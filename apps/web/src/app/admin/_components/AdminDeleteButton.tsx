@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 
+import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
+
 type AdminDeleteButtonProps = {
   id: string;
   title: string;
@@ -36,6 +38,11 @@ export function AdminDeleteButton({ id, title, deleteAction, labels }: AdminDele
     }
   }
 
+  function handleCancel() {
+    setIsOpen(false);
+    setError(null);
+  }
+
   return (
     <>
       <button
@@ -46,42 +53,22 @@ export function AdminDeleteButton({ id, title, deleteAction, labels }: AdminDele
         {labels.deleteButton}
       </button>
 
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-card border border-border rounded-lg p-6 w-full max-w-md mx-4">
-            <h3 className="text-lg font-semibold mb-4">{labels.modalTitle}</h3>
-
-            <p className="text-sm text-muted-foreground mb-2">
-              <span className="font-medium text-foreground">{title}</span>
-            </p>
-            <p className="text-sm text-muted-foreground">{labels.modalMessage}</p>
-
-            {error && <p className="text-destructive text-sm mt-2">{error}</p>}
-
-            <div className="flex justify-end gap-2 mt-4">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsOpen(false);
-                  setError(null);
-                }}
-                className="px-4 py-2 text-sm rounded bg-card border border-border hover:bg-secondary transition-colors"
-                disabled={isPending}
-              >
-                {labels.cancel}
-              </button>
-              <button
-                type="button"
-                onClick={handleDelete}
-                className="px-4 py-2 text-sm rounded bg-destructive text-destructive-foreground hover:opacity-80 transition-opacity disabled:opacity-50"
-                disabled={isPending}
-              >
-                {isPending ? labels.deleting : labels.confirm}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmationModal
+        isOpen={isOpen}
+        title={labels.modalTitle}
+        confirmText={isPending ? labels.deleting : labels.confirm}
+        cancelText={labels.cancel}
+        confirmVariant="danger"
+        isLoading={isPending}
+        error={error}
+        onConfirm={handleDelete}
+        onCancel={handleCancel}
+      >
+        <p className="text-sm text-muted-foreground mb-2">
+          <span className="font-medium text-foreground">{title}</span>
+        </p>
+        <p className="text-sm text-muted-foreground">{labels.modalMessage}</p>
+      </ConfirmationModal>
     </>
   );
 }

@@ -1,9 +1,8 @@
 'use client';
 
 import { Button } from '@/app/_components';
+import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
 import { FaChevronDown, FaChevronRight, FaExternalLinkAlt, FaTrash } from 'react-icons/fa';
-
-import { fenToLichessUrl } from '@/lib/lichess';
 
 import type { PracticeCompleteLabels, ProblemResult } from '../_lib/practice-complete-types';
 import { AnimatedChessBoard } from './AnimatedChessBoard';

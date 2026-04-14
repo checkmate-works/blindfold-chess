@@ -335,8 +335,9 @@ describe('checkAndGrantRanks', () => {
             ],
           },
         ];
-      // Call 3: evaluator checks challenge_best_scores
-      if (callCount === 3) return [{ score: 25 }];
+      // Call 3: allBestScores query (pre-fetched scores for cache)
+      if (callCount === 3)
+        return [{ menuType: 'coordinate_quiz', leaderboardKey: 'white', score: 25 }];
       return [];
     });
 
@@ -393,10 +394,9 @@ describe('checkAndGrantRanks', () => {
             ],
           },
         ];
-      // Call 3: evaluator for rank-1 — score 25 >= 20 (met)
-      if (callCount === 3) return [{ score: 25 }];
-      // Call 4: evaluator for rank-2 — score 25 < 30 (NOT met)
-      if (callCount === 4) return [{ score: 25 }];
+      // Call 3: allBestScores — score 25 meets rank-1 (>=20) but NOT rank-2 (< 30)
+      if (callCount === 3)
+        return [{ menuType: 'coordinate_quiz', leaderboardKey: 'white', score: 25 }];
       return [];
     });
 
@@ -445,9 +445,9 @@ describe('checkAndGrantRanks', () => {
             ],
           },
         ];
-      // Both evaluations return high enough scores
-      if (callCount === 3) return [{ score: 35 }];
-      if (callCount === 4) return [{ score: 35 }];
+      // Call 3: allBestScores — score 35 meets both ranks
+      if (callCount === 3)
+        return [{ menuType: 'coordinate_quiz', leaderboardKey: 'white', score: 35 }];
       return [];
     });
 
@@ -490,8 +490,9 @@ describe('checkAndGrantRanks', () => {
             ],
           },
         ];
-      // Evaluator for rank-1
-      if (callCount === 3) return [{ score: 25 }];
+      // Call 3: allBestScores
+      if (callCount === 3)
+        return [{ menuType: 'coordinate_quiz', leaderboardKey: 'white', score: 25 }];
       return [];
     });
 
@@ -537,8 +538,9 @@ describe('checkAndGrantRanks', () => {
             ],
           },
         ];
-      // Evaluator for rank-2
-      if (callCount === 3) return [{ score: 35 }];
+      // Call 3: allBestScores
+      if (callCount === 3)
+        return [{ menuType: 'coordinate_quiz', leaderboardKey: 'white', score: 35 }];
       return [];
     });
 
@@ -556,6 +558,7 @@ describe('checkAndGrantRanks', () => {
       callCount++;
       if (callCount === 1) return [{ rankId: 'rank-1' }]; // all achieved
       if (callCount === 2) return [{ id: 'rank-1', slug: '5kyu', level: 10, requirements: [] }];
+      if (callCount === 3) return []; // allBestScores
       return [];
     });
 
@@ -571,6 +574,7 @@ describe('checkAndGrantRanks', () => {
       callCount++;
       if (callCount === 1) return []; // no achieved ranks
       if (callCount === 2) return []; // no ranks defined
+      if (callCount === 3) return []; // allBestScores
       return [];
     });
 
@@ -607,7 +611,9 @@ describe('checkAndGrantRanks', () => {
             ],
           },
         ];
-      if (callCount === 3) return [{ score: 25 }];
+      // Call 3: allBestScores
+      if (callCount === 3)
+        return [{ menuType: 'coordinate_quiz', leaderboardKey: 'white', score: 25 }];
       return [];
     });
 
@@ -640,7 +646,9 @@ describe('checkAndGrantRanks', () => {
             ],
           },
         ];
-      if (callCount === 3) return [{ score: 25 }];
+      // Call 3: allBestScores
+      if (callCount === 3)
+        return [{ menuType: 'coordinate_quiz', leaderboardKey: 'white', score: 25 }];
       return [];
     });
 
@@ -727,8 +735,10 @@ describe('checkAndGrantRanks', () => {
       callCount++;
       if (callCount === 1) return []; // no achieved ranks
       if (callCount === 2) return manyRanks;
-      // All evaluations return score of 100 (meets all requirements)
-      return [{ score: 100 }];
+      // Call 3: allBestScores — score 100 meets all requirements
+      if (callCount === 3)
+        return [{ menuType: 'coordinate_quiz', leaderboardKey: 'white', score: 100 }];
+      return [];
     });
 
     const result = await checkAndGrantRanks(userId);
@@ -772,9 +782,12 @@ describe('checkAndGrantRanks', () => {
             ],
           },
         ];
-      // First requirement met, second not met
-      if (callCount === 3) return [{ score: 25 }]; // coordinate_quiz: 25 >= 20 OK
-      if (callCount === 4) return [{ score: 10 }]; // legal_moves: 10 < 15 FAIL
+      // Call 3: allBestScores — coordinate_quiz met, legal_moves NOT met
+      if (callCount === 3)
+        return [
+          { menuType: 'coordinate_quiz', leaderboardKey: 'white', score: 25 },
+          { menuType: 'legal_moves', leaderboardKey: 'knight', score: 10 },
+        ];
       return [];
     });
 
@@ -805,7 +818,9 @@ describe('checkAndGrantRanks', () => {
             ],
           },
         ];
-      if (callCount === 3) return [{ score: 0 }]; // score of 0 >= minScore of 0
+      // Call 3: allBestScores — score of 0 >= minScore of 0
+      if (callCount === 3)
+        return [{ menuType: 'coordinate_quiz', leaderboardKey: 'white', score: 0 }];
       return [];
     });
 
@@ -837,7 +852,7 @@ describe('checkAndGrantRanks', () => {
             ],
           },
         ];
-      if (callCount === 3) return []; // no score entry
+      if (callCount === 3) return []; // allBestScores — no score entry at all
       return [];
     });
 
@@ -847,7 +862,7 @@ describe('checkAndGrantRanks', () => {
     expect(mockInsertValues).not.toHaveBeenCalled();
   });
 
-  it('should not leave partial grants when evaluation throws mid-way', async () => {
+  it('should not leave partial grants when insert throws mid-way', async () => {
     let callCount = 0;
     mockSelectResult.mockImplementation(() => {
       callCount++;
@@ -881,18 +896,25 @@ describe('checkAndGrantRanks', () => {
             ],
           },
         ];
-      // rank-1 evaluation succeeds
-      if (callCount === 3) return [{ score: 25 }];
-      // rank-2 evaluation throws
-      if (callCount === 4) throw new Error('DB connection lost');
+      // Call 3: allBestScores — score meets both ranks
+      if (callCount === 3)
+        return [{ menuType: 'coordinate_quiz', leaderboardKey: 'white', score: 35 }];
       return [];
     });
+
+    // rank-1 insert succeeds, rank-2 insert throws
+    mockOnConflictDoNothing
+      .mockImplementationOnce(() => {}) // rank-1 succeeds
+      .mockImplementationOnce(() => {
+        throw new Error('DB connection lost');
+      }); // rank-2 fails
 
     await expect(checkAndGrantRanks(userId)).rejects.toThrow('DB connection lost');
 
     // rank-1 was already granted before the error (no transaction rollback in current impl)
-    expect(mockInsertValues).toHaveBeenCalledTimes(1);
-    expect(mockInsertValues).toHaveBeenCalledWith({ userId, rankId: 'rank-1' });
+    expect(mockInsertValues).toHaveBeenCalledTimes(2);
+    expect(mockInsertValues).toHaveBeenNthCalledWith(1, { userId, rankId: 'rank-1' });
+    expect(mockInsertValues).toHaveBeenNthCalledWith(2, { userId, rankId: 'rank-2' });
   });
 
   it('should correctly filter when user has some ranks achieved in the middle', async () => {
@@ -943,8 +965,9 @@ describe('checkAndGrantRanks', () => {
             ],
           },
         ];
-      // Evaluator for rank-2 (the only unachieved rank)
-      if (callCount === 3) return [{ score: 12 }];
+      // Call 3: allBestScores — score 12 meets rank-2 (>=10)
+      if (callCount === 3)
+        return [{ menuType: 'coordinate_quiz', leaderboardKey: 'white', score: 12 }];
       return [];
     });
 
@@ -976,7 +999,9 @@ describe('checkAndGrantRanks', () => {
             ],
           },
         ];
-      if (callCount === 3) return [{ score: 25 }];
+      // Call 3: allBestScores
+      if (callCount === 3)
+        return [{ menuType: 'coordinate_quiz', leaderboardKey: 'white', score: 25 }];
       return [];
     });
 

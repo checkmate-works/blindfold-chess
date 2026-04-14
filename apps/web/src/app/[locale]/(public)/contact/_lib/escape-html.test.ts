@@ -1,6 +1,5 @@
+import { escapeHtml } from '@blindfold-chess/features/utils';
 import { describe, expect, it } from 'vitest';
-
-import { escapeHtml } from './escape-html';
 
 describe('escapeHtml', () => {
   it('should escape ampersand', () => {

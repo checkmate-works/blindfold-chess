@@ -1,15 +1,16 @@
-import { NextConfig } from 'next';
+import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
 
 import { withSentryConfig } from '@sentry/nextjs';
 
 const cspDirectives = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' www.googletagmanager.com www.google-analytics.com cdn-cookieyes.com *.sentry.io",
+  "script-src 'self' 'unsafe-inline' www.googletagmanager.com www.google-analytics.com cdn-cookieyes.com *.sentry.io pagead2.googlesyndication.com adservice.google.com adservice.google.co.jp *.doubleclick.net",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: *.supabase.co",
+  "img-src 'self' data: blob: *.supabase.co pagead2.googlesyndication.com *.doubleclick.net",
   "font-src 'self'",
-  "connect-src 'self' www.google-analytics.com *.sentry.io *.ingest.sentry.io *.supabase.co",
+  "connect-src 'self' www.google-analytics.com *.sentry.io *.ingest.sentry.io *.supabase.co pagead2.googlesyndication.com adservice.google.com",
+  'frame-src googleads.g.doubleclick.net tpc.googlesyndication.com ep2.adtrafficquality.google www.google.com',
   "frame-ancestors 'none'",
 ];
 
@@ -86,18 +87,39 @@ const nextConfig: NextConfig = {
         destination: '/:locale/games/play/error',
         permanent: true,
       },
-    ];
-  },
-
-  // Rewrites: map /@/username to /profile/username (@ is reserved by Next.js for parallel routes)
-  async rewrites() {
-    return [
+      // Redirect old /@/username URLs to /u/username.
+      // Originally the URL scheme used /@/username, but @ is a reserved character
+      // in Next.js App Router (it denotes parallel routes), which caused client-side
+      // navigation to fail with route resolution errors (404). The scheme was migrated
+      // to /u/username, and this redirect ensures old links and search engine entries
+      // continue to work. (added 2026-04-09)
       {
         source: '/:locale/@/:username/:path*',
-        destination: '/:locale/profile/:username/:path*',
+        destination: '/:locale/u/:username/:path*',
+        permanent: true,
+      },
+      // Rank guide URL migration (added 2026-04-11).
+      // Moved textbook-like guide content from /ranks/:slug/guide to the
+      // independent /guides/ranks/:rank hub for namespace isolation and
+      // future expansion (columns, tactics, etc.).
+      // Safe to remove after 6 months if Search Console shows no traffic.
+      {
+        source: '/:locale/ranks/:slug/guide',
+        destination: '/:locale/guides/ranks/:slug',
+        permanent: true,
+      },
+      {
+        source: '/:locale/ranks/:slug/guide/:page(\\d+)',
+        destination: '/:locale/guides/ranks/:slug/:page',
+        permanent: true,
       },
     ];
   },
+
+  // NOTE: The rewrites() block that mapped /@/username to /profile/username has been removed.
+  // The URL scheme was changed from /@/username to /u/username because @ is a reserved
+  // character in Next.js App Router (used for parallel routes), which caused client-side
+  // navigation to fail with 404 errors. See the redirect rule above for the /@/ -> /u/ migration.
 
   // Security headers
   async headers() {

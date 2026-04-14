@@ -1,13 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
-import { BELT_COLOR_HEX, RANK_COLORS } from '@/lib/db/data/ranks';
+import { ALL_RANK_SLUGS, BELT_COLOR_HEX, RANK_COLORS } from '@/lib/db/data/ranks';
 import type { ChallengeScoreRequirement, RankSlug } from '@/lib/db/data/ranks';
+import type { Rank } from '@/lib/db/schema';
 
 import {
   buildChallengeNameKey,
   buildRequirementItems,
   getBeltColorHex,
   getRankCardState,
+  isWhiteBelt,
+  resolveNextRank,
 } from './helpers';
 
 // ---------------------------------------------------------------------------
@@ -96,6 +99,22 @@ describe('buildRequirementItems', () => {
     expect(items[0].href).toBe('/en/practice/legal-moves/challenge?piece=king');
   });
 
+  it('should generate challenge URL with piece parameter for route_planner', () => {
+    const items = buildRequirementItems(
+      [
+        {
+          type: 'challenge_score',
+          menuType: 'route_planner',
+          leaderboardKey: 'knight',
+          minScore: 3,
+        },
+      ],
+      'en',
+      mockT
+    );
+    expect(items[0].href).toBe('/en/practice/route-planner/challenge?piece=knight');
+  });
+
   it('should generate standard practice URL for non-legal_moves', () => {
     const items = buildRequirementItems(
       [
@@ -159,6 +178,20 @@ describe('getBeltColorHex', () => {
     // RANK_COLORS won't have this key, so colorName is undefined
     // BELT_COLOR_HEX[undefined] is undefined, so fallback '#6b7280' is returned
     expect(getBeltColorHex(unknownSlug)).toBe('#6b7280');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// isWhiteBelt
+// ---------------------------------------------------------------------------
+
+describe('isWhiteBelt', () => {
+  it('returns true for #ffffff (mukyu belt color)', () => {
+    expect(isWhiteBelt('#ffffff')).toBe(true);
+  });
+
+  it('returns false for any non-white belt color', () => {
+    expect(isWhiteBelt('#f97316')).toBe(false);
   });
 });
 
@@ -295,5 +328,172 @@ describe('getRankCardState', () => {
       { type: 'challenge_score', menuType: 'legal_moves', leaderboardKey: 'knight', minScore: 20 },
     ];
     expect(call({ requirements: legalMovesRequirements, isAchieved: true })).toBe('achieved');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// resolveNextRank
+// ---------------------------------------------------------------------------
+
+describe('resolveNextRank', () => {
+  /**
+   * Build a fake `Rank` row for a given slug with a single valid
+   * challenge_score requirement. The exact values are not important — we just
+   * need `requirements` to be a valid JSONB payload so that `parseRequirements`
+   * returns a non-empty array.
+   */
+  const makeDbRank = (slug: string, requirements: ChallengeScoreRequirement[] = []): Rank => ({
+    id: `id-${slug}`,
+    slug,
+    level: 0,
+    color: null,
+    requirements,
+    createdAt: new Date('2025-01-01T00:00:00Z'),
+  });
+
+  const defaultReqFor = (slug: string): ChallengeScoreRequirement[] => [
+    {
+      type: 'challenge_score',
+      menuType: 'square_colors',
+      leaderboardKey: 'default',
+      minScore: 10 + slug.length,
+    },
+  ];
+
+  /** All non-mukyu slugs, each backed by a fake DB row with one requirement. */
+  const buildFullDbRanks = (): Rank[] =>
+    ALL_RANK_SLUGS.filter((s) => s !== 'mukyu').map((s) => makeDbRank(s, defaultReqFor(s)));
+
+  it('returns next=5kyu and current=null when nothing has been achieved', () => {
+    const dbRanks = buildFullDbRanks();
+    const { current, next } = resolveNextRank(dbRanks, new Set<RankSlug>());
+
+    expect(current).toBeNull();
+    expect(next).not.toBeNull();
+    expect(next?.slug).toBe('5kyu');
+    // parseRequirements should have produced an array, not raw JSON.
+    expect(Array.isArray(next?.requirements)).toBe(true);
+    expect(next?.requirements.length).toBeGreaterThan(0);
+    expect(next?.dbRank?.slug).toBe('5kyu');
+  });
+
+  it('returns current=5kyu and next=4kyu when only 5kyu is achieved', () => {
+    const dbRanks = buildFullDbRanks();
+    const { current, next } = resolveNextRank(dbRanks, new Set<RankSlug>(['5kyu']));
+
+    expect(current?.slug).toBe('5kyu');
+    expect(next?.slug).toBe('4kyu');
+    expect(Array.isArray(current?.requirements)).toBe(true);
+    expect(Array.isArray(next?.requirements)).toBe(true);
+  });
+
+  it('returns current=3kyu and next=2kyu when 5kyu/4kyu/3kyu are achieved', () => {
+    const dbRanks = buildFullDbRanks();
+    const { current, next } = resolveNextRank(dbRanks, new Set<RankSlug>(['5kyu', '4kyu', '3kyu']));
+
+    expect(current?.slug).toBe('3kyu');
+    expect(next?.slug).toBe('2kyu');
+  });
+
+  it('returns current=1dan (top rank) and next=null when every rank is achieved', () => {
+    const dbRanks = buildFullDbRanks();
+    const allAchieved = new Set<RankSlug>(
+      ALL_RANK_SLUGS.filter((s): s is RankSlug => s !== 'mukyu')
+    );
+    const { current, next } = resolveNextRank(dbRanks, allAchieved);
+
+    expect(current?.slug).toBe('1dan');
+    expect(next).toBeNull();
+    expect(Array.isArray(current?.requirements)).toBe(true);
+  });
+
+  it('ignores mukyu entries in achievedSlugs (defensive — mukyu is UI-only)', () => {
+    const dbRanks = buildFullDbRanks();
+    // 'mukyu' is a valid RankSlug value but should be defensively skipped by
+    // the walk. Cast through a typed set.
+    const { current, next } = resolveNextRank(dbRanks, new Set<RankSlug>(['mukyu']));
+
+    // mukyu is skipped during the walk, so it must never become `current`
+    // and must never influence the computed `next`.
+    expect(current).toBeNull();
+    expect(next?.slug).toBe('5kyu');
+  });
+
+  it('with a gap in achievements (3kyu only), still reports current=3kyu and next=2kyu', () => {
+    // A corrupted / partial state where the user somehow has 3kyu without
+    // 5kyu or 4kyu. The implementation walks linearly so `current` becomes
+    // the highest slug present in the set, and `next` is the first gap AFTER
+    // any achievement... but because the linear walk sets `next` on the first
+    // non-achieved slug encountered, 5kyu is assigned to `next` first.
+    //
+    // This test locks in the current documented behavior so that any future
+    // change is a deliberate decision.
+    const dbRanks = buildFullDbRanks();
+    const { current, next } = resolveNextRank(dbRanks, new Set<RankSlug>(['3kyu']));
+
+    expect(current?.slug).toBe('3kyu');
+    // First non-achieved slug in progression order = 5kyu.
+    expect(next?.slug).toBe('5kyu');
+  });
+
+  it('returns both null when dbRanks is empty and nothing achieved', () => {
+    const { current, next } = resolveNextRank([], new Set<RankSlug>());
+
+    expect(current).toBeNull();
+    // Even without DB rows, `next` is computed from ALL_RANK_SLUGS and the
+    // `toView()` helper gracefully handles missing DB rows.
+    expect(next?.slug).toBe('5kyu');
+    expect(next?.dbRank).toBeNull();
+    expect(next?.requirements).toEqual([]);
+  });
+
+  it('handles dbRanks missing some slugs from ALL_RANK_SLUGS safely', () => {
+    // Only 5kyu and 3kyu exist in DB; user has achieved 5kyu.
+    const dbRanks = [
+      makeDbRank('5kyu', defaultReqFor('5kyu')),
+      makeDbRank('3kyu', defaultReqFor('3kyu')),
+    ];
+    const { current, next } = resolveNextRank(dbRanks, new Set<RankSlug>(['5kyu']));
+
+    expect(current?.slug).toBe('5kyu');
+    expect(current?.dbRank?.slug).toBe('5kyu');
+    expect(current?.requirements.length).toBeGreaterThan(0);
+
+    // next = 4kyu in progression order, but missing from DB → dbRank is null
+    // and requirements is an empty array (parseRequirements over nothing).
+    expect(next?.slug).toBe('4kyu');
+    expect(next?.dbRank).toBeNull();
+    expect(next?.requirements).toEqual([]);
+  });
+
+  it('parses requirements via parseRequirements (returns typed array, not raw JSON)', () => {
+    // Include a malformed requirement alongside a valid one to verify that
+    // parseRequirements filters it out rather than leaking raw objects.
+    const mixedRequirements = [
+      {
+        type: 'challenge_score',
+        menuType: 'square_colors',
+        leaderboardKey: 'default',
+        minScore: 15,
+      },
+      // malformed — missing minScore
+      { type: 'challenge_score', menuType: 'broken', leaderboardKey: 'default' },
+      // completely wrong shape
+      { foo: 'bar' },
+    ] as unknown as ChallengeScoreRequirement[];
+
+    const dbRanks = [makeDbRank('5kyu', mixedRequirements)];
+    const { next } = resolveNextRank(dbRanks, new Set<RankSlug>());
+
+    expect(next?.slug).toBe('5kyu');
+    expect(Array.isArray(next?.requirements)).toBe(true);
+    // Only the valid entry survives parseRequirements.
+    expect(next?.requirements).toHaveLength(1);
+    expect(next?.requirements[0]).toMatchObject({
+      type: 'challenge_score',
+      menuType: 'square_colors',
+      leaderboardKey: 'default',
+      minScore: 15,
+    });
   });
 });

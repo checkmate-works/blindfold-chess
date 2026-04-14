@@ -3,12 +3,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MISTAKE_LIMIT } from '@/lib/challenge-constants';
 import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 
-import {
-  type ChallengeResultRow,
-  type DatePeriod,
-  getAvailableMenuTypes,
-  getChallengeSessions,
-} from '../_actions/get-challenge-sessions';
+import type { ChallengeResultRow } from '../_actions/get-challenge-sessions';
+import { getAvailableMenuTypes, getChallengeSessions } from '../_actions/get-challenge-sessions';
 import {
   aggregateByDay,
   computePercentChange,
@@ -25,6 +21,7 @@ import {
   type PieceSelection,
   derivePieceSelectionFromSessions,
 } from '../_lib/derive-piece-filter';
+import type { DatePeriod } from '../_lib/period-utils';
 import { getPeriodRange, getPreviousPeriodRange } from '../_lib/period-utils';
 
 export { PIECE_TYPES } from '../_lib/derive-piece-filter';

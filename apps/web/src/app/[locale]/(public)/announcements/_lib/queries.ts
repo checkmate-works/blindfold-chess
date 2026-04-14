@@ -6,25 +6,14 @@ import { and, desc, eq, gte, isNotNull, sql } from 'drizzle-orm';
 
 import { type Announcement, announcements, db } from '@/lib/db';
 
-const DEFAULT_LOCALE = 'en';
+import { DEFAULT_LOCALE, pickByLocale } from '@/app/[locale]/_lib/locale-utils';
+
 const BANNER_DISPLAY_DAYS = 3;
 
 const pinnedFirstOrdering = [
   sql`${announcements.pinnedAt} DESC NULLS LAST`,
   desc(announcements.publishedAt),
 ];
-
-/**
- * Pick the best locale variant from a group of announcements sharing the same slug.
- * Priority: requested locale > default locale (en) > first available.
- */
-function pickByLocale(rows: Announcement[], locale: string): Announcement {
-  return (
-    rows.find((a) => a.locale === locale) ??
-    rows.find((a) => a.locale === DEFAULT_LOCALE) ??
-    rows[0]
-  );
-}
 
 /**
  * Deduplicate announcements by slug, keeping the best locale variant for each.
@@ -42,6 +31,58 @@ function deduplicateBySlug(rows: Announcement[], locale: string): Announcement[]
   }
 
   return [...grouped.values()].map((group) => pickByLocale(group, locale));
+}
+
+/**
+ * Build a SQL query that deduplicates announcements by slug, keeping the best
+ * locale variant for each slug. Uses ROW_NUMBER() window function to rank
+ * locale variants per slug by priority:
+ *   1. Requested locale
+ *   2. Default locale (en)
+ *   3. Any other locale
+ *
+ * The result is ordered by pinned_at DESC NULLS LAST, published_at DESC,
+ * then paginated with LIMIT/OFFSET applied after deduplication.
+ */
+async function getDeduplicatedAnnouncements(
+  locale: string,
+  limit: number,
+  offset: number
+): Promise<Announcement[]> {
+  const rows = await db.execute<Announcement>(sql`
+    SELECT
+      id,
+      slug,
+      title,
+      content,
+      locale,
+      status,
+      visibility,
+      pinned_at AS "pinnedAt",
+      published_at AS "publishedAt",
+      created_at AS "createdAt",
+      updated_at AS "updatedAt"
+    FROM (
+      SELECT *,
+        ROW_NUMBER() OVER (
+          PARTITION BY ${announcements.slug}
+          ORDER BY
+            CASE ${announcements.locale}
+              WHEN ${locale} THEN 0
+              WHEN ${DEFAULT_LOCALE} THEN 1
+              ELSE 2
+            END
+        ) AS rn
+      FROM ${announcements}
+      WHERE ${announcements.status} = 'published'
+    ) ranked
+    WHERE rn = 1
+    ORDER BY pinned_at DESC NULLS LAST, published_at DESC
+    LIMIT ${limit}
+    OFFSET ${offset}
+  `);
+
+  return rows;
 }
 
 /**
@@ -69,13 +110,7 @@ export async function getPublishedAnnouncementsPaginated(
   limit: number,
   offset: number
 ): Promise<Announcement[]> {
-  const rows = await db
-    .select()
-    .from(announcements)
-    .where(eq(announcements.status, 'published'))
-    .orderBy(...pinnedFirstOrdering);
-
-  return deduplicateBySlug(rows, locale).slice(offset, offset + limit);
+  return getDeduplicatedAnnouncements(locale, limit, offset);
 }
 
 /**

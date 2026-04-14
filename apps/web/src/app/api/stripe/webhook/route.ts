@@ -23,7 +23,10 @@ export async function POST(request: Request) {
   try {
     event = getStripe().webhooks.constructEvent(body, sig, getStripeWebhookSecret());
   } catch (err) {
-    console.error('Webhook signature verification failed:', err);
+    console.error(
+      'Webhook signature verification failed:',
+      err instanceof Error ? err.message : 'Unknown error'
+    );
     Sentry.captureException(err);
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
@@ -43,7 +46,10 @@ export async function POST(request: Request) {
         break;
     }
   } catch (error) {
-    console.error(`Webhook handler error for ${event.type}:`, error);
+    console.error(
+      `Webhook handler error for ${event.type}:`,
+      error instanceof Error ? error.message : 'Unknown error'
+    );
     Sentry.captureException(error);
     return NextResponse.json({ error: 'Handler failed' }, { status: 500 });
   }

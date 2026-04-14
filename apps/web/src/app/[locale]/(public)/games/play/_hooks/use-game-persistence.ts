@@ -9,6 +9,8 @@ import type { MoveOperationLog } from '@/lib/types';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
+import { SESSION_STORAGE_KEYS } from '../_lib/session-storage-keys';
+
 type SavedGameData = {
   moves: AlgebraicNotation[];
   startingFen?: string;
@@ -70,7 +72,7 @@ export function useGamePersistence({
   // Clear save toast flag on mount when we have a gameId
   useEffect(() => {
     if (initialGameId && typeof window !== 'undefined') {
-      sessionStorage.removeItem('blindfold_chess_show_save_toast');
+      sessionStorage.removeItem(SESSION_STORAGE_KEYS.SHOW_SAVE_TOAST);
     }
   }, [initialGameId]);
 
@@ -79,7 +81,7 @@ export function useGamePersistence({
     const loadGame = async () => {
       if (initialGameId && typeof window !== 'undefined') {
         setIsLoadingFromStorage(true);
-        sessionStorage.removeItem('blindfold_chess_show_save_toast');
+        sessionStorage.removeItem(SESSION_STORAGE_KEYS.SHOW_SAVE_TOAST);
 
         const gameRepository = new LocalStorageGameRepository();
         const savedGame = await gameRepository.load(initialGameId);

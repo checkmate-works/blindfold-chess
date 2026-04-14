@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getPaginationParams, paginateItems } from './pagination';
+import { DEFAULT_PAGE_SIZE, getPaginationParams, paginateItems } from './pagination';
 
 describe('paginateItems', () => {
   const items = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -83,6 +83,12 @@ describe('paginateItems', () => {
   });
 });
 
+describe('DEFAULT_PAGE_SIZE', () => {
+  it('is 20', () => {
+    expect(DEFAULT_PAGE_SIZE).toBe(20);
+  });
+});
+
 describe('getPaginationParams', () => {
   it('returns correct params for the first page', () => {
     const result = getPaginationParams(1, 50, 10);
@@ -136,5 +142,25 @@ describe('getPaginationParams', () => {
     const result = getPaginationParams(100, 50, 10);
     expect(result.currentPage).toBe(100);
     expect(result.offset).toBe(990);
+  });
+
+  it('uses DEFAULT_PAGE_SIZE when pageSize is omitted', () => {
+    const result = getPaginationParams(1, 50);
+    expect(result).toEqual({
+      currentPage: 1,
+      totalPages: 3,
+      limit: 20,
+      offset: 0,
+    });
+  });
+
+  it('uses DEFAULT_PAGE_SIZE for offset calculation when pageSize is omitted', () => {
+    const result = getPaginationParams(2, 50);
+    expect(result).toEqual({
+      currentPage: 2,
+      totalPages: 3,
+      limit: 20,
+      offset: 20,
+    });
   });
 });

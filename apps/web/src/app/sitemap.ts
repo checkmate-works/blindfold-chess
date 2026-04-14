@@ -1,16 +1,25 @@
-import { MetadataRoute } from 'next';
+import type { MetadataRoute } from 'next';
 
 import { SITE_URL, SUPPORTED_LOCALES } from '@/config';
 import enMessages from '@/messages/en.json';
 import * as Sentry from '@sentry/nextjs';
 import { and, eq, isNull } from 'drizzle-orm';
+import { statSync } from 'node:fs';
+import path from 'node:path';
 
 import { db, topicPosts } from '@/lib/db';
 import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
+import { enumerateGuideRoutes, guideRouteToSegments } from '@/lib/guides';
 
 import { getPublishedAnnouncements } from './[locale]/(public)/announcements/_lib/queries';
 import { getPublishedArticlesForSitemap } from './[locale]/(public)/articles/_lib/queries';
 import { getCategoryCounts, getUniqueLetters } from './[locale]/(public)/glossary/_lib/queries';
+import {
+  MODULES,
+  MODULE_KEYS,
+  MODULE_TO_SLUG,
+  VALID_PERIODS,
+} from './[locale]/(public)/leaderboard/_lib/types';
 import { ARTICLE_CATEGORIES } from './[locale]/(public)/learn/_lib/types';
 import { getAllArticles } from './[locale]/(public)/learn/_lib/utils';
 import { getAllManualArticles } from './[locale]/(public)/manual/_lib/utils';
@@ -71,8 +80,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/getting-started',
     '/articles',
     '/announcements',
-    '/leaderboard',
+    // Note: `/leaderboard` is intentionally NOT listed here — it is a 308
+    // redirect to `/leaderboard/score/all-time`. The canonical category-first
+    // leaderboard URLs (`/leaderboard/score/...` and `/leaderboard/exp/...`)
+    // are emitted below in the "Dynamic pages - Leaderboard" section so
+    // crawlers index only non-redirect, 200-returning canonical endpoints.
     '/ranks',
+    '/dojo',
+    '/guides',
     '/pricing',
     '/affiliate-disclosure',
     '/topics',
@@ -229,18 +244,84 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  // Dynamic pages - Rank guide pages
-  const guidePages = enMessages.ranks.detail.guidePages as Record<string, unknown[]>;
-  for (const [slug, pages] of Object.entries(guidePages)) {
-    for (let page = 1; page <= pages.length; page++) {
-      const path = page === 1 ? `/ranks/${slug}/guide` : `/ranks/${slug}/guide/${page}`;
-      for (const locale of SUPPORTED_LOCALES) {
-        sitemap.push({
-          url: `${BASE_URL}/${locale}${path}`,
-          lastModified: now,
-          alternates: generateAlternates(path),
-        });
+  // Dynamic pages - Leaderboard (category-first canonical URLs).
+  //
+  // Emits only non-redirect, 200-returning endpoints under the
+  // `/leaderboard/score/...` and `/leaderboard/exp/...` category-first
+  // hierarchy. The legacy period-first paths (`/leaderboard/[period]/...`)
+  // and the bare `/leaderboard` index are intentionally omitted — they 308
+  // to the canonical shapes emitted here, and listing redirect sources in a
+  // sitemap dilutes crawl budget for no SEO gain.
+  //
+  // Emitted paths (per locale, with hreflang alternates):
+  //   - Score top:        /leaderboard/score/{period}                        × 3 periods
+  //   - Score middle hub: /leaderboard/score/{period}/{module-slug}          × 3 × 6 modules
+  //   - Score detail:     /leaderboard/score/{period}/{module-slug}/{key}    (variant modules only)
+  //   - Exp top:          /leaderboard/exp/{period}                          × 3 periods
+  //
+  // Detail leaves are skipped for modules whose only key is `default`
+  // (square_colors, diagonal_quiz, board_symmetry). Those modules are fully
+  // represented by their middle hub — the detail page would share the same
+  // ranking table and create duplicate-content noise for crawlers.
+  const leaderboardPaths: string[] = [];
+  for (const period of VALID_PERIODS) {
+    // Score top
+    leaderboardPaths.push(`/leaderboard/score/${period}`);
+    // Score middle hubs (one per module). `mod` (not `module`) because
+    // `module` is a reserved globals-shadowing variable name under
+    // `@next/next/no-assign-module-variable`.
+    for (const mod of MODULES) {
+      const slug = MODULE_TO_SLUG[mod];
+      leaderboardPaths.push(`/leaderboard/score/${period}/${slug}`);
+      // Score detail leaves — only for modules with real variant keys
+      for (const key of MODULE_KEYS[mod]) {
+        if (key === 'default') continue;
+        leaderboardPaths.push(`/leaderboard/score/${period}/${slug}/${key}`);
       }
+    }
+    // Exp top
+    leaderboardPaths.push(`/leaderboard/exp/${period}`);
+  }
+  for (const routePath of leaderboardPaths) {
+    for (const locale of SUPPORTED_LOCALES) {
+      sitemap.push({
+        url: `${BASE_URL}/${locale}${routePath}`,
+        lastModified: now,
+        alternates: generateAlternates(routePath),
+      });
+    }
+  }
+
+  // Dynamic pages - Rank guide pages (hub at /guides is in staticPages above).
+  // Uses the shared `enumerateGuideRoutes` helper so the sitemap, route
+  // `generateStaticParams`, and any future enumerators all walk the same tree.
+  //
+  // `lastModified` for guide entries is derived from the mtime of the English
+  // message file. Using the file mtime instead of `now` keeps the sitemap's
+  // "freshness signal" stable across deploys — Google penalises spurious
+  // `lastmod` churn, and every build would otherwise bump the timestamp for
+  // content that did not change. The English file is the canonical source of
+  // truth for guide content; ja/es are translations of it.
+  //
+  // Falls back to `now` if `statSync` throws (e.g. a test sandbox without
+  // real filesystem access for this path).
+  const messagesEnPath = path.join(process.cwd(), 'src/messages/en.json');
+  let guidesLastModified: Date;
+  try {
+    guidesLastModified = statSync(messagesEnPath).mtime;
+  } catch {
+    guidesLastModified = now;
+  }
+
+  const guideRoutes = enumerateGuideRoutes(enMessages.guides.pages as Record<string, unknown>);
+  for (const route of guideRoutes) {
+    const routePath = `/guides/ranks/${guideRouteToSegments(route).join('/')}`;
+    for (const locale of SUPPORTED_LOCALES) {
+      sitemap.push({
+        url: `${BASE_URL}/${locale}${routePath}`,
+        lastModified: guidesLastModified,
+        alternates: generateAlternates(routePath),
+      });
     }
   }
 

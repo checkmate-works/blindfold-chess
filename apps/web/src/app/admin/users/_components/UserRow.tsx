@@ -21,6 +21,7 @@ type UserRowProps = {
   hasSubscription: boolean;
   banReason: string | null;
   isCurrentUser: boolean;
+  signupMethod: 'google' | 'email' | 'unknown';
   labels: {
     defaultRole: string;
     premium: string;
@@ -32,6 +33,9 @@ type UserRowProps = {
     viewPosts: string;
     viewActivity: string;
     viewSubscriptions: string;
+    google: string;
+    email: string;
+    unknown: string;
   };
 };
 
@@ -42,6 +46,7 @@ export function UserRow({
   hasSubscription,
   banReason,
   isCurrentUser,
+  signupMethod,
   labels,
 }: UserRowProps) {
   const isDeleted = profile?.deletedAt != null;
@@ -53,7 +58,7 @@ export function UserRow({
       <td className="px-4 py-3">
         {profile?.username ? (
           <Link
-            href={`/en/profile/${encodeURIComponent(profile.username)}`}
+            href={`/en/u/${encodeURIComponent(profile.username)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-primary hover:underline"
@@ -94,6 +99,11 @@ export function UserRow({
             active: labels.active,
           }}
         />
+      </td>
+      <td className="px-4 py-3">
+        <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-secondary text-foreground">
+          {labels[signupMethod]}
+        </span>
       </td>
       <td className="px-4 py-3 text-muted-foreground">
         {user.created_at ? new Date(user.created_at).toLocaleDateString() : '-'}

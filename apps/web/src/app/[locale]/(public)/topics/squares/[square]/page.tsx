@@ -2,10 +2,11 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE, IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
-import { paginateItems } from '@/lib/pagination';
+import { getPaginationParams } from '@/lib/pagination';
 import { createClient } from '@/lib/supabase/server';
 
 import { TopicListPageLayout } from '@/app/[locale]/(public)/topics/_components/TopicListPageLayout';
@@ -18,11 +19,12 @@ import { OpeningCard } from '@/app/[locale]/(public)/topics/openings/_components
 import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import { getOpeningsByFirstMoveSquare } from '@/app/[locale]/(public)/topics/openings/_lib/queries';
 import { SectionTitle } from '@/app/[locale]/_components';
+import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { SortTabs } from '../_components';
-import { getPostsWithReplyMeta } from '../_lib/queries';
+import { getPostCountForSquare, getPostsWithReplyMetaPaginated } from '../_lib/queries';
 import { isValidSquare } from '../_lib/squares';
 import { PostCard, SquareHighlightBoard } from './_components';
 
@@ -73,15 +75,18 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const allPosts = await getPostsWithReplyMeta(square, user?.id, sortBy);
-  const openingsForSquare = await getOpeningsByFirstMoveSquare(square);
+  const [totalCount, openingsForSquare] = await Promise.all([
+    getPostCountForSquare(square),
+    getOpeningsByFirstMoveSquare(square),
+  ]);
 
-  const {
+  const { totalPages, currentPage, limit, offset } = getPaginationParams(
+    page,
     totalCount,
-    totalPages,
-    currentPage,
-    paginatedItems: posts,
-  } = paginateItems(allPosts, TOPIC_PAGE_SIZE, page);
+    TOPIC_PAGE_SIZE
+  );
+
+  const posts = await getPostsWithReplyMetaPaginated(square, limit, offset, user?.id, sortBy);
 
   const MAX_OPENING_CARDS = 3;
   const visibleOpenings = openingsForSquare.slice(0, MAX_OPENING_CARDS);
@@ -129,6 +134,16 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
       pageTitle={t('squares.pageTitle')}
       sectionTitle={square}
       topicHeader={topicHeader}
+      adMiddle={
+        (IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE) && (
+          <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
+        )
+      }
+      adBottom={
+        (IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+        )
+      }
       postCountText={t('squares.postCount', { count: totalCount })}
       newPostButton={{ href: `/topics/squares/${square}/new`, label: t('squares.newPost') }}
       sortTabs={<SortTabs square={square} locale={locale} />}

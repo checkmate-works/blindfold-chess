@@ -51,7 +51,7 @@ export default async function ProfilePage({ params }: Props) {
       <PagePanel>
         <div className="mb-4">
           <Link
-            href={`/@/${profile.username}`}
+            href={`/u/${profile.username}`}
             locale={locale}
             className="rounded-full border border-border px-4 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
           >

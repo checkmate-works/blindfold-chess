@@ -10,7 +10,6 @@ import {
   PaginationNav,
   SectionTitle,
 } from '@/app/[locale]/_components';
-import { AdBanner } from '@/app/[locale]/_components/AdBanner';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import type { BreadcrumbItem } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -21,6 +20,10 @@ type Props = {
   sectionTitle: string;
   /** Topic-specific header rendered below the section title (board, opening cards, etc.) */
   topicHeader?: ReactNode;
+  /** Ad slot rendered between the topic header and the post list */
+  adMiddle?: ReactNode;
+  /** Ad slot rendered between the post list and the pagination */
+  adBottom?: ReactNode;
   /** Post count display text */
   postCountText: string;
   /** New post button config -- omit to hide the button */
@@ -51,6 +54,8 @@ export function TopicListPageLayout({
   pageTitle,
   sectionTitle,
   topicHeader,
+  adMiddle,
+  adBottom,
   postCountText,
   newPostButton,
   sortTabs,
@@ -69,7 +74,7 @@ export function TopicListPageLayout({
 
         {topicHeader}
 
-        <AdBanner slot="banner-wide" />
+        {adMiddle}
 
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">{postCountText}</p>
@@ -91,7 +96,7 @@ export function TopicListPageLayout({
           <p className="text-muted-foreground text-center py-8">{noPostsText}</p>
         )}
 
-        <AdBanner slot="banner-standard" />
+        {adBottom}
 
         <PaginationNav
           currentPage={pagination.currentPage}

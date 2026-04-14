@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, gte, sql } from 'drizzle-orm';
 
 import { db } from './index';
+import { startOfCurrentMonth, startOfCurrentWeek } from './period-range';
 import { challengeBestScores, challengeResults, profiles } from './schema';
 
 export type LeaderboardRow = {
@@ -25,25 +26,6 @@ export type RankResult = {
 };
 
 // ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function startOfCurrentWeek(): Date {
-  const now = new Date();
-  const day = now.getUTCDay(); // 0 = Sunday
-  const diff = day === 0 ? 6 : day - 1; // Monday-based week
-  const monday = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - diff)
-  );
-  return monday;
-}
-
-function startOfCurrentMonth(): Date {
-  const now = new Date();
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-}
-
-// ---------------------------------------------------------------------------
 // All-time ranking (from challenge_best_scores)
 // ---------------------------------------------------------------------------
 
@@ -53,43 +35,44 @@ export async function getAllTimeRanking(
   offset: number,
   limit: number
 ): Promise<LeaderboardPage> {
-  const rows = await db
-    .select({
-      userId: challengeBestScores.userId,
-      username: profiles.username,
-      score: challengeBestScores.score,
-      incorrectAnswers: challengeBestScores.incorrectAnswers,
-      timeTaken: challengeBestScores.timeTaken,
-      displayName: profiles.displayName,
-      avatarUrl: profiles.avatarUrl,
-      country: profiles.country,
-      flair: profiles.flair,
-    })
-    .from(challengeBestScores)
-    .innerJoin(profiles, eq(challengeBestScores.userId, profiles.id))
-    .where(
-      and(
-        eq(challengeBestScores.menuType, menuType),
-        eq(challengeBestScores.leaderboardKey, leaderboardKey)
+  const [rows, [countRow]] = await Promise.all([
+    db
+      .select({
+        userId: challengeBestScores.userId,
+        username: profiles.username,
+        score: challengeBestScores.score,
+        incorrectAnswers: challengeBestScores.incorrectAnswers,
+        timeTaken: challengeBestScores.timeTaken,
+        displayName: profiles.displayName,
+        avatarUrl: profiles.avatarUrl,
+        country: profiles.country,
+        flair: profiles.flair,
+      })
+      .from(challengeBestScores)
+      .innerJoin(profiles, eq(challengeBestScores.userId, profiles.id))
+      .where(
+        and(
+          eq(challengeBestScores.menuType, menuType),
+          eq(challengeBestScores.leaderboardKey, leaderboardKey)
+        )
       )
-    )
-    .orderBy(
-      desc(challengeBestScores.score),
-      asc(challengeBestScores.incorrectAnswers),
-      asc(challengeBestScores.timeTaken)
-    )
-    .offset(offset)
-    .limit(limit);
-
-  const [countRow] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(challengeBestScores)
-    .where(
-      and(
-        eq(challengeBestScores.menuType, menuType),
-        eq(challengeBestScores.leaderboardKey, leaderboardKey)
+      .orderBy(
+        desc(challengeBestScores.score),
+        asc(challengeBestScores.incorrectAnswers),
+        asc(challengeBestScores.timeTaken)
       )
-    );
+      .offset(offset)
+      .limit(limit),
+    db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(challengeBestScores)
+      .where(
+        and(
+          eq(challengeBestScores.menuType, menuType),
+          eq(challengeBestScores.leaderboardKey, leaderboardKey)
+        )
+      ),
+  ]);
 
   return { rows, total: countRow?.count ?? 0 };
 }

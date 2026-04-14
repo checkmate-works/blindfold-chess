@@ -19,9 +19,24 @@
  * `true` when the user's first-ever score for a leaderboard key is recorded;
  * `false` when an existing best score is surpassed.
  */
-import type { AdBannerConfig } from '@/lib/ad';
-
 import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
+
+export type PositionFeedData = {
+  id: string;
+  fen: string;
+  createdAt: string; // ISO 8601
+  author: {
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    country: string | null;
+    flair: string | null;
+  } | null;
+  likeMeta: {
+    likeCount: number;
+    likedByMe: boolean;
+  };
+};
 
 type FeedItemBase = {
   id: string;
@@ -61,8 +76,13 @@ export type ChallengeRankUpdateFeedItem = FeedItemBase & {
   data: ChallengeRankUpdateData;
 };
 
+export type PositionFeedItem = FeedItemBase & {
+  entityType: 'position';
+  data: PositionFeedData;
+};
+
 // Discriminated union — extend with new entity types here
-export type FeedItem = TopicPostFeedItem | ChallengeRankUpdateFeedItem;
+export type FeedItem = TopicPostFeedItem | ChallengeRankUpdateFeedItem | PositionFeedItem;
 
 export type FeedResponse = {
   items: FeedItem[];
@@ -70,4 +90,4 @@ export type FeedResponse = {
 };
 
 /** A single entry in the interleaved feed + ad display list. */
-export type DisplayItem = { type: 'feed'; item: FeedItem } | { type: 'ad'; ad: AdBannerConfig };
+export type DisplayItem = { type: 'feed'; item: FeedItem } | { type: 'ad' };

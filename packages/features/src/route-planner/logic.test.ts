@@ -490,6 +490,50 @@ describe("generateProblem", () => {
     });
   });
 
+  // ============================================================
+  // Trivial problem exclusion
+  // These tests verify the business rule: "1-move problems must never
+  // be generated." Each piece type has constraints that reject trivially
+  // simple routes where the target is directly reachable in a single move.
+  // ============================================================
+  describe("trivial problem exclusion", () => {
+    it("Bishop: never generates problems where start and end share a diagonal (1-move route)", () => {
+      for (let i = 0; i < ITERATIONS; i++) {
+        const problem = generateProblem(["b"]);
+        const path = findShortestPath("b", problem.start, problem.end);
+        expect(path).not.toBeNull();
+        // pathLength === 2 would mean start and end are on the same diagonal (1 move)
+        expect(path!.length).not.toBe(2);
+        // Must be exactly 3 (2 moves)
+        expect(path!).toHaveLength(3);
+      }
+    });
+
+    it("Knight: never generates problems where start and end are 1 knight-move apart", () => {
+      for (let i = 0; i < ITERATIONS; i++) {
+        const problem = generateProblem(["n"]);
+        const path = findShortestPath("n", problem.start, problem.end);
+        expect(path).not.toBeNull();
+        // pathLength === 2 would mean a direct 1-move knight jump
+        expect(path!.length).not.toBe(2);
+        expect(path!.length).toBeGreaterThanOrEqual(3);
+      }
+    });
+
+    it("all generated problems require at least 2 moves (pathLength >= 3)", () => {
+      for (let i = 0; i < ITERATIONS; i++) {
+        const problem = generateProblem();
+        const path = findShortestPath(
+          problem.piece,
+          problem.start,
+          problem.end,
+        );
+        expect(path).not.toBeNull();
+        expect(path!.length).toBeGreaterThanOrEqual(3);
+      }
+    });
+  });
+
   describe("general", () => {
     it("returns a valid problem structure", () => {
       const problem = generateProblem();

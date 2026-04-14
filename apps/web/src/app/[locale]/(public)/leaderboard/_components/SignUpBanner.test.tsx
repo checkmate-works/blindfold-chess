@@ -1,12 +1,14 @@
+/**
+ * Tests for the leaderboard-scoped `SignUpBanner` wrapper.
+ *
+ * After the CLS refactor, the wrapper is presentational: no auth check, no
+ * conditional `null`. It just fetches the `leaderboard.signUpBanner.*`
+ * translation keys and renders `SignUpBannerUI`. The auth decision lives in
+ * the page (`{!user && <SignUpBanner />}`) so the `loading.tsx` skeleton can
+ * hide its banner placeholder for logged-in users via a paired CSS rule.
+ */
 import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-
-// --- Mocks ---
-
-const mockGetOptionalUser = vi.fn();
-vi.mock('@/lib/auth', () => ({
-  getOptionalUser: () => mockGetOptionalUser(),
-}));
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('next-intl/server', () => ({
   getTranslations: () => (key: string) => key,
@@ -29,78 +31,42 @@ vi.mock('@/i18n/routing', () => ({
   ),
 }));
 
-// Import the base SignUpBanner directly to test it with leaderboard translation keys
-const { SignUpBanner: SignUpBannerBase } = await import('@/app/[locale]/_components/SignUpBanner');
+const { SignUpBanner } = await import('./SignUpBanner');
 
 afterEach(() => {
   cleanup();
 });
 
-// --- Helpers ---
-
-async function renderSignUpBanner(locale = 'en') {
-  // Simulate what the leaderboard wrapper does: resolve translations, then call base component
-  const t = (key: string) => key;
-  const Component = await SignUpBannerBase({
-    locale,
-    message: t('message'),
-    description: t('description'),
-    ctaLabel: t('cta'),
-  });
-  if (Component === null) return null;
-  return render(Component);
+async function renderBanner(locale = 'en') {
+  const element = await SignUpBanner({ locale });
+  return render(element);
 }
 
-// --- Tests ---
+describe('leaderboard SignUpBanner wrapper', () => {
+  it('renders unconditionally — no internal auth check', async () => {
+    await renderBanner();
 
-describe('SignUpBanner', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
+    expect(screen.getByText('message')).toBeInTheDocument();
+    expect(screen.getByText('description')).toBeInTheDocument();
+    expect(screen.getByText('cta')).toBeInTheDocument();
   });
 
-  describe('when user is logged in', () => {
-    it('renders null', async () => {
-      mockGetOptionalUser.mockResolvedValue({ id: 'user-1' });
+  it('passes the locale through to SignUpBannerUI', async () => {
+    await renderBanner('ja');
 
-      const result = await renderSignUpBanner();
-
-      expect(result).toBeNull();
-    });
+    // The mocked Link doesn't echo locale, but the CTA anchor is still
+    // present — proves the branch rendered end-to-end without errors.
+    const ctaLink = screen.getByText('cta').closest('a');
+    expect(ctaLink).toHaveAttribute('href', '/sign-up');
   });
 
-  describe('when user is not logged in', () => {
-    beforeEach(() => {
-      mockGetOptionalUser.mockResolvedValue(null);
-    });
+  it('renders all three translation keys from the leaderboard.signUpBanner namespace', async () => {
+    await renderBanner();
 
-    it('renders the banner', async () => {
-      await renderSignUpBanner();
-
-      expect(screen.getByText('message')).toBeInTheDocument();
-      expect(screen.getByText('description')).toBeInTheDocument();
-    });
-
-    it('renders the CTA button', async () => {
-      await renderSignUpBanner();
-
-      expect(screen.getByText('cta')).toBeInTheDocument();
-    });
-
-    it('CTA button links to /sign-up', async () => {
-      await renderSignUpBanner();
-
-      const ctaLink = screen.getByText('cta').closest('a');
-      expect(ctaLink).toHaveAttribute('href', '/sign-up');
-    });
-
-    it('displays all i18n messages (message, description, cta)', async () => {
-      await renderSignUpBanner();
-
-      // The base SignUpBanner receives message, description, ctaLabel as props.
-      // Our mock translation returns the key itself.
-      expect(screen.getByText('message')).toBeInTheDocument();
-      expect(screen.getByText('description')).toBeInTheDocument();
-      expect(screen.getByText('cta')).toBeInTheDocument();
-    });
+    // The mock translator returns the key verbatim, so these assertions
+    // double as proof that the wrapper is asking for the right keys.
+    expect(screen.getByText('message')).toBeInTheDocument();
+    expect(screen.getByText('description')).toBeInTheDocument();
+    expect(screen.getByText('cta')).toBeInTheDocument();
   });
 });

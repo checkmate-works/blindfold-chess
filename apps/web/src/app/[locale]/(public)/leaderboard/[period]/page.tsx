@@ -1,29 +1,58 @@
-import { redirect } from 'next/navigation';
-
-import { SUPPORTED_LOCALES } from '@/config';
+/**
+ * Legacy score leaderboard shim (`/leaderboard/[period]` — 308 redirect)
+ *
+ * @description
+ * Absorbs the pre-refactor period-first URL shape and redirects to the
+ * canonical category-first form `/leaderboard/score/[period]`. If the legacy
+ * `?module=` query param is present, it is absorbed into the middle-hub path
+ * segment `/leaderboard/score/[period]/[module-slug]`.
+ *
+ * Invalid `period` values produce a real 404 (strict). The `'score'` and
+ * `'exp'` reserved category segments are also 404'd here as defense-in-depth
+ * against any future change in Next.js's static-vs-dynamic routing precedence
+ * — today those literals hit the `score/` / `exp/` sibling directories instead
+ * and never reach this shim.
+ */
+import { notFound, permanentRedirect } from 'next/navigation';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { VALID_PERIODS } from '../_lib/types';
-import { isValidPeriod } from '../_lib/validators';
+import { MODULE_TO_SLUG } from '../_lib/types';
+import { isValidPeriod, parseModuleFilter } from '../_lib/validators';
+
+export const dynamic = 'force-dynamic';
 
 type Props = {
   params: Promise<{
     locale: Locale;
     period: string;
   }>;
+  searchParams: Promise<{
+    module?: string | string[];
+  }>;
 };
 
-export function generateStaticParams() {
-  return SUPPORTED_LOCALES.flatMap((locale) => VALID_PERIODS.map((period) => ({ locale, period })));
-}
+export default async function LegacyLeaderboardPeriodRedirect({ params, searchParams }: Props) {
+  const { locale, period: periodParam } = await params;
 
-export default async function LeaderboardPeriodRedirect({ params }: Props) {
-  const { locale, period } = await params;
-
-  if (isValidPeriod(period)) {
-    redirect(`/${locale}/leaderboard?period=${period}`);
+  // Defense in depth: if Next's static>dynamic precedence ever flips, the
+  // reserved category segments must still 404 here rather than be treated
+  // as periods.
+  if (periodParam === 'score' || periodParam === 'exp') {
+    notFound();
   }
 
-  redirect(`/${locale}/leaderboard`);
+  if (!isValidPeriod(periodParam)) {
+    notFound();
+  }
+
+  const { module: moduleParam } = await searchParams;
+  const moduleFilter = parseModuleFilter(moduleParam);
+
+  if (moduleFilter !== 'all') {
+    const slug = MODULE_TO_SLUG[moduleFilter];
+    permanentRedirect(`/${locale}/leaderboard/score/${periodParam}/${slug}`);
+  }
+
+  permanentRedirect(`/${locale}/leaderboard/score/${periodParam}`);
 }

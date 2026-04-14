@@ -97,6 +97,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                   {t('topicPosts.navLabel')}
                 </Link>
                 <Link
+                  href="/admin/positions/memory"
+                  className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
+                >
+                  {t('positionMemory')}
+                </Link>
+                <Link
                   href="/admin/audit-log"
                   className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
                 >
@@ -125,6 +131,18 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                   className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
                 >
                   {t('ads')}
+                </Link>
+                <Link
+                  href="/admin/grants"
+                  className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
+                >
+                  {t('grants.navLabel')}
+                </Link>
+                <Link
+                  href="/admin/achievements"
+                  className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
+                >
+                  {t('achievements.navLabel')}
                 </Link>
               </nav>
             </aside>

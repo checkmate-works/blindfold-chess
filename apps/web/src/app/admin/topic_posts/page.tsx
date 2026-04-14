@@ -4,12 +4,11 @@ import { and, desc, eq, ilike, inArray, isNotNull, isNull, or, sql } from 'drizz
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { db, profiles, topicPosts } from '@/lib/db';
+import { getPaginationParams } from '@/lib/pagination';
 import { createAdminClient } from '@/lib/supabase/admin';
 
-import { PaginationNav } from '@/app/[locale]/_components';
-
 import { AdminDataTable } from '../_components/AdminDataTable';
-import { getPaginationData } from '../_lib/pagination';
+import { AdminPaginationNav } from '../_components/AdminPaginationNav';
 import { DeletePostAdminButton } from '../users/_components/DeletePostAdminButton';
 
 const searchParamsCache = createSearchParamsCache({
@@ -89,7 +88,7 @@ export default async function AdminTopicPostsPage({
     .select({ count: sql<number>`count(*)` })
     .from(topicPosts)
     .where(whereClause);
-  const { currentPage, totalPages, limit, offset } = getPaginationData(
+  const { currentPage, totalPages, limit, offset } = getPaginationParams(
     page,
     Number(countResult.count)
   );
@@ -263,7 +262,7 @@ export default async function AdminTopicPostsPage({
         }}
       />
 
-      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+      <AdminPaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
     </div>
   );
 }

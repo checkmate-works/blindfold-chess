@@ -131,6 +131,10 @@
       "title": "Clasificación",
       "description": "Consulta a los mejores jugadores en todos los módulos de práctica"
     },
+    "expLeaderboard": {
+      "title": "Clasificación de Exp",
+      "description": "Los mejores jugadores clasificados por puntos de experiencia totales"
+    },
     "practice": {
       "title": "Ejercicios de Práctica de Ajedrez a Ciegas",
       "description": "Ejercicios interactivos gratuitos de ajedrez a ciegas: reconocimiento de coordenadas, ejercicios de color de casillas, cuestionarios de movimientos legales y más. Mejora tu visualización."
@@ -155,6 +159,10 @@
       "title": "Sistema de Cinturones",
       "description": "Un programa único diseñado para desarrollar las habilidades necesarias para vencer a la IA en ajedrez a ciegas. Aspira al cinturón negro."
     },
+    "dojo": {
+      "title": "Dojo",
+      "description": "Consulta tu rango actual y los requisitos del siguiente, todo en un solo lugar."
+    },
     "glossary": {
       "title": "Glosario de Ajedrez - Términos y Definiciones",
       "description": "Consulta la terminología ajedrecística en nuestro glosario completo. Navega alfabéticamente o por categoría para aprender definiciones de términos, tácticas, estrategias y conceptos posicionales utilizados en el ajedrez a ciegas.",
@@ -171,9 +179,23 @@
       "title": "{rankName} - Rangos",
       "description": "Requisitos y criterios para alcanzar el rango {rankName} en el entrenamiento de ajedrez a ciegas."
     },
-    "rankGuide": {
-      "title": "Guía de {rankName} - Rangos",
-      "description": "Guía detallada y consejos para alcanzar el rango {rankName} en el entrenamiento de ajedrez a ciegas."
+    "guides": {
+      "top": {
+        "title": "Guías",
+        "description": "Guías tipo libro de texto para el entrenamiento de ajedrez a ciegas, organizadas por rango."
+      },
+      "rank": {
+        "title": "Guía de {rankName}",
+        "description": "Guía completa de ajedrez a ciegas de {rankName}. Aprende coordenadas, diagonales y maniobras paso a paso con ayudas visuales y el sistema de cinturones como meta.",
+        "pageTitle": "Guía de {rankName} - Página {page}",
+        "descriptionWithPage": "Guía de ajedrez a ciegas de {rankName}, página {page} de {total}. Recorre esta parte del curso con ayudas visuales y ejercicios progresivos del sistema de cinturones."
+      },
+      "chapter": {
+        "title": "Guía de {rankName} - {chapterName}",
+        "description": "Capítulo {chapterName} de la guía de ajedrez a ciegas de {rankName}. Un recorrido visual y progresivo centrado en las habilidades de {chapterName} para este cinturón.",
+        "pageTitle": "Guía de {rankName} - {chapterName} - Página {page}",
+        "descriptionWithPage": "Capítulo {chapterName} de la guía de {rankName}, página {page} de {total}. Ayudas visuales y enlaces para dominar paso a paso {chapterName} en ajedrez a ciegas."
+      }
     }
   },
   "Header": {
@@ -192,7 +214,9 @@
     "leaderboard": "Clasificación",
     "contact": "Contacto",
     "settings": "Configuración",
-    "ranks": "Sistema de Cinturones"
+    "ranks": "Sistema de Cinturones",
+    "guides": "Guías",
+    "dojo": "Dojo"
   },
   "Preferences": {
     "title": "Configuración",
@@ -302,6 +326,40 @@
       "chessEngine": {
         "question": "¿Qué motor de ajedrez usa la IA?",
         "answer": "La IA utiliza Stockfish 17.1 (versión Lite de un solo hilo)."
+      },
+      "expSystem": {
+        "question": "¿Cómo se calcula la experiencia (Exp)?",
+        "answer": "Ganas puntos de experiencia (Exp) al completar desafíos. La fórmula es: Exp = Respuestas Correctas × Peso del Módulo × Bonificación por Errores.",
+        "moduleWeightTitle": "Pesos por Módulo",
+        "accuracyBonusTitle": "Bonificación por Errores",
+        "streakBonusTitle": "Bonificación de Racha Diaria",
+        "headerModule": "Módulo",
+        "headerWeight": "Peso",
+        "headerAccuracy": "Errores",
+        "headerMultiplier": "Multiplicador",
+        "headerChallenges": "Desafíos Diarios",
+        "modules": {
+          "coordinate_quiz": "Quiz de Coordenadas",
+          "square_colors": "Colores de Casillas",
+          "diagonal_quiz": "Quiz de Diagonales",
+          "legal_moves": "Movimientos Legales",
+          "board_symmetry": "Simetría del Tablero",
+          "route_planner": "Planificador de Rutas",
+          "position_memory": "Memoria de Posiciones"
+        },
+        "misses0": "0 (Perfecto)",
+        "misses1": "1",
+        "misses2": "2",
+        "misses3": "3 (Burst)",
+        "streak5": "5+",
+        "streak3": "3–4",
+        "streak2": "2",
+        "streak1": "1",
+        "multiplier15": "×1.5",
+        "multiplier13": "×1.3",
+        "multiplier12": "×1.2",
+        "multiplier11": "×1.1",
+        "multiplier10": "×1.0"
       }
     }
   },
@@ -418,12 +476,16 @@
     "articleNotFound": "Artículo No Encontrado"
   },
   "practice": {
+    "keyboard": {
+      "algebraicKeyboardHint": "Escribe una letra (a–h) y luego un número (1–8). Retroceso: borrar."
+    },
     "title": "Práctica",
     "modulesTitle": "Módulos de Práctica",
     "levelBeginner": "Principiante",
     "levelIntermediate": "Intermedio",
     "levelAdvanced": "Avanzado",
     "levelIntroduction": "Introducción",
+    "viewLeaderboard": "🏆 Ver Clasificación",
     "tryAgain": "Intentar de Nuevo",
     "changeSettings": "Cambiar Configuración",
     "doOtherPractice": "Hacer otra práctica",
@@ -705,6 +767,8 @@
     "positionMemory": {
       "title": "Memoria de Posiciones",
       "description": "Entrena tu capacidad para recordar y recrear posiciones de ajedrez",
+      "like": "Me gusta",
+      "unlike": "Quitar me gusta",
       "session": "En Progreso",
       "settings": "Configuración del Problema",
       "problemSource": "Origen del Problema",
@@ -815,8 +879,35 @@
       },
       "cancel": "Cancelar",
       "requiredKnowledge": "Conocimiento Necesario",
-      "viewArticle": "Aprende sobre el entrenamiento de memoria de posiciones",
-      "articleDescription": "Aprende técnicas para memorizar y recrear posiciones de ajedrez"
+      "articles": {
+        "positionMemory": {
+          "title": "Aprende sobre el entrenamiento de memoria de posiciones",
+          "description": "Aprende técnicas para memorizar y recrear posiciones de ajedrez"
+        },
+        "deGrootExperiment": {
+          "title": "El experimento de De Groot",
+          "description": "Cómo los grandes maestros memorizan posiciones: el estudio clásico sobre chunking"
+        }
+      },
+      "list": {
+        "title": "Memoria de Posiciones",
+        "sectionTitle": "Lista de Problemas",
+        "empty": "Aún no hay posiciones disponibles",
+        "tutorialLink": "Ver Tutorial",
+        "submittedBy": "enviado"
+      },
+      "detail": {
+        "title": "Detalle de Posición",
+        "descriptionSection": "Descripción de la Posición",
+        "solveSection": "Resolver el Problema",
+        "start": "Iniciar",
+        "timeLimit": "Límite de Tiempo",
+        "seconds": "{count} segundos",
+        "createdBy": "Creado por",
+        "tutorialLink": "Ver Tutorial",
+        "tryAgain": "Intentar de nuevo",
+        "backToList": "Volver a la lista"
+      }
     },
     "knightTour": {
       "title": "Recorrido del Caballo",
@@ -969,7 +1060,6 @@
       "title": "Planificador de Rutas",
       "session": "En Progreso",
       "description": "Calcula el camino más corto para que una pieza alcance una casilla objetivo",
-      "betaNotice": "El guardado de puntuaciones y la clasificación están actualmente en desarrollo.",
       "howToPlayTitle": "Cómo Jugar",
       "howToPlayDescription": "Calcula el camino más corto para que una pieza alcance una casilla objetivo.",
       "settings": "Configuración",
@@ -1162,7 +1252,10 @@
           "title": "Casillas Ancla",
           "description": "Aprende puntos de referencia clave para la visualización del tablero"
         }
-      }
+      },
+      "howToPlayTitle": "Cómo Jugar",
+      "howToPlayDescription": "Se mostrará el nombre de una casilla. Identifica a qué cuadrante pertenece tocando el área correcta en el tablero.",
+      "challengeSetupNoLeaderboard": "Las puntuaciones de este ejercicio no se registrarán en tu historial de práctica ni en la clasificación."
     },
     "diagonalQuiz": {
       "title": "Cuestionario de Diagonales",
@@ -1270,6 +1363,9 @@
         "improved": "¡Mejoró su posición!",
         "rank": "Posición",
         "score": "Puntuación"
+      },
+      "position": {
+        "action": "Publicó un nuevo problema"
       }
     },
     "vsAi": {
@@ -1435,10 +1531,12 @@
     "logMoveNumber": "Movimiento",
     "logIncorrectMove": "Tu entrada",
     "logCorrectMove": "Correcto",
+    "logAutoFilled": "Auto-rellenado",
     "noMistakes": "¡Sin errores!",
     "incorrectMoveError": "{movePrefix} no es {move}",
     "analyzing": "Analizando",
-    "correctMoveMessage": "{movePrefix} {move} es correcto"
+    "correctMoveMessage": "{movePrefix} {move} es correcto",
+    "skippedMoveMessage": "La respuesta era {movePrefix} {move}"
   },
   "playError": {
     "title": "Recuperación de Partida",
@@ -1859,14 +1957,16 @@
     "submitLoading": "Restableciendo...",
     "error": "Error al restablecer la contraseña. Por favor, inténtalo de nuevo.",
     "passwordMismatch": "Las contraseñas no coinciden.",
-    "passwordTooShort": "La contraseña debe tener al menos 8 caracteres."
+    "passwordTooShort": "La contraseña debe tener al menos 8 caracteres.",
+    "rateLimited": "Demasiadas solicitudes. Inténtalo de nuevo más tarde."
   },
   "articles": {
     "pageTitle": "Artículos",
     "noArticles": "Aún no hay artículos.",
     "articlesListTitle": "Todos los Artículos",
     "moreArticles": "Más artículos",
-    "articleNotFound": "Artículo No Encontrado"
+    "articleNotFound": "Artículo No Encontrado",
+    "notTranslatedNotice": "Este artículo aún no ha sido traducido a tu idioma. Estás viendo la versión original."
   },
   "announcements": {
     "pageTitle": "Anuncios",
@@ -1984,7 +2084,13 @@
       "beltSystem": "Sistema de Cinturones",
       "myRecords": "Mis Registros",
       "socialTitle": "Social",
-      "interviewBanner": "Responde preguntas de entrevista y cuéntanos sobre ti"
+      "interviewBanner": "Responde preguntas de entrevista y cuéntanos sobre ti",
+      "activityTitle": "Actividad",
+      "heatmapLess": "Menos",
+      "heatmapMore": "Más",
+      "heatmapTotal": "Total",
+      "heatmapNoActivity": "Sin actividad en este día",
+      "heatmapLearnLink": "Cómo calculamos la Exp"
     },
     "records": "Registros",
     "bestScore": "Mejor Puntuación",
@@ -2235,11 +2341,36 @@
       "past28days": "Últimos 28 días",
       "past90days": "Últimos 90 días",
       "newUsersPeriodTotal": "Nuevos Usuarios (Total del Período)",
-      "postsPeriodTotal": "Publicaciones (Total del Período)",
+      "ugcPostsPeriodTotal": "Publicaciones UGC (Total del Período)",
       "dailyTrends": "Tendencias Diarias",
       "newUsers": "Nuevos Usuarios",
-      "posts": "Publicaciones",
-      "noData": "Sin datos para el período seleccionado."
+      "ugcPosts": "Publicaciones UGC",
+      "noData": "Sin datos para el período seleccionado.",
+      "summaryTable": {
+        "title": "Resumen de KPI",
+        "category": "Categoría",
+        "metric": "Métrica",
+        "value": "Valor",
+        "users": "Usuarios",
+        "ugcPosts": "Publicaciones UGC",
+        "likes": "Me gusta",
+        "avgPerDay": "Promedio por día",
+        "avgPerActivePoster": "Promedio por autor activo",
+        "total": "Total",
+        "sources": {
+          "topic_posts": "topic_posts",
+          "positions": "positions"
+        },
+        "breakdowns": {
+          "topic_posts": {
+            "opening": "apertura",
+            "square": "casilla"
+          },
+          "positions": {
+            "memory": "memoria"
+          }
+        }
+      }
     },
     "usersTable": {
       "email": "Correo",
@@ -2351,6 +2482,7 @@
       "previousPage": "Anterior",
       "nextPage": "Siguiente"
     },
+    "positionMemory": "Position Memory",
     "topicPosts": {
       "navLabel": "Publicaciones de Temas",
       "title": "Publicaciones de Temas",
@@ -3039,7 +3171,7 @@
       "board_symmetry": "Simetría del Tablero",
       "route_planner": "Planificador de Rutas"
     },
-    "allLeaderboardsSection": "Todas las Clasificaciones",
+    "scoreLeaderboardSection": "Clasificación de Puntuación",
     "rankLabel": "Tu Posición: #{rank}",
     "notRanked": "Sin posición",
     "cardTitle": {
@@ -3078,7 +3210,23 @@
       "message": "¡Únete a la clasificación!",
       "description": "Crea una cuenta gratuita para seguir tus puntuaciones y competir con otros jugadores.",
       "cta": "Registro Gratuito"
+    },
+    "tabs": {
+      "score": "Puntuación",
+      "exp": "Exp"
     }
+  },
+  "expLeaderboard": {
+    "title": "Clasificación de Exp",
+    "description": "Los mejores jugadores clasificados por puntos de experiencia totales.",
+    "table": {
+      "rank": "Posición",
+      "player": "Jugador",
+      "exp": "Exp",
+      "level": "Nivel"
+    },
+    "emptyState": "Aún no hay registros de Exp. ¡Empieza a practicar para ganar Exp!",
+    "backToScoreLeaderboard": "Volver a Clasificación de Puntuación"
   },
   "validation": {
     "password": {
@@ -3138,7 +3286,9 @@
       "legal_moves": "Movimientos Legales",
       "legal_moves_bishop": "Movimientos Legales (Alfil)",
       "legal_moves_king": "Movimientos Legales (Rey)",
-      "legal_moves_knight": "Movimientos Legales (Caballo)"
+      "legal_moves_knight": "Movimientos Legales (Caballo)",
+      "route_planner_knight": "Planificador de Rutas (Caballo)",
+      "route_planner_bishop": "Planificador de Rutas (Alfil)"
     },
     "rankNames": {
       "mukyu": "Sin Rango",
@@ -3155,7 +3305,8 @@
       "criteriaDescriptions": {
         "mukyu": "Listo para comenzar el entrenamiento básico de ajedrez a ciegas.",
         "5kyu": "Capacidad de identificar correctamente la casilla en el tablero de ajedrez a partir de la notación algebraica (ej., e4, Ag7).",
-        "4kyu": "Capacidad de determinar los movimientos legales en una coordenada específica para todas las piezas sin ayudas visuales."
+        "4kyu": "Capacidad de determinar los movimientos legales en una coordenada específica para todas las piezas sin ayudas visuales.",
+        "3kyu": "Capacidad de planificar rutas de maniobra para todas las piezas sin ayudas visuales."
       },
       "tips": "Consejos",
       "guide": "Guía",
@@ -3164,8 +3315,120 @@
       "prevPage": "Anterior",
       "nextPage": "Siguiente",
       "pageOf": "Página {current} de {total}",
-      "guidePages": {
-        "mukyu": [
+      "mukyuRequirements": ["Comprensión de la notación algebraica"],
+      "mukyuRelatedLinks": {
+        "learnArticle": "Para más detalles, consulta el siguiente artículo.",
+        "practiceLink": "También puedes practicar con un ejercicio sencillo.",
+        "learnArticleLabel": "Aprende sobre notación algebraica",
+        "practiceLabel": "Practica notación algebraica"
+      },
+      "readFullGuide": "Leer la guía de {rankName}"
+    },
+    "signUpBanner": {
+      "message": "¡Obtén tu cinturón negro!",
+      "description": "Regístrate para seguir tu progreso de rango.",
+      "cta": "Registro Gratuito"
+    },
+    "lockedModal": {
+      "title": "Rango Bloqueado",
+      "message": "Supera {rankName} para desbloquear este rango",
+      "linkLabel": "Ver detalles de {rankName}",
+      "ariaLabel": "Bloqueado"
+    }
+  },
+  "rankAchievement": {
+    "title": "¡Rango Alcanzado!",
+    "description": "¡Felicitaciones! Has obtenido un nuevo rango de cinturón.",
+    "viewRanks": "Ver Rangos",
+    "close": "Cerrar",
+    "rankNames": {
+      "mukyu": "Sin Rango",
+      "5kyu": "5.º Kyū",
+      "4kyu": "4.º Kyū",
+      "3kyu": "3.er Kyū",
+      "2kyu": "2.º Kyū",
+      "1kyu": "1.er Kyū",
+      "1dan": "1.er Dan"
+    }
+  },
+  "Achievements": {
+    "monthlyLeaderboard": {
+      "name": "{menuType} ({leaderboardKey}) — {placement} lugar",
+      "menuType": {
+        "board_symmetry": "Simetría del Tablero",
+        "coordinate_quiz": "Cuestionario de Coordenadas",
+        "diagonal_quiz": "Cuestionario de Diagonales",
+        "legal_moves": "Movimientos Legales",
+        "route_planner": "Planificador de Rutas",
+        "square_colors": "Color de Casillas"
+      },
+      "leaderboardKey": {
+        "bishop": "Alfil",
+        "black": "Negras",
+        "default": "Predeterminado",
+        "king": "Rey",
+        "knight": "Caballo",
+        "queen": "Dama",
+        "random": "Aleatorio",
+        "rook": "Torre",
+        "white": "Blancas"
+      },
+      "placement": {
+        "1st": "1.º",
+        "2nd": "2.º",
+        "3rd": "3.º"
+      }
+    }
+  },
+  "MobileTabBar": {
+    "games": "Partidas",
+    "dojo": "Dojo",
+    "topics": "Temas",
+    "mypage": "Mi Página"
+  },
+  "dojo": {
+    "pageTitle": "Dojo",
+    "currentRankTitle": "Rango actual",
+    "nextRankTitle": "Siguiente rango",
+    "nextRankRequirementsComingSoon": "Requisitos próximamente",
+    "allAchieved": "¡Has conseguido todos los rangos! 🎉",
+    "viewAllRanks": "Ver todos los rangos",
+    "viewAllPractices": "Ver todas las prácticas",
+    "viewAllGuides": "Ver todas las guías",
+    "curriculum": {
+      "title": "Temario",
+      "empty": "Próximamente",
+      "achieved": "Conseguido",
+      "sections": {
+        "algebraicNotation": "Notación algebraica",
+        "anchorPoints": "Percepción del tablero con puntos de anclaje",
+        "blindfoldLegalMoves": "Detección de movimientos legales en ajedrez a ciegas",
+        "diagonals": "Cálculo de diagonales y antidiagonales"
+      }
+    }
+  },
+  "guides": {
+    "top": {
+      "title": "Guías",
+      "sections": {
+        "rankGuides": {
+          "title": "Guías por Rango",
+          "description": "Guías tipo libro de texto para el entrenamiento de ajedrez a ciegas, organizadas por rango."
+        }
+      }
+    },
+    "ranks": {
+      "indexTitle": "Guía",
+      "chapterListHeading": "Capítulos"
+    },
+    "breadcrumb": {
+      "home": "Inicio",
+      "guides": "Guías"
+    },
+    "pages": {
+      "mukyu": {
+        "format": "flat",
+        "pages": [
           {
             "paragraphs": [
               "Si no entiendes lo que significan notaciones como e4 o Cf3, necesitas empezar aprendiendo la notación algebraica.",
@@ -3189,8 +3452,11 @@
               "Esta técnica se enseña en el 5.º Kyū."
             ]
           }
-        ],
-        "5kyu": [
+        ]
+      },
+      "5kyu": {
+        "format": "flat",
+        "pages": [
           {
             "paragraphs": [
               "Si tienes problemas para resolver los ejercicios, intenta usar puntos de anclaje.",
@@ -3212,11 +3478,104 @@
               "Paso 1: Identificar el área.\nIncluso si no puedes localizar f6 inmediatamente, puedes determinar rápidamente que cae dentro del área superior derecha (e5–h8).",
               "Paso 2: Determinar el punto de anclaje.\nLos puntos de anclaje en esta área son e5, h5, e8 y h8. Busca el punto de anclaje más cercano por columna y fila — en este caso, e5 funciona bien.",
               "Paso 3: Verificar la posición relativa.\nf6 está una casilla a la derecha y una casilla arriba de e5 — es decir, diagonalmente arriba a la derecha.",
-              "De esta manera, en lugar de construir una imagen mental a partir de coordenadas absolutas como \"la columna f... la fila 6...\", reconoces posiciones de forma relativa: \"área superior derecha, arriba a la derecha de e5.\" Esto reduce la carga cognitiva y permite una visualización del tablero más eficiente."
+              "De esta manera, en lugar de construir una imagen mental a partir de coordenadas absolutas como \"la columna f... la fila 6...\", reconoces posiciones de forma relativa: \"área superior derecha, arriba a la derecha de e5.\" Esto reduce la carga cognitiva y permite una visualización del tablero más eficiente.",
+              "El siguiente artículo también explica este método."
             ]
           }
-        ],
-        "4kyu": [
+        ]
+      },
+      "3kyu": {
+        "format": "flat",
+        "pages": [
+          {
+            "paragraphs": [
+              "En cuanto a la maniobra del alfil, es útil considerar primero qué diagonal y anti-diagonal puede controlar un alfil cuando se coloca en una casilla específica.",
+              "Para una explicación de las diagonales y anti-diagonales, consulta el tutorial del Cuestionario de Diagonales.",
+              "Comencemos pensando en las diagonales que van de abajo a la izquierda hacia arriba a la derecha.",
+              "El punto de inicio de una diagonal siempre es una casilla en la columna a o en la fila 1.",
+              "Esto se debe a que los valores de columna y fila cambian en 1 simultáneamente a lo largo de una diagonal, por lo que al trazar hacia abajo a la izquierda (↙) siempre se alcanza un borde del tablero antes que el otro.",
+              "Pensemos en términos de valores numéricos de columna (a=1, b=2, ..., h=8).",
+              "Cuando el valor de la columna es menor que el valor de la fila, al trazar hacia abajo a la izquierda (↙) se llega primero a la columna a (borde izquierdo).",
+              "Por ejemplo, consideremos un alfil en d7. El valor de la columna es 4 y la fila es 7.",
+              "El máximo de pasos hacia abajo a la izquierda es \"valor de columna - 1\" = 3. Restando 3 de la fila: 7 - 3 = 4, así que el punto de inicio es a4."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Por el contrario, cuando el valor de la columna es mayor que el valor de la fila, al trazar hacia abajo a la izquierda (↙) se llega primero a la fila 1 (borde inferior).",
+              "Por ejemplo, consideremos un alfil en f4. El valor de la columna es 6 y la fila es 4.",
+              "El máximo de pasos hacia abajo a la izquierda es \"valor de fila - 1\" = 3. Restando 3 de la columna: 6 - 3 = 3, así que el punto de inicio es c1.",
+              "Cuando los valores de columna y fila son iguales, al trazar hacia abajo a la izquierda (↙) se alcanzan ambos bordes del tablero simultáneamente, por lo que el punto de inicio siempre es a1.",
+              "Esta es la diagonal principal a1-h8."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Hasta ahora hemos aprendido a encontrar el punto de inicio.",
+              "El mismo enfoque se puede usar para encontrar el punto final.",
+              "El punto final siempre es una casilla en la columna h o en la fila 8.",
+              "Esta vez, consideremos trazar hacia arriba a la derecha (↗). Por la misma lógica, el borde del tablero que se alcanza primero determina el punto final.",
+              "Cuando el valor de la columna es menor que el valor de la fila, al trazar hacia arriba a la derecha (↗) se llega primero a la fila 8 (borde superior).",
+              "Por ejemplo, con un alfil en d7, el máximo de pasos hacia arriba a la derecha es \"8 - valor de fila\" = 8 - 7 = 1. Sumando 1 a la columna: 4 + 1 = 5, así que el punto final es e8.",
+              "Por el contrario, cuando el valor de la columna es mayor que el valor de la fila, se llega primero a la columna h (borde derecho).",
+              "Por ejemplo, con un alfil en f4, el máximo de pasos hacia arriba a la derecha es \"8 - valor de columna\" = 8 - 6 = 2. Sumando 2 a la fila: 4 + 2 = 6, así que el punto final es h6.",
+              "Cuando los valores de columna y fila son iguales, el punto final siempre es h8."
+            ]
+          },
+          {
+            "paragraphs": [
+              "A continuación, consideremos las anti-diagonales que van de arriba a la izquierda hacia abajo a la derecha.",
+              "El punto de inicio de una anti-diagonal siempre es una casilla en la columna a o en la fila 8.",
+              "A lo largo de una anti-diagonal, al trazar hacia arriba a la izquierda (↖) la columna disminuye y la fila aumenta, por lo que se llega primero a la columna a (borde izquierdo) o a la fila 8 (borde superior).",
+              "Los pasos hasta la columna a son \"valor de columna - 1\", y los pasos hasta la fila 8 son \"8 - valor de fila\". El valor menor determina qué borde se alcanza primero.",
+              "Por ejemplo, consideremos un alfil en c3. Pasos hasta la columna a: 3 - 1 = 2, pasos hasta la fila 8: 8 - 3 = 5.",
+              "Se llega primero a la columna a, así que sumando 2 a la fila: 3 + 2 = 5, el punto de inicio es a5.",
+              "Por el contrario, para un alfil en f7, pasos hasta la columna a: 6 - 1 = 5, pasos hasta la fila 8: 8 - 7 = 1.",
+              "Se llega primero a la fila 8, así que restando 1 de la columna: 6 - 1 = 5, el punto de inicio es e8.",
+              "Cuando ambos conteos de pasos son iguales, el punto de inicio siempre es a8. Esta es la anti-diagonal principal a8-h1."
+            ]
+          },
+          {
+            "paragraphs": [
+              "El punto final de una anti-diagonal siempre es una casilla en la columna h o en la fila 1.",
+              "Consideremos trazar hacia abajo a la derecha (↘). Los pasos hasta la columna h son \"8 - valor de columna\", y los pasos hasta la fila 1 son \"valor de fila - 1\".",
+              "Para un alfil en c3, pasos hasta la columna h: 8 - 3 = 5, pasos hasta la fila 1: 3 - 1 = 2.",
+              "Se llega primero a la fila 1, así que sumando 2 a la columna: 3 + 2 = 5, el punto final es e1.",
+              "Para un alfil en f7, pasos hasta la columna h: 8 - 6 = 2, pasos hasta la fila 1: 7 - 1 = 6.",
+              "Se llega primero a la columna h, así que restando 2 de la fila: 7 - 2 = 5, el punto final es h5.",
+              "Cuando ambos conteos de pasos son iguales, el punto final siempre es h1."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Para resumir, los puntos de inicio y final de las diagonales y anti-diagonales siguen patrones regulares.",
+              "Primero, los patrones de las diagonales (dirección ↗) con inicio en la columna a.",
+              "A medida que el punto de inicio sube, el punto final se comprime desde la derecha a lo largo de la fila 8.",
+              "A continuación, los patrones con inicio en la fila 1.",
+              "A medida que el punto de inicio se mueve a la derecha, el punto final se comprime desde arriba a lo largo de la columna h."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Los patrones de las anti-diagonales (dirección ↘) con inicio en la columna a.",
+              "Al igual que las diagonales, a medida que el punto de inicio baja, el punto final se comprime desde la derecha a lo largo de la fila 1.",
+              "A continuación, los patrones con inicio en la fila 8.",
+              "A medida que el punto de inicio se mueve a la derecha, el punto final se comprime desde abajo a lo largo de la columna h."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Combinaciones como a2 → g8 o e8 → h5 se memorizarán naturalmente a través de la práctica repetida del ajedrez a ciegas. Eventualmente podrás responderlas inconscientemente.",
+              "El Cuestionario de Diagonales es efectivo para entrenar este cálculo.",
+              "Si saltar directamente al Planificador de Rutas es demasiado difícil, haz un calentamiento aquí primero.",
+              "Una vez que puedas realizar estos cálculos de diagonales y anti-diagonales, la maniobra en el ajedrez a ciegas se vuelve mucho más rápida — la teoría detrás de esto se cubrirá en una guía futura."
+            ]
+          }
+        ]
+      },
+      "4kyu": {
+        "format": "flat",
+        "pages": [
           {
             "paragraphs": [
               "Con un tablero de ajedrez físico frente a ti, los jugadores experimentados pueden determinar los movimientos legales de todas las piezas casi inconscientemente.",
@@ -3254,56 +3613,39 @@
             ]
           }
         ]
+      }
+    },
+    "inlineLinks": {
+      "3kyu": {
+        "diagonalQuizTutorialLabel": "Tutorial del Cuestionario de Diagonales",
+        "diagonalQuizLabel": "Cuestionario de Diagonales"
       },
-      "mukyuRequirements": ["Comprensión de la notación algebraica"],
-      "4kyuGuideLinks": {
+      "5kyu": {
+        "quadrantMethodArticleLabel": "Construcción de Puntos de Anclaje con el Método de Cuadrantes"
+      },
+      "4kyu": {
         "kingMovementLabel": "Movimiento del Rey (guía detallada)",
         "knightMovementLabel": "Movimiento del Caballo (guía detallada)",
         "bishopMovementLabel": "Movimiento del Alfil (guía detallada)",
         "rookMovementLabel": "Movimiento de la Torre (guía detallada)"
       },
-      "mukyuGuideLinks": {
+      "mukyu": {
         "learnArticle": "Para más detalles, consulta el siguiente artículo.",
-        "practiceLink": "También puedes practicar con un ejercicio sencillo.",
         "learnArticleLabel": "Aprende sobre notación algebraica",
-        "practiceLabel": "Practica notación algebraica",
         "coordinateQuizLabel": "Cuestionario de Coordenadas",
         "coordinateConfusionLabel": "Sobre la confusión de coordenadas",
         "quadrantsLabel": "Entrenamiento de Cuadrantes",
         "5kyuGuideLabel": "Ver la guía del 5.º Kyū"
       }
     },
-    "signUpBanner": {
-      "message": "¡Obtén tu cinturón negro!",
-      "description": "Regístrate para seguir tu progreso de rango.",
-      "cta": "Registro Gratuito"
-    },
-    "lockedModal": {
-      "title": "Rango Bloqueado",
-      "message": "Supera {rankName} para desbloquear este rango",
-      "linkLabel": "Ver detalles de {rankName}",
-      "ariaLabel": "Bloqueado"
+    "navigation": {
+      "prevRank": "Rango anterior: guía de {rankName}",
+      "nextRank": "Siguiente rango: guía de {rankName}"
     }
   },
-  "rankAchievement": {
-    "title": "¡Rango Alcanzado!",
-    "description": "¡Felicitaciones! Has obtenido un nuevo rango de cinturón.",
-    "viewRanks": "Ver Rangos",
-    "close": "Cerrar",
-    "rankNames": {
-      "mukyu": "Sin Rango",
-      "5kyu": "5.º Kyū",
-      "4kyu": "4.º Kyū",
-      "3kyu": "3.er Kyū",
-      "2kyu": "2.º Kyū",
-      "1kyu": "1.er Kyū",
-      "1dan": "1.er Dan"
-    }
-  },
-  "MobileTabBar": {
-    "games": "Partidas",
-    "practice": "Práctica",
-    "topics": "Temas",
-    "mypage": "Mi Página"
+  "Footer": {
+    "resources": "Recursos",
+    "support": "Soporte",
+    "legal": "Legal"
   }
 }

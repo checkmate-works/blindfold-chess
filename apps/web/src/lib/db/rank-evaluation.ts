@@ -34,25 +34,45 @@ import { db } from './index';
 import { challengeBestScores, ranks, userRanks } from './schema';
 
 // ---------------------------------------------------------------------------
+// Pre-fetched scores cache type
+// ---------------------------------------------------------------------------
+
+type BestScoreCache = Map<string, number>;
+
+function bestScoreCacheKey(menuType: string, leaderboardKey: string): string {
+  return `${menuType}:${leaderboardKey}`;
+}
+
+// ---------------------------------------------------------------------------
 // Evaluators — one per requirement type
 // ---------------------------------------------------------------------------
 
 type RequirementEvaluator<T extends RankRequirement = RankRequirement> = (
   userId: string,
   requirement: T,
-  tx?: typeof db
+  tx?: typeof db,
+  scoreCache?: BestScoreCache
 ) => Promise<boolean>;
 
 const evaluators: Record<string, RequirementEvaluator> = {
-  challenge_score: async (userId, req, executor) => {
+  challenge_score: async (_userId, req, _executor, scoreCache) => {
     const requirement = req as ChallengeScoreRequirement;
-    const dbInstance = executor ?? db;
+
+    // Use pre-fetched scores when available (avoids N+1 queries)
+    if (scoreCache) {
+      const key = bestScoreCacheKey(requirement.menuType, requirement.leaderboardKey);
+      const score = scoreCache.get(key);
+      return score !== undefined && score >= requirement.minScore;
+    }
+
+    // Fallback: query DB directly (for backward compatibility with evaluateRankRequirements)
+    const dbInstance = _executor ?? db;
     const [best] = await dbInstance
       .select({ score: challengeBestScores.score })
       .from(challengeBestScores)
       .where(
         and(
-          eq(challengeBestScores.userId, userId),
+          eq(challengeBestScores.userId, _userId),
           eq(challengeBestScores.menuType, requirement.menuType),
           eq(challengeBestScores.leaderboardKey, requirement.leaderboardKey)
         )
@@ -68,16 +88,18 @@ const evaluators: Record<string, RequirementEvaluator> = {
 /**
  * Evaluate whether a user meets ALL requirements for a given rank.
  * Returns true only if every requirement is satisfied (implicit AND).
+ * When scoreCache is provided, evaluators use it instead of querying the DB.
  */
 export async function evaluateRankRequirements(
   userId: string,
   requirements: RankRequirement[],
-  executor?: typeof db
+  executor?: typeof db,
+  scoreCache?: BestScoreCache
 ): Promise<boolean> {
   for (const req of requirements) {
     const evaluate = evaluators[req.type];
     if (!evaluate) return false; // Unknown requirement type = fail
-    const met = await evaluate(userId, req, executor);
+    const met = await evaluate(userId, req, executor, scoreCache);
     if (!met) return false;
   }
   return true;
@@ -102,17 +124,28 @@ export type { GrantedRank } from './data/ranks';
 export async function checkAndGrantRanks(userId: string): Promise<GrantedRank[]> {
   const granted: GrantedRank[] = [];
 
-  // 1. Get all rank IDs the user already has
-  const achievedRanks = await db
-    .select({ rankId: userRanks.rankId })
-    .from(userRanks)
-    .where(eq(userRanks.userId, userId));
+  // 1. Get all rank IDs the user already has, all ranks, and pre-fetch all best scores in parallel
+  const [achievedRanks, allRanks, allBestScores] = await Promise.all([
+    db.select({ rankId: userRanks.rankId }).from(userRanks).where(eq(userRanks.userId, userId)),
+    db.select().from(ranks).orderBy(asc(ranks.level)),
+    db
+      .select({
+        menuType: challengeBestScores.menuType,
+        leaderboardKey: challengeBestScores.leaderboardKey,
+        score: challengeBestScores.score,
+      })
+      .from(challengeBestScores)
+      .where(eq(challengeBestScores.userId, userId)),
+  ]);
 
   const achievedRankIds = new Set(achievedRanks.map((r) => r.rankId));
 
-  // 2. Get all ranks ordered by level, filter to unachieved
-  const allRanks = await db.select().from(ranks).orderBy(asc(ranks.level));
+  // Build in-memory score cache to avoid N+1 queries during evaluation
+  const scoreCache: BestScoreCache = new Map(
+    allBestScores.map((s) => [bestScoreCacheKey(s.menuType, s.leaderboardKey), s.score])
+  );
 
+  // 2. Filter to unachieved ranks
   const unachievedRanks = allRanks.filter((r) => !achievedRankIds.has(r.id));
 
   // 3. For each unachieved rank (in level order), evaluate requirements
@@ -120,7 +153,7 @@ export async function checkAndGrantRanks(userId: string): Promise<GrantedRank[]>
     const requirements = parseRequirements(rank.requirements);
     if (requirements.length === 0) continue; // No requirements = skip
 
-    const met = await evaluateRankRequirements(userId, requirements);
+    const met = await evaluateRankRequirements(userId, requirements, undefined, scoreCache);
     if (!met) break; // Linear progression: stop at first unmet rank
 
     // 4. Grant the rank

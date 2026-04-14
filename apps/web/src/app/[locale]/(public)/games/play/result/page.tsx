@@ -3,12 +3,14 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
+import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { eq } from 'drizzle-orm';
 
 import { db, profiles } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
 import { PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -61,7 +63,7 @@ export default async function ResultPage({ params }: Props) {
 
   return (
     <div className="space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
+      <PageTitle>{t('resultTitle')}</PageTitle>
       <PagePanel>
         <Suspense>
           <ResultClient
@@ -70,6 +72,10 @@ export default async function ResultPage({ params }: Props) {
             displayName={displayName}
           />
         </Suspense>
+
+        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+        )}
       </PagePanel>
     </div>
   );

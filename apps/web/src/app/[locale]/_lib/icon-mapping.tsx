@@ -1,5 +1,6 @@
 import {
   FaBook,
+  FaBookOpen,
   FaBullhorn,
   FaCog,
   FaDumbbell,
@@ -52,5 +53,16 @@ export const getIcon = (iconName: NavigationIconName) => {
       return <FaCog className="h-5 w-5" />;
     case 'ranks':
       return <GiBlackBelt className="h-5 w-5" />;
+    case 'guides':
+      return <FaBookOpen className="h-5 w-5" />;
+    case 'dojo':
+      return (
+        <span
+          aria-hidden="true"
+          className="inline-flex h-5 w-5 items-center justify-center text-[18px] leading-none"
+        >
+          🥋
+        </span>
+      );
   }
 };

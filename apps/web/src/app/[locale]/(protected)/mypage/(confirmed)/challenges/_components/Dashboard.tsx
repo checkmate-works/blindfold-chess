@@ -1,5 +1,7 @@
 'use client';
 
+import dynamic from 'next/dynamic';
+
 import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
@@ -14,10 +16,18 @@ import {
   getPreviousPeriodLabel,
 } from '../_lib/dashboard-ui-utils';
 import { DashboardFilters } from './DashboardFilters';
-import { DashboardContentSkeleton, DashboardSkeleton } from './DashboardSkeleton';
+import {
+  DashboardContentSkeleton,
+  DashboardSkeleton,
+  ScoreChartSkeleton,
+} from './DashboardSkeleton';
 import { DashboardStatsSection } from './DashboardStatsSection';
-import { ScoreChart } from './ScoreChart';
 import { SessionHistoryTable } from './SessionHistoryTable';
+
+const ScoreChart = dynamic(() => import('./ScoreChart').then((mod) => mod.ScoreChart), {
+  ssr: false,
+  loading: () => <ScoreChartSkeleton />,
+});
 
 export function Dashboard({ locale }: { locale: string }) {
   const t = useTranslations('Mypage');

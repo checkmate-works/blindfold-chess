@@ -26,6 +26,13 @@ export function coordsToSquare(file: number, rank: number): string {
 
 export { isValidSquare as isValidRoutePlannerSquare };
 
+/**
+ * Strategy interface for piece-specific move generation and difficulty constraints.
+ *
+ * Each piece type has a `meetsConstraint` predicate that rejects trivially simple
+ * problems (e.g., 1-move direct routes). The `pathLength` parameter includes the
+ * start square, so `pathLength === 3` means 2 moves (start -> intermediate -> end).
+ */
 interface RoutePlannerStrategy {
   getMoves(file: number, rank: number): string[];
   meetsConstraint(pathLength: number): boolean;
@@ -54,6 +61,11 @@ const getValidLines = (
   });
 };
 
+/**
+ * Knight: requires 2-3 moves (pathLength 3-4).
+ * A 1-move knight jump is trivial, so we require at least 2 moves.
+ * We cap at 3 moves to keep problems tractable for mental visualization.
+ */
 const KnightRouteStrategy: RoutePlannerStrategy = {
   getMoves(f, r) {
     return KNIGHT_OFFSETS.flatMap((d) => getValidMove(f + d[0], r + d[1]));
@@ -63,6 +75,12 @@ const KnightRouteStrategy: RoutePlannerStrategy = {
   },
 };
 
+/**
+ * Bishop: requires exactly 2 moves (pathLength === 3).
+ * A 1-move bishop path means start and end share a diagonal, which is too easy.
+ * Bishop problems are always exactly 2 moves since any two same-color squares
+ * not on the same diagonal are reachable in exactly 2 bishop moves.
+ */
 const BishopRouteStrategy: RoutePlannerStrategy = {
   getMoves(f, r) {
     return getValidLines(f, r, BISHOP_DIRS);
@@ -72,6 +90,11 @@ const BishopRouteStrategy: RoutePlannerStrategy = {
   },
 };
 
+/**
+ * Rook: requires 2+ moves (pathLength >= 3).
+ * A 1-move rook path (same rank or file) is trivial, so we require at least
+ * one intermediate square.
+ */
 const RookRouteStrategy: RoutePlannerStrategy = {
   getMoves(f, r) {
     return getValidLines(f, r, ROOK_DIRS);
@@ -81,6 +104,11 @@ const RookRouteStrategy: RoutePlannerStrategy = {
   },
 };
 
+/**
+ * Queen: requires 2+ moves (pathLength >= 3).
+ * A queen can reach most squares in 1 move, so we require at least one
+ * intermediate square to make the problem non-trivial.
+ */
 const QueenRouteStrategy: RoutePlannerStrategy = {
   getMoves(f, r) {
     return [
@@ -109,6 +137,13 @@ export function getPossibleMoves(
   return strategy ? strategy.getMoves(f, r) : [];
 }
 
+/**
+ * Find the shortest path for a piece from `start` to `end` using BFS.
+ *
+ * @returns The path as an array of squares including both `start` and `end`,
+ *          or `null` if no path exists (e.g., bishop between different-color squares).
+ *          The path length includes the start square, so a 1-move route has length 2.
+ */
 export function findShortestPath(
   piece: RoutePlannerPieceType,
   start: string,
@@ -149,7 +184,12 @@ export function findShortestPath(
 }
 
 /**
- * Validates a user-provided path sequence starting from a given square.
+ * Validate a user-provided path for a route planner problem.
+ *
+ * Checks that every consecutive move in the path is legal for the given piece
+ * and that the path ends at the goal square. The `userPath` should not include
+ * the start square (it is prepended automatically in the returned `fullPath`).
+ *
  * @param piece The piece type
  * @param start The starting square (e.g. 'f6')
  * @param userPath The sequence of squares entered by user (e.g. ['e4', 'd2'])
@@ -193,18 +233,25 @@ export function isSameColor(sq1: string, sq2: string): boolean {
 }
 
 /**
- * Generate a route-planner problem with per-piece difficulty constraints.
+ * Generate a route planner problem with per-piece difficulty constraints.
+ *
+ * Randomly selects a piece, start square, and end square, then verifies that
+ * the shortest path meets the piece's minimum difficulty constraint. This
+ * ensures trivially simple 1-move problems are never generated.
  *
  * Path length includes the start square, so:
- *   path.length === 2 means 1 move (start -> end)
- *   path.length === 3 means 2 moves (start -> mid -> end)
- *   path.length === 4 means 3 moves (start -> mid1 -> mid2 -> end)
+ * - `pathLength === 2` means 1 move (start -> end)
+ * - `pathLength === 3` means 2 moves (start -> mid -> end)
+ * - `pathLength === 4` means 3 moves (start -> mid1 -> mid2 -> end)
  *
- * Per-piece constraints:
- * - Rook (R):   min 2 moves, path.length >= 3 (must pass through at least one intermediate square)
- * - Queen (Q):  min 2 moves, path.length >= 3 (must pass through at least one intermediate square)
- * - Bishop (B): exactly 2 moves, path.length === 3 (same-color squares only)
- * - Knight (N): 2-3 moves, path.length >= 3 AND path.length <= 4
+ * Per-piece constraints (all require pathLength >= 3, i.e., at least 2 moves):
+ * - Knight: 2-3 moves (`3 <= pathLength <= 4`) -- capped to keep problems tractable
+ * - Bishop: exactly 2 moves (`pathLength === 3`) -- start/end must be same color, different diagonal
+ * - Rook:   2+ moves (`pathLength >= 3`) -- start/end must not share rank or file
+ * - Queen:  2+ moves (`pathLength >= 3`) -- start/end must not be directly reachable
+ *
+ * @param allowedPieces Subset of piece types to choose from (defaults to all)
+ * @param rng Random number source for deterministic testing
  */
 export function generateProblem(
   allowedPieces: RoutePlannerPieceType[] = ROUTE_PLANNER_PIECES,

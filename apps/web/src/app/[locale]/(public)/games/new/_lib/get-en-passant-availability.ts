@@ -1,4 +1,4 @@
-import { expandRank } from './fen-utils';
+import { fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
 
 const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'] as const;
 
@@ -15,20 +15,20 @@ export function getEnPassantAvailability(
   boardFen: string,
   turn: 'w' | 'b'
 ): Record<string, boolean> {
-  const boardPart = boardFen.split(' ')[0];
-  const ranks = boardPart.split('/');
+  const board = fenToBoardFlat(boardFen);
 
-  // FEN ranks: index 0 = rank 8, index 7 = rank 1
-  // For white's turn, check rank 5 → index 3
-  // For black's turn, check rank 4 → index 4
-  const rankIndex = turn === 'w' ? 3 : 4;
+  // Flat board indices:
+  // rank 8: 0..7, rank 7: 8..15, rank 6: 16..23, rank 5: 24..31,
+  // rank 4: 32..39, rank 3: 40..47, rank 2: 48..55, rank 1: 56..63
+  //
+  // For white's turn, check rank 5 (indices 24..31)
+  // For black's turn, check rank 4 (indices 32..39)
+  const rankOffset = turn === 'w' ? 24 : 32;
   const expectedPawn = turn === 'w' ? 'p' : 'P';
-
-  const rank = expandRank(ranks[rankIndex]);
 
   const result: Record<string, boolean> = {};
   for (let i = 0; i < FILES.length; i++) {
-    result[FILES[i]] = rank[i] === expectedPawn;
+    result[FILES[i]] = board[rankOffset + i] === expectedPawn;
   }
   return result;
 }

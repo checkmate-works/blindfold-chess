@@ -15,6 +15,7 @@ import { CookieConsent } from './_components/CookieConsent';
 import { Footer } from './_components/Footer';
 import { Header } from './_components/Header';
 import { MobileTabBar } from './_components/MobileTabBar';
+import { isServerOnlyNamespace } from './_lib/i18n-namespaces';
 import { buildPageTitle } from './_lib/metadata';
 import { Providers } from './_lib/providers';
 
@@ -51,6 +52,7 @@ export async function generateMetadata({
     pt: 'pt_BR',
   };
   const currentLocale = OG_LOCALE_MAP[locale] ?? 'en_US';
+  const alternateLocales = Object.values(OG_LOCALE_MAP).filter((l) => l !== currentLocale);
 
   return {
     title: {
@@ -74,6 +76,7 @@ export async function generateMetadata({
       siteName: siteName,
       type: 'website',
       locale: currentLocale,
+      alternateLocale: alternateLocales,
       images: [
         {
           url: '/logo.png',
@@ -140,28 +143,14 @@ export default async function Layout({
     allMessages = {};
   }
 
-  // Namespaces used only by Server Components (via getTranslations()), not by
-  // client-side useTranslations(). Excluding them reduces the client payload.
-  // New namespaces are included in the client bundle by default for safety;
-  // add a namespace here only after confirming it is never used in client code.
-  const serverOnlyNamespaces = [
-    'metadata',
-    'Header',
-    'faq',
-    'glossary',
-    'manual',
-    'gettingStarted',
-    'learn',
-    'privacy',
-    'terms',
-    'company',
-    'landing',
-    'posts',
-  ];
-
+  // Namespaces used only by Server Components (via getTranslations()) are
+  // excluded from the client-side dictionary payload. The classification lives
+  // in `./_lib/i18n-namespaces.ts` and is validated at check time by
+  // `scripts/check-i18n-namespaces.ts` (run via `pnpm check:i18n`). Adding a
+  // new namespace requires classifying it there or the check will fail.
   const messages = Object.fromEntries(
     Object.entries(allMessages as Record<string, unknown>).filter(
-      ([key]) => !serverOnlyNamespaces.includes(key)
+      ([key]) => !isServerOnlyNamespace(key)
     )
   );
 

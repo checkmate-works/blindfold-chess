@@ -4,8 +4,7 @@ import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/ser
 
 import { createAdminClient } from '@/lib/supabase/admin';
 
-import { PaginationNav } from '@/app/[locale]/_components';
-
+import { AdminPaginationNav } from '../_components/AdminPaginationNav';
 import { ActivityLogRow } from './_components/ActivityLogRow';
 import { fetchActivityLogPageData } from './_lib/queries';
 
@@ -108,7 +107,7 @@ export default async function AdminActivityLogPage({
         </table>
       </div>
 
-      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+      <AdminPaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
     </div>
   );
 }

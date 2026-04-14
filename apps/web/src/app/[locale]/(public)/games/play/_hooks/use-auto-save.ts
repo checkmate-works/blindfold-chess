@@ -10,6 +10,7 @@ import type { GameOutcome, MoveOperationLog, SkillLevel } from '@/lib/types';
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { isGameFinished } from '../_lib/game-utils';
+import { SESSION_STORAGE_KEYS } from '../_lib/session-storage-keys';
 import { useAutoSaveEvents } from './use-auto-save-events';
 import { useInitialSave } from './use-initial-save';
 
@@ -210,7 +211,7 @@ export function useAutoSave({
 
         // Show notification if requested
         if (showNotification) {
-          sessionStorage.setItem('blindfold_chess_show_save_toast', 'true');
+          sessionStorage.setItem(SESSION_STORAGE_KEYS.SHOW_SAVE_TOAST, 'true');
         }
 
         return savedGameId;

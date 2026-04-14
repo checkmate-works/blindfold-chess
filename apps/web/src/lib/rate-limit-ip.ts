@@ -26,6 +26,17 @@ export function _resetStore() {
  * under the specified rate limit configuration.
  *
  * Uses an in-memory fixed-window approach keyed by `${ip}:${action}`.
+ *
+ * 制限事項:
+ * - インメモリ（Map）ベースのため、マルチインスタンス環境ではインスタンス間で
+ *   レートリミットの状態が共有されない。
+ * - Serverless 環境（Vercel Functions 等）ではコールドスタートごとにストアが
+ *   リセットされるため、制限の精度が低下する。
+ * - DB ベースのレートリミット（rate-limit.ts）との二重防御により、
+ *   上記制限の影響を緩和している。
+ *
+ * TODO: トラフィック増加時には Redis（Upstash 等）ベースの実装に移行し、
+ * インスタンス間で状態を共有できるようにする。
  */
 export function checkIpRateLimit(
   ip: string,
@@ -56,6 +67,7 @@ export const IP_RATE_LIMITS = {
   signUp: { maxRequests: 5, windowMs: 300_000 }, // 5 min, 5 requests
   forgotPassword: { maxRequests: 3, windowMs: 300_000 }, // 5 min, 3 requests
   resendEmail: { maxRequests: 3, windowMs: 300_000 }, // 5 min, 3 requests
+  resetPassword: { maxRequests: 5, windowMs: 300_000 }, // 5 min, 5 requests
 } as const;
 
 /**
@@ -73,11 +85,11 @@ export function checkIpRateLimitGuard(
   key: string,
   config: IpRateLimitConfig
 ): { error: 'rateLimited' } | null {
-  if (ip) {
-    const { allowed } = checkIpRateLimit(ip, key, config);
-    if (!allowed) {
-      return { error: 'rateLimited' };
-    }
+  // Use a shared bucket for null IPs so they cannot bypass rate limiting.
+  const effectiveIp = ip ?? 'unknown';
+  const { allowed } = checkIpRateLimit(effectiveIp, key, config);
+  if (!allowed) {
+    return { error: 'rateLimited' };
   }
   return null;
 }

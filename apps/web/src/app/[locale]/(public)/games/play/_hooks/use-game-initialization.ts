@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 
+import { isValidSkillLevel } from '@blindfold-chess/features/ai-game';
 import { getStartingFen, validateMoveSequence } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
-import { isValidSkillLevel } from '@/lib/types';
 import type { SkillLevel } from '@/lib/types';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';

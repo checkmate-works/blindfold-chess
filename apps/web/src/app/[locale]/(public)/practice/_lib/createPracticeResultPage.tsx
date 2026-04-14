@@ -3,15 +3,52 @@ import { type ComponentType, type ReactNode, Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
+import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE, IS_LOCAL_DEV } from '@/config';
+import type { ExpInfo } from '@blindfold-chess/features/exp';
+
+import { getExpInfoBySource } from '@/lib/db/get-exp-info-by-source';
+import { createClient } from '@/lib/supabase/server';
+
 import { getLeaderboard } from '@/app/[locale]/(public)/leaderboard/_actions/getLeaderboard';
 import type {
   LeaderboardModule,
   LeaderboardRow,
 } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { buildDetailPath } from '@/app/[locale]/(public)/leaderboard/_lib/types';
-import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
+import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale, LocalePageProps, LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
+
+// ---------------------------------------------------------------------------
+// Shared: resolve ExpInfo from ?grant=<challenge_result_id>
+// ---------------------------------------------------------------------------
+
+/** Identifier written to `exp_events.source` for a given result flow. */
+export type ExpSource = 'challenge_result' | 'practice_result';
+
+/**
+ * Read the `grant` query param and refetch the corresponding EXP event for
+ * the authenticated user. Returns `null` when unauthenticated, when the
+ * param is missing, or when no matching event is found. The lookup is
+ * scoped to the current user, so passing another user's `sourceId` yields
+ * `null` (authorization guard enforced at the query level).
+ */
+async function resolveExpInfoFromGrantParam(
+  searchParams: Record<string, string | string[] | undefined>,
+  expSource: ExpSource
+): Promise<ExpInfo | null> {
+  const grantRaw = searchParams.grant;
+  const grant = typeof grantRaw === 'string' ? grantRaw : undefined;
+  if (!grant) return null;
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  return getExpInfoBySource(user.id, expSource, grant);
+}
 
 // ---------------------------------------------------------------------------
 // Shared metadata factory
@@ -41,21 +78,48 @@ export function createPracticeResultMetadata(config: MetadataConfig) {
 type SimpleResultClientProps = {
   locale: Locale;
   adBanner?: ReactNode;
+  adBannerStandard?: ReactNode;
+  expInfo?: ExpInfo | null;
+};
+
+type SimpleResultPageOptions = {
+  /**
+   * Source identifier used when looking up EXP events via `?grant=<id>`.
+   * Defaults to `'challenge_result'` (matching the historical behavior).
+   * Free-play flows that grant EXP via `grantPracticeExp` should pass
+   * `'practice_result'`.
+   */
+  expSource?: ExpSource;
 };
 
 export function createSimplePracticeResultPage(
-  ResultClient: ComponentType<SimpleResultClientProps>
+  ResultClient: ComponentType<SimpleResultClientProps>,
+  options: SimpleResultPageOptions = {}
 ) {
-  return async function Page(props: LocalePageProps) {
+  const expSource: ExpSource = options.expSource ?? 'challenge_result';
+
+  return async function Page(props: LocaleSearchPageProps) {
     const { locale } = await props.params;
     setRequestLocale(locale);
+    const searchParams = await props.searchParams;
+    const expInfo = await resolveExpInfoFromGrantParam(searchParams, expSource);
     return (
-      <>
-        <Suspense>
-          <ResultClient locale={locale} adBanner={<AdBannerGuard slot="banner-wide" />} />
-        </Suspense>
-        <AdBannerGuard slot="banner-standard" />
-      </>
+      <Suspense>
+        <ResultClient
+          locale={locale}
+          expInfo={expInfo}
+          adBanner={
+            IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE ? (
+              <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
+            ) : undefined
+          }
+          adBannerStandard={
+            IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM ? (
+              <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+            ) : undefined
+          }
+        />
+      </Suspense>
     );
   };
 }
@@ -70,6 +134,7 @@ type LeaderboardResultClientProps = {
   adBannerStandard?: ReactNode;
   leaderboardRows?: LeaderboardRow[];
   leaderboardDetailPath?: string;
+  expInfo?: ExpInfo | null;
 };
 
 type LeaderboardConfig = {
@@ -101,18 +166,36 @@ export function createLeaderboardPracticeResultPage(
     const searchParams = await props.searchParams;
     const key = leaderboard.resolveKey(searchParams);
 
-    const leaderboardResult = await getLeaderboard(leaderboard.module, key, 'weekly', 1);
+    const [leaderboardResult, expInfo] = await Promise.all([
+      getLeaderboard(leaderboard.module, key, 'weekly', 1),
+      resolveExpInfoFromGrantParam(searchParams, 'challenge_result'),
+    ]);
     const leaderboardRows = leaderboardResult.rows.slice(0, 3);
     const leaderboardDetailPath = buildDetailPath('weekly', leaderboard.module, key);
+
+    // `adBannerWide` (content-middle) is the top half of a sandwich around the
+    // weekly leaderboard. When there are no leaderboard rows, `LeaderboardPreview`
+    // renders nothing, so the wide banner would become an orphan "top half". Hide
+    // it in that case so the sandwich is all-or-nothing.
+    const hasLeaderboardRows = leaderboardRows.length > 0;
 
     return (
       <Suspense>
         <ResultClient
           locale={locale}
-          adBannerWide={wide ? <AdBannerGuard slot="banner-wide" /> : undefined}
-          adBannerStandard={standard ? <AdBannerGuard slot="banner-standard" /> : undefined}
+          adBannerWide={
+            wide && hasLeaderboardRows && (IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE) ? (
+              <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
+            ) : undefined
+          }
+          adBannerStandard={
+            standard && (IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) ? (
+              <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+            ) : undefined
+          }
           leaderboardRows={leaderboardRows}
           leaderboardDetailPath={leaderboardDetailPath}
+          expInfo={expInfo}
         />
       </Suspense>
     );

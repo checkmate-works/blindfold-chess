@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from "react";
 import * as Haptics from "expo-haptics";
-import { generateSquareSequence } from "@blindfold-chess/features/common";
 import {
+  generateSquareSequence,
   getDiagonals,
   isValidDiagonalAnswer,
   normalizeDiagonal,

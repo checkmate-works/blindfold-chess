@@ -1,11 +1,5 @@
-import {
-  ALL_PIECE_SYMBOLS,
-  AlgebraicNotation,
-  FILES,
-  File,
-  NUMERIC_RANKS,
-  Rank,
-} from '@blindfold-chess/types';
+import type { AlgebraicNotation, File, Rank } from '@blindfold-chess/types';
+import { ALL_PIECE_SYMBOLS, FILES, NUMERIC_RANKS } from '@blindfold-chess/types';
 
 /**
  * Generate move suggestions based on partial input

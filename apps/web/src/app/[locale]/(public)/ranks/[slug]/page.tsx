@@ -18,19 +18,21 @@ import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { SUPPORTED_LOCALES } from '@/config';
+import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV, SUPPORTED_LOCALES } from '@/config';
 
 import { ALL_RANK_SLUGS, isMukyuSlug } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
+import { buildGuidePath, getRankGuide } from '@/lib/guides';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
-import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
+import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { AnchorPointsBoard } from '../_components/AnchorPointsBoard';
 import { CoordinateBoard } from '../_components/CoordinateBoard';
+import { DiagonalBoard } from '../_components/DiagonalBoard';
 import { GuideLinkCard } from '../_components/GuideLinkCard';
 import { KingMovementBoard } from '../_components/KingMovementBoard';
 import { RankHeader } from '../_components/RankHeader';
@@ -74,6 +76,20 @@ export default async function RankDetailPage({ params }: Props) {
 
   const t = await getTranslations({ locale, namespace: 'ranks' });
 
+  const tGuides = await getTranslations({ locale, namespace: 'guides' });
+  const guidesPages = tGuides.raw('pages') as Record<string, unknown>;
+
+  // Extract a short teaser paragraph for the "tips" card, if the rank has a
+  // flat guide. Chaptered guides have no single top-level teaser, so we render
+  // the tips card without a preview paragraph.
+  const getTeaserParagraph = (rankKey: string): string => {
+    const guide = getRankGuide(guidesPages, rankKey as RankSlug);
+    if (!guide || guide.format !== 'flat') return '';
+    return guide.pages[0]?.paragraphs[0] ?? '';
+  };
+  const hasGuideFor = (rankKey: string): boolean =>
+    getRankGuide(guidesPages, rankKey as RankSlug) !== null;
+
   // -----------------------------------------------------------------------
   // Mukyu (無級) — UI-only rank, not stored in DB.
   // Renders a dedicated detail page with criteria, tips, and requirements
@@ -83,19 +99,15 @@ export default async function RankDetailPage({ params }: Props) {
     const beltColor = getBeltColorHex(slug);
     const rankName = t(`rankNames.${slug}`);
     const mukyuRequirements = t.raw('detail.mukyuRequirements') as string[];
-    const mukyuGuideLinks = t.raw('detail.mukyuGuideLinks') as {
+    const mukyuRelatedLinks = t.raw('detail.mukyuRelatedLinks') as {
       learnArticle: string;
       practiceLink: string;
       learnArticleLabel: string;
       practiceLabel: string;
     };
 
-    // Check for guide pages
-    const guidePages = t.raw('detail.guidePages') as Record<
-      string,
-      Array<{ paragraphs: string[] }>
-    >;
-    const hasGuide = slug in guidePages;
+    const hasGuide = hasGuideFor(slug);
+    const firstFlatParagraph = getTeaserParagraph(slug);
 
     return (
       <div className="space-y-8">
@@ -113,14 +125,18 @@ export default async function RankDetailPage({ params }: Props) {
             <div className="rounded-lg bg-amber-50 p-4 dark:bg-amber-950/20">
               <p className="font-semibold text-foreground">💡 {t('detail.tips')}</p>
               <p className="mt-2 text-foreground/80">
-                {guidePages[slug][0].paragraphs[0].length > 100
-                  ? `${guidePages[slug][0].paragraphs[0].slice(0, 100)}…`
-                  : guidePages[slug][0].paragraphs[0]}
+                {firstFlatParagraph.length > 100
+                  ? `${firstFlatParagraph.slice(0, 100)}…`
+                  : firstFlatParagraph}
               </p>
-              <Link href={`/${locale}/ranks/${slug}/guide`} className="mt-3 block">
+              <Link
+                href={buildGuidePath(locale, slug, { kind: 'root' })}
+                className="mt-3 block"
+                aria-label={t('detail.readFullGuide', { rankName })}
+              >
                 <CoordinateBoard className="mx-auto max-w-[10rem]" />
                 <span className="mt-2 block text-sm text-amber-600 hover:underline dark:text-amber-400">
-                  {t('detail.showMore')}
+                  {t('detail.readFullGuide', { rankName })}
                 </span>
               </Link>
             </div>
@@ -137,27 +153,29 @@ export default async function RankDetailPage({ params }: Props) {
 
           {/* Related links */}
           <div className="mt-6 space-y-3">
-            <p className="text-foreground/80">{mukyuGuideLinks.learnArticle}</p>
+            <p className="text-foreground/80">{mukyuRelatedLinks.learnArticle}</p>
             <GuideLinkCard
               items={[
                 {
-                  label: mukyuGuideLinks.learnArticleLabel,
+                  label: mukyuRelatedLinks.learnArticleLabel,
                   href: `/${locale}/learn/notation/algebraic-notation`,
                 },
               ]}
             />
-            <p className="text-foreground/80">{mukyuGuideLinks.practiceLink}</p>
+            <p className="text-foreground/80">{mukyuRelatedLinks.practiceLink}</p>
             <GuideLinkCard
               items={[
                 {
-                  label: mukyuGuideLinks.practiceLabel,
+                  label: mukyuRelatedLinks.practiceLabel,
                   href: `/${locale}/practice/algebraic-notation`,
                 },
               ]}
             />
           </div>
 
-          <AdBannerGuard slot="banner-standard" />
+          {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+            <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+          )}
 
           <Divider />
 
@@ -185,8 +203,8 @@ export default async function RankDetailPage({ params }: Props) {
   const hasCriteriaDescription = rankSlug in criteriaDescriptions;
 
   // Check if guide pages exist for this slug
-  const guidePages = t.raw('detail.guidePages') as Record<string, Array<{ paragraphs: string[] }>>;
-  const hasGuide = rankSlug in guidePages;
+  const hasGuide = hasGuideFor(rankSlug);
+  const firstDbGuideParagraph = getTeaserParagraph(rankSlug);
 
   return (
     <div className="space-y-8">
@@ -210,18 +228,24 @@ export default async function RankDetailPage({ params }: Props) {
           <div className="rounded-lg bg-amber-50 p-4 dark:bg-amber-950/20">
             <p className="font-semibold text-foreground">💡 {t('detail.tips')}</p>
             <p className="mt-2 text-foreground/80">
-              {guidePages[rankSlug][0].paragraphs[0].length > 100
-                ? `${guidePages[rankSlug][0].paragraphs[0].slice(0, 100)}…`
-                : guidePages[rankSlug][0].paragraphs[0]}
+              {firstDbGuideParagraph.length > 100
+                ? `${firstDbGuideParagraph.slice(0, 100)}…`
+                : firstDbGuideParagraph}
             </p>
-            <Link href={`/${locale}/ranks/${rankSlug}/guide`} className="mt-3 block">
+            <Link
+              href={buildGuidePath(locale, rankSlug, { kind: 'root' })}
+              className="mt-3 block"
+              aria-label={t('detail.readFullGuide', { rankName })}
+            >
               {rankSlug === '4kyu' ? (
                 <KingMovementBoard className="mx-auto max-w-[10rem]" />
+              ) : rankSlug === '3kyu' ? (
+                <DiagonalBoard className="mx-auto max-w-[10rem]" />
               ) : (
                 <AnchorPointsBoard className="mx-auto max-w-[10rem]" />
               )}
               <span className="mt-2 block text-sm text-amber-600 hover:underline dark:text-amber-400">
-                {t('detail.showMore')}
+                {t('detail.readFullGuide', { rankName })}
               </span>
             </Link>
           </div>
@@ -236,7 +260,9 @@ export default async function RankDetailPage({ params }: Props) {
           items={buildRequirementItems(requirements, locale, t)}
         />
 
-        <AdBannerGuard slot="banner-standard" />
+        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+        )}
 
         <Divider />
 

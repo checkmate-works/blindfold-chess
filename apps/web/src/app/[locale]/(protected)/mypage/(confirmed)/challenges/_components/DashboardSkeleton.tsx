@@ -12,7 +12,7 @@ function StatsCardSkeleton() {
 }
 
 /** スコアトレンドチャートのスケルトン（ScoreChartのResponsiveContainerと同じ高さ） */
-function ScoreChartSkeleton() {
+export function ScoreChartSkeleton() {
   return <Skeleton className="h-[250px] w-full rounded-lg" />;
 }
 

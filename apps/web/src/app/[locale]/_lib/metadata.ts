@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import { SITE_URL } from '@/config';
+import { SITE_URL, SUPPORTED_LOCALES } from '@/config';
 
 /**
  * Keyword map for determining title suffix by locale.
@@ -56,38 +56,46 @@ export function resolveTitle(title: string, locale: string): string | { absolute
  * @param path - Path without locale prefix (e.g., '/learn', '/practice/algebraic-notation')
  * @param title - Optional page title for openGraph
  * @param description - Optional page description for openGraph
+ * @param availableLocales - When provided, only emit hreflang for these locales (e.g., for articles that exist in limited locales)
+ * @param canonicalLocale - Override locale for canonical URL (e.g., when serving fallback content from a different locale)
  */
 export function generateCanonicalMetadata({
   locale,
   path,
   title,
   description,
+  availableLocales,
+  canonicalLocale,
 }: {
   locale: string;
   path: string;
   title?: string;
   description?: string;
+  availableLocales?: string[];
+  canonicalLocale?: string;
 }): Metadata {
   const baseUrl = SITE_URL;
   const cleanPath = path.startsWith('/') ? path.slice(1) : path;
 
-  const canonical = `${baseUrl}/${locale}${cleanPath ? `/${cleanPath}` : ''}`;
+  const effectiveLocale = canonicalLocale ?? locale;
+  const canonical = `${baseUrl}/${effectiveLocale}${cleanPath ? `/${cleanPath}` : ''}`;
 
-  const enUrl = `${baseUrl}/en${cleanPath ? `/${cleanPath}` : ''}`;
-  const jaUrl = `${baseUrl}/ja${cleanPath ? `/${cleanPath}` : ''}`;
+  // Build hreflang entries
+  const languages: Record<string, string> = {};
+  const localesForAlternates = availableLocales ?? [...SUPPORTED_LOCALES];
+  for (const loc of localesForAlternates) {
+    languages[loc] = `${baseUrl}/${loc}${cleanPath ? `/${cleanPath}` : ''}`;
+  }
+  languages['x-default'] = `${baseUrl}/en${cleanPath ? `/${cleanPath}` : ''}`;
 
   return {
     alternates: {
       canonical,
-      languages: {
-        en: enUrl,
-        ja: jaUrl,
-        'x-default': enUrl,
-      },
+      languages,
     },
     openGraph: {
       url: canonical,
-      ...(title && { title: buildPageTitle(title, locale) }),
+      ...(title && { title: buildPageTitle(title, effectiveLocale) }),
       ...(description && { description }),
     },
   };

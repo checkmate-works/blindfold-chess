@@ -51,36 +51,36 @@ describe('PaginationNav', () => {
   describe('Previous/Next buttons', () => {
     it('disables Previous on first page', () => {
       render(<PaginationNav currentPage={1} totalPages={3} buildHref={buildHref} />);
-      const previous = screen.getByText('Previous');
+      const previous = screen.getByLabelText('Previous page');
       expect(previous.tagName).toBe('SPAN');
       expect(previous.className).toContain('cursor-not-allowed');
     });
 
     it('enables Previous on non-first page', () => {
       render(<PaginationNav currentPage={2} totalPages={3} buildHref={buildHref} />);
-      const previous = screen.getByText('Previous');
+      const previous = screen.getByLabelText('Previous page');
       expect(previous.tagName).toBe('A');
       expect(previous).toHaveAttribute('href', '/test?page=1');
     });
 
     it('disables Next on last page', () => {
       render(<PaginationNav currentPage={3} totalPages={3} buildHref={buildHref} />);
-      const next = screen.getByText('Next');
+      const next = screen.getByLabelText('Next page');
       expect(next.tagName).toBe('SPAN');
       expect(next.className).toContain('cursor-not-allowed');
     });
 
     it('enables Next on non-last page', () => {
       render(<PaginationNav currentPage={1} totalPages={3} buildHref={buildHref} />);
-      const next = screen.getByText('Next');
+      const next = screen.getByLabelText('Next page');
       expect(next.tagName).toBe('A');
       expect(next).toHaveAttribute('href', '/test?page=2');
     });
 
     it('enables both Previous and Next on middle page', () => {
       render(<PaginationNav currentPage={2} totalPages={3} buildHref={buildHref} />);
-      const previous = screen.getByText('Previous');
-      const next = screen.getByText('Next');
+      const previous = screen.getByLabelText('Previous page');
+      const next = screen.getByLabelText('Next page');
       expect(previous.tagName).toBe('A');
       expect(next.tagName).toBe('A');
       expect(previous).toHaveAttribute('href', '/test?page=1');
@@ -226,8 +226,8 @@ describe('PaginationNav', () => {
   describe('edge cases', () => {
     it('renders with exactly 2 pages on first page', () => {
       render(<PaginationNav currentPage={1} totalPages={2} buildHref={buildHref} />);
-      const previous = screen.getByText('Previous');
-      const next = screen.getByText('Next');
+      const previous = screen.getByLabelText('Previous page');
+      const next = screen.getByLabelText('Next page');
       expect(previous.tagName).toBe('SPAN');
       expect(previous.className).toContain('cursor-not-allowed');
       expect(next.tagName).toBe('A');
@@ -240,8 +240,8 @@ describe('PaginationNav', () => {
 
     it('renders with exactly 2 pages on last page', () => {
       render(<PaginationNav currentPage={2} totalPages={2} buildHref={buildHref} />);
-      const previous = screen.getByText('Previous');
-      const next = screen.getByText('Next');
+      const previous = screen.getByLabelText('Previous page');
+      const next = screen.getByLabelText('Next page');
       expect(previous.tagName).toBe('A');
       expect(previous).toHaveAttribute('href', '/test?page=1');
       expect(next.tagName).toBe('SPAN');
@@ -250,8 +250,8 @@ describe('PaginationNav', () => {
 
     it('handles very large page numbers with truncation', () => {
       render(<PaginationNav currentPage={500000} totalPages={999999} buildHref={buildHref} />);
-      const previous = screen.getByText('Previous');
-      const next = screen.getByText('Next');
+      const previous = screen.getByLabelText('Previous page');
+      const next = screen.getByLabelText('Next page');
       expect(previous.tagName).toBe('A');
       expect(next.tagName).toBe('A');
       expect(previous).toHaveAttribute('href', '/test?page=499999');
@@ -273,8 +273,8 @@ describe('PaginationNav', () => {
         return `/ja/posts/tips${qs}`;
       };
       render(<PaginationNav currentPage={2} totalPages={5} buildHref={localeBuildHref} />);
-      const previous = screen.getByText('Previous');
-      const next = screen.getByText('Next');
+      const previous = screen.getByLabelText('Previous page');
+      const next = screen.getByLabelText('Next page');
       expect(previous).toHaveAttribute('href', '/ja/posts/tips');
       expect(next).toHaveAttribute('href', '/ja/posts/tips?page=3');
     });
@@ -288,8 +288,8 @@ describe('PaginationNav', () => {
         return `/en/topics/squares/e4?${qs}`;
       };
       render(<PaginationNav currentPage={3} totalPages={10} buildHref={sortBuildHref} />);
-      const previous = screen.getByText('Previous');
-      const next = screen.getByText('Next');
+      const previous = screen.getByLabelText('Previous page');
+      const next = screen.getByLabelText('Next page');
       expect(previous).toHaveAttribute('href', '/en/topics/squares/e4?sort=top&page=2');
       expect(next).toHaveAttribute('href', '/en/topics/squares/e4?sort=top&page=4');
     });
@@ -303,7 +303,7 @@ describe('PaginationNav', () => {
         return `/en/topics/squares/e4?${qs}`;
       };
       render(<PaginationNav currentPage={2} totalPages={5} buildHref={sortBuildHref} />);
-      const previous = screen.getByText('Previous');
+      const previous = screen.getByLabelText('Previous page');
       // Going back to page 1: page param should be omitted, only sort remains
       expect(previous).toHaveAttribute('href', '/en/topics/squares/e4?sort=top');
     });
@@ -504,6 +504,67 @@ describe('PaginationNav', () => {
 
       expect(screen.queryByText('2')).not.toBeInTheDocument();
       expect(screen.queryByText('3')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('data-pagination-item attributes', () => {
+    it('marks active Previous link with data-pagination-item="link"', () => {
+      render(<PaginationNav currentPage={2} totalPages={3} buildHref={buildHref} />);
+      const previous = screen.getByLabelText('Previous page');
+      expect(previous).toHaveAttribute('data-pagination-item', 'link');
+    });
+
+    it('marks disabled Previous span with data-pagination-item="disabled"', () => {
+      render(<PaginationNav currentPage={1} totalPages={3} buildHref={buildHref} />);
+      const previous = screen.getByLabelText('Previous page');
+      expect(previous).toHaveAttribute('data-pagination-item', 'disabled');
+    });
+
+    it('marks active Next link with data-pagination-item="link"', () => {
+      render(<PaginationNav currentPage={1} totalPages={3} buildHref={buildHref} />);
+      const next = screen.getByLabelText('Next page');
+      expect(next).toHaveAttribute('data-pagination-item', 'link');
+    });
+
+    it('marks disabled Next span with data-pagination-item="disabled"', () => {
+      render(<PaginationNav currentPage={3} totalPages={3} buildHref={buildHref} />);
+      const next = screen.getByLabelText('Next page');
+      expect(next).toHaveAttribute('data-pagination-item', 'disabled');
+    });
+
+    it('marks current page span with data-pagination-item="current"', () => {
+      render(<PaginationNav currentPage={2} totalPages={3} buildHref={buildHref} />);
+      const currentPageEl = screen.getByText('2');
+      expect(currentPageEl).toHaveAttribute('data-pagination-item', 'current');
+    });
+
+    it('marks non-current page links with data-pagination-item="link"', () => {
+      render(<PaginationNav currentPage={2} totalPages={3} buildHref={buildHref} />);
+      const page1 = screen.getByText('1');
+      const page3 = screen.getByText('3');
+      expect(page1).toHaveAttribute('data-pagination-item', 'link');
+      expect(page3).toHaveAttribute('data-pagination-item', 'link');
+    });
+
+    it('marks ellipsis spans with data-pagination-item="ellipsis"', () => {
+      render(<PaginationNav currentPage={5} totalPages={10} buildHref={buildHref} />);
+      const ellipses = screen.getAllByText('...');
+      expect(ellipses).toHaveLength(2);
+      for (const ellipsis of ellipses) {
+        expect(ellipsis).toHaveAttribute('data-pagination-item', 'ellipsis');
+      }
+    });
+
+    it('every element inside nav has a data-pagination-item attribute', () => {
+      const { container } = render(
+        <PaginationNav currentPage={5} totalPages={10} buildHref={buildHref} />
+      );
+      const nav = container.querySelector('nav')!;
+      const directChildren = Array.from(nav.children);
+      // Every direct child of the nav should have data-pagination-item
+      for (const child of directChildren) {
+        expect(child).toHaveAttribute('data-pagination-item');
+      }
     });
   });
 

@@ -1,5 +1,13 @@
-import { BELT_COLOR_HEX, RANK_COLORS, parseRequirements, ranksSeedData } from '@/lib/db/data/ranks';
+import {
+  ALL_RANK_SLUGS,
+  BELT_COLOR_HEX,
+  RANK_COLORS,
+  isMukyuSlug,
+  parseRequirements,
+  ranksSeedData,
+} from '@/lib/db/data/ranks';
 import type { ChallengeScoreRequirement, RankSlug } from '@/lib/db/data/ranks';
+import type { Rank } from '@/lib/db/schema';
 
 import type { RequirementItem } from '../_components/RequirementsList';
 
@@ -37,9 +45,10 @@ export function buildRequirementItems(
     const challengeKey = buildChallengeNameKey(req);
     const practiceSlug = menuTypeToPracticeSlug(req.menuType);
 
-    // For legal_moves, link directly to challenge page with piece parameter
+    // For legal_moves and route_planner, link directly to challenge page with piece parameter
     const href =
-      req.menuType === 'legal_moves' && req.leaderboardKey !== 'default'
+      (req.menuType === 'legal_moves' || req.menuType === 'route_planner') &&
+      req.leaderboardKey !== 'default'
         ? `/${locale}/practice/${practiceSlug}/challenge?piece=${req.leaderboardKey}`
         : `/${locale}/practice/${practiceSlug}`;
 
@@ -56,6 +65,17 @@ export function buildRequirementItems(
 export function getBeltColorHex(slug: RankSlug): string {
   const colorName = RANK_COLORS[slug];
   return BELT_COLOR_HEX[colorName] ?? '#6b7280';
+}
+
+/**
+ * Whether a given hex belt color should be treated as the "white belt" color.
+ *
+ * `#ffffff` is invisible on light backgrounds, so components rendering white
+ * belts need to add a visible border / outline. Centralising the check here
+ * keeps belt-color UI behaviour consistent across components.
+ */
+export function isWhiteBelt(beltColor: string): boolean {
+  return beltColor.toLowerCase() === '#ffffff';
 }
 
 export function getRankCardState(
@@ -135,4 +155,67 @@ export function buildRankTeaserCards(
       previousSlug,
     };
   });
+}
+
+/**
+ * View model for the dojo page — identifies the user's current rank and the
+ * next rank they are working toward.
+ *
+ * `current` is `null` for unranked users (mukyu / not logged in).
+ * `next` is `null` only when the user has achieved the top rank.
+ */
+export type ResolvedRankView = {
+  slug: RankSlug;
+  dbRank: Rank | null;
+  requirements: ChallengeScoreRequirement[];
+};
+
+export type ResolveNextRankResult = {
+  current: ResolvedRankView | null;
+  next: ResolvedRankView | null;
+};
+
+/**
+ * Resolve the highest achieved rank and the next rank to pursue from DB ranks
+ * and the set of achieved slugs. Walks `ALL_RANK_SLUGS` in progression order.
+ *
+ * - `current` = highest achieved slug (or `null` when nothing is achieved).
+ * - `next` = first non-achieved slug encountered in the linear walk (or `null`
+ *   once everything is achieved).
+ *
+ * @remarks
+ * - Linear grant progression is assumed: ranks are granted in order, so in
+ *   practice `next` will be the slug immediately after `current`.
+ * - If achievement gaps exist (e.g. user somehow has 3kyu without 5kyu), the
+ *   linear walk assigns `next` to the first non-achieved slug it encounters,
+ *   which may end up being lower than `current` in theory. This behaviour is
+ *   intentional and locked in by tests.
+ * - Mukyu is UI-only and is always skipped — it is never counted as achieved
+ *   or assigned as `current` / `next`.
+ */
+export function resolveNextRank(
+  dbRanks: Rank[],
+  achievedSlugs: ReadonlySet<RankSlug>
+): ResolveNextRankResult {
+  const dbRanksBySlug = new Map(dbRanks.map((r) => [r.slug, r]));
+
+  const toView = (slug: RankSlug): ResolvedRankView => {
+    const dbRank = dbRanksBySlug.get(slug) ?? null;
+    const requirements = dbRank ? parseRequirements(dbRank.requirements) : [];
+    return { slug, dbRank, requirements };
+  };
+
+  let current: ResolvedRankView | null = null;
+  let next: ResolvedRankView | null = null;
+
+  for (const slug of ALL_RANK_SLUGS) {
+    if (isMukyuSlug(slug)) continue;
+    if (achievedSlugs.has(slug)) {
+      current = toView(slug);
+    } else if (next === null) {
+      next = toView(slug);
+    }
+  }
+
+  return { current, next };
 }

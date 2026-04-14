@@ -48,13 +48,6 @@ vi.mock('@/app/[locale]/_components/ColorIcon', () => ({
   ColorIcon: ({ color }: { color: string }) => <span data-testid="color-icon">{color}</span>,
 }));
 
-vi.mock('@/lib/chess/elo', () => ({
-  getEloRating: (level: number) => {
-    if (level < 15) return Math.max(800, 700 + level * 100);
-    return 2000 + level * 100;
-  },
-}));
-
 // --- Helpers ---
 
 function createMockGame(overrides: Partial<Game> & { id: string }): Game {

@@ -6,6 +6,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 
 import { getMedalEmoji } from '@/lib/rank-emoji';
 
+import { getLeaderboardIcon } from '@/app/[locale]/(public)/leaderboard/_lib/icons';
 import {
   type LeaderboardModule,
   moduleToSlug,
@@ -55,7 +56,7 @@ export const ChallengeRankUpdateCard = memo(function ChallengeRankUpdateCard({
   const tLeaderboard = useTranslations('leaderboard');
   const displayName = data.actor.displayName || data.actor.username;
   const moduleSlug = moduleToSlug(data.menuType as LeaderboardModule);
-  const href = `/leaderboard/all-time/${moduleSlug}/${data.leaderboardKey}`;
+  const href = `/leaderboard/score/all-time/${moduleSlug}/${data.leaderboardKey}`;
   const moduleName = tLeaderboard(`module.${data.menuType}` as Parameters<typeof tLeaderboard>[0]);
 
   const label =
@@ -65,12 +66,23 @@ export const ChallengeRankUpdateCard = memo(function ChallengeRankUpdateCard({
 
   const rankEmoji = getRankEmoji(data.rank);
 
+  const icon = getLeaderboardIcon(data.menuType as LeaderboardModule, data.leaderboardKey, 'lg');
+
+  const thumbnail = (
+    <div className="relative flex items-center justify-center w-full h-full">
+      <div className="flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-muted">
+        {icon}
+      </div>
+      <span className="absolute right-0 bottom-0 z-10 text-lg sm:text-xl">{'\u{1F3C6}'}</span>
+    </div>
+  );
+
   return (
     <FeedItemCard
       href={href}
       locale={locale}
-      thumbnail={'\u{1F3C6}'}
-      thumbnailClassName="flex items-center justify-center text-4xl sm:text-5xl"
+      thumbnail={thumbnail}
+      thumbnailClassName="flex items-center justify-center"
     >
       <UserAvatar
         profileHref={null}

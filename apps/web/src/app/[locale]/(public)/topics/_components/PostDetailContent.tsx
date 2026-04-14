@@ -1,10 +1,11 @@
+import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE, IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
 import type { User } from '@supabase/supabase-js';
 
 import type { ActionResult } from '@/lib/action-types';
 
 import { LinkedText, SectionTitle } from '@/app/[locale]/_components';
-import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
+import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { LikeMeta, PostWithReplyMeta, TopicPostWithAuthor } from '../_lib/queries';
@@ -76,7 +77,7 @@ export function PostDetailContent({
   extraContent,
 }: Props) {
   const authorName = post.author?.displayName || post.author?.username || 'Anonymous';
-  const profileHref = post.author?.username ? `/@/${post.author.username}` : null;
+  const profileHref = post.author?.username ? `/u/${post.author.username}` : null;
 
   return (
     <>
@@ -131,7 +132,9 @@ export function PostDetailContent({
         </div>
       </div>
 
-      <AdBannerGuard slot="banner-wide" />
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE) && (
+        <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
+      )}
 
       <SectionTitle>
         {i18n.repliesTitle} ({i18n.repliesCount})
@@ -199,7 +202,9 @@ export function PostDetailContent({
         </>
       )}
 
-      <AdBannerGuard slot="banner-standard" />
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+      )}
 
       <HashScrollTarget />
     </>

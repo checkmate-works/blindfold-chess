@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
@@ -8,11 +8,10 @@ import type { PgTableWithColumns } from 'drizzle-orm/pg-core';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { db } from '@/lib/db';
+import { getPaginationParams } from '@/lib/pagination';
 
-import { PaginationNav } from '@/app/[locale]/_components';
-
-import { getPaginationData } from '../_lib/pagination';
 import { AdminDataTable } from './AdminDataTable';
+import { AdminPaginationNav } from './AdminPaginationNav';
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -39,7 +38,7 @@ export function createAdminListPage<T>(config: AdminListPageConfig<T>) {
     const t = await getTranslations({ locale: 'en', namespace: config.translationNamespace });
 
     const [countResult] = await db.select({ count: sql<number>`count(*)` }).from(config.table);
-    const { currentPage, totalPages, limit, offset } = getPaginationData(
+    const { currentPage, totalPages, limit, offset } = getPaginationParams(
       page,
       Number(countResult.count)
     );
@@ -72,7 +71,11 @@ export function createAdminListPage<T>(config: AdminListPageConfig<T>) {
           renderRow={(item) => config.renderRow(item, t)}
         />
 
-        <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+        <AdminPaginationNav
+          currentPage={currentPage}
+          totalPages={totalPages}
+          buildHref={buildHref}
+        />
       </div>
     );
   };

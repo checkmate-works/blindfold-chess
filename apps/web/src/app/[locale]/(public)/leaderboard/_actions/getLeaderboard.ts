@@ -2,17 +2,18 @@
 
 import { unstable_cache } from 'next/cache';
 
+import { LEADERBOARD_CACHE_TAG } from '@/lib/cache-tags';
 import { handleServerActionError } from '@/lib/server-action-error';
 import { createClient } from '@/lib/supabase/server';
 
 import { getQueriesForPeriod } from '../_lib/period-queries';
-import {
-  type LeaderboardModule,
-  type LeaderboardPeriod,
-  type LeaderboardResult,
-  type LeaderboardRow,
-  PAGE_SIZE,
+import type {
+  LeaderboardModule,
+  LeaderboardPeriod,
+  LeaderboardResult,
+  LeaderboardRow,
 } from '../_lib/types';
+import { PAGE_SIZE } from '../_lib/types';
 import { isValidKey, isValidModule, isValidPage, isValidPeriod } from '../_lib/validators';
 
 // ---------------------------------------------------------------------------
@@ -50,7 +51,7 @@ function getCachedRanking(
       return getRanking(module, key, offset, limit);
     },
     ['leaderboard-ranking', module, key, period, String(offset), String(limit)],
-    { revalidate: REVALIDATE_SECONDS, tags: ['leaderboard'] }
+    { revalidate: REVALIDATE_SECONDS, tags: [LEADERBOARD_CACHE_TAG] }
   )();
 }
 

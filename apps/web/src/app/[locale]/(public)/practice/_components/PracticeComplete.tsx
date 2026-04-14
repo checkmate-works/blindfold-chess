@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
+import type { ExpInfo } from '@blindfold-chess/features/exp';
 import { FaRedo } from 'react-icons/fa';
 
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
@@ -14,6 +15,7 @@ import type {
   ProblemResult,
   ScoreStats,
 } from '../_lib/practice-complete-types';
+import { ExpGainDisplay } from './ExpGainDisplay';
 import { PracticeCompleteSummary } from './PracticeCompleteSummary';
 import { ProblemResultList } from './ProblemResultList';
 import { RankAchievementModal } from './RankAchievementModal';
@@ -42,6 +44,8 @@ type Props = {
   };
   afterActions?: React.ReactNode;
   beforeRelatedContent?: React.ReactNode;
+  /** EXP gained info for the current result, fetched server-side and passed down. */
+  expInfo?: ExpInfo | null;
 };
 
 export function PracticeComplete({
@@ -59,6 +63,7 @@ export function PracticeComplete({
   otherPracticeLink,
   afterActions,
   beforeRelatedContent,
+  expInfo = null,
 }: Props) {
   const router = useRouter();
 
@@ -71,6 +76,8 @@ export function PracticeComplete({
         averageTimeText={averageTimeText}
         scoreStats={scoreStats}
       />
+
+      <ExpGainDisplay expInfo={expInfo} />
 
       {problemResults && <ProblemResultList problemResults={problemResults} labels={labels} />}
 

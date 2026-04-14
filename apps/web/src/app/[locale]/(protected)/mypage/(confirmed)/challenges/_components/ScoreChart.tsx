@@ -72,8 +72,11 @@ export function ScoreChart({
             borderRadius: '8px',
             color: 'var(--color-foreground)',
           }}
-          formatter={(value: number | string | (string | number)[] | undefined, name?: string) => {
-            if (value === undefined || value === null) return ['-', name ?? ''];
+          formatter={(
+            value: number | string | readonly (string | number)[] | undefined,
+            name?: string | number
+          ) => {
+            if (value === undefined || value === null) return ['-', String(name ?? '')];
             const num = typeof value === 'number' ? value : Number(value);
             const label = name === 'previousScore' ? previousLabel : currentLabel;
             return [num.toFixed(1), label];

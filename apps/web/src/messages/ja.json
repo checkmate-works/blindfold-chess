@@ -131,6 +131,10 @@
       "title": "ランキング",
       "description": "すべての練習モジュールのトッププレイヤーを確認"
     },
+    "expLeaderboard": {
+      "title": "Exp ランキング",
+      "description": "累計経験値によるプレイヤーランキング"
+    },
     "practice": {
       "title": "目隠しチェス練習問題",
       "description": "座標認識、マスの色判定、合法手判定など多彩な練習メニューで目隠しチェスの力を鍛えましょう。無料で使えるインタラクティブな練習問題で、あなたのビジュアライゼーション能力を向上させます。"
@@ -155,6 +159,10 @@
       "title": "段級位制度",
       "description": "目隠しチェスでAIを打ち負かす実力がつけられるように独自のカリキュラムを公開。黒帯取得を目指そう。"
     },
+    "dojo": {
+      "title": "道場",
+      "description": "現在の段級位と、次の昇級に必要な条件をひとつのページで確認できます。"
+    },
     "glossary": {
       "title": "チェス用語集 - 用語と定義一覧",
       "description": "チェスの専門用語を網羅的に解説する用語集。アルファベット順やカテゴリー別に検索して、戦術・戦略・ポジショナルコンセプトなど目隠しチェスに役立つ用語の意味を学びましょう。",
@@ -171,9 +179,23 @@
       "title": "{rankName} - 段級位",
       "description": "{rankName}の合格基準と必要スコアの詳細。"
     },
-    "rankGuide": {
-      "title": "{rankName} ガイド - 段級位",
-      "description": "{rankName}の合格に向けた詳細なガイドと解説。"
+    "guides": {
+      "top": {
+        "title": "ガイド",
+        "description": "段級位別に整理された、目隠しチェス訓練のテキストブック形式ガイド。"
+      },
+      "rank": {
+        "title": "{rankName} ガイド",
+        "description": "{rankName} の目隠しチェス教本(ガイド)。盤上の座標認識、ダイアゴナル計算、駒の合法手、駒運び(マヌーバリング)を、視覚教材とインラインリンクつきで段階的に解説し、帯システムで到達度を確認しながら学べる学習ガイドです。",
+        "pageTitle": "{rankName} ガイド - {page}ページ目",
+        "descriptionWithPage": "{rankName} の目隠しチェス教本(ガイド)、{page}/{total}ページ。視覚教材やインラインリンクを使いながら、{rankName} 取得に必要な盤上認識・座標感覚・駒運びを段階的に身につけていくページです。"
+      },
+      "chapter": {
+        "title": "{rankName} ガイド - {chapterName}",
+        "description": "{rankName} ガイドの {chapterName} 章。視覚教材を使った段階的な解説で、目隠しチェスで {chapterName} を扱うのに必要な感覚と計算を、{rankName} 取得に向けて体系的に身につけられる学習コンテンツです。",
+        "pageTitle": "{rankName} ガイド - {chapterName} - {page}ページ目",
+        "descriptionWithPage": "{rankName} ガイドの {chapterName} 章、{page}/{total}ページ。視覚教材やインラインリンクで、{chapterName} を少しずつ身につける手順と、目隠しチェスに必要な感覚・計算を具体的に解説します。"
+      }
     }
   },
   "Header": {
@@ -192,7 +214,9 @@
     "leaderboard": "ランキング",
     "contact": "お問い合わせ",
     "settings": "設定",
-    "ranks": "段級位制"
+    "ranks": "段級位制",
+    "guides": "ガイド",
+    "dojo": "道場"
   },
   "Preferences": {
     "title": "設定",
@@ -303,6 +327,40 @@
       "chessEngine": {
         "question": "AIは具体的に何のチェスエンジンを利用しているのですか？",
         "answer": "AIはStockfish 17.1（Lite Single-threaded版）を使用しています。"
+      },
+      "expSystem": {
+        "question": "経験値（Exp）はどのように計算されますか？",
+        "answer": "チャレンジモードを完了すると経験値（Exp）を獲得できます。計算式: Exp = 正解数 × モジュール重み × ミスボーナス",
+        "moduleWeightTitle": "モジュール別重み",
+        "accuracyBonusTitle": "ミスボーナス",
+        "streakBonusTitle": "連続チャレンジボーナス",
+        "headerModule": "モジュール",
+        "headerWeight": "重み",
+        "headerAccuracy": "ミス回数",
+        "headerMultiplier": "倍率",
+        "headerChallenges": "同日チャレンジ数",
+        "modules": {
+          "coordinate_quiz": "座標クイズ",
+          "square_colors": "マスの色",
+          "diagonal_quiz": "ダイアゴナルクイズ",
+          "legal_moves": "合法手",
+          "board_symmetry": "盤面の対称性",
+          "route_planner": "ルートプランナー",
+          "position_memory": "ポジションの記憶"
+        },
+        "misses0": "0（パーフェクト）",
+        "misses1": "1回",
+        "misses2": "2回",
+        "misses3": "3回（バースト）",
+        "streak5": "5回以上",
+        "streak3": "3〜4回",
+        "streak2": "2回",
+        "streak1": "1回",
+        "multiplier15": "×1.5",
+        "multiplier13": "×1.3",
+        "multiplier12": "×1.2",
+        "multiplier11": "×1.1",
+        "multiplier10": "×1.0"
       }
     }
   },
@@ -419,12 +477,16 @@
     "articleNotFound": "記事が見つかりません"
   },
   "practice": {
+    "keyboard": {
+      "algebraicKeyboardHint": "ファイル（a〜h）とランク（1〜8）を入力。Backspace で削除。"
+    },
     "title": "練習",
     "modulesTitle": "練習メニュー一覧",
     "levelBeginner": "初級",
     "levelIntermediate": "中級",
     "levelAdvanced": "上級",
     "levelIntroduction": "入門",
+    "viewLeaderboard": "🏆 ランキングを見る",
     "tryAgain": "もう一度行う",
     "changeSettings": "設定を変更する",
     "doOtherPractice": "他の練習を行う",
@@ -706,6 +768,8 @@
     "positionMemory": {
       "title": "ポジションの記憶",
       "description": "チェスの位置を記憶して再現する能力を訓練",
+      "like": "いいね",
+      "unlike": "いいね解除",
       "session": "練習中",
       "settings": "出題の設定",
       "problemSource": "出題方式",
@@ -816,8 +880,35 @@
       },
       "cancel": "キャンセル",
       "requiredKnowledge": "関連記事",
-      "viewArticle": "ポジション記憶のトレーニングについて学ぶ",
-      "articleDescription": "チェスの局面を記憶し再現するテクニックを学ぶ"
+      "articles": {
+        "positionMemory": {
+          "title": "ポジション記憶のトレーニングについて学ぶ",
+          "description": "チェスの局面を記憶し再現するテクニックを学ぶ"
+        },
+        "deGrootExperiment": {
+          "title": "デ・フロートの実験",
+          "description": "グランドマスターはどのように局面を記憶するか：チャンキングに関する古典的研究"
+        }
+      },
+      "list": {
+        "title": "ポジション記憶",
+        "sectionTitle": "問題一覧",
+        "empty": "まだポジションがありません",
+        "tutorialLink": "チュートリアルを見る",
+        "submittedBy": "による出題"
+      },
+      "detail": {
+        "title": "ポジション詳細",
+        "descriptionSection": "ポジションの説明",
+        "solveSection": "問題を解く",
+        "start": "開始",
+        "timeLimit": "制限時間",
+        "seconds": "{count} 秒",
+        "createdBy": "作成者",
+        "tutorialLink": "チュートリアルを見る",
+        "tryAgain": "もう一度挑戦",
+        "backToList": "一覧に戻る"
+      }
     },
     "knightTour": {
       "title": "ナイトツアー",
@@ -970,7 +1061,6 @@
       "title": "ルートプランナー",
       "session": "練習中",
       "description": "駒が目標マスに到達するための最短経路を計算する練習",
-      "betaNotice": "スコアの保存とリーダーボードへの表示は現在開発中です。",
       "howToPlayTitle": "問題方式",
       "howToPlayDescription": "駒がターゲットのマスに到達するための最短経路を考えましょう。",
       "settings": "設定",
@@ -1163,7 +1253,10 @@
           "title": "アンカースクエア",
           "description": "盤面イメージのための基準点を学ぶ"
         }
-      }
+      },
+      "howToPlayTitle": "遊び方",
+      "howToPlayDescription": "マス名が表示されるので、そのマスが属する象限（4分割エリア）をボード上でタップして答えてください。",
+      "challengeSetupNoLeaderboard": "この機能ではスコアはマイページの練習履歴とリーダーボードに記録されません。"
     },
     "diagonalQuiz": {
       "title": "ダイアゴナルクイズ",
@@ -1271,6 +1364,9 @@
         "improved": "ランクアップ！",
         "rank": "順位",
         "score": "スコア"
+      },
+      "position": {
+        "action": "問題を投稿しました"
       }
     },
     "vsAi": {
@@ -1436,10 +1532,12 @@
     "logMoveNumber": "手",
     "logIncorrectMove": "入力した手",
     "logCorrectMove": "正解",
+    "logAutoFilled": "自動入力",
     "noMistakes": "間違いなし！",
     "incorrectMoveError": "{movePrefix} {move} ではありません",
     "analyzing": "解析中",
-    "correctMoveMessage": "{movePrefix} {move} は正解です"
+    "correctMoveMessage": "{movePrefix} {move} は正解です",
+    "skippedMoveMessage": "正解は {movePrefix} {move} でした"
   },
   "playError": {
     "title": "ゲームの復旧",
@@ -1860,14 +1958,16 @@
     "submitLoading": "リセット中...",
     "error": "パスワードのリセットに失敗しました。もう一度お試しください。",
     "passwordMismatch": "パスワードが一致しません。",
-    "passwordTooShort": "パスワードは8文字以上で入力してください。"
+    "passwordTooShort": "パスワードは8文字以上で入力してください。",
+    "rateLimited": "リクエストが多すぎます。しばらくしてからもう一度お試しください。"
   },
   "articles": {
     "pageTitle": "記事",
     "noArticles": "記事はまだありません。",
     "articlesListTitle": "すべての記事",
     "moreArticles": "その他の記事",
-    "articleNotFound": "記事が見つかりません"
+    "articleNotFound": "記事が見つかりません",
+    "notTranslatedNotice": "この記事はまだあなたの言語に翻訳されていません。原文を表示しています。"
   },
   "announcements": {
     "pageTitle": "お知らせ",
@@ -1985,7 +2085,17 @@
       "beltSystem": "段級位",
       "myRecords": "マイレコード",
       "socialTitle": "ソーシャル",
-      "interviewBanner": "インタビューに答えてあなたのことを教えてください"
+      "interviewBanner": "インタビューに答えてあなたのことを教えてください",
+      "activityTitle": "アクティビティ",
+      "heatmapLess": "少",
+      "heatmapMore": "多",
+      "heatmapTotal": "合計",
+      "heatmapNoActivity": "この日のアクティビティはありません",
+      "heatmapLearnLink": "経験値の計算方法",
+      "levelLabel": "Level {level}",
+      "expProgress": "{current} / {next} Exp",
+      "expRemaining": "次のレベルまで あと {remaining} Exp",
+      "viewExpLeaderboard": "Exp ランキングを見る"
     },
     "records": "レコード",
     "bestScore": "最高スコア",
@@ -2038,7 +2148,8 @@
       "move_sequence": "約束組手",
       "algebraic_notation": "代数記法",
       "fen": "FEN再構成",
-      "quadrant_anchors": "象限アンカー"
+      "quadrant_anchors": "象限アンカー",
+      "unknown": "その他"
     },
     "practiceThisChallenge": "このチャレンジを練習する"
   },
@@ -2236,11 +2347,36 @@
       "past28days": "過去28日",
       "past90days": "過去90日",
       "newUsersPeriodTotal": "新規ユーザー数（期間合計）",
-      "postsPeriodTotal": "投稿数（期間合計）",
+      "ugcPostsPeriodTotal": "UGC投稿数（期間合計）",
       "dailyTrends": "日別推移",
       "newUsers": "新規ユーザー",
-      "posts": "投稿",
-      "noData": "選択期間のデータがありません。"
+      "ugcPosts": "UGC投稿",
+      "noData": "選択期間のデータがありません。",
+      "summaryTable": {
+        "title": "KPIサマリー",
+        "category": "カテゴリ",
+        "metric": "指標",
+        "value": "値",
+        "users": "ユーザー",
+        "ugcPosts": "UGC投稿",
+        "likes": "いいね",
+        "avgPerDay": "1日あたりの平均",
+        "avgPerActivePoster": "アクティブ投稿者あたりの平均",
+        "total": "合計",
+        "sources": {
+          "topic_posts": "topic_posts",
+          "positions": "positions"
+        },
+        "breakdowns": {
+          "topic_posts": {
+            "opening": "オープニング",
+            "square": "マス目"
+          },
+          "positions": {
+            "memory": "メモリー"
+          }
+        }
+      }
     },
     "usersTable": {
       "email": "Email",
@@ -2262,7 +2398,38 @@
       "premium": "Premium",
       "free": "Free",
       "viewSubscriptions": "サブスクリプション",
-      "deleted": "退会済み"
+      "deleted": "退会済み",
+      "signupMethod": "Signup Method",
+      "filterByProvider": "Signup Method",
+      "allProviders": "All",
+      "providerGoogle": "Google",
+      "providerEmail": "Email",
+      "providerUnknown": "Unknown"
+    },
+    "tabs": {
+      "users": "ユーザー",
+      "statistics": "統計"
+    },
+    "stats": {
+      "usersByCountry": "国別ユーザー数",
+      "usersByRank": "ランク別ユーザー数",
+      "usersBySignupMethod": "Users by Signup Method",
+      "noData": "データがありません",
+      "users": "人",
+      "rankNames": {
+        "mukyu": "無級",
+        "5kyu": "5級",
+        "4kyu": "4級",
+        "3kyu": "3級",
+        "2kyu": "2級",
+        "1kyu": "1級",
+        "1dan": "初段"
+      }
+    },
+    "filters": {
+      "clearAll": "すべてクリア",
+      "country": "国",
+      "rank": "ランク"
     },
     "subscriptions": "Subscriptions",
     "subscriptionsTable": {
@@ -2482,6 +2649,7 @@
         "publishedConfirmCancel": "キャンセル"
       }
     },
+    "positionMemory": "Position Memory",
     "topicPosts": {
       "navLabel": "トピック投稿",
       "title": "トピック投稿",
@@ -2995,7 +3163,7 @@
       "board_symmetry": "ボードの対称性",
       "route_planner": "ルートプランナー"
     },
-    "allLeaderboardsSection": "すべてのランキング",
+    "scoreLeaderboardSection": "スコアランキング",
     "rankLabel": "あなたの順位: 第{rank}位",
     "notRanked": "ランク外",
     "cardTitle": {
@@ -3034,7 +3202,23 @@
       "message": "ランキングに参加しよう！",
       "description": "無料アカウントを作成して、スコアを記録し他のプレイヤーと競い合いましょう。",
       "cta": "無料登録"
+    },
+    "tabs": {
+      "score": "スコア",
+      "exp": "Exp"
     }
+  },
+  "expLeaderboard": {
+    "title": "Exp ランキング",
+    "description": "累計経験値によるプレイヤーランキングです。",
+    "table": {
+      "rank": "順位",
+      "player": "プレイヤー",
+      "exp": "Exp",
+      "level": "レベル"
+    },
+    "emptyState": "まだExpの記録がありません。練習を始めてExpを獲得しましょう！",
+    "backToScoreLeaderboard": "スコアランキングへ戻る"
   },
   "validation": {
     "password": {
@@ -3094,7 +3278,9 @@
       "legal_moves": "合法手チャレンジ",
       "legal_moves_bishop": "合法手チャレンジ（ビショップ）",
       "legal_moves_king": "合法手チャレンジ（キング）",
-      "legal_moves_knight": "合法手チャレンジ（ナイト）"
+      "legal_moves_knight": "合法手チャレンジ（ナイト）",
+      "route_planner_knight": "ルートプランナー（ナイト）",
+      "route_planner_bishop": "ルートプランナー（ビショップ）"
     },
     "rankNames": {
       "mukyu": "無級",
@@ -3111,7 +3297,8 @@
       "criteriaDescriptions": {
         "mukyu": "目隠しチェスの簡単なトレーニングを始める準備ができていること。",
         "5kyu": "代数記法（例：e4、Bg7）から、該当するチェスボード上のマスを正しく特定できること。",
-        "4kyu": "視覚的な補助がなくても、全ての駒で指定された座標における合法手の判定ができること。"
+        "4kyu": "視覚的な補助がなくても、全ての駒で指定された座標における合法手の判定ができること。",
+        "3kyu": "視覚的な補助がなくても、全ての駒でマヌーバリングができること。"
       },
       "tips": "解説",
       "guide": "解説",
@@ -3120,8 +3307,120 @@
       "prevPage": "前へ",
       "nextPage": "次へ",
       "pageOf": "{total}ページ中{current}ページ目",
-      "guidePages": {
-        "mukyu": [
+      "mukyuRequirements": ["代数記法を理解していること"],
+      "mukyuRelatedLinks": {
+        "learnArticle": "詳しくは以下の記事をみてください。",
+        "practiceLink": "簡単な演習を以下で行うこともできます。",
+        "learnArticleLabel": "代数記法について学ぶ",
+        "practiceLabel": "代数記法の練習"
+      },
+      "readFullGuide": "{rankName} ガイドを読む"
+    },
+    "signUpBanner": {
+      "message": "黒帯を取得しよう！",
+      "description": "段級位の取得には会員登録が必要です",
+      "cta": "無料登録"
+    },
+    "lockedModal": {
+      "title": "ロックされた級",
+      "message": "{rankName}を合格したら挑戦できます",
+      "linkLabel": "{rankName}の詳細を見る",
+      "ariaLabel": "ロックされています"
+    }
+  },
+  "rankAchievement": {
+    "title": "昇級おめでとう！",
+    "description": "新しい級位を獲得しました。",
+    "viewRanks": "段級位を見る",
+    "close": "閉じる",
+    "rankNames": {
+      "mukyu": "無級",
+      "5kyu": "5級",
+      "4kyu": "4級",
+      "3kyu": "3級",
+      "2kyu": "2級",
+      "1kyu": "1級",
+      "1dan": "初段"
+    }
+  },
+  "Achievements": {
+    "monthlyLeaderboard": {
+      "name": "{menuType}（{leaderboardKey}） {placement}",
+      "menuType": {
+        "board_symmetry": "盤面対称",
+        "coordinate_quiz": "座標クイズ",
+        "diagonal_quiz": "斜線クイズ",
+        "legal_moves": "合法手",
+        "route_planner": "ルートプランナー",
+        "square_colors": "マス目の色"
+      },
+      "leaderboardKey": {
+        "bishop": "ビショップ",
+        "black": "黒番",
+        "default": "標準",
+        "king": "キング",
+        "knight": "ナイト",
+        "queen": "クイーン",
+        "random": "ランダム",
+        "rook": "ルーク",
+        "white": "白番"
+      },
+      "placement": {
+        "1st": "1位",
+        "2nd": "2位",
+        "3rd": "3位"
+      }
+    }
+  },
+  "MobileTabBar": {
+    "games": "ゲーム一覧",
+    "dojo": "道場",
+    "topics": "トピック",
+    "mypage": "マイページ"
+  },
+  "dojo": {
+    "pageTitle": "道場",
+    "currentRankTitle": "現在のランク",
+    "nextRankTitle": "次のランク",
+    "nextRankRequirementsComingSoon": "条件は近日公開",
+    "allAchieved": "すべてのランクを達成しました 🎉",
+    "viewAllRanks": "段級位一覧を見る",
+    "viewAllPractices": "練習一覧を見る",
+    "viewAllGuides": "ガイドを全て見る",
+    "curriculum": {
+      "title": "教本",
+      "empty": "近日公開",
+      "achieved": "達成済み",
+      "sections": {
+        "algebraicNotation": "代数記法の理解",
+        "anchorPoints": "アンカーポイントによる盤面の把握",
+        "blindfoldLegalMoves": "目隠しチェスでのリーガルムーブ判定",
+        "diagonals": "ダイアゴナルと逆ダイアゴナルの算出"
+      }
+    }
+  },
+  "guides": {
+    "top": {
+      "title": "ガイド",
+      "sections": {
+        "rankGuides": {
+          "title": "段級位別ガイド",
+          "description": "段級位ごとに整理された、目隠しチェス訓練のテキストブック形式のガイドです。"
+        }
+      }
+    },
+    "ranks": {
+      "indexTitle": "解説",
+      "chapterListHeading": "章"
+    },
+    "breadcrumb": {
+      "home": "ホーム",
+      "guides": "ガイド"
+    },
+    "pages": {
+      "mukyu": {
+        "format": "flat",
+        "pages": [
           {
             "paragraphs": [
               "もし e4 や Nf3 などの記法が意味することがわからないなら、代数記法を理解するところから始める必要があります。",
@@ -3145,8 +3444,11 @@
               "このテクニックは5級で習います。"
             ]
           }
-        ],
-        "5kyu": [
+        ]
+      },
+      "5kyu": {
+        "format": "flat",
+        "pages": [
           {
             "paragraphs": [
               "うまく問題が解けない場合は、アンカーポイントを利用してみましょう。",
@@ -3168,11 +3470,104 @@
               "ステップ1: エリアを特定\nf6 をピンポイントにイメージできなくても右上のエリア (e5–h8) に包含されていること自体はすぐに判別できるはずです。",
               "ステップ2: 使用するアンカーポイントの決定\nこのエリアのアンカーポイントは e5, h5, e8, h8 の4つです。ファイルやランクから一番近いアンカーポイントを探します。この場合は e5 を利用できそうだとすぐにわかります。",
               "ステップ3: 相対位置の確認\nf6 は e5 から右に1、上に1なので、斜め右上と認識します。",
-              "このように、「f列は…6段目は…」とボード全体から座標イメージを構築するのではなく、「右上のエリア、e5の右上」と相対位置で認識することで、脳の負荷を下げ、効率よく盤面把握ができます。"
+              "このように、「f列は…6段目は…」とボード全体から座標イメージを構築するのではなく、「右上のエリア、e5の右上」と相対位置で認識することで、脳の負荷を下げ、効率よく盤面把握ができます。",
+              "以下の記事でもこの方法を解説しています。"
             ]
           }
-        ],
-        "4kyu": [
+        ]
+      },
+      "3kyu": {
+        "format": "flat",
+        "pages": [
+          {
+            "paragraphs": [
+              "ビショップのマヌーバリングに関してですが、まずビショップが特定のマスに置かれた場合、そのビショップがどのダイアゴナルと逆ダイアゴナルを支配できるかを考えるといいです。",
+              "ダイアゴナルと、逆ダイアゴナルの解説についてはダイアゴナルクイズのチュートリアルを参照してください。",
+              "まず、左下から右上方向のダイアゴナルについて考えます。",
+              "ダイアゴナルの始点は必ずaファイルか1ランクのマスになります。",
+              "ダイアゴナル上ではファイルとランクが同時に1ずつ変化するため、左下（↙）に辿ると必ずどちらかのボード端に先に到達するからです。",
+              "ファイルを数値に変換して考えましょう（a=1, b=2, ..., h=8）。",
+              "ファイルの値がランクの値より小さい場合、左下（↙）に辿るとaファイル（左端）に先にぶつかります。",
+              "例えば d7 にビショップがある場合を考えます。ファイルの値は 4、ランクは 7 です。",
+              "左下に進める最大歩数は「ファイルの値 - 1」で 3 です。ランクから 3 を引くと 7 - 3 = 4 なので、始点は a4 になります。"
+            ]
+          },
+          {
+            "paragraphs": [
+              "逆にファイルの値がランクの値より大きい場合は、左下（↙）に辿ると1ランク（下端）に先にぶつかります。",
+              "例えば f4 にビショップがある場合、ファイルの値は 6、ランクは 4 です。",
+              "左下に進める最大歩数は「ランクの値 - 1」で 3 です。ファイルから 3 を引くと 6 - 3 = 3 なので、始点は c1 になります。",
+              "ファイルとランクの値が等しい場合は、左下（↙）に辿ると両方のボード端に同時に到達するため、始点は常に a1 です。",
+              "これが a1-h8 のメインダイアゴナルです。"
+            ]
+          },
+          {
+            "paragraphs": [
+              "ここまでは始点の求め方を学びました。",
+              "同じ要領で終点も求めることができます。",
+              "終点は必ずhファイルか8ランクのマスになります。",
+              "今度は右上（↗）方向に辿ることを考えます。始点のときと同じ理屈で、先にボード端に到達する方が終点の位置を決定します。",
+              "ファイルの値がランクの値より小さい場合、右上（↗）に辿ると8ランク（上端）に先にぶつかります。",
+              "例えば d7 にビショップがある場合、右上に進める最大歩数は「8 - ランクの値」で 8 - 7 = 1 です。ファイルに 1 を足すと 4 + 1 = 5 なので、終点は e8 になります。",
+              "逆にファイルの値がランクの値より大きい場合は、hファイル（右端）に先にぶつかります。",
+              "例えば f4 にビショップがある場合、右上に進める最大歩数は「8 - ファイルの値」で 8 - 6 = 2 です。ランクに 2 を足すと 4 + 2 = 6 なので、終点は h6 になります。",
+              "ファイルとランクの値が等しい場合は、終点は常に h8 です。"
+            ]
+          },
+          {
+            "paragraphs": [
+              "次に、右上から左下方向の逆ダイアゴナルについて考えます。",
+              "逆ダイアゴナルの始点は必ずaファイルか8ランクのマスになります。",
+              "逆ダイアゴナル上では左上（↖）方向に進むとファイルが減少しランクが増加するため、aファイル（左端）か8ランク（上端）のどちらかに先に到達します。",
+              "aファイルまでの歩数は「ファイルの値 - 1」、8ランクまでの歩数は「8 - ランクの値」です。小さい方が先にボード端に到達します。",
+              "例えば c3 にビショップがある場合を考えます。aファイルまで 3 - 1 = 2 歩、8ランクまで 8 - 3 = 5 歩です。",
+              "aファイルに先に到達するので、ランクに 2 を足して 3 + 2 = 5、始点は a5 になります。",
+              "逆に f7 にビショップがある場合、aファイルまで 6 - 1 = 5 歩、8ランクまで 8 - 7 = 1 歩です。",
+              "8ランクに先に到達するので、ファイルから 1 を引いて 6 - 1 = 5、始点は e8 になります。",
+              "両方の歩数が等しい場合は、始点は常に a8 です。これが a8-h1 のメイン逆ダイアゴナルです。"
+            ]
+          },
+          {
+            "paragraphs": [
+              "逆ダイアゴナルの終点は必ずhファイルか1ランクのマスになります。",
+              "右下（↘）方向に辿ることを考えます。hファイルまでの歩数は「8 - ファイルの値」、1ランクまでの歩数は「ランクの値 - 1」です。",
+              "c3 にビショップがある場合、hファイルまで 8 - 3 = 5 歩、1ランクまで 3 - 1 = 2 歩です。",
+              "1ランクに先に到達するので、ファイルに 2 を足して 3 + 2 = 5、終点は e1 になります。",
+              "f7 にビショップがある場合、hファイルまで 8 - 6 = 2 歩、1ランクまで 7 - 1 = 6 歩です。",
+              "hファイルに先に到達するので、ランクから 2 を引いて 7 - 2 = 5、終点は h5 になります。",
+              "両方の歩数が等しい場合は、終点は常に h1 です。"
+            ]
+          },
+          {
+            "paragraphs": [
+              "ここまでの内容をまとめると、ダイアゴナルと逆ダイアゴナルの始点・終点には規則的なパターンがあります。",
+              "まず、ダイアゴナル（↗ 方向）のaファイル始点のパターンです。",
+              "始点が上がるごとに、終点が8ランク上で右から詰まっていきます。",
+              "次に、1ランク始点のパターンです。",
+              "始点が右に移るごとに、終点がhファイル上で上から詰まっていきます。"
+            ]
+          },
+          {
+            "paragraphs": [
+              "逆ダイアゴナル（↘ 方向）のaファイル始点のパターンです。",
+              "ダイアゴナルと同じく、始点が下がるごとに終点が1ランク上で右から詰まっていきます。",
+              "次に、8ランク始点のパターンです。",
+              "始点が右に移るごとに、終点がhファイル上で下から詰まっていきます。"
+            ]
+          },
+          {
+            "paragraphs": [
+              "a2 → g8、e8 → h5 などの組み合わせは、何度も目隠しチェスを繰り返していくうちに自然と覚えます。そのうち無意識に答えられるようになるでしょう。",
+              "この計算を鍛えるにはダイアゴナルクイズが有効です。",
+              "いきなりルートプランナーをやるのが難しい場合はここで肩慣らしをしておきましょう。",
+              "このダイアゴナルと逆ダイアゴナルの計算ができるようになると目隠しチェスでのマヌーバリングも早くできるようになるのですが、その理論は別途解説予定です。"
+            ]
+          }
+        ]
+      },
+      "4kyu": {
+        "format": "flat",
+        "pages": [
           {
             "paragraphs": [
               "物理的なチェスボードが目の前にある場合、おそらくチェスの経験者ならすべての駒で合法手の判断をすることがほぼ無意識にできるでしょう。",
@@ -3210,56 +3605,39 @@
             ]
           }
         ]
+      }
+    },
+    "inlineLinks": {
+      "3kyu": {
+        "diagonalQuizTutorialLabel": "ダイアゴナルクイズ チュートリアル",
+        "diagonalQuizLabel": "ダイアゴナルクイズ"
       },
-      "mukyuRequirements": ["代数記法を理解していること"],
-      "4kyuGuideLinks": {
+      "5kyu": {
+        "quadrantMethodArticleLabel": "盤面把握の方法をクアドラント法に切り替えた"
+      },
+      "4kyu": {
         "kingMovementLabel": "キングの動き（詳しい解説）",
         "knightMovementLabel": "ナイトの動き（詳しい解説）",
         "bishopMovementLabel": "ビショップの動き（詳しい解説）",
         "rookMovementLabel": "ルークの動き（詳しい解説）"
       },
-      "mukyuGuideLinks": {
+      "mukyu": {
         "learnArticle": "詳しくは以下の記事をみてください。",
-        "practiceLink": "簡単な演習を以下で行うこともできます。",
         "learnArticleLabel": "代数記法について学ぶ",
-        "practiceLabel": "代数記法の練習",
         "coordinateQuizLabel": "座標クイズ",
         "coordinateConfusionLabel": "座標の混乱について",
         "quadrantsLabel": "4分割トレーニング",
         "5kyuGuideLabel": "5級のガイドを見る"
       }
     },
-    "signUpBanner": {
-      "message": "黒帯を取得しよう！",
-      "description": "段級位の取得には会員登録が必要です",
-      "cta": "無料登録"
-    },
-    "lockedModal": {
-      "title": "ロックされた級",
-      "message": "{rankName}を合格したら挑戦できます",
-      "linkLabel": "{rankName}の詳細を見る",
-      "ariaLabel": "ロックされています"
+    "navigation": {
+      "prevRank": "前の段級位: {rankName} ガイド",
+      "nextRank": "次の段級位: {rankName} ガイド"
     }
   },
-  "rankAchievement": {
-    "title": "昇級おめでとう！",
-    "description": "新しい級位を獲得しました。",
-    "viewRanks": "段級位を見る",
-    "close": "閉じる",
-    "rankNames": {
-      "mukyu": "無級",
-      "5kyu": "5級",
-      "4kyu": "4級",
-      "3kyu": "3級",
-      "2kyu": "2級",
-      "1kyu": "1級",
-      "1dan": "初段"
-    }
-  },
-  "MobileTabBar": {
-    "games": "ゲーム一覧",
-    "practice": "練習",
-    "topics": "トピック",
-    "mypage": "マイページ"
+  "Footer": {
+    "resources": "リソース",
+    "support": "サポート",
+    "legal": "法的情報"
   }
 }

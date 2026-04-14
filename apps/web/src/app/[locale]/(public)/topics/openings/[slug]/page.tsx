@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE, IS_LOCAL_DEV } from '@/config';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { paginateItems } from '@/lib/pagination';
@@ -14,6 +15,7 @@ import {
   buildPaginationHref,
   validateSort,
 } from '@/app/[locale]/(public)/topics/_lib/pagination';
+import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -105,6 +107,16 @@ export default async function OpeningDetailPage({ params, searchParams }: Props)
       locale={locale}
       pageTitle={dt('pageTitle')}
       sectionTitle={displayName}
+      adMiddle={
+        (IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE) && (
+          <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
+        )
+      }
+      adBottom={
+        (IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+        )
+      }
       topicHeader={
         currentPage === 1 ? (
           <OpeningBoardWithMoves fen={opening.fen} pgn={opening.pgn} />

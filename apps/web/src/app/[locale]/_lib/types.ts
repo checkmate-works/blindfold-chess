@@ -1,4 +1,4 @@
-import { SUPPORTED_LOCALES } from '@/config';
+import type { SUPPORTED_LOCALES } from '@/config';
 
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 
@@ -26,7 +26,9 @@ export type NavigationIconName =
   | 'glossary'
   | 'contact'
   | 'settings'
-  | 'ranks';
+  | 'ranks'
+  | 'guides'
+  | 'dojo';
 
 export interface NavigationItem {
   id: string;

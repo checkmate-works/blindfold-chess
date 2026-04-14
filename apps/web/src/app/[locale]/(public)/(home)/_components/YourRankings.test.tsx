@@ -41,6 +41,7 @@ vi.mock('@/i18n/routing', () => ({
 
 vi.mock('@/app/[locale]/_components', () => ({
   SectionTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
+  PagePanel: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
 vi.mock('@/app/[locale]/(public)/leaderboard/_components/LeaderboardCard', () => ({
@@ -129,7 +130,7 @@ describe('YourRankings', () => {
 
       expect(screen.getByText('viewAll')).toBeInTheDocument();
       const viewAllLink = screen.getByText('viewAll').closest('a');
-      expect(viewAllLink).toHaveAttribute('href', '/leaderboard?period=weekly');
+      expect(viewAllLink).toHaveAttribute('href', '/leaderboard/score/weekly');
     });
 
     it('passes correct props to each representative LeaderboardCard', async () => {
@@ -279,7 +280,7 @@ describe('YourRankings', () => {
       await renderYourRankings();
 
       const viewAllLink = screen.getByText('viewAll').closest('a');
-      expect(viewAllLink).toHaveAttribute('href', '/leaderboard?period=weekly');
+      expect(viewAllLink).toHaveAttribute('href', '/leaderboard/score/weekly');
     });
   });
 

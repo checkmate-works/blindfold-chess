@@ -2,14 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import type { AdBannerConfig } from '@/lib/ad';
-
 import { getFeed } from '../_actions/getFeed';
 import { buildDisplayItems } from '../_lib/feed-display';
 import type { DisplayItem, FeedItem } from '../_lib/types';
 import { FeedCard } from './FeedCard';
 import { FeedSkeleton } from './FeedSkeleton';
-import { NativeAdCard } from './NativeAdCard';
+import { ResponsiveAdSlot } from './ResponsiveAdSlot';
 
 type Props = {
   initialCursor: string | null;
@@ -17,10 +15,7 @@ type Props = {
   showMoreLabel: string;
   justNowLabel: string;
   newReplyTemplate: string;
-  adBanners?: AdBannerConfig[];
-  adLabel?: string;
-  sponsorLabel?: string;
-  sponsoredLinkLabel?: string;
+  showAds?: boolean;
   /**
    * Number of feed items already rendered server-side. Used to continue the
    * ad insertion cycle seamlessly (i.e. the first client-loaded item is treated
@@ -35,10 +30,7 @@ export function FeedClient({
   showMoreLabel,
   justNowLabel,
   newReplyTemplate,
-  adBanners = [],
-  adLabel = '',
-  sponsorLabel = '',
-  sponsoredLinkLabel = '',
+  showAds = false,
   adIndexOffset = 0,
 }: Props) {
   const [items, setItems] = useState<FeedItem[]>([]);
@@ -48,8 +40,8 @@ export function FeedClient({
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   const displayItems = useMemo(
-    () => buildDisplayItems(items, adBanners, adIndexOffset),
-    [items, adBanners, adIndexOffset]
+    () => buildDisplayItems(items, showAds, adIndexOffset),
+    [items, showAds, adIndexOffset]
   );
 
   const renderDisplayItem = useCallback(
@@ -57,13 +49,7 @@ export function FeedClient({
       if (displayItem.type === 'ad') {
         return (
           <div key={`ad-${index}`} className="border-b border-border">
-            <NativeAdCard
-              ad={displayItem.ad}
-              adLabel={adLabel}
-              sponsorLabel={sponsorLabel}
-              sponsoredLinkLabel={sponsoredLinkLabel}
-              locale={locale}
-            />
+            <ResponsiveAdSlot />
           </div>
         );
       }
@@ -79,15 +65,7 @@ export function FeedClient({
         </div>
       );
     },
-    [
-      adLabel,
-      sponsorLabel,
-      sponsoredLinkLabel,
-      locale,
-      showMoreLabel,
-      justNowLabel,
-      newReplyTemplate,
-    ]
+    [locale, showMoreLabel, justNowLabel, newReplyTemplate]
   );
 
   const loadMore = useCallback(async () => {

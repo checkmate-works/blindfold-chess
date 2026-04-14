@@ -11,14 +11,15 @@ import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { HiMegaphone, HiTrophy } from 'react-icons/hi2';
 
-import { slugToDisplayName } from '@/lib/achievements/display';
+import { getAchievementDisplayName } from '@/lib/achievements/display';
 import { truncateContent } from '@/lib/truncate-content';
 
-import type { NotificationWithActor } from '../_actions';
 import { markAsRead } from '../_actions';
+import type { NotificationWithActor } from '../_lib/queries';
 import {
   isAchievementGrantedMetadata,
   isAnnouncementMetadata,
+  isPositionMetadata,
   isPostMetadata,
   isReplyMetadata,
 } from '../_lib/type-guards';
@@ -31,6 +32,9 @@ type Props = {
 export function NotificationItem({ notification, currentUsername }: Props) {
   const locale = useLocale();
   const t = useTranslations('MypageNotifications');
+  // Root-scoped translator so `getAchievementDisplayName` can resolve
+  // full-path keys like `Achievements.monthlyLeaderboard.name`.
+  const tRoot = useTranslations();
   const router = useRouter();
   const [, startTransition] = useTransition();
 
@@ -56,7 +60,12 @@ export function NotificationItem({ notification, currentUsername }: Props) {
         if (isAchievementGrantedMetadata(notification.metadata)) {
           const { badges } = notification.metadata;
           if (badges.length === 1) {
-            return t('achievementSingleMessage', { name: slugToDisplayName(badges[0].slug) });
+            return t('achievementSingleMessage', {
+              name: getAchievementDisplayName(
+                { slug: badges[0].slug, category: 'monthly_leaderboard' },
+                tRoot
+              ),
+            });
           }
           return t('achievementMultipleMessage', { count: String(badges.length) });
         }
@@ -73,7 +82,15 @@ export function NotificationItem({ notification, currentUsername }: Props) {
 
   function getLink(): string | null {
     if (notification.type === 'follow' && actor) {
-      return `/@/${actor.username}`;
+      return `/u/${actor.username}`;
+    }
+    if (notification.type === 'like' && notification.targetType === 'position') {
+      if (isPositionMetadata(notification.metadata)) {
+        return `/practice/position-memory/${notification.metadata.positionId}`;
+      }
+      if (notification.targetId) {
+        return `/practice/position-memory/${notification.targetId}`;
+      }
     }
     if (
       (notification.type === 'like' ||
@@ -92,7 +109,7 @@ export function NotificationItem({ notification, currentUsername }: Props) {
       return `/announcements/${notification.metadata.slug}`;
     }
     if (notification.type === 'achievement_granted' && currentUsername) {
-      return `/@/${currentUsername}/achievements`;
+      return `/u/${currentUsername}/achievements`;
     }
     return null;
   }

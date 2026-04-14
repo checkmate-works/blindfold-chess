@@ -6,11 +6,14 @@ import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigat
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { SESSION_STORAGE_KEYS as GAME_SESSION_STORAGE_KEYS } from '@/app/[locale]/(public)/games/play/_lib/session-storage-keys';
+import { SESSION_STORAGE_KEYS as PRACTICE_SESSION_STORAGE_KEYS } from '@/app/[locale]/(public)/practice/_lib/session-storage-keys';
 import { UI_TIMEOUTS } from '@/app/[locale]/_constants/ui-timeouts';
 import type { ToastType } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useToast } from '../_contexts/ToastContext';
+import { ToastItem } from './ToastItem';
 
 const TOAST_PARAM_CONFIG: Record<string, { messageKey: string; type: ToastType }> = {
   login_success: { messageKey: 'loginSuccess', type: 'success' },
@@ -56,14 +59,16 @@ export function ToastContainer() {
       if (processingToastRef.current) return;
 
       const shouldShowPracticeErrorToast = sessionStorage.getItem(
-        'blindfold_chess_show_practice_save_error_toast'
+        PRACTICE_SESSION_STORAGE_KEYS.SHOW_SAVE_ERROR_TOAST
       );
-      const shouldShowSaveToast = sessionStorage.getItem('blindfold_chess_show_save_toast');
-      const shouldShowDeleteToast = sessionStorage.getItem('blindfold_chess_show_delete_toast');
+      const shouldShowSaveToast = sessionStorage.getItem(GAME_SESSION_STORAGE_KEYS.SHOW_SAVE_TOAST);
+      const shouldShowDeleteToast = sessionStorage.getItem(
+        GAME_SESSION_STORAGE_KEYS.SHOW_DELETE_TOAST
+      );
 
       if (shouldShowPracticeErrorToast === 'true') {
         processingToastRef.current = true;
-        sessionStorage.removeItem('blindfold_chess_show_practice_save_error_toast');
+        sessionStorage.removeItem(PRACTICE_SESSION_STORAGE_KEYS.SHOW_SAVE_ERROR_TOAST);
         showToast(tToast('practiceResultSaveFailed'), 'error');
 
         setTimeout(() => {
@@ -71,7 +76,7 @@ export function ToastContainer() {
         }, 1000);
       } else if (shouldShowSaveToast === 'true') {
         processingToastRef.current = true;
-        sessionStorage.removeItem('blindfold_chess_show_save_toast');
+        sessionStorage.removeItem(GAME_SESSION_STORAGE_KEYS.SHOW_SAVE_TOAST);
         showToast(tToast('gameSaved'), 'success');
 
         // Reset flag after a delay
@@ -80,9 +85,9 @@ export function ToastContainer() {
         }, 1000);
       } else if (shouldShowDeleteToast === 'true') {
         processingToastRef.current = true;
-        const deletedCount = sessionStorage.getItem('blindfold_chess_deleted_count');
-        sessionStorage.removeItem('blindfold_chess_show_delete_toast');
-        sessionStorage.removeItem('blindfold_chess_deleted_count');
+        const deletedCount = sessionStorage.getItem(GAME_SESSION_STORAGE_KEYS.DELETED_COUNT);
+        sessionStorage.removeItem(GAME_SESSION_STORAGE_KEYS.SHOW_DELETE_TOAST);
+        sessionStorage.removeItem(GAME_SESSION_STORAGE_KEYS.DELETED_COUNT);
 
         const count = deletedCount ? parseInt(deletedCount, 10) : 1;
         showToast(tToast('gamesDeleted', { count }), 'success');
@@ -121,58 +126,13 @@ export function ToastContainer() {
     <div className="fixed bottom-14 md:bottom-0 left-0 right-0 z-50 p-4 pointer-events-none">
       <div className="max-w-sm mx-auto space-y-2">
         {toasts.map((toast) => (
-          <Toast key={toast.id} toast={toast} onClose={() => hideToast(toast.id)} />
+          <ToastItem
+            key={toast.id}
+            toast={toast}
+            onClose={() => hideToast(toast.id)}
+            duration={UI_TIMEOUTS.TOAST_DURATION}
+          />
         ))}
-      </div>
-    </div>
-  );
-}
-
-type Props = {
-  toast: { id: string; message: string; type: 'success' | 'error' | 'info' | 'warning' };
-  onClose: () => void;
-};
-
-function Toast({ toast, onClose }: Props) {
-  useEffect(() => {
-    const timer = setTimeout(onClose, UI_TIMEOUTS.TOAST_DURATION);
-    return () => clearTimeout(timer);
-  }, [onClose]);
-
-  const getStyles = () => {
-    switch (toast.type) {
-      case 'success':
-        return 'bg-success text-success-foreground';
-      case 'error':
-        return 'bg-destructive text-destructive-foreground';
-      case 'warning':
-        return 'bg-warning text-warning-foreground';
-      default:
-        return 'bg-muted text-foreground';
-    }
-  };
-
-  const getIcon = () => {
-    switch (toast.type) {
-      case 'success':
-        return '✓';
-      case 'error':
-        return '✕';
-      case 'warning':
-        return '⚠';
-      default:
-        return 'ℹ';
-    }
-  };
-
-  return (
-    <div
-      className={`${getStyles()} px-4 py-3 rounded-md shadow-lg pointer-events-auto transform transition-all duration-300 ease-out`}
-      onClick={onClose}
-    >
-      <div className="flex items-center gap-3">
-        <span className="text-lg">{getIcon()}</span>
-        <p className="flex-1 text-sm font-medium">{toast.message}</p>
       </div>
     </div>
   );

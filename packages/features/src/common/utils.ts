@@ -41,28 +41,42 @@ export function formatTime(seconds: number): string {
   return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
 }
 
-export function generateRandomSquare(rng: RandomSource = Math.random): Square {
-  return (FILES[Math.floor(rng() * FILES.length)] +
-    RANKS[Math.floor(rng() * RANKS.length)]) as Square;
+export function generateRandomSquare(
+  rng: RandomSource = Math.random,
+  exclude?: ReadonlySet<Square>,
+): Square {
+  if (exclude && exclude.size >= 64) {
+    throw new Error(
+      "Cannot generate a random square: all squares are excluded",
+    );
+  }
+  let square: Square;
+  do {
+    square = (FILES[Math.floor(rng() * FILES.length)] +
+      RANKS[Math.floor(rng() * RANKS.length)]) as Square;
+  } while (exclude?.has(square));
+  return square;
 }
 
 export function generateSquareSequence(
   count: number,
   rng: RandomSource = Math.random,
+  exclude?: ReadonlySet<Square>,
 ): Square[] {
   const squares: Square[] = [];
   const usedSquares = new Set<Square>();
+  const resetThreshold = Math.floor((64 - (exclude?.size ?? 0)) / 2);
 
   while (squares.length < count) {
-    const square = generateRandomSquare(rng);
+    const square = generateRandomSquare(rng, exclude);
     if (!usedSquares.has(square)) {
       usedSquares.add(square);
       squares.push(square);
     }
 
-    // Reset after using half the board (32/64 squares) to allow re-use
+    // Reset after using half the eligible squares to allow re-use
     // while maintaining variety in consecutive questions
-    if (usedSquares.size >= 32 && squares.length < count) {
+    if (usedSquares.size >= resetThreshold && squares.length < count) {
       usedSquares.clear();
     }
   }

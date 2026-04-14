@@ -1,9 +1,6 @@
-'use client';
-
-import { memo } from 'react';
-
 import type { FeedItem } from '../_lib/types';
 import { ChallengeRankUpdateCard } from './ChallengeRankUpdateCard';
+import { PositionFeedCard } from './PositionFeedCard';
 import { TopicPostCard } from './TopicPostCard';
 
 type Props = {
@@ -14,13 +11,7 @@ type Props = {
   newReplyTemplate: string;
 };
 
-export const FeedCard = memo(function FeedCard({
-  item,
-  locale,
-  showMoreLabel,
-  justNowLabel,
-  newReplyTemplate,
-}: Props) {
+export function FeedCard({ item, locale, showMoreLabel, justNowLabel, newReplyTemplate }: Props) {
   switch (item.entityType) {
     case 'topic_post':
       return (
@@ -32,6 +23,8 @@ export const FeedCard = memo(function FeedCard({
           newReplyTemplate={newReplyTemplate}
         />
       );
+    case 'position':
+      return <PositionFeedCard data={item.data} locale={locale} justNowLabel={justNowLabel} />;
     case 'challenge_rank_update':
       return (
         <ChallengeRankUpdateCard
@@ -44,4 +37,4 @@ export const FeedCard = memo(function FeedCard({
     default:
       return null;
   }
-});
+}

@@ -9,11 +9,12 @@ import { Modal } from './Modal';
 type Props = {
   isOpen: boolean;
   title: string;
-  message: string;
+  message?: string;
   children?: ReactNode;
+  error?: string | null;
   confirmText?: string;
   cancelText?: string;
-  confirmVariant?: 'primary' | 'danger' | 'warning';
+  confirmVariant?: 'primary' | 'danger';
   isLoading?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
@@ -24,6 +25,7 @@ export function ConfirmationModal({
   title,
   message,
   children,
+  error,
   confirmText = 'Confirm',
   cancelText = 'Cancel',
   confirmVariant = 'primary',
@@ -38,7 +40,6 @@ export function ConfirmationModal({
     switch (confirmVariant) {
       case 'danger':
         return 'destructive';
-      case 'warning':
       case 'primary':
       default:
         return 'primary';
@@ -51,7 +52,7 @@ export function ConfirmationModal({
       onClose={onCancel}
       maxWidth="max-w-md"
       aria-labelledby={titleId}
-      aria-describedby={messageId}
+      aria-describedby={message ? messageId : undefined}
     >
       {/* Header */}
       <div className="mb-4">
@@ -62,10 +63,13 @@ export function ConfirmationModal({
 
       {/* Content */}
       <div className="mb-6">
-        <p id={messageId} className="text-muted-foreground leading-relaxed">
-          {message}
-        </p>
+        {message && (
+          <p id={messageId} className="text-muted-foreground leading-relaxed">
+            {message}
+          </p>
+        )}
         {children}
+        {error && <p className="text-destructive text-sm mt-2">{error}</p>}
       </div>
 
       {/* Actions */}

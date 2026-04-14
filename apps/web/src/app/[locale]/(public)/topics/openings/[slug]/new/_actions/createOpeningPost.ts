@@ -4,10 +4,8 @@ import { topicPostRatings } from '@/lib/db';
 import { createOpeningPostRateLimit } from '@/lib/rate-limit';
 import { MAX_CONTENT_LENGTH } from '@/lib/validations/content';
 
-import {
-  type CreatePostState,
-  createPostBase,
-} from '@/app/[locale]/(public)/topics/_actions/createPost';
+import type { CreatePostState } from '@/app/[locale]/(public)/topics/_actions/createPost';
+import { createPostBase } from '@/app/[locale]/(public)/topics/_actions/createPost';
 import { isValidOpening } from '@/app/[locale]/(public)/topics/openings/_lib/queries';
 
 export async function createOpeningPost(

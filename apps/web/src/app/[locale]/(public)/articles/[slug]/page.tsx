@@ -5,11 +5,12 @@ import nextDynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
 
 import type { TiptapJsonContent } from '@/app/admin/articles/_lib/types';
+import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 
 import { JsonLd, generateBlogPostingSchema } from '@/lib/jsonld';
 
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
+import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { TiptapRenderer } from '@/app/[locale]/_components/TiptapRenderer';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -17,7 +18,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { getPublishedArticle } from '../_lib/queries';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 const MarkdownRenderer = nextDynamic(
   () =>
@@ -36,33 +37,47 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, slug } = await params;
-  const article = await getPublishedArticle(slug, locale);
+  const result = await getPublishedArticle(slug, locale);
 
-  if (!article) {
+  if (!result) {
     const t = await getTranslations({ locale, namespace: 'articles' });
     return {
       title: resolveTitle(t('articleNotFound'), locale),
     };
   }
 
+  const { article, availableLocales } = result;
+  const isFallback = article.locale !== locale;
   const title = article.title;
   const description = article.content.slice(0, 160).replace(/\n/g, ' ').trim();
 
   return {
-    ...generateCanonicalMetadata({ locale, path: `articles/${slug}`, title, description }),
-    title: resolveTitle(title, locale),
+    ...generateCanonicalMetadata({
+      locale,
+      path: `articles/${slug}`,
+      title,
+      description,
+      ...(isFallback && {
+        canonicalLocale: article.locale,
+        availableLocales,
+      }),
+    }),
+    title: resolveTitle(title, isFallback ? article.locale : locale),
     description,
   };
 }
 
 export default async function ArticlePage({ params }: Props) {
   const { locale, slug } = await params;
-  const article = await getPublishedArticle(slug, locale);
+  const result = await getPublishedArticle(slug, locale);
   const t = await getTranslations({ locale, namespace: 'articles' });
 
-  if (!article) {
+  if (!result) {
     notFound();
   }
+
+  const { article } = result;
+  const isFallback = article.locale !== locale;
 
   const publishedDate = article.publishedAt
     ? new Date(article.publishedAt).toLocaleDateString(locale, {
@@ -87,6 +102,11 @@ export default async function ArticlePage({ params }: Props) {
       <PageTitle>{article.title}</PageTitle>
 
       <PagePanel>
+        {isFallback && (
+          <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">
+            {t('notTranslatedNotice')}
+          </div>
+        )}
         <article className="prose prose-slate dark:prose-invert max-w-none">
           {article.contentFormat === 'tiptap_json' && article.contentJson ? (
             <TiptapRenderer content={article.contentJson as TiptapJsonContent} />
@@ -99,7 +119,9 @@ export default async function ArticlePage({ params }: Props) {
           <p className="text-sm text-muted-foreground text-right">{publishedDate}</p>
         )}
 
-        <AdBannerGuard slot="banner-standard" />
+        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+        )}
 
         <Divider />
 

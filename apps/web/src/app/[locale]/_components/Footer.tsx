@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
 import { SITE_DOMAIN } from '@/config';
-import { FaChevronRight, FaGithub } from 'react-icons/fa';
+import { FaGithub } from 'react-icons/fa';
 
 import { LanguageSwitcher } from './LanguageSwitcher';
 
@@ -11,11 +11,27 @@ type Props = {
 };
 
 export async function Footer({ locale }: Props) {
-  const [tPrivacy, tTerms, tCompany, tContact, tAffiliate] = await Promise.all([
+  const [
+    tFooter,
+    tManual,
+    tGlossary,
+    tAnnouncements,
+    tFaq,
+    tContact,
+    tPrivacy,
+    tTerms,
+    tCompany,
+    tAffiliate,
+  ] = await Promise.all([
+    getTranslations({ locale, namespace: 'Footer' }),
+    getTranslations({ locale, namespace: 'manual' }),
+    getTranslations({ locale, namespace: 'glossary' }),
+    getTranslations({ locale, namespace: 'announcements' }),
+    getTranslations({ locale, namespace: 'faq' }),
+    getTranslations({ locale, namespace: 'contact' }),
     getTranslations({ locale, namespace: 'privacy' }),
     getTranslations({ locale, namespace: 'terms' }),
     getTranslations({ locale, namespace: 'company' }),
-    getTranslations({ locale, namespace: 'contact' }),
     getTranslations({ locale, namespace: 'affiliateDisclosure' }),
   ]);
 
@@ -23,61 +39,101 @@ export async function Footer({ locale }: Props) {
 
   return (
     <footer className="bg-card border-t border-border mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="space-y-4">
-          {/* Legal pages - vertical menu */}
-          <nav>
-            <ul className="flex flex-col gap-1 text-xs text-muted-foreground">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Category columns */}
+        <nav className="grid grid-cols-2 gap-8 md:grid-cols-3">
+          {/* Resources */}
+          <div>
+            <h3 className="text-sm font-semibold text-foreground">{tFooter('resources')}</h3>
+            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               <li>
                 <Link
-                  href={`/${locale}/privacy`}
-                  className="inline-flex items-center gap-1 hover:text-foreground transition-colors py-1"
+                  href={`/${locale}/manual`}
+                  className="hover:text-foreground transition-colors"
                 >
-                  <FaChevronRight className="h-2 w-2" />
-                  {tPrivacy('title')}
+                  {tManual('title')}
                 </Link>
               </li>
               <li>
                 <Link
-                  href={`/${locale}/terms`}
-                  className="inline-flex items-center gap-1 hover:text-foreground transition-colors py-1"
+                  href={`/${locale}/glossary`}
+                  className="hover:text-foreground transition-colors"
                 >
-                  <FaChevronRight className="h-2 w-2" />
-                  {tTerms('title')}
+                  {tGlossary('title')}
                 </Link>
               </li>
               <li>
                 <Link
-                  href={`/${locale}/company`}
-                  className="inline-flex items-center gap-1 hover:text-foreground transition-colors py-1"
+                  href={`/${locale}/announcements`}
+                  className="hover:text-foreground transition-colors"
                 >
-                  <FaChevronRight className="h-2 w-2" />
-                  {tCompany('title')}
+                  {tAnnouncements('pageTitle')}
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Support */}
+          <div>
+            <h3 className="text-sm font-semibold text-foreground">{tFooter('support')}</h3>
+            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+              <li>
+                <Link href={`/${locale}/faq`} className="hover:text-foreground transition-colors">
+                  {tFaq('title')}
                 </Link>
               </li>
               {isContactFormEnabled && (
                 <li>
                   <Link
                     href={`/${locale}/contact`}
-                    className="inline-flex items-center gap-1 hover:text-foreground transition-colors py-1"
+                    className="hover:text-foreground transition-colors"
                   >
-                    <FaChevronRight className="h-2 w-2" />
                     {tContact('title')}
                   </Link>
                 </li>
               )}
+            </ul>
+          </div>
+
+          {/* Legal */}
+          <div>
+            <h3 className="text-sm font-semibold text-foreground">{tFooter('legal')}</h3>
+            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+              <li>
+                <Link href={`/${locale}/terms`} className="hover:text-foreground transition-colors">
+                  {tTerms('title')}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={`/${locale}/privacy`}
+                  className="hover:text-foreground transition-colors"
+                >
+                  {tPrivacy('title')}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={`/${locale}/company`}
+                  className="hover:text-foreground transition-colors"
+                >
+                  {tCompany('title')}
+                </Link>
+              </li>
               <li>
                 <Link
                   href={`/${locale}/affiliate-disclosure`}
-                  className="inline-flex items-center gap-1 hover:text-foreground transition-colors py-1"
+                  className="hover:text-foreground transition-colors"
                 >
-                  <FaChevronRight className="h-2 w-2" />
                   {tAffiliate('title')}
                 </Link>
               </li>
             </ul>
-          </nav>
+          </div>
+        </nav>
 
+        {/* Divider */}
+        <div className="mt-8 border-t border-border pt-6">
           {/* Social & Language */}
           <div className="flex justify-between items-center">
             <a
@@ -94,7 +150,7 @@ export async function Footer({ locale }: Props) {
           </div>
 
           {/* Copyright & Disclaimer */}
-          <div className="text-center text-xs text-muted-foreground space-y-1">
+          <div className="mt-4 text-center text-xs text-muted-foreground space-y-1">
             <p>{tAffiliate('footerText')}</p>
             <p>
               © {new Date().getFullYear()} {SITE_DOMAIN}

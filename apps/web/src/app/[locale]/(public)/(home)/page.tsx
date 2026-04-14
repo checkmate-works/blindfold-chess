@@ -2,10 +2,10 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
+import { IS_LOCAL_DEV } from '@/config';
 import { FaTachometerAlt } from 'react-icons/fa';
 
-import type { AdBannerConfig } from '@/lib/ad';
-import { getAdBannersForFeed, shouldShowAdsForUser } from '@/lib/ad';
+import { shouldShowAdsForUser } from '@/lib/ad';
 import { JsonLd, generateWebApplicationSchema } from '@/lib/jsonld';
 import { createClient } from '@/lib/supabase/server';
 
@@ -15,7 +15,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { FeedCard } from './_components/FeedCard';
 import { FeedClient } from './_components/FeedClient';
-import { NativeAdCard } from './_components/NativeAdCard';
+import { ResponsiveAdSlot } from './_components/ResponsiveAdSlot';
 import { VsAiCard } from './_components/VsAiCard';
 import { buildDisplayItems } from './_lib/feed-display';
 import { getFeedData } from './_lib/queries';
@@ -71,29 +71,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function HomePage({ params }: Props) {
   const { locale } = await params;
-  const tMetadata = await getTranslations({ locale, namespace: 'metadata' });
-  const tHome = await getTranslations({ locale, namespace: 'home' });
-  const tTopics = await getTranslations({ locale, namespace: 'topics' });
-  const tSquares = await getTranslations({ locale, namespace: 'topics.squares' });
-  const tCommon = await getTranslations({ locale, namespace: 'Common' });
-  const tHeader = await getTranslations({ locale, namespace: 'Header' });
-
-  const supabase = await createClient();
+  const [tMetadata, tHome, tTopics, tSquares, tHeader, supabase] = await Promise.all([
+    getTranslations({ locale, namespace: 'metadata' }),
+    getTranslations({ locale, namespace: 'home' }),
+    getTranslations({ locale, namespace: 'topics' }),
+    getTranslations({ locale, namespace: 'topics.squares' }),
+    getTranslations({ locale, namespace: 'Header' }),
+    createClient(),
+  ]);
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Always prefetch ad banners in parallel to eliminate waterfall.
-  // getAdBannersForFeed is wrapped with unstable_cache (60s TTL),
-  // so the cost of calling it even when showAds=false is negligible.
-  // NOTE: Monitor TTFB as feed/ad queries grow. Consider pagination or caching if response time degrades.
-  const [initialFeed, showAds, adBannersAll] = await Promise.all([
+  const [initialFeed, showAdsResult] = await Promise.all([
     getFeedData(undefined, INITIAL_FEED_SIZE, user?.id),
     shouldShowAdsForUser(user?.id ?? null),
-    getAdBannersForFeed(),
   ]);
-
-  const adBanners = showAds ? adBannersAll : [];
+  const showAds = IS_LOCAL_DEV || showAdsResult;
 
   return (
     <>
@@ -122,10 +116,7 @@ export default async function HomePage({ params }: Props) {
             showMoreLabel={tTopics('showMore')}
             justNowLabel={tSquares('justNow')}
             newReplyTemplate={tSquares('newReply', { time: '{time}' })}
-            adBanners={adBanners}
-            adLabel={tCommon('adLabel')}
-            sponsorLabel={tCommon('sponsor')}
-            sponsoredLinkLabel={tCommon('sponsoredLink')}
+            showAds={showAds}
           />
           {/* Client: Infinite scroll for additional items (page 2+) */}
           <FeedClient
@@ -134,10 +125,7 @@ export default async function HomePage({ params }: Props) {
             showMoreLabel={tTopics('showMore')}
             justNowLabel={tSquares('justNow')}
             newReplyTemplate={tSquares('newReply', { time: '{time}' })}
-            adBanners={adBanners}
-            adLabel={tCommon('adLabel')}
-            sponsorLabel={tCommon('sponsor')}
-            sponsoredLinkLabel={tCommon('sponsoredLink')}
+            showAds={showAds}
             adIndexOffset={initialFeed.items.length}
           />
         </DashboardCard>
@@ -156,10 +144,7 @@ type ServerFeedListProps = {
   showMoreLabel: string;
   justNowLabel: string;
   newReplyTemplate: string;
-  adBanners: AdBannerConfig[];
-  adLabel: string;
-  sponsorLabel: string;
-  sponsoredLinkLabel: string;
+  showAds: boolean;
 };
 
 function ServerFeedList({
@@ -168,14 +153,11 @@ function ServerFeedList({
   showMoreLabel,
   justNowLabel,
   newReplyTemplate,
-  adBanners,
-  adLabel,
-  sponsorLabel,
-  sponsoredLinkLabel,
+  showAds,
 }: ServerFeedListProps) {
   if (items.length === 0) return null;
 
-  const displayItems = buildDisplayItems(items, adBanners);
+  const displayItems = buildDisplayItems(items, showAds);
 
   return (
     <div>
@@ -183,13 +165,7 @@ function ServerFeedList({
         if (displayItem.type === 'ad') {
           return (
             <div key={`ad-${index}`} className="border-b border-border">
-              <NativeAdCard
-                ad={displayItem.ad}
-                adLabel={adLabel}
-                sponsorLabel={sponsorLabel}
-                sponsoredLinkLabel={sponsoredLinkLabel}
-                locale={locale}
-              />
+              <ResponsiveAdSlot />
             </div>
           );
         }

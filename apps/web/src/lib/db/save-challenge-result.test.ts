@@ -16,6 +16,12 @@ const mockRevalidateTag = vi.fn();
 
 const mockGetUserAllTimeRank = vi.fn().mockResolvedValue({ rank: 5 });
 const mockCheckAndGrantRanks = vi.fn().mockResolvedValue([]);
+const mockGrantChallengeExp = vi.fn().mockResolvedValue({
+  earnedExp: 10,
+  totalExp: 100,
+  level: 2,
+  levelUp: false,
+});
 
 vi.mock('server-only', () => ({}));
 
@@ -29,6 +35,10 @@ vi.mock('./rank-evaluation', () => ({
 
 vi.mock('./challenge-queries', () => ({
   getUserAllTimeRank: (...args: unknown[]) => mockGetUserAllTimeRank(...args),
+}));
+
+vi.mock('./save-exp', () => ({
+  grantChallengeExp: (...args: unknown[]) => mockGrantChallengeExp(...args),
 }));
 
 vi.mock('./index', () => {
@@ -130,7 +140,7 @@ describe('saveChallengeResult', () => {
 
     const result = await saveChallengeResult(validInput);
 
-    expect(result).toEqual({ grantedRanks: mockRanks });
+    expect(result.grantedRanks).toEqual(mockRanks);
   });
 
   it('should return empty grantedRanks when no ranks are granted', async () => {
@@ -138,7 +148,7 @@ describe('saveChallengeResult', () => {
 
     const result = await saveChallengeResult(validInput);
 
-    expect(result).toEqual({ grantedRanks: [] });
+    expect(result.grantedRanks).toEqual([]);
   });
 
   it('should return empty grantedRanks when checkAndGrantRanks throws', async () => {
@@ -146,7 +156,7 @@ describe('saveChallengeResult', () => {
 
     const result = await saveChallengeResult(validInput);
 
-    expect(result).toEqual({ grantedRanks: [] });
+    expect(result.grantedRanks).toEqual([]);
   });
 
   // -------------------------------------------------------------------------
@@ -441,24 +451,30 @@ describe('saveChallengeResult', () => {
 
   // -------------------------------------------------------------------------
   // Leaderboard cache invalidation
+  //
+  // Cache invalidation is the caller's responsibility (see
+  // `save-practice-result.ts`, which strict-invalidates both 'leaderboard' and
+  // 'exp-leaderboard' tags after this function returns). `saveChallengeResult`
+  // itself must never touch `revalidateTag` — these assertions guard against
+  // accidental re-introduction of an inner invalidation call.
   // -------------------------------------------------------------------------
 
-  it('should call revalidateTag("leaderboard") on new entry', async () => {
+  it('should NOT call revalidateTag on new entry (caller is responsible)', async () => {
     mockSelectResult.mockReturnValue([]);
     mockGetUserAllTimeRank.mockResolvedValue({ rank: 5 });
 
     await saveChallengeResult(validInput);
 
-    expect(mockRevalidateTag).toHaveBeenCalledWith('leaderboard', { expire: 60 });
+    expect(mockRevalidateTag).not.toHaveBeenCalled();
   });
 
-  it('should call revalidateTag("leaderboard") on improvement', async () => {
+  it('should NOT call revalidateTag on improvement (caller is responsible)', async () => {
     mockSelectResult.mockReturnValue([{ score: 20, incorrectAnswers: 5, timeTaken: 60 }]);
     mockGetUserAllTimeRank.mockResolvedValueOnce({ rank: 8 }).mockResolvedValueOnce({ rank: 5 });
 
     await saveChallengeResult(validInput);
 
-    expect(mockRevalidateTag).toHaveBeenCalledWith('leaderboard', { expire: 60 });
+    expect(mockRevalidateTag).not.toHaveBeenCalled();
   });
 
   it('should NOT call revalidateTag when no improvement', async () => {

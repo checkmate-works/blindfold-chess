@@ -1,6 +1,7 @@
 'use client';
 
-import { FormEvent, useReducer, useState } from 'react';
+import type { FormEvent } from 'react';
+import { useReducer, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 

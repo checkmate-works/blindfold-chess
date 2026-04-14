@@ -4,26 +4,14 @@ import { and, desc, eq, isNotNull, sql } from 'drizzle-orm';
 
 import { type Article, articles, db } from '@/lib/db';
 
+import { DEFAULT_LOCALE, pickByLocale } from '@/app/[locale]/_lib/locale-utils';
+
 // NOTE: Currently articles have a flat structure without categories.
 // If categories are needed in the future, add an `article_categories` table,
 // update routes (e.g., /articles/[category]/[slug]), and set up 301 redirects
 // from the current /articles/[slug] URLs.
 
-const DEFAULT_LOCALE = 'en';
-
 const pinnedFirstOrdering = [sql`${articles.pinnedAt} DESC NULLS LAST`, desc(articles.publishedAt)];
-
-/**
- * Pick the best locale variant from a group of articles sharing the same slug.
- * Priority: requested locale > default locale (en) > first available.
- */
-function pickByLocale(rows: Article[], locale: string): Article {
-  return (
-    rows.find((a) => a.locale === locale) ??
-    rows.find((a) => a.locale === DEFAULT_LOCALE) ??
-    rows[0]
-  );
-}
 
 /**
  * Build a SQL query that deduplicates articles by slug, keeping the best
@@ -147,7 +135,10 @@ export async function getPublishedArticlesPaginated(
  *   2. Default locale (en)
  *   3. Any available locale
  */
-export async function getPublishedArticle(slug: string, locale: string): Promise<Article | null> {
+export async function getPublishedArticle(
+  slug: string,
+  locale: string
+): Promise<{ article: Article; availableLocales: string[] } | null> {
   const results = await db
     .select()
     .from(articles)
@@ -161,7 +152,8 @@ export async function getPublishedArticle(slug: string, locale: string): Promise
 
   if (results.length === 0) return null;
 
-  return pickByLocale(results, locale);
+  const availableLocales = results.map((r) => r.locale);
+  return { article: pickByLocale(results, locale), availableLocales };
 }
 
 /**

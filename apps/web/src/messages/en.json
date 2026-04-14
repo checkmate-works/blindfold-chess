@@ -131,6 +131,10 @@
       "title": "Leaderboard",
       "description": "See the top players across all practice modules"
     },
+    "expLeaderboard": {
+      "title": "Exp Leaderboard",
+      "description": "See the top players ranked by total experience points"
+    },
     "practice": {
       "title": "Blindfold Chess Practice Exercises",
       "description": "Free interactive blindfold chess exercises — coordinate recognition, square-color drills, legal-move quizzes, and more. Boost your visualization."
@@ -155,6 +159,10 @@
       "title": "Belt Ranking System",
       "description": "A unique curriculum designed to build the skills needed to defeat AI at blindfold chess. Aim for the black belt."
     },
+    "dojo": {
+      "title": "Dojo",
+      "description": "See your current rank and the requirements for the next one, all in one place."
+    },
     "glossary": {
       "title": "Chess Glossary - Terms & Definitions",
       "description": "Look up chess terminology in our comprehensive glossary. Browse alphabetically or by category to learn definitions of chess terms, tactics, strategies, and positional concepts used in blindfold chess.",
@@ -171,9 +179,23 @@
       "title": "{rankName} - Ranks",
       "description": "Requirements and criteria for achieving {rankName} rank in blindfold chess training."
     },
-    "rankGuide": {
-      "title": "{rankName} Guide - Ranks",
-      "description": "Detailed guide and tips for achieving {rankName} rank in blindfold chess training."
+    "guides": {
+      "top": {
+        "title": "Guides",
+        "description": "Textbook-style guides for blindfold chess training, organized by rank."
+      },
+      "rank": {
+        "title": "{rankName} Guide",
+        "description": "The complete {rankName} blindfold chess guide. Learn coordinates, diagonals, and piece maneuvering step by step with visual aids and belt-progression goals.",
+        "pageTitle": "{rankName} Guide - Page {page}",
+        "descriptionWithPage": "{rankName} blindfold chess guide, page {page} of {total}. Work through this part of the course with visual board aids and progressive exercises built for the belt system."
+      },
+      "chapter": {
+        "title": "{rankName} Guide - {chapterName}",
+        "description": "The {chapterName} chapter of the {rankName} blindfold chess guide. A focused, visually guided walkthrough of {chapterName} skills needed to earn this belt rank.",
+        "pageTitle": "{rankName} Guide - {chapterName} - Page {page}",
+        "descriptionWithPage": "{chapterName} chapter of the {rankName} blindfold chess guide, page {page} of {total}. Step-by-step visual aids and inline links to help you master {chapterName}."
+      }
     }
   },
   "Header": {
@@ -192,7 +214,9 @@
     "leaderboard": "Leaderboard",
     "contact": "Contact",
     "settings": "Settings",
-    "ranks": "Belt System"
+    "ranks": "Belt System",
+    "guides": "Guides",
+    "dojo": "Dojo"
   },
   "Preferences": {
     "title": "Settings",
@@ -302,6 +326,40 @@
       "chessEngine": {
         "question": "What chess engine does the AI use?",
         "answer": "The AI uses Stockfish 17.1 (Lite Single-threaded version)."
+      },
+      "expSystem": {
+        "question": "How is experience (Exp) calculated?",
+        "answer": "You earn experience points (Exp) by completing challenges. The formula is: Exp = Correct Answers × Module Weight × Miss Bonus.",
+        "moduleWeightTitle": "Module Weights",
+        "accuracyBonusTitle": "Miss Bonus",
+        "streakBonusTitle": "Daily Streak Bonus",
+        "headerModule": "Module",
+        "headerWeight": "Weight",
+        "headerAccuracy": "Mistakes",
+        "headerMultiplier": "Multiplier",
+        "headerChallenges": "Daily Challenges",
+        "modules": {
+          "coordinate_quiz": "Coordinate Quiz",
+          "square_colors": "Square Colors",
+          "diagonal_quiz": "Diagonal Quiz",
+          "legal_moves": "Legal Moves",
+          "board_symmetry": "Board Symmetry",
+          "route_planner": "Route Planner",
+          "position_memory": "Position Memory"
+        },
+        "misses0": "0 (Perfect)",
+        "misses1": "1",
+        "misses2": "2",
+        "misses3": "3 (Burst)",
+        "streak5": "5+",
+        "streak3": "3–4",
+        "streak2": "2",
+        "streak1": "1",
+        "multiplier15": "×1.5",
+        "multiplier13": "×1.3",
+        "multiplier12": "×1.2",
+        "multiplier11": "×1.1",
+        "multiplier10": "×1.0"
       }
     }
   },
@@ -418,12 +476,16 @@
     "articleNotFound": "Article Not Found"
   },
   "practice": {
+    "keyboard": {
+      "algebraicKeyboardHint": "Type a letter (a–h) then a number (1–8). Backspace: delete."
+    },
     "title": "Practice",
     "modulesTitle": "Practice Modules",
     "levelBeginner": "Beginner",
     "levelIntermediate": "Intermediate",
     "levelAdvanced": "Advanced",
     "levelIntroduction": "Introduction",
+    "viewLeaderboard": "🏆 View Leaderboard",
     "tryAgain": "Try Again",
     "changeSettings": "Change Settings",
     "doOtherPractice": "Do other practice",
@@ -705,6 +767,8 @@
     "positionMemory": {
       "title": "Position Memory",
       "description": "Train your ability to remember and recreate chess positions",
+      "like": "Like",
+      "unlike": "Unlike",
       "session": "In Progress",
       "settings": "Problem Settings",
       "problemSource": "Problem Source",
@@ -815,8 +879,35 @@
       },
       "cancel": "Cancel",
       "requiredKnowledge": "Required Knowledge",
-      "viewArticle": "Learn about position memory training",
-      "articleDescription": "Learn techniques for memorizing and recreating chess positions"
+      "articles": {
+        "positionMemory": {
+          "title": "Learn about position memory training",
+          "description": "Learn techniques for memorizing and recreating chess positions"
+        },
+        "deGrootExperiment": {
+          "title": "The De Groot Experiment",
+          "description": "How grandmasters memorize positions: the classic study on chunking"
+        }
+      },
+      "list": {
+        "title": "Position Memory",
+        "sectionTitle": "Problem List",
+        "empty": "No positions available yet",
+        "tutorialLink": "View Tutorial",
+        "submittedBy": "submitted"
+      },
+      "detail": {
+        "title": "Position Detail",
+        "descriptionSection": "Position Description",
+        "solveSection": "Solve the Problem",
+        "start": "Start",
+        "timeLimit": "Time Limit",
+        "seconds": "{count} seconds",
+        "createdBy": "Created by",
+        "tutorialLink": "View Tutorial",
+        "tryAgain": "Try Again",
+        "backToList": "Back to List"
+      }
     },
     "knightTour": {
       "title": "Knight's Tour",
@@ -969,7 +1060,6 @@
       "title": "Route Planner",
       "session": "In Progress",
       "description": "Calculate the shortest path for a piece to reach a target square",
-      "betaNotice": "Score saving and leaderboard display are currently under development.",
       "howToPlayTitle": "How to Play",
       "howToPlayDescription": "Calculate the shortest path for a piece to reach a target square.",
       "settings": "Settings",
@@ -1162,7 +1252,10 @@
           "title": "Anchor Squares",
           "description": "Learn key reference points for board visualization"
         }
-      }
+      },
+      "howToPlayTitle": "How to Play",
+      "howToPlayDescription": "A square name will be shown. Identify which quadrant it belongs to by tapping the correct area on the board.",
+      "challengeSetupNoLeaderboard": "Scores from this exercise will not be recorded in your practice history or leaderboard."
     },
     "diagonalQuiz": {
       "title": "Diagonal Quiz",
@@ -1270,6 +1363,9 @@
         "improved": "Improved rank!",
         "rank": "Rank",
         "score": "Score"
+      },
+      "position": {
+        "action": "Posted a new problem"
       }
     },
     "vsAi": {
@@ -1435,10 +1531,12 @@
     "logMoveNumber": "Move",
     "logIncorrectMove": "Your input",
     "logCorrectMove": "Correct",
+    "logAutoFilled": "Auto-filled",
     "noMistakes": "No mistakes!",
     "incorrectMoveError": "{movePrefix} is not {move}",
     "analyzing": "Analyzing",
-    "correctMoveMessage": "{movePrefix} {move} is correct"
+    "correctMoveMessage": "{movePrefix} {move} is correct",
+    "skippedMoveMessage": "The answer was {movePrefix} {move}"
   },
   "playError": {
     "title": "Game Recovery",
@@ -1859,14 +1957,16 @@
     "submitLoading": "Resetting...",
     "error": "Failed to reset password. Please try again.",
     "passwordMismatch": "Passwords do not match.",
-    "passwordTooShort": "Password must be at least 8 characters."
+    "passwordTooShort": "Password must be at least 8 characters.",
+    "rateLimited": "Too many requests. Please try again later."
   },
   "articles": {
     "pageTitle": "Articles",
     "noArticles": "No articles yet.",
     "articlesListTitle": "All Articles",
     "moreArticles": "More articles",
-    "articleNotFound": "Article Not Found"
+    "articleNotFound": "Article Not Found",
+    "notTranslatedNotice": "This article has not been translated into your language yet. You are viewing the original version."
   },
   "announcements": {
     "pageTitle": "Announcements",
@@ -1984,7 +2084,17 @@
       "beltSystem": "Belt System",
       "myRecords": "My Records",
       "socialTitle": "Social",
-      "interviewBanner": "Answer interview questions and tell us about yourself"
+      "interviewBanner": "Answer interview questions and tell us about yourself",
+      "activityTitle": "Activity",
+      "heatmapLess": "Less",
+      "heatmapMore": "More",
+      "heatmapTotal": "Total",
+      "heatmapNoActivity": "No activity on this day",
+      "heatmapLearnLink": "Learn how we count Exp",
+      "levelLabel": "Level {level}",
+      "expProgress": "{current} / {next} Exp",
+      "expRemaining": "{remaining} Exp to next level",
+      "viewExpLeaderboard": "View Exp Leaderboard"
     },
     "records": "Records",
     "bestScore": "Best Score",
@@ -2037,7 +2147,8 @@
       "move_sequence": "Yakusoku Kumite",
       "algebraic_notation": "Algebraic Notation",
       "fen": "FEN Reconstruction",
-      "quadrant_anchors": "Quadrant Anchors"
+      "quadrant_anchors": "Quadrant Anchors",
+      "unknown": "Other"
     },
     "practiceThisChallenge": "Practice This Challenge"
   },
@@ -2235,11 +2346,43 @@
       "past28days": "Past 28 days",
       "past90days": "Past 90 days",
       "newUsersPeriodTotal": "New Users (Period Total)",
-      "postsPeriodTotal": "Posts (Period Total)",
+      "ugcPostsPeriodTotal": "UGC Posts (Period Total)",
       "dailyTrends": "Daily Trends",
       "newUsers": "New Users",
-      "posts": "Posts",
-      "noData": "No data for the selected period."
+      "ugcPosts": "UGC Posts",
+      "noData": "No data for the selected period.",
+      "summaryTable": {
+        "title": "KPI Summary",
+        "category": "Category",
+        "metric": "Metric",
+        "value": "Value",
+        "users": "Users",
+        "ugcPosts": "UGC Posts",
+        "likes": "Likes",
+        "avgPerDay": "Avg per day",
+        "avgPerActivePoster": "Avg per active poster",
+        "total": "Total",
+        "sources": {
+          "topic_posts": "topic_posts",
+          "positions": "positions"
+        },
+        "breakdowns": {
+          "topic_posts": {
+            "opening": "opening",
+            "square": "square"
+          },
+          "positions": {
+            "memory": "memory"
+          }
+        },
+        "help": {
+          "avgPerActivePoster": {
+            "title": "Avg per active poster",
+            "ariaLabel": "Show explanation for Avg per active poster",
+            "description": "Total UGC posts in the selected period divided by the number of distinct users who posted at least one UGC item in that period.\n\nA user who contributed multiple kinds of UGC (for example, both a topic post and a saved position) is counted as one active poster, not two.\n\nSoft-deleted posts are excluded from both the numerator and the active-poster count."
+          }
+        }
+      }
     },
     "usersTable": {
       "email": "Email",
@@ -2261,7 +2404,13 @@
       "premium": "Premium",
       "free": "Free",
       "viewSubscriptions": "Subscriptions",
-      "deleted": "Deleted"
+      "deleted": "Deleted",
+      "signupMethod": "Signup Method",
+      "filterByProvider": "Signup Method",
+      "allProviders": "All",
+      "providerGoogle": "Google",
+      "providerEmail": "Email",
+      "providerUnknown": "Unknown"
     },
     "tabs": {
       "users": "Users",
@@ -2269,8 +2418,24 @@
     },
     "stats": {
       "usersByCountry": "Users by Country",
+      "usersByRank": "Users by Rank",
+      "usersBySignupMethod": "Users by Signup Method",
       "noData": "No data available",
-      "users": "users"
+      "users": "users",
+      "rankNames": {
+        "mukyu": "Unranked",
+        "5kyu": "5th Kyu",
+        "4kyu": "4th Kyu",
+        "3kyu": "3rd Kyu",
+        "2kyu": "2nd Kyu",
+        "1kyu": "1st Kyu",
+        "1dan": "1st Dan"
+      }
+    },
+    "filters": {
+      "clearAll": "Clear all",
+      "country": "Country",
+      "rank": "Rank"
     },
     "subscriptions": "Subscriptions",
     "subscriptionsTable": {
@@ -2351,6 +2516,7 @@
       "previousPage": "Previous",
       "nextPage": "Next"
     },
+    "positionMemory": "Position Memory",
     "topicPosts": {
       "navLabel": "Topic Posts",
       "title": "Topic Posts",
@@ -2555,6 +2721,68 @@
       "endAt": "End At",
       "create": "Create",
       "creating": "Creating..."
+    },
+    "grants": {
+      "title": "Grants",
+      "navLabel": "Grants",
+      "noGrantsFound": "No grants found",
+      "showing": "Showing {from}\u2013{to} of {total} grants",
+      "columns": {
+        "user": "User",
+        "benefit": "Benefit",
+        "grantType": "Grant Type",
+        "reason": "Reason",
+        "period": "Period",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "status": {
+        "revoked": "Revoked",
+        "expired": "Expired",
+        "active": "Active"
+      }
+    },
+    "achievements": {
+      "title": "Achievements",
+      "navLabel": "Achievements",
+      "description": "Manage achievement definitions and view holders.",
+      "noAchievementsFound": "No achievements found",
+      "showing": "Showing {from}\u2013{to} of {total} achievements",
+      "viewHolders": "View holders",
+      "columns": {
+        "displayName": "Name",
+        "iconKey": "Icon key",
+        "slug": "Slug",
+        "category": "Category",
+        "repeatable": "Repeatable",
+        "displayOrder": "Display order",
+        "holderCount": "Holders",
+        "actions": "Actions"
+      },
+      "yes": "Yes",
+      "no": "No",
+      "detail": {
+        "backToList": "Back to Achievements",
+        "notFound": "Achievement not found",
+        "headerTitle": "Achievement Details",
+        "slug": "Slug",
+        "category": "Category",
+        "iconKey": "Icon key",
+        "repeatable": "Repeatable",
+        "displayOrder": "Display order",
+        "holderCount": "Holders",
+        "createdAt": "Created at",
+        "holdersTitle": "Holders",
+        "showingHolders": "Showing {from}\u2013{to} of {total} holders",
+        "noHoldersFound": "No holders yet",
+        "columns": {
+          "username": "Username",
+          "userId": "User ID",
+          "achievedAt": "Achieved at",
+          "metadata": "Metadata"
+        },
+        "anonymous": "(no profile)"
+      }
     }
   },
   "publicProfile": {
@@ -3039,7 +3267,7 @@
       "board_symmetry": "Board Symmetry",
       "route_planner": "Route Planner"
     },
-    "allLeaderboardsSection": "All Leaderboards",
+    "scoreLeaderboardSection": "Score Leaderboard",
     "rankLabel": "Your Rank: #{rank}",
     "notRanked": "Not ranked",
     "cardTitle": {
@@ -3078,7 +3306,23 @@
       "message": "Join the leaderboard!",
       "description": "Create a free account to track your scores and compete with other players.",
       "cta": "Sign Up Free"
+    },
+    "tabs": {
+      "score": "Score",
+      "exp": "Exp"
     }
+  },
+  "expLeaderboard": {
+    "title": "Exp Leaderboard",
+    "description": "See the top players ranked by total experience points.",
+    "table": {
+      "rank": "Rank",
+      "player": "Player",
+      "exp": "Exp",
+      "level": "Level"
+    },
+    "emptyState": "No Exp records yet. Start practicing to earn Exp!",
+    "backToScoreLeaderboard": "Back to Score Leaderboard"
   },
   "validation": {
     "password": {
@@ -3138,7 +3382,9 @@
       "legal_moves": "Legal Moves",
       "legal_moves_bishop": "Legal Moves (Bishop)",
       "legal_moves_king": "Legal Moves (King)",
-      "legal_moves_knight": "Legal Moves (Knight)"
+      "legal_moves_knight": "Legal Moves (Knight)",
+      "route_planner_knight": "Route Planner (Knight)",
+      "route_planner_bishop": "Route Planner (Bishop)"
     },
     "rankNames": {
       "mukyu": "Unranked",
@@ -3155,7 +3401,8 @@
       "criteriaDescriptions": {
         "mukyu": "Ready to begin simple blindfold chess training.",
         "5kyu": "Ability to correctly identify the square on the chess board from algebraic notation (e.g., e4, Bg7).",
-        "4kyu": "Ability to determine legal moves at a specified coordinate for all pieces without visual aids."
+        "4kyu": "Ability to determine legal moves at a specified coordinate for all pieces without visual aids.",
+        "3kyu": "Ability to plan piece maneuvering routes for all pieces without visual aids."
       },
       "tips": "Tips",
       "guide": "Guide",
@@ -3164,8 +3411,120 @@
       "prevPage": "Previous",
       "nextPage": "Next",
       "pageOf": "Page {current} of {total}",
-      "guidePages": {
-        "mukyu": [
+      "mukyuRequirements": ["Understanding of algebraic notation"],
+      "mukyuRelatedLinks": {
+        "learnArticle": "For more details, refer to the following article.",
+        "practiceLink": "You can also practice with a simple exercise.",
+        "learnArticleLabel": "Learn about algebraic notation",
+        "practiceLabel": "Practice algebraic notation"
+      },
+      "readFullGuide": "Read the {rankName} guide"
+    },
+    "signUpBanner": {
+      "message": "Earn your black belt!",
+      "description": "Sign up to track your rank progress.",
+      "cta": "Sign Up Free"
+    },
+    "lockedModal": {
+      "title": "Locked Rank",
+      "message": "Pass {rankName} to unlock this rank",
+      "linkLabel": "View {rankName} details",
+      "ariaLabel": "Locked"
+    }
+  },
+  "rankAchievement": {
+    "title": "Rank Achieved!",
+    "description": "Congratulations! You've earned a new belt rank.",
+    "viewRanks": "View Ranks",
+    "close": "Close",
+    "rankNames": {
+      "mukyu": "Unranked",
+      "5kyu": "5th Kyū",
+      "4kyu": "4th Kyū",
+      "3kyu": "3rd Kyū",
+      "2kyu": "2nd Kyū",
+      "1kyu": "1st Kyū",
+      "1dan": "1st Dan"
+    }
+  },
+  "Achievements": {
+    "monthlyLeaderboard": {
+      "name": "{menuType} ({leaderboardKey}) — {placement} Place",
+      "menuType": {
+        "board_symmetry": "Board Symmetry",
+        "coordinate_quiz": "Coordinate Quiz",
+        "diagonal_quiz": "Diagonal Quiz",
+        "legal_moves": "Legal Moves",
+        "route_planner": "Route Planner",
+        "square_colors": "Square Colors"
+      },
+      "leaderboardKey": {
+        "bishop": "Bishop",
+        "black": "Black",
+        "default": "Default",
+        "king": "King",
+        "knight": "Knight",
+        "queen": "Queen",
+        "random": "Random",
+        "rook": "Rook",
+        "white": "White"
+      },
+      "placement": {
+        "1st": "1st",
+        "2nd": "2nd",
+        "3rd": "3rd"
+      }
+    }
+  },
+  "MobileTabBar": {
+    "games": "Games",
+    "dojo": "Dojo",
+    "topics": "Topics",
+    "mypage": "My Page"
+  },
+  "dojo": {
+    "pageTitle": "Dojo",
+    "currentRankTitle": "Current Rank",
+    "nextRankTitle": "Next Rank",
+    "nextRankRequirementsComingSoon": "Requirements coming soon",
+    "allAchieved": "You have achieved every rank 🎉",
+    "viewAllRanks": "View all ranks",
+    "viewAllPractices": "View all practices",
+    "viewAllGuides": "View all guides",
+    "curriculum": {
+      "title": "Curriculum",
+      "empty": "Coming soon",
+      "achieved": "Achieved",
+      "sections": {
+        "algebraicNotation": "Algebraic notation",
+        "anchorPoints": "Board awareness with anchor points",
+        "blindfoldLegalMoves": "Legal move detection in blindfold chess",
+        "diagonals": "Computing diagonals and anti-diagonals"
+      }
+    }
+  },
+  "guides": {
+    "top": {
+      "title": "Guides",
+      "sections": {
+        "rankGuides": {
+          "title": "Rank Guides",
+          "description": "Textbook-style guides for blindfold chess training, organized by rank."
+        }
+      }
+    },
+    "ranks": {
+      "indexTitle": "Guide",
+      "chapterListHeading": "Chapters"
+    },
+    "breadcrumb": {
+      "home": "Home",
+      "guides": "Guides"
+    },
+    "pages": {
+      "mukyu": {
+        "format": "flat",
+        "pages": [
           {
             "paragraphs": [
               "If you don't understand what notations like e4 or Nf3 mean, you need to start by learning algebraic notation.",
@@ -3189,8 +3548,11 @@
               "This technique is taught at 5th Kyū."
             ]
           }
-        ],
-        "5kyu": [
+        ]
+      },
+      "5kyu": {
+        "format": "flat",
+        "pages": [
           {
             "paragraphs": [
               "If you're having trouble solving the problems, try using anchor points.",
@@ -3212,11 +3574,104 @@
               "Step 1: Identify the area.\nEven if you can't pinpoint f6 immediately, you can quickly determine that it falls within the top-right area (e5–h8).",
               "Step 2: Determine the anchor point.\nThe anchor points in this area are e5, h5, e8, and h8. Look for the nearest anchor point by file and rank — in this case, e5 works well.",
               "Step 3: Check the relative position.\nf6 is one square to the right and one square up from e5 — in other words, diagonally upper-right.",
-              "In this way, instead of constructing a mental image from absolute coordinates like \"the f-file... the 6th rank...\", you recognize positions relatively: \"top-right area, upper-right of e5.\" This reduces cognitive load and allows for more efficient board visualization."
+              "In this way, instead of constructing a mental image from absolute coordinates like \"the f-file... the 6th rank...\", you recognize positions relatively: \"top-right area, upper-right of e5.\" This reduces cognitive load and allows for more efficient board visualization.",
+              "The following article also explains this method."
             ]
           }
-        ],
-        "4kyu": [
+        ]
+      },
+      "3kyu": {
+        "format": "flat",
+        "pages": [
+          {
+            "paragraphs": [
+              "Regarding bishop maneuvering, it's helpful to first consider which diagonal and anti-diagonal a bishop can control when placed on a specific square.",
+              "For an explanation of diagonals and anti-diagonals, please refer to the Diagonal Quiz tutorial.",
+              "Let's start by thinking about the diagonals that run from bottom-left to top-right.",
+              "The starting point of a diagonal is always a square on the a-file or the 1st rank.",
+              "This is because file and rank values change by 1 simultaneously along a diagonal, so tracing down-left (↙) will always reach one board edge before the other.",
+              "Let's think in terms of numeric file values (a=1, b=2, ..., h=8).",
+              "When the file value is less than the rank value, tracing down-left (↙) hits the a-file (left edge) first.",
+              "For example, consider a bishop on d7. The file value is 4 and the rank is 7.",
+              "The maximum steps down-left is \"file value - 1\" = 3. Subtracting 3 from the rank gives 7 - 3 = 4, so the starting point is a4."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Conversely, when the file value is greater than the rank value, tracing down-left (↙) hits the 1st rank (bottom edge) first.",
+              "For example, consider a bishop on f4. The file value is 6 and the rank is 4.",
+              "The maximum steps down-left is \"rank value - 1\" = 3. Subtracting 3 from the file gives 6 - 3 = 3, so the starting point is c1.",
+              "When the file and rank values are equal, tracing down-left (↙) reaches both board edges simultaneously, so the starting point is always a1.",
+              "This is the a1-h8 main diagonal."
+            ]
+          },
+          {
+            "paragraphs": [
+              "So far we've learned how to find the starting point.",
+              "The same approach can be used to find the endpoint.",
+              "The endpoint is always a square on the h-file or the 8th rank.",
+              "This time, consider tracing up-right (↗). By the same logic as before, whichever board edge is reached first determines the endpoint.",
+              "When the file value is less than the rank value, tracing up-right (↗) hits the 8th rank (top edge) first.",
+              "For example, with a bishop on d7, the maximum steps up-right is \"8 - rank value\" = 8 - 7 = 1. Adding 1 to the file gives 4 + 1 = 5, so the endpoint is e8.",
+              "Conversely, when the file value is greater than the rank value, the h-file (right edge) is reached first.",
+              "For example, with a bishop on f4, the maximum steps up-right is \"8 - file value\" = 8 - 6 = 2. Adding 2 to the rank gives 4 + 2 = 6, so the endpoint is h6.",
+              "When the file and rank values are equal, the endpoint is always h8."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Next, let's consider the anti-diagonals that run from top-left to bottom-right.",
+              "The starting point of an anti-diagonal is always a square on the a-file or the 8th rank.",
+              "Along an anti-diagonal, tracing up-left (↖) decreases the file and increases the rank, so it reaches either the a-file (left edge) or the 8th rank (top edge) first.",
+              "The steps to the a-file is \"file value - 1\", and the steps to the 8th rank is \"8 - rank value\". The smaller value determines which edge is reached first.",
+              "For example, consider a bishop on c3. Steps to the a-file: 3 - 1 = 2, steps to the 8th rank: 8 - 3 = 5.",
+              "The a-file is reached first, so adding 2 to the rank gives 3 + 2 = 5, and the starting point is a5.",
+              "Conversely, for a bishop on f7, steps to the a-file: 6 - 1 = 5, steps to the 8th rank: 8 - 7 = 1.",
+              "The 8th rank is reached first, so subtracting 1 from the file gives 6 - 1 = 5, and the starting point is e8.",
+              "When both step counts are equal, the starting point is always a8. This is the a8-h1 main anti-diagonal."
+            ]
+          },
+          {
+            "paragraphs": [
+              "The endpoint of an anti-diagonal is always a square on the h-file or the 1st rank.",
+              "Consider tracing down-right (↘). The steps to the h-file is \"8 - file value\", and the steps to the 1st rank is \"rank value - 1\".",
+              "For a bishop on c3, steps to the h-file: 8 - 3 = 5, steps to the 1st rank: 3 - 1 = 2.",
+              "The 1st rank is reached first, so adding 2 to the file gives 3 + 2 = 5, and the endpoint is e1.",
+              "For a bishop on f7, steps to the h-file: 8 - 6 = 2, steps to the 1st rank: 7 - 1 = 6.",
+              "The h-file is reached first, so subtracting 2 from the rank gives 7 - 2 = 5, and the endpoint is h5.",
+              "When both step counts are equal, the endpoint is always h1."
+            ]
+          },
+          {
+            "paragraphs": [
+              "To summarize, the starting and ending points of diagonals and anti-diagonals follow regular patterns.",
+              "First, here are the patterns for diagonals (↗ direction) starting from the a-file.",
+              "As the starting point moves up, the endpoint squeezes in from the right along the 8th rank.",
+              "Next, the patterns for diagonals starting from the 1st rank.",
+              "As the starting point moves right, the endpoint squeezes down from the top along the h-file."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Here are the patterns for anti-diagonals (↘ direction) starting from the a-file.",
+              "Similar to diagonals, as the starting point moves down, the endpoint squeezes in from the right along the 1st rank.",
+              "Next, the patterns for anti-diagonals starting from the 8th rank.",
+              "As the starting point moves right, the endpoint squeezes up from the bottom along the h-file."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Combinations like a2 → g8 or e8 → h5 will naturally be memorized through repeated blindfold chess practice. Eventually you'll be able to answer them unconsciously.",
+              "The Diagonal Quiz is effective for training this calculation.",
+              "If jumping straight into Route Planner is too difficult, warm up here first.",
+              "Once you can perform these diagonal and anti-diagonal calculations, maneuvering in blindfold chess becomes much faster — the theory behind this will be covered in a future guide."
+            ]
+          }
+        ]
+      },
+      "4kyu": {
+        "format": "flat",
+        "pages": [
           {
             "paragraphs": [
               "With a physical chess board in front of you, experienced chess players can determine legal moves for all pieces almost unconsciously.",
@@ -3254,56 +3709,39 @@
             ]
           }
         ]
+      }
+    },
+    "inlineLinks": {
+      "3kyu": {
+        "diagonalQuizTutorialLabel": "Diagonal Quiz Tutorial",
+        "diagonalQuizLabel": "Diagonal Quiz"
       },
-      "mukyuRequirements": ["Understanding of algebraic notation"],
-      "4kyuGuideLinks": {
+      "5kyu": {
+        "quadrantMethodArticleLabel": "Switching My Board Awareness Method to the Quadrant Method"
+      },
+      "4kyu": {
         "kingMovementLabel": "King's Movement (detailed guide)",
         "knightMovementLabel": "Knight's Movement (detailed guide)",
         "bishopMovementLabel": "Bishop's Movement (detailed guide)",
         "rookMovementLabel": "Rook Movement (Detailed Guide)"
       },
-      "mukyuGuideLinks": {
+      "mukyu": {
         "learnArticle": "For more details, refer to the following article.",
-        "practiceLink": "You can also practice with a simple exercise.",
         "learnArticleLabel": "Learn about algebraic notation",
-        "practiceLabel": "Practice algebraic notation",
         "coordinateQuizLabel": "Coordinate Quiz",
         "coordinateConfusionLabel": "About coordinate confusion",
         "quadrantsLabel": "Quadrant Training",
         "5kyuGuideLabel": "View the 5th Kyū guide"
       }
     },
-    "signUpBanner": {
-      "message": "Earn your black belt!",
-      "description": "Sign up to track your rank progress.",
-      "cta": "Sign Up Free"
-    },
-    "lockedModal": {
-      "title": "Locked Rank",
-      "message": "Pass {rankName} to unlock this rank",
-      "linkLabel": "View {rankName} details",
-      "ariaLabel": "Locked"
+    "navigation": {
+      "prevRank": "Previous rank: {rankName} guide",
+      "nextRank": "Next rank: {rankName} guide"
     }
   },
-  "rankAchievement": {
-    "title": "Rank Achieved!",
-    "description": "Congratulations! You've earned a new belt rank.",
-    "viewRanks": "View Ranks",
-    "close": "Close",
-    "rankNames": {
-      "mukyu": "Unranked",
-      "5kyu": "5th Kyū",
-      "4kyu": "4th Kyū",
-      "3kyu": "3rd Kyū",
-      "2kyu": "2nd Kyū",
-      "1kyu": "1st Kyū",
-      "1dan": "1st Dan"
-    }
-  },
-  "MobileTabBar": {
-    "games": "Games",
-    "practice": "Practice",
-    "topics": "Topics",
-    "mypage": "My Page"
+  "Footer": {
+    "resources": "Resources",
+    "support": "Support",
+    "legal": "Legal"
   }
 }

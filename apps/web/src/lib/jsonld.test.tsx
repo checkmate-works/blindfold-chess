@@ -1,17 +1,21 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import {
+import type {
   ArticleData,
   BlogPostData,
   BreadcrumbItem,
   FAQItemData,
   ItemListItemData,
+  LearningResourceData,
+} from './jsonld';
+import {
   generateArticleSchema,
   generateBlogPostingSchema,
   generateBreadcrumbListSchema,
   generateDefinedTermSetSchema,
   generateFAQPageSchema,
   generateItemListSchema,
+  generateLearningResourceSchema,
   generateOrganizationSchema,
   generateWebSiteSchema,
 } from './jsonld';
@@ -539,6 +543,114 @@ describe('JSON-LD Schema Generators', () => {
       expect(schema.name).toBe('チェス用語集');
       expect(schema.hasDefinedTerm[0].name).toBe('チェックメイト');
       expect(schema.hasDefinedTerm[0].inDefinedTermSet).toBe('https://example.com/ja/glossary');
+    });
+  });
+
+  describe('generateLearningResourceSchema', () => {
+    const baseParams: LearningResourceData = {
+      name: '5th Kyū Guide',
+      description: 'The complete 5th Kyū blindfold chess guide.',
+      url: 'https://www.blindfold-chess.online/en/guides/ranks/5kyu',
+      inLanguage: 'en',
+      educationalLevel: '5th Kyū',
+      learningResourceType: 'Guide',
+    };
+
+    it('emits the required LearningResource fields', () => {
+      const schema = generateLearningResourceSchema(baseParams);
+
+      expect(schema['@context']).toBe('https://schema.org');
+      expect(schema['@type']).toBe('LearningResource');
+      expect(schema.name).toBe('5th Kyū Guide');
+      expect(schema.description).toBe('The complete 5th Kyū blindfold chess guide.');
+      expect(schema.url).toBe('https://www.blindfold-chess.online/en/guides/ranks/5kyu');
+      expect(schema.educationalLevel).toBe('5th Kyū');
+      expect(schema.learningResourceType).toBe('Guide');
+    });
+
+    it('maps `inLanguage` through LANGUAGE_MAP for known locales', () => {
+      expect(generateLearningResourceSchema({ ...baseParams, inLanguage: 'en' }).inLanguage).toBe(
+        'en-US'
+      );
+      expect(generateLearningResourceSchema({ ...baseParams, inLanguage: 'ja' }).inLanguage).toBe(
+        'ja-JP'
+      );
+      expect(generateLearningResourceSchema({ ...baseParams, inLanguage: 'es' }).inLanguage).toBe(
+        'es-ES'
+      );
+    });
+
+    it('passes through unknown language codes unchanged', () => {
+      const schema = generateLearningResourceSchema({ ...baseParams, inLanguage: 'fr-CA' });
+      expect(schema.inLanguage).toBe('fr-CA');
+    });
+
+    it('defaults `author` and `publisher` to the site Organization', () => {
+      const schema = generateLearningResourceSchema(baseParams);
+      expect(schema.author).toEqual({
+        '@type': 'Organization',
+        name: 'CheckmateWorks',
+        url: 'https://www.blindfold-chess.online',
+      });
+      expect(schema.publisher).toEqual({
+        '@type': 'Organization',
+        name: 'CheckmateWorks',
+        url: 'https://www.blindfold-chess.online',
+        logo: {
+          '@type': 'ImageObject',
+          url: 'https://www.blindfold-chess.online/logo.png',
+        },
+      });
+    });
+
+    it('allows overriding author and publisher', () => {
+      const schema = generateLearningResourceSchema({
+        ...baseParams,
+        author: { name: 'Alice', url: 'https://alice.example' },
+        publisher: {
+          name: 'Example Inc',
+          url: 'https://example.com',
+          logo: 'https://example.com/logo.png',
+        },
+      });
+      expect((schema.author as { name: string }).name).toBe('Alice');
+      expect((schema.publisher as { name: string }).name).toBe('Example Inc');
+      expect((schema.publisher as { logo: { url: string } }).logo.url).toBe(
+        'https://example.com/logo.png'
+      );
+    });
+
+    it('omits optional fields when they are undefined', () => {
+      const schema = generateLearningResourceSchema(baseParams);
+      expect(schema).not.toHaveProperty('teaches');
+      expect(schema).not.toHaveProperty('datePublished');
+      expect(schema).not.toHaveProperty('dateModified');
+      expect(schema).not.toHaveProperty('image');
+    });
+
+    it('includes optional fields when provided', () => {
+      const schema = generateLearningResourceSchema({
+        ...baseParams,
+        teaches: 'Coordinate recognition, diagonals, piece maneuvering',
+        datePublished: '2025-04-01T00:00:00.000Z',
+        dateModified: '2026-04-11T00:00:00.000Z',
+        image: 'https://www.blindfold-chess.online/og/5kyu-guide.png',
+      });
+      expect(schema.teaches).toBe('Coordinate recognition, diagonals, piece maneuvering');
+      expect(schema.datePublished).toBe('2025-04-01T00:00:00.000Z');
+      expect(schema.dateModified).toBe('2026-04-11T00:00:00.000Z');
+      expect(schema.image).toBe('https://www.blindfold-chess.online/og/5kyu-guide.png');
+    });
+
+    it('supports the Tutorial and Course variants', () => {
+      expect(
+        generateLearningResourceSchema({ ...baseParams, learningResourceType: 'Tutorial' })
+          .learningResourceType
+      ).toBe('Tutorial');
+      expect(
+        generateLearningResourceSchema({ ...baseParams, learningResourceType: 'Course' })
+          .learningResourceType
+      ).toBe('Course');
     });
   });
 });

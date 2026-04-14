@@ -15,9 +15,10 @@ type Props = {
     noData: string;
     users: string;
   };
+  onBarClick?: (country: string) => void;
 };
 
-export function CountryBarChart({ data, labels }: Props) {
+export function CountryBarChart({ data, labels, onBarClick }: Props) {
   if (data.length === 0) {
     return (
       <div className="flex items-center justify-center h-48 text-muted-foreground text-sm">
@@ -51,7 +52,18 @@ export function CountryBarChart({ data, labels }: Props) {
             color: 'var(--color-foreground)',
           }}
         />
-        <Bar dataKey="count" fill="var(--color-primary)" radius={[0, 4, 4, 0]} />
+        <Bar
+          dataKey="count"
+          fill="var(--color-primary)"
+          radius={[0, 4, 4, 0]}
+          cursor={onBarClick ? 'pointer' : undefined}
+          onClick={(_data, _index, _event) => {
+            const entry = _data as unknown as CountryStat;
+            if (onBarClick && entry?.country) {
+              onBarClick(entry.country);
+            }
+          }}
+        />
       </BarChart>
     </ResponsiveContainer>
   );

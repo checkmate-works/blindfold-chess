@@ -5,10 +5,17 @@ import { setRequestLocale } from 'next-intl/server';
 import nextDynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
 
+import {
+  ADSENSE_SLOT_CONTENT_BOTTOM,
+  ADSENSE_SLOT_CONTENT_MIDDLE,
+  IS_LOCAL_DEV,
+  SUPPORTED_LOCALES,
+} from '@/config';
+
 import { JsonLd, generateArticleSchema } from '@/lib/jsonld';
 
 import { CardLink, Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
-import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
+import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import {
@@ -19,6 +26,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ARTICLE_ICONS, type ArticleSlug, CATEGORY_STYLES } from '../../_lib/types';
 import {
+  getAllArticles,
   getArticle,
   getArticlesByCategory,
   getAvailableCategories,
@@ -42,7 +50,19 @@ type Props = {
   }>;
 };
 
-export const dynamic = 'force-dynamic';
+export async function generateStaticParams(): Promise<
+  { locale: Locale; category: string; slug: string }[]
+> {
+  const results = await Promise.all(
+    SUPPORTED_LOCALES.map(async (locale) => {
+      const articles = await getAllArticles(locale);
+      return articles
+        .filter((article) => article.category)
+        .map((article) => ({ locale, category: article.category, slug: article.slug }));
+    })
+  );
+  return results.flat();
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, slug, category } = await params;
@@ -115,7 +135,9 @@ export default async function LearnArticlePage({ params }: Props) {
           <MarkdownRenderer content={article.content} skipFirstH1={true} />
         </article>
 
-        <AdBannerGuard slot="banner-wide" />
+        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE) && (
+          <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
+        )}
 
         {relatedPracticeModules && (
           <div className="space-y-4">
@@ -182,7 +204,9 @@ export default async function LearnArticlePage({ params }: Props) {
           </div>
         </div>
 
-        <AdBannerGuard slot="banner-standard" />
+        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+        )}
 
         <Divider />
 

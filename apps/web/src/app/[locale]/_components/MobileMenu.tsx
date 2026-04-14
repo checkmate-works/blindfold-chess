@@ -10,6 +10,7 @@ import { FaHome } from 'react-icons/fa';
 import { useScrollLock } from '../_hooks/use-scroll-lock';
 import { getIcon } from '../_lib/icon-mapping';
 import type { NavigationItem } from '../_lib/types';
+import { CloseButton } from './CloseButton';
 
 type Props = {
   title: string;
@@ -72,19 +73,10 @@ export function MobileMenu({ title, items }: Props) {
             >
               <div className="flex items-center justify-between h-14 px-4 border-b border-border">
                 <span className="text-lg font-semibold text-foreground">{title}</span>
-                <button
+                <CloseButton
                   onClick={() => setIsOpen(false)}
                   className="p-2 rounded-md text-muted-foreground hover:bg-accent"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
+                />
               </div>
 
               <nav className="px-4 py-6 space-y-2">

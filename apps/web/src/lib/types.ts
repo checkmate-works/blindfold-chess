@@ -6,12 +6,6 @@ import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreference
 // Re-export the canonical SkillLevel type from @blindfold-chess/features
 export type SkillLevel = AiGameSkillLevel;
 
-// Validate skill level is within valid range (1-20)
-// We start from 1 instead of 0 to avoid complete random moves
-export function isValidSkillLevel(level: number): level is SkillLevel {
-  return Number.isInteger(level) && level >= 1 && level <= 20;
-}
-
 // Game settings
 export type GameSettings = {
   color: Side;

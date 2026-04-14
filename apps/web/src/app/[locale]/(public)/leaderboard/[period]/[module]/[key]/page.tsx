@@ -1,22 +1,24 @@
-import { getTranslations } from 'next-intl/server';
-import { notFound } from 'next/navigation';
+/**
+ * Legacy score detail shim (`/leaderboard/[period]/[module]/[key]` — 308 redirect)
+ *
+ * @description
+ * Absorbs the pre-refactor period-first URL shape and redirects to the
+ * canonical category-first form
+ * `/leaderboard/score/[period]/[module-slug]/[key]`. All three path segments
+ * are strictly validated against the current value sets — any mismatch 404s.
+ *
+ * The `[module]` path segment is expected to be the hyphenated slug form
+ * (e.g. `coordinate-quiz`), which is what the pre-refactor route already
+ * accepted, so existing inbound links keep working verbatim.
+ *
+ * `?page=` is preserved on the redirect so deep-linked pagination survives.
+ */
+import { notFound, permanentRedirect } from 'next/navigation';
 
-import { createClient } from '@/lib/supabase/server';
-
-import { getLeaderboard } from '@/app/[locale]/(public)/leaderboard/_actions/getLeaderboard';
-import { LeaderboardDetailContent } from '@/app/[locale]/(public)/leaderboard/_components';
-import { ChallengeLink } from '@/app/[locale]/(public)/leaderboard/_components/ChallengeLink';
-import {
-  type LeaderboardModule,
-  type LeaderboardPeriod,
-  slugToModule,
-} from '@/app/[locale]/(public)/leaderboard/_lib/types';
-import { isValidKey, isValidPeriod } from '@/app/[locale]/(public)/leaderboard/_lib/validators';
-import { Divider, PagePanel } from '@/app/[locale]/_components';
-import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
-import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
+
+import { slugToModule } from '../../../_lib/types';
+import { isValidKey, isValidModuleSlug, isValidPeriod } from '../../../_lib/validators';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,86 +30,22 @@ type Props = {
     key: string;
   }>;
   searchParams: Promise<{
-    page?: string;
+    page?: string | string[];
   }>;
 };
 
-type ValidatedParams = {
-  period: LeaderboardPeriod;
-  module: LeaderboardModule;
-  key: string;
-};
+export default async function LegacyLeaderboardDetailRedirect({ params, searchParams }: Props) {
+  const { locale, period, module: moduleSlug, key } = await params;
 
-function validateParams(
-  periodStr: string,
-  moduleSlug: string,
-  key: string
-): ValidatedParams | null {
-  if (!isValidPeriod(periodStr)) return null;
+  if (!isValidPeriod(period)) notFound();
+  if (!isValidModuleSlug(moduleSlug)) notFound();
 
   const resolvedModule = slugToModule(moduleSlug);
-  if (!resolvedModule || !isValidKey(resolvedModule, key)) return null;
+  if (!resolvedModule || !isValidKey(resolvedModule, key)) notFound();
 
-  return { period: periodStr, module: resolvedModule, key };
-}
-
-export async function generateMetadata({ params }: Props) {
-  const { locale, period, module: moduleSlug, key } = await params;
-
-  const validated = validateParams(period, moduleSlug, key);
-  if (!validated) return {};
-
-  const t = await getTranslations({ locale, namespace: 'leaderboard' });
-
-  const title = t(`cardTitle.${validated.module}.${validated.key}`);
-  const periodLabel = t(`period.${validated.period}`);
-
-  return {
-    title: resolveTitle(`${title} (${periodLabel}) — ${t('title')}`, locale),
-  };
-}
-
-export default async function LeaderboardDetailPage({ params, searchParams }: Props) {
-  const { locale, period, module: moduleSlug, key } = await params;
   const { page: pageParam } = await searchParams;
+  const rawPage = Array.isArray(pageParam) ? pageParam[0] : pageParam;
+  const pageQuery = rawPage ? `?page=${encodeURIComponent(rawPage)}` : '';
 
-  const validated = validateParams(period, moduleSlug, key);
-  if (!validated) notFound();
-
-  const page = Math.max(1, parseInt(pageParam ?? '1', 10) || 1);
-
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const currentUserId = user?.id ?? null;
-
-  const data = await getLeaderboard(validated.module, validated.key, validated.period, page);
-  const t = await getTranslations({ locale, namespace: 'leaderboard' });
-  const detailTitle = t(`cardTitle.${validated.module}.${validated.key}`);
-
-  return (
-    <PagePanel>
-      <LeaderboardDetailContent
-        locale={locale}
-        period={validated.period}
-        module={validated.module}
-        settingKey={validated.key}
-        currentUserId={currentUserId}
-        data={data}
-        currentPage={page}
-      />
-
-      <ChallengeLink locale={locale} module={validated.module} settingKey={validated.key} />
-
-      <AdBannerGuard slot="banner-standard" />
-
-      <Divider />
-
-      <Breadcrumb
-        items={[{ label: t('title'), href: '/leaderboard' }, { label: detailTitle }]}
-        locale={locale}
-      />
-    </PagePanel>
-  );
+  permanentRedirect(`/${locale}/leaderboard/score/${period}/${moduleSlug}/${key}${pageQuery}`);
 }

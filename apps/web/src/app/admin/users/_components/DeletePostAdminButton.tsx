@@ -2,6 +2,10 @@
 
 import { useRef, useState } from 'react';
 
+import { Textarea } from '@/app/_components';
+
+import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
+
 import { deletePostAdmin } from '../_actions/deletePostAdmin';
 
 export function DeletePostAdminButton({
@@ -46,6 +50,11 @@ export function DeletePostAdminButton({
     }
   }
 
+  function handleCancel() {
+    setIsOpen(false);
+    setError(null);
+  }
+
   return (
     <>
       <button
@@ -56,49 +65,29 @@ export function DeletePostAdminButton({
         {labels.deleteButton}
       </button>
 
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-card border border-border rounded-lg p-6 w-full max-w-md mx-4">
-            <h3 className="text-lg font-semibold mb-4">{labels.deleteModalTitle}</h3>
-
-            <label htmlFor={`delete-reason-${postId}`} className="block text-sm font-medium mb-2">
-              {labels.deleteModalReasonLabel}
-            </label>
-            <textarea
-              id={`delete-reason-${postId}`}
-              ref={reasonRef}
-              className="w-full border border-border rounded-md px-3 py-2 text-sm bg-background text-foreground resize-none"
-              rows={3}
-              maxLength={1000}
-              placeholder={labels.deleteModalReasonPlaceholder}
-            />
-
-            {error && <p className="text-destructive text-sm mt-2">{error}</p>}
-
-            <div className="flex justify-end gap-2 mt-4">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsOpen(false);
-                  setError(null);
-                }}
-                className="px-4 py-2 text-sm rounded bg-card border border-border hover:bg-secondary transition-colors"
-                disabled={isPending}
-              >
-                {labels.deleteModalCancel}
-              </button>
-              <button
-                type="button"
-                onClick={handleDelete}
-                className="px-4 py-2 text-sm rounded bg-destructive text-destructive-foreground hover:opacity-80 transition-opacity disabled:opacity-50"
-                disabled={isPending}
-              >
-                {isPending ? labels.deleteModalDeleting : labels.deleteModalConfirm}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmationModal
+        isOpen={isOpen}
+        title={labels.deleteModalTitle}
+        confirmText={labels.deleteModalConfirm}
+        cancelText={labels.deleteModalCancel}
+        confirmVariant="danger"
+        isLoading={isPending}
+        error={error}
+        onConfirm={handleDelete}
+        onCancel={handleCancel}
+      >
+        <label htmlFor={`delete-reason-${postId}`} className="block text-sm font-medium mb-2">
+          {labels.deleteModalReasonLabel}
+        </label>
+        <Textarea
+          id={`delete-reason-${postId}`}
+          ref={reasonRef}
+          inputSize="sm"
+          rows={3}
+          maxLength={1000}
+          placeholder={labels.deleteModalReasonPlaceholder}
+        />
+      </ConfirmationModal>
     </>
   );
 }

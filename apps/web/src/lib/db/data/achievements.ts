@@ -8,9 +8,10 @@
  * These are repeatable achievements: a user can earn the same badge every
  * month they place in the top 3.
  */
+import type { AchievementCriteria } from '@blindfold-chess/types';
+
 import { LEADERBOARD_KEYS } from '@/lib/leaderboard-keys';
 
-import type { AchievementCriteria } from '../achievement-criteria-types';
 import { CHALLENGE_MENU_TYPES } from '../practice-menu-types';
 
 // ---------------------------------------------------------------------------

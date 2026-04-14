@@ -94,17 +94,43 @@ Route segment names use **singular or plural form depending on the nature of the
 ### Server Actions (`"use server"` files) Convention
 
 - **Only async function declarations may be exported** — Next.js requires that every export in a `"use server"` file is an async function. Re-exports (`export { fn } from '...'`) are **forbidden** because they are not async function declarations. This causes a build error: _"Only async functions are allowed to be exported in a 'use server' file."_
-- **`export type` is safe** — Type-only exports (`export type { T } from '...'`) are allowed because types are erased at build time and are not Server Actions.
-- **DRY pattern for shared actions** — When multiple routes share the same Server Action logic, extract the core logic into a base function (e.g., `toggleLikeBase`) and define a thin async wrapper in each route's `_actions/` file. Do NOT re-export the shared function directly.
+- **`export type { ... }` brace re-exports are FORBIDDEN** — The following forms are **not safe** in `"use server"` files under Next.js 16 + Turbopack:
+  ```ts
+  export type { T }; // re-export of a locally imported type
+  export type { T } from '...'; // direct re-export from another module
+  ```
+  The Server Action transform does NOT reliably erase these statements: they survive into the bundled server chunk as value references and produce a runtime `ReferenceError: <Type> is not defined` on first POST (Server Action invocation). This contradicts what TypeScript alone would do, and it is **not caught by GET smoke tests** — only by actually invoking a Server Action.
+  - **Reproduced on 2026-04-10** as `ReferenceError: ToggleLikeResult is not defined` thrown from the home feed's Like action. The three affected files (`position-memory`, `topics/openings/.../toggleLike`, `topics/squares/.../toggleLike`) all had an `export type { ToggleLikeResult }` line; removing those lines eliminated the error.
+  - **Rule**: Never write `export type { ... }` re-exports inside a `"use server"` file. If a type needs to be shared, define it in a separate non-`"use server"` module (e.g., `_lib/types.ts` or `@/lib/<feature>/types.ts`) and have consumers `import type { ... }` from there. The `"use server"` action file may then `import type` (not re-export) that type internally for its own function signatures.
+  - **`export type Foo = ...` (local alias declarations) are still allowed** — empirically these do not reproduce the runtime error. A static regression test (`src/lib/use-server-type-imports.test.ts`) enforces only the brace re-export ban. If a future repro shows local aliases also break, tighten the test.
+  - **Inline `type` specifiers in value imports are also unsafe** — `import { type X, y } from '...'` inside `"use server"` files must be split into `import type { X } from '...'` + `import { y } from '...'` for the same reason.
+- **DRY pattern for shared actions** — When multiple routes share the same Server Action logic, extract the core logic into a base function (e.g., `toggleLikeBase`) and define a thin async wrapper in each route's `_actions/` file. Do NOT re-export the shared function directly, and do NOT re-export its return type as `export type` either — put the type in a plain module.
 
 ```typescript
 // ✗ Bad — re-export in "use server" file (build error)
 'use server';
+import type { ToggleLikeResult } from '@/lib/positions/like-actions';
+import { togglePositionLike } from '@/lib/positions/like-actions';
+
 import { deletePostBase } from '@/app/[locale]/(public)/topics/_actions/deletePost';
-// ✓ Also good — import the shared action directly in the consumer (page.tsx)
-import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
 
 export { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
+
+// ✗ Bad — export type in "use server" file (runtime ReferenceError under Next.js 16 + Turbopack)
+('use server');
+export type { ToggleLikeResult } from '@/lib/positions/like-actions';
+export async function toggleLike(id: string) {
+  /* ... */
+}
+
+// ✓ Good — put the type in a plain module and only `import type` it inside the action
+// @/lib/positions/like-actions.ts (no "use server" directive):
+//   export type ToggleLikeResult = { liked: boolean; likeCount: number } | { error: string };
+('use server');
+
+export async function toggleLike(id: string, locale: string): Promise<ToggleLikeResult> {
+  return togglePositionLike(id, locale);
+}
 
 // ✓ Good — async wrapper delegates to shared base function
 ('use server');
@@ -259,16 +285,16 @@ A martial arts-inspired progression system (5級 → 初段). Users earn ranks b
 
 ### Architecture Overview
 
-| Layer                 | File                                                                      | Responsibility                                                                                                                                                                                          |
-| --------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Schema**            | `src/lib/db/schema.ts` (`ranks`, `userRanks`)                             | DB table definitions. `ranks` is admin-managed master data; `user_ranks` is immutable achievement history (INSERT-only, service role only)                                                              |
-| **Seed data**         | `src/lib/db/data/ranks.ts`                                                | Code-is-source-of-truth rank definitions with `ALL_RANK_SLUGS`, `RANK_COLORS`, and `ranksSeedData`. Requirements are JSONB arrays (implicit AND). Empty `requirements: []` = conditions not yet defined |
-| **Evaluation**        | `src/lib/db/rank-evaluation.ts`                                           | `checkAndGrantRanks(userId)` — called after every challenge completion. Evaluator pattern: one function per requirement `type` (currently `challenge_score`). Returns `GrantedRank[]`                   |
-| **Integration**       | `src/lib/db/save-challenge-result.ts`                                     | Calls `checkAndGrantRanks` in try-catch after the challenge transaction commits. Failure does not break the challenge save flow                                                                         |
-| **Server Action**     | `src/app/[locale]/(public)/practice/_actions/save-practice-result.ts`     | `SaveResultResponse` includes `grantedRanks?` field, propagated from `saveChallengeResult`                                                                                                              |
-| **Achievement Modal** | `src/app/[locale]/(public)/practice/_components/RankAchievementModal.tsx` | Client component. Reads `blindfold_chess_granted_ranks` from sessionStorage on mount, shows celebration modal with CTA to `/ranks`                                                                      |
-| **Ranks Page**        | `src/app/[locale]/(public)/ranks/page.tsx`                                | Public SSR page showing all ranks with 4 states: achieved ✓, next (requirements visible), locked 🔒, coming soon                                                                                        |
-| **RLS**               | `drizzle/supabase/rls_policies.sql`                                       | Both tables: SELECT only for authenticated/anon. No INSERT/UPDATE/DELETE policies — writes via service role only                                                                                        |
+| Layer                 | File                                                                              | Responsibility                                                                                                                                                                                          |
+| --------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Schema**            | `src/lib/db/schema.ts` (`ranks`, `userRanks`)                                     | DB table definitions. `ranks` is admin-managed master data; `user_ranks` is immutable achievement history (INSERT-only, service role only)                                                              |
+| **Seed data**         | `src/lib/db/data/ranks.ts`                                                        | Code-is-source-of-truth rank definitions with `ALL_RANK_SLUGS`, `RANK_COLORS`, and `ranksSeedData`. Requirements are JSONB arrays (implicit AND). Empty `requirements: []` = conditions not yet defined |
+| **Evaluation**        | `src/lib/db/rank-evaluation.ts`                                                   | `checkAndGrantRanks(userId)` — called after every challenge completion. Evaluator pattern: one function per requirement `type` (currently `challenge_score`). Returns `GrantedRank[]`                   |
+| **Integration**       | `src/lib/db/save-challenge-result.ts`                                             | Calls `checkAndGrantRanks` in try-catch after the challenge transaction commits. Failure does not break the challenge save flow                                                                         |
+| **Server Action**     | `src/app/[locale]/(public)/practice/(challenge)/_actions/save-practice-result.ts` | `SaveResultResponse` includes `grantedRanks?` field, propagated from `saveChallengeResult`                                                                                                              |
+| **Achievement Modal** | `src/app/[locale]/(public)/practice/_components/RankAchievementModal.tsx`         | Client component. Reads `blindfold_chess_granted_ranks` from sessionStorage on mount, shows celebration modal with CTA to `/ranks`                                                                      |
+| **Ranks Page**        | `src/app/[locale]/(public)/ranks/page.tsx`                                        | Public SSR page showing all ranks with 4 states: achieved ✓, next (requirements visible), locked 🔒, coming soon                                                                                        |
+| **RLS**               | `drizzle/supabase/rls_policies.sql`                                               | Both tables: SELECT only for authenticated/anon. No INSERT/UPDATE/DELETE policies — writes via service role only                                                                                        |
 
 ### Key Design Decisions
 
@@ -393,6 +419,43 @@ If adding the ability to edit `markdown` format articles in the admin UI:
 4. **content vs. contentJson** — For `markdown` articles, `content` is the source of truth and `contentJson` should remain `null`. The validation logic already allows empty `content` only for `tiptap_json`.
 5. **Image handling** — Markdown articles use inline image URLs (e.g., `![alt](/path)`). The current `useImageUpload` hook is Tiptap-specific. A Markdown editor would need its own image insertion mechanism (e.g., insert `![](url)` at cursor).
 6. **Preview rendering** — The existing `MarkdownRenderer` component can be reused for live preview.
+
+## User Grants System (権限付与)
+
+A generic system for granting time-limited benefits to users. Supports ad-free access, paywall content access, and future benefit types.
+
+### Architecture Overview
+
+| Layer              | File                                  | Responsibility                                                                                                                  |
+| ------------------ | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| **Schema**         | `src/lib/db/schema.ts` (`userGrants`) | DB table. See TSDoc `@design` tags for full design rationale                                                                    |
+| **Core logic**     | `src/lib/user-grants.ts`              | `hasActiveGrant(userId, benefitType)` — cached lookup; `calcGrantStartsAt(userId, benefitType)` — additive stacking calculation |
+| **Ad integration** | `src/lib/ad.ts`                       | `shouldShowAdsForUser()` checks both Stripe subscriptions AND `hasActiveGrant(userId, 'ad_free')`                               |
+| **Admin page**     | `src/app/admin/grants/page.tsx`       | Grant creation form, paginated list, revoke. See TSDoc for full description                                                     |
+| **Server actions** | `src/app/admin/grants/_actions/`      | `createGrant` (with UUID + duration validation), `revokeGrant` (logical delete via `revokedAt`)                                 |
+
+### Key Design Decisions
+
+- **Single `user_grants` table** for all benefit types — `benefitType` discriminator ('ad_free', 'paywall_access', ...) avoids per-benefit tables. `grantType` tracks the source ('admin_manual', 'topic_post', 'campaign', ...). Both are varchar for extensibility.
+- **`resourceType` + `resourceId`** — NULL for global benefits (ad_free), populated for scoped benefits (e.g., paywall access to a specific article).
+- **Additive stacking** — New grants start from `max(expiresAt)` of existing non-revoked grants, so multiple grants extend the benefit period.
+- **No `grantedBy` column** — Admin audit trail is handled by the existing `moderation_actions` table.
+- **`revokedAt` logical deletion** — Grants are never physically deleted.
+- **Ad-free sources** — A user sees no ads if they have EITHER an active Stripe subscription (`subscriptions` table) OR an active ad_free grant (`user_grants` table). Both are checked in `shouldShowAdsForUser()`.
+
+### Adding a New Benefit Type
+
+1. Use the existing `user_grants` table with a new `benefitType` value (no schema change needed).
+2. Create a check function similar to `hasActiveGrant(userId, 'new_type')` or use the existing one.
+3. Integrate the check at the appropriate gate (e.g., content access middleware, component guard).
+4. For scoped benefits, also filter by `resourceType`/`resourceId`.
+
+### Adding a New Grant Trigger
+
+1. Call `calcGrantStartsAt(userId, benefitType)` to get the stacking start time.
+2. Insert into `user_grants` with the appropriate `grantType` (e.g., 'topic_post').
+3. For automated (high-frequency) triggers, wrap the read + insert in a `db.transaction()` to prevent race conditions. The current admin_manual flow intentionally omits the transaction as it is low-frequency.
+4. Call `revalidateTag('grant-status')` after insert.
 
 ## Important Notes
 

@@ -1,22 +1,20 @@
+import { fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
+
 import type { CastlingRights } from '../_components/PositionSettings';
-import { expandRank } from './fen-utils';
 
 /**
  * Given a board FEN (piece placement only), returns which castling rights
  * are possible based on whether the king and rook are on their initial squares.
  */
 export function getCastlingAvailability(boardFen: string): CastlingRights {
-  const boardPart = boardFen.split(' ')[0];
-  const ranks = boardPart.split('/');
+  const board = fenToBoardFlat(boardFen);
 
-  // FEN ranks: index 0 = rank 8, index 7 = rank 1
-  const rank1 = expandRank(ranks[7]); // white pieces
-  const rank8 = expandRank(ranks[0]); // black pieces
-
+  // Flat board indices:
+  // rank 8: 0(a8)..7(h8), rank 1: 56(a1)..63(h1)
   return {
-    K: rank1[4] === 'K' && rank1[7] === 'R', // e1=King, h1=Rook
-    Q: rank1[4] === 'K' && rank1[0] === 'R', // e1=King, a1=Rook
-    k: rank8[4] === 'k' && rank8[7] === 'r', // e8=king, h8=rook
-    q: rank8[4] === 'k' && rank8[0] === 'r', // e8=king, a8=rook
+    K: board[60] === 'K' && board[63] === 'R', // e1=King, h1=Rook
+    Q: board[60] === 'K' && board[56] === 'R', // e1=King, a1=Rook
+    k: board[4] === 'k' && board[7] === 'r', // e8=king, h8=rook
+    q: board[4] === 'k' && board[0] === 'r', // e8=king, a8=rook
   };
 }

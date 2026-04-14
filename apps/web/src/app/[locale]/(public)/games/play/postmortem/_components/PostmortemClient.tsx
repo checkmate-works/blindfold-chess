@@ -13,7 +13,6 @@ import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { usePostmortemGame } from '../_hooks';
-import type { MoveLogEntry } from '../_lib';
 import { PostmortemMovesPanel } from './PostmortemMovesPanel';
 
 type Props = {
@@ -71,7 +70,9 @@ export function PostmortemClient({
   const feedbackMessage = feedback
     ? feedback.type === 'incorrect'
       ? t('incorrectMoveError', { movePrefix, move: feedback.move })
-      : t('correctMoveMessage', { movePrefix, move: feedback.move })
+      : feedback.type === 'skipped'
+        ? t('skippedMoveMessage', { movePrefix, move: feedback.move })
+        : t('correctMoveMessage', { movePrefix, move: feedback.move })
     : null;
   const feedbackIsError = feedback?.type === 'incorrect';
 
@@ -134,6 +135,11 @@ export function PostmortemClient({
                       {/* Correct move feedback */}
                       {feedback?.type === 'correct' && feedbackMessage && (
                         <p className="text-success text-sm mt-[-16px]">{feedbackMessage}</p>
+                      )}
+                      {feedback?.type === 'skipped' && feedbackMessage && (
+                        <p className="text-muted-foreground text-sm mt-[-16px]">
+                          {feedbackMessage}
+                        </p>
                       )}
 
                       {/* Settings checkboxes */}
@@ -256,11 +262,10 @@ export function PostmortemClient({
         onClose={() => setShowMoveLogModal(false)}
       >
         {(() => {
-          const incorrectEntries = moveLog.entries.filter(
-            (e): e is MoveLogEntry & { incorrectMove: string } =>
-              e.status === 'incorrect' && !!e.incorrectMove
+          const relevantEntries = moveLog.entries.filter(
+            (e) => e.status === 'incorrect' || e.status === 'auto'
           );
-          if (incorrectEntries.length === 0) {
+          if (relevantEntries.length === 0) {
             return <p className="text-center text-muted-foreground py-4">{t('noMistakes')}</p>;
           }
           return (
@@ -274,13 +279,22 @@ export function PostmortemClient({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {incorrectEntries.map((entry, index) => (
+                  {relevantEntries.map((entry, index) => (
                     <tr key={index}>
                       <td className="px-4 py-3 text-muted-foreground">
                         {entry.isWhiteMove ? `${entry.moveNumber}.` : `${entry.moveNumber}...`}
                       </td>
-                      <td className="px-4 py-3 text-destructive">{entry.incorrectMove}</td>
-                      <td className="px-4 py-3 text-success">{entry.move}</td>
+                      {entry.status === 'incorrect' ? (
+                        <>
+                          <td className="px-4 py-3 text-destructive">{entry.incorrectMove}</td>
+                          <td className="px-4 py-3 text-success">{entry.move}</td>
+                        </>
+                      ) : (
+                        <>
+                          <td className="px-4 py-3 text-muted-foreground">{t('logAutoFilled')}</td>
+                          <td className="px-4 py-3 text-muted-foreground">{entry.move}</td>
+                        </>
+                      )}
                     </tr>
                   ))}
                 </tbody>

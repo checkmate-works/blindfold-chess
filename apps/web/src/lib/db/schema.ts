@@ -12,6 +12,7 @@ import {
   text,
   timestamp,
   unique,
+  uniqueIndex,
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
@@ -157,7 +158,10 @@ export const announcements = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
   },
-  (table) => [unique('uq_announcements_slug_locale').on(table.slug, table.locale)]
+  (table) => [
+    unique('uq_announcements_slug_locale').on(table.slug, table.locale),
+    index('idx_announcements_status_published').on(table.status, table.publishedAt),
+  ]
 );
 
 export type Announcement = typeof announcements.$inferSelect;
@@ -387,26 +391,46 @@ export const topicPosts = pgTable(
 export type TopicPost = typeof topicPosts.$inferSelect;
 export type NewTopicPost = typeof topicPosts.$inferInsert;
 
-// Topic Post Likes
-export const topicPostLikes = pgTable(
-  'topic_post_likes',
+/**
+ * Polymorphic likes table.
+ *
+ * @design
+ * Generic like table keyed by (target_type, target_id) so any entity can be liked
+ * without adding per-entity tables (e.g., position_likes, puzzle_likes). Follows the
+ * same polymorphic pattern used by `topicPosts` (topicType + topicKey), `moderationActions`
+ * (targetType + targetId), and `feedItems` (entityType + entityId).
+ *
+ * - No FK on target_id: PostgreSQL cannot express polymorphic FKs. Orphan cleanup is
+ *   handled at the application layer (e.g., when deleting a topic post).
+ * - FK on user_id → auth.users: defined in `drizzle/supabase/foreign_keys_and_grants.sql`
+ *   following the established Supabase pattern.
+ * - Existing data from `topic_post_likes` is migrated with `target_type = 'topic_post'`.
+ */
+export const likes = pgTable(
+  'likes',
   {
     id: uuid('id').primaryKey().defaultRandom(),
     userId: uuid('user_id').notNull(), // references auth.users — FK defined in custom SQL
-    postId: uuid('post_id')
-      .notNull()
-      .references(() => topicPosts.id, { onDelete: 'cascade' }),
+    targetType: varchar('target_type', { length: 50 }).notNull(),
+    targetId: uuid('target_id').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
-    unique('uq_topic_post_like').on(table.userId, table.postId),
-    index('idx_topic_post_likes_post').on(table.postId),
-    index('idx_topic_post_likes_user').on(table.userId),
+    unique('uq_like').on(table.userId, table.targetType, table.targetId),
+    index('idx_likes_target').on(table.targetType, table.targetId),
+    index('idx_likes_user').on(table.userId),
+    // Composite index for "a user's likes of a given target type, newest first"
+    // queries (e.g., "articles I liked"). Order matches the query predicate.
+    index('idx_likes_user_type_created_at').on(
+      table.userId,
+      table.targetType,
+      table.createdAt.desc()
+    ),
   ]
 );
 
-export type TopicPostLike = typeof topicPostLikes.$inferSelect;
-export type NewTopicPostLike = typeof topicPostLikes.$inferInsert;
+export type Like = typeof likes.$inferSelect;
+export type NewLike = typeof likes.$inferInsert;
 
 /**
  * Topic Post Ratings — 1:1 extension of topic_posts for structured ratings.
@@ -1340,3 +1364,255 @@ export const userAchievements = pgTable(
 
 export type UserAchievement = typeof userAchievements.$inferSelect;
 export type NewUserAchievement = typeof userAchievements.$inferInsert;
+
+/**
+ * Exp Events — append-only log of all Exp grants (経験値イベントログ).
+ *
+ * @description
+ * Records every Exp grant event. This table is the source of truth for
+ * Exp history and audit. Append-only: rows are never updated or deleted.
+ *
+ * @design Two-table architecture (event log + cache)
+ *
+ * Exp data is split into two tables with different responsibilities:
+ * - `exp_events`: append-only log of all Exp grants (INSERT only).
+ *   Used for per-user Exp history and auditing.
+ * - `user_exp`: materialized cumulative Exp per user, maintained via
+ *   service-role-only writes. Serves as the source for leaderboard
+ *   rankings and profile display.
+ *
+ * @design source + source_id for traceability
+ *
+ * `source` identifies the subsystem that generated the Exp grant
+ * (e.g., 'challenge_result'). `source_id` optionally references the
+ * originating record's ID for audit trails. Together they enable
+ * tracing any Exp grant back to its origin.
+ *
+ * @design metadata (JSONB) for extensible context
+ *
+ * Stores grant-specific context (e.g., score details, bonus multipliers)
+ * without requiring schema changes. Follows the same pattern as
+ * `userAchievements.metadata` and `moderationActions.metadata`.
+ *
+ * @design FKs for userId managed in custom SQL
+ *
+ * `userId` → `auth.users` is defined in Supabase-side SQL (not Drizzle references),
+ * following the same pattern as `profiles.id`, `userRanks.userId`, etc.
+ *
+ * @design No updatedAt — append-only by design
+ *
+ * This table is immutable. Once inserted, records are never updated or
+ * deleted. `createdAt` serves as the sole timestamp.
+ */
+export const expEvents = pgTable(
+  'exp_events',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').notNull(), // references auth.users — FK defined in custom SQL
+    source: varchar('source', { length: 50 }).notNull(),
+    sourceId: uuid('source_id'),
+    menuType: varchar('menu_type', { length: 30 }),
+    amount: integer('amount').notNull(),
+    metadata: jsonb('metadata').default({}),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('idx_exp_events_user_created').on(table.userId, table.createdAt),
+    index('idx_exp_events_source').on(table.source, table.sourceId),
+    // Idempotency guard: prevents double-granting EXP for the same (source, source_id)
+    // on retries. Partial index allows multiple rows with NULL source_id (e.g., future
+    // grants not tied to a specific record).
+    uniqueIndex('uq_exp_events_source_pair')
+      .on(table.source, table.sourceId)
+      .where(sql`source_id IS NOT NULL`),
+  ]
+);
+
+export type ExpEvent = typeof expEvents.$inferSelect;
+export type NewExpEvent = typeof expEvents.$inferInsert;
+
+/**
+ * User Exp — cumulative Exp cache per user (累計Expキャッシュ).
+ *
+ * @description
+ * Maintains exactly one row per user, representing the user's total
+ * accumulated Exp. Updated via service-role-only writes whenever new
+ * Exp is granted. Used for leaderboard rankings and profile display.
+ *
+ * @design Materialized cache, rebuildable from exp_events
+ *
+ * This table is a denormalized cache. If data correction is needed,
+ * the total can be recalculated from `exp_events` using
+ * `SUM(amount) GROUP BY user_id`. Follows the same cache pattern as
+ * `challenge_best_scores`.
+ *
+ * @design Service-role-only writes
+ *
+ * INSERT and UPDATE are restricted to the service role to ensure
+ * consistency. Client-side code cannot directly modify Exp totals.
+ * RLS allows SELECT for authenticated and anon (leaderboard display).
+ *
+ * @design FKs for userId managed in custom SQL
+ *
+ * `userId` → `auth.users` is defined in Supabase-side SQL (not Drizzle references),
+ * following the same pattern as `profiles.id`, `userRanks.userId`, etc.
+ */
+export const userExp = pgTable(
+  'user_exp',
+  {
+    userId: uuid('user_id').primaryKey().notNull(), // references auth.users — FK defined in custom SQL
+    totalExp: integer('total_exp').notNull().default(0),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [index('idx_user_exp_total').on(table.totalExp)]
+);
+
+export type UserExpRecord = typeof userExp.$inferSelect;
+export type NewUserExpRecord = typeof userExp.$inferInsert;
+
+/**
+ * User Grants — time-limited benefit grants for users.
+ *
+ * @description
+ * Stores grants that provide users with time-limited benefits such as ad-free
+ * access or paywall content access. Grants can be issued manually by admins,
+ * automatically by system triggers (e.g., topic post), or via campaigns.
+ *
+ * @design Additive duration model
+ *
+ * When a new grant is created, its `startsAt` is set to the later of the current
+ * time and the latest existing `expiresAt` for the same user+benefitType. This
+ * "stacks" grants so that multiple grants extend the benefit period rather than
+ * overlapping or resetting it.
+ *
+ * @design benefitType + grantType are varchar, not pgEnum
+ *
+ * New benefit types ('ad_free', 'paywall_access', etc.) and grant types
+ * ('admin_manual', 'topic_post', 'campaign', etc.) will be added incrementally.
+ * Using varchar avoids requiring an ALTER TYPE migration for each new type.
+ * Consistent with the project's existing pattern (topicType, action, etc.).
+ *
+ * @design resourceType + resourceId for scoped grants
+ *
+ * Global benefits (e.g., ad_free) have NULL resourceType/resourceId.
+ * Scoped benefits (e.g., paywall access to a specific article) specify the
+ * resource. This avoids separate tables for global vs. scoped grants.
+ *
+ * @design revokedAt for logical deletion
+ *
+ * Grants are never physically deleted. Revocation sets revokedAt, preserving
+ * the full audit trail. The granted_by info is tracked via moderation_actions
+ * (the existing audit log), not duplicated here.
+ *
+ * @design No updatedAt — grants are effectively immutable
+ *
+ * Once created, grants are not modified (only revoked via revokedAt).
+ * This follows the same immutability pattern as user_ranks.
+ *
+ * @design FKs managed in custom SQL
+ *
+ * `userId` → `auth.users` is defined in Supabase-side SQL (not Drizzle references),
+ * following the same pattern as `profiles.id`.
+ */
+export const userGrants = pgTable(
+  'user_grants',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').notNull(), // references auth.users — FK defined in custom SQL
+    benefitType: varchar('benefit_type', { length: 50 }).notNull(), // 'ad_free', 'paywall_access', etc.
+    grantType: varchar('grant_type', { length: 50 }).notNull(), // 'admin_manual', 'topic_post', 'campaign', etc.
+    resourceType: varchar('resource_type', { length: 50 }), // NULL for global benefits, 'article' etc. for scoped
+    resourceId: varchar('resource_id', { length: 255 }), // NULL for global benefits, target resource ID for scoped
+    reason: text('reason'), // Human-readable justification (admin memo, campaign name, etc.)
+    startsAt: timestamp('starts_at', { withTimezone: true }).notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
+  },
+  (table) => [
+    index('idx_user_grants_benefit_lookup').on(table.userId, table.benefitType, table.expiresAt),
+    index('idx_user_grants_user').on(table.userId),
+  ]
+);
+
+export type UserGrant = typeof userGrants.$inferSelect;
+export type NewUserGrant = typeof userGrants.$inferInsert;
+
+/**
+ * Positions — user-submitted chess positions for various practice modules.
+ *
+ * @description
+ * A generic table that holds user-submitted chess positions.
+ * Used across multiple practice modules: position-memory, puzzles,
+ * move-sequence, and future modules that need a stored FEN with metadata.
+ *
+ * @design FEN の一意性制約なし
+ * The same FEN may appear in multiple rows with different titles and
+ * descriptions — each is treated as a distinct problem.
+ *
+ * @design `updated_at` なし
+ * Positions are immutable after creation — editing is not supported.
+ * The column is intentionally omitted.
+ *
+ * @design `type` は varchar（pgEnum ではない）
+ * Follows the existing `topicType` pattern. New type values (e.g. 'puzzle',
+ * 'sequence') can be added without ALTER TYPE migrations.
+ *
+ * @design FKs managed in custom SQL
+ * `userId` → `auth.users` is defined in Supabase-side SQL, not Drizzle
+ * references, following the same pattern as `profiles.id` and
+ * `topicPosts.userId`.
+ *
+ * @design 論理削除
+ * `deletedAt` enables soft-delete. Rows with a non-null `deletedAt` are
+ * treated as 404 by the application layer.
+ */
+export const positions = pgTable(
+  'positions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').notNull(), // references auth.users — FK defined in custom SQL
+    type: varchar('type', { length: 50 }).notNull(), // 'memory', 'puzzle', 'sequence', etc.
+    fen: varchar('fen', { length: 100 }).notNull(),
+    title: varchar('title', { length: 255 }).notNull(),
+    description: text('description'),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('idx_positions_user').on(table.userId),
+    // Composite partial index for the public positions list, which filters by
+    // `type` and orders by `created_at DESC` while excluding soft-deleted rows.
+    // Replaces the former single-column `idx_positions_type` (dropped in the
+    // same migration) because Postgres could not use it for the ORDER BY.
+    index('idx_positions_type_created_at')
+      .on(table.type, table.createdAt.desc())
+      .where(sql`deleted_at IS NULL`),
+  ]
+);
+
+export type Position = typeof positions.$inferSelect;
+export type NewPosition = typeof positions.$inferInsert;
+
+// Position Tags (junction table)
+export const positionTags = pgTable(
+  'position_tags',
+  {
+    positionId: uuid('position_id')
+      .notNull()
+      .references(() => positions.id, { onDelete: 'cascade' }),
+    tagId: uuid('tag_id')
+      .notNull()
+      .references(() => tags.id, { onDelete: 'cascade' }),
+  },
+  (table) => [
+    unique('uq_position_tag').on(table.positionId, table.tagId),
+    // Secondary index on `tag_id` for reverse lookups ("positions with tag X").
+    // The uq_position_tag UNIQUE already covers position_id → tag_id, so no
+    // dedicated index on position_id is needed.
+    index('idx_position_tags_tag').on(table.tagId),
+  ]
+);
+
+export type PositionTag = typeof positionTags.$inferSelect;
+export type NewPositionTag = typeof positionTags.$inferInsert;

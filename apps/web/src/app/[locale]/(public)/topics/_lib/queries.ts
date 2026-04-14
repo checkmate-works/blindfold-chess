@@ -159,6 +159,80 @@ export async function getPostsWithReplyMetaByTopicKey(
 }
 
 /**
+ * Get the count of top-level posts for a specific topicType + topicKey.
+ */
+export async function getPostCountByTopicKey(
+  topicType: 'square' | 'opening',
+  topicKey: string
+): Promise<number> {
+  const [result] = await db
+    .select({ count: count() })
+    .from(topicPosts)
+    .where(
+      and(
+        eq(topicPosts.topicType, topicType),
+        eq(topicPosts.topicKey, topicKey),
+        isNull(topicPosts.parentId),
+        isNull(topicPosts.deletedAt)
+      )
+    );
+  return result.count;
+}
+
+/**
+ * Get paginated top-level posts for a specific topicType + topicKey with reply metadata, sorted.
+ * Uses SQL-level LIMIT/OFFSET for 'new' sort (the DB default ordering), then attaches meta
+ * only for the paginated slice. For 'popular' and 'active' sorts, we must fetch all posts
+ * since sorting depends on metadata (like counts, reply timestamps).
+ */
+export async function getPostsWithReplyMetaPaginatedByTopicKey(
+  topicType: 'square' | 'opening',
+  topicKey: string,
+  limit: number,
+  offset: number,
+  currentUserId?: string,
+  sortBy: SortMode = 'new'
+): Promise<PostWithReplyMeta[]> {
+  if (sortBy !== 'new') {
+    // For 'popular' and 'active' sorts, we need metadata to sort, so fetch all and slice
+    const allPosts = await getPostsWithReplyMetaByTopicKey(
+      topicType,
+      topicKey,
+      currentUserId,
+      sortBy
+    );
+    return allPosts.slice(offset, offset + limit);
+  }
+
+  // For 'new' sort, use SQL-level pagination (posts already ordered by createdAt DESC)
+  const results = await db
+    .select({
+      post: topicPosts,
+      author: authorSelect,
+    })
+    .from(topicPosts)
+    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+    .where(
+      and(
+        eq(topicPosts.topicType, topicType),
+        eq(topicPosts.topicKey, topicKey),
+        isNull(topicPosts.parentId),
+        isNull(topicPosts.deletedAt)
+      )
+    )
+    .orderBy(desc(topicPosts.createdAt))
+    .limit(limit)
+    .offset(offset);
+
+  const posts: TopicPostWithAuthor[] = results.map((r) => ({
+    ...r.post,
+    author: r.author,
+  }));
+
+  return attachPostMeta(posts, currentUserId);
+}
+
+/**
  * Get top-level posts for a specific topic type with reply metadata, paginated.
  * Base function shared by squares and openings (for simple cases without extra JOINs).
  */

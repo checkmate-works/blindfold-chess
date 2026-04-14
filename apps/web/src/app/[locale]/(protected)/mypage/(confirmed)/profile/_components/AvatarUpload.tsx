@@ -1,6 +1,7 @@
 'use client';
 
-import { ChangeEvent, useRef, useState } from 'react';
+import type { ChangeEvent } from 'react';
+import { useRef, useState } from 'react';
 
 import Image from 'next/image';
 

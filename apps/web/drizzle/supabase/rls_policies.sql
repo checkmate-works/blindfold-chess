@@ -47,20 +47,20 @@ CREATE TRIGGER profiles_updated_at
   EXECUTE FUNCTION public.update_updated_at_column();
 
 -- =============================================================================
--- topic_post_likes
+-- likes
 -- =============================================================================
-ALTER TABLE "topic_post_likes" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "likes" ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "topic_post_likes_select" ON "topic_post_likes";
-CREATE POLICY "topic_post_likes_select" ON "topic_post_likes"
+DROP POLICY IF EXISTS "likes_select" ON "likes";
+CREATE POLICY "likes_select" ON "likes"
   FOR SELECT USING (true);
 
-DROP POLICY IF EXISTS "topic_post_likes_insert" ON "topic_post_likes";
-CREATE POLICY "topic_post_likes_insert" ON "topic_post_likes"
+DROP POLICY IF EXISTS "likes_insert" ON "likes";
+CREATE POLICY "likes_insert" ON "likes"
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
-DROP POLICY IF EXISTS "topic_post_likes_delete" ON "topic_post_likes";
-CREATE POLICY "topic_post_likes_delete" ON "topic_post_likes"
+DROP POLICY IF EXISTS "likes_delete" ON "likes";
+CREATE POLICY "likes_delete" ON "likes"
   FOR DELETE USING (auth.uid() = user_id);
 
 -- =============================================================================
@@ -330,4 +330,22 @@ ALTER TABLE "user_achievements" ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "user_achievements_select_policy" ON "user_achievements";
 CREATE POLICY "user_achievements_select_policy" ON "user_achievements"
+  FOR SELECT USING (true);
+
+-- =============================================================================
+-- exp_events (append-only Exp log — authenticated SELECT own rows, service role only write)
+-- =============================================================================
+ALTER TABLE "exp_events" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "exp_events_select_policy" ON "exp_events";
+CREATE POLICY "exp_events_select_policy" ON "exp_events"
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- =============================================================================
+-- user_exp (cumulative Exp cache — public read, service role only write)
+-- =============================================================================
+ALTER TABLE "user_exp" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "user_exp_select_policy" ON "user_exp";
+CREATE POLICY "user_exp_select_policy" ON "user_exp"
   FOR SELECT USING (true);

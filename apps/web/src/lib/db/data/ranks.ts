@@ -186,7 +186,25 @@ export const ranksSeedData: RankSeed[] = [
       },
     ],
   },
-  { slug: '3kyu', level: 30, color: RANK_COLORS['3kyu'], requirements: [] },
+  {
+    slug: '3kyu',
+    level: 30,
+    color: RANK_COLORS['3kyu'],
+    requirements: [
+      {
+        type: 'challenge_score',
+        menuType: 'route_planner',
+        leaderboardKey: 'knight',
+        minScore: 3,
+      },
+      {
+        type: 'challenge_score',
+        menuType: 'route_planner',
+        leaderboardKey: 'bishop',
+        minScore: 3,
+      },
+    ],
+  },
   { slug: '2kyu', level: 40, color: RANK_COLORS['2kyu'], requirements: [] },
   { slug: '1kyu', level: 50, color: RANK_COLORS['1kyu'], requirements: [] },
   // Gap between 1kyu (50) and 1dan (110) is intentionally large to reserve

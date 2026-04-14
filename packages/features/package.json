@@ -9,6 +9,7 @@
     "./ai-game": "./src/ai-game/index.ts",
     "./ai-game/notation-input": "./src/ai-game/notation-input/index.ts",
     "./chess-core": "./src/chess-core/index.ts",
+    "./chess-core/fen": "./src/chess-core/fen-pure.ts",
     "./board-symmetry": "./src/board-symmetry/index.ts",
     "./common": "./src/common/index.ts",
     "./coordinate-quiz": "./src/coordinate-quiz/index.ts",
@@ -16,11 +17,13 @@
     "./legal-moves": "./src/legal-moves/index.ts",
     "./route-planner": "./src/route-planner/index.ts",
     "./knight-tour": "./src/knight-tour/index.ts",
+    "./quadrants": "./src/quadrants/index.ts",
     "./square-colors": "./src/square-colors/index.ts",
     "./username": "./src/username/index.ts",
     "./lame-name": "./src/lame-name/index.ts",
     "./linkify": "./src/linkify/index.ts",
-    "./utils": "./src/utils/index.ts"
+    "./utils": "./src/utils/index.ts",
+    "./exp": "./src/exp/index.ts"
   },
   "scripts": {
     "lint": "eslint",
@@ -33,7 +36,7 @@
   },
   "devDependencies": {
     "@blindfold-chess/eslint-config": "workspace:*",
-    "eslint": "^9.39.1",
+    "eslint": "^9.39.4",
     "typescript": "^5.9.3"
   }
 }

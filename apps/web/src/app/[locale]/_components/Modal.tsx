@@ -5,6 +5,7 @@ import { type ReactNode, useEffect, useId, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { useScrollLock } from '../_hooks/use-scroll-lock';
+import { CloseButton } from './CloseButton';
 
 type Props = {
   isOpen: boolean;
@@ -73,16 +74,7 @@ export function Modal({
               <h2 id={titleId} className="text-xl font-semibold text-foreground">
                 {title}
               </h2>
-              <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
+              <CloseButton onClick={onClose} />
             </div>
           )}
 

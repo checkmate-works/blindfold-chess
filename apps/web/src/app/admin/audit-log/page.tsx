@@ -4,12 +4,11 @@ import { and, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { db, moderationActions, profiles } from '@/lib/db';
+import { getPaginationParams } from '@/lib/pagination';
 import { createAdminClient } from '@/lib/supabase/admin';
 
-import { PaginationNav } from '@/app/[locale]/_components';
-
 import { AdminDataTable } from '../_components/AdminDataTable';
-import { getPaginationData } from '../_lib/pagination';
+import { AdminPaginationNav } from '../_components/AdminPaginationNav';
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -76,7 +75,7 @@ export default async function AdminAuditLogPage({
     .select({ count: sql<number>`count(*)` })
     .from(moderationActions)
     .where(whereClause);
-  const { currentPage, totalPages, limit, offset } = getPaginationData(
+  const { currentPage, totalPages, limit, offset } = getPaginationParams(
     page,
     Number(countResult.count)
   );
@@ -148,6 +147,7 @@ export default async function AdminAuditLogPage({
             <option value="ban">ban</option>
             <option value="unban">unban</option>
             <option value="delete_post">delete_post</option>
+            <option value="delete_position">delete_position</option>
           </select>
         </div>
         <div>
@@ -197,7 +197,7 @@ export default async function AdminAuditLogPage({
                       ? 'bg-destructive-soft text-destructive-soft-foreground'
                       : log.action === 'unban'
                         ? 'bg-success-soft text-success-soft-foreground'
-                        : log.action === 'delete_post'
+                        : log.action === 'delete_post' || log.action === 'delete_position'
                           ? 'bg-caution-soft text-caution-soft-foreground'
                           : 'bg-secondary text-secondary-foreground'
                   }`}
@@ -225,7 +225,7 @@ export default async function AdminAuditLogPage({
         }}
       />
 
-      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+      <AdminPaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
     </div>
   );
 }

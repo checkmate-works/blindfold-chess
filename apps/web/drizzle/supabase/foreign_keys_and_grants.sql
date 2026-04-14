@@ -263,25 +263,38 @@ GRANT SELECT ON TABLE public.chess_openings TO authenticated;
 GRANT SELECT ON TABLE public.chess_openings TO anon;
 
 -- =============================================================================
--- topic_post_likes
+-- likes (polymorphic, renamed from topic_post_likes)
 -- =============================================================================
 
--- FK constraint: topic_post_likes.user_id → auth.users(id) ON DELETE CASCADE
+-- Drop the legacy FK constraint name if it survived the table rename. The
+-- rename + recreate migration drops this in SQL, but we defensively drop here
+-- as well so re-runs against older snapshots stay idempotent.
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'topic_post_likes_user_id_fkey'
+  ) THEN
+    ALTER TABLE public.likes DROP CONSTRAINT topic_post_likes_user_id_fkey;
+  END IF;
+END;
+$$;
+
+-- FK constraint: likes.user_id → auth.users(id) ON DELETE CASCADE
 DO $$
 BEGIN
   IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'topic_post_likes_user_id_fkey'
+    SELECT 1 FROM pg_constraint WHERE conname = 'likes_user_id_fkey'
   ) THEN
-    ALTER TABLE public.topic_post_likes
-      ADD CONSTRAINT topic_post_likes_user_id_fkey
+    ALTER TABLE public.likes
+      ADD CONSTRAINT likes_user_id_fkey
       FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
   END IF;
 END;
 $$;
 
 -- Grant necessary permissions
-GRANT SELECT, INSERT, DELETE ON TABLE public.topic_post_likes TO authenticated;
-GRANT SELECT ON TABLE public.topic_post_likes TO anon;
+GRANT SELECT, INSERT, DELETE ON TABLE public.likes TO authenticated;
+GRANT SELECT ON TABLE public.likes TO anon;
 
 -- =============================================================================
 -- challenge_results
@@ -436,3 +449,43 @@ $$;
 GRANT SELECT ON TABLE public.user_ranks TO authenticated;
 GRANT SELECT ON TABLE public.user_ranks TO anon;
 
+-- =============================================================================
+-- exp_events
+-- =============================================================================
+
+-- FK constraint: exp_events.user_id → auth.users(id) ON DELETE CASCADE
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'exp_events_user_id_fkey'
+  ) THEN
+    ALTER TABLE public.exp_events
+      ADD CONSTRAINT exp_events_user_id_fkey
+      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+  END IF;
+END;
+$$;
+
+-- Grant read permissions (authenticated can SELECT own rows via RLS, service role only write)
+GRANT SELECT ON TABLE public.exp_events TO authenticated;
+
+-- =============================================================================
+-- user_exp
+-- =============================================================================
+
+-- FK constraint: user_exp.user_id → auth.users(id) ON DELETE CASCADE
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'user_exp_user_id_fkey'
+  ) THEN
+    ALTER TABLE public.user_exp
+      ADD CONSTRAINT user_exp_user_id_fkey
+      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+  END IF;
+END;
+$$;
+
+-- Grant read permissions (public read for leaderboard, service role only write)
+GRANT SELECT ON TABLE public.user_exp TO authenticated;
+GRANT SELECT ON TABLE public.user_exp TO anon;

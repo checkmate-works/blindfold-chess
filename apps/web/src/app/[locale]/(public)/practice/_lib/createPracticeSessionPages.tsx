@@ -4,6 +4,8 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { PracticeSessionPage } from '@/app/[locale]/(public)/practice/_components/PracticeSessionPage';
+import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale, LocalePageProps, LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
@@ -67,6 +69,47 @@ function resolveBreadcrumbs(
 }
 
 // ---------------------------------------------------------------------------
+// Shared Page body for session-style pages (challenge, challenge session, training)
+// ---------------------------------------------------------------------------
+
+type SessionPageBodyConfig = {
+  i18nKey: string;
+  breadcrumbSegments: BreadcrumbSegment[];
+  showDivider?: boolean;
+  renderContent: (context: {
+    locale: Locale;
+    searchParams: Record<string, string | string[] | undefined>;
+    t: Awaited<ReturnType<typeof getTranslations>>;
+  }) => ReactNode;
+};
+
+async function renderSessionPage(props: LocaleSearchPageProps, config: SessionPageBodyConfig) {
+  const { locale } = await props.params;
+  setRequestLocale(locale);
+  const searchParams = await props.searchParams;
+  const t = await getTranslations({ locale });
+
+  const breadcrumbItems = resolveBreadcrumbs(
+    [
+      { labelKey: 'practice', namespace: 'navigation', href: '/practice' },
+      ...config.breadcrumbSegments,
+    ],
+    t
+  );
+
+  return (
+    <PracticeSessionPage
+      locale={locale}
+      title={t(`practice.${config.i18nKey}.title`)}
+      breadcrumbItems={breadcrumbItems}
+      {...(config.showDivider !== undefined ? { showDivider: config.showDivider } : {})}
+    >
+      {config.renderContent({ locale, searchParams, t })}
+    </PracticeSessionPage>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Challenge page factory
 // ---------------------------------------------------------------------------
 
@@ -102,29 +145,7 @@ export function createPracticeChallengePage(config: ChallengePageConfig) {
   const staticParams = config.staticParams !== false ? generateLocaleStaticParams : undefined;
 
   async function Page(props: LocaleSearchPageProps) {
-    const { locale } = await props.params;
-    setRequestLocale(locale);
-    const searchParams = await props.searchParams;
-    const t = await getTranslations({ locale });
-
-    const breadcrumbItems = resolveBreadcrumbs(
-      [
-        { labelKey: 'practice', namespace: 'navigation', href: '/practice' },
-        ...config.breadcrumbSegments,
-      ],
-      t
-    );
-
-    return (
-      <PracticeSessionPage
-        locale={locale}
-        title={t(`practice.${config.i18nKey}.title`)}
-        breadcrumbItems={breadcrumbItems}
-        {...(config.showDivider !== undefined ? { showDivider: config.showDivider } : {})}
-      >
-        {config.renderContent({ locale, searchParams, t })}
-      </PracticeSessionPage>
-    );
+    return renderSessionPage(props, config);
   }
 
   return { generateMetadata, generateStaticParams: staticParams, Page };
@@ -179,9 +200,63 @@ export function createPracticeChallengeSessionPage(config: ChallengeSessionPageC
   const staticParams = config.staticParams !== false ? generateLocaleStaticParams : undefined;
 
   async function Page(props: LocaleSearchPageProps) {
-    const { locale } = await props.params;
+    return renderSessionPage(props, config);
+  }
+
+  return { generateMetadata, generateStaticParams: staticParams, Page };
+}
+
+// ---------------------------------------------------------------------------
+// Tutorial page factory
+// ---------------------------------------------------------------------------
+
+type TutorialPageConfig = {
+  /** i18n key under "practice" namespace, e.g. "diagonalQuiz" */
+  i18nKey: string;
+  /** Canonical path without leading slash, e.g. "practice/diagonal-quiz/tutorial" */
+  canonicalPath: string;
+  /** Breadcrumb segments (excluding "Practice" which is always first) */
+  breadcrumbSegments: BreadcrumbSegment[];
+  /**
+   * i18n key for the description in metadata.
+   * Resolved as `practice.<i18nKey>.<descriptionKey>`.
+   * Defaults to "description".
+   */
+  descriptionKey?: string;
+  /** Whether to wrap the content in a PagePanel. Defaults to true. */
+  usePagePanel?: boolean;
+  /** Render the section title. Receives translation function. Defaults to SectionTitle with tutorial.title. */
+  renderSectionTitle?: (t: Awaited<ReturnType<typeof getTranslations>>) => ReactNode;
+  /** Render the tutorial skip link. Receives locale. */
+  renderSkipLink: (locale: Locale) => ReactNode;
+  /** Render the tutorial content. Receives locale. */
+  renderTutorial: (locale: Locale) => ReactNode;
+};
+
+export function createPracticeTutorialPage(config: TutorialPageConfig) {
+  const descriptionKey = config.descriptionKey ?? 'description';
+  const usePagePanel = config.usePagePanel !== false;
+
+  const generateMetadata = async function generateMetadata({
+    params,
+  }: LocalePageProps): Promise<Metadata> {
+    const { locale } = await params;
     setRequestLocale(locale);
-    const searchParams = await props.searchParams;
+    const t = await getTranslations({ locale });
+
+    const title = `${t(`practice.${config.i18nKey}.title`)} - ${t(`practice.${config.i18nKey}.tutorial.title`)}`;
+    const description = t(`practice.${config.i18nKey}.${descriptionKey}`);
+
+    return {
+      ...generateCanonicalMetadata({ locale, path: config.canonicalPath, title, description }),
+      title: resolveTitle(title, locale),
+      description,
+    };
+  };
+
+  async function Page({ params }: LocalePageProps) {
+    const { locale } = await params;
+    setRequestLocale(locale);
     const t = await getTranslations({ locale });
 
     const breadcrumbItems = resolveBreadcrumbs(
@@ -192,19 +267,42 @@ export function createPracticeChallengeSessionPage(config: ChallengeSessionPageC
       t
     );
 
+    const sectionTitle = config.renderSectionTitle ? config.renderSectionTitle(t) : null;
+
+    const inner = (
+      <>
+        {sectionTitle ?? (
+          <SectionTitle>{t(`practice.${config.i18nKey}.tutorial.title`)}</SectionTitle>
+        )}
+
+        <div className="text-right">{config.renderSkipLink(locale)}</div>
+
+        {config.renderTutorial(locale)}
+
+        <Divider />
+
+        <Breadcrumb items={breadcrumbItems} locale={locale} />
+      </>
+    );
+
+    if (usePagePanel) {
+      return (
+        <div className="space-y-8">
+          <PageTitle>{t(`practice.${config.i18nKey}.title`)}</PageTitle>
+          <PagePanel>{inner}</PagePanel>
+        </div>
+      );
+    }
+
     return (
-      <PracticeSessionPage
-        locale={locale}
-        title={t(`practice.${config.i18nKey}.title`)}
-        breadcrumbItems={breadcrumbItems}
-        {...(config.showDivider !== undefined ? { showDivider: config.showDivider } : {})}
-      >
-        {config.renderContent({ locale, searchParams, t })}
-      </PracticeSessionPage>
+      <div className="space-y-8">
+        <PageTitle>{t(`practice.${config.i18nKey}.title`)}</PageTitle>
+        {inner}
+      </div>
     );
   }
 
-  return { generateMetadata, generateStaticParams: staticParams, Page };
+  return { generateMetadata, generateStaticParams: generateLocaleStaticParams, Page };
 }
 
 // ---------------------------------------------------------------------------
@@ -243,29 +341,7 @@ export function createPracticeTrainingPage(config: TrainingPageConfig) {
   const staticParams = config.staticParams !== false ? generateLocaleStaticParams : undefined;
 
   async function Page(props: LocaleSearchPageProps) {
-    const { locale } = await props.params;
-    setRequestLocale(locale);
-    const searchParams = await props.searchParams;
-    const t = await getTranslations({ locale });
-
-    const breadcrumbItems = resolveBreadcrumbs(
-      [
-        { labelKey: 'practice', namespace: 'navigation', href: '/practice' },
-        ...config.breadcrumbSegments,
-      ],
-      t
-    );
-
-    return (
-      <PracticeSessionPage
-        locale={locale}
-        title={t(`practice.${config.i18nKey}.title`)}
-        breadcrumbItems={breadcrumbItems}
-        {...(config.showDivider !== undefined ? { showDivider: config.showDivider } : {})}
-      >
-        {config.renderContent({ locale, searchParams, t })}
-      </PracticeSessionPage>
-    );
+    return renderSessionPage(props, config);
   }
 
   return { generateMetadata, generateStaticParams: staticParams, Page };

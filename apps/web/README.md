@@ -150,10 +150,40 @@ Monthly leaderboard badges are granted automatically via a Vercel Cron Job.
 - **Endpoint:** `/api/cron/grant-monthly-leaderboard-badges`
 - **Configuration:** `vercel.json` (`crons` field)
 
+The route handler authenticates incoming requests by comparing the `Authorization: Bearer <token>` header against `process.env.CRON_SECRET`. Vercel Cron Jobs automatically attach this header when a `CRON_SECRET` environment variable exists on the project, but **the value itself is not auto-generated — you must create and set it yourself**.
+
+### Setting up `CRON_SECRET`
+
+1. Generate a strong random secret locally:
+
+   ```bash
+   openssl rand -base64 32
+   ```
+
+   (or `openssl rand -hex 32` / `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`)
+
+2. Register it on Vercel in the **Production** environment (at minimum). Either from the dashboard (Settings > Environment Variables) or via CLI:
+
+   ```bash
+   cd apps/web
+   vercel env add CRON_SECRET production
+   # paste the generated value when prompted
+   ```
+
+3. Redeploy so the new environment variable takes effect.
+
+4. (Optional) Pull it into local `.env.local` for manual testing:
+
+   ```bash
+   vercel env pull .env.local
+   ```
+
+### Post-deploy checklist
+
 After deploying, verify the following in the Vercel dashboard:
 
 1. **Settings > Cron Jobs** - Confirm the job is registered and shows the correct schedule
-2. **Settings > Environment Variables** - Confirm `CRON_SECRET` is set in the Production environment (Vercel auto-generates this variable for Cron Jobs)
+2. **Settings > Environment Variables** - Confirm `CRON_SECRET` exists in the Production environment. If it is missing, all cron invocations will fail with `401 Unauthorized`.
 
 ## Available Scripts
 

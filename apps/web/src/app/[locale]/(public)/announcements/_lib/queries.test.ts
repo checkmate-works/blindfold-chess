@@ -13,6 +13,7 @@ import {
 vi.mock('@/lib/db', () => {
   const mockDb = {
     select: vi.fn(),
+    execute: vi.fn(),
   };
 
   return {
@@ -47,6 +48,23 @@ function mockChain(rows: unknown[]) {
   }
   chain.then = (resolve: (v: unknown) => void) => resolve(rows);
   return chain;
+}
+
+/**
+ * Wraps a plain array with stub ResultQueryMeta properties so it satisfies
+ * the return type of `db.execute()` from the postgres driver.
+ * Uses `as any` because the full `ResultQueryMeta` shape is complex and
+ * irrelevant to the behavior under test.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mockExecuteResult(rows: Record<string, unknown>[]): any {
+  return Object.assign(rows, {
+    columns: [],
+    count: rows.length,
+    command: 'SELECT',
+    statement: { columns: [], name: '', string: '', types: [] },
+    state: null,
+  });
 }
 
 const makeAnnouncement = (overrides: Record<string, unknown> = {}) => ({
@@ -115,9 +133,9 @@ describe('announcements queries', () => {
 
   describe('getPublishedAnnouncementsPaginated', () => {
     it('should return paginated announcements', async () => {
-      const announcements = [makeAnnouncement({ id: 'ann-1', slug: 'page-item' })];
-      const chain = mockChain(announcements);
-      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+      // SQL-level deduplication returns already-deduplicated rows
+      const rows = [makeAnnouncement({ id: 'ann-1', slug: 'page-item' })];
+      mockDb.execute.mockResolvedValue(mockExecuteResult(rows));
 
       const result = await getPublishedAnnouncementsPaginated('en', 20, 0);
 
@@ -126,31 +144,28 @@ describe('announcements queries', () => {
     });
 
     it('should return empty array when offset exceeds total', async () => {
-      const chain = mockChain([]);
-      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+      mockDb.execute.mockResolvedValue(mockExecuteResult([]));
 
       const result = await getPublishedAnnouncementsPaginated('en', 20, 100);
 
-      expect(result).toEqual([]);
+      expect(result).toHaveLength(0);
     });
 
     it('should return empty array for pagination with 0 results', async () => {
-      const chain = mockChain([]);
-      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+      mockDb.execute.mockResolvedValue(mockExecuteResult([]));
 
       const result = await getPublishedAnnouncementsPaginated('en', 10, 0);
 
-      expect(result).toEqual([]);
+      expect(result).toHaveLength(0);
     });
 
     it('should deduplicate by slug, preferring the requested locale', async () => {
-      const announcements = [
-        makeAnnouncement({ id: 'ann-en', slug: 'hello', locale: 'en', title: 'Hello' }),
+      // SQL ROW_NUMBER() picks the best locale per slug; mock returns already-deduplicated results
+      const rows = [
         makeAnnouncement({ id: 'ann-ja', slug: 'hello', locale: 'ja', title: 'こんにちは' }),
         makeAnnouncement({ id: 'ann-2', slug: 'other', locale: 'en' }),
       ];
-      const chain = mockChain(announcements);
-      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+      mockDb.execute.mockResolvedValue(mockExecuteResult(rows));
 
       const result = await getPublishedAnnouncementsPaginated('ja', 20, 0);
 
@@ -161,11 +176,11 @@ describe('announcements queries', () => {
     });
 
     it('should fall back to default locale (en) when requested locale is not available', async () => {
-      const announcements = [
+      // SQL ROW_NUMBER() falls back to default locale (en) when requested is unavailable
+      const rows = [
         makeAnnouncement({ id: 'ann-en', slug: 'hello', locale: 'en', title: 'Hello' }),
       ];
-      const chain = mockChain(announcements);
-      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+      mockDb.execute.mockResolvedValue(mockExecuteResult(rows));
 
       const result = await getPublishedAnnouncementsPaginated('ja', 20, 0);
 
@@ -333,33 +348,28 @@ describe('announcements queries', () => {
 
   describe('getPublishedAnnouncementsPaginated - edge cases', () => {
     it('should return empty array when limit is 0', async () => {
-      const chain = mockChain([makeAnnouncement({ id: 'ann-1', slug: 'hello' })]);
-      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+      // SQL LIMIT 0 returns no rows
+      mockDb.execute.mockResolvedValue(mockExecuteResult([]));
 
       const result = await getPublishedAnnouncementsPaginated('en', 0, 0);
 
-      expect(result).toEqual([]);
+      expect(result).toHaveLength(0);
     });
 
     it('should return empty when offset equals number of deduplicated results', async () => {
-      const chain = mockChain([
-        makeAnnouncement({ id: 'ann-1', slug: 'a' }),
-        makeAnnouncement({ id: 'ann-2', slug: 'b' }),
-      ]);
-      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+      // SQL OFFSET beyond available rows returns empty
+      mockDb.execute.mockResolvedValue(mockExecuteResult([]));
 
       const result = await getPublishedAnnouncementsPaginated('en', 10, 2);
 
-      expect(result).toEqual([]);
+      expect(result).toHaveLength(0);
     });
 
     it('should return last item when offset is count-1 with limit 1', async () => {
-      const chain = mockChain([
-        makeAnnouncement({ id: 'ann-1', slug: 'a' }),
-        makeAnnouncement({ id: 'ann-2', slug: 'b' }),
-        makeAnnouncement({ id: 'ann-3', slug: 'c' }),
-      ]);
-      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+      // SQL returns only the last deduplicated row with LIMIT 1 OFFSET 2
+      mockDb.execute.mockResolvedValue(
+        mockExecuteResult([makeAnnouncement({ id: 'ann-3', slug: 'c' })])
+      );
 
       const result = await getPublishedAnnouncementsPaginated('en', 1, 2);
 
@@ -368,14 +378,13 @@ describe('announcements queries', () => {
     });
 
     it('should deduplicate 3+ locale variants per slug and pick requested locale', async () => {
-      const chain = mockChain([
-        makeAnnouncement({ id: 'ann-en', slug: 'hello', locale: 'en' }),
-        makeAnnouncement({ id: 'ann-ja', slug: 'hello', locale: 'ja' }),
-        makeAnnouncement({ id: 'ann-fr', slug: 'hello', locale: 'fr' }),
-        makeAnnouncement({ id: 'ann-de', slug: 'hello', locale: 'de' }),
-        makeAnnouncement({ id: 'ann-other', slug: 'other', locale: 'en' }),
-      ]);
-      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+      // SQL ROW_NUMBER() picks 'de' for slug 'hello' and 'en' for slug 'other'
+      mockDb.execute.mockResolvedValue(
+        mockExecuteResult([
+          makeAnnouncement({ id: 'ann-de', slug: 'hello', locale: 'de' }),
+          makeAnnouncement({ id: 'ann-other', slug: 'other', locale: 'en' }),
+        ])
+      );
 
       const result = await getPublishedAnnouncementsPaginated('de', 20, 0);
 
@@ -386,14 +395,14 @@ describe('announcements queries', () => {
     });
 
     it('should preserve ordering of first slug occurrence after deduplication', async () => {
-      const chain = mockChain([
-        makeAnnouncement({ id: 'ann-1-en', slug: 'first', locale: 'en' }),
-        makeAnnouncement({ id: 'ann-2-en', slug: 'second', locale: 'en' }),
-        makeAnnouncement({ id: 'ann-1-ja', slug: 'first', locale: 'ja' }),
-        makeAnnouncement({ id: 'ann-3-en', slug: 'third', locale: 'en' }),
-        makeAnnouncement({ id: 'ann-2-ja', slug: 'second', locale: 'ja' }),
-      ]);
-      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+      // SQL returns deduplicated rows ordered by pinned_at DESC NULLS LAST, published_at DESC
+      mockDb.execute.mockResolvedValue(
+        mockExecuteResult([
+          makeAnnouncement({ id: 'ann-1-ja', slug: 'first', locale: 'ja' }),
+          makeAnnouncement({ id: 'ann-2-ja', slug: 'second', locale: 'ja' }),
+          makeAnnouncement({ id: 'ann-3-en', slug: 'third', locale: 'en' }),
+        ])
+      );
 
       const result = await getPublishedAnnouncementsPaginated('ja', 20, 0);
 
@@ -407,12 +416,14 @@ describe('announcements queries', () => {
     });
 
     it('should handle mixed fallback: some slugs match locale, some fall back', async () => {
-      const chain = mockChain([
-        makeAnnouncement({ id: 'ann-1-ja', slug: 'has-ja', locale: 'ja' }),
-        makeAnnouncement({ id: 'ann-2-en', slug: 'no-ja', locale: 'en' }),
-        makeAnnouncement({ id: 'ann-3-fr', slug: 'only-fr', locale: 'fr' }),
-      ]);
-      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+      // SQL ROW_NUMBER() picks best locale per slug: ja when available, en as fallback, fr as last resort
+      mockDb.execute.mockResolvedValue(
+        mockExecuteResult([
+          makeAnnouncement({ id: 'ann-1-ja', slug: 'has-ja', locale: 'ja' }),
+          makeAnnouncement({ id: 'ann-2-en', slug: 'no-ja', locale: 'en' }),
+          makeAnnouncement({ id: 'ann-3-fr', slug: 'only-fr', locale: 'fr' }),
+        ])
+      );
 
       const result = await getPublishedAnnouncementsPaginated('ja', 20, 0);
 
@@ -423,14 +434,10 @@ describe('announcements queries', () => {
     });
 
     it('should apply pagination after deduplication', async () => {
-      // 4 rows but only 2 unique slugs after deduplication
-      const chain = mockChain([
-        makeAnnouncement({ id: 'ann-1-en', slug: 'a', locale: 'en' }),
-        makeAnnouncement({ id: 'ann-1-ja', slug: 'a', locale: 'ja' }),
-        makeAnnouncement({ id: 'ann-2-en', slug: 'b', locale: 'en' }),
-        makeAnnouncement({ id: 'ann-2-ja', slug: 'b', locale: 'ja' }),
-      ]);
-      mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+      // SQL deduplicates first (ROW_NUMBER), then applies LIMIT 1 OFFSET 0
+      mockDb.execute.mockResolvedValue(
+        mockExecuteResult([makeAnnouncement({ id: 'ann-1-en', slug: 'a', locale: 'en' })])
+      );
 
       const result = await getPublishedAnnouncementsPaginated('en', 1, 0);
 

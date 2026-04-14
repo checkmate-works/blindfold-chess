@@ -1,9 +1,8 @@
 /**
- * Number of feed items between each native ad insertion.
+ * Number of feed items between each in-feed ad insertion.
  *
- * @design Native ads (NativeAdCard) are interleaved rather than stored in
+ * @design Ads (AdSenseInFeed) are interleaved rather than stored in
  * feed_items because ad display is presentation logic, not user activity.
- * Ads cycle through the `adBanners` array via modulo indexing. When
- * `adBanners` is empty (ads disabled or none active), no ads appear.
+ * When `showAds` is false, no ads appear.
  */
-export const AD_INTERVAL = 5;
+export const AD_INTERVAL = 10;

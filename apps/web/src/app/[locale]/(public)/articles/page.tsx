@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { SITE_URL } from '@/config';
+import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV, SITE_URL } from '@/config';
 
 import { JsonLd, generateItemListSchema } from '@/lib/jsonld';
 
@@ -15,14 +15,14 @@ import {
   PaginationNav,
   SectionTitle,
 } from '@/app/[locale]/_components';
-import { AdBannerGuard } from '@/app/[locale]/_components/AdBanner/AdBannerGuard';
+import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { getPublishedArticleCount, getPublishedArticlesPaginated } from './_lib/queries';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 const ARTICLES_PER_PAGE = 20;
 
@@ -112,7 +112,9 @@ export default async function ArticlesPage({ params, searchParams }: Props) {
           </>
         )}
 
-        <AdBannerGuard slot="banner-standard" />
+        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+        )}
 
         <Divider />
 
