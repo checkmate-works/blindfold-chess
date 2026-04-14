@@ -6,9 +6,12 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useState,
 } from 'react';
+
+import { usePathname } from 'next/navigation';
 
 import {
   type ResolvedTheme,
@@ -20,8 +23,9 @@ import {
 
 // Minimal replacement for next-themes. Intentionally omits features we do not
 // use (forced themes, custom themes, system-event nonce, etc.) and, crucially,
-// does NOT render a bootstrap <script> in the React tree — that is handled by
-// <ThemeScript /> in each root layout (a Server Component).
+// does NOT render a bootstrap <script> in the React tree — that is injected
+// into the HTML response by `src/middleware.ts` before `</head>`, so React
+// never sees it and the React 19 "Encountered a script tag" warning never fires.
 
 type ThemeContextValue = {
   theme: Theme;
@@ -73,17 +77,38 @@ type ProviderProps = {
 
 export function ThemeProvider({ children, disableTransitionOnChange = false }: ProviderProps) {
   // `theme` is the user's preference ('system' | 'light' | 'dark').
-  // Start from 'system' so SSR and the first client render agree; the
-  // ThemeScript has already applied the real class on <html> before paint.
-  const [theme, setThemeState] = useState<Theme>('system');
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(THEME_LIGHT_CLASS);
-
-  // Hydrate from localStorage + matchMedia after mount.
-  useEffect(() => {
+  // Lazy-initialize from localStorage on the client so the very first client
+  // render already matches what the middleware-injected bootstrap script put
+  // on <html>. On the server we fall back to 'system' / light; this creates a
+  // React state mismatch between SSR and the first client commit, but:
+  //   - <html> already has `suppressHydrationWarning` (bootstrap script mutates
+  //     className/colorScheme before React mounts)
+  //   - all consumers of `useTheme()` (ThemeToggle, ThemeSelector, FlairPicker)
+  //     gate their rendering on their own `mounted` flag, so they do not emit
+  //     SSR-vs-client-divergent markup from this state
+  // Without lazy init, the initial client render had resolvedTheme='light',
+  // and the useLayoutEffect below would synchronously overwrite the correct
+  // 'dark' class set by the bootstrap script, producing a visible flash until
+  // the separate hydration useEffect caught up.
+  const [theme, setThemeState] = useState<Theme>(() => {
+    if (typeof window === 'undefined') return 'system';
+    return readStoredTheme();
+  });
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() => {
+    if (typeof window === 'undefined') return THEME_LIGHT_CLASS;
     const stored = readStoredTheme();
-    setThemeState(stored);
-    setResolvedTheme(stored === 'system' ? getSystemTheme() : stored);
-  }, []);
+    return stored === 'system' ? getSystemTheme() : stored;
+  });
+  const pathname = usePathname();
+
+  // Re-apply the theme class on every client navigation. React reconciles
+  // <html> (which has no `className` prop in our layouts) after soft nav via
+  // `router.push`, which clears the class added by the middleware-injected
+  // bootstrap script. `useLayoutEffect` runs synchronously after reconciliation
+  // but before paint, eliminating a flash to the default (light) theme.
+  useLayoutEffect(() => {
+    applyTheme(resolvedTheme);
+  }, [pathname, resolvedTheme]);
 
   // React to OS-level theme changes when in 'system' mode.
   useEffect(() => {

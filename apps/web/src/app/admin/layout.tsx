@@ -12,7 +12,7 @@ import { NuqsAdapter } from 'nuqs/adapters/next/app';
 
 import { db, userRoles } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
-import { ThemeProvider, ThemeScript } from '@/lib/theme';
+import { ThemeProvider } from '@/lib/theme';
 
 import { ToastProvider } from '@/app/[locale]/_contexts/ToastContext';
 
@@ -56,7 +56,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <ThemeScript />
         <style dangerouslySetInnerHTML={{ __html: generateThemeCSS() }} />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
