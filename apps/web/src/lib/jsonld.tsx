@@ -1,50 +1,13 @@
-import Script from 'next/script';
-
 import { AUTHOR_NAME, SITE_URL } from '@/config';
 
 const LANGUAGE_MAP: Record<string, string> = { en: 'en-US', ja: 'ja-JP', es: 'es-ES', pt: 'pt-BR' };
 
 /**
- * Stable FNV-1a 32-bit hash for generating deterministic `id`s for
- * JSON-LD <Script> blocks. We only need uniqueness across the document,
- * not cryptographic strength, and it must produce the same output on
- * server and client to avoid hydration mismatches.
- */
-function stableHash(input: string): string {
-  let hash = 0x811c9dc5;
-  for (let i = 0; i < input.length; i++) {
-    hash ^= input.charCodeAt(i);
-    hash = (hash + ((hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24))) >>> 0;
-  }
-  return hash.toString(16).padStart(8, '0');
-}
-
-/**
- * Renders JSON-LD structured data.
- *
- * Uses `next/script` rather than a raw `<script>` element because React 19 /
- * Next.js 16 emits a "Scripts inside React components are never executed
- * when rendering on the client" warning for inline `<script>` tags rendered
- * inside a route's React subtree (triggered on client-side navigation such
- * as a locale switch). `next/script` hoists the tag outside the reconciled
- * tree and ensures it is emitted exactly once per page, and it still
- * server-renders into the initial HTML so search engine crawlers see the
- * structured data.
- *
- * The `id` is required by `next/script` for inline scripts; we derive it
- * deterministically from the serialized payload so multiple `<JsonLd>`
- * calls on the same page each get a unique but stable id without forcing
- * call sites to invent one.
+ * Renders JSON-LD structured data as a script tag
  */
 export function JsonLd({ data }: { data: object }) {
-  const json = JSON.stringify(data);
   return (
-    <Script
-      id={`jsonld-${stableHash(json)}`}
-      type="application/ld+json"
-      strategy="afterInteractive"
-      dangerouslySetInnerHTML={{ __html: json }}
-    />
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />
   );
 }
 
