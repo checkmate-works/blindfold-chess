@@ -5,9 +5,5 @@ type Props = {
 };
 
 export function DashboardCard({ children }: Props) {
-  return (
-    <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
-      {children}
-    </div>
-  );
+  return <div className="bg-card border border-border rounded-lg overflow-hidden">{children}</div>;
 }
