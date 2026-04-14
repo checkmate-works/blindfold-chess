@@ -3382,7 +3382,7 @@
     "subscribe": "Subscribe",
     "managePlan": "Manage plan"
   },
-  "subscription": {
+  "MypageSubscription": {
     "title": "Subscription",
     "breadcrumbMypage": "My Page",
     "successMessage": "Your subscription is now active! Ads have been removed.",

@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'subscription' });
+  const t = await getTranslations({ locale, namespace: 'MypageSubscription' });
   const title = t('title');
 
   return {
@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function SubscriptionPage({ params, searchParams }: Props) {
   const { locale } = await params;
   const sp = await searchParams;
-  const t = await getTranslations({ locale, namespace: 'subscription' });
+  const t = await getTranslations({ locale, namespace: 'MypageSubscription' });
 
   const user = await getAuthenticatedUser();
   const subscription = await getUserSubscription(user.id);

@@ -3278,7 +3278,7 @@
     "subscribe": "登録する",
     "managePlan": "プランを管理"
   },
-  "subscription": {
+  "MypageSubscription": {
     "title": "サブスクリプション",
     "breadcrumbMypage": "マイページ",
     "successMessage": "サブスクリプションが有効になりました！広告が非表示になります。",
