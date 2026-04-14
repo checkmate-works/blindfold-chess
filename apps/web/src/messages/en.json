@@ -3384,6 +3384,7 @@
   },
   "subscription": {
     "title": "Subscription",
+    "breadcrumbMypage": "My Page",
     "successMessage": "Your subscription is now active! Ads have been removed.",
     "noSubscription": "No active subscription",
     "noSubscriptionDescription": "Subscribe to remove ads and support Blindfold Chess.",

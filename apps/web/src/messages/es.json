@@ -3258,6 +3258,7 @@
   },
   "subscription": {
     "title": "Suscripción",
+    "breadcrumbMypage": "Mi Página",
     "successMessage": "¡Tu suscripción está activa! Los anuncios han sido eliminados.",
     "noSubscription": "Sin suscripción activa",
     "noSubscriptionDescription": "Suscríbete para eliminar los anuncios y apoyar Ajedrez a Ciegas.",

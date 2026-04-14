@@ -3280,6 +3280,7 @@
   },
   "subscription": {
     "title": "サブスクリプション",
+    "breadcrumbMypage": "マイページ",
     "successMessage": "サブスクリプションが有効になりました！広告が非表示になります。",
     "noSubscription": "有効なサブスクリプションがありません",
     "noSubscriptionDescription": "サブスクリプションに登録して、広告を非表示にしましょう。",
