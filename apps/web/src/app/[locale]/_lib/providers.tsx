@@ -5,13 +5,12 @@ import { Suspense } from 'react';
 
 import { NextIntlClientProvider } from 'next-intl';
 import { NavigationGuardProvider } from 'next-navigation-guard';
+import { ThemeProvider } from 'next-themes';
 
 import { ErrorBoundary } from '@/app/_components/ErrorBoundary';
 import { IntlAvailableContext } from '@/i18n/IntlAvailableContext';
 import { getMessageFallback, handleIntlError } from '@/i18n/error-handling';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
-
-import { ThemeProvider } from '@/lib/theme';
 
 import { ToastContainer } from '../_components/ToastContainer';
 import { AuthProvider } from '../_contexts/AuthContext';
@@ -34,7 +33,12 @@ export function Providers({ children, locale, messages }: Props) {
         getMessageFallback={getMessageFallback}
       >
         <IntlAvailableContext.Provider value={true}>
-          <ThemeProvider disableTransitionOnChange>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
             <NavigationGuardProvider>
               <NuqsAdapter>
                 <AuthProvider>

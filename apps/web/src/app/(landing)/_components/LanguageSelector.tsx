@@ -12,7 +12,6 @@ const LOCALE_LABELS: Record<Locale, string> = {
   en: 'English',
   es: 'Español',
   ja: '日本語',
-  pt: 'Português',
 };
 
 type Props = {

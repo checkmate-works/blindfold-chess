@@ -75,7 +75,6 @@ describe('generateCanonicalMetadata', () => {
         en: 'https://www.blindfold-chess.online/en/learn',
         es: 'https://www.blindfold-chess.online/es/learn',
         ja: 'https://www.blindfold-chess.online/ja/learn',
-        pt: 'https://www.blindfold-chess.online/pt/learn',
         'x-default': 'https://www.blindfold-chess.online/en/learn',
       });
     });
@@ -90,7 +89,6 @@ describe('generateCanonicalMetadata', () => {
         en: 'https://www.blindfold-chess.online/en',
         es: 'https://www.blindfold-chess.online/es',
         ja: 'https://www.blindfold-chess.online/ja',
-        pt: 'https://www.blindfold-chess.online/pt',
         'x-default': 'https://www.blindfold-chess.online/en',
       });
     });
@@ -105,7 +103,6 @@ describe('generateCanonicalMetadata', () => {
         en: 'https://www.blindfold-chess.online/en/practice/algebraic-notation',
         es: 'https://www.blindfold-chess.online/es/practice/algebraic-notation',
         ja: 'https://www.blindfold-chess.online/ja/practice/algebraic-notation',
-        pt: 'https://www.blindfold-chess.online/pt/practice/algebraic-notation',
         'x-default': 'https://www.blindfold-chess.online/en/practice/algebraic-notation',
       });
     });

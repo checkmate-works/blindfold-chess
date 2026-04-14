@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { NavigationGuardProvider } from 'next-navigation-guard';
+import { ThemeProvider } from 'next-themes';
 import { Inter } from 'next/font/google';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -12,7 +13,6 @@ import { NuqsAdapter } from 'nuqs/adapters/next/app';
 
 import { db, userRoles } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
-import { ThemeProvider } from '@/lib/theme';
 
 import { ToastProvider } from '@/app/[locale]/_contexts/ToastContext';
 
@@ -59,7 +59,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <style dangerouslySetInnerHTML={{ __html: generateThemeCSS() }} />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
-        <ThemeProvider disableTransitionOnChange>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
           <div className="flex min-h-screen">
             <aside className="w-56 border-r border-border bg-secondary p-4">
               <div className="text-lg font-semibold mb-6 flex items-center gap-2">

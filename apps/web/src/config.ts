@@ -18,7 +18,7 @@ export const ADSENSE_INFEED_LAYOUT_KEY_MOBILE =
 export const IS_LOCAL_DEV =
   process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_SITE_URL?.includes('localhost');
 
-export const SUPPORTED_LOCALES = ['en', 'es', 'pt', 'ja'] as const;
+export const SUPPORTED_LOCALES = ['en', 'es', 'ja'] as const;
 export const DEFAULT_LOCALE = 'en';
 export const LOCALE_COOKIE_NAME = 'NEXT_LOCALE';
 

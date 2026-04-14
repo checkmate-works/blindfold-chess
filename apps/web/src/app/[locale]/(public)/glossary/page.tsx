@@ -39,12 +39,7 @@ export default async function GlossaryIndexPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'glossary' });
 
   const glossaryUrl = `${SITE_URL}/${locale}/glossary`;
-  const LANGUAGE_MAP: Record<string, string> = {
-    en: 'en-US',
-    ja: 'ja-JP',
-    es: 'es-ES',
-    pt: 'pt-BR',
-  };
+  const LANGUAGE_MAP: Record<string, string> = { en: 'en-US', ja: 'ja-JP', es: 'es-ES' };
   const inLanguage = LANGUAGE_MAP[locale] ?? 'en-US';
 
   const allTerms = await getGlossaryTerms(locale);

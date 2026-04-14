@@ -1,6 +1,6 @@
 import { AUTHOR_NAME, SITE_URL } from '@/config';
 
-const LANGUAGE_MAP: Record<string, string> = { en: 'en-US', ja: 'ja-JP', es: 'es-ES', pt: 'pt-BR' };
+const LANGUAGE_MAP: Record<string, string> = { en: 'en-US', ja: 'ja-JP', es: 'es-ES' };
 
 /**
  * Renders JSON-LD structured data as a script tag
@@ -59,7 +59,6 @@ export function generateWebApplicationSchema(locale: string, brandName: string) 
     en: 'A free training app for blindfold chess',
     ja: '目隠しチェスの無料練習アプリ',
     es: 'Una aplicación gratuita de entrenamiento para ajedrez a ciegas',
-    pt: 'Um aplicativo gratuito de treinamento para xadrez às cegas',
   };
   const description = descriptionMap[locale] ?? descriptionMap.en;
 
