@@ -2094,7 +2094,10 @@
       "levelLabel": "Level {level}",
       "expProgress": "{current} / {next} Exp",
       "expRemaining": "{remaining} Exp to next level",
-      "viewExpLeaderboard": "View Exp Leaderboard"
+      "viewExpLeaderboard": "View Exp Leaderboard",
+      "accountTitle": "Account",
+      "subscriptionTitle": "Subscription",
+      "benefitsTitle": "Benefits"
     },
     "records": "Records",
     "bestScore": "Best Score",
@@ -2151,6 +2154,33 @@
       "unknown": "Other"
     },
     "practiceThisChallenge": "Practice This Challenge"
+  },
+  "MypageBenefits": {
+    "title": "Benefits",
+    "breadcrumbMypage": "My Page",
+    "adFree": {
+      "statusActive": "Ad-free is active",
+      "statusInactive": "Ad-free is not currently active",
+      "activeUntil": "until {date}",
+      "sourceSubscription": "From your plan subscription",
+      "sourceGrants": "From benefit grants",
+      "grantPeriod": "{startDate} – {endDate}",
+      "grantStatusActive": "Active",
+      "grantStatusUpcoming": "Upcoming",
+      "grantStatusExpired": "Expired"
+    },
+    "howToEarn": {
+      "title": "How to earn benefits",
+      "topic_post": "Posting a topic grants you ad-free access for {days} days",
+      "puzzle_creation": "Creating a puzzle grants you ad-free access for {days} days",
+      "campaign": "Joining a campaign grants you ad-free access for {days} days"
+    },
+    "grantTypeLabel": {
+      "admin_manual": "Granted by staff",
+      "topic_post": "Granted for topic post",
+      "puzzle_creation": "Granted for puzzle creation",
+      "campaign": "Granted for campaign"
+    }
   },
   "MypageLikes": {
     "title": "Liked Posts",

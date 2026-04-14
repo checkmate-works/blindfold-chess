@@ -225,6 +225,28 @@ export default async function MypagePage({ params }: Props) {
               />
             </div>
           </DashboardSection>
+
+          {/* Account section */}
+          <DashboardSection>
+            <DashboardSectionHeader
+              icon={<span className="text-lg">⚙️</span>}
+              title={t('dashboard.accountTitle')}
+            />
+            <div className="flex flex-wrap gap-3 mt-3">
+              <ChallengeCard
+                locale={locale}
+                href="/mypage/subscription"
+                label={t('dashboard.subscriptionTitle')}
+                icon="💳"
+              />
+              <ChallengeCard
+                locale={locale}
+                href="/mypage/benefits"
+                label={t('dashboard.benefitsTitle')}
+                icon="🎁"
+              />
+            </div>
+          </DashboardSection>
         </DashboardCard>
 
         <Divider />

@@ -2095,7 +2095,10 @@
       "levelLabel": "Level {level}",
       "expProgress": "{current} / {next} Exp",
       "expRemaining": "次のレベルまで あと {remaining} Exp",
-      "viewExpLeaderboard": "Exp ランキングを見る"
+      "viewExpLeaderboard": "Exp ランキングを見る",
+      "accountTitle": "アカウント",
+      "subscriptionTitle": "サブスクリプション",
+      "benefitsTitle": "特典"
     },
     "records": "レコード",
     "bestScore": "最高スコア",
@@ -2152,6 +2155,33 @@
       "unknown": "その他"
     },
     "practiceThisChallenge": "このチャレンジを練習する"
+  },
+  "MypageBenefits": {
+    "title": "特典",
+    "breadcrumbMypage": "マイページ",
+    "adFree": {
+      "statusActive": "広告非表示が有効です",
+      "statusInactive": "現在広告非表示は有効ではありません",
+      "activeUntil": "{date}まで",
+      "sourceSubscription": "プラン契約による",
+      "sourceGrants": "特典付与による",
+      "grantPeriod": "{startDate} 〜 {endDate}",
+      "grantStatusActive": "有効",
+      "grantStatusUpcoming": "開始予定",
+      "grantStatusExpired": "終了"
+    },
+    "howToEarn": {
+      "title": "特典の獲得方法",
+      "topic_post": "トピックを投稿すると{days}日間付与されます",
+      "puzzle_creation": "問題を作成すると{days}日間付与されます",
+      "campaign": "キャンペーン参加で{days}日間付与されます"
+    },
+    "grantTypeLabel": {
+      "admin_manual": "運営からの付与",
+      "topic_post": "トピック投稿による付与",
+      "puzzle_creation": "問題作成による付与",
+      "campaign": "キャンペーンによる付与"
+    }
   },
   "MypageLikes": {
     "title": "いいねした投稿",
