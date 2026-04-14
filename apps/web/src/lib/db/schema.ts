@@ -1485,6 +1485,17 @@ export type NewUserExpRecord = typeof userExp.$inferInsert;
  * "stacks" grants so that multiple grants extend the benefit period rather than
  * overlapping or resetting it.
  *
+ * @design No durationDays column — policy and fact are separated
+ *
+ * The duration (e.g., 7 days for topic_post) is a *policy* that lives in
+ * code (`src/lib/db/data/grant-types.ts`) and can change over time. Each
+ * grant record stores the *fact* — the concrete `startsAt`/`expiresAt` pair
+ * computed at the moment of grant. This separation ensures that a later
+ * policy change (e.g., 7 → 10 days) does not retroactively affect already
+ * issued grants, and removes any ambiguity about which value was in effect
+ * when a given grant was created. Git history on grant-types.ts is the
+ * audit trail for policy changes.
+ *
  * @design benefitType + grantType are varchar, not pgEnum
  *
  * New benefit types ('ad_free', 'paywall_access', etc.) and grant types
@@ -1503,6 +1514,22 @@ export type NewUserExpRecord = typeof userExp.$inferInsert;
  * Grants are never physically deleted. Revocation sets revokedAt, preserving
  * the full audit trail. The granted_by info is tracked via moderation_actions
  * (the existing audit log), not duplicated here.
+ *
+ * @design reason is free-form text by design; grantType is the canonical "why"
+ *
+ * The categorical "why" of a grant is expressed by `grantType` (e.g.,
+ * 'topic_post', 'puzzle_creation', 'admin_manual'), not by `reason`. A
+ * separate `grant_reasons` master table was deliberately NOT introduced:
+ *
+ * - User-facing notification/display text is owned by the i18n layer
+ *   (`messages/{locale}.json`, keyed by grantType), not the database.
+ *   Storing localized copy in DB would duplicate next-intl infrastructure
+ *   and lose ICU message format, type safety, and git-reviewable diffs.
+ * - `reason` is meaningful only for `grantType='admin_manual'`, where it
+ *   holds an ad-hoc admin memo. For automated grant types, reason is
+ *   typically null and display text comes from i18n.
+ * - Since `reason` is never queried/searched and never updated after
+ *   insert, there is no update-anomaly risk from keeping it denormalized.
  *
  * @design No updatedAt — grants are effectively immutable
  *
