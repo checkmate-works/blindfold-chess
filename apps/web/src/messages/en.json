@@ -2157,6 +2157,7 @@
   },
   "MypageBenefits": {
     "title": "Benefits",
+    "sectionTitle": "Ad-Free Benefits",
     "breadcrumbMypage": "My Page",
     "adFree": {
       "statusActive": "Ad-free is active",
@@ -3380,6 +3381,7 @@
   },
   "MypageSubscription": {
     "title": "Subscription",
+    "sectionTitle": "Current Plan",
     "breadcrumbMypage": "My Page",
     "successMessage": "Your subscription is now active! Ads have been removed.",
     "noSubscription": "No active subscription",

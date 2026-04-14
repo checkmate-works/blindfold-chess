@@ -48,7 +48,7 @@ import {
 import { getUserSubscription } from '@/lib/subscription';
 import { BENEFIT_ACTIVE_STATUSES } from '@/lib/subscription-constants';
 
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
@@ -128,6 +128,7 @@ export default async function BenefitsPage({ params }: Props) {
     <div className="space-y-8">
       <PageTitle>{t('title')}</PageTitle>
       <PagePanel>
+        <SectionTitle>{t('sectionTitle')}</SectionTitle>
         <div className="space-y-6">
           {/* Aggregate status banner */}
           <div

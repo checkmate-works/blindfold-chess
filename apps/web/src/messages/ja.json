@@ -2158,6 +2158,7 @@
   },
   "MypageBenefits": {
     "title": "特典",
+    "sectionTitle": "広告非表示特典",
     "breadcrumbMypage": "マイページ",
     "adFree": {
       "statusActive": "広告非表示が有効です",
@@ -3276,6 +3277,7 @@
   },
   "MypageSubscription": {
     "title": "サブスクリプション",
+    "sectionTitle": "現在のプラン",
     "breadcrumbMypage": "マイページ",
     "successMessage": "サブスクリプションが有効になりました！広告が非表示になります。",
     "noSubscription": "有効なサブスクリプションがありません",
