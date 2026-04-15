@@ -52,10 +52,14 @@ jobs:
     #   contents: write       — ブランチ作成 / commit / push のため
     #   pull-requests: write  — PR 作成のため
     #   issues: write         — Claude が issue にステータスコメントを返すため
+    #   id-token: write       — claude-code-action が OIDC トークン交換で必要
+    # 当初の "id-token: none" 目標に対する Phase 1 の現実解。OIDC トークンは
+    # この run に scoped かつ短命で、owner-only トリガーで呼び出し面も限定的。
     permissions:
       contents: write
       pull-requests: write
       issues: write
+      id-token: write      # claude-code-action が OIDC トークン交換のために必要
 
     steps:
       - name: Checkout
