@@ -12,7 +12,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { HiGift, HiMegaphone, HiTrophy } from 'react-icons/hi2';
 
 import { getAchievementDisplayName } from '@/lib/achievements/display';
-import { truncateContent } from '@/lib/truncate-content';
+import { truncateContent } from '@/lib/content/truncate-content';
 
 import { markAsRead } from '../_actions';
 import type { NotificationWithActor } from '../_lib/queries';

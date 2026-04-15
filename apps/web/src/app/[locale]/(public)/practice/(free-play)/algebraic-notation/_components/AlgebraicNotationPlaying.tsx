@@ -1,7 +1,7 @@
 'use client';
 
-import type { BoardTheme } from '@/lib/boardThemes';
-import { DEFAULT_BOARD_THEME } from '@/lib/boardThemes';
+import type { BoardTheme } from '@/lib/games/board-themes';
+import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
 import type { Locale } from '@/app/[locale]/_lib/types';

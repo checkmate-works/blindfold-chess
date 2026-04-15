@@ -4,8 +4,8 @@ import { memo } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import { resolveDisplayName } from '@/lib/display-name';
 import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
+import { resolveDisplayName } from '@/lib/users/display-name';
 
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_actions/toggleLike';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { MISTAKE_LIMIT } from '@/lib/challenge-constants';
+import { MISTAKE_LIMIT } from '@/lib/challenge/constants';
 import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 
 import type { ChallengeResultRow } from '../_actions/get-challenge-sessions';

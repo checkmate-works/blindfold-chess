@@ -1,7 +1,7 @@
 import { and, eq, gte } from 'drizzle-orm';
 import 'server-only';
 
-import { db, notifications, userFollows } from './db';
+import { db, notifications, userFollows } from '../db';
 
 type NotificationEvent = {
   userId: string;

@@ -3,7 +3,7 @@ import { cache } from 'react';
 import { eq } from 'drizzle-orm';
 import 'server-only';
 
-import { db, profiles } from './db';
+import { db, profiles } from '../db';
 
 /**
  * Check if a user is banned by looking up their profile.

@@ -10,7 +10,7 @@
  */
 import type { AchievementCriteria } from '@blindfold-chess/types';
 
-import { LEADERBOARD_KEYS } from '@/lib/leaderboard-keys';
+import { LEADERBOARD_KEYS } from '@/lib/games/leaderboard-keys';
 
 import { CHALLENGE_MENU_TYPES } from '../practice-menu-types';
 

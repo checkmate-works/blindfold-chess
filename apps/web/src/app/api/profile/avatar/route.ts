@@ -4,7 +4,7 @@ import { eq } from 'drizzle-orm';
 
 import { authenticateAndGuardApi } from '@/lib/auth';
 import { db, profiles } from '@/lib/db';
-import { RATE_LIMITS } from '@/lib/rate-limit';
+import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];

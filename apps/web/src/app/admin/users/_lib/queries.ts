@@ -1,6 +1,7 @@
 import type { SupabaseClient, User } from '@supabase/supabase-js';
 import { and, desc, eq, inArray } from 'drizzle-orm';
 
+import { BENEFIT_ACTIVE_STATUSES } from '@/lib/billing/subscription-constants';
 import {
   db,
   moderationActions,
@@ -18,7 +19,6 @@ import {
   ranksSeedData,
 } from '@/lib/db/data/ranks';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
-import { BENEFIT_ACTIVE_STATUSES } from '@/lib/subscription-constants';
 
 import { SIGNUP_METHOD_ORDER, type SignupMethod } from './signup-method';
 

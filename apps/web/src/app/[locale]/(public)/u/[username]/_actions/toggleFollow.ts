@@ -4,12 +4,12 @@ import { revalidatePath } from 'next/cache';
 
 import { and, eq, isNull } from 'drizzle-orm';
 
-import { logActivityEvent } from '@/lib/activity-log';
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, profiles, userFollows } from '@/lib/db';
 import { toggleByInsert } from '@/lib/db/toggle-by-insert';
-import { createNotification } from '@/lib/notification';
-import { RATE_LIMITS } from '@/lib/rate-limit';
+import { createNotification } from '@/lib/notifications/notification';
+import { RATE_LIMITS } from '@/lib/security/rate-limit';
+import { logActivityEvent } from '@/lib/users/activity-log';
 
 type ToggleFollowResult = { following: boolean } | { error: string };
 

@@ -4,7 +4,7 @@ import { requireAdmin } from '@/app/admin/_lib/auth';
 import { eq } from 'drizzle-orm';
 
 import { articleImages, articles, db } from '@/lib/db';
-import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
+import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 import {

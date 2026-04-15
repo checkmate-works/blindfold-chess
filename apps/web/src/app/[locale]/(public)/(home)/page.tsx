@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { IS_LOCAL_DEV } from '@/config';
 import { FaTachometerAlt } from 'react-icons/fa';
 
-import { shouldShowAdsForUser } from '@/lib/ad';
-import { JsonLd, generateWebApplicationSchema } from '@/lib/jsonld';
+import { shouldShowAdsForUser } from '@/lib/ads/ad';
+import { JsonLd, generateWebApplicationSchema } from '@/lib/seo/jsonld';
 import { createClient } from '@/lib/supabase/server';
 
 import { DashboardCard, PageTitle } from '@/app/[locale]/_components';

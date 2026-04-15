@@ -1,8 +1,8 @@
 import { MAX_GAMES } from '@/config';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { GameLimitError } from './errors';
-import { LocalStorageGameRepository } from './repositories';
+import { GameLimitError } from '../errors';
+import { LocalStorageGameRepository } from './local-storage-repository';
 
 describe('LocalStorageGameRepository', () => {
   let repository: LocalStorageGameRepository;

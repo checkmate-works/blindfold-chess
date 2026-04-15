@@ -4,7 +4,7 @@ import { memo } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import { getMedalEmoji } from '@/lib/rank-emoji';
+import { getMedalEmoji } from '@/lib/users/rank-emoji';
 
 import { getLeaderboardIcon } from '@/app/[locale]/(public)/leaderboard/_lib/icons';
 import {

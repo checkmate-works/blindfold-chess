@@ -3,9 +3,12 @@ import { unstable_cache } from 'next/cache';
 import { and, eq, inArray } from 'drizzle-orm';
 import 'server-only';
 
+import {
+  BENEFIT_ACTIVE_STATUSES,
+  DISPLAYABLE_STATUSES,
+} from '@/lib/billing/subscription-constants';
 import { db, subscriptions } from '@/lib/db';
 import { withTimeout } from '@/lib/db-timeout';
-import { BENEFIT_ACTIVE_STATUSES, DISPLAYABLE_STATUSES } from '@/lib/subscription-constants';
 
 export { BENEFIT_ACTIVE_STATUSES, DISPLAYABLE_STATUSES };
 

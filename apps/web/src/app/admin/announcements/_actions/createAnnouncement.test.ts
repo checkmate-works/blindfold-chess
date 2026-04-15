@@ -61,7 +61,7 @@ vi.mock('next/cache', () => ({
   revalidatePath: (...args: unknown[]) => mockRevalidatePath(...args),
 }));
 
-vi.mock('@/lib/announcement-notification', () => ({
+vi.mock('@/lib/notifications/announcement-notification', () => ({
   notifyAllUsersOfAnnouncement: (...args: unknown[]) => mockNotifyAllUsersOfAnnouncement(...args),
   hasAnnouncementNotification: (...args: unknown[]) => mockHasAnnouncementNotification(...args),
 }));

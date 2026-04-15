@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { getStartingFen } from '@blindfold-chess/features/chess-core';
 import { FaRegComment } from 'react-icons/fa';
 
-import { truncateContent } from '@/lib/truncate-content';
+import { truncateContent } from '@/lib/content/truncate-content';
 
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { UserAvatar } from '@/app/[locale]/(public)/topics/_components/UserAvatar';

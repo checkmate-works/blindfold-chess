@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mockLimit = vi.fn();
 const mockOrderBy = vi.fn();
 
-vi.mock('./db', () => ({
+vi.mock('@/lib/db', () => ({
   db: {
     select: () => ({
       from: () => ({
@@ -25,17 +25,17 @@ vi.mock('next/cache', () => ({
 vi.mock('server-only', () => ({}));
 
 const mockHasActiveSubscription = vi.fn();
-vi.mock('./subscription', () => ({
+vi.mock('@/lib/billing/subscription', () => ({
   hasActiveSubscription: (...args: unknown[]) => mockHasActiveSubscription(...args),
 }));
 
 const mockHasActiveGrant = vi.fn();
-vi.mock('./user-grants', () => ({
+vi.mock('@/lib/users/user-grants', () => ({
   hasActiveGrant: (...args: unknown[]) => mockHasActiveGrant(...args),
 }));
 
 const mockGetOptionalUser = vi.fn();
-vi.mock('./auth', () => ({
+vi.mock('@/lib/auth', () => ({
   getOptionalUser: () => mockGetOptionalUser(),
 }));
 

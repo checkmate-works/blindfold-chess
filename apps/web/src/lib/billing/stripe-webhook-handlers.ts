@@ -4,8 +4,8 @@ import { eq } from 'drizzle-orm';
 import 'server-only';
 import type Stripe from 'stripe';
 
+import { getStripe } from '@/lib/billing/stripe';
 import { db, stripeCustomers, subscriptions } from '@/lib/db';
-import { getStripe } from '@/lib/stripe';
 
 /**
  * Map a Stripe Subscription object to the DB column values used for

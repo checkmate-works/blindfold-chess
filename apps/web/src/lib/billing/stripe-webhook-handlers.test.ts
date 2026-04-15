@@ -6,7 +6,7 @@ const mockOnConflictDoUpdate = vi.fn();
 const mockUpdateSetWhere = vi.fn();
 const mockSelectLimit = vi.fn();
 
-vi.mock('./db', () => ({
+vi.mock('@/lib/db', () => ({
   db: {
     insert: () => ({
       values: (...args: unknown[]) => {
@@ -45,7 +45,7 @@ const mockStripe = {
   },
 };
 
-vi.mock('./stripe', () => ({
+vi.mock('@/lib/billing/stripe', () => ({
   getStripe: () => mockStripe,
 }));
 

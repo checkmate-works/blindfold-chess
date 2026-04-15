@@ -7,7 +7,7 @@ import { notFound } from 'next/navigation';
 import type { TiptapJsonContent } from '@/app/admin/articles/_lib/types';
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 
-import { JsonLd, generateBlogPostingSchema } from '@/lib/jsonld';
+import { JsonLd, generateBlogPostingSchema } from '@/lib/seo/jsonld';
 
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';

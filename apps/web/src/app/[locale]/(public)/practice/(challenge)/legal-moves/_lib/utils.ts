@@ -1,4 +1,8 @@
-import { PIECE_NAME_TO_SHORT, PIECE_SHORT_TO_NAME, type PieceFullName } from '@/lib/chess-pieces';
+import {
+  PIECE_NAME_TO_SHORT,
+  PIECE_SHORT_TO_NAME,
+  type PieceFullName,
+} from '@/lib/games/chess-pieces';
 
 import type { PieceType } from './types';
 

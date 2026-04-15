@@ -7,7 +7,7 @@ import type {
   FAQItemData,
   ItemListItemData,
   LearningResourceData,
-} from './jsonld';
+} from './index';
 import {
   generateArticleSchema,
   generateBlogPostingSchema,
@@ -18,7 +18,7 @@ import {
   generateLearningResourceSchema,
   generateOrganizationSchema,
   generateWebSiteSchema,
-} from './jsonld';
+} from './index';
 
 describe('JSON-LD Schema Generators', () => {
   const originalEnv = process.env.NEXT_PUBLIC_SITE_URL;

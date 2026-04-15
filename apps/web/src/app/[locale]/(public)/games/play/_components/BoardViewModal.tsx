@@ -7,7 +7,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import type { Side } from '@blindfold-chess/types';
 import { FaExchangeAlt } from 'react-icons/fa';
 
-import type { EvaluationMark } from '@/lib/evaluation';
+import type { EvaluationMark } from '@/lib/games/evaluation';
 
 import type { FormattedPgnMove } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';

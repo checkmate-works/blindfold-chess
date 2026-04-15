@@ -1,4 +1,4 @@
-import type { MISTAKE_LIMIT } from '@/lib/challenge-constants';
+import type { MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
 import type { ChallengeResultRow } from '../_actions/get-challenge-sessions';
 import type { DatePeriod } from './period-utils';

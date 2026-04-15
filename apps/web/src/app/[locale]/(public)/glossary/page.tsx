@@ -4,7 +4,7 @@ import { setRequestLocale } from 'next-intl/server';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV, SITE_URL } from '@/config';
 
-import { JsonLd, generateDefinedTermSetSchema } from '@/lib/jsonld';
+import { JsonLd, generateDefinedTermSetSchema } from '@/lib/seo/jsonld';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';

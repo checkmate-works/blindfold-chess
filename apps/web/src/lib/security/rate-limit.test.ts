@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mockSelectFromWhere = vi.fn();
 const mockInsertValues = vi.fn().mockResolvedValue(undefined);
 
-vi.mock('./db', () => ({
+vi.mock('@/lib/db', () => ({
   db: {
     select: () => ({
       from: () => ({

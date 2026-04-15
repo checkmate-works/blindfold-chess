@@ -12,7 +12,7 @@ const mockDbInsertValues = vi.fn();
  * We track which table is queried via the from() argument.
  */
 
-vi.mock('./db', () => ({
+vi.mock('@/lib/db', () => ({
   db: {
     select: () => {
       return {

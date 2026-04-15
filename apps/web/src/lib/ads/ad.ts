@@ -3,10 +3,10 @@ import { unstable_cache } from 'next/cache';
 import { eq } from 'drizzle-orm';
 
 import { getOptionalUser } from '@/lib/auth';
+import { hasActiveSubscription } from '@/lib/billing/subscription';
 import { adBanners, db, siteSettings } from '@/lib/db';
 import { withTimeout } from '@/lib/db-timeout';
-import { hasActiveSubscription } from '@/lib/subscription';
-import { hasActiveGrant } from '@/lib/user-grants';
+import { hasActiveGrant } from '@/lib/users/user-grants';
 
 export type AdBannerConfig = {
   href: string;

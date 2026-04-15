@@ -6,9 +6,9 @@ import { SITE_URL } from '@/config';
 import type Stripe from 'stripe';
 
 import { getAuthenticatedUser } from '@/lib/auth';
-import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
-import { getStripe } from '@/lib/stripe';
-import { getStripeCustomerId } from '@/lib/stripe-customer';
+import { getStripe } from '@/lib/billing/stripe';
+import { getStripeCustomerId } from '@/lib/billing/stripe-customer';
+import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
 
 type PortalError = { error: 'rateLimited' | 'noSubscription' | 'portalSessionFailed' };
 

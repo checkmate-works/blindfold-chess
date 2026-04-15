@@ -6,8 +6,8 @@ import { BoardLayout, ChessPiece } from '@/app/_components';
 import type { SquareRenderInfo } from '@/app/_components';
 import type { RoutePlannerPieceType } from '@blindfold-chess/features/route-planner';
 
-import type { BoardTheme } from '@/lib/boardThemes';
-import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
+import type { BoardTheme } from '@/lib/games/board-themes';
+import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/games/board-themes';
 
 type Props = {
   startSquare: string;

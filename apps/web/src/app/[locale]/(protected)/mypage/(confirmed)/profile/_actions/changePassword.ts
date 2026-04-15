@@ -3,10 +3,10 @@
 import { createClient } from '@supabase/supabase-js';
 
 import type { ActionResult } from '@/lib/action-types';
-import { logActivityEvent } from '@/lib/activity-log';
 import { getAuthenticatedUser } from '@/lib/auth';
-import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
+import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { logActivityEvent } from '@/lib/users/activity-log';
 import { getPasswordValidationError } from '@/lib/validations/password';
 
 export type ChangePasswordResult = ActionResult;

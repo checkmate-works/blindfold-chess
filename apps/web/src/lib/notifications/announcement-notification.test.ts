@@ -4,7 +4,7 @@ let mockUsers: { id: string }[] = [];
 
 const mockCreateNotification = vi.fn();
 
-vi.mock('./db', () => ({
+vi.mock('@/lib/db', () => ({
   db: {
     select: () => ({
       from: () => ({
@@ -19,7 +19,7 @@ vi.mock('./db', () => ({
   },
 }));
 
-vi.mock('./notification', () => ({
+vi.mock('@/lib/notifications/notification', () => ({
   createNotification: (...args: unknown[]) => mockCreateNotification(...args),
 }));
 

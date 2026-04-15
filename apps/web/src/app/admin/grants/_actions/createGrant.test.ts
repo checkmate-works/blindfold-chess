@@ -25,11 +25,11 @@ vi.mock('@/lib/db', () => ({
   userGrants: {},
 }));
 
-vi.mock('@/lib/user-grants', () => ({
+vi.mock('@/lib/users/user-grants', () => ({
   calcGrantStartsAt: (...args: unknown[]) => mockCalcGrantStartsAt(...args),
 }));
 
-vi.mock('@/lib/notification', () => ({
+vi.mock('@/lib/notifications/notification', () => ({
   createNotification: (...args: unknown[]) => mockCreateNotification(...args),
 }));
 

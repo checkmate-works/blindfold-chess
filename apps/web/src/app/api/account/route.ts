@@ -2,11 +2,11 @@ import { NextResponse } from 'next/server';
 
 import { eq } from 'drizzle-orm';
 
-import { logActivityEvent } from '@/lib/activity-log';
 import { authenticateAndGuardApi } from '@/lib/auth';
 import { db, profiles } from '@/lib/db';
-import { RATE_LIMITS } from '@/lib/rate-limit';
+import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { logActivityEvent } from '@/lib/users/activity-log';
 
 export async function DELETE() {
   const guardResult = await authenticateAndGuardApi(RATE_LIMITS.deleteAccount);

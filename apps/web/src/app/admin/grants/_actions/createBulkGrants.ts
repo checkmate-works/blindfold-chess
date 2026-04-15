@@ -6,8 +6,8 @@ import { requireAdmin } from '@/app/admin/_lib/auth';
 import { addDays } from 'date-fns';
 
 import { db, userGrants } from '@/lib/db';
-import { createNotification } from '@/lib/notification';
-import { calcGrantStartsAt } from '@/lib/user-grants';
+import { createNotification } from '@/lib/notifications/notification';
+import { calcGrantStartsAt } from '@/lib/users/user-grants';
 
 import { validateDurationDays, validateUuid } from '../_lib/validation';
 

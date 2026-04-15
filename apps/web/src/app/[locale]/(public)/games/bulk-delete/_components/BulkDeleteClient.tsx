@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import { LocalStorageGameRepository } from '@/lib/repositories';
+import { LocalStorageGameRepository } from '@/lib/games/local-storage-repository';
 import type { Game } from '@/lib/types';
 
 import { GameSelector } from '@/app/[locale]/(public)/games/_components';

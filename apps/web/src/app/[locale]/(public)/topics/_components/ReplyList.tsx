@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import { truncateContent } from '@/lib/truncate-content';
+import { truncateContent } from '@/lib/content/truncate-content';
 
 import { LinkedText } from '@/app/[locale]/_components/LinkedText';
 

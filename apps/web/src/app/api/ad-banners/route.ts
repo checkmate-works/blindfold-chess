@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-import { getAdBannerBySlot, isAdsEnabled } from '@/lib/ad';
+import { getAdBannerBySlot, isAdsEnabled } from '@/lib/ads/ad';
 
 export async function GET(request: NextRequest) {
   const slot = request.nextUrl.searchParams.get('slot');

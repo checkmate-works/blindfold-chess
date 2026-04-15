@@ -1,7 +1,7 @@
 import { and, eq, isNull } from 'drizzle-orm';
 import 'server-only';
 
-import { db, notifications, profiles } from './db';
+import { db, notifications, profiles } from '../db';
 import { createNotification } from './notification';
 
 /**

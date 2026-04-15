@@ -9,7 +9,7 @@ import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaChartLine, FaClipboardList, FaMinus, FaTimes } from 'react-icons/fa';
 
-import { LocalStorageGameRepository } from '@/lib/repositories';
+import { LocalStorageGameRepository } from '@/lib/games/local-storage-repository';
 import type { Game, MoveInputMethod, MoveOperationLog } from '@/lib/types';
 
 import { Divider } from '@/app/[locale]/_components/Divider';

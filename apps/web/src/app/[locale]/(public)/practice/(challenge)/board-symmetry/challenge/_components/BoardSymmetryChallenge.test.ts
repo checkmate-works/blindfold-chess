@@ -2,7 +2,7 @@
 import { checkSymmetryAnswer, generateProblem } from '@blindfold-chess/features/board-symmetry';
 import { describe, expect, it } from 'vitest';
 
-import { MISTAKE_LIMIT } from '@/lib/challenge-constants';
+import { MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
 describe('BoardSymmetryChallenge timed mode logic', () => {
   describe('problem generation', () => {

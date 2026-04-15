@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockSelectFromWhere = vi.fn();
 
-vi.mock('./db', () => ({
+vi.mock('@/lib/db', () => ({
   db: {
     select: () => ({
       from: () => ({
@@ -22,7 +22,7 @@ vi.mock('./db', () => ({
   },
 }));
 
-vi.mock('./db-timeout', () => ({
+vi.mock('@/lib/db-timeout', () => ({
   withTimeout: (promise: Promise<unknown>) => promise,
 }));
 

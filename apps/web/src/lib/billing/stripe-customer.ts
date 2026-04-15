@@ -1,8 +1,8 @@
 import { eq } from 'drizzle-orm';
 import 'server-only';
 
+import { getStripe } from '@/lib/billing/stripe';
 import { db, stripeCustomers } from '@/lib/db';
-import { getStripe } from '@/lib/stripe';
 
 export async function getStripeCustomerId(userId: string): Promise<string | null> {
   const [record] = await db

@@ -18,11 +18,11 @@ vi.mock('@/lib/supabase/server', () => ({
     }),
 }));
 
-vi.mock('@/lib/activity-log', () => ({
+vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: (...args: unknown[]) => mockLogActivityEvent(...args),
 }));
 
-vi.mock('@/lib/client-ip', () => ({
+vi.mock('@/lib/security/client-ip', () => ({
   getClientIp: (...args: unknown[]) => mockGetClientIp(...args),
 }));
 
@@ -30,7 +30,7 @@ vi.mock('@/lib/locale', () => ({
   getLocaleFromRequest: (...args: unknown[]) => mockGetLocaleFromRequest(...args),
 }));
 
-vi.mock('@/lib/rate-limit-ip', () => ({
+vi.mock('@/lib/security/rate-limit-ip', () => ({
   checkIpRateLimitGuard: vi.fn().mockReturnValue(null),
   IP_RATE_LIMITS: {
     signIn: { maxRequests: 10, windowMs: 300_000 },
@@ -72,7 +72,7 @@ describe('signIn', () => {
   });
 
   it('should not log activity event when rate limited', async () => {
-    const { checkIpRateLimitGuard } = await import('@/lib/rate-limit-ip');
+    const { checkIpRateLimitGuard } = await import('@/lib/security/rate-limit-ip');
     vi.mocked(checkIpRateLimitGuard).mockReturnValueOnce({ error: 'rateLimited' });
 
     const result = await signIn('test@example.com', 'password123');

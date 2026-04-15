@@ -1,1 +1,1 @@
-export { getClientIp } from '@/lib/client-ip';
+export { getClientIp } from '@/lib/security/client-ip';

@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react';
 import { notifyGameListUpdated } from '@/config';
 
 import { GameLimitError } from '@/lib/errors';
-import type { LocalStorageGameRepository } from '@/lib/repositories';
+import type { LocalStorageGameRepository } from '@/lib/games/local-storage-repository';
 
 import type { GameDataRefs } from './use-auto-save';
 

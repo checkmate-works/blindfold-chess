@@ -22,7 +22,7 @@
 import { and, count, eq, gt, sql } from 'drizzle-orm';
 import 'server-only';
 
-import { db, rateLimitEvents } from './db';
+import { db, rateLimitEvents } from '../db';
 
 export type RateLimitConfig = {
   action: string;

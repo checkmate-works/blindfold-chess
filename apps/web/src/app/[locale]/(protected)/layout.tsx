@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 
-import { isUserBanned } from '@/lib/ban';
+import { isUserBanned } from '@/lib/moderation/ban';
 import { createClient } from '@/lib/supabase/server';
 
 export default async function ProtectedLayout({

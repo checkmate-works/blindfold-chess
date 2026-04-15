@@ -1,6 +1,6 @@
 import { IS_LOCAL_DEV } from '@/config';
 
-import { shouldShowAds } from '@/lib/ad';
+import { shouldShowAds } from '@/lib/ads/ad';
 
 export type AdGuardResult = 'show' | 'placeholder' | 'hidden';
 

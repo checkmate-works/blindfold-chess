@@ -8,7 +8,7 @@ import { routing } from '@/i18n/routing';
 import { generateThemeCSS } from '@blindfold-chess/ui';
 import { GoogleAnalytics } from '@next/third-parties/google';
 
-import { JsonLd, generateOrganizationSchema, generateWebSiteSchema } from '@/lib/jsonld';
+import { JsonLd, generateOrganizationSchema, generateWebSiteSchema } from '@/lib/seo/jsonld';
 
 import '../globals.css';
 import { CookieConsent } from './_components/CookieConsent';

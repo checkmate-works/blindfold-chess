@@ -2,11 +2,11 @@ import { NextResponse } from 'next/server';
 
 import { eq } from 'drizzle-orm';
 
-import { logActivityEvent } from '@/lib/activity-log';
 import { authenticateAndGuardApi } from '@/lib/auth';
+import { isLameName } from '@/lib/content/lame-name';
 import { db, profiles } from '@/lib/db';
-import { isLameName } from '@/lib/lame-name';
-import { RATE_LIMITS } from '@/lib/rate-limit';
+import { RATE_LIMITS } from '@/lib/security/rate-limit';
+import { logActivityEvent } from '@/lib/users/activity-log';
 
 export async function PUT(request: Request) {
   const guardResult = await authenticateAndGuardApi(RATE_LIMITS.updateProfile);

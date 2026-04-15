@@ -1,7 +1,7 @@
 'use server';
 
 import { topicPostRatings } from '@/lib/db';
-import { createOpeningPostRateLimit } from '@/lib/rate-limit';
+import { createOpeningPostRateLimit } from '@/lib/security/rate-limit';
 import { MAX_CONTENT_LENGTH } from '@/lib/validations/content';
 
 import type { CreatePostState } from '@/app/[locale]/(public)/topics/_actions/createPost';

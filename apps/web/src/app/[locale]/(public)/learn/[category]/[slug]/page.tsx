@@ -12,7 +12,7 @@ import {
   SUPPORTED_LOCALES,
 } from '@/config';
 
-import { JsonLd, generateArticleSchema } from '@/lib/jsonld';
+import { JsonLd, generateArticleSchema } from '@/lib/seo/jsonld';
 
 import { CardLink, Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';

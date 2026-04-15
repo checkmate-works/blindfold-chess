@@ -2,10 +2,10 @@ import { NextResponse } from 'next/server';
 
 import { eq } from 'drizzle-orm';
 
-import { logActivityEvent } from '@/lib/activity-log';
 import { db, profiles } from '@/lib/db';
 import { getLocaleFromRequest } from '@/lib/locale';
 import { createClient } from '@/lib/supabase/server';
+import { logActivityEvent } from '@/lib/users/activity-log';
 
 /**
  * Auth callback handler.

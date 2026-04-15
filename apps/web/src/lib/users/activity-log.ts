@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { db, userActivityLog } from './db';
+import { db, userActivityLog } from '../db';
 
 type ActivityEvent = {
   userId: string;

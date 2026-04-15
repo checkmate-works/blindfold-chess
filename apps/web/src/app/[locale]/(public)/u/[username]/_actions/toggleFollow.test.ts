@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { logActivityEvent } from '@/lib/activity-log';
+import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { toggleFollow } from './toggleFollow';
 
@@ -10,11 +10,11 @@ const mockSelectFromWhere = vi.fn();
 const mockInsertValues = vi.fn();
 const mockDeleteWhere = vi.fn();
 
-vi.mock('@/lib/activity-log', () => ({
+vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: vi.fn(),
 }));
 
-vi.mock('@/lib/notification', () => ({
+vi.mock('@/lib/notifications/notification', () => ({
   createNotification: vi.fn(),
 }));
 
@@ -27,11 +27,11 @@ vi.mock('@/lib/supabase/server', () => ({
     }),
 }));
 
-vi.mock('@/lib/ban', () => ({
+vi.mock('@/lib/moderation/ban', () => ({
   isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
 }));
 
-vi.mock('@/lib/rate-limit', () => ({
+vi.mock('@/lib/security/rate-limit', () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ success: true }),
   RATE_LIMITS: {
     toggleFollow: { action: 'toggle_follow', maxAttempts: 100, windowMs: 86_400_000 },

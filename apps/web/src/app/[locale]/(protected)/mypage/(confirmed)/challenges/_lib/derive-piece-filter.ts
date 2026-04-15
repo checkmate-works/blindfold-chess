@@ -1,6 +1,6 @@
 import type { PieceSelection } from '@/app/_components/practice/PieceSelector';
 
-import { PIECE_NAME_TO_SHORT, PIECE_TYPES, type PieceFullName } from '@/lib/chess-pieces';
+import { PIECE_NAME_TO_SHORT, PIECE_TYPES, type PieceFullName } from '@/lib/games/chess-pieces';
 
 import type { ChallengeResultRow } from '../_actions/get-challenge-sessions';
 
@@ -10,7 +10,7 @@ export {
   PIECE_SHORT_TO_NAME,
   PIECE_NAME_TO_SHORT,
   type PieceFullName,
-} from '@/lib/chess-pieces';
+} from '@/lib/games/chess-pieces';
 
 export const DEFAULT_PIECE_SELECTION: PieceSelection = 'random';
 

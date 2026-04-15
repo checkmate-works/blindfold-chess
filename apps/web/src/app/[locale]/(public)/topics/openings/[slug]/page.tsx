@@ -6,7 +6,7 @@ import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE, IS_LOCAL_DEV 
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { paginateItems } from '@/lib/pagination';
-import { createOpeningPostRateLimit, isRateLimited } from '@/lib/rate-limit';
+import { createOpeningPostRateLimit, isRateLimited } from '@/lib/security/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
 import { TopicListPageLayout } from '@/app/[locale]/(public)/topics/_components/TopicListPageLayout';

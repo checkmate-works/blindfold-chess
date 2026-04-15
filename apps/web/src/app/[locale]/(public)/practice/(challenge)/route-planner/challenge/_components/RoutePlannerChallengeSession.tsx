@@ -10,7 +10,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { FaArrowRight, FaFlagCheckered, FaHeart, FaRegHeart, FaUndo } from 'react-icons/fa';
 import { LuPause, LuPlay } from 'react-icons/lu';
 
-import { MISTAKE_LIMIT } from '@/lib/challenge-constants';
+import { MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
 import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-challenge-result-save';

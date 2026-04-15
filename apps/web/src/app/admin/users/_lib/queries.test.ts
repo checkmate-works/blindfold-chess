@@ -46,7 +46,7 @@ vi.mock('drizzle-orm', () => ({
   inArray: (col: unknown, vals: unknown) => [col, vals],
 }));
 
-vi.mock('@/lib/subscription-constants', () => ({
+vi.mock('@/lib/billing/subscription-constants', () => ({
   BENEFIT_ACTIVE_STATUSES: ['active'],
 }));
 
@@ -1077,8 +1077,9 @@ describe('fetchRankStats', () => {
     });
 
     const { fetchRankStats } = await import('./queries');
-    const { BELT_COLOR_HEX: beltColors, RANK_COLORS: rankColors } =
-      await import('@/lib/db/data/ranks');
+    const { BELT_COLOR_HEX: beltColors, RANK_COLORS: rankColors } = await import(
+      '@/lib/db/data/ranks'
+    );
     const result = await fetchRankStats(mockAdminClient as never, '');
 
     for (const rank of result) {

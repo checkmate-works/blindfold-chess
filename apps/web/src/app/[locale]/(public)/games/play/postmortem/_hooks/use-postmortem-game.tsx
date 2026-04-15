@@ -4,7 +4,7 @@ import type { replayMoves } from '@blindfold-chess/features/chess-core';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
-import type { EvaluationMark } from '@/lib/evaluation';
+import type { EvaluationMark } from '@/lib/games/evaluation';
 
 import { getMovingSide } from '../../_lib/fen-utils';
 import type { MoveLogEntry } from '../_lib';

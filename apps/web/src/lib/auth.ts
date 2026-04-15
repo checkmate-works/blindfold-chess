@@ -5,9 +5,9 @@ import { NextResponse } from 'next/server';
 
 import type { User } from '@supabase/supabase-js';
 
-import { isUserBanned } from '@/lib/ban';
-import type { RateLimitConfig } from '@/lib/rate-limit';
-import { checkRateLimit } from '@/lib/rate-limit';
+import { isUserBanned } from '@/lib/moderation/ban';
+import type { RateLimitConfig } from '@/lib/security/rate-limit';
+import { checkRateLimit } from '@/lib/security/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
 /**

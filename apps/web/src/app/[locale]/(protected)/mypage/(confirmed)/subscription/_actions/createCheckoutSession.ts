@@ -6,9 +6,9 @@ import { SITE_URL } from '@/config';
 import type Stripe from 'stripe';
 
 import { getAuthenticatedUser } from '@/lib/auth';
-import { RATE_LIMITS, checkRateLimit } from '@/lib/rate-limit';
-import { getStripe, getStripePriceId } from '@/lib/stripe';
-import { getOrCreateStripeCustomerId } from '@/lib/stripe-customer';
+import { getStripe, getStripePriceId } from '@/lib/billing/stripe';
+import { getOrCreateStripeCustomerId } from '@/lib/billing/stripe-customer';
+import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
 
 type CheckoutError = { error: 'rateLimited' | 'sessionCreationFailed' };
 

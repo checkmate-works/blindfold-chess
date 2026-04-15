@@ -1,6 +1,6 @@
 import type { RoutePlannerPieceType } from '@blindfold-chess/features/route-planner';
 
-import { PIECE_NAME_TO_SHORT, PIECE_SHORT_TO_NAME } from '@/lib/chess-pieces';
+import { PIECE_NAME_TO_SHORT, PIECE_SHORT_TO_NAME } from '@/lib/games/chess-pieces';
 
 export {
   type RoutePlannerPieceType as PieceType,

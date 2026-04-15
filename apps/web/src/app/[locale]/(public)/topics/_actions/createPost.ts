@@ -3,14 +3,14 @@
 import { revalidateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
 
-import { logActivityEvent } from '@/lib/activity-log';
 import { authenticateAndCheckBan } from '@/lib/auth';
 import { db, feedItems, topicPosts } from '@/lib/db';
 import { GRANT_TYPE_DEFAULTS } from '@/lib/db/data/grant-types';
-import { createNotification, notifyFollowersOfNewPost } from '@/lib/notification';
-import type { RateLimitConfig } from '@/lib/rate-limit';
-import { checkRateLimit } from '@/lib/rate-limit';
-import { applyAutomatedGrant } from '@/lib/user-grants';
+import { createNotification, notifyFollowersOfNewPost } from '@/lib/notifications/notification';
+import type { RateLimitConfig } from '@/lib/security/rate-limit';
+import { checkRateLimit } from '@/lib/security/rate-limit';
+import { logActivityEvent } from '@/lib/users/activity-log';
+import { applyAutomatedGrant } from '@/lib/users/user-grants';
 
 import { VALID_REPLY_PERMISSIONS } from '../_lib/constants';
 

@@ -17,7 +17,7 @@ import {
   getRankGuide,
 } from '@/lib/guides';
 import type { ChapteredGuide, FlatGuide, GuidePage, RankGuide } from '@/lib/guides';
-import { JsonLd, generateItemListSchema, generateLearningResourceSchema } from '@/lib/jsonld';
+import { JsonLd, generateItemListSchema, generateLearningResourceSchema } from '@/lib/seo/jsonld';
 
 import { GuidePageFooter } from '@/app/[locale]/(public)/guides/_components/GuidePageFooter';
 import { GuideLinkCard } from '@/app/[locale]/(public)/ranks/_components/GuideLinkCard';
