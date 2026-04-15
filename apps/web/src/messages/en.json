@@ -2191,6 +2191,19 @@
       "topic_post": "Granted for topic post"
     }
   },
+  "MypageBenefitHistory": {
+    "title": "Benefit History",
+    "sectionTitle": "Your benefit grants",
+    "breadcrumbMypage": "My Page",
+    "breadcrumbBenefits": "Benefits",
+    "showing": "Showing {from}-{to} of {total}",
+    "empty": "No benefit grants found.",
+    "grantPeriod": "{startDate} – {endDate}",
+    "statusActive": "Active",
+    "statusUpcoming": "Upcoming",
+    "statusExpired": "Expired",
+    "statusRevoked": "Revoked"
+  },
   "MypageLikes": {
     "title": "Liked Posts",
     "breadcrumbMypage": "My Page",

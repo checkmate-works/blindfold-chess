@@ -2192,6 +2192,19 @@
       "topic_post": "トピック投稿による付与"
     }
   },
+  "MypageBenefitHistory": {
+    "title": "特典履歴",
+    "sectionTitle": "付与された特典",
+    "breadcrumbMypage": "マイページ",
+    "breadcrumbBenefits": "特典",
+    "showing": "{total}件中 {from}-{to}件を表示",
+    "empty": "付与された特典はありません。",
+    "grantPeriod": "{startDate} 〜 {endDate}",
+    "statusActive": "有効",
+    "statusUpcoming": "開始予定",
+    "statusExpired": "終了",
+    "statusRevoked": "取り消し"
+  },
   "MypageLikes": {
     "title": "いいねした投稿",
     "breadcrumbMypage": "マイページ",
