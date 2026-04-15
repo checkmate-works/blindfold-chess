@@ -46,6 +46,7 @@ export function NewOpeningPostForm({ locale, slug }: Props) {
       translationNamespace="topics.openings.newPostForm"
       contentRequired={false}
       submitDisabled={!hasAnyInput}
+      showGrantInfoModal
       onContentChange={(hasValue) => setHasContent(hasValue)}
       beforeContent={(markDirty) => (
         <>
