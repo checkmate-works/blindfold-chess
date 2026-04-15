@@ -360,6 +360,18 @@
         "multiplier12": "×1.2",
         "multiplier11": "×1.1",
         "multiplier10": "×1.0"
+      },
+      "adFreeBenefits": {
+        "question": "How are ad-free benefits earned?",
+        "answer": "Ad-free benefits are granted automatically when you contribute text-bearing content on topic pages. The grants stack additively — posting multiple times extends your ad-free period.",
+        "tableTitle": "Ways to earn ad-free benefits",
+        "headerAction": "Action",
+        "headerDuration": "Duration",
+        "actions": {
+          "topic_post": "Post a text topic"
+        },
+        "durationDays": "{days} days",
+        "note": "Posts containing only ratings without text content do not qualify for the grant."
       }
     }
   },

@@ -361,6 +361,18 @@
         "multiplier12": "×1.2",
         "multiplier11": "×1.1",
         "multiplier10": "×1.0"
+      },
+      "adFreeBenefits": {
+        "question": "広告非表示特典はどうやって獲得できますか？",
+        "answer": "テキスト付きのトピック投稿を行うと、自動的に広告非表示特典が付与されます。複数回投稿することで、広告非表示の期間は加算で延長されます。",
+        "tableTitle": "特典を獲得する方法",
+        "headerAction": "アクション",
+        "headerDuration": "付与期間",
+        "actions": {
+          "topic_post": "テキスト付きでトピックに投稿する"
+        },
+        "durationDays": "{days}日間",
+        "note": "選択式の評価(rating)のみでテキストがない投稿は特典の対象外です。"
       }
     }
   },
