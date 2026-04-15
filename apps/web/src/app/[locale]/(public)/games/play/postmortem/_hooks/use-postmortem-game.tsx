@@ -12,6 +12,7 @@ import { isPlayerTurn as computeIsPlayerTurn, formatMovesToPgn } from '../_lib';
 import { usePostmortemActions } from './use-postmortem-actions';
 import { usePostmortemInit } from './use-postmortem-init';
 import { usePostmortemNavigation } from './use-postmortem-navigation';
+import { usePostmortemSettings } from './use-postmortem-settings';
 
 type Props = {
   pgn: string;
@@ -100,7 +101,9 @@ export function usePostmortemGame({
 
   // Local state
   const [moveInputValue, setMoveInputValue] = useState('');
-  const [autoOpponent, setAutoOpponent] = useState(initialAutoOpponent);
+  const { autoOpponent, setAutoOpponent } = usePostmortemSettings({
+    initialAutoOpponent,
+  });
   const [moveLog, setMoveLog] = useState<MoveLogEntry[]>([]);
 
   // Hooks: Navigation
