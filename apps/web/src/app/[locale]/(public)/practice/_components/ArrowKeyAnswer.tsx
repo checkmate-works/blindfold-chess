@@ -18,7 +18,8 @@ import { KeyboardHint } from './KeyboardHint';
  * work. It bails out automatically when:
  *   - `disabled` is true
  *   - the user is typing in an input / textarea / contenteditable
- *   - any modal (`[aria-modal="true"]`) is open
+ *   - any app-owned modal (`[data-app-modal="true"]`) is open — see
+ *     `keyboard-guards.ts` → `isModalOpen()` for why this is not `aria-modal`
  *   - a modifier key (Ctrl/Meta/Alt/Shift) is held, so browser shortcuts win
  *   - the keydown event has `repeat=true` (auto-repeat)
  */

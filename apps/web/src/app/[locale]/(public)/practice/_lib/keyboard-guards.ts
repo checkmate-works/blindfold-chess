@@ -22,16 +22,31 @@ export function isEditableElement(target: EventTarget | null): boolean {
 }
 
 /**
- * True when any element in the DOM has `aria-modal="true"`.
+ * True when any app-owned modal is open, detected via the `data-app-modal="true"`
+ * attribute set by the shared `<Modal>` component in `_components/Modal.tsx`.
  *
- * Intentionally uses the broad `[aria-modal="true"]` selector so that any
- * future modal component (QuitConfirmModal, RankAchievementModal, future
- * dialogs, etc.) which sets that attribute automatically blocks the practice
- * keyboard handlers. Do NOT tighten this to `[role="dialog"][aria-modal="true"]`.
+ * Why not `[aria-modal="true"]`?
+ *   Third-party scripts injected into the page (e.g. the CookieYes consent
+ *   banner, which only ships in production and is env-var gated) render
+ *   elements with `aria-modal="true"` of their own. Querying that attribute
+ *   would over-match and cause `shouldIgnoreKeyEvent` to return `true` for
+ *   every keydown while the 3P element is in the DOM — silently breaking
+ *   arrow-key / algebraic-notation input on practice pages in production
+ *   only (dev is unaffected because CookieYes is not loaded there).
+ *
+ * `data-app-modal` is an app-owned contract: only the shared `<Modal>`
+ * component sets it, so the selector is immune to third-party collisions
+ * (CookieYes today, future chat widgets / ad providers / etc.). The existing
+ * `aria-modal` attribute is still set alongside it because it is required
+ * for accessibility — this guard is additive, not a replacement.
+ *
+ * If a new modal ever stops routing through the shared `<Modal>` component
+ * it MUST also set `data-app-modal="true"` explicitly, or the practice
+ * keyboard handlers will fail to bail out while it is open.
  */
 export function isModalOpen(): boolean {
   if (typeof document === 'undefined') return false;
-  return document.querySelector('[aria-modal="true"]') !== null;
+  return document.querySelector('[data-app-modal="true"]') !== null;
 }
 
 /**
