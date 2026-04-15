@@ -222,6 +222,8 @@ async function UsersListContent({
     viewPosts: t('usersTable.viewPosts'),
     viewActivity: t('usersTable.viewActivity'),
     viewSubscriptions: t('usersTable.viewSubscriptions'),
+    copyUserId: t('usersTable.copyUserId'),
+    copyUserIdSuccess: t('usersTable.copyUserIdSuccess'),
     ...providerNames,
   };
 
@@ -252,6 +254,7 @@ async function UsersListContent({
 
       <AdminDataTable
         headers={[
+          t('usersTable.columnId'),
           t('usersTable.email'),
           t('usersTable.username'),
           t('usersTable.role'),

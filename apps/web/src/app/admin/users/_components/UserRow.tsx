@@ -4,6 +4,7 @@ import type { User } from '@supabase/supabase-js';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 
 import { BanButton } from './BanButton';
+import { CopyUserIdButton } from './CopyUserIdButton';
 import { StatusBadge } from './StatusBadge';
 import { UnbanButton } from './UnbanButton';
 
@@ -36,6 +37,8 @@ type UserRowProps = {
     google: string;
     email: string;
     unknown: string;
+    copyUserId: string;
+    copyUserIdSuccess: string;
   };
 };
 
@@ -54,7 +57,18 @@ export function UserRow({
 
   return (
     <tr key={user.id} className="border-t border-border">
-      <td className="px-4 py-3">{user.email ?? '-'}</td>
+      <td className="px-4 py-3">
+        <CopyUserIdButton
+          userId={user.id}
+          labels={{
+            copyUserId: labels.copyUserId,
+            copyUserIdSuccess: labels.copyUserIdSuccess,
+          }}
+        />
+      </td>
+      <td className="px-4 py-3">
+        <span>{user.email ?? '-'}</span>
+      </td>
       <td className="px-4 py-3">
         {profile?.username ? (
           <Link

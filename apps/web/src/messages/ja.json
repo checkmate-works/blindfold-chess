@@ -2461,7 +2461,10 @@
       "allProviders": "All",
       "providerGoogle": "Google",
       "providerEmail": "Email",
-      "providerUnknown": "Unknown"
+      "providerUnknown": "Unknown",
+      "copyUserId": "ユーザーIDをコピー",
+      "copyUserIdSuccess": "コピーしました",
+      "columnId": "ID"
     },
     "tabs": {
       "users": "ユーザー",
