@@ -274,7 +274,7 @@ export function BulkGrantForm() {
                 </div>
                 <div>
                   <label htmlFor="bulkReason" className="block text-sm font-medium mb-1">
-                    Reason
+                    Reason / notification message
                   </label>
                   <input
                     type="text"
@@ -282,7 +282,7 @@ export function BulkGrantForm() {
                     value={reason}
                     onChange={(e) => setReason(e.target.value)}
                     className="w-full px-3 py-2 border border-border rounded bg-background text-foreground text-sm"
-                    placeholder="Campaign name, admin memo, etc."
+                    placeholder="Shown to users as the notification message (e.g., 'New Year campaign')"
                   />
                 </div>
               </div>

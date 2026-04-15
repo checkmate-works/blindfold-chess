@@ -360,6 +360,18 @@
         "multiplier12": "×1.2",
         "multiplier11": "×1.1",
         "multiplier10": "×1.0"
+      },
+      "adFreeBenefits": {
+        "question": "How are ad-free benefits earned?",
+        "answer": "Ad-free benefits are granted automatically when you contribute text-bearing content on topic pages. The grants stack additively — posting multiple times extends your ad-free period.",
+        "tableTitle": "Ways to earn ad-free benefits",
+        "headerAction": "Action",
+        "headerDuration": "Duration",
+        "actions": {
+          "topic_post": "Post a text topic"
+        },
+        "durationDays": "{days} days",
+        "note": "Posts containing only ratings without text content do not qualify for the grant."
       }
     }
   },
@@ -2094,7 +2106,10 @@
       "levelLabel": "Level {level}",
       "expProgress": "{current} / {next} Exp",
       "expRemaining": "{remaining} Exp to next level",
-      "viewExpLeaderboard": "View Exp Leaderboard"
+      "viewExpLeaderboard": "View Exp Leaderboard",
+      "accountTitle": "Account",
+      "subscriptionTitle": "Subscription",
+      "benefitsTitle": "Benefits"
     },
     "records": "Records",
     "bestScore": "Best Score",
@@ -2152,6 +2167,42 @@
     },
     "practiceThisChallenge": "Practice This Challenge"
   },
+  "MypageBenefits": {
+    "title": "Benefits",
+    "sectionTitle": "Ad-Free Benefits",
+    "breadcrumbMypage": "My Page",
+    "adFree": {
+      "statusActive": "Ad-free is active",
+      "statusInactive": "Ad-free is not currently active",
+      "activeUntil": "until {date}",
+      "sourceSubscription": "From your plan subscription",
+      "sourceGrants": "From benefit grants",
+      "pastBenefits": "Past benefits",
+      "learnHowToEarn": "Learn how to earn ad-free benefits",
+      "viewFullHistory": "View full history",
+      "grantPeriod": "{startDate} – {endDate}",
+      "grantStatusActive": "Active",
+      "grantStatusUpcoming": "Upcoming",
+      "grantStatusExpired": "Expired"
+    },
+    "grantTypeLabel": {
+      "admin_manual": "Granted by staff",
+      "topic_post": "Granted for topic post"
+    }
+  },
+  "MypageBenefitHistory": {
+    "title": "Benefit History",
+    "sectionTitle": "Your benefit grants",
+    "breadcrumbMypage": "My Page",
+    "breadcrumbBenefits": "Benefits",
+    "showing": "Showing {from}-{to} of {total}",
+    "empty": "No benefit grants found.",
+    "grantPeriod": "{startDate} – {endDate}",
+    "statusActive": "Active",
+    "statusUpcoming": "Upcoming",
+    "statusExpired": "Expired",
+    "statusRevoked": "Revoked"
+  },
   "MypageLikes": {
     "title": "Liked Posts",
     "breadcrumbMypage": "My Page",
@@ -2202,7 +2253,11 @@
     "announcementMessage": "New announcement: {title}",
     "newPostMessage": "{actor} shared a new post",
     "achievementSingleMessage": "🏆 You earned {name}",
-    "achievementMultipleMessage": "🏆 You earned {count} achievements"
+    "achievementMultipleMessage": "🏆 You earned {count} achievements",
+    "benefitGrantMessage": {
+      "topic_post": "Thank you for your topic post — you've received {days} days of ad-free benefit",
+      "default": "You received {days} days of ad-free benefit"
+    }
   },
   "deleteAccount": {
     "title": "Delete Account",
@@ -2875,6 +2930,13 @@
     "moreTopicPosts": "More topics",
     "showMore": "Show more",
     "showLess": "Show less",
+    "grantInfoModal": {
+      "title": "Ad-Free Benefit Notice",
+      "body": "Posting a topic with text content automatically grants you {days} days of ad-free access.",
+      "note": "Posts containing only ratings without text content do not qualify.",
+      "confirm": "Continue posting",
+      "cancel": "Cancel"
+    },
     "categories": {
       "squares": {
         "title": "Squares",
@@ -3352,8 +3414,10 @@
     "subscribe": "Subscribe",
     "managePlan": "Manage plan"
   },
-  "subscription": {
+  "MypageSubscription": {
     "title": "Subscription",
+    "sectionTitle": "Current Plan",
+    "breadcrumbMypage": "My Page",
     "successMessage": "Your subscription is now active! Ads have been removed.",
     "noSubscription": "No active subscription",
     "noSubscriptionDescription": "Subscribe to remove ads and support Blindfold Chess.",

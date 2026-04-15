@@ -69,11 +69,18 @@ vi.mock('@/lib/db', () => {
       metadata: 'metadata',
       ipAddress: 'ip_address',
     },
+    userGrants: {
+      id: 'id',
+      sourceType: 'source_type',
+      sourceId: 'source_id',
+      revokedAt: 'revoked_at',
+    },
   };
 });
 
 vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
 }));
 
 vi.mock('./getClientIp', () => ({

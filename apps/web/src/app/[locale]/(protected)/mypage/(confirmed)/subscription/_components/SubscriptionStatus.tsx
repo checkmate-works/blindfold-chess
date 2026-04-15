@@ -14,7 +14,7 @@ type Props = {
 };
 
 export function SubscriptionStatus({ subscription, locale }: Props) {
-  const t = useTranslations('subscription');
+  const t = useTranslations('MypageSubscription');
 
   async function handleManage() {
     const result = await createPortalSession(locale);

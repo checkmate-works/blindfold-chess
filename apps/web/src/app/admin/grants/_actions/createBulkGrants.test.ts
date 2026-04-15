@@ -4,6 +4,9 @@ const mockRequireAdmin = vi.fn();
 const mockInsertValues = vi.fn();
 const mockRevalidateTag = vi.fn();
 const mockCalcGrantStartsAt = vi.fn();
+const mockCreateNotification = vi.fn();
+
+let insertCounter = 0;
 
 vi.mock('@/app/admin/_lib/auth', () => ({
   requireAdmin: () => mockRequireAdmin(),
@@ -14,7 +17,20 @@ vi.mock('@/lib/db', () => ({
     transaction: async (fn: (tx: unknown) => Promise<unknown>) => {
       const tx = {
         insert: () => ({
-          values: (data: unknown) => mockInsertValues(data),
+          values: (data: unknown) => {
+            const result = mockInsertValues(data);
+            // Support both sync (default) and rejected promise returns
+            return {
+              returning: () => {
+                if (result && typeof (result as Promise<unknown>).then === 'function') {
+                  return (result as Promise<unknown>).then(() => [
+                    { id: `grant-id-${++insertCounter}` },
+                  ]);
+                }
+                return Promise.resolve([{ id: `grant-id-${++insertCounter}` }]);
+              },
+            };
+          },
         }),
       };
       return fn(tx);
@@ -25,6 +41,10 @@ vi.mock('@/lib/db', () => ({
 
 vi.mock('@/lib/user-grants', () => ({
   calcGrantStartsAt: (...args: unknown[]) => mockCalcGrantStartsAt(...args),
+}));
+
+vi.mock('@/lib/notification', () => ({
+  createNotification: (...args: unknown[]) => mockCreateNotification(...args),
 }));
 
 vi.mock('next/cache', () => ({
@@ -39,6 +59,9 @@ const validUserId2 = '00000000-0000-0000-0000-000000000002';
 describe('createBulkGrants', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    insertCounter = 0;
+    // Default: values() resolves to undefined; returning() resolves with synthetic id
+    mockInsertValues.mockResolvedValue(undefined);
   });
 
   it('should return unauthorized when user is not admin', async () => {

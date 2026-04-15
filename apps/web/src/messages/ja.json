@@ -361,6 +361,18 @@
         "multiplier12": "×1.2",
         "multiplier11": "×1.1",
         "multiplier10": "×1.0"
+      },
+      "adFreeBenefits": {
+        "question": "広告非表示特典はどうやって獲得できますか？",
+        "answer": "テキスト付きのトピック投稿を行うと、自動的に広告非表示特典が付与されます。複数回投稿することで、広告非表示の期間は加算で延長されます。",
+        "tableTitle": "特典を獲得する方法",
+        "headerAction": "アクション",
+        "headerDuration": "付与期間",
+        "actions": {
+          "topic_post": "テキスト付きでトピックに投稿する"
+        },
+        "durationDays": "{days}日間",
+        "note": "選択式の評価(rating)のみでテキストがない投稿は特典の対象外です。"
       }
     }
   },
@@ -2095,7 +2107,10 @@
       "levelLabel": "Level {level}",
       "expProgress": "{current} / {next} Exp",
       "expRemaining": "次のレベルまで あと {remaining} Exp",
-      "viewExpLeaderboard": "Exp ランキングを見る"
+      "viewExpLeaderboard": "Exp ランキングを見る",
+      "accountTitle": "アカウント",
+      "subscriptionTitle": "サブスクリプション",
+      "benefitsTitle": "特典"
     },
     "records": "レコード",
     "bestScore": "最高スコア",
@@ -2153,6 +2168,42 @@
     },
     "practiceThisChallenge": "このチャレンジを練習する"
   },
+  "MypageBenefits": {
+    "title": "特典",
+    "sectionTitle": "広告非表示特典",
+    "breadcrumbMypage": "マイページ",
+    "adFree": {
+      "statusActive": "広告非表示が有効です",
+      "statusInactive": "現在広告非表示は有効ではありません",
+      "activeUntil": "{date}まで",
+      "sourceSubscription": "プラン契約による",
+      "sourceGrants": "特典付与による",
+      "pastBenefits": "過去の特典",
+      "learnHowToEarn": "広告非表示特典の獲得方法を見る",
+      "viewFullHistory": "すべての履歴を見る",
+      "grantPeriod": "{startDate} 〜 {endDate}",
+      "grantStatusActive": "有効",
+      "grantStatusUpcoming": "開始予定",
+      "grantStatusExpired": "終了"
+    },
+    "grantTypeLabel": {
+      "admin_manual": "運営からの付与",
+      "topic_post": "トピック投稿による付与"
+    }
+  },
+  "MypageBenefitHistory": {
+    "title": "特典履歴",
+    "sectionTitle": "付与された特典",
+    "breadcrumbMypage": "マイページ",
+    "breadcrumbBenefits": "特典",
+    "showing": "{total}件中 {from}-{to}件を表示",
+    "empty": "付与された特典はありません。",
+    "grantPeriod": "{startDate} 〜 {endDate}",
+    "statusActive": "有効",
+    "statusUpcoming": "開始予定",
+    "statusExpired": "終了",
+    "statusRevoked": "取り消し"
+  },
   "MypageLikes": {
     "title": "いいねした投稿",
     "breadcrumbMypage": "マイページ",
@@ -2203,7 +2254,11 @@
     "announcementMessage": "新しいお知らせ: {title}",
     "newPostMessage": "{actor} が新しい投稿をしました",
     "achievementSingleMessage": "🏆 {name} を獲得しました",
-    "achievementMultipleMessage": "🏆 {count}件のアチーブメントを獲得しました"
+    "achievementMultipleMessage": "🏆 {count}件のアチーブメントを獲得しました",
+    "benefitGrantMessage": {
+      "topic_post": "トピックの投稿のお礼として、{days}日間の広告非表示特典が付与されました",
+      "default": "{days}日間の広告非表示特典が付与されました"
+    }
   },
   "deleteAccount": {
     "title": "退会",
@@ -2771,6 +2826,13 @@
     "moreTopicPosts": "トピックをもっと見る",
     "showMore": "さらに表示",
     "showLess": "閉じる",
+    "grantInfoModal": {
+      "title": "広告非表示特典のご案内",
+      "body": "テキスト付きでトピックを投稿すると、{days}日間の広告非表示特典が自動で付与されます。",
+      "note": "選択式の評価のみの投稿は対象外です。",
+      "confirm": "投稿する",
+      "cancel": "キャンセル"
+    },
     "categories": {
       "squares": {
         "title": "マス目",
@@ -3248,8 +3310,10 @@
     "subscribe": "登録する",
     "managePlan": "プランを管理"
   },
-  "subscription": {
+  "MypageSubscription": {
     "title": "サブスクリプション",
+    "sectionTitle": "現在のプラン",
+    "breadcrumbMypage": "マイページ",
     "successMessage": "サブスクリプションが有効になりました！広告が非表示になります。",
     "noSubscription": "有効なサブスクリプションがありません",
     "noSubscriptionDescription": "サブスクリプションに登録して、広告を非表示にしましょう。",
