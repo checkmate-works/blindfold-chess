@@ -2254,7 +2254,8 @@
     "announcementMessage": "新しいお知らせ: {title}",
     "newPostMessage": "{actor} が新しい投稿をしました",
     "achievementSingleMessage": "🏆 {name} を獲得しました",
-    "achievementMultipleMessage": "🏆 {count}件のアチーブメントを獲得しました"
+    "achievementMultipleMessage": "🏆 {count}件のアチーブメントを獲得しました",
+    "benefitGrantMessage": "{days}日間の広告非表示特典が付与されました"
   },
   "deleteAccount": {
     "title": "退会",

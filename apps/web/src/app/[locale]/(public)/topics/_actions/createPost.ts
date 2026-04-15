@@ -6,7 +6,8 @@ import { redirect } from 'next/navigation';
 import { logActivityEvent } from '@/lib/activity-log';
 import { authenticateAndCheckBan } from '@/lib/auth';
 import { db, feedItems, topicPosts } from '@/lib/db';
-import { notifyFollowersOfNewPost } from '@/lib/notification';
+import { GRANT_TYPE_DEFAULTS } from '@/lib/db/data/grant-types';
+import { createNotification, notifyFollowersOfNewPost } from '@/lib/notification';
 import type { RateLimitConfig } from '@/lib/rate-limit';
 import { checkRateLimit } from '@/lib/rate-limit';
 import { applyAutomatedGrant } from '@/lib/user-grants';
@@ -79,6 +80,7 @@ export async function createPostBase(params: {
   }
 
   let grantApplied = false;
+  let grantInfo: { grantId: string; expiresAt: Date } | null = null;
   const inserted = await db.transaction(async (tx) => {
     const [post] = await tx
       .insert(topicPosts)
@@ -108,7 +110,7 @@ export async function createPostBase(params: {
     // Source linkage (sourceType + sourceId) enables targeted revocation
     // if the post is later deleted — see schema.ts userGrants @design source*.
     if (contentResult.content.trim() !== '') {
-      await applyAutomatedGrant(tx, user.id, 'topic_post', {
+      grantInfo = await applyAutomatedGrant(tx, user.id, 'topic_post', {
         type: 'topic_post',
         id: post.id,
       });
@@ -118,8 +120,21 @@ export async function createPostBase(params: {
     return post;
   });
 
-  if (grantApplied) {
+  if (grantApplied && grantInfo) {
     revalidateTag('grant-status', { expire: 60 });
+    const info: { grantId: string; expiresAt: Date } = grantInfo;
+    createNotification({
+      userId: user.id,
+      type: 'benefit_grant',
+      targetType: 'user_grant',
+      targetId: info.grantId,
+      metadata: {
+        grantType: 'topic_post',
+        benefitType: 'ad_free',
+        durationDays: GRANT_TYPE_DEFAULTS.topic_post.durationDays,
+        expiresAt: info.expiresAt.toISOString(),
+      },
+    });
   }
 
   logActivityEvent({

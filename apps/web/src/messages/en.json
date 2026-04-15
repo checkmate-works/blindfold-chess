@@ -2253,7 +2253,8 @@
     "announcementMessage": "New announcement: {title}",
     "newPostMessage": "{actor} shared a new post",
     "achievementSingleMessage": "🏆 You earned {name}",
-    "achievementMultipleMessage": "🏆 You earned {count} achievements"
+    "achievementMultipleMessage": "🏆 You earned {count} achievements",
+    "benefitGrantMessage": "You received {days} days of ad-free benefit"
   },
   "deleteAccount": {
     "title": "Delete Account",

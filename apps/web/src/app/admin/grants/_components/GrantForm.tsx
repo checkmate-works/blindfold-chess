@@ -80,14 +80,14 @@ export function GrantForm() {
 
       <div>
         <label htmlFor="reason" className="block text-sm font-medium mb-1">
-          Reason (optional)
+          Reason / notification message (optional)
         </label>
         <textarea
           id="reason"
           name="reason"
           rows={3}
           className="w-full px-3 py-2 border border-border rounded bg-background text-foreground text-sm"
-          placeholder="Admin memo, campaign name, etc."
+          placeholder="Shown to the user as the notification message (e.g., 'Compensation for outage')"
         />
       </div>
 

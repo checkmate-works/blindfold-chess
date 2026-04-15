@@ -18,8 +18,10 @@ vi.mock('@/lib/activity-log', () => ({
 }));
 
 const mockNotifyFollowersOfNewPost = vi.fn();
+const mockCreateNotification = vi.fn();
 vi.mock('@/lib/notification', () => ({
   notifyFollowersOfNewPost: (...args: unknown[]) => mockNotifyFollowersOfNewPost(...args),
+  createNotification: (...args: unknown[]) => mockCreateNotification(...args),
 }));
 
 vi.mock('@/lib/supabase/server', () => ({
