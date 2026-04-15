@@ -8,6 +8,7 @@ function makeFilters(overrides: Partial<AdminUserFilters> = {}): AdminUserFilter
     countryFilter: '',
     rankFilter: '',
     providerFilter: '',
+    usernameFilter: '',
     ...overrides,
   };
 }
@@ -24,6 +25,12 @@ describe('buildAdminUsersHref', () => {
     expect(href).not.toContain('country=');
     expect(href).not.toContain('rank=');
     expect(href).not.toContain('provider=');
+    expect(href).not.toContain('username=');
+  });
+
+  it('includes non-empty username filter', () => {
+    const href = buildAdminUsersHref(makeFilters({ usernameFilter: 'alice' }), 1);
+    expect(href).toBe('/admin/users?page=1&tab=list&username=alice');
   });
 
   it('includes non-empty status filter', () => {

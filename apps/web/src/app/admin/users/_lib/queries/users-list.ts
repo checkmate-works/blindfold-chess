@@ -29,7 +29,8 @@ export async function fetchUsersPageData(
   statusFilter: string,
   countryFilter?: string,
   rankFilter?: string,
-  providerFilter?: string
+  providerFilter?: string,
+  usernameFilter?: string
 ): Promise<UsersPageData> {
   let users: User[];
   let currentPage: number;
@@ -37,7 +38,7 @@ export async function fetchUsersPageData(
   let totalCount: number;
   let profileMap: Map<string, Profile>;
 
-  const hasFilter = statusFilter || countryFilter || rankFilter || providerFilter;
+  const hasFilter = statusFilter || countryFilter || rankFilter || providerFilter || usernameFilter;
 
   if (hasFilter) {
     const { filteredUsers, profileMap: allProfileMap } = await getFilteredPopulation(
@@ -45,7 +46,8 @@ export async function fetchUsersPageData(
       statusFilter,
       countryFilter,
       rankFilter,
-      providerFilter
+      providerFilter,
+      usernameFilter
     );
 
     totalCount = filteredUsers.length;
@@ -151,14 +153,16 @@ export async function fetchCountryStats(
   statusFilter: string,
   countryFilter?: string,
   rankFilter?: string,
-  providerFilter?: string
+  providerFilter?: string,
+  usernameFilter?: string
 ): Promise<CountryStat[]> {
   const { filteredUsers, profileMap } = await getFilteredPopulation(
     adminClient,
     statusFilter,
     countryFilter,
     rankFilter,
-    providerFilter
+    providerFilter,
+    usernameFilter
   );
   return aggregateCountryStats(filteredUsers, profileMap);
 }
@@ -174,14 +178,16 @@ export async function fetchRankStats(
   statusFilter: string,
   countryFilter?: string,
   rankFilter?: string,
-  providerFilter?: string
+  providerFilter?: string,
+  usernameFilter?: string
 ): Promise<RankStat[]> {
   const { filteredUsers } = await getFilteredPopulation(
     adminClient,
     statusFilter,
     countryFilter,
     rankFilter,
-    providerFilter
+    providerFilter,
+    usernameFilter
   );
 
   const filteredUserIds = filteredUsers.map((u) => u.id);
@@ -217,14 +223,16 @@ export async function fetchSignupMethodStats(
   statusFilter: string,
   countryFilter?: string,
   rankFilter?: string,
-  providerFilter?: string
+  providerFilter?: string,
+  usernameFilter?: string
 ): Promise<SignupMethodStat[]> {
   const { filteredUsers } = await getFilteredPopulation(
     adminClient,
     statusFilter,
     countryFilter,
     rankFilter,
-    providerFilter
+    providerFilter,
+    usernameFilter
   );
   return aggregateSignupMethodStats(filteredUsers);
 }

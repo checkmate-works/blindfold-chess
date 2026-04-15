@@ -2470,7 +2470,10 @@
       "providerUnknown": "Unknown",
       "copyUserId": "Copy user ID",
       "copyUserIdSuccess": "Copied",
-      "columnId": "ID"
+      "columnId": "ID",
+      "searchByUsername": "Search by username",
+      "searchButton": "Search",
+      "usernameLabel": "Username"
     },
     "tabs": {
       "users": "Users",

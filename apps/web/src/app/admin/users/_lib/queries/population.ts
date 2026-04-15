@@ -72,8 +72,10 @@ export const getFilteredPopulation = cache(
     statusFilter: string,
     countryFilter?: string,
     rankFilter?: string,
-    providerFilter?: string
+    providerFilter?: string,
+    usernameFilter?: string
   ): Promise<FilteredPopulation> => {
+    const normalizedUsernameQuery = usernameFilter?.trim().toLowerCase() ?? '';
     const allUsers = await fetchAllUsers(adminClient);
     const allUserIds = allUsers.map((u) => u.id);
 
@@ -146,6 +148,16 @@ export const getFilteredPopulation = cache(
       // Signup method (provider) filter
       if (providerFilter) {
         if (getSignupMethod(user) !== providerFilter) return false;
+      }
+
+      // Username filter — case-insensitive partial match on profiles.username.
+      // Users without a profile (anonymous) never match; `username` is
+      // non-null on the profiles table, so a present profile always has a
+      // comparable string.
+      if (normalizedUsernameQuery) {
+        const username = profile?.username;
+        if (!username) return false;
+        if (!username.toLowerCase().includes(normalizedUsernameQuery)) return false;
       }
 
       return true;
