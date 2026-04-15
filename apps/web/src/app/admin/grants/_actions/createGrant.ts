@@ -39,9 +39,11 @@ export async function createGrant(formData: FormData): Promise<ActionResult> {
 
   // NOTE: calcGrantStartsAt read + insert are not wrapped in a transaction.
   // Concurrent calls for the same user+benefitType could produce overlapping
-  // grants instead of stacking. Acceptable for admin_manual (low-frequency,
-  // single operator), but should be wrapped in a transaction if automated
-  // grant types (topic_post, campaign) are added.
+  // grants instead of stacking. Acceptable here because admin_manual is a
+  // low-frequency single-operator flow. Automated grant types (topic_post,
+  // etc.) use the separate `applyAutomatedGrant` helper in src/lib/user-grants.ts
+  // which performs the read + insert inside a db.transaction with row-level
+  // locking.
   try {
     const startsAt = await calcGrantStartsAt(userId.trim(), benefitType.trim());
     const expiresAt = addDays(startsAt, durationDays);
