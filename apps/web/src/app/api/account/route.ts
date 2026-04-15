@@ -3,12 +3,17 @@ import { NextResponse } from 'next/server';
 import { eq } from 'drizzle-orm';
 
 import { authenticateAndGuardApi } from '@/lib/auth';
+import { isValidOrigin } from '@/lib/csrf';
 import { db, profiles } from '@/lib/db';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
-export async function DELETE() {
+export async function DELETE(request: Request) {
+  if (!isValidOrigin(request)) {
+    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
+  }
+
   const guardResult = await authenticateAndGuardApi(RATE_LIMITS.deleteAccount);
   if ('response' in guardResult) {
     return guardResult.response;
