@@ -1486,6 +1486,8 @@
     "showLegalMoves": "合法手を表示",
     "legalMovesList": "合法手一覧：",
     "result": {
+      "gameNotFound": "対局が見つかりません",
+      "gameIdMissing": "対局IDが指定されていません",
       "operationSummary": {
         "title": "対局統計",
         "inputMethods": "入力方式",

@@ -1,33 +1,20 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 import { MISTAKE_LIMIT } from '@/lib/challenge/constants';
 import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 
 import type { ChallengeResultRow } from '../_actions/get-challenge-sessions';
-import { getAvailableMenuTypes, getChallengeSessions } from '../_actions/get-challenge-sessions';
-import {
-  aggregateByDay,
-  computePercentChange,
-  computeStats,
-  formatDate,
-  formatShortDate,
-  getDayIndex,
-  getPeriodStart,
-  getPreviousPeriodStart,
-} from '../_lib/dashboard-utils';
-import {
-  DEFAULT_PIECE_SELECTION,
-  PIECE_SHORT_TO_NAME,
-  type PieceSelection,
-  derivePieceSelectionFromSessions,
-} from '../_lib/derive-piece-filter';
-import type { DatePeriod } from '../_lib/period-utils';
-import { getPeriodRange, getPreviousPeriodRange } from '../_lib/period-utils';
+import { computePercentChange, computeStats, formatDate } from '../_lib/dashboard-utils';
+import { derivePieceSelectionFromSessions } from '../_lib/derive-piece-filter';
+import { selectChartData } from '../_lib/select-chart-data';
+import type { ChartDataPoint } from '../_lib/select-chart-data';
+import { useChallengeSessionsQuery } from './use-challenge-sessions-query';
+import { useDashboardFilters } from './use-dashboard-filters';
+import type { BoardOrientation } from './use-dashboard-filters';
 
 export { PIECE_TYPES } from '../_lib/derive-piece-filter';
 export type { PieceSelection } from '@/app/_components/practice/PieceSelector';
-
-type BoardOrientation = 'white' | 'black' | 'random';
+export type { ChartDataPoint } from '../_lib/select-chart-data';
 
 type FilterContext = {
   boardOrientationFilter: BoardOrientation;
@@ -73,98 +60,60 @@ export type TableRow = {
 
 const DASHBOARD_TABLE_ROWS = 5;
 
-export type ChartDataPoint = {
-  date: string;
-  score: number | null;
-  previousScore: number | null;
-};
-
+/**
+ * Thin orchestrator that wires together:
+ *
+ *   - `useChallengeSessionsQuery` — fetching
+ *   - `useDashboardFilters`       — UI filter state
+ *   - `selectChartData`           — pure chart-data selector
+ *   - `computeStats` / `computePercentChange` — pure stats helpers
+ *
+ * Public API is preserved byte-for-byte from the previous single-hook
+ * implementation so Dashboard/Filters/Results consumers need no changes.
+ */
 export function useDashboardData(locale: string) {
-  const [allSessions, setAllSessions] = useState<ChallengeResultRow[]>([]);
-  const [previousSessions, setPreviousSessions] = useState<ChallengeResultRow[]>([]);
-  const [selectedMenu, setSelectedMenu] = useState<ChallengeMenuType | null>(null);
-  const [selectedPeriod, setSelectedPeriod] = useState<DatePeriod>('thisWeek');
-  const [boardOrientationFilter, setBoardOrientationFilter] = useState<BoardOrientation>('white');
-  const [pieceFilter, setPieceFilter] = useState<PieceSelection>(DEFAULT_PIECE_SELECTION);
-  const [isLoading, setIsLoading] = useState(true);
-  const [availableMenuTypes, setAvailableMenuTypes] = useState<ChallengeMenuType[] | null>(null);
+  const {
+    selectedPeriod,
+    setSelectedPeriod,
+    boardOrientationFilter,
+    setBoardOrientationFilter,
+    pieceFilter,
+    setPieceFilter,
+    handlePieceSelect,
+    resetFilters,
+    activePiece,
+  } = useDashboardFilters();
 
-  // Fetch all menu types once on mount to populate dropdown
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const types = await getAvailableMenuTypes();
-      if (!cancelled) {
-        setAvailableMenuTypes(types);
-        if (types.length > 0) {
-          setSelectedMenu(types[0]);
-        } else {
-          setIsLoading(false);
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  // Track whether piece filter should be derived from session data on next fetch.
-  // Set to true when menu changes; consumed (set to false) after derivation.
+  // Track whether piece filter should be derived from session data on next
+  // fetch. Set to true when menu changes; consumed (set to false) after
+  // derivation in the `onSessionsLoaded` callback.
   const shouldDerivePieceFilter = useRef(true);
+
+  const handleSessionsLoaded = useCallback(
+    (menu: ChallengeMenuType, sessions: ChallengeResultRow[]) => {
+      if (menu === 'legal_moves' && shouldDerivePieceFilter.current) {
+        setPieceFilter(derivePieceSelectionFromSessions(sessions));
+        shouldDerivePieceFilter.current = false;
+      }
+    },
+    [setPieceFilter]
+  );
+
+  const {
+    allSessions,
+    previousSessions,
+    availableMenuTypes,
+    selectedMenu,
+    setSelectedMenu,
+    isLoading,
+  } = useChallengeSessionsQuery(selectedPeriod, handleSessionsLoaded);
 
   // Reset filters when menu changes
   useEffect(() => {
-    setBoardOrientationFilter('white');
-    setPieceFilter(DEFAULT_PIECE_SELECTION);
+    resetFilters();
     shouldDerivePieceFilter.current = true;
-  }, [selectedMenu]);
+  }, [selectedMenu, resetFilters]);
 
-  // Fetch sessions when menu or period changes
-  useEffect(() => {
-    if (!selectedMenu) return;
-
-    let cancelled = false;
-    (async () => {
-      setIsLoading(true);
-      const currentRange = getPeriodRange(selectedPeriod);
-      const previousRange = getPreviousPeriodRange(selectedPeriod);
-
-      const response = await getChallengeSessions(
-        selectedMenu,
-        currentRange.start.toISOString(),
-        currentRange.end.toISOString(),
-        previousRange.start.toISOString(),
-        previousRange.end.toISOString()
-      );
-      if (!cancelled && response.success) {
-        setAllSessions(response.sessions);
-        setPreviousSessions(response.previousSessions);
-
-        // Derive piece filter from session data only on initial load for the menu.
-        // Subsequent period changes preserve the user's manual filter adjustments.
-        if (selectedMenu === 'legal_moves' && shouldDerivePieceFilter.current) {
-          setPieceFilter(derivePieceSelectionFromSessions(response.sessions));
-          shouldDerivePieceFilter.current = false;
-        }
-      }
-      if (!cancelled) setIsLoading(false);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedMenu, selectedPeriod]);
-
-  const handlePieceSelect = useCallback((piece: PieceSelection) => {
-    setPieceFilter(piece);
-  }, []);
-
-  const activePiece = useMemo(
-    () =>
-      pieceFilter === 'random'
-        ? 'random'
-        : (PIECE_SHORT_TO_NAME[pieceFilter as keyof typeof PIECE_SHORT_TO_NAME] ?? 'random'),
-    [pieceFilter]
-  );
   const filterCtx = useMemo<FilterContext>(
     () => ({ boardOrientationFilter, activePiece }),
     [boardOrientationFilter, activePiece]
@@ -189,51 +138,10 @@ export function useDashboardData(locale: string) {
     [filteredPreviousSessions]
   );
 
-  const chartData = useMemo((): ChartDataPoint[] => {
-    const currentDaily = aggregateByDay(filteredSessions, locale);
-    const previousDaily = aggregateByDay(filteredPreviousSessions, locale);
-
-    const currentPeriodStart = getPeriodStart(selectedPeriod);
-    const prevPeriodStart = getPreviousPeriodStart(selectedPeriod);
-
-    // Build maps keyed by day index (offset from period start)
-    const currentByDayIndex = new Map<number, { avgScore: number; dateLabel: string }>();
-    for (const cd of currentDaily) {
-      const idx = getDayIndex(cd.dateKey, currentPeriodStart);
-      currentByDayIndex.set(idx, { avgScore: cd.avgScore, dateLabel: cd.date });
-    }
-
-    const prevByDayIndex = new Map<number, number>();
-    for (const pd of previousDaily) {
-      const idx = getDayIndex(pd.dateKey, prevPeriodStart);
-      prevByDayIndex.set(idx, pd.avgScore);
-    }
-
-    // Union of day indices from both periods so previous-only days also appear
-    const allDayIndices = new Set([...currentByDayIndex.keys(), ...prevByDayIndex.keys()]);
-    const sortedIndices = Array.from(allDayIndices).sort((a, b) => a - b);
-
-    return sortedIndices.map((dayIdx) => {
-      const current = currentByDayIndex.get(dayIdx);
-      const prevScore = prevByDayIndex.get(dayIdx) ?? null;
-
-      // Use existing date label when available, otherwise derive from day index
-      let dateLabel: string;
-      if (current) {
-        dateLabel = current.dateLabel;
-      } else {
-        const dateForLabel = new Date(currentPeriodStart);
-        dateForLabel.setDate(dateForLabel.getDate() + dayIdx);
-        dateLabel = formatShortDate(dateForLabel, locale);
-      }
-
-      return {
-        date: dateLabel,
-        score: current?.avgScore ?? null,
-        previousScore: prevScore,
-      };
-    });
-  }, [filteredSessions, filteredPreviousSessions, locale, selectedPeriod]);
+  const chartData = useMemo<ChartDataPoint[]>(
+    () => selectChartData(filteredSessions, filteredPreviousSessions, selectedPeriod, locale),
+    [filteredSessions, filteredPreviousSessions, selectedPeriod, locale]
+  );
 
   const hasMoreResults = filteredSessions.length > DASHBOARD_TABLE_ROWS;
 
