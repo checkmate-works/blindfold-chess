@@ -13,10 +13,11 @@ export function GrantForm() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const form = e.currentTarget;
     setPending(true);
     setMessage(null);
 
-    const formData = new FormData(e.currentTarget);
+    const formData = new FormData(form);
     const result = await createGrant(formData);
 
     setPending(false);
@@ -27,7 +28,7 @@ export function GrantForm() {
     }
 
     setMessage({ type: 'success', text: 'Grant created successfully' });
-    e.currentTarget.reset();
+    form.reset();
     router.refresh();
   }
 
