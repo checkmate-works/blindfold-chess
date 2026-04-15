@@ -6,8 +6,12 @@
  * aggregated across both sources:
  *   - Stripe subscriptions (managed at /mypage/subscription)
  *   - user_grants table (automated UGC bonuses + admin manual grants)
- * Also displays "how to earn" guidance listing automated grant triggers
- * with their current policy durations (from grant-types.ts).
+ * The aggregate status banner reflects ALL ad_free grants (including
+ * admin_manual), while the detailed "From benefit grants" list is
+ * intentionally filtered to topic_post grants only — this section is
+ * conceptually a view of what the user has earned through contributions.
+ * Guidance on how to earn benefits lives in the FAQ (/faq#ad-free-benefits),
+ * linked from this page when ad_free is inactive.
  *
  * @design URL naming rationale
  *
@@ -30,21 +34,23 @@
  * 2. Page queries Stripe subscription status (via existing helper) +
  *    user_grants (benefitType='ad_free', not revoked), computes latest
  *    effective expiresAt across both sources.
- * 3. Renders status banner, per-source breakdown, and how-to-earn section.
+ * 3. Renders aggregate status banner, subscription source (if active),
+ *    and a topic_post-filtered grant list (latest 5, desc by startsAt).
+ *    When >5 topic_post grants exist, a "View full history" link routes
+ *    to /mypage/benefits/[grantType] for paginated history (which also
+ *    includes revoked grants for audit purposes).
+ * 4. On inactive state, displays an FAQ link to /faq#ad-free-benefits
+ *    and swaps the grant list title to "Past benefits".
  */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { and, asc, eq, isNull } from 'drizzle-orm';
+import { Link } from '@/i18n/routing';
+import { and, desc, eq, isNull } from 'drizzle-orm';
 
 import { getAuthenticatedUser } from '@/lib/auth';
 import { db, userGrants } from '@/lib/db';
-import {
-  type AutomatedGrantType,
-  GRANT_TYPE_DEFAULTS,
-  type GrantType,
-  isGrantType,
-} from '@/lib/db/data/grant-types';
+import { type GrantType, isGrantType } from '@/lib/db/data/grant-types';
 import { getUserSubscription } from '@/lib/subscription';
 import { BENEFIT_ACTIVE_STATUSES } from '@/lib/subscription-constants';
 
@@ -79,7 +85,7 @@ export default async function BenefitsPage({ params }: Props) {
 
   const user = await getAuthenticatedUser();
 
-  const [subscription, grants] = await Promise.all([
+  const [subscription, allGrants] = await Promise.all([
     getUserSubscription(user.id),
     db
       .select()
@@ -91,10 +97,17 @@ export default async function BenefitsPage({ params }: Props) {
           isNull(userGrants.revokedAt)
         )
       )
-      .orderBy(asc(userGrants.startsAt)),
+      .orderBy(desc(userGrants.startsAt)),
   ]);
 
   const now = new Date();
+
+  // Filter display list to topic_post only — "Ad-Free Benefits" section is
+  // conceptually for user-earned topic_post grants. Banner aggregates still
+  // use allGrants (including admin_manual).
+  const topicPostGrants = allGrants.filter((g) => g.grantType === 'topic_post');
+  const displayGrants = topicPostGrants.slice(0, 5);
+  const hasMoreTopicPostGrants = topicPostGrants.length > 5;
 
   // Subscription confers ad_free if status is in BENEFIT_ACTIVE_STATUSES
   // and the period has not yet ended.
@@ -106,7 +119,7 @@ export default async function BenefitsPage({ params }: Props) {
   const subscriptionExpiresAt = subscriptionActive ? new Date(subscription.currentPeriodEnd) : null;
 
   // Find latest expiresAt among currently-active grants.
-  const activeGrants = grants.filter(
+  const activeGrants = allGrants.filter(
     (g) => new Date(g.startsAt) <= now && new Date(g.expiresAt) > now
   );
   const latestGrantExpiresAt = activeGrants.reduce<Date | null>((acc, g) => {
@@ -148,7 +161,18 @@ export default async function BenefitsPage({ params }: Props) {
                 </p>
               </>
             ) : (
-              <h2 className="font-semibold text-foreground">{t('adFree.statusInactive')}</h2>
+              <>
+                <h2 className="font-semibold text-foreground">{t('adFree.statusInactive')}</h2>
+                <div className="mt-3">
+                  <Link
+                    href="/faq#ad-free-benefits"
+                    locale={locale}
+                    className="text-sm text-foreground underline hover:opacity-80 transition-colors"
+                  >
+                    {t('adFree.learnHowToEarn')}
+                  </Link>
+                </div>
+              </>
             )}
           </div>
 
@@ -164,12 +188,14 @@ export default async function BenefitsPage({ params }: Props) {
               </div>
             )}
 
-            {/* Grants source */}
-            {grants.length > 0 && (
+            {/* Grants source — filtered to topic_post, limited to latest 5 */}
+            {displayGrants.length > 0 && (
               <div className="rounded-xl border border-border bg-card p-6">
-                <h3 className="font-semibold text-foreground">{t('adFree.sourceGrants')}</h3>
+                <h3 className="font-semibold text-foreground">
+                  {adFreeActive ? t('adFree.sourceGrants') : t('adFree.pastBenefits')}
+                </h3>
                 <ul className="mt-3 space-y-3">
-                  {grants.map((g) => {
+                  {displayGrants.map((g) => {
                     const startsAt = new Date(g.startsAt);
                     const expiresAt = new Date(g.expiresAt);
                     const status = classifyGrant(now, startsAt, expiresAt);
@@ -213,20 +239,19 @@ export default async function BenefitsPage({ params }: Props) {
                     );
                   })}
                 </ul>
+                {hasMoreTopicPostGrants && (
+                  <div className="mt-4">
+                    <Link
+                      href={`/mypage/benefits/topic_post`}
+                      locale={locale}
+                      className="text-sm text-foreground underline hover:opacity-80 transition-colors"
+                    >
+                      {t('adFree.viewFullHistory')}
+                    </Link>
+                  </div>
+                )}
               </div>
             )}
-          </div>
-
-          {/* How to earn benefits */}
-          <div className="rounded-xl border border-border bg-card p-6">
-            <h3 className="font-semibold text-foreground">{t('howToEarn.title')}</h3>
-            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground">
-              {(Object.keys(GRANT_TYPE_DEFAULTS) as AutomatedGrantType[]).map((key) => (
-                <li key={key}>
-                  {t(`howToEarn.${key}`, { days: GRANT_TYPE_DEFAULTS[key].durationDays })}
-                </li>
-              ))}
-            </ul>
           </div>
         </div>
 

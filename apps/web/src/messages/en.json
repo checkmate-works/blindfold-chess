@@ -2177,14 +2177,13 @@
       "activeUntil": "until {date}",
       "sourceSubscription": "From your plan subscription",
       "sourceGrants": "From benefit grants",
+      "pastBenefits": "Past benefits",
+      "learnHowToEarn": "Learn how to earn ad-free benefits",
+      "viewFullHistory": "View full history",
       "grantPeriod": "{startDate} – {endDate}",
       "grantStatusActive": "Active",
       "grantStatusUpcoming": "Upcoming",
       "grantStatusExpired": "Expired"
-    },
-    "howToEarn": {
-      "title": "How to earn benefits",
-      "topic_post": "Posting a topic grants you ad-free access for {days} days"
     },
     "grantTypeLabel": {
       "admin_manual": "Granted by staff",
