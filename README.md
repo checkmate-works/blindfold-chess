@@ -80,6 +80,12 @@ pnpm --filter web run copy-stockfish
 
 For more details on the web application, see [apps/web/README.md](apps/web/README.md).
 
+## Automation (Owner-only)
+
+This repository uses [`anthropics/claude-code-action`](https://github.com/anthropics/claude-code-action) to let the repository owner drive Claude Code from GitHub issue comments. Mentioning `@claude` in an issue comment triggers `.github/workflows/claude-issue-solve.yml`, which runs Claude Code against the owner's Claude Max subscription and opens a Pull Request.
+
+**This automation is owner-only** (`github.actor == 'k0kishima'`). It does not run on fork PRs and does not run on comments from anyone other than the owner. External contributors should not rely on or attempt to invoke it.
+
 ## Versioning Strategy
 
 This project follows [Semantic Versioning](https://semver.org/).

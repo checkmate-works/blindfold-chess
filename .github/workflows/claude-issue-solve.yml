@@ -1,0 +1,106 @@
+# Claude Code GitHub Actions — Phase 1
+#
+# 目的:
+#   issue コメントに `@claude` が含まれたときに、
+#   anthropics/claude-code-action を起動してオーナーのサブスク枠
+#   (CLAUDE_CODE_OAUTH_TOKEN) で自律的に実装 + PR 作成を行わせる。
+#
+# 前提 (Phase 1 スコープ):
+#   - トリガーは issue_comment (created) のみ
+#   - 実行はリポジトリオーナー (k0kishima) のコメントのみ
+#   - Environment / Required reviewers / guard step / label gating は
+#     Phase 1 では実装しない (後続フェーズで強化予定)
+#
+# セキュリティ上の重要な決定:
+#   - workflow レベルの permissions は空 (`{}`) にし、job レベルで最小権限を付与
+#   - `if: github.actor == 'k0kishima'` で owner 以外を即時弾く
+#   - action は commit SHA で pin (タグは可変で供給チェーン攻撃面になるため)
+
+name: Claude Issue Solve
+
+on:
+  issue_comment:
+    types: [created]
+
+# Layer 5 (最小権限): workflow 全体では何も許可しない。
+# 必要な権限は個別 job でだけ付与する。
+permissions: {}
+
+# 並列実行を避ける (NF-C-03: Max 20x 枠を直列消費)。
+concurrency:
+  group: claude-issue-solve
+  cancel-in-progress: false
+
+jobs:
+  solve:
+    name: Claude solves the issue
+    runs-on: ubuntu-latest
+    # NF-C-03: token budget / runaway prevention
+    timeout-minutes: 60
+    # issue へのコメントのみ対象 (PR コメントは issue_comment でも来るので除外)。
+    # 加えて owner 本人の `@claude` 入りコメントだけに絞り込む。
+    #   - github.actor: コメント投稿者
+    #   - github.event.issue.pull_request: 存在すれば PR、無ければ issue
+    #   - contains(...): claude-code-action 側でも trigger_phrase によるフィルタが
+    #     入るが、ワークフロー起動自体を節約するためここでも早期に弾く
+    if: >-
+      github.event.issue.pull_request == null &&
+      github.actor == 'k0kishima' &&
+      contains(github.event.comment.body, '@claude')
+
+    # job スコープで最小権限だけ付与する。
+    #   contents: write       — ブランチ作成 / commit / push のため
+    #   pull-requests: write  — PR 作成のため
+    #   issues: write         — Claude が issue にステータスコメントを返すため
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          fetch-depth: 0
+
+      # システムプロンプトをファイルから読み込んで環境変数に格納する。
+      # claude-code-action 内部 (run.ts) は `APPEND_SYSTEM_PROMPT` 環境変数を
+      # そのまま Claude CLI の --append-system-prompt にパススルーする実装なので、
+      # この step で設定すれば後続の action step にも引き継がれる。
+      # (ファイル参照にしている理由: YAML に長文を直書きするとエスケープと
+      #  レビュー性が落ちるため、プロンプトは独立ファイルで管理する)
+      #
+      # Verified against anthropics/claude-code-action@c7c8889 (run.ts)
+      # Re-verify on every SHA bump of claude-code-action.
+      - name: Load Claude system prompt
+        shell: bash
+        run: |
+          # ランダム delimiter で system-prompt.md からの env 注入を防ぐ
+          # (静的 delimiter だと将来 system-prompt.md にその文字列が書かれた場合に
+          #  heredoc を抜けて任意の環境変数を仕込まれる恐れがある)
+          delim="EOF_$(openssl rand -hex 16)"
+          {
+            printf 'APPEND_SYSTEM_PROMPT<<%s\n' "$delim"
+            cat .github/claude/system-prompt.md
+            printf '%s\n' "$delim"
+          } >> "$GITHUB_ENV"
+
+      # Claude Code Action (v1) — @claude メンションを検知して自動で
+      # ブランチ作成 / 実装 / PR 作成までを行うモード。
+      #
+      # SHA pin 理由:
+      #   タグ (v1) は可変で、上流が書き換われば任意コードが流入する。
+      #
+      # claude_code_oauth_token:
+      #   Repository Secret に登録済み。サブスク枠 (Max 20x) を消費する。
+      #   API key ではないので Anthropic 従量課金は発生しない (NF-C-01)。
+      #
+      # 品質ゲートはシステムプロンプトで Claude 自身に依頼する
+      # (strict な enforcement は Phase 2 の guard step で入れる)
+      - name: Run Claude Code Action
+        uses: anthropics/claude-code-action@c7c8889b30499b4e46f4c32b892e43cd364bc2fe # v1 (2026-04 時点)
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # trigger_phrase のデフォルトは "@claude" なので明示指定は不要だが、
+          # 将来の default 変更に備えて固定しておく。
+          trigger_phrase: "@claude"
