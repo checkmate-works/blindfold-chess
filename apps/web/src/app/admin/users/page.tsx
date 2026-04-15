@@ -45,6 +45,7 @@ import { StatsChartNav } from './_components/StatsChartNav';
 import { StatusFilter } from './_components/StatusFilter';
 import { UserRow } from './_components/UserRow';
 import { UsersTabNav } from './_components/UsersTabNav';
+import { type AdminUserFilters, buildAdminUsersHref } from './_lib/filters';
 import {
   fetchCountryStats,
   fetchRankStats,
@@ -97,6 +98,12 @@ export default async function AdminUsersPage({
     rank: rankFilter,
     provider: providerFilter,
   } = await searchParamsCache.parse(searchParams);
+  const filters: AdminUserFilters = {
+    statusFilter,
+    countryFilter,
+    rankFilter,
+    providerFilter,
+  };
   const adminClient = createAdminClient();
   const t = await getTranslations({ locale: 'en', namespace: 'Admin' });
   const providerNames = buildProviderNames(t);
@@ -146,10 +153,7 @@ export default async function AdminUsersPage({
         <UsersListContent
           adminClient={adminClient}
           page={page}
-          statusFilter={statusFilter}
-          countryFilter={countryFilter}
-          rankFilter={rankFilter}
-          providerFilter={providerFilter}
+          filters={filters}
           providerNames={providerNames}
           currentUser={currentUser}
           t={t}
@@ -157,10 +161,7 @@ export default async function AdminUsersPage({
       ) : (
         <StatsContent
           adminClient={adminClient}
-          statusFilter={statusFilter}
-          countryFilter={countryFilter}
-          rankFilter={rankFilter}
-          providerFilter={providerFilter}
+          filters={filters}
           providerNames={providerNames}
           t={t}
         />
@@ -172,24 +173,19 @@ export default async function AdminUsersPage({
 async function UsersListContent({
   adminClient,
   page,
-  statusFilter,
-  countryFilter,
-  rankFilter,
-  providerFilter,
+  filters,
   providerNames,
   currentUser,
   t,
 }: {
   adminClient: ReturnType<typeof createAdminClient>;
   page: number;
-  statusFilter: string;
-  countryFilter: string;
-  rankFilter: string;
-  providerFilter: string;
+  filters: AdminUserFilters;
   providerNames: Record<(typeof SIGNUP_METHOD_ORDER)[number], string>;
   currentUser: { id: string } | null | undefined;
   t: Awaited<ReturnType<typeof getTranslations>>;
 }) {
+  const { statusFilter, countryFilter, rankFilter, providerFilter } = filters;
   const {
     users,
     currentPage,
@@ -208,16 +204,7 @@ async function UsersListContent({
     providerFilter
   );
 
-  const buildHref = (p: number) => {
-    const params = new URLSearchParams();
-    params.set('page', String(p));
-    params.set('tab', 'list');
-    if (statusFilter) params.set('status', statusFilter);
-    if (countryFilter) params.set('country', countryFilter);
-    if (rankFilter) params.set('rank', rankFilter);
-    if (providerFilter) params.set('provider', providerFilter);
-    return `/admin/users?${params.toString()}`;
-  };
+  const buildHref = (p: number) => buildAdminUsersHref(filters, p);
 
   const rankNames: Record<string, string> = {};
   for (const slug of ALL_RANK_SLUGS) {
@@ -298,21 +285,16 @@ async function UsersListContent({
 
 async function StatsContent({
   adminClient,
-  statusFilter,
-  countryFilter,
-  rankFilter,
-  providerFilter,
+  filters,
   providerNames,
   t,
 }: {
   adminClient: ReturnType<typeof createAdminClient>;
-  statusFilter: string;
-  countryFilter: string;
-  rankFilter: string;
-  providerFilter: string;
+  filters: AdminUserFilters;
   providerNames: Record<(typeof SIGNUP_METHOD_ORDER)[number], string>;
   t: Awaited<ReturnType<typeof getTranslations>>;
 }) {
+  const { statusFilter, countryFilter, rankFilter, providerFilter } = filters;
   const [countryStats, rankStats, signupMethodStats] = await Promise.all([
     fetchCountryStats(adminClient, statusFilter, countryFilter, rankFilter, providerFilter),
     fetchRankStats(adminClient, statusFilter, countryFilter, rankFilter, providerFilter),

@@ -1,20 +1,22 @@
 'use client';
 
-import { useCallback, useMemo, useState, useTransition } from 'react';
+import { useCallback, useState, useTransition } from 'react';
 
 import { useRouter } from 'next/navigation';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { UnsavedChangesDialog } from '@/app/_components';
-import { LuSettings, LuX } from 'react-icons/lu';
 
-import { Modal } from '@/app/[locale]/_components/Modal';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 
-import { extractPlainText } from '../_lib/extract-plain-text';
+import { useArticleFormState } from '../_hooks/useArticleFormState';
+import { buildArticleFormData } from '../_lib/build-form-data';
 import type { ArticleEditData, ContentFormat, TiptapJsonContent } from '../_lib/types';
 import { MarkdownEditor } from './MarkdownEditor';
 import { TiptapEditor } from './TiptapEditor';
+import { ArticleFormTopBar } from './article-form/ArticleFormTopBar';
+import { ArticleMetadataPanel } from './article-form/ArticleMetadataPanel';
+import { PublishedConfirmModal } from './article-form/PublishedConfirmModal';
 
 type ArticleFormProps = {
   articleId?: string;
@@ -105,61 +107,34 @@ export function ArticleForm({
   const [publishedConfirmOpen, setPublishedConfirmOpen] = useState(false);
   const [isNavigatingToPublish, setIsNavigatingToPublish] = useState(false);
 
-  const [slug, setSlug] = useState(defaultValues?.slug ?? defaultSlug ?? '');
-  const [title, setTitle] = useState(defaultValues?.title ?? '');
-  const [contentJson, setContentJson] = useState<TiptapJsonContent | null>(
-    defaultValues?.contentJson ?? null
-  );
-  const [markdownContent, setMarkdownContent] = useState(
-    contentFormat === 'markdown' ? (defaultValues?.content ?? '') : ''
-  );
-  const [locale, setLocale] = useState(defaultValues?.locale ?? defaultLocale ?? 'en');
-  const [excerpt, setExcerpt] = useState(defaultValues?.excerpt ?? '');
-  const [description, setDescription] = useState(defaultValues?.description ?? '');
-  const [categoryId, setCategoryId] = useState(defaultValues?.categoryId ?? '');
-  const [icon, setIcon] = useState(defaultValues?.icon ?? '');
+  const formState = useArticleFormState({
+    contentFormat,
+    defaultValues,
+    defaultSlug,
+    defaultLocale,
+  });
 
-  const isDirty = useMemo(() => {
-    const initial = defaultValues ?? {
-      slug: defaultSlug ?? '',
-      title: '',
-      content: '',
-      contentJson: null,
-      locale: defaultLocale ?? 'en',
-      excerpt: '',
-      description: '',
-      categoryId: '',
-      icon: '',
-    };
-    const contentChanged =
-      contentFormat === 'markdown'
-        ? markdownContent !== (initial.content ?? '')
-        : JSON.stringify(contentJson) !== JSON.stringify(initial.contentJson);
-    return (
-      slug !== initial.slug ||
-      title !== initial.title ||
-      contentChanged ||
-      locale !== initial.locale ||
-      excerpt !== initial.excerpt ||
-      description !== initial.description ||
-      categoryId !== initial.categoryId ||
-      icon !== initial.icon
-    );
-  }, [
+  const {
     slug,
     title,
     contentJson,
     markdownContent,
-    contentFormat,
     locale,
     excerpt,
     description,
     categoryId,
     icon,
-    defaultValues,
-    defaultSlug,
-    defaultLocale,
-  ]);
+    setSlug,
+    setTitle,
+    setContentJson,
+    setMarkdownContent,
+    setLocale,
+    setExcerpt,
+    setDescription,
+    setCategoryId,
+    setIcon,
+    isDirty,
+  } = formState;
 
   const {
     isBlocking,
@@ -167,50 +142,40 @@ export function ArticleForm({
     cancel: cancelNavigation,
   } = useUnsavedChanges({ isDirty: isDirty && !isNavigatingToPublish });
 
-  const buildFormData = useCallback((): ArticleEditData => {
-    if (contentFormat === 'markdown') {
-      return {
+  const buildFormData = useCallback(
+    (): ArticleEditData =>
+      buildArticleFormData({
         slug,
         title,
-        content: markdownContent,
-        contentJson: null,
-        contentFormat: 'markdown',
+        contentFormat,
+        markdownContent,
+        contentJson,
         locale,
         excerpt,
         description,
         categoryId,
         icon,
-      };
-    }
-    const plainText = extractPlainText(contentJson);
-    return {
+      }),
+    [
       slug,
       title,
-      content: plainText,
-      contentJson: contentJson ? JSON.parse(JSON.stringify(contentJson)) : null,
-      contentFormat: 'tiptap_json',
+      contentFormat,
+      markdownContent,
+      contentJson,
       locale,
       excerpt,
       description,
       categoryId,
       icon,
-    };
-  }, [
-    slug,
-    title,
-    contentJson,
-    markdownContent,
-    contentFormat,
-    locale,
-    excerpt,
-    description,
-    categoryId,
-    icon,
-  ]);
+    ]
+  );
 
-  const handleContentChange = useCallback((json: TiptapJsonContent) => {
-    setContentJson(json);
-  }, []);
+  const handleContentChange = useCallback(
+    (json: TiptapJsonContent) => {
+      setContentJson(json);
+    },
+    [setContentJson]
+  );
 
   const redirectAfterSave = (id: string) => {
     window.location.replace(`/admin/articles/${id}/edit`);
@@ -263,50 +228,23 @@ export function ArticleForm({
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)]">
-      {/* Top bar */}
-      <div className="flex items-center justify-end border-b border-border px-4 py-2 shrink-0">
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setMetadataOpen(!metadataOpen)}
-            className="p-2 text-sm rounded border border-border hover:bg-secondary transition-colors"
-            title={labels.metadata}
-          >
-            <LuSettings size={16} />
-          </button>
-
-          <button
-            type="button"
-            onClick={handleSaveDraft}
-            disabled={isPending}
-            className="px-4 py-1.5 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
-          >
-            {isPending
-              ? isPublished
-                ? labels.savingPublished
-                : labels.savingDraft
-              : isPublished
-                ? labels.savePublished
-                : labels.saveDraft}
-          </button>
-          <button
-            type="button"
-            onClick={handlePublishSettings}
-            disabled={isPending}
-            className="px-4 py-1.5 text-sm rounded bg-card border border-primary text-primary hover:bg-primary/10 transition-colors disabled:opacity-50"
-          >
-            {labels.preview}
-          </button>
-          <button
-            type="button"
-            onClick={() => router.push('/admin/articles')}
-            disabled={isPending}
-            className="px-4 py-1.5 text-sm rounded bg-card border border-border hover:bg-secondary transition-colors"
-          >
-            {labels.cancel}
-          </button>
-        </div>
-      </div>
+      <ArticleFormTopBar
+        labels={{
+          metadata: labels.metadata,
+          saveDraft: labels.saveDraft,
+          savingDraft: labels.savingDraft,
+          savePublished: labels.savePublished,
+          savingPublished: labels.savingPublished,
+          preview: labels.preview,
+          cancel: labels.cancel,
+        }}
+        isPending={isPending}
+        isPublished={isPublished}
+        onToggleMetadata={() => setMetadataOpen(!metadataOpen)}
+        onSave={handleSaveDraft}
+        onPublishSettings={handlePublishSettings}
+        onCancel={() => router.push('/admin/articles')}
+      />
 
       {error && (
         <div className="px-4 py-2 shrink-0">
@@ -388,114 +326,40 @@ export function ArticleForm({
           cancelLabel={labels.unsavedChangesCancel}
         />
 
-        <Modal
+        <PublishedConfirmModal
           isOpen={publishedConfirmOpen}
-          onClose={() => setPublishedConfirmOpen(false)}
-          maxWidth="max-w-sm"
-        >
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-foreground">
-              {labels.publishedConfirmTitle}
-            </h2>
-            <p className="text-sm text-muted-foreground">{labels.publishedConfirmMessage}</p>
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setPublishedConfirmOpen(false)}
-                className="px-4 py-2 text-sm rounded-md border border-border bg-card text-foreground hover:bg-secondary transition-colors"
-              >
-                {labels.publishedConfirmCancel}
-              </button>
-              <button
-                type="button"
-                onClick={handlePublishedConfirm}
-                className="px-4 py-2 text-sm rounded-md bg-primary text-primary-foreground hover:opacity-90 transition-colors"
-              >
-                {labels.publishedConfirmConfirm}
-              </button>
-            </div>
-          </div>
-        </Modal>
+          title={labels.publishedConfirmTitle}
+          message={labels.publishedConfirmMessage}
+          confirmLabel={labels.publishedConfirmConfirm}
+          cancelLabel={labels.publishedConfirmCancel}
+          onConfirm={handlePublishedConfirm}
+          onCancel={() => setPublishedConfirmOpen(false)}
+        />
 
-        {/* Metadata side panel */}
         {metadataOpen && (
-          <div className="w-80 border-l border-border overflow-y-auto shrink-0">
-            <div className="p-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold">{labels.metadata}</h3>
-                <button
-                  type="button"
-                  onClick={() => setMetadataOpen(false)}
-                  aria-label="Close metadata"
-                  className="p-1 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <LuX size={16} />
-                </button>
-              </div>
-
-              <div>
-                <label htmlFor="categoryId" className="block text-sm font-medium mb-1">
-                  {labels.category}
-                </label>
-                <select
-                  id="categoryId"
-                  value={categoryId}
-                  onChange={(e) => setCategoryId(e.target.value)}
-                  className="w-full border border-border rounded px-3 py-2 text-sm bg-card text-foreground"
-                >
-                  <option value="">{labels.categoryNone}</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="excerpt" className="block text-sm font-medium mb-1">
-                  {labels.excerpt}
-                </label>
-                <textarea
-                  id="excerpt"
-                  value={excerpt}
-                  onChange={(e) => setExcerpt(e.target.value)}
-                  placeholder={labels.excerptPlaceholder}
-                  className="w-full border border-border rounded px-3 py-2 text-sm bg-card text-foreground resize-none"
-                  rows={3}
-                />
-              </div>
-
-              <div>
-                <label htmlFor="description" className="block text-sm font-medium mb-1">
-                  {labels.description}
-                </label>
-                <textarea
-                  id="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder={labels.descriptionPlaceholder}
-                  className="w-full border border-border rounded px-3 py-2 text-sm bg-card text-foreground resize-none"
-                  rows={3}
-                />
-              </div>
-
-              <div>
-                <label htmlFor="icon" className="block text-sm font-medium mb-1">
-                  {labels.icon}
-                </label>
-                <input
-                  id="icon"
-                  type="text"
-                  value={icon}
-                  onChange={(e) => setIcon(e.target.value)}
-                  placeholder={labels.iconPlaceholder}
-                  className="w-full border border-border rounded px-3 py-2 text-sm bg-card text-foreground"
-                  maxLength={10}
-                />
-              </div>
-            </div>
-          </div>
+          <ArticleMetadataPanel
+            labels={{
+              metadata: labels.metadata,
+              category: labels.category,
+              categoryNone: labels.categoryNone,
+              excerpt: labels.excerpt,
+              excerptPlaceholder: labels.excerptPlaceholder,
+              description: labels.description,
+              descriptionPlaceholder: labels.descriptionPlaceholder,
+              icon: labels.icon,
+              iconPlaceholder: labels.iconPlaceholder,
+            }}
+            categories={categories}
+            categoryId={categoryId}
+            excerpt={excerpt}
+            description={description}
+            icon={icon}
+            onCategoryIdChange={setCategoryId}
+            onExcerptChange={setExcerpt}
+            onDescriptionChange={setDescription}
+            onIconChange={setIcon}
+            onClose={() => setMetadataOpen(false)}
+          />
         )}
       </div>
     </div>
