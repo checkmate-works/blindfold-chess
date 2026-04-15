@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import type { PostWithReplyMeta } from '../_lib/queries';
+import type { PostWithReplyMeta } from '../_lib/shared';
 import { ReplyList } from './ReplyList';
 
 afterEach(() => {

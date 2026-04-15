@@ -9,8 +9,8 @@ import { truncateContent } from '@/lib/content/truncate-content';
 
 import { LinkedText } from '@/app/[locale]/_components';
 
-import type { LikeMeta, ReplyMeta } from '../_lib/queries';
 import { formatRelativeTime } from '../_lib/relative-time';
+import type { LikeMeta, ReplyMeta } from '../_lib/shared';
 import { PostFooter } from './PostFooter';
 import { UserAvatar } from './UserAvatar';
 

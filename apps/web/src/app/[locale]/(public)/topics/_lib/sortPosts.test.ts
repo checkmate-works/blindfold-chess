@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import type { PostWithReplyMeta } from './queries';
-import { sortPosts } from './queries';
+import type { PostWithReplyMeta } from './shared';
+import { sortPosts } from './shared';
 
 function makePost(
   overrides: Partial<{

@@ -30,7 +30,7 @@ import { db, profiles, userFollows } from '@/lib/db';
 import { getUserAchievements } from '@/lib/db/achievement-queries';
 import { createClient } from '@/lib/supabase/server';
 
-import { getPostsByUserId } from '@/app/[locale]/(public)/topics/_lib/queries';
+import { getPostsByUserId } from '@/app/[locale]/(public)/topics/_lib/user-post-queries';
 import { LinkedText, PagePanel, UserAvatar } from '@/app/[locale]/_components';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';

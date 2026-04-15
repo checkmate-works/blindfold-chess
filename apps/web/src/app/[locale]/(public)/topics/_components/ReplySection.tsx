@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState } from 'react';
 
-import type { PostWithReplyMeta } from '../_lib/queries';
+import type { PostWithReplyMeta } from '../_lib/shared';
 import { ReplyForm } from './ReplyForm';
 import { ReplyList } from './ReplyList';
 
