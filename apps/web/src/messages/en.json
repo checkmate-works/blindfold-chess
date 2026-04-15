@@ -2467,7 +2467,13 @@
       "allProviders": "All",
       "providerGoogle": "Google",
       "providerEmail": "Email",
-      "providerUnknown": "Unknown"
+      "providerUnknown": "Unknown",
+      "copyUserId": "Copy user ID",
+      "copyUserIdSuccess": "Copied",
+      "columnId": "ID",
+      "searchByUsername": "Search by username",
+      "searchButton": "Search",
+      "usernameLabel": "Username"
     },
     "tabs": {
       "users": "Users",

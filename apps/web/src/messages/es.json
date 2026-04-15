@@ -2394,7 +2394,13 @@
       "premium": "Premium",
       "free": "Gratuito",
       "viewSubscriptions": "Suscripciones",
-      "deleted": "Eliminado"
+      "deleted": "Eliminado",
+      "copyUserId": "Copiar ID de usuario",
+      "copyUserIdSuccess": "Copiado",
+      "columnId": "ID",
+      "searchByUsername": "Buscar por nombre de usuario",
+      "searchButton": "Buscar",
+      "usernameLabel": "Nombre de usuario"
     },
     "tabs": {
       "users": "Usuarios",

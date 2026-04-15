@@ -10,6 +10,7 @@ export type AdminUserFilters = {
   countryFilter: string;
   rankFilter: string;
   providerFilter: string;
+  usernameFilter: string;
 };
 
 /**
@@ -25,5 +26,6 @@ export function buildAdminUsersHref(filters: AdminUserFilters, page: number): st
   if (filters.countryFilter) params.set('country', filters.countryFilter);
   if (filters.rankFilter) params.set('rank', filters.rankFilter);
   if (filters.providerFilter) params.set('provider', filters.providerFilter);
+  if (filters.usernameFilter) params.set('username', filters.usernameFilter);
   return `/admin/users?${params.toString()}`;
 }

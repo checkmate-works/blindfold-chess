@@ -9,6 +9,7 @@ type Props = {
   countryFilter: string;
   rankFilter: string;
   providerFilter: string;
+  usernameFilter: string;
   rankNames: Record<string, string>;
   providerNames: Record<string, string>;
   labels: {
@@ -17,6 +18,7 @@ type Props = {
     banned: string;
     anonymous: string;
     deleted: string;
+    usernameLabel: string;
   };
 };
 
@@ -32,6 +34,7 @@ export function ActiveFilters({
   countryFilter,
   rankFilter,
   providerFilter,
+  usernameFilter,
   rankNames,
   providerNames,
   labels,
@@ -41,19 +44,21 @@ export function ActiveFilters({
     country: parseAsString.withDefault(''),
     rank: parseAsString.withDefault(''),
     provider: parseAsString.withDefault(''),
+    username: parseAsString.withDefault(''),
     page: parseAsInteger.withDefault(1),
   });
 
-  const hasAnyFilter = statusFilter || countryFilter || rankFilter || providerFilter;
+  const hasAnyFilter =
+    statusFilter || countryFilter || rankFilter || providerFilter || usernameFilter;
   if (!hasAnyFilter) return null;
 
-  const clearOne = (key: 'status' | 'country' | 'rank' | 'provider') => {
+  const clearOne = (key: 'status' | 'country' | 'rank' | 'provider' | 'username') => {
     setParams({ [key]: null, page: null }, { history: 'push', shallow: false });
   };
 
   const clearAll = () => {
     setParams(
-      { status: null, country: null, rank: null, provider: null, page: null },
+      { status: null, country: null, rank: null, provider: null, username: null, page: null },
       { history: 'push', shallow: false }
     );
   };
@@ -85,6 +90,13 @@ export function ActiveFilters({
         <FilterBadge
           label={labels[STATUS_LABEL_KEYS[statusFilter] ?? 'active'] ?? statusFilter}
           onRemove={() => clearOne('status')}
+        />
+      )}
+
+      {usernameFilter && (
+        <FilterBadge
+          label={`${labels.usernameLabel}: "${usernameFilter}"`}
+          onRemove={() => clearOne('username')}
         />
       )}
 
