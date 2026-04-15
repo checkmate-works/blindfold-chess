@@ -2255,7 +2255,10 @@
     "newPostMessage": "{actor} が新しい投稿をしました",
     "achievementSingleMessage": "🏆 {name} を獲得しました",
     "achievementMultipleMessage": "🏆 {count}件のアチーブメントを獲得しました",
-    "benefitGrantMessage": "{days}日間の広告非表示特典が付与されました"
+    "benefitGrantMessage": {
+      "topic_post": "トピックの投稿のお礼として、{days}日間の広告非表示特典が付与されました",
+      "default": "{days}日間の広告非表示特典が付与されました"
+    }
   },
   "deleteAccount": {
     "title": "退会",

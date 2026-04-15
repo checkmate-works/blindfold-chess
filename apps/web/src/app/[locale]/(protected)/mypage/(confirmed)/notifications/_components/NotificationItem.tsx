@@ -62,7 +62,11 @@ export function NotificationItem({ notification, currentUsername }: Props) {
           if (notification.metadata.reason) {
             return notification.metadata.reason;
           }
-          return t('benefitGrantMessage', { days: notification.metadata.durationDays });
+          const specificKey = `benefitGrantMessage.${notification.metadata.grantType}`;
+          if (t.has(specificKey)) {
+            return t(specificKey, { days: notification.metadata.durationDays });
+          }
+          return t('benefitGrantMessage.default', { days: notification.metadata.durationDays });
         }
         return t('unknownNotification');
       case 'achievement_granted':

@@ -2254,7 +2254,10 @@
     "newPostMessage": "{actor} shared a new post",
     "achievementSingleMessage": "🏆 You earned {name}",
     "achievementMultipleMessage": "🏆 You earned {count} achievements",
-    "benefitGrantMessage": "You received {days} days of ad-free benefit"
+    "benefitGrantMessage": {
+      "topic_post": "Thank you for your topic post — you've received {days} days of ad-free benefit",
+      "default": "You received {days} days of ad-free benefit"
+    }
   },
   "deleteAccount": {
     "title": "Delete Account",

@@ -133,6 +133,7 @@ export async function createPostBase(params: {
         benefitType: 'ad_free',
         durationDays: GRANT_TYPE_DEFAULTS.topic_post.durationDays,
         expiresAt: info.expiresAt.toISOString(),
+        reason: null,
       },
     });
   }
