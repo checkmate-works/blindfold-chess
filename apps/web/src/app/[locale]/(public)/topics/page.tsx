@@ -22,7 +22,10 @@ import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
-import { getPostCountAcrossTopics, getPostsAcrossTopicsPaginated } from './_lib/queries';
+import {
+  getPostCountAcrossTopics,
+  getPostsAcrossTopicsPaginated,
+} from './_lib/cross-topic-queries';
 
 export const dynamic = 'force-dynamic';
 

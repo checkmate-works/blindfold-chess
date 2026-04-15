@@ -6,8 +6,8 @@ import type { DeleteResult } from '@/app/admin/_lib/action-factories';
 import { requireAdmin } from '@/app/admin/_lib/auth';
 import { eq } from 'drizzle-orm';
 
-import { getClientIp } from '@/lib/client-ip';
 import { db, moderationActions, positions } from '@/lib/db';
+import { getClientIp } from '@/lib/security/client-ip';
 
 export async function deletePosition(id: string): Promise<DeleteResult> {
   const auth = await requireAdmin();

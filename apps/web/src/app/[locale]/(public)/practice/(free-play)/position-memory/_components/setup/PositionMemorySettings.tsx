@@ -2,7 +2,7 @@
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import type { BoardTheme } from '@/lib/boardThemes';
+import type { BoardTheme } from '@/lib/games/board-themes';
 
 import { PositionMemoryCustomFenSection } from './PositionMemoryCustomFenSection';
 import { PositionMemoryPresetSection } from './PositionMemoryPresetSection';

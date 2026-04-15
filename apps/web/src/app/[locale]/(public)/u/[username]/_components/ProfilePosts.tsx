@@ -1,5 +1,5 @@
 import { TopicPostCard } from '@/app/[locale]/(public)/(home)/_components/TopicPostCard';
-import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/queries';
+import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
 import { PaginationNav } from '@/app/[locale]/_components';
 
 type Props = {

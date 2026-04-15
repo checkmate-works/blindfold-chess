@@ -30,11 +30,11 @@ vi.mock('@/lib/supabase/server', () => ({
     }),
 }));
 
-vi.mock('@/lib/ban', () => ({
+vi.mock('@/lib/moderation/ban', () => ({
   isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
 }));
 
-vi.mock('@/lib/rate-limit', () => ({
+vi.mock('@/lib/security/rate-limit', () => ({
   checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
   RATE_LIMITS: {
     savePracticeResult: { maxAttempts: 10, windowMs: 60_000 },

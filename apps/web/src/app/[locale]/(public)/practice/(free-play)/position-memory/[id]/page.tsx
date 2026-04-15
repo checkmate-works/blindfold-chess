@@ -8,9 +8,9 @@ import { Link } from '@/i18n/routing';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 
 import { getOptionalUser } from '@/lib/auth';
-import { resolveDisplayName } from '@/lib/display-name';
 import { getPositionLikeMeta } from '@/lib/positions/like-queries';
 import { getPositionWithProfileById } from '@/lib/positions/queries';
+import { resolveDisplayName } from '@/lib/users/display-name';
 
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';

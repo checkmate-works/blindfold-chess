@@ -2,8 +2,8 @@ import { revalidateTag } from 'next/cache';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { logActivityEvent } from '@/lib/activity-log';
-import { applyAutomatedGrant } from '@/lib/user-grants';
+import { logActivityEvent } from '@/lib/users/activity-log';
+import { applyAutomatedGrant } from '@/lib/users/user-grants';
 
 import { createOpeningPost } from './createOpeningPost';
 
@@ -13,13 +13,13 @@ const mockInsertReturning = vi.fn();
 const mockIsUserBanned = vi.fn();
 const mockIsValidOpening = vi.fn();
 
-vi.mock('@/lib/activity-log', () => ({
+vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: vi.fn(),
 }));
 
 const mockNotifyFollowersOfNewPost = vi.fn();
 const mockCreateNotification = vi.fn();
-vi.mock('@/lib/notification', () => ({
+vi.mock('@/lib/notifications/notification', () => ({
   notifyFollowersOfNewPost: (...args: unknown[]) => mockNotifyFollowersOfNewPost(...args),
   createNotification: (...args: unknown[]) => mockCreateNotification(...args),
 }));
@@ -57,13 +57,13 @@ vi.mock('@/lib/db', () => ({
   feedItems: {},
 }));
 
-vi.mock('@/lib/ban', () => ({
+vi.mock('@/lib/moderation/ban', () => ({
   isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
 }));
 
 const mockCheckRateLimit = vi.fn().mockResolvedValue({ success: true });
 
-vi.mock('@/lib/rate-limit', () => ({
+vi.mock('@/lib/security/rate-limit', () => ({
   checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
   createOpeningPostRateLimit: (slug: string) => ({
     action: `create_opening_post:${slug}`,
@@ -88,7 +88,7 @@ vi.mock('next/cache', () => ({
   revalidateTag: vi.fn(),
 }));
 
-vi.mock('@/lib/user-grants', () => ({
+vi.mock('@/lib/users/user-grants', () => ({
   applyAutomatedGrant: vi.fn().mockResolvedValue({ grantId: 'g1', expiresAt: new Date() }),
 }));
 

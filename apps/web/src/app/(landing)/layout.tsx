@@ -13,8 +13,8 @@ import {
 import { generateThemeCSS } from '@blindfold-chess/ui';
 import { GoogleAnalytics } from '@next/third-parties/google';
 
-import { JsonLd, generateOrganizationSchema, generateWebSiteSchema } from '@/lib/jsonld';
 import { getLocaleFromRequest } from '@/lib/locale';
+import { JsonLd, generateOrganizationSchema, generateWebSiteSchema } from '@/lib/seo/jsonld';
 
 import { getLatestBannerAnnouncement } from '@/app/[locale]/(public)/announcements/_lib/queries';
 import { AnnouncementBanner } from '@/app/[locale]/_components/AnnouncementBanner';

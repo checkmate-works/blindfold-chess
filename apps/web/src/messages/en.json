@@ -1485,6 +1485,8 @@
     "showLegalMoves": "Show legal moves",
     "legalMovesList": "Legal moves:",
     "result": {
+      "gameNotFound": "Game not found",
+      "gameIdMissing": "No game ID provided",
       "operationSummary": {
         "title": "Game Stats",
         "inputMethods": "Input Methods",

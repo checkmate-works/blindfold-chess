@@ -7,7 +7,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import type { BoardOrientation } from '@blindfold-chess/features/quadrants';
 import { FaPlay } from 'react-icons/fa';
 
-import { MISTAKE_LIMIT } from '@/lib/challenge-constants';
+import { MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
 import { BoardOrientationSelector } from '@/app/[locale]/(public)/practice/(challenge)/_components/BoardOrientationSelector';
 import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';

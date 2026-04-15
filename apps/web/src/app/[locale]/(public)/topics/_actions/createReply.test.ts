@@ -2,8 +2,8 @@ import { revalidatePath } from 'next/cache';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { logActivityEvent } from '@/lib/activity-log';
-import { createNotification } from '@/lib/notification';
+import { createNotification } from '@/lib/notifications/notification';
+import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { createReplyBase } from './createReply';
 
@@ -14,11 +14,11 @@ const mockInsertValues = vi.fn();
 const mockIsUserBanned = vi.fn();
 const mockCheckRateLimit = vi.fn();
 
-vi.mock('@/lib/activity-log', () => ({
+vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: vi.fn(),
 }));
 
-vi.mock('@/lib/notification', () => ({
+vi.mock('@/lib/notifications/notification', () => ({
   createNotification: vi.fn(),
 }));
 
@@ -70,11 +70,11 @@ vi.mock('@/lib/db', () => ({
   },
 }));
 
-vi.mock('@/lib/ban', () => ({
+vi.mock('@/lib/moderation/ban', () => ({
   isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
 }));
 
-vi.mock('@/lib/rate-limit', () => ({
+vi.mock('@/lib/security/rate-limit', () => ({
   checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
   RATE_LIMITS: {
     createReply: { action: 'create_reply', maxAttempts: 20, windowMs: 3_600_000 },

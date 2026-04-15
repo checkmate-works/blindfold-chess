@@ -1,8 +1,8 @@
 import { eq } from 'drizzle-orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { logActivityEvent } from '@/lib/activity-log';
-import { createNotification } from '@/lib/notification';
+import { createNotification } from '@/lib/notifications/notification';
+import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { toggleLikeBase } from './toggleLike';
 
@@ -29,11 +29,11 @@ const mockDeleteWhere = vi.fn();
 const mockSelectCount = vi.fn();
 const mockSelectPostAuthor = vi.fn();
 
-vi.mock('@/lib/activity-log', () => ({
+vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: vi.fn(),
 }));
 
-vi.mock('@/lib/notification', () => ({
+vi.mock('@/lib/notifications/notification', () => ({
   createNotification: vi.fn(),
 }));
 
@@ -46,11 +46,11 @@ vi.mock('@/lib/supabase/server', () => ({
     }),
 }));
 
-vi.mock('@/lib/ban', () => ({
+vi.mock('@/lib/moderation/ban', () => ({
   isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
 }));
 
-vi.mock('@/lib/rate-limit', () => ({
+vi.mock('@/lib/security/rate-limit', () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ success: true }),
   RATE_LIMITS: {
     toggleLike: { action: 'toggle_like', maxAttempts: 50, windowMs: 86_400_000 },

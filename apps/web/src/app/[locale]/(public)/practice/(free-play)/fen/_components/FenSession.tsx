@@ -1,9 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { shuffleArray } from '@blindfold-chess/features/common';
 
 import { usePieceAccuracy } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-piece-accuracy';
 import { aggregateResults } from '@/app/[locale]/(public)/practice/(free-play)/_lib/aggregate-results';
@@ -16,7 +15,7 @@ import type { PositionAccuracy, PositionData } from '@/app/[locale]/(public)/pra
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { getFenPositions } from '../_data/positions';
+import { selectInitialPositions } from '../_lib/select-initial-positions';
 import { FenProblemResult } from './FenProblemResult';
 import { FenRecreate } from './FenRecreate';
 import { TUTORIAL_SKIPPED_KEY } from './TutorialSkipLink';
@@ -50,59 +49,14 @@ export function FenSession({
   const { preferences, isLoaded } = useGamePreferences();
   const { pieceNames, accuracyDescriptions } = usePieceAccuracy(t);
 
-  // Track if component has mounted (to avoid SSR/hydration mismatch)
-  const [hasMounted, setHasMounted] = useState(false);
+  // Positions are derived once on first render from props — no effect-based
+  // initialization and no `hasMounted` flag required. `FenSession` is loaded
+  // via `next/dynamic`, so it never renders on the server.
+  const [positions] = useState<PositionData[]>(() =>
+    selectInitialPositions(customFen, fens, problemCount, shuffle)
+  );
 
-  // Initialize positions
-  const [positions, setPositions] = useState<PositionData[]>([]);
-
-  // Initialize positions after mount
-  useEffect(() => {
-    if (!hasMounted) {
-      setHasMounted(true);
-
-      // If customFen is provided (e.g., from tutorial), use it directly
-      if (customFen) {
-        const isBlackToMove = customFen.includes(' b ');
-        setPositions([{ fen: customFen, isBlackToMove }]);
-        return;
-      }
-
-      // If fens are provided from URL params, use them
-      if (fens && fens.length > 0) {
-        let fenPositions = fens.map((fen) => {
-          const isBlackToMove = fen.includes(' b ');
-          return { fen, isBlackToMove };
-        });
-
-        // Shuffle if needed
-        if (shuffle) {
-          fenPositions = shuffleArray(fenPositions);
-        }
-
-        // Limit to problemCount
-        fenPositions = fenPositions.slice(0, problemCount);
-
-        setPositions(fenPositions);
-        return;
-      }
-
-      // Fallback to default positions
-      let fenPositions = getFenPositions();
-
-      // Shuffle if needed
-      if (shuffle) {
-        fenPositions = shuffleArray(fenPositions);
-      }
-
-      // Limit to problemCount
-      fenPositions = fenPositions.slice(0, problemCount);
-
-      setPositions(fenPositions);
-    }
-  }, [hasMounted, problemCount, shuffle, customFen, fens]);
-
-  useScrollToElement('fen-session', hasMounted);
+  useScrollToElement('fen-session');
 
   // Game state
   const [phase, setPhase] = useState<GamePhase>('recreate');
@@ -180,8 +134,8 @@ export function FenSession({
     setShowQuitModal(false);
   }, []);
 
-  // Wait for positions to be initialized and preferences to be loaded
-  if (!hasMounted || !isLoaded || positions.length === 0) {
+  // Wait for preferences to be loaded (positions are initialized synchronously).
+  if (!isLoaded || positions.length === 0) {
     return null;
   }
 

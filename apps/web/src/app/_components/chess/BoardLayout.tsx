@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 
 import { DISPLAY_RANKS, FILES, isLightSquare } from '@blindfold-chess/features/common';
 
-import type { TailwindThemeClasses } from '@/lib/boardThemes';
+import type { TailwindThemeClasses } from '@/lib/games/board-themes';
 
 import { Square } from './Square';
 

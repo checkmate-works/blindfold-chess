@@ -52,10 +52,10 @@ import { Link } from '@/i18n/routing';
 import { and, desc, eq, isNull } from 'drizzle-orm';
 
 import { getAuthenticatedUser } from '@/lib/auth';
+import { getUserSubscription } from '@/lib/billing/subscription';
+import { BENEFIT_ACTIVE_STATUSES } from '@/lib/billing/subscription-constants';
 import { db, userGrants } from '@/lib/db';
 import { type GrantType, isGrantType } from '@/lib/db/data/grant-types';
-import { getUserSubscription } from '@/lib/subscription';
-import { BENEFIT_ACTIVE_STATUSES } from '@/lib/subscription-constants';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';

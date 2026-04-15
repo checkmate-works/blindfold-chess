@@ -1,15 +1,14 @@
 import type { ReactNode } from 'react';
 
-import type { User } from '@supabase/supabase-js';
-
 import { Link } from '@/i18n/routing';
+import type { User } from '@supabase/supabase-js';
 
 import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import type { BreadcrumbItem } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import type { LikeMeta, PostWithReplyMeta, TopicPostWithAuthor } from '../_lib/queries';
+import type { LikeMeta, PostWithReplyMeta, TopicPostWithAuthor } from '../_lib/shared';
 import type { PostDetailI18n } from './PostDetailContent';
 import { PostDetailContent } from './PostDetailContent';
 

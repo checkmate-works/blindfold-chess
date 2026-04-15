@@ -19,12 +19,12 @@ import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getOptionalUser } from '@/lib/auth';
-import { resolveDisplayName } from '@/lib/display-name';
 import { getPaginationParams } from '@/lib/pagination';
 import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
 import { countPositions, listPositionsWithProfile } from '@/lib/positions/queries';
 import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
 import { truncate } from '@/lib/text';
+import { resolveDisplayName } from '@/lib/users/display-name';
 
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import {

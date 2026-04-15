@@ -5,11 +5,11 @@ import { redirect } from 'next/navigation';
 
 import { and, eq, isNull } from 'drizzle-orm';
 
-import { logActivityEvent } from '@/lib/activity-log';
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, topicPosts, userFollows } from '@/lib/db';
-import { createNotification } from '@/lib/notification';
-import { RATE_LIMITS } from '@/lib/rate-limit';
+import { createNotification } from '@/lib/notifications/notification';
+import { RATE_LIMITS } from '@/lib/security/rate-limit';
+import { logActivityEvent } from '@/lib/users/activity-log';
 import { MAX_CONTENT_LENGTH } from '@/lib/validations/content';
 import { UUID_RE } from '@/lib/validations/uuid';
 

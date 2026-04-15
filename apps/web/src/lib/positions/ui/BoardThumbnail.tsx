@@ -1,8 +1,8 @@
 import { ChessPieceIcon } from '@blindfold-chess/icons';
 import type { PieceType } from '@blindfold-chess/types';
 
-import type { BoardTheme } from '@/lib/boardThemes';
-import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
+import type { BoardTheme } from '@/lib/games/board-themes';
+import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/games/board-themes';
 
 type Props = {
   fen: string;

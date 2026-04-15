@@ -2,7 +2,7 @@
 
 import { authenticateAndGuard } from '@/lib/auth';
 import { saveFreePlayResult } from '@/lib/db/save-free-play-result';
-import { RATE_LIMITS } from '@/lib/rate-limit';
+import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { handleServerActionError } from '@/lib/server-action-error';
 
 export type SavePositionMemoryResultInput = {

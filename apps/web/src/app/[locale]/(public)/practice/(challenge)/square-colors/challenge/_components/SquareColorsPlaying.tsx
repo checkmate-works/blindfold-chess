@@ -5,8 +5,8 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { LuPause, LuPlay } from 'react-icons/lu';
 
-import type { BoardTheme } from '@/lib/boardThemes';
-import { DEFAULT_BOARD_THEME } from '@/lib/boardThemes';
+import type { BoardTheme } from '@/lib/games/board-themes';
+import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
 import { SquareColorAnswerButtons } from '@/app/[locale]/(public)/practice/(challenge)/square-colors/_components/SquareColorAnswerButtons';

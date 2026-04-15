@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { checkRateLimit } from '@/lib/rate-limit';
+import { checkRateLimit } from '@/lib/security/rate-limit';
 
 import { DELETE } from './route';
 
@@ -30,15 +30,15 @@ vi.mock('@/lib/supabase/admin', () => ({
   }),
 }));
 
-vi.mock('@/lib/activity-log', () => ({
+vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: (...args: unknown[]) => mockLogActivityEvent(...args),
 }));
 
-vi.mock('@/lib/ban', () => ({
+vi.mock('@/lib/moderation/ban', () => ({
   isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
 }));
 
-vi.mock('@/lib/rate-limit', () => ({
+vi.mock('@/lib/security/rate-limit', () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ success: true }),
   RATE_LIMITS: {
     deleteAccount: { action: 'delete_account', maxAttempts: 3, windowMs: 3_600_000 },

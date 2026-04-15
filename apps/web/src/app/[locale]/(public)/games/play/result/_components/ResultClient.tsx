@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -9,7 +9,6 @@ import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaChartLine, FaClipboardList, FaMinus, FaTimes } from 'react-icons/fa';
 
-import { LocalStorageGameRepository } from '@/lib/repositories';
 import type { Game, MoveInputMethod, MoveOperationLog } from '@/lib/types';
 
 import { Divider } from '@/app/[locale]/_components/Divider';
@@ -19,6 +18,7 @@ import { ClientBreadcrumb } from '../../_components/ClientBreadcrumb';
 import { OperationLogModal } from '../../_components/OperationLogModal';
 import { useNotation } from '../../_hooks';
 import type { FormattedPgnMove } from '../../_lib';
+import { useLoadGame } from '../_hooks/useLoadGame';
 import { VictoryCertificate } from './VictoryCertificate';
 
 type Props = {
@@ -28,51 +28,30 @@ type Props = {
 };
 
 export function ResultClient({ locale, brandName, displayName }: Props) {
+  const t = useTranslations('play');
   const searchParams = useSearchParams();
   const gameId = searchParams.get('gameId');
+  const loadState = useLoadGame(gameId);
 
-  const [game, setGame] = useState<Game | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Load game data from localStorage
-  useEffect(() => {
-    if (!gameId) {
-      setError('No game ID provided');
-      setIsLoading(false);
-      return;
-    }
-
-    const loadGame = async () => {
-      const repo = new LocalStorageGameRepository();
-      const loadedGame = await repo.load(gameId);
-      if (!loadedGame) {
-        setError('Game not found');
-      } else {
-        setGame(loadedGame);
-      }
-      setIsLoading(false);
-    };
-
-    loadGame();
-  }, [gameId]);
-
-  if (isLoading) {
+  if (loadState.status === 'idle' || loadState.status === 'loading') {
     return null;
   }
 
-  if (error || !game || !gameId) {
+  if (loadState.status === 'error') {
+    const message =
+      loadState.error === 'missing-id' ? t('result.gameIdMissing') : t('result.gameNotFound');
     return (
       <div className="text-center">
-        <p className="text-muted-foreground mt-4">{error || 'Game not found'}</p>
+        <p className="text-muted-foreground mt-4">{message}</p>
       </div>
     );
   }
 
+  // gameId is guaranteed non-null when status === 'loaded'.
   return (
     <ResultContent
-      game={game}
-      gameId={gameId}
+      game={loadState.game}
+      gameId={gameId as string}
       locale={locale}
       brandName={brandName}
       displayName={displayName}

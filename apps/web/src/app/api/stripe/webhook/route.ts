@@ -3,12 +3,12 @@ import { NextResponse } from 'next/server';
 import * as Sentry from '@sentry/nextjs';
 import type Stripe from 'stripe';
 
-import { getStripe, getStripeWebhookSecret } from '@/lib/stripe';
+import { getStripe, getStripeWebhookSecret } from '@/lib/billing/stripe';
 import {
   handleCheckoutCompleted,
   handleSubscriptionDeleted,
   handleSubscriptionUpdated,
-} from '@/lib/stripe-webhook-handlers';
+} from '@/lib/billing/stripe-webhook-handlers';
 
 export async function POST(request: Request) {
   const body = await request.text();

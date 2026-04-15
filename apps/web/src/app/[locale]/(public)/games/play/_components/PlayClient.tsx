@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { notFound, useRouter } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -182,20 +183,33 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
         {/* Move List */}
         <div className="lg:col-span-1">
           <MovesPanel
-            formattedPgn={formattedPgn}
-            currentPosition={currentPosition}
-            movesLength={moves.length}
-            currentFen={currentFen}
-            displayFen={displayFen}
-            startingFen={startingFen}
-            gameInProgress={gameStatus === 'in_progress'}
-            onNavigateToPosition={navigateToPosition}
-            onNavigateToStart={navigateToStart}
-            onNavigatePrevious={navigatePrevious}
-            onNavigateNext={navigateNext}
-            onNavigateToEnd={navigateToEnd}
-            onRestartFromPosition={confirmationDialogs.restart.openWithPosition}
-            onNewGameFromPosition={handleNewGameFromPosition}
+            moveList={{
+              formattedPgn,
+              currentPosition,
+              movesLength: moves.length,
+              currentFen,
+              displayFen,
+              startingFen,
+            }}
+            navigation={{
+              onNavigateToPosition: navigateToPosition,
+              onNavigateToStart: navigateToStart,
+              onNavigatePrevious: navigatePrevious,
+              onNavigateNext: navigateNext,
+              onNavigateToEnd: navigateToEnd,
+            }}
+            actions={{
+              gameInProgress: gameStatus === 'in_progress',
+              // FEN → Lichess URL derivation is a navigation concern, so it
+              // lives here (the parent that owns routing) rather than in
+              // MovesPanel. Mirrors the original inline behavior: latest
+              // position uses currentFen, historical positions use displayFen.
+              lichessAnalysisUrl: fenToLichessUrl(
+                currentPosition === -1 || displayFen === null ? currentFen : displayFen
+              ),
+              onRestartFromPosition: confirmationDialogs.restart.openWithPosition,
+              onNewGameFromPosition: handleNewGameFromPosition,
+            }}
             showBackground={false}
           />
         </div>

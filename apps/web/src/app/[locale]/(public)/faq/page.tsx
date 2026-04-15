@@ -6,7 +6,7 @@ import { Link } from '@/i18n/routing';
 import { getModuleWeight } from '@blindfold-chess/features/exp';
 
 import { type AutomatedGrantType, GRANT_TYPE_DEFAULTS } from '@/lib/db/data/grant-types';
-import { JsonLd, generateFAQPageSchema } from '@/lib/jsonld';
+import { JsonLd, generateFAQPageSchema } from '@/lib/seo/jsonld';
 
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';

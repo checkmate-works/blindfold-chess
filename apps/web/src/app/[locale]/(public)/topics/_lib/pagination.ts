@@ -1,4 +1,4 @@
-import type { SortMode } from './queries';
+import type { SortMode } from './shared';
 
 /** Default page size for topic and profile listing pages. */
 export const TOPIC_PAGE_SIZE = 5;

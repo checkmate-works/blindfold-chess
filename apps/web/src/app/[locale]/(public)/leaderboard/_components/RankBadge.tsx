@@ -1,4 +1,4 @@
-import { getMedalEmoji } from '@/lib/rank-emoji';
+import { getMedalEmoji } from '@/lib/users/rank-emoji';
 
 type Props = {
   rank: number;

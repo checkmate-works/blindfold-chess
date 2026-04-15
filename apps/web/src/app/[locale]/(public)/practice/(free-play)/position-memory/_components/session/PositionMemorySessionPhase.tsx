@@ -1,6 +1,6 @@
 'use client';
 
-import type { BoardTheme } from '@/lib/boardThemes';
+import type { BoardTheme } from '@/lib/games/board-themes';
 
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 

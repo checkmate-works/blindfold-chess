@@ -11,7 +11,7 @@ import {
   normalizeDiagonal,
 } from '@blindfold-chess/features/diagonal-quiz';
 
-import { MISTAKE_LIMIT } from '@/lib/challenge-constants';
+import { MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
 import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-challenge-result-save';
 import { useTimedSession } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-timed-session';

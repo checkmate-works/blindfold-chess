@@ -1,6 +1,6 @@
 'use server';
 
-import { RATE_LIMITS } from '@/lib/rate-limit';
+import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { validateContent } from '@/lib/validations/content';
 
 import type { CreatePostState } from '@/app/[locale]/(public)/topics/_actions/createPost';

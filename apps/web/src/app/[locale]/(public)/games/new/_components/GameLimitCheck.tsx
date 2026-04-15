@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 import { MAX_GAMES } from '@/config';
 
-import { LocalStorageGameRepository } from '@/lib/repositories';
+import { LocalStorageGameRepository } from '@/lib/games/local-storage-repository';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 

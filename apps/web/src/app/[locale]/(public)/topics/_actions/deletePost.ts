@@ -5,10 +5,10 @@ import { revalidatePath, revalidateTag } from 'next/cache';
 import { and, eq, isNull } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
-import { logActivityEvent } from '@/lib/activity-log';
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, topicPosts, userGrants } from '@/lib/db';
-import { RATE_LIMITS } from '@/lib/rate-limit';
+import { RATE_LIMITS } from '@/lib/security/rate-limit';
+import { logActivityEvent } from '@/lib/users/activity-log';
 
 export type DeletePostResult = ActionResult;
 

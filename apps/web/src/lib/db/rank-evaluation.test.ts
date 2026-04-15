@@ -17,7 +17,7 @@ const mockOnConflictDoNothing = vi.fn();
 const mockSelectResult = vi.fn<() => unknown[]>().mockReturnValue([]);
 const mockLogActivityEvent = vi.fn();
 
-vi.mock('../activity-log', () => ({
+vi.mock('../users/activity-log', () => ({
   logActivityEvent: (...args: unknown[]) => mockLogActivityEvent(...args),
 }));
 

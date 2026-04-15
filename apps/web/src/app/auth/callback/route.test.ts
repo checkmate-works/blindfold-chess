@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { logActivityEvent } from '@/lib/activity-log';
+import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { GET } from './route';
 
@@ -11,7 +11,7 @@ const mockUserId = 'test-user-id-12345678';
 const mockExchangeCodeForSession = vi.fn();
 const mockVerifyOtp = vi.fn();
 
-vi.mock('@/lib/activity-log', () => ({
+vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: vi.fn(),
 }));
 

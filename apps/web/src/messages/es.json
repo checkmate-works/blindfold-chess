@@ -1473,6 +1473,8 @@
     "showLegalMoves": "Mostrar movimientos legales",
     "legalMovesList": "Movimientos legales:",
     "result": {
+      "gameNotFound": "Partida no encontrada",
+      "gameIdMissing": "No se ha proporcionado ID de partida",
       "operationSummary": {
         "title": "Estadísticas de la Partida",
         "inputMethods": "Métodos de Entrada",

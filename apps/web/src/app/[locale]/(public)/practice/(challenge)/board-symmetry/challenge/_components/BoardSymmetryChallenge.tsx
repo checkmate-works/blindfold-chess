@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { checkSymmetryAnswer, generateProblem } from '@blindfold-chess/features/board-symmetry';
 import type { BoardSymmetryProblem } from '@blindfold-chess/features/board-symmetry';
 
-import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge-constants';
+import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
 import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-challenge-result-save';
 import { useTimedSession } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-timed-session';

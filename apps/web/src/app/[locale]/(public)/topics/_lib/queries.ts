@@ -6,24 +6,6 @@ import { attachPostMeta } from './post-meta';
 import { authorSelect, sortPosts } from './shared';
 import type { PostWithReplyMeta, SortMode, TopicPostWithAuthor } from './shared';
 
-// Re-export shared types and functions for backward compatibility
-export { attachPostMeta, attachProfilePostMeta } from './post-meta';
-export { authorSelect, ratingSelect, sortPosts } from './shared';
-export type {
-  LikeMeta,
-  PostWithReplyMeta,
-  ProfilePostWithReplyMeta,
-  Replier,
-  ReplyMeta,
-  SortMode,
-  TopicPostWithAuthor,
-} from './shared';
-
-// Re-export from split modules for backward compatibility
-export { getLikeMetaForPost, getLikedPostCountByUser, getLikedPostsByUser } from './like-queries';
-export { getPostCountByUserId, getPostsByUserId } from './user-post-queries';
-export { getPostCountAcrossTopics, getPostsAcrossTopicsPaginated } from './cross-topic-queries';
-
 /**
  * Get the count of top-level posts for a specific topic type ('square' or 'opening').
  */

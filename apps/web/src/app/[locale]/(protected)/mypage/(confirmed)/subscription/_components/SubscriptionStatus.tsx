@@ -3,8 +3,8 @@
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import * as Sentry from '@sentry/nextjs';
 
+import { BENEFIT_ACTIVE_STATUSES } from '@/lib/billing/subscription-constants';
 import type { Subscription } from '@/lib/db';
-import { BENEFIT_ACTIVE_STATUSES } from '@/lib/subscription-constants';
 
 import { createPortalSession } from '../_actions/createPortalSession';
 

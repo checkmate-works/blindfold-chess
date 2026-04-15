@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { logActivityEvent } from '@/lib/activity-log';
+import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { deleteAnswerAction } from './deleteAnswer';
 
@@ -8,7 +8,7 @@ const mockGetUser = vi.fn();
 const mockIsUserBanned = vi.fn();
 const mockUpdateReturning = vi.fn();
 
-vi.mock('@/lib/activity-log', () => ({
+vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: vi.fn(),
 }));
 
@@ -21,11 +21,11 @@ vi.mock('@/lib/supabase/server', () => ({
     }),
 }));
 
-vi.mock('@/lib/ban', () => ({
+vi.mock('@/lib/moderation/ban', () => ({
   isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
 }));
 
-vi.mock('@/lib/rate-limit', () => ({
+vi.mock('@/lib/security/rate-limit', () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ success: true }),
   RATE_LIMITS: {
     deleteInterviewAnswer: {

@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
-import { getAdsEnabledDirect, getAllAdBanners } from '@/lib/ad';
+import { getAdsEnabledDirect, getAllAdBanners } from '@/lib/ads/ad';
 
 import { AdsToggle } from './_components/AdsToggle';
 import { BannerEditRow } from './_components/BannerEditRow';

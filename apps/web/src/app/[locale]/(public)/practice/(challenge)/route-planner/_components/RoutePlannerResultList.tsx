@@ -5,7 +5,7 @@ import { Fragment, useState } from 'react';
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
 import { FaArrowRight, FaChevronDown, FaChevronRight } from 'react-icons/fa';
 
-import type { BoardTheme } from '@/lib/boardThemes';
+import type { BoardTheme } from '@/lib/games/board-themes';
 
 import type { PieceType } from '../_lib/utils';
 import { RoutePlannerBoard } from './RoutePlannerBoard';

@@ -27,7 +27,7 @@
 import { and, asc, eq } from 'drizzle-orm';
 import 'server-only';
 
-import { logActivityEvent } from '../activity-log';
+import { logActivityEvent } from '../users/activity-log';
 import type { ChallengeScoreRequirement, GrantedRank, RankRequirement } from './data/ranks';
 import { parseRequirements } from './data/ranks';
 import { db } from './index';

@@ -18,7 +18,7 @@ import { SITE_URL, SUPPORTED_LOCALES } from '@/config';
 import enMessages from '@/messages/en.json';
 
 import { buildGuidePath, enumerateGuideRoutes } from '@/lib/guides';
-import { JsonLd, generateItemListSchema } from '@/lib/jsonld';
+import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
 
 import { PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';

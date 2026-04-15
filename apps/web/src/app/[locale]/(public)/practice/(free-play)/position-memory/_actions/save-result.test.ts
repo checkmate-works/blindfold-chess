@@ -28,7 +28,7 @@ vi.mock('@/lib/db/save-free-play-result', () => ({
   saveFreePlayResult: (...args: unknown[]) => mockSaveFreePlayResult(...args),
 }));
 
-vi.mock('@/lib/rate-limit', () => ({
+vi.mock('@/lib/security/rate-limit', () => ({
   RATE_LIMITS: {
     savePracticeResult: { maxAttempts: 10, windowMs: 60_000 },
   },

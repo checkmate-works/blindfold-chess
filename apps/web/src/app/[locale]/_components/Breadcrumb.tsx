@@ -4,7 +4,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { JsonLd, generateBreadcrumbListSchema } from '@/lib/jsonld';
+import { JsonLd, generateBreadcrumbListSchema } from '@/lib/seo/jsonld';
 
 export type BreadcrumbItem = {
   label: string;

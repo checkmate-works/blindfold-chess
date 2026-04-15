@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 import { getAuthenticatedUser } from '@/lib/auth';
-import { getUserSubscription } from '@/lib/subscription';
+import { getUserSubscription } from '@/lib/billing/subscription';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
