@@ -1509,6 +1509,22 @@ export type NewUserExpRecord = typeof userExp.$inferInsert;
  * Scoped benefits (e.g., paywall access to a specific article) specify the
  * resource. This avoids separate tables for global vs. scoped grants.
  *
+ * @design sourceType + sourceId for trigger provenance
+ *
+ * Distinct from resourceType/resourceId (which describes what the benefit
+ * applies TO / scope), source* records what triggered the grant (the
+ * provenance / cause). For automated UGC grants, this links the grant
+ * back to the action that earned it (e.g., topic_post + postId).
+ * admin_manual grants leave these NULL. This enables targeted revocation
+ * when the source entity is removed (e.g., when a topic post is deleted,
+ * revoke all ad_free grants where sourceType='topic_post' and
+ * sourceId=postId — note: this revocation flow is NOT yet implemented;
+ * the source* columns exist now to make that future implementation
+ * trivial without a retrofit migration).
+ *
+ * Polymorphic FK pattern (no DB-level FK) — consistent with topicPosts,
+ * moderationActions, feedItems.
+ *
  * @design revokedAt for logical deletion
  *
  * Grants are never physically deleted. Revocation sets revokedAt, preserving
@@ -1550,6 +1566,8 @@ export const userGrants = pgTable(
     grantType: varchar('grant_type', { length: 50 }).notNull(), // 'admin_manual', 'topic_post', 'campaign', etc.
     resourceType: varchar('resource_type', { length: 50 }), // NULL for global benefits, 'article' etc. for scoped
     resourceId: varchar('resource_id', { length: 255 }), // NULL for global benefits, target resource ID for scoped
+    sourceType: varchar('source_type', { length: 50 }), // NEW: nullable; e.g., 'topic_post' for UGC-triggered grants
+    sourceId: varchar('source_id', { length: 255 }), // NEW: nullable; the triggering entity ID
     reason: text('reason'), // Human-readable justification (admin memo, campaign name, etc.)
     startsAt: timestamp('starts_at', { withTimezone: true }).notNull(),
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
@@ -1559,6 +1577,7 @@ export const userGrants = pgTable(
   (table) => [
     index('idx_user_grants_benefit_lookup').on(table.userId, table.benefitType, table.expiresAt),
     index('idx_user_grants_user').on(table.userId),
+    index('idx_user_grants_source').on(table.sourceType, table.sourceId),
   ]
 );
 
