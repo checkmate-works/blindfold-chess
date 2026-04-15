@@ -2,27 +2,30 @@
  * Benefit Grant History Page (特典履歴)
  *
  * @description
- * Paginated history of a user's benefit grants filtered by grantType.
- * Linked from /mypage/benefits "View full history" when the user has more
- * than 5 grants of the given grantType. Currently the only supported
- * grantType is 'topic_post'; other URLs return 404 via Next.js notFound().
+ * Paginated history of a user's benefit grants filtered by benefitType.
+ * Linked from /mypage/benefits "View full history" when the user has
+ * more than 5 grants. Currently the only supported benefitType is
+ * 'ad_free'; other URLs return 404 via Next.js notFound().
  *
- * Unlike /mypage/benefits which excludes revoked grants, this history view
- * INCLUDES revoked grants so the user can audit their full grant timeline.
- * Revoked grants render with a dedicated 'revoked' status badge.
+ * Unlike /mypage/benefits which excludes revoked grants, this history
+ * view INCLUDES revoked grants so the user can audit their full grant
+ * timeline. Revoked grants render with a dedicated 'revoked' status
+ * badge. Grants of all grantTypes (admin_manual, topic_post, etc.) are
+ * shown together — row labels via grantTypeLabel differentiate sources.
  *
  * @design URL shape
  *
- * `/mypage/benefits/[grantType]` — the dynamic segment is a grantType code
- * (e.g., 'topic_post'). This generalizes for future grant types without
- * requiring a new route. A single history page per user-earning grantType
- * is the UX model; admin_manual grants are out of scope for this view.
+ * `/mypage/benefits/[benefitType]` — the dynamic segment is a
+ * benefitType code (e.g., 'ad_free'). This generalizes for future
+ * benefit types (e.g., 'paywall_access') without requiring a new route.
+ * Filtering by benefitType (not grantType) matches the logical axis of
+ * "what the user has been granted" rather than "how it was earned".
  *
  * @flow
  * 1. Route group (protected)/(confirmed) enforces auth
- * 2. grantType param validated against allowed values; invalid → notFound()
- * 3. Query user_grants filtered by (userId, benefitType='ad_free', grantType)
- *    INCLUDING revoked — ordered by startsAt DESC
+ * 2. benefitType param validated against allowed values; invalid → notFound()
+ * 3. Query user_grants filtered by (userId, benefitType), INCLUDING
+ *    revoked — ordered by startsAt DESC
  * 4. Paginate (20/page via nuqs), render rows with status badges
  */
 import type { Metadata } from 'next';
@@ -54,7 +57,7 @@ const searchParamsCache = createSearchParamsCache({
 });
 
 type Props = {
-  params: Promise<{ locale: Locale; grantType: string }>;
+  params: Promise<{ locale: Locale; benefitType: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
@@ -73,22 +76,22 @@ function classifyGrantForHistory(
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale, grantType } = await params;
-  if (grantType !== 'topic_post') {
+  const { locale, benefitType } = await params;
+  if (benefitType !== 'ad_free') {
     return { title: resolveTitle('Not Found', locale) };
   }
   const t = await getTranslations({ locale, namespace: 'MypageBenefitHistory' });
   const title = t('title');
   return {
-    ...generateCanonicalMetadata({ locale, path: `mypage/benefits/${grantType}`, title }),
+    ...generateCanonicalMetadata({ locale, path: `mypage/benefits/${benefitType}`, title }),
     title: resolveTitle(title, locale),
     robots: { index: false, follow: false },
   };
 }
 
 export default async function BenefitHistoryPage({ params, searchParams }: Props) {
-  const { locale, grantType } = await params;
-  if (grantType !== 'topic_post') {
+  const { locale, benefitType } = await params;
+  if (benefitType !== 'ad_free') {
     notFound();
   }
 
@@ -102,13 +105,7 @@ export default async function BenefitHistoryPage({ params, searchParams }: Props
   const [countResult] = await db
     .select({ count: sql<number>`count(*)` })
     .from(userGrants)
-    .where(
-      and(
-        eq(userGrants.userId, user.id),
-        eq(userGrants.benefitType, 'ad_free'),
-        eq(userGrants.grantType, grantType)
-      )
-    );
+    .where(and(eq(userGrants.userId, user.id), eq(userGrants.benefitType, benefitType)));
 
   const totalCount = Number(countResult?.count ?? 0);
 
@@ -121,13 +118,7 @@ export default async function BenefitHistoryPage({ params, searchParams }: Props
   const rows = await db
     .select()
     .from(userGrants)
-    .where(
-      and(
-        eq(userGrants.userId, user.id),
-        eq(userGrants.benefitType, 'ad_free'),
-        eq(userGrants.grantType, grantType)
-      )
-    )
+    .where(and(eq(userGrants.userId, user.id), eq(userGrants.benefitType, benefitType)))
     .orderBy(desc(userGrants.startsAt))
     .limit(limit)
     .offset(offset);
@@ -163,7 +154,7 @@ export default async function BenefitHistoryPage({ params, searchParams }: Props
 
   const buildHref = (p: number) => {
     const qs = p > 1 ? `?page=${p}` : '';
-    return `/${locale}/mypage/benefits/${grantType}${qs}`;
+    return `/${locale}/mypage/benefits/${benefitType}${qs}`;
   };
 
   return (

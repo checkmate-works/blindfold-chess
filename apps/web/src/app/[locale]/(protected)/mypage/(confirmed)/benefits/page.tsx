@@ -6,10 +6,13 @@
  * aggregated across both sources:
  *   - Stripe subscriptions (managed at /mypage/subscription)
  *   - user_grants table (automated UGC bonuses + admin manual grants)
- * The aggregate status banner reflects ALL ad_free grants (including
- * admin_manual), while the detailed "From benefit grants" list is
- * intentionally filtered to topic_post grants only — this section is
- * conceptually a view of what the user has earned through contributions.
+ * Both the aggregate status banner and the detailed "From benefit grants"
+ * list read from the same population: non-revoked ad_free grants for the
+ * user, regardless of grantType. admin_manual and automated UGC grants
+ * (e.g., topic_post) appear together, differentiated only by their
+ * per-row grantTypeLabel. This keeps the banner and the list consistent —
+ * a user who sees "active" in the banner also sees the contributing
+ * grants in the list below.
  * Guidance on how to earn benefits lives in the FAQ (/faq#ad-free-benefits),
  * linked from this page when ad_free is inactive.
  *
@@ -35,10 +38,10 @@
  *    user_grants (benefitType='ad_free', not revoked), computes latest
  *    effective expiresAt across both sources.
  * 3. Renders aggregate status banner, subscription source (if active),
- *    and a topic_post-filtered grant list (latest 5, desc by startsAt).
- *    When >5 topic_post grants exist, a "View full history" link routes
- *    to /mypage/benefits/[grantType] for paginated history (which also
- *    includes revoked grants for audit purposes).
+ *    and a grant list filtered by benefitType='ad_free' (latest 5, desc
+ *    by startsAt). When >5 grants exist, a "View full history" link
+ *    routes to /mypage/benefits/[benefitType] for paginated history
+ *    (which also includes revoked grants for audit purposes).
  * 4. On inactive state, displays an FAQ link to /faq#ad-free-benefits
  *    and swaps the grant list title to "Past benefits".
  */
@@ -102,12 +105,12 @@ export default async function BenefitsPage({ params }: Props) {
 
   const now = new Date();
 
-  // Filter display list to topic_post only — "Ad-Free Benefits" section is
-  // conceptually for user-earned topic_post grants. Banner aggregates still
-  // use allGrants (including admin_manual).
-  const topicPostGrants = allGrants.filter((g) => g.grantType === 'topic_post');
-  const displayGrants = topicPostGrants.slice(0, 5);
-  const hasMoreTopicPostGrants = topicPostGrants.length > 5;
+  // Display all ad_free grants regardless of grantType. The aggregate banner
+  // and the display list share the same population, so admin_manual grants
+  // appear alongside automated UGC grants. Row labels (via grantTypeLabel)
+  // still differentiate the source.
+  const displayGrants = allGrants.slice(0, 5);
+  const hasMoreGrants = allGrants.length > 5;
 
   // Subscription confers ad_free if status is in BENEFIT_ACTIVE_STATUSES
   // and the period has not yet ended.
@@ -239,10 +242,10 @@ export default async function BenefitsPage({ params }: Props) {
                     );
                   })}
                 </ul>
-                {hasMoreTopicPostGrants && (
+                {hasMoreGrants && (
                   <div className="mt-4">
                     <Link
-                      href={`/mypage/benefits/topic_post`}
+                      href={`/mypage/benefits/ad_free`}
                       locale={locale}
                       className="text-sm text-foreground underline hover:opacity-80 transition-colors"
                     >
