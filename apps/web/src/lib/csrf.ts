@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nextjs';
 import 'server-only';
 
 /**
@@ -17,11 +18,14 @@ export function isValidOrigin(request: Request): boolean {
 
   const allowedOrigin = process.env.NEXT_PUBLIC_SITE_URL;
   if (!allowedOrigin) {
-    console.error(
-      'NEXT_PUBLIC_SITE_URL is not set. CSRF origin validation will reject all requests.'
-    );
+    Sentry.captureMessage('CSRF check failed: NEXT_PUBLIC_SITE_URL is not configured', 'warning');
     return false;
   }
 
-  return origin.replace(/\/+$/, '') === allowedOrigin.replace(/\/+$/, '');
+  if (origin.replace(/\/+$/, '') !== allowedOrigin.replace(/\/+$/, '')) {
+    Sentry.captureMessage(`CSRF origin mismatch: received ${origin}`, 'warning');
+    return false;
+  }
+
+  return true;
 }
