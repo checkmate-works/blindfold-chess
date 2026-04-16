@@ -60,4 +60,52 @@ describe('isValidOrigin', () => {
 
     expect(result).toBe(false);
   });
+
+  it('should return true when NEXT_PUBLIC_SITE_URL has trailing slash', () => {
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://example.com/');
+
+    const result = isValidOrigin(createRequest({ origin: 'https://example.com' }));
+
+    expect(result).toBe(true);
+  });
+
+  it('should return true when Origin has trailing slash', () => {
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://example.com');
+
+    const result = isValidOrigin(createRequest({ origin: 'https://example.com/' }));
+
+    expect(result).toBe(true);
+  });
+
+  it('should return true when both Origin and NEXT_PUBLIC_SITE_URL have trailing slashes', () => {
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://example.com/');
+
+    const result = isValidOrigin(createRequest({ origin: 'https://example.com/' }));
+
+    expect(result).toBe(true);
+  });
+
+  it('should return true when NEXT_PUBLIC_SITE_URL has multiple trailing slashes', () => {
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://example.com///');
+
+    const result = isValidOrigin(createRequest({ origin: 'https://example.com' }));
+
+    expect(result).toBe(true);
+  });
+
+  it('should return true when Origin has multiple trailing slashes', () => {
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://example.com');
+
+    const result = isValidOrigin(createRequest({ origin: 'https://example.com///' }));
+
+    expect(result).toBe(true);
+  });
+
+  it('should return false when NEXT_PUBLIC_SITE_URL is undefined', () => {
+    delete process.env.NEXT_PUBLIC_SITE_URL;
+
+    const result = isValidOrigin(createRequest({ origin: 'https://example.com' }));
+
+    expect(result).toBe(false);
+  });
 });

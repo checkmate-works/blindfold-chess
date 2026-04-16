@@ -17,8 +17,11 @@ export function isValidOrigin(request: Request): boolean {
 
   const allowedOrigin = process.env.NEXT_PUBLIC_SITE_URL;
   if (!allowedOrigin) {
+    console.error(
+      'NEXT_PUBLIC_SITE_URL is not set. CSRF origin validation will reject all requests.'
+    );
     return false;
   }
 
-  return origin === allowedOrigin;
+  return origin.replace(/\/+$/, '') === allowedOrigin.replace(/\/+$/, '');
 }
