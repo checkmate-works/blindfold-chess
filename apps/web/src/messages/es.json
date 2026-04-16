@@ -2419,7 +2419,7 @@
       "subscriptionId": "ID de Suscripción",
       "priceId": "ID de Precio",
       "status": "Estado",
-      "cancelAtPeriodEnd": "Cancelar al Final del Período",
+      "cancelAt": "Fecha de Cancelación",
       "periodStart": "Inicio del Período",
       "periodEnd": "Fin del Período",
       "createdAt": "Fecha de Creación",

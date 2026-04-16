@@ -90,7 +90,7 @@ function createMockSubscription(
   return {
     id: 'sub_123',
     status: 'active',
-    cancel_at_period_end: false,
+    cancel_at: null,
     items: {
       data: [
         {
@@ -114,7 +114,7 @@ describe('toSubscriptionFields', () => {
     expect(fields).toEqual({
       stripePriceId: 'price_abc',
       status: 'active',
-      cancelAtPeriodEnd: false,
+      cancelAt: null,
       currentPeriodStart: new Date(1700000000 * 1000),
       currentPeriodEnd: new Date(1702592000 * 1000),
     });
@@ -155,9 +155,29 @@ describe('toSubscriptionFields', () => {
     expect(fields.status).toBe('paused');
   });
 
-  it('should map cancel_at_period_end = true', () => {
-    const fields = toSubscriptionFields(createMockSubscription({ cancel_at_period_end: true }));
-    expect(fields.cancelAtPeriodEnd).toBe(true);
+  it('should map cancel_at to a Date when set', () => {
+    const fields = toSubscriptionFields(
+      createMockSubscription({ cancel_at: 1778917194 } as Record<string, unknown>)
+    );
+    expect(fields.cancelAt).toEqual(new Date(1778917194 * 1000));
+  });
+
+  it('should map cancel_at to null when not set', () => {
+    const fields = toSubscriptionFields(
+      createMockSubscription({ cancel_at: null } as Record<string, unknown>)
+    );
+    expect(fields.cancelAt).toBeNull();
+  });
+
+  it('should map cancel_at=0 to null (falsy value treated as unset)', () => {
+    // cancel_at=0 is epoch zero. The current implementation uses a truthy check
+    // (`subscription.cancel_at ? ...`), so 0 is treated as null/unset.
+    // This documents the current behavior — Stripe never sends cancel_at=0
+    // in practice, but if it did, this would silently discard the value.
+    const fields = toSubscriptionFields(
+      createMockSubscription({ cancel_at: 0 } as Record<string, unknown>)
+    );
+    expect(fields.cancelAt).toBeNull();
   });
 
   it('should convert Unix timestamps to Date objects', () => {
@@ -189,7 +209,7 @@ describe('toSubscriptionFields', () => {
     const sub = {
       id: 'sub_multi',
       status: 'active',
-      cancel_at_period_end: false,
+      cancel_at: null,
       items: {
         data: [
           {
@@ -221,7 +241,7 @@ describe('toSubscriptionFields', () => {
     const sub = {
       id: 'sub_empty',
       status: 'active',
-      cancel_at_period_end: false,
+      cancel_at: null,
       items: { data: [] },
     } as unknown as Stripe.Subscription;
 
@@ -455,11 +475,11 @@ describe('handleCheckoutCompleted', () => {
   it('should include all mapped subscription fields in the upsert', async () => {
     const sub = createMockSubscription({
       status: 'trialing',
-      cancel_at_period_end: false,
+      cancel_at: null,
       priceId: 'price_trial',
       periodStart: 1710000000,
       periodEnd: 1712678400,
-    });
+    } as Record<string, unknown>);
 
     const session = {
       mode: 'subscription',
@@ -480,7 +500,7 @@ describe('handleCheckoutCompleted', () => {
         stripeSubscriptionId: 'sub_123',
         stripePriceId: 'price_trial',
         status: 'trialing',
-        cancelAtPeriodEnd: false,
+        cancelAt: null,
         currentPeriodStart: new Date(1710000000 * 1000),
         currentPeriodEnd: new Date(1712678400 * 1000),
       })
@@ -504,7 +524,7 @@ describe('handleSubscriptionUpdated', () => {
       expect.objectContaining({
         stripePriceId: 'price_abc',
         status: 'active',
-        cancelAtPeriodEnd: false,
+        cancelAt: null,
         updatedAt: expect.any(Date),
       })
     );
@@ -522,13 +542,16 @@ describe('handleSubscriptionUpdated', () => {
     mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
 
     await handleSubscriptionUpdated(
-      createMockSubscription({ status: 'past_due', cancel_at_period_end: true })
+      createMockSubscription({ status: 'past_due', cancel_at: 1778917194 } as Record<
+        string,
+        unknown
+      >)
     );
 
     expect(mockUpdateSetWhere).toHaveBeenCalledWith(
       expect.objectContaining({
         status: 'past_due',
-        cancelAtPeriodEnd: true,
+        cancelAt: new Date(1778917194 * 1000),
       })
     );
   });
@@ -684,7 +707,7 @@ describe('handleSubscriptionUpdated', () => {
     const sub = createMockSubscription({
       customer: 'cus_fields',
       status: 'past_due',
-      cancel_at_period_end: true,
+      cancel_at: 1778917194,
       priceId: 'price_recovery',
       periodStart: 1710000000,
       periodEnd: 1712678400,
@@ -697,7 +720,7 @@ describe('handleSubscriptionUpdated', () => {
         stripeSubscriptionId: 'sub_123',
         stripePriceId: 'price_recovery',
         status: 'past_due',
-        cancelAtPeriodEnd: true,
+        cancelAt: new Date(1778917194 * 1000),
         currentPeriodStart: new Date(1710000000 * 1000),
         currentPeriodEnd: new Date(1712678400 * 1000),
       })
@@ -720,7 +743,7 @@ describe('handleSubscriptionDeleted', () => {
     vi.clearAllMocks();
   });
 
-  it('should set status to canceled and cancelAtPeriodEnd to false', async () => {
+  it('should set status to canceled and cancelAt to null', async () => {
     mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
 
     await handleSubscriptionDeleted(createMockSubscription());
@@ -728,7 +751,7 @@ describe('handleSubscriptionDeleted', () => {
     expect(mockUpdateSetWhere).toHaveBeenCalledWith(
       expect.objectContaining({
         status: 'canceled',
-        cancelAtPeriodEnd: false,
+        cancelAt: null,
         updatedAt: expect.any(Date),
       })
     );
@@ -752,14 +775,14 @@ describe('handleSubscriptionDeleted', () => {
     );
   });
 
-  it('should force cancelAtPeriodEnd to false regardless of input', async () => {
+  it('should force cancelAt to null regardless of input', async () => {
     mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
 
-    await handleSubscriptionDeleted(createMockSubscription({ cancel_at_period_end: true }));
-
-    expect(mockUpdateSetWhere).toHaveBeenCalledWith(
-      expect.objectContaining({ cancelAtPeriodEnd: false })
+    await handleSubscriptionDeleted(
+      createMockSubscription({ cancel_at: 1778917194 } as Record<string, unknown>)
     );
+
+    expect(mockUpdateSetWhere).toHaveBeenCalledWith(expect.objectContaining({ cancelAt: null }));
   });
 
   it('should include updatedAt as a Date in the set call', async () => {

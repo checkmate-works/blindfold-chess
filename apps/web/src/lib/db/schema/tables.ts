@@ -1049,11 +1049,15 @@ export type NewStripeCustomer = typeof stripeCustomers.$inferInsert;
  * Stores the Stripe Price ID to identify which plan a subscription belongs to.
  * Enables future expansion (e.g., $1/month ad-free + $5/month premium).
  *
- * @design cancelAtPeriodEnd flag
+ * @design cancelAt timestamp
  *
- * When a user cancels, Stripe sets cancel_at_period_end=true but keeps
- * status='active' until the period ends. This flag enables "cancellation
- * scheduled" UI without losing ad-free access during the remaining period.
+ * When a user cancels via Stripe Customer Portal, Stripe sets `cancel_at`
+ * to the timestamp when the subscription will actually be terminated (equal
+ * to `current_period_end`). We store this as a nullable timestamp rather
+ * than using the boolean `cancel_at_period_end`, because Stripe's portal
+ * cancellation flow sets `cancel_at` without setting `cancel_at_period_end`
+ * to true, making the boolean unreliable. A non-null `cancelAt` means
+ * cancellation is scheduled; null means the subscription renews normally.
  *
  * @design FKs managed in custom SQL
  *
@@ -1067,7 +1071,7 @@ export const subscriptions = pgTable(
     stripeSubscriptionId: varchar('stripe_subscription_id', { length: 255 }).unique().notNull(),
     stripePriceId: varchar('stripe_price_id', { length: 255 }).notNull(),
     status: varchar('status', { length: 50 }).notNull(), // Stripe subscription status
-    cancelAtPeriodEnd: boolean('cancel_at_period_end').notNull().default(false),
+    cancelAt: timestamp('cancel_at', { withTimezone: true }),
     currentPeriodStart: timestamp('current_period_start', { withTimezone: true }).notNull(),
     currentPeriodEnd: timestamp('current_period_end', { withTimezone: true }).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),

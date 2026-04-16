@@ -2508,7 +2508,7 @@
       "subscriptionId": "Subscription ID",
       "priceId": "Price ID",
       "status": "Status",
-      "cancelAtPeriodEnd": "Cancel at Period End",
+      "cancelAt": "Cancel At",
       "periodStart": "Period Start",
       "periodEnd": "Period End",
       "createdAt": "Created At",

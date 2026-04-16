@@ -20,7 +20,7 @@ export function toSubscriptionFields(subscription: Stripe.Subscription) {
   return {
     stripePriceId: item.price.id,
     status: subscription.status,
-    cancelAtPeriodEnd: subscription.cancel_at_period_end,
+    cancelAt: subscription.cancel_at ? new Date(subscription.cancel_at * 1000) : null,
     currentPeriodStart: new Date(item.current_period_start * 1000),
     currentPeriodEnd: new Date(item.current_period_end * 1000),
   };
@@ -124,7 +124,7 @@ export async function handleSubscriptionDeleted(subscription: Stripe.Subscriptio
     .update(subscriptions)
     .set({
       status: 'canceled',
-      cancelAtPeriodEnd: false,
+      cancelAt: null,
       updatedAt: new Date(),
     })
     .where(eq(subscriptions.stripeSubscriptionId, subscription.id))

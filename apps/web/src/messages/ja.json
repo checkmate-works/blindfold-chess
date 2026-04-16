@@ -2502,7 +2502,7 @@
       "subscriptionId": "Subscription ID",
       "priceId": "Price ID",
       "status": "ステータス",
-      "cancelAtPeriodEnd": "期間終了時にキャンセル",
+      "cancelAt": "キャンセル日",
       "periodStart": "期間開始",
       "periodEnd": "期間終了",
       "createdAt": "作成日時",

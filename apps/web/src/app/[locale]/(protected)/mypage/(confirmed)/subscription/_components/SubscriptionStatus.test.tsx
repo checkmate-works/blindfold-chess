@@ -37,7 +37,7 @@ function buildSubscription(overrides: Partial<Subscription> = {}): Subscription 
     stripeSubscriptionId: 'stripe_sub_1',
     stripePriceId: 'price_1',
     status: 'active',
-    cancelAtPeriodEnd: false,
+    cancelAt: null,
     currentPeriodStart: new Date('2026-04-01T00:00:00Z'),
     currentPeriodEnd: new Date('2026-05-01T00:00:00Z'),
     createdAt: new Date('2026-03-01T00:00:00Z'),
@@ -72,23 +72,23 @@ describe('SubscriptionStatus', () => {
     });
   });
 
-  describe('canceling subscription (cancelAtPeriodEnd = true)', () => {
+  describe('canceling subscription (cancelAt is set)', () => {
     it('should NOT show "Next billing date"', () => {
-      const subscription = buildSubscription({ cancelAtPeriodEnd: true });
+      const subscription = buildSubscription({ cancelAt: new Date('2026-05-01T00:00:00Z') });
       render(<SubscriptionStatus subscription={subscription} locale="en" />);
 
       expect(screen.queryByText('nextBilling')).not.toBeInTheDocument();
     });
 
     it('should show canceling note', () => {
-      const subscription = buildSubscription({ cancelAtPeriodEnd: true });
+      const subscription = buildSubscription({ cancelAt: new Date('2026-05-01T00:00:00Z') });
       render(<SubscriptionStatus subscription={subscription} locale="en" />);
 
       expect(screen.getByText('cancelingNote')).toBeInTheDocument();
     });
 
     it('should show "access until" date', () => {
-      const subscription = buildSubscription({ cancelAtPeriodEnd: true });
+      const subscription = buildSubscription({ cancelAt: new Date('2026-05-01T00:00:00Z') });
       render(<SubscriptionStatus subscription={subscription} locale="en" />);
 
       const formattedDate = new Date('2026-05-01T00:00:00Z').toLocaleDateString('en');
@@ -97,10 +97,35 @@ describe('SubscriptionStatus', () => {
     });
 
     it('should show "Canceling" status badge', () => {
-      const subscription = buildSubscription({ cancelAtPeriodEnd: true });
+      const subscription = buildSubscription({ cancelAt: new Date('2026-05-01T00:00:00Z') });
       render(<SubscriptionStatus subscription={subscription} locale="en" />);
 
       expect(screen.getByText('statusCanceling')).toBeInTheDocument();
+    });
+  });
+
+  describe('cancelAt in the past (stale cancellation)', () => {
+    it('should still show "Canceling" status even when cancelAt is in the past', () => {
+      // When cancelAt is a past date, the subscription was previously set to cancel
+      // but hasn't been cleaned up yet. The UI treats any non-null cancelAt as "canceling".
+      const subscription = buildSubscription({ cancelAt: new Date('2020-01-01T00:00:00Z') });
+      render(<SubscriptionStatus subscription={subscription} locale="en" />);
+
+      expect(screen.getByText('statusCanceling')).toBeInTheDocument();
+    });
+
+    it('should show cancelingNote when cancelAt is in the past', () => {
+      const subscription = buildSubscription({ cancelAt: new Date('2020-01-01T00:00:00Z') });
+      render(<SubscriptionStatus subscription={subscription} locale="en" />);
+
+      expect(screen.getByText('cancelingNote')).toBeInTheDocument();
+    });
+
+    it('should NOT show nextBilling when cancelAt is in the past', () => {
+      const subscription = buildSubscription({ cancelAt: new Date('2020-01-01T00:00:00Z') });
+      render(<SubscriptionStatus subscription={subscription} locale="en" />);
+
+      expect(screen.queryByText('nextBilling')).not.toBeInTheDocument();
     });
   });
 

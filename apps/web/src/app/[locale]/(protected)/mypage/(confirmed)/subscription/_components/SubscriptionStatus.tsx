@@ -43,7 +43,7 @@ export function SubscriptionStatus({ subscription, locale }: Props) {
   const isActive = BENEFIT_ACTIVE_STATUSES.includes(
     subscription.status as (typeof BENEFIT_ACTIVE_STATUSES)[number]
   );
-  const isCanceling = subscription.cancelAtPeriodEnd;
+  const isCanceling = subscription.cancelAt !== null;
 
   return (
     <div className="rounded-xl border border-border bg-card p-6">

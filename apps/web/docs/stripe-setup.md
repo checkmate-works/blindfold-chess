@@ -160,7 +160,7 @@ STRIPE_PRICE_ID=price_XXXXXXXXXXXXXXXXXXXX         # Production environment Pric
 - [ ] Ads are hidden
 - [ ] Subscription status is displayed on `/mypage/subscription`
 - [ ] "Manage subscription" redirects to the Customer Portal
-- [ ] Canceling via Customer Portal sets `cancel_at_period_end` to true
+- [ ] Canceling via Customer Portal sets `cancel_at` to the period-end timestamp
 - [ ] Scheduled cancellation is displayed correctly
 
 ### Stripe Test Cards
