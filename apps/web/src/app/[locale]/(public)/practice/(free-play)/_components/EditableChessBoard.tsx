@@ -126,6 +126,7 @@ export function EditableChessBoard({
       <h3 className="text-xs font-medium text-muted-foreground">{title}</h3>
       <div className="flex gap-1 sm:gap-2 p-2 sm:p-3 border border-border rounded-lg">
         <button
+          type="button"
           onClick={() => setSelectedPiece('')}
           className={`w-10 h-10 sm:w-12 sm:h-12 rounded border-2 flex items-center justify-center text-base sm:text-lg flex-shrink-0 transition-colors ${
             selectedPiece === ''
@@ -143,6 +144,7 @@ export function EditableChessBoard({
 
           return (
             <button
+              type="button"
               key={piece}
               onClick={() => setSelectedPiece(piece)}
               className={`w-10 h-10 sm:w-12 sm:h-12 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${

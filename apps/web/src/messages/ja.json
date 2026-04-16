@@ -908,7 +908,7 @@
         "empty": "まだポジションがありません",
         "tutorialLink": "チュートリアルを見る",
         "submittedBy": "による出題",
-        "createButton": "問題を作成"
+        "createButton": "問題を作成する"
       },
       "create": {
         "title": "問題を作成",
@@ -919,7 +919,12 @@
         "titleRequired": "タイトルは必須です",
         "descriptionLabel": "説明",
         "submit": "作成",
-        "submitting": "作成中..."
+        "submitting": "作成中...",
+        "clearBoard": "ボードをクリア",
+        "tabBoard": "ボード",
+        "tabFen": "FEN",
+        "positionInvalid": "有効なポジションを設定してください",
+        "flipBoard": "ボードを反転"
       },
       "detail": {
         "title": "ポジション詳細",
@@ -2297,7 +2302,8 @@
     "gameSaved": "ゲームが保存されました",
     "gamesDeleted": "{count}個のゲームを削除しました",
     "accountDeleted": "退会が完了しました",
-    "practiceResultSaveFailed": "結果の保存に失敗しました。もう一度お試しください。"
+    "practiceResultSaveFailed": "結果の保存に失敗しました。もう一度お試しください。",
+    "positionCreated": "問題を作成しました"
   },
   "setupUsername": {
     "title": "アカウント登録",

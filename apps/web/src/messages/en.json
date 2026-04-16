@@ -907,10 +907,10 @@
         "empty": "No positions available yet",
         "tutorialLink": "View Tutorial",
         "submittedBy": "submitted",
-        "createButton": "Create Position"
+        "createButton": "Create Problem"
       },
       "create": {
-        "title": "Create Position",
+        "title": "Create Problem",
         "fenLabel": "FEN",
         "fenRequired": "FEN is required",
         "fenInvalid": "Invalid FEN position",
@@ -918,7 +918,12 @@
         "titleRequired": "Title is required",
         "descriptionLabel": "Description",
         "submit": "Create",
-        "submitting": "Creating..."
+        "submitting": "Creating...",
+        "clearBoard": "Clear Board",
+        "tabBoard": "Board",
+        "tabFen": "FEN",
+        "positionInvalid": "Please set up a valid position",
+        "flipBoard": "Flip board"
       },
       "detail": {
         "title": "Position Detail",
@@ -2296,7 +2301,8 @@
     "gameSaved": "Game saved successfully",
     "gamesDeleted": "{count} games deleted successfully",
     "accountDeleted": "Your account has been deleted",
-    "practiceResultSaveFailed": "Failed to save your result. Please try again."
+    "practiceResultSaveFailed": "Failed to save your result. Please try again.",
+    "positionCreated": "Position created successfully"
   },
   "setupUsername": {
     "title": "Create Your Account",

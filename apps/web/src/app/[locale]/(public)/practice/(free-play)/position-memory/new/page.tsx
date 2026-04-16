@@ -2,7 +2,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { getAuthenticatedUser } from '@/lib/auth';
 
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
@@ -28,9 +28,10 @@ export default async function NewPositionPage({ params }: Props) {
 
   return (
     <div className="space-y-8">
-      <PageTitle>{t('create.title')}</PageTitle>
+      <PageTitle>{t('list.title')}</PageTitle>
 
       <PagePanel>
+        <SectionTitle>{t('create.title')}</SectionTitle>
         <CreatePositionForm />
 
         <Divider />

@@ -24,6 +24,7 @@ const TOAST_PARAM_CONFIG: Record<string, { messageKey: string; type: ToastType }
   post_created: { messageKey: 'postCreated', type: 'success' },
   rate_limited: { messageKey: 'rateLimited', type: 'info' },
   account_deleted: { messageKey: 'accountDeleted', type: 'success' },
+  position_created: { messageKey: 'positionCreated', type: 'success' },
 };
 
 export function ToastContainer() {

@@ -100,16 +100,7 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
       <PagePanel>
         <SectionTitle>{t('list.sectionTitle')}</SectionTitle>
 
-        <div className="flex justify-end gap-4 mb-4">
-          {currentUser && (
-            <Link
-              href="/practice/position-memory/new"
-              locale={locale}
-              className="text-sm px-3 py-1 rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-            >
-              {t('list.createButton')}
-            </Link>
-          )}
+        <div className="flex justify-end mb-4">
           <Link
             href="/practice/position-memory/tutorial"
             locale={locale}
@@ -189,6 +180,18 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
         )}
 
         <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+
+        {currentUser && (
+          <div className="flex justify-center py-4">
+            <Link
+              href="/practice/position-memory/new"
+              locale={locale}
+              className="px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+            >
+              {t('list.createButton')}
+            </Link>
+          </div>
+        )}
 
         {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
           <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
