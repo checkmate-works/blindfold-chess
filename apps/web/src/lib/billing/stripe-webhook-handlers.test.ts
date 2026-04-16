@@ -432,7 +432,7 @@ describe('handleCheckoutCompleted', () => {
       })
     );
     expect(mockOnConflictDoUpdate).toHaveBeenCalled();
-    expect(revalidateTag).toHaveBeenCalledWith('subscription-status');
+    expect(revalidateTag).toHaveBeenCalledWith('subscription-status', { expire: 60 });
   });
 
   it('should pass subscription ID as string to stripe.subscriptions.retrieve', async () => {
@@ -515,7 +515,7 @@ describe('handleSubscriptionUpdated', () => {
 
     await handleSubscriptionUpdated(createMockSubscription());
 
-    expect(revalidateTag).toHaveBeenCalledWith('subscription-status');
+    expect(revalidateTag).toHaveBeenCalledWith('subscription-status', { expire: 60 });
   });
 
   it('should pass updated fields for a past_due subscription', async () => {
@@ -582,7 +582,7 @@ describe('handleSubscriptionUpdated', () => {
       })
     );
     expect(mockOnConflictDoUpdate).toHaveBeenCalled();
-    expect(revalidateTag).toHaveBeenCalledWith('subscription-status');
+    expect(revalidateTag).toHaveBeenCalledWith('subscription-status', { expire: 60 });
   });
 
   it('should report to Sentry when update affects 0 rows and no customer record found', async () => {
@@ -663,7 +663,7 @@ describe('handleSubscriptionUpdated', () => {
     const sub = createMockSubscription({ customer: 'cus_reval' } as Record<string, unknown>);
     await handleSubscriptionUpdated(sub);
 
-    expect(revalidateTag).toHaveBeenCalledWith('subscription-status');
+    expect(revalidateTag).toHaveBeenCalledWith('subscription-status', { expire: 60 });
   });
 
   it('should call revalidateTag even when Sentry warning is reported (no customer record)', async () => {
@@ -674,7 +674,7 @@ describe('handleSubscriptionUpdated', () => {
     await handleSubscriptionUpdated(sub);
 
     expect(mockCaptureMessage).toHaveBeenCalled();
-    expect(revalidateTag).toHaveBeenCalledWith('subscription-status');
+    expect(revalidateTag).toHaveBeenCalledWith('subscription-status', { expire: 60 });
   });
 
   it('should include correct subscription fields in recovery insert', async () => {
@@ -739,7 +739,7 @@ describe('handleSubscriptionDeleted', () => {
 
     await handleSubscriptionDeleted(createMockSubscription());
 
-    expect(revalidateTag).toHaveBeenCalledWith('subscription-status');
+    expect(revalidateTag).toHaveBeenCalledWith('subscription-status', { expire: 60 });
   });
 
   it('should override whatever previous status the subscription had', async () => {
@@ -812,7 +812,7 @@ describe('handleSubscriptionDeleted', () => {
     await handleSubscriptionDeleted(createMockSubscription());
 
     expect(mockCaptureMessage).toHaveBeenCalled();
-    expect(revalidateTag).toHaveBeenCalledWith('subscription-status');
+    expect(revalidateTag).toHaveBeenCalledWith('subscription-status', { expire: 60 });
   });
 
   it('should include subscription ID in Sentry message when 0 rows affected', async () => {

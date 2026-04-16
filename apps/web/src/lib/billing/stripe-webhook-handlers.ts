@@ -68,7 +68,7 @@ export async function handleCheckoutCompleted(session: Stripe.Checkout.Session) 
       },
     });
 
-  revalidateTag('subscription-status');
+  revalidateTag('subscription-status', { expire: 60 });
 }
 
 export async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
@@ -116,7 +116,7 @@ export async function handleSubscriptionUpdated(subscription: Stripe.Subscriptio
     }
   }
 
-  revalidateTag('subscription-status');
+  revalidateTag('subscription-status', { expire: 60 });
 }
 
 export async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
@@ -137,5 +137,5 @@ export async function handleSubscriptionDeleted(subscription: Stripe.Subscriptio
     );
   }
 
-  revalidateTag('subscription-status');
+  revalidateTag('subscription-status', { expire: 60 });
 }
