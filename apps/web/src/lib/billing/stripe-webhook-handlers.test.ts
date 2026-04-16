@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mockInsertValues = vi.fn();
 const mockOnConflictDoUpdate = vi.fn();
 const mockUpdateSetWhere = vi.fn();
+const mockUpdateReturning = vi.fn();
 const mockSelectLimit = vi.fn();
 
 vi.mock('@/lib/db', () => ({
@@ -23,7 +24,9 @@ vi.mock('@/lib/db', () => ({
       set: (...args: unknown[]) => {
         mockUpdateSetWhere(...args);
         return {
-          where: () => Promise.resolve(),
+          where: () => ({
+            returning: () => mockUpdateReturning(),
+          }),
         };
       },
     }),
@@ -36,7 +39,7 @@ vi.mock('@/lib/db', () => ({
     }),
   },
   stripeCustomers: { stripeCustomerId: 'stripe_customer_id', userId: 'user_id' },
-  subscriptions: { stripeSubscriptionId: 'stripe_subscription_id' },
+  subscriptions: { stripeSubscriptionId: 'stripe_subscription_id', id: 'id' },
 }));
 
 const mockStripe = {
@@ -54,6 +57,11 @@ vi.mock('next/cache', () => ({
 }));
 
 vi.mock('server-only', () => ({}));
+
+const mockCaptureMessage = vi.fn();
+vi.mock('@sentry/nextjs', () => ({
+  captureMessage: (...args: unknown[]) => mockCaptureMessage(...args),
+}));
 
 const {
   toSubscriptionFields,
@@ -286,6 +294,102 @@ describe('handleCheckoutCompleted', () => {
     expect(vi.mocked(mockStripe.subscriptions.retrieve)).not.toHaveBeenCalled();
   });
 
+  it('should report to Sentry and return when session.customer is null', async () => {
+    const session = {
+      id: 'cs_test_123',
+      mode: 'subscription',
+      subscription: 'sub_123',
+      customer: null,
+    } as unknown as Stripe.Checkout.Session;
+
+    vi.mocked(mockStripe.subscriptions.retrieve).mockResolvedValue(
+      createMockSubscription() as unknown as Stripe.Response<Stripe.Subscription>
+    );
+
+    await handleCheckoutCompleted(session);
+
+    expect(mockCaptureMessage).toHaveBeenCalledWith(
+      'checkout.session.completed: session cs_test_123 has no customer (subscription: sub_123)',
+      'error'
+    );
+    expect(mockInsertValues).not.toHaveBeenCalled();
+  });
+
+  it('should report to Sentry with error severity (not warning) when session.customer is null', async () => {
+    const session = {
+      id: 'cs_sev_test',
+      mode: 'subscription',
+      subscription: 'sub_sev',
+      customer: null,
+    } as unknown as Stripe.Checkout.Session;
+
+    vi.mocked(mockStripe.subscriptions.retrieve).mockResolvedValue(
+      createMockSubscription() as unknown as Stripe.Response<Stripe.Subscription>
+    );
+
+    await handleCheckoutCompleted(session);
+
+    expect(mockCaptureMessage).toHaveBeenCalledWith(expect.any(String), 'error');
+  });
+
+  it('should not call revalidateTag when session.customer is null', async () => {
+    const session = {
+      id: 'cs_no_reval',
+      mode: 'subscription',
+      subscription: 'sub_no_reval',
+      customer: null,
+    } as unknown as Stripe.Checkout.Session;
+
+    vi.mocked(mockStripe.subscriptions.retrieve).mockResolvedValue(
+      createMockSubscription() as unknown as Stripe.Response<Stripe.Subscription>
+    );
+
+    await handleCheckoutCompleted(session);
+
+    expect(revalidateTag).not.toHaveBeenCalled();
+  });
+
+  it('should handle session.customer as Stripe.Customer object', async () => {
+    const session = {
+      mode: 'subscription',
+      subscription: 'sub_cust_obj',
+      customer: { id: 'cus_from_object' },
+    } as unknown as Stripe.Checkout.Session;
+
+    vi.mocked(mockStripe.subscriptions.retrieve).mockResolvedValue(
+      createMockSubscription() as unknown as Stripe.Response<Stripe.Subscription>
+    );
+    mockSelectLimit.mockResolvedValue([{ userId: 'user_from_obj' }]);
+
+    await handleCheckoutCompleted(session);
+
+    expect(mockInsertValues).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: 'user_from_obj',
+      })
+    );
+  });
+
+  it('should handle session.subscription as Stripe.Subscription object', async () => {
+    const session = {
+      mode: 'subscription',
+      subscription: { id: 'sub_from_object' },
+      customer: 'cus_sub_obj',
+    } as unknown as Stripe.Checkout.Session;
+
+    vi.mocked(mockStripe.subscriptions.retrieve).mockResolvedValue(
+      createMockSubscription({ id: 'sub_from_object' } as Record<
+        string,
+        unknown
+      >) as unknown as Stripe.Response<Stripe.Subscription>
+    );
+    mockSelectLimit.mockResolvedValue([{ userId: 'user_sub_obj' }]);
+
+    await handleCheckoutCompleted(session);
+
+    expect(vi.mocked(mockStripe.subscriptions.retrieve)).toHaveBeenCalledWith('sub_from_object');
+  });
+
   it('should throw when no customer record is found', async () => {
     const session = {
       mode: 'subscription',
@@ -328,7 +432,7 @@ describe('handleCheckoutCompleted', () => {
       })
     );
     expect(mockOnConflictDoUpdate).toHaveBeenCalled();
-    expect(revalidateTag).toHaveBeenCalledWith('subscription-status', { expire: 60 });
+    expect(revalidateTag).toHaveBeenCalledWith('subscription-status');
   });
 
   it('should pass subscription ID as string to stripe.subscriptions.retrieve', async () => {
@@ -392,6 +496,8 @@ describe('handleSubscriptionUpdated', () => {
   });
 
   it('should update subscription fields in DB', async () => {
+    mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
+
     await handleSubscriptionUpdated(createMockSubscription());
 
     expect(mockUpdateSetWhere).toHaveBeenCalledWith(
@@ -405,12 +511,16 @@ describe('handleSubscriptionUpdated', () => {
   });
 
   it('should call revalidateTag after update', async () => {
+    mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
+
     await handleSubscriptionUpdated(createMockSubscription());
 
-    expect(revalidateTag).toHaveBeenCalledWith('subscription-status', { expire: 60 });
+    expect(revalidateTag).toHaveBeenCalledWith('subscription-status');
   });
 
   it('should pass updated fields for a past_due subscription', async () => {
+    mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
+
     await handleSubscriptionUpdated(
       createMockSubscription({ status: 'past_due', cancel_at_period_end: true })
     );
@@ -424,6 +534,8 @@ describe('handleSubscriptionUpdated', () => {
   });
 
   it('should include updatedAt as a Date in the set call', async () => {
+    mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
+
     const before = Date.now();
     await handleSubscriptionUpdated(createMockSubscription());
     const after = Date.now();
@@ -435,6 +547,8 @@ describe('handleSubscriptionUpdated', () => {
   });
 
   it('should update with trialing status and new period timestamps', async () => {
+    mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
+
     const sub = createMockSubscription({
       status: 'trialing',
       periodStart: 1710000000,
@@ -451,6 +565,152 @@ describe('handleSubscriptionUpdated', () => {
       })
     );
   });
+
+  it('should insert subscription when update affects 0 rows and customer record exists', async () => {
+    mockUpdateReturning.mockResolvedValue([]);
+    mockSelectLimit.mockResolvedValue([{ userId: 'user_recovered' }]);
+
+    const sub = createMockSubscription({ customer: 'cus_recovery' } as Record<string, unknown>);
+    await handleSubscriptionUpdated(sub);
+
+    expect(mockInsertValues).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: 'user_recovered',
+        stripeSubscriptionId: 'sub_123',
+        stripePriceId: 'price_abc',
+        status: 'active',
+      })
+    );
+    expect(mockOnConflictDoUpdate).toHaveBeenCalled();
+    expect(revalidateTag).toHaveBeenCalledWith('subscription-status');
+  });
+
+  it('should report to Sentry when update affects 0 rows and no customer record found', async () => {
+    mockUpdateReturning.mockResolvedValue([]);
+    mockSelectLimit.mockResolvedValue([]);
+
+    const sub = createMockSubscription({ customer: 'cus_orphan' } as Record<string, unknown>);
+    await handleSubscriptionUpdated(sub);
+
+    expect(mockCaptureMessage).toHaveBeenCalledWith(
+      expect.stringContaining('no stripe_customers record for customer cus_orphan'),
+      'warning'
+    );
+    expect(mockInsertValues).not.toHaveBeenCalled();
+  });
+
+  it('should not attempt recovery when update affects rows', async () => {
+    mockUpdateReturning.mockResolvedValue([{ id: 'existing-id' }]);
+
+    await handleSubscriptionUpdated(
+      createMockSubscription({ customer: 'cus_existing' } as Record<string, unknown>)
+    );
+
+    expect(mockSelectLimit).not.toHaveBeenCalled();
+    expect(mockInsertValues).not.toHaveBeenCalled();
+    expect(mockCaptureMessage).not.toHaveBeenCalled();
+  });
+
+  it('should handle subscription.customer as Stripe.Customer object during recovery', async () => {
+    mockUpdateReturning.mockResolvedValue([]);
+    mockSelectLimit.mockResolvedValue([{ userId: 'user_obj' }]);
+
+    const sub = createMockSubscription({
+      customer: { id: 'cus_from_obj' },
+    } as Record<string, unknown>);
+    await handleSubscriptionUpdated(sub);
+
+    expect(mockInsertValues).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: 'user_obj',
+        stripeSubscriptionId: 'sub_123',
+      })
+    );
+  });
+
+  it('should handle subscription.customer as Stripe.Customer object when no customer record found (Sentry path)', async () => {
+    mockUpdateReturning.mockResolvedValue([]);
+    mockSelectLimit.mockResolvedValue([]);
+
+    const sub = createMockSubscription({
+      customer: { id: 'cus_obj_orphan' },
+    } as Record<string, unknown>);
+    await handleSubscriptionUpdated(sub);
+
+    expect(mockCaptureMessage).toHaveBeenCalledWith(
+      expect.stringContaining('no stripe_customers record for customer cus_obj_orphan'),
+      'warning'
+    );
+    expect(mockInsertValues).not.toHaveBeenCalled();
+  });
+
+  it('should propagate DB errors from recovery insert', async () => {
+    mockUpdateReturning.mockResolvedValue([]);
+    mockSelectLimit.mockResolvedValue([{ userId: 'user_err' }]);
+    mockInsertValues.mockImplementationOnce(() => {
+      throw new Error('DB connection lost');
+    });
+
+    const sub = createMockSubscription({ customer: 'cus_db_err' } as Record<string, unknown>);
+
+    await expect(handleSubscriptionUpdated(sub)).rejects.toThrow('DB connection lost');
+  });
+
+  it('should call revalidateTag even when recovery insert is performed', async () => {
+    mockUpdateReturning.mockResolvedValue([]);
+    mockSelectLimit.mockResolvedValue([{ userId: 'user_revalidate' }]);
+
+    const sub = createMockSubscription({ customer: 'cus_reval' } as Record<string, unknown>);
+    await handleSubscriptionUpdated(sub);
+
+    expect(revalidateTag).toHaveBeenCalledWith('subscription-status');
+  });
+
+  it('should call revalidateTag even when Sentry warning is reported (no customer record)', async () => {
+    mockUpdateReturning.mockResolvedValue([]);
+    mockSelectLimit.mockResolvedValue([]);
+
+    const sub = createMockSubscription({ customer: 'cus_no_record' } as Record<string, unknown>);
+    await handleSubscriptionUpdated(sub);
+
+    expect(mockCaptureMessage).toHaveBeenCalled();
+    expect(revalidateTag).toHaveBeenCalledWith('subscription-status');
+  });
+
+  it('should include correct subscription fields in recovery insert', async () => {
+    mockUpdateReturning.mockResolvedValue([]);
+    mockSelectLimit.mockResolvedValue([{ userId: 'user_fields' }]);
+
+    const sub = createMockSubscription({
+      customer: 'cus_fields',
+      status: 'past_due',
+      cancel_at_period_end: true,
+      priceId: 'price_recovery',
+      periodStart: 1710000000,
+      periodEnd: 1712678400,
+    } as Record<string, unknown>);
+    await handleSubscriptionUpdated(sub);
+
+    expect(mockInsertValues).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: 'user_fields',
+        stripeSubscriptionId: 'sub_123',
+        stripePriceId: 'price_recovery',
+        status: 'past_due',
+        cancelAtPeriodEnd: true,
+        currentPeriodStart: new Date(1710000000 * 1000),
+        currentPeriodEnd: new Date(1712678400 * 1000),
+      })
+    );
+  });
+
+  it('should propagate DB errors from the initial update query', async () => {
+    mockUpdateReturning.mockRejectedValue(new Error('Update query failed'));
+
+    await expect(handleSubscriptionUpdated(createMockSubscription())).rejects.toThrow(
+      'Update query failed'
+    );
+  });
 });
 
 // ── handleSubscriptionDeleted ────────────────────────────────────────
@@ -461,6 +721,8 @@ describe('handleSubscriptionDeleted', () => {
   });
 
   it('should set status to canceled and cancelAtPeriodEnd to false', async () => {
+    mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
+
     await handleSubscriptionDeleted(createMockSubscription());
 
     expect(mockUpdateSetWhere).toHaveBeenCalledWith(
@@ -473,12 +735,16 @@ describe('handleSubscriptionDeleted', () => {
   });
 
   it('should call revalidateTag after deletion', async () => {
+    mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
+
     await handleSubscriptionDeleted(createMockSubscription());
 
-    expect(revalidateTag).toHaveBeenCalledWith('subscription-status', { expire: 60 });
+    expect(revalidateTag).toHaveBeenCalledWith('subscription-status');
   });
 
   it('should override whatever previous status the subscription had', async () => {
+    mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
+
     await handleSubscriptionDeleted(createMockSubscription({ status: 'active' }));
 
     expect(mockUpdateSetWhere).toHaveBeenCalledWith(
@@ -487,6 +753,8 @@ describe('handleSubscriptionDeleted', () => {
   });
 
   it('should force cancelAtPeriodEnd to false regardless of input', async () => {
+    mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
+
     await handleSubscriptionDeleted(createMockSubscription({ cancel_at_period_end: true }));
 
     expect(mockUpdateSetWhere).toHaveBeenCalledWith(
@@ -495,6 +763,8 @@ describe('handleSubscriptionDeleted', () => {
   });
 
   it('should include updatedAt as a Date in the set call', async () => {
+    mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
+
     const before = Date.now();
     await handleSubscriptionDeleted(createMockSubscription());
     const after = Date.now();
@@ -506,6 +776,8 @@ describe('handleSubscriptionDeleted', () => {
   });
 
   it('should not include subscription field mapping (uses hardcoded values)', async () => {
+    mockUpdateReturning.mockResolvedValue([{ id: 'some-id' }]);
+
     await handleSubscriptionDeleted(createMockSubscription({ priceId: 'price_should_be_ignored' }));
 
     const setArgs = mockUpdateSetWhere.mock.calls[0][0];
@@ -513,5 +785,53 @@ describe('handleSubscriptionDeleted', () => {
     expect(setArgs).not.toHaveProperty('stripePriceId');
     expect(setArgs).not.toHaveProperty('currentPeriodStart');
     expect(setArgs).not.toHaveProperty('currentPeriodEnd');
+  });
+
+  it('should report to Sentry when update affects 0 rows', async () => {
+    mockUpdateReturning.mockResolvedValue([]);
+
+    await handleSubscriptionDeleted(createMockSubscription());
+
+    expect(mockCaptureMessage).toHaveBeenCalledWith(
+      expect.stringContaining('no subscription record found for subscription sub_123'),
+      'warning'
+    );
+  });
+
+  it('should not report to Sentry when update affects rows', async () => {
+    mockUpdateReturning.mockResolvedValue([{ id: 'existing-id' }]);
+
+    await handleSubscriptionDeleted(createMockSubscription());
+
+    expect(mockCaptureMessage).not.toHaveBeenCalled();
+  });
+
+  it('should call revalidateTag even when Sentry warning is reported (0 rows)', async () => {
+    mockUpdateReturning.mockResolvedValue([]);
+
+    await handleSubscriptionDeleted(createMockSubscription());
+
+    expect(mockCaptureMessage).toHaveBeenCalled();
+    expect(revalidateTag).toHaveBeenCalledWith('subscription-status');
+  });
+
+  it('should include subscription ID in Sentry message when 0 rows affected', async () => {
+    mockUpdateReturning.mockResolvedValue([]);
+
+    const sub = createMockSubscription({ id: 'sub_specific_deleted' } as Record<string, unknown>);
+    await handleSubscriptionDeleted(sub);
+
+    expect(mockCaptureMessage).toHaveBeenCalledWith(
+      expect.stringContaining('sub_specific_deleted'),
+      'warning'
+    );
+  });
+
+  it('should propagate DB errors from the update query', async () => {
+    mockUpdateReturning.mockRejectedValue(new Error('Delete update failed'));
+
+    await expect(handleSubscriptionDeleted(createMockSubscription())).rejects.toThrow(
+      'Delete update failed'
+    );
   });
 });

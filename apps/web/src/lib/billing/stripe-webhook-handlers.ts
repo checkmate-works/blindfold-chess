@@ -1,5 +1,6 @@
 import { revalidateTag } from 'next/cache';
 
+import * as Sentry from '@sentry/nextjs';
 import { eq } from 'drizzle-orm';
 import 'server-only';
 import type Stripe from 'stripe';
@@ -32,7 +33,13 @@ export async function handleCheckoutCompleted(session: Stripe.Checkout.Session) 
     typeof session.subscription === 'string' ? session.subscription : session.subscription.id;
   const subscription = await getStripe().subscriptions.retrieve(subscriptionId);
 
-  if (!session.customer) return;
+  if (!session.customer) {
+    Sentry.captureMessage(
+      `checkout.session.completed: session ${session.id} has no customer (subscription: ${subscriptionId})`,
+      'error'
+    );
+    return;
+  }
   const customerId = typeof session.customer === 'string' ? session.customer : session.customer.id;
   const [customerRecord] = await db
     .select({ userId: stripeCustomers.userId })
@@ -61,32 +68,74 @@ export async function handleCheckoutCompleted(session: Stripe.Checkout.Session) 
       },
     });
 
-  revalidateTag('subscription-status', { expire: 60 });
+  revalidateTag('subscription-status');
 }
 
 export async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   const fields = toSubscriptionFields(subscription);
 
-  await db
+  const updated = await db
     .update(subscriptions)
     .set({
       ...fields,
       updatedAt: new Date(),
     })
-    .where(eq(subscriptions.stripeSubscriptionId, subscription.id));
+    .where(eq(subscriptions.stripeSubscriptionId, subscription.id))
+    .returning({ id: subscriptions.id });
 
-  revalidateTag('subscription-status', { expire: 60 });
+  if (updated.length === 0) {
+    const customerId =
+      typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id;
+
+    const [customerRecord] = await db
+      .select({ userId: stripeCustomers.userId })
+      .from(stripeCustomers)
+      .where(eq(stripeCustomers.stripeCustomerId, customerId))
+      .limit(1);
+
+    if (customerRecord) {
+      await db
+        .insert(subscriptions)
+        .values({
+          userId: customerRecord.userId,
+          stripeSubscriptionId: subscription.id,
+          ...fields,
+        })
+        .onConflictDoUpdate({
+          target: subscriptions.stripeSubscriptionId,
+          set: {
+            ...fields,
+            updatedAt: new Date(),
+          },
+        });
+    } else {
+      Sentry.captureMessage(
+        `customer.subscription.updated: no stripe_customers record for customer ${customerId} (subscription: ${subscription.id}). Manual intervention required.`,
+        'warning'
+      );
+    }
+  }
+
+  revalidateTag('subscription-status');
 }
 
 export async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
-  await db
+  const deleted = await db
     .update(subscriptions)
     .set({
       status: 'canceled',
       cancelAtPeriodEnd: false,
       updatedAt: new Date(),
     })
-    .where(eq(subscriptions.stripeSubscriptionId, subscription.id));
+    .where(eq(subscriptions.stripeSubscriptionId, subscription.id))
+    .returning({ id: subscriptions.id });
 
-  revalidateTag('subscription-status', { expire: 60 });
+  if (deleted.length === 0) {
+    Sentry.captureMessage(
+      `customer.subscription.deleted: no subscription record found for subscription ${subscription.id}. The checkout.session.completed event may have been missed.`,
+      'warning'
+    );
+  }
+
+  revalidateTag('subscription-status');
 }
