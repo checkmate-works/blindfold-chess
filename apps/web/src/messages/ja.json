@@ -937,6 +937,13 @@
         "tutorialLink": "チュートリアルを見る",
         "tryAgain": "もう一度挑戦",
         "backToList": "一覧に戻る"
+      },
+      "delete": {
+        "button": "削除",
+        "confirmTitle": "問題を削除",
+        "confirmMessage": "この問題を削除しますか？この操作は元に戻せません。",
+        "confirm": "削除",
+        "cancel": "キャンセル"
       }
     },
     "knightTour": {
@@ -2303,7 +2310,8 @@
     "gamesDeleted": "{count}個のゲームを削除しました",
     "accountDeleted": "退会が完了しました",
     "practiceResultSaveFailed": "結果の保存に失敗しました。もう一度お試しください。",
-    "positionCreated": "問題を作成しました"
+    "positionCreated": "問題を作成しました",
+    "positionDeleted": "問題を削除しました"
   },
   "setupUsername": {
     "title": "アカウント登録",

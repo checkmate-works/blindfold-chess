@@ -936,6 +936,13 @@
         "tutorialLink": "View Tutorial",
         "tryAgain": "Try Again",
         "backToList": "Back to List"
+      },
+      "delete": {
+        "button": "Delete Problem",
+        "confirmTitle": "Delete Problem",
+        "confirmMessage": "Are you sure you want to delete this problem? This action cannot be undone.",
+        "confirm": "Delete",
+        "cancel": "Cancel"
       }
     },
     "knightTour": {
@@ -2302,7 +2309,8 @@
     "gamesDeleted": "{count} games deleted successfully",
     "accountDeleted": "Your account has been deleted",
     "practiceResultSaveFailed": "Failed to save your result. Please try again.",
-    "positionCreated": "Position created successfully"
+    "positionCreated": "Position created successfully",
+    "positionDeleted": "Problem deleted"
   },
   "setupUsername": {
     "title": "Create Your Account",
