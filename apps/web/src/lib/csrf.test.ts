@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('server-only', () => ({}));
+vi.mock('@sentry/nextjs', () => ({ captureMessage: vi.fn() }));
 
+const Sentry = await import('@sentry/nextjs');
 const { isValidOrigin } = await import('./csrf');
 
 function createRequest(headers: Record<string, string> = {}): Request {
@@ -11,6 +13,7 @@ function createRequest(headers: Record<string, string> = {}): Request {
 describe('isValidOrigin', () => {
   beforeEach(() => {
     vi.unstubAllEnvs();
+    vi.mocked(Sentry.captureMessage).mockClear();
   });
 
   it('should return false when Origin header is missing', () => {
@@ -107,5 +110,45 @@ describe('isValidOrigin', () => {
     const result = isValidOrigin(createRequest({ origin: 'https://example.com' }));
 
     expect(result).toBe(false);
+  });
+
+  describe('Sentry notifications', () => {
+    it('should not call captureMessage when Origin header is missing', () => {
+      vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://example.com');
+
+      isValidOrigin(createRequest());
+
+      expect(Sentry.captureMessage).not.toHaveBeenCalled();
+    });
+
+    it('should call captureMessage when NEXT_PUBLIC_SITE_URL is not configured', () => {
+      vi.stubEnv('NEXT_PUBLIC_SITE_URL', '');
+
+      isValidOrigin(createRequest({ origin: 'https://example.com' }));
+
+      expect(Sentry.captureMessage).toHaveBeenCalledWith(
+        'CSRF check failed: NEXT_PUBLIC_SITE_URL is not configured',
+        'warning'
+      );
+    });
+
+    it('should call captureMessage with origin value when Origin does not match', () => {
+      vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://example.com');
+
+      isValidOrigin(createRequest({ origin: 'https://evil.com' }));
+
+      expect(Sentry.captureMessage).toHaveBeenCalledWith(
+        'CSRF origin mismatch: received https://evil.com',
+        'warning'
+      );
+    });
+
+    it('should not call captureMessage when Origin matches', () => {
+      vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://example.com');
+
+      isValidOrigin(createRequest({ origin: 'https://example.com' }));
+
+      expect(Sentry.captureMessage).not.toHaveBeenCalled();
+    });
   });
 });
