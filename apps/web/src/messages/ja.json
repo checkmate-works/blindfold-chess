@@ -907,7 +907,19 @@
         "sectionTitle": "問題一覧",
         "empty": "まだポジションがありません",
         "tutorialLink": "チュートリアルを見る",
-        "submittedBy": "による出題"
+        "submittedBy": "による出題",
+        "createButton": "問題を作成"
+      },
+      "create": {
+        "title": "問題を作成",
+        "fenLabel": "FEN",
+        "fenRequired": "FENは必須です",
+        "fenInvalid": "無効なFENです",
+        "titleLabel": "タイトル",
+        "titleRequired": "タイトルは必須です",
+        "descriptionLabel": "説明",
+        "submit": "作成",
+        "submitting": "作成中..."
       },
       "detail": {
         "title": "ポジション詳細",

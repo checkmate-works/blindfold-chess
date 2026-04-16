@@ -906,7 +906,19 @@
         "sectionTitle": "Problem List",
         "empty": "No positions available yet",
         "tutorialLink": "View Tutorial",
-        "submittedBy": "submitted"
+        "submittedBy": "submitted",
+        "createButton": "Create Position"
+      },
+      "create": {
+        "title": "Create Position",
+        "fenLabel": "FEN",
+        "fenRequired": "FEN is required",
+        "fenInvalid": "Invalid FEN position",
+        "titleLabel": "Title",
+        "titleRequired": "Title is required",
+        "descriptionLabel": "Description",
+        "submit": "Create",
+        "submitting": "Creating..."
       },
       "detail": {
         "title": "Position Detail",

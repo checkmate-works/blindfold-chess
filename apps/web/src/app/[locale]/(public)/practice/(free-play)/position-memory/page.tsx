@@ -100,7 +100,16 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
       <PagePanel>
         <SectionTitle>{t('list.sectionTitle')}</SectionTitle>
 
-        <div className="flex justify-end mb-4">
+        <div className="flex justify-end gap-4 mb-4">
+          {currentUser && (
+            <Link
+              href="/practice/position-memory/new"
+              locale={locale}
+              className="text-sm px-3 py-1 rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+            >
+              {t('list.createButton')}
+            </Link>
+          )}
           <Link
             href="/practice/position-memory/tutorial"
             locale={locale}
