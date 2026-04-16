@@ -15,7 +15,10 @@ export function isValidOrigin(request: Request): boolean {
     return false;
   }
 
-  const allowedOrigin =
-    process.env.NEXT_PUBLIC_SITE_URL || `https://${request.headers.get('host')}`;
+  const allowedOrigin = process.env.NEXT_PUBLIC_SITE_URL;
+  if (!allowedOrigin) {
+    return false;
+  }
+
   return origin === allowedOrigin;
 }
