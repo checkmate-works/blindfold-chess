@@ -3434,10 +3434,9 @@
     "statusActive": "Active",
     "statusCanceling": "Canceling",
     "statusInactive": "Inactive",
-    "cancelingNote": "Your subscription will end at the end of the billing period.",
+    "cancelingNote": "Your subscription has been cancelled.",
     "accessUntil": "Ad-free access until {date}",
     "nextBilling": "Next billing date",
-    "noBilling": "No future billing",
     "manageSubscription": "Manage subscription"
   },
   "ranks": {
