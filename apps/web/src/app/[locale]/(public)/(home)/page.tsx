@@ -164,13 +164,13 @@ function ServerFeedList({
       {displayItems.map((displayItem, index) => {
         if (displayItem.type === 'ad') {
           return (
-            <div key={`ad-${index}`} className="border-b border-border">
+            <div key={`ad-${index}`} className="border-b border-border last:border-b-0">
               <ResponsiveAdSlot />
             </div>
           );
         }
         return (
-          <div key={displayItem.item.id} className="border-b border-border">
+          <div key={displayItem.item.id} className="border-b border-border last:border-b-0">
             <FeedCard
               item={displayItem.item}
               locale={locale}
