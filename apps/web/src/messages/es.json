@@ -3275,10 +3275,9 @@
     "statusActive": "Activo",
     "statusCanceling": "Cancelando",
     "statusInactive": "Inactivo",
-    "cancelingNote": "Tu suscripción terminará al final del período de facturación.",
+    "cancelingNote": "Tu suscripción ha sido cancelada.",
     "accessUntil": "Acceso sin anuncios hasta {date}",
     "nextBilling": "Próxima fecha de facturación",
-    "noBilling": "Sin facturación futura",
     "manageSubscription": "Gestionar suscripción"
   },
   "ranks": {

@@ -73,14 +73,12 @@ export function SubscriptionStatus({ subscription, locale }: Props) {
             </dd>
           </div>
         )}
-        <div className="flex justify-between">
-          <dt className="text-muted-foreground">{t('nextBilling')}</dt>
-          <dd>
-            {isCanceling
-              ? t('noBilling')
-              : new Date(subscription.currentPeriodEnd).toLocaleDateString(locale)}
-          </dd>
-        </div>
+        {!isCanceling && (
+          <div className="flex justify-between">
+            <dt className="text-muted-foreground">{t('nextBilling')}</dt>
+            <dd>{new Date(subscription.currentPeriodEnd).toLocaleDateString(locale)}</dd>
+          </div>
+        )}
       </dl>
 
       <button

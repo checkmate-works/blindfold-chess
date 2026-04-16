@@ -3330,10 +3330,9 @@
     "statusActive": "有効",
     "statusCanceling": "解約予定",
     "statusInactive": "無効",
-    "cancelingNote": "現在の請求期間の終了時にサブスクリプションが終了します。",
+    "cancelingNote": "サブスクリプションは解約済みです。",
     "accessUntil": "{date} まで広告なしでご利用いただけます",
     "nextBilling": "次回請求日",
-    "noBilling": "今後の請求はありません",
     "manageSubscription": "サブスクリプションを管理"
   },
   "ranks": {
