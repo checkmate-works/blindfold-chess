@@ -63,6 +63,10 @@
       "title": "My Posts",
       "description": "View your posts"
     },
+    "mypageProblems": {
+      "title": "My Problems",
+      "description": "Position memory problems you have created"
+    },
     "mypageFollowing": {
       "title": "Following",
       "description": "Users you are following"
@@ -2135,7 +2139,9 @@
       "viewExpLeaderboard": "View Exp Leaderboard",
       "accountTitle": "Account",
       "subscriptionTitle": "Subscription",
-      "benefitsTitle": "Benefits"
+      "benefitsTitle": "Benefits",
+      "practiceTitle": "Practice",
+      "myProblems": "My Problems"
     },
     "records": "Records",
     "bestScore": "Best Score",
@@ -2240,6 +2246,12 @@
     "breadcrumbMypage": "My Page",
     "empty": "No posts yet.",
     "sectionTitle": "Topics"
+  },
+  "MypageProblems": {
+    "title": "My Problems",
+    "sectionTitle": "Problems You Created",
+    "empty": "You haven't created any problems yet.",
+    "breadcrumbMypage": "My Page"
   },
   "MypageFollowing": {
     "title": "Following",

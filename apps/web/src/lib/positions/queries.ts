@@ -45,6 +45,7 @@ export const getPositionById = cache(
 type ListPositionsOptions = {
   type?: PositionType;
   includeDeleted?: boolean;
+  userId?: string;
   limit: number;
   offset: number;
 };
@@ -52,18 +53,26 @@ type ListPositionsOptions = {
 function buildListConditions({
   type,
   includeDeleted,
-}: Pick<ListPositionsOptions, 'type' | 'includeDeleted'>): SQL | undefined {
+  userId,
+}: Pick<ListPositionsOptions, 'type' | 'includeDeleted' | 'userId'>): SQL | undefined {
   const conditions: SQL[] = [];
   if (type) conditions.push(eq(positions.type, type));
   if (!includeDeleted) conditions.push(isNull(positions.deletedAt));
+  if (userId) conditions.push(eq(positions.userId, userId));
   return conditions.length > 0 ? and(...conditions) : undefined;
 }
 
 /**
  * Fetch a paginated list of positions ordered by `createdAt` DESC.
  */
-export async function listPositions({ type, includeDeleted, limit, offset }: ListPositionsOptions) {
-  const where = buildListConditions({ type, includeDeleted });
+export async function listPositions({
+  type,
+  includeDeleted,
+  userId,
+  limit,
+  offset,
+}: ListPositionsOptions) {
+  const where = buildListConditions({ type, includeDeleted, userId });
   const query = db.select().from(positions);
   const rows = await (where ? query.where(where) : query)
     .orderBy(desc(positions.createdAt))
@@ -78,10 +87,11 @@ export async function listPositions({ type, includeDeleted, limit, offset }: Lis
 export async function listPositionsWithProfile({
   type,
   includeDeleted,
+  userId,
   limit,
   offset,
 }: ListPositionsOptions) {
-  const where = buildListConditions({ type, includeDeleted });
+  const where = buildListConditions({ type, includeDeleted, userId });
   const query = db
     .select({
       position: positions,
@@ -106,8 +116,9 @@ export async function listPositionsWithProfile({
 export async function countPositions({
   type,
   includeDeleted,
-}: Pick<ListPositionsOptions, 'type' | 'includeDeleted'>) {
-  const where = buildListConditions({ type, includeDeleted });
+  userId,
+}: Pick<ListPositionsOptions, 'type' | 'includeDeleted' | 'userId'>) {
+  const where = buildListConditions({ type, includeDeleted, userId });
   const query = db.select({ value: count() }).from(positions);
   const [row] = await (where ? query.where(where) : query);
   return row?.value ?? 0;

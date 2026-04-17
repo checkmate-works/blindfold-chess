@@ -63,6 +63,10 @@
       "title": "自分の投稿",
       "description": "自分の投稿の一覧を表示します"
     },
+    "mypageProblems": {
+      "title": "マイ問題",
+      "description": "作成したポジション記憶の問題"
+    },
     "mypageFollowing": {
       "title": "フォロー中",
       "description": "フォロー中のユーザー"
@@ -2136,7 +2140,9 @@
       "viewExpLeaderboard": "Exp ランキングを見る",
       "accountTitle": "アカウント",
       "subscriptionTitle": "サブスクリプション",
-      "benefitsTitle": "特典"
+      "benefitsTitle": "特典",
+      "practiceTitle": "練習",
+      "myProblems": "マイ問題"
     },
     "records": "レコード",
     "bestScore": "最高スコア",
@@ -2241,6 +2247,12 @@
     "breadcrumbMypage": "マイページ",
     "empty": "投稿はまだありません。",
     "sectionTitle": "トピック"
+  },
+  "MypageProblems": {
+    "title": "マイ問題",
+    "sectionTitle": "作成した問題",
+    "empty": "まだ問題を作成していません。",
+    "breadcrumbMypage": "マイページ"
   },
   "MypageFollowing": {
     "title": "フォロー中",
