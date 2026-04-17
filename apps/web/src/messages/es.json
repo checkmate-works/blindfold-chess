@@ -991,7 +991,8 @@
         "submitAnswer": "Enviar",
         "correct": "¡Correcto! \ud83c\udf89",
         "incorrect": "Incorrecto. Inténtalo de nuevo.",
-        "noPieces": "Ninguna"
+        "noPieces": "Ninguna",
+        "showBoard": "Mostrar Tablero"
       },
       "result": {
         "title": "Resultado del Puzzle",
@@ -1002,7 +1003,8 @@
         "attemptIncorrect": "Incorrecto",
         "backToList": "Volver a Puzzles",
         "tryAgain": "Intentar de Nuevo",
-        "viewResult": "Ver Resultado"
+        "viewResult": "Ver Resultado",
+        "peekCount": "Vistas del Tablero: {count}"
       }
     },
     "knightTour": {

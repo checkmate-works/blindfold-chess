@@ -1003,7 +1003,8 @@
         "submitAnswer": "Submit",
         "correct": "Correct! \ud83c\udf89",
         "incorrect": "Incorrect. Try again.",
-        "noPieces": "None"
+        "noPieces": "None",
+        "showBoard": "Show Board"
       },
       "result": {
         "title": "Puzzle Result",
@@ -1014,7 +1015,8 @@
         "attemptIncorrect": "Incorrect",
         "backToList": "Back to Puzzles",
         "tryAgain": "Try Again",
-        "viewResult": "View Result"
+        "viewResult": "View Result",
+        "peekCount": "Board Peeks: {count}"
       }
     },
     "knightTour": {

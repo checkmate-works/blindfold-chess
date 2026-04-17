@@ -1004,7 +1004,8 @@
         "submitAnswer": "回答する",
         "correct": "正解！\ud83c\udf89",
         "incorrect": "不正解です。もう一度挑戦してください。",
-        "noPieces": "なし"
+        "noPieces": "なし",
+        "showBoard": "ボードを表示"
       },
       "result": {
         "title": "パズル結果",
@@ -1015,7 +1016,8 @@
         "attemptIncorrect": "不正解",
         "backToList": "パズル一覧に戻る",
         "tryAgain": "もう一度",
-        "viewResult": "結果を見る"
+        "viewResult": "結果を見る",
+        "peekCount": "盤面確認: {count}回"
       }
     },
     "knightTour": {

@@ -4,9 +4,11 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { movesToUci } from '@blindfold-chess/features/chess-core';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
+import { FaEye } from 'react-icons/fa';
 
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
 import { SectionTitle } from '@/app/[locale]/_components';
@@ -25,6 +27,7 @@ export function PuzzleResultClient({ positionId, fen, solutionLines }: Props) {
   const { preferences } = useGamePreferences();
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   const [solutionLine, setSolutionLine] = useState<string>(solutionLines[0] ?? '');
+  const [peekCount, setPeekCount] = useState(0);
 
   useEffect(() => {
     try {
@@ -33,10 +36,14 @@ export function PuzzleResultClient({ positionId, fen, solutionLines }: Props) {
         const data = JSON.parse(stored) as {
           attempts: Attempt[];
           solutionLine: string;
+          peekCount?: number;
         };
         setAttempts(data.attempts);
         if (data.solutionLine) {
           setSolutionLine(data.solutionLine);
+        }
+        if (typeof data.peekCount === 'number') {
+          setPeekCount(data.peekCount);
         }
       }
     } catch {
@@ -96,19 +103,25 @@ export function PuzzleResultClient({ positionId, fen, solutionLines }: Props) {
         </>
       )}
 
+      {/* (C) Peek count */}
+      {peekCount > 0 && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <FaEye className="w-4 h-4" />
+          <span>{t('peekCount', { count: peekCount })}</span>
+        </div>
+      )}
+
       {/* (D) Action buttons */}
-      <div className="flex flex-col sm:flex-row gap-3 pt-4">
-        <Link
-          href="/practice/puzzle"
-          className="rounded-md bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground hover:opacity-90 transition-opacity text-center"
-        >
-          {t('backToList')}
+      <div className="flex flex-col gap-3 pt-4">
+        <Link href={`/practice/puzzle/${positionId}`}>
+          <Button asChild variant="primary" fullWidth>
+            {t('tryAgain')}
+          </Button>
         </Link>
-        <Link
-          href={`/practice/puzzle/${positionId}`}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity text-center"
-        >
-          {t('tryAgain')}
+        <Link href="/practice/puzzle">
+          <Button asChild variant="secondary" fullWidth>
+            {t('backToList')}
+          </Button>
         </Link>
       </div>
     </div>
