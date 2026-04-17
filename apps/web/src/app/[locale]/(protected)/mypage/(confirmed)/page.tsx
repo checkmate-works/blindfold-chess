@@ -191,12 +191,6 @@ export default async function MypagePage({ params }: Props) {
             <div className="flex flex-wrap gap-3 mt-3">
               <ChallengeCard
                 locale={locale}
-                href="/ranks"
-                label={t('dashboard.beltSystem')}
-                icon="🥋"
-              />
-              <ChallengeCard
-                locale={locale}
                 href="/mypage/challenges"
                 label={t('dashboard.myRecords')}
                 icon="📈"
@@ -222,6 +216,22 @@ export default async function MypagePage({ params }: Props) {
                 href="/mypage/likes"
                 label={t('dashboard.likesTitle')}
                 icon="❤️"
+              />
+            </div>
+          </DashboardSection>
+
+          {/* Practice section */}
+          <DashboardSection>
+            <DashboardSectionHeader
+              icon={<span className="text-lg">💪</span>}
+              title={t('dashboard.practiceTitle')}
+            />
+            <div className="flex flex-wrap gap-3 mt-3">
+              <ChallengeCard
+                locale={locale}
+                href="/mypage/problems"
+                label={t('dashboard.myProblems')}
+                icon="🧩"
               />
             </div>
           </DashboardSection>
