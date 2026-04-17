@@ -971,16 +971,14 @@
       "result": {
         "title": "Resultado del Puzzle",
         "replaySection": "Repetición de la Solución",
-        "positionSection": "Posición",
+        "betaNotice": "Esta función está en beta. La interfaz y funcionalidad pueden cambiar.",
         "historySection": "Historial de Intentos",
         "solution": "Solución: {move}",
         "attemptCorrect": "Correcto",
         "attemptIncorrect": "Incorrecto",
         "backToList": "Volver a Puzzles",
         "tryAgain": "Intentar de Nuevo",
-        "viewResult": "Ver Resultado",
-        "solvedMessage": "¡Resuelto!",
-        "solvedWithErrorsMessage": "Resuelto con {errorCount} intento(s) incorrecto(s)"
+        "viewResult": "Ver Resultado"
       }
     },
     "knightTour": {

@@ -1007,16 +1007,14 @@
       "result": {
         "title": "Puzzle Result",
         "replaySection": "Solution Replay",
-        "positionSection": "Position",
+        "betaNotice": "This feature is in beta. The UI and functionality may change.",
         "historySection": "Attempt History",
         "solution": "Solution: {move}",
         "attemptCorrect": "Correct",
         "attemptIncorrect": "Incorrect",
         "backToList": "Back to Puzzles",
         "tryAgain": "Try Again",
-        "viewResult": "View Result",
-        "solvedMessage": "Solved!",
-        "solvedWithErrorsMessage": "Solved with {errorCount} incorrect attempt(s)"
+        "viewResult": "View Result"
       }
     },
     "knightTour": {

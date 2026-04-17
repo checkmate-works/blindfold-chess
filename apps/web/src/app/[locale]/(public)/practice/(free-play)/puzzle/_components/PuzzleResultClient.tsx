@@ -6,10 +6,10 @@ import { useTranslations } from 'next-intl';
 
 import { Link } from '@/i18n/routing';
 import { movesToUci } from '@blindfold-chess/features/chess-core';
-import { fenToPieceList, isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
+import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
-import { SectionTitle } from '@/app/[locale]/_components';
+import { BetaNotice, SectionTitle } from '@/app/[locale]/_components';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 type Attempt = { move: string; isCorrect: boolean };
@@ -22,7 +22,6 @@ type Props = {
 
 export function PuzzleResultClient({ positionId, fen, solutionLines }: Props) {
   const t = useTranslations('practice.puzzle.result');
-  const tDetail = useTranslations('practice.puzzle.detail');
   const { preferences } = useGamePreferences();
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   const [solutionLine, setSolutionLine] = useState<string>(solutionLines[0] ?? '');
@@ -46,7 +45,6 @@ export function PuzzleResultClient({ positionId, fen, solutionLines }: Props) {
   }, [positionId]);
 
   const isBlackToMove = isBlackToMoveFromFen(fen);
-  const pieceList = fenToPieceList(fen);
 
   // Get the first move of the solution in SAN
   const solutionFirstMove = solutionLine.split(' ')[0] ?? '';
@@ -58,25 +56,13 @@ export function PuzzleResultClient({ positionId, fen, solutionLines }: Props) {
     return uciMoves[0];
   }, [solutionFirstMove, fen]);
 
-  const errorCount = attempts.filter((a) => !a.isCorrect).length;
-
   return (
     <div className="space-y-6">
-      {/* Solved message */}
-      <div className="text-center">
-        {errorCount === 0 && attempts.length > 0 ? (
-          <p className="text-lg font-bold text-green-600 dark:text-green-400">
-            {t('solvedMessage')}
-          </p>
-        ) : errorCount > 0 ? (
-          <p className="text-lg font-bold text-yellow-600 dark:text-yellow-400">
-            {t('solvedWithErrorsMessage', { errorCount })}
-          </p>
-        ) : null}
-      </div>
-
       {/* (A) Replay board */}
       <SectionTitle>{t('replaySection')}</SectionTitle>
+      <BetaNotice className="mb-4">
+        <p>{t('betaNotice')}</p>
+      </BetaNotice>
       <div className="max-w-md mx-auto">
         <AnimatedChessBoard
           initialFen={fen}
@@ -89,23 +75,7 @@ export function PuzzleResultClient({ positionId, fen, solutionLines }: Props) {
         {t('solution', { move: solutionFirstMove })}
       </p>
 
-      {/* (B) Position info */}
-      <SectionTitle>{t('positionSection')}</SectionTitle>
-      <div className="rounded-lg border border-border bg-card p-4 space-y-2">
-        <p className="text-sm font-medium text-foreground">
-          {isBlackToMove ? tDetail('blackToMove') : tDetail('whiteToMove')}
-        </p>
-        <p className="text-sm text-foreground">
-          <span className="font-medium">{tDetail('whitePiecesLabel')}:</span>{' '}
-          {pieceList.white.length > 0 ? pieceList.white.join(' ') : tDetail('noPieces')}
-        </p>
-        <p className="text-sm text-foreground">
-          <span className="font-medium">{tDetail('blackPiecesLabel')}:</span>{' '}
-          {pieceList.black.length > 0 ? pieceList.black.join(' ') : tDetail('noPieces')}
-        </p>
-      </div>
-
-      {/* (C) Attempt history */}
+      {/* (B) Attempt history */}
       {attempts.length > 0 && (
         <>
           <SectionTitle>{t('historySection')}</SectionTitle>
