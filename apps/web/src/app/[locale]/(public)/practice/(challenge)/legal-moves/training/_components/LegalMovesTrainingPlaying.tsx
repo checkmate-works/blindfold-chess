@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 
-import { BoardOverlay, Button } from '@/app/_components';
+import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
@@ -23,7 +23,6 @@ type Props = {
   } | null;
   onAnswer: (answer: boolean) => void;
   getQuestion: (from: string, to: string) => string;
-  countdown: number | null;
   correctCount: number;
   incorrectCount: number;
   onEndTraining: () => void;
@@ -36,25 +35,17 @@ export function LegalMovesTrainingPlaying({
   lastAnswer,
   onAnswer,
   getQuestion,
-  countdown,
   correctCount,
   incorrectCount,
   onEndTraining,
 }: Props) {
   const t = useTranslations('practice.legalMoves');
   const tp = useTranslations('practice');
-  const inputDisabled = showResult || countdown !== null;
+  const inputDisabled = showResult;
 
   return (
     <div>
       <div className="relative bg-card rounded-2xl border border-border p-8 text-center overflow-hidden">
-        {/* Countdown Overlay */}
-        <BoardOverlay isVisible={countdown !== null} className="backdrop-blur-md">
-          <span className="text-8xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] animate-in zoom-in duration-300">
-            {countdown !== null && (countdown > 0 ? countdown : 'START!')}
-          </span>
-        </BoardOverlay>
-
         <div>
           <div className="mb-8 min-h-[160px] flex flex-col items-center justify-center">
             <div

@@ -7,7 +7,7 @@
  * No timer, no result page -- navigates back to setup with a toast notification on end.
  *
  * @flow
- * Setup (training selected) -> Countdown -> Infinite Q&A -> End button -> Setup + toast
+ * Setup (training selected) -> Infinite Q&A -> End button -> Setup + toast
  */
 import dynamic from 'next/dynamic';
 
