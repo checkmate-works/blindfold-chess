@@ -14,7 +14,6 @@ import {
 
 import { useBatchTrainingSession } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-batch-training-session';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
-import { useCountdown } from '@/app/[locale]/(public)/practice/_hooks/use-countdown';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -30,8 +29,6 @@ export default function DiagonalQuizTrainingSession({ locale }: Props) {
   const router = useRouter();
   const { showToast } = useToast();
   const tp = useTranslations('practice');
-
-  const { countdown } = useCountdown();
 
   const {
     currentQuestion: currentSquare,
@@ -69,15 +66,14 @@ export default function DiagonalQuizTrainingSession({ locale }: Props) {
 
   const onAnswer = useCallback(
     (diagonalAnswer: string, antiDiagonalAnswer: string) => {
-      handleAnswer({ diagonalAnswer, antiDiagonalAnswer }, countdown !== null);
+      handleAnswer({ diagonalAnswer, antiDiagonalAnswer });
     },
-    [handleAnswer, countdown]
+    [handleAnswer]
   );
 
   const onSkip = useCallback(() => {
-    if (countdown !== null) return;
     handleSkip();
-  }, [handleSkip, countdown]);
+  }, [handleSkip]);
 
   const handleEndTraining = useCallback(() => {
     showToast(tp('trainingEnded'), 'info');
@@ -114,7 +110,6 @@ export default function DiagonalQuizTrainingSession({ locale }: Props) {
         onSkip={onSkip}
         onNextAfterSkip={handleNextAfterSkip}
         onNextAfterIncorrect={handleNextAfterIncorrect}
-        countdown={countdown}
         correctCount={correctCount}
         incorrectCount={incorrectCount}
         onEndTraining={handleEndTraining}

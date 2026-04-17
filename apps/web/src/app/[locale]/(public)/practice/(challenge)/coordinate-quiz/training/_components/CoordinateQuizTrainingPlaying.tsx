@@ -21,7 +21,6 @@ type Props = {
   showFeedback: boolean;
   isCorrect: boolean;
   onSquareClick: (square: Square) => void;
-  countdown: number | null;
   onEndTraining: () => void;
 };
 
@@ -34,7 +33,6 @@ export function CoordinateQuizTrainingPlaying({
   showFeedback,
   isCorrect,
   onSquareClick,
-  countdown,
   onEndTraining,
 }: Props) {
   const tp = useTranslations('practice');
@@ -50,7 +48,7 @@ export function CoordinateQuizTrainingPlaying({
               lastClickedSquare={lastClickedSquare}
               showFeedback={showFeedback}
               isCorrect={isCorrect}
-              countdown={countdown}
+              countdown={null}
             />
           </div>
         </div>
