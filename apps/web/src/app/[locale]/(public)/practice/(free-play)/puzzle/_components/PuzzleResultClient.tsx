@@ -9,7 +9,7 @@ import { movesToUci } from '@blindfold-chess/features/chess-core';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
-import { BetaNotice, SectionTitle } from '@/app/[locale]/_components';
+import { SectionTitle } from '@/app/[locale]/_components';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 type Attempt = { move: string; isCorrect: boolean };
@@ -60,9 +60,6 @@ export function PuzzleResultClient({ positionId, fen, solutionLines }: Props) {
     <div className="space-y-6">
       {/* (A) Replay board */}
       <SectionTitle>{t('replaySection')}</SectionTitle>
-      <BetaNotice className="mb-4">
-        <p>{t('betaNotice')}</p>
-      </BetaNotice>
       <div className="max-w-md mx-auto">
         <AnimatedChessBoard
           initialFen={fen}

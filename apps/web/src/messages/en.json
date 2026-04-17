@@ -959,6 +959,7 @@
       "list": {
         "title": "Puzzle",
         "sectionTitle": "Puzzle List",
+        "betaNotice": "This feature is in beta. The UI and functionality may change.",
         "empty": "No puzzles available yet",
         "submittedBy": "submitted",
         "createButton": "Create Puzzle"
@@ -1007,7 +1008,6 @@
       "result": {
         "title": "Puzzle Result",
         "replaySection": "Solution Replay",
-        "betaNotice": "This feature is in beta. The UI and functionality may change.",
         "historySection": "Attempt History",
         "solution": "Solution: {move}",
         "attemptCorrect": "Correct",

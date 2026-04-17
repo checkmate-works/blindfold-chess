@@ -960,6 +960,7 @@
       "list": {
         "title": "パズル",
         "sectionTitle": "パズル一覧",
+        "betaNotice": "この機能はベータ版です。UIや機能は変更される場合があります。",
         "empty": "パズルはまだありません",
         "submittedBy": "作成",
         "createButton": "パズルを作成"
@@ -1008,7 +1009,6 @@
       "result": {
         "title": "パズル結果",
         "replaySection": "正解のリプレイ",
-        "betaNotice": "この機能はベータ版です。UIや機能は変更される場合があります。",
         "historySection": "回答履歴",
         "solution": "正解: {move}",
         "attemptCorrect": "正解",

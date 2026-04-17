@@ -923,6 +923,7 @@
       "list": {
         "title": "Puzzle",
         "sectionTitle": "Lista de Puzzles",
+        "betaNotice": "Esta función está en beta. La interfaz y funcionalidad pueden cambiar.",
         "empty": "Aun no hay puzzles disponibles",
         "submittedBy": "enviado",
         "createButton": "Crear Puzzle"
@@ -971,7 +972,6 @@
       "result": {
         "title": "Resultado del Puzzle",
         "replaySection": "Repetición de la Solución",
-        "betaNotice": "Esta función está en beta. La interfaz y funcionalidad pueden cambiar.",
         "historySection": "Historial de Intentos",
         "solution": "Solución: {move}",
         "attemptCorrect": "Correcto",
