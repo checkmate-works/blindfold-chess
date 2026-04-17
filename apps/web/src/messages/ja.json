@@ -1004,6 +1004,20 @@
         "correct": "正解！\ud83c\udf89",
         "incorrect": "不正解です。もう一度挑戦してください。",
         "noPieces": "なし"
+      },
+      "result": {
+        "title": "パズル結果",
+        "replaySection": "正解のリプレイ",
+        "positionSection": "ポジション",
+        "historySection": "回答履歴",
+        "solution": "正解: {move}",
+        "attemptCorrect": "正解",
+        "attemptIncorrect": "不正解",
+        "backToList": "パズル一覧に戻る",
+        "tryAgain": "もう一度",
+        "viewResult": "結果を見る",
+        "solvedMessage": "正解！",
+        "solvedWithErrorsMessage": "{errorCount}回の不正解の後に正解"
       }
     },
     "knightTour": {

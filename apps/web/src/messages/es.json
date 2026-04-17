@@ -967,6 +967,20 @@
         "correct": "¡Correcto! \ud83c\udf89",
         "incorrect": "Incorrecto. Inténtalo de nuevo.",
         "noPieces": "Ninguna"
+      },
+      "result": {
+        "title": "Resultado del Puzzle",
+        "replaySection": "Repetición de la Solución",
+        "positionSection": "Posición",
+        "historySection": "Historial de Intentos",
+        "solution": "Solución: {move}",
+        "attemptCorrect": "Correcto",
+        "attemptIncorrect": "Incorrecto",
+        "backToList": "Volver a Puzzles",
+        "tryAgain": "Intentar de Nuevo",
+        "viewResult": "Ver Resultado",
+        "solvedMessage": "¡Resuelto!",
+        "solvedWithErrorsMessage": "Resuelto con {errorCount} intento(s) incorrecto(s)"
       }
     },
     "knightTour": {

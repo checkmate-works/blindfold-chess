@@ -151,7 +151,7 @@ export default async function PuzzleDetailPage({ params }: Props) {
 
           <SectionTitle>{t('detail.solveSection')}</SectionTitle>
 
-          <PuzzleAnswerForm solutions={solutionLines} />
+          <PuzzleAnswerForm solutions={solutionLines} positionId={position.id} fen={position.fen} />
         </div>
 
         {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (

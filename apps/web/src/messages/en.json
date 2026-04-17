@@ -1003,6 +1003,20 @@
         "correct": "Correct! \ud83c\udf89",
         "incorrect": "Incorrect. Try again.",
         "noPieces": "None"
+      },
+      "result": {
+        "title": "Puzzle Result",
+        "replaySection": "Solution Replay",
+        "positionSection": "Position",
+        "historySection": "Attempt History",
+        "solution": "Solution: {move}",
+        "attemptCorrect": "Correct",
+        "attemptIncorrect": "Incorrect",
+        "backToList": "Back to Puzzles",
+        "tryAgain": "Try Again",
+        "viewResult": "View Result",
+        "solvedMessage": "Solved!",
+        "solvedWithErrorsMessage": "Solved with {errorCount} incorrect attempt(s)"
       }
     },
     "knightTour": {
