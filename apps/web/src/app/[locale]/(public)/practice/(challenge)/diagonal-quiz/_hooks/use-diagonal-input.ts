@@ -190,19 +190,37 @@ export function useDiagonalInput({
   const handleBackspace = useCallback(() => {
     if (disabled) return;
 
+    // If the active field is empty but the other field has chars, fall back
+    // to the previous field. This makes Backspace behave as a true "undo last
+    // keystroke" across both inputs — otherwise the user gets stuck on an
+    // empty anti-diagonal after auto-advance and Backspace appears dead.
+    if (activeField === 'antiDiagonal' && antiDiagonal.chars.length === 0) {
+      if (diagonal.chars.length === 0) return;
+      const newChars = diagonal.chars.slice(0, -1);
+      setDiagonal({ chars: newChars, step: getStep(newChars.length) });
+      setActiveField('diagonal');
+      return;
+    }
+
     const setter = activeField === 'diagonal' ? setDiagonal : setAntiDiagonal;
     setter((prev) => {
       if (prev.chars.length === 0) return prev;
       const newChars = prev.chars.slice(0, -1);
       return { chars: newChars, step: getStep(newChars.length) };
     });
-  }, [disabled, activeField]);
+  }, [disabled, activeField, antiDiagonal.chars, diagonal.chars]);
 
   const handleClear = useCallback(() => {
     if (disabled) return;
-    const setter = activeField === 'diagonal' ? setDiagonal : setAntiDiagonal;
-    setter(INITIAL_STATE);
-  }, [disabled, activeField]);
+    // Clear wipes both fields and returns focus to the diagonal field, so the
+    // user can start the answer over from scratch regardless of which field
+    // was active when Clear was pressed. This is especially important once the
+    // diagonal has auto-advanced to the anti-diagonal with nothing typed yet —
+    // a "clear the active field only" Clear would then be a silent no-op.
+    setDiagonal(INITIAL_STATE);
+    setAntiDiagonal(INITIAL_STATE);
+    setActiveField('diagonal');
+  }, [disabled]);
 
   const reset = useCallback(() => {
     setDiagonal(INITIAL_STATE);

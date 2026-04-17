@@ -429,6 +429,71 @@ describe('useDiagonalInput', () => {
       expect(result.current.diagonalStartText).toBe('a1');
       expect(result.current.currentStep).toBe('file2');
     });
+
+    it('falls back to the diagonal field when pressed on an empty anti-diagonal after auto-advance', () => {
+      const { result } = renderHook(() => useDiagonalInput(defaultProps));
+
+      // Fill diagonal (auto-advances to anti-diagonal)
+      act(() => {
+        result.current.handleFilePress('a');
+      });
+      act(() => {
+        result.current.handleRankPress('1');
+      });
+      act(() => {
+        result.current.handleFilePress('h');
+      });
+      act(() => {
+        result.current.handleRankPress('8');
+      });
+
+      expect(result.current.activeField).toBe('antiDiagonal');
+      expect(result.current.antiDiagonalStartText).toBe('');
+      expect(result.current.diagonalEndText).toBe('h8');
+
+      // Backspace while the anti-diagonal is empty should undo the last
+      // diagonal keystroke and return focus to the diagonal field.
+      act(() => {
+        result.current.handleBackspace();
+      });
+
+      expect(result.current.activeField).toBe('diagonal');
+      expect(result.current.diagonalStartText).toBe('a1');
+      expect(result.current.diagonalEndText).toBe('h');
+      expect(result.current.currentStep).toBe('rank2');
+    });
+
+    it('removes from the anti-diagonal when it has chars (does not leak back to diagonal)', () => {
+      const { result } = renderHook(() => useDiagonalInput(defaultProps));
+
+      // Fill diagonal → auto-advance → type one char in anti-diagonal
+      act(() => {
+        result.current.handleFilePress('a');
+      });
+      act(() => {
+        result.current.handleRankPress('1');
+      });
+      act(() => {
+        result.current.handleFilePress('h');
+      });
+      act(() => {
+        result.current.handleRankPress('8');
+      });
+      act(() => {
+        result.current.handleFilePress('a');
+      });
+
+      expect(result.current.antiDiagonalStartText).toBe('a');
+
+      act(() => {
+        result.current.handleBackspace();
+      });
+
+      expect(result.current.activeField).toBe('antiDiagonal');
+      expect(result.current.antiDiagonalStartText).toBe('');
+      expect(result.current.diagonalStartText).toBe('a1');
+      expect(result.current.diagonalEndText).toBe('h8');
+    });
   });
 
   describe('clear', () => {
@@ -451,6 +516,44 @@ describe('useDiagonalInput', () => {
 
       expect(result.current.diagonalStartText).toBe('');
       expect(result.current.diagonalEndText).toBe('');
+      expect(result.current.currentStep).toBe('file1');
+    });
+
+    it('wipes both fields and returns focus to the diagonal when pressed after auto-advance', () => {
+      const { result } = renderHook(() => useDiagonalInput(defaultProps));
+
+      // Fill diagonal → auto-advance → type some chars in anti-diagonal
+      act(() => {
+        result.current.handleFilePress('a');
+      });
+      act(() => {
+        result.current.handleRankPress('1');
+      });
+      act(() => {
+        result.current.handleFilePress('h');
+      });
+      act(() => {
+        result.current.handleRankPress('8');
+      });
+      act(() => {
+        result.current.handleFilePress('a');
+      });
+      act(() => {
+        result.current.handleRankPress('8');
+      });
+
+      expect(result.current.activeField).toBe('antiDiagonal');
+      expect(result.current.antiDiagonalStartText).toBe('a8');
+
+      act(() => {
+        result.current.handleClear();
+      });
+
+      expect(result.current.activeField).toBe('diagonal');
+      expect(result.current.diagonalStartText).toBe('');
+      expect(result.current.diagonalEndText).toBe('');
+      expect(result.current.antiDiagonalStartText).toBe('');
+      expect(result.current.antiDiagonalEndText).toBe('');
       expect(result.current.currentStep).toBe('file1');
     });
   });
