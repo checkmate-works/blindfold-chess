@@ -902,7 +902,24 @@
         "sectionTitle": "Lista de Problemas",
         "empty": "Aún no hay posiciones disponibles",
         "tutorialLink": "Ver Tutorial",
-        "submittedBy": "enviado"
+        "submittedBy": "enviado",
+        "createButton": "Crear Problema"
+      },
+      "create": {
+        "title": "Crear Problema",
+        "fenLabel": "FEN",
+        "fenRequired": "El FEN es obligatorio",
+        "fenInvalid": "Posición FEN inválida",
+        "titleLabel": "Título",
+        "titleRequired": "El título es obligatorio",
+        "descriptionLabel": "Descripción",
+        "submit": "Crear",
+        "submitting": "Creando...",
+        "clearBoard": "Limpiar Tablero",
+        "tabBoard": "Tablero",
+        "tabFen": "FEN",
+        "positionInvalid": "Por favor configura una posición válida",
+        "flipBoard": "Voltear tablero"
       },
       "detail": {
         "title": "Detalle de Posición",
@@ -915,6 +932,13 @@
         "tutorialLink": "Ver Tutorial",
         "tryAgain": "Intentar de nuevo",
         "backToList": "Volver a la lista"
+      },
+      "delete": {
+        "button": "Eliminar Problema",
+        "confirmTitle": "Eliminar Problema",
+        "confirmMessage": "¿Estás seguro de que deseas eliminar este problema? Esta acción no se puede deshacer.",
+        "confirm": "Eliminar",
+        "cancel": "Cancelar"
       }
     },
     "puzzle": {
