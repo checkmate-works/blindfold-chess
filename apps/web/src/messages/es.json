@@ -943,7 +943,23 @@
       "whitePieces": "Piezas Blancas",
       "blackPieces": "Piezas Negras",
       "removePieceMode": "Modo de eliminar pieza - Haz clic en una casilla para eliminar la pieza",
-      "placingPiece": "Colocando"
+      "placingPiece": "Colocando",
+      "detail": {
+        "title": "Detalle del Puzzle",
+        "descriptionSection": "Sobre Este Puzzle",
+        "solveSection": "Resolver el Puzzle",
+        "whitePiecesLabel": "Piezas Blancas",
+        "blackPiecesLabel": "Piezas Negras",
+        "whiteToMove": "Mueven blancas",
+        "blackToMove": "Mueven negras",
+        "createdBy": "Creado por",
+        "answerLabel": "Tu respuesta (SAN, distingue mayúsculas)",
+        "answerPlaceholder": "ej. Nf3",
+        "submitAnswer": "Enviar",
+        "correct": "¡Correcto! \ud83c\udf89",
+        "incorrect": "Incorrecto. Inténtalo de nuevo.",
+        "noPieces": "Ninguna"
+      }
     },
     "knightTour": {
       "title": "Recorrido del Caballo",

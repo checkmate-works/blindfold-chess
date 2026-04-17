@@ -983,7 +983,23 @@
       "whitePieces": "White Pieces",
       "blackPieces": "Black Pieces",
       "removePieceMode": "Remove piece mode - Click on a square to remove piece",
-      "placingPiece": "Placing"
+      "placingPiece": "Placing",
+      "detail": {
+        "title": "Puzzle Detail",
+        "descriptionSection": "About This Puzzle",
+        "solveSection": "Solve the Puzzle",
+        "whitePiecesLabel": "White Pieces",
+        "blackPiecesLabel": "Black Pieces",
+        "whiteToMove": "White to move",
+        "blackToMove": "Black to move",
+        "createdBy": "Created by",
+        "answerLabel": "Your answer (SAN, case-sensitive)",
+        "answerPlaceholder": "e.g. Nf3",
+        "submitAnswer": "Submit",
+        "correct": "Correct! \ud83c\udf89",
+        "incorrect": "Incorrect. Try again.",
+        "noPieces": "None"
+      }
     },
     "knightTour": {
       "title": "Knight's Tour",

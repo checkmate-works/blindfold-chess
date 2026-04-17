@@ -131,6 +131,79 @@ export function fenToLichessUrl(fen: string): string {
 }
 
 /**
+ * Convert a FEN string to a human-readable piece list.
+ *
+ * @example
+ * fenToPieceList("7R/5k2/5p2/5K2/8/8/8/8 w - - 0 1")
+ * // => { white: ["Kf5", "Rh8"], black: ["Kf7", "f6"] }
+ *
+ * Output format:
+ * - King, Queen, Rook, Bishop, Knight use piece letter prefix: "Kf5", "Qd1", "Rh8", "Bc4", "Nf3"
+ * - Pawns use only the square: "e4", "d5", "f6"
+ * - Pieces are sorted: K, Q, R, B, N, then pawns (each group alphabetically by square)
+ */
+export function fenToPieceList(fen: string): {
+  white: string[];
+  black: string[];
+} {
+  const PIECE_ORDER: Record<string, number> = {
+    K: 0,
+    Q: 1,
+    R: 2,
+    B: 3,
+    N: 4,
+    P: 5,
+  };
+
+  const piecePlacement = fen.split(" ")[0];
+  const white: string[] = [];
+  const black: string[] = [];
+
+  const ranks = piecePlacement.split("/");
+  for (let rankIdx = 0; rankIdx < ranks.length; rankIdx++) {
+    const rankNumber = 8 - rankIdx; // rank 8 at top
+    let fileIdx = 0;
+
+    for (const char of ranks[rankIdx]) {
+      if (/\d/.test(char)) {
+        fileIdx += parseInt(char);
+      } else {
+        const file = String.fromCharCode("a".charCodeAt(0) + fileIdx);
+        const square = `${file}${rankNumber}`;
+        const upper = char.toUpperCase();
+        const label = upper === "P" ? square : `${upper}${square}`;
+
+        if (char === char.toUpperCase()) {
+          white.push(label);
+        } else {
+          black.push(label);
+        }
+        fileIdx++;
+      }
+    }
+  }
+
+  const sortPieces = (pieces: string[]): string[] => {
+    return pieces.sort((a, b) => {
+      const pieceA = a.length === 2 ? "P" : a[0];
+      const pieceB = b.length === 2 ? "P" : b[0];
+      const orderA = PIECE_ORDER[pieceA] ?? 99;
+      const orderB = PIECE_ORDER[pieceB] ?? 99;
+      if (orderA !== orderB) return orderA - orderB;
+      // Within same piece type, sort alphabetically by square
+      const squareA = a.length === 2 ? a : a.slice(1);
+      const squareB = b.length === 2 ? b : b.slice(1);
+      return squareA.localeCompare(squareB);
+    });
+  };
+
+  return {
+    white: sortPieces(white),
+    black: sortPieces(black),
+  };
+}
+
+/**
  * Lightweight FEN format validation without chess.js.
  * Checks structural validity (8 ranks, valid characters, valid turn)
  * but does not verify position legality.
