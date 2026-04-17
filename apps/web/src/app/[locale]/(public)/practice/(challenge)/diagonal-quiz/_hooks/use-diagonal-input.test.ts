@@ -463,6 +463,44 @@ describe('useDiagonalInput', () => {
       expect(result.current.currentStep).toBe('rank2');
     });
 
+    it('falls back to the anti-diagonal when pressed on an empty diagonal (manual focus switch)', () => {
+      const { result } = renderHook(() => useDiagonalInput(defaultProps));
+
+      // User manually taps anti-diagonal first and types some chars there.
+      // Diagonal remains empty, so the auto-advance effect (which only fires
+      // when the diagonal is *complete*) does not interfere with our later
+      // manual focus switch back to diagonal.
+      act(() => {
+        result.current.setActiveField('antiDiagonal');
+      });
+      act(() => {
+        result.current.handleFilePress('b');
+      });
+      act(() => {
+        result.current.handleRankPress('2');
+      });
+
+      // User manually taps back to the still-empty diagonal.
+      act(() => {
+        result.current.setActiveField('diagonal');
+      });
+
+      expect(result.current.activeField).toBe('diagonal');
+      expect(result.current.diagonalStartText).toBe('');
+      expect(result.current.antiDiagonalStartText).toBe('b2');
+
+      // Backspace on the empty diagonal should pop the last anti-diagonal
+      // char and return focus to anti-diagonal.
+      act(() => {
+        result.current.handleBackspace();
+      });
+
+      expect(result.current.activeField).toBe('antiDiagonal');
+      expect(result.current.antiDiagonalStartText).toBe('b');
+      expect(result.current.diagonalStartText).toBe('');
+      expect(result.current.currentStep).toBe('rank1');
+    });
+
     it('removes from the anti-diagonal when it has chars (does not leak back to diagonal)', () => {
       const { result } = renderHook(() => useDiagonalInput(defaultProps));
 
@@ -497,9 +535,13 @@ describe('useDiagonalInput', () => {
   });
 
   describe('clear', () => {
-    it('resets the current field to initial state', () => {
+    it('resets both fields to initial state and returns focus to diagonal', () => {
       const { result } = renderHook(() => useDiagonalInput(defaultProps));
 
+      // Fill diagonal → auto-advance → type chars in anti-diagonal so both
+      // fields have content before we press Clear. This ensures the test
+      // genuinely exercises the broadened "clear both fields" semantics
+      // rather than passing because anti-diagonal happened to start empty.
       act(() => {
         result.current.handleFilePress('a');
       });
@@ -509,6 +551,20 @@ describe('useDiagonalInput', () => {
       act(() => {
         result.current.handleFilePress('h');
       });
+      act(() => {
+        result.current.handleRankPress('8');
+      });
+      act(() => {
+        result.current.handleFilePress('b');
+      });
+      act(() => {
+        result.current.handleRankPress('2');
+      });
+
+      expect(result.current.activeField).toBe('antiDiagonal');
+      expect(result.current.diagonalStartText).toBe('a1');
+      expect(result.current.diagonalEndText).toBe('h8');
+      expect(result.current.antiDiagonalStartText).toBe('b2');
 
       act(() => {
         result.current.handleClear();
@@ -516,6 +572,9 @@ describe('useDiagonalInput', () => {
 
       expect(result.current.diagonalStartText).toBe('');
       expect(result.current.diagonalEndText).toBe('');
+      expect(result.current.antiDiagonalStartText).toBe('');
+      expect(result.current.antiDiagonalEndText).toBe('');
+      expect(result.current.activeField).toBe('diagonal');
       expect(result.current.currentStep).toBe('file1');
     });
 

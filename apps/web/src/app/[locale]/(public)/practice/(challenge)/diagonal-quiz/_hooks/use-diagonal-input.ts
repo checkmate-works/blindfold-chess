@@ -191,14 +191,24 @@ export function useDiagonalInput({
     if (disabled) return;
 
     // If the active field is empty but the other field has chars, fall back
-    // to the previous field. This makes Backspace behave as a true "undo last
+    // to the other field. This makes Backspace behave as a true "undo last
     // keystroke" across both inputs — otherwise the user gets stuck on an
-    // empty anti-diagonal after auto-advance and Backspace appears dead.
+    // empty field and Backspace appears dead. Both directions are supported:
+    //   - antiDiagonal → diagonal (typical after auto-advance with no typing)
+    //   - diagonal → antiDiagonal (user manually tapped back to a drained
+    //     diagonal field while anti-diagonal still has content)
     if (activeField === 'antiDiagonal' && antiDiagonal.chars.length === 0) {
       if (diagonal.chars.length === 0) return;
       const newChars = diagonal.chars.slice(0, -1);
       setDiagonal({ chars: newChars, step: getStep(newChars.length) });
       setActiveField('diagonal');
+      return;
+    }
+    if (activeField === 'diagonal' && diagonal.chars.length === 0) {
+      if (antiDiagonal.chars.length === 0) return;
+      const newChars = antiDiagonal.chars.slice(0, -1);
+      setAntiDiagonal({ chars: newChars, step: getStep(newChars.length) });
+      setActiveField('antiDiagonal');
       return;
     }
 
