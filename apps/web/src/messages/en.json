@@ -2363,6 +2363,8 @@
     "unknownNotification": "You have a new notification",
     "announcementMessage": "New announcement: {title}",
     "newPostMessage": "{actor} shared a new post",
+    "newPositionMemoryMessage": "{actor} created a new position memory problem",
+    "newPuzzleMessage": "{actor} created a new puzzle",
     "achievementSingleMessage": "🏆 You earned {name}",
     "achievementMultipleMessage": "🏆 You earned {count} achievements",
     "benefitGrantMessage": {

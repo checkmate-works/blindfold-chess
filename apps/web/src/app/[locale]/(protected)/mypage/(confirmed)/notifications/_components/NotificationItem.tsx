@@ -52,6 +52,13 @@ export function NotificationItem({ notification, currentUsername }: Props) {
         return t('replyMessage', { actor: actorName });
       case 'new_post':
         return t('newPostMessage', { actor: actorName });
+      case 'new_position':
+        if (isPositionMetadata(notification.metadata)) {
+          return notification.metadata.positionType === 'puzzle'
+            ? t('newPuzzleMessage', { actor: actorName })
+            : t('newPositionMemoryMessage', { actor: actorName });
+        }
+        return t('newPositionMemoryMessage', { actor: actorName });
       case 'announcement':
         if (isAnnouncementMetadata(notification.metadata)) {
           return t('announcementMessage', { title: truncateContent(notification.metadata.title) });
@@ -104,6 +111,15 @@ export function NotificationItem({ notification, currentUsername }: Props) {
       if (notification.targetId) {
         return `/practice/position-memory/${notification.targetId}`;
       }
+    }
+    if (notification.type === 'new_position' && notification.targetId) {
+      if (
+        isPositionMetadata(notification.metadata) &&
+        notification.metadata.positionType === 'puzzle'
+      ) {
+        return `/practice/puzzle/${notification.targetId}`;
+      }
+      return `/practice/position-memory/${notification.targetId}`;
     }
     if (
       (notification.type === 'like' ||

@@ -2290,6 +2290,8 @@
     "unknownNotification": "Tienes una nueva notificación",
     "announcementMessage": "Nuevo anuncio: {title}",
     "newPostMessage": "{actor} compartió una nueva publicación",
+    "newPositionMemoryMessage": "{actor} creó un nuevo problema de memoria de posición",
+    "newPuzzleMessage": "{actor} creó un nuevo puzzle",
     "achievementSingleMessage": "🏆 Obtuviste {name}",
     "achievementMultipleMessage": "🏆 Obtuviste {count} logros"
   },

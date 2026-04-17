@@ -2364,6 +2364,8 @@
     "unknownNotification": "新しい通知があります",
     "announcementMessage": "新しいお知らせ: {title}",
     "newPostMessage": "{actor} が新しい投稿をしました",
+    "newPositionMemoryMessage": "{actor} がポジション記憶の問題を作成しました",
+    "newPuzzleMessage": "{actor} がパズルを作成しました",
     "achievementSingleMessage": "🏆 {name} を獲得しました",
     "achievementMultipleMessage": "🏆 {count}件のアチーブメントを獲得しました",
     "benefitGrantMessage": {

@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, feedItems, positions } from '@/lib/db';
+import { notifyFollowersOfNewPosition } from '@/lib/notifications/notification';
 import { validatePositionMutationData } from '@/lib/positions/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
@@ -53,6 +54,12 @@ export async function createPosition(data: {
     });
 
     return position;
+  });
+
+  notifyFollowersOfNewPosition({
+    actorId: user.id,
+    positionId: inserted.id,
+    positionType: 'memory',
   });
 
   revalidatePath('/practice/position-memory');

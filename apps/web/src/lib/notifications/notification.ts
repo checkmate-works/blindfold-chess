@@ -94,3 +94,34 @@ export function notifyFollowersOfNewPost(params: {
     }
   })().catch(() => {});
 }
+
+/**
+ * Notify all followers of a user about a new position (memory or puzzle).
+ * Fire-and-forget — failures are silently caught.
+ */
+export function notifyFollowersOfNewPosition(params: {
+  actorId: string;
+  positionId: string;
+  positionType: 'memory' | 'puzzle';
+}): void {
+  (async () => {
+    const followers = await db
+      .select({ followerId: userFollows.followerId })
+      .from(userFollows)
+      .where(eq(userFollows.followingId, params.actorId));
+
+    for (const follower of followers) {
+      createNotification({
+        userId: follower.followerId,
+        actorId: params.actorId,
+        type: 'new_position',
+        targetType: 'position',
+        targetId: params.positionId,
+        metadata: {
+          positionType: params.positionType,
+          positionId: params.positionId,
+        },
+      });
+    }
+  })().catch(() => {});
+}

@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, feedItems, positions, puzzleSolutions } from '@/lib/db';
+import { notifyFollowersOfNewPosition } from '@/lib/notifications/notification';
 import { validatePuzzleMutationData } from '@/lib/positions/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
@@ -60,6 +61,12 @@ export async function createPuzzle(data: {
     });
 
     return position;
+  });
+
+  notifyFollowersOfNewPosition({
+    actorId: user.id,
+    positionId: inserted.id,
+    positionType: 'puzzle',
   });
 
   revalidatePath('/practice/puzzle');
