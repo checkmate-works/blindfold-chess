@@ -117,6 +117,11 @@ export default async function PracticePage({ params }: Props) {
           icon: PRACTICE_EMOJIS.position_memory,
         },
         {
+          id: 'puzzle',
+          title: t('practice.puzzle.title'),
+          icon: PRACTICE_EMOJIS.puzzle,
+        },
+        {
           id: 'knight-tour',
           title: t('practice.knightTour.title'),
           icon: PRACTICE_EMOJIS.knight_tour,

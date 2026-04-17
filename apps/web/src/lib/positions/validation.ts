@@ -1,4 +1,4 @@
-import { validateFen } from '@blindfold-chess/features/chess-core';
+import { validateFen, validateMoveSequence } from '@blindfold-chess/features/chess-core';
 
 import { UUID_RE } from '@/lib/validations/uuid';
 
@@ -7,6 +7,10 @@ export type PositionMutationData = {
   title: string;
   description?: string | null;
   userId: string;
+};
+
+export type PuzzleMutationData = PositionMutationData & {
+  solutionLine: string;
 };
 
 /**
@@ -33,6 +37,33 @@ export function validatePositionMutationData(data: PositionMutationData): string
 
   if (!UUID_RE.test(data.userId.trim())) {
     return 'User ID must be a valid UUID';
+  }
+
+  return null;
+}
+
+/**
+ * Validate puzzle mutation data before persisting.
+ *
+ * Extends position validation with solution line validation.
+ *
+ * @returns An error message string if validation fails, or `null` if valid.
+ */
+export function validatePuzzleMutationData(data: PuzzleMutationData): string | null {
+  const positionError = validatePositionMutationData(data);
+  if (positionError) {
+    return positionError;
+  }
+
+  if (!data.solutionLine || !data.solutionLine.trim()) {
+    return 'Solution is required';
+  }
+
+  const moves = data.solutionLine.trim().split(/\s+/);
+  const result = validateMoveSequence(data.fen.trim(), moves);
+
+  if (!result.valid) {
+    return result.error ?? 'Invalid move sequence for this position';
   }
 
   return null;

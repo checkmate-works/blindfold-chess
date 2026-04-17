@@ -22,12 +22,13 @@ import { notFound } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
 import { and, count, eq, isNull } from 'drizzle-orm';
-import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
+import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { getAchievementCategoryNames } from '@/lib/achievements/display';
 import { countryCodeToFlag } from '@/lib/countries';
 import { db, profiles, userFollows } from '@/lib/db';
 import { getUserAchievements } from '@/lib/db/achievement-queries';
+import { countPositions, listPositions } from '@/lib/positions/queries';
 import { createClient } from '@/lib/supabase/server';
 
 import { getPostsByUserId } from '@/app/[locale]/(public)/topics/_lib/user-post-queries';
@@ -38,6 +39,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { FollowButton } from './_components/FollowButton';
 import { ProfileAchievements } from './_components/ProfileAchievements';
 import { ProfilePosts } from './_components/ProfilePosts';
+import { ProfileProblems } from './_components/ProfileProblems';
 import { SocialLinks } from './_components/SocialLinks';
 import { getProfileByUsername } from './_lib/queries';
 
@@ -47,6 +49,7 @@ const PAGE_SIZE = 5;
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
+  tab: parseAsString.withDefault('topics'),
 });
 
 type Props = {
@@ -153,15 +156,44 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
   const followerCount = followerResult.count;
   const followingCount = followingResult.count;
 
-  const { page } = await searchParamsCache.parse(searchParams);
-  const totalCount = allPosts.length;
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
-  const currentPage = Math.max(1, Math.min(page, totalPages || 1));
-  const posts = allPosts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const { page, tab } = await searchParamsCache.parse(searchParams);
+  const activeTab = tab === 'problems' ? 'problems' : 'topics';
+
+  const topicsCount = allPosts.length;
+
+  // Problems tab data
+  const problemsCount = await countPositions({ userId: profile.id });
+
+  // Topics pagination
+  const topicsTotalPages = Math.ceil(topicsCount / PAGE_SIZE);
+  const topicsCurrentPage =
+    activeTab === 'topics' ? Math.max(1, Math.min(page, topicsTotalPages || 1)) : 1;
+  const posts = allPosts.slice((topicsCurrentPage - 1) * PAGE_SIZE, topicsCurrentPage * PAGE_SIZE);
+
+  // Problems pagination
+  const problemsTotalPages = Math.ceil(problemsCount / PAGE_SIZE);
+  const problemsCurrentPage =
+    activeTab === 'problems' ? Math.max(1, Math.min(page, problemsTotalPages || 1)) : 1;
+  const problemPositions =
+    activeTab === 'problems'
+      ? await listPositions({
+          userId: profile.id,
+          limit: PAGE_SIZE,
+          offset: (problemsCurrentPage - 1) * PAGE_SIZE,
+        })
+      : [];
 
   const buildHref = (p: number) => {
-    const qs = p > 1 ? `?page=${p}` : '';
-    return `/${locale}/u/${username}${qs}`;
+    const params = new URLSearchParams();
+    if (activeTab !== 'topics') params.set('tab', activeTab);
+    if (p > 1) params.set('page', String(p));
+    const qs = params.toString();
+    return `/${locale}/u/${username}${qs ? `?${qs}` : ''}`;
+  };
+
+  const buildTabHref = (targetTab: string) => {
+    if (targetTab === 'topics') return `/u/${username}`;
+    return `/u/${username}?tab=${targetTab}`;
   };
 
   return (
@@ -251,16 +283,20 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
           </div>
         )}
 
-        {/* Topics Tab */}
+        {/* Topics / Problems Tabs */}
         <ProfilePosts
           posts={posts}
-          totalCount={totalCount}
-          currentPage={currentPage}
-          totalPages={totalPages}
+          totalCount={topicsCount}
+          problemsCount={problemsCount}
+          activeTab={activeTab}
+          currentPage={topicsCurrentPage}
+          totalPages={topicsTotalPages}
           locale={locale}
           buildHref={buildHref}
+          buildTabHref={buildTabHref}
           labels={{
             topicsTab: t('topicsTab'),
+            problemsTab: t('problemsTab'),
             noTopicPosts: t('noTopicPosts'),
             showMore: tTopics('showMore'),
             justNow: (topicType) =>
@@ -270,7 +306,20 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
                 ? tOpenings('newReply', { time: '{time}' })
                 : tSquares('newReply', { time: '{time}' }),
           }}
-        />
+        >
+          <ProfileProblems
+            positions={problemPositions}
+            currentPage={problemsCurrentPage}
+            totalPages={problemsTotalPages}
+            locale={locale}
+            buildHref={buildHref}
+            labels={{
+              noProblems: t('noProblems'),
+              problemTypeMemory: t('problemTypeMemory'),
+              problemTypePuzzle: t('problemTypePuzzle'),
+            }}
+          />
+        </ProfilePosts>
 
         {/* Achievements */}
         {userAchievementRows.length > 0 && (

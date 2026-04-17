@@ -3,19 +3,20 @@
 import { revalidatePath } from 'next/cache';
 
 import { authenticateAndGuard } from '@/lib/auth';
-import { db, feedItems, positions } from '@/lib/db';
+import { db, feedItems, positions, puzzleSolutions } from '@/lib/db';
 import { notifyFollowersOfNewPosition } from '@/lib/notifications/notification';
-import { validatePositionMutationData } from '@/lib/positions/validation';
+import { validatePuzzleMutationData } from '@/lib/positions/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
-export type CreatePositionResult = { success: true; id: string } | { error: string };
+export type CreatePuzzleResult = { success: true; id: string } | { error: string };
 
-export async function createPosition(data: {
+export async function createPuzzle(data: {
   fen: string;
   title: string;
   description?: string | null;
-}): Promise<CreatePositionResult> {
-  const guardResult = await authenticateAndGuard(RATE_LIMITS.createPosition);
+  solutionLine: string;
+}): Promise<CreatePuzzleResult> {
+  const guardResult = await authenticateAndGuard(RATE_LIMITS.createPuzzle);
 
   if ('error' in guardResult) {
     return { error: guardResult.error };
@@ -23,10 +24,11 @@ export async function createPosition(data: {
 
   const { user } = guardResult;
 
-  const validationError = validatePositionMutationData({
+  const validationError = validatePuzzleMutationData({
     fen: data.fen,
     title: data.title,
     description: data.description,
+    solutionLine: data.solutionLine,
     userId: user.id,
   });
 
@@ -42,15 +44,20 @@ export async function createPosition(data: {
         title: data.title.trim(),
         description: data.description?.trim() || null,
         userId: user.id,
-        type: 'memory',
+        type: 'puzzle',
       })
       .returning({ id: positions.id });
+
+    await tx.insert(puzzleSolutions).values({
+      positionId: position.id,
+      solutionLine: data.solutionLine.trim(),
+    });
 
     await tx.insert(feedItems).values({
       entityType: 'position',
       entityId: position.id,
       actorId: user.id,
-      metadata: { type: 'memory' },
+      metadata: { type: 'puzzle' },
     });
 
     return position;
@@ -59,10 +66,10 @@ export async function createPosition(data: {
   notifyFollowersOfNewPosition({
     actorId: user.id,
     positionId: inserted.id,
-    positionType: 'memory',
+    positionType: 'puzzle',
   });
 
-  revalidatePath('/practice/position-memory');
+  revalidatePath('/practice/puzzle');
 
   return { success: true, id: inserted.id };
 }

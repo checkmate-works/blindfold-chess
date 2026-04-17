@@ -10,20 +10,20 @@ import { countPositions, listPositions } from '@/lib/positions/queries';
 import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
 import { truncate } from '@/lib/text';
 
-import { DeletePositionButton } from './_components/DeletePositionButton';
+import { DeletePuzzleButton } from './_components/DeletePuzzleButton';
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
 });
 
-export default async function AdminPositionMemoryPage({
+export default async function AdminPositionPuzzlePage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { page } = await searchParamsCache.parse(searchParams);
 
-  const totalCount = await countPositions({ type: 'memory' });
+  const totalCount = await countPositions({ type: 'puzzle' });
 
   const { currentPage, totalPages, limit, offset } = getPaginationParams(
     page,
@@ -31,14 +31,14 @@ export default async function AdminPositionMemoryPage({
     DEFAULT_PAGE_SIZE
   );
 
-  const rows = await listPositions({ type: 'memory', limit, offset });
+  const rows = await listPositions({ type: 'puzzle', limit, offset });
 
-  const buildHref = (p: number) => `/admin/positions/memory?page=${p}`;
+  const buildHref = (p: number) => `/admin/positions/puzzle?page=${p}`;
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Position Memory</h1>
+        <h1 className="text-2xl font-bold">Puzzle</h1>
       </div>
 
       {rows.length > 0 && (
@@ -56,7 +56,7 @@ export default async function AdminPositionMemoryPage({
           <tr key={position.id} className="border-t border-border">
             <td className="px-4 py-3">
               <Link
-                href={`/en/practice/position-memory/${position.id}`}
+                href={`/en/practice/puzzle/${position.id}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-primary hover:underline"
@@ -75,7 +75,7 @@ export default async function AdminPositionMemoryPage({
               {new Date(position.createdAt).toLocaleString()}
             </td>
             <td className="px-4 py-3">
-              <DeletePositionButton id={position.id} title={position.title} />
+              <DeletePuzzleButton id={position.id} title={position.title} />
             </td>
           </tr>
         )}

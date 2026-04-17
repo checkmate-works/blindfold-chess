@@ -63,6 +63,14 @@
       "title": "Mis Publicaciones",
       "description": "Consulta tus publicaciones"
     },
+    "mypageProblems": {
+      "title": "Mis Problemas",
+      "description": "Problemas de memoria de posición que has creado"
+    },
+    "mypagePuzzles": {
+      "title": "Mis Puzzles",
+      "description": "Administra tus puzzles creados"
+    },
     "mypageFollowing": {
       "title": "Siguiendo",
       "description": "Usuarios que sigues"
@@ -894,7 +902,24 @@
         "sectionTitle": "Lista de Problemas",
         "empty": "Aún no hay posiciones disponibles",
         "tutorialLink": "Ver Tutorial",
-        "submittedBy": "enviado"
+        "submittedBy": "enviado",
+        "createButton": "Crear Problema"
+      },
+      "create": {
+        "title": "Crear Problema",
+        "fenLabel": "FEN",
+        "fenRequired": "El FEN es obligatorio",
+        "fenInvalid": "Posición FEN inválida",
+        "titleLabel": "Título",
+        "titleRequired": "El título es obligatorio",
+        "descriptionLabel": "Descripción",
+        "submit": "Crear",
+        "submitting": "Creando...",
+        "clearBoard": "Limpiar Tablero",
+        "tabBoard": "Tablero",
+        "tabFen": "FEN",
+        "positionInvalid": "Por favor configura una posición válida",
+        "flipBoard": "Voltear tablero"
       },
       "detail": {
         "title": "Detalle de Posición",
@@ -907,6 +932,79 @@
         "tutorialLink": "Ver Tutorial",
         "tryAgain": "Intentar de nuevo",
         "backToList": "Volver a la lista"
+      },
+      "delete": {
+        "button": "Eliminar Problema",
+        "confirmTitle": "Eliminar Problema",
+        "confirmMessage": "¿Estás seguro de que deseas eliminar este problema? Esta acción no se puede deshacer.",
+        "confirm": "Eliminar",
+        "cancel": "Cancelar"
+      }
+    },
+    "puzzle": {
+      "title": "Puzzle",
+      "description": "Encuentra la mejor jugada en la posición",
+      "list": {
+        "title": "Puzzle",
+        "sectionTitle": "Lista de Puzzles",
+        "betaNotice": "Esta función está en beta. La interfaz y funcionalidad pueden cambiar.",
+        "empty": "Aun no hay puzzles disponibles",
+        "submittedBy": "enviado",
+        "createButton": "Crear Puzzle"
+      },
+      "create": {
+        "title": "Crear Puzzle",
+        "fenLabel": "FEN",
+        "fenInvalid": "Posición FEN inválida",
+        "titleLabel": "Título",
+        "titleRequired": "El título es obligatorio",
+        "descriptionLabel": "Descripción",
+        "solutionLabel": "Solución",
+        "solutionPlaceholder": "ej. Nf3 o Qh7+ Kf8 Qh8#",
+        "solutionRequired": "La solución es obligatoria",
+        "solutionInvalid": "Secuencia de movimientos inválida para esta posición",
+        "submit": "Crear",
+        "submitting": "Creando...",
+        "clearBoard": "Limpiar Tablero",
+        "tabBoard": "Tablero",
+        "tabFen": "FEN",
+        "positionInvalid": "Por favor configura una posición válida",
+        "flipBoard": "Voltear tablero",
+        "whiteToMove": "Mueven blancas",
+        "blackToMove": "Mueven negras"
+      },
+      "whitePieces": "Piezas Blancas",
+      "blackPieces": "Piezas Negras",
+      "removePieceMode": "Modo de eliminar pieza - Haz clic en una casilla para eliminar la pieza",
+      "placingPiece": "Colocando",
+      "detail": {
+        "title": "Detalle del Puzzle",
+        "descriptionSection": "Sobre Este Puzzle",
+        "solveSection": "Resolver el Puzzle",
+        "whitePiecesLabel": "Piezas Blancas",
+        "blackPiecesLabel": "Piezas Negras",
+        "whiteToMove": "Mueven blancas",
+        "blackToMove": "Mueven negras",
+        "createdBy": "Creado por",
+        "answerLabel": "Tu respuesta (SAN, distingue mayúsculas)",
+        "answerPlaceholder": "ej. Nf3",
+        "submitAnswer": "Enviar",
+        "correct": "¡Correcto! \ud83c\udf89",
+        "incorrect": "Incorrecto. Inténtalo de nuevo.",
+        "noPieces": "Ninguna",
+        "showBoard": "Mostrar Tablero"
+      },
+      "result": {
+        "title": "Resultado del Puzzle",
+        "replaySection": "Repetición de la Solución",
+        "historySection": "Historial de Intentos",
+        "solution": "Solución: {move}",
+        "attemptCorrect": "Correcto",
+        "attemptIncorrect": "Incorrecto",
+        "backToList": "Volver a Puzzles",
+        "tryAgain": "Intentar de Nuevo",
+        "viewResult": "Ver Resultado",
+        "peekCount": "Vistas del Tablero: {count}"
       }
     },
     "knightTour": {
@@ -2092,7 +2190,18 @@
       "heatmapMore": "Más",
       "heatmapTotal": "Total",
       "heatmapNoActivity": "Sin actividad en este día",
-      "heatmapLearnLink": "Cómo calculamos la Exp"
+      "heatmapLearnLink": "Cómo calculamos la Exp",
+      "levelLabel": "Nivel {level}",
+      "expProgress": "{current} / {next} Exp",
+      "expRemaining": "{remaining} Exp para el siguiente nivel",
+      "viewExpLeaderboard": "Ver Clasificación de Exp",
+      "accountTitle": "Cuenta",
+      "subscriptionTitle": "Suscripción",
+      "benefitsTitle": "Beneficios",
+      "practiceTitle": "Práctica",
+      "myProblems": "Mis Problemas",
+      "myPositionMemory": "Memoria de Posición",
+      "myPuzzles": "Puzzles"
     },
     "records": "Registros",
     "bestScore": "Mejor Puntuación",
@@ -2161,6 +2270,27 @@
     "empty": "Aún no hay publicaciones.",
     "sectionTitle": "Temas"
   },
+  "MypageProblems": {
+    "title": "Mis Problemas",
+    "sectionTitle": "Problemas que Has Creado",
+    "empty": "Aún no has creado ningún problema.",
+    "breadcrumbMypage": "Mi Página",
+    "breadcrumbProblems": "Mis Problemas"
+  },
+  "MypagePuzzles": {
+    "title": "Mis Puzzles",
+    "sectionTitle": "Puzzles que Has Creado",
+    "empty": "Aún no has creado ningún puzzle.",
+    "breadcrumbMypage": "Mi Página",
+    "breadcrumbProblems": "Mis Problemas"
+  },
+  "MypageProblemsIndex": {
+    "title": "Mis Problemas",
+    "description": "Administra tus problemas creados",
+    "positionMemory": "Memoria de Posición",
+    "puzzles": "Puzzles",
+    "breadcrumbMypage": "Mi Página"
+  },
   "MypageFollowing": {
     "title": "Siguiendo",
     "empty": "Aún no sigues a nadie.",
@@ -2198,6 +2328,8 @@
     "unknownNotification": "Tienes una nueva notificación",
     "announcementMessage": "Nuevo anuncio: {title}",
     "newPostMessage": "{actor} compartió una nueva publicación",
+    "newPositionMemoryMessage": "{actor} creó un nuevo problema de memoria de posición",
+    "newPuzzleMessage": "{actor} creó un nuevo puzzle",
     "achievementSingleMessage": "🏆 Obtuviste {name}",
     "achievementMultipleMessage": "🏆 Obtuviste {count} logros"
   },
@@ -2491,6 +2623,7 @@
       "nextPage": "Siguiente"
     },
     "positionMemory": "Position Memory",
+    "puzzle": "Puzzle",
     "topicPosts": {
       "navLabel": "Publicaciones de Temas",
       "title": "Publicaciones de Temas",
@@ -2714,6 +2847,10 @@
     "editProfile": "Editar perfil",
     "topicsTab": "Temas",
     "noTopicPosts": "Aún no hay publicaciones.",
+    "problemsTab": "Problemas",
+    "noProblems": "Aún no hay problemas.",
+    "problemTypeMemory": "Memoria",
+    "problemTypePuzzle": "Puzzle",
     "achievementsSection": "Logros",
     "noAchievements": "Aún no hay logros.",
     "viewAllAchievements": "Ver todos",

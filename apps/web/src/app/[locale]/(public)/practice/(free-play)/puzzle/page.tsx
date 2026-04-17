@@ -1,15 +1,15 @@
 /**
- * Position Memory — Problem List (ポジション記憶 — 問題一覧)
+ * Puzzle — Problem List (パズル — 問題一覧)
  *
  * @description
- * Displays a paginated list of user-submitted positions for the
- * position memory practice module. Each card shows a board thumbnail,
- * title, description excerpt, and author information.
+ * Displays a paginated list of user-submitted puzzle positions.
+ * Each card shows a board thumbnail, title, description excerpt,
+ * and author information.
  *
  * @flow
- * 1. Browse the list of available positions
- * 2. Click a card to navigate to the position detail page
- * 3. On the detail page, configure time limit and start a session
+ * 1. Browse the list of available puzzles
+ * 2. Click a card to navigate to the puzzle detail page (not yet implemented)
+ * 3. On the detail page, attempt to find the best move(s)
  */
 import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
@@ -20,14 +20,13 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getPaginationParams } from '@/lib/pagination';
-import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
 import { countPositions, listPositionsWithProfile } from '@/lib/positions/queries';
 import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 import { truncate } from '@/lib/text';
 import { resolveDisplayName } from '@/lib/users/display-name';
 
-import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import {
+  BetaNotice,
   Divider,
   PagePanel,
   PageTitle,
@@ -39,8 +38,6 @@ import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
-import { toggleLike } from './_actions/toggleLike';
-
 export const dynamic = 'force-dynamic';
 
 const PAGE_SIZE = 12;
@@ -51,26 +48,26 @@ const searchParamsCache = createSearchParamsCache({
 
 export async function generateMetadata({ params }: Props) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'practice.positionMemory' });
+  const t = await getTranslations({ locale, namespace: 'practice.puzzle' });
   const title = t('list.title');
   const description = t('description');
 
   return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/position-memory', title, description }),
+    ...generateCanonicalMetadata({ locale, path: 'practice/puzzle', title, description }),
     title: resolveTitle(title, locale),
     description,
   };
 }
 
-export default async function PositionMemoryListPage({ params, searchParams }: Props) {
+export default async function PuzzleListPage({ params, searchParams }: Props) {
   const { locale } = await params;
   const { page } = await searchParamsCache.parse(searchParams);
-  const t = await getTranslations({ locale, namespace: 'practice.positionMemory' });
+  const t = await getTranslations({ locale, namespace: 'practice.puzzle' });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
 
   // TODO: Consider a composite index on (type, deleted_at, created_at DESC)
   // if this query becomes slow with large data volumes.
-  const totalCount = await countPositions({ type: 'memory' });
+  const totalCount = await countPositions({ type: 'puzzle' });
 
   const { currentPage, totalPages, limit, offset } = getPaginationParams(
     page,
@@ -78,19 +75,15 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
     PAGE_SIZE
   );
 
-  const rows = await listPositionsWithProfile({ type: 'memory', limit, offset });
+  const rows = await listPositionsWithProfile({ type: 'puzzle', limit, offset });
 
   const currentUser = await getOptionalUser();
-  const likeMetaMap = await getPositionLikeMetaMap(
-    rows.map((r) => r.position.id),
-    currentUser?.id
-  );
 
   const buildHref = (p: number) => {
     const params = new URLSearchParams();
     if (p > 1) params.set('page', String(p));
     const qs = params.toString();
-    return `/${locale}/practice/position-memory${qs ? `?${qs}` : ''}`;
+    return `/${locale}/practice/puzzle${qs ? `?${qs}` : ''}`;
   };
 
   return (
@@ -100,15 +93,9 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
       <PagePanel>
         <SectionTitle>{t('list.sectionTitle')}</SectionTitle>
 
-        <div className="flex justify-end mb-4">
-          <Link
-            href="/practice/position-memory/tutorial"
-            locale={locale}
-            className="text-sm text-link-primary hover:underline"
-          >
-            {t('list.tutorialLink')}
-          </Link>
-        </div>
+        <BetaNotice className="mb-4">
+          <p>{t('list.betaNotice')}</p>
+        </BetaNotice>
 
         {rows.length === 0 ? (
           <p className="text-muted-foreground text-center py-8">{t('list.empty')}</p>
@@ -117,15 +104,11 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
             {rows.map(({ position, profile }) => {
               const displayName = resolveDisplayName(profile);
               const descriptionExcerpt = truncate(position.description);
-              const likeMeta = likeMetaMap.get(position.id) ?? {
-                likeCount: 0,
-                likedByMe: false,
-              };
 
               return (
                 <Link
                   key={position.id}
-                  href={`/practice/position-memory/${position.id}`}
+                  href={`/practice/puzzle/${position.id}`}
                   locale={locale}
                   className="block p-4 rounded-md border border-border bg-card hover:border-foreground/20 transition-colors"
                 >
@@ -162,17 +145,6 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border">
-                    <LikeButton
-                      postId={position.id}
-                      locale={locale}
-                      topicKey=""
-                      initialLikeCount={likeMeta.likeCount}
-                      initialLikedByMe={likeMeta.likedByMe}
-                      toggleLikeAction={toggleLike}
-                      i18nNamespace="practice.positionMemory"
-                    />
-                  </div>
                 </Link>
               );
             })}
@@ -184,7 +156,7 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
         {currentUser && (
           <div className="flex justify-center py-4">
             <Link
-              href="/practice/position-memory/new"
+              href="/practice/puzzle/new"
               locale={locale}
               className="px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
             >

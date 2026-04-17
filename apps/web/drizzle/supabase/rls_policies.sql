@@ -349,3 +349,12 @@ ALTER TABLE "user_exp" ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "user_exp_select_policy" ON "user_exp";
 CREATE POLICY "user_exp_select_policy" ON "user_exp"
   FOR SELECT USING (true);
+
+-- =============================================================================
+-- puzzle_solutions (public read, service role only write)
+-- =============================================================================
+ALTER TABLE "puzzle_solutions" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "puzzle_solutions_select_policy" ON "puzzle_solutions";
+CREATE POLICY "puzzle_solutions_select_policy" ON "puzzle_solutions"
+  FOR SELECT USING (true);

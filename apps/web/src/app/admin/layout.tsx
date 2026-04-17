@@ -103,6 +103,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                   {t('positionMemory')}
                 </Link>
                 <Link
+                  href="/admin/positions/puzzle"
+                  className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
+                >
+                  {t('puzzle')}
+                </Link>
+                <Link
                   href="/admin/audit-log"
                   className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
                 >

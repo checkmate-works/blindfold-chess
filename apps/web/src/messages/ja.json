@@ -67,6 +67,10 @@
       "title": "マイ問題",
       "description": "作成したポジション記憶の問題"
     },
+    "mypagePuzzles": {
+      "title": "マイパズル",
+      "description": "作成したパズルの管理"
+    },
     "mypageFollowing": {
       "title": "フォロー中",
       "description": "フォロー中のユーザー"
@@ -948,6 +952,72 @@
         "confirmMessage": "この問題を削除しますか？この操作は元に戻せません。",
         "confirm": "削除",
         "cancel": "キャンセル"
+      }
+    },
+    "puzzle": {
+      "title": "パズル",
+      "description": "ポジションで最善手を見つけよう",
+      "list": {
+        "title": "パズル",
+        "sectionTitle": "パズル一覧",
+        "betaNotice": "この機能はベータ版です。UIや機能は変更される場合があります。",
+        "empty": "パズルはまだありません",
+        "submittedBy": "作成",
+        "createButton": "パズルを作成"
+      },
+      "create": {
+        "title": "パズルを作成",
+        "fenLabel": "FEN",
+        "fenInvalid": "無効なFENです",
+        "titleLabel": "タイトル",
+        "titleRequired": "タイトルは必須です",
+        "descriptionLabel": "説明",
+        "solutionLabel": "正解手",
+        "solutionPlaceholder": "例: Nf3 または Qh7+ Kf8 Qh8#",
+        "solutionRequired": "正解手は必須です",
+        "solutionInvalid": "このポジションでは無効な手順です",
+        "submit": "作成",
+        "submitting": "作成中...",
+        "clearBoard": "ボードをクリア",
+        "tabBoard": "ボード",
+        "tabFen": "FEN",
+        "positionInvalid": "有効なポジションを設定してください",
+        "flipBoard": "ボードを反転",
+        "whiteToMove": "白の手番",
+        "blackToMove": "黒の手番"
+      },
+      "whitePieces": "白の駒",
+      "blackPieces": "黒の駒",
+      "removePieceMode": "駒を削除 - マスをクリックして駒を削除",
+      "placingPiece": "配置中:",
+      "detail": {
+        "title": "パズル詳細",
+        "descriptionSection": "このパズルについて",
+        "solveSection": "パズルを解く",
+        "whitePiecesLabel": "白の駒",
+        "blackPiecesLabel": "黒の駒",
+        "whiteToMove": "白の手番",
+        "blackToMove": "黒の手番",
+        "createdBy": "作成者",
+        "answerLabel": "回答（SAN形式、大文字小文字を区別）",
+        "answerPlaceholder": "例: Nf3",
+        "submitAnswer": "回答する",
+        "correct": "正解！\ud83c\udf89",
+        "incorrect": "不正解です。もう一度挑戦してください。",
+        "noPieces": "なし",
+        "showBoard": "ボードを表示"
+      },
+      "result": {
+        "title": "パズル結果",
+        "replaySection": "正解のリプレイ",
+        "historySection": "回答履歴",
+        "solution": "正解: {move}",
+        "attemptCorrect": "正解",
+        "attemptIncorrect": "不正解",
+        "backToList": "パズル一覧に戻る",
+        "tryAgain": "もう一度",
+        "viewResult": "結果を見る",
+        "peekCount": "盤面確認: {count}回"
       }
     },
     "knightTour": {
@@ -2142,7 +2212,9 @@
       "subscriptionTitle": "サブスクリプション",
       "benefitsTitle": "特典",
       "practiceTitle": "練習",
-      "myProblems": "マイ問題"
+      "myProblems": "マイ問題",
+      "myPositionMemory": "ポジションの記憶",
+      "myPuzzles": "パズル"
     },
     "records": "レコード",
     "bestScore": "最高スコア",
@@ -2252,6 +2324,21 @@
     "title": "マイ問題",
     "sectionTitle": "作成した問題",
     "empty": "まだ問題を作成していません。",
+    "breadcrumbMypage": "マイページ",
+    "breadcrumbProblems": "マイ問題"
+  },
+  "MypagePuzzles": {
+    "title": "マイパズル",
+    "sectionTitle": "作成したパズル",
+    "empty": "まだパズルを作成していません。",
+    "breadcrumbMypage": "マイページ",
+    "breadcrumbProblems": "マイ問題"
+  },
+  "MypageProblemsIndex": {
+    "title": "マイ問題",
+    "description": "作成した問題の管理",
+    "positionMemory": "ポジションの記憶",
+    "puzzles": "パズル",
     "breadcrumbMypage": "マイページ"
   },
   "MypageFollowing": {
@@ -2291,6 +2378,8 @@
     "unknownNotification": "新しい通知があります",
     "announcementMessage": "新しいお知らせ: {title}",
     "newPostMessage": "{actor} が新しい投稿をしました",
+    "newPositionMemoryMessage": "{actor} がポジション記憶の問題を作成しました",
+    "newPuzzleMessage": "{actor} がパズルを作成しました",
     "achievementSingleMessage": "🏆 {name} を獲得しました",
     "achievementMultipleMessage": "🏆 {count}件のアチーブメントを獲得しました",
     "benefitGrantMessage": {
@@ -2751,6 +2840,7 @@
       }
     },
     "positionMemory": "Position Memory",
+    "puzzle": "Puzzle",
     "topicPosts": {
       "navLabel": "トピック投稿",
       "title": "トピック投稿",
@@ -2799,6 +2889,10 @@
     "editProfile": "プロフィール編集",
     "topicsTab": "トピック",
     "noTopicPosts": "まだ投稿がありません。",
+    "problemsTab": "問題",
+    "noProblems": "まだ問題がありません。",
+    "problemTypeMemory": "記憶",
+    "problemTypePuzzle": "パズル",
     "achievementsSection": "アチーブメント",
     "noAchievements": "まだアチーブメントはありません。",
     "viewAllAchievements": "すべて見る",

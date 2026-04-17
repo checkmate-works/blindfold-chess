@@ -67,6 +67,10 @@
       "title": "My Problems",
       "description": "Position memory problems you have created"
     },
+    "mypagePuzzles": {
+      "title": "My Puzzles",
+      "description": "Manage your created puzzles"
+    },
     "mypageFollowing": {
       "title": "Following",
       "description": "Users you are following"
@@ -947,6 +951,72 @@
         "confirmMessage": "Are you sure you want to delete this problem? This action cannot be undone.",
         "confirm": "Delete",
         "cancel": "Cancel"
+      }
+    },
+    "puzzle": {
+      "title": "Puzzle",
+      "description": "Find the best move in the position",
+      "list": {
+        "title": "Puzzle",
+        "sectionTitle": "Puzzle List",
+        "betaNotice": "This feature is in beta. The UI and functionality may change.",
+        "empty": "No puzzles available yet",
+        "submittedBy": "submitted",
+        "createButton": "Create Puzzle"
+      },
+      "create": {
+        "title": "Create Puzzle",
+        "fenLabel": "FEN",
+        "fenInvalid": "Invalid FEN position",
+        "titleLabel": "Title",
+        "titleRequired": "Title is required",
+        "descriptionLabel": "Description",
+        "solutionLabel": "Solution",
+        "solutionPlaceholder": "e.g. Nf3 or Qh7+ Kf8 Qh8#",
+        "solutionRequired": "Solution is required",
+        "solutionInvalid": "Invalid move sequence for this position",
+        "submit": "Create",
+        "submitting": "Creating...",
+        "clearBoard": "Clear Board",
+        "tabBoard": "Board",
+        "tabFen": "FEN",
+        "positionInvalid": "Please set up a valid position",
+        "flipBoard": "Flip board",
+        "whiteToMove": "White to move",
+        "blackToMove": "Black to move"
+      },
+      "whitePieces": "White Pieces",
+      "blackPieces": "Black Pieces",
+      "removePieceMode": "Remove piece mode - Click on a square to remove piece",
+      "placingPiece": "Placing",
+      "detail": {
+        "title": "Puzzle Detail",
+        "descriptionSection": "About This Puzzle",
+        "solveSection": "Solve the Puzzle",
+        "whitePiecesLabel": "White Pieces",
+        "blackPiecesLabel": "Black Pieces",
+        "whiteToMove": "White to move",
+        "blackToMove": "Black to move",
+        "createdBy": "Created by",
+        "answerLabel": "Your answer (SAN, case-sensitive)",
+        "answerPlaceholder": "e.g. Nf3",
+        "submitAnswer": "Submit",
+        "correct": "Correct! \ud83c\udf89",
+        "incorrect": "Incorrect. Try again.",
+        "noPieces": "None",
+        "showBoard": "Show Board"
+      },
+      "result": {
+        "title": "Puzzle Result",
+        "replaySection": "Solution Replay",
+        "historySection": "Attempt History",
+        "solution": "Solution: {move}",
+        "attemptCorrect": "Correct",
+        "attemptIncorrect": "Incorrect",
+        "backToList": "Back to Puzzles",
+        "tryAgain": "Try Again",
+        "viewResult": "View Result",
+        "peekCount": "Board Peeks: {count}"
       }
     },
     "knightTour": {
@@ -2141,7 +2211,9 @@
       "subscriptionTitle": "Subscription",
       "benefitsTitle": "Benefits",
       "practiceTitle": "Practice",
-      "myProblems": "My Problems"
+      "myProblems": "My Problems",
+      "myPositionMemory": "Position Memory",
+      "myPuzzles": "Puzzles"
     },
     "records": "Records",
     "bestScore": "Best Score",
@@ -2251,6 +2323,21 @@
     "title": "My Problems",
     "sectionTitle": "Problems You Created",
     "empty": "You haven't created any problems yet.",
+    "breadcrumbMypage": "My Page",
+    "breadcrumbProblems": "My Problems"
+  },
+  "MypagePuzzles": {
+    "title": "My Puzzles",
+    "sectionTitle": "Puzzles You Created",
+    "empty": "You haven't created any puzzles yet.",
+    "breadcrumbMypage": "My Page",
+    "breadcrumbProblems": "My Problems"
+  },
+  "MypageProblemsIndex": {
+    "title": "My Problems",
+    "description": "Manage your created problems",
+    "positionMemory": "Position Memory",
+    "puzzles": "Puzzles",
     "breadcrumbMypage": "My Page"
   },
   "MypageFollowing": {
@@ -2290,6 +2377,8 @@
     "unknownNotification": "You have a new notification",
     "announcementMessage": "New announcement: {title}",
     "newPostMessage": "{actor} shared a new post",
+    "newPositionMemoryMessage": "{actor} created a new position memory problem",
+    "newPuzzleMessage": "{actor} created a new puzzle",
     "achievementSingleMessage": "🏆 You earned {name}",
     "achievementMultipleMessage": "🏆 You earned {count} achievements",
     "benefitGrantMessage": {
@@ -2618,6 +2707,7 @@
       "nextPage": "Next"
     },
     "positionMemory": "Position Memory",
+    "puzzle": "Puzzle",
     "topicPosts": {
       "navLabel": "Topic Posts",
       "title": "Topic Posts",
@@ -2903,6 +2993,10 @@
     "editProfile": "Edit profile",
     "topicsTab": "Topics",
     "noTopicPosts": "No posts yet.",
+    "problemsTab": "Problems",
+    "noProblems": "No problems yet.",
+    "problemTypeMemory": "Memory",
+    "problemTypePuzzle": "Puzzle",
     "achievementsSection": "Achievements",
     "noAchievements": "No achievements yet.",
     "viewAllAchievements": "View all",
