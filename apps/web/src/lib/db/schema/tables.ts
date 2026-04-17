@@ -1666,3 +1666,55 @@ export const positionTags = pgTable(
 
 export type PositionTag = typeof positionTags.$inferSelect;
 export type NewPositionTag = typeof positionTags.$inferInsert;
+
+/**
+ * Puzzle Solutions — correct move sequences for puzzle-type positions.
+ *
+ * @description
+ * Stores the solution line(s) for positions with `type = 'puzzle'`.
+ * Each row represents one valid solution; a puzzle with multiple correct
+ * first moves has multiple rows sharing the same `positionId`.
+ *
+ * @design 正規化の理由 — positions テーブルの STI 化回避
+ * パズル固有データ（正解手）を `positions` テーブルに NULL 許容カラムとして追加すると、
+ * Rails の Single Table Inheritance のように type ごとに NULL カラムが増える。
+ * パズル固有データは別テーブルに分離し、関心を明確に分離する。
+ *
+ * @design `solutionLine` 文字列方式の理由 — Lichess の `line` フィールドを参考
+ * 行分割方式（`move` + `moveOrder` で各手を別行に持つ）と比較して:
+ * (a) マルチムーブ時の相手応手を自然に表現できる（プレイヤー手と応手の交互列）
+ * (b) JOIN のコストが 1 回で済む（行分割ではパズルごとに N 回）
+ * (c) `validateMoveSequence(fen, moves)` でまとめてバリデーション可能
+ *
+ * @design SAN 形式の理由
+ * chess-core パッケージの全 API（`validateMoveSequence`, `executeMove`,
+ * `getLegalMoves`）が SAN ベースで、変換なしにそのまま使用できる。
+ *
+ * @design 代替正解の表現
+ * 同一 `positionId` に対して複数行を INSERT することで代替正解を表現する。
+ * 例: `["Nf3", "Bg5"]` がどちらも正解 → 2 行。
+ * マルチムーブの代替パスも同様に行で表現: `"Qh7+ Kf8 Qh8#"` と
+ * `"Qh7+ Kf8 Qf7#"` は 2 行。
+ *
+ * @example
+ * // 1手パズル
+ * { positionId: '...', solutionLine: 'Nf3' }
+ *
+ * // マルチムーブ（プレイヤー手 → 相手応手 → プレイヤー手）
+ * { positionId: '...', solutionLine: 'Qh7+ Kf8 Qh8#' }
+ */
+export const puzzleSolutions = pgTable(
+  'puzzle_solutions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    positionId: uuid('position_id')
+      .notNull()
+      .references(() => positions.id, { onDelete: 'cascade' }),
+    solutionLine: text('solution_line').notNull(), // SAN moves, space-separated
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [index('idx_puzzle_solutions_position').on(table.positionId)]
+);
+
+export type PuzzleSolution = typeof puzzleSolutions.$inferSelect;
+export type NewPuzzleSolution = typeof puzzleSolutions.$inferInsert;
