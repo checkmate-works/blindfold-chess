@@ -67,6 +67,10 @@
       "title": "My Problems",
       "description": "Position memory problems you have created"
     },
+    "mypagePuzzles": {
+      "title": "My Puzzles",
+      "description": "Manage your created puzzles"
+    },
     "mypageFollowing": {
       "title": "Following",
       "description": "Users you are following"
@@ -2193,7 +2197,9 @@
       "subscriptionTitle": "Subscription",
       "benefitsTitle": "Benefits",
       "practiceTitle": "Practice",
-      "myProblems": "My Problems"
+      "myProblems": "My Problems",
+      "myPositionMemory": "Position Memory",
+      "myPuzzles": "Puzzles"
     },
     "records": "Records",
     "bestScore": "Best Score",
@@ -2303,6 +2309,21 @@
     "title": "My Problems",
     "sectionTitle": "Problems You Created",
     "empty": "You haven't created any problems yet.",
+    "breadcrumbMypage": "My Page",
+    "breadcrumbProblems": "My Problems"
+  },
+  "MypagePuzzles": {
+    "title": "My Puzzles",
+    "sectionTitle": "Puzzles You Created",
+    "empty": "You haven't created any puzzles yet.",
+    "breadcrumbMypage": "My Page",
+    "breadcrumbProblems": "My Problems"
+  },
+  "MypageProblemsIndex": {
+    "title": "My Problems",
+    "description": "Manage your created problems",
+    "positionMemory": "Position Memory",
+    "puzzles": "Puzzles",
     "breadcrumbMypage": "My Page"
   },
   "MypageFollowing": {

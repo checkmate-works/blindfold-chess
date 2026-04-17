@@ -67,6 +67,10 @@
       "title": "マイ問題",
       "description": "作成したポジション記憶の問題"
     },
+    "mypagePuzzles": {
+      "title": "マイパズル",
+      "description": "作成したパズルの管理"
+    },
     "mypageFollowing": {
       "title": "フォロー中",
       "description": "フォロー中のユーザー"
@@ -2194,7 +2198,9 @@
       "subscriptionTitle": "サブスクリプション",
       "benefitsTitle": "特典",
       "practiceTitle": "練習",
-      "myProblems": "マイ問題"
+      "myProblems": "マイ問題",
+      "myPositionMemory": "ポジションの記憶",
+      "myPuzzles": "パズル"
     },
     "records": "レコード",
     "bestScore": "最高スコア",
@@ -2304,6 +2310,21 @@
     "title": "マイ問題",
     "sectionTitle": "作成した問題",
     "empty": "まだ問題を作成していません。",
+    "breadcrumbMypage": "マイページ",
+    "breadcrumbProblems": "マイ問題"
+  },
+  "MypagePuzzles": {
+    "title": "マイパズル",
+    "sectionTitle": "作成したパズル",
+    "empty": "まだパズルを作成していません。",
+    "breadcrumbMypage": "マイページ",
+    "breadcrumbProblems": "マイ問題"
+  },
+  "MypageProblemsIndex": {
+    "title": "マイ問題",
+    "description": "作成した問題の管理",
+    "positionMemory": "ポジションの記憶",
+    "puzzles": "パズル",
     "breadcrumbMypage": "マイページ"
   },
   "MypageFollowing": {

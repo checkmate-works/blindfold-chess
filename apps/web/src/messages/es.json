@@ -63,6 +63,14 @@
       "title": "Mis Publicaciones",
       "description": "Consulta tus publicaciones"
     },
+    "mypageProblems": {
+      "title": "Mis Problemas",
+      "description": "Problemas de memoria de posición que has creado"
+    },
+    "mypagePuzzles": {
+      "title": "Mis Puzzles",
+      "description": "Administra tus puzzles creados"
+    },
     "mypageFollowing": {
       "title": "Siguiendo",
       "description": "Usuarios que sigues"
@@ -2144,7 +2152,18 @@
       "heatmapMore": "Más",
       "heatmapTotal": "Total",
       "heatmapNoActivity": "Sin actividad en este día",
-      "heatmapLearnLink": "Cómo calculamos la Exp"
+      "heatmapLearnLink": "Cómo calculamos la Exp",
+      "levelLabel": "Nivel {level}",
+      "expProgress": "{current} / {next} Exp",
+      "expRemaining": "{remaining} Exp para el siguiente nivel",
+      "viewExpLeaderboard": "Ver Clasificación de Exp",
+      "accountTitle": "Cuenta",
+      "subscriptionTitle": "Suscripción",
+      "benefitsTitle": "Beneficios",
+      "practiceTitle": "Práctica",
+      "myProblems": "Mis Problemas",
+      "myPositionMemory": "Memoria de Posición",
+      "myPuzzles": "Puzzles"
     },
     "records": "Registros",
     "bestScore": "Mejor Puntuación",
@@ -2212,6 +2231,27 @@
     "breadcrumbMypage": "Mi Página",
     "empty": "Aún no hay publicaciones.",
     "sectionTitle": "Temas"
+  },
+  "MypageProblems": {
+    "title": "Mis Problemas",
+    "sectionTitle": "Problemas que Has Creado",
+    "empty": "Aún no has creado ningún problema.",
+    "breadcrumbMypage": "Mi Página",
+    "breadcrumbProblems": "Mis Problemas"
+  },
+  "MypagePuzzles": {
+    "title": "Mis Puzzles",
+    "sectionTitle": "Puzzles que Has Creado",
+    "empty": "Aún no has creado ningún puzzle.",
+    "breadcrumbMypage": "Mi Página",
+    "breadcrumbProblems": "Mis Problemas"
+  },
+  "MypageProblemsIndex": {
+    "title": "Mis Problemas",
+    "description": "Administra tus problemas creados",
+    "positionMemory": "Memoria de Posición",
+    "puzzles": "Puzzles",
+    "breadcrumbMypage": "Mi Página"
   },
   "MypageFollowing": {
     "title": "Siguiendo",
