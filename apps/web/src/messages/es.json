@@ -909,6 +909,35 @@
         "backToList": "Volver a la lista"
       }
     },
+    "puzzle": {
+      "title": "Puzzle",
+      "description": "Encuentra la mejor jugada en la posición",
+      "create": {
+        "title": "Crear Puzzle",
+        "fenLabel": "FEN",
+        "fenInvalid": "Posición FEN inválida",
+        "titleLabel": "Título",
+        "titleRequired": "El título es obligatorio",
+        "descriptionLabel": "Descripción",
+        "solutionLabel": "Solución",
+        "solutionPlaceholder": "ej. Nf3 o Qh7+ Kf8 Qh8#",
+        "solutionRequired": "La solución es obligatoria",
+        "solutionInvalid": "Secuencia de movimientos inválida para esta posición",
+        "submit": "Crear",
+        "submitting": "Creando...",
+        "clearBoard": "Limpiar Tablero",
+        "tabBoard": "Tablero",
+        "tabFen": "FEN",
+        "positionInvalid": "Por favor configura una posición válida",
+        "flipBoard": "Voltear tablero",
+        "whiteToMove": "Mueven blancas",
+        "blackToMove": "Mueven negras"
+      },
+      "whitePieces": "Piezas Blancas",
+      "blackPieces": "Piezas Negras",
+      "removePieceMode": "Modo de eliminar pieza - Haz clic en una casilla para eliminar la pieza",
+      "placingPiece": "Colocando"
+    },
     "knightTour": {
       "title": "Recorrido del Caballo",
       "description": "Visita las 64 casillas con un caballo, pasando por cada casilla exactamente una vez",

@@ -950,6 +950,35 @@
         "cancel": "キャンセル"
       }
     },
+    "puzzle": {
+      "title": "パズル",
+      "description": "ポジションで最善手を見つけよう",
+      "create": {
+        "title": "パズルを作成",
+        "fenLabel": "FEN",
+        "fenInvalid": "無効なFENです",
+        "titleLabel": "タイトル",
+        "titleRequired": "タイトルは必須です",
+        "descriptionLabel": "説明",
+        "solutionLabel": "正解手",
+        "solutionPlaceholder": "例: Nf3 または Qh7+ Kf8 Qh8#",
+        "solutionRequired": "正解手は必須です",
+        "solutionInvalid": "このポジションでは無効な手順です",
+        "submit": "作成",
+        "submitting": "作成中...",
+        "clearBoard": "ボードをクリア",
+        "tabBoard": "ボード",
+        "tabFen": "FEN",
+        "positionInvalid": "有効なポジションを設定してください",
+        "flipBoard": "ボードを反転",
+        "whiteToMove": "白の手番",
+        "blackToMove": "黒の手番"
+      },
+      "whitePieces": "白の駒",
+      "blackPieces": "黒の駒",
+      "removePieceMode": "駒を削除 - マスをクリックして駒を削除",
+      "placingPiece": "配置中:"
+    },
     "knightTour": {
       "title": "ナイトツアー",
       "description": "ナイトを使って64マス全てを1回ずつ訪問する",
