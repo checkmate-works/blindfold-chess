@@ -38,12 +38,6 @@ export default async function AdminPositionMemoryPage({
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Position Memory</h1>
-        <Link
-          href="/admin/positions/memory/new"
-          className="px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-        >
-          New Position
-        </Link>
       </div>
 
       {rows.length > 0 && (
