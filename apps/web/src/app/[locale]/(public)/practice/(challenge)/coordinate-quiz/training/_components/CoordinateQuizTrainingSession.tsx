@@ -8,7 +8,6 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import type { Square } from '@blindfold-chess/types';
 
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
-import { useCountdown } from '@/app/[locale]/(public)/practice/_hooks/use-countdown';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -45,8 +44,6 @@ export default function CoordinateQuizTrainingSession({
   const [showFeedback, setShowFeedback] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
 
-  const { countdown } = useCountdown();
-
   const hasStarted = useRef(false);
 
   // Auto-start the game on mount
@@ -63,7 +60,7 @@ export default function CoordinateQuizTrainingSession({
 
   const handleSquareClick = useCallback(
     (square: Square) => {
-      if (!currentQuestion || showFeedback || countdown !== null) return;
+      if (!currentQuestion || showFeedback) return;
 
       setLastClickedSquare(square);
       const correct = checkAnswer(square, currentQuestion.targetSquare);
@@ -87,7 +84,7 @@ export default function CoordinateQuizTrainingSession({
         setLastClickedSquare(null);
       }, feedbackDuration);
     },
-    [currentQuestion, showFeedback, boardOrientation, recentSquares, feedbackDuration, countdown]
+    [currentQuestion, showFeedback, boardOrientation, recentSquares, feedbackDuration]
   );
 
   const handleEndTraining = useCallback(() => {
@@ -111,7 +108,6 @@ export default function CoordinateQuizTrainingSession({
         showFeedback={showFeedback}
         isCorrect={isCorrect}
         onSquareClick={handleSquareClick}
-        countdown={countdown}
         onEndTraining={handleEndTraining}
       />
     </div>

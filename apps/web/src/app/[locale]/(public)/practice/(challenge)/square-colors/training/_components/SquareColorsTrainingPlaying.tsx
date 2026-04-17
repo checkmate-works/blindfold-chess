@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 
-import { BoardOverlay, Button } from '@/app/_components';
+import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { BoardTheme } from '@/lib/games/board-themes';
@@ -21,7 +21,6 @@ type Props = {
   lastAnswer: { correct: boolean; square: string } | null;
   onAnswer: (color: 'light' | 'dark') => void;
   boardTheme?: BoardTheme;
-  countdown: number | null;
   correctCount: number;
   incorrectCount: number;
   onEndTraining: () => void;
@@ -34,7 +33,6 @@ export function SquareColorsTrainingPlaying({
   lastAnswer,
   onAnswer,
   boardTheme = DEFAULT_BOARD_THEME,
-  countdown,
   correctCount,
   incorrectCount,
   onEndTraining,
@@ -42,18 +40,11 @@ export function SquareColorsTrainingPlaying({
 }: Props) {
   const t = useTranslations('practice.squareColors');
   const tp = useTranslations('practice');
-  const inputDisabled = showResult || countdown !== null;
+  const inputDisabled = showResult;
 
   return (
     <div className="max-w-md mx-auto">
       <div className="bg-card rounded-xl border border-border p-8 text-center relative overflow-hidden shadow-sm">
-        {/* Countdown Overlay */}
-        <BoardOverlay isVisible={countdown !== null} className="backdrop-blur-md">
-          <span className="text-8xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] animate-in zoom-in duration-300">
-            {countdown !== null && (countdown > 0 ? countdown : 'START!')}
-          </span>
-        </BoardOverlay>
-
         <div>
           <SquareColorQuestionDisplay currentSquare={currentSquare} lastAnswer={lastAnswer} />
 

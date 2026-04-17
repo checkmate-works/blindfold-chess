@@ -9,7 +9,6 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 
 import { useBatchTrainingSession } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-batch-training-session';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
-import { useCountdown } from '@/app/[locale]/(public)/practice/_hooks/use-countdown';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -29,8 +28,6 @@ export default function SquareColorsTrainingSession({ locale }: Props) {
   const { showToast } = useToast();
   const tp = useTranslations('practice');
 
-  const { countdown } = useCountdown();
-
   const {
     currentQuestion: currentSquare,
     hasQuestions,
@@ -49,9 +46,9 @@ export default function SquareColorsTrainingSession({ locale }: Props) {
 
   const onAnswer = useCallback(
     (selectedColor: 'light' | 'dark') => {
-      handleAnswer(selectedColor, countdown !== null);
+      handleAnswer(selectedColor);
     },
-    [handleAnswer, countdown]
+    [handleAnswer]
   );
 
   const handleEndTraining = useCallback(() => {
@@ -84,7 +81,6 @@ export default function SquareColorsTrainingSession({ locale }: Props) {
         }
         onAnswer={onAnswer}
         boardTheme={preferences.boardTheme}
-        countdown={countdown}
         correctCount={correctCount}
         incorrectCount={incorrectCount}
         onEndTraining={handleEndTraining}

@@ -17,7 +17,6 @@ import {
 
 import { useBatchTrainingSession } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-batch-training-session';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
-import { useCountdown } from '@/app/[locale]/(public)/practice/_hooks/use-countdown';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -34,8 +33,6 @@ export default function QuadrantsTrainingSession({ locale, orientation }: Props)
   const router = useRouter();
   const { showToast } = useToast();
   const tp = useTranslations('practice');
-
-  const { countdown } = useCountdown();
 
   const {
     currentQuestion,
@@ -56,9 +53,9 @@ export default function QuadrantsTrainingSession({ locale, orientation }: Props)
 
   const onAnswer = useCallback(
     (selectedQuadrant: QuadrantId) => {
-      handleAnswer(selectedQuadrant, countdown !== null);
+      handleAnswer(selectedQuadrant);
     },
-    [handleAnswer, countdown]
+    [handleAnswer]
   );
 
   const handleEndTraining = useCallback(() => {
@@ -77,7 +74,6 @@ export default function QuadrantsTrainingSession({ locale, orientation }: Props)
         showResult={showResult}
         lastAnswer={lastAnswer}
         onAnswer={onAnswer}
-        countdown={countdown}
         correctCount={correctCount}
         incorrectCount={incorrectCount}
         onEndTraining={handleEndTraining}

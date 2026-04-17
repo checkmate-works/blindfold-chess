@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 
-import { BoardOverlay, Button } from '@/app/_components';
+import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { QuadrantId, QuadrantQuestion } from '@blindfold-chess/features/quadrants';
 import { getCorrectQuadrant } from '@blindfold-chess/features/quadrants';
@@ -22,7 +22,6 @@ type Props = {
     skipped: boolean;
   } | null;
   onAnswer: (quadrant: QuadrantId) => void;
-  countdown: number | null;
   correctCount: number;
   incorrectCount: number;
   onEndTraining: () => void;
@@ -34,7 +33,6 @@ export function QuadrantsTrainingPlaying({
   showResult,
   lastAnswer,
   onAnswer,
-  countdown,
   correctCount,
   incorrectCount,
   onEndTraining,
@@ -54,13 +52,6 @@ export function QuadrantsTrainingPlaying({
   return (
     <div className="max-w-2xl mx-auto">
       <div className="bg-card rounded-xl border border-border p-6 text-center relative overflow-hidden shadow-sm space-y-4">
-        {/* Countdown Overlay */}
-        <BoardOverlay isVisible={countdown !== null} className="backdrop-blur-md">
-          <span className="text-8xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] animate-in zoom-in duration-300">
-            {countdown !== null && (countdown > 0 ? countdown : 'START!')}
-          </span>
-        </BoardOverlay>
-
         {/* Orientation Indicator */}
         <div className="flex justify-center">
           <div className="flex items-center gap-2">
@@ -90,7 +81,7 @@ export function QuadrantsTrainingPlaying({
             correctQuadrant={correctQuadrant}
             wrongQuadrant={wrongQuadrant}
             onQuadrantClick={onAnswer}
-            disabled={showResult || countdown !== null}
+            disabled={showResult}
             orientation={currentQuestion.orientation}
           />
         </div>

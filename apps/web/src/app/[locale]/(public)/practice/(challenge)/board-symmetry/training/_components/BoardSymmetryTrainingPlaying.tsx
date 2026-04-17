@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 
-import { BoardOverlay, Button } from '@/app/_components';
+import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { BoardSymmetryProblem } from '@blindfold-chess/features/board-symmetry';
 
@@ -24,7 +24,6 @@ type Props = {
   onRankToggle: (rank: string) => void;
   onBackspace: () => void;
   isProcessing: boolean;
-  countdown: number | null;
   onEndTraining: () => void;
   locale: Locale;
 };
@@ -40,13 +39,12 @@ export function BoardSymmetryTrainingPlaying({
   onRankToggle,
   onBackspace,
   isProcessing,
-  countdown,
   onEndTraining,
   locale,
 }: Props) {
   const t = useTranslations('practice.boardSymmetry');
   const tp = useTranslations('practice');
-  const isDisabled = isProcessing || countdown !== null;
+  const isDisabled = isProcessing;
 
   useAlgebraicKeyboardInput({
     onFile: onFileToggle,
@@ -64,13 +62,6 @@ export function BoardSymmetryTrainingPlaying({
   return (
     <div className="max-w-md mx-auto">
       <div className="bg-card rounded-xl border border-border p-8 text-center shadow-sm relative overflow-hidden">
-        {/* Countdown Overlay */}
-        <BoardOverlay isVisible={countdown !== null} className="backdrop-blur-md">
-          <span className="text-8xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] animate-in zoom-in duration-300">
-            {countdown !== null && (countdown > 0 ? countdown : 'START!')}
-          </span>
-        </BoardOverlay>
-
         <div>
           <SectionTitle className="mb-8">
             {t('question', {
