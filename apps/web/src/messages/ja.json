@@ -63,6 +63,10 @@
       "title": "自分の投稿",
       "description": "自分の投稿の一覧を表示します"
     },
+    "mypageProblems": {
+      "title": "マイ問題",
+      "description": "作成したポジション記憶の問題"
+    },
     "mypageFollowing": {
       "title": "フォロー中",
       "description": "フォロー中のユーザー"
@@ -907,7 +911,24 @@
         "sectionTitle": "問題一覧",
         "empty": "まだポジションがありません",
         "tutorialLink": "チュートリアルを見る",
-        "submittedBy": "による出題"
+        "submittedBy": "による出題",
+        "createButton": "問題を作成する"
+      },
+      "create": {
+        "title": "問題を作成",
+        "fenLabel": "FEN",
+        "fenRequired": "FENは必須です",
+        "fenInvalid": "無効なFENです",
+        "titleLabel": "タイトル",
+        "titleRequired": "タイトルは必須です",
+        "descriptionLabel": "説明",
+        "submit": "作成",
+        "submitting": "作成中...",
+        "clearBoard": "ボードをクリア",
+        "tabBoard": "ボード",
+        "tabFen": "FEN",
+        "positionInvalid": "有効なポジションを設定してください",
+        "flipBoard": "ボードを反転"
       },
       "detail": {
         "title": "ポジション詳細",
@@ -920,6 +941,13 @@
         "tutorialLink": "チュートリアルを見る",
         "tryAgain": "もう一度挑戦",
         "backToList": "一覧に戻る"
+      },
+      "delete": {
+        "button": "削除",
+        "confirmTitle": "問題を削除",
+        "confirmMessage": "この問題を削除しますか？この操作は元に戻せません。",
+        "confirm": "削除",
+        "cancel": "キャンセル"
       }
     },
     "knightTour": {
@@ -2112,7 +2140,9 @@
       "viewExpLeaderboard": "Exp ランキングを見る",
       "accountTitle": "アカウント",
       "subscriptionTitle": "サブスクリプション",
-      "benefitsTitle": "特典"
+      "benefitsTitle": "特典",
+      "practiceTitle": "練習",
+      "myProblems": "マイ問題"
     },
     "records": "レコード",
     "bestScore": "最高スコア",
@@ -2218,6 +2248,12 @@
     "empty": "投稿はまだありません。",
     "sectionTitle": "トピック"
   },
+  "MypageProblems": {
+    "title": "マイ問題",
+    "sectionTitle": "作成した問題",
+    "empty": "まだ問題を作成していません。",
+    "breadcrumbMypage": "マイページ"
+  },
   "MypageFollowing": {
     "title": "フォロー中",
     "empty": "まだ誰もフォローしていません。",
@@ -2285,7 +2321,9 @@
     "gameSaved": "ゲームが保存されました",
     "gamesDeleted": "{count}個のゲームを削除しました",
     "accountDeleted": "退会が完了しました",
-    "practiceResultSaveFailed": "結果の保存に失敗しました。もう一度お試しください。"
+    "practiceResultSaveFailed": "結果の保存に失敗しました。もう一度お試しください。",
+    "positionCreated": "問題を作成しました",
+    "positionDeleted": "問題を削除しました"
   },
   "setupUsername": {
     "title": "アカウント登録",

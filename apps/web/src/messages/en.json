@@ -63,6 +63,10 @@
       "title": "My Posts",
       "description": "View your posts"
     },
+    "mypageProblems": {
+      "title": "My Problems",
+      "description": "Position memory problems you have created"
+    },
     "mypageFollowing": {
       "title": "Following",
       "description": "Users you are following"
@@ -906,7 +910,24 @@
         "sectionTitle": "Problem List",
         "empty": "No positions available yet",
         "tutorialLink": "View Tutorial",
-        "submittedBy": "submitted"
+        "submittedBy": "submitted",
+        "createButton": "Create Problem"
+      },
+      "create": {
+        "title": "Create Problem",
+        "fenLabel": "FEN",
+        "fenRequired": "FEN is required",
+        "fenInvalid": "Invalid FEN position",
+        "titleLabel": "Title",
+        "titleRequired": "Title is required",
+        "descriptionLabel": "Description",
+        "submit": "Create",
+        "submitting": "Creating...",
+        "clearBoard": "Clear Board",
+        "tabBoard": "Board",
+        "tabFen": "FEN",
+        "positionInvalid": "Please set up a valid position",
+        "flipBoard": "Flip board"
       },
       "detail": {
         "title": "Position Detail",
@@ -919,6 +940,13 @@
         "tutorialLink": "View Tutorial",
         "tryAgain": "Try Again",
         "backToList": "Back to List"
+      },
+      "delete": {
+        "button": "Delete Problem",
+        "confirmTitle": "Delete Problem",
+        "confirmMessage": "Are you sure you want to delete this problem? This action cannot be undone.",
+        "confirm": "Delete",
+        "cancel": "Cancel"
       }
     },
     "knightTour": {
@@ -2111,7 +2139,9 @@
       "viewExpLeaderboard": "View Exp Leaderboard",
       "accountTitle": "Account",
       "subscriptionTitle": "Subscription",
-      "benefitsTitle": "Benefits"
+      "benefitsTitle": "Benefits",
+      "practiceTitle": "Practice",
+      "myProblems": "My Problems"
     },
     "records": "Records",
     "bestScore": "Best Score",
@@ -2217,6 +2247,12 @@
     "empty": "No posts yet.",
     "sectionTitle": "Topics"
   },
+  "MypageProblems": {
+    "title": "My Problems",
+    "sectionTitle": "Problems You Created",
+    "empty": "You haven't created any problems yet.",
+    "breadcrumbMypage": "My Page"
+  },
   "MypageFollowing": {
     "title": "Following",
     "empty": "You're not following anyone yet.",
@@ -2284,7 +2320,9 @@
     "gameSaved": "Game saved successfully",
     "gamesDeleted": "{count} games deleted successfully",
     "accountDeleted": "Your account has been deleted",
-    "practiceResultSaveFailed": "Failed to save your result. Please try again."
+    "practiceResultSaveFailed": "Failed to save your result. Please try again.",
+    "positionCreated": "Position created successfully",
+    "positionDeleted": "Problem deleted"
   },
   "setupUsername": {
     "title": "Create Your Account",

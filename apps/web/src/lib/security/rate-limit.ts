@@ -56,6 +56,8 @@ export const RATE_LIMITS = {
     maxAttempts: 10,
     windowMs: 3_600_000,
   },
+  createPosition: { action: 'create_position', maxAttempts: 10, windowMs: 3_600_000 },
+  deletePosition: { action: 'delete_position', maxAttempts: 10, windowMs: 3_600_000 },
 } as const;
 
 /**

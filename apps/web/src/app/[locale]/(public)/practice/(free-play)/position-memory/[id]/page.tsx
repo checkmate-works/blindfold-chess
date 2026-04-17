@@ -20,6 +20,7 @@ import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/met
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { toggleLike } from '../_actions/toggleLike';
+import { DeletePositionButton } from '../_components/DeletePositionButton';
 import { PositionDetailBoard } from '../_components/single-position/PositionDetailBoard';
 import { PositionStartForm } from '../_components/single-position/PositionStartForm';
 
@@ -136,13 +137,18 @@ export default async function PositionDetailPage({ params }: Props) {
               toggleLikeAction={toggleLike}
               i18nNamespace="practice.positionMemory"
             />
-            <time dateTime={position.createdAt.toISOString()}>
-              {position.createdAt.toLocaleDateString(locale, {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
-            </time>
+            <div className="flex items-center gap-4">
+              {currentUser?.id === position.userId && (
+                <DeletePositionButton positionId={position.id} locale={locale} />
+              )}
+              <time dateTime={position.createdAt.toISOString()}>
+                {position.createdAt.toLocaleDateString(locale, {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </time>
+            </div>
           </div>
 
           <SectionTitle>{t('detail.solveSection')}</SectionTitle>
