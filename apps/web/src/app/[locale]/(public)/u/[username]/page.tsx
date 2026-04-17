@@ -192,8 +192,8 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
   };
 
   const buildTabHref = (targetTab: string) => {
-    if (targetTab === 'topics') return `/${locale}/u/${username}`;
-    return `/${locale}/u/${username}?tab=${targetTab}`;
+    if (targetTab === 'topics') return `/u/${username}`;
+    return `/u/${username}?tab=${targetTab}`;
   };
 
   return (
