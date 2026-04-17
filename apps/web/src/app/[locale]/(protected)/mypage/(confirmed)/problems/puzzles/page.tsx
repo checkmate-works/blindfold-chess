@@ -19,7 +19,7 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { getPaginationParams } from '@/lib/pagination';
 import { countPositions, listPositionsWithProfile } from '@/lib/positions/queries';
-import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
+import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 import { truncate } from '@/lib/text';
 
 import {
@@ -96,7 +96,7 @@ export default async function PuzzleProblemsPage({ params, searchParams }: Props
                 >
                   <div className="flex gap-4">
                     <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
-                      <BoardThumbnail fen={position.fen} className="w-full h-full" />
+                      <ThemedBoardThumbnail fen={position.fen} className="w-full h-full" />
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col gap-1">
                       <h3 className="font-medium text-foreground truncate">{position.title}</h3>

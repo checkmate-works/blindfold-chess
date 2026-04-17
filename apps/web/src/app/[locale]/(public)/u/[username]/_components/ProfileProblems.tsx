@@ -1,6 +1,6 @@
 import { Link } from '@/i18n/routing';
 
-import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
+import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 
 import { PaginationNav } from '@/app/[locale]/_components';
 
@@ -63,7 +63,10 @@ export function ProfileProblems({
               locale={locale}
               className="flex gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-muted"
             >
-              <BoardThumbnail fen={position.fen} className="w-16 h-16 sm:w-20 sm:h-20 shrink-0" />
+              <ThemedBoardThumbnail
+                fen={position.fen}
+                className="w-16 h-16 sm:w-20 sm:h-20 shrink-0"
+              />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <h3 className="text-sm font-semibold text-foreground truncate">
