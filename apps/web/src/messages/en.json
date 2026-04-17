@@ -952,6 +952,13 @@
     "puzzle": {
       "title": "Puzzle",
       "description": "Find the best move in the position",
+      "list": {
+        "title": "Puzzle",
+        "sectionTitle": "Puzzle List",
+        "empty": "No puzzles available yet",
+        "submittedBy": "submitted",
+        "createButton": "Create Puzzle"
+      },
       "create": {
         "title": "Create Puzzle",
         "fenLabel": "FEN",

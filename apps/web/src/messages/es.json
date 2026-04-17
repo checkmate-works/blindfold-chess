@@ -912,6 +912,13 @@
     "puzzle": {
       "title": "Puzzle",
       "description": "Encuentra la mejor jugada en la posición",
+      "list": {
+        "title": "Puzzle",
+        "sectionTitle": "Lista de Puzzles",
+        "empty": "Aun no hay puzzles disponibles",
+        "submittedBy": "enviado",
+        "createButton": "Crear Puzzle"
+      },
       "create": {
         "title": "Crear Puzzle",
         "fenLabel": "FEN",

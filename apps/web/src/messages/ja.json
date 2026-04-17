@@ -953,6 +953,13 @@
     "puzzle": {
       "title": "パズル",
       "description": "ポジションで最善手を見つけよう",
+      "list": {
+        "title": "パズル",
+        "sectionTitle": "パズル一覧",
+        "empty": "パズルはまだありません",
+        "submittedBy": "作成",
+        "createButton": "パズルを作成"
+      },
       "create": {
         "title": "パズルを作成",
         "fenLabel": "FEN",

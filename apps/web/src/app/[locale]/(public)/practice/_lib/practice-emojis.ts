@@ -19,4 +19,5 @@ export const PRACTICE_EMOJIS: Record<PracticeMenuType, string> = {
   algebraic_notation: '🔤',
   fen: '📝',
   quadrant_anchors: '⚃',
+  puzzle: '🧩',
 };
