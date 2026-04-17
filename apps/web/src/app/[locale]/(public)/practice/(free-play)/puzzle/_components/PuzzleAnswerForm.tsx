@@ -101,10 +101,22 @@ export function PuzzleAnswerForm({ solutions, positionId, fen }: Props) {
         <p className="text-sm font-medium text-red-600 dark:text-red-400">{t('incorrect')}</p>
       )}
 
-      {isSolved && hasErrors && (
+      {hasErrors && (
         <Link
           href={`/practice/puzzle/${positionId}/result`}
           className="inline-block rounded-md bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground hover:opacity-90 transition-opacity"
+          onClick={() => {
+            // Save current attempts to sessionStorage even if not yet solved
+            try {
+              const solutionLine = solutions[0] ?? '';
+              sessionStorage.setItem(
+                `puzzle_result_${positionId}`,
+                JSON.stringify({ attempts, solutionLine, fen })
+              );
+            } catch {
+              // sessionStorage may be unavailable
+            }
+          }}
         >
           {tResult('viewResult')}
         </Link>
