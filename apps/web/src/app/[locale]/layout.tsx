@@ -3,6 +3,7 @@ import { getMessages, getTranslations } from 'next-intl/server';
 import { Inter } from 'next/font/google';
 import { notFound } from 'next/navigation';
 
+import { EnvironmentRibbon } from '@/app/_components/EnvironmentRibbon';
 import { AUTHOR_NAME, COOKIEYES_ID, GA_MEASUREMENT_ID, SITE_URL } from '@/config';
 import { routing } from '@/i18n/routing';
 import { generateThemeCSS } from '@blindfold-chess/ui';
@@ -12,7 +13,6 @@ import { JsonLd, generateOrganizationSchema, generateWebSiteSchema } from '@/lib
 
 import '../globals.css';
 import { CookieConsent } from './_components/CookieConsent';
-import { EnvironmentRibbon } from './_components/EnvironmentRibbon';
 import { Footer } from './_components/Footer';
 import { Header } from './_components/Header';
 import { MobileTabBar } from './_components/MobileTabBar';

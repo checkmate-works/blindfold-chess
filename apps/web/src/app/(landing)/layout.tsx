@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { Inter } from 'next/font/google';
 import { cookies } from 'next/headers';
 
+import { EnvironmentRibbon } from '@/app/_components/EnvironmentRibbon';
 import {
   AUTHOR_NAME,
   COOKIEYES_ID,
@@ -94,6 +95,7 @@ export default async function LandingLayout({ children }: { children: React.Reac
         <style dangerouslySetInnerHTML={{ __html: generateThemeCSS() }} />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
+        <EnvironmentRibbon />
         {showBanner && (
           <AnnouncementBanner
             id={bannerAnnouncement.id}

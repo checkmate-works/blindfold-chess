@@ -7,6 +7,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { EnvironmentRibbon } from '@/app/_components/EnvironmentRibbon';
 import { generateThemeCSS } from '@blindfold-chess/ui';
 import { eq } from 'drizzle-orm';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
@@ -59,6 +60,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <style dangerouslySetInnerHTML={{ __html: generateThemeCSS() }} />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
+        <EnvironmentRibbon />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
