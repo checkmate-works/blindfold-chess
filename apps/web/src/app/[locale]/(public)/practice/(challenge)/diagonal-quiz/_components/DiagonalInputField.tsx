@@ -1,6 +1,5 @@
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-
-import type { ActiveField } from '../_hooks/use-diagonal-input';
+import type { ActiveField } from '@blindfold-chess/features/diagonal-quiz';
 
 type Props = {
   label: string;

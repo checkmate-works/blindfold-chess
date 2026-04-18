@@ -1,12 +1,12 @@
 import { Text, StyleSheet, TouchableOpacity } from "react-native";
 import {
-  useTheme,
   fontSize,
   fontWeight,
   spacing,
   borderRadius,
   touchTarget,
 } from "../../../theme";
+import type { useTheme } from "../../../theme";
 
 export type ToggleButtonProps = {
   label: string;

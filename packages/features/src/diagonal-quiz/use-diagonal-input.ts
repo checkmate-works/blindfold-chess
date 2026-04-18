@@ -30,6 +30,7 @@ function getStep(length: number): InputStep {
 function buildDisplayText(chars: string[]): string {
   if (chars.length === 0) return "";
   if (chars.length <= 2) return chars.join("");
+  // After 2 chars, insert hyphen: "b1-h7"
   return chars.slice(0, 2).join("") + "-" + chars.slice(2).join("");
 }
 
@@ -94,6 +95,7 @@ export function useDiagonalInput({
   const expectingFile = currentStep === "file1" || currentStep === "file2";
   const expectingRank = currentStep === "rank1" || currentStep === "rank2";
 
+  // Whether the user is currently inputting the start square or end square
   const isInputtingStart = currentStep === "file1" || currentStep === "rank1";
   const isInputtingEnd = currentStep === "file2" || currentStep === "rank2";
 
@@ -117,6 +119,7 @@ export function useDiagonalInput({
       const newChars = [...currentState.chars, file];
       setter({ chars: newChars, step: getStep(newChars.length) });
 
+      // Check synchronous completion (possible when single-square mode allows 2-char completion)
       const currentComplete =
         isComplete(newChars) ||
         (allowSingleCurrent && isSingleSquareComplete(newChars));
@@ -166,6 +169,7 @@ export function useDiagonalInput({
       const newChars = [...currentState.chars, rank];
       setter({ chars: newChars, step: getStep(newChars.length) });
 
+      // Check synchronous completion
       const currentComplete =
         isComplete(newChars) ||
         (allowSingleCurrent && isSingleSquareComplete(newChars));
