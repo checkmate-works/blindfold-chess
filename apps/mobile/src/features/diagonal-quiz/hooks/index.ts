@@ -1,7 +1,7 @@
 export { useDiagonalQuizSettings } from "./useDiagonalQuizSettings";
 export { useDiagonalQuizSession } from "./useDiagonalQuizSession";
-export { useDiagonalInput } from "./useDiagonalInput";
-export type { ActiveField } from "./useDiagonalInput";
+export { useDiagonalInput } from "@blindfold-chess/features/diagonal-quiz";
+export type { ActiveField } from "@blindfold-chess/features/diagonal-quiz";
 export type {
   DiagonalQuizSettings,
   DiagonalQuizResult,
