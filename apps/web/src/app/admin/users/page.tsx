@@ -1,5 +1,5 @@
 /**
- * Admin Users Management (ユーザー管理)
+ * Admin Users Management
  *
  * @description
  * Admin page for viewing and managing user accounts. Provides both a paginated

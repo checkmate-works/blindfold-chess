@@ -1,5 +1,5 @@
 /**
- * Postmortem Page (感想戦)
+ * Postmortem Page
  *
  * @description
  * A game review feature where users replay all moves from a completed game

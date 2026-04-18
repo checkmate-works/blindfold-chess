@@ -1,5 +1,5 @@
 /**
- * Admin Achievements Page (実績管理)
+ * Admin Achievements Page
  *
  * @description
  * Read-only admin surface for browsing achievement master data. Lists every

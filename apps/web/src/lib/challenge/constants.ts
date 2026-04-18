@@ -1,22 +1,23 @@
 /**
- * チャレンジモードのミス許容数（全メニュー共通）。
+ * Mistake limit for challenge mode (shared across all menus).
  *
- * この値はすべてのチャレンジモジュール（coordinate_quiz, legal_moves, square_colors）で
- * 共有される。ミスがこの数に達するとセッションが終了する。
+ * This value is shared by every challenge module (coordinate_quiz, legal_moves,
+ * square_colors). The session ends once the mistake count reaches this number.
  *
- * 現在は全メニューで同一の値を使用しているが、将来メニューごとに異なる値が
- * 必要になった場合は、メニューごとの設定テーブルやマッピングに移行する。
- * その際、以下の箇所が影響を受ける:
- * - 各チャレンジコンポーネントの useTimedSession 呼び出し
- * - ダッシュボードの完走判定ロジック (dashboard-utils.ts)
- * - リーダーボードの表示ロジック
+ * A single value is used for all menus today. If per-menu limits become
+ * necessary in the future, this should be migrated to a per-menu config table
+ * or mapping. The following call sites would be affected by such a change:
+ * - the `useTimedSession` call in each challenge component
+ * - the completion detection logic on the dashboard (dashboard-utils.ts)
+ * - the leaderboard display logic
  */
 export const MISTAKE_LIMIT = 3;
 
 /**
- * チャレンジモードの制限時間（秒）（全メニュー共通）。
+ * Time limit for challenge mode in seconds (shared across all menus).
  *
- * チャレンジは常に60秒固定。URLパラメータでの可変化は
- * セキュリティ上もビジネスロジック上も許容しない。
+ * Challenges are always fixed to 60 seconds. Exposing this as a tunable
+ * URL parameter is not acceptable — neither from a security standpoint nor
+ * from a business-logic standpoint.
  */
 export const CHALLENGE_TIME_LIMIT = 60;

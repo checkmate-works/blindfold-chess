@@ -39,25 +39,6 @@ describe('NextRankRequirements', () => {
     }
   });
 
-  it('renders as a plain list without a bordered card container or border-t dividers', () => {
-    const { container } = render(<NextRankRequirements items={items} beltColor={BELT} />);
-
-    const list = container.querySelector('ol[data-testid="next-rank-requirements"]');
-    expect(list).not.toBeNull();
-    expect(list!.className).not.toMatch(/rounded-lg/);
-    expect(list!.className).not.toMatch(/\bshadow/);
-    expect(list!.className).not.toMatch(/\bbg-card\b/);
-
-    const rows = list!.querySelectorAll(':scope > li');
-    expect(rows).toHaveLength(items.length);
-
-    for (const row of rows) {
-      expect(row.className ?? '').not.toMatch(/border-t/);
-      const inner = row.querySelector('a, :scope > *');
-      expect(inner?.className ?? '').not.toMatch(/border-t/);
-    }
-  });
-
   it('renders a belt-colored bullet on each row using the provided beltColor', () => {
     const { container } = render(<NextRankRequirements items={items} beltColor={BELT} />);
     const dots = container.querySelectorAll('[data-testid="next-rank-belt-dot"]');

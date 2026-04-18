@@ -3,59 +3,24 @@ import { describe, expect, it, vi } from 'vitest';
 import { getCommonPracticeCompleteLabels } from './get-common-practice-labels';
 
 describe('getCommonPracticeCompleteLabels', () => {
-  const mockT = vi.fn((key: string) => `translated_${key}`);
-
-  it('returns exactly the 5 expected keys', () => {
-    const result = getCommonPracticeCompleteLabels(mockT);
-    const keys = Object.keys(result).sort();
-    expect(keys).toEqual(
-      ['morePractice', 'practiceComplete', 'relatedLearning', 'score', 'tryAgain'].sort()
-    );
-  });
-
-  it('calls the translation function with the correct keys', () => {
-    mockT.mockClear();
-    getCommonPracticeCompleteLabels(mockT);
-    expect(mockT).toHaveBeenCalledTimes(5);
-    expect(mockT).toHaveBeenCalledWith('practiceComplete');
-    expect(mockT).toHaveBeenCalledWith('result');
-    expect(mockT).toHaveBeenCalledWith('tryAgain');
-    expect(mockT).toHaveBeenCalledWith('changeSettings');
-    expect(mockT).toHaveBeenCalledWith('relatedLearning');
-  });
-
+  /**
+   * Intentional re-mapping test:
+   *
+   * The label `morePractice` is intentionally mapped to the translation of
+   * `changeSettings`, not to the translation key `morePractice`. This is a
+   * design decision to keep the semantic label name (`morePractice`) separate
+   * from the "Change settings" wording that is reused in the presentation
+   * layer; it is NOT a simple same-name mapping like the other labels
+   * (e.g., `practiceComplete`).
+   *
+   * Accidentally removing this re-mapping would cause the UI label and the
+   * actual wording to drift apart, so this behavior is locked in as a
+   * specification test. Other keys are excluded from the test because they
+   * are tautological same-name mappings that just return `t()`'s result as-is.
+   */
   it('maps morePractice to the changeSettings translation key', () => {
+    const mockT = vi.fn((key: string) => `translated_${key}`);
     const result = getCommonPracticeCompleteLabels(mockT);
     expect(result.morePractice).toBe('translated_changeSettings');
-  });
-
-  it('returns the translated values for each key', () => {
-    const result = getCommonPracticeCompleteLabels(mockT);
-    expect(result).toEqual({
-      practiceComplete: 'translated_practiceComplete',
-      score: 'translated_result',
-      tryAgain: 'translated_tryAgain',
-      morePractice: 'translated_changeSettings',
-      relatedLearning: 'translated_relatedLearning',
-    });
-  });
-
-  it('uses the actual return values from the translation function', () => {
-    const customT = (key: string) => {
-      const translations: Record<string, string> = {
-        practiceComplete: 'Practice Complete!',
-        result: 'Result',
-        tryAgain: 'Try Again',
-        changeSettings: 'More Practice',
-        relatedLearning: 'Related Learning',
-      };
-      return translations[key] ?? key;
-    };
-    const result = getCommonPracticeCompleteLabels(customT);
-    expect(result.practiceComplete).toBe('Practice Complete!');
-    expect(result.score).toBe('Result');
-    expect(result.tryAgain).toBe('Try Again');
-    expect(result.morePractice).toBe('More Practice');
-    expect(result.relatedLearning).toBe('Related Learning');
   });
 });

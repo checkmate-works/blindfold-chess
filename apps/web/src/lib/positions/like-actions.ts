@@ -6,6 +6,7 @@ import { authenticateAndGuard } from '@/lib/auth';
 import { db, positions } from '@/lib/db';
 import { toggleLikeForTarget } from '@/lib/db/like-actions';
 import { createNotification } from '@/lib/notifications/notification';
+import { parsePositionType } from '@/lib/positions/types';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { UUID_RE } from '@/lib/validations/uuid';
 
@@ -39,19 +40,29 @@ export async function togglePositionLike(
 
   if (liked) {
     const [position] = await db
-      .select({ userId: positions.userId })
+      .select({ userId: positions.userId, type: positions.type })
       .from(positions)
       .where(eq(positions.id, positionId))
       .limit(1);
 
     if (position && position.userId !== user.id) {
+      // Include `positionType` in metadata so that the recipient's
+      // notification link can be routed to the correct detail page
+      // (memory vs puzzle vs sequence). Without this, notifications on
+      // puzzle positions would default to the position-memory detail URL
+      // and 404. Falls back to omitting `positionType` for defensive
+      // safety when the raw DB value is outside the known union.
+      const positionType = parsePositionType(position.type);
       createNotification({
         userId: position.userId,
         actorId: user.id,
         type: 'like',
         targetType: 'position',
         targetId: positionId,
-        metadata: { positionId },
+        metadata: {
+          positionId,
+          ...(positionType ? { positionType } : {}),
+        },
       });
     }
   }

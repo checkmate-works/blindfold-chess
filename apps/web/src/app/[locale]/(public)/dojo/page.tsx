@@ -1,5 +1,5 @@
 /**
- * Dojo (道場)
+ * Dojo (道場 — "training hall")
  *
  * @description
  * Single-page view of the user's current belt rank, the requirements for the

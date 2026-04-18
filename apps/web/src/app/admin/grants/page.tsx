@@ -1,5 +1,5 @@
 /**
- * Admin Grants Page (権限付与管理)
+ * Admin Grants Page
  *
  * @description
  * Manages time-limited benefit grants for users. Grants provide benefits

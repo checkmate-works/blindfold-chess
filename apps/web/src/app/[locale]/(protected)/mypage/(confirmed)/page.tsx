@@ -1,5 +1,5 @@
 /**
- * My Page (マイページ — `/mypage`)
+ * My Page (`/mypage`)
  *
  * @description
  * The authenticated user's personal hub. Shows profile card, interview banner,

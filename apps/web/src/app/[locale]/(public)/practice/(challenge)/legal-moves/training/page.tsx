@@ -1,5 +1,5 @@
 /**
- * Legal Moves Training (合法手トレーニング)
+ * Legal Moves Training
  *
  * @description
  * Untimed training mode for legal move identification.

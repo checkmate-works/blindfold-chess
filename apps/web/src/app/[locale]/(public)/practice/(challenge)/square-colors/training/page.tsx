@@ -1,5 +1,5 @@
 /**
- * Square Colors Training (マスの色トレーニング)
+ * Square Colors Training
  *
  * @description
  * Untimed training mode for square color identification.

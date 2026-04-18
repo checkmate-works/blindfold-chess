@@ -27,16 +27,16 @@ export function _resetStore() {
  *
  * Uses an in-memory fixed-window approach keyed by `${ip}:${action}`.
  *
- * 制限事項:
- * - インメモリ（Map）ベースのため、マルチインスタンス環境ではインスタンス間で
- *   レートリミットの状態が共有されない。
- * - Serverless 環境（Vercel Functions 等）ではコールドスタートごとにストアが
- *   リセットされるため、制限の精度が低下する。
- * - DB ベースのレートリミット（rate-limit.ts）との二重防御により、
- *   上記制限の影響を緩和している。
+ * Limitations:
+ * - Because the store is an in-memory `Map`, rate-limit state is not shared
+ *   across instances in a multi-instance deployment.
+ * - In serverless environments (Vercel Functions, etc.) the store is reset on
+ *   every cold start, which reduces the accuracy of the limit.
+ * - These limitations are mitigated by a second layer of DB-based rate
+ *   limiting (rate-limit.ts) running alongside this one.
  *
- * TODO: トラフィック増加時には Redis（Upstash 等）ベースの実装に移行し、
- * インスタンス間で状態を共有できるようにする。
+ * TODO: As traffic grows, migrate to a Redis-backed implementation (e.g.,
+ * Upstash) so that rate-limit state can be shared across instances.
  */
 export function checkIpRateLimit(
   ip: string,

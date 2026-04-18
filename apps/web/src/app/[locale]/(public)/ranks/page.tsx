@@ -1,5 +1,5 @@
 /**
- * Ranks Page (段級位一覧)
+ * Ranks Page
  *
  * @description
  * Displays all belt ranks and their requirements in the blindfold chess

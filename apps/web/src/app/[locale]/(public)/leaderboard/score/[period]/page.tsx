@@ -1,5 +1,5 @@
 /**
- * Score Leaderboard (スコアランキング — `/leaderboard/score/[period]`)
+ * Score Leaderboard (`/leaderboard/score/[period]`)
  *
  * @description
  * Canonical category-first score leaderboard. Displays weekly/monthly/all-time

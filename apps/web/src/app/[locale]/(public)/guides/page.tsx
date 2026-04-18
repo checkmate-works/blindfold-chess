@@ -1,5 +1,5 @@
 /**
- * Guides Hub Top (ガイドハブ)
+ * Guides Hub Top
  *
  * @description
  * Top page of the guides SEO content hub. Lists available guide sections;

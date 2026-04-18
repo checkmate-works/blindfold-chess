@@ -8,6 +8,45 @@ const mockGetUser = vi.fn();
 const mockIsUserBanned = vi.fn();
 const mockWhere = vi.fn().mockResolvedValue(undefined);
 
+vi.mock('server-only', () => ({}));
+
+vi.mock('@/lib/csrf', () => ({
+  isValidOrigin: () => true,
+}));
+
+vi.mock('@/lib/auth', () => ({
+  authenticateAndGuardApi: async (rateLimitConfig: {
+    action: string;
+    maxAttempts: number;
+    windowMs: number;
+  }) => {
+    const { createClient } = await import('@/lib/supabase/server');
+    const { isUserBanned } = await import('@/lib/moderation/ban');
+    const { checkRateLimit } = await import('@/lib/security/rate-limit');
+    const { NextResponse } = await import('next/server');
+
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { response: NextResponse.json({ error: 'unauthorized' }, { status: 401 }) };
+    }
+
+    if (await isUserBanned(user.id)) {
+      return { response: NextResponse.json({ error: 'banned' }, { status: 403 }) };
+    }
+
+    const rateLimitResult = await checkRateLimit(user.id, rateLimitConfig);
+    if ('error' in rateLimitResult) {
+      return { response: NextResponse.json({ error: 'rateLimited' }, { status: 429 }) };
+    }
+
+    return { user };
+  },
+}));
+
 vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: vi.fn(),
 }));

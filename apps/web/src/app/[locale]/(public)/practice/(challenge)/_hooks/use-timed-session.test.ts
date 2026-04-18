@@ -35,9 +35,6 @@ describe('useTimedSession', () => {
     vi.useRealTimers();
   });
 
-  // ===========================================================================
-  // mistakeAllowance 未指定時（後方互換性）
-  // ===========================================================================
   describe('without mistakeAllowance (backward compatibility)', () => {
     it('does not finish on incorrect answers when mistakeAllowance is not set', () => {
       const { result } = renderHook(() =>
@@ -83,9 +80,6 @@ describe('useTimedSession', () => {
     });
   });
 
-  // ===========================================================================
-  // mistakeAllowance=3 の動作
-  // ===========================================================================
   describe('with mistakeAllowance=3', () => {
     it('does not finish when incorrect count is below mistakeAllowance', () => {
       const { result } = renderHook(() =>
@@ -274,9 +268,6 @@ describe('useTimedSession', () => {
     });
   });
 
-  // ===========================================================================
-  // mistakeAllowance=1 境界値
-  // ===========================================================================
   describe('with mistakeAllowance=1 (boundary value)', () => {
     it('finishes immediately on first incorrect answer', () => {
       const { result } = renderHook(() =>
@@ -322,9 +313,6 @@ describe('useTimedSession', () => {
     });
   });
 
-  // ===========================================================================
-  // totalCount の正確性
-  // ===========================================================================
   describe('totalCount tracking', () => {
     it('totalCount equals correctCount + incorrectCount', () => {
       const { result } = renderHook(() =>
@@ -362,9 +350,6 @@ describe('useTimedSession', () => {
     });
   });
 
-  // ===========================================================================
-  // handleAnswer が無視されるケース
-  // ===========================================================================
   describe('handleAnswer guards', () => {
     it('ignores answer when already finished via time limit', () => {
       const { result } = renderHook(() =>
