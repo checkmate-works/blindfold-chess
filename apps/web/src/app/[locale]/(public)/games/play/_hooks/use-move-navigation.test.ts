@@ -196,8 +196,8 @@ describe('useMoveNavigation', () => {
     // Button state change: -1 also has Next disabled.
 
     // The bug report says:
-    // "1.e4 がプレイされた状態に戻す" (Back to state with 1.e4 played)
-    // "これ以上先に進む対象のムーブがないのに、 > や >> がクリッカブルである" (Even though no component, > and >> are clickable)
+    // "Back to state with 1.e4 played"
+    // "Even though no component, > and >> are clickable"
 
     // In the repro steps:
     // 1. e4 (1 move)

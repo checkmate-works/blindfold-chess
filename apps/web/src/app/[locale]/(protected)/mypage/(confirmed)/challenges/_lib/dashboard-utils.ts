@@ -5,10 +5,12 @@ import type { DatePeriod } from './period-utils';
 import { getPeriodRange, getPreviousPeriodRange } from './period-utils';
 
 /**
- * 完走判定: incorrectAnswers < MISTAKE_LIMIT（ミス上限に達せず時間切れで終了したセッション）
+ * Completion detection: `incorrectAnswers < MISTAKE_LIMIT` (the session ran out
+ * of time without reaching the mistake limit).
  *
- * MISTAKE_LIMIT は @/lib/challenge-constants で一元管理されている。
- * ここでは型レベルでのみ参照し、実際の値は呼び出し側から渡す。
+ * `MISTAKE_LIMIT` is managed centrally in `@/lib/challenge-constants`.
+ * This function references it only at the type level; callers must pass the
+ * actual value.
  */
 export function isCompletedSession(
   session: ChallengeResultRow,

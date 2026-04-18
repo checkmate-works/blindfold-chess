@@ -1,6 +1,5 @@
 import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 
-/** KPIカード1枚分のスケルトン（StatsCardと同じサイズ） */
 function StatsCardSkeleton() {
   return (
     <div className="bg-card border border-border rounded-lg p-4 shadow-sm">
@@ -11,12 +10,10 @@ function StatsCardSkeleton() {
   );
 }
 
-/** スコアトレンドチャートのスケルトン（ScoreChartのResponsiveContainerと同じ高さ） */
 export function ScoreChartSkeleton() {
   return <Skeleton className="h-[250px] w-full rounded-lg" />;
 }
 
-/** セッション履歴テーブルのスケルトン（ヘッダー＋5行分） */
 function SessionHistoryTableSkeleton() {
   return (
     <div className="overflow-x-auto">
@@ -54,7 +51,6 @@ function SessionHistoryTableSkeleton() {
   );
 }
 
-/** 期間セレクターのスケルトン */
 function PeriodSelectorSkeleton() {
   return (
     <div className="flex flex-col sm:flex-row gap-3">
@@ -64,11 +60,9 @@ function PeriodSelectorSkeleton() {
   );
 }
 
-/** コンテンツ部分のスケルトン（セレクターを除く） */
 export function DashboardContentSkeleton() {
   return (
     <>
-      {/* KPIカード */}
       <div>
         <Skeleton className="h-6 w-24 mb-4" />
         <div className="grid grid-cols-2 gap-4 mt-4">
@@ -77,7 +71,6 @@ export function DashboardContentSkeleton() {
         </div>
       </div>
 
-      {/* スコアトレンドチャート */}
       <div className="min-w-0">
         <Skeleton className="h-6 w-32 mb-4" />
         <div className="mt-4">
@@ -85,7 +78,6 @@ export function DashboardContentSkeleton() {
         </div>
       </div>
 
-      {/* セッション履歴テーブル */}
       <div>
         <Skeleton className="h-6 w-28 mb-4" />
         <div className="mt-4">
@@ -96,7 +88,6 @@ export function DashboardContentSkeleton() {
   );
 }
 
-/** ダッシュボード全体のスケルトン（セレクター含む） */
 export function DashboardSkeleton() {
   return (
     <div className="space-y-6">

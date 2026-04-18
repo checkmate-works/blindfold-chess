@@ -1,5 +1,5 @@
 /**
- * Exp Leaderboard (Exp ランキング — `/leaderboard/exp/[period]`)
+ * Exp Leaderboard (`/leaderboard/exp/[period]`)
  *
  * @description
  * Canonical category-first exp leaderboard. Displays cumulative Exp rankings

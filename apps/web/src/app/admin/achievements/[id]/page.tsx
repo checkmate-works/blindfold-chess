@@ -1,5 +1,5 @@
 /**
- * Admin Achievement Detail Page (実績詳細)
+ * Admin Achievement Detail Page
  *
  * @description
  * Read-only admin surface showing a single achievement definition together

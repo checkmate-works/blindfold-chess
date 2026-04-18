@@ -1,5 +1,5 @@
 /**
- * Benefits Page (特典)
+ * Benefits Page
  *
  * @description
  * End-user view of current benefit entitlements. Shows active ad_free status

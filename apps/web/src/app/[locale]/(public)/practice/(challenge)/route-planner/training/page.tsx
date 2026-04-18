@@ -1,5 +1,5 @@
 /**
- * Route Planner Training (ルートプランナートレーニング)
+ * Route Planner Training
  *
  * @description
  * Untimed training mode for route planning.

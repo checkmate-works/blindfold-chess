@@ -26,8 +26,9 @@ type EditArticleFormProps = {
 };
 
 export function EditArticleForm({ id, defaultValues, categories, labels }: EditArticleFormProps) {
-  // TODO: publishedAt が未来日時の場合は「公開予定」であり、まだ公開状態ではない。
-  // 現在は未来日時チェックが未実装のため、publishedAt が存在するだけで公開済みと判定している。
+  // TODO: When `publishedAt` is a future timestamp the article is "scheduled",
+  // not yet actually published. The future-timestamp check is not implemented
+  // yet, so for now we treat the mere presence of `publishedAt` as "published".
   const isPublished = defaultValues.status === 'published' && defaultValues.publishedAt != null;
 
   return (

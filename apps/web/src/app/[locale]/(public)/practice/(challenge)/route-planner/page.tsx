@@ -1,16 +1,20 @@
 /**
- * Route Planner (ルートプランナー — `/practice/route-planner`)
+ * Route Planner (`/practice/route-planner`)
  *
  * @description
- * 指定された駒で開始マスから目標マスまでの経路を見つける練習モジュール。
- * 駒の動き方を理解し、最短経路を計算する力を鍛える。
- * ナイト・ビショップなど複数の駒種に対応。
+ * Practice module in which the user finds a path from a starting square to a
+ * target square using a specified piece. Trains the ability to understand how
+ * each piece moves and to compute shortest routes. Supports multiple piece
+ * types, such as knight and bishop.
  *
  * @flow
- * - Tutorial: 初回アクセス時にチュートリアルへリダイレクト（スキップ可、localStorage で記憶）
- * - Setup: 駒種を選択してトレーニング開始
- * - Training: 駒・開始マス・目標マスが提示され、中間経路を入力して回答
- * - Result: 正誤フィードバックと最短経路の表示、次の問題へ進行
+ * - Tutorial: redirects first-time visitors to the tutorial (skippable; the
+ *   skip state is remembered in localStorage).
+ * - Setup: the user selects a piece type and starts training.
+ * - Training: the piece, starting square, and target square are presented;
+ *   the user answers by inputting the intermediate squares.
+ * - Result: shows correctness feedback and the shortest route, then advances
+ *   to the next problem.
  */
 import { createPracticeTopPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeTopPage';
 

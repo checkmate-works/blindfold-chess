@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 
 /**
- * Onboarding (オンボーディング)
+ * Onboarding
  *
  * @description Guides new users through initial setup of key preferences
  * before their first game. Each step is a separate route page under

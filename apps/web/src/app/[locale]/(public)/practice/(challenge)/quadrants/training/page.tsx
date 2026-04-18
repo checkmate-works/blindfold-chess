@@ -1,5 +1,5 @@
 /**
- * Quadrant Anchors Training (象限アンカートレーニング)
+ * Quadrant Anchors Training
  *
  * @description
  * Untimed training mode for quadrant identification.

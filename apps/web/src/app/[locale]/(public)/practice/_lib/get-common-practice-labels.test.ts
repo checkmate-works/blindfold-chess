@@ -4,17 +4,19 @@ import { getCommonPracticeCompleteLabels } from './get-common-practice-labels';
 
 describe('getCommonPracticeCompleteLabels', () => {
   /**
-   * 意図的な再割り当てテスト:
+   * Intentional re-mapping test:
    *
-   * ラベル `morePractice` は、翻訳キー `morePractice` ではなく意図的に
-   * `changeSettings` の訳を指すようマッピングされている。これはプレゼンテーション
-   * レイヤーで再利用している "Change settings" 文言と意味論上のラベル名
-   * (`morePractice`) を分離するための設計上の決定であり、
-   * 他のラベル (practiceComplete 等) のような単純な同名マッピングではない。
+   * The label `morePractice` is intentionally mapped to the translation of
+   * `changeSettings`, not to the translation key `morePractice`. This is a
+   * design decision to keep the semantic label name (`morePractice`) separate
+   * from the "Change settings" wording that is reused in the presentation
+   * layer; it is NOT a simple same-name mapping like the other labels
+   * (e.g., `practiceComplete`).
    *
-   * この再割り当てを意図せず外すと、UI のラベルと実文言が食い違うため、
-   * ここは挙動仕様としてロックしておく。その他のキーは t() の戻り値を
-   * そのまま返す同語反復なのでテスト対象から除外した。
+   * Accidentally removing this re-mapping would cause the UI label and the
+   * actual wording to drift apart, so this behavior is locked in as a
+   * specification test. Other keys are excluded from the test because they
+   * are tautological same-name mappings that just return `t()`'s result as-is.
    */
   it('maps morePractice to the changeSettings translation key', () => {
     const mockT = vi.fn((key: string) => `translated_${key}`);

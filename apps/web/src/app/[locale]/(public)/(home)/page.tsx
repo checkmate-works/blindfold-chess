@@ -22,7 +22,7 @@ import { getFeedData } from './_lib/queries';
 import type { FeedItem } from './_lib/types';
 
 /**
- * Home Page (ホーム — `/[locale]`)
+ * Home Page (`/[locale]`)
  *
  * @description
  * The locale-prefixed home page (e.g. `/en`, `/ja`). Distinct from the root

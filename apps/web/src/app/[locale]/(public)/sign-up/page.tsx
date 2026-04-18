@@ -1,5 +1,5 @@
 /**
- * Sign Up Page (アカウント登録)
+ * Sign Up Page
  *
  * @description
  * Registration page using Google OAuth or email/password.

@@ -1,5 +1,5 @@
 /**
- * Exp Persistence (経験値の永続化)
+ * Exp Persistence
  *
  * @description
  * Database operations for granting Exp from challenge completions.

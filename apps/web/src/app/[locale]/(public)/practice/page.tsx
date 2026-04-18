@@ -1,5 +1,5 @@
 /**
- * Practice List (練習一覧 — `/practice`)
+ * Practice List (`/practice`)
  *
  * @description
  * Lists all available practice modules grouped by difficulty level (Beginner,

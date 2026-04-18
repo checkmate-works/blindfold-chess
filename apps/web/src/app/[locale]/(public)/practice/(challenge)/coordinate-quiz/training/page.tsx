@@ -1,5 +1,5 @@
 /**
- * Coordinate Quiz Training (座標クイズトレーニング)
+ * Coordinate Quiz Training
  *
  * @description
  * Untimed training mode for coordinate identification.
