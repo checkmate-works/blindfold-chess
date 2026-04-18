@@ -1,17 +1,22 @@
 /**
- * Diagonal Quiz (ダイアゴナルクイズ -- `/practice/diagonal-quiz`)
+ * Diagonal Quiz (`/practice/diagonal-quiz`)
  *
  * @description
- * 指定されたマス目が属するダイアゴナル（斜めライン）を答える練習モジュール。
- * マス座標（例: e4）が提示され、そのマスを通るダイアゴナルと
- * アンチダイアゴナルの端点ペアを回答する。
+ * Practice module in which the user names the diagonals that a given square
+ * belongs to. A square coordinate (e.g. `e4`) is presented, and the user
+ * answers with the endpoint pair of both the diagonal and the anti-diagonal
+ * that pass through that square.
  *
  * @flow
- * - Tutorial: 初回アクセス時にチュートリアルへリダイレクト（スキップ可、localStorage で記憶）
- * - Setup: チュートリアル完了後、チャレンジ開始 or トレーニングモード切替を選択
- * - Challenge: 制限時間付きでスコアを記録し、リーダーボードに反映
- * - Training: 時間制限なしで自由に練習
- * - Result: 回答結果の表示（チャレンジモードではリーダーボードプレビュー付き）
+ * - Tutorial: redirects first-time visitors to the tutorial (skippable;
+ *   the skip state is remembered in localStorage).
+ * - Setup: after the tutorial, the user can start a challenge or switch to
+ *   training mode.
+ * - Challenge: time-limited; the score is recorded and reflected on the
+ *   leaderboard.
+ * - Training: untimed free practice.
+ * - Result: shows answer details (with a leaderboard preview in challenge
+ *   mode).
  */
 import { createPracticeTopPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeTopPage';
 

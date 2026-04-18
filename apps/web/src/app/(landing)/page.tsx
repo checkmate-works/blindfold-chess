@@ -1,5 +1,5 @@
 /**
- * Root Dashboard / Landing (ルートダッシュボード / ランディング)
+ * Root Dashboard / Landing
  *
  * @description
  * The root URL (`/`) page. Serves two different views based on authentication state:

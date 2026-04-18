@@ -14,9 +14,11 @@ import { selectClassName } from '../_lib/ui-constants';
 
 type BoardOrientation = 'white' | 'black' | 'random';
 
-// 期間選択は意図的に固定期間のみ提供している。
-// 理由: (1) 古いデータは練習の成長指標として参考にならない
-// (2) 定期的なデータクリーンアップを想定しており、長期間のデータ保持を前提としない
+// Period selection is intentionally restricted to a few fixed ranges.
+// Rationale:
+// (1) Old data is not a useful reference point for measuring practice progress.
+// (2) We plan to run periodic data cleanup, so long-term data retention is not
+//     an assumption of this UI.
 
 const DATE_PERIODS: DatePeriod[] = ['thisWeek', 'lastWeek', 'thisMonth', 'lastMonth'];
 

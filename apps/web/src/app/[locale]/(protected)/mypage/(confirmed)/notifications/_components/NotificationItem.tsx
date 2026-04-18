@@ -13,10 +13,13 @@ import { HiGift, HiMegaphone, HiTrophy } from 'react-icons/hi2';
 
 import { getAchievementDisplayName } from '@/lib/achievements/display';
 import { truncateContent } from '@/lib/content/truncate-content';
+import { getPositionDetailPath } from '@/lib/positions/routes';
 
 import { markAsRead } from '../_actions';
 import type { NotificationWithActor } from '../_lib/queries';
+import type { PositionMetadata } from '../_lib/type-guards';
 import {
+  getPositionTypeFromMetadata,
   isAchievementGrantedMetadata,
   isAnnouncementMetadata,
   isBenefitGrantMetadata,
@@ -29,6 +32,36 @@ type Props = {
   notification: NotificationWithActor;
   currentUsername?: string;
 };
+
+/**
+ * Resolve a notification link for a position-targeted notification.
+ *
+ * Uses the stored `positionType` in `metadata` to route to the correct
+ * detail page (`/practice/puzzle/:id` for puzzles,
+ * `/practice/position-memory/:id` for memory).
+ *
+ * Return values:
+ *   - A path string — route to the correct detail page when `positionType`
+ *     is known and a detail page exists.
+ *   - `null` — `positionType` is a known value that has no detail page
+ *     (currently `'sequence'`). Callers should degrade to a non-link
+ *     button rather than producing an inevitable 404.
+ *   - `/practice/position-memory/:id` fallback — `positionType` is missing
+ *     (legacy notifications persisted before the field was introduced) or
+ *     outside the known set. Legacy rows are overwhelmingly memory-typed,
+ *     so the memory URL preserves pre-fix behavior.
+ */
+function resolvePositionLinkFromMetadata(id: string, metadata: PositionMetadata): string | null {
+  const positionType = getPositionTypeFromMetadata(metadata);
+  if (positionType !== null) {
+    // Known type: trust `getPositionDetailPath`, including its `null` for
+    // `sequence`. Do NOT fall back to the memory URL here — that would
+    // just 404 for sequence positions.
+    return getPositionDetailPath(positionType, id);
+  }
+  // Unknown / missing positionType — preserve legacy behavior.
+  return `/practice/position-memory/${id}`;
+}
 
 export function NotificationItem({ notification, currentUsername }: Props) {
   const locale = useLocale();
@@ -52,13 +85,30 @@ export function NotificationItem({ notification, currentUsername }: Props) {
         return t('replyMessage', { actor: actorName });
       case 'new_post':
         return t('newPostMessage', { actor: actorName });
-      case 'new_position':
-        if (isPositionMetadata(notification.metadata)) {
-          return notification.metadata.positionType === 'puzzle'
-            ? t('newPuzzleMessage', { actor: actorName })
-            : t('newPositionMemoryMessage', { actor: actorName });
+      case 'new_position': {
+        // Exhaustive `PositionType` dispatch — the `never` check at the
+        // bottom forces this switch to be updated whenever a new
+        // `PositionType` value is introduced, instead of silently
+        // falling through to the memory message.
+        const positionType = isPositionMetadata(notification.metadata)
+          ? getPositionTypeFromMetadata(notification.metadata)
+          : null;
+        if (positionType === null) {
+          // Legacy notifications (no `positionType`) or unknown values.
+          return t('newPositionMemoryMessage', { actor: actorName });
         }
-        return t('newPositionMemoryMessage', { actor: actorName });
+        switch (positionType) {
+          case 'puzzle':
+            return t('newPuzzleMessage', { actor: actorName });
+          case 'memory':
+          case 'sequence':
+            return t('newPositionMemoryMessage', { actor: actorName });
+          default: {
+            const _exhaustive: never = positionType;
+            return _exhaustive;
+          }
+        }
+      }
       case 'announcement':
         if (isAnnouncementMetadata(notification.metadata)) {
           return t('announcementMessage', { title: truncateContent(notification.metadata.title) });
@@ -106,18 +156,24 @@ export function NotificationItem({ notification, currentUsername }: Props) {
     }
     if (notification.type === 'like' && notification.targetType === 'position') {
       if (isPositionMetadata(notification.metadata)) {
-        return `/practice/position-memory/${notification.metadata.positionId}`;
+        // Prefer the stored `positionType` so puzzle likes route to
+        // `/practice/puzzle/:id` (the memory URL 404s for puzzles).
+        // May return `null` for types without a detail page (e.g.
+        // `sequence`); in that case the item degrades to a non-link
+        // button rather than producing a 404. Legacy notifications
+        // without `positionType` still fall back to the memory URL.
+        return resolvePositionLinkFromMetadata(
+          notification.metadata.positionId,
+          notification.metadata
+        );
       }
       if (notification.targetId) {
         return `/practice/position-memory/${notification.targetId}`;
       }
     }
     if (notification.type === 'new_position' && notification.targetId) {
-      if (
-        isPositionMetadata(notification.metadata) &&
-        notification.metadata.positionType === 'puzzle'
-      ) {
-        return `/practice/puzzle/${notification.targetId}`;
+      if (isPositionMetadata(notification.metadata)) {
+        return resolvePositionLinkFromMetadata(notification.targetId, notification.metadata);
       }
       return `/practice/position-memory/${notification.targetId}`;
     }

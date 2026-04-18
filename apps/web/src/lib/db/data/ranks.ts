@@ -1,5 +1,5 @@
 /**
- * Rank (級・段位) seed data.
+ * Rank (kyu/dan) seed data.
  *
  * Each entry defines a rank in the belt system. Requirements are expressed
  * as an array of conditions that must ALL be met (implicit AND).
@@ -95,7 +95,7 @@ export const BELT_COLOR_HEX: Record<string, string> = {
 };
 
 // ---------------------------------------------------------------------------
-// Mukyu (無級) — UI-only default rank
+// Mukyu (無級 — "no rank") — UI-only default rank
 // ---------------------------------------------------------------------------
 
 /**

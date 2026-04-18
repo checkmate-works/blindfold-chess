@@ -1,12 +1,26 @@
+import { parsePositionType } from '@/lib/positions/types';
+import type { PositionType } from '@/lib/positions/types';
+
 export type PostMetadata = { topicType: string; topicKey: string; postId: string };
 export type ReplyMetadata = PostMetadata & { replyId: string };
 export type AnnouncementMetadata = { slug: string; title: string };
-export type PositionMetadata = { positionId: string; positionType?: 'memory' | 'puzzle' };
+export type PositionMetadata = { positionId: string; positionType?: PositionType };
 
 export function isPositionMetadata(m: unknown): m is PositionMetadata {
   if (typeof m !== 'object' || m === null) return false;
   const r = m as Record<string, unknown>;
   return typeof r.positionId === 'string';
+}
+
+/**
+ * Narrow `metadata.positionType` (if present) to the typed `PositionType`
+ * union using the shared `parsePositionType` parser. Returns `null` when
+ * `positionType` is missing or outside the known set — callers can then
+ * fall back to a default route.
+ */
+export function getPositionTypeFromMetadata(m: PositionMetadata): PositionType | null {
+  if (typeof m.positionType !== 'string') return null;
+  return parsePositionType(m.positionType);
 }
 
 export function isPostMetadata(m: unknown): m is PostMetadata {

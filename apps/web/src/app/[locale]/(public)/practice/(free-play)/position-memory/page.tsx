@@ -1,5 +1,5 @@
 /**
- * Position Memory — Problem List (ポジション記憶 — 問題一覧)
+ * Position Memory — Problem List
  *
  * @description
  * Displays a paginated list of user-submitted positions for the

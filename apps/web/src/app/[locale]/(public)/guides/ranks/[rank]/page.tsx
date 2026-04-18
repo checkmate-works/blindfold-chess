@@ -1,5 +1,5 @@
 /**
- * Rank Guide Root (段級位ガイド ルート)
+ * Rank Guide Root
  *
  * @description
  * Entry point for a rank guide. For flat ranks, renders the first body page

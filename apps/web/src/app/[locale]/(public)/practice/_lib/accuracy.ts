@@ -40,9 +40,9 @@ export function calculateAccuracy(
 
   let correctPieces = 0;
   let totalPieces = 0;
-  let incorrectPieces = 0; // 誤答: 元の配置にある駒だが違う駒を置いた
-  let missingPieces = 0; // 漏れ: 置き忘れた駒
-  let extraPieces = 0; // 余分: 元の配置にない場所に置いた駒
+  let incorrectPieces = 0; // incorrect: a piece from the original position, but placed with a different piece type
+  let missingPieces = 0; // missing: a piece that should be placed but is omitted
+  let extraPieces = 0; // extra: a piece placed on a square that should remain empty
   const details: ScoreDetail[] = [];
 
   for (let i = 0; i < 64; i++) {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  getPositionTypeFromMetadata,
   isAnnouncementMetadata,
   isPositionMetadata,
   isPostMetadata,
@@ -266,5 +267,44 @@ describe('isPositionMetadata', () => {
 
   it('should return false for an array', () => {
     expect(isPositionMetadata([])).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getPositionTypeFromMetadata
+// ---------------------------------------------------------------------------
+
+describe('getPositionTypeFromMetadata', () => {
+  it('returns "memory" for metadata.positionType = "memory"', () => {
+    expect(getPositionTypeFromMetadata({ positionId: 'x', positionType: 'memory' })).toBe('memory');
+  });
+
+  it('returns "puzzle" for metadata.positionType = "puzzle"', () => {
+    // Regression: the 404 bug stemmed from `positionType` being absent in
+    // `like` notifications, so puzzle likes defaulted to the memory URL.
+    // This test pins the mapping used by the notification link resolver.
+    expect(getPositionTypeFromMetadata({ positionId: 'x', positionType: 'puzzle' })).toBe('puzzle');
+  });
+
+  it('returns "sequence" for metadata.positionType = "sequence"', () => {
+    expect(getPositionTypeFromMetadata({ positionId: 'x', positionType: 'sequence' })).toBe(
+      'sequence'
+    );
+  });
+
+  it('returns null when positionType is absent (legacy metadata)', () => {
+    expect(getPositionTypeFromMetadata({ positionId: 'x' })).toBeNull();
+  });
+
+  it('returns null when positionType is an unknown string', () => {
+    // The metadata column is JSONB and historically untyped, so we defend
+    // against stale/unexpected values instead of crashing the UI.
+    expect(
+      getPositionTypeFromMetadata({
+        positionId: 'x',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        positionType: 'unknown-type' as any,
+      })
+    ).toBeNull();
   });
 });

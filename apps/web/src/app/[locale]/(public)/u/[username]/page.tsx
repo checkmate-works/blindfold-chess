@@ -1,5 +1,5 @@
 /**
- * Public Profile (公開プロフィールページ)
+ * Public Profile
  *
  * @description Displays another user's public profile including avatar, display name, bio,
  * follow relationships, topic posts, and achievements. Shows edit link and following count for own profile.

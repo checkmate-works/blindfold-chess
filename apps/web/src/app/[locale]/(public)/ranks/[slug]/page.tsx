@@ -1,5 +1,5 @@
 /**
- * Rank Detail Page (段級位詳細)
+ * Rank Detail Page
  *
  * @description
  * Displays detailed information about a specific belt rank including

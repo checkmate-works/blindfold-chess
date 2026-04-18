@@ -1,5 +1,5 @@
 /**
- * Games Page (ゲーム一覧)
+ * Games Page
  *
  * @description
  * Displays the full list of saved blindfold chess games with sorting

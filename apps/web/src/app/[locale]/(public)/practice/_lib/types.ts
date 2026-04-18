@@ -17,9 +17,9 @@ export type ScoreDetail = {
 export type PositionAccuracy = {
   correctPieces: number;
   totalPieces: number;
-  incorrectPieces: number; // 誤答: 元の配置にある駒だが違う駒を置いた
-  missingPieces: number; // 漏れ: 置き忘れた駒
-  extraPieces: number; // 余分: 元の配置にない場所に置いた駒
+  incorrectPieces: number; // incorrect: a piece from the original position, but placed with a different piece type
+  missingPieces: number; // missing: a piece that should be placed but is omitted
+  extraPieces: number; // extra: a piece placed on a square that should remain empty
   netScore: number;
   accuracy: number;
   details: ScoreDetail[];

@@ -1,5 +1,5 @@
 /**
- * Rank Guide Deep Route (段級位ガイド 詳細経路)
+ * Rank Guide Deep Route
  *
  * @description
  * Catch-all for paths following the rank root:

@@ -1116,24 +1116,24 @@ export type UserInterviewAnswer = typeof userInterviewAnswers.$inferSelect;
 export type NewUserInterviewAnswer = typeof userInterviewAnswers.$inferInsert;
 
 /**
- * Ranks — master data for the belt/ranking system (級・段位).
+ * Ranks — master data for the belt/ranking system (kyu/dan ranking).
  *
  * @description
  * Stores rank definitions for the progression system inspired by martial arts
- * belt rankings. Users progress linearly from 5級 through 初段 to 10段.
+ * belt rankings. Users progress linearly from 5-kyu through shodan (first dan) to 10-dan.
  * This table is admin-managed master data (read-only for users).
  *
  * @design slug as URL segment and i18n key source
  *
  * `slug` serves as both the URL path segment (e.g., `/ranks/5kyu`) and the
- * base for next-intl translation keys (e.g., `ranks.5kyu.name` → "5級" / "5th Kyū").
+ * base for next-intl translation keys (e.g., `ranks.5kyu.name` → "5th Kyū").
  * Display names are managed in message files, not in the database, keeping i18n
  * consistent with the rest of the application. Follows the same pattern as
  * `articleCategories.slug` and `chessOpenings.slug`.
  *
  * @design Linear progression via `level` integer
  *
- * Each rank has a numeric `level` value (e.g., 5級=10, 4級=20, 初段=110)
+ * Each rank has a numeric `level` value (e.g., 5-kyu=10, 4-kyu=20, shodan=110)
  * with gaps between values to allow future insertion of intermediate ranks
  * without renumbering. Unlock logic is simply `target.level > user.currentLevel`.
  * This enables trivial "next rank" queries and progress bar calculations.
@@ -1237,7 +1237,7 @@ export type UserRank = typeof userRanks.$inferSelect;
 export type NewUserRank = typeof userRanks.$inferInsert;
 
 /**
- * Achievements — master data for achievement badges (実績バッジ).
+ * Achievements — master data for achievement badges.
  *
  * @description
  * Stores achievement definitions for the badge system. Each row defines a
@@ -1246,7 +1246,7 @@ export type NewUserRank = typeof userRanks.$inferInsert;
  *
  * @design Completely separate from the rank system (ranks table)
  *
- * Ranks represent skill-level progression (段級位: linear 5級→初段→10段),
+ * Ranks represent skill-level progression (kyu/dan ranking: linear 5-kyu → shodan → 10-dan),
  * while achievements represent individual accomplishments unlocked by specific
  * actions or milestones. A user progresses through ranks sequentially, but can
  * unlock achievements in any order. The two systems coexist independently.
@@ -1306,7 +1306,7 @@ export type Achievement = typeof achievements.$inferSelect;
 export type NewAchievement = typeof achievements.$inferInsert;
 
 /**
- * User Achievements — immutable achievement history (実績解除ログ).
+ * User Achievements — immutable achievement history.
  *
  * @description
  * Records when a user unlocks an achievement. This table is an immutable,
@@ -1370,7 +1370,7 @@ export type UserAchievement = typeof userAchievements.$inferSelect;
 export type NewUserAchievement = typeof userAchievements.$inferInsert;
 
 /**
- * Exp Events — append-only log of all Exp grants (経験値イベントログ).
+ * Exp Events — append-only log of all Exp grants.
  *
  * @description
  * Records every Exp grant event. This table is the source of truth for
@@ -1436,7 +1436,7 @@ export type ExpEvent = typeof expEvents.$inferSelect;
 export type NewExpEvent = typeof expEvents.$inferInsert;
 
 /**
- * User Exp — cumulative Exp cache per user (累計Expキャッシュ).
+ * User Exp — cumulative Exp cache per user.
  *
  * @description
  * Maintains exactly one row per user, representing the user's total
@@ -1596,15 +1596,15 @@ export type NewUserGrant = typeof userGrants.$inferInsert;
  * Used across multiple practice modules: position-memory, puzzles,
  * move-sequence, and future modules that need a stored FEN with metadata.
  *
- * @design FEN の一意性制約なし
+ * @design No uniqueness constraint on FEN
  * The same FEN may appear in multiple rows with different titles and
  * descriptions — each is treated as a distinct problem.
  *
- * @design `updated_at` なし
+ * @design No `updated_at`
  * Positions are immutable after creation — editing is not supported.
  * The column is intentionally omitted.
  *
- * @design `type` は varchar（pgEnum ではない）
+ * @design `type` is varchar (not a pgEnum)
  * Follows the existing `topicType` pattern. New type values (e.g. 'puzzle',
  * 'sequence') can be added without ALTER TYPE migrations.
  *
@@ -1613,7 +1613,7 @@ export type NewUserGrant = typeof userGrants.$inferInsert;
  * references, following the same pattern as `profiles.id` and
  * `topicPosts.userId`.
  *
- * @design 論理削除
+ * @design Logical deletion
  * `deletedAt` enables soft-delete. Rows with a non-null `deletedAt` are
  * treated as 404 by the application layer.
  */
@@ -1675,32 +1675,36 @@ export type NewPositionTag = typeof positionTags.$inferInsert;
  * Each row represents one valid solution; a puzzle with multiple correct
  * first moves has multiple rows sharing the same `positionId`.
  *
- * @design 正規化の理由 — positions テーブルの STI 化回避
- * パズル固有データ（正解手）を `positions` テーブルに NULL 許容カラムとして追加すると、
- * Rails の Single Table Inheritance のように type ごとに NULL カラムが増える。
- * パズル固有データは別テーブルに分離し、関心を明確に分離する。
+ * @design Rationale for normalization — avoid turning `positions` into an STI table
+ * If puzzle-specific data (the solution moves) were added to the `positions`
+ * table as nullable columns, the table would accumulate NULL columns per type,
+ * similar to Rails' Single Table Inheritance. Instead, puzzle-specific data
+ * is split into a separate table to keep concerns clearly separated.
  *
- * @design `solutionLine` 文字列方式の理由 — Lichess の `line` フィールドを参考
- * 行分割方式（`move` + `moveOrder` で各手を別行に持つ）と比較して:
- * (a) マルチムーブ時の相手応手を自然に表現できる（プレイヤー手と応手の交互列）
- * (b) JOIN のコストが 1 回で済む（行分割ではパズルごとに N 回）
- * (c) `validateMoveSequence(fen, moves)` でまとめてバリデーション可能
+ * @design Rationale for the `solutionLine` string format — modeled on Lichess' `line` field
+ * Compared to a row-split approach (one row per move with `move` + `moveOrder`):
+ * (a) opponent responses in multi-move puzzles are represented naturally
+ *     (alternating player moves and responses within a single string),
+ * (b) JOINs only cost one lookup (the row-split approach requires N lookups per puzzle), and
+ * (c) the whole line can be validated in one call to `validateMoveSequence(fen, moves)`.
  *
- * @design SAN 形式の理由
- * chess-core パッケージの全 API（`validateMoveSequence`, `executeMove`,
- * `getLegalMoves`）が SAN ベースで、変換なしにそのまま使用できる。
+ * @design Rationale for SAN format
+ * Every API in the chess-core package (`validateMoveSequence`, `executeMove`,
+ * `getLegalMoves`) is SAN-based, so no conversion is needed.
  *
- * @design 代替正解の表現
- * 同一 `positionId` に対して複数行を INSERT することで代替正解を表現する。
- * 例: `["Nf3", "Bg5"]` がどちらも正解 → 2 行。
- * マルチムーブの代替パスも同様に行で表現: `"Qh7+ Kf8 Qh8#"` と
- * `"Qh7+ Kf8 Qf7#"` は 2 行。
+ * @design Representing alternative solutions
+ * Alternative solutions are represented by inserting multiple rows with the
+ * same `positionId`.
+ * Example: if both `Nf3` and `Bg5` are correct, store 2 rows with
+ * `solutionLine: "Nf3"` and `solutionLine: "Bg5"`.
+ * Alternative paths in multi-move puzzles are represented the same way:
+ * `"Qh7+ Kf8 Qh8#"` and `"Qh7+ Kf8 Qf7#"` would be 2 rows.
  *
  * @example
- * // 1手パズル
+ * // Single-move puzzle
  * { positionId: '...', solutionLine: 'Nf3' }
  *
- * // マルチムーブ（プレイヤー手 → 相手応手 → プレイヤー手）
+ * // Multi-move (player move → opponent response → player move)
  * { positionId: '...', solutionLine: 'Qh7+ Kf8 Qh8#' }
  */
 export const puzzleSolutions = pgTable(

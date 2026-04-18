@@ -1,5 +1,5 @@
 /**
- * Rank Achievement Evaluation (段級位判定)
+ * Rank Achievement Evaluation
  *
  * @description
  * Evaluates whether a user qualifies for belt rank promotions after completing

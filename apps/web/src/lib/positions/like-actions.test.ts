@@ -55,7 +55,7 @@ vi.mock('@/lib/security/rate-limit', () => ({
 }));
 
 vi.mock('@/lib/db', () => {
-  const positionsTable = { id: 'id', userId: 'user_id' };
+  const positionsTable = { id: 'id', userId: 'user_id', type: 'type' };
   const likesTable = { userId: 'user_id', targetType: 'target_type', targetId: 'target_id' };
 
   return {
@@ -94,7 +94,7 @@ const testLocale = 'en';
 describe('toggleLike (position-memory)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockSelectPositionAuthor.mockResolvedValue([{ userId: testPositionAuthorId }]);
+    mockSelectPositionAuthor.mockResolvedValue([{ userId: testPositionAuthorId, type: 'memory' }]);
   });
 
   describe('input validation', () => {
@@ -174,7 +174,9 @@ describe('toggleLike (position-memory)', () => {
     });
 
     it('should create notification for position author when liking another user position', async () => {
-      mockSelectPositionAuthor.mockResolvedValue([{ userId: testPositionAuthorId }]);
+      mockSelectPositionAuthor.mockResolvedValue([
+        { userId: testPositionAuthorId, type: 'memory' },
+      ]);
 
       await toggleLike(testPositionId, testLocale);
 
@@ -184,12 +186,71 @@ describe('toggleLike (position-memory)', () => {
         type: 'like',
         targetType: 'position',
         targetId: testPositionId,
-        metadata: { positionId: testPositionId },
+        metadata: { positionId: testPositionId, positionType: 'memory' },
       });
     });
 
+    it('should include positionType="puzzle" in notification metadata for a puzzle-type position', async () => {
+      // Regression for the 404 bug: puzzle likes must include
+      // `positionType` so the recipient's notification link can route
+      // to /practice/puzzle/{id} instead of /practice/position-memory/{id}.
+      mockSelectPositionAuthor.mockResolvedValue([
+        { userId: testPositionAuthorId, type: 'puzzle' },
+      ]);
+
+      await toggleLike(testPositionId, testLocale);
+
+      expect(createNotification).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'like',
+          targetType: 'position',
+          targetId: testPositionId,
+          metadata: { positionId: testPositionId, positionType: 'puzzle' },
+        })
+      );
+    });
+
+    it('should include positionType="sequence" in notification metadata for a sequence-type position', async () => {
+      // Sequence-typed positions currently have no detail page — the
+      // notification UI degrades to a non-link button on the recipient
+      // side. Still, the metadata must carry `positionType: 'sequence'`
+      // so the UI can make that decision instead of falling back to the
+      // (404-prone) memory URL.
+      mockSelectPositionAuthor.mockResolvedValue([
+        { userId: testPositionAuthorId, type: 'sequence' },
+      ]);
+
+      await toggleLike(testPositionId, testLocale);
+
+      expect(createNotification).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'like',
+          targetType: 'position',
+          targetId: testPositionId,
+          metadata: { positionId: testPositionId, positionType: 'sequence' },
+        })
+      );
+    });
+
+    it('should omit positionType from metadata when the DB value is outside the known set', async () => {
+      // Defensive: if a legacy or unexpected `type` ever reached the DB
+      // (migration bug, etc.), we should still create the notification
+      // without propagating the bad value downstream.
+      mockSelectPositionAuthor.mockResolvedValue([
+        { userId: testPositionAuthorId, type: 'unknown_type' },
+      ]);
+
+      await toggleLike(testPositionId, testLocale);
+
+      expect(createNotification).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadata: { positionId: testPositionId },
+        })
+      );
+    });
+
     it('should NOT create notification when liking own position (self-like suppression)', async () => {
-      mockSelectPositionAuthor.mockResolvedValue([{ userId: testUserId }]);
+      mockSelectPositionAuthor.mockResolvedValue([{ userId: testUserId, type: 'memory' }]);
 
       await toggleLike(testPositionId, testLocale);
 
