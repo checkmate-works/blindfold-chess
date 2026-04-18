@@ -329,6 +329,78 @@ describe('NotificationItem', () => {
       expect(link!.getAttribute('href')).toBe('/practice/position-memory/pos-abc');
     });
 
+    it('should link to /practice/position-memory/{id} for like when metadata.positionType is "memory"', () => {
+      // Regression: new notifications persist positionType; memory-typed likes
+      // should route to the position-memory detail page.
+      const notification = createNotification({
+        type: 'like',
+        targetType: 'position',
+        targetId: 'pos-mem',
+        metadata: { positionId: 'pos-mem', positionType: 'memory' },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const link = screen.getByText('Alice liked your post').closest('a');
+      expect(link).not.toBeNull();
+      expect(link!.getAttribute('href')).toBe('/practice/position-memory/pos-mem');
+    });
+
+    it('should link to /practice/puzzle/{id} for like when metadata.positionType is "puzzle"', () => {
+      // Regression for the 404 bug: before this fix, puzzle likes were
+      // routed to /practice/position-memory/{id} (which 404s for puzzles).
+      const notification = createNotification({
+        type: 'like',
+        targetType: 'position',
+        targetId: 'pos-puz',
+        metadata: { positionId: 'pos-puz', positionType: 'puzzle' },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const link = screen.getByText('Alice liked your post').closest('a');
+      expect(link).not.toBeNull();
+      expect(link!.getAttribute('href')).toBe('/practice/puzzle/pos-puz');
+    });
+
+    it('should render as a non-link button for like when metadata.positionType is "sequence" (no detail page yet)', () => {
+      // `sequence` currently has no detail page (getPositionDetailPath
+      // returns null). Previously we fell back to the memory URL, but
+      // that 404s for sequence-typed positions — so we degrade to a
+      // non-link button instead.
+      const notification = createNotification({
+        type: 'like',
+        targetType: 'position',
+        targetId: 'pos-seq',
+        metadata: { positionId: 'pos-seq', positionType: 'sequence' },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      // No anchor should be produced for a sequence-typed like.
+      expect(screen.queryByRole('link')).toBeNull();
+      // The row still renders as a clickable button so it can be marked
+      // as read, matching the behavior for other no-link notifications.
+      expect(screen.getByRole('button')).toBeDefined();
+    });
+
+    it('should fall back to /practice/position-memory/{id} for legacy like notifications missing positionType', () => {
+      // Legacy notifications (persisted before positionType was added to
+      // metadata) should preserve their previous behavior.
+      const notification = createNotification({
+        type: 'like',
+        targetType: 'position',
+        targetId: 'pos-legacy',
+        metadata: { positionId: 'pos-legacy' },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const link = screen.getByText('Alice liked your post').closest('a');
+      expect(link).not.toBeNull();
+      expect(link!.getAttribute('href')).toBe('/practice/position-memory/pos-legacy');
+    });
+
     it('should fall back to targetId when metadata is missing for a position like', () => {
       const notification = createNotification({
         type: 'like',
@@ -432,6 +504,115 @@ describe('NotificationItem', () => {
       // The unread dot uses bg-link-primary; when read, it must not exist
       const dot = container.querySelector('.bg-link-primary');
       expect(dot).toBeNull();
+    });
+
+    it('should fall back to /practice/position-memory/{id} for like when metadata.positionType is an unknown string', () => {
+      // Defensive: if `positionType` ever contains an unexpected value
+      // (migration bug, stale rows), the parser narrows it to `null` and we
+      // must preserve the legacy memory URL rather than crash or produce a
+      // non-link button — `like` notifications should always be clickable
+      // when a `positionId` is available.
+      const notification = createNotification({
+        type: 'like',
+        targetType: 'position',
+        targetId: 'pos-unknown',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        metadata: { positionId: 'pos-unknown', positionType: 'bogus-type' as any },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const link = screen.getByText('Alice liked your post').closest('a');
+      expect(link).not.toBeNull();
+      expect(link!.getAttribute('href')).toBe('/practice/position-memory/pos-unknown');
+    });
+  });
+
+  describe('new_position notification routing', () => {
+    // `new_position` shares the same `resolvePositionLinkFromMetadata`
+    // helper as `like`, so the routing logic must match for every
+    // `positionType`. These tests pin that symmetry — if the helper
+    // diverges between the two notification types, these fail first.
+    it('should link to /practice/position-memory/{id} for new_position with positionType="memory"', () => {
+      const notification = createNotification({
+        type: 'new_position',
+        targetType: 'position',
+        targetId: 'pos-np-mem',
+        metadata: { positionId: 'pos-np-mem', positionType: 'memory' },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const link = screen.queryByRole('link');
+      expect(link).not.toBeNull();
+      expect(link!.getAttribute('href')).toBe('/practice/position-memory/pos-np-mem');
+    });
+
+    it('should link to /practice/puzzle/{id} for new_position with positionType="puzzle"', () => {
+      // Regression for the 404 bug at the `new_position` layer: before the
+      // fix, all `new_position` notifications routed to
+      // /practice/position-memory/{id}, which 404s for puzzle positions.
+      const notification = createNotification({
+        type: 'new_position',
+        targetType: 'position',
+        targetId: 'pos-np-puz',
+        metadata: { positionId: 'pos-np-puz', positionType: 'puzzle' },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const link = screen.queryByRole('link');
+      expect(link).not.toBeNull();
+      expect(link!.getAttribute('href')).toBe('/practice/puzzle/pos-np-puz');
+    });
+
+    it('should render as a non-link button for new_position with positionType="sequence"', () => {
+      // Same degradation as `like` + sequence — sequence has no detail
+      // page so we must not emit a link that would 404.
+      const notification = createNotification({
+        type: 'new_position',
+        targetType: 'position',
+        targetId: 'pos-np-seq',
+        metadata: { positionId: 'pos-np-seq', positionType: 'sequence' },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      expect(screen.queryByRole('link')).toBeNull();
+      expect(screen.getByRole('button')).toBeDefined();
+    });
+
+    it('should fall back to /practice/position-memory/{id} for legacy new_position notifications missing positionType', () => {
+      // Legacy rows (no `positionType`) should keep their pre-fix routing.
+      const notification = createNotification({
+        type: 'new_position',
+        targetType: 'position',
+        targetId: 'pos-np-legacy',
+        metadata: { positionId: 'pos-np-legacy' },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const link = screen.queryByRole('link');
+      expect(link).not.toBeNull();
+      expect(link!.getAttribute('href')).toBe('/practice/position-memory/pos-np-legacy');
+    });
+
+    it('should fall back to /practice/position-memory/{targetId} for new_position when metadata is missing', () => {
+      // Absent metadata should still produce a link via the `targetId`
+      // fallback branch.
+      const notification = createNotification({
+        type: 'new_position',
+        targetType: 'position',
+        targetId: 'pos-np-no-meta',
+        metadata: {},
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const link = screen.queryByRole('link');
+      expect(link).not.toBeNull();
+      expect(link!.getAttribute('href')).toBe('/practice/position-memory/pos-np-no-meta');
     });
   });
 
