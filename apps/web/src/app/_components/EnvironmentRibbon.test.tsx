@@ -1,7 +1,8 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { EnvironmentRibbon } from './EnvironmentRibbon';
+import { EnvironmentRibbonClient } from './EnvironmentRibbonClient';
 
 /**
  * Tests for EnvironmentRibbon.
@@ -207,13 +208,107 @@ describe('EnvironmentRibbon', () => {
   });
 
   describe('accessibility', () => {
-    it('marks the ribbon as aria-hidden so it is ignored by assistive tech', () => {
+    it('renders the ribbon as an interactive button with an aria-label', () => {
+      // The ribbon is dismissible, so it must be a real interactive element
+      // (not aria-hidden). A screen-reader-friendly label tells users what
+      // activating it will do.
       process.env.VERCEL_ENV = 'preview';
       (process.env as Record<string, string | undefined>).NODE_ENV = 'production';
 
       render(<EnvironmentRibbon />);
 
-      expect(screen.getByTestId(RIBBON_TEST_ID)).toHaveAttribute('aria-hidden', 'true');
+      const ribbon = screen.getByTestId(RIBBON_TEST_ID);
+      expect(ribbon.tagName).toBe('BUTTON');
+      expect(ribbon).not.toHaveAttribute('aria-hidden');
+      expect(ribbon).toHaveAttribute('aria-label', 'Dismiss PREVIEW environment indicator');
+    });
+
+    it('exposes a variant-aware aria-label on the LOCAL ribbon', () => {
+      // Double-check that the aria-label reflects the LOCAL variant too —
+      // regression guard if someone hardcodes "PREVIEW" in the template.
+      delete process.env.VERCEL_ENV;
+      (process.env as Record<string, string | undefined>).NODE_ENV = 'development';
+
+      render(<EnvironmentRibbon />);
+
+      const ribbon = screen.getByTestId(RIBBON_TEST_ID);
+      expect(ribbon).toHaveAttribute('aria-label', 'Dismiss LOCAL environment indicator');
+    });
+  });
+
+  describe('dismiss interaction', () => {
+    // These tests exercise the `EnvironmentRibbonClient` interactive behaviour
+    // directly. The server wrapper is a pure gate: once it decides to render,
+    // it emits the same client subtree we exercise here. Rendering the client
+    // component directly keeps these tests independent of environment variable
+    // plumbing and focuses them on the dismiss state machine.
+
+    it('unmounts the PREVIEW ribbon when clicked', () => {
+      render(<EnvironmentRibbonClient variant="PREVIEW" />);
+
+      const ribbon = screen.getByTestId(RIBBON_TEST_ID);
+      expect(ribbon).toBeInTheDocument();
+
+      fireEvent.click(ribbon);
+
+      // After dismissal the component must return null — not just hide the
+      // element — so the button is no longer focusable or in the DOM.
+      expect(screen.queryByTestId(RIBBON_TEST_ID)).toBeNull();
+      expect(screen.queryByText('PREVIEW')).toBeNull();
+    });
+
+    it('unmounts the LOCAL ribbon when clicked', () => {
+      render(<EnvironmentRibbonClient variant="LOCAL" />);
+
+      const ribbon = screen.getByTestId(RIBBON_TEST_ID);
+      fireEvent.click(ribbon);
+
+      expect(screen.queryByTestId(RIBBON_TEST_ID)).toBeNull();
+      expect(screen.queryByText('LOCAL')).toBeNull();
+    });
+
+    it('unmounts when dismissed via the server wrapper tree', () => {
+      // Sanity check that the server wrapper → client child composition also
+      // dismisses correctly end-to-end. Protects against a future refactor
+      // that accidentally strips the onClick handler when passing props down.
+      process.env.VERCEL_ENV = 'preview';
+      (process.env as Record<string, string | undefined>).NODE_ENV = 'production';
+
+      render(<EnvironmentRibbon />);
+
+      const ribbon = screen.getByTestId(RIBBON_TEST_ID);
+      fireEvent.click(ribbon);
+
+      expect(screen.queryByTestId(RIBBON_TEST_ID)).toBeNull();
+    });
+
+    it('starts fresh on a new render (no persistence across reloads)', () => {
+      // Dismiss state lives in React memory only. A new `render` simulates a
+      // page reload: the ribbon must reappear. This inherently demonstrates
+      // the "reloading brings it back" requirement — there is no session or
+      // local storage to clear between tests.
+      const first = render(<EnvironmentRibbonClient variant="LOCAL" />);
+      fireEvent.click(screen.getByTestId(RIBBON_TEST_ID));
+      expect(screen.queryByTestId(RIBBON_TEST_ID)).toBeNull();
+      first.unmount();
+
+      render(<EnvironmentRibbonClient variant="LOCAL" />);
+      expect(screen.getByTestId(RIBBON_TEST_ID)).toBeInTheDocument();
+      expect(screen.getByText('LOCAL')).toBeInTheDocument();
+    });
+
+    it('is a native <button type="button"> so Enter/Space activate it for free', () => {
+      // jsdom does not translate keydown events on a button into a synthetic
+      // click, so asserting "pressing Enter dismisses" would test the jsdom
+      // shim, not real browsers. Instead, assert the structural contract that
+      // gives us keyboard accessibility: it IS a <button type="button">, which
+      // every browser activates on Enter and Space. Combined with the click
+      // tests above, this covers the keyboard requirement end-to-end.
+      render(<EnvironmentRibbonClient variant="PREVIEW" />);
+
+      const ribbon = screen.getByTestId(RIBBON_TEST_ID);
+      expect(ribbon.tagName).toBe('BUTTON');
+      expect(ribbon).toHaveAttribute('type', 'button');
     });
   });
 });

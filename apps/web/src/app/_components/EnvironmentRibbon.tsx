@@ -1,7 +1,18 @@
+import { EnvironmentRibbonClient } from './EnvironmentRibbonClient';
+
 /**
  * Displays a diagonal ribbon in the top-right corner to identify the current
- * deployment environment at a glance (LOCAL / PREVIEW). Rendered as a Server
- * Component so it contributes zero bytes to the client JS bundle.
+ * deployment environment at a glance (LOCAL / PREVIEW).
+ *
+ * Architecture: this file is a Server Component that performs the environment
+ * detection (reading `VERCEL_ENV` / `NODE_ENV`, which are only reliably
+ * available on the server) and decides whether to render. When it should
+ * render, it delegates the actual visible element to
+ * `EnvironmentRibbonClient` — a Client Component that owns the dismiss state
+ * (`useState`) and the interactive `<button>`. `VERCEL_ENV` is intentionally
+ * NOT forwarded to the client via a `NEXT_PUBLIC_*` variable; instead the
+ * server resolves a small `variant` prop so the client never needs to know
+ * about Vercel internals.
  *
  * Placed under `src/app/_components/` (not `[locale]/_components/`) because
  * the app has multiple root layouts — `[locale]/layout.tsx`,
@@ -34,6 +45,11 @@
  * indicator prioritizes color-recognition convention over the "No Hardcoded
  * Colors" rule in apps/web/CLAUDE.md, and is the only place in the web app
  * where that deviation is intentional.
+ *
+ * Dismissal: the rendered ribbon is a real `<button>` that can be clicked /
+ * tapped / activated via Enter or Space. Dismiss state lives only in React
+ * memory (no session/local storage) — reloading the page brings the ribbon
+ * back. See `EnvironmentRibbonClient.tsx` for the interactive behavior.
  */
 export function EnvironmentRibbon() {
   const vercelEnv = process.env.VERCEL_ENV;
@@ -43,35 +59,18 @@ export function EnvironmentRibbon() {
   if (vercelEnv === 'production') return null;
   if (nodeEnv === 'test') return null;
 
-  let label: 'PREVIEW' | 'LOCAL';
-  let colorClasses: string;
-
   if (vercelEnv === 'preview') {
     // Vercel preview builds run with NODE_ENV='production' — that is expected
     // and must not hide the ribbon.
-    label = 'PREVIEW';
-    colorClasses = 'bg-yellow-400 text-white';
-  } else if ((vercelEnv === 'development' || vercelEnv === undefined) && nodeEnv !== 'production') {
+    return <EnvironmentRibbonClient variant="PREVIEW" />;
+  }
+
+  if ((vercelEnv === 'development' || vercelEnv === undefined) && nodeEnv !== 'production') {
     // Purely local dev. Guarding on nodeEnv !== 'production' prevents a
     // self-hosted / non-Vercel production build (no VERCEL_ENV) from showing
     // the "LOCAL" ribbon.
-    label = 'LOCAL';
-    colorClasses = 'bg-green-500 text-white';
-  } else {
-    return null;
+    return <EnvironmentRibbonClient variant="LOCAL" />;
   }
 
-  return (
-    <div
-      aria-hidden="true"
-      data-testid="environment-ribbon"
-      className="pointer-events-none fixed top-0 right-0 z-[60] h-24 w-24 overflow-hidden print:hidden"
-    >
-      <span
-        className={`absolute top-[18px] -right-[36px] w-[140px] rotate-45 text-center text-[11px] font-bold tracking-widest py-1 shadow-md ${colorClasses}`}
-      >
-        {label}
-      </span>
-    </div>
-  );
+  return null;
 }
