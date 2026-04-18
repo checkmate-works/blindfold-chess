@@ -4,7 +4,13 @@ import type { ReactNode } from 'react';
 import { Link } from '@/i18n/routing';
 
 type Props = {
-  href: string;
+  /**
+   * Target URL. Pass `null` to render the card as a non-interactive `<div>`
+   * (used when a feed entity has no detail page yet — e.g. `sequence`
+   * positions). The card still shows the thumbnail and children so the
+   * content remains visible in the feed.
+   */
+  href: string | null;
   locale?: string;
   external?: boolean;
   thumbnail: ReactNode;
@@ -22,7 +28,7 @@ export const FeedItemCard = memo(function FeedItemCard({
   variant = 'feed',
   children,
 }: Props) {
-  const className =
+  const baseClassName =
     variant === 'card'
       ? 'flex gap-4 p-4 rounded-md border border-border bg-card hover:border-foreground/20 transition-colors'
       : 'flex gap-4 p-4 hover:bg-muted/50 transition-colors';
@@ -36,16 +42,25 @@ export const FeedItemCard = memo(function FeedItemCard({
     </>
   );
 
+  if (href === null) {
+    // Non-link: drop hover affordances since nothing is clickable.
+    const staticClassName =
+      variant === 'card'
+        ? 'flex gap-4 p-4 rounded-md border border-border bg-card'
+        : 'flex gap-4 p-4';
+    return <div className={staticClassName}>{content}</div>;
+  }
+
   if (external) {
     return (
-      <a href={href} target="_blank" rel="noopener noreferrer sponsored" className={className}>
+      <a href={href} target="_blank" rel="noopener noreferrer sponsored" className={baseClassName}>
         {content}
       </a>
     );
   }
 
   return (
-    <Link href={href} locale={locale} className={className}>
+    <Link href={href} locale={locale} className={baseClassName}>
       {content}
     </Link>
   );

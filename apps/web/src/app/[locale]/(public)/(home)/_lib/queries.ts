@@ -10,6 +10,7 @@ import {
   topicPosts,
 } from '@/lib/db';
 import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
+import { parsePositionType } from '@/lib/positions/types';
 
 import { attachProfilePostMeta } from '@/app/[locale]/(public)/topics/_lib/post-meta';
 import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
@@ -128,6 +129,7 @@ export async function getFeedData(
       const rows = await db
         .select({
           id: positions.id,
+          type: positions.type,
           fen: positions.fen,
           createdAt: positions.createdAt,
           author: {
@@ -146,9 +148,15 @@ export async function getFeedData(
       const likeMetaMap = await getPositionLikeMetaMap(foundIds, currentUserId);
 
       for (const row of rows) {
+        const positionType = parsePositionType(row.type);
+        // Defensive: drop rows with an unexpected `type` value rather than
+        // crashing. Follows the same "silently drop deleted entities" pattern
+        // used elsewhere in this function.
+        if (positionType === null) continue;
         const likeMeta = likeMetaMap.get(row.id) ?? { likeCount: 0, likedByMe: false };
         map.set(row.id, {
           id: row.id,
+          type: positionType,
           fen: row.fen,
           createdAt: row.createdAt.toISOString(),
           author: row.author

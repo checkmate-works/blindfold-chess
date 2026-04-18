@@ -19,10 +19,14 @@
  * `true` when the user's first-ever score for a leaderboard key is recorded;
  * `false` when an existing best score is surpassed.
  */
+import type { PositionType } from '@/lib/positions/types';
+
 import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
 
 export type PositionFeedData = {
   id: string;
+  /** Used to route the card to the correct detail page. */
+  type: PositionType;
   fen: string;
   createdAt: string; // ISO 8601
   author: {
@@ -37,6 +41,9 @@ export type PositionFeedData = {
     likedByMe: boolean;
   };
 };
+
+/** Re-exported for convenience. */
+export type { PositionType };
 
 type FeedItemBase = {
   id: string;

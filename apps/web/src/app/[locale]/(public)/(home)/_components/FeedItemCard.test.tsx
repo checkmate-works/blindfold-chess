@@ -187,4 +187,89 @@ describe('FeedItemCard', () => {
       expect(screen.getByText('child span')).toBeInTheDocument();
     });
   });
+
+  describe('non-link (href={null})', () => {
+    it('renders a plain div — no anchor is emitted', () => {
+      // Regression guard for the 404 bug fix: when a feed entity has no
+      // detail page (e.g. `sequence` positions), the card must not produce
+      // a link that would 404.
+      render(
+        <FeedItemCard href={null} thumbnail={<span>thumb</span>}>
+          <p>non-link content</p>
+        </FeedItemCard>
+      );
+
+      expect(screen.queryByRole('link')).toBeNull();
+      expect(screen.getByText('non-link content')).toBeInTheDocument();
+    });
+
+    it('still renders the thumbnail and children when href is null', () => {
+      render(
+        <FeedItemCard href={null} thumbnail={<span data-testid="thumb">thumb</span>}>
+          <p>body</p>
+        </FeedItemCard>
+      );
+
+      expect(screen.getByTestId('thumb')).toBeInTheDocument();
+      expect(screen.getByText('body')).toBeInTheDocument();
+    });
+
+    it('drops hover affordances on the container when href is null (feed variant)', () => {
+      const { container } = render(
+        <FeedItemCard href={null} thumbnail={<span>thumb</span>}>
+          <p>body</p>
+        </FeedItemCard>
+      );
+
+      const root = container.firstChild as HTMLElement;
+      expect(root.tagName).toBe('DIV');
+      expect(root.className).not.toContain('hover:bg-muted/50');
+    });
+
+    it('applies card-variant classes on the container when href is null and variant="card"', () => {
+      const { container } = render(
+        <FeedItemCard href={null} variant="card" thumbnail={<span>thumb</span>}>
+          <p>body</p>
+        </FeedItemCard>
+      );
+
+      const root = container.firstChild as HTMLElement;
+      expect(root.tagName).toBe('DIV');
+      expect(root.className).toContain('border');
+      expect(root.className).toContain('border-border');
+      expect(root.className).toContain('bg-card');
+      // Non-interactive: no hover-border transition expected.
+      expect(root.className).not.toContain('hover:border-foreground/20');
+    });
+
+    it('ignores `external` when href is null (no <a target="_blank"> is emitted)', () => {
+      // Ensure the null branch short-circuits before the external-link branch.
+      render(
+        <FeedItemCard href={null} external thumbnail={<span>thumb</span>}>
+          <p>body</p>
+        </FeedItemCard>
+      );
+
+      expect(screen.queryByRole('link')).toBeNull();
+    });
+  });
+
+  describe('empty string href (edge case)', () => {
+    it('still renders as an internal Link (anchor tag) when href is an empty string', () => {
+      // `""` is a valid string so the null branch does not fire. The fallback
+      // behavior is to emit an internal Link with an empty href. Callers
+      // should use `null` to opt out; empty string is not a sentinel.
+      // (Note: an anchor without a valid href does NOT have the implicit ARIA
+      // `link` role, so we query by tag rather than role.)
+      const { container } = render(
+        <FeedItemCard href="" thumbnail={<span>thumb</span>}>
+          <p>body</p>
+        </FeedItemCard>
+      );
+
+      const anchor = container.querySelector('a');
+      expect(anchor).not.toBeNull();
+      expect(anchor).toHaveAttribute('href', '');
+    });
+  });
 });
