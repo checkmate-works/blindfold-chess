@@ -13,8 +13,8 @@ import {
 import { generateThemeCSS } from '@blindfold-chess/ui';
 import { GoogleAnalytics } from '@next/third-parties/google';
 
-import { JsonLd, generateOrganizationSchema, generateWebSiteSchema } from '@/lib/jsonld';
 import { getLocaleFromRequest } from '@/lib/locale';
+import { JsonLd, generateOrganizationSchema, generateWebSiteSchema } from '@/lib/seo/jsonld';
 import { ThemeScript } from '@/lib/theme';
 
 import { getLatestBannerAnnouncement } from '@/app/[locale]/(public)/announcements/_lib/queries';
@@ -33,12 +33,7 @@ const inter = Inter({
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocaleFromRequest();
   const t = await getTranslations({ locale, namespace: 'metadata' });
-  const OG_LOCALE_MAP: Record<string, string> = {
-    en: 'en_US',
-    ja: 'ja_JP',
-    es: 'es_ES',
-    pt: 'pt_BR',
-  };
+  const OG_LOCALE_MAP: Record<string, string> = { en: 'en_US', ja: 'ja_JP', es: 'es_ES' };
   const currentLocale = OG_LOCALE_MAP[locale] ?? 'en_US';
   const siteName = t('siteName');
   const seoSiteName = t('seoSiteName');

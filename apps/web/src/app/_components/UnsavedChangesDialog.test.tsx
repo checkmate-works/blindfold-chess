@@ -137,6 +137,9 @@ describe('UnsavedChangesDialog', () => {
 
     const dialog = screen.getByRole('dialog');
     expect(dialog).toHaveAttribute('aria-modal', 'true');
+    // `data-app-modal="true"` is the app-owned contract checked by
+    // practice-page keyboard guards (see keyboard-guards.ts → isModalOpen).
+    expect(dialog).toHaveAttribute('data-app-modal', 'true');
     expect(dialog).toHaveAttribute('aria-labelledby');
     expect(dialog).toHaveAttribute('aria-describedby');
   });

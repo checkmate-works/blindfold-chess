@@ -4,12 +4,17 @@ import { validateUsername } from '@blindfold-chess/features/username';
 import { eq } from 'drizzle-orm';
 
 import { authenticateAndGuardApi } from '@/lib/auth';
+import { isLameName } from '@/lib/content/lame-name';
+import { isValidOrigin } from '@/lib/csrf';
 import { db, profiles } from '@/lib/db';
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
-import { isLameName } from '@/lib/lame-name';
-import { RATE_LIMITS } from '@/lib/rate-limit';
+import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
 export async function POST(request: Request) {
+  if (!isValidOrigin(request)) {
+    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
+  }
+
   const guardResult = await authenticateAndGuardApi(RATE_LIMITS.setupUsername);
   if ('response' in guardResult) {
     return guardResult.response;

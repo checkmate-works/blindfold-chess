@@ -3,8 +3,8 @@
 import { SITE_URL } from '@/config';
 
 import type { ActionResult } from '@/lib/action-types';
-import { getClientIp } from '@/lib/client-ip';
-import { IP_RATE_LIMITS, checkIpRateLimitGuard } from '@/lib/rate-limit-ip';
+import { getClientIp } from '@/lib/security/client-ip';
+import { IP_RATE_LIMITS, checkIpRateLimitGuard } from '@/lib/security/rate-limit-ip';
 import { createClient } from '@/lib/supabase/server';
 import { getPasswordValidationError } from '@/lib/validations/password';
 

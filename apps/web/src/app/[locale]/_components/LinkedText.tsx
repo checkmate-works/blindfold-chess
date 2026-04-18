@@ -1,6 +1,6 @@
 'use client';
 
-import { buildCushionPageUrl, linkifyText } from '@/lib/linkify-urls';
+import { buildCushionPageUrl, linkifyText } from '@/lib/content/linkify-urls';
 
 type Props = {
   text: string;

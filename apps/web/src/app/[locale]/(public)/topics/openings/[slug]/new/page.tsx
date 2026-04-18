@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound, redirect } from 'next/navigation';
 
-import { createOpeningPostRateLimit, isRateLimited } from '@/lib/rate-limit';
+import { createOpeningPostRateLimit, isRateLimited } from '@/lib/security/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
 import { NewTopicPostLayout } from '@/app/[locale]/(public)/topics/_components/NewTopicPostLayout';

@@ -8,7 +8,7 @@ import { routing } from '@/i18n/routing';
 import { generateThemeCSS } from '@blindfold-chess/ui';
 import { GoogleAnalytics } from '@next/third-parties/google';
 
-import { JsonLd, generateOrganizationSchema, generateWebSiteSchema } from '@/lib/jsonld';
+import { JsonLd, generateOrganizationSchema, generateWebSiteSchema } from '@/lib/seo/jsonld';
 import { ThemeScript } from '@/lib/theme';
 
 import '../globals.css';
@@ -46,12 +46,7 @@ export async function generateMetadata({
   const siteName = t('siteName');
   const seoSiteName = t('seoSiteName');
   const description = t('siteDescription');
-  const OG_LOCALE_MAP: Record<string, string> = {
-    en: 'en_US',
-    ja: 'ja_JP',
-    es: 'es_ES',
-    pt: 'pt_BR',
-  };
+  const OG_LOCALE_MAP: Record<string, string> = { en: 'en_US', ja: 'ja_JP', es: 'es_ES' };
   const currentLocale = OG_LOCALE_MAP[locale] ?? 'en_US';
   const alternateLocales = Object.values(OG_LOCALE_MAP).filter((l) => l !== currentLocale);
 

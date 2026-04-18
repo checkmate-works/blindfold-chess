@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import type { ReactNode } from 'react';
 
-import type { TailwindThemeClasses } from '@/lib/boardThemes';
+import type { TailwindThemeClasses } from '@/lib/games/board-themes';
 
 type Props = {
   // Position

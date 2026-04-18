@@ -8,7 +8,6 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 
 import { useBatchTrainingSession } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-batch-training-session';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
-import { useCountdown } from '@/app/[locale]/(public)/practice/_hooks/use-countdown';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -31,8 +30,6 @@ export default function LegalMovesTrainingSession({ locale, selectedPieces }: Pr
 
   const getQuestion = (from: string, to: string) => t('questionFormat', { from, to });
 
-  const { countdown } = useCountdown();
-
   const {
     currentQuestion,
     hasQuestions,
@@ -53,9 +50,9 @@ export default function LegalMovesTrainingSession({ locale, selectedPieces }: Pr
     (userAnswer: boolean) => {
       if (!currentQuestion) return;
       const isLegal = isLegalMove(currentQuestion.from, currentQuestion.to, currentQuestion.piece);
-      handleAnswer({ userAnswer, isLegal }, countdown !== null);
+      handleAnswer({ userAnswer, isLegal });
     },
-    [handleAnswer, countdown, currentQuestion]
+    [handleAnswer, currentQuestion]
   );
 
   const handleEndTraining = useCallback(() => {
@@ -85,7 +82,6 @@ export default function LegalMovesTrainingSession({ locale, selectedPieces }: Pr
         }
         onAnswer={onAnswer}
         getQuestion={getQuestion}
-        countdown={countdown}
         correctCount={correctCount}
         incorrectCount={incorrectCount}
         onEndTraining={handleEndTraining}

@@ -19,12 +19,12 @@ import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getOptionalUser } from '@/lib/auth';
-import { resolveDisplayName } from '@/lib/display-name';
 import { getPaginationParams } from '@/lib/pagination';
 import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
 import { countPositions, listPositionsWithProfile } from '@/lib/positions/queries';
-import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
+import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 import { truncate } from '@/lib/text';
+import { resolveDisplayName } from '@/lib/users/display-name';
 
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import {
@@ -131,7 +131,7 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
                 >
                   <div className="flex gap-4">
                     <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
-                      <BoardThumbnail fen={position.fen} className="w-full h-full" />
+                      <ThemedBoardThumbnail fen={position.fen} className="w-full h-full" />
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col gap-1">
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -180,6 +180,18 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
         )}
 
         <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+
+        {currentUser && (
+          <div className="flex justify-center py-4">
+            <Link
+              href="/practice/position-memory/new"
+              locale={locale}
+              className="px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+            >
+              {t('list.createButton')}
+            </Link>
+          </div>
+        )}
 
         {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
           <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />

@@ -1,0 +1,88 @@
+import type { ChessOpeningSeed } from './_types';
+
+export const openingsAdditionalE4: ChessOpeningSeed[] = [
+  // =========================================================================
+  // Additional well-known e4 systems
+  // =========================================================================
+  {
+    slug: 'sicilian-najdorf',
+    name: 'Sicilian Defense: Najdorf Variation',
+    ecoCode: 'B90',
+    pgn: '1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 a6',
+    firstMoveSquare: 'e4',
+    sortOrder: 301,
+    parentSlug: 'sicilian-defense',
+  },
+  {
+    slug: 'sicilian-dragon',
+    name: 'Sicilian Defense: Dragon Variation',
+    ecoCode: 'B70',
+    pgn: '1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 g6',
+    firstMoveSquare: 'e4',
+    sortOrder: 302,
+    parentSlug: 'sicilian-defense',
+  },
+  {
+    slug: 'sicilian-scheveningen',
+    name: 'Sicilian Defense: Scheveningen Variation',
+    ecoCode: 'B80',
+    pgn: '1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 e6',
+    firstMoveSquare: 'e4',
+    sortOrder: 303,
+    parentSlug: 'sicilian-defense',
+  },
+  {
+    slug: 'sicilian-sveshnikov',
+    name: 'Sicilian Defense: Sveshnikov Variation',
+    ecoCode: 'B33',
+    pgn: '1. e4 c5 2. Nf3 Nc6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 e5',
+    firstMoveSquare: 'e4',
+    sortOrder: 304,
+    parentSlug: 'sicilian-defense',
+  },
+  {
+    slug: 'french-winawer',
+    name: 'French Defense: Winawer Variation',
+    ecoCode: 'C15',
+    pgn: '1. e4 e6 2. d4 d5 3. Nc3 Bb4',
+    firstMoveSquare: 'e4',
+    sortOrder: 311,
+    parentSlug: 'french-defense',
+  },
+  {
+    slug: 'french-tarrasch',
+    name: 'French Defense: Tarrasch Variation',
+    ecoCode: 'C03',
+    pgn: '1. e4 e6 2. d4 d5 3. Nd2',
+    firstMoveSquare: 'e4',
+    sortOrder: 312,
+    parentSlug: 'french-defense',
+  },
+  {
+    slug: 'french-advance',
+    name: 'French Defense: Advance Variation',
+    ecoCode: 'C02',
+    pgn: '1. e4 e6 2. d4 d5 3. e5',
+    firstMoveSquare: 'e4',
+    sortOrder: 313,
+    parentSlug: 'french-defense',
+  },
+  {
+    slug: 'caro-kann-advance',
+    name: 'Caro-Kann Defense: Advance Variation',
+    ecoCode: 'B12',
+    pgn: '1. e4 c6 2. d4 d5 3. e5',
+    firstMoveSquare: 'e4',
+    sortOrder: 321,
+    parentSlug: 'caro-kann-defense',
+  },
+  {
+    slug: 'caro-kann-classical',
+    name: 'Caro-Kann Defense: Classical Variation',
+    ecoCode: 'B18',
+    pgn: '1. e4 c6 2. d4 d5 3. Nc3 dxe4 4. Nxe4 Bf5',
+    firstMoveSquare: 'e4',
+    sortOrder: 322,
+    parentSlug: 'caro-kann-defense',
+  },
+];

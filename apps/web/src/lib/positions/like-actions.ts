@@ -5,8 +5,8 @@ import { eq } from 'drizzle-orm';
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, positions } from '@/lib/db';
 import { toggleLikeForTarget } from '@/lib/db/like-actions';
-import { createNotification } from '@/lib/notification';
-import { RATE_LIMITS } from '@/lib/rate-limit';
+import { createNotification } from '@/lib/notifications/notification';
+import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 export type ToggleLikeResult = { liked: boolean; likeCount: number } | { error: string };

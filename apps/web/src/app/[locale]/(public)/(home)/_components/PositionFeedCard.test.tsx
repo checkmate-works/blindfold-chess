@@ -31,13 +31,18 @@ vi.mock('@/i18n/use-safe-translations', () => ({
 // server-only code. These are not the subject of this regression test.
 vi.mock('./FeedItemCard', () => ({
   FeedItemCard: ({
+    href,
     thumbnail,
     children,
   }: {
+    href: string | null;
     thumbnail: React.ReactNode;
     children: React.ReactNode;
   }) => (
-    <div data-testid="feed-item-card">
+    <div
+      data-testid="feed-item-card"
+      {...(href === null ? { 'data-has-link': 'false' } : { 'data-href': href })}
+    >
       <div data-testid="feed-item-card-thumbnail">{thumbnail}</div>
       <div>{children}</div>
     </div>
@@ -61,6 +66,7 @@ vi.mock('@/app/[locale]/(public)/practice/(free-play)/position-memory/_actions/t
 function createPositionFeedData(overrides: Partial<PositionFeedData> = {}): PositionFeedData {
   return {
     id: 'position-1',
+    type: 'memory',
     fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
     createdAt: '2025-01-15T10:00:00.000Z',
     author: {
@@ -113,5 +119,60 @@ describe('PositionFeedCard', () => {
 
     const thumbnail = screen.getByTestId('board-thumbnail');
     expect(thumbnail).toHaveAttribute('data-board-theme', 'lichess');
+  });
+
+  it('routes memory-type positions to the position-memory detail page', () => {
+    // Regression guard for the 404 bug: puzzle-type positions were being linked
+    // to `/practice/position-memory/{id}`, which filters by `type = 'memory'`
+    // and returned 404 for puzzle rows surfaced in the home feed.
+    mockUseGamePreferences.mockReturnValue({
+      preferences: { boardTheme: 'default' },
+    });
+
+    render(
+      <PositionFeedCard
+        data={createPositionFeedData({ id: 'mem-1', type: 'memory' })}
+        {...defaultProps}
+      />
+    );
+
+    const card = screen.getByTestId('feed-item-card');
+    expect(card).toHaveAttribute('data-href', '/practice/position-memory/mem-1');
+  });
+
+  it('routes puzzle-type positions to the puzzle detail page', () => {
+    mockUseGamePreferences.mockReturnValue({
+      preferences: { boardTheme: 'default' },
+    });
+
+    render(
+      <PositionFeedCard
+        data={createPositionFeedData({ id: 'puz-1', type: 'puzzle' })}
+        {...defaultProps}
+      />
+    );
+
+    const card = screen.getByTestId('feed-item-card');
+    expect(card).toHaveAttribute('data-href', '/practice/puzzle/puz-1');
+  });
+
+  it('renders sequence-type positions without a link (no detail page implemented)', () => {
+    // `sequence` has no detail page yet. We still surface the card in the
+    // feed so the content is visible, but we must not generate a link that
+    // would 404.
+    mockUseGamePreferences.mockReturnValue({
+      preferences: { boardTheme: 'default' },
+    });
+
+    render(
+      <PositionFeedCard
+        data={createPositionFeedData({ id: 'seq-1', type: 'sequence' })}
+        {...defaultProps}
+      />
+    );
+
+    const card = screen.getByTestId('feed-item-card');
+    expect(card).not.toHaveAttribute('data-href');
+    expect(card).toHaveAttribute('data-has-link', 'false');
   });
 });

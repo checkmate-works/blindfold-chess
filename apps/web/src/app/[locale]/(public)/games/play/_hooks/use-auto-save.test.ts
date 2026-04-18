@@ -18,7 +18,7 @@ const { mockUpdate, mockCreate, mockLoad } = vi.hoisted(() => ({
   mockLoad: vi.fn().mockResolvedValue(null),
 }));
 
-vi.mock('@/lib/repositories', () => {
+vi.mock('@/lib/games/local-storage-repository', () => {
   return {
     LocalStorageGameRepository: class {
       update = mockUpdate;

@@ -61,35 +61,66 @@ describe('keyboard-guards', () => {
   });
 
   describe('isModalOpen', () => {
-    it('returns false when no element has aria-modal="true"', () => {
+    it('returns false when no element has data-app-modal="true"', () => {
       expect(isModalOpen()).toBe(false);
     });
 
-    it('returns true when an element with aria-modal="true" is in the DOM', () => {
+    it('returns true when an element with data-app-modal="true" is in the DOM', () => {
       const modal = document.createElement('div');
       modal.setAttribute('role', 'dialog');
       modal.setAttribute('aria-modal', 'true');
+      modal.setAttribute('data-app-modal', 'true');
       document.body.appendChild(modal);
       expect(isModalOpen()).toBe(true);
     });
 
-    it('returns true when multiple aria-modal elements are in the DOM', () => {
+    it('returns true when multiple data-app-modal elements are in the DOM', () => {
       for (let i = 0; i < 3; i++) {
         const m = document.createElement('div');
-        m.setAttribute('aria-modal', 'true');
+        m.setAttribute('data-app-modal', 'true');
         document.body.appendChild(m);
       }
       expect(isModalOpen()).toBe(true);
     });
 
-    it('returns false when an element only has aria-modal="false"', () => {
-      // The selector is intentionally `[aria-modal="true"]`, so a dialog that
-      // exists in the DOM but is NOT currently modal (aria-modal="false")
-      // should not block practice keyboard handlers.
+    it('returns false when an element only has data-app-modal="false"', () => {
+      // The selector is intentionally `[data-app-modal="true"]`, so a dialog
+      // whose flag is explicitly "false" should not block practice keyboard
+      // handlers.
       const nonModal = document.createElement('div');
       nonModal.setAttribute('role', 'dialog');
-      nonModal.setAttribute('aria-modal', 'false');
+      nonModal.setAttribute('data-app-modal', 'false');
       document.body.appendChild(nonModal);
+      expect(isModalOpen()).toBe(false);
+    });
+
+    it('returns false when a third-party script (e.g. CookieYes) injects an aria-modal element without data-app-modal', () => {
+      // Regression: CookieYes (prod-only) injects a consent container with
+      // `aria-modal="true"` into document.body. The previous implementation
+      // used `[aria-modal="true"]` and over-matched, silently breaking all
+      // practice keyboard input in production. `data-app-modal` is an
+      // app-owned contract that third-party scripts cannot accidentally set.
+      const cookieYes = document.createElement('div');
+      cookieYes.setAttribute('aria-modal', 'true');
+      cookieYes.setAttribute('class', 'cky-consent-container');
+      document.body.appendChild(cookieYes);
+      expect(isModalOpen()).toBe(false);
+    });
+
+    it('returns true for a div with only data-app-modal="true"', () => {
+      const modal = document.createElement('div');
+      modal.setAttribute('data-app-modal', 'true');
+      document.body.appendChild(modal);
+      expect(isModalOpen()).toBe(true);
+    });
+
+    it('returns false when data-app-modal is set to an empty string', () => {
+      // `querySelector('[data-app-modal="true"]')` is an exact-value match,
+      // so an empty string must not match. Guards against an accidental
+      // `data-app-modal=""` prop on the shared <Modal> component.
+      const el = document.createElement('div');
+      el.setAttribute('data-app-modal', '');
+      document.body.appendChild(el);
       expect(isModalOpen()).toBe(false);
     });
   });
@@ -123,7 +154,7 @@ describe('keyboard-guards', () => {
 
     it('returns true when a modal is open', () => {
       const modal = document.createElement('div');
-      modal.setAttribute('aria-modal', 'true');
+      modal.setAttribute('data-app-modal', 'true');
       document.body.appendChild(modal);
       expect(shouldIgnoreKeyEvent(makeKeyEvent())).toBe(true);
     });
@@ -134,7 +165,7 @@ describe('keyboard-guards', () => {
 
     beforeEach(() => {
       leakedModal = document.createElement('div');
-      leakedModal.setAttribute('aria-modal', 'true');
+      leakedModal.setAttribute('data-app-modal', 'true');
       document.body.appendChild(leakedModal);
     });
 
@@ -147,7 +178,7 @@ describe('keyboard-guards', () => {
       // so the modal added by beforeEach above is re-added but the previous
       // one is gone. If cleanup were broken, isModalOpen would still be true
       // without the new beforeEach run, but either way only one modal exists.
-      expect(document.querySelectorAll('[aria-modal="true"]').length).toBe(1);
+      expect(document.querySelectorAll('[data-app-modal="true"]').length).toBe(1);
     });
   });
 });

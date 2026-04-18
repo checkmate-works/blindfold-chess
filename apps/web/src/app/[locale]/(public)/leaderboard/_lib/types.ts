@@ -1,5 +1,5 @@
 import type { RankedLeaderboardRow } from '@/lib/db/challenge-queries';
-import { LEADERBOARD_KEYS } from '@/lib/leaderboard-keys';
+import { LEADERBOARD_KEYS } from '@/lib/games/leaderboard-keys';
 
 export type LeaderboardPeriod = 'all-time' | 'weekly' | 'monthly';
 

@@ -39,7 +39,7 @@ vi.mock('@/lib/db', () => ({
 }));
 
 vi.mock('@/config', () => ({
-  SUPPORTED_LOCALES: ['en', 'es', 'pt', 'ja'],
+  SUPPORTED_LOCALES: ['en', 'es', 'ja'],
 }));
 
 vi.mock('../../../_components/AdminDataTable', () => ({
@@ -353,8 +353,7 @@ describe('AdminArticleSlugPage (locale variant detail page)', () => {
       const enArticle = createArticle({ id: 'art-en', locale: 'en' });
       const jaArticle = createArticle({ id: 'art-ja', locale: 'ja' });
       const esArticle = createArticle({ id: 'art-es', locale: 'es' });
-      const ptArticle = createArticle({ id: 'art-pt', locale: 'pt' });
-      mockDbSelectFromWhereOrderBy.mockResolvedValue([enArticle, jaArticle, esArticle, ptArticle]);
+      mockDbSelectFromWhereOrderBy.mockResolvedValue([enArticle, jaArticle, esArticle]);
 
       const jsx = await AdminArticleSlugPage({ params: createParams('test-article') });
       render(jsx);

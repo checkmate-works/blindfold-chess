@@ -191,12 +191,6 @@ export default async function MypagePage({ params }: Props) {
             <div className="flex flex-wrap gap-3 mt-3">
               <ChallengeCard
                 locale={locale}
-                href="/ranks"
-                label={t('dashboard.beltSystem')}
-                icon="🥋"
-              />
-              <ChallengeCard
-                locale={locale}
                 href="/mypage/challenges"
                 label={t('dashboard.myRecords')}
                 icon="📈"
@@ -222,6 +216,50 @@ export default async function MypagePage({ params }: Props) {
                 href="/mypage/likes"
                 label={t('dashboard.likesTitle')}
                 icon="❤️"
+              />
+            </div>
+          </DashboardSection>
+
+          {/* Practice section */}
+          <DashboardSection>
+            <DashboardSectionHeader
+              icon={<span className="text-lg">💪</span>}
+              title={t('dashboard.practiceTitle')}
+            />
+            <div className="flex flex-wrap gap-3 mt-3">
+              <ChallengeCard
+                locale={locale}
+                href="/mypage/problems/memory"
+                label={t('dashboard.myPositionMemory')}
+                icon="🧠"
+              />
+              <ChallengeCard
+                locale={locale}
+                href="/mypage/problems/puzzles"
+                label={t('dashboard.myPuzzles')}
+                icon="🧩"
+              />
+            </div>
+          </DashboardSection>
+
+          {/* Account section */}
+          <DashboardSection>
+            <DashboardSectionHeader
+              icon={<span className="text-lg">⚙️</span>}
+              title={t('dashboard.accountTitle')}
+            />
+            <div className="flex flex-wrap gap-3 mt-3">
+              <ChallengeCard
+                locale={locale}
+                href="/mypage/subscription"
+                label={t('dashboard.subscriptionTitle')}
+                icon="💳"
+              />
+              <ChallengeCard
+                locale={locale}
+                href="/mypage/benefits"
+                label={t('dashboard.benefitsTitle')}
+                icon="🎁"
               />
             </div>
           </DashboardSection>

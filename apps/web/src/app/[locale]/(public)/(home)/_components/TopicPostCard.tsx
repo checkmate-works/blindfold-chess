@@ -7,12 +7,12 @@ import Image from 'next/image';
 import { getStartingFen } from '@blindfold-chess/features/chess-core';
 import { FaRegComment } from 'react-icons/fa';
 
-import { truncateContent } from '@/lib/truncate-content';
+import { truncateContent } from '@/lib/content/truncate-content';
 
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { UserAvatar } from '@/app/[locale]/(public)/topics/_components/UserAvatar';
-import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/queries';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
+import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
 import { RatingDisplay } from '@/app/[locale]/(public)/topics/openings/[slug]/_components/RatingDisplay';
 import { toggleLike as toggleLikeOpening } from '@/app/[locale]/(public)/topics/openings/[slug]/posts/[postId]/_actions/toggleLike';
 import { MiniBoard } from '@/app/[locale]/(public)/topics/openings/_components/MiniBoard';

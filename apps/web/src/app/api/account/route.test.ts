@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { checkRateLimit } from '@/lib/rate-limit';
+import { checkRateLimit } from '@/lib/security/rate-limit';
 
 import { DELETE } from './route';
 
@@ -10,6 +10,43 @@ const mockIsUserBanned = vi.fn();
 const mockLogActivityEvent = vi.fn();
 
 vi.mock('server-only', () => ({}));
+
+vi.mock('@/lib/csrf', () => ({
+  isValidOrigin: () => true,
+}));
+
+vi.mock('@/lib/auth', () => ({
+  authenticateAndGuardApi: async (rateLimitConfig: {
+    action: string;
+    maxAttempts: number;
+    windowMs: number;
+  }) => {
+    const { createClient } = await import('@/lib/supabase/server');
+    const { isUserBanned } = await import('@/lib/moderation/ban');
+    const { checkRateLimit } = await import('@/lib/security/rate-limit');
+    const { NextResponse } = await import('next/server');
+
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { response: NextResponse.json({ error: 'unauthorized' }, { status: 401 }) };
+    }
+
+    if (await isUserBanned(user.id)) {
+      return { response: NextResponse.json({ error: 'banned' }, { status: 403 }) };
+    }
+
+    const rateLimitResult = await checkRateLimit(user.id, rateLimitConfig);
+    if ('error' in rateLimitResult) {
+      return { response: NextResponse.json({ error: 'rateLimited' }, { status: 429 }) };
+    }
+
+    return { user };
+  },
+}));
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () =>
@@ -30,15 +67,15 @@ vi.mock('@/lib/supabase/admin', () => ({
   }),
 }));
 
-vi.mock('@/lib/activity-log', () => ({
+vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: (...args: unknown[]) => mockLogActivityEvent(...args),
 }));
 
-vi.mock('@/lib/ban', () => ({
+vi.mock('@/lib/moderation/ban', () => ({
   isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
 }));
 
-vi.mock('@/lib/rate-limit', () => ({
+vi.mock('@/lib/security/rate-limit', () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ success: true }),
   RATE_LIMITS: {
     deleteAccount: { action: 'delete_account', maxAttempts: 3, windowMs: 3_600_000 },
@@ -72,6 +109,13 @@ vi.mock('@/lib/db', () => ({
 
 const testUserId = 'user-id-00000000-0000-0000-0000-000000000001';
 
+function createDeleteRequest(): Request {
+  return new Request('https://example.com/api/account', {
+    method: 'DELETE',
+    headers: { origin: 'https://example.com' },
+  });
+}
+
 describe('DELETE /api/account', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -84,7 +128,7 @@ describe('DELETE /api/account', () => {
       });
       mockIsUserBanned.mockResolvedValue(true);
 
-      const response = await DELETE();
+      const response = await DELETE(createDeleteRequest());
 
       expect(response.status).toBe(403);
       const body = await response.json();
@@ -99,7 +143,7 @@ describe('DELETE /api/account', () => {
       });
       mockIsUserBanned.mockResolvedValue(true);
 
-      await DELETE();
+      await DELETE(createDeleteRequest());
 
       expect(mockLogActivityEvent).not.toHaveBeenCalled();
     });
@@ -113,7 +157,7 @@ describe('DELETE /api/account', () => {
       mockIsUserBanned.mockResolvedValue(false);
       vi.mocked(checkRateLimit).mockResolvedValueOnce({ error: 'rateLimited' } as never);
 
-      const response = await DELETE();
+      const response = await DELETE(createDeleteRequest());
 
       expect(response.status).toBe(429);
       const body = await response.json();
@@ -127,7 +171,7 @@ describe('DELETE /api/account', () => {
       mockIsUserBanned.mockResolvedValue(false);
       vi.mocked(checkRateLimit).mockResolvedValueOnce({ error: 'rateLimited' } as never);
 
-      await DELETE();
+      await DELETE(createDeleteRequest());
 
       expect(mockLogActivityEvent).not.toHaveBeenCalled();
       expect(mockDeleteUser).not.toHaveBeenCalled();
@@ -142,7 +186,7 @@ describe('DELETE /api/account', () => {
       mockIsUserBanned.mockResolvedValue(false);
       mockDeleteUser.mockResolvedValue({ error: null });
 
-      const response = await DELETE();
+      const response = await DELETE(createDeleteRequest());
 
       expect(response.status).toBe(200);
       const body = await response.json();
@@ -170,7 +214,7 @@ describe('DELETE /api/account', () => {
         data: { user: null },
       });
 
-      const response = await DELETE();
+      const response = await DELETE(createDeleteRequest());
 
       expect(response.status).toBe(401);
       const body = await response.json();
@@ -191,7 +235,7 @@ describe('DELETE /api/account', () => {
         error: new Error('Admin API error'),
       });
 
-      const response = await DELETE();
+      const response = await DELETE(createDeleteRequest());
 
       expect(response.status).toBe(500);
       const body = await response.json();
@@ -220,7 +264,7 @@ describe('DELETE /api/account', () => {
         return undefined;
       });
 
-      await DELETE();
+      await DELETE(createDeleteRequest());
 
       expect(callOrder).toEqual(['deleteUser', 'updateProfile']);
     });
@@ -233,7 +277,7 @@ describe('DELETE /api/account', () => {
         error: new Error('session expired'),
       });
 
-      const response = await DELETE();
+      const response = await DELETE(createDeleteRequest());
 
       expect(response.status).toBe(401);
       const body = await response.json();

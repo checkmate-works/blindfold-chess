@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { AdminDataTable } from '@/app/admin/_components/AdminDataTable';
 import { AdminPaginationNav } from '@/app/admin/_components/AdminPaginationNav';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
+import { FaExternalLinkAlt } from 'react-icons/fa';
 
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
 import { countPositions, listPositions } from '@/lib/positions/queries';
@@ -38,12 +39,6 @@ export default async function AdminPositionMemoryPage({
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Position Memory</h1>
-        <Link
-          href="/admin/positions/memory/new"
-          className="px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-        >
-          New Position
-        </Link>
       </div>
 
       {rows.length > 0 && (
@@ -61,10 +56,13 @@ export default async function AdminPositionMemoryPage({
           <tr key={position.id} className="border-t border-border">
             <td className="px-4 py-3">
               <Link
-                href={`/admin/positions/memory/${position.id}`}
-                className="font-medium text-primary hover:underline"
+                href={`/en/practice/position-memory/${position.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-primary hover:underline"
               >
-                {position.title}
+                <span className="font-medium">{position.title}</span>
+                <FaExternalLinkAlt className="h-3 w-3" />
               </Link>
             </td>
             <td className="px-4 py-3">

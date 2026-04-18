@@ -148,6 +148,7 @@ describe('FeedCard', () => {
       createdAt: '2025-01-15T10:00:00.000Z',
       data: {
         id: 'position-1',
+        type: 'memory',
         fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
         createdAt: '2025-01-15T10:00:00.000Z',
         author: {
@@ -178,6 +179,7 @@ describe('FeedCard', () => {
       createdAt: '2025-01-15T10:00:00.000Z',
       data: {
         id: 'position-1',
+        type: 'memory',
         fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
         createdAt: '2025-01-15T10:00:00.000Z',
         author: {

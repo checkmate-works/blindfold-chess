@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mockIsAdsEnabled = vi.fn();
 const mockGetAdBannerBySlot = vi.fn();
 
-vi.mock('@/lib/ad', () => ({
+vi.mock('@/lib/ads/ad', () => ({
   isAdsEnabled: (...args: unknown[]) => mockIsAdsEnabled(...args),
   getAdBannerBySlot: (...args: unknown[]) => mockGetAdBannerBySlot(...args),
 }));

@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 
-import { isInternalUrl } from '@/lib/linkify-urls';
+import { isInternalUrl } from '@/lib/content/linkify-urls';
 
 import { PagePanel } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';

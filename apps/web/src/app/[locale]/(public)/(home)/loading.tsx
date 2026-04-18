@@ -18,12 +18,12 @@ export default function HomeLoading() {
   return (
     <>
       {/* PageTitle */}
-      <div className="mb-8 flex items-center justify-center">
+      <div className="mb-8 flex items-center justify-center gap-2">
         <div className="h-8 bg-muted rounded w-48 animate-pulse" />
       </div>
 
       <div className="space-y-6">
-        <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-card border border-border rounded-lg overflow-hidden">
           {/* VsAiCard skeleton — matches the loading state in VsAiCard.tsx */}
           <div className="p-4 sm:p-6 border-b border-border">
             <div className="animate-pulse">

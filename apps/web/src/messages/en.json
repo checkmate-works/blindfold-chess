@@ -63,6 +63,14 @@
       "title": "My Posts",
       "description": "View your posts"
     },
+    "mypageProblems": {
+      "title": "My Problems",
+      "description": "Position memory problems you have created"
+    },
+    "mypagePuzzles": {
+      "title": "My Puzzles",
+      "description": "Manage your created puzzles"
+    },
     "mypageFollowing": {
       "title": "Following",
       "description": "Users you are following"
@@ -360,6 +368,18 @@
         "multiplier12": "×1.2",
         "multiplier11": "×1.1",
         "multiplier10": "×1.0"
+      },
+      "adFreeBenefits": {
+        "question": "How are ad-free benefits earned?",
+        "answer": "Ad-free benefits are granted automatically when you contribute text-bearing content on topic pages. The grants stack additively — posting multiple times extends your ad-free period.",
+        "tableTitle": "Ways to earn ad-free benefits",
+        "headerAction": "Action",
+        "headerDuration": "Duration",
+        "actions": {
+          "topic_post": "Post a text topic"
+        },
+        "durationDays": "{days} days",
+        "note": "Posts containing only ratings without text content do not qualify for the grant."
       }
     }
   },
@@ -894,7 +914,24 @@
         "sectionTitle": "Problem List",
         "empty": "No positions available yet",
         "tutorialLink": "View Tutorial",
-        "submittedBy": "submitted"
+        "submittedBy": "submitted",
+        "createButton": "Create Problem"
+      },
+      "create": {
+        "title": "Create Problem",
+        "fenLabel": "FEN",
+        "fenRequired": "FEN is required",
+        "fenInvalid": "Invalid FEN position",
+        "titleLabel": "Title",
+        "titleRequired": "Title is required",
+        "descriptionLabel": "Description",
+        "submit": "Create",
+        "submitting": "Creating...",
+        "clearBoard": "Clear Board",
+        "tabBoard": "Board",
+        "tabFen": "FEN",
+        "positionInvalid": "Please set up a valid position",
+        "flipBoard": "Flip board"
       },
       "detail": {
         "title": "Position Detail",
@@ -907,6 +944,79 @@
         "tutorialLink": "View Tutorial",
         "tryAgain": "Try Again",
         "backToList": "Back to List"
+      },
+      "delete": {
+        "button": "Delete Problem",
+        "confirmTitle": "Delete Problem",
+        "confirmMessage": "Are you sure you want to delete this problem? This action cannot be undone.",
+        "confirm": "Delete",
+        "cancel": "Cancel"
+      }
+    },
+    "puzzle": {
+      "title": "Puzzle",
+      "description": "Find the best move in the position",
+      "list": {
+        "title": "Puzzle",
+        "sectionTitle": "Puzzle List",
+        "betaNotice": "This feature is in beta. The UI and functionality may change.",
+        "empty": "No puzzles available yet",
+        "submittedBy": "submitted",
+        "createButton": "Create Puzzle"
+      },
+      "create": {
+        "title": "Create Puzzle",
+        "fenLabel": "FEN",
+        "fenInvalid": "Invalid FEN position",
+        "titleLabel": "Title",
+        "titleRequired": "Title is required",
+        "descriptionLabel": "Description",
+        "solutionLabel": "Solution",
+        "solutionPlaceholder": "e.g. Nf3 or Qh7+ Kf8 Qh8#",
+        "solutionRequired": "Solution is required",
+        "solutionInvalid": "Invalid move sequence for this position",
+        "submit": "Create",
+        "submitting": "Creating...",
+        "clearBoard": "Clear Board",
+        "tabBoard": "Board",
+        "tabFen": "FEN",
+        "positionInvalid": "Please set up a valid position",
+        "flipBoard": "Flip board",
+        "whiteToMove": "White to move",
+        "blackToMove": "Black to move"
+      },
+      "whitePieces": "White Pieces",
+      "blackPieces": "Black Pieces",
+      "removePieceMode": "Remove piece mode - Click on a square to remove piece",
+      "placingPiece": "Placing",
+      "detail": {
+        "title": "Puzzle Detail",
+        "descriptionSection": "About This Puzzle",
+        "solveSection": "Solve the Puzzle",
+        "whitePiecesLabel": "White Pieces",
+        "blackPiecesLabel": "Black Pieces",
+        "whiteToMove": "White to move",
+        "blackToMove": "Black to move",
+        "createdBy": "Created by",
+        "answerLabel": "Your answer (SAN, case-sensitive)",
+        "answerPlaceholder": "e.g. Nf3",
+        "submitAnswer": "Submit",
+        "correct": "Correct! \ud83c\udf89",
+        "incorrect": "Incorrect. Try again.",
+        "noPieces": "None",
+        "showBoard": "Show Board"
+      },
+      "result": {
+        "title": "Puzzle Result",
+        "replaySection": "Solution Replay",
+        "historySection": "Attempt History",
+        "solution": "Solution: {move}",
+        "attemptCorrect": "Correct",
+        "attemptIncorrect": "Incorrect",
+        "backToList": "Back to Puzzles",
+        "tryAgain": "Try Again",
+        "viewResult": "View Result",
+        "peekCount": "Board Peeks: {count}"
       }
     },
     "knightTour": {
@@ -1473,6 +1583,8 @@
     "showLegalMoves": "Show legal moves",
     "legalMovesList": "Legal moves:",
     "result": {
+      "gameNotFound": "Game not found",
+      "gameIdMissing": "No game ID provided",
       "operationSummary": {
         "title": "Game Stats",
         "inputMethods": "Input Methods",
@@ -2094,7 +2206,14 @@
       "levelLabel": "Level {level}",
       "expProgress": "{current} / {next} Exp",
       "expRemaining": "{remaining} Exp to next level",
-      "viewExpLeaderboard": "View Exp Leaderboard"
+      "viewExpLeaderboard": "View Exp Leaderboard",
+      "accountTitle": "Account",
+      "subscriptionTitle": "Subscription",
+      "benefitsTitle": "Benefits",
+      "practiceTitle": "Practice",
+      "myProblems": "My Problems",
+      "myPositionMemory": "Position Memory",
+      "myPuzzles": "Puzzles"
     },
     "records": "Records",
     "bestScore": "Best Score",
@@ -2152,6 +2271,42 @@
     },
     "practiceThisChallenge": "Practice This Challenge"
   },
+  "MypageBenefits": {
+    "title": "Benefits",
+    "sectionTitle": "Ad-Free Benefits",
+    "breadcrumbMypage": "My Page",
+    "adFree": {
+      "statusActive": "Ad-free is active",
+      "statusInactive": "Ad-free is not currently active",
+      "activeUntil": "until {date}",
+      "sourceSubscription": "From your plan subscription",
+      "sourceGrants": "From benefit grants",
+      "pastBenefits": "Past benefits",
+      "learnHowToEarn": "Learn how to earn ad-free benefits",
+      "viewFullHistory": "View full history",
+      "grantPeriod": "{startDate} – {endDate}",
+      "grantStatusActive": "Active",
+      "grantStatusUpcoming": "Upcoming",
+      "grantStatusExpired": "Expired"
+    },
+    "grantTypeLabel": {
+      "admin_manual": "Granted by staff",
+      "topic_post": "Granted for topic post"
+    }
+  },
+  "MypageBenefitHistory": {
+    "title": "Benefit History",
+    "sectionTitle": "Your benefit grants",
+    "breadcrumbMypage": "My Page",
+    "breadcrumbBenefits": "Benefits",
+    "showing": "Showing {from}-{to} of {total}",
+    "empty": "No benefit grants found.",
+    "grantPeriod": "{startDate} – {endDate}",
+    "statusActive": "Active",
+    "statusUpcoming": "Upcoming",
+    "statusExpired": "Expired",
+    "statusRevoked": "Revoked"
+  },
   "MypageLikes": {
     "title": "Liked Posts",
     "breadcrumbMypage": "My Page",
@@ -2163,6 +2318,27 @@
     "breadcrumbMypage": "My Page",
     "empty": "No posts yet.",
     "sectionTitle": "Topics"
+  },
+  "MypageProblems": {
+    "title": "My Problems",
+    "sectionTitle": "Problems You Created",
+    "empty": "You haven't created any problems yet.",
+    "breadcrumbMypage": "My Page",
+    "breadcrumbProblems": "My Problems"
+  },
+  "MypagePuzzles": {
+    "title": "My Puzzles",
+    "sectionTitle": "Puzzles You Created",
+    "empty": "You haven't created any puzzles yet.",
+    "breadcrumbMypage": "My Page",
+    "breadcrumbProblems": "My Problems"
+  },
+  "MypageProblemsIndex": {
+    "title": "My Problems",
+    "description": "Manage your created problems",
+    "positionMemory": "Position Memory",
+    "puzzles": "Puzzles",
+    "breadcrumbMypage": "My Page"
   },
   "MypageFollowing": {
     "title": "Following",
@@ -2201,8 +2377,14 @@
     "unknownNotification": "You have a new notification",
     "announcementMessage": "New announcement: {title}",
     "newPostMessage": "{actor} shared a new post",
+    "newPositionMemoryMessage": "{actor} created a new position memory problem",
+    "newPuzzleMessage": "{actor} created a new puzzle",
     "achievementSingleMessage": "🏆 You earned {name}",
-    "achievementMultipleMessage": "🏆 You earned {count} achievements"
+    "achievementMultipleMessage": "🏆 You earned {count} achievements",
+    "benefitGrantMessage": {
+      "topic_post": "Thank you for your topic post — you've received {days} days of ad-free benefit",
+      "default": "You received {days} days of ad-free benefit"
+    }
   },
   "deleteAccount": {
     "title": "Delete Account",
@@ -2227,7 +2409,9 @@
     "gameSaved": "Game saved successfully",
     "gamesDeleted": "{count} games deleted successfully",
     "accountDeleted": "Your account has been deleted",
-    "practiceResultSaveFailed": "Failed to save your result. Please try again."
+    "practiceResultSaveFailed": "Failed to save your result. Please try again.",
+    "positionCreated": "Position created successfully",
+    "positionDeleted": "Problem deleted"
   },
   "setupUsername": {
     "title": "Create Your Account",
@@ -2410,7 +2594,13 @@
       "allProviders": "All",
       "providerGoogle": "Google",
       "providerEmail": "Email",
-      "providerUnknown": "Unknown"
+      "providerUnknown": "Unknown",
+      "copyUserId": "Copy user ID",
+      "copyUserIdSuccess": "Copied",
+      "columnId": "ID",
+      "searchByUsername": "Search by username",
+      "searchButton": "Search",
+      "usernameLabel": "Username"
     },
     "tabs": {
       "users": "Users",
@@ -2445,7 +2635,7 @@
       "subscriptionId": "Subscription ID",
       "priceId": "Price ID",
       "status": "Status",
-      "cancelAtPeriodEnd": "Cancel at Period End",
+      "cancelAt": "Cancel At",
       "periodStart": "Period Start",
       "periodEnd": "Period End",
       "createdAt": "Created At",
@@ -2517,6 +2707,7 @@
       "nextPage": "Next"
     },
     "positionMemory": "Position Memory",
+    "puzzle": "Puzzle",
     "topicPosts": {
       "navLabel": "Topic Posts",
       "title": "Topic Posts",
@@ -2802,6 +2993,10 @@
     "editProfile": "Edit profile",
     "topicsTab": "Topics",
     "noTopicPosts": "No posts yet.",
+    "problemsTab": "Problems",
+    "noProblems": "No problems yet.",
+    "problemTypeMemory": "Memory",
+    "problemTypePuzzle": "Puzzle",
     "achievementsSection": "Achievements",
     "noAchievements": "No achievements yet.",
     "viewAllAchievements": "View all",
@@ -2875,6 +3070,13 @@
     "moreTopicPosts": "More topics",
     "showMore": "Show more",
     "showLess": "Show less",
+    "grantInfoModal": {
+      "title": "Ad-Free Benefit Notice",
+      "body": "Posting a topic with text content automatically grants you {days} days of ad-free access.",
+      "note": "Posts containing only ratings without text content do not qualify.",
+      "confirm": "Continue posting",
+      "cancel": "Cancel"
+    },
     "categories": {
       "squares": {
         "title": "Squares",
@@ -3352,8 +3554,10 @@
     "subscribe": "Subscribe",
     "managePlan": "Manage plan"
   },
-  "subscription": {
+  "MypageSubscription": {
     "title": "Subscription",
+    "sectionTitle": "Current Plan",
+    "breadcrumbMypage": "My Page",
     "successMessage": "Your subscription is now active! Ads have been removed.",
     "noSubscription": "No active subscription",
     "noSubscriptionDescription": "Subscribe to remove ads and support Blindfold Chess.",
@@ -3362,10 +3566,9 @@
     "statusActive": "Active",
     "statusCanceling": "Canceling",
     "statusInactive": "Inactive",
-    "cancelingNote": "Your subscription will end at the end of the billing period.",
+    "cancelingNote": "Your subscription has been cancelled.",
     "accessUntil": "Ad-free access until {date}",
     "nextBilling": "Next billing date",
-    "noBilling": "No future billing",
     "manageSubscription": "Manage subscription"
   },
   "ranks": {

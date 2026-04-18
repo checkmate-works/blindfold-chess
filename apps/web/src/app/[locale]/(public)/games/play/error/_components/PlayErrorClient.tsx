@@ -9,7 +9,7 @@ import { isValidSkillLevel } from '@blindfold-chess/features/ai-game';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaExclamationTriangle, FaTrash, FaWrench } from 'react-icons/fa';
 
-import { LocalStorageGameRepository } from '@/lib/repositories';
+import { LocalStorageGameRepository } from '@/lib/games/local-storage-repository';
 import type { SkillLevel } from '@/lib/types';
 
 import { PageTitle } from '@/app/[locale]/_components/PageTitle';

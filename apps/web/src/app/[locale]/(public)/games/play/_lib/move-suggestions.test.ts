@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { generateMoveSuggestions } from './move-suggestions';
+import { buildCompletePattern, generateMoveSuggestions } from './move-suggestions';
 
 describe('generateMoveSuggestions', () => {
   describe('empty and invalid input', () => {
@@ -267,5 +267,82 @@ describe('generateMoveSuggestions', () => {
       const suggestions = generateMoveSuggestions('  N  ');
       expect(suggestions.length).toBeGreaterThan(0);
     });
+  });
+});
+
+describe('buildCompletePattern', () => {
+  it('anchors the body with ^ and $', () => {
+    const re = buildCompletePattern('[a-h][2-7]');
+    expect(re.source).toBe('^[a-h][2-7](\\+|#)?$');
+    expect(re.test('e4')).toBe(true);
+    expect(re.test('xe4')).toBe(false);
+    expect(re.test('e4x')).toBe(false);
+  });
+
+  it('accepts optional + and # suffix', () => {
+    const re = buildCompletePattern('[KQRBN][a-h][1-8]');
+    expect(re.test('Nf3')).toBe(true);
+    expect(re.test('Nf3+')).toBe(true);
+    expect(re.test('Nf3#')).toBe(true);
+    expect(re.test('Nf3++')).toBe(false);
+    expect(re.test('Nf3?')).toBe(false);
+  });
+
+  it('is equivalent to the original hand-written patterns', () => {
+    // The 12 legacy patterns, copied verbatim. A refactor that preserves
+    // behavior must match on the same set of inputs.
+    const legacy: readonly [RegExp, string][] = [
+      [/^[a-h][2-7](\+|#)?$/, '[a-h][2-7]'],
+      [/^[a-h]x[a-h][2-7](\+|#)?$/, '[a-h]x[a-h][2-7]'],
+      [/^[a-h][1-8]=[QRBN](\+|#)?$/, '[a-h][1-8]=[QRBN]'],
+      [/^[a-h]x[a-h][1-8]=[QRBN](\+|#)?$/, '[a-h]x[a-h][1-8]=[QRBN]'],
+      [/^[KQRBN][a-h][1-8](\+|#)?$/, '[KQRBN][a-h][1-8]'],
+      [/^[KQRBN]x[a-h][1-8](\+|#)?$/, '[KQRBN]x[a-h][1-8]'],
+      [/^[KQRBN][a-h][a-h][1-8](\+|#)?$/, '[KQRBN][a-h][a-h][1-8]'],
+      [/^[KQRBN][1-8][a-h][1-8](\+|#)?$/, '[KQRBN][1-8][a-h][1-8]'],
+      [/^[KQRBN][a-h][1-8][a-h][1-8](\+|#)?$/, '[KQRBN][a-h][1-8][a-h][1-8]'],
+      [/^[KQRBN][a-h]x[a-h][1-8](\+|#)?$/, '[KQRBN][a-h]x[a-h][1-8]'],
+      [/^[KQRBN][1-8]x[a-h][1-8](\+|#)?$/, '[KQRBN][1-8]x[a-h][1-8]'],
+      [/^[KQRBN][a-h][1-8]x[a-h][1-8](\+|#)?$/, '[KQRBN][a-h][1-8]x[a-h][1-8]'],
+    ];
+
+    const sampleInputs = [
+      'e4',
+      'e4+',
+      'e4#',
+      'exd5',
+      'exd5+',
+      'e8=Q',
+      'e8=Q+',
+      'exd8=Q',
+      'exd8=Q#',
+      'Nf3',
+      'Nf3+',
+      'Nxe5',
+      'Qxd4#',
+      'Nbd2',
+      'Rad1+',
+      'N1d2',
+      'R1a1#',
+      'Nb1d2',
+      'Nbxd2',
+      'Nfxe5',
+      'R1xd1',
+      'Nb1xe5',
+      // Negative cases
+      '',
+      'e9',
+      'Zxe5',
+      'Nf3??',
+      'O-O',
+      'abc',
+    ];
+
+    for (const [legacyRe, body] of legacy) {
+      const rebuilt = buildCompletePattern(body);
+      for (const input of sampleInputs) {
+        expect(rebuilt.test(input)).toBe(legacyRe.test(input));
+      }
+    }
   });
 });

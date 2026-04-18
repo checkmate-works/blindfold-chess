@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { MISTAKE_LIMIT } from '@/lib/challenge-constants';
+import { MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
 import type { ChallengeResultRow } from '../_actions/get-challenge-sessions';
 import { getPreviousPeriodLabel } from './dashboard-ui-utils';

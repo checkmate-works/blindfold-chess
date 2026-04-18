@@ -63,6 +63,14 @@
       "title": "自分の投稿",
       "description": "自分の投稿の一覧を表示します"
     },
+    "mypageProblems": {
+      "title": "マイ問題",
+      "description": "作成したポジション記憶の問題"
+    },
+    "mypagePuzzles": {
+      "title": "マイパズル",
+      "description": "作成したパズルの管理"
+    },
     "mypageFollowing": {
       "title": "フォロー中",
       "description": "フォロー中のユーザー"
@@ -361,6 +369,18 @@
         "multiplier12": "×1.2",
         "multiplier11": "×1.1",
         "multiplier10": "×1.0"
+      },
+      "adFreeBenefits": {
+        "question": "広告非表示特典はどうやって獲得できますか？",
+        "answer": "テキスト付きのトピック投稿を行うと、自動的に広告非表示特典が付与されます。複数回投稿することで、広告非表示の期間は加算で延長されます。",
+        "tableTitle": "特典を獲得する方法",
+        "headerAction": "アクション",
+        "headerDuration": "付与期間",
+        "actions": {
+          "topic_post": "テキスト付きでトピックに投稿する"
+        },
+        "durationDays": "{days}日間",
+        "note": "選択式の評価(rating)のみでテキストがない投稿は特典の対象外です。"
       }
     }
   },
@@ -895,7 +915,24 @@
         "sectionTitle": "問題一覧",
         "empty": "まだポジションがありません",
         "tutorialLink": "チュートリアルを見る",
-        "submittedBy": "による出題"
+        "submittedBy": "による出題",
+        "createButton": "問題を作成する"
+      },
+      "create": {
+        "title": "問題を作成",
+        "fenLabel": "FEN",
+        "fenRequired": "FENは必須です",
+        "fenInvalid": "無効なFENです",
+        "titleLabel": "タイトル",
+        "titleRequired": "タイトルは必須です",
+        "descriptionLabel": "説明",
+        "submit": "作成",
+        "submitting": "作成中...",
+        "clearBoard": "ボードをクリア",
+        "tabBoard": "ボード",
+        "tabFen": "FEN",
+        "positionInvalid": "有効なポジションを設定してください",
+        "flipBoard": "ボードを反転"
       },
       "detail": {
         "title": "ポジション詳細",
@@ -908,6 +945,79 @@
         "tutorialLink": "チュートリアルを見る",
         "tryAgain": "もう一度挑戦",
         "backToList": "一覧に戻る"
+      },
+      "delete": {
+        "button": "削除",
+        "confirmTitle": "問題を削除",
+        "confirmMessage": "この問題を削除しますか？この操作は元に戻せません。",
+        "confirm": "削除",
+        "cancel": "キャンセル"
+      }
+    },
+    "puzzle": {
+      "title": "パズル",
+      "description": "ポジションで最善手を見つけよう",
+      "list": {
+        "title": "パズル",
+        "sectionTitle": "パズル一覧",
+        "betaNotice": "この機能はベータ版です。UIや機能は変更される場合があります。",
+        "empty": "パズルはまだありません",
+        "submittedBy": "作成",
+        "createButton": "パズルを作成"
+      },
+      "create": {
+        "title": "パズルを作成",
+        "fenLabel": "FEN",
+        "fenInvalid": "無効なFENです",
+        "titleLabel": "タイトル",
+        "titleRequired": "タイトルは必須です",
+        "descriptionLabel": "説明",
+        "solutionLabel": "正解手",
+        "solutionPlaceholder": "例: Nf3 または Qh7+ Kf8 Qh8#",
+        "solutionRequired": "正解手は必須です",
+        "solutionInvalid": "このポジションでは無効な手順です",
+        "submit": "作成",
+        "submitting": "作成中...",
+        "clearBoard": "ボードをクリア",
+        "tabBoard": "ボード",
+        "tabFen": "FEN",
+        "positionInvalid": "有効なポジションを設定してください",
+        "flipBoard": "ボードを反転",
+        "whiteToMove": "白の手番",
+        "blackToMove": "黒の手番"
+      },
+      "whitePieces": "白の駒",
+      "blackPieces": "黒の駒",
+      "removePieceMode": "駒を削除 - マスをクリックして駒を削除",
+      "placingPiece": "配置中:",
+      "detail": {
+        "title": "パズル詳細",
+        "descriptionSection": "このパズルについて",
+        "solveSection": "パズルを解く",
+        "whitePiecesLabel": "白の駒",
+        "blackPiecesLabel": "黒の駒",
+        "whiteToMove": "白の手番",
+        "blackToMove": "黒の手番",
+        "createdBy": "作成者",
+        "answerLabel": "回答（SAN形式、大文字小文字を区別）",
+        "answerPlaceholder": "例: Nf3",
+        "submitAnswer": "回答する",
+        "correct": "正解！\ud83c\udf89",
+        "incorrect": "不正解です。もう一度挑戦してください。",
+        "noPieces": "なし",
+        "showBoard": "ボードを表示"
+      },
+      "result": {
+        "title": "パズル結果",
+        "replaySection": "正解のリプレイ",
+        "historySection": "回答履歴",
+        "solution": "正解: {move}",
+        "attemptCorrect": "正解",
+        "attemptIncorrect": "不正解",
+        "backToList": "パズル一覧に戻る",
+        "tryAgain": "もう一度",
+        "viewResult": "結果を見る",
+        "peekCount": "盤面確認: {count}回"
       }
     },
     "knightTour": {
@@ -1474,6 +1584,8 @@
     "showLegalMoves": "合法手を表示",
     "legalMovesList": "合法手一覧：",
     "result": {
+      "gameNotFound": "対局が見つかりません",
+      "gameIdMissing": "対局IDが指定されていません",
       "operationSummary": {
         "title": "対局統計",
         "inputMethods": "入力方式",
@@ -2095,7 +2207,14 @@
       "levelLabel": "Level {level}",
       "expProgress": "{current} / {next} Exp",
       "expRemaining": "次のレベルまで あと {remaining} Exp",
-      "viewExpLeaderboard": "Exp ランキングを見る"
+      "viewExpLeaderboard": "Exp ランキングを見る",
+      "accountTitle": "アカウント",
+      "subscriptionTitle": "サブスクリプション",
+      "benefitsTitle": "特典",
+      "practiceTitle": "練習",
+      "myProblems": "マイ問題",
+      "myPositionMemory": "ポジションの記憶",
+      "myPuzzles": "パズル"
     },
     "records": "レコード",
     "bestScore": "最高スコア",
@@ -2153,6 +2272,42 @@
     },
     "practiceThisChallenge": "このチャレンジを練習する"
   },
+  "MypageBenefits": {
+    "title": "特典",
+    "sectionTitle": "広告非表示特典",
+    "breadcrumbMypage": "マイページ",
+    "adFree": {
+      "statusActive": "広告非表示が有効です",
+      "statusInactive": "現在広告非表示は有効ではありません",
+      "activeUntil": "{date}まで",
+      "sourceSubscription": "プラン契約による",
+      "sourceGrants": "特典付与による",
+      "pastBenefits": "過去の特典",
+      "learnHowToEarn": "広告非表示特典の獲得方法を見る",
+      "viewFullHistory": "すべての履歴を見る",
+      "grantPeriod": "{startDate} 〜 {endDate}",
+      "grantStatusActive": "有効",
+      "grantStatusUpcoming": "開始予定",
+      "grantStatusExpired": "終了"
+    },
+    "grantTypeLabel": {
+      "admin_manual": "運営からの付与",
+      "topic_post": "トピック投稿による付与"
+    }
+  },
+  "MypageBenefitHistory": {
+    "title": "特典履歴",
+    "sectionTitle": "付与された特典",
+    "breadcrumbMypage": "マイページ",
+    "breadcrumbBenefits": "特典",
+    "showing": "{total}件中 {from}-{to}件を表示",
+    "empty": "付与された特典はありません。",
+    "grantPeriod": "{startDate} 〜 {endDate}",
+    "statusActive": "有効",
+    "statusUpcoming": "開始予定",
+    "statusExpired": "終了",
+    "statusRevoked": "取り消し"
+  },
   "MypageLikes": {
     "title": "いいねした投稿",
     "breadcrumbMypage": "マイページ",
@@ -2164,6 +2319,27 @@
     "breadcrumbMypage": "マイページ",
     "empty": "投稿はまだありません。",
     "sectionTitle": "トピック"
+  },
+  "MypageProblems": {
+    "title": "マイ問題",
+    "sectionTitle": "作成した問題",
+    "empty": "まだ問題を作成していません。",
+    "breadcrumbMypage": "マイページ",
+    "breadcrumbProblems": "マイ問題"
+  },
+  "MypagePuzzles": {
+    "title": "マイパズル",
+    "sectionTitle": "作成したパズル",
+    "empty": "まだパズルを作成していません。",
+    "breadcrumbMypage": "マイページ",
+    "breadcrumbProblems": "マイ問題"
+  },
+  "MypageProblemsIndex": {
+    "title": "マイ問題",
+    "description": "作成した問題の管理",
+    "positionMemory": "ポジションの記憶",
+    "puzzles": "パズル",
+    "breadcrumbMypage": "マイページ"
   },
   "MypageFollowing": {
     "title": "フォロー中",
@@ -2202,8 +2378,14 @@
     "unknownNotification": "新しい通知があります",
     "announcementMessage": "新しいお知らせ: {title}",
     "newPostMessage": "{actor} が新しい投稿をしました",
+    "newPositionMemoryMessage": "{actor} がポジション記憶の問題を作成しました",
+    "newPuzzleMessage": "{actor} がパズルを作成しました",
     "achievementSingleMessage": "🏆 {name} を獲得しました",
-    "achievementMultipleMessage": "🏆 {count}件のアチーブメントを獲得しました"
+    "achievementMultipleMessage": "🏆 {count}件のアチーブメントを獲得しました",
+    "benefitGrantMessage": {
+      "topic_post": "トピックの投稿のお礼として、{days}日間の広告非表示特典が付与されました",
+      "default": "{days}日間の広告非表示特典が付与されました"
+    }
   },
   "deleteAccount": {
     "title": "退会",
@@ -2228,7 +2410,9 @@
     "gameSaved": "ゲームが保存されました",
     "gamesDeleted": "{count}個のゲームを削除しました",
     "accountDeleted": "退会が完了しました",
-    "practiceResultSaveFailed": "結果の保存に失敗しました。もう一度お試しください。"
+    "practiceResultSaveFailed": "結果の保存に失敗しました。もう一度お試しください。",
+    "positionCreated": "問題を作成しました",
+    "positionDeleted": "問題を削除しました"
   },
   "setupUsername": {
     "title": "アカウント登録",
@@ -2404,7 +2588,13 @@
       "allProviders": "All",
       "providerGoogle": "Google",
       "providerEmail": "Email",
-      "providerUnknown": "Unknown"
+      "providerUnknown": "Unknown",
+      "copyUserId": "ユーザーIDをコピー",
+      "copyUserIdSuccess": "コピーしました",
+      "columnId": "ID",
+      "searchByUsername": "ユーザー名で検索",
+      "searchButton": "検索",
+      "usernameLabel": "ユーザー名"
     },
     "tabs": {
       "users": "ユーザー",
@@ -2439,7 +2629,7 @@
       "subscriptionId": "Subscription ID",
       "priceId": "Price ID",
       "status": "ステータス",
-      "cancelAtPeriodEnd": "期間終了時にキャンセル",
+      "cancelAt": "キャンセル日",
       "periodStart": "期間開始",
       "periodEnd": "期間終了",
       "createdAt": "作成日時",
@@ -2650,6 +2840,7 @@
       }
     },
     "positionMemory": "Position Memory",
+    "puzzle": "Puzzle",
     "topicPosts": {
       "navLabel": "トピック投稿",
       "title": "トピック投稿",
@@ -2698,6 +2889,10 @@
     "editProfile": "プロフィール編集",
     "topicsTab": "トピック",
     "noTopicPosts": "まだ投稿がありません。",
+    "problemsTab": "問題",
+    "noProblems": "まだ問題がありません。",
+    "problemTypeMemory": "記憶",
+    "problemTypePuzzle": "パズル",
     "achievementsSection": "アチーブメント",
     "noAchievements": "まだアチーブメントはありません。",
     "viewAllAchievements": "すべて見る",
@@ -2771,6 +2966,13 @@
     "moreTopicPosts": "トピックをもっと見る",
     "showMore": "さらに表示",
     "showLess": "閉じる",
+    "grantInfoModal": {
+      "title": "広告非表示特典のご案内",
+      "body": "テキスト付きでトピックを投稿すると、{days}日間の広告非表示特典が自動で付与されます。",
+      "note": "選択式の評価のみの投稿は対象外です。",
+      "confirm": "投稿する",
+      "cancel": "キャンセル"
+    },
     "categories": {
       "squares": {
         "title": "マス目",
@@ -3248,8 +3450,10 @@
     "subscribe": "登録する",
     "managePlan": "プランを管理"
   },
-  "subscription": {
+  "MypageSubscription": {
     "title": "サブスクリプション",
+    "sectionTitle": "現在のプラン",
+    "breadcrumbMypage": "マイページ",
     "successMessage": "サブスクリプションが有効になりました！広告が非表示になります。",
     "noSubscription": "有効なサブスクリプションがありません",
     "noSubscriptionDescription": "サブスクリプションに登録して、広告を非表示にしましょう。",
@@ -3258,10 +3462,9 @@
     "statusActive": "有効",
     "statusCanceling": "解約予定",
     "statusInactive": "無効",
-    "cancelingNote": "現在の請求期間の終了時にサブスクリプションが終了します。",
+    "cancelingNote": "サブスクリプションは解約済みです。",
     "accessUntil": "{date} まで広告なしでご利用いただけます",
     "nextBilling": "次回請求日",
-    "noBilling": "今後の請求はありません",
     "manageSubscription": "サブスクリプションを管理"
   },
   "ranks": {

@@ -6,7 +6,8 @@ import { requireAdmin } from '@/app/admin/_lib/auth';
 import { addDays } from 'date-fns';
 
 import { db, userGrants } from '@/lib/db';
-import { calcGrantStartsAt } from '@/lib/user-grants';
+import { createNotification } from '@/lib/notifications/notification';
+import { calcGrantStartsAt } from '@/lib/users/user-grants';
 
 import { validateDurationDays, validateUuid } from '../_lib/validation';
 
@@ -39,23 +40,44 @@ export async function createGrant(formData: FormData): Promise<ActionResult> {
 
   // NOTE: calcGrantStartsAt read + insert are not wrapped in a transaction.
   // Concurrent calls for the same user+benefitType could produce overlapping
-  // grants instead of stacking. Acceptable for admin_manual (low-frequency,
-  // single operator), but should be wrapped in a transaction if automated
-  // grant types (topic_post, campaign) are added.
+  // grants instead of stacking. Acceptable here because admin_manual is a
+  // low-frequency single-operator flow. Automated grant types (topic_post,
+  // etc.) use the separate `applyAutomatedGrant` helper in src/lib/user-grants.ts
+  // which performs the read + insert inside a db.transaction with row-level
+  // locking.
   try {
     const startsAt = await calcGrantStartsAt(userId.trim(), benefitType.trim());
     const expiresAt = addDays(startsAt, durationDays);
 
-    await db.insert(userGrants).values({
-      userId: userId.trim(),
-      benefitType: benefitType.trim(),
-      grantType: 'admin_manual',
-      reason: reason?.trim() || null,
-      startsAt,
-      expiresAt,
-    });
+    const [inserted] = await db
+      .insert(userGrants)
+      .values({
+        userId: userId.trim(),
+        benefitType: benefitType.trim(),
+        grantType: 'admin_manual',
+        reason: reason?.trim() || null,
+        startsAt,
+        expiresAt,
+      })
+      .returning({ id: userGrants.id });
 
     revalidateTag('grant-status', { expire: 60 });
+
+    createNotification({
+      userId: userId.trim(),
+      actorId: auth.userId,
+      type: 'benefit_grant',
+      targetType: 'user_grant',
+      targetId: inserted.id,
+      metadata: {
+        grantType: 'admin_manual',
+        benefitType: benefitType.trim(),
+        durationDays,
+        expiresAt: expiresAt.toISOString(),
+        reason: reason?.trim() || null,
+      },
+    });
+
     return { success: true };
   } catch (error) {
     console.error('Failed to create grant:', error);

@@ -1,10 +1,10 @@
 'use server';
 
+import { announcements, db } from '@/lib/db';
 import {
   hasAnnouncementNotification,
   notifyAllUsersOfAnnouncement,
-} from '@/lib/announcement-notification';
-import { announcements, db } from '@/lib/db';
+} from '@/lib/notifications/announcement-notification';
 
 import { adminMutationGuard, mutationSuccess } from '../../_lib/action-factories';
 import type { MutationResult } from '../../_lib/action-factories';

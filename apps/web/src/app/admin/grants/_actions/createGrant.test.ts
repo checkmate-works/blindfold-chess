@@ -2,8 +2,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockRequireAdmin = vi.fn();
 const mockInsertValues = vi.fn();
+const mockInsertReturning = vi.fn();
 const mockRevalidateTag = vi.fn();
 const mockCalcGrantStartsAt = vi.fn();
+const mockCreateNotification = vi.fn();
 
 vi.mock('@/app/admin/_lib/auth', () => ({
   requireAdmin: () => mockRequireAdmin(),
@@ -12,14 +14,23 @@ vi.mock('@/app/admin/_lib/auth', () => ({
 vi.mock('@/lib/db', () => ({
   db: {
     insert: () => ({
-      values: (data: unknown) => mockInsertValues(data),
+      values: (data: unknown) => {
+        mockInsertValues(data);
+        return {
+          returning: () => mockInsertReturning(),
+        };
+      },
     }),
   },
   userGrants: {},
 }));
 
-vi.mock('@/lib/user-grants', () => ({
+vi.mock('@/lib/users/user-grants', () => ({
   calcGrantStartsAt: (...args: unknown[]) => mockCalcGrantStartsAt(...args),
+}));
+
+vi.mock('@/lib/notifications/notification', () => ({
+  createNotification: (...args: unknown[]) => mockCreateNotification(...args),
 }));
 
 vi.mock('next/cache', () => ({
@@ -49,6 +60,7 @@ const validFormData = () =>
 describe('createGrant', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockInsertReturning.mockResolvedValue([{ id: 'grant-id-1' }]);
   });
 
   it('should return unauthorized when user is not admin', async () => {
@@ -134,7 +146,6 @@ describe('createGrant', () => {
     mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
     const startsAt = new Date('2026-04-08T12:00:00Z');
     mockCalcGrantStartsAt.mockResolvedValue(startsAt);
-    mockInsertValues.mockResolvedValue(undefined);
 
     const result = await createGrant(validFormData());
     expect(result).toEqual({ success: true });
@@ -152,9 +163,25 @@ describe('createGrant', () => {
   it('should call revalidateTag on success', async () => {
     mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
     mockCalcGrantStartsAt.mockResolvedValue(new Date());
-    mockInsertValues.mockResolvedValue(undefined);
 
     await createGrant(validFormData());
     expect(mockRevalidateTag).toHaveBeenCalledWith('grant-status', { expire: 60 });
+  });
+
+  it('should create a benefit_grant notification on success', async () => {
+    mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
+    mockCalcGrantStartsAt.mockResolvedValue(new Date('2026-04-08T12:00:00Z'));
+
+    await createGrant(validFormData());
+    expect(mockCreateNotification).toHaveBeenCalledTimes(1);
+    expect(mockCreateNotification).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: validUserId,
+        actorId: 'admin-id',
+        type: 'benefit_grant',
+        targetType: 'user_grant',
+        targetId: 'grant-id-1',
+      })
+    );
   });
 });

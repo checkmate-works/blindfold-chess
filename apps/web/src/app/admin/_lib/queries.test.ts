@@ -1,6 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { fillDateRange, getKpiSummary, getNewUsersPerDay, getPostsPerDay } from './queries';
+import {
+  aggregateByDay,
+  fillDateRange,
+  getKpiSummary,
+  getNewUsersPerDay,
+  getPostsPerDay,
+} from './queries';
 
 // --- Mocks ---
 
@@ -1125,5 +1131,72 @@ describe('getKpiSummary', () => {
     expect(result.users.avgPerDay).toBe(0);
     expect(result.ugcPosts.avgPerDay).toBe(0);
     expect(result.likes.avgPerDay).toBe(0);
+  });
+});
+
+describe('aggregateByDay', () => {
+  it('returns zero-count days for an empty input', () => {
+    const result = aggregateByDay([], () => '2026-01-01', {
+      startDate: '2026-01-01',
+      endDate: '2026-01-03',
+    });
+    expect(result.total).toBe(0);
+    expect(result.daily).toEqual([
+      { date: '2026-01-01', count: 0 },
+      { date: '2026-01-02', count: 0 },
+      { date: '2026-01-03', count: 0 },
+    ]);
+  });
+
+  it('buckets items by UTC day using a string getDate', () => {
+    const items = [
+      { created_at: '2026-01-01T00:00:00Z' },
+      { created_at: '2026-01-01T23:59:00Z' },
+      { created_at: '2026-01-02T12:00:00Z' },
+    ];
+    const result = aggregateByDay(items, (u) => u.created_at, {
+      startDate: '2026-01-01',
+      endDate: '2026-01-02',
+    });
+    expect(result.total).toBe(3);
+    expect(result.daily).toEqual([
+      { date: '2026-01-01', count: 2 },
+      { date: '2026-01-02', count: 1 },
+    ]);
+  });
+
+  it('buckets items using a Date object', () => {
+    const items = [
+      { at: new Date('2026-01-01T00:00:00Z') },
+      { at: new Date('2026-01-02T00:00:00Z') },
+    ];
+    const result = aggregateByDay(items, (u) => u.at, {
+      startDate: '2026-01-01',
+      endDate: '2026-01-02',
+    });
+    expect(result.total).toBe(2);
+  });
+
+  it('excludes items outside the date range', () => {
+    const items = [
+      { created_at: '2025-12-31T23:59:59Z' }, // before start
+      { created_at: '2026-01-01T12:00:00Z' }, // in range
+      { created_at: '2026-01-03T00:00:01Z' }, // after end
+    ];
+    const result = aggregateByDay(items, (u) => u.created_at, {
+      startDate: '2026-01-01',
+      endDate: '2026-01-02',
+    });
+    expect(result.total).toBe(1);
+  });
+
+  it('includes items on the end date through end-of-day UTC', () => {
+    const items = [{ created_at: '2026-01-02T23:59:00Z' }];
+    const result = aggregateByDay(items, (u) => u.created_at, {
+      startDate: '2026-01-01',
+      endDate: '2026-01-02',
+    });
+    expect(result.total).toBe(1);
+    expect(result.daily.find((d) => d.date === '2026-01-02')?.count).toBe(1);
   });
 });

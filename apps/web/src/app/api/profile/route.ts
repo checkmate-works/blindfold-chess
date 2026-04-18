@@ -2,13 +2,18 @@ import { NextResponse } from 'next/server';
 
 import { eq } from 'drizzle-orm';
 
-import { logActivityEvent } from '@/lib/activity-log';
 import { authenticateAndGuardApi } from '@/lib/auth';
+import { isLameName } from '@/lib/content/lame-name';
+import { isValidOrigin } from '@/lib/csrf';
 import { db, profiles } from '@/lib/db';
-import { isLameName } from '@/lib/lame-name';
-import { RATE_LIMITS } from '@/lib/rate-limit';
+import { RATE_LIMITS } from '@/lib/security/rate-limit';
+import { logActivityEvent } from '@/lib/users/activity-log';
 
 export async function PUT(request: Request) {
+  if (!isValidOrigin(request)) {
+    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
+  }
+
   const guardResult = await authenticateAndGuardApi(RATE_LIMITS.updateProfile);
   if ('response' in guardResult) {
     return guardResult.response;

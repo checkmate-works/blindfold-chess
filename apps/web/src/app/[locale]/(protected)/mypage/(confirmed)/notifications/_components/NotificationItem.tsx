@@ -9,16 +9,17 @@ import { notifyNotificationsRead } from '@/config';
 import { Link } from '@/i18n/routing';
 import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { HiMegaphone, HiTrophy } from 'react-icons/hi2';
+import { HiGift, HiMegaphone, HiTrophy } from 'react-icons/hi2';
 
 import { getAchievementDisplayName } from '@/lib/achievements/display';
-import { truncateContent } from '@/lib/truncate-content';
+import { truncateContent } from '@/lib/content/truncate-content';
 
 import { markAsRead } from '../_actions';
 import type { NotificationWithActor } from '../_lib/queries';
 import {
   isAchievementGrantedMetadata,
   isAnnouncementMetadata,
+  isBenefitGrantMetadata,
   isPositionMetadata,
   isPostMetadata,
   isReplyMetadata,
@@ -51,9 +52,28 @@ export function NotificationItem({ notification, currentUsername }: Props) {
         return t('replyMessage', { actor: actorName });
       case 'new_post':
         return t('newPostMessage', { actor: actorName });
+      case 'new_position':
+        if (isPositionMetadata(notification.metadata)) {
+          return notification.metadata.positionType === 'puzzle'
+            ? t('newPuzzleMessage', { actor: actorName })
+            : t('newPositionMemoryMessage', { actor: actorName });
+        }
+        return t('newPositionMemoryMessage', { actor: actorName });
       case 'announcement':
         if (isAnnouncementMetadata(notification.metadata)) {
           return t('announcementMessage', { title: truncateContent(notification.metadata.title) });
+        }
+        return t('unknownNotification');
+      case 'benefit_grant':
+        if (isBenefitGrantMetadata(notification.metadata)) {
+          if (notification.metadata.reason) {
+            return notification.metadata.reason;
+          }
+          const specificKey = `benefitGrantMessage.${notification.metadata.grantType}`;
+          if (t.has(specificKey)) {
+            return t(specificKey, { days: notification.metadata.durationDays });
+          }
+          return t('benefitGrantMessage.default', { days: notification.metadata.durationDays });
         }
         return t('unknownNotification');
       case 'achievement_granted':
@@ -92,6 +112,15 @@ export function NotificationItem({ notification, currentUsername }: Props) {
         return `/practice/position-memory/${notification.targetId}`;
       }
     }
+    if (notification.type === 'new_position' && notification.targetId) {
+      if (
+        isPositionMetadata(notification.metadata) &&
+        notification.metadata.positionType === 'puzzle'
+      ) {
+        return `/practice/puzzle/${notification.targetId}`;
+      }
+      return `/practice/position-memory/${notification.targetId}`;
+    }
     if (
       (notification.type === 'like' ||
         notification.type === 'reply' ||
@@ -110,6 +139,9 @@ export function NotificationItem({ notification, currentUsername }: Props) {
     }
     if (notification.type === 'achievement_granted' && currentUsername) {
       return `/u/${currentUsername}/achievements`;
+    }
+    if (notification.type === 'benefit_grant') {
+      return '/mypage/benefits';
     }
     return null;
   }
@@ -140,6 +172,10 @@ export function NotificationItem({ notification, currentUsername }: Props) {
       {notification.type === 'achievement_granted' ? (
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground flex-shrink-0">
           <HiTrophy className="h-5 w-5" />
+        </div>
+      ) : notification.type === 'benefit_grant' ? (
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground flex-shrink-0">
+          <HiGift className="h-5 w-5" />
         </div>
       ) : notification.type === 'announcement' ? (
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground flex-shrink-0">

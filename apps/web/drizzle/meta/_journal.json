@@ -183,6 +183,27 @@
       "when": 1775819555588,
       "tag": "20260410111235_add_exp_events_idempotency_index",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1776210018520,
+      "tag": "20260414234018_add_source_to_user_grants",
+      "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1776329362893,
+      "tag": "20260416084922_replace_cancel_at_period_end_with_cancel_at",
+      "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1776413713238,
+      "tag": "20260417081513_create_puzzle_solutions_table",
+      "breakpoints": true
     }
   ]
 }

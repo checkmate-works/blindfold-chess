@@ -3,16 +3,17 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import type { GameStatus } from '@blindfold-chess/features/ai-game';
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
-import type { GameOutcome, SkillLevel } from '@/lib/types';
+import type { SkillLevel } from '@/lib/types';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { countPlayerMoves, getMovingSide, parseFenMeta } from '../_lib/fen-utils';
+import { countPlayerMoves } from '../_lib/fen-utils';
+import { mapGameStatusToOutcome } from '../_lib/map-game-status-to-outcome';
+import { useAiMoveAnnouncer } from './use-ai-move-announcer';
 import { useAiMoveOrchestration } from './use-ai-move-orchestration';
 import { useAiVersus } from './use-ai-versus';
 import { useAutoSave } from './use-auto-save';
@@ -23,17 +24,6 @@ import { useMoveOperationTracker } from './use-move-operation-tracker';
 import { useNotation } from './use-notation';
 import { usePlayerMove } from './use-player-move';
 import { useUrlSync } from './use-url-sync';
-
-/** Map internal game status + player result to the repository's GameOutcome. */
-function mapGameStatusToOutcome(
-  gameStatus: GameStatus,
-  playerResult: 'win' | 'loss' | 'draw' | null
-): GameOutcome {
-  if (gameStatus === 'in_progress') return 'in_progress';
-  if (playerResult === 'win') return 'win';
-  if (playerResult === 'loss') return 'loss';
-  return 'draw';
-}
 
 type UseGameSessionOptions = {
   locale: Locale;
@@ -286,42 +276,13 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
   // Current FEN and formatted PGN are memoized values from useNotation
 
   // Update parent component with AI's last move
-  useEffect(() => {
-    if (!onAiMoveChange) return;
-
-    if (moves.length === 0) {
-      onAiMoveChange(null);
-      return;
-    }
-
-    const { startsAsBlack, startMoveNumber } = parseFenMeta(startingFen);
-
-    const isAiMove = (index: number) => {
-      return getMovingSide(index, startingFen) !== playerSide;
-    };
-
-    for (let i = moves.length - 1; i >= 0; i--) {
-      if (isAiMove(i)) {
-        let moveNumber: number;
-        let isWhiteMove: boolean;
-
-        if (startsAsBlack) {
-          moveNumber = startMoveNumber + Math.floor((i + 1) / 2);
-          isWhiteMove = i % 2 === 1;
-        } else {
-          moveNumber = startMoveNumber + Math.floor(i / 2);
-          isWhiteMove = i % 2 === 0;
-        }
-
-        const moveNotation = `${moveNumber}.${isWhiteMove ? '' : '..'} ${moves[i]}`;
-        const moveText = t('aiPlayed', { move: moveNotation });
-        onAiMoveChange(moveText);
-        return;
-      }
-    }
-
-    onAiMoveChange(null);
-  }, [moves, playerSide, startingFen, onAiMoveChange, t]);
+  useAiMoveAnnouncer({
+    moves,
+    playerSide,
+    startingFen,
+    t,
+    onAiMoveChange,
+  });
 
   return {
     gameConfig: {

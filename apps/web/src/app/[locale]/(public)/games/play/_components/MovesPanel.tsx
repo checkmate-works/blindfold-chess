@@ -4,7 +4,6 @@ import { useState } from 'react';
 
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
 import {
   FaCheck,
   FaChevronDown,
@@ -20,21 +19,41 @@ import { formatPgnToText } from '../_lib';
 import type { FormattedPgn, FormattedPgnMove } from '../_lib';
 import { MoveNavigationControls } from './MoveNavigationControls';
 
-type Props = {
+/** Everything needed to render and click-to-navigate the move list. */
+export type MovesPanelMoveListProps = {
   formattedPgn: FormattedPgn;
   currentPosition: number;
   movesLength: number;
   currentFen: string;
   displayFen: string | null;
   startingFen?: string;
-  gameInProgress: boolean;
+};
+
+/** Navigation callbacks for the start/prev/next/end controls and list clicks. */
+export type MovesPanelNavigationProps = {
   onNavigateToPosition: (position: number) => void;
   onNavigateToStart: () => void;
   onNavigatePrevious: () => void;
   onNavigateNext: () => void;
   onNavigateToEnd: () => void;
+};
+
+/**
+ * Action callbacks and pre-computed URLs for the button cluster below the
+ * move list. `lichessAnalysisUrl` is pre-computed by the parent — this panel
+ * does not own the FEN→URL concern.
+ */
+export type MovesPanelActionsProps = {
+  gameInProgress: boolean;
+  lichessAnalysisUrl: string;
   onRestartFromPosition: (position: number) => void;
   onNewGameFromPosition: (position: number) => void;
+};
+
+type Props = {
+  moveList: MovesPanelMoveListProps;
+  navigation: MovesPanelNavigationProps;
+  actions: MovesPanelActionsProps;
   showBackground?: boolean;
 };
 
@@ -49,23 +68,19 @@ type Props = {
  * - Analyze on Lichess
  * - Copy PGN/FEN
  */
-export function MovesPanel({
-  formattedPgn,
-  currentPosition,
-  movesLength,
-  currentFen,
-  displayFen,
-  startingFen,
-  gameInProgress,
-  onNavigateToPosition,
-  onNavigateToStart,
-  onNavigatePrevious,
-  onNavigateNext,
-  onNavigateToEnd,
-  onRestartFromPosition,
-  onNewGameFromPosition,
-  showBackground = true,
-}: Props) {
+export function MovesPanel({ moveList, navigation, actions, showBackground = true }: Props) {
+  const { formattedPgn, currentPosition, movesLength, currentFen, displayFen, startingFen } =
+    moveList;
+  const {
+    onNavigateToPosition,
+    onNavigateToStart,
+    onNavigatePrevious,
+    onNavigateNext,
+    onNavigateToEnd,
+  } = navigation;
+  const { gameInProgress, lichessAnalysisUrl, onRestartFromPosition, onNewGameFromPosition } =
+    actions;
+
   const t = useTranslations('play');
   const [isMovesVisible, setIsMovesVisible] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
@@ -97,17 +112,7 @@ export function MovesPanel({
   };
 
   const handleAnalyzeOnLichess = () => {
-    // Get FEN for current position
-    let fenToAnalyze: string;
-    if (currentPosition === -1 || displayFen === null) {
-      // Latest position
-      fenToAnalyze = currentFen;
-    } else {
-      // Historical position
-      fenToAnalyze = displayFen;
-    }
-    const lichessUrl = fenToLichessUrl(fenToAnalyze);
-    window.open(lichessUrl, '_blank');
+    window.open(lichessAnalysisUrl, '_blank');
   };
 
   return (

@@ -4,7 +4,7 @@ import type { GameStatus } from '@blindfold-chess/features/ai-game';
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
-import { LocalStorageGameRepository } from '@/lib/repositories';
+import { LocalStorageGameRepository } from '@/lib/games/local-storage-repository';
 import type { MoveOperationLog } from '@/lib/types';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';

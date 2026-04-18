@@ -23,6 +23,7 @@ export const PRACTICE_MENU_TYPES = [
   'algebraic_notation',
   'fen',
   'quadrant_anchors',
+  'puzzle',
 ] as const;
 
 export type PracticeMenuType = (typeof PRACTICE_MENU_TYPES)[number];

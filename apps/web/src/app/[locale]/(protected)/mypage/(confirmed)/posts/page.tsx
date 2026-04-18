@@ -11,7 +11,7 @@ import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination'
 import {
   getPostCountByUserId,
   getPostsByUserId,
-} from '@/app/[locale]/(public)/topics/_lib/queries';
+} from '@/app/[locale]/(public)/topics/_lib/user-post-queries';
 import {
   Divider,
   PagePanel,

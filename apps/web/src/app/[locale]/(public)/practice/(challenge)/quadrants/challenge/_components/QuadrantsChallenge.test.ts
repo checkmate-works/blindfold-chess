@@ -6,7 +6,7 @@ import {
 } from '@blindfold-chess/features/quadrants';
 import { describe, expect, it } from 'vitest';
 
-import { MISTAKE_LIMIT } from '@/lib/challenge-constants';
+import { MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
 const BATCH_SIZE = 100;
 

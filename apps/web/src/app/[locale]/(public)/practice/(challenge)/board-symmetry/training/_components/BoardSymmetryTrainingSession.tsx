@@ -9,7 +9,6 @@ import { checkSymmetryAnswer, generateProblem } from '@blindfold-chess/features/
 import type { BoardSymmetryProblem } from '@blindfold-chess/features/board-symmetry';
 
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
-import { useCountdown } from '@/app/[locale]/(public)/practice/_hooks/use-countdown';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { applyCoordinateBackspace } from '@/app/[locale]/(public)/practice/_lib/coordinate-backspace';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
@@ -25,8 +24,6 @@ export default function BoardSymmetryTrainingSession({ locale }: Props) {
   const router = useRouter();
   const { showToast } = useToast();
   const tp = useTranslations('practice');
-
-  const { countdown } = useCountdown();
 
   const [problem, setProblem] = useState<BoardSymmetryProblem | null>(null);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
@@ -57,7 +54,7 @@ export default function BoardSymmetryTrainingSession({ locale }: Props) {
 
   const checkAnswer = useCallback(
     (file: string, rank: string) => {
-      if (!problem || isProcessing || countdown !== null) return;
+      if (!problem || isProcessing) return;
 
       const { isCorrect: correct } = checkSymmetryAnswer(file, rank, problem);
       setIsCorrect(correct);
@@ -72,33 +69,33 @@ export default function BoardSymmetryTrainingSession({ locale }: Props) {
       const delay = correct ? 1000 : 2000;
       setTimeout(advanceToNextProblem, delay);
     },
-    [problem, isProcessing, countdown, advanceToNextProblem]
+    [problem, isProcessing, advanceToNextProblem]
   );
 
   const handleFileToggle = (file: string) => {
-    if (isProcessing || countdown !== null) return;
+    if (isProcessing) return;
     setSelectedFile((prev) => (prev === file ? null : file));
   };
 
   const handleRankToggle = (rank: string) => {
-    if (isProcessing || countdown !== null) return;
+    if (isProcessing) return;
     setSelectedRank((prev) => (prev === rank ? null : rank));
   };
 
   // Rank-first deletion: clear the rank if present, otherwise clear the file.
   const handleBackspace = useCallback(() => {
-    if (isProcessing || countdown !== null) return;
+    if (isProcessing) return;
     const { next } = applyCoordinateBackspace({ selectedFile, selectedRank });
     setSelectedFile(next.selectedFile);
     setSelectedRank(next.selectedRank);
-  }, [isProcessing, countdown, selectedFile, selectedRank]);
+  }, [isProcessing, selectedFile, selectedRank]);
 
   // Auto-submit when both file and rank are selected
   useEffect(() => {
-    if (selectedFile && selectedRank && !isProcessing && isCorrect === null && countdown === null) {
+    if (selectedFile && selectedRank && !isProcessing && isCorrect === null) {
       checkAnswer(selectedFile, selectedRank);
     }
-  }, [selectedFile, selectedRank, checkAnswer, isProcessing, isCorrect, countdown]);
+  }, [selectedFile, selectedRank, checkAnswer, isProcessing, isCorrect]);
 
   const handleEndTraining = useCallback(() => {
     showToast(tp('trainingEnded'), 'info');
@@ -122,7 +119,6 @@ export default function BoardSymmetryTrainingSession({ locale }: Props) {
         onRankToggle={handleRankToggle}
         onBackspace={handleBackspace}
         isProcessing={isProcessing}
-        countdown={countdown}
         onEndTraining={handleEndTraining}
         locale={locale}
       />

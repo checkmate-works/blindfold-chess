@@ -1,14 +1,14 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 
 import { and, eq, isNull } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
-import { logActivityEvent } from '@/lib/activity-log';
 import { authenticateAndGuard } from '@/lib/auth';
-import { db, topicPosts } from '@/lib/db';
-import { RATE_LIMITS } from '@/lib/rate-limit';
+import { db, topicPosts, userGrants } from '@/lib/db';
+import { RATE_LIMITS } from '@/lib/security/rate-limit';
+import { logActivityEvent } from '@/lib/users/activity-log';
 
 export type DeletePostResult = ActionResult;
 
@@ -48,10 +48,34 @@ export async function deletePost(postId: string, locale: string): Promise<Delete
     return { error: 'alreadyDeleted' };
   }
 
-  await db
-    .update(topicPosts)
-    .set({ deletedAt: new Date() })
-    .where(and(eq(topicPosts.id, postId), isNull(topicPosts.deletedAt)));
+  await db.transaction(async (tx) => {
+    await tx
+      .update(topicPosts)
+      .set({ deletedAt: new Date() })
+      .where(and(eq(topicPosts.id, postId), isNull(topicPosts.deletedAt)));
+
+    // Revoke any benefit grants triggered by this post. The source* columns
+    // on user_grants were added specifically to support this targeted
+    // revocation flow — see schema.ts userGrants @design sourceType.
+    // Note on stacking semantics: if the user had multiple stacked grants
+    // and one is revoked, the others retain their pre-computed startsAt/
+    // expiresAt. This may leave a "gap" in ad_free coverage rather than
+    // shifting subsequent grants forward. Acceptable — revocation is
+    // intentionally narrow to "grants earned from the deleted action".
+    await tx
+      .update(userGrants)
+      .set({ revokedAt: new Date() })
+      .where(
+        and(
+          eq(userGrants.sourceType, 'topic_post'),
+          eq(userGrants.sourceId, postId),
+          isNull(userGrants.revokedAt)
+        )
+      );
+  });
+
+  // Invalidate grant cache so the user's ad_free state updates immediately.
+  revalidateTag('grant-status', { expire: 60 });
 
   logActivityEvent({
     userId: user.id,

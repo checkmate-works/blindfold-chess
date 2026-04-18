@@ -5,12 +5,12 @@ import type { ReactNode } from 'react';
 import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import { truncateContent } from '@/lib/truncate-content';
+import { truncateContent } from '@/lib/content/truncate-content';
 
 import { LinkedText } from '@/app/[locale]/_components';
 
-import type { LikeMeta, ReplyMeta } from '../_lib/queries';
 import { formatRelativeTime } from '../_lib/relative-time';
+import type { LikeMeta, ReplyMeta } from '../_lib/shared';
 import { PostFooter } from './PostFooter';
 import { UserAvatar } from './UserAvatar';
 

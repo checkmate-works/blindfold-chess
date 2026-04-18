@@ -19,7 +19,7 @@ import Link from 'next/link';
 import { ChallengeCard } from '@/app/_components';
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV, SITE_URL } from '@/config';
 
-import { JsonLd, generateItemListSchema } from '@/lib/jsonld';
+import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
 
 import { PRACTICE_EMOJIS } from '@/app/[locale]/(public)/practice/_lib/practice-emojis';
 import {
@@ -115,6 +115,11 @@ export default async function PracticePage({ params }: Props) {
           id: 'position-memory',
           title: t('practice.positionMemory.title'),
           icon: PRACTICE_EMOJIS.position_memory,
+        },
+        {
+          id: 'puzzle',
+          title: t('practice.puzzle.title'),
+          icon: PRACTICE_EMOJIS.puzzle,
         },
         {
           id: 'knight-tour',

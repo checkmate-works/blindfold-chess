@@ -190,7 +190,7 @@ describe('useAlgebraicKeyboardInput', () => {
     editable.remove();
   });
 
-  it('ignores presses while an aria-modal element is in the DOM', () => {
+  it('ignores presses while an app-owned modal element is in the DOM', () => {
     const onFile = vi.fn();
     const onRank = vi.fn();
     const onBackspace = vi.fn();
@@ -200,7 +200,11 @@ describe('useAlgebraicKeyboardInput', () => {
         onRank,
         onBackspace,
         enabled: true,
-        extra: createElement('div', { role: 'dialog', 'aria-modal': 'true' }, 'modal'),
+        extra: createElement(
+          'div',
+          { role: 'dialog', 'aria-modal': 'true', 'data-app-modal': 'true' },
+          'modal'
+        ),
       })
     );
 

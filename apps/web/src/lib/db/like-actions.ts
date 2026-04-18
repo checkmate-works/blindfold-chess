@@ -1,6 +1,6 @@
 import { and, count, eq } from 'drizzle-orm';
 
-import { logActivityEvent } from '@/lib/activity-log';
+import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { db, likes } from './index';
 import { toggleByInsert } from './toggle-by-insert';

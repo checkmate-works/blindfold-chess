@@ -159,7 +159,7 @@ export default async function AdminSubscriptionsPage({
           t('subscriptionsTable.subscriptionId'),
           t('subscriptionsTable.priceId'),
           t('subscriptionsTable.status'),
-          t('subscriptionsTable.cancelAtPeriodEnd'),
+          t('subscriptionsTable.cancelAt'),
           t('subscriptionsTable.periodStart'),
           t('subscriptionsTable.periodEnd'),
           t('subscriptionsTable.createdAt'),
@@ -188,7 +188,7 @@ export default async function AdminSubscriptionsPage({
                 </span>
               </td>
               <td className="px-4 py-3">
-                {sub.cancelAtPeriodEnd ? t('subscriptionsTable.yes') : t('subscriptionsTable.no')}
+                {sub.cancelAt ? new Date(sub.cancelAt).toLocaleDateString() : '-'}
               </td>
               <td className="px-4 py-3 text-muted-foreground">
                 {new Date(sub.currentPeriodStart).toLocaleDateString()}

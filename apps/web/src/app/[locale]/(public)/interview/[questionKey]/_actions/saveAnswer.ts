@@ -5,11 +5,11 @@ import { revalidatePath } from 'next/cache';
 import { eq } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
-import { logActivityEvent } from '@/lib/activity-log';
 import { authenticateAndGuard } from '@/lib/auth';
 import { chessOpenings, db, userInterviewAnswers } from '@/lib/db';
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
-import { RATE_LIMITS } from '@/lib/rate-limit';
+import { RATE_LIMITS } from '@/lib/security/rate-limit';
+import { logActivityEvent } from '@/lib/users/activity-log';
 
 import type { InterviewQuestionKey } from '@/app/[locale]/_lib/interview';
 import { INTERVIEW_QUESTION_KEYS, QUESTION_CONFIG } from '@/app/[locale]/_lib/interview';

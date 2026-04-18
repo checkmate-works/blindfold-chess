@@ -4,12 +4,13 @@ import { notifyGameListUpdated } from '@/config';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 import { GameLimitError } from '@/lib/errors';
-import { LocalStorageGameRepository } from '@/lib/repositories';
+import { LocalStorageGameRepository } from '@/lib/games/local-storage-repository';
 import type { GameOutcome, MoveOperationLog, SkillLevel } from '@/lib/types';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { isGameFinished } from '../_lib/game-utils';
+import { persistGameSnapshot } from '../_lib/persist-game-snapshot';
 import { SESSION_STORAGE_KEYS } from '../_lib/session-storage-keys';
 import { useAutoSaveEvents } from './use-auto-save-events';
 import { useInitialSave } from './use-initial-save';
@@ -38,6 +39,12 @@ type UseAutoSaveOptions = {
   operationLogs?: MoveOperationLog[];
   enabled?: boolean;
   saveOnInit?: boolean;
+  /**
+   * Repository to persist games to. Injected so tests (and alternate callers)
+   * can substitute their own implementation. Defaults to a lazily-constructed
+   * `LocalStorageGameRepository`.
+   */
+  repository?: LocalStorageGameRepository;
 };
 
 /**
@@ -54,8 +61,12 @@ export function useAutoSave({
   operationLogs,
   enabled = true,
   saveOnInit = false,
+  repository,
 }: UseAutoSaveOptions) {
-  const gameRepository = useMemo(() => new LocalStorageGameRepository(), []);
+  // If the caller injected a repository, use it as-is; otherwise lazily build
+  // a default LocalStorageGameRepository once per hook instance.
+  const defaultRepository = useMemo(() => new LocalStorageGameRepository(), []);
+  const gameRepository = repository ?? defaultRepository;
 
   const [currentGameId, setCurrentGameId] = useState<string | undefined>(gameId);
   const currentGameIdRef = useRef<string | undefined>(gameId);
@@ -168,28 +179,17 @@ export function useAutoSave({
           operationLogs: gameDataRefs.operationLogs.current,
         };
 
-        let savedGameId: string;
         const gameIdFromRef = currentGameIdRef.current;
+        const savedGameId = await persistGameSnapshot(gameRepository, gameData, {
+          gameId: gameIdFromRef,
+          // Skip lastPlayed update during initial sync save (reopening a game without making a move)
+          updateLastPlayed: !isInitialSyncSave.current,
+        });
 
-        if (gameIdFromRef) {
-          // Check if game actually exists before updating
-          const existingGame = await gameRepository.load(gameIdFromRef);
-          if (existingGame) {
-            // Update existing game
-            // Skip lastPlayed update during initial sync save (reopening a game without making a move)
-            await gameRepository.update(gameIdFromRef, gameData, {
-              updateLastPlayed: !isInitialSyncSave.current,
-            });
-            savedGameId = gameIdFromRef;
-          } else {
-            // Game ID provided but doesn't exist - create new game
-            savedGameId = await gameRepository.create(gameData);
-            currentGameIdRef.current = savedGameId;
-            setCurrentGameId(savedGameId);
-          }
-        } else {
-          // Create new game
-          savedGameId = await gameRepository.create(gameData);
+        // If persistGameSnapshot had to create a new record (either because
+        // there was no gameId, or the previous id was stale), sync our refs
+        // and state to the freshly minted id.
+        if (savedGameId !== gameIdFromRef) {
           currentGameIdRef.current = savedGameId;
           setCurrentGameId(savedGameId);
         }

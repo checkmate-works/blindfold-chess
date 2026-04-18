@@ -20,7 +20,7 @@ vi.mock('@/config', () => ({
   notifyGameListUpdated: vi.fn(),
 }));
 
-vi.mock('@/lib/repositories', () => ({
+vi.mock('@/lib/games/local-storage-repository', () => ({
   LocalStorageGameRepository: vi.fn(function () {
     return {
       delete: mockDelete,

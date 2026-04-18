@@ -1,6 +1,6 @@
 import dynamic from 'next/dynamic';
 
-import { CHALLENGE_TIME_LIMIT } from '@/lib/challenge-constants';
+import { CHALLENGE_TIME_LIMIT } from '@/lib/challenge/constants';
 
 import { createPracticeChallengeSessionPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeSessionPages';
 

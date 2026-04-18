@@ -5,7 +5,8 @@ import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
 import { getModuleWeight } from '@blindfold-chess/features/exp';
 
-import { JsonLd, generateFAQPageSchema } from '@/lib/jsonld';
+import { type AutomatedGrantType, GRANT_TYPE_DEFAULTS } from '@/lib/db/data/grant-types';
+import { JsonLd, generateFAQPageSchema } from '@/lib/seo/jsonld';
 
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
@@ -70,6 +71,10 @@ export default async function FAQPage({ params }: Props) {
     {
       question: t('items.expSystem.question'),
       answer: stripTags(t.raw('items.expSystem.answer')),
+    },
+    {
+      question: t('items.adFreeBenefits.question'),
+      answer: stripTags(t.raw('items.adFreeBenefits.answer')),
     },
   ];
 
@@ -168,6 +173,43 @@ export default async function FAQPage({ params }: Props) {
               ))}
             </tbody>
           </table>
+        </div>
+      ),
+    },
+    {
+      id: 'ad-free-benefits',
+      question: t('items.adFreeBenefits.question'),
+      answer: (
+        <div className="space-y-4">
+          <p>{t('items.adFreeBenefits.answer')}</p>
+
+          <h3 className="font-medium text-foreground">{t('items.adFreeBenefits.tableTitle')}</h3>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left text-muted-foreground font-medium py-1.5 px-2">
+                  {t('items.adFreeBenefits.headerAction')}
+                </th>
+                <th className="text-left text-muted-foreground font-medium py-1.5 px-2">
+                  {t('items.adFreeBenefits.headerDuration')}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {(Object.keys(GRANT_TYPE_DEFAULTS) as AutomatedGrantType[]).map((key) => (
+                <tr key={key} className="border-b border-border">
+                  <td className="py-1.5 px-2">{t(`items.adFreeBenefits.actions.${key}`)}</td>
+                  <td className="py-1.5 px-2">
+                    {t('items.adFreeBenefits.durationDays', {
+                      days: GRANT_TYPE_DEFAULTS[key].durationDays,
+                    })}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <p className="text-sm text-muted-foreground">{t('items.adFreeBenefits.note')}</p>
         </div>
       ),
     },

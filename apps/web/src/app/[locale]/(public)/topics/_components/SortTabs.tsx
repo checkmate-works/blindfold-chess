@@ -4,7 +4,7 @@ import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { parseAsString, useQueryState } from 'nuqs';
 
-import type { SortMode } from '../_lib/queries';
+import type { SortMode } from '../_lib/shared';
 
 const SORT_MODES: SortMode[] = ['new', 'popular', 'active'];
 

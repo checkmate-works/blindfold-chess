@@ -6,7 +6,7 @@ import { BoardLayout, BoardSkeleton } from '@/app/_components';
 import type { SquareRenderInfo } from '@/app/_components';
 import type { QuadrantId } from '@blindfold-chess/features/quadrants';
 
-import { getBoardThemeColors } from '@/lib/boardThemes';
+import { getBoardThemeColors } from '@/lib/games/board-themes';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 

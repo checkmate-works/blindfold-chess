@@ -2,11 +2,11 @@
 
 import { z } from 'zod';
 
-import { logActivityEvent } from '@/lib/activity-log';
-import { getClientIp } from '@/lib/client-ip';
 import { getLocaleFromRequest } from '@/lib/locale';
-import { IP_RATE_LIMITS, checkIpRateLimitGuard } from '@/lib/rate-limit-ip';
+import { getClientIp } from '@/lib/security/client-ip';
+import { IP_RATE_LIMITS, checkIpRateLimitGuard } from '@/lib/security/rate-limit-ip';
 import { createClient } from '@/lib/supabase/server';
+import { logActivityEvent } from '@/lib/users/activity-log';
 
 export type SignInResult = { error: string } | { success: true; locale: string };
 

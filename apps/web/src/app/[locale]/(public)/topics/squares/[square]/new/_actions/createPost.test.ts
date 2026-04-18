@@ -1,6 +1,9 @@
+import { revalidateTag } from 'next/cache';
+
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { logActivityEvent } from '@/lib/activity-log';
+import { logActivityEvent } from '@/lib/users/activity-log';
+import { applyAutomatedGrant } from '@/lib/users/user-grants';
 
 import { createPost } from './createPost';
 
@@ -9,13 +12,15 @@ const mockInsertValues = vi.fn();
 const mockInsertReturning = vi.fn();
 const mockIsUserBanned = vi.fn();
 
-vi.mock('@/lib/activity-log', () => ({
+vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: vi.fn(),
 }));
 
 const mockNotifyFollowersOfNewPost = vi.fn();
-vi.mock('@/lib/notification', () => ({
+const mockCreateNotification = vi.fn();
+vi.mock('@/lib/notifications/notification', () => ({
   notifyFollowersOfNewPost: (...args: unknown[]) => mockNotifyFollowersOfNewPost(...args),
+  createNotification: (...args: unknown[]) => mockCreateNotification(...args),
 }));
 
 vi.mock('@/lib/supabase/server', () => ({
@@ -50,11 +55,11 @@ vi.mock('@/lib/db', () => ({
   feedItems: {},
 }));
 
-vi.mock('@/lib/ban', () => ({
+vi.mock('@/lib/moderation/ban', () => ({
   isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
 }));
 
-vi.mock('@/lib/rate-limit', () => ({
+vi.mock('@/lib/security/rate-limit', () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ success: true }),
   RATE_LIMITS: {
     createPost: { action: 'create_post', maxAttempts: 10, windowMs: 3_600_000 },
@@ -67,6 +72,14 @@ vi.mock('next/navigation', () => ({
     mockRedirect(...args);
     throw new Error('NEXT_REDIRECT');
   },
+}));
+
+vi.mock('next/cache', () => ({
+  revalidateTag: vi.fn(),
+}));
+
+vi.mock('@/lib/users/user-grants', () => ({
+  applyAutomatedGrant: vi.fn().mockResolvedValue({ grantId: 'g1', expiresAt: new Date() }),
 }));
 
 const testUserId = 'user-00000000-0000-0000-0000-000000000001';
@@ -350,6 +363,43 @@ describe('createPost', () => {
       const result = await createPost('en', 'e4', {}, fd);
       expect(result).toEqual({ error: 'invalidReplyPermission' });
       expect(mockInsertValues).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('automated grant integration', () => {
+    beforeEach(() => {
+      mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
+      mockIsUserBanned.mockResolvedValue(false);
+      mockInsertReturning.mockResolvedValue([{ id: generatedPostId }]);
+    });
+
+    it('should call applyAutomatedGrant with user id, topic_post grantType, and source linkage on successful text post', async () => {
+      await expect(createPost('en', 'e4', {}, makeFormData('Nice square'))).rejects.toThrow(
+        'NEXT_REDIRECT'
+      );
+
+      expect(applyAutomatedGrant).toHaveBeenCalledTimes(1);
+      expect(applyAutomatedGrant).toHaveBeenCalledWith(
+        expect.anything(),
+        testUserId,
+        'topic_post',
+        { type: 'topic_post', id: generatedPostId }
+      );
+      expect(revalidateTag).toHaveBeenCalledTimes(1);
+      expect(revalidateTag).toHaveBeenCalledWith('grant-status', { expire: 60 });
+    });
+
+    it('should NOT call applyAutomatedGrant or revalidateTag when content is whitespace-only (validation rejects)', async () => {
+      const result = await createPost('en', 'e4', {}, makeFormData('   '));
+      expect(result).toEqual({ error: 'contentRequired' });
+      expect(applyAutomatedGrant).not.toHaveBeenCalled();
+      expect(revalidateTag).not.toHaveBeenCalled();
+    });
+
+    it('should NOT call applyAutomatedGrant when square is invalid', async () => {
+      await createPost('en', 'z9', {}, makeFormData('hello'));
+      expect(applyAutomatedGrant).not.toHaveBeenCalled();
+      expect(revalidateTag).not.toHaveBeenCalled();
     });
   });
 });

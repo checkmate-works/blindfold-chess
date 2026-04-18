@@ -19,7 +19,7 @@ vi.mock('@/lib/supabase/server', () => ({
     }),
 }));
 
-vi.mock('@/lib/client-ip', () => ({
+vi.mock('@/lib/security/client-ip', () => ({
   getClientIp: () => Promise.resolve('127.0.0.1'),
 }));
 

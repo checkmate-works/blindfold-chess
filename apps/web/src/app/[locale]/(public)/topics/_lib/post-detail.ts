@@ -2,9 +2,10 @@ import type { User } from '@supabase/supabase-js';
 
 import { createClient } from '@/lib/supabase/server';
 
+import { getLikeMetaForPost } from './like-queries';
 import { canUserReply } from './permissions';
-import type { LikeMeta, PostWithReplyMeta, TopicPostWithAuthor } from './queries';
-import { getLikeMetaForPost, getRepliesByPostId } from './queries';
+import { getRepliesByPostId } from './queries';
+import type { LikeMeta, PostWithReplyMeta, TopicPostWithAuthor } from './shared';
 
 export type PostDetailData = {
   user: User | null;

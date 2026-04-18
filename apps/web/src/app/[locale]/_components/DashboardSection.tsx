@@ -5,5 +5,5 @@ type Props = {
 };
 
 export function DashboardSection({ children }: Props) {
-  return <div className="p-4 sm:p-6 border-b border-border">{children}</div>;
+  return <div className="p-4 sm:p-6 border-b border-border last:border-b-0">{children}</div>;
 }

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef } from 'react';
 
 import Link from 'next/link';
 
-import { BoardOverlay, Button } from '@/app/_components';
+import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { getCornerInfo } from '@blindfold-chess/features/diagonal-quiz';
 
@@ -39,7 +39,6 @@ type Props = {
   onSkip: () => void;
   onNextAfterSkip: () => void;
   onNextAfterIncorrect: () => void;
-  countdown: number | null;
   correctCount: number;
   incorrectCount: number;
   onEndTraining: () => void;
@@ -54,14 +53,13 @@ export function DiagonalQuizTrainingPlaying({
   onSkip,
   onNextAfterSkip,
   onNextAfterIncorrect,
-  countdown,
   correctCount,
   incorrectCount,
   onEndTraining,
 }: Props) {
   const t = useTranslations('practice.diagonalQuiz');
   const tp = useTranslations('practice');
-  const isDisabled = showResult || countdown !== null;
+  const isDisabled = showResult;
 
   const { singleDiagonal, singleAntiDiagonal } = getCornerInfo(currentSquare);
 
@@ -168,13 +166,6 @@ export function DiagonalQuizTrainingPlaying({
   return (
     <div className="max-w-md mx-auto">
       <div className="bg-card rounded-xl border border-border p-8 text-center relative overflow-hidden shadow-sm">
-        {/* Countdown Overlay */}
-        <BoardOverlay isVisible={countdown !== null} className="backdrop-blur-md z-50">
-          <span className="text-8xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] dark:drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] animate-in zoom-in duration-300">
-            {countdown !== null && (countdown > 0 ? countdown : 'START!')}
-          </span>
-        </BoardOverlay>
-
         <div>
           <SectionTitle className="mb-4">{t('question', { square: currentSquare })}</SectionTitle>
 

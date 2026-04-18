@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { notifyGameListUpdated } from '@/config';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import { LocalStorageGameRepository } from '@/lib/repositories';
+import { LocalStorageGameRepository } from '@/lib/games/local-storage-repository';
 
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 

@@ -7,10 +7,10 @@ import type { BoardPiece } from '@blindfold-chess/features/chess-core';
 import { fenToBoard } from '@blindfold-chess/features/chess-core';
 import type { Side } from '@blindfold-chess/types';
 
-import type { BoardTheme } from '@/lib/boardThemes';
-import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
-import type { EvaluationMark } from '@/lib/evaluation';
-import { getEvaluationIcon } from '@/lib/evaluation';
+import type { BoardTheme } from '@/lib/games/board-themes';
+import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/games/board-themes';
+import type { EvaluationMark } from '@/lib/games/evaluation';
+import { getEvaluationIcon } from '@/lib/games/evaluation';
 
 import type { SquareRenderInfo } from './BoardLayout';
 import { BoardLayout } from './BoardLayout';

@@ -8,7 +8,7 @@ import { LinkedText, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import type { LikeMeta, PostWithReplyMeta, TopicPostWithAuthor } from '../_lib/queries';
+import type { LikeMeta, PostWithReplyMeta, TopicPostWithAuthor } from '../_lib/shared';
 import { DeletePostButton } from './DeletePostButton';
 import { HashScrollTarget } from './HashScrollTarget';
 import { LikeButton } from './LikeButton';

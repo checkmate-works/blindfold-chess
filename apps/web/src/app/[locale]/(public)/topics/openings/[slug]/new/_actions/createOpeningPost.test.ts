@@ -1,6 +1,9 @@
+import { revalidateTag } from 'next/cache';
+
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { logActivityEvent } from '@/lib/activity-log';
+import { logActivityEvent } from '@/lib/users/activity-log';
+import { applyAutomatedGrant } from '@/lib/users/user-grants';
 
 import { createOpeningPost } from './createOpeningPost';
 
@@ -10,13 +13,15 @@ const mockInsertReturning = vi.fn();
 const mockIsUserBanned = vi.fn();
 const mockIsValidOpening = vi.fn();
 
-vi.mock('@/lib/activity-log', () => ({
+vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: vi.fn(),
 }));
 
 const mockNotifyFollowersOfNewPost = vi.fn();
-vi.mock('@/lib/notification', () => ({
+const mockCreateNotification = vi.fn();
+vi.mock('@/lib/notifications/notification', () => ({
   notifyFollowersOfNewPost: (...args: unknown[]) => mockNotifyFollowersOfNewPost(...args),
+  createNotification: (...args: unknown[]) => mockCreateNotification(...args),
 }));
 
 vi.mock('@/lib/supabase/server', () => ({
@@ -52,13 +57,13 @@ vi.mock('@/lib/db', () => ({
   feedItems: {},
 }));
 
-vi.mock('@/lib/ban', () => ({
+vi.mock('@/lib/moderation/ban', () => ({
   isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
 }));
 
 const mockCheckRateLimit = vi.fn().mockResolvedValue({ success: true });
 
-vi.mock('@/lib/rate-limit', () => ({
+vi.mock('@/lib/security/rate-limit', () => ({
   checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
   createOpeningPostRateLimit: (slug: string) => ({
     action: `create_opening_post:${slug}`,
@@ -77,6 +82,14 @@ vi.mock('next/navigation', () => ({
     mockRedirect(...args);
     throw new Error('NEXT_REDIRECT');
   },
+}));
+
+vi.mock('next/cache', () => ({
+  revalidateTag: vi.fn(),
+}));
+
+vi.mock('@/lib/users/user-grants', () => ({
+  applyAutomatedGrant: vi.fn().mockResolvedValue({ grantId: 'g1', expiresAt: new Date() }),
 }));
 
 const testUserId = 'user-00000000-0000-0000-0000-000000000001';
@@ -526,6 +539,80 @@ describe('createOpeningPost', () => {
       const result = await createOpeningPost('en', 'french-defense', {}, fd);
       expect(result).toEqual({ error: 'invalidReplyPermission' });
       expect(mockInsertValues).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('automated grant integration', () => {
+    it('should call applyAutomatedGrant when opening post has text content', async () => {
+      await expect(
+        createOpeningPost('en', 'french-defense', {}, makeFormData({ content: 'Great opening!' }))
+      ).rejects.toThrow('NEXT_REDIRECT');
+
+      expect(applyAutomatedGrant).toHaveBeenCalledTimes(1);
+      expect(applyAutomatedGrant).toHaveBeenCalledWith(
+        expect.anything(),
+        testUserId,
+        'topic_post',
+        { type: 'topic_post', id: generatedPostId }
+      );
+      expect(revalidateTag).toHaveBeenCalledTimes(1);
+      expect(revalidateTag).toHaveBeenCalledWith('grant-status', { expire: 60 });
+    });
+
+    it('should NOT call applyAutomatedGrant when opening post has ratings only (no text)', async () => {
+      await expect(
+        createOpeningPost('en', 'french-defense', {}, makeFormData({ preferenceRating: '5' }))
+      ).rejects.toThrow('NEXT_REDIRECT');
+
+      // Post was still created successfully (topic_posts + feed_items + topic_post_ratings).
+      expect(mockInsertValues).toHaveBeenCalledTimes(3);
+      expect(applyAutomatedGrant).not.toHaveBeenCalled();
+      expect(revalidateTag).not.toHaveBeenCalled();
+    });
+
+    it('should NOT call applyAutomatedGrant when proficiencyRating-only post has no text', async () => {
+      await expect(
+        createOpeningPost('en', 'french-defense', {}, makeFormData({ proficiencyRating: '3' }))
+      ).rejects.toThrow('NEXT_REDIRECT');
+
+      expect(applyAutomatedGrant).not.toHaveBeenCalled();
+      expect(revalidateTag).not.toHaveBeenCalled();
+    });
+
+    it('should call applyAutomatedGrant exactly once when post has both text and ratings', async () => {
+      await expect(
+        createOpeningPost(
+          'en',
+          'french-defense',
+          {},
+          makeFormData({
+            content: 'Great opening!',
+            preferenceRating: '5',
+            proficiencyRating: '3',
+          })
+        )
+      ).rejects.toThrow('NEXT_REDIRECT');
+
+      expect(applyAutomatedGrant).toHaveBeenCalledTimes(1);
+      expect(applyAutomatedGrant).toHaveBeenCalledWith(
+        expect.anything(),
+        testUserId,
+        'topic_post',
+        { type: 'topic_post', id: generatedPostId }
+      );
+      expect(revalidateTag).toHaveBeenCalledTimes(1);
+    });
+
+    it('should NOT call applyAutomatedGrant when validation fails (contentOrRatingRequired)', async () => {
+      const result = await createOpeningPost(
+        'en',
+        'french-defense',
+        {},
+        makeFormData({ content: '' })
+      );
+      expect(result).toEqual({ error: 'contentOrRatingRequired' });
+      expect(applyAutomatedGrant).not.toHaveBeenCalled();
+      expect(revalidateTag).not.toHaveBeenCalled();
     });
   });
 });

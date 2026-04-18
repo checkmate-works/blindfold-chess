@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { logActivityEvent } from '@/lib/activity-log';
+import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { forgotPassword } from './forgotPassword';
 
@@ -9,7 +9,7 @@ const mockGetUser = vi.fn();
 const mockCheckIpRateLimitGuard = vi.fn();
 const mockGetClientIp = vi.fn();
 
-vi.mock('@/lib/activity-log', () => ({
+vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: vi.fn(),
 }));
 
@@ -23,11 +23,11 @@ vi.mock('@/lib/supabase/server', () => ({
     }),
 }));
 
-vi.mock('@/lib/client-ip', () => ({
+vi.mock('@/lib/security/client-ip', () => ({
   getClientIp: () => mockGetClientIp(),
 }));
 
-vi.mock('@/lib/rate-limit-ip', () => ({
+vi.mock('@/lib/security/rate-limit-ip', () => ({
   IP_RATE_LIMITS: { forgotPassword: { maxRequests: 3, windowMs: 300_000 } },
   checkIpRateLimitGuard: (...args: unknown[]) => mockCheckIpRateLimitGuard(...args),
 }));

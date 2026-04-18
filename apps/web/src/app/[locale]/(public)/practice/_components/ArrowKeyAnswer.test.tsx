@@ -81,7 +81,7 @@ describe('ArrowKeyAnswer', () => {
         <ArrowKeyAnswer bindings={{ ArrowLeft: { label: 'Light', onTrigger: left } }}>
           <div>children</div>
         </ArrowKeyAnswer>
-        <div role="dialog" aria-modal="true">
+        <div role="dialog" aria-modal="true" data-app-modal="true">
           modal
         </div>
       </>

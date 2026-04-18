@@ -1,3 +1,4 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { and, count, gte, isNull, lte, sql } from 'drizzle-orm';
 import { type PgColumn, type PgTable } from 'drizzle-orm/pg-core';
 
@@ -57,25 +58,25 @@ export type DailyCount = {
 };
 
 /**
- * Aggregate new user sign-ups per day from auth.users.created_at.
+ * Paginated fetch of all Supabase Auth users.
  *
- * Supabase Admin API does not support date-range filtering, so we fetch all
- * users and aggregate in JS. The listUsers endpoint paginates at 1000 max,
- * so we loop until exhausted.
+ * Pure I/O: walks `auth.admin.listUsers` until exhausted and returns only
+ * the `created_at` field (all we need for day-bucket aggregation). Split
+ * from `getNewUsersPerDay` so the aggregation step becomes a pure,
+ * testable function.
+ *
+ * Supabase Admin API does not support date-range filtering, so callers
+ * must filter in JS. The listUsers endpoint paginates at 1000 max.
  *
  * // TODO: Replace with DB-level aggregation when user count exceeds ~5000
  */
-export async function getNewUsersPerDay(
-  startDate: string,
-  endDate: string
-): Promise<{ daily: DailyCount[]; total: number }> {
-  const adminClient = createAdminClient();
-
+export async function fetchAllAuthUsers(
+  adminClient: SupabaseClient = createAdminClient()
+): Promise<{ created_at: string }[]> {
   const allUsers: { created_at: string }[] = [];
   let page = 1;
   const perPage = 1000;
 
-  // Fetch all users from Supabase Auth (paginated)
   while (true) {
     const { data } = await adminClient.auth.admin.listUsers({ page, perPage });
     const users = data?.users ?? [];
@@ -85,25 +86,56 @@ export async function getNewUsersPerDay(
     page++;
   }
 
-  // Filter to date range and aggregate by day
-  const start = new Date(`${startDate}T00:00:00Z`);
-  const end = new Date(`${endDate}T23:59:59.999Z`);
+  return allUsers;
+}
+
+/**
+ * Bucket a list of items by UTC day within a date range.
+ *
+ * Pure function — takes already-fetched items and a date extractor, and
+ * returns a `DailyCount[]` covering every day in [startDate, endDate]
+ * (zero-count days included) plus the total.
+ *
+ * Extracted from `getNewUsersPerDay` so the aggregation step is trivially
+ * testable without Supabase or the DB.
+ */
+export function aggregateByDay<T>(
+  items: readonly T[],
+  getDate: (item: T) => string | Date,
+  range: { startDate: string; endDate: string }
+): { daily: DailyCount[]; total: number } {
+  const start = new Date(`${range.startDate}T00:00:00Z`);
+  const end = new Date(`${range.endDate}T23:59:59.999Z`);
 
   const countsByDate = new Map<string, number>();
 
-  for (const user of allUsers) {
-    const createdAt = new Date(user.created_at);
+  for (const item of items) {
+    const raw = getDate(item);
+    const createdAt = raw instanceof Date ? raw : new Date(raw);
     if (createdAt >= start && createdAt <= end) {
       const dateKey = createdAt.toISOString().slice(0, 10);
       countsByDate.set(dateKey, (countsByDate.get(dateKey) ?? 0) + 1);
     }
   }
 
-  // Fill in all dates in range (including zero-count days)
-  const daily = fillDateRange(startDate, endDate, countsByDate);
+  const daily = fillDateRange(range.startDate, range.endDate, countsByDate);
   const total = daily.reduce((sum, d) => sum + d.count, 0);
 
   return { daily, total };
+}
+
+/**
+ * Aggregate new user sign-ups per day from auth.users.created_at.
+ *
+ * Delegates to `fetchAllAuthUsers` (pure I/O) and `aggregateByDay`
+ * (pure aggregation). See those helpers for details.
+ */
+export async function getNewUsersPerDay(
+  startDate: string,
+  endDate: string
+): Promise<{ daily: DailyCount[]; total: number }> {
+  const allUsers = await fetchAllAuthUsers();
+  return aggregateByDay(allUsers, (u) => u.created_at, { startDate, endDate });
 }
 
 /**

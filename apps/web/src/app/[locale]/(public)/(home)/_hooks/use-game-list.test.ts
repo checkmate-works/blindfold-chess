@@ -8,7 +8,7 @@ import { useGameList } from './use-game-list';
 // Mock LocalStorageGameRepository
 const mockLoadAllSorted = vi.fn();
 
-vi.mock('@/lib/repositories', () => ({
+vi.mock('@/lib/games/local-storage-repository', () => ({
   LocalStorageGameRepository: vi.fn(function () {
     return {
       loadAllSorted: mockLoadAllSorted,

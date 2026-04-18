@@ -1,3 +1,5 @@
+import { PagePanel, PageTitle } from '@/app/[locale]/_components';
+
 /**
  * Learn category listing loading skeleton.
  *
@@ -5,24 +7,34 @@
  */
 export default function LearnLoading() {
   return (
-    <>
-      {/* PageTitle */}
-      <div className="mb-8 flex items-center justify-center">
-        <div className="h-8 bg-muted rounded w-56 animate-pulse" />
-      </div>
+    <div className="space-y-8">
+      <PageTitle>
+        <span className="invisible">Loading</span>
+      </PageTitle>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div
-            key={i}
-            className="bg-card border border-border rounded-lg p-5 shadow-sm animate-pulse"
-          >
-            <div className="h-5 bg-muted rounded w-2/3 mb-3" />
-            <div className="h-4 bg-muted rounded w-full mb-2" />
-            <div className="h-4 bg-muted rounded w-5/6" />
-          </div>
-        ))}
-      </div>
-    </>
+      <PagePanel>
+        {/* SectionTitle skeleton */}
+        <div className="border-b border-warning/50 pb-2">
+          <div className="h-5 md:h-6 bg-muted rounded w-48 animate-pulse" />
+        </div>
+
+        <div className="space-y-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div
+              key={i}
+              className="p-6 bg-card rounded-md shadow-sm border border-border animate-pulse"
+            >
+              <div className="flex items-start gap-4">
+                <div className="w-9 h-9 bg-muted rounded flex-shrink-0" />
+                <div className="flex-1">
+                  <div className="h-5 bg-muted rounded w-1/3 mb-2" />
+                  <div className="h-4 bg-muted rounded w-1/4" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </PagePanel>
+    </div>
   );
 }

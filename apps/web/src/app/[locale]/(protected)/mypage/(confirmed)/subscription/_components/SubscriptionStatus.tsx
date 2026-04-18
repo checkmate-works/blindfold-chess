@@ -3,8 +3,8 @@
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import * as Sentry from '@sentry/nextjs';
 
+import { BENEFIT_ACTIVE_STATUSES } from '@/lib/billing/subscription-constants';
 import type { Subscription } from '@/lib/db';
-import { BENEFIT_ACTIVE_STATUSES } from '@/lib/subscription-constants';
 
 import { createPortalSession } from '../_actions/createPortalSession';
 
@@ -14,7 +14,7 @@ type Props = {
 };
 
 export function SubscriptionStatus({ subscription, locale }: Props) {
-  const t = useTranslations('subscription');
+  const t = useTranslations('MypageSubscription');
 
   async function handleManage() {
     const result = await createPortalSession(locale);
@@ -43,7 +43,7 @@ export function SubscriptionStatus({ subscription, locale }: Props) {
   const isActive = BENEFIT_ACTIVE_STATUSES.includes(
     subscription.status as (typeof BENEFIT_ACTIVE_STATUSES)[number]
   );
-  const isCanceling = subscription.cancelAtPeriodEnd;
+  const isCanceling = subscription.cancelAt !== null;
 
   return (
     <div className="rounded-xl border border-border bg-card p-6">
@@ -73,14 +73,12 @@ export function SubscriptionStatus({ subscription, locale }: Props) {
             </dd>
           </div>
         )}
-        <div className="flex justify-between">
-          <dt className="text-muted-foreground">{t('nextBilling')}</dt>
-          <dd>
-            {isCanceling
-              ? t('noBilling')
-              : new Date(subscription.currentPeriodEnd).toLocaleDateString(locale)}
-          </dd>
-        </div>
+        {!isCanceling && (
+          <div className="flex justify-between">
+            <dt className="text-muted-foreground">{t('nextBilling')}</dt>
+            <dd>{new Date(subscription.currentPeriodEnd).toLocaleDateString(locale)}</dd>
+          </div>
+        )}
       </dl>
 
       <button

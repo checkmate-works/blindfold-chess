@@ -4,8 +4,9 @@ import { memo } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import { resolveDisplayName } from '@/lib/display-name';
+import { getPositionDetailPath } from '@/lib/positions/routes';
 import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
+import { resolveDisplayName } from '@/lib/users/display-name';
 
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_actions/toggleLike';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
@@ -30,7 +31,10 @@ export const PositionFeedCard = memo(function PositionFeedCard({
   const tFeed = useTranslations('home.feed.position');
   const { preferences } = useGamePreferences();
   const displayName = resolveDisplayName(data.author);
-  const href = `/practice/position-memory/${data.id}`;
+  // Resolve the correct detail-page path based on the position's `type`.
+  // Returns `null` for types without a detail page (e.g. `sequence`), in
+  // which case `FeedItemCard` renders the card as a non-interactive element.
+  const href = getPositionDetailPath(data.type, data.id);
 
   return (
     <FeedItemCard

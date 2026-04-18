@@ -8,8 +8,8 @@ import type { Color } from '@blindfold-chess/features/chess-core';
 import { executeMove, fenToBoard } from '@blindfold-chess/features/chess-core';
 import type { PieceType } from '@blindfold-chess/types';
 
-import type { BoardTheme } from '@/lib/boardThemes';
-import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/boardThemes';
+import type { BoardTheme } from '@/lib/games/board-themes';
+import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/games/board-themes';
 
 import { usePieceAnimation } from '../_hooks/use-piece-animation';
 

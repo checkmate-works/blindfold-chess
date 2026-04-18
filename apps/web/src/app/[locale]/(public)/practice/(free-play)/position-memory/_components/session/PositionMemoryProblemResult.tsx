@@ -7,8 +7,8 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 
-import type { BoardTheme } from '@/lib/boardThemes';
-import { DEFAULT_BOARD_THEME } from '@/lib/boardThemes';
+import type { BoardTheme } from '@/lib/games/board-themes';
+import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 
 import { ChessBoardWithOverlay } from '@/app/[locale]/(public)/practice/(free-play)/_components/ChessBoardWithOverlay';
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';

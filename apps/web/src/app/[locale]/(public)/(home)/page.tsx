@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { IS_LOCAL_DEV } from '@/config';
 import { FaTachometerAlt } from 'react-icons/fa';
 
-import { shouldShowAdsForUser } from '@/lib/ad';
-import { JsonLd, generateWebApplicationSchema } from '@/lib/jsonld';
+import { shouldShowAdsForUser } from '@/lib/ads/ad';
+import { JsonLd, generateWebApplicationSchema } from '@/lib/seo/jsonld';
 import { createClient } from '@/lib/supabase/server';
 
 import { DashboardCard, PageTitle } from '@/app/[locale]/_components';
@@ -164,13 +164,13 @@ function ServerFeedList({
       {displayItems.map((displayItem, index) => {
         if (displayItem.type === 'ad') {
           return (
-            <div key={`ad-${index}`} className="border-b border-border">
+            <div key={`ad-${index}`} className="border-b border-border last:border-b-0">
               <ResponsiveAdSlot />
             </div>
           );
         }
         return (
-          <div key={displayItem.item.id} className="border-b border-border">
+          <div key={displayItem.item.id} className="border-b border-border last:border-b-0">
             <FeedCard
               item={displayItem.item}
               locale={locale}

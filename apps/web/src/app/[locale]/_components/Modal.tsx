@@ -65,6 +65,7 @@ export function Modal({
           className={`bg-card rounded-lg shadow-xl w-full ${maxWidth} max-h-[90vh] overflow-y-auto`}
           role="dialog"
           aria-modal="true"
+          data-app-modal="true"
           aria-labelledby={title ? titleId : ariaLabelledBy}
           aria-describedby={ariaDescribedBy}
         >

@@ -1,0 +1,141 @@
+# Claude Code GitHub Actions — Phase 1
+#
+# Purpose:
+#   When an issue comment contains `@claude`, launch
+#   anthropics/claude-code-action to autonomously implement + create a PR
+#   using the repository owner's subscription quota
+#   (CLAUDE_CODE_OAUTH_TOKEN).
+#
+# Scope (Phase 1):
+#   - Trigger: issue_comment (created) only
+#   - Execution: restricted to the repository owner (k0kishima)
+#   - Environment / Required reviewers / guard step / label gating
+#     are NOT implemented in Phase 1 (planned for later phases)
+#
+# Key security decisions:
+#   - Workflow-level permissions are empty (`{}`) — least privilege granted per job
+#   - `if: github.actor == 'k0kishima'` immediately rejects non-owner triggers
+#   - Actions are pinned by commit SHA (tags are mutable and create a supply chain attack surface)
+
+name: Claude Issue Solve
+
+on:
+  issue_comment:
+    types: [created]
+
+# Layer 5 (least privilege): grant nothing at the workflow level.
+# Required permissions are granted only at the individual job level.
+permissions: {}
+
+# Avoid parallel execution (NF-C-03: sequentially consume Max 20x plan quota).
+concurrency:
+  group: claude-issue-solve
+  cancel-in-progress: false
+
+jobs:
+  solve:
+    name: Claude solves the issue
+    runs-on: ubuntu-latest
+    # NF-C-03: token budget / runaway prevention
+    timeout-minutes: 60
+    # Only target issue comments (PR comments also fire issue_comment, so exclude them).
+    # Additionally, narrow down to owner-only comments containing `@claude`.
+    #   - github.actor: the comment author
+    #   - github.event.issue.pull_request: present for PRs, absent for issues
+    #   - contains(...): claude-code-action also filters by trigger_phrase internally,
+    #     but we reject early here to avoid unnecessary workflow runs
+    if: >-
+      github.event.issue.pull_request == null &&
+      github.actor == 'k0kishima' &&
+      contains(github.event.comment.body, '@claude')
+
+    # Grant least privilege at the job scope only.
+    #   contents: write       — for branch creation / commit / push
+    #   pull-requests: write  — for PR creation
+    #   issues: write         — for Claude to post status comments on the issue
+    #   id-token: write       — required by claude-code-action for OIDC token exchange
+    # Pragmatic Phase 1 compromise vs. the original "id-token: none" goal.
+    # The OIDC token is scoped to this run, short-lived, and the trigger surface
+    # is limited to owner-only invocations.
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write      # required by claude-code-action for OIDC token exchange
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          fetch-depth: 0
+
+      # Set up Node + pnpm and install dependencies so that Claude can
+      # autonomously run quality gates (pnpm lint / typecheck / test).
+      # Without this, even if Bash(pnpm ...) is allowed via claude_args,
+      # the commands would fail with "command not found" or missing node_modules.
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: 24
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@b307475762933b98ed359c036b0e51f26b63b74b # v5.0.0
+        with:
+          run_install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Load the system prompt from a file into an environment variable.
+      # claude-code-action (run.ts) passes the `APPEND_SYSTEM_PROMPT` env var
+      # directly to the Claude CLI via --append-system-prompt, so setting it
+      # in this step makes it available to the subsequent action step.
+      # (Reason for using a file: embedding long text directly in YAML
+      #  degrades escaping and reviewability, so the prompt is managed as
+      #  a separate file.)
+      #
+      # Verified against anthropics/claude-code-action@c7c8889 (run.ts)
+      # Re-verify on every SHA bump of claude-code-action.
+      - name: Load Claude system prompt
+        shell: bash
+        run: |
+          # Use a random delimiter to prevent env injection from system-prompt.md
+          # (A static delimiter could be exploited if the same string appears in
+          #  system-prompt.md, allowing arbitrary env vars via heredoc escape)
+          delim="EOF_$(openssl rand -hex 16)"
+          {
+            printf 'APPEND_SYSTEM_PROMPT<<%s\n' "$delim"
+            cat .github/claude/system-prompt.md
+            printf '%s\n' "$delim"
+          } >> "$GITHUB_ENV"
+
+      # Claude Code Action (v1) — detects @claude mentions and automatically
+      # creates a branch / implements changes / opens a PR.
+      #
+      # SHA pin rationale:
+      #   Tags (v1) are mutable; if upstream rewrites them, arbitrary code could be injected.
+      #
+      # claude_code_oauth_token:
+      #   Stored as a Repository Secret. Consumes the subscription quota (Max 20x plan).
+      #   This is not an API key, so no Anthropic usage-based charges apply (NF-C-01).
+      #
+      # Quality gates are delegated to Claude itself via the system prompt
+      # (strict enforcement will be added in Phase 2 via a guard step).
+      - name: Run Claude Code Action
+        uses: anthropics/claude-code-action@c7c8889b30499b4e46f4c32b892e43cd364bc2fe # v1 (as of 2026-04)
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # The default trigger_phrase is "@claude", so explicit specification
+          # is not required, but we pin it here to guard against future default changes.
+          trigger_phrase: "@claude"
+          # Strict allowlist for quality-gate execution.
+          #
+          # claude-code-action@c7c8889 has no dedicated `allowed_tools` input;
+          # the only way to pass additional CLI flags is via the generic
+          # `claude_args` input. We use --allowed-tools to whitelist exactly
+          # three commands.
+          #
+          # We intentionally avoid prefix match (`Bash(pnpm:*)`) to block
+          # escape routes like `pnpm exec ...` or `pnpm install -g ...`.
+          # gh / git push / other Bash commands remain blocked.
+          claude_args: --allowed-tools "Bash(pnpm lint),Bash(pnpm typecheck),Bash(pnpm test)"

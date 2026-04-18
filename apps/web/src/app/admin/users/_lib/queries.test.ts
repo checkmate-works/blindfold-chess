@@ -46,7 +46,7 @@ vi.mock('drizzle-orm', () => ({
   inArray: (col: unknown, vals: unknown) => [col, vals],
 }));
 
-vi.mock('@/lib/subscription-constants', () => ({
+vi.mock('@/lib/billing/subscription-constants', () => ({
   BENEFIT_ACTIVE_STATUSES: ['active'],
 }));
 

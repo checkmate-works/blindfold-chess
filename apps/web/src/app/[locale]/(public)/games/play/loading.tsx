@@ -1,28 +1,48 @@
+import { PagePanel, PageTitle } from '@/app/[locale]/_components';
+
 /**
- * Games / play setup loading skeleton.
+ * Games / play loading skeleton.
  *
- * Shown while the play setup page resolves (server-side dynamic data fetch,
- * auth checks, etc.). Mirrors the form-card frame shown on the real page.
+ * Shown while the play page resolves. Mirrors the outer structure of
+ * PlayPageClient (space-y-8 > PageTitle > PagePanel) and approximates
+ * the initial game-in-progress layout (3-column grid with game area
+ * and moves panel) to prevent CLS.
  */
 export default function GamesPlayLoading() {
   return (
-    <>
-      {/* PageTitle */}
-      <div className="mb-8 flex items-center justify-center">
-        <div className="h-8 bg-muted rounded w-48 animate-pulse" />
-      </div>
+    <div className="space-y-8">
+      <PageTitle>
+        <span className="invisible">Loading</span>
+      </PageTitle>
 
-      <div className="bg-card border border-border rounded-lg shadow-sm p-4 sm:p-6 animate-pulse">
-        <div className="h-5 w-32 bg-muted rounded mb-4" />
-        <div className="space-y-3">
-          <div className="h-10 bg-muted rounded w-full" />
-          <div className="h-10 bg-muted rounded w-full" />
-          <div className="h-10 bg-muted rounded w-2/3" />
+      <PagePanel>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-pulse">
+          {/* Game area skeleton (2 cols) */}
+          <div className="lg:col-span-2 space-y-4">
+            {/* Status line */}
+            <div className="h-5 bg-muted rounded w-40" />
+            {/* Move input area */}
+            <div className="h-10 bg-muted rounded w-full" />
+            {/* Action buttons */}
+            <div className="flex gap-3">
+              <div className="h-10 bg-muted rounded w-24" />
+              <div className="h-10 bg-muted rounded w-24" />
+            </div>
+          </div>
+
+          {/* Moves panel skeleton (1 col) */}
+          <div className="lg:col-span-1 space-y-3">
+            <div className="h-5 bg-muted rounded w-24" />
+            <div className="h-40 bg-muted rounded w-full" />
+          </div>
         </div>
-        <div className="mt-6 flex justify-end">
-          <div className="h-10 w-32 bg-muted rounded-md" />
-        </div>
-      </div>
-    </>
+
+        {/* Divider skeleton */}
+        <div className="border-t border-border my-6" />
+
+        {/* Breadcrumb skeleton */}
+        <div className="h-4 bg-muted rounded w-48 animate-pulse" />
+      </PagePanel>
+    </div>
   );
 }

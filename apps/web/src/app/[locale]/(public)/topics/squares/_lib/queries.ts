@@ -1,11 +1,10 @@
+import { getLikeMetaForPost } from '@/app/[locale]/(public)/topics/_lib/like-queries';
+import { attachPostMeta } from '@/app/[locale]/(public)/topics/_lib/post-meta';
 import {
-  attachPostMeta,
-  getLikeMetaForPost,
   getPostByIdAndTopicKey,
   getPostCountByTopicKey,
   getPostCountByTopicType,
   getPostsByTopicTypePaginated,
-  getPostsByUserId,
   getPostsWithReplyMetaByTopicKey,
   getPostsWithReplyMetaPaginatedByTopicKey,
   getRecentPostsByTopicType,
@@ -20,7 +19,8 @@ import type {
   ReplyMeta,
   SortMode,
   TopicPostWithAuthor,
-} from '@/app/[locale]/(public)/topics/_lib/queries';
+} from '@/app/[locale]/(public)/topics/_lib/shared';
+import { getPostsByUserId } from '@/app/[locale]/(public)/topics/_lib/user-post-queries';
 
 export { attachPostMeta, getPostsByUserId, getLikeMetaForPost, getRepliesByPostId };
 export type {

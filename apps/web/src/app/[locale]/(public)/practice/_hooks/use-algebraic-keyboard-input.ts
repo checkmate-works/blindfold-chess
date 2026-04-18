@@ -27,8 +27,10 @@ import { shouldIgnoreKeyEvent } from '@/app/[locale]/(public)/practice/_lib/keyb
  *   - `event.repeat === true` (auto-repeat from held key).
  *   - Focus is inside an `<input>`, `<textarea>`, `<select>`, or a
  *     contenteditable element.
- *   - Any element with `[aria-modal="true"]` is in the DOM (so modal Escape,
- *     form typing, etc. take precedence).
+ *   - Any app-owned modal (`[data-app-modal="true"]`) is in the DOM (so modal
+ *     Escape, form typing, etc. take precedence). The selector intentionally
+ *     ignores third-party `aria-modal` elements (e.g. CookieYes) — see
+ *     `keyboard-guards.ts` → `isModalOpen()` for the rationale.
  */
 type UseAlgebraicKeyboardInputOptions = {
   /** Called with the pressed letter when the user types `a`..`h` (lowercase only). */

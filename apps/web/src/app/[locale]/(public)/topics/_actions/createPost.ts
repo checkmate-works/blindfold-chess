@@ -1,13 +1,16 @@
 'use server';
 
+import { revalidateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
 
-import { logActivityEvent } from '@/lib/activity-log';
 import { authenticateAndCheckBan } from '@/lib/auth';
 import { db, feedItems, topicPosts } from '@/lib/db';
-import { notifyFollowersOfNewPost } from '@/lib/notification';
-import type { RateLimitConfig } from '@/lib/rate-limit';
-import { checkRateLimit } from '@/lib/rate-limit';
+import { GRANT_TYPE_DEFAULTS } from '@/lib/db/data/grant-types';
+import { createNotification, notifyFollowersOfNewPost } from '@/lib/notifications/notification';
+import type { RateLimitConfig } from '@/lib/security/rate-limit';
+import { checkRateLimit } from '@/lib/security/rate-limit';
+import { logActivityEvent } from '@/lib/users/activity-log';
+import { applyAutomatedGrant } from '@/lib/users/user-grants';
 
 import { VALID_REPLY_PERMISSIONS } from '../_lib/constants';
 
@@ -76,6 +79,8 @@ export async function createPostBase(params: {
     return { error: rateLimitResult.error };
   }
 
+  let grantApplied = false;
+  let grantInfo: { grantId: string; expiresAt: Date } | null = null;
   const inserted = await db.transaction(async (tx) => {
     const [post] = await tx
       .insert(topicPosts)
@@ -99,8 +104,39 @@ export async function createPostBase(params: {
       await afterInsert(tx, post.id);
     }
 
+    // Automated grant for text-bearing topic posts.
+    // Rating-only posts (e.g., opening preference rating without comment)
+    // do NOT qualify — the user must have written text to earn the grant.
+    // Source linkage (sourceType + sourceId) enables targeted revocation
+    // if the post is later deleted — see schema.ts userGrants @design source*.
+    if (contentResult.content.trim() !== '') {
+      grantInfo = await applyAutomatedGrant(tx, user.id, 'topic_post', {
+        type: 'topic_post',
+        id: post.id,
+      });
+      grantApplied = true;
+    }
+
     return post;
   });
+
+  if (grantApplied && grantInfo) {
+    revalidateTag('grant-status', { expire: 60 });
+    const info: { grantId: string; expiresAt: Date } = grantInfo;
+    createNotification({
+      userId: user.id,
+      type: 'benefit_grant',
+      targetType: 'user_grant',
+      targetId: info.grantId,
+      metadata: {
+        grantType: 'topic_post',
+        benefitType: 'ad_free',
+        durationDays: GRANT_TYPE_DEFAULTS.topic_post.durationDays,
+        expiresAt: info.expiresAt.toISOString(),
+        reason: null,
+      },
+    });
+  }
 
   logActivityEvent({
     userId: user.id,

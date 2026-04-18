@@ -7,11 +7,11 @@ import { getAuthenticatedUser } from '@/lib/auth';
 import { getPaginationParams } from '@/lib/pagination';
 
 import { TopicPostCard } from '@/app/[locale]/(public)/(home)/_components/TopicPostCard';
-import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import {
   getLikedPostCountByUser,
   getLikedPostsByUser,
-} from '@/app/[locale]/(public)/topics/_lib/queries';
+} from '@/app/[locale]/(public)/topics/_lib/like-queries';
+import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import {
   Divider,
   PagePanel,

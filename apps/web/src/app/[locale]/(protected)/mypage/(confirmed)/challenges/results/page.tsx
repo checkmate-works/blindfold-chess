@@ -4,7 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { getAuthenticatedUser } from '@/lib/auth';
-import { getMissColorClass } from '@/lib/challenge-ui';
+import { getMissColorClass } from '@/lib/challenge/ui';
 import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 import { CHALLENGE_MENU_TYPES } from '@/lib/db/practice-menu-types';
 

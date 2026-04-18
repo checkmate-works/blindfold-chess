@@ -17,6 +17,7 @@ export function NewPostForm({ locale, square }: Props) {
       action={boundCreatePost}
       translationNamespace="topics.squares.newPostForm"
       contentRequired
+      showGrantInfoModal
     />
   );
 }

@@ -4,23 +4,27 @@ import { chessOpenings, db, profiles, topicPostRatings, topicPosts } from '@/lib
 import type { Profile, TopicPost, TopicPostRating } from '@/lib/db';
 
 import { buildProfilePostQuery } from '@/app/[locale]/(public)/topics/_lib/build-profile-post-query';
+import { getLikeMetaForPost } from '@/app/[locale]/(public)/topics/_lib/like-queries';
 import {
   attachPostMeta,
   attachProfilePostMeta,
-  authorSelect,
-  getLikeMetaForPost,
+} from '@/app/[locale]/(public)/topics/_lib/post-meta';
+import {
   getPostCountByTopicType,
   getRepliesByPostId,
+} from '@/app/[locale]/(public)/topics/_lib/queries';
+import {
+  authorSelect,
+  normalizeRating,
   ratingSelect,
   sortPosts,
-} from '@/app/[locale]/(public)/topics/_lib/queries';
+} from '@/app/[locale]/(public)/topics/_lib/shared';
 import type {
   LikeMeta,
   PostWithReplyMeta,
   ProfilePostWithReplyMeta,
   SortMode,
-} from '@/app/[locale]/(public)/topics/_lib/queries';
-import { normalizeRating } from '@/app/[locale]/(public)/topics/_lib/shared';
+} from '@/app/[locale]/(public)/topics/_lib/shared';
 
 // Re-export from opening-master-queries for backward compatibility
 export {

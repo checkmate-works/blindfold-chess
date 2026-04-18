@@ -1,15 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { logActivityEvent } from '@/lib/activity-log';
+import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { deletePost } from './deletePost';
 
 const mockGetUser = vi.fn();
 const mockSelectFromWhereLimit = vi.fn();
 const mockUpdateSetWhere = vi.fn();
+const mockTxUpdateSetWhere = vi.fn();
 const mockIsUserBanned = vi.fn();
 
-vi.mock('@/lib/activity-log', () => ({
+vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: vi.fn(),
 }));
 
@@ -36,6 +37,16 @@ vi.mock('@/lib/db', () => ({
         where: mockUpdateSetWhere,
       }),
     }),
+    transaction: async (fn: (tx: unknown) => Promise<unknown>) => {
+      const tx = {
+        update: () => ({
+          set: () => ({
+            where: mockTxUpdateSetWhere,
+          }),
+        }),
+      };
+      return fn(tx);
+    },
   },
   topicPosts: {
     id: 'id',
@@ -44,13 +55,18 @@ vi.mock('@/lib/db', () => ({
     topicKey: 'topic_key',
     deletedAt: 'deleted_at',
   },
+  userGrants: {
+    sourceType: 'source_type',
+    sourceId: 'source_id',
+    revokedAt: 'revoked_at',
+  },
 }));
 
-vi.mock('@/lib/ban', () => ({
+vi.mock('@/lib/moderation/ban', () => ({
   isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
 }));
 
-vi.mock('@/lib/rate-limit', () => ({
+vi.mock('@/lib/security/rate-limit', () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ success: true }),
   RATE_LIMITS: {
     deletePost: { action: 'delete_post', maxAttempts: 10, windowMs: 3_600_000 },
@@ -59,6 +75,7 @@ vi.mock('@/lib/rate-limit', () => ({
 
 vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
 }));
 
 const testUserId = 'user-00000000-0000-0000-0000-000000000001';
@@ -127,7 +144,7 @@ describe('deletePost', () => {
 
     const result = await deletePost(testPostId, 'en');
     expect(result).toEqual({ error: 'alreadyDeleted' });
-    expect(mockUpdateSetWhere).not.toHaveBeenCalled();
+    expect(mockTxUpdateSetWhere).not.toHaveBeenCalled();
   });
 
   it('should successfully soft-delete own post', async () => {
@@ -145,7 +162,7 @@ describe('deletePost', () => {
 
     const result = await deletePost(testPostId, 'en');
     expect(result).toEqual({ success: true });
-    expect(mockUpdateSetWhere).toHaveBeenCalled();
+    expect(mockTxUpdateSetWhere).toHaveBeenCalled();
   });
 
   it('should log activity event on successful deletion', async () => {
