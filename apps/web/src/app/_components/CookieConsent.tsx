@@ -31,7 +31,7 @@ export function CookieConsent({ cookieYesId, locale }: CookieConsentProps) {
     <Script
       id="cookieyes"
       src={`https://cdn-cookieyes.com/client_data/${cookieYesId}/script.js`}
-      strategy="afterInteractive"
+      strategy="lazyOnload"
       type="text/javascript"
       data-locale={locale}
     />

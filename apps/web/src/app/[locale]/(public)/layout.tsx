@@ -1,17 +1,23 @@
-import Script from 'next/script';
-
+import { GoogleScripts } from '@/app/_components/GoogleScripts';
 import { ADSENSE_PUBLISHER_ID } from '@/config';
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      {ADSENSE_PUBLISHER_ID && (
-        <Script
-          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_PUBLISHER_ID}`}
-          strategy="afterInteractive"
-          crossOrigin="anonymous"
-        />
-      )}
+      {/*
+        AdSense loader is injected via `GoogleScripts`, which reads from the
+        `StorageAvailabilityProvider` mounted once in the parent
+        `[locale]/layout.tsx`. The probe therefore runs exactly once per
+        page load — this nested `GoogleScripts` instance consumes the same
+        context as the one mounted in the root layout, so adding more
+        `GoogleScripts` nests never duplicates the storage probe.
+
+        The parent layout's `GoogleScripts` carries only `cookieYesId` +
+        `gaMeasurementId`; this one carries only `adsensePublisherId`.
+        Because each instance renders only the scripts whose IDs it was
+        given, there are no duplicate script tags.
+      */}
+      <GoogleScripts adsensePublisherId={ADSENSE_PUBLISHER_ID} />
       {children}
     </>
   );

@@ -4,15 +4,15 @@ import { Inter } from 'next/font/google';
 import { notFound } from 'next/navigation';
 
 import { EnvironmentRibbon } from '@/app/_components/EnvironmentRibbon';
+import { GoogleScripts } from '@/app/_components/GoogleScripts';
 import { AUTHOR_NAME, COOKIEYES_ID, GA_MEASUREMENT_ID, SITE_URL } from '@/config';
 import { routing } from '@/i18n/routing';
 import { generateThemeCSS } from '@blindfold-chess/ui';
-import { GoogleAnalytics } from '@next/third-parties/google';
 
 import { JsonLd, generateOrganizationSchema, generateWebSiteSchema } from '@/lib/seo/jsonld';
+import { StorageAvailabilityProvider } from '@/lib/storage/StorageAvailabilityProvider';
 
 import '../globals.css';
-import { CookieConsent } from './_components/CookieConsent';
 import { Footer } from './_components/Footer';
 import { Header } from './_components/Header';
 import { MobileTabBar } from './_components/MobileTabBar';
@@ -159,20 +159,25 @@ export default async function Layout({
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         <EnvironmentRibbon />
-        {COOKIEYES_ID && <CookieConsent cookieYesId={COOKIEYES_ID} locale={locale} />}
-        {GA_MEASUREMENT_ID && <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />}
-        <Providers locale={locale} messages={messages}>
-          <div className="flex flex-col min-h-screen">
-            <Header locale={locale} />
-            <main className="flex-1 bg-secondary">
-              <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">{children}</div>
-            </main>
-            <Footer locale={locale} />
-            {/* Spacer to prevent the fixed MobileTabBar from covering the footer */}
-            <div className="h-14 md:h-0" />
-            <MobileTabBar />
-          </div>
-        </Providers>
+        <StorageAvailabilityProvider>
+          <GoogleScripts
+            locale={locale}
+            cookieYesId={COOKIEYES_ID}
+            gaMeasurementId={GA_MEASUREMENT_ID}
+          />
+          <Providers locale={locale} messages={messages}>
+            <div className="flex flex-col min-h-screen">
+              <Header locale={locale} />
+              <main className="flex-1 bg-secondary">
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">{children}</div>
+              </main>
+              <Footer locale={locale} />
+              {/* Spacer to prevent the fixed MobileTabBar from covering the footer */}
+              <div className="h-14 md:h-0" />
+              <MobileTabBar />
+            </div>
+          </Providers>
+        </StorageAvailabilityProvider>
       </body>
     </html>
   );

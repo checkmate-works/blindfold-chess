@@ -4,6 +4,8 @@ import { useEffect, useRef } from 'react';
 
 import { ADSENSE_PUBLISHER_ID, IS_LOCAL_DEV } from '@/config';
 
+import { useStorageAvailabilityContext } from '@/lib/storage/StorageAvailabilityProvider';
+
 import { AdPlaceholder } from './AdPlaceholder';
 import './types';
 
@@ -13,10 +15,15 @@ type AdSenseInFeedProps = {
 };
 
 export function AdSenseInFeed({ slotId, layoutKey }: AdSenseInFeedProps) {
+  // See `AdSenseDisplay` for rationale — we gate the `<ins>` on the storage
+  // probe so the layout doesn't reserve space for an empty ad box when the
+  // loader was never injected or was stubbed by an adblocker.
+  const availability = useStorageAvailabilityContext();
   const pushed = useRef(false);
 
   useEffect(() => {
     if (IS_LOCAL_DEV || !ADSENSE_PUBLISHER_ID) return;
+    if (!availability?.all) return;
     if (pushed.current) return;
     pushed.current = true;
 
@@ -25,11 +32,13 @@ export function AdSenseInFeed({ slotId, layoutKey }: AdSenseInFeedProps) {
     } catch {
       // Silently fail - ads are non-critical
     }
-  }, []);
+  }, [availability]);
 
   if (IS_LOCAL_DEV || !ADSENSE_PUBLISHER_ID) {
     return <AdPlaceholder slot="native-ad" />;
   }
+
+  if (!availability?.all) return null;
 
   return (
     <div className="max-w-full overflow-hidden">
