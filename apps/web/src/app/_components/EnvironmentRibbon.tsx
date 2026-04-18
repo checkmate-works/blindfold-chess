@@ -27,12 +27,13 @@
  * Text is English-only by design (developer tooling, not user-facing).
  *
  * Colors: intentionally uses Tailwind default palette (bg-yellow-400 /
- * bg-green-500) instead of the project's semantic tokens (bg-warning /
- * bg-success). The semantic `warning` token is orange-leaning, which conflicts
- * with the conventional "bright yellow" used by deploy-preview ribbons across
- * the industry. This developer-facing indicator prioritizes color-recognition
- * convention over the "No Hardcoded Colors" rule in apps/web/CLAUDE.md, and is
- * the only place in the web app where that deviation is intentional.
+ * bg-green-500 / text-white) instead of the project's semantic tokens
+ * (bg-warning / bg-success / text-foreground). The semantic `warning` token is
+ * orange-leaning, which conflicts with the conventional "bright yellow" used
+ * by deploy-preview ribbons across the industry. This developer-facing
+ * indicator prioritizes color-recognition convention over the "No Hardcoded
+ * Colors" rule in apps/web/CLAUDE.md, and is the only place in the web app
+ * where that deviation is intentional.
  */
 export function EnvironmentRibbon() {
   const vercelEnv = process.env.VERCEL_ENV;
@@ -49,13 +50,13 @@ export function EnvironmentRibbon() {
     // Vercel preview builds run with NODE_ENV='production' — that is expected
     // and must not hide the ribbon.
     label = 'PREVIEW';
-    colorClasses = 'bg-yellow-400 text-yellow-950';
+    colorClasses = 'bg-yellow-400 text-white';
   } else if ((vercelEnv === 'development' || vercelEnv === undefined) && nodeEnv !== 'production') {
     // Purely local dev. Guarding on nodeEnv !== 'production' prevents a
     // self-hosted / non-Vercel production build (no VERCEL_ENV) from showing
     // the "LOCAL" ribbon.
     label = 'LOCAL';
-    colorClasses = 'bg-green-500 text-green-950';
+    colorClasses = 'bg-green-500 text-white';
   } else {
     return null;
   }
