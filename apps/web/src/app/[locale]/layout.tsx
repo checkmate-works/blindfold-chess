@@ -12,6 +12,7 @@ import { JsonLd, generateOrganizationSchema, generateWebSiteSchema } from '@/lib
 
 import '../globals.css';
 import { CookieConsent } from './_components/CookieConsent';
+import { EnvironmentRibbon } from './_components/EnvironmentRibbon';
 import { Footer } from './_components/Footer';
 import { Header } from './_components/Header';
 import { MobileTabBar } from './_components/MobileTabBar';
@@ -157,6 +158,7 @@ export default async function Layout({
         <style dangerouslySetInnerHTML={{ __html: generateThemeCSS() }} />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
+        <EnvironmentRibbon />
         {COOKIEYES_ID && <CookieConsent cookieYesId={COOKIEYES_ID} locale={locale} />}
         {GA_MEASUREMENT_ID && <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />}
         <Providers locale={locale} messages={messages}>
