@@ -20,20 +20,6 @@ html {
   scroll-behavior: smooth;
 }
 
-/*
- * No-flash ad-hide rule.
- *
- * When the inline bootstrap script in `[locale]/layout.tsx` sees the
- * `bfc_ads_hidden=1` cookie it sets `<html data-ads-hidden="true">`.
- * This rule then hides AdSense slot wrappers (`.ad-slot-wrapper`, emitted
- * by `AdSenseGuard`) and the raw `.adsbygoogle` ins element before first
- * paint. See `@/lib/ads/ads-hidden-cookie.ts` for the overall flow.
- */
-html[data-ads-hidden='true'] .ad-slot-wrapper,
-html[data-ads-hidden='true'] .adsbygoogle {
-  display: none !important;
-}
-
 /* Define Tailwind utilities using CSS variables */
 @theme {
   --color-background: var(--color-background);
