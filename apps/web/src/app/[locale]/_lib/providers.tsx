@@ -10,6 +10,7 @@ import { ThemeProvider } from 'next-themes';
 import { ErrorBoundary } from '@/app/_components/ErrorBoundary';
 import { IntlAvailableContext } from '@/i18n/IntlAvailableContext';
 import { getMessageFallback, handleIntlError } from '@/i18n/error-handling';
+import type { User } from '@supabase/supabase-js';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 
 import { ToastContainer } from '../_components/ToastContainer';
@@ -20,9 +21,10 @@ type Props = {
   children: ReactNode;
   locale: string;
   messages: Record<string, unknown>;
+  initialUser?: User | null;
 };
 
-export function Providers({ children, locale, messages }: Props) {
+export function Providers({ children, locale, messages, initialUser = null }: Props) {
   return (
     <ErrorBoundary autoRecover>
       <NextIntlClientProvider
@@ -41,7 +43,7 @@ export function Providers({ children, locale, messages }: Props) {
           >
             <NavigationGuardProvider>
               <NuqsAdapter>
-                <AuthProvider>
+                <AuthProvider initialUser={initialUser}>
                   <ToastProvider>
                     {children}
                     <Suspense>
