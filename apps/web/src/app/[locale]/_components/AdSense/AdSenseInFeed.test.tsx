@@ -42,12 +42,22 @@ describe('AdSenseInFeed', () => {
   beforeEach(() => {
     mockedUseContext.mockReset();
     (window as unknown as { adsbygoogle?: unknown[] }).adsbygoogle = [];
+    delete document.documentElement.dataset.adsHidden;
   });
 
   afterEach(() => {
     cleanup();
     (window as unknown as { adsbygoogle?: unknown }).adsbygoogle = originalAdsbygoogle;
+    delete document.documentElement.dataset.adsHidden;
   });
+
+  function setVisibility(state: 'visible' | 'hidden') {
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      get: () => state,
+    });
+    document.dispatchEvent(new Event('visibilitychange'));
+  }
 
   it('renders nothing when availability context is null', () => {
     mockedUseContext.mockReturnValue(null);
@@ -102,6 +112,61 @@ describe('AdSenseInFeed', () => {
     const { rerender } = render(<AdSenseInFeed slotId="5555" layoutKey="-abc-def-ghi-jkl" />);
     expect(pushSpy).toHaveBeenCalledTimes(1);
     rerender(<AdSenseInFeed slotId="5555" layoutKey="-abc-def-ghi-jkl" />);
+    expect(pushSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("skips push when data-ads-hidden='true' at mount", () => {
+    mockedUseContext.mockReturnValue(allAvailable);
+    document.documentElement.dataset.adsHidden = 'true';
+
+    const pushSpy = vi.fn();
+    (window as unknown as { adsbygoogle: { push: typeof pushSpy } }).adsbygoogle = {
+      push: pushSpy,
+    };
+
+    render(<AdSenseInFeed slotId="5555" layoutKey="-abc-def-ghi-jkl" />);
+
+    expect(pushSpy).not.toHaveBeenCalled();
+  });
+
+  it("skips push after visibilitychange->visible when data-ads-hidden is 'true'", () => {
+    mockedUseContext.mockReturnValue(allAvailable);
+    document.documentElement.dataset.adsHidden = 'true';
+
+    const pushSpy = vi.fn();
+    (window as unknown as { adsbygoogle: { push: typeof pushSpy } }).adsbygoogle = {
+      push: pushSpy,
+    };
+
+    render(<AdSenseInFeed slotId="5555" layoutKey="-abc-def-ghi-jkl" />);
+    expect(pushSpy).not.toHaveBeenCalled();
+
+    setVisibility('hidden');
+    setVisibility('visible');
+
+    expect(pushSpy).not.toHaveBeenCalled();
+  });
+
+  it('pushes on visibilitychange->visible if ads-hidden was later cleared', () => {
+    mockedUseContext.mockReturnValue(allAvailable);
+    document.documentElement.dataset.adsHidden = 'true';
+
+    const pushSpy = vi.fn();
+    (window as unknown as { adsbygoogle: { push: typeof pushSpy } }).adsbygoogle = {
+      push: pushSpy,
+    };
+
+    render(<AdSenseInFeed slotId="5555" layoutKey="-abc-def-ghi-jkl" />);
+    expect(pushSpy).not.toHaveBeenCalled();
+
+    delete document.documentElement.dataset.adsHidden;
+    setVisibility('hidden');
+    setVisibility('visible');
+
+    expect(pushSpy).toHaveBeenCalledTimes(1);
+
+    setVisibility('hidden');
+    setVisibility('visible');
     expect(pushSpy).toHaveBeenCalledTimes(1);
   });
 });

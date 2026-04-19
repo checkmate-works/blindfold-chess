@@ -24,17 +24,33 @@ export function AdSenseInFeed({ slotId, layoutKey }: AdSenseInFeedProps) {
   useEffect(() => {
     if (IS_LOCAL_DEV || !ADSENSE_PUBLISHER_ID) return;
     if (!availability?.all) return;
-    if (pushed.current) return;
-    // See `AdSenseDisplay` — skip the push when the no-flash bootstrap
-    // marked the page as ads-hidden (sub / grant holder).
-    if (document.documentElement.dataset.adsHidden === 'true') return;
-    pushed.current = true;
 
-    try {
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
-    } catch {
-      // Silently fail - ads are non-critical
-    }
+    const tryPush = () => {
+      if (pushed.current) return;
+      // See `AdSenseDisplay` — skip the push when the no-flash bootstrap
+      // marked the page as ads-hidden (sub / grant holder). The
+      // `visibilitychange` re-check below covers the case where the user
+      // completes a subscription checkout in another tab: when this tab
+      // returns to visible the attribute is re-read before the push fires.
+      if (document.documentElement.dataset.adsHidden === 'true') return;
+      pushed.current = true;
+
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      } catch {
+        // Silently fail - ads are non-critical
+      }
+    };
+
+    tryPush();
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') tryPush();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
   }, [availability]);
 
   if (IS_LOCAL_DEV || !ADSENSE_PUBLISHER_ID) {
