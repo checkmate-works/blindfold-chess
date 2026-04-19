@@ -15,9 +15,15 @@
 /* Define dark mode variant for Tailwind v4 */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Enable smooth scrolling for in-page anchor navigation */
-html {
-  scroll-behavior: smooth;
+/*
+ * Enable smooth scrolling for in-page anchor navigation.
+ * Gated on `prefers-reduced-motion: no-preference` so users who opt into the
+ * OS-level "reduce motion" accessibility setting get instant scrolls instead.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 /* Define Tailwind utilities using CSS variables */
