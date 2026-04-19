@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidateTag } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 
 import { announcements } from '@/lib/db';
 
@@ -14,10 +14,12 @@ const deleteBase = createAdminDeleteAction({
 export async function deleteAnnouncement(id: string) {
   const result = await deleteBase(id);
 
-  // Invalidate the SSR banner cache so deleted banners disappear from the
-  // header without waiting for the 5-minute unstable_cache revalidation window.
+  // revalidateTag invalidates the unstable_cache-wrapped banner fetch;
+  // revalidatePath evicts ISR-rendered HTML under [locale]/(public)/ that has
+  // the header/banner markup baked in from [locale]/layout.tsx.
   if ('success' in result) {
     revalidateTag('announcements', { expire: 60 });
+    revalidatePath('/', 'layout');
   }
 
   return result;

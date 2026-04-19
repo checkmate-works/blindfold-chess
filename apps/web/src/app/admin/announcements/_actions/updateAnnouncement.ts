@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidateTag } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
@@ -60,9 +60,11 @@ export async function updateAnnouncement(id: string, data: UpdateData): Promise<
     }
   }
 
-  // Invalidate the SSR banner cache so edited banners propagate to the header
-  // without waiting for the 5-minute unstable_cache revalidation window.
+  // revalidateTag invalidates the unstable_cache-wrapped banner fetch;
+  // revalidatePath evicts ISR-rendered HTML under [locale]/(public)/ that has
+  // the header/banner markup baked in from [locale]/layout.tsx.
   revalidateTag('announcements', { expire: 60 });
+  revalidatePath('/', 'layout');
 
   return mutationSuccess(id, '/admin/announcements');
 }

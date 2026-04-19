@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidateTag } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 
 import { announcements, db } from '@/lib/db';
 import {
@@ -51,9 +51,11 @@ export async function createAnnouncement(data: CreateData): Promise<MutationResu
     }
   }
 
-  // Invalidate the SSR banner cache so new banners propagate to the header
-  // without waiting for the 5-minute unstable_cache revalidation window.
+  // revalidateTag invalidates the unstable_cache-wrapped banner fetch;
+  // revalidatePath evicts ISR-rendered HTML under [locale]/(public)/ that has
+  // the header/banner markup baked in from [locale]/layout.tsx.
   revalidateTag('announcements', { expire: 60 });
+  revalidatePath('/', 'layout');
 
   return mutationSuccess(inserted.id, '/admin/announcements');
 }
