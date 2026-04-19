@@ -121,10 +121,9 @@ describe('AuthContext', () => {
       // Wait for the client hydration to overwrite the seeded user with null.
       await waitFor(() => {
         expect(result.current.user).toBeNull();
+        expect(result.current.session).toBeNull();
+        expect(result.current.isLoading).toBe(false);
       });
-
-      expect(result.current.session).toBeNull();
-      expect(result.current.isLoading).toBe(false);
     });
 
     it('skips Supabase entirely when anonymous (server reports no user)', async () => {
