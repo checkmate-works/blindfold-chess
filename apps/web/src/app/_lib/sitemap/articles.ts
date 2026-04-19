@@ -12,12 +12,28 @@ export async function buildArticleEntries(now: Date): Promise<MetadataRoute.Site
   try {
     const publishedArticles = await getPublishedArticlesForSitemap();
 
+    // Group rows by slug so each entry can emit hreflang alternates only for
+    // the locales that actually have a published article row. Without this,
+    // a partially-translated article would claim alternates in locales whose
+    // URL returns the fallback locale's content, breaking the bidirectional
+    // hreflang contract described in `generateCanonicalMetadata`.
+    const localesBySlug = new Map<string, string[]>();
+    for (const article of publishedArticles) {
+      const locales = localesBySlug.get(article.slug);
+      if (locales) {
+        locales.push(article.locale);
+      } else {
+        localesBySlug.set(article.slug, [article.locale]);
+      }
+    }
+
     for (const article of publishedArticles) {
       const path = `/articles/${article.slug}`;
+      const availableLocales = localesBySlug.get(article.slug) ?? [article.locale];
       entries.push({
         url: `${BASE_URL}/${article.locale}${path}`,
         lastModified: article.updatedAt ?? article.publishedAt ?? now,
-        alternates: generateAlternates(path),
+        alternates: generateAlternates(path, availableLocales),
       });
     }
   } catch (error) {

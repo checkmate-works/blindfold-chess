@@ -13,7 +13,7 @@ import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/met
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { MANUAL_ARTICLE_SLUGS } from '../_lib/types';
-import { getManualArticle } from '../_lib/utils';
+import { getManualArticle, getManualArticleAvailableLocales } from '../_lib/utils';
 
 const MarkdownRenderer = nextDynamic(
   () =>
@@ -49,9 +49,16 @@ export async function generateMetadata({ params }: Props) {
 
   const title = article.metadata.title;
   const description = article.metadata.excerpt;
+  const availableLocales = getManualArticleAvailableLocales(slug);
 
   return {
-    ...generateCanonicalMetadata({ locale, path: `manual/${slug}`, title, description }),
+    ...generateCanonicalMetadata({
+      locale,
+      path: `manual/${slug}`,
+      title,
+      description,
+      availableLocales,
+    }),
     title: resolveTitle(title, locale),
     description,
   };

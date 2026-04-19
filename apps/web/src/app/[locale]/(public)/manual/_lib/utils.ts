@@ -12,11 +12,11 @@ import { MANUAL_ARTICLE_SLUGS } from './types';
 // entries as "article not available in that locale": `getManualArticle`
 // returns `null`, `getAllManualArticles` filters them out.
 //
-// TODO(Finding 4): the public `manual` pages currently do NOT plumb
-// `availableLocales` through `generateCanonicalMetadata`, so hreflang is
-// still emitted for all 4 supported locales regardless of which translations
-// actually exist for a given article. Propagating "locales this article has"
-// from this registry to the metadata builder is a separate PR.
+// The set of locales actually registered per slug is surfaced via
+// `getManualArticleAvailableLocales(slug)` and plumbed into
+// `generateCanonicalMetadata` / `generateAlternates` so partially-translated
+// articles only emit hreflang and sitemap `<alternate>` entries for the
+// locales that have content.
 const metadataRegistry: Record<
   string,
   Partial<Record<Locale, () => Promise<{ metadata: ManualArticleMetadata }>>>
@@ -123,4 +123,14 @@ export const getManualArticle = async (
 
 export const getAllManualArticles = async (locale: Locale): Promise<ManualArticleMetadata[]> => {
   return manualContentManager.getAllArticles(locale);
+};
+
+/**
+ * Return the locales for which a given manual article has both metadata and
+ * content loaders registered — i.e. the locales whose `/manual/<slug>` URL
+ * should appear in hreflang alternates and the sitemap. Used by the article
+ * page metadata and the sitemap builder.
+ */
+export const getManualArticleAvailableLocales = (slug: string): Locale[] => {
+  return manualContentManager.getAvailableLocales(slug);
 };

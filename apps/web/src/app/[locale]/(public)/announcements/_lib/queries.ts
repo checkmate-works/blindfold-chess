@@ -134,11 +134,17 @@ export async function getPublishedAnnouncementCount(): Promise<number> {
  *   3. Any available locale
  * Does NOT filter by visibility — the page component handles
  * members_only access control so it can show the login prompt.
+ *
+ * Returns the chosen announcement together with `availableLocales`, the list
+ * of locales for which this slug actually has a row. Callers feed
+ * `availableLocales` into `generateCanonicalMetadata` so hreflang entries are
+ * only emitted for locales that actually have a translation. Mirrors the
+ * shape of `getPublishedArticle`.
  */
 export async function getPublishedAnnouncement(
   slug: string,
   locale: string
-): Promise<Announcement | null> {
+): Promise<{ announcement: Announcement; availableLocales: string[] } | null> {
   const results = await db
     .select()
     .from(announcements)
@@ -146,7 +152,8 @@ export async function getPublishedAnnouncement(
 
   if (results.length === 0) return null;
 
-  return pickByLocale(results, locale);
+  const availableLocales = results.map((r) => r.locale);
+  return { announcement: pickByLocale(results, locale), availableLocales };
 }
 
 /**

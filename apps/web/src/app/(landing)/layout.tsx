@@ -36,6 +36,10 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocaleFromRequest();
   const t = await getTranslations({ locale, namespace: 'metadata' });
   const currentLocale = OG_LOCALE_MAP[locale];
+  // Mirror `[locale]/layout.tsx`: advertise every other supported locale as
+  // an Open Graph alternate so the landing page gives Facebook / other OG
+  // consumers the same signal as the locale-scoped layout.
+  const alternateLocales = Object.values(OG_LOCALE_MAP).filter((l) => l !== currentLocale);
   const siteName = t('siteName');
   const seoSiteName = t('seoSiteName');
   const siteDescription = t('siteDescription');
@@ -59,6 +63,7 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: siteName,
       type: 'website',
       locale: currentLocale,
+      alternateLocale: alternateLocales,
       images: [
         {
           url: '/logo.png',

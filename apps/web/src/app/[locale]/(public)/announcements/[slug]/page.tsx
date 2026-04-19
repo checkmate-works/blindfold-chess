@@ -36,33 +36,46 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, slug } = await params;
-  const announcement = await getPublishedAnnouncement(slug, locale);
+  const result = await getPublishedAnnouncement(slug, locale);
 
-  if (!announcement) {
+  if (!result) {
     const t = await getTranslations({ locale, namespace: 'announcements' });
     return {
       title: resolveTitle(t('announcementNotFound'), locale),
     };
   }
 
+  const { announcement, availableLocales } = result;
+  const isFallback = announcement.locale !== locale;
   const title = announcement.title;
   const description = announcement.content.slice(0, 160).replace(/\n/g, ' ').trim();
 
   return {
-    ...generateCanonicalMetadata({ locale, path: `announcements/${slug}`, title, description }),
-    title: resolveTitle(title, locale),
+    ...generateCanonicalMetadata({
+      locale,
+      path: `announcements/${slug}`,
+      title,
+      description,
+      availableLocales,
+      ...(isFallback && {
+        canonicalLocale: announcement.locale,
+      }),
+    }),
+    title: resolveTitle(title, isFallback ? announcement.locale : locale),
     description,
   };
 }
 
 export default async function AnnouncementPage({ params }: Props) {
   const { locale, slug } = await params;
-  const announcement = await getPublishedAnnouncement(slug, locale);
+  const result = await getPublishedAnnouncement(slug, locale);
   const t = await getTranslations({ locale, namespace: 'announcements' });
 
-  if (!announcement) {
+  if (!result) {
     notFound();
   }
+
+  const { announcement } = result;
 
   if (announcement.visibility === 'members_only') {
     const user = await getOptionalUser();

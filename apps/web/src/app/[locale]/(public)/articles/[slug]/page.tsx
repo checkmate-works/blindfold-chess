@@ -57,9 +57,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       path: `articles/${slug}`,
       title,
       description,
+      availableLocales,
       ...(isFallback && {
         canonicalLocale: article.locale,
-        availableLocales,
       }),
     }),
     title: resolveTitle(title, isFallback ? article.locale : locale),

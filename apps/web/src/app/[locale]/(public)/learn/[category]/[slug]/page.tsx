@@ -31,6 +31,7 @@ import {
   getArticlesByCategory,
   getAvailableCategories,
   getCategoryCounts,
+  getLearnArticleAvailableLocales,
   getPracticeModulesForArticle,
 } from '../../_lib/utils';
 
@@ -78,9 +79,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const title = article.metadata.title;
   const description = article.metadata.excerpt;
+  const availableLocales = getLearnArticleAvailableLocales(slug);
 
   return {
-    ...generateCanonicalMetadata({ locale, path: `learn/${category}/${slug}`, title, description }),
+    ...generateCanonicalMetadata({
+      locale,
+      path: `learn/${category}/${slug}`,
+      title,
+      description,
+      availableLocales,
+    }),
     title: resolveTitle(title, locale),
     description,
   };
