@@ -1,7 +1,7 @@
 import React from 'react';
 
 import type { User } from '@supabase/supabase-js';
-import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
+import { act, cleanup, render, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AuthProvider, useAuth } from './AuthContext';
@@ -156,6 +156,115 @@ describe('AuthContext', () => {
       expect(result.current.user).toBeNull();
       expect(mockGetUser).not.toHaveBeenCalled();
       expect(mockOnAuthStateChange).not.toHaveBeenCalled();
+    });
+
+    it('unsubscribes even if unmounted during client load', async () => {
+      // Regression test: the bug fix handles the case where the component
+      // unmounts while the async IIFE is awaiting between
+      // `loadSupabaseClient()` and the `onAuthStateChange` call — specifically
+      // during the `Promise.all([getUser, getSession])` step. Before the fix,
+      // `onAuthStateChange` still ran and created a subscription, but the
+      // cleanup function had already captured `subscription === null` and
+      // could not unsubscribe it — a memory/listener leak. The fix adds a
+      // post-subscription `if (cancelled) sub.unsubscribe()` guard.
+      //
+      // Module state (`supabaseClientPromise`) is memoised module-wide in
+      // AuthContext, and earlier tests in this file may have already resolved
+      // it. Reset modules + re-mock with a controllable promise so we can
+      // freeze the inner getUser/getSession await at will.
+      vi.resetModules();
+
+      let resolveHydration: (() => void) | null = null;
+      const hydrationPromise = new Promise<void>((r) => {
+        resolveHydration = r;
+      });
+
+      const unsubscribeSpy = vi.fn();
+      // Hold getUser/getSession open so we can unmount AFTER
+      // `loadSupabaseClient()` has resolved but BEFORE `onAuthStateChange`
+      // runs. This is the exact window the fix needs to cover.
+      const slowGetUser = vi
+        .fn()
+        .mockImplementation(() => hydrationPromise.then(() => ({ data: { user: seededUser } })));
+      const slowGetSession = vi.fn().mockImplementation(() =>
+        hydrationPromise.then(() => ({
+          data: { session: { access_token: 'tok', user: seededUser } },
+        }))
+      );
+      const slowOnAuthStateChange = vi.fn(() => ({
+        data: { subscription: { unsubscribe: unsubscribeSpy } },
+      }));
+
+      vi.doMock('@/lib/supabase/client', () => ({
+        createClient: () => ({
+          auth: {
+            getUser: slowGetUser,
+            getSession: slowGetSession,
+            signOut: vi.fn(),
+            onAuthStateChange: slowOnAuthStateChange,
+          },
+        }),
+      }));
+
+      vi.doMock('next/navigation', () => ({
+        useRouter: () => ({
+          push: mockPush,
+          refresh: mockRefresh,
+          replace: vi.fn(),
+          back: vi.fn(),
+          forward: vi.fn(),
+          prefetch: vi.fn(),
+        }),
+      }));
+
+      vi.doMock('@/app/[locale]/_actions/getSessionUser', () => ({
+        getSessionUser: () => Promise.resolve(seededUser),
+      }));
+
+      vi.doMock('next-intl', () => ({
+        useLocale: () => 'en',
+      }));
+
+      // Re-import AuthProvider so it picks up the fresh mocks and a fresh
+      // module-level `supabaseClientPromise` cache.
+      const { AuthProvider: FreshAuthProvider } = await import('./AuthContext');
+
+      const { unmount } = render(
+        <FreshAuthProvider>
+          <div>child</div>
+        </FreshAuthProvider>
+      );
+
+      // Wait until the effect has reached the getUser/getSession await
+      // (i.e. `loadSupabaseClient()` has resolved). At that point both spies
+      // have been called but neither Promise.all has resolved yet.
+      await waitFor(() => {
+        expect(slowGetUser).toHaveBeenCalled();
+        expect(slowGetSession).toHaveBeenCalled();
+      });
+
+      // Unmount now — this sets `cancelled = true` before `onAuthStateChange`
+      // is reached.
+      unmount();
+
+      // Let the Promise.all resolve so the IIFE proceeds to
+      // `onAuthStateChange(...)` and then the post-subscription guard.
+      resolveHydration!();
+
+      await waitFor(() => {
+        expect(slowOnAuthStateChange).toHaveBeenCalled();
+      });
+
+      // The fix's `if (cancelled) sub.unsubscribe()` must run. Without the
+      // fix, the subscription leaks (unsubscribe is never called).
+      await waitFor(() => {
+        expect(unsubscribeSpy).toHaveBeenCalledTimes(1);
+      });
+
+      vi.doUnmock('@/lib/supabase/client');
+      vi.doUnmock('next/navigation');
+      vi.doUnmock('@/app/[locale]/_actions/getSessionUser');
+      vi.doUnmock('next-intl');
     });
   });
 

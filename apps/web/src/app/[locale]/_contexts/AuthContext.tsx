@@ -159,8 +159,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (!cancelled) setIsLoading(false);
       }
 
-      if (cancelled) return;
-
       const {
         data: { subscription: sub },
       } = supabase.auth.onAuthStateChange((event, session) => {
@@ -175,7 +173,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
           routerRef.current.push(`/${localeRef.current}/reset-password`);
         }
       });
-      subscription = sub;
+      // If the component unmounted while we were awaiting above, the cleanup
+      // function has already run with `subscription === null` and could not
+      // unsubscribe. Detect that here and unsubscribe immediately, otherwise
+      // store the subscription for the cleanup to handle.
+      if (cancelled) {
+        sub.unsubscribe();
+      } else {
+        subscription = sub;
+      }
     })().catch(() => {
       if (!cancelled) setIsLoading(false);
     });
