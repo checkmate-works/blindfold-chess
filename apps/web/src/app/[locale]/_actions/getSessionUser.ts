@@ -1,5 +1,6 @@
 'use server';
 
+import * as Sentry from '@sentry/nextjs';
 import type { User } from '@supabase/supabase-js';
 
 import { writeAdsHiddenCookieForUser } from '@/lib/ads/ads-hidden-cookie-writer';
@@ -16,6 +17,11 @@ import { createClient as createServerSupabaseClient } from '@/lib/supabase/serve
  *
  * Any failure (misconfigured env, transient server error, etc.) is coerced
  * to `null` so the client renders as unauthenticated rather than erroring.
+ * Auth-resolution failures (e.g. `supabase.auth.getUser()` throwing due to a
+ * cookie-decode error, transient Supabase outage, or env misconfiguration)
+ * are reported to Sentry before the null is returned, so a real
+ * authenticated user silently appearing as anonymous is observable in
+ * operations instead of going unnoticed.
  *
  * @sideEffect Also refreshes the `bfc_ads_hidden` cookie from the user's
  * current ad-free entitlement. This is how cancelled subscriptions stop
@@ -26,7 +32,9 @@ import { createClient as createServerSupabaseClient } from '@/lib/supabase/serve
  * `getSessionUser()` call recomputes the entitlement and rewrites the
  * cookie. The cookie refresh is wrapped in its own try/catch so a DB
  * hiccup never breaks the auth path (AuthProvider correctness depends on
- * this function always resolving).
+ * this function always resolving). Cookie-writer failures are intentionally
+ * NOT sent to Sentry — entitlement queries already log at a lower layer via
+ * `console.warn`, and a DB blip here is cosmetic rather than an auth signal.
  */
 export async function getSessionUser(): Promise<User | null> {
   let user: User | null = null;
@@ -36,7 +44,8 @@ export async function getSessionUser(): Promise<User | null> {
       data: { user: resolvedUser },
     } = await supabase.auth.getUser();
     user = resolvedUser;
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error);
     return null;
   }
 

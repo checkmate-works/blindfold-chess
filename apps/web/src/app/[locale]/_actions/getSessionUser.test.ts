@@ -3,6 +3,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('server-only', () => ({}));
 
+const mockSentryCaptureException = vi.fn();
+vi.mock('@sentry/nextjs', () => ({
+  captureException: (...args: unknown[]) => mockSentryCaptureException(...args),
+}));
+
 const mockGetUser = vi.fn();
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () =>
@@ -56,8 +61,9 @@ describe('getSessionUser', () => {
   });
 
   describe('supabase.auth.getUser throws', () => {
-    it('returns null and does NOT touch the cookie (per existing robustness contract)', async () => {
-      mockGetUser.mockRejectedValue(new Error('supabase down'));
+    it('returns null, does NOT touch the cookie, and reports the error to Sentry', async () => {
+      const authError = new Error('supabase down');
+      mockGetUser.mockRejectedValue(authError);
 
       const result = await getSessionUser();
 
@@ -66,6 +72,11 @@ describe('getSessionUser', () => {
       // cookie in its previous state is the safe choice — flipping it
       // in either direction on an unknown user would be wrong.
       expect(mockWriteAdsHiddenCookieForUser).not.toHaveBeenCalled();
+      // An auth-resolution failure means a real signed-in user may
+      // silently appear as anonymous; that regression must be visible in
+      // operations, so the error is reported to Sentry.
+      expect(mockSentryCaptureException).toHaveBeenCalledTimes(1);
+      expect(mockSentryCaptureException).toHaveBeenCalledWith(authError);
     });
   });
 
@@ -82,6 +93,10 @@ describe('getSessionUser', () => {
 
       expect(result).toEqual(mockUser);
       expect(mockWriteAdsHiddenCookieForUser).toHaveBeenCalledTimes(1);
+      // Cookie-writer failures are cosmetic (entitlement queries already
+      // log via `console.warn` at a lower layer); only auth-getUser
+      // failures should wake up Sentry.
+      expect(mockSentryCaptureException).not.toHaveBeenCalled();
     });
   });
 });
