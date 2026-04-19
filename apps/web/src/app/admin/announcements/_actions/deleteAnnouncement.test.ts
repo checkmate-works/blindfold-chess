@@ -6,6 +6,7 @@ const mockGetUser = vi.fn();
 const mockSelectFromWhere = vi.fn();
 const mockDeleteWhere = vi.fn();
 const mockRevalidatePath = vi.fn();
+const mockRevalidateTag = vi.fn();
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () =>
@@ -42,6 +43,7 @@ vi.mock('@/lib/db', () => ({
 
 vi.mock('next/cache', () => ({
   revalidatePath: (...args: unknown[]) => mockRevalidatePath(...args),
+  revalidateTag: (...args: unknown[]) => mockRevalidateTag(...args),
 }));
 
 const adminUserId = 'admin-00000000-0000-0000-0000-000000000001';
@@ -92,11 +94,26 @@ describe('deleteAnnouncement', () => {
     expect(mockRevalidatePath).toHaveBeenCalledWith('/admin/announcements');
   });
 
+  it('should call revalidateTag("announcements") after successful deletion', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    await deleteAnnouncement(announcementId);
+    expect(mockRevalidateTag).toHaveBeenCalledWith('announcements', { expire: 60 });
+  });
+
   it('should not call revalidatePath when unauthorized', async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
 
     await deleteAnnouncement(announcementId);
     expect(mockRevalidatePath).not.toHaveBeenCalled();
+  });
+
+  it('should not call revalidateTag when unauthorized', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: null } });
+
+    await deleteAnnouncement(announcementId);
+    expect(mockRevalidateTag).not.toHaveBeenCalled();
   });
 
   it('should return success even when announcement ID does not exist (no-op delete)', async () => {

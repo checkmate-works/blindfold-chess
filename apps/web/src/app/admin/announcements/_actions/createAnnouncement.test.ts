@@ -6,6 +6,7 @@ const mockGetUser = vi.fn();
 const mockSelectFromWhere = vi.fn();
 const mockInsertValuesReturning = vi.fn();
 const mockRevalidatePath = vi.fn();
+const mockRevalidateTag = vi.fn();
 const mockNotifyAllUsersOfAnnouncement = vi.fn();
 const mockHasAnnouncementNotification = vi.fn();
 
@@ -59,6 +60,7 @@ vi.mock('@/lib/db', () => ({
 
 vi.mock('next/cache', () => ({
   revalidatePath: (...args: unknown[]) => mockRevalidatePath(...args),
+  revalidateTag: (...args: unknown[]) => mockRevalidateTag(...args),
 }));
 
 vi.mock('@/lib/notifications/announcement-notification', () => ({
@@ -391,11 +393,26 @@ describe('createAnnouncement', () => {
     expect(mockRevalidatePath).toHaveBeenCalledWith('/admin/announcements');
   });
 
+  it('should call revalidateTag("announcements") after successful creation', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    await createAnnouncement(validData);
+    expect(mockRevalidateTag).toHaveBeenCalledWith('announcements', { expire: 60 });
+  });
+
   it('should not call revalidatePath when unauthorized', async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
 
     await createAnnouncement(validData);
     expect(mockRevalidatePath).not.toHaveBeenCalled();
+  });
+
+  it('should not call revalidateTag when unauthorized', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: null } });
+
+    await createAnnouncement(validData);
+    expect(mockRevalidateTag).not.toHaveBeenCalled();
   });
 
   it('should not call revalidatePath when validation fails', async () => {

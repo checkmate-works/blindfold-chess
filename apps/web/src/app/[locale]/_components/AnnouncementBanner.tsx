@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 type Props = {
   id: string;
@@ -9,16 +9,26 @@ type Props = {
 };
 
 export function AnnouncementBanner({ id, title, href }: Props) {
-  const router = useRouter();
+  // The banner is always rendered on the server (to keep [locale]/ SSG-eligible).
+  // Dismissal state lives on the client: the no-flash script in Header.tsx hides
+  // the DOM node before first paint on subsequent loads; this state handles the
+  // immediate hide after the user clicks the close button on the current page.
+  const [dismissed, setDismissed] = useState(false);
 
   function handleDismiss() {
     const secure = window.location.protocol === 'https:' ? '; Secure' : '';
     document.cookie = `dismissed-announcement=${id}; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax${secure}`;
-    router.refresh();
+    setDismissed(true);
   }
 
+  if (dismissed) return null;
+
   return (
-    <div role="status" className="bg-primary text-primary-foreground">
+    <div
+      role="status"
+      data-announcement-banner-id={id}
+      className="bg-primary text-primary-foreground"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between py-2 text-sm">
         <a href={href} className="truncate hover:underline">
           📢 {title}

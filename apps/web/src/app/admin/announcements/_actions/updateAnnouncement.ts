@@ -1,5 +1,7 @@
 'use server';
 
+import { revalidateTag } from 'next/cache';
+
 import { eq } from 'drizzle-orm';
 
 import { announcements, db } from '@/lib/db';
@@ -57,6 +59,10 @@ export async function updateAnnouncement(id: string, data: UpdateData): Promise<
       await notifyAllUsersOfAnnouncement(id, data.slug, data.title);
     }
   }
+
+  // Invalidate the SSR banner cache so edited banners propagate to the header
+  // without waiting for the 5-minute unstable_cache revalidation window.
+  revalidateTag('announcements', { expire: 60 });
 
   return mutationSuccess(id, '/admin/announcements');
 }

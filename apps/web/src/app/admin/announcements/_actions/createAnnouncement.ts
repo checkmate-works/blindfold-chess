@@ -1,5 +1,7 @@
 'use server';
 
+import { revalidateTag } from 'next/cache';
+
 import { announcements, db } from '@/lib/db';
 import {
   hasAnnouncementNotification,
@@ -48,6 +50,10 @@ export async function createAnnouncement(data: CreateData): Promise<MutationResu
       await notifyAllUsersOfAnnouncement(inserted.id, data.slug, data.title);
     }
   }
+
+  // Invalidate the SSR banner cache so new banners propagate to the header
+  // without waiting for the 5-minute unstable_cache revalidation window.
+  revalidateTag('announcements', { expire: 60 });
 
   return mutationSuccess(inserted.id, '/admin/announcements');
 }
