@@ -16,6 +16,8 @@ import { useRouter } from 'next/navigation';
 import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import type { Session, SupabaseClient, User } from '@supabase/supabase-js';
 
+import { getSessionUser } from '@/app/[locale]/_actions/getSessionUser';
+
 type AuthContextValue = {
   user: User | null;
   session: Session | null;
@@ -30,8 +32,9 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
  * Lazily loads the Supabase browser client. The module-level import is
  * intentionally avoided so that anonymous visitors do not download the
  * ~220 KB Supabase SDK chunk on SSR-heavy public pages. The client is
- * only loaded when an authenticated session exists (seeded via SSR) or
- * when a caller explicitly triggers a sign-in-related action.
+ * only loaded after `getSessionUser()` (a Server Action) reports a
+ * non-null user, or when a caller explicitly triggers a sign-in-related
+ * action (`refreshUser`, `signOut`).
  *
  * The loaded client is memoised module-wide so repeated calls (from
  * separate effects or from `refreshUser`/`signOut`) share a single
@@ -50,24 +53,16 @@ function loadSupabaseClient(): Promise<SupabaseClient | null> {
 
 type AuthProviderProps = {
   children: ReactNode;
-  /**
-   * Optional SSR-seeded user. When provided, the initial render does not
-   * flash the `isLoading` state and — if `null` — the Supabase SDK is
-   * not loaded at all. Defaults to `null` which preserves the historical
-   * "loading → refresh" behaviour for contexts where no SSR seed is
-   * available (e.g. certain test harnesses).
-   */
-  initialUser?: User | null;
 };
 
-export function AuthProvider({ children, initialUser = null }: AuthProviderProps) {
-  const [user, setUser] = useState<User | null>(initialUser);
+export function AuthProvider({ children }: AuthProviderProps) {
+  const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  // When we have an SSR seed we already know the auth state, so we skip the
-  // initial loading flicker. Without a seed we preserve the legacy "start
-  // loading, resolve after refresh" flow so existing consumers/tests keep
-  // working.
-  const [isLoading, setIsLoading] = useState(initialUser === null);
+  // We do not know the auth state until `getSessionUser()` resolves, so the
+  // initial state is "loading". The layout no longer seeds `initialUser`
+  // (that read forced the entire `[locale]/**` subtree dynamic and blocked
+  // ISR on puzzle pages — see F-003 Group A).
+  const [isLoading, setIsLoading] = useState(true);
   const supabaseRef = useRef<SupabaseClient | null>(null);
   const router = useRouter();
   const locale = useLocale();
@@ -99,82 +94,90 @@ export function AuthProvider({ children, initialUser = null }: AuthProviderProps
     setSession(session);
   }, []);
 
-  // Only tracks whether an SSR seed was initially provided — the effect below
-  // intentionally does NOT re-run when `initialUser` changes on subsequent
-  // renders. Navigation-driven auth changes are handled by `onAuthStateChange`
-  // (which Supabase fires after server-side sign-in redirects restore the
-  // session cookie), keeping the effect's lifecycle stable.
-  const hasInitialUser = initialUser !== null;
-
   useEffect(() => {
-    // Anonymous visit: skip loading Supabase entirely. This is the whole
-    // point of F-001 — SEO/crawler traffic must not pay for the SDK.
-    if (!hasInitialUser) {
-      setIsLoading(false);
-      return;
-    }
-
     let cancelled = false;
     let subscription:
       | ReturnType<SupabaseClient['auth']['onAuthStateChange']>['data']['subscription']
       | null = null;
 
-    loadSupabaseClient()
-      .then(async (supabase) => {
-        if (cancelled || !supabase) {
-          if (!cancelled) setIsLoading(false);
-          return;
-        }
+    (async () => {
+      // Ask the server whether a session cookie is present. This is a thin
+      // Server Action call — no Supabase browser SDK is downloaded yet.
+      let serverUser: User | null = null;
+      try {
+        serverUser = await getSessionUser();
+      } catch {
+        serverUser = null;
+      }
 
-        supabaseRef.current = supabase;
+      if (cancelled) return;
 
-        // Hydrate the session from the Supabase client (the SSR seed only
-        // carries the user, not the session tokens). getUser() also refreshes
-        // the session cookie if needed.
-        try {
-          const [
-            {
-              data: { user: freshUser },
-            },
-            {
-              data: { session: freshSession },
-            },
-          ] = await Promise.all([supabase.auth.getUser(), supabase.auth.getSession()]);
-          if (!cancelled) {
-            setUser(freshUser);
-            setSession(freshSession);
-          }
-        } finally {
-          if (!cancelled) setIsLoading(false);
-        }
+      // Anonymous visit: resolve to loaded-not-authenticated without touching
+      // the Supabase SDK. This preserves F-001's bundle-size win for crawlers
+      // and anonymous traffic. After a successful sign-in, Supabase's server
+      // redirect pattern re-mounts this provider, so `getSessionUser()` will
+      // return the new user and the SDK-load path below takes over.
+      if (!serverUser) {
+        setIsLoading(false);
+        return;
+      }
 
-        if (cancelled) return;
+      // Authenticated visit: seed UI with the server result, then load the
+      // Supabase browser client to hydrate the session and subscribe to
+      // auth-state changes.
+      setUser(serverUser);
 
-        const {
-          data: { subscription: sub },
-        } = supabase.auth.onAuthStateChange((event, session) => {
-          setSession(session);
-          setUser(session?.user ?? null);
-
-          if (event === 'SIGNED_OUT') {
-            routerRef.current.refresh();
-          }
-
-          if (event === 'PASSWORD_RECOVERY') {
-            routerRef.current.push(`/${localeRef.current}/reset-password`);
-          }
-        });
-        subscription = sub;
-      })
-      .catch(() => {
+      const supabase = await loadSupabaseClient();
+      if (cancelled || !supabase) {
         if (!cancelled) setIsLoading(false);
+        return;
+      }
+
+      supabaseRef.current = supabase;
+
+      try {
+        const [
+          {
+            data: { user: freshUser },
+          },
+          {
+            data: { session: freshSession },
+          },
+        ] = await Promise.all([supabase.auth.getUser(), supabase.auth.getSession()]);
+        if (!cancelled) {
+          setUser(freshUser);
+          setSession(freshSession);
+        }
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+
+      if (cancelled) return;
+
+      const {
+        data: { subscription: sub },
+      } = supabase.auth.onAuthStateChange((event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+
+        if (event === 'SIGNED_OUT') {
+          routerRef.current.refresh();
+        }
+
+        if (event === 'PASSWORD_RECOVERY') {
+          routerRef.current.push(`/${localeRef.current}/reset-password`);
+        }
       });
+      subscription = sub;
+    })().catch(() => {
+      if (!cancelled) setIsLoading(false);
+    });
 
     return () => {
       cancelled = true;
       subscription?.unsubscribe();
     };
-  }, [hasInitialUser]);
+  }, []);
 
   const signOut = useCallback(async () => {
     const supabase = supabaseRef.current ?? (await loadSupabaseClient());

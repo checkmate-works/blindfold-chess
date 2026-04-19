@@ -8,11 +8,9 @@ import { GoogleScripts } from '@/app/_components/GoogleScripts';
 import { AUTHOR_NAME, COOKIEYES_ID, GA_MEASUREMENT_ID, SITE_URL } from '@/config';
 import { routing } from '@/i18n/routing';
 import { generateThemeCSS } from '@blindfold-chess/ui';
-import type { User } from '@supabase/supabase-js';
 
 import { JsonLd, generateOrganizationSchema, generateWebSiteSchema } from '@/lib/seo/jsonld';
 import { StorageAvailabilityProvider } from '@/lib/storage/StorageAvailabilityProvider';
-import { createClient as createServerSupabaseClient } from '@/lib/supabase/server';
 
 import '../globals.css';
 import { Footer } from './_components/Footer';
@@ -141,25 +139,6 @@ export default async function Layout({
     allMessages = {};
   }
 
-  // SSR-seed the Supabase user so the client AuthProvider does not need to
-  // download the Supabase SDK for anonymous visitors. Reads the auth cookie
-  // via the server Supabase client; if the client cannot be created or the
-  // request fails (e.g. misconfigured env), we fall back to `null` and the
-  // client will render as unauthenticated.
-  let initialUser: User | null = null;
-  try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    initialUser = user;
-  } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('[layout] supabase.auth.getUser failed, seeding null user:', error);
-    }
-    initialUser = null;
-  }
-
   // Namespaces used only by Server Components (via getTranslations()) are
   // excluded from the client-side dictionary payload. The classification lives
   // in `./_lib/i18n-namespaces.ts` and is validated at check time by
@@ -186,7 +165,7 @@ export default async function Layout({
             cookieYesId={COOKIEYES_ID}
             gaMeasurementId={GA_MEASUREMENT_ID}
           />
-          <Providers locale={locale} messages={messages} initialUser={initialUser}>
+          <Providers locale={locale} messages={messages}>
             <div className="flex flex-col min-h-screen">
               <Header locale={locale} />
               <main className="flex-1 bg-secondary">

@@ -10,6 +10,7 @@ const mockGetUser = vi.fn();
 const mockGetSession = vi.fn();
 const mockSignOut = vi.fn();
 const mockOnAuthStateChange = vi.fn();
+const mockGetSessionUser = vi.fn();
 
 vi.mock('next-intl', () => ({
   useLocale: () => 'en',
@@ -40,17 +41,17 @@ vi.mock('@/lib/supabase/client', () => {
   return { createClient };
 });
 
-// Most tests exercise the "authenticated" path where the SSR seed provides a
-// user and the AuthProvider eagerly loads the Supabase client. Passing a
-// seeded user short-circuits the lazy-load logic so the mocked client gets
-// wired up via the async effect just like it did before F-001.
+vi.mock('@/app/[locale]/_actions/getSessionUser', () => ({
+  getSessionUser: (...args: unknown[]) => mockGetSessionUser(...args),
+}));
+
+// Most tests exercise the "authenticated" path where the server-side session
+// read returns a user and the AuthProvider eagerly loads the Supabase client
+// after mount. Configuring `mockGetSessionUser` to resolve with this user in
+// `beforeEach` drives the same code path that an authenticated visitor hits.
 const seededUser = { id: 'seed-user', email: 'seed@example.com' } as unknown as User;
 
-function authenticatedWrapper({ children }: { children: React.ReactNode }) {
-  return <AuthProvider initialUser={seededUser}>{children}</AuthProvider>;
-}
-
-function anonymousWrapper({ children }: { children: React.ReactNode }) {
+function wrapper({ children }: { children: React.ReactNode }) {
   return <AuthProvider>{children}</AuthProvider>;
 }
 
@@ -60,6 +61,8 @@ describe('AuthContext', () => {
     mockOnAuthStateChange.mockReturnValue({
       data: { subscription: { unsubscribe: vi.fn() } },
     });
+    // Default to authenticated; individual "anonymous" tests override this.
+    mockGetSessionUser.mockResolvedValue(seededUser);
   });
 
   afterEach(() => {
@@ -67,27 +70,27 @@ describe('AuthContext', () => {
   });
 
   describe('initialization', () => {
-    it('resolves isLoading to false after Supabase hydration when SSR-seeded', async () => {
+    it('resolves isLoading to false after Supabase hydration when authenticated', async () => {
       mockGetUser.mockResolvedValue({ data: { user: seededUser } });
       mockGetSession.mockResolvedValue({
         data: { session: { access_token: 'tok', user: seededUser } },
       });
 
-      const { result } = renderHook(() => useAuth(), { wrapper: authenticatedWrapper });
+      const { result } = renderHook(() => useAuth(), { wrapper });
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
       });
     });
 
-    it('hydrates user and session from Supabase after SSR-seed mount', async () => {
+    it('hydrates user and session from Supabase after authenticated mount', async () => {
       const mockUser = { id: 'user-1', email: 'test@example.com' };
       const mockSession = { access_token: 'token', user: mockUser };
 
       mockGetUser.mockResolvedValue({ data: { user: mockUser } });
       mockGetSession.mockResolvedValue({ data: { session: mockSession } });
 
-      const { result } = renderHook(() => useAuth(), { wrapper: authenticatedWrapper });
+      const { result } = renderHook(() => useAuth(), { wrapper });
 
       // Wait for the Supabase client to finish hydration — `onAuthStateChange`
       // is set up at the end of the effect, so its invocation is a reliable
@@ -101,21 +104,21 @@ describe('AuthContext', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    it('clears user when Supabase hydration returns null (stale SSR seed)', async () => {
+    it('clears user when Supabase hydration returns null (stale server read)', async () => {
       // Supabase client methods return error objects rather than throwing,
       // but getUser/getSession in Promise.all could still technically reject.
       // Here we test the non-throwing error case (Supabase's typical pattern).
-      // The SSR seed stays behind until the client hydration overwrites it
-      // with the "no user" result — simulating a stale cookie scenario.
+      // The server-read user stays behind until the client hydration overwrites
+      // it with the "no user" result — simulating a stale cookie scenario.
       mockGetUser.mockResolvedValue({ data: { user: null }, error: { message: 'Unauthorized' } });
       mockGetSession.mockResolvedValue({
         data: { session: null },
         error: { message: 'Unauthorized' },
       });
 
-      const { result } = renderHook(() => useAuth(), { wrapper: authenticatedWrapper });
+      const { result } = renderHook(() => useAuth(), { wrapper });
 
-      // Wait for the client hydration to overwrite the SSR seed with null.
+      // Wait for the client hydration to overwrite the seeded user with null.
       await waitFor(() => {
         expect(result.current.user).toBeNull();
       });
@@ -124,8 +127,10 @@ describe('AuthContext', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    it('skips Supabase entirely when anonymous (no SSR seed)', async () => {
-      const { result } = renderHook(() => useAuth(), { wrapper: anonymousWrapper });
+    it('skips Supabase entirely when anonymous (server reports no user)', async () => {
+      mockGetSessionUser.mockResolvedValue(null);
+
+      const { result } = renderHook(() => useAuth(), { wrapper });
 
       // Anonymous visitors resolve to loaded-not-authenticated immediately
       // without touching the Supabase client — this is the F-001 win.
@@ -139,6 +144,20 @@ describe('AuthContext', () => {
       expect(mockGetSession).not.toHaveBeenCalled();
       expect(mockOnAuthStateChange).not.toHaveBeenCalled();
     });
+
+    it('treats a failing getSessionUser as anonymous', async () => {
+      mockGetSessionUser.mockRejectedValue(new Error('network'));
+
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(result.current.user).toBeNull();
+      expect(mockGetUser).not.toHaveBeenCalled();
+      expect(mockOnAuthStateChange).not.toHaveBeenCalled();
+    });
   });
 
   describe('signOut', () => {
@@ -149,7 +168,7 @@ describe('AuthContext', () => {
       });
       mockSignOut.mockResolvedValue({ error: null });
 
-      const { result } = renderHook(() => useAuth(), { wrapper: authenticatedWrapper });
+      const { result } = renderHook(() => useAuth(), { wrapper });
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -170,7 +189,7 @@ describe('AuthContext', () => {
         data: { session: { access_token: 'tok', user: seededUser } },
       });
 
-      const { result } = renderHook(() => useAuth(), { wrapper: authenticatedWrapper });
+      const { result } = renderHook(() => useAuth(), { wrapper });
 
       await waitFor(() => {
         expect(mockOnAuthStateChange).toHaveBeenCalled();
@@ -191,16 +210,13 @@ describe('AuthContext', () => {
 
     it('clears user when session becomes null (sign out)', async () => {
       const initialUser = { id: 'user-4', email: 'clear@example.com' } as unknown as User;
+      mockGetSessionUser.mockResolvedValue(initialUser);
       mockGetUser.mockResolvedValue({ data: { user: initialUser } });
       mockGetSession.mockResolvedValue({
         data: { session: { access_token: 'tok', user: initialUser } },
       });
 
-      const { result } = renderHook(() => useAuth(), {
-        wrapper: ({ children }) => (
-          <AuthProvider initialUser={initialUser}>{children}</AuthProvider>
-        ),
-      });
+      const { result } = renderHook(() => useAuth(), { wrapper });
 
       await waitFor(() => {
         expect(mockOnAuthStateChange).toHaveBeenCalled();
@@ -218,16 +234,13 @@ describe('AuthContext', () => {
 
     it('calls router.refresh on SIGNED_OUT event to sync server state', async () => {
       const initialUser = { id: 'user-6', email: 'signout@example.com' } as unknown as User;
+      mockGetSessionUser.mockResolvedValue(initialUser);
       mockGetUser.mockResolvedValue({ data: { user: initialUser } });
       mockGetSession.mockResolvedValue({
         data: { session: { access_token: 'tok', user: initialUser } },
       });
 
-      renderHook(() => useAuth(), {
-        wrapper: ({ children }) => (
-          <AuthProvider initialUser={initialUser}>{children}</AuthProvider>
-        ),
-      });
+      renderHook(() => useAuth(), { wrapper });
 
       await waitFor(() => {
         expect(mockOnAuthStateChange).toHaveBeenCalled();
@@ -247,7 +260,7 @@ describe('AuthContext', () => {
         data: { session: { access_token: 'tok', user: seededUser } },
       });
 
-      renderHook(() => useAuth(), { wrapper: authenticatedWrapper });
+      renderHook(() => useAuth(), { wrapper });
 
       await waitFor(() => {
         expect(mockOnAuthStateChange).toHaveBeenCalled();
@@ -269,14 +282,11 @@ describe('AuthContext', () => {
     it('does not call router.refresh on TOKEN_REFRESHED event', async () => {
       const initialUser = { id: 'user-tr', email: 'tokenrefresh@example.com' } as unknown as User;
       const initialSession = { access_token: 'old-token', user: initialUser };
+      mockGetSessionUser.mockResolvedValue(initialUser);
       mockGetUser.mockResolvedValue({ data: { user: initialUser } });
       mockGetSession.mockResolvedValue({ data: { session: initialSession } });
 
-      renderHook(() => useAuth(), {
-        wrapper: ({ children }) => (
-          <AuthProvider initialUser={initialUser}>{children}</AuthProvider>
-        ),
-      });
+      renderHook(() => useAuth(), { wrapper });
 
       await waitFor(() => {
         expect(mockOnAuthStateChange).toHaveBeenCalled();
@@ -296,16 +306,13 @@ describe('AuthContext', () => {
 
     it('does not call router.refresh on USER_UPDATED event', async () => {
       const initialUser = { id: 'user-uu', email: 'userupdate@example.com' } as unknown as User;
+      mockGetSessionUser.mockResolvedValue(initialUser);
       mockGetUser.mockResolvedValue({ data: { user: initialUser } });
       mockGetSession.mockResolvedValue({
         data: { session: { access_token: 'tok', user: initialUser } },
       });
 
-      renderHook(() => useAuth(), {
-        wrapper: ({ children }) => (
-          <AuthProvider initialUser={initialUser}>{children}</AuthProvider>
-        ),
-      });
+      renderHook(() => useAuth(), { wrapper });
 
       await waitFor(() => {
         expect(mockOnAuthStateChange).toHaveBeenCalled();
@@ -330,7 +337,7 @@ describe('AuthContext', () => {
         data: { session: { access_token: 'tok', user: seededUser } },
       });
 
-      renderHook(() => useAuth(), { wrapper: authenticatedWrapper });
+      renderHook(() => useAuth(), { wrapper });
 
       await waitFor(() => {
         expect(mockOnAuthStateChange).toHaveBeenCalled();
@@ -352,7 +359,7 @@ describe('AuthContext', () => {
         data: { session: { access_token: 'tok', user: seededUser } },
       });
 
-      const { result } = renderHook(() => useAuth(), { wrapper: authenticatedWrapper });
+      const { result } = renderHook(() => useAuth(), { wrapper });
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -362,13 +369,13 @@ describe('AuthContext', () => {
     });
 
     it('updates user and session when refreshUser is called explicitly', async () => {
-      // Start with a seeded user so the Supabase client is loaded.
+      // Start authenticated so the Supabase client is loaded.
       mockGetUser.mockResolvedValue({ data: { user: seededUser } });
       mockGetSession.mockResolvedValue({
         data: { session: { access_token: 'seed-token', user: seededUser } },
       });
 
-      const { result } = renderHook(() => useAuth(), { wrapper: authenticatedWrapper });
+      const { result } = renderHook(() => useAuth(), { wrapper });
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
