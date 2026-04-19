@@ -266,6 +266,120 @@ describe('AuthContext', () => {
       vi.doUnmock('@/app/[locale]/_actions/getSessionUser');
       vi.doUnmock('next-intl');
     });
+
+    it('recovers from a failed initial Supabase chunk load on a subsequent attempt', async () => {
+      // Regression test for the fix in AuthContext.tsx:
+      //   supabaseClientPromise = import('@/lib/supabase/client')
+      //     .then(({ createClient }) => createClient())
+      //     .catch((err) => {
+      //       supabaseClientPromise = null;
+      //       throw err;
+      //     });
+      //
+      // Without the `.catch` that resets `supabaseClientPromise = null`, a
+      // chunk-load failure during the first `import()` would permanently
+      // memoise a rejected promise. Every subsequent caller (refreshUser,
+      // signOut, a later AuthProvider mount) would await the same rejected
+      // promise and fail until the user fully reloaded the page.
+      //
+      // The module-level `supabaseClientPromise` is shared across all callers,
+      // so we reset modules and install fresh mocks to guarantee a clean
+      // cache. The test asserts that `createClient` is invoked a SECOND time
+      // after the first attempt fails — proving the cache was cleared and the
+      // fresh import pipeline ran again.
+      vi.resetModules();
+
+      let createClientCallCount = 0;
+      const successfulAuth = {
+        getUser: vi.fn().mockResolvedValue({ data: { user: seededUser } }),
+        getSession: vi.fn().mockResolvedValue({
+          data: { session: { access_token: 'tok', user: seededUser } },
+        }),
+        signOut: vi.fn(),
+        onAuthStateChange: vi.fn(() => ({
+          data: { subscription: { unsubscribe: vi.fn() } },
+        })),
+      };
+
+      vi.doMock('@/lib/supabase/client', () => ({
+        createClient: () => {
+          createClientCallCount += 1;
+          if (createClientCallCount === 1) {
+            // Simulate a transient chunk-load / initialization failure on the
+            // first attempt. Throwing from createClient lands in the same
+            // `.catch` branch that the real chunk-load rejection would hit.
+            throw new Error('ChunkLoadError: simulated failure');
+          }
+          return {
+            auth: successfulAuth,
+          };
+        },
+      }));
+
+      vi.doMock('next/navigation', () => ({
+        useRouter: () => ({
+          push: mockPush,
+          refresh: mockRefresh,
+          replace: vi.fn(),
+          back: vi.fn(),
+          forward: vi.fn(),
+          prefetch: vi.fn(),
+        }),
+      }));
+
+      vi.doMock('@/app/[locale]/_actions/getSessionUser', () => ({
+        getSessionUser: () => Promise.resolve(seededUser),
+      }));
+
+      vi.doMock('next-intl', () => ({
+        useLocale: () => 'en',
+      }));
+
+      // Re-import AuthProvider + useAuth so they pick up the fresh mocks AND a
+      // fresh module-level `supabaseClientPromise` cache.
+      const { AuthProvider: FreshAuthProvider, useAuth: useFreshAuth } = await import(
+        './AuthContext'
+      );
+
+      function freshWrapper({ children }: { children: React.ReactNode }) {
+        return <FreshAuthProvider>{children}</FreshAuthProvider>;
+      }
+
+      const { result } = renderHook(() => useFreshAuth(), { wrapper: freshWrapper });
+
+      // First attempt fails inside the IIFE's `.catch(() => setIsLoading(false))`.
+      // The observable contract: the provider surfaces the failure by
+      // finishing loading without hydrating the session — `getSessionUser()`
+      // seeds `user` from the server read (so it is `seededUser`), but the
+      // client-side hydration that would populate `session` never completes,
+      // and `onAuthStateChange` is never wired up.
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+      expect(createClientCallCount).toBe(1);
+      expect(result.current.session).toBeNull();
+      expect(successfulAuth.onAuthStateChange).not.toHaveBeenCalled();
+
+      // Trigger a second load path. If the rejection was cached (i.e. the fix
+      // is absent), `refreshUser` awaits the SAME rejected promise and
+      // `createClient` is never called again — the assertion below would fail.
+      // With the fix, the `.catch` reset clears the cache so the next call
+      // freshly re-imports and `createClient` runs a second time, now
+      // succeeding and hydrating the user.
+      await act(async () => {
+        await result.current.refreshUser();
+      });
+
+      expect(createClientCallCount).toBe(2);
+      expect(successfulAuth.getUser).toHaveBeenCalled();
+      expect(successfulAuth.getSession).toHaveBeenCalled();
+      expect(result.current.user).toEqual(seededUser);
+
+      vi.doUnmock('@/lib/supabase/client');
+      vi.doUnmock('next/navigation');
+      vi.doUnmock('@/app/[locale]/_actions/getSessionUser');
+      vi.doUnmock('next-intl');
+    });
   });
 
   describe('signOut', () => {
