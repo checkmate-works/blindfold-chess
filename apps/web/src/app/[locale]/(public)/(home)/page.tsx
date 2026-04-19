@@ -105,7 +105,12 @@ export default async function HomePage({ params }: Props) {
       </div>
 
       <div className="space-y-6">
-        <JsonLd data={generateWebApplicationSchema(locale, tMetadata('siteName'))} />
+        <JsonLd
+          data={generateWebApplicationSchema(
+            tMetadata('siteName'),
+            tMetadata('webApplicationDescription')
+          )}
+        />
 
         <DashboardCard>
           <VsAiCard locale={locale} />

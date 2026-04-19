@@ -10,6 +10,7 @@ import {
   SITE_URL,
   SUPPORTED_LOCALES,
 } from '@/config';
+import { OG_LOCALE_MAP } from '@/i18n/og-locale';
 import { generateThemeCSS } from '@blindfold-chess/ui';
 import { GoogleAnalytics } from '@next/third-parties/google';
 
@@ -33,8 +34,7 @@ const inter = Inter({
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocaleFromRequest();
   const t = await getTranslations({ locale, namespace: 'metadata' });
-  const OG_LOCALE_MAP: Record<string, string> = { en: 'en_US', ja: 'ja_JP', es: 'es_ES' };
-  const currentLocale = OG_LOCALE_MAP[locale] ?? 'en_US';
+  const currentLocale = OG_LOCALE_MAP[locale];
   const siteName = t('siteName');
   const seoSiteName = t('seoSiteName');
   const siteDescription = t('siteDescription');

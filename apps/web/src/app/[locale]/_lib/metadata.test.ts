@@ -65,7 +65,7 @@ describe('generateCanonicalMetadata', () => {
   });
 
   describe('alternate languages generation', () => {
-    it('should generate correct alternate URLs for both locales', () => {
+    it('should generate correct alternate URLs for all supported locales', () => {
       const result = generateCanonicalMetadata({
         locale: 'en',
         path: '/learn',
@@ -74,6 +74,7 @@ describe('generateCanonicalMetadata', () => {
       expect(result.alternates?.languages).toEqual({
         en: 'https://www.blindfold-chess.online/en/learn',
         es: 'https://www.blindfold-chess.online/es/learn',
+        'pt-BR': 'https://www.blindfold-chess.online/pt-BR/learn',
         ja: 'https://www.blindfold-chess.online/ja/learn',
         'x-default': 'https://www.blindfold-chess.online/en/learn',
       });
@@ -88,6 +89,7 @@ describe('generateCanonicalMetadata', () => {
       expect(result.alternates?.languages).toEqual({
         en: 'https://www.blindfold-chess.online/en',
         es: 'https://www.blindfold-chess.online/es',
+        'pt-BR': 'https://www.blindfold-chess.online/pt-BR',
         ja: 'https://www.blindfold-chess.online/ja',
         'x-default': 'https://www.blindfold-chess.online/en',
       });
@@ -102,6 +104,7 @@ describe('generateCanonicalMetadata', () => {
       expect(result.alternates?.languages).toEqual({
         en: 'https://www.blindfold-chess.online/en/practice/algebraic-notation',
         es: 'https://www.blindfold-chess.online/es/practice/algebraic-notation',
+        'pt-BR': 'https://www.blindfold-chess.online/pt-BR/practice/algebraic-notation',
         ja: 'https://www.blindfold-chess.online/ja/practice/algebraic-notation',
         'x-default': 'https://www.blindfold-chess.online/en/practice/algebraic-notation',
       });
@@ -282,6 +285,7 @@ describe('generateCanonicalMetadata', () => {
       });
       expect(result.alternates?.languages).toHaveProperty('en');
       expect(result.alternates?.languages).toHaveProperty('es');
+      expect(result.alternates?.languages).toHaveProperty('pt-BR');
       expect(result.alternates?.languages).toHaveProperty('ja');
       expect(result.alternates?.languages).toHaveProperty('x-default');
     });
@@ -295,6 +299,44 @@ describe('generateCanonicalMetadata', () => {
       });
       // Should use ja locale for buildPageTitle since canonicalLocale is ja
       expect(result.openGraph?.title).toBe('目隠しチェスの練習 | 心眼チェス');
+    });
+  });
+
+  // Added by tester for Phase-2 hreflang remediation (B2): verify that the
+  // canonical/alternates emission works for `pt-BR`, the newly-introduced
+  // fourth supported locale. These assertions exercise the locale that is
+  // most likely to regress if hreflang machinery is ever hard-coded to
+  // three-letter primary-subtag locales (the `pt-BR` BCP 47 tag contains a
+  // hyphen + regional code, unlike `en`/`es`/`ja`).
+  describe('pt-BR hreflang / canonical emission', () => {
+    it('emits a canonical URL and exactly four language alternates + x-default at root', () => {
+      const result = generateCanonicalMetadata({
+        locale: 'pt-BR',
+        path: '/',
+      });
+
+      expect(result.alternates?.canonical).toBe('https://www.blindfold-chess.online/pt-BR');
+
+      const languages = result.alternates?.languages ?? {};
+      // Exactly the four supported locales + x-default, no more and no fewer
+      expect(Object.keys(languages).sort()).toEqual(['en', 'es', 'ja', 'pt-BR', 'x-default']);
+      expect(languages['pt-BR']).toBe('https://www.blindfold-chess.online/pt-BR');
+      expect(languages['x-default']).toBe('https://www.blindfold-chess.online/en');
+    });
+
+    it('restricts alternates to the availableLocales subset when provided', () => {
+      const result = generateCanonicalMetadata({
+        locale: 'pt-BR',
+        path: '/articles/test',
+        availableLocales: ['en', 'pt-BR'],
+      });
+
+      const languages = result.alternates?.languages ?? {};
+      // Only the 2 requested locales + x-default
+      expect(Object.keys(languages).sort()).toEqual(['en', 'pt-BR', 'x-default']);
+      expect(languages['en']).toBe('https://www.blindfold-chess.online/en/articles/test');
+      expect(languages['pt-BR']).toBe('https://www.blindfold-chess.online/pt-BR/articles/test');
+      expect(languages['x-default']).toBe('https://www.blindfold-chess.online/en/articles/test');
     });
   });
 });

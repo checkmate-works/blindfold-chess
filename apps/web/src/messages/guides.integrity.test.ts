@@ -3,11 +3,17 @@ import { describe, expect, it } from 'vitest';
 import enMessages from './en.json';
 import esMessages from './es.json';
 import jaMessages from './ja.json';
+import ptBRMessages from './pt-BR.json';
 
+// Keep in sync with SUPPORTED_LOCALES in @/config. Every locale shipped by the
+// app must appear here so that structural drift between the en.json source of
+// truth and the other locales (missing keys, missing paragraphs, etc.) fails
+// the build instead of silently slipping through to production.
 const locales = {
   en: enMessages as unknown as Record<string, unknown>,
   ja: jaMessages as unknown as Record<string, unknown>,
   es: esMessages as unknown as Record<string, unknown>,
+  'pt-BR': ptBRMessages as unknown as Record<string, unknown>,
 };
 
 function keyPaths(obj: unknown, prefix = ''): string[] {
@@ -150,6 +156,25 @@ describe('guides.* i18n integrity', () => {
         getAt(messages, 'ranks.detail.mukyuRelatedLinks'),
         `${name}.json must still contain ranks.detail.mukyuRelatedLinks`
       ).toBeDefined();
+    }
+  });
+
+  // Phase-2 (R3): metadata.webApplicationDescription was missing from the
+  // pt-BR translation and silently fell through to English in the OG graph.
+  // This test enforces presence across every locale so the same drift does
+  // not reoccur after the next locale is added. Kept narrow (one key) to
+  // avoid coupling with a broader cross-locale parity checker; if that
+  // checker is added later, this test becomes redundant and can be removed.
+  it('metadata.webApplicationDescription is a non-empty string in every locale (R3)', () => {
+    for (const [name, messages] of Object.entries(locales)) {
+      const value = getAt(messages, 'metadata.webApplicationDescription');
+      expect(typeof value, `${name}.json metadata.webApplicationDescription must be a string`).toBe(
+        'string'
+      );
+      expect(
+        (value as string).length,
+        `${name}.json metadata.webApplicationDescription must be non-empty`
+      ).toBeGreaterThan(0);
     }
   });
 });

@@ -54,10 +54,22 @@ describe('JSON-LD Schema Generators', () => {
       expect(schema.inLanguage).toBe('ja-JP');
     });
 
-    it('should default to en-US for unknown locale', () => {
-      const schema = generateWebSiteSchema('fr', 'Shingan Chess');
+    it('should generate correct schema for Spanish locale', () => {
+      const schema = generateWebSiteSchema('es', 'Shingan Chess');
 
-      expect(schema.inLanguage).toBe('en-US');
+      expect(schema.name).toBe('Shingan Chess');
+      expect(schema.inLanguage).toBe('es-ES');
+    });
+
+    // Post-R2 (exhaustive contract): `inLanguage` must be a BCP 47 tag looked
+    // up via `LANGUAGE_TAGS` with no silent `?? 'en-US'` fallback. For every
+    // supported locale, the emitter must produce the exact tag declared in
+    // LANGUAGE_TAGS.
+    it('emits the exact BCP 47 tag for every SUPPORTED_LOCALES value', () => {
+      expect(generateWebSiteSchema('en', 'n').inLanguage).toBe('en-US');
+      expect(generateWebSiteSchema('es', 'n').inLanguage).toBe('es-ES');
+      expect(generateWebSiteSchema('pt-BR', 'n').inLanguage).toBe('pt-BR');
+      expect(generateWebSiteSchema('ja', 'n').inLanguage).toBe('ja-JP');
     });
   });
 
@@ -301,6 +313,16 @@ describe('JSON-LD Schema Generators', () => {
       );
     });
 
+    it('should use pt-BR for Brazilian Portuguese locale and include it in the URL', () => {
+      const article: ArticleData = { ...baseArticle, locale: 'pt-BR' };
+      const schema = generateArticleSchema(article);
+
+      expect(schema.inLanguage).toBe('pt-BR');
+      expect(schema.mainEntityOfPage['@id']).toBe(
+        'https://www.blindfold-chess.online/pt-BR/learn/basics/test-article'
+      );
+    });
+
     it('should handle different categories', () => {
       const article: ArticleData = { ...baseArticle, category: 'advanced' };
       const schema = generateArticleSchema(article);
@@ -384,6 +406,16 @@ describe('JSON-LD Schema Generators', () => {
 
       expect(schema.mainEntityOfPage['@id']).toBe(
         'https://www.blindfold-chess.online/ja/articles/test-blog-post'
+      );
+    });
+
+    it('should use pt-BR for Brazilian Portuguese locale and include it in the URL', () => {
+      const post: BlogPostData = { ...basePost, locale: 'pt-BR' };
+      const schema = generateBlogPostingSchema(post);
+
+      expect(schema.inLanguage).toBe('pt-BR');
+      expect(schema.mainEntityOfPage['@id']).toBe(
+        'https://www.blindfold-chess.online/pt-BR/articles/test-blog-post'
       );
     });
 
@@ -568,7 +600,12 @@ describe('JSON-LD Schema Generators', () => {
       expect(schema.learningResourceType).toBe('Guide');
     });
 
-    it('maps `inLanguage` through LANGUAGE_MAP for known locales', () => {
+    it('maps `inLanguage` through LANGUAGE_TAGS for every supported locale', () => {
+      // Exhaustive: one assertion per entry in SUPPORTED_LOCALES. If a locale
+      // is added to `SUPPORTED_LOCALES` without a corresponding tag in
+      // LANGUAGE_TAGS, TypeScript catches it at compile time — this test is
+      // the runtime backstop for the behaviour (it confirms the mapping's
+      // output shape is stable BCP 47).
       expect(generateLearningResourceSchema({ ...baseParams, inLanguage: 'en' }).inLanguage).toBe(
         'en-US'
       );
@@ -578,11 +615,9 @@ describe('JSON-LD Schema Generators', () => {
       expect(generateLearningResourceSchema({ ...baseParams, inLanguage: 'es' }).inLanguage).toBe(
         'es-ES'
       );
-    });
-
-    it('passes through unknown language codes unchanged', () => {
-      const schema = generateLearningResourceSchema({ ...baseParams, inLanguage: 'fr-CA' });
-      expect(schema.inLanguage).toBe('fr-CA');
+      expect(
+        generateLearningResourceSchema({ ...baseParams, inLanguage: 'pt-BR' }).inLanguage
+      ).toBe('pt-BR');
     });
 
     it('defaults `author` and `publisher` to the site Organization', () => {

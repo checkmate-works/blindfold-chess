@@ -1,15 +1,19 @@
 import type { Metadata } from 'next';
+import { hasLocale } from 'next-intl';
 import { getMessages, getTranslations } from 'next-intl/server';
 import { Inter } from 'next/font/google';
 import { notFound } from 'next/navigation';
 
 import { AUTHOR_NAME, COOKIEYES_ID, GA_MEASUREMENT_ID, SITE_URL } from '@/config';
+import { OG_LOCALE_MAP } from '@/i18n/og-locale';
 import { routing } from '@/i18n/routing';
 import { generateThemeCSS } from '@blindfold-chess/ui';
 import { GoogleAnalytics } from '@next/third-parties/google';
 
 import { JsonLd, generateOrganizationSchema, generateWebSiteSchema } from '@/lib/seo/jsonld';
 import { ThemeScript } from '@/lib/theme';
+
+import type { Locale } from '@/app/[locale]/_lib/types';
 
 import '../globals.css';
 import { CookieConsent } from './_components/CookieConsent';
@@ -46,8 +50,11 @@ export async function generateMetadata({
   const siteName = t('siteName');
   const seoSiteName = t('seoSiteName');
   const description = t('siteDescription');
-  const OG_LOCALE_MAP: Record<string, string> = { en: 'en_US', ja: 'ja_JP', es: 'es_ES' };
-  const currentLocale = OG_LOCALE_MAP[locale] ?? 'en_US';
+  // Narrow `locale` (typed as plain `string` from params) to a supported
+  // locale so the exhaustive `Record<Locale, string>` OG map can be indexed
+  // without a fallback. Unknown locales fall back to the default.
+  const effectiveLocale = hasLocale(routing.locales, locale) ? locale : routing.defaultLocale;
+  const currentLocale = OG_LOCALE_MAP[effectiveLocale];
   const alternateLocales = Object.values(OG_LOCALE_MAP).filter((l) => l !== currentLocale);
 
   return {
@@ -109,12 +116,16 @@ export default async function Layout({
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await params;
+  const { locale: rawLocale } = await params;
 
-  // Ensure that the incoming `locale` is valid
-  if (!(routing.locales as readonly string[]).includes(locale)) {
+  // Ensure that the incoming `locale` is valid. Narrow to `Locale` so every
+  // downstream call that expects the `Locale` union (JSON-LD emitters, OG
+  // metadata, etc.) can be fed `locale` directly without a second runtime
+  // check or cast.
+  if (!(routing.locales as readonly string[]).includes(rawLocale)) {
     notFound();
   }
+  const locale = rawLocale as Locale;
 
   let t: Awaited<ReturnType<typeof getTranslations<'metadata'>>>;
   let allMessages: Awaited<ReturnType<typeof getMessages>>;

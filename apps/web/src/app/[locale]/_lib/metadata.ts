@@ -51,8 +51,38 @@ export function resolveTitle(title: string, locale: string): string | { absolute
 }
 
 /**
- * Generate canonical URL, alternates, and openGraph metadata for a page.
- * @param locale - Current locale (e.g., 'en', 'ja')
+ * Emit canonical URL, hreflang `alternates.languages`, and openGraph URL /
+ * title / description metadata for a page. This is the central hreflang
+ * machinery used by every non-sitemap page in the app.
+ *
+ * Contract:
+ * 1. **Canonical URL**: `<SITE_URL>/<effectiveLocale>/<path>` where
+ *    `effectiveLocale` is `canonicalLocale ?? locale`. The canonical tells
+ *    Google which URL is the authoritative version of this page; pointing it
+ *    at a different locale is the "fallback content" signal used when a
+ *    translation is unavailable and we are serving the source-language page.
+ * 2. **`alternates.languages`**: one entry per locale in `SUPPORTED_LOCALES`
+ *    (or `availableLocales` when provided) plus an `x-default` entry. Each
+ *    entry is a fully-qualified URL pointing at that locale's version of the
+ *    same path. This satisfies Google's **bidirectional hreflang
+ *    requirement**: every page lists itself and all its alternates, and every
+ *    alternate must list us back — because all pages run through this helper
+ *    and iterate the same locale list, self-referencing is automatic.
+ * 3. **`x-default`**: always points at the English version. `x-default` is
+ *    the fallback Google shows when no hreflang entry matches the user's
+ *    language / region, and English is the project's source language.
+ * 4. **`availableLocales` override**: for partially-translated pages (e.g.
+ *    articles that exist in a subset of locales), pass the subset here to
+ *    emit hreflang only for locales where the page actually exists. Omitting
+ *    this argument defaults to the full `SUPPORTED_LOCALES` list, which is
+ *    correct for pages that are translated for every locale.
+ *
+ * Keep in sync with `generateAlternates` in `app/_lib/sitemap/shared.ts`,
+ * which is the sitemap counterpart of this function's `languages` map. Both
+ * iterate `SUPPORTED_LOCALES`, so adding a locale fans out to both surfaces
+ * without any manual synchronization.
+ *
+ * @param locale - Current locale (e.g., 'en', 'pt-BR', 'ja')
  * @param path - Path without locale prefix (e.g., '/learn', '/practice/algebraic-notation')
  * @param title - Optional page title for openGraph
  * @param description - Optional page description for openGraph

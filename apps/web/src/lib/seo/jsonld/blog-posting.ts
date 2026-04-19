@@ -1,11 +1,15 @@
-import { AUTHOR_NAME, LANGUAGE_MAP, SITE_URL } from './base';
+import { LANGUAGE_TAGS } from '@/i18n/language-tags';
+
+import type { Locale } from '@/app/[locale]/_lib/types';
+
+import { AUTHOR_NAME, SITE_URL } from './base';
 
 export type BlogPostData = {
   title: string;
   description: string;
   slug: string;
   publishedAt: Date | null;
-  locale: string;
+  locale: Locale;
 };
 
 /**
@@ -39,6 +43,6 @@ export function generateBlogPostingSchema(post: BlogPostData) {
       '@type': 'WebPage',
       '@id': postUrl,
     },
-    inLanguage: LANGUAGE_MAP[post.locale] ?? 'en-US',
+    inLanguage: LANGUAGE_TAGS[post.locale],
   };
 }

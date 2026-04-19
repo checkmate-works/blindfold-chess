@@ -38,11 +38,11 @@ export function AlgebraicNotationResult({
         </p>
       </div>
 
-      {/* Explanation */}
+      {/* Explanation (fall back to English when no translation for this locale) */}
       <div className="bg-muted/50 dark:bg-secondary rounded-md p-4">
         <h4 className="text-sm font-medium text-foreground mb-3">{t('explanation')}</h4>
         <ul className="text-sm text-muted-foreground space-y-1">
-          {question.explanation[locale].map((point, index) => (
+          {(question.explanation[locale] ?? question.explanation.en ?? []).map((point, index) => (
             <li key={index} className="flex items-start">
               <span className="text-muted-foreground mr-2">•</span>
               <span>{point}</span>

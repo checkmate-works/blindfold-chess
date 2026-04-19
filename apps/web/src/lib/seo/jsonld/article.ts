@@ -1,4 +1,8 @@
-import { AUTHOR_NAME, LANGUAGE_MAP, SITE_URL } from './base';
+import { LANGUAGE_TAGS } from '@/i18n/language-tags';
+
+import type { Locale } from '@/app/[locale]/_lib/types';
+
+import { AUTHOR_NAME, SITE_URL } from './base';
 
 export type ArticleData = {
   title: string;
@@ -6,7 +10,7 @@ export type ArticleData = {
   slug: string;
   category: string;
   publishedAt: string;
-  locale: string;
+  locale: Locale;
 };
 
 /**
@@ -40,6 +44,6 @@ export function generateArticleSchema(article: ArticleData) {
       '@type': 'WebPage',
       '@id': articleUrl,
     },
-    inLanguage: LANGUAGE_MAP[article.locale] ?? 'en-US',
+    inLanguage: LANGUAGE_TAGS[article.locale],
   };
 }

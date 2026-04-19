@@ -8,7 +8,20 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import type { Article, ArticleCategory, ArticleMetadata, ArticleSlug } from './types';
 import { ARTICLE_CATEGORIES, ARTICLE_PRACTICE_MAPPING } from './types';
 
-const contentRegistry: Record<string, Record<Locale, () => Promise<string>>> = {
+// Per-article content loaders keyed by slug, then by locale.
+//
+// The inner type is `Partial<Record<Locale, ...>>` because a new locale may be
+// added to `SUPPORTED_LOCALES` (e.g. `pt-BR`) before per-article translations
+// exist. Missing (slug, locale) pairs are handled at the data layer:
+// `createContentManager.getArticle` returns `null`, `getAllArticles` filters
+// out articles without a loader for the requested locale.
+//
+// TODO(Finding 4): the public `learn` pages currently do NOT plumb
+// `availableLocales` through `generateCanonicalMetadata`, so hreflang is
+// still emitted for all 4 supported locales regardless of which translations
+// actually exist for a given article. Propagating "locales this article has"
+// from this registry to the metadata builder is a separate PR.
+const contentRegistry: Record<string, Partial<Record<Locale, () => Promise<string>>>> = {
   'algebraic-notation': {
     en: () => import('../_content/algebraic-notation/en').then((m) => m.default),
     ja: () => import('../_content/algebraic-notation/ja').then((m) => m.default),
