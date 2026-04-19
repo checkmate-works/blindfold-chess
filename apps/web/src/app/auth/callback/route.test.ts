@@ -6,6 +6,11 @@ import { logActivityEvent } from '@/lib/users/activity-log';
 
 vi.mock('server-only', () => ({}));
 
+const mockSentryCaptureException = vi.fn();
+vi.mock('@sentry/nextjs', () => ({
+  captureException: (...args: unknown[]) => mockSentryCaptureException(...args),
+}));
+
 const mockComputeAdsHiddenValueForUser = vi.fn().mockResolvedValue(null);
 vi.mock('@/lib/ads/ads-hidden-cookie-compute', () => ({
   computeAdsHiddenValueForUser: mockComputeAdsHiddenValueForUser,
@@ -484,6 +489,50 @@ describe('Auth callback route', () => {
       const redirectUrl = mockRedirect.mock.calls[0][0] as URL;
       expect(redirectUrl.pathname).toBe('/en/mypage');
       expect(redirectUrl.searchParams.get('toast')).toBe('login_success');
+    });
+  });
+
+  describe('ads-hidden cookie compute isolation', () => {
+    it('still returns a success redirect when computeAdsHiddenValueForUser rejects', async () => {
+      const computeError = new Error('ads-hidden DB blip');
+      mockComputeAdsHiddenValueForUser.mockRejectedValueOnce(computeError);
+      mockExchangeCodeForSession.mockResolvedValue(mockSuccessfulExchange());
+
+      const request = new Request('http://localhost:3000/auth/callback?code=test-code');
+      const response = await GET(request);
+
+      // Sign-in must not fail over a cosmetic cookie concern.
+      const redirectUrl = mockRedirect.mock.calls[0][0] as URL;
+      expect(redirectUrl.pathname).toBe('/en/mypage');
+      expect(redirectUrl.searchParams.get('toast')).toBe('login_success');
+
+      // The ads-hidden cookie is deleted (null) — the user may see ads for
+      // a few page loads until `getSessionUser()` self-corrects the state.
+      // `NextResponse.cookies.delete()` encodes the deletion as an empty-
+      // value cookie with an expired `expires` (Epoch 0). That is the
+      // client's instruction to drop the cookie.
+      const cookie = response.cookies.get('bfc_ads_hidden');
+      expect(cookie?.value).toBe('');
+      expect(cookie?.expires && new Date(cookie.expires).getTime()).toBe(0);
+
+      // The regression must be observable in operations.
+      expect(mockSentryCaptureException).toHaveBeenCalledTimes(1);
+      expect(mockSentryCaptureException).toHaveBeenCalledWith(computeError);
+    });
+
+    it('logs activity and queries the profile even when ads-hidden compute rejects', async () => {
+      mockComputeAdsHiddenValueForUser.mockRejectedValueOnce(new Error('ads-hidden DB blip'));
+      mockExchangeCodeForSession.mockResolvedValue(mockSuccessfulExchange());
+
+      const request = new Request('http://localhost:3000/auth/callback?code=test-code');
+      await GET(request);
+
+      // Unchanged contract: login is logged and the profile is checked.
+      expect(logActivityEvent).toHaveBeenCalledWith({
+        userId: mockUserId,
+        action: 'login',
+      });
+      expect(mockDbSelect).toHaveBeenCalled();
     });
   });
 

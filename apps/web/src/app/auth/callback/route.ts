@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+import * as Sentry from '@sentry/nextjs';
 import { eq } from 'drizzle-orm';
 
 import { ADS_HIDDEN_COOKIE_NAME, adsHiddenCookieOptions } from '@/lib/ads/ads-hidden-cookie';
@@ -51,7 +52,16 @@ async function handleSuccessfulAuth(
     // `refreshAdsHiddenCookie()` on `/mypage/subscription` and the Stripe
     // success landing. See `@/lib/ads/ads-hidden-cookie.ts` for the overall
     // no-flash flow.
-    computeAdsHiddenValueForUser(userId),
+    //
+    // A transient failure here (DB blip, Supabase timeout) is isolated so
+    // sign-in still succeeds: the cookie is deleted (null), the user sees
+    // ads for their first few page loads, and the next `getSessionUser()`
+    // call self-corrects the state. The error is reported to Sentry so the
+    // regression is observable.
+    computeAdsHiddenValueForUser(userId).catch((error) => {
+      Sentry.captureException(error);
+      return null;
+    }),
   ]);
 
   if (!profile) {
