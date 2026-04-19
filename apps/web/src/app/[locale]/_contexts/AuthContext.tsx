@@ -44,9 +44,16 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 let supabaseClientPromise: Promise<SupabaseClient | null> | null = null;
 function loadSupabaseClient(): Promise<SupabaseClient | null> {
   if (!supabaseClientPromise) {
-    supabaseClientPromise = import('@/lib/supabase/client').then(({ createClient }) =>
-      createClient()
-    );
+    supabaseClientPromise = import('@/lib/supabase/client')
+      .then(({ createClient }) => createClient())
+      .catch((err) => {
+        // Reset the module-level cache so the next caller re-initiates the
+        // dynamic import. Without this, a transient network failure during
+        // the initial chunk load would permanently memoise the rejection and
+        // users could never recover without a full page reload.
+        supabaseClientPromise = null;
+        throw err;
+      });
   }
   return supabaseClientPromise;
 }
