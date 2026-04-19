@@ -5,6 +5,13 @@ import type { Game } from '@/lib/types';
 
 import { VsAiCard } from './VsAiCard';
 
+// The shared `_components` barrel re-exports `AuthStatusDisplay`, which
+// pulls in `AuthContext` → `getSessionUser` → `ads-hidden-cookie-writer` →
+// `ads-hidden-cookie-compute` (which imports `server-only`). Mock the
+// `server-only` sentinel so the barrel evaluation does not explode in
+// jsdom. Nothing in this test actually exercises the auth/ads path.
+vi.mock('server-only', () => ({}));
+
 afterEach(() => {
   cleanup();
 });
