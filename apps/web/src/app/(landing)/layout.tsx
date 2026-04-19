@@ -46,10 +46,10 @@ export async function generateMetadata(): Promise<Metadata> {
     authors: [{ name: AUTHOR_NAME }],
     metadataBase: new URL(SITE_URL),
     alternates: {
-      canonical: `/${locale}`,
+      canonical: `${SITE_URL}/${locale}`,
       languages: {
-        ...Object.fromEntries(SUPPORTED_LOCALES.map((l) => [l, `/${l}`])),
-        'x-default': '/en',
+        ...Object.fromEntries(SUPPORTED_LOCALES.map((l) => [l, `${SITE_URL}/${l}`])),
+        'x-default': `${SITE_URL}/en`,
       },
     },
     openGraph: {

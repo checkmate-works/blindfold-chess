@@ -482,7 +482,7 @@ describe('JSON-LD Schema Generators', () => {
         name: 'Chess Glossary',
         description: 'A glossary of chess terms',
         url: 'https://example.com/glossary',
-        inLanguage: 'en-US',
+        inLanguage: 'en',
         terms: [
           {
             name: 'Checkmate',
@@ -513,7 +513,7 @@ describe('JSON-LD Schema Generators', () => {
         name: 'Chess Glossary',
         description: 'A glossary of chess terms',
         url: 'https://example.com/glossary',
-        inLanguage: 'en-US',
+        inLanguage: 'en',
         terms: [],
       });
 
@@ -526,7 +526,7 @@ describe('JSON-LD Schema Generators', () => {
         name: 'Chess Glossary',
         description: 'A glossary of chess terms',
         url: 'https://example.com/glossary',
-        inLanguage: 'en-US',
+        inLanguage: 'en',
         terms: [
           {
             name: 'Checkmate',
@@ -561,7 +561,7 @@ describe('JSON-LD Schema Generators', () => {
         name: 'チェス用語集',
         description: 'チェス用語の総合辞典',
         url: 'https://example.com/ja/glossary',
-        inLanguage: 'ja-JP',
+        inLanguage: 'ja',
         terms: [
           {
             name: 'チェックメイト',
@@ -575,6 +575,32 @@ describe('JSON-LD Schema Generators', () => {
       expect(schema.name).toBe('チェス用語集');
       expect(schema.hasDefinedTerm[0].name).toBe('チェックメイト');
       expect(schema.hasDefinedTerm[0].inDefinedTermSet).toBe('https://example.com/ja/glossary');
+    });
+
+    it('maps `inLanguage` through LANGUAGE_TAGS for every supported locale', () => {
+      // Exhaustive: one assertion per entry in SUPPORTED_LOCALES. If a locale
+      // is added to `SUPPORTED_LOCALES` without a corresponding tag in
+      // LANGUAGE_TAGS, TypeScript catches it at compile time — this test is
+      // the runtime backstop for the behaviour (it confirms the mapping's
+      // output shape is stable BCP 47).
+      const baseParams = {
+        name: 'Chess Glossary',
+        description: 'A glossary of chess terms',
+        url: 'https://example.com/glossary',
+        terms: [],
+      };
+      expect(generateDefinedTermSetSchema({ ...baseParams, inLanguage: 'en' }).inLanguage).toBe(
+        'en-US'
+      );
+      expect(generateDefinedTermSetSchema({ ...baseParams, inLanguage: 'ja' }).inLanguage).toBe(
+        'ja-JP'
+      );
+      expect(generateDefinedTermSetSchema({ ...baseParams, inLanguage: 'es' }).inLanguage).toBe(
+        'es-ES'
+      );
+      expect(generateDefinedTermSetSchema({ ...baseParams, inLanguage: 'pt-BR' }).inLanguage).toBe(
+        'pt-BR'
+      );
     });
   });
 

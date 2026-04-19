@@ -3,7 +3,6 @@ import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV, SITE_URL } from '@/config';
-import { LANGUAGE_TAGS } from '@/i18n/language-tags';
 
 import { JsonLd, generateDefinedTermSetSchema } from '@/lib/seo/jsonld';
 
@@ -40,7 +39,6 @@ export default async function GlossaryIndexPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'glossary' });
 
   const glossaryUrl = `${SITE_URL}/${locale}/glossary`;
-  const inLanguage = LANGUAGE_TAGS[locale];
 
   const allTerms = await getGlossaryTerms(locale);
   const definedTerms = allTerms.map((term) => ({
@@ -53,7 +51,7 @@ export default async function GlossaryIndexPage({ params }: Props) {
     name: t('title'),
     description: t('description'),
     url: glossaryUrl,
-    inLanguage,
+    inLanguage: locale,
     terms: definedTerms,
   });
 
