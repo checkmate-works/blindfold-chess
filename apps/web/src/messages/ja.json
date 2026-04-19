@@ -3834,6 +3834,17 @@
         "5kyuGuideLabel": "5級のガイドを見る"
       }
     },
+    "visualAids": {
+      "diagonalPatternTables": {
+        "headers": {
+          "start": "始点",
+          "end": "終点"
+        },
+        "aFileStart": "aファイル始点",
+        "rank1Start": "1ランク始点",
+        "rank8Start": "8ランク始点"
+      }
+    },
     "navigation": {
       "prevRank": "前の段級位: {rankName} ガイド",
       "nextRank": "次の段級位: {rankName} ガイド"

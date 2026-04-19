@@ -3938,6 +3938,17 @@
         "5kyuGuideLabel": "View the 5th Kyū guide"
       }
     },
+    "visualAids": {
+      "diagonalPatternTables": {
+        "headers": {
+          "start": "Start",
+          "end": "End"
+        },
+        "aFileStart": "Starting from a-file",
+        "rank1Start": "Starting from 1st rank",
+        "rank8Start": "Starting from 8th rank"
+      }
+    },
     "navigation": {
       "prevRank": "Previous rank: {rankName} guide",
       "nextRank": "Next rank: {rankName} guide"

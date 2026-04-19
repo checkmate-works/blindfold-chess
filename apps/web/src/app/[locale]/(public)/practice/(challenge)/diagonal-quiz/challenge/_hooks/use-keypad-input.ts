@@ -3,9 +3,8 @@
 import { useCallback, useEffect, useRef } from 'react';
 
 import { getCornerInfo } from '@blindfold-chess/features/diagonal-quiz';
-
-import type { ActiveField } from '../../_hooks/use-diagonal-input';
-import { useDiagonalInput } from '../../_hooks/use-diagonal-input';
+import type { ActiveField } from '@blindfold-chess/features/diagonal-quiz';
+import { useDiagonalInput } from '@blindfold-chess/features/diagonal-quiz';
 
 type UseKeypadInputOptions = {
   currentSquare: string;

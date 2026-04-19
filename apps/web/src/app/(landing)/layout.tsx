@@ -3,6 +3,8 @@ import { getTranslations } from 'next-intl/server';
 import { Inter } from 'next/font/google';
 import { cookies } from 'next/headers';
 
+import { EnvironmentRibbon } from '@/app/_components/EnvironmentRibbon';
+import { GoogleScripts } from '@/app/_components/GoogleScripts';
 import {
   AUTHOR_NAME,
   COOKIEYES_ID,
@@ -12,15 +14,14 @@ import {
 } from '@/config';
 import { OG_LOCALE_MAP } from '@/i18n/og-locale';
 import { generateThemeCSS } from '@blindfold-chess/ui';
-import { GoogleAnalytics } from '@next/third-parties/google';
 
 import { getLocaleFromRequest } from '@/lib/locale';
 import { JsonLd, generateOrganizationSchema, generateWebSiteSchema } from '@/lib/seo/jsonld';
+import { StorageAvailabilityProvider } from '@/lib/storage/StorageAvailabilityProvider';
 import { ThemeScript } from '@/lib/theme';
 
 import { getLatestBannerAnnouncement } from '@/app/[locale]/(public)/announcements/_lib/queries';
 import { AnnouncementBanner } from '@/app/[locale]/_components/AnnouncementBanner';
-import { CookieConsent } from '@/app/[locale]/_components/CookieConsent';
 
 import '../globals.css';
 import { Providers } from './_lib/providers';
@@ -96,6 +97,7 @@ export default async function LandingLayout({ children }: { children: React.Reac
         <style dangerouslySetInnerHTML={{ __html: generateThemeCSS() }} />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
+        <EnvironmentRibbon />
         {showBanner && (
           <AnnouncementBanner
             id={bannerAnnouncement.id}
@@ -103,9 +105,14 @@ export default async function LandingLayout({ children }: { children: React.Reac
             href={`/${locale}/announcements/${bannerAnnouncement.slug}`}
           />
         )}
-        {COOKIEYES_ID && <CookieConsent cookieYesId={COOKIEYES_ID} locale={locale} />}
-        {GA_MEASUREMENT_ID && <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />}
-        <Providers>{children}</Providers>
+        <StorageAvailabilityProvider>
+          <GoogleScripts
+            locale={locale}
+            cookieYesId={COOKIEYES_ID}
+            gaMeasurementId={GA_MEASUREMENT_ID}
+          />
+          <Providers>{children}</Providers>
+        </StorageAvailabilityProvider>
       </body>
     </html>
   );

@@ -1,5 +1,7 @@
 'use client';
 
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+
 type DiagonalPair = { start: string; end: string };
 
 const A_FILE_DIAGONALS: DiagonalPair[] = [
@@ -49,15 +51,18 @@ function PatternTable({
   pairs: DiagonalPair[];
   highlight?: number;
 }) {
+  const t = useTranslations('guides.visualAids.diagonalPatternTables');
   return (
     <div>
       <p className="mb-2 text-sm font-semibold text-foreground">{title}</p>
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-border">
-            <th className="py-1 text-left font-medium text-muted-foreground">始点</th>
+            <th className="py-1 text-left font-medium text-muted-foreground">
+              {t('headers.start')}
+            </th>
             <th className="py-1 text-left font-medium text-muted-foreground"></th>
-            <th className="py-1 text-left font-medium text-muted-foreground">終点</th>
+            <th className="py-1 text-left font-medium text-muted-foreground">{t('headers.end')}</th>
           </tr>
         </thead>
         <tbody>
@@ -78,33 +83,37 @@ function PatternTable({
 }
 
 export function DiagonalAFileTable() {
+  const t = useTranslations('guides.visualAids.diagonalPatternTables');
   return (
     <div className="mx-auto max-w-xs sm:max-w-sm">
-      <PatternTable title="aファイル始点" pairs={A_FILE_DIAGONALS} highlight={0} />
+      <PatternTable title={t('aFileStart')} pairs={A_FILE_DIAGONALS} highlight={0} />
     </div>
   );
 }
 
 export function DiagonalRank1Table() {
+  const t = useTranslations('guides.visualAids.diagonalPatternTables');
   return (
     <div className="mx-auto max-w-xs sm:max-w-sm">
-      <PatternTable title="1ランク始点" pairs={RANK_1_DIAGONALS} />
+      <PatternTable title={t('rank1Start')} pairs={RANK_1_DIAGONALS} />
     </div>
   );
 }
 
 export function AntiDiagAFileTable() {
+  const t = useTranslations('guides.visualAids.diagonalPatternTables');
   return (
     <div className="mx-auto max-w-xs sm:max-w-sm">
-      <PatternTable title="aファイル始点" pairs={A_FILE_ANTI_DIAGS} highlight={0} />
+      <PatternTable title={t('aFileStart')} pairs={A_FILE_ANTI_DIAGS} highlight={0} />
     </div>
   );
 }
 
 export function AntiDiagRank8Table() {
+  const t = useTranslations('guides.visualAids.diagonalPatternTables');
   return (
     <div className="mx-auto max-w-xs sm:max-w-sm">
-      <PatternTable title="8ランク始点" pairs={RANK_8_ANTI_DIAGS} />
+      <PatternTable title={t('rank8Start')} pairs={RANK_8_ANTI_DIAGS} />
     </div>
   );
 }

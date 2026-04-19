@@ -3784,6 +3784,17 @@
         "5kyuGuideLabel": "Ver la guía del 5.º Kyū"
       }
     },
+    "visualAids": {
+      "diagonalPatternTables": {
+        "headers": {
+          "start": "Inicio",
+          "end": "Fin"
+        },
+        "aFileStart": "Inicio en la columna a",
+        "rank1Start": "Inicio en la fila 1",
+        "rank8Start": "Inicio en la fila 8"
+      }
+    },
     "navigation": {
       "prevRank": "Rango anterior: guía de {rankName}",
       "nextRank": "Siguiente rango: guía de {rankName}"

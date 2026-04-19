@@ -1,11 +1,6 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import {
-  useTheme,
-  fontSize,
-  fontWeight,
-  spacing,
-  borderRadius,
-} from "../../../theme";
+import { fontSize, fontWeight, spacing, borderRadius } from "../../../theme";
+import type { useTheme } from "../../../theme";
 
 export type CheckboxPillProps = {
   label: string;

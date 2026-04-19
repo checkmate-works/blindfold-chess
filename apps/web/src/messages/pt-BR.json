@@ -3938,6 +3938,17 @@
         "5kyuGuideLabel": "Ver o guia do 5º Kyū"
       }
     },
+    "visualAids": {
+      "diagonalPatternTables": {
+        "headers": {
+          "start": "Início",
+          "end": "Fim"
+        },
+        "aFileStart": "Começando pela coluna a",
+        "rank1Start": "Começando pela 1ª fileira",
+        "rank8Start": "Começando pela 8ª fileira"
+      }
+    },
     "navigation": {
       "prevRank": "Graduação anterior: guia de {rankName}",
       "nextRank": "Próxima graduação: guia de {rankName}"
