@@ -30,6 +30,13 @@ type Props = {
 
 const ALPHABET = Array.from({ length: 26 }, (_, i) => String.fromCharCode(97 + i)); // a-z
 
+/**
+ * Only a–z letter pages are prerendered at build time. Non-Latin starting
+ * letters (e.g., hiragana/katakana terms) fall through to on-demand ISR via
+ * Next.js's default `dynamicParams = true`, so they still render correctly.
+ * To change this, either widen `ALPHABET` above, or add
+ * `export const dynamicParams = false` to return 404 for unknown letters.
+ */
 export function generateStaticParams(): { locale: Locale; letter: string }[] {
   return SUPPORTED_LOCALES.flatMap((locale) => ALPHABET.map((letter) => ({ locale, letter })));
 }
