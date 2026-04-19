@@ -12,8 +12,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { SinglePositionSession } from '../../_components/session/SinglePositionSession';
 import { clampTimeLimit } from '../../_lib/session-config';
 
-export const dynamic = 'force-dynamic';
-
 type Props = {
   params: Promise<{
     locale: Locale;

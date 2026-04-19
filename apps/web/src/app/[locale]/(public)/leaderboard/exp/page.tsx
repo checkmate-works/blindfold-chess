@@ -19,8 +19,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { parsePeriod } from '../_lib/validators';
 
-export const dynamic = 'force-dynamic';
-
 type Props = {
   params: Promise<{
     locale: Locale;
