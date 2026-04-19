@@ -2,7 +2,12 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
 
-import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE, IS_LOCAL_DEV } from '@/config';
+import {
+  ADSENSE_SLOT_CONTENT_BOTTOM,
+  ADSENSE_SLOT_CONTENT_MIDDLE,
+  IS_LOCAL_DEV,
+  SUPPORTED_LOCALES,
+} from '@/config';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
@@ -22,6 +27,12 @@ type Props = {
     letter: string;
   }>;
 };
+
+const ALPHABET = Array.from({ length: 26 }, (_, i) => String.fromCharCode(97 + i)); // a-z
+
+export function generateStaticParams(): { locale: Locale; letter: string }[] {
+  return SUPPORTED_LOCALES.flatMap((locale) => ALPHABET.map((letter) => ({ locale, letter })));
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, letter } = await params;
