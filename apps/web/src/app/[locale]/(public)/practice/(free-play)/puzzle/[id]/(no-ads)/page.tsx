@@ -141,7 +141,28 @@ export default async function PuzzleDetailPage({ params }: Props) {
             )}
           </div>
 
-          {/* TODO: Add LikeButton and DeletePositionButton (same pattern as position-memory) */}
+          {/*
+            TODO: Add LikeButton and DeletePositionButton (same pattern as position-memory).
+
+            WARNING: This page is ISR-cached (see `export const revalidate = 300` above).
+            The rendered HTML is shared across anonymous viewers via the CDN, so DO NOT
+            implement these buttons as server components that read the current user at
+            render time — one viewer's liked / owned state would bake into the cached
+            HTML and leak to every other viewer who hits the same cache entry.
+
+            Safe implementation options (pick one):
+              (a) Render them as client components that fetch user-scoped state after
+                  hydration via a Server Action or API route (recommended: mirrors the
+                  LikeButton pattern already used in position-memory).
+              (b) Add `export const dynamic = 'force-dynamic'` at the top of this file
+                  BEFORE adding the buttons, to opt this page out of ISR entirely.
+              (c) Pass the userId in as a prop from a parent dynamic boundary.
+
+            The static regression test at `src/lib/isr-user-scope-guard.test.ts` scans
+            ISR-signalled pages under `[locale]/(public)/` for imports of user-scoped
+            auth helpers (`getOptionalUser`, `getSessionUser`, `cookies`, `headers`,
+            etc.) and will fail the build if this rule is violated.
+          */}
           <div className="flex items-center justify-end gap-4 text-xs text-muted-foreground">
             <time dateTime={position.createdAt.toISOString()}>
               {position.createdAt.toLocaleDateString(locale, {
