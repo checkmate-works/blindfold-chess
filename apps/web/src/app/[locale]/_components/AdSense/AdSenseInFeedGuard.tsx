@@ -3,19 +3,27 @@ import {
   ADSENSE_INFEED_LAYOUT_KEY_MOBILE,
   ADSENSE_SLOT_INFEED_DESKTOP,
   ADSENSE_SLOT_INFEED_MOBILE,
+  IS_LOCAL_DEV,
 } from '@/config';
+
+import { isAdsEnabled } from '@/lib/ads/ad';
+import { isNoAdsScope } from '@/lib/ads/no-ads-scope';
 
 import { AdPlaceholder } from './AdPlaceholder';
 import { AdSenseInFeed } from './AdSenseInFeed';
-import { resolveAdGuard } from './resolveAdGuard';
 
+/**
+ * In-feed counterpart to `AdSenseGuard`. Same principle: no `cookies()`
+ * read, per-user hiding handled by the `bfc_ads_hidden` cookie + CSS rule.
+ * See `AdSenseGuard` and `@/lib/ads/ads-hidden-cookie.ts` for details.
+ */
 export async function AdSenseInFeedGuard() {
-  const guard = await resolveAdGuard();
-  if (guard === 'hidden') return null;
-  if (guard === 'placeholder') return <AdPlaceholder slot="native-ad" />;
+  if (isNoAdsScope()) return null;
+  if (!(await isAdsEnabled())) return null;
+  if (IS_LOCAL_DEV) return <AdPlaceholder slot="native-ad" />;
 
   return (
-    <>
+    <div className="ad-slot-wrapper" data-ad-slot="native-ad">
       {ADSENSE_SLOT_INFEED_DESKTOP && ADSENSE_INFEED_LAYOUT_KEY_DESKTOP && (
         <div className="hidden md:block">
           <AdSenseInFeed
@@ -32,6 +40,6 @@ export async function AdSenseInFeedGuard() {
           />
         </div>
       )}
-    </>
+    </div>
   );
 }

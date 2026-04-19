@@ -25,6 +25,9 @@ export function AdSenseInFeed({ slotId, layoutKey }: AdSenseInFeedProps) {
     if (IS_LOCAL_DEV || !ADSENSE_PUBLISHER_ID) return;
     if (!availability?.all) return;
     if (pushed.current) return;
+    // See `AdSenseDisplay` — skip the push when the no-flash bootstrap
+    // marked the page as ads-hidden (sub / grant holder).
+    if (document.documentElement.dataset.adsHidden === 'true') return;
     pushed.current = true;
 
     try {

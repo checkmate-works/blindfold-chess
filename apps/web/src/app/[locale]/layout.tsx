@@ -156,6 +156,19 @@ export default async function Layout({
         <JsonLd data={generateWebSiteSchema(locale, t('siteName'))} />
         <JsonLd data={generateOrganizationSchema()} />
         <style dangerouslySetInnerHTML={{ __html: generateThemeCSS() }} />
+        {/*
+          No-flash ad-hide bootstrap. Reads the `bfc_ads_hidden` cookie and,
+          when set to `'1'`, flags `<html data-ads-hidden="true">`. A CSS rule
+          in `globals.css` then hides `.ad-slot-wrapper` / `.adsbygoogle`
+          before first paint. Mirrors the AnnouncementBanner no-flash pattern
+          (see Header.tsx) and keeps the page free of a server-side
+          `cookies()` read so descendant pages can stay static/ISR.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{if(/(?:^|; )bfc_ads_hidden=1(?:;|$)/.test(document.cookie)){document.documentElement.setAttribute('data-ads-hidden','true');}}catch(e){}})();`,
+          }}
+        />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         <EnvironmentRibbon />

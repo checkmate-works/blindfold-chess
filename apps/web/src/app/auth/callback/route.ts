@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 
 import { eq } from 'drizzle-orm';
 
+import { ADS_HIDDEN_COOKIE_NAME, adsHiddenCookieOptions } from '@/lib/ads/ads-hidden-cookie';
+import { computeAdsHiddenValueForUser } from '@/lib/ads/ads-hidden-cookie-compute';
 import { db, profiles } from '@/lib/db';
 import { getLocaleFromRequest } from '@/lib/locale';
 import { createClient } from '@/lib/supabase/server';
@@ -37,20 +39,41 @@ async function handleSuccessfulAuth(
     action: 'login',
   });
 
-  const [profile] = await db
-    .select({ username: profiles.username })
-    .from(profiles)
-    .where(eq(profiles.id, userId))
-    .limit(1);
+  const [profile, adsHiddenValue] = await Promise.all([
+    db
+      .select({ username: profiles.username })
+      .from(profiles)
+      .where(eq(profiles.id, userId))
+      .limit(1)
+      .then((rows) => rows[0]),
+    // Initialize the `bfc_ads_hidden` cookie based on the freshly-signed-in
+    // user's entitlement state. Subsequent visits refresh this cookie via
+    // `refreshAdsHiddenCookie()` on `/mypage/subscription` and the Stripe
+    // success landing. See `@/lib/ads/ads-hidden-cookie.ts` for the overall
+    // no-flash flow.
+    computeAdsHiddenValueForUser(userId),
+  ]);
 
   if (!profile) {
     const setupUrl = new URL(`/${locale}/mypage/setup-username`, origin);
-    return NextResponse.redirect(setupUrl);
+    const response = NextResponse.redirect(setupUrl);
+    applyAdsHiddenCookie(response, adsHiddenValue);
+    return response;
   }
 
   const redirectUrl = new URL(safeNext, origin);
   redirectUrl.searchParams.set('toast', 'login_success');
-  return NextResponse.redirect(redirectUrl);
+  const response = NextResponse.redirect(redirectUrl);
+  applyAdsHiddenCookie(response, adsHiddenValue);
+  return response;
+}
+
+function applyAdsHiddenCookie(response: NextResponse, value: '1' | null): void {
+  if (value === '1') {
+    response.cookies.set(ADS_HIDDEN_COOKIE_NAME, '1', adsHiddenCookieOptions());
+  } else {
+    response.cookies.delete(ADS_HIDDEN_COOKIE_NAME);
+  }
 }
 
 export async function GET(request: Request) {

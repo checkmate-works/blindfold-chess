@@ -21,6 +21,9 @@ export async function revokeGrant(grantId: string): Promise<ActionResult> {
     await db.update(userGrants).set({ revokedAt: new Date() }).where(eq(userGrants.id, grantId));
 
     revalidateTag('grant-status', { expire: 60 });
+    // See `createGrant.ts` — the target user's `bfc_ads_hidden` cookie
+    // cannot be updated from an admin action; it self-corrects on their
+    // next authenticated page load or when the cookie TTL expires.
     return { success: true };
   } catch (error) {
     console.error('Failed to revoke grant:', error);

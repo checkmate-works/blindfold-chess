@@ -4,7 +4,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { logActivityEvent } from '@/lib/users/activity-log';
 
-import { GET } from './route';
+vi.mock('server-only', () => ({}));
+
+const mockComputeAdsHiddenValueForUser = vi.fn().mockResolvedValue(null);
+vi.mock('@/lib/ads/ads-hidden-cookie-compute', () => ({
+  computeAdsHiddenValueForUser: mockComputeAdsHiddenValueForUser,
+}));
 
 const mockUserId = 'test-user-id-12345678';
 
@@ -49,6 +54,10 @@ vi.mock('@/lib/db', () => ({
     id: 'id',
   },
 }));
+
+// Dynamic import so the `vi.mock` calls above are applied before the
+// route module evaluates its `server-only` and config imports.
+const { GET } = await import('./route');
 
 const mockRedirect = vi.spyOn(NextResponse, 'redirect');
 

@@ -34,6 +34,11 @@ export function AdSenseDisplay({ slotId, slot, className }: AdSenseDisplayProps)
     if (IS_LOCAL_DEV || !ADSENSE_PUBLISHER_ID) return;
     if (!availability?.all) return;
     if (pushed.current) return;
+    // Respect the `bfc_ads_hidden` cookie surfaced as
+    // `<html data-ads-hidden="true">` by the inline no-flash bootstrap in
+    // `[locale]/layout.tsx`. Skipping `push()` here prevents a network
+    // request to Google for ads we are about to CSS-hide anyway.
+    if (document.documentElement.dataset.adsHidden === 'true') return;
     pushed.current = true;
 
     try {
