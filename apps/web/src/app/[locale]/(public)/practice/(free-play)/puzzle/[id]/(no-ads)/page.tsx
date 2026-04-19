@@ -10,7 +10,6 @@ import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
-import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
 import { fenToPieceList, isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import { eq } from 'drizzle-orm';
@@ -21,12 +20,11 @@ import { resolveDisplayName } from '@/lib/users/display-name';
 
 import { PuzzleAnswerForm } from '@/app/[locale]/(public)/practice/(free-play)/puzzle/_components/PuzzleAnswerForm';
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
-import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 type Props = {
   params: Promise<{
@@ -159,10 +157,6 @@ export default async function PuzzleDetailPage({ params }: Props) {
 
           <PuzzleAnswerForm solutions={solutionLines} positionId={position.id} fen={position.fen} />
         </div>
-
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-        )}
 
         <Divider />
 
