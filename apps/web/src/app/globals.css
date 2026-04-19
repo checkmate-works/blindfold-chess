@@ -15,6 +15,11 @@
 /* Define dark mode variant for Tailwind v4 */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Enable smooth scrolling for in-page anchor navigation */
+html {
+  scroll-behavior: smooth;
+}
+
 /* Define Tailwind utilities using CSS variables */
 @theme {
   --color-background: var(--color-background);
