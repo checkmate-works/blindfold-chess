@@ -1,3 +1,10 @@
+/**
+ * This page relies on its sibling `(no-ads)/layout.tsx` to suppress ads:
+ * the layout calls `markNoAdsScope()`, which causes `resolveAdGuard()` to
+ * short-circuit to `'hidden'` for every AdSense slot rendered here.
+ *
+ * Moving this page out of the `(no-ads)/` route group will re-enable ads.
+ */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
@@ -12,13 +19,12 @@ import { db, puzzleSolutions } from '@/lib/db';
 import { getPositionWithProfileById } from '@/lib/positions/queries';
 import { resolveDisplayName } from '@/lib/users/display-name';
 
+import { PuzzleAnswerForm } from '@/app/[locale]/(public)/practice/(free-play)/puzzle/_components/PuzzleAnswerForm';
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
-
-import { PuzzleAnswerForm } from '../_components/PuzzleAnswerForm';
 
 export const dynamic = 'force-dynamic';
 

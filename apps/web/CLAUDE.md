@@ -9,6 +9,7 @@ This document outlines the technical decisions and implementation guidelines for
 - **Next.js App Router** - Use App Router exclusively (no Pages Router)
 - **Server Components by Default** - Prefer Server Components for SEO benefits
 - **Route Groups** - Use route groups like `(landing)` for organization without affecting URLs
+- **`(no-ads)` Route Group** - 広告を表示しないページを追加するには、そのページを `(no-ads)` route group 配下に配置します（例: `foo/(no-ads)/page.tsx`）。同階層の `(no-ads)/layout.tsx` が `markNoAdsScope()` を呼び、`resolveAdGuard()` が最優先で `'hidden'` を返すことで、descendant の AdSense スロットが DOM に一切出なくなります。ページ側のコード変更は不要です。
 
 ### URL Naming Convention
 
