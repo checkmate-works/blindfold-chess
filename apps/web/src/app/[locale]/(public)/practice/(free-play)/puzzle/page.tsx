@@ -125,7 +125,6 @@ export default async function PuzzleListPage({ params, searchParams }: Props) {
                             width={24}
                             height={24}
                             className="w-6 h-6 rounded-full object-cover flex-shrink-0"
-                            unoptimized
                           />
                         ) : (
                           <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
