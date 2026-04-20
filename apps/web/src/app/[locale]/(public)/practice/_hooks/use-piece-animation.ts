@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { getSquareVisualCell } from '@/app/_components/chess/board-coords';
 import type { Color } from '@blindfold-chess/features/chess-core';
 import type { PieceType } from '@blindfold-chess/types';
 
@@ -31,11 +32,9 @@ type UsePieceAnimationOptions = {
 
 /**
  * Convert a square name (e.g. "f5") to its top-left pixel offset on the
- * rendered board. When `flipped` is true the board is drawn from Black's
- * point of view (rank 1 at the top, h-file on the left), so the file/rank
- * indices must be inverted to match the visual cell — otherwise the piece
- * animates to the point-symmetric square (the a1↔h8 rotation of the
- * correct square), e.g. `f5` would be drawn at where `c4` appears.
+ * rendered board. Thin wrapper around {@link getSquareVisualCell} — the
+ * canonical `(square, flipped)` → visual cell mapping lives there; this
+ * function only scales the result to pixel coordinates.
  *
  * @param square - Algebraic square name like "e4"
  * @param boardWidth - Rendered board width in pixels
@@ -47,15 +46,11 @@ export function getSquarePixelOffset(
   boardWidth: number,
   flipped: boolean
 ): { left: number; top: number } {
-  const file = square.charCodeAt(0) - 'a'.charCodeAt(0);
-  const rank = parseInt(square[1], 10) - 1;
   const squareSize = boardWidth / 8;
-
-  const column = flipped ? 7 - file : file;
-  const row = flipped ? rank : 7 - rank;
+  const { col, row } = getSquareVisualCell(square, flipped);
 
   return {
-    left: column * squareSize,
+    left: col * squareSize,
     top: row * squareSize,
   };
 }
