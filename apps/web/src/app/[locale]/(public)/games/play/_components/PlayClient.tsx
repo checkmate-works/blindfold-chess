@@ -176,6 +176,12 @@ export function PlayClient({
             {/* In Progress Content */}
             {gameStatus === 'in_progress' && isInitializing && (
               <div className="flex flex-col gap-6">
+                {/* InlineBoardView header (conditional): border 2 + py-3 (24) + text-sm line-height 20 ≈ 46px.
+                    Only reserved once preferences are hydrated, so `modal` peek users (the defaults)
+                    are not subjected to a counter-productive upward shift during SSR → hydration. */}
+                {isHydrated &&
+                  preferences.showBoardButtonInGame &&
+                  preferences.peekMode === 'inline' && <div aria-hidden className="min-h-[46px]" />}
                 <MoveInputSkeleton
                   mode={preferences.moveInputMode}
                   variant="initial"

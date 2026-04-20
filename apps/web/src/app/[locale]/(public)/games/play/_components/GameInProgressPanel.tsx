@@ -62,7 +62,11 @@ export function GameInProgressPanel({
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Inline Board View (accordion) */}
+      {/* Inline Board View (peek mode === 'inline').
+          NOTE: Header height (~46px) + parent gap-6 (24px) is reserved in
+          PlayClient's initializing skeleton when preferences indicate inline
+          peek. Changes to the header padding / text size here must be kept
+          in sync with that reservation. */}
       {inlineBoardView}
 
       {/* Move Input */}
