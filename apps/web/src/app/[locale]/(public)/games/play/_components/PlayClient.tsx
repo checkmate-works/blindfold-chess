@@ -18,6 +18,7 @@ import { GameInProgressPanel } from './GameInProgressPanel';
 import { InlineBoardView } from './InlineBoardView';
 import { MoveInputSkeleton } from './MoveInputSkeleton';
 import { MovesPanel } from './MovesPanel';
+import { MovesPanelSkeleton } from './MovesPanelSkeleton';
 import { OperationLogModal } from './OperationLogModal';
 
 type Props = {
@@ -174,11 +175,19 @@ export function PlayClient({
           <div>
             {/* In Progress Content */}
             {gameStatus === 'in_progress' && isInitializing && (
-              <MoveInputSkeleton
-                mode={preferences.moveInputMode}
-                variant="initial"
-                hasModeSwitch={preferences.enabledMoveInputModes.length >= 2}
-              />
+              <div className="flex flex-col gap-6">
+                <MoveInputSkeleton
+                  mode={preferences.moveInputMode}
+                  variant="initial"
+                  hasModeSwitch={preferences.enabledMoveInputModes.length >= 2}
+                />
+                {/* Reserve space for the action button row (Undo / Resign / Show Board) */}
+                <div aria-hidden className="min-h-[40px]" />
+                {/* Reserve space for the Save and Exit link */}
+                <div aria-hidden className="min-h-[20px]" />
+                {/* Reserve space for the Operation Log trigger */}
+                <div aria-hidden className="min-h-[24px]" />
+              </div>
             )}
             {gameStatus === 'in_progress' && !isInitializing && (
               <GameInProgressPanel
@@ -235,36 +244,40 @@ export function PlayClient({
 
         {/* Move List */}
         <div className="lg:col-span-1">
-          <MovesPanel
-            moveList={{
-              formattedPgn,
-              currentPosition,
-              movesLength: moves.length,
-              currentFen,
-              displayFen,
-              startingFen,
-            }}
-            navigation={{
-              onNavigateToPosition: navigateToPosition,
-              onNavigateToStart: navigateToStart,
-              onNavigatePrevious: navigatePrevious,
-              onNavigateNext: navigateNext,
-              onNavigateToEnd: navigateToEnd,
-            }}
-            actions={{
-              gameInProgress: gameStatus === 'in_progress',
-              // FEN → Lichess URL derivation is a navigation concern, so it
-              // lives here (the parent that owns routing) rather than in
-              // MovesPanel. Mirrors the original inline behavior: latest
-              // position uses currentFen, historical positions use displayFen.
-              lichessAnalysisUrl: fenToLichessUrl(
-                currentPosition === -1 || displayFen === null ? currentFen : displayFen
-              ),
-              onRestartFromPosition: confirmationDialogs.restart.openWithPosition,
-              onNewGameFromPosition: handleNewGameFromPosition,
-            }}
-            showBackground={false}
-          />
+          {isInitializing ? (
+            <MovesPanelSkeleton />
+          ) : (
+            <MovesPanel
+              moveList={{
+                formattedPgn,
+                currentPosition,
+                movesLength: moves.length,
+                currentFen,
+                displayFen,
+                startingFen,
+              }}
+              navigation={{
+                onNavigateToPosition: navigateToPosition,
+                onNavigateToStart: navigateToStart,
+                onNavigatePrevious: navigatePrevious,
+                onNavigateNext: navigateNext,
+                onNavigateToEnd: navigateToEnd,
+              }}
+              actions={{
+                gameInProgress: gameStatus === 'in_progress',
+                // FEN → Lichess URL derivation is a navigation concern, so it
+                // lives here (the parent that owns routing) rather than in
+                // MovesPanel. Mirrors the original inline behavior: latest
+                // position uses currentFen, historical positions use displayFen.
+                lichessAnalysisUrl: fenToLichessUrl(
+                  currentPosition === -1 || displayFen === null ? currentFen : displayFen
+                ),
+                onRestartFromPosition: confirmationDialogs.restart.openWithPosition,
+                onNewGameFromPosition: handleNewGameFromPosition,
+              }}
+              showBackground={false}
+            />
+          )}
         </div>
       </div>
 

@@ -1,6 +1,7 @@
 import { PagePanel, PageTitle } from '@/app/[locale]/_components';
 
 import { MoveInputSkeleton } from './_components/MoveInputSkeleton';
+import { MovesPanelSkeleton } from './_components/MovesPanelSkeleton';
 
 /**
  * Games / play loading skeleton.
@@ -35,13 +36,20 @@ export default function GamesPlayLoading() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Game area skeleton (2 cols) */}
           <div className="lg:col-span-2">
-            <MoveInputSkeleton mode="button" variant="initial" />
+            <div className="flex flex-col gap-6">
+              <MoveInputSkeleton mode="button" variant="initial" />
+              {/* Reserve space for the action button row (Undo / Resign / Show Board) */}
+              <div aria-hidden className="min-h-[40px]" />
+              {/* Reserve space for the Save and Exit link */}
+              <div aria-hidden className="min-h-[20px]" />
+              {/* Reserve space for the Operation Log trigger */}
+              <div aria-hidden className="min-h-[24px]" />
+            </div>
           </div>
 
           {/* Moves panel skeleton (1 col) */}
-          <div className="lg:col-span-1 space-y-3 motion-safe:animate-pulse">
-            <div className="h-5 bg-muted rounded w-24" />
-            <div className="h-40 bg-muted rounded w-full" />
+          <div className="lg:col-span-1">
+            <MovesPanelSkeleton />
           </div>
         </div>
 
