@@ -38,7 +38,6 @@ export const NAMESPACE_CLASSIFICATION = {
   Achievements: 'client',
   Admin: 'client',
   AuthStatusDisplay: 'client',
-  ButtonInput: 'client',
   Common: 'client',
   Footer: 'client',
   MobileTabBar: 'client',

@@ -424,10 +424,6 @@
     "invalidPgn": "Invalid PGN format",
     "invalidMove": "\"{move}\" is an invalid move"
   },
-  "ButtonInput": {
-    "disambiguationButton": "Disambiguation...",
-    "sourceLabel": "From (Source)"
-  },
   "error": {
     "title": "Something went wrong!",
     "description": "We apologize for the inconvenience. An error occurred while processing your request.",

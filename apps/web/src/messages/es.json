@@ -412,10 +412,6 @@
     "invalidPgn": "Formato PGN inválido",
     "invalidMove": "\"{move}\" es un movimiento inválido"
   },
-  "ButtonInput": {
-    "disambiguationButton": "Desambiguación...",
-    "sourceLabel": "Desde (Origen)"
-  },
   "error": {
     "title": "¡Algo salió mal!",
     "description": "Pedimos disculpas por las molestias. Ocurrió un error al procesar tu solicitud.",

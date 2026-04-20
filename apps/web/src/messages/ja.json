@@ -425,10 +425,6 @@
     "invalidPgn": "無効なPGN形式",
     "invalidMove": "「{move}」は無効な手です"
   },
-  "ButtonInput": {
-    "disambiguationButton": "曖昧性解消...",
-    "sourceLabel": "移動元"
-  },
   "error": {
     "title": "エラーが発生しました",
     "description": "ご不便をおかけして申し訳ございません。リクエストの処理中にエラーが発生しました。",
