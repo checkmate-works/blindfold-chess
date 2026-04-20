@@ -11,6 +11,7 @@ import { createClient } from '@/lib/supabase/server';
 
 import { PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
+import { BreadcrumbContent } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -41,15 +42,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ResultPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations({ locale, namespace: 'play' });
   const tMetadata = await getTranslations({ locale, namespace: 'metadata' });
+  const tPlay = await getTranslations({ locale, namespace: 'play' });
+  const tGames = await getTranslations({ locale, namespace: 'gamesPage' });
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  let displayName = t('certificate.guestName');
+  let displayName = tPlay('certificate.guestName');
   if (user) {
     const [profile] = await db
       .select({ displayName: profiles.displayName })
@@ -61,16 +63,20 @@ export default async function ResultPage({ params }: Props) {
     }
   }
 
+  const breadcrumb = (
+    <BreadcrumbContent
+      items={[{ label: tGames('pageTitle'), href: '/games' }, { label: tPlay('gameOver') }]}
+      locale={locale}
+      brandName={tMetadata('siteName')}
+    />
+  );
+
   return (
     <div className="space-y-8">
-      <PageTitle>{t('resultTitle')}</PageTitle>
+      <PageTitle>{tPlay('resultTitle')}</PageTitle>
       <PagePanel>
         <Suspense>
-          <ResultClient
-            locale={locale}
-            brandName={tMetadata('siteName')}
-            displayName={displayName}
-          />
+          <ResultClient locale={locale} displayName={displayName} breadcrumb={breadcrumb} />
         </Suspense>
 
         {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
