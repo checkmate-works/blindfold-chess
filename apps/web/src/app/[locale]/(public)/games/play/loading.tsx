@@ -1,5 +1,7 @@
 import { PagePanel, PageTitle } from '@/app/[locale]/_components';
 
+import { MoveInputSkeleton } from './_components/MoveInputSkeleton';
+
 /**
  * Games / play loading skeleton.
  *
@@ -7,6 +9,13 @@ import { PagePanel, PageTitle } from '@/app/[locale]/_components';
  * PlayPageClient (space-y-8 > PageTitle > PagePanel) and approximates
  * the initial game-in-progress layout (3-column grid with game area
  * and moves panel) to prevent CLS.
+ *
+ * The move-input column uses `MoveInputSkeleton` so that the SSR → client
+ * hydration handoff does not introduce a visual jump. `button` is the
+ * default input mode and the most common; if the user's saved preference
+ * resolves to `text` or `select`, the swap after hydration is a visual
+ * change only (the MoveInputSkeleton on the client also gates render
+ * until preferences are hydrated).
  */
 export default function GamesPlayLoading() {
   return (
@@ -16,22 +25,14 @@ export default function GamesPlayLoading() {
       </PageTitle>
 
       <PagePanel>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-pulse">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Game area skeleton (2 cols) */}
-          <div className="lg:col-span-2 space-y-4">
-            {/* Status line */}
-            <div className="h-5 bg-muted rounded w-40" />
-            {/* Move input area */}
-            <div className="h-10 bg-muted rounded w-full" />
-            {/* Action buttons */}
-            <div className="flex gap-3">
-              <div className="h-10 bg-muted rounded w-24" />
-              <div className="h-10 bg-muted rounded w-24" />
-            </div>
+          <div className="lg:col-span-2">
+            <MoveInputSkeleton mode="button" variant="initial" />
           </div>
 
           {/* Moves panel skeleton (1 col) */}
-          <div className="lg:col-span-1 space-y-3">
+          <div className="lg:col-span-1 space-y-3 motion-safe:animate-pulse">
             <div className="h-5 bg-muted rounded w-24" />
             <div className="h-40 bg-muted rounded w-full" />
           </div>
@@ -41,7 +42,7 @@ export default function GamesPlayLoading() {
         <div className="border-t border-border my-6" />
 
         {/* Breadcrumb skeleton */}
-        <div className="h-4 bg-muted rounded w-48 animate-pulse" />
+        <div className="h-4 bg-muted rounded w-48 motion-safe:animate-pulse" />
       </PagePanel>
     </div>
   );

@@ -16,6 +16,7 @@ import { useBoardFlip, useConfirmationDialogs, useGameSession, useMoveNavigation
 import { BoardViewModal } from './BoardViewModal';
 import { GameInProgressPanel } from './GameInProgressPanel';
 import { InlineBoardView } from './InlineBoardView';
+import { MoveInputSkeleton } from './MoveInputSkeleton';
 import { MovesPanel } from './MovesPanel';
 import { OperationLogModal } from './OperationLogModal';
 
@@ -35,7 +36,15 @@ export function PlayClient({ locale, onAiMoveChange, onMoveErrorChange }: Props)
   });
 
   const { playerSide, startingFen, perGamePrefs, gameId } = gameConfig;
-  const { gameStatus, playerResult, isPlayerTurn, isLoading, lastMove, gameNotFound } = gameState;
+  const {
+    gameStatus,
+    playerResult,
+    isPlayerTurn,
+    isLoading,
+    isLoadingFromStorage,
+    lastMove,
+    gameNotFound,
+  } = gameState;
   const { moves, currentFen, formattedPgn } = moveState;
   const {
     value: moveInputValue,
@@ -71,7 +80,8 @@ export function PlayClient({ locale, onAiMoveChange, onMoveErrorChange }: Props)
   } = actions;
 
   // Global preferences
-  const { preferences: globalPreferences, updatePreferences } = useGamePreferences();
+  const { preferences: globalPreferences, updatePreferences, isHydrated } = useGamePreferences();
+  const isInitializing = isLoadingFromStorage || !isHydrated;
 
   // Merge per-game preferences with global preferences
   // Per-game fields override global; other fields come from global
@@ -149,7 +159,10 @@ export function PlayClient({ locale, onAiMoveChange, onMoveErrorChange }: Props)
         <div className="lg:col-span-2">
           <div>
             {/* In Progress Content */}
-            {gameStatus === 'in_progress' && (
+            {gameStatus === 'in_progress' && isInitializing && (
+              <MoveInputSkeleton mode={preferences.moveInputMode} variant="initial" />
+            )}
+            {gameStatus === 'in_progress' && !isInitializing && (
               <GameInProgressPanel
                 isPlayerTurn={isPlayerTurn}
                 isLoading={isLoading}

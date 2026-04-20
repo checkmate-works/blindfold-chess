@@ -308,6 +308,7 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
       playerResult,
       isPlayerTurn,
       isLoading,
+      isLoadingFromStorage,
       lastMove,
       gameNotFound,
     },

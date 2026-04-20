@@ -124,6 +124,16 @@ const PREFERENCES_STORAGE_KEY = 'blindfold-chess-game-preferences';
 type GamePreferencesContextType = {
   preferences: GamePreferences;
   isLoaded: boolean;
+  /**
+   * `true` once the client has read preferences from localStorage (or
+   * determined that none are persisted). `false` on the server and on the
+   * very first client render, allowing consumers to render a skeleton until
+   * the saved-mode vs default-mode ambiguity is resolved.
+   *
+   * Semantically equivalent to `isLoaded` today — kept as a distinct field
+   * so call sites can express "waiting for hydration" intent explicitly.
+   */
+  isHydrated: boolean;
   updatePreferences: (updates: Partial<GamePreferences>) => void;
   resetPreferences: () => void;
 };
@@ -133,6 +143,7 @@ const GamePreferencesContext = createContext<GamePreferencesContextType | undefi
 export function GamePreferencesProvider({ children }: { children: React.ReactNode }) {
   const [preferences, setPreferences] = useState<GamePreferences>(defaultPreferences);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   // Load preferences from localStorage on mount
   useEffect(() => {
@@ -154,6 +165,7 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
       console.warn('Failed to load game preferences from localStorage:', error);
     } finally {
       setIsLoaded(true);
+      setIsHydrated(true);
     }
   }, []);
 
@@ -199,10 +211,11 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
     () => ({
       preferences,
       isLoaded,
+      isHydrated,
       updatePreferences,
       resetPreferences,
     }),
-    [preferences, isLoaded, updatePreferences, resetPreferences]
+    [preferences, isLoaded, isHydrated, updatePreferences, resetPreferences]
   );
 
   return (

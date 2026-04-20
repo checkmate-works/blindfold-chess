@@ -14,6 +14,7 @@ import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import type { ConfirmationDialogs } from '../_hooks';
+import { MoveInputSkeleton } from './MoveInputSkeleton';
 
 type Props = {
   isPlayerTurn: boolean;
@@ -84,12 +85,13 @@ export function GameInProgressPanel({
           onMovePeek={onMovePeek}
         />
       ) : (
-        <div>
+        <>
           <div className="flex items-center justify-center gap-2 text-muted-foreground">
             <p>{isLoading ? t('aiThinking') : t('yourMove')}</p>
             {isLoading && <SpinnerIcon size={16} className="animate-spin text-primary" />}
           </div>
-        </div>
+          <MoveInputSkeleton mode={preferences.moveInputMode} variant="ai-turn" />
+        </>
       )}
 
       {/* Action Buttons */}
