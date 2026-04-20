@@ -2,6 +2,7 @@ import { PagePanel, PageTitle } from '@/app/[locale]/_components';
 
 import { MoveInputSkeleton } from './_components/MoveInputSkeleton';
 import { MovesPanelSkeleton } from './_components/MovesPanelSkeleton';
+import { ActionRowSkeleton, IconButtonSkeleton, TextLinkSkeleton } from './_components/skeletons';
 
 /**
  * Games / play loading skeleton.
@@ -34,16 +35,17 @@ export default function GamesPlayLoading() {
 
       <PagePanel>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Game area skeleton (2 cols) */}
+          {/* Game area skeleton (2 cols).
+              SSR cannot read persisted preferences, so we use defaults:
+              `mode='button'`, `peekMode='modal'`, `showBoardButtonInGame=true`,
+              single enabled input mode (no switcher). Users with other
+              preferences will see a minor re-render after hydration. */}
           <div className="lg:col-span-2">
             <div className="flex flex-col gap-6">
               <MoveInputSkeleton mode="button" variant="initial" />
-              {/* Action row (Undo / Resign / Show Board): px-4 py-2 (8+8) + text-base line-height 24 + border 2 ≈ 42px */}
-              <div aria-hidden className="min-h-[42px]" />
-              {/* Save and Exit link: text-sm ≈ 20px */}
-              <div aria-hidden className="min-h-[20px]" />
-              {/* Operation Log trigger: w-4 h-4 icon + padding ≈ 24px */}
-              <div aria-hidden className="min-h-[24px]" />
+              <ActionRowSkeleton showBoardButton />
+              <TextLinkSkeleton />
+              <IconButtonSkeleton />
             </div>
           </div>
 

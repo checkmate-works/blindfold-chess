@@ -1,6 +1,8 @@
 import { Skeleton } from '@/app/[locale]/_components';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
+import { ModeSwitchSkeleton } from './skeletons';
+
 type MoveInputMode = GamePreferences['moveInputMode'];
 
 type Props = {
@@ -20,7 +22,10 @@ type Props = {
    * not shift layout. Defaults to `false`, which matches the default
    * preferences (`enabledMoveInputModes: ['button']`).
    *
-   * Only meaningful for `mode === 'button'`; ignored for text/select.
+   * For `mode === 'button'`, the additional height is baked into the outer
+   * `min-h-[346px]`. For `mode === 'text'` / `'select'`, a `ModeSwitchSkeleton`
+   * is appended as a sibling inside the same wrapper so the gap is covered by
+   * the wrapper's own flex spacing (`gap-6`) rather than the parent's.
    */
   hasModeSwitch?: boolean;
 };
@@ -54,6 +59,12 @@ type Props = {
 // `p-4 bg-card` wrapper, so the skeleton for text/select must match that bare
 // shape — otherwise the swap introduces both height CLS and a surface-style
 // jank (card → bare form).
+//
+// When `hasModeSwitch=true`, `ModeSwitchSkeleton` is appended inside the same
+// wrapper with internal `gap-6`, so the rendered height becomes
+// 56 + 24 (gap-6) + 34 = 114px. The `min-h-[56px]` bounds the no-switcher
+// case; the wrapper's `flex flex-col` naturally expands when the switcher
+// sibling is present, so no separate `min-h` constant is needed.
 const MIN_HEIGHT_BUTTON = 'min-h-[288px]';
 const MIN_HEIGHT_BUTTON_WITH_SWITCHER = 'min-h-[346px]';
 const MIN_HEIGHT_TEXT_OR_SELECT = 'min-h-[56px]';
@@ -64,13 +75,36 @@ export function MoveInputSkeleton({ mode, variant, hasModeSwitch = false }: Prop
       ? ({ 'aria-hidden': true } as const)
       : ({ role: 'status', 'aria-live': 'polite', 'aria-busy': true } as const);
 
-  if (mode !== 'button') {
-    // MoveInput / MoveSelect render raw form elements (no outer card), so the
-    // skeleton must mirror that bare shape — just an `h-14` block inside a
-    // minimal wrapper that carries the a11y attrs. No `p-4 bg-card`.
+  if (mode === 'select') {
+    // MoveSelect renders a single trigger button styled as
+    // `px-4 py-3.5 md:py-3 border rounded-lg text-lg md:text-base` with a
+    // chevron on the right. No `p-4 bg-card` wrapper. The switcher row, when
+    // present, is a sibling inside the real `MoveInputPanel` fragment — we
+    // emulate that by rendering it inside this wrapper with `gap-6` to match
+    // the parent's spacing.
     return (
-      <div className={`w-full ${MIN_HEIGHT_TEXT_OR_SELECT}`} {...ariaProps}>
-        <Skeleton disableAnimation className="h-14 w-full" />
+      <div className={`flex w-full flex-col gap-6 ${MIN_HEIGHT_TEXT_OR_SELECT}`} {...ariaProps}>
+        <div className="flex w-full items-center justify-between rounded-lg border border-border bg-background px-4 py-3.5 md:py-3">
+          <Skeleton disableAnimation className="h-5 w-32" />
+          <Skeleton disableAnimation className="ml-2 h-4 w-4 rounded-sm" />
+        </div>
+        {hasModeSwitch && <ModeSwitchSkeleton />}
+      </div>
+    );
+  }
+
+  if (mode === 'text') {
+    // MoveInput renders a `flex gap-2 items-center` form with an `h-14` input
+    // (via `py-3 text-lg` that reaches ~56px) and an `h-14 w-14` submit button.
+    // Match that shape exactly so both the input row and the optional switcher
+    // sibling line up with the real panel.
+    return (
+      <div className={`flex w-full flex-col gap-6 ${MIN_HEIGHT_TEXT_OR_SELECT}`} {...ariaProps}>
+        <div className="flex items-center gap-2">
+          <Skeleton disableAnimation className="h-14 flex-1 rounded-lg" />
+          <Skeleton disableAnimation className="h-14 w-14 rounded-lg" />
+        </div>
+        {hasModeSwitch && <ModeSwitchSkeleton />}
       </div>
     );
   }

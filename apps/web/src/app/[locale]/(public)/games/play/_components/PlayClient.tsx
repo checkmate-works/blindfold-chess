@@ -20,6 +20,12 @@ import { MoveInputSkeleton } from './MoveInputSkeleton';
 import { MovesPanel } from './MovesPanel';
 import { MovesPanelSkeleton } from './MovesPanelSkeleton';
 import { OperationLogModal } from './OperationLogModal';
+import {
+  ActionRowSkeleton,
+  IconButtonSkeleton,
+  InlineBoardHeaderSkeleton,
+  TextLinkSkeleton,
+} from './skeletons';
 
 type Props = {
   locale: Locale;
@@ -176,23 +182,31 @@ export function PlayClient({
             {/* In Progress Content */}
             {gameStatus === 'in_progress' && isInitializing && (
               <div className="flex flex-col gap-6">
-                {/* InlineBoardView header (conditional): border 2 + py-3 (24) + text-sm line-height 20 ≈ 46px.
-                    Only reserved once preferences are hydrated, so `modal` peek users (the defaults)
-                    are not subjected to a counter-productive upward shift during SSR → hydration. */}
+                {/* InlineBoardView header (~46px). Only reserved once preferences
+                    are hydrated, so `modal` peek users (the defaults) are not
+                    subjected to a counter-productive upward shift during SSR →
+                    hydration. */}
                 {isHydrated &&
                   preferences.showBoardButtonInGame &&
-                  preferences.peekMode === 'inline' && <div aria-hidden className="min-h-[46px]" />}
+                  preferences.peekMode === 'inline' && <InlineBoardHeaderSkeleton />}
                 <MoveInputSkeleton
                   mode={preferences.moveInputMode}
                   variant="initial"
                   hasModeSwitch={preferences.enabledMoveInputModes.length >= 2}
                 />
-                {/* Action row (Undo / Resign / Show Board): px-4 py-2 (8+8) + text-base line-height 24 + border 2 ≈ 42px */}
-                <div aria-hidden className="min-h-[42px]" />
+                {/* Action row (Show Board + Undo + Resign). Default preferences
+                    have `peekMode='modal'` and `showBoardButtonInGame=true`, so
+                    gating on `isHydrated` is unnecessary: the pre-hydration
+                    reservation matches the hydrated one. */}
+                <ActionRowSkeleton
+                  showBoardButton={
+                    preferences.showBoardButtonInGame && preferences.peekMode === 'modal'
+                  }
+                />
                 {/* Save and Exit link: text-sm ≈ 20px */}
-                <div aria-hidden className="min-h-[20px]" />
+                <TextLinkSkeleton />
                 {/* Operation Log trigger: w-4 h-4 icon + padding ≈ 24px */}
-                <div aria-hidden className="min-h-[24px]" />
+                <IconButtonSkeleton />
               </div>
             )}
             {gameStatus === 'in_progress' && !isInitializing && (
