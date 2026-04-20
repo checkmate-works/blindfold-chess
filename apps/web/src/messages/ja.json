@@ -1529,6 +1529,7 @@
     "switchInputMode": "入力モードを切り替え",
     "submitMove": "決定",
     "invalidMove": "無効な手です",
+    "aiMoveFailed": "AIの手の取得に失敗しました",
     "newGame": "新規ゲーム",
     "resign": "投了",
     "undo": "待った",

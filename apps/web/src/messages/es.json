@@ -1516,6 +1516,7 @@
     "switchInputMode": "Cambiar modo de entrada",
     "submitMove": "Enviar",
     "invalidMove": "Movimiento inválido",
+    "aiMoveFailed": "Error al procesar el movimiento de la IA",
     "newGame": "Nueva Partida",
     "resign": "Rendirse",
     "undo": "Deshacer",

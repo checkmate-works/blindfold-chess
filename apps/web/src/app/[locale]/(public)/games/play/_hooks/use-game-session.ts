@@ -185,10 +185,10 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
   );
 
   const handleAiMoveError = useCallback(() => {
-    setError('AI move failed');
+    setError(t('aiMoveFailed'));
     setLastAttemptedInput('');
     setShouldMakeAiMove(false);
-  }, [setShouldMakeAiMove]);
+  }, [t, setShouldMakeAiMove]);
 
   const { isLoading } = useAiMoveOrchestration({
     shouldMakeAiMove: shouldMakeAiMove && !gameNotFound,

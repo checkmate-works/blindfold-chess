@@ -1528,6 +1528,7 @@
     "switchInputMode": "Switch input mode",
     "submitMove": "Submit",
     "invalidMove": "Invalid move",
+    "aiMoveFailed": "AI move failed",
     "newGame": "New Game",
     "resign": "Resign",
     "undo": "Undo",
