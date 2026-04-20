@@ -12,10 +12,13 @@ import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { FAQClient } from './_components/FAQClient';
 import type { FAQItem } from './_lib/types';
+
+export const generateStaticParams = generateLocaleStaticParams;
 
 /**
  * Display order for the EXP module-weight table. Kept separate from

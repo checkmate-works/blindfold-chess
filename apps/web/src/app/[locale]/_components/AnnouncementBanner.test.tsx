@@ -10,14 +10,6 @@ afterEach(() => {
   cleanup();
 });
 
-const mockRefresh = vi.fn();
-
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({
-    refresh: mockRefresh,
-  }),
-}));
-
 describe('AnnouncementBanner', () => {
   const defaultProps = {
     id: 'ann-123',
@@ -51,6 +43,12 @@ describe('AnnouncementBanner', () => {
     expect(screen.getByRole('status')).toBeInTheDocument();
   });
 
+  it('should expose the banner id via data-announcement-banner-id for the no-flash script', () => {
+    render(<AnnouncementBanner {...defaultProps} />);
+
+    expect(screen.getByRole('status')).toHaveAttribute('data-announcement-banner-id', 'ann-123');
+  });
+
   it('should render a close button with aria-label "Close"', () => {
     render(<AnnouncementBanner {...defaultProps} />);
 
@@ -67,13 +65,14 @@ describe('AnnouncementBanner', () => {
     expect(document.cookie).toContain('dismissed-announcement=ann-123');
   });
 
-  it('should call router.refresh when close button is clicked', () => {
+  it('should hide the banner immediately when close button is clicked', () => {
     render(<AnnouncementBanner {...defaultProps} />);
 
     const closeButton = screen.getByRole('button', { name: 'Close' });
     fireEvent.click(closeButton);
 
-    expect(mockRefresh).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(screen.queryByText(/New feature released!/)).not.toBeInTheDocument();
   });
 
   it('should set cookie with correct max-age of 30 days', () => {

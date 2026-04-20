@@ -33,14 +33,39 @@ export function AdSenseDisplay({ slotId, slot, className }: AdSenseDisplayProps)
   useEffect(() => {
     if (IS_LOCAL_DEV || !ADSENSE_PUBLISHER_ID) return;
     if (!availability?.all) return;
-    if (pushed.current) return;
-    pushed.current = true;
 
-    try {
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
-    } catch {
-      // Silently fail - ads are non-critical
-    }
+    const tryPush = () => {
+      if (pushed.current) return;
+      // Respect the `bfc_ads_hidden` cookie surfaced as
+      // `<html data-ads-hidden="true">` by the inline no-flash bootstrap in
+      // `[locale]/layout.tsx`. Skipping `push()` here prevents a network
+      // request to Google for ads we are about to CSS-hide anyway.
+      //
+      // Re-checked on every `visibilitychange` to `visible` so a subscription
+      // completed in another tab takes effect without a reload: if the
+      // entitlement cookie flipped the attribute to 'true' while this tab
+      // was backgrounded, the queued push is skipped on return. If the push
+      // has already fired, we cannot un-fire it — this is a one-shot
+      // correction for not-yet-pushed slots only.
+      if (document.documentElement.dataset.adsHidden === 'true') return;
+      pushed.current = true;
+
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      } catch {
+        // Silently fail - ads are non-critical
+      }
+    };
+
+    tryPush();
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') tryPush();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
   }, [availability]);
 
   if (IS_LOCAL_DEV || !ADSENSE_PUBLISHER_ID) {

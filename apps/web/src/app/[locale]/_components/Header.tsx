@@ -2,8 +2,10 @@ import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { getLatestBannerAnnouncement } from '@/app/[locale]/(public)/announcements/_lib/queries';
+
 import type { NavigationItem } from '../_lib/types';
-import { AnnouncementBannerContainer } from './AnnouncementBannerContainer';
+import { AnnouncementBanner } from './AnnouncementBanner';
 import { HeaderNavigation } from './HeaderNavigation';
 import { HeaderRightSection } from './HeaderRightSection';
 
@@ -11,8 +13,26 @@ type Props = {
   locale: string;
 };
 
+/**
+ * Inline script that runs synchronously before the banner paints. It reads the
+ * `dismissed-announcement` cookie on the client and, if it matches the
+ * currently-rendered banner id, injects a `<style>` tag that hides the banner
+ * before it becomes visible. This mirrors the classic "dark mode no-flash"
+ * pattern and is required because the Header is in the [locale]/ layout tree:
+ * calling `cookies()` here would mark the entire subtree dynamic and regress
+ * previously-SSG pages (privacy, terms, preferences, practice tutorials).
+ */
+function buildDismissScript(bannerId: string): string {
+  // Keep this tiny and self-contained; no external references.
+  const safeId = JSON.stringify(bannerId);
+  return `(function(){try{var m=document.cookie.match(/(?:^|;\\s*)dismissed-announcement=([^;]*)/);if(m&&decodeURIComponent(m[1])===${safeId}){var s=document.createElement('style');s.setAttribute('data-announcement-dismiss','1');s.textContent='[data-announcement-banner-id="'+${safeId}+'"]{display:none!important;}';document.head.appendChild(s);}}catch(e){}})();`;
+}
+
 export async function Header({ locale }: Props) {
-  const t = await getTranslations({ locale, namespace: 'Header' });
+  const [t, bannerAnnouncement] = await Promise.all([
+    getTranslations({ locale, namespace: 'Header' }),
+    getLatestBannerAnnouncement(locale),
+  ]);
 
   const commonItems: NavigationItem[] = [
     { id: 'home', href: `/${locale}`, label: t('home'), iconName: 'home' },
@@ -42,7 +62,16 @@ export async function Header({ locale }: Props) {
 
   return (
     <>
-      <AnnouncementBannerContainer />
+      {bannerAnnouncement && (
+        <>
+          <script dangerouslySetInnerHTML={{ __html: buildDismissScript(bannerAnnouncement.id) }} />
+          <AnnouncementBanner
+            id={bannerAnnouncement.id}
+            title={bannerAnnouncement.title}
+            href={`/${locale}/announcements/${bannerAnnouncement.slug}`}
+          />
+        </>
+      )}
       <header className="bg-card border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-14 items-center justify-between">

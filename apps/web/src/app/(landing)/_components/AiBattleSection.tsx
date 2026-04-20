@@ -12,7 +12,7 @@ type Props = {
 
 export function AiBattleSection({ locale, t }: Props) {
   return (
-    <section className="py-24 px-6 bg-card border-y border-border/50">
+    <section id="ai-battle" className="py-24 px-6 bg-card border-y border-border/50">
       <div className="max-w-4xl mx-auto flex flex-col items-center text-center space-y-8">
         <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary text-3xl">
           <FaRobot />

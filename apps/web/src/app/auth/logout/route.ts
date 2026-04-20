@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 
+import { ADS_HIDDEN_COOKIE_NAME } from '@/lib/ads/ads-hidden-cookie';
 import { db, userActivityLog } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
@@ -26,7 +27,11 @@ export async function POST() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ ok: false }, { status: 401 });
+    const response = NextResponse.json({ ok: false }, { status: 401 });
+    // Defensive: clear the no-flash ad-hide cookie even when the session was
+    // already missing, so stale values do not outlive the session cookie.
+    response.cookies.delete(ADS_HIDDEN_COOKIE_NAME);
+    return response;
   }
 
   try {
@@ -41,5 +46,11 @@ export async function POST() {
     // Logging failure must never prevent the logout response.
   }
 
-  return NextResponse.json({ ok: true });
+  const response = NextResponse.json({ ok: true });
+  // Clear the no-flash ad-hide cookie on sign-out. The Supabase browser SDK
+  // clears its own session cookies via `supabase.auth.signOut()` on the
+  // client — this handler clears our ad-hide hint cookie server-side so
+  // anonymous browsing after logout immediately reverts to showing ads.
+  response.cookies.delete(ADS_HIDDEN_COOKIE_NAME);
+  return response;
 }

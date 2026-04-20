@@ -20,8 +20,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { MODULE_TO_SLUG } from '../_lib/types';
 import { isValidPeriod, parseModuleFilter } from '../_lib/validators';
 
-export const dynamic = 'force-dynamic';
-
 type Props = {
   params: Promise<{
     locale: Locale;

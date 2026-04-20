@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { getUserSubscription } from '@/lib/billing/subscription';
 
+import { refreshAdsHiddenCookie } from '@/app/[locale]/_actions/refreshAdsHiddenCookie';
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -31,6 +32,15 @@ export default async function SubscriptionPage({ params, searchParams }: Props) 
 
   const user = await getAuthenticatedUser();
   const subscription = await getUserSubscription(user.id);
+
+  // Refresh the `bfc_ads_hidden` cookie on every visit to this page:
+  // - After a successful Stripe checkout (the success_url lands here with
+  //   `?status=success`), so the new subscription immediately translates
+  //   into ads-hidden state without waiting for re-login.
+  // - On any normal visit, so a lapsed subscription or revoked grant also
+  //   self-corrects back to ads-shown. This page is `force-dynamic` so the
+  //   cookie write has no impact on static generation.
+  await refreshAdsHiddenCookie();
 
   const showSuccessMessage = sp.status === 'success';
 
