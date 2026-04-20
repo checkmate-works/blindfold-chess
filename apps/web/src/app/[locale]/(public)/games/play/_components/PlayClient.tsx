@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { notFound, useRouter } from 'next/navigation';
 
@@ -22,9 +22,10 @@ import { OperationLogModal } from './OperationLogModal';
 type Props = {
   locale: Locale;
   onAiMoveChange?: (move: string | null) => void;
+  onMoveErrorChange?: (error: string | null, attemptedInput: string) => void;
 };
 
-export function PlayClient({ locale, onAiMoveChange }: Props) {
+export function PlayClient({ locale, onAiMoveChange, onMoveErrorChange }: Props) {
   const t = useTranslations('play');
   const router = useRouter();
 
@@ -36,7 +37,28 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   const { playerSide, startingFen, perGamePrefs, gameId } = gameConfig;
   const { gameStatus, playerResult, isPlayerTurn, isLoading, lastMove, gameNotFound } = gameState;
   const { moves, currentFen, formattedPgn } = moveState;
-  const { value: moveInputValue, setValue: setMoveInput, error, setError } = moveInput;
+  const {
+    value: moveInputValue,
+    setValue: setMoveInput,
+    error,
+    setError,
+    lastAttemptedInput,
+    setLastAttemptedInput,
+  } = moveInput;
+
+  // Notify parent whenever the move error changes, so the page-level status slot
+  // (PageTitle) can swap between "AI played ..." / "Play Chess" and the error message.
+  useEffect(() => {
+    onMoveErrorChange?.(error, lastAttemptedInput);
+  }, [error, lastAttemptedInput, onMoveErrorChange]);
+
+  // Clear both error and the preserved attempted-input in one call.
+  // Wired to every child input component's `onErrorClear` so that any user edit
+  // reverts the status slot back to "AI played ..." / "Play Chess".
+  const clearMoveError = useCallback(() => {
+    if (error) setError(null);
+    setLastAttemptedInput('');
+  }, [error, setError, setLastAttemptedInput]);
   const {
     handleSubmitMove,
     handleResign,
@@ -137,7 +159,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                 moveInput={moveInputValue}
                 setMoveInput={setMoveInput}
                 error={error}
-                setError={setError}
+                onErrorClear={clearMoveError}
                 handleSubmitMove={handleSubmitMove}
                 moves={moves}
                 confirmationDialogs={confirmationDialogs}

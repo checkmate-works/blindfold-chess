@@ -15,6 +15,7 @@ type Props = {
   onSubmit: (move: AlgebraicNotation) => void;
   disabled?: boolean;
   playerColor?: 'w' | 'b';
+  onClearError?: () => void;
 };
 
 const PIECE_BUTTONS: Array<{ char: NotationChar; type: PieceType }> = [
@@ -36,12 +37,38 @@ const CASTLING_BUTTON_CLASS =
 const UTILITY_BUTTON_CLASS =
   'w-14 h-14 bg-background hover:bg-muted border border-border rounded-lg text-foreground flex items-center justify-center';
 
-export function ButtonInput({ fen, onSubmit, disabled = false, playerColor = 'w' }: Props) {
+export function ButtonInput({
+  fen,
+  onSubmit,
+  disabled = false,
+  playerColor = 'w',
+  onClearError,
+}: Props) {
   const { preferences } = useGamePreferences();
   const { buttonInputPieceLabel } = preferences;
 
   const { input, canSubmit, appendChar, appendCastling, backspace, clear, submit } =
     useButtonInputLogic({ fen, onSubmit });
+
+  const handleAppendChar = (char: NotationChar) => {
+    onClearError?.();
+    appendChar(char);
+  };
+
+  const handleAppendCastling = (move: CastlingToken) => {
+    onClearError?.();
+    appendCastling(move);
+  };
+
+  const handleBackspace = () => {
+    onClearError?.();
+    backspace();
+  };
+
+  const handleClear = () => {
+    onClearError?.();
+    clear();
+  };
 
   return (
     <div className="flex flex-col gap-3 p-4 bg-card rounded-lg">
@@ -51,7 +78,7 @@ export function ButtonInput({ fen, onSubmit, disabled = false, playerColor = 'w'
           <button
             key={char}
             type="button"
-            onClick={() => appendChar(char)}
+            onClick={() => handleAppendChar(char)}
             aria-label={char}
             className={CELL_BUTTON_CLASS}
           >
@@ -64,7 +91,7 @@ export function ButtonInput({ fen, onSubmit, disabled = false, playerColor = 'w'
         ))}
         <button
           type="button"
-          onClick={() => appendChar('x')}
+          onClick={() => handleAppendChar('x')}
           aria-label="capture"
           className={CELL_BUTTON_CLASS}
         >
@@ -75,13 +102,13 @@ export function ButtonInput({ fen, onSubmit, disabled = false, playerColor = 'w'
       {/* Row 2: Files */}
       <CoordinateInput
         showRanks={false}
-        onFileToggle={(file) => appendChar(file as NotationChar)}
+        onFileToggle={(file) => handleAppendChar(file as NotationChar)}
       />
 
       {/* Row 3: Ranks */}
       <CoordinateInput
         showFiles={false}
-        onRankToggle={(rank) => appendChar(rank as NotationChar)}
+        onRankToggle={(rank) => handleAppendChar(rank as NotationChar)}
       />
 
       {/* Row 4: Annotations + Castling */}
@@ -91,7 +118,7 @@ export function ButtonInput({ fen, onSubmit, disabled = false, playerColor = 'w'
             <button
               key={char}
               type="button"
-              onClick={() => appendChar(char)}
+              onClick={() => handleAppendChar(char)}
               aria-label={char}
               className={CELL_BUTTON_CLASS}
             >
@@ -104,7 +131,7 @@ export function ButtonInput({ fen, onSubmit, disabled = false, playerColor = 'w'
             <button
               key={move}
               type="button"
-              onClick={() => appendCastling(move)}
+              onClick={() => handleAppendCastling(move)}
               className={CASTLING_BUTTON_CLASS}
             >
               {move}
@@ -116,14 +143,14 @@ export function ButtonInput({ fen, onSubmit, disabled = false, playerColor = 'w'
       {/* Row 5: Preview + Backspace + Clear + Submit */}
       <div className="flex gap-2 mt-2 items-center">
         <div className="flex-1">
-          <div className="w-full px-4 py-3 border rounded-lg bg-background font-mono text-lg h-14 flex items-center border-border">
-            <span className="font-bold text-foreground">{input}</span>
+          <div className="w-full px-4 py-3 border border-border rounded-lg bg-background font-mono text-lg h-14 flex items-center truncate">
+            <span className="font-bold text-foreground truncate">{input}</span>
           </div>
         </div>
 
         <button
           type="button"
-          onClick={backspace}
+          onClick={handleBackspace}
           aria-label="Backspace"
           title="Backspace"
           className={UTILITY_BUTTON_CLASS}
@@ -133,7 +160,7 @@ export function ButtonInput({ fen, onSubmit, disabled = false, playerColor = 'w'
 
         <button
           type="button"
-          onClick={clear}
+          onClick={handleClear}
           aria-label="Clear"
           title="Clear"
           className={UTILITY_BUTTON_CLASS}

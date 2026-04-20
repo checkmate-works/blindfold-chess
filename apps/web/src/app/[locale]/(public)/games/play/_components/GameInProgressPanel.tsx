@@ -24,7 +24,7 @@ type Props = {
   moveInput: string;
   setMoveInput: (value: string) => void;
   error: string | null;
-  setError: (value: string | null) => void;
+  onErrorClear: () => void;
   handleSubmitMove: (move: AlgebraicNotation) => boolean | void | Promise<void>;
   moves: AlgebraicNotation[];
   confirmationDialogs: ConfirmationDialogs;
@@ -45,7 +45,7 @@ export function GameInProgressPanel({
   moveInput,
   setMoveInput,
   error,
-  setError,
+  onErrorClear,
   handleSubmitMove,
   moves,
   confirmationDialogs,
@@ -73,9 +73,7 @@ export function GameInProgressPanel({
           moveInput={moveInput}
           onMoveInputChange={setMoveInput}
           error={error}
-          onErrorClear={() => {
-            if (error) setError(null);
-          }}
+          onErrorClear={onErrorClear}
           onSubmit={handleSubmitMove}
           disabled={isLoading}
           inputPlaceholder={t('inputMove')}

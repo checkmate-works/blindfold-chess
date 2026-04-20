@@ -61,6 +61,10 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
   // Move input state (managed here to avoid circular deps between usePlayerMove and useAiMoveOrchestration)
   const [moveInput, setMoveInput] = useState('');
   const [error, setError] = useState<string | null>(null);
+  // Preserved copy of the exact string the user last tried to submit.
+  // Populated on invalid-move failure so the status slot can show
+  // "⚠ Invalid move: {lastAttemptedInput}". Cleared alongside error.
+  const [lastAttemptedInput, setLastAttemptedInput] = useState('');
 
   // Notation hook
   const {
@@ -207,6 +211,7 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     setLastMove,
     setMoveInput,
     setError,
+    setLastAttemptedInput,
   });
 
   // Resign handler
@@ -221,6 +226,7 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     markPlayerInteraction();
     removeMoves(2);
     setError(null);
+    setLastAttemptedInput('');
     const newMoves = moves.slice(0, -2) as AlgebraicNotation[];
     updateLastMove(newMoves);
     // handleUndoLog removes the last player's log entry and resets peek/undo counters.
@@ -312,6 +318,8 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
       setValue: setMoveInput,
       error,
       setError,
+      lastAttemptedInput,
+      setLastAttemptedInput,
     },
     actions: {
       handleSubmitMove,

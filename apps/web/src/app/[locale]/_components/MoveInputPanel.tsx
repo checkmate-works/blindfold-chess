@@ -120,6 +120,7 @@ export function MoveInputPanel({
             onSubmit={(move) => handleSubmitWithTracking(move, 'button')}
             disabled={disabled}
             playerColor={playerColor}
+            onClearError={onErrorClear}
           />
         ) : (
           <MoveInput
@@ -137,7 +138,6 @@ export function MoveInputPanel({
             showSubmitButton={true}
           />
         )}
-        {error && <p className="text-destructive text-sm mt-2">{error}</p>}
         {error && invalidAttemptCount >= INVALID_ATTEMPTS_THRESHOLD && !showLegalMoves && (
           <button
             type="button"
