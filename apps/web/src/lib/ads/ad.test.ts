@@ -34,18 +34,12 @@ vi.mock('@/lib/users/user-grants', () => ({
   hasActiveGrant: (...args: unknown[]) => mockHasActiveGrant(...args),
 }));
 
-const mockGetOptionalUser = vi.fn();
-vi.mock('@/lib/auth', () => ({
-  getOptionalUser: () => mockGetOptionalUser(),
-}));
-
 const {
   isAdsEnabled,
   getAdBannerBySlot,
   getAdsEnabledDirect,
   getAllAdBanners,
   shouldShowAdsForUser,
-  shouldShowAds,
 } = await import('./ad');
 
 describe('isAdsEnabled', () => {
@@ -342,41 +336,5 @@ describe('shouldShowAdsForUser', () => {
     const result = await shouldShowAdsForUser('user-123');
     expect(result).toBe(false);
     expect(mockHasActiveSubscription).not.toHaveBeenCalled();
-  });
-});
-
-describe('shouldShowAds', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it('should delegate to shouldShowAdsForUser with session user id', async () => {
-    mockLimit.mockResolvedValue([{ value: { enabled: true } }]);
-    mockGetOptionalUser.mockResolvedValue({ id: 'session-user-1' });
-    mockHasActiveSubscription.mockResolvedValue(false);
-    mockHasActiveGrant.mockResolvedValue(false);
-
-    const result = await shouldShowAds();
-    expect(result).toBe(true);
-    expect(mockGetOptionalUser).toHaveBeenCalled();
-    expect(mockHasActiveSubscription).toHaveBeenCalledWith('session-user-1');
-  });
-
-  it('should pass null when no session user exists', async () => {
-    mockLimit.mockResolvedValue([{ value: { enabled: true } }]);
-    mockGetOptionalUser.mockResolvedValue(null);
-
-    const result = await shouldShowAds();
-    expect(result).toBe(true);
-    expect(mockGetOptionalUser).toHaveBeenCalled();
-    expect(mockHasActiveSubscription).not.toHaveBeenCalled();
-  });
-
-  it('should return false when ads disabled even with session user', async () => {
-    mockLimit.mockResolvedValue([{ value: { enabled: false } }]);
-    mockGetOptionalUser.mockResolvedValue({ id: 'session-user-1' });
-
-    const result = await shouldShowAds();
-    expect(result).toBe(false);
   });
 });

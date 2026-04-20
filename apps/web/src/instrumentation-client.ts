@@ -79,11 +79,20 @@ if (process.env.NODE_ENV === 'development') {
   }
 }
 
+// Names of default integrations that exist solely for performance tracing /
+// session tracking. The app only uses Sentry for error capture
+// (captureException / captureMessage), so these add bundle weight and
+// runtime cost without being consumed. Removing them from the client SDK
+// trims the shared vendor chunk and eliminates the PerformanceObservers
+// that BrowserTracing and ElementTiming install at boot.
+//
+// Server-side Sentry (`sentry.server.config.ts` / `sentry.edge.config.ts`)
+// is intentionally left untouched — those bundles are not shipped to the
+// browser, and server-side traces are cheap.
+const PERF_ONLY_INTEGRATION_NAMES = new Set(['BrowserTracing', 'BrowserSession', 'ElementTiming']);
+
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
-
-  // Reduce sample rate in production for performance
-  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
 
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
   debug: false,
@@ -91,11 +100,24 @@ Sentry.init({
   // Don't send events in development unless explicitly enabled
   enabled: process.env.NODE_ENV === 'production' || !!process.env.NEXT_PUBLIC_SENTRY_ENABLE_DEV,
 
+  // Drop performance-tracing integrations from the client SDK. We keep
+  // error-capture integrations (global handlers, linked errors, dedupe,
+  // breadcrumbs, etc.) so `Sentry.captureException` / `captureMessage`
+  // behave unchanged. `tracesSampleRate` is also omitted so no spans are
+  // ever sampled / transmitted from the browser.
+  integrations: (defaultIntegrations) =>
+    defaultIntegrations.filter((integration) => !PERF_ONLY_INTEGRATION_NAMES.has(integration.name)),
+
   // Session Replay integration removed on 2026-04-13.
   // Sentry's replay quota was exhausted, so replays were not actually
   // being captured (the UI showed "The replay associated with this
   // event cannot be found"). Dropping replayIntegration trims the
   // client bundle accordingly. If re-enabling, review the replay quota first.
+  //
+  // BrowserTracing / BrowserSession / ElementTiming integrations removed
+  // on 2026-04-19 (audit F-002). The app only uses Sentry for error
+  // capture; performance-tracing integrations added ~130 KB Brotli to the
+  // shared vendor chunk and hurt LCP/TBT on every page.
 
   // Filter out known errors that are not actionable
   beforeSend(event, hint) {

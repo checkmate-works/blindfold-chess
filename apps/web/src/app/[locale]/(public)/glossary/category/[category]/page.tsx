@@ -3,7 +3,12 @@ import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE, IS_LOCAL_DEV } from '@/config';
+import {
+  ADSENSE_SLOT_CONTENT_BOTTOM,
+  ADSENSE_SLOT_CONTENT_MIDDLE,
+  IS_LOCAL_DEV,
+  SUPPORTED_LOCALES,
+} from '@/config';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
@@ -26,6 +31,12 @@ type Props = {
 };
 
 const VALID_CATEGORIES = Object.keys(CATEGORY_STYLES);
+
+export function generateStaticParams(): { locale: Locale; category: string }[] {
+  return SUPPORTED_LOCALES.flatMap((locale) =>
+    VALID_CATEGORIES.map((category) => ({ locale, category }))
+  );
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, category } = await params;

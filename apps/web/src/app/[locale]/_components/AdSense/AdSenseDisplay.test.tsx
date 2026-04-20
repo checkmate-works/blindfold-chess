@@ -54,12 +54,23 @@ describe('AdSenseDisplay', () => {
     // Fresh adsbygoogle queue for every test so we can count pushes
     // deterministically.
     (window as unknown as { adsbygoogle?: unknown[] }).adsbygoogle = [];
+    // Reset the ads-hidden marker between tests so state doesn't leak.
+    delete document.documentElement.dataset.adsHidden;
   });
 
   afterEach(() => {
     cleanup();
     (window as unknown as { adsbygoogle?: unknown }).adsbygoogle = originalAdsbygoogle;
+    delete document.documentElement.dataset.adsHidden;
   });
+
+  function setVisibility(state: 'visible' | 'hidden') {
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      get: () => state,
+    });
+    document.dispatchEvent(new Event('visibilitychange'));
+  }
 
   it('renders nothing when availability context is null', () => {
     mockedUseContext.mockReturnValue(null);
@@ -141,5 +152,107 @@ describe('AdSenseDisplay', () => {
     expect(() => {
       render(<AdSenseDisplay slotId="1234567890" slot="content-middle" />);
     }).not.toThrow();
+  });
+
+  it('pushes when data-ads-hidden attribute is absent', () => {
+    mockedUseContext.mockReturnValue(allAvailable);
+    // Sanity: attribute should not be set.
+    expect(document.documentElement.dataset.adsHidden).toBeUndefined();
+
+    const pushSpy = vi.fn();
+    (window as unknown as { adsbygoogle: { push: typeof pushSpy } }).adsbygoogle = {
+      push: pushSpy,
+    };
+
+    render(<AdSenseDisplay slotId="1234567890" slot="content-middle" />);
+
+    expect(pushSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("skips push when data-ads-hidden='true' at mount", () => {
+    mockedUseContext.mockReturnValue(allAvailable);
+    document.documentElement.dataset.adsHidden = 'true';
+
+    const pushSpy = vi.fn();
+    (window as unknown as { adsbygoogle: { push: typeof pushSpy } }).adsbygoogle = {
+      push: pushSpy,
+    };
+
+    render(<AdSenseDisplay slotId="1234567890" slot="content-middle" />);
+
+    expect(pushSpy).not.toHaveBeenCalled();
+  });
+
+  it("skips push when data-ads-hidden flips to 'true' while tab is hidden and then becomes visible", () => {
+    // Scenario: user completes checkout in another tab; entitlement cookie
+    // is written and the other tab's bootstrap sets
+    // `<html data-ads-hidden="true">`. When this tab returns to visible,
+    // the not-yet-fired push should be skipped.
+    mockedUseContext.mockReturnValue(allAvailable);
+    document.documentElement.dataset.adsHidden = 'true';
+
+    const pushSpy = vi.fn();
+    (window as unknown as { adsbygoogle: { push: typeof pushSpy } }).adsbygoogle = {
+      push: pushSpy,
+    };
+
+    // Initial mount: attribute already 'true' so nothing pushed.
+    render(<AdSenseDisplay slotId="1234567890" slot="content-middle" />);
+    expect(pushSpy).not.toHaveBeenCalled();
+
+    // Tab hidden, then visible again — attribute is still 'true', so still no push.
+    setVisibility('hidden');
+    setVisibility('visible');
+
+    expect(pushSpy).not.toHaveBeenCalled();
+  });
+
+  it("pushes on visibilitychange->visible if the attribute was 'true' at mount but flipped back to absent (symmetric sanity check)", () => {
+    // Covers the inverse direction so the listener isn't a dead branch:
+    // mount with ads-hidden set prevents push, but if the entitlement is
+    // later removed (attribute cleared) and the tab becomes visible again,
+    // the push should fire exactly once.
+    mockedUseContext.mockReturnValue(allAvailable);
+    document.documentElement.dataset.adsHidden = 'true';
+
+    const pushSpy = vi.fn();
+    (window as unknown as { adsbygoogle: { push: typeof pushSpy } }).adsbygoogle = {
+      push: pushSpy,
+    };
+
+    render(<AdSenseDisplay slotId="1234567890" slot="content-middle" />);
+    expect(pushSpy).not.toHaveBeenCalled();
+
+    delete document.documentElement.dataset.adsHidden;
+    setVisibility('hidden');
+    setVisibility('visible');
+
+    expect(pushSpy).toHaveBeenCalledTimes(1);
+
+    // Further visibility cycles must not re-push.
+    setVisibility('hidden');
+    setVisibility('visible');
+    expect(pushSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('removes the visibilitychange listener on unmount', () => {
+    mockedUseContext.mockReturnValue(allAvailable);
+    document.documentElement.dataset.adsHidden = 'true';
+
+    const pushSpy = vi.fn();
+    (window as unknown as { adsbygoogle: { push: typeof pushSpy } }).adsbygoogle = {
+      push: pushSpy,
+    };
+
+    const { unmount } = render(<AdSenseDisplay slotId="1234567890" slot="content-middle" />);
+    unmount();
+
+    // Clear the attribute and fire visibilitychange after unmount — the
+    // detached effect must not leak and call push().
+    delete document.documentElement.dataset.adsHidden;
+    setVisibility('hidden');
+    setVisibility('visible');
+
+    expect(pushSpy).not.toHaveBeenCalled();
   });
 });

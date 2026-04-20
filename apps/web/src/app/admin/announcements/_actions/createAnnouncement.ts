@@ -1,5 +1,7 @@
 'use server';
 
+import { revalidatePath, revalidateTag } from 'next/cache';
+
 import { announcements, db } from '@/lib/db';
 import {
   hasAnnouncementNotification,
@@ -48,6 +50,12 @@ export async function createAnnouncement(data: CreateData): Promise<MutationResu
       await notifyAllUsersOfAnnouncement(inserted.id, data.slug, data.title);
     }
   }
+
+  // revalidateTag invalidates the unstable_cache-wrapped banner fetch;
+  // revalidatePath evicts ISR-rendered HTML under [locale]/(public)/ that has
+  // the header/banner markup baked in from [locale]/layout.tsx.
+  revalidateTag('announcements', { expire: 60 });
+  revalidatePath('/', 'layout');
 
   return mutationSuccess(inserted.id, '/admin/announcements');
 }

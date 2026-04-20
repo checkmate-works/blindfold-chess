@@ -2,7 +2,6 @@ import { unstable_cache } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
-import { getOptionalUser } from '@/lib/auth';
 import { hasActiveSubscription } from '@/lib/billing/subscription';
 import { adBanners, db, siteSettings } from '@/lib/db';
 import { withTimeout } from '@/lib/db-timeout';
@@ -77,17 +76,6 @@ export async function shouldShowAdsForUser(userId: string | null): Promise<boole
   if (hasSub || hasGrant) return false;
 
   return true;
-}
-
-/**
- * Convenience wrapper that resolves the current session user and delegates
- * to `shouldShowAdsForUser`.
- *
- * Existing callers can continue using this function without changes.
- */
-export async function shouldShowAds(): Promise<boolean> {
-  const user = await getOptionalUser();
-  return shouldShowAdsForUser(user?.id ?? null);
 }
 
 export const getAdBannerBySlot = unstable_cache(

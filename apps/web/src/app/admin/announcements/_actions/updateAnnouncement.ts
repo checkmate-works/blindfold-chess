@@ -1,5 +1,7 @@
 'use server';
 
+import { revalidatePath, revalidateTag } from 'next/cache';
+
 import { eq } from 'drizzle-orm';
 
 import { announcements, db } from '@/lib/db';
@@ -57,6 +59,12 @@ export async function updateAnnouncement(id: string, data: UpdateData): Promise<
       await notifyAllUsersOfAnnouncement(id, data.slug, data.title);
     }
   }
+
+  // revalidateTag invalidates the unstable_cache-wrapped banner fetch;
+  // revalidatePath evicts ISR-rendered HTML under [locale]/(public)/ that has
+  // the header/banner markup baked in from [locale]/layout.tsx.
+  revalidateTag('announcements', { expire: 60 });
+  revalidatePath('/', 'layout');
 
   return mutationSuccess(id, '/admin/announcements');
 }

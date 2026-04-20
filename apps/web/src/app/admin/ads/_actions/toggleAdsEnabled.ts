@@ -1,6 +1,6 @@
 'use server';
 
-import { updateTag } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
@@ -31,7 +31,10 @@ export async function toggleAdsEnabled(): Promise<ActionResult> {
       set: { value: { enabled: !currentEnabled }, updatedAt: new Date() },
     });
 
+  // updateTag invalidates the unstable_cache-wrapped data; revalidatePath
+  // evicts ISR-rendered HTML that has the ad markup baked in.
   updateTag('ads-config');
+  revalidatePath('/', 'layout');
 
   return { success: true };
 }

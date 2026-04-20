@@ -7,9 +7,12 @@ import { CardLink, Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[lo
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { getAllManualArticles } from './_lib/utils';
+
+export const generateStaticParams = generateLocaleStaticParams;
 
 type Props = {
   params: Promise<{

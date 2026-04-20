@@ -157,6 +157,18 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      {
+        // Stockfish WASM binary is content-hashed by filename (effectively immutable)
+        // and only loaded on the VS AI game route. Cache aggressively so returning
+        // players don't re-download the 6.9 MB binary on every session.
+        source: '/stockfish.wasm',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
     ];
   },
 };

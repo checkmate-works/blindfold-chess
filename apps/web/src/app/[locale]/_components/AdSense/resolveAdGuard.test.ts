@@ -5,9 +5,9 @@ vi.mock('@/lib/ads/no-ads-scope', () => ({
   isNoAdsScope: () => mockIsNoAdsScope(),
 }));
 
-const mockShouldShowAds = vi.fn();
+const mockIsAdsEnabled = vi.fn();
 vi.mock('@/lib/ads/ad', () => ({
-  shouldShowAds: () => mockShouldShowAds(),
+  isAdsEnabled: () => mockIsAdsEnabled(),
 }));
 
 vi.mock('@/config', () => ({
@@ -21,23 +21,32 @@ describe('resolveAdGuard', () => {
     vi.clearAllMocks();
   });
 
-  it('returns "hidden" when the no-ads scope is marked, without consulting shouldShowAds', async () => {
+  it('returns "hidden" when the no-ads scope is marked, without consulting isAdsEnabled', async () => {
     mockIsNoAdsScope.mockReturnValue(true);
-    mockShouldShowAds.mockResolvedValue(true);
+    mockIsAdsEnabled.mockResolvedValue(true);
 
     const result = await resolveAdGuard();
 
     expect(result).toBe('hidden');
-    expect(mockShouldShowAds).not.toHaveBeenCalled();
+    expect(mockIsAdsEnabled).not.toHaveBeenCalled();
   });
 
-  it('falls through to shouldShowAds when the no-ads scope is not marked', async () => {
+  it('returns "hidden" when ads are globally disabled', async () => {
     mockIsNoAdsScope.mockReturnValue(false);
-    mockShouldShowAds.mockResolvedValue(true);
+    mockIsAdsEnabled.mockResolvedValue(false);
+
+    const result = await resolveAdGuard();
+
+    expect(result).toBe('hidden');
+  });
+
+  it('returns "show" when no-ads scope is not marked and ads are enabled', async () => {
+    mockIsNoAdsScope.mockReturnValue(false);
+    mockIsAdsEnabled.mockResolvedValue(true);
 
     const result = await resolveAdGuard();
 
     expect(result).toBe('show');
-    expect(mockShouldShowAds).toHaveBeenCalled();
+    expect(mockIsAdsEnabled).toHaveBeenCalled();
   });
 });

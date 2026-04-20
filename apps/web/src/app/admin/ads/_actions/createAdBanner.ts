@@ -1,6 +1,6 @@
 'use server';
 
-import { updateTag } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 
 import { adBanners, db } from '@/lib/db';
 
@@ -64,7 +64,10 @@ export async function createAdBanner(data: CreateData): Promise<CreateResult> {
       })
       .returning({ id: adBanners.id });
 
+    // updateTag invalidates the unstable_cache-wrapped data; revalidatePath
+    // evicts ISR-rendered HTML that has the ad markup baked in.
     updateTag('ads-config');
+    revalidatePath('/', 'layout');
 
     return { success: true, id: inserted.id };
   } catch (error) {

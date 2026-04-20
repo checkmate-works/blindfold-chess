@@ -1,7 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { POST } from './route';
-
 const mockGetUser = vi.fn();
 const mockValues = vi.fn().mockReturnValue(Promise.resolve());
 const mockInsert = vi.fn().mockReturnValue({ values: mockValues });
@@ -21,6 +19,11 @@ vi.mock('@/lib/supabase/server', () => ({
       },
     }),
 }));
+
+// Dynamic import so the `vi.mock` calls above are hoisted ahead of the
+// route module's transitive imports (it pulls `@/lib/ads/ads-hidden-cookie`
+// which references `@/config` — harmless but keeps the pattern uniform).
+const { POST } = await import('./route');
 
 const mockUserId = 'user-00000000-0000-0000-0000-000000000001';
 

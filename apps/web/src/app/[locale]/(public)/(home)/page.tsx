@@ -47,7 +47,7 @@ import type { FeedItem } from './_lib/types';
  */
 export const dynamic = 'force-dynamic';
 
-const INITIAL_FEED_SIZE = 20;
+const INITIAL_FEED_SIZE = 10;
 
 type Props = {
   params: Promise<{

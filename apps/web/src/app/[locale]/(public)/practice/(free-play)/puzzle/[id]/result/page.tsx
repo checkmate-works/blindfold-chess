@@ -16,7 +16,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { PuzzleResultClient } from '../../_components/PuzzleResultClient';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 type Props = {
   params: Promise<{

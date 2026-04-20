@@ -155,7 +155,27 @@ export default async function Layout({
       <head>
         <JsonLd data={generateWebSiteSchema(locale, t('siteName'))} />
         <JsonLd data={generateOrganizationSchema()} />
-        <style dangerouslySetInnerHTML={{ __html: generateThemeCSS() }} />
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `${generateThemeCSS()}\n\n/* No-flash ad-hide — see [locale]/layout.tsx comment near the bootstrap script. */\nhtml[data-ads-hidden='true'] .ad-slot-wrapper,\nhtml[data-ads-hidden='true'] .adsbygoogle{display:none!important;}`,
+          }}
+        />
+        {/*
+          No-flash ad-hide bootstrap. Reads the `bfc_ads_hidden` cookie and,
+          when set to `'1'`, flags `<html data-ads-hidden="true">`. The
+          matching CSS rule lives in the inline <style> block directly above
+          (not in `globals.css`) so it is render-blocking with <head> and
+          applies before the first paint even on cold-cache loads — this
+          prevents a brief flash of the ad slot before the external
+          stylesheet arrives. Mirrors the AnnouncementBanner no-flash pattern
+          (see Header.tsx) and keeps the page free of a server-side
+          `cookies()` read so descendant pages can stay static/ISR.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{if(/(?:^|; )bfc_ads_hidden=1(?:;|$)/.test(document.cookie)){document.documentElement.setAttribute('data-ads-hidden','true');}}catch(e){}})();`,
+          }}
+        />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         <EnvironmentRibbon />
