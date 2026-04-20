@@ -2,19 +2,28 @@ import type { Metadata } from 'next';
 
 import { SITE_URL, SUPPORTED_LOCALES } from '@/config';
 
+import type { Locale } from '@/app/[locale]/_lib/types';
+
 /**
  * Keyword map for determining title suffix by locale.
- * - seoSiteName: the SEO-focused site name that also serves as the keyword to detect
- * - siteName: the brand name used as suffix when keyword is already present in title
+ * - `seoSiteName`: the SEO-focused site name that also serves as the keyword
+ *   to detect in a page title.
+ * - `siteName`: the brand name used as suffix when the keyword is already
+ *   present in the title (to avoid redundant stuffing).
+ *
+ * Exhaustiveness: typed as `Record<Locale, _>` mirroring `LANGUAGE_TAGS`
+ * (`src/i18n/language-tags.ts`) and `OG_LOCALE_MAP` (`src/i18n/og-locale.ts`),
+ * so adding a new entry to `SUPPORTED_LOCALES` without updating this map is a
+ * compile-time error. There is intentionally no silent `?? SITE_NAMES.en`
+ * runtime fallback — a missing locale must fail loudly at compile time rather
+ * than silently emit the wrong brand strings to OG / `<title>` metadata.
  */
-const SITE_NAMES: Record<string, { seoSiteName: string; siteName: string }> = {
+const SITE_NAMES: Record<Locale, { seoSiteName: string; siteName: string }> = {
   en: { seoSiteName: 'Blindfold Chess', siteName: 'Shingan Chess' },
   ja: { seoSiteName: '目隠しチェス', siteName: '心眼チェス' },
+  es: { seoSiteName: 'Ajedrez a Ciegas', siteName: 'Shingan Chess' },
+  'pt-BR': { seoSiteName: 'Xadrez às Cegas', siteName: 'Shingan Chess' },
 };
-
-function getSiteNames(locale: string) {
-  return SITE_NAMES[locale] ?? SITE_NAMES['en'];
-}
 
 /**
  * Build a full page title with the appropriate suffix.
@@ -24,8 +33,8 @@ function getSiteNames(locale: string) {
  *
  * @returns Full title string with suffix (e.g., "Learn | Blindfold Chess")
  */
-export function buildPageTitle(title: string, locale: string): string {
-  const { seoSiteName, siteName } = getSiteNames(locale);
+export function buildPageTitle(title: string, locale: Locale): string {
+  const { seoSiteName, siteName } = SITE_NAMES[locale];
   if (title.includes(seoSiteName)) {
     return `${title} | ${siteName}`;
   }
@@ -42,8 +51,8 @@ export function buildPageTitle(title: string, locale: string): string {
  *
  * @returns Plain string (uses template) or `{ absolute: string }` (bypasses template)
  */
-export function resolveTitle(title: string, locale: string): string | { absolute: string } {
-  const { seoSiteName, siteName } = getSiteNames(locale);
+export function resolveTitle(title: string, locale: Locale): string | { absolute: string } {
+  const { seoSiteName, siteName } = SITE_NAMES[locale];
   if (title.includes(seoSiteName)) {
     return { absolute: `${title} | ${siteName}` };
   }
@@ -97,12 +106,12 @@ export function generateCanonicalMetadata({
   availableLocales,
   canonicalLocale,
 }: {
-  locale: string;
+  locale: Locale;
   path: string;
   title?: string;
   description?: string;
-  availableLocales?: string[];
-  canonicalLocale?: string;
+  availableLocales?: Locale[];
+  canonicalLocale?: Locale;
 }): Metadata {
   const baseUrl = SITE_URL;
   const cleanPath = path.startsWith('/') ? path.slice(1) : path;

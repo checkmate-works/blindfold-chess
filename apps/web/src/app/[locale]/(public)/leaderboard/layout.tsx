@@ -1,7 +1,10 @@
 import type { ReactNode } from 'react';
 
 import type { Metadata } from 'next';
+import { hasLocale } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
+
+import { routing } from '@/i18n/routing';
 
 import { getOptionalUser } from '@/lib/auth';
 
@@ -16,7 +19,10 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
+  const { locale: rawLocale } = await params;
+  // Narrow route-segment `locale` (plain string) to the `Locale` union so the
+  // metadata helpers can index their exhaustive `Record<Locale, _>` maps.
+  const locale = hasLocale(routing.locales, rawLocale) ? rawLocale : routing.defaultLocale;
   const t = await getTranslations({ locale, namespace: 'metadata.leaderboard' });
 
   const title = t('title');

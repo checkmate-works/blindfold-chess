@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
 /**
  * Onboarding
@@ -18,9 +19,7 @@ import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/met
  * 4. Complete -> navigate to /games/play
  */
 
-type Props = {
-  params: Promise<{ locale: string }>;
-};
+type Props = LocalePageProps;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;

@@ -4,14 +4,11 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
+import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
 export const generateStaticParams = generateLocaleStaticParams;
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: LocalePageProps): Promise<Metadata> {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'metadata.company' });
@@ -26,7 +23,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function CompanyPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function CompanyPage({ params }: LocalePageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'company' });

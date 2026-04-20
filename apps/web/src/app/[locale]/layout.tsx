@@ -15,8 +15,6 @@ import { JsonLd, generateOrganizationSchema, generateWebSiteSchema } from '@/lib
 import { StorageAvailabilityProvider } from '@/lib/storage/StorageAvailabilityProvider';
 import { ThemeScript } from '@/lib/theme';
 
-import type { Locale } from '@/app/[locale]/_lib/types';
-
 import '../globals.css';
 import { Footer } from './_components/Footer';
 import { Header } from './_components/Header';
@@ -36,7 +34,11 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  const { locale } = await params;
+  const { locale: rawLocale } = await params;
+  // Narrow `locale` (typed as plain `string` from params) to a supported
+  // `Locale` so exhaustive `Record<Locale, _>` maps (OG, SITE_NAMES) can be
+  // indexed without a fallback. Unknown locales fall back to the default.
+  const locale = hasLocale(routing.locales, rawLocale) ? rawLocale : routing.defaultLocale;
 
   let t: Awaited<ReturnType<typeof getTranslations<'metadata'>>>;
   try {
@@ -51,11 +53,7 @@ export async function generateMetadata({
   const siteName = t('siteName');
   const seoSiteName = t('seoSiteName');
   const description = t('siteDescription');
-  // Narrow `locale` (typed as plain `string` from params) to a supported
-  // locale so the exhaustive `Record<Locale, string>` OG map can be indexed
-  // without a fallback. Unknown locales fall back to the default.
-  const effectiveLocale = hasLocale(routing.locales, locale) ? locale : routing.defaultLocale;
-  const currentLocale = OG_LOCALE_MAP[effectiveLocale];
+  const currentLocale = OG_LOCALE_MAP[locale];
   const alternateLocales = Object.values(OG_LOCALE_MAP).filter((l) => l !== currentLocale);
 
   return {
@@ -123,10 +121,10 @@ export default async function Layout({
   // downstream call that expects the `Locale` union (JSON-LD emitters, OG
   // metadata, etc.) can be fed `locale` directly without a second runtime
   // check or cast.
-  if (!(routing.locales as readonly string[]).includes(rawLocale)) {
+  if (!hasLocale(routing.locales, rawLocale)) {
     notFound();
   }
-  const locale = rawLocale as Locale;
+  const locale = rawLocale;
 
   let t: Awaited<ReturnType<typeof getTranslations<'metadata'>>>;
   let allMessages: Awaited<ReturnType<typeof getMessages>>;

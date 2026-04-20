@@ -3,12 +3,11 @@ import { getTranslations } from 'next-intl/server';
 
 import { PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
+import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
 import { UsernameForm } from './_components';
 
-type Props = {
-  params: Promise<{ locale: string }>;
-};
+type Props = LocalePageProps;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;

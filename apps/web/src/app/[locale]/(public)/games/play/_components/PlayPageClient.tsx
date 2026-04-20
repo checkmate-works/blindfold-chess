@@ -18,7 +18,7 @@ type Props = {
 
 export function PlayPageClient({ locale }: Props) {
   const t = useTranslations('play');
-  const tCommon = useTranslations('common');
+  const tCommon = useTranslations('Common');
   const tGames = useTranslations('gamesPage');
   const [aiMoveDisplay, setAiMoveDisplay] = useState<string | null>(null);
 
