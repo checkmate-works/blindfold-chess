@@ -12,65 +12,97 @@ type Props = {
    *   so we avoid SR chatter on every turn.
    */
   variant: 'initial' | 'ai-turn';
+  /**
+   * Whether the real `MoveInputPanel` will render its mode-switch button row
+   * (i.e. the user has 2+ input modes enabled). When true, the skeleton adds
+   * the height of the switcher row plus the parent `gap-6` so the swap does
+   * not shift layout. Defaults to `false`, which matches the default
+   * preferences (`enabledMoveInputModes: ['button']`).
+   *
+   * Only meaningful for `mode === 'button'`; ignored for text/select.
+   */
+  hasModeSwitch?: boolean;
 };
 
 // Shape-matched minimum heights per input mode. Values chosen so that the
 // skeleton ↔ real panel swap introduces zero (or near-zero) CLS.
-// See MoveInputSkeleton notes below for how these were derived.
-const MIN_HEIGHT_BY_MODE: Record<MoveInputMode, string> = {
-  // ButtonInput: 5 rows of content + p-4 + gap-3 + mt-2 on last row ≈ 288px,
-  // plus the mode-switch button row (~40px) and the outer gap-6 in the
-  // parent column. Use 368px as a safe upper bound so the skeleton matches
-  // the real panel with a small margin.
-  button: 'min-h-[368px]',
-  // MoveInput / MoveSelect render a single input/select with py-3(.5) text-lg
-  // ≈ 52–56px. 56px is the submit button's h-14, which dominates MoveInput.
-  text: 'min-h-[56px]',
-  select: 'min-h-[56px]',
-};
+//
+// ButtonInput (default preferences, single enabled mode, no switcher row):
+//   p-4 vertical         : 32px (py-4 × 2)
+//   gap-3 × 4 between 5 rows : 48px
+//   Row 1 (pieces)       : 36px (h-9)
+//   Row 2 (files)        : 36px (h-9)
+//   Row 3 (ranks)        : 36px (h-9)
+//   Row 4 (annotations)  : 36px (h-9)
+//   Row 5 mt-2           :  8px
+//   Row 5 preview/submit : 56px (h-14)
+//   Total                : 288px
+//
+// When the mode-switch button row is present (2+ enabled modes), the parent
+// `MoveInputPanel` returns a React fragment whose two children (the input and
+// the switcher row) sit inside `GameInProgressPanel`'s `flex flex-col gap-6`.
+// So the rendered height is the sum of:
+//   ButtonInput                        : 288px
+//   parent gap-6 (between siblings)    :  24px
+//   Mode switcher row (p-2 + h-4 icon) :  34px  (1 + 8 + 16 + 8 + 1)
+//   Total                              : 346px
+//
+// MoveInput / MoveSelect real panel is a single row ~56px tall (input's py-3
+// text-lg plus submit h-14 dominates MoveInput; MoveSelect's py-3.5 text-lg
+// button is similar). Those components render raw form elements without a
+// `p-4 bg-card` wrapper, so the skeleton for text/select must match that bare
+// shape — otherwise the swap introduces both height CLS and a surface-style
+// jank (card → bare form).
+const MIN_HEIGHT_BUTTON = 'min-h-[288px]';
+const MIN_HEIGHT_BUTTON_WITH_SWITCHER = 'min-h-[346px]';
+const MIN_HEIGHT_TEXT_OR_SELECT = 'min-h-[56px]';
 
-export function MoveInputSkeleton({ mode, variant }: Props) {
-  const minHeight = MIN_HEIGHT_BY_MODE[mode];
+export function MoveInputSkeleton({ mode, variant, hasModeSwitch = false }: Props) {
   const ariaProps =
     variant === 'ai-turn'
       ? ({ 'aria-hidden': true } as const)
       : ({ role: 'status', 'aria-live': 'polite', 'aria-busy': true } as const);
 
   if (mode !== 'button') {
+    // MoveInput / MoveSelect render raw form elements (no outer card), so the
+    // skeleton must mirror that bare shape — just an `h-14` block inside a
+    // minimal wrapper that carries the a11y attrs. No `p-4 bg-card`.
     return (
-      <div className={`flex flex-col gap-3 p-4 bg-card rounded-lg ${minHeight}`} {...ariaProps}>
-        <Skeleton className="h-12 w-full" />
+      <div className={`w-full ${MIN_HEIGHT_TEXT_OR_SELECT}`} {...ariaProps}>
+        <Skeleton disableAnimation className="h-14 w-full" />
       </div>
     );
   }
 
+  const buttonMinHeight = hasModeSwitch ? MIN_HEIGHT_BUTTON_WITH_SWITCHER : MIN_HEIGHT_BUTTON;
+
   return (
-    <div className={`flex flex-col gap-3 p-4 bg-card rounded-lg ${minHeight}`} {...ariaProps}>
+    <div className={`flex flex-col gap-3 p-4 bg-card rounded-lg ${buttonMinHeight}`} {...ariaProps}>
       {/* Row 1: K / Q / R / B / N / × (6 cells) */}
       <div className="flex gap-2 justify-center">
         {Array.from({ length: 6 }).map((_, i) => (
-          <Skeleton key={i} static className="w-9 h-9" />
+          <Skeleton key={i} disableAnimation className="w-9 h-9" />
         ))}
       </div>
 
       {/* Row 2: files */}
-      <Skeleton static className="h-9 w-full" />
+      <Skeleton disableAnimation className="h-9 w-full" />
 
       {/* Row 3: ranks */}
-      <Skeleton static className="h-9 w-full" />
+      <Skeleton disableAnimation className="h-9 w-full" />
 
       {/* Row 4: annotations + castling */}
       <div className="flex gap-6 items-center justify-center">
-        <Skeleton static className="h-9 w-32" />
-        <Skeleton static className="h-9 w-24" />
+        <Skeleton disableAnimation className="h-9 w-32" />
+        <Skeleton disableAnimation className="h-9 w-24" />
       </div>
 
       {/* Row 5: preview + 3 action buttons */}
       <div className="flex gap-2 mt-2 items-center">
-        <Skeleton static className="h-14 flex-1" />
-        <Skeleton static className="h-14 w-14" />
-        <Skeleton static className="h-14 w-14" />
-        <Skeleton static className="h-14 w-14" />
+        <Skeleton disableAnimation className="h-14 flex-1" />
+        <Skeleton disableAnimation className="h-14 w-14" />
+        <Skeleton disableAnimation className="h-14 w-14" />
+        <Skeleton disableAnimation className="h-14 w-14" />
       </div>
     </div>
   );

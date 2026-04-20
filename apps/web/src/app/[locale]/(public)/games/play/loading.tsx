@@ -16,6 +16,13 @@ import { MoveInputSkeleton } from './_components/MoveInputSkeleton';
  * resolves to `text` or `select`, the swap after hydration is a visual
  * change only (the MoveInputSkeleton on the client also gates render
  * until preferences are hydrated).
+ *
+ * `hasModeSwitch` is omitted here because the SSR phase cannot read the
+ * user's persisted preferences. We default to the common case (single
+ * enabled mode, no switcher row). Users with 2+ modes enabled will see a
+ * minor upward adjustment when the client-side skeleton re-renders with
+ * the correct height; this is a small, bounded CLS and only affects the
+ * initial paint → hydration window.
  */
 export default function GamesPlayLoading() {
   return (

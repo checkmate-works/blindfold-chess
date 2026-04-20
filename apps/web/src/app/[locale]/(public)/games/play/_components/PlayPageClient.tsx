@@ -23,6 +23,7 @@ export function PlayPageClient({ locale }: Props) {
   const [aiMoveDisplay, setAiMoveDisplay] = useState<string | null>(null);
   const [moveError, setMoveError] = useState<string | null>(null);
   const [lastAttemptedInput, setLastAttemptedInput] = useState('');
+  const [isAiThinking, setIsAiThinking] = useState(false);
 
   const handleMoveErrorChange = useCallback((error: string | null, attemptedInput: string) => {
     setMoveError(error);
@@ -30,17 +31,24 @@ export function PlayPageClient({ locale }: Props) {
   }, []);
 
   // Resolve the content of the single status slot (PageTitle).
-  // Priority: active move error → AI's last move announcement → initial "Play Chess" title.
-  // Both branches render a `truncate block` span so the swap between error and
-  // normal state is always single-line and does not reflow / cause CLS on narrow
-  // viewports (longer "AI played …" strings would otherwise wrap to 2 lines).
+  // Priority: active move error → AI-thinking state → AI's last move
+  // announcement → initial "Play Chess" title. Both branches render a
+  // `truncate block` span so the swap between states is always single-line
+  // and does not reflow / cause CLS on narrow viewports (longer "AI played …"
+  // strings would otherwise wrap to 2 lines).
   const titleContent = (
-    <span className={`truncate block ${moveError ? 'text-destructive' : ''}`}>
+    <span
+      className={`truncate block ${
+        moveError ? 'text-destructive' : isAiThinking ? 'text-muted-foreground' : ''
+      }`}
+    >
       {moveError
         ? lastAttemptedInput
           ? `\u26A0 ${t('invalidMove')}: ${lastAttemptedInput}`
           : `\u26A0 ${moveError}`
-        : aiMoveDisplay || t('title')}
+        : isAiThinking
+          ? t('aiThinking')
+          : aiMoveDisplay || t('title')}
     </span>
   );
 
@@ -52,6 +60,7 @@ export function PlayPageClient({ locale }: Props) {
           locale={locale}
           onAiMoveChange={setAiMoveDisplay}
           onMoveErrorChange={handleMoveErrorChange}
+          onAiThinkingChange={setIsAiThinking}
         />
         <Divider />
         <ClientBreadcrumb

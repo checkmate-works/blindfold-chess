@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 
 import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FlagIcon, SpinnerIcon, UndoIcon } from '@blindfold-chess/icons';
+import { FlagIcon, UndoIcon } from '@blindfold-chess/icons';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaClipboardList, FaEye } from 'react-icons/fa';
 
@@ -85,13 +85,15 @@ export function GameInProgressPanel({
           onMovePeek={onMovePeek}
         />
       ) : (
-        <>
-          <div className="flex items-center justify-center gap-2 text-muted-foreground">
-            <p>{isLoading ? t('aiThinking') : t('yourMove')}</p>
-            {isLoading && <SpinnerIcon size={16} className="animate-spin text-primary" />}
-          </div>
-          <MoveInputSkeleton mode={preferences.moveInputMode} variant="ai-turn" />
-        </>
+        // AI-turn state. The "AI is thinking…" status is surfaced in the
+        // page-level PageTitle slot (see PlayPageClient) rather than inline
+        // here, so this branch renders only the skeleton to hold the
+        // ButtonInput-shaped footprint while the AI computes.
+        <MoveInputSkeleton
+          mode={preferences.moveInputMode}
+          variant="ai-turn"
+          hasModeSwitch={preferences.enabledMoveInputModes.length >= 2}
+        />
       )}
 
       {/* Action Buttons */}

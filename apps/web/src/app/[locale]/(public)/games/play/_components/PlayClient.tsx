@@ -24,9 +24,15 @@ type Props = {
   locale: Locale;
   onAiMoveChange?: (move: string | null) => void;
   onMoveErrorChange?: (error: string | null, attemptedInput: string) => void;
+  onAiThinkingChange?: (isAiThinking: boolean) => void;
 };
 
-export function PlayClient({ locale, onAiMoveChange, onMoveErrorChange }: Props) {
+export function PlayClient({
+  locale,
+  onAiMoveChange,
+  onMoveErrorChange,
+  onAiThinkingChange,
+}: Props) {
   const t = useTranslations('play');
   const router = useRouter();
 
@@ -60,6 +66,14 @@ export function PlayClient({ locale, onAiMoveChange, onMoveErrorChange }: Props)
   useEffect(() => {
     onMoveErrorChange?.(error, lastAttemptedInput);
   }, [error, lastAttemptedInput, onMoveErrorChange]);
+
+  // While the AI is computing, surface that state in the PageTitle slot instead
+  // of rendering an inline "AI is thinking…" line above the skeleton. Keeping
+  // the status in the title prevents vertical layout shift on every AI turn.
+  const isAiThinking = !isPlayerTurn && isLoading;
+  useEffect(() => {
+    onAiThinkingChange?.(isAiThinking);
+  }, [isAiThinking, onAiThinkingChange]);
 
   // Clear both error and the preserved attempted-input in one call.
   // Wired to every child input component's `onErrorClear` so that any user edit
@@ -160,7 +174,11 @@ export function PlayClient({ locale, onAiMoveChange, onMoveErrorChange }: Props)
           <div>
             {/* In Progress Content */}
             {gameStatus === 'in_progress' && isInitializing && (
-              <MoveInputSkeleton mode={preferences.moveInputMode} variant="initial" />
+              <MoveInputSkeleton
+                mode={preferences.moveInputMode}
+                variant="initial"
+                hasModeSwitch={preferences.enabledMoveInputModes.length >= 2}
+              />
             )}
             {gameStatus === 'in_progress' && !isInitializing && (
               <GameInProgressPanel
