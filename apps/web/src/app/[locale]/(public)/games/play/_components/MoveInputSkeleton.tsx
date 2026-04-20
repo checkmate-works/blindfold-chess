@@ -53,21 +53,36 @@ type Props = {
 //   Mode switcher row (p-2 + h-4 icon) :  34px  (1 + 8 + 16 + 8 + 1)
 //   Total                              : 346px
 //
-// MoveInput / MoveSelect real panel is a single row ~56px tall (input's py-3
-// text-lg plus submit h-14 dominates MoveInput; MoveSelect's py-3.5 text-lg
-// button is similar). Those components render raw form elements without a
+// MoveInput (text mode) and MoveSelect render raw form elements without a
 // `p-4 bg-card` wrapper, so the skeleton for text/select must match that bare
 // shape — otherwise the swap introduces both height CLS and a surface-style
-// jank (card → bare form).
+// jank (card → bare form). The two modes have different real-panel heights,
+// so their reservations are tracked separately below.
+//
+// MoveInput (text mode), both breakpoints:
+//   Input row dominated by submit button `h-14`     : 56px
+//   (Input element itself is `py-3 text-lg border`  = 24 + 28 + 2 = 54px,
+//    but the sibling `h-14` submit pins the row to 56px.)
+//   `MIN_HEIGHT_TEXT` = 56px matches the real row exactly.
+//
+// MoveSelect (trigger button `px-4 py-3.5 md:py-3 border text-lg md:text-base`):
+//   Mobile  : py-3.5 (28) + text-lg line-height (28) + border (2) = 58px
+//   Desktop : py-3   (24) + text-base line-height (24) + border (2) = 50px
+//   `MIN_HEIGHT_SELECT` is responsive so the skeleton matches both
+//   breakpoints. Previously a single `min-h-[56px]` constant covered both
+//   modes; that under-reserved by 2px on mobile select (58 vs 56),
+//   producing a barely-perceptible downward nudge when the real select
+//   hydrated. Splitting the constant removes that shift.
 //
 // When `hasModeSwitch=true`, `ModeSwitchSkeleton` is appended inside the same
-// wrapper with internal `gap-6`, so the rendered height becomes
-// 56 + 24 (gap-6) + 34 = 114px. The `min-h-[56px]` bounds the no-switcher
-// case; the wrapper's `flex flex-col` naturally expands when the switcher
-// sibling is present, so no separate `min-h` constant is needed.
+// wrapper with internal `gap-6`, so the rendered height grows by
+// 24 (gap-6) + 34 (switcher) = 58px. The `min-h-*` constants bound the
+// no-switcher case; the wrapper's `flex flex-col` naturally expands when the
+// switcher sibling is present, so no separate `min-h` constant is needed.
 const MIN_HEIGHT_BUTTON = 'min-h-[288px]';
 const MIN_HEIGHT_BUTTON_WITH_SWITCHER = 'min-h-[346px]';
-const MIN_HEIGHT_TEXT_OR_SELECT = 'min-h-[56px]';
+const MIN_HEIGHT_TEXT = 'min-h-[56px]';
+const MIN_HEIGHT_SELECT = 'min-h-[58px] md:min-h-[50px]';
 
 export function MoveInputSkeleton({ mode, variant, hasModeSwitch = false }: Props) {
   const ariaProps =
@@ -83,7 +98,7 @@ export function MoveInputSkeleton({ mode, variant, hasModeSwitch = false }: Prop
     // emulate that by rendering it inside this wrapper with `gap-6` to match
     // the parent's spacing.
     return (
-      <div className={`flex w-full flex-col gap-6 ${MIN_HEIGHT_TEXT_OR_SELECT}`} {...ariaProps}>
+      <div className={`flex w-full flex-col gap-6 ${MIN_HEIGHT_SELECT}`} {...ariaProps}>
         <div className="flex w-full items-center justify-between rounded-lg border border-border bg-background px-4 py-3.5 md:py-3">
           <Skeleton disableAnimation className="h-5 w-32" />
           <Skeleton disableAnimation className="ml-2 h-4 w-4 rounded-sm" />
@@ -99,7 +114,7 @@ export function MoveInputSkeleton({ mode, variant, hasModeSwitch = false }: Prop
     // Match that shape exactly so both the input row and the optional switcher
     // sibling line up with the real panel.
     return (
-      <div className={`flex w-full flex-col gap-6 ${MIN_HEIGHT_TEXT_OR_SELECT}`} {...ariaProps}>
+      <div className={`flex w-full flex-col gap-6 ${MIN_HEIGHT_TEXT}`} {...ariaProps}>
         <div className="flex items-center gap-2">
           <Skeleton disableAnimation className="h-14 flex-1 rounded-lg" />
           <Skeleton disableAnimation className="h-14 w-14 rounded-lg" />
