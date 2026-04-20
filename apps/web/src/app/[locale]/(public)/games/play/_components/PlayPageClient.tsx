@@ -1,7 +1,5 @@
 'use client';
 
-import { useCallback, useState } from 'react';
-
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { Divider } from '@/app/[locale]/_components/Divider';
@@ -9,6 +7,7 @@ import { PagePanel } from '@/app/[locale]/_components/PagePanel';
 import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { useGameSession } from '../_hooks/use-game-session';
 import { ClientBreadcrumb } from './ClientBreadcrumb';
 import { PlayClient } from './PlayClient';
 
@@ -20,15 +19,13 @@ export function PlayPageClient({ locale }: Props) {
   const t = useTranslations('play');
   const tCommon = useTranslations('common');
   const tGames = useTranslations('gamesPage');
-  const [aiMoveDisplay, setAiMoveDisplay] = useState<string | null>(null);
-  const [moveError, setMoveError] = useState<string | null>(null);
-  const [lastAttemptedInput, setLastAttemptedInput] = useState('');
-  const [isAiThinking, setIsAiThinking] = useState(false);
 
-  const handleMoveErrorChange = useCallback((error: string | null, attemptedInput: string) => {
-    setMoveError(error);
-    setLastAttemptedInput(attemptedInput);
-  }, []);
+  // Own the game session here so the page-level status slot (PageTitle) can
+  // read move-error / AI-thinking / AI-move-announcement state directly,
+  // without a useEffect bridge from PlayClient.
+  const gameSession = useGameSession({ locale });
+  const { aiMoveDisplay, isAiThinking } = gameSession;
+  const { error: moveError, lastAttemptedInput } = gameSession.moveInput;
 
   // Resolve the content of the single status slot (PageTitle).
   // Priority: active move error → AI-thinking state → AI's last move
@@ -56,12 +53,7 @@ export function PlayPageClient({ locale }: Props) {
     <div className="space-y-8">
       <PageTitle>{titleContent}</PageTitle>
       <PagePanel>
-        <PlayClient
-          locale={locale}
-          onAiMoveChange={setAiMoveDisplay}
-          onMoveErrorChange={handleMoveErrorChange}
-          onAiThinkingChange={setIsAiThinking}
-        />
+        <PlayClient locale={locale} gameSession={gameSession} />
         <Divider />
         <ClientBreadcrumb
           items={[{ label: tGames('pageTitle'), href: '/games' }, { label: t('title') }]}

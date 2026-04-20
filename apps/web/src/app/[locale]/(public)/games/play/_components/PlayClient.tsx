@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { notFound, useRouter } from 'next/navigation';
 
@@ -12,7 +12,8 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { useBoardFlip, useConfirmationDialogs, useGameSession, useMoveNavigation } from '../_hooks';
+import { useBoardFlip, useConfirmationDialogs, useMoveNavigation } from '../_hooks';
+import type { GameSession } from '../_hooks/use-game-session';
 import { BoardViewModal } from './BoardViewModal';
 import { GameInProgressPanel } from './GameInProgressPanel';
 import { InlineBoardView } from './InlineBoardView';
@@ -29,24 +30,14 @@ import {
 
 type Props = {
   locale: Locale;
-  onAiMoveChange?: (move: string | null) => void;
-  onMoveErrorChange?: (error: string | null, attemptedInput: string) => void;
-  onAiThinkingChange?: (isAiThinking: boolean) => void;
+  gameSession: GameSession;
 };
 
-export function PlayClient({
-  locale,
-  onAiMoveChange,
-  onMoveErrorChange,
-  onAiThinkingChange,
-}: Props) {
+export function PlayClient({ locale, gameSession }: Props) {
   const t = useTranslations('play');
   const router = useRouter();
 
-  const { gameConfig, gameState, moveState, moveInput, actions, operationLogs } = useGameSession({
-    locale,
-    onAiMoveChange,
-  });
+  const { gameConfig, gameState, moveState, moveInput, actions, operationLogs } = gameSession;
 
   const { playerSide, startingFen, perGamePrefs, gameId } = gameConfig;
   const {
@@ -59,36 +50,7 @@ export function PlayClient({
     gameNotFound,
   } = gameState;
   const { moves, currentFen, formattedPgn } = moveState;
-  const {
-    value: moveInputValue,
-    setValue: setMoveInput,
-    error,
-    setError,
-    lastAttemptedInput,
-    setLastAttemptedInput,
-  } = moveInput;
-
-  // Notify parent whenever the move error changes, so the page-level status slot
-  // (PageTitle) can swap between "AI played ..." / "Play Chess" and the error message.
-  useEffect(() => {
-    onMoveErrorChange?.(error, lastAttemptedInput);
-  }, [error, lastAttemptedInput, onMoveErrorChange]);
-
-  // While the AI is computing, surface that state in the PageTitle slot instead
-  // of rendering an inline "AI is thinking…" line above the skeleton. Keeping
-  // the status in the title prevents vertical layout shift on every AI turn.
-  const isAiThinking = !isPlayerTurn && isLoading;
-  useEffect(() => {
-    onAiThinkingChange?.(isAiThinking);
-  }, [isAiThinking, onAiThinkingChange]);
-
-  // Clear both error and the preserved attempted-input in one call.
-  // Wired to every child input component's `onErrorClear` so that any user edit
-  // reverts the status slot back to "AI played ..." / "Play Chess".
-  const clearMoveError = useCallback(() => {
-    if (error) setError(null);
-    setLastAttemptedInput('');
-  }, [error, setError, setLastAttemptedInput]);
+  const { value: moveInputValue, setValue: setMoveInput, error, clearMoveError } = moveInput;
   const {
     handleSubmitMove,
     handleResign,

@@ -27,10 +27,9 @@ import { useUrlSync } from './use-url-sync';
 
 type UseGameSessionOptions = {
   locale: Locale;
-  onAiMoveChange?: (move: string | null) => void;
 };
 
-export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions) {
+export function useGameSession({ locale }: UseGameSessionOptions) {
   const t = useTranslations('play');
   const searchParamsFromHook = useSearchParams();
 
@@ -284,14 +283,27 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
 
   // Current FEN and formatted PGN are memoized values from useNotation
 
-  // Update parent component with AI's last move
-  useAiMoveAnnouncer({
+  // Localized label for the AI's last move (e.g. "AI played 1... e5"), or null
+  // when there is nothing to announce. Consumed by the page-level status slot.
+  const aiMoveDisplay = useAiMoveAnnouncer({
     moves,
     playerSide,
     startingFen,
     t,
-    onAiMoveChange,
   });
+
+  // Surface the "AI is computing" state so the page-level status slot can show
+  // it in place of rendering an inline "AI is thinking…" line, avoiding
+  // vertical layout shift on every AI turn.
+  const isAiThinking = !isPlayerTurn && isLoading;
+
+  // Clear both the error and the preserved attempted-input in one call.
+  // Wired to every child input component's `onErrorClear` so that any user
+  // edit reverts the status slot back to "AI played …" / "Play Chess".
+  const clearMoveError = useCallback(() => {
+    setError(null);
+    setLastAttemptedInput('');
+  }, [setError, setLastAttemptedInput]);
 
   return {
     gameConfig: {
@@ -324,7 +336,10 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
       setError,
       lastAttemptedInput,
       setLastAttemptedInput,
+      clearMoveError,
     },
+    aiMoveDisplay,
+    isAiThinking,
     actions: {
       handleSubmitMove,
       handleResign,
@@ -338,3 +353,5 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     operationLogs,
   };
 }
+
+export type GameSession = ReturnType<typeof useGameSession>;
