@@ -186,6 +186,7 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
 
   const handleAiMoveError = useCallback(() => {
     setError('AI move failed');
+    setLastAttemptedInput('');
     setShouldMakeAiMove(false);
   }, [setShouldMakeAiMove]);
 
@@ -240,6 +241,8 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
   const handleRestartFromPosition = useCallback(
     (position: number) => {
       markPlayerInteraction();
+      setError(null);
+      setLastAttemptedInput('');
       const movesToRemove = moves.length - position - 1;
       if (movesToRemove > 0) {
         removeMoves(movesToRemove);

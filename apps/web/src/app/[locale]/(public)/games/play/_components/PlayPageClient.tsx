@@ -31,16 +31,17 @@ export function PlayPageClient({ locale }: Props) {
 
   // Resolve the content of the single status slot (PageTitle).
   // Priority: active move error → AI's last move announcement → initial "Play Chess" title.
-  // Kept single-line via `truncate` so the swap between error and normal state does not
-  // reflow and cause CLS on narrow viewports.
-  const titleContent = moveError ? (
-    <span className="text-destructive truncate block">
-      {lastAttemptedInput
-        ? `\u26A0 ${t('invalidMove')}: ${lastAttemptedInput}`
-        : `\u26A0 ${moveError}`}
+  // Both branches render a `truncate block` span so the swap between error and
+  // normal state is always single-line and does not reflow / cause CLS on narrow
+  // viewports (longer "AI played …" strings would otherwise wrap to 2 lines).
+  const titleContent = (
+    <span className={`truncate block ${moveError ? 'text-destructive' : ''}`}>
+      {moveError
+        ? lastAttemptedInput
+          ? `\u26A0 ${t('invalidMove')}: ${lastAttemptedInput}`
+          : `\u26A0 ${moveError}`
+        : aiMoveDisplay || t('title')}
     </span>
-  ) : (
-    aiMoveDisplay || t('title')
   );
 
   return (

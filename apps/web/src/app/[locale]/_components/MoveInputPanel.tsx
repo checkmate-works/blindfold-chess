@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { getLegalMoves } from '@blindfold-chess/features/chess-core';
@@ -93,10 +93,26 @@ export function MoveInputPanel({
     ? preferences.moveInputMode
     : enabledModes[0];
 
-  // Reset legal moves display and invalid attempt counter when input mode changes
+  // Reset legal moves display and invalid attempt counter when input mode changes.
+  // Switching modes is treated as a user edit, so clear any active move error too
+  // — otherwise a stale "⚠ Invalid move: …" persists in the title slot after the
+  // user navigated away from the failing input.
+  //
+  // `onErrorClear` is intentionally *not* listed as a dependency: its identity
+  // can change when `error` toggles (since the parent's `clearMoveError` depends
+  // on `error`), and re-firing this effect on every error transition would
+  // incorrectly reset `invalidAttemptCount` after each failed submit — breaking
+  // the "show legal moves after 3 failures" threshold. The latest closure is
+  // captured via a ref instead.
+  const onErrorClearRef = useRef(onErrorClear);
+  useEffect(() => {
+    onErrorClearRef.current = onErrorClear;
+  }, [onErrorClear]);
+
   useEffect(() => {
     setShowLegalMoves(false);
     setInvalidAttemptCount(0);
+    onErrorClearRef.current();
   }, [currentMode]);
 
   // Compute next mode for cycling
