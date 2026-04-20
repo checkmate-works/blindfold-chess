@@ -1,31 +1,27 @@
 'use client';
 
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 
 import { useSearchParams } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaQuestionCircle } from 'react-icons/fa';
 
-import { ClientBreadcrumb } from '@/app/[locale]/(public)/games/play/_components/ClientBreadcrumb';
 import { Divider } from '@/app/[locale]/_components/Divider';
 import { Modal } from '@/app/[locale]/_components/Modal';
 import { PagePanel } from '@/app/[locale]/_components/PagePanel';
 import { PageTitle } from '@/app/[locale]/_components/PageTitle';
-import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { PostmortemClient } from './PostmortemClient';
 
 type Props = {
-  locale: Locale;
-  brandName: string;
+  breadcrumb: ReactNode;
 };
 
-export function PostmortemPageClient({ locale, brandName }: Props) {
+export function PostmortemPageClient({ breadcrumb }: Props) {
   const searchParams = useSearchParams();
   const t = useTranslations('postmortem');
-  const tPlay = useTranslations('play');
-  const tGames = useTranslations('gamesPage');
   const [showHelp, setShowHelp] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
 
@@ -33,15 +29,7 @@ export function PostmortemPageClient({ locale, brandName }: Props) {
   const pgn = searchParams.get('pgn');
   const playerColor = (searchParams.get('color') as 'white' | 'black') || 'white';
   const offset = parseInt(searchParams.get('offset') || '0', 10);
-  const gameId = searchParams.get('gameId');
   const startingFen = searchParams.get('fen') || undefined;
-
-  const getResultPageUrl = () => {
-    if (!gameId) return '/games/play';
-    const params = new URLSearchParams();
-    params.set('gameId', gameId);
-    return `/games/play/result?${params.toString()}`;
-  };
 
   if (!pgn) {
     return (
@@ -76,15 +64,7 @@ export function PostmortemPageClient({ locale, brandName }: Props) {
           onStart={() => setHasStarted(true)}
         />
         <Divider />
-        <ClientBreadcrumb
-          items={[
-            { label: tGames('pageTitle'), href: '/games' },
-            { label: tPlay('resultTitle'), href: getResultPageUrl() },
-            { label: t('title') },
-          ]}
-          locale={locale}
-          brandName={brandName}
-        />
+        {breadcrumb}
       </PagePanel>
 
       {/* Help Modal */}

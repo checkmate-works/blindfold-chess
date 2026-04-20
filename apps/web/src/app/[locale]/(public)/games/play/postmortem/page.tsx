@@ -20,6 +20,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
+import { BreadcrumbContent } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -30,6 +31,7 @@ type Props = {
   params: Promise<{
     locale: Locale;
   }>;
+  searchParams: Promise<{ gameId?: string; [key: string]: string | string[] | undefined }>;
 };
 
 export const generateStaticParams = generateLocaleStaticParams;
@@ -47,14 +49,33 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function PostmortemPage({ params }: Props) {
+export default async function PostmortemPage({ params, searchParams }: Props) {
   const { locale } = await params;
+  const { gameId } = await searchParams;
   setRequestLocale(locale);
+
   const tMetadata = await getTranslations({ locale, namespace: 'metadata' });
+  const tGames = await getTranslations({ locale, namespace: 'gamesPage' });
+  const tPlay = await getTranslations({ locale, namespace: 'play' });
+  const tPostmortem = await getTranslations({ locale, namespace: 'postmortem' });
+
+  const resultHref = gameId ? `/games/play/result?gameId=${gameId}` : '/games/play/result';
+
+  const breadcrumb = (
+    <BreadcrumbContent
+      items={[
+        { label: tGames('pageTitle'), href: '/games' },
+        { label: tPlay('resultTitle'), href: resultHref },
+        { label: tPostmortem('title') },
+      ]}
+      locale={locale}
+      brandName={tMetadata('siteName')}
+    />
+  );
 
   return (
     <Suspense>
-      <PostmortemPageClient locale={locale} brandName={tMetadata('siteName')} />
+      <PostmortemPageClient breadcrumb={breadcrumb} />
     </Suspense>
   );
 }
