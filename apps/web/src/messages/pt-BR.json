@@ -314,7 +314,8 @@
     "sponsoredLink": "Link Patrocinado",
     "testAd": "Anúncio de Teste",
     "adLabel": "Publicidade",
-    "sponsor": "Patrocinador"
+    "sponsor": "Patrocinador",
+    "brandName": "Shingan Chess"
   },
   "openingSearch": {
     "selectOpening": "Selecione uma abertura",
@@ -403,12 +404,12 @@
     "letterPage": {
       "title": "Termos que Começam com {letter}",
       "description": "Termos de xadrez que começam com a letra {letter}",
-      "count": "{count} termos encontrados",
+      "count": "{count, plural, one {# termo encontrado} other {# termos encontrados}}",
       "termsTitle": "Termos"
     },
     "categoryPage": {
       "description": "Termos de xadrez relacionados com {category}",
-      "count": "{count} termos encontrados",
+      "count": "{count, plural, one {# termo encontrado} other {# termos encontrados}}",
       "termsTitle": "Termos",
       "categoriesTitle": "Categorias"
     },
@@ -421,7 +422,7 @@
     "placeholder": "Cole sua notação PGN aqui...\n\nExemplo:\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6",
     "completeSuggestion": "✨ Completar \"{suggestion}\"",
     "tabToComplete": "💡 Pressione Tab para completar \"{suggestion}\"",
-    "validWithMoves": "✓ PGN válido com {count} movimentos",
+    "validWithMoves": "{count, plural, one {✓ PGN válido com # movimento} other {✓ PGN válido com # movimentos}}",
     "invalidPgn": "Formato PGN inválido",
     "invalidMove": "\"{move}\" é um movimento inválido"
   },
@@ -940,7 +941,7 @@
         "solveSection": "Resolver o Problema",
         "start": "Iniciar",
         "timeLimit": "Limite de Tempo",
-        "seconds": "{count} segundos",
+        "seconds": "{count, plural, one {# segundo} other {# segundos}}",
         "createdBy": "Criado por",
         "tutorialLink": "Ver Tutorial",
         "tryAgain": "Tentar Novamente",
@@ -1296,7 +1297,7 @@
       "correctMoves": "Movimentos Corretos",
       "moveDetails": "Detalhes do Movimento",
       "correct": "Correto",
-      "attempts": "{count} tentativas",
+      "attempts": "{count, plural, one {# tentativa} other {# tentativas}}",
       "backToSetup": "Voltar à Configuração",
       "includeOpponentMoves": "Incluir movimentos do adversário",
       "moveHistory": "Histórico de Movimentos",
@@ -1457,7 +1458,7 @@
       "deleteConfirm": "Excluir",
       "cancel": "Cancelar",
       "gameDeletedToast": "Partida excluída com sucesso",
-      "gamesDeletedToast": "{count} partidas excluídas com sucesso",
+      "gamesDeletedToast": "{count, plural, one {# partida excluída com sucesso} other {# partidas excluídas com sucesso}}",
       "deleteFailedToast": "Erro ao excluir a partida",
       "moreGames": "Todas as partidas"
     },
@@ -1497,7 +1498,7 @@
     "title": "Exclusão em Massa de Partidas",
     "explanation": "Selecione e exclua partidas indesejadas em massa.",
     "noGames": "Não há partidas para excluir",
-    "selectedCount": "{count} partidas selecionadas",
+    "selectedCount": "{count, plural, one {# partida selecionada} other {# partidas selecionadas}}",
     "selectAll": "Selecionar Todas",
     "unselectAll": "Desmarcar Todas",
     "delete": "Excluir",
@@ -1506,7 +1507,7 @@
     "errorDeleting": "Erro ao excluir. Por favor, tente novamente.",
     "confirmTitle": "Excluir Partidas Selecionadas?",
     "confirmMessage": "Tem certeza de que deseja excluir {count} partidas? Esta ação não pode ser desfeita.",
-    "deletedToast": "{count} partidas excluídas com sucesso",
+    "deletedToast": "{count, plural, one {# partida excluída com sucesso} other {# partidas excluídas com sucesso}}",
     "deleteFailedToast": "Erro ao excluir as partidas"
   },
   "play": {
@@ -1593,7 +1594,7 @@
         "undoCount": "Desfazer",
         "hintCount": "Dicas de Movimento",
         "viewDetails": "Registro",
-        "times": "{count} vezes",
+        "times": "{count, plural, one {# vez} other {# vezes}}",
         "columnItem": "Item",
         "columnDetail": "Detalhe"
       }
@@ -2408,7 +2409,7 @@
     "postCreated": "Publicado com sucesso",
     "rateLimited": "Você só pode publicar uma vez por dia para cada abertura. Por favor, tente mais tarde.",
     "gameSaved": "Partida salva com sucesso",
-    "gamesDeleted": "{count} partidas excluídas com sucesso",
+    "gamesDeleted": "{count, plural, one {# partida excluída com sucesso} other {# partidas excluídas com sucesso}}",
     "accountDeleted": "Sua conta foi excluída",
     "practiceResultSaveFailed": "Erro ao salvar seu resultado. Por favor, tente novamente.",
     "positionCreated": "Posição criada com sucesso",
@@ -3561,7 +3562,7 @@
     "breadcrumbMypage": "Minha Página",
     "successMessage": "Sua assinatura está ativa! Os anúncios foram removidos.",
     "noSubscription": "Nenhuma assinatura ativa",
-    "noSubscriptionDescription": "Assine para remover anúncios e apoiar o Blindfold Chess.",
+    "noSubscriptionDescription": "Assine para remover anúncios e apoiar o Xadrez às Cegas.",
     "viewPlans": "Ver planos",
     "adFreePlan": "Plano Sem Anúncios",
     "statusActive": "Ativo",

@@ -314,7 +314,8 @@
     "sponsoredLink": "Enlace Patrocinado",
     "testAd": "Anuncio de Prueba",
     "adLabel": "Publicidad",
-    "sponsor": "Patrocinador"
+    "sponsor": "Patrocinador",
+    "brandName": "Shingan Chess"
   },
   "openingSearch": {
     "selectOpening": "Selecciona una apertura",
@@ -391,12 +392,12 @@
     "letterPage": {
       "title": "Términos que Empiezan con {letter}",
       "description": "Términos de ajedrez que empiezan con la letra {letter}",
-      "count": "{count} términos encontrados",
+      "count": "{count, plural, one {# término encontrado} other {# términos encontrados}}",
       "termsTitle": "Términos"
     },
     "categoryPage": {
       "description": "Términos de ajedrez relacionados con {category}",
-      "count": "{count} términos encontrados",
+      "count": "{count, plural, one {# término encontrado} other {# términos encontrados}}",
       "termsTitle": "Términos",
       "categoriesTitle": "Categorías"
     },
@@ -409,7 +410,7 @@
     "placeholder": "Pega tu notación PGN aquí...\n\nEjemplo:\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6",
     "completeSuggestion": "✨ Completar \"{suggestion}\"",
     "tabToComplete": "💡 Presiona Tab para completar \"{suggestion}\"",
-    "validWithMoves": "✓ PGN válido con {count} movimientos",
+    "validWithMoves": "{count, plural, one {✓ PGN válido con # movimiento} other {✓ PGN válido con # movimientos}}",
     "invalidPgn": "Formato PGN inválido",
     "invalidMove": "\"{move}\" es un movimiento inválido"
   },
@@ -928,7 +929,7 @@
         "solveSection": "Resolver el Problema",
         "start": "Iniciar",
         "timeLimit": "Límite de Tiempo",
-        "seconds": "{count} segundos",
+        "seconds": "{count, plural, one {# segundo} other {# segundos}}",
         "createdBy": "Creado por",
         "tutorialLink": "Ver Tutorial",
         "tryAgain": "Intentar de nuevo",
@@ -1284,7 +1285,7 @@
       "correctMoves": "Movimientos Correctos",
       "moveDetails": "Detalles del Movimiento",
       "correct": "Correcto",
-      "attempts": "{count} intentos",
+      "attempts": "{count, plural, one {# intento} other {# intentos}}",
       "backToSetup": "Volver a Configuración",
       "includeOpponentMoves": "Incluir movimientos del rival",
       "moveHistory": "Historial de Movimientos",
@@ -1445,7 +1446,7 @@
       "deleteConfirm": "Eliminar",
       "cancel": "Cancelar",
       "gameDeletedToast": "Partida eliminada correctamente",
-      "gamesDeletedToast": "{count} partidas eliminadas correctamente",
+      "gamesDeletedToast": "{count, plural, one {# partida eliminada correctamente} other {# partidas eliminadas correctamente}}",
       "deleteFailedToast": "Error al eliminar la partida",
       "moreGames": "Todas las partidas"
     },
@@ -1485,7 +1486,7 @@
     "title": "Eliminación Masiva de Partidas",
     "explanation": "Selecciona y elimina partidas no deseadas en masa.",
     "noGames": "No hay partidas para eliminar",
-    "selectedCount": "{count} partidas seleccionadas",
+    "selectedCount": "{count, plural, one {# partida seleccionada} other {# partidas seleccionadas}}",
     "selectAll": "Seleccionar Todas",
     "unselectAll": "Deseleccionar Todas",
     "delete": "Eliminar",
@@ -1494,7 +1495,7 @@
     "errorDeleting": "Error al eliminar. Por favor, inténtalo de nuevo.",
     "confirmTitle": "¿Eliminar Partidas Seleccionadas?",
     "confirmMessage": "¿Estás seguro de que deseas eliminar {count} partidas? Esta acción no se puede deshacer.",
-    "deletedToast": "{count} partidas eliminadas correctamente",
+    "deletedToast": "{count, plural, one {# partida eliminada correctamente} other {# partidas eliminadas correctamente}}",
     "deleteFailedToast": "Error al eliminar las partidas"
   },
   "play": {
@@ -1581,7 +1582,7 @@
         "undoCount": "Deshacer",
         "hintCount": "Pistas de Movimiento",
         "viewDetails": "Registro",
-        "times": "{count} veces",
+        "times": "{count, plural, one {# vez} other {# veces}}",
         "columnItem": "Elemento",
         "columnDetail": "Detalle"
       }
@@ -2355,7 +2356,7 @@
     "postCreated": "Publicado correctamente",
     "rateLimited": "Solo puedes publicar una vez al día para cada apertura. Por favor, inténtalo más tarde.",
     "gameSaved": "Partida guardada correctamente",
-    "gamesDeleted": "{count} partidas eliminadas correctamente",
+    "gamesDeleted": "{count, plural, one {# partida eliminada correctamente} other {# partidas eliminadas correctamente}}",
     "accountDeleted": "Tu cuenta ha sido eliminada",
     "practiceResultSaveFailed": "Error al guardar tu resultado. Por favor, inténtalo de nuevo."
   },
