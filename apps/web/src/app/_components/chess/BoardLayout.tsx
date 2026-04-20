@@ -36,7 +36,7 @@ type Props = {
 // from these visual indices to the logical square is delegated to
 // `getVisualCellSquare` so that both this component and the animation
 // overlay (`usePieceAnimation`) share the same canonical definition.
-const VISUAL_INDICES: readonly number[] = [0, 1, 2, 3, 4, 5, 6, 7] as const;
+const VISUAL_INDICES = [0, 1, 2, 3, 4, 5, 6, 7] as const;
 
 export function BoardLayout({
   flipped = false,
@@ -55,9 +55,8 @@ export function BoardLayout({
         onClick={onBoardClick}
       >
         {VISUAL_INDICES.map((row) => {
-          const rowKey = getVisualCellSquare(0, row, flipped).rank;
           return (
-            <div key={rowKey} className="flex h-[12.5%]">
+            <div key={row} className="flex h-[12.5%]">
               {VISUAL_INDICES.map((col) => {
                 const { fileIndex, rankIndex, file, rank, square } = getVisualCellSquare(
                   col,
