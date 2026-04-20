@@ -26,7 +26,39 @@ type UsePieceAnimationOptions = {
   animationDuration: number;
   autoPlay: boolean;
   boardRef: React.RefObject<HTMLDivElement | null>;
+  flipped?: boolean;
 };
+
+/**
+ * Convert a square name (e.g. "f5") to its top-left pixel offset on the
+ * rendered board. When `flipped` is true the board is drawn from Black's
+ * point of view (rank 1 at the top, h-file on the left), so the file/rank
+ * indices must be inverted to match the visual cell — otherwise the piece
+ * animates to the point-symmetric square (the a1↔h8 rotation of the
+ * correct square), e.g. `f5` would be drawn at where `c4` appears.
+ *
+ * @param square - Algebraic square name like "e4"
+ * @param boardWidth - Rendered board width in pixels
+ * @param flipped - True when the board is drawn from Black's perspective
+ * @returns Pixel offset of the square's top-left corner on the rendered board
+ */
+export function getSquarePixelOffset(
+  square: string,
+  boardWidth: number,
+  flipped: boolean
+): { left: number; top: number } {
+  const file = square.charCodeAt(0) - 'a'.charCodeAt(0);
+  const rank = parseInt(square[1], 10) - 1;
+  const squareSize = boardWidth / 8;
+
+  const column = flipped ? 7 - file : file;
+  const row = flipped ? rank : 7 - rank;
+
+  return {
+    left: column * squareSize,
+    top: row * squareSize,
+  };
+}
 
 type UsePieceAnimationReturn = {
   currentFen: string;
@@ -49,6 +81,7 @@ export function usePieceAnimation({
   animationDuration,
   autoPlay,
   boardRef,
+  flipped = false,
 }: UsePieceAnimationOptions): UsePieceAnimationReturn {
   const [currentFen, setCurrentFen] = useState(initialFen);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -72,22 +105,15 @@ export function usePieceAnimation({
     setIsAnimating(false);
   }, [initialFen, moveDetails, autoPlay]);
 
-  // Get pixel position for a square
+  // Get pixel position for a square (accounts for board flip)
   const getSquarePosition = useCallback(
     (square: string): { left: number; top: number } | null => {
       if (!boardRef.current) return null;
 
-      const file = square.charCodeAt(0) - 'a'.charCodeAt(0);
-      const rank = parseInt(square[1]) - 1;
       const boardRect = boardRef.current.getBoundingClientRect();
-      const squareSize = boardRect.width / 8;
-
-      return {
-        left: file * squareSize,
-        top: (7 - rank) * squareSize,
-      };
+      return getSquarePixelOffset(square, boardRect.width, flipped);
     },
-    [boardRef]
+    [boardRef, flipped]
   );
 
   // Animate the piece movement

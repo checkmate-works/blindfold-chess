@@ -123,6 +123,7 @@ export function AnimatedChessBoard({
     animationDuration,
     autoPlay,
     boardRef,
+    flipped,
   });
 
   const pieces = useMemo(() => parseFenToPieces(currentFen), [currentFen]);
