@@ -181,11 +181,11 @@ export function PlayClient({
                   variant="initial"
                   hasModeSwitch={preferences.enabledMoveInputModes.length >= 2}
                 />
-                {/* Reserve space for the action button row (Undo / Resign / Show Board) */}
-                <div aria-hidden className="min-h-[40px]" />
-                {/* Reserve space for the Save and Exit link */}
+                {/* Action row (Undo / Resign / Show Board): px-4 py-2 (8+8) + text-base line-height 24 + border 2 ≈ 42px */}
+                <div aria-hidden className="min-h-[42px]" />
+                {/* Save and Exit link: text-sm ≈ 20px */}
                 <div aria-hidden className="min-h-[20px]" />
-                {/* Reserve space for the Operation Log trigger */}
+                {/* Operation Log trigger: w-4 h-4 icon + padding ≈ 24px */}
                 <div aria-hidden className="min-h-[24px]" />
               </div>
             )}
