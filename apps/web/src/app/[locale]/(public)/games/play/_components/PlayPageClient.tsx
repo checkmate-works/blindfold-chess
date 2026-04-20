@@ -1,5 +1,7 @@
 'use client';
 
+import type { ReactNode } from 'react';
+
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { Divider } from '@/app/[locale]/_components/Divider';
@@ -8,17 +10,15 @@ import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useGameSession } from '../_hooks';
-import { ClientBreadcrumb } from './ClientBreadcrumb';
 import { PlayClient } from './PlayClient';
 
 type Props = {
   locale: Locale;
+  breadcrumb: ReactNode;
 };
 
-export function PlayPageClient({ locale }: Props) {
+export function PlayPageClient({ locale, breadcrumb }: Props) {
   const t = useTranslations('play');
-  const tCommon = useTranslations('common');
-  const tGames = useTranslations('gamesPage');
 
   // Own the game session here so the page-level status slot (PageTitle) can
   // read move-error / AI-thinking / AI-move-announcement state directly,
@@ -55,11 +55,7 @@ export function PlayPageClient({ locale }: Props) {
       <PagePanel>
         <PlayClient locale={locale} gameSession={gameSession} />
         <Divider />
-        <ClientBreadcrumb
-          items={[{ label: tGames('pageTitle'), href: '/games' }, { label: t('title') }]}
-          locale={locale}
-          brandName={tCommon('brandName')}
-        />
+        {breadcrumb}
       </PagePanel>
     </div>
   );

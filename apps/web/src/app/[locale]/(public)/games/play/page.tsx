@@ -20,6 +20,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
+import { BreadcrumbContent } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -51,9 +52,21 @@ export default async function PlayPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
+  const tMetadata = await getTranslations({ locale, namespace: 'metadata' });
+  const tGames = await getTranslations({ locale, namespace: 'gamesPage' });
+  const tPlay = await getTranslations({ locale, namespace: 'play' });
+
+  const breadcrumb = (
+    <BreadcrumbContent
+      items={[{ label: tGames('pageTitle'), href: '/games' }, { label: tPlay('title') }]}
+      locale={locale}
+      brandName={tMetadata('siteName')}
+    />
+  );
+
   return (
     <Suspense>
-      <PlayPageClient locale={locale} />
+      <PlayPageClient locale={locale} breadcrumb={breadcrumb} />
     </Suspense>
   );
 }
