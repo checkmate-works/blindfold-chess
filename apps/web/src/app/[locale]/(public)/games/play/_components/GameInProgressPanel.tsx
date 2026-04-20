@@ -14,6 +14,7 @@ import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import type { ConfirmationDialogs } from '../_hooks';
+import { shouldShowModalPeekButton } from '../_lib';
 import { MoveInputSkeleton } from './MoveInputSkeleton';
 
 type Props = {
@@ -58,7 +59,7 @@ export function GameInProgressPanel({
   onShowOperationLog,
 }: Props) {
   const t = useTranslations('play');
-  const showModalPeekButton = preferences.showBoardButtonInGame && preferences.peekMode === 'modal';
+  const showModalPeekButton = shouldShowModalPeekButton(preferences);
 
   return (
     <div className="flex flex-col gap-6">

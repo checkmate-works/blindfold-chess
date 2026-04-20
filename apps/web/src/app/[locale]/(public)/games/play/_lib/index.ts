@@ -13,3 +13,4 @@ export {
   validatePgnWithDetails,
 } from './pgn-parser';
 export type { FormattedPgn, FormattedPgnMove } from './pgn-parser';
+export { shouldShowInlinePeekHeader, shouldShowModalPeekButton } from './preferences';

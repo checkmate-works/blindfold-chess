@@ -14,6 +14,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useBoardFlip, useConfirmationDialogs, useMoveNavigation } from '../_hooks';
 import type { GameSession } from '../_hooks/use-game-session';
+import { shouldShowInlinePeekHeader, shouldShowModalPeekButton } from '../_lib';
 import { BoardViewModal } from './BoardViewModal';
 import { GameInProgressPanel } from './GameInProgressPanel';
 import { InlineBoardView } from './InlineBoardView';
@@ -148,9 +149,9 @@ export function PlayClient({ locale, gameSession }: Props) {
                     are hydrated, so `modal` peek users (the defaults) are not
                     subjected to a counter-productive upward shift during SSR →
                     hydration. */}
-                {isHydrated &&
-                  preferences.showBoardButtonInGame &&
-                  preferences.peekMode === 'inline' && <InlineBoardHeaderSkeleton />}
+                {isHydrated && shouldShowInlinePeekHeader(preferences) && (
+                  <InlineBoardHeaderSkeleton />
+                )}
                 <MoveInputSkeleton
                   mode={preferences.moveInputMode}
                   variant="initial"
@@ -160,11 +161,7 @@ export function PlayClient({ locale, gameSession }: Props) {
                     have `peekMode='modal'` and `showBoardButtonInGame=true`, so
                     gating on `isHydrated` is unnecessary: the pre-hydration
                     reservation matches the hydrated one. */}
-                <ActionRowSkeleton
-                  showBoardButton={
-                    preferences.showBoardButtonInGame && preferences.peekMode === 'modal'
-                  }
-                />
+                <ActionRowSkeleton showBoardButton={shouldShowModalPeekButton(preferences)} />
                 {/* Save and Exit link: text-sm ≈ 20px */}
                 <TextLinkSkeleton />
                 {/* Operation Log trigger: w-4 h-4 icon + padding ≈ 24px */}
@@ -197,7 +194,7 @@ export function PlayClient({ locale, gameSession }: Props) {
                 onMovePeek={recordMovePeek}
                 onShowOperationLog={() => setShowOperationLogModal(true)}
                 inlineBoardView={
-                  preferences.showBoardButtonInGame && preferences.peekMode === 'inline' ? (
+                  shouldShowInlinePeekHeader(preferences) ? (
                     <InlineBoardView
                       fen={displayFen || currentFen}
                       playerSide={playerSide}
