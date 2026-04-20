@@ -58,8 +58,13 @@ export default function GamesPlayLoading() {
         {/* Divider skeleton */}
         <div className="border-t border-border my-6" />
 
-        {/* Breadcrumb skeleton */}
-        <div className="h-4 bg-muted rounded w-48 motion-safe:animate-pulse" />
+        {/* Breadcrumb skeleton. Matches the real Breadcrumb's `<nav>` wrapper
+            (mb-4 flex min-h-10 items-end) so that the handoff from
+            loading.tsx to the hydrated Breadcrumb is CLS-free across all
+            locales, including long-label cases that wrap to 2 lines. */}
+        <div className="mb-4 flex min-h-10 w-48 items-end">
+          <div className="h-4 w-full rounded bg-muted motion-safe:animate-pulse" />
+        </div>
       </PagePanel>
     </div>
   );
