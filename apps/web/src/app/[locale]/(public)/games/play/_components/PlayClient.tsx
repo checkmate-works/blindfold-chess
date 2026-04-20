@@ -7,6 +7,8 @@ import { notFound, useRouter } from 'next/navigation';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
 
+import type { MoveInputPreferenceHint } from '@/lib/games/move-input-cookie';
+
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -32,9 +34,17 @@ import {
 type Props = {
   locale: Locale;
   gameSession: GameSession;
+  /**
+   * Server-resolved hint for the user's move-input mode preference. Used
+   * to pick the correct `MoveInputSkeleton` shape during the SSR +
+   * pre-hydration window, before `GamePreferencesContext` has read
+   * localStorage. Once `isHydrated` flips true, the real preferences
+   * from localStorage take over — see `skeletonMode` below.
+   */
+  initialMoveInputHint: MoveInputPreferenceHint;
 };
 
-export function PlayClient({ locale, gameSession }: Props) {
+export function PlayClient({ locale, gameSession, initialMoveInputHint }: Props) {
   const t = useTranslations('play');
   const router = useRouter();
 
@@ -66,6 +76,21 @@ export function PlayClient({ locale, gameSession }: Props) {
   // Global preferences
   const { preferences: globalPreferences, updatePreferences, isHydrated } = useGamePreferences();
   const isInitializing = isLoadingFromStorage || !isHydrated;
+
+  // Pre-hydration skeleton shape: prefer the cookie-sourced hint from the
+  // server over `globalPreferences` (which is still the provider's default
+  // `'button'` until localStorage is read). Once `isHydrated` flips true,
+  // `globalPreferences` becomes the source of truth — matching the
+  // localStorage value, which may or may not agree with the cookie.
+  //
+  // Reconciliation rule: cookie wins on first paint (driven by this branch);
+  // localStorage wins post-hydration (driven by `globalPreferences`). The
+  // `GamePreferencesContext` also mirrors subsequent mode changes back to
+  // the cookie so the two stay in sync on the next navigation.
+  const skeletonMode = isHydrated ? globalPreferences.moveInputMode : initialMoveInputHint.mode;
+  const skeletonHasModeSwitch = isHydrated
+    ? globalPreferences.enabledMoveInputModes.length >= 2
+    : initialMoveInputHint.enabledModes.length >= 2;
 
   // Merge per-game preferences with global preferences
   // Per-game fields override global; other fields come from global
@@ -153,9 +178,9 @@ export function PlayClient({ locale, gameSession }: Props) {
                   <InlineBoardHeaderSkeleton />
                 )}
                 <MoveInputSkeleton
-                  mode={preferences.moveInputMode}
+                  mode={skeletonMode}
                   variant="initial"
-                  hasModeSwitch={preferences.enabledMoveInputModes.length >= 2}
+                  hasModeSwitch={skeletonHasModeSwitch}
                 />
                 {/* Action row (Show Board + Undo + Resign). Default preferences
                     have `peekMode='modal'` and `showBoardButtonInGame=true`, so

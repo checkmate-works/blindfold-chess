@@ -4,6 +4,11 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 
 import type { BoardTheme } from '@/lib/games/board-themes';
 import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
+import {
+  DEFAULT_ENABLED_MOVE_INPUT_MODES,
+  DEFAULT_MOVE_INPUT_MODE,
+  writeMoveInputCookieClient,
+} from '@/lib/games/move-input-cookie';
 
 // Per-game preferences (subset of GamePreferences saved with each game)
 export type PerGamePreferences = {
@@ -38,7 +43,9 @@ export type GamePreferences = {
   peekMode: 'modal' | 'inline'; // How to display the board peek (modal dialog or inline accordion)
 };
 
-// Default preferences
+// Default preferences. `moveInputMode` / `enabledMoveInputModes` are derived
+// from the shared `DEFAULT_MOVE_INPUT_*` constants in `@/lib/games/move-input-cookie`
+// so the SSR cookie hint and the client-side defaults can never drift apart.
 const defaultPreferences: GamePreferences = {
   showCoordinates: true,
   highlightLastMove: true,
@@ -47,8 +54,8 @@ const defaultPreferences: GamePreferences = {
   showOpponentPieces: true,
   pieceShapeMode: 'normal',
   pieceColors: 'normal',
-  moveInputMode: 'button',
-  enabledMoveInputModes: ['button'],
+  moveInputMode: DEFAULT_MOVE_INPUT_MODE,
+  enabledMoveInputModes: [...DEFAULT_ENABLED_MOVE_INPUT_MODES],
   buttonInputPieceLabel: 'icon',
   enableAutoComplete: true,
   showBoardButtonInGame: true,
@@ -195,6 +202,26 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
       console.warn('Failed to save game preferences to localStorage:', error);
     }
   }, [preferences, isLoaded]);
+
+  // Mirror the move-input mode keys to the `bfc_move_input_pref` cookie so
+  // the SSR pipeline can emit the right `MoveInputSkeleton` shape on the
+  // next navigation. Only runs after the initial localStorage read so we
+  // don't overwrite a correct cookie with the default `'button'` hint on
+  // first mount. The cookie is a server-facing hint only — localStorage
+  // remains the source of truth for the full preferences object.
+  //
+  // Single-writer rule: this provider is the ONLY place that writes the
+  // cookie. Any other writer will cause drift with localStorage. If the
+  // cookie is cleared externally (privacy extensions, incognito, etc.),
+  // SSR falls back to the default hint until the user next changes a
+  // mode-related preference — an acceptable degradation to today's baseline.
+  useEffect(() => {
+    if (!isLoaded) return;
+    writeMoveInputCookieClient({
+      mode: preferences.moveInputMode,
+      enabledModes: preferences.enabledMoveInputModes,
+    });
+  }, [isLoaded, preferences.moveInputMode, preferences.enabledMoveInputModes]);
 
   const updatePreferences = useCallback((updates: Partial<GamePreferences>) => {
     setPreferences((prev) => ({

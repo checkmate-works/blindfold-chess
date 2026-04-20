@@ -4,6 +4,8 @@ import type { ReactNode } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import type { MoveInputPreferenceHint } from '@/lib/games/move-input-cookie';
+
 import { Divider } from '@/app/[locale]/_components/Divider';
 import { PagePanel } from '@/app/[locale]/_components/PagePanel';
 import { PageTitle } from '@/app/[locale]/_components/PageTitle';
@@ -15,9 +17,16 @@ import { PlayClient } from './PlayClient';
 type Props = {
   locale: Locale;
   breadcrumb: ReactNode;
+  /**
+   * Server-resolved move-input mode hint from the `bfc_move_input_pref`
+   * cookie. Used by `PlayClient` to pick the correct `MoveInputSkeleton`
+   * shape during SSR + pre-hydration, eliminating the ~288 px → 50/56 px
+   * CLS that returning `text` / `select` users otherwise saw on first paint.
+   */
+  initialMoveInputHint: MoveInputPreferenceHint;
 };
 
-export function PlayPageClient({ locale, breadcrumb }: Props) {
+export function PlayPageClient({ locale, breadcrumb, initialMoveInputHint }: Props) {
   const t = useTranslations('play');
 
   // Own the game session here so the page-level status slot (PageTitle) can
@@ -53,7 +62,11 @@ export function PlayPageClient({ locale, breadcrumb }: Props) {
     <div className="space-y-8">
       <PageTitle>{titleContent}</PageTitle>
       <PagePanel>
-        <PlayClient locale={locale} gameSession={gameSession} />
+        <PlayClient
+          locale={locale}
+          gameSession={gameSession}
+          initialMoveInputHint={initialMoveInputHint}
+        />
         <Divider />
         {breadcrumb}
       </PagePanel>
