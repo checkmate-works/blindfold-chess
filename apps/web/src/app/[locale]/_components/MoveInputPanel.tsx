@@ -98,12 +98,12 @@ export function MoveInputPanel({
   // — otherwise a stale "⚠ Invalid move: …" persists in the title slot after the
   // user navigated away from the failing input.
   //
-  // `onErrorClear` is intentionally *not* listed as a dependency: its identity
-  // can change when `error` toggles (since the parent's `clearMoveError` depends
-  // on `error`), and re-firing this effect on every error transition would
-  // incorrectly reset `invalidAttemptCount` after each failed submit — breaking
-  // the "show legal moves after 3 failures" threshold. The latest closure is
-  // captured via a ref instead.
+  // `onErrorClear` is intentionally *not* listed as a dependency. The current
+  // `clearMoveError` only closes over stable `useState` setters and is
+  // referentially stable, so the ref is defensive rather than required — it
+  // guards against a future consumer passing a non-stable `onErrorClear`
+  // that would otherwise re-fire this effect and reset `invalidAttemptCount`
+  // on every error transition.
   const onErrorClearRef = useRef(onErrorClear);
   useEffect(() => {
     onErrorClearRef.current = onErrorClear;

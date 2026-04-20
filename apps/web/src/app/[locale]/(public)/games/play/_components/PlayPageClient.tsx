@@ -7,7 +7,7 @@ import { PagePanel } from '@/app/[locale]/_components/PagePanel';
 import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { useGameSession } from '../_hooks/use-game-session';
+import { useGameSession } from '../_hooks';
 import { ClientBreadcrumb } from './ClientBreadcrumb';
 import { PlayClient } from './PlayClient';
 
