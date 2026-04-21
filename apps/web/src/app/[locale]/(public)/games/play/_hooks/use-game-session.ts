@@ -200,6 +200,15 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
   }, [t, setShouldMakeAiMove]);
 
   const retryAiMove = useCallback(async () => {
+    // Clear the error state synchronously *before* the async engine teardown
+    // so the Retry button unmounts on the first click. Without this, a fast
+    // double-click during the `await resetChessEngine()` gap would re-enter
+    // this callback (isLoading is still false until the orchestration effect
+    // schedules). `useAiVersus` re-acquires `getChessEngine()` on every
+    // invocation, so the next `getAiMove` call observes the fresh singleton.
+    setError(null);
+    setAiMoveError(null);
+    setLastAttemptedInput('');
     // Tear down the singleton so the next `getAiMove` call spins up a fresh
     // Worker; leaving the dead singleton in place would make the retry fail
     // with the same error the user just saw.
@@ -208,9 +217,6 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     } catch (resetError) {
       console.error('Failed to reset chess engine before retry:', resetError);
     }
-    setError(null);
-    setAiMoveError(null);
-    setLastAttemptedInput('');
     setShouldMakeAiMove(true);
   }, [setShouldMakeAiMove]);
 

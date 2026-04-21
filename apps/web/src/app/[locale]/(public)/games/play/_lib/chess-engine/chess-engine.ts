@@ -292,11 +292,19 @@ export function getChessEngine(): ChessEngine {
 }
 
 /**
- * Tear down the singleton chess engine so the next `getChessEngine()` call
- * returns a fresh instance. Used by the UI "Retry" affordance to recover
- * from a dead Worker after a fatal engine error — `ChessEngine#destroy()`
- * on its own resets per-instance state but not the module-level singleton,
- * which would otherwise keep handing callers the broken instance.
+ * Tears down the current singleton and forces the next `getChessEngine()`
+ * call to construct a fresh one. Used by the UI "Retry" affordance to
+ * recover from a dead Worker after a fatal engine error.
+ *
+ * `useAiVersus` re-acquires the singleton on every engine invocation
+ * (`getAiMove`, skill-level propagation, etc.), so the next call after a
+ * reset will observe the newly-constructed instance. Callers that cache the
+ * result of `getChessEngine()` across resets would continue to hold the
+ * torn-down reference and defeat this recovery path — don't do that.
+ *
+ * `ChessEngine#destroy()` alone resets per-instance state but not the
+ * module-level singleton, which would otherwise keep handing callers the
+ * broken instance.
  */
 export async function resetChessEngine(): Promise<void> {
   if (engineInstance) {
