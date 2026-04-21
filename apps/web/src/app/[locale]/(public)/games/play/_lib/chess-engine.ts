@@ -3,4 +3,9 @@
 // `_lib/chess-engine/` and is split between a low-level UCI transport and
 // a high-level engine wrapper — see `chess-engine/chess-engine.ts` and
 // `chess-engine/uci-transport.ts` for details.
-export { ChessEngine, getChessEngine, type EvaluationResult } from './chess-engine/chess-engine';
+export {
+  ChessEngine,
+  getChessEngine,
+  resetChessEngine,
+  type EvaluationResult,
+} from './chess-engine/chess-engine';

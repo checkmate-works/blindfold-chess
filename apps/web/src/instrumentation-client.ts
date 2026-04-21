@@ -142,6 +142,21 @@ Sentry.init({
 
     return event;
   },
+
+  beforeBreadcrumb(breadcrumb) {
+    // Drop RSC prefetch cancellations: next/link prefetch fires GET ?_rsc=...
+    // and aborts on navigation, producing status-less fetch breadcrumbs that
+    // clutter error reports without ever becoming independent Sentry events.
+    if (
+      breadcrumb.category === 'fetch' &&
+      typeof breadcrumb.data?.url === 'string' &&
+      breadcrumb.data.url.includes('_rsc=') &&
+      breadcrumb.data.status_code == null
+    ) {
+      return null;
+    }
+    return breadcrumb;
+  },
 });
 
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;

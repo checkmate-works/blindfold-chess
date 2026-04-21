@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import { SITE_URL, SUPPORTED_LOCALES } from '@/config';
+import { DEFAULT_LOCALE, SITE_URL, SUPPORTED_LOCALES } from '@/config';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -14,9 +14,19 @@ import type { Locale } from '@/app/[locale]/_lib/types';
  * Exhaustiveness: typed as `Record<Locale, _>` mirroring `LANGUAGE_TAGS`
  * (`src/i18n/language-tags.ts`) and `OG_LOCALE_MAP` (`src/i18n/og-locale.ts`),
  * so adding a new entry to `SUPPORTED_LOCALES` without updating this map is a
- * compile-time error. There is intentionally no silent `?? SITE_NAMES.en`
- * runtime fallback — a missing locale must fail loudly at compile time rather
- * than silently emit the wrong brand strings to OG / `<title>` metadata.
+ * compile-time error. This compile-time guarantee is still the primary line
+ * of defence against a silently-missing locale entry.
+ *
+ * Runtime fallback: the lookup sites below (`buildPageTitle`, `resolveTitle`)
+ * narrow via `?? SITE_NAMES[DEFAULT_LOCALE]` because the Next.js App Router
+ * invokes `generateMetadata` with the URL-supplied `[locale]` segment *before*
+ * any layout-level `notFound()` has a chance to run. Without the fallback, a
+ * URL like `/fr/...` (or the bare `/pt/...` that triggered the incident this
+ * comment documents) throws a `Cannot read properties of undefined` deep
+ * inside metadata generation and turns a would-be 404 into a 500. The
+ * fallback only affects URL-supplied values outside `SUPPORTED_LOCALES`;
+ * legitimate compile-time additions to the type must still extend this map
+ * or TypeScript will fail the build.
  */
 const SITE_NAMES: Record<Locale, { seoSiteName: string; siteName: string }> = {
   en: { seoSiteName: 'Blindfold Chess', siteName: 'Shingan Chess' },
@@ -34,7 +44,7 @@ const SITE_NAMES: Record<Locale, { seoSiteName: string; siteName: string }> = {
  * @returns Full title string with suffix (e.g., "Learn | Blindfold Chess")
  */
 export function buildPageTitle(title: string, locale: Locale): string {
-  const { seoSiteName, siteName } = SITE_NAMES[locale];
+  const { seoSiteName, siteName } = SITE_NAMES[locale] ?? SITE_NAMES[DEFAULT_LOCALE];
   if (title.includes(seoSiteName)) {
     return `${title} | ${siteName}`;
   }
@@ -52,7 +62,7 @@ export function buildPageTitle(title: string, locale: Locale): string {
  * @returns Plain string (uses template) or `{ absolute: string }` (bypasses template)
  */
 export function resolveTitle(title: string, locale: Locale): string | { absolute: string } {
-  const { seoSiteName, siteName } = SITE_NAMES[locale];
+  const { seoSiteName, siteName } = SITE_NAMES[locale] ?? SITE_NAMES[DEFAULT_LOCALE];
   if (title.includes(seoSiteName)) {
     return { absolute: `${title} | ${siteName}` };
   }

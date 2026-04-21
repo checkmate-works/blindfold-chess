@@ -1531,6 +1531,7 @@
     "submitMove": "Enviar",
     "invalidMove": "Movimento inválido",
     "aiMoveFailed": "Falha no movimento da IA",
+    "retry": "Tentar novamente",
     "newGame": "Nova Partida",
     "resign": "Desistir",
     "undo": "Desfazer",

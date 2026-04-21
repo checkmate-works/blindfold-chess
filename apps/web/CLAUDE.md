@@ -45,7 +45,7 @@ Route segment names use **singular or plural form depending on the nature of the
     - `ja`: "目隠しチェス" / "心眼チェス"
     - `es`: "Ajedrez a Ciegas" / "Shingan Chess"
     - `pt-BR`: "Xadrez às Cegas" / "Shingan Chess"
-  - `SITE_NAMES` is typed `Record<Locale, { seoSiteName; siteName }>`, so adding a locale to `SUPPORTED_LOCALES` without extending `SITE_NAMES` is a compile-time error (there is intentionally no silent runtime fallback).
+  - `SITE_NAMES` is typed `Record<Locale, { seoSiteName; siteName }>`, so adding a locale to `SUPPORTED_LOCALES` without extending `SITE_NAMES` is a compile-time error — that compile-time exhaustiveness is preserved. A narrow runtime fallback (`?? SITE_NAMES[DEFAULT_LOCALE]`) exists only for URL-supplied `[locale]` segments outside `SUPPORTED_LOCALES`, because Next.js App Router invokes `generateMetadata` before any layout-level `notFound()` has a chance to run; without it, a stray URL like `/fr/...` or `/pt/...` turns a would-be 404 into a 500 inside metadata generation.
   - Use `resolveTitle(title, locale)` from `_lib/metadata.ts` for the `title` field in `generateMetadata`
   - Use `buildPageTitle(title, locale)` for OGP titles and other contexts needing the full title string
 

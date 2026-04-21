@@ -1531,6 +1531,7 @@
     "submitMove": "Submit",
     "invalidMove": "Invalid move",
     "aiMoveFailed": "AI move failed",
+    "retry": "Retry",
     "newGame": "New Game",
     "resign": "Resign",
     "undo": "Undo",

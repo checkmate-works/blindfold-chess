@@ -77,8 +77,16 @@ export function PlayClient({
   const t = useTranslations('play');
   const router = useRouter();
 
-  const { gameConfig, gameState, moveState, moveInput, actions, operationLogs, isAiThinking } =
-    gameSession;
+  const {
+    gameConfig,
+    gameState,
+    moveState,
+    moveInput,
+    aiMoveError,
+    actions,
+    operationLogs,
+    isAiThinking,
+  } = gameSession;
 
   const { playerSide, startingFen, perGamePrefs, gameId } = gameConfig;
   const { gameStatus, playerResult, isPlayerTurn, isLoading, lastMove, gameNotFound } = gameState;
@@ -249,6 +257,11 @@ export function PlayClient({
                 onMoveCommitted={commitMoveLog}
                 onMovePeek={recordMovePeek}
                 onShowOperationLog={() => setShowOperationLogModal(true)}
+                aiMoveError={
+                  aiMoveError.message
+                    ? { message: aiMoveError.message, retry: aiMoveError.retry }
+                    : null
+                }
                 inlineBoardView={
                   shouldShowInlinePeekHeader(preferences) ? (
                     <InlineBoardView

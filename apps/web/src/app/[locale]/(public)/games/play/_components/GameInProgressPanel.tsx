@@ -36,6 +36,12 @@ type Props = {
   onMoveCommitted?: (inputMethod: MoveInputMethod) => void;
   onMovePeek?: () => void;
   onShowOperationLog?: () => void;
+  /**
+   * When the last AI move failed, carries the i18n'd error message and a
+   * `retry` callback that tears down the dead engine and re-requests a move.
+   * Null when there is nothing to retry.
+   */
+  aiMoveError: { message: string; retry: () => void } | null;
 };
 
 export function GameInProgressPanel({
@@ -58,6 +64,7 @@ export function GameInProgressPanel({
   onMoveCommitted,
   onMovePeek,
   onShowOperationLog,
+  aiMoveError,
 }: Props) {
   const t = useTranslations('play');
   const showModalPeekButton = shouldShowModalPeekButton(preferences);
@@ -91,6 +98,23 @@ export function GameInProgressPanel({
         onMovePeek={onMovePeek}
         showInlineError={false}
       />
+
+      {/* AI move failed → offer an inline Retry that tears down the dead
+          engine and re-requests a move, so the user does not need to reload
+          the page. The message already shows in the page-level status slot
+          (PageTitle) via `moveInput.error`; this row adds the affordance. */}
+      {aiMoveError && (
+        <div className="flex justify-center">
+          <button
+            type="button"
+            onClick={aiMoveError.retry}
+            disabled={isLoading}
+            className="px-4 py-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {t('retry')}
+          </button>
+        </div>
+      )}
 
       {/* Action Buttons */}
       <div className="flex gap-4 md:gap-2 justify-center">

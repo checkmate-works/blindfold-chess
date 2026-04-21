@@ -11,6 +11,7 @@ import type { SkillLevel } from '@/lib/types';
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { resetChessEngine } from '../_lib/chess-engine';
 import { countPlayerMoves } from '../_lib/fen-utils';
 import { mapGameStatusToOutcome } from '../_lib/map-game-status-to-outcome';
 import { useAiMoveAnnouncer } from './use-ai-move-announcer';
@@ -183,11 +184,41 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     [pushMove, updateLastMove]
   );
 
+  // AI-move failure state, kept separate from the generic `error` slot so
+  // the UI can distinguish "AI move failed" (surface a Retry button) from
+  // the regular "invalid move" path (no Retry — the user just edits their
+  // input). `clearMoveError` nulls both in lockstep because any input edit
+  // is treated as the user moving on from either error.
+  const [aiMoveError, setAiMoveError] = useState<string | null>(null);
+
   const handleAiMoveError = useCallback(() => {
-    setError(t('aiMoveFailed'));
+    const message = t('aiMoveFailed');
+    setError(message);
+    setAiMoveError(message);
     setLastAttemptedInput('');
     setShouldMakeAiMove(false);
   }, [t, setShouldMakeAiMove]);
+
+  const retryAiMove = useCallback(async () => {
+    // Clear the error state synchronously *before* the async engine teardown
+    // so the Retry button unmounts on the first click. Without this, a fast
+    // double-click during the `await resetChessEngine()` gap would re-enter
+    // this callback (isLoading is still false until the orchestration effect
+    // schedules). `useAiVersus` re-acquires `getChessEngine()` on every
+    // invocation, so the next `getAiMove` call observes the fresh singleton.
+    setError(null);
+    setAiMoveError(null);
+    setLastAttemptedInput('');
+    // Tear down the singleton so the next `getAiMove` call spins up a fresh
+    // Worker; leaving the dead singleton in place would make the retry fail
+    // with the same error the user just saw.
+    try {
+      await resetChessEngine();
+    } catch (resetError) {
+      console.error('Failed to reset chess engine before retry:', resetError);
+    }
+    setShouldMakeAiMove(true);
+  }, [setShouldMakeAiMove]);
 
   const { isLoading } = useAiMoveOrchestration({
     shouldMakeAiMove: shouldMakeAiMove && !gameNotFound,
@@ -300,8 +331,12 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
   // Clear both the error and the preserved attempted-input in one call.
   // Wired to every child input component's `onErrorClear` so that any user
   // edit reverts the status slot back to "AI played …" / "Play Chess".
+  // Also clears any AI-move error so the Retry affordance disappears in
+  // lockstep — otherwise an invalid-move edit would leave the Retry button
+  // hanging around after the user had moved on.
   const clearMoveError = useCallback(() => {
     setError(null);
+    setAiMoveError(null);
     setLastAttemptedInput('');
   }, [setError, setLastAttemptedInput]);
 
@@ -335,6 +370,10 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
       error,
       lastAttemptedInput,
       clearMoveError,
+    },
+    aiMoveError: {
+      message: aiMoveError,
+      retry: retryAiMove,
     },
     aiMoveDisplay,
     isAiThinking,
