@@ -20,14 +20,12 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { DEFAULT_LOCALE, SITE_URL, SUPPORTED_LOCALES } from '@/config';
 import { OG_LOCALE_MAP } from '@/i18n/og-locale';
 import { eq } from 'drizzle-orm';
 
 import { getOptionalUser } from '@/lib/auth';
 import { db, profiles } from '@/lib/db';
-
-import type { Locale } from '@/app/[locale]/_lib/types';
+import { buildLandingLanguageAlternates, buildLandingUrl } from '@/lib/seo/landing-urls';
 
 import {
   AiBattleSection,
@@ -43,25 +41,6 @@ import { getLandingLocale } from './_lib/getLandingLocale';
 export const dynamic = 'force-dynamic';
 
 type SearchParamsInput = Promise<Record<string, string | string[] | undefined>>;
-
-/**
- * Canonical / hreflang / OG URL for a landing locale variant. English is the
- * default: it lives at bare `/` (no query) so the primary entrypoint keeps
- * the cleanest URL and inherits any pre-existing backlinks. Other locales
- * live at `/?lang=<code>`.
- */
-function buildLandingUrl(locale: Locale): string {
-  return locale === DEFAULT_LOCALE ? `${SITE_URL}/` : `${SITE_URL}/?lang=${locale}`;
-}
-
-function buildLandingLanguageAlternates(): Record<string, string> {
-  const languages: Record<string, string> = {};
-  for (const l of SUPPORTED_LOCALES) {
-    languages[l] = buildLandingUrl(l);
-  }
-  languages['x-default'] = buildLandingUrl(DEFAULT_LOCALE);
-  return languages;
-}
 
 export async function generateMetadata({
   searchParams,
