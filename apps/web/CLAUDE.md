@@ -38,8 +38,14 @@ Route segment names use **singular or plural form depending on the nature of the
   - Reference: https://nextjs.org/learn/seo/on-page-seo#nextlink
 - **Semantic HTML** - Use proper HTML elements for better SEO
 - **Title Suffix Rule** - Page titles use a dynamic suffix to avoid keyword stuffing:
-  - If the title contains the SEO site name phrase ("Blindfold Chess" / "目隠しチェス") → suffix is the brand name ("Shingan Chess" / "心眼チェス")
-  - Otherwise → suffix is the SEO site name ("Blindfold Chess" / "目隠しチェス")
+  - If the title contains the SEO site name phrase for the current locale → suffix is the brand name for that locale
+  - Otherwise → suffix is the SEO site name for that locale
+  - The per-locale keyword/brand pairs are defined in `SITE_NAMES` in `apps/web/src/app/[locale]/_lib/metadata.ts`. As of this writing:
+    - `en`: "Blindfold Chess" / "Shingan Chess"
+    - `ja`: "目隠しチェス" / "心眼チェス"
+    - `es`: "Ajedrez a Ciegas" / "Shingan Chess"
+    - `pt-BR`: "Xadrez às Cegas" / "Shingan Chess"
+  - `SITE_NAMES` is typed `Record<Locale, { seoSiteName; siteName }>`, so adding a locale to `SUPPORTED_LOCALES` without extending `SITE_NAMES` is a compile-time error (there is intentionally no silent runtime fallback).
   - Use `resolveTitle(title, locale)` from `_lib/metadata.ts` for the `title` field in `generateMetadata`
   - Use `buildPageTitle(title, locale)` for OGP titles and other contexts needing the full title string
 
@@ -64,7 +70,16 @@ Route segment names use **singular or plural form depending on the nature of the
 
 - **next-intl** - For i18n support
 - **URL Path-based Locales** - Use `/[locale]/` pattern
-- **Supported Languages** - English (`en`) and Japanese (`ja`)
+- **Source of truth** - `SUPPORTED_LOCALES` exported from `@/config` is the single source of truth for every locale-derived artifact (metadata, OG tags, `hreflang`, sitemap, JSON-LD, routing, `<html lang>`, message file resolution). All i18n-aware code derives from this constant — there is no second list to keep in sync.
+- **Currently supported (for quick reference)** - `en`, `es`, `pt-BR`, `ja`. This prose may lag the code; when in doubt, `SUPPORTED_LOCALES` wins.
+
+### Locale granularity (region-qualified tags)
+
+The project prefers region-qualified BCP 47 tags (e.g., `pt-BR`) over bare language tags (e.g., `pt`) when the content targets a specific region. Brazilian Portuguese and European Portuguese diverge meaningfully in vocabulary (`usuário` vs `utilizador`, `celular` vs `telemóvel`, `tela` vs `ecrã`), pronouns (`você` vs `tu`), and register — and `pt-BR.json` is written specifically for Brazilian audiences. BCP 47, `hreflang`, and Google all distinguish `pt-BR` from `pt-PT`; emitting bare `pt` forces search engines and browsers to guess which variant the user will receive, weakening regional targeting.
+
+Starting with a region-qualified tag also keeps future expansion additive: adding `pt-PT` (or `en-GB`, etc.) later is a single-line change to `SUPPORTED_LOCALES` with no migration. The convention applies generally — **prefer region-qualified BCP 47 tags whenever the content targets a specific region**; use bare language tags only when the content is truly region-neutral.
+
+As of this writing, the project ships `pt-BR` only (not `pt-BR` + `pt-PT`): ~95% of Portuguese-speaking web users are in Brazil, and with only one translation available, also emitting a duplicated or machine-translated `pt-PT` would trigger Google "duplicate content" / "alternate page with wrong hreflang" warnings — worse for SEO than shipping `pt-BR` alone. Portugal users are served the `pt-BR` page, which Google treats as an acceptable near-match. See the `SUPPORTED_LOCALES` TSDoc in `apps/web/src/config.ts` for the full rationale.
 
 ## Testing
 
@@ -320,7 +335,7 @@ A martial arts-inspired progression system (5級 → 初段). Users earn ranks b
 
 1. Add entry to `ranksSeedData` in `src/lib/db/data/ranks.ts` (with requirements or `[]` for placeholder)
 2. Add slug to `ALL_RANK_SLUGS` and color to `RANK_COLORS` in same file
-3. Add i18n entries in `src/messages/{en,ja}.json` under `ranks.rankNames` and `rankAchievement.rankNames`
+3. Add i18n entries in all locale message files (`src/messages/*.json`) under `ranks.rankNames` and `rankAchievement.rankNames`
 4. Run `pnpm db:seed`
 
 ### Adding Leaderboard Support to a Practice Module
@@ -466,32 +481,32 @@ domain terms to their English counterparts and points at the code that owns
 each concept, so that AI agents (and human readers) can locate the relevant
 files when a user refers to a concept in Japanese.
 
-| Japanese                      | English                                  | Where                                                                                                                                   |
-| ----------------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| 実績 / 実績バッジ             | achievement / achievement badge          | `src/lib/achievements/`, `src/lib/db/data/achievements.ts`, `src/app/admin/achievements/`, `src/messages/{en,ja}.json` (`achievements`) |
-| 感想戦                        | postmortem                               | `src/app/[locale]/(public)/games/play/postmortem/`                                                                                      |
-| 目隠しチェス / 心眼チェス     | blindfold chess / Shingan Chess (brand)  | See "Title Suffix Rule" in this file; strings in `src/messages/{en,ja}.json`                                                            |
-| 段級位                        | kyu/dan ranking (belt system)            | `src/lib/db/schema/tables.ts` (`ranks`, `userRanks`), `src/lib/db/data/ranks.ts`, `src/app/[locale]/(public)/ranks/`                    |
-| 無級                          | Mukyu — "no rank" (default)              | `MUKYU_SLUG` in `src/lib/db/data/ranks.ts`                                                                                              |
-| 道場                          | Dojo — training hall                     | `src/app/[locale]/(public)/dojo/`                                                                                                       |
-| 約束組手                      | Yakusoku Kumite — move-sequence practice | `src/app/[locale]/(public)/practice/(free-play)/move-sequence/`                                                                         |
-| 合法手                        | legal move                               | `src/app/[locale]/(public)/practice/(challenge)/legal-moves/`                                                                           |
-| 正解手 / 代替正解             | solution move / alternative solution     | `puzzleSolutions` table in `src/lib/db/schema/tables.ts`; `src/app/[locale]/(public)/practice/(free-play)/puzzle/`                      |
-| パズル                        | puzzle                                   | `src/app/[locale]/(public)/practice/(free-play)/puzzle/`, `src/app/admin/positions/puzzle/`                                             |
-| ポジション記憶                | position memory                          | `src/app/[locale]/(public)/practice/(free-play)/position-memory/`                                                                       |
-| ルートプランナー              | route planner                            | `src/app/[locale]/(public)/practice/(challenge)/route-planner/`                                                                         |
-| ダイアゴナルクイズ            | diagonal quiz                            | `src/app/[locale]/(public)/practice/(challenge)/diagonal-quiz/`                                                                         |
-| 座標クイズ                    | coordinate quiz                          | `src/app/[locale]/(public)/practice/(challenge)/coordinate-quiz/`                                                                       |
-| マスの色                      | square colors                            | `src/app/[locale]/(public)/practice/(challenge)/square-colors/`                                                                         |
-| ナイトツアー                  | knight tour                              | `src/app/[locale]/(public)/practice/(free-play)/knight-tour/`                                                                           |
-| 経験値 / 経験値イベント       | experience points (Exp) / exp events     | `src/lib/db/save-exp.ts`, `src/lib/db/get-exp-info-by-source.ts`, `expEvents` / `userExp` tables in `src/lib/db/schema/tables.ts`       |
-| リーダーボード                | leaderboard                              | `src/app/[locale]/(public)/leaderboard/`, `src/lib/db/leaderboard-key.ts`                                                               |
-| チャレンジモード / フリー対局 | challenge mode / free-play mode          | `src/app/[locale]/(public)/practice/(challenge)/`, `src/app/[locale]/(public)/practice/(free-play)/`                                    |
-| ミス上限 / 完走               | mistake limit / completion               | `MISTAKE_LIMIT` in `src/lib/challenge/constants.ts`                                                                                     |
-| 特典 / 権限付与               | benefit / user grant                     | `src/lib/user-grants.ts`, `src/app/admin/grants/`, `src/app/[locale]/(protected)/mypage/(confirmed)/benefits/`                          |
-| モデレーション / 通報         | moderation / reporting                   | `moderationActions` table in `src/lib/db/schema/tables.ts`, `src/app/admin/`, `src/lib/ban.ts`                                          |
-| 記事                          | article                                  | `src/app/admin/articles/`, `src/app/[locale]/(public)/articles/`, `articles` / `articleImages` tables                                   |
-| トピック / 投稿               | topic / post                             | `src/app/[locale]/(public)/topics/`, `topicPosts` table in `src/lib/db/schema/tables.ts`                                                |
+| Japanese                      | English                                  | Where                                                                                                                             |
+| ----------------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| 実績 / 実績バッジ             | achievement / achievement badge          | `src/lib/achievements/`, `src/lib/db/data/achievements.ts`, `src/app/admin/achievements/`, `src/messages/*.json` (`achievements`) |
+| 感想戦                        | postmortem                               | `src/app/[locale]/(public)/games/play/postmortem/`                                                                                |
+| 目隠しチェス / 心眼チェス     | blindfold chess / Shingan Chess (brand)  | See "Title Suffix Rule" in this file; strings in `src/messages/*.json`                                                            |
+| 段級位                        | kyu/dan ranking (belt system)            | `src/lib/db/schema/tables.ts` (`ranks`, `userRanks`), `src/lib/db/data/ranks.ts`, `src/app/[locale]/(public)/ranks/`              |
+| 無級                          | Mukyu — "no rank" (default)              | `MUKYU_SLUG` in `src/lib/db/data/ranks.ts`                                                                                        |
+| 道場                          | Dojo — training hall                     | `src/app/[locale]/(public)/dojo/`                                                                                                 |
+| 約束組手                      | Yakusoku Kumite — move-sequence practice | `src/app/[locale]/(public)/practice/(free-play)/move-sequence/`                                                                   |
+| 合法手                        | legal move                               | `src/app/[locale]/(public)/practice/(challenge)/legal-moves/`                                                                     |
+| 正解手 / 代替正解             | solution move / alternative solution     | `puzzleSolutions` table in `src/lib/db/schema/tables.ts`; `src/app/[locale]/(public)/practice/(free-play)/puzzle/`                |
+| パズル                        | puzzle                                   | `src/app/[locale]/(public)/practice/(free-play)/puzzle/`, `src/app/admin/positions/puzzle/`                                       |
+| ポジション記憶                | position memory                          | `src/app/[locale]/(public)/practice/(free-play)/position-memory/`                                                                 |
+| ルートプランナー              | route planner                            | `src/app/[locale]/(public)/practice/(challenge)/route-planner/`                                                                   |
+| ダイアゴナルクイズ            | diagonal quiz                            | `src/app/[locale]/(public)/practice/(challenge)/diagonal-quiz/`                                                                   |
+| 座標クイズ                    | coordinate quiz                          | `src/app/[locale]/(public)/practice/(challenge)/coordinate-quiz/`                                                                 |
+| マスの色                      | square colors                            | `src/app/[locale]/(public)/practice/(challenge)/square-colors/`                                                                   |
+| ナイトツアー                  | knight tour                              | `src/app/[locale]/(public)/practice/(free-play)/knight-tour/`                                                                     |
+| 経験値 / 経験値イベント       | experience points (Exp) / exp events     | `src/lib/db/save-exp.ts`, `src/lib/db/get-exp-info-by-source.ts`, `expEvents` / `userExp` tables in `src/lib/db/schema/tables.ts` |
+| リーダーボード                | leaderboard                              | `src/app/[locale]/(public)/leaderboard/`, `src/lib/db/leaderboard-key.ts`                                                         |
+| チャレンジモード / フリー対局 | challenge mode / free-play mode          | `src/app/[locale]/(public)/practice/(challenge)/`, `src/app/[locale]/(public)/practice/(free-play)/`                              |
+| ミス上限 / 完走               | mistake limit / completion               | `MISTAKE_LIMIT` in `src/lib/challenge/constants.ts`                                                                               |
+| 特典 / 権限付与               | benefit / user grant                     | `src/lib/user-grants.ts`, `src/app/admin/grants/`, `src/app/[locale]/(protected)/mypage/(confirmed)/benefits/`                    |
+| モデレーション / 通報         | moderation / reporting                   | `moderationActions` table in `src/lib/db/schema/tables.ts`, `src/app/admin/`, `src/lib/ban.ts`                                    |
+| 記事                          | article                                  | `src/app/admin/articles/`, `src/app/[locale]/(public)/articles/`, `articles` / `articleImages` tables                             |
+| トピック / 投稿               | topic / post                             | `src/app/[locale]/(public)/topics/`, `topicPosts` table in `src/lib/db/schema/tables.ts`                                          |
 
 Terms that map one-to-one onto standard chess vocabulary (盤面 = board, マス =
 square, 駒 = piece, 手 = move, etc.) are intentionally omitted; they can be

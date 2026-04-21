@@ -31,6 +31,7 @@ import {
 } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
+import type { LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
 const PAGE_SIZE = 12;
 
@@ -38,10 +39,7 @@ const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
 });
 
-type Props = {
-  params: Promise<{ locale: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-};
+type Props = LocaleSearchPageProps;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;

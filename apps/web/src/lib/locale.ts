@@ -25,7 +25,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
  * This is an accepted tradeoff. Link updates inside the app ensure normal
  * users never hit these 404s.
  *
- * @returns The detected locale ('en', 'ja', or 'es')
+ * @returns The detected locale (one of `SUPPORTED_LOCALES`)
  */
 export async function getLocaleFromRequest(): Promise<Locale> {
   // 1. Check cookie first (user preference)
@@ -59,25 +59,53 @@ function isValidLocale(locale: string): locale is Locale {
 }
 
 /**
- * Parses Accept-Language header and returns the first supported locale
+ * Parses an `Accept-Language` header and returns the first entry that matches
+ * a supported locale.
+ *
+ * Matching strategy (per preference order in the header):
+ *  1. Case-insensitive exact match against `SUPPORTED_LOCALES`. RFC 4647
+ *     explicitly allows the subtags in `Accept-Language` to vary in case
+ *     (browsers commonly send `pt-br` lower-cased), while our canonical
+ *     identifiers use BCP 47 mixed case (`pt-BR`). Without normalization, a
+ *     Brazilian browser sending `pt-BR,pt;q=0.9,en;q=0.8` would fall through
+ *     to English despite our shipping a `pt-BR` translation.
+ *  2. Language-prefix fallback: if no exact match, we compare only the
+ *     primary subtag (e.g. `pt` from `pt`, `en` from `en-US`) against the
+ *     primary subtag of each supported locale. This maps a bare `pt` (generic
+ *     Portuguese preference) onto our only supported regional variant
+ *     (`pt-BR`), and it makes `en-GB`/`en-AU` resolve to `en` rather than
+ *     failing over to cookie/default.
+ *
+ * Both steps derive from `SUPPORTED_LOCALES` — there is no secondary locale
+ * list or BCP 47 variant table to keep in sync. Adding a new locale to
+ * `SUPPORTED_LOCALES` automatically fans out here.
+ *
+ * If two supported locales ever share a primary subtag (e.g. `pt-BR` and
+ * `pt-PT`), the prefix fallback resolves to whichever is declared first in
+ * `SUPPORTED_LOCALES`. At that point we should replace the prefix step with
+ * explicit regional preference ordering.
  */
 function parseAcceptLanguage(acceptLanguage: string): Locale | null {
-  // Parse "ja-JP,ja;q=0.9,en-US;q=0.8,en;q=0.7" format
+  // Parse "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7" format, lower-casing each
+  // entry so we can compare without worrying about browser casing.
   const languages = acceptLanguage.split(',').map((lang) => {
     const [code] = lang.trim().split(';');
     return code.toLowerCase();
   });
 
   for (const lang of languages) {
-    // Check for exact match first (e.g., "ja")
-    if (isValidLocale(lang)) {
-      return lang as Locale;
+    // 1. Case-insensitive exact match (e.g., 'pt-br' -> 'pt-BR', 'ja' -> 'ja')
+    const exact = SUPPORTED_LOCALES.find((l) => l.toLowerCase() === lang);
+    if (exact) {
+      return exact;
     }
 
-    // Check for language prefix (e.g., "ja-JP" -> "ja")
+    // 2. Primary-subtag fallback (e.g., 'pt' -> 'pt-BR', 'en-US' -> 'en')
     const prefix = lang.split('-')[0];
-    if (prefix && isValidLocale(prefix)) {
-      return prefix as Locale;
+    if (!prefix) continue;
+    const byPrefix = SUPPORTED_LOCALES.find((l) => l.toLowerCase().split('-')[0] === prefix);
+    if (byPrefix) {
+      return byPrefix;
     }
   }
 

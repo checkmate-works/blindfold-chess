@@ -1,6 +1,7 @@
 import enMessages from '@/messages/en.json';
 import esMessages from '@/messages/es.json';
 import jaMessages from '@/messages/ja.json';
+import ptBRMessages from '@/messages/pt-BR.json';
 import { describe, expect, it } from 'vitest';
 
 import { getGuideInlineLink } from './paragraphInlineLinks';
@@ -100,12 +101,17 @@ describe('getGuideInlineLink', () => {
       ['mukyu', 3, 2],
     ];
 
-    const byLocale: Record<'en' | 'ja' | 'es', unknown> = {
+    // Keep in sync with SUPPORTED_LOCALES in @/config. Every locale shipped
+    // by the app needs to be covered so that missing keys in translated
+    // message files surface as test failures rather than runtime crashes in
+    // the rank guide renderer.
+    const byLocale: Record<'en' | 'ja' | 'es' | 'pt-BR', unknown> = {
       en: enMessages,
       ja: jaMessages,
       es: esMessages,
+      'pt-BR': ptBRMessages,
     };
-    for (const locale of ['en', 'ja', 'es'] as const) {
+    for (const locale of ['en', 'ja', 'es', 'pt-BR'] as const) {
       const t = makeTranslator(byLocale[locale]);
       for (const [rank, page, paragraph] of coords) {
         it(`${locale}: ${rank}:${page}:${paragraph}`, () => {

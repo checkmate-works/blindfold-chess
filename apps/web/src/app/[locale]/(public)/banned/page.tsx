@@ -6,9 +6,11 @@ import { and, desc, eq } from 'drizzle-orm';
 import { db, moderationActions, profiles } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
+import type { LocalePageProps } from '@/app/[locale]/_lib/types';
+
 export const dynamic = 'force-dynamic';
 
-export default async function BannedPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function BannedPage({ params }: LocalePageProps) {
   const { locale } = await params;
   const supabase = await createClient();
   const {

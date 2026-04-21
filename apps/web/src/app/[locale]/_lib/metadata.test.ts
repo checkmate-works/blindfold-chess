@@ -65,7 +65,7 @@ describe('generateCanonicalMetadata', () => {
   });
 
   describe('alternate languages generation', () => {
-    it('should generate correct alternate URLs for both locales', () => {
+    it('should generate correct alternate URLs for all supported locales', () => {
       const result = generateCanonicalMetadata({
         locale: 'en',
         path: '/learn',
@@ -74,6 +74,7 @@ describe('generateCanonicalMetadata', () => {
       expect(result.alternates?.languages).toEqual({
         en: 'https://www.blindfold-chess.online/en/learn',
         es: 'https://www.blindfold-chess.online/es/learn',
+        'pt-BR': 'https://www.blindfold-chess.online/pt-BR/learn',
         ja: 'https://www.blindfold-chess.online/ja/learn',
         'x-default': 'https://www.blindfold-chess.online/en/learn',
       });
@@ -88,6 +89,7 @@ describe('generateCanonicalMetadata', () => {
       expect(result.alternates?.languages).toEqual({
         en: 'https://www.blindfold-chess.online/en',
         es: 'https://www.blindfold-chess.online/es',
+        'pt-BR': 'https://www.blindfold-chess.online/pt-BR',
         ja: 'https://www.blindfold-chess.online/ja',
         'x-default': 'https://www.blindfold-chess.online/en',
       });
@@ -102,6 +104,7 @@ describe('generateCanonicalMetadata', () => {
       expect(result.alternates?.languages).toEqual({
         en: 'https://www.blindfold-chess.online/en/practice/algebraic-notation',
         es: 'https://www.blindfold-chess.online/es/practice/algebraic-notation',
+        'pt-BR': 'https://www.blindfold-chess.online/pt-BR/practice/algebraic-notation',
         ja: 'https://www.blindfold-chess.online/ja/practice/algebraic-notation',
         'x-default': 'https://www.blindfold-chess.online/en/practice/algebraic-notation',
       });
@@ -282,6 +285,7 @@ describe('generateCanonicalMetadata', () => {
       });
       expect(result.alternates?.languages).toHaveProperty('en');
       expect(result.alternates?.languages).toHaveProperty('es');
+      expect(result.alternates?.languages).toHaveProperty('pt-BR');
       expect(result.alternates?.languages).toHaveProperty('ja');
       expect(result.alternates?.languages).toHaveProperty('x-default');
     });
@@ -295,6 +299,92 @@ describe('generateCanonicalMetadata', () => {
       });
       // Should use ja locale for buildPageTitle since canonicalLocale is ja
       expect(result.openGraph?.title).toBe('目隠しチェスの練習 | 心眼チェス');
+    });
+  });
+
+  // Added by tester for Phase-2 hreflang remediation (B2): verify that the
+  // canonical/alternates emission works for `pt-BR`, the newly-introduced
+  // fourth supported locale. These assertions exercise the locale that is
+  // most likely to regress if hreflang machinery is ever hard-coded to
+  // three-letter primary-subtag locales (the `pt-BR` BCP 47 tag contains a
+  // hyphen + regional code, unlike `en`/`es`/`ja`).
+  describe('pt-BR hreflang / canonical emission', () => {
+    it('emits a canonical URL and exactly four language alternates + x-default at root', () => {
+      const result = generateCanonicalMetadata({
+        locale: 'pt-BR',
+        path: '/',
+      });
+
+      expect(result.alternates?.canonical).toBe('https://www.blindfold-chess.online/pt-BR');
+
+      const languages = result.alternates?.languages ?? {};
+      // Exactly the four supported locales + x-default, no more and no fewer
+      expect(Object.keys(languages).sort()).toEqual(['en', 'es', 'ja', 'pt-BR', 'x-default']);
+      expect(languages['pt-BR']).toBe('https://www.blindfold-chess.online/pt-BR');
+      expect(languages['x-default']).toBe('https://www.blindfold-chess.online/en');
+    });
+
+    it('restricts alternates to the availableLocales subset when provided', () => {
+      const result = generateCanonicalMetadata({
+        locale: 'pt-BR',
+        path: '/articles/test',
+        availableLocales: ['en', 'pt-BR'],
+      });
+
+      const languages = result.alternates?.languages ?? {};
+      // Only the 2 requested locales + x-default
+      expect(Object.keys(languages).sort()).toEqual(['en', 'pt-BR', 'x-default']);
+      expect(languages['en']).toBe('https://www.blindfold-chess.online/en/articles/test');
+      expect(languages['pt-BR']).toBe('https://www.blindfold-chess.online/pt-BR/articles/test');
+      expect(languages['x-default']).toBe('https://www.blindfold-chess.online/en/articles/test');
+    });
+  });
+
+  // Documents the silent-substitution contract at the hreflang-helper boundary
+  // exercised by `articles/[slug]/page.tsx` and `announcements/[slug]/page.tsx`,
+  // which now filter DB-sourced locale strings through `hasLocale(...)` before
+  // handing them to `generateCanonicalMetadata`. When the DB row's stored
+  // locale (or the derived `availableLocales` set) contains only unsupported
+  // values, the narrow may collapse to an empty list; the current contract is
+  // that we emit **only** the `x-default` alternate rather than silently
+  // falling back to the full `SUPPORTED_LOCALES` set (which would advertise
+  // translations that do not exist). This test pins that behaviour so a future
+  // "be helpful" change to `?? [...SUPPORTED_LOCALES]` would fail loudly.
+  describe('availableLocales: empty-set boundary (S3 silent substitution)', () => {
+    it('emits only x-default when availableLocales is an empty array', () => {
+      const result = generateCanonicalMetadata({
+        locale: 'en',
+        path: '/articles/orphan',
+        availableLocales: [],
+      });
+
+      const languages = result.alternates?.languages ?? {};
+      // No per-locale hreflang entries, only the x-default fallback
+      expect(Object.keys(languages).sort()).toEqual(['x-default']);
+      expect(languages['x-default']).toBe('https://www.blindfold-chess.online/en/articles/orphan');
+    });
+
+    it('does NOT self-reference the current locale when it has been filtered out of availableLocales', () => {
+      // Mirrors the edge case where a DB row's `locale` is (say) `'fr'` —
+      // `hasLocale` drops it, `canonicalLocale` is undefined, and the only
+      // translated version that actually exists is English. The page still
+      // renders (silent substitution at the route level) and the hreflang set
+      // correctly advertises only the English translation without advertising
+      // a non-existent `es` version just because the visitor landed on `/es/...`.
+      const result = generateCanonicalMetadata({
+        locale: 'es',
+        path: '/articles/en-only',
+        availableLocales: ['en'],
+      });
+
+      const languages = result.alternates?.languages ?? {};
+      expect(Object.keys(languages).sort()).toEqual(['en', 'x-default']);
+      expect(languages['en']).toBe('https://www.blindfold-chess.online/en/articles/en-only');
+      expect(languages['x-default']).toBe('https://www.blindfold-chess.online/en/articles/en-only');
+      // Critically, the current locale (`es`) must NOT appear — it would be a
+      // broken hreflang claiming a Spanish version exists when the article is
+      // English-only.
+      expect(languages['es']).toBeUndefined();
     });
   });
 });
@@ -330,15 +420,30 @@ describe('buildPageTitle', () => {
     });
   });
 
-  describe('unknown locale fallback', () => {
-    it('should fall back to English site names for unknown locale', () => {
-      expect(buildPageTitle('Learn Chess', 'fr')).toBe('Learn Chess | Blindfold Chess');
+  // Exhaustive contract: `buildPageTitle` must produce the exact per-locale
+  // suffix declared in `SITE_NAMES`. Mirrors the exhaustive `LANGUAGE_TAGS`
+  // contract test in `src/lib/seo/jsonld/index.test.tsx` — adding a locale
+  // without extending `SITE_NAMES` would be a silent SEO bug that only
+  // surfaces post-deploy, so we pin every supported locale here.
+  describe('exhaustive per-locale suffixes', () => {
+    it('emits the correct seoSiteName suffix for every SUPPORTED_LOCALES value', () => {
+      expect(buildPageTitle('Learn Chess', 'en')).toBe('Learn Chess | Blindfold Chess');
+      expect(buildPageTitle('Aprender Ajedrez', 'es')).toBe('Aprender Ajedrez | Ajedrez a Ciegas');
+      expect(buildPageTitle('Aprender Xadrez', 'pt-BR')).toBe('Aprender Xadrez | Xadrez às Cegas');
+      expect(buildPageTitle('チェスを学ぶ', 'ja')).toBe('チェスを学ぶ | 目隠しチェス');
     });
 
-    it('should use brand suffix when unknown locale title contains English seoSiteName', () => {
-      expect(buildPageTitle('Blindfold Chess Guide', 'fr')).toBe(
+    it('swaps to the brand-name suffix when the title contains the seoSiteName', () => {
+      expect(buildPageTitle('Blindfold Chess Guide', 'en')).toBe(
         'Blindfold Chess Guide | Shingan Chess'
       );
+      expect(buildPageTitle('Guía de Ajedrez a Ciegas', 'es')).toBe(
+        'Guía de Ajedrez a Ciegas | Shingan Chess'
+      );
+      expect(buildPageTitle('Guia de Xadrez às Cegas', 'pt-BR')).toBe(
+        'Guia de Xadrez às Cegas | Shingan Chess'
+      );
+      expect(buildPageTitle('目隠しチェスガイド', 'ja')).toBe('目隠しチェスガイド | 心眼チェス');
     });
   });
 
@@ -427,6 +532,35 @@ describe('resolveTitle', () => {
     });
   });
 
+  // Exhaustive contract: for every supported locale, `resolveTitle` must
+  // return either a plain string (when the title does not contain that
+  // locale's seoSiteName) or an `{ absolute }` object with the brand-name
+  // suffix (when it does). Pins every locale explicitly to prevent the
+  // silent-fallback class of bug that PR-C set out to eliminate.
+  describe('exhaustive per-locale behaviour', () => {
+    it('returns a plain string for every SUPPORTED_LOCALES value when the title lacks seoSiteName', () => {
+      expect(resolveTitle('Learn Chess', 'en')).toBe('Learn Chess');
+      expect(resolveTitle('Aprender Ajedrez', 'es')).toBe('Aprender Ajedrez');
+      expect(resolveTitle('Aprender Xadrez', 'pt-BR')).toBe('Aprender Xadrez');
+      expect(resolveTitle('チェスを学ぶ', 'ja')).toBe('チェスを学ぶ');
+    });
+
+    it('returns `{ absolute }` with the brand suffix when the title contains the locale-specific seoSiteName', () => {
+      expect(resolveTitle('Blindfold Chess Guide', 'en')).toEqual({
+        absolute: 'Blindfold Chess Guide | Shingan Chess',
+      });
+      expect(resolveTitle('Guía de Ajedrez a Ciegas', 'es')).toEqual({
+        absolute: 'Guía de Ajedrez a Ciegas | Shingan Chess',
+      });
+      expect(resolveTitle('Guia de Xadrez às Cegas', 'pt-BR')).toEqual({
+        absolute: 'Guia de Xadrez às Cegas | Shingan Chess',
+      });
+      expect(resolveTitle('目隠しチェスガイド', 'ja')).toEqual({
+        absolute: '目隠しチェスガイド | 心眼チェス',
+      });
+    });
+  });
+
   describe('edge cases', () => {
     it('should return plain string for empty title', () => {
       const result = resolveTitle('', 'en');
@@ -436,16 +570,6 @@ describe('resolveTitle', () => {
     it('should return absolute object when title is exactly seoSiteName', () => {
       const result = resolveTitle('Blindfold Chess', 'en');
       expect(result).toEqual({ absolute: 'Blindfold Chess | Shingan Chess' });
-    });
-
-    it('should fall back to English detection for unknown locale', () => {
-      const result = resolveTitle('Blindfold Chess Guide', 'fr');
-      expect(result).toEqual({ absolute: 'Blindfold Chess Guide | Shingan Chess' });
-    });
-
-    it('should return plain string for unknown locale with non-matching title', () => {
-      const result = resolveTitle('Some Page', 'fr');
-      expect(result).toBe('Some Page');
     });
 
     it('should return absolute object for JA title with seoSiteName at end', () => {

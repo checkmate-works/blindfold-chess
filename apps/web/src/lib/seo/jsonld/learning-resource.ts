@@ -1,4 +1,8 @@
-import { AUTHOR_NAME, LANGUAGE_MAP, SITE_URL } from './base';
+import { LANGUAGE_TAGS } from '@/i18n/language-tags';
+
+import type { Locale } from '@/app/[locale]/_lib/types';
+
+import { AUTHOR_NAME, SITE_URL } from './base';
 
 export type LearningResourceData = {
   /** Visible title of the resource (e.g. "5th Kyū Guide"). */
@@ -7,8 +11,8 @@ export type LearningResourceData = {
   description: string;
   /** Absolute URL of the current page. */
   url: string;
-  /** BCP-47 / simple locale code (`en`, `ja`, `es`). Mapped to e.g. `en-US`. */
-  inLanguage: string;
+  /** Supported app locale. Mapped via `LANGUAGE_TAGS` to a BCP 47 tag (e.g. `en` -> `en-US`). */
+  inLanguage: Locale;
   /** Human-readable rank/level label (e.g. "5th Kyū"). */
   educationalLevel: string;
   /** `https://schema.org/LearningResource` subtype. */
@@ -54,7 +58,7 @@ export function generateLearningResourceSchema(params: LearningResourceData) {
     name: params.name,
     description: params.description,
     url: params.url,
-    inLanguage: LANGUAGE_MAP[params.inLanguage] ?? params.inLanguage,
+    inLanguage: LANGUAGE_TAGS[params.inLanguage],
     educationalLevel: params.educationalLevel,
     learningResourceType: params.learningResourceType,
     author: {

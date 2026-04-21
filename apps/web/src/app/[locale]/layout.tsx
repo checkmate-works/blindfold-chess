@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { hasLocale } from 'next-intl';
 import { getMessages, getTranslations } from 'next-intl/server';
 import { Inter } from 'next/font/google';
 import { notFound } from 'next/navigation';
@@ -6,11 +7,13 @@ import { notFound } from 'next/navigation';
 import { EnvironmentRibbon } from '@/app/_components/EnvironmentRibbon';
 import { GoogleScripts } from '@/app/_components/GoogleScripts';
 import { AUTHOR_NAME, COOKIEYES_ID, GA_MEASUREMENT_ID, SITE_URL } from '@/config';
+import { OG_LOCALE_MAP } from '@/i18n/og-locale';
 import { routing } from '@/i18n/routing';
 import { generateThemeCSS } from '@blindfold-chess/ui';
 
 import { JsonLd, generateOrganizationSchema, generateWebSiteSchema } from '@/lib/seo/jsonld';
 import { StorageAvailabilityProvider } from '@/lib/storage/StorageAvailabilityProvider';
+import { ThemeScript } from '@/lib/theme';
 
 import '../globals.css';
 import { Footer } from './_components/Footer';
@@ -31,7 +34,11 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  const { locale } = await params;
+  const { locale: rawLocale } = await params;
+  // Narrow `locale` (typed as plain `string` from params) to a supported
+  // `Locale` so exhaustive `Record<Locale, _>` maps (OG, SITE_NAMES) can be
+  // indexed without a fallback. Unknown locales fall back to the default.
+  const locale = hasLocale(routing.locales, rawLocale) ? rawLocale : routing.defaultLocale;
 
   let t: Awaited<ReturnType<typeof getTranslations<'metadata'>>>;
   try {
@@ -46,8 +53,7 @@ export async function generateMetadata({
   const siteName = t('siteName');
   const seoSiteName = t('seoSiteName');
   const description = t('siteDescription');
-  const OG_LOCALE_MAP: Record<string, string> = { en: 'en_US', ja: 'ja_JP', es: 'es_ES' };
-  const currentLocale = OG_LOCALE_MAP[locale] ?? 'en_US';
+  const currentLocale = OG_LOCALE_MAP[locale];
   const alternateLocales = Object.values(OG_LOCALE_MAP).filter((l) => l !== currentLocale);
 
   return {
@@ -109,12 +115,16 @@ export default async function Layout({
   children: React.ReactNode;
   params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await params;
+  const { locale: rawLocale } = await params;
 
-  // Ensure that the incoming `locale` is valid
-  if (!(routing.locales as readonly string[]).includes(locale)) {
+  // Ensure that the incoming `locale` is valid. Narrow to `Locale` so every
+  // downstream call that expects the `Locale` union (JSON-LD emitters, OG
+  // metadata, etc.) can be fed `locale` directly without a second runtime
+  // check or cast.
+  if (!hasLocale(routing.locales, rawLocale)) {
     notFound();
   }
+  const locale = rawLocale;
 
   let t: Awaited<ReturnType<typeof getTranslations<'metadata'>>>;
   let allMessages: Awaited<ReturnType<typeof getMessages>>;
@@ -153,6 +163,7 @@ export default async function Layout({
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
+        <ThemeScript />
         <JsonLd data={generateWebSiteSchema(locale, t('siteName'))} />
         <JsonLd data={generateOrganizationSchema()} />
         <style

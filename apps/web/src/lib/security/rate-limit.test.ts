@@ -23,9 +23,8 @@ vi.mock('@/lib/db', () => ({
 
 vi.mock('server-only', () => ({}));
 
-const { checkRateLimit, isRateLimited, createOpeningPostRateLimit, RATE_LIMITS } = await import(
-  './rate-limit'
-);
+const { checkRateLimit, isRateLimited, createOpeningPostRateLimit, RATE_LIMITS } =
+  await import('./rate-limit');
 
 const testUserId = 'user-00000000-0000-0000-0000-000000000001';
 

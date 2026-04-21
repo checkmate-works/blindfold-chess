@@ -8,7 +8,20 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import type { Article, ArticleCategory, ArticleMetadata, ArticleSlug } from './types';
 import { ARTICLE_CATEGORIES, ARTICLE_PRACTICE_MAPPING } from './types';
 
-const contentRegistry: Record<string, Record<Locale, () => Promise<string>>> = {
+// Per-article content loaders keyed by slug, then by locale.
+//
+// The inner type is `Partial<Record<Locale, ...>>` because a new locale may be
+// added to `SUPPORTED_LOCALES` (e.g. `pt-BR`) before per-article translations
+// exist. Missing (slug, locale) pairs are handled at the data layer:
+// `createContentManager.getArticle` returns `null`, `getAllArticles` filters
+// out articles without a loader for the requested locale.
+//
+// The set of locales actually registered per slug is surfaced via
+// `getLearnArticleAvailableLocales(slug)` and plumbed into
+// `generateCanonicalMetadata` / `generateAlternates` so partially-translated
+// articles only emit hreflang and sitemap `<alternate>` entries for the
+// locales that have content.
+const contentRegistry: Record<string, Partial<Record<Locale, () => Promise<string>>>> = {
   'algebraic-notation': {
     en: () => import('../_content/algebraic-notation/en').then((m) => m.default),
     ja: () => import('../_content/algebraic-notation/ja').then((m) => m.default),
@@ -186,6 +199,16 @@ export async function getArticle(slug: string, locale: Locale): Promise<Article 
  */
 export async function getAllArticles(locale: Locale): Promise<ArticleMetadata[]> {
   return learnContentManager.getAllArticles(locale);
+}
+
+/**
+ * Return the locales for which a given learn article has both metadata and
+ * content loaders registered — i.e. the locales whose
+ * `/learn/<category>/<slug>` URL should appear in hreflang alternates and the
+ * sitemap. Used by the article page metadata and the sitemap builder.
+ */
+export function getLearnArticleAvailableLocales(slug: string): Locale[] {
+  return learnContentManager.getAvailableLocales(slug);
 }
 
 /**

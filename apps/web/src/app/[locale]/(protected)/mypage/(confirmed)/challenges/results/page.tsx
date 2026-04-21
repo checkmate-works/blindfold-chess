@@ -17,6 +17,7 @@ import {
 } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
+import type { LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
 import { getAvailableMenuTypes } from '../_actions/get-challenge-sessions';
 import { formatDate } from '../_lib/dashboard-utils';
@@ -29,10 +30,7 @@ const searchParamsCache = createSearchParamsCache({
   key: parseAsString.withDefault(''),
 });
 
-type Props = {
-  params: Promise<{ locale: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-};
+type Props = LocaleSearchPageProps;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;

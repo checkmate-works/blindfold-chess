@@ -2,19 +2,28 @@ import type { Metadata } from 'next';
 
 import { SITE_URL, SUPPORTED_LOCALES } from '@/config';
 
+import type { Locale } from '@/app/[locale]/_lib/types';
+
 /**
  * Keyword map for determining title suffix by locale.
- * - seoSiteName: the SEO-focused site name that also serves as the keyword to detect
- * - siteName: the brand name used as suffix when keyword is already present in title
+ * - `seoSiteName`: the SEO-focused site name that also serves as the keyword
+ *   to detect in a page title.
+ * - `siteName`: the brand name used as suffix when the keyword is already
+ *   present in the title (to avoid redundant stuffing).
+ *
+ * Exhaustiveness: typed as `Record<Locale, _>` mirroring `LANGUAGE_TAGS`
+ * (`src/i18n/language-tags.ts`) and `OG_LOCALE_MAP` (`src/i18n/og-locale.ts`),
+ * so adding a new entry to `SUPPORTED_LOCALES` without updating this map is a
+ * compile-time error. There is intentionally no silent `?? SITE_NAMES.en`
+ * runtime fallback — a missing locale must fail loudly at compile time rather
+ * than silently emit the wrong brand strings to OG / `<title>` metadata.
  */
-const SITE_NAMES: Record<string, { seoSiteName: string; siteName: string }> = {
+const SITE_NAMES: Record<Locale, { seoSiteName: string; siteName: string }> = {
   en: { seoSiteName: 'Blindfold Chess', siteName: 'Shingan Chess' },
   ja: { seoSiteName: '目隠しチェス', siteName: '心眼チェス' },
+  es: { seoSiteName: 'Ajedrez a Ciegas', siteName: 'Shingan Chess' },
+  'pt-BR': { seoSiteName: 'Xadrez às Cegas', siteName: 'Shingan Chess' },
 };
-
-function getSiteNames(locale: string) {
-  return SITE_NAMES[locale] ?? SITE_NAMES['en'];
-}
 
 /**
  * Build a full page title with the appropriate suffix.
@@ -24,8 +33,8 @@ function getSiteNames(locale: string) {
  *
  * @returns Full title string with suffix (e.g., "Learn | Blindfold Chess")
  */
-export function buildPageTitle(title: string, locale: string): string {
-  const { seoSiteName, siteName } = getSiteNames(locale);
+export function buildPageTitle(title: string, locale: Locale): string {
+  const { seoSiteName, siteName } = SITE_NAMES[locale];
   if (title.includes(seoSiteName)) {
     return `${title} | ${siteName}`;
   }
@@ -42,8 +51,8 @@ export function buildPageTitle(title: string, locale: string): string {
  *
  * @returns Plain string (uses template) or `{ absolute: string }` (bypasses template)
  */
-export function resolveTitle(title: string, locale: string): string | { absolute: string } {
-  const { seoSiteName, siteName } = getSiteNames(locale);
+export function resolveTitle(title: string, locale: Locale): string | { absolute: string } {
+  const { seoSiteName, siteName } = SITE_NAMES[locale];
   if (title.includes(seoSiteName)) {
     return { absolute: `${title} | ${siteName}` };
   }
@@ -51,8 +60,38 @@ export function resolveTitle(title: string, locale: string): string | { absolute
 }
 
 /**
- * Generate canonical URL, alternates, and openGraph metadata for a page.
- * @param locale - Current locale (e.g., 'en', 'ja')
+ * Emit canonical URL, hreflang `alternates.languages`, and openGraph URL /
+ * title / description metadata for a page. This is the central hreflang
+ * machinery used by every non-sitemap page in the app.
+ *
+ * Contract:
+ * 1. **Canonical URL**: `<SITE_URL>/<effectiveLocale>/<path>` where
+ *    `effectiveLocale` is `canonicalLocale ?? locale`. The canonical tells
+ *    Google which URL is the authoritative version of this page; pointing it
+ *    at a different locale is the "fallback content" signal used when a
+ *    translation is unavailable and we are serving the source-language page.
+ * 2. **`alternates.languages`**: one entry per locale in `SUPPORTED_LOCALES`
+ *    (or `availableLocales` when provided) plus an `x-default` entry. Each
+ *    entry is a fully-qualified URL pointing at that locale's version of the
+ *    same path. This satisfies Google's **bidirectional hreflang
+ *    requirement**: every page lists itself and all its alternates, and every
+ *    alternate must list us back — because all pages run through this helper
+ *    and iterate the same locale list, self-referencing is automatic.
+ * 3. **`x-default`**: always points at the English version. `x-default` is
+ *    the fallback Google shows when no hreflang entry matches the user's
+ *    language / region, and English is the project's source language.
+ * 4. **`availableLocales` override**: for partially-translated pages (e.g.
+ *    articles that exist in a subset of locales), pass the subset here to
+ *    emit hreflang only for locales where the page actually exists. Omitting
+ *    this argument defaults to the full `SUPPORTED_LOCALES` list, which is
+ *    correct for pages that are translated for every locale.
+ *
+ * Keep in sync with `generateAlternates` in `app/_lib/sitemap/shared.ts`,
+ * which is the sitemap counterpart of this function's `languages` map. Both
+ * iterate `SUPPORTED_LOCALES`, so adding a locale fans out to both surfaces
+ * without any manual synchronization.
+ *
+ * @param locale - Current locale (e.g., 'en', 'pt-BR', 'ja')
  * @param path - Path without locale prefix (e.g., '/learn', '/practice/algebraic-notation')
  * @param title - Optional page title for openGraph
  * @param description - Optional page description for openGraph
@@ -67,12 +106,12 @@ export function generateCanonicalMetadata({
   availableLocales,
   canonicalLocale,
 }: {
-  locale: string;
+  locale: Locale;
   path: string;
   title?: string;
   description?: string;
-  availableLocales?: string[];
-  canonicalLocale?: string;
+  availableLocales?: Locale[];
+  canonicalLocale?: Locale;
 }): Metadata {
   const baseUrl = SITE_URL;
   const cleanPath = path.startsWith('/') ? path.slice(1) : path;

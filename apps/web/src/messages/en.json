@@ -3,6 +3,7 @@
     "siteName": "Shingan Chess",
     "seoSiteName": "Blindfold Chess",
     "siteDescription": "A free online platform for practising blindfold chess. Improve your chess visualisation and calculation skills.",
+    "webApplicationDescription": "A free training app for blindfold chess",
     "home": {
       "title": "Blindfold Chess Training - Free Online Visualization Practice",
       "description": "Play blindfold chess against AI, follow a structured training curriculum, and share knowledge through social features."
@@ -402,12 +403,12 @@
     "letterPage": {
       "title": "Terms Starting with {letter}",
       "description": "Chess terms starting with the letter {letter}",
-      "count": "{count} terms found",
+      "count": "{count, plural, one {# term found} other {# terms found}}",
       "termsTitle": "Terms"
     },
     "categoryPage": {
       "description": "Chess terms related to {category}",
-      "count": "{count} terms found",
+      "count": "{count, plural, one {# term found} other {# terms found}}",
       "termsTitle": "Terms",
       "categoriesTitle": "Categories"
     },
@@ -420,7 +421,7 @@
     "placeholder": "Paste your PGN notation here...\n\nExample:\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6",
     "completeSuggestion": "✨ Complete \"{suggestion}\"",
     "tabToComplete": "💡 Press Tab to complete \"{suggestion}\"",
-    "validWithMoves": "✓ Valid PGN with {count} moves",
+    "validWithMoves": "{count, plural, one {✓ Valid PGN with # move} other {✓ Valid PGN with # moves}}",
     "invalidPgn": "Invalid PGN format",
     "invalidMove": "\"{move}\" is an invalid move"
   },
@@ -935,7 +936,7 @@
         "solveSection": "Solve the Problem",
         "start": "Start",
         "timeLimit": "Time Limit",
-        "seconds": "{count} seconds",
+        "seconds": "{count, plural, one {# second} other {# seconds}}",
         "createdBy": "Created by",
         "tutorialLink": "View Tutorial",
         "tryAgain": "Try Again",
@@ -1291,7 +1292,7 @@
       "correctMoves": "Correct Moves",
       "moveDetails": "Move Details",
       "correct": "Correct",
-      "attempts": "{count} attempts",
+      "attempts": "{count, plural, one {# attempt} other {# attempts}}",
       "backToSetup": "Back to Setup",
       "includeOpponentMoves": "Include opponent's moves",
       "moveHistory": "Move History",
@@ -1452,7 +1453,7 @@
       "deleteConfirm": "Delete",
       "cancel": "Cancel",
       "gameDeletedToast": "Game deleted successfully",
-      "gamesDeletedToast": "{count} games deleted successfully",
+      "gamesDeletedToast": "{count, plural, one {# game deleted successfully} other {# games deleted successfully}}",
       "deleteFailedToast": "Failed to delete game",
       "moreGames": "All games"
     },
@@ -1492,7 +1493,7 @@
     "title": "Bulk Delete Games",
     "explanation": "Select and delete unwanted games in bulk.",
     "noGames": "No games to delete",
-    "selectedCount": "{count} games selected",
+    "selectedCount": "{count, plural, one {# game selected} other {# games selected}}",
     "selectAll": "Select All",
     "unselectAll": "Unselect All",
     "delete": "Delete",
@@ -1501,7 +1502,7 @@
     "errorDeleting": "Failed to delete. Please try again.",
     "confirmTitle": "Delete Selected Games?",
     "confirmMessage": "Are you sure you want to delete {count} games? This action cannot be undone.",
-    "deletedToast": "{count} games deleted successfully",
+    "deletedToast": "{count, plural, one {# game deleted successfully} other {# games deleted successfully}}",
     "deleteFailedToast": "Failed to delete games"
   },
   "play": {
@@ -1590,7 +1591,7 @@
         "undoCount": "Undos",
         "hintCount": "Move Hints",
         "viewDetails": "Log",
-        "times": "{count} times",
+        "times": "{count, plural, one {# time} other {# times}}",
         "columnItem": "Item",
         "columnDetail": "Detail"
       }
@@ -2405,7 +2406,7 @@
     "postCreated": "Posted successfully",
     "rateLimited": "You can only post once per day for each opening. Please try again later.",
     "gameSaved": "Game saved successfully",
-    "gamesDeleted": "{count} games deleted successfully",
+    "gamesDeleted": "{count, plural, one {# game deleted successfully} other {# games deleted successfully}}",
     "accountDeleted": "Your account has been deleted",
     "practiceResultSaveFailed": "Failed to save your result. Please try again.",
     "positionCreated": "Position created successfully",

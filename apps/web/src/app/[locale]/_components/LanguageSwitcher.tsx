@@ -5,6 +5,12 @@ import { usePathname, useRouter } from 'next/navigation';
 import { SUPPORTED_LOCALES } from '@/config';
 import { FaGlobe } from 'react-icons/fa';
 
+/**
+ * Human-readable label for each supported locale, shown in the language
+ * switcher UI. Typed as a mapped type over `SUPPORTED_LOCALES` so that
+ * adding a new locale to the array without adding a label here is a
+ * compile-time error — the switcher can never render an empty option.
+ */
 type LocaleLabels = {
   [K in (typeof SUPPORTED_LOCALES)[number]]: string;
 };
@@ -12,6 +18,7 @@ type LocaleLabels = {
 const LOCALE_LABELS: LocaleLabels = {
   en: 'English',
   es: 'Español',
+  'pt-BR': 'Português (Brasil)',
   ja: '日本語',
 } as const;
 

@@ -218,8 +218,9 @@ describe('announcements queries', () => {
       const result = await getPublishedAnnouncement('test-slug', 'en');
 
       expect(result).not.toBeNull();
-      expect(result!.slug).toBe('test-slug');
-      expect(result!.locale).toBe('en');
+      expect(result!.announcement.slug).toBe('test-slug');
+      expect(result!.announcement.locale).toBe('en');
+      expect(result!.availableLocales).toEqual(['en']);
     });
 
     it('should fall back to default locale (en) when requested locale is not available', async () => {
@@ -230,8 +231,8 @@ describe('announcements queries', () => {
       const result = await getPublishedAnnouncement('test-slug', 'ja');
 
       expect(result).not.toBeNull();
-      expect(result!.slug).toBe('test-slug');
-      expect(result!.locale).toBe('en');
+      expect(result!.announcement.slug).toBe('test-slug');
+      expect(result!.announcement.locale).toBe('en');
     });
 
     it('should fall back to any locale when neither requested nor default is available', async () => {
@@ -242,7 +243,7 @@ describe('announcements queries', () => {
       const result = await getPublishedAnnouncement('test-slug', 'ja');
 
       expect(result).not.toBeNull();
-      expect(result!.locale).toBe('fr');
+      expect(result!.announcement.locale).toBe('fr');
     });
 
     it('should prefer the requested locale when multiple locale variants exist', async () => {
@@ -254,7 +255,8 @@ describe('announcements queries', () => {
       const result = await getPublishedAnnouncement('test-slug', 'ja');
 
       expect(result).not.toBeNull();
-      expect(result!.locale).toBe('ja');
+      expect(result!.announcement.locale).toBe('ja');
+      expect(result!.availableLocales.sort()).toEqual(['en', 'ja']);
     });
 
     it('should prefer default locale (en) over other locales when requested is unavailable', async () => {
@@ -266,7 +268,7 @@ describe('announcements queries', () => {
       const result = await getPublishedAnnouncement('test-slug', 'ja');
 
       expect(result).not.toBeNull();
-      expect(result!.locale).toBe('en');
+      expect(result!.announcement.locale).toBe('en');
     });
 
     it('should return null when announcement does not exist', async () => {
@@ -289,7 +291,7 @@ describe('announcements queries', () => {
       const result = await getPublishedAnnouncement('members-only', 'en');
 
       expect(result).not.toBeNull();
-      expect(result!.visibility).toBe('members_only');
+      expect(result!.announcement.visibility).toBe('members_only');
     });
 
     it('should return null for unpublished announcement', async () => {
@@ -314,7 +316,8 @@ describe('announcements queries', () => {
       const result = await getPublishedAnnouncement('multi', 'fr');
 
       expect(result).not.toBeNull();
-      expect(result!.locale).toBe('fr');
+      expect(result!.announcement.locale).toBe('fr');
+      expect(result!.availableLocales.sort()).toEqual(['de', 'en', 'fr', 'ja']);
     });
 
     it('should fall back to en when requested locale is missing among 3+ variants', async () => {
@@ -328,7 +331,7 @@ describe('announcements queries', () => {
       const result = await getPublishedAnnouncement('multi', 'ja');
 
       expect(result).not.toBeNull();
-      expect(result!.locale).toBe('en');
+      expect(result!.announcement.locale).toBe('en');
     });
 
     it('should fall back to first available when neither requested nor en exists among 3+ variants', async () => {
@@ -342,7 +345,7 @@ describe('announcements queries', () => {
       const result = await getPublishedAnnouncement('multi', 'ja');
 
       expect(result).not.toBeNull();
-      expect(result!.locale).toBe('fr');
+      expect(result!.announcement.locale).toBe('fr');
     });
   });
 

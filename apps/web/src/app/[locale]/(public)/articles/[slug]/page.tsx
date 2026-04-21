@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { hasLocale } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
 // Renamed to avoid conflict with Next.js route segment config `export const dynamic`
 import nextDynamic from 'next/dynamic';
@@ -6,6 +7,7 @@ import { notFound } from 'next/navigation';
 
 import type { TiptapJsonContent } from '@/app/admin/articles/_lib/types';
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
+import { routing } from '@/i18n/routing';
 
 import { JsonLd, generateBlogPostingSchema } from '@/lib/seo/jsonld';
 
@@ -47,7 +49,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const { article, availableLocales } = result;
-  const isFallback = article.locale !== locale;
+  // Narrow DB-sourced `locale` values (typed as plain `string`) to the
+  // `Locale` union before handing them to the exhaustive metadata helpers.
+  // Unknown values are filtered out of `availableLocales` (rather than
+  // falling back silently) so the hreflang set never advertises an
+  // unsupported locale.
+  const narrowedAvailableLocales = availableLocales.filter((l): l is Locale =>
+    hasLocale(routing.locales, l)
+  );
+  const articleLocale: Locale | undefined = hasLocale(routing.locales, article.locale)
+    ? article.locale
+    : undefined;
+  const isFallback = articleLocale !== locale;
   const title = article.title;
   const description = article.content.slice(0, 160).replace(/\n/g, ' ').trim();
 
@@ -57,12 +70,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       path: `articles/${slug}`,
       title,
       description,
-      ...(isFallback && {
-        canonicalLocale: article.locale,
-        availableLocales,
-      }),
+      availableLocales: narrowedAvailableLocales,
+      ...(isFallback &&
+        articleLocale && {
+          canonicalLocale: articleLocale,
+        }),
     }),
-    title: resolveTitle(title, isFallback ? article.locale : locale),
+    title: resolveTitle(title, isFallback && articleLocale ? articleLocale : locale),
     description,
   };
 }

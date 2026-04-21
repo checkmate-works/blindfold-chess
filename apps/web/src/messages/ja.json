@@ -3,6 +3,7 @@
     "siteName": "心眼チェス",
     "seoSiteName": "目隠しチェス",
     "siteDescription": "目隠しチェスの練習が無料でできるオンラインプラットフォーム。チェスのビジュアライゼーションスキルや計算力を向上させましょう。",
+    "webApplicationDescription": "目隠しチェスの無料練習アプリ",
     "home": {
       "title": "目隠しチェストレーニング - 無料オンライン練習プラットフォーム",
       "description": "目隠しチェスでのAI対局や、段階的なトレーニングカリキュラム、知見の共有などのソーシャル機能をご利用いただけます。"
@@ -403,12 +404,12 @@
     "letterPage": {
       "title": "{letter}で始まる用語",
       "description": "{letter}で始まるチェス用語",
-      "count": "{count}件の用語",
+      "count": "{count, plural, other {#件の用語}}",
       "termsTitle": "用語一覧"
     },
     "categoryPage": {
       "description": "{category}に関連するチェス用語",
-      "count": "{count}件の用語",
+      "count": "{count, plural, other {#件の用語}}",
       "termsTitle": "用語一覧",
       "categoriesTitle": "カテゴリー一覧"
     },
@@ -421,7 +422,7 @@
     "placeholder": "PGN記法を貼り付けてください...\n\n例:\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6",
     "completeSuggestion": "✨ \"{suggestion}\" を補完",
     "tabToComplete": "💡 Tab キーで \"{suggestion}\" を補完",
-    "validWithMoves": "✓ 有効なPGN（{count}手）",
+    "validWithMoves": "{count, plural, other {✓ 有効なPGN（#手）}}",
     "invalidPgn": "無効なPGN形式",
     "invalidMove": "「{move}」は無効な手です"
   },
@@ -936,7 +937,7 @@
         "solveSection": "問題を解く",
         "start": "開始",
         "timeLimit": "制限時間",
-        "seconds": "{count} 秒",
+        "seconds": "{count, plural, other {# 秒}}",
         "createdBy": "作成者",
         "tutorialLink": "チュートリアルを見る",
         "tryAgain": "もう一度挑戦",
@@ -1292,7 +1293,7 @@
       "correctMoves": "正解数",
       "moveDetails": "手順の詳細",
       "correct": "正解",
-      "attempts": "{count}回試行",
+      "attempts": "{count, plural, other {#回試行}}",
       "backToSetup": "設定に戻る",
       "includeOpponentMoves": "相手の手も入力する",
       "moveHistory": "入力した手順",
@@ -1453,7 +1454,7 @@
       "deleteConfirm": "削除",
       "cancel": "キャンセル",
       "gameDeletedToast": "ゲームを削除しました",
-      "gamesDeletedToast": "{count}個のゲームを削除しました",
+      "gamesDeletedToast": "{count, plural, other {#個のゲームを削除しました}}",
       "deleteFailedToast": "ゲームの削除に失敗しました",
       "moreGames": "すべてのゲーム"
     },
@@ -1493,7 +1494,7 @@
     "title": "ゲームの一括削除",
     "explanation": "不要なゲームを選択して一括削除できます。",
     "noGames": "削除できるゲームがありません",
-    "selectedCount": "{count}個のゲームを選択中",
+    "selectedCount": "{count, plural, other {#個のゲームを選択中}}",
     "selectAll": "すべて選択",
     "unselectAll": "選択を解除",
     "delete": "削除",
@@ -1502,7 +1503,7 @@
     "errorDeleting": "削除に失敗しました。もう一度お試しください。",
     "confirmTitle": "選択したゲームを削除しますか？",
     "confirmMessage": "{count}個のゲームを削除してもよろしいですか？この操作は取り消せません。",
-    "deletedToast": "{count}個のゲームを削除しました",
+    "deletedToast": "{count, plural, other {#個のゲームを削除しました}}",
     "deleteFailedToast": "ゲームの削除に失敗しました"
   },
   "play": {
@@ -1591,7 +1592,7 @@
         "undoCount": "テイクバック",
         "hintCount": "合法手ヒント",
         "viewDetails": "ログ",
-        "times": "{count}回",
+        "times": "{count, plural, other {#回}}",
         "columnItem": "項目",
         "columnDetail": "詳細"
       }
@@ -2406,7 +2407,7 @@
     "postCreated": "投稿しました",
     "rateLimited": "各オープニングへの投稿は1日1回までです。時間をおいて再度お試しください。",
     "gameSaved": "ゲームが保存されました",
-    "gamesDeleted": "{count}個のゲームを削除しました",
+    "gamesDeleted": "{count, plural, other {#個のゲームを削除しました}}",
     "accountDeleted": "退会が完了しました",
     "practiceResultSaveFailed": "結果の保存に失敗しました。もう一度お試しください。",
     "positionCreated": "問題を作成しました",

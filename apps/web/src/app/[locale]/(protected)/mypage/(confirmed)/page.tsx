@@ -32,14 +32,13 @@ import {
 } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
 import { ExpActivityHeatmap } from './_components/ExpActivityHeatmap';
 import { getExpHeatmapData } from './_lib/getExpHeatmapData';
 import { getMypageDashboardData } from './_lib/getMypageDashboardData';
 
-type Props = {
-  params: Promise<{ locale: string }>;
-};
+type Props = LocalePageProps;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;

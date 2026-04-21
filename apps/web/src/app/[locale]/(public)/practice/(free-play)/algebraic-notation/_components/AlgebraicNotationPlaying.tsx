@@ -29,8 +29,10 @@ export function AlgebraicNotationPlaying({
 }: Props) {
   return (
     <div className="flex flex-col gap-6">
-      {/* Question Description */}
-      <p className="text-lg text-muted-foreground">{question.description[locale]}</p>
+      {/* Question Description (fall back to English when no translation for this locale) */}
+      <p className="text-lg text-muted-foreground">
+        {question.description[locale] ?? question.description.en}
+      </p>
 
       {/* Chess Board */}
       <div className="flex justify-center">

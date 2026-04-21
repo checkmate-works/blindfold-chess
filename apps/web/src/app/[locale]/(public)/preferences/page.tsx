@@ -7,12 +7,11 @@ import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
+import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
 import { PreferencesTabs } from './_components/PreferencesTabs';
 
-type Props = {
-  params: Promise<{ locale: string }>;
-};
+type Props = LocalePageProps;
 
 export const generateStaticParams = generateLocaleStaticParams;
 

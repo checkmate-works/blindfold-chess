@@ -1077,9 +1077,8 @@ describe('fetchRankStats', () => {
     });
 
     const { fetchRankStats } = await import('./queries');
-    const { BELT_COLOR_HEX: beltColors, RANK_COLORS: rankColors } = await import(
-      '@/lib/db/data/ranks'
-    );
+    const { BELT_COLOR_HEX: beltColors, RANK_COLORS: rankColors } =
+      await import('@/lib/db/data/ranks');
     const result = await fetchRankStats(mockAdminClient as never, '');
 
     for (const rank of result) {

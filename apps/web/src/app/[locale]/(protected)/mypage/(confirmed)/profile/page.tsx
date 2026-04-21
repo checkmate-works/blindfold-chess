@@ -11,12 +11,11 @@ import { db, profiles } from '@/lib/db';
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
 import { ChangePasswordForm, ProfileForm } from './_components';
 
-type Props = {
-  params: Promise<{ locale: string }>;
-};
+type Props = LocalePageProps;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
