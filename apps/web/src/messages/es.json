@@ -3801,5 +3801,29 @@
     "resources": "Recursos",
     "support": "Soporte",
     "legal": "Legal"
+  },
+  "buttonInput": {
+    "piece": {
+      "king": "Rey",
+      "queen": "Dama",
+      "rook": "Torre",
+      "bishop": "Alfil",
+      "knight": "Caballo"
+    },
+    "symbol": {
+      "capture": "Captura",
+      "check": "Jaque",
+      "promotion": "Promoción",
+      "checkmate": "Jaque mate"
+    },
+    "castling": {
+      "kingside": "Enroque corto",
+      "queenside": "Enroque largo"
+    },
+    "action": {
+      "backspace": "Retroceso",
+      "clear": "Borrar",
+      "submit": "Enviar"
+    }
   }
 }

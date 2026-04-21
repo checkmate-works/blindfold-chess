@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
 import type { CastlingToken, NotationChar } from '@blindfold-chess/features/ai-game/notation-input';
 import type { AlgebraicNotation, PieceType } from '@blindfold-chess/types';
@@ -18,15 +20,30 @@ type Props = {
   onClearError?: () => void;
 };
 
-const PIECE_BUTTONS: Array<{ char: NotationChar; type: PieceType }> = [
-  { char: 'K', type: 'k' },
-  { char: 'Q', type: 'q' },
-  { char: 'R', type: 'r' },
-  { char: 'B', type: 'b' },
-  { char: 'N', type: 'n' },
+type PieceLabelKey = 'king' | 'queen' | 'rook' | 'bishop' | 'knight';
+
+const PIECE_BUTTONS: Array<{ char: NotationChar; type: PieceType; labelKey: PieceLabelKey }> = [
+  { char: 'K', type: 'k', labelKey: 'king' },
+  { char: 'Q', type: 'q', labelKey: 'queen' },
+  { char: 'R', type: 'r', labelKey: 'rook' },
+  { char: 'B', type: 'b', labelKey: 'bishop' },
+  { char: 'N', type: 'n', labelKey: 'knight' },
 ];
 
-const ANNOTATION_CHARS: NotationChar[] = ['+', '=', '#'];
+type AnnotationLabelKey = 'check' | 'promotion' | 'checkmate';
+
+const ANNOTATION_BUTTONS: Array<{ char: NotationChar; labelKey: AnnotationLabelKey }> = [
+  { char: '+', labelKey: 'check' },
+  { char: '=', labelKey: 'promotion' },
+  { char: '#', labelKey: 'checkmate' },
+];
+
+type CastlingLabelKey = 'kingside' | 'queenside';
+
+const CASTLING_BUTTONS: Array<{ move: CastlingToken; labelKey: CastlingLabelKey }> = [
+  { move: 'O-O', labelKey: 'kingside' },
+  { move: 'O-O-O', labelKey: 'queenside' },
+];
 
 const CELL_BUTTON_CLASS =
   'w-9 h-9 flex items-center justify-center rounded-md font-bold text-lg transition-colors border bg-background hover:bg-muted border-border';
@@ -46,6 +63,7 @@ export function ButtonInput({
 }: Props) {
   const { preferences } = useGamePreferences();
   const { buttonInputPieceLabel } = preferences;
+  const t = useTranslations('buttonInput');
 
   const { input, canSubmit, appendChar, appendCastling, backspace, clear, submit } =
     useButtonInputLogic({ fen, onSubmit });
@@ -74,12 +92,12 @@ export function ButtonInput({
     <div className="flex flex-col gap-3 p-4 bg-card rounded-lg">
       {/* Row 1: Pieces + capture */}
       <div className="flex gap-2 justify-center">
-        {PIECE_BUTTONS.map(({ char, type }) => (
+        {PIECE_BUTTONS.map(({ char, type, labelKey }) => (
           <button
             key={char}
             type="button"
             onClick={() => handleAppendChar(char)}
-            aria-label={char}
+            aria-label={t(`piece.${labelKey}`)}
             className={CELL_BUTTON_CLASS}
           >
             {buttonInputPieceLabel === 'icon' ? (
@@ -92,7 +110,7 @@ export function ButtonInput({
         <button
           type="button"
           onClick={() => handleAppendChar('x')}
-          aria-label="capture"
+          aria-label={t('symbol.capture')}
           className={CELL_BUTTON_CLASS}
         >
           ×
@@ -114,12 +132,12 @@ export function ButtonInput({
       {/* Row 4: Annotations + Castling */}
       <div className="flex gap-6 items-center justify-center">
         <div className="flex gap-2">
-          {ANNOTATION_CHARS.map((char) => (
+          {ANNOTATION_BUTTONS.map(({ char, labelKey }) => (
             <button
               key={char}
               type="button"
               onClick={() => handleAppendChar(char)}
-              aria-label={char}
+              aria-label={t(`symbol.${labelKey}`)}
               className={CELL_BUTTON_CLASS}
             >
               {char}
@@ -127,11 +145,12 @@ export function ButtonInput({
           ))}
         </div>
         <div className="flex gap-2">
-          {(['O-O', 'O-O-O'] as CastlingToken[]).map((move) => (
+          {CASTLING_BUTTONS.map(({ move, labelKey }) => (
             <button
               key={move}
               type="button"
               onClick={() => handleAppendCastling(move)}
+              aria-label={t(`castling.${labelKey}`)}
               className={CASTLING_BUTTON_CLASS}
             >
               {move}
@@ -151,8 +170,8 @@ export function ButtonInput({
         <button
           type="button"
           onClick={handleBackspace}
-          aria-label="Backspace"
-          title="Backspace"
+          aria-label={t('action.backspace')}
+          title={t('action.backspace')}
           className={UTILITY_BUTTON_CLASS}
         >
           <FaBackspace className="w-5 h-5" />
@@ -161,8 +180,8 @@ export function ButtonInput({
         <button
           type="button"
           onClick={handleClear}
-          aria-label="Clear"
-          title="Clear"
+          aria-label={t('action.clear')}
+          title={t('action.clear')}
           className={UTILITY_BUTTON_CLASS}
         >
           <FaTrash className="w-4 h-4" />
@@ -173,7 +192,8 @@ export function ButtonInput({
           onClick={submit}
           disabled={disabled || !canSubmit}
           className="w-14 h-14 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:shadow-none disabled:text-muted-foreground disabled:cursor-not-allowed text-primary-foreground font-medium rounded-lg transition-all duration-150 flex items-center justify-center text-xl border border-border"
-          title="Submit"
+          aria-label={t('action.submit')}
+          title={t('action.submit')}
         >
           ♟️
         </button>

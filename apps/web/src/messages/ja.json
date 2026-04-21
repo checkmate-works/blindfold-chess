@@ -3851,5 +3851,29 @@
     "resources": "リソース",
     "support": "サポート",
     "legal": "法的情報"
+  },
+  "buttonInput": {
+    "piece": {
+      "king": "キング",
+      "queen": "クイーン",
+      "rook": "ルーク",
+      "bishop": "ビショップ",
+      "knight": "ナイト"
+    },
+    "symbol": {
+      "capture": "取る",
+      "check": "チェック",
+      "promotion": "成り",
+      "checkmate": "チェックメイト"
+    },
+    "castling": {
+      "kingside": "キングサイドキャスリング",
+      "queenside": "クイーンサイドキャスリング"
+    },
+    "action": {
+      "backspace": "1 文字削除",
+      "clear": "クリア",
+      "submit": "送信"
+    }
   }
 }

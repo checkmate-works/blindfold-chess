@@ -55,6 +55,7 @@ export const NAMESPACE_CLASSIFICATION = {
   authPrompt: 'client',
   banned: 'client',
   bulkDelete: 'client',
+  buttonInput: 'client',
   contact: 'client',
   deleteAccount: 'client',
   dojo: 'client',

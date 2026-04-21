@@ -3955,5 +3955,29 @@
     "resources": "Resources",
     "support": "Support",
     "legal": "Legal"
+  },
+  "buttonInput": {
+    "piece": {
+      "king": "King",
+      "queen": "Queen",
+      "rook": "Rook",
+      "bishop": "Bishop",
+      "knight": "Knight"
+    },
+    "symbol": {
+      "capture": "Capture",
+      "check": "Check",
+      "promotion": "Promotion",
+      "checkmate": "Checkmate"
+    },
+    "castling": {
+      "kingside": "Kingside castling",
+      "queenside": "Queenside castling"
+    },
+    "action": {
+      "backspace": "Backspace",
+      "clear": "Clear",
+      "submit": "Submit"
+    }
   }
 }
