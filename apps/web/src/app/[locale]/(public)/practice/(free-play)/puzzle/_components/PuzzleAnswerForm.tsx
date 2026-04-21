@@ -1,12 +1,17 @@
 'use client';
 
-import { type FormEvent, useState } from 'react';
+import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/app/_components';
 import { Link, useRouter } from '@/i18n/routing';
+import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
+import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaEye } from 'react-icons/fa';
+
+import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
+import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { PuzzleBoardPeekModal } from './PuzzleBoardPeekModal';
 
@@ -18,22 +23,35 @@ type Props = {
   fen: string;
 };
 
+const AUTO_NAVIGATE_DELAY_MS = 1000;
+
 export function PuzzleAnswerForm({ solutions, positionId, fen }: Props) {
   const t = useTranslations('practice.puzzle.detail');
+  const tPlay = useTranslations('play');
   const tResult = useTranslations('practice.puzzle.result');
   const router = useRouter();
-  const [userInput, setUserInput] = useState('');
+  const { preferences, updatePreferences } = useGamePreferences();
+
+  const [moveInput, setMoveInput] = useState('');
   const [result, setResult] = useState<'correct' | 'incorrect' | null>(null);
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   const [peekCount, setPeekCount] = useState(0);
   const [isBoardVisible, setIsBoardVisible] = useState(false);
   const isSolved = result === 'correct';
   const hasErrors = attempts.some((a) => !a.isCorrect);
+  const playerColor: 'w' | 'b' = isBlackToMoveFromFen(fen) ? 'b' : 'w';
 
-  function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    const trimmed = userInput.trim();
-    if (!trimmed) return;
+  /**
+   * MoveInputPanel calls this with the user's submitted move. Return `true`
+   * on correct answer (matches the first move of any known solution line) and
+   * `false` on incorrect answer, so MoveInputPanel can track invalid-attempt
+   * counts. The legal-moves hint is suppressed via
+   * `showLegalMovesHint={false}` below — revealing all legal moves on a
+   * puzzle would be effectively giving the answer away.
+   */
+  function handleSubmit(move: AlgebraicNotation): boolean {
+    const trimmed = move.trim();
+    if (!trimmed) return false;
 
     // Initial implementation supports single-move puzzles only.
     // For multi-move puzzles, only the first move is checked.
@@ -65,42 +83,41 @@ export function PuzzleAnswerForm({ solutions, positionId, fen }: Props) {
       // Auto-navigate after a short delay
       setTimeout(() => {
         router.push(`/practice/puzzle/${positionId}/result`);
-      }, 1000);
+      }, AUTO_NAVIGATE_DELAY_MS);
+
+      // Clear the text-mode input buffer only on success. On an incorrect
+      // attempt we intentionally keep the buffer so the user can see what
+      // they typed and edit it — clearing it would force them to retype the
+      // whole move from scratch.
+      setMoveInput('');
     }
+
+    return isCorrect;
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <label htmlFor="puzzle-answer" className="block text-sm font-medium text-foreground">
-          {t('answerLabel')}
-        </label>
-        <input
-          id="puzzle-answer"
-          type="text"
-          value={userInput}
-          onChange={(e) => {
-            setUserInput(e.target.value);
-            if (result === 'incorrect') setResult(null);
-          }}
-          placeholder={t('answerPlaceholder')}
-          disabled={isSolved}
-          className="w-full rounded-md border border-border bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
-          autoComplete="off"
-          autoCapitalize="off"
-          spellCheck={false}
-        />
-      </div>
-
-      <Button type="submit" variant="primary" fullWidth disabled={isSolved || !userInput.trim()}>
-        {t('submitAnswer')}
-      </Button>
+    <div className="space-y-4">
+      <MoveInputPanel
+        preferences={preferences}
+        updatePreferences={updatePreferences}
+        currentFen={fen}
+        moveInput={moveInput}
+        onMoveInputChange={setMoveInput}
+        error={result === 'incorrect' ? t('incorrect') : null}
+        onErrorClear={() => {
+          if (result === 'incorrect') setResult(null);
+        }}
+        onSubmit={handleSubmit}
+        disabled={isSolved}
+        inputPlaceholder={tPlay('inputMove')}
+        selectPlaceholder={tPlay('selectMove')}
+        toggleTitle={tPlay('switchInputMode')}
+        playerColor={playerColor}
+        showLegalMovesHint={false}
+      />
 
       {result === 'correct' && (
         <p className="text-sm font-medium text-green-600 dark:text-green-400">{t('correct')}</p>
-      )}
-      {result === 'incorrect' && (
-        <p className="text-sm font-medium text-red-600 dark:text-red-400">{t('incorrect')}</p>
       )}
 
       {hasErrors && (
@@ -146,6 +163,6 @@ export function PuzzleAnswerForm({ solutions, positionId, fen }: Props) {
         onClose={() => setIsBoardVisible(false)}
         fen={fen}
       />
-    </form>
+    </div>
   );
 }
