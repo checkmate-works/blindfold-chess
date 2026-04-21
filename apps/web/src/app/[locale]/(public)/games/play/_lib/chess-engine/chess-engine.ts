@@ -17,6 +17,22 @@ export type EvaluationResult = {
   bestMove?: string; // Best move in UCI format
 };
 
+/**
+ * Number of attempts `ensureInitialized` makes before surfacing the last
+ * initialization error to the caller. Engine spin-up can transiently fail
+ * (Worker / WASM boot race, tab throttling, Sentry-reported `onerror` from
+ * Stockfish) — a small bounded retry makes first-move experience far more
+ * robust without hiding genuine configuration errors.
+ */
+export const MAX_INIT_ATTEMPTS = 3;
+
+/**
+ * Delay (in ms) applied **before** each retry attempt. The first retry waits
+ * 500 ms, the second 1500 ms, the third 3000 ms. Indexed by attempt number
+ * (1-based): `INIT_RETRY_DELAYS_MS[attempt - 1]`.
+ */
+export const INIT_RETRY_DELAYS_MS = [500, 1500, 3000] as const;
+
 export class ChessEngine {
   private transport: UciTransport | null = null;
   private isInitialized = false;
@@ -27,9 +43,35 @@ export class ChessEngine {
   private async ensureInitialized(): Promise<void> {
     if (this.isInitialized) return;
     if (!this.initializationPromise) {
-      this.initializationPromise = this.initializeEngine();
+      this.initializationPromise = this.initializeWithRetry();
     }
     await this.initializationPromise;
+  }
+
+  /**
+   * Wrap `initializeEngine` with bounded retry + exponential backoff. Only
+   * init failures trigger a retry; downstream errors (`getBestMove`,
+   * `getEvaluation`) flow through unchanged. After the final attempt the last
+   * error is rethrown verbatim so callers (e.g. `use-game-session`'s
+   * `handleAiMoveError`) keep their existing error-handling behaviour.
+   */
+  private async initializeWithRetry(): Promise<void> {
+    let lastError: unknown;
+    for (let attempt = 1; attempt <= MAX_INIT_ATTEMPTS; attempt++) {
+      try {
+        await this.initializeEngine();
+        return;
+      } catch (error) {
+        lastError = error;
+        if (attempt < MAX_INIT_ATTEMPTS) {
+          console.warn('Chess engine init retry', { attempt, error });
+          await new Promise((resolve) =>
+            setTimeout(resolve, INIT_RETRY_DELAYS_MS[attempt - 1] ?? 0)
+          );
+        }
+      }
+    }
+    throw lastError;
   }
 
   private async initializeEngine(): Promise<void> {
@@ -44,6 +86,20 @@ export class ChessEngine {
 
       this.isInitialized = true;
     } catch (error) {
+      // Tear down the dead transport before rethrowing so the next attempt
+      // (from `initializeWithRetry` or a future `ensureInitialized` call)
+      // spins up a fresh Worker instead of reusing / leaking the broken one.
+      if (this.transport) {
+        try {
+          this.transport.destroy();
+        } catch (destroyError) {
+          // Swallow destroy errors — the transport is already in a failure
+          // state; logging here is enough, we still need to rethrow the
+          // original cause below.
+          console.error('Failed to destroy broken chess engine transport:', destroyError);
+        }
+        this.transport = null;
+      }
       this.initializationPromise = null;
       console.error('Failed to initialize chess engine:', error);
       throw new Error(
@@ -233,4 +289,18 @@ export function getChessEngine(): ChessEngine {
     engineInstance = new ChessEngine();
   }
   return engineInstance;
+}
+
+/**
+ * Tear down the singleton chess engine so the next `getChessEngine()` call
+ * returns a fresh instance. Used by the UI "Retry" affordance to recover
+ * from a dead Worker after a fatal engine error — `ChessEngine#destroy()`
+ * on its own resets per-instance state but not the module-level singleton,
+ * which would otherwise keep handing callers the broken instance.
+ */
+export async function resetChessEngine(): Promise<void> {
+  if (engineInstance) {
+    await engineInstance.destroy();
+    engineInstance = null;
+  }
 }

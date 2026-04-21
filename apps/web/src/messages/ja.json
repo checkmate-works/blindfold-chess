@@ -1532,6 +1532,7 @@
     "submitMove": "決定",
     "invalidMove": "無効な手です",
     "aiMoveFailed": "AIの手の取得に失敗しました",
+    "retry": "再試行",
     "newGame": "新規ゲーム",
     "resign": "投了",
     "undo": "待った",
