@@ -35,31 +35,25 @@ function hasModeSwitchSkeleton(container: HTMLElement): boolean {
 describe('MoveInputSkeleton', () => {
   describe("mode='button'", () => {
     it('renders ModeSwitchSkeleton as a sibling when hasModeSwitch=true', () => {
-      const { container } = render(
-        <MoveInputSkeleton mode="button" variant="initial" hasModeSwitch={true} />
-      );
+      const { container } = render(<MoveInputSkeleton mode="button" hasModeSwitch={true} />);
 
       expect(hasModeSwitchSkeleton(container)).toBe(true);
     });
 
     it('does NOT render ModeSwitchSkeleton when hasModeSwitch=false', () => {
-      const { container } = render(
-        <MoveInputSkeleton mode="button" variant="initial" hasModeSwitch={false} />
-      );
+      const { container } = render(<MoveInputSkeleton mode="button" hasModeSwitch={false} />);
 
       expect(hasModeSwitchSkeleton(container)).toBe(false);
     });
 
     it('does NOT render ModeSwitchSkeleton when hasModeSwitch is omitted (default false)', () => {
-      const { container } = render(<MoveInputSkeleton mode="button" variant="initial" />);
+      const { container } = render(<MoveInputSkeleton mode="button" />);
 
       expect(hasModeSwitchSkeleton(container)).toBe(false);
     });
 
     it('wraps the card and switcher in a flex flex-col gap-6 container when hasModeSwitch=true', () => {
-      const { container } = render(
-        <MoveInputSkeleton mode="button" variant="initial" hasModeSwitch={true} />
-      );
+      const { container } = render(<MoveInputSkeleton mode="button" hasModeSwitch={true} />);
 
       // The outermost element is the flex flex-col gap-6 wrapper that
       // contains both the card skeleton and the switcher.
@@ -74,17 +68,13 @@ describe('MoveInputSkeleton', () => {
 
   describe("mode='text'", () => {
     it('renders ModeSwitchSkeleton when hasModeSwitch=true (regression guard)', () => {
-      const { container } = render(
-        <MoveInputSkeleton mode="text" variant="initial" hasModeSwitch={true} />
-      );
+      const { container } = render(<MoveInputSkeleton mode="text" hasModeSwitch={true} />);
 
       expect(hasModeSwitchSkeleton(container)).toBe(true);
     });
 
     it('does NOT render ModeSwitchSkeleton when hasModeSwitch=false', () => {
-      const { container } = render(
-        <MoveInputSkeleton mode="text" variant="initial" hasModeSwitch={false} />
-      );
+      const { container } = render(<MoveInputSkeleton mode="text" hasModeSwitch={false} />);
 
       expect(hasModeSwitchSkeleton(container)).toBe(false);
     });
@@ -92,43 +82,26 @@ describe('MoveInputSkeleton', () => {
 
   describe("mode='select'", () => {
     it('renders ModeSwitchSkeleton when hasModeSwitch=true (regression guard)', () => {
-      const { container } = render(
-        <MoveInputSkeleton mode="select" variant="initial" hasModeSwitch={true} />
-      );
+      const { container } = render(<MoveInputSkeleton mode="select" hasModeSwitch={true} />);
 
       expect(hasModeSwitchSkeleton(container)).toBe(true);
     });
 
     it('does NOT render ModeSwitchSkeleton when hasModeSwitch=false', () => {
-      const { container } = render(
-        <MoveInputSkeleton mode="select" variant="initial" hasModeSwitch={false} />
-      );
+      const { container } = render(<MoveInputSkeleton mode="select" hasModeSwitch={false} />);
 
       expect(hasModeSwitchSkeleton(container)).toBe(false);
     });
   });
 
   describe('aria semantics', () => {
-    it("variant='initial' exposes a polite live region on the outer wrapper", () => {
-      const { container } = render(
-        <MoveInputSkeleton mode="button" variant="initial" hasModeSwitch={true} />
-      );
+    it('exposes a polite live region on the outer wrapper', () => {
+      const { container } = render(<MoveInputSkeleton mode="button" hasModeSwitch={true} />);
 
       const root = container.firstElementChild;
       expect(root?.getAttribute('role')).toBe('status');
       expect(root?.getAttribute('aria-live')).toBe('polite');
       expect(root?.getAttribute('aria-busy')).toBe('true');
-    });
-
-    it("variant='ai-turn' hides the skeleton from assistive tech", () => {
-      const { container } = render(
-        <MoveInputSkeleton mode="button" variant="ai-turn" hasModeSwitch={true} />
-      );
-
-      const root = container.firstElementChild;
-      expect(root?.getAttribute('aria-hidden')).toBe('true');
-      expect(root?.hasAttribute('role')).toBe(false);
-      expect(root?.hasAttribute('aria-live')).toBe(false);
     });
   });
 });

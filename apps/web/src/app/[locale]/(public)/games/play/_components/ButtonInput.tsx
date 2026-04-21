@@ -46,13 +46,13 @@ const CASTLING_BUTTONS: Array<{ move: CastlingToken; labelKey: CastlingLabelKey 
 ];
 
 const CELL_BUTTON_CLASS =
-  'w-9 h-9 flex items-center justify-center rounded-md font-bold text-lg transition-colors border bg-background hover:bg-muted border-border';
+  'w-9 h-9 flex items-center justify-center rounded-md font-bold text-lg transition-colors border bg-background hover:bg-muted border-border disabled:opacity-50 disabled:cursor-not-allowed';
 
 const CASTLING_BUTTON_CLASS =
-  'px-3 h-9 rounded-md font-bold text-xs transition-colors border bg-background hover:bg-muted border-border';
+  'px-3 h-9 rounded-md font-bold text-xs transition-colors border bg-background hover:bg-muted border-border disabled:opacity-50 disabled:cursor-not-allowed';
 
 const UTILITY_BUTTON_CLASS =
-  'w-14 h-14 bg-background hover:bg-muted border border-border rounded-lg text-foreground flex items-center justify-center';
+  'w-14 h-14 bg-background hover:bg-muted border border-border rounded-lg text-foreground flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed';
 
 export function ButtonInput({
   fen,
@@ -97,6 +97,7 @@ export function ButtonInput({
             key={char}
             type="button"
             onClick={() => handleAppendChar(char)}
+            disabled={disabled}
             aria-label={t(`piece.${labelKey}`)}
             className={CELL_BUTTON_CLASS}
           >
@@ -110,6 +111,7 @@ export function ButtonInput({
         <button
           type="button"
           onClick={() => handleAppendChar('x')}
+          disabled={disabled}
           aria-label={t('symbol.capture')}
           className={CELL_BUTTON_CLASS}
         >
@@ -121,12 +123,14 @@ export function ButtonInput({
       <CoordinateInput
         showRanks={false}
         onFileToggle={(file) => handleAppendChar(file as NotationChar)}
+        disabledFile={() => disabled}
       />
 
       {/* Row 3: Ranks */}
       <CoordinateInput
         showFiles={false}
         onRankToggle={(rank) => handleAppendChar(rank as NotationChar)}
+        disabledRank={() => disabled}
       />
 
       {/* Row 4: Annotations + Castling */}
@@ -137,6 +141,7 @@ export function ButtonInput({
               key={char}
               type="button"
               onClick={() => handleAppendChar(char)}
+              disabled={disabled}
               aria-label={t(`symbol.${labelKey}`)}
               className={CELL_BUTTON_CLASS}
             >
@@ -150,6 +155,7 @@ export function ButtonInput({
               key={move}
               type="button"
               onClick={() => handleAppendCastling(move)}
+              disabled={disabled}
               aria-label={t(`castling.${labelKey}`)}
               className={CASTLING_BUTTON_CLASS}
             >
@@ -170,6 +176,7 @@ export function ButtonInput({
         <button
           type="button"
           onClick={handleBackspace}
+          disabled={disabled}
           aria-label={t('action.backspace')}
           title={t('action.backspace')}
           className={UTILITY_BUTTON_CLASS}
@@ -180,6 +187,7 @@ export function ButtonInput({
         <button
           type="button"
           onClick={handleClear}
+          disabled={disabled}
           aria-label={t('action.clear')}
           title={t('action.clear')}
           className={UTILITY_BUTTON_CLASS}

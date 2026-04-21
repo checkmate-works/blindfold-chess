@@ -15,11 +15,11 @@ import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCo
 
 import type { ConfirmationDialogs } from '../_hooks';
 import { shouldShowModalPeekButton } from '../_lib';
-import { MoveInputSkeleton } from './MoveInputSkeleton';
 
 type Props = {
   isPlayerTurn: boolean;
   isLoading: boolean;
+  isAiThinking: boolean;
   preferences: GamePreferences;
   updatePreferences: (updates: Partial<GamePreferences>) => void;
   currentFen: string;
@@ -41,6 +41,7 @@ type Props = {
 export function GameInProgressPanel({
   isPlayerTurn,
   isLoading,
+  isAiThinking,
   preferences,
   updatePreferences,
   currentFen,
@@ -71,36 +72,25 @@ export function GameInProgressPanel({
       {inlineBoardView}
 
       {/* Move Input */}
-      {isPlayerTurn ? (
-        <MoveInputPanel
-          preferences={preferences}
-          updatePreferences={updatePreferences}
-          currentFen={currentFen}
-          moveInput={moveInput}
-          onMoveInputChange={setMoveInput}
-          error={error}
-          onErrorClear={onErrorClear}
-          onSubmit={handleSubmitMove}
-          disabled={isLoading}
-          inputPlaceholder={t('inputMove')}
-          selectPlaceholder={t('selectMove')}
-          toggleTitle={t('switchInputMode')}
-          playerColor={playerColor}
-          onMoveCommitted={onMoveCommitted}
-          onMovePeek={onMovePeek}
-          showInlineError={false}
-        />
-      ) : (
-        // AI-turn state. The "AI is thinking…" status is surfaced in the
-        // page-level PageTitle slot (see PlayPageClient) rather than inline
-        // here, so this branch renders only the skeleton to hold the
-        // ButtonInput-shaped footprint while the AI computes.
-        <MoveInputSkeleton
-          mode={preferences.moveInputMode}
-          variant="ai-turn"
-          hasModeSwitch={preferences.enabledMoveInputModes.length >= 2}
-        />
-      )}
+      {/* AI thinking or retry → disabled real UI, not skeleton */}
+      <MoveInputPanel
+        preferences={preferences}
+        updatePreferences={updatePreferences}
+        currentFen={currentFen}
+        moveInput={moveInput}
+        onMoveInputChange={setMoveInput}
+        error={error}
+        onErrorClear={onErrorClear}
+        onSubmit={handleSubmitMove}
+        disabled={isLoading || !isPlayerTurn}
+        inputPlaceholder={t('inputMove')}
+        selectPlaceholder={t('selectMove')}
+        toggleTitle={t('switchInputMode')}
+        playerColor={playerColor}
+        onMoveCommitted={onMoveCommitted}
+        onMovePeek={onMovePeek}
+        showInlineError={false}
+      />
 
       {/* Action Buttons */}
       <div className="flex gap-4 md:gap-2 justify-center">
@@ -116,8 +106,8 @@ export function GameInProgressPanel({
         )}
         <button
           onClick={confirmationDialogs.undo.open}
-          disabled={moves.length < 2}
-          className="px-4 py-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 flex items-center justify-center gap-2"
+          disabled={moves.length < 2 || isAiThinking}
+          className="px-4 py-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           title={t('undo')}
         >
           <UndoIcon className="w-4 h-4" />
@@ -125,7 +115,8 @@ export function GameInProgressPanel({
         </button>
         <button
           onClick={confirmationDialogs.resign.open}
-          className="px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center justify-center gap-2"
+          disabled={isAiThinking}
+          className="px-4 py-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           title={t('resign')}
         >
           <FlagIcon className="w-4 h-4" />

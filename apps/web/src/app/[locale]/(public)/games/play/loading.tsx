@@ -42,7 +42,7 @@ export default function GamesPlayLoading() {
               preferences will see a minor re-render after hydration. */}
           <div className="lg:col-span-2">
             <div className="flex flex-col gap-6">
-              <MoveInputSkeleton mode="button" variant="initial" />
+              <MoveInputSkeleton mode="button" />
               <ActionRowSkeleton showBoardButton />
               <TextLinkSkeleton />
               <IconButtonSkeleton />

@@ -8,14 +8,6 @@ type MoveInputMode = GamePreferences['moveInputMode'];
 type Props = {
   mode: MoveInputMode;
   /**
-   * `initial`: used during initial load / hydration. Exposes the skeleton as
-   *   a live region so screen readers announce the pending state once.
-   * `ai-turn`: used while the AI is thinking. Hidden from assistive tech —
-   *   the adjacent "AI is thinking..." text already communicates the state,
-   *   so we avoid SR chatter on every turn.
-   */
-  variant: 'initial' | 'ai-turn';
-  /**
    * Whether the real `MoveInputPanel` will render its mode-switch button row
    * (i.e. the user has 2+ input modes enabled). When true, the skeleton
    * appends a `ModeSwitchSkeleton` as an explicit sibling inside its own
@@ -76,11 +68,15 @@ const MIN_HEIGHT_BUTTON = 'min-h-[288px]';
 const MIN_HEIGHT_TEXT = 'min-h-[56px]';
 const MIN_HEIGHT_SELECT = 'min-h-[58px] md:min-h-[50px]';
 
-export function MoveInputSkeleton({ mode, variant, hasModeSwitch = false }: Props) {
-  const ariaProps =
-    variant === 'ai-turn'
-      ? ({ 'aria-hidden': true } as const)
-      : ({ role: 'status', 'aria-live': 'polite', 'aria-busy': true } as const);
+/**
+ * Skeleton used during initial load / hydration of the play page.
+ *
+ * Exposes the skeleton as a live region so screen readers announce the
+ * pending state once. AI-thinking state is handled by rendering the real
+ * `MoveInputPanel` in a `disabled` state; see `GameInProgressPanel`.
+ */
+export function MoveInputSkeleton({ mode, hasModeSwitch = false }: Props) {
+  const ariaProps = { role: 'status', 'aria-live': 'polite', 'aria-busy': true } as const;
 
   if (mode === 'select') {
     // MoveSelect renders a single trigger button styled as

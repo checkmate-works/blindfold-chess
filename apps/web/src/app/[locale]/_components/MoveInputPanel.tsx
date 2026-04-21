@@ -199,7 +199,8 @@ export function MoveInputPanel({
             onClick={() => {
               updatePreferences({ moveInputMode: nextMode });
             }}
-            className="p-2 border border-border rounded-md hover:bg-muted"
+            disabled={disabled}
+            className="p-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
             title={toggleTitle}
           >
             {modeIcons[nextMode]}

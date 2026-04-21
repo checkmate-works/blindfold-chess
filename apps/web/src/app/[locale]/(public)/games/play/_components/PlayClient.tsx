@@ -55,7 +55,8 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
   const t = useTranslations('play');
   const router = useRouter();
 
-  const { gameConfig, gameState, moveState, moveInput, actions, operationLogs } = gameSession;
+  const { gameConfig, gameState, moveState, moveInput, actions, operationLogs, isAiThinking } =
+    gameSession;
 
   const { playerSide, startingFen, perGamePrefs, gameId } = gameConfig;
   const { gameStatus, playerResult, isPlayerTurn, isLoading, lastMove, gameNotFound } = gameState;
@@ -175,11 +176,7 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
                 {isHydrated && shouldShowInlinePeekHeader(preferences) && (
                   <InlineBoardHeaderSkeleton />
                 )}
-                <MoveInputSkeleton
-                  mode={skeletonMode}
-                  variant="initial"
-                  hasModeSwitch={skeletonHasModeSwitch}
-                />
+                <MoveInputSkeleton mode={skeletonMode} hasModeSwitch={skeletonHasModeSwitch} />
                 {/* Action row (Show Board + Undo + Resign). Default preferences
                     have `peekMode='modal'` and `showBoardButtonInGame=true`, so
                     gating on `isHydrated` is unnecessary: the pre-hydration
@@ -195,6 +192,7 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
               <GameInProgressPanel
                 isPlayerTurn={isPlayerTurn}
                 isLoading={isLoading}
+                isAiThinking={isAiThinking}
                 preferences={preferences}
                 updatePreferences={updatePreferences}
                 currentFen={currentFen}
