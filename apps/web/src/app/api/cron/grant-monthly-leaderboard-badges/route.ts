@@ -1,13 +1,19 @@
 import { NextResponse } from 'next/server';
 
 import * as Sentry from '@sentry/nextjs';
+import { timingSafeEqual } from 'node:crypto';
 
 import { grantMonthlyLeaderboardBadges } from '@/lib/achievements/grant-monthly-leaderboard-badges';
 
 export async function GET(request: Request): Promise<NextResponse> {
-  // Authenticate via CRON_SECRET
-  const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  // Authenticate via CRON_SECRET using timing-safe comparison.
+  // Length precheck is required because timingSafeEqual throws on length mismatch.
+  const expected = `Bearer ${process.env.CRON_SECRET}`;
+  const provided = request.headers.get('authorization') ?? '';
+  const ok =
+    provided.length === expected.length &&
+    timingSafeEqual(Buffer.from(provided), Buffer.from(expected));
+  if (!ok) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

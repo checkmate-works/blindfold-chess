@@ -23,58 +23,10 @@ vi.mock('@/lib/db', () => ({
 
 vi.mock('server-only', () => ({}));
 
-const {
-  checkIpRateLimit,
-  checkIpRateLimitGuard,
-  checkEmailRateLimitGuard,
-  IP_RATE_LIMITS,
-  EMAIL_RATE_LIMITS,
-} = await import('./rate-limit-ip');
+const { checkIpRateLimitGuard, checkEmailRateLimitGuard, IP_RATE_LIMITS, EMAIL_RATE_LIMITS } =
+  await import('./rate-limit-ip');
 
 const config = { maxRequests: 3, windowMs: 60_000 };
-
-describe('checkIpRateLimit', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockInsertValues.mockResolvedValue(undefined);
-  });
-
-  it('allows the first request (count 0)', async () => {
-    mockSelectFromWhere.mockResolvedValue([{ count: 0 }]);
-    expect(await checkIpRateLimit('192.168.1.1', 'test', config)).toEqual({ allowed: true });
-    expect(mockInsertValues).toHaveBeenCalledWith({
-      subjectKey: 'ip:192.168.1.1',
-      action: 'test',
-    });
-  });
-
-  it('allows requests up to maxRequests - 1 (boundary: just under)', async () => {
-    mockSelectFromWhere.mockResolvedValue([{ count: 2 }]);
-    expect(await checkIpRateLimit('10.0.0.1', 'test', config)).toEqual({ allowed: true });
-    expect(mockInsertValues).toHaveBeenCalled();
-  });
-
-  it('blocks at exactly maxRequests and does NOT insert', async () => {
-    mockSelectFromWhere.mockResolvedValue([{ count: 3 }]);
-    expect(await checkIpRateLimit('10.0.0.2', 'test', config)).toEqual({ allowed: false });
-    expect(mockInsertValues).not.toHaveBeenCalled();
-  });
-
-  it('blocks over maxRequests and does NOT insert', async () => {
-    mockSelectFromWhere.mockResolvedValue([{ count: 10 }]);
-    expect(await checkIpRateLimit('10.0.0.3', 'test', config)).toEqual({ allowed: false });
-    expect(mockInsertValues).not.toHaveBeenCalled();
-  });
-
-  it('namespaces the subject key under "ip:"', async () => {
-    mockSelectFromWhere.mockResolvedValue([{ count: 0 }]);
-    await checkIpRateLimit('203.0.113.50', 'someAction', config);
-    expect(mockInsertValues).toHaveBeenCalledWith({
-      subjectKey: 'ip:203.0.113.50',
-      action: 'someAction',
-    });
-  });
-});
 
 describe('checkIpRateLimitGuard', () => {
   beforeEach(() => {

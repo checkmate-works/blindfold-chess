@@ -105,24 +105,6 @@ async function checkKeyRateLimit(
 }
 
 /**
- * Check whether a request from the given IP for the given action is allowed.
- *
- * Keyed as `ip:<ip>` in `rate_limit_key_events` and namespaced by `action`.
- *
- * @remarks
- * Retained for backwards compatibility with existing callers that expect the
- * `{ allowed }` shape (e.g. `contact/_lib/rate-limiter.ts`). New callers
- * should prefer `checkIpRateLimitGuard`, which returns an ActionResult.
- */
-export async function checkIpRateLimit(
-  ip: string,
-  action: string,
-  config: IpRateLimitConfig
-): Promise<{ allowed: boolean }> {
-  return checkKeyRateLimit(`ip:${ip}`, action, config);
-}
-
-/**
  * IP-based rate limit guard for Server Actions (unauthenticated endpoints).
  *
  * Returns `{ error: 'rateLimited' }` if the limit is exceeded, or `null` if

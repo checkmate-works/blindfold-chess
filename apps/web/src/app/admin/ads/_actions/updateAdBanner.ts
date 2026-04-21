@@ -26,6 +26,15 @@ export async function updateAdBanner(id: string, data: UpdateData): Promise<Acti
     return { error: 'invalid href' };
   }
 
+  try {
+    const url = new URL(data.href);
+    if (!['https:', 'http:'].includes(url.protocol)) {
+      return { error: 'invalid href' };
+    }
+  } catch {
+    return { error: 'invalid href' };
+  }
+
   if (!data.imagePath || data.imagePath.length > 1024) {
     return { error: 'invalid imagePath' };
   }
