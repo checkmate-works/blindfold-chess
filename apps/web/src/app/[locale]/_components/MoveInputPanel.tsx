@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { getLegalMoves } from '@blindfold-chess/features/chess-core';
@@ -123,6 +123,11 @@ export function MoveInputPanel({
     onErrorClearRef.current();
   }, [currentMode]);
 
+  const legalMoves = useMemo(
+    () => (showLegalMoves ? getLegalMoves(currentFen).sort() : null),
+    [showLegalMoves, currentFen]
+  );
+
   // Compute next mode for cycling
   const currentIndex = enabledModes.indexOf(currentMode);
   const nextMode = enabledModes[(currentIndex + 1) % enabledModes.length];
@@ -172,20 +177,18 @@ export function MoveInputPanel({
             {t('showLegalMoves')}
           </button>
         )}
-        {showLegalMoves && (
+        {legalMoves && (
           <div className="mt-2 p-3 bg-muted/50 border border-border rounded-lg">
             <p className="text-xs text-muted-foreground mb-2">{t('legalMovesList')}</p>
             <div className="flex flex-wrap gap-1.5">
-              {getLegalMoves(currentFen)
-                .sort()
-                .map((move) => (
-                  <span
-                    key={move}
-                    className="px-2 py-0.5 text-sm font-mono bg-card border border-border rounded"
-                  >
-                    {move}
-                  </span>
-                ))}
+              {legalMoves.map((move) => (
+                <span
+                  key={move}
+                  className="px-2 py-0.5 text-sm font-mono bg-card border border-border rounded"
+                >
+                  {move}
+                </span>
+              ))}
             </div>
           </div>
         )}
