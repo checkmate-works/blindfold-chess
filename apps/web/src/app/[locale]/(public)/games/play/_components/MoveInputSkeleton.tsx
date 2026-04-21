@@ -11,7 +11,7 @@ type Props = {
    * `initial`: used during initial load / hydration. Exposes the skeleton as
    *   a live region so screen readers announce the pending state once.
    * `ai-turn`: used while the AI is thinking. Hidden from assistive tech —
-   *   the adjacent "AI is thinking…" text already communicates the state,
+   *   the adjacent "AI is thinking..." text already communicates the state,
    *   so we avoid SR chatter on every turn.
    */
   variant: 'initial' | 'ai-turn';

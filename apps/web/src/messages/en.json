@@ -1506,7 +1506,7 @@
   },
   "play": {
     "title": "Play Chess",
-    "loading": "Loading…",
+    "loading": "Loading...",
     "yourMove": "Your move",
     "aiThinking": "AI is thinking...",
     "gameOver": "Game Over",

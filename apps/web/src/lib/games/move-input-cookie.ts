@@ -2,12 +2,13 @@ import { IS_LOCAL_DEV } from '@/config';
 
 /**
  * Single-writer rule: only `GamePreferencesProvider` writes this cookie (via
- * `writeMoveInputCookieClient` in a `useEffect` keyed on the mirrored mode
- * keys). Any additional writer will cause drift with the localStorage source
- * of truth. If the cookie is cleared (privacy extensions, incognito, storage
- * wipes, etc.) SSR falls back to `DEFAULT_MOVE_INPUT_HINT` until the user
- * next changes a mode-related preference — acceptable graceful degradation,
- * behavior reverts to today's baseline (default skeleton), not worse.
+ * `writeMoveInputCookieClient`, called synchronously from the initial-load
+ * effect, `updatePreferences`, and `resetPreferences`). Any additional writer
+ * will cause drift with the localStorage source of truth. If the cookie is
+ * cleared (privacy extensions, incognito, storage wipes, etc.) SSR falls back
+ * to `DEFAULT_MOVE_INPUT_HINT` until the user next changes a mode-related
+ * preference — acceptable graceful degradation, behavior reverts to today's
+ * baseline (default skeleton), not worse.
  */
 
 /**

@@ -44,10 +44,10 @@ export function PlayPageClient({ locale, breadcrumb, initialMoveInputHint }: Pro
 
   // Resolve the content of the single status slot (PageTitle).
   // Priority: active move error → AI-thinking state → AI's last move
-  // announcement → initial-load "Loading…" → "Play Chess" title. Both
+  // announcement → initial-load "Loading..." → "Play Chess" title. Both
   // branches render a `truncate block` span so the swap between states is
   // always single-line and does not reflow / cause CLS on narrow viewports
-  // (longer "AI played …" strings would otherwise wrap to 2 lines).
+  // (longer "AI played ..." strings would otherwise wrap to 2 lines).
   const titleContent = (
     <span
       className={`truncate block ${
