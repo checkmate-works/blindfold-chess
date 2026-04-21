@@ -82,10 +82,8 @@ export function MoveSelect({ fen, onSubmit, onChange, disabled, placeholder }: P
         type="button"
         onClick={toggleOpen}
         disabled={isDisabled}
-        className={`w-full flex items-center justify-between px-4 py-3.5 md:py-3 border rounded-lg bg-background text-lg md:text-base text-left focus:outline-none focus:ring-2 focus:ring-ring transition-colors ${
-          isDisabled
-            ? 'opacity-50 cursor-not-allowed border-border'
-            : 'border-border hover:bg-muted/50'
+        className={`w-full flex items-center justify-between px-4 py-3.5 md:py-3 border border-border rounded-lg bg-background text-lg md:text-base text-left focus:outline-none focus:ring-2 focus:ring-ring transition-colors ${
+          isDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-muted/50'
         } ${isOpen ? 'ring-2 ring-ring border-ring' : ''}`}
       >
         <span className={!selectedMove ? 'text-muted-foreground' : 'text-foreground'}>

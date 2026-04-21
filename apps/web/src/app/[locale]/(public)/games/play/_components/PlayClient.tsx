@@ -7,36 +7,83 @@ import { notFound, useRouter } from 'next/navigation';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
 
+import type { MoveInputPreferenceHint } from '@/lib/games/move-input-cookie';
+import type { PeekPreferenceHint } from '@/lib/games/peek-cookie';
+
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { useBoardFlip, useConfirmationDialogs, useGameSession, useMoveNavigation } from '../_hooks';
+import { useBoardFlip, useConfirmationDialogs, useMoveNavigation } from '../_hooks';
+import type { GameSession } from '../_hooks/use-game-session';
+import {
+  deriveMoveInputSkeletonProps,
+  shouldShowInlinePeekHeader,
+  shouldShowModalPeekButton,
+} from '../_lib';
 import { BoardViewModal } from './BoardViewModal';
 import { GameInProgressPanel } from './GameInProgressPanel';
 import { InlineBoardView } from './InlineBoardView';
+import { MoveInputSkeleton } from './MoveInputSkeleton';
 import { MovesPanel } from './MovesPanel';
+import { MovesPanelSkeleton } from './MovesPanelSkeleton';
 import { OperationLogModal } from './OperationLogModal';
+import {
+  ActionRowSkeleton,
+  IconButtonSkeleton,
+  InlineBoardHeaderSkeleton,
+  TextLinkSkeleton,
+} from './skeletons';
 
 type Props = {
   locale: Locale;
-  onAiMoveChange?: (move: string | null) => void;
+  gameSession: GameSession;
+  /**
+   * Server-resolved hint for the user's move-input mode preference. Used
+   * to pick the correct `MoveInputSkeleton` shape during the SSR +
+   * pre-hydration window, before `GamePreferencesContext` has read
+   * localStorage. Once `isHydrated` flips true, the real preferences
+   * from localStorage take over — see `skeletonMode` below.
+   */
+  initialMoveInputHint: MoveInputPreferenceHint;
+  /**
+   * Server-resolved hint for the user's board-peek preferences
+   * (`peekMode`, `showBoardButtonInGame`). Used to decide whether to
+   * reserve the `InlineBoardHeaderSkeleton` / `ActionRowSkeleton` board
+   * button during the SSR + pre-hydration window, before
+   * `GamePreferencesContext` has read localStorage. Once `isHydrated`
+   * flips true, the real preferences from localStorage take over —
+   * see `skeletonShowInlinePeekHeader` / `skeletonShowModalPeekButton`
+   * below.
+   */
+  initialPeekHint: PeekPreferenceHint;
+  /**
+   * Page-level "waiting for persisted state" flag, computed once in
+   * `PlayPageClient` from `gameState.isLoadingFromStorage` and the
+   * preferences hydration state. Passed down so the title slot and the
+   * input panel transition out of their loading states in lockstep.
+   */
+  isInitializing: boolean;
 };
 
-export function PlayClient({ locale, onAiMoveChange }: Props) {
+export function PlayClient({
+  locale,
+  gameSession,
+  initialMoveInputHint,
+  initialPeekHint,
+  isInitializing,
+}: Props) {
   const t = useTranslations('play');
   const router = useRouter();
 
-  const { gameConfig, gameState, moveState, moveInput, actions, operationLogs } = useGameSession({
-    locale,
-    onAiMoveChange,
-  });
+  const { gameConfig, gameState, moveState, moveInput, actions, operationLogs, isAiThinking } =
+    gameSession;
 
   const { playerSide, startingFen, perGamePrefs, gameId } = gameConfig;
   const { gameStatus, playerResult, isPlayerTurn, isLoading, lastMove, gameNotFound } = gameState;
   const { moves, currentFen, formattedPgn } = moveState;
-  const { value: moveInputValue, setValue: setMoveInput, error, setError } = moveInput;
+  const { value: moveInputValue, setValue: setMoveInput, error, clearMoveError } = moveInput;
   const {
     handleSubmitMove,
     handleResign,
@@ -49,7 +96,26 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
   } = actions;
 
   // Global preferences
-  const { preferences: globalPreferences, updatePreferences } = useGamePreferences();
+  const { preferences: globalPreferences, updatePreferences, isHydrated } = useGamePreferences();
+
+  // Pre-hydration skeleton shape: prefer the cookie-sourced hints from the
+  // server over `globalPreferences` (which is still the provider's defaults
+  // until localStorage is read). Once `isHydrated` flips true,
+  // `globalPreferences` becomes the source of truth — matching the
+  // localStorage value, which may or may not agree with the cookie.
+  //
+  // Reconciliation rule: cookie wins on first paint (driven by these
+  // branches); localStorage wins post-hydration (driven by
+  // `globalPreferences`). The `GamePreferencesContext` also mirrors
+  // subsequent preference changes back to the cookie so the two stay in
+  // sync on the next navigation.
+  // Pre-hydration derivation is shared with `loading.tsx` via
+  // `deriveMoveInputSkeletonProps` so the two entry points stay in lockstep.
+  const hintSkeletonProps = deriveMoveInputSkeletonProps(initialMoveInputHint);
+  const skeletonMode = isHydrated ? globalPreferences.moveInputMode : hintSkeletonProps.mode;
+  const skeletonHasModeSwitch = isHydrated
+    ? globalPreferences.enabledMoveInputModes.length >= 2
+    : hintSkeletonProps.hasModeSwitch;
 
   // Merge per-game preferences with global preferences
   // Per-game fields override global; other fields come from global
@@ -65,6 +131,16 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
       pieceColors: perGamePrefs.pieceColors,
     };
   }, [globalPreferences, perGamePrefs]);
+
+  // Pre-hydration peek skeleton decisions: cookie hint wins on first paint,
+  // `preferences` (merged with per-game overrides) wins post-hydration. This
+  // mirrors the `skeletonMode` / `skeletonHasModeSwitch` pattern above.
+  const skeletonShowInlinePeekHeader = isHydrated
+    ? shouldShowInlinePeekHeader(preferences)
+    : shouldShowInlinePeekHeader(initialPeekHint);
+  const skeletonShowModalPeekButton = isHydrated
+    ? shouldShowModalPeekButton(preferences)
+    : shouldShowModalPeekButton(initialPeekHint);
 
   // UI state
   const [isBoardVisible, setIsBoardVisible] = useState(false);
@@ -127,17 +203,38 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
         <div className="lg:col-span-2">
           <div>
             {/* In Progress Content */}
-            {gameStatus === 'in_progress' && (
+            {gameStatus === 'in_progress' && isInitializing && (
+              <div className="flex flex-col gap-6">
+                {/* InlineBoardView header (~46px). Reserved whenever the
+                    active hint (cookie pre-hydration, preferences post-
+                    hydration) says the user has `peekMode='inline'` with
+                    `showBoardButtonInGame` enabled, so returning inline
+                    users get the correct layout from the very first paint. */}
+                {skeletonShowInlinePeekHeader && <InlineBoardHeaderSkeleton />}
+                <MoveInputSkeleton mode={skeletonMode} hasModeSwitch={skeletonHasModeSwitch} />
+                {/* Action row (Show Board + Undo + Resign). Whether the
+                    "Show Board" button is reserved is driven by the active
+                    hint so users who disabled the button — or use inline
+                    peek — don't get a phantom slot reserved during SSR. */}
+                <ActionRowSkeleton showBoardButton={skeletonShowModalPeekButton} />
+                {/* Save and Exit link: text-sm ≈ 20px */}
+                <TextLinkSkeleton />
+                {/* Operation Log trigger: w-4 h-4 icon + padding ≈ 24px */}
+                <IconButtonSkeleton />
+              </div>
+            )}
+            {gameStatus === 'in_progress' && !isInitializing && (
               <GameInProgressPanel
                 isPlayerTurn={isPlayerTurn}
                 isLoading={isLoading}
+                isAiThinking={isAiThinking}
                 preferences={preferences}
                 updatePreferences={updatePreferences}
                 currentFen={currentFen}
                 moveInput={moveInputValue}
                 setMoveInput={setMoveInput}
                 error={error}
-                setError={setError}
+                onErrorClear={clearMoveError}
                 handleSubmitMove={handleSubmitMove}
                 moves={moves}
                 confirmationDialogs={confirmationDialogs}
@@ -153,7 +250,7 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
                 onMovePeek={recordMovePeek}
                 onShowOperationLog={() => setShowOperationLogModal(true)}
                 inlineBoardView={
-                  preferences.showBoardButtonInGame && preferences.peekMode === 'inline' ? (
+                  shouldShowInlinePeekHeader(preferences) ? (
                     <InlineBoardView
                       fen={displayFen || currentFen}
                       playerSide={playerSide}
@@ -182,36 +279,40 @@ export function PlayClient({ locale, onAiMoveChange }: Props) {
 
         {/* Move List */}
         <div className="lg:col-span-1">
-          <MovesPanel
-            moveList={{
-              formattedPgn,
-              currentPosition,
-              movesLength: moves.length,
-              currentFen,
-              displayFen,
-              startingFen,
-            }}
-            navigation={{
-              onNavigateToPosition: navigateToPosition,
-              onNavigateToStart: navigateToStart,
-              onNavigatePrevious: navigatePrevious,
-              onNavigateNext: navigateNext,
-              onNavigateToEnd: navigateToEnd,
-            }}
-            actions={{
-              gameInProgress: gameStatus === 'in_progress',
-              // FEN → Lichess URL derivation is a navigation concern, so it
-              // lives here (the parent that owns routing) rather than in
-              // MovesPanel. Mirrors the original inline behavior: latest
-              // position uses currentFen, historical positions use displayFen.
-              lichessAnalysisUrl: fenToLichessUrl(
-                currentPosition === -1 || displayFen === null ? currentFen : displayFen
-              ),
-              onRestartFromPosition: confirmationDialogs.restart.openWithPosition,
-              onNewGameFromPosition: handleNewGameFromPosition,
-            }}
-            showBackground={false}
-          />
+          {isInitializing ? (
+            <MovesPanelSkeleton />
+          ) : (
+            <MovesPanel
+              moveList={{
+                formattedPgn,
+                currentPosition,
+                movesLength: moves.length,
+                currentFen,
+                displayFen,
+                startingFen,
+              }}
+              navigation={{
+                onNavigateToPosition: navigateToPosition,
+                onNavigateToStart: navigateToStart,
+                onNavigatePrevious: navigatePrevious,
+                onNavigateNext: navigateNext,
+                onNavigateToEnd: navigateToEnd,
+              }}
+              actions={{
+                gameInProgress: gameStatus === 'in_progress',
+                // FEN → Lichess URL derivation is a navigation concern, so it
+                // lives here (the parent that owns routing) rather than in
+                // MovesPanel. Mirrors the original inline behavior: latest
+                // position uses currentFen, historical positions use displayFen.
+                lichessAnalysisUrl: fenToLichessUrl(
+                  currentPosition === -1 || displayFen === null ? currentFen : displayFen
+                ),
+                onRestartFromPosition: confirmationDialogs.restart.openWithPosition,
+                onNewGameFromPosition: handleNewGameFromPosition,
+              }}
+              showBackground={false}
+            />
+          )}
         </div>
       </div>
 

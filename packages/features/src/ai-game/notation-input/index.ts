@@ -1,14 +1,12 @@
 export type {
-  CastlingMove,
+  CastlingToken,
+  NotationChar,
   NotationInputAction,
   NotationInputState,
-  PromotionPiece,
 } from "./types";
+export { MAX_NOTATION_INPUT_LENGTH } from "./types";
 export {
   computeIsSubmittable,
-  computeIsPawnCaptureMode,
-  computePreviewText,
-  computeShowPromotion,
   createInitialState,
   notationInputReducer,
 } from "./state-machine";

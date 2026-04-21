@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -14,7 +15,6 @@ import type { Game, MoveInputMethod, MoveOperationLog } from '@/lib/types';
 import { Divider } from '@/app/[locale]/_components/Divider';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { ClientBreadcrumb } from '../../_components/ClientBreadcrumb';
 import { OperationLogModal } from '../../_components/OperationLogModal';
 import { useNotation } from '../../_hooks';
 import type { FormattedPgnMove } from '../../_lib';
@@ -23,11 +23,11 @@ import { VictoryCertificate } from './VictoryCertificate';
 
 type Props = {
   locale: Locale;
-  brandName: string;
   displayName: string;
+  breadcrumb: ReactNode;
 };
 
-export function ResultClient({ locale, brandName, displayName }: Props) {
+export function ResultClient({ locale, displayName, breadcrumb }: Props) {
   const t = useTranslations('play');
   const searchParams = useSearchParams();
   const gameId = searchParams.get('gameId');
@@ -53,8 +53,8 @@ export function ResultClient({ locale, brandName, displayName }: Props) {
       game={loadState.game}
       gameId={gameId as string}
       locale={locale}
-      brandName={brandName}
       displayName={displayName}
+      breadcrumb={breadcrumb}
     />
   );
 }
@@ -63,8 +63,8 @@ type ResultContentProps = {
   game: Game;
   gameId: string;
   locale: Locale;
-  brandName: string;
   displayName: string;
+  breadcrumb: ReactNode;
 };
 
 function OperationLogSummary({
@@ -199,7 +199,7 @@ function OperationLogSummary({
   );
 }
 
-function ResultContent({ game, gameId, locale, brandName, displayName }: ResultContentProps) {
+function ResultContent({ game, gameId, locale, displayName, breadcrumb }: ResultContentProps) {
   const t = useTranslations('play');
   const tGames = useTranslations('gamesPage');
   const router = useRouter();
@@ -313,11 +313,7 @@ function ResultContent({ game, gameId, locale, brandName, displayName }: ResultC
       )}
 
       <Divider />
-      <ClientBreadcrumb
-        items={[{ label: tGames('pageTitle'), href: '/games' }, { label: t('gameOver') }]}
-        locale={locale}
-        brandName={brandName}
-      />
+      {breadcrumb}
     </div>
   );
 }

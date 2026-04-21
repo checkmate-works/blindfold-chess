@@ -15,6 +15,7 @@ type UsePlayerMoveOptions = {
   setLastMove: (lastMove: { from: string; to: string } | null) => void;
   setMoveInput: (input: string) => void;
   setError: (error: string | null) => void;
+  setLastAttemptedInput: (input: string) => void;
 };
 
 export function usePlayerMove({
@@ -27,6 +28,7 @@ export function usePlayerMove({
   setLastMove,
   setMoveInput,
   setError,
+  setLastAttemptedInput,
 }: UsePlayerMoveOptions) {
   const t = useTranslations('play');
   const lastSubmittedMoveRef = useRef<{ move: string; timestamp: number } | null>(null);
@@ -55,11 +57,13 @@ export function usePlayerMove({
         pushMove(move);
         setMoveInput('');
         setError(null);
+        setLastAttemptedInput('');
 
         const newMoves = [...moves, move];
         setLastMove(getLastMoveDetails(newMoves as string[], startingFen));
         return true;
       } else {
+        setLastAttemptedInput(move);
         setError(t('invalidMove'));
         return false;
       }
@@ -75,6 +79,7 @@ export function usePlayerMove({
       setLastMove,
       setMoveInput,
       setError,
+      setLastAttemptedInput,
     ]
   );
 

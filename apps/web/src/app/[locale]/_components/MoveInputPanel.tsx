@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { getLegalMoves } from '@blindfold-chess/features/chess-core';
@@ -32,6 +32,13 @@ type Props = {
   playerColor?: 'w' | 'b';
   onMoveCommitted?: (inputMethod: MoveInputMethod) => void;
   onMovePeek?: () => void;
+  /**
+   * When `true` (default), renders the `error` message inline right below the
+   * input area. Set to `false` when the consumer surfaces the error elsewhere
+   * (e.g. the page-level PageTitle slot in `/games/play`) to avoid double
+   * display.
+   */
+  showInlineError?: boolean;
 };
 
 const modeIcons: Record<GamePreferences['moveInputMode'], ReactNode> = {
@@ -56,6 +63,7 @@ export function MoveInputPanel({
   playerColor,
   onMoveCommitted,
   onMovePeek,
+  showInlineError = true,
 }: Props) {
   const t = useTranslations('play');
   const enabledModes = preferences.enabledMoveInputModes;
@@ -93,11 +101,32 @@ export function MoveInputPanel({
     ? preferences.moveInputMode
     : enabledModes[0];
 
-  // Reset legal moves display and invalid attempt counter when input mode changes
+  // Reset legal moves display and invalid attempt counter when input mode changes.
+  // Switching modes is treated as a user edit, so clear any active move error too
+  // — otherwise a stale "⚠ Invalid move: …" persists in the title slot after the
+  // user navigated away from the failing input.
+  //
+  // `onErrorClear` is intentionally *not* listed as a dependency. The current
+  // `clearMoveError` only closes over stable `useState` setters and is
+  // referentially stable, so the ref is defensive rather than required — it
+  // guards against a future consumer passing a non-stable `onErrorClear`
+  // that would otherwise re-fire this effect and reset `invalidAttemptCount`
+  // on every error transition.
+  const onErrorClearRef = useRef(onErrorClear);
+  useEffect(() => {
+    onErrorClearRef.current = onErrorClear;
+  }, [onErrorClear]);
+
   useEffect(() => {
     setShowLegalMoves(false);
     setInvalidAttemptCount(0);
+    onErrorClearRef.current();
   }, [currentMode]);
+
+  const legalMoves = useMemo(
+    () => (showLegalMoves ? getLegalMoves(currentFen).sort() : null),
+    [showLegalMoves, currentFen]
+  );
 
   // Compute next mode for cycling
   const currentIndex = enabledModes.indexOf(currentMode);
@@ -120,6 +149,7 @@ export function MoveInputPanel({
             onSubmit={(move) => handleSubmitWithTracking(move, 'button')}
             disabled={disabled}
             playerColor={playerColor}
+            onClearError={onErrorClear}
           />
         ) : (
           <MoveInput
@@ -137,7 +167,7 @@ export function MoveInputPanel({
             showSubmitButton={true}
           />
         )}
-        {error && <p className="text-destructive text-sm mt-2">{error}</p>}
+        {showInlineError && error && <p className="text-destructive text-sm mt-2">{error}</p>}
         {error && invalidAttemptCount >= INVALID_ATTEMPTS_THRESHOLD && !showLegalMoves && (
           <button
             type="button"
@@ -147,20 +177,18 @@ export function MoveInputPanel({
             {t('showLegalMoves')}
           </button>
         )}
-        {showLegalMoves && (
+        {legalMoves && (
           <div className="mt-2 p-3 bg-muted/50 border border-border rounded-lg">
             <p className="text-xs text-muted-foreground mb-2">{t('legalMovesList')}</p>
             <div className="flex flex-wrap gap-1.5">
-              {getLegalMoves(currentFen)
-                .sort()
-                .map((move) => (
-                  <span
-                    key={move}
-                    className="px-2 py-0.5 text-sm font-mono bg-card border border-border rounded"
-                  >
-                    {move}
-                  </span>
-                ))}
+              {legalMoves.map((move) => (
+                <span
+                  key={move}
+                  className="px-2 py-0.5 text-sm font-mono bg-card border border-border rounded"
+                >
+                  {move}
+                </span>
+              ))}
             </div>
           </div>
         )}
@@ -171,7 +199,8 @@ export function MoveInputPanel({
             onClick={() => {
               updatePreferences({ moveInputMode: nextMode });
             }}
-            className="p-2 border border-border rounded-md hover:bg-muted"
+            disabled={disabled}
+            className="p-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
             title={toggleTitle}
           >
             {modeIcons[nextMode]}

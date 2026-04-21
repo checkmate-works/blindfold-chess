@@ -13,3 +13,9 @@ export {
   validatePgnWithDetails,
 } from './pgn-parser';
 export type { FormattedPgn, FormattedPgnMove } from './pgn-parser';
+export {
+  deriveMoveInputSkeletonProps,
+  shouldShowInlinePeekHeader,
+  shouldShowModalPeekButton,
+} from './preferences';
+export type { MoveInputSkeletonProps } from './preferences';

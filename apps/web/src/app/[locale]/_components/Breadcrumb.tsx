@@ -23,8 +23,17 @@ export function BreadcrumbContent({ items, locale, brandName }: BreadcrumbConten
   return (
     <>
       <JsonLd data={generateBreadcrumbListSchema(items, effectiveLocale, brandName)} />
-      <nav aria-label="Breadcrumb" className="mb-4">
-        <ol className="flex items-center space-x-1 text-sm">
+      {/*
+        Reserve 2-line height (text-sm line-height 20px x 2 = 40px) so that
+        long i18n labels (e.g. es `/games/play/postmortem` with
+        "Partidas / Resultado de la Partida / Revisión de Partida") do not
+        trigger CLS when they wrap on narrow viewports. The single-line
+        case simply leaves bottom whitespace inside the reserved block; the
+        `items-end` alignment keeps the label anchored to the bottom so the
+        visual rhythm with the following `mb-4` block is preserved.
+      */}
+      <nav aria-label="Breadcrumb" className="mb-4 flex min-h-10 items-end">
+        <ol className="flex flex-wrap items-center gap-x-1 text-sm">
           <li>
             <Link
               href={locale ? `/${locale}` : '/'}
