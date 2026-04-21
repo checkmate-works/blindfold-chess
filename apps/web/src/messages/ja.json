@@ -1507,6 +1507,7 @@
   },
   "play": {
     "title": "チェス対戦",
+    "loading": "読み込み中…",
     "yourMove": "あなたの番です",
     "aiThinking": "AIが考えています...",
     "gameOver": "ゲーム終了",

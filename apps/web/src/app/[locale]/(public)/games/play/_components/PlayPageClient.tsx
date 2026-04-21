@@ -9,6 +9,7 @@ import type { MoveInputPreferenceHint } from '@/lib/games/move-input-cookie';
 import { Divider } from '@/app/[locale]/_components/Divider';
 import { PagePanel } from '@/app/[locale]/_components/PagePanel';
 import { PageTitle } from '@/app/[locale]/_components/PageTitle';
+import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useGameSession } from '../_hooks';
@@ -35,17 +36,26 @@ export function PlayPageClient({ locale, breadcrumb, initialMoveInputHint }: Pro
   const gameSession = useGameSession({ locale });
   const { aiMoveDisplay, isAiThinking } = gameSession;
   const { error: moveError, lastAttemptedInput } = gameSession.moveInput;
+  const { isLoadingFromStorage } = gameSession.gameState;
+  const { isHydrated } = useGamePreferences();
+  // Matches the `isInitializing` predicate in `PlayClient` so the title and
+  // the input panel both transition out of their "loading" state in lockstep.
+  const isInitializing = isLoadingFromStorage || !isHydrated;
 
   // Resolve the content of the single status slot (PageTitle).
   // Priority: active move error → AI-thinking state → AI's last move
-  // announcement → initial "Play Chess" title. Both branches render a
-  // `truncate block` span so the swap between states is always single-line
-  // and does not reflow / cause CLS on narrow viewports (longer "AI played …"
-  // strings would otherwise wrap to 2 lines).
+  // announcement → initial-load "Loading…" → "Play Chess" title. Both
+  // branches render a `truncate block` span so the swap between states is
+  // always single-line and does not reflow / cause CLS on narrow viewports
+  // (longer "AI played …" strings would otherwise wrap to 2 lines).
   const titleContent = (
     <span
       className={`truncate block ${
-        moveError ? 'text-destructive' : isAiThinking ? 'text-muted-foreground' : ''
+        moveError
+          ? 'text-destructive'
+          : isAiThinking || isInitializing
+            ? 'text-muted-foreground'
+            : ''
       }`}
     >
       {moveError
@@ -54,7 +64,7 @@ export function PlayPageClient({ locale, breadcrumb, initialMoveInputHint }: Pro
           : `\u26A0 ${moveError}`
         : isAiThinking
           ? t('aiThinking')
-          : aiMoveDisplay || t('title')}
+          : aiMoveDisplay || (isInitializing ? t('loading') : t('title'))}
     </span>
   );
 

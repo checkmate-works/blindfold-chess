@@ -1494,6 +1494,7 @@
   },
   "play": {
     "title": "Jugar Ajedrez",
+    "loading": "Cargando…",
     "yourMove": "Tu movimiento",
     "aiThinking": "La IA está pensando...",
     "gameOver": "Fin de la Partida",
