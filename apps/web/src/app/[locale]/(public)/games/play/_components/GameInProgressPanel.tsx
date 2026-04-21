@@ -88,6 +88,7 @@ export function GameInProgressPanel({
           playerColor={playerColor}
           onMoveCommitted={onMoveCommitted}
           onMovePeek={onMovePeek}
+          showInlineError={false}
         />
       ) : (
         // AI-turn state. The "AI is thinking…" status is surfaced in the

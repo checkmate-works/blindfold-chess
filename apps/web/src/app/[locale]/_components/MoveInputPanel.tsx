@@ -32,6 +32,13 @@ type Props = {
   playerColor?: 'w' | 'b';
   onMoveCommitted?: (inputMethod: MoveInputMethod) => void;
   onMovePeek?: () => void;
+  /**
+   * When `true` (default), renders the `error` message inline right below the
+   * input area. Set to `false` when the consumer surfaces the error elsewhere
+   * (e.g. the page-level PageTitle slot in `/games/play`) to avoid double
+   * display.
+   */
+  showInlineError?: boolean;
 };
 
 const modeIcons: Record<GamePreferences['moveInputMode'], ReactNode> = {
@@ -56,6 +63,7 @@ export function MoveInputPanel({
   playerColor,
   onMoveCommitted,
   onMovePeek,
+  showInlineError = true,
 }: Props) {
   const t = useTranslations('play');
   const enabledModes = preferences.enabledMoveInputModes;
@@ -154,6 +162,7 @@ export function MoveInputPanel({
             showSubmitButton={true}
           />
         )}
+        {showInlineError && error && <p className="text-destructive text-sm mt-2">{error}</p>}
         {error && invalidAttemptCount >= INVALID_ATTEMPTS_THRESHOLD && !showLegalMoves && (
           <button
             type="button"
