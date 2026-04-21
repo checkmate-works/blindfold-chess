@@ -138,15 +138,17 @@ const PREFERENCES_STORAGE_KEY = 'blindfold-chess-game-preferences';
 
 type GamePreferencesContextType = {
   preferences: GamePreferences;
-  isLoaded: boolean;
   /**
    * `true` once the client has read preferences from localStorage (or
    * determined that none are persisted). `false` on the server and on the
    * very first client render, allowing consumers to render a skeleton until
    * the saved-mode vs default-mode ambiguity is resolved.
-   *
-   * Semantically equivalent to `isLoaded` today — kept as a distinct field
-   * so call sites can express "waiting for hydration" intent explicitly.
+   */
+  isLoaded: boolean;
+  /**
+   * Alias of `isLoaded`. Kept as a distinct field name so call sites can
+   * express "waiting for hydration" intent explicitly; both fields always
+   * resolve to the same underlying state.
    */
   isHydrated: boolean;
   updatePreferences: (updates: Partial<GamePreferences>) => void;
@@ -157,8 +159,10 @@ const GamePreferencesContext = createContext<GamePreferencesContextType | undefi
 
 export function GamePreferencesProvider({ children }: { children: React.ReactNode }) {
   const [preferences, setPreferences] = useState<GamePreferences>(defaultPreferences);
+  // Single underlying flag for both `isLoaded` and `isHydrated`. They have
+  // always flipped together (see the `finally` block in the load effect);
+  // keeping them as one state variable ensures they cannot drift.
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isHydrated, setIsHydrated] = useState(false);
 
   // Mirror `preferences` into a ref so `updatePreferences` can read the
   // current value without being re-created (and invalidating consumer
@@ -203,7 +207,6 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
         enabledModes: loaded.enabledMoveInputModes,
       });
       setIsLoaded(true);
-      setIsHydrated(true);
     }
   }, []);
 
@@ -287,11 +290,12 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
     () => ({
       preferences,
       isLoaded,
-      isHydrated,
+      // Alias: see the field-level comment on `GamePreferencesContextType`.
+      isHydrated: isLoaded,
       updatePreferences,
       resetPreferences,
     }),
-    [preferences, isLoaded, isHydrated, updatePreferences, resetPreferences]
+    [preferences, isLoaded, updatePreferences, resetPreferences]
   );
 
   return (

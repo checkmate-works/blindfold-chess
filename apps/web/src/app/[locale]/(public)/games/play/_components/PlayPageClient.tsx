@@ -76,6 +76,7 @@ export function PlayPageClient({ locale, breadcrumb, initialMoveInputHint }: Pro
           locale={locale}
           gameSession={gameSession}
           initialMoveInputHint={initialMoveInputHint}
+          isInitializing={isInitializing}
         />
         <Divider />
         {breadcrumb}

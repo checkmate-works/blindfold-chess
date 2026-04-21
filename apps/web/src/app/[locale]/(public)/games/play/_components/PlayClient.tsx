@@ -42,24 +42,23 @@ type Props = {
    * from localStorage take over — see `skeletonMode` below.
    */
   initialMoveInputHint: MoveInputPreferenceHint;
+  /**
+   * Page-level "waiting for persisted state" flag, computed once in
+   * `PlayPageClient` from `gameState.isLoadingFromStorage` and the
+   * preferences hydration state. Passed down so the title slot and the
+   * input panel transition out of their loading states in lockstep.
+   */
+  isInitializing: boolean;
 };
 
-export function PlayClient({ locale, gameSession, initialMoveInputHint }: Props) {
+export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitializing }: Props) {
   const t = useTranslations('play');
   const router = useRouter();
 
   const { gameConfig, gameState, moveState, moveInput, actions, operationLogs } = gameSession;
 
   const { playerSide, startingFen, perGamePrefs, gameId } = gameConfig;
-  const {
-    gameStatus,
-    playerResult,
-    isPlayerTurn,
-    isLoading,
-    isLoadingFromStorage,
-    lastMove,
-    gameNotFound,
-  } = gameState;
+  const { gameStatus, playerResult, isPlayerTurn, isLoading, lastMove, gameNotFound } = gameState;
   const { moves, currentFen, formattedPgn } = moveState;
   const { value: moveInputValue, setValue: setMoveInput, error, clearMoveError } = moveInput;
   const {
@@ -75,7 +74,6 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint }: Props)
 
   // Global preferences
   const { preferences: globalPreferences, updatePreferences, isHydrated } = useGamePreferences();
-  const isInitializing = isLoadingFromStorage || !isHydrated;
 
   // Pre-hydration skeleton shape: prefer the cookie-sourced hint from the
   // server over `globalPreferences` (which is still the provider's default
