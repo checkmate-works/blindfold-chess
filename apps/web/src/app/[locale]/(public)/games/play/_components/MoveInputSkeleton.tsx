@@ -17,15 +17,12 @@ type Props = {
   variant: 'initial' | 'ai-turn';
   /**
    * Whether the real `MoveInputPanel` will render its mode-switch button row
-   * (i.e. the user has 2+ input modes enabled). When true, the skeleton adds
-   * the height of the switcher row plus the parent `gap-6` so the swap does
-   * not shift layout. Defaults to `false`, which matches the default
-   * preferences (`enabledMoveInputModes: ['button']`).
-   *
-   * For `mode === 'button'`, the additional height is baked into the outer
-   * `min-h-[346px]`. For `mode === 'text'` / `'select'`, a `ModeSwitchSkeleton`
-   * is appended as a sibling inside the same wrapper so the gap is covered by
-   * the wrapper's own flex spacing (`gap-6`) rather than the parent's.
+   * (i.e. the user has 2+ input modes enabled). When true, the skeleton
+   * appends a `ModeSwitchSkeleton` as an explicit sibling inside its own
+   * `flex flex-col gap-6` wrapper so the gap between the input skeleton and
+   * the switcher matches the real `MoveInputPanel`'s spacing exactly.
+   * Defaults to `false`, which matches the default preferences
+   * (`enabledMoveInputModes: ['button']`).
    */
   hasModeSwitch?: boolean;
 };
@@ -33,31 +30,28 @@ type Props = {
 // Shape-matched minimum heights per input mode. Values chosen so that the
 // skeleton ↔ real panel swap introduces zero (or near-zero) CLS.
 //
-// ButtonInput (default preferences, single enabled mode, no switcher row):
-//   p-4 vertical         : 32px (py-4 × 2)
-//   gap-3 × 4 between 5 rows : 48px
-//   Row 1 (pieces)       : 36px (h-9)
-//   Row 2 (files)        : 36px (h-9)
-//   Row 3 (ranks)        : 36px (h-9)
-//   Row 4 (annotations)  : 36px (h-9)
-//   Row 5 mt-2           :  8px
-//   Row 5 preview/submit : 56px (h-14)
-//   Total                : 288px
+// All three modes share the same outer structure: a `flex flex-col gap-6`
+// wrapper whose first child is the mode-specific input skeleton and whose
+// optional second child is `<ModeSwitchSkeleton />` (rendered when
+// `hasModeSwitch` is true). The wrapper's own `gap-6` covers the 24px space
+// between the input and the switcher, matching the parent `MoveInputPanel`'s
+// own `gap-6` in the hydrated view.
 //
-// When the mode-switch button row is present (2+ enabled modes), the parent
-// `MoveInputPanel` returns a React fragment whose two children (the input and
-// the switcher row) sit inside `GameInProgressPanel`'s `flex flex-col gap-6`.
-// So the rendered height is the sum of:
-//   ButtonInput                        : 288px
-//   parent gap-6 (between siblings)    :  24px
-//   Mode switcher row (p-2 + h-4 icon) :  34px  (1 + 8 + 16 + 8 + 1)
-//   Total                              : 346px
+// ButtonInput (default preferences, single enabled mode):
+//   p-4 vertical             : 32px (py-4 × 2)
+//   gap-3 × 4 between 5 rows : 48px
+//   Row 1 (pieces)           : 36px (h-9)
+//   Row 2 (files)            : 36px (h-9)
+//   Row 3 (ranks)            : 36px (h-9)
+//   Row 4 (annotations)      : 36px (h-9)
+//   Row 5 mt-2               :  8px
+//   Row 5 preview/submit     : 56px (h-14)
+//   Card total               : 288px
 //
 // MoveInput (text mode) and MoveSelect render raw form elements without a
-// `p-4 bg-card` wrapper, so the skeleton for text/select must match that bare
-// shape — otherwise the swap introduces both height CLS and a surface-style
-// jank (card → bare form). The two modes have different real-panel heights,
-// so their reservations are tracked separately below.
+// `p-4 bg-card` wrapper, so the skeleton for text/select must match that
+// bare shape — otherwise the swap introduces both height CLS and a
+// surface-style jank (card → bare form).
 //
 // MoveInput (text mode), both breakpoints:
 //   Input row dominated by submit button `h-14`     : 56px
@@ -69,18 +63,16 @@ type Props = {
 //   Mobile  : py-3.5 (28) + text-lg line-height (28) + border (2) = 58px
 //   Desktop : py-3   (24) + text-base line-height (24) + border (2) = 50px
 //   `MIN_HEIGHT_SELECT` is responsive so the skeleton matches both
-//   breakpoints. Previously a single `min-h-[56px]` constant covered both
-//   modes; that under-reserved by 2px on mobile select (58 vs 56),
-//   producing a barely-perceptible downward nudge when the real select
-//   hydrated. Splitting the constant removes that shift.
+//   breakpoints.
 //
-// When `hasModeSwitch=true`, `ModeSwitchSkeleton` is appended inside the same
-// wrapper with internal `gap-6`, so the rendered height grows by
-// 24 (gap-6) + 34 (switcher) = 58px. The `min-h-*` constants bound the
-// no-switcher case; the wrapper's `flex flex-col` naturally expands when the
-// switcher sibling is present, so no separate `min-h` constant is needed.
+// When `hasModeSwitch=true`, the wrapper grows by 24 (gap-6) + 34 (switcher)
+// = 58px regardless of mode. The `min-h-*` constants are applied to the
+// input skeleton itself (not the wrapper), so the wrapper's `flex flex-col`
+// naturally expands when the switcher sibling is present.
+//   Button with switcher : 288 + 24 + 34 = 346px
+//   Text  with switcher  :  56 + 24 + 34 = 114px
+//   Select with switcher :  58 + 24 + 34 = 116px (mobile) / 50 + 58 = 108px (desktop)
 const MIN_HEIGHT_BUTTON = 'min-h-[288px]';
-const MIN_HEIGHT_BUTTON_WITH_SWITCHER = 'min-h-[346px]';
 const MIN_HEIGHT_TEXT = 'min-h-[56px]';
 const MIN_HEIGHT_SELECT = 'min-h-[58px] md:min-h-[50px]';
 
@@ -124,36 +116,43 @@ export function MoveInputSkeleton({ mode, variant, hasModeSwitch = false }: Prop
     );
   }
 
-  const buttonMinHeight = hasModeSwitch ? MIN_HEIGHT_BUTTON_WITH_SWITCHER : MIN_HEIGHT_BUTTON;
-
+  // ButtonInput renders a `p-4 bg-card rounded-lg` card with a 5-row grid.
+  // The switcher row, when present, is a sibling inside the real
+  // `MoveInputPanel` fragment — we emulate that by rendering it inside this
+  // wrapper with `gap-6` to match the parent's spacing. The `min-h` is
+  // applied to the card itself so the wrapper's flex layout naturally
+  // expands when the switcher sibling is present.
   return (
-    <div className={`flex flex-col gap-3 p-4 bg-card rounded-lg ${buttonMinHeight}`} {...ariaProps}>
-      {/* Row 1: K / Q / R / B / N / × (6 cells) */}
-      <div className="flex gap-2 justify-center">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <Skeleton key={i} disableAnimation className="w-9 h-9" />
-        ))}
+    <div className="flex flex-col gap-6" {...ariaProps}>
+      <div className={`flex flex-col gap-3 p-4 bg-card rounded-lg ${MIN_HEIGHT_BUTTON}`}>
+        {/* Row 1: K / Q / R / B / N / × (6 cells) */}
+        <div className="flex gap-2 justify-center">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} disableAnimation className="w-9 h-9" />
+          ))}
+        </div>
+
+        {/* Row 2: files */}
+        <Skeleton disableAnimation className="h-9 w-full" />
+
+        {/* Row 3: ranks */}
+        <Skeleton disableAnimation className="h-9 w-full" />
+
+        {/* Row 4: annotations + castling */}
+        <div className="flex gap-6 items-center justify-center">
+          <Skeleton disableAnimation className="h-9 w-32" />
+          <Skeleton disableAnimation className="h-9 w-24" />
+        </div>
+
+        {/* Row 5: preview + 3 action buttons */}
+        <div className="flex gap-2 mt-2 items-center">
+          <Skeleton disableAnimation className="h-14 flex-1" />
+          <Skeleton disableAnimation className="h-14 w-14" />
+          <Skeleton disableAnimation className="h-14 w-14" />
+          <Skeleton disableAnimation className="h-14 w-14" />
+        </div>
       </div>
-
-      {/* Row 2: files */}
-      <Skeleton disableAnimation className="h-9 w-full" />
-
-      {/* Row 3: ranks */}
-      <Skeleton disableAnimation className="h-9 w-full" />
-
-      {/* Row 4: annotations + castling */}
-      <div className="flex gap-6 items-center justify-center">
-        <Skeleton disableAnimation className="h-9 w-32" />
-        <Skeleton disableAnimation className="h-9 w-24" />
-      </div>
-
-      {/* Row 5: preview + 3 action buttons */}
-      <div className="flex gap-2 mt-2 items-center">
-        <Skeleton disableAnimation className="h-14 flex-1" />
-        <Skeleton disableAnimation className="h-14 w-14" />
-        <Skeleton disableAnimation className="h-14 w-14" />
-        <Skeleton disableAnimation className="h-14 w-14" />
-      </div>
+      {hasModeSwitch && <ModeSwitchSkeleton />}
     </div>
   );
 }
