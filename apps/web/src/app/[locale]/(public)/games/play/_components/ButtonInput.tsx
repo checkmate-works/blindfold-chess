@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
 import type { CastlingToken, NotationChar } from '@blindfold-chess/features/ai-game/notation-input';
 import type { AlgebraicNotation, PieceType } from '@blindfold-chess/types';
-import { FaBackspace, FaTrash } from 'react-icons/fa';
+import { FaBackspace, FaCheck, FaTrash } from 'react-icons/fa';
 
 import { CoordinateInput } from '@/app/[locale]/_components/CoordinateInput';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -203,7 +203,7 @@ export function ButtonInput({
           aria-label={t('action.submit')}
           title={t('action.submit')}
         >
-          ♟️
+          <FaCheck className="w-4 h-4" />
         </button>
       </div>
     </div>

@@ -2,7 +2,10 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+import { useTranslations } from 'next-intl';
+
 import type { AlgebraicNotation } from '@blindfold-chess/types';
+import { FaCheck } from 'react-icons/fa';
 
 import { UI_TIMEOUTS } from '@/app/[locale]/_constants/ui-timeouts';
 
@@ -33,6 +36,7 @@ function SuggestionInput({
   showSubmitButton = false,
   className = '',
 }: SuggestionInputProps) {
+  const t = useTranslations('buttonInput');
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -118,9 +122,10 @@ function SuggestionInput({
             type="submit"
             disabled={disabled || !value.trim()}
             className="w-14 h-14 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:shadow-none disabled:text-muted-foreground disabled:cursor-not-allowed text-primary-foreground font-medium rounded-lg transition-all duration-150 flex items-center justify-center text-xl border border-border"
-            title="Submit"
+            aria-label={t('action.submit')}
+            title={t('action.submit')}
           >
-            ♟️
+            <FaCheck className="w-4 h-4" />
           </button>
         )}
       </form>
