@@ -425,10 +425,6 @@
     "invalidPgn": "Formato PGN inválido",
     "invalidMove": "\"{move}\" é um movimento inválido"
   },
-  "ButtonInput": {
-    "disambiguationButton": "Desambiguação...",
-    "sourceLabel": "De (Origem)"
-  },
   "error": {
     "title": "Algo deu errado!",
     "description": "Pedimos desculpas pelo inconveniente. Ocorreu um erro ao processar sua solicitação.",
@@ -1511,6 +1507,7 @@
   },
   "play": {
     "title": "Jogar Xadrez",
+    "loading": "Carregando...",
     "yourMove": "Seu movimento",
     "aiThinking": "A IA está pensando...",
     "gameOver": "Fim da Partida",
@@ -1533,6 +1530,7 @@
     "switchInputMode": "Mudar modo de entrada",
     "submitMove": "Enviar",
     "invalidMove": "Movimento inválido",
+    "aiMoveFailed": "Falha no movimento da IA",
     "newGame": "Nova Partida",
     "resign": "Desistir",
     "undo": "Desfazer",
@@ -3959,5 +3957,28 @@
     "support": "Suporte",
     "legal": "Legal"
   },
-  "subscription": {}
+  "buttonInput": {
+    "piece": {
+      "king": "Rei",
+      "queen": "Dama",
+      "rook": "Torre",
+      "bishop": "Bispo",
+      "knight": "Cavalo"
+    },
+    "symbol": {
+      "capture": "Captura",
+      "check": "Xeque",
+      "promotion": "Promoção",
+      "checkmate": "Xeque-mate"
+    },
+    "castling": {
+      "kingside": "Roque pequeno",
+      "queenside": "Roque grande"
+    },
+    "action": {
+      "backspace": "Retrocesso",
+      "clear": "Limpar",
+      "submit": "Enviar"
+    }
+  }
 }
