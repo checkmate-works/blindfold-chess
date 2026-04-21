@@ -1,8 +1,16 @@
+import { readPeekPreferenceFromCookies } from '@/lib/games/peek-cookie.server';
+
 import { PagePanel, PageTitle } from '@/app/[locale]/_components';
 
 import { MoveInputSkeleton } from './_components/MoveInputSkeleton';
 import { MovesPanelSkeleton } from './_components/MovesPanelSkeleton';
-import { ActionRowSkeleton, IconButtonSkeleton, TextLinkSkeleton } from './_components/skeletons';
+import {
+  ActionRowSkeleton,
+  IconButtonSkeleton,
+  InlineBoardHeaderSkeleton,
+  TextLinkSkeleton,
+} from './_components/skeletons';
+import { shouldShowInlinePeekHeader, shouldShowModalPeekButton } from './_lib';
 
 /**
  * Games / play loading skeleton.
@@ -19,14 +27,20 @@ import { ActionRowSkeleton, IconButtonSkeleton, TextLinkSkeleton } from './_comp
  * change only (the MoveInputSkeleton on the client also gates render
  * until preferences are hydrated).
  *
- * `hasModeSwitch` is omitted here because the SSR phase cannot read the
- * user's persisted preferences. We default to the common case (single
- * enabled mode, no switcher row). Users with 2+ modes enabled will see a
- * minor upward adjustment when the client-side skeleton re-renders with
- * the correct height; this is a small, bounded CLS and only affects the
- * initial paint → hydration window.
+ * `hasModeSwitch` is omitted here because `loading.tsx` only runs during
+ * the initial route-segment transition and a minor upward adjustment for
+ * multi-mode users is a small, bounded CLS only affecting that window.
+ *
+ * Peek-related reservations (`InlineBoardHeaderSkeleton` and the
+ * `ActionRowSkeleton showBoardButton` slot) are driven by
+ * `bfc_peek_pref` so inline-peek users and users who disabled the board
+ * button get the correct layout during this transitional paint too.
  */
-export default function GamesPlayLoading() {
+export default async function GamesPlayLoading() {
+  const peekHint = await readPeekPreferenceFromCookies();
+  const showInlinePeekHeader = shouldShowInlinePeekHeader(peekHint);
+  const showModalPeekButton = shouldShowModalPeekButton(peekHint);
+
   return (
     <div className="space-y-8">
       <PageTitle>
@@ -36,14 +50,15 @@ export default function GamesPlayLoading() {
       <PagePanel>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Game area skeleton (2 cols).
-              SSR cannot read persisted preferences, so we use defaults:
-              `mode='button'`, `peekMode='modal'`, `showBoardButtonInGame=true`,
-              single enabled input mode (no switcher). Users with other
-              preferences will see a minor re-render after hydration. */}
+              `mode='button'` and the single-enabled-mode assumption still
+              apply here (see component docs above). Peek-related slots are
+              driven by the `bfc_peek_pref` cookie so returning users get
+              the correct layout from this transitional paint onward. */}
           <div className="lg:col-span-2">
             <div className="flex flex-col gap-6">
+              {showInlinePeekHeader && <InlineBoardHeaderSkeleton />}
               <MoveInputSkeleton mode="button" />
-              <ActionRowSkeleton showBoardButton />
+              <ActionRowSkeleton showBoardButton={showModalPeekButton} />
               <TextLinkSkeleton />
               <IconButtonSkeleton />
             </div>

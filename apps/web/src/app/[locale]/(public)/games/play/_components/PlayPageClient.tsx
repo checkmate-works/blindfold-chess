@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { MoveInputPreferenceHint } from '@/lib/games/move-input-cookie';
+import type { PeekPreferenceHint } from '@/lib/games/peek-cookie';
 
 import { Divider } from '@/app/[locale]/_components/Divider';
 import { PagePanel } from '@/app/[locale]/_components/PagePanel';
@@ -25,9 +26,23 @@ type Props = {
    * CLS that returning `text` / `select` users otherwise saw on first paint.
    */
   initialMoveInputHint: MoveInputPreferenceHint;
+  /**
+   * Server-resolved board-peek hint from the `bfc_peek_pref` cookie. Used
+   * by `PlayClient` to decide whether to reserve the inline board header
+   * (~46 px) and whether the modal "Show Board" button slot is rendered
+   * during SSR + pre-hydration, eliminating the layout jump that returning
+   * `inline` users (or users who disabled the board button) otherwise saw
+   * on first paint.
+   */
+  initialPeekHint: PeekPreferenceHint;
 };
 
-export function PlayPageClient({ locale, breadcrumb, initialMoveInputHint }: Props) {
+export function PlayPageClient({
+  locale,
+  breadcrumb,
+  initialMoveInputHint,
+  initialPeekHint,
+}: Props) {
   const t = useTranslations('play');
 
   // Own the game session here so the page-level status slot (PageTitle) can
@@ -76,6 +91,7 @@ export function PlayPageClient({ locale, breadcrumb, initialMoveInputHint }: Pro
           locale={locale}
           gameSession={gameSession}
           initialMoveInputHint={initialMoveInputHint}
+          initialPeekHint={initialPeekHint}
           isInitializing={isInitializing}
         />
         <Divider />

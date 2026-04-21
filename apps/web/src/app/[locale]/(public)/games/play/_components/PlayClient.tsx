@@ -8,6 +8,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
 
 import type { MoveInputPreferenceHint } from '@/lib/games/move-input-cookie';
+import type { PeekPreferenceHint } from '@/lib/games/peek-cookie';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -43,6 +44,17 @@ type Props = {
    */
   initialMoveInputHint: MoveInputPreferenceHint;
   /**
+   * Server-resolved hint for the user's board-peek preferences
+   * (`peekMode`, `showBoardButtonInGame`). Used to decide whether to
+   * reserve the `InlineBoardHeaderSkeleton` / `ActionRowSkeleton` board
+   * button during the SSR + pre-hydration window, before
+   * `GamePreferencesContext` has read localStorage. Once `isHydrated`
+   * flips true, the real preferences from localStorage take over —
+   * see `skeletonShowInlinePeekHeader` / `skeletonShowModalPeekButton`
+   * below.
+   */
+  initialPeekHint: PeekPreferenceHint;
+  /**
    * Page-level "waiting for persisted state" flag, computed once in
    * `PlayPageClient` from `gameState.isLoadingFromStorage` and the
    * preferences hydration state. Passed down so the title slot and the
@@ -51,7 +63,13 @@ type Props = {
   isInitializing: boolean;
 };
 
-export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitializing }: Props) {
+export function PlayClient({
+  locale,
+  gameSession,
+  initialMoveInputHint,
+  initialPeekHint,
+  isInitializing,
+}: Props) {
   const t = useTranslations('play');
   const router = useRouter();
 
@@ -76,16 +94,17 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
   // Global preferences
   const { preferences: globalPreferences, updatePreferences, isHydrated } = useGamePreferences();
 
-  // Pre-hydration skeleton shape: prefer the cookie-sourced hint from the
-  // server over `globalPreferences` (which is still the provider's default
-  // `'button'` until localStorage is read). Once `isHydrated` flips true,
+  // Pre-hydration skeleton shape: prefer the cookie-sourced hints from the
+  // server over `globalPreferences` (which is still the provider's defaults
+  // until localStorage is read). Once `isHydrated` flips true,
   // `globalPreferences` becomes the source of truth — matching the
   // localStorage value, which may or may not agree with the cookie.
   //
-  // Reconciliation rule: cookie wins on first paint (driven by this branch);
-  // localStorage wins post-hydration (driven by `globalPreferences`). The
-  // `GamePreferencesContext` also mirrors subsequent mode changes back to
-  // the cookie so the two stay in sync on the next navigation.
+  // Reconciliation rule: cookie wins on first paint (driven by these
+  // branches); localStorage wins post-hydration (driven by
+  // `globalPreferences`). The `GamePreferencesContext` also mirrors
+  // subsequent preference changes back to the cookie so the two stay in
+  // sync on the next navigation.
   const skeletonMode = isHydrated ? globalPreferences.moveInputMode : initialMoveInputHint.mode;
   const skeletonHasModeSwitch = isHydrated
     ? globalPreferences.enabledMoveInputModes.length >= 2
@@ -105,6 +124,16 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
       pieceColors: perGamePrefs.pieceColors,
     };
   }, [globalPreferences, perGamePrefs]);
+
+  // Pre-hydration peek skeleton decisions: cookie hint wins on first paint,
+  // `preferences` (merged with per-game overrides) wins post-hydration. This
+  // mirrors the `skeletonMode` / `skeletonHasModeSwitch` pattern above.
+  const skeletonShowInlinePeekHeader = isHydrated
+    ? shouldShowInlinePeekHeader(preferences)
+    : shouldShowInlinePeekHeader(initialPeekHint);
+  const skeletonShowModalPeekButton = isHydrated
+    ? shouldShowModalPeekButton(preferences)
+    : shouldShowModalPeekButton(initialPeekHint);
 
   // UI state
   const [isBoardVisible, setIsBoardVisible] = useState(false);
@@ -169,19 +198,18 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
             {/* In Progress Content */}
             {gameStatus === 'in_progress' && isInitializing && (
               <div className="flex flex-col gap-6">
-                {/* InlineBoardView header (~46px). Only reserved once preferences
-                    are hydrated, so `modal` peek users (the defaults) are not
-                    subjected to a counter-productive upward shift during SSR →
-                    hydration. */}
-                {isHydrated && shouldShowInlinePeekHeader(preferences) && (
-                  <InlineBoardHeaderSkeleton />
-                )}
+                {/* InlineBoardView header (~46px). Reserved whenever the
+                    active hint (cookie pre-hydration, preferences post-
+                    hydration) says the user has `peekMode='inline'` with
+                    `showBoardButtonInGame` enabled, so returning inline
+                    users get the correct layout from the very first paint. */}
+                {skeletonShowInlinePeekHeader && <InlineBoardHeaderSkeleton />}
                 <MoveInputSkeleton mode={skeletonMode} hasModeSwitch={skeletonHasModeSwitch} />
-                {/* Action row (Show Board + Undo + Resign). Default preferences
-                    have `peekMode='modal'` and `showBoardButtonInGame=true`, so
-                    gating on `isHydrated` is unnecessary: the pre-hydration
-                    reservation matches the hydrated one. */}
-                <ActionRowSkeleton showBoardButton={shouldShowModalPeekButton(preferences)} />
+                {/* Action row (Show Board + Undo + Resign). Whether the
+                    "Show Board" button is reserved is driven by the active
+                    hint so users who disabled the button — or use inline
+                    peek — don't get a phantom slot reserved during SSR. */}
+                <ActionRowSkeleton showBoardButton={skeletonShowModalPeekButton} />
                 {/* Save and Exit link: text-sm ≈ 20px */}
                 <TextLinkSkeleton />
                 {/* Operation Log trigger: w-4 h-4 icon + padding ≈ 24px */}

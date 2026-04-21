@@ -17,6 +17,11 @@ import {
   DEFAULT_MOVE_INPUT_MODE,
   writeMoveInputCookieClient,
 } from '@/lib/games/move-input-cookie';
+import {
+  DEFAULT_PEEK_MODE,
+  DEFAULT_SHOW_BOARD_BUTTON_IN_GAME,
+  writePeekPreferenceCookie,
+} from '@/lib/games/peek-cookie';
 
 // Per-game preferences (subset of GamePreferences saved with each game)
 export type PerGamePreferences = {
@@ -52,8 +57,10 @@ export type GamePreferences = {
 };
 
 // Default preferences. `moveInputMode` / `enabledMoveInputModes` are derived
-// from the shared `DEFAULT_MOVE_INPUT_*` constants in `@/lib/games/move-input-cookie`
-// so the SSR cookie hint and the client-side defaults can never drift apart.
+// from the shared `DEFAULT_MOVE_INPUT_*` constants in `@/lib/games/move-input-cookie`,
+// and `peekMode` / `showBoardButtonInGame` are derived from the shared
+// `DEFAULT_PEEK_*` constants in `@/lib/games/peek-cookie`, so the SSR cookie
+// hints and the client-side defaults can never drift apart.
 const defaultPreferences: GamePreferences = {
   showCoordinates: true,
   highlightLastMove: true,
@@ -66,8 +73,8 @@ const defaultPreferences: GamePreferences = {
   enabledMoveInputModes: [...DEFAULT_ENABLED_MOVE_INPUT_MODES],
   buttonInputPieceLabel: 'icon',
   enableAutoComplete: true,
-  showBoardButtonInGame: true,
-  peekMode: 'modal',
+  showBoardButtonInGame: DEFAULT_SHOW_BOARD_BUTTON_IN_GAME,
+  peekMode: DEFAULT_PEEK_MODE,
 };
 
 // Validate and sanitize parsed preferences from localStorage.
@@ -173,10 +180,10 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
   // Load preferences from localStorage on mount.
   //
   // Cookie-write responsibility: this effect writes the `bfc_move_input_pref`
-  // cookie directly with the loaded (or default) mode keys. Updates made
-  // later go through `updatePreferences` / `resetPreferences`, which write
-  // the cookie synchronously before returning — see the comment on
-  // `updatePreferences` below for the rationale (race with immediate
+  // and `bfc_peek_pref` cookies directly with the loaded (or default) keys.
+  // Updates made later go through `updatePreferences` / `resetPreferences`,
+  // which write the cookies synchronously before returning — see the comment
+  // on `updatePreferences` below for the rationale (race with immediate
   // navigation / prefetch). We deliberately do NOT keep a secondary
   // `useEffect` keyed on mode changes: that effect fires asynchronously
   // after `setState`, which is exactly the race we're closing.
@@ -200,11 +207,15 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
     } catch (error) {
       console.warn('Failed to load game preferences from localStorage:', error);
     } finally {
-      // Align the SSR cookie hint with the just-loaded preferences so the
+      // Align the SSR cookie hints with the just-loaded preferences so the
       // next navigation's SSR paint uses the correct skeleton shape.
       writeMoveInputCookieClient({
         mode: loaded.moveInputMode,
         enabledModes: loaded.enabledMoveInputModes,
+      });
+      writePeekPreferenceCookie({
+        peekMode: loaded.peekMode,
+        showBoardButtonInGame: loaded.showBoardButtonInGame,
       });
       setIsLoaded(true);
     }
@@ -242,23 +253,24 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
     }
   }, [preferences, isLoaded]);
 
-  // Mirror the move-input mode keys to the `bfc_move_input_pref` cookie so
-  // the SSR pipeline can emit the right `MoveInputSkeleton` shape on the
-  // next navigation. The cookie write is performed **synchronously** here,
-  // before `setPreferences` schedules a re-render and before the user can
-  // navigate / trigger a Next.js prefetch of `/games/play`. If we relied on
-  // a post-state-update `useEffect` (as a previous version did), a user
-  // toggling mode and immediately reloading could race the effect and hit
-  // the server with a stale cookie, yielding the wrong skeleton.
+  // Mirror the move-input mode keys to the `bfc_move_input_pref` cookie, and
+  // the board-peek keys to the `bfc_peek_pref` cookie, so the SSR pipeline
+  // can emit the right skeleton shape on the next navigation. The cookie
+  // writes are performed **synchronously** here, before `setPreferences`
+  // schedules a re-render and before the user can navigate / trigger a
+  // Next.js prefetch of `/games/play`. If we relied on a post-state-update
+  // `useEffect` (as a previous version did), a user toggling a preference
+  // and immediately reloading could race the effect and hit the server with
+  // a stale cookie, yielding the wrong skeleton.
   //
-  // The cookie is a server-facing hint only — localStorage remains the
+  // The cookies are server-facing hints only — localStorage remains the
   // source of truth for the full preferences object.
   //
   // Single-writer rule: this provider is the ONLY place that writes the
-  // cookie. Any other writer will cause drift with localStorage. If the
+  // cookies. Any other writer will cause drift with localStorage. If a
   // cookie is cleared externally (privacy extensions, incognito, etc.),
   // SSR falls back to the default hint until the user next changes a
-  // mode-related preference — an acceptable degradation to today's baseline.
+  // related preference — an acceptable degradation to today's baseline.
   const updatePreferences = useCallback((updates: Partial<GamePreferences>) => {
     const prev = preferencesRef.current;
     const next = { ...prev, ...updates };
@@ -272,16 +284,30 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
         enabledModes: next.enabledMoveInputModes,
       });
     }
+    const peekKeysChanged =
+      ('peekMode' in updates && updates.peekMode !== prev.peekMode) ||
+      ('showBoardButtonInGame' in updates &&
+        updates.showBoardButtonInGame !== prev.showBoardButtonInGame);
+    if (peekKeysChanged) {
+      writePeekPreferenceCookie({
+        peekMode: next.peekMode,
+        showBoardButtonInGame: next.showBoardButtonInGame,
+      });
+    }
     setPreferences(next);
   }, []);
 
   const resetPreferences = useCallback(() => {
-    // Write the cookie synchronously so a reset user's next navigation
-    // sees the default SSR hint (matching the reset state), not whatever
+    // Write the cookies synchronously so a reset user's next navigation
+    // sees the default SSR hints (matching the reset state), not whatever
     // was last persisted.
     writeMoveInputCookieClient({
       mode: defaultPreferences.moveInputMode,
       enabledModes: defaultPreferences.enabledMoveInputModes,
+    });
+    writePeekPreferenceCookie({
+      peekMode: defaultPreferences.peekMode,
+      showBoardButtonInGame: defaultPreferences.showBoardButtonInGame,
     });
     setPreferences(defaultPreferences);
   }, []);

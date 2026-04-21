@@ -21,6 +21,7 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { readMoveInputPreferenceFromCookies } from '@/lib/games/move-input-cookie.server';
+import { readPeekPreferenceFromCookies } from '@/lib/games/peek-cookie.server';
 
 import { BreadcrumbContent } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -35,13 +36,14 @@ type Props = {
 };
 
 /**
- * `/games/play` reads a per-user cookie (`bfc_move_input_pref`) so the SSR
- * pipeline can emit the correctly shaped `MoveInputSkeleton` for users whose
- * preferred mode is `text` or `select` (defaults to `button`). That cookie
- * read makes the page dynamic, so `generateStaticParams` is intentionally
- * not exported and `dynamic = 'force-dynamic'` is declared below to make the
- * opt-out explicit (it also satisfies the repo-wide ISR / user-scope guard —
- * see `apps/web/src/lib/isr-user-scope-guard.test.ts`).
+ * `/games/play` reads per-user cookies (`bfc_move_input_pref` and
+ * `bfc_peek_pref`) so the SSR pipeline can emit the correctly shaped
+ * `MoveInputSkeleton` / `InlineBoardHeaderSkeleton` / `ActionRowSkeleton` for
+ * users whose preferences differ from the defaults. Those cookie reads make
+ * the page dynamic, so `generateStaticParams` is intentionally not exported
+ * and `dynamic = 'force-dynamic'` is declared below to make the opt-out
+ * explicit (it also satisfies the repo-wide ISR / user-scope guard — see
+ * `apps/web/src/lib/isr-user-scope-guard.test.ts`).
  */
 export const dynamic = 'force-dynamic';
 
@@ -66,10 +68,13 @@ export default async function PlayPage({ params }: Props) {
   const tGames = await getTranslations({ locale, namespace: 'gamesPage' });
   const tPlay = await getTranslations({ locale, namespace: 'play' });
 
-  // Server-resolved hint for the move-input skeleton shape. Returns the
-  // default (`mode: 'button'`, `enabledModes: ['button']`) on first visit
-  // (no cookie set yet).
+  // Server-resolved hints for the pre-hydration skeletons. Both readers
+  // return the default hint on first visit (no cookie set yet).
+  //   - `moveInputHint`: shape of the move-input panel skeleton.
+  //   - `peekHint`:      whether to reserve the inline board header and
+  //                      whether the modal "Show Board" button is shown.
   const moveInputHint = await readMoveInputPreferenceFromCookies();
+  const peekHint = await readPeekPreferenceFromCookies();
 
   const breadcrumb = (
     <BreadcrumbContent
@@ -85,6 +90,7 @@ export default async function PlayPage({ params }: Props) {
         locale={locale}
         breadcrumb={breadcrumb}
         initialMoveInputHint={moveInputHint}
+        initialPeekHint={peekHint}
       />
     </Suspense>
   );
