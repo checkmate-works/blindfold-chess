@@ -39,6 +39,19 @@ type Props = {
    * display.
    */
   showInlineError?: boolean;
+  /**
+   * When `true` (default), shows a "show legal moves" affordance after the
+   * user submits invalid moves `INVALID_ATTEMPTS_THRESHOLD` times in a row
+   * (and renders the full legal-move list once the user opts in).
+   *
+   * Set to `false` on surfaces where revealing the legal-move list would
+   * effectively give the answer away — notably the puzzle-solving screen,
+   * where the solution move is always a legal move and surfacing every legal
+   * move would trivialize the puzzle. The invalid-attempt counter still ticks
+   * internally (used for the `onSubmit` truthiness contract), only the
+   * UI affordance is suppressed.
+   */
+  showLegalMovesHint?: boolean;
 };
 
 const modeIcons: Record<GamePreferences['moveInputMode'], ReactNode> = {
@@ -64,6 +77,7 @@ export function MoveInputPanel({
   onMoveCommitted,
   onMovePeek,
   showInlineError = true,
+  showLegalMovesHint = true,
 }: Props) {
   const t = useTranslations('play');
   const enabledModes = preferences.enabledMoveInputModes;
@@ -168,15 +182,18 @@ export function MoveInputPanel({
           />
         )}
         {showInlineError && error && <p className="text-destructive text-sm mt-2">{error}</p>}
-        {error && invalidAttemptCount >= INVALID_ATTEMPTS_THRESHOLD && !showLegalMoves && (
-          <button
-            type="button"
-            onClick={handleShowLegalMoves}
-            className="text-sm text-primary hover:text-primary/80 underline mt-1"
-          >
-            {t('showLegalMoves')}
-          </button>
-        )}
+        {showLegalMovesHint &&
+          error &&
+          invalidAttemptCount >= INVALID_ATTEMPTS_THRESHOLD &&
+          !showLegalMoves && (
+            <button
+              type="button"
+              onClick={handleShowLegalMoves}
+              className="text-sm text-primary hover:text-primary/80 underline mt-1"
+            >
+              {t('showLegalMoves')}
+            </button>
+          )}
         {legalMoves && (
           <div className="mt-2 p-3 bg-muted/50 border border-border rounded-lg">
             <p className="text-xs text-muted-foreground mb-2">{t('legalMovesList')}</p>
