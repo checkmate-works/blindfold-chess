@@ -5,14 +5,7 @@ import { cookies } from 'next/headers';
 
 import { EnvironmentRibbon } from '@/app/_components/EnvironmentRibbon';
 import { GoogleScripts } from '@/app/_components/GoogleScripts';
-import {
-  AUTHOR_NAME,
-  COOKIEYES_ID,
-  GA_MEASUREMENT_ID,
-  SITE_URL,
-  SUPPORTED_LOCALES,
-} from '@/config';
-import { OG_LOCALE_MAP } from '@/i18n/og-locale';
+import { AUTHOR_NAME, COOKIEYES_ID, GA_MEASUREMENT_ID, SITE_URL } from '@/config';
 import { generateThemeCSS } from '@blindfold-chess/ui';
 
 import { getLocaleFromRequest } from '@/lib/locale';
@@ -33,53 +26,18 @@ const inter = Inter({
   variable: '--font-inter',
 });
 
-export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getLocaleFromRequest();
-  const t = await getTranslations({ locale, namespace: 'metadata' });
-  const currentLocale = OG_LOCALE_MAP[locale];
-  // Mirror `[locale]/layout.tsx`: advertise every other supported locale as
-  // an Open Graph alternate so the landing page gives Facebook / other OG
-  // consumers the same signal as the locale-scoped layout.
-  const alternateLocales = Object.values(OG_LOCALE_MAP).filter((l) => l !== currentLocale);
-  const siteName = t('siteName');
-  const seoSiteName = t('seoSiteName');
-  const siteDescription = t('siteDescription');
-
+/**
+ * Lang-invariant metadata only. Title, description, canonical, hreflang,
+ * Open Graph URL/locale, and Twitter card all depend on the `?lang=` query
+ * param and therefore live in `page.tsx`'s `generateMetadata` — layouts do
+ * not receive `searchParams` in Next.js App Router, so they cannot resolve
+ * the landing locale. Anything lang-invariant (authors, metadataBase)
+ * stays here and is inherited by the page.
+ */
+export function generateMetadata(): Metadata {
   return {
-    title: seoSiteName,
-    description: siteDescription,
     authors: [{ name: AUTHOR_NAME }],
     metadataBase: new URL(SITE_URL),
-    alternates: {
-      canonical: `${SITE_URL}/${locale}`,
-      languages: {
-        ...Object.fromEntries(SUPPORTED_LOCALES.map((l) => [l, `${SITE_URL}/${l}`])),
-        'x-default': `${SITE_URL}/en`,
-      },
-    },
-    openGraph: {
-      title: seoSiteName,
-      description: siteDescription,
-      url: `${SITE_URL}/${locale}`,
-      siteName: siteName,
-      type: 'website',
-      locale: currentLocale,
-      alternateLocale: alternateLocales,
-      images: [
-        {
-          url: '/logo.png',
-          width: 512,
-          height: 512,
-          alt: `${siteName} Logo`,
-        },
-      ],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: seoSiteName,
-      description: siteDescription,
-      images: ['/logo.png'],
-    },
   };
 }
 
