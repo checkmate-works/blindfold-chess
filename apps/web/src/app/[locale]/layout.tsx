@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { hasLocale } from 'next-intl';
 import { getMessages, getTranslations } from 'next-intl/server';
 import { Inter } from 'next/font/google';
+import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 
 import { EnvironmentRibbon } from '@/app/_components/EnvironmentRibbon';
@@ -174,6 +175,11 @@ export default async function Layout({
     allMessages = {};
   }
 
+  // Per-request CSP nonce (set by src/proxy.ts on the request headers).
+  // Attached to every inline <script> / <style> this layout emits so they
+  // pass the enforcing `script-src 'nonce-...' 'strict-dynamic'` policy.
+  const nonce = (await headers()).get('x-nonce') ?? undefined;
+
   // Namespaces used only by Server Components (via getTranslations()) are
   // excluded from the client-side dictionary payload. The classification lives
   // in `./_lib/i18n-namespaces.ts` and is validated at check time by
@@ -192,6 +198,7 @@ export default async function Layout({
         <JsonLd data={generateWebSiteSchema(locale, t('siteName'))} />
         <JsonLd data={generateOrganizationSchema()} />
         <style
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: `${generateThemeCSS()}\n\n/* No-flash ad-hide — see [locale]/layout.tsx comment near the bootstrap script. */\nhtml[data-ads-hidden='true'] .ad-slot-wrapper,\nhtml[data-ads-hidden='true'] .adsbygoogle{display:none!important;}`,
           }}
@@ -208,6 +215,7 @@ export default async function Layout({
           `cookies()` read so descendant pages can stay static/ISR.
         */}
         <script
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: `(function(){try{if(/(?:^|; )bfc_ads_hidden=1(?:;|$)/.test(document.cookie)){document.documentElement.setAttribute('data-ads-hidden','true');}}catch(e){}})();`,
           }}

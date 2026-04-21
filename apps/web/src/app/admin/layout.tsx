@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { NavigationGuardProvider } from 'next-navigation-guard';
 import { Inter } from 'next/font/google';
+import { headers } from 'next/headers';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -53,12 +54,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   const t = await getTranslations({ locale: 'en', namespace: 'Admin' });
+  const nonce = (await headers()).get('x-nonce') ?? undefined;
 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         <ThemeScript />
-        <style dangerouslySetInnerHTML={{ __html: generateThemeCSS() }} />
+        <style nonce={nonce} dangerouslySetInnerHTML={{ __html: generateThemeCSS() }} />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         <EnvironmentRibbon />

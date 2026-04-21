@@ -2,10 +2,23 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 import { createServerClient } from '@supabase/ssr';
 
-export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  });
+/**
+ * Refresh the Supabase session cookie for the incoming request and return
+ * a `NextResponse.next()` that forwards any updated cookies to the browser.
+ *
+ * The optional `requestHeaders` lets the caller (the proxy) inject headers
+ * — notably `x-nonce` — that downstream Server Components need to read via
+ * `headers()`. These headers are attached to the forwarded request (not
+ * the response), so they are visible to RSCs without leaking to the client.
+ */
+export async function updateSession(
+  request: NextRequest,
+  options: { requestHeaders?: Headers } = {}
+) {
+  const requestHeaders = options.requestHeaders;
+  const nextInit = requestHeaders ? { request: { headers: requestHeaders } } : { request };
+
+  let supabaseResponse = NextResponse.next(nextInit);
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -21,9 +34,7 @@ export async function updateSession(request: NextRequest) {
       },
       setAll(cookiesToSet) {
         cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-        supabaseResponse = NextResponse.next({
-          request,
-        });
+        supabaseResponse = NextResponse.next(nextInit);
         cookiesToSet.forEach(({ name, value, options }) =>
           supabaseResponse.cookies.set(name, value, options)
         );

@@ -70,6 +70,17 @@ vi.mock('next/navigation', () => ({
   },
 }));
 
+// `JsonLd` is an async Server Component that reads the per-request CSP nonce
+// via `next/headers`. Neither path works under jsdom, so stub it out — this
+// test cares about layout / CTA branching, not the JSON-LD payload.
+vi.mock('@/lib/seo/jsonld', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/seo/jsonld')>();
+  return {
+    ...actual,
+    JsonLd: () => null,
+  };
+});
+
 // Stub board visuals so we don't pull the whole ranks/_components tree.
 vi.mock('@/app/[locale]/(public)/ranks/_components/GuideLinkCard', () => ({
   GuideLinkCard: ({ items }: { items: Array<{ label: string; href: string }> }) => (

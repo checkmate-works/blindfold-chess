@@ -245,7 +245,12 @@ describe('proxy', () => {
       const request = createRequest('/en/games/play');
       await proxy(request);
 
-      expect(mockUpdateSession).toHaveBeenCalledWith(request);
+      // The proxy forwards the request plus a `requestHeaders` option holding
+      // the per-request CSP nonce (`x-nonce`) so downstream RSCs can read it.
+      expect(mockUpdateSession).toHaveBeenCalledTimes(1);
+      const [passedRequest, options] = mockUpdateSession.mock.calls[0];
+      expect(passedRequest).toBe(request);
+      expect(options?.requestHeaders?.get('x-nonce')).toBeTruthy();
     });
   });
 
