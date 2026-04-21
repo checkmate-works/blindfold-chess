@@ -5,14 +5,19 @@ import { z } from 'zod';
 
 import type { ActionResult } from '@/lib/action-types';
 import { getClientIp } from '@/lib/security/client-ip';
-import { IP_RATE_LIMITS, checkIpRateLimitGuard } from '@/lib/security/rate-limit-ip';
+import {
+  EMAIL_RATE_LIMITS,
+  IP_RATE_LIMITS,
+  checkEmailRateLimitGuard,
+  checkIpRateLimitGuard,
+} from '@/lib/security/rate-limit-ip';
 import { createClient } from '@/lib/supabase/server';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
 export type ForgotPasswordResult = ActionResult;
 
 export async function forgotPassword(email: string): Promise<ForgotPasswordResult> {
-  const ipRateLimited = checkIpRateLimitGuard(
+  const ipRateLimited = await checkIpRateLimitGuard(
     await getClientIp(),
     'forgotPassword',
     IP_RATE_LIMITS.forgotPassword
@@ -24,6 +29,16 @@ export async function forgotPassword(email: string): Promise<ForgotPasswordResul
   const emailSchema = z.string().email().max(254);
   if (!emailSchema.safeParse(email).success) {
     return { error: 'resetFailed' };
+  }
+
+  // Secondary per-account cap: an attacker rotating IPs still hits this.
+  const emailRateLimited = await checkEmailRateLimitGuard(
+    email,
+    'forgotPassword',
+    EMAIL_RATE_LIMITS.forgotPassword
+  );
+  if (emailRateLimited) {
+    return emailRateLimited;
   }
 
   const supabase = await createClient();

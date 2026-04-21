@@ -625,6 +625,45 @@ export type RateLimitEvent = typeof rateLimitEvents.$inferSelect;
 export type NewRateLimitEvent = typeof rateLimitEvents.$inferInsert;
 
 /**
+ * Rate Limit Key Events — fixed-window counter for non-user-keyed throttling.
+ *
+ * @description
+ * Mirrors `rate_limit_events` but keyed by a string `subject_key` instead of a
+ * user UUID. Used for unauthenticated endpoints (sign-in, sign-up, password
+ * reset, contact form, email resend) where the limiter key is derived from
+ * the client IP (`ip:<ip>`) or a hashed email (`email:<sha256-hex>`).
+ *
+ * @design Separate table rather than polymorphic column on rate_limit_events
+ *
+ * `rate_limit_events.user_id` is `uuid NOT NULL` with a foreign key to
+ * `auth.users(id) ON DELETE CASCADE`. Repurposing it for a free-form string
+ * would require dropping that FK and widening the type. A parallel table is
+ * both safer (keeps existing user-keyed limits untouched) and more honest
+ * (no FK pretense on keys like `ip:1.2.3.4`).
+ *
+ * @design No FK, server-side writes only
+ *
+ * There is no user or auth relation to enforce. The table is written only by
+ * server-side Drizzle (pooler role, BYPASSRLS). RLS + FORCE with no policies
+ * denies all client access; grants are REVOKEd from `authenticated` / `anon`.
+ */
+export const rateLimitKeyEvents = pgTable(
+  'rate_limit_key_events',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    subjectKey: varchar('subject_key', { length: 255 }).notNull(),
+    action: varchar('action', { length: 50 }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('idx_rate_limit_key_events_lookup').on(table.subjectKey, table.action, table.createdAt),
+  ]
+);
+
+export type RateLimitKeyEvent = typeof rateLimitKeyEvents.$inferSelect;
+export type NewRateLimitKeyEvent = typeof rateLimitKeyEvents.$inferInsert;
+
+/**
  * User Activity Log — immutable event log for user actions.
  *
  * @design Follows the same immutable event log pattern as `moderation_actions`

@@ -4,14 +4,23 @@ import { z } from 'zod';
 
 import { getLocaleFromRequest } from '@/lib/locale';
 import { getClientIp } from '@/lib/security/client-ip';
-import { IP_RATE_LIMITS, checkIpRateLimitGuard } from '@/lib/security/rate-limit-ip';
+import {
+  EMAIL_RATE_LIMITS,
+  IP_RATE_LIMITS,
+  checkEmailRateLimitGuard,
+  checkIpRateLimitGuard,
+} from '@/lib/security/rate-limit-ip';
 import { createClient } from '@/lib/supabase/server';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
 export type SignInResult = { error: string } | { success: true; locale: string };
 
 export async function signIn(email: string, password: string): Promise<SignInResult> {
-  const ipRateLimited = checkIpRateLimitGuard(await getClientIp(), 'signIn', IP_RATE_LIMITS.signIn);
+  const ipRateLimited = await checkIpRateLimitGuard(
+    await getClientIp(),
+    'signIn',
+    IP_RATE_LIMITS.signIn
+  );
   if (ipRateLimited) {
     return ipRateLimited;
   }
@@ -19,6 +28,16 @@ export async function signIn(email: string, password: string): Promise<SignInRes
   const emailSchema = z.string().email().max(254);
   if (!emailSchema.safeParse(email).success) {
     return { error: 'invalidCredentials' };
+  }
+
+  // Secondary per-account cap: an attacker rotating IPs still hits this.
+  const emailRateLimited = await checkEmailRateLimitGuard(
+    email,
+    'signIn',
+    EMAIL_RATE_LIMITS.signIn
+  );
+  if (emailRateLimited) {
+    return emailRateLimited;
   }
 
   const supabase = await createClient();

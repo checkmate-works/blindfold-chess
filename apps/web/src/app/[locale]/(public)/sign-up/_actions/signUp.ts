@@ -11,7 +11,11 @@ import { getPasswordValidationError } from '@/lib/validations/password';
 export type SignUpResult = ActionResult;
 
 export async function signUp(email: string, password: string): Promise<SignUpResult> {
-  const ipRateLimited = checkIpRateLimitGuard(await getClientIp(), 'signUp', IP_RATE_LIMITS.signUp);
+  const ipRateLimited = await checkIpRateLimitGuard(
+    await getClientIp(),
+    'signUp',
+    IP_RATE_LIMITS.signUp
+  );
   if (ipRateLimited) {
     return ipRateLimited;
   }

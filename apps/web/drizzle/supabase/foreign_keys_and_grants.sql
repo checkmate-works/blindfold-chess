@@ -201,6 +201,15 @@ $$;
 REVOKE ALL ON TABLE public.rate_limit_events FROM authenticated, anon;
 
 -- =============================================================================
+-- rate_limit_key_events
+-- =============================================================================
+
+-- No FK: subject_key is a free-form namespaced string (e.g. "ip:1.2.3.4",
+-- "email:<sha256>"). Writes are server-side only via Drizzle (pooler role,
+-- BYPASSRLS). Clients must never touch this table.
+REVOKE ALL ON TABLE public.rate_limit_key_events FROM authenticated, anon;
+
+-- =============================================================================
 -- user_activity_log
 -- =============================================================================
 

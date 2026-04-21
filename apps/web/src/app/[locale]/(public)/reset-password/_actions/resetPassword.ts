@@ -9,7 +9,7 @@ import { getPasswordValidationError } from '@/lib/validations/password';
 export type ResetPasswordResult = ActionResult;
 
 export async function resetPassword(password: string): Promise<ResetPasswordResult> {
-  const ipRateLimited = checkIpRateLimitGuard(
+  const ipRateLimited = await checkIpRateLimitGuard(
     await getClientIp(),
     'resetPassword',
     IP_RATE_LIMITS.resetPassword

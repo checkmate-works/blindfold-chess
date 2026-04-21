@@ -1,163 +1,185 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { _resetStore, checkIpRateLimit, checkIpRateLimitGuard } from './rate-limit-ip';
+const mockSelectFromWhere = vi.fn();
+const mockInsertValues = vi.fn().mockResolvedValue(undefined);
+
+vi.mock('@/lib/db', () => ({
+  db: {
+    select: () => ({
+      from: () => ({
+        where: () => mockSelectFromWhere(),
+      }),
+    }),
+    insert: () => ({
+      values: mockInsertValues,
+    }),
+  },
+  rateLimitKeyEvents: {
+    subjectKey: 'subject_key',
+    action: 'action',
+    createdAt: 'created_at',
+  },
+}));
+
+vi.mock('server-only', () => ({}));
+
+const {
+  checkIpRateLimit,
+  checkIpRateLimitGuard,
+  checkEmailRateLimitGuard,
+  IP_RATE_LIMITS,
+  EMAIL_RATE_LIMITS,
+} = await import('./rate-limit-ip');
+
+const config = { maxRequests: 3, windowMs: 60_000 };
 
 describe('checkIpRateLimit', () => {
   beforeEach(() => {
-    vi.useFakeTimers();
-    _resetStore();
+    vi.clearAllMocks();
+    mockInsertValues.mockResolvedValue(undefined);
   });
 
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
-  const config = { maxRequests: 3, windowMs: 60_000 };
-
-  it('should allow the first request', () => {
-    expect(checkIpRateLimit('192.168.1.1', 'test', config)).toEqual({
-      allowed: true,
+  it('allows the first request (count 0)', async () => {
+    mockSelectFromWhere.mockResolvedValue([{ count: 0 }]);
+    expect(await checkIpRateLimit('192.168.1.1', 'test', config)).toEqual({ allowed: true });
+    expect(mockInsertValues).toHaveBeenCalledWith({
+      subjectKey: 'ip:192.168.1.1',
+      action: 'test',
     });
   });
 
-  it('should allow up to maxRequests within the window', () => {
-    expect(checkIpRateLimit('10.0.0.1', 'test', config)).toEqual({
-      allowed: true,
-    });
-    expect(checkIpRateLimit('10.0.0.1', 'test', config)).toEqual({
-      allowed: true,
-    });
-    expect(checkIpRateLimit('10.0.0.1', 'test', config)).toEqual({
-      allowed: true,
-    });
+  it('allows requests up to maxRequests - 1 (boundary: just under)', async () => {
+    mockSelectFromWhere.mockResolvedValue([{ count: 2 }]);
+    expect(await checkIpRateLimit('10.0.0.1', 'test', config)).toEqual({ allowed: true });
+    expect(mockInsertValues).toHaveBeenCalled();
   });
 
-  it('should block requests exceeding maxRequests', () => {
-    for (let i = 0; i < 3; i++) {
-      checkIpRateLimit('10.0.0.2', 'test', config);
-    }
-    expect(checkIpRateLimit('10.0.0.2', 'test', config)).toEqual({
-      allowed: false,
-    });
+  it('blocks at exactly maxRequests and does NOT insert', async () => {
+    mockSelectFromWhere.mockResolvedValue([{ count: 3 }]);
+    expect(await checkIpRateLimit('10.0.0.2', 'test', config)).toEqual({ allowed: false });
+    expect(mockInsertValues).not.toHaveBeenCalled();
   });
 
-  it('should track different IPs independently', () => {
-    for (let i = 0; i < 3; i++) {
-      checkIpRateLimit('10.0.0.3', 'test', config);
-    }
-    expect(checkIpRateLimit('10.0.0.3', 'test', config)).toEqual({
-      allowed: false,
-    });
-
-    expect(checkIpRateLimit('10.0.0.4', 'test', config)).toEqual({
-      allowed: true,
-    });
+  it('blocks over maxRequests and does NOT insert', async () => {
+    mockSelectFromWhere.mockResolvedValue([{ count: 10 }]);
+    expect(await checkIpRateLimit('10.0.0.3', 'test', config)).toEqual({ allowed: false });
+    expect(mockInsertValues).not.toHaveBeenCalled();
   });
 
-  it('should track different actions independently', () => {
-    for (let i = 0; i < 3; i++) {
-      checkIpRateLimit('10.0.0.5', 'actionA', config);
-    }
-    expect(checkIpRateLimit('10.0.0.5', 'actionA', config)).toEqual({
-      allowed: false,
-    });
-
-    expect(checkIpRateLimit('10.0.0.5', 'actionB', config)).toEqual({
-      allowed: true,
-    });
-  });
-
-  it('should reset after the window expires', () => {
-    for (let i = 0; i < 3; i++) {
-      checkIpRateLimit('10.0.0.6', 'test', config);
-    }
-    expect(checkIpRateLimit('10.0.0.6', 'test', config)).toEqual({
-      allowed: false,
-    });
-
-    vi.advanceTimersByTime(60_000);
-
-    expect(checkIpRateLimit('10.0.0.6', 'test', config)).toEqual({
-      allowed: true,
-    });
-  });
-
-  it('should still block before the full window elapses', () => {
-    for (let i = 0; i < 3; i++) {
-      checkIpRateLimit('10.0.0.7', 'test', config);
-    }
-    expect(checkIpRateLimit('10.0.0.7', 'test', config)).toEqual({
-      allowed: false,
-    });
-
-    vi.advanceTimersByTime(59_999);
-
-    expect(checkIpRateLimit('10.0.0.7', 'test', config)).toEqual({
-      allowed: false,
-    });
-  });
-
-  it('should respect different configs per action', () => {
-    const strictConfig = { maxRequests: 1, windowMs: 10_000 };
-
-    expect(checkIpRateLimit('10.0.0.8', 'strict', strictConfig)).toEqual({
-      allowed: true,
-    });
-    expect(checkIpRateLimit('10.0.0.8', 'strict', strictConfig)).toEqual({
-      allowed: false,
-    });
-
-    // Same IP, different action with lenient config still allowed
-    expect(checkIpRateLimit('10.0.0.8', 'lenient', config)).toEqual({
-      allowed: true,
+  it('namespaces the subject key under "ip:"', async () => {
+    mockSelectFromWhere.mockResolvedValue([{ count: 0 }]);
+    await checkIpRateLimit('203.0.113.50', 'someAction', config);
+    expect(mockInsertValues).toHaveBeenCalledWith({
+      subjectKey: 'ip:203.0.113.50',
+      action: 'someAction',
     });
   });
 });
 
 describe('checkIpRateLimitGuard', () => {
   beforeEach(() => {
-    vi.useFakeTimers();
-    _resetStore();
+    vi.clearAllMocks();
+    mockInsertValues.mockResolvedValue(undefined);
   });
 
-  afterEach(() => {
-    vi.useRealTimers();
+  it('returns null when under the limit', async () => {
+    mockSelectFromWhere.mockResolvedValue([{ count: 0 }]);
+    expect(await checkIpRateLimitGuard('1.2.3.4', 'test', config)).toBeNull();
   });
 
-  const config = { maxRequests: 2, windowMs: 60_000 };
-
-  it('should return null when IP is provided and under the limit', () => {
-    expect(checkIpRateLimitGuard('192.168.1.1', 'test', config)).toBeNull();
-  });
-
-  it('should return rateLimited when IP exceeds the limit', () => {
-    checkIpRateLimitGuard('10.0.0.1', 'test', config);
-    checkIpRateLimitGuard('10.0.0.1', 'test', config);
-    expect(checkIpRateLimitGuard('10.0.0.1', 'test', config)).toEqual({
+  it('returns { error: rateLimited } when at the limit', async () => {
+    mockSelectFromWhere.mockResolvedValue([{ count: 3 }]);
+    expect(await checkIpRateLimitGuard('1.2.3.4', 'test', config)).toEqual({
       error: 'rateLimited',
     });
   });
 
-  it('should apply rate limiting when IP is null using shared "unknown" bucket', () => {
-    expect(checkIpRateLimitGuard(null, 'test', config)).toBeNull();
-    expect(checkIpRateLimitGuard(null, 'test', config)).toBeNull();
-    expect(checkIpRateLimitGuard(null, 'test', config)).toEqual({
-      error: 'rateLimited',
+  it('maps null IP to a shared "unknown" bucket so it cannot bypass rate limiting', async () => {
+    mockSelectFromWhere.mockResolvedValue([{ count: 0 }]);
+    await checkIpRateLimitGuard(null, 'test', config);
+    expect(mockInsertValues).toHaveBeenCalledWith({
+      subjectKey: 'ip:unknown',
+      action: 'test',
     });
   });
 
-  it('should share the same bucket for all null IP requests', () => {
-    // First null IP request
-    checkIpRateLimitGuard(null, 'test', config);
-    // A real IP should not be affected
-    expect(checkIpRateLimitGuard('10.0.0.2', 'test', config)).toBeNull();
-    // Second null IP request fills the bucket
-    checkIpRateLimitGuard(null, 'test', config);
-    // Third null IP request should be rate limited
-    expect(checkIpRateLimitGuard(null, 'test', config)).toEqual({
+  it('rate-limits null-IP callers once the shared bucket hits the cap', async () => {
+    mockSelectFromWhere.mockResolvedValue([{ count: 3 }]);
+    expect(await checkIpRateLimitGuard(null, 'test', config)).toEqual({ error: 'rateLimited' });
+    expect(mockInsertValues).not.toHaveBeenCalled();
+  });
+});
+
+describe('checkEmailRateLimitGuard', () => {
+  // SHA-256 hex of "attacker@example.com" (lowercased, trimmed) for assertions.
+  // Computed with: createHash('sha256').update('attacker@example.com').digest('hex')
+  const expectedHashPrefix = 'email:';
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockInsertValues.mockResolvedValue(undefined);
+  });
+
+  it('returns null and inserts an event when under the limit', async () => {
+    mockSelectFromWhere.mockResolvedValue([{ count: 0 }]);
+    expect(await checkEmailRateLimitGuard('user@example.com', 'signIn', config)).toBeNull();
+    expect(mockInsertValues).toHaveBeenCalledTimes(1);
+    const [call] = mockInsertValues.mock.calls;
+    const args = call[0] as { subjectKey: string; action: string };
+    expect(args.action).toBe('signIn');
+    expect(args.subjectKey.startsWith(expectedHashPrefix)).toBe(true);
+    // SHA-256 hex is 64 chars → full key length 6 + 64 = 70.
+    expect(args.subjectKey.length).toBe(expectedHashPrefix.length + 64);
+  });
+
+  it('returns { error: rateLimited } when at the limit (no insert)', async () => {
+    mockSelectFromWhere.mockResolvedValue([{ count: 3 }]);
+    expect(await checkEmailRateLimitGuard('user@example.com', 'signIn', config)).toEqual({
       error: 'rateLimited',
     });
-    // Real IP is still unaffected
-    expect(checkIpRateLimitGuard('10.0.0.2', 'test', config)).toBeNull();
+    expect(mockInsertValues).not.toHaveBeenCalled();
+  });
+
+  it('normalises case and whitespace so "User@Example.com " and "user@example.com" share a bucket', async () => {
+    mockSelectFromWhere.mockResolvedValue([{ count: 0 }]);
+    await checkEmailRateLimitGuard('  User@Example.com  ', 'signIn', config);
+    await checkEmailRateLimitGuard('user@example.com', 'signIn', config);
+    const call1 = mockInsertValues.mock.calls[0][0] as { subjectKey: string };
+    const call2 = mockInsertValues.mock.calls[1][0] as { subjectKey: string };
+    expect(call1.subjectKey).toBe(call2.subjectKey);
+  });
+
+  it('produces distinct keys for distinct emails', async () => {
+    mockSelectFromWhere.mockResolvedValue([{ count: 0 }]);
+    await checkEmailRateLimitGuard('a@example.com', 'signIn', config);
+    await checkEmailRateLimitGuard('b@example.com', 'signIn', config);
+    const key1 = (mockInsertValues.mock.calls[0][0] as { subjectKey: string }).subjectKey;
+    const key2 = (mockInsertValues.mock.calls[1][0] as { subjectKey: string }).subjectKey;
+    expect(key1).not.toBe(key2);
+  });
+
+  it('does NOT embed the raw email in the subject key', async () => {
+    mockSelectFromWhere.mockResolvedValue([{ count: 0 }]);
+    await checkEmailRateLimitGuard('secret@example.com', 'signIn', config);
+    const key = (mockInsertValues.mock.calls[0][0] as { subjectKey: string }).subjectKey;
+    expect(key).not.toContain('secret@example.com');
+    expect(key).not.toContain('@');
+  });
+});
+
+describe('IP_RATE_LIMITS / EMAIL_RATE_LIMITS', () => {
+  it('defines IP limits for all unauthenticated endpoints', () => {
+    expect(IP_RATE_LIMITS.signIn).toEqual({ maxRequests: 10, windowMs: 300_000 });
+    expect(IP_RATE_LIMITS.signUp).toEqual({ maxRequests: 5, windowMs: 300_000 });
+    expect(IP_RATE_LIMITS.forgotPassword).toEqual({ maxRequests: 3, windowMs: 300_000 });
+    expect(IP_RATE_LIMITS.resendEmail).toEqual({ maxRequests: 3, windowMs: 300_000 });
+    expect(IP_RATE_LIMITS.resetPassword).toEqual({ maxRequests: 5, windowMs: 300_000 });
+    expect(IP_RATE_LIMITS.contact).toEqual({ maxRequests: 3, windowMs: 60_000 });
+  });
+
+  it('defines email caps only for signIn and forgotPassword (NOT signUp — enumeration oracle)', () => {
+    expect(EMAIL_RATE_LIMITS.signIn).toEqual({ maxRequests: 5, windowMs: 900_000 });
+    expect(EMAIL_RATE_LIMITS.forgotPassword).toEqual({ maxRequests: 3, windowMs: 3_600_000 });
+    expect('signUp' in EMAIL_RATE_LIMITS).toBe(false);
   });
 });

@@ -1,15 +1,14 @@
 'use server';
 
-import { headers } from 'next/headers';
-
 import { escapeHtml } from '@blindfold-chess/features/utils';
 import { Resend } from 'resend';
 
+import { getClientIp } from '@/lib/security/client-ip';
+import { IP_RATE_LIMITS, checkIpRateLimitGuard } from '@/lib/security/rate-limit-ip';
 import { handleServerActionError } from '@/lib/server-action-error';
 
 import type { ContactFormData } from './contact-schema';
 import { contactFormSchema } from './contact-schema';
-import { checkRateLimit } from './rate-limiter';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -20,11 +19,12 @@ export type ContactFormState = {
 
 export async function submitContactForm(data: ContactFormData): Promise<ContactFormState> {
   try {
-    const headersList = await headers();
-    const ip = headersList.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-
-    const { allowed } = checkRateLimit(ip);
-    if (!allowed) {
+    const ipRateLimited = await checkIpRateLimitGuard(
+      await getClientIp(),
+      'contact',
+      IP_RATE_LIMITS.contact
+    );
+    if (ipRateLimited) {
       return {
         success: false,
         error: 'Too many requests. Please try again later.',

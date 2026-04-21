@@ -403,6 +403,12 @@ ALTER TABLE "rate_limit_events" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "rate_limit_events" FORCE ROW LEVEL SECURITY;
 
 -- =============================================================================
+-- rate_limit_key_events (server-side only writes; deny-by-default)
+-- =============================================================================
+ALTER TABLE "rate_limit_key_events" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "rate_limit_key_events" FORCE ROW LEVEL SECURITY;
+
+-- =============================================================================
 -- site_settings (admin-only write; deny-by-default)
 -- =============================================================================
 ALTER TABLE "site_settings" ENABLE ROW LEVEL SECURITY;

@@ -31,9 +31,13 @@ vi.mock('@/lib/locale', () => ({
 }));
 
 vi.mock('@/lib/security/rate-limit-ip', () => ({
-  checkIpRateLimitGuard: vi.fn().mockReturnValue(null),
+  checkIpRateLimitGuard: vi.fn().mockResolvedValue(null),
+  checkEmailRateLimitGuard: vi.fn().mockResolvedValue(null),
   IP_RATE_LIMITS: {
     signIn: { maxRequests: 10, windowMs: 300_000 },
+  },
+  EMAIL_RATE_LIMITS: {
+    signIn: { maxRequests: 5, windowMs: 900_000 },
   },
 }));
 
@@ -71,15 +75,35 @@ describe('signIn', () => {
     });
   });
 
-  it('should not log activity event when rate limited', async () => {
+  it('should not log activity event when IP rate limited', async () => {
     const { checkIpRateLimitGuard } = await import('@/lib/security/rate-limit-ip');
-    vi.mocked(checkIpRateLimitGuard).mockReturnValueOnce({ error: 'rateLimited' });
+    vi.mocked(checkIpRateLimitGuard).mockResolvedValueOnce({ error: 'rateLimited' });
 
     const result = await signIn('test@example.com', 'password123');
 
     expect(result).toEqual({ error: 'rateLimited' });
     expect(mockLogActivityEvent).not.toHaveBeenCalled();
     expect(mockSignInWithPassword).not.toHaveBeenCalled();
+  });
+
+  it('should short-circuit when email rate limit is exceeded (after IP check)', async () => {
+    const { checkEmailRateLimitGuard } = await import('@/lib/security/rate-limit-ip');
+    vi.mocked(checkEmailRateLimitGuard).mockResolvedValueOnce({ error: 'rateLimited' });
+
+    const result = await signIn('test@example.com', 'password123');
+
+    expect(result).toEqual({ error: 'rateLimited' });
+    expect(mockSignInWithPassword).not.toHaveBeenCalled();
+    expect(mockLogActivityEvent).not.toHaveBeenCalled();
+  });
+
+  it('should NOT run email rate limit check when email is invalid (avoids enumeration oracle bleed)', async () => {
+    const { checkEmailRateLimitGuard } = await import('@/lib/security/rate-limit-ip');
+
+    const result = await signIn('not-an-email', 'password123');
+
+    expect(result).toEqual({ error: 'invalidCredentials' });
+    expect(checkEmailRateLimitGuard).not.toHaveBeenCalled();
   });
 
   it('should not log activity event when authentication fails', async () => {
