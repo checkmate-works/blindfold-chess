@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 
 import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FlagIcon, SpinnerIcon, UndoIcon } from '@blindfold-chess/icons';
+import { FlagIcon, UndoIcon } from '@blindfold-chess/icons';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaClipboardList, FaEye } from 'react-icons/fa';
 
@@ -14,17 +14,19 @@ import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import type { ConfirmationDialogs } from '../_hooks';
+import { shouldShowModalPeekButton } from '../_lib';
 
 type Props = {
   isPlayerTurn: boolean;
   isLoading: boolean;
+  isAiThinking: boolean;
   preferences: GamePreferences;
   updatePreferences: (updates: Partial<GamePreferences>) => void;
   currentFen: string;
   moveInput: string;
   setMoveInput: (value: string) => void;
   error: string | null;
-  setError: (value: string | null) => void;
+  onErrorClear: () => void;
   handleSubmitMove: (move: AlgebraicNotation) => boolean | void | Promise<void>;
   moves: AlgebraicNotation[];
   confirmationDialogs: ConfirmationDialogs;
@@ -39,13 +41,14 @@ type Props = {
 export function GameInProgressPanel({
   isPlayerTurn,
   isLoading,
+  isAiThinking,
   preferences,
   updatePreferences,
   currentFen,
   moveInput,
   setMoveInput,
   error,
-  setError,
+  onErrorClear,
   handleSubmitMove,
   moves,
   confirmationDialogs,
@@ -57,42 +60,37 @@ export function GameInProgressPanel({
   onShowOperationLog,
 }: Props) {
   const t = useTranslations('play');
-  const showModalPeekButton = preferences.showBoardButtonInGame && preferences.peekMode === 'modal';
+  const showModalPeekButton = shouldShowModalPeekButton(preferences);
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Inline Board View (accordion) */}
+      {/* Inline Board View (peek mode === 'inline').
+          NOTE: Header height (~46px) + parent gap-6 (24px) is reserved in
+          PlayClient's initializing skeleton when preferences indicate inline
+          peek. Changes to the header padding / text size here must be kept
+          in sync with that reservation. */}
       {inlineBoardView}
 
       {/* Move Input */}
-      {isPlayerTurn ? (
-        <MoveInputPanel
-          preferences={preferences}
-          updatePreferences={updatePreferences}
-          currentFen={currentFen}
-          moveInput={moveInput}
-          onMoveInputChange={setMoveInput}
-          error={error}
-          onErrorClear={() => {
-            if (error) setError(null);
-          }}
-          onSubmit={handleSubmitMove}
-          disabled={isLoading}
-          inputPlaceholder={t('inputMove')}
-          selectPlaceholder={t('selectMove')}
-          toggleTitle={t('switchInputMode')}
-          playerColor={playerColor}
-          onMoveCommitted={onMoveCommitted}
-          onMovePeek={onMovePeek}
-        />
-      ) : (
-        <div>
-          <div className="flex items-center justify-center gap-2 text-muted-foreground">
-            <p>{isLoading ? t('aiThinking') : t('yourMove')}</p>
-            {isLoading && <SpinnerIcon size={16} className="animate-spin text-primary" />}
-          </div>
-        </div>
-      )}
+      {/* AI thinking or retry → disabled real UI, not skeleton */}
+      <MoveInputPanel
+        preferences={preferences}
+        updatePreferences={updatePreferences}
+        currentFen={currentFen}
+        moveInput={moveInput}
+        onMoveInputChange={setMoveInput}
+        error={error}
+        onErrorClear={onErrorClear}
+        onSubmit={handleSubmitMove}
+        disabled={isLoading || !isPlayerTurn}
+        inputPlaceholder={t('inputMove')}
+        selectPlaceholder={t('selectMove')}
+        toggleTitle={t('switchInputMode')}
+        playerColor={playerColor}
+        onMoveCommitted={onMoveCommitted}
+        onMovePeek={onMovePeek}
+        showInlineError={false}
+      />
 
       {/* Action Buttons */}
       <div className="flex gap-4 md:gap-2 justify-center">
@@ -108,8 +106,8 @@ export function GameInProgressPanel({
         )}
         <button
           onClick={confirmationDialogs.undo.open}
-          disabled={moves.length < 2}
-          className="px-4 py-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 flex items-center justify-center gap-2"
+          disabled={moves.length < 2 || isAiThinking}
+          className="px-4 py-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           title={t('undo')}
         >
           <UndoIcon className="w-4 h-4" />
@@ -117,7 +115,8 @@ export function GameInProgressPanel({
         </button>
         <button
           onClick={confirmationDialogs.resign.open}
-          className="px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center justify-center gap-2"
+          disabled={isAiThinking}
+          className="px-4 py-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           title={t('resign')}
         >
           <FlagIcon className="w-4 h-4" />

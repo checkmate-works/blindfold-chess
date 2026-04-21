@@ -315,8 +315,7 @@
     "sponsoredLink": "スポンサーリンク",
     "testAd": "テスト広告",
     "adLabel": "広告",
-    "sponsor": "スポンサー",
-    "brandName": "心眼チェス"
+    "sponsor": "スポンサー"
   },
   "openingSearch": {
     "selectOpening": "オープニングを選択",
@@ -426,10 +425,6 @@
     "validWithMoves": "{count, plural, other {✓ 有効なPGN（#手）}}",
     "invalidPgn": "無効なPGN形式",
     "invalidMove": "「{move}」は無効な手です"
-  },
-  "ButtonInput": {
-    "disambiguationButton": "曖昧性解消...",
-    "sourceLabel": "移動元"
   },
   "error": {
     "title": "エラーが発生しました",
@@ -1513,6 +1508,7 @@
   },
   "play": {
     "title": "チェス対戦",
+    "loading": "読み込み中...",
     "yourMove": "あなたの番です",
     "aiThinking": "AIが考えています...",
     "gameOver": "ゲーム終了",
@@ -1535,6 +1531,7 @@
     "switchInputMode": "入力モードを切り替え",
     "submitMove": "決定",
     "invalidMove": "無効な手です",
+    "aiMoveFailed": "AIの手の取得に失敗しました",
     "newGame": "新規ゲーム",
     "resign": "投了",
     "undo": "待った",
@@ -3855,5 +3852,29 @@
     "resources": "リソース",
     "support": "サポート",
     "legal": "法的情報"
+  },
+  "buttonInput": {
+    "piece": {
+      "king": "キング",
+      "queen": "クイーン",
+      "rook": "ルーク",
+      "bishop": "ビショップ",
+      "knight": "ナイト"
+    },
+    "symbol": {
+      "capture": "取る",
+      "check": "チェック",
+      "promotion": "成り",
+      "checkmate": "チェックメイト"
+    },
+    "castling": {
+      "kingside": "キングサイドキャスリング",
+      "queenside": "クイーンサイドキャスリング"
+    },
+    "action": {
+      "backspace": "1 文字削除",
+      "clear": "クリア",
+      "submit": "送信"
+    }
   }
 }

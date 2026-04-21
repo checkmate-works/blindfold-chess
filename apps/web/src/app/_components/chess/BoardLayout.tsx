@@ -1,11 +1,11 @@
-import { useMemo } from 'react';
 import type { ReactNode } from 'react';
 
-import { DISPLAY_RANKS, FILES, isLightSquare } from '@blindfold-chess/features/common';
+import { isLightSquare } from '@blindfold-chess/features/common';
 
 import type { TailwindThemeClasses } from '@/lib/games/board-themes';
 
 import { Square } from './Square';
+import { getVisualCellSquare } from './board-coords';
 
 export type SquareRenderInfo = {
   square: string;
@@ -32,9 +32,11 @@ type Props = {
   className?: string;
 };
 
-const getSquareName = (fileIndex: number, rankIndex: number) => {
-  return `${FILES[fileIndex]}${DISPLAY_RANKS[rankIndex]}`;
-};
+// Visual rows/cols `0..7`, left→right / top→bottom as rendered. The mapping
+// from these visual indices to the logical square is delegated to
+// `getVisualCellSquare` so that both this component and the animation
+// overlay (`usePieceAnimation`) share the same canonical definition.
+const VISUAL_INDICES = [0, 1, 2, 3, 4, 5, 6, 7] as const;
 
 export function BoardLayout({
   flipped = false,
@@ -46,58 +48,56 @@ export function BoardLayout({
   rounded = true,
   className = '',
 }: Props) {
-  const displayFiles = useMemo(() => (flipped ? [...FILES].reverse() : FILES), [flipped]);
-  const displayRanks = useMemo(
-    () => (flipped ? [...DISPLAY_RANKS].reverse() : DISPLAY_RANKS),
-    [flipped]
-  );
-
   return (
     <div className={`w-full ${className}`}>
       <div
         className={`relative w-full aspect-square border border-border overflow-hidden ${rounded ? 'rounded-md shadow-lg' : ''}`}
         onClick={onBoardClick}
       >
-        {displayRanks.map((rank, rankIndex) => (
-          <div key={rank} className="flex h-[12.5%]">
-            {displayFiles.map((file, fileIndex) => {
-              const actualFileIndex = flipped ? 7 - fileIndex : fileIndex;
-              const actualRankIndex = flipped ? 7 - rankIndex : rankIndex;
-              const square = getSquareName(actualFileIndex, actualRankIndex);
-              const isLight = isLightSquare(actualFileIndex, actualRankIndex);
+        {VISUAL_INDICES.map((row) => {
+          return (
+            <div key={row} className="flex h-[12.5%]">
+              {VISUAL_INDICES.map((col) => {
+                const { fileIndex, rankIndex, file, rank, square } = getVisualCellSquare(
+                  col,
+                  row,
+                  flipped
+                );
+                const isLight = isLightSquare(fileIndex, rankIndex);
 
-              const info: SquareRenderInfo = {
-                square,
-                file,
-                rank,
-                fileIndex: actualFileIndex,
-                rankIndex: actualRankIndex,
-                isLight,
-              };
+                const info: SquareRenderInfo = {
+                  square,
+                  file,
+                  rank,
+                  fileIndex,
+                  rankIndex,
+                  isLight,
+                };
 
-              const extra = squareProps?.(info);
+                const extra = squareProps?.(info);
 
-              return (
-                <Square
-                  key={file}
-                  file={file}
-                  rank={rank}
-                  isLight={isLight}
-                  showCoordinates={showCoordinates}
-                  showRankCoordinate={fileIndex === 0}
-                  showFileCoordinate={rankIndex === 7}
-                  themeColors={themeColors}
-                  onClick={extra?.onClick}
-                  highlightType={extra?.highlightType}
-                  badge={extra?.badge}
-                  dataSquare={extra?.dataSquare}
-                >
-                  {renderSquare(info)}
-                </Square>
-              );
-            })}
-          </div>
-        ))}
+                return (
+                  <Square
+                    key={file}
+                    file={file}
+                    rank={rank}
+                    isLight={isLight}
+                    showCoordinates={showCoordinates}
+                    showRankCoordinate={col === 0}
+                    showFileCoordinate={row === 7}
+                    themeColors={themeColors}
+                    onClick={extra?.onClick}
+                    highlightType={extra?.highlightType}
+                    badge={extra?.badge}
+                    dataSquare={extra?.dataSquare}
+                  >
+                    {renderSquare(info)}
+                  </Square>
+                );
+              })}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

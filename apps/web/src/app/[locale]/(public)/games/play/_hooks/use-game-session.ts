@@ -27,10 +27,9 @@ import { useUrlSync } from './use-url-sync';
 
 type UseGameSessionOptions = {
   locale: Locale;
-  onAiMoveChange?: (move: string | null) => void;
 };
 
-export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions) {
+export function useGameSession({ locale }: UseGameSessionOptions) {
   const t = useTranslations('play');
   const searchParamsFromHook = useSearchParams();
 
@@ -61,6 +60,10 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
   // Move input state (managed here to avoid circular deps between usePlayerMove and useAiMoveOrchestration)
   const [moveInput, setMoveInput] = useState('');
   const [error, setError] = useState<string | null>(null);
+  // Preserved copy of the exact string the user last tried to submit.
+  // Populated on invalid-move failure so the status slot can show
+  // "⚠ Invalid move: {lastAttemptedInput}". Cleared alongside error.
+  const [lastAttemptedInput, setLastAttemptedInput] = useState('');
 
   // Notation hook
   const {
@@ -181,9 +184,10 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
   );
 
   const handleAiMoveError = useCallback(() => {
-    setError('AI move failed');
+    setError(t('aiMoveFailed'));
+    setLastAttemptedInput('');
     setShouldMakeAiMove(false);
-  }, [setShouldMakeAiMove]);
+  }, [t, setShouldMakeAiMove]);
 
   const { isLoading } = useAiMoveOrchestration({
     shouldMakeAiMove: shouldMakeAiMove && !gameNotFound,
@@ -207,6 +211,7 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     setLastMove,
     setMoveInput,
     setError,
+    setLastAttemptedInput,
   });
 
   // Resign handler
@@ -221,6 +226,7 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     markPlayerInteraction();
     removeMoves(2);
     setError(null);
+    setLastAttemptedInput('');
     const newMoves = moves.slice(0, -2) as AlgebraicNotation[];
     updateLastMove(newMoves);
     // handleUndoLog removes the last player's log entry and resets peek/undo counters.
@@ -234,6 +240,8 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
   const handleRestartFromPosition = useCallback(
     (position: number) => {
       markPlayerInteraction();
+      setError(null);
+      setLastAttemptedInput('');
       const movesToRemove = moves.length - position - 1;
       if (movesToRemove > 0) {
         removeMoves(movesToRemove);
@@ -275,14 +283,27 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
 
   // Current FEN and formatted PGN are memoized values from useNotation
 
-  // Update parent component with AI's last move
-  useAiMoveAnnouncer({
+  // Localized label for the AI's last move (e.g. "AI played 1... e5"), or null
+  // when there is nothing to announce. Consumed by the page-level status slot.
+  const aiMoveDisplay = useAiMoveAnnouncer({
     moves,
     playerSide,
     startingFen,
     t,
-    onAiMoveChange,
   });
+
+  // Surface the "AI is computing" state so the page-level status slot can show
+  // it in place of rendering an inline "AI is thinking…" line, avoiding
+  // vertical layout shift on every AI turn.
+  const isAiThinking = !isPlayerTurn && isLoading;
+
+  // Clear both the error and the preserved attempted-input in one call.
+  // Wired to every child input component's `onErrorClear` so that any user
+  // edit reverts the status slot back to "AI played …" / "Play Chess".
+  const clearMoveError = useCallback(() => {
+    setError(null);
+    setLastAttemptedInput('');
+  }, [setError, setLastAttemptedInput]);
 
   return {
     gameConfig: {
@@ -299,6 +320,7 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
       playerResult,
       isPlayerTurn,
       isLoading,
+      isLoadingFromStorage,
       lastMove,
       gameNotFound,
     },
@@ -311,8 +333,11 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
       value: moveInput,
       setValue: setMoveInput,
       error,
-      setError,
+      lastAttemptedInput,
+      clearMoveError,
     },
+    aiMoveDisplay,
+    isAiThinking,
     actions: {
       handleSubmitMove,
       handleResign,
@@ -326,3 +351,5 @@ export function useGameSession({ locale, onAiMoveChange }: UseGameSessionOptions
     operationLogs,
   };
 }
+
+export type GameSession = ReturnType<typeof useGameSession>;

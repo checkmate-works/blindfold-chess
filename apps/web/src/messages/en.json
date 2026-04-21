@@ -314,8 +314,7 @@
     "sponsoredLink": "Sponsored Link",
     "testAd": "Test Ad",
     "adLabel": "Ad",
-    "sponsor": "Sponsor",
-    "brandName": "Shingan Chess"
+    "sponsor": "Sponsor"
   },
   "openingSearch": {
     "selectOpening": "Select an opening",
@@ -425,10 +424,6 @@
     "validWithMoves": "{count, plural, one {✓ Valid PGN with # move} other {✓ Valid PGN with # moves}}",
     "invalidPgn": "Invalid PGN format",
     "invalidMove": "\"{move}\" is an invalid move"
-  },
-  "ButtonInput": {
-    "disambiguationButton": "Disambiguation...",
-    "sourceLabel": "From (Source)"
   },
   "error": {
     "title": "Something went wrong!",
@@ -1512,6 +1507,7 @@
   },
   "play": {
     "title": "Play Chess",
+    "loading": "Loading...",
     "yourMove": "Your move",
     "aiThinking": "AI is thinking...",
     "gameOver": "Game Over",
@@ -1534,6 +1530,7 @@
     "switchInputMode": "Switch input mode",
     "submitMove": "Submit",
     "invalidMove": "Invalid move",
+    "aiMoveFailed": "AI move failed",
     "newGame": "New Game",
     "resign": "Resign",
     "undo": "Undo",
@@ -3959,5 +3956,29 @@
     "resources": "Resources",
     "support": "Support",
     "legal": "Legal"
+  },
+  "buttonInput": {
+    "piece": {
+      "king": "King",
+      "queen": "Queen",
+      "rook": "Rook",
+      "bishop": "Bishop",
+      "knight": "Knight"
+    },
+    "symbol": {
+      "capture": "Capture",
+      "check": "Check",
+      "promotion": "Promotion",
+      "checkmate": "Checkmate"
+    },
+    "castling": {
+      "kingside": "Kingside castling",
+      "queenside": "Queenside castling"
+    },
+    "action": {
+      "backspace": "Backspace",
+      "clear": "Clear",
+      "submit": "Submit"
+    }
   }
 }

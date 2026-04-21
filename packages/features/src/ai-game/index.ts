@@ -27,16 +27,14 @@ export {
   buildGoCommand,
 } from "./uci-protocol";
 export type {
-  CastlingMove,
+  CastlingToken,
+  NotationChar,
   NotationInputAction,
   NotationInputState,
-  PromotionPiece,
 } from "./notation-input";
+export { MAX_NOTATION_INPUT_LENGTH } from "./notation-input";
 export {
   computeIsSubmittable,
-  computeIsPawnCaptureMode,
-  computePreviewText,
-  computeShowPromotion,
   createInitialState,
   notationInputReducer,
 } from "./notation-input";
