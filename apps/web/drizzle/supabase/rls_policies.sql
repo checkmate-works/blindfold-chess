@@ -14,6 +14,7 @@
 -- user_roles
 -- =============================================================================
 ALTER TABLE "user_roles" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "user_roles" FORCE ROW LEVEL SECURITY;
 
 -- =============================================================================
 -- profiles
@@ -30,7 +31,7 @@ CREATE POLICY "profiles_insert_policy" ON "profiles"
 
 DROP POLICY IF EXISTS "profiles_update_policy" ON "profiles";
 CREATE POLICY "profiles_update_policy" ON "profiles"
-  FOR UPDATE USING (auth.uid() = id);
+  FOR UPDATE USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
 
 CREATE OR REPLACE FUNCTION public.update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -143,7 +144,7 @@ CREATE POLICY "topic_posts_delete" ON "topic_posts"
 
 DROP POLICY IF EXISTS "topic_posts_update" ON "topic_posts";
 CREATE POLICY "topic_posts_update" ON "topic_posts"
-  FOR UPDATE USING (auth.uid() = user_id);
+  FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 -- =============================================================================
 -- user_activity_log
@@ -179,7 +180,7 @@ CREATE POLICY "notifications_select" ON "notifications"
 -- Users can mark their own notifications as read
 DROP POLICY IF EXISTS "notifications_update" ON "notifications";
 CREATE POLICY "notifications_update" ON "notifications"
-  FOR UPDATE USING (auth.uid() = user_id);
+  FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 -- Users can delete their own notifications
 DROP POLICY IF EXISTS "notifications_delete" ON "notifications";
@@ -223,7 +224,7 @@ CREATE POLICY "challenge_best_scores_insert" ON "challenge_best_scores"
 
 DROP POLICY IF EXISTS "challenge_best_scores_update" ON "challenge_best_scores";
 CREATE POLICY "challenge_best_scores_update" ON "challenge_best_scores"
-  FOR UPDATE USING (auth.uid() = user_id);
+  FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 -- =============================================================================
 -- article_images (admin-only write, public read)
@@ -294,7 +295,7 @@ DROP POLICY IF EXISTS "user_interview_answers_delete" ON "user_interview_answers
 
 DROP POLICY IF EXISTS "user_interview_answers_update" ON "user_interview_answers";
 CREATE POLICY "user_interview_answers_update" ON "user_interview_answers"
-  FOR UPDATE USING (auth.uid() = user_id);
+  FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 -- =============================================================================
 -- ranks (master data — read-only for all, write via service role only)
@@ -358,3 +359,51 @@ ALTER TABLE "puzzle_solutions" ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "puzzle_solutions_select_policy" ON "puzzle_solutions";
 CREATE POLICY "puzzle_solutions_select_policy" ON "puzzle_solutions"
   FOR SELECT USING (true);
+
+-- =============================================================================
+-- user_grants (admin-only write, server-side only read; deny-by-default)
+-- =============================================================================
+ALTER TABLE "user_grants" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "user_grants" FORCE ROW LEVEL SECURITY;
+
+-- =============================================================================
+-- announcements (admin-only write; deny-by-default)
+-- =============================================================================
+ALTER TABLE "announcements" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "announcements" FORCE ROW LEVEL SECURITY;
+
+-- =============================================================================
+-- ad_banners (admin-only write; deny-by-default)
+-- =============================================================================
+ALTER TABLE "ad_banners" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "ad_banners" FORCE ROW LEVEL SECURITY;
+
+-- =============================================================================
+-- articles (admin-only write; deny-by-default)
+-- =============================================================================
+ALTER TABLE "articles" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "articles" FORCE ROW LEVEL SECURITY;
+
+-- =============================================================================
+-- positions (admin-only write; deny-by-default)
+-- =============================================================================
+ALTER TABLE "positions" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "positions" FORCE ROW LEVEL SECURITY;
+
+-- =============================================================================
+-- topic_post_ratings (server-side only writes; deny-by-default)
+-- =============================================================================
+ALTER TABLE "topic_post_ratings" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "topic_post_ratings" FORCE ROW LEVEL SECURITY;
+
+-- =============================================================================
+-- rate_limit_events (server-side only writes; deny-by-default)
+-- =============================================================================
+ALTER TABLE "rate_limit_events" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "rate_limit_events" FORCE ROW LEVEL SECURITY;
+
+-- =============================================================================
+-- site_settings (admin-only write; deny-by-default)
+-- =============================================================================
+ALTER TABLE "site_settings" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "site_settings" FORCE ROW LEVEL SECURITY;
