@@ -128,16 +128,3 @@ export function writePeekPreferenceCookie(hint: PeekPreferenceHint): void {
   const secureFlag = !IS_LOCAL_DEV ? '; Secure' : '';
   document.cookie = `${PEEK_COOKIE_NAME}=${value}; Path=/; Max-Age=${PEEK_COOKIE_MAX_AGE_SEC}; SameSite=Lax${secureFlag}`;
 }
-
-// TODO(Tester): unit-test coverage to write in `peek-cookie.test.ts`:
-//   - parsePeekCookie:
-//       * parses 'modal|1' / 'inline|0' / 'modal|0' / 'inline|1' correctly
-//       * returns DEFAULT_PEEK_HINT for null / undefined / '' input
-//       * returns DEFAULT_PEEK_HINT for unknown peekMode token ('bogus', 'MODAL', 'Modal|1')
-//       * returns DEFAULT_PEEK_HINT for malformed boolean tokens ('modal|yes', 'modal|true', 'modal|', 'modal')
-//       * rejects uppercased peekMode variants (case-sensitive)
-//       * tolerates very long untrusted input without throwing
-//   - encodePeekCookie:
-//       * encodes { peekMode: 'inline', showBoardButtonInGame: false } -> 'inline|0'
-//       * encodes { peekMode: 'modal',  showBoardButtonInGame: true  } -> 'modal|1'
-//   - round-trip: parse(encode(hint)) === hint for all four combinations.

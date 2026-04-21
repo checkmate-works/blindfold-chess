@@ -6,6 +6,7 @@ import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { MOVE_INPUT_COOKIE_NAME } from '@/lib/games/move-input-cookie';
+import { PEEK_COOKIE_NAME } from '@/lib/games/peek-cookie';
 
 import { GamePreferencesProvider, useGamePreferences } from './GamePreferencesContext';
 
@@ -32,6 +33,25 @@ function readMoveInputCookie(): string | null {
  */
 function clearMoveInputCookie(): void {
   document.cookie = `${MOVE_INPUT_COOKIE_NAME}=; Path=/; Max-Age=0`;
+}
+
+/**
+ * Read the current value of the board-peek mirror cookie, or `null` if not
+ * present. Symmetric with `readMoveInputCookie` above.
+ */
+function readPeekCookie(): string | null {
+  const entry = document.cookie
+    .split(';')
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(`${PEEK_COOKIE_NAME}=`));
+  return entry ? entry.slice(PEEK_COOKIE_NAME.length + 1) : null;
+}
+
+/**
+ * Expire the peek mirror cookie between tests.
+ */
+function clearPeekCookie(): void {
+  document.cookie = `${PEEK_COOKIE_NAME}=; Path=/; Max-Age=0`;
 }
 
 function wrapper({ children }: { children: React.ReactNode }) {
@@ -461,6 +481,260 @@ describe('GamePreferencesContext - moveInput cookie mirror', () => {
 
       // …but this tab MUST NOT re-write the cookie.
       expect(readMoveInputCookie()).toBeNull();
+    });
+  });
+});
+
+/**
+ * Board-peek cookie mirror behavior. Symmetric with the move-input cookie
+ * mirror coverage above: pins that `GamePreferencesContext` is the single
+ * writer for the `bfc_peek_pref` cookie and that peek-related updates flush
+ * synchronously (i.e. before the originating call returns), so a user who
+ * toggles `peekMode` / `showBoardButtonInGame` and immediately navigates
+ * cannot race a post-state-update effect.
+ */
+describe('GamePreferencesContext - peek cookie mirror', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    clearPeekCookie();
+    clearMoveInputCookie();
+  });
+
+  afterEach(() => {
+    cleanup();
+    localStorage.clear();
+    clearPeekCookie();
+    clearMoveInputCookie();
+  });
+
+  describe('initial load', () => {
+    it('writes the default hint to the cookie when no preferences are persisted', async () => {
+      renderHook(() => useGamePreferences(), { wrapper });
+
+      await act(async () => {});
+
+      // Defaults are peekMode='modal' and showBoardButtonInGame=true.
+      expect(readPeekCookie()).toBe('modal|1');
+    });
+
+    it('writes the loaded peek keys to the cookie when preferences are persisted', async () => {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          peekMode: 'inline',
+          showBoardButtonInGame: true,
+        })
+      );
+
+      renderHook(() => useGamePreferences(), { wrapper });
+
+      await act(async () => {});
+
+      expect(readPeekCookie()).toBe('inline|1');
+    });
+
+    it('writes the loaded peek keys with showBoardButtonInGame=false', async () => {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          peekMode: 'modal',
+          showBoardButtonInGame: false,
+        })
+      );
+
+      renderHook(() => useGamePreferences(), { wrapper });
+
+      await act(async () => {});
+
+      expect(readPeekCookie()).toBe('modal|0');
+    });
+  });
+
+  describe('updatePreferences', () => {
+    it('writes the cookie synchronously inside the updatePreferences call when peekMode changes', async () => {
+      const { result } = renderHook(() => useGamePreferences(), { wrapper });
+
+      // Wait for initial load so the "before" cookie state is stable.
+      await act(async () => {});
+      expect(readPeekCookie()).toBe('modal|1');
+
+      // Synchronous check: observe `document.cookie` immediately after
+      // `updatePreferences` returns, without awaiting any effects. If the
+      // write had been deferred to a post-state-update `useEffect`, the
+      // cookie would still be the old value here.
+      act(() => {
+        result.current.updatePreferences({ peekMode: 'inline' });
+        expect(readPeekCookie()).toBe('inline|1');
+      });
+
+      // Sanity: still correct after act flushes.
+      expect(readPeekCookie()).toBe('inline|1');
+    });
+
+    it('writes the cookie when only showBoardButtonInGame changes (peekMode stays the same)', async () => {
+      const { result } = renderHook(() => useGamePreferences(), { wrapper });
+
+      await act(async () => {});
+      expect(readPeekCookie()).toBe('modal|1');
+
+      act(() => {
+        result.current.updatePreferences({ showBoardButtonInGame: false });
+      });
+
+      expect(readPeekCookie()).toBe('modal|0');
+    });
+
+    it('writes both keys when peekMode and showBoardButtonInGame change together', async () => {
+      const { result } = renderHook(() => useGamePreferences(), { wrapper });
+
+      await act(async () => {});
+      expect(readPeekCookie()).toBe('modal|1');
+
+      act(() => {
+        result.current.updatePreferences({
+          peekMode: 'inline',
+          showBoardButtonInGame: false,
+        });
+      });
+
+      expect(readPeekCookie()).toBe('inline|0');
+    });
+
+    it('does NOT re-write the cookie when peekMode is set to its current value', async () => {
+      // Preload so peekMode === 'inline' before the update.
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          peekMode: 'inline',
+          showBoardButtonInGame: true,
+        })
+      );
+
+      const { result } = renderHook(() => useGamePreferences(), { wrapper });
+
+      await act(async () => {});
+      expect(readPeekCookie()).toBe('inline|1');
+
+      // Clear the cookie to detect whether `updatePreferences` rewrites it.
+      clearPeekCookie();
+      expect(readPeekCookie()).toBeNull();
+
+      act(() => {
+        // Same value — the `peekKeysChanged` guard should skip the write.
+        result.current.updatePreferences({ peekMode: 'inline' });
+      });
+
+      expect(readPeekCookie()).toBeNull();
+    });
+
+    it('does NOT re-write the cookie when showBoardButtonInGame is set to its current value', async () => {
+      const { result } = renderHook(() => useGamePreferences(), { wrapper });
+
+      await act(async () => {});
+      expect(readPeekCookie()).toBe('modal|1');
+
+      clearPeekCookie();
+      expect(readPeekCookie()).toBeNull();
+
+      act(() => {
+        // Default is `true`; updating to the same value should skip the write.
+        result.current.updatePreferences({ showBoardButtonInGame: true });
+      });
+
+      expect(readPeekCookie()).toBeNull();
+    });
+
+    it('does NOT write the peek cookie when an unrelated (moveInputMode) preference changes', async () => {
+      const { result } = renderHook(() => useGamePreferences(), { wrapper });
+
+      await act(async () => {});
+
+      // Clear the peek cookie to detect any incidental write from an unrelated
+      // update. Writing on every preference change would be wasteful and could
+      // race with unrelated navigations.
+      clearPeekCookie();
+
+      act(() => {
+        result.current.updatePreferences({
+          moveInputMode: 'text',
+          enabledMoveInputModes: ['text', 'button'],
+        });
+      });
+
+      // `peekKeysChanged` should be false → no peek cookie write.
+      expect(readPeekCookie()).toBeNull();
+    });
+
+    it('does NOT write the peek cookie when a non-peek preference is updated (showCoordinates)', async () => {
+      const { result } = renderHook(() => useGamePreferences(), { wrapper });
+
+      await act(async () => {});
+
+      clearPeekCookie();
+
+      act(() => {
+        result.current.updatePreferences({ showCoordinates: false });
+      });
+
+      expect(readPeekCookie()).toBeNull();
+    });
+  });
+
+  describe('resetPreferences', () => {
+    it('writes the default hint to the cookie synchronously', async () => {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          peekMode: 'inline',
+          showBoardButtonInGame: false,
+        })
+      );
+
+      const { result } = renderHook(() => useGamePreferences(), { wrapper });
+
+      await act(async () => {});
+      expect(readPeekCookie()).toBe('inline|0');
+
+      act(() => {
+        result.current.resetPreferences();
+        // Inline write — visible before effects flush.
+        expect(readPeekCookie()).toBe('modal|1');
+      });
+
+      expect(readPeekCookie()).toBe('modal|1');
+    });
+  });
+
+  describe('cross-tab storage event', () => {
+    it('updates in-memory preferences but does NOT re-write the peek cookie', async () => {
+      const { result } = renderHook(() => useGamePreferences(), { wrapper });
+
+      await act(async () => {});
+
+      // Clear the cookie to detect whether the storage handler writes it.
+      // The originating tab already wrote the cookie (it's process-global
+      // on the origin), so this tab must not write it again.
+      clearPeekCookie();
+      expect(readPeekCookie()).toBeNull();
+
+      await act(async () => {
+        window.dispatchEvent(
+          new StorageEvent('storage', {
+            key: STORAGE_KEY,
+            newValue: JSON.stringify({
+              peekMode: 'inline',
+              showBoardButtonInGame: false,
+            }),
+          })
+        );
+      });
+
+      // In-memory state follows the other tab…
+      expect(result.current.preferences.peekMode).toBe('inline');
+      expect(result.current.preferences.showBoardButtonInGame).toBe(false);
+
+      // …but this tab MUST NOT re-write the cookie.
+      expect(readPeekCookie()).toBeNull();
     });
   });
 });
