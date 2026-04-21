@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getMessages, getTranslations } from 'next-intl/server';
 import { Inter } from 'next/font/google';
 import { cookies } from 'next/headers';
 
@@ -22,6 +22,7 @@ import { ThemeScript } from '@/lib/theme';
 
 import { getLatestBannerAnnouncement } from '@/app/[locale]/(public)/announcements/_lib/queries';
 import { AnnouncementBanner } from '@/app/[locale]/_components/AnnouncementBanner';
+import { isServerOnlyNamespace } from '@/app/[locale]/_lib/i18n-namespaces';
 
 import '../globals.css';
 import { Providers } from './_lib/providers';
@@ -90,6 +91,26 @@ export default async function LandingLayout({ children }: { children: React.Reac
     getLatestBannerAnnouncement(locale),
   ]);
 
+  // Load the full client-side message dictionary so that Client Components
+  // rendered below (e.g. `LockedRankIndicator` via `RanksSection` →
+  // `RankCard`) can resolve translations through `NextIntlClientProvider`.
+  // Mirrors the filtering done in `[locale]/layout.tsx` so server-only
+  // namespaces are excluded from the client payload.
+  let allMessages: Awaited<ReturnType<typeof getMessages>>;
+  try {
+    allMessages = await getMessages({ locale });
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[landing/layout] getMessages failed, using empty messages:', error);
+    }
+    allMessages = {};
+  }
+  const messages = Object.fromEntries(
+    Object.entries(allMessages as Record<string, unknown>).filter(
+      ([key]) => !isServerOnlyNamespace(key)
+    )
+  );
+
   const dismissedId = cookieStore.get('dismissed-announcement')?.value;
   const showBanner = bannerAnnouncement && bannerAnnouncement.id !== dismissedId;
 
@@ -116,7 +137,9 @@ export default async function LandingLayout({ children }: { children: React.Reac
             cookieYesId={COOKIEYES_ID}
             gaMeasurementId={GA_MEASUREMENT_ID}
           />
-          <Providers>{children}</Providers>
+          <Providers locale={locale} messages={messages}>
+            {children}
+          </Providers>
         </StorageAvailabilityProvider>
       </body>
     </html>
