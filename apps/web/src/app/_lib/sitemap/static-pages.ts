@@ -2,6 +2,8 @@ import type { MetadataRoute } from 'next';
 
 import { SUPPORTED_LOCALES } from '@/config';
 
+import { buildLandingLanguageAlternates, buildLandingUrl } from '@/lib/seo/landing-urls';
+
 import { BASE_URL, generateAlternates } from './shared';
 
 const STATIC_PAGES = [
@@ -54,13 +56,21 @@ const STATIC_PAGES = [
   '/games/play',
 ];
 
+/**
+ * The root landing page lives at `/` across all languages (not
+ * `/[locale]/`), so its sitemap entries do not follow the
+ * `generateAlternates` locale-prefix convention. Instead we emit one entry
+ * per supported locale using the landing URL shape (`/` for en,
+ * `/?lang=<code>` for others), with every entry sharing the same
+ * `alternates.languages` map so the hreflang graph is reciprocal.
+ */
 export function buildRootEntry(now: Date): MetadataRoute.Sitemap {
-  return [
-    {
-      url: BASE_URL,
-      lastModified: now,
-    },
-  ];
+  const languages = buildLandingLanguageAlternates();
+  return SUPPORTED_LOCALES.map((locale) => ({
+    url: buildLandingUrl(locale),
+    lastModified: now,
+    alternates: { languages },
+  }));
 }
 
 export function buildStaticPageEntries(now: Date): MetadataRoute.Sitemap {
