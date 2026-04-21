@@ -17,7 +17,11 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useBoardFlip, useConfirmationDialogs, useMoveNavigation } from '../_hooks';
 import type { GameSession } from '../_hooks/use-game-session';
-import { shouldShowInlinePeekHeader, shouldShowModalPeekButton } from '../_lib';
+import {
+  deriveMoveInputSkeletonProps,
+  shouldShowInlinePeekHeader,
+  shouldShowModalPeekButton,
+} from '../_lib';
 import { BoardViewModal } from './BoardViewModal';
 import { GameInProgressPanel } from './GameInProgressPanel';
 import { InlineBoardView } from './InlineBoardView';
@@ -105,10 +109,13 @@ export function PlayClient({
   // `globalPreferences`). The `GamePreferencesContext` also mirrors
   // subsequent preference changes back to the cookie so the two stay in
   // sync on the next navigation.
-  const skeletonMode = isHydrated ? globalPreferences.moveInputMode : initialMoveInputHint.mode;
+  // Pre-hydration derivation is shared with `loading.tsx` via
+  // `deriveMoveInputSkeletonProps` so the two entry points stay in lockstep.
+  const hintSkeletonProps = deriveMoveInputSkeletonProps(initialMoveInputHint);
+  const skeletonMode = isHydrated ? globalPreferences.moveInputMode : hintSkeletonProps.mode;
   const skeletonHasModeSwitch = isHydrated
     ? globalPreferences.enabledMoveInputModes.length >= 2
-    : initialMoveInputHint.enabledModes.length >= 2;
+    : hintSkeletonProps.hasModeSwitch;
 
   // Merge per-game preferences with global preferences
   // Per-game fields override global; other fields come from global
