@@ -4,7 +4,7 @@ import { useTransition } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { LOCALE_COOKIE_NAME, SUPPORTED_LOCALES } from '@/config';
+import { DEFAULT_LOCALE, LOCALE_COOKIE_NAME, SUPPORTED_LOCALES } from '@/config';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -32,14 +32,22 @@ export function LanguageSelector({ currentLocale }: Props) {
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newLocale = e.target.value as Locale;
 
-    // Set cookie with 1 year expiry
+    // Persist preference for other surfaces that fall back to
+    // getLocaleFromRequest (e.g. the landing layout's <html lang> and
+    // banner announcement). The LP itself no longer relies on the cookie
+    // for locale resolution — the URL `?lang=` below is the source of
+    // truth — but the cookie keeps non-landing contexts in sync.
     const expires = new Date();
     expires.setFullYear(expires.getFullYear() + 1);
     document.cookie = `${LOCALE_COOKIE_NAME}=${newLocale}; path=/; expires=${expires.toUTCString()}`;
 
-    // Refresh to apply new locale
+    // Landing locale resolver (`getLandingLocale`) prioritises `?lang=`
+    // over cookie/Accept-Language, so the URL must change for the switch
+    // to take effect on the LP. English is the bare-`/` default; other
+    // locales use `/?lang=<code>` to match the canonical/hreflang cluster.
+    const target = newLocale === DEFAULT_LOCALE ? '/' : `/?lang=${newLocale}`;
     startTransition(() => {
-      router.refresh();
+      router.push(target);
     });
   };
 
