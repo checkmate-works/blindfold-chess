@@ -22,12 +22,37 @@ import { MobileTabBar } from './_components/MobileTabBar';
 import { isServerOnlyNamespace } from './_lib/i18n-namespaces';
 import { buildPageTitle } from './_lib/metadata';
 import { Providers } from './_lib/providers';
+import { generateLocaleStaticParams } from './_lib/static-params';
 
 const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-inter',
 });
+
+/**
+ * Enumerate the supported `[locale]` segments at build time.
+ *
+ * Combined with `dynamicParams = false` below, this makes Next.js return a
+ * framework-level 404 for any URL whose `[locale]` is not in
+ * `SUPPORTED_LOCALES` — before `generateMetadata` is invoked and before any
+ * nested segment's own `generateStaticParams` / `dynamicParams` runs. This
+ * prevents stray URLs (e.g. bare `/pt/...` or `/fr/...`) from throwing
+ * 500-level errors inside metadata generation.
+ *
+ * Nested dynamic segments (e.g. `[locale]/articles/[slug]`,
+ * `[locale]/glossary/letter/[letter]`) are unaffected — `dynamicParams` is
+ * scoped to the segment it is declared on, so their DB- / on-demand-driven
+ * params continue to resolve per their own declarations.
+ */
+export const generateStaticParams = generateLocaleStaticParams;
+
+/**
+ * Return 404 for any `[locale]` value outside the set returned by
+ * `generateStaticParams` above. Only scopes to this segment's params —
+ * nested dynamic segments keep their default `dynamicParams = true`.
+ */
+export const dynamicParams = false;
 
 export async function generateMetadata({
   params,
