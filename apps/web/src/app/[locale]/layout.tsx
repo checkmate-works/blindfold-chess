@@ -195,8 +195,8 @@ export default async function Layout({
     <html lang={locale} suppressHydrationWarning>
       <head>
         <ThemeScript />
-        <JsonLd data={generateWebSiteSchema(locale, t('siteName'))} />
-        <JsonLd data={generateOrganizationSchema()} />
+        <JsonLd data={generateWebSiteSchema(locale, t('siteName'))} nonce={nonce} />
+        <JsonLd data={generateOrganizationSchema()} nonce={nonce} />
         <style
           nonce={nonce}
           suppressHydrationWarning

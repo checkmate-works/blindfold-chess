@@ -15,14 +15,27 @@ type BreadcrumbContentProps = {
   items: BreadcrumbItem[];
   locale?: string;
   brandName: string;
+  /**
+   * Optional per-request CSP nonce. Server Component callers resolve this
+   * via `resolveCspNonce()` (`@/lib/security/nonce`) and pass it through so
+   * the emitted `<script type="application/ld+json">` passes the enforcing
+   * `script-src` policy. Client-reachable callers omit it; the script then
+   * renders without a nonce and may be blocked by strict CSP in the
+   * browser, but Google's crawler still parses the JSON-LD from the HTML
+   * source, so rich-result eligibility is preserved.
+   */
+  nonce?: string;
 };
 
-export function BreadcrumbContent({ items, locale, brandName }: BreadcrumbContentProps) {
+export function BreadcrumbContent({ items, locale, brandName, nonce }: BreadcrumbContentProps) {
   const effectiveLocale = locale || 'en';
 
   return (
     <>
-      <JsonLd data={generateBreadcrumbListSchema(items, effectiveLocale, brandName)} />
+      <JsonLd
+        data={generateBreadcrumbListSchema(items, effectiveLocale, brandName)}
+        nonce={nonce}
+      />
       {/*
         Reserve 2-line height (text-sm line-height 20px x 2 = 40px) so that
         long i18n labels (e.g. es `/games/play/postmortem` with
@@ -73,8 +86,10 @@ export function BreadcrumbContent({ items, locale, brandName }: BreadcrumbConten
 type BreadcrumbProps = {
   items: BreadcrumbItem[];
   locale?: string;
+  /** See `BreadcrumbContentProps.nonce`. */
+  nonce?: string;
 };
 
-export function Breadcrumb({ items, locale }: BreadcrumbProps) {
-  return <BreadcrumbContent items={items} locale={locale} brandName="Home" />;
+export function Breadcrumb({ items, locale, nonce }: BreadcrumbProps) {
+  return <BreadcrumbContent items={items} locale={locale} brandName="Home" nonce={nonce} />;
 }

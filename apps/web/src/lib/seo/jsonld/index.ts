@@ -1,3 +1,8 @@
+// `JsonLd` is a synchronous, client-safe component: it accepts the CSP nonce
+// as a prop rather than reading `next/headers` internally, so re-exporting
+// it from this barrel does not drag `next/headers` into any client-reachable
+// import graph. Server Component callers resolve the nonce via
+// `resolveCspNonce()` (`@/lib/security/nonce`) and forward it here.
 export { JsonLd } from './JsonLd';
 export { generateWebSiteSchema } from './website';
 export { generateOrganizationSchema } from './organization';

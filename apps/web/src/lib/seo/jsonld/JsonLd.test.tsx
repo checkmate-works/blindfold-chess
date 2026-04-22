@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { JsonLd } from './JsonLd';
 
@@ -9,19 +9,16 @@ import { JsonLd } from './JsonLd';
  * permit arbitrary script injection. `JSON.stringify` does NOT escape `<`,
  * U+2028, or U+2029, so `JsonLd` must do so itself.
  *
- * `JsonLd` is an async Server Component because it reads the per-request
- * CSP nonce from `next/headers`. Tests mock `next/headers` and `await` the
- * component to get the final React element before handing it to
- * `renderToStaticMarkup`.
+ * `JsonLd` is a synchronous client-safe component: it accepts the per-request
+ * CSP nonce as a prop (rather than reading `next/headers`) so Client
+ * Components can import it without dragging `next/headers` into the client
+ * bundle. Server Component callers resolve the nonce via `resolveCspNonce()`
+ * (`@/lib/security/nonce`) and forward it here.
  */
 
-vi.mock('next/headers', () => ({
-  headers: vi.fn(async () => new Headers({ 'x-nonce': 'test-nonce' })),
-}));
-
 describe('JsonLd', () => {
-  it('escapes `<` so a payload containing `</script>` cannot close the tag', async () => {
-    const element = await JsonLd({ data: { evil: '</script><img src=x>' } });
+  it('escapes `<` so a payload containing `</script>` cannot close the tag', () => {
+    const element = JsonLd({ data: { evil: '</script><img src=x>' }, nonce: 'n' });
     const html = renderToStaticMarkup(element);
 
     // The raw `</script>` substring must not appear inside the script body;
@@ -30,9 +27,13 @@ describe('JsonLd', () => {
     expect(html).not.toContain('</script><img');
   });
 
-  it('escapes U+2028 and U+2029 line/paragraph separators', async () => {
-    const element = await JsonLd({
-      data: { ls: 'before after', ps: 'before after' },
+  it('escapes U+2028 and U+2029 line/paragraph separators', () => {
+    const element = JsonLd({
+      data: {
+        ls: `before${String.fromCharCode(0x2028)}after`,
+        ps: `before${String.fromCharCode(0x2029)}after`,
+      },
+      nonce: 'n',
     });
     const html = renderToStaticMarkup(element);
 
@@ -40,9 +41,10 @@ describe('JsonLd', () => {
     expect(html).toContain('\\u2029');
   });
 
-  it('preserves the structured data for normal payloads', async () => {
-    const element = await JsonLd({
+  it('preserves the structured data for normal payloads', () => {
+    const element = JsonLd({
       data: { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Shingan' },
+      nonce: 'n',
     });
     const html = renderToStaticMarkup(element);
 
@@ -51,10 +53,17 @@ describe('JsonLd', () => {
     expect(html).toContain('"name":"Shingan"');
   });
 
-  it('attaches the per-request CSP nonce from `x-nonce`', async () => {
-    const element = await JsonLd({ data: { ok: true } });
+  it('attaches the provided CSP nonce as the `nonce` attribute', () => {
+    const element = JsonLd({ data: { ok: true }, nonce: 'test-nonce' });
     const html = renderToStaticMarkup(element);
 
     expect(html).toContain('nonce="test-nonce"');
+  });
+
+  it('omits the `nonce` attribute when no nonce is supplied', () => {
+    const element = JsonLd({ data: { ok: true } });
+    const html = renderToStaticMarkup(element);
+
+    expect(html).not.toContain('nonce=');
   });
 });
