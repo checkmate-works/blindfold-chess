@@ -38,6 +38,16 @@ describe('buildCspHeader', () => {
     expect(header).not.toContain("'unsafe-eval'");
   });
 
+  it("keeps 'wasm-unsafe-eval' in production for Stockfish WebAssembly", () => {
+    // Stockfish (public/stockfish.js + stockfish.wasm) powers the AI game on
+    // /[locale]/games/play and calls WebAssembly.instantiate. Without this
+    // directive the Worker throws CompileError in production and the AI-game
+    // UI hangs on "thinking...". Unlike 'unsafe-eval', this keyword does NOT
+    // re-enable eval() for ordinary JS, so the XSS defence is unchanged.
+    const header = buildCspHeader('xyz', { isDevelopment: false });
+    expect(header).toContain("'wasm-unsafe-eval'");
+  });
+
   it('permits unsafe-eval in development (Fast Refresh / Turbopack HMR)', () => {
     const header = buildCspHeader('xyz', { isDevelopment: true });
     expect(header).toContain("'unsafe-eval'");

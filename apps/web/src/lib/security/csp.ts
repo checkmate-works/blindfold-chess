@@ -22,7 +22,9 @@
  *
  * In development, `'unsafe-eval'` is added to `script-src` because React Fast
  * Refresh / Turbopack HMR rely on `eval`. Production never allows
- * `'unsafe-eval'`.
+ * `'unsafe-eval'`. Production DOES allow `'wasm-unsafe-eval'`, which is a
+ * narrower keyword that only permits WebAssembly compilation (required by
+ * Stockfish on `/[locale]/games/play`) without re-enabling regular `eval()`.
  *
  * `style-src 'unsafe-inline'` is retained: removing it would require
  * overhauling every CSS-in-JS / inline `<style>` usage in the app, which is
@@ -69,6 +71,13 @@ export function buildCspHeader(nonce: string, options: { isDevelopment?: boolean
     "'self'",
     `'nonce-${nonce}'`,
     "'strict-dynamic'",
+    // Required so Stockfish (public/stockfish.js + stockfish.wasm) can compile
+    // WebAssembly on /[locale]/games/play. Unlike 'unsafe-eval', this keyword
+    // ONLY permits WebAssembly.compile / WebAssembly.instantiate — it does NOT
+    // re-enable eval() for ordinary JS, so the 'strict-dynamic' + nonce XSS
+    // defence is unchanged. Do NOT remove without a replacement for the
+    // Stockfish engine used by the AI-game feature.
+    "'wasm-unsafe-eval'",
     // Fallback schemes for non-`strict-dynamic` browsers.
     'https:',
     // Explicit host fallbacks (also honored by older browsers).
