@@ -14,7 +14,7 @@ export default function LearnLoading() {
 
       <PagePanel>
         {/* SectionTitle skeleton */}
-        <div className="border-b border-warning/50 pb-2">
+        <div className="border-b border-border pb-2">
           <div className="h-5 md:h-6 bg-muted rounded w-48 animate-pulse" />
         </div>
 
