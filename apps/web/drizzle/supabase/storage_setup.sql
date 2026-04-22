@@ -9,9 +9,18 @@
 -- the expected definitions, correcting any configuration drift.
 
 -- Create the avatars bucket (public so avatar URLs are accessible without auth)
-INSERT INTO storage.buckets (id, name, public)
-VALUES ('avatars', 'avatars', true)
-ON CONFLICT (id) DO UPDATE SET public = EXCLUDED.public;
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'avatars',
+  'avatars',
+  true,
+  5242880,
+  ARRAY['image/jpeg', 'image/png', 'image/webp']
+)
+ON CONFLICT (id) DO UPDATE SET
+  public = EXCLUDED.public,
+  file_size_limit = EXCLUDED.file_size_limit,
+  allowed_mime_types = EXCLUDED.allowed_mime_types;
 
 -- Allow authenticated users to upload to their own folder
 DROP POLICY IF EXISTS "avatars_insert_own" ON storage.objects;
