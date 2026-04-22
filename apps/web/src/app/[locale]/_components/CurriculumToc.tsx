@@ -204,7 +204,7 @@ export function CurriculumToc({
         const titleLink = row.href ? (
           <Link
             href={row.href}
-            className="text-sm text-foreground transition-colors hover:text-foreground/70 hover:underline"
+            className="rounded-sm text-sm text-link-primary underline decoration-1 underline-offset-2 transition-colors hover:text-link-primary/80 hover:decoration-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             {row.title}
           </Link>
