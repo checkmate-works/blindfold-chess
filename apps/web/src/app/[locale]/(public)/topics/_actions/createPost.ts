@@ -3,6 +3,8 @@
 import { revalidateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
 
+import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';
+
 import { authenticateAndCheckBan } from '@/lib/auth';
 import { db, feedItems, topicPosts } from '@/lib/db';
 import { GRANT_TYPE_DEFAULTS } from '@/lib/db/data/grant-types';
@@ -47,6 +49,8 @@ export async function createPostBase(params: {
     afterInsert,
     formData,
   } = params;
+
+  assertSupportedLocale(locale);
 
   if (!(await validateTopic(topicIdentifier))) {
     return { error: invalidTopicError };

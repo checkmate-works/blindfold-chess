@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 
+import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';
 import { and, eq, isNull } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
@@ -10,6 +11,8 @@ import { db, positions } from '@/lib/db';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
 export async function deletePosition(positionId: string, locale: string): Promise<ActionResult> {
+  assertSupportedLocale(locale);
+
   const guardResult = await authenticateAndGuard(RATE_LIMITS.deletePosition);
   if ('error' in guardResult) {
     return { error: guardResult.error };

@@ -2,6 +2,7 @@
 
 import { revalidatePath, revalidateTag } from 'next/cache';
 
+import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';
 import { and, eq, isNull } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
@@ -18,6 +19,8 @@ const TOPIC_TYPE_TO_URL_SEGMENT: Record<string, string> = {
 };
 
 export async function deletePost(postId: string, locale: string): Promise<DeletePostResult> {
+  assertSupportedLocale(locale);
+
   const guardResult = await authenticateAndGuard(RATE_LIMITS.deletePost);
   if ('error' in guardResult) {
     return { error: guardResult.error };

@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
+import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';
 import { and, eq, isNull } from 'drizzle-orm';
 
 import { authenticateAndGuard } from '@/lib/auth';
@@ -37,6 +38,8 @@ export async function createReplyBase(params: {
     validateTopic,
     formData,
   } = params;
+
+  assertSupportedLocale(locale);
 
   if (!(await validateTopic(topicIdentifier))) {
     return { error: `Invalid ${topicType}` };
