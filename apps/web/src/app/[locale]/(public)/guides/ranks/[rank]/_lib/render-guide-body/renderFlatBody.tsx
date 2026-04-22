@@ -39,7 +39,7 @@ export async function renderFlatBody(
   props: FlatBodyProps,
   requirements: ChallengeScoreRequirement[]
 ): Promise<ReactNode> {
-  const { locale, rankSlug, rankName, beltColor, tRanks, tGuides } = ctx;
+  const { locale, rankSlug, rankName, beltColor, tRanks, tGuides, nonce } = ctx;
   const { pageNumber } = props;
 
   const pages = guide.pages;
@@ -69,7 +69,7 @@ export async function renderFlatBody(
 
   return (
     <div className="space-y-8">
-      <JsonLd data={learningResourceSchema} />
+      <JsonLd data={learningResourceSchema} nonce={nonce} />
 
       <PageTitle>{rankName}</PageTitle>
 

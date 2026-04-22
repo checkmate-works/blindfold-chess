@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV, SITE_URL } from '@/config';
 
+import { resolveCspNonce } from '@/lib/security/nonce';
 import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
 
 import {
@@ -70,9 +71,11 @@ export default async function ArticlesPage({ params, searchParams }: Props) {
     url: `${SITE_URL}/${locale}/articles/${article.slug}`,
   }));
 
+  const nonce = await resolveCspNonce();
+
   return (
     <div className="space-y-8">
-      <JsonLd data={generateItemListSchema(itemListItems)} />
+      <JsonLd data={generateItemListSchema(itemListItems)} nonce={nonce} />
       <PageTitle>{t('pageTitle')}</PageTitle>
 
       <PagePanel>

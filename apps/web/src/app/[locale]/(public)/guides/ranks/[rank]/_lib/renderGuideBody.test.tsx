@@ -70,6 +70,17 @@ vi.mock('next/navigation', () => ({
   },
 }));
 
+// `resolveGuideContext` now reads the per-request CSP nonce via
+// `resolveCspNonce()`, which calls `next/headers`. In jsdom there is no
+// request scope, so we stub `headers()` to a minimal `Headers`-like object
+// that returns `null` for unknown keys. The renderer only uses the nonce to
+// forward to `<JsonLd>`, which the SEO jsonld mock above stubs out to null.
+vi.mock('next/headers', () => ({
+  headers: async () => ({
+    get: (_key: string) => null,
+  }),
+}));
+
 // `JsonLd` emits an inline `<script type="application/ld+json">`. Stub it
 // out — this test cares about layout / CTA branching, not the JSON-LD
 // payload. This mock also silences the `<script>` rendering noise in the

@@ -4,6 +4,7 @@ import { setRequestLocale } from 'next-intl/server';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV, SITE_URL } from '@/config';
 
+import { resolveCspNonce } from '@/lib/security/nonce';
 import { JsonLd, generateDefinedTermSetSchema } from '@/lib/seo/jsonld';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
@@ -58,9 +59,11 @@ export default async function GlossaryIndexPage({ params }: Props) {
     terms: definedTerms,
   });
 
+  const nonce = await resolveCspNonce();
+
   return (
     <div className="space-y-8">
-      <JsonLd data={definedTermSetSchema} />
+      <JsonLd data={definedTermSetSchema} nonce={nonce} />
       <PageTitle>{t('title')}</PageTitle>
 
       <PagePanel>

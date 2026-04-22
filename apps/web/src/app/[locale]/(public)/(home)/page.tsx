@@ -6,6 +6,7 @@ import { IS_LOCAL_DEV } from '@/config';
 import { FaTachometerAlt } from 'react-icons/fa';
 
 import { shouldShowAdsForUser } from '@/lib/ads/ad';
+import { resolveCspNonce } from '@/lib/security/nonce';
 import { JsonLd, generateWebApplicationSchema } from '@/lib/seo/jsonld';
 import { createClient } from '@/lib/supabase/server';
 
@@ -71,13 +72,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function HomePage({ params }: Props) {
   const { locale } = await params;
-  const [tMetadata, tHome, tTopics, tSquares, tHeader, supabase] = await Promise.all([
+  const [tMetadata, tHome, tTopics, tSquares, tHeader, supabase, nonce] = await Promise.all([
     getTranslations({ locale, namespace: 'metadata' }),
     getTranslations({ locale, namespace: 'home' }),
     getTranslations({ locale, namespace: 'topics' }),
     getTranslations({ locale, namespace: 'topics.squares' }),
     getTranslations({ locale, namespace: 'Header' }),
     createClient(),
+    resolveCspNonce(),
   ]);
   const {
     data: { user },
@@ -110,6 +112,7 @@ export default async function HomePage({ params }: Props) {
             tMetadata('siteName'),
             tMetadata('webApplicationDescription')
           )}
+          nonce={nonce}
         />
 
         <DashboardCard>

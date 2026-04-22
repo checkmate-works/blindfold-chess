@@ -19,6 +19,7 @@ import Link from 'next/link';
 import { ChallengeCard } from '@/app/_components';
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV, SITE_URL } from '@/config';
 
+import { resolveCspNonce } from '@/lib/security/nonce';
 import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
 
 import { PRACTICE_EMOJIS } from '@/app/[locale]/(public)/practice/_lib/practice-emojis';
@@ -159,9 +160,11 @@ export default async function PracticePage({ params }: Props) {
     }))
   );
 
+  const nonce = await resolveCspNonce();
+
   return (
     <div className="space-y-8">
-      <JsonLd data={generateItemListSchema(itemListItems)} />
+      <JsonLd data={generateItemListSchema(itemListItems)} nonce={nonce} />
       <PageTitle>{t('practice.title')}</PageTitle>
 
       <PagePanel>

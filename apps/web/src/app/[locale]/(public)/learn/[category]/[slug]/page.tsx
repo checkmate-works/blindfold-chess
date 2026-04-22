@@ -12,6 +12,7 @@ import {
   SUPPORTED_LOCALES,
 } from '@/config';
 
+import { resolveCspNonce } from '@/lib/security/nonce';
 import { JsonLd, generateArticleSchema } from '@/lib/seo/jsonld';
 
 import { CardLink, Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
@@ -132,9 +133,11 @@ export default async function LearnArticlePage({ params }: Props) {
     locale,
   };
 
+  const nonce = await resolveCspNonce();
+
   return (
     <div className="space-y-8">
-      <JsonLd data={generateArticleSchema(articleSchemaData)} />
+      <JsonLd data={generateArticleSchema(articleSchemaData)} nonce={nonce} />
       <PageTitle>{article.metadata.title}</PageTitle>
 
       <PagePanel>
