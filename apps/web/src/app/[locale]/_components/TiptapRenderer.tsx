@@ -5,6 +5,8 @@ import type { TiptapJsonContent, TiptapMark, TiptapNode } from '@/app/admin/arti
 import { extractYouTubeVideoId } from '@/app/admin/articles/_lib/youtube';
 import { Tweet } from 'react-tweet';
 
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
+
 import { SectionTitle } from './SectionTitle';
 import { SubsectionTitle } from './SubsectionTitle';
 import './tiptap-renderer.css';
@@ -179,18 +181,13 @@ function applyMark(children: React.ReactNode, mark: TiptapMark): React.ReactNode
       const isInternal = href.startsWith('/') || href.startsWith('#');
       if (isInternal) {
         return (
-          <Link href={href} className="text-primary no-underline hover:underline transition-all">
+          <Link href={href} className={TEXT_LINK_CLASSES}>
             {children}
           </Link>
         );
       }
       return (
-        <a
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-primary no-underline hover:underline transition-all"
-        >
+        <a href={href} target="_blank" rel="noopener noreferrer" className={TEXT_LINK_CLASSES}>
           {children}
         </a>
       );

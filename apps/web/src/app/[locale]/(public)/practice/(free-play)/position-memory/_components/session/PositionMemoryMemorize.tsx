@@ -8,6 +8,7 @@ import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
 import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/ProgressBar';
 import { QuizTimer } from '@/app/[locale]/(public)/practice/_components/QuizTimer';
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import type { PositionData } from '../../_lib/types';
 
@@ -134,17 +135,11 @@ export function PositionMemoryMemorize({
       {/* Action Links */}
       <div className="flex flex-col items-center gap-2">
         {showSkip && (
-          <button
-            onClick={onSkip}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
-          >
+          <button onClick={onSkip} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
             {t('skip')}
           </button>
         )}
-        <button
-          onClick={onQuit}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
-        >
+        <button onClick={onQuit} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
           {t('quit')}
         </button>
       </div>

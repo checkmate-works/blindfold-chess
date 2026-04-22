@@ -8,6 +8,7 @@ import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_comp
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { PieceType } from '../../_lib/utils';
@@ -115,10 +116,7 @@ export default function RoutePlannerChallengeSession({
 
       {/* Quit section (no Skip in challenge mode) */}
       <div className="flex flex-col items-center gap-2">
-        <button
-          onClick={handleQuitRequest}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
-        >
+        <button onClick={handleQuitRequest} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
           {tPractice('quit')}
         </button>
       </div>

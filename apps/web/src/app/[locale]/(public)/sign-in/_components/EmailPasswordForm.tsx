@@ -12,6 +12,7 @@ import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { FormErrorMessage } from '@/app/[locale]/_components/FormErrorMessage';
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import { signIn } from '../_actions/signIn';
 
@@ -96,7 +97,7 @@ export function EmailPasswordForm() {
       </button>
 
       <p className="text-center text-sm">
-        <Link href="/forgot-password" locale={locale} className="text-link-primary hover:underline">
+        <Link href="/forgot-password" locale={locale} className={TEXT_LINK_CLASSES}>
           {t('forgotPassword')}
         </Link>
       </p>

@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 type RedirectProps = {
@@ -44,10 +45,7 @@ export function TutorialSkipLink(props: Props) {
   );
 
   return (
-    <button
-      onClick={handleClick}
-      className="text-sm text-muted-foreground hover:text-foreground underline transition-colors"
-    >
+    <button onClick={handleClick} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
       {label}
     </button>
   );

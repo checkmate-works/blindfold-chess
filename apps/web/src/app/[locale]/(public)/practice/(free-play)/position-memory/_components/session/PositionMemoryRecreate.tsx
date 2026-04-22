@@ -10,6 +10,7 @@ import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 
 import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
 import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/ProgressBar';
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import type { PositionData } from '../../_lib/types';
 
@@ -90,22 +91,13 @@ export function PositionMemoryRecreate({
       {/* Action Links */}
       {!isTutorial && (
         <div className="flex flex-col items-center gap-2">
-          <button
-            onClick={onViewAgain}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
-          >
+          <button onClick={onViewAgain} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
             {t('viewAgain')}
           </button>
-          <button
-            onClick={onSkip}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
-          >
+          <button onClick={onSkip} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
             {t('skip')}
           </button>
-          <button
-            onClick={onQuit}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
-          >
+          <button onClick={onQuit} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
             {t('quit')}
           </button>
         </div>

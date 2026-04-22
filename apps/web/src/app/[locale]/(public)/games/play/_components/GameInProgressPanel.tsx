@@ -12,6 +12,7 @@ import type { MoveInputMethod } from '@/lib/types';
 
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import type { ConfirmationDialogs } from '../_hooks';
 import { shouldShowModalPeekButton } from '../_lib';
@@ -150,10 +151,7 @@ export function GameInProgressPanel({
 
       {/* Save and Exit */}
       <div className="text-center">
-        <Link
-          href="/games"
-          className="text-sm text-muted-foreground hover:text-foreground underline"
-        >
+        <Link href="/games" className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
           💾 {t('saveAndExit')}
         </Link>
       </div>

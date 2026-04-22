@@ -8,6 +8,7 @@ import type { ExpInfo } from '@blindfold-chess/features/exp';
 import { FaRedo } from 'react-icons/fa';
 
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type {
@@ -110,7 +111,7 @@ export function PracticeComplete({
           <div className="text-center pt-2">
             <Link
               href={otherPracticeLink.href}
-              className="text-primary hover:underline text-sm font-medium"
+              className={`text-sm font-medium ${TEXT_LINK_CLASSES}`}
             >
               {otherPracticeLink.label}
             </Link>

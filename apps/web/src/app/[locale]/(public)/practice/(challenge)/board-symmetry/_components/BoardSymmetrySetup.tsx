@@ -8,6 +8,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { FaArrowRight, FaPlay } from 'react-icons/fa';
 
 import { SectionTitle } from '@/app/[locale]/_components';
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { BOARD_SYMMETRY_TUTORIAL_SKIPPED_KEY } from './BoardSymmetryTutorialSkipLink';
@@ -40,10 +41,7 @@ export function BoardSymmetrySetup({ locale }: Props) {
           </div>
         </div>
         <div className="mb-6 text-center">
-          <button
-            onClick={handleViewTutorial}
-            className="text-sm text-muted-foreground hover:text-foreground underline transition-colors"
-          >
+          <button onClick={handleViewTutorial} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
             {t('viewTutorial')}
           </button>
         </div>

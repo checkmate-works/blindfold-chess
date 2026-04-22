@@ -31,6 +31,7 @@ import {
   UserAvatar,
 } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
@@ -138,7 +139,7 @@ export default async function MypagePage({ params }: Props) {
             <Link
               href="/leaderboard/exp/all-time"
               locale={locale}
-              className="text-xs text-muted-foreground hover:text-foreground hover:underline transition-colors"
+              className={`text-xs ${TEXT_LINK_MUTED_CLASSES}`}
             >
               {t('dashboard.viewExpLeaderboard')}
             </Link>

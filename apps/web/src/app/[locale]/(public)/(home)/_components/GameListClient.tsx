@@ -4,6 +4,7 @@ import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useGameDelete } from '../_hooks/use-game-delete';
@@ -37,11 +38,7 @@ export function GameListClient({ locale }: Props) {
           <GameList games={displayGames} locale={locale} onDeleteGame={handleDeleteGame} />
           {hasMore && (
             <div className="text-center">
-              <Link
-                href="/games"
-                locale={locale}
-                className="text-sm text-link-primary hover:text-link-primary/80 transition-colors"
-              >
+              <Link href="/games" locale={locale} className={`text-sm ${TEXT_LINK_CLASSES}`}>
                 {t('moreGames')}
               </Link>
             </div>

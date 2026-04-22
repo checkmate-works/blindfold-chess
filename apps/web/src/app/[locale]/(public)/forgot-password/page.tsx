@@ -5,6 +5,7 @@ import { Link } from '@/i18n/routing';
 
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
@@ -38,7 +39,7 @@ export default async function ForgotPasswordPage({ params }: Props) {
         <ForgotPasswordForm />
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          <Link href="/sign-in" locale={locale} className="text-link-primary hover:underline">
+          <Link href="/sign-in" locale={locale} className={TEXT_LINK_CLASSES}>
             {t('backToSignIn')}
           </Link>
         </p>

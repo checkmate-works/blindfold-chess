@@ -10,6 +10,7 @@ import { db, profiles } from '@/lib/db';
 
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { TEXT_LINK_DESTRUCTIVE_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
@@ -72,7 +73,7 @@ export default async function ProfilePage({ params }: Props) {
         <Link
           href="/mypage/delete-account"
           locale={locale}
-          className="inline-block text-sm text-destructive hover:underline"
+          className={`inline-block text-sm ${TEXT_LINK_DESTRUCTIVE_CLASSES}`}
         >
           {t('deleteAccountLink')}
         </Link>

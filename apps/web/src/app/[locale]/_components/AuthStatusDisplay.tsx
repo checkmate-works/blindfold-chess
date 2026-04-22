@@ -10,6 +10,8 @@ import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FiLogOut, FiSettings, FiUser } from 'react-icons/fi';
 
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
+
 import { useAuth } from '../_contexts/AuthContext';
 
 type Props = {
@@ -104,10 +106,10 @@ export function AuthStatusDisplay({ isAuthenticated, avatarUrl, displayName }: P
 
   return (
     <div className="flex items-center gap-3 text-sm">
-      <Link href={`/${locale}/sign-up`} className="text-link-primary hover:underline">
+      <Link href={`/${locale}/sign-up`} className={TEXT_LINK_CLASSES}>
         {t('signUp')}
       </Link>
-      <Link href={`/${locale}/sign-in`} className="text-link-primary hover:underline">
+      <Link href={`/${locale}/sign-in`} className={TEXT_LINK_CLASSES}>
         {t('signIn')}
       </Link>
     </div>

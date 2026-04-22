@@ -33,6 +33,7 @@ import { createClient } from '@/lib/supabase/server';
 
 import { getPostsByUserId } from '@/app/[locale]/(public)/topics/_lib/user-post-queries';
 import { LinkedText, PagePanel, UserAvatar } from '@/app/[locale]/_components';
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -249,14 +250,14 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
         <p className="text-sm text-muted-foreground">
           {isOwnProfile && (
             <>
-              <Link href="/mypage/following" locale={locale} className="hover:underline">
+              <Link href="/mypage/following" locale={locale} className={TEXT_LINK_CLASSES}>
                 <span className="font-semibold text-foreground">{followingCount}</span>{' '}
                 {t('followingCount')}
               </Link>
               <span className="mx-2" />
             </>
           )}
-          <Link href={`/u/${username}/followers`} locale={locale} className="hover:underline">
+          <Link href={`/u/${username}/followers`} locale={locale} className={TEXT_LINK_CLASSES}>
             <span className="font-semibold text-foreground">{followerCount}</span> {t('followers')}
           </Link>
         </p>

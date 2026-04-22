@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
@@ -54,7 +55,7 @@ export default async function PrivacyPage({ params }: Props) {
               href="https://policies.google.com/privacy"
               target="_blank"
               rel="noopener noreferrer"
-              className="underline text-muted-foreground hover:text-foreground"
+              className={TEXT_LINK_MUTED_CLASSES}
             >
               {t('googlePrivacyPolicyLink')}
             </a>
@@ -73,7 +74,7 @@ export default async function PrivacyPage({ params }: Props) {
               href="https://www.google.com/settings/ads"
               target="_blank"
               rel="noopener noreferrer"
-              className="underline text-muted-foreground hover:text-foreground"
+              className={TEXT_LINK_MUTED_CLASSES}
             >
               {t('adsSettingsLink')}
             </a>
@@ -84,7 +85,7 @@ export default async function PrivacyPage({ params }: Props) {
               href="https://policies.google.com/technologies/partner-sites"
               target="_blank"
               rel="noopener noreferrer"
-              className="underline text-muted-foreground hover:text-foreground"
+              className={TEXT_LINK_MUTED_CLASSES}
             >
               {t('partnerSitesLink')}
             </a>

@@ -3,6 +3,7 @@ import Link from 'next/link';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
@@ -23,10 +24,7 @@ export function EmptyGameList({ locale }: Props) {
           <p className="text-muted-foreground max-w-md mx-auto">
             {t.rich('startGuidance', {
               link: (chunks) => (
-                <Link
-                  href={`/${locale}/games/new`}
-                  className="text-primary font-medium hover:underline focus-visible:underline focus:outline-none"
-                >
+                <Link href={`/${locale}/games/new`} className={`font-medium ${TEXT_LINK_CLASSES}`}>
                   {chunks}
                 </Link>
               ),

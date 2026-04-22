@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
@@ -76,7 +77,7 @@ export default async function CompanyPage({ params }: LocalePageProps) {
               href="https://www.fuji.llc/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-primary hover:underline font-medium"
+              className={`font-medium ${TEXT_LINK_CLASSES}`}
             >
               {t('corporateWebsite')}
             </a>

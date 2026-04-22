@@ -32,6 +32,7 @@ import {
 } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -190,7 +191,7 @@ export default async function PracticePage({ params }: Props) {
         <div className="text-center pt-4">
           <Link
             href={`/${locale}/leaderboard/score/all-time`}
-            className="text-primary hover:underline text-sm font-medium"
+            className={`text-sm font-medium ${TEXT_LINK_CLASSES}`}
           >
             {t('practice.viewLeaderboard')}
           </Link>

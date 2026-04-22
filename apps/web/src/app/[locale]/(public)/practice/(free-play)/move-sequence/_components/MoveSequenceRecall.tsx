@@ -10,6 +10,7 @@ import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/Progre
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useScrollLock } from '@/app/[locale]/_hooks/use-scroll-lock';
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import { useMoveSequenceRecall } from '../_hooks/use-move-sequence-recall';
 import type { MoveSequenceData, MoveSequenceSessionResult, RecallResult } from '../_lib/types';
@@ -180,7 +181,7 @@ export function MoveSequenceRecall({ data, onComplete, onQuit }: Props) {
               results,
             });
           }}
-          className="text-sm text-muted-foreground hover:text-foreground underline transition-colors"
+          className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}
         >
           {t('endPractice')}
         </button>

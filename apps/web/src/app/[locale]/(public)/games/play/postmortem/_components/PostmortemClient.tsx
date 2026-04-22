@@ -11,6 +11,7 @@ import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal'
 import { Modal } from '@/app/[locale]/_components/Modal';
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import { usePostmortemGame } from '../_hooks';
 import { PostmortemMovesPanel } from './PostmortemMovesPanel';
@@ -228,7 +229,7 @@ export function PostmortemClient({
                   <div className="text-center">
                     <button
                       onClick={() => setShowMoveLogModal(true)}
-                      className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors"
+                      className={`text-xs ${TEXT_LINK_MUTED_CLASSES}`}
                     >
                       {t('log')}
                     </button>

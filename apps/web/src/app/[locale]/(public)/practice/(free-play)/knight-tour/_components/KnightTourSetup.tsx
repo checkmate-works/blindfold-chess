@@ -9,6 +9,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { FaPlay } from 'react-icons/fa';
 
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import { getRandomSquare } from '../_lib/utils';
 
@@ -106,7 +107,7 @@ export function KnightTourSetup({
           <Link
             href="/practice/knight-tour/tutorial"
             locale={locale}
-            className="text-sm text-muted-foreground underline hover:text-foreground transition-colors"
+            className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}
           >
             {t('viewTutorial')}
           </Link>

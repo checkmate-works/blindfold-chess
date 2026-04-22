@@ -4,6 +4,7 @@ import Link from 'next/link';
 
 import { Button } from '@/app/_components';
 
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { LanguageSelector } from './LanguageSelector';
@@ -52,10 +53,7 @@ export function HeroSection({ locale, t, siteName }: Props) {
           {/* Language Selector */}
           <div className="flex flex-col items-center gap-4">
             <LanguageSelector currentLocale={locale} />
-            <Link
-              href={`/${locale}`}
-              className="text-sm text-muted-foreground hover:text-foreground underline transition-colors"
-            >
+            <Link href={`/${locale}`} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
               {t('goToTop')}
             </Link>
           </div>
