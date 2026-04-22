@@ -20,5 +20,7 @@ const SCRIPT = `(function(){try{var d=document.documentElement;var s=localStorag
 
 export async function ThemeScript() {
   const nonce = (await headers()).get('x-nonce') ?? undefined;
-  return <script nonce={nonce} dangerouslySetInnerHTML={{ __html: SCRIPT }} />;
+  return (
+    <script nonce={nonce} suppressHydrationWarning dangerouslySetInnerHTML={{ __html: SCRIPT }} />
+  );
 }

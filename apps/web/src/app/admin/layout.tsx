@@ -60,7 +60,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <html lang="en" suppressHydrationWarning>
       <head>
         <ThemeScript />
-        <style nonce={nonce} dangerouslySetInnerHTML={{ __html: generateThemeCSS() }} />
+        <style
+          nonce={nonce}
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: generateThemeCSS() }}
+        />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         <EnvironmentRibbon />

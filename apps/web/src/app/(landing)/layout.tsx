@@ -83,7 +83,11 @@ export default async function LandingLayout({ children }: { children: React.Reac
         <ThemeScript />
         <JsonLd data={generateWebSiteSchema(locale, t('siteName'))} />
         <JsonLd data={generateOrganizationSchema()} />
-        <style nonce={nonce} dangerouslySetInnerHTML={{ __html: generateThemeCSS() }} />
+        <style
+          nonce={nonce}
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: generateThemeCSS() }}
+        />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         <EnvironmentRibbon />

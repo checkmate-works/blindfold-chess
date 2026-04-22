@@ -69,6 +69,7 @@ export async function Header({ locale }: Props) {
         <>
           <script
             nonce={nonce}
+            suppressHydrationWarning
             dangerouslySetInnerHTML={{ __html: buildDismissScript(bannerAnnouncement.id) }}
           />
           <AnnouncementBanner

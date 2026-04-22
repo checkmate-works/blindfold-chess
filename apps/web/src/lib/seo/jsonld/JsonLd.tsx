@@ -29,6 +29,11 @@ export async function JsonLd({ data }: { data: object }) {
   const nonce = (await headers()).get('x-nonce') ?? undefined;
 
   return (
-    <script type="application/ld+json" nonce={nonce} dangerouslySetInnerHTML={{ __html: safe }} />
+    <script
+      type="application/ld+json"
+      nonce={nonce}
+      suppressHydrationWarning
+      dangerouslySetInnerHTML={{ __html: safe }}
+    />
   );
 }
