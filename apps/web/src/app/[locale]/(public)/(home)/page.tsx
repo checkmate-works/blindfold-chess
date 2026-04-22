@@ -112,11 +112,7 @@ export default async function HomePage({ params }: Props) {
 
         <DashboardCard>
           <VsAiCard locale={locale} />
-          {/* FeedClient is a Client Component, but Next.js SSRs its initial
-              markup — initialItems are serialized into the HTML so Googlebot
-              sees real feed content on first render. Unifying SSR and client
-              items in one container keeps `last:border-b-0` targeting the
-              actual visually-last item. */}
+          {/* initialItems: SSR'd into FeedClient — see FeedClient prop TSDoc for the SSR invariant. */}
           <FeedClient
             initialItems={initialFeed.items}
             initialCursor={initialFeed.nextCursor}
