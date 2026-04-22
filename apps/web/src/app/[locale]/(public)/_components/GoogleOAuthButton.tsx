@@ -37,7 +37,7 @@ export function GoogleOAuthButton({ namespace }: Props) {
     <button
       onClick={handleClick}
       disabled={isLoading}
-      className="flex items-center justify-center gap-3 w-full max-w-sm mx-auto px-6 py-3 bg-card border border-border rounded-lg shadow-sm hover:shadow-md transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
+      className="flex items-center justify-center gap-3 w-full max-w-sm mx-auto px-6 py-3 bg-card border border-border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
     >
       <FcGoogle className="w-5 h-5" />
       <span className="text-sm font-medium text-foreground">

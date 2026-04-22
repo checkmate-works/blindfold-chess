@@ -20,10 +20,7 @@ export default function LearnLoading() {
 
         <div className="space-y-4">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div
-              key={i}
-              className="p-6 bg-card rounded-md shadow-sm border border-border animate-pulse"
-            >
+            <div key={i} className="p-6 bg-card rounded-md border border-border animate-pulse">
               <div className="flex items-start gap-4">
                 <div className="w-9 h-9 bg-muted rounded flex-shrink-0" />
                 <div className="flex-1">

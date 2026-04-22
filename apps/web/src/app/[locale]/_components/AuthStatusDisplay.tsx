@@ -65,7 +65,7 @@ export function AuthStatusDisplay({ isAuthenticated, avatarUrl, displayName }: P
         </button>
 
         {isOpen && (
-          <div className="absolute right-0 top-full mt-2 z-50 w-48 rounded-lg border border-border bg-card shadow-lg">
+          <div className="absolute right-0 top-full mt-2 z-50 w-48 rounded-lg border border-border bg-card">
             <div className="py-1">
               <Link
                 href={`/${locale}/mypage`}

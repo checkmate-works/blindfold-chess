@@ -32,7 +32,7 @@ export function MoveSequenceResult({
 
   return (
     <PracticeLayout>
-      <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mb-8">
+      <div className="bg-card rounded-2xl p-6 border border-border mb-8">
         {/* Result Header */}
         <SectionTitle className="text-2xl font-bold text-center mb-6">
           {t('accuracy')}: {result.accuracy}% ({result.correctMoves}/{result.totalMoves})

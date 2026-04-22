@@ -26,7 +26,7 @@ export function LeaderboardCard({ locale, module, settingKey, period, rank }: Pr
   return (
     <Link
       href={`/${locale}${detailPath}`}
-      className="group block rounded-lg border border-border bg-card p-4 shadow-sm transition-all hover:shadow-md hover:border-foreground/20"
+      className="group block rounded-lg border border-border bg-card p-4 transition-all hover:border-foreground/20"
     >
       <div className="flex items-center gap-3">
         <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md border border-border bg-muted">

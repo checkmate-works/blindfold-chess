@@ -93,7 +93,7 @@ export function CountrySelect({
       </div>
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-50">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg z-50">
           <div className="p-2 border-b border-border">
             <input
               ref={searchInputRef}

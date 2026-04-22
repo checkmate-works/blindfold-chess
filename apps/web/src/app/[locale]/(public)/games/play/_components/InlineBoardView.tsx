@@ -52,7 +52,7 @@ export function InlineBoardView({
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="bg-card rounded-md shadow-sm border border-border overflow-hidden">
+    <div className="bg-card rounded-md border border-border overflow-hidden">
       <button
         type="button"
         onClick={() => {

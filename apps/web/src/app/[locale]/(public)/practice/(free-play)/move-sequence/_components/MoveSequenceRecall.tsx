@@ -108,7 +108,7 @@ export function MoveSequenceRecall({ data, onComplete, onQuit }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="bg-card rounded-md shadow-sm border border-border p-4">
+      <div className="bg-card rounded-md border border-border p-4">
         <div className="flex flex-col gap-6">
           {/* Progress */}
           <div className="flex items-center gap-3">
@@ -197,7 +197,7 @@ export function MoveSequenceRecall({ data, onComplete, onQuit }: Props) {
 
           {/* Content */}
           <div className="relative z-10 w-full max-w-lg px-4">
-            <div className="rounded-md overflow-hidden shadow-lg">
+            <div className="rounded-md overflow-hidden">
               {!isLoaded ? (
                 <BoardSkeleton />
               ) : (

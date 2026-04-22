@@ -3,7 +3,7 @@ import { PracticeLayout } from '@/app/[locale]/(public)/practice/_components/Pra
 export function PositionMemorySetupSkeleton() {
   return (
     <PracticeLayout>
-      <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mb-8">
+      <div className="bg-card rounded-2xl p-6 border border-border mb-8">
         <div className="animate-pulse">
           <div className="space-y-6">
             {/* Problem Source Toggle */}

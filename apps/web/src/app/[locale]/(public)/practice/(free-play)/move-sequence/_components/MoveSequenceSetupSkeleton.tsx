@@ -3,7 +3,7 @@ import { PracticeLayout } from '@/app/[locale]/(public)/practice/_components/Pra
 export function MoveSequenceSetupSkeleton() {
   return (
     <PracticeLayout>
-      <div className="bg-card rounded-2xl p-6 shadow-sm border border-border">
+      <div className="bg-card rounded-2xl p-6 border border-border">
         <div className="animate-pulse">
           {/* Title */}
           <div className="h-7 bg-muted rounded w-32 mb-6"></div>

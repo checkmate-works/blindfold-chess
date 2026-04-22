@@ -160,7 +160,7 @@ export function AnimatedChessBoard({
           <BoardOverlay isVisible={showPlayButton && !isAnimating && !!move}>
             <button
               onClick={handlePlay}
-              className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 shadow-lg transition-all hover:scale-110 pointer-events-auto"
+              className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 transition-all hover:scale-110 pointer-events-auto"
               aria-label="Play animation"
             >
               <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24">

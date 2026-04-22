@@ -42,7 +42,7 @@ export function EnvironmentRibbonClient({ variant }: EnvironmentRibbonClientProp
       className="fixed top-0 right-0 z-[60] h-24 w-24 overflow-hidden bg-transparent p-0 border-0 cursor-pointer print:hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
     >
       <span
-        className={`absolute top-[18px] -right-[36px] w-[140px] rotate-45 text-center text-[11px] font-bold tracking-widest py-1 shadow-md ${colorClasses}`}
+        className={`absolute top-[18px] -right-[36px] w-[140px] rotate-45 text-center text-[11px] font-bold tracking-widest py-1 ${colorClasses}`}
       >
         {variant}
       </span>

@@ -161,7 +161,6 @@ export function UsernameForm({ locale }: Props) {
         variant="primary"
         size="lg"
         fullWidth
-        shadow={false}
         disabled={isSubmitting || username.trim().length === 0 || !agreedToTerms}
         loading={isSubmitting}
       >

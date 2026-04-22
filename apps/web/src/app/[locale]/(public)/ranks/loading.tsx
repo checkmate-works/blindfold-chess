@@ -36,7 +36,7 @@ export default function RanksLoading() {
           {Array.from({ length: 7 }).map((_, i) => (
             <div
               key={i}
-              className="relative overflow-hidden rounded-lg border border-border bg-card shadow-sm animate-pulse"
+              className="relative overflow-hidden rounded-lg border border-border bg-card animate-pulse"
             >
               {/* Belt color bar */}
               <div className="h-2 bg-muted" />

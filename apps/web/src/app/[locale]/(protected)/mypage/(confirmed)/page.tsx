@@ -152,7 +152,7 @@ export default async function MypagePage({ params }: Props) {
           <Link
             href="/interview"
             locale={locale}
-            className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card p-4 shadow-sm transition-all hover:shadow-md hover:border-primary/30"
+            className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card p-4 transition-all hover:border-primary/30"
           >
             <div className="flex items-center gap-2">
               <span className="text-lg">🎙️</span>
@@ -167,7 +167,7 @@ export default async function MypagePage({ params }: Props) {
         )}
 
         {/* Exp activity heatmap */}
-        <section className="rounded-lg border border-border bg-card p-4 shadow-sm">
+        <section className="rounded-lg border border-border bg-card p-4">
           <h3 className="text-sm font-semibold text-foreground mb-2">
             <span className="mr-1">🔥</span>
             {t('dashboard.activityTitle')}

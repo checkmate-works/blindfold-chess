@@ -175,7 +175,7 @@ export function PlusMenu({
         type="button"
         onMouseDown={(e) => e.preventDefault()}
         onClick={() => setShowMenu((prev) => !prev)}
-        className="flex items-center justify-center w-7 h-7 rounded-full border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-secondary shadow-sm transition-colors"
+        className="flex items-center justify-center w-7 h-7 rounded-full border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
         aria-label="ブロックを追加"
       >
         <LuPlus size={18} />
@@ -184,7 +184,7 @@ export function PlusMenu({
       {showMenu && (
         <div
           ref={menuRef}
-          className="absolute left-0 top-8 w-52 rounded-lg border border-border bg-card shadow-lg py-1 z-20"
+          className="absolute left-0 top-8 w-52 rounded-lg border border-border bg-card py-1 z-20"
         >
           {menuItems.map((item) => (
             <button

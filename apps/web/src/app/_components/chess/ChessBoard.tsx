@@ -103,7 +103,7 @@ export const ChessBoard = memo(function ChessBoard({
         if (displayColor === 'w') {
           return (
             <div
-              className="w-[60%] h-[60%] rounded-full shadow-lg"
+              className="w-[60%] h-[60%] rounded-full"
               style={{
                 background:
                   'radial-gradient(ellipse at 30% 30%, #ffffff 0%, #e8e8e8 50%, #d0d0d0 100%)',
@@ -114,7 +114,7 @@ export const ChessBoard = memo(function ChessBoard({
         } else {
           return (
             <div
-              className="w-[60%] h-[60%] rounded-full shadow-lg"
+              className="w-[60%] h-[60%] rounded-full"
               style={{
                 background:
                   'radial-gradient(ellipse at 30% 30%, #4a4a4a 0%, #2a2a2a 50%, #1a1a1a 100%)',

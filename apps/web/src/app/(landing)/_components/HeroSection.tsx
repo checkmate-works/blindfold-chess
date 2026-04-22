@@ -27,7 +27,7 @@ export function HeroSection({ locale, t, siteName }: Props) {
               alt={`${siteName} Logo`}
               width={120}
               height={120}
-              className="w-32 h-32 md:w-40 md:h-40 drop-shadow-2xl"
+              className="w-32 h-32 md:w-40 md:h-40"
               priority
             />
           </div>
@@ -44,12 +44,7 @@ export function HeroSection({ locale, t, siteName }: Props) {
         {/* Call to Action */}
         <div className="flex flex-col items-center gap-6">
           <Link href={`/${locale}/getting-started`}>
-            <Button
-              variant="primary"
-              size="lg"
-              asChild
-              className="shadow-lg hover:shadow-xl hover:scale-105"
-            >
+            <Button variant="primary" size="lg" asChild className="hover:scale-105">
               <span className="flex items-center gap-2">🚀 {t('getStarted')}</span>
             </Button>
           </Link>

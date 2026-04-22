@@ -29,7 +29,7 @@ function ModalPreview() {
       {/* Arrow indicating the button opens the modal */}
       <div className="text-muted-foreground/50 text-xs">▼</div>
       {/* Modal dialog */}
-      <div className="w-full max-w-[200px] rounded-lg border border-border bg-background shadow-lg">
+      <div className="w-full max-w-[200px] rounded-lg border border-border bg-background">
         <div className="flex items-center justify-between px-3 py-1.5 border-b border-border">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <FaEye className="w-3 h-3" />

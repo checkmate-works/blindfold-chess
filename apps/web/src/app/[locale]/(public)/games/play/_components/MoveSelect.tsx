@@ -98,7 +98,7 @@ export function MoveSelect({ fen, onSubmit, onChange, disabled, placeholder }: P
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto w-full">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg z-50 max-h-60 overflow-y-auto w-full">
           {legalMoves.map((move) => (
             <button
               key={move}

@@ -27,7 +27,7 @@ export function GuideLinkCard({ items, className = 'space-y-3' }: GuideLinkCardP
         <Link
           key={i}
           href={item.href}
-          className="group block rounded-xl border border-border bg-gradient-to-r from-card to-secondary/30 px-5 py-5 shadow-sm transition-all hover:border-foreground/20 hover:shadow-md"
+          className="group block rounded-xl border border-border bg-gradient-to-r from-card to-secondary/30 px-5 py-5 transition-all hover:border-foreground/20"
         >
           <div className="flex items-center justify-between gap-3">
             <div className="space-y-1">

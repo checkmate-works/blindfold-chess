@@ -161,7 +161,7 @@ export function DiagonalQuizTutorial({ locale }: Props) {
 
   return (
     <div className="max-w-md mx-auto">
-      <div className="bg-card rounded-2xl p-6 shadow-sm border border-border">
+      <div className="bg-card rounded-2xl p-6 border border-border">
         {/* Progress Dots */}
         <div className="flex justify-center gap-2 mb-6">
           {steps.map((s, idx) => (

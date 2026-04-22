@@ -110,7 +110,7 @@ export function CoordinateQuizChallengePlaying({
             >
               <button
                 onClick={onTogglePause}
-                className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 shadow-lg transition-all hover:scale-110 active:scale-95 pointer-events-auto"
+                className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 transition-all hover:scale-110 active:scale-95 pointer-events-auto"
                 aria-label={tPractice('resume')}
               >
                 <LuPlay size={48} className="fill-current ml-1" />

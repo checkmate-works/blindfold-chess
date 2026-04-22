@@ -129,7 +129,7 @@ export function CreatePositionForm() {
             onClick={() => setActiveTab('board')}
             className={`flex-1 rounded-md px-4 py-2 text-center text-sm font-medium transition-colors ${
               activeTab === 'board'
-                ? 'bg-card text-foreground shadow-sm'
+                ? 'bg-card text-foreground'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -142,7 +142,7 @@ export function CreatePositionForm() {
             onClick={() => setActiveTab('fen')}
             className={`flex-1 rounded-md px-4 py-2 text-center text-sm font-medium transition-colors ${
               activeTab === 'fen'
-                ? 'bg-card text-foreground shadow-sm'
+                ? 'bg-card text-foreground'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >

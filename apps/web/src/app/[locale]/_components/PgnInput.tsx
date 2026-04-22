@@ -134,7 +134,7 @@ export function PgnInput({
 
       {/* Mobile suggestion button */}
       {suggestion && isMobile && !showError && (
-        <Button variant="outline" size="sm" fullWidth shadow={false} onClick={applySuggestion}>
+        <Button variant="outline" size="sm" fullWidth onClick={applySuggestion}>
           {t('completeSuggestion', { suggestion })}
         </Button>
       )}

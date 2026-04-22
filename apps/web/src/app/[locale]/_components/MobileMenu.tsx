@@ -67,7 +67,7 @@ export function MobileMenu({ title, items }: Props) {
 
             {/* Mobile menu panel */}
             <div
-              className={`fixed inset-y-0 left-0 z-50 w-64 bg-card shadow-lg transform transition-transform duration-300 ease-in-out ${
+              className={`fixed inset-y-0 left-0 z-50 w-64 bg-card transform transition-transform duration-300 ease-in-out ${
                 isOpen ? 'translate-x-0' : '-translate-x-full'
               }`}
             >

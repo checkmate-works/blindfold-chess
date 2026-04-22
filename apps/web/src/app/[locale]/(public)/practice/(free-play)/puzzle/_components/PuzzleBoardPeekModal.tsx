@@ -40,7 +40,7 @@ export function PuzzleBoardPeekModal({ isOpen, onClose, fen }: Props) {
     <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/70" />
       <div className="relative z-10 w-full max-w-lg px-4">
-        <div className="rounded-md overflow-hidden shadow-lg">
+        <div className="rounded-md overflow-hidden">
           <ChessBoard
             fen={fen}
             flipped={flipped}

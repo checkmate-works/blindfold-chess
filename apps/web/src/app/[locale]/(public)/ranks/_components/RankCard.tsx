@@ -121,7 +121,7 @@ export function RankCard({
         <Link
           href={`/${locale}/ranks/${slug}`}
           className={[
-            'block relative overflow-hidden rounded-lg border bg-card shadow-sm transition-all',
+            'block relative overflow-hidden rounded-lg border bg-card transition-all',
             isNext ? 'scale-[1.02]' : 'border-border hover:border-foreground/20',
           ].join(' ')}
           style={
@@ -136,7 +136,7 @@ export function RankCard({
           {cardContent}
         </Link>
       ) : (
-        <div className="relative overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+        <div className="relative overflow-hidden rounded-lg border border-border bg-card">
           {cardContent}
         </div>
       )}

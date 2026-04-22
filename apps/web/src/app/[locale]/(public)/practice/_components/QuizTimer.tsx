@@ -34,7 +34,7 @@ export function QuizTimer({
 
   return (
     <div
-      className="relative flex items-center justify-center bg-card rounded-full shadow-sm"
+      className="relative flex items-center justify-center bg-card rounded-full"
       style={{ width: size, height: size }}
     >
       <svg width={size} height={size} className="transform -rotate-90 absolute top-0 left-0">

@@ -117,7 +117,7 @@ export function UserCombobox({ initialUser, currentStatus, labels }: UserCombobo
       </div>
       <ul
         {...getMenuProps()}
-        className={`absolute z-10 mt-1 w-full rounded border border-border bg-card shadow-lg ${
+        className={`absolute z-10 mt-1 w-full rounded border border-border bg-card ${
           isOpen && (items.length > 0 || (!isLoading && inputValue.length > 0)) ? '' : 'hidden'
         }`}
       >

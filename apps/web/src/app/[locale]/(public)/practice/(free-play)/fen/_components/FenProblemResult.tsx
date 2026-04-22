@@ -51,7 +51,7 @@ export function FenProblemResult({
 
   return (
     <div className="space-y-4">
-      <div className="bg-card rounded-md shadow-sm border border-border p-4">
+      <div className="bg-card rounded-md border border-border p-4">
         <div className="flex flex-col gap-6">
           {/* Accuracy Result */}
           <div className="text-center">

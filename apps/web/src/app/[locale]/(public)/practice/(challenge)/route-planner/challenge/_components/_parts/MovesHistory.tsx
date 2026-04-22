@@ -42,7 +42,7 @@ export function MovesHistory({
               className={
                 isFinalTarget
                   ? 'font-mono font-bold text-muted-foreground'
-                  : 'font-mono font-bold bg-background px-2 py-1 rounded border border-border shadow-sm'
+                  : 'font-mono font-bold bg-background px-2 py-1 rounded border border-border'
               }
             >
               {move}

@@ -26,7 +26,7 @@ export async function CategoryIndex({ currentCategory, locale }: Props) {
           <Link
             key={category}
             href={`/${locale}/glossary/category/${category}`}
-            className={`p-6 rounded-xl shadow-sm border transition-colors ${
+            className={`p-6 rounded-xl border transition-colors ${
               isActive ? 'bg-muted border-foreground/20' : 'bg-card hover:bg-muted/50 border-border'
             }`}
           >

@@ -165,7 +165,7 @@ export function DiagonalQuizTrainingPlaying({
 
   return (
     <div className="max-w-md mx-auto">
-      <div className="bg-card rounded-xl border border-border p-8 text-center relative overflow-hidden shadow-sm">
+      <div className="bg-card rounded-xl border border-border p-8 text-center relative overflow-hidden">
         <div>
           <SectionTitle className="mb-4">{t('question', { square: currentSquare })}</SectionTitle>
 

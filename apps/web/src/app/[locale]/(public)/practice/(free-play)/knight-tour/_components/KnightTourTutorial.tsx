@@ -184,7 +184,7 @@ export function KnightTourTutorial({ locale }: Props) {
             <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-md">
               <button
                 onClick={handlePlay}
-                className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 shadow-lg transition-all hover:scale-110"
+                className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 transition-all hover:scale-110"
                 aria-label="Play"
               >
                 <FaPlay className="w-8 h-8 ml-1" />
@@ -196,7 +196,7 @@ export function KnightTourTutorial({ locale }: Props) {
             <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-md">
               <button
                 onClick={handlePlay}
-                className="bg-white/90 hover:bg-white text-foreground rounded-full p-4 shadow-lg transition-all hover:scale-110"
+                className="bg-white/90 hover:bg-white text-foreground rounded-full p-4 transition-all hover:scale-110"
                 aria-label="Replay"
               >
                 <FaPlay className="w-6 h-6 ml-0.5" />

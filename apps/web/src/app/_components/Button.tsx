@@ -10,7 +10,6 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
   fullWidth?: boolean;
   asChild?: boolean;
-  shadow?: boolean;
   children: ReactNode;
 }
 
@@ -35,7 +34,6 @@ export function Button({
   loading = false,
   fullWidth = false,
   asChild = false,
-  shadow = true,
   children,
   className = '',
   disabled,
@@ -44,10 +42,9 @@ export function Button({
   const baseStyles =
     'rounded-md font-medium transition-colors duration-150 flex items-center justify-center gap-2';
   const disabledStyles =
-    disabled || loading ? 'opacity-50 cursor-not-allowed shadow-none text-muted-foreground' : '';
+    disabled || loading ? 'opacity-50 cursor-not-allowed text-muted-foreground' : '';
   const widthStyles = fullWidth ? 'w-full' : '';
-  const shadowStyles = shadow ? 'shadow-sm' : '';
-  const combinedClassName = `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${disabledStyles} ${widthStyles} ${shadowStyles} ${className}`;
+  const combinedClassName = `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${disabledStyles} ${widthStyles} ${className}`;
 
   // If asChild is true, render as a span to be used inside Link
   if (asChild) {

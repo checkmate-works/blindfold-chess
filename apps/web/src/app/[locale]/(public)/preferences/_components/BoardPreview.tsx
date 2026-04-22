@@ -38,7 +38,7 @@ export function BoardPreview({ settings, playerSide = 'white' }: Props) {
             onClick={() => setPreviewPerspective('white')}
             className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
               previewPerspective === 'white'
-                ? 'bg-card text-foreground shadow-sm'
+                ? 'bg-card text-foreground'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -48,7 +48,7 @@ export function BoardPreview({ settings, playerSide = 'white' }: Props) {
             onClick={() => setPreviewPerspective('black')}
             className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
               previewPerspective === 'black'
-                ? 'bg-card text-foreground shadow-sm'
+                ? 'bg-card text-foreground'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >

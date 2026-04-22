@@ -20,7 +20,7 @@ type Props = {
 
 export function TrainingCard({ icon, iconColor, title, description, href, cta }: Props) {
   return (
-    <div className="bg-card p-8 rounded-2xl border border-border shadow-sm flex flex-col">
+    <div className="bg-card p-8 rounded-2xl border border-border flex flex-col">
       <div
         className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-6 ${iconColorStyles[iconColor]}`}
       >
@@ -31,7 +31,7 @@ export function TrainingCard({ icon, iconColor, title, description, href, cta }:
       <div className="mt-8 flex justify-center">
         <Link
           href={href}
-          className="inline-flex items-center justify-center rounded-md bg-secondary px-6 py-2 text-sm font-medium text-secondary-foreground shadow-sm transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          className="inline-flex items-center justify-center rounded-md bg-secondary px-6 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         >
           {cta}
         </Link>

@@ -14,17 +14,15 @@ const sizeClasses: Record<EvaluationIconSize, { container: string; icon: string;
 function EvaluationBadge({
   bgColor,
   classes,
-  shadow,
   children,
 }: {
   bgColor: string;
   classes: { container: string; text: string };
-  shadow: string;
   children: ReactNode;
 }) {
   return (
     <span
-      className={`inline-flex items-center justify-center ${classes.container} rounded-full ${bgColor} text-white ${classes.text} font-bold ${shadow}`}
+      className={`inline-flex items-center justify-center ${classes.container} rounded-full ${bgColor} text-white ${classes.text} font-bold`}
     >
       {children}
     </span>
@@ -44,38 +42,37 @@ export function getEvaluationIcon(
   size: EvaluationIconSize = 'md'
 ): ReactElement | null {
   const classes = sizeClasses[size];
-  const shadow = size === 'md' ? 'shadow-md' : '';
 
   if (isMate || loss <= 20) {
     return (
-      <EvaluationBadge bgColor="bg-success" classes={classes} shadow={shadow}>
+      <EvaluationBadge bgColor="bg-success" classes={classes}>
         <FaStar className={`${classes.icon} text-white`} />
       </EvaluationBadge>
     );
   }
   if (loss <= 50) {
     return (
-      <EvaluationBadge bgColor="bg-success" classes={classes} shadow={shadow}>
+      <EvaluationBadge bgColor="bg-success" classes={classes}>
         <FaCheck className={`${classes.icon} text-white`} />
       </EvaluationBadge>
     );
   }
   if (loss <= 100) {
     return (
-      <EvaluationBadge bgColor="bg-warning" classes={classes} shadow={shadow}>
+      <EvaluationBadge bgColor="bg-warning" classes={classes}>
         ?!
       </EvaluationBadge>
     );
   }
   if (loss <= 300) {
     return (
-      <EvaluationBadge bgColor="bg-caution" classes={classes} shadow={shadow}>
+      <EvaluationBadge bgColor="bg-caution" classes={classes}>
         ?
       </EvaluationBadge>
     );
   }
   return (
-    <EvaluationBadge bgColor="bg-destructive" classes={classes} shadow={shadow}>
+    <EvaluationBadge bgColor="bg-destructive" classes={classes}>
       ??
     </EvaluationBadge>
   );

@@ -171,7 +171,7 @@ export function EditableChessBoard({
 
       {/* Chess board */}
       <div className="w-full max-w-md">
-        <div className="relative w-full aspect-square border border-border rounded-md shadow-lg overflow-hidden">
+        <div className="relative w-full aspect-square border border-border rounded-md overflow-hidden">
           <div className="grid grid-cols-8 gap-0 w-full h-full">
             {board.map((piece, squareIndex) => {
               // Handle board flipping for black side

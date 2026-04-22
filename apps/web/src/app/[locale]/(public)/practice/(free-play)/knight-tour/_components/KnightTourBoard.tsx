@@ -49,7 +49,7 @@ export function KnightTourBoard({
           // Show move number (for result screen)
           return (
             <div className="w-full h-full flex items-center justify-center">
-              <span className="text-xs sm:text-sm font-bold text-white bg-black/50 rounded-full w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center shadow-md">
+              <span className="text-xs sm:text-sm font-bold text-white bg-black/50 rounded-full w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center">
                 {moveNumber}
               </span>
             </div>

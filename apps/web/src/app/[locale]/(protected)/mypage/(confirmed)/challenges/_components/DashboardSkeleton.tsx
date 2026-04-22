@@ -2,7 +2,7 @@ import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 
 function StatsCardSkeleton() {
   return (
-    <div className="bg-card border border-border rounded-lg p-4 shadow-sm">
+    <div className="bg-card border border-border rounded-lg p-4">
       <Skeleton className="h-3 w-20 mb-3" />
       <Skeleton className="h-8 w-16 mb-2" />
       <Skeleton className="h-3 w-28" />

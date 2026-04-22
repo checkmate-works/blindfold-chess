@@ -44,7 +44,6 @@ export default async function ContactSuccessPage({ params }: Props) {
               variant="secondary"
               size="lg"
               fullWidth
-              shadow={false}
               className="border-0 hover:bg-secondary/80"
             >
               {t('success.backToHome')}

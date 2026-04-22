@@ -75,7 +75,6 @@ export function PgnPreview({ pgnMoves, startingFen, color }: Props) {
       <div className="flex justify-center">
         <Button
           variant="outline"
-          shadow={false}
           icon={<FaEye className="w-4 h-4" />}
           onClick={() => setIsBoardVisible(true)}
         >

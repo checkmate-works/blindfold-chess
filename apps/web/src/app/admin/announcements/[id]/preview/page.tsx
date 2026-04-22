@@ -56,7 +56,7 @@ export default async function PreviewAnnouncementPage({
           <h2 className="text-sm font-medium text-muted-foreground mb-2">
             {t('form.contentPreview')}
           </h2>
-          <div className="border border-border rounded-lg p-6 bg-card shadow-sm">
+          <div className="border border-border rounded-lg p-6 bg-card">
             <h2 className="text-xl font-bold mb-4">{announcement.title}</h2>
             <article className="prose prose-slate dark:prose-invert max-w-none break-words">
               <MarkdownRenderer content={announcement.content} skipFirstH1={true} />

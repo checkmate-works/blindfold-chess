@@ -34,7 +34,7 @@ export async function GlossaryTermList({ terms, locale }: Props) {
         <div
           key={term.term}
           id={term.term.toLowerCase().replace(/\s+/g, '-')}
-          className="bg-card rounded-xl p-4 md:p-6 shadow-sm border border-border"
+          className="bg-card rounded-xl p-4 md:p-6 border border-border"
         >
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2 md:gap-4 mb-3">
             <div>

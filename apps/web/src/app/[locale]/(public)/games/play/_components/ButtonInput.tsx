@@ -199,7 +199,7 @@ export function ButtonInput({
           type="button"
           onClick={submit}
           disabled={disabled || !canSubmit}
-          className="w-14 h-14 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:shadow-none disabled:text-muted-foreground disabled:cursor-not-allowed text-primary-foreground font-medium rounded-lg transition-all duration-150 flex items-center justify-center text-xl border border-border"
+          className="w-14 h-14 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:text-muted-foreground disabled:cursor-not-allowed text-primary-foreground font-medium rounded-lg transition-all duration-150 flex items-center justify-center text-xl border border-border"
           aria-label={t('action.submit')}
           title={t('action.submit')}
         >
