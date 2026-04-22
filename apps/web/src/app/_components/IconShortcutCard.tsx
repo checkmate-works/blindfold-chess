@@ -28,7 +28,7 @@ export function IconShortcutCard({ href, label, icon, overlay }: Props) {
   return (
     <Link
       href={href}
-      className="flex flex-col items-center justify-center w-24 h-24 rounded-2xl bg-card border border-border shadow-sm hover:shadow-md hover:border-primary/30 transition-all group gap-1"
+      className="flex flex-col items-center justify-center w-24 h-24 rounded-2xl bg-card border border-border hover:border-primary/30 transition-all group gap-1"
     >
       {overlay ? (
         <div className="relative">

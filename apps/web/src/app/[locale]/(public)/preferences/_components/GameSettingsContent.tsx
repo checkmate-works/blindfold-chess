@@ -50,7 +50,7 @@ export function GameSettingsContent({
     }
   }, [availableShapeOptions, settings.pieceShapeMode, onSettingsChange]);
 
-  const containerClass = compact ? '' : 'bg-card rounded-md p-6 shadow-sm border border-border';
+  const containerClass = compact ? '' : 'bg-card rounded-md p-6 border border-border';
 
   return (
     <div className={containerClass}>

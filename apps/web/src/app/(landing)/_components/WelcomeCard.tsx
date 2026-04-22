@@ -15,7 +15,7 @@ export function WelcomeCard({ t, locale, displayName, avatarUrl }: Props) {
   const initial = (displayName ?? '?').charAt(0).toUpperCase();
 
   return (
-    <div className="flex items-center gap-4 rounded-2xl bg-card border border-border shadow-sm p-4 w-full sm:w-auto sm:min-w-[28rem] max-w-full">
+    <div className="flex items-center gap-4 rounded-2xl bg-card border border-border p-4 w-full sm:w-auto sm:min-w-[28rem] max-w-full">
       {avatarUrl ? (
         <Image
           src={avatarUrl}

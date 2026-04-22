@@ -24,7 +24,7 @@ export function BubbleToolbar({ editor }: BubbleToolbarProps) {
 
   return (
     <BubbleMenu editor={editor}>
-      <div className="flex items-center gap-0.5 rounded-lg border border-border bg-card px-1 py-0.5 shadow-md">
+      <div className="flex items-center gap-0.5 rounded-lg border border-border bg-card px-1 py-0.5">
         <BubbleButton
           onClick={() => editor.chain().focus().toggleBold().run()}
           active={editor.isActive('bold')}

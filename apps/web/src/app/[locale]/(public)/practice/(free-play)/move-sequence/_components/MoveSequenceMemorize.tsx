@@ -123,7 +123,7 @@ export function MoveSequenceMemorize({ data, onComplete }: Props) {
               <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-md">
                 <button
                   onClick={handlePlay}
-                  className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 shadow-lg transition-all hover:scale-110"
+                  className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 transition-all hover:scale-110"
                   aria-label={t('play')}
                 >
                   <FaPlay className="w-12 h-12 ml-1" />
@@ -135,7 +135,7 @@ export function MoveSequenceMemorize({ data, onComplete }: Props) {
       </div>
 
       {/* Move display */}
-      <div className="bg-card rounded-md shadow-sm border border-border p-4">
+      <div className="bg-card rounded-md border border-border p-4">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-sm font-medium text-muted-foreground">{t('moves')}</h3>
           {hasPlayed && !isPlaying && (
@@ -159,7 +159,7 @@ export function MoveSequenceMemorize({ data, onComplete }: Props) {
 
       {/* Progress */}
       {isPlaying && (
-        <div className="bg-card rounded-md shadow-sm border border-border p-4">
+        <div className="bg-card rounded-md border border-border p-4">
           <p className="text-sm text-center text-muted-foreground">
             {t('playingMove', { current: currentMoveIndex + 1, total: data.moves.length })}
           </p>

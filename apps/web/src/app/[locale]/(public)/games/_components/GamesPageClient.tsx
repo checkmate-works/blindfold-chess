@@ -8,6 +8,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import type { GameSortOption, SortDirection } from '@/lib/types';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { EmptyGameList } from '../../(home)/_components/EmptyGameList';
@@ -73,7 +74,7 @@ export function GamesPageClient({ locale }: Props) {
             <Link
               href="/games/bulk-delete"
               locale={locale}
-              className="text-sm text-muted-foreground hover:text-foreground underline"
+              className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}
             >
               {t('bulkDelete')}
             </Link>

@@ -53,7 +53,7 @@ export function PositionMemoryProblemResult({
 
   return (
     <div className="space-y-4">
-      <div className="bg-card rounded-md shadow-sm border border-border p-4">
+      <div className="bg-card rounded-md border border-border p-4">
         <div className="flex flex-col gap-6">
           {/* Accuracy Title */}
           <h2 className="text-2xl font-bold text-center">

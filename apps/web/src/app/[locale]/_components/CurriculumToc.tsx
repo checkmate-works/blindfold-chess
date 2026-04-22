@@ -7,6 +7,7 @@ import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
 
 import { getBeltColorHex, isWhiteBelt } from '@/app/[locale]/(public)/ranks/_lib/helpers';
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 type CurriculumTocProps = {
   /**
@@ -202,10 +203,7 @@ export function CurriculumToc({
         }
 
         const titleLink = row.href ? (
-          <Link
-            href={row.href}
-            className="text-sm text-foreground transition-colors hover:text-foreground/70 hover:underline"
-          >
+          <Link href={row.href} className={`text-sm ${TEXT_LINK_CLASSES}`}>
             {row.title}
           </Link>
         ) : (

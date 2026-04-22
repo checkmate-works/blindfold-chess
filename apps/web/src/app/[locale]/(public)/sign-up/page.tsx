@@ -17,6 +17,7 @@ import { createClient } from '@/lib/supabase/server';
 
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -97,7 +98,7 @@ export default async function SignUpPage({ params, searchParams }: Props) {
         <EmailSignUpForm />
         <p className="mt-6 text-center text-sm text-muted-foreground">
           {t('alreadyHaveAccount')}{' '}
-          <Link href="/sign-in" locale={locale} className="text-link-primary hover:underline">
+          <Link href="/sign-in" locale={locale} className={TEXT_LINK_CLASSES}>
             {t('signIn')}
           </Link>
         </p>

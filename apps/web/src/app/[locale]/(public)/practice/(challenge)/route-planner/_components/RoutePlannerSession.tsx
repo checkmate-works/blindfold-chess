@@ -81,7 +81,7 @@ export function RoutePlannerSession({
     <div className="min-h-screen max-w-md mx-auto">
       <div
         id="route-planner-session"
-        className="bg-card border border-border rounded-xl p-8 text-center relative overflow-hidden shadow-sm"
+        className="bg-card border border-border rounded-xl p-8 text-center relative overflow-hidden"
       >
         {/* Problem Header */}
         <div className="flex justify-center items-center gap-6 border-b border-border pb-4 mb-4">
@@ -111,7 +111,7 @@ export function RoutePlannerSession({
               {moves.map((move, i) => (
                 <div key={i} className="flex items-center">
                   <span className="text-muted-foreground mx-1">&rarr;</span>
-                  <span className="font-mono font-bold bg-background px-2 py-1 rounded border border-border shadow-sm">
+                  <span className="font-mono font-bold bg-background px-2 py-1 rounded border border-border">
                     {move}
                   </span>
                 </div>

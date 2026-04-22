@@ -9,6 +9,8 @@ import { Button, TextInput } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { validateUsername } from '@blindfold-chess/features/username';
 
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
+
 type Props = {
   locale: string;
 };
@@ -148,7 +150,7 @@ export function UsernameForm({ locale }: Props) {
             href={`/${locale}/terms`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-primary hover:underline"
+            className={TEXT_LINK_CLASSES}
           >
             {t('termsLink')}
           </a>
@@ -161,7 +163,6 @@ export function UsernameForm({ locale }: Props) {
         variant="primary"
         size="lg"
         fullWidth
-        shadow={false}
         disabled={isSubmitting || username.trim().length === 0 || !agreedToTerms}
         loading={isSubmitting}
       >

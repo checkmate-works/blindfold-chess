@@ -13,6 +13,7 @@ import { FaChartLine, FaClipboardList, FaMinus, FaTimes } from 'react-icons/fa';
 import type { Game, MoveInputMethod, MoveOperationLog } from '@/lib/types';
 
 import { Divider } from '@/app/[locale]/_components/Divider';
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { OperationLogModal } from '../../_components/OperationLogModal';
@@ -188,10 +189,7 @@ function OperationLogSummary({
       </div>
 
       <div className="text-center">
-        <button
-          onClick={onViewDetails}
-          className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors"
-        >
+        <button onClick={onViewDetails} className={`text-xs ${TEXT_LINK_MUTED_CLASSES}`}>
           {t('result.operationSummary.viewDetails')}
         </button>
       </div>
@@ -291,10 +289,7 @@ function ResultContent({ game, gameId, locale, displayName, breadcrumb }: Result
               {t('postmortem')}
             </Button>
           )}
-          <Link
-            href={`/${locale}/games`}
-            className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors"
-          >
+          <Link href={`/${locale}/games`} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
             {tGames('pageTitle')}
           </Link>
         </div>

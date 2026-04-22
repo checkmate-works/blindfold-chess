@@ -39,7 +39,7 @@ export function StatsCard({ label, value, sub, tooltip, comparison }: Props) {
   };
 
   return (
-    <div className="bg-card border border-border rounded-lg p-4 shadow-sm min-w-0">
+    <div className="bg-card border border-border rounded-lg p-4 min-w-0">
       <p className="text-xs text-muted-foreground mb-1">
         {label}
         {tooltip && (

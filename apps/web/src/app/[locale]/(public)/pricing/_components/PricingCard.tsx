@@ -51,7 +51,7 @@ export function PricingCard(props: Props) {
 
   return (
     <div
-      className={`relative flex flex-col rounded-xl bg-card p-6 shadow-sm ${
+      className={`relative flex flex-col rounded-xl bg-card p-6 ${
         isCurrent ? 'border-2 border-primary' : 'border border-border'
       }`}
     >

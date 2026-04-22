@@ -83,7 +83,7 @@ export function BoardViewModal({
 
       {/* Content */}
       <div className="relative z-10 w-full max-w-lg px-4">
-        <div className="rounded-md overflow-hidden shadow-lg">
+        <div className="rounded-md overflow-hidden">
           {/* Horizontal Move List */}
           {formattedPgn.length > 0 && (
             <div

@@ -10,6 +10,7 @@ import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/Progre
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useScrollLock } from '@/app/[locale]/_hooks/use-scroll-lock';
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import { useMoveSequenceRecall } from '../_hooks/use-move-sequence-recall';
 import type { MoveSequenceData, MoveSequenceSessionResult, RecallResult } from '../_lib/types';
@@ -108,7 +109,7 @@ export function MoveSequenceRecall({ data, onComplete, onQuit }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="bg-card rounded-md shadow-sm border border-border p-4">
+      <div className="bg-card rounded-md border border-border p-4">
         <div className="flex flex-col gap-6">
           {/* Progress */}
           <div className="flex items-center gap-3">
@@ -180,7 +181,7 @@ export function MoveSequenceRecall({ data, onComplete, onQuit }: Props) {
               results,
             });
           }}
-          className="text-sm text-muted-foreground hover:text-foreground underline transition-colors"
+          className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}
         >
           {t('endPractice')}
         </button>
@@ -197,7 +198,7 @@ export function MoveSequenceRecall({ data, onComplete, onQuit }: Props) {
 
           {/* Content */}
           <div className="relative z-10 w-full max-w-lg px-4">
-            <div className="rounded-md overflow-hidden shadow-lg">
+            <div className="rounded-md overflow-hidden">
               {!isLoaded ? (
                 <BoardSkeleton />
               ) : (

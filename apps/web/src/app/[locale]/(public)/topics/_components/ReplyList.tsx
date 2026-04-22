@@ -7,6 +7,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { truncateContent } from '@/lib/content/truncate-content';
 
 import { LinkedText } from '@/app/[locale]/_components/LinkedText';
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import type { PostWithReplyMeta } from '../_lib/shared';
 import { LikeButton } from './LikeButton';
@@ -43,7 +44,7 @@ function ReplyContent({ content, locale }: { content: string; locale: string }) 
         <button
           type="button"
           onClick={() => setExpanded(true)}
-          className="text-sm text-link-primary hover:underline"
+          className={`text-sm ${TEXT_LINK_CLASSES}`}
         >
           {t('showMore')}
         </button>

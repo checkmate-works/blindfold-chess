@@ -101,7 +101,7 @@ function SuggestionInput({
 
           {/* Suggestions Dropdown */}
           {displaySuggestions && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+            <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg z-50 max-h-48 overflow-y-auto">
               {suggestions.map((suggestion, index) => (
                 <button
                   key={`${suggestion}-${index}`}
@@ -121,7 +121,7 @@ function SuggestionInput({
           <button
             type="submit"
             disabled={disabled || !value.trim()}
-            className="w-14 h-14 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:shadow-none disabled:text-muted-foreground disabled:cursor-not-allowed text-primary-foreground font-medium rounded-lg transition-all duration-150 flex items-center justify-center text-xl border border-border"
+            className="w-14 h-14 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:text-muted-foreground disabled:cursor-not-allowed text-primary-foreground font-medium rounded-lg transition-all duration-150 flex items-center justify-center text-xl border border-border"
             aria-label={t('action.submit')}
             title={t('action.submit')}
           >

@@ -18,10 +18,7 @@ export default function TopicsLoading() {
         {/* CardLink x2 skeleton */}
         <div className="space-y-4">
           {Array.from({ length: 2 }).map((_, i) => (
-            <div
-              key={i}
-              className="p-6 bg-card rounded-md shadow-sm border border-border animate-pulse"
-            >
+            <div key={i} className="p-6 bg-card rounded-md border border-border animate-pulse">
               <div className="flex items-start gap-4">
                 <div className="w-8 h-8 bg-muted rounded flex-shrink-0" />
                 <div className="flex-1">
@@ -41,10 +38,7 @@ export default function TopicsLoading() {
         {/* TopicPostCard list skeleton */}
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div
-              key={i}
-              className="bg-card border border-border rounded-lg p-4 shadow-sm animate-pulse"
-            >
+            <div key={i} className="bg-card border border-border rounded-lg p-4 animate-pulse">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-6 h-6 bg-muted rounded-full" />
                 <div className="h-4 bg-muted rounded w-24" />

@@ -99,7 +99,7 @@ export function ContactForm({ locale }: Props) {
           />
         </div>
 
-        <Button type="submit" variant="primary" size="lg" fullWidth shadow={false}>
+        <Button type="submit" variant="primary" size="lg" fullWidth>
           {t('form.submit')}
         </Button>
       </form>

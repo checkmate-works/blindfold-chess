@@ -61,7 +61,7 @@ export function BoardSymmetryTrainingPlaying({
 
   return (
     <div className="max-w-md mx-auto">
-      <div className="bg-card rounded-xl border border-border p-8 text-center shadow-sm relative overflow-hidden">
+      <div className="bg-card rounded-xl border border-border p-8 text-center relative overflow-hidden">
         <div>
           <SectionTitle className="mb-8">
             {t('question', {

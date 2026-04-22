@@ -2,7 +2,7 @@ export function GameSelectorSkeleton() {
   return (
     <div className="space-y-6">
       {/* Game List Skeleton */}
-      <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden">
+      <div className="bg-card rounded-lg border border-border overflow-hidden">
         {/* Header Skeleton */}
         <div className="px-4 sm:px-6 py-3 border-b border-border bg-muted/30 flex items-center gap-3">
           <div className="w-5 h-5 rounded border-2 border-muted-foreground/20 bg-muted/50"></div>

@@ -14,6 +14,7 @@ import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hoo
 import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
 import { SectionTitle } from '@/app/[locale]/_components';
 import { CoordinateInput } from '@/app/[locale]/_components/CoordinateInput';
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 export type { BoardSymmetryProblem, SymmetryType } from '@blindfold-chess/features/board-symmetry';
 
@@ -86,7 +87,7 @@ export function BoardSymmetryPlaying({
 
   return (
     <div className="max-w-md mx-auto">
-      <div className="bg-card rounded-xl border border-border p-8 text-center shadow-sm relative overflow-hidden">
+      <div className="bg-card rounded-xl border border-border p-8 text-center relative overflow-hidden">
         {/* Countdown Overlay */}
         <BoardOverlay
           isVisible={countdown !== null}
@@ -102,7 +103,7 @@ export function BoardSymmetryPlaying({
         <BoardOverlay isVisible={isPaused} className="backdrop-blur-sm bg-black/40 z-50">
           <button
             onClick={onTogglePause}
-            className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 shadow-lg transition-all hover:scale-110 active:scale-95 pointer-events-auto"
+            className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 transition-all hover:scale-110 active:scale-95 pointer-events-auto"
             aria-label={tPractice('resume')}
           >
             <LuPlay size={48} className="fill-current ml-1" />
@@ -189,10 +190,7 @@ export function BoardSymmetryPlaying({
       <ScoreCounter correct={correctCount} incorrect={incorrectCount} className="mt-4" />
 
       <div className="flex flex-col items-center gap-2 mt-4">
-        <button
-          onClick={onQuitRequest}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
-        >
+        <button onClick={onQuitRequest} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
           {tPractice('quit')}
         </button>
       </div>

@@ -6,6 +6,7 @@ import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { getPgnSuggestion } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
+import { TEXT_LINK_DESTRUCTIVE_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import { useDebouncedInput } from '../_hooks/use-debounced-input';
 import { useIsMobile } from '../_hooks/use-is-mobile';
@@ -134,7 +135,7 @@ export function PgnInput({
 
       {/* Mobile suggestion button */}
       {suggestion && isMobile && !showError && (
-        <Button variant="outline" size="sm" fullWidth shadow={false} onClick={applySuggestion}>
+        <Button variant="outline" size="sm" fullWidth onClick={applySuggestion}>
           {t('completeSuggestion', { suggestion })}
         </Button>
       )}
@@ -150,7 +151,7 @@ export function PgnInput({
           <button
             type="button"
             onClick={selectInvalidMove}
-            className="text-sm text-destructive hover:underline cursor-pointer text-left"
+            className={`text-sm text-left ${TEXT_LINK_DESTRUCTIVE_CLASSES}`}
           >
             {errorMessage}
           </button>

@@ -8,6 +8,7 @@ import { LeaderboardTableHeader } from '@/app/[locale]/(public)/leaderboard/_com
 import { LeaderboardTableRow } from '@/app/[locale]/(public)/leaderboard/_components/LeaderboardTableRow';
 import type { LeaderboardRow } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { SectionTitle } from '@/app/[locale]/_components';
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 type Props = {
   rows: LeaderboardRow[];
@@ -43,7 +44,7 @@ export function LeaderboardPreview({ rows, detailPath, locale }: Props) {
       <div className="text-center pt-2">
         <Link
           href={`/${locale}${detailPath}`}
-          className="text-primary hover:underline text-sm font-medium"
+          className={`text-sm font-medium ${TEXT_LINK_CLASSES}`}
         >
           {t('viewMore')}
         </Link>

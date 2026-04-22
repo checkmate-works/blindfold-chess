@@ -2,33 +2,35 @@ import Link from 'next/link';
 
 import type { RequirementItem } from '@/app/[locale]/(public)/ranks/_components/RequirementsList';
 import { isWhiteBelt } from '@/app/[locale]/(public)/ranks/_lib/helpers';
+import { FOCUS_RING_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 type NextRankRequirementsProps = {
   items: RequirementItem[];
   /**
    * Hex color of the next rank's belt. The bullet dot on each row uses this
-   * color so the list visually ties to the rank it belongs to, matching the
-   * look of `CurriculumToc`.
+   * color so the list visually ties to the rank it belongs to.
    */
   beltColor: string;
 };
 
 /**
- * Zenn-chapter-style flat list for the Dojo page's "Next rank requirements"
- * section. Plain vertical list — no outer card, no row dividers. Each row is
- * a single-line item with a belt-colored bullet on the left. The entire row
- * is a single `<Link>` to the matching practice page; rows without an `href`
- * render as static (non-link) entries.
+ * Flat row-stack list for the Dojo page's "Next rank requirements" section.
+ * Each row is a single-line item with a belt-colored bullet on the left; the
+ * entire row is a single `<Link>` to the matching practice page, and rows
+ * without an `href` render as static (non-link) entries.
  *
- * Matches the visual language of `CurriculumToc`.
+ * Rows are separated by persistent horizontal borders (top border per row +
+ * closing border-b on the outer `<ol>`) so the list reads as a tappable stack
+ * on touch devices where hover affordance is unavailable.
  */
 export function NextRankRequirements({ items, beltColor }: NextRankRequirementsProps) {
   const whiteBelt = isWhiteBelt(beltColor);
 
   return (
-    <ol className="flex flex-col" data-testid="next-rank-requirements">
+    <ol className="flex flex-col border-b border-border" data-testid="next-rank-requirements">
       {items.map((item, index) => {
-        const baseRowClass = 'relative flex items-center gap-3 py-3 pl-3 pr-2';
+        const baseRowClass =
+          'relative flex items-center gap-3 border-t border-border py-3 pl-3 pr-2';
 
         const beltDot = (
           <span
@@ -55,7 +57,7 @@ export function NextRankRequirements({ items, beltColor }: NextRankRequirementsP
             <li key={`${item.href}-${index}`}>
               <Link
                 href={item.href}
-                className={`${baseRowClass} transition-colors hover:bg-muted/30`}
+                className={`${baseRowClass} transition-colors hover:bg-muted/30 ${FOCUS_RING_CLASSES}`}
               >
                 {content}
               </Link>

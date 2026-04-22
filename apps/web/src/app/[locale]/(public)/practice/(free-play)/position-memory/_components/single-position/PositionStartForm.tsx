@@ -8,6 +8,8 @@ import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { useRouter } from '@/i18n/routing';
 
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
+
 import { DEFAULT_TIME_LIMIT, MAX_TIME_LIMIT, MIN_TIME_LIMIT } from '../../_lib/session-config';
 
 type Props = {
@@ -53,7 +55,7 @@ export function PositionStartForm({ positionId, locale }: Props) {
         <Link
           href="/practice/position-memory/tutorial"
           locale={locale}
-          className="text-sm text-link-primary hover:underline"
+          className={`text-sm ${TEXT_LINK_CLASSES}`}
         >
           {t('tutorialLink')}
         </Link>

@@ -51,7 +51,7 @@ export function QuadrantsTrainingPlaying({
 
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="bg-card rounded-xl border border-border p-6 text-center relative overflow-hidden shadow-sm space-y-4">
+      <div className="bg-card rounded-xl border border-border p-6 text-center relative overflow-hidden space-y-4">
         {/* Orientation Indicator */}
         <div className="flex justify-center">
           <div className="flex items-center gap-2">

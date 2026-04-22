@@ -52,7 +52,7 @@ export function CoordinateQuizBoard({
 
   return (
     <div className="inline-block w-full max-w-md">
-      <div className="relative w-full aspect-square border-2 border-border rounded-lg overflow-hidden shadow-lg">
+      <div className="relative w-full aspect-square border-2 border-border rounded-lg overflow-hidden">
         {ranks.map((rank, rankIndex) => (
           <div key={rank} className="flex h-[12.5%]">
             {files.map((file, fileIndex) => {

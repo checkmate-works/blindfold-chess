@@ -55,7 +55,7 @@ export function PositionMemorySettings({
             onClick={() => onUseCustomFenChange(false)}
             className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
               !useCustomFen
-                ? 'bg-card text-foreground shadow-sm'
+                ? 'bg-card text-foreground'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -66,7 +66,7 @@ export function PositionMemorySettings({
             onClick={() => onUseCustomFenChange(true)}
             className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
               useCustomFen
-                ? 'bg-card text-foreground shadow-sm'
+                ? 'bg-card text-foreground'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >

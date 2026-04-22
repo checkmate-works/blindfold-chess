@@ -12,6 +12,7 @@ import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
 import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/ProgressBar';
 import type { PositionData } from '@/app/[locale]/(public)/practice/_lib/types';
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 type Props = {
   originalPosition: PositionData;
@@ -55,7 +56,7 @@ export function FenRecreate({
 
   return (
     <div className="space-y-4">
-      <div className="bg-card rounded-md shadow-sm border border-border p-4">
+      <div className="bg-card rounded-md border border-border p-4">
         <div className="flex flex-col gap-6">
           {/* Progress */}
           {problemCount > 1 && (
@@ -116,16 +117,10 @@ export function FenRecreate({
       {/* Skip/Quit Links */}
       {!isTutorial && (
         <div className="flex flex-col items-center gap-2">
-          <button
-            onClick={onSkip}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
-          >
+          <button onClick={onSkip} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
             {t('skip')}
           </button>
-          <button
-            onClick={onQuit}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
-          >
+          <button onClick={onQuit} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
             {t('quit')}
           </button>
         </div>

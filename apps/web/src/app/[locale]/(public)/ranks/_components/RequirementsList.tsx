@@ -30,7 +30,7 @@ export function RequirementsList({
             {href ? (
               <Link
                 href={href}
-                className="block rounded-lg border border-border bg-card px-4 py-3 shadow-sm transition-colors hover:border-foreground/20"
+                className="block rounded-lg border border-border bg-card px-4 py-3 transition-colors hover:border-foreground/20"
               >
                 <div className="flex items-center gap-2">
                   <HiMiniStar className={`${iconSize} shrink-0 text-amber-500`} />

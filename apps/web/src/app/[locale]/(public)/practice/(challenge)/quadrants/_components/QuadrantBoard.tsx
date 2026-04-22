@@ -126,7 +126,7 @@ export default function QuadrantBoard({
   const themeColors = getBoardThemeColors(preferences.boardTheme);
 
   return (
-    <div className="mx-auto w-full max-w-xs sm:max-w-sm relative group rounded-md shadow-lg overflow-hidden">
+    <div className="mx-auto w-full max-w-xs sm:max-w-sm relative group rounded-md overflow-hidden">
       <BoardLayout
         flipped={orientation === 'black'}
         showCoordinates={preferences.showCoordinates}

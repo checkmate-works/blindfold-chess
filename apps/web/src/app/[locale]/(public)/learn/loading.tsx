@@ -14,16 +14,13 @@ export default function LearnLoading() {
 
       <PagePanel>
         {/* SectionTitle skeleton */}
-        <div className="border-b border-warning/50 pb-2">
+        <div className="border-b border-border pb-2">
           <div className="h-5 md:h-6 bg-muted rounded w-48 animate-pulse" />
         </div>
 
         <div className="space-y-4">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div
-              key={i}
-              className="p-6 bg-card rounded-md shadow-sm border border-border animate-pulse"
-            >
+            <div key={i} className="p-6 bg-card rounded-md border border-border animate-pulse">
               <div className="flex items-start gap-4">
                 <div className="w-9 h-9 bg-muted rounded flex-shrink-0" />
                 <div className="flex-1">

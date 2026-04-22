@@ -9,6 +9,7 @@ import { FaRedo } from 'react-icons/fa';
 import { PracticeLayout } from '@/app/[locale]/(public)/practice/_components/PracticeLayout';
 import { SectionTitle } from '@/app/[locale]/_components';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import { KnightTourBoard } from './KnightTourBoard';
 
@@ -43,7 +44,7 @@ export function KnightTourResult({
 
   return (
     <PracticeLayout>
-      <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mb-8">
+      <div className="bg-card rounded-2xl p-6 border border-border mb-8">
         {/* ... (Header and Board sections unchanged) ... */}
         {/* Result Header */}
         <SectionTitle className="text-2xl font-bold text-center mb-6">
@@ -122,7 +123,7 @@ export function KnightTourResult({
                 <Link
                   href="/practice"
                   locale={locale}
-                  className="text-sm text-muted-foreground hover:text-foreground underline transition-colors"
+                  className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}
                 >
                   {tPractice('doOtherPractice')}
                 </Link>

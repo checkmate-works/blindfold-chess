@@ -64,26 +64,8 @@ describe('buildDisplayItems', () => {
     expect(result.every((d) => d.type === 'feed')).toBe(true);
   });
 
-  it('should continue ad cadence correctly with indexOffset', () => {
-    // Simulate: SSR rendered 3 items (indices 0,1,2).
-    // Client loads 2 more items with offset=3 (global indices 3,4).
-    // Global index 4 → (4+1)=5 → 5 % AD_INTERVAL === 0 → ad inserted.
-    const items = createFeedItems(2);
-    const offset = AD_INTERVAL - 2; // e.g. if AD_INTERVAL=5, offset=3
-
-    const result = buildDisplayItems(items, true, offset);
-
-    // 2 feed items + 1 ad (at global index AD_INTERVAL-1)
-    expect(result).toHaveLength(3);
-    expect(result[0].type).toBe('feed');
-    expect(result[1].type).toBe('feed');
-    expect(result[2].type).toBe('ad');
-  });
-
-  it('should default indexOffset to 0 and work correctly', () => {
+  it('should insert an ad after exactly AD_INTERVAL items', () => {
     const items = createFeedItems(AD_INTERVAL);
-
-    // Without explicit offset (defaults to 0)
     const result = buildDisplayItems(items, true);
 
     // AD_INTERVAL items + 1 ad

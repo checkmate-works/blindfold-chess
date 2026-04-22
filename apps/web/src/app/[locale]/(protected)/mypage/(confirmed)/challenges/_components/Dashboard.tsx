@@ -8,6 +8,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import type { LeaderboardModule } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { buildChallengePath } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { SectionTitle } from '@/app/[locale]/_components';
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import { useDashboardData } from '../_hooks/use-dashboard-data';
 import {
@@ -134,10 +135,7 @@ export function Dashboard({ locale }: { locale: string }) {
             </div>
             {hasMoreResults && (
               <div className="text-center mt-3">
-                <Link
-                  href="/mypage/challenges/results"
-                  className="text-sm text-link-primary hover:text-link-primary/80 transition-colors"
-                >
+                <Link href="/mypage/challenges/results" className={`text-sm ${TEXT_LINK_CLASSES}`}>
                   {t('viewAllResults')}
                 </Link>
               </div>

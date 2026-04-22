@@ -13,6 +13,7 @@ import { getOptionalUser } from '@/lib/auth';
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -101,11 +102,7 @@ export default async function AnnouncementPage({ params }: Props) {
           <PagePanel>
             <div className="text-center py-8">
               <p className="text-muted-foreground mb-4">{t('membersOnly')}</p>
-              <Link
-                href="/sign-in"
-                locale={locale}
-                className="text-link-primary hover:underline font-medium"
-              >
+              <Link href="/sign-in" locale={locale} className={`font-medium ${TEXT_LINK_CLASSES}`}>
                 {t('signInToView')}
               </Link>
             </div>

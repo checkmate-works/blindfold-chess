@@ -50,7 +50,7 @@ export function ToastItem({ toast, onClose, duration }: Props) {
 
   return (
     <div
-      className={`${getStyles()} px-4 py-3 rounded-md shadow-lg pointer-events-auto transform transition-all duration-300 ease-out`}
+      className={`${getStyles()} px-4 py-3 rounded-md pointer-events-auto transform transition-all duration-300 ease-out`}
       onClick={onClose}
     >
       <div className="flex items-center gap-3">

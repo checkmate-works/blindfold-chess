@@ -136,7 +136,7 @@ export function RoutePlannerResultList({ results, boardTheme, labels }: Props) {
                                 <button
                                   className={`font-mono text-xs px-2 py-1 rounded border transition-colors cursor-pointer ${
                                     isActive
-                                      ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                                      ? 'bg-primary text-primary-foreground border-primary'
                                       : 'bg-background hover:bg-muted border-border'
                                   }`}
                                   onMouseEnter={() => setHoveredStepIndex(i)}

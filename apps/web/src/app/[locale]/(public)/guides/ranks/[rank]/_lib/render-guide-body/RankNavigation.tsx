@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 
 import { buildGuidePath } from '@/lib/guides';
 
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
+
 import type { GuideContext } from './context';
 
 /**
@@ -22,7 +24,7 @@ export function RankNavigation({ ctx }: { ctx: GuideContext }): ReactNode {
       {prevRank ? (
         <a
           href={buildGuidePath(locale, prevRank.slug, { kind: 'root' })}
-          className="text-sm text-link-primary hover:underline"
+          className={`text-sm ${TEXT_LINK_CLASSES}`}
         >
           ← {tGuides('navigation.prevRank', { rankName: prevRank.rankName })}
         </a>
@@ -32,7 +34,7 @@ export function RankNavigation({ ctx }: { ctx: GuideContext }): ReactNode {
       {nextRank ? (
         <a
           href={buildGuidePath(locale, nextRank.slug, { kind: 'root' })}
-          className="text-sm text-link-primary hover:underline"
+          className={`text-sm ${TEXT_LINK_CLASSES}`}
         >
           {tGuides('navigation.nextRank', { rankName: nextRank.rankName })} →
         </a>
