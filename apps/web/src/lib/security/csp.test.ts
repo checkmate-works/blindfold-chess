@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildCspHeader, buildReportToHeader, generateCspNonce } from './csp';
+import {
+  buildCspHeader,
+  buildReportToHeader,
+  buildReportingEndpointsHeader,
+  generateCspNonce,
+} from './csp';
 
 describe('generateCspNonce', () => {
   it('returns a base64-encoded 16-byte nonce', () => {
@@ -67,5 +72,21 @@ describe('buildReportToHeader', () => {
     expect(parsed.group).toBe('csp-endpoint');
     expect(parsed.max_age).toBeGreaterThan(0);
     expect(parsed.endpoints).toEqual([{ url: '/api/csp-report' }]);
+  });
+});
+
+describe('buildReportingEndpointsHeader', () => {
+  it('returns a Structured-Fields header pointing at /api/csp-report', () => {
+    const raw = buildReportingEndpointsHeader();
+    // Shape: csp-endpoint="/api/csp-report" — key="value" pair, not JSON.
+    expect(raw).toBe('csp-endpoint="/api/csp-report"');
+    expect(() => JSON.parse(raw)).toThrow();
+  });
+
+  it('uses the same group name as the CSP report-to directive', () => {
+    const csp = buildCspHeader('n', { isDevelopment: false });
+    const reporting = buildReportingEndpointsHeader();
+    expect(csp).toContain('report-to csp-endpoint');
+    expect(reporting.startsWith('csp-endpoint=')).toBe(true);
   });
 });

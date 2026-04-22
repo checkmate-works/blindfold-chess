@@ -1,6 +1,11 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { buildCspHeader, buildReportToHeader, generateCspNonce } from '@/lib/security/csp';
+import {
+  buildCspHeader,
+  buildReportToHeader,
+  buildReportingEndpointsHeader,
+  generateCspNonce,
+} from '@/lib/security/csp';
 import { updateSession } from '@/lib/supabase/proxy';
 
 const BLOCKED_PATHS = [
@@ -45,15 +50,21 @@ function isSignInPath(pathname: string): boolean {
 }
 
 /**
- * Apply CSP + Report-To headers to a response, given the request nonce.
+ * Apply CSP + reporting endpoint headers to a response, given the request
+ * nonce.
  *
  * Extracted into a helper so every `return` branch below can stamp the
  * headers consistently. The CSP is enforcing (not Report-Only) — violations
  * block the offending resource AND are POSTed to `/api/csp-report` via the
  * `report-to` / `report-uri` directives for observability.
+ *
+ * Both `Reporting-Endpoints` (the modern Structured-Fields header) and
+ * `Report-To` (its deprecated JSON predecessor) are emitted concurrently so
+ * supporting browsers use the former while older ones keep working.
  */
 function applyCspHeaders(response: NextResponse, nonce: string): NextResponse {
   response.headers.set('Content-Security-Policy', buildCspHeader(nonce));
+  response.headers.set('Reporting-Endpoints', buildReportingEndpointsHeader());
   response.headers.set('Report-To', buildReportToHeader());
   return response;
 }

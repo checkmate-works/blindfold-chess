@@ -119,3 +119,19 @@ export function buildReportToHeader(): string {
     endpoints: [{ url: REPORT_PATH }],
   });
 }
+
+/**
+ * Build the `Reporting-Endpoints` header value.
+ *
+ * `Reporting-Endpoints` is the successor to `Report-To` (deprecated in
+ * Chrome 96+) and uses the Structured Fields `key="value"` syntax rather
+ * than a JSON payload. The project emits both headers concurrently so
+ * supporting browsers prefer the modern one while older ones still honor
+ * `Report-To`. Both point at the same `/api/csp-report` collector, paired
+ * with `report-to <group>` in the CSP directive list.
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Reporting-Endpoints
+ */
+export function buildReportingEndpointsHeader(): string {
+  return `${REPORT_GROUP}="${REPORT_PATH}"`;
+}
