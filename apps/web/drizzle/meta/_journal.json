@@ -204,6 +204,13 @@
       "when": 1776413713238,
       "tag": "20260417081513_create_puzzle_solutions_table",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1776926655533,
+      "tag": "20260423064415_consolidate_puzzle_solution_moves",
+      "breakpoints": true
     }
   ]
 }

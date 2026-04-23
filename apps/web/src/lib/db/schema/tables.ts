@@ -1681,32 +1681,50 @@ export type NewPositionTag = typeof positionTags.$inferInsert;
  * similar to Rails' Single Table Inheritance. Instead, puzzle-specific data
  * is split into a separate table to keep concerns clearly separated.
  *
- * @design Rationale for the `solutionLine` string format — modeled on Lichess' `line` field
- * Compared to a row-split approach (one row per move with `move` + `moveOrder`):
- * (a) opponent responses in multi-move puzzles are represented naturally
- *     (alternating player moves and responses within a single string),
- * (b) JOINs only cost one lookup (the row-split approach requires N lookups per puzzle), and
- * (c) the whole line can be validated in one call to `validateMoveSequence(fen, moves)`.
+ * @design Rationale for consolidated `solutionMoves` JSONB storage
+ * Each row stores a single array of `{ san, note }` objects — the move and its
+ * optional note live in the same element. This replaced an earlier design that
+ * used parallel `solution_line: text` + `notes: jsonb Array<string|null>` columns,
+ * where per-move notes were matched to moves by index. The parallel-index design
+ * was a latent bug surface (truncating one array out of sync silently broke the
+ * mapping); the consolidated shape makes the invariant structural.
+ *
+ * The `solution_line` column is kept as a read-only archive of the pre-migration
+ * denormalized form. Newly inserted rows write `solutionMoves` only; `solutionLine`
+ * stays NULL. Phase 3 will drop `solution_line` outright once we have confidence
+ * that no external tooling reads it.
  *
  * @design Rationale for SAN format
  * Every API in the chess-core package (`validateMoveSequence`, `executeMove`,
- * `getLegalMoves`) is SAN-based, so no conversion is needed.
+ * `getLegalMoves`) is SAN-based, so the `san` field in each element goes into
+ * those APIs unchanged. The key name `san` matches the `AlgebraicNotation` /
+ * `SAN` vocabulary used throughout the codebase.
  *
  * @design Representing alternative solutions
  * Alternative solutions are represented by inserting multiple rows with the
  * same `positionId`.
  * Example: if both `Nf3` and `Bg5` are correct, store 2 rows with
- * `solutionLine: "Nf3"` and `solutionLine: "Bg5"`.
- * Alternative paths in multi-move puzzles are represented the same way:
- * `"Qh7+ Kf8 Qh8#"` and `"Qh7+ Kf8 Qf7#"` would be 2 rows.
+ * `solutionMoves: [{san:'Nf3',note:null}]` and `solutionMoves: [{san:'Bg5',note:null}]`.
+ * Alternative paths in multi-move puzzles are represented the same way.
  *
  * @example
- * // Single-move puzzle
- * { positionId: '...', solutionLine: 'Nf3' }
+ * // Single-move puzzle with a note on the only move
+ * { positionId: '...', solutionMoves: [
+ *     { san: 'Nf3', note: 'develops and eyes e5' }
+ *   ] }
  *
- * // Multi-move (player move → opponent response → player move)
- * { positionId: '...', solutionLine: 'Qh7+ Kf8 Qh8#' }
+ * // Multi-move (player move → opponent response → player move), note on move 1 only
+ * { positionId: '...', solutionMoves: [
+ *     { san: 'Qh7+', note: 'forcing check' },
+ *     { san: 'Kf8', note: null },
+ *     { san: 'Qh8#', note: null }
+ *   ] }
  */
+export type PuzzleSolutionMove = {
+  san: string;
+  note: string | null;
+};
+
 export const puzzleSolutions = pgTable(
   'puzzle_solutions',
   {
@@ -1714,7 +1732,8 @@ export const puzzleSolutions = pgTable(
     positionId: uuid('position_id')
       .notNull()
       .references(() => positions.id, { onDelete: 'cascade' }),
-    solutionLine: text('solution_line').notNull(), // SAN moves, space-separated
+    solutionLine: text('solution_line'), // archive of pre-migration denormalized line; new rows leave NULL
+    solutionMoves: jsonb('solution_moves').$type<PuzzleSolutionMove[]>().notNull().default([]),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [index('idx_puzzle_solutions_position').on(table.positionId)]

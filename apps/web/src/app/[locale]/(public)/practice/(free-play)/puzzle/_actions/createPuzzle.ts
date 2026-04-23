@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, feedItems, positions, puzzleSolutions } from '@/lib/db';
 import { notifyFollowersOfNewPosition } from '@/lib/notifications/notification';
-import { validatePuzzleMutationData } from '@/lib/positions/validation';
+import { normalizePuzzleMoves, validatePuzzleMutationData } from '@/lib/positions/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
 export type CreatePuzzleResult = { success: true; id: string } | { error: string };
@@ -14,7 +14,7 @@ export async function createPuzzle(data: {
   fen: string;
   title: string;
   description?: string | null;
-  solutionLine: string;
+  solutionMoves: Array<{ san: string; note?: string | null }>;
 }): Promise<CreatePuzzleResult> {
   const guardResult = await authenticateAndGuard(RATE_LIMITS.createPuzzle);
 
@@ -24,11 +24,13 @@ export async function createPuzzle(data: {
 
   const { user } = guardResult;
 
+  const normalizedMoves = normalizePuzzleMoves(data.solutionMoves ?? []);
+
   const validationError = validatePuzzleMutationData({
     fen: data.fen,
     title: data.title,
     description: data.description,
-    solutionLine: data.solutionLine,
+    solutionMoves: normalizedMoves,
     userId: user.id,
   });
 
@@ -50,7 +52,7 @@ export async function createPuzzle(data: {
 
     await tx.insert(puzzleSolutions).values({
       positionId: position.id,
-      solutionLine: data.solutionLine.trim(),
+      solutionMoves: normalizedMoves,
     });
 
     await tx.insert(feedItems).values({
