@@ -4,6 +4,8 @@ import type { ReactNode } from 'react';
 
 import { FaTimes } from 'react-icons/fa';
 
+import { CircleMarker } from './CircleMarker';
+
 type Props = {
   moves: string[];
   firstTurn: 'w' | 'b';
@@ -45,9 +47,7 @@ export function SolutionMoveList({
         return (
           <li key={index} className="flex items-center gap-1.5">
             <span className="text-muted-foreground">{index + 1}.</span>
-            <span aria-hidden className="text-base leading-none">
-              {isWhiteMove ? '⚪' : '⚫'}
-            </span>
+            <CircleMarker color={isWhiteMove ? 'w' : 'b'} />
             <span className="font-mono text-foreground">{move}</span>
             {isLast && (
               <button
