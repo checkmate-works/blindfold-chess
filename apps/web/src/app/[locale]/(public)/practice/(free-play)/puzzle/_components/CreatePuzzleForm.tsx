@@ -472,31 +472,24 @@ export function CreatePuzzleForm() {
           </div>
 
           {moves.length > 0 && (
-            <>
-              <SolutionMoveList
-                moves={moves}
-                firstTurn={firstTurn}
-                onRemoveLast={handleRemoveLast}
-                removeAriaLabel={t('removeLastMove', { move: moves[moves.length - 1]! })}
-                disabled={pending}
-              />
-              <ul className="space-y-2">
-                {moves.map((move, index) => (
-                  <li key={index} className="flex items-center gap-2 text-sm">
-                    <span className="shrink-0 text-muted-foreground">{t('noteLabel')}</span>
-                    <input
-                      type="text"
-                      value={notes[index] ?? ''}
-                      onChange={(e) => handleNoteChange(index, e.target.value)}
-                      maxLength={PUZZLE_NOTE_MAX_LENGTH}
-                      placeholder={t('addMoveNote')}
-                      aria-label={t('noteAriaLabel', { move })}
-                      className="flex-1 px-2 py-1 rounded border border-border bg-card text-foreground text-sm"
-                    />
-                  </li>
-                ))}
-              </ul>
-            </>
+            <SolutionMoveList
+              moves={moves}
+              firstTurn={firstTurn}
+              onRemoveLast={handleRemoveLast}
+              removeAriaLabel={t('removeLastMove', { move: moves[moves.length - 1]! })}
+              disabled={pending}
+              renderAfter={(index) => (
+                <input
+                  type="text"
+                  value={notes[index] ?? ''}
+                  onChange={(e) => handleNoteChange(index, e.target.value)}
+                  maxLength={PUZZLE_NOTE_MAX_LENGTH}
+                  placeholder={t('addMoveNote')}
+                  aria-label={t('noteAriaLabel', { move: moves[index]! })}
+                  className="w-full px-2 py-1 rounded border border-border bg-card text-foreground text-sm"
+                />
+              )}
+            />
           )}
 
           {isFenValid ? (

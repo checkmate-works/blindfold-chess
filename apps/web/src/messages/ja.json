@@ -978,7 +978,6 @@
         "solutionInvalid": "このポジションでは無効な手順です",
         "movePlaceholder": "手を入力 (例: e4, Nf3)",
         "addMoveNote": "メモ (任意)",
-        "noteLabel": "コメント:",
         "noteAriaLabel": "{move} のコメント",
         "removeLastMove": "最後の手 ({move}) を削除",
         "maxMovesReached": "手数の上限 (20) に達しました",
