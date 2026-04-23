@@ -64,7 +64,8 @@ export default async function PuzzleResultPage({ params }: Props) {
     .from(puzzleSolutions)
     .where(eq(puzzleSolutions.positionId, position.id));
 
-  const solutionLines = solutions.map((s) => s.solutionMoves.map((m) => m.san).join(' '));
+  const solutionMoveLists = solutions.map((s) => s.solutionMoves);
+  const solutionLines = solutionMoveLists.map((moves) => moves.map((m) => m.san).join(' '));
 
   const adBannerStandard =
     IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM ? (
@@ -80,6 +81,7 @@ export default async function PuzzleResultPage({ params }: Props) {
           positionId={position.id}
           fen={position.fen}
           solutionLines={solutionLines}
+          solutionMoveLists={solutionMoveLists}
         />
 
         {adBannerStandard && <div className="mt-8">{adBannerStandard}</div>}

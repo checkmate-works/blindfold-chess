@@ -1000,8 +1000,6 @@
       "detail": {
         "title": "パズル詳細",
         "descriptionSection": "このパズルについて",
-        "solutionSection": "正解手順",
-        "note": "— {note}",
         "startSolving": "挑戦する",
         "whitePiecesLabel": "白の駒",
         "blackPiecesLabel": "黒の駒",
@@ -1021,6 +1019,7 @@
         "replaySection": "正解のリプレイ",
         "historySection": "回答履歴",
         "solution": "正解: {move}",
+        "note": "— {note}",
         "attemptCorrect": "正解",
         "attemptIncorrect": "不正解",
         "backToList": "パズル一覧に戻る",

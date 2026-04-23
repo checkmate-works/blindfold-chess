@@ -64,7 +64,7 @@ export default async function PuzzleDetailPage({ params }: Props) {
     notFound();
   }
 
-  const { position, profile, solutions } = row;
+  const { position, profile } = row;
   const displayName = resolveDisplayName(profile);
   const isBlackToMove = isBlackToMoveFromFen(position.fen);
   const pieceList = fenToPieceList(position.fen);
@@ -164,36 +164,6 @@ export default async function PuzzleDetailPage({ params }: Props) {
               })}
             </time>
           </div>
-
-          {solutions.length > 0 && (
-            <div className="space-y-3">
-              <SectionTitle>{t('detail.solutionSection')}</SectionTitle>
-              {solutions.map((solution, si) => {
-                const firstTurn: 'w' | 'b' = isBlackToMove ? 'b' : 'w';
-                return (
-                  <ol key={si} className="space-y-1.5 text-sm">
-                    {solution.solutionMoves.map((m, mi) => {
-                      const isWhiteMove = mi % 2 === (firstTurn === 'w' ? 0 : 1);
-                      return (
-                        <li key={mi} className="flex items-baseline gap-2">
-                          <span className="text-muted-foreground shrink-0">{mi + 1}.</span>
-                          <span aria-hidden className="leading-none">
-                            {isWhiteMove ? '⚪' : '⚫'}
-                          </span>
-                          <span className="font-mono text-foreground shrink-0">{m.san}</span>
-                          {m.note && (
-                            <span className="text-muted-foreground">
-                              {t('detail.note', { note: m.note })}
-                            </span>
-                          )}
-                        </li>
-                      );
-                    })}
-                  </ol>
-                );
-              })}
-            </div>
-          )}
 
           <div className="pt-2">
             <Link href={`/practice/puzzle/${position.id}/session`}>

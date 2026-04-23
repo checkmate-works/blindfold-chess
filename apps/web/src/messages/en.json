@@ -999,8 +999,6 @@
       "detail": {
         "title": "Puzzle Detail",
         "descriptionSection": "About This Puzzle",
-        "solutionSection": "Solution",
-        "note": "\u2014 {note}",
         "startSolving": "Start solving",
         "whitePiecesLabel": "White Pieces",
         "blackPiecesLabel": "Black Pieces",
@@ -1020,6 +1018,7 @@
         "replaySection": "Solution Replay",
         "historySection": "Attempt History",
         "solution": "Solution: {move}",
+        "note": "\u2014 {note}",
         "attemptCorrect": "Correct",
         "attemptIncorrect": "Incorrect",
         "backToList": "Back to Puzzles",
