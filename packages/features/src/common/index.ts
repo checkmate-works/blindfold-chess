@@ -33,3 +33,8 @@ export {
   QUEEN_DIRS,
   KING_OFFSETS,
 } from "./piece-moves";
+export type {
+  CoordinateBackspaceResult,
+  StagedCoordinateSelection,
+} from "./coordinate-backspace";
+export { applyCoordinateBackspace } from "./coordinate-backspace";

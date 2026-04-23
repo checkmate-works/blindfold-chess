@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 
 import { checkSymmetryAnswer, generateProblem } from '@blindfold-chess/features/board-symmetry';
 import type { BoardSymmetryProblem } from '@blindfold-chess/features/board-symmetry';
+import { applyCoordinateBackspace } from '@blindfold-chess/features/common';
 
 import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
@@ -14,7 +15,6 @@ import { useTimedSession } from '@/app/[locale]/(public)/practice/(challenge)/_h
 import { saveBoardSymmetryResult } from '@/app/[locale]/(public)/practice/(challenge)/board-symmetry/_actions/save-result';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
-import { applyCoordinateBackspace } from '@/app/[locale]/(public)/practice/_lib/coordinate-backspace';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { BoardSymmetryPlaying } from '../../_components/BoardSymmetryPlaying';

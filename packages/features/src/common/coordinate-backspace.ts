@@ -38,7 +38,7 @@ export type CoordinateBackspaceResult = {
  * the rank-first rule. Pure; does not mutate its input.
  */
 export function applyCoordinateBackspace(
-  current: StagedCoordinateSelection
+  current: StagedCoordinateSelection,
 ): CoordinateBackspaceResult {
   if (current.selectedRank !== null) {
     return {
