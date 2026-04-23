@@ -5,6 +5,7 @@ import { useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { FEEDBACK_FLASH_MS } from '@blindfold-chess/features/common';
 import {
   generateSquareSequence,
   getDiagonals,
@@ -59,7 +60,8 @@ export default function DiagonalQuizTrainingSession({ locale }: Props) {
       return diagonalCorrect && antiDiagonalCorrect;
     },
     scrollTargetId: 'diagonal-quiz-training-session',
-    feedbackDelayMs: (isCorrect) => (isCorrect ? 1000 : 2000),
+    feedbackDelayMs: (isCorrect) =>
+      isCorrect ? FEEDBACK_FLASH_MS.correct : FEEDBACK_FLASH_MS.incorrect,
     skipAutoAdvance: false,
     incorrectAutoAdvance: false,
   });
