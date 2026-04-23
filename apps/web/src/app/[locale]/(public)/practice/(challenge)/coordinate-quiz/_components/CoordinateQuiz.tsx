@@ -1,6 +1,7 @@
 'use client';
 
-import { usePersistentSettings } from '@/app/[locale]/(public)/practice/_hooks/use-persistent-settings';
+import { useLocalStorageSettings } from '@/lib/persistent-settings/use-local-storage-settings';
+
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { BoardOrientation, FeedbackSpeed } from '../_lib/types';
@@ -22,7 +23,7 @@ const DEFAULTS: CoordinateQuizLocalSettings = {
 };
 
 export default function CoordinateQuiz({ locale }: Props) {
-  const { settings, updateSettings } = usePersistentSettings(STORAGE_KEY, DEFAULTS);
+  const { settings, updateSettings } = useLocalStorageSettings(STORAGE_KEY, DEFAULTS);
 
   return (
     <CoordinateQuizSetup
