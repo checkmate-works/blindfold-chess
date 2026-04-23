@@ -971,9 +971,18 @@
         "titleRequired": "Título é obrigatório",
         "descriptionLabel": "Descrição",
         "solutionLabel": "Solução",
+        "solutionSection": "Lances da solução",
         "solutionPlaceholder": "ex: Nf3 ou Qh7+ Kf8 Qh8#",
         "solutionRequired": "Solução é obrigatória",
         "solutionInvalid": "Sequência de lances inválida para esta posição",
+        "movePlaceholder": "Digite o lance (ex: e4, Nf3)",
+        "addMoveNote": "Nota (opcional)",
+        "noteAriaLabel": "Comentário para o lance {move}",
+        "removeLastMove": "Remover último lance ({move})",
+        "maxMovesReached": "Máximo de 20 lances atingido",
+        "sideToMove": "Vez de",
+        "sideWhite": "Brancas",
+        "sideBlack": "Pretas",
         "submit": "Criar",
         "submitting": "Criando...",
         "clearBoard": "Limpar Tabuleiro",
@@ -991,28 +1000,34 @@
       "detail": {
         "title": "Detalhes do Puzzle",
         "descriptionSection": "Sobre Este Puzzle",
-        "solveSection": "Resolva o Puzzle",
+        "startSolving": "Começar a resolver",
         "whitePiecesLabel": "Peças Brancas",
         "blackPiecesLabel": "Peças Pretas",
         "whiteToMove": "Brancas jogam",
         "blackToMove": "Pretas jogam",
         "createdBy": "Criado por",
-        "correct": "Correto! 🎉",
-        "incorrect": "Incorreto. Tente novamente.",
-        "noPieces": "Nenhuma",
-        "showBoard": "Mostrar Tabuleiro"
+        "noPieces": "Nenhuma"
       },
       "result": {
         "title": "Resultado do Puzzle",
         "replaySection": "Replay da Solução",
         "historySection": "Histórico de Tentativas",
         "solution": "Solução: {move}",
+        "note": "— {note}",
         "attemptCorrect": "Correto",
         "attemptIncorrect": "Incorreto",
         "backToList": "Voltar para Puzzles",
         "tryAgain": "Tentar Novamente",
         "viewResult": "Ver Resultado",
         "peekCount": "Visualizações do Tabuleiro: {count}"
+      },
+      "session": {
+        "title": "Resolver",
+        "correct": "Correto! 🎉",
+        "incorrect": "Incorreto. Tente novamente.",
+        "showBoard": "Mostrar Tabuleiro",
+        "whitePlayed": "Brancas jogam {move}",
+        "blackPlayed": "Pretas jogam {move}"
       }
     },
     "knightTour": {

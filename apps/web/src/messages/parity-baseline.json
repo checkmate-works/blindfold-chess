@@ -113,23 +113,6 @@
         "faq.items.adFreeBenefits.note",
         "faq.items.adFreeBenefits.question",
         "faq.items.adFreeBenefits.tableTitle",
-        "practice.puzzle.create.addMoveNote",
-        "practice.puzzle.create.maxMovesReached",
-        "practice.puzzle.create.movePlaceholder",
-        "practice.puzzle.create.noteAriaLabel",
-        "practice.puzzle.create.removeLastMove",
-        "practice.puzzle.create.sideBlack",
-        "practice.puzzle.create.sideToMove",
-        "practice.puzzle.create.sideWhite",
-        "practice.puzzle.create.solutionSection",
-        "practice.puzzle.detail.startSolving",
-        "practice.puzzle.result.note",
-        "practice.puzzle.session.blackPlayed",
-        "practice.puzzle.session.correct",
-        "practice.puzzle.session.incorrect",
-        "practice.puzzle.session.showBoard",
-        "practice.puzzle.session.title",
-        "practice.puzzle.session.whitePlayed",
         "toast.positionCreated",
         "toast.positionDeleted",
         "topics.grantInfoModal.body",
@@ -138,12 +121,7 @@
         "topics.grantInfoModal.note",
         "topics.grantInfoModal.title"
       ],
-      "extra": [
-        "practice.puzzle.detail.correct",
-        "practice.puzzle.detail.incorrect",
-        "practice.puzzle.detail.showBoard",
-        "practice.puzzle.detail.solveSection"
-      ]
+      "extra": []
     },
     "ja": {
       "missing": [
@@ -236,31 +214,8 @@
       "extra": ["Preferences.controls.switchInputMode"]
     },
     "pt-BR": {
-      "missing": [
-        "practice.puzzle.create.addMoveNote",
-        "practice.puzzle.create.maxMovesReached",
-        "practice.puzzle.create.movePlaceholder",
-        "practice.puzzle.create.noteAriaLabel",
-        "practice.puzzle.create.removeLastMove",
-        "practice.puzzle.create.sideBlack",
-        "practice.puzzle.create.sideToMove",
-        "practice.puzzle.create.sideWhite",
-        "practice.puzzle.create.solutionSection",
-        "practice.puzzle.detail.startSolving",
-        "practice.puzzle.result.note",
-        "practice.puzzle.session.blackPlayed",
-        "practice.puzzle.session.correct",
-        "practice.puzzle.session.incorrect",
-        "practice.puzzle.session.showBoard",
-        "practice.puzzle.session.title",
-        "practice.puzzle.session.whitePlayed"
-      ],
-      "extra": [
-        "practice.puzzle.detail.correct",
-        "practice.puzzle.detail.incorrect",
-        "practice.puzzle.detail.showBoard",
-        "practice.puzzle.detail.solveSection"
-      ]
+      "missing": [],
+      "extra": []
     }
   }
 }
