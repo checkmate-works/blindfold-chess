@@ -1,13 +1,13 @@
 import { useCallback } from "react";
-import { usePersistentSettings } from "../../../hooks/usePersistentSettings";
+import { useAsyncStorageSettings } from "../../../lib/persistent-settings/useAsyncStorageSettings";
 import type { PieceType, LegalMovesSettings } from "../lib/types";
 import { DEFAULT_LEGAL_MOVES_SETTINGS } from "../lib/types";
 
 const STORAGE_KEY = "LEGAL_MOVES_SETTINGS";
 
 export function useLegalMovesSettings() {
-  const { settings, isLoading, updateSettings, saveSettings, resetSettings } =
-    usePersistentSettings<LegalMovesSettings>(
+  const { settings, isLoaded, updateSettings, resetSettings } =
+    useAsyncStorageSettings<LegalMovesSettings>(
       STORAGE_KEY,
       DEFAULT_LEGAL_MOVES_SETTINGS,
     );
@@ -36,10 +36,9 @@ export function useLegalMovesSettings() {
 
   return {
     settings,
-    isLoading,
+    isLoading: !isLoaded,
     updateTimeLimit,
     togglePiece,
-    saveSettings,
     resetSettings,
   };
 }

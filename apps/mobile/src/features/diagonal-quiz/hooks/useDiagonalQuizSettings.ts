@@ -1,13 +1,13 @@
 import { useCallback } from "react";
-import { usePersistentSettings } from "../../../hooks/usePersistentSettings";
+import { useAsyncStorageSettings } from "../../../lib/persistent-settings/useAsyncStorageSettings";
 import type { DiagonalQuizSettings } from "../lib/types";
 import { DEFAULT_DIAGONAL_QUIZ_SETTINGS } from "../lib/types";
 
 const STORAGE_KEY = "DIAGONAL_QUIZ_SETTINGS";
 
 export function useDiagonalQuizSettings() {
-  const { settings, isLoading, updateSettings, saveSettings, resetSettings } =
-    usePersistentSettings<DiagonalQuizSettings>(
+  const { settings, isLoaded, updateSettings, resetSettings } =
+    useAsyncStorageSettings<DiagonalQuizSettings>(
       STORAGE_KEY,
       DEFAULT_DIAGONAL_QUIZ_SETTINGS,
     );
@@ -19,9 +19,8 @@ export function useDiagonalQuizSettings() {
 
   return {
     settings,
-    isLoading,
+    isLoading: !isLoaded,
     updateTimeLimit,
-    saveSettings,
     resetSettings,
   };
 }

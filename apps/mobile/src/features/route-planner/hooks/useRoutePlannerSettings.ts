@@ -1,13 +1,13 @@
 import { useCallback } from "react";
-import { usePersistentSettings } from "../../../hooks/usePersistentSettings";
+import { useAsyncStorageSettings } from "../../../lib/persistent-settings/useAsyncStorageSettings";
 import type { RoutePlannerPieceType, RoutePlannerSettings } from "../lib/types";
 import { DEFAULT_ROUTE_PLANNER_SETTINGS } from "../lib/types";
 
 const STORAGE_KEY = "ROUTE_PLANNER_SETTINGS";
 
 export function useRoutePlannerSettings() {
-  const { settings, isLoading, updateSettings, saveSettings, resetSettings } =
-    usePersistentSettings<RoutePlannerSettings>(
+  const { settings, isLoaded, updateSettings, resetSettings } =
+    useAsyncStorageSettings<RoutePlannerSettings>(
       STORAGE_KEY,
       DEFAULT_ROUTE_PLANNER_SETTINGS,
     );
@@ -36,10 +36,9 @@ export function useRoutePlannerSettings() {
 
   return {
     settings,
-    isLoading,
+    isLoading: !isLoaded,
     updateProblemCount,
     togglePiece,
-    saveSettings,
     resetSettings,
   };
 }

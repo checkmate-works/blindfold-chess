@@ -1,13 +1,13 @@
 import { useCallback } from "react";
-import { usePersistentSettings } from "../../../hooks/usePersistentSettings";
+import { useAsyncStorageSettings } from "../../../lib/persistent-settings/useAsyncStorageSettings";
 import type { QuizSettings } from "../lib/types";
 import { DEFAULT_QUIZ_SETTINGS } from "../lib/types";
 
 const STORAGE_KEY = "COORDINATE_QUIZ_SETTINGS";
 
 export function useQuizSettings() {
-  const { settings, isLoading, updateSettings, saveSettings, resetSettings } =
-    usePersistentSettings<QuizSettings>(STORAGE_KEY, DEFAULT_QUIZ_SETTINGS);
+  const { settings, isLoaded, updateSettings, resetSettings } =
+    useAsyncStorageSettings<QuizSettings>(STORAGE_KEY, DEFAULT_QUIZ_SETTINGS);
 
   const updateSetting = useCallback(
     <K extends keyof QuizSettings>(key: K, value: QuizSettings[K]) =>
@@ -17,9 +17,8 @@ export function useQuizSettings() {
 
   return {
     settings,
-    isLoading,
+    isLoading: !isLoaded,
     updateSetting,
-    saveSettings,
     resetSettings,
   };
 }

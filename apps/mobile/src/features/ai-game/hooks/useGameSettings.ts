@@ -1,14 +1,14 @@
 import { useCallback } from "react";
 import type { Side } from "@blindfold-chess/types";
-import { usePersistentSettings } from "../../../hooks/usePersistentSettings";
+import { useAsyncStorageSettings } from "../../../lib/persistent-settings/useAsyncStorageSettings";
 import type { SkillLevel, AiGameSettings } from "../lib/types";
 import { DEFAULT_AI_GAME_SETTINGS } from "../lib/types";
 
 const STORAGE_KEY = "ai-game-settings";
 
 export function useGameSettings() {
-  const { settings, isLoading, updateSettings } =
-    usePersistentSettings<AiGameSettings>(
+  const { settings, isLoaded, updateSettings } =
+    useAsyncStorageSettings<AiGameSettings>(
       STORAGE_KEY,
       DEFAULT_AI_GAME_SETTINGS,
     );
@@ -25,7 +25,7 @@ export function useGameSettings() {
 
   return {
     settings,
-    isLoaded: !isLoading,
+    isLoaded,
     updatePlayerColor,
     updateSkillLevel,
   };
