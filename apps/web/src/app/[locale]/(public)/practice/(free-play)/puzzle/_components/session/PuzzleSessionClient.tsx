@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useMemo, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -19,6 +19,7 @@ import { PagePanel } from '@/app/[locale]/_components/PagePanel';
 import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
+import { CircleMarker } from '../CircleMarker';
 import { PuzzleBoardPeekModal } from './PuzzleBoardPeekModal';
 
 type Attempt = { move: string; isCorrect: boolean };
@@ -101,6 +102,24 @@ export function PuzzleSessionClient({
   const [peekCount, setPeekCount] = useState(0);
   const [isBoardVisible, setIsBoardVisible] = useState(false);
   const [isSolved, setIsSolved] = useState(false);
+  /**
+   * Flipped to `true` in the short window between the puzzle being solved
+   * and the router.push to /result completing, so the PageTitle can show
+   * "Loading..." instead of the stale puzzle name. Mirrors the
+   * `isInitializing → t('loading')` branch in `PlayPageClient.tsx`.
+   */
+  const [isNavigatingToResult, setIsNavigatingToResult] = useState(false);
+
+  // Scroll the page back to the top whenever the opponent auto-plays a new
+  // reply. The MoveInputPanel sits below the fold on narrow viewports, so
+  // without this the user never sees the PageTitle's "White plays Nh2"
+  // announcement — they stay focused on the input they just submitted.
+  // `smooth` keeps the motion obvious without being disorienting.
+  useEffect(() => {
+    if (session.lastOpponentMove === null) return;
+    if (typeof window === 'undefined') return;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [session.lastOpponentMove]);
 
   const hasErrors = session.attempts.some((a) => !a.isCorrect);
 
@@ -113,6 +132,7 @@ export function PuzzleSessionClient({
     } catch {
       // sessionStorage may be unavailable
     }
+    setIsNavigatingToResult(true);
     setTimeout(() => {
       router.push(`/practice/puzzle/${positionId}/result`);
     }, AUTO_NAVIGATE_DELAY_MS);
@@ -200,23 +220,32 @@ export function PuzzleSessionClient({
   // PageTitle is a single-line status surface that switches between the
   // default page heading and transient "AI played X" announcements. Here
   // the PageTitle carries the puzzle's title by default and swaps to
-  // "⚪ White plays Nh2" while the opponent reply is the freshest context.
-  // When `isSolved` flips to true the "Correct!" confirmation below takes
-  // focus, so we revert the title to the puzzle name instead of pinning
-  // the last opponent move there.
+  // "○ White plays Nh2" while the opponent reply is the freshest context.
+  // When `isNavigatingToResult` is set (final solve + router.push pending)
+  // the PageTitle shows "Loading..." to match the /result-bound transition.
+  // When `isSolved` flips to true *without* navigation yet, the "Correct!"
+  // confirmation below takes focus, so we revert the title to the puzzle
+  // name instead of pinning the last opponent move there.
   const opponentColor: 'w' | 'b' = playerColor === 'w' ? 'b' : 'w';
   const opponentStatusKey = opponentColor === 'w' ? 'whitePlayed' : 'blackPlayed';
   const showOpponentStatus = session.lastOpponentMove !== null && !isSolved;
-  const titleContent = showOpponentStatus ? (
-    <span data-testid="opponent-status">
-      <span aria-hidden className="mr-1 text-base leading-none">
-        {opponentColor === 'w' ? '⚪' : '⚫'}
+  let titleContent: ReactNode;
+  if (isNavigatingToResult) {
+    titleContent = (
+      <span data-testid="loading-title" className="text-muted-foreground">
+        {tPlay('loading')}
       </span>
-      {t(opponentStatusKey, { move: session.lastOpponentMove! })}
-    </span>
-  ) : (
-    positionTitle
-  );
+    );
+  } else if (showOpponentStatus) {
+    titleContent = (
+      <span data-testid="opponent-status" className="inline-flex items-center gap-1.5">
+        <CircleMarker color={opponentColor} />
+        <span>{t(opponentStatusKey, { move: session.lastOpponentMove! })}</span>
+      </span>
+    );
+  } else {
+    titleContent = positionTitle;
+  }
 
   return (
     <div className="space-y-8">

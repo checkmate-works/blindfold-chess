@@ -489,18 +489,25 @@ describe('PuzzleSessionClient', () => {
       expect(heading).not.toHaveTextContent(POSITION_TITLE);
     });
 
-    it('reverts the PageTitle back to the puzzle title once the puzzle is solved', () => {
+    it('swaps the PageTitle to the Loading... placeholder once the puzzle is solved and navigation starts', () => {
       // 2-token line: h5 is the only player slot, so submitting it flips
-      // `isSolved` to true. The opponent-status branch is suppressed in
-      // that state, so the PageTitle should read the puzzle title again.
+      // `isSolved` to true AND kicks off `finishSolve`, which sets
+      // `isNavigatingToResult` before the 1s auto-navigate. In that window
+      // the PageTitle should render the loading placeholder (mirroring the
+      // `isInitializing → t('loading')` branch in games/play) — not the
+      // opponent-status slot and not the puzzle title.
       renderSession(['h5 Nh2'], BLACK_TO_MOVE_FEN);
 
       (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'h5';
       fireEvent.click(screen.getByTestId('stub-custom-submit'));
 
       const heading = screen.getByRole('heading', { level: 1 });
-      expect(heading).toHaveTextContent(POSITION_TITLE);
+      // `useTranslations('play')` is mocked to return the key verbatim, so
+      // `tPlay('loading')` comes back as the literal `'loading'`.
+      expect(heading).toHaveTextContent('loading');
       expect(screen.queryByTestId('opponent-status')).not.toBeInTheDocument();
+      expect(screen.getByTestId('loading-title')).toBeInTheDocument();
+      expect(heading).not.toHaveTextContent(POSITION_TITLE);
     });
   });
 });
