@@ -4,6 +4,11 @@ import {
   type BoardOrientation,
 } from "@blindfold-chess/types";
 
+import {
+  FEEDBACK_SPEED_MS,
+  FEEDBACK_SPEEDS,
+  type FeedbackSpeed,
+} from "../common/feedback-speed";
 import type { BasePracticeResult, BasePracticeSettings } from "../common/types";
 
 // Re-exported so existing importers of `@blindfold-chess/features/coordinate-quiz`
@@ -11,15 +16,10 @@ import type { BasePracticeResult, BasePracticeSettings } from "../common/types";
 export { BOARD_ORIENTATIONS };
 export type { BoardOrientation };
 
-export const FEEDBACK_SPEEDS = ["fast", "normal", "slow"] as const;
-export type FeedbackSpeed = (typeof FEEDBACK_SPEEDS)[number];
-
-// Feedback speed to milliseconds mapping
-export const FEEDBACK_SPEED_MS: Record<FeedbackSpeed, number> = {
-  fast: 300,
-  normal: 600,
-  slow: 900,
-};
+// Re-exported so existing importers of `@blindfold-chess/features/coordinate-quiz`
+// keep working; the canonical source is `@blindfold-chess/features/common`.
+export { FEEDBACK_SPEEDS, FEEDBACK_SPEED_MS };
+export type { FeedbackSpeed };
 
 export type CoordinateQuestion = {
   targetSquare: Square;

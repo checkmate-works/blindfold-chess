@@ -45,3 +45,5 @@ export type {
   SquareStatus,
 } from "./accuracy";
 export { calculateAccuracy, calculateSquareDifferences } from "./accuracy";
+export type { FeedbackSpeed } from "./feedback-speed";
+export { FEEDBACK_SPEEDS, FEEDBACK_SPEED_MS } from "./feedback-speed";
