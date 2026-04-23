@@ -1,0 +1,307 @@
+{
+  "common": {
+    "start": "Iniciar",
+    "cancel": "Cancelar",
+    "continue": "Continuar",
+    "back": "Voltar",
+    "settings": "Configurações",
+    "home": "Início",
+    "practice": "Prática"
+  },
+  "tabs": {
+    "home": "Início",
+    "play": "Jogar",
+    "practice": "Prática",
+    "settings": "Configurações"
+  },
+  "home": {
+    "title": "Xadrez às Cegas",
+    "welcome": "Bem-vindo de volta!",
+    "startPractice": "Começar prática",
+    "playAi": "Jogar contra a IA",
+    "replayOnboarding": "Refazer tutorial"
+  },
+  "practice": {
+    "title": "Prática",
+    "coordinateQuiz": {
+      "title": "Quiz de coordenadas",
+      "description": "Teste sua visualização do tabuleiro encontrando casas"
+    },
+    "legalMoves": {
+      "title": "Movimentos legais",
+      "description": "Pratique identificando movimentos legais e ilegais"
+    },
+    "boardSymmetry": {
+      "title": "Simetria do tabuleiro",
+      "description": "Pratique encontrando casas simétricas no tabuleiro"
+    },
+    "squareColors": {
+      "title": "Cor das casas",
+      "description": "Pratique identificando casas claras e escuras"
+    },
+    "diagonalQuiz": {
+      "title": "Quiz de diagonais",
+      "description": "Identifique as duas diagonais que passam por uma casa indicada"
+    },
+    "routePlanner": {
+      "title": "Planejador de rotas",
+      "description": "Planeje a rota mais curta para uma peça entre duas casas"
+    }
+  },
+  "onboarding": {
+    "skip": "Pular",
+    "tapToContinue": "Toque para continuar",
+    "start": "Iniciar",
+    "script": {
+      "greeting": "Olá",
+      "introduction": "Sou um mestre do xadrez às cegas",
+      "experienceCheck": "Você já jogou xadrez às cegas?",
+      "choiceYes": "Sim",
+      "choiceNo": "Não",
+      "experienced": "Ora... isso é reconfortante.\nVamos colocar suas habilidades à prova, que tal?",
+      "beginner": "Entendo, então é a sua primeira vez.\nNão se preocupe. Vou lhe ensinar passo a passo.",
+      "ready": "Quando estiver pronto, aperte o botão."
+    }
+  },
+  "settings": {
+    "language": "Idioma",
+    "languageJapanese": "日本語",
+    "languageEnglish": "English",
+    "languageSpanish": "Español",
+    "languagePortuguese": "Português"
+  },
+  "legalMoves": {
+    "setup": {
+      "title": "Configurações de movimentos legais",
+      "timeLimit": "Tempo limite",
+      "durationSeconds": "{{seconds}}s",
+      "pieceSelection": "Selecione uma peça",
+      "selectAtLeastOne": "Selecione pelo menos uma peça",
+      "start": "Iniciar"
+    },
+    "session": {
+      "legal": "Legal",
+      "illegal": "Ilegal",
+      "correct": "Correto!",
+      "incorrect": "Incorreto"
+    },
+    "result": {
+      "title": "Prática concluída!",
+      "correctAnswers": "Respostas corretas",
+      "accuracy": "Precisão",
+      "timeTaken": "Tempo gasto",
+      "averageTime": "Tempo médio",
+      "playAgain": "Jogar novamente",
+      "backToMenu": "Voltar ao menu"
+    },
+    "pieces": {
+      "b": "Bispo",
+      "n": "Cavalo",
+      "r": "Torre",
+      "q": "Dama",
+      "k": "Rei"
+    }
+  },
+  "boardSymmetry": {
+    "setup": {
+      "title": "Configurações de simetria do tabuleiro",
+      "startQuiz": "Começar prática"
+    },
+    "session": {
+      "question": "Encontre a casa simétrica {{type}} de {{square}}",
+      "types": {
+        "horizontal": "Horizontal",
+        "vertical": "Vertical",
+        "point": "Pontual"
+      },
+      "correct": "Correto!",
+      "incorrectWithSolution": "Incorreto. Resposta: {{solution}}"
+    },
+    "result": {
+      "title": "Resultados",
+      "playAgain": "Jogar novamente",
+      "backToMenu": "Voltar à prática",
+      "correctAnswers": "Respostas corretas",
+      "accuracy": "Precisão",
+      "timeTaken": "Tempo",
+      "averageTime": "Tempo médio"
+    },
+    "settings": {
+      "timeLimit": "Tempo limite",
+      "seconds": "{{seconds}}s"
+    }
+  },
+  "squareColors": {
+    "setup": {
+      "title": "Configurações de cor das casas",
+      "startQuiz": "Começar prática"
+    },
+    "session": {
+      "question": "Qual é a cor de {{square}}?",
+      "light": "Clara",
+      "dark": "Escura",
+      "correct": "Correto!",
+      "incorrect": "Incorreto"
+    },
+    "result": {
+      "title": "Prática concluída!",
+      "playAgain": "Jogar novamente",
+      "backToMenu": "Voltar ao menu",
+      "correctAnswers": "Respostas corretas",
+      "accuracy": "Precisão",
+      "timeTaken": "Tempo gasto",
+      "averageTime": "Tempo médio"
+    },
+    "settings": {
+      "timeLimit": "Tempo limite",
+      "seconds": "{{seconds}}s"
+    }
+  },
+  "coordinateQuiz": {
+    "setup": {
+      "title": "Configurações do quiz",
+      "duration": "Duração",
+      "durationSeconds": "{{seconds}} segundos",
+      "orientation": "Orientação do tabuleiro",
+      "orientationWhite": "Brancas",
+      "orientationBlack": "Pretas",
+      "orientationRandom": "Aleatória",
+      "feedbackSpeed": "Velocidade do feedback",
+      "feedbackFast": "Rápida",
+      "feedbackNormal": "Normal",
+      "feedbackSlow": "Lenta",
+      "startQuiz": "Começar quiz"
+    },
+    "session": {
+      "findSquare": "Encontre",
+      "timeRemaining": "Tempo restante",
+      "correct": "Correto!",
+      "incorrect": "Incorreto",
+      "score": "Pontuação",
+      "whiteToMove": "Vez das brancas",
+      "blackToMove": "Vez das pretas"
+    },
+    "result": {
+      "title": "Quiz concluído!",
+      "totalQuestions": "Perguntas totais",
+      "correctAnswers": "Respostas corretas",
+      "accuracy": "Precisão",
+      "averageTime": "Tempo médio",
+      "points": "Pontos",
+      "playAgain": "Jogar novamente",
+      "backToMenu": "Voltar ao menu"
+    }
+  },
+  "routePlanner": {
+    "setup": {
+      "title": "Configurações do planejador de rotas",
+      "problemCount": "Número de problemas",
+      "problemUnit": "{{count}} problemas",
+      "pieceSelection": "Selecione as peças",
+      "start": "Iniciar"
+    },
+    "session": {
+      "progress": "{{current}} / {{total}}",
+      "selectFile": "Selecione uma coluna (a-h)",
+      "selectRank": "Selecione uma linha (1-8)",
+      "submit": "Enviar",
+      "undo": "Desfazer",
+      "skip": "Pular",
+      "correct": "Correto!",
+      "incorrect": "Incorreto",
+      "skipped": "Pulado",
+      "shortestPath": "Caminho mais curto",
+      "nextProblem": "Próximo problema",
+      "finish": "Finalizar"
+    },
+    "result": {
+      "title": "Prática concluída!",
+      "score": "Pontuação",
+      "correct": "Corretas",
+      "accuracy": "Precisão",
+      "playAgain": "Jogar novamente",
+      "backToMenu": "Voltar ao menu"
+    },
+    "pieces": {
+      "n": "Cavalo",
+      "b": "Bispo",
+      "r": "Torre",
+      "q": "Dama"
+    }
+  },
+  "aiGame": {
+    "title": "Jogar contra a IA",
+    "description": "Jogue uma partida às cegas contra o motor de IA",
+    "setup": {
+      "title": "Configuração da partida",
+      "playerColor": "Jogar como",
+      "white": "Brancas",
+      "black": "Pretas",
+      "skillLevel": "Nível de habilidade",
+      "skillLevelDescription": "1 (iniciante) - 20 (mais forte)",
+      "startGame": "Começar partida"
+    },
+    "session": {
+      "yourTurn": "Sua vez",
+      "aiThinking": "A IA está pensando...",
+      "checkmate": "Xeque-mate!",
+      "stalemate": "Rei afogado",
+      "draw": "Empate",
+      "check": "Xeque!",
+      "skillLevel": "Nível",
+      "moves": "Jogadas",
+      "noMoves": "Ainda não há jogadas",
+      "movePreview": "Digite sua jogada",
+      "submit": "Enviar",
+      "clear": "Limpar",
+      "invalidMove": "Jogada inválida",
+      "disambiguation": "Desambiguação (opcional)",
+      "sourceLabel": "Origem",
+      "showBoard": "Mostrar tabuleiro"
+    },
+    "result": {
+      "title": "Fim da partida",
+      "win": "Você venceu!",
+      "loss": "Você perdeu",
+      "draw": "Empate",
+      "playerColor": "Cor",
+      "skillLevel": "Nível de habilidade",
+      "moveCount": "Total de jogadas",
+      "playAgain": "Jogar novamente",
+      "backToMenu": "Voltar ao menu"
+    }
+  },
+  "diagonalQuiz": {
+    "setup": {
+      "title": "Configurações do quiz de diagonais",
+      "startQuiz": "Começar prática"
+    },
+    "session": {
+      "question": "Quais são as diagonais de {{square}}?",
+      "diagonalLabel": "Diagonal (direção a1-h8)",
+      "antiDiagonalLabel": "Antidiagonal (direção h1-a8)",
+      "squarePlaceholder": "??",
+      "singleSquarePlaceholder": "ex., a1",
+      "singleSquare": "casa única",
+      "selectFile": "Selecione uma coluna (a-h)",
+      "selectRank": "Selecione uma linha (1-8)",
+      "clear": "Limpar",
+      "correct": "Correto!",
+      "incorrect": "Incorreto",
+      "correctAnswer": "{{diagonal}}, {{antiDiagonal}}"
+    },
+    "result": {
+      "title": "Prática concluída!",
+      "correctAnswers": "Respostas corretas",
+      "accuracy": "Precisão",
+      "timeTaken": "Tempo gasto",
+      "averageTime": "Tempo médio",
+      "playAgain": "Jogar novamente",
+      "backToMenu": "Voltar ao menu"
+    },
+    "settings": {
+      "timeLimit": "Tempo limite",
+      "seconds": "{{seconds}}s"
+    }
+  }
+}

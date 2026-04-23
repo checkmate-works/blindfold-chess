@@ -4,17 +4,25 @@ import * as Localization from "expo-localization";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import en from "./resources/en.json";
+import es from "./resources/es.json";
 import ja from "./resources/ja.json";
+import ptBR from "./resources/pt-BR.json";
 
 const LANGUAGE_STORAGE_KEY = "user-language";
 
-export const SUPPORTED_LANGUAGES = ["ja", "en"] as const;
+export const SUPPORTED_LANGUAGES = ["ja", "en", "es", "pt-BR"] as const;
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 
 const resources = {
   ja: { translation: ja },
   en: { translation: en },
+  es: { translation: es },
+  "pt-BR": { translation: ptBR },
 };
+
+function isSupportedLanguage(lang: string): lang is SupportedLanguage {
+  return (SUPPORTED_LANGUAGES as readonly string[]).includes(lang);
+}
 
 /**
  * Initialize i18n
@@ -23,10 +31,6 @@ export async function initI18n(): Promise<void> {
   const savedLanguage = await AsyncStorage.getItem(LANGUAGE_STORAGE_KEY);
   const locales = Localization.getLocales();
   const deviceLanguage = locales[0]?.languageCode ?? "en";
-
-  const isSupportedLanguage = (lang: string): lang is SupportedLanguage => {
-    return lang === "ja" || lang === "en";
-  };
 
   const fallbackLanguage: SupportedLanguage = isSupportedLanguage(
     deviceLanguage,
