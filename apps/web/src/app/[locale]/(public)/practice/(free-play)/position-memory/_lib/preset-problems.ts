@@ -4,10 +4,7 @@ import { FEN_STRINGS } from '../_data/positions';
 import type { PositionData } from './types';
 
 // Re-export shared accuracy utilities
-export {
-  calculateAccuracy,
-  calculateSquareDifferences,
-} from '@/app/[locale]/(public)/practice/_lib/accuracy';
+export { calculateAccuracy, calculateSquareDifferences } from '@blindfold-chess/features/common';
 
 // Parse FEN positions
 const PRACTICE_POSITIONS: PositionData[] = FEN_STRINGS.map((fen) => {

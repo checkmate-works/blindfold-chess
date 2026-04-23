@@ -38,3 +38,10 @@ export type {
   StagedCoordinateSelection,
 } from "./coordinate-backspace";
 export { applyCoordinateBackspace } from "./coordinate-backspace";
+export type {
+  PositionAccuracy,
+  ScoreDetail,
+  SquareDiff,
+  SquareStatus,
+} from "./accuracy";
+export { calculateAccuracy, calculateSquareDifferences } from "./accuracy";
