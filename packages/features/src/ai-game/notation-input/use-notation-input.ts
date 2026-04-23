@@ -38,8 +38,6 @@ export type UseNotationInputReturn = {
   showPromotion: boolean;
   isPawnCaptureMode: boolean;
   isSubmittable: boolean;
-  // Low-level dispatch for callers that want to batch actions.
-  dispatch: (...actions: NotationInputAction[]) => void;
   // Text-builder surface (web keypad).
   appendChar: (char: NotationChar) => void;
   appendCastling: (move: CastlingToken) => void;
@@ -169,7 +167,6 @@ export function useNotationInput({
     showPromotion,
     isPawnCaptureMode,
     isSubmittable,
-    dispatch,
     appendChar,
     appendCastling,
     backspace,

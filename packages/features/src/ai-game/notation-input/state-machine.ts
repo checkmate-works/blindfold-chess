@@ -94,10 +94,6 @@ function applyStructuredSideEffects(
     next = { ...next, targetFile: null };
   }
 
-  if (!next.isCapture && next.targetFile !== null) {
-    next = { ...next, targetFile: null };
-  }
-
   if (!computeShowPromotion(next) && next.promotionPiece !== null) {
     next = { ...next, promotionPiece: null };
   }
@@ -137,7 +133,7 @@ export function notationInputReducer(
     }
 
     case "clear": {
-      return { ...createInitialState(), input: "" };
+      return createInitialState();
     }
 
     // ------------------------------------------------------------
