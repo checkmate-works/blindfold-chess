@@ -97,7 +97,7 @@ export function notifyFollowersOfNewPost(params: {
 
 /**
  * Notify all followers of a user about a new position (memory or puzzle).
- * Fire-and-forget — failures are silently caught.
+ * Fire-and-forget — failures are logged but do not block the caller.
  */
 export function notifyFollowersOfNewPosition(params: {
   actorId: string;
@@ -123,5 +123,7 @@ export function notifyFollowersOfNewPosition(params: {
         },
       });
     }
-  })().catch(() => {});
+  })().catch((error) => {
+    console.error('[notifyFollowersOfNewPosition] failed:', error);
+  });
 }
