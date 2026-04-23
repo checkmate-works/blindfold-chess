@@ -439,4 +439,60 @@ describe('PuzzleSessionClient', () => {
       expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'true');
     });
   });
+
+  // Opponent status line — displays `"White plays Nh2"` after the player's
+  // correct move triggers an opponent auto-play, mirroring the `aiPlayed`
+  // pattern in `games/play`. Before the fix, the auto-play was silent and
+  // the user had no cue that the position had advanced.
+  describe('opponent status line', () => {
+    const BLACK_TO_MOVE_FEN =
+      'r2q1rk1/2pb1ppn/pp1p3p/6b1/2P1P1N1/1P1P3P/PB1N1RP1/R2Q2K1 b - - 4 16';
+
+    it('does not render the opponent status line before the player has made a move', () => {
+      renderSession(['h5 Nh2']);
+
+      // translation keys are returned verbatim by the next-intl mock
+      expect(screen.queryByText(/whitePlayed|blackPlayed/)).not.toBeInTheDocument();
+    });
+
+    it('shows `"White plays Nh2"` after the black player plays `h5` and the white reply auto-runs', () => {
+      // Two-plies-deep line: black plays h5 (index 0), white auto-plays Nh2
+      // (index 1). After the first player submit, the status line should
+      // announce the white reply; the puzzle is NOT yet solved because there
+      // is still a player slot at index 2 (but the fixture only has 2 SAN
+      // tokens, so the player slot count is 1 and the puzzle IS solved
+      // after this move — the status line must still render before the
+      // auto-navigation fires).
+      //
+      // We use a 3-token fixture ["h5", "Nh2", "_"] shape via a 2-token
+      // line to keep the test focused: 2 SAN tokens means 1 player slot
+      // (`h5`) and 1 opponent reply (`Nh2`). After h5, `isSolved` becomes
+      // true and the component suppresses the status line to get out of
+      // the way of the "Correct!" confirmation — matching the design
+      // choice in the JSX guard `!isSolved`. So we need a 3-token fixture
+      // where the auto-played opponent reply is followed by another player
+      // slot, to observe the status line while isSolved is still false.
+      renderSession(['h5 Nh2 Bh4'], BLACK_TO_MOVE_FEN);
+
+      (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'h5';
+      fireEvent.click(screen.getByTestId('stub-custom-submit'));
+
+      // status line uses next-intl's `t('whitePlayed', { move: 'Nh2' })`;
+      // the mock returns the key name, so we assert on the key.
+      expect(screen.getByRole('status')).toHaveTextContent('whitePlayed');
+    });
+
+    it('hides the opponent status line once the puzzle is solved', () => {
+      // 2-token line: black plays h5 (only player slot), puzzle solves
+      // immediately. Even though an opponent reply index (1=Nh2) exists
+      // and auto-plays, `isSolved` becomes true, so the status line is
+      // suppressed to give the "Correct!" confirmation the spotlight.
+      renderSession(['h5 Nh2'], BLACK_TO_MOVE_FEN);
+
+      (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'h5';
+      fireEvent.click(screen.getByTestId('stub-custom-submit'));
+
+      expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    });
+  });
 });

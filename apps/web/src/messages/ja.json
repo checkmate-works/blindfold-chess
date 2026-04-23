@@ -1013,7 +1013,9 @@
         "title": "挑戦",
         "correct": "正解！\ud83c\udf89",
         "incorrect": "不正解です。もう一度挑戦してください。",
-        "showBoard": "ボードを表示"
+        "showBoard": "ボードを表示",
+        "whitePlayed": "白が {move} を指しました",
+        "blackPlayed": "黒が {move} を指しました"
       },
       "result": {
         "title": "パズル結果",

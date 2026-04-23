@@ -1012,7 +1012,9 @@
         "title": "Solve",
         "correct": "Correct! \ud83c\udf89",
         "incorrect": "Incorrect. Try again.",
-        "showBoard": "Show Board"
+        "showBoard": "Show Board",
+        "whitePlayed": "White plays {move}",
+        "blackPlayed": "Black plays {move}"
       },
       "result": {
         "title": "Puzzle Result",

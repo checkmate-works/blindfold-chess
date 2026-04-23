@@ -33,6 +33,13 @@ type SessionState = {
   playerMoves: string[];
   lockedSolutionIndex: number | null;
   attempts: Attempt[];
+  /**
+   * SAN of the opponent's most recent auto-played reply, or `null` before the
+   * first player move. Surfaced in the UI as a `"White plays Nh2"` status
+   * line so the user isn't left wondering how the position advanced between
+   * their own moves. Mirrors the `aiPlayed` status pattern in `games/play`.
+   */
+  lastOpponentMove: string | null;
 };
 
 export function PuzzleSessionClient({ solutions, positionId, fen }: Props) {
@@ -70,6 +77,7 @@ export function PuzzleSessionClient({ solutions, positionId, fen }: Props) {
     playerMoves: [],
     lockedSolutionIndex: null,
     attempts: [],
+    lastOpponentMove: null,
   });
   const [moveInput, setMoveInput] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -141,11 +149,13 @@ export function PuzzleSessionClient({ solutions, positionId, fen }: Props) {
     const opponentSanIndex = justPlayedSanIndex + 1;
 
     let fenAfter = afterPlayer.fen;
+    let playedOpponentMove: string | null = null;
     if (opponentSanIndex < solution.moves.length) {
       const opponentMove = solution.moves[opponentSanIndex]!;
       const afterOpponent = executeMove(fenAfter, opponentMove);
       if (afterOpponent) {
         fenAfter = afterOpponent.fen;
+        playedOpponentMove = opponentMove;
       }
     }
 
@@ -155,6 +165,7 @@ export function PuzzleSessionClient({ solutions, positionId, fen }: Props) {
       playerMoves: newPlayerMoves,
       lockedSolutionIndex: locked,
       attempts: updatedAttempts,
+      lastOpponentMove: playedOpponentMove,
     });
     setMoveInput('');
     setError(null);
@@ -167,8 +178,20 @@ export function PuzzleSessionClient({ solutions, positionId, fen }: Props) {
     return true;
   }
 
+  const opponentColor: 'w' | 'b' = playerColor === 'w' ? 'b' : 'w';
+  const opponentStatusKey = opponentColor === 'w' ? 'whitePlayed' : 'blackPlayed';
+
   return (
     <div className="space-y-4">
+      {session.lastOpponentMove && !isSolved && (
+        <p className="text-sm text-muted-foreground" role="status" aria-live="polite">
+          <span aria-hidden className="mr-1 text-base leading-none">
+            {opponentColor === 'w' ? '⚪' : '⚫'}
+          </span>
+          {t(opponentStatusKey, { move: session.lastOpponentMove })}
+        </p>
+      )}
+
       <MoveInputPanel
         preferences={preferences}
         updatePreferences={updatePreferences}

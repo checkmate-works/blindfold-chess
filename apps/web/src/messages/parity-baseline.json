@@ -124,10 +124,12 @@
         "practice.puzzle.create.solutionSection",
         "practice.puzzle.detail.startSolving",
         "practice.puzzle.result.note",
+        "practice.puzzle.session.blackPlayed",
         "practice.puzzle.session.correct",
         "practice.puzzle.session.incorrect",
         "practice.puzzle.session.showBoard",
         "practice.puzzle.session.title",
+        "practice.puzzle.session.whitePlayed",
         "toast.positionCreated",
         "toast.positionDeleted",
         "topics.grantInfoModal.body",
@@ -246,10 +248,12 @@
         "practice.puzzle.create.solutionSection",
         "practice.puzzle.detail.startSolving",
         "practice.puzzle.result.note",
+        "practice.puzzle.session.blackPlayed",
         "practice.puzzle.session.correct",
         "practice.puzzle.session.incorrect",
         "practice.puzzle.session.showBoard",
-        "practice.puzzle.session.title"
+        "practice.puzzle.session.title",
+        "practice.puzzle.session.whitePlayed"
       ],
       "extra": [
         "practice.puzzle.detail.correct",
