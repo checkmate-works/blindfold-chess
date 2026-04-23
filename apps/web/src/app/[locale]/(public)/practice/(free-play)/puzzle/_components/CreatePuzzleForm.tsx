@@ -93,6 +93,20 @@ export function CreatePuzzleForm() {
     }
   }, [baseFen]);
 
+  // Side to move at the *current* position along the line. This is what
+  // drives ButtonInput's piece-icon color: the pieces displayed should
+  // belong to whichever side is about to play next, which alternates as
+  // moves are appended. `firstTurn` only reflects the puzzle's starting
+  // side and would leave the icons stale after the first move.
+  const currentTurn: SideToMove = useMemo(() => {
+    if (!currentFen) return firstTurn;
+    try {
+      return getTurnFromFen(currentFen) as SideToMove;
+    } catch {
+      return firstTurn;
+    }
+  }, [currentFen, firstTurn]);
+
   const isDirty =
     !submitted &&
     (title.trim() !== '' ||
@@ -405,6 +419,9 @@ export function CreatePuzzleForm() {
         {/* Turn indicator */}
         {turnIndicator && (
           <p className="text-sm text-muted-foreground text-center">
+            <span aria-hidden className="mr-1">
+              {turnIndicator === 'w' ? '⚪' : '⚫'}
+            </span>
             {turnIndicator === 'w' ? t('whiteToMove') : t('blackToMove')}
           </p>
         )}
@@ -458,15 +475,14 @@ export function CreatePuzzleForm() {
               <ul className="space-y-2">
                 {moves.map((move, index) => (
                   <li key={index} className="flex items-center gap-2 text-sm">
-                    <span className="w-14 shrink-0 text-right text-muted-foreground">
-                      <span className="font-mono text-foreground">{move}</span>
-                    </span>
+                    <span className="shrink-0 text-muted-foreground">{t('noteLabel')}</span>
                     <input
                       type="text"
                       value={notes[index] ?? ''}
                       onChange={(e) => handleNoteChange(index, e.target.value)}
                       maxLength={PUZZLE_NOTE_MAX_LENGTH}
                       placeholder={t('addMoveNote')}
+                      aria-label={t('noteAriaLabel', { move })}
                       className="flex-1 px-2 py-1 rounded border border-border bg-card text-foreground text-sm"
                     />
                   </li>
@@ -492,7 +508,7 @@ export function CreatePuzzleForm() {
                 inputPlaceholder={t('movePlaceholder')}
                 selectPlaceholder={tPlay('selectMove')}
                 toggleTitle={tPlay('switchInputMode')}
-                playerColor={firstTurn}
+                playerColor={currentTurn}
                 showLegalMovesHint={false}
               />
             )

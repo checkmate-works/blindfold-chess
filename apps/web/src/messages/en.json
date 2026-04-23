@@ -977,6 +977,8 @@
         "solutionInvalid": "Invalid move sequence for this position",
         "movePlaceholder": "Enter move (e.g., e4, Nf3)",
         "addMoveNote": "Note (optional)",
+        "noteLabel": "comment:",
+        "noteAriaLabel": "Comment for move {move}",
         "removeLastMove": "Remove last move ({move})",
         "maxMovesReached": "Maximum 20 moves reached",
         "sideToMove": "Side to move",
