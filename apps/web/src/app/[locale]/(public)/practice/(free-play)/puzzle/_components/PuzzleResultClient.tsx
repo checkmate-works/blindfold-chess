@@ -4,27 +4,31 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { Button } from '@/app/_components';
+import { Button, ChessBoard } from '@/app/_components';
 import { Link } from '@/i18n/routing';
-import { executeMove, movesToUci } from '@blindfold-chess/features/chess-core';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
-import { FaEye } from 'react-icons/fa';
+import { FaEye, FaPlay, FaRedo } from 'react-icons/fa';
 
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
 
-import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
+import { useMovePlayback } from '@/app/[locale]/(public)/practice/_hooks/use-move-playback';
 import { SectionTitle } from '@/app/[locale]/_components';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { CircleMarker } from './CircleMarker';
 
 /**
- * Delay between auto-advanced moves in the multi-move replay. 1500 ms lines
- * up roughly with the internal `AnimatedChessBoard` animation so each move
- * has time to complete before the next one starts, without testing the
- * viewer's patience.
+ * Interval between auto-advanced moves in the replay. Matches the value used
+ * by `MoveSequenceMemorize` so the two surfaces feel consistent to a user
+ * who uses both.
  */
-const REPLAY_STEP_DELAY_MS = 1500;
+const MOVE_INTERVAL_MS = 1000;
+/**
+ * Short delay before the first move starts animating after the user clicks
+ * Play, so the initial position registers for a beat before the pieces move.
+ * Mirrors `MoveSequenceMemorize`'s `autoPlayDelayMs` of 500 ms.
+ */
+const PLAY_INITIAL_DELAY_MS = 500;
 
 type Attempt = { move: string; isCorrect: boolean };
 
@@ -37,6 +41,11 @@ type Props = {
 
 export function PuzzleResultClient({ positionId, fen, solutionLines, solutionMoveLists }: Props) {
   const t = useTranslations('practice.puzzle.result');
+  // Reuse the `practice.moveSequence.play` / `replay` strings rather than
+  // duplicating them under `practice.puzzle.result.*`: the UI is intentionally
+  // aligned with `MoveSequenceMemorize`, so the labels should stay in lockstep
+  // without a second i18n entry to keep in sync.
+  const tMoveSequence = useTranslations('practice.moveSequence');
   const { preferences } = useGamePreferences();
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   const [solutionLine, setSolutionLine] = useState<string>(solutionLines[0] ?? '');
@@ -83,79 +92,78 @@ export function PuzzleResultClient({ positionId, fen, solutionLines, solutionMov
       .map((san) => ({ san, note: null }));
   }, [solutionLine, solutionMoveLists]);
 
+  // Drive the replay with the same `useMovePlayback` hook `MoveSequenceMemorize`
+  // uses — it owns the chess.js state, the step timer, and the jump/pause
+  // primitives. The hook re-initialises when its `initialFen` / `moves` change,
+  // so solutionLine switches (after sessionStorage read) reset the replay to
+  // an idle state automatically.
+  const replayMoveSans = useMemo(() => lockedMoves.map((m) => m.san), [lockedMoves]);
+  const {
+    currentFen: replayFen,
+    isPlaying,
+    hasPlayed,
+    lastMove,
+    play,
+  } = useMovePlayback({
+    initialFen: fen,
+    moves: replayMoveSans,
+    intervalMs: MOVE_INTERVAL_MS,
+    autoPlayDelayMs: PLAY_INITIAL_DELAY_MS,
+  });
+
   const solutionFirstMove = lockedMoves[0]?.san ?? '';
-
-  // Pre-compute the FEN *before* each move in the locked sequence. Index N
-  // is the FEN that `AnimatedChessBoard` should take as its `initialFen`
-  // when we want it to animate `lockedMoves[N].san`. The array length
-  // matches `lockedMoves.length`: slot 0 is the puzzle's starting FEN,
-  // slot 1 is the FEN after move 0 has been applied, etc. If `executeMove`
-  // ever returns null (schema drift, illegal stored move), we stop
-  // extending the array — the replay just won't advance past that index.
-  const replayFens = useMemo<string[]>(() => {
-    const fens: string[] = [fen];
-    let current = fen;
-    for (const m of lockedMoves) {
-      const result = executeMove(current, m.san);
-      if (!result) break;
-      fens.push(result.fen);
-      current = result.fen;
-    }
-    return fens;
-  }, [fen, lockedMoves]);
-
-  // Step through `lockedMoves` on a timer so `AnimatedChessBoard` re-keys
-  // with a fresh (initialFen, move) pair on each tick and plays every move
-  // in the sequence, not just the first. The board component itself only
-  // animates a single move at a time, so we drive the sequence from here.
-  const [replayIndex, setReplayIndex] = useState(0);
-
-  // Restart from move 0 whenever the solution line changes (i.e. after
-  // `useEffect` reads sessionStorage and swaps `solutionLine`).
-  useEffect(() => {
-    setReplayIndex(0);
-  }, [lockedMoves]);
-
-  useEffect(() => {
-    if (replayIndex >= lockedMoves.length - 1) return;
-    const handle = setTimeout(() => {
-      setReplayIndex((i) => Math.min(i + 1, lockedMoves.length - 1));
-    }, REPLAY_STEP_DELAY_MS);
-    return () => clearTimeout(handle);
-  }, [replayIndex, lockedMoves.length]);
-
-  const replayInitialFen = replayFens[replayIndex] ?? fen;
-  const replayMoveSan = lockedMoves[replayIndex]?.san;
-
-  // Convert the current step's SAN to UCI for `AnimatedChessBoard`. The
-  // board component accepts SAN too, but we keep the UCI conversion for
-  // parity with the earlier single-move animation path.
-  const replayMoveUci = useMemo(() => {
-    if (!replayMoveSan) return undefined;
-    const uciMoves = movesToUci([replayMoveSan], replayInitialFen);
-    return uciMoves[0];
-  }, [replayMoveSan, replayInitialFen]);
-
   const firstTurn: 'w' | 'b' = isBlackToMove ? 'b' : 'w';
 
   return (
     <div className="space-y-6">
-      {/* (A) Replay board */}
+      {/* (A) Replay board — mirrors MoveSequenceMemorize's layout: plain
+       *     ChessBoard + Play overlay while idle, Replay affordance once
+       *     the sequence has been played through at least once.
+       */}
       <SectionTitle>{t('replaySection')}</SectionTitle>
-      <div className="max-w-md mx-auto">
-        {/*
-         * `key` forces AnimatedChessBoard to remount each step so its internal
-         * `usePieceAnimation` hook picks up the new `(initialFen, move)` pair
-         * cleanly instead of treating the change as a mid-animation update.
-         */}
-        <AnimatedChessBoard
-          key={replayIndex}
-          initialFen={replayInitialFen}
-          move={replayMoveUci}
-          autoPlay
-          flipped={isBlackToMove}
-          boardTheme={preferences.boardTheme}
-        />
+      <div className="flex justify-center">
+        <div className="w-full max-w-md">
+          <div className="relative">
+            <ChessBoard
+              fen={replayFen}
+              flipped={isBlackToMove}
+              showCoordinates={preferences.showCoordinates}
+              boardTheme={preferences.boardTheme}
+              lastMove={preferences.highlightLastMove ? lastMove : null}
+            />
+
+            {/* Play overlay — shown while idle and never while a replay is
+             *  in-flight. After the replay finishes (`hasPlayed=true`) the
+             *  overlay goes away and the Replay button below takes over.
+             */}
+            {!isPlaying && !hasPlayed && lockedMoves.length > 0 && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-md">
+                <button
+                  type="button"
+                  onClick={play}
+                  aria-label={tMoveSequence('play')}
+                  className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 transition-all hover:scale-110"
+                >
+                  <FaPlay className="w-12 h-12 ml-1" />
+                </button>
+              </div>
+            )}
+          </div>
+
+          {hasPlayed && !isPlaying && (
+            <div className="mt-3 flex justify-center">
+              <button
+                type="button"
+                onClick={play}
+                aria-label={tMoveSequence('replay')}
+                className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <FaRedo className="w-3 h-3" />
+                <span>{tMoveSequence('replay')}</span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {lockedMoves.length > 0 && (

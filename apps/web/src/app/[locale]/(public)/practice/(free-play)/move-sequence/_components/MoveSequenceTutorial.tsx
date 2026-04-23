@@ -6,10 +6,10 @@ import { BoardSkeleton, Button, ChessBoard } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaPlay } from 'react-icons/fa';
 
+import { useMovePlayback } from '@/app/[locale]/(public)/practice/_hooks/use-move-playback';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { useMovePlayback } from '../_hooks/use-move-playback';
 import { encodeMoveSequenceToBase64 } from '../_lib/share';
 
 type Props = {

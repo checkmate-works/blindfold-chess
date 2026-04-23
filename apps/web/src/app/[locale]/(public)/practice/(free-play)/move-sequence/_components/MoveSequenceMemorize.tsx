@@ -6,9 +6,9 @@ import { BoardSkeleton, Button, ChessBoard } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaPlay, FaRedo } from 'react-icons/fa';
 
+import { useMovePlayback } from '@/app/[locale]/(public)/practice/_hooks/use-move-playback';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
-import { useMovePlayback } from '../_hooks/use-move-playback';
 import type { MoveSequenceData } from '../_lib/types';
 
 type Props = {
