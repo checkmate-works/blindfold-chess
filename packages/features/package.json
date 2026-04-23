@@ -30,13 +30,18 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
+  "peerDependencies": {
+    "react": "*"
+  },
   "dependencies": {
     "@blindfold-chess/types": "workspace:*",
     "chess.js": "^1.4.0"
   },
   "devDependencies": {
     "@blindfold-chess/eslint-config": "workspace:*",
+    "@types/react": "^19.2.14",
     "eslint": "^9.39.4",
+    "react": "^19.2.5",
     "typescript": "^5.9.3"
   }
 }
