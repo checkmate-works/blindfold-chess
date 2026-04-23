@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useEffect, useMemo, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -110,16 +110,95 @@ export function PuzzleSessionClient({
    */
   const [isNavigatingToResult, setIsNavigatingToResult] = useState(false);
 
-  // Scroll the page back to the top whenever the opponent auto-plays a new
+  // Scroll the PageTitle into view whenever the opponent auto-plays a new
   // reply. The MoveInputPanel sits below the fold on narrow viewports, so
   // without this the user never sees the PageTitle's "White plays Nh2"
   // announcement — they stay focused on the input they just submitted.
-  // `smooth` keeps the motion obvious without being disorienting.
+  //
+  // Why this shape: earlier attempts ran `scrollIntoView` directly in the
+  // effect, but on mobile / narrow viewports the post-submit DOM mutation
+  // (error-message clear, legal-moves hint toggle, etc.) can happen on the
+  // same commit, and Safari / Chrome-on-iOS will silently no-op a smooth
+  // scroll requested mid-commit. Deferring to `requestAnimationFrame`
+  // guarantees layout is flushed and paint has started before we ask the
+  // browser to scroll — after that the scroll always lands.
+  //
+  // We also explicitly blur `document.activeElement` first: when the user
+  // submits via the text input, the on-screen keyboard can keep the input
+  // pinned to the visual viewport, which causes `scrollIntoView` to align
+  // against the keyboard's offset instead of the real page top. Blurring
+  // collapses the virtual keyboard; the subsequent rAF then scrolls the
+  // fully-collapsed viewport.
+  //
+  // `scrollIntoView` is used with a `window.scrollTo` fallback computed from
+  // `getBoundingClientRect().top + window.scrollY`, so if a future layout
+  // introduces an overflow-scroll ancestor that breaks `scrollIntoView` we
+  // still have a deterministic document-level scroll path.
+  //
+  // Dependency uses `playerMoves.length` rather than `lastOpponentMove`
+  // itself: if the same opponent SAN happens to come up twice in a row
+  // (transposition into the same reply), the primitive string comparison
+  // would treat it as unchanged and skip the scroll; keying off the move
+  // count instead refires on every accepted player move.
+  const titleAnchorRef = useRef<HTMLDivElement>(null);
+  const playerMoveCount = session.playerMoves.length;
   useEffect(() => {
+    if (playerMoveCount === 0) return;
     if (session.lastOpponentMove === null) return;
-    if (typeof window === 'undefined') return;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [session.lastOpponentMove]);
+
+    // Collapse the virtual keyboard / drop focus from the move input so the
+    // scroll target is measured against the layout viewport, not the visual
+    // viewport pinned to the focused input.
+    if (typeof document !== 'undefined') {
+      const active = document.activeElement;
+      if (active instanceof HTMLElement && active !== document.body) {
+        active.blur();
+      }
+    }
+
+    // Wait one animation frame so React's commit is flushed and the layout
+    // engine has the up-to-date PageTitle content ("White plays Nh2") when
+    // we measure / scroll.
+    const raf = requestAnimationFrame(() => {
+      const anchor = titleAnchorRef.current;
+      if (!anchor) return;
+
+      // Dual-call strategy: run `scrollIntoView` (works in the common case,
+      // walks up the ancestor chain to find a scroll container) AND an
+      // imperative `window.scrollTo` by computed Y. Running both is
+      // idempotent — if the first one already landed at the right place the
+      // second is a no-op; but if the first silently refuses (e.g. Safari's
+      // treatment of smooth scroll under certain focus/virtual-keyboard
+      // states), the second still succeeds.
+      if (typeof anchor.scrollIntoView === 'function') {
+        try {
+          anchor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } catch {
+          // Safari < 15.4 rejects the options object form; fall through to
+          // the imperative path below.
+        }
+      }
+      try {
+        const y = anchor.getBoundingClientRect().top + window.scrollY;
+        if (Math.abs(y - window.scrollY) > 1) {
+          window.scrollTo({ top: y, behavior: 'smooth' });
+        }
+      } catch {
+        // Ultimate fallback — positional `scrollTo` with no options.
+        try {
+          window.scrollTo(0, anchor.getBoundingClientRect().top + window.scrollY);
+        } catch {
+          if (document.documentElement) document.documentElement.scrollTop = 0;
+        }
+      }
+    });
+    return () => cancelAnimationFrame(raf);
+    // `session.lastOpponentMove` is included so a single-move puzzle that
+    // happens to have an opponent reply (player's sole move → auto reply →
+    // solve) still triggers the scroll on that single transition; omitting
+    // it would mean `playerMoveCount` changing from 0 to 1 without the
+    // ref being populated (first render) misses the scroll on SSR hydration.
+  }, [playerMoveCount, session.lastOpponentMove]);
 
   const hasErrors = session.attempts.some((a) => !a.isCorrect);
 
@@ -249,7 +328,9 @@ export function PuzzleSessionClient({
 
   return (
     <div className="space-y-8">
-      <PageTitle>{titleContent}</PageTitle>
+      <div ref={titleAnchorRef} data-testid="title-anchor">
+        <PageTitle>{titleContent}</PageTitle>
+      </div>
 
       <PagePanel>
         <div className="space-y-4">
