@@ -1,9 +1,15 @@
 import type { Square } from "@blindfold-chess/types";
+import {
+  BOARD_ORIENTATIONS,
+  type BoardOrientation,
+} from "@blindfold-chess/types";
 
 import type { BasePracticeResult, BasePracticeSettings } from "../common/types";
 
-export const BOARD_ORIENTATIONS = ["white", "black", "random"] as const;
-export type BoardOrientation = (typeof BOARD_ORIENTATIONS)[number];
+// Re-exported so existing importers of `@blindfold-chess/features/coordinate-quiz`
+// keep working; the canonical source is `@blindfold-chess/types`.
+export { BOARD_ORIENTATIONS };
+export type { BoardOrientation };
 
 export const FEEDBACK_SPEEDS = ["fast", "normal", "slow"] as const;
 export type FeedbackSpeed = (typeof FEEDBACK_SPEEDS)[number];

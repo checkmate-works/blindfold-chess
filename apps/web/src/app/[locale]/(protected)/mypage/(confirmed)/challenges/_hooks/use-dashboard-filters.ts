@@ -1,5 +1,7 @@
 import { useCallback, useState } from 'react';
 
+import type { BoardOrientation } from '@blindfold-chess/types';
+
 import {
   DEFAULT_PIECE_SELECTION,
   PIECE_SHORT_TO_NAME,
@@ -7,7 +9,7 @@ import {
 } from '../_lib/derive-piece-filter';
 import type { DatePeriod } from '../_lib/period-utils';
 
-export type BoardOrientation = 'white' | 'black' | 'random';
+export type { BoardOrientation };
 
 /**
  * Owns the user-facing UI filter state for the mypage challenges dashboard:

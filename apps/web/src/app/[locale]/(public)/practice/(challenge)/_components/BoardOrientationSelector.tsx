@@ -1,10 +1,10 @@
 'use client';
 
+import type { BoardOrientation } from '@blindfold-chess/types';
+
 import { getBoardThemeColors } from '@/lib/games/board-themes';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
-
-type BoardOrientation = 'white' | 'black' | 'random';
 
 type Props = {
   value: BoardOrientation;
