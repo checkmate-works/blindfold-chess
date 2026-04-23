@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 
 import { checkSymmetryAnswer, generateProblem } from '@blindfold-chess/features/board-symmetry';
 import type { BoardSymmetryProblem } from '@blindfold-chess/features/board-symmetry';
-import { applyCoordinateBackspace } from '@blindfold-chess/features/common';
+import { FEEDBACK_FLASH_MS, applyCoordinateBackspace } from '@blindfold-chess/features/common';
 
 import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
@@ -52,7 +52,8 @@ export default function BoardSymmetryChallenge({ locale }: Props) {
     timeLimit: CHALLENGE_TIME_LIMIT,
     generateQuestion,
     mistakeAllowance: MISTAKE_LIMIT,
-    feedbackDuration: (correct: boolean) => (correct ? 1000 : 2000),
+    feedbackDuration: (correct: boolean) =>
+      correct ? FEEDBACK_FLASH_MS.correct : FEEDBACK_FLASH_MS.incorrect,
   });
 
   useScrollToElement('board-symmetry-challenge');

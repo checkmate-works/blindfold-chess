@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import { FEEDBACK_FLASH_MS } from '@blindfold-chess/features/common';
 import {
   generateSquareSequence,
   getDiagonals,
@@ -73,7 +74,8 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
     timeLimit: initialTimeLimit,
     generateQuestion,
     mistakeAllowance: MISTAKE_LIMIT,
-    feedbackDuration: (correct: boolean) => (correct ? 1000 : 2000),
+    feedbackDuration: (correct: boolean) =>
+      correct ? FEEDBACK_FLASH_MS.correct : FEEDBACK_FLASH_MS.incorrect,
   });
 
   useScrollToElement('diagonal-quiz-session');

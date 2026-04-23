@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import * as Haptics from "expo-haptics";
+import { FEEDBACK_FLASH_MS } from "@blindfold-chess/features/common";
 import {
   generateSquareSequence,
   getDiagonals,
@@ -118,7 +119,7 @@ export function useDiagonalQuizSession({
         () => {
           nextQuestion();
         },
-        correct ? 1000 : 2000,
+        correct ? FEEDBACK_FLASH_MS.correct : FEEDBACK_FLASH_MS.incorrect,
       );
     },
     [currentSquare, isProcessing, nextQuestion],

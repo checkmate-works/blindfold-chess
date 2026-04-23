@@ -4,6 +4,7 @@ import {
   generateProblem,
   checkSymmetryAnswer,
 } from "@blindfold-chess/features/board-symmetry";
+import { FEEDBACK_FLASH_MS } from "@blindfold-chess/features/common";
 import type { BoardSymmetryProblem, BoardSymmetryResult } from "../lib/types";
 
 type UseBoardSymmetrySessionProps = {
@@ -95,7 +96,7 @@ export function useBoardSymmetrySession({
         () => {
           nextProblem();
         },
-        correct ? 1000 : 2000,
+        correct ? FEEDBACK_FLASH_MS.correct : FEEDBACK_FLASH_MS.incorrect,
       );
     },
     [problem, isProcessing, nextProblem],

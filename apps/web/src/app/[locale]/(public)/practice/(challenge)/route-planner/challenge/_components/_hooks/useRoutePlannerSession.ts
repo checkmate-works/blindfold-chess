@@ -4,6 +4,8 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import { FEEDBACK_FLASH_MS } from '@blindfold-chess/features/common';
+
 import { MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
 import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-challenge-result-save';
@@ -65,7 +67,8 @@ export function useRoutePlannerSession({
     timeLimit: initialTimeLimit,
     generateQuestion,
     mistakeAllowance: MISTAKE_LIMIT,
-    feedbackDuration: (correct: boolean) => (correct ? 1000 : 2000),
+    feedbackDuration: (correct: boolean) =>
+      correct ? FEEDBACK_FLASH_MS.correct : FEEDBACK_FLASH_MS.incorrect,
   });
 
   const {
