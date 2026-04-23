@@ -1252,6 +1252,10 @@
         "switchToTraining": "📖 トレーニングモードで練習する"
       }
     },
+    "common": {
+      "play": "再生",
+      "replay": "再生"
+    },
     "moveSequence": {
       "title": "約束組手",
       "description": "一連の指し手を記憶し、脳内でビジュアライズする練習",
@@ -1286,7 +1290,6 @@
       "presetDescription": "練習するオープニングを選択",
       "preview": "プレビュー",
       "memorizeInstructions": "手順を見て記憶してください",
-      "play": "再生",
       "moves": "手",
       "pressPlayToStart": "再生ボタンを押して開始",
       "playingMove": "{total}手中{current}手目",
@@ -1323,7 +1326,6 @@
       "invalid_fen": "無効なFEN形式が含まれています",
       "session": "練習中",
       "endPractice": "練習を終了する",
-      "replay": "再生",
       "clickMoveToJump": "クリックで局面を表示",
       "wrongAttempts": "間違い入力",
       "tutorial": {

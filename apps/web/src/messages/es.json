@@ -1224,6 +1224,10 @@
         "switchToTraining": "📖 Practicar en modo entrenamiento"
       }
     },
+    "common": {
+      "play": "Reproducir",
+      "replay": "Repetir"
+    },
     "moveSequence": {
       "title": "Yakusoku Kumite",
       "description": "Memoriza y visualiza una secuencia de movimientos en el tablero",
@@ -1258,7 +1262,6 @@
       "presetDescription": "Selecciona una apertura para practicar",
       "preview": "Vista Previa",
       "memorizeInstructions": "Observa la secuencia y memoriza los movimientos",
-      "play": "Reproducir",
       "moves": "movimientos",
       "pressPlayToStart": "Presiona reproducir para iniciar la secuencia",
       "playingMove": "Movimiento {current} de {total}",
@@ -1295,7 +1298,6 @@
       "invalid_fen": "Contiene formato FEN inválido",
       "session": "Sesión",
       "endPractice": "Finalizar Práctica",
-      "replay": "Repetir",
       "clickMoveToJump": "Haz clic en un movimiento para saltar a esa posición",
       "wrongAttempts": "Intentos incorrectos",
       "tutorial": {

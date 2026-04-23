@@ -25,6 +25,7 @@ const MOVE_INTERVAL = 1000;
 
 export function MoveSequenceTutorial({ locale }: Props) {
   const t = useTranslations('practice.moveSequence');
+  const tCommon = useTranslations('practice.common');
   const router = useRouter();
   const { preferences, isLoaded } = useGamePreferences();
 
@@ -74,7 +75,7 @@ export function MoveSequenceTutorial({ locale }: Props) {
               <button
                 onClick={handlePlay}
                 className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 transition-all hover:scale-110"
-                aria-label={t('play')}
+                aria-label={tCommon('play')}
               >
                 <FaPlay className="w-8 h-8 ml-1" />
               </button>

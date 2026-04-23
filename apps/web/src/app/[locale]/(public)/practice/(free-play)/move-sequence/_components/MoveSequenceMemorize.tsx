@@ -20,6 +20,7 @@ const MOVE_INTERVAL = 1000; // 1 second between moves
 
 export function MoveSequenceMemorize({ data, onComplete }: Props) {
   const t = useTranslations('practice.moveSequence');
+  const tCommon = useTranslations('practice.common');
   const { preferences, isLoaded } = useGamePreferences();
 
   const [selectedMoveIndex, setSelectedMoveIndex] = useState<number | null>(null);
@@ -124,7 +125,7 @@ export function MoveSequenceMemorize({ data, onComplete }: Props) {
                 <button
                   onClick={handlePlay}
                   className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 transition-all hover:scale-110"
-                  aria-label={t('play')}
+                  aria-label={tCommon('play')}
                 >
                   <FaPlay className="w-12 h-12 ml-1" />
                 </button>
@@ -142,10 +143,10 @@ export function MoveSequenceMemorize({ data, onComplete }: Props) {
             <button
               onClick={handlePlay}
               className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-              aria-label={t('replay')}
+              aria-label={tCommon('replay')}
             >
               <FaRedo className="w-3 h-3" />
-              <span>{t('replay')}</span>
+              <span>{tCommon('replay')}</span>
             </button>
           )}
         </div>

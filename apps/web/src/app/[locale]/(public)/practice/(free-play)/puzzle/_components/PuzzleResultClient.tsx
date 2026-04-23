@@ -41,11 +41,10 @@ type Props = {
 
 export function PuzzleResultClient({ positionId, fen, solutionLines, solutionMoveLists }: Props) {
   const t = useTranslations('practice.puzzle.result');
-  // Reuse the `practice.moveSequence.play` / `replay` strings rather than
-  // duplicating them under `practice.puzzle.result.*`: the UI is intentionally
-  // aligned with `MoveSequenceMemorize`, so the labels should stay in lockstep
-  // without a second i18n entry to keep in sync.
-  const tMoveSequence = useTranslations('practice.moveSequence');
+  // Pull Play / Replay labels from the shared `practice.common` namespace so
+  // the puzzle replay surface stays in lockstep with `MoveSequenceMemorize`
+  // without reaching into a feature-specific namespace to borrow strings.
+  const tCommon = useTranslations('practice.common');
   const { preferences } = useGamePreferences();
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   const [solutionLine, setSolutionLine] = useState<string>(solutionLines[0] ?? '');
@@ -141,7 +140,7 @@ export function PuzzleResultClient({ positionId, fen, solutionLines, solutionMov
                 <button
                   type="button"
                   onClick={play}
-                  aria-label={tMoveSequence('play')}
+                  aria-label={tCommon('play')}
                   className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 transition-all hover:scale-110"
                 >
                   <FaPlay className="w-12 h-12 ml-1" />
@@ -155,11 +154,11 @@ export function PuzzleResultClient({ positionId, fen, solutionLines, solutionMov
               <button
                 type="button"
                 onClick={play}
-                aria-label={tMoveSequence('replay')}
+                aria-label={tCommon('replay')}
                 className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 <FaRedo className="w-3 h-3" />
-                <span>{tMoveSequence('replay')}</span>
+                <span>{tCommon('replay')}</span>
               </button>
             </div>
           )}
