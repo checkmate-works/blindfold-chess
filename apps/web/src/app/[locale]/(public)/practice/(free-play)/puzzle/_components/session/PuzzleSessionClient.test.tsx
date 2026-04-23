@@ -130,10 +130,10 @@ function toSolutionMoves(line: string) {
     .map((san) => ({ san, note: null }));
 }
 
-function renderSession(solutions: string[] = ['Nf3']) {
+function renderSession(solutions: string[] = ['Nf3'], fen: string = STARTING_FEN) {
   const solutionMoves = solutions.map(toSolutionMoves);
   return render(
-    <PuzzleSessionClient solutions={solutionMoves} positionId={POSITION_ID} fen={STARTING_FEN} />
+    <PuzzleSessionClient solutions={solutionMoves} positionId={POSITION_ID} fen={fen} />
   );
 }
 
@@ -361,6 +361,82 @@ describe('PuzzleSessionClient', () => {
       } finally {
         vi.useRealTimers();
       }
+    });
+  });
+
+  // Regression guard for the black-to-move matcher bug where the session
+  // client used `getPlayerMovesFromSequence(moves, 'b')` from chess-core. That
+  // helper is a PGN utility that assumes index 0 is always a white move, so
+  // for a black-to-move puzzle solution stored as `['h5', 'Nh2', 'Bg3']` it
+  // returned `['Nh2']` and rejected the correct first move `h5` as invalid.
+  //
+  // Puzzle solutions always begin with the player's move, so player slots are
+  // at indices 0, 2, 4, … regardless of which side the puzzle is set up for.
+  describe('black-to-move puzzle', () => {
+    // Real puzzle surfaced by a user: 276e36fb-9d43-4e6c-80f1-98ec47d1ac17
+    const BLACK_TO_MOVE_FEN =
+      'r2q1rk1/2pb1ppn/pp1p3p/6b1/2P1P1N1/1P1P3P/PB1N1RP1/R2Q2K1 b - - 4 16';
+
+    it("accepts the black player's first move `h5` as correct", () => {
+      renderSession(['h5 Nh2 Bg3'], BLACK_TO_MOVE_FEN);
+
+      (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'h5';
+      fireEvent.click(screen.getByTestId('stub-custom-submit'));
+
+      expect(screen.queryByTestId('panel-error')).not.toBeInTheDocument();
+    });
+
+    it("rejects the opponent's SAN `Nh2` when submitted as the first player move", () => {
+      renderSession(['h5 Nh2 Bg3'], BLACK_TO_MOVE_FEN);
+
+      (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'Nh2';
+      fireEvent.click(screen.getByTestId('stub-custom-submit'));
+
+      expect(screen.getByTestId('panel-error')).toHaveTextContent('incorrect');
+    });
+
+    it('solves a single-move black-to-move puzzle and records the payload with the black-side FEN', () => {
+      // Single-move variant: black plays `h5`, puzzle complete. This isolates
+      // the regression (matcher accepts index 0 as the player's move for a
+      // black-to-move puzzle) from any board-legality concerns on deeper
+      // plies, which are exercised separately by the first case above.
+      vi.useFakeTimers();
+      try {
+        renderSession(['h5'], BLACK_TO_MOVE_FEN);
+
+        (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'h5';
+        fireEvent.click(screen.getByTestId('stub-custom-submit'));
+
+        act(() => {
+          vi.advanceTimersByTime(1000);
+        });
+
+        expect(mockPush).toHaveBeenCalledWith(`/practice/puzzle/${POSITION_ID}/result`);
+
+        const parsed = JSON.parse(sessionStorage.getItem(`puzzle_result_${POSITION_ID}`)!);
+        expect(parsed.solutionLine).toBe('h5');
+        expect(parsed.attempts).toEqual([{ move: 'h5', isCorrect: true }]);
+        expect(parsed.fen).toBe(BLACK_TO_MOVE_FEN);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('auto-plays the white opponent reply after the black player move in a multi-move line', () => {
+      // Black plays h5, opponent reply Nh2 is auto-played, puzzle continues.
+      // This exercises the interleave fix in the opponent-reply logic
+      // (`justPlayedSanIndex = (playerMoveCount - 1) * 2` instead of the
+      // `playerColor === 'w' ? 0 : 1` branch), verifying the opponent SAN at
+      // index 1 is the one that gets fed into executeMove.
+      renderSession(['h5 Nh2'], BLACK_TO_MOVE_FEN);
+
+      (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'h5';
+      fireEvent.click(screen.getByTestId('stub-custom-submit'));
+
+      // After the player's one and only move, the puzzle should now be solved
+      // (the opponent reply auto-plays, but there are no more player slots).
+      expect(screen.queryByTestId('panel-error')).not.toBeInTheDocument();
+      expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'true');
     });
   });
 });

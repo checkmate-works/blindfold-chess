@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 
 import { Button } from '@/app/_components';
 import { Link, useRouter } from '@/i18n/routing';
-import { executeMove, getPlayerMovesFromSequence } from '@blindfold-chess/features/chess-core';
+import { executeMove } from '@blindfold-chess/features/chess-core';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaEye } from 'react-icons/fa';
@@ -46,14 +46,23 @@ export function PuzzleSessionClient({ solutions, positionId, fen }: Props) {
 
   // Pre-extract each solution's SAN tokens and its player-move slots so per-submit
   // matching is O(solutions * 1) rather than re-parsing on every keystroke.
+  //
+  // A puzzle's stored solution always starts with the player's move (that's
+  // the whole point of a puzzle), so the player's moves sit at indices 0, 2,
+  // 4, … and the opponent's replies at 1, 3, 5, … — regardless of which side
+  // (white or black) the puzzle is set up for. We can't use
+  // `getPlayerMovesFromSequence(moves, playerColor)` from chess-core here:
+  // that helper is a PGN utility that assumes white always plays index 0, so
+  // feeding it a black-to-move puzzle ("h5 Nh2 Bg3", playerColor='b') would
+  // return `['Nh2']` and reject the correct first move `h5`.
   const parsedSolutions = useMemo(
     () =>
       solutions.map((line) => {
         const moves = line.map((m) => m.san) as AlgebraicNotation[];
-        const playerSlots = getPlayerMovesFromSequence(moves, playerColor);
+        const playerSlots = moves.filter((_, i) => i % 2 === 0);
         return { moves, playerSlots };
       }),
-    [solutions, playerColor]
+    [solutions]
   );
 
   const [session, setSession] = useState<SessionState>({
@@ -125,9 +134,10 @@ export function PuzzleSessionClient({ solutions, positionId, fen }: Props) {
     const playerMoveCount = newPlayerMoves.length;
 
     // Auto-play the opponent reply that follows this player move, if any.
-    // Opponent moves live in the SAN slots interleaved with player slots.
-    const playerStartIndex = playerColor === 'w' ? 0 : 1;
-    const justPlayedSanIndex = playerStartIndex + (playerMoveCount - 1) * 2;
+    // Puzzle solutions always begin with the player's move, so the player's
+    // N-th move (1-indexed) is at SAN index (N-1)*2 and the opponent's reply
+    // at (N-1)*2 + 1. This is independent of `playerColor`.
+    const justPlayedSanIndex = (playerMoveCount - 1) * 2;
     const opponentSanIndex = justPlayedSanIndex + 1;
 
     let fenAfter = afterPlayer.fen;
