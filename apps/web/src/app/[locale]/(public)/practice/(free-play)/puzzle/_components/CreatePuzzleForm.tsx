@@ -272,8 +272,16 @@ export function CreatePuzzleForm() {
 
       // flushSync ensures the re-render (isDirty -> false) completes before
       // router.push triggers the navigation guard check.
+      //
+      // Redirect to the just-created puzzle's detail page so the author lands
+      // on their own puzzle (not the generic list). The `?toast=position_created`
+      // param is picked up by the global `ToastContainer` — we reuse that key
+      // rather than adding a puzzle-specific one because a puzzle IS a position
+      // (`positions.type = 'puzzle'`) and the existing message "Position created
+      // successfully" reads correctly here; this avoids widening the
+      // `TOAST_PARAM_CONFIG` map and adding a near-duplicate i18n entry.
       flushSync(() => setSubmitted(true));
-      router.push(`/practice/puzzle?toast=puzzle_created`);
+      router.push(`/practice/puzzle/${result.id}?toast=position_created`);
     } catch {
       setError('An unexpected error occurred. Please try again.');
     } finally {
