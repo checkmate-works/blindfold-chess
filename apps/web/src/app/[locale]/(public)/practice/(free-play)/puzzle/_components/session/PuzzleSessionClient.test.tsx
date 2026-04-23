@@ -122,6 +122,7 @@ vi.mock('@/app/[locale]/_components/MoveInputPanel', () => ({
 // reads side-to-move via `isBlackToMoveFromFen`).
 const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 const POSITION_ID = 'puzzle-123';
+const POSITION_TITLE = 'Sample Puzzle';
 
 function toSolutionMoves(line: string) {
   return line
@@ -133,7 +134,13 @@ function toSolutionMoves(line: string) {
 function renderSession(solutions: string[] = ['Nf3'], fen: string = STARTING_FEN) {
   const solutionMoves = solutions.map(toSolutionMoves);
   return render(
-    <PuzzleSessionClient solutions={solutionMoves} positionId={POSITION_ID} fen={fen} />
+    <PuzzleSessionClient
+      solutions={solutionMoves}
+      positionId={POSITION_ID}
+      fen={fen}
+      positionTitle={POSITION_TITLE}
+      breadcrumb={<nav data-testid="stub-breadcrumb" />}
+    />
   );
 }
 
@@ -440,59 +447,60 @@ describe('PuzzleSessionClient', () => {
     });
   });
 
-  // Opponent status line — displays `"White plays Nh2"` after the player's
-  // correct move triggers an opponent auto-play, mirroring the `aiPlayed`
-  // pattern in `games/play`. Before the fix, the auto-play was silent and
-  // the user had no cue that the position had advanced.
-  describe('opponent status line', () => {
+  // Opponent status surfaced via the PageTitle — mirrors the `aiPlayed`
+  // pattern from `games/play/_components/PlayPageClient.tsx`, which swaps
+  // its `<PageTitle>` content between the default heading and transient
+  // "AI played X" announcements. For puzzles the PageTitle carries the
+  // puzzle's title by default and switches to "⚪ White plays Nh2" while
+  // the opponent reply is the freshest context, reverting to the title
+  // once `isSolved` flips so the "Correct!" confirmation takes focus.
+  describe('opponent status in PageTitle', () => {
     const BLACK_TO_MOVE_FEN =
       'r2q1rk1/2pb1ppn/pp1p3p/6b1/2P1P1N1/1P1P3P/PB1N1RP1/R2Q2K1 b - - 4 16';
 
-    it('does not render the opponent status line before the player has made a move', () => {
+    it('renders the puzzle title in the PageTitle before any player move', () => {
       renderSession(['h5 Nh2']);
 
-      // translation keys are returned verbatim by the next-intl mock
-      expect(screen.queryByText(/whitePlayed|blackPlayed/)).not.toBeInTheDocument();
+      const heading = screen.getByRole('heading', { level: 1 });
+      expect(heading).toHaveTextContent(POSITION_TITLE);
+      // The opponent-status span only appears after the first opponent
+      // auto-play, so the `data-testid` hook used by the other assertions
+      // in this block must be absent here.
+      expect(screen.queryByTestId('opponent-status')).not.toBeInTheDocument();
     });
 
-    it('shows `"White plays Nh2"` after the black player plays `h5` and the white reply auto-runs', () => {
-      // Two-plies-deep line: black plays h5 (index 0), white auto-plays Nh2
-      // (index 1). After the first player submit, the status line should
-      // announce the white reply; the puzzle is NOT yet solved because there
-      // is still a player slot at index 2 (but the fixture only has 2 SAN
-      // tokens, so the player slot count is 1 and the puzzle IS solved
-      // after this move — the status line must still render before the
-      // auto-navigation fires).
-      //
-      // We use a 3-token fixture ["h5", "Nh2", "_"] shape via a 2-token
-      // line to keep the test focused: 2 SAN tokens means 1 player slot
-      // (`h5`) and 1 opponent reply (`Nh2`). After h5, `isSolved` becomes
-      // true and the component suppresses the status line to get out of
-      // the way of the "Correct!" confirmation — matching the design
-      // choice in the JSX guard `!isSolved`. So we need a 3-token fixture
-      // where the auto-played opponent reply is followed by another player
-      // slot, to observe the status line while isSolved is still false.
+    it('swaps the PageTitle to `"White plays Nh2"` after the black player plays `h5`', () => {
+      // 3-token line so the second player slot (index 2 = Bh4) still
+      // exists after Nh2 auto-plays — keeps `isSolved=false` so the
+      // opponent-status branch renders. `Bh4` is a legal follow-up from
+      // the chess.js repro the fix block already covers; the stub matcher
+      // doesn't need to execute it, so its legality is incidental.
       renderSession(['h5 Nh2 Bh4'], BLACK_TO_MOVE_FEN);
 
       (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'h5';
       fireEvent.click(screen.getByTestId('stub-custom-submit'));
 
-      // status line uses next-intl's `t('whitePlayed', { move: 'Nh2' })`;
-      // the mock returns the key name, so we assert on the key.
-      expect(screen.getByRole('status')).toHaveTextContent('whitePlayed');
+      const heading = screen.getByRole('heading', { level: 1 });
+      // next-intl mock returns key names, so `t('whitePlayed', {move})`
+      // comes back as the literal key "whitePlayed".
+      expect(heading).toHaveTextContent('whitePlayed');
+      expect(screen.getByTestId('opponent-status')).toBeInTheDocument();
+      // Puzzle title is suppressed while the opponent-status slot is active.
+      expect(heading).not.toHaveTextContent(POSITION_TITLE);
     });
 
-    it('hides the opponent status line once the puzzle is solved', () => {
-      // 2-token line: black plays h5 (only player slot), puzzle solves
-      // immediately. Even though an opponent reply index (1=Nh2) exists
-      // and auto-plays, `isSolved` becomes true, so the status line is
-      // suppressed to give the "Correct!" confirmation the spotlight.
+    it('reverts the PageTitle back to the puzzle title once the puzzle is solved', () => {
+      // 2-token line: h5 is the only player slot, so submitting it flips
+      // `isSolved` to true. The opponent-status branch is suppressed in
+      // that state, so the PageTitle should read the puzzle title again.
       renderSession(['h5 Nh2'], BLACK_TO_MOVE_FEN);
 
       (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'h5';
       fireEvent.click(screen.getByTestId('stub-custom-submit'));
 
-      expect(screen.queryByRole('status')).not.toBeInTheDocument();
+      const heading = screen.getByRole('heading', { level: 1 });
+      expect(heading).toHaveTextContent(POSITION_TITLE);
+      expect(screen.queryByTestId('opponent-status')).not.toBeInTheDocument();
     });
   });
 });

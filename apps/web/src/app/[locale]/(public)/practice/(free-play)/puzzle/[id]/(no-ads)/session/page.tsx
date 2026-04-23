@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -52,29 +51,25 @@ export default async function PuzzleSessionPage({ params }: Props) {
 
   const { position, solutions } = row;
 
+  const breadcrumb = (
+    <Breadcrumb
+      items={[
+        { label: tNav('practice'), href: '/practice' },
+        { label: t('list.title'), href: '/practice/puzzle' },
+        { label: position.title, href: `/practice/puzzle/${position.id}` },
+        { label: t('session.title') },
+      ]}
+      locale={locale}
+    />
+  );
+
   return (
-    <div className="space-y-8">
-      <PageTitle>{position.title}</PageTitle>
-
-      <PagePanel>
-        <PuzzleSessionClient
-          solutions={solutions.map((s) => s.solutionMoves)}
-          positionId={position.id}
-          fen={position.fen}
-        />
-
-        <Divider />
-
-        <Breadcrumb
-          items={[
-            { label: tNav('practice'), href: '/practice' },
-            { label: t('list.title'), href: '/practice/puzzle' },
-            { label: position.title, href: `/practice/puzzle/${position.id}` },
-            { label: t('session.title') },
-          ]}
-          locale={locale}
-        />
-      </PagePanel>
-    </div>
+    <PuzzleSessionClient
+      solutions={solutions.map((s) => s.solutionMoves)}
+      positionId={position.id}
+      fen={position.fen}
+      positionTitle={position.title}
+      breadcrumb={breadcrumb}
+    />
   );
 }

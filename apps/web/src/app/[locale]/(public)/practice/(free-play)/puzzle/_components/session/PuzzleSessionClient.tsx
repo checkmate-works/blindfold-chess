@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -13,7 +13,10 @@ import { FaEye } from 'react-icons/fa';
 
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
 
+import { Divider } from '@/app/[locale]/_components/Divider';
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
+import { PagePanel } from '@/app/[locale]/_components/PagePanel';
+import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { PuzzleBoardPeekModal } from './PuzzleBoardPeekModal';
@@ -24,6 +27,14 @@ type Props = {
   solutions: PuzzleSolutionMove[][];
   positionId: string;
   fen: string;
+  positionTitle: string;
+  /**
+   * Breadcrumb rendered at the bottom of the page panel. Passed as a prop
+   * from the server page so locale-aware `<Breadcrumb>` (a server component)
+   * doesn't have to cross the client boundary. Mirrors the `games/play`
+   * `PlayPageClient` shape where `breadcrumb` is injected the same way.
+   */
+  breadcrumb: ReactNode;
 };
 
 const AUTO_NAVIGATE_DELAY_MS = 1000;
@@ -42,7 +53,13 @@ type SessionState = {
   lastOpponentMove: string | null;
 };
 
-export function PuzzleSessionClient({ solutions, positionId, fen }: Props) {
+export function PuzzleSessionClient({
+  solutions,
+  positionId,
+  fen,
+  positionTitle,
+  breadcrumb,
+}: Props) {
   const t = useTranslations('practice.puzzle.session');
   const tPlay = useTranslations('play');
   const tResult = useTranslations('practice.puzzle.result');
@@ -178,91 +195,112 @@ export function PuzzleSessionClient({ solutions, positionId, fen }: Props) {
     return true;
   }
 
+  // Opponent status slot in the PageTitle — mirrors the `aiMoveDisplay`
+  // pattern from `games/play/_components/PlayPageClient.tsx`, where the
+  // PageTitle is a single-line status surface that switches between the
+  // default page heading and transient "AI played X" announcements. Here
+  // the PageTitle carries the puzzle's title by default and swaps to
+  // "⚪ White plays Nh2" while the opponent reply is the freshest context.
+  // When `isSolved` flips to true the "Correct!" confirmation below takes
+  // focus, so we revert the title to the puzzle name instead of pinning
+  // the last opponent move there.
   const opponentColor: 'w' | 'b' = playerColor === 'w' ? 'b' : 'w';
   const opponentStatusKey = opponentColor === 'w' ? 'whitePlayed' : 'blackPlayed';
+  const showOpponentStatus = session.lastOpponentMove !== null && !isSolved;
+  const titleContent = showOpponentStatus ? (
+    <span data-testid="opponent-status">
+      <span aria-hidden className="mr-1 text-base leading-none">
+        {opponentColor === 'w' ? '⚪' : '⚫'}
+      </span>
+      {t(opponentStatusKey, { move: session.lastOpponentMove! })}
+    </span>
+  ) : (
+    positionTitle
+  );
 
   return (
-    <div className="space-y-4">
-      {session.lastOpponentMove && !isSolved && (
-        <p className="text-sm text-muted-foreground" role="status" aria-live="polite">
-          <span aria-hidden className="mr-1 text-base leading-none">
-            {opponentColor === 'w' ? '⚪' : '⚫'}
-          </span>
-          {t(opponentStatusKey, { move: session.lastOpponentMove })}
-        </p>
-      )}
+    <div className="space-y-8">
+      <PageTitle>{titleContent}</PageTitle>
 
-      <MoveInputPanel
-        preferences={preferences}
-        updatePreferences={updatePreferences}
-        currentFen={session.currentFen}
-        moveInput={moveInput}
-        onMoveInputChange={setMoveInput}
-        error={error}
-        onErrorClear={() => setError(null)}
-        onSubmit={handleSubmit}
-        disabled={isSolved}
-        inputPlaceholder={tPlay('inputMove')}
-        selectPlaceholder={tPlay('selectMove')}
-        toggleTitle={tPlay('switchInputMode')}
-        playerColor={playerColor}
-        showLegalMovesHint={false}
-      />
+      <PagePanel>
+        <div className="space-y-4">
+          <MoveInputPanel
+            preferences={preferences}
+            updatePreferences={updatePreferences}
+            currentFen={session.currentFen}
+            moveInput={moveInput}
+            onMoveInputChange={setMoveInput}
+            error={error}
+            onErrorClear={() => setError(null)}
+            onSubmit={handleSubmit}
+            disabled={isSolved}
+            inputPlaceholder={tPlay('inputMove')}
+            selectPlaceholder={tPlay('selectMove')}
+            toggleTitle={tPlay('switchInputMode')}
+            playerColor={playerColor}
+            showLegalMovesHint={false}
+          />
 
-      {isSolved && (
-        <p className="text-sm font-medium text-green-600 dark:text-green-400">{t('correct')}</p>
-      )}
+          {isSolved && (
+            <p className="text-sm font-medium text-green-600 dark:text-green-400">{t('correct')}</p>
+          )}
 
-      {hasErrors && !isSolved && (
-        <Link
-          href={`/practice/puzzle/${positionId}/result`}
-          onClick={() => {
-            // Save current attempts to sessionStorage even if not yet solved.
-            // First solution line is a safe default here because the user has
-            // not locked onto any specific line yet (or has only guessed wrong).
-            try {
-              const solutionLine = (solutions[0] ?? []).map((m) => m.san).join(' ');
-              sessionStorage.setItem(
-                `puzzle_result_${positionId}`,
-                JSON.stringify({
-                  attempts: session.attempts,
-                  solutionLine,
-                  fen,
-                  peekCount,
-                })
-              );
-            } catch {
-              // sessionStorage may be unavailable
-            }
-          }}
-        >
-          <Button asChild variant="secondary" fullWidth>
-            {tResult('viewResult')}
-          </Button>
-        </Link>
-      )}
+          {hasErrors && !isSolved && (
+            <Link
+              href={`/practice/puzzle/${positionId}/result`}
+              onClick={() => {
+                // Save current attempts to sessionStorage even if not yet solved.
+                // First solution line is a safe default here because the user has
+                // not locked onto any specific line yet (or has only guessed wrong).
+                try {
+                  const solutionLine = (solutions[0] ?? []).map((m) => m.san).join(' ');
+                  sessionStorage.setItem(
+                    `puzzle_result_${positionId}`,
+                    JSON.stringify({
+                      attempts: session.attempts,
+                      solutionLine,
+                      fen,
+                      peekCount,
+                    })
+                  );
+                } catch {
+                  // sessionStorage may be unavailable
+                }
+              }}
+            >
+              <Button asChild variant="secondary" fullWidth>
+                {tResult('viewResult')}
+              </Button>
+            </Link>
+          )}
 
-      <div className="pt-2">
-        <Button
-          type="button"
-          variant="outline"
-          icon={<FaEye />}
-          disabled={isSolved}
-          onClick={() => {
-            setPeekCount((c) => c + 1);
-            setIsBoardVisible(true);
-          }}
-          title={t('showBoard')}
-        >
-          <span className="hidden md:inline">{t('showBoard')}</span>
-        </Button>
-      </div>
+          <div className="pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              icon={<FaEye />}
+              disabled={isSolved}
+              onClick={() => {
+                setPeekCount((c) => c + 1);
+                setIsBoardVisible(true);
+              }}
+              title={t('showBoard')}
+            >
+              <span className="hidden md:inline">{t('showBoard')}</span>
+            </Button>
+          </div>
 
-      <PuzzleBoardPeekModal
-        isOpen={isBoardVisible}
-        onClose={() => setIsBoardVisible(false)}
-        fen={session.currentFen}
-      />
+          <PuzzleBoardPeekModal
+            isOpen={isBoardVisible}
+            onClose={() => setIsBoardVisible(false)}
+            fen={session.currentFen}
+          />
+        </div>
+
+        <Divider />
+
+        {breadcrumb}
+      </PagePanel>
     </div>
   );
 }
