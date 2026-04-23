@@ -10,19 +10,18 @@ import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
+import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { fenToPieceList, isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
-import { eq } from 'drizzle-orm';
 
-import { db, puzzleSolutions } from '@/lib/db';
-import { getPositionWithProfileById } from '@/lib/positions/queries';
 import { resolveDisplayName } from '@/lib/users/display-name';
 
-import { PuzzleAnswerForm } from '@/app/[locale]/(public)/practice/(free-play)/puzzle/_components/PuzzleAnswerForm';
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
+
+import { loadPuzzleWithSolutions } from '../../_lib/load-puzzle';
 
 export const revalidate = 300;
 
@@ -37,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, id } = await params;
   const t = await getTranslations({ locale, namespace: 'practice.puzzle' });
 
-  const row = await getPositionWithProfileById({ id, type: 'puzzle' });
+  const row = await loadPuzzleWithSolutions(id);
 
   if (!row) {
     return { title: t('detail.title') };
@@ -59,23 +58,16 @@ export default async function PuzzleDetailPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'practice.puzzle' });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
 
-  const row = await getPositionWithProfileById({ id, type: 'puzzle' });
+  const row = await loadPuzzleWithSolutions(id);
 
   if (!row) {
     notFound();
   }
 
-  const { position, profile } = row;
+  const { position, profile, solutions } = row;
   const displayName = resolveDisplayName(profile);
   const isBlackToMove = isBlackToMoveFromFen(position.fen);
   const pieceList = fenToPieceList(position.fen);
-
-  const solutions = await db
-    .select({ solutionLine: puzzleSolutions.solutionLine })
-    .from(puzzleSolutions)
-    .where(eq(puzzleSolutions.positionId, position.id));
-
-  const solutionLines = solutions.map((s) => s.solutionLine);
 
   const authorBadge = (
     <>
@@ -173,9 +165,43 @@ export default async function PuzzleDetailPage({ params }: Props) {
             </time>
           </div>
 
-          <SectionTitle>{t('detail.solveSection')}</SectionTitle>
+          {solutions.length > 0 && (
+            <div className="space-y-3">
+              <SectionTitle>{t('detail.solutionSection')}</SectionTitle>
+              {solutions.map((solution, si) => {
+                const firstTurn: 'w' | 'b' = isBlackToMove ? 'b' : 'w';
+                return (
+                  <ol key={si} className="space-y-1.5 text-sm">
+                    {solution.solutionMoves.map((m, mi) => {
+                      const isWhiteMove = mi % 2 === (firstTurn === 'w' ? 0 : 1);
+                      return (
+                        <li key={mi} className="flex items-baseline gap-2">
+                          <span className="text-muted-foreground shrink-0">{mi + 1}.</span>
+                          <span aria-hidden className="leading-none">
+                            {isWhiteMove ? '⚪' : '⚫'}
+                          </span>
+                          <span className="font-mono text-foreground shrink-0">{m.san}</span>
+                          {m.note && (
+                            <span className="text-muted-foreground">
+                              {t('detail.note', { note: m.note })}
+                            </span>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ol>
+                );
+              })}
+            </div>
+          )}
 
-          <PuzzleAnswerForm solutions={solutionLines} positionId={position.id} fen={position.fen} />
+          <div className="pt-2">
+            <Link href={`/practice/puzzle/${position.id}/session`}>
+              <Button asChild variant="primary" fullWidth>
+                {t('detail.startSolving')}
+              </Button>
+            </Link>
+          </div>
         </div>
 
         <Divider />

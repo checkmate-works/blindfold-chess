@@ -52,16 +52,19 @@ export function PuzzleResultClient({ positionId, fen, solutionLines }: Props) {
   }, [positionId]);
 
   const isBlackToMove = isBlackToMoveFromFen(fen);
+  const solutionMoves = useMemo(() => solutionLine.split(/\s+/).filter(Boolean), [solutionLine]);
+  const solutionFirstMove = solutionMoves[0] ?? '';
 
-  // Get the first move of the solution in SAN
-  const solutionFirstMove = solutionLine.split(' ')[0] ?? '';
-
-  // Convert SAN to UCI for AnimatedChessBoard
+  // Convert SAN to UCI for AnimatedChessBoard. We animate just the first move
+  // as a visual anchor; the full line is listed as chips below for readers
+  // who want the whole solution.
   const solutionMoveUci = useMemo(() => {
     if (!solutionFirstMove) return undefined;
     const uciMoves = movesToUci([solutionFirstMove], fen);
     return uciMoves[0];
   }, [solutionFirstMove, fen]);
+
+  const firstTurn: 'w' | 'b' = isBlackToMove ? 'b' : 'w';
 
   return (
     <div className="space-y-6">
@@ -75,9 +78,31 @@ export function PuzzleResultClient({ positionId, fen, solutionLines }: Props) {
           boardTheme={preferences.boardTheme}
         />
       </div>
-      <p className="text-center text-sm font-medium text-foreground">
-        {t('solution', { move: solutionFirstMove })}
-      </p>
+
+      {solutionMoves.length > 0 && (
+        <>
+          {solutionMoves.length === 1 ? (
+            <p className="text-center text-sm font-medium text-foreground">
+              {t('solution', { move: solutionFirstMove })}
+            </p>
+          ) : (
+            <ol className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm">
+              {solutionMoves.map((move, i) => {
+                const isWhiteMove = i % 2 === (firstTurn === 'w' ? 0 : 1);
+                return (
+                  <li key={i} className="flex items-center gap-1.5">
+                    <span className="text-muted-foreground">{i + 1}.</span>
+                    <span aria-hidden className="text-base leading-none">
+                      {isWhiteMove ? '⚪' : '⚫'}
+                    </span>
+                    <span className="font-mono text-foreground">{move}</span>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
+        </>
+      )}
 
       {/* (B) Attempt history */}
       {attempts.length > 0 && (

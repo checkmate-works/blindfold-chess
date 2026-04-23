@@ -60,11 +60,11 @@ export default async function PuzzleResultPage({ params }: Props) {
   const { position } = row;
 
   const solutions = await db
-    .select({ solutionLine: puzzleSolutions.solutionLine })
+    .select({ solutionMoves: puzzleSolutions.solutionMoves })
     .from(puzzleSolutions)
     .where(eq(puzzleSolutions.positionId, position.id));
 
-  const solutionLines = solutions.map((s) => s.solutionLine);
+  const solutionLines = solutions.map((s) => s.solutionMoves.map((m) => m.san).join(' '));
 
   const adBannerStandard =
     IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM ? (
