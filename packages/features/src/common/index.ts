@@ -48,3 +48,9 @@ export { calculateAccuracy, calculateSquareDifferences } from "./accuracy";
 export type { FeedbackSpeed } from "./feedback-speed";
 export { FEEDBACK_SPEEDS, FEEDBACK_SPEED_MS } from "./feedback-speed";
 export { FEEDBACK_FLASH_MS } from "./flash-policy";
+export type { PersistentStorage } from "./persistent-storage";
+export type {
+  UsePersistentSettingsOptions,
+  UsePersistentSettingsReturn,
+} from "./use-persistent-settings";
+export { usePersistentSettings } from "./use-persistent-settings";
