@@ -1,4 +1,6 @@
-import { parseUciResponse } from '@blindfold-chess/features/ai-game';
+import { parseUciResponse } from "../uci-protocol";
+
+import type { UciMessageChannel } from "./message-channel";
 
 type InfoHandler = (message: string) => void;
 
@@ -9,87 +11,70 @@ type PendingResolver<T> = {
 };
 
 /**
- * Low-level UCI transport.
- *
- * Wraps a Stockfish Web Worker and exposes a small, typed API for the
+ * Framework-agnostic UCI protocol state machine. Wraps a {@link UciMessageChannel}
+ * (platform-specific byte pipe) and exposes a small, typed API for the
  * synchronous UCI flow used by `ChessEngine`:
  *
  * - `waitForUciOk` / `waitForReadyOk` — await the handshake responses
  * - `waitForBestMove`                — await the `bestmove` response
  * - `send`                           — fire-and-forget command post
  * - `subscribeInfo`                  — stream `info` lines during evaluation
- * - `destroy`                        — terminate the underlying worker
+ * - `destroy`                        — terminate the underlying channel
  *
- * Internally it uses typed one-shot resolvers instead of a string-keyed
- * callback map: each "await X" call atomically claims the resolver slot for
- * that response type. Each slot holds both a resolve and a reject callback
- * plus its timeout handle so that fatal Worker errors (`onerror` /
- * `onmessageerror`) can reject all pending awaiters promptly instead of
- * letting them run out the full timeout with a misleading "command timeout"
- * message.
+ * Uses typed one-shot resolvers instead of a string-keyed callback map: each
+ * "await X" call atomically claims the resolver slot for that response type.
+ * Each slot holds both a resolve and a reject callback plus its timeout handle
+ * so that fatal channel errors (`onError`) can reject all pending awaiters
+ * promptly instead of letting them run out the full timeout with a misleading
+ * "command timeout" message.
  */
 export class UciTransport {
-  private worker: Worker | null = null;
+  private channel: UciMessageChannel | null = null;
+  private unsubscribeMessage: (() => void) | null = null;
+  private unsubscribeError: (() => void) | null = null;
   private uciOkResolver: PendingResolver<void> | null = null;
   private readyOkResolver: PendingResolver<void> | null = null;
   private bestMoveResolver: PendingResolver<string | undefined> | null = null;
   private infoHandler: InfoHandler | null = null;
 
-  constructor(workerPath: string) {
-    // NOTE: This generates a Turbopack warning "TP1001: new Worker(...) is not statically analyse-able"
-    // This is expected behavior as we're loading an external Stockfish WebAssembly file from public/
-    // The warning doesn't affect functionality and can be safely ignored
-    this.worker = new Worker(workerPath);
-    this.worker.onmessage = (event) => this.handleMessage(event.data);
-    this.worker.onerror = (error) => {
-      const errorMessage =
-        error instanceof ErrorEvent
-          ? error.message || error.error?.message || 'Unknown error'
-          : String(error);
-      const err = new Error(`Worker error: ${errorMessage}`);
-      // Preserve observability — `onerror` is the only place the DOM
-      // surfaces Worker-level failures to us.
-      console.error('Worker error:', error);
-      this.failPending(err);
-      // The worker is effectively dead after an `onerror`; terminate it and
-      // null the reference so the owning `ChessEngine` can detect the dead
-      // transport and spin up a fresh one on the next call.
-      this.worker?.terminate();
-      this.worker = null;
-    };
-    this.worker.onmessageerror = (event) => {
-      const err = new Error('Worker message deserialization failed');
-      console.error('Worker message error:', event);
-      this.failPending(err);
-      this.worker?.terminate();
-      this.worker = null;
-    };
+  constructor(channel: UciMessageChannel) {
+    this.channel = channel;
+    this.unsubscribeMessage = channel.onMessage((msg) =>
+      this.handleMessage(msg),
+    );
+    this.unsubscribeError = channel.onError((err) =>
+      this.handleFatalError(err),
+    );
   }
 
   /** Fire-and-forget command post. */
   send(command: string): void {
-    if (!this.worker) {
-      throw new Error('Engine not initialized');
+    if (!this.channel) {
+      throw new Error("Engine not initialized");
     }
-    this.worker.postMessage(command);
+    this.channel.send(command);
   }
 
   /** Send `uci` and resolve when the engine replies with `uciok`. */
   async waitForUciOk(timeoutMs = 10000): Promise<void> {
-    return this.awaitResponse('uciOkResolver', 'uci', timeoutMs);
+    return this.awaitResponse("uciOkResolver", "uci", timeoutMs);
   }
 
   /** Send `isready` and resolve when the engine replies with `readyok`. */
   async waitForReadyOk(timeoutMs = 10000): Promise<void> {
-    return this.awaitResponse('readyOkResolver', 'isready', timeoutMs);
+    return this.awaitResponse("readyOkResolver", "isready", timeoutMs);
   }
 
   /**
    * Send the given `go ...` command and resolve with the UCI move string
    * from the subsequent `bestmove` response.
    */
-  async waitForBestMove(goCommand: string, timeoutMs = 10000): Promise<string | undefined> {
-    if (!this.worker) throw new Error('Engine not initialized');
+  async waitForBestMove(
+    goCommand: string,
+    timeoutMs = 10000,
+  ): Promise<string | undefined> {
+    if (!this.channel) throw new Error("Engine not initialized");
+    const channel = this.channel;
 
     return new Promise<string | undefined>((resolve, reject) => {
       const timer = setTimeout(() => {
@@ -111,7 +96,7 @@ export class UciTransport {
         timer,
       };
 
-      this.worker?.postMessage(goCommand);
+      channel.send(goCommand);
     });
   }
 
@@ -137,18 +122,18 @@ export class UciTransport {
     }
   }
 
-  /** True once the underlying Worker has been torn down (fatal error or destroy). */
+  /** True once the underlying channel has been torn down (fatal error or destroy). */
   isDead(): boolean {
-    return this.worker === null;
+    return this.channel === null;
   }
 
   destroy(): void {
-    if (this.worker) {
-      this.worker.terminate();
-      this.worker = null;
+    if (this.channel) {
+      this.channel.terminate();
     }
+    this.tearDown();
     // Clear any in-flight timers so a pending Promise does not linger past
-    // destruction. We null the slot without rejecting because `destroy()` is
+    // destruction. Slots are nulled without rejecting because `destroy()` is
     // expected teardown, not a failure the awaiter needs to observe.
     if (this.uciOkResolver) {
       clearTimeout(this.uciOkResolver.timer);
@@ -166,10 +151,41 @@ export class UciTransport {
   }
 
   /**
-   * Reject every pending awaiter with the given reason. Invoked from the
-   * Worker's `onerror` / `onmessageerror` handlers so callers see the actual
-   * failure instead of waiting out the per-command timeout and reporting a
-   * misleading "Engine command timeout: uci" error.
+   * Channel-level fatal error: terminate the channel, tear down subscriptions,
+   * and propagate to every pending awaiter. Invoked from the channel's
+   * `onError` callback so callers see the actual failure instead of waiting
+   * out the per-command timeout. Terminating the channel here (rather than
+   * leaving it to the channel's own error path) keeps lifecycle ownership
+   * unambiguous: once constructed, the transport owns the channel.
+   */
+  private handleFatalError(error: Error): void {
+    const channel = this.channel;
+    this.tearDown();
+    // Terminate the channel AFTER unsubscribing our own handlers, so we never
+    // re-enter `handleFatalError` from a channel that also self-fires on
+    // termination.
+    if (channel) {
+      try {
+        channel.terminate();
+      } catch {
+        // Terminate errors are swallowed — the channel is already in a
+        // failure state; the original error is what the caller cares about.
+      }
+    }
+    this.failPending(error);
+  }
+
+  private tearDown(): void {
+    this.unsubscribeMessage?.();
+    this.unsubscribeMessage = null;
+    this.unsubscribeError?.();
+    this.unsubscribeError = null;
+    this.channel = null;
+  }
+
+  /**
+   * Reject every pending awaiter with the given reason. Triggered from the
+   * channel's error path so pending resolvers don't hang past the 10s timeout.
    */
   private failPending(reason: Error): void {
     const uciOk = this.uciOkResolver;
@@ -193,11 +209,12 @@ export class UciTransport {
   }
 
   private async awaitResponse(
-    slot: 'uciOkResolver' | 'readyOkResolver',
+    slot: "uciOkResolver" | "readyOkResolver",
     command: string,
-    timeoutMs: number
+    timeoutMs: number,
   ): Promise<void> {
-    if (!this.worker) throw new Error('Engine not initialized');
+    if (!this.channel) throw new Error("Engine not initialized");
+    const channel = this.channel;
 
     return new Promise<void>((resolve, reject) => {
       const timer = setTimeout(() => {
@@ -219,15 +236,15 @@ export class UciTransport {
         timer,
       };
 
-      this.worker?.postMessage(command);
+      channel.send(command);
     });
   }
 
   private handleMessage(message: string): void {
-    // Ignore error messages from the worker here — they are non-fatal strings
-    // that the caller's own error channel is responsible for logging.
-    if (message.startsWith('Error:') || message.startsWith('Worker Error:')) {
-      console.error('Engine worker error:', message);
+    // Ignore error-shaped strings from the engine here — they are non-fatal
+    // prints the caller's own error channel is responsible for logging.
+    if (message.startsWith("Error:") || message.startsWith("Worker Error:")) {
+      console.error("Engine error:", message);
       return;
     }
 
@@ -235,28 +252,28 @@ export class UciTransport {
     if (!parsed) return;
 
     switch (parsed.type) {
-      case 'uciok': {
+      case "uciok": {
         const resolver = this.uciOkResolver;
         if (resolver) {
           resolver.resolve();
         }
         break;
       }
-      case 'readyok': {
+      case "readyok": {
         const resolver = this.readyOkResolver;
         if (resolver) {
           resolver.resolve();
         }
         break;
       }
-      case 'bestmove': {
+      case "bestmove": {
         const resolver = this.bestMoveResolver;
         if (resolver) {
           resolver.resolve(parsed.move);
         }
         break;
       }
-      case 'info': {
+      case "info": {
         this.infoHandler?.(message);
         break;
       }
