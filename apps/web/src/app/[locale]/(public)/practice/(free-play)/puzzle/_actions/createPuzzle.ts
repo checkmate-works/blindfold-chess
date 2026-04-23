@@ -24,7 +24,7 @@ export async function createPuzzle(data: {
 
   const { user } = guardResult;
 
-  const normalizedMoves = normalizePuzzleMoves(data.solutionMoves ?? []);
+  const normalizedMoves = normalizePuzzleMoves(data.solutionMoves);
 
   const validationError = validatePuzzleMutationData({
     fen: data.fen,

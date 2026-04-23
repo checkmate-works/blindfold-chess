@@ -22,6 +22,9 @@ ALTER TABLE "puzzle_solutions"
 --      described in tmp/shikigami/phase1.6-design.md §2.1). When the column
 --      exists, `to_jsonb(row)` emits its value; when it doesn't, the `->`
 --      lookup yields NULL which `COALESCE` turns into an empty array.
+--      When the column itself holds SQL NULL, `to_jsonb` emits JSON null;
+--      `jsonb_array_element_text` on that value returns SQL NULL at read
+--      time, which the CASE branch treats the same as a missing entry.
 --    - `jsonb_array_element_text(notes, ord-1)` reads the note at the same 0-based
 --      index as the move token. When `notes` is shorter than moves (or absent),
 --      the LEFT JOIN yields NULL, which becomes the `note` field.

@@ -239,10 +239,10 @@ export function CreatePuzzleForm() {
     setPending(true);
 
     try {
-      const solutionMoves = moves.map((san, i) => ({
-        san,
-        note: notes[i]?.trim() ? notes[i]!.trim() : null,
-      }));
+      const solutionMoves = moves.map((san, i) => {
+        const trimmed = notes[i]?.trim() ?? '';
+        return { san, note: trimmed.length > 0 ? trimmed : null };
+      });
 
       const result = await createPuzzle({
         fen: trimmedFen,

@@ -89,6 +89,11 @@ export function normalizePuzzleMoves(
   rawMoves: Array<{ san: string; note?: string | null }>
 ): PuzzleSolutionMove[] {
   return rawMoves.map((m) => {
+    // `note?: string | null` accepts both `undefined` (key omitted by the
+    // caller) and `null` (explicit-no-note). `apps/web/tsconfig.json` does
+    // not enable `exactOptionalPropertyTypes`, so the `?` modifier in the
+    // parameter type already admits `undefined` alongside `null`; the
+    // `== null` check collapses both to the canonical `note: null` output.
     if (m.note == null) return { san: m.san, note: null };
     const trimmed = m.note.trim();
     return { san: m.san, note: trimmed.length === 0 ? null : trimmed };
