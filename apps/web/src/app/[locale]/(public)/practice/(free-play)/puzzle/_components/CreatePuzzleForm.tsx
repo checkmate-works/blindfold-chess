@@ -7,58 +7,115 @@ import { useTranslations } from 'next-intl';
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { UnsavedChangesDialog } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
-import { getTurnFromFen, validateFen } from '@blindfold-chess/features/chess-core';
+import { executeMove, getTurnFromFen, validateFen } from '@blindfold-chess/features/chess-core';
+import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { flushSync } from 'react-dom';
 import { FaSyncAlt } from 'react-icons/fa';
 
+import { PUZZLE_NOTE_MAX_LENGTH } from '@/lib/positions/validation';
+
 import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
+import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
+import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { createPuzzle } from '../_actions/createPuzzle';
+import { SolutionMoveList } from './SolutionMoveList';
 
 const EMPTY_BOARD_FEN = '8/8/8/8/8/8/8/8 w - - 0 1';
+const MAX_SOLUTION_MOVES = 20;
 
 type EditorTab = 'board' | 'fen';
+type SideToMove = 'w' | 'b';
+
+function replaceSideToMove(fen: string, side: SideToMove): string {
+  const parts = fen.trim().split(/\s+/);
+  if (parts.length < 2) return fen;
+  parts[1] = side;
+  return parts.join(' ');
+}
+
+function readSideToMove(fen: string): SideToMove {
+  const parts = fen.trim().split(/\s+/);
+  return parts[1] === 'b' ? 'b' : 'w';
+}
 
 export function CreatePuzzleForm() {
   const router = useRouter();
   const t = useTranslations('practice.puzzle.create');
   const tBoard = useTranslations('practice.puzzle');
+  const tPlay = useTranslations('play');
   const tUnsaved = useTranslations('unsavedChanges');
+  const { preferences, updatePreferences } = useGamePreferences();
+
   const [fenInput, setFenInput] = useState('');
   const [boardFen, setBoardFen] = useState(EMPTY_BOARD_FEN);
+  const [sideToMove, setSideToMove] = useState<SideToMove>('w');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [solutionLine, setSolutionLine] = useState('');
+  const [moves, setMoves] = useState<string[]>([]);
+  const [notes, setNotes] = useState<string[]>([]);
+  const [moveInput, setMoveInput] = useState('');
+  const [moveError, setMoveError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [positionError, setPositionError] = useState(false);
   const [solutionError, setSolutionError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [activeTab, setActiveTab] = useState<EditorTab>('board');
   const [flipped, setFlipped] = useState(false);
+  const [userFlipped, setUserFlipped] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  const trimmedFen = fenInput.trim();
+  const isFenValid = trimmedFen !== '' && validateFen(trimmedFen);
+
+  const baseFen = isFenValid ? trimmedFen : '';
+
+  // Derive currentFen by replaying the entered moves on top of baseFen.
+  // On any replay failure we stop, returning the last good FEN — handleSubmit
+  // already guarantees moves were accepted by executeMove, so this is defensive.
+  const currentFen = useMemo(() => {
+    if (!baseFen) return '';
+    let fen = baseFen;
+    for (const move of moves) {
+      const r = executeMove(fen, move);
+      if (!r) return fen;
+      fen = r.fen;
+    }
+    return fen;
+  }, [baseFen, moves]);
+
+  const firstTurn: SideToMove = useMemo(() => {
+    if (!baseFen) return 'w';
+    try {
+      return getTurnFromFen(baseFen) as SideToMove;
+    } catch {
+      return 'w';
+    }
+  }, [baseFen]);
 
   const isDirty =
     !submitted &&
     (title.trim() !== '' ||
       description.trim() !== '' ||
-      solutionLine.trim() !== '' ||
+      moves.length > 0 ||
+      notes.some((n) => n.trim() !== '') ||
       (fenInput.trim() !== '' && fenInput !== EMPTY_BOARD_FEN));
 
   const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
 
-  const handleFlip = useCallback(() => setFlipped((prev) => !prev), []);
-
-  const isFenValid = fenInput.trim() !== '' && validateFen(fenInput.trim());
+  const handleFlip = useCallback(() => {
+    setFlipped((prev) => !prev);
+    setUserFlipped(true);
+  }, []);
 
   const turnIndicator = useMemo(() => {
     if (!isFenValid) return null;
     try {
-      const turn = getTurnFromFen(fenInput.trim());
-      return turn;
+      return getTurnFromFen(trimmedFen);
     } catch {
       return null;
     }
-  }, [fenInput, isFenValid]);
+  }, [trimmedFen, isFenValid]);
 
   const editableBoardLabels = useMemo(
     () => ({
@@ -70,23 +127,97 @@ export function CreatePuzzleForm() {
     [tBoard]
   );
 
+  function resetSolutionState() {
+    setMoves([]);
+    setNotes([]);
+    setMoveInput('');
+    setMoveError(null);
+    setSolutionError(null);
+  }
+
+  function applyFen(nextFen: string) {
+    const trimmed = nextFen.trim();
+    setFenInput(trimmed);
+    if (trimmed !== '' && validateFen(trimmed)) {
+      setBoardFen(trimmed);
+      const side = readSideToMove(trimmed);
+      setSideToMove(side);
+    }
+    resetSolutionState();
+  }
+
   function handleFenInputChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
     const value = e.target.value;
     setFenInput(value);
     if (value.trim() !== '' && validateFen(value.trim())) {
       setBoardFen(value.trim());
+      setSideToMove(readSideToMove(value.trim()));
     }
+    resetSolutionState();
   }
 
   function handleBoardChange(newFen: string) {
-    setFenInput(newFen);
-    setBoardFen(newFen);
+    const withSide = replaceSideToMove(newFen, sideToMove);
+    setFenInput(withSide);
+    setBoardFen(withSide);
     setPositionError(false);
+    resetSolutionState();
   }
 
   function handleClearBoard() {
-    setFenInput(EMPTY_BOARD_FEN);
-    setBoardFen(EMPTY_BOARD_FEN);
+    applyFen(EMPTY_BOARD_FEN);
+  }
+
+  function handleSideToMoveChange(next: SideToMove) {
+    if (next === sideToMove) return;
+    setSideToMove(next);
+    const sourceFen = boardFen && validateFen(boardFen) ? boardFen : EMPTY_BOARD_FEN;
+    const updated = replaceSideToMove(sourceFen, next);
+    setBoardFen(updated);
+    setFenInput(updated);
+    if (next === 'b' && !userFlipped) {
+      setFlipped(true);
+    }
+    resetSolutionState();
+  }
+
+  function handleMoveSubmit(move: AlgebraicNotation): boolean {
+    const trimmed = move.trim();
+    if (!trimmed) return false;
+    if (!baseFen) {
+      setMoveError(t('positionInvalid'));
+      return false;
+    }
+    if (moves.length >= MAX_SOLUTION_MOVES) {
+      setMoveError(t('maxMovesReached'));
+      return false;
+    }
+    const r = executeMove(currentFen, trimmed);
+    if (!r) {
+      setMoveError(tPlay('invalidMove'));
+      return false;
+    }
+    setMoves((prev) => [...prev, trimmed]);
+    setNotes((prev) => [...prev, '']);
+    setMoveInput('');
+    setMoveError(null);
+    setSolutionError(null);
+    return true;
+  }
+
+  function handleRemoveLast() {
+    setMoves((prev) => prev.slice(0, -1));
+    setNotes((prev) => prev.slice(0, -1));
+    setMoveError(null);
+    setSolutionError(null);
+  }
+
+  function handleNoteChange(index: number, value: string) {
+    setNotes((prev) => {
+      const next = [...prev];
+      next[index] = value;
+      return next;
+    });
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -95,12 +226,12 @@ export function CreatePuzzleForm() {
     setPositionError(false);
     setSolutionError(null);
 
-    if (!fenInput.trim() || !isFenValid) {
+    if (!trimmedFen || !isFenValid) {
       setPositionError(true);
       return;
     }
 
-    if (!solutionLine.trim()) {
+    if (moves.length === 0) {
       setSolutionError(t('solutionRequired'));
       return;
     }
@@ -108,11 +239,16 @@ export function CreatePuzzleForm() {
     setPending(true);
 
     try {
+      const solutionMoves = moves.map((san, i) => ({
+        san,
+        note: notes[i]?.trim() ? notes[i]!.trim() : null,
+      }));
+
       const result = await createPuzzle({
-        fen: fenInput.trim(),
+        fen: trimmedFen,
         title,
         description: description || null,
-        solutionLine: solutionLine.trim(),
+        solutionMoves,
       });
 
       if ('error' in result) {
@@ -120,8 +256,8 @@ export function CreatePuzzleForm() {
         return;
       }
 
-      // flushSync ensures the re-render (isDirty -> false) completes
-      // before router.push triggers the navigation guard check.
+      // flushSync ensures the re-render (isDirty -> false) completes before
+      // router.push triggers the navigation guard check.
       flushSync(() => setSubmitted(true));
       router.push(`/practice/puzzle?toast=puzzle_created`);
     } catch {
@@ -130,6 +266,8 @@ export function CreatePuzzleForm() {
       setPending(false);
     }
   }
+
+  const reachedMaxMoves = moves.length >= MAX_SOLUTION_MOVES;
 
   return (
     <>
@@ -173,7 +311,39 @@ export function CreatePuzzleForm() {
         {/* Board editor tab */}
         {activeTab === 'board' && (
           <>
-            <div className="flex justify-end mb-2">
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <div
+                role="radiogroup"
+                aria-label={t('sideToMove')}
+                className="inline-flex rounded-md border border-border overflow-hidden text-sm"
+              >
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={sideToMove === 'w'}
+                  onClick={() => handleSideToMoveChange('w')}
+                  className={`px-3 py-1.5 transition-colors ${
+                    sideToMove === 'w'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:bg-muted'
+                  }`}
+                >
+                  {t('sideWhite')}
+                </button>
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={sideToMove === 'b'}
+                  onClick={() => handleSideToMoveChange('b')}
+                  className={`px-3 py-1.5 transition-colors ${
+                    sideToMove === 'b'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:bg-muted'
+                  }`}
+                >
+                  {t('sideBlack')}
+                </button>
+              </div>
               <button
                 type="button"
                 onClick={handleFlip}
@@ -266,23 +436,71 @@ export function CreatePuzzleForm() {
           />
         </div>
 
-        <div>
-          <label htmlFor="solutionLine" className="block text-sm font-medium mb-1">
-            {t('solutionLabel')} <span className="text-destructive">*</span>
-          </label>
-          <input
-            id="solutionLine"
-            type="text"
-            value={solutionLine}
-            onChange={(e) => {
-              setSolutionLine(e.target.value);
-              setSolutionError(null);
-            }}
-            placeholder={t('solutionPlaceholder')}
-            className="w-full px-3 py-2 rounded border border-border bg-card text-foreground font-mono"
-            required
-          />
-          {solutionError && <p className="text-sm text-destructive mt-1">{solutionError}</p>}
+        <div className="space-y-3">
+          <div className="flex items-baseline justify-between">
+            <label className="text-sm font-medium">
+              {t('solutionSection')} <span className="text-destructive">*</span>
+            </label>
+            <span className="text-xs text-muted-foreground">
+              {moves.length} / {MAX_SOLUTION_MOVES}
+            </span>
+          </div>
+
+          {moves.length > 0 && (
+            <>
+              <SolutionMoveList
+                moves={moves}
+                firstTurn={firstTurn}
+                onRemoveLast={handleRemoveLast}
+                removeAriaLabel={t('removeLastMove', { move: moves[moves.length - 1]! })}
+                disabled={pending}
+              />
+              <ul className="space-y-2">
+                {moves.map((move, index) => (
+                  <li key={index} className="flex items-center gap-2 text-sm">
+                    <span className="w-14 shrink-0 text-right text-muted-foreground">
+                      <span className="font-mono text-foreground">{move}</span>
+                    </span>
+                    <input
+                      type="text"
+                      value={notes[index] ?? ''}
+                      onChange={(e) => handleNoteChange(index, e.target.value)}
+                      maxLength={PUZZLE_NOTE_MAX_LENGTH}
+                      placeholder={t('addMoveNote')}
+                      className="flex-1 px-2 py-1 rounded border border-border bg-card text-foreground text-sm"
+                    />
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+
+          {isFenValid ? (
+            reachedMaxMoves ? (
+              <p className="text-sm text-muted-foreground">{t('maxMovesReached')}</p>
+            ) : (
+              <MoveInputPanel
+                preferences={preferences}
+                updatePreferences={updatePreferences}
+                currentFen={currentFen}
+                moveInput={moveInput}
+                onMoveInputChange={setMoveInput}
+                error={moveError}
+                onErrorClear={() => setMoveError(null)}
+                onSubmit={handleMoveSubmit}
+                disabled={pending}
+                inputPlaceholder={t('movePlaceholder')}
+                selectPlaceholder={tPlay('selectMove')}
+                toggleTitle={tPlay('switchInputMode')}
+                playerColor={firstTurn}
+                showLegalMovesHint={false}
+              />
+            )
+          ) : (
+            <p className="text-sm text-muted-foreground">{t('positionInvalid')}</p>
+          )}
+
+          {solutionError && <p className="text-sm text-destructive">{solutionError}</p>}
         </div>
 
         <button
