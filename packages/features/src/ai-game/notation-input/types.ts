@@ -29,10 +29,39 @@ export type NotationChar =
 
 export type CastlingToken = "O-O" | "O-O-O";
 
-export type NotationInputState = { input: string };
+export type PromotionPiece = "q" | "r" | "b" | "n";
+
+export type NotationInputState = {
+  input: string;
+  selectedPiece: string | null;
+  selectedFiles: Set<string>;
+  selectedRanks: Set<string>;
+  targetFile: string | null;
+  isCapture: boolean;
+  isCheck: boolean;
+  castling: CastlingToken | null;
+  promotionPiece: PromotionPiece | null;
+  sourceFile: string | null;
+  sourceRank: string | null;
+  isAmbiguous: boolean;
+};
 
 export type NotationInputAction =
+  // Text-builder actions (web keypad)
   | { type: "appendChar"; char: NotationChar }
   | { type: "appendCastling"; move: CastlingToken }
   | { type: "backspace" }
-  | { type: "clear" };
+  | { type: "clear" }
+  // Structured actions (mobile button UI)
+  | { type: "selectPiece"; piece: string }
+  | { type: "selectFile"; file: string }
+  | { type: "selectRank"; rank: string }
+  | { type: "setTargetFile"; file: string | null }
+  | { type: "toggleCapture" }
+  | { type: "toggleCheck" }
+  | { type: "selectCastling"; move: CastlingToken }
+  | { type: "selectPromotion"; piece: PromotionPiece }
+  | { type: "selectSourceFile"; file: string }
+  | { type: "selectSourceRank"; rank: string }
+  | { type: "toggleAmbiguous" }
+  | { type: "reset" };
