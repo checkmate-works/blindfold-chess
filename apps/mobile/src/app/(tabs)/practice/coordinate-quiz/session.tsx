@@ -6,7 +6,6 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { Check, X } from "lucide-react-native";
 import { useCoordinateQuizSession } from "@blindfold-chess/features/coordinate-quiz";
-import type { Square } from "@blindfold-chess/types";
 
 import {
   ChessBoard,
@@ -73,13 +72,6 @@ export default function CoordinateQuizSession() {
       ),
   });
 
-  const handleSquareTap = useCallback(
-    (square: Square) => {
-      handleAnswer(square);
-    },
-    [handleAnswer],
-  );
-
   const feedbackValue = showFeedback
     ? lastAnswerCorrect
       ? ("correct" as const)
@@ -143,7 +135,7 @@ export default function CoordinateQuizSession() {
                 orientation={currentQuestion?.orientation ?? "white"}
                 targetSquare={currentQuestion?.targetSquare ?? null}
                 feedback={feedbackValue}
-                onSquarePress={handleSquareTap}
+                onSquarePress={handleAnswer}
                 disabled={!currentQuestion}
               />
 

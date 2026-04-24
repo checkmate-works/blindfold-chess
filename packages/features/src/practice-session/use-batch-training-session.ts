@@ -71,14 +71,18 @@ export function useBatchTrainingSession<TQuestion, TAnswerData>({
   >(null);
 
   const hasStarted = useRef(false);
+  const generateBatchRef = useRef(generateBatch);
+  generateBatchRef.current = generateBatch;
+  const batchSizeRef = useRef(batchSize);
+  batchSizeRef.current = batchSize;
 
   useEffect(() => {
     if (hasStarted.current) return;
     hasStarted.current = true;
 
-    const initialBatch = generateBatch(batchSize);
+    const initialBatch = generateBatchRef.current(batchSizeRef.current);
     setQuestions(initialBatch);
-  }, []); // Only run once on mount
+  }, []);
 
   // Regenerate questions when running low
   useEffect(() => {

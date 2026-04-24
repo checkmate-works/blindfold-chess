@@ -4,21 +4,15 @@ import { useMemo, useState } from 'react';
 
 import { ChessPiece, Square } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { getDiagonalSquares } from '@blindfold-chess/features/diagonal-quiz';
+import {
+  type DiagonalQuestionResult as QuestionResult,
+  getDiagonalSquares,
+} from '@blindfold-chess/features/diagonal-quiz';
 import { FaCheck, FaChevronDown, FaChevronRight, FaTimes } from 'react-icons/fa';
 
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/games/board-themes';
 
-export type QuestionResult = {
-  square: string;
-  isCorrect: boolean;
-  isDiagonalCorrect: boolean;
-  isAntiDiagonalCorrect: boolean;
-  correctDiagonal: string;
-  correctAntiDiagonal: string;
-  userDiagonal?: string;
-  userAntiDiagonal?: string;
-};
+export type { QuestionResult };
 
 const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 const RANKS = ['8', '7', '6', '5', '4', '3', '2', '1'];

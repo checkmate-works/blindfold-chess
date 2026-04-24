@@ -66,7 +66,7 @@ export function useDiagonalQuizSession({
       // per-question timing — useTimedSession tracks session-wide elapsed time only
       (Date.now() - questionStartRef.current) / 1000,
     );
-    questionStartRef.current = Date.now();
+    questionStartRef.current = Date.now(); // per-question timing — useTimedSession tracks session-wide elapsed time only
 
     indexRef.current += 1;
     if (indexRef.current >= squaresRef.current.length - 10) {

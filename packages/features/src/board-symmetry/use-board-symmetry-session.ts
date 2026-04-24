@@ -54,7 +54,7 @@ export function useBoardSymmetrySession({
       // per-question timing — useTimedSession tracks session-wide elapsed time only
       (Date.now() - questionStartRef.current) / 1000,
     );
-    questionStartRef.current = Date.now();
+    questionStartRef.current = Date.now(); // per-question timing — useTimedSession tracks session-wide elapsed time only
     return generateProblem();
   }, []);
 

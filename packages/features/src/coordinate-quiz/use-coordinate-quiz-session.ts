@@ -43,19 +43,10 @@ export function useCoordinateQuizSession({
   mistakeAllowance,
 }: UseCoordinateQuizSessionConfig): UseCoordinateQuizSessionReturn {
   const recentSquaresRef = useRef<Square[]>([]);
-  // per-question timing — useTimedSession tracks session-wide elapsed time only
-  const questionStartRef = useRef<number>(Date.now());
-  const questionTimesRef = useRef<number[]>([]);
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
 
   const generateQuestion = useCallback((): CoordinateQuestion => {
-    questionTimesRef.current.push(
-      // per-question timing — useTimedSession tracks session-wide elapsed time only
-      (Date.now() - questionStartRef.current) / 1000,
-    );
-    questionStartRef.current = Date.now();
-
     const question = generateSingleQuestion(
       orientation,
       recentSquaresRef.current,

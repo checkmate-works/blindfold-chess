@@ -49,7 +49,7 @@ export function useLegalMovesSession({
       // per-question timing — useTimedSession tracks session-wide elapsed time only
       (Date.now() - questionStartRef.current) / 1000,
     );
-    questionStartRef.current = Date.now();
+    questionStartRef.current = Date.now(); // per-question timing — useTimedSession tracks session-wide elapsed time only
 
     if (indexRef.current >= questionsRef.current.length - 10) {
       questionsRef.current = [
