@@ -1,9 +1,10 @@
-import { act, renderHook } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+// @vitest-environment jsdom
+import { act, renderHook } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useCountdown } from './use-countdown';
+import { useCountdown } from "./use-countdown";
 
-describe('useCountdown', () => {
+describe("useCountdown", () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -12,13 +13,13 @@ describe('useCountdown', () => {
     vi.useRealTimers();
   });
 
-  it('starts with countdown at 3 and isCountingDown true', () => {
+  it("starts with countdown at 3 and isCountingDown true", () => {
     const { result } = renderHook(() => useCountdown());
     expect(result.current.countdown).toBe(3);
     expect(result.current.isCountingDown).toBe(true);
   });
 
-  it('counts down from 3 to null', () => {
+  it("counts down from 3 to null", () => {
     const { result } = renderHook(() => useCountdown());
 
     // 3 -> 2

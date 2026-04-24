@@ -1,11 +1,14 @@
-'use client';
+import { useEffect, useState } from "react";
 
-import { useEffect, useState } from 'react';
-
-import { COUNTDOWN_INITIAL_VALUE, getNextCountdownValue } from '@blindfold-chess/features/common';
+import {
+  COUNTDOWN_INITIAL_VALUE,
+  getNextCountdownValue,
+} from "../common/countdown";
 
 export function useCountdown() {
-  const [countdown, setCountdown] = useState<number | null>(COUNTDOWN_INITIAL_VALUE);
+  const [countdown, setCountdown] = useState<number | null>(
+    COUNTDOWN_INITIAL_VALUE,
+  );
 
   useEffect(() => {
     const transition = getNextCountdownValue(countdown);

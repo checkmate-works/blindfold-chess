@@ -3,17 +3,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useTimedSession } from './use-timed-session';
 
-// Mock use-countdown to skip countdown phase
-vi.mock('@/app/[locale]/(public)/practice/_hooks/use-countdown', () => ({
-  useCountdown: () => ({ countdown: null, isCountingDown: false }),
-}));
-
-// Mock use-game-timer with controllable behavior
 const mockOnTimeLimitReached = vi.fn();
 
 vi.mock('@blindfold-chess/features/practice-session', () => ({
+  useCountdown: () => ({ countdown: null, isCountingDown: false }),
   useGameTimer: ({ onTimeLimitReached }: { onTimeLimitReached?: () => void }) => {
-    // Store the callback so tests can invoke it
     mockOnTimeLimitReached.mockImplementation(() => onTimeLimitReached?.());
     return {
       timeElapsed: 0,
