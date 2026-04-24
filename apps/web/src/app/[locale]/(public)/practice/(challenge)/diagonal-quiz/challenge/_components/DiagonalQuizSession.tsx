@@ -1,17 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { FEEDBACK_FLASH_MS } from '@blindfold-chess/features/common';
-import {
-  generateSquareSequence,
-  getDiagonals,
-  isValidDiagonalAnswer,
-  normalizeDiagonal,
-} from '@blindfold-chess/features/diagonal-quiz';
-import { useTimedSession } from '@blindfold-chess/features/practice-session';
+import { useDiagonalQuizSession } from '@blindfold-chess/features/diagonal-quiz';
 
 import { MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
@@ -21,7 +14,6 @@ import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_compon
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import type { QuestionResult } from '../../_components/DiagonalQuizProblemList';
 import { DiagonalQuizPlaying } from './DiagonalQuizPlaying';
 
 type Props = {
@@ -29,53 +21,26 @@ type Props = {
   initialTimeLimit: number;
 };
 
-const BATCH_SIZE = 100;
-
 export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props) {
   const router = useRouter();
 
-  // Batch-based question generation
-  const squaresRef = useRef<string[]>([]);
-  const indexRef = useRef(0);
-
-  // Module-specific state
-  const [questionResults, setQuestionResults] = useState<QuestionResult[]>([]);
-  const [lastAnswer, setLastAnswer] = useState<{
-    correct: boolean;
-    correctDiagonal: string;
-    correctAntiDiagonal: string;
-  } | null>(null);
-
-  const generateQuestion = useCallback((): string => {
-    if (squaresRef.current.length === 0) {
-      squaresRef.current = generateSquareSequence(BATCH_SIZE);
-    }
-    if (indexRef.current >= squaresRef.current.length) {
-      squaresRef.current = [...squaresRef.current, ...generateSquareSequence(BATCH_SIZE)];
-    }
-    const square = squaresRef.current[indexRef.current];
-    indexRef.current += 1;
-    return square;
-  }, []);
-
   const {
-    currentQuestion: currentSquare,
+    currentSquare,
     timeRemaining,
-    totalTime,
+    timeElapsed,
     correctCount,
     incorrectCount,
     showFeedback,
+    lastAnswer,
     isFinished,
     countdown,
     isPaused,
-    handleAnswer: hookHandleAnswer,
+    handleAnswer,
     togglePause,
-  } = useTimedSession<string>({
+    questionResults,
+  } = useDiagonalQuizSession({
     timeLimit: initialTimeLimit,
-    generateQuestion,
     mistakeAllowance: MISTAKE_LIMIT,
-    feedbackDuration: (correct: boolean) =>
-      correct ? FEEDBACK_FLASH_MS.correct : FEEDBACK_FLASH_MS.incorrect,
   });
 
   useScrollToElement('diagonal-quiz-session');
@@ -96,56 +61,7 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
     if (isPaused) togglePause();
   }, [isPaused, togglePause]);
 
-  // Clear module-specific feedback state when hook feedback ends
-  useEffect(() => {
-    if (!showFeedback) {
-      setLastAnswer(null);
-    }
-  }, [showFeedback]);
-
-  const handleAnswer = useCallback(
-    (diagonalAnswer: string, antiDiagonalAnswer: string) => {
-      if (!currentSquare) return;
-
-      const { diagonal, antiDiagonal } = getDiagonals(currentSquare);
-
-      const diagonalValid = isValidDiagonalAnswer(diagonalAnswer);
-      const antiDiagonalValid = isValidDiagonalAnswer(antiDiagonalAnswer);
-
-      const diagonalCorrect =
-        diagonalValid && normalizeDiagonal(diagonalAnswer) === normalizeDiagonal(diagonal);
-      const antiDiagonalCorrect =
-        antiDiagonalValid &&
-        normalizeDiagonal(antiDiagonalAnswer) === normalizeDiagonal(antiDiagonal);
-
-      const isCorrect = diagonalCorrect && antiDiagonalCorrect;
-
-      setQuestionResults((prev) => [
-        ...prev,
-        {
-          square: currentSquare,
-          isCorrect,
-          isDiagonalCorrect: diagonalCorrect,
-          isAntiDiagonalCorrect: antiDiagonalCorrect,
-          correctDiagonal: diagonal,
-          correctAntiDiagonal: antiDiagonal,
-          userDiagonal: diagonalAnswer,
-          userAntiDiagonal: antiDiagonalAnswer,
-        },
-      ]);
-      setLastAnswer({
-        correct: isCorrect,
-        correctDiagonal: diagonal,
-        correctAntiDiagonal: antiDiagonal,
-      });
-
-      hookHandleAnswer(isCorrect);
-    },
-    [currentSquare, hookHandleAnswer]
-  );
-
   // Save result and redirect on finish
-  const total = correctCount + incorrectCount;
   const resultUrl = useMemo(() => {
     const serializedData = JSON.stringify(
       questionResults.map((r) => ({
@@ -162,27 +78,27 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
 
     const params = new URLSearchParams();
     params.set('score', correctCount.toString());
-    params.set('total', total.toString());
-    params.set('time', totalTime.toString());
+    params.set('total', (correctCount + incorrectCount).toString());
+    params.set('time', timeElapsed.toString());
     params.set('timeLimit', initialTimeLimit.toString());
     params.set('data', encodeURIComponent(serializedData));
 
     return `/${locale}/practice/diagonal-quiz/result?${params.toString()}`;
-  }, [correctCount, total, totalTime, initialTimeLimit, questionResults, locale]);
+  }, [correctCount, incorrectCount, timeElapsed, initialTimeLimit, questionResults, locale]);
 
   const saveResult = useCallback(
     () =>
       saveDiagonalQuizResult({
         correctAnswers: correctCount,
         incorrectAnswers: incorrectCount,
-        timeTaken: totalTime,
+        timeTaken: timeElapsed,
       }),
-    [correctCount, incorrectCount, totalTime]
+    [correctCount, incorrectCount, timeElapsed]
   );
 
   useChallengeResultSave({
     isFinished,
-    totalAnswers: total,
+    totalAnswers: correctCount + incorrectCount,
     resultUrl,
     saveResult,
     moduleName: 'diagonal_quiz',
