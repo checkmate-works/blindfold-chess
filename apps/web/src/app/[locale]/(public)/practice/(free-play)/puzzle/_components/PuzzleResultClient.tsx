@@ -4,31 +4,15 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-import { Button, ChessBoard } from '@/app/_components';
+import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
-import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
-import { FaEye, FaPlay, FaRedo } from 'react-icons/fa';
+import { FaEye } from 'react-icons/fa';
 
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
 
-import { useMovePlayback } from '@/app/[locale]/(public)/practice/_hooks/use-move-playback';
 import { SectionTitle } from '@/app/[locale]/_components';
-import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
-import { CircleMarker } from './CircleMarker';
-
-/**
- * Interval between auto-advanced moves in the replay. Matches the value used
- * by `MoveSequenceMemorize` so the two surfaces feel consistent to a user
- * who uses both.
- */
-const MOVE_INTERVAL_MS = 1000;
-/**
- * Short delay before the first move starts animating after the user clicks
- * Play, so the initial position registers for a beat before the pieces move.
- * Mirrors `MoveSequenceMemorize`'s `autoPlayDelayMs` of 500 ms.
- */
-const PLAY_INITIAL_DELAY_MS = 500;
+import { PuzzleSolutionReplay } from './PuzzleSolutionReplay';
 
 type Attempt = { move: string; isCorrect: boolean };
 
@@ -41,11 +25,6 @@ type Props = {
 
 export function PuzzleResultClient({ positionId, fen, solutionLines, solutionMoveLists }: Props) {
   const t = useTranslations('practice.puzzle.result');
-  // Pull Play / Replay labels from the shared `practice.common` namespace so
-  // the puzzle replay surface stays in lockstep with `MoveSequenceMemorize`
-  // without reaching into a feature-specific namespace to borrow strings.
-  const tCommon = useTranslations('practice.common');
-  const { preferences } = useGamePreferences();
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   const [solutionLine, setSolutionLine] = useState<string>(solutionLines[0] ?? '');
   const [peekCount, setPeekCount] = useState(0);
@@ -72,8 +51,6 @@ export function PuzzleResultClient({ positionId, fen, solutionLines, solutionMov
     }
   }, [positionId]);
 
-  const isBlackToMove = isBlackToMoveFromFen(fen);
-
   // Resolve the locked solution back to its server-side `{san, note}[]` shape
   // by matching the stored `solutionLine` string against each candidate's
   // joined SAN tokens. sessionStorage carries only the line string (to keep
@@ -91,110 +68,9 @@ export function PuzzleResultClient({ positionId, fen, solutionLines, solutionMov
       .map((san) => ({ san, note: null }));
   }, [solutionLine, solutionMoveLists]);
 
-  // Drive the replay with the same `useMovePlayback` hook `MoveSequenceMemorize`
-  // uses — it owns the chess.js state, the step timer, and the jump/pause
-  // primitives. The hook re-initialises when its `initialFen` / `moves` change,
-  // so solutionLine switches (after sessionStorage read) reset the replay to
-  // an idle state automatically.
-  const replayMoveSans = useMemo(() => lockedMoves.map((m) => m.san), [lockedMoves]);
-  const {
-    currentFen: replayFen,
-    isPlaying,
-    hasPlayed,
-    lastMove,
-    play,
-  } = useMovePlayback({
-    initialFen: fen,
-    moves: replayMoveSans,
-    intervalMs: MOVE_INTERVAL_MS,
-    autoPlayDelayMs: PLAY_INITIAL_DELAY_MS,
-  });
-
-  const solutionFirstMove = lockedMoves[0]?.san ?? '';
-  const firstTurn: 'w' | 'b' = isBlackToMove ? 'b' : 'w';
-
   return (
     <div className="space-y-6">
-      {/* (A) Replay board — mirrors MoveSequenceMemorize's layout: plain
-       *     ChessBoard + Play overlay while idle, Replay affordance once
-       *     the sequence has been played through at least once.
-       */}
-      <SectionTitle>{t('replaySection')}</SectionTitle>
-      <div className="flex justify-center">
-        <div className="w-full max-w-md">
-          <div className="relative">
-            <ChessBoard
-              fen={replayFen}
-              flipped={isBlackToMove}
-              showCoordinates={preferences.showCoordinates}
-              boardTheme={preferences.boardTheme}
-              lastMove={preferences.highlightLastMove ? lastMove : null}
-            />
-
-            {/* Play overlay — shown while idle and never while a replay is
-             *  in-flight. After the replay finishes (`hasPlayed=true`) the
-             *  overlay goes away and the Replay button below takes over.
-             */}
-            {!isPlaying && !hasPlayed && lockedMoves.length > 0 && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-md">
-                <button
-                  type="button"
-                  onClick={play}
-                  aria-label={tCommon('play')}
-                  className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 transition-all hover:scale-110"
-                >
-                  <FaPlay className="w-12 h-12 ml-1" />
-                </button>
-              </div>
-            )}
-          </div>
-
-          {hasPlayed && !isPlaying && (
-            <div className="mt-3 flex justify-center">
-              <button
-                type="button"
-                onClick={play}
-                aria-label={tCommon('replay')}
-                className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <FaRedo className="w-3 h-3" />
-                <span>{tCommon('replay')}</span>
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {lockedMoves.length > 0 && (
-        <>
-          {lockedMoves.length === 1 ? (
-            <p className="text-center text-sm font-medium text-foreground">
-              {t('solution', { move: solutionFirstMove })}
-              {lockedMoves[0]!.note && (
-                <span className="ml-1 text-muted-foreground font-normal">
-                  {t('note', { note: lockedMoves[0]!.note })}
-                </span>
-              )}
-            </p>
-          ) : (
-            <ol className="mx-auto max-w-md flex flex-col items-start gap-y-2 text-sm">
-              {lockedMoves.map((m, i) => {
-                const isWhiteMove = i % 2 === (firstTurn === 'w' ? 0 : 1);
-                return (
-                  <li key={i} className="flex items-baseline gap-1.5">
-                    <span className="text-muted-foreground">{i + 1}.</span>
-                    <CircleMarker color={isWhiteMove ? 'w' : 'b'} />
-                    <span className="font-mono text-foreground">{m.san}</span>
-                    {m.note && (
-                      <span className="text-muted-foreground">{t('note', { note: m.note })}</span>
-                    )}
-                  </li>
-                );
-              })}
-            </ol>
-          )}
-        </>
-      )}
+      <PuzzleSolutionReplay fen={fen} solutionMoves={lockedMoves} showSectionTitle />
 
       {/* (B) Attempt history — unordered list. Each bullet is one submitted
        *     move, which may or may not have been correct; we intentionally
