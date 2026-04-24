@@ -1,15 +1,42 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
-
-type UseBatchTrainingSessionConfig<TQuestion, TAnswerData> = {
+export type UseBatchTrainingSessionConfig<TQuestion, TAnswerData> = {
   batchSize?: number;
   generateBatch: (size: number) => TQuestion[];
   checkAnswer: (question: TQuestion, answerParams: TAnswerData) => boolean;
   feedbackDelayMs?: number | ((isCorrect: boolean) => number);
-  scrollTargetId?: string;
   skipAutoAdvance?: boolean;
   incorrectAutoAdvance?: boolean;
+};
+
+export type UseBatchTrainingSessionReturn<TQuestion, TAnswerData> = {
+  currentQuestion: TQuestion | null;
+  hasQuestions: boolean;
+  showResult: boolean;
+  lastAnswer:
+    | {
+        correct: boolean;
+        question: TQuestion;
+        userAnswerData: TAnswerData;
+        skipped: false;
+      }
+    | {
+        correct: false;
+        question: TQuestion;
+        userAnswerData: null;
+        skipped: true;
+      }
+    | null;
+  correctCount: number;
+  incorrectCount: number;
+  handleAnswer: (
+    answerData: TAnswerData,
+    isBlocked?: boolean,
+    onFeedbackStart?: (isCorrect: boolean) => void,
+  ) => void;
+  handleSkip: (onFeedbackStart?: (isCorrect: boolean) => void) => void;
+  handleNextAfterSkip: () => void;
+  handleNextAfterIncorrect: () => void;
 };
 
 export function useBatchTrainingSession<TQuestion, TAnswerData>({
@@ -17,10 +44,12 @@ export function useBatchTrainingSession<TQuestion, TAnswerData>({
   generateBatch,
   checkAnswer,
   feedbackDelayMs = 500,
-  scrollTargetId,
   skipAutoAdvance = true,
   incorrectAutoAdvance = true,
-}: UseBatchTrainingSessionConfig<TQuestion, TAnswerData>) {
+}: UseBatchTrainingSessionConfig<
+  TQuestion,
+  TAnswerData
+>): UseBatchTrainingSessionReturn<TQuestion, TAnswerData> {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [questions, setQuestions] = useState<TQuestion[]>([]);
   const [answers, setAnswers] = useState<boolean[]>([]);
@@ -42,20 +71,14 @@ export function useBatchTrainingSession<TQuestion, TAnswerData>({
   >(null);
 
   const hasStarted = useRef(false);
-  const [hasMounted, setHasMounted] = useState(false);
 
-  // Auto-start and mount
   useEffect(() => {
     if (hasStarted.current) return;
     hasStarted.current = true;
-    setHasMounted(true);
 
     const initialBatch = generateBatch(batchSize);
     setQuestions(initialBatch);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
-
-  useScrollToElement(scrollTargetId ?? '', hasMounted && !!scrollTargetId);
 
   // Regenerate questions when running low
   useEffect(() => {
@@ -69,7 +92,7 @@ export function useBatchTrainingSession<TQuestion, TAnswerData>({
     (
       answerData: TAnswerData,
       isBlocked: boolean = false,
-      onFeedbackStart?: (isCorrect: boolean) => void
+      onFeedbackStart?: (isCorrect: boolean) => void,
     ) => {
       if (isBlocked || showResult) return;
 
@@ -89,7 +112,9 @@ export function useBatchTrainingSession<TQuestion, TAnswerData>({
 
       if (isCorrect || incorrectAutoAdvance) {
         const delay =
-          typeof feedbackDelayMs === 'function' ? feedbackDelayMs(isCorrect) : feedbackDelayMs;
+          typeof feedbackDelayMs === "function"
+            ? feedbackDelayMs(isCorrect)
+            : feedbackDelayMs;
 
         setTimeout(() => {
           setShowResult(false);
@@ -98,7 +123,14 @@ export function useBatchTrainingSession<TQuestion, TAnswerData>({
         }, delay);
       }
     },
-    [currentIndex, questions, showResult, checkAnswer, feedbackDelayMs, incorrectAutoAdvance]
+    [
+      currentIndex,
+      questions,
+      showResult,
+      checkAnswer,
+      feedbackDelayMs,
+      incorrectAutoAdvance,
+    ],
   );
 
   const handleSkip = useCallback(
@@ -120,7 +152,9 @@ export function useBatchTrainingSession<TQuestion, TAnswerData>({
 
       if (skipAutoAdvance) {
         const delay =
-          typeof feedbackDelayMs === 'function' ? feedbackDelayMs(false) : feedbackDelayMs;
+          typeof feedbackDelayMs === "function"
+            ? feedbackDelayMs(false)
+            : feedbackDelayMs;
 
         setTimeout(() => {
           setShowResult(false);
@@ -129,7 +163,7 @@ export function useBatchTrainingSession<TQuestion, TAnswerData>({
         }, delay);
       }
     },
-    [currentIndex, questions, showResult, feedbackDelayMs, skipAutoAdvance]
+    [currentIndex, questions, showResult, feedbackDelayMs, skipAutoAdvance],
   );
 
   const advanceToNext = useCallback(() => {

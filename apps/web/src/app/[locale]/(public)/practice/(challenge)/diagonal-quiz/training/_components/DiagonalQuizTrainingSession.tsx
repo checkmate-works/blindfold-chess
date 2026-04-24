@@ -12,9 +12,10 @@ import {
   isValidDiagonalAnswer,
   normalizeDiagonal,
 } from '@blindfold-chess/features/diagonal-quiz';
+import { useBatchTrainingSession } from '@blindfold-chess/features/practice-session';
 
-import { useBatchTrainingSession } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-batch-training-session';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
+import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -59,12 +60,13 @@ export default function DiagonalQuizTrainingSession({ locale }: Props) {
 
       return diagonalCorrect && antiDiagonalCorrect;
     },
-    scrollTargetId: 'diagonal-quiz-training-session',
     feedbackDelayMs: (isCorrect) =>
       isCorrect ? FEEDBACK_FLASH_MS.correct : FEEDBACK_FLASH_MS.incorrect,
     skipAutoAdvance: false,
     incorrectAutoAdvance: false,
   });
+
+  useScrollToElement('diagonal-quiz-training-session', hasQuestions);
 
   const onAnswer = useCallback(
     (diagonalAnswer: string, antiDiagonalAnswer: string) => {

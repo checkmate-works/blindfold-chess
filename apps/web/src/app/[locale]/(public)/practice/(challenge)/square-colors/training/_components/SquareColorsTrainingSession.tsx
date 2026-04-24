@@ -6,9 +6,10 @@ import { useRouter } from 'next/navigation';
 
 import { BoardSkeleton } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { useBatchTrainingSession } from '@blindfold-chess/features/practice-session';
 
-import { useBatchTrainingSession } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-batch-training-session';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
+import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -40,9 +41,10 @@ export default function SquareColorsTrainingSession({ locale }: Props) {
     batchSize: BATCH_SIZE,
     generateBatch: () => generateSquareSequence(BATCH_SIZE),
     checkAnswer: (square, selectedColor) => selectedColor === getSquareColor(square),
-    scrollTargetId: 'square-colors-training-session',
     feedbackDelayMs: 500,
   });
+
+  useScrollToElement('square-colors-training-session', hasQuestions);
 
   const onAnswer = useCallback(
     (selectedColor: 'light' | 'dark') => {

@@ -1,21 +1,21 @@
-import { act, renderHook } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+// @vitest-environment jsdom
+import { act, renderHook } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useBatchTrainingSession } from './use-batch-training-session';
+import { useBatchTrainingSession } from "./use-batch-training-session";
 
-// Mock use-scroll-to-element to avoid DOM side effects
-vi.mock('@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element', () => ({
-  useScrollToElement: () => {},
-}));
-
-describe('useBatchTrainingSession', () => {
+describe("useBatchTrainingSession", () => {
   const FEEDBACK_DELAY = 500;
 
   // Generate deterministic questions: ['q0', 'q1', 'q2', ...]
-  const generateBatch = vi.fn((size: number) => Array.from({ length: size }, (_, i) => `q${i}`));
+  const generateBatch = vi.fn((size: number) =>
+    Array.from({ length: size }, (_, i) => `q${i}`),
+  );
 
   // Simple checkAnswer: answerData === 'correct' means correct
-  const checkAnswer = vi.fn((_question: string, answerData: string) => answerData === 'correct');
+  const checkAnswer = vi.fn(
+    (_question: string, answerData: string) => answerData === "correct",
+  );
 
   beforeEach(() => {
     vi.useFakeTimers();
@@ -35,46 +35,46 @@ describe('useBatchTrainingSession', () => {
         checkAnswer,
         feedbackDelayMs: FEEDBACK_DELAY,
         ...overrides,
-      })
+      }),
     );
   }
 
   // ===========================================================================
   // handleAnswer sets skipped to false
   // ===========================================================================
-  describe('handleAnswer sets skipped to false', () => {
-    it('sets skipped to false on correct answer', () => {
+  describe("handleAnswer sets skipped to false", () => {
+    it("sets skipped to false on correct answer", () => {
       const { result } = renderSession();
 
       act(() => {
-        result.current.handleAnswer('correct');
+        result.current.handleAnswer("correct");
       });
 
       expect(result.current.lastAnswer).not.toBeNull();
       expect(result.current.lastAnswer!.skipped).toBe(false);
       expect(result.current.lastAnswer!.correct).toBe(true);
-      expect(result.current.lastAnswer!.userAnswerData).toBe('correct');
+      expect(result.current.lastAnswer!.userAnswerData).toBe("correct");
     });
 
-    it('sets skipped to false on incorrect answer', () => {
+    it("sets skipped to false on incorrect answer", () => {
       const { result } = renderSession();
 
       act(() => {
-        result.current.handleAnswer('wrong');
+        result.current.handleAnswer("wrong");
       });
 
       expect(result.current.lastAnswer).not.toBeNull();
       expect(result.current.lastAnswer!.skipped).toBe(false);
       expect(result.current.lastAnswer!.correct).toBe(false);
-      expect(result.current.lastAnswer!.userAnswerData).toBe('wrong');
+      expect(result.current.lastAnswer!.userAnswerData).toBe("wrong");
     });
   });
 
   // ===========================================================================
   // handleSkip basic behavior
   // ===========================================================================
-  describe('handleSkip basic behavior', () => {
-    it('sets showResult to true', () => {
+  describe("handleSkip basic behavior", () => {
+    it("sets showResult to true", () => {
       const { result } = renderSession();
 
       expect(result.current.showResult).toBe(false);
@@ -86,7 +86,7 @@ describe('useBatchTrainingSession', () => {
       expect(result.current.showResult).toBe(true);
     });
 
-    it('sets lastAnswer.skipped to true', () => {
+    it("sets lastAnswer.skipped to true", () => {
       const { result } = renderSession();
 
       act(() => {
@@ -97,7 +97,7 @@ describe('useBatchTrainingSession', () => {
       expect(result.current.lastAnswer!.skipped).toBe(true);
     });
 
-    it('sets lastAnswer.correct to false', () => {
+    it("sets lastAnswer.correct to false", () => {
       const { result } = renderSession();
 
       act(() => {
@@ -107,7 +107,7 @@ describe('useBatchTrainingSession', () => {
       expect(result.current.lastAnswer!.correct).toBe(false);
     });
 
-    it('sets lastAnswer.userAnswerData to null', () => {
+    it("sets lastAnswer.userAnswerData to null", () => {
       const { result } = renderSession();
 
       act(() => {
@@ -117,7 +117,7 @@ describe('useBatchTrainingSession', () => {
       expect(result.current.lastAnswer!.userAnswerData).toBeNull();
     });
 
-    it('sets lastAnswer.question to the current question', () => {
+    it("sets lastAnswer.question to the current question", () => {
       const { result } = renderSession();
 
       const questionBeforeSkip = result.current.currentQuestion;
@@ -133,8 +133,8 @@ describe('useBatchTrainingSession', () => {
   // ===========================================================================
   // handleSkip increments incorrect count
   // ===========================================================================
-  describe('handleSkip increments incorrect count', () => {
-    it('increases incorrectCount by 1 after a skip', () => {
+  describe("handleSkip increments incorrect count", () => {
+    it("increases incorrectCount by 1 after a skip", () => {
       const { result } = renderSession();
 
       expect(result.current.incorrectCount).toBe(0);
@@ -146,7 +146,7 @@ describe('useBatchTrainingSession', () => {
       expect(result.current.incorrectCount).toBe(1);
     });
 
-    it('does not increment correctCount after a skip', () => {
+    it("does not increment correctCount after a skip", () => {
       const { result } = renderSession();
 
       act(() => {
@@ -156,7 +156,7 @@ describe('useBatchTrainingSession', () => {
       expect(result.current.correctCount).toBe(0);
     });
 
-    it('accumulates incorrect count across multiple skips', () => {
+    it("accumulates incorrect count across multiple skips", () => {
       const { result } = renderSession();
 
       // Skip 3 times, advancing past feedback each time
@@ -173,12 +173,12 @@ describe('useBatchTrainingSession', () => {
       expect(result.current.correctCount).toBe(0);
     });
 
-    it('correctly counts mixed answers and skips', () => {
+    it("correctly counts mixed answers and skips", () => {
       const { result } = renderSession();
 
       // Correct answer
       act(() => {
-        result.current.handleAnswer('correct');
+        result.current.handleAnswer("correct");
       });
       act(() => {
         vi.advanceTimersByTime(FEEDBACK_DELAY);
@@ -194,7 +194,7 @@ describe('useBatchTrainingSession', () => {
 
       // Incorrect answer
       act(() => {
-        result.current.handleAnswer('wrong');
+        result.current.handleAnswer("wrong");
       });
       act(() => {
         vi.advanceTimersByTime(FEEDBACK_DELAY);
@@ -216,8 +216,8 @@ describe('useBatchTrainingSession', () => {
   // ===========================================================================
   // handleSkip advances to next question
   // ===========================================================================
-  describe('handleSkip advances to next question', () => {
-    it('moves to the next question after feedback delay', () => {
+  describe("handleSkip advances to next question", () => {
+    it("moves to the next question after feedback delay", () => {
       const { result } = renderSession();
 
       const firstQuestion = result.current.currentQuestion;
@@ -239,7 +239,7 @@ describe('useBatchTrainingSession', () => {
       expect(result.current.currentQuestion).not.toBe(firstQuestion);
     });
 
-    it('does not advance before feedback delay completes', () => {
+    it("does not advance before feedback delay completes", () => {
       const { result } = renderSession();
 
       const firstQuestion = result.current.currentQuestion;
@@ -258,8 +258,10 @@ describe('useBatchTrainingSession', () => {
       expect(result.current.currentQuestion).toBe(firstQuestion);
     });
 
-    it('uses function-based feedbackDelayMs correctly for skip', () => {
-      const customDelay = vi.fn<(isCorrect: boolean) => number>().mockReturnValue(1000);
+    it("uses function-based feedbackDelayMs correctly for skip", () => {
+      const customDelay = vi
+        .fn<(isCorrect: boolean) => number>()
+        .mockReturnValue(1000);
       const { result } = renderSession({ feedbackDelayMs: customDelay });
 
       act(() => {
@@ -286,8 +288,8 @@ describe('useBatchTrainingSession', () => {
   // ===========================================================================
   // handleSkip is blocked during showResult
   // ===========================================================================
-  describe('handleSkip is blocked during showResult', () => {
-    it('ignores handleSkip while already showing result from a previous skip', () => {
+  describe("handleSkip is blocked during showResult", () => {
+    it("ignores handleSkip while already showing result from a previous skip", () => {
       const { result } = renderSession();
 
       // First skip
@@ -314,12 +316,12 @@ describe('useBatchTrainingSession', () => {
       expect(result.current.incorrectCount).toBe(1); // still 1
     });
 
-    it('ignores handleSkip while showing result from a normal answer', () => {
+    it("ignores handleSkip while showing result from a normal answer", () => {
       const { result } = renderSession();
 
       // Normal answer
       act(() => {
-        result.current.handleAnswer('correct');
+        result.current.handleAnswer("correct");
       });
 
       expect(result.current.showResult).toBe(true);
@@ -333,7 +335,7 @@ describe('useBatchTrainingSession', () => {
       expect(result.current.incorrectCount).toBe(0); // skip was ignored
     });
 
-    it('handleAnswer is also blocked while showing result from a skip', () => {
+    it("handleAnswer is also blocked while showing result from a skip", () => {
       const { result } = renderSession();
 
       // Skip
@@ -345,7 +347,7 @@ describe('useBatchTrainingSession', () => {
 
       // Try to answer during skip feedback - should be no-op
       act(() => {
-        result.current.handleAnswer('correct');
+        result.current.handleAnswer("correct");
       });
 
       expect(result.current.incorrectCount).toBe(1);
@@ -356,8 +358,8 @@ describe('useBatchTrainingSession', () => {
   // ===========================================================================
   // onFeedbackStart callback
   // ===========================================================================
-  describe('handleSkip onFeedbackStart callback', () => {
-    it('calls onFeedbackStart with false when skip is invoked', () => {
+  describe("handleSkip onFeedbackStart callback", () => {
+    it("calls onFeedbackStart with false when skip is invoked", () => {
       const { result } = renderSession();
       const onFeedbackStart = vi.fn();
 
@@ -369,7 +371,7 @@ describe('useBatchTrainingSession', () => {
       expect(onFeedbackStart).toHaveBeenCalledWith(false);
     });
 
-    it('does not call onFeedbackStart when skip is blocked', () => {
+    it("does not call onFeedbackStart when skip is blocked", () => {
       const { result } = renderSession();
       const onFeedbackStart = vi.fn();
 
@@ -390,8 +392,8 @@ describe('useBatchTrainingSession', () => {
   // ===========================================================================
   // skipAutoAdvance: false behavior
   // ===========================================================================
-  describe('skipAutoAdvance: false', () => {
-    it('does not auto-advance after handleSkip when skipAutoAdvance is false', () => {
+  describe("skipAutoAdvance: false", () => {
+    it("does not auto-advance after handleSkip when skipAutoAdvance is false", () => {
       const { result } = renderSession({ skipAutoAdvance: false });
 
       const firstQuestion = result.current.currentQuestion;
@@ -412,7 +414,7 @@ describe('useBatchTrainingSession', () => {
       expect(result.current.currentQuestion).toBe(firstQuestion);
     });
 
-    it('handleNextAfterSkip advances to next question and clears showResult', () => {
+    it("handleNextAfterSkip advances to next question and clears showResult", () => {
       const { result } = renderSession({ skipAutoAdvance: false });
 
       const firstQuestion = result.current.currentQuestion;
@@ -436,8 +438,8 @@ describe('useBatchTrainingSession', () => {
   // ===========================================================================
   // skipAutoAdvance: true (default) — handleNextAfterSkip is no-op
   // ===========================================================================
-  describe('skipAutoAdvance: true (default)', () => {
-    it('handleNextAfterSkip is a no-op when skipAutoAdvance is true', () => {
+  describe("skipAutoAdvance: true (default)", () => {
+    it("handleNextAfterSkip is a no-op when skipAutoAdvance is true", () => {
       const { result } = renderSession(); // default skipAutoAdvance: true
 
       act(() => {
@@ -461,14 +463,14 @@ describe('useBatchTrainingSession', () => {
   // ===========================================================================
   // incorrectAutoAdvance: false behavior
   // ===========================================================================
-  describe('incorrectAutoAdvance: false', () => {
-    it('does not auto-advance after an incorrect answer', () => {
+  describe("incorrectAutoAdvance: false", () => {
+    it("does not auto-advance after an incorrect answer", () => {
       const { result } = renderSession({ incorrectAutoAdvance: false });
 
       const firstQuestion = result.current.currentQuestion;
 
       act(() => {
-        result.current.handleAnswer('wrong');
+        result.current.handleAnswer("wrong");
       });
 
       expect(result.current.showResult).toBe(true);
@@ -482,13 +484,13 @@ describe('useBatchTrainingSession', () => {
       expect(result.current.currentQuestion).toBe(firstQuestion);
     });
 
-    it('still auto-advances after a correct answer', () => {
+    it("still auto-advances after a correct answer", () => {
       const { result } = renderSession({ incorrectAutoAdvance: false });
 
       const firstQuestion = result.current.currentQuestion;
 
       act(() => {
-        result.current.handleAnswer('correct');
+        result.current.handleAnswer("correct");
       });
 
       expect(result.current.showResult).toBe(true);
@@ -503,13 +505,13 @@ describe('useBatchTrainingSession', () => {
       expect(result.current.currentQuestion).not.toBe(firstQuestion);
     });
 
-    it('handleNextAfterIncorrect advances to next question and clears showResult', () => {
+    it("handleNextAfterIncorrect advances to next question and clears showResult", () => {
       const { result } = renderSession({ incorrectAutoAdvance: false });
 
       const firstQuestion = result.current.currentQuestion;
 
       act(() => {
-        result.current.handleAnswer('wrong');
+        result.current.handleAnswer("wrong");
       });
 
       expect(result.current.showResult).toBe(true);
@@ -523,12 +525,12 @@ describe('useBatchTrainingSession', () => {
       expect(result.current.currentQuestion).not.toBe(firstQuestion);
     });
 
-    it('handleNextAfterIncorrect clears incorrectCount tracking correctly', () => {
+    it("handleNextAfterIncorrect clears incorrectCount tracking correctly", () => {
       const { result } = renderSession({ incorrectAutoAdvance: false });
 
       // First incorrect answer
       act(() => {
-        result.current.handleAnswer('wrong');
+        result.current.handleAnswer("wrong");
       });
 
       expect(result.current.incorrectCount).toBe(1);
@@ -539,7 +541,7 @@ describe('useBatchTrainingSession', () => {
 
       // Second incorrect answer
       act(() => {
-        result.current.handleAnswer('wrong');
+        result.current.handleAnswer("wrong");
       });
 
       expect(result.current.incorrectCount).toBe(2);
@@ -550,16 +552,16 @@ describe('useBatchTrainingSession', () => {
 
       // Correct answer
       act(() => {
-        result.current.handleAnswer('correct');
+        result.current.handleAnswer("correct");
       });
 
       expect(result.current.correctCount).toBe(1);
       expect(result.current.incorrectCount).toBe(2);
     });
 
-    it('uses function-based feedbackDelayMs only for correct answers', () => {
+    it("uses function-based feedbackDelayMs only for correct answers", () => {
       const customDelay = vi.fn<(isCorrect: boolean) => number>((isCorrect) =>
-        isCorrect ? 300 : 1000
+        isCorrect ? 300 : 1000,
       );
       const { result } = renderSession({
         incorrectAutoAdvance: false,
@@ -568,7 +570,7 @@ describe('useBatchTrainingSession', () => {
 
       // Incorrect answer — feedbackDelayMs should NOT be called since no auto-advance
       act(() => {
-        result.current.handleAnswer('wrong');
+        result.current.handleAnswer("wrong");
       });
 
       // The function is not called for incorrect answers when incorrectAutoAdvance is false
@@ -581,7 +583,7 @@ describe('useBatchTrainingSession', () => {
 
       // Correct answer — feedbackDelayMs should be called
       act(() => {
-        result.current.handleAnswer('correct');
+        result.current.handleAnswer("correct");
       });
 
       expect(customDelay).toHaveBeenCalledWith(true);
@@ -598,12 +600,12 @@ describe('useBatchTrainingSession', () => {
   // ===========================================================================
   // incorrectAutoAdvance: true (default) — handleNextAfterIncorrect is no-op
   // ===========================================================================
-  describe('incorrectAutoAdvance: true (default)', () => {
-    it('handleNextAfterIncorrect is a no-op when incorrectAutoAdvance is true', () => {
+  describe("incorrectAutoAdvance: true (default)", () => {
+    it("handleNextAfterIncorrect is a no-op when incorrectAutoAdvance is true", () => {
       const { result } = renderSession(); // default incorrectAutoAdvance: true
 
       act(() => {
-        result.current.handleAnswer('wrong');
+        result.current.handleAnswer("wrong");
       });
 
       expect(result.current.showResult).toBe(true);
@@ -619,13 +621,13 @@ describe('useBatchTrainingSession', () => {
       expect(result.current.currentQuestion).toBe(questionDuringFeedback);
     });
 
-    it('auto-advances after incorrect answer with default settings', () => {
+    it("auto-advances after incorrect answer with default settings", () => {
       const { result } = renderSession(); // default incorrectAutoAdvance: true
 
       const firstQuestion = result.current.currentQuestion;
 
       act(() => {
-        result.current.handleAnswer('wrong');
+        result.current.handleAnswer("wrong");
       });
 
       act(() => {
@@ -641,8 +643,8 @@ describe('useBatchTrainingSession', () => {
   // ===========================================================================
   // Combined: incorrectAutoAdvance: false and skipAutoAdvance: false
   // ===========================================================================
-  describe('incorrectAutoAdvance: false with skipAutoAdvance: false', () => {
-    it('neither skip nor incorrect answer auto-advances', () => {
+  describe("incorrectAutoAdvance: false with skipAutoAdvance: false", () => {
+    it("neither skip nor incorrect answer auto-advances", () => {
       const { result } = renderSession({
         incorrectAutoAdvance: false,
         skipAutoAdvance: false,
@@ -672,7 +674,7 @@ describe('useBatchTrainingSession', () => {
 
       // Incorrect answer — should not auto-advance
       act(() => {
-        result.current.handleAnswer('wrong');
+        result.current.handleAnswer("wrong");
       });
 
       act(() => {
@@ -691,7 +693,7 @@ describe('useBatchTrainingSession', () => {
       expect(result.current.currentQuestion).not.toBe(secondQuestion);
     });
 
-    it('correct answer still auto-advances even when both flags are false', () => {
+    it("correct answer still auto-advances even when both flags are false", () => {
       const { result } = renderSession({
         incorrectAutoAdvance: false,
         skipAutoAdvance: false,
@@ -700,7 +702,7 @@ describe('useBatchTrainingSession', () => {
       const firstQuestion = result.current.currentQuestion;
 
       act(() => {
-        result.current.handleAnswer('correct');
+        result.current.handleAnswer("correct");
       });
 
       act(() => {
