@@ -4,10 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { checkSymmetryAnswer, generateProblem } from '@blindfold-chess/features/board-symmetry';
-import type { BoardSymmetryProblem } from '@blindfold-chess/features/board-symmetry';
-import { FEEDBACK_FLASH_MS, applyCoordinateBackspace } from '@blindfold-chess/features/common';
-import { useTimedSession } from '@blindfold-chess/features/practice-session';
+import { useBoardSymmetrySession } from '@blindfold-chess/features/board-symmetry';
 
 import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
@@ -26,75 +23,34 @@ type Props = {
 export default function BoardSymmetryChallenge({ locale }: Props) {
   const router = useRouter();
 
-  // Module-specific UI state
-  const [selectedFile, setSelectedFile] = useState<string | null>(null);
-  const [selectedRank, setSelectedRank] = useState<string | null>(null);
-  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [showQuitModal, setShowQuitModal] = useState(false);
 
-  const generateQuestion = useCallback((): BoardSymmetryProblem => {
-    return generateProblem();
-  }, []);
-
   const {
-    currentQuestion: problem,
+    currentProblem: problem,
     timeRemaining,
-    totalTime,
+    timeElapsed,
     correctCount,
     incorrectCount,
     showFeedback: isProcessing,
+    lastAnswerCorrect,
     isFinished,
     countdown,
     isPaused,
+    selectedFile,
+    selectedRank,
+    handleFileToggle,
+    handleRankToggle,
+    handleBackspace,
     handleAnswer,
     togglePause,
-  } = useTimedSession<BoardSymmetryProblem>({
+  } = useBoardSymmetrySession({
     timeLimit: CHALLENGE_TIME_LIMIT,
-    generateQuestion,
     mistakeAllowance: MISTAKE_LIMIT,
-    feedbackDuration: (correct: boolean) =>
-      correct ? FEEDBACK_FLASH_MS.correct : FEEDBACK_FLASH_MS.incorrect,
   });
 
+  const isCorrect = isProcessing ? lastAnswerCorrect : null;
+
   useScrollToElement('board-symmetry-challenge');
-
-  // Clear module-specific state when feedback ends (next problem loaded)
-  useEffect(() => {
-    if (!isProcessing) {
-      setSelectedFile(null);
-      setSelectedRank(null);
-      setIsCorrect(null);
-    }
-  }, [isProcessing]);
-
-  const checkAnswer = useCallback(
-    (file: string, rank: string) => {
-      if (!problem || isProcessing || isFinished || countdown !== null || isPaused) return;
-
-      const { isCorrect: correct } = checkSymmetryAnswer(file, rank, problem);
-      setIsCorrect(correct);
-      handleAnswer(correct);
-    },
-    [problem, isProcessing, isFinished, countdown, isPaused, handleAnswer]
-  );
-
-  const handleFileToggle = (file: string) => {
-    if (isProcessing || countdown !== null || isPaused) return;
-    setSelectedFile((prev) => (prev === file ? null : file));
-  };
-
-  const handleRankToggle = (rank: string) => {
-    if (isProcessing || countdown !== null || isPaused) return;
-    setSelectedRank((prev) => (prev === rank ? null : rank));
-  };
-
-  // Rank-first deletion: clear the rank if present, otherwise clear the file.
-  const handleBackspace = useCallback(() => {
-    if (isProcessing || countdown !== null || isPaused) return;
-    const { next } = applyCoordinateBackspace({ selectedFile, selectedRank });
-    setSelectedFile(next.selectedFile);
-    setSelectedRank(next.selectedRank);
-  }, [isProcessing, countdown, isPaused, selectedFile, selectedRank]);
 
   const handleQuitRequest = useCallback(() => {
     if (!isPaused) togglePause();
@@ -120,44 +76,39 @@ export default function BoardSymmetryChallenge({ locale }: Props) {
       countdown === null &&
       !isPaused
     ) {
-      checkAnswer(selectedFile, selectedRank);
+      handleAnswer(selectedFile, selectedRank);
     }
-  }, [selectedFile, selectedRank, checkAnswer, isProcessing, isCorrect, countdown, isPaused]);
+  }, [selectedFile, selectedRank, handleAnswer, isProcessing, isCorrect, countdown, isPaused]);
 
   // Save result and redirect on finish
-  const total = correctCount + incorrectCount;
   const resultUrl = useMemo(() => {
     const params = new URLSearchParams({
       score: correctCount.toString(),
-      total: total.toString(),
-      time: totalTime.toString(),
+      total: (correctCount + incorrectCount).toString(),
+      time: timeElapsed.toString(),
     });
     return `/${locale}/practice/board-symmetry/result?${params.toString()}`;
-  }, [correctCount, total, totalTime, locale]);
+  }, [correctCount, incorrectCount, timeElapsed, locale]);
 
   const saveResult = useCallback(
     () =>
       saveBoardSymmetryResult({
         correctAnswers: correctCount,
         incorrectAnswers: incorrectCount,
-        timeTaken: totalTime,
+        timeTaken: timeElapsed,
       }),
-    [correctCount, incorrectCount, totalTime]
+    [correctCount, incorrectCount, timeElapsed]
   );
 
   useChallengeResultSave({
     isFinished,
-    totalAnswers: total,
+    totalAnswers: correctCount + incorrectCount,
     resultUrl,
     saveResult,
     moduleName: 'board_symmetry',
   });
 
-  if (isFinished) {
-    return <PracticeResultSkeleton />;
-  }
-
-  if (!problem) {
+  if (isFinished || !problem) {
     return <PracticeResultSkeleton />;
   }
 
