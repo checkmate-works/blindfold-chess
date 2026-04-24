@@ -1,14 +1,14 @@
-'use client';
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-
-import { useCountdown, useGameTimer } from '@blindfold-chess/features/practice-session';
+import { useCountdown } from "./use-countdown";
+import { useGameTimer } from "./use-game-timer";
 
 export type UseTimedSessionConfig<TQuestion> = {
   timeLimit: number;
   generateQuestion: () => TQuestion;
   feedbackDuration?: number | ((correct: boolean) => number);
   mistakeAllowance?: number;
+  onAnswerEffect?: (correct: boolean) => void;
 };
 
 export type UseTimedSessionReturn<TQuestion> = {
@@ -32,48 +32,57 @@ export type UseTimedSessionReturn<TQuestion> = {
 const DEFAULT_FEEDBACK_DURATION = 500;
 
 export function useTimedSession<TQuestion>(
-  config: UseTimedSessionConfig<TQuestion>
+  config: UseTimedSessionConfig<TQuestion>,
 ): UseTimedSessionReturn<TQuestion> {
   const {
     timeLimit,
     generateQuestion,
     feedbackDuration = DEFAULT_FEEDBACK_DURATION,
     mistakeAllowance,
+    onAnswerEffect,
   } = config;
 
-  // Use refs to always access the latest callbacks inside setTimeout
   const generateQuestionRef = useRef(generateQuestion);
   generateQuestionRef.current = generateQuestion;
 
   const feedbackDurationRef = useRef(feedbackDuration);
   feedbackDurationRef.current = feedbackDuration;
 
-  // Core state
-  const [currentQuestion, setCurrentQuestion] = useState<TQuestion | null>(null);
+  const onAnswerEffectRef = useRef(onAnswerEffect);
+  onAnswerEffectRef.current = onAnswerEffect;
+
+  const [currentQuestion, setCurrentQuestion] = useState<TQuestion | null>(
+    null,
+  );
   const [correctCount, setCorrectCount] = useState(0);
   const [incorrectCount, setIncorrectCount] = useState(0);
   const [showFeedback, setShowFeedback] = useState(false);
-  const [lastAnswerCorrect, setLastAnswerCorrect] = useState<boolean | null>(null);
+  const [lastAnswerCorrect, setLastAnswerCorrect] = useState<boolean | null>(
+    null,
+  );
   const [isFinished, setIsFinished] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
 
   const hasStarted = useRef(false);
   const isFinishedRef = useRef(false);
-  const feedbackTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const feedbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
 
-  // Countdown
   const { countdown } = useCountdown();
 
-  // Auto-start on mount
   useEffect(() => {
     if (hasStarted.current) return;
     hasStarted.current = true;
     setCurrentQuestion(generateQuestionRef.current());
   }, []);
 
-  // Timer
   const isPlaying =
-    currentQuestion !== null && !isFinished && countdown === null && !showFeedback && !isPaused;
+    currentQuestion !== null &&
+    !isFinished &&
+    countdown === null &&
+    !showFeedback &&
+    !isPaused;
 
   const { timeElapsed, totalTime } = useGameTimer({
     timeLimit,
@@ -84,7 +93,6 @@ export function useTimedSession<TQuestion>(
     }, []),
   });
 
-  // Cleanup feedback timeout on unmount
   useEffect(() => {
     return () => {
       if (feedbackTimeoutRef.current) clearTimeout(feedbackTimeoutRef.current);
@@ -100,6 +108,7 @@ export function useTimedSession<TQuestion>(
     (correct: boolean) => {
       if (isFinished || countdown !== null || showFeedback || isPaused) return;
 
+      onAnswerEffectRef.current?.(correct);
       setLastAnswerCorrect(correct);
       setShowFeedback(true);
 
@@ -112,12 +121,14 @@ export function useTimedSession<TQuestion>(
       }
 
       const duration =
-        typeof feedbackDurationRef.current === 'function'
+        typeof feedbackDurationRef.current === "function"
           ? feedbackDurationRef.current(correct)
           : feedbackDurationRef.current;
 
-      // Check if max mistakes reached after this answer
-      if (mistakeAllowance !== undefined && newIncorrectCount >= mistakeAllowance) {
+      if (
+        mistakeAllowance !== undefined &&
+        newIncorrectCount >= mistakeAllowance
+      ) {
         feedbackTimeoutRef.current = setTimeout(() => {
           isFinishedRef.current = true;
           setIsFinished(true);
@@ -133,7 +144,14 @@ export function useTimedSession<TQuestion>(
         setLastAnswerCorrect(null);
       }, duration);
     },
-    [isFinished, countdown, showFeedback, isPaused, incorrectCount, mistakeAllowance]
+    [
+      isFinished,
+      countdown,
+      showFeedback,
+      isPaused,
+      incorrectCount,
+      mistakeAllowance,
+    ],
   );
 
   const timeRemaining = Math.max(0, timeLimit - timeElapsed);

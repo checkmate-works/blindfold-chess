@@ -5,11 +5,11 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { BoardSkeleton } from '@/app/_components';
+import { useTimedSession } from '@blindfold-chess/features/practice-session';
 
 import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
 import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-challenge-result-save';
-import { useTimedSession } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-timed-session';
 import { saveSquareColorsResult } from '@/app/[locale]/(public)/practice/(challenge)/square-colors/_actions/save-result';
 import {
   generateSquareSequence,

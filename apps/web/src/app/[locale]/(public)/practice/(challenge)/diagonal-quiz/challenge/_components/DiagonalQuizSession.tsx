@@ -11,11 +11,11 @@ import {
   isValidDiagonalAnswer,
   normalizeDiagonal,
 } from '@blindfold-chess/features/diagonal-quiz';
+import { useTimedSession } from '@blindfold-chess/features/practice-session';
 
 import { MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
 import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-challenge-result-save';
-import { useTimedSession } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-timed-session';
 import { saveDiagonalQuizResult } from '@/app/[locale]/(public)/practice/(challenge)/diagonal-quiz/_actions/save-result';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
