@@ -7,9 +7,17 @@ import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hoo
 import { useStagedCoordinate } from '../../../_hooks/use-staged-coordinate';
 import { findShortestPath, validateUserPath } from '../../../_lib/utils';
 import type { PieceType } from '../../../_lib/utils';
-import type { ProblemResult } from '../_hooks/useRoutePlannerSession';
 import { MovesHistory } from './MovesHistory';
 import { SubmitArea } from './SubmitArea';
+
+export type ProblemResult = {
+  piece: PieceType;
+  start: string;
+  end: string;
+  success: boolean;
+  userPath: string[];
+  shortestPath: string[];
+};
 
 type Props = {
   currentProblem: { piece: PieceType; start: string; end: string };

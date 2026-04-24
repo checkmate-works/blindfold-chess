@@ -1,18 +1,28 @@
 'use client';
 
+import { useCallback, useMemo, useState } from 'react';
+
+import { useRouter } from 'next/navigation';
+
 import { BoardOverlay } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { useRoutePlannerSession } from '@blindfold-chess/features/route-planner';
 import { LuPlay } from 'react-icons/lu';
 
+import { MISTAKE_LIMIT } from '@/lib/challenge/constants';
+
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
+import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-challenge-result-save';
+import { saveRoutePlannerResult } from '@/app/[locale]/(public)/practice/(challenge)/route-planner/_actions/save-result';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
+import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { PieceType } from '../../_lib/utils';
-import { useRoutePlannerSession } from './_hooks/useRoutePlannerSession';
+import type { ProblemResult } from './_parts/ProblemBody';
 import { ProblemBody } from './_parts/ProblemBody';
 import { SessionHeader } from './_parts/SessionHeader';
 
@@ -29,34 +39,106 @@ export default function RoutePlannerChallengeSession({
 }: Props) {
   const tPractice = useTranslations('practice');
   const quitConfirmLabels = useQuitConfirmLabels();
+  const router = useRouter();
+
+  const [problemResults, setProblemResults] = useState<ProblemResult[]>([]);
+  const [showQuitModal, setShowQuitModal] = useState(false);
+
+  const piecesForGeneration = useMemo(
+    () => (allowedPieces.length > 0 ? allowedPieces : (['n', 'b'] as PieceType[])),
+    [allowedPieces]
+  );
 
   const {
     currentProblem,
     timeRemaining,
+    timeElapsed,
     correctCount,
     incorrectCount,
     showFeedback,
     isFinished,
     countdown,
     isPaused,
-    timeElapsed,
-    isDisabled,
-    hookHandleAnswer,
+    handleAnswer: hookHandleAnswer,
     togglePause,
-    recordProblemResult,
-    showQuitModal,
-    handleQuitRequest,
-    handleQuitConfirm,
-    handleQuitCancel,
-  } = useRoutePlannerSession({ locale, initialTimeLimit, allowedPieces });
+  } = useRoutePlannerSession({
+    selectedPieces: piecesForGeneration,
+    timeLimit: initialTimeLimit,
+    mistakeAllowance: MISTAKE_LIMIT,
+  });
+
+  useScrollToElement('route-planner-challenge-session');
+
+  const isDisabled = showFeedback || isPaused || countdown !== null;
+
+  const recordProblemResult = useCallback((result: ProblemResult) => {
+    setProblemResults((prev) => [...prev, result]);
+  }, []);
+
+  const handleQuitRequest = useCallback(() => {
+    if (!isPaused) togglePause();
+    setShowQuitModal(true);
+  }, [isPaused, togglePause]);
+
+  const handleQuitConfirm = useCallback(() => {
+    router.push(`/${locale}/practice/route-planner/challenge`);
+  }, [router, locale]);
+
+  const handleQuitCancel = useCallback(() => {
+    setShowQuitModal(false);
+    if (isPaused) togglePause();
+  }, [isPaused, togglePause]);
+
+  const total = correctCount + incorrectCount;
+
+  const resultUrl = useMemo(() => {
+    const dataStr = encodeURIComponent(JSON.stringify(problemResults));
+    const piecesStr = allowedPieces.join('');
+
+    const params = new URLSearchParams();
+    params.set('data', dataStr);
+    params.set('mode', 'standard');
+    params.set('count', total.toString());
+    params.set('pieces', piecesStr);
+    params.set('time', timeElapsed.toString());
+    if (allowedPieces.length === 1) {
+      const pieceName = allowedPieces[0] === 'n' ? 'knight' : 'bishop';
+      params.set('piece', pieceName);
+    }
+
+    return `/${locale}/practice/route-planner/result?${params.toString()}`;
+  }, [problemResults, allowedPieces, total, locale, timeElapsed]);
+
+  const pieceName = useMemo(() => {
+    if (allowedPieces.length === 1) {
+      return allowedPieces[0] === 'n' ? 'knight' : 'bishop';
+    }
+    return 'knight';
+  }, [allowedPieces]);
+
+  const saveResult = useCallback(
+    () =>
+      saveRoutePlannerResult({
+        correctAnswers: correctCount,
+        incorrectAnswers: incorrectCount,
+        timeTaken: timeElapsed,
+        piece: pieceName,
+      }),
+    [correctCount, incorrectCount, timeElapsed, pieceName]
+  );
+
+  useChallengeResultSave({
+    isFinished,
+    totalAnswers: total,
+    resultUrl,
+    saveResult,
+    moduleName: 'route_planner',
+  });
 
   if (!currentProblem || isFinished) {
     return <PracticeResultSkeleton />;
   }
 
-  // Identity key for the per-problem view — React remounts ProblemBody on
-  // change, which discards moves / staged coord / feedback marker without
-  // any manual effect-based reset.
   const problemKey = `${currentProblem.piece}:${currentProblem.start}:${currentProblem.end}`;
 
   return (
