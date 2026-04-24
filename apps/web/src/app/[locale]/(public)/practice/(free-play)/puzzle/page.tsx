@@ -153,11 +153,11 @@ export default async function PuzzleListPage({ params, searchParams }: Props) {
         <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
 
         {currentUser && (
-          <div className="flex justify-center py-4">
+          <div className="py-4">
             <Link
               href="/practice/puzzle/new"
               locale={locale}
-              className="px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+              className="block w-full text-center px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
             >
               {t('list.createButton')}
             </Link>

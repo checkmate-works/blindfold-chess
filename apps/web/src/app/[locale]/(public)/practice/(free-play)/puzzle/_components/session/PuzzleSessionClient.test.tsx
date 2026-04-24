@@ -2,7 +2,7 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { PuzzleAnswerForm } from './PuzzleAnswerForm';
+import { PuzzleSessionClient } from './PuzzleSessionClient';
 
 // `useRouter` is provided by the i18n routing wrapper, which is just a thin
 // wrapper around `next-intl`'s navigation helpers. Mock the wrapper directly
@@ -31,8 +31,6 @@ vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }));
 
-// `useGamePreferences` reads from context + localStorage. Provide a minimal
-// stub covering the fields the form actually consumes.
 vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
   useGamePreferences: () => ({
     preferences: {
@@ -57,22 +55,11 @@ vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
   }),
 }));
 
-// `PuzzleBoardPeekModal` pulls in `ChessBoard`, which isn't relevant here.
 vi.mock('./PuzzleBoardPeekModal', () => ({
   PuzzleBoardPeekModal: ({ isOpen }: { isOpen: boolean }) =>
     isOpen ? <div data-testid="peek-modal" /> : null,
 }));
 
-// Stub `MoveInputPanel` with a harness that exposes:
-//   - the `disabled` prop via `data-disabled`
-//   - the current `moveInput` prop via `data-move-input` (lets tests assert
-//     whether the parent cleared the input buffer after submit)
-//   - a "seed" button that calls `onMoveInputChange('Nf3')` so tests can
-//     simulate the user having typed a move before submitting
-//   - a stub "submit" button that calls `onSubmit('Nf3')` to simulate a
-//     user-entered move without depending on the inner input UIs.
-// Tests can swap what gets submitted per-test by re-mocking, but all tests
-// here use a single move (`Nf3`) and the solution set is controlled per-test.
 vi.mock('@/app/[locale]/_components/MoveInputPanel', () => ({
   MoveInputPanel: ({
     disabled,
@@ -109,13 +96,6 @@ vi.mock('@/app/[locale]/_components/MoveInputPanel', () => ({
           onSubmit('Nf3' as AlgebraicNotation);
         }}
       />
-      {/**
-       * Free-form move submitter: tests set the desired move text via the
-       * adjacent hidden input (`stub-custom-move-value`), then click
-       * `stub-custom-submit` to invoke `onSubmit` with that exact string.
-       * Lets us cover empty / whitespace-padded / arbitrary-SAN cases
-       * without proliferating per-move mock buttons.
-       */}
       <input type="hidden" data-testid="stub-custom-move-value" defaultValue="" />
       <button
         type="button"
@@ -138,14 +118,29 @@ vi.mock('@/app/[locale]/_components/MoveInputPanel', () => ({
   ),
 }));
 
-// FEN with white to move (any legal-looking FEN suffices — the form only
+// FEN with white to move (any legal-looking FEN suffices — the component only
 // reads side-to-move via `isBlackToMoveFromFen`).
 const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 const POSITION_ID = 'puzzle-123';
+const POSITION_TITLE = 'Sample Puzzle';
 
-function renderForm(solutions: string[] = ['Nf3']) {
+function toSolutionMoves(line: string) {
+  return line
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((san) => ({ san, note: null }));
+}
+
+function renderSession(solutions: string[] = ['Nf3'], fen: string = STARTING_FEN) {
+  const solutionMoves = solutions.map(toSolutionMoves);
   return render(
-    <PuzzleAnswerForm solutions={solutions} positionId={POSITION_ID} fen={STARTING_FEN} />
+    <PuzzleSessionClient
+      solutions={solutionMoves}
+      positionId={POSITION_ID}
+      fen={fen}
+      positionTitle={POSITION_TITLE}
+      breadcrumb={<nav data-testid="stub-breadcrumb" />}
+    />
   );
 }
 
@@ -158,16 +153,15 @@ afterEach(() => {
   cleanup();
 });
 
-describe('PuzzleAnswerForm', () => {
+describe('PuzzleSessionClient', () => {
   describe('correct answer', () => {
-    it('navigates to the result page ~1s after a correct submit', () => {
+    it('navigates to the result page ~1s after the final player move', () => {
       vi.useFakeTimers();
       try {
-        renderForm(['Nf3']);
+        renderSession(['Nf3']);
 
         fireEvent.click(screen.getByTestId('stub-submit'));
 
-        // Push is deferred by ~1s to let the success feedback show.
         expect(mockPush).not.toHaveBeenCalled();
 
         act(() => {
@@ -181,7 +175,9 @@ describe('PuzzleAnswerForm', () => {
     });
 
     it('writes the result payload to sessionStorage with the expected shape', () => {
-      renderForm(['Nf3 Nc6']);
+      // Solution: player plays Nf3, opponent replies Nc6 — the solve completes
+      // once the single player slot is filled.
+      renderSession(['Nf3 Nc6']);
 
       fireEvent.click(screen.getByTestId('stub-submit'));
 
@@ -197,8 +193,8 @@ describe('PuzzleAnswerForm', () => {
       });
     });
 
-    it('disables the input panel after a correct submit', () => {
-      renderForm(['Nf3']);
+    it('disables the input panel after the final correct submit', () => {
+      renderSession(['Nf3']);
 
       fireEvent.click(screen.getByTestId('stub-submit'));
 
@@ -206,9 +202,8 @@ describe('PuzzleAnswerForm', () => {
     });
 
     it('clears the moveInput buffer on a correct submit', () => {
-      renderForm(['Nf3']);
+      renderSession(['Nf3']);
 
-      // Seed the input buffer as if the user had typed `Nf3`.
       fireEvent.click(screen.getByTestId('stub-seed'));
       expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-move-input', 'Nf3');
 
@@ -220,24 +215,18 @@ describe('PuzzleAnswerForm', () => {
 
   describe('incorrect answer', () => {
     it('records the attempt and surfaces the incorrect-move message', () => {
-      // Solution is something other than 'Nf3', so our stub-submit is wrong.
-      renderForm(['e4']);
+      renderSession(['e4']);
 
       fireEvent.click(screen.getByTestId('stub-submit'));
 
       expect(screen.getByTestId('panel-error')).toHaveTextContent('incorrect');
-      // Input remains enabled so the user can try again.
       expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'false');
-      // "View result" link is available once the user has at least one
-      // incorrect attempt.
       expect(screen.getByTestId('view-result-link')).toBeInTheDocument();
     });
 
     it('preserves the moveInput buffer on an incorrect submit so the user can edit their prior attempt', () => {
-      // Solution is something other than 'Nf3', so our stub-submit is wrong.
-      renderForm(['e4']);
+      renderSession(['e4']);
 
-      // Seed the input buffer as if the user had typed `Nf3`.
       fireEvent.click(screen.getByTestId('stub-seed'));
       expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-move-input', 'Nf3');
 
@@ -252,16 +241,12 @@ describe('PuzzleAnswerForm', () => {
 
   describe('board peek', () => {
     it('increments peekCount and persists it to sessionStorage on a subsequent correct submit', () => {
-      renderForm(['Nf3']);
+      renderSession(['Nf3']);
 
-      // Peek twice before answering.
       const peekButton = screen.getByRole('button', { name: 'showBoard' });
       fireEvent.click(peekButton);
-      // The modal's onClose is driven by the form, so the peek count stays
-      // at 2 regardless of modal open/close toggling.
       fireEvent.click(peekButton);
 
-      // Correct answer
       fireEvent.click(screen.getByTestId('stub-submit'));
 
       const parsed = JSON.parse(sessionStorage.getItem(`puzzle_result_${POSITION_ID}`)!);
@@ -269,20 +254,12 @@ describe('PuzzleAnswerForm', () => {
     });
 
     it('persists peekCount to sessionStorage when the user bails out via the "view result" link after incorrect attempts', () => {
-      // Solution is something other than 'Nf3', so the stub-submit is wrong
-      // and the "view result" link is revealed.
-      renderForm(['e4']);
+      renderSession(['e4']);
 
-      // Peek once before answering.
       const peekButton = screen.getByRole('button', { name: 'showBoard' });
       fireEvent.click(peekButton);
 
-      // Incorrect answer → surfaces the "view result" link.
       fireEvent.click(screen.getByTestId('stub-submit'));
-
-      // Click the link — the Link mock fires its `onClick` synchronously, and
-      // the form's `onClick` handler writes the interim result payload
-      // (including the peekCount collected so far) to sessionStorage.
       fireEvent.click(screen.getByTestId('view-result-link'));
 
       const parsed = JSON.parse(sessionStorage.getItem(`puzzle_result_${POSITION_ID}`)!);
@@ -295,50 +272,39 @@ describe('PuzzleAnswerForm', () => {
 
   describe('input lifecycle', () => {
     it('clears the incorrect-move error when the user edits the input (onErrorClear)', () => {
-      renderForm(['e4']);
+      renderSession(['e4']);
 
-      // Trigger an incorrect attempt so the panel error is surfaced.
       fireEvent.click(screen.getByTestId('stub-submit'));
       expect(screen.getByTestId('panel-error')).toHaveTextContent('incorrect');
 
-      // Simulate the MoveInputPanel telling the form to clear the error
-      // (this is what happens on any subsequent keystroke / mode change).
       fireEvent.click(screen.getByTestId('stub-clear-error'));
 
-      // The error message should disappear because `result` was reset to null.
       expect(screen.queryByTestId('panel-error')).not.toBeInTheDocument();
     });
 
-    it('ignores onErrorClear before any incorrect attempt (no-op when result is null)', () => {
-      renderForm(['Nf3']);
+    it('ignores onErrorClear before any incorrect attempt (no-op when error is null)', () => {
+      renderSession(['Nf3']);
 
-      // Fire the panel's onErrorClear without any prior submission. This
-      // must not crash and must not surface any unexpected UI changes.
       fireEvent.click(screen.getByTestId('stub-clear-error'));
 
       expect(screen.queryByTestId('panel-error')).not.toBeInTheDocument();
-      // View-result link should still be hidden since no attempts were made.
       expect(screen.queryByTestId('view-result-link')).not.toBeInTheDocument();
     });
   });
 
   describe('edge-case submissions', () => {
     it('treats a whitespace-only submit as a no-op (no attempt recorded, no error surfaced)', () => {
-      renderForm(['Nf3']);
+      renderSession(['Nf3']);
 
-      // Set the custom submitter to whitespace-only and fire it.
       (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = '   ';
       fireEvent.click(screen.getByTestId('stub-custom-submit'));
 
-      // `handleSubmit` early-returns false for empty input, so no attempt is
-      // appended and `result` remains null → no "incorrect" panel error and
-      // no "view result" link.
       expect(screen.queryByTestId('panel-error')).not.toBeInTheDocument();
       expect(screen.queryByTestId('view-result-link')).not.toBeInTheDocument();
     });
 
     it('treats the empty string as a no-op (no attempt recorded)', () => {
-      renderForm(['Nf3']);
+      renderSession(['Nf3']);
 
       (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = '';
       fireEvent.click(screen.getByTestId('stub-custom-submit'));
@@ -350,13 +316,11 @@ describe('PuzzleAnswerForm', () => {
     it('trims surrounding whitespace before comparing against the solution', () => {
       vi.useFakeTimers();
       try {
-        renderForm(['Nf3']);
+        renderSession(['Nf3']);
 
-        // `  Nf3  ` must match the solution `Nf3` after trim.
         (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = '  Nf3  ';
         fireEvent.click(screen.getByTestId('stub-custom-submit'));
 
-        // Correct path → panel becomes disabled and the navigate timer starts.
         expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'true');
 
         act(() => {
@@ -364,8 +328,6 @@ describe('PuzzleAnswerForm', () => {
         });
         expect(mockPush).toHaveBeenCalledWith(`/practice/puzzle/${POSITION_ID}/result`);
 
-        // The stored attempt should record the trimmed move, not the
-        // whitespace-padded one.
         const parsed = JSON.parse(sessionStorage.getItem(`puzzle_result_${POSITION_ID}`)!);
         expect(parsed.attempts).toEqual([{ move: 'Nf3', isCorrect: true }]);
       } finally {
@@ -374,13 +336,11 @@ describe('PuzzleAnswerForm', () => {
     });
 
     it('accumulates repeated incorrect attempts (same move submitted twice records two attempts)', () => {
-      renderForm(['e4']);
+      renderSession(['e4']);
 
-      // Submit `Nf3` twice — both are incorrect for a solution of `e4`.
       fireEvent.click(screen.getByTestId('stub-submit'));
       fireEvent.click(screen.getByTestId('stub-submit'));
 
-      // Click the "view result" link to flush attempts to sessionStorage.
       fireEvent.click(screen.getByTestId('view-result-link'));
 
       const parsed = JSON.parse(sessionStorage.getItem(`puzzle_result_${POSITION_ID}`)!);
@@ -393,8 +353,7 @@ describe('PuzzleAnswerForm', () => {
     it('accepts a different correct move from a multi-solution puzzle and records the matching solution line', () => {
       vi.useFakeTimers();
       try {
-        // Two independent solutions; user submits the second one.
-        renderForm(['e4 e5', 'Nf3 d5']);
+        renderSession(['e4 e5', 'Nf3 d5']);
 
         (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'Nf3';
         fireEvent.click(screen.getByTestId('stub-custom-submit'));
@@ -404,13 +363,151 @@ describe('PuzzleAnswerForm', () => {
         });
 
         const parsed = JSON.parse(sessionStorage.getItem(`puzzle_result_${POSITION_ID}`)!);
-        // The solutionLine recorded must be the line whose first move matched,
-        // not just `solutions[0]`.
         expect(parsed.solutionLine).toBe('Nf3 d5');
         expect(parsed.attempts).toEqual([{ move: 'Nf3', isCorrect: true }]);
       } finally {
         vi.useRealTimers();
       }
+    });
+  });
+
+  // Regression guard for the black-to-move matcher bug where the session
+  // client used `getPlayerMovesFromSequence(moves, 'b')` from chess-core. That
+  // helper is a PGN utility that assumes index 0 is always a white move, so
+  // for a black-to-move puzzle solution stored as `['h5', 'Nh2', 'Bg3']` it
+  // returned `['Nh2']` and rejected the correct first move `h5` as invalid.
+  //
+  // Puzzle solutions always begin with the player's move, so player slots are
+  // at indices 0, 2, 4, … regardless of which side the puzzle is set up for.
+  describe('black-to-move puzzle', () => {
+    // Real puzzle surfaced by a user: 276e36fb-9d43-4e6c-80f1-98ec47d1ac17
+    const BLACK_TO_MOVE_FEN =
+      'r2q1rk1/2pb1ppn/pp1p3p/6b1/2P1P1N1/1P1P3P/PB1N1RP1/R2Q2K1 b - - 4 16';
+
+    it("accepts the black player's first move `h5` as correct", () => {
+      renderSession(['h5 Nh2 Bg3'], BLACK_TO_MOVE_FEN);
+
+      (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'h5';
+      fireEvent.click(screen.getByTestId('stub-custom-submit'));
+
+      expect(screen.queryByTestId('panel-error')).not.toBeInTheDocument();
+    });
+
+    it("rejects the opponent's SAN `Nh2` when submitted as the first player move", () => {
+      renderSession(['h5 Nh2 Bg3'], BLACK_TO_MOVE_FEN);
+
+      (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'Nh2';
+      fireEvent.click(screen.getByTestId('stub-custom-submit'));
+
+      expect(screen.getByTestId('panel-error')).toHaveTextContent('incorrect');
+    });
+
+    it('solves a single-move black-to-move puzzle and records the payload with the black-side FEN', () => {
+      // Single-move variant: black plays `h5`, puzzle complete. This isolates
+      // the regression (matcher accepts index 0 as the player's move for a
+      // black-to-move puzzle) from any board-legality concerns on deeper
+      // plies, which are exercised separately by the first case above.
+      vi.useFakeTimers();
+      try {
+        renderSession(['h5'], BLACK_TO_MOVE_FEN);
+
+        (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'h5';
+        fireEvent.click(screen.getByTestId('stub-custom-submit'));
+
+        act(() => {
+          vi.advanceTimersByTime(1000);
+        });
+
+        expect(mockPush).toHaveBeenCalledWith(`/practice/puzzle/${POSITION_ID}/result`);
+
+        const parsed = JSON.parse(sessionStorage.getItem(`puzzle_result_${POSITION_ID}`)!);
+        expect(parsed.solutionLine).toBe('h5');
+        expect(parsed.attempts).toEqual([{ move: 'h5', isCorrect: true }]);
+        expect(parsed.fen).toBe(BLACK_TO_MOVE_FEN);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('auto-plays the white opponent reply after the black player move in a multi-move line', () => {
+      // Black plays h5, opponent reply Nh2 is auto-played, puzzle continues.
+      // This exercises the interleave fix in the opponent-reply logic
+      // (`justPlayedSanIndex = (playerMoveCount - 1) * 2` instead of the
+      // `playerColor === 'w' ? 0 : 1` branch), verifying the opponent SAN at
+      // index 1 is the one that gets fed into executeMove.
+      renderSession(['h5 Nh2'], BLACK_TO_MOVE_FEN);
+
+      (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'h5';
+      fireEvent.click(screen.getByTestId('stub-custom-submit'));
+
+      // After the player's one and only move, the puzzle should now be solved
+      // (the opponent reply auto-plays, but there are no more player slots).
+      expect(screen.queryByTestId('panel-error')).not.toBeInTheDocument();
+      expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'true');
+    });
+  });
+
+  // Opponent status surfaced via the PageTitle — mirrors the `aiPlayed`
+  // pattern from `games/play/_components/PlayPageClient.tsx`, which swaps
+  // its `<PageTitle>` content between the default heading and transient
+  // "AI played X" announcements. For puzzles the PageTitle carries the
+  // puzzle's title by default and switches to "⚪ White plays Nh2" while
+  // the opponent reply is the freshest context, reverting to the title
+  // once `isSolved` flips so the "Correct!" confirmation takes focus.
+  describe('opponent status in PageTitle', () => {
+    const BLACK_TO_MOVE_FEN =
+      'r2q1rk1/2pb1ppn/pp1p3p/6b1/2P1P1N1/1P1P3P/PB1N1RP1/R2Q2K1 b - - 4 16';
+
+    it('renders the puzzle title in the PageTitle before any player move', () => {
+      renderSession(['h5 Nh2']);
+
+      const heading = screen.getByRole('heading', { level: 1 });
+      expect(heading).toHaveTextContent(POSITION_TITLE);
+      // The opponent-status span only appears after the first opponent
+      // auto-play, so the `data-testid` hook used by the other assertions
+      // in this block must be absent here.
+      expect(screen.queryByTestId('opponent-status')).not.toBeInTheDocument();
+    });
+
+    it('swaps the PageTitle to `"White plays Nh2"` after the black player plays `h5`', () => {
+      // 3-token line so the second player slot (index 2 = Bh4) still
+      // exists after Nh2 auto-plays — keeps `isSolved=false` so the
+      // opponent-status branch renders. `Bh4` is a legal follow-up from
+      // the chess.js repro the fix block already covers; the stub matcher
+      // doesn't need to execute it, so its legality is incidental.
+      renderSession(['h5 Nh2 Bh4'], BLACK_TO_MOVE_FEN);
+
+      (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'h5';
+      fireEvent.click(screen.getByTestId('stub-custom-submit'));
+
+      const heading = screen.getByRole('heading', { level: 1 });
+      // next-intl mock returns key names, so `t('whitePlayed', {move})`
+      // comes back as the literal key "whitePlayed".
+      expect(heading).toHaveTextContent('whitePlayed');
+      expect(screen.getByTestId('opponent-status')).toBeInTheDocument();
+      // Puzzle title is suppressed while the opponent-status slot is active.
+      expect(heading).not.toHaveTextContent(POSITION_TITLE);
+    });
+
+    it('swaps the PageTitle to the Loading... placeholder once the puzzle is solved and navigation starts', () => {
+      // 2-token line: h5 is the only player slot, so submitting it flips
+      // `isSolved` to true AND kicks off `finishSolve`, which sets
+      // `isNavigatingToResult` before the 1s auto-navigate. In that window
+      // the PageTitle should render the loading placeholder (mirroring the
+      // `isInitializing → t('loading')` branch in games/play) — not the
+      // opponent-status slot and not the puzzle title.
+      renderSession(['h5 Nh2'], BLACK_TO_MOVE_FEN);
+
+      (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'h5';
+      fireEvent.click(screen.getByTestId('stub-custom-submit'));
+
+      const heading = screen.getByRole('heading', { level: 1 });
+      // `useTranslations('play')` is mocked to return the key verbatim, so
+      // `tPlay('loading')` comes back as the literal `'loading'`.
+      expect(heading).toHaveTextContent('loading');
+      expect(screen.queryByTestId('opponent-status')).not.toBeInTheDocument();
+      expect(screen.getByTestId('loading-title')).toBeInTheDocument();
+      expect(heading).not.toHaveTextContent(POSITION_TITLE);
     });
   });
 });

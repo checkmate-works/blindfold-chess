@@ -31,6 +31,7 @@ export function CoordinateInput({
           {['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'].map((file) => (
             <button
               key={file}
+              type="button"
               onClick={() => onFileToggle?.(file)}
               disabled={disabledFile?.(file)}
               className={`flex-1 min-w-0 h-9 rounded-md font-mono text-lg transition-colors border ${
@@ -52,6 +53,7 @@ export function CoordinateInput({
             {['1', '2', '3', '4', '5', '6', '7', '8'].map((rank) => (
               <button
                 key={rank}
+                type="button"
                 onClick={() => onRankToggle?.(rank)}
                 disabled={disabledRank?.(rank)}
                 className={`flex-1 min-w-0 h-9 rounded-md font-mono text-lg transition-colors border ${

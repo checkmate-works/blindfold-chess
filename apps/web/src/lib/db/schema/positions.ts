@@ -10,4 +10,5 @@ export type {
   NewPositionTag,
   PuzzleSolution,
   NewPuzzleSolution,
+  PuzzleSolutionMove,
 } from './tables';

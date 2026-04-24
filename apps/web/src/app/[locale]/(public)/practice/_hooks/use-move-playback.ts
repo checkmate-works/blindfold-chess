@@ -109,15 +109,25 @@ export function useMovePlayback({
     if (isPlaying) return;
 
     // Start fresh if we haven't played or reached the end
-    if (!hasPlayed || currentMoveIndex >= moves.length - 1) {
+    const shouldReset = !hasPlayed || currentMoveIndex >= moves.length - 1;
+    if (shouldReset) {
       resetPlayback();
     }
 
     setIsPlaying(true);
 
+    // Resolve the start index synchronously here rather than inside the
+    // setTimeout callback. `resetPlayback()` schedules `setCurrentMoveIndex(-1)`
+    // but does not apply it synchronously, so reading `currentMoveIndex` from
+    // the closure inside the timeout sees the PRE-reset value — previously
+    // that caused the first Replay click after a completed playback to
+    // dispatch `playNextMove(moves.length)`, which bailed immediately and
+    // looked like a no-op to the user.
+    const startIndex = shouldReset ? 0 : currentMoveIndex + 1;
+
     const delay = autoPlayDelayMs !== undefined ? autoPlayDelayMs : 0;
     setTimeout(() => {
-      playNextMove(currentMoveIndex === -1 ? 0 : currentMoveIndex + 1);
+      playNextMove(startIndex);
     }, delay);
   }, [
     isPlaying,
