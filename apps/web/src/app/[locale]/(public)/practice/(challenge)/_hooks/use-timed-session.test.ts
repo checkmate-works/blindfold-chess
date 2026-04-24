@@ -11,7 +11,7 @@ vi.mock('@/app/[locale]/(public)/practice/_hooks/use-countdown', () => ({
 // Mock use-game-timer with controllable behavior
 const mockOnTimeLimitReached = vi.fn();
 
-vi.mock('@/app/[locale]/(public)/practice/(challenge)/_hooks/use-game-timer', () => ({
+vi.mock('@blindfold-chess/features/practice-session', () => ({
   useGameTimer: ({ onTimeLimitReached }: { onTimeLimitReached?: () => void }) => {
     // Store the callback so tests can invoke it
     mockOnTimeLimitReached.mockImplementation(() => onTimeLimitReached?.());

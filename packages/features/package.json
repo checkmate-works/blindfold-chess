@@ -24,7 +24,8 @@
     "./lame-name": "./src/lame-name/index.ts",
     "./linkify": "./src/linkify/index.ts",
     "./utils": "./src/utils/index.ts",
-    "./exp": "./src/exp/index.ts"
+    "./exp": "./src/exp/index.ts",
+    "./practice-session": "./src/practice-session/index.ts"
   },
   "scripts": {
     "lint": "eslint",

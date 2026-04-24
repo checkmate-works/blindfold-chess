@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useGameTimer } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-game-timer';
+import { useGameTimer } from '@blindfold-chess/features/practice-session';
+
 import { useCountdown } from '@/app/[locale]/(public)/practice/_hooks/use-countdown';
 
 export type UseTimedSessionConfig<TQuestion> = {
