@@ -1,5 +1,25 @@
 import type { BasePracticeResult } from "./types";
 
+export type StatItem = {
+  label: string;
+  value: string;
+  highlight?: boolean;
+};
+
+export type DerivedResultStats = {
+  scoreLabel?: string;
+  scoreValue: string;
+  stats: StatItem[];
+};
+
+export type DeriveResultStatsLabels = {
+  scoreLabel?: string;
+  correctAnswers: string;
+  accuracy: string;
+  timeTaken: string;
+  averageTime: string;
+};
+
 /**
  * Computes a practice result from raw session data.
  * Pure function — no side effects, no dependency on Date.now().
@@ -26,5 +46,38 @@ export function computePracticeResult(
     accuracy,
     timeTaken: Math.min(elapsedSeconds, timeLimit),
     averageTime,
+  };
+}
+
+/**
+ * Derives presentation-ready stats from a BasePracticeResult.
+ * Pure function — caller supplies translated label strings; no i18n dependency.
+ */
+export function deriveResultStats(
+  result: BasePracticeResult,
+  labels: DeriveResultStatsLabels,
+): DerivedResultStats {
+  return {
+    scoreLabel: labels.scoreLabel,
+    scoreValue: `${result.correctAnswers} / ${result.totalQuestions}`,
+    stats: [
+      {
+        label: labels.correctAnswers,
+        value: result.correctAnswers.toString(),
+        highlight: true,
+      },
+      {
+        label: labels.accuracy,
+        value: `${result.accuracy.toFixed(1)}%`,
+      },
+      {
+        label: labels.timeTaken,
+        value: `${result.timeTaken}s`,
+      },
+      {
+        label: labels.averageTime,
+        value: `${result.averageTime.toFixed(1)}s`,
+      },
+    ],
   };
 }

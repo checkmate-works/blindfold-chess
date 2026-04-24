@@ -186,6 +186,7 @@
       "totalQuestions": "Total Questions",
       "correctAnswers": "Correct Answers",
       "accuracy": "Accuracy",
+      "timeTaken": "Time Taken",
       "averageTime": "Avg. Time",
       "points": "Points",
       "playAgain": "Play Again",

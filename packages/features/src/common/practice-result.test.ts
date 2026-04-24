@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { computePracticeResult } from "./practice-result";
+import { computePracticeResult, deriveResultStats } from "./practice-result";
 
 describe("computePracticeResult", () => {
   it("computes basic result with correct and incorrect counts", () => {
@@ -92,5 +92,148 @@ describe("computePracticeResult", () => {
     const result = computePracticeResult(5, 5, 60, 60, [1.0]);
 
     expect(result.timeTaken).toBe(60);
+  });
+});
+
+const BASE_LABELS = {
+  correctAnswers: "Correct",
+  accuracy: "Accuracy",
+  timeTaken: "Time",
+  averageTime: "Avg Time",
+};
+
+describe("deriveResultStats", () => {
+  it("returns scoreValue as correct / total", () => {
+    const result = deriveResultStats(
+      {
+        correctAnswers: 8,
+        totalQuestions: 10,
+        accuracy: 80,
+        timeTaken: 45,
+        averageTime: 2,
+      },
+      BASE_LABELS,
+    );
+
+    expect(result.scoreValue).toBe("8 / 10");
+  });
+
+  it("returns scoreLabel when provided", () => {
+    const result = deriveResultStats(
+      {
+        correctAnswers: 5,
+        totalQuestions: 10,
+        accuracy: 50,
+        timeTaken: 30,
+        averageTime: 3,
+      },
+      { ...BASE_LABELS, scoreLabel: "Score" },
+    );
+
+    expect(result.scoreLabel).toBe("Score");
+  });
+
+  it("returns undefined scoreLabel when not provided", () => {
+    const result = deriveResultStats(
+      {
+        correctAnswers: 5,
+        totalQuestions: 10,
+        accuracy: 50,
+        timeTaken: 30,
+        averageTime: 3,
+      },
+      BASE_LABELS,
+    );
+
+    expect(result.scoreLabel).toBeUndefined();
+  });
+
+  it("formats accuracy to 1 decimal place", () => {
+    const result = deriveResultStats(
+      {
+        correctAnswers: 1,
+        totalQuestions: 3,
+        accuracy: 33.333333,
+        timeTaken: 10,
+        averageTime: 3.333,
+      },
+      BASE_LABELS,
+    );
+
+    const accuracyStat = result.stats.find((s) => s.label === "Accuracy");
+    expect(accuracyStat?.value).toBe("33.3%");
+  });
+
+  it("formats averageTime to 1 decimal place with s suffix", () => {
+    const result = deriveResultStats(
+      {
+        correctAnswers: 3,
+        totalQuestions: 3,
+        accuracy: 100,
+        timeTaken: 15,
+        averageTime: 5,
+      },
+      BASE_LABELS,
+    );
+
+    const avgStat = result.stats.find((s) => s.label === "Avg Time");
+    expect(avgStat?.value).toBe("5.0s");
+  });
+
+  it("marks correctAnswers stat with highlight true", () => {
+    const result = deriveResultStats(
+      {
+        correctAnswers: 7,
+        totalQuestions: 10,
+        accuracy: 70,
+        timeTaken: 40,
+        averageTime: 4,
+      },
+      BASE_LABELS,
+    );
+
+    const correctStat = result.stats.find((s) => s.label === "Correct");
+    expect(correctStat?.highlight).toBe(true);
+  });
+
+  it("returns exactly 4 stat items", () => {
+    const result = deriveResultStats(
+      {
+        correctAnswers: 5,
+        totalQuestions: 10,
+        accuracy: 50,
+        timeTaken: 30,
+        averageTime: 3,
+      },
+      BASE_LABELS,
+    );
+
+    expect(result.stats).toHaveLength(4);
+  });
+
+  it("uses caller-supplied label strings verbatim", () => {
+    const labels = {
+      correctAnswers: "正解数",
+      accuracy: "正確率",
+      timeTaken: "経過時間",
+      averageTime: "平均時間",
+    };
+    const result = deriveResultStats(
+      {
+        correctAnswers: 5,
+        totalQuestions: 10,
+        accuracy: 50,
+        timeTaken: 30,
+        averageTime: 3,
+      },
+      labels,
+    );
+
+    expect(result.stats.map((s) => s.label)).toEqual([
+      "正解数",
+      "正確率",
+      "経過時間",
+      "平均時間",
+    ]);
   });
 });

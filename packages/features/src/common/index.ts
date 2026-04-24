@@ -12,7 +12,13 @@ export {
   getNextCountdownValue,
   isCountdownActive,
 } from "./countdown";
-export { computePracticeResult } from "./practice-result";
+export {
+  computePracticeResult,
+  deriveResultStats,
+  type StatItem,
+  type DerivedResultStats,
+  type DeriveResultStatsLabels,
+} from "./practice-result";
 export {
   type RandomSource,
   squareToFileIndex,

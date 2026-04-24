@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
+import { deriveResultStats } from "@blindfold-chess/features/common";
 import { Card } from "../../../components";
 import { useTheme, fontSize, fontWeight, spacing } from "../../../theme";
 import type { QuizResult } from "../lib/types";
@@ -12,25 +13,12 @@ export function ResultCard({ result }: ResultCardProps) {
   const { t } = useTranslation();
   const { colors, feedbackColors } = useTheme();
 
-  const statItems = [
-    {
-      label: t("coordinateQuiz.result.totalQuestions"),
-      value: result.totalQuestions.toString(),
-    },
-    {
-      label: t("coordinateQuiz.result.correctAnswers"),
-      value: result.correctAnswers.toString(),
-      highlight: true,
-    },
-    {
-      label: t("coordinateQuiz.result.accuracy"),
-      value: `${result.accuracy.toFixed(1)}%`,
-    },
-    {
-      label: t("coordinateQuiz.result.averageTime"),
-      value: `${result.averageTime.toFixed(1)}s`,
-    },
-  ];
+  const { stats } = deriveResultStats(result, {
+    correctAnswers: t("coordinateQuiz.result.correctAnswers"),
+    accuracy: t("coordinateQuiz.result.accuracy"),
+    timeTaken: t("coordinateQuiz.result.timeTaken"),
+    averageTime: t("coordinateQuiz.result.averageTime"),
+  });
 
   return (
     <Card padding="lg">
@@ -46,7 +34,7 @@ export function ResultCard({ result }: ResultCardProps) {
       <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
       <View style={styles.statsGrid}>
-        {statItems.map((item, index) => (
+        {stats.map((item, index) => (
           <View key={index} style={styles.statItem}>
             <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>
               {item.label}

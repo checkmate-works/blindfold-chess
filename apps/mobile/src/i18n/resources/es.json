@@ -186,6 +186,7 @@
       "totalQuestions": "Preguntas totales",
       "correctAnswers": "Respuestas correctas",
       "accuracy": "Precisión",
+      "timeTaken": "Tiempo empleado",
       "averageTime": "Tiempo medio",
       "points": "Puntos",
       "playAgain": "Jugar de nuevo",
