@@ -55,9 +55,27 @@ vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
   }),
 }));
 
-vi.mock('./PuzzleBoardPeekModal', () => ({
-  PuzzleBoardPeekModal: ({ isOpen }: { isOpen: boolean }) =>
+vi.mock('@/app/[locale]/(public)/games/play/_components/BoardViewModal', () => ({
+  BoardViewModal: ({ isOpen }: { isOpen: boolean }) =>
     isOpen ? <div data-testid="peek-modal" /> : null,
+}));
+
+vi.mock('@/app/[locale]/(public)/games/play/_components/InlineBoardView', () => ({
+  InlineBoardView: () => <div data-testid="inline-board-view" />,
+}));
+
+vi.mock('@/app/[locale]/(public)/games/play/_components/ShowBoardButton', () => ({
+  ShowBoardButton: ({ onClick, disabled }: { onClick: () => void; disabled?: boolean }) => (
+    <button
+      type="button"
+      aria-label="showBoard"
+      onClick={onClick}
+      disabled={disabled}
+      data-testid="show-board-button"
+    >
+      showBoard
+    </button>
+  ),
 }));
 
 vi.mock('@/app/[locale]/_components/MoveInputPanel', () => ({
@@ -139,7 +157,9 @@ function renderSession(solutions: string[] = ['Nf3'], fen: string = STARTING_FEN
       positionId={POSITION_ID}
       fen={fen}
       positionTitle={POSITION_TITLE}
+      piecesInfo={<div data-testid="stub-pieces-info" />}
       breadcrumb={<nav data-testid="stub-breadcrumb" />}
+      initialPeekHint={{ peekMode: 'modal', showBoardButtonInGame: true }}
     />
   );
 }

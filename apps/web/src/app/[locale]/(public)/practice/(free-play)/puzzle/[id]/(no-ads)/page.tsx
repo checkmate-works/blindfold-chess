@@ -12,7 +12,6 @@ import { notFound } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
-import { fenToPieceList, isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getPositionLikeMeta } from '@/lib/positions/like-queries';
@@ -25,6 +24,7 @@ import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { PuzzlePiecesInfo } from '../../_components/PuzzlePiecesInfo';
 import { loadPuzzleWithSolutions } from '../../_lib/load-puzzle';
 
 export const dynamic = 'force-dynamic';
@@ -70,8 +70,6 @@ export default async function PuzzleDetailPage({ params }: Props) {
 
   const { position, profile } = row;
   const displayName = resolveDisplayName(profile);
-  const isBlackToMove = isBlackToMoveFromFen(position.fen);
-  const pieceList = fenToPieceList(position.fen);
 
   const currentUser = await getOptionalUser();
   const likeMeta = await getPositionLikeMeta(position.id, currentUser?.id);
@@ -112,19 +110,7 @@ export default async function PuzzleDetailPage({ params }: Props) {
             <p className="text-foreground whitespace-pre-wrap">{position.description}</p>
           )}
 
-          <div className="rounded-lg border border-border bg-card p-4 space-y-2">
-            <p className="text-sm font-medium text-foreground">
-              {isBlackToMove ? t('detail.blackToMove') : t('detail.whiteToMove')}
-            </p>
-            <p className="text-sm text-foreground">
-              <span className="font-medium">{t('detail.whitePiecesLabel')}:</span>{' '}
-              {pieceList.white.length > 0 ? pieceList.white.join(' ') : t('detail.noPieces')}
-            </p>
-            <p className="text-sm text-foreground">
-              <span className="font-medium">{t('detail.blackPiecesLabel')}:</span>{' '}
-              {pieceList.black.length > 0 ? pieceList.black.join(' ') : t('detail.noPieces')}
-            </p>
-          </div>
+          <PuzzlePiecesInfo fen={position.fen} locale={locale} />
 
           <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
             <span>{t('detail.createdBy')}</span>
