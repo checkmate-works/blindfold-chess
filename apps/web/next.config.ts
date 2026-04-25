@@ -44,10 +44,14 @@ const nextConfig: NextConfig = {
     removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,
   },
 
-  // Enable experimental features for better performance
-  experimental: {
-    optimizeCss: true,
-  },
+  // Note: `experimental.optimizeCss` was removed on 2026-04-25.
+  // It depends on `critters`, which is deprecated upstream (vercel/next.js#72036)
+  // and does not support the App Router's streaming model
+  // (vercel/next.js discussion #59989), so it has been a no-op on this codebase.
+  // Removing it also eliminates the boot-time `Cannot resolve 'critters'`
+  // ModuleBuildError under Turbopack. The official successor is
+  // `experimental.inlineCss` — adopt deliberately if FCP gain on first-load
+  // outweighs the loss of stylesheet caching for returning visitors.
 
   // Permanent redirects for renamed routes
   // TODO: Remove this redirect after ~3-6 months (added 2026-02-16).
