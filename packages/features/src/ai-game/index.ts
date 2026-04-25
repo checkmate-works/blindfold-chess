@@ -43,5 +43,4 @@ export {
   computeShowPromotion,
   createInitialState,
   notationInputReducer,
-  useNotationInput,
 } from "./notation-input";

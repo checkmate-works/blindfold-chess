@@ -5,7 +5,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { BoardSkeleton } from '@/app/_components';
-import { useSquareColorsSession } from '@blindfold-chess/features/square-colors';
+import { useSquareColorsSession } from '@blindfold-chess/features/square-colors/client';
 
 import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge/constants';
 

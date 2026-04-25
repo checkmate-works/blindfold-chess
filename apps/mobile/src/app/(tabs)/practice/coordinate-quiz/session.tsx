@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { Check, X } from "lucide-react-native";
-import { useCoordinateQuizSession } from "@blindfold-chess/features/coordinate-quiz";
+import { useCoordinateQuizSession } from "@blindfold-chess/features/coordinate-quiz/client";
 
 import {
   ChessBoard,

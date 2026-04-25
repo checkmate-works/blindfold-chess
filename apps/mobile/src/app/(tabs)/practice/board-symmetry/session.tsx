@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { Check, X } from "lucide-react-native";
-import { useBoardSymmetrySession } from "@blindfold-chess/features/board-symmetry";
+import { useBoardSymmetrySession } from "@blindfold-chess/features/board-symmetry/client";
 
 import {
   SymmetryQuestion,

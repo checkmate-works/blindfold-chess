@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { useCoordinateQuizSession } from '@blindfold-chess/features/coordinate-quiz';
+import { useCoordinateQuizSession } from '@blindfold-chess/features/coordinate-quiz/client';
 import type { Square } from '@blindfold-chess/types';
 
 import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge/constants';

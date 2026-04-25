@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 
 import { BoardOverlay } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { useRoutePlannerSession } from '@blindfold-chess/features/route-planner';
+import { useRoutePlannerSession } from '@blindfold-chess/features/route-planner/client';
 import { LuPlay } from 'react-icons/lu';
 
 import { MISTAKE_LIMIT } from '@/lib/challenge/constants';

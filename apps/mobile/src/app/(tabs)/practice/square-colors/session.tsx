@@ -5,10 +5,8 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { Check, X } from "lucide-react-native";
 
-import {
-  useSquareColorsSession,
-  type SquareColorsResult,
-} from "@blindfold-chess/features/square-colors";
+import { useSquareColorsSession } from "@blindfold-chess/features/square-colors/client";
+import type { SquareColorsResult } from "@blindfold-chess/features/square-colors";
 
 import {
   SquareQuestion,

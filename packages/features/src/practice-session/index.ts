@@ -1,3 +1,5 @@
+"use client";
+
 export { useBatchTrainingSession } from "./use-batch-training-session";
 export type {
   UseBatchTrainingSessionConfig,

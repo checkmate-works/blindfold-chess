@@ -10,7 +10,7 @@ import {
   LegalIllegalButtons,
 } from "../../../../features/legal-moves/components";
 import { QuizTimer } from "../../../../features/coordinate-quiz/components";
-import { useLegalMovesSession } from "@blindfold-chess/features/legal-moves";
+import { useLegalMovesSession } from "@blindfold-chess/features/legal-moves/client";
 import { useTheme, fontSize, fontWeight, spacing } from "../../../../theme";
 import type { PieceType } from "../../../../features/legal-moves/lib/types";
 import type { LegalMovesResult } from "../../../../features/legal-moves/hooks";

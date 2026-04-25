@@ -10,8 +10,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import * as Haptics from "expo-haptics";
+import { useRoutePlannerSession } from "@blindfold-chess/features/route-planner/client";
 import {
-  useRoutePlannerSession,
   findShortestPath,
   validateUserPath,
 } from "@blindfold-chess/features/route-planner";

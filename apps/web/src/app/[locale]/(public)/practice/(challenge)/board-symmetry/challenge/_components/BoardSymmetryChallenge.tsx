@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { useBoardSymmetrySession } from '@blindfold-chess/features/board-symmetry';
+import { useBoardSymmetrySession } from '@blindfold-chess/features/board-symmetry/client';
 
 import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge/constants';
 

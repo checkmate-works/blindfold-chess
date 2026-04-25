@@ -1,7 +1,7 @@
 'use client';
 
-import { usePersistentSettings } from '@blindfold-chess/features/common';
-import type { UsePersistentSettingsReturn } from '@blindfold-chess/features/common';
+import { usePersistentSettings } from '@blindfold-chess/features/common/client';
+import type { UsePersistentSettingsReturn } from '@blindfold-chess/features/common/client';
 
 import { localStorageAdapter } from './local-storage-adapter';
 

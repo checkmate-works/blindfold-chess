@@ -5,7 +5,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { Check, X } from "lucide-react-native";
 import { getCornerInfo } from "@blindfold-chess/features/diagonal-quiz";
-import { useDiagonalQuizSession } from "@blindfold-chess/features/diagonal-quiz";
+import { useDiagonalQuizSession } from "@blindfold-chess/features/diagonal-quiz/client";
 
 import {
   QuestionCard,

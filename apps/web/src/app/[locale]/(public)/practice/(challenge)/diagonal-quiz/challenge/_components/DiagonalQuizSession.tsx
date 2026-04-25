@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { useDiagonalQuizSession } from '@blindfold-chess/features/diagonal-quiz';
+import { useDiagonalQuizSession } from '@blindfold-chess/features/diagonal-quiz/client';
 
 import { MISTAKE_LIMIT } from '@/lib/challenge/constants';
 

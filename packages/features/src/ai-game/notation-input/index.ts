@@ -18,4 +18,3 @@ export type {
   UseNotationInputOptions,
   UseNotationInputReturn,
 } from "./use-notation-input";
-export { useNotationInput } from "./use-notation-input";

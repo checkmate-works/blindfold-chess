@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from "react";
 
 import type { AlgebraicNotation } from "@blindfold-chess/types";
-import { useNotationInput } from "@blindfold-chess/features/ai-game/notation-input";
+import { useNotationInput } from "@blindfold-chess/features/ai-game/notation-input/client";
 
 type UseMoveInputProps = {
   fen: string;

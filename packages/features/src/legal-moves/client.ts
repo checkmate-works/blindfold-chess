@@ -1,6 +1,6 @@
-export * from "./types";
-export * from "./constants";
-export * from "./logic";
+"use client";
+
+export { useLegalMovesSession } from "./use-legal-moves-session";
 export type {
   UseLegalMovesSessionConfig,
   UseLegalMovesSessionReturn,
