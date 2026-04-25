@@ -14,8 +14,12 @@ import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { fenToPieceList, isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 
+import { getOptionalUser } from '@/lib/auth';
+import { getPositionLikeMeta } from '@/lib/positions/like-queries';
 import { resolveDisplayName } from '@/lib/users/display-name';
 
+import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_actions/toggleLike';
+import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -23,7 +27,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { loadPuzzleWithSolutions } from '../../_lib/load-puzzle';
 
-export const revalidate = 300;
+export const dynamic = 'force-dynamic';
 
 type Props = {
   params: Promise<{
@@ -69,6 +73,9 @@ export default async function PuzzleDetailPage({ params }: Props) {
   const isBlackToMove = isBlackToMoveFromFen(position.fen);
   const pieceList = fenToPieceList(position.fen);
 
+  const currentUser = await getOptionalUser();
+  const likeMeta = await getPositionLikeMeta(position.id, currentUser?.id);
+
   const authorBadge = (
     <>
       {profile?.avatarUrl ? (
@@ -78,6 +85,7 @@ export default async function PuzzleDetailPage({ params }: Props) {
           width={24}
           height={24}
           className="w-6 h-6 rounded-full object-cover flex-shrink-0"
+          unoptimized
         />
       ) : (
         <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
@@ -133,29 +141,16 @@ export default async function PuzzleDetailPage({ params }: Props) {
             )}
           </div>
 
-          {/*
-            TODO: Add LikeButton and DeletePositionButton (same pattern as position-memory).
-
-            WARNING: This page is ISR-cached (see `export const revalidate = 300` above).
-            The rendered HTML is shared across anonymous viewers via the CDN, so DO NOT
-            implement these buttons as server components that read the current user at
-            render time — one viewer's liked / owned state would bake into the cached
-            HTML and leak to every other viewer who hits the same cache entry.
-
-            Safe implementation options (pick one):
-              (a) Render them as client components that fetch user-scoped state after
-                  hydration via a Server Action or API route (recommended: mirrors the
-                  LikeButton pattern already used in position-memory).
-              (b) Add `export const dynamic = 'force-dynamic'` at the top of this file
-                  BEFORE adding the buttons, to opt this page out of ISR entirely.
-              (c) Pass the userId in as a prop from a parent dynamic boundary.
-
-            The static regression test at `src/lib/isr-user-scope-guard.test.ts` scans
-            ISR-signalled pages under `[locale]/(public)/` for imports of user-scoped
-            auth helpers (`getOptionalUser`, `getSessionUser`, `cookies`, `headers`,
-            etc.) and will fail the build if this rule is violated.
-          */}
-          <div className="flex items-center justify-end gap-4 text-xs text-muted-foreground">
+          <div className="flex items-center justify-between gap-4 text-xs text-muted-foreground">
+            <LikeButton
+              postId={position.id}
+              locale={locale}
+              topicKey=""
+              initialLikeCount={likeMeta.likeCount}
+              initialLikedByMe={likeMeta.likedByMe}
+              toggleLikeAction={toggleLike}
+              i18nNamespace="practice.positionMemory"
+            />
             <time dateTime={position.createdAt.toISOString()}>
               {position.createdAt.toLocaleDateString(locale, {
                 year: 'numeric',
