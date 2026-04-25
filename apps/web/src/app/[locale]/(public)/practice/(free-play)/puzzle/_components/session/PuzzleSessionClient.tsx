@@ -9,10 +9,17 @@ import { Link, useRouter } from '@/i18n/routing';
 import { executeMove } from '@blindfold-chess/features/chess-core';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { FaEye } from 'react-icons/fa';
 
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
+import type { PeekPreferenceHint } from '@/lib/games/peek-cookie';
 
+import { BoardViewModal } from '@/app/[locale]/(public)/games/play/_components/BoardViewModal';
+import { InlineBoardView } from '@/app/[locale]/(public)/games/play/_components/InlineBoardView';
+import { ShowBoardButton } from '@/app/[locale]/(public)/games/play/_components/ShowBoardButton';
+import {
+  shouldShowInlinePeekHeader,
+  shouldShowModalPeekButton,
+} from '@/app/[locale]/(public)/games/play/_lib';
 import { Divider } from '@/app/[locale]/_components/Divider';
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import { PagePanel } from '@/app/[locale]/_components/PagePanel';
@@ -20,7 +27,6 @@ import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { CircleMarker } from '../CircleMarker';
-import { PuzzleBoardPeekModal } from './PuzzleBoardPeekModal';
 
 type Attempt = { move: string; isCorrect: boolean };
 
@@ -30,12 +36,25 @@ type Props = {
   fen: string;
   positionTitle: string;
   /**
+   * Pieces-info card (white/black to move + piece lists). Passed in as a
+   * server-rendered node so the same `PuzzlePiecesInfo` component used on
+   * the puzzle detail page can be reused as-is here without duplicating its
+   * locale-aware translations.
+   */
+  piecesInfo: ReactNode;
+  /**
    * Breadcrumb rendered at the bottom of the page panel. Passed as a prop
    * from the server page so locale-aware `<Breadcrumb>` (a server component)
    * doesn't have to cross the client boundary. Mirrors the `games/play`
    * `PlayPageClient` shape where `breadcrumb` is injected the same way.
    */
   breadcrumb: ReactNode;
+  /**
+   * Server-resolved board-peek hint from the `bfc_peek_pref` cookie. Used
+   * to pick the correct peek-mode rendering path on first paint, mirroring
+   * the `initialPeekHint` flow in `games/play/_components/PlayPageClient`.
+   */
+  initialPeekHint: PeekPreferenceHint;
 };
 
 const AUTO_NAVIGATE_DELAY_MS = 1000;
@@ -59,13 +78,25 @@ export function PuzzleSessionClient({
   positionId,
   fen,
   positionTitle,
+  piecesInfo,
   breadcrumb,
+  initialPeekHint,
 }: Props) {
   const t = useTranslations('practice.puzzle.session');
   const tPlay = useTranslations('play');
   const tResult = useTranslations('practice.puzzle.result');
   const router = useRouter();
-  const { preferences, updatePreferences } = useGamePreferences();
+  const { preferences, updatePreferences, isHydrated } = useGamePreferences();
+
+  // Pre-hydration: trust the cookie hint (server-resolved). Post-hydration:
+  // trust the localStorage-backed `preferences`. Mirrors `PlayClient`'s
+  // `skeletonShowInlinePeekHeader` / `skeletonShowModalPeekButton` pattern.
+  const showModalPeekButton = isHydrated
+    ? shouldShowModalPeekButton(preferences)
+    : shouldShowModalPeekButton(initialPeekHint);
+  const showInlinePeek = isHydrated
+    ? shouldShowInlinePeekHeader(preferences)
+    : shouldShowInlinePeekHeader(initialPeekHint);
 
   const playerColor: 'w' | 'b' = isBlackToMoveFromFen(fen) ? 'b' : 'w';
 
@@ -334,6 +365,23 @@ export function PuzzleSessionClient({
 
       <PagePanel>
         <div className="space-y-4">
+          {piecesInfo}
+
+          {showInlinePeek && (
+            // Puzzle peek always reveals all pieces — overrides blindfold prefs from games/play.
+            <InlineBoardView
+              fen={session.currentFen}
+              playerSide={playerColor === 'b' ? 'black' : 'white'}
+              flipped={playerColor === 'b'}
+              lastMove={null}
+              preferences={{ ...preferences, showOwnPieces: true, showOpponentPieces: true }}
+              movesLength={0}
+              currentPosition={-1}
+              formattedPgn={[]}
+              onPeek={() => setPeekCount((c) => c + 1)}
+            />
+          )}
+
           <MoveInputPanel
             preferences={preferences}
             updatePreferences={updatePreferences}
@@ -384,27 +432,37 @@ export function PuzzleSessionClient({
             </Link>
           )}
 
-          <div className="pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              icon={<FaEye />}
-              disabled={isSolved}
-              onClick={() => {
-                setPeekCount((c) => c + 1);
-                setIsBoardVisible(true);
-              }}
-              title={t('showBoard')}
-            >
-              <span className="hidden md:inline">{t('showBoard')}</span>
-            </Button>
-          </div>
+          {/* Action row matches the `games/play` `GameInProgressPanel`
+              structure — same `ShowBoardButton` component, same flex layout —
+              so the puzzle session and games/play look identical when the
+              user has `peekMode='modal'`. Hidden under `peekMode='inline'`,
+              where the inline accordion above already exposes the board. */}
+          {showModalPeekButton && (
+            <div className="flex gap-4 md:gap-2 justify-center">
+              <ShowBoardButton
+                onClick={() => {
+                  setPeekCount((c) => c + 1);
+                  setIsBoardVisible(true);
+                }}
+                disabled={isSolved}
+              />
+            </div>
+          )}
 
-          <PuzzleBoardPeekModal
-            isOpen={isBoardVisible}
-            onClose={() => setIsBoardVisible(false)}
-            fen={session.currentFen}
-          />
+          {showModalPeekButton && (
+            <BoardViewModal
+              isOpen={isBoardVisible}
+              onClose={() => setIsBoardVisible(false)}
+              fen={session.currentFen}
+              playerSide={playerColor === 'b' ? 'black' : 'white'}
+              flipped={playerColor === 'b'}
+              lastMove={null}
+              preferences={{ ...preferences, showOwnPieces: true, showOpponentPieces: true }}
+              movesLength={0}
+              currentPosition={-1}
+              formattedPgn={[]}
+            />
+          )}
         </div>
 
         <Divider />

@@ -22,11 +22,11 @@ type Props = {
   movesLength: number;
   currentPosition: number;
   formattedPgn: FormattedPgnMove[];
-  onNavigateToStart: () => void;
-  onNavigatePrevious: () => void;
-  onNavigateNext: () => void;
-  onNavigateToEnd: () => void;
-  onNavigateToPosition: (position: number) => void;
+  onNavigateToStart?: () => void;
+  onNavigatePrevious?: () => void;
+  onNavigateNext?: () => void;
+  onNavigateToEnd?: () => void;
+  onNavigateToPosition?: (position: number) => void;
   onFlipBoard?: () => void;
   onPeek?: () => void;
 };
@@ -74,7 +74,7 @@ export function InlineBoardView({
       {isOpen && (
         <div>
           {/* Horizontal Move List */}
-          {formattedPgn.length > 0 && (
+          {formattedPgn.length > 0 && onNavigateToPosition && (
             <div className="px-2 py-1.5 overflow-x-auto border-t border-border">
               <HorizontalMoveList
                 formattedPgn={formattedPgn}
@@ -99,32 +99,42 @@ export function InlineBoardView({
           />
 
           {/* Navigation Controls & Flip Button */}
-          <div className="flex items-center justify-center relative" style={{ aspectRatio: '8/1' }}>
-            {movesLength > 0 && (
-              <MoveNavigationControls
-                onNavigateToStart={onNavigateToStart}
-                onNavigatePrevious={onNavigatePrevious}
-                onNavigateNext={onNavigateNext}
-                onNavigateToEnd={onNavigateToEnd}
-                isPreviousDisabled={
-                  currentPosition === -2 || (currentPosition === -1 && movesLength === 0)
-                }
-                isNextDisabled={
-                  currentPosition === -1 || (movesLength > 0 && currentPosition === movesLength - 1)
-                }
-              />
-            )}
-            {onFlipBoard && (
-              <button
-                type="button"
-                onClick={onFlipBoard}
-                className="absolute right-3 p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                title={t('flipBoard')}
-              >
-                <FaExchangeAlt className="w-3 h-3 rotate-90" />
-              </button>
-            )}
-          </div>
+          {(movesLength > 0 || onFlipBoard) && (
+            <div
+              className="flex items-center justify-center relative"
+              style={{ aspectRatio: '8/1' }}
+            >
+              {movesLength > 0 &&
+                onNavigateToStart &&
+                onNavigatePrevious &&
+                onNavigateNext &&
+                onNavigateToEnd && (
+                  <MoveNavigationControls
+                    onNavigateToStart={onNavigateToStart}
+                    onNavigatePrevious={onNavigatePrevious}
+                    onNavigateNext={onNavigateNext}
+                    onNavigateToEnd={onNavigateToEnd}
+                    isPreviousDisabled={
+                      currentPosition === -2 || (currentPosition === -1 && movesLength === 0)
+                    }
+                    isNextDisabled={
+                      currentPosition === -1 ||
+                      (movesLength > 0 && currentPosition === movesLength - 1)
+                    }
+                  />
+                )}
+              {onFlipBoard && (
+                <button
+                  type="button"
+                  onClick={onFlipBoard}
+                  className="absolute right-3 p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                  title={t('flipBoard')}
+                >
+                  <FaExchangeAlt className="w-3 h-3 rotate-90" />
+                </button>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
