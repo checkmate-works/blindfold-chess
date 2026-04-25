@@ -11,6 +11,7 @@ import { executeMove, getTurnFromFen, validateFen } from '@blindfold-chess/featu
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { flushSync } from 'react-dom';
 import { FaSyncAlt } from 'react-icons/fa';
+import { FiInfo } from 'react-icons/fi';
 
 import { PUZZLE_NOTE_MAX_LENGTH } from '@/lib/positions/validation';
 
@@ -366,13 +367,21 @@ export function CreatePuzzleForm({ displayName }: Props = {}) {
         )}
 
         {hydratedFromDraft && (
-          <div className="flex justify-end">
+          <div
+            role="status"
+            aria-live="polite"
+            className="flex items-center justify-between gap-3 rounded-md border border-border bg-secondary px-3 py-2 text-sm"
+          >
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <FiInfo className="h-4 w-4 flex-shrink-0" aria-hidden />
+              <span>Continuing from a previous draft.</span>
+            </div>
             <button
               type="button"
               onClick={() => setStartOverOpen(true)}
-              className="text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline transition-colors"
+              className="rounded border border-destructive px-2 py-1 text-xs text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors"
             >
-              {t('startOver')}
+              Discard
             </button>
           </div>
         )}

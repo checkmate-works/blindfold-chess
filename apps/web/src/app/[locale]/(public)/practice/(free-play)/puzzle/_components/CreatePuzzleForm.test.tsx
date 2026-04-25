@@ -307,13 +307,15 @@ describe('CreatePuzzleForm', () => {
     });
   });
 
-  describe('Start over button', () => {
-    it('is hidden when no draft exists', () => {
+  describe('Draft-restored banner', () => {
+    it('banner is hidden on fresh mount when no draft exists', () => {
       render(<CreatePuzzleForm />);
-      expect(screen.queryByRole('button', { name: 'startOver' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('status')).not.toBeInTheDocument();
+      expect(screen.queryByText('Continuing from a previous draft.')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Discard' })).not.toBeInTheDocument();
     });
 
-    it('is visible when hydrated from a draft, and clearing it resets the form and slot', () => {
+    it('banner is visible when hydrated from a draft, with role="status" on the outer container', () => {
       sessionStorage.setItem(
         DRAFT_STORAGE_KEY,
         JSON.stringify(makeDraft({ title: 'Before reset' }))
@@ -321,21 +323,39 @@ describe('CreatePuzzleForm', () => {
 
       render(<CreatePuzzleForm />);
 
-      const startOver = screen.getByRole('button', { name: 'startOver' });
-      expect(startOver).toBeInTheDocument();
+      // Outer banner exposes role="status" for assistive tech.
+      const banner = screen.getByRole('status');
+      expect(banner).toBeInTheDocument();
+      expect(banner).toHaveTextContent('Continuing from a previous draft.');
+
+      // Discard button is rendered inside the banner.
+      expect(screen.getByRole('button', { name: 'Discard' })).toBeInTheDocument();
+    });
+
+    it('clicking Discard opens the confirmation modal, and confirming resets the form and slot', () => {
+      sessionStorage.setItem(
+        DRAFT_STORAGE_KEY,
+        JSON.stringify(makeDraft({ title: 'Before reset' }))
+      );
+
+      render(<CreatePuzzleForm />);
+
+      const discard = screen.getByRole('button', { name: 'Discard' });
+      expect(discard).toBeInTheDocument();
 
       // Opens the confirmation modal (stubbed inline in this file).
-      fireEvent.click(startOver);
+      fireEvent.click(discard);
       const dialog = screen.getByRole('dialog', { name: 'startOverConfirmTitle' });
       expect(dialog).toBeInTheDocument();
 
       // Confirm the reset.
       fireEvent.click(screen.getByRole('button', { name: 'startOverConfirm' }));
 
-      // Slot cleared, title reset to empty, Start over button hidden again.
+      // Slot cleared, title reset to empty, banner + Discard button hidden again.
       expect(sessionStorage.getItem(DRAFT_STORAGE_KEY)).toBeNull();
       expect(screen.getByLabelText(/titleLabel/)).toHaveValue('');
-      expect(screen.queryByRole('button', { name: 'startOver' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('status')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Discard' })).not.toBeInTheDocument();
     });
   });
 
@@ -434,7 +454,7 @@ describe('CreatePuzzleForm', () => {
       vi.useRealTimers();
     });
 
-    it('Start over restores the seeded default title (not empty) when the form was hydrated from a draft', () => {
+    it('Discard restores the seeded default title (not empty) when the form was hydrated from a draft', () => {
       const seededDefault = 'Puzzle 2026-04-25 - alice';
       sessionStorage.setItem(
         DRAFT_STORAGE_KEY,
@@ -446,8 +466,8 @@ describe('CreatePuzzleForm', () => {
       // After hydration, the title reflects the saved draft, not the seeded default.
       expect(screen.getByLabelText(/titleLabel/)).toHaveValue('User-edited title');
 
-      // Click Start over and confirm.
-      fireEvent.click(screen.getByRole('button', { name: 'startOver' }));
+      // Click Discard (in the draft-restored banner) and confirm.
+      fireEvent.click(screen.getByRole('button', { name: 'Discard' }));
       fireEvent.click(screen.getByRole('button', { name: 'startOverConfirm' }));
 
       // Title resets to the SEEDED default — not to empty string.
