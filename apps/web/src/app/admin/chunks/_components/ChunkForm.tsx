@@ -18,11 +18,13 @@ type ChunkFormProps = {
     representativeFen: string;
     title: string;
     description: string | null;
+    userId: string | null;
   };
 };
 
 export function ChunkForm({ mode, initial }: ChunkFormProps) {
   const router = useRouter();
+  const [userId, setUserId] = useState(initial?.userId ?? '');
   const [representativeFen, setRepresentativeFen] = useState(initial?.representativeFen ?? '');
   const [title, setTitle] = useState(initial?.title ?? '');
   const [description, setDescription] = useState(initial?.description ?? '');
@@ -42,6 +44,7 @@ export function ChunkForm({ mode, initial }: ChunkFormProps) {
     setPending(true);
 
     const payload = {
+      userId,
       representativeFen,
       title,
       description: description || null,
@@ -67,6 +70,21 @@ export function ChunkForm({ mode, initial }: ChunkFormProps) {
           {error}
         </div>
       )}
+
+      <div>
+        <label htmlFor="userId" className="block text-sm font-medium mb-1">
+          User ID <span className="text-destructive">*</span>
+        </label>
+        <input
+          id="userId"
+          type="text"
+          value={userId}
+          onChange={(e) => setUserId(e.target.value)}
+          placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+          className="w-full px-3 py-2 rounded border border-border bg-card text-foreground font-mono text-sm"
+          required
+        />
+      </div>
 
       <div>
         <label htmlFor="representativeFen" className="block text-sm font-medium mb-1">

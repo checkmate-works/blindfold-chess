@@ -59,6 +59,7 @@ export default async function EditChunkPage({ params }: { params: Promise<{ id: 
           representativeFen: chunk.representativeFen,
           title: chunk.title,
           description: chunk.description,
+          userId: chunk.userId,
         }}
       />
     </div>

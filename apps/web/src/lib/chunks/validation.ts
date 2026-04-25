@@ -1,5 +1,7 @@
 import { validateFenStructure } from '@blindfold-chess/features/chess-core';
 
+import { UUID_RE } from '@/lib/validations/uuid';
+
 /**
  * Maximum length of `chunks.title`. Must match the `varchar(255)` declared in
  * `src/lib/db/schema/tables.ts`.
@@ -18,6 +20,7 @@ export type ChunkMutationData = {
   representativeFen: string;
   title: string;
   description?: string | null;
+  userId: string;
 };
 
 /**
@@ -53,6 +56,14 @@ export function validateChunkMutationData(data: ChunkMutationData): string | nul
 
   if (data.description && data.description.trim().length > CHUNK_DESCRIPTION_MAX_LENGTH) {
     return `Description must be ${CHUNK_DESCRIPTION_MAX_LENGTH} characters or fewer`;
+  }
+
+  if (!data.userId || !data.userId.trim()) {
+    return 'User ID is required';
+  }
+
+  if (!UUID_RE.test(data.userId.trim())) {
+    return 'Invalid User ID format (expected UUID)';
   }
 
   return null;

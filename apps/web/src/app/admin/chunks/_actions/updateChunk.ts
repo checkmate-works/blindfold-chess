@@ -8,7 +8,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 
 import type { ChunkMutationData } from '@/lib/chunks/validation';
 import { validateChunkMutationData } from '@/lib/chunks/validation';
-import { chunks, db } from '@/lib/db';
+import { chunks, db, profiles } from '@/lib/db';
 
 // NOTE: kept hand-written (not using adminMutationGuard factory) for
 // consistency with createChunk. See createChunk.ts for context.
@@ -41,15 +41,24 @@ export async function updateChunk(id: string, data: ChunkMutationData): Promise<
     return { error: 'Chunk not found' };
   }
 
-  // NOTE: `userId` is intentionally NOT updated here — the original author
-  // (or orphaned NULL after account deletion) is preserved across edits.
-  // Admins editing a chunk must not silently claim authorship.
+  // Verify the specified user exists in the profiles table.
+  const [profile] = await db
+    .select({ id: profiles.id })
+    .from(profiles)
+    .where(eq(profiles.id, data.userId.trim()))
+    .limit(1);
+
+  if (!profile) {
+    return { error: 'User not found' };
+  }
+
   await db
     .update(chunks)
     .set({
       representativeFen: data.representativeFen.trim(),
       title: data.title.trim(),
       description: data.description?.trim() || null,
+      userId: data.userId.trim(),
     })
     .where(eq(chunks.id, id));
 
