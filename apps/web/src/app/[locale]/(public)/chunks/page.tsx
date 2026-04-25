@@ -6,7 +6,7 @@ import { countChunks, listChunks } from '@/lib/chunks/queries';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
 import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
 
-import { PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -44,46 +44,47 @@ export default async function ChunksListPage({ params, searchParams }: Props) {
   const rows = await listChunks({ includeDeleted: false, limit, offset });
 
   return (
-    <PagePanel>
+    <div className="space-y-8">
       <PageTitle>Chunks</PageTitle>
-      <p className="text-muted-foreground mb-6">
-        Chess piece-coordination patterns — reusable building blocks for position memory training.
-      </p>
 
-      {rows.length === 0 ? (
-        <p className="text-muted-foreground">No chunks yet.</p>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {rows.map((chunk) => (
-              <Link
-                key={chunk.id}
-                href={`/chunks/${chunk.slug}` as '/chunks/[slug]'}
-                locale={locale}
-                className="block p-4 rounded border border-border hover:bg-muted transition-colors"
-              >
-                <BoardThumbnail fen={chunk.representativeFen} className="w-full mb-3" />
-                <p className="font-medium truncate">{chunk.title}</p>
-                {chunk.description && (
-                  <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                    {chunk.description}
-                  </p>
-                )}
-              </Link>
-            ))}
-          </div>
+      <PagePanel>
+        <SectionTitle>Chess piece-coordination patterns</SectionTitle>
 
-          {totalPages > 1 && (
-            <div className="mt-8">
-              <PaginationNav
-                currentPage={currentPage}
-                totalPages={totalPages}
-                buildHref={(p) => `/${locale}/chunks?page=${p}`}
-              />
+        {rows.length === 0 ? (
+          <p className="text-muted-foreground">No chunks yet.</p>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {rows.map((chunk) => (
+                <Link
+                  key={chunk.id}
+                  href={`/chunks/${chunk.slug}` as '/chunks/[slug]'}
+                  locale={locale}
+                  className="block p-4 rounded border border-border hover:bg-muted transition-colors"
+                >
+                  <BoardThumbnail fen={chunk.representativeFen} className="w-full mb-3" />
+                  <p className="font-medium truncate">{chunk.title}</p>
+                  {chunk.description && (
+                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                      {chunk.description}
+                    </p>
+                  )}
+                </Link>
+              ))}
             </div>
-          )}
-        </>
-      )}
-    </PagePanel>
+
+            {totalPages > 1 && (
+              <div className="mt-8">
+                <PaginationNav
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  buildHref={(p) => `/${locale}/chunks?page=${p}`}
+                />
+              </div>
+            )}
+          </>
+        )}
+      </PagePanel>
+    </div>
   );
 }
