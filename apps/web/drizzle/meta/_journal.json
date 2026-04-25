@@ -218,6 +218,13 @@
       "when": 1777149609963,
       "tag": "20260425204009_add_updated_at_and_chunks",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1777159151959,
+      "tag": "20260425231911_add_slug_to_chunks",
+      "breakpoints": true
     }
   ]
 }

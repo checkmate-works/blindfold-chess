@@ -1834,6 +1834,7 @@ export const chunks = pgTable(
     // rather than cascading and breaking position_chunks references.
     userId: uuid('user_id'),
     title: varchar('title', { length: 255 }).notNull(),
+    slug: varchar('slug', { length: 255 }).notNull().unique(),
     description: text('description'),
     representativeFen: varchar('representative_fen', { length: 100 }).notNull(),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
