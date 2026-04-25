@@ -991,11 +991,16 @@
         "flipBoard": "Flip board",
         "whiteToMove": "White to move",
         "blackToMove": "Black to move",
-        "startOver": "Start over",
         "startOverConfirmTitle": "Discard draft?",
         "startOverConfirmMessage": "This will clear the puzzle you were drafting. This cannot be undone.",
         "startOverConfirm": "Discard",
         "startOverCancel": "Keep draft",
+        "draftRestoredBanner": "Continuing from a previous draft.",
+        "draftRestoredDiscard": "Discard",
+        "clearBoardConfirmTitle": "Clear board?",
+        "clearBoardConfirmMessage": "This will remove all placed pieces and entered solution moves. This cannot be undone.",
+        "clearBoardConfirmConfirm": "Clear board",
+        "clearBoardConfirmCancel": "Cancel",
         "draftWriteFailed": "Could not save the draft. Check that your browser allows storage and try again."
       },
       "preview": {
@@ -1018,7 +1023,9 @@
         "whiteToMove": "White to move",
         "blackToMove": "Black to move",
         "createdBy": "Created by",
-        "noPieces": "None"
+        "noPieces": "None",
+        "like": "Like",
+        "unlike": "Unlike"
       },
       "session": {
         "title": "Solve",

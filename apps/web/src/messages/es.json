@@ -979,11 +979,16 @@
         "flipBoard": "Voltear tablero",
         "whiteToMove": "Mueven blancas",
         "blackToMove": "Mueven negras",
-        "startOver": "Empezar de nuevo",
         "startOverConfirmTitle": "¿Descartar el borrador?",
         "startOverConfirmMessage": "Esto eliminará el puzzle que estabas redactando. Esta acción no se puede deshacer.",
         "startOverConfirm": "Descartar",
         "startOverCancel": "Mantener borrador",
+        "draftRestoredBanner": "Continuando con un borrador anterior.",
+        "draftRestoredDiscard": "Descartar",
+        "clearBoardConfirmTitle": "¿Limpiar el tablero?",
+        "clearBoardConfirmMessage": "Esto eliminará todas las piezas colocadas y los movimientos de la solución ingresados. Esta acción no se puede deshacer.",
+        "clearBoardConfirmConfirm": "Limpiar",
+        "clearBoardConfirmCancel": "Cancelar",
         "draftWriteFailed": "No se pudo guardar el borrador. Verifica que tu navegador permita el almacenamiento e inténtalo de nuevo."
       },
       "preview": {
@@ -1006,7 +1011,9 @@
         "whiteToMove": "Mueven blancas",
         "blackToMove": "Mueven negras",
         "createdBy": "Creado por",
-        "noPieces": "Ninguna"
+        "noPieces": "Ninguna",
+        "like": "Me gusta",
+        "unlike": "Quitar me gusta"
       },
       "result": {
         "title": "Resultado del Puzzle",

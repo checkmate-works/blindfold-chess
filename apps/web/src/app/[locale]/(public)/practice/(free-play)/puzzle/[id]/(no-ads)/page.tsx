@@ -149,7 +149,7 @@ export default async function PuzzleDetailPage({ params }: Props) {
               initialLikeCount={likeMeta.likeCount}
               initialLikedByMe={likeMeta.likedByMe}
               toggleLikeAction={toggleLike}
-              i18nNamespace="practice.positionMemory"
+              i18nNamespace="practice.puzzle.detail"
             />
             <time dateTime={position.createdAt.toISOString()}>
               {position.createdAt.toLocaleDateString(locale, {

@@ -311,8 +311,10 @@ describe('CreatePuzzleForm', () => {
     it('banner is hidden on fresh mount when no draft exists', () => {
       render(<CreatePuzzleForm />);
       expect(screen.queryByRole('status')).not.toBeInTheDocument();
-      expect(screen.queryByText('Continuing from a previous draft.')).not.toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: 'Discard' })).not.toBeInTheDocument();
+      expect(screen.queryByText('draftRestoredBanner')).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'draftRestoredDiscard' })
+      ).not.toBeInTheDocument();
     });
 
     it('banner is visible when hydrated from a draft, with role="status" on the outer container', () => {
@@ -326,10 +328,10 @@ describe('CreatePuzzleForm', () => {
       // Outer banner exposes role="status" for assistive tech.
       const banner = screen.getByRole('status');
       expect(banner).toBeInTheDocument();
-      expect(banner).toHaveTextContent('Continuing from a previous draft.');
+      expect(banner).toHaveTextContent('draftRestoredBanner');
 
       // Discard button is rendered inside the banner.
-      expect(screen.getByRole('button', { name: 'Discard' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'draftRestoredDiscard' })).toBeInTheDocument();
     });
 
     it('clicking Discard opens the confirmation modal, and confirming resets the form and slot', () => {
@@ -340,7 +342,7 @@ describe('CreatePuzzleForm', () => {
 
       render(<CreatePuzzleForm />);
 
-      const discard = screen.getByRole('button', { name: 'Discard' });
+      const discard = screen.getByRole('button', { name: 'draftRestoredDiscard' });
       expect(discard).toBeInTheDocument();
 
       // Opens the confirmation modal (stubbed inline in this file).
@@ -355,7 +357,9 @@ describe('CreatePuzzleForm', () => {
       expect(sessionStorage.getItem(DRAFT_STORAGE_KEY)).toBeNull();
       expect(screen.getByLabelText(/titleLabel/)).toHaveValue('');
       expect(screen.queryByRole('status')).not.toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: 'Discard' })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'draftRestoredDiscard' })
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -467,7 +471,7 @@ describe('CreatePuzzleForm', () => {
       expect(screen.getByLabelText(/titleLabel/)).toHaveValue('User-edited title');
 
       // Click Discard (in the draft-restored banner) and confirm.
-      fireEvent.click(screen.getByRole('button', { name: 'Discard' }));
+      fireEvent.click(screen.getByRole('button', { name: 'draftRestoredDiscard' }));
       fireEvent.click(screen.getByRole('button', { name: 'startOverConfirm' }));
 
       // Title resets to the SEEDED default — not to empty string.
@@ -481,11 +485,13 @@ describe('CreatePuzzleForm', () => {
       render(<CreatePuzzleForm />);
 
       // Modal is not open on initial mount.
-      expect(screen.queryByRole('dialog', { name: 'Clear board?' })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('dialog', { name: 'clearBoardConfirmTitle' })
+      ).not.toBeInTheDocument();
 
       fireEvent.click(screen.getByRole('button', { name: 'clearBoard' }));
 
-      expect(screen.getByRole('dialog', { name: 'Clear board?' })).toBeInTheDocument();
+      expect(screen.getByRole('dialog', { name: 'clearBoardConfirmTitle' })).toBeInTheDocument();
     });
 
     it('Cancel closes the modal and leaves board state unchanged', () => {
@@ -505,12 +511,14 @@ describe('CreatePuzzleForm', () => {
       // Switch to Board tab so Clear Board button is rendered.
       fireEvent.click(screen.getByRole('tab', { name: 'tabBoard' }));
       fireEvent.click(screen.getByRole('button', { name: 'clearBoard' }));
-      expect(screen.getByRole('dialog', { name: 'Clear board?' })).toBeInTheDocument();
+      expect(screen.getByRole('dialog', { name: 'clearBoardConfirmTitle' })).toBeInTheDocument();
 
-      fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+      fireEvent.click(screen.getByRole('button', { name: 'clearBoardConfirmCancel' }));
 
       // Modal gone; all state still intact.
-      expect(screen.queryByRole('dialog', { name: 'Clear board?' })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('dialog', { name: 'clearBoardConfirmTitle' })
+      ).not.toBeInTheDocument();
       expect(screen.getByLabelText(/titleLabel/)).toHaveValue('Before cancel');
       // Flip back to FEN tab to inspect fenInput value.
       fireEvent.click(screen.getByRole('tab', { name: 'tabFen' }));
@@ -532,10 +540,12 @@ describe('CreatePuzzleForm', () => {
       // Switch to Board tab so Clear Board button is rendered.
       fireEvent.click(screen.getByRole('tab', { name: 'tabBoard' }));
       fireEvent.click(screen.getByRole('button', { name: 'clearBoard' }));
-      fireEvent.click(screen.getByRole('button', { name: 'Clear board' }));
+      fireEvent.click(screen.getByRole('button', { name: 'clearBoardConfirmConfirm' }));
 
       // Modal closes.
-      expect(screen.queryByRole('dialog', { name: 'Clear board?' })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('dialog', { name: 'clearBoardConfirmTitle' })
+      ).not.toBeInTheDocument();
 
       // Flip to FEN tab to assert fenInput was reset to the empty-board FEN.
       fireEvent.click(screen.getByRole('tab', { name: 'tabFen' }));

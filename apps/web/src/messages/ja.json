@@ -4,7 +4,7 @@
     "seoSiteName": "目隠しチェス",
     "siteDescription": "目隠しチェスの練習が無料でできるオンラインプラットフォーム。チェスのビジュアライゼーションスキルや計算力を向上させましょう。",
     "webApplicationDescription": "目隠しチェスの無料練習アプリ",
-    "landingTitle": "目隠しチェス｜無料の盲指しトレーニング・AI対局・段級位",
+    "landingTitle": "目隠しチェス | 無料のトレーニング・AI対局機能・段級位制度",
     "landingDescription": "座標クイズ・ルートプランナー・記憶パズル・Stockfish対戦まで、目隠しチェスの可視化力と計算力を鍛える無料のオンライントレーニング。段級位で上達を可視化できます。",
     "home": {
       "title": "目隠しチェストレーニング - 無料オンライン練習プラットフォーム",
@@ -992,11 +992,16 @@
         "flipBoard": "ボードを反転",
         "whiteToMove": "白の手番",
         "blackToMove": "黒の手番",
-        "startOver": "最初からやり直す",
         "startOverConfirmTitle": "下書きを破棄しますか?",
         "startOverConfirmMessage": "作成中のパズルが消去されます。この操作は取り消せません。",
         "startOverConfirm": "破棄する",
         "startOverCancel": "下書きを残す",
+        "draftRestoredBanner": "前回の下書きを復元しました。",
+        "draftRestoredDiscard": "破棄",
+        "clearBoardConfirmTitle": "盤面をクリアしますか?",
+        "clearBoardConfirmMessage": "配置した駒と入力した解手がすべて削除されます。この操作は取り消せません。",
+        "clearBoardConfirmConfirm": "クリア",
+        "clearBoardConfirmCancel": "キャンセル",
         "draftWriteFailed": "下書きを保存できませんでした。ブラウザのストレージが有効か確認してもう一度お試しください。"
       },
       "preview": {
@@ -1019,7 +1024,9 @@
         "whiteToMove": "白の手番",
         "blackToMove": "黒の手番",
         "createdBy": "作成者",
-        "noPieces": "なし"
+        "noPieces": "なし",
+        "like": "いいね",
+        "unlike": "いいね解除"
       },
       "session": {
         "title": "挑戦",

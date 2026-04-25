@@ -374,14 +374,14 @@ export function CreatePuzzleForm({ displayName }: Props = {}) {
           >
             <div className="flex items-center gap-2 text-muted-foreground">
               <FiInfo className="h-4 w-4 flex-shrink-0" aria-hidden />
-              <span>Continuing from a previous draft.</span>
+              <span>{t('draftRestoredBanner')}</span>
             </div>
             <button
               type="button"
               onClick={() => setStartOverOpen(true)}
               className="rounded border border-destructive px-2 py-1 text-xs text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors"
             >
-              Discard
+              {t('draftRestoredDiscard')}
             </button>
           </div>
         )}
@@ -637,10 +637,10 @@ export function CreatePuzzleForm({ displayName }: Props = {}) {
 
       <ConfirmationModal
         isOpen={clearBoardOpen}
-        title="Clear board?"
-        message="This will remove all placed pieces and entered solution moves. This cannot be undone."
-        confirmText="Clear board"
-        cancelText="Cancel"
+        title={t('clearBoardConfirmTitle')}
+        message={t('clearBoardConfirmMessage')}
+        confirmText={t('clearBoardConfirmConfirm')}
+        cancelText={t('clearBoardConfirmCancel')}
         confirmVariant="danger"
         onConfirm={() => {
           setClearBoardOpen(false);
