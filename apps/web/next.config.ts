@@ -199,16 +199,25 @@ export default withSentryConfig(withNextIntl(nextConfig), {
   // Upload a larger set of source maps for prettier stack traces (increases build time)
   widenClientFileUpload: true,
 
-  // Automatically annotate React components to show their full name in breadcrumbs and session replay
-  reactComponentAnnotation: {
-    enabled: true,
+  // Sentry React component annotation, Turbopack edition.
+  // Replaced the deprecated `reactComponentAnnotation` option on 2026-04-25:
+  // the legacy option is webpack-only; under Turbopack it was a silent no-op.
+  // `_experimental.turbopackReactComponentAnnotation` is the documented
+  // Turbopack equivalent (Sentry Build Options reference).
+  //
+  // Note: `disableLogger` was also removed in the same change. Sentry's
+  // tree-shaking options are not supported for Turbopack builds; the
+  // option was a no-op on this stack. The bundle-size cost of leaving
+  // debug logger statements in is small (they are runtime-gated on
+  // `debug: false`, set in sentry.server.config.ts).
+  _experimental: {
+    turbopackReactComponentAnnotation: {
+      enabled: true,
+    },
   },
 
   // Configure source maps
   sourcemaps: {
     disable: !process.env.SENTRY_AUTH_TOKEN, // Only upload if auth token is present
   },
-
-  // Automatically tree-shake Sentry logger statements to reduce bundle size
-  disableLogger: true,
 });
