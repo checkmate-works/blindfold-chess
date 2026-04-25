@@ -2,7 +2,7 @@ import { revalidatePath } from 'next/cache';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { deletePosition } from './deletePosition';
+import { deleteChunk } from './deleteChunk';
 
 const mockGetUser = vi.fn();
 const mockSelectFromWhere = vi.fn();
@@ -55,11 +55,10 @@ vi.mock('@/lib/db', () => {
         return fn(makeDbOps());
       },
     },
-    positions: {
+    chunks: {
       id: 'id',
       userId: 'user_id',
-      type: 'type',
-      fen: 'fen',
+      representativeFen: 'representative_fen',
       title: 'title',
       deletedAt: 'deleted_at',
     },
@@ -82,25 +81,22 @@ vi.mock('next/cache', () => ({
 
 const adminUserId = 'admin-00000000-0000-0000-0000-000000000001';
 const authorUserId = 'author-00000000-0000-0000-0000-000000000001';
-const testPositionId = 'pos-00000000-0000-0000-0000-000000000001';
+const testChunkId = 'chk-00000000-0000-0000-0000-000000000001';
 
-const samplePosition = {
-  id: testPositionId,
+const sampleChunk = {
+  id: testChunkId,
   userId: authorUserId,
-  type: 'memory',
-  fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
-  title: 'Starting Position',
+  representativeFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+  title: 'Fianchetto',
 };
 
-function setupAdminWithPosition() {
+function setupAdminWithChunk() {
   mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
-  // 1st call: userRoles → admin; 2nd call: positions → sample
-  mockSelectFromWhere
-    .mockReturnValueOnce([{ role: 'admin' }])
-    .mockReturnValueOnce([samplePosition]);
+  // 1st call: userRoles → admin; 2nd call: chunks → sample
+  mockSelectFromWhere.mockReturnValueOnce([{ role: 'admin' }]).mockReturnValueOnce([sampleChunk]);
 }
 
-describe('deletePosition', () => {
+describe('deleteChunk', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -108,7 +104,7 @@ describe('deletePosition', () => {
   it('should return unauthorized when user is not authenticated', async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
 
-    const result = await deletePosition(testPositionId);
+    const result = await deleteChunk(testChunkId);
     expect(result).toEqual({ error: 'unauthorized' });
     expect(mockTransaction).not.toHaveBeenCalled();
   });
@@ -117,7 +113,7 @@ describe('deletePosition', () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
     mockSelectFromWhere.mockReturnValue([{ role: 'user' }]);
 
-    const result = await deletePosition(testPositionId);
+    const result = await deleteChunk(testChunkId);
     expect(result).toEqual({ error: 'unauthorized' });
     expect(mockTransaction).not.toHaveBeenCalled();
   });
@@ -126,17 +122,17 @@ describe('deletePosition', () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
     mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
 
-    const result = await deletePosition('');
-    expect(result).toEqual({ error: 'Position ID is required' });
+    const result = await deleteChunk('');
+    expect(result).toEqual({ error: 'Chunk ID is required' });
     expect(mockTransaction).not.toHaveBeenCalled();
   });
 
-  it('should return error when position does not exist and NOT insert moderation_actions', async () => {
+  it('should return error when chunk does not exist and NOT insert moderation_actions', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
     mockSelectFromWhere.mockReturnValueOnce([{ role: 'admin' }]).mockReturnValueOnce([]);
 
-    const result = await deletePosition(testPositionId);
-    expect(result).toEqual({ error: 'Position not found' });
+    const result = await deleteChunk(testChunkId);
+    expect(result).toEqual({ error: 'Chunk not found' });
     expect(mockTransaction).not.toHaveBeenCalled();
     expect(mockUpdateSetWhere).not.toHaveBeenCalled();
     expect(mockInsertValues).not.toHaveBeenCalled();
@@ -150,18 +146,18 @@ describe('deletePosition', () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
     mockSelectFromWhere.mockReturnValueOnce([{ role: 'admin' }]).mockReturnValueOnce([]);
 
-    const result = await deletePosition(testPositionId);
-    expect(result).toEqual({ error: 'Position not found' });
+    const result = await deleteChunk(testChunkId);
+    expect(result).toEqual({ error: 'Chunk not found' });
     expect(mockTransaction).not.toHaveBeenCalled();
     expect(mockUpdateSetWhere).not.toHaveBeenCalled();
     expect(mockInsertValues).not.toHaveBeenCalled();
     expect(revalidatePath).not.toHaveBeenCalled();
   });
 
-  it('should soft-delete the position and insert a moderation_actions audit row', async () => {
-    setupAdminWithPosition();
+  it('should soft-delete the chunk and insert a moderation_actions audit row', async () => {
+    setupAdminWithChunk();
 
-    const result = await deletePosition(testPositionId);
+    const result = await deleteChunk(testChunkId);
     expect(result).toEqual({ success: true });
 
     expect(mockTransaction).toHaveBeenCalledTimes(1);
@@ -169,29 +165,28 @@ describe('deletePosition', () => {
     expect(mockInsertValues).toHaveBeenCalledTimes(1);
     expect(mockInsertValues).toHaveBeenCalledWith({
       actorId: adminUserId,
-      action: 'delete_position',
-      targetType: 'position',
-      targetId: testPositionId,
+      action: 'delete_chunk',
+      targetType: 'chunk',
+      targetId: testChunkId,
       reason: null,
       metadata: {
-        positionType: samplePosition.type,
-        fen: samplePosition.fen,
-        title: samplePosition.title,
-        authorId: samplePosition.userId,
+        representativeFen: sampleChunk.representativeFen,
+        title: sampleChunk.title,
+        authorId: sampleChunk.userId,
       },
       ipAddress: '127.0.0.1',
     });
   });
 
   it('should use db.transaction to wrap update and audit log atomically', async () => {
-    setupAdminWithPosition();
+    setupAdminWithChunk();
 
-    await deletePosition(testPositionId);
+    await deleteChunk(testChunkId);
     expect(mockTransaction).toHaveBeenCalledTimes(1);
   });
 
   it('should propagate error when transaction fails (atomicity)', async () => {
-    setupAdminWithPosition();
+    setupAdminWithChunk();
 
     const { db } = await import('@/lib/db');
     const originalTransaction = db.transaction;
@@ -199,32 +194,32 @@ describe('deletePosition', () => {
       .fn()
       .mockRejectedValueOnce(new Error('DB transaction failed'));
 
-    await expect(deletePosition(testPositionId)).rejects.toThrow('DB transaction failed');
+    await expect(deleteChunk(testChunkId)).rejects.toThrow('DB transaction failed');
     expect(revalidatePath).not.toHaveBeenCalled();
 
     (db as unknown as { transaction: unknown }).transaction = originalTransaction;
   });
 
-  it('should revalidate both the list and detail paths after successful deletion', async () => {
-    setupAdminWithPosition();
+  it('should revalidate both the list and edit paths after successful deletion', async () => {
+    setupAdminWithChunk();
 
-    await deletePosition(testPositionId);
-    expect(revalidatePath).toHaveBeenCalledWith('/admin/positions/memory');
-    expect(revalidatePath).toHaveBeenCalledWith(`/admin/positions/memory/${testPositionId}`);
+    await deleteChunk(testChunkId);
+    expect(revalidatePath).toHaveBeenCalledWith('/admin/chunks');
+    expect(revalidatePath).toHaveBeenCalledWith(`/admin/chunks/${testChunkId}/edit`);
   });
 
-  it('should not call revalidatePath when position is not found', async () => {
+  it('should not call revalidatePath when chunk is not found', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
     mockSelectFromWhere.mockReturnValueOnce([{ role: 'admin' }]).mockReturnValueOnce([]);
 
-    await deletePosition(testPositionId);
+    await deleteChunk(testChunkId);
     expect(revalidatePath).not.toHaveBeenCalled();
   });
 
   it('should not call revalidatePath when user is unauthorized', async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
 
-    await deletePosition(testPositionId);
+    await deleteChunk(testChunkId);
     expect(revalidatePath).not.toHaveBeenCalled();
   });
 });

@@ -30,7 +30,9 @@ CREATE POLICY "profiles_insert_policy" ON "profiles"
 
 DROP POLICY IF EXISTS "profiles_update_policy" ON "profiles";
 CREATE POLICY "profiles_update_policy" ON "profiles"
-  FOR UPDATE USING (auth.uid() = id);
+  FOR UPDATE
+  USING (auth.uid() = id)
+  WITH CHECK (auth.uid() = id);
 
 CREATE OR REPLACE FUNCTION public.update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -143,7 +145,9 @@ CREATE POLICY "topic_posts_delete" ON "topic_posts"
 
 DROP POLICY IF EXISTS "topic_posts_update" ON "topic_posts";
 CREATE POLICY "topic_posts_update" ON "topic_posts"
-  FOR UPDATE USING (auth.uid() = user_id);
+  FOR UPDATE
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 
 -- =============================================================================
 -- user_activity_log
@@ -179,7 +183,9 @@ CREATE POLICY "notifications_select" ON "notifications"
 -- Users can mark their own notifications as read
 DROP POLICY IF EXISTS "notifications_update" ON "notifications";
 CREATE POLICY "notifications_update" ON "notifications"
-  FOR UPDATE USING (auth.uid() = user_id);
+  FOR UPDATE
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 
 -- Users can delete their own notifications
 DROP POLICY IF EXISTS "notifications_delete" ON "notifications";
@@ -223,7 +229,9 @@ CREATE POLICY "challenge_best_scores_insert" ON "challenge_best_scores"
 
 DROP POLICY IF EXISTS "challenge_best_scores_update" ON "challenge_best_scores";
 CREATE POLICY "challenge_best_scores_update" ON "challenge_best_scores"
-  FOR UPDATE USING (auth.uid() = user_id);
+  FOR UPDATE
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 
 -- =============================================================================
 -- article_images (admin-only write, public read)
@@ -294,7 +302,9 @@ DROP POLICY IF EXISTS "user_interview_answers_delete" ON "user_interview_answers
 
 DROP POLICY IF EXISTS "user_interview_answers_update" ON "user_interview_answers";
 CREATE POLICY "user_interview_answers_update" ON "user_interview_answers"
-  FOR UPDATE USING (auth.uid() = user_id);
+  FOR UPDATE
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 
 -- =============================================================================
 -- ranks (master data — read-only for all, write via service role only)
@@ -349,6 +359,92 @@ ALTER TABLE "user_exp" ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "user_exp_select_policy" ON "user_exp";
 CREATE POLICY "user_exp_select_policy" ON "user_exp"
   FOR SELECT USING (true);
+
+-- =============================================================================
+-- positions (UGC — public read for catalog, owner write, logical delete)
+-- =============================================================================
+-- Positions are user-submitted chess boards used across multiple practice
+-- modules. SELECT is open (catalog listings filter `deleted_at IS NULL` at
+-- the application layer). INSERT/UPDATE are restricted to the owner; UPDATE
+-- also carries a WITH CHECK so the `user_id` cannot be reassigned to
+-- another account during an edit. Physical DELETE is service-role only
+-- (owners deprecate via `deleted_at`).
+ALTER TABLE "positions" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "positions_select" ON "positions";
+CREATE POLICY "positions_select" ON "positions"
+  FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "positions_insert" ON "positions";
+CREATE POLICY "positions_insert" ON "positions"
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "positions_update" ON "positions";
+CREATE POLICY "positions_update" ON "positions"
+  FOR UPDATE
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+-- =============================================================================
+-- chunks (UGC public catalog — open read, owner write, logical delete)
+-- =============================================================================
+-- Chunks are user-submitted but function as a global public catalog: anyone
+-- can SELECT, but only the creator may INSERT / UPDATE (which includes
+-- logical delete via `deleted_at`). Physical DELETE is service-role only.
+-- Filtering out soft-deleted rows is done at the application layer so that
+-- admin tooling via the service role can still see them.
+ALTER TABLE "chunks" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "chunks_select" ON "chunks";
+CREATE POLICY "chunks_select" ON "chunks"
+  FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "chunks_insert" ON "chunks";
+CREATE POLICY "chunks_insert" ON "chunks"
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "chunks_update" ON "chunks";
+CREATE POLICY "chunks_update" ON "chunks"
+  FOR UPDATE
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+-- =============================================================================
+-- position_chunks (junction — public read, position-owner write)
+-- =============================================================================
+-- INSERT/DELETE are gated on the POSITION owner, not the chunk owner. Chunk
+-- creators have no veto over which positions reference their chunks.
+ALTER TABLE "position_chunks" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "position_chunks_select" ON "position_chunks";
+CREATE POLICY "position_chunks_select" ON "position_chunks"
+  FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "position_chunks_insert" ON "position_chunks";
+CREATE POLICY "position_chunks_insert" ON "position_chunks"
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM positions p
+      WHERE p.id = position_id
+      AND p.user_id = auth.uid()
+      AND p.deleted_at IS NULL
+    )
+    AND EXISTS (
+      SELECT 1 FROM chunks c
+      WHERE c.id = chunk_id
+      AND c.deleted_at IS NULL
+    )
+  );
+
+DROP POLICY IF EXISTS "position_chunks_delete" ON "position_chunks";
+CREATE POLICY "position_chunks_delete" ON "position_chunks"
+  FOR DELETE USING (
+    EXISTS (
+      SELECT 1 FROM positions p
+      WHERE p.id = position_id
+      AND p.user_id = auth.uid()
+    )
+  );
 
 -- =============================================================================
 -- puzzle_solutions (public read, service role only write)

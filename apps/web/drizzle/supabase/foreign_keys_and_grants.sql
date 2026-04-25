@@ -489,3 +489,65 @@ $$;
 -- Grant read permissions (public read for leaderboard, service role only write)
 GRANT SELECT ON TABLE public.user_exp TO authenticated;
 GRANT SELECT ON TABLE public.user_exp TO anon;
+
+-- =============================================================================
+-- positions
+-- =============================================================================
+
+-- FK constraint: positions.user_id → auth.users(id) ON DELETE CASCADE
+-- Matches the topic_posts.user_id pattern: when a user is hard-deleted,
+-- their submitted positions go with them. Logical delete via
+-- `deleted_at` remains the usual deprecation path.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'positions_user_id_fkey'
+  ) THEN
+    ALTER TABLE public.positions
+      ADD CONSTRAINT positions_user_id_fkey
+      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+  END IF;
+END;
+$$;
+
+-- Grant necessary permissions (public read for catalog listings; authenticated
+-- users create and edit their own positions; physical DELETE is service-role only)
+GRANT SELECT, INSERT, UPDATE ON TABLE public.positions TO authenticated;
+GRANT SELECT ON TABLE public.positions TO anon;
+
+-- =============================================================================
+-- chunks
+-- =============================================================================
+
+-- FK constraint: chunks.user_id → auth.users(id) ON DELETE SET NULL
+-- Chunks function as a global public catalog, so author deletion should NOT
+-- cascade into the catalog. Combined with `position_chunks.chunk_id ON
+-- DELETE RESTRICT`, CASCADE here would also deadlock user hard-deletes via
+-- the FK graph. Orphaning (user_id → NULL) is the safer fallback; the
+-- normal deprecation path remains logical delete via `chunks.deleted_at`.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'chunks_user_id_fkey'
+  ) THEN
+    ALTER TABLE public.chunks
+      ADD CONSTRAINT chunks_user_id_fkey
+      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+  END IF;
+END;
+$$;
+
+-- Grant necessary permissions (public read for catalog listing; authenticated
+-- users create and edit their own chunks; physical DELETE is service-role only)
+GRANT SELECT, INSERT, UPDATE ON TABLE public.chunks TO authenticated;
+GRANT SELECT ON TABLE public.chunks TO anon;
+
+-- =============================================================================
+-- position_chunks
+-- =============================================================================
+
+-- No FK to auth.users on this junction table (the FKs to positions and chunks
+-- are managed by Drizzle). Grants only: public read, authenticated
+-- INSERT/DELETE gated by RLS on the position's owner.
+GRANT SELECT, INSERT, DELETE ON TABLE public.position_chunks TO authenticated;
+GRANT SELECT ON TABLE public.position_chunks TO anon;

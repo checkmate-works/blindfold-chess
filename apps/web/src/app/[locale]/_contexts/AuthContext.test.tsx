@@ -337,9 +337,8 @@ describe('AuthContext', () => {
 
       // Re-import AuthProvider + useAuth so they pick up the fresh mocks AND a
       // fresh module-level `supabaseClientPromise` cache.
-      const { AuthProvider: FreshAuthProvider, useAuth: useFreshAuth } = await import(
-        './AuthContext'
-      );
+      const { AuthProvider: FreshAuthProvider, useAuth: useFreshAuth } =
+        await import('./AuthContext');
 
       function freshWrapper({ children }: { children: React.ReactNode }) {
         return <FreshAuthProvider>{children}</FreshAuthProvider>;

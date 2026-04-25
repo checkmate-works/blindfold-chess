@@ -1,0 +1,144 @@
+'use client';
+
+import { useState } from 'react';
+
+import { useRouter } from 'next/navigation';
+
+import { validateFenStructure } from '@blindfold-chess/features/chess-core';
+
+import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
+
+import { createChunk } from '../_actions/createChunk';
+import { updateChunk } from '../_actions/updateChunk';
+
+type ChunkFormProps = {
+  mode: 'create' | 'edit';
+  initial?: {
+    id: string;
+    representativeFen: string;
+    title: string;
+    description: string | null;
+  };
+};
+
+export function ChunkForm({ mode, initial }: ChunkFormProps) {
+  const router = useRouter();
+  const [representativeFen, setRepresentativeFen] = useState(initial?.representativeFen ?? '');
+  const [title, setTitle] = useState(initial?.title ?? '');
+  const [description, setDescription] = useState(initial?.description ?? '');
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+
+  // Structural validation only — chunks are piece-coordination patterns that
+  // may legitimately omit kings, so we intentionally do NOT use chess.js's
+  // full legality check here. Keep this in sync with `validateChunkMutationData`
+  // in `lib/chunks/validation.ts`.
+  const isFenValid =
+    representativeFen.trim() !== '' && validateFenStructure(representativeFen.trim()).ok;
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setPending(true);
+
+    const payload = {
+      representativeFen,
+      title,
+      description: description || null,
+    };
+
+    const result =
+      mode === 'create' ? await createChunk(payload) : await updateChunk(initial!.id, payload);
+
+    setPending(false);
+
+    if ('error' in result) {
+      setError(result.error);
+      return;
+    }
+
+    router.push('/admin/chunks');
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
+      {error && (
+        <div className="p-3 rounded bg-destructive-soft text-destructive-soft-foreground text-sm">
+          {error}
+        </div>
+      )}
+
+      <div>
+        <label htmlFor="representativeFen" className="block text-sm font-medium mb-1">
+          Representative FEN <span className="text-destructive">*</span>
+        </label>
+        <input
+          id="representativeFen"
+          type="text"
+          value={representativeFen}
+          onChange={(e) => setRepresentativeFen(e.target.value)}
+          placeholder="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+          className="w-full px-3 py-2 rounded border border-border bg-card text-foreground"
+          required
+        />
+        {representativeFen.trim() && !isFenValid && (
+          <p className="text-sm text-destructive mt-1">Invalid FEN position</p>
+        )}
+      </div>
+
+      {isFenValid && (
+        <div className="w-64">
+          {/*
+           * Use `BoardThumbnail` (chess.js-free FEN parser) rather than
+           * `AnimatedChessBoard`, which would internally call chess.js's
+           * `fenToBoard` and throw on kingless patterns. Chunks may
+           * legitimately have no kings, so the preview must accept any
+           * structurally valid FEN.
+           */}
+          <BoardThumbnail fen={representativeFen.trim()} className="w-full" />
+        </div>
+      )}
+
+      <div>
+        <label htmlFor="title" className="block text-sm font-medium mb-1">
+          Title <span className="text-destructive">*</span>
+        </label>
+        <input
+          id="title"
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="w-full px-3 py-2 rounded border border-border bg-card text-foreground"
+          required
+        />
+      </div>
+
+      <div>
+        <label htmlFor="description" className="block text-sm font-medium mb-1">
+          Description
+        </label>
+        <textarea
+          id="description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={4}
+          className="w-full px-3 py-2 rounded border border-border bg-card text-foreground"
+        />
+      </div>
+
+      <button
+        type="submit"
+        disabled={pending}
+        className="px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+      >
+        {pending
+          ? mode === 'create'
+            ? 'Creating...'
+            : 'Saving...'
+          : mode === 'create'
+            ? 'Create Chunk'
+            : 'Save Changes'}
+      </button>
+    </form>
+  );
+}

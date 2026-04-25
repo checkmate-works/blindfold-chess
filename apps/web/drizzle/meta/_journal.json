@@ -211,6 +211,13 @@
       "when": 1776926655533,
       "tag": "20260423064415_consolidate_puzzle_solution_moves",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1777149609963,
+      "tag": "20260425204009_add_updated_at_and_chunks",
+      "breakpoints": true
     }
   ]
 }

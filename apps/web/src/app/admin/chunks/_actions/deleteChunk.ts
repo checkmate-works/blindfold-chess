@@ -6,60 +6,58 @@ import type { DeleteResult } from '@/app/admin/_lib/action-factories';
 import { requireAdmin } from '@/app/admin/_lib/auth';
 import { and, eq, isNull } from 'drizzle-orm';
 
-import { db, moderationActions, positions } from '@/lib/db';
+import { chunks, db, moderationActions } from '@/lib/db';
 import { getClientIp } from '@/lib/security/client-ip';
 
-export async function deletePosition(id: string): Promise<DeleteResult> {
+export async function deleteChunk(id: string): Promise<DeleteResult> {
   const auth = await requireAdmin();
   if ('error' in auth) {
     return auth;
   }
 
   if (!id) {
-    return { error: 'Position ID is required' };
+    return { error: 'Chunk ID is required' };
   }
 
   // Idempotency guard: rows with `deletedAt IS NOT NULL` are treated as
   // non-existent here so a second delete attempt does not append another
   // `moderation_actions` row for the same target.
-  const [position] = await db
+  const [chunk] = await db
     .select({
-      id: positions.id,
-      userId: positions.userId,
-      type: positions.type,
-      fen: positions.fen,
-      title: positions.title,
+      id: chunks.id,
+      userId: chunks.userId,
+      representativeFen: chunks.representativeFen,
+      title: chunks.title,
     })
-    .from(positions)
-    .where(and(eq(positions.id, id), isNull(positions.deletedAt)))
+    .from(chunks)
+    .where(and(eq(chunks.id, id), isNull(chunks.deletedAt)))
     .limit(1);
 
-  if (!position) {
-    return { error: 'Position not found' };
+  if (!chunk) {
+    return { error: 'Chunk not found' };
   }
 
   const ipAddress = await getClientIp();
 
   await db.transaction(async (tx) => {
-    await tx.update(positions).set({ deletedAt: new Date() }).where(eq(positions.id, id));
+    await tx.update(chunks).set({ deletedAt: new Date() }).where(eq(chunks.id, id));
 
     await tx.insert(moderationActions).values({
       actorId: auth.userId,
-      action: 'delete_position',
-      targetType: 'position',
+      action: 'delete_chunk',
+      targetType: 'chunk',
       targetId: id,
       reason: null,
       metadata: {
-        positionType: position.type,
-        fen: position.fen,
-        title: position.title,
-        authorId: position.userId,
+        representativeFen: chunk.representativeFen,
+        title: chunk.title,
+        authorId: chunk.userId,
       },
       ipAddress,
     });
   });
 
-  revalidatePath('/admin/positions/memory');
-  revalidatePath(`/admin/positions/memory/${id}`);
+  revalidatePath('/admin/chunks');
+  revalidatePath(`/admin/chunks/${id}/edit`);
   return { success: true };
 }
