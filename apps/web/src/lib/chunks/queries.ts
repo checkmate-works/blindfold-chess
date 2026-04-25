@@ -92,6 +92,14 @@ export const getChunkBySlug = cache(async (slug: string) => {
 /**
  * Fetch positions linked to a chunk via the position_chunks junction table.
  * Only returns non-deleted positions, ordered by creation date descending.
+ *
+ * @design position_chunks rows are intentionally preserved when a chunk is
+ * soft-deleted. Because chunks use logical deletion (`deletedAt`), the
+ * junction rows remain so that restoring the chunk also restores its
+ * position associations without data loss. Callers that display chunk data
+ * on public pages should filter out soft-deleted chunks at the chunk query
+ * level (e.g. `getChunkBySlug` already enforces `deletedAt IS NULL`),
+ * which prevents the linked positions from surfacing indirectly.
  */
 export async function getLinkedPositionsForChunk(chunkId: string) {
   const rows = await db
