@@ -3,6 +3,8 @@
 import { useCallback, useMemo, useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { calculateAccuracy } from '@blindfold-chess/features/common';
+import type { PositionAccuracy } from '@blindfold-chess/features/common';
 
 import { usePieceAccuracy } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-piece-accuracy';
 import { aggregateResults } from '@/app/[locale]/(public)/practice/(free-play)/_lib/aggregate-results';
@@ -10,8 +12,7 @@ import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_compon
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
 import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
-import { calculateAccuracy } from '@/app/[locale]/(public)/practice/_lib/accuracy';
-import type { PositionAccuracy, PositionData } from '@/app/[locale]/(public)/practice/_lib/types';
+import type { PositionData } from '@/app/[locale]/(public)/practice/_lib/types';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 

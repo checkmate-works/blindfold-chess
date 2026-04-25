@@ -1,8 +1,10 @@
-// Re-export shared types from parent
+// Re-export shared types: PositionAccuracy / ScoreDetail / SquareDiff /
+// SquareStatus come from the features package (platform-agnostic); PositionData
+// stays web-local because it describes a session-setup shape.
 export type {
   PositionAccuracy,
-  PositionData,
   ScoreDetail,
   SquareDiff,
   SquareStatus,
-} from '@/app/[locale]/(public)/practice/_lib/types';
+} from '@blindfold-chess/features/common';
+export type { PositionData } from '@/app/[locale]/(public)/practice/_lib/types';

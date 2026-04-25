@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { PieceSelector } from '@/app/_components';
 import type { PieceSelection } from '@/app/_components/practice/PieceSelector';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { BoardOrientation } from '@blindfold-chess/types';
 
 import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 
@@ -17,8 +18,6 @@ import {
   type PieceFullName,
 } from '../../_lib/derive-piece-filter';
 import { selectClassName } from '../../_lib/ui-constants';
-
-type BoardOrientation = 'white' | 'black' | 'random';
 
 type Props = {
   locale: string;

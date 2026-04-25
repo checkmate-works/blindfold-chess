@@ -17,6 +17,8 @@ import {
 const LANGUAGE_LABELS: Record<SupportedLanguage, string> = {
   ja: "settings.languageJapanese",
   en: "settings.languageEnglish",
+  es: "settings.languageSpanish",
+  "pt-BR": "settings.languagePortuguese",
 };
 
 export default function SettingsTab() {

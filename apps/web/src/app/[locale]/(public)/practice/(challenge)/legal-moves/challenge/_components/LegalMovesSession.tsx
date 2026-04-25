@@ -1,22 +1,22 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { useLegalMovesSession } from '@blindfold-chess/features/legal-moves';
 
 import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
 import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-challenge-result-save';
-import { useTimedSession } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-timed-session';
 import { saveLegalMovesResult } from '@/app/[locale]/(public)/practice/(challenge)/legal-moves/_actions/save-result';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import type { MoveQuestion, PieceType } from '../../_lib/types';
-import { generateBalancedMoveQuestions, isLegalMove } from '../../_lib/utils';
+import type { PieceType } from '../../_lib/types';
+import { isLegalMove } from '../../_lib/utils';
 import { LegalMovesPlaying } from './LegalMovesPlaying';
 
 type Props = {
@@ -31,37 +31,17 @@ export default function LegalMovesSession({ locale, selectedPieces, selectedPiec
 
   const getQuestion = (from: string, to: string) => t('questionFormat', { from, to });
 
-  // Batch-based question generation
-  const questionsRef = useRef<MoveQuestion[]>([]);
-  const indexRef = useRef(0);
-
-  // Module-specific feedback state
+  // Module-specific feedback state for detailed answer display
   const [lastAnswer, setLastAnswer] = useState<{
     correct: boolean;
     userAnswer: boolean;
     isLegal: boolean;
   } | null>(null);
 
-  const generateQuestion = useCallback((): MoveQuestion => {
-    if (questionsRef.current.length === 0) {
-      questionsRef.current = generateBalancedMoveQuestions(100, selectedPieces);
-    }
-    if (indexRef.current >= questionsRef.current.length) {
-      questionsRef.current = [
-        ...questionsRef.current,
-        ...generateBalancedMoveQuestions(100, selectedPieces),
-      ];
-    }
-    const question = questionsRef.current[indexRef.current];
-    indexRef.current += 1;
-    return question;
-  }, [selectedPieces]);
-
   const {
     currentQuestion,
     timeRemaining,
     timeElapsed,
-    totalTime,
     correctCount,
     incorrectCount,
     showFeedback,
@@ -70,10 +50,9 @@ export default function LegalMovesSession({ locale, selectedPieces, selectedPiec
     isPaused,
     handleAnswer: hookHandleAnswer,
     togglePause,
-    totalCount,
-  } = useTimedSession<MoveQuestion>({
+  } = useLegalMovesSession({
     timeLimit: CHALLENGE_TIME_LIMIT,
-    generateQuestion,
+    selectedPieces,
     mistakeAllowance: MISTAKE_LIMIT,
   });
 
@@ -110,7 +89,7 @@ export default function LegalMovesSession({ locale, selectedPieces, selectedPiec
       const isCorrect = userAnswer === legal;
 
       setLastAnswer({ correct: isCorrect, userAnswer, isLegal: legal });
-      hookHandleAnswer(isCorrect);
+      hookHandleAnswer(userAnswer);
     },
     [currentQuestion, hookHandleAnswer]
   );
@@ -120,25 +99,25 @@ export default function LegalMovesSession({ locale, selectedPieces, selectedPiec
     const params = new URLSearchParams();
     params.set('score', correctCount.toString());
     params.set('total', (correctCount + incorrectCount).toString());
-    params.set('time', totalTime.toString());
+    params.set('time', timeElapsed.toString());
     params.set('piece', selectedPiece);
     return `/${locale}/practice/legal-moves/result?${params.toString()}`;
-  }, [correctCount, incorrectCount, totalTime, selectedPiece, locale]);
+  }, [correctCount, incorrectCount, timeElapsed, selectedPiece, locale]);
 
   const saveResult = useCallback(
     () =>
       saveLegalMovesResult({
         correctAnswers: correctCount,
         incorrectAnswers: incorrectCount,
-        timeTaken: totalTime,
+        timeTaken: timeElapsed,
         selectedPiece,
       }),
-    [correctCount, incorrectCount, totalTime, selectedPiece]
+    [correctCount, incorrectCount, timeElapsed, selectedPiece]
   );
 
   useChallengeResultSave({
     isFinished,
-    totalAnswers: totalCount,
+    totalAnswers: correctCount + incorrectCount,
     resultUrl,
     saveResult,
     moduleName: 'legal_moves',

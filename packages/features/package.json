@@ -7,6 +7,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./ai-game": "./src/ai-game/index.ts",
+    "./ai-game/engine": "./src/ai-game/engine/index.ts",
     "./ai-game/notation-input": "./src/ai-game/notation-input/index.ts",
     "./chess-core": "./src/chess-core/index.ts",
     "./chess-core/fen": "./src/chess-core/fen-pure.ts",
@@ -23,12 +24,16 @@
     "./lame-name": "./src/lame-name/index.ts",
     "./linkify": "./src/linkify/index.ts",
     "./utils": "./src/utils/index.ts",
-    "./exp": "./src/exp/index.ts"
+    "./exp": "./src/exp/index.ts",
+    "./practice-session": "./src/practice-session/index.ts"
   },
   "scripts": {
     "lint": "eslint",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": "*"
   },
   "dependencies": {
     "@blindfold-chess/types": "workspace:*",
@@ -36,7 +41,9 @@
   },
   "devDependencies": {
     "@blindfold-chess/eslint-config": "workspace:*",
+    "@types/react": "^19.2.14",
     "eslint": "^9.39.4",
+    "react": "^19.2.5",
     "typescript": "^5.9.3"
   }
 }

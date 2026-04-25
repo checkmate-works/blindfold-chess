@@ -2,12 +2,11 @@ import { ChessPiece, Square } from '@/app/_components';
 import type { Color } from '@blindfold-chess/features/chess-core';
 import { fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
 import { DISPLAY_RANKS, FILES, isLightSquare } from '@blindfold-chess/features/common';
+import type { SquareDiff } from '@blindfold-chess/features/common';
 import type { PieceType } from '@blindfold-chess/types';
 
 import type { BoardTheme } from '@/lib/games/board-themes';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/games/board-themes';
-
-import type { SquareDiff } from '@/app/[locale]/(public)/practice/_lib/types';
 
 import type { FenPieceChar } from './types';
 

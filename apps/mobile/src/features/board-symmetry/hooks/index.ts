@@ -1,3 +1,5 @@
 export { useBoardSymmetrySettings } from "./useBoardSymmetrySettings";
-export { useBoardSymmetrySession } from "./useBoardSymmetrySession";
-export type { BoardSymmetrySettings, BoardSymmetryResult } from "../lib/types";
+export type {
+  BoardSymmetrySettings,
+  BoardSymmetryResult,
+} from "@blindfold-chess/features/board-symmetry";

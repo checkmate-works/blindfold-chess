@@ -7,10 +7,10 @@ import { useRouter } from 'next/navigation';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { checkSymmetryAnswer, generateProblem } from '@blindfold-chess/features/board-symmetry';
 import type { BoardSymmetryProblem } from '@blindfold-chess/features/board-symmetry';
+import { FEEDBACK_FLASH_MS, applyCoordinateBackspace } from '@blindfold-chess/features/common';
 
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
-import { applyCoordinateBackspace } from '@/app/[locale]/(public)/practice/_lib/coordinate-backspace';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -66,7 +66,7 @@ export default function BoardSymmetryTrainingSession({ locale }: Props) {
         setIncorrectCount((prev) => prev + 1);
       }
 
-      const delay = correct ? 1000 : 2000;
+      const delay = correct ? FEEDBACK_FLASH_MS.correct : FEEDBACK_FLASH_MS.incorrect;
       setTimeout(advanceToNextProblem, delay);
     },
     [problem, isProcessing, advanceToNextProblem]

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import { usePersistentSettings } from '@/app/[locale]/(public)/practice/_hooks/use-persistent-settings';
+import { useLocalStorageSettings } from '@/lib/persistent-settings/use-local-storage-settings';
 
 import type { MoveSequenceSettings } from '../_lib/types';
 
@@ -31,7 +31,7 @@ export function useMoveSequenceSettings(
     settings: persistedSettings,
     updateSettings: updatePersistedSettings,
     isLoaded: isPersistedLoaded,
-  } = usePersistentSettings<MoveSequenceSettings>(STORAGE_KEY, DEFAULT_SETTINGS);
+  } = useLocalStorageSettings<MoveSequenceSettings>(STORAGE_KEY, DEFAULT_SETTINGS);
 
   // URL-derived state (used when URL params are present)
   const [urlSettings, setUrlSettings] = useState<MoveSequenceSettings>(() =>

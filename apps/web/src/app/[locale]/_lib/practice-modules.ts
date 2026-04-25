@@ -56,8 +56,9 @@
  *        `isFinished`, score counts, etc. Composes `useCountdown` + `useGameTimer`.
  *    - `useCountdown`           — 3-2-1-Go countdown before session starts
  *    - `useGameTimer`           — Precise elapsed time tracking with pause support
- *    - `usePersistentSettings<T>` — localStorage-backed settings (e.g. time limit,
- *        problem count) that persist across sessions
+ *    - `useLocalStorageSettings<T>` — localStorage-backed settings (e.g. time
+ *        limit, problem count) that persist across sessions. Thin web wrapper
+ *        over the shared `@blindfold-chess/features/common` hook.
  *
  *    **Shared utilities** (`practice/_lib/`):
  *    - `GameState` type          — `'setup' | 'playing' | 'finished'`

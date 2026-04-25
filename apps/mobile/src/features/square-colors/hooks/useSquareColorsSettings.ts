@@ -1,13 +1,13 @@
 import { useCallback } from "react";
-import { usePersistentSettings } from "../../../hooks/usePersistentSettings";
+import { useAsyncStorageSettings } from "../../../lib/persistent-settings/useAsyncStorageSettings";
 import type { SquareColorsSettings } from "../lib/types";
 import { DEFAULT_SQUARE_COLORS_SETTINGS } from "../lib/types";
 
 const STORAGE_KEY = "SQUARE_COLORS_SETTINGS";
 
 export function useSquareColorsSettings() {
-  const { settings, isLoading, updateSettings, saveSettings, resetSettings } =
-    usePersistentSettings<SquareColorsSettings>(
+  const { settings, isLoaded, updateSettings, resetSettings } =
+    useAsyncStorageSettings<SquareColorsSettings>(
       STORAGE_KEY,
       DEFAULT_SQUARE_COLORS_SETTINGS,
     );
@@ -19,9 +19,8 @@ export function useSquareColorsSettings() {
 
   return {
     settings,
-    isLoading,
+    isLoading: !isLoaded,
     updateTimeLimit,
-    saveSettings,
     resetSettings,
   };
 }

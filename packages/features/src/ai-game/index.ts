@@ -31,10 +31,17 @@ export type {
   NotationChar,
   NotationInputAction,
   NotationInputState,
+  PromotionPiece,
+  UseNotationInputOptions,
+  UseNotationInputReturn,
 } from "./notation-input";
 export { MAX_NOTATION_INPUT_LENGTH } from "./notation-input";
 export {
+  computeIsPawnCaptureMode,
   computeIsSubmittable,
+  computePreviewText,
+  computeShowPromotion,
   createInitialState,
   notationInputReducer,
+  useNotationInput,
 } from "./notation-input";

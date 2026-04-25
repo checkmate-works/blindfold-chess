@@ -1,22 +1,19 @@
-import { useEffect, useCallback } from "react";
+import { useCallback } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import * as Haptics from "expo-haptics";
 import { Check, X } from "lucide-react-native";
+import { useCoordinateQuizSession } from "@blindfold-chess/features/coordinate-quiz";
 
 import {
   ChessBoard,
   QuizTimer,
   FeedbackOverlay,
 } from "../../../../features/coordinate-quiz/components";
-import {
-  useQuizSession,
-  useQuizTimer,
-} from "../../../../features/coordinate-quiz/hooks";
 import { useTheme, fontSize, fontWeight, spacing } from "../../../../theme";
 import type {
-  QuizSettings,
   QuizResult,
   BoardOrientation,
   FeedbackSpeed,
@@ -32,13 +29,9 @@ export default function CoordinateQuizSession() {
     feedbackSpeed: string;
   }>();
 
-  // Parse settings from URL params
-  const settings: QuizSettings = {
-    timeLimit: parseInt(params.duration || "60", 10),
-    orientation: (params.orientation || "white") as BoardOrientation,
-    feedbackSpeed: (params.feedbackSpeed || "normal") as FeedbackSpeed,
-    mode: "timed",
-  };
+  const timeLimit = parseInt(params.duration || "60", 10);
+  const orientation = (params.orientation || "white") as BoardOrientation;
+  const feedbackSpeed = (params.feedbackSpeed || "normal") as FeedbackSpeed;
 
   const handleComplete = useCallback(
     (result: QuizResult) => {
@@ -59,117 +52,134 @@ export default function CoordinateQuizSession() {
 
   const {
     currentQuestion,
+    countdown,
+    timeRemaining,
     correctCount,
-    totalCount,
-    feedback,
-    isProcessing,
-    startSession,
-    handleSquareTap,
-    endSession,
-  } = useQuizSession({
-    settings,
+    incorrectCount,
+    showFeedback,
+    lastAnswerCorrect,
+    handleAnswer,
+  } = useCoordinateQuizSession({
+    timeLimit,
+    orientation,
+    feedbackSpeed,
     onComplete: handleComplete,
+    onAnswerEffect: (correct) =>
+      Haptics.notificationAsync(
+        correct
+          ? Haptics.NotificationFeedbackType.Success
+          : Haptics.NotificationFeedbackType.Error,
+      ),
   });
 
-  const { timeRemaining, progress, start } = useQuizTimer({
-    duration: settings.timeLimit,
-    onTimeUp: endSession,
-  });
-
-  // Start session and timer on mount
-  useEffect(() => {
-    startSession();
-    start();
-  }, [startSession, start]);
-
-  const wrongCount = totalCount - correctCount;
+  const feedbackValue = showFeedback
+    ? lastAnswerCorrect
+      ? ("correct" as const)
+      : ("incorrect" as const)
+    : null;
 
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
-      {/* Board Container with Overlay */}
-      <View style={styles.boardContainer}>
-        {/* Turn Indicator Row with Timer */}
-        <View style={styles.turnRow}>
-          <View style={styles.turnIndicator}>
-            <View
-              style={[
-                styles.turnDot,
-                {
-                  backgroundColor:
-                    currentQuestion?.orientation === "white"
-                      ? colors.card
-                      : colors.foreground,
-                  borderColor: colors.foreground,
-                },
-              ]}
-            />
-            <Text style={[styles.turnText, { color: colors.mutedForeground }]}>
-              {currentQuestion?.orientation === "white"
-                ? t("coordinateQuiz.session.whiteToMove")
-                : t("coordinateQuiz.session.blackToMove")}
-            </Text>
-          </View>
-
-          <View style={styles.timerContainer}>
-            <QuizTimer
-              timeRemaining={timeRemaining}
-              progress={progress}
-              size={50}
-            />
-          </View>
+      {/* Countdown overlay */}
+      {countdown !== null && (
+        <View style={styles.countdownContainer}>
+          <Text style={[styles.countdownText, { color: colors.primary }]}>
+            {countdown > 0 ? countdown : "START!"}
+          </Text>
         </View>
+      )}
 
-        {/* Board Wrapper */}
-        <View style={styles.boardWrapper}>
-          <ChessBoard
-            orientation={currentQuestion?.orientation ?? "white"}
-            targetSquare={currentQuestion?.targetSquare ?? null}
-            feedback={feedback}
-            onSquarePress={handleSquareTap}
-            disabled={isProcessing || !currentQuestion}
-          />
+      {/* Main content */}
+      {countdown === null && (
+        <>
+          {/* Board Container with Overlay */}
+          <View style={styles.boardContainer}>
+            {/* Turn Indicator Row with Timer */}
+            <View style={styles.turnRow}>
+              <View style={styles.turnIndicator}>
+                <View
+                  style={[
+                    styles.turnDot,
+                    {
+                      backgroundColor:
+                        currentQuestion?.orientation === "white"
+                          ? colors.card
+                          : colors.foreground,
+                      borderColor: colors.foreground,
+                    },
+                  ]}
+                />
+                <Text
+                  style={[styles.turnText, { color: colors.mutedForeground }]}
+                >
+                  {currentQuestion?.orientation === "white"
+                    ? t("coordinateQuiz.session.whiteToMove")
+                    : t("coordinateQuiz.session.blackToMove")}
+                </Text>
+              </View>
 
-          {/* Target Overlay */}
-          {currentQuestion && !feedback && (
-            <View style={styles.overlayContainer} pointerEvents="none">
-              <Text
-                style={[
-                  styles.overlayText,
-                  { color: colors.primaryForeground },
-                ]}
-              >
-                {currentQuestion.targetSquare}
+              <View style={styles.timerContainer}>
+                <QuizTimer
+                  timeRemaining={timeRemaining}
+                  progress={timeRemaining / timeLimit}
+                  size={50}
+                />
+              </View>
+            </View>
+
+            {/* Board Wrapper */}
+            <View style={styles.boardWrapper}>
+              <ChessBoard
+                orientation={currentQuestion?.orientation ?? "white"}
+                targetSquare={currentQuestion?.targetSquare ?? null}
+                feedback={feedbackValue}
+                onSquarePress={handleAnswer}
+                disabled={!currentQuestion}
+              />
+
+              {/* Target Overlay */}
+              {currentQuestion && !showFeedback && (
+                <View style={styles.overlayContainer} pointerEvents="none">
+                  <Text
+                    style={[
+                      styles.overlayText,
+                      { color: colors.primaryForeground },
+                    ]}
+                  >
+                    {currentQuestion.targetSquare}
+                  </Text>
+                </View>
+              )}
+
+              {/* Feedback Overlay */}
+              <FeedbackOverlay feedback={feedbackValue} />
+            </View>
+          </View>
+
+          {/* Footer Score */}
+          <View style={styles.footer}>
+            <View style={styles.scoreItem}>
+              <View style={[styles.iconContainer, styles.correctIconBg]}>
+                <Check size={16} color={feedbackColors.success} />
+              </View>
+              <Text style={[styles.scoreValue, { color: colors.foreground }]}>
+                {correctCount}
               </Text>
             </View>
-          )}
 
-          {/* Feedback Overlay */}
-          <FeedbackOverlay feedback={feedback} />
-        </View>
-      </View>
-
-      {/* Footer Score */}
-      <View style={styles.footer}>
-        <View style={styles.scoreItem}>
-          <View style={[styles.iconContainer, styles.correctIconBg]}>
-            <Check size={16} color={feedbackColors.success} />
+            <View style={styles.scoreItem}>
+              <View style={[styles.iconContainer, styles.wrongIconBg]}>
+                <X size={16} color={feedbackColors.error} />
+              </View>
+              <Text style={[styles.scoreValue, { color: colors.foreground }]}>
+                {incorrectCount}
+              </Text>
+            </View>
           </View>
-          <Text style={[styles.scoreValue, { color: colors.foreground }]}>
-            {correctCount}
-          </Text>
-        </View>
-
-        <View style={styles.scoreItem}>
-          <View style={[styles.iconContainer, styles.wrongIconBg]}>
-            <X size={16} color={feedbackColors.error} />
-          </View>
-          <Text style={[styles.scoreValue, { color: colors.foreground }]}>
-            {wrongCount}
-          </Text>
-        </View>
-      </View>
+        </>
+      )}
     </SafeAreaView>
   );
 }
@@ -177,6 +187,15 @@ export default function CoordinateQuizSession() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  countdownContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  countdownText: {
+    fontSize: 72,
+    fontWeight: fontWeight.bold,
   },
   boardContainer: {
     flex: 1,

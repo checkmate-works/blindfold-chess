@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { validateFenFormat as validateFEN } from '@blindfold-chess/features/chess-core/fen';
 
-import { usePersistentSettings } from '@/app/[locale]/(public)/practice/_hooks/use-persistent-settings';
+import { useLocalStorageSettings } from '@/lib/persistent-settings/use-local-storage-settings';
 
 import type { PresetPosition } from '../_data/positions';
 import presetPositions from '../_data/presetPositions.json';
@@ -32,7 +32,7 @@ const DEFAULT_SETTINGS: FenSettings = {
 export function useFenSettings() {
   const t = useTranslations('practice.fen');
 
-  const { settings, updateSettings } = usePersistentSettings<FenSettings>(
+  const { settings, updateSettings } = useLocalStorageSettings<FenSettings>(
     STORAGE_KEY,
     DEFAULT_SETTINGS
   );
