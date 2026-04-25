@@ -43,6 +43,7 @@ export async function createChunk(data: ChunkMutationData): Promise<MutationResu
     .values({
       representativeFen: data.representativeFen.trim(),
       title: data.title.trim(),
+      slug: data.slug.trim(),
       description: data.description?.trim() || null,
       // The admin specifies the author via the form — this allows creating
       // chunks on behalf of any user. The form-supplied userId is validated

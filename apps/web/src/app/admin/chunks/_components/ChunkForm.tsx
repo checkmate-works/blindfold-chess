@@ -17,6 +17,7 @@ type ChunkFormProps = {
     id: string;
     representativeFen: string;
     title: string;
+    slug: string;
     description: string | null;
     userId: string | null;
   };
@@ -27,9 +28,20 @@ export function ChunkForm({ mode, initial }: ChunkFormProps) {
   const [userId, setUserId] = useState(initial?.userId ?? '');
   const [representativeFen, setRepresentativeFen] = useState(initial?.representativeFen ?? '');
   const [title, setTitle] = useState(initial?.title ?? '');
+  const [slug, setSlug] = useState(initial?.slug ?? '');
   const [description, setDescription] = useState(initial?.description ?? '');
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+
+  function generateSlugFromTitle() {
+    const generated = title
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+    setSlug(generated);
+  }
 
   // Structural validation only — chunks are piece-coordination patterns that
   // may legitimately omit kings, so we intentionally do NOT use chess.js's
@@ -47,6 +59,7 @@ export function ChunkForm({ mode, initial }: ChunkFormProps) {
       userId,
       representativeFen,
       title,
+      slug,
       description: description || null,
     };
 
@@ -129,6 +142,30 @@ export function ChunkForm({ mode, initial }: ChunkFormProps) {
           className="w-full px-3 py-2 rounded border border-border bg-card text-foreground"
           required
         />
+      </div>
+
+      <div>
+        <label htmlFor="slug" className="block text-sm font-medium mb-1">
+          Slug <span className="text-destructive">*</span>
+        </label>
+        <div className="flex gap-2">
+          <input
+            id="slug"
+            type="text"
+            value={slug}
+            onChange={(e) => setSlug(e.target.value)}
+            placeholder="rook-battery"
+            className="flex-1 px-3 py-2 rounded border border-border bg-card text-foreground font-mono text-sm"
+            required
+          />
+          <button
+            type="button"
+            onClick={generateSlugFromTitle}
+            className="px-3 py-2 text-sm rounded border border-border bg-muted text-foreground hover:opacity-80 transition-opacity whitespace-nowrap"
+          >
+            Generate from title
+          </button>
+        </div>
       </div>
 
       <div>

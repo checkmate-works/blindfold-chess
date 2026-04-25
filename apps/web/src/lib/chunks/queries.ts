@@ -2,7 +2,7 @@ import { cache } from 'react';
 
 import { type SQL, and, count, desc, eq, isNull } from 'drizzle-orm';
 
-import { chunks, db } from '@/lib/db';
+import { chunks, db, positionChunks, positions } from '@/lib/db';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 type GetChunkByIdOptions = {
@@ -70,4 +70,41 @@ export async function countChunks({ includeDeleted }: Pick<ListChunksOptions, 'i
   const query = db.select({ value: count() }).from(chunks);
   const [row] = await (where ? query.where(where) : query);
   return row?.value ?? 0;
+}
+
+/**
+ * Fetch a single chunk by slug. Only returns non-deleted rows (public use).
+ *
+ * Wrapped with `React.cache` for per-request deduplication.
+ */
+export const getChunkBySlug = cache(async (slug: string) => {
+  if (!slug) return null;
+
+  const [row] = await db
+    .select()
+    .from(chunks)
+    .where(and(eq(chunks.slug, slug), isNull(chunks.deletedAt)))
+    .limit(1);
+
+  return row ?? null;
+});
+
+/**
+ * Fetch positions linked to a chunk via the position_chunks junction table.
+ * Only returns non-deleted positions, ordered by creation date descending.
+ */
+export async function getLinkedPositionsForChunk(chunkId: string) {
+  const rows = await db
+    .select({
+      id: positions.id,
+      title: positions.title,
+      fen: positions.fen,
+      type: positions.type,
+    })
+    .from(positionChunks)
+    .innerJoin(positions, eq(positionChunks.positionId, positions.id))
+    .where(and(eq(positionChunks.chunkId, chunkId), isNull(positions.deletedAt)))
+    .orderBy(desc(positions.createdAt));
+
+  return rows;
 }

@@ -81,6 +81,7 @@ const targetUserId = '00000000-1111-2222-3333-444444444444';
 const validData = {
   representativeFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
   title: 'Fianchetto',
+  slug: 'fianchetto',
   description: 'Bishop developed to a long diagonal',
   userId: targetUserId,
 };
@@ -216,6 +217,7 @@ describe('updateChunk', () => {
     expect(mockUpdateSet).toHaveBeenCalledWith({
       representativeFen: validData.representativeFen,
       title: validData.title,
+      slug: validData.slug,
       description: validData.description,
       userId: targetUserId,
     });
@@ -235,6 +237,7 @@ describe('updateChunk', () => {
     expect(mockUpdateSet).toHaveBeenCalledWith({
       representativeFen: validData.representativeFen,
       title: 'Trimmed Title',
+      slug: validData.slug,
       description: 'Trimmed Desc',
       userId: targetUserId,
     });

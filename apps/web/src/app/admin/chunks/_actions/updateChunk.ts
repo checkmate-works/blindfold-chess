@@ -57,6 +57,7 @@ export async function updateChunk(id: string, data: ChunkMutationData): Promise<
     .set({
       representativeFen: data.representativeFen.trim(),
       title: data.title.trim(),
+      slug: data.slug.trim(),
       description: data.description?.trim() || null,
       userId: data.userId.trim(),
     })
