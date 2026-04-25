@@ -25,6 +25,10 @@ const REACT_IMPORT_RE = /\bfrom\s+["']react["']/;
 // which is not matched, and type identifiers conventionally start with `Use`
 // (capitalized), so they also don't match.
 const HOOK_VALUE_RE = /^\s*export\s*\{[^}]*\buse[A-Z][A-Za-z0-9]*\b[^}]*\}/m;
+// Matches `export * from "./use-..."` — a wildcard re-export from a hook
+// source file. Even with no braces, this drags every value export of the
+// hook file (including the hook itself) into the pure barrel.
+const HOOK_WILDCARD_RE = /export\s*\*\s*from\s*["']\.\/use-/;
 
 describe("packages/features pure barrels", () => {
   for (const relativePath of PURE_BARRELS) {
@@ -38,6 +42,14 @@ describe("packages/features pure barrels", () => {
     it(`${relativePath} does not value-export a React hook (useXxx)`, () => {
       const source = readFileSync(absolutePath, "utf8");
       expect(source).not.toMatch(HOOK_VALUE_RE);
+    });
+
+    it(`${relativePath} does not wildcard-re-export from a hook file`, () => {
+      const source = readFileSync(absolutePath, "utf8");
+      expect(
+        source,
+        `pure barrel ${relativePath} performs a wildcard re-export from a hook file (\`export * from "./use-..."\`); move this re-export to client.ts, or replace it with an explicit \`export type { ... }\` re-export of the hook's type-only surface`,
+      ).not.toMatch(HOOK_WILDCARD_RE);
     });
   }
 });

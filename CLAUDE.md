@@ -36,6 +36,7 @@ This project is a pnpm + Turborepo monorepo.
 3. **For features that have hooks, ship two barrels per directory:**
    - `<feature>/index.ts` — pure barrel, no `"use client"`. Re-exports types, constants, validators, pure logic. Type-only re-exports of hook return shapes (`export type { UseXxxReturn }`) are allowed here because types erase at compile time.
    - `<feature>/client.ts` — client barrel, starts with `"use client";`. Re-exports the React hooks (and any client-only utilities).
+   - **Exception:** if a feature directory contains only hooks, the single `index.ts` may carry `"use client";` directly without a separate `client.ts` (the directory's only barrel becomes the client barrel). Example: `practice-session/`.
 4. **Expose both via `package.json#exports`** as `"./<feature>"` and `"./<feature>/client"`. Apps import the path that matches the consumer's environment.
 5. **Inside `packages/features`, intra-package imports SHOULD prefer deep paths** (`./use-foo`, `../common/flash-policy`) over barrel imports, to keep the boundary explicit and to avoid re-introducing the same coupling.
 6. **Mobile compatibility:** Metro treats `"use client"` as a no-op directive prologue, so this rule is invisible to the React Native target — no special handling needed there.

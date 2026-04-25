@@ -4,6 +4,8 @@ export type {
   NotationInputAction,
   NotationInputState,
   PromotionPiece,
+  UseNotationInputOptions,
+  UseNotationInputReturn,
 } from "./types";
 export { MAX_NOTATION_INPUT_LENGTH } from "./types";
 export {
@@ -14,7 +16,3 @@ export {
   createInitialState,
   notationInputReducer,
 } from "./state-machine";
-export type {
-  UseNotationInputOptions,
-  UseNotationInputReturn,
-} from "./use-notation-input";
