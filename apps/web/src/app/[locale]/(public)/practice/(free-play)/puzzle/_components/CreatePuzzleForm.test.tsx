@@ -1,5 +1,7 @@
+import type { ReactNode } from 'react';
+
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DRAFT_STORAGE_KEY } from '../_lib/draft-storage';
 import type { PuzzleDraftV1 } from '../_lib/draft-storage';
@@ -117,8 +119,22 @@ vi.mock('@/app/[locale]/_components/ConfirmationModal', () => ({
 }));
 
 // UnsavedChangesDialog — also uses the shared Modal, same rationale.
+// Button is stubbed to a plain <button> so role/name lookups still work.
 vi.mock('@/app/_components', () => ({
   UnsavedChangesDialog: () => null,
+  Button: ({
+    children,
+    type,
+    disabled,
+  }: {
+    children: ReactNode;
+    type?: 'button' | 'submit' | 'reset';
+    disabled?: boolean;
+  }) => (
+    <button type={type ?? 'button'} disabled={disabled}>
+      {children}
+    </button>
+  ),
 }));
 
 const VALID_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
@@ -188,28 +204,34 @@ describe('CreatePuzzleForm', () => {
       expect(mockPush).toHaveBeenCalledWith('/practice/puzzle/new/preview');
     });
 
-    it('does NOT navigate when the position is missing — surfaces positionInvalid instead', () => {
+    it('Preview button is disabled when the position is missing, even if a title is set — clicking does not navigate or write a draft', () => {
       render(<CreatePuzzleForm />);
 
       fireEvent.change(screen.getByLabelText(/titleLabel/), { target: { value: 'No FEN yet' } });
-      fireEvent.click(screen.getByRole('button', { name: 'continueToPreview' }));
+
+      const previewBtn = screen.getByRole('button', { name: 'continueToPreview' });
+      expect(previewBtn).toBeDisabled();
+
+      fireEvent.click(previewBtn);
 
       expect(mockPush).not.toHaveBeenCalled();
       expect(sessionStorage.getItem(DRAFT_STORAGE_KEY)).toBeNull();
     });
 
-    it('does NOT navigate when the solution is empty — surfaces solutionRequired instead', () => {
+    it('Preview button is disabled when the position is valid but the solution is empty — clicking does not navigate or write a draft', () => {
       render(<CreatePuzzleForm />);
 
       fireEvent.click(screen.getByRole('tab', { name: 'tabFen' }));
       fireEvent.change(screen.getByLabelText('fenLabel'), { target: { value: VALID_FEN } });
       fireEvent.change(screen.getByLabelText(/titleLabel/), { target: { value: 'Titled' } });
 
-      fireEvent.click(screen.getByRole('button', { name: 'continueToPreview' }));
+      const previewBtn = screen.getByRole('button', { name: 'continueToPreview' });
+      expect(previewBtn).toBeDisabled();
+
+      fireEvent.click(previewBtn);
 
       expect(mockPush).not.toHaveBeenCalled();
       expect(sessionStorage.getItem(DRAFT_STORAGE_KEY)).toBeNull();
-      expect(screen.getByText('solutionRequired')).toBeInTheDocument();
     });
 
     it('stays on the form and surfaces draftWriteFailed when sessionStorage.setItem throws', () => {
@@ -314,6 +336,240 @@ describe('CreatePuzzleForm', () => {
       expect(sessionStorage.getItem(DRAFT_STORAGE_KEY)).toBeNull();
       expect(screen.getByLabelText(/titleLabel/)).toHaveValue('');
       expect(screen.queryByRole('button', { name: 'startOver' })).not.toBeInTheDocument();
+    });
+  });
+
+  describe('default title (buildDefaultTitle)', () => {
+    // Pin the system clock so the date portion of the seeded title is
+    // deterministic regardless of when the suite runs. The form computes
+    // `formatLocalIsoDate(new Date())` once via useRef on first render, so
+    // we set the time before each render.
+    beforeAll(() => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-04-25T12:00:00'));
+    });
+
+    afterAll(() => {
+      vi.useRealTimers();
+    });
+
+    it('starts with an empty title when displayName is undefined', () => {
+      render(<CreatePuzzleForm />);
+      expect(screen.getByLabelText(/titleLabel/)).toHaveValue('');
+    });
+
+    it('uses the date-only fallback when displayName is an empty string', () => {
+      render(<CreatePuzzleForm displayName="" />);
+      expect(screen.getByLabelText(/titleLabel/)).toHaveValue('Puzzle 2026-04-25');
+    });
+
+    it('uses the date-only fallback when displayName is whitespace-only (after trim)', () => {
+      render(<CreatePuzzleForm displayName="   " />);
+      expect(screen.getByLabelText(/titleLabel/)).toHaveValue('Puzzle 2026-04-25');
+    });
+
+    it('seeds the title with "Puzzle YYYY-MM-DD - <displayName>" for a simple name', () => {
+      render(<CreatePuzzleForm displayName="alice" />);
+      expect(screen.getByLabelText(/titleLabel/)).toHaveValue('Puzzle 2026-04-25 - alice');
+    });
+
+    it('preserves spaces inside displayName verbatim', () => {
+      render(<CreatePuzzleForm displayName="Alice Smith" />);
+      expect(screen.getByLabelText(/titleLabel/)).toHaveValue('Puzzle 2026-04-25 - Alice Smith');
+    });
+
+    it('passes through special characters and emoji verbatim so the user can edit them', () => {
+      render(<CreatePuzzleForm displayName="🐴 Knight!" />);
+      expect(screen.getByLabelText(/titleLabel/)).toHaveValue('Puzzle 2026-04-25 - 🐴 Knight!');
+    });
+
+    it('formats the date portion as YYYY-MM-DD with no time component', () => {
+      render(<CreatePuzzleForm displayName="" />);
+      const value = (screen.getByLabelText(/titleLabel/) as HTMLInputElement).value;
+      // Body must match `Puzzle ` followed by ISO date only — no `T`, no time.
+      expect(value).toMatch(/^Puzzle \d{4}-\d{2}-\d{2}$/);
+    });
+  });
+
+  describe('field order', () => {
+    it('renders title before description, and both before the position editor (tabs / FEN)', () => {
+      const { container } = render(<CreatePuzzleForm />);
+
+      const title = screen.getByLabelText(/titleLabel/);
+      const description = screen.getByLabelText(/descriptionLabel/);
+      const tablist = container.querySelector('[role="tablist"]') as HTMLElement | null;
+      expect(tablist).not.toBeNull();
+
+      // compareDocumentPosition returns a bitmask; DOCUMENT_POSITION_FOLLOWING (4)
+      // is set when the argument node comes AFTER the receiver in document order.
+      const FOLLOWING = Node.DOCUMENT_POSITION_FOLLOWING;
+      expect(title.compareDocumentPosition(description) & FOLLOWING).toBe(FOLLOWING);
+      expect(description.compareDocumentPosition(tablist!) & FOLLOWING).toBe(FOLLOWING);
+    });
+
+    it('renders the title input earlier in the DOM than the FEN textarea', () => {
+      const { container } = render(<CreatePuzzleForm />);
+
+      // Switch to the FEN tab so the textarea is mounted.
+      fireEvent.click(screen.getByRole('tab', { name: 'tabFen' }));
+
+      const title = screen.getByLabelText(/titleLabel/);
+      const fen = screen.getByLabelText('fenLabel');
+      const FOLLOWING = Node.DOCUMENT_POSITION_FOLLOWING;
+      expect(title.compareDocumentPosition(fen) & FOLLOWING).toBe(FOLLOWING);
+
+      // Sanity: title is also strictly earlier in the focusable-input order.
+      const inputs = Array.from(container.querySelectorAll('input, textarea')) as HTMLElement[];
+      expect(inputs.indexOf(title)).toBeLessThan(inputs.indexOf(fen));
+    });
+  });
+
+  describe('reset / dirty-check semantics with seeded default title', () => {
+    beforeAll(() => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-04-25T12:00:00'));
+    });
+
+    afterAll(() => {
+      vi.useRealTimers();
+    });
+
+    it('Start over restores the seeded default title (not empty) when the form was hydrated from a draft', () => {
+      const seededDefault = 'Puzzle 2026-04-25 - alice';
+      sessionStorage.setItem(
+        DRAFT_STORAGE_KEY,
+        JSON.stringify(makeDraft({ title: 'User-edited title' }))
+      );
+
+      render(<CreatePuzzleForm displayName="alice" />);
+
+      // After hydration, the title reflects the saved draft, not the seeded default.
+      expect(screen.getByLabelText(/titleLabel/)).toHaveValue('User-edited title');
+
+      // Click Start over and confirm.
+      fireEvent.click(screen.getByRole('button', { name: 'startOver' }));
+      fireEvent.click(screen.getByRole('button', { name: 'startOverConfirm' }));
+
+      // Title resets to the SEEDED default — not to empty string.
+      expect(screen.getByLabelText(/titleLabel/)).toHaveValue(seededDefault);
+      expect(sessionStorage.getItem(DRAFT_STORAGE_KEY)).toBeNull();
+    });
+  });
+
+  describe('Clear Board confirmation modal', () => {
+    it('clicking Clear Board opens the confirmation modal', () => {
+      render(<CreatePuzzleForm />);
+
+      // Modal is not open on initial mount.
+      expect(screen.queryByRole('dialog', { name: 'Clear board?' })).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'clearBoard' }));
+
+      expect(screen.getByRole('dialog', { name: 'Clear board?' })).toBeInTheDocument();
+    });
+
+    it('Cancel closes the modal and leaves board state unchanged', () => {
+      // Seed a draft (activeTab='fen' by default) so we can assert FEN value,
+      // but the Clear Board button only renders in the Board tab.
+      sessionStorage.setItem(
+        DRAFT_STORAGE_KEY,
+        JSON.stringify(makeDraft({ title: 'Before cancel', moves: ['Nf3', 'e5'] }))
+      );
+      render(<CreatePuzzleForm />);
+
+      // Sanity — draft is loaded.
+      expect(screen.getByLabelText(/titleLabel/)).toHaveValue('Before cancel');
+      expect(screen.getByLabelText('fenLabel')).toHaveValue(VALID_FEN);
+      expect(screen.getByText(/^2\s*\/\s*20$/)).toBeInTheDocument();
+
+      // Switch to Board tab so Clear Board button is rendered.
+      fireEvent.click(screen.getByRole('tab', { name: 'tabBoard' }));
+      fireEvent.click(screen.getByRole('button', { name: 'clearBoard' }));
+      expect(screen.getByRole('dialog', { name: 'Clear board?' })).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+      // Modal gone; all state still intact.
+      expect(screen.queryByRole('dialog', { name: 'Clear board?' })).not.toBeInTheDocument();
+      expect(screen.getByLabelText(/titleLabel/)).toHaveValue('Before cancel');
+      // Flip back to FEN tab to inspect fenInput value.
+      fireEvent.click(screen.getByRole('tab', { name: 'tabFen' }));
+      expect(screen.getByLabelText('fenLabel')).toHaveValue(VALID_FEN);
+      expect(screen.getByText(/^2\s*\/\s*20$/)).toBeInTheDocument();
+    });
+
+    it('Confirm closes the modal and resets the board (FEN → empty, moves cleared)', () => {
+      sessionStorage.setItem(
+        DRAFT_STORAGE_KEY,
+        JSON.stringify(makeDraft({ title: 'Before clear', moves: ['Nf3', 'e5'] }))
+      );
+      render(<CreatePuzzleForm />);
+
+      // Sanity — solution section visible with 2 moves.
+      expect(screen.getByText(/^2\s*\/\s*20$/)).toBeInTheDocument();
+      expect(screen.getByLabelText('fenLabel')).toHaveValue(VALID_FEN);
+
+      // Switch to Board tab so Clear Board button is rendered.
+      fireEvent.click(screen.getByRole('tab', { name: 'tabBoard' }));
+      fireEvent.click(screen.getByRole('button', { name: 'clearBoard' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Clear board' }));
+
+      // Modal closes.
+      expect(screen.queryByRole('dialog', { name: 'Clear board?' })).not.toBeInTheDocument();
+
+      // Flip to FEN tab to assert fenInput was reset to the empty-board FEN.
+      fireEvent.click(screen.getByRole('tab', { name: 'tabFen' }));
+      expect(screen.getByLabelText('fenLabel')).toHaveValue('8/8/8/8/8/8/8/8 w - - 0 1');
+
+      // Solution section hides because the empty-board FEN fails validateFen.
+      expect(screen.queryByText(/\/\s*20$/)).not.toBeInTheDocument();
+
+      // Title is untouched (Clear Board only resets board + solution).
+      expect(screen.getByLabelText(/titleLabel/)).toHaveValue('Before clear');
+    });
+  });
+
+  describe('Preview button disabled gate', () => {
+    it('is disabled on fresh mount (empty FEN, empty moves, empty title)', () => {
+      render(<CreatePuzzleForm />);
+      expect(screen.getByRole('button', { name: 'continueToPreview' })).toBeDisabled();
+    });
+
+    it('is disabled with a valid FEN but empty moves', () => {
+      render(<CreatePuzzleForm />);
+
+      fireEvent.click(screen.getByRole('tab', { name: 'tabFen' }));
+      fireEvent.change(screen.getByLabelText('fenLabel'), { target: { value: VALID_FEN } });
+      fireEvent.change(screen.getByLabelText(/titleLabel/), { target: { value: 'Titled' } });
+
+      expect(screen.getByRole('button', { name: 'continueToPreview' })).toBeDisabled();
+    });
+
+    it('is disabled when title is empty (cleared by the user) even with valid FEN and moves', () => {
+      render(<CreatePuzzleForm />);
+
+      fireEvent.click(screen.getByRole('tab', { name: 'tabFen' }));
+      fireEvent.change(screen.getByLabelText('fenLabel'), { target: { value: VALID_FEN } });
+      fireEvent.change(screen.getByLabelText(/titleLabel/), { target: { value: 'Titled' } });
+      seedMoveValue('Nf3');
+      fireEvent.click(screen.getByTestId('stub-submit'));
+
+      // Now clear the title. Button should flip back to disabled.
+      fireEvent.change(screen.getByLabelText(/titleLabel/), { target: { value: '' } });
+
+      expect(screen.getByRole('button', { name: 'continueToPreview' })).toBeDisabled();
+    });
+
+    it('is enabled when title, FEN, and at least one move are all set', () => {
+      render(<CreatePuzzleForm />);
+
+      fireEvent.click(screen.getByRole('tab', { name: 'tabFen' }));
+      fireEvent.change(screen.getByLabelText('fenLabel'), { target: { value: VALID_FEN } });
+      fireEvent.change(screen.getByLabelText(/titleLabel/), { target: { value: 'Titled' } });
+      seedMoveValue('Nf3');
+      fireEvent.click(screen.getByTestId('stub-submit'));
+
+      expect(screen.getByRole('button', { name: 'continueToPreview' })).not.toBeDisabled();
     });
   });
 });

@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { UnsavedChangesDialog } from '@/app/_components';
+import { Button, UnsavedChangesDialog } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 import { executeMove, getTurnFromFen, validateFen } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
@@ -28,6 +28,31 @@ const MAX_SOLUTION_MOVES = 20;
 type EditorTab = 'board' | 'fen';
 type SideToMove = 'w' | 'b';
 
+function formatLocalIsoDate(d: Date): string {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function buildDefaultTitle(displayName: string | undefined): string {
+  if (displayName === undefined) return '';
+  const date = formatLocalIsoDate(new Date());
+  const trimmed = displayName.trim();
+  return trimmed ? `Puzzle ${date} - ${trimmed}` : `Puzzle ${date}`;
+}
+
+type Props = {
+  /**
+   * Author's display name used to seed the default title as
+   * `Puzzle YYYY-MM-DD - <displayName>`. When omitted (e.g., in tests),
+   * the title starts empty. When passed as an empty string (no profile
+   * displayName/username), the date-only fallback `Puzzle YYYY-MM-DD`
+   * is used.
+   */
+  displayName?: string;
+};
+
 function replaceSideToMove(fen: string, side: SideToMove): string {
   const parts = fen.trim().split(/\s+/);
   if (parts.length < 2) return fen;
@@ -40,7 +65,7 @@ function readSideToMove(fen: string): SideToMove {
   return parts[1] === 'b' ? 'b' : 'w';
 }
 
-export function CreatePuzzleForm() {
+export function CreatePuzzleForm({ displayName }: Props = {}) {
   const router = useRouter();
   const t = useTranslations('practice.puzzle.create');
   const tBoard = useTranslations('practice.puzzle');
@@ -48,10 +73,11 @@ export function CreatePuzzleForm() {
   const tUnsaved = useTranslations('unsavedChanges');
   const { preferences, updatePreferences } = useGamePreferences();
 
+  const defaultTitleRef = useRef(buildDefaultTitle(displayName));
   const [fenInput, setFenInput] = useState('');
   const [boardFen, setBoardFen] = useState(EMPTY_BOARD_FEN);
   const [sideToMove, setSideToMove] = useState<SideToMove>('w');
-  const [title, setTitle] = useState('');
+  const [title, setTitle] = useState(defaultTitleRef.current);
   const [description, setDescription] = useState('');
   const [moves, setMoves] = useState<string[]>([]);
   const [notes, setNotes] = useState<string[]>([]);
@@ -67,6 +93,7 @@ export function CreatePuzzleForm() {
   const [submitted, setSubmitted] = useState(false);
   const [hydratedFromDraft, setHydratedFromDraft] = useState(false);
   const [startOverOpen, setStartOverOpen] = useState(false);
+  const [clearBoardOpen, setClearBoardOpen] = useState(false);
 
   // Hydrate once on mount. `didHydrate` guards against remounts (e.g., Fast
   // Refresh during dev) clobbering user edits mid-authoring. The draft is
@@ -136,7 +163,7 @@ export function CreatePuzzleForm() {
 
   const isDirty =
     !submitted &&
-    (title.trim() !== '' ||
+    (title.trim() !== defaultTitleRef.current.trim() ||
       description.trim() !== '' ||
       moves.length > 0 ||
       notes.some((n) => n.trim() !== '') ||
@@ -176,17 +203,6 @@ export function CreatePuzzleForm() {
     setSolutionError(null);
   }
 
-  function applyFen(nextFen: string) {
-    const trimmed = nextFen.trim();
-    setFenInput(trimmed);
-    if (trimmed !== '' && validateFen(trimmed)) {
-      setBoardFen(trimmed);
-      const side = readSideToMove(trimmed);
-      setSideToMove(side);
-    }
-    resetSolutionState();
-  }
-
   function handleFenInputChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
     const value = e.target.value;
     setFenInput(value);
@@ -205,8 +221,16 @@ export function CreatePuzzleForm() {
     resetSolutionState();
   }
 
+  // Reset board state directly: EMPTY_BOARD_FEN fails validateFen's
+  // king-count check, so the usual FEN-validation path would skip
+  // setBoardFen. For this known-good reset we bypass validation.
   function handleClearBoard() {
-    applyFen(EMPTY_BOARD_FEN);
+    setFenInput(EMPTY_BOARD_FEN);
+    setBoardFen(EMPTY_BOARD_FEN);
+    setSideToMove('w');
+    setPositionError(false);
+    setError(null);
+    resetSolutionState();
   }
 
   function handleSideToMoveChange(next: SideToMove) {
@@ -314,7 +338,7 @@ export function CreatePuzzleForm() {
     setFenInput('');
     setBoardFen(EMPTY_BOARD_FEN);
     setSideToMove('w');
-    setTitle('');
+    setTitle(defaultTitleRef.current);
     setDescription('');
     setMoves([]);
     setNotes([]);
@@ -352,6 +376,33 @@ export function CreatePuzzleForm() {
             </button>
           </div>
         )}
+
+        <div>
+          <label htmlFor="title" className="block text-sm font-medium mb-1">
+            {t('titleLabel')} <span className="text-destructive">*</span>
+          </label>
+          <input
+            id="title"
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="w-full px-3 py-2 rounded border border-border bg-card text-foreground"
+            required
+          />
+        </div>
+
+        <div>
+          <label htmlFor="description" className="block text-sm font-medium mb-1">
+            {t('descriptionLabel')}
+          </label>
+          <textarea
+            id="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={4}
+            className="w-full px-3 py-2 rounded border border-border bg-card text-foreground"
+          />
+        </div>
 
         {/* Tab switcher — matches LeaderboardTabs style */}
         <nav className="flex rounded-lg bg-secondary p-1" role="tablist">
@@ -448,7 +499,7 @@ export function CreatePuzzleForm() {
             <div className="flex justify-center">
               <button
                 type="button"
-                onClick={handleClearBoard}
+                onClick={() => setClearBoardOpen(true)}
                 className="px-3 py-1 text-sm rounded border border-border text-muted-foreground hover:bg-muted transition-colors"
               >
                 {t('clearBoard')}
@@ -487,66 +538,39 @@ export function CreatePuzzleForm() {
           </p>
         )}
 
-        <div>
-          <label htmlFor="title" className="block text-sm font-medium mb-1">
-            {t('titleLabel')} <span className="text-destructive">*</span>
-          </label>
-          <input
-            id="title"
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-3 py-2 rounded border border-border bg-card text-foreground"
-            required
-          />
-        </div>
+        {isFenValid && (
+          <div className="space-y-3">
+            <div className="flex items-baseline justify-between">
+              <label className="text-sm font-medium">
+                {t('solutionSection')} <span className="text-destructive">*</span>
+              </label>
+              <span className="text-xs text-muted-foreground">
+                {moves.length} / {MAX_SOLUTION_MOVES}
+              </span>
+            </div>
 
-        <div>
-          <label htmlFor="description" className="block text-sm font-medium mb-1">
-            {t('descriptionLabel')}
-          </label>
-          <textarea
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={4}
-            className="w-full px-3 py-2 rounded border border-border bg-card text-foreground"
-          />
-        </div>
+            {moves.length > 0 && (
+              <SolutionMoveList
+                moves={moves}
+                firstTurn={firstTurn}
+                onRemoveLast={handleRemoveLast}
+                removeAriaLabel={t('removeLastMove', { move: moves[moves.length - 1]! })}
+                disabled={pending}
+                renderAfter={(index) => (
+                  <input
+                    type="text"
+                    value={notes[index] ?? ''}
+                    onChange={(e) => handleNoteChange(index, e.target.value)}
+                    maxLength={PUZZLE_NOTE_MAX_LENGTH}
+                    placeholder={t('addMoveNote')}
+                    aria-label={t('noteAriaLabel', { move: moves[index]! })}
+                    className="w-full px-2 py-1 rounded border border-border bg-card text-foreground text-sm"
+                  />
+                )}
+              />
+            )}
 
-        <div className="space-y-3">
-          <div className="flex items-baseline justify-between">
-            <label className="text-sm font-medium">
-              {t('solutionSection')} <span className="text-destructive">*</span>
-            </label>
-            <span className="text-xs text-muted-foreground">
-              {moves.length} / {MAX_SOLUTION_MOVES}
-            </span>
-          </div>
-
-          {moves.length > 0 && (
-            <SolutionMoveList
-              moves={moves}
-              firstTurn={firstTurn}
-              onRemoveLast={handleRemoveLast}
-              removeAriaLabel={t('removeLastMove', { move: moves[moves.length - 1]! })}
-              disabled={pending}
-              renderAfter={(index) => (
-                <input
-                  type="text"
-                  value={notes[index] ?? ''}
-                  onChange={(e) => handleNoteChange(index, e.target.value)}
-                  maxLength={PUZZLE_NOTE_MAX_LENGTH}
-                  placeholder={t('addMoveNote')}
-                  aria-label={t('noteAriaLabel', { move: moves[index]! })}
-                  className="w-full px-2 py-1 rounded border border-border bg-card text-foreground text-sm"
-                />
-              )}
-            />
-          )}
-
-          {isFenValid ? (
-            reachedMaxMoves ? (
+            {reachedMaxMoves ? (
               <p className="text-sm text-muted-foreground">{t('maxMovesReached')}</p>
             ) : (
               <MoveInputPanel
@@ -565,21 +589,20 @@ export function CreatePuzzleForm() {
                 playerColor={currentTurn}
                 showLegalMovesHint={false}
               />
-            )
-          ) : (
-            <p className="text-sm text-muted-foreground">{t('positionInvalid')}</p>
-          )}
+            )}
 
-          {solutionError && <p className="text-sm text-destructive">{solutionError}</p>}
-        </div>
+            {solutionError && <p className="text-sm text-destructive">{solutionError}</p>}
+          </div>
+        )}
 
-        <button
+        <Button
           type="submit"
-          disabled={pending}
-          className="w-full px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+          variant="primary"
+          fullWidth
+          disabled={pending || !isFenValid || moves.length === 0 || title.trim() === ''}
         >
           {t('continueToPreview')}
-        </button>
+        </Button>
       </form>
 
       <UnsavedChangesDialog
@@ -601,6 +624,20 @@ export function CreatePuzzleForm() {
         confirmVariant="danger"
         onConfirm={handleStartOver}
         onCancel={() => setStartOverOpen(false)}
+      />
+
+      <ConfirmationModal
+        isOpen={clearBoardOpen}
+        title="Clear board?"
+        message="This will remove all placed pieces and entered solution moves. This cannot be undone."
+        confirmText="Clear board"
+        cancelText="Cancel"
+        confirmVariant="danger"
+        onConfirm={() => {
+          setClearBoardOpen(false);
+          handleClearBoard();
+        }}
+        onCancel={() => setClearBoardOpen(false)}
       />
     </>
   );
