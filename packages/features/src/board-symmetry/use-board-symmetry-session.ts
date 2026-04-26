@@ -60,6 +60,16 @@ export function useBoardSymmetrySession({
     return generateProblem();
   }, []);
 
+  // Must run via onAdvance (not a separate showFeedback effect) so the auto-
+  // submit effect in `BoardSymmetryChallenge` cannot observe stale file/rank
+  // alongside the new question — the bug that caused hearts to decrement on
+  // every answer. See UseTimedSessionConfig.onAdvance for the batching contract.
+  const handleAdvance = useCallback(() => {
+    setSelectedFile(null);
+    setSelectedRank(null);
+    setCorrectSolution(null);
+  }, []);
+
   const session = useTimedSession<BoardSymmetryProblem>({
     timeLimit,
     generateQuestion,
@@ -67,6 +77,7 @@ export function useBoardSymmetrySession({
     mistakeAllowance,
     feedbackDuration: (correct: boolean) =>
       correct ? FEEDBACK_FLASH_MS.correct : FEEDBACK_FLASH_MS.incorrect,
+    onAdvance: handleAdvance,
   });
 
   const {
@@ -78,14 +89,6 @@ export function useBoardSymmetrySession({
     countdown,
     isPaused,
   } = session;
-
-  useEffect(() => {
-    if (!showFeedback) {
-      setSelectedFile(null);
-      setSelectedRank(null);
-      setCorrectSolution(null);
-    }
-  }, [showFeedback]);
 
   useEffect(() => {
     if (!isFinished) return;
