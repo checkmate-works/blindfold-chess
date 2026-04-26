@@ -11,6 +11,7 @@ import { OG_LOCALE_MAP } from '@/i18n/og-locale';
 import { routing } from '@/i18n/routing';
 import { generateThemeCSS } from '@blindfold-chess/ui';
 
+import { AdHideBootstrapScript } from '@/lib/ads/AdHideBootstrapScript';
 import { JsonLd, generateOrganizationSchema, generateWebSiteSchema } from '@/lib/seo/jsonld';
 import { StorageAvailabilityProvider } from '@/lib/storage/StorageAvailabilityProvider';
 import { ThemeScript } from '@/lib/theme';
@@ -206,12 +207,12 @@ export default async function Layout({
           stylesheet arrives. Mirrors the AnnouncementBanner no-flash pattern
           (see Header.tsx) and keeps the page free of a server-side
           `cookies()` read so descendant pages can stay static/ISR.
+
+          The component is a Client Component that emits its <script> only
+          during SSR (gated on `typeof window === 'undefined'`) — see
+          `@/lib/ads/AdHideBootstrapScript` for the React 19 rationale.
         */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{if(/(?:^|; )bfc_ads_hidden=1(?:;|$)/.test(document.cookie)){document.documentElement.setAttribute('data-ads-hidden','true');}}catch(e){}})();`,
-          }}
-        />
+        <AdHideBootstrapScript />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         <EnvironmentRibbon />
