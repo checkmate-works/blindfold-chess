@@ -117,6 +117,8 @@ export default async function PositionDetailPage({ params }: Props) {
             <PositionDetailBoard fen={position.fen} flipped={isBlackToMove} />
           </div>
 
+          <RelatedChunks chunks={relatedChunks} locale={locale} />
+
           <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
             <span>{t('detail.createdBy')}</span>
             {profile?.username ? (
@@ -160,8 +162,6 @@ export default async function PositionDetailPage({ params }: Props) {
 
           <PositionStartForm positionId={position.id} locale={locale} />
         </div>
-
-        <RelatedChunks chunks={relatedChunks} locale={locale} />
 
         {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
           <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />

@@ -30,7 +30,7 @@ export function RelatedChunks({ chunks, locale }: Props) {
     <details className="group">
       <summary className="cursor-pointer select-none list-none flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
         <span className="transition-transform group-open:rotate-90">▶</span>
-        <span>🧩 Chunks ({chunks.length})</span>
+        <span>♟ Useful chunks for solving ({chunks.length})</span>
       </summary>
 
       <div className="mt-3 space-y-3">

@@ -117,6 +117,8 @@ export default async function PuzzleDetailPage({ params }: Props) {
 
           <PuzzlePiecesInfo fen={position.fen} locale={locale} />
 
+          <RelatedChunks chunks={relatedChunks} locale={locale} />
+
           <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
             <span>{t('detail.createdBy')}</span>
             {profile?.username ? (
@@ -159,8 +161,6 @@ export default async function PuzzleDetailPage({ params }: Props) {
             </Link>
           </div>
         </div>
-
-        <RelatedChunks chunks={relatedChunks} locale={locale} />
 
         <Divider />
 
