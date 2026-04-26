@@ -208,9 +208,9 @@ export default async function Layout({
           (see Header.tsx) and keeps the page free of a server-side
           `cookies()` read so descendant pages can stay static/ISR.
 
-          The component is a Client Component that emits its <script> only
-          during SSR (gated on `typeof window === 'undefined'`) — see
-          `@/lib/ads/AdHideBootstrapScript` for the React 19 rationale.
+          AdHideBootstrapScript is a Server Component, parallel to
+          ThemeScript — the <script> must be in the SSR'd HTML to execute
+          synchronously before first paint.
         */}
         <AdHideBootstrapScript />
       </head>
