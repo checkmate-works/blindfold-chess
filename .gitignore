@@ -60,4 +60,4 @@ package-lock.json
 
 # temporary working files
 tmp/
-SPEC1.md
+SPEC*.md
