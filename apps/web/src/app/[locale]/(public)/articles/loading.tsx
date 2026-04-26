@@ -1,24 +1,25 @@
-import { PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { getTranslations } from 'next-intl/server';
+
+import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 
 /**
  * Articles listing loading skeleton.
  *
  * Shown while the server renders the paginated article list. Mirrors the
  * PageTitle + PagePanel + SectionTitle + ListLinkContainer/ListLink structure
- * to minimise CLS when the real content swaps in.
+ * to minimise CLS when the real content swaps in. Static labels (PageTitle,
+ * SectionTitle) render the real translated strings; dynamic article rows use
+ * bar placeholders.
  */
-export default function ArticlesLoading() {
+export default async function ArticlesLoading() {
+  const t = await getTranslations('articles');
+
   return (
     <div className="space-y-8">
-      <PageTitle>
-        <span className="invisible">Articles</span>
-      </PageTitle>
+      <PageTitle>{t('pageTitle')}</PageTitle>
 
       <PagePanel>
-        {/* SectionTitle skeleton */}
-        <div className="border-b border-border pb-2">
-          <div className="h-5 md:h-6 bg-muted rounded w-48 animate-pulse" />
-        </div>
+        <SectionTitle>{t('articlesListTitle')}</SectionTitle>
 
         {/* ListLinkContainer skeleton */}
         <ul className="bg-card border border-border rounded-md overflow-hidden">
@@ -34,6 +35,22 @@ export default function ArticlesLoading() {
             </li>
           ))}
         </ul>
+
+        <Divider />
+
+        {/* Breadcrumb: [Home logo] / Articles. Single static crumb mirrors
+            `articles/page.tsx`'s `<Breadcrumb items={[{ label: t('pageTitle') }]} />`. */}
+        <nav aria-label="Breadcrumb" className="mb-4 flex min-h-10 items-end">
+          <ol className="flex flex-wrap items-center gap-x-1 text-sm">
+            <li>
+              <div className="w-6 h-6 rounded-sm bg-muted animate-pulse" />
+            </li>
+            <li className="flex items-center">
+              <span className="mx-1 text-muted-foreground">/</span>
+              <span className="text-foreground font-medium">{t('pageTitle')}</span>
+            </li>
+          </ol>
+        </nav>
       </PagePanel>
     </div>
   );
