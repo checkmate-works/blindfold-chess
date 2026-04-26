@@ -11,6 +11,23 @@ export type UseTimedSessionConfig<TQuestion> = {
   feedbackDuration?: number | ((correct: boolean) => number);
   mistakeAllowance?: number;
   onAnswerEffect?: (correct: boolean) => void;
+  /**
+   * Called inside the feedback-timeout callback right before the next question
+   * is generated and `showFeedback` is cleared. Consumers should reset any
+   * per-question selection state from here so that React 18+ auto-batching
+   * commits the consumer's reset and the new question in the same render —
+   * preventing a one-render gap where stale selections coexist with a fresh
+   * question (which can re-trigger auto-submit `useEffect`s).
+   *
+   * @param lastCorrect Whether the answer that just finished its feedback flash
+   * was correct. Lets consumers branch on outcome (e.g. log streaks, vary
+   * reset behavior) without needing a parallel ref.
+   *
+   * If `onAdvance` throws, the error is logged via `console.error` and the
+   * advance proceeds anyway — the session must never get stuck in feedback
+   * state because of a consumer-side fault.
+   */
+  onAdvance?: (lastCorrect: boolean) => void;
 };
 
 export type UseTimedSessionReturn<TQuestion> = {
@@ -42,6 +59,7 @@ export function useTimedSession<TQuestion>(
     feedbackDuration = DEFAULT_FEEDBACK_DURATION,
     mistakeAllowance,
     onAnswerEffect,
+    onAdvance,
   } = config;
 
   const generateQuestionRef = useRef(generateQuestion);
@@ -52,6 +70,9 @@ export function useTimedSession<TQuestion>(
 
   const onAnswerEffectRef = useRef(onAnswerEffect);
   onAnswerEffectRef.current = onAnswerEffect;
+
+  const onAdvanceRef = useRef(onAdvance);
+  onAdvanceRef.current = onAdvance;
 
   const [currentQuestion, setCurrentQuestion] = useState<TQuestion | null>(
     null,
@@ -141,6 +162,15 @@ export function useTimedSession<TQuestion>(
 
       feedbackTimeoutRef.current = setTimeout(() => {
         if (isFinishedRef.current) return;
+        // see UseTimedSessionConfig.onAdvance for batching contract
+        try {
+          onAdvanceRef.current?.(correct);
+        } catch (error) {
+          console.error(
+            "useTimedSession: onAdvance threw, continuing advance:",
+            error,
+          );
+        }
         setCurrentQuestion(generateQuestionRef.current());
         setShowFeedback(false);
         setLastAnswerCorrect(null);
