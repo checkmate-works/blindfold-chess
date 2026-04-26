@@ -8,6 +8,7 @@ import { Link } from '@/i18n/routing';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 
 import { getOptionalUser } from '@/lib/auth';
+import { getLinkedChunksForPosition } from '@/lib/chunks/queries';
 import { getPositionLikeMeta } from '@/lib/positions/like-queries';
 import { getPositionWithProfileById } from '@/lib/positions/queries';
 import { resolveDisplayName } from '@/lib/users/display-name';
@@ -16,6 +17,7 @@ import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButto
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { RelatedChunks } from '@/app/[locale]/_components/RelatedChunks';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -70,7 +72,10 @@ export default async function PositionDetailPage({ params }: Props) {
   const isBlackToMove = isBlackToMoveFromFen(position.fen);
 
   const currentUser = await getOptionalUser();
-  const likeMeta = await getPositionLikeMeta(position.id, currentUser?.id);
+  const [likeMeta, relatedChunks] = await Promise.all([
+    getPositionLikeMeta(position.id, currentUser?.id),
+    getLinkedChunksForPosition(position.id),
+  ]);
 
   const authorBadge = (
     <>
@@ -155,6 +160,8 @@ export default async function PositionDetailPage({ params }: Props) {
 
           <PositionStartForm positionId={position.id} locale={locale} />
         </div>
+
+        <RelatedChunks chunks={relatedChunks} locale={locale} />
 
         {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
           <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />

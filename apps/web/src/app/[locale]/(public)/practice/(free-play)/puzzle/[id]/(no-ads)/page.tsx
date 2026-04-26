@@ -14,6 +14,7 @@ import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 
 import { getOptionalUser } from '@/lib/auth';
+import { getLinkedChunksForPosition } from '@/lib/chunks/queries';
 import { getPositionLikeMeta } from '@/lib/positions/like-queries';
 import { resolveDisplayName } from '@/lib/users/display-name';
 
@@ -21,6 +22,7 @@ import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/positio
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { RelatedChunks } from '@/app/[locale]/_components/RelatedChunks';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -72,7 +74,10 @@ export default async function PuzzleDetailPage({ params }: Props) {
   const displayName = resolveDisplayName(profile);
 
   const currentUser = await getOptionalUser();
-  const likeMeta = await getPositionLikeMeta(position.id, currentUser?.id);
+  const [likeMeta, relatedChunks] = await Promise.all([
+    getPositionLikeMeta(position.id, currentUser?.id),
+    getLinkedChunksForPosition(position.id),
+  ]);
 
   const authorBadge = (
     <>
@@ -154,6 +159,8 @@ export default async function PuzzleDetailPage({ params }: Props) {
             </Link>
           </div>
         </div>
+
+        <RelatedChunks chunks={relatedChunks} locale={locale} />
 
         <Divider />
 

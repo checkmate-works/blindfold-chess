@@ -101,6 +101,28 @@ export const getChunkBySlug = cache(async (slug: string) => {
  * level (e.g. `getChunkBySlug` already enforces `deletedAt IS NULL`),
  * which prevents the linked positions from surfacing indirectly.
  */
+/**
+ * Fetch chunks linked to a position via the position_chunks junction table.
+ * Only returns non-deleted chunks, ordered by chunk title ascending.
+ * Used on position detail pages to show related patterns.
+ */
+export async function getLinkedChunksForPosition(positionId: string) {
+  const rows = await db
+    .select({
+      id: chunks.id,
+      slug: chunks.slug,
+      title: chunks.title,
+      description: chunks.description,
+      representativeFen: chunks.representativeFen,
+    })
+    .from(positionChunks)
+    .innerJoin(chunks, eq(positionChunks.chunkId, chunks.id))
+    .where(and(eq(positionChunks.positionId, positionId), isNull(chunks.deletedAt)))
+    .orderBy(chunks.title);
+
+  return rows;
+}
+
 export async function getLinkedPositionsForChunk(chunkId: string) {
   const rows = await db
     .select({
