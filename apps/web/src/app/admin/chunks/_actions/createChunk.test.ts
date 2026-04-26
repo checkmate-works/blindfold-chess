@@ -33,11 +33,12 @@ vi.mock('@blindfold-chess/features/chess-core', () => ({
 
 vi.mock('@/lib/db', () => {
   const chunksTable = { id: 'id' };
+  const profilesTable = { id: 'profiles_id' };
 
   return {
     db: {
       select: () => ({
-        from: () => ({
+        from: (_table: unknown) => ({
           where: (...args: unknown[]) => {
             mockSelectFromWhere(...args);
             return {
@@ -63,6 +64,7 @@ vi.mock('@/lib/db', () => {
       }),
     },
     chunks: chunksTable,
+    profiles: profilesTable,
     userRoles: { userId: 'user_id' },
   };
 });
@@ -72,22 +74,28 @@ vi.mock('next/cache', () => ({
 }));
 
 const adminUserId = 'admin-00000000-0000-0000-0000-000000000001';
+const targetUserId = '00000000-1111-2222-3333-444444444444';
 
 const validData = {
   representativeFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
   title: 'Fianchetto',
+  slug: 'fianchetto',
   description: 'Bishop developed to a long diagonal',
+  userId: targetUserId,
 };
 
 function setupAdmin() {
   mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
-  mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+  // 1st call: userRoles → admin; 2nd call: profiles → user exists
+  mockSelectFromWhere
+    .mockReturnValueOnce([{ role: 'admin' }])
+    .mockReturnValueOnce([{ id: targetUserId }]);
   mockInsertChunks.mockReturnValue([{ id: generatedChunkId }]);
 }
 
 describe('createChunk', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   // --- Auth guard ---
@@ -132,9 +140,6 @@ describe('createChunk', () => {
   it('should accept a kingless representative FEN (chunks are piece patterns)', async () => {
     setupAdmin();
 
-    // This is the user-reported regression case: a kingless rook-pair
-    // pattern must be accepted because chunks represent piece-coordination
-    // patterns, not full legal chess positions.
     const result = await createChunk({
       ...validData,
       representativeFen: '8/4R1R1/8/8/8/8/8/8 w - - 0 1',
@@ -175,9 +180,38 @@ describe('createChunk', () => {
     expect(mockInsertChunks).not.toHaveBeenCalled();
   });
 
+  it('should return error when userId is missing', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createChunk({ ...validData, userId: '' });
+    expect(result).toEqual({ error: 'User ID is required' });
+    expect(mockInsertChunks).not.toHaveBeenCalled();
+  });
+
+  it('should return error when userId is not a valid UUID', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createChunk({ ...validData, userId: 'not-a-uuid' });
+    expect(result).toEqual({ error: 'Invalid User ID format (expected UUID)' });
+    expect(mockInsertChunks).not.toHaveBeenCalled();
+  });
+
+  it('should return error when userId refers to a non-existent user', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    // 1st call: userRoles → admin; 2nd call: profiles → no match
+    mockSelectFromWhere.mockReturnValueOnce([{ role: 'admin' }]).mockReturnValueOnce([]);
+    mockInsertChunks.mockReturnValue([{ id: generatedChunkId }]);
+
+    const result = await createChunk(validData);
+    expect(result).toEqual({ error: 'User not found' });
+    expect(mockInsertChunks).not.toHaveBeenCalled();
+  });
+
   // --- Success path ---
 
-  it('should insert chunk with admin userId as author', async () => {
+  it('should insert chunk with the form-supplied userId as author', async () => {
     setupAdmin();
 
     const result = await createChunk(validData);
@@ -185,8 +219,9 @@ describe('createChunk', () => {
     expect(mockInsertChunks).toHaveBeenCalledWith({
       representativeFen: validData.representativeFen,
       title: validData.title,
+      slug: validData.slug,
       description: validData.description,
-      userId: adminUserId,
+      userId: targetUserId,
     });
   });
 

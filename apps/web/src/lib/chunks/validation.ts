@@ -1,10 +1,24 @@
 import { validateFenStructure } from '@blindfold-chess/features/chess-core';
 
+import { UUID_RE } from '@/lib/validations/uuid';
+
 /**
  * Maximum length of `chunks.title`. Must match the `varchar(255)` declared in
  * `src/lib/db/schema/tables.ts`.
  */
 export const CHUNK_TITLE_MAX_LENGTH = 255;
+
+/**
+ * Maximum length of `chunks.slug`. Must match the `varchar(255)` declared in
+ * `src/lib/db/schema/tables.ts`.
+ */
+export const CHUNK_SLUG_MAX_LENGTH = 255;
+
+/**
+ * Valid slug pattern: lowercase alphanumeric segments separated by single
+ * hyphens. No leading/trailing hyphens, no consecutive hyphens.
+ */
+export const CHUNK_SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
 /**
  * Practical upper bound for `chunks.description`. The DB column is `text`
@@ -17,7 +31,9 @@ export const CHUNK_DESCRIPTION_MAX_LENGTH = 5000;
 export type ChunkMutationData = {
   representativeFen: string;
   title: string;
+  slug: string;
   description?: string | null;
+  userId: string;
 };
 
 /**
@@ -51,8 +67,28 @@ export function validateChunkMutationData(data: ChunkMutationData): string | nul
     return `Title must be ${CHUNK_TITLE_MAX_LENGTH} characters or fewer`;
   }
 
+  if (!data.slug || !data.slug.trim()) {
+    return 'Slug is required';
+  }
+
+  if (data.slug.trim().length > CHUNK_SLUG_MAX_LENGTH) {
+    return `Slug must be ${CHUNK_SLUG_MAX_LENGTH} characters or fewer`;
+  }
+
+  if (!CHUNK_SLUG_PATTERN.test(data.slug.trim())) {
+    return 'Slug must contain only lowercase letters, numbers, and hyphens (e.g. "rook-battery")';
+  }
+
   if (data.description && data.description.trim().length > CHUNK_DESCRIPTION_MAX_LENGTH) {
     return `Description must be ${CHUNK_DESCRIPTION_MAX_LENGTH} characters or fewer`;
+  }
+
+  if (!data.userId || !data.userId.trim()) {
+    return 'User ID is required';
+  }
+
+  if (!UUID_RE.test(data.userId.trim())) {
+    return 'Invalid User ID format (expected UUID)';
   }
 
   return null;

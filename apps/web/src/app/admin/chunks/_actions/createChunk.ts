@@ -4,16 +4,18 @@ import { revalidatePath } from 'next/cache';
 
 import type { MutationResult } from '@/app/admin/_lib/action-factories';
 import { requireAdmin } from '@/app/admin/_lib/auth';
+import { eq } from 'drizzle-orm';
 
 import type { ChunkMutationData } from '@/lib/chunks/validation';
 import { validateChunkMutationData } from '@/lib/chunks/validation';
-import { chunks, db } from '@/lib/db';
+import { chunks, db, profiles } from '@/lib/db';
 
 // NOTE: this action does not use `adminMutationGuard` / `mutationSuccess`
-// factories because it needs the authenticated admin's userId to populate
-// `chunks.user_id`, and the current factory signature does not return it.
-// Once `adminMutationGuard` is extended to return { userId } (follow-up issue),
-// this file and `createPosition.ts` should migrate to the factory pattern.
+// factories because it needs to validate the user_id from the form and
+// verify the user exists in the profiles table. The current factory
+// signature does not support this. Once `adminMutationGuard` is extended
+// (follow-up issue), this file and `createPosition.ts` should migrate to
+// the factory pattern.
 export async function createChunk(data: ChunkMutationData): Promise<MutationResult> {
   const auth = await requireAdmin();
   if ('error' in auth) {
@@ -25,18 +27,28 @@ export async function createChunk(data: ChunkMutationData): Promise<MutationResu
     return { error: validationError };
   }
 
+  // Verify the specified user exists in the profiles table.
+  const [profile] = await db
+    .select({ id: profiles.id })
+    .from(profiles)
+    .where(eq(profiles.id, data.userId.trim()))
+    .limit(1);
+
+  if (!profile) {
+    return { error: 'User not found' };
+  }
+
   const [chunk] = await db
     .insert(chunks)
     .values({
       representativeFen: data.representativeFen.trim(),
       title: data.title.trim(),
+      slug: data.slug.trim(),
       description: data.description?.trim() || null,
-      // Chunks are a curated catalog where the admin's identity is the source
-      // of truth — the admin is always the author. This differs from
-      // createPosition which accepts user_id from the form (admin acting as a
-      // proxy for another user). See the @design note on the `chunks` table
-      // in schema/tables.ts.
-      userId: auth.userId,
+      // The admin specifies the author via the form — this allows creating
+      // chunks on behalf of any user. The form-supplied userId is validated
+      // against the profiles table above.
+      userId: data.userId.trim(),
     })
     .returning({ id: chunks.id });
 

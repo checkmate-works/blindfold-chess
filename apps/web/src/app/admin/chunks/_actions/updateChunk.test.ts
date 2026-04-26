@@ -66,6 +66,7 @@ vi.mock('@/lib/db', () => {
       title: 'title',
       deletedAt: 'deleted_at',
     },
+    profiles: { id: 'profiles_id' },
     userRoles: { userId: 'user_id' },
   };
 });
@@ -75,24 +76,29 @@ vi.mock('next/cache', () => ({
 }));
 
 const adminUserId = 'admin-00000000-0000-0000-0000-000000000001';
+const targetUserId = '00000000-1111-2222-3333-444444444444';
 
 const validData = {
   representativeFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
   title: 'Fianchetto',
+  slug: 'fianchetto',
   description: 'Bishop developed to a long diagonal',
+  userId: targetUserId,
 };
 
 function setupAdminWithExistingChunk() {
   mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
-  // 1st call: userRoles → admin; 2nd call: chunks existing check → row present
+  // 1st call: userRoles → admin; 2nd call: chunks existing check → row present;
+  // 3rd call: profiles → user exists
   mockSelectFromWhere
     .mockReturnValueOnce([{ role: 'admin' }])
-    .mockReturnValueOnce([{ id: testChunkId }]);
+    .mockReturnValueOnce([{ id: testChunkId }])
+    .mockReturnValueOnce([{ id: targetUserId }]);
 }
 
 describe('updateChunk', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   // --- Auth guard ---
@@ -145,6 +151,37 @@ describe('updateChunk', () => {
     expect(mockUpdateSet).not.toHaveBeenCalled();
   });
 
+  it('should return error when userId is missing', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await updateChunk(testChunkId, { ...validData, userId: '' });
+    expect(result).toEqual({ error: 'User ID is required' });
+    expect(mockUpdateSet).not.toHaveBeenCalled();
+  });
+
+  it('should return error when userId is not a valid UUID', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await updateChunk(testChunkId, { ...validData, userId: 'not-a-uuid' });
+    expect(result).toEqual({ error: 'Invalid User ID format (expected UUID)' });
+    expect(mockUpdateSet).not.toHaveBeenCalled();
+  });
+
+  it('should return error when userId refers to a non-existent user', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    // 1st call: userRoles → admin; 2nd call: chunks existing → found; 3rd call: profiles → not found
+    mockSelectFromWhere
+      .mockReturnValueOnce([{ role: 'admin' }])
+      .mockReturnValueOnce([{ id: testChunkId }])
+      .mockReturnValueOnce([]);
+
+    const result = await updateChunk(testChunkId, validData);
+    expect(result).toEqual({ error: 'User not found' });
+    expect(mockUpdateSet).not.toHaveBeenCalled();
+  });
+
   // --- Not found / soft-deleted ---
 
   it('should return error when chunk does not exist', async () => {
@@ -171,7 +208,7 @@ describe('updateChunk', () => {
 
   // --- Success path ---
 
-  it('should update the chunk with trimmed fields and return success', async () => {
+  it('should update the chunk with trimmed fields including userId and return success', async () => {
     setupAdminWithExistingChunk();
 
     const result = await updateChunk(testChunkId, validData);
@@ -180,7 +217,9 @@ describe('updateChunk', () => {
     expect(mockUpdateSet).toHaveBeenCalledWith({
       representativeFen: validData.representativeFen,
       title: validData.title,
+      slug: validData.slug,
       description: validData.description,
+      userId: targetUserId,
     });
     expect(mockUpdateWhere).toHaveBeenCalledTimes(1);
   });
@@ -198,21 +237,19 @@ describe('updateChunk', () => {
     expect(mockUpdateSet).toHaveBeenCalledWith({
       representativeFen: validData.representativeFen,
       title: 'Trimmed Title',
+      slug: validData.slug,
       description: 'Trimmed Desc',
+      userId: targetUserId,
     });
   });
 
-  it('should NOT include userId in the update set (user_id takeover regression)', async () => {
-    // updateChunk must never overwrite the original author. Even though the
-    // action runs under an admin session, editing a chunk preserves the
-    // existing `user_id` (or NULL for orphaned rows). This guards against a
-    // silent author takeover on edit.
+  it('should include userId in the update set (admin can reassign author)', async () => {
     setupAdminWithExistingChunk();
 
     await updateChunk(testChunkId, validData);
 
     const setArgs = mockUpdateSet.mock.calls[0][0] as Record<string, unknown>;
-    expect(setArgs).not.toHaveProperty('userId');
+    expect(setArgs).toHaveProperty('userId', targetUserId);
   });
 
   it('should convert whitespace-only description to null', async () => {

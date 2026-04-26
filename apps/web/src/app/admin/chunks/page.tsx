@@ -54,7 +54,7 @@ export default async function AdminChunksPage({
       )}
 
       <AdminDataTable
-        headers={['Title', 'Board', 'Description', 'Created At', 'Actions']}
+        headers={['Title', 'Slug', 'Board', 'Description', 'Created At', 'Actions']}
         items={rows}
         emptyMessage="No chunks found"
         renderRow={(chunk) => (
@@ -67,6 +67,7 @@ export default async function AdminChunksPage({
                 {chunk.title}
               </Link>
             </td>
+            <td className="px-4 py-3 font-mono text-sm text-muted-foreground">{chunk.slug}</td>
             <td className="px-4 py-3">
               <BoardThumbnail fen={chunk.representativeFen} className="w-20 h-20" />
             </td>

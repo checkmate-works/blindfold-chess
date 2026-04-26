@@ -3,8 +3,10 @@ import { notFound } from 'next/navigation';
 
 import { getChunkById } from '@/lib/chunks/queries';
 
+import { getLinkedPositions } from '../../_actions/positionChunkActions';
 import { ChunkForm } from '../../_components/ChunkForm';
 import { DeleteChunkButton } from '../../_components/DeleteChunkButton';
+import { PositionLinker } from '../../_components/PositionLinker';
 
 export default async function EditChunkPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -14,6 +16,8 @@ export default async function EditChunkPage({ params }: { params: Promise<{ id: 
   if (!chunk) {
     notFound();
   }
+
+  const linkedPositions = await getLinkedPositions(id);
 
   return (
     <div>
@@ -58,9 +62,15 @@ export default async function EditChunkPage({ params }: { params: Promise<{ id: 
           id: chunk.id,
           representativeFen: chunk.representativeFen,
           title: chunk.title,
+          slug: chunk.slug,
           description: chunk.description,
+          userId: chunk.userId,
         }}
       />
+
+      {!chunk.deletedAt && (
+        <PositionLinker chunkId={chunk.id} initialLinkedPositions={linkedPositions} />
+      )}
     </div>
   );
 }
