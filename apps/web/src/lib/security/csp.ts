@@ -53,6 +53,46 @@ export function generateCspNonce(): string {
 }
 
 /**
+ * Extract the CSP-style origin (`scheme://host[:port]`) from a URL string.
+ *
+ * Returns `null` when `raw` is missing or unparseable so callers can fail
+ * closed (i.e., simply omit the entry rather than emit a malformed CSP).
+ *
+ * `URL.origin` is exactly the form CSP wants: it includes the port only when
+ * non-default for the scheme, and omits any pathname / query / hash.
+ */
+function originFromUrl(raw: string | undefined): string | null {
+  if (!raw) return null;
+  try {
+    const u = new URL(raw);
+    return u.origin;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Derive the WebSocket origin (`ws://` or `wss://`) corresponding to the
+ * given http(s) URL. Returns `null` if the URL is missing, unparseable, or
+ * uses a non-http(s) scheme.
+ *
+ * CSP Level 3 is supposed to imply ws/wss when http/https is allowlisted,
+ * but several browsers historically required the explicit ws/wss entry for
+ * Supabase Realtime to connect, so we emit it explicitly.
+ */
+function wsOriginFromUrl(raw: string | undefined): string | null {
+  if (!raw) return null;
+  try {
+    const u = new URL(raw);
+    if (u.protocol === 'http:') return `ws://${u.host}`;
+    if (u.protocol === 'https:') return `wss://${u.host}`;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Build the full `Content-Security-Policy` header value for a given nonce.
  *
  * The directive list is intentionally kept in a single place so the proxy
@@ -62,6 +102,18 @@ export function generateCspNonce(): string {
  */
 export function buildCspHeader(nonce: string, options: { isDevelopment?: boolean } = {}): string {
   const isDevelopment = options.isDevelopment ?? process.env.NODE_ENV === 'development';
+
+  // Derive the Supabase origin from `NEXT_PUBLIC_SUPABASE_URL` so local dev
+  // (which uses `http://127.0.0.1:54321` and is NOT covered by the
+  // `*.supabase.co` wildcard) and any future regional / custom-domain
+  // Supabase deployments (`db.<region>.supabase.co`, custom domains) keep
+  // working without ad-hoc allow-list edits. The wildcard is intentionally
+  // retained as a belt-and-suspenders fallback for the standard hosted case.
+  // If the env var is missing or unparseable we fall closed: nothing is
+  // appended, the existing `*.supabase.co` wildcard remains, and production
+  // is unaffected.
+  const supabaseOrigin = originFromUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
+  const supabaseWsOrigin = wsOriginFromUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
 
   // Keep host allow-lists: they act as a fallback for browsers that do not
   // implement `'strict-dynamic'`. Modern browsers ignore host-based entries
@@ -97,9 +149,14 @@ export function buildCspHeader(nonce: string, options: { isDevelopment?: boolean
     `script-src ${scriptSrc.join(' ')}`,
     // `'unsafe-inline'` on styles is out of scope to remove (CSS-in-JS).
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob: *.supabase.co pagead2.googlesyndication.com *.doubleclick.net",
+    "img-src 'self' data: blob: *.supabase.co" +
+      (supabaseOrigin ? ` ${supabaseOrigin}` : '') +
+      ' pagead2.googlesyndication.com *.doubleclick.net',
     "font-src 'self' data:",
-    "connect-src 'self' www.google-analytics.com *.sentry.io *.ingest.sentry.io *.supabase.co pagead2.googlesyndication.com adservice.google.com",
+    "connect-src 'self' www.google-analytics.com *.sentry.io *.ingest.sentry.io *.supabase.co" +
+      (supabaseOrigin ? ` ${supabaseOrigin}` : '') +
+      (supabaseWsOrigin ? ` ${supabaseWsOrigin}` : '') +
+      ' pagead2.googlesyndication.com adservice.google.com',
     'frame-src googleads.g.doubleclick.net tpc.googlesyndication.com ep2.adtrafficquality.google www.google.com',
     "frame-ancestors 'none'",
     "base-uri 'self'",

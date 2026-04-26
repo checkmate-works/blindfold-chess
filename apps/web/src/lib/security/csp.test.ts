@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   buildCspHeader,
@@ -72,6 +72,77 @@ describe('buildCspHeader', () => {
     const header = buildCspHeader('n', { isDevelopment: false });
     expect(header).toContain('report-uri /api/csp-report');
     expect(header).toContain('report-to csp-endpoint');
+  });
+});
+
+describe('buildCspHeader — Supabase origin from env', () => {
+  beforeEach(() => {
+    // Start each test with the env var unset so individual cases can stub it
+    // explicitly; otherwise a real `.env.local` value would leak in.
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', '');
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('includes the Supabase origin from NEXT_PUBLIC_SUPABASE_URL in connect-src', () => {
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'http://127.0.0.1:54321');
+    const header = buildCspHeader('n', { isDevelopment: false });
+
+    const connectSrc = header.split('; ').find((d) => d.startsWith('connect-src '));
+    expect(connectSrc).toBeDefined();
+    expect(connectSrc).toContain('http://127.0.0.1:54321');
+  });
+
+  it('includes the corresponding WebSocket origin in connect-src', () => {
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'http://127.0.0.1:54321');
+    const header = buildCspHeader('n', { isDevelopment: false });
+
+    const connectSrc = header.split('; ').find((d) => d.startsWith('connect-src '));
+    expect(connectSrc).toBeDefined();
+    expect(connectSrc).toContain('ws://127.0.0.1:54321');
+  });
+
+  it('includes the Supabase origin in img-src', () => {
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'http://127.0.0.1:54321');
+    const header = buildCspHeader('n', { isDevelopment: false });
+
+    const imgSrc = header.split('; ').find((d) => d.startsWith('img-src '));
+    expect(imgSrc).toBeDefined();
+    expect(imgSrc).toContain('http://127.0.0.1:54321');
+  });
+
+  it('uses wss:// when Supabase URL is https://', () => {
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'https://abc.supabase.co');
+    const header = buildCspHeader('n', { isDevelopment: false });
+
+    const connectSrc = header.split('; ').find((d) => d.startsWith('connect-src '));
+    expect(connectSrc).toBeDefined();
+    expect(connectSrc).toContain('wss://abc.supabase.co');
+    // Sanity: no http downgrade.
+    expect(connectSrc).not.toContain('ws://abc.supabase.co');
+  });
+
+  it('does not break when NEXT_PUBLIC_SUPABASE_URL is missing', () => {
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', '');
+    expect(() => buildCspHeader('n', { isDevelopment: false })).not.toThrow();
+
+    const header = buildCspHeader('n', { isDevelopment: false });
+    const connectSrc = header.split('; ').find((d) => d.startsWith('connect-src '));
+    expect(connectSrc).toBeDefined();
+    // Wildcard fallback remains so production keeps working.
+    expect(connectSrc).toContain('*.supabase.co');
+  });
+
+  it('does not break when NEXT_PUBLIC_SUPABASE_URL is malformed', () => {
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'not a url');
+    expect(() => buildCspHeader('n', { isDevelopment: false })).not.toThrow();
+
+    const header = buildCspHeader('n', { isDevelopment: false });
+    const connectSrc = header.split('; ').find((d) => d.startsWith('connect-src '));
+    expect(connectSrc).toBeDefined();
+    expect(connectSrc).toContain('*.supabase.co');
   });
 });
 
