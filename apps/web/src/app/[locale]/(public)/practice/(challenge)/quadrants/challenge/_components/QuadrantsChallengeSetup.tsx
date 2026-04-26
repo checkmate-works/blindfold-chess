@@ -8,10 +8,10 @@ import type { BoardOrientation } from '@blindfold-chess/features/quadrants';
 import { FaPlay } from 'react-icons/fa';
 
 import { MISTAKE_LIMIT } from '@/lib/challenge/constants';
+import { useLocalStorageSettings } from '@/lib/persistent-settings/use-local-storage-settings';
 
 import { BoardOrientationSelector } from '@/app/[locale]/(public)/practice/(challenge)/_components/BoardOrientationSelector';
 import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
-import { usePersistentSettings } from '@/app/[locale]/(public)/practice/_hooks/use-persistent-settings';
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -34,7 +34,7 @@ export function QuadrantsChallengeSetup({ locale }: Props) {
   const tQa = useTranslations('practice.quadrantAnchors');
   const router = useRouter();
 
-  const { settings, updateSettings } = usePersistentSettings(STORAGE_KEY, DEFAULTS);
+  const { settings, updateSettings } = useLocalStorageSettings(STORAGE_KEY, DEFAULTS);
 
   const handleStart = () => {
     const params = new URLSearchParams();

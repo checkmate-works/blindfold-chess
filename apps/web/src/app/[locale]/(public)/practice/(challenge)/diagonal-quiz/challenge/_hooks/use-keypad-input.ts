@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef } from 'react';
 
 import { getCornerInfo } from '@blindfold-chess/features/diagonal-quiz';
 import type { ActiveField } from '@blindfold-chess/features/diagonal-quiz';
-import { useDiagonalInput } from '@blindfold-chess/features/diagonal-quiz';
+import { useDiagonalInput } from '@blindfold-chess/features/diagonal-quiz/client';
 
 type UseKeypadInputOptions = {
   currentSquare: string;

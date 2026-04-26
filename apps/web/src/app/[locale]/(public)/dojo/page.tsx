@@ -42,6 +42,7 @@ import {
 } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
@@ -159,7 +160,7 @@ export default async function DojoPage({ params }: LocalePageProps) {
 
               {/* Centered "View all ranks" link directly below the card */}
               <div className="flex justify-center">
-                <Link href={`/${locale}/ranks`} className="text-sm text-primary hover:underline">
+                <Link href={`/${locale}/ranks`} className={`text-sm ${TEXT_LINK_CLASSES}`}>
                   {t('viewAllRanks')}
                 </Link>
               </div>
@@ -180,10 +181,7 @@ export default async function DojoPage({ params }: LocalePageProps) {
 
                 {/* Centered "View all practices" link directly below the list */}
                 <div className="flex justify-center">
-                  <Link
-                    href={`/${locale}/practice`}
-                    className="text-sm text-primary hover:underline"
-                  >
+                  <Link href={`/${locale}/practice`} className={`text-sm ${TEXT_LINK_CLASSES}`}>
                     {t('viewAllPractices')}
                   </Link>
                 </div>
@@ -195,12 +193,12 @@ export default async function DojoPage({ params }: LocalePageProps) {
                 <p className="text-foreground">{t('allAchieved')}</p>
               </div>
               <div className="flex justify-center">
-                <Link href={`/${locale}/ranks`} className="text-sm text-primary hover:underline">
+                <Link href={`/${locale}/ranks`} className={`text-sm ${TEXT_LINK_CLASSES}`}>
                   {t('viewAllRanks')}
                 </Link>
               </div>
               <div className="flex justify-center">
-                <Link href={`/${locale}/practice`} className="text-sm text-primary hover:underline">
+                <Link href={`/${locale}/practice`} className={`text-sm ${TEXT_LINK_CLASSES}`}>
                   {t('viewAllPractices')}
                 </Link>
               </div>
@@ -222,7 +220,7 @@ export default async function DojoPage({ params }: LocalePageProps) {
             guideHrefBySlug={guideHrefBySlug}
           />
           <div className="flex justify-center">
-            <Link href={`/${locale}/guides`} className="text-sm text-primary hover:underline">
+            <Link href={`/${locale}/guides`} className={`text-sm ${TEXT_LINK_CLASSES}`}>
               {t('viewAllGuides')}
             </Link>
           </div>

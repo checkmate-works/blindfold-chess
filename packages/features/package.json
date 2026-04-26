@@ -7,28 +7,41 @@
   "exports": {
     ".": "./src/index.ts",
     "./ai-game": "./src/ai-game/index.ts",
+    "./ai-game/engine": "./src/ai-game/engine/index.ts",
     "./ai-game/notation-input": "./src/ai-game/notation-input/index.ts",
+    "./ai-game/notation-input/client": "./src/ai-game/notation-input/client.ts",
     "./chess-core": "./src/chess-core/index.ts",
     "./chess-core/fen": "./src/chess-core/fen-pure.ts",
     "./board-symmetry": "./src/board-symmetry/index.ts",
+    "./board-symmetry/client": "./src/board-symmetry/client.ts",
     "./common": "./src/common/index.ts",
+    "./common/client": "./src/common/client.ts",
     "./coordinate-quiz": "./src/coordinate-quiz/index.ts",
+    "./coordinate-quiz/client": "./src/coordinate-quiz/client.ts",
     "./diagonal-quiz": "./src/diagonal-quiz/index.ts",
+    "./diagonal-quiz/client": "./src/diagonal-quiz/client.ts",
     "./legal-moves": "./src/legal-moves/index.ts",
+    "./legal-moves/client": "./src/legal-moves/client.ts",
     "./route-planner": "./src/route-planner/index.ts",
+    "./route-planner/client": "./src/route-planner/client.ts",
     "./knight-tour": "./src/knight-tour/index.ts",
     "./quadrants": "./src/quadrants/index.ts",
     "./square-colors": "./src/square-colors/index.ts",
+    "./square-colors/client": "./src/square-colors/client.ts",
     "./username": "./src/username/index.ts",
     "./lame-name": "./src/lame-name/index.ts",
     "./linkify": "./src/linkify/index.ts",
     "./utils": "./src/utils/index.ts",
-    "./exp": "./src/exp/index.ts"
+    "./exp": "./src/exp/index.ts",
+    "./practice-session": "./src/practice-session/index.ts"
   },
   "scripts": {
     "lint": "eslint",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": "*"
   },
   "dependencies": {
     "@blindfold-chess/types": "workspace:*",
@@ -36,7 +49,9 @@
   },
   "devDependencies": {
     "@blindfold-chess/eslint-config": "workspace:*",
+    "@types/react": "^19.2.14",
     "eslint": "^9.39.4",
+    "react": "^19.2.5",
     "typescript": "^5.9.3"
   }
 }

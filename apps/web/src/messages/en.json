@@ -971,18 +971,44 @@
         "titleRequired": "Title is required",
         "descriptionLabel": "Description",
         "solutionLabel": "Solution",
+        "solutionSection": "Solution moves",
         "solutionPlaceholder": "e.g. Nf3 or Qh7+ Kf8 Qh8#",
-        "solutionRequired": "Solution is required",
+        "solutionRequired": "Enter at least one move",
         "solutionInvalid": "Invalid move sequence for this position",
-        "submit": "Create",
-        "submitting": "Creating...",
+        "movePlaceholder": "Enter move (e.g., e4, Nf3)",
+        "addMoveNote": "Note (optional)",
+        "noteAriaLabel": "Comment for move {move}",
+        "removeLastMove": "Remove last move ({move})",
+        "maxMovesReached": "Maximum 20 moves reached",
+        "sideToMove": "Side to move",
+        "sideWhite": "White",
+        "sideBlack": "Black",
+        "continueToPreview": "Preview",
         "clearBoard": "Clear Board",
         "tabBoard": "Board",
         "tabFen": "FEN",
         "positionInvalid": "Please set up a valid position",
         "flipBoard": "Flip board",
         "whiteToMove": "White to move",
-        "blackToMove": "Black to move"
+        "blackToMove": "Black to move",
+        "startOverConfirmTitle": "Discard draft?",
+        "startOverConfirmMessage": "This will clear the puzzle you were drafting. This cannot be undone.",
+        "startOverConfirm": "Discard",
+        "startOverCancel": "Keep draft",
+        "draftRestoredBanner": "Continuing from a previous draft.",
+        "draftRestoredDiscard": "Discard",
+        "clearBoardConfirmTitle": "Clear board?",
+        "clearBoardConfirmMessage": "This will remove all placed pieces and entered solution moves. This cannot be undone.",
+        "clearBoardConfirmConfirm": "Clear board",
+        "clearBoardConfirmCancel": "Cancel",
+        "draftWriteFailed": "Could not save the draft. Check that your browser allows storage and try again."
+      },
+      "preview": {
+        "title": "Preview Puzzle",
+        "moveCount": "{count} {count, plural, one {move} other {moves}}",
+        "createCta": "Create",
+        "backToEditCta": "Back to edit",
+        "createError": "An unexpected error occurred. Please try again."
       },
       "whitePieces": "White Pieces",
       "blackPieces": "Black Pieces",
@@ -991,22 +1017,30 @@
       "detail": {
         "title": "Puzzle Detail",
         "descriptionSection": "About This Puzzle",
-        "solveSection": "Solve the Puzzle",
+        "startSolving": "Start solving",
         "whitePiecesLabel": "White Pieces",
         "blackPiecesLabel": "Black Pieces",
         "whiteToMove": "White to move",
         "blackToMove": "Black to move",
         "createdBy": "Created by",
+        "noPieces": "None",
+        "like": "Like",
+        "unlike": "Unlike"
+      },
+      "session": {
+        "title": "Solve",
         "correct": "Correct! \ud83c\udf89",
         "incorrect": "Incorrect. Try again.",
-        "noPieces": "None",
-        "showBoard": "Show Board"
+        "showBoard": "Show Board",
+        "whitePlayed": "White plays {move}",
+        "blackPlayed": "Black plays {move}"
       },
       "result": {
         "title": "Puzzle Result",
         "replaySection": "Solution Replay",
         "historySection": "Attempt History",
         "solution": "Solution: {move}",
+        "note": "\u2014 {note}",
         "attemptCorrect": "Correct",
         "attemptIncorrect": "Incorrect",
         "backToList": "Back to Puzzles",
@@ -1236,6 +1270,10 @@
         "switchToTraining": "📖 Practice in training mode"
       }
     },
+    "common": {
+      "play": "Play",
+      "replay": "Replay"
+    },
     "moveSequence": {
       "title": "Yakusoku Kumite",
       "description": "Memorize and visualize a sequence of moves on the board",
@@ -1270,7 +1308,6 @@
       "presetDescription": "Select an opening to practice",
       "preview": "Preview",
       "memorizeInstructions": "Watch the sequence and memorize the moves",
-      "play": "Play",
       "moves": "moves",
       "pressPlayToStart": "Press play to start the sequence",
       "playingMove": "Move {current} of {total}",
@@ -1307,7 +1344,6 @@
       "invalid_fen": "Contains invalid FEN format",
       "session": "Session",
       "endPractice": "End Practice",
-      "replay": "Replay",
       "clickMoveToJump": "Click a move to jump to that position",
       "wrongAttempts": "Wrong attempts",
       "tutorial": {
@@ -2711,6 +2747,7 @@
       "nextPage": "Next"
     },
     "positionMemory": "Position Memory",
+    "chunks": "Chunks",
     "puzzle": "Puzzle",
     "topicPosts": {
       "navLabel": "Topic Posts",

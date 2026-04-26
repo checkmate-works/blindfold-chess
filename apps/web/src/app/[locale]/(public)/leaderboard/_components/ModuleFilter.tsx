@@ -58,9 +58,7 @@ export async function ModuleFilter({ currentSlug, period, locale }: Props) {
             aria-checked={active}
             title={t(`moduleFilter.${m}`)}
             className={`flex-1 rounded-md px-2 py-2 text-center text-sm font-medium transition-colors md:px-4 ${
-              active
-                ? 'bg-card text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
+              active ? 'bg-card text-foreground' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             {emoji ? (

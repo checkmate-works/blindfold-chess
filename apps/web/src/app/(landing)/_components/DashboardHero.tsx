@@ -16,7 +16,7 @@ export function DashboardHero({ t, siteName }: Props) {
             alt={`${siteName} Logo`}
             width={120}
             height={120}
-            className="w-32 h-32 md:w-40 md:h-40 drop-shadow-2xl"
+            className="w-32 h-32 md:w-40 md:h-40"
             priority
           />
         </div>

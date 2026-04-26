@@ -41,37 +41,44 @@ export async function togglePositionLike(
     targetId: positionId,
   });
 
-  if (liked) {
-    const [position] = await db
-      .select({ userId: positions.userId, type: positions.type })
-      .from(positions)
-      .where(eq(positions.id, positionId))
-      .limit(1);
+  const [position] = await db
+    .select({ userId: positions.userId, type: positions.type })
+    .from(positions)
+    .where(eq(positions.id, positionId))
+    .limit(1);
+  const positionType = position ? parsePositionType(position.type) : null;
 
-    if (position && position.userId !== user.id) {
-      // Include `positionType` in metadata so that the recipient's
-      // notification link can be routed to the correct detail page
-      // (memory vs puzzle vs sequence). Without this, notifications on
-      // puzzle positions would default to the position-memory detail URL
-      // and 404. Falls back to omitting `positionType` for defensive
-      // safety when the raw DB value is outside the known union.
-      const positionType = parsePositionType(position.type);
-      createNotification({
-        userId: position.userId,
-        actorId: user.id,
-        type: 'like',
-        targetType: 'position',
-        targetId: positionId,
-        metadata: {
-          positionId,
-          ...(positionType ? { positionType } : {}),
-        },
-      });
-    }
+  if (liked && position && position.userId !== user.id) {
+    // Include `positionType` in metadata so that the recipient's
+    // notification link can be routed to the correct detail page
+    // (memory vs puzzle vs sequence). Without this, notifications on
+    // puzzle positions would default to the position-memory detail URL
+    // and 404. Falls back to omitting `positionType` for defensive
+    // safety when the raw DB value is outside the known union.
+    createNotification({
+      userId: position.userId,
+      actorId: user.id,
+      type: 'like',
+      targetType: 'position',
+      targetId: positionId,
+      metadata: {
+        positionId,
+        ...(positionType ? { positionType } : {}),
+      },
+    });
   }
 
-  revalidatePath(`/${locale}/practice/position-memory`);
-  revalidatePath(`/${locale}/practice/position-memory/${positionId}`);
+  // Revalidate the detail page for whichever position type this row is, so
+  // a freshly-loaded SSR render reflects the new like count. The list pages
+  // are revalidated too, but the puzzle list is paginated/generic enough
+  // that `/practice/puzzle` alone is sufficient.
+  if (positionType === 'puzzle') {
+    revalidatePath(`/${locale}/practice/puzzle`);
+    revalidatePath(`/${locale}/practice/puzzle/${positionId}`);
+  } else {
+    revalidatePath(`/${locale}/practice/position-memory`);
+    revalidatePath(`/${locale}/practice/position-memory/${positionId}`);
+  }
 
   return { liked, likeCount };
 }

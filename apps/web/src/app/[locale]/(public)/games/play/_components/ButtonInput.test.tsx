@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ButtonInput } from './ButtonInput';
@@ -95,6 +95,82 @@ describe('ButtonInput', () => {
       render(<ButtonInput fen={STARTING_FEN} onSubmit={() => {}} disabled={false} />);
 
       expect(screen.getByRole('button', { name: SUBMIT_LABEL })).toBeDisabled();
+    });
+  });
+
+  // Regression guard for the puzzle-creator bug where clicking a piece, file,
+  // rank, annotation, castling, or utility button in ButtonInput mode would
+  // submit the surrounding `<form>`. Root cause was that CoordinateInput's
+  // file/rank buttons omitted a `type` attribute, defaulting to `type="submit"`
+  // in HTML. ButtonInput itself always set `type="button"` on its own buttons,
+  // but CoordinateInput did not. This block asserts that none of the buttons
+  // rendered by ButtonInput can submit a parent form.
+  describe('does not submit a surrounding form', () => {
+    function renderInForm() {
+      const parentSubmit = vi.fn((e: React.FormEvent) => e.preventDefault());
+      render(
+        <form onSubmit={parentSubmit} data-testid="parent-form">
+          <ButtonInput fen={STARTING_FEN} onSubmit={() => {}} disabled={false} />
+        </form>
+      );
+      return parentSubmit;
+    }
+
+    it.each(PIECE_LABELS)('clicking piece button %s does not submit', (label) => {
+      const parentSubmit = renderInForm();
+      fireEvent.click(screen.getByRole('button', { name: label }));
+      expect(parentSubmit).not.toHaveBeenCalled();
+    });
+
+    it('clicking the capture button does not submit', () => {
+      const parentSubmit = renderInForm();
+      fireEvent.click(screen.getByRole('button', { name: CAPTURE_LABEL }));
+      expect(parentSubmit).not.toHaveBeenCalled();
+    });
+
+    it.each(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'])(
+      'clicking file button %s does not submit',
+      (file) => {
+        const parentSubmit = renderInForm();
+        fireEvent.click(screen.getByRole('button', { name: file }));
+        expect(parentSubmit).not.toHaveBeenCalled();
+      }
+    );
+
+    it.each(['1', '2', '3', '4', '5', '6', '7', '8'])(
+      'clicking rank button %s does not submit',
+      (rank) => {
+        const parentSubmit = renderInForm();
+        fireEvent.click(screen.getByRole('button', { name: rank }));
+        expect(parentSubmit).not.toHaveBeenCalled();
+      }
+    );
+
+    it.each(ANNOTATION_LABELS)('clicking annotation button %s does not submit', (label) => {
+      const parentSubmit = renderInForm();
+      fireEvent.click(screen.getByRole('button', { name: label }));
+      expect(parentSubmit).not.toHaveBeenCalled();
+    });
+
+    it.each(CASTLING_LABELS)('clicking castling button %s does not submit', (label) => {
+      const parentSubmit = renderInForm();
+      fireEvent.click(screen.getByRole('button', { name: label }));
+      expect(parentSubmit).not.toHaveBeenCalled();
+    });
+
+    it.each(UTILITY_LABELS)('clicking utility button %s does not submit', (label) => {
+      const parentSubmit = renderInForm();
+      fireEvent.click(screen.getByRole('button', { name: label }));
+      expect(parentSubmit).not.toHaveBeenCalled();
+    });
+
+    it('every button rendered has an explicit type="button"', () => {
+      render(<ButtonInput fen={STARTING_FEN} onSubmit={() => {}} disabled={false} />);
+      const buttons = document.querySelectorAll('button');
+      expect(buttons.length).toBeGreaterThan(0);
+      for (const btn of Array.from(buttons)) {
+        expect(btn.getAttribute('type')).toBe('button');
+      }
     });
   });
 });

@@ -15,26 +15,11 @@ export const ARTICLE_CATEGORIES = {
 export type ArticleCategory = (typeof ARTICLE_CATEGORIES)[keyof typeof ARTICLE_CATEGORIES];
 
 export const CATEGORY_STYLES = {
-  notation: {
-    icon: '📝',
-    className: 'text-warning bg-warning/10',
-  },
-  coordinates: {
-    icon: '🎯',
-    className: 'text-info bg-info/10',
-  },
-  moves: {
-    icon: '♟️',
-    className: 'text-success bg-success/10',
-  },
-  memory: {
-    icon: '🧠',
-    className: 'text-accent-purple bg-accent-purple-soft',
-  },
-  practice: {
-    icon: '🏋️',
-    className: 'text-accent-orange bg-accent-orange-soft',
-  },
+  notation: { icon: '📝' },
+  coordinates: { icon: '🎯' },
+  moves: { icon: '♟️' },
+  memory: { icon: '🧠' },
+  practice: { icon: '🏋️' },
 } as const;
 
 export type ArticleSlug =

@@ -1,4 +1,4 @@
-import type { PositionAccuracy } from '@/app/[locale]/(public)/practice/_lib/types';
+import type { PositionAccuracy } from '@blindfold-chess/features/common';
 
 export type AggregatedStats = {
   totalAccuracy: number;

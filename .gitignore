@@ -57,3 +57,7 @@ package-lock.json
 
 # claude code
 .claude/settings.local.json
+
+# temporary working files
+tmp/
+SPEC*.md

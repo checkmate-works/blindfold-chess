@@ -15,7 +15,7 @@ export function GameList({
   const t = useTranslations('bulkDelete');
 
   return (
-    <div className="bg-card rounded-lg shadow-sm border border-border overflow-hidden">
+    <div className="bg-card rounded-lg border border-border overflow-hidden">
       {onToggleAll && games.length > 0 && (
         <div
           className={`px-4 sm:px-6 py-3 border-b border-border bg-muted/30 flex items-center gap-3 cursor-pointer ${

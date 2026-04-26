@@ -45,7 +45,7 @@ export function AuthPromptModal({ isOpen, onClose }: Props) {
           <Link
             href="/sign-up"
             locale={locale}
-            className="block w-full rounded-md px-4 py-2 text-center font-medium shadow-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+            className="block w-full rounded-md px-4 py-2 text-center font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
             onClick={onClose}
           >
             {t('signUpButton')}
@@ -53,7 +53,7 @@ export function AuthPromptModal({ isOpen, onClose }: Props) {
           <Link
             href="/sign-in"
             locale={locale}
-            className="block w-full rounded-md px-4 py-2 text-center font-medium shadow-sm bg-card border border-border text-foreground hover:bg-muted transition-colors"
+            className="block w-full rounded-md px-4 py-2 text-center font-medium bg-card border border-border text-foreground hover:bg-muted transition-colors"
             onClick={onClose}
           >
             {t('signInButton')}

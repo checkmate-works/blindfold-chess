@@ -24,7 +24,7 @@ export async function AlphabeticalIndex({ currentLetter, locale }: Props) {
           <Link
             key={letter}
             href={`/${locale}/glossary/letter/${letter.toLowerCase()}`}
-            className={`flex flex-col items-center justify-center p-4 rounded-xl shadow-sm border transition-colors ${
+            className={`flex flex-col items-center justify-center p-4 rounded-xl border transition-colors ${
               isActive ? 'bg-muted border-foreground/20' : 'bg-card hover:bg-muted/50 border-border'
             }`}
           >

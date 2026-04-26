@@ -28,11 +28,11 @@ type Props = {
   currentPosition: number;
   formattedPgn: FormattedPgnMove[];
   evaluationMark?: EvaluationMark | null;
-  onNavigateToStart: () => void;
-  onNavigatePrevious: () => void;
-  onNavigateNext: () => void;
-  onNavigateToEnd: () => void;
-  onNavigateToPosition: (position: number) => void;
+  onNavigateToStart?: () => void;
+  onNavigatePrevious?: () => void;
+  onNavigateNext?: () => void;
+  onNavigateToEnd?: () => void;
+  onNavigateToPosition?: (position: number) => void;
   onFlipBoard?: () => void;
 };
 
@@ -83,9 +83,9 @@ export function BoardViewModal({
 
       {/* Content */}
       <div className="relative z-10 w-full max-w-lg px-4">
-        <div className="rounded-md overflow-hidden shadow-lg">
+        <div className="rounded-md overflow-hidden">
           {/* Horizontal Move List */}
-          {formattedPgn.length > 0 && (
+          {formattedPgn.length > 0 && onNavigateToPosition && (
             <div
               className="bg-card px-2 py-1.5 overflow-x-auto"
               onClick={(e) => e.stopPropagation()}
@@ -114,36 +114,43 @@ export function BoardViewModal({
           />
 
           {/* Navigation Controls & Flip Button */}
-          <div
-            className="bg-card flex items-center justify-center relative"
-            style={{ aspectRatio: '8/1' }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {movesLength > 0 && (
-              <MoveNavigationControls
-                onNavigateToStart={onNavigateToStart}
-                onNavigatePrevious={onNavigatePrevious}
-                onNavigateNext={onNavigateNext}
-                onNavigateToEnd={onNavigateToEnd}
-                isPreviousDisabled={
-                  currentPosition === -2 || (currentPosition === -1 && movesLength === 0)
-                }
-                isNextDisabled={
-                  currentPosition === -1 || (movesLength > 0 && currentPosition === movesLength - 1)
-                }
-              />
-            )}
-            {onFlipBoard && (
-              <button
-                type="button"
-                onClick={onFlipBoard}
-                className="absolute right-3 p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                title={t('flipBoard')}
-              >
-                <FaExchangeAlt className="w-3 h-3 rotate-90" />
-              </button>
-            )}
-          </div>
+          {(movesLength > 0 || onFlipBoard) && (
+            <div
+              className="bg-card flex items-center justify-center relative"
+              style={{ aspectRatio: '8/1' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {movesLength > 0 &&
+                onNavigateToStart &&
+                onNavigatePrevious &&
+                onNavigateNext &&
+                onNavigateToEnd && (
+                  <MoveNavigationControls
+                    onNavigateToStart={onNavigateToStart}
+                    onNavigatePrevious={onNavigatePrevious}
+                    onNavigateNext={onNavigateNext}
+                    onNavigateToEnd={onNavigateToEnd}
+                    isPreviousDisabled={
+                      currentPosition === -2 || (currentPosition === -1 && movesLength === 0)
+                    }
+                    isNextDisabled={
+                      currentPosition === -1 ||
+                      (movesLength > 0 && currentPosition === movesLength - 1)
+                    }
+                  />
+                )}
+              {onFlipBoard && (
+                <button
+                  type="button"
+                  onClick={onFlipBoard}
+                  className="absolute right-3 p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                  title={t('flipBoard')}
+                >
+                  <FaExchangeAlt className="w-3 h-3 rotate-90" />
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

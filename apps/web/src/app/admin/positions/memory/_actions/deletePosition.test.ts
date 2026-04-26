@@ -142,6 +142,22 @@ describe('deletePosition', () => {
     expect(mockInsertValues).not.toHaveBeenCalled();
   });
 
+  it('should return error when deleting an already soft-deleted record', async () => {
+    // existing check filters by `deletedAt IS NULL`, so a soft-deleted row
+    // is observed by the Server Action as "not found" (empty result set).
+    // This is the idempotency guard — repeated delete attempts must not
+    // append additional moderation_actions rows.
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValueOnce([{ role: 'admin' }]).mockReturnValueOnce([]);
+
+    const result = await deletePosition(testPositionId);
+    expect(result).toEqual({ error: 'Position not found' });
+    expect(mockTransaction).not.toHaveBeenCalled();
+    expect(mockUpdateSetWhere).not.toHaveBeenCalled();
+    expect(mockInsertValues).not.toHaveBeenCalled();
+    expect(revalidatePath).not.toHaveBeenCalled();
+  });
+
   it('should soft-delete the position and insert a moderation_actions audit row', async () => {
     setupAdminWithPosition();
 

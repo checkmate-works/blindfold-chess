@@ -49,7 +49,7 @@ export function PeriodSelector({ currentPeriod, hrefs }: Props) {
         id={selectId}
         value={currentPeriod}
         onChange={handleChange}
-        className="rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring"
+        className="rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring"
       >
         {PERIOD_OPTIONS.map((p) => (
           <option key={p} value={p}>

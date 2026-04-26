@@ -96,7 +96,6 @@ export function ContactConfirm({ formData, locale }: Props) {
           variant="secondary"
           size="lg"
           fullWidth
-          shadow={false}
           className="border-0 hover:bg-secondary/80"
         >
           {t('form.backToForm')}
@@ -109,7 +108,6 @@ export function ContactConfirm({ formData, locale }: Props) {
           variant="primary"
           size="lg"
           fullWidth
-          shadow={false}
         >
           {t('form.sendEmail')}
         </Button>

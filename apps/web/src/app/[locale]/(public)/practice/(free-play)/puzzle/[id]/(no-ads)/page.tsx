@@ -10,21 +10,26 @@ import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
+import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
-import { fenToPieceList, isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
-import { eq } from 'drizzle-orm';
 
-import { db, puzzleSolutions } from '@/lib/db';
-import { getPositionWithProfileById } from '@/lib/positions/queries';
+import { getOptionalUser } from '@/lib/auth';
+import { getLinkedChunksForPosition } from '@/lib/chunks/queries';
+import { getPositionLikeMeta } from '@/lib/positions/like-queries';
 import { resolveDisplayName } from '@/lib/users/display-name';
 
-import { PuzzleAnswerForm } from '@/app/[locale]/(public)/practice/(free-play)/puzzle/_components/PuzzleAnswerForm';
+import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_actions/toggleLike';
+import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { RelatedChunks } from '@/app/[locale]/_components/RelatedChunks';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-export const revalidate = 300;
+import { PuzzlePiecesInfo } from '../../_components/PuzzlePiecesInfo';
+import { loadPuzzleWithSolutions } from '../../_lib/load-puzzle';
+
+export const dynamic = 'force-dynamic';
 
 type Props = {
   params: Promise<{
@@ -37,7 +42,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, id } = await params;
   const t = await getTranslations({ locale, namespace: 'practice.puzzle' });
 
-  const row = await getPositionWithProfileById({ id, type: 'puzzle' });
+  const row = await loadPuzzleWithSolutions(id);
 
   if (!row) {
     return { title: t('detail.title') };
@@ -59,7 +64,7 @@ export default async function PuzzleDetailPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'practice.puzzle' });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
 
-  const row = await getPositionWithProfileById({ id, type: 'puzzle' });
+  const row = await loadPuzzleWithSolutions(id);
 
   if (!row) {
     notFound();
@@ -67,15 +72,12 @@ export default async function PuzzleDetailPage({ params }: Props) {
 
   const { position, profile } = row;
   const displayName = resolveDisplayName(profile);
-  const isBlackToMove = isBlackToMoveFromFen(position.fen);
-  const pieceList = fenToPieceList(position.fen);
 
-  const solutions = await db
-    .select({ solutionLine: puzzleSolutions.solutionLine })
-    .from(puzzleSolutions)
-    .where(eq(puzzleSolutions.positionId, position.id));
-
-  const solutionLines = solutions.map((s) => s.solutionLine);
+  const currentUser = await getOptionalUser();
+  const [likeMeta, relatedChunks] = await Promise.all([
+    getPositionLikeMeta(position.id, currentUser?.id),
+    getLinkedChunksForPosition(position.id),
+  ]);
 
   const authorBadge = (
     <>
@@ -86,6 +88,7 @@ export default async function PuzzleDetailPage({ params }: Props) {
           width={24}
           height={24}
           className="w-6 h-6 rounded-full object-cover flex-shrink-0"
+          unoptimized
         />
       ) : (
         <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
@@ -112,19 +115,9 @@ export default async function PuzzleDetailPage({ params }: Props) {
             <p className="text-foreground whitespace-pre-wrap">{position.description}</p>
           )}
 
-          <div className="rounded-lg border border-border bg-card p-4 space-y-2">
-            <p className="text-sm font-medium text-foreground">
-              {isBlackToMove ? t('detail.blackToMove') : t('detail.whiteToMove')}
-            </p>
-            <p className="text-sm text-foreground">
-              <span className="font-medium">{t('detail.whitePiecesLabel')}:</span>{' '}
-              {pieceList.white.length > 0 ? pieceList.white.join(' ') : t('detail.noPieces')}
-            </p>
-            <p className="text-sm text-foreground">
-              <span className="font-medium">{t('detail.blackPiecesLabel')}:</span>{' '}
-              {pieceList.black.length > 0 ? pieceList.black.join(' ') : t('detail.noPieces')}
-            </p>
-          </div>
+          <PuzzlePiecesInfo fen={position.fen} locale={locale} />
+
+          <RelatedChunks chunks={relatedChunks} locale={locale} />
 
           <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
             <span>{t('detail.createdBy')}</span>
@@ -141,29 +134,16 @@ export default async function PuzzleDetailPage({ params }: Props) {
             )}
           </div>
 
-          {/*
-            TODO: Add LikeButton and DeletePositionButton (same pattern as position-memory).
-
-            WARNING: This page is ISR-cached (see `export const revalidate = 300` above).
-            The rendered HTML is shared across anonymous viewers via the CDN, so DO NOT
-            implement these buttons as server components that read the current user at
-            render time — one viewer's liked / owned state would bake into the cached
-            HTML and leak to every other viewer who hits the same cache entry.
-
-            Safe implementation options (pick one):
-              (a) Render them as client components that fetch user-scoped state after
-                  hydration via a Server Action or API route (recommended: mirrors the
-                  LikeButton pattern already used in position-memory).
-              (b) Add `export const dynamic = 'force-dynamic'` at the top of this file
-                  BEFORE adding the buttons, to opt this page out of ISR entirely.
-              (c) Pass the userId in as a prop from a parent dynamic boundary.
-
-            The static regression test at `src/lib/isr-user-scope-guard.test.ts` scans
-            ISR-signalled pages under `[locale]/(public)/` for imports of user-scoped
-            auth helpers (`getOptionalUser`, `getSessionUser`, `cookies`, `headers`,
-            etc.) and will fail the build if this rule is violated.
-          */}
-          <div className="flex items-center justify-end gap-4 text-xs text-muted-foreground">
+          <div className="flex items-center justify-between gap-4 text-xs text-muted-foreground">
+            <LikeButton
+              postId={position.id}
+              locale={locale}
+              topicKey=""
+              initialLikeCount={likeMeta.likeCount}
+              initialLikedByMe={likeMeta.likedByMe}
+              toggleLikeAction={toggleLike}
+              i18nNamespace="practice.puzzle.detail"
+            />
             <time dateTime={position.createdAt.toISOString()}>
               {position.createdAt.toLocaleDateString(locale, {
                 year: 'numeric',
@@ -173,9 +153,13 @@ export default async function PuzzleDetailPage({ params }: Props) {
             </time>
           </div>
 
-          <SectionTitle>{t('detail.solveSection')}</SectionTitle>
-
-          <PuzzleAnswerForm solutions={solutionLines} positionId={position.id} fen={position.fen} />
+          <div className="pt-2">
+            <Link href={`/practice/puzzle/${position.id}/session`}>
+              <Button asChild variant="primary" fullWidth>
+                {t('detail.startSolving')}
+              </Button>
+            </Link>
+          </div>
         </div>
 
         <Divider />

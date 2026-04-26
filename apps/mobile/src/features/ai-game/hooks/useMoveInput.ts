@@ -1,58 +1,25 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo } from "react";
 
 import type { AlgebraicNotation } from "@blindfold-chess/types";
-import {
-  type NotationInputState,
-  type PromotionPiece,
-  computeIsPawnCaptureMode,
-  computeIsSubmittable,
-  computePreviewText,
-  computeShowPromotion,
-  createInitialState,
-  notationInputReducer,
-} from "@blindfold-chess/features/ai-game/notation-input";
+import { useNotationInput } from "@blindfold-chess/features/ai-game/notation-input/client";
 
 type UseMoveInputProps = {
   fen: string;
   onSubmit: (move: AlgebraicNotation) => void;
 };
 
-function useReducerState() {
-  const [state, setState] = useState<NotationInputState>(createInitialState);
-
-  const dispatch = useCallback(
-    (...actions: Parameters<typeof notationInputReducer>[1][]) => {
-      setState((prev) =>
-        actions.reduce((s, action) => notationInputReducer(s, action), prev),
-      );
-    },
-    [],
-  );
-
-  return [state, dispatch] as const;
-}
-
+/**
+ * Mobile adapter over the shared `useNotationInput` hook.
+ *
+ * Exposes the structured field-by-field surface the mobile `ButtonInput`
+ * renders, plus the one mobile-specific rule: when the UI is in pawn-capture
+ * mode, tapping a file sets/toggles the target file instead of the selected
+ * file.
+ */
 export function useMoveInput({ fen, onSubmit }: UseMoveInputProps) {
-  const [state, dispatch] = useReducerState();
-  const prevFenRef = useRef(fen);
+  const n = useNotationInput({ fen, onSubmit, resetOnSubmit: true });
+  const { state } = n;
 
-  // Reset when FEN changes (new move was made)
-  useEffect(() => {
-    if (prevFenRef.current !== fen) {
-      prevFenRef.current = fen;
-      dispatch({ type: "reset" });
-    }
-  }, [fen, dispatch]);
-
-  const previewText = useMemo(() => computePreviewText(state), [state]);
-  const showPromotion = useMemo(() => computeShowPromotion(state), [state]);
-  const isPawnCaptureMode = useMemo(
-    () => computeIsPawnCaptureMode(state),
-    [state],
-  );
-  const isSubmittable = useMemo(() => computeIsSubmittable(state), [state]);
-
-  // Expose singular selectedFile/selectedRank for backward compatibility
   const selectedFile = useMemo(() => {
     const files = Array.from(state.selectedFiles);
     return files.length > 0 ? files[0] : null;
@@ -63,86 +30,34 @@ export function useMoveInput({ fen, onSubmit }: UseMoveInputProps) {
     return ranks.length > 0 ? ranks[0] : null;
   }, [state.selectedRanks]);
 
-  const handlePieceSelect = useCallback(
-    (piece: string) => dispatch({ type: "selectPiece", piece }),
-    [dispatch],
-  );
-
-  // Mobile's handleFileSelect has special behavior: in pawn capture mode,
-  // it sets/toggles the target file instead of the selected file.
+  // In pawn-capture mode, file taps set/toggle the target file instead of the
+  // selected file. The shared hook exposes the raw actions; the mobile-specific
+  // routing lives here rather than in the shared hook so the package stays
+  // platform-agnostic.
   const handleFileSelect = useCallback(
     (file: string) => {
-      if (computeIsPawnCaptureMode(state)) {
-        if (state.targetFile === file) {
-          dispatch({ type: "setTargetFile", file: null });
-        } else {
-          dispatch({ type: "setTargetFile", file });
-        }
+      if (n.isPawnCaptureMode) {
+        n.setTargetFile(state.targetFile === file ? null : file);
       } else {
-        dispatch({ type: "selectFile", file });
+        n.selectFile(file);
       }
     },
-    [dispatch, state],
-  );
-
-  const handleRankSelect = useCallback(
-    (rank: string) => dispatch({ type: "selectRank", rank }),
-    [dispatch],
-  );
-
-  const handleCaptureToggle = useCallback(
-    () => dispatch({ type: "toggleCapture" }),
-    [dispatch],
-  );
-
-  const handleCheckToggle = useCallback(
-    () => dispatch({ type: "toggleCheck" }),
-    [dispatch],
-  );
-
-  const handleCastlingSelect = useCallback(
-    (move: "O-O" | "O-O-O") => dispatch({ type: "selectCastling", move }),
-    [dispatch],
-  );
-
-  const handlePromotionSelect = useCallback(
-    (piece: PromotionPiece) => dispatch({ type: "selectPromotion", piece }),
-    [dispatch],
-  );
-
-  const handleSourceFileSelect = useCallback(
-    (file: string) => dispatch({ type: "selectSourceFile", file }),
-    [dispatch],
-  );
-
-  const handleSourceRankSelect = useCallback(
-    (rank: string) => dispatch({ type: "selectSourceRank", rank }),
-    [dispatch],
+    [n, state.targetFile],
   );
 
   const setIsAmbiguous = useCallback(
     (value: boolean | ((prev: boolean) => boolean)) => {
-      if (typeof value === "function") {
-        dispatch({ type: "toggleAmbiguous" });
-      } else if (value !== state.isAmbiguous) {
-        dispatch({ type: "toggleAmbiguous" });
+      const nextValue =
+        typeof value === "function" ? value(state.isAmbiguous) : value;
+      if (nextValue !== state.isAmbiguous) {
+        n.toggleAmbiguous();
       }
     },
-    [dispatch, state.isAmbiguous],
+    [n, state.isAmbiguous],
   );
 
-  const resetAll = useCallback(() => dispatch({ type: "reset" }), [dispatch]);
-
-  const handleSubmit = useCallback(() => {
-    const text = computePreviewText(state);
-    if (text) {
-      onSubmit(text as AlgebraicNotation);
-      dispatch({ type: "reset" });
-    }
-  }, [state, onSubmit, dispatch]);
-
   return {
-    // State (backward compatible: singular selectedFile/selectedRank)
+    // Structured state
     selectedPiece: state.selectedPiece,
     selectedFile,
     selectedRank,
@@ -151,28 +66,28 @@ export function useMoveInput({ fen, onSubmit }: UseMoveInputProps) {
     isCheck: state.isCheck,
     castling: state.castling,
     promotionPiece: state.promotionPiece,
-    showPromotion,
-    isPawnCaptureMode,
+    showPromotion: n.showPromotion,
+    isPawnCaptureMode: n.isPawnCaptureMode,
     sourceFile: state.sourceFile,
     sourceRank: state.sourceRank,
     isAmbiguous: state.isAmbiguous,
 
     // Derived
-    previewText,
-    isSubmittable,
+    previewText: n.previewText,
+    isSubmittable: n.isSubmittable,
 
     // Actions
-    handlePieceSelect,
+    handlePieceSelect: n.selectPiece,
     handleFileSelect,
-    handleRankSelect,
-    handleCaptureToggle,
-    handleCheckToggle,
-    handleCastlingSelect,
-    handlePromotionSelect,
-    handleSourceFileSelect,
-    handleSourceRankSelect,
+    handleRankSelect: n.selectRank,
+    handleCaptureToggle: n.toggleCapture,
+    handleCheckToggle: n.toggleCheck,
+    handleCastlingSelect: n.selectCastling,
+    handlePromotionSelect: n.selectPromotion,
+    handleSourceFileSelect: n.selectSourceFile,
+    handleSourceRankSelect: n.selectSourceRank,
     setIsAmbiguous,
-    resetAll,
-    handleSubmit,
+    resetAll: n.reset,
+    handleSubmit: n.submit,
   };
 }

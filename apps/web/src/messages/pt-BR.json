@@ -971,18 +971,44 @@
         "titleRequired": "Título é obrigatório",
         "descriptionLabel": "Descrição",
         "solutionLabel": "Solução",
+        "solutionSection": "Lances da solução",
         "solutionPlaceholder": "ex: Nf3 ou Qh7+ Kf8 Qh8#",
         "solutionRequired": "Solução é obrigatória",
         "solutionInvalid": "Sequência de lances inválida para esta posição",
-        "submit": "Criar",
-        "submitting": "Criando...",
+        "movePlaceholder": "Digite o lance (ex: e4, Nf3)",
+        "addMoveNote": "Nota (opcional)",
+        "noteAriaLabel": "Comentário para o lance {move}",
+        "removeLastMove": "Remover último lance ({move})",
+        "maxMovesReached": "Máximo de 20 lances atingido",
+        "sideToMove": "Vez de",
+        "sideWhite": "Brancas",
+        "sideBlack": "Pretas",
+        "continueToPreview": "Pré-visualizar",
         "clearBoard": "Limpar Tabuleiro",
         "tabBoard": "Tabuleiro",
         "tabFen": "FEN",
         "positionInvalid": "Por favor, configure uma posição válida",
         "flipBoard": "Inverter tabuleiro",
         "whiteToMove": "Brancas jogam",
-        "blackToMove": "Pretas jogam"
+        "blackToMove": "Pretas jogam",
+        "startOverConfirmTitle": "Descartar rascunho?",
+        "startOverConfirmMessage": "Isso apagará o puzzle que você estava criando. Esta ação não pode ser desfeita.",
+        "startOverConfirm": "Descartar",
+        "startOverCancel": "Manter rascunho",
+        "draftRestoredBanner": "Continuando de um rascunho anterior.",
+        "draftRestoredDiscard": "Descartar",
+        "clearBoardConfirmTitle": "Limpar o tabuleiro?",
+        "clearBoardConfirmMessage": "Isso removerá todas as peças colocadas e os lances da solução inseridos. Esta ação não pode ser desfeita.",
+        "clearBoardConfirmConfirm": "Limpar",
+        "clearBoardConfirmCancel": "Cancelar",
+        "draftWriteFailed": "Não foi possível salvar o rascunho. Verifique se o seu navegador permite armazenamento e tente novamente."
+      },
+      "preview": {
+        "title": "Pré-visualizar Puzzle",
+        "moveCount": "{count} {count, plural, one {lance} other {lances}}",
+        "createCta": "Criar",
+        "backToEditCta": "Voltar para editar",
+        "createError": "Ocorreu um erro inesperado. Tente novamente."
       },
       "whitePieces": "Peças Brancas",
       "blackPieces": "Peças Pretas",
@@ -991,28 +1017,36 @@
       "detail": {
         "title": "Detalhes do Puzzle",
         "descriptionSection": "Sobre Este Puzzle",
-        "solveSection": "Resolva o Puzzle",
+        "startSolving": "Começar a resolver",
         "whitePiecesLabel": "Peças Brancas",
         "blackPiecesLabel": "Peças Pretas",
         "whiteToMove": "Brancas jogam",
         "blackToMove": "Pretas jogam",
         "createdBy": "Criado por",
-        "correct": "Correto! 🎉",
-        "incorrect": "Incorreto. Tente novamente.",
         "noPieces": "Nenhuma",
-        "showBoard": "Mostrar Tabuleiro"
+        "like": "Curtir",
+        "unlike": "Descurtir"
       },
       "result": {
         "title": "Resultado do Puzzle",
         "replaySection": "Replay da Solução",
         "historySection": "Histórico de Tentativas",
         "solution": "Solução: {move}",
+        "note": "— {note}",
         "attemptCorrect": "Correto",
         "attemptIncorrect": "Incorreto",
         "backToList": "Voltar para Puzzles",
         "tryAgain": "Tentar Novamente",
         "viewResult": "Ver Resultado",
         "peekCount": "Visualizações do Tabuleiro: {count}"
+      },
+      "session": {
+        "title": "Resolver",
+        "correct": "Correto! 🎉",
+        "incorrect": "Incorreto. Tente novamente.",
+        "showBoard": "Mostrar Tabuleiro",
+        "whitePlayed": "Brancas jogam {move}",
+        "blackPlayed": "Pretas jogam {move}"
       }
     },
     "knightTour": {
@@ -1236,6 +1270,10 @@
         "switchToTraining": "📖 Praticar em modo treinamento"
       }
     },
+    "common": {
+      "play": "Reproduzir",
+      "replay": "Repetir"
+    },
     "moveSequence": {
       "title": "Yakusoku Kumite",
       "description": "Memorize e visualize uma sequência de movimentos no tabuleiro",
@@ -1270,7 +1308,6 @@
       "presetDescription": "Selecione uma abertura para praticar",
       "preview": "Pré-visualização",
       "memorizeInstructions": "Observe a sequência e memorize os movimentos",
-      "play": "Reproduzir",
       "moves": "movimentos",
       "pressPlayToStart": "Pressione reproduzir para iniciar a sequência",
       "playingMove": "Movimento {current} de {total}",
@@ -1307,7 +1344,6 @@
       "invalid_fen": "Contém formato FEN inválido",
       "session": "Sessão",
       "endPractice": "Finalizar Prática",
-      "replay": "Repetir",
       "clickMoveToJump": "Clique em um movimento para pular para essa posição",
       "wrongAttempts": "Tentativas incorretas",
       "tutorial": {
@@ -2522,6 +2558,7 @@
   },
   "Admin": {
     "title": "Admin",
+    "chunks": "Chunks",
     "dashboard": "Painel",
     "users": "Usuários",
     "auditLog": "Registro de Auditoria",

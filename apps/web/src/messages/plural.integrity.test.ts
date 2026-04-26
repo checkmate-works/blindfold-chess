@@ -400,11 +400,27 @@ const cases: Case[] = [
     count: 2,
     expect: '✓ PGN válido com 2 movimentos',
   },
+
+  // 11. practice.puzzle.preview.moveCount — added when the puzzle creation
+  // preview page was introduced. Each locale provides its own plural shape;
+  // ja keeps the non-plural counter "N 手" unchanged.
+  { locale: 'en', key: 'practice.puzzle.preview.moveCount', count: 0, expect: '0 moves' },
+  { locale: 'en', key: 'practice.puzzle.preview.moveCount', count: 1, expect: '1 move' },
+  { locale: 'en', key: 'practice.puzzle.preview.moveCount', count: 2, expect: '2 moves' },
+  { locale: 'ja', key: 'practice.puzzle.preview.moveCount', count: 0, expect: '0 手' },
+  { locale: 'ja', key: 'practice.puzzle.preview.moveCount', count: 1, expect: '1 手' },
+  { locale: 'ja', key: 'practice.puzzle.preview.moveCount', count: 2, expect: '2 手' },
+  { locale: 'es', key: 'practice.puzzle.preview.moveCount', count: 0, expect: '0 movimientos' },
+  { locale: 'es', key: 'practice.puzzle.preview.moveCount', count: 1, expect: '1 movimiento' },
+  { locale: 'es', key: 'practice.puzzle.preview.moveCount', count: 2, expect: '2 movimientos' },
+  { locale: 'pt-BR', key: 'practice.puzzle.preview.moveCount', count: 0, expect: '0 lance' },
+  { locale: 'pt-BR', key: 'practice.puzzle.preview.moveCount', count: 1, expect: '1 lance' },
+  { locale: 'pt-BR', key: 'practice.puzzle.preview.moveCount', count: 2, expect: '2 lances' },
 ];
 
 describe('ICU plural integrity across locales', () => {
-  it('covers all 10 affected keys at counts 0, 1, 2 across en/ja/es/pt-BR (10 x 3 x 4 = 120 cases)', () => {
-    expect(cases).toHaveLength(120);
+  it('covers all 11 affected keys at counts 0, 1, 2 across en/ja/es/pt-BR (11 x 3 x 4 = 132 cases)', () => {
+    expect(cases).toHaveLength(132);
   });
 
   for (const c of cases) {

@@ -3,7 +3,7 @@ import { PracticeLayout } from '@/app/[locale]/(public)/practice/_components/Pra
 export function FenSetupSkeleton() {
   return (
     <PracticeLayout>
-      <div className="bg-card rounded-2xl p-6 shadow-sm border border-border mb-8">
+      <div className="bg-card rounded-2xl p-6 border border-border mb-8">
         <div className="animate-pulse">
           {/* Title */}
           <div className="h-7 bg-muted rounded w-24 mb-4"></div>

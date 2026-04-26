@@ -58,6 +58,21 @@ describe("validateMoveSequence", () => {
     expect(result.valid).toBe(false);
     expect(result.validMoves).toEqual(["e4", "e5", "Nf3"]);
   });
+
+  // Regression: user-reported puzzle-builder case. The third move `Bg3` is
+  // illegal from this position for both black bishops (d7 and g5 cannot reach
+  // g3 — wrong color square for d7, non-diagonal for g5). Guards against any
+  // future relaxation of SAN parsing that might ambiguously resolve `Bg3` to
+  // a different piece's move.
+  it("rejects an illegal bishop move in a mid-game puzzle position", () => {
+    const fen =
+      "r2q1rk1/2pb1ppn/pp1p3p/6b1/2P1P1N1/1P1P3P/PB1N1RP1/R2Q2K1 b - - 4 16";
+    const result = validateMoveSequence(fen, ["h5", "Nh2", "Bg3"]);
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain("Bg3");
+    expect(result.error).toContain("index 2");
+    expect(result.validMoves).toEqual(["h5", "Nh2"]);
+  });
 });
 
 // ============================================================

@@ -4,14 +4,15 @@ import { useMemo } from 'react';
 
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { calculateSquareDifferences } from '@blindfold-chess/features/common';
+import type { PositionAccuracy } from '@blindfold-chess/features/common';
 
 import type { BoardTheme } from '@/lib/games/board-themes';
 import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 
 import { ChessBoardWithOverlay } from '@/app/[locale]/(public)/practice/(free-play)/_components/ChessBoardWithOverlay';
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
-import { calculateSquareDifferences } from '@/app/[locale]/(public)/practice/_lib/accuracy';
-import type { PositionAccuracy, PositionData } from '@/app/[locale]/(public)/practice/_lib/types';
+import type { PositionData } from '@/app/[locale]/(public)/practice/_lib/types';
 
 type Props = {
   accuracy: PositionAccuracy;
@@ -51,7 +52,7 @@ export function FenProblemResult({
 
   return (
     <div className="space-y-4">
-      <div className="bg-card rounded-md shadow-sm border border-border p-4">
+      <div className="bg-card rounded-md border border-border p-4">
         <div className="flex flex-col gap-6">
           {/* Accuracy Result */}
           <div className="text-center">

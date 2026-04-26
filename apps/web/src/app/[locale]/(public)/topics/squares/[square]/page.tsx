@@ -20,6 +20,7 @@ import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_
 import { getOpeningsByFirstMoveSquare } from '@/app/[locale]/(public)/topics/openings/_lib/queries';
 import { SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -117,7 +118,7 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
               <Link
                 href={`/topics/openings?first_move=${square}`}
                 locale={locale}
-                className="inline-flex items-center gap-1 text-sm text-link-primary hover:underline"
+                className={`inline-flex items-center gap-1 text-sm ${TEXT_LINK_CLASSES}`}
               >
                 {t('squares.moreOpenings')}
               </Link>

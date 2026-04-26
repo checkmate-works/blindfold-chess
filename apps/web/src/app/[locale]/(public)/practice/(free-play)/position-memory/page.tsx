@@ -36,6 +36,7 @@ import {
 } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
@@ -104,7 +105,7 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
           <Link
             href="/practice/position-memory/tutorial"
             locale={locale}
-            className="text-sm text-link-primary hover:underline"
+            className={`text-sm ${TEXT_LINK_CLASSES}`}
           >
             {t('list.tutorialLink')}
           </Link>

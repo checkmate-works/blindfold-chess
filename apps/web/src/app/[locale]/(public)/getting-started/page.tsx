@@ -9,6 +9,7 @@ import { RankCard } from '@/app/[locale]/(public)/ranks/_components/RankCard';
 import { buildRankTeaserCards } from '@/app/[locale]/(public)/ranks/_lib/helpers';
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -71,10 +72,7 @@ export default async function GettingStartedPage({ params }: Props) {
                   {t('cards.try.cta')}
                 </Button>
               </Link>
-              <Link
-                href="/games/new/standard"
-                className="text-sm text-muted-foreground hover:text-foreground underline"
-              >
+              <Link href="/games/new/standard" className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
                 {t('cards.try.startFromInitial')}
               </Link>
             </div>
@@ -107,10 +105,7 @@ export default async function GettingStartedPage({ params }: Props) {
                   {t('cards.train.cta')}
                 </Button>
               </Link>
-              <Link
-                href="/practice"
-                className="text-sm text-muted-foreground hover:text-foreground underline"
-              >
+              <Link href="/practice" className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
                 {t('cards.train.viewOtherMenus')}
               </Link>
             </div>
@@ -129,10 +124,7 @@ export default async function GettingStartedPage({ params }: Props) {
                   {t('cards.community.cta')}
                 </Button>
               </Link>
-              <Link
-                href="/sign-up"
-                className="text-sm text-muted-foreground hover:text-foreground underline"
-              >
+              <Link href="/sign-up" className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
                 {t('cards.community.signUp')}
               </Link>
             </div>

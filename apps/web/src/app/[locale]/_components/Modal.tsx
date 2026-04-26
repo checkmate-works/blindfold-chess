@@ -62,7 +62,7 @@ export function Modal({
       <div className="fixed inset-0 flex items-center justify-center z-50 p-4" onClick={onClose}>
         <div
           onClick={(e) => e.stopPropagation()}
-          className={`bg-card rounded-lg shadow-xl w-full ${maxWidth} max-h-[90vh] overflow-y-auto`}
+          className={`bg-card rounded-lg w-full ${maxWidth} max-h-[90vh] overflow-y-auto`}
           role="dialog"
           aria-modal="true"
           data-app-modal="true"

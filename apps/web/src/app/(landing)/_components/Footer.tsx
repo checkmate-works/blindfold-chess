@@ -23,7 +23,7 @@ export function Footer({ locale, t }: Props) {
             variant="primary"
             size="lg"
             asChild
-            className="rounded-lg shadow-lg hover:shadow-xl hover:scale-105 font-semibold"
+            className="rounded-lg hover:scale-105 font-semibold"
           >
             <span className="flex items-center gap-2">🚀 {t('getStarted')}</span>
           </Button>

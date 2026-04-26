@@ -6,13 +6,13 @@ import { useTranslations } from 'next-intl';
 
 import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
-import { movesToUci } from '@blindfold-chess/features/chess-core';
-import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import { FaEye } from 'react-icons/fa';
 
-import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
+import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
+
 import { SectionTitle } from '@/app/[locale]/_components';
-import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+
+import { PuzzleSolutionReplay } from './PuzzleSolutionReplay';
 
 type Attempt = { move: string; isCorrect: boolean };
 
@@ -20,11 +20,11 @@ type Props = {
   positionId: string;
   fen: string;
   solutionLines: string[];
+  solutionMoveLists: PuzzleSolutionMove[][];
 };
 
-export function PuzzleResultClient({ positionId, fen, solutionLines }: Props) {
+export function PuzzleResultClient({ positionId, fen, solutionLines, solutionMoveLists }: Props) {
   const t = useTranslations('practice.puzzle.result');
-  const { preferences } = useGamePreferences();
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   const [solutionLine, setSolutionLine] = useState<string>(solutionLines[0] ?? '');
   const [peekCount, setPeekCount] = useState(0);
@@ -51,43 +51,39 @@ export function PuzzleResultClient({ positionId, fen, solutionLines }: Props) {
     }
   }, [positionId]);
 
-  const isBlackToMove = isBlackToMoveFromFen(fen);
-
-  // Get the first move of the solution in SAN
-  const solutionFirstMove = solutionLine.split(' ')[0] ?? '';
-
-  // Convert SAN to UCI for AnimatedChessBoard
-  const solutionMoveUci = useMemo(() => {
-    if (!solutionFirstMove) return undefined;
-    const uciMoves = movesToUci([solutionFirstMove], fen);
-    return uciMoves[0];
-  }, [solutionFirstMove, fen]);
+  // Resolve the locked solution back to its server-side `{san, note}[]` shape
+  // by matching the stored `solutionLine` string against each candidate's
+  // joined SAN tokens. sessionStorage carries only the line string (to keep
+  // the session → result handoff compact + backward-compatible), so the
+  // per-move note metadata has to be looked up from the prop the page
+  // passed in. If no list matches (schema drift, cache miss), fall back to
+  // the first line with null notes — the chip list still renders.
+  const lockedMoves = useMemo<PuzzleSolutionMove[]>(() => {
+    if (!solutionLine) return [];
+    const hit = solutionMoveLists.find((list) => list.map((m) => m.san).join(' ') === solutionLine);
+    if (hit) return hit;
+    return solutionLine
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((san) => ({ san, note: null }));
+  }, [solutionLine, solutionMoveLists]);
 
   return (
     <div className="space-y-6">
-      {/* (A) Replay board */}
-      <SectionTitle>{t('replaySection')}</SectionTitle>
-      <div className="max-w-md mx-auto">
-        <AnimatedChessBoard
-          initialFen={fen}
-          move={solutionMoveUci}
-          flipped={isBlackToMove}
-          boardTheme={preferences.boardTheme}
-        />
-      </div>
-      <p className="text-center text-sm font-medium text-foreground">
-        {t('solution', { move: solutionFirstMove })}
-      </p>
+      <PuzzleSolutionReplay fen={fen} solutionMoves={lockedMoves} showSectionTitle />
 
-      {/* (B) Attempt history */}
+      {/* (B) Attempt history — unordered list. Each bullet is one submitted
+       *     move, which may or may not have been correct; we intentionally
+       *     do NOT number the bullets because an incorrect attempt would
+       *     shift the numbering out of step with the puzzle's actual move
+       *     sequence and mislead the reader.
+       */}
       {attempts.length > 0 && (
         <>
           <SectionTitle>{t('historySection')}</SectionTitle>
-          <div className="flex flex-wrap items-center gap-2 text-sm">
+          <ul className="mx-auto max-w-md flex flex-col gap-1 text-sm list-disc list-inside">
             {attempts.map((attempt, index) => (
-              <span key={index} className="flex items-center gap-1">
-                {index > 0 && <span className="text-muted-foreground mx-1">&rarr;</span>}
-                <span className="text-muted-foreground">{index + 1}.</span>
+              <li key={index}>
                 {attempt.isCorrect ? (
                   <span className="text-green-600 dark:text-green-400 font-medium">
                     &#x2705; {attempt.move}
@@ -97,9 +93,9 @@ export function PuzzleResultClient({ positionId, fen, solutionLines }: Props) {
                     &#x274C; {attempt.move}
                   </span>
                 )}
-              </span>
+              </li>
             ))}
-          </div>
+          </ul>
         </>
       )}
 

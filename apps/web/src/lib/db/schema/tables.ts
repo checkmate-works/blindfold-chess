@@ -17,6 +17,26 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 
+/**
+ * @design updated_at update policy
+ *
+ * For every table in this file, any column named `updated_at` is refreshed
+ * automatically by Drizzle via `.$onUpdateFn(() => new Date())`. When adding a
+ * new table that has an `updated_at` column, always attach this callback.
+ *
+ * Exceptions:
+ * - `profiles`: updated by a Supabase BEFORE UPDATE trigger (`profiles_updated_at`).
+ *   Because `profiles` can be written through internal Supabase paths that go
+ *   via `auth.users` (e.g. auth hooks), the timestamp update is centralized at
+ *   the DB trigger layer instead of `$onUpdateFn`. See the `@design` note on
+ *   the `profiles` table definition for details.
+ *
+ * Existing call sites still contain several explicit `set({ updatedAt: new Date() })`
+ * statements. They are redundant but harmless, so we intentionally leave them
+ * in place: they act as a fail-safe if an UPDATE path that bypasses Drizzle is
+ * introduced in the future.
+ */
+
 // Article Categories
 export const articleCategories = pgTable('article_categories', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -39,7 +59,10 @@ export const articleCategoryTranslations = pgTable(
     locale: varchar('locale', { length: 10 }).notNull(), // BCP 47
     name: varchar('name', { length: 100 }).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull()
+      .$onUpdateFn(() => new Date()),
   },
   (table) => [unique('uq_category_translation_locale').on(table.categoryId, table.locale)]
 );
@@ -67,7 +90,10 @@ export const articles = pgTable(
     pinnedAt: timestamp('pinned_at', { withTimezone: true }),
     publishedAt: timestamp('published_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull()
+      .$onUpdateFn(() => new Date()),
   },
   (table) => [
     unique('uq_articles_slug_locale').on(table.slug, table.locale),
@@ -156,7 +182,10 @@ export const announcements = pgTable(
     pinnedAt: timestamp('pinned_at', { withTimezone: true }),
     publishedAt: timestamp('published_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull()
+      .$onUpdateFn(() => new Date()),
   },
   (table) => [
     unique('uq_announcements_slug_locale').on(table.slug, table.locale),
@@ -174,7 +203,10 @@ export const glossaryTerms = pgTable('glossary_terms', {
   termEn: varchar('term_en', { length: 255 }).notNull(),
   category: varchar('category', { length: 50 }).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .defaultNow()
+    .notNull()
+    .$onUpdateFn(() => new Date()),
 });
 
 export const glossaryTermTranslations = pgTable(
@@ -189,7 +221,10 @@ export const glossaryTermTranslations = pgTable(
     definition: text('definition').notNull(),
     reading: varchar('reading', { length: 255 }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull()
+      .$onUpdateFn(() => new Date()),
   },
   (table) => [unique('uq_term_locale').on(table.termId, table.locale)]
 );
@@ -255,6 +290,13 @@ export type NewGlossaryTermRelation = typeof glossaryTermRelations.$inferInsert;
  * Note: email is intentionally omitted — it is managed by Supabase Auth
  * (auth.users) as the single source of truth. Do not duplicate it here
  * to avoid denormalization. Use a JOIN or the Admin API when needed.
+ *
+ * @design `updated_at` is refreshed automatically by a Supabase BEFORE UPDATE
+ * trigger (`profiles_updated_at`). Because `profiles` can be updated through
+ * internal Supabase paths that go via `auth.users` (e.g. auth hooks), the
+ * update is centralized at the DB trigger layer instead of Drizzle's
+ * `$onUpdateFn`.
+ * See: apps/web/drizzle/supabase/rls_policies.sql L35-47
  */
 export const profiles = pgTable('profiles', {
   id: uuid('id').primaryKey(), // references auth.users(id) — FK defined in custom SQL
@@ -273,6 +315,7 @@ export const profiles = pgTable('profiles', {
   bannedAt: timestamp('banned_at', { withTimezone: true }),
   deletedAt: timestamp('deleted_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  // updated_at is refreshed by the `profiles_updated_at` DB trigger (see the @design note above)
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
@@ -378,7 +421,10 @@ export const topicPosts = pgTable(
     replyPermission: varchar('reply_permission', { length: 20 }).notNull().default('everyone'),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull()
+      .$onUpdateFn(() => new Date()),
   },
   (table) => [
     index('idx_topic_posts_topic').on(table.topicType, table.topicKey),
@@ -725,7 +771,10 @@ export const siteSettings = pgTable('site_settings', {
   key: varchar('key', { length: 100 }).unique().notNull(),
   value: jsonb('value').notNull().default({}),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .defaultNow()
+    .notNull()
+    .$onUpdateFn(() => new Date()),
 });
 
 export type SiteSetting = typeof siteSettings.$inferSelect;
@@ -747,7 +796,10 @@ export const adBanners = pgTable(
     startAt: timestamp('start_at', { withTimezone: true }),
     endAt: timestamp('end_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull()
+      .$onUpdateFn(() => new Date()),
   },
   (table) => [index('idx_ad_banners_active').on(table.isActive)]
 );
@@ -836,7 +888,10 @@ export const chessOpenings = pgTable(
     parentSlug: varchar('parent_slug', { length: 100 }),
     sortOrder: integer('sort_order').notNull().default(0),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull()
+      .$onUpdateFn(() => new Date()),
   },
   (table) => [
     index('idx_chess_openings_first_move_square').on(table.firstMoveSquare),
@@ -964,7 +1019,10 @@ export const challengeBestScores = pgTable(
     incorrectAnswers: integer('incorrect_answers').notNull().default(0),
     timeTaken: integer('time_taken').notNull(),
     achievedAt: timestamp('achieved_at', { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull()
+      .$onUpdateFn(() => new Date()),
   },
   (table) => [
     primaryKey({ columns: [table.userId, table.menuType, table.leaderboardKey] }),
@@ -1114,7 +1172,10 @@ export const subscriptions = pgTable(
     currentPeriodStart: timestamp('current_period_start', { withTimezone: true }).notNull(),
     currentPeriodEnd: timestamp('current_period_end', { withTimezone: true }).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull()
+      .$onUpdateFn(() => new Date()),
   },
   (table) => [
     index('idx_subscriptions_user').on(table.userId),
@@ -1505,7 +1566,10 @@ export const userExp = pgTable(
   {
     userId: uuid('user_id').primaryKey().notNull(), // references auth.users — FK defined in custom SQL
     totalExp: integer('total_exp').notNull().default(0),
-    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull()
+      .$onUpdateFn(() => new Date()),
   },
   (table) => [index('idx_user_exp_total').on(table.totalExp)]
 );
@@ -1639,9 +1703,22 @@ export type NewUserGrant = typeof userGrants.$inferInsert;
  * The same FEN may appear in multiple rows with different titles and
  * descriptions — each is treated as a distinct problem.
  *
- * @design No `updated_at`
- * Positions are immutable after creation — editing is not supported.
- * The column is intentionally omitted.
+ * @design `updated_at` is present — positions are editable UGC
+ * `positions` supports editing and exposes `updatedAt`, which is refreshed
+ * automatically by Drizzle via `.$onUpdateFn(() => new Date())` (see the
+ * file-level `@design updated_at update policy` note).
+ *
+ * Immutability in this schema is reserved for:
+ * - Append-only audit / history tables: `moderation_actions`,
+ *   `user_activity_log`, `user_ranks`, `user_achievements`, `exp_events`,
+ *   `user_grants`
+ * - Infrequently-mutated master data: `ranks`, `achievements`
+ *
+ * Junction tables (e.g. `position_tags`) also omit `updated_at` by
+ * convention since they carry no meaningful attribute.
+ *
+ * Only user-authored content tables (`positions`, `chunks`) accept edits
+ * and expose `updated_at`.
  *
  * @design `type` is varchar (not a pgEnum)
  * Follows the existing `topicType` pattern. New type values (e.g. 'puzzle',
@@ -1667,6 +1744,10 @@ export const positions = pgTable(
     description: text('description'),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull()
+      .$onUpdateFn(() => new Date()),
   },
   (table) => [
     index('idx_positions_user').on(table.userId),
@@ -1707,6 +1788,194 @@ export type PositionTag = typeof positionTags.$inferSelect;
 export type NewPositionTag = typeof positionTags.$inferInsert;
 
 /**
+ * Chunks — catalog of piece-coordination patterns.
+ *
+ * @description
+ * A named chess piece-coordination pattern — for example a fianchetto,
+ * a rook battery on the 7th rank, a French-style pawn chain, and so on.
+ * Each row is a reusable building block that `positions` can link to via
+ * `position_chunks`, describing which patterns a given memory position
+ * contains.
+ *
+ * @design catalog, not discussion — why chunks is a separate table from topic_posts
+ * Both `chunks` and `topic_posts` are UGC, but they differ in nature:
+ * - `topic_posts` are **discussions** — free-form text tied to a topic
+ *   (opening or square), with replies, likes, and ratings.
+ * - `chunks` are **catalog entries** — structured data (FEN, slug, title)
+ *   that serve as reusable building blocks linked to positions via the
+ *   `position_chunks` junction table.
+ *
+ * Merging chunks into `topic_posts` via polymorphism (STI) was considered
+ * but rejected because:
+ * (a) chunks have unique columns (`representative_fen`, `slug`) that would
+ *     become nullable in a shared table;
+ * (b) chunks have a many-to-many relationship with `positions` via
+ *     `position_chunks`, which is structurally different from the 1:N
+ *     relationship `topic_posts` have with their topics;
+ * (c) the RLS model differs — chunks are a public catalog editable only by
+ *     the author, whereas topic_posts support reply permissions, ratings,
+ *     and moderation workflows.
+ *
+ * The UI navigation places chunks alongside topics (linked from `/topics`)
+ * because both are UGC, but the URL is `/chunks` (not `/topics/chunks`)
+ * to reflect that chunks are a catalog, not a discussion forum.
+ *
+ * @design catalog of piece-coordination patterns
+ * `chunks` is a catalog — not per-user scratch data. Each row represents one
+ * recognizable pattern named by its submitter (title) and optionally
+ * illustrated by a representative board (`representative_fen`).
+ *
+ * @design public catalog — UGC but globally visible
+ * Chunks are user-submitted, but once created they function as a global
+ * public catalog:
+ * - SELECT is open to `anon` and `authenticated`.
+ * - UPDATE / logical DELETE (via `deletedAt`) are restricted to the chunk's
+ *   creator.
+ * - Physical DELETE is restricted to the service role.
+ * - Chunk creators cannot veto which positions link to their chunks —
+ *   linking is governed by the position's owner (see `position_chunks`
+ *   RLS), not by the chunk's owner.
+ *
+ * @design representative_fen is not unique
+ * Multiple chunks may legitimately share the same `representative_fen`,
+ * and conversely the same pattern may be illustrated by different boards.
+ * `representative_fen` is a display-only identity (a thumbnail board for
+ * the catalog entry), not a pattern identity, so NO UNIQUE constraint is
+ * attached to it.
+ *
+ * @design type='memory' only is enforced at the application layer
+ * The rule "only positions with type='memory' can link to chunks" is
+ * enforced in Server Actions (e.g. the createPosition-style flows that
+ * attach chunks), NOT at the database level.
+ *
+ * A DB-level alternative using a composite foreign key
+ * `(position_id, position_type) REFERENCES positions(id, type)` plus a
+ * CHECK constraint on the junction is technically possible in Postgres,
+ * but it would require adding `UNIQUE (id, type)` to `positions` purely
+ * to serve as the composite FK target. That cost was judged not worth it
+ * for this feature, so the invariant is kept in application code.
+ *
+ * @design admin-authored in the current phase
+ * Until the public UGC flow ships, `chunks` is populated by admin users only.
+ * The Server Action (`createChunk`) automatically sets `user_id` to the
+ * acting admin's UUID rather than accepting it from the form. When chunks
+ * becomes open to general users, the author attribution model does not need
+ * to change — the Server Action will just pick the authenticated user from
+ * any role.
+ *
+ * @design FKs managed in custom SQL
+ * `userId` → `auth.users` is defined in Supabase-side
+ * `foreign_keys_and_grants.sql`, not in Drizzle references — following the
+ * same pattern as `profiles.id`, `positions.userId`, and `topicPosts.userId`.
+ *
+ * @design user_id is nullable — orphaned chunks after account deletion
+ * `userId` is intentionally nullable and the Supabase-side FK uses
+ * `ON DELETE SET NULL`. When a user's account is hard-deleted, their
+ * chunks are kept as orphaned public catalog entries (user_id becomes
+ * NULL) rather than cascaded.
+ *
+ * This is intentional: chunks function as a global public catalog, and
+ * removing them on author deletion would leave dangling references from
+ * other users' `position_chunks` rows. Combined with
+ * `position_chunks.chunk_id ON DELETE RESTRICT`, a CASCADE here would
+ * also deadlock hard deletes through the FK graph. Orphaning is the
+ * safer, review-friendly fallback; the usual deprecation path remains
+ * logical delete via `deletedAt`, which is owner-controlled.
+ *
+ * @design logical delete
+ * `deletedAt` enables soft-delete. Rows with a non-null `deletedAt` are
+ * excluded from the public catalog at the application layer; service-role
+ * admin tools can still see them for audit/recovery.
+ */
+export const chunks = pgTable(
+  'chunks',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    // references auth.users — FK defined in custom SQL (ON DELETE SET NULL).
+    // Nullable so that hard-deleted authors leave orphaned public-catalog rows
+    // rather than cascading and breaking position_chunks references.
+    userId: uuid('user_id'),
+    title: varchar('title', { length: 255 }).notNull(),
+    slug: varchar('slug', { length: 255 }).notNull().unique(),
+    description: text('description'),
+    representativeFen: varchar('representative_fen', { length: 100 }).notNull(),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull()
+      .$onUpdateFn(() => new Date()),
+  },
+  (table) => [
+    index('idx_chunks_user').on(table.userId),
+    // Partial index for the public catalog listing, which orders by
+    // `created_at DESC` and excludes soft-deleted rows. Mirrors the
+    // `idx_positions_type_created_at` pattern on `positions`.
+    index('idx_chunks_created_at')
+      .on(table.createdAt.desc())
+      .where(sql`deleted_at IS NULL`),
+  ]
+);
+
+export type Chunk = typeof chunks.$inferSelect;
+export type NewChunk = typeof chunks.$inferInsert;
+
+/**
+ * Position Chunks — junction between memory-type positions and the chunks
+ * (piece-coordination patterns) that appear in them.
+ *
+ * @design catalog-problem association
+ * Links memory-type positions to the chunks they contain. A single position
+ * may reference multiple chunks (e.g. a board that contains both a
+ * fianchetto and a rook battery), and a single chunk may be referenced by
+ * many positions. This is the many-to-many table that connects the two.
+ *
+ * @design created_at present (unlike position_tags)
+ * Unlike `position_tags`, this junction carries a `created_at` column. The
+ * UGC workflow means users attach chunks to their positions over time
+ * rather than all at once, and the attach timestamp is useful for audit
+ * trails and for ordering attachments in the UI.
+ *
+ * @design no display_order
+ * A `display_order` column was deliberately omitted. It was debated during
+ * design review: the rejected shape was `NOT NULL DEFAULT 0` with no
+ * uniqueness constraint, which produces non-deterministic ordering in
+ * practice and is YAGNI for the current feature set. Order callers by
+ * `created_at` or sort on the application side. A real ordering column can
+ * be added later if an actual UX need appears.
+ *
+ * @design ON DELETE RESTRICT on chunk_id
+ * `chunks` uses logical delete (`deletedAt`) as its primary deprecation
+ * mechanism, so in normal operation the RESTRICT on `chunk_id` never
+ * fires. The RESTRICT exists to intentionally block physical deletes
+ * (which are service-role-only) against a chunk that still has junction
+ * rows — deleting a referenced chunk requires an explicit cleanup step.
+ *
+ * Junction tables have no `updated_at` by convention (see the file-level
+ * `@design updated_at update policy` note on `positions`).
+ */
+export const positionChunks = pgTable(
+  'position_chunks',
+  {
+    positionId: uuid('position_id')
+      .notNull()
+      .references(() => positions.id, { onDelete: 'cascade' }),
+    chunkId: uuid('chunk_id')
+      .notNull()
+      .references(() => chunks.id, { onDelete: 'restrict' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.positionId, table.chunkId] }),
+    // Reverse lookup index: "positions linking to chunk X".
+    index('idx_position_chunks_chunk').on(table.chunkId),
+  ]
+);
+
+export type PositionChunk = typeof positionChunks.$inferSelect;
+export type NewPositionChunk = typeof positionChunks.$inferInsert;
+
+/**
  * Puzzle Solutions — correct move sequences for puzzle-type positions.
  *
  * @description
@@ -1720,32 +1989,50 @@ export type NewPositionTag = typeof positionTags.$inferInsert;
  * similar to Rails' Single Table Inheritance. Instead, puzzle-specific data
  * is split into a separate table to keep concerns clearly separated.
  *
- * @design Rationale for the `solutionLine` string format — modeled on Lichess' `line` field
- * Compared to a row-split approach (one row per move with `move` + `moveOrder`):
- * (a) opponent responses in multi-move puzzles are represented naturally
- *     (alternating player moves and responses within a single string),
- * (b) JOINs only cost one lookup (the row-split approach requires N lookups per puzzle), and
- * (c) the whole line can be validated in one call to `validateMoveSequence(fen, moves)`.
+ * @design Rationale for consolidated `solutionMoves` JSONB storage
+ * Each row stores a single array of `{ san, note }` objects — the move and its
+ * optional note live in the same element. This replaced an earlier design that
+ * used parallel `solution_line: text` + `notes: jsonb Array<string|null>` columns,
+ * where per-move notes were matched to moves by index. The parallel-index design
+ * was a latent bug surface (truncating one array out of sync silently broke the
+ * mapping); the consolidated shape makes the invariant structural.
+ *
+ * The `solution_line` column is kept as a read-only archive of the pre-migration
+ * denormalized form. Newly inserted rows write `solutionMoves` only; `solutionLine`
+ * stays NULL. Phase 3 will drop `solution_line` outright once we have confidence
+ * that no external tooling reads it.
  *
  * @design Rationale for SAN format
  * Every API in the chess-core package (`validateMoveSequence`, `executeMove`,
- * `getLegalMoves`) is SAN-based, so no conversion is needed.
+ * `getLegalMoves`) is SAN-based, so the `san` field in each element goes into
+ * those APIs unchanged. The key name `san` matches the `AlgebraicNotation` /
+ * `SAN` vocabulary used throughout the codebase.
  *
  * @design Representing alternative solutions
  * Alternative solutions are represented by inserting multiple rows with the
  * same `positionId`.
  * Example: if both `Nf3` and `Bg5` are correct, store 2 rows with
- * `solutionLine: "Nf3"` and `solutionLine: "Bg5"`.
- * Alternative paths in multi-move puzzles are represented the same way:
- * `"Qh7+ Kf8 Qh8#"` and `"Qh7+ Kf8 Qf7#"` would be 2 rows.
+ * `solutionMoves: [{san:'Nf3',note:null}]` and `solutionMoves: [{san:'Bg5',note:null}]`.
+ * Alternative paths in multi-move puzzles are represented the same way.
  *
  * @example
- * // Single-move puzzle
- * { positionId: '...', solutionLine: 'Nf3' }
+ * // Single-move puzzle with a note on the only move
+ * { positionId: '...', solutionMoves: [
+ *     { san: 'Nf3', note: 'develops and eyes e5' }
+ *   ] }
  *
- * // Multi-move (player move → opponent response → player move)
- * { positionId: '...', solutionLine: 'Qh7+ Kf8 Qh8#' }
+ * // Multi-move (player move → opponent response → player move), note on move 1 only
+ * { positionId: '...', solutionMoves: [
+ *     { san: 'Qh7+', note: 'forcing check' },
+ *     { san: 'Kf8', note: null },
+ *     { san: 'Qh8#', note: null }
+ *   ] }
  */
+export type PuzzleSolutionMove = {
+  san: string;
+  note: string | null;
+};
+
 export const puzzleSolutions = pgTable(
   'puzzle_solutions',
   {
@@ -1753,7 +2040,8 @@ export const puzzleSolutions = pgTable(
     positionId: uuid('position_id')
       .notNull()
       .references(() => positions.id, { onDelete: 'cascade' }),
-    solutionLine: text('solution_line').notNull(), // SAN moves, space-separated
+    solutionLine: text('solution_line'), // archive of pre-migration denormalized line; new rows leave NULL
+    solutionMoves: jsonb('solution_moves').$type<PuzzleSolutionMove[]>().notNull().default([]),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [index('idx_puzzle_solutions_position').on(table.positionId)]

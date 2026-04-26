@@ -27,7 +27,7 @@ export function InterviewQuestionCard({
     <Link
       href={`/interview/${questionKey}`}
       locale={locale}
-      className="group block rounded-lg border border-border bg-card p-5 transition-colors hover:bg-muted hover:shadow-md hover:border-foreground/20"
+      className="group block rounded-lg border border-border bg-card p-5 transition-colors hover:bg-muted hover:border-foreground/20"
     >
       <h2 className="text-base font-semibold text-card-foreground">{label}</h2>
       <p className="mt-1 text-sm text-muted-foreground">{description}</p>

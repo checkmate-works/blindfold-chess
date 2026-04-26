@@ -6,6 +6,8 @@ import { getAchievementDisplayName, getAchievementIconEmoji } from '@/lib/achiev
 import { isMonthlyMetadata } from '@/lib/achievements/type-guards';
 import type { UserAchievementRow } from '@/lib/db/achievement-queries';
 
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -127,7 +129,7 @@ export async function ProfileAchievements({
           <Link
             href={`/u/${username}/achievements`}
             locale={locale}
-            className="text-sm text-primary hover:underline"
+            className={`text-sm ${TEXT_LINK_CLASSES}`}
           >
             {labels.viewAll}
           </Link>

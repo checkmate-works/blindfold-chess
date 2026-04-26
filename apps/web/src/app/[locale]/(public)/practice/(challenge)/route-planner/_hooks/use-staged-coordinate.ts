@@ -3,7 +3,7 @@ import { useCallback, useRef, useState } from 'react';
 import {
   type StagedCoordinateSelection,
   applyCoordinateBackspace,
-} from '@/app/[locale]/(public)/practice/_lib/coordinate-backspace';
+} from '@blindfold-chess/features/common';
 
 export type StagedCoordinateState = StagedCoordinateSelection;
 

@@ -370,9 +370,15 @@ importers:
       '@blindfold-chess/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
+      '@types/react':
+        specifier: ^19.2.14
+        version: 19.2.14
       eslint:
         specifier: ^9.39.4
         version: 9.39.4(jiti@2.6.1)
+      react:
+        specifier: ^19.2.5
+        version: 19.2.5
       typescript:
         specifier: ^5.9.3
         version: 5.9.3

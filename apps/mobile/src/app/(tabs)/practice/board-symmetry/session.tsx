@@ -1,20 +1,18 @@
-import { useEffect, useCallback, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import * as Haptics from "expo-haptics";
 import { Check, X } from "lucide-react-native";
+import { useBoardSymmetrySession } from "@blindfold-chess/features/board-symmetry/client";
 
 import {
   SymmetryQuestion,
   CoordinateSelector,
 } from "../../../../features/board-symmetry/components";
 import { QuizTimer } from "../../../../features/coordinate-quiz/components";
-import {
-  useBoardSymmetrySession,
-  type BoardSymmetryResult,
-} from "../../../../features/board-symmetry/hooks";
-import { useQuizTimer } from "../../../../features/coordinate-quiz/hooks";
 import { useTheme, fontSize, fontWeight, spacing } from "../../../../theme";
+import type { BoardSymmetryResult } from "@blindfold-chess/features/board-symmetry";
 
 export default function BoardSymmetrySession() {
   const router = useRouter();
@@ -24,9 +22,6 @@ export default function BoardSymmetrySession() {
   }>();
 
   const duration = parseInt(params.timeLimit || "60", 10);
-
-  const [countdown, setCountdown] = useState<number | null>(3);
-  const [sessionStarted, setSessionStarted] = useState(false);
 
   const handleComplete = useCallback(
     (result: BoardSymmetryResult) => {
@@ -46,75 +41,38 @@ export default function BoardSymmetrySession() {
   );
 
   const {
-    problem,
-    selectedFile,
-    selectedRank,
+    currentProblem,
+    countdown,
+    timeRemaining,
     correctCount,
     incorrectCount,
-    isCorrect,
+    showFeedback,
+    lastAnswerCorrect,
+    selectedFile,
+    selectedRank,
     correctSolution,
-    isProcessing,
-    startSession,
     handleFileToggle,
     handleRankToggle,
     handleAnswer,
-    endSession,
   } = useBoardSymmetrySession({
-    duration,
+    timeLimit: duration,
     onComplete: handleComplete,
+    onAnswerEffect: (correct) =>
+      Haptics.notificationAsync(
+        correct
+          ? Haptics.NotificationFeedbackType.Success
+          : Haptics.NotificationFeedbackType.Error,
+      ),
   });
 
-  const { timeRemaining, progress, start } = useQuizTimer({
-    duration,
-    onTimeUp: endSession,
-  });
-
-  // Countdown effect
-  useEffect(() => {
-    if (countdown === null) return;
-
-    if (countdown === 0) {
-      const timer = setTimeout(() => {
-        setCountdown(null);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-
-    const timer = setTimeout(() => {
-      setCountdown((prev) => (prev !== null ? prev - 1 : null));
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [countdown]);
-
-  // Start session and timer after countdown
-  useEffect(() => {
-    if (countdown === null && !sessionStarted) {
-      setSessionStarted(true);
-      startSession();
-      start();
-    }
-  }, [countdown, sessionStarted, startSession, start]);
+  const isCorrect = showFeedback ? lastAnswerCorrect : null;
 
   // Auto-submit when both file and rank are selected
   useEffect(() => {
-    if (
-      selectedFile &&
-      selectedRank &&
-      !isProcessing &&
-      isCorrect === null &&
-      countdown === null
-    ) {
+    if (selectedFile && selectedRank && !showFeedback && countdown === null) {
       handleAnswer(selectedFile, selectedRank);
     }
-  }, [
-    selectedFile,
-    selectedRank,
-    isProcessing,
-    isCorrect,
-    countdown,
-    handleAnswer,
-  ]);
+  }, [selectedFile, selectedRank, showFeedback, countdown, handleAnswer]);
 
   return (
     <SafeAreaView
@@ -137,16 +95,16 @@ export default function BoardSymmetrySession() {
             <View style={styles.spacer} />
             <QuizTimer
               timeRemaining={timeRemaining}
-              progress={progress}
+              progress={timeRemaining / duration}
               size={50}
             />
           </View>
 
           {/* Question */}
           <View style={styles.questionContainer}>
-            {problem && (
+            {currentProblem && (
               <SymmetryQuestion
-                problem={problem}
+                problem={currentProblem}
                 selectedFile={selectedFile}
                 selectedRank={selectedRank}
                 isCorrect={isCorrect}
@@ -162,7 +120,7 @@ export default function BoardSymmetrySession() {
               selectedRank={selectedRank}
               onFileToggle={handleFileToggle}
               onRankToggle={handleRankToggle}
-              disabled={isProcessing}
+              disabled={showFeedback}
             />
           </View>
 

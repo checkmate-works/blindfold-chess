@@ -14,7 +14,7 @@ export function GameSectionCard({
   children,
 }: Props) {
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-card border border-border shadow-sm p-6 w-full sm:w-auto sm:min-w-[28rem] max-w-full">
+    <div className="relative overflow-hidden rounded-2xl bg-card border border-border p-6 w-full sm:w-auto sm:min-w-[28rem] max-w-full">
       <div
         aria-hidden="true"
         className="absolute inset-0 opacity-[0.6] pointer-events-none dark:opacity-[0.4]"

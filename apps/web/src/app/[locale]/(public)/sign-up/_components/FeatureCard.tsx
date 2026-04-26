@@ -18,7 +18,7 @@ type Props = {
 
 export function FeatureCard({ icon, iconColor, title, description }: Props) {
   return (
-    <div className="bg-card p-5 rounded-2xl border border-border shadow-sm flex items-start gap-4">
+    <div className="bg-card p-5 rounded-2xl border border-border flex items-start gap-4">
       <div
         className={`w-10 h-10 rounded-xl flex shrink-0 items-center justify-center text-xl ${iconColorStyles[iconColor]}`}
       >

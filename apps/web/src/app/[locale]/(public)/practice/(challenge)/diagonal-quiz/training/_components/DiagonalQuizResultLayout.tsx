@@ -33,7 +33,7 @@ export function DiagonalQuizResultLayout({
 
   return (
     <>
-      <div className="bg-card rounded-xl border border-border p-8 text-center relative overflow-hidden shadow-sm">
+      <div className="bg-card rounded-xl border border-border p-8 text-center relative overflow-hidden">
         <SectionTitle className="mb-4">{t('question', { square: question })}</SectionTitle>
 
         {children}

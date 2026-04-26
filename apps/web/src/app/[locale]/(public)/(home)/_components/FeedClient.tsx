@@ -10,39 +10,38 @@ import { FeedSkeleton } from './FeedSkeleton';
 import { ResponsiveAdSlot } from './ResponsiveAdSlot';
 
 type Props = {
+  /**
+   * Initial feed items rendered server-side for SEO. Because this component
+   * is a Client Component, Next.js still emits the initial HTML on the server,
+   * so Googlebot receives real content while the browser hydrates into a
+   * single scrolling list. Keeping SSR and infinite-scroll items in one
+   * container lets `last:border-b-0` correctly target the visually-last item.
+   */
+  initialItems: FeedItem[];
   initialCursor: string | null;
   locale: string;
   showMoreLabel: string;
   justNowLabel: string;
   newReplyTemplate: string;
   showAds?: boolean;
-  /**
-   * Number of feed items already rendered server-side. Used to continue the
-   * ad insertion cycle seamlessly (i.e. the first client-loaded item is treated
-   * as item N+1 for AD_INTERVAL calculation).
-   */
-  adIndexOffset?: number;
 };
 
 export function FeedClient({
+  initialItems,
   initialCursor,
   locale,
   showMoreLabel,
   justNowLabel,
   newReplyTemplate,
   showAds = false,
-  adIndexOffset = 0,
 }: Props) {
-  const [items, setItems] = useState<FeedItem[]>([]);
+  const [items, setItems] = useState<FeedItem[]>(initialItems);
   const [cursor, setCursor] = useState<string | null>(initialCursor);
   const [isLoading, setIsLoading] = useState(false);
   const isLoadingRef = useRef(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  const displayItems = useMemo(
-    () => buildDisplayItems(items, showAds, adIndexOffset),
-    [items, showAds, adIndexOffset]
-  );
+  const displayItems = useMemo(() => buildDisplayItems(items, showAds), [items, showAds]);
 
   const renderDisplayItem = useCallback(
     (index: number, displayItem: DisplayItem) => {

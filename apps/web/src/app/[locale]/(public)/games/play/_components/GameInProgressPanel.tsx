@@ -6,15 +6,17 @@ import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FlagIcon, UndoIcon } from '@blindfold-chess/icons';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { FaClipboardList, FaEye } from 'react-icons/fa';
+import { FaClipboardList } from 'react-icons/fa';
 
 import type { MoveInputMethod } from '@/lib/types';
 
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import type { ConfirmationDialogs } from '../_hooks';
 import { shouldShowModalPeekButton } from '../_lib';
+import { ShowBoardButton } from './ShowBoardButton';
 
 type Props = {
   isPlayerTurn: boolean;
@@ -118,16 +120,7 @@ export function GameInProgressPanel({
 
       {/* Action Buttons */}
       <div className="flex gap-4 md:gap-2 justify-center">
-        {showModalPeekButton && (
-          <button
-            onClick={onShowBoard}
-            className="px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center justify-center gap-2"
-            title={t('showBoard')}
-          >
-            <FaEye className="w-4 h-4" />
-            <span className="hidden md:inline">{t('showBoard')}</span>
-          </button>
-        )}
+        {showModalPeekButton && <ShowBoardButton onClick={onShowBoard} />}
         <button
           onClick={confirmationDialogs.undo.open}
           disabled={moves.length < 2 || isAiThinking}
@@ -150,10 +143,7 @@ export function GameInProgressPanel({
 
       {/* Save and Exit */}
       <div className="text-center">
-        <Link
-          href="/games"
-          className="text-sm text-muted-foreground hover:text-foreground underline"
-        >
+        <Link href="/games" className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
           💾 {t('saveAndExit')}
         </Link>
       </div>

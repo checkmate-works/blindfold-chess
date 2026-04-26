@@ -1,9 +1,11 @@
-import { useEffect, useCallback, useState, useRef } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import * as Haptics from "expo-haptics";
 import { Check, X } from "lucide-react-native";
 import { getCornerInfo } from "@blindfold-chess/features/diagonal-quiz";
+import { useDiagonalQuizSession } from "@blindfold-chess/features/diagonal-quiz/client";
 
 import {
   QuestionCard,
@@ -12,13 +14,11 @@ import {
 } from "../../../../features/diagonal-quiz/components";
 import { QuizTimer } from "../../../../features/coordinate-quiz/components";
 import {
-  useDiagonalQuizSession,
   useDiagonalInput,
-  type DiagonalQuizResult,
   type ActiveField,
 } from "../../../../features/diagonal-quiz/hooks";
-import { useQuizTimer } from "../../../../features/coordinate-quiz/hooks";
 import { useTheme, fontSize, fontWeight, spacing } from "../../../../theme";
+import type { DiagonalQuizResult } from "@blindfold-chess/features/diagonal-quiz";
 
 export default function DiagonalQuizSession() {
   const router = useRouter();
@@ -28,9 +28,6 @@ export default function DiagonalQuizSession() {
   }>();
 
   const duration = parseInt(params.timeLimit || "60", 10);
-
-  const [countdown, setCountdown] = useState<number | null>(3);
-  const [sessionStarted, setSessionStarted] = useState(false);
 
   const handleComplete = useCallback(
     (result: DiagonalQuizResult) => {
@@ -51,25 +48,24 @@ export default function DiagonalQuizSession() {
 
   const {
     currentSquare,
+    countdown,
+    timeRemaining,
     correctCount,
     incorrectCount,
-    isCorrect,
-    isProcessing,
     lastAnswer,
-    startSession,
     handleAnswer,
-    endSession,
   } = useDiagonalQuizSession({
-    duration,
+    timeLimit: duration,
     onComplete: handleComplete,
+    onAnswerEffect: (correct) =>
+      Haptics.notificationAsync(
+        correct
+          ? Haptics.NotificationFeedbackType.Success
+          : Haptics.NotificationFeedbackType.Error,
+      ),
   });
 
-  const { timeRemaining, progress, start } = useQuizTimer({
-    duration,
-    onTimeUp: endSession,
-  });
-
-  const isDisabled = isProcessing || countdown !== null;
+  const isDisabled = countdown !== null;
 
   const { singleDiagonal, singleAntiDiagonal } = currentSquare
     ? getCornerInfo(currentSquare)
@@ -117,33 +113,6 @@ export default function DiagonalQuizSession() {
     }
   }, [currentSquare, resetInput]);
 
-  // Countdown effect
-  useEffect(() => {
-    if (countdown === null) return;
-
-    if (countdown === 0) {
-      const timer = setTimeout(() => {
-        setCountdown(null);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-
-    const timer = setTimeout(() => {
-      setCountdown((prev) => (prev !== null ? prev - 1 : null));
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [countdown]);
-
-  // Start session and timer after countdown
-  useEffect(() => {
-    if (countdown === null && !sessionStarted) {
-      setSessionStarted(true);
-      startSession();
-      start();
-    }
-  }, [countdown, sessionStarted, startSession, start]);
-
   const handleFieldPress = (field: ActiveField) => {
     if (isDisabled) return;
     setActiveField(field);
@@ -170,7 +139,7 @@ export default function DiagonalQuizSession() {
             <View style={styles.spacer} />
             <QuizTimer
               timeRemaining={timeRemaining}
-              progress={progress}
+              progress={timeRemaining / duration}
               size={50}
             />
           </View>
@@ -185,7 +154,7 @@ export default function DiagonalQuizSession() {
             {currentSquare && (
               <QuestionCard
                 square={currentSquare}
-                isCorrect={isCorrect}
+                isCorrect={lastAnswer?.correct ?? null}
                 lastAnswer={lastAnswer}
               />
             )}

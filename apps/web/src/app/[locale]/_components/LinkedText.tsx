@@ -2,6 +2,8 @@
 
 import { buildCushionPageUrl, linkifyText } from '@/lib/content/linkify-urls';
 
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
+
 type Props = {
   text: string;
   locale: string;
@@ -27,7 +29,7 @@ export function LinkedText({ text, locale }: Props) {
               key={i}
               href={buildCushionPageUrl(segment.href, locale)}
               rel="noopener noreferrer"
-              className="text-link-primary underline hover:text-link-primary/80 break-all"
+              className={`break-all ${TEXT_LINK_CLASSES}`}
               onClick={(e) => e.stopPropagation()}
             >
               {segment.display}
@@ -39,7 +41,7 @@ export function LinkedText({ text, locale }: Props) {
           <a
             key={i}
             href={segment.href}
-            className="text-link-primary underline hover:text-link-primary/80 break-all"
+            className={`break-all ${TEXT_LINK_CLASSES}`}
             onClick={(e) => e.stopPropagation()}
           >
             {segment.display}

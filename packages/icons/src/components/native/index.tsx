@@ -3,11 +3,13 @@ import Svg, { Circle, G, Path } from "react-native-svg";
 
 import { getPieceData } from "../../data/chess-pieces";
 import { flagData } from "../../data/flag";
+import { getRatingFaceData } from "../../data/rating-faces";
 import { spinnerData } from "../../data/spinner";
 import type { SvgElement, StrokeIconSvgData } from "../../data/types";
 import { undoData } from "../../data/undo";
 import type {
   ChessPieceIconProps,
+  RatingFaceIconProps,
   SpinnerIconProps,
   StrokeIconProps,
 } from "../types";
@@ -117,10 +119,30 @@ function createStrokeIcon(data: StrokeIconSvgData, displayName: string) {
 export const UndoIcon = createStrokeIcon(undoData, "UndoIcon");
 export const FlagIcon = createStrokeIcon(flagData, "FlagIcon");
 
+type NativeRatingFaceIconProps = RatingFaceIconProps & {
+  style?: StyleProp<ViewStyle>;
+};
+
+export function RatingFaceIcon({
+  level,
+  size = 24,
+  faceColor,
+  style,
+}: NativeRatingFaceIconProps) {
+  const data = getRatingFaceData(level, faceColor);
+
+  return (
+    <Svg viewBox={data.viewBox} width={size} height={size} style={style}>
+      {data.elements.map((el, i) => renderElement(el, i))}
+    </Svg>
+  );
+}
+
 export type {
   ChessPieceIconProps,
+  RatingFaceIconProps,
   SpinnerIconProps,
   StrokeIconProps,
 } from "../types";
 export type { PieceType } from "../../data/chess-pieces";
-export type { PieceColor } from "../../data/types";
+export type { PieceColor, RatingFaceLevel } from "../../data/types";

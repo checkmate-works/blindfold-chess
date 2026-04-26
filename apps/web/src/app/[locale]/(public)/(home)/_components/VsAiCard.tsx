@@ -9,6 +9,7 @@ import type { Game } from '@/lib/types';
 
 import { DashboardSection, DashboardSectionHeader } from '@/app/[locale]/_components';
 import { ColorIcon } from '@/app/[locale]/_components/ColorIcon';
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import { useGameList } from '../_hooks/use-game-list';
 
@@ -97,11 +98,7 @@ export function VsAiCard({ locale }: Props) {
                 {t('startGame')}
               </Link>
             )}
-            <Link
-              href="/games"
-              locale={locale}
-              className="text-sm text-link-primary hover:text-link-primary/80 transition-colors"
-            >
+            <Link href="/games" locale={locale} className={`text-sm ${TEXT_LINK_CLASSES}`}>
               {t('allGames')}
             </Link>
           </>

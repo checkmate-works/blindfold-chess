@@ -116,11 +116,7 @@ export function MovesPanel({ moveList, navigation, actions, showBackground = tru
   };
 
   return (
-    <div
-      className={
-        showBackground ? 'bg-card rounded-lg shadow-lg' : 'border border-border rounded-lg'
-      }
-    >
+    <div className={showBackground ? 'bg-card rounded-lg' : 'border border-border rounded-lg'}>
       {/* Moves Toggle Header */}
       <button
         onClick={() => setIsMovesVisible(!isMovesVisible)}

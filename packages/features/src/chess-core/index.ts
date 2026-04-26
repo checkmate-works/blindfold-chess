@@ -80,3 +80,6 @@ export {
 export { formatLastMove } from "./format";
 
 export { ChessGameManager } from "./game-manager";
+
+export type { FenStructureResult } from "./validate-fen-structure";
+export { validateFenStructure } from "./validate-fen-structure";

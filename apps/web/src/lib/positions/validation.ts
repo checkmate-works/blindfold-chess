@@ -1,6 +1,9 @@
 import { validateFen, validateMoveSequence } from '@blindfold-chess/features/chess-core';
 
+import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
 import { UUID_RE } from '@/lib/validations/uuid';
+
+export const PUZZLE_NOTE_MAX_LENGTH = 280;
 
 export type PositionMutationData = {
   fen: string;
@@ -10,7 +13,7 @@ export type PositionMutationData = {
 };
 
 export type PuzzleMutationData = PositionMutationData & {
-  solutionLine: string;
+  solutionMoves: PuzzleSolutionMove[];
 };
 
 /**
@@ -45,7 +48,7 @@ export function validatePositionMutationData(data: PositionMutationData): string
 /**
  * Validate puzzle mutation data before persisting.
  *
- * Extends position validation with solution line validation.
+ * Extends position validation with solution moves validation.
  *
  * @returns An error message string if validation fails, or `null` if valid.
  */
@@ -55,16 +58,44 @@ export function validatePuzzleMutationData(data: PuzzleMutationData): string | n
     return positionError;
   }
 
-  if (!data.solutionLine || !data.solutionLine.trim()) {
+  if (!data.solutionMoves || data.solutionMoves.length === 0) {
     return 'Solution is required';
   }
 
-  const moves = data.solutionLine.trim().split(/\s+/);
-  const result = validateMoveSequence(data.fen.trim(), moves);
+  const sanTokens = data.solutionMoves.map((m) => m.san);
+  const result = validateMoveSequence(data.fen.trim(), sanTokens);
 
   if (!result.valid) {
     return result.error ?? 'Invalid move sequence for this position';
   }
 
+  for (const move of data.solutionMoves) {
+    if (move.note != null && move.note.length > PUZZLE_NOTE_MAX_LENGTH) {
+      return `Each note must be ${PUZZLE_NOTE_MAX_LENGTH} characters or fewer`;
+    }
+  }
+
   return null;
+}
+
+/**
+ * Normalize a raw per-move input array for persistence.
+ *
+ * Trims each note; empty / whitespace-only notes become `null`. Returns the
+ * always-canonical `PuzzleSolutionMove[]` shape (every element carries a
+ * `note` field, `null` when absent) to match the JSONB column shape.
+ */
+export function normalizePuzzleMoves(
+  rawMoves: Array<{ san: string; note?: string | null }>
+): PuzzleSolutionMove[] {
+  return rawMoves.map((m) => {
+    // `note?: string | null` accepts both `undefined` (key omitted by the
+    // caller) and `null` (explicit-no-note). `apps/web/tsconfig.json` does
+    // not enable `exactOptionalPropertyTypes`, so the `?` modifier in the
+    // parameter type already admits `undefined` alongside `null`; the
+    // `== null` check collapses both to the canonical `note: null` output.
+    if (m.note == null) return { san: m.san, note: null };
+    const trimmed = m.note.trim();
+    return { san: m.san, note: trimmed.length === 0 ? null : trimmed };
+  });
 }

@@ -4,7 +4,7 @@
     "seoSiteName": "目隠しチェス",
     "siteDescription": "目隠しチェスの練習が無料でできるオンラインプラットフォーム。チェスのビジュアライゼーションスキルや計算力を向上させましょう。",
     "webApplicationDescription": "目隠しチェスの無料練習アプリ",
-    "landingTitle": "目隠しチェス｜無料の盲指しトレーニング・AI対局・段級位",
+    "landingTitle": "目隠しチェス | 無料のトレーニング・AI対局機能・段級位制度",
     "landingDescription": "座標クイズ・ルートプランナー・記憶パズル・Stockfish対戦まで、目隠しチェスの可視化力と計算力を鍛える無料のオンライントレーニング。段級位で上達を可視化できます。",
     "home": {
       "title": "目隠しチェストレーニング - 無料オンライン練習プラットフォーム",
@@ -972,18 +972,44 @@
         "titleRequired": "タイトルは必須です",
         "descriptionLabel": "説明",
         "solutionLabel": "正解手",
+        "solutionSection": "正解手順",
         "solutionPlaceholder": "例: Nf3 または Qh7+ Kf8 Qh8#",
-        "solutionRequired": "正解手は必須です",
+        "solutionRequired": "手を1つ以上入力してください",
         "solutionInvalid": "このポジションでは無効な手順です",
-        "submit": "作成",
-        "submitting": "作成中...",
+        "movePlaceholder": "手を入力 (例: e4, Nf3)",
+        "addMoveNote": "メモ (任意)",
+        "noteAriaLabel": "{move} のコメント",
+        "removeLastMove": "最後の手 ({move}) を削除",
+        "maxMovesReached": "手数の上限 (20) に達しました",
+        "sideToMove": "手番",
+        "sideWhite": "白",
+        "sideBlack": "黒",
+        "continueToPreview": "プレビュー",
         "clearBoard": "ボードをクリア",
         "tabBoard": "ボード",
         "tabFen": "FEN",
         "positionInvalid": "有効なポジションを設定してください",
         "flipBoard": "ボードを反転",
         "whiteToMove": "白の手番",
-        "blackToMove": "黒の手番"
+        "blackToMove": "黒の手番",
+        "startOverConfirmTitle": "下書きを破棄しますか?",
+        "startOverConfirmMessage": "作成中のパズルが消去されます。この操作は取り消せません。",
+        "startOverConfirm": "破棄する",
+        "startOverCancel": "下書きを残す",
+        "draftRestoredBanner": "前回の下書きを復元しました。",
+        "draftRestoredDiscard": "破棄",
+        "clearBoardConfirmTitle": "盤面をクリアしますか?",
+        "clearBoardConfirmMessage": "配置した駒と入力した解手がすべて削除されます。この操作は取り消せません。",
+        "clearBoardConfirmConfirm": "クリア",
+        "clearBoardConfirmCancel": "キャンセル",
+        "draftWriteFailed": "下書きを保存できませんでした。ブラウザのストレージが有効か確認してもう一度お試しください。"
+      },
+      "preview": {
+        "title": "パズルをプレビュー",
+        "moveCount": "{count} 手",
+        "createCta": "作成",
+        "backToEditCta": "編集に戻る",
+        "createError": "予期しないエラーが発生しました。もう一度お試しください。"
       },
       "whitePieces": "白の駒",
       "blackPieces": "黒の駒",
@@ -992,22 +1018,30 @@
       "detail": {
         "title": "パズル詳細",
         "descriptionSection": "このパズルについて",
-        "solveSection": "パズルを解く",
+        "startSolving": "挑戦する",
         "whitePiecesLabel": "白の駒",
         "blackPiecesLabel": "黒の駒",
         "whiteToMove": "白の手番",
         "blackToMove": "黒の手番",
         "createdBy": "作成者",
+        "noPieces": "なし",
+        "like": "いいね",
+        "unlike": "いいね解除"
+      },
+      "session": {
+        "title": "挑戦",
         "correct": "正解！\ud83c\udf89",
         "incorrect": "不正解です。もう一度挑戦してください。",
-        "noPieces": "なし",
-        "showBoard": "ボードを表示"
+        "showBoard": "ボードを表示",
+        "whitePlayed": "白が {move} を指しました",
+        "blackPlayed": "黒が {move} を指しました"
       },
       "result": {
         "title": "パズル結果",
         "replaySection": "正解のリプレイ",
         "historySection": "回答履歴",
         "solution": "正解: {move}",
+        "note": "— {note}",
         "attemptCorrect": "正解",
         "attemptIncorrect": "不正解",
         "backToList": "パズル一覧に戻る",
@@ -1237,6 +1271,10 @@
         "switchToTraining": "📖 トレーニングモードで練習する"
       }
     },
+    "common": {
+      "play": "再生",
+      "replay": "再生"
+    },
     "moveSequence": {
       "title": "約束組手",
       "description": "一連の指し手を記憶し、脳内でビジュアライズする練習",
@@ -1271,7 +1309,6 @@
       "presetDescription": "練習するオープニングを選択",
       "preview": "プレビュー",
       "memorizeInstructions": "手順を見て記憶してください",
-      "play": "再生",
       "moves": "手",
       "pressPlayToStart": "再生ボタンを押して開始",
       "playingMove": "{total}手中{current}手目",
@@ -1308,7 +1345,6 @@
       "invalid_fen": "無効なFEN形式が含まれています",
       "session": "練習中",
       "endPractice": "練習を終了する",
-      "replay": "再生",
       "clickMoveToJump": "クリックで局面を表示",
       "wrongAttempts": "間違い入力",
       "tutorial": {
@@ -2844,6 +2880,7 @@
       }
     },
     "positionMemory": "Position Memory",
+    "chunks": "チャンク",
     "puzzle": "Puzzle",
     "topicPosts": {
       "navLabel": "トピック投稿",

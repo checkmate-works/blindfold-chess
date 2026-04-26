@@ -36,9 +36,7 @@ export function LeaderboardTabs({ activeTab, locale, period }: Props) {
             role="tab"
             aria-selected={isActive}
             className={`flex-1 rounded-md px-4 py-2 text-center text-sm font-medium transition-colors ${
-              isActive
-                ? 'bg-card text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
+              isActive ? 'bg-card text-foreground' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             {t(`tabs.${tab.value}`)}

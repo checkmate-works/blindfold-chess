@@ -1,7 +1,8 @@
-import { useEffect, useCallback, useState } from "react";
+import { useCallback } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import * as Haptics from "expo-haptics";
 import { Check, X } from "lucide-react-native";
 
 import {
@@ -9,13 +10,10 @@ import {
   LegalIllegalButtons,
 } from "../../../../features/legal-moves/components";
 import { QuizTimer } from "../../../../features/coordinate-quiz/components";
-import {
-  useLegalMovesSession,
-  type LegalMovesResult,
-} from "../../../../features/legal-moves/hooks";
-import { useQuizTimer } from "../../../../features/coordinate-quiz/hooks";
+import { useLegalMovesSession } from "@blindfold-chess/features/legal-moves/client";
 import { useTheme, fontSize, fontWeight, spacing } from "../../../../theme";
 import type { PieceType } from "../../../../features/legal-moves/lib/types";
+import type { LegalMovesResult } from "../../../../features/legal-moves/hooks";
 
 export default function LegalMovesSession() {
   const router = useRouter();
@@ -29,10 +27,6 @@ export default function LegalMovesSession() {
   const selectedPieces = (params.pieces || "b,n,r,q,k").split(
     ",",
   ) as PieceType[];
-
-  // Countdown state
-  const [countdown, setCountdown] = useState<number | null>(3);
-  const [sessionStarted, setSessionStarted] = useState(false);
 
   const handleComplete = useCallback(
     (result: LegalMovesResult) => {
@@ -53,50 +47,32 @@ export default function LegalMovesSession() {
 
   const {
     currentQuestion,
+    countdown,
+    timeRemaining,
     correctCount,
     incorrectCount,
-    feedback,
-    isProcessing,
-    startSession,
+    showFeedback,
+    lastAnswerCorrect,
     handleAnswer,
-    endSession,
   } = useLegalMovesSession({
-    duration,
+    timeLimit: duration,
     selectedPieces,
     onComplete: handleComplete,
+    onAnswerEffect: (correct) => {
+      Haptics.notificationAsync(
+        correct
+          ? Haptics.NotificationFeedbackType.Success
+          : Haptics.NotificationFeedbackType.Error,
+      );
+    },
   });
 
-  const { timeRemaining, progress, start } = useQuizTimer({
-    duration,
-    onTimeUp: endSession,
-  });
-
-  // Countdown effect
-  useEffect(() => {
-    if (countdown === null) return;
-
-    if (countdown === 0) {
-      const timer = setTimeout(() => {
-        setCountdown(null);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-
-    const timer = setTimeout(() => {
-      setCountdown((prev) => (prev !== null ? prev - 1 : null));
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [countdown]);
-
-  // Start session and timer after countdown
-  useEffect(() => {
-    if (countdown === null && !sessionStarted) {
-      setSessionStarted(true);
-      startSession();
-      start();
-    }
-  }, [countdown, sessionStarted, startSession, start]);
+  const progress = timeRemaining / duration;
+  const feedback: "correct" | "incorrect" | null = showFeedback
+    ? lastAnswerCorrect
+      ? "correct"
+      : "incorrect"
+    : null;
 
   return (
     <SafeAreaView
@@ -135,7 +111,7 @@ export default function LegalMovesSession() {
           <View style={styles.buttonsContainer}>
             <LegalIllegalButtons
               onAnswer={handleAnswer}
-              disabled={isProcessing || !currentQuestion || feedback !== null}
+              disabled={showFeedback || !currentQuestion}
             />
           </View>
 

@@ -2,12 +2,11 @@ import { ChessPiece, Square } from '@/app/_components';
 import type { Color } from '@blindfold-chess/features/chess-core';
 import { fenToBoardFlat } from '@blindfold-chess/features/chess-core/fen';
 import { DISPLAY_RANKS, FILES, isLightSquare } from '@blindfold-chess/features/common';
+import type { SquareDiff } from '@blindfold-chess/features/common';
 import type { PieceType } from '@blindfold-chess/types';
 
 import type { BoardTheme } from '@/lib/games/board-themes';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/games/board-themes';
-
-import type { SquareDiff } from '@/app/[locale]/(public)/practice/_lib/types';
 
 import type { FenPieceChar } from './types';
 
@@ -72,7 +71,7 @@ export function ChessBoardWithOverlay({
 
   return (
     <div className="w-full max-w-md">
-      <div className="relative w-full aspect-square border border-border rounded-md shadow-lg overflow-hidden">
+      <div className="relative w-full aspect-square border border-border rounded-md overflow-hidden">
         <div className="grid grid-cols-8 gap-0 w-full h-full">
           {board.map((piece, squareIndex) => {
             // Handle board flipping for black side

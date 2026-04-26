@@ -8,6 +8,7 @@ import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
 import { ProgressBar } from '@/app/[locale]/(public)/practice/_components/ProgressBar';
 import { QuizTimer } from '@/app/[locale]/(public)/practice/_components/QuizTimer';
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import type { PositionData } from '../../_lib/types';
 
@@ -47,7 +48,7 @@ export function PositionMemoryMemorize({
 
   return (
     <div className="space-y-4">
-      <div className="bg-card rounded-md shadow-sm border border-border p-4">
+      <div className="bg-card rounded-md border border-border p-4">
         <div className="flex flex-col gap-6">
           {/* Progress */}
           {problemCount > 1 && (
@@ -107,7 +108,7 @@ export function PositionMemoryMemorize({
                   {onTogglePause && (
                     <button
                       onClick={onTogglePause}
-                      className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 shadow-lg transition-all hover:scale-110 active:scale-95 pointer-events-auto"
+                      className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 transition-all hover:scale-110 active:scale-95 pointer-events-auto"
                       aria-label={tPractice('resume')}
                     >
                       <LuPlay size={48} className="fill-current ml-1" />
@@ -134,17 +135,11 @@ export function PositionMemoryMemorize({
       {/* Action Links */}
       <div className="flex flex-col items-center gap-2">
         {showSkip && (
-          <button
-            onClick={onSkip}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
-          >
+          <button onClick={onSkip} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
             {t('skip')}
           </button>
         )}
-        <button
-          onClick={onQuit}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors underline"
-        >
+        <button onClick={onQuit} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
           {t('quit')}
         </button>
       </div>

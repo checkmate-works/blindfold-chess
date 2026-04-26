@@ -51,7 +51,7 @@ export default function AlgebraicNotation({ questions, locale }: Props) {
 
   return (
     <div id="algebraic-notation-session" className="min-h-screen space-y-4">
-      <div className="bg-card rounded-md shadow-sm border border-border p-4">
+      <div className="bg-card rounded-md border border-border p-4">
         <div className="flex flex-col gap-6">
           {/* Progress bar */}
           <ProgressBar current={currentQuestionIndex + 1} total={questions.length} />

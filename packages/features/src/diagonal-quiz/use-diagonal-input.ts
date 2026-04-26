@@ -1,3 +1,5 @@
+"use client";
+
 import { useCallback, useEffect, useState } from "react";
 
 type InputStep = "file1" | "rank1" | "file2" | "rank2" | "complete";

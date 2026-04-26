@@ -66,7 +66,9 @@
   "settings": {
     "language": "言語",
     "languageJapanese": "日本語",
-    "languageEnglish": "English"
+    "languageEnglish": "English",
+    "languageSpanish": "Español",
+    "languagePortuguese": "Português"
   },
   "legalMoves": {
     "setup": {
@@ -184,6 +186,7 @@
       "totalQuestions": "出題数",
       "correctAnswers": "正解数",
       "accuracy": "正答率",
+      "timeTaken": "経過時間",
       "averageTime": "平均時間",
       "points": "ポイント",
       "playAgain": "もう一度",

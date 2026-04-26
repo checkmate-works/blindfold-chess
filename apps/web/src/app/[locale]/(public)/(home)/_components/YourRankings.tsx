@@ -8,6 +8,7 @@ import { getUserRanks } from '@/app/[locale]/(public)/leaderboard/_actions/getUs
 import { LeaderboardCard } from '@/app/[locale]/(public)/leaderboard/_components/LeaderboardCard';
 import type { LeaderboardEntry } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { PagePanel, SectionTitle } from '@/app/[locale]/_components';
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 const MAX_DISPLAY = 3;
 
@@ -62,7 +63,7 @@ export async function YourRankings({ locale }: Props) {
         <Link
           href="/leaderboard/score/weekly"
           locale={locale}
-          className="text-sm text-link-primary hover:text-link-primary/80 transition-colors"
+          className={`text-sm ${TEXT_LINK_CLASSES}`}
         >
           {t('viewAll')}
         </Link>

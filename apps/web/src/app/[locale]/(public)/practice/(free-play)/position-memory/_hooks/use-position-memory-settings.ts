@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { usePersistentSettings } from '@/app/[locale]/(public)/practice/_hooks/use-persistent-settings';
+import { useLocalStorageSettings } from '@/lib/persistent-settings/use-local-storage-settings';
 
 const STORAGE_KEY = 'positionMemorySettings';
 
@@ -55,7 +55,7 @@ export function usePositionMemorySettings(urlOverrides: UrlOverrides) {
     settings: persistedSettings,
     updateSettings: updatePersistedSettings,
     isLoaded: isPersistedLoaded,
-  } = usePersistentSettings<PositionMemorySettings>(STORAGE_KEY, DEFAULT_SETTINGS);
+  } = useLocalStorageSettings<PositionMemorySettings>(STORAGE_KEY, DEFAULT_SETTINGS);
 
   // When URL params are present, use URL-derived state instead of persisted state
   const [urlDerivedSettings, setUrlDerivedSettings] = useState<PositionMemorySettings>(

@@ -51,7 +51,7 @@ export function BoardLayout({
   return (
     <div className={`w-full ${className}`}>
       <div
-        className={`relative w-full aspect-square border border-border overflow-hidden ${rounded ? 'rounded-md shadow-lg' : ''}`}
+        className={`relative w-full aspect-square border border-border overflow-hidden ${rounded ? 'rounded-md' : ''}`}
         onClick={onBoardClick}
       >
         {VISUAL_INDICES.map((row) => {

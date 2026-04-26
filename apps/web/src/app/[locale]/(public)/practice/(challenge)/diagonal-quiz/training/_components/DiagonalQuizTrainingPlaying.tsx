@@ -8,7 +8,7 @@ import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { getCornerInfo } from '@blindfold-chess/features/diagonal-quiz';
 import type { ActiveField } from '@blindfold-chess/features/diagonal-quiz';
-import { useDiagonalInput } from '@blindfold-chess/features/diagonal-quiz';
+import { useDiagonalInput } from '@blindfold-chess/features/diagonal-quiz/client';
 
 import { AnswerFeedback } from '@/app/[locale]/(public)/practice/(challenge)/_components/AnswerFeedback';
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
@@ -165,7 +165,7 @@ export function DiagonalQuizTrainingPlaying({
 
   return (
     <div className="max-w-md mx-auto">
-      <div className="bg-card rounded-xl border border-border p-8 text-center relative overflow-hidden shadow-sm">
+      <div className="bg-card rounded-xl border border-border p-8 text-center relative overflow-hidden">
         <div>
           <SectionTitle className="mb-4">{t('question', { square: currentSquare })}</SectionTitle>
 

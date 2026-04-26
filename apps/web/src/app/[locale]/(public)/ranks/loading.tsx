@@ -17,7 +17,7 @@ export default function RanksLoading() {
 
       <PagePanel>
         {/* SectionTitle skeleton */}
-        <div className="border-b border-warning/50 pb-2">
+        <div className="border-b border-border pb-2">
           <div className="h-5 md:h-6 bg-muted rounded w-48 animate-pulse" />
         </div>
 
@@ -36,7 +36,7 @@ export default function RanksLoading() {
           {Array.from({ length: 7 }).map((_, i) => (
             <div
               key={i}
-              className="relative overflow-hidden rounded-lg border border-border bg-card shadow-sm animate-pulse"
+              className="relative overflow-hidden rounded-lg border border-border bg-card animate-pulse"
             >
               {/* Belt color bar */}
               <div className="h-2 bg-muted" />

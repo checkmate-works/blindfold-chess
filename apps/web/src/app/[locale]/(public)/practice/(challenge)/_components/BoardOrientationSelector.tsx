@@ -1,10 +1,10 @@
 'use client';
 
+import type { BoardOrientation } from '@blindfold-chess/types';
+
 import { getBoardThemeColors } from '@/lib/games/board-themes';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
-
-type BoardOrientation = 'white' | 'black' | 'random';
 
 type Props = {
   value: BoardOrientation;
@@ -64,8 +64,8 @@ export function BoardOrientationSelector({
             <span
               className={`${sizeConfig.box} rounded-md border-2 ${
                 key === 'random'
-                  ? `overflow-hidden ${value === key ? 'border-primary' : 'border-border'} shadow-sm flex`
-                  : `${key === 'white' ? themeColors.light : themeColors.dark} ${value === key ? 'border-primary' : 'border-border'} shadow-sm`
+                  ? `overflow-hidden ${value === key ? 'border-primary' : 'border-border'} flex`
+                  : `${key === 'white' ? themeColors.light : themeColors.dark} ${value === key ? 'border-primary' : 'border-border'}`
               }`}
             >
               {key === 'random' && (

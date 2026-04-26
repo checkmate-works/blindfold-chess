@@ -45,8 +45,7 @@ function SuggestionInput({
     onChange(e.target.value);
   };
 
-  const handleSubmit = (e?: React.FormEvent) => {
-    e?.preventDefault();
+  const handleSubmit = () => {
     if (value.trim()) {
       onSubmit(value.trim(), false);
       onChange('');
@@ -55,6 +54,10 @@ function SuggestionInput({
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
+      // Always preventDefault, even when this input sits inside a parent
+      // `<form>` (e.g. the puzzle-creator flow). Without this, pressing Enter
+      // while composing a per-move SAN would trigger the parent form's native
+      // submit and persist a half-finished puzzle.
       e.preventDefault();
       handleSubmit();
     } else if (e.key === 'Escape') {
@@ -81,8 +84,15 @@ function SuggestionInput({
   const displaySuggestions = showSuggestions && isFocused && suggestions.length > 0;
 
   return (
+    // No `<form>` wrapper here: this component is sometimes mounted inside
+    // a parent `<form>` (the puzzle creator), and nested forms are invalid
+    // per the HTML spec — browsers drop the inner `<form>` tag during parsing
+    // and re-parent its children (including any `type="submit"` button) onto
+    // the outer form, which then submits prematurely. Enter-to-submit is
+    // handled explicitly in `onKeyDown` above, and the confirm button below
+    // is a plain `type="button"` wired to `handleSubmit`.
     <div ref={containerRef} className="relative">
-      <form onSubmit={handleSubmit} className="flex gap-2 items-center">
+      <div className="flex gap-2 items-center">
         <div className="relative flex-1">
           <input
             ref={inputRef}
@@ -101,7 +111,7 @@ function SuggestionInput({
 
           {/* Suggestions Dropdown */}
           {displaySuggestions && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+            <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg z-50 max-h-48 overflow-y-auto">
               {suggestions.map((suggestion, index) => (
                 <button
                   key={`${suggestion}-${index}`}
@@ -119,16 +129,17 @@ function SuggestionInput({
 
         {showSubmitButton && (
           <button
-            type="submit"
+            type="button"
+            onClick={handleSubmit}
             disabled={disabled || !value.trim()}
-            className="w-14 h-14 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:shadow-none disabled:text-muted-foreground disabled:cursor-not-allowed text-primary-foreground font-medium rounded-lg transition-all duration-150 flex items-center justify-center text-xl border border-border"
+            className="w-14 h-14 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:text-muted-foreground disabled:cursor-not-allowed text-primary-foreground font-medium rounded-lg transition-all duration-150 flex items-center justify-center text-xl border border-border"
             aria-label={t('action.submit')}
             title={t('action.submit')}
           >
             <FaCheck className="w-4 h-4" />
           </button>
         )}
-      </form>
+      </div>
     </div>
   );
 }

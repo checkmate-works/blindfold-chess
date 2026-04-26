@@ -213,6 +213,7 @@ export function MoveInputPanel({
       {enabledModes.length >= 2 && (
         <div className="flex items-center justify-end">
           <button
+            type="button"
             onClick={() => {
               updatePreferences({ moveInputMode: nextMode });
             }}

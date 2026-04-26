@@ -6,6 +6,8 @@ import { useTranslations } from 'next-intl';
 
 import { Link } from '@/i18n/routing';
 
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
+
 import type { ExpHeatmapData } from '../_lib/getExpHeatmapData';
 import {
   DESKTOP_WEEKS,
@@ -191,7 +193,7 @@ export function ExpActivityHeatmap({ data, legendLess, legendMore }: Props) {
 
       {/* Legend — desktop only */}
       <div className="hidden items-center justify-between text-xs text-muted-foreground md:flex">
-        <Link href="/faq#exp-system" className="text-xs text-muted-foreground hover:underline">
+        <Link href="/faq#exp-system" className={`text-xs ${TEXT_LINK_MUTED_CLASSES}`}>
           {t('dashboard.heatmapLearnLink')}
         </Link>
         <div className="flex items-center gap-1.5">

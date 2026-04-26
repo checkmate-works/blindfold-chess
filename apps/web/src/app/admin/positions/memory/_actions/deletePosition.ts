@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 
 import type { DeleteResult } from '@/app/admin/_lib/action-factories';
 import { requireAdmin } from '@/app/admin/_lib/auth';
-import { eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 
 import { db, moderationActions, positions } from '@/lib/db';
 import { getClientIp } from '@/lib/security/client-ip';
@@ -19,6 +19,9 @@ export async function deletePosition(id: string): Promise<DeleteResult> {
     return { error: 'Position ID is required' };
   }
 
+  // Idempotency guard: rows with `deletedAt IS NOT NULL` are treated as
+  // non-existent here so a second delete attempt does not append another
+  // `moderation_actions` row for the same target.
   const [position] = await db
     .select({
       id: positions.id,
@@ -28,7 +31,7 @@ export async function deletePosition(id: string): Promise<DeleteResult> {
       title: positions.title,
     })
     .from(positions)
-    .where(eq(positions.id, id))
+    .where(and(eq(positions.id, id), isNull(positions.deletedAt)))
     .limit(1);
 
   if (!position) {

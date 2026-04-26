@@ -47,7 +47,7 @@ export function RoutePlannerBoard({
         return (
           <div className="w-full h-full flex items-center justify-center relative">
             <div className="absolute inset-0 bg-blue-500/30"></div>
-            <span className="relative font-bold text-xs sm:text-sm text-white bg-black/60 rounded-full w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center shadow-md backdrop-blur-[1px] z-10">
+            <span className="relative font-bold text-xs sm:text-sm text-white bg-black/60 rounded-full w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center backdrop-blur-[1px] z-10">
               1
             </span>
           </div>
@@ -69,7 +69,7 @@ export function RoutePlannerBoard({
                 </div>
               )}
               <span
-                className={`text-xs sm:text-sm font-bold text-white bg-black/60 rounded-full w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center shadow-md backdrop-blur-[1px] ${moveNumber === path.length ? 'ring-2 ring-white scale-110' : ''}`}
+                className={`text-xs sm:text-sm font-bold text-white bg-black/60 rounded-full w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center backdrop-blur-[1px] ${moveNumber === path.length ? 'ring-2 ring-white scale-110' : ''}`}
               >
                 {moveNumber}
               </span>

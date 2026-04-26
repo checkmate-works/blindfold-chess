@@ -5,9 +5,10 @@ import { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { useBatchTrainingSession } from '@blindfold-chess/features/practice-session';
 
-import { useBatchTrainingSession } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-batch-training-session';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
+import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -42,9 +43,10 @@ export default function LegalMovesTrainingSession({ locale, selectedPieces }: Pr
     batchSize: BATCH_SIZE,
     generateBatch: () => generateBalancedMoveQuestions(BATCH_SIZE, selectedPieces),
     checkAnswer: (question, { userAnswer, isLegal }) => userAnswer === isLegal,
-    scrollTargetId: 'legal-moves-training-session',
     feedbackDelayMs: 500,
   });
+
+  useScrollToElement('legal-moves-training-session', hasQuestions);
 
   const onAnswer = useCallback(
     (userAnswer: boolean) => {

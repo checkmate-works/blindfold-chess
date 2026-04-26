@@ -12,7 +12,13 @@ export {
   getNextCountdownValue,
   isCountdownActive,
 } from "./countdown";
-export { computePracticeResult } from "./practice-result";
+export {
+  computePracticeResult,
+  deriveResultStats,
+  type StatItem,
+  type DerivedResultStats,
+  type DeriveResultStatsLabels,
+} from "./practice-result";
 export {
   type RandomSource,
   squareToFileIndex,
@@ -33,3 +39,23 @@ export {
   QUEEN_DIRS,
   KING_OFFSETS,
 } from "./piece-moves";
+export type {
+  CoordinateBackspaceResult,
+  StagedCoordinateSelection,
+} from "./coordinate-backspace";
+export { applyCoordinateBackspace } from "./coordinate-backspace";
+export type {
+  PositionAccuracy,
+  ScoreDetail,
+  SquareDiff,
+  SquareStatus,
+} from "./accuracy";
+export { calculateAccuracy, calculateSquareDifferences } from "./accuracy";
+export type { FeedbackSpeed } from "./feedback-speed";
+export { FEEDBACK_SPEEDS, FEEDBACK_SPEED_MS } from "./feedback-speed";
+export { FEEDBACK_FLASH_MS } from "./flash-policy";
+export type { PersistentStorage } from "./persistent-storage";
+export type {
+  UsePersistentSettingsOptions,
+  UsePersistentSettingsReturn,
+} from "./use-persistent-settings";

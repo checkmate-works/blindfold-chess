@@ -9,12 +9,13 @@ describe('ChessEngine', () => {
     // because it only uses chess.js for conversion
     let engine: ChessEngine;
 
-    // Create engine instance but don't wait for Worker initialization
-    // The convertUciToAlgebraic method doesn't need the Worker
+    // Create engine instance but don't trigger init. The convertUciToAlgebraic
+    // method is a pure chess.js-backed transform; it does not touch the engine
+    // channel, so the factory below is never actually invoked.
     beforeEach(() => {
-      // Create engine but it will fail to initialize (no Worker in test env)
-      // That's ok because we're only testing convertUciToAlgebraic
-      engine = new ChessEngine();
+      engine = new ChessEngine(() => {
+        throw new Error('channel factory should not be called in convertUciToAlgebraic tests');
+      });
     });
 
     const startingFen: Fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1' as Fen;

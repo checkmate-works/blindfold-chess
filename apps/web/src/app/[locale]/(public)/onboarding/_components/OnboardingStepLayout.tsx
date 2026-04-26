@@ -2,6 +2,8 @@
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
+
 import { StepIndicator } from './StepIndicator';
 
 const STEPS = [
@@ -44,11 +46,7 @@ export function OnboardingStepLayout({
       {showFooter && (
         <div className="flex items-center justify-between gap-3">
           {onSkip ? (
-            <button
-              type="button"
-              onClick={onSkip}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
+            <button type="button" onClick={onSkip} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
               {t('skip')}
             </button>
           ) : (

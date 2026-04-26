@@ -32,7 +32,7 @@ export function CollapsibleGameSettings({ settings, onSettingsChange }: Props) {
   };
 
   return (
-    <div className="bg-card rounded-md shadow-sm border border-border">
+    <div className="bg-card rounded-md border border-border">
       <div className="px-4 py-3">
         <PreferenceOption
           type="checkbox"

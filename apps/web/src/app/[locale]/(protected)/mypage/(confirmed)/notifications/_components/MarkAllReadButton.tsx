@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 
 import { notifyNotificationsRead } from '@/config';
 
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
+
 import { markAllAsRead } from '../_actions';
 
 type Props = {
@@ -19,7 +21,7 @@ export function MarkAllReadButton({ label }: Props) {
   return (
     <button
       type="button"
-      className="text-sm text-link-primary hover:underline disabled:opacity-50"
+      className={`text-sm disabled:opacity-50 ${TEXT_LINK_CLASSES}`}
       disabled={isPending}
       onClick={() => {
         startTransition(async () => {

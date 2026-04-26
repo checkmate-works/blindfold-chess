@@ -10,6 +10,7 @@ import remarkMath from 'remark-math';
 import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 import { SubsectionTitle } from '@/app/[locale]/_components/SubsectionTitle';
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import { MarkdownDemoImage } from './MarkdownDemoImage';
 
@@ -59,21 +60,13 @@ export function MarkdownRenderer({ content, skipFirstH1 = false }: Props) {
           const isInternalLink = href?.startsWith('/') || href?.startsWith('#');
           if (isInternalLink) {
             return (
-              <Link
-                href={href || ''}
-                className="text-primary no-underline hover:underline transition-all"
-              >
+              <Link href={href || ''} className={TEXT_LINK_CLASSES}>
                 {children}
               </Link>
             );
           }
           return (
-            <a
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary no-underline hover:underline transition-all"
-            >
+            <a href={href} target="_blank" rel="noopener noreferrer" className={TEXT_LINK_CLASSES}>
               {children}
             </a>
           );

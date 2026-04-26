@@ -2,7 +2,8 @@
 
 import type { PieceSelection } from '@/app/_components/practice/PieceSelector';
 
-import { usePersistentSettings } from '@/app/[locale]/(public)/practice/_hooks/use-persistent-settings';
+import { useLocalStorageSettings } from '@/lib/persistent-settings/use-local-storage-settings';
+
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { LegalMovesSetup } from './LegalMovesSetup';
@@ -21,7 +22,7 @@ const DEFAULTS: LegalMovesLocalSettings = {
 };
 
 export function LegalMoves({ locale }: Props) {
-  const { settings, updateSettings } = usePersistentSettings(STORAGE_KEY, DEFAULTS);
+  const { settings, updateSettings } = useLocalStorageSettings(STORAGE_KEY, DEFAULTS);
 
   return (
     <LegalMovesSetup

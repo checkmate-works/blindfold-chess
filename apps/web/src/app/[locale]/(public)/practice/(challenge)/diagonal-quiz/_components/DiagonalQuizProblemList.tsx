@@ -4,21 +4,15 @@ import { useMemo, useState } from 'react';
 
 import { ChessPiece, Square } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { getDiagonalSquares } from '@blindfold-chess/features/diagonal-quiz';
+import {
+  type DiagonalQuestionResult as QuestionResult,
+  getDiagonalSquares,
+} from '@blindfold-chess/features/diagonal-quiz';
 import { FaCheck, FaChevronDown, FaChevronRight, FaTimes } from 'react-icons/fa';
 
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/games/board-themes';
 
-export type QuestionResult = {
-  square: string;
-  isCorrect: boolean;
-  isDiagonalCorrect: boolean;
-  isAntiDiagonalCorrect: boolean;
-  correctDiagonal: string;
-  correctAntiDiagonal: string;
-  userDiagonal?: string;
-  userAntiDiagonal?: string;
-};
+export type { QuestionResult };
 
 const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 const RANKS = ['8', '7', '6', '5', '4', '3', '2', '1'];
@@ -46,7 +40,7 @@ export function DiagonalBoard({ targetSquare }: { targetSquare: string }) {
 
   return (
     <div className="w-full max-w-xs mx-auto">
-      <div className="relative w-full aspect-square border border-border rounded-md overflow-hidden shadow-lg">
+      <div className="relative w-full aspect-square border border-border rounded-md overflow-hidden">
         <div className="grid grid-cols-8 gap-0 w-full h-full">
           {RANKS.map((rank, rankIndex) =>
             FILES.map((file, fileIndex) => {

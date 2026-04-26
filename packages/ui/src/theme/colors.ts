@@ -93,7 +93,7 @@ export const darkColors = {
   podiumSilverForeground: "#d1d5db",
   podiumBronze: "rgba(124, 45, 18, 0.3)",
   podiumBronzeForeground: "#fb923c",
-  border: "#3d3d3d",
+  border: "#7f7f7f",
   input: "#2b2926",
   ring: "#3893E8",
   linkPrimary: "#3893E8",

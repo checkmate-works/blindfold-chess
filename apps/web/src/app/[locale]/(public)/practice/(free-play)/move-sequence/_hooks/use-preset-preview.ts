@@ -1,8 +1,9 @@
 import { useEffect, useMemo } from 'react';
 
+import { useMovePlayback } from '@/app/[locale]/(public)/practice/_hooks/use-move-playback';
+
 import { presetOpenings } from '../_data/presetOpenings';
 import { parseMoveSequence } from '../_lib/pgn-parser';
-import { useMovePlayback } from './use-move-playback';
 
 export function usePresetPreview(selectedPresetId: string | null) {
   const selectedPresetData = useMemo(() => {

@@ -1,19 +1,18 @@
-import { useEffect, useCallback, useState } from "react";
+import { useCallback } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import * as Haptics from "expo-haptics";
 import { Check, X } from "lucide-react-native";
+
+import { useSquareColorsSession } from "@blindfold-chess/features/square-colors/client";
+import type { SquareColorsResult } from "@blindfold-chess/features/square-colors";
 
 import {
   SquareQuestion,
   ColorButtons,
 } from "../../../../features/square-colors/components";
 import { QuizTimer } from "../../../../features/coordinate-quiz/components";
-import {
-  useSquareColorsSession,
-  type SquareColorsResult,
-} from "../../../../features/square-colors/hooks";
-import { useQuizTimer } from "../../../../features/coordinate-quiz/hooks";
 import { useTheme, fontSize, fontWeight, spacing } from "../../../../theme";
 
 export default function SquareColorsSession() {
@@ -24,9 +23,6 @@ export default function SquareColorsSession() {
   }>();
 
   const duration = parseInt(params.timeLimit || "60", 10);
-
-  const [countdown, setCountdown] = useState<number | null>(3);
-  const [sessionStarted, setSessionStarted] = useState(false);
 
   const handleComplete = useCallback(
     (result: SquareColorsResult) => {
@@ -45,51 +41,30 @@ export default function SquareColorsSession() {
     [router],
   );
 
+  const handleAnswerEffect = useCallback((correct: boolean) => {
+    Haptics.notificationAsync(
+      correct
+        ? Haptics.NotificationFeedbackType.Success
+        : Haptics.NotificationFeedbackType.Error,
+    );
+  }, []);
+
   const {
     currentSquare,
+    countdown,
+    timeRemaining,
     correctCount,
     incorrectCount,
-    isCorrect,
-    isProcessing,
-    startSession,
+    showFeedback,
+    lastAnswerCorrect,
     handleAnswer,
-    endSession,
   } = useSquareColorsSession({
-    duration,
+    timeLimit: duration,
     onComplete: handleComplete,
+    onAnswerEffect: handleAnswerEffect,
   });
 
-  const { timeRemaining, progress, start } = useQuizTimer({
-    duration,
-    onTimeUp: endSession,
-  });
-
-  // Countdown effect
-  useEffect(() => {
-    if (countdown === null) return;
-
-    if (countdown === 0) {
-      const timer = setTimeout(() => {
-        setCountdown(null);
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-
-    const timer = setTimeout(() => {
-      setCountdown((prev) => (prev !== null ? prev - 1 : null));
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [countdown]);
-
-  // Start session and timer after countdown
-  useEffect(() => {
-    if (countdown === null && !sessionStarted) {
-      setSessionStarted(true);
-      startSession();
-      start();
-    }
-  }, [countdown, sessionStarted, startSession, start]);
+  const progress = timeRemaining / duration;
 
   return (
     <SafeAreaView
@@ -120,13 +95,16 @@ export default function SquareColorsSession() {
           {/* Question */}
           <View style={styles.questionContainer}>
             {currentSquare && (
-              <SquareQuestion square={currentSquare} isCorrect={isCorrect} />
+              <SquareQuestion
+                square={currentSquare}
+                isCorrect={showFeedback ? lastAnswerCorrect : null}
+              />
             )}
           </View>
 
           {/* Color Buttons */}
           <View style={styles.buttonsContainer}>
-            <ColorButtons onAnswer={handleAnswer} disabled={isProcessing} />
+            <ColorButtons onAnswer={handleAnswer} disabled={showFeedback} />
           </View>
 
           {/* Score */}
