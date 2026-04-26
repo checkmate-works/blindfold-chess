@@ -5,7 +5,8 @@ import { notFound } from 'next/navigation';
 import { getChunkBySlug, getLinkedPositionsForChunk } from '@/lib/chunks/queries';
 import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
 
-import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -56,7 +57,7 @@ export default async function ChunkDetailPage({ params }: Props) {
         {chunk.description && (
           <>
             <SectionTitle>Description</SectionTitle>
-            <p className="text-muted-foreground mb-6">{chunk.description}</p>
+            <p className="text-muted-foreground">{chunk.description}</p>
           </>
         )}
 
@@ -65,8 +66,8 @@ export default async function ChunkDetailPage({ params }: Props) {
         </div>
 
         {linkedPositions.length > 0 && (
-          <section className="mt-8">
-            <h2 className="text-lg font-semibold mb-4">Positions</h2>
+          <>
+            <SectionTitle>Positions</SectionTitle>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {linkedPositions.map((position) => (
                 <Link
@@ -79,8 +80,15 @@ export default async function ChunkDetailPage({ params }: Props) {
                 </Link>
               ))}
             </div>
-          </section>
+          </>
         )}
+
+        <Divider />
+
+        <Breadcrumb
+          items={[{ label: 'Chunks', href: '/chunks' }, { label: chunk.title }]}
+          locale={locale}
+        />
       </PagePanel>
     </div>
   );
