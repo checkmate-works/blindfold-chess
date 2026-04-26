@@ -1758,6 +1758,29 @@ export type NewPositionTag = typeof positionTags.$inferInsert;
  * `position_chunks`, describing which patterns a given memory position
  * contains.
  *
+ * @design catalog, not discussion — why chunks is a separate table from topic_posts
+ * Both `chunks` and `topic_posts` are UGC, but they differ in nature:
+ * - `topic_posts` are **discussions** — free-form text tied to a topic
+ *   (opening or square), with replies, likes, and ratings.
+ * - `chunks` are **catalog entries** — structured data (FEN, slug, title)
+ *   that serve as reusable building blocks linked to positions via the
+ *   `position_chunks` junction table.
+ *
+ * Merging chunks into `topic_posts` via polymorphism (STI) was considered
+ * but rejected because:
+ * (a) chunks have unique columns (`representative_fen`, `slug`) that would
+ *     become nullable in a shared table;
+ * (b) chunks have a many-to-many relationship with `positions` via
+ *     `position_chunks`, which is structurally different from the 1:N
+ *     relationship `topic_posts` have with their topics;
+ * (c) the RLS model differs — chunks are a public catalog editable only by
+ *     the author, whereas topic_posts support reply permissions, ratings,
+ *     and moderation workflows.
+ *
+ * The UI navigation places chunks alongside topics (linked from `/topics`)
+ * because both are UGC, but the URL is `/chunks` (not `/topics/chunks`)
+ * to reflect that chunks are a catalog, not a discussion forum.
+ *
  * @design catalog of piece-coordination patterns
  * `chunks` is a catalog — not per-user scratch data. Each row represents one
  * recognizable pattern named by its submitter (title) and optionally
