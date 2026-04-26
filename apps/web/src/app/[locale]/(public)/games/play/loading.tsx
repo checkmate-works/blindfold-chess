@@ -1,3 +1,5 @@
+import { getTranslations } from 'next-intl/server';
+
 import { readMoveInputPreferenceFromCookies } from '@/lib/games/move-input-cookie.server';
 import { readPeekPreferenceFromCookies } from '@/lib/games/peek-cookie.server';
 
@@ -43,9 +45,10 @@ export const dynamic = 'force-dynamic';
  * button get the correct layout during this transitional paint too.
  */
 export default async function GamesPlayLoading() {
-  const [moveInputHint, peekHint] = await Promise.all([
+  const [moveInputHint, peekHint, tPlay] = await Promise.all([
     readMoveInputPreferenceFromCookies(),
     readPeekPreferenceFromCookies(),
+    getTranslations('play'),
   ]);
   const moveInputSkeletonProps = deriveMoveInputSkeletonProps(moveInputHint);
   const showInlinePeekHeader = shouldShowInlinePeekHeader(peekHint);
@@ -53,9 +56,11 @@ export default async function GamesPlayLoading() {
 
   return (
     <div className="space-y-8">
-      <PageTitle>
-        <span className="invisible">Loading</span>
-      </PageTitle>
+      {/* Match the initial PlayPageClient render (`isInitializing` branch),
+          which shows `t('loading')` rather than `t('title')`. Using
+          `t('title')` here causes a visible double-flash:
+          "Play Chess" → "Loading..." → "Play Chess". */}
+      <PageTitle>{tPlay('loading')}</PageTitle>
 
       <PagePanel>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
