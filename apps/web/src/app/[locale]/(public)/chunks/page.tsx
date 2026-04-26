@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 
+import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
 import { truncateContent } from '@blindfold-chess/features/utils';
 
@@ -8,6 +9,7 @@ import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
 import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -88,6 +90,10 @@ export default async function ChunksListPage({ params, searchParams }: Props) {
             totalPages={totalPages}
             buildHref={(p) => `/${locale}/chunks?page=${p}`}
           />
+        )}
+
+        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
         )}
 
         <Divider />
