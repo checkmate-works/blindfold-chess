@@ -1,22 +1,28 @@
-import { PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { getTranslations } from 'next-intl/server';
+
+import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 
 /**
- * Learn category listing loading skeleton.
+ * Learn index loading skeleton.
  *
- * Shown while the server renders the learn index / category pages.
+ * Mirrors `learn/page.tsx` (PageTitle + PagePanel + SectionTitle + 5 CardLink
+ * placeholders matching the available-categories grid). Static labels resolve
+ * from the `learn` namespace; per-category counts (DB-driven) stay as bar
+ * placeholders.
+ *
+ * Note: `[category]` and `[category]/[slug]` ship dedicated `loading.tsx`
+ * files because their bodies diverge from this index shape (ListLink rows
+ * and a Markdown article body respectively).
  */
-export default function LearnLoading() {
+export default async function LearnLoading() {
+  const [t, tNav] = await Promise.all([getTranslations('learn'), getTranslations('navigation')]);
+
   return (
     <div className="space-y-8">
-      <PageTitle>
-        <span className="invisible">Loading</span>
-      </PageTitle>
+      <PageTitle>{t('title')}</PageTitle>
 
       <PagePanel>
-        {/* SectionTitle skeleton */}
-        <div className="border-b border-border pb-2">
-          <div className="h-5 md:h-6 bg-muted rounded w-48 animate-pulse" />
-        </div>
+        <SectionTitle>{t('browseByCategory')}</SectionTitle>
 
         <div className="space-y-4">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -31,6 +37,22 @@ export default function LearnLoading() {
             </div>
           ))}
         </div>
+
+        <Divider />
+
+        {/* Breadcrumb: [Home logo] / Learn. Single static crumb mirrors
+            `learn/page.tsx`'s `<Breadcrumb items={[{ label: t('navigation.learn') }]} />`. */}
+        <nav aria-label="Breadcrumb" className="mb-4 flex min-h-10 items-end">
+          <ol className="flex flex-wrap items-center gap-x-1 text-sm">
+            <li>
+              <div className="w-6 h-6 rounded-sm bg-muted animate-pulse" />
+            </li>
+            <li className="flex items-center">
+              <span className="mx-1 text-muted-foreground">/</span>
+              <span className="text-foreground font-medium">{tNav('learn')}</span>
+            </li>
+          </ol>
+        </nav>
       </PagePanel>
     </div>
   );
