@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { getChunkBySlug, getLinkedPositionsForChunk } from '@/lib/chunks/queries';
-import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
+import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
@@ -62,7 +62,7 @@ export default async function ChunkDetailPage({ params }: Props) {
         )}
 
         <div className="max-w-xs mx-auto">
-          <BoardThumbnail fen={chunk.representativeFen} className="w-full" />
+          <ThemedBoardThumbnail fen={chunk.representativeFen} className="w-full" />
         </div>
 
         {linkedPositions.length > 0 && (
@@ -78,7 +78,7 @@ export default async function ChunkDetailPage({ params }: Props) {
                   href={`/${locale}/practice/position-memory/${position.id}`}
                   className="block p-4 rounded border border-border hover:bg-muted transition-colors"
                 >
-                  <BoardThumbnail fen={position.fen} className="w-full mb-2" />
+                  <ThemedBoardThumbnail fen={position.fen} className="w-full mb-2" />
                   <p className="text-sm font-medium truncate">{position.title}</p>
                 </Link>
               ))}

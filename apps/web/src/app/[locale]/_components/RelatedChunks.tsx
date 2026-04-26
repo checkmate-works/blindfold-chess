@@ -1,6 +1,6 @@
 import { Link } from '@/i18n/routing';
 
-import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
+import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -41,7 +41,7 @@ export function RelatedChunks({ chunks, locale }: Props) {
             locale={locale}
             className="flex items-start gap-3 p-3 rounded border border-border hover:bg-muted transition-colors"
           >
-            <BoardThumbnail fen={chunk.representativeFen} className="w-16 h-16 shrink-0" />
+            <ThemedBoardThumbnail fen={chunk.representativeFen} className="w-16 h-16 shrink-0" />
             <div className="min-w-0">
               <p className="text-sm font-medium">{chunk.title}</p>
               {chunk.description && (

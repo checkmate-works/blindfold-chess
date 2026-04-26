@@ -5,7 +5,7 @@ import { truncateContent } from '@blindfold-chess/features/utils';
 
 import { countChunks, listChunks } from '@/lib/chunks/queries';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
-import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
+import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
@@ -74,7 +74,7 @@ export default async function ChunksListPage({ params, searchParams }: Props) {
                 locale={locale}
                 className="block p-4 rounded border border-border hover:bg-muted transition-colors"
               >
-                <BoardThumbnail fen={chunk.representativeFen} className="w-full mb-3" />
+                <ThemedBoardThumbnail fen={chunk.representativeFen} className="w-full mb-3" />
                 <p className="font-medium truncate">{chunk.title}</p>
                 {chunk.description && <DescriptionPreview description={chunk.description} />}
               </Link>
