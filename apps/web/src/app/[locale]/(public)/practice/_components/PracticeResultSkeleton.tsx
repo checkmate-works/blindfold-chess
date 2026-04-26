@@ -3,6 +3,19 @@ import { Skeleton } from '@/app/[locale]/_components';
 import { PracticeLayout } from './PracticeLayout';
 import { PracticePanel } from './PracticePanel';
 
+/**
+ * Inline practice-result fallback used by client-side session components
+ * (e.g. `LegalMovesSession`, `RoutePlannerSession`, `SquareColorsChallenge`)
+ * while a problem set or result payload is being prepared on the client.
+ *
+ * This is intentionally NOT the same shape as the server `loading.tsx`
+ * fallback for the result route (`PracticeResultLoadingSkeleton`). The
+ * client fallback only needs to occupy the inner score panel area while a
+ * client-side state transition completes; the surrounding `<PageTitle>` /
+ * `<PagePanel>` / `<Breadcrumb>` chrome is already in the DOM at that
+ * point, so re-emitting it would double-render. Keep the two skeletons
+ * separate.
+ */
 export function PracticeResultSkeleton() {
   return (
     <PracticeLayout>
