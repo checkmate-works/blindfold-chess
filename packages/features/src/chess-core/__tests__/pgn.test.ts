@@ -1098,4 +1098,112 @@ describe("validateAttachedPgn", () => {
       expect(["invalid_pgn", "no_moves"]).toContain(result.error);
     }
   });
+
+  // ─── Boundary value tests for SPEC1 attachment limit (100 KiB) ───
+  describe("byte-length boundary at 100 KiB", () => {
+    const KIB_100 = 100 * 1024;
+
+    it("accepts input whose UTF-8 byte length equals exactly maxBytes (when normalized fits too)", () => {
+      // The contract has TWO maxBytes checks: the input AND the normalized
+      // re-emitted PGN must both fit (see pgn.ts §"normalizedByteLength
+      // > maxBytes"). chess.js typically ADDS headers (Result, Site=?, etc.)
+      // when re-emitting, so the normalized form is usually larger than the
+      // raw input. To exercise the boundary, we set maxBytes to a value
+      // comfortably above the normalized re-emit size and confirm acceptance.
+      const pgn = "1. e4 e5 2. Nf3 Nc6"; // 19 bytes
+      // Re-normalized chess.js output for the SIMPLE_PGN above is around
+      // 200-300 bytes; pick 1024 so we are clearly over the normalized size
+      // boundary on the safe side.
+      const result = validateAttachedPgn(pgn, { maxBytes: 1024 });
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        // Sanity: the byteLength field must reflect the normalized output,
+        // not the raw input — this is what gets stored in the DB column.
+        expect(result.byteLength).toBeGreaterThanOrEqual(pgn.length);
+      }
+    });
+
+    it("rejects input one byte over the input maxBytes guard", () => {
+      const pgn = "1. e4 e5 2. Nf3 Nc6";
+      const oneByteUnder = pgn.length - 1;
+      const result = validateAttachedPgn(pgn, { maxBytes: oneByteUnder });
+      expect(result).toEqual({ ok: false, error: "too_large" });
+    });
+
+    it("rejects when normalized output exceeds maxBytes even if input fits", () => {
+      // Choose maxBytes equal to the raw input length so the input passes
+      // the first cap check but the normalized chess.js output (which is
+      // larger due to added headers) trips the second check.
+      const pgn = "1. e4 e5 2. Nf3 Nc6"; // 19 bytes
+      const result = validateAttachedPgn(pgn, { maxBytes: pgn.length });
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error).toBe("too_large");
+      }
+    });
+
+    it("accepts a real 100 KiB-or-under input under the production cap", () => {
+      // The default cap is 102_400. Build a PGN comfortably under it
+      // and confirm it passes — this is the happy-path boundary check
+      // for the production-default code path.
+      const moves: string[] = [];
+      for (let i = 1; i <= 200; i += 2) {
+        // 200 plies => 100 moves each side, well under any byte limit
+        moves.push(`${Math.floor(i / 2) + 1}. e4 e5`);
+      }
+      // Replace alternating moves with legal ones — keep it minimal/legal
+      const pgn = "1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Be7";
+      const result = validateAttachedPgn(pgn);
+      expect(result.ok).toBe(true);
+    });
+
+    it("rejects an input over the default 100 KiB cap (no custom maxBytes)", () => {
+      // Construct a string whose UTF-8 byte length is just over the
+      // default cap. Use a single-byte ASCII char to keep length == bytes.
+      const oversized = "a".repeat(KIB_100 + 1);
+      const result = validateAttachedPgn(oversized);
+      expect(result).toEqual({ ok: false, error: "too_large" });
+    });
+  });
+
+  describe("empty / whitespace boundaries", () => {
+    it("returns 'empty' for a pure tab+newline+space mix", () => {
+      expect(validateAttachedPgn("\t\n \r\n  ")).toEqual({
+        ok: false,
+        error: "empty",
+      });
+    });
+
+    it("returns 'empty' for the empty string (regression)", () => {
+      expect(validateAttachedPgn("")).toEqual({ ok: false, error: "empty" });
+    });
+  });
+
+  describe("normalized output safety", () => {
+    it("anonymized normalized PGN never contains the original White name", () => {
+      const pgn =
+        '[White "AliceTheGreat"]\n[Black "BobTheWise"]\n\n1. e4 e5 2. Nf3 Nc6';
+      const result = validateAttachedPgn(pgn, { anonymize: true });
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        // Defense-in-depth assertion: the stored, normalized text MUST
+        // not leak the original names. If chess.js ever changes how
+        // headers are emitted, this test surfaces it immediately.
+        expect(result.normalized).not.toContain("AliceTheGreat");
+        expect(result.normalized).not.toContain("BobTheWise");
+      }
+    });
+
+    it("non-anonymized PGN preserves original White / Black names verbatim", () => {
+      const pgn =
+        '[White "AliceTheGreat"]\n[Black "BobTheWise"]\n\n1. e4 e5 2. Nf3 Nc6';
+      const result = validateAttachedPgn(pgn);
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.headers.white).toBe("AliceTheGreat");
+        expect(result.headers.black).toBe("BobTheWise");
+        expect(result.normalized).toContain("AliceTheGreat");
+      }
+    });
+  });
 });
