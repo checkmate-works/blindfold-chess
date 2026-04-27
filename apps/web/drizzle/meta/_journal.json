@@ -225,6 +225,13 @@
       "when": 1777159151959,
       "tag": "20260425231911_add_slug_to_chunks",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1777283452195,
+      "tag": "20260427095052_create_topic_post_attachments",
+      "breakpoints": true
     }
   ]
 }

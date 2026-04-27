@@ -528,6 +528,119 @@ export const topicPostRatings = pgTable(
 export type TopicPostRating = typeof topicPostRatings.$inferSelect;
 export type NewTopicPostRating = typeof topicPostRatings.$inferInsert;
 
+/**
+ * Topic Post Attachments — chess game attached to a topic post.
+ *
+ * @description
+ * One topic_post can have at most one attached chess game. v1 supports two
+ * sources: user-pasted PGN, and Lichess URL (server-fetched into PGN at
+ * post-creation time). All attachments store a normalized PGN string —
+ * rendering always works from PGN, even for Lichess-sourced games.
+ *
+ * @design 1:0..1 instead of 1:N (UNIQUE on post_id)
+ *
+ * v1 caps at one attachment per post. UNIQUE on post_id makes this an
+ * invariant of the schema, not a soft business rule. If multi-attachment
+ * is ever needed, drop the UNIQUE and add a `display_order` column —
+ * neither is forward-incompatible.
+ *
+ * @design Dedicated table instead of polymorphic `attachments`
+ *
+ * Unlike `likes` / `moderation_actions` / `feed_items` (which are truly
+ * polymorphic over many target types), attachments today and for the
+ * foreseeable future are only ever attached to topic_posts. A dedicated
+ * table mirrors the established 1:0..1 extension pattern used by
+ * `topic_post_ratings` above and lets us:
+ *   - express the 1:0..1 invariant via UNIQUE
+ *   - foreign-key cleanly to topic_posts (CASCADE on post delete)
+ *   - keep PGN-specific extracted columns (`header_white`, `result`, etc.)
+ *     typed and indexable instead of inside JSONB
+ *
+ * @design source is varchar, not pgEnum
+ *
+ * Same rationale as topic_type / target_type elsewhere in this file:
+ * varchar avoids ALTER TYPE migrations when 'inline_built' / 'chess_com'
+ * (if a future API path opens up) join the set.
+ *
+ * @design Always store normalized PGN, even for Lichess sources
+ *
+ * Rendering is unified to one path: `parsePgnWithFen` + replayable board.
+ * Lichess URL becomes `source='lichess'`, `source_url` populated, plus
+ * the fetched PGN saved verbatim. This keeps the viewer offline-resilient
+ * (no live Lichess dependency at view time) and removes a CSP/iframe
+ * surface from the public site.
+ *
+ * @design FK to topic_posts (CASCADE)
+ *
+ * Attachments belong to their post. Soft-deletion of the post (deletedAt)
+ * leaves the attachment row but the application layer (and RLS) hide it;
+ * hard deletion of the post cascades the attachment.
+ *
+ * @design pgn_byte_length for fast moderation queries
+ *
+ * Indexed precomputed length so admin moderation can filter "abusively
+ * large attachments" without touching the text column. The column is
+ * also a CHECK input to enforce MAX_PGN_BYTES at the DB level.
+ *
+ * @design (source, source_game_id) composite index
+ *
+ * Lichess fetch reuse lookup: when a user attaches a Lichess game that
+ * was already fetched and stored within the reuse window (see
+ * `resolve-lichess-attachment.ts`), the previously stored PGN is reused
+ * instead of re-fetching from Lichess. This index makes that lookup O(log N).
+ */
+export const topicPostAttachments = pgTable(
+  'topic_post_attachments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    postId: uuid('post_id')
+      .notNull()
+      .unique()
+      .references(() => topicPosts.id, { onDelete: 'cascade' }),
+    source: varchar('source', { length: 20 }).notNull(), // 'pgn' | 'lichess' | (future)
+    sourceUrl: varchar('source_url', { length: 512 }), // canonical URL when source != 'pgn'
+    sourceGameId: varchar('source_game_id', { length: 64 }), // Lichess gameId, etc.
+    pgn: text('pgn').notNull(), // normalized PGN, always present
+    pgnByteLength: integer('pgn_byte_length').notNull(), // for size-based moderation
+    startingFen: varchar('starting_fen', { length: 100 }), // non-default starting position only
+    moveCount: integer('move_count').notNull().default(0),
+    // Extracted PGN headers (denormalized for list/preview without re-parsing).
+    // All nullable: minimal "1. e4 e5" PGN has no headers.
+    headerWhite: varchar('header_white', { length: 100 }),
+    headerBlack: varchar('header_black', { length: 100 }),
+    headerResult: varchar('header_result', { length: 10 }), // '1-0' | '0-1' | '1/2-1/2' | '*'
+    headerEvent: varchar('header_event', { length: 200 }),
+    headerSite: varchar('header_site', { length: 200 }),
+    headerDate: varchar('header_date', { length: 20 }),
+    // Privacy: poster opted to anonymize player names. The stored PGN is
+    // already anonymized when this is true; the original headers are
+    // discarded at save time (we never persist the real names).
+    anonymized: boolean('anonymized').notNull().default(false),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    check(
+      'chk_pgn_byte_length',
+      sql`${table.pgnByteLength} > 0 AND ${table.pgnByteLength} <= 102400`
+    ),
+    check('chk_source_valid', sql`${table.source} IN ('pgn', 'lichess')`),
+    check(
+      'chk_source_url_required_for_external',
+      sql`${table.source} = 'pgn' OR ${table.sourceUrl} IS NOT NULL`
+    ),
+    index('idx_topic_post_attachments_post').on(table.postId),
+    index('idx_topic_post_attachments_source').on(table.source),
+    // Forensic / admin filtering for oversized attachments.
+    index('idx_topic_post_attachments_size').on(table.pgnByteLength),
+    // Lichess fetch reuse lookup: `(source='lichess', source_game_id='abcd1234')`
+    // — see `apps/web/src/lib/games/resolve-lichess-attachment.ts`.
+    index('idx_topic_post_attachments_source_game').on(table.source, table.sourceGameId),
+  ]
+);
+
+export type TopicPostAttachment = typeof topicPostAttachments.$inferSelect;
+export type NewTopicPostAttachment = typeof topicPostAttachments.$inferInsert;
+
 // User Follows
 export const userFollows = pgTable(
   'user_follows',
