@@ -3902,6 +3902,50 @@
       "nextRank": "Siguiente rango: guía de {rankName}"
     }
   },
+  "attachment": {
+    "input": {
+      "show": "Adjuntar una partida",
+      "hide": "Ocultar adjunto",
+      "label": "Partida (PGN o URL de Lichess)",
+      "placeholder": "Pega una URL de partida de Lichess o un PGN completo…",
+      "modeHint": "Acepta una URL de partida de Lichess (lichess.org/…) o un PGN completo. Las URLs de chess.com no están soportadas — pega el PGN exportado en su lugar."
+    },
+    "label": {
+      "anonymize": "Anonimizar nombres de jugadores",
+      "anonymizeHint": "Sustituye las cabeceras White / Black por «Player 1» y «Player 2» antes de guardar."
+    },
+    "preview": {
+      "loading": "Generando vista previa…",
+      "openInLichess": "Abrir en Lichess"
+    },
+    "card": {
+      "replayButton": "Abrir reproducción",
+      "collapseButton": "Ocultar reproducción",
+      "movesCount": "{count, plural, one {# jugada} other {# jugadas}}",
+      "headerWhite": "Blancas",
+      "headerBlack": "Negras",
+      "headerEvent": "Evento",
+      "headerDate": "Fecha",
+      "headerSite": "Sitio",
+      "sourceLabel": "Fuente",
+      "anonymizedNote": "Nombres de los jugadores anonimizados por el autor."
+    },
+    "delete": {
+      "confirm": "¿Eliminar la partida adjunta de este comentario?",
+      "success": "Adjunto eliminado."
+    },
+    "error": {
+      "empty": "Pega una URL de Lichess o un PGN, u oculta el campo de adjunto.",
+      "tooLarge": "El PGN es demasiado grande. El tamaño máximo es 100 KB.",
+      "invalidPgn": "No se pudo interpretar como PGN. Revisa las jugadas y las cabeceras.",
+      "noMoves": "El PGN no contiene jugadas. Añade al menos una jugada antes de adjuntarlo.",
+      "lichessFetchFailed": "No se pudo obtener la partida de Lichess. Inténtalo de nuevo o pega el PGN directamente.",
+      "lichessNotFound": "Partida de Lichess no encontrada. Revisa la URL.",
+      "lichessRateLimited": "Lichess está saturado en este momento. Espera un poco o pega el PGN directamente.",
+      "chesscomUnsupported": "Las URLs de chess.com no están soportadas. Exporta el PGN desde chess.com y pégalo aquí.",
+      "rateLimitedPostWithAttachment": "Puedes adjuntar como máximo 5 partidas por hora."
+    }
+  },
   "Footer": {
     "resources": "Recursos",
     "support": "Soporte",

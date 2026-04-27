@@ -4056,6 +4056,50 @@
       "nextRank": "Next rank: {rankName} guide"
     }
   },
+  "attachment": {
+    "input": {
+      "show": "Attach a game",
+      "hide": "Hide attachment",
+      "label": "Game (PGN or Lichess URL)",
+      "placeholder": "Paste a Lichess game URL or full PGN…",
+      "modeHint": "Accepts a Lichess game URL (lichess.org/…) or a full PGN. chess.com URLs are not supported — paste the exported PGN instead."
+    },
+    "label": {
+      "anonymize": "Anonymize player names",
+      "anonymizeHint": "Replaces White / Black headers with \"Player 1\" and \"Player 2\" before saving."
+    },
+    "preview": {
+      "loading": "Generating preview…",
+      "openInLichess": "Open in Lichess"
+    },
+    "card": {
+      "replayButton": "Open replay",
+      "collapseButton": "Hide replay",
+      "movesCount": "{count, plural, one {# move} other {# moves}}",
+      "headerWhite": "White",
+      "headerBlack": "Black",
+      "headerEvent": "Event",
+      "headerDate": "Date",
+      "headerSite": "Site",
+      "sourceLabel": "Source",
+      "anonymizedNote": "Player names anonymized by the poster."
+    },
+    "delete": {
+      "confirm": "Remove the attached game from this comment?",
+      "success": "Attachment removed."
+    },
+    "error": {
+      "empty": "Paste a Lichess URL or PGN, or hide the attachment field.",
+      "tooLarge": "PGN is too large. The maximum size is 100 KB.",
+      "invalidPgn": "Could not parse that as a PGN. Check the moves and headers.",
+      "noMoves": "PGN has no moves. Add at least one move before attaching.",
+      "lichessFetchFailed": "Could not fetch the Lichess game. Try again, or paste the PGN directly.",
+      "lichessNotFound": "Lichess game not found. Check the URL.",
+      "lichessRateLimited": "Lichess is busy right now. Wait a moment, or paste the PGN directly.",
+      "chesscomUnsupported": "chess.com URLs are not supported. Export the PGN from chess.com and paste it here.",
+      "rateLimitedPostWithAttachment": "You can attach at most 5 games per hour."
+    }
+  },
   "Footer": {
     "resources": "Resources",
     "support": "Support",

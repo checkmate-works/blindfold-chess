@@ -4056,6 +4056,50 @@
       "nextRank": "Próxima graduação: guia de {rankName}"
     }
   },
+  "attachment": {
+    "input": {
+      "show": "Anexar uma partida",
+      "hide": "Ocultar anexo",
+      "label": "Partida (PGN ou URL do Lichess)",
+      "placeholder": "Cole uma URL de partida do Lichess ou um PGN completo…",
+      "modeHint": "Aceita uma URL de partida do Lichess (lichess.org/…) ou um PGN completo. URLs do chess.com não são suportadas — cole o PGN exportado em vez disso."
+    },
+    "label": {
+      "anonymize": "Anonimizar nomes dos jogadores",
+      "anonymizeHint": "Substitui os cabeçalhos White / Black por «Player 1» e «Player 2» antes de salvar."
+    },
+    "preview": {
+      "loading": "Gerando pré-visualização…",
+      "openInLichess": "Abrir no Lichess"
+    },
+    "card": {
+      "replayButton": "Abrir replay",
+      "collapseButton": "Ocultar replay",
+      "movesCount": "{count, plural, one {# lance} other {# lances}}",
+      "headerWhite": "Brancas",
+      "headerBlack": "Pretas",
+      "headerEvent": "Evento",
+      "headerDate": "Data",
+      "headerSite": "Site",
+      "sourceLabel": "Fonte",
+      "anonymizedNote": "Nomes dos jogadores anonimizados pelo autor."
+    },
+    "delete": {
+      "confirm": "Remover a partida anexada deste comentário?",
+      "success": "Anexo removido."
+    },
+    "error": {
+      "empty": "Cole uma URL do Lichess ou um PGN, ou oculte o campo de anexo.",
+      "tooLarge": "O PGN é grande demais. O tamanho máximo é 100 KB.",
+      "invalidPgn": "Não foi possível interpretar como PGN. Verifique os lances e os cabeçalhos.",
+      "noMoves": "O PGN não contém lances. Adicione pelo menos um lance antes de anexá-lo.",
+      "lichessFetchFailed": "Não foi possível obter a partida do Lichess. Tente novamente ou cole o PGN diretamente.",
+      "lichessNotFound": "Partida do Lichess não encontrada. Verifique a URL.",
+      "lichessRateLimited": "O Lichess está congestionado. Aguarde um pouco ou cole o PGN diretamente.",
+      "chesscomUnsupported": "URLs do chess.com não são suportadas. Exporte o PGN do chess.com e cole aqui.",
+      "rateLimitedPostWithAttachment": "Você pode anexar no máximo 5 partidas por hora."
+    }
+  },
   "Footer": {
     "resources": "Recursos",
     "support": "Suporte",

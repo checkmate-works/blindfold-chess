@@ -3952,6 +3952,50 @@
       "nextRank": "次の段級位: {rankName} ガイド"
     }
   },
+  "attachment": {
+    "input": {
+      "show": "ゲームを添付",
+      "hide": "添付を閉じる",
+      "label": "ゲーム（PGN または Lichess の URL）",
+      "placeholder": "Lichess の対局 URL または PGN を貼り付け…",
+      "modeHint": "Lichess の対局 URL（lichess.org/…）または PGN を受け付けます。chess.com の URL は非対応です — エクスポートした PGN を貼り付けてください。"
+    },
+    "label": {
+      "anonymize": "対局者名を匿名化",
+      "anonymizeHint": "保存時に White / Black ヘッダを「Player 1」「Player 2」に置き換えます。"
+    },
+    "preview": {
+      "loading": "プレビュー生成中…",
+      "openInLichess": "Lichess で開く"
+    },
+    "card": {
+      "replayButton": "リプレイを開く",
+      "collapseButton": "リプレイを閉じる",
+      "movesCount": "{count} 手",
+      "headerWhite": "白",
+      "headerBlack": "黒",
+      "headerEvent": "イベント",
+      "headerDate": "日付",
+      "headerSite": "サイト",
+      "sourceLabel": "出典",
+      "anonymizedNote": "投稿者により対局者名が匿名化されています。"
+    },
+    "delete": {
+      "confirm": "このコメントから添付ゲームを削除しますか？",
+      "success": "添付を削除しました。"
+    },
+    "error": {
+      "empty": "Lichess URL または PGN を入力するか、添付欄を閉じてください。",
+      "tooLarge": "PGN が大きすぎます。最大サイズは 100 KB です。",
+      "invalidPgn": "PGN として解釈できませんでした。指し手とヘッダを確認してください。",
+      "noMoves": "PGN に指し手がありません。少なくとも 1 手追加してください。",
+      "lichessFetchFailed": "Lichess の対局を取得できませんでした。少し待つか、PGN を直接貼り付けてください。",
+      "lichessNotFound": "Lichess に対局が見つかりませんでした。URL を確認してください。",
+      "lichessRateLimited": "Lichess が混雑しています。少し待つか、PGN を直接貼り付けてください。",
+      "chesscomUnsupported": "chess.com の URL は非対応です。chess.com から PGN をエクスポートして貼り付けてください。",
+      "rateLimitedPostWithAttachment": "添付付きの投稿は 1 時間に 5 件までです。"
+    }
+  },
   "Footer": {
     "resources": "リソース",
     "support": "サポート",

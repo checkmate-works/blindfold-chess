@@ -41,6 +41,7 @@ export function BasePostForm({
   showGrantInfoModal = false,
 }: Props) {
   const t = useTranslations(translationNamespace);
+  const tGlobal = useTranslations();
   const tUnsaved = useTranslations('unsavedChanges');
   const [state, formAction, isPending] = useActionState(action, {});
   const [isDirty, setIsDirty] = useState(false);
@@ -84,10 +85,17 @@ export function BasePostForm({
     setShowModal(false);
   };
 
+  // Errors come back from server actions either as plain keys (resolved
+  // against the form's namespace) or as fully-qualified dotted paths
+  // (e.g. `attachment.error.tooLarge`). The latter are resolved against
+  // the global translator. If neither resolves, fall back to the form's
+  // generic `error` key.
   const errorMessage = state.error
     ? t.has(state.error)
       ? t(state.error as string)
-      : t('error')
+      : state.error.includes('.') && tGlobal.has(state.error)
+        ? tGlobal(state.error)
+        : t('error')
     : null;
 
   return (
