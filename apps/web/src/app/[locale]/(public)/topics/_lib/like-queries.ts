@@ -1,4 +1,4 @@
-import { and, count, desc, eq, isNull } from 'drizzle-orm';
+import { and, count, desc, eq, inArray, isNull } from 'drizzle-orm';
 
 import { chessOpenings, db, likes, profiles, topicPostRatings, topicPosts } from '@/lib/db';
 import { getLikeMeta } from '@/lib/db/like-queries';
@@ -30,6 +30,7 @@ export async function getLikedPostCountByUser(userId: string): Promise<number> {
       and(
         eq(likes.userId, userId),
         eq(likes.targetType, 'topic_post'),
+        inArray(topicPosts.topicType, ['square', 'opening']),
         isNull(topicPosts.deletedAt)
       )
     );
@@ -64,6 +65,7 @@ export async function getLikedPostsByUser(
       and(
         eq(likes.userId, userId),
         eq(likes.targetType, 'topic_post'),
+        inArray(topicPosts.topicType, ['square', 'opening']),
         isNull(topicPosts.deletedAt)
       )
     )

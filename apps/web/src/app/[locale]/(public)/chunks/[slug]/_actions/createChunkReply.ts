@@ -20,8 +20,8 @@ export async function createChunkReply(
     topicKey: slug,
     urlSegment: 'chunks',
     validateTopic: async (s) => (await getChunkBySlug(s)) !== null,
-    redirectPath: (parentPostId, replyId) =>
-      `/${locale}/chunks/${slug}?toast=post_created#post-${replyId ?? parentPostId}`,
+    redirectPath: (_parentPostId, replyId) =>
+      `/${locale}/chunks/${slug}?toast=post_created#post-${replyId}`,
     revalidate: () => `/${locale}/chunks/${slug}`,
     formData,
   });
