@@ -49,9 +49,10 @@ async function handleSuccessfulAuth(
       .then((rows) => rows[0]),
     // Initialize the `bfc_ads_hidden` cookie based on the freshly-signed-in
     // user's entitlement state. Subsequent visits refresh this cookie via
-    // `refreshAdsHiddenCookie()` on `/mypage/subscription` and the Stripe
-    // success landing. See `@/lib/ads/ads-hidden-cookie.ts` for the overall
-    // no-flash flow.
+    // `getSessionUser()` (called by `AuthProvider` on every mount) and via
+    // the request proxy (`apps/web/src/proxy.ts`) on `/mypage/subscription`
+    // — including the Stripe success landing. See
+    // `@/lib/ads/ads-hidden-cookie.ts` for the overall no-flash flow.
     //
     // A transient failure here (DB blip, Supabase timeout) is isolated so
     // sign-in still succeeds: the cookie is deleted (null), the user sees

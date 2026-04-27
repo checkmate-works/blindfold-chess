@@ -38,6 +38,7 @@ describe('updateSession', () => {
       const result = await updateSession(request);
 
       expect(result.authenticated).toBe(false);
+      expect(result.userId).toBeNull();
       expect(result.response).toBeInstanceOf(NextResponse);
       expect(mockCreateServerClient).not.toHaveBeenCalled();
     });
@@ -51,6 +52,7 @@ describe('updateSession', () => {
       const result = await updateSession(request);
 
       expect(result.authenticated).toBe(false);
+      expect(result.userId).toBeNull();
       expect(result.response).toBeInstanceOf(NextResponse);
       expect(mockCreateServerClient).not.toHaveBeenCalled();
     });
@@ -64,6 +66,7 @@ describe('updateSession', () => {
       const result = await updateSession(request);
 
       expect(result.authenticated).toBe(false);
+      expect(result.userId).toBeNull();
       expect(mockCreateServerClient).not.toHaveBeenCalled();
     });
   });
@@ -74,7 +77,7 @@ describe('updateSession', () => {
       vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', 'test-anon-key');
     });
 
-    it('should return authenticated=true when getClaims succeeds with data', async () => {
+    it('should return authenticated=true and expose userId when getClaims succeeds with data', async () => {
       mockGetClaims.mockResolvedValue({
         data: { claims: { sub: 'user-123' } },
         error: null,
@@ -85,12 +88,27 @@ describe('updateSession', () => {
       const result = await updateSession(request);
 
       expect(result.authenticated).toBe(true);
+      expect(result.userId).toBe('user-123');
       expect(result.response).toBeInstanceOf(NextResponse);
       expect(mockCreateServerClient).toHaveBeenCalledWith(
         'https://example.supabase.co',
         'test-anon-key',
         expect.objectContaining({ cookies: expect.any(Object) })
       );
+    });
+
+    it('should return authenticated=true with null userId when claims have no sub', async () => {
+      mockGetClaims.mockResolvedValue({
+        data: { claims: {} },
+        error: null,
+      });
+
+      const updateSession = await importUpdateSession();
+      const request = createRequest('/en');
+      const result = await updateSession(request);
+
+      expect(result.authenticated).toBe(true);
+      expect(result.userId).toBeNull();
     });
 
     it('should return authenticated=false when getClaims returns an error', async () => {
@@ -104,6 +122,7 @@ describe('updateSession', () => {
       const result = await updateSession(request);
 
       expect(result.authenticated).toBe(false);
+      expect(result.userId).toBeNull();
       expect(result.response).toBeInstanceOf(NextResponse);
     });
 
@@ -118,6 +137,7 @@ describe('updateSession', () => {
       const result = await updateSession(request);
 
       expect(result.authenticated).toBe(false);
+      expect(result.userId).toBeNull();
     });
 
     it('should create Supabase client with cookie handlers from request', async () => {

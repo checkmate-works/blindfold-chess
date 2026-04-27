@@ -1,5 +1,8 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
+import * as Sentry from '@sentry/nextjs';
+
+import { refreshAdsHiddenCookieOnResponse } from '@/lib/ads/ads-hidden-cookie-writer';
 import { updateSession } from '@/lib/supabase/proxy';
 
 const BLOCKED_PATHS = [
@@ -19,6 +22,15 @@ const BLOCKED_PATHS = [
 const AUTH_REQUIRED_PATHS = ['/mypage'];
 const SIGN_IN_PATH = '/sign-in';
 const ADMIN_PATH = '/admin';
+// Path (after the locale segment) for which the proxy refreshes the
+// `bfc_ads_hidden` cookie on the outgoing response. Kept narrow on purpose:
+// ordinary authenticated page loads are already covered by `getSessionUser()`
+// (called from `AuthProvider`), so we only need to handle the few entry
+// points that DON'T go through the auth provider mount — chiefly the Stripe
+// checkout `success_url` landing on `/mypage/subscription?status=success`,
+// where the user's entitlement just changed and the cookie must reflect that
+// before the page renders.
+const ADS_COOKIE_REFRESH_PATH = '/mypage/subscription';
 
 function isBlockedPath(pathname: string): boolean {
   return BLOCKED_PATHS.some(
@@ -43,6 +55,11 @@ function isSignInPath(pathname: string): boolean {
   return pattern.test(pathname);
 }
 
+function isAdsCookieRefreshPath(pathname: string): boolean {
+  const pattern = new RegExp(`^/[^/]+${ADS_COOKIE_REFRESH_PATH}(/.*)?$`);
+  return pattern.test(pathname);
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -50,7 +67,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.json(null, { status: 404 });
   }
 
-  const { response, authenticated } = await updateSession(request);
+  const { response, authenticated, userId } = await updateSession(request);
 
   // Return 404 for unauthenticated admin access to hide admin panel existence
   if (isAdminPath(pathname) && !authenticated) {
@@ -69,6 +86,25 @@ export async function proxy(request: NextRequest) {
     const locale = pathname.split('/')[1] || 'en';
     const mypageUrl = new URL(`/${locale}/mypage?toast=already_logged_in`, request.url);
     return NextResponse.redirect(mypageUrl);
+  }
+
+  // Refresh the `bfc_ads_hidden` cookie on the response when the user is
+  // navigating to `/mypage/subscription` (and its Stripe-success landing).
+  // Server Components cannot mutate cookies during render under Next.js 16,
+  // so the previous in-page `refreshAdsHiddenCookie()` Server Action call
+  // has been moved here. See `@/lib/ads/ads-hidden-cookie-writer.ts` for the
+  // overall design rationale.
+  //
+  // A transient failure (DB blip, Supabase outage) is isolated so the page
+  // still renders: the cookie is left at its previous value, which
+  // self-corrects on the next visit. The error is reported to Sentry so the
+  // regression is observable.
+  if (isAdsCookieRefreshPath(pathname)) {
+    try {
+      await refreshAdsHiddenCookieOnResponse(response, userId);
+    } catch (error) {
+      Sentry.captureException(error);
+    }
   }
 
   return response;
