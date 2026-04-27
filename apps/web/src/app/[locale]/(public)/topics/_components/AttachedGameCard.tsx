@@ -60,13 +60,21 @@ export function AttachedGameCard({ attachment }: Props) {
   const t = useTranslations('attachment');
   const [expanded, setExpanded] = useState(false);
 
-  // Build the source attribution. For Lichess we always use the
-  // re-built canonical URL — never the raw `headerSite` value.
+  // Build the source attribution. For Lichess we ALWAYS rebuild the URL
+  // from `sourceGameId` rather than trusting any persisted `sourceUrl`
+  // value. This is defense in depth — the writer (`createChunkPostWithAttachment`)
+  // always sets a canonical `https://lichess.org/{8-char-id}` URL today,
+  // but if a future migration, admin tool, or direct REST write ever
+  // landed a non-canonical value in `source_url`, that value would
+  // otherwise become a clickable link in the public UI. Rebuilding from
+  // the validated `sourceGameId` (which is constrained at parse time to
+  // 8 alphanumerics by `LICHESS_URL_RE` / `LICHESS_GAME_ID_RE`) makes
+  // the rendered href provably safe regardless of what the row carries.
   const lichessSource =
     attachment.source === 'lichess' && attachment.sourceGameId
       ? {
           label: `lichess.org/${attachment.sourceGameId}`,
-          href: attachment.sourceUrl ?? `https://lichess.org/${attachment.sourceGameId}`,
+          href: `https://lichess.org/${attachment.sourceGameId}`,
         }
       : null;
 
