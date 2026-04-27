@@ -14,10 +14,11 @@ import { db, stripeCustomers, subscriptions } from '@/lib/db';
  * Webhook handlers run in a Stripe → server HTTP session, with no access to
  * the user's browser cookie jar. The no-flash ad-hide cookie (see
  * `@/lib/ads/ads-hidden-cookie.ts`) is instead refreshed on the user's
- * next authenticated page load via `refreshAdsHiddenCookie()` in
- * `/mypage/subscription/page.tsx`. The Stripe checkout `success_url`
- * points at exactly that page, so a freshly-paid user lands with an
- * up-to-date cookie immediately after checkout. Subscription lifecycle
+ * next authenticated page load via the request proxy
+ * (`apps/web/src/proxy.ts`) when they navigate to
+ * `/mypage/subscription`. The Stripe checkout `success_url` points at
+ * exactly that page, so a freshly-paid user lands with an up-to-date
+ * cookie immediately after checkout. Subscription lifecycle
  * webhooks (`customer.subscription.updated`, `customer.subscription.deleted`)
  * still hit `revalidateTag('subscription-status')` below, so the next
  * visit recomputes entitlement from fresh DB state.
