@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import * as Sentry from '@sentry/nextjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { proxy } from '../src/proxy';
@@ -450,12 +451,19 @@ describe('proxy', () => {
         authenticated: true,
         userId: 'user-123',
       });
-      mockRefreshAdsHiddenCookieOnResponse.mockRejectedValue(new Error('DB hiccup'));
+      const refreshError = new Error('DB hiccup');
+      mockRefreshAdsHiddenCookieOnResponse.mockRejectedValue(refreshError);
+      const captureSpy = vi.mocked(Sentry.captureException);
 
       const request = createRequest('/en/mypage/subscription');
       const result = await proxy(request);
 
       expect(result).toBe(mockResponse);
+      // The swallowed error must still surface to Sentry so the regression is
+      // observable; otherwise a silent DB outage could mask itself as a
+      // working-but-stale ads-hidden cookie indefinitely.
+      expect(captureSpy).toHaveBeenCalledWith(refreshError);
+      expect(captureSpy).toHaveBeenCalledWith(expect.any(Error));
     });
   });
 });
