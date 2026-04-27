@@ -1,3 +1,6 @@
+export { AttachedGameCard } from './AttachedGameCard';
+export type { AttachedGameCardData } from './AttachedGameCard';
+export { AttachmentInput } from './AttachmentInput';
 export { BaseTopicPostCard } from './BaseTopicPostCard';
 export { DeletePostButton } from './DeletePostButton';
 export { LikeButton } from './LikeButton';

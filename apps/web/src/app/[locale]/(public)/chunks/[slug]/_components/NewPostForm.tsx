@@ -1,8 +1,9 @@
 'use client';
 
+import { AttachmentInput } from '@/app/[locale]/(public)/topics/_components/AttachmentInput';
 import { BasePostForm } from '@/app/[locale]/(public)/topics/_components/BasePostForm';
 
-import { createChunkPost } from '../_actions/createChunkPost';
+import { createChunkPostWithAttachment } from '../_actions/createChunkPostWithAttachment';
 
 type Props = {
   locale: string;
@@ -10,13 +11,14 @@ type Props = {
 };
 
 export function NewPostForm({ locale, slug }: Props) {
-  const boundCreatePost = createChunkPost.bind(null, locale, slug);
+  const boundCreatePost = createChunkPostWithAttachment.bind(null, locale, slug);
 
   return (
     <BasePostForm
       action={boundCreatePost}
       translationNamespace="topics.chunks.newPostForm"
       contentRequired
+      beforeContent={(markDirty) => <AttachmentInput onChange={() => markDirty()} />}
     />
   );
 }

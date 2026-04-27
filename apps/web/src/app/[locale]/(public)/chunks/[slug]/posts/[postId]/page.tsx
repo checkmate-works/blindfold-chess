@@ -3,9 +3,11 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { getChunkBySlug } from '@/lib/chunks/queries';
+import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
+import { AttachedGameCard } from '@/app/[locale]/(public)/topics/_components/AttachedGameCard';
 import { TopicPostDetailLayout } from '@/app/[locale]/(public)/topics/_components/TopicPostDetailLayout';
 import { fetchPostDetailData } from '@/app/[locale]/(public)/topics/_lib/post-detail';
 import { getPostByIdAndTopicKey } from '@/app/[locale]/(public)/topics/_lib/queries';
@@ -62,6 +64,9 @@ export default async function ChunkPostDetailPage({ params }: Props) {
 
   const { user, replies, likeMeta, isAuthor, canReply } = await fetchPostDetailData(postId, post);
 
+  const attachments = await getAttachmentsForPosts([postId]);
+  const attachment = attachments.get(postId) ?? null;
+
   const ct = await getTranslations({ locale, namespace: 'topics.chunks' });
 
   const replyRestrictionMessage =
@@ -110,6 +115,7 @@ export default async function ChunkPostDetailPage({ params }: Props) {
         { label: chunk.title, href: `/chunks/${slug}` },
         { label: ct('readMore') },
       ]}
+      extraContent={attachment ? <AttachedGameCard attachment={attachment} /> : undefined}
     />
   );
 }

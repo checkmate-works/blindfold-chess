@@ -7,6 +7,7 @@ import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { getChunkBySlug, getLinkedPositionsForChunk } from '@/lib/chunks/queries';
+import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { getPaginationParams } from '@/lib/pagination';
 import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 import { createClient } from '@/lib/supabase/server';
@@ -110,6 +111,8 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
     sortBy
   );
 
+  const attachments = await getAttachmentsForPosts(posts.map((p) => p.id));
+
   const buildHref = (p: number) => buildPaginationHref(locale, `/chunks/${slug}`, p, sortBy);
 
   return (
@@ -169,7 +172,12 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
           <div className="space-y-3">
             {posts.map((post) => (
               <div key={post.id} id={`post-${post.id}`}>
-                <PostCard post={post} locale={locale} slug={slug} />
+                <PostCard
+                  post={post}
+                  locale={locale}
+                  slug={slug}
+                  attachment={attachments.get(post.id) ?? null}
+                />
               </div>
             ))}
           </div>

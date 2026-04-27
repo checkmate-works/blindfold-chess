@@ -2,7 +2,8 @@
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import { BaseTopicPostCard } from '@/app/[locale]/(public)/topics/_components';
+import { AttachedGameCard, BaseTopicPostCard } from '@/app/[locale]/(public)/topics/_components';
+import type { AttachedGameCardData } from '@/app/[locale]/(public)/topics/_components';
 import type { PostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
 
 import { toggleChunkLike } from '../_actions/toggleChunkLike';
@@ -11,9 +12,10 @@ type Props = {
   post: PostWithReplyMeta;
   locale: string;
   slug: string;
+  attachment: AttachedGameCardData | null;
 };
 
-export function PostCard({ post, locale, slug }: Props) {
+export function PostCard({ post, locale, slug, attachment }: Props) {
   const t = useTranslations('topics.chunks');
 
   return (
@@ -30,6 +32,7 @@ export function PostCard({ post, locale, slug }: Props) {
       toggleLikeAction={toggleChunkLike}
       i18nNamespace="topics.chunks"
       justNowLabel={t('justNow')}
+      extraContent={attachment ? <AttachedGameCard attachment={attachment} /> : undefined}
     />
   );
 }

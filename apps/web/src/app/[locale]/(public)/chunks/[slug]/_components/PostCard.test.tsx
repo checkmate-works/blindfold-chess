@@ -62,7 +62,7 @@ function makePost(overrides: Partial<PostWithReplyMeta> = {}): PostWithReplyMeta
 describe('chunks PostCard', () => {
   it('links to the post detail page (not the listing anchor) so users can open replies', () => {
     baseTopicPostCardSpy.mockClear();
-    render(<PostCard post={makePost()} locale="en" slug="rook-battery" />);
+    render(<PostCard post={makePost()} locale="en" slug="rook-battery" attachment={null} />);
 
     expect(baseTopicPostCardSpy).toHaveBeenCalledTimes(1);
     expect(baseTopicPostCardSpy.mock.calls[0][0]).toMatchObject({
