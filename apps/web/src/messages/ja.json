@@ -3317,6 +3317,14 @@
       "postCount": "{count}件のコメント",
       "noPosts": "まだコメントがありません。最初のコメントを投稿してみましょう！",
       "signInToComment": "サインインしてコメントする",
+      "readMore": "続きを読む",
+      "detail": {
+        "pageTitle": "チャンクコメント"
+      },
+      "postDetail": {
+        "authorView": "{author}さんの「{name}」についてのコメント",
+        "backToChunk": "「{name}」に戻る"
+      },
       "sort": {
         "new": "新着",
         "popular": "人気",
@@ -3342,6 +3350,26 @@
       "unlike": "いいね解除",
       "newReply": "新しい返信 {time}",
       "justNow": "たった今",
+      "replies": {
+        "title": "返信",
+        "count": "{count}件の返信",
+        "noReplies": "まだ返信はありません。最初の返信をしてみましょう！",
+        "contentLabel": "返信内容",
+        "contentPlaceholder": "意見を共有しましょう...",
+        "submit": "返信する",
+        "submitting": "返信中...",
+        "contentRequired": "内容を入力してください",
+        "contentTooLong": "内容は5000文字以内にしてください",
+        "error": "エラーが発生しました。もう一度お試しください。",
+        "signInRequired": "返信するにはサインインが必要です",
+        "loginToReply": "サインインして返信する",
+        "rateLimited": "返信が多すぎます。しばらくしてからもう一度お試しください。",
+        "repliesDisabled": "投稿者がこのコメントへの返信を無効化しています。",
+        "followRequired": "投稿者をフォローしているユーザーのみ返信できます。",
+        "replyButton": "返信",
+        "replyingTo": "@{username} に返信",
+        "cancelReply": "キャンセル"
+      },
       "deletePost": {
         "button": "削除",
         "confirmTitle": "コメントを削除",

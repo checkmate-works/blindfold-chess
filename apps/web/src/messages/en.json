@@ -3421,6 +3421,14 @@
       "postCount": "{count, plural, one {# comment} other {# comments}}",
       "noPosts": "No comments yet. Be the first to share your thoughts!",
       "signInToComment": "Sign in to comment",
+      "readMore": "Read more",
+      "detail": {
+        "pageTitle": "Chunk Comment"
+      },
+      "postDetail": {
+        "authorView": "{author}'s thoughts on {name}",
+        "backToChunk": "Back to {name}"
+      },
       "sort": {
         "new": "New",
         "popular": "Popular",
@@ -3446,6 +3454,26 @@
       "unlike": "Unlike",
       "newReply": "New Reply {time}",
       "justNow": "just now",
+      "replies": {
+        "title": "Replies",
+        "count": "{count, plural, one {# reply} other {# replies}}",
+        "noReplies": "No replies yet. Be the first to reply!",
+        "contentLabel": "Your reply",
+        "contentPlaceholder": "Share your thoughts...",
+        "submit": "Reply",
+        "submitting": "Replying...",
+        "contentRequired": "Please enter some content",
+        "contentTooLong": "Content must be 5000 characters or less",
+        "error": "An error occurred. Please try again.",
+        "signInRequired": "Please sign in to reply",
+        "loginToReply": "Sign in to reply",
+        "rateLimited": "Too many replies. Please try again later.",
+        "repliesDisabled": "The author has disabled replies on this comment.",
+        "followRequired": "Only followers of the author can reply to this comment.",
+        "replyButton": "Reply",
+        "replyingTo": "Replying to @{username}",
+        "cancelReply": "Cancel"
+      },
       "deletePost": {
         "button": "Delete",
         "confirmTitle": "Delete Comment",

@@ -3421,6 +3421,14 @@
       "postCount": "{count, plural, one {# comentário} other {# comentários}}",
       "noPosts": "Ainda não há comentários. Seja o primeiro a compartilhar sua opinião!",
       "signInToComment": "Faça login para comentar",
+      "readMore": "Leia mais",
+      "detail": {
+        "pageTitle": "Comentário do Chunk"
+      },
+      "postDetail": {
+        "authorView": "Opinião de {author} sobre {name}",
+        "backToChunk": "Voltar para {name}"
+      },
       "sort": {
         "new": "Novos",
         "popular": "Populares",
@@ -3446,6 +3454,26 @@
       "unlike": "Descurtir",
       "newReply": "Nova Resposta {time}",
       "justNow": "agora mesmo",
+      "replies": {
+        "title": "Respostas",
+        "count": "{count, plural, one {# resposta} other {# respostas}}",
+        "noReplies": "Ainda não há respostas. Seja o primeiro a responder!",
+        "contentLabel": "Sua resposta",
+        "contentPlaceholder": "Compartilhe sua opinião...",
+        "submit": "Responder",
+        "submitting": "Respondendo...",
+        "contentRequired": "Insira algum conteúdo",
+        "contentTooLong": "O conteúdo deve ter 5000 caracteres ou menos",
+        "error": "Ocorreu um erro. Por favor, tente novamente.",
+        "signInRequired": "Faça login para responder",
+        "loginToReply": "Faça login para responder",
+        "rateLimited": "Muitas respostas. Por favor, tente novamente mais tarde.",
+        "repliesDisabled": "O autor desativou as respostas neste comentário.",
+        "followRequired": "Apenas seguidores do autor podem responder a este comentário.",
+        "replyButton": "Responder",
+        "replyingTo": "Respondendo a @{username}",
+        "cancelReply": "Cancelar"
+      },
       "deletePost": {
         "button": "Excluir",
         "confirmTitle": "Excluir Comentário",

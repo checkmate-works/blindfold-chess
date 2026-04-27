@@ -19,7 +19,7 @@ export function PostCard({ post, locale, slug }: Props) {
   return (
     <BaseTopicPostCard
       postId={post.id}
-      postHref={`/chunks/${slug}#post-${post.id}`}
+      postHref={`/chunks/${slug}/posts/${post.id}`}
       content={post.content}
       createdAt={post.createdAt}
       author={post.author}
