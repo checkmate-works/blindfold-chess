@@ -66,37 +66,49 @@ export function BaseTopicPostCard({
   const contentPreview = truncateContent(content);
   const isTruncated = contentPreview !== content;
 
+  // Layout note (HTML / a11y): the card is intentionally NOT a single
+  // top-level <a>. Wrapping the whole card in <Link> would force any
+  // interactive children (LikeButton, AttachedGameCard's per-move
+  // buttons, …) to live inside an <a>, which is invalid HTML
+  // (interactive content nested in interactive content) and degrades
+  // screen-reader semantics. Instead, the click-to-detail affordance
+  // is scoped to the avatar / header / text region — the parts that
+  // genuinely behave like a single link target — and `extraContent`
+  // and `PostFooter` are rendered as siblings outside the link.
   return (
-    <Link
-      href={postHref}
-      locale={locale}
-      className="block p-4 rounded-md border border-border bg-card hover:border-foreground/20 transition-colors"
-    >
-      <UserAvatar
-        profileHref={profileHref}
-        avatarUrl={author?.avatarUrl}
-        displayName={displayName}
+    <div className="group p-4 rounded-md border border-border bg-card hover:border-foreground/20 transition-colors">
+      <Link
+        href={postHref}
         locale={locale}
-        asLink={false}
-        flair={author?.flair}
-        country={author?.country}
+        className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
       >
-        <div className="text-sm text-muted-foreground mb-4">
-          <time dateTime={createdAt.toISOString()}>
-            {formatRelativeTime(new Date(createdAt), locale, justNowLabel)}
-          </time>
-          {badge}
-        </div>
-        {extraContent}
-        {hasContent && (
-          <p className="text-sm text-foreground whitespace-pre-wrap break-words line-clamp-3">
-            <LinkedText text={contentPreview} locale={locale} />
-          </p>
-        )}
-        {hasContent && isTruncated && (
-          <span className="text-sm text-link-primary hover:underline">{tTopics('showMore')}</span>
-        )}
-      </UserAvatar>
+        <UserAvatar
+          profileHref={profileHref}
+          avatarUrl={author?.avatarUrl}
+          displayName={displayName}
+          locale={locale}
+          asLink={false}
+          flair={author?.flair}
+          country={author?.country}
+        >
+          <div className="text-sm text-muted-foreground mb-4">
+            <time dateTime={createdAt.toISOString()}>
+              {formatRelativeTime(new Date(createdAt), locale, justNowLabel)}
+            </time>
+            {badge}
+          </div>
+          {hasContent && (
+            <p className="text-sm text-foreground whitespace-pre-wrap break-words line-clamp-3">
+              <LinkedText text={contentPreview} locale={locale} />
+            </p>
+          )}
+          {hasContent && isTruncated && (
+            <span className="text-sm text-link-primary hover:underline">{tTopics('showMore')}</span>
+          )}
+        </UserAvatar>
+      </Link>
+
+      {extraContent}
 
       <PostFooter
         postId={postId}
@@ -107,6 +119,6 @@ export function BaseTopicPostCard({
         toggleLikeAction={toggleLikeAction}
         i18nNamespace={i18nNamespace}
       />
-    </Link>
+    </div>
   );
 }

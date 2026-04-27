@@ -113,18 +113,7 @@ export function AttachedGameCard({ attachment }: Props) {
   })();
 
   return (
-    <div
-      className="mt-2 mb-2 rounded-md border border-border bg-card overflow-hidden"
-      // Stop click events from bubbling to the parent post card link, so
-      // toggling the replay does not navigate to the post detail page.
-      onClick={(e) => e.stopPropagation()}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.stopPropagation();
-        }
-      }}
-      role="presentation"
-    >
+    <div className="mt-2 mb-2 rounded-md border border-border bg-card overflow-hidden">
       <div className="p-3 space-y-2">
         <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3 gap-2">
           <div className="w-32 shrink-0 mx-auto sm:mx-0">
