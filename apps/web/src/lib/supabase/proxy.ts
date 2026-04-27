@@ -41,9 +41,8 @@ export async function updateSession(request: NextRequest) {
   // that need to perform a per-user side effect (e.g., refreshing the
   // `bfc_ads_hidden` cookie in proxy.ts) without paying for a second
   // Supabase round-trip via `auth.getUser()`.
-  const userId = authenticated
-    ? (((data as { claims?: { sub?: string } } | null)?.claims?.sub ?? null) as string | null)
-    : null;
+  const claims = (data as { claims?: { sub?: string } } | null)?.claims;
+  const userId = authenticated ? (claims?.sub ?? null) : null;
 
   return { response: supabaseResponse, authenticated, userId };
 }

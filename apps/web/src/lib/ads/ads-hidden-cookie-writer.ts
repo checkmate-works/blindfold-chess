@@ -54,10 +54,13 @@ export async function writeAdsHiddenCookieForUser(user: User | null): Promise<vo
  *
  * @design Server Components cannot mutate cookies during render under
  * Next.js 16, so the `/mypage/subscription` page (which is a Server Component)
- * cannot refresh the cookie inline. Refreshing it on the response from the
- * proxy is the supported alternative: the cookie is set on the outgoing
- * response before the page renders, so descendant pages observe the updated
- * value on the very same request.
+ * cannot refresh the cookie inline. The proxy attaches a `Set-Cookie` header
+ * to the outgoing response instead, which the browser stores and sends with
+ * the next request — so the new value is observed on the next navigation,
+ * not the in-flight render. For the Stripe checkout success flow, the cookie
+ * is set on the redirect response from the success URL, so it travels with
+ * the very first GET to `/mypage/subscription?status=success` and the
+ * inline no-flash script sees the up-to-date value on first paint.
  */
 export async function refreshAdsHiddenCookieOnResponse(
   response: NextResponse,
