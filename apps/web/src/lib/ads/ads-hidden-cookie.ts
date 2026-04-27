@@ -31,7 +31,7 @@ export const ADS_HIDDEN_COOKIE_NAME = 'bfc_ads_hidden';
 /**
  * 7 days. The cookie is a hint only — misses (e.g., user purchases a sub
  * between refreshes) are self-correcting on the next authenticated page load
- * via `refreshAdsHiddenCookie()`. Keeping the TTL short means stale `'1'`
+ * via the request proxy on `/mypage/subscription`. Keeping the TTL short means stale `'1'`
  * values (e.g., after a subscription lapses) also self-correct.
  */
 export const ADS_HIDDEN_COOKIE_MAX_AGE_SEC = 60 * 60 * 24 * 7;

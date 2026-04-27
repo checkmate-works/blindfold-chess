@@ -66,10 +66,10 @@ export async function createGrant(formData: FormData): Promise<ActionResult> {
     // Note: the target user's `bfc_ads_hidden` cookie cannot be updated from
     // this admin action — it runs in the admin's HTTP session, not the
     // target user's. The cookie refreshes on the target user's next visit
-    // to `/mypage/subscription` (via `refreshAdsHiddenCookie()`), or at
-    // most after `ADS_HIDDEN_COOKIE_MAX_AGE_SEC` (7 days). `grant-status`
-    // tag revalidation above ensures the next render recomputes entitlement
-    // freshly from DB.
+    // to `/mypage/subscription` (via the request proxy in
+    // `apps/web/src/proxy.ts`), or at most after `ADS_HIDDEN_COOKIE_MAX_AGE_SEC`
+    // (7 days). `grant-status` tag revalidation above ensures the next
+    // render recomputes entitlement freshly from DB.
     createNotification({
       userId: userId.trim(),
       actorId: auth.userId,
