@@ -1,3 +1,8 @@
+import {
+  getFenAfterMoves,
+  getStartingFen,
+  parsePgnWithFen,
+} from '@blindfold-chess/features/chess-core';
 import { and, eq, inArray, isNull } from 'drizzle-orm';
 import 'server-only';
 
@@ -40,6 +45,7 @@ export async function getAttachmentsForPosts(
       headerBlack: topicPostAttachments.headerBlack,
       headerResult: topicPostAttachments.headerResult,
       headerEvent: topicPostAttachments.headerEvent,
+      headerSite: topicPostAttachments.headerSite,
       headerDate: topicPostAttachments.headerDate,
       anonymized: topicPostAttachments.anonymized,
     })
@@ -49,6 +55,24 @@ export async function getAttachmentsForPosts(
 
   const map = new Map<string, AttachedGameCardData>();
   for (const row of rows) {
+    // Compute the final-position FEN server-side. The summary card
+    // only needs a static FEN string for its thumbnail, so doing the
+    // PGN parse + chess.js replay here keeps chess-core off the
+    // client bundle of every page that lists attached games. See
+    // SPEC1 §5-1 ("初期はサムネイルのみ + 詳細展開時のみリプレイ UI を lazy ロード").
+    let finalFen: string;
+    try {
+      const parsed = parsePgnWithFen(row.pgn);
+      const startingFen = parsed.startingFen ?? getStartingFen();
+      finalFen = getFenAfterMoves(startingFen, parsed.moves);
+    } catch {
+      // Defensive: validateAttachedPgn already accepted this PGN at
+      // write time. If it now fails to parse the row is corrupt or
+      // chess.js changed behavior; fall back to the standard starting
+      // position rather than dropping the whole attachment.
+      finalFen = getStartingFen();
+    }
+
     map.set(row.postId, {
       id: row.id,
       source: row.source,
@@ -60,8 +84,10 @@ export async function getAttachmentsForPosts(
       headerBlack: row.headerBlack,
       headerResult: row.headerResult,
       headerEvent: row.headerEvent,
+      headerSite: row.headerSite,
       headerDate: row.headerDate,
       anonymized: row.anonymized,
+      finalFen,
     });
   }
   return map;

@@ -1,13 +1,10 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useState } from 'react';
+
+import dynamic from 'next/dynamic';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import {
-  getFenAfterMoves,
-  getStartingFen,
-  parsePgnWithFen,
-} from '@blindfold-chess/features/chess-core';
 
 import { MiniBoard } from '@/app/[locale]/(public)/topics/openings/_components/MiniBoard';
 
@@ -21,6 +18,15 @@ import { MiniBoard } from '@/app/[locale]/(public)/topics/openings/_components/M
  * by (a) the RLS SELECT policy on `topic_post_attachments`, (b) the
  * application-layer query that filters `topic_posts.deleted_at IS NULL`,
  * and (c) this contract — three layers of defense per SPEC1 §5-1.
+ *
+ * @design Bundle split
+ *
+ * `finalFen` is computed server-side by `getAttachmentsForPosts`, so
+ * the summary card can render its FEN thumbnail without importing
+ * `chess.js` into the chunk-page first-paint client bundle. The
+ * chess.js-bearing replay UI lives in `AttachedGameCardReplay` and
+ * is loaded lazily via `next/dynamic({ ssr: false })` only when the
+ * user clicks the "Open replay" button. See SPEC1 §5-1.
  */
 export type AttachedGameCardData = {
   id: string;
@@ -33,9 +39,18 @@ export type AttachedGameCardData = {
   headerBlack: string | null;
   headerResult: string | null;
   headerEvent: string | null;
+  headerSite: string | null;
   headerDate: string | null;
   anonymized: boolean;
+  /** Pre-computed final-position FEN, used for the static thumbnail
+   * so the summary card does not need chess.js on first paint. */
+  finalFen: string;
 };
+
+const AttachedGameCardReplay = dynamic(
+  () => import('./AttachedGameCardReplay').then((m) => m.AttachedGameCardReplay),
+  { ssr: false }
+);
 
 type Props = {
   attachment: AttachedGameCardData;
@@ -45,79 +60,27 @@ export function AttachedGameCard({ attachment }: Props) {
   const t = useTranslations('attachment');
   const [expanded, setExpanded] = useState(false);
 
-  const parsed = useMemo(() => {
-    try {
-      return parsePgnWithFen(attachment.pgn);
-    } catch {
-      // Defensive: validateAttachedPgn already accepted this PGN at write
-      // time, so a parse failure here means the row is corrupt or chess.js
-      // changed behavior. Fall back to no-moves rather than crashing the
-      // whole post.
-      return { moves: [] as string[], startingFen: undefined };
-    }
-  }, [attachment.pgn]);
-
-  const startingFen = parsed.startingFen ?? getStartingFen();
-
-  // Initial board: position after the last played move, so the thumbnail
-  // shows the most informative state.
-  const finalFen = useMemo(
-    () => getFenAfterMoves(startingFen, parsed.moves),
-    [startingFen, parsed.moves]
-  );
-
-  // Move index: -1 = before any move; 0..moves.length-1 = after that move.
-  const [moveIndex, setMoveIndex] = useState<number>(parsed.moves.length - 1);
-  const currentFen = useMemo(() => {
-    if (moveIndex === -1) return startingFen;
-    if (moveIndex === parsed.moves.length - 1) return finalFen;
-    return getFenAfterMoves(startingFen, parsed.moves.slice(0, moveIndex + 1));
-  }, [moveIndex, parsed.moves, startingFen, finalFen]);
-
-  const handleToggle = useCallback(() => {
-    setExpanded((prev) => !prev);
-    // Reset to last move when re-opening so thumbnail and replay agree.
-    setMoveIndex(parsed.moves.length - 1);
-  }, [parsed.moves.length]);
-
-  const movePairs = useMemo(() => {
-    const pairs: {
-      moveNumber: number;
-      whiteMove: string;
-      whiteIndex: number;
-      blackMove?: string;
-      blackIndex?: number;
-    }[] = [];
-    for (let i = 0; i < parsed.moves.length; i += 2) {
-      pairs.push({
-        moveNumber: Math.floor(i / 2) + 1,
-        whiteMove: parsed.moves[i],
-        whiteIndex: i,
-        blackMove: parsed.moves[i + 1],
-        blackIndex: i + 1 < parsed.moves.length ? i + 1 : undefined,
-      });
-    }
-    return pairs;
-  }, [parsed.moves]);
-
   // Build the source attribution. For Lichess we always use the
   // re-built canonical URL — never the raw `headerSite` value.
-  const sourceLabel = (() => {
-    if (attachment.source === 'lichess' && attachment.sourceGameId) {
-      return {
-        label: `lichess.org/${attachment.sourceGameId}`,
-        href: attachment.sourceUrl ?? `https://lichess.org/${attachment.sourceGameId}`,
-      };
-    }
-    return null;
-  })();
+  const lichessSource =
+    attachment.source === 'lichess' && attachment.sourceGameId
+      ? {
+          label: `lichess.org/${attachment.sourceGameId}`,
+          href: attachment.sourceUrl ?? `https://lichess.org/${attachment.sourceGameId}`,
+        }
+      : null;
+
+  // For PGN-mode attachments, surface the sanitized [Site] header as
+  // plain text (no auto-link, no <a href>) per SPEC1 §7-4.
+  const pgnSiteText =
+    attachment.source === 'pgn' && attachment.headerSite ? attachment.headerSite : null;
 
   return (
     <div className="mt-2 mb-2 rounded-md border border-border bg-card overflow-hidden">
       <div className="p-3 space-y-2">
         <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3 gap-2">
           <div className="w-32 shrink-0 mx-auto sm:mx-0">
-            <MiniBoard fen={expanded ? currentFen : finalFen} responsive />
+            <MiniBoard fen={attachment.finalFen} responsive />
           </div>
           <div className="flex-1 min-w-0 space-y-1">
             {(attachment.headerWhite || attachment.headerBlack) && (
@@ -145,9 +108,15 @@ export function AttachedGameCard({ attachment }: Props) {
                 <span>{attachment.headerDate}</span>
               </p>
             )}
+            {pgnSiteText && (
+              <p className="text-xs text-muted-foreground truncate">
+                <span className="font-medium">{t('card.headerSite')}: </span>
+                <span>{pgnSiteText}</span>
+              </p>
+            )}
             <button
               type="button"
-              onClick={handleToggle}
+              onClick={() => setExpanded((prev) => !prev)}
               className="text-sm text-link-primary hover:underline"
             >
               {expanded ? t('card.collapseButton') : t('card.replayButton')}
@@ -155,94 +124,20 @@ export function AttachedGameCard({ attachment }: Props) {
           </div>
         </div>
 
-        {expanded && parsed.moves.length > 0 && (
-          <div className="space-y-2 pt-2 border-t border-border">
-            <div className="flex justify-center gap-1">
-              <button
-                type="button"
-                onClick={() => setMoveIndex(-1)}
-                disabled={moveIndex === -1}
-                className="w-9 h-9 flex items-center justify-center hover:bg-muted rounded transition-colors disabled:opacity-50 disabled:hover:bg-transparent font-mono text-lg"
-                aria-label="Go to start"
-              >
-                &laquo;
-              </button>
-              <button
-                type="button"
-                onClick={() => setMoveIndex((i) => Math.max(-1, i - 1))}
-                disabled={moveIndex === -1}
-                className="w-9 h-9 flex items-center justify-center hover:bg-muted rounded transition-colors disabled:opacity-50 disabled:hover:bg-transparent font-mono text-lg"
-                aria-label="Previous move"
-              >
-                &lsaquo;
-              </button>
-              <button
-                type="button"
-                onClick={() => setMoveIndex((i) => Math.min(parsed.moves.length - 1, i + 1))}
-                disabled={moveIndex === parsed.moves.length - 1}
-                className="w-9 h-9 flex items-center justify-center hover:bg-muted rounded transition-colors disabled:opacity-50 disabled:hover:bg-transparent font-mono text-lg"
-                aria-label="Next move"
-              >
-                &rsaquo;
-              </button>
-              <button
-                type="button"
-                onClick={() => setMoveIndex(parsed.moves.length - 1)}
-                disabled={moveIndex === parsed.moves.length - 1}
-                className="w-9 h-9 flex items-center justify-center hover:bg-muted rounded transition-colors disabled:opacity-50 disabled:hover:bg-transparent font-mono text-lg"
-                aria-label="Go to end"
-              >
-                &raquo;
-              </button>
-            </div>
-            <div className="overflow-x-auto">
-              <div className="flex items-center gap-1 text-xs whitespace-nowrap justify-center flex-wrap">
-                {movePairs.map((pair) => (
-                  <div key={pair.moveNumber} className="flex items-center gap-0.5">
-                    <span className="text-muted-foreground">{pair.moveNumber}.</span>
-                    <button
-                      type="button"
-                      className={`px-1 py-0.5 rounded transition-colors ${
-                        moveIndex === pair.whiteIndex
-                          ? 'bg-foreground/15 font-semibold'
-                          : 'hover:bg-muted/40'
-                      }`}
-                      onClick={() => setMoveIndex(pair.whiteIndex)}
-                    >
-                      {pair.whiteMove}
-                    </button>
-                    {pair.blackMove && pair.blackIndex !== undefined && (
-                      <button
-                        type="button"
-                        className={`px-1 py-0.5 rounded transition-colors ${
-                          moveIndex === pair.blackIndex
-                            ? 'bg-foreground/15 font-semibold'
-                            : 'hover:bg-muted/40'
-                        }`}
-                        onClick={() =>
-                          pair.blackIndex !== undefined && setMoveIndex(pair.blackIndex)
-                        }
-                      >
-                        {pair.blackMove}
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+        {expanded && (
+          <AttachedGameCardReplay pgn={attachment.pgn} fallbackFen={attachment.finalFen} />
         )}
 
-        {sourceLabel && (
+        {lichessSource && (
           <p className="text-xs text-muted-foreground pt-1">
             <span>{t('card.sourceLabel')}: </span>
             <a
-              href={sourceLabel.href}
+              href={lichessSource.href}
               target="_blank"
               rel="noopener noreferrer"
               className="text-link-primary hover:underline"
             >
-              {sourceLabel.label}
+              {lichessSource.label}
             </a>
           </p>
         )}
