@@ -19,6 +19,9 @@ vi.mock('@/app/[locale]/(public)/topics/_components', () => ({
     baseTopicPostCardSpy(props);
     return <div data-testid="base-topic-post-card" />;
   },
+  AttachedGameCard: ({ attachment }: { attachment: { id: string } }) => (
+    <div data-testid="attached-game-card" data-attachment-id={attachment.id} />
+  ),
 }));
 
 vi.mock('../_actions/toggleChunkLike', () => ({
@@ -69,5 +72,44 @@ describe('chunks PostCard', () => {
       postHref: `/chunks/rook-battery/posts/post-1`,
       topicKey: 'rook-battery',
     });
+  });
+
+  it('passes extraContent ONLY when an attachment is supplied (M1 a11y / hoist-out-of-link contract)', () => {
+    // Per BaseTopicPostCard's design (see src/app/[locale]/(public)/topics/
+    // _components/BaseTopicPostCard.tsx), `extraContent` is rendered as a
+    // sibling of the click-to-detail <a>, not inside it. The chunks
+    // PostCard MUST pass the AttachedGameCard via that extraContent slot
+    // so the attachment's per-move buttons never end up nested in an
+    // anchor (invalid HTML, screen-reader hostile).
+    baseTopicPostCardSpy.mockClear();
+
+    render(<PostCard post={makePost()} locale="en" slug="rook-battery" attachment={null} />);
+    expect(baseTopicPostCardSpy.mock.calls[0][0].extraContent).toBeUndefined();
+
+    baseTopicPostCardSpy.mockClear();
+    render(
+      <PostCard
+        post={makePost()}
+        locale="en"
+        slug="rook-battery"
+        attachment={{
+          id: 'att-1',
+          source: 'pgn',
+          sourceUrl: null,
+          sourceGameId: null,
+          pgn: '1. e4 e5',
+          moveCount: 2,
+          headerWhite: 'Alice',
+          headerBlack: 'Bob',
+          headerResult: '*',
+          headerEvent: null,
+          headerSite: null,
+          headerDate: null,
+          anonymized: false,
+          finalFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+        }}
+      />
+    );
+    expect(baseTopicPostCardSpy.mock.calls[0][0].extraContent).toBeDefined();
   });
 });
