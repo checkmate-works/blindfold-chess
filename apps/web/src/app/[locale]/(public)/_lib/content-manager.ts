@@ -1,3 +1,5 @@
+import { SUPPORTED_LOCALES } from '@/config';
+
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 type MetadataLoader<TMetadata> = () => Promise<{ metadata: TMetadata }>;
@@ -12,6 +14,26 @@ type ContentRegistry = Record<string, Partial<Record<Locale, ContentLoader>>>;
 type ContentManagerOptions<TMetadata> = {
   metadataRegistry: MetadataRegistry<TMetadata>;
   contentRegistry: ContentRegistry;
+  sort?: (a: TMetadata, b: TMetadata) => number;
+};
+
+/**
+ * Exhaustive variants used by `createExhaustiveContentManager`. The inner
+ * type is `Record<Locale, ...>` (no `Partial`), so omitting any locale at
+ * construction time is a TypeScript error. This is the structural guard
+ * that makes the original "/pt-BR/manual is empty" bug unreproducible: a
+ * future addition to `SUPPORTED_LOCALES` cannot land without also
+ * registering loaders for every slug.
+ */
+type ExhaustiveMetadataRegistry<TMetadata> = Record<
+  string,
+  Record<Locale, MetadataLoader<TMetadata>>
+>;
+type ExhaustiveContentRegistry = Record<string, Record<Locale, ContentLoader>>;
+
+type ExhaustiveContentManagerOptions<TMetadata> = {
+  metadataRegistry: ExhaustiveMetadataRegistry<TMetadata>;
+  contentRegistry: ExhaustiveContentRegistry;
   sort?: (a: TMetadata, b: TMetadata) => number;
 };
 
@@ -103,4 +125,45 @@ export function createContentManager<TMetadata>(
   };
 
   return { getAvailableSlugs, getArticle, getAllArticles, getAvailableLocales };
+}
+
+/**
+ * Exhaustive sibling of `createContentManager`. The registry types require
+ * every supported locale for every slug, so a missing entry is a TypeScript
+ * error at construction time rather than a silent "empty body" at runtime.
+ *
+ * Use this when partial translations are NOT acceptable (e.g. the manual,
+ * which is short, pinned content). For sections that legitimately ship
+ * partial translations (e.g. learn), use the permissive `createContentManager`
+ * instead.
+ *
+ * Behavioral diff vs the permissive variant:
+ * - Construction-time exhaustiveness check (the entire purpose of this fn).
+ * - `getAvailableLocales` for a known slug always returns `SUPPORTED_LOCALES`,
+ *   because the type system has already proved every locale is registered.
+ *   Unknown slugs still return `[]` to match the permissive contract used by
+ *   metadata/sitemap call sites.
+ *
+ * The runtime article-loading machinery (getArticle, getAllArticles, the
+ * try/catch around dynamic imports) is shared with the permissive variant —
+ * only the registry types and `getAvailableLocales` differ.
+ */
+export function createExhaustiveContentManager<TMetadata>(
+  options: ExhaustiveContentManagerOptions<TMetadata>
+): ContentManagerResult<TMetadata> {
+  const base = createContentManager<TMetadata>(options);
+
+  const getAvailableLocales = (slug: string): Locale[] => {
+    if (!(slug in options.metadataRegistry)) {
+      return [];
+    }
+    return [...SUPPORTED_LOCALES];
+  };
+
+  return {
+    getAvailableSlugs: base.getAvailableSlugs,
+    getArticle: base.getArticle,
+    getAllArticles: base.getAllArticles,
+    getAvailableLocales,
+  };
 }
