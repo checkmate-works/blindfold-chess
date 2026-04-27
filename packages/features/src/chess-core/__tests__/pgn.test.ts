@@ -17,6 +17,7 @@ import {
   flattenPgnMoves,
   validatePgnMoves,
   parsePgnMoveSequence,
+  validateAttachedPgn,
 } from "../pgn";
 import type { FormattedPgn } from "../pgn";
 
@@ -969,5 +970,132 @@ describe("Integration: full PGN pipeline", () => {
       { moveNumber: 1, white: "e4", black: "e5" },
       { moveNumber: 2, white: "Nf3", black: "Nc6" },
     ]);
+  });
+});
+
+// ============================================================
+// validateAttachedPgn
+// ============================================================
+describe("validateAttachedPgn", () => {
+  it("returns ok for a minimal headerless PGN", () => {
+    const result = validateAttachedPgn(SIMPLE_PGN);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.moveCount).toBe(4);
+      expect(result.startingFen).toBeNull();
+      expect(result.headers.white).toBeNull();
+      expect(result.headers.black).toBeNull();
+      expect(result.byteLength).toBeGreaterThan(0);
+      expect(result.normalized.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("returns ok with extracted headers for a full PGN", () => {
+    const pgn =
+      '[Event "Test Cup"]\n' +
+      '[Site "https://lichess.org/abcd1234"]\n' +
+      '[Date "2026.04.27"]\n' +
+      '[White "Alice"]\n' +
+      '[Black "Bob"]\n' +
+      '[Result "1-0"]\n\n' +
+      "1. e4 e5 2. Nf3 Nc6 1-0";
+    const result = validateAttachedPgn(pgn);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.headers.white).toBe("Alice");
+      expect(result.headers.black).toBe("Bob");
+      expect(result.headers.result).toBe("1-0");
+      expect(result.headers.event).toBe("Test Cup");
+      expect(result.headers.site).toBe("https://lichess.org/abcd1234");
+      expect(result.headers.date).toBe("2026.04.27");
+      expect(result.moveCount).toBe(4);
+    }
+  });
+
+  it("returns 'empty' for an empty string", () => {
+    expect(validateAttachedPgn("")).toEqual({ ok: false, error: "empty" });
+  });
+
+  it("returns 'empty' for whitespace-only input", () => {
+    expect(validateAttachedPgn("   \n\t  ")).toEqual({
+      ok: false,
+      error: "empty",
+    });
+  });
+
+  it("returns 'too_large' before invoking chess.js when input exceeds maxBytes", () => {
+    // Construct a string just over the cap. Use a tiny maxBytes so we don't
+    // need to allocate 100 KB of test data.
+    const big = "1. e4 ".repeat(200); // ~1200 bytes
+    const result = validateAttachedPgn(big, { maxBytes: 64 });
+    expect(result).toEqual({ ok: false, error: "too_large" });
+  });
+
+  it("returns 'invalid_pgn' for syntactically malformed PGN", () => {
+    const result = validateAttachedPgn("not a real pgn !!! @@@");
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      // Either invalid_pgn or no_moves are acceptable here depending on
+      // chess.js behavior, but we expect invalid_pgn for outright garbage.
+      expect(["invalid_pgn", "no_moves"]).toContain(result.error);
+    }
+  });
+
+  it("returns 'invalid_pgn' when a move in the middle is illegal", () => {
+    // 2. Ke2 is legal, 3. Ke3 walks the king into a check pattern
+    // that chess.js will accept. Use a clearly illegal move instead:
+    // bishop teleports through pieces.
+    const result = validateAttachedPgn("1. e4 e5 2. Bc4 Bc5 3. Bf8");
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBe("invalid_pgn");
+    }
+  });
+
+  it("returns 'no_moves' for a header-only PGN", () => {
+    const result = validateAttachedPgn('[Event "x"]\n\n*');
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBe("no_moves");
+    }
+  });
+
+  it("anonymizes White and Black headers when opts.anonymize=true", () => {
+    const pgn = '[White "Alice"]\n[Black "Bob"]\n\n1. e4 e5 2. Nf3 Nc6';
+    const result = validateAttachedPgn(pgn, { anonymize: true });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.headers.white).toBe("Player 1");
+      expect(result.headers.black).toBe("Player 2");
+      expect(result.normalized).not.toContain("Alice");
+      expect(result.normalized).not.toContain("Bob");
+      expect(result.normalized).toContain("Player 1");
+      expect(result.normalized).toContain("Player 2");
+    }
+  });
+
+  it("preserves a non-default starting FEN in the result", () => {
+    const customFen =
+      "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1";
+    const pgn = `[SetUp "1"]\n[FEN "${customFen}"]\n\n1... e5`;
+    const result = validateAttachedPgn(pgn);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.startingFen).toBe(customFen);
+      expect(result.moveCount).toBe(1);
+    }
+  });
+
+  it("returns 'invalid_pgn' for a syntactically broken FEN header", () => {
+    const pgn = '[SetUp "1"]\n[FEN "garbage"]\n\n1. e4';
+    const result = validateAttachedPgn(pgn);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      // Either invalid_pgn (chess.js rejects the position) or no_moves
+      // (chess.js silently swallows the FEN and yields zero history).
+      // Both are acceptable; the important guarantee is that we don't
+      // return ok:true with junk data.
+      expect(["invalid_pgn", "no_moves"]).toContain(result.error);
+    }
   });
 });

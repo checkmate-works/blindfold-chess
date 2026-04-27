@@ -44,6 +44,8 @@ export type {
   FormattedPgnMove,
   ParsedPgnMove,
   ParsedMoveSequence,
+  AttachedPgnError,
+  ValidateAttachedPgnResult,
 } from "./pgn";
 
 export {
@@ -60,6 +62,7 @@ export {
   flattenPgnMoves,
   validatePgnMoves,
   parsePgnMoveSequence,
+  validateAttachedPgn,
 } from "./pgn";
 
 export type { PositionQuery } from "./position";
