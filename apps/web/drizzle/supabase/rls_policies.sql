@@ -473,6 +473,17 @@ CREATE POLICY "topic_post_attachments_select" ON "topic_post_attachments"
         AND p.deleted_at IS NULL
     )
   );
+-- Note: this policy is intentionally stricter than `topic_posts_select`
+-- (which uses `USING (true)` and lets every row through, relying on
+-- the application layer to filter `deleted_at IS NULL`). The deleted-post
+-- check here is intentional defense-in-depth for attachment data: while
+-- soft-deleted `topic_posts` rows themselves are filtered by application-
+-- layer queries, an attached game (with full PGN, original player names,
+-- and source URL) is markedly more sensitive than the post text and
+-- warrants DB-level enforcement. Pushing the deleted-post check into
+-- RLS prevents a future caller (debug tool, REST client, ad-hoc migration)
+-- from accidentally re-exposing orphaned attachment rows that survive
+-- a soft delete.
 
 -- INSERT: only the parent post's author may attach a game, and only while the
 -- post is not soft-deleted. The application path inserts the attachment in the

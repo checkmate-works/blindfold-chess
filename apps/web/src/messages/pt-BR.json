@@ -4097,6 +4097,7 @@
       "lichessNotFound": "Partida do Lichess não encontrada. Verifique a URL.",
       "lichessRateLimited": "O Lichess está congestionado. Aguarde um pouco ou cole o PGN diretamente.",
       "chesscomUnsupported": "URLs do chess.com não são suportadas. Exporte o PGN do chess.com e cole aqui.",
+      "lichessStudyUnsupported": "URLs de Lichess Study não são suportadas. Cole uma URL de partida ou um PGN.",
       "rateLimitedPostWithAttachment": "Você pode anexar no máximo 5 partidas por hora."
     }
   },

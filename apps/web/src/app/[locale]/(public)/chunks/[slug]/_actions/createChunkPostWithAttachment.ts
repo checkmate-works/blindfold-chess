@@ -49,7 +49,7 @@ function attachmentErrorKey(
     case 'fetch_failed':
       return 'attachment.error.lichessFetchFailed';
     case 'lichess_unsupported':
-      return 'attachment.error.invalidPgn';
+      return 'attachment.error.lichessStudyUnsupported';
     case 'chesscom_unsupported':
       return 'attachment.error.chesscomUnsupported';
     case 'unknown':

@@ -3993,6 +3993,7 @@
       "lichessNotFound": "Lichess に対局が見つかりませんでした。URL を確認してください。",
       "lichessRateLimited": "Lichess が混雑しています。少し待つか、PGN を直接貼り付けてください。",
       "chesscomUnsupported": "chess.com の URL は非対応です。chess.com から PGN をエクスポートして貼り付けてください。",
+      "lichessStudyUnsupported": "Lichess の Study URL には対応していません。対局 URL または PGN を貼り付けてください。",
       "rateLimitedPostWithAttachment": "添付付きの投稿は 1 時間に 5 件までです。"
     }
   },

@@ -4097,6 +4097,7 @@
       "lichessNotFound": "Lichess game not found. Check the URL.",
       "lichessRateLimited": "Lichess is busy right now. Wait a moment, or paste the PGN directly.",
       "chesscomUnsupported": "chess.com URLs are not supported. Export the PGN from chess.com and paste it here.",
+      "lichessStudyUnsupported": "Lichess Study URLs are not supported. Please paste a game URL or PGN.",
       "rateLimitedPostWithAttachment": "You can attach at most 5 games per hour."
     }
   },
