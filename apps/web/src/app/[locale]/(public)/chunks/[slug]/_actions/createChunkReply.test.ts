@@ -181,4 +181,20 @@ describe('createChunkReply', () => {
       })
     );
   });
+
+  it('returns postNotFound when the parent post is soft-deleted', async () => {
+    // The shared createReplyBase WHERE clause includes `deletedAt IS NULL`,
+    // so a soft-deleted parent must surface as 'postNotFound' to the caller.
+    mockSelectFromWhere.mockReturnValue([]);
+
+    const result = await createChunkReply('en', testSlug, validPostId, {}, makeFormData('hi'));
+    expect(result).toEqual({ error: 'postNotFound' });
+    expect(mockInsertValues).not.toHaveBeenCalled();
+  });
+
+  it('rejects an invalid (non-UUID) postId before touching the DB', async () => {
+    const result = await createChunkReply('en', testSlug, 'not-a-uuid', {}, makeFormData('hi'));
+    expect(result).toEqual({ error: 'invalidPostId' });
+    expect(mockInsertValues).not.toHaveBeenCalled();
+  });
 });

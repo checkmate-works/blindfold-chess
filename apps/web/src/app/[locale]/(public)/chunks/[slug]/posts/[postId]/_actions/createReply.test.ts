@@ -159,4 +159,23 @@ describe('chunks detail page createReply', () => {
 
     expect(revalidatePath).toHaveBeenCalledWith(`/en/chunks/${testSlug}/posts/${validPostId}`);
   });
+
+  it('returns postNotFound when the parent post is soft-deleted (no row returned by the deletedAt-filtered query)', async () => {
+    // The createReplyBase top-level lookup is `WHERE id=postId AND deletedAt IS NULL`.
+    // When the parent is soft-deleted the query yields no rows, and the action
+    // must surface that as 'postNotFound' rather than inserting an orphan reply.
+    mockSelectFromWhere.mockReturnValue([]);
+
+    const result = await createReply('en', testSlug, validPostId, {}, makeFormData('hi'));
+    expect(result).toEqual({ error: 'postNotFound' });
+    expect(mockInsertValues).not.toHaveBeenCalled();
+  });
+
+  it('rejects an invalid (non-UUID) postId before touching the DB', async () => {
+    // UUID_RE validation happens before the parent lookup, so a malformed
+    // postId from a tampered URL must short-circuit with 'invalidPostId'.
+    const result = await createReply('en', testSlug, 'not-a-uuid', {}, makeFormData('hi'));
+    expect(result).toEqual({ error: 'invalidPostId' });
+    expect(mockInsertValues).not.toHaveBeenCalled();
+  });
 });
