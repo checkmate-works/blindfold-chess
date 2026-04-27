@@ -136,15 +136,29 @@ export async function fetchLichessGamePgn(
   const timeout = setTimeout(() => ac.abort(), LICHESS_FETCH_TIMEOUT_MS);
 
   try {
+    // SSRF defense in depth: `redirect: 'manual'` ensures Node's undici-based
+    // fetch never silently follows a 30x to an arbitrary host. The Lichess
+    // game-export endpoint returns 200 with the PGN body directly, so any
+    // redirect response is treated as `fetch_failed` and surfaces as a
+    // user-facing error rather than as a request to whatever Location: was
+    // returned. This closes a hypothetical SSRF vector should an upstream
+    // CDN/edge ever start emitting cross-origin redirects.
     const res = await fetch(url, {
       headers: { Accept: 'application/x-chess-pgn' },
       signal: ac.signal,
+      redirect: 'manual',
     });
 
     if (res.status === 404) return { ok: false, error: 'not_found' };
     if (res.status === 429) {
       throttle.cooldown();
       return { ok: false, error: 'rate_limited' };
+    }
+    // With redirect:'manual', a 30x response is surfaced rather than
+    // followed. Treat any 3xx as a fetch failure — we never re-issue
+    // against a Location: header that could point off lichess.org.
+    if (res.status >= 300 && res.status < 400) {
+      return { ok: false, error: 'fetch_failed' };
     }
     if (!res.ok) return { ok: false, error: 'fetch_failed' };
 
