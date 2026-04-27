@@ -57,4 +57,66 @@ describe('sanitizePgnHeader', () => {
     const onlyControls = `${String.fromCharCode(0)}${String.fromCharCode(7)}${String.fromCharCode(0x7f)}`;
     expect(sanitizePgnHeader(onlyControls)).toBeNull();
   });
+
+  // ─── Additional Tester-pass coverage ───
+  describe('null byte handling', () => {
+    it('strips a leading null byte', () => {
+      expect(sanitizePgnHeader(`${String.fromCharCode(0)}Alice`)).toBe('Alice');
+    });
+
+    it('strips an embedded null byte without truncating subsequent text', () => {
+      const value = `Alice${String.fromCharCode(0)}Bob`;
+      expect(sanitizePgnHeader(value)).toBe('AliceBob');
+    });
+
+    it('returns null when input is a single null byte', () => {
+      expect(sanitizePgnHeader(String.fromCharCode(0))).toBeNull();
+    });
+  });
+
+  describe('multibyte unicode preservation', () => {
+    it('preserves Japanese (CJK)', () => {
+      expect(sanitizePgnHeader('心眼チェス')).toBe('心眼チェス');
+    });
+
+    it('preserves emoji (surrogate pair)', () => {
+      expect(sanitizePgnHeader('Magnus 👑')).toBe('Magnus 👑');
+    });
+
+    it('preserves accented Latin', () => {
+      expect(sanitizePgnHeader('Vlădescu')).toBe('Vlădescu');
+    });
+
+    it('preserves Cyrillic', () => {
+      expect(sanitizePgnHeader('Каспаров')).toBe('Каспаров');
+    });
+  });
+
+  describe('whitespace contract', () => {
+    it('trims leading whitespace', () => {
+      expect(sanitizePgnHeader('   Hikaru')).toBe('Hikaru');
+    });
+
+    it('trims trailing whitespace', () => {
+      expect(sanitizePgnHeader('Hikaru   ')).toBe('Hikaru');
+    });
+
+    it('preserves internal whitespace verbatim', () => {
+      // The contract trims surrounding whitespace but does NOT collapse
+      // internal whitespace runs.
+      expect(sanitizePgnHeader('Magnus    Carlsen')).toBe('Magnus    Carlsen');
+    });
+  });
+
+  describe('length cap boundary', () => {
+    it('preserves exactly 200 chars unchanged', () => {
+      const exactly200 = 'x'.repeat(200);
+      expect(sanitizePgnHeader(exactly200)).toBe(exactly200);
+    });
+
+    it('caps at 200 chars when input is 201 chars', () => {
+      const result = sanitizePgnHeader('y'.repeat(201));
+      expect(result?.length).toBe(200);
+    });
+  });
 });
