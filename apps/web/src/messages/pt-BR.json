@@ -3415,6 +3415,45 @@
         "cancel": "Cancelar",
         "deleting": "Excluindo..."
       }
+    },
+    "chunks": {
+      "commentsTitle": "Comentários",
+      "postCount": "{count, plural, one {# comentário} other {# comentários}}",
+      "noPosts": "Ainda não há comentários. Seja o primeiro a compartilhar sua opinião!",
+      "signInToComment": "Faça login para comentar",
+      "sort": {
+        "new": "Novos",
+        "popular": "Populares",
+        "active": "Ativos"
+      },
+      "newPostForm": {
+        "contentLabel": "Comentário",
+        "contentPlaceholder": "Compartilhe sua opinião sobre este chunk...",
+        "replyPermissionLabel": "Quem pode responder",
+        "replyPermission_everyone": "Todos",
+        "replyPermission_followers": "Apenas seguidores",
+        "replyPermission_nobody": "Ninguém",
+        "invalidReplyPermission": "Configuração de permissão de resposta inválida",
+        "submit": "Comentar",
+        "submitting": "Publicando...",
+        "contentRequired": "Insira algum conteúdo",
+        "contentTooLong": "O conteúdo deve ter 5000 caracteres ou menos",
+        "error": "Ocorreu um erro. Por favor, tente novamente.",
+        "signInRequired": "Faça login para comentar",
+        "rateLimited": "Muitos comentários. Por favor, tente novamente mais tarde."
+      },
+      "like": "Curtir",
+      "unlike": "Descurtir",
+      "newReply": "Nova Resposta {time}",
+      "justNow": "agora mesmo",
+      "deletePost": {
+        "button": "Excluir",
+        "confirmTitle": "Excluir Comentário",
+        "confirmMessage": "Tem certeza de que deseja excluir este comentário? Esta ação não pode ser desfeita.",
+        "confirm": "Excluir",
+        "cancel": "Cancelar",
+        "deleting": "Excluindo..."
+      }
     }
   },
   "unsavedChanges": {

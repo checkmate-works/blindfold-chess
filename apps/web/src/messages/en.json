@@ -3415,6 +3415,45 @@
         "cancel": "Cancel",
         "deleting": "Deleting..."
       }
+    },
+    "chunks": {
+      "commentsTitle": "Comments",
+      "postCount": "{count, plural, one {# comment} other {# comments}}",
+      "noPosts": "No comments yet. Be the first to share your thoughts!",
+      "signInToComment": "Sign in to comment",
+      "sort": {
+        "new": "New",
+        "popular": "Popular",
+        "active": "Active"
+      },
+      "newPostForm": {
+        "contentLabel": "Comment",
+        "contentPlaceholder": "Share your thoughts about this chunk...",
+        "replyPermissionLabel": "Who can reply",
+        "replyPermission_everyone": "Everyone",
+        "replyPermission_followers": "Followers only",
+        "replyPermission_nobody": "No one",
+        "invalidReplyPermission": "Invalid reply permission setting",
+        "submit": "Comment",
+        "submitting": "Posting...",
+        "contentRequired": "Please enter some content",
+        "contentTooLong": "Content must be 5000 characters or less",
+        "error": "An error occurred. Please try again.",
+        "signInRequired": "Please sign in to comment",
+        "rateLimited": "Too many comments. Please try again later."
+      },
+      "like": "Like",
+      "unlike": "Unlike",
+      "newReply": "New Reply {time}",
+      "justNow": "just now",
+      "deletePost": {
+        "button": "Delete",
+        "confirmTitle": "Delete Comment",
+        "confirmMessage": "Are you sure you want to delete this comment? This action cannot be undone.",
+        "confirm": "Delete",
+        "cancel": "Cancel",
+        "deleting": "Deleting..."
+      }
     }
   },
   "unsavedChanges": {

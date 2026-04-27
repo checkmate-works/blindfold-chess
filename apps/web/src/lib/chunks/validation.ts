@@ -9,10 +9,17 @@ import { UUID_RE } from '@/lib/validations/uuid';
 export const CHUNK_TITLE_MAX_LENGTH = 255;
 
 /**
- * Maximum length of `chunks.slug`. Must match the `varchar(255)` declared in
- * `src/lib/db/schema/tables.ts`.
+ * Maximum length of `chunks.slug`. The DB column is `varchar(255)` (see
+ * `src/lib/db/schema/tables.ts`), but discussions about a chunk are stored
+ * in `topic_posts` with `topic_key=chunk.slug`, and `topic_posts.topic_key`
+ * is `varchar(50)`. The application-layer cap below the column width keeps
+ * every chunk slug round-trippable through the topic_posts storage path.
+ *
+ * Lowering the column itself was deliberately rejected — it would invalidate
+ * any existing chunk that happens to exceed 50 chars. The check is therefore
+ * applied only on new submissions via `validateChunkMutationData`.
  */
-export const CHUNK_SLUG_MAX_LENGTH = 255;
+export const CHUNK_SLUG_MAX_LENGTH = 50;
 
 /**
  * Valid slug pattern: lowercase alphanumeric segments separated by single

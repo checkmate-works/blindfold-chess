@@ -1781,6 +1781,16 @@ export type NewPositionTag = typeof positionTags.$inferInsert;
  * because both are UGC, but the URL is `/chunks` (not `/topics/chunks`)
  * to reflect that chunks are a catalog, not a discussion forum.
  *
+ * @design comments live in `topic_posts` (topicType='chunk')
+ * The chunks/topic_posts table separation is about the catalog body itself
+ * (see "@design catalog, not discussion" above). Discussions about a chunk
+ * are stored in `topic_posts` with `topic_type='chunk'` and
+ * `topic_key=chunk.slug`, following the same polymorphic pattern as 'square'
+ * and 'opening' topic types. This preserves the rule that chunks are a catalog
+ * (not a discussion forum) while letting the existing UGC discussion
+ * infrastructure (replies, likes, moderation, rate-limit, activity log) be
+ * reused unchanged.
+ *
  * @design catalog of piece-coordination patterns
  * `chunks` is a catalog — not per-user scratch data. Each row represents one
  * recognizable pattern named by its submitter (title) and optionally

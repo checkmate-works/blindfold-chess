@@ -15,6 +15,7 @@ export type DeletePostResult = ActionResult;
 const TOPIC_TYPE_TO_URL_SEGMENT: Record<string, string> = {
   square: 'squares',
   opening: 'openings',
+  chunk: 'chunks',
 };
 
 export async function deletePost(postId: string, locale: string): Promise<DeletePostResult> {
@@ -86,7 +87,14 @@ export async function deletePost(postId: string, locale: string): Promise<Delete
   });
 
   const urlSegment = TOPIC_TYPE_TO_URL_SEGMENT[post.topicType] ?? post.topicType;
-  revalidatePath(`/${locale}/topics/${urlSegment}/${post.topicKey}`);
+  // 'chunk' lives at /chunks/{slug}, not /topics/chunks/{slug} — chunks
+  // are catalog rows that happen to host comments via topic_posts, not a
+  // segment of the /topics route tree.
+  const detailPath =
+    post.topicType === 'chunk'
+      ? `/${locale}/chunks/${post.topicKey}`
+      : `/${locale}/topics/${urlSegment}/${post.topicKey}`;
+  revalidatePath(detailPath);
 
   return { success: true };
 }

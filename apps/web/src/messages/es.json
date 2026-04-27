@@ -3262,6 +3262,45 @@
         "cancel": "Cancelar",
         "deleting": "Eliminando..."
       }
+    },
+    "chunks": {
+      "commentsTitle": "Comentarios",
+      "postCount": "{count, plural, one {# comentario} other {# comentarios}}",
+      "noPosts": "Aún no hay comentarios. ¡Sé el primero en compartir tu opinión!",
+      "signInToComment": "Inicia sesión para comentar",
+      "sort": {
+        "new": "Nuevo",
+        "popular": "Popular",
+        "active": "Activo"
+      },
+      "newPostForm": {
+        "contentLabel": "Comentario",
+        "contentPlaceholder": "Comparte tu opinión sobre este chunk...",
+        "replyPermissionLabel": "Quién puede responder",
+        "replyPermission_everyone": "Todos",
+        "replyPermission_followers": "Solo seguidores",
+        "replyPermission_nobody": "Nadie",
+        "invalidReplyPermission": "Configuración de permiso de respuesta inválida",
+        "submit": "Comentar",
+        "submitting": "Publicando...",
+        "contentRequired": "Introduce algún contenido",
+        "contentTooLong": "El contenido debe tener 5000 caracteres o menos",
+        "error": "Ocurrió un error. Por favor, inténtalo de nuevo.",
+        "signInRequired": "Inicia sesión para comentar",
+        "rateLimited": "Demasiados comentarios. Por favor, inténtalo más tarde."
+      },
+      "like": "Me gusta",
+      "unlike": "Ya no me gusta",
+      "newReply": "Nueva Respuesta {time}",
+      "justNow": "ahora mismo",
+      "deletePost": {
+        "button": "Eliminar",
+        "confirmTitle": "Eliminar Comentario",
+        "confirmMessage": "¿Estás seguro de que deseas eliminar este comentario? Esta acción no se puede deshacer.",
+        "confirm": "Eliminar",
+        "cancel": "Cancelar",
+        "deleting": "Eliminando..."
+      }
     }
   },
   "unsavedChanges": {
