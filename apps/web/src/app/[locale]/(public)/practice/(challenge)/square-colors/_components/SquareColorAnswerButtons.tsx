@@ -25,7 +25,7 @@ export function SquareColorAnswerButtons({
       <button
         onClick={() => onAnswer('light')}
         disabled={disabled}
-        className={`aspect-square rounded-md border border-border ${themeColors.light} ${themeColors.lightCoordinates} hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center`}
+        className={`aspect-square rounded-md border border-border ${themeColors.light} ${themeColors.lightCoordinates} hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center touch-manipulation select-none`}
       >
         <span className="text-lg font-bold">{labels.white}</span>
       </button>
@@ -34,7 +34,7 @@ export function SquareColorAnswerButtons({
       <button
         onClick={() => onAnswer('dark')}
         disabled={disabled}
-        className={`aspect-square rounded-md border border-border ${themeColors.dark} ${themeColors.darkCoordinates} hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center`}
+        className={`aspect-square rounded-md border border-border ${themeColors.dark} ${themeColors.darkCoordinates} hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center touch-manipulation select-none`}
       >
         <span className="text-lg font-bold">{labels.black}</span>
       </button>

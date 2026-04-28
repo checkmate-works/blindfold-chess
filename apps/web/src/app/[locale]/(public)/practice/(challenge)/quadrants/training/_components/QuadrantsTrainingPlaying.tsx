@@ -51,7 +51,7 @@ export function QuadrantsTrainingPlaying({
 
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="bg-card rounded-xl border border-border p-6 text-center relative overflow-hidden space-y-4">
+      <div className="p-6 text-center relative overflow-hidden space-y-4">
         {/* Orientation Indicator */}
         <div className="flex justify-center">
           <div className="flex items-center gap-2">
@@ -76,14 +76,16 @@ export function QuadrantsTrainingPlaying({
         </div>
 
         {/* Quadrant Board */}
-        <div className="min-h-[120px] flex flex-col justify-center items-center">
-          <QuadrantBoard
-            correctQuadrant={correctQuadrant}
-            wrongQuadrant={wrongQuadrant}
-            onQuadrantClick={onAnswer}
-            disabled={showResult}
-            orientation={currentQuestion.orientation}
-          />
+        <div className="-mx-6 sm:mx-0">
+          <div className="min-h-[120px] flex flex-col justify-center items-center">
+            <QuadrantBoard
+              correctQuadrant={correctQuadrant}
+              wrongQuadrant={wrongQuadrant}
+              onQuadrantClick={onAnswer}
+              disabled={showResult}
+              orientation={currentQuestion.orientation}
+            />
+          </div>
         </div>
       </div>
 
