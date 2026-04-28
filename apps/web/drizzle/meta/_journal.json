@@ -253,6 +253,13 @@
       "when": 1777365194000,
       "tag": "20260428102126_add_source_url_https_check",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1777365195000,
+      "tag": "20260428202557_drop_topic_post_attachments_compat_view",
+      "breakpoints": true
     }
   ]
 }

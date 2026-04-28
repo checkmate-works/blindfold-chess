@@ -469,23 +469,4 @@ describe('post_game_attachments integration', () => {
       ).rejects.toThrow(/chk_attribution_pair/);
     });
   });
-
-  describe('rename compatibility view (H-5)', () => {
-    it('still allows SELECT * FROM topic_post_attachments via the compat VIEW', async (ctx) => {
-      const db = requireDb(ctx);
-      // Old-deploy code paths that have not yet picked up the
-      // renamed symbol must keep working during the rolling deploy
-      // window. Migration 1 ships a read-only VIEW under the old
-      // name; this assertion pins that contract.
-      const rows = await db<{ check: string }[]>`
-        SELECT 'view ok'::text AS check
-        FROM topic_post_attachments
-        LIMIT 1
-      `;
-      // We do not assert on row count — the suite may run on an
-      // empty fixture DB. What we assert is that the SELECT does
-      // not throw an "undefined relation" error.
-      expect(Array.isArray(rows)).toBe(true);
-    });
-  });
 });

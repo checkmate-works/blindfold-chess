@@ -1,0 +1,14 @@
+-- Drop the rolling-deploy compatibility VIEW `topic_post_attachments`.
+--
+-- Migration `20260428093312_rename_topic_post_attachments_to_post_game_attachments`
+-- created this VIEW so deploy environments still running the previous
+-- build could keep reading from the old symbol during the rolling
+-- deploy window. That window has now closed; all production code
+-- paths reference `post_game_attachments` directly, so the compat
+-- VIEW is no longer needed.
+--
+-- `IF EXISTS` keeps the migration idempotent on environments where
+-- the VIEW was never created (e.g. fresh local DBs that run the full
+-- migration chain — Postgres still resolves the DROP cleanly — or
+-- any environment that has already had the VIEW dropped manually).
+DROP VIEW IF EXISTS "public"."topic_post_attachments";
