@@ -529,13 +529,19 @@ export type TopicPostRating = typeof topicPostRatings.$inferSelect;
 export type NewTopicPostRating = typeof topicPostRatings.$inferInsert;
 
 /**
- * Topic Post Attachments — chess game attached to a topic post.
+ * PGN Game Attachments — PGN-stored chess game attached to a topic post.
  *
  * @description
  * One topic_post can have at most one attached chess game. v1 supports two
  * sources: user-pasted PGN, and Lichess URL (server-fetched into PGN at
  * post-creation time). All attachments store a normalized PGN string —
  * rendering always works from PGN, even for Lichess-sourced games.
+ *
+ * This table is `post_game_pgn_attachments` — the `pgn` infix disambiguates
+ * it from the sibling table `post_game_embed_attachments` (scaffold added in
+ * Phase A, SPEC1) which stores iframe embed attachments. The two tables are
+ * independent members of the `post_game_<kind>_attachments` family (Pattern 5
+ * per-kind tables; see `docs/design/SPEC1-embed-data-model-ADR.md`).
  *
  * @design 1:0..1 instead of 1:N (UNIQUE on post_id)
  *
@@ -620,8 +626,8 @@ export type NewTopicPostRating = typeof topicPostRatings.$inferInsert;
  * soft-deleted attachments is a future option, not currently scheduled —
  * no formal SLA exists.
  */
-export const postGameAttachments = pgTable(
-  'post_game_attachments',
+export const postGamePgnAttachments = pgTable(
+  'post_game_pgn_attachments',
   {
     id: uuid('id').primaryKey().defaultRandom(),
     postId: uuid('post_id')
@@ -669,12 +675,12 @@ export const postGameAttachments = pgTable(
   },
   (table) => [
     check(
-      'chk_pgn_byte_length',
+      'post_game_pgn_attachments_chk_pgn_byte_length',
       sql`${table.pgnByteLength} > 0 AND ${table.pgnByteLength} <= 102400`
     ),
-    check('chk_source_valid', sql`${table.source} IN ('pgn', 'lichess')`),
+    check('post_game_pgn_attachments_chk_source_valid', sql`${table.source} IN ('pgn', 'lichess')`),
     check(
-      'chk_source_url_required_for_external',
+      'post_game_pgn_attachments_chk_source_url_required_for_external',
       sql`${table.source} = 'pgn' OR ${table.sourceUrl} IS NOT NULL`
     ),
     // Phase H (M-3): even though `source_url` is audit-only and never
@@ -684,48 +690,138 @@ export const postGameAttachments = pgTable(
     // dumps the row) cannot turn a `javascript:` / `data:` / `file:`
     // payload into a clickable link. Last line of defense.
     check(
-      'chk_source_url_audit_https',
+      'post_game_pgn_attachments_chk_source_url_audit_https',
       sql`${table.sourceUrl} IS NULL OR ${table.sourceUrl} ~ '^https://'`
     ),
     // (M-3) Defense-in-depth against PGN length spoofing: the cached
-    // `pgn_byte_length` column is also a CHECK input for `chk_pgn_byte_length`,
+    // `pgn_byte_length` column is also a CHECK input for the byte_length check,
     // so a writer that submits a low precomputed length together with an
     // oversized PGN body would otherwise bypass the size cap. This CHECK
     // pins the precomputed value to the actual byte length at the DB level.
     check(
-      'chk_pgn_byte_length_matches_octet_length',
+      'post_game_pgn_attachments_chk_pgn_byte_length_matches_octet_length',
       sql`${table.pgnByteLength} = octet_length(${table.pgn})`
     ),
     // attribution_platform allow-list: MVP supports 'chesscom' only.
     check(
-      'chk_attribution_platform_valid',
+      'post_game_pgn_attachments_chk_attribution_platform_valid',
       sql`${table.attributionPlatform} IS NULL OR ${table.attributionPlatform} IN ('chesscom')`
     ),
     // attribution_path format: must be a `/`-prefixed path of allowed
     // characters, length 1..128. Mirrors the regex enforced by
     // `parseChesscomAttribution` so a direct REST write cannot bypass it.
     check(
-      'chk_attribution_path_format',
+      'post_game_pgn_attachments_chk_attribution_path_format',
       sql`${table.attributionPath} IS NULL OR ${table.attributionPath} ~ '^/[A-Za-z0-9/_-]{1,128}$'`
     ),
     // Pair invariant: either both attribution columns are NULL or both
     // are NOT NULL. Prevents partial writes that would render with a
     // broken href.
     check(
-      'chk_attribution_pair',
+      'post_game_pgn_attachments_chk_attribution_pair',
       sql`(${table.attributionPlatform} IS NULL AND ${table.attributionPath} IS NULL)
         OR (${table.attributionPlatform} IS NOT NULL AND ${table.attributionPath} IS NOT NULL)`
     ),
     // Forensic / admin filtering for oversized attachments.
-    index('idx_post_game_attachments_size').on(table.pgnByteLength),
+    index('idx_post_game_pgn_attachments_size').on(table.pgnByteLength),
     // Lichess fetch reuse lookup: `(source='lichess', source_game_id='abcd1234')`
     // — see `apps/web/src/lib/games/resolve-lichess-attachment.ts`.
-    index('idx_post_game_attachments_source_game').on(table.source, table.sourceGameId),
+    index('idx_post_game_pgn_attachments_source_game').on(table.source, table.sourceGameId),
   ]
 );
 
-export type PostGameAttachment = typeof postGameAttachments.$inferSelect;
-export type NewPostGameAttachment = typeof postGameAttachments.$inferInsert;
+export type PostGamePgnAttachment = typeof postGamePgnAttachments.$inferSelect;
+export type NewPostGamePgnAttachment = typeof postGamePgnAttachments.$inferInsert;
+
+/**
+ * Embed Game Attachments — iframe embed chess game attached to a topic post.
+ *
+ * @description
+ * Phase A scaffold only. No application code reads or writes this table in
+ * Phase A. Phase B (SPEC2) will add the iframe embed feature implementation:
+ * chess.com `<iframe src="https://www.chess.com/emboard?id={embed_id}">` and
+ * Lichess `<iframe src="https://lichess.org/embed/{embed_id}">`.
+ *
+ * See `docs/design/SPEC1-embed-data-model-ADR.md` for the full design
+ * rationale, including the decision to keep this as a separate table from
+ * `post_game_pgn_attachments` (Pattern 5 per-kind tables). The `pgn` sibling
+ * stores PGN-text games; this table stores embed-only games that have no PGN
+ * body — they carry only an embed identifier and provider discriminator.
+ *
+ * @design 1:0..1 invariant (UNIQUE on post_id)
+ *
+ * Same as `post_game_pgn_attachments`: one post has at most one embed attachment.
+ *
+ * @design embed_id format
+ *
+ * Provider-specific identifier. chess.com: the `id` query param from the
+ * emboard URL (numeric diagram ID). Lichess: the 8-character game ID (same
+ * namespace as `post_game_pgn_attachments.source_game_id` for Lichess games).
+ * The CHECK `^[A-Za-z0-9_-]{1,64}$` intentionally excludes `/` so Lichess
+ * study chapter IDs (`{studyId}/{chapterId}`) cannot be stored — those are
+ * out of scope for SPEC2 (ADR §4.1).
+ *
+ * @design attribution columns mirror post_game_pgn_attachments
+ *
+ * The `(attribution_platform, attribution_path)` pair serves the same purpose
+ * as in the PGN table: a validated decomposition of a click-through URL that
+ * the renderer rebuilds server-side. The allow-list differs: embed table
+ * supports both 'chesscom' and 'lichess' (Lichess embeds do require
+ * attribution; PGN Lichess games use `source='lichess'` instead).
+ */
+export const postGameEmbedAttachments = pgTable(
+  'post_game_embed_attachments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    postId: uuid('post_id')
+      .notNull()
+      .unique()
+      .references(() => topicPosts.id, { onDelete: 'cascade' }),
+    embedProvider: varchar('embed_provider', { length: 20 }).notNull(), // 'chesscom' | 'lichess'
+    embedId: varchar('embed_id', { length: 64 }).notNull(),
+    /**
+     * @security audit-only — never render this as a src or href directly.
+     *   The embed URL is always reconstructed from (embedProvider, embedId)
+     *   at render time. `chk_embed_source_url_https` pins the scheme.
+     */
+    sourceUrl: varchar('source_url', { length: 512 }),
+    attributionPlatform: varchar('attribution_platform', { length: 20 }),
+    attributionPath: varchar('attribution_path', { length: 160 }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    check(
+      'post_game_embed_attachments_chk_embed_provider_valid',
+      sql`${table.embedProvider} IN ('chesscom', 'lichess')`
+    ),
+    check(
+      'post_game_embed_attachments_chk_embed_id_format',
+      sql`${table.embedId} ~ '^[A-Za-z0-9_-]{1,64}$'`
+    ),
+    check(
+      'post_game_embed_attachments_chk_embed_source_url_https',
+      sql`${table.sourceUrl} IS NULL OR ${table.sourceUrl} ~ '^https://'`
+    ),
+    check(
+      'post_game_embed_attachments_chk_embed_attribution_platform_valid',
+      sql`${table.attributionPlatform} IS NULL OR ${table.attributionPlatform} IN ('chesscom', 'lichess')`
+    ),
+    check(
+      'post_game_embed_attachments_chk_embed_attribution_path_format',
+      sql`${table.attributionPath} IS NULL OR ${table.attributionPath} ~ '^/[A-Za-z0-9/_-]{1,128}$'`
+    ),
+    check(
+      'post_game_embed_attachments_chk_embed_attribution_pair',
+      sql`(${table.attributionPlatform} IS NULL AND ${table.attributionPath} IS NULL)
+        OR (${table.attributionPlatform} IS NOT NULL AND ${table.attributionPath} IS NOT NULL)`
+    ),
+    // Future embed dedup: mirrors the Lichess reuse index on the PGN table.
+    index('idx_post_game_embed_attachments_provider_id').on(table.embedProvider, table.embedId),
+  ]
+);
+
+export type PostGameEmbedAttachment = typeof postGameEmbedAttachments.$inferSelect;
+export type NewPostGameEmbedAttachment = typeof postGameEmbedAttachments.$inferInsert;
 
 // User Follows
 export const userFollows = pgTable(

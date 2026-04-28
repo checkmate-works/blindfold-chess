@@ -2,7 +2,7 @@ import postgres from 'postgres';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 /**
- * Integration tests for the DB-level guarantees on `post_game_attachments`.
+ * Integration tests for the DB-level guarantees on `post_game_pgn_attachments`.
  *
  * These tests are DB-bound by design — the things they verify (CHECK
  * constraints, view aliasing) only exist in PostgreSQL, so a mocked
@@ -57,16 +57,16 @@ beforeAll(async () => {
     const probe = await sql`
       SELECT 1
       FROM pg_tables
-      WHERE schemaname = 'public' AND tablename = 'post_game_attachments'
+      WHERE schemaname = 'public' AND tablename = 'post_game_pgn_attachments'
     `;
     if (probe.length === 0) {
-      skipReason = 'post_game_attachments table not present (migrations not applied?)';
+      skipReason = 'post_game_pgn_attachments table not present (migrations not applied?)';
       await sql.end({ timeout: 1 });
       sql = null;
       return;
     }
     // Create a parent topic_post row to satisfy the FK on
-    // post_game_attachments. The auth.users FK on topic_posts.user_id
+    // post_game_pgn_attachments. The auth.users FK on topic_posts.user_id
     // is enforced when the migrate.ts Supabase-side SQL has run, so we
     // (a) try to insert the fixture user into auth.users (postgres
     // superuser has access), and (b) on any failure we fall back to
@@ -141,7 +141,7 @@ afterAll(async () => {
 
 const VALID_PGN = '1. e4 e5 2. Nf3 Nc6';
 
-describe('post_game_attachments integration', () => {
+describe('post_game_pgn_attachments integration', () => {
   describe('chk_pgn_byte_length_matches_octet_length (M-3)', () => {
     it('rejects an INSERT where pgn_byte_length disagrees with octet_length(pgn)', async (ctx) => {
       const db = requireDb(ctx);
@@ -153,7 +153,7 @@ describe('post_game_attachments integration', () => {
       // value alongside an oversized PGN and slip past the cap.
       await expect(
         db`
-          INSERT INTO post_game_attachments (
+          INSERT INTO post_game_pgn_attachments (
             post_id, source, pgn, pgn_byte_length, move_count
           )
           VALUES (
@@ -167,7 +167,7 @@ describe('post_game_attachments integration', () => {
       const db = requireDb(ctx);
       const expectedLength = Buffer.byteLength(VALID_PGN, 'utf8');
       await db`
-        INSERT INTO post_game_attachments (
+        INSERT INTO post_game_pgn_attachments (
           post_id, source, pgn, pgn_byte_length, move_count
         )
         VALUES (
@@ -176,13 +176,13 @@ describe('post_game_attachments integration', () => {
       `;
       const rows = await db<{ pgn_byte_length: number }[]>`
         SELECT pgn_byte_length
-        FROM post_game_attachments
+        FROM post_game_pgn_attachments
         WHERE post_id = ${testPostId}::uuid
       `;
       expect(rows.length).toBe(1);
       expect(rows[0].pgn_byte_length).toBe(expectedLength);
       // Cleanup so the next test starts fresh.
-      await db`DELETE FROM post_game_attachments WHERE post_id = ${testPostId}::uuid`;
+      await db`DELETE FROM post_game_pgn_attachments WHERE post_id = ${testPostId}::uuid`;
     });
   });
 
@@ -192,7 +192,7 @@ describe('post_game_attachments integration', () => {
       const expectedLength = Buffer.byteLength(VALID_PGN, 'utf8');
       await expect(
         db`
-          INSERT INTO post_game_attachments (
+          INSERT INTO post_game_pgn_attachments (
             post_id, source, pgn, pgn_byte_length, move_count,
             attribution_platform, attribution_path
           )
@@ -209,7 +209,7 @@ describe('post_game_attachments integration', () => {
       const expectedLength = Buffer.byteLength(VALID_PGN, 'utf8');
       await expect(
         db`
-          INSERT INTO post_game_attachments (
+          INSERT INTO post_game_pgn_attachments (
             post_id, source, pgn, pgn_byte_length, move_count,
             attribution_platform, attribution_path
           )
@@ -226,7 +226,7 @@ describe('post_game_attachments integration', () => {
       const expectedLength = Buffer.byteLength(VALID_PGN, 'utf8');
       await expect(
         db`
-          INSERT INTO post_game_attachments (
+          INSERT INTO post_game_pgn_attachments (
             post_id, source, pgn, pgn_byte_length, move_count,
             attribution_platform, attribution_path
           )
@@ -252,7 +252,7 @@ describe('post_game_attachments integration', () => {
       const expectedLength = Buffer.byteLength(VALID_PGN, 'utf8');
       await expect(
         db`
-          INSERT INTO post_game_attachments (
+          INSERT INTO post_game_pgn_attachments (
             post_id, source, source_url, source_game_id,
             pgn, pgn_byte_length, move_count
           )
@@ -270,7 +270,7 @@ describe('post_game_attachments integration', () => {
       const expectedLength = Buffer.byteLength(VALID_PGN, 'utf8');
       await expect(
         db`
-          INSERT INTO post_game_attachments (
+          INSERT INTO post_game_pgn_attachments (
             post_id, source, source_url, source_game_id,
             pgn, pgn_byte_length, move_count
           )
@@ -288,7 +288,7 @@ describe('post_game_attachments integration', () => {
       const expectedLength = Buffer.byteLength(VALID_PGN, 'utf8');
       await expect(
         db`
-          INSERT INTO post_game_attachments (
+          INSERT INTO post_game_pgn_attachments (
             post_id, source, source_url, source_game_id,
             pgn, pgn_byte_length, move_count
           )
@@ -305,7 +305,7 @@ describe('post_game_attachments integration', () => {
       const db = requireDb(ctx);
       const expectedLength = Buffer.byteLength(VALID_PGN, 'utf8');
       await db`
-        INSERT INTO post_game_attachments (
+        INSERT INTO post_game_pgn_attachments (
           post_id, source, source_url, source_game_id,
           pgn, pgn_byte_length, move_count
         )
@@ -317,20 +317,20 @@ describe('post_game_attachments integration', () => {
       `;
       const rows = await db<{ source_url: string }[]>`
         SELECT source_url
-        FROM post_game_attachments
+        FROM post_game_pgn_attachments
         WHERE post_id = ${testPostId}::uuid
       `;
       expect(rows.length).toBe(1);
       expect(rows[0].source_url).toBe('https://lichess.org/abcd1234');
       // Cleanup so the next test starts fresh.
-      await db`DELETE FROM post_game_attachments WHERE post_id = ${testPostId}::uuid`;
+      await db`DELETE FROM post_game_pgn_attachments WHERE post_id = ${testPostId}::uuid`;
     });
 
     it('accepts NULL source_url (pure-PGN attachment)', async (ctx) => {
       const db = requireDb(ctx);
       const expectedLength = Buffer.byteLength(VALID_PGN, 'utf8');
       await db`
-        INSERT INTO post_game_attachments (
+        INSERT INTO post_game_pgn_attachments (
           post_id, source, source_url, pgn, pgn_byte_length, move_count
         )
         VALUES (
@@ -339,13 +339,13 @@ describe('post_game_attachments integration', () => {
       `;
       const rows = await db<{ source_url: string | null }[]>`
         SELECT source_url
-        FROM post_game_attachments
+        FROM post_game_pgn_attachments
         WHERE post_id = ${testPostId}::uuid
       `;
       expect(rows.length).toBe(1);
       expect(rows[0].source_url).toBeNull();
       // Cleanup so the next test starts fresh.
-      await db`DELETE FROM post_game_attachments WHERE post_id = ${testPostId}::uuid`;
+      await db`DELETE FROM post_game_pgn_attachments WHERE post_id = ${testPostId}::uuid`;
     });
   });
 
@@ -363,7 +363,7 @@ describe('post_game_attachments integration', () => {
       const expectedLength = Buffer.byteLength(VALID_PGN, 'utf8');
       const path128 = `/${'a'.repeat(128)}`;
       await db`
-        INSERT INTO post_game_attachments (
+        INSERT INTO post_game_pgn_attachments (
           post_id, source, pgn, pgn_byte_length, move_count,
           attribution_platform, attribution_path
         )
@@ -373,13 +373,13 @@ describe('post_game_attachments integration', () => {
         )
       `;
       const rows = await db<{ attribution_path: string }[]>`
-        SELECT attribution_path FROM post_game_attachments
+        SELECT attribution_path FROM post_game_pgn_attachments
         WHERE post_id = ${testPostId}::uuid
       `;
       expect(rows.length).toBe(1);
       expect(rows[0].attribution_path).toBe(path128);
       expect(rows[0].attribution_path.length).toBe(129); // 1 leading `/` + 128 body
-      await db`DELETE FROM post_game_attachments WHERE post_id = ${testPostId}::uuid`;
+      await db`DELETE FROM post_game_pgn_attachments WHERE post_id = ${testPostId}::uuid`;
     });
 
     it('rejects attribution_path with 129 body chars (one above the regex cap)', async (ctx) => {
@@ -388,7 +388,7 @@ describe('post_game_attachments integration', () => {
       const path129 = `/${'a'.repeat(129)}`;
       await expect(
         db`
-          INSERT INTO post_game_attachments (
+          INSERT INTO post_game_pgn_attachments (
             post_id, source, pgn, pgn_byte_length, move_count,
             attribution_platform, attribution_path
           )
@@ -410,7 +410,7 @@ describe('post_game_attachments integration', () => {
       const expectedLength = Buffer.byteLength(VALID_PGN, 'utf8');
       await expect(
         db`
-          INSERT INTO post_game_attachments (
+          INSERT INTO post_game_pgn_attachments (
             post_id, source, pgn, pgn_byte_length, move_count,
             attribution_platform, attribution_path
           )
@@ -434,7 +434,7 @@ describe('post_game_attachments integration', () => {
       const sneakyPath = `/foo${String.fromCharCode(0x200b)}bar`;
       await expect(
         db`
-          INSERT INTO post_game_attachments (
+          INSERT INTO post_game_pgn_attachments (
             post_id, source, pgn, pgn_byte_length, move_count,
             attribution_platform, attribution_path
           )
@@ -457,7 +457,7 @@ describe('post_game_attachments integration', () => {
       const expectedLength = Buffer.byteLength(VALID_PGN, 'utf8');
       await expect(
         db`
-          INSERT INTO post_game_attachments (
+          INSERT INTO post_game_pgn_attachments (
             post_id, source, pgn, pgn_byte_length, move_count,
             attribution_platform, attribution_path
           )

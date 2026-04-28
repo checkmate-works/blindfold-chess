@@ -6,7 +6,7 @@ import {
 import { and, eq, inArray, isNull } from 'drizzle-orm';
 import 'server-only';
 
-import { db, postGameAttachments, topicPosts } from '@/lib/db';
+import { db, postGamePgnAttachments, topicPosts } from '@/lib/db';
 
 import type { AttachedGameCardData } from '@/app/[locale]/(public)/topics/_components/AttachedGameCard';
 
@@ -34,26 +34,26 @@ export async function getAttachmentsForPosts(
 
   const rows = await db
     .select({
-      id: postGameAttachments.id,
-      postId: postGameAttachments.postId,
-      source: postGameAttachments.source,
-      sourceUrl: postGameAttachments.sourceUrl,
-      sourceGameId: postGameAttachments.sourceGameId,
-      pgn: postGameAttachments.pgn,
-      moveCount: postGameAttachments.moveCount,
-      headerWhite: postGameAttachments.headerWhite,
-      headerBlack: postGameAttachments.headerBlack,
-      headerResult: postGameAttachments.headerResult,
-      headerEvent: postGameAttachments.headerEvent,
-      headerSite: postGameAttachments.headerSite,
-      headerDate: postGameAttachments.headerDate,
-      anonymized: postGameAttachments.anonymized,
-      attributionPlatform: postGameAttachments.attributionPlatform,
-      attributionPath: postGameAttachments.attributionPath,
+      id: postGamePgnAttachments.id,
+      postId: postGamePgnAttachments.postId,
+      source: postGamePgnAttachments.source,
+      sourceUrl: postGamePgnAttachments.sourceUrl,
+      sourceGameId: postGamePgnAttachments.sourceGameId,
+      pgn: postGamePgnAttachments.pgn,
+      moveCount: postGamePgnAttachments.moveCount,
+      headerWhite: postGamePgnAttachments.headerWhite,
+      headerBlack: postGamePgnAttachments.headerBlack,
+      headerResult: postGamePgnAttachments.headerResult,
+      headerEvent: postGamePgnAttachments.headerEvent,
+      headerSite: postGamePgnAttachments.headerSite,
+      headerDate: postGamePgnAttachments.headerDate,
+      anonymized: postGamePgnAttachments.anonymized,
+      attributionPlatform: postGamePgnAttachments.attributionPlatform,
+      attributionPath: postGamePgnAttachments.attributionPath,
     })
-    .from(postGameAttachments)
-    .innerJoin(topicPosts, eq(topicPosts.id, postGameAttachments.postId))
-    .where(and(inArray(postGameAttachments.postId, [...postIds]), isNull(topicPosts.deletedAt)));
+    .from(postGamePgnAttachments)
+    .innerJoin(topicPosts, eq(topicPosts.id, postGamePgnAttachments.postId))
+    .where(and(inArray(postGamePgnAttachments.postId, [...postIds]), isNull(topicPosts.deletedAt)));
 
   const map = new Map<string, AttachedGameCardData>();
   for (const row of rows) {

@@ -456,20 +456,20 @@ CREATE POLICY "puzzle_solutions_select_policy" ON "puzzle_solutions"
   FOR SELECT USING (true);
 
 -- =============================================================================
--- post_game_attachments (1:0..1 extension of topic_posts)
+-- post_game_pgn_attachments (1:0..1 extension of topic_posts)
 -- =============================================================================
 -- Public read is gated on the parent post NOT being soft-deleted. The
 -- application layer also filters `topic_posts.deleted_at IS NULL`, but
 -- a direct PostgREST hit on this table by REST clients would otherwise
 -- expose attachments belonging to soft-deleted posts. Two-layer defense.
-ALTER TABLE "post_game_attachments" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "post_game_pgn_attachments" ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "post_game_attachments_select" ON "post_game_attachments";
-CREATE POLICY "post_game_attachments_select" ON "post_game_attachments"
+DROP POLICY IF EXISTS "post_game_pgn_attachments_select" ON "post_game_pgn_attachments";
+CREATE POLICY "post_game_pgn_attachments_select" ON "post_game_pgn_attachments"
   FOR SELECT USING (
     EXISTS (
       SELECT 1 FROM topic_posts p
-      WHERE p.id = post_game_attachments.post_id
+      WHERE p.id = post_game_pgn_attachments.post_id
         AND p.deleted_at IS NULL
     )
   );
@@ -489,12 +489,12 @@ CREATE POLICY "post_game_attachments_select" ON "post_game_attachments"
 -- post is not soft-deleted. The application path inserts the attachment in the
 -- same transaction as the post (via createPostBase's afterInsert hook); this
 -- policy is the secondary guard against direct REST writes.
-DROP POLICY IF EXISTS "post_game_attachments_insert" ON "post_game_attachments";
-CREATE POLICY "post_game_attachments_insert" ON "post_game_attachments"
+DROP POLICY IF EXISTS "post_game_pgn_attachments_insert" ON "post_game_pgn_attachments";
+CREATE POLICY "post_game_pgn_attachments_insert" ON "post_game_pgn_attachments"
   FOR INSERT WITH CHECK (
     EXISTS (
       SELECT 1 FROM topic_posts p
-      WHERE p.id = post_game_attachments.post_id
+      WHERE p.id = post_game_pgn_attachments.post_id
         AND p.user_id = auth.uid()
         AND p.deleted_at IS NULL
     )
@@ -506,12 +506,53 @@ CREATE POLICY "post_game_attachments_insert" ON "post_game_attachments"
 -- DELETE: post owner may delete their attachment. In practice the path is
 -- "delete post → CASCADE attachment", but the explicit policy keeps the
 -- direct delete path closed to non-owners.
-DROP POLICY IF EXISTS "post_game_attachments_delete" ON "post_game_attachments";
-CREATE POLICY "post_game_attachments_delete" ON "post_game_attachments"
+-- Note: INSERT requires deleted_at IS NULL (cannot attach to a soft-deleted post),
+-- but DELETE does not — the post author can clean up attachments even after
+-- their post is soft-deleted (intentional asymmetry).
+DROP POLICY IF EXISTS "post_game_pgn_attachments_delete" ON "post_game_pgn_attachments";
+CREATE POLICY "post_game_pgn_attachments_delete" ON "post_game_pgn_attachments"
   FOR DELETE USING (
     EXISTS (
       SELECT 1 FROM topic_posts p
-      WHERE p.id = post_game_attachments.post_id
+      WHERE p.id = post_game_pgn_attachments.post_id
+        AND p.user_id = auth.uid()
+    )
+  );
+
+-- =============================================================================
+-- post_game_embed_attachments (1:0..1 extension of topic_posts)
+-- =============================================================================
+ALTER TABLE "post_game_embed_attachments" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "post_game_embed_attachments_select" ON "post_game_embed_attachments";
+CREATE POLICY "post_game_embed_attachments_select" ON "post_game_embed_attachments"
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM topic_posts p
+      WHERE p.id = post_game_embed_attachments.post_id
+        AND p.deleted_at IS NULL
+    )
+  );
+
+DROP POLICY IF EXISTS "post_game_embed_attachments_insert" ON "post_game_embed_attachments";
+CREATE POLICY "post_game_embed_attachments_insert" ON "post_game_embed_attachments"
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM topic_posts p
+      WHERE p.id = post_game_embed_attachments.post_id
+        AND p.user_id = auth.uid()
+        AND p.deleted_at IS NULL
+    )
+  );
+
+-- No UPDATE policy: embed attachments are immutable once created.
+
+DROP POLICY IF EXISTS "post_game_embed_attachments_delete" ON "post_game_embed_attachments";
+CREATE POLICY "post_game_embed_attachments_delete" ON "post_game_embed_attachments"
+  FOR DELETE USING (
+    EXISTS (
+      SELECT 1 FROM topic_posts p
+      WHERE p.id = post_game_embed_attachments.post_id
         AND p.user_id = auth.uid()
     )
   );

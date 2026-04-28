@@ -1,13 +1,13 @@
 import { and, desc, eq, gt, sql } from 'drizzle-orm';
 import 'server-only';
 
-import { db, postGameAttachments } from '@/lib/db';
+import { db, postGamePgnAttachments } from '@/lib/db';
 
 import { fetchLichessGamePgn } from './lichess';
 
 /**
  * Reuse window for Lichess PGN fetches. If a row exists in
- * `post_game_attachments` for the same gameId and was created within
+ * `post_game_pgn_attachments` for the same gameId and was created within
  * this many days, the stored PGN is reused instead of re-fetching.
  *
  * Trade-off: shorter values catch upstream deletions sooner, longer
@@ -45,19 +45,19 @@ export async function resolveLichessAttachmentPgn(gameId: string): Promise<Resol
   // through the same code path.
   if (/^[a-zA-Z0-9]{8}$/.test(gameId)) {
     const reused = await db
-      .select({ pgn: postGameAttachments.pgn })
-      .from(postGameAttachments)
+      .select({ pgn: postGamePgnAttachments.pgn })
+      .from(postGamePgnAttachments)
       .where(
         and(
-          eq(postGameAttachments.source, 'lichess'),
-          eq(postGameAttachments.sourceGameId, gameId),
+          eq(postGamePgnAttachments.source, 'lichess'),
+          eq(postGamePgnAttachments.sourceGameId, gameId),
           gt(
-            postGameAttachments.createdAt,
+            postGamePgnAttachments.createdAt,
             sql`now() - ${REUSE_WINDOW_DAYS}::int * interval '1 day'`
           )
         )
       )
-      .orderBy(desc(postGameAttachments.createdAt))
+      .orderBy(desc(postGamePgnAttachments.createdAt))
       .limit(1);
 
     if (reused.length > 0) {

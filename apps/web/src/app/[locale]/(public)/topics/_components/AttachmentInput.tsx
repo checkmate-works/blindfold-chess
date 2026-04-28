@@ -56,7 +56,7 @@ export function AttachmentInput({ onChange }: Props) {
             name="attachment"
             rows={6}
             // Generous client cap; server-side limit is 100 KB per
-            // `post_game_attachments.chk_pgn_byte_length`.
+            // `post_game_pgn_attachments.chk_pgn_byte_length`.
             maxLength={120_000}
             placeholder={t('input.placeholder')}
             onChange={handleChange}

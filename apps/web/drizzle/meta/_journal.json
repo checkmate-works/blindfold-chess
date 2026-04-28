@@ -267,6 +267,20 @@
       "when": 1777409146220,
       "tag": "20260428204546_drop_redundant_post_game_attachments_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1777490772000,
+      "tag": "20260429072612_rename_post_game_attachments_to_post_game_pgn_attachments",
+      "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1777490774000,
+      "tag": "20260429072614_create_post_game_embed_attachments",
+      "breakpoints": true
     }
   ]
 }

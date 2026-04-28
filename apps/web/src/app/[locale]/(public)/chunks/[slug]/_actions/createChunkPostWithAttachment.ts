@@ -4,7 +4,7 @@ import { validateAttachedPgn } from '@blindfold-chess/features/chess-core';
 
 import { authenticateAndCheckBan } from '@/lib/auth';
 import { getChunkBySlug } from '@/lib/chunks/queries';
-import { postGameAttachments } from '@/lib/db';
+import { postGamePgnAttachments } from '@/lib/db';
 import { resolveLichessAttachmentPgn } from '@/lib/games/resolve-lichess-attachment';
 import { sanitizePgnHeader } from '@/lib/games/sanitize-pgn-header';
 import { detectAttachmentInput } from '@/lib/games/validation';
@@ -224,7 +224,7 @@ export async function createChunkPostWithAttachment(
     emitFeedItem: false,
     redirectPath: (postId) => `/${locale}/chunks/${slug}?toast=post_created#post-${postId}`,
     afterInsert: async (tx, postId) => {
-      await tx.insert(postGameAttachments).values({
+      await tx.insert(postGamePgnAttachments).values({
         postId,
         source: sourceKind,
         sourceUrl: canonicalUrl,

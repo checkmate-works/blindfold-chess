@@ -14,7 +14,7 @@
  *   - returns null for empty / whitespace-only inputs so callers can store
  *     NULL in the DB instead of an empty string;
  *   - caps the result at 200 characters, matching the column widths on
- *     `post_game_attachments` (`header_white`, `header_black` are 100;
+ *     `post_game_pgn_attachments` (`header_white`, `header_black` are 100;
  *     `header_event` and `header_site` are 200; the slice keeps every
  *     downstream column safe under one rule).
  *

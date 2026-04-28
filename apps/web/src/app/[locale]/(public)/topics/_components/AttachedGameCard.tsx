@@ -9,13 +9,13 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { MiniBoard } from '@/app/[locale]/(public)/topics/openings/_components/MiniBoard';
 
 /**
- * Subset of `post_game_attachments` columns that the card needs.
+ * Subset of `post_game_pgn_attachments` columns that the card needs.
  *
  * @design Component contract
  *
  * `AttachedGameCard` MUST only ever be rendered for attachments whose
  * parent topic_post is non-soft-deleted. The visibility rule is enforced
- * by (a) the RLS SELECT policy on `post_game_attachments`, (b) the
+ * by (a) the RLS SELECT policy on `post_game_pgn_attachments`, (b) the
  * application-layer query that filters `topic_posts.deleted_at IS NULL`,
  * and (c) this contract — three layers of defense per SPEC1 §5-1.
  *

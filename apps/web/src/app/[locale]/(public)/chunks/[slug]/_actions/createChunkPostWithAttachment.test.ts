@@ -40,12 +40,12 @@ const generatedPostId = 'post-00000000-0000-0000-0000-000000000001';
 
 // `tx.insert(...)` is called twice per attachment-bearing path:
 //   1. tx.insert(topicPosts).values(...).returning(...)
-//   2. tx.insert(postGameAttachments).values(...)        ← afterInsert hook
+//   2. tx.insert(postGamePgnAttachments).values(...)        ← afterInsert hook
 //
 // We branch on the table identity passed to insert(...) to spy on each.
 const mockTx = {
   insert: (table: { __name?: string }) => {
-    if (table.__name === 'post_game_attachments') {
+    if (table.__name === 'post_game_pgn_attachments') {
       return {
         values: (...args: unknown[]) => {
           mockAttachmentInsertValues(...args);
@@ -69,7 +69,7 @@ vi.mock('@/lib/db', () => ({
     transaction: (fn: (tx: typeof mockTx) => Promise<unknown>) => fn(mockTx),
   },
   topicPosts: { id: 'id', __name: 'topic_posts' },
-  postGameAttachments: { __name: 'post_game_attachments' },
+  postGamePgnAttachments: { __name: 'post_game_pgn_attachments' },
   feedItems: { __name: 'feed_items' },
 }));
 

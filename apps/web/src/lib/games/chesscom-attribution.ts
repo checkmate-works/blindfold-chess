@@ -1,6 +1,6 @@
 /**
  * Parse + validate a chess.com URL into the (platform, path) attribution
- * pair persisted on `post_game_attachments`.
+ * pair persisted on `post_game_pgn_attachments`.
  *
  * @description
  * chess.com forbids automated game-page scraping (TOS), so we cannot
