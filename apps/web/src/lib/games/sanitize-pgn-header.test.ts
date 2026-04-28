@@ -108,6 +108,74 @@ describe('sanitizePgnHeader', () => {
     });
   });
 
+  // ─── M-4: Trojan Source / bidi & zero-width strip ───
+  describe('bidi and zero-width strip (CVE-2021-42574 class)', () => {
+    it('strips RIGHT-TO-LEFT OVERRIDE (U+202E)', () => {
+      // The classic Trojan Source vector: `evil` followed by U+202E
+      // and `site.com` would render as `evilmoc.etis` in the card.
+      // After sanitization the codepoint is gone and the visible text
+      // matches the stored bytes.
+      const value = `evil${String.fromCharCode(0x202e)}site.com`;
+      expect(sanitizePgnHeader(value)).toBe('evilsite.com');
+    });
+
+    it('strips LEFT-TO-RIGHT OVERRIDE (U+202D)', () => {
+      const value = `Magnus${String.fromCharCode(0x202d)}Carlsen`;
+      expect(sanitizePgnHeader(value)).toBe('MagnusCarlsen');
+    });
+
+    it('strips PDF / pop-direction-formatting (U+202C) and embeddings (U+202A, U+202B)', () => {
+      const lre = String.fromCharCode(0x202a);
+      const rle = String.fromCharCode(0x202b);
+      const pdf = String.fromCharCode(0x202c);
+      expect(sanitizePgnHeader(`A${lre}B${rle}C${pdf}D`)).toBe('ABCD');
+    });
+
+    it('strips bidi isolates (U+2066..U+2069)', () => {
+      // LEFT-TO-RIGHT ISOLATE / RIGHT-TO-LEFT ISOLATE / FIRST-STRONG /
+      // POP DIRECTIONAL ISOLATE — newer (Unicode 6.3+) vectors with
+      // the same display-reorder effect.
+      const lri = String.fromCharCode(0x2066);
+      const rli = String.fromCharCode(0x2067);
+      const fsi = String.fromCharCode(0x2068);
+      const pdi = String.fromCharCode(0x2069);
+      expect(sanitizePgnHeader(`A${lri}B${rli}C${fsi}D${pdi}E`)).toBe('ABCDE');
+    });
+
+    it('strips zero-width space (U+200B)', () => {
+      // Zero-width separator (U+200B inside): `Hi<ZWSP>karu` and `Hikaru` look identical
+      // but compare unequal — useful for impersonation / bypassing
+      // exact-match moderation rules. Strip so the stored value
+      // matches what a moderator sees.
+      const value = `Hi${String.fromCharCode(0x200b)}karu`;
+      expect(sanitizePgnHeader(value)).toBe('Hikaru');
+    });
+
+    it('strips zero-width non-joiner / joiner (U+200C, U+200D)', () => {
+      const value = `A${String.fromCharCode(0x200c)}B${String.fromCharCode(0x200d)}C`;
+      expect(sanitizePgnHeader(value)).toBe('ABC');
+    });
+
+    it('strips word joiner (U+2060) and zero-width no-break space / BOM (U+FEFF)', () => {
+      const value = `X${String.fromCharCode(0x2060)}Y${String.fromCharCode(0xfeff)}Z`;
+      expect(sanitizePgnHeader(value)).toBe('XYZ');
+    });
+
+    it('returns null when the input is ONLY bidi / zero-width chars', () => {
+      const value =
+        String.fromCharCode(0x202e) + String.fromCharCode(0x200b) + String.fromCharCode(0xfeff);
+      expect(sanitizePgnHeader(value)).toBeNull();
+    });
+
+    it('preserves legitimate bidi-rich strings after the override is stripped', () => {
+      // Hebrew name with no override — must pass through unchanged.
+      // (The strip targets the *override* codepoints, not the right-
+      // to-left letters themselves.)
+      const hebrew = 'דוד';
+      expect(sanitizePgnHeader(hebrew)).toBe(hebrew);
+    });
+  });
+
   describe('length cap boundary', () => {
     it('preserves exactly 200 chars unchanged', () => {
       const exactly200 = 'x'.repeat(200);
