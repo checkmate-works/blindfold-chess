@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Textarea } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -82,18 +82,13 @@ export function AttachmentInput({ onChange, onModeChange }: Props) {
     [onChange]
   );
 
-  // Notify parent on mode transitions. We keep this in an effect-less
-  // pattern by computing the mode synchronously and passing it on every
-  // value change — the parent is expected to memoize / shallow-compare.
-  // Using a derived call here is acceptable because `onModeChange`
-  // is itself a stable callback in the parent.
-  if (onModeChange) {
-    // Calling during render is intentional (and safe since onModeChange
-    // is stable + does not setState in a way that would re-render this
-    // component synchronously). React 19 still tolerates this pattern
-    // for parent-state mirrors.
-    Promise.resolve().then(() => onModeChange(mode));
-  }
+  // Notify parent on mode transitions via an effect so we don't call
+  // `setState` on the parent during this component's render. The parent
+  // is expected to memoize / shallow-compare on its end so repeated
+  // calls with the same mode are cheap.
+  useEffect(() => {
+    if (onModeChange) onModeChange(mode);
+  }, [mode, onModeChange]);
 
   // Surface a per-kind preview hint so the user knows what we detected.
   let previewHint: string | null = null;
