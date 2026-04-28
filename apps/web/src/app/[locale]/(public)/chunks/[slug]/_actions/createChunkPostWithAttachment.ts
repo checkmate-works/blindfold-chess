@@ -193,6 +193,18 @@ export async function createChunkPostWithAttachment(
     case 'chesscom_invalid_pgn':
     case 'unknown':
       return { error: attachmentErrorKey(detected.kind) };
+    // Embed URL kinds (SPEC2 Phase B). The PGN-flavoured action does NOT
+    // accept embed URLs — those are routed to
+    // `createChunkPostWithEmbedAttachment` from the UI layer. If a user
+    // pastes an embed URL into the PGN textarea here we surface the
+    // generic "invalid pgn" error rather than silently dropping the
+    // input; the UI's `detectAttachmentInput` should have routed them
+    // away from this action before submit.
+    case 'chesscom_embed':
+    case 'chesscom_embed_invalid_url':
+    case 'lichess_embed':
+    case 'lichess_embed_invalid_url':
+      return { error: attachmentErrorKey('unknown') };
     default: {
       // Compile-time exhaustiveness guard. If a future variant is added
       // to `AttachmentInputDetect` without a matching `case` arm above,
