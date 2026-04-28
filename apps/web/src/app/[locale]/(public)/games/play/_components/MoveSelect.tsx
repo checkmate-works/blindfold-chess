@@ -82,7 +82,7 @@ export function MoveSelect({ fen, onSubmit, onChange, disabled, placeholder }: P
         type="button"
         onClick={toggleOpen}
         disabled={isDisabled}
-        className={`w-full flex items-center justify-between px-4 py-3.5 md:py-3 border border-border rounded-lg bg-background text-lg md:text-base text-left focus:outline-none focus:ring-2 focus:ring-ring transition-colors ${
+        className={`w-full flex items-center justify-between px-4 py-3.5 md:py-3 border border-border rounded-lg bg-background text-lg md:text-base text-left focus:outline-none focus:ring-2 focus:ring-ring transition-colors touch-manipulation select-none ${
           isDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-muted/50'
         } ${isOpen ? 'ring-2 ring-ring border-ring' : ''}`}
       >
@@ -104,7 +104,7 @@ export function MoveSelect({ fen, onSubmit, onChange, disabled, placeholder }: P
               key={move}
               type="button"
               onClick={() => handleSelect(move)}
-              className="w-full px-4 py-4 md:py-2 text-left font-mono text-lg md:text-base text-foreground hover:bg-muted transition-colors duration-150 first:rounded-t-lg last:rounded-b-lg focus:outline-none focus:bg-muted"
+              className="w-full px-4 py-4 md:py-2 text-left font-mono text-lg md:text-base text-foreground hover:bg-muted transition-colors duration-150 first:rounded-t-lg last:rounded-b-lg focus:outline-none focus:bg-muted touch-manipulation select-none"
             >
               {move}
             </button>

@@ -82,7 +82,7 @@ export function MoveSequenceMemorize({ data, onComplete }: Props) {
           key={`move-${i}`}
           onClick={() => jumpToMove(i)}
           disabled={isPlaying || !hasPlayed}
-          className={`font-mono text-sm px-1 rounded transition-colors ${
+          className={`font-mono text-sm px-1 rounded transition-colors touch-manipulation select-none ${
             isSelected
               ? 'bg-primary text-primary-foreground'
               : isPlayed
@@ -136,13 +136,13 @@ export function MoveSequenceMemorize({ data, onComplete }: Props) {
       </div>
 
       {/* Move display */}
-      <div className="bg-card rounded-md border border-border p-4">
+      <div className="p-4">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-sm font-medium text-muted-foreground">{t('moves')}</h3>
           {hasPlayed && !isPlaying && (
             <button
               onClick={handlePlay}
-              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors touch-manipulation"
               aria-label={tCommon('replay')}
             >
               <FaRedo className="w-3 h-3" />
@@ -160,7 +160,7 @@ export function MoveSequenceMemorize({ data, onComplete }: Props) {
 
       {/* Progress */}
       {isPlaying && (
-        <div className="bg-card rounded-md border border-border p-4">
+        <div className="p-4">
           <p className="text-sm text-center text-muted-foreground">
             {t('playingMove', { current: currentMoveIndex + 1, total: data.moves.length })}
           </p>
