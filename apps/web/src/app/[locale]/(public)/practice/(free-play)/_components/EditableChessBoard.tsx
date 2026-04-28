@@ -128,7 +128,7 @@ export function EditableChessBoard({
         <button
           type="button"
           onClick={() => setSelectedPiece('')}
-          className={`w-10 h-10 sm:w-12 sm:h-12 rounded border-2 flex items-center justify-center text-base sm:text-lg flex-shrink-0 transition-colors ${
+          className={`w-10 h-10 sm:w-12 sm:h-12 rounded border-2 flex items-center justify-center text-base sm:text-lg flex-shrink-0 transition-colors touch-manipulation select-none ${
             selectedPiece === ''
               ? 'border-foreground bg-foreground/10 scale-105'
               : 'border-border hover:bg-muted'
@@ -147,7 +147,7 @@ export function EditableChessBoard({
               type="button"
               key={piece}
               onClick={() => setSelectedPiece(piece)}
-              className={`w-10 h-10 sm:w-12 sm:h-12 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+              className={`w-10 h-10 sm:w-12 sm:h-12 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors touch-manipulation select-none ${
                 selectedPiece === piece
                   ? 'border-foreground bg-foreground/10 scale-105'
                   : 'border-border hover:bg-muted'
