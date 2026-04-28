@@ -39,7 +39,7 @@ export function CoordinateQuizTrainingPlaying({
 
   return (
     <div>
-      <div className="bg-card rounded-2xl border border-border p-8 text-center overflow-hidden">
+      <div className="p-8 text-center overflow-hidden">
         <div className="max-w-md mx-auto mb-8 relative">
           <div className="-mx-8 sm:mx-0">
             <CoordinateQuizGameBoard
