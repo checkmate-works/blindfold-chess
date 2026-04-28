@@ -143,7 +143,7 @@ export default function RoutePlannerChallengeSession({
 
   return (
     <div id="route-planner-challenge-session" className="min-h-screen max-w-2xl mx-auto space-y-4">
-      <div className="p-6 space-y-6 relative overflow-hidden">
+      <div className="space-y-6 relative overflow-hidden">
         {/* Countdown Overlay */}
         <BoardOverlay
           isVisible={countdown !== null}
@@ -181,18 +181,16 @@ export default function RoutePlannerChallengeSession({
             onTogglePause={togglePause}
           />
 
-          <div className="-mx-6 sm:mx-0">
-            <ProblemBody
-              key={problemKey}
-              currentProblem={currentProblem}
-              isDisabled={isDisabled}
-              showFeedback={showFeedback}
-              isPaused={isPaused}
-              countdown={countdown}
-              onAnswer={hookHandleAnswer}
-              onRecordResult={recordProblemResult}
-            />
-          </div>
+          <ProblemBody
+            key={problemKey}
+            currentProblem={currentProblem}
+            isDisabled={isDisabled}
+            showFeedback={showFeedback}
+            isPaused={isPaused}
+            countdown={countdown}
+            onAnswer={hookHandleAnswer}
+            onRecordResult={recordProblemResult}
+          />
         </div>
       </div>
 
