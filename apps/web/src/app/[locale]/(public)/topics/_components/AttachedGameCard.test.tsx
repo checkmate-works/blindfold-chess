@@ -227,6 +227,93 @@ describe('AttachedGameCard — DOM / a11y structure', () => {
     fireEvent.click(button);
     expect(getByText('card.collapseButton')).not.toBeNull();
   });
+
+  // ─── Phase I: defense-in-depth — hostile attribution_path render ───
+  //
+  // Both `parseChesscomAttribution` (write-time) and the
+  // `chk_attribution_path_format` DB CHECK pin the path to
+  // `[A-Za-z0-9/_-]{1,128}` so an unsafe path SHOULD never reach this
+  // component. The tests below probe the *last* line of defense: even
+  // if a hostile string somehow survived both upstream checks (a
+  // future migration that loosened the constraint, a service-role
+  // write that bypassed the validator, a hand-edited row), the React
+  // text-child / attribute-value escape MUST keep it from becoming
+  // executable markup or an attribute-injection vector.
+  it('does not produce an unsafe href when attribution_path is set to a hostile string (XSS defense in depth)', () => {
+    // Quote-break + script tag inside the path. React renders the
+    // entire concatenated string as a single attribute value; per the
+    // HTML serialization rules React only needs to escape `"` and `&`
+    // inside attribute values (the `<` / `>` characters are legal
+    // inside attribute values and never start a tag). The hostile
+    // payload therefore lands in the href attribute as inert text —
+    // no <script> *element* node is created in the DOM, no quote
+    // breaks out of the attribute, no JS executes. We assert exactly
+    // those structural invariants.
+    const att = makeAttachment({
+      source: 'pgn',
+      attributionPlatform: 'chesscom',
+      attributionPath: '/admin"><script>alert(1)</script>',
+    });
+    const { container } = render(<AttachedGameCard attachment={att} />);
+
+    // (1) Hostile payload did NOT spawn a real <script> ELEMENT node.
+    // This is the load-bearing invariant — the substring may appear
+    // inside the href attribute (HTML allows it there), but it must
+    // never become a real <script> child.
+    expect(container.querySelector('script')).toBeNull();
+
+    // (2) The anchor renders with a single href attribute whose value
+    // is the full concatenated string. React's attribute serializer
+    // must NOT have closed the attribute early on the embedded `"`,
+    // because if it had, the trailing `<script>...` would have escaped
+    // into the markup as a sibling element — and the previous assertion
+    // would have failed.
+    const anchors = Array.from(container.querySelectorAll('a'));
+    const chesscomAnchor = anchors.find((a) =>
+      (a.getAttribute('href') ?? '').startsWith('https://www.chess.com/admin')
+    );
+    expect(chesscomAnchor).toBeDefined();
+    // The href value contains the full hostile path because React did
+    // NOT silently strip it — it kept it inside the attribute value,
+    // where it is harmless. Pin the exact value so a future renderer
+    // change (e.g. naive `escape()` that mangles the path) is caught.
+    expect(chesscomAnchor?.getAttribute('href')).toBe(
+      'https://www.chess.com/admin"><script>alert(1)</script>'
+    );
+
+    // (3) Attribute hardening still applies even on the hostile path.
+    const rel = chesscomAnchor?.getAttribute('rel') ?? '';
+    expect(rel).toContain('noopener');
+    expect(rel).toContain('noreferrer');
+    expect(rel).toContain('nofollow');
+  });
+
+  it('does not produce a javascript: href when attribution_path tries to break out of the chess.com origin', () => {
+    // The renderer hard-codes `https://www.chess.com` as the prefix —
+    // attempts to override the scheme via the path are inert because
+    // the scheme is not user-controlled. Pin this so a future refactor
+    // that derives the prefix from a data field cannot regress to a
+    // scheme-injection bug.
+    const att = makeAttachment({
+      source: 'pgn',
+      attributionPlatform: 'chesscom',
+      // Even with a colon and "javascript" word in the path, the
+      // resulting concatenated href still starts with `https://`.
+      attributionPath: '/javascript:alert(1)',
+    });
+    const { container } = render(<AttachedGameCard attachment={att} />);
+    const anchors = Array.from(container.querySelectorAll('a'));
+    const evilHref = anchors
+      .map((a) => a.getAttribute('href') ?? '')
+      .find((h) => h.startsWith('javascript:'));
+    expect(evilHref).toBeUndefined();
+    // The chess.com anchor itself still rendered with the literal
+    // (inert) path inside the attribute.
+    const chesscomAnchor = anchors.find((a) =>
+      (a.getAttribute('href') ?? '').startsWith('https://www.chess.com/javascript:')
+    );
+    expect(chesscomAnchor).toBeDefined();
+  });
 });
 
 // ─── M2 bundle isolation guard (static source check) ───

@@ -251,6 +251,106 @@ describe('sanitizePgnHeader', () => {
         String.fromCodePoint(0xe0020);
       expect(sanitizePgnHeader(value)).toBeNull();
     });
+
+    // ─── Phase I: range-boundary regression coverage ───
+    //
+    // The strip regex includes two supplementary-plane ranges:
+    //   - U+1D173..U+1D17A Musical Symbol formatters
+    //   - U+E0020..U+E007F TAG printable range (plus the standalone
+    //     U+E0001 LANG TAG)
+    //
+    // A range mistake of one codepoint either way (`{1D172,1D17B}` or
+    // `{E001F,E0080}`) would silently widen or narrow the strip without
+    // changing any of the existing assertions. These tests pin every
+    // boundary codepoint individually so a future regex tweak that
+    // misnames a boundary fails here in CI rather than weakening the
+    // invariant in production.
+    it('preserves U+1D172 (one BELOW the Musical Symbol formatter range)', () => {
+      // U+1D172 is MUSICAL SYMBOL COMBINING TREMOLO-3 — a real glyph,
+      // not a zero-width formatter. Stripping it would be over-broad.
+      const just_before = String.fromCodePoint(0x1d172);
+      const value = `A${just_before}B`;
+      expect(sanitizePgnHeader(value)).toBe(value);
+    });
+
+    it('preserves U+1D17B (one ABOVE the Musical Symbol formatter range)', () => {
+      // U+1D17B is MUSICAL SYMBOL COMBINING ACCENT — also a glyph, not
+      // a formatter. Same range-boundary regression check.
+      const just_after = String.fromCodePoint(0x1d17b);
+      const value = `A${just_after}B`;
+      expect(sanitizePgnHeader(value)).toBe(value);
+    });
+
+    it('preserves U+E001F (one BELOW the printable TAG range)', () => {
+      // U+E001F sits between U+E0001 LANGUAGE TAG (stripped as a
+      // standalone codepoint) and U+E0020 TAG SPACE (start of the
+      // printable TAG block we strip). Stripping U+E001F would imply
+      // that the regex is matching the *whole* TAG block instead of
+      // the documented {U+E0001} + [U+E0020..U+E007F] union.
+      const just_before = String.fromCodePoint(0xe001f);
+      const value = `A${just_before}B`;
+      expect(sanitizePgnHeader(value)).toBe(value);
+    });
+
+    it('preserves U+E0080 (one ABOVE the printable TAG range)', () => {
+      // U+E0080 is the first codepoint above U+E007F CANCEL TAG.
+      // Stripping it would also imply an over-wide regex.
+      const just_after = String.fromCodePoint(0xe0080);
+      const value = `A${just_after}B`;
+      expect(sanitizePgnHeader(value)).toBe(value);
+    });
+
+    it('preserves U+E0002 (TAG block but NOT in the stripped subset)', () => {
+      // The strip covers U+E0001 (LANG TAG) and the printable subrange
+      // U+E0020..U+E007F. Codepoints in between (e.g. U+E0002) are
+      // intentionally NOT stripped. This pins the precise shape of the
+      // alternation — a future tweak that broadens to the whole
+      // U+E0001..U+E007F block would fail this test.
+      const middle = String.fromCodePoint(0xe0002);
+      const value = `A${middle}B`;
+      expect(sanitizePgnHeader(value)).toBe(value);
+    });
+
+    it('preserves U+E0000 (one BELOW the LANG TAG codepoint)', () => {
+      const value = `A${String.fromCodePoint(0xe0000)}B`;
+      expect(sanitizePgnHeader(value)).toBe(value);
+    });
+
+    it('strips a long, mixed run of bidi + zero-width + TAG codepoints in one pass', () => {
+      // Defense-in-depth probe: build a string that combines codepoints
+      // from every covered class to confirm a single replace() pass
+      // removes them all (the `g` flag must be live and the
+      // alternation must cover all branches in one regex). If a future
+      // edit accidentally drops the `g` flag, only the first match
+      // would be removed and this test would fail.
+      const payload =
+        String.fromCharCode(0x202e) + // RLO
+        String.fromCharCode(0x200b) + // ZWSP
+        String.fromCharCode(0x200c) + // ZWNJ
+        String.fromCharCode(0x200d) + // ZWJ
+        String.fromCharCode(0x2060) + // WJ
+        String.fromCharCode(0xfeff) + // BOM
+        String.fromCharCode(0x061c) + // ALM
+        String.fromCharCode(0x180e) + // MVS
+        String.fromCharCode(0x2066) + // LRI
+        String.fromCharCode(0x2069) + // PDI
+        String.fromCodePoint(0x1d173) + // Musical formatter
+        String.fromCodePoint(0xe0001) + // LANG TAG
+        String.fromCodePoint(0xe0020) + // TAG SPACE
+        String.fromCodePoint(0xe007f); // CANCEL TAG
+      const value = `Magnus${payload}Carlsen`;
+      expect(sanitizePgnHeader(value)).toBe('MagnusCarlsen');
+    });
+
+    it('strips repeated runs of the same bidi codepoint (regex global flag regression)', () => {
+      // The classic "drop the /g flag" regression: with /g missing the
+      // first U+202E would be removed but the four trailing copies
+      // would survive. Pin this so a future edit cannot silently
+      // weaken the strip to a single pass per character class.
+      const rlo = String.fromCharCode(0x202e);
+      const value = `A${rlo}${rlo}${rlo}${rlo}${rlo}B`;
+      expect(sanitizePgnHeader(value)).toBe('AB');
+    });
   });
 
   describe('length cap boundary', () => {

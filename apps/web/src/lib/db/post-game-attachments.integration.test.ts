@@ -349,6 +349,127 @@ describe('post_game_attachments integration', () => {
     });
   });
 
+  describe('attribution_path length boundary at the regex edge', () => {
+    // The CHECK regex `^/[A-Za-z0-9/_-]{1,128}$` caps the path body at
+    // 128 chars after the leading slash (129 chars total). The column
+    // itself is varchar(160) — wider than the regex deliberately so a
+    // future regex widening does not need a column migration. The two
+    // tests below pin (a) the largest accepted value and (b) the
+    // smallest rejected value at the regex boundary, so a future
+    // regex tweak from `{1,128}` to anything else surfaces here as
+    // either a passing reject test or a failing accept test.
+    it('accepts attribution_path with EXACTLY 128 body chars (regex upper bound)', async (ctx) => {
+      const db = requireDb(ctx);
+      const expectedLength = Buffer.byteLength(VALID_PGN, 'utf8');
+      const path128 = `/${'a'.repeat(128)}`;
+      await db`
+        INSERT INTO post_game_attachments (
+          post_id, source, pgn, pgn_byte_length, move_count,
+          attribution_platform, attribution_path
+        )
+        VALUES (
+          ${testPostId}::uuid, 'pgn', ${VALID_PGN}, ${expectedLength}, 4,
+          'chesscom', ${path128}
+        )
+      `;
+      const rows = await db<{ attribution_path: string }[]>`
+        SELECT attribution_path FROM post_game_attachments
+        WHERE post_id = ${testPostId}::uuid
+      `;
+      expect(rows.length).toBe(1);
+      expect(rows[0].attribution_path).toBe(path128);
+      expect(rows[0].attribution_path.length).toBe(129); // 1 leading `/` + 128 body
+      await db`DELETE FROM post_game_attachments WHERE post_id = ${testPostId}::uuid`;
+    });
+
+    it('rejects attribution_path with 129 body chars (one above the regex cap)', async (ctx) => {
+      const db = requireDb(ctx);
+      const expectedLength = Buffer.byteLength(VALID_PGN, 'utf8');
+      const path129 = `/${'a'.repeat(129)}`;
+      await expect(
+        db`
+          INSERT INTO post_game_attachments (
+            post_id, source, pgn, pgn_byte_length, move_count,
+            attribution_platform, attribution_path
+          )
+          VALUES (
+            ${testPostId}::uuid, 'pgn', ${VALID_PGN}, ${expectedLength}, 4,
+            'chesscom', ${path129}
+          )
+        `
+      ).rejects.toThrow(/chk_attribution_path_format/);
+    });
+
+    it('rejects attribution_path containing a percent (e.g. URL-encoded space)', async (ctx) => {
+      // The path regex `[A-Za-z0-9/_-]` excludes `%`. A pasted path
+      // that survived percent-encoding by `new URL(...)` (e.g. a
+      // literal space) should be caught at the parser layer; this
+      // test pins the DB-level failure mode in case the parser layer
+      // is ever bypassed (direct REST write, manual SQL).
+      const db = requireDb(ctx);
+      const expectedLength = Buffer.byteLength(VALID_PGN, 'utf8');
+      await expect(
+        db`
+          INSERT INTO post_game_attachments (
+            post_id, source, pgn, pgn_byte_length, move_count,
+            attribution_platform, attribution_path
+          )
+          VALUES (
+            ${testPostId}::uuid, 'pgn', ${VALID_PGN}, ${expectedLength}, 4,
+            'chesscom', '/foo%20bar'
+          )
+        `
+      ).rejects.toThrow(/chk_attribution_path_format/);
+    });
+
+    it('rejects attribution_path containing a stray U+200B zero-width space', async (ctx) => {
+      // ZWSP characters in the persisted path could let two
+      // attribution rows look identical to a moderator while pointing
+      // at different chess.com URLs. The regex `[A-Za-z0-9/_-]`
+      // rejects U+200B because it is not in the allow-list — pin so
+      // a future regex widening (e.g. switching to `\S`) cannot
+      // silently let this slip through.
+      const db = requireDb(ctx);
+      const expectedLength = Buffer.byteLength(VALID_PGN, 'utf8');
+      const sneakyPath = `/foo${String.fromCharCode(0x200b)}bar`;
+      await expect(
+        db`
+          INSERT INTO post_game_attachments (
+            post_id, source, pgn, pgn_byte_length, move_count,
+            attribution_platform, attribution_path
+          )
+          VALUES (
+            ${testPostId}::uuid, 'pgn', ${VALID_PGN}, ${expectedLength}, 4,
+            'chesscom', ${sneakyPath}
+          )
+        `
+      ).rejects.toThrow(/chk_attribution_path_format/);
+    });
+  });
+
+  describe('chk_attribution_pair (reverse direction)', () => {
+    it('rejects an INSERT with attribution_path set but attribution_platform NULL', async (ctx) => {
+      // The "platform set, path NULL" direction is already covered
+      // above. Pin the reverse direction so a future single-direction
+      // CHECK rewrite (e.g. enforcing only `path IS NULL OR platform
+      // IS NOT NULL`) surfaces in CI.
+      const db = requireDb(ctx);
+      const expectedLength = Buffer.byteLength(VALID_PGN, 'utf8');
+      await expect(
+        db`
+          INSERT INTO post_game_attachments (
+            post_id, source, pgn, pgn_byte_length, move_count,
+            attribution_platform, attribution_path
+          )
+          VALUES (
+            ${testPostId}::uuid, 'pgn', ${VALID_PGN}, ${expectedLength}, 4,
+            NULL, '/game/live/12345'
+          )
+        `
+      ).rejects.toThrow(/chk_attribution_pair/);
+    });
+  });
+
   describe('rename compatibility view (H-5)', () => {
     it('still allows SELECT * FROM topic_post_attachments via the compat VIEW', async (ctx) => {
       const db = requireDb(ctx);
