@@ -4102,6 +4102,14 @@
       "chesscomInvalidPgn": "O texto abaixo da URL do chess.com não parece ser um PGN. Cole o corpo da partida exportada.",
       "lichessStudyUnsupported": "URLs de Lichess Study não são suportadas. Cole uma URL de partida ou um PGN.",
       "rateLimitedPostWithAttachment": "Você pode anexar no máximo 5 partidas por hora."
+    },
+    "embed": {
+      "chesscomDetected": "Diagrama do Chess.com detectado.",
+      "lichessDetected": "Incorporação do Lichess detectada.",
+      "viewOnLichess": "Ver no Lichess",
+      "invalidUrl": "Isso não parece ser uma URL de incorporação válida.",
+      "chesscomCardTitle": "Diagrama do Chess.com",
+      "lichessCardTitle": "Partida do Lichess"
     }
   },
   "Footer": {

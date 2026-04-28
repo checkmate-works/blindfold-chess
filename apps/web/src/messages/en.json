@@ -4102,6 +4102,14 @@
       "chesscomInvalidPgn": "The text below the chess.com URL doesn't look like a PGN. Paste the exported game body.",
       "lichessStudyUnsupported": "Lichess Study URLs are not supported. Please paste a game URL or PGN.",
       "rateLimitedPostWithAttachment": "You can attach at most 5 games per hour."
+    },
+    "embed": {
+      "chesscomDetected": "Chess.com diagram detected.",
+      "lichessDetected": "Lichess embed detected.",
+      "viewOnLichess": "View on Lichess",
+      "invalidUrl": "That doesn't look like a valid embed URL.",
+      "chesscomCardTitle": "Chess.com diagram",
+      "lichessCardTitle": "Lichess game"
     }
   },
   "Footer": {

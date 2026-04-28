@@ -3998,6 +3998,14 @@
       "chesscomInvalidPgn": "chess.com の URL の下のテキストが PGN として認識できません。エクスポートした対局本文を貼り付けてください。",
       "lichessStudyUnsupported": "Lichess の Study URL には対応していません。対局 URL または PGN を貼り付けてください。",
       "rateLimitedPostWithAttachment": "添付付きの投稿は 1 時間に 5 件までです。"
+    },
+    "embed": {
+      "chesscomDetected": "Chess.com の図を検出しました。",
+      "lichessDetected": "Lichess の埋め込みを検出しました。",
+      "viewOnLichess": "Lichess で開く",
+      "invalidUrl": "埋め込み URL の形式が正しくありません。",
+      "chesscomCardTitle": "Chess.com の図",
+      "lichessCardTitle": "Lichess の対局"
     }
   },
   "Footer": {
