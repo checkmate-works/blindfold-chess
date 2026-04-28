@@ -35,7 +35,7 @@ export function ChessCoordinateKeypad({
             type="button"
             onClick={() => onFilePress(file)}
             disabled={isDisabled || !expectingFile}
-            className={`flex-1 min-w-0 h-11 rounded-md font-mono text-lg transition-colors border ${
+            className={`flex-1 min-w-0 h-11 rounded-md font-mono text-lg transition-colors border touch-manipulation select-none ${
               expectingFile && !isDisabled
                 ? 'bg-background hover:bg-muted border-border text-foreground'
                 : 'bg-background border-border opacity-30 cursor-not-allowed text-muted-foreground'
@@ -54,7 +54,7 @@ export function ChessCoordinateKeypad({
             type="button"
             onClick={() => onRankPress(rank)}
             disabled={isDisabled || !expectingRank}
-            className={`flex-1 min-w-0 h-11 rounded-md font-mono text-lg transition-colors border ${
+            className={`flex-1 min-w-0 h-11 rounded-md font-mono text-lg transition-colors border touch-manipulation select-none ${
               expectingRank && !isDisabled
                 ? 'bg-background hover:bg-muted border-border text-foreground'
                 : 'bg-background border-border opacity-30 cursor-not-allowed text-muted-foreground'
@@ -71,7 +71,7 @@ export function ChessCoordinateKeypad({
           type="button"
           onClick={onBackspace}
           disabled={isDisabled}
-          className="flex-1 h-11 rounded-md font-mono text-lg transition-colors border border-border bg-background hover:bg-muted text-foreground flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
+          className="flex-1 h-11 rounded-md font-mono text-lg transition-colors border border-border bg-background hover:bg-muted text-foreground flex items-center justify-center touch-manipulation select-none disabled:opacity-30 disabled:cursor-not-allowed"
           title={t('backspace')}
         >
           <FaBackspace className="w-5 h-5" />
@@ -80,7 +80,7 @@ export function ChessCoordinateKeypad({
           type="button"
           onClick={onClear}
           disabled={isDisabled}
-          className="flex-1 h-11 rounded-md font-mono text-lg transition-colors border border-border bg-background hover:bg-muted text-foreground flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed"
+          className="flex-1 h-11 rounded-md font-mono text-lg transition-colors border border-border bg-background hover:bg-muted text-foreground flex items-center justify-center touch-manipulation select-none disabled:opacity-30 disabled:cursor-not-allowed"
         >
           {t('clear')}
         </button>
