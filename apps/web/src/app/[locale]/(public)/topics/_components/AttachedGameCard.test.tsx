@@ -150,10 +150,14 @@ describe('AttachedGameCard — DOM / a11y structure', () => {
       (a) => a.getAttribute('href') === 'https://lichess.org/abcd1234'
     );
     expect(lichessAnchor).toBeDefined();
-    // target=_blank with noopener noreferrer.
+    // target=_blank with noopener noreferrer + UGC nofollow (Phase H L-1).
+    // Same posture as the chess.com attribution link: a comment-attached
+    // outbound link must not transfer PageRank to lichess.org via UGC.
     expect(lichessAnchor?.getAttribute('target')).toBe('_blank');
-    expect(lichessAnchor?.getAttribute('rel') ?? '').toContain('noopener');
-    expect(lichessAnchor?.getAttribute('rel') ?? '').toContain('noreferrer');
+    const lichessRel = lichessAnchor?.getAttribute('rel') ?? '';
+    expect(lichessRel).toContain('noopener');
+    expect(lichessRel).toContain('noreferrer');
+    expect(lichessRel).toContain('nofollow');
 
     // The hostile [Site] header value must NOT have been linked.
     const evilAnchor = anchors.find((a) =>

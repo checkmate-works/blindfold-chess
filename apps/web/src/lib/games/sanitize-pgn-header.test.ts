@@ -174,6 +174,83 @@ describe('sanitizePgnHeader', () => {
       const hebrew = 'דוד';
       expect(sanitizePgnHeader(hebrew)).toBe(hebrew);
     });
+
+    // ─── Phase H: extended invisible / formatter coverage ───
+    it('strips ARABIC LETTER MARK (U+061C, Bidi_Control)', () => {
+      // U+061C is an Arabic-script bidi formatter that, like the
+      // U+202A..U+202E family, can flip rendered text without
+      // changing the underlying codepoints. Coverage gap noted in
+      // Phase G review.
+      const value = `Magnus${String.fromCharCode(0x061c)}Carlsen`;
+      expect(sanitizePgnHeader(value)).toBe('MagnusCarlsen');
+    });
+
+    it('strips MONGOLIAN VOWEL SEPARATOR (U+180E)', () => {
+      // U+180E is deprecated but still rendered as zero-width and
+      // accepted by most pipelines — abusable as an invisible
+      // separator that defeats exact-match comparisons.
+      const value = `A${String.fromCharCode(0x180e)}B`;
+      expect(sanitizePgnHeader(value)).toBe('AB');
+    });
+
+    it('strips Musical Symbol formatter U+1D173 (MUSICAL SYMBOL BEGIN BEAM)', () => {
+      // Supplementary-plane formatter; requires the regex `u` flag to
+      // match the surrogate pair correctly.
+      const value = `A${String.fromCodePoint(0x1d173)}B`;
+      expect(sanitizePgnHeader(value)).toBe('AB');
+    });
+
+    it('strips the full Musical Symbol formatter range U+1D173..U+1D17A', () => {
+      // The whole 8-codepoint formatter block must be stripped, not
+      // just the boundary points. Spot-check the middle of the range.
+      const middle = String.fromCodePoint(0x1d177);
+      const value = `X${middle}Y`;
+      expect(sanitizePgnHeader(value)).toBe('XY');
+    });
+
+    it('strips TAG character U+E0001 LANGUAGE TAG', () => {
+      // U+E0001 is the entry point of the TAG block — the classic
+      // "ghost text" / invisible-watermark vector.
+      const value = `A${String.fromCodePoint(0xe0001)}B`;
+      expect(sanitizePgnHeader(value)).toBe('AB');
+    });
+
+    it('strips TAG SPACE (U+E0020)', () => {
+      // U+E0020 maps to ASCII space inside the TAG namespace — the
+      // start of the printable TAG range.
+      const value = `Hi${String.fromCodePoint(0xe0020)}karu`;
+      expect(sanitizePgnHeader(value)).toBe('Hikaru');
+    });
+
+    it('strips CANCEL TAG (U+E007F)', () => {
+      // U+E007F is the closing terminator for a TAG sequence — the
+      // last codepoint in the block.
+      const value = `Foo${String.fromCodePoint(0xe007f)}Bar`;
+      expect(sanitizePgnHeader(value)).toBe('FooBar');
+    });
+
+    it('strips a long TAG-encoded payload entirely', () => {
+      // Encode "evil" using the standard TAG mapping (TAG version of
+      // ASCII char `c` = U+E0000 + codePointOf(c)). Every TAG char
+      // here lands in U+E0020..U+E007F, the printable TAG range.
+      // After sanitization the payload must be gone but legitimate
+      // prefix/suffix preserved.
+      const tagged =
+        String.fromCodePoint(0xe0000 + 'e'.charCodeAt(0)) +
+        String.fromCodePoint(0xe0000 + 'v'.charCodeAt(0)) +
+        String.fromCodePoint(0xe0000 + 'i'.charCodeAt(0)) +
+        String.fromCodePoint(0xe0000 + 'l'.charCodeAt(0));
+      const value = `Magnus${tagged}Carlsen`;
+      expect(sanitizePgnHeader(value)).toBe('MagnusCarlsen');
+    });
+
+    it('returns null when input is ONLY supplementary-plane formatters', () => {
+      const value =
+        String.fromCodePoint(0x1d173) +
+        String.fromCodePoint(0xe0001) +
+        String.fromCodePoint(0xe0020);
+      expect(sanitizePgnHeader(value)).toBeNull();
+    });
   });
 
   describe('length cap boundary', () => {

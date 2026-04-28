@@ -598,6 +598,14 @@ export const postGameAttachments = pgTable(
       .unique()
       .references(() => topicPosts.id, { onDelete: 'cascade' }),
     source: varchar('source', { length: 20 }).notNull(), // 'pgn' | 'lichess' | (future)
+    /**
+     * 添付の元 URL（Lichess の game URL or chess.com の attribution URL）。
+     * @security audit-only — 絶対に href として直接 render してはならない。
+     *   表示用 href は (source, sourceGameId) または (attributionPlatform, attributionPath) から
+     *   サーバ側で再構築する。詳細は AttachedGameCard.tsx 参照。
+     *   `chk_source_url_audit_https` により、`https://` 以外のスキーム
+     *   （`javascript:` / `data:` / `file:` 等）は DB レベルで拒否される。
+     */
     sourceUrl: varchar('source_url', { length: 512 }), // canonical URL when source != 'pgn'
     sourceGameId: varchar('source_game_id', { length: 64 }), // Lichess gameId, etc.
     pgn: text('pgn').notNull(), // normalized PGN, always present
@@ -637,6 +645,16 @@ export const postGameAttachments = pgTable(
     check(
       'chk_source_url_required_for_external',
       sql`${table.source} = 'pgn' OR ${table.sourceUrl} IS NOT NULL`
+    ),
+    // Phase H (M-3): even though `source_url` is audit-only and never
+    // rendered directly as an href, pin its scheme to `https://` at the
+    // DB so that an accidental future render (e.g. a refactor that
+    // forgets the rebuild-from-components rule, a debug page that
+    // dumps the row) cannot turn a `javascript:` / `data:` / `file:`
+    // payload into a clickable link. Last line of defense.
+    check(
+      'chk_source_url_audit_https',
+      sql`${table.sourceUrl} IS NULL OR ${table.sourceUrl} ~ '^https://'`
     ),
     // (M-3) Defense-in-depth against PGN length spoofing: the cached
     // `pgn_byte_length` column is also a CHECK input for `chk_pgn_byte_length`,

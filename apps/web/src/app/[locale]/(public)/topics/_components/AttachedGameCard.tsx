@@ -170,10 +170,17 @@ export function AttachedGameCard({ attachment }: Props) {
         {lichessSource && (
           <p className="text-xs text-muted-foreground pt-1">
             <span>{t('card.sourceLabel')}: </span>
+            {/*
+              `rel="noopener noreferrer nofollow"` matches the chess.com
+              attribution link below (Phase H L-1):
+                - noopener / noreferrer — standard cross-origin link hardening
+                - nofollow — UGC link, do not transfer PageRank to lichess.org
+                  via comment-attachment posts, same posture as chess.com.
+            */}
             <a
               href={lichessSource.href}
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noopener noreferrer nofollow"
               className="text-link-primary hover:underline"
             >
               {lichessSource.label}

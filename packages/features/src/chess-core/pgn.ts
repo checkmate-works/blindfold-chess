@@ -254,7 +254,7 @@ function nullableHeader(value: string | undefined | null): string | null {
  * Validate, normalize, and extract metadata from a PGN string in one call.
  *
  * Designed for the comment-attachment use case: returns everything the
- * Server Action needs to populate `topic_post_attachments` in a single
+ * Server Action needs to populate `post_game_attachments` in a single
  * synchronous step. chess.js is the only external dep.
  *
  * Normalization:

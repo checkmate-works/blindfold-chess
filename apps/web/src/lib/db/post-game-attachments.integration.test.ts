@@ -239,6 +239,116 @@ describe('post_game_attachments integration', () => {
     });
   });
 
+  describe('chk_source_url_audit_https (Phase H M-3)', () => {
+    // `source_url` is documented as audit-only — the renderer never
+    // reads it back as an href (see AttachedGameCard.tsx + the
+    // @security TSDoc on the column). The CHECK below is the last
+    // line of defense if a future refactor accidentally surfaces
+    // the column as a link: hostile schemes (`javascript:`, `data:`,
+    // `file:`, ...) and even plain `http://` are rejected at write
+    // time, regardless of the application path that submitted them.
+    it('rejects javascript: scheme on source_url', async (ctx) => {
+      const db = requireDb(ctx);
+      const expectedLength = Buffer.byteLength(VALID_PGN, 'utf8');
+      await expect(
+        db`
+          INSERT INTO post_game_attachments (
+            post_id, source, source_url, source_game_id,
+            pgn, pgn_byte_length, move_count
+          )
+          VALUES (
+            ${testPostId}::uuid, 'lichess',
+            'javascript:alert(1)', 'abcd1234',
+            ${VALID_PGN}, ${expectedLength}, 4
+          )
+        `
+      ).rejects.toThrow(/chk_source_url_audit_https/);
+    });
+
+    it('rejects data: scheme on source_url', async (ctx) => {
+      const db = requireDb(ctx);
+      const expectedLength = Buffer.byteLength(VALID_PGN, 'utf8');
+      await expect(
+        db`
+          INSERT INTO post_game_attachments (
+            post_id, source, source_url, source_game_id,
+            pgn, pgn_byte_length, move_count
+          )
+          VALUES (
+            ${testPostId}::uuid, 'lichess',
+            'data:text/html,<script>alert(1)</script>', 'abcd1234',
+            ${VALID_PGN}, ${expectedLength}, 4
+          )
+        `
+      ).rejects.toThrow(/chk_source_url_audit_https/);
+    });
+
+    it('rejects plain http:// (https-only policy)', async (ctx) => {
+      const db = requireDb(ctx);
+      const expectedLength = Buffer.byteLength(VALID_PGN, 'utf8');
+      await expect(
+        db`
+          INSERT INTO post_game_attachments (
+            post_id, source, source_url, source_game_id,
+            pgn, pgn_byte_length, move_count
+          )
+          VALUES (
+            ${testPostId}::uuid, 'lichess',
+            'http://lichess.org/abcd1234', 'abcd1234',
+            ${VALID_PGN}, ${expectedLength}, 4
+          )
+        `
+      ).rejects.toThrow(/chk_source_url_audit_https/);
+    });
+
+    it('accepts a canonical https://lichess.org URL', async (ctx) => {
+      const db = requireDb(ctx);
+      const expectedLength = Buffer.byteLength(VALID_PGN, 'utf8');
+      await db`
+        INSERT INTO post_game_attachments (
+          post_id, source, source_url, source_game_id,
+          pgn, pgn_byte_length, move_count
+        )
+        VALUES (
+          ${testPostId}::uuid, 'lichess',
+          'https://lichess.org/abcd1234', 'abcd1234',
+          ${VALID_PGN}, ${expectedLength}, 4
+        )
+      `;
+      const rows = await db<{ source_url: string }[]>`
+        SELECT source_url
+        FROM post_game_attachments
+        WHERE post_id = ${testPostId}::uuid
+      `;
+      expect(rows.length).toBe(1);
+      expect(rows[0].source_url).toBe('https://lichess.org/abcd1234');
+      // Cleanup so the next test starts fresh.
+      await db`DELETE FROM post_game_attachments WHERE post_id = ${testPostId}::uuid`;
+    });
+
+    it('accepts NULL source_url (pure-PGN attachment)', async (ctx) => {
+      const db = requireDb(ctx);
+      const expectedLength = Buffer.byteLength(VALID_PGN, 'utf8');
+      await db`
+        INSERT INTO post_game_attachments (
+          post_id, source, source_url, pgn, pgn_byte_length, move_count
+        )
+        VALUES (
+          ${testPostId}::uuid, 'pgn', NULL, ${VALID_PGN}, ${expectedLength}, 4
+        )
+      `;
+      const rows = await db<{ source_url: string | null }[]>`
+        SELECT source_url
+        FROM post_game_attachments
+        WHERE post_id = ${testPostId}::uuid
+      `;
+      expect(rows.length).toBe(1);
+      expect(rows[0].source_url).toBeNull();
+      // Cleanup so the next test starts fresh.
+      await db`DELETE FROM post_game_attachments WHERE post_id = ${testPostId}::uuid`;
+    });
+  });
+
   describe('rename compatibility view (H-5)', () => {
     it('still allows SELECT * FROM topic_post_attachments via the compat VIEW', async (ctx) => {
       const db = requireDb(ctx);

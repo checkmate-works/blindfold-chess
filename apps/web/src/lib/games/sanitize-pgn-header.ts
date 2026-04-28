@@ -50,22 +50,51 @@
  * for the same reason: invisible separators that produce different
  * stored/displayed strings than what the user sees, and let attackers
  * defeat exact-match moderation rules ("Hikaru" vs "Hi" + U+200B + "karu").
+ *
+ * @design Extended invisible / formatter coverage (Phase H)
+ *
+ * In addition to the bidi + zero-width sets above, the strip also
+ * covers:
+ *   - U+061C ARABIC LETTER MARK — formally classified as Bidi_Control
+ *     since Unicode 6.3, same attack surface as U+202A..U+202E.
+ *   - U+180E MONGOLIAN VOWEL SEPARATOR — deprecated but still rendered
+ *     as zero-width by browsers; usable as an invisible separator.
+ *   - U+1D173..U+1D17A Musical Symbol formatters — zero-width control
+ *     codepoints from the supplementary plane (require the `u` flag).
+ *   - U+E0001 + U+E0020..U+E007F TAG characters — an invisible
+ *     "ghost text" channel that has been used to watermark or smuggle
+ *     hidden instructions inside otherwise plain text. Stripping at
+ *     the input layer prevents both display impersonation and
+ *     downstream prompt-injection of an LLM that ingests the header.
  */
 
 const PGN_HEADER_MAX_LENGTH = 200;
-// Strip three classes of invisible / control characters in one pass:
+// Strip several classes of invisible / control characters in one pass:
 //   - U+0000..U+001F + U+007F: ASCII C0 controls + DEL
+//   - U+061C: ARABIC LETTER MARK (Bidi_Control formatter, Unicode 6.3+)
+//   - U+180E: MONGOLIAN VOWEL SEPARATOR (deprecated, but still emitted by
+//     some sources — zero-width and treated as invisible by browsers)
 //   - U+200B..U+200D, U+2060, U+FEFF: zero-width family (ZWSP / ZWNJ /
 //     ZWJ / WJ / ZWNBSP)
 //   - U+202A..U+202E, U+2066..U+2069: bidi overrides + isolates
 //     (Trojan Source — CVE-2021-42574)
+//   - U+1D173..U+1D17A: Musical Symbol formatting (zero-width formatters
+//     used to scope musical glyphs; abusable as invisible separators in
+//     plain text)
+//   - U+E0001 + U+E0020..U+E007F: TAG characters / "ghost text" — an
+//     invisible-watermarking vector that has been used to smuggle
+//     instructions past LLMs and to hide data inside otherwise normal
+//     text. Stripping at the input layer prevents both display-spoofing
+//     and downstream prompt-injection scenarios.
 // Built from a hex-escape string so this source file itself contains
 // no literal invisible / bidi bytes (some editors and commit hooks
-// silently strip them, which would silently weaken the regex).
+// silently strip them, which would silently weaken the regex). The
+// `u` flag is required for the `\u{...}` escapes that reach into the
+// supplementary planes (TAG and Musical Symbol blocks).
 const CONTROL_CHARS_RE = new RegExp(
   // eslint-disable-next-line no-control-regex
-  '[\\x00-\\x1F\\x7F\\u200B-\\u200D\\u2060\\uFEFF\\u202A-\\u202E\\u2066-\\u2069]',
-  'g'
+  '[\\x00-\\x1F\\x7F\\u061C\\u180E\\u200B-\\u200D\\u2060\\uFEFF\\u202A-\\u202E\\u2066-\\u2069]|[\\u{1D173}-\\u{1D17A}]|[\\u{E0001}\\u{E0020}-\\u{E007F}]',
+  'gu'
 );
 
 export function sanitizePgnHeader(value: string | null | undefined): string | null {

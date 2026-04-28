@@ -182,8 +182,27 @@ export async function createChunkPostWithAttachment(
       attributionPath = detected.attribution.attributionPath;
       break;
     }
-    default:
+    // The remaining `kind`s are all error variants from
+    // `detectAttachmentInput` (no PGN body to attach). They are listed
+    // explicitly so a future addition to the discriminated union surfaces
+    // as a TS build error instead of silently falling into the default
+    // arm. The trailing `: never` guard pins exhaustiveness.
+    case 'empty':
+    case 'lichess_unsupported':
+    case 'chesscom_invalid_url':
+    case 'chesscom_invalid_pgn':
+    case 'unknown':
       return { error: attachmentErrorKey(detected.kind) };
+    default: {
+      // Compile-time exhaustiveness guard. If a future variant is added
+      // to `AttachmentInputDetect` without a matching `case` arm above,
+      // this assignment fails at build time and forces the new variant
+      // to be handled explicitly. The runtime fallback maps to the
+      // generic `unknown` reason key — by construction unreachable.
+      const _exhaustive: never = detected;
+      void _exhaustive;
+      return { error: attachmentErrorKey('unknown') };
+    }
   }
 
   const validated = validateAttachedPgn(pgnText, { anonymize });
