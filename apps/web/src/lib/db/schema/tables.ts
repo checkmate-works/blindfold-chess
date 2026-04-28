@@ -588,6 +588,37 @@ export type NewTopicPostRating = typeof topicPostRatings.$inferInsert;
  * was already fetched and stored within the reuse window (see
  * `resolve-lichess-attachment.ts`), the previously stored PGN is reused
  * instead of re-fetching from Lichess. This index makes that lookup O(log N).
+ *
+ * @design Topic-type agnostic by construction
+ *
+ * This table intentionally does not know about `topic_type`. The parent
+ * `topic_posts` row carries `topic_type` ('chunk' | 'square' | 'opening'),
+ * and gating per-topic-type lives in the Server Action / RLS layer — not
+ * here. Generalizing attachments to 'square' or 'opening' posts is
+ * therefore a Server Action wrapper change only, with no schema migration.
+ *
+ * @design `attribution_platform` extensibility pattern
+ *
+ * The `(attribution_platform, attribution_path)` decomposition is built
+ * to admit additional platforms beyond `'chesscom'`. Adding a third one
+ * is a 3-step change with no schema redesign:
+ *   (a) extend the `chk_attribution_platform_valid` allow-list,
+ *   (b) add a parser arm in `apps/web/src/lib/games/`,
+ *   (c) add a renderer arm in the attached-game card UI.
+ * Do NOT pre-extend the CHECK with placeholder values that have no
+ * matching parser/renderer — the CHECK is the contract.
+ *
+ * @design Soft-delete posture, PII, and GDPR
+ *
+ * When the parent `topic_posts` is soft-deleted (`deleted_at IS NOT NULL`),
+ * the attachment row physically persists; visibility is gated by RLS plus
+ * the `get-attachments-for-posts` query. Header columns (`header_white`,
+ * `header_black`, etc.) may carry identifying data even after the parent
+ * is hidden. For full data removal (e.g., GDPR right-to-be-forgotten),
+ * hard-deleting `topic_posts` (CASCADE reaps the attachment) is required;
+ * soft-delete alone is not sufficient. A scheduled SQL reaper for
+ * soft-deleted attachments is a future option, not currently scheduled —
+ * no formal SLA exists.
  */
 export const postGameAttachments = pgTable(
   'post_game_attachments',
