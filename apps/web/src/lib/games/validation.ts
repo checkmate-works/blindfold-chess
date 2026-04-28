@@ -44,11 +44,18 @@ import { getPgnHeaders } from '@blindfold-chess/features/chess-core';
 
 import type { ChesscomAttribution } from './chesscom-attribution';
 import { parseChesscomAttribution } from './chesscom-attribution';
+import { parseChesscomEmboardUrl, parseLichessEmbedUrl } from './parse-embed-url';
 
 const LICHESS_URL_RE =
   /^https?:\/\/lichess\.org\/([a-zA-Z0-9]{8})(?:[a-zA-Z0-9]{4})?(?:\/(?:white|black))?\/?$/;
 
 const LICHESS_STUDY_RE = /^https?:\/\/lichess\.org\/study\//;
+
+// Pre-filter for "this looks like a Lichess embed URL". The authoritative
+// validation runs through `parseLichessEmbedUrl`; this regex just routes
+// the input into the embed branch so a malformed embed URL surfaces a
+// Lichess-flavoured error rather than `unknown`.
+const LICHESS_EMBED_URL_RE = /^https?:\/\/lichess\.org\/embed\//i;
 
 // Loose pre-filter for "this looks like the user meant chess.com". The
 // authoritative validation is done by `parseChesscomAttribution`; we
@@ -61,6 +68,12 @@ const LICHESS_STUDY_RE = /^https?:\/\/lichess\.org\/study\//;
 // We want those routed to the strict parser (which rejects them with
 // the right reason code), not silently dropped as "unknown".
 const CHESSCOM_URL_RE = /^https?:\/\/.*chess\.com/i;
+
+// Pre-filter for "this looks like a chess.com emboard URL". Routed to
+// `parseChesscomEmboardUrl` (strict) so a malformed emboard URL gets a
+// chesscom_embed_invalid_url error, not the legacy chesscom_invalid_url
+// (which assumes the user pasted a chess.com /game/ URL).
+const CHESSCOM_EMBOARD_URL_RE = /^https?:\/\/.*chess\.com\/emboard/i;
 
 export type AttachmentInputDetect =
   | { kind: 'empty' }
@@ -79,6 +92,24 @@ export type AttachmentInputDetect =
     }
   | { kind: 'chesscom_invalid_url' }
   | { kind: 'chesscom_invalid_pgn' }
+  | {
+      kind: 'chesscom_embed';
+      embedId: string;
+      /** Original (validated) URL string for audit / logging. The
+       * renderer never reads this back as a `src` — the iframe URL is
+       * rebuilt server-side from `(provider, embedId)`. */
+      sourceUrl: string;
+    }
+  | { kind: 'chesscom_embed_invalid_url' }
+  | {
+      kind: 'lichess_embed';
+      embedId: string;
+      /** Original (validated) URL string for audit / logging. The
+       * renderer never reads this back as a `src` — the iframe URL is
+       * rebuilt server-side from `(provider, embedId)`. */
+      sourceUrl: string;
+    }
+  | { kind: 'lichess_embed_invalid_url' }
   | { kind: 'pgn'; text: string }
   | { kind: 'unknown' };
 
@@ -92,9 +123,40 @@ export function detectAttachmentInput(raw: string | null | undefined): Attachmen
     return { kind: 'lichess_unsupported' };
   }
 
+  // Lichess embed URL handling. Runs BEFORE the Lichess game URL match
+  // so `lichess.org/embed/{id}` is routed into the embed namespace
+  // instead of being misinterpreted as an unknown shape.
+  if (LICHESS_EMBED_URL_RE.test(trimmed)) {
+    const parsed = parseLichessEmbedUrl(trimmed);
+    if (!parsed.ok) {
+      return { kind: 'lichess_embed_invalid_url' };
+    }
+    return {
+      kind: 'lichess_embed',
+      embedId: parsed.value.embedId,
+      sourceUrl: trimmed,
+    };
+  }
+
   const lichess = trimmed.match(LICHESS_URL_RE);
   if (lichess) {
     return { kind: 'lichess', gameId: lichess[1] };
+  }
+
+  // chess.com emboard URL handling. Runs BEFORE the legacy chess.com
+  // first-line + PGN flow so `https://www.chess.com/emboard?id=...` is
+  // routed into the embed namespace and not (mis-)interpreted as a
+  // chess.com /game/ URL with a missing PGN body.
+  if (CHESSCOM_EMBOARD_URL_RE.test(trimmed)) {
+    const parsed = parseChesscomEmboardUrl(trimmed);
+    if (!parsed.ok) {
+      return { kind: 'chesscom_embed_invalid_url' };
+    }
+    return {
+      kind: 'chesscom_embed',
+      embedId: parsed.value.embedId,
+      sourceUrl: trimmed,
+    };
   }
 
   // chess.com URL handling: the user MUST paste the URL together with

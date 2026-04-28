@@ -197,4 +197,49 @@ describe('detectAttachmentInput', () => {
     const r = detectAttachmentInput('https://lichess.org/abcd1234');
     expect(r.kind).toBe('lichess');
   });
+
+  // ─── SPEC2 Phase B: embed URL smoke tests ───
+  // Exhaustive parser coverage lives in `parse-embed-url.test.ts`. The
+  // tests below only confirm that `detectAttachmentInput` routes embed
+  // URLs to the right kind in the right order.
+  it('routes a Lichess embed URL into the lichess_embed kind', () => {
+    const r = detectAttachmentInput('https://lichess.org/embed/abcd1234');
+    expect(r.kind).toBe('lichess_embed');
+    if (r.kind === 'lichess_embed') {
+      expect(r.embedId).toBe('abcd1234');
+      expect(r.sourceUrl).toBe('https://lichess.org/embed/abcd1234');
+    }
+  });
+
+  it('routes a malformed Lichess embed URL into lichess_embed_invalid_url', () => {
+    // Trailing path makes the embed parser reject — must NOT silently
+    // fall through to the lichess game branch (which would also fail
+    // since the path does not match LICHESS_URL_RE).
+    const r = detectAttachmentInput('https://lichess.org/embed/abcd1234/extra');
+    expect(r.kind).toBe('lichess_embed_invalid_url');
+  });
+
+  it('routes a chess.com emboard URL into the chesscom_embed kind', () => {
+    const r = detectAttachmentInput('https://www.chess.com/emboard?id=12345');
+    expect(r.kind).toBe('chesscom_embed');
+    if (r.kind === 'chesscom_embed') {
+      expect(r.embedId).toBe('12345');
+      expect(r.sourceUrl).toBe('https://www.chess.com/emboard?id=12345');
+    }
+  });
+
+  it('routes a malformed chess.com emboard URL into chesscom_embed_invalid_url, not the legacy chesscom_invalid_url', () => {
+    // Bare apex fails the strict embed parser. Must surface the embed-
+    // specific error key rather than the legacy chesscom_invalid_url
+    // (which assumes the user pasted a /game/ URL + PGN flow).
+    const r = detectAttachmentInput('https://chess.com/emboard?id=12345');
+    expect(r.kind).toBe('chesscom_embed_invalid_url');
+  });
+
+  it('routes the chess.com /game/ URL flow as chesscom_attribution (not as embed)', () => {
+    // /game/ URLs do not match the emboard pre-filter and must continue
+    // to flow through the legacy chesscom_attribution branch.
+    const r = detectAttachmentInput('https://www.chess.com/game/live/12345678');
+    expect(r.kind).toBe('chesscom_attribution');
+  });
 });
