@@ -14,7 +14,7 @@ vi.mock('@/lib/db', () => ({
   db: {
     select: (...args: unknown[]) => dbSelectMock(...args),
   },
-  topicPostAttachments: {
+  postGameAttachments: {
     pgn: 'pgn',
     source: 'source',
     sourceGameId: 'sourceGameId',

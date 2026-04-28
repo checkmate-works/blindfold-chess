@@ -106,6 +106,8 @@ describe('chunks PostCard', () => {
           headerSite: null,
           headerDate: null,
           anonymized: false,
+          attributionPlatform: null,
+          attributionPath: null,
           finalFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
         }}
       />

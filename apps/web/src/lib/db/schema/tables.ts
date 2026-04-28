@@ -589,8 +589,8 @@ export type NewTopicPostRating = typeof topicPostRatings.$inferInsert;
  * `resolve-lichess-attachment.ts`), the previously stored PGN is reused
  * instead of re-fetching from Lichess. This index makes that lookup O(log N).
  */
-export const topicPostAttachments = pgTable(
-  'topic_post_attachments',
+export const postGameAttachments = pgTable(
+  'post_game_attachments',
   {
     id: uuid('id').primaryKey().defaultRandom(),
     postId: uuid('post_id')
@@ -616,6 +616,16 @@ export const topicPostAttachments = pgTable(
     // already anonymized when this is true; the original headers are
     // discarded at save time (we never persist the real names).
     anonymized: boolean('anonymized').notNull().default(false),
+    // Off-platform game attribution. Stored as a (platform, path) pair
+    // rather than a free-form URL so the rendered href can be rebuilt
+    // server-side from validated components — never from a persisted URL
+    // that could have drifted via direct REST writes or future migrations.
+    // `attribution_platform` is currently 'chesscom' only; `attribution_path`
+    // is the URL pathname (e.g. '/game/live/12345'). Both are NULL together
+    // or NOT NULL together — enforced by `chk_attribution_pair` at the DB.
+    // See `apps/web/src/lib/games/chesscom-attribution.ts` for the parser.
+    attributionPlatform: varchar('attribution_platform', { length: 20 }),
+    attributionPath: varchar('attribution_path', { length: 160 }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
@@ -628,18 +638,47 @@ export const topicPostAttachments = pgTable(
       'chk_source_url_required_for_external',
       sql`${table.source} = 'pgn' OR ${table.sourceUrl} IS NOT NULL`
     ),
-    index('idx_topic_post_attachments_post').on(table.postId),
-    index('idx_topic_post_attachments_source').on(table.source),
+    // (M-3) Defense-in-depth against PGN length spoofing: the cached
+    // `pgn_byte_length` column is also a CHECK input for `chk_pgn_byte_length`,
+    // so a writer that submits a low precomputed length together with an
+    // oversized PGN body would otherwise bypass the size cap. This CHECK
+    // pins the precomputed value to the actual byte length at the DB level.
+    check(
+      'chk_pgn_byte_length_matches_octet_length',
+      sql`${table.pgnByteLength} = octet_length(${table.pgn})`
+    ),
+    // attribution_platform allow-list: MVP supports 'chesscom' only.
+    check(
+      'chk_attribution_platform_valid',
+      sql`${table.attributionPlatform} IS NULL OR ${table.attributionPlatform} IN ('chesscom')`
+    ),
+    // attribution_path format: must be a `/`-prefixed path of allowed
+    // characters, length 1..128. Mirrors the regex enforced by
+    // `parseChesscomAttribution` so a direct REST write cannot bypass it.
+    check(
+      'chk_attribution_path_format',
+      sql`${table.attributionPath} IS NULL OR ${table.attributionPath} ~ '^/[A-Za-z0-9/_-]{1,128}$'`
+    ),
+    // Pair invariant: either both attribution columns are NULL or both
+    // are NOT NULL. Prevents partial writes that would render with a
+    // broken href.
+    check(
+      'chk_attribution_pair',
+      sql`(${table.attributionPlatform} IS NULL AND ${table.attributionPath} IS NULL)
+        OR (${table.attributionPlatform} IS NOT NULL AND ${table.attributionPath} IS NOT NULL)`
+    ),
+    index('idx_post_game_attachments_post').on(table.postId),
+    index('idx_post_game_attachments_source').on(table.source),
     // Forensic / admin filtering for oversized attachments.
-    index('idx_topic_post_attachments_size').on(table.pgnByteLength),
+    index('idx_post_game_attachments_size').on(table.pgnByteLength),
     // Lichess fetch reuse lookup: `(source='lichess', source_game_id='abcd1234')`
     // — see `apps/web/src/lib/games/resolve-lichess-attachment.ts`.
-    index('idx_topic_post_attachments_source_game').on(table.source, table.sourceGameId),
+    index('idx_post_game_attachments_source_game').on(table.source, table.sourceGameId),
   ]
 );
 
-export type TopicPostAttachment = typeof topicPostAttachments.$inferSelect;
-export type NewTopicPostAttachment = typeof topicPostAttachments.$inferInsert;
+export type PostGameAttachment = typeof postGameAttachments.$inferSelect;
+export type NewPostGameAttachment = typeof postGameAttachments.$inferInsert;
 
 // User Follows
 export const userFollows = pgTable(

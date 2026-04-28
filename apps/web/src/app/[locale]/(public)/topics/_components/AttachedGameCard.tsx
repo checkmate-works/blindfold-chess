@@ -9,13 +9,13 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { MiniBoard } from '@/app/[locale]/(public)/topics/openings/_components/MiniBoard';
 
 /**
- * Subset of `topic_post_attachments` columns that the card needs.
+ * Subset of `post_game_attachments` columns that the card needs.
  *
  * @design Component contract
  *
  * `AttachedGameCard` MUST only ever be rendered for attachments whose
  * parent topic_post is non-soft-deleted. The visibility rule is enforced
- * by (a) the RLS SELECT policy on `topic_post_attachments`, (b) the
+ * by (a) the RLS SELECT policy on `post_game_attachments`, (b) the
  * application-layer query that filters `topic_posts.deleted_at IS NULL`,
  * and (c) this contract — three layers of defense per SPEC1 §5-1.
  *
@@ -42,6 +42,16 @@ export type AttachedGameCardData = {
   headerSite: string | null;
   headerDate: string | null;
   anonymized: boolean;
+  /** Off-platform game source identifier (currently 'chesscom' only).
+   * NULL for on-platform / pure-PGN attachments. Paired with
+   * `attributionPath`. The href is rebuilt server-side from these
+   * components — never from a persisted source URL — so a hostile or
+   * drifted source URL cannot land in the rendered DOM as a link. */
+  attributionPlatform: string | null;
+  /** URL pathname (e.g. '/game/live/12345') for the off-platform game.
+   * NULL when `attributionPlatform` is NULL. Validated against a strict
+   * allow-list both at parse time and via a DB CHECK constraint. */
+  attributionPath: string | null;
   /** Pre-computed final-position FEN, used for the static thumbnail
    * so the summary card does not need chess.js on first paint. */
   finalFen: string;

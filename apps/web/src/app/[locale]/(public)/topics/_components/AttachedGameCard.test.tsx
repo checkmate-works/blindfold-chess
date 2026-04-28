@@ -49,6 +49,8 @@ function makeAttachment(overrides: Partial<AttachedGameCardData> = {}): Attached
     headerSite: null,
     headerDate: '2026.04.27',
     anonymized: false,
+    attributionPlatform: null,
+    attributionPath: null,
     finalFen: STARTING_FEN,
     ...overrides,
   };

@@ -232,6 +232,20 @@
       "when": 1777283452195,
       "tag": "20260427095052_create_topic_post_attachments",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1777365192000,
+      "tag": "20260428093312_rename_topic_post_attachments_to_post_game_attachments",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1777365193000,
+      "tag": "20260428093313_add_chesscom_attribution_to_post_game_attachments",
+      "breakpoints": true
     }
   ]
 }

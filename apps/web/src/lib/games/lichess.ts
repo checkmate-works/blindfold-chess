@@ -114,7 +114,7 @@ const defaultThrottle = createLichessThrottle({
  *
  * Reuse semantics:
  *   Callers (typically `resolveLichessAttachmentPgn`) should first look
- *   up `topic_post_attachments` by `(source='lichess', source_game_id)`
+ *   up `post_game_attachments` by `(source='lichess', source_game_id)`
  *   for a recently-saved PGN and skip this fetch when one is found.
  *   This function itself is purely a fetch — no DB side effects.
  */
