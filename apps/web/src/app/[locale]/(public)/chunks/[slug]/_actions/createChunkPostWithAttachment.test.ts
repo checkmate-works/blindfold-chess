@@ -277,6 +277,33 @@ describe('createChunkPostWithAttachment', () => {
     });
   });
 
+  describe('chess.com attribution path', () => {
+    it('persists source=pgn + attribution_platform/path when URL is pasted with a PGN body', async () => {
+      const input = `https://www.chess.com/game/live/9876
+[Event "Live Chess"]
+[White "Alice"]
+[Black "Bob"]
+
+1. e4 e5 2. Nf3 Nc6`;
+
+      await expect(
+        createChunkPostWithAttachment('en', testSlug, {}, makeFormData({ attachment: input }))
+      ).rejects.toThrow('NEXT_REDIRECT');
+
+      expect(mockAttachmentInsertValues).toHaveBeenCalledTimes(1);
+      const inserted = mockAttachmentInsertValues.mock.calls[0][0];
+      // PGN was the user-pasted body, NOT something we fetched.
+      expect(inserted.source).toBe('pgn');
+      // The persisted source_url is the original URL (audit only) —
+      // the renderer rebuilds the href from the attribution columns.
+      expect(inserted.sourceUrl).toBe('https://www.chess.com/game/live/9876');
+      expect(inserted.attributionPlatform).toBe('chesscom');
+      expect(inserted.attributionPath).toBe('/game/live/9876');
+      // Lichess fields are unset for this path.
+      expect(inserted.sourceGameId).toBeNull();
+    });
+  });
+
   describe('anonymize=true contract', () => {
     it('writes Player 1 / Player 2 headers and a normalized PGN that does not contain the original names', async () => {
       const namedPgn =
@@ -336,14 +363,25 @@ describe('createChunkPostWithAttachment', () => {
   });
 
   describe('detectAttachmentInput error mapping', () => {
-    it('returns the chesscom_unsupported i18n key for chess.com URLs', async () => {
+    it('returns the chesscomPgnRequired i18n key when chess.com URL is pasted alone', async () => {
+      // chess.com URL with no PGN body — the user must paste both.
       const result = await createChunkPostWithAttachment(
         'en',
         testSlug,
         {},
         makeFormData({ attachment: 'https://www.chess.com/game/live/123' })
       );
-      expect(result).toEqual({ error: 'attachment.error.chesscomUnsupported' });
+      expect(result).toEqual({ error: 'attachment.error.chesscomPgnRequired' });
+    });
+
+    it('returns the chesscomInvalidUrl i18n key for hostile chess.com-shaped URLs', async () => {
+      const result = await createChunkPostWithAttachment(
+        'en',
+        testSlug,
+        {},
+        makeFormData({ attachment: 'https://www.chess.com@evil.tld/foo' })
+      );
+      expect(result).toEqual({ error: 'attachment.error.chesscomInvalidUrl' });
     });
 
     it('returns the lichessStudyUnsupported i18n key for Lichess study URLs', async () => {

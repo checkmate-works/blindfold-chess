@@ -88,6 +88,27 @@ export function AttachedGameCard({ attachment }: Props) {
         }
       : null;
 
+  // chess.com attribution. Same defense-in-depth posture as Lichess: we
+  // ignore the persisted `sourceUrl` and rebuild the href from the
+  // (attribution_platform, attribution_path) pair. The path was
+  // validated by `parseChesscomAttribution` at write time AND by the
+  // `chk_attribution_path_format` DB CHECK, so its character set is
+  // pinned to `[A-Za-z0-9/_-]{1,128}`. The label uses the `viewOnChesscom`
+  // i18n key rather than echoing the path verbatim — an arbitrary path
+  // is not user-friendly link text and reduces the surface for any
+  // future bypass that might land a hostile-looking string in the path.
+  //
+  // `rel="noopener noreferrer nofollow"`:
+  //   - noopener / noreferrer — standard cross-origin link hardening
+  //   - nofollow — UGC link, do not transfer PageRank (avoids being
+  //     drafted into SEO link farms via comment-attachment posts).
+  const chesscomSource =
+    attachment.attributionPlatform === 'chesscom' && attachment.attributionPath
+      ? {
+          href: `https://www.chess.com${attachment.attributionPath}`,
+        }
+      : null;
+
   // For PGN-mode attachments, surface the sanitized [Site] header as
   // plain text (no auto-link, no <a href>) per SPEC1 §7-4.
   const pgnSiteText =
@@ -156,6 +177,20 @@ export function AttachedGameCard({ attachment }: Props) {
               className="text-link-primary hover:underline"
             >
               {lichessSource.label}
+            </a>
+          </p>
+        )}
+
+        {chesscomSource && (
+          <p className="text-xs text-muted-foreground pt-1">
+            <span>{t('card.sourceLabel')}: </span>
+            <a
+              href={chesscomSource.href}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              className="text-link-primary hover:underline"
+            >
+              {t('card.viewOnChesscom')}
             </a>
           </p>
         )}

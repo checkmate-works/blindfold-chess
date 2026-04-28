@@ -29,7 +29,9 @@ function attachmentErrorKey(
     | 'rate_limited'
     | 'fetch_failed'
     | 'lichess_unsupported'
-    | 'chesscom_unsupported'
+    | 'chesscom_invalid_url'
+    | 'chesscom_invalid_pgn'
+    | 'chesscom_pgn_required'
     | 'unknown'
 ): string {
   switch (err) {
@@ -50,8 +52,12 @@ function attachmentErrorKey(
       return 'attachment.error.lichessFetchFailed';
     case 'lichess_unsupported':
       return 'attachment.error.lichessStudyUnsupported';
-    case 'chesscom_unsupported':
-      return 'attachment.error.chesscomUnsupported';
+    case 'chesscom_invalid_url':
+      return 'attachment.error.chesscomInvalidUrl';
+    case 'chesscom_invalid_pgn':
+      return 'attachment.error.chesscomInvalidPgn';
+    case 'chesscom_pgn_required':
+      return 'attachment.error.chesscomPgnRequired';
     case 'unknown':
     default:
       return 'attachment.error.invalidPgn';
@@ -129,27 +135,55 @@ export async function createChunkPostWithAttachment(
   }
 
   const detected = detectAttachmentInput(attachmentRaw);
-  if (detected.kind !== 'lichess' && detected.kind !== 'pgn') {
-    return { error: attachmentErrorKey(detected.kind) };
-  }
 
   let pgnText: string;
   let sourceKind: 'pgn' | 'lichess';
   let canonicalUrl: string | null = null;
   let lichessGameId: string | null = null;
+  let attributionPlatform: string | null = null;
+  let attributionPath: string | null = null;
 
-  if (detected.kind === 'lichess') {
-    const resolved = await resolveLichessAttachmentPgn(detected.gameId);
-    if (!resolved.ok) {
-      return { error: attachmentErrorKey(resolved.error) };
+  switch (detected.kind) {
+    case 'lichess': {
+      const resolved = await resolveLichessAttachmentPgn(detected.gameId);
+      if (!resolved.ok) {
+        return { error: attachmentErrorKey(resolved.error) };
+      }
+      pgnText = resolved.pgn;
+      sourceKind = 'lichess';
+      canonicalUrl = resolved.canonicalUrl;
+      lichessGameId = detected.gameId;
+      break;
     }
-    pgnText = resolved.pgn;
-    sourceKind = 'lichess';
-    canonicalUrl = resolved.canonicalUrl;
-    lichessGameId = detected.gameId;
-  } else {
-    pgnText = detected.text;
-    sourceKind = 'pgn';
+    case 'pgn': {
+      pgnText = detected.text;
+      sourceKind = 'pgn';
+      break;
+    }
+    case 'chesscom_attribution': {
+      // chess.com TOS forbids us auto-fetching the PGN, so the user
+      // must paste the PGN body alongside the URL. If only the URL is
+      // present we surface a guidance error instead of accepting an
+      // empty attachment.
+      if (!detected.pgn) {
+        return { error: attachmentErrorKey('chesscom_pgn_required') };
+      }
+      pgnText = detected.pgn;
+      // source = 'pgn' because the persisted PGN is what the user
+      // pasted (we did not fetch it from chess.com). The chess.com
+      // origin is recorded via the (attributionPlatform, attributionPath)
+      // pair so the renderer can build the credit link separately.
+      sourceKind = 'pgn';
+      // Persist the user-supplied URL on `source_url` for audit only —
+      // the rendered href is rebuilt server-side from the validated
+      // attribution path and is never sourced from this column.
+      canonicalUrl = detected.sourceUrl;
+      attributionPlatform = detected.attribution.attributionPlatform;
+      attributionPath = detected.attribution.attributionPath;
+      break;
+    }
+    default:
+      return { error: attachmentErrorKey(detected.kind) };
   }
 
   const validated = validateAttachedPgn(pgnText, { anonymize });
@@ -187,6 +221,8 @@ export async function createChunkPostWithAttachment(
         headerSite: sanitizePgnHeader(validated.headers.site),
         headerDate: sanitizePgnHeader(validated.headers.date),
         anonymized: anonymize,
+        attributionPlatform,
+        attributionPath,
       });
     },
     formData,

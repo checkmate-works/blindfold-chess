@@ -91,6 +91,50 @@ describe('AttachedGameCard — DOM / a11y structure', () => {
     expect(siteAnchor).toBeUndefined();
   });
 
+  it('renders a chess.com attribution link rebuilt from attribution_path (NOT from sourceUrl)', () => {
+    // The persisted sourceUrl is intentionally a hostile string to
+    // verify the renderer never reads it back as an href. Only the
+    // (platform, path) pair drives the rendered link.
+    const att = makeAttachment({
+      source: 'pgn',
+      sourceUrl: 'https://evil.tld/payload',
+      attributionPlatform: 'chesscom',
+      attributionPath: '/game/live/12345',
+    });
+    const { container } = render(<AttachedGameCard attachment={att} />);
+
+    const anchors = Array.from(container.querySelectorAll('a'));
+    const chesscomAnchor = anchors.find(
+      (a) => a.getAttribute('href') === 'https://www.chess.com/game/live/12345'
+    );
+    expect(chesscomAnchor).toBeDefined();
+    expect(chesscomAnchor?.getAttribute('target')).toBe('_blank');
+    const rel = chesscomAnchor?.getAttribute('rel') ?? '';
+    expect(rel).toContain('noopener');
+    expect(rel).toContain('noreferrer');
+    // UGC link must NOT transfer PageRank to chess.com.
+    expect(rel).toContain('nofollow');
+
+    // The hostile sourceUrl must not have produced an anchor.
+    const evilAnchor = anchors.find((a) => (a.getAttribute('href') ?? '').includes('evil.tld'));
+    expect(evilAnchor).toBeUndefined();
+  });
+
+  it('does NOT render a chess.com attribution link when the platform/path pair is null', () => {
+    // Pure PGN attachment (no off-platform attribution) — no chess.com
+    // anchor should appear.
+    const att = makeAttachment({
+      source: 'pgn',
+      attributionPlatform: null,
+      attributionPath: null,
+    });
+    const { container } = render(<AttachedGameCard attachment={att} />);
+    const anchors = Array.from(container.querySelectorAll('a'));
+    expect(
+      anchors.find((a) => (a.getAttribute('href') ?? '').includes('chess.com'))
+    ).toBeUndefined();
+  });
+
   it('renders a real <a> for Lichess-source attachments (canonical URL only)', () => {
     const att = makeAttachment({
       source: 'lichess',

@@ -47,9 +47,66 @@ describe('detectAttachmentInput', () => {
     expect(r.kind).toBe('lichess_unsupported');
   });
 
-  it('flags chess.com URL as unsupported with guidance', () => {
+  it('parses a chess.com URL alone (no PGN body) into a chesscom_attribution result without pgn', () => {
     const r = detectAttachmentInput('https://www.chess.com/game/live/12345678');
-    expect(r.kind).toBe('chesscom_unsupported');
+    expect(r.kind).toBe('chesscom_attribution');
+    if (r.kind === 'chesscom_attribution') {
+      expect(r.attribution).toEqual({
+        attributionPlatform: 'chesscom',
+        attributionPath: '/game/live/12345678',
+      });
+      // The original URL is preserved on `sourceUrl` for audit / logging.
+      // The renderer never reads it back as an href — it rebuilds from
+      // `attributionPlatform` + `attributionPath`.
+      expect(r.sourceUrl).toBe('https://www.chess.com/game/live/12345678');
+      // No PGN body was supplied — the action layer treats this as a
+      // "paste the PGN below the URL" guidance error.
+      expect(r.pgn).toBeUndefined();
+    }
+  });
+
+  it('parses a chess.com URL + PGN body into a chesscom_attribution result with pgn', () => {
+    const input = `https://www.chess.com/game/live/12345678
+[Event "Live Chess"]
+[White "Alice"]
+[Black "Bob"]
+
+1. e4 e5 2. Nf3 Nc6`;
+    const r = detectAttachmentInput(input);
+    expect(r.kind).toBe('chesscom_attribution');
+    if (r.kind === 'chesscom_attribution') {
+      expect(r.attribution.attributionPath).toBe('/game/live/12345678');
+      expect(r.sourceUrl).toBe('https://www.chess.com/game/live/12345678');
+      expect(r.pgn).toBeDefined();
+      expect(r.pgn).toContain('1. e4 e5');
+      // The URL line itself MUST NOT be carried into the PGN body —
+      // chess-core's PGN parser would choke on it.
+      expect(r.pgn).not.toContain('chess.com');
+    }
+  });
+
+  it('flags chess.com URL + non-PGN trailing text as chesscom_invalid_pgn', () => {
+    const input = 'https://www.chess.com/game/live/12345678\nhello world this is not pgn';
+    const r = detectAttachmentInput(input);
+    expect(r.kind).toBe('chesscom_invalid_pgn');
+  });
+
+  it('flags a chess.com-shaped URL that fails strict validation as chesscom_invalid_url', () => {
+    // Bare apex (chess.com without www) fails the parser's hostname
+    // allow-list. We surface a chess.com-specific error, NOT 'unknown',
+    // so the message mentions chess.com.
+    const r = detectAttachmentInput('https://chess.com/game/live/12345678');
+    expect(r.kind).toBe('chesscom_invalid_url');
+  });
+
+  it('flags an http:// chess.com URL as chesscom_invalid_url (must be https)', () => {
+    const r = detectAttachmentInput('http://www.chess.com/game/live/12345678');
+    expect(r.kind).toBe('chesscom_invalid_url');
+  });
+
+  it('flags a userinfo-trick chess.com URL as chesscom_invalid_url', () => {
+    const r = detectAttachmentInput('https://www.chess.com@evil.tld/foo');
+    expect(r.kind).toBe('chesscom_invalid_url');
   });
 
   it('detects PGN with headers', () => {
