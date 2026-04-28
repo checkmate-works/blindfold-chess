@@ -716,8 +716,6 @@ export const postGameAttachments = pgTable(
       sql`(${table.attributionPlatform} IS NULL AND ${table.attributionPath} IS NULL)
         OR (${table.attributionPlatform} IS NOT NULL AND ${table.attributionPath} IS NOT NULL)`
     ),
-    index('idx_post_game_attachments_post').on(table.postId),
-    index('idx_post_game_attachments_source').on(table.source),
     // Forensic / admin filtering for oversized attachments.
     index('idx_post_game_attachments_size').on(table.pgnByteLength),
     // Lichess fetch reuse lookup: `(source='lichess', source_game_id='abcd1234')`

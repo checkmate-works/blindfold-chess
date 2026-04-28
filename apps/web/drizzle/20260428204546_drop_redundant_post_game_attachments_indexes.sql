@@ -1,0 +1,23 @@
+-- Drop two redundant indexes on `post_game_attachments`.
+--
+-- `idx_post_game_attachments_post` is redundant with the implicit btree
+-- index Postgres creates for the `UNIQUE(post_id)` constraint on the
+-- table — every (=, lookup) on `post_id` is already O(log N) via that
+-- unique index, so the explicit one only adds write/storage cost.
+--
+-- `idx_post_game_attachments_source` is a single-column index on a
+-- 2-value enum (`source` ∈ {'pgn', 'lichess'}). Its selectivity is
+-- effectively 50/50, so the planner won't choose it for most queries.
+-- The only real predicate that filters on `source` is the Lichess
+-- reuse cache lookup (`source='lichess' AND source_game_id=?`), which
+-- is dominated by the composite `idx_post_game_attachments_source_game`
+-- — that composite already serves as a left-prefix index for `source`
+-- alone if it were ever needed.
+--
+-- `IF EXISTS` keeps the migration idempotent on environments where the
+-- index was never created (fresh local DBs that run the full migration
+-- chain still resolve cleanly) or where it has already been dropped
+-- manually. Schema-qualified with `public.` to match the surrounding
+-- migration style and avoid any `search_path` ambiguity.
+DROP INDEX IF EXISTS "public"."idx_post_game_attachments_post";--> statement-breakpoint
+DROP INDEX IF EXISTS "public"."idx_post_game_attachments_source";

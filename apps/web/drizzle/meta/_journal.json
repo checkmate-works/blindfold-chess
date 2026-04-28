@@ -260,6 +260,13 @@
       "when": 1777365195000,
       "tag": "20260428202557_drop_topic_post_attachments_compat_view",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1777409146220,
+      "tag": "20260428204546_drop_redundant_post_game_attachments_indexes",
+      "breakpoints": true
     }
   ]
 }
