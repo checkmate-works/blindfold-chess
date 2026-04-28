@@ -7,6 +7,7 @@ import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
+import { AttachedEmbedCard } from '@/app/[locale]/(public)/topics/_components/AttachedEmbedCard';
 import { AttachedGameCard } from '@/app/[locale]/(public)/topics/_components/AttachedGameCard';
 import { TopicPostDetailLayout } from '@/app/[locale]/(public)/topics/_components/TopicPostDetailLayout';
 import { fetchPostDetailData } from '@/app/[locale]/(public)/topics/_lib/post-detail';
@@ -115,7 +116,15 @@ export default async function ChunkPostDetailPage({ params }: Props) {
         { label: chunk.title, href: `/chunks/${slug}` },
         { label: ct('readMore') },
       ]}
-      extraContent={attachment ? <AttachedGameCard attachment={attachment} /> : undefined}
+      extraContent={
+        attachment ? (
+          attachment.kind === 'pgn' ? (
+            <AttachedGameCard attachment={attachment.data} />
+          ) : (
+            <AttachedEmbedCard attachment={attachment.data} />
+          )
+        ) : undefined
+      }
     />
   );
 }

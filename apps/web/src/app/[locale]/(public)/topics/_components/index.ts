@@ -1,3 +1,5 @@
+export { AttachedEmbedCard } from './AttachedEmbedCard';
+export type { AttachedEmbedCardData } from './AttachedEmbedCard';
 export { AttachedGameCard } from './AttachedGameCard';
 export type { AttachedGameCardData } from './AttachedGameCard';
 export { AttachmentInput } from './AttachmentInput';

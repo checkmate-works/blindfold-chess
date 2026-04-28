@@ -93,22 +93,25 @@ describe('chunks PostCard', () => {
         locale="en"
         slug="rook-battery"
         attachment={{
-          id: 'att-1',
-          source: 'pgn',
-          sourceUrl: null,
-          sourceGameId: null,
-          pgn: '1. e4 e5',
-          moveCount: 2,
-          headerWhite: 'Alice',
-          headerBlack: 'Bob',
-          headerResult: '*',
-          headerEvent: null,
-          headerSite: null,
-          headerDate: null,
-          anonymized: false,
-          attributionPlatform: null,
-          attributionPath: null,
-          finalFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+          kind: 'pgn',
+          data: {
+            id: 'att-1',
+            source: 'pgn',
+            sourceUrl: null,
+            sourceGameId: null,
+            pgn: '1. e4 e5',
+            moveCount: 2,
+            headerWhite: 'Alice',
+            headerBlack: 'Bob',
+            headerResult: '*',
+            headerEvent: null,
+            headerSite: null,
+            headerDate: null,
+            anonymized: false,
+            attributionPlatform: null,
+            attributionPath: null,
+            finalFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+          },
         }}
       />
     );
