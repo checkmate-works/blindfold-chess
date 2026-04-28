@@ -40,6 +40,8 @@
  * as a generic "unknown" — the user pasted something that looked like a
  * chess.com link, so the message should reflect that.
  */
+import { getPgnHeaders } from '@blindfold-chess/features/chess-core';
+
 import type { ChesscomAttribution } from './chesscom-attribution';
 import { parseChesscomAttribution } from './chesscom-attribution';
 
@@ -140,6 +142,23 @@ export function detectAttachmentInput(raw: string | null | undefined): Attachmen
   }
 
   if (looksLikePgnText(trimmed)) {
+    // [Link] auto-extract: if the PGN contains a `[Link "..."]` header with a
+    // chess.com URL, extract attribution from it so the user doesn't need to
+    // paste the URL on the first line. Falls through to plain PGN if absent
+    // or if the Link value fails chess.com validation.
+    const headers = getPgnHeaders(trimmed);
+    const linkValue = headers['Link'];
+    if (linkValue) {
+      const parsed = parseChesscomAttribution(linkValue);
+      if (parsed.ok) {
+        return {
+          kind: 'chesscom_attribution',
+          attribution: parsed.value,
+          sourceUrl: linkValue,
+          pgn: trimmed,
+        };
+      }
+    }
     return { kind: 'pgn', text: trimmed };
   }
 

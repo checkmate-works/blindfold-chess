@@ -4062,7 +4062,7 @@
       "hide": "Hide attachment",
       "label": "Game (PGN or Lichess URL)",
       "placeholder": "Paste a Lichess game URL or full PGN…",
-      "modeHint": "Accepts a Lichess game URL (lichess.org/…), a full PGN, or a chess.com URL with the exported PGN pasted below it."
+      "modeHint": "Accepts a Lichess game URL (lichess.org/…) or a PGN. chess.com PGNs with a [Link] header are auto-attributed."
     },
     "label": {
       "anonymize": "Anonymize player names",
@@ -4097,7 +4097,7 @@
       "lichessFetchFailed": "Could not fetch the Lichess game. Try again, or paste the PGN directly.",
       "lichessNotFound": "Lichess game not found. Check the URL.",
       "lichessRateLimited": "Lichess is busy right now. Wait a moment, or paste the PGN directly.",
-      "chesscomPgnRequired": "Paste the PGN below the chess.com URL. chess.com URLs cannot be auto-fetched, so the game body is required.",
+      "chesscomPgnRequired": "Please paste the PGN. chess.com games cannot be auto-fetched.",
       "chesscomInvalidUrl": "That doesn't look like a valid chess.com URL. Use https://www.chess.com/...",
       "chesscomInvalidPgn": "The text below the chess.com URL doesn't look like a PGN. Paste the exported game body.",
       "lichessStudyUnsupported": "Lichess Study URLs are not supported. Please paste a game URL or PGN.",

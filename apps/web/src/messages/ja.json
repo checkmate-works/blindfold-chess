@@ -3958,7 +3958,7 @@
       "hide": "添付を閉じる",
       "label": "ゲーム（PGN または Lichess の URL）",
       "placeholder": "Lichess の対局 URL または PGN を貼り付け…",
-      "modeHint": "Lichess の対局 URL（lichess.org/…）、PGN 単独、または chess.com の URL とエクスポートした PGN を続けて貼り付けて投稿できます。"
+      "modeHint": "Lichess の対局 URL（lichess.org/…）または PGN を貼り付けてください。[Link] ヘッダ付きの chess.com PGN は自動で帰属情報が付与されます。"
     },
     "label": {
       "anonymize": "対局者名を匿名化",
@@ -3993,7 +3993,7 @@
       "lichessFetchFailed": "Lichess の対局を取得できませんでした。少し待つか、PGN を直接貼り付けてください。",
       "lichessNotFound": "Lichess に対局が見つかりませんでした。URL を確認してください。",
       "lichessRateLimited": "Lichess が混雑しています。少し待つか、PGN を直接貼り付けてください。",
-      "chesscomPgnRequired": "chess.com の URL の下にエクスポートした PGN を貼り付けてください。chess.com の対局は自動取得できないため、PGN 本文が必要です。",
+      "chesscomPgnRequired": "PGN を貼り付けてください。chess.com の対局は自動取得できません。",
       "chesscomInvalidUrl": "chess.com の URL が不正です。https://www.chess.com/... の形式で貼り付けてください。",
       "chesscomInvalidPgn": "chess.com の URL の下のテキストが PGN として認識できません。エクスポートした対局本文を貼り付けてください。",
       "lichessStudyUnsupported": "Lichess の Study URL には対応していません。対局 URL または PGN を貼り付けてください。",

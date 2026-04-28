@@ -3908,7 +3908,7 @@
       "hide": "Ocultar adjunto",
       "label": "Partida (PGN o URL de Lichess)",
       "placeholder": "Pega una URL de partida de Lichess o un PGN completo…",
-      "modeHint": "Acepta una URL de partida de Lichess (lichess.org/…), un PGN completo, o una URL de chess.com con el PGN exportado pegado debajo."
+      "modeHint": "Acepta una URL de partida de Lichess (lichess.org/…) o un PGN. Los PGNs de chess.com con encabezado [Link] se atribuyen automáticamente."
     },
     "label": {
       "anonymize": "Anonimizar nombres de jugadores",
@@ -3943,7 +3943,7 @@
       "lichessFetchFailed": "No se pudo obtener la partida de Lichess. Inténtalo de nuevo o pega el PGN directamente.",
       "lichessNotFound": "Partida de Lichess no encontrada. Revisa la URL.",
       "lichessRateLimited": "Lichess está saturado en este momento. Espera un poco o pega el PGN directamente.",
-      "chesscomPgnRequired": "Pega el PGN debajo de la URL de chess.com. Las partidas de chess.com no se pueden obtener automáticamente, por lo que se requiere el cuerpo del PGN.",
+      "chesscomPgnRequired": "Por favor, pega el PGN. Las partidas de chess.com no se pueden obtener automáticamente.",
       "chesscomInvalidUrl": "Eso no parece una URL válida de chess.com. Usa https://www.chess.com/...",
       "chesscomInvalidPgn": "El texto debajo de la URL de chess.com no parece un PGN. Pega el cuerpo de la partida exportada.",
       "lichessStudyUnsupported": "Las URLs de Lichess Study no son compatibles. Pega una URL de partida o un PGN.",
