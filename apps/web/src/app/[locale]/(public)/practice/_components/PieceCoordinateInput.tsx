@@ -25,7 +25,7 @@ export function PieceCoordinateInput({
   const selectedRanksSet = selectedRank ? new Set([selectedRank]) : new Set<string>();
 
   return (
-    <div className="flex flex-col gap-3 p-4 bg-card rounded-lg border border-border">
+    <div className="flex flex-col gap-3 p-4">
       {/* Piece Row (Read Only Indicator) */}
       <div className="flex gap-2 justify-center">
         {(['k', 'q', 'r', 'b', 'n'] as const).map((piece) => (
