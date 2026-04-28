@@ -79,10 +79,7 @@ export function RoutePlannerSession({
 
   return (
     <div className="min-h-screen max-w-md mx-auto">
-      <div
-        id="route-planner-session"
-        className="bg-card border border-border rounded-xl p-8 text-center relative overflow-hidden"
-      >
+      <div id="route-planner-session" className="p-8 text-center relative overflow-hidden">
         {/* Problem Header */}
         <div className="flex justify-center items-center gap-6 border-b border-border pb-4 mb-4">
           <div className="bg-primary/10 p-2 rounded-lg text-primary w-14 h-14 flex items-center justify-center border border-primary/20">
@@ -136,7 +133,7 @@ export function RoutePlannerSession({
           )}
 
           {gameState === 'playing' && (
-            <>
+            <div className="-mx-8 sm:mx-0">
               <PieceCoordinateInput
                 activePiece={problem.piece}
                 selectedFile={staged.selectedFile}
@@ -158,7 +155,7 @@ export function RoutePlannerSession({
                 </div>
               </PieceCoordinateInput>
               <AlgebraicKeyboardHint disabled={!isInputActive} />
-            </>
+            </div>
           )}
         </div>
 
