@@ -39,6 +39,7 @@ const connectionString =
   'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
 
 type Sql = ReturnType<typeof postgres>;
+type TxSql = postgres.TransactionSql;
 
 let sql: Sql | null = null;
 let dbAvailable = false;
@@ -272,7 +273,7 @@ describe('post_game_embed_attachments — RLS policies (#39〜#41)', () => {
   async function asAuthenticated<T>(
     db: Sql,
     userId: string,
-    body: (txSql: Sql) => Promise<T>
+    body: (txSql: TxSql) => Promise<T>
   ): Promise<T> {
     let captured: T | undefined;
     let captureError: unknown = undefined;
@@ -308,7 +309,7 @@ describe('post_game_embed_attachments — RLS policies (#39〜#41)', () => {
    * ...) silently return zero rows for anon because `auth.uid()` is
    * NULL — which is exactly the property we want to verify.
    */
-  async function asAnon<T>(db: Sql, body: (txSql: Sql) => Promise<T>): Promise<T> {
+  async function asAnon<T>(db: Sql, body: (txSql: TxSql) => Promise<T>): Promise<T> {
     let captured: T | undefined;
     let captureError: unknown = undefined;
     try {
