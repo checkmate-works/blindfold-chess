@@ -780,6 +780,10 @@ export const postGameEmbedAttachments = pgTable(
     embedProvider: varchar('embed_provider', { length: 20 }).notNull(), // 'chesscom' | 'lichess'
     embedId: varchar('embed_id', { length: 64 }).notNull(),
     /**
+     * @design Audit-only canonical embed URL. NEVER read into the rendered
+     *   iframe `src` or any clickable href — the renderer reconstructs the
+     *   URL from `(embed_provider, embed_id)` server-side. This column exists
+     *   for forensics / migration / debug only.
      * @security audit-only — never render this as a src or href directly.
      *   The embed URL is always reconstructed from (embedProvider, embedId)
      *   at render time. `chk_embed_source_url_https` pins the scheme.
