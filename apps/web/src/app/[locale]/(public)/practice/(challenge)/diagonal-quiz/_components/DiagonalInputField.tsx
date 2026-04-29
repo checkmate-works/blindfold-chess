@@ -43,7 +43,7 @@ export function DiagonalInputField({
           type="button"
           onClick={() => onFieldClick(fieldType)}
           disabled={isDisabled}
-          className={`w-full px-4 py-3 rounded-lg border text-center text-lg font-mono transition-colors ${
+          className={`w-full px-4 py-3 rounded-lg border text-center text-lg font-mono transition-colors touch-manipulation select-none ${
             activeField === fieldType && !isDisabled
               ? 'border-primary ring-2 ring-primary/30 bg-background text-foreground'
               : isComplete
@@ -61,7 +61,7 @@ export function DiagonalInputField({
             type="button"
             onClick={() => onFieldClick(fieldType)}
             disabled={isDisabled}
-            className={`flex-1 px-4 py-3 rounded-lg border text-center text-lg font-mono transition-colors ${
+            className={`flex-1 px-4 py-3 rounded-lg border text-center text-lg font-mono transition-colors touch-manipulation select-none ${
               activeField === fieldType && !isDisabled && isInputtingStart
                 ? 'border-primary ring-2 ring-primary/30 bg-background text-foreground'
                 : startText
@@ -78,7 +78,7 @@ export function DiagonalInputField({
             type="button"
             onClick={() => onFieldClick(fieldType)}
             disabled={isDisabled}
-            className={`flex-1 px-4 py-3 rounded-lg border text-center text-lg font-mono transition-colors ${
+            className={`flex-1 px-4 py-3 rounded-lg border text-center text-lg font-mono transition-colors touch-manipulation select-none ${
               activeField === fieldType && !isDisabled && isInputtingEnd
                 ? 'border-primary ring-2 ring-primary/30 bg-background text-foreground'
                 : endText

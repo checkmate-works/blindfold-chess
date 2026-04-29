@@ -189,7 +189,7 @@ export function MoveInputPanel({
             <button
               type="button"
               onClick={handleShowLegalMoves}
-              className="text-sm text-primary hover:text-primary/80 underline mt-1"
+              className="text-sm text-primary hover:text-primary/80 underline mt-1 touch-manipulation select-none"
             >
               {t('showLegalMoves')}
             </button>
@@ -218,7 +218,7 @@ export function MoveInputPanel({
               updatePreferences({ moveInputMode: nextMode });
             }}
             disabled={disabled}
-            className="p-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation select-none"
             title={toggleTitle}
           >
             {modeIcons[nextMode]}

@@ -48,7 +48,7 @@ export function PositionMemoryMemorize({
 
   return (
     <div className="space-y-4">
-      <div className="bg-card rounded-md border border-border p-4">
+      <div className="p-4">
         <div className="flex flex-col gap-6">
           {/* Progress */}
           {problemCount > 1 && (
@@ -108,7 +108,7 @@ export function PositionMemoryMemorize({
                   {onTogglePause && (
                     <button
                       onClick={onTogglePause}
-                      className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 transition-all hover:scale-110 active:scale-95 pointer-events-auto"
+                      className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 transition-all hover:scale-110 active:scale-95 pointer-events-auto touch-manipulation select-none"
                       aria-label={tPractice('resume')}
                     >
                       <LuPlay size={48} className="fill-current ml-1" />

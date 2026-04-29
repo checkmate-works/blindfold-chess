@@ -38,7 +38,9 @@ export function DiagonalQuizResultLayout({
 
         {children}
 
-        <DiagonalBoard targetSquare={question} />
+        <div className="-mx-8 sm:mx-0">
+          <DiagonalBoard targetSquare={question} />
+        </div>
 
         <div className="mt-6">
           <Button onClick={onNext} variant="primary" className="w-full">

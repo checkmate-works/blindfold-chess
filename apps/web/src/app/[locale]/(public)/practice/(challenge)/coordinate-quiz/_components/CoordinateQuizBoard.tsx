@@ -66,7 +66,7 @@ export function CoordinateQuizBoard({
                   key={square}
                   onClick={() => onSquareClick(square)}
                   className={`
-                    w-[12.5%] h-full relative
+                    w-[12.5%] h-full relative touch-manipulation select-none
                     transition-all duration-200
                     hover:brightness-110 active:brightness-90
                     ${highlightColor || (isLight ? themeColors.light : themeColors.dark)}

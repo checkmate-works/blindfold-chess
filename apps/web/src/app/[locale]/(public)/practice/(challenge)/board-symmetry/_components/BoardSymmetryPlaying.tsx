@@ -87,7 +87,7 @@ export function BoardSymmetryPlaying({
 
   return (
     <div className="max-w-md mx-auto">
-      <div className="bg-card rounded-xl border border-border p-8 text-center relative overflow-hidden">
+      <div className="p-8 text-center relative overflow-hidden">
         {/* Countdown Overlay */}
         <BoardOverlay
           isVisible={countdown !== null}
@@ -163,7 +163,7 @@ export function BoardSymmetryPlaying({
           </div>
 
           <div className="mb-8">
-            <div className="flex items-center justify-center gap-4 text-6xl font-bold text-foreground mb-4 font-mono">
+            <div className="flex items-center justify-center gap-4 text-6xl font-bold text-foreground mb-4 font-mono select-none">
               {problem.square}
               <span className="text-muted-foreground">→</span>
               <span className={`min-w-[2ch] ${getFeedbackColor()}`}>
@@ -172,7 +172,7 @@ export function BoardSymmetryPlaying({
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-4 -mx-8 sm:mx-0">
             <CoordinateInput
               selectedFiles={selectedFile ? new Set([selectedFile]) : new Set()}
               selectedRanks={selectedRank ? new Set([selectedRank]) : new Set()}

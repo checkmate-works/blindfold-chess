@@ -11,7 +11,6 @@ import { MISTAKE_LIMIT } from '@/lib/challenge/constants';
 import { useLocalStorageSettings } from '@/lib/persistent-settings/use-local-storage-settings';
 
 import { BoardOrientationSelector } from '@/app/[locale]/(public)/practice/(challenge)/_components/BoardOrientationSelector';
-import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -43,7 +42,7 @@ export function QuadrantsChallengeSetup({ locale }: Props) {
   };
 
   return (
-    <PracticePanel className="p-6">
+    <>
       <SectionTitle className="mb-4">{t('challengeSetup.title')}</SectionTitle>
 
       <ul className="mb-6 space-y-2 text-sm text-muted-foreground list-disc list-inside">
@@ -74,6 +73,6 @@ export function QuadrantsChallengeSetup({ locale }: Props) {
       >
         {t('startChallenge')}
       </Button>
-    </PracticePanel>
+    </>
   );
 }

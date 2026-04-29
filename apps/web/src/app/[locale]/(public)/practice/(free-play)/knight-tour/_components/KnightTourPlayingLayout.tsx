@@ -44,7 +44,7 @@ export function KnightTourPlayingLayout({
 
   return (
     <div className="space-y-4">
-      <div className="bg-card rounded-md border border-border p-4">
+      <div className="p-4">
         <div className="flex flex-col gap-6">
           {/* Progress */}
           <ProgressBar current={moveCount} total={64} />
