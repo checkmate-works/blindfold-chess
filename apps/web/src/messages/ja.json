@@ -3373,6 +3373,55 @@
         "cancel": "キャンセル",
         "deleting": "削除中..."
       }
+    },
+    "positionMemory": {
+      "commentsTitle": "コメント",
+      "postCount": "{count}件のコメント",
+      "noPosts": "まだコメントがありません。最初のコメントを投稿してみましょう！",
+      "signInToComment": "サインインしてコメントする",
+      "newPostForm": {
+        "contentLabel": "コメント",
+        "contentPlaceholder": "このポジションについて思うことを共有しましょう...",
+        "submit": "コメントする",
+        "submitting": "投稿中...",
+        "contentRequired": "内容を入力してください",
+        "contentTooLong": "内容は5000文字以内にしてください",
+        "error": "エラーが発生しました。もう一度お試しください。",
+        "signInRequired": "コメントするにはサインインが必要です",
+        "invalidReplyPermission": "無効な返信許可設定です",
+        "rateLimited": "コメントが多すぎます。しばらくしてからもう一度お試しください。"
+      },
+      "like": "いいね",
+      "unlike": "いいね解除",
+      "newReply": "新しい返信 {time}",
+      "justNow": "たった今"
+    },
+    "positionPuzzle": {
+      "commentsTitle": "コメント",
+      "postCount": "{count}件のコメント",
+      "noPosts": "まだコメントがありません。最初のコメントを投稿してみましょう！",
+      "signInToComment": "サインインしてコメントする",
+      "commentGuidelineSpoiler": "解法を含むコメントは「解法を含む」にチェックを入れてください。",
+      "newPostForm": {
+        "contentLabel": "コメント",
+        "contentPlaceholder": "このパズルについて思うことを共有しましょう...",
+        "submit": "コメントする",
+        "submitting": "投稿中...",
+        "contentRequired": "内容を入力してください",
+        "contentTooLong": "内容は5000文字以内にしてください",
+        "error": "エラーが発生しました。もう一度お試しください。",
+        "signInRequired": "コメントするにはサインインが必要です",
+        "invalidReplyPermission": "無効な返信許可設定です",
+        "rateLimited": "コメントが多すぎます。しばらくしてからもう一度お試しください。"
+      },
+      "like": "いいね",
+      "unlike": "いいね解除",
+      "newReply": "新しい返信 {time}",
+      "justNow": "たった今"
+    },
+    "spoiler": {
+      "toggleLabel": "解法を含む",
+      "detailsSummary": "解法を表示"
     }
   },
   "unsavedChanges": {

@@ -3477,6 +3477,55 @@
         "cancel": "Cancel",
         "deleting": "Deleting..."
       }
+    },
+    "positionMemory": {
+      "commentsTitle": "Comments",
+      "postCount": "{count, plural, one {# comment} other {# comments}}",
+      "noPosts": "No comments yet. Be the first to share your thoughts!",
+      "signInToComment": "Sign in to comment",
+      "newPostForm": {
+        "contentLabel": "Comment",
+        "contentPlaceholder": "Share your thoughts about this position...",
+        "submit": "Comment",
+        "submitting": "Posting...",
+        "contentRequired": "Please enter some content",
+        "contentTooLong": "Content must be 5000 characters or less",
+        "error": "An error occurred. Please try again.",
+        "signInRequired": "Please sign in to comment",
+        "invalidReplyPermission": "Invalid reply permission setting",
+        "rateLimited": "Too many comments. Please try again later."
+      },
+      "like": "Like",
+      "unlike": "Unlike",
+      "newReply": "New Reply {time}",
+      "justNow": "just now"
+    },
+    "positionPuzzle": {
+      "commentsTitle": "Comments",
+      "postCount": "{count, plural, one {# comment} other {# comments}}",
+      "noPosts": "No comments yet. Be the first to share your thoughts!",
+      "signInToComment": "Sign in to comment",
+      "commentGuidelineSpoiler": "If your comment reveals the solution, please tick \"Contains solution\".",
+      "newPostForm": {
+        "contentLabel": "Comment",
+        "contentPlaceholder": "Share your thoughts about this puzzle...",
+        "submit": "Comment",
+        "submitting": "Posting...",
+        "contentRequired": "Please enter some content",
+        "contentTooLong": "Content must be 5000 characters or less",
+        "error": "An error occurred. Please try again.",
+        "signInRequired": "Please sign in to comment",
+        "invalidReplyPermission": "Invalid reply permission setting",
+        "rateLimited": "Too many comments. Please try again later."
+      },
+      "like": "Like",
+      "unlike": "Unlike",
+      "newReply": "New Reply {time}",
+      "justNow": "just now"
+    },
+    "spoiler": {
+      "toggleLabel": "Contains solution",
+      "detailsSummary": "Show solution"
     }
   },
   "unsavedChanges": {

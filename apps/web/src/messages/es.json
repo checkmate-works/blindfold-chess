@@ -3331,6 +3331,55 @@
         "cancel": "Cancelar",
         "deleting": "Eliminando..."
       }
+    },
+    "positionMemory": {
+      "commentsTitle": "Comentarios",
+      "postCount": "{count, plural, one {# comentario} other {# comentarios}}",
+      "noPosts": "Aún no hay comentarios. ¡Sé el primero en compartir tus ideas!",
+      "signInToComment": "Inicia sesión para comentar",
+      "newPostForm": {
+        "contentLabel": "Comentario",
+        "contentPlaceholder": "Comparte tus ideas sobre esta posición...",
+        "submit": "Comentar",
+        "submitting": "Publicando...",
+        "contentRequired": "Por favor escribe algún contenido",
+        "contentTooLong": "El contenido debe tener 5000 caracteres o menos",
+        "error": "Ocurrió un error. Inténtalo de nuevo.",
+        "signInRequired": "Inicia sesión para comentar",
+        "invalidReplyPermission": "Configuración de permiso de respuesta inválida",
+        "rateLimited": "Demasiados comentarios. Inténtalo de nuevo más tarde."
+      },
+      "like": "Me gusta",
+      "unlike": "Quitar me gusta",
+      "newReply": "Nueva respuesta {time}",
+      "justNow": "ahora mismo"
+    },
+    "positionPuzzle": {
+      "commentsTitle": "Comentarios",
+      "postCount": "{count, plural, one {# comentario} other {# comentarios}}",
+      "noPosts": "Aún no hay comentarios. ¡Sé el primero en compartir tus ideas!",
+      "signInToComment": "Inicia sesión para comentar",
+      "commentGuidelineSpoiler": "Si tu comentario revela la solución, marca \"Contiene la solución\".",
+      "newPostForm": {
+        "contentLabel": "Comentario",
+        "contentPlaceholder": "Comparte tus ideas sobre este puzzle...",
+        "submit": "Comentar",
+        "submitting": "Publicando...",
+        "contentRequired": "Por favor escribe algún contenido",
+        "contentTooLong": "El contenido debe tener 5000 caracteres o menos",
+        "error": "Ocurrió un error. Inténtalo de nuevo.",
+        "signInRequired": "Inicia sesión para comentar",
+        "invalidReplyPermission": "Configuración de permiso de respuesta inválida",
+        "rateLimited": "Demasiados comentarios. Inténtalo de nuevo más tarde."
+      },
+      "like": "Me gusta",
+      "unlike": "Quitar me gusta",
+      "newReply": "Nueva respuesta {time}",
+      "justNow": "ahora mismo"
+    },
+    "spoiler": {
+      "toggleLabel": "Contiene la solución",
+      "detailsSummary": "Mostrar la solución"
     }
   },
   "unsavedChanges": {

@@ -232,6 +232,13 @@
       "when": 1777283452195,
       "tag": "20260427095052_create_attachments",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1777463350006,
+      "tag": "20260429114910_add_is_spoiler_to_topic_posts",
+      "breakpoints": true
     }
   ]
 }

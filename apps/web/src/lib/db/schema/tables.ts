@@ -419,6 +419,17 @@ export const topicPosts = pgTable(
     rootPostId: uuid('root_post_id'), // top-level post of the thread; NULL for top-level posts
     content: text('content').notNull(),
     replyPermission: varchar('reply_permission', { length: 20 }).notNull().default('everyone'),
+    /**
+     * Self-declared "this comment contains spoilers" flag. Currently surfaced
+     * by the UI only for `topic_type='position_puzzle'` (puzzle pages) — when
+     * `true`, the post body is rendered inside a `<details>` element so the
+     * solution is not revealed until the reader opts in. Stored on every row
+     * so the column can be reused for other spoiler-sensitive topic types
+     * (e.g. opening lines) without a migration. Defaults to `false`, so
+     * existing rows and topic types that do not expose the toggle behave
+     * exactly as before.
+     */
+    isSpoiler: boolean('is_spoiler').notNull().default(false),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true })
@@ -816,8 +827,7 @@ export const postGameEmbedAttachments = pgTable(
     ),
     check(
       'post_game_embed_attachments_chk_embed_attribution_pair',
-      sql`(${table.attributionPlatform} IS NULL AND ${table.attributionPath} IS NULL)
-        OR (${table.attributionPlatform} IS NOT NULL AND ${table.attributionPath} IS NOT NULL)`
+      sql`(${table.attributionPlatform} IS NULL AND ${table.attributionPath} IS NULL) OR (${table.attributionPlatform} IS NOT NULL AND ${table.attributionPath} IS NOT NULL)`
     ),
     // Future embed dedup: mirrors the Lichess reuse index on the PGN table.
     index('idx_post_game_embed_attachments_provider_id').on(table.embedProvider, table.embedId),

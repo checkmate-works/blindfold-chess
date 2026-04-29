@@ -3477,6 +3477,55 @@
         "cancel": "Cancelar",
         "deleting": "Excluindo..."
       }
+    },
+    "positionMemory": {
+      "commentsTitle": "Comentários",
+      "postCount": "{count, plural, one {# comentário} other {# comentários}}",
+      "noPosts": "Ainda não há comentários. Seja o primeiro a compartilhar suas ideias!",
+      "signInToComment": "Entre para comentar",
+      "newPostForm": {
+        "contentLabel": "Comentário",
+        "contentPlaceholder": "Compartilhe suas ideias sobre esta posição...",
+        "submit": "Comentar",
+        "submitting": "Publicando...",
+        "contentRequired": "Por favor, insira algum conteúdo",
+        "contentTooLong": "O conteúdo deve ter 5000 caracteres ou menos",
+        "error": "Ocorreu um erro. Tente novamente.",
+        "signInRequired": "Entre para comentar",
+        "invalidReplyPermission": "Configuração de permissão de resposta inválida",
+        "rateLimited": "Comentários demais. Tente novamente mais tarde."
+      },
+      "like": "Curtir",
+      "unlike": "Descurtir",
+      "newReply": "Nova resposta {time}",
+      "justNow": "agora mesmo"
+    },
+    "positionPuzzle": {
+      "commentsTitle": "Comentários",
+      "postCount": "{count, plural, one {# comentário} other {# comentários}}",
+      "noPosts": "Ainda não há comentários. Seja o primeiro a compartilhar suas ideias!",
+      "signInToComment": "Entre para comentar",
+      "commentGuidelineSpoiler": "Se o seu comentário revelar a solução, marque \"Contém a solução\".",
+      "newPostForm": {
+        "contentLabel": "Comentário",
+        "contentPlaceholder": "Compartilhe suas ideias sobre este puzzle...",
+        "submit": "Comentar",
+        "submitting": "Publicando...",
+        "contentRequired": "Por favor, insira algum conteúdo",
+        "contentTooLong": "O conteúdo deve ter 5000 caracteres ou menos",
+        "error": "Ocorreu um erro. Tente novamente.",
+        "signInRequired": "Entre para comentar",
+        "invalidReplyPermission": "Configuração de permissão de resposta inválida",
+        "rateLimited": "Comentários demais. Tente novamente mais tarde."
+      },
+      "like": "Curtir",
+      "unlike": "Descurtir",
+      "newReply": "Nova resposta {time}",
+      "justNow": "agora mesmo"
+    },
+    "spoiler": {
+      "toggleLabel": "Contém a solução",
+      "detailsSummary": "Mostrar a solução"
     }
   },
   "unsavedChanges": {
