@@ -20,6 +20,10 @@ import { resolveDisplayName } from '@/lib/users/display-name';
 
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_actions/toggleLike';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
+import {
+  getPostCountByTopicKey,
+  getPostsWithReplyMetaPaginatedByTopicKey,
+} from '@/app/[locale]/(public)/topics/_lib/queries';
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { RelatedChunks } from '@/app/[locale]/_components/RelatedChunks';
@@ -28,6 +32,8 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { PuzzlePiecesInfo } from '../../_components/PuzzlePiecesInfo';
 import { loadPuzzleWithSolutions } from '../../_lib/load-puzzle';
+import { NewPostForm } from './_components/NewPostForm';
+import { PostCard } from './_components/PostCard';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,6 +43,8 @@ type Props = {
     id: string;
   }>;
 };
+
+const COMMENT_PAGE_SIZE = 20;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, id } = await params;
@@ -62,6 +70,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function PuzzleDetailPage({ params }: Props) {
   const { locale, id } = await params;
   const t = await getTranslations({ locale, namespace: 'practice.puzzle' });
+  const tComments = await getTranslations({ locale, namespace: 'topics.positionPuzzle' });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
 
   const row = await loadPuzzleWithSolutions(id);
@@ -74,10 +83,20 @@ export default async function PuzzleDetailPage({ params }: Props) {
   const displayName = resolveDisplayName(profile);
 
   const currentUser = await getOptionalUser();
-  const [likeMeta, relatedChunks] = await Promise.all([
+  const [likeMeta, relatedChunks, commentCount] = await Promise.all([
     getPositionLikeMeta(position.id, currentUser?.id),
     getLinkedChunksForPosition(position.id),
+    getPostCountByTopicKey('position_puzzle', position.id),
   ]);
+
+  const comments = await getPostsWithReplyMetaPaginatedByTopicKey(
+    'position_puzzle',
+    position.id,
+    COMMENT_PAGE_SIZE,
+    0,
+    currentUser?.id,
+    'new'
+  );
 
   const authorBadge = (
     <>
@@ -160,6 +179,36 @@ export default async function PuzzleDetailPage({ params }: Props) {
               </Button>
             </Link>
           </div>
+
+          <SectionTitle>{tComments('commentsTitle')}</SectionTitle>
+
+          <p className="text-sm text-muted-foreground">
+            {tComments('postCount', { count: commentCount })}
+          </p>
+
+          <p className="text-sm text-muted-foreground">{tComments('commentGuidelineSpoiler')}</p>
+
+          {currentUser ? (
+            <NewPostForm locale={locale} positionId={position.id} />
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              <Link href={`/${locale}/sign-in`} className="text-link-primary hover:underline">
+                {tComments('signInToComment')}
+              </Link>
+            </p>
+          )}
+
+          {comments.length > 0 ? (
+            <div className="space-y-3">
+              {comments.map((post) => (
+                <div key={post.id} id={`post-${post.id}`}>
+                  <PostCard post={post} locale={locale} positionId={position.id} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-center py-8">{tComments('noPosts')}</p>
+          )}
         </div>
 
         <Divider />
