@@ -22,6 +22,9 @@ vi.mock('@/app/[locale]/(public)/topics/_components', () => ({
   AttachedGameCard: ({ attachment }: { attachment: { id: string } }) => (
     <div data-testid="attached-game-card" data-attachment-id={attachment.id} />
   ),
+  AttachedEmbedCard: ({ attachment }: { attachment: { id: string } }) => (
+    <div data-testid="attached-embed-card" data-attachment-id={attachment.id} />
+  ),
 }));
 
 vi.mock('../_actions/toggleChunkLike', () => ({
