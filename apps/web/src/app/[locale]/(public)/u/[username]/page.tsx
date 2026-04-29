@@ -25,20 +25,20 @@ import { and, count, eq, isNull } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { getAchievementCategoryNames } from '@/lib/achievements/display';
-import { countryCodeToFlag } from '@/lib/countries';
 import { db, profiles, userFollows } from '@/lib/db';
 import { getUserAchievements } from '@/lib/db/achievement-queries';
 import { countPositions, listPositions } from '@/lib/positions/queries';
 import { createClient } from '@/lib/supabase/server';
 
 import { getPostsByUserId } from '@/app/[locale]/(public)/topics/_lib/user-post-queries';
-import { LinkedText, PagePanel, PageTitle, UserAvatar } from '@/app/[locale]/_components';
+import { LinkedText, PagePanel, PageTitle } from '@/app/[locale]/_components';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { FollowButton } from './_components/FollowButton';
 import { ProfileAchievements } from './_components/ProfileAchievements';
+import { ProfileHeader } from './_components/ProfileHeader';
 import { ProfilePosts } from './_components/ProfilePosts';
 import { ProfileProblems } from './_components/ProfileProblems';
 import { SocialLinks } from './_components/SocialLinks';
@@ -202,27 +202,14 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
       <PageTitle>{t('pageTitle')}</PageTitle>
       <PagePanel>
         <div className="space-y-6">
-          {/* Avatar */}
-          <UserAvatar
-            src={profile.avatarUrl}
-            alt={profile.displayName ?? profile.username}
-            size={96}
-          />
-
-          {/* Display Name + Action Button Row */}
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">
-                {profile.displayName}
-                {profile.flair && <span className="ml-2">{profile.flair}</span>}
-                {profile.country && (
-                  <span className="ml-2">{countryCodeToFlag(profile.country)}</span>
-                )}
-              </h1>
-              <p className="text-muted-foreground mt-1">@{profile.username}</p>
-            </div>
-            <div className="flex flex-col items-end gap-1 sm:flex-row sm:items-center sm:gap-2">
-              {isOwnProfile ? (
+          <ProfileHeader
+            avatarUrl={profile.avatarUrl}
+            username={profile.username}
+            displayName={profile.displayName}
+            flair={profile.flair}
+            country={profile.country}
+            action={
+              isOwnProfile ? (
                 <Link
                   href="/mypage/profile"
                   locale={locale}
@@ -244,9 +231,9 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
                     isAuthenticated={!!user}
                   />
                 </>
-              )}
-            </div>
-          </div>
+              )
+            }
+          />
 
           {/* Stats Row */}
           <p className="text-sm text-muted-foreground">
