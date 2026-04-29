@@ -6,7 +6,6 @@ import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaPlay } from 'react-icons/fa';
 
-import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -29,7 +28,7 @@ export function DiagonalQuizChallengeSetup({ locale }: Props) {
   };
 
   return (
-    <PracticePanel className="p-6">
+    <>
       <SectionTitle className="mb-4">{t('challengeSetup.title')}</SectionTitle>
 
       <ul className="mb-6 space-y-2 text-sm text-muted-foreground list-disc list-inside">
@@ -47,6 +46,6 @@ export function DiagonalQuizChallengeSetup({ locale }: Props) {
       >
         {t('startChallenge')}
       </Button>
-    </PracticePanel>
+    </>
   );
 }

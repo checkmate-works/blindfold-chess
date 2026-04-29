@@ -11,7 +11,6 @@ import { FaPlay } from 'react-icons/fa';
 
 import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
-import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
 import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -42,7 +41,7 @@ export function LegalMovesChallengeSetup({ locale, piece }: Props) {
   };
 
   return (
-    <PracticePanel className="p-6">
+    <>
       <SectionTitle className="mb-4">{t('challengeSetup.title')}</SectionTitle>
 
       <ul className="mb-6 space-y-2 text-sm text-muted-foreground list-disc list-inside">
@@ -62,6 +61,6 @@ export function LegalMovesChallengeSetup({ locale, piece }: Props) {
       >
         {t('startChallenge')}
       </Button>
-    </PracticePanel>
+    </>
   );
 }

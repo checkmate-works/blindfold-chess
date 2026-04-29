@@ -68,7 +68,7 @@ export function LegalMovesPlaying({
 
   return (
     <div>
-      <div className="relative bg-card rounded-2xl border border-border p-8 text-center overflow-hidden">
+      <div className="relative p-8 text-center overflow-hidden">
         {/* Header with Timer and Pause Button */}
 
         {/* Blur entire question area during countdown */}
@@ -152,7 +152,7 @@ export function LegalMovesPlaying({
                 .replace('{from}', currentQuestion.from)
                 .replace('{to}', currentQuestion.to)}
             </div>
-            <div className="text-7xl">{pieceDisplayMap[currentQuestion.piece]}</div>
+            <div className="text-7xl select-none">{pieceDisplayMap[currentQuestion.piece]}</div>
           </div>
 
           <ArrowKeyAnswer
@@ -166,7 +166,7 @@ export function LegalMovesPlaying({
               <button
                 onClick={() => onAnswer(true)}
                 disabled={inputDisabled}
-                className="px-6 py-4 bg-success/10 hover:bg-success/20 disabled:opacity-50 disabled:cursor-not-allowed text-success border border-success/30 rounded-md font-medium text-lg transition-colors flex items-center justify-center gap-2"
+                className="px-6 py-4 bg-success/10 hover:bg-success/20 disabled:opacity-50 disabled:cursor-not-allowed text-success border border-success/30 rounded-md font-medium text-lg transition-colors flex items-center justify-center gap-2 touch-manipulation select-none"
               >
                 <span className="text-2xl">○</span>
                 <span>{t('legal')}</span>
@@ -174,7 +174,7 @@ export function LegalMovesPlaying({
               <button
                 onClick={() => onAnswer(false)}
                 disabled={inputDisabled}
-                className="px-6 py-4 bg-destructive/10 hover:bg-destructive/20 disabled:opacity-50 disabled:cursor-not-allowed text-destructive border border-destructive/30 rounded-md font-medium text-lg transition-colors flex items-center justify-center gap-2"
+                className="px-6 py-4 bg-destructive/10 hover:bg-destructive/20 disabled:opacity-50 disabled:cursor-not-allowed text-destructive border border-destructive/30 rounded-md font-medium text-lg transition-colors flex items-center justify-center gap-2 touch-manipulation select-none"
               >
                 <span className="text-2xl">×</span>
                 <span>{t('illegal')}</span>

@@ -61,7 +61,7 @@ export function CoordinateQuizChallengePlaying({
   const quitConfirmLabels = useQuitConfirmLabels();
   return (
     <div id="quiz-session">
-      <div className="bg-card rounded-2xl border border-border p-8 text-center overflow-hidden">
+      <div className="p-8 text-center overflow-hidden">
         <div className="max-w-md mx-auto mb-8 relative">
           <div className="mb-4 relative flex items-center justify-between min-h-[50px]">
             {/* Lives - left side */}

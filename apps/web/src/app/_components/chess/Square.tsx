@@ -76,11 +76,11 @@ export const Square = memo(function Square({
   return (
     <div
       className={`
-        ${sizeClass} relative flex items-center justify-center
+        ${sizeClass} relative flex items-center justify-center touch-manipulation select-none
         ${squareColorClass}
         ${highlightClass}
         ${onClick || dataSquare ? 'cursor-pointer hover:opacity-80' : ''}
-        ${layoutMode === 'grid' ? 'transition-colors select-none' : ''}
+        ${layoutMode === 'grid' ? 'transition-colors' : ''}
       `}
       onClick={onClick}
       data-square={dataSquare}
