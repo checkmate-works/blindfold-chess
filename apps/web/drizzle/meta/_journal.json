@@ -230,56 +230,7 @@
       "idx": 32,
       "version": "7",
       "when": 1777283452195,
-      "tag": "20260427095052_create_topic_post_attachments",
-      "breakpoints": true
-    },
-    {
-      "idx": 33,
-      "version": "7",
-      "when": 1777365192000,
-      "tag": "20260428093312_rename_topic_post_attachments_to_post_game_attachments",
-      "breakpoints": true
-    },
-    {
-      "idx": 34,
-      "version": "7",
-      "when": 1777365193000,
-      "tag": "20260428093313_add_chesscom_attribution_to_post_game_attachments",
-      "breakpoints": true
-    },
-    {
-      "idx": 35,
-      "version": "7",
-      "when": 1777365194000,
-      "tag": "20260428102126_add_source_url_https_check",
-      "breakpoints": true
-    },
-    {
-      "idx": 36,
-      "version": "7",
-      "when": 1777365195000,
-      "tag": "20260428202557_drop_topic_post_attachments_compat_view",
-      "breakpoints": true
-    },
-    {
-      "idx": 37,
-      "version": "7",
-      "when": 1777409146220,
-      "tag": "20260428204546_drop_redundant_post_game_attachments_indexes",
-      "breakpoints": true
-    },
-    {
-      "idx": 38,
-      "version": "7",
-      "when": 1777490772000,
-      "tag": "20260429072612_rename_post_game_attachments_to_post_game_pgn_attachments",
-      "breakpoints": true
-    },
-    {
-      "idx": 39,
-      "version": "7",
-      "when": 1777490774000,
-      "tag": "20260429072614_create_post_game_embed_attachments",
+      "tag": "20260427095052_create_attachments",
       "breakpoints": true
     }
   ]

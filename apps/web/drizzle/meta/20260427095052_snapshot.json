@@ -1,5 +1,5 @@
 {
-  "id": "b56277c4-b666-4a13-bdb6-96e60c19a4e8",
+  "id": "cdf82579-ce12-41e3-a66c-d601e094a8bf",
   "prevId": "96ac14d0-ca64-4550-81b8-22fbdd9b54a9",
   "version": "7",
   "dialect": "postgresql",
@@ -2490,6 +2490,223 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.post_game_pgn_attachments": {
+      "name": "post_game_pgn_attachments",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "post_id": {
+          "name": "post_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source": {
+          "name": "source",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_url": {
+          "name": "source_url",
+          "type": "varchar(512)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "source_game_id": {
+          "name": "source_game_id",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pgn": {
+          "name": "pgn",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pgn_byte_length": {
+          "name": "pgn_byte_length",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "starting_fen": {
+          "name": "starting_fen",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "move_count": {
+          "name": "move_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "header_white": {
+          "name": "header_white",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "header_black": {
+          "name": "header_black",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "header_result": {
+          "name": "header_result",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "header_event": {
+          "name": "header_event",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "header_site": {
+          "name": "header_site",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "header_date": {
+          "name": "header_date",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "anonymized": {
+          "name": "anonymized",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "attribution_platform": {
+          "name": "attribution_platform",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "attribution_path": {
+          "name": "attribution_path",
+          "type": "varchar(160)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_post_game_pgn_attachments_size": {
+          "name": "idx_post_game_pgn_attachments_size",
+          "columns": [
+            {
+              "expression": "pgn_byte_length",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_post_game_pgn_attachments_source_game": {
+          "name": "idx_post_game_pgn_attachments_source_game",
+          "columns": [
+            {
+              "expression": "source",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "source_game_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "post_game_pgn_attachments_post_id_topic_posts_id_fk": {
+          "name": "post_game_pgn_attachments_post_id_topic_posts_id_fk",
+          "tableFrom": "post_game_pgn_attachments",
+          "tableTo": "topic_posts",
+          "columnsFrom": ["post_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "post_game_pgn_attachments_post_id_unique": {
+          "name": "post_game_pgn_attachments_post_id_unique",
+          "nullsNotDistinct": false,
+          "columns": ["post_id"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "post_game_pgn_attachments_chk_pgn_byte_length": {
+          "name": "post_game_pgn_attachments_chk_pgn_byte_length",
+          "value": "\"post_game_pgn_attachments\".\"pgn_byte_length\" > 0 AND \"post_game_pgn_attachments\".\"pgn_byte_length\" <= 102400"
+        },
+        "post_game_pgn_attachments_chk_source_valid": {
+          "name": "post_game_pgn_attachments_chk_source_valid",
+          "value": "\"post_game_pgn_attachments\".\"source\" IN ('pgn', 'lichess')"
+        },
+        "post_game_pgn_attachments_chk_source_url_required_for_external": {
+          "name": "post_game_pgn_attachments_chk_source_url_required_for_external",
+          "value": "\"post_game_pgn_attachments\".\"source\" = 'pgn' OR \"post_game_pgn_attachments\".\"source_url\" IS NOT NULL"
+        },
+        "post_game_pgn_attachments_chk_source_url_audit_https": {
+          "name": "post_game_pgn_attachments_chk_source_url_audit_https",
+          "value": "\"post_game_pgn_attachments\".\"source_url\" IS NULL OR \"post_game_pgn_attachments\".\"source_url\" ~ '^https://'"
+        },
+        "post_game_pgn_attachments_chk_pgn_byte_length_matches_octet_length": {
+          "name": "post_game_pgn_attachments_chk_pgn_byte_length_matches_octet_length",
+          "value": "\"post_game_pgn_attachments\".\"pgn_byte_length\" = octet_length(\"post_game_pgn_attachments\".\"pgn\")"
+        },
+        "post_game_pgn_attachments_chk_attribution_platform_valid": {
+          "name": "post_game_pgn_attachments_chk_attribution_platform_valid",
+          "value": "\"post_game_pgn_attachments\".\"attribution_platform\" IS NULL OR \"post_game_pgn_attachments\".\"attribution_platform\" IN ('chesscom')"
+        },
+        "post_game_pgn_attachments_chk_attribution_path_format": {
+          "name": "post_game_pgn_attachments_chk_attribution_path_format",
+          "value": "\"post_game_pgn_attachments\".\"attribution_path\" IS NULL OR \"post_game_pgn_attachments\".\"attribution_path\" ~ '^/[A-Za-z0-9/_-]{1,128}$'"
+        },
+        "post_game_pgn_attachments_chk_attribution_pair": {
+          "name": "post_game_pgn_attachments_chk_attribution_pair",
+          "value": "(\"post_game_pgn_attachments\".\"attribution_platform\" IS NULL AND \"post_game_pgn_attachments\".\"attribution_path\" IS NULL)\n        OR (\"post_game_pgn_attachments\".\"attribution_platform\" IS NOT NULL AND \"post_game_pgn_attachments\".\"attribution_path\" IS NOT NULL)"
+        }
+      },
+      "isRLSEnabled": false
+    },
     "public.profiles": {
       "name": "profiles",
       "schema": "",
@@ -3089,221 +3306,6 @@
       },
       "policies": {},
       "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.topic_post_attachments": {
-      "name": "topic_post_attachments",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "post_id": {
-          "name": "post_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "source": {
-          "name": "source",
-          "type": "varchar(20)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "source_url": {
-          "name": "source_url",
-          "type": "varchar(512)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "source_game_id": {
-          "name": "source_game_id",
-          "type": "varchar(64)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "pgn": {
-          "name": "pgn",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "pgn_byte_length": {
-          "name": "pgn_byte_length",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "starting_fen": {
-          "name": "starting_fen",
-          "type": "varchar(100)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "move_count": {
-          "name": "move_count",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "header_white": {
-          "name": "header_white",
-          "type": "varchar(100)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "header_black": {
-          "name": "header_black",
-          "type": "varchar(100)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "header_result": {
-          "name": "header_result",
-          "type": "varchar(10)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "header_event": {
-          "name": "header_event",
-          "type": "varchar(200)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "header_site": {
-          "name": "header_site",
-          "type": "varchar(200)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "header_date": {
-          "name": "header_date",
-          "type": "varchar(20)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "anonymized": {
-          "name": "anonymized",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "idx_topic_post_attachments_post": {
-          "name": "idx_topic_post_attachments_post",
-          "columns": [
-            {
-              "expression": "post_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "idx_topic_post_attachments_source": {
-          "name": "idx_topic_post_attachments_source",
-          "columns": [
-            {
-              "expression": "source",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "idx_topic_post_attachments_size": {
-          "name": "idx_topic_post_attachments_size",
-          "columns": [
-            {
-              "expression": "pgn_byte_length",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "idx_topic_post_attachments_source_game": {
-          "name": "idx_topic_post_attachments_source_game",
-          "columns": [
-            {
-              "expression": "source",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "source_game_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "topic_post_attachments_post_id_topic_posts_id_fk": {
-          "name": "topic_post_attachments_post_id_topic_posts_id_fk",
-          "tableFrom": "topic_post_attachments",
-          "tableTo": "topic_posts",
-          "columnsFrom": ["post_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "topic_post_attachments_post_id_unique": {
-          "name": "topic_post_attachments_post_id_unique",
-          "nullsNotDistinct": false,
-          "columns": ["post_id"]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {
-        "chk_pgn_byte_length": {
-          "name": "chk_pgn_byte_length",
-          "value": "\"topic_post_attachments\".\"pgn_byte_length\" > 0 AND \"topic_post_attachments\".\"pgn_byte_length\" <= 102400"
-        },
-        "chk_source_valid": {
-          "name": "chk_source_valid",
-          "value": "\"topic_post_attachments\".\"source\" IN ('pgn', 'lichess')"
-        },
-        "chk_source_url_required_for_external": {
-          "name": "chk_source_url_required_for_external",
-          "value": "\"topic_post_attachments\".\"source\" = 'pgn' OR \"topic_post_attachments\".\"source_url\" IS NOT NULL"
-        }
-      },
       "isRLSEnabled": false
     },
     "public.topic_post_ratings": {
@@ -4314,6 +4316,132 @@
       },
       "policies": {},
       "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.post_game_embed_attachments": {
+      "name": "post_game_embed_attachments",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "post_id": {
+          "name": "post_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "embed_provider": {
+          "name": "embed_provider",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "embed_id": {
+          "name": "embed_id",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_url": {
+          "name": "source_url",
+          "type": "varchar(512)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "attribution_platform": {
+          "name": "attribution_platform",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "attribution_path": {
+          "name": "attribution_path",
+          "type": "varchar(160)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_post_game_embed_attachments_provider_id": {
+          "name": "idx_post_game_embed_attachments_provider_id",
+          "columns": [
+            {
+              "expression": "embed_provider",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "embed_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "post_game_embed_attachments_post_id_topic_posts_id_fk": {
+          "name": "post_game_embed_attachments_post_id_topic_posts_id_fk",
+          "tableFrom": "post_game_embed_attachments",
+          "tableTo": "topic_posts",
+          "columnsFrom": ["post_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "post_game_embed_attachments_post_id_unique": {
+          "name": "post_game_embed_attachments_post_id_unique",
+          "nullsNotDistinct": false,
+          "columns": ["post_id"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "post_game_embed_attachments_chk_embed_provider_valid": {
+          "name": "post_game_embed_attachments_chk_embed_provider_valid",
+          "value": "\"post_game_embed_attachments\".\"embed_provider\" IN ('chesscom', 'lichess')"
+        },
+        "post_game_embed_attachments_chk_embed_id_format": {
+          "name": "post_game_embed_attachments_chk_embed_id_format",
+          "value": "\"post_game_embed_attachments\".\"embed_id\" ~ '^[A-Za-z0-9_-]{1,64}$'"
+        },
+        "post_game_embed_attachments_chk_embed_source_url_https": {
+          "name": "post_game_embed_attachments_chk_embed_source_url_https",
+          "value": "\"post_game_embed_attachments\".\"source_url\" IS NULL OR \"post_game_embed_attachments\".\"source_url\" ~ '^https://'"
+        },
+        "post_game_embed_attachments_chk_embed_attribution_platform_valid": {
+          "name": "post_game_embed_attachments_chk_embed_attribution_platform_valid",
+          "value": "\"post_game_embed_attachments\".\"attribution_platform\" IS NULL OR \"post_game_embed_attachments\".\"attribution_platform\" IN ('chesscom', 'lichess')"
+        },
+        "post_game_embed_attachments_chk_embed_attribution_path_format": {
+          "name": "post_game_embed_attachments_chk_embed_attribution_path_format",
+          "value": "\"post_game_embed_attachments\".\"attribution_path\" IS NULL OR \"post_game_embed_attachments\".\"attribution_path\" ~ '^/[A-Za-z0-9/_-]{1,128}$'"
+        },
+        "post_game_embed_attachments_chk_embed_attribution_pair": {
+          "name": "post_game_embed_attachments_chk_embed_attribution_pair",
+          "value": "(\"post_game_embed_attachments\".\"attribution_platform\" IS NULL AND \"post_game_embed_attachments\".\"attribution_path\" IS NULL) OR (\"post_game_embed_attachments\".\"attribution_platform\" IS NOT NULL AND \"post_game_embed_attachments\".\"attribution_path\" IS NOT NULL)"
+        }
+      },
       "isRLSEnabled": false
     }
   },
