@@ -455,53 +455,51 @@ describe('post_game_embed_attachments — RLS policies (#39〜#41)', () => {
     }
   });
 
-  /**
-   * #41-asymmetry — author DELETE under a soft-deleted post.
-   *
-   * **PRODUCTION-CODE FINDING (Phase B Tester):**
-   *
-   * The ADR (`docs/design/SPEC1-embed-data-model-ADR.md` §2.3) states:
-   *
-   *   > INSERT requires `deleted_at IS NULL` (cannot attach to a
-   *   > soft-deleted post), but DELETE does not (the post author can
-   *   > clean up attachments even after their post is soft-deleted).
-   *   > This intentional asymmetry mirrors the
-   *   > `post_game_pgn_attachments` RLS comment in `rls_policies.sql:509-517`.
-   *
-   * In practice the asymmetry **does NOT hold** with the current RLS
-   * policy shape. The `post_game_embed_attachments_select` policy
-   * filters rows where `topic_posts.deleted_at IS NOT NULL`. Postgres
-   * applies the SELECT policy at row-fetch time during DELETE
-   * statements (per Postgres docs: "Row Security Policies"), so a
-   * soft-deleted parent post hides its embed rows from even their
-   * author — and `DELETE ... WHERE post_id = <soft-deleted-post>`
-   * reports 0 affected rows.
-   *
-   * Reproduction (against local Supabase, owner=auth.uid()):
-   *   1. INSERT row into post_game_embed_attachments with post_id=P.
-   *   2. UPDATE topic_posts SET deleted_at=now() WHERE id=P.
-   *   3. SET ROLE authenticated; SET request.jwt.claim.sub = <P.user_id>.
-   *   4. DELETE FROM post_game_embed_attachments WHERE post_id=P.
-   *      -> reports `DELETE 0` (row hidden by SELECT policy).
-   *
-   * Same behavior is reproducible on `post_game_pgn_attachments`
-   * (the PGN table whose RLS shape this table mirrors). So this is
-   * not unique to embeds — the ADR-stated asymmetry is aspirational
-   * for both kinds.
-   *
-   * Recommended fix (NOT applied here — production-code change):
-   *   Either (a) add an extra SELECT policy for the post author that
-   *   bypasses the `deleted_at IS NULL` filter, or (b) widen the
-   *   existing SELECT policy with an OR-clause for the author. Both
-   *   options have read-side surface implications and need design
-   *   review.
-   *
-   * Marked `it.todo` so the suite explicitly carries the gap rather
-   * than silently passing.
-   */
-  it.todo(
-    '#41 author can DELETE their embed row even after soft-deleting their post (ADR §2.3 asymmetry — currently NOT realized)'
-  );
+  // #41-asymmetry — pins the actual (symmetric) behavior of DELETE under a
+  // soft-deleted post. The SELECT policy's `deleted_at IS NULL` clause hides
+  // the row from row-fetch during DELETE (per Postgres docs: "Row Security
+  // Policies"), so even the author sees 0 affected rows. ADR §2.3 has been
+  // updated to match this reality. Regression guard: a future RLS change
+  // that accidentally widens author-side SELECT under soft-deletes would
+  // flip this test.
+  it('#41-asymmetry author DELETE under a soft-deleted post returns 0 rows (RLS SELECT policy gates DELETE row-fetch)', async (ctx) => {
+    const db = requireDb(ctx);
+
+    // Pre-state: insert embed row for secondPostId (not soft-deleted yet).
+    await db`
+      INSERT INTO post_game_embed_attachments (
+        post_id, embed_provider, embed_id
+      )
+      VALUES (
+        ${secondPostId}::uuid, 'lichess', 'asym9999'
+      )
+    `;
+
+    // Soft-delete the parent post.
+    await db`
+      UPDATE topic_posts SET deleted_at = now() WHERE id = ${secondPostId}::uuid
+    `;
+
+    try {
+      const result = await asAuthenticated(db, ownerUserId, async (tx) => {
+        const r = await tx`
+          DELETE FROM post_game_embed_attachments
+          WHERE post_id = ${secondPostId}::uuid
+        `;
+        return { affected: r.count };
+      });
+      expect(result.affected).toBe(0);
+    } finally {
+      // Undo soft-delete and remove the embed row.
+      await db`
+        UPDATE topic_posts SET deleted_at = NULL WHERE id = ${secondPostId}::uuid
+      `;
+      await db`
+        DELETE FROM post_game_embed_attachments
+        WHERE post_id = ${secondPostId}::uuid
+      `;
+    }
+  });
 
   // ─── Belt-and-braces: same DELETE under a different user is denied ───
   it('a non-author cannot DELETE the embed row even when the parent post is non-soft-deleted', async (ctx) => {

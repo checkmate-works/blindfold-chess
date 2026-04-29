@@ -506,9 +506,11 @@ CREATE POLICY "post_game_pgn_attachments_insert" ON "post_game_pgn_attachments"
 -- DELETE: post owner may delete their attachment. In practice the path is
 -- "delete post → CASCADE attachment", but the explicit policy keeps the
 -- direct delete path closed to non-owners.
--- Note: INSERT requires deleted_at IS NULL (cannot attach to a soft-deleted post),
--- but DELETE does not — the post author can clean up attachments even after
--- their post is soft-deleted (intentional asymmetry).
+-- Note: INSERT requires deleted_at IS NULL (cannot attach to a soft-deleted post).
+-- The DELETE policy's own USING clause has no deleted_at guard, but Postgres
+-- applies the SELECT policy to row-fetch during DELETE — so DELETE against a
+-- soft-deleted post's attachment also reports 0 rows in practice. The typical
+-- path is "delete post → CASCADE attachment", not direct attachment delete.
 DROP POLICY IF EXISTS "post_game_pgn_attachments_delete" ON "post_game_pgn_attachments";
 CREATE POLICY "post_game_pgn_attachments_delete" ON "post_game_pgn_attachments"
   FOR DELETE USING (
