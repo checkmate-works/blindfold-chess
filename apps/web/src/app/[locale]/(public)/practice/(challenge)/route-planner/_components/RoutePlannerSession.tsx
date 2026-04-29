@@ -81,7 +81,7 @@ export function RoutePlannerSession({
     <div className="min-h-screen max-w-md mx-auto">
       <div id="route-planner-session" className="text-center relative overflow-hidden">
         {/* Problem Header */}
-        <div className="flex justify-center items-center gap-6 border-b border-border pb-4 mb-4">
+        <div className="flex justify-center items-center gap-6 pb-4 mb-4">
           <div className="bg-primary/10 p-2 rounded-lg text-primary w-14 h-14 flex items-center justify-center border border-primary/20">
             <ChessPiece type={problem.piece} color="w" size={32} />
           </div>
@@ -140,9 +140,10 @@ export function RoutePlannerSession({
                 selectedRank={staged.selectedRank}
                 onFileToggle={handleFilePress}
                 onRankToggle={handleRankPress}
+                expandOnMobile
               >
                 {/* Answer Action */}
-                <div className="flex pt-4 border-t border-border mt-2">
+                <div className="flex pt-4 mt-2 -mx-4 sm:mx-0">
                   <Button
                     onClick={handleSubmitAnswer}
                     disabled={moves.length === 0 && problem.start === problem.end}

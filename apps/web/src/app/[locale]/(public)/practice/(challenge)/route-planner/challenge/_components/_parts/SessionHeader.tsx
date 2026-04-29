@@ -76,7 +76,7 @@ export function SessionHeader({
       </div>
 
       {/* Problem Header */}
-      <div className="flex justify-between items-center border-b border-border pb-4 mb-4">
+      <div className="flex justify-between items-center pb-4 mb-4">
         <div className="flex items-center gap-6">
           <div className="bg-primary/10 p-2 rounded-lg text-primary w-14 h-14 flex items-center justify-center border border-primary/20">
             <ChessPiece type={currentProblem.piece} color="w" size={32} />
