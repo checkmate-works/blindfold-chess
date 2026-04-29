@@ -3958,7 +3958,7 @@
       "hide": "添付を閉じる",
       "label": "ゲーム（PGN または Lichess の URL）",
       "placeholder": "Lichess の対局 URL または PGN を貼り付け…",
-      "modeHint": "Lichess の対局 URL（lichess.org/…）または PGN を貼り付けてください。[Link] ヘッダ付きの chess.com PGN は自動で帰属情報が付与されます。"
+      "modeHint": "Lichess の対局 URL（lichess.org/…）、chess.com の emboard URL、Lichess の埋め込み URL、または PGN を貼り付けてください。[Link] ヘッダ付きの chess.com PGN は自動で帰属情報が付与されます。"
     },
     "label": {
       "anonymize": "対局者名を匿名化",

@@ -4062,7 +4062,7 @@
       "hide": "Hide attachment",
       "label": "Game (PGN or Lichess URL)",
       "placeholder": "Paste a Lichess game URL or full PGN…",
-      "modeHint": "Accepts a Lichess game URL (lichess.org/…) or a PGN. chess.com PGNs with a [Link] header are auto-attributed."
+      "modeHint": "Accepts a Lichess game URL (lichess.org/…), a chess.com emboard URL, a Lichess embed URL, or a PGN. chess.com PGNs with a [Link] header are auto-attributed."
     },
     "label": {
       "anonymize": "Anonymize player names",

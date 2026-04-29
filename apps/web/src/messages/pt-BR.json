@@ -4062,7 +4062,7 @@
       "hide": "Ocultar anexo",
       "label": "Partida (PGN ou URL do Lichess)",
       "placeholder": "Cole uma URL de partida do Lichess ou um PGN completo…",
-      "modeHint": "Aceita uma URL de partida do Lichess (lichess.org/…) ou um PGN. PGNs do chess.com com cabeçalho [Link] são atribuídos automaticamente."
+      "modeHint": "Aceita uma URL de partida do Lichess (lichess.org/…), uma URL de emboard do chess.com, uma URL de incorporação do Lichess ou um PGN. PGNs do chess.com com cabeçalho [Link] são atribuídos automaticamente."
     },
     "label": {
       "anonymize": "Anonimizar nomes dos jogadores",
