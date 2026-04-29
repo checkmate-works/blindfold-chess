@@ -3106,13 +3106,6 @@
     "moreTopicPosts": "More topics",
     "showMore": "Show more",
     "showLess": "Show less",
-    "grantInfoModal": {
-      "title": "Ad-Free Benefit Notice",
-      "body": "Posting a topic with text content automatically grants you {days} days of ad-free access.",
-      "note": "Posts containing only ratings without text content do not qualify.",
-      "confirm": "Continue posting",
-      "cancel": "Cancel"
-    },
     "categories": {
       "squares": {
         "title": "Squares",

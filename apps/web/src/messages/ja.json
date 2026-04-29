@@ -3002,13 +3002,6 @@
     "moreTopicPosts": "トピックをもっと見る",
     "showMore": "さらに表示",
     "showLess": "閉じる",
-    "grantInfoModal": {
-      "title": "広告非表示特典のご案内",
-      "body": "テキスト付きでトピックを投稿すると、{days}日間の広告非表示特典が自動で付与されます。",
-      "note": "選択式の評価のみの投稿は対象外です。",
-      "confirm": "投稿する",
-      "cancel": "キャンセル"
-    },
     "categories": {
       "squares": {
         "title": "マス目",

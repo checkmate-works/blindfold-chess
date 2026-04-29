@@ -3106,13 +3106,6 @@
     "moreTopicPosts": "Mais tópicos",
     "showMore": "Mostrar mais",
     "showLess": "Mostrar menos",
-    "grantInfoModal": {
-      "title": "Aviso de Benefício Sem Anúncios",
-      "body": "Publicar um tópico com conteúdo de texto concede automaticamente {days} dias de acesso sem anúncios.",
-      "note": "Publicações contendo apenas avaliações sem conteúdo de texto não se qualificam.",
-      "confirm": "Continuar publicação",
-      "cancel": "Cancelar"
-    },
     "categories": {
       "squares": {
         "title": "Casas",

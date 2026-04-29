@@ -1,16 +1,10 @@
 'use client';
 
-import { type ReactNode, useActionState, useCallback, useRef, useState } from 'react';
+import { type ReactNode, useActionState, useCallback, useState } from 'react';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { Button, FormErrorBanner, Textarea, UnsavedChangesDialog } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-
-import { GRANT_TYPE_DEFAULTS } from '@/lib/db/data/grant-types';
-
-import { GrantInfoModal } from './GrantInfoModal';
-
-const GRANT_INFO_MODAL_STORAGE_KEY = 'bc_topic_post_grant_modal_shown_v1';
 
 type Props = {
   /** Bound server action (locale/slug already bound) */
@@ -26,9 +20,6 @@ type Props = {
   beforeContent?: (markDirty: () => void) => ReactNode;
   /** Callback when content textarea value changes (receives whether textarea has content) */
   onContentChange?: (hasContent: boolean) => void;
-  /** When true, show a one-time pre-submit modal explaining the ad-free grant policy.
-   *  Persisted via localStorage so it only appears until the user confirms once. */
-  showGrantInfoModal?: boolean;
 };
 
 /**
@@ -53,52 +44,18 @@ export function BasePostForm({
   contentRequired = true,
   beforeContent,
   onContentChange,
-  showGrantInfoModal = false,
 }: Props) {
   const t = useTranslations(translationNamespace);
   const tGlobal = useTranslations();
   const tUnsaved = useTranslations('unsavedChanges');
   const [state, formAction, isPending] = useActionState(action, {});
   const [isDirty, setIsDirty] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const formRef = useRef<HTMLFormElement>(null);
 
   const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
 
   const markDirty = useCallback(() => {
     setIsDirty(true);
   }, []);
-
-  const handleSubmitClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (!showGrantInfoModal) return;
-
-    let alreadyShown = false;
-    try {
-      alreadyShown =
-        typeof window !== 'undefined' && localStorage.getItem(GRANT_INFO_MODAL_STORAGE_KEY) === '1';
-    } catch {
-      // localStorage may be disabled (e.g., Safari private mode); fall through
-    }
-
-    if (alreadyShown) return;
-
-    e.preventDefault();
-    setShowModal(true);
-  };
-
-  const handleModalConfirm = () => {
-    try {
-      localStorage.setItem(GRANT_INFO_MODAL_STORAGE_KEY, '1');
-    } catch {
-      // ignore storage failures
-    }
-    setShowModal(false);
-    formRef.current?.requestSubmit();
-  };
-
-  const handleModalCancel = () => {
-    setShowModal(false);
-  };
 
   // Errors come back from server actions either as plain keys (resolved
   // against the form's namespace) or as fully-qualified dotted paths
@@ -114,7 +71,7 @@ export function BasePostForm({
     : null;
 
   return (
-    <form ref={formRef} action={formAction} className="space-y-4">
+    <form action={formAction} className="space-y-4">
       <FormErrorBanner message={errorMessage} />
 
       {beforeContent?.(markDirty)}
@@ -145,7 +102,6 @@ export function BasePostForm({
         fullWidth
         disabled={isPending || submitDisabled}
         loading={isPending}
-        onClick={handleSubmitClick}
       >
         {isPending ? t('submitting') : t('submit')}
       </Button>
@@ -158,13 +114,6 @@ export function BasePostForm({
         message={tUnsaved('message')}
         confirmLabel={tUnsaved('confirm')}
         cancelLabel={tUnsaved('cancel')}
-      />
-
-      <GrantInfoModal
-        open={showModal}
-        durationDays={GRANT_TYPE_DEFAULTS.topic_post.durationDays}
-        onConfirm={handleModalConfirm}
-        onCancel={handleModalCancel}
       />
     </form>
   );
