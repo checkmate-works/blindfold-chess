@@ -3525,7 +3525,9 @@
     },
     "spoiler": {
       "toggleLabel": "Contains solution",
-      "detailsSummary": "Show solution"
+      "overlayTitle": "Contains solution",
+      "overlayHint": "Tap to reveal",
+      "overlayAriaLabel": "Reveal comment that may contain the puzzle solution"
     }
   },
   "unsavedChanges": {

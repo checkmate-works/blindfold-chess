@@ -3525,7 +3525,9 @@
     },
     "spoiler": {
       "toggleLabel": "Contém a solução",
-      "detailsSummary": "Mostrar a solução"
+      "overlayTitle": "Contém a solução",
+      "overlayHint": "Toque para revelar",
+      "overlayAriaLabel": "Mostrar comentário que pode conter a solução do quebra-cabeça"
     }
   },
   "unsavedChanges": {

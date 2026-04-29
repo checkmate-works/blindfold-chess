@@ -3379,7 +3379,9 @@
     },
     "spoiler": {
       "toggleLabel": "Contiene la solución",
-      "detailsSummary": "Mostrar la solución"
+      "overlayTitle": "Contiene la solución",
+      "overlayHint": "Pulsa para mostrar",
+      "overlayAriaLabel": "Mostrar comentario que puede contener la solución del puzzle"
     }
   },
   "unsavedChanges": {

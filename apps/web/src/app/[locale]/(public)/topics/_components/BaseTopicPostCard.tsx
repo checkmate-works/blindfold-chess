@@ -1,9 +1,10 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 
 import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { FaEyeSlash } from 'react-icons/fa';
 
 import { truncateContent } from '@/lib/content/truncate-content';
 
@@ -42,10 +43,10 @@ type Props = {
   badge?: ReactNode;
   extraContent?: ReactNode;
   /**
-   * When `true`, the post body is wrapped in a `<details>` element so the
-   * preview is hidden behind a "Show solution" disclosure. Currently set
-   * by the puzzle PostCard, where authors self-flag comments that reveal
-   * the solution. Defaults to `false`.
+   * When `true`, the post body is hidden behind a click-to-reveal overlay
+   * (Discord/Reddit-style) so the solution stays obscured until the reader
+   * explicitly opts in. Currently set by the puzzle PostCard, where authors
+   * self-flag comments that reveal the solution. Defaults to `false`.
    */
   isSpoiler?: boolean;
 };
@@ -68,11 +69,13 @@ export function BaseTopicPostCard({
   isSpoiler = false,
 }: Props) {
   const tTopics = useTranslations('topics');
+  const [isRevealed, setIsRevealed] = useState(false);
   const displayName = author?.displayName || author?.username || 'Anonymous';
   const profileHref = author?.username ? `/u/${author.username}` : null;
   const hasContent = content.length > 0;
   const contentPreview = truncateContent(content);
   const isTruncated = contentPreview !== content;
+  const showSpoilerOverlay = isSpoiler && !isRevealed;
 
   // Layout note (HTML / a11y): the card is intentionally NOT a single
   // top-level <a>. Wrapping the whole card in <Link> would force any
@@ -105,22 +108,53 @@ export function BaseTopicPostCard({
             </time>
             {badge}
           </div>
-          {hasContent &&
-            (isSpoiler ? (
-              <details className="text-sm">
-                <summary className="cursor-pointer text-link-primary hover:underline">
-                  {tTopics('spoiler.detailsSummary')}
-                </summary>
-                <p className="mt-2 text-foreground whitespace-pre-wrap break-words line-clamp-3">
-                  <LinkedText text={contentPreview} locale={locale} />
-                </p>
-              </details>
-            ) : (
-              <p className="text-sm text-foreground whitespace-pre-wrap break-words line-clamp-3">
+          {/*
+            i18n note: Japanese intentionally uses different wording for the
+            writer-side toggle label (`spoiler.toggleLabel` = "解法を含む") and
+            the reader-side overlay title (`spoiler.overlayTitle` =
+            "ネタバレを含みます"). "ネタバレ" is the standard Japanese term for
+            a reader-facing spoiler warning, while "解法を含む" reads more
+            naturally as a self-declaration on the composer. Other locales
+            (en/es/pt-BR) use parallel "Contains solution" wording for both
+            because there is no equivalent natural-cognate distinction. Do
+            NOT normalize without product input.
+
+            a11y note: `aria-live="polite"` on the wrapper announces the
+            revealed body to screen readers when the overlay is dismissed,
+            so the user who clicked "reveal" hears the comment they just
+            opted into.
+          */}
+          {hasContent && (
+            <div className="relative" aria-live="polite">
+              <p
+                className="text-sm text-foreground whitespace-pre-wrap break-words line-clamp-3"
+                aria-hidden={showSpoilerOverlay || undefined}
+              >
                 <LinkedText text={contentPreview} locale={locale} />
               </p>
-            ))}
-          {hasContent && isTruncated && !isSpoiler && (
+              {showSpoilerOverlay && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsRevealed(true);
+                  }}
+                  aria-label={tTopics('spoiler.overlayAriaLabel')}
+                  className="absolute inset-0 flex flex-col items-center justify-center gap-1 rounded-sm bg-muted text-muted-foreground hover:bg-muted/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors cursor-pointer"
+                >
+                  <span className="flex items-center gap-1.5 text-sm font-medium">
+                    <FaEyeSlash aria-hidden="true" />
+                    {tTopics('spoiler.overlayTitle')}
+                  </span>
+                  <span className="text-xs text-muted-foreground/80">
+                    {tTopics('spoiler.overlayHint')}
+                  </span>
+                </button>
+              )}
+            </div>
+          )}
+          {hasContent && isTruncated && (!isSpoiler || isRevealed) && (
             <span className="text-sm text-link-primary hover:underline">{tTopics('showMore')}</span>
           )}
         </UserAvatar>
