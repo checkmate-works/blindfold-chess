@@ -1,5 +1,6 @@
 'use server';
 
+import * as Sentry from '@sentry/nextjs';
 import { eq } from 'drizzle-orm';
 
 import { authenticateAndCheckBan } from '@/lib/auth';
@@ -16,12 +17,15 @@ import { createPostBase } from '@/app/[locale]/(public)/topics/_actions/createPo
  * Translates URL-parser failure reasons into the `attachment.embed.*` i18n
  * key used by the input form.
  */
-function embedErrorKey(_reason: string): string {
-  // All parser failure reasons collapse to a single user-facing message.
-  // The granular reason codes are recorded server-side (Sentry / logs)
-  // but exposed only as a single "invalid embed URL" message to the
-  // user — the user does not need to know about `has_userinfo` vs
-  // `wrong_host`.
+function embedErrorKey(reason: string): string {
+  // Capture the granular reason for observability while exposing
+  // a single user-facing message. Reasons covered: 'invalid_url',
+  // 'wrong_protocol', 'has_userinfo', 'wrong_host', 'invalid_path',
+  // 'invalid_id', 'fragment_not_allowed', 'input_too_long'.
+  Sentry.captureMessage(`embed URL parser rejected: ${reason}`, {
+    level: 'warning',
+    tags: { component: 'createChunkPostWithEmbedAttachment', reason },
+  });
   return 'attachment.embed.invalidUrl';
 }
 

@@ -21,6 +21,11 @@ const mockInsertReturning = vi.fn();
 const mockEmbedInsertValues = vi.fn();
 const mockPgnSelectWhereLimit = vi.fn();
 
+vi.mock('@sentry/nextjs', () => ({
+  captureException: vi.fn(),
+  captureMessage: vi.fn(),
+}));
+
 vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: vi.fn(),
 }));
