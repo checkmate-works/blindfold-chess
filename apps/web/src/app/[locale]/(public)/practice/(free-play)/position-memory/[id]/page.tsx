@@ -14,6 +14,10 @@ import { getPositionWithProfileById } from '@/lib/positions/queries';
 import { resolveDisplayName } from '@/lib/users/display-name';
 
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
+import {
+  getPostCountByTopicKey,
+  getPostsWithReplyMetaPaginatedByTopicKey,
+} from '@/app/[locale]/(public)/topics/_lib/queries';
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
@@ -25,6 +29,8 @@ import { toggleLike } from '../_actions/toggleLike';
 import { DeletePositionButton } from '../_components/DeletePositionButton';
 import { PositionDetailBoard } from '../_components/single-position/PositionDetailBoard';
 import { PositionStartForm } from '../_components/single-position/PositionStartForm';
+import { NewPostForm } from './_components/NewPostForm';
+import { PostCard } from './_components/PostCard';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,6 +40,8 @@ type Props = {
     id: string;
   }>;
 };
+
+const COMMENT_PAGE_SIZE = 20;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, id } = await params;
@@ -59,6 +67,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function PositionDetailPage({ params }: Props) {
   const { locale, id } = await params;
   const t = await getTranslations({ locale, namespace: 'practice.positionMemory' });
+  const tComments = await getTranslations({ locale, namespace: 'topics.positionMemory' });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
 
   const row = await getPositionWithProfileById({ id, type: 'memory' });
@@ -72,10 +81,20 @@ export default async function PositionDetailPage({ params }: Props) {
   const isBlackToMove = isBlackToMoveFromFen(position.fen);
 
   const currentUser = await getOptionalUser();
-  const [likeMeta, relatedChunks] = await Promise.all([
+  const [likeMeta, relatedChunks, commentCount] = await Promise.all([
     getPositionLikeMeta(position.id, currentUser?.id),
     getLinkedChunksForPosition(position.id),
+    getPostCountByTopicKey('position_memory', position.id),
   ]);
+
+  const comments = await getPostsWithReplyMetaPaginatedByTopicKey(
+    'position_memory',
+    position.id,
+    COMMENT_PAGE_SIZE,
+    0,
+    currentUser?.id,
+    'new'
+  );
 
   const authorBadge = (
     <>
@@ -161,6 +180,34 @@ export default async function PositionDetailPage({ params }: Props) {
           <SectionTitle>{t('detail.solveSection')}</SectionTitle>
 
           <PositionStartForm positionId={position.id} locale={locale} />
+
+          <SectionTitle>{tComments('commentsTitle')}</SectionTitle>
+
+          <p className="text-sm text-muted-foreground">
+            {tComments('postCount', { count: commentCount })}
+          </p>
+
+          {currentUser ? (
+            <NewPostForm locale={locale} positionId={position.id} />
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              <Link href={`/${locale}/sign-in`} className="text-link-primary hover:underline">
+                {tComments('signInToComment')}
+              </Link>
+            </p>
+          )}
+
+          {comments.length > 0 ? (
+            <div className="space-y-3">
+              {comments.map((post) => (
+                <div key={post.id} id={`post-${post.id}`}>
+                  <PostCard post={post} locale={locale} positionId={position.id} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-center py-8">{tComments('noPosts')}</p>
+          )}
         </div>
 
         {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
