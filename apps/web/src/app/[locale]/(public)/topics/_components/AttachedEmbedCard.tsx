@@ -103,6 +103,40 @@ export function AttachedEmbedCard({ attachment }: Props) {
         <div className="p-3 space-y-2">
           <p className="text-sm font-medium text-foreground">{t('embed.lichessCardTitle')}</p>
           <div className="aspect-video w-full">
+            {/*
+              sandbox token rationale (SecurityEngineer Phase A finding M-2):
+                - allow-scripts: required so the embed can run its own
+                  JavaScript (board rendering + interaction).
+                - allow-popups: required so links inside the embed (e.g.
+                  "open this game on Lichess.org") can open at all.
+                - allow-popups-to-escape-sandbox: trade-off. A script
+                  inside the iframe can `window.open()` a URL, and the
+                  resulting popup is itself UNsandboxed — i.e. the new
+                  tab renders Lichess's full UI without inheriting our
+                  sandbox restrictions. We accept this because (a) the
+                  rendered URL is a trusted origin (lichess.org), (b)
+                  the user-facing UX of "open in new tab" requires an
+                  unsandboxed page to look/behave like the user expects,
+                  and (c) the embedId is regex-validated at write time
+                  by `parseLichessEmbedUrl` to the canonical Lichess
+                  8-char game-ID shape (`^[A-Za-z0-9]{8}$`, see
+                  `apps/web/src/lib/games/parse-embed-url.ts`) AND
+                  backstopped by the DB CHECK `^[A-Za-z0-9_-]{1,64}$`
+                  on `post_game_embed_attachments.embed_id`, so the
+                  substring interpolated into the iframe `src` cannot
+                  contain URL-special characters and we only ever embed
+                  `lichess.org/embed/<8-alnum>`.
+                  Residual risk: a supply-chain compromise of Lichess's
+                  served scripts could open arbitrary unsandboxed pages
+                  via window.open from inside the iframe.
+
+              Asymmetry vs. the chess.com iframe above (which uses only
+              `sandbox="allow-scripts"`): the chess.com emboard is a
+              static diagram with no "open in new tab" affordance, so
+              neither allow-popups nor escape-sandbox are needed. The
+              Lichess embed is a full game-replay UI whose pop-out flow
+              is part of the expected UX, hence the wider sandbox.
+            */}
             <iframe
               src={`https://lichess.org/embed/${attachment.embedId}?theme=auto&bg=auto`}
               sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"

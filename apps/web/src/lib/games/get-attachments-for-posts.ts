@@ -3,6 +3,7 @@ import {
   getStartingFen,
   parsePgnWithFen,
 } from '@blindfold-chess/features/chess-core';
+import * as Sentry from '@sentry/nextjs';
 import { and, eq, inArray, isNull } from 'drizzle-orm';
 import 'server-only';
 
@@ -158,11 +159,16 @@ export async function getAttachmentsForPosts(
       // enforce 1:0..1 by construction, so this branch only fires if
       // a future flow inserts both kinds for the same post (or via a
       // direct DB write). We prefer the PGN variant for safety: it is
-      // the older, better-tested rendering path. Logged via console
-      // so Sentry / observability picks it up without throwing.
-
-      console.warn(
-        `[get-attachments-for-posts] post ${row.postId} has both PGN and embed attachments; preferring PGN`
+      // the older, better-tested rendering path. Reported via Sentry
+      // (mirroring the `embedErrorKey` pattern in
+      // `createChunkPostWithEmbedAttachment`) so the invariant break
+      // is surfaced in observability without throwing.
+      Sentry.captureMessage(
+        `[get-attachments-for-posts] post ${row.postId} has both PGN and embed attachments; preferring PGN`,
+        {
+          level: 'warning',
+          tags: { component: 'get-attachments-for-posts', postId: row.postId },
+        }
       );
       continue;
     }
