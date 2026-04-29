@@ -226,7 +226,10 @@ export default async function Layout({
             <div className="flex flex-col min-h-screen">
               <Header locale={locale} />
               <main className="flex-1 bg-secondary">
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">{children}</div>
+                {/* pb-0 at <sm: footer sits flush against page content on mobile; py-8 (= pt-8 + sm:pb-8) preserved at ≥sm. */}
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-0 sm:pb-8">
+                  {children}
+                </div>
               </main>
               <Footer locale={locale} />
               {/* Spacer to prevent the fixed MobileTabBar from covering the footer */}
