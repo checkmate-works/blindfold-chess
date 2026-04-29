@@ -160,7 +160,7 @@ describe('post_game_pgn_attachments integration', () => {
             ${testPostId}::uuid, 'pgn', ${VALID_PGN}, 10, 4
           )
         `
-      ).rejects.toThrow(/chk_pgn_byte_length_matches_octet_length/);
+      ).rejects.toThrow(/chk_pgn_byte_length_matches_octet_len/);
     });
 
     it('accepts an INSERT where pgn_byte_length equals octet_length(pgn)', async (ctx) => {
