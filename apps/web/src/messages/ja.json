@@ -2910,6 +2910,7 @@
   },
   "publicProfile": {
     "title": "{displayName}のプロフィール",
+    "pageTitle": "プロフィール",
     "defaultDescription": "{displayName}のBlindfold Chessプロフィール",
     "chessAccounts": "チェスアカウント",
     "bio": "自己紹介",

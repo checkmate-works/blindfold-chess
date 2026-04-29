@@ -3014,6 +3014,7 @@
   },
   "publicProfile": {
     "title": "{displayName}'s Profile",
+    "pageTitle": "Profile",
     "defaultDescription": "{displayName}'s profile on Blindfold Chess",
     "chessAccounts": "Chess Accounts",
     "bio": "About",

@@ -3014,6 +3014,7 @@
   },
   "publicProfile": {
     "title": "Perfil de {displayName}",
+    "pageTitle": "Perfil",
     "defaultDescription": "Perfil de {displayName} no Xadrez às Cegas",
     "chessAccounts": "Contas de Xadrez",
     "bio": "Sobre",

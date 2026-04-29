@@ -2868,6 +2868,7 @@
   },
   "publicProfile": {
     "title": "Perfil de {displayName}",
+    "pageTitle": "Perfil",
     "defaultDescription": "Perfil de {displayName} en Ajedrez a Ciegas",
     "chessAccounts": "Cuentas de Ajedrez",
     "bio": "Acerca de",
