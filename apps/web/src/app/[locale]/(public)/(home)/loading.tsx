@@ -23,7 +23,8 @@ export default function HomeLoading() {
       </div>
 
       <div className="space-y-6">
-        <div className="bg-card border border-border rounded-lg overflow-hidden">
+        {/* `-mx-4` assumes the parent locale layout wrapper uses `px-4` at `<sm` (see `[locale]/layout.tsx`); breaks the skeleton out to flush-edge on mobile to match DashboardCard. */}
+        <div className="bg-card -mx-4 sm:mx-0 rounded-none sm:rounded-lg border-0 sm:border sm:border-border overflow-hidden">
           {/* VsAiCard skeleton — matches the loading state in VsAiCard.tsx */}
           <div className="p-4 sm:p-6 border-b border-border">
             <div className="animate-pulse">
