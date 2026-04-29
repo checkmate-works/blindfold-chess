@@ -415,15 +415,10 @@ describe('post_game_embed_attachments — RLS policies (#39〜#41)', () => {
     expect(denied).toBe(true);
   });
 
-  // #41 — author can DELETE under non-soft-deleted post (positive control
-  //        for the asymmetry-as-designed test below). The ADR-stated
-  //        "DELETE works even when soft-deleted" asymmetry is documented
-  //        below as a separate `it.todo` because the current RLS shape
-  //        does not actually realize it (production-code finding —
-  //        Postgres applies the SELECT policy to row-fetch during
-  //        DELETE, so a soft-deleted post hides its embed rows from
-  //        even the author and `DELETE ... WHERE post_id = ...` reports
-  //        0 affected rows).
+  // #41 — author CAN DELETE their embed row when the parent post is
+  //        NOT soft-deleted (positive control). Companion test below
+  //        (#41-asymmetry) pins the symmetric 0-rows behavior when the
+  //        parent IS soft-deleted.
   it('#41 author CAN DELETE their embed row when their post is NOT soft-deleted (positive control)', async (ctx) => {
     const db = requireDb(ctx);
 
