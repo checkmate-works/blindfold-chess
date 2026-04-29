@@ -2,27 +2,16 @@
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import type { PostAttachment } from '@/lib/games/get-attachments-for-posts';
+
 import {
   AttachedEmbedCard,
   AttachedGameCard,
   BaseTopicPostCard,
 } from '@/app/[locale]/(public)/topics/_components';
-import type {
-  AttachedEmbedCardData,
-  AttachedGameCardData,
-} from '@/app/[locale]/(public)/topics/_components';
 import type { PostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
 
 import { toggleChunkLike } from '../_actions/toggleChunkLike';
-
-/**
- * Per-post attachment payload. Matches the discriminated union returned
- * by `getAttachmentsForPosts`. SPEC2 Phase B introduces the embed
- * variant alongside the existing PGN variant.
- */
-export type PostAttachment =
-  | { kind: 'pgn'; data: AttachedGameCardData }
-  | { kind: 'embed'; data: AttachedEmbedCardData };
 
 type Props = {
   post: PostWithReplyMeta;

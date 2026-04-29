@@ -24,6 +24,22 @@ import type { AttachedGameCardData } from '@/app/[locale]/(public)/topics/_compo
  * two tables. The loader below enforces that invariant defensively: if
  * a post somehow has both, it logs a warning and returns the PGN
  * variant (older + better-tested rendering path).
+ *
+ * @design Future widening for #73 / #74 / #75
+ *
+ * The downstream `Map<postId, PostAttachment>` shape returned by
+ * `getAttachmentsForPosts` assumes **at most one attachment per post** —
+ * this is the "PGN xor embed" rule enforced today by the Server Action
+ * layer. Once additional attachment kinds land (#73 image N, #74 FEN
+ * 0..1, #75 video 0..1), this single-value-per-post shape will need to
+ * widen — most likely to a per-post bundle along the lines of
+ * `{ game?, fen?, video?, images? }` — because #72 R2 explicitly allows
+ * multiple kinds on the same post (e.g. game + FEN + 2 images).
+ *
+ * The "preferring PGN" branch in this file (the `Sentry.captureMessage(...)`
+ * call inside the embed-row loop's `if (map.has(row.postId))` PGN-preference
+ * branch below) encodes the current "PGN xor embed" exclusivity rule and
+ * will need to be widened or removed at the same time the union widens.
  */
 export type PostAttachment =
   | { kind: 'pgn'; data: AttachedGameCardData }
