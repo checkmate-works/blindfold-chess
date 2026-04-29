@@ -31,6 +31,21 @@ type Props = {
   showGrantInfoModal?: boolean;
 };
 
+/**
+ * Shared post form rendering content + submit, used by every new-post form
+ * across topics (squares, openings, chunks).
+ *
+ * @description
+ * The "Who can reply" selector is intentionally not rendered while reply-
+ * permission control is hidden from end users (planned to ship later as a
+ * paid feature). A hidden input still submits the schema default
+ * (`'everyone'`) so `createPostBase` and the rest of the Server Action
+ * pipeline continue to receive a valid `replyPermission` value with no
+ * server-side changes. Replacing the hidden input with the original
+ * `<label>` + `<select>` (everyone / followers / nobody, i18n keys
+ * preserved in every locale message file) is the only change required to
+ * re-enable the flow.
+ */
 export function BasePostForm({
   action,
   translationNamespace,
@@ -122,21 +137,7 @@ export function BasePostForm({
         />
       </div>
 
-      <div className="space-y-2">
-        <label htmlFor="replyPermission" className="block text-sm font-medium text-foreground">
-          {t('replyPermissionLabel')}
-        </label>
-        <select
-          id="replyPermission"
-          name="replyPermission"
-          defaultValue="everyone"
-          className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
-        >
-          <option value="everyone">{t('replyPermission_everyone')}</option>
-          <option value="followers">{t('replyPermission_followers')}</option>
-          <option value="nobody">{t('replyPermission_nobody')}</option>
-        </select>
-      </div>
+      <input type="hidden" name="replyPermission" value="everyone" />
 
       <Button
         type="submit"
