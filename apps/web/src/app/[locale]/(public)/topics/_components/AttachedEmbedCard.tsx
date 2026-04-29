@@ -61,7 +61,12 @@ export function AttachedEmbedCard({ attachment }: Props) {
       <div className="mt-2 mb-2 rounded-md border border-border bg-card overflow-hidden">
         <div className="p-3 space-y-2">
           <p className="text-sm font-medium text-foreground">{t('embed.chesscomCardTitle')}</p>
-          <div className="aspect-video w-full">
+          {/* aspect-square: chess.com emboard renders an 8x8 board (square).
+              Manual verification step (deferred to merge): confirm that the
+              chess.com emboard fits the square frame at the chosen width
+              breakpoints; if there is a controls bar that pushes the layout
+              out of square, revisit. */}
+          <div className="aspect-square w-full">
             <iframe
               src={`https://www.chess.com/emboard?id=${attachment.embedId}`}
               sandbox="allow-scripts"
