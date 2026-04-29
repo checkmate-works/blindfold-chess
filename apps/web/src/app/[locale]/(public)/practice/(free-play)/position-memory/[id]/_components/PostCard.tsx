@@ -30,6 +30,7 @@ export function PostCard({ post, locale, positionId }: Props) {
       toggleLikeAction={togglePositionMemoryPostLike}
       i18nNamespace="topics.positionMemory"
       justNowLabel={t('justNow')}
+      expandInline
     />
   );
 }

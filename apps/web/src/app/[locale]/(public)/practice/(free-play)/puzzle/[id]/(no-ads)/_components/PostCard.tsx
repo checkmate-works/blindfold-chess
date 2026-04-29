@@ -31,6 +31,7 @@ export function PostCard({ post, locale, positionId }: Props) {
       i18nNamespace="topics.positionPuzzle"
       justNowLabel={t('justNow')}
       isSpoiler={post.isSpoiler}
+      expandInline
     />
   );
 }

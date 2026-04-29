@@ -49,6 +49,17 @@ type Props = {
    * self-flag comments that reveal the solution. Defaults to `false`.
    */
   isSpoiler?: boolean;
+  /**
+   * When `true`, the "Show more" affordance expands the comment inline
+   * (lifts the truncate + line-clamp) instead of navigating to a post
+   * detail page. Used by surfaces that have no per-post detail page —
+   * currently position-memory and puzzle, where the postHref is a same-
+   * page hash anchor that does nothing visible to the reader. Chunks,
+   * which DO have a `/chunks/[slug]/posts/[postId]` page, leaves this
+   * `false` so its "Show more" continues to navigate. Defaults to
+   * `false`.
+   */
+  expandInline?: boolean;
 };
 
 export function BaseTopicPostCard({
@@ -67,15 +78,20 @@ export function BaseTopicPostCard({
   badge,
   extraContent,
   isSpoiler = false,
+  expandInline = false,
 }: Props) {
   const tTopics = useTranslations('topics');
   const [isRevealed, setIsRevealed] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const displayName = author?.displayName || author?.username || 'Anonymous';
   const profileHref = author?.username ? `/u/${author.username}` : null;
   const hasContent = content.length > 0;
   const contentPreview = truncateContent(content);
   const isTruncated = contentPreview !== content;
   const showSpoilerOverlay = isSpoiler && !isRevealed;
+  const showInlineExpanded = expandInline && isExpanded;
+  const bodyText = showInlineExpanded ? content : contentPreview;
+  const bodyId = `post-body-${postId}`;
 
   // Layout note (HTML / a11y): the card is intentionally NOT a single
   // top-level <a>. Wrapping the whole card in <Link> would force any
@@ -127,10 +143,15 @@ export function BaseTopicPostCard({
           {hasContent && (
             <div className="relative" aria-live="polite">
               <p
-                className="text-sm text-foreground whitespace-pre-wrap break-words line-clamp-3"
+                id={bodyId}
+                className={
+                  showInlineExpanded
+                    ? 'text-sm text-foreground whitespace-pre-wrap break-words'
+                    : 'text-sm text-foreground whitespace-pre-wrap break-words line-clamp-3'
+                }
                 aria-hidden={showSpoilerOverlay || undefined}
               >
-                <LinkedText text={contentPreview} locale={locale} />
+                <LinkedText text={bodyText} locale={locale} />
               </p>
               {showSpoilerOverlay && (
                 <button
@@ -154,9 +175,30 @@ export function BaseTopicPostCard({
               )}
             </div>
           )}
-          {hasContent && isTruncated && (!isSpoiler || isRevealed) && (
-            <span className="text-sm text-link-primary hover:underline">{tTopics('showMore')}</span>
-          )}
+          {hasContent &&
+            isTruncated &&
+            (!isSpoiler || isRevealed) &&
+            (expandInline ? (
+              !isExpanded && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsExpanded(true);
+                  }}
+                  aria-expanded={false}
+                  aria-controls={bodyId}
+                  className="text-sm text-link-primary hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm cursor-pointer"
+                >
+                  {tTopics('showMore')}
+                </button>
+              )
+            ) : (
+              <span className="text-sm text-link-primary hover:underline">
+                {tTopics('showMore')}
+              </span>
+            ))}
         </UserAvatar>
       </Link>
 

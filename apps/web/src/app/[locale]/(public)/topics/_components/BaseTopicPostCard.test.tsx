@@ -147,3 +147,95 @@ describe('BaseTopicPostCard isSpoiler', () => {
     expect(screen.queryByRole('button', { name: 'spoiler.overlayAriaLabel' })).toBeNull();
   });
 });
+
+// expandInline pins the "Show more" inline-expansion behavior used by the
+// position-memory and puzzle PostCards, where there is no per-post detail
+// page to navigate to. The default (`expandInline=false`, used by chunks)
+// keeps the legacy non-interactive `<span>` so that clicking the card area
+// continues to navigate via the surrounding <Link>.
+
+describe('BaseTopicPostCard expandInline', () => {
+  beforeEach(() => {
+    linkClickSpy.mockReset();
+  });
+
+  // The truncateContent util truncates above 200 chars; use a comfortably
+  // longer string so the preview is strictly shorter than the full text.
+  const longContent =
+    'A'.repeat(180) +
+    ' — and then the bishop sacrifice on h7 forces the king into a mating net via Ng5+ Kg8 Qh5.';
+
+  it('renders Show more as a non-interactive <span> by default (expandInline=false)', () => {
+    const { container } = render(<BaseTopicPostCard {...baseProps} content={longContent} />);
+
+    const showMore = screen.getByText('showMore');
+    expect(showMore.tagName).toBe('SPAN');
+    // Body is the truncated preview, not the full content.
+    expect(container.textContent).not.toContain('mating net via Ng5+');
+  });
+
+  it('renders Show more as a <button> when expandInline is true', () => {
+    render(<BaseTopicPostCard {...baseProps} content={longContent} expandInline />);
+
+    const showMore = screen.getByRole('button', { name: 'showMore' });
+    expect(showMore.tagName).toBe('BUTTON');
+    expect(showMore.getAttribute('type')).toBe('button');
+    expect(showMore.getAttribute('aria-controls')).toBe(`post-body-${baseProps.postId}`);
+    expect(showMore.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('expands the body inline and hides Show more after click (expandInline=true)', () => {
+    const { container } = render(
+      <BaseTopicPostCard {...baseProps} content={longContent} expandInline />
+    );
+
+    // Before click: only the truncated preview is rendered.
+    expect(container.textContent).not.toContain('mating net via Ng5+');
+
+    fireEvent.click(screen.getByRole('button', { name: 'showMore' }));
+
+    // After click: full content is rendered.
+    expect(container.textContent).toContain('mating net via Ng5+');
+    // Show more is gone (no more affordance to click; nothing left to expand).
+    expect(screen.queryByRole('button', { name: 'showMore' })).toBeNull();
+    // The body <p> no longer carries line-clamp-3 once expanded.
+    const bodyParagraph = container.querySelector(`p[id="post-body-${baseProps.postId}"]`);
+    expect(bodyParagraph?.className).not.toContain('line-clamp-3');
+  });
+
+  it('does not navigate the parent Link when Show more is clicked (expandInline=true)', () => {
+    render(<BaseTopicPostCard {...baseProps} content={longContent} expandInline />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'showMore' }));
+
+    // The parent <Link>'s React onClick must NOT be invoked, because the
+    // Show more button's onClick calls stopPropagation. The user opted in
+    // to inline expansion, not navigation.
+    expect(linkClickSpy).not.toHaveBeenCalled();
+  });
+
+  it('does not show Show more while a spoiler is still hidden (expandInline=true)', () => {
+    render(<BaseTopicPostCard {...baseProps} content={longContent} expandInline isSpoiler />);
+
+    expect(screen.getByRole('button', { name: 'spoiler.overlayAriaLabel' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'showMore' })).toBeNull();
+    expect(screen.queryByText('showMore')).toBeNull();
+  });
+
+  it('shows Show more after the spoiler is revealed and inline-expands on click', () => {
+    const { container } = render(
+      <BaseTopicPostCard {...baseProps} content={longContent} expandInline isSpoiler />
+    );
+
+    // Reveal the spoiler first.
+    fireEvent.click(screen.getByRole('button', { name: 'spoiler.overlayAriaLabel' }));
+    // Show more is now an inline-expand button.
+    const showMore = screen.getByRole('button', { name: 'showMore' });
+    expect(showMore.tagName).toBe('BUTTON');
+
+    fireEvent.click(showMore);
+
+    expect(container.textContent).toContain('mating net via Ng5+');
+    expect(screen.queryByRole('button', { name: 'showMore' })).toBeNull();
+  });
+});
