@@ -72,7 +72,12 @@ export default async function SquaresPage({ params, searchParams }: Props) {
       <PageTitle>{t('squares.title')}</PageTitle>
 
       <PagePanel>
-        {currentPage === 1 && <SquareBoard locale={locale} />}
+        {currentPage === 1 && (
+          <>
+            <SectionTitle>{t('squares.sectionTitle')}</SectionTitle>
+            <SquareBoard locale={locale} />
+          </>
+        )}
 
         {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE) && (
           <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
