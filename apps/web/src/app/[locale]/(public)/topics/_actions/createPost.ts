@@ -62,6 +62,14 @@ export async function createPostBase(params: {
    * URL is used.
    */
   redirectPath?: (postId: string) => string;
+  /**
+   * Self-declared "this comment contains spoilers" flag, persisted to
+   * `topic_posts.is_spoiler`. Surface today is `topic_type='position_puzzle'`
+   * only — every other call site can omit this and the column defaults to
+   * `false`. Wrappers that accept user input for this field should validate
+   * the FormData value upstream and pass a strict boolean here.
+   */
+  isSpoiler?: boolean;
   formData: FormData;
 }): Promise<CreatePostState> {
   const {
@@ -78,6 +86,7 @@ export async function createPostBase(params: {
     grantConfig,
     emitFeedItem,
     redirectPath,
+    isSpoiler,
     formData,
   } = params;
 
@@ -128,6 +137,7 @@ export async function createPostBase(params: {
         topicKey,
         content: contentResult.content,
         replyPermission,
+        ...(isSpoiler !== undefined ? { isSpoiler } : {}),
       })
       .returning({ id: topicPosts.id });
 

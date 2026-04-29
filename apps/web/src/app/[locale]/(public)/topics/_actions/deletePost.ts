@@ -16,6 +16,14 @@ const TOPIC_TYPE_TO_URL_SEGMENT: Record<string, string> = {
   square: 'squares',
   opening: 'openings',
   chunk: 'chunks',
+  // Position-backed topic types live under `/practice/...`, not
+  // `/topics/...`. The mapped segment is consumed by the legacy
+  // `/topics/{segment}/{key}` builder which we override below for these
+  // types — the entry is still present so cross-references that look up
+  // the segment by topicType (e.g. analytics, activity log labels) get a
+  // sensible value.
+  position_memory: 'practice/position-memory',
+  position_puzzle: 'practice/puzzle',
 };
 
 export async function deletePost(postId: string, locale: string): Promise<DeletePostResult> {
@@ -87,13 +95,19 @@ export async function deletePost(postId: string, locale: string): Promise<Delete
   });
 
   const urlSegment = TOPIC_TYPE_TO_URL_SEGMENT[post.topicType] ?? post.topicType;
-  // 'chunk' lives at /chunks/{slug}, not /topics/chunks/{slug} — chunks
-  // are catalog rows that happen to host comments via topic_posts, not a
-  // segment of the /topics route tree.
-  const detailPath =
-    post.topicType === 'chunk'
-      ? `/${locale}/chunks/${post.topicKey}`
-      : `/${locale}/topics/${urlSegment}/${post.topicKey}`;
+  // 'chunk' lives at /chunks/{slug}, and `position_memory` / `position_puzzle`
+  // live under /practice/{kind}/{id} — these topic types host comments via
+  // topic_posts but are not segments of the /topics route tree.
+  let detailPath: string;
+  if (post.topicType === 'chunk') {
+    detailPath = `/${locale}/chunks/${post.topicKey}`;
+  } else if (post.topicType === 'position_memory') {
+    detailPath = `/${locale}/practice/position-memory/${post.topicKey}`;
+  } else if (post.topicType === 'position_puzzle') {
+    detailPath = `/${locale}/practice/puzzle/${post.topicKey}`;
+  } else {
+    detailPath = `/${locale}/topics/${urlSegment}/${post.topicKey}`;
+  }
   revalidatePath(detailPath);
 
   return { success: true };

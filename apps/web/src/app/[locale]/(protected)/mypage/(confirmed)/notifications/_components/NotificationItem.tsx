@@ -150,6 +150,27 @@ export function NotificationItem({ notification, currentUsername }: Props) {
     return `${topicType}s`;
   }
 
+  /**
+   * Build the post-detail URL for a notification keyed off `topicType`.
+   *
+   * `topic_posts` is polymorphic, but the routes that render those posts
+   * are not — squares/openings live under `/topics/...`, while
+   * `position_memory` / `position_puzzle` live under `/practice/...`. Until
+   * (or unless) post-detail pages are added under `/practice/...`, those
+   * notifications point back at the parent position page; the trailing
+   * `#post-{postId}` anchor scrolls to the comment in the inline list.
+   */
+  function buildPostDetailUrl(topicType: string, topicKey: string, postId: string): string {
+    if (topicType === 'position_memory') {
+      return `/practice/position-memory/${topicKey}#post-${postId}`;
+    }
+    if (topicType === 'position_puzzle') {
+      return `/practice/puzzle/${topicKey}#post-${postId}`;
+    }
+    const segment = getTopicSegment(topicType);
+    return `/topics/${segment}/${topicKey}/posts/${postId}`;
+  }
+
   function getLink(): string | null {
     if (notification.type === 'follow' && actor) {
       return `/u/${actor.username}`;
@@ -183,8 +204,11 @@ export function NotificationItem({ notification, currentUsername }: Props) {
         notification.type === 'new_post') &&
       isPostMetadata(notification.metadata)
     ) {
-      const segment = getTopicSegment(notification.metadata.topicType);
-      const base = `/topics/${segment}/${notification.metadata.topicKey}/posts/${notification.metadata.postId}`;
+      const base = buildPostDetailUrl(
+        notification.metadata.topicType,
+        notification.metadata.topicKey,
+        notification.metadata.postId
+      );
       if (notification.type === 'reply' && isReplyMetadata(notification.metadata)) {
         return `${base}#reply-${notification.metadata.replyId}`;
       }

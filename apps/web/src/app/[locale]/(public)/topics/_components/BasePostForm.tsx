@@ -20,6 +20,14 @@ type Props = {
   beforeContent?: (markDirty: () => void) => ReactNode;
   /** Callback when content textarea value changes (receives whether textarea has content) */
   onContentChange?: (hasContent: boolean) => void;
+  /**
+   * When `true`, render an `isSpoiler` checkbox below the content textarea.
+   * Currently surfaced only by the puzzle comment form so the author can
+   * self-flag a comment that reveals the solution. The checkbox name is
+   * `isSpoiler` and the value submitted is the standard `'on'` — the
+   * Server Action wrapper is responsible for normalizing it to a boolean.
+   */
+  enableSpoilerToggle?: boolean;
 };
 
 /**
@@ -44,8 +52,10 @@ export function BasePostForm({
   contentRequired = true,
   beforeContent,
   onContentChange,
+  enableSpoilerToggle = false,
 }: Props) {
   const t = useTranslations(translationNamespace);
+  const tTopics = useTranslations('topics');
   const tGlobal = useTranslations();
   const tUnsaved = useTranslations('unsavedChanges');
   const [state, formAction, isPending] = useActionState(action, {});
@@ -95,6 +105,18 @@ export function BasePostForm({
       </div>
 
       <input type="hidden" name="replyPermission" value="everyone" />
+
+      {enableSpoilerToggle && (
+        <label className="flex items-center gap-2 text-sm text-foreground">
+          <input
+            type="checkbox"
+            name="isSpoiler"
+            className="h-4 w-4 rounded border-border"
+            onChange={() => setIsDirty(true)}
+          />
+          {tTopics('spoiler.toggleLabel')}
+        </label>
+      )}
 
       <Button
         type="submit"

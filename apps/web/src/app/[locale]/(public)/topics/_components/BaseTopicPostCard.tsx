@@ -41,6 +41,13 @@ type Props = {
   justNowLabel: string;
   badge?: ReactNode;
   extraContent?: ReactNode;
+  /**
+   * When `true`, the post body is wrapped in a `<details>` element so the
+   * preview is hidden behind a "Show solution" disclosure. Currently set
+   * by the puzzle PostCard, where authors self-flag comments that reveal
+   * the solution. Defaults to `false`.
+   */
+  isSpoiler?: boolean;
 };
 
 export function BaseTopicPostCard({
@@ -58,6 +65,7 @@ export function BaseTopicPostCard({
   justNowLabel,
   badge,
   extraContent,
+  isSpoiler = false,
 }: Props) {
   const tTopics = useTranslations('topics');
   const displayName = author?.displayName || author?.username || 'Anonymous';
@@ -97,12 +105,22 @@ export function BaseTopicPostCard({
             </time>
             {badge}
           </div>
-          {hasContent && (
-            <p className="text-sm text-foreground whitespace-pre-wrap break-words line-clamp-3">
-              <LinkedText text={contentPreview} locale={locale} />
-            </p>
-          )}
-          {hasContent && isTruncated && (
+          {hasContent &&
+            (isSpoiler ? (
+              <details className="text-sm">
+                <summary className="cursor-pointer text-link-primary hover:underline">
+                  {tTopics('spoiler.detailsSummary')}
+                </summary>
+                <p className="mt-2 text-foreground whitespace-pre-wrap break-words line-clamp-3">
+                  <LinkedText text={contentPreview} locale={locale} />
+                </p>
+              </details>
+            ) : (
+              <p className="text-sm text-foreground whitespace-pre-wrap break-words line-clamp-3">
+                <LinkedText text={contentPreview} locale={locale} />
+              </p>
+            ))}
+          {hasContent && isTruncated && !isSpoiler && (
             <span className="text-sm text-link-primary hover:underline">{tTopics('showMore')}</span>
           )}
         </UserAvatar>
