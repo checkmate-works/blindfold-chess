@@ -10,7 +10,22 @@ export default async function OpeningsLoading() {
       <PageTitle>{t('openings.title')}</PageTitle>
 
       <PagePanel>
-        <div className="mb-6">
+        <SectionTitle>{t('openings.recentPosts')}</SectionTitle>
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="bg-card border border-border rounded-lg p-4 animate-pulse">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-6 h-6 bg-muted rounded-full" />
+                <div className="h-4 bg-muted rounded w-24" />
+              </div>
+              <div className="h-3 bg-muted rounded w-20 mb-2" />
+              <div className="h-4 bg-muted rounded w-full mb-1" />
+              <div className="h-4 bg-muted rounded w-4/5" />
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-8 mb-6">
           <SectionTitle>
             <div className="h-6 w-32 bg-muted rounded animate-pulse inline-block align-middle" />
           </SectionTitle>
