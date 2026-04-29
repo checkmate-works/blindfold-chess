@@ -3343,6 +3343,7 @@
       "title": "Squares",
       "description": "Select a square to view and share discussions",
       "pageTitle": "Squares",
+      "sectionTitle": "Choose Square",
       "postCount": "{count, plural, one {# post} other {# posts}}",
       "noPosts": "No posts yet.",
       "newPost": "Share your thoughts",

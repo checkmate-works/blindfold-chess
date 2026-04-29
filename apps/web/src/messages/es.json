@@ -3190,6 +3190,7 @@
       "title": "Casillas",
       "description": "Selecciona una casilla para ver y compartir discusiones",
       "pageTitle": "Casillas",
+      "sectionTitle": "Elegir Casilla",
       "postCount": "{count, plural, one {# publicación} other {# publicaciones}}",
       "noPosts": "Aún no hay publicaciones.",
       "newPost": "Comparte tu opinión",

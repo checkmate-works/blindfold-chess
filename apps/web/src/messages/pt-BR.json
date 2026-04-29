@@ -3343,6 +3343,7 @@
       "title": "Casas",
       "description": "Selecione uma casa para ver e compartilhar discussões",
       "pageTitle": "Casas",
+      "sectionTitle": "Escolher Casa",
       "postCount": "{count, plural, one {# publicação} other {# publicações}}",
       "noPosts": "Ainda não há publicações.",
       "newPost": "Compartilhe sua opinião",

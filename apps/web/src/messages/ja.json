@@ -3239,6 +3239,7 @@
       "title": "マス目",
       "description": "マス目を選んで議論を閲覧・共有しましょう",
       "pageTitle": "Squares",
+      "sectionTitle": "マスを選択",
       "postCount": "{count}件の投稿",
       "noPosts": "まだ投稿がありません。",
       "newPost": "あなたの考えを投稿",
