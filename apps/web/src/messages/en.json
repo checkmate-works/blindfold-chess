@@ -3107,6 +3107,7 @@
     "moreTopicPosts": "More topics",
     "showMore": "Show more",
     "showLess": "Show less",
+    "permalinkAriaLabel": "View this post",
     "categories": {
       "squares": {
         "title": "Squares",

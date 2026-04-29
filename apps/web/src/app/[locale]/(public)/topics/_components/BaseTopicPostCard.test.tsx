@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { BaseTopicPostCard } from './BaseTopicPostCard';
 
@@ -17,14 +17,17 @@ vi.mock('@/i18n/use-safe-translations', () => ({
   useSafeTranslations: () => (key: string) => key,
 }));
 
-// Spy used by the propagation test below. `linkClickSpy` is reset per-test
-// via `beforeEach` and stands in for whatever click handler the real Link
-// would attach to perform navigation.
-const linkClickSpy = vi.fn();
-
 vi.mock('@/i18n/routing', () => ({
-  Link: ({ href, children }: { href: string; children: React.ReactNode }) => (
-    <a href={typeof href === 'string' ? href : '#'} onClick={linkClickSpy}>
+  Link: ({
+    href,
+    children,
+    'aria-label': ariaLabel,
+  }: {
+    href: string;
+    children: React.ReactNode;
+    'aria-label'?: string;
+  }) => (
+    <a href={typeof href === 'string' ? href : '#'} aria-label={ariaLabel}>
       {children}
     </a>
   ),
@@ -64,10 +67,6 @@ const baseProps = {
 };
 
 describe('BaseTopicPostCard isSpoiler', () => {
-  beforeEach(() => {
-    linkClickSpy.mockReset();
-  });
-
   it('renders content directly with no overlay when isSpoiler is false', () => {
     const { container } = render(<BaseTopicPostCard {...baseProps} />);
 
@@ -109,18 +108,15 @@ describe('BaseTopicPostCard isSpoiler', () => {
     expect(bodyParagraph?.parentElement?.getAttribute('aria-live')).toBe('polite');
   });
 
-  it('does not propagate the overlay click to the parent Link (no navigation)', () => {
-    render(<BaseTopicPostCard {...baseProps} isSpoiler />);
-
-    const overlay = screen.getByRole('button', { name: 'spoiler.overlayAriaLabel' });
-    fireEvent.click(overlay);
-
-    // The parent <Link>'s React onClick must NOT be invoked, because
-    // overlay's onClick calls stopPropagation. This is what guarantees the
-    // user does not get navigated to the post detail page when toggling
-    // the spoiler reveal.
-    expect(linkClickSpy).not.toHaveBeenCalled();
-    expect(screen.queryByRole('button', { name: 'spoiler.overlayAriaLabel' })).toBeNull();
+  it('renders the spoiler overlay <button> as a sibling of any Link, not nested inside one', () => {
+    // Structural invariant: the overlay <button> must NOT live inside an
+    // <a> element. <button> nested in <a> is invalid HTML (interactive
+    // content inside interactive content) and the click would also be
+    // interpreted as link activation. The card uses a timestamp-only
+    // permalink instead of a card-wide <Link>, so this is now a pure
+    // DOM-shape contract — no event propagation tricks required.
+    const { container } = render(<BaseTopicPostCard {...baseProps} isSpoiler />);
+    expect(container.querySelectorAll('a button')).toHaveLength(0);
   });
 
   it('does not render the "show more" hint while the spoiler is still hidden', () => {
@@ -151,25 +147,24 @@ describe('BaseTopicPostCard isSpoiler', () => {
 // expandInline pins the "Show more" inline-expansion behavior used by the
 // position-memory and puzzle PostCards, where there is no per-post detail
 // page to navigate to. The default (`expandInline=false`, used by chunks)
-// keeps the legacy non-interactive `<span>` so that clicking the card area
-// continues to navigate via the surrounding <Link>.
+// renders Show more as a permalink <Link> to the post detail page.
 
 describe('BaseTopicPostCard expandInline', () => {
-  beforeEach(() => {
-    linkClickSpy.mockReset();
-  });
-
   // The truncateContent util truncates above 200 chars; use a comfortably
   // longer string so the preview is strictly shorter than the full text.
   const longContent =
     'A'.repeat(180) +
     ' — and then the bishop sacrifice on h7 forces the king into a mating net via Ng5+ Kg8 Qh5.';
 
-  it('renders Show more as a non-interactive <span> by default (expandInline=false)', () => {
+  it('renders Show more as a permalink <a> by default (expandInline=false)', () => {
     const { container } = render(<BaseTopicPostCard {...baseProps} content={longContent} />);
 
+    // Show more navigates to the post detail page when expandInline is
+    // false (used by chunks). It must be a real <a> so crawlers can
+    // discover the post URL even from feed pages.
     const showMore = screen.getByText('showMore');
-    expect(showMore.tagName).toBe('SPAN');
+    expect(showMore.tagName).toBe('A');
+    expect(showMore.getAttribute('href')).toBe(baseProps.postHref);
     // Body is the truncated preview, not the full content.
     expect(container.textContent).not.toContain('mating net via Ng5+');
   });
@@ -203,17 +198,6 @@ describe('BaseTopicPostCard expandInline', () => {
     expect(bodyParagraph?.className).not.toContain('line-clamp-3');
   });
 
-  it('does not navigate the parent Link when Show more is clicked (expandInline=true)', () => {
-    render(<BaseTopicPostCard {...baseProps} content={longContent} expandInline />);
-
-    fireEvent.click(screen.getByRole('button', { name: 'showMore' }));
-
-    // The parent <Link>'s React onClick must NOT be invoked, because the
-    // Show more button's onClick calls stopPropagation. The user opted in
-    // to inline expansion, not navigation.
-    expect(linkClickSpy).not.toHaveBeenCalled();
-  });
-
   it('does not show Show more while a spoiler is still hidden (expandInline=true)', () => {
     render(<BaseTopicPostCard {...baseProps} content={longContent} expandInline isSpoiler />);
 
@@ -237,5 +221,31 @@ describe('BaseTopicPostCard expandInline', () => {
 
     expect(container.textContent).toContain('mating net via Ng5+');
     expect(screen.queryByRole('button', { name: 'showMore' })).toBeNull();
+  });
+});
+
+// Structural HTML validity contract — pinned because every comment surface
+// renders user-submitted content via <LinkedText>, which emits inline <a>
+// elements for URLs in the post body. Wrapping the card in an outer <Link>
+// would nest <a> in <a> (invalid HTML, hydration error in React) and would
+// also nest the spoiler <button>, expand-inline <button>, and the
+// LikeButton inside an anchor. The card therefore exposes navigation only
+// via the timestamp permalink Link.
+describe('BaseTopicPostCard nested-anchor invariant', () => {
+  it('does NOT render any <a> inside another <a> (no <a><a>)', () => {
+    const { container } = render(<BaseTopicPostCard {...baseProps} />);
+    expect(container.querySelectorAll('a a')).toHaveLength(0);
+  });
+
+  it('renders the timestamp as a permalink <a> with the post detail href', () => {
+    render(<BaseTopicPostCard {...baseProps} />);
+
+    const permalink = screen.getByRole('link', { name: 'permalinkAriaLabel' });
+    expect(permalink.tagName).toBe('A');
+    expect(permalink.getAttribute('href')).toBe(baseProps.postHref);
+    // The relative timestamp must live inside the permalink so crawlers see
+    // the link as the timestamp permalink (Twitter / Mastodon / GitHub
+    // pattern).
+    expect(permalink.querySelector('time')).not.toBeNull();
   });
 });

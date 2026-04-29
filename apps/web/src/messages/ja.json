@@ -3003,6 +3003,7 @@
     "moreTopicPosts": "トピックをもっと見る",
     "showMore": "さらに表示",
     "showLess": "閉じる",
+    "permalinkAriaLabel": "この投稿を表示",
     "categories": {
       "squares": {
         "title": "マス目",
