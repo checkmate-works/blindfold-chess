@@ -3,9 +3,11 @@ import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
+import { Button } from '@/app/_components';
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
+import { FaPlusCircle } from 'react-icons/fa';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getLinkedChunksForPosition } from '@/lib/chunks/queries';
@@ -69,6 +71,7 @@ export default async function PositionDetailPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'practice.positionMemory' });
   const tComments = await getTranslations({ locale, namespace: 'topics.positionMemory' });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
+  const tPlay = await getTranslations({ locale, namespace: 'play' });
 
   const row = await getPositionWithProfileById({ id, type: 'memory' });
 
@@ -134,6 +137,13 @@ export default async function PositionDetailPage({ params }: Props) {
 
           <div className="max-w-md mx-auto">
             <PositionDetailBoard fen={position.fen} flipped={isBlackToMove} />
+            <div className="flex justify-center mt-4">
+              <Link href={`/games/new/position?fen=${encodeURIComponent(position.fen)}`}>
+                <Button asChild variant="secondary" icon={<FaPlusCircle className="w-3 h-3" />}>
+                  {tPlay('newGameFromHere')}
+                </Button>
+              </Link>
+            </div>
           </div>
 
           <RelatedChunks chunks={relatedChunks} locale={locale} />

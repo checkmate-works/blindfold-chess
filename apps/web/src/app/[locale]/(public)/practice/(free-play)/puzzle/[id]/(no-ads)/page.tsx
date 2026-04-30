@@ -12,6 +12,7 @@ import { notFound } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
+import { FaPlusCircle } from 'react-icons/fa';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getLinkedChunksForPosition } from '@/lib/chunks/queries';
@@ -72,6 +73,7 @@ export default async function PuzzleDetailPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'practice.puzzle' });
   const tComments = await getTranslations({ locale, namespace: 'topics.positionPuzzle' });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
+  const tPlay = await getTranslations({ locale, namespace: 'play' });
 
   const row = await loadPuzzleWithSolutions(id);
 
@@ -135,6 +137,14 @@ export default async function PuzzleDetailPage({ params }: Props) {
           )}
 
           <PuzzlePiecesInfo fen={position.fen} locale={locale} />
+
+          <div className="flex justify-center">
+            <Link href={`/games/new/position?fen=${encodeURIComponent(position.fen)}`}>
+              <Button asChild variant="secondary" icon={<FaPlusCircle className="w-3 h-3" />}>
+                {tPlay('newGameFromHere')}
+              </Button>
+            </Link>
+          </div>
 
           <RelatedChunks chunks={relatedChunks} locale={locale} />
 
