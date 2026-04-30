@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 
 import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -83,15 +83,39 @@ export function BaseTopicPostCard({
   const tTopics = useTranslations('topics');
   const [isRevealed, setIsRevealed] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  // CSS `line-clamp-3` can clip content that JS-side `truncateContent` left
+  // untouched — e.g. a sub-200-char comment with multiple paragraph breaks
+  // still overflows three visual lines. We measure the rendered body to
+  // detect that case so "Show more" appears whenever the reader actually
+  // can't see the full text.
+  const [isClamped, setIsClamped] = useState(false);
+  const bodyRef = useRef<HTMLParagraphElement>(null);
   const displayName = author?.displayName || author?.username || 'Anonymous';
   const profileHref = author?.username ? `/u/${author.username}` : null;
   const hasContent = content.length > 0;
   const contentPreview = truncateContent(content);
-  const isTruncated = contentPreview !== content;
   const showSpoilerOverlay = isSpoiler && !isRevealed;
   const showInlineExpanded = expandInline && isExpanded;
   const bodyText = showInlineExpanded ? content : contentPreview;
+  const isTruncated = contentPreview !== content || isClamped;
   const bodyId = `post-body-${postId}`;
+
+  useEffect(() => {
+    if (showInlineExpanded) {
+      setIsClamped(false);
+      return;
+    }
+    const el = bodyRef.current;
+    if (!el) return;
+    const measure = () => {
+      setIsClamped(el.scrollHeight > el.clientHeight + 1);
+    };
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [showInlineExpanded, bodyText]);
 
   // Layout note (HTML / a11y): the card MUST NOT wrap its body in a
   // top-level <a>. The body renders user-submitted content via
@@ -150,6 +174,7 @@ export function BaseTopicPostCard({
           <div className="relative" aria-live="polite">
             <p
               id={bodyId}
+              ref={bodyRef}
               className={
                 showInlineExpanded
                   ? 'text-sm text-foreground whitespace-pre-wrap break-words'

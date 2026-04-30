@@ -222,6 +222,48 @@ describe('BaseTopicPostCard expandInline', () => {
     expect(container.textContent).toContain('mating net via Ng5+');
     expect(screen.queryByRole('button', { name: 'showMore' })).toBeNull();
   });
+
+  // Regression: a sub-200-char comment with multiple paragraph breaks
+  // (e.g. an opening line, a blank line, then a longer paragraph that
+  // wraps within line-clamp-3) is NOT cut by JS-side `truncateContent`,
+  // but IS cut visually by the `line-clamp-3` style on the body. Without
+  // measuring overflow, "Show more" never appeared and the reader was
+  // stuck looking at half a comment with no way to expand it. The body
+  // measures its own scrollHeight vs clientHeight to detect that case.
+  it('shows Show more when CSS line-clamp visually clips a sub-200-char comment', () => {
+    const originalScrollHeight = Object.getOwnPropertyDescriptor(Element.prototype, 'scrollHeight');
+    const originalClientHeight = Object.getOwnPropertyDescriptor(Element.prototype, 'clientHeight');
+    Object.defineProperty(Element.prototype, 'scrollHeight', {
+      configurable: true,
+      get: () => 200,
+    });
+    Object.defineProperty(Element.prototype, 'clientHeight', {
+      configurable: true,
+      get: () => 60,
+    });
+
+    try {
+      const subThresholdMultiParagraph =
+        'This is a good problem!\n\n' +
+        'I thought it was a Discover Attack with Ng1, but surprisingly, the king still had an escape route.\n' +
+        'It was difficult for me to find a mate in one move.';
+      // Sanity-check the precondition: under the JS truncate threshold.
+      expect(subThresholdMultiParagraph.length).toBeLessThan(200);
+
+      render(
+        <BaseTopicPostCard {...baseProps} content={subThresholdMultiParagraph} expandInline />
+      );
+
+      expect(screen.getByRole('button', { name: 'showMore' })).toBeTruthy();
+    } finally {
+      if (originalScrollHeight) {
+        Object.defineProperty(Element.prototype, 'scrollHeight', originalScrollHeight);
+      }
+      if (originalClientHeight) {
+        Object.defineProperty(Element.prototype, 'clientHeight', originalClientHeight);
+      }
+    }
+  });
 });
 
 // Structural HTML validity contract — pinned because every comment surface
