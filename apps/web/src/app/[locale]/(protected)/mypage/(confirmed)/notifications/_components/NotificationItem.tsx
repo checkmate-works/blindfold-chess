@@ -85,6 +85,8 @@ export function NotificationItem({ notification, currentUsername }: Props) {
         return t('replyMessage', { actor: actorName });
       case 'new_post':
         return t('newPostMessage', { actor: actorName });
+      case 'new_comment_on_topic':
+        return t('newCommentOnTopicMessage', { actor: actorName });
       case 'new_position': {
         // Exhaustive `PositionType` dispatch — the `never` check at the
         // bottom forces this switch to be updated whenever a new
@@ -201,7 +203,8 @@ export function NotificationItem({ notification, currentUsername }: Props) {
     if (
       (notification.type === 'like' ||
         notification.type === 'reply' ||
-        notification.type === 'new_post') &&
+        notification.type === 'new_post' ||
+        notification.type === 'new_comment_on_topic') &&
       isPostMetadata(notification.metadata)
     ) {
       const base = buildPostDetailUrl(

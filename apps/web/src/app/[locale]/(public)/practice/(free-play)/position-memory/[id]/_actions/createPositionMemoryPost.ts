@@ -13,6 +13,8 @@ export async function createPositionMemoryPost(
   _prevState: CreatePostState,
   formData: FormData
 ): Promise<CreatePostState> {
+  const position = await getPositionById({ id: positionId, type: 'memory' });
+
   return createPostBase({
     locale,
     topicIdentifier: positionId,
@@ -23,12 +25,13 @@ export async function createPositionMemoryPost(
     // for `position_memory` so any code path that derives URLs from this
     // value stays consistent.
     urlSegment: 'practice/position-memory',
-    validateTopic: async (id) => (await getPositionById({ id, type: 'memory' })) !== null,
+    validateTopic: () => position !== null,
     invalidTopicError: 'Invalid position',
     rateLimit: RATE_LIMITS.createPost,
     validateContent,
     grantConfig: null,
     emitFeedItem: false,
+    topicAuthorId: position?.userId,
     redirectPath: (postId) =>
       `/${locale}/practice/position-memory/${positionId}?toast=post_created#post-${postId}`,
     formData,

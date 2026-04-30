@@ -20,19 +20,22 @@ export async function createPositionPuzzlePost(
   const rawSpoiler = formData.get('isSpoiler');
   const isSpoiler = rawSpoiler === 'on' || rawSpoiler === 'true';
 
+  const position = await getPositionById({ id: positionId, type: 'puzzle' });
+
   return createPostBase({
     locale,
     topicIdentifier: positionId,
     topicType: 'position_puzzle',
     topicKey: positionId,
     urlSegment: 'practice/puzzle',
-    validateTopic: async (id) => (await getPositionById({ id, type: 'puzzle' })) !== null,
+    validateTopic: () => position !== null,
     invalidTopicError: 'Invalid position',
     rateLimit: RATE_LIMITS.createPost,
     validateContent,
     grantConfig: null,
     emitFeedItem: false,
     isSpoiler,
+    topicAuthorId: position?.userId,
     redirectPath: (postId) =>
       `/${locale}/practice/puzzle/${positionId}?toast=post_created#post-${postId}`,
     formData,

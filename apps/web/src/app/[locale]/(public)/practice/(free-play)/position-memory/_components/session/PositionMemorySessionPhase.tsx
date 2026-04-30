@@ -73,7 +73,7 @@ export function PositionMemorySessionPhase({
 }: Props) {
   if (phase === 'memorize' && originalPosition) {
     return (
-      <div id="position-memory-session" className="min-h-screen">
+      <div id="position-memory-session">
         <PositionMemoryMemorize
           position={originalPosition}
           memorizeTimeLeft={memorizeTimeLeft}

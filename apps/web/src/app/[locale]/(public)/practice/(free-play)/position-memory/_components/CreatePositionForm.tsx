@@ -12,6 +12,7 @@ import { flushSync } from 'react-dom';
 import { FaPlay } from 'react-icons/fa';
 
 import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
+import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { createPosition } from '../_actions/createPosition';
@@ -54,6 +55,7 @@ export function CreatePositionForm({ displayName }: Props = {}) {
   const [activeTab, setActiveTab] = useState<EditorTab>('board');
   const [flipped, setFlipped] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [clearBoardOpen, setClearBoardOpen] = useState(false);
 
   const isDirty =
     !submitted &&
@@ -228,7 +230,7 @@ export function CreatePositionForm({ displayName }: Props = {}) {
             <div className="flex justify-center">
               <button
                 type="button"
-                onClick={handleClearBoard}
+                onClick={() => setClearBoardOpen(true)}
                 className="px-3 py-1 text-sm rounded border border-border text-muted-foreground hover:bg-muted transition-colors"
               >
                 {t('clearBoard')}
@@ -277,6 +279,20 @@ export function CreatePositionForm({ displayName }: Props = {}) {
         message={tUnsaved('message')}
         confirmLabel={tUnsaved('confirm')}
         cancelLabel={tUnsaved('cancel')}
+      />
+
+      <ConfirmationModal
+        isOpen={clearBoardOpen}
+        title={t('clearBoardConfirmTitle')}
+        message={t('clearBoardConfirmMessage')}
+        confirmText={t('clearBoardConfirmConfirm')}
+        cancelText={t('clearBoardConfirmCancel')}
+        confirmVariant="danger"
+        onConfirm={() => {
+          setClearBoardOpen(false);
+          handleClearBoard();
+        }}
+        onCancel={() => setClearBoardOpen(false)}
       />
     </>
   );

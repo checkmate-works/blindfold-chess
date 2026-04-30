@@ -7,7 +7,11 @@ import { authenticateAndCheckBan } from '@/lib/auth';
 import { db, feedItems, topicPosts } from '@/lib/db';
 import type { AutomatedGrantType } from '@/lib/db/data/grant-types';
 import { GRANT_TYPE_DEFAULTS } from '@/lib/db/data/grant-types';
-import { createNotification, notifyFollowersOfNewPost } from '@/lib/notifications/notification';
+import {
+  createNotification,
+  notifyFollowersOfNewPost,
+  notifyTopicAuthorOfNewComment,
+} from '@/lib/notifications/notification';
 import type { RateLimitConfig } from '@/lib/security/rate-limit';
 import { checkRateLimit } from '@/lib/security/rate-limit';
 import { logActivityEvent } from '@/lib/users/activity-log';
@@ -70,6 +74,11 @@ export async function createPostBase(params: {
    * the FormData value upstream and pass a strict boolean here.
    */
   isSpoiler?: boolean;
+  /**
+   * Optional ID of the topic's author. When provided, the author will receive
+   * a notification about the new post (comment).
+   */
+  topicAuthorId?: string;
   formData: FormData;
 }): Promise<CreatePostState> {
   const {
@@ -87,6 +96,7 @@ export async function createPostBase(params: {
     emitFeedItem,
     redirectPath,
     isSpoiler,
+    topicAuthorId,
     formData,
   } = params;
 
@@ -203,6 +213,16 @@ export async function createPostBase(params: {
     topicType,
     topicKey,
   });
+
+  if (topicAuthorId) {
+    notifyTopicAuthorOfNewComment({
+      authorId: topicAuthorId,
+      actorId: user.id,
+      postId: inserted.id,
+      topicType,
+      topicKey,
+    });
+  }
 
   redirect(
     redirectPath

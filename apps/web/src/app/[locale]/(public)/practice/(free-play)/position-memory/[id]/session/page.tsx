@@ -6,6 +6,7 @@ import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 
 import { getPositionById } from '@/lib/positions/queries';
 
+import { PracticeSessionPage } from '@/app/[locale]/(public)/practice/_components/PracticeSessionPage';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -35,6 +36,7 @@ export default async function PositionSessionPage({ params, searchParams }: Prop
   const { locale, id } = await params;
   setRequestLocale(locale);
 
+  const t = await getTranslations({ locale });
   const sp = await searchParams;
   const timeLimit = clampTimeLimit(sp.timeLimit);
 
@@ -47,11 +49,21 @@ export default async function PositionSessionPage({ params, searchParams }: Prop
   const isBlackToMove = isBlackToMoveFromFen(position.fen);
 
   return (
-    <SinglePositionSession
+    <PracticeSessionPage
       locale={locale}
-      positionId={position.id}
-      timeLimit={timeLimit}
-      position={{ fen: position.fen, isBlackToMove }}
-    />
+      title={t('practice.positionMemory.title')}
+      breadcrumbItems={[
+        { label: t('navigation.practice'), href: '/practice' },
+        { label: t('practice.positionMemory.title'), href: '/practice/position-memory' },
+        { label: position.title || t('practice.positionMemory.session') },
+      ]}
+    >
+      <SinglePositionSession
+        locale={locale}
+        positionId={position.id}
+        timeLimit={timeLimit}
+        position={{ fen: position.fen, isBlackToMove }}
+      />
+    </PracticeSessionPage>
   );
 }
