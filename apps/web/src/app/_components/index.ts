@@ -7,6 +7,7 @@ export { Textarea } from './Textarea';
 export * from './BoardOverlay';
 export { BoardLayout } from './chess/BoardLayout';
 export { BoardSkeleton } from './chess/BoardSkeleton';
+export { FlipBoardButton } from './chess/FlipBoardButton';
 export type { SquareRenderInfo } from './chess/BoardLayout';
 export { ChessBoard } from './chess/ChessBoard';
 export { ChessPiece } from './chess/ChessPiece';

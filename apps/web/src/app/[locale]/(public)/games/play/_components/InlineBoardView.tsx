@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 
-import { ChessBoard } from '@/app/_components';
+import { ChessBoard, FlipBoardButton } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Side } from '@blindfold-chess/types';
-import { FaChevronDown, FaExchangeAlt, FaEye } from 'react-icons/fa';
+import { FaChevronDown, FaEye } from 'react-icons/fa';
 
 import type { FormattedPgnMove } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -124,14 +124,11 @@ export function InlineBoardView({
                   />
                 )}
               {onFlipBoard && (
-                <button
-                  type="button"
+                <FlipBoardButton
                   onClick={onFlipBoard}
-                  className="absolute right-3 p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
                   title={t('flipBoard')}
-                >
-                  <FaExchangeAlt className="w-3 h-3 rotate-90" />
-                </button>
+                  className="absolute right-3 p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                />
               )}
             </div>
           )}

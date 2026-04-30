@@ -5,11 +5,10 @@ import { useCallback, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { BoardSkeleton, UnsavedChangesDialog } from '@/app/_components';
+import { BoardSkeleton, FlipBoardButton, UnsavedChangesDialog } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 import { validateFen } from '@blindfold-chess/features/chess-core';
 import { flushSync } from 'react-dom';
-import { FaSyncAlt } from 'react-icons/fa';
 
 import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -156,14 +155,7 @@ export function CreatePositionForm() {
         {activeTab === 'board' && (
           <>
             <div className="flex justify-end mb-2">
-              <button
-                type="button"
-                onClick={handleFlip}
-                className="p-2 border border-border rounded-md hover:bg-muted"
-                title={t('flipBoard')}
-              >
-                <FaSyncAlt className="w-4 h-4" />
-              </button>
+              <FlipBoardButton onClick={handleFlip} title={t('flipBoard')} />
             </div>
             <div className="flex justify-center">
               <div className="w-full max-w-md">

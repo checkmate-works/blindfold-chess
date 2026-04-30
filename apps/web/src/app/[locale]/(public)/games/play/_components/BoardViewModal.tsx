@@ -2,10 +2,9 @@
 
 import { useEffect } from 'react';
 
-import { ChessBoard } from '@/app/_components';
+import { ChessBoard, FlipBoardButton } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Side } from '@blindfold-chess/types';
-import { FaExchangeAlt } from 'react-icons/fa';
 
 import type { EvaluationMark } from '@/lib/games/evaluation';
 
@@ -140,14 +139,11 @@ export function BoardViewModal({
                   />
                 )}
               {onFlipBoard && (
-                <button
-                  type="button"
+                <FlipBoardButton
                   onClick={onFlipBoard}
-                  className="absolute right-3 p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
                   title={t('flipBoard')}
-                >
-                  <FaExchangeAlt className="w-3 h-3 rotate-90" />
-                </button>
+                  className="absolute right-3 p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                />
               )}
             </div>
           )}

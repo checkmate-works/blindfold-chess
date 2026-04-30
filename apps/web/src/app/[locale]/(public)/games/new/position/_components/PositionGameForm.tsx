@@ -4,10 +4,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { BoardSkeleton, Button } from '@/app/_components';
+import { BoardSkeleton, Button, FlipBoardButton } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Side } from '@blindfold-chess/types';
-import { FaChevronDown, FaSyncAlt } from 'react-icons/fa';
+import { FaChevronDown } from 'react-icons/fa';
 
 import type { SkillLevel } from '@/lib/types';
 
@@ -195,13 +195,7 @@ export function PositionGameForm({ locale }: Props) {
     <div className="space-y-4">
       <SectionTitle>{t('customPosition')}</SectionTitle>
       <div className="flex justify-end mb-2">
-        <button
-          onClick={() => setFlipped((prev) => !prev)}
-          className="p-2 border border-border rounded-md hover:bg-muted"
-          title={t('flipBoard')}
-        >
-          <FaSyncAlt className="w-4 h-4" />
-        </button>
+        <FlipBoardButton onClick={() => setFlipped((prev) => !prev)} title={t('flipBoard')} />
       </div>
       {!isLoaded ? (
         <BoardSkeleton />
