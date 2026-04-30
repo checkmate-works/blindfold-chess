@@ -343,21 +343,7 @@ const cases: Case[] = [
     expect: '2 termos encontrados',
   },
 
-  // 9. practice.moveSequence.attempts
-  { locale: 'en', key: 'practice.moveSequence.attempts', count: 0, expect: '0 attempts' },
-  { locale: 'en', key: 'practice.moveSequence.attempts', count: 1, expect: '1 attempt' },
-  { locale: 'en', key: 'practice.moveSequence.attempts', count: 2, expect: '2 attempts' },
-  { locale: 'ja', key: 'practice.moveSequence.attempts', count: 0, expect: '0回試行' },
-  { locale: 'ja', key: 'practice.moveSequence.attempts', count: 1, expect: '1回試行' },
-  { locale: 'ja', key: 'practice.moveSequence.attempts', count: 2, expect: '2回試行' },
-  { locale: 'es', key: 'practice.moveSequence.attempts', count: 0, expect: '0 intentos' },
-  { locale: 'es', key: 'practice.moveSequence.attempts', count: 1, expect: '1 intento' },
-  { locale: 'es', key: 'practice.moveSequence.attempts', count: 2, expect: '2 intentos' },
-  { locale: 'pt-BR', key: 'practice.moveSequence.attempts', count: 0, expect: '0 tentativa' },
-  { locale: 'pt-BR', key: 'practice.moveSequence.attempts', count: 1, expect: '1 tentativa' },
-  { locale: 'pt-BR', key: 'practice.moveSequence.attempts', count: 2, expect: '2 tentativas' },
-
-  // 10. pgnInput.validWithMoves
+  // 9. pgnInput.validWithMoves
   { locale: 'en', key: 'pgnInput.validWithMoves', count: 0, expect: '✓ Valid PGN with 0 moves' },
   { locale: 'en', key: 'pgnInput.validWithMoves', count: 1, expect: '✓ Valid PGN with 1 move' },
   { locale: 'en', key: 'pgnInput.validWithMoves', count: 2, expect: '✓ Valid PGN with 2 moves' },
@@ -401,7 +387,7 @@ const cases: Case[] = [
     expect: '✓ PGN válido com 2 movimentos',
   },
 
-  // 11. practice.puzzle.preview.moveCount — added when the puzzle creation
+  // 10. practice.puzzle.preview.moveCount — added when the puzzle creation
   // preview page was introduced. Each locale provides its own plural shape;
   // ja keeps the non-plural counter "N 手" unchanged.
   { locale: 'en', key: 'practice.puzzle.preview.moveCount', count: 0, expect: '0 moves' },
@@ -419,8 +405,8 @@ const cases: Case[] = [
 ];
 
 describe('ICU plural integrity across locales', () => {
-  it('covers all 11 affected keys at counts 0, 1, 2 across en/ja/es/pt-BR (11 x 3 x 4 = 132 cases)', () => {
-    expect(cases).toHaveLength(132);
+  it('covers all 10 affected keys at counts 0, 1, 2 across en/ja/es/pt-BR (10 x 3 x 4 = 120 cases)', () => {
+    expect(cases).toHaveLength(120);
   });
 
   for (const c of cases) {
@@ -443,12 +429,6 @@ describe('ICU plural integrity across locales', () => {
       const out = format('pt-BR', 'play.result.operationSummary.times', 1);
       expect(out).toBe('1 vez');
       expect(out).not.toBe('1 vezes');
-    });
-
-    it('"1 tentativa" (not "1 tentativas")', () => {
-      const out = format('pt-BR', 'practice.moveSequence.attempts', 1);
-      expect(out).toBe('1 tentativa');
-      expect(out).not.toBe('1 tentativas');
     });
 
     it('"1 partida selecionada" (not "1 partidas selecionadas")', () => {

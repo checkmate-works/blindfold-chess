@@ -25,7 +25,6 @@ const STATIC_PAGES = [
   '/practice/position-memory',
   '/practice/fen',
   '/practice/knight-tour',
-  '/practice/move-sequence',
   '/practice/board-symmetry',
   '/practice/diagonal-quiz',
   '/practice/route-planner',

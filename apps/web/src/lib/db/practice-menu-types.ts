@@ -19,7 +19,6 @@ export const PRACTICE_MENU_TYPES = [
   'diagonal_quiz',
   'position_memory',
   'knight_tour',
-  'move_sequence',
   'algebraic_notation',
   'fen',
   'quadrant_anchors',

@@ -1967,7 +1967,7 @@ export type NewUserGrant = typeof userGrants.$inferInsert;
  * @description
  * A generic table that holds user-submitted chess positions.
  * Used across multiple practice modules: position-memory, puzzles,
- * move-sequence, and future modules that need a stored FEN with metadata.
+ * and future modules that need a stored FEN with metadata.
  *
  * @design No uniqueness constraint on FEN
  * The same FEN may appear in multiple rows with different titles and
