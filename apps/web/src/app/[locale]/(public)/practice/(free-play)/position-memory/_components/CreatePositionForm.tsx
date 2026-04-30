@@ -5,13 +5,14 @@ import { useCallback, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { UnsavedChangesDialog } from '@/app/_components';
+import { BoardSkeleton, UnsavedChangesDialog } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 import { validateFen } from '@blindfold-chess/features/chess-core';
 import { flushSync } from 'react-dom';
 import { FaSyncAlt } from 'react-icons/fa';
 
 import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
+import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { createPosition } from '../_actions/createPosition';
 
@@ -24,6 +25,7 @@ export function CreatePositionForm() {
   const t = useTranslations('practice.positionMemory.create');
   const tBoard = useTranslations('practice.positionMemory');
   const tUnsaved = useTranslations('unsavedChanges');
+  const { preferences, isLoaded } = useGamePreferences();
   const [fenInput, setFenInput] = useState('');
   const [boardFen, setBoardFen] = useState(EMPTY_BOARD_FEN);
   const [title, setTitle] = useState('');
@@ -165,14 +167,19 @@ export function CreatePositionForm() {
             </div>
             <div className="flex justify-center">
               <div className="w-full max-w-md">
-                <EditableChessBoard
-                  fen={boardFen}
-                  onFenChange={handleBoardChange}
-                  labels={editableBoardLabels}
-                  editable={true}
-                  flipped={flipped}
-                  showCoordinates={true}
-                />
+                {!isLoaded ? (
+                  <BoardSkeleton />
+                ) : (
+                  <EditableChessBoard
+                    fen={boardFen}
+                    onFenChange={handleBoardChange}
+                    labels={editableBoardLabels}
+                    editable={true}
+                    flipped={flipped}
+                    showCoordinates={true}
+                    boardTheme={preferences.boardTheme}
+                  />
+                )}
               </div>
             </div>
 

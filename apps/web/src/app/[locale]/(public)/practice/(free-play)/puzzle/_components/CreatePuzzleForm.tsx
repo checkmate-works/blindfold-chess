@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { Button, UnsavedChangesDialog } from '@/app/_components';
+import { BoardSkeleton, Button, UnsavedChangesDialog } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 import { executeMove, getTurnFromFen, validateFen } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
@@ -72,7 +72,7 @@ export function CreatePuzzleForm({ displayName }: Props = {}) {
   const tBoard = useTranslations('practice.puzzle');
   const tPlay = useTranslations('play');
   const tUnsaved = useTranslations('unsavedChanges');
-  const { preferences, updatePreferences } = useGamePreferences();
+  const { preferences, updatePreferences, isLoaded } = useGamePreferences();
 
   const defaultTitleRef = useRef(buildDefaultTitle(displayName));
   const [fenInput, setFenInput] = useState('');
@@ -490,14 +490,19 @@ export function CreatePuzzleForm({ displayName }: Props = {}) {
             </div>
             <div className="flex justify-center">
               <div className="w-full max-w-md">
-                <EditableChessBoard
-                  fen={boardFen}
-                  onFenChange={handleBoardChange}
-                  labels={editableBoardLabels}
-                  editable={true}
-                  flipped={flipped}
-                  showCoordinates={true}
-                />
+                {!isLoaded ? (
+                  <BoardSkeleton />
+                ) : (
+                  <EditableChessBoard
+                    fen={boardFen}
+                    onFenChange={handleBoardChange}
+                    labels={editableBoardLabels}
+                    editable={true}
+                    flipped={flipped}
+                    showCoordinates={true}
+                    boardTheme={preferences.boardTheme}
+                  />
+                )}
               </div>
             </div>
 
