@@ -121,6 +121,33 @@ export function CreatePositionForm() {
           </div>
         )}
 
+        <div>
+          <label htmlFor="title" className="block text-sm font-medium mb-1">
+            {t('titleLabel')} <span className="text-destructive">*</span>
+          </label>
+          <input
+            id="title"
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="w-full px-3 py-2 rounded border border-border bg-card text-foreground"
+            required
+          />
+        </div>
+
+        <div>
+          <label htmlFor="description" className="block text-sm font-medium mb-1">
+            {t('descriptionLabel')}
+          </label>
+          <textarea
+            id="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={4}
+            className="w-full px-3 py-2 rounded border border-border bg-card text-foreground"
+          />
+        </div>
+
         {/* Tab switcher — matches LeaderboardTabs style */}
         <nav className="flex rounded-lg bg-secondary p-1" role="tablist">
           <button
@@ -211,36 +238,9 @@ export function CreatePositionForm() {
           </div>
         )}
 
-        <div>
-          <label htmlFor="title" className="block text-sm font-medium mb-1">
-            {t('titleLabel')} <span className="text-destructive">*</span>
-          </label>
-          <input
-            id="title"
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-3 py-2 rounded border border-border bg-card text-foreground"
-            required
-          />
-        </div>
-
-        <div>
-          <label htmlFor="description" className="block text-sm font-medium mb-1">
-            {t('descriptionLabel')}
-          </label>
-          <textarea
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={4}
-            className="w-full px-3 py-2 rounded border border-border bg-card text-foreground"
-          />
-        </div>
-
         <button
           type="submit"
-          disabled={pending}
+          disabled={pending || !isFenValid || title.trim() === ''}
           className="w-full px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
         >
           {pending ? t('submitting') : t('submit')}
