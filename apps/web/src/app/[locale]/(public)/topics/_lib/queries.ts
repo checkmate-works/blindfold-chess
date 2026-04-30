@@ -2,6 +2,7 @@ import { and, asc, count, desc, eq, isNull } from 'drizzle-orm';
 
 import { db, profiles, topicPosts } from '@/lib/db';
 
+import type { TopicType } from './constants';
 import { attachPostMeta } from './post-meta';
 import { authorSelect, sortPosts } from './shared';
 import type { PostWithReplyMeta, SortMode, TopicPostWithAuthor } from './shared';
@@ -9,7 +10,7 @@ import type { PostWithReplyMeta, SortMode, TopicPostWithAuthor } from './shared'
 /**
  * Get the count of top-level posts for a specific topic type ('square' or 'opening').
  */
-export async function getPostCountByTopicType(topicType: 'square' | 'opening'): Promise<number> {
+export async function getPostCountByTopicType(topicType: TopicType): Promise<number> {
   const [result] = await db
     .select({ count: count() })
     .from(topicPosts)
@@ -28,7 +29,7 @@ export async function getPostCountByTopicType(topicType: 'square' | 'opening'): 
  * Base function shared by squares and openings.
  */
 export async function getTopLevelPostsByTopicKey(
-  topicType: 'square' | 'opening',
+  topicType: TopicType,
   topicKey: string
 ): Promise<TopicPostWithAuthor[]> {
   const results = await db
@@ -60,7 +61,7 @@ export async function getTopLevelPostsByTopicKey(
  */
 export async function getPostByIdAndTopicKey(
   postId: string,
-  topicType: 'square' | 'opening',
+  topicType: TopicType,
   topicKey: string
 ): Promise<TopicPostWithAuthor | null> {
   const results = await db
@@ -95,7 +96,7 @@ export async function getPostByIdAndTopicKey(
  * Base function shared by squares and openings.
  */
 export async function getRecentPostsByTopicType(
-  topicType: 'square' | 'opening',
+  topicType: TopicType,
   limit = 5,
   currentUserId?: string
 ): Promise<PostWithReplyMeta[]> {
@@ -129,7 +130,7 @@ export async function getRecentPostsByTopicType(
  * Base function shared by squares and openings.
  */
 export async function getPostsWithReplyMetaByTopicKey(
-  topicType: 'square' | 'opening',
+  topicType: TopicType,
   topicKey: string,
   currentUserId?: string,
   sortBy: SortMode = 'new'
@@ -144,7 +145,7 @@ export async function getPostsWithReplyMetaByTopicKey(
  * Get the count of top-level posts for a specific topicType + topicKey.
  */
 export async function getPostCountByTopicKey(
-  topicType: 'square' | 'opening',
+  topicType: TopicType,
   topicKey: string
 ): Promise<number> {
   const [result] = await db
@@ -168,7 +169,7 @@ export async function getPostCountByTopicKey(
  * since sorting depends on metadata (like counts, reply timestamps).
  */
 export async function getPostsWithReplyMetaPaginatedByTopicKey(
-  topicType: 'square' | 'opening',
+  topicType: TopicType,
   topicKey: string,
   limit: number,
   offset: number,
@@ -219,7 +220,7 @@ export async function getPostsWithReplyMetaPaginatedByTopicKey(
  * Base function shared by squares and openings (for simple cases without extra JOINs).
  */
 export async function getPostsByTopicTypePaginated(
-  topicType: 'square' | 'opening',
+  topicType: TopicType,
   limit: number,
   offset: number,
   currentUserId?: string

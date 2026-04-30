@@ -32,6 +32,18 @@ export type RateLimitConfig = {
 
 export const RATE_LIMITS = {
   createPost: { action: 'create_post', maxAttempts: 10, windowMs: 3_600_000 },
+  /**
+   * Per-user limit for posts that include a chess game attachment. Stricter
+   * than `createPost` because the attachment path can trigger an outbound
+   * Lichess fetch and writes additional rows. Apply IN ADDITION to the
+   * standard `createPost` limit so the user's overall create-post budget
+   * is not bypassed.
+   */
+  createPostWithAttachment: {
+    action: 'create_post_with_attachment',
+    maxAttempts: 5,
+    windowMs: 3_600_000,
+  },
   createReply: { action: 'create_reply', maxAttempts: 20, windowMs: 3_600_000 },
   toggleLike: { action: 'toggle_like', maxAttempts: 50, windowMs: 86_400_000 },
   toggleFollow: { action: 'toggle_follow', maxAttempts: 100, windowMs: 86_400_000 },

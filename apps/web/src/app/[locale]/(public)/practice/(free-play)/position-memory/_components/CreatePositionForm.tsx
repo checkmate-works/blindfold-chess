@@ -5,13 +5,15 @@ import { useCallback, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { UnsavedChangesDialog } from '@/app/_components';
+import { BoardSkeleton, Button, FlipBoardButton, UnsavedChangesDialog } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 import { validateFen } from '@blindfold-chess/features/chess-core';
 import { flushSync } from 'react-dom';
-import { FaSyncAlt } from 'react-icons/fa';
+import { FaPlay } from 'react-icons/fa';
 
 import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
+import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
+import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { createPosition } from '../_actions/createPosition';
 
@@ -19,14 +21,33 @@ const EMPTY_BOARD_FEN = '8/8/8/8/8/8/8/8 w - - 0 1';
 
 type EditorTab = 'board' | 'fen';
 
-export function CreatePositionForm() {
+function formatLocalIsoDate(d: Date): string {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function buildDefaultTitle(displayName: string | undefined): string {
+  if (displayName === undefined) return '';
+  const date = formatLocalIsoDate(new Date());
+  const trimmed = displayName.trim();
+  return trimmed ? `Position ${date} - ${trimmed}` : `Position ${date}`;
+}
+
+type Props = {
+  displayName?: string;
+};
+
+export function CreatePositionForm({ displayName }: Props = {}) {
   const router = useRouter();
   const t = useTranslations('practice.positionMemory.create');
   const tBoard = useTranslations('practice.positionMemory');
   const tUnsaved = useTranslations('unsavedChanges');
+  const { preferences, isLoaded } = useGamePreferences();
   const [fenInput, setFenInput] = useState('');
   const [boardFen, setBoardFen] = useState(EMPTY_BOARD_FEN);
-  const [title, setTitle] = useState('');
+  const [title, setTitle] = useState(() => buildDefaultTitle(displayName));
   const [description, setDescription] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [positionError, setPositionError] = useState(false);
@@ -34,6 +55,7 @@ export function CreatePositionForm() {
   const [activeTab, setActiveTab] = useState<EditorTab>('board');
   const [flipped, setFlipped] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [clearBoardOpen, setClearBoardOpen] = useState(false);
 
   const isDirty =
     !submitted &&
@@ -120,6 +142,33 @@ export function CreatePositionForm() {
           </div>
         )}
 
+        <div>
+          <label htmlFor="title" className="block text-sm font-medium mb-1">
+            {t('titleLabel')} <span className="text-destructive">*</span>
+          </label>
+          <input
+            id="title"
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="w-full px-3 py-2 rounded border border-border bg-card text-foreground"
+            required
+          />
+        </div>
+
+        <div>
+          <label htmlFor="description" className="block text-sm font-medium mb-1">
+            {t('descriptionLabel')}
+          </label>
+          <textarea
+            id="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={4}
+            className="w-full px-3 py-2 rounded border border-border bg-card text-foreground"
+          />
+        </div>
+
         {/* Tab switcher — matches LeaderboardTabs style */}
         <nav className="flex rounded-lg bg-secondary p-1" role="tablist">
           <button
@@ -154,25 +203,23 @@ export function CreatePositionForm() {
         {activeTab === 'board' && (
           <>
             <div className="flex justify-end mb-2">
-              <button
-                type="button"
-                onClick={handleFlip}
-                className="p-2 border border-border rounded-md hover:bg-muted"
-                title={t('flipBoard')}
-              >
-                <FaSyncAlt className="w-4 h-4" />
-              </button>
+              <FlipBoardButton onClick={handleFlip} title={t('flipBoard')} />
             </div>
             <div className="flex justify-center">
               <div className="w-full max-w-md">
-                <EditableChessBoard
-                  fen={boardFen}
-                  onFenChange={handleBoardChange}
-                  labels={editableBoardLabels}
-                  editable={true}
-                  flipped={flipped}
-                  showCoordinates={true}
-                />
+                {!isLoaded ? (
+                  <BoardSkeleton />
+                ) : (
+                  <EditableChessBoard
+                    fen={boardFen}
+                    onFenChange={handleBoardChange}
+                    labels={editableBoardLabels}
+                    editable={true}
+                    flipped={flipped}
+                    showCoordinates={true}
+                    boardTheme={preferences.boardTheme}
+                  />
+                )}
               </div>
             </div>
 
@@ -183,7 +230,7 @@ export function CreatePositionForm() {
             <div className="flex justify-center">
               <button
                 type="button"
-                onClick={handleClearBoard}
+                onClick={() => setClearBoardOpen(true)}
                 className="px-3 py-1 text-sm rounded border border-border text-muted-foreground hover:bg-muted transition-colors"
               >
                 {t('clearBoard')}
@@ -212,40 +259,16 @@ export function CreatePositionForm() {
           </div>
         )}
 
-        <div>
-          <label htmlFor="title" className="block text-sm font-medium mb-1">
-            {t('titleLabel')} <span className="text-destructive">*</span>
-          </label>
-          <input
-            id="title"
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-3 py-2 rounded border border-border bg-card text-foreground"
-            required
-          />
-        </div>
-
-        <div>
-          <label htmlFor="description" className="block text-sm font-medium mb-1">
-            {t('descriptionLabel')}
-          </label>
-          <textarea
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={4}
-            className="w-full px-3 py-2 rounded border border-border bg-card text-foreground"
-          />
-        </div>
-
-        <button
+        <Button
           type="submit"
-          disabled={pending}
-          className="w-full px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
+          variant="primary"
+          size="lg"
+          icon={<FaPlay />}
+          fullWidth
+          disabled={pending || !isFenValid || title.trim() === ''}
         >
           {pending ? t('submitting') : t('submit')}
-        </button>
+        </Button>
       </form>
 
       <UnsavedChangesDialog
@@ -256,6 +279,20 @@ export function CreatePositionForm() {
         message={tUnsaved('message')}
         confirmLabel={tUnsaved('confirm')}
         cancelLabel={tUnsaved('cancel')}
+      />
+
+      <ConfirmationModal
+        isOpen={clearBoardOpen}
+        title={t('clearBoardConfirmTitle')}
+        message={t('clearBoardConfirmMessage')}
+        confirmText={t('clearBoardConfirmConfirm')}
+        cancelText={t('clearBoardConfirmCancel')}
+        confirmVariant="danger"
+        onConfirm={() => {
+          setClearBoardOpen(false);
+          handleClearBoard();
+        }}
+        onCancel={() => setClearBoardOpen(false)}
       />
     </>
   );

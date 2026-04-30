@@ -419,6 +419,17 @@ export const topicPosts = pgTable(
     rootPostId: uuid('root_post_id'), // top-level post of the thread; NULL for top-level posts
     content: text('content').notNull(),
     replyPermission: varchar('reply_permission', { length: 20 }).notNull().default('everyone'),
+    /**
+     * Self-declared "this comment contains spoilers" flag. Currently surfaced
+     * by the UI only for `topic_type='position_puzzle'` (puzzle pages) — when
+     * `true`, the post body is rendered inside a `<details>` element so the
+     * solution is not revealed until the reader opts in. Stored on every row
+     * so the column can be reused for other spoiler-sensitive topic types
+     * (e.g. opening lines) without a migration. Defaults to `false`, so
+     * existing rows and topic types that do not expose the toggle behave
+     * exactly as before.
+     */
+    isSpoiler: boolean('is_spoiler').notNull().default(false),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true })
@@ -527,6 +538,304 @@ export const topicPostRatings = pgTable(
 
 export type TopicPostRating = typeof topicPostRatings.$inferSelect;
 export type NewTopicPostRating = typeof topicPostRatings.$inferInsert;
+
+/**
+ * PGN Game Attachments — PGN-stored chess game attached to a topic post.
+ *
+ * @description
+ * One topic_post can have at most one attached chess game. v1 supports two
+ * sources: user-pasted PGN, and Lichess URL (server-fetched into PGN at
+ * post-creation time). All attachments store a normalized PGN string —
+ * rendering always works from PGN, even for Lichess-sourced games.
+ *
+ * This table is `post_game_pgn_attachments` — the `pgn` infix disambiguates
+ * it from the sibling table `post_game_embed_attachments` (scaffold added in
+ * Phase A, SPEC1) which stores iframe embed attachments. The two tables are
+ * independent members of the `post_game_<kind>_attachments` family (Pattern 5
+ * per-kind tables; see `docs/design/SPEC1-embed-data-model-ADR.md`).
+ *
+ * @design 1:0..1 instead of 1:N (UNIQUE on post_id)
+ *
+ * v1 caps at one attachment per post. UNIQUE on post_id makes this an
+ * invariant of the schema, not a soft business rule. If multi-attachment
+ * is ever needed, drop the UNIQUE and add a `display_order` column —
+ * neither is forward-incompatible.
+ *
+ * @design Dedicated table instead of polymorphic `attachments`
+ *
+ * Unlike `likes` / `moderation_actions` / `feed_items` (which are truly
+ * polymorphic over many target types), attachments today and for the
+ * foreseeable future are only ever attached to topic_posts. A dedicated
+ * table mirrors the established 1:0..1 extension pattern used by
+ * `topic_post_ratings` above and lets us:
+ *   - express the 1:0..1 invariant via UNIQUE
+ *   - foreign-key cleanly to topic_posts (CASCADE on post delete)
+ *   - keep PGN-specific extracted columns (`header_white`, `result`, etc.)
+ *     typed and indexable instead of inside JSONB
+ *
+ * @design source is varchar, not pgEnum
+ *
+ * Same rationale as topic_type / target_type elsewhere in this file:
+ * varchar avoids ALTER TYPE migrations when 'inline_built' / 'chess_com'
+ * (if a future API path opens up) join the set.
+ *
+ * @design Always store normalized PGN, even for Lichess sources
+ *
+ * Rendering is unified to one path: `parsePgnWithFen` + replayable board.
+ * Lichess URL becomes `source='lichess'`, `source_url` populated, plus
+ * the fetched PGN saved verbatim. This keeps the viewer offline-resilient
+ * (no live Lichess dependency at view time) and removes a CSP/iframe
+ * surface from the public site.
+ *
+ * @design FK to topic_posts (CASCADE)
+ *
+ * Attachments belong to their post. Soft-deletion of the post (deletedAt)
+ * leaves the attachment row but the application layer (and RLS) hide it;
+ * hard deletion of the post cascades the attachment.
+ *
+ * @design pgn_byte_length for fast moderation queries
+ *
+ * Indexed precomputed length so admin moderation can filter "abusively
+ * large attachments" without touching the text column. The column is
+ * also a CHECK input to enforce MAX_PGN_BYTES at the DB level.
+ *
+ * @design (source, source_game_id) composite index
+ *
+ * Lichess fetch reuse lookup: when a user attaches a Lichess game that
+ * was already fetched and stored within the reuse window (see
+ * `resolve-lichess-attachment.ts`), the previously stored PGN is reused
+ * instead of re-fetching from Lichess. This index makes that lookup O(log N).
+ *
+ * @design Topic-type agnostic by construction
+ *
+ * This table intentionally does not know about `topic_type`. The parent
+ * `topic_posts` row carries `topic_type` ('chunk' | 'square' | 'opening'),
+ * and gating per-topic-type lives in the Server Action / RLS layer — not
+ * here. Generalizing attachments to 'square' or 'opening' posts is
+ * therefore a Server Action wrapper change only, with no schema migration.
+ *
+ * @design `attribution_platform` extensibility pattern
+ *
+ * The `(attribution_platform, attribution_path)` decomposition is built
+ * to admit additional platforms beyond `'chesscom'`. Adding a third one
+ * is a 3-step change with no schema redesign:
+ *   (a) extend the `chk_attribution_platform_valid` allow-list,
+ *   (b) add a parser arm in `apps/web/src/lib/games/`,
+ *   (c) add a renderer arm in the attached-game card UI.
+ * Do NOT pre-extend the CHECK with placeholder values that have no
+ * matching parser/renderer — the CHECK is the contract.
+ *
+ * @design Soft-delete posture, PII, and GDPR
+ *
+ * When the parent `topic_posts` is soft-deleted (`deleted_at IS NOT NULL`),
+ * the attachment row physically persists; visibility is gated by RLS plus
+ * the `get-attachments-for-posts` query. Header columns (`header_white`,
+ * `header_black`, etc.) may carry identifying data even after the parent
+ * is hidden. For full data removal (e.g., GDPR right-to-be-forgotten),
+ * hard-deleting `topic_posts` (CASCADE reaps the attachment) is required;
+ * soft-delete alone is not sufficient. A scheduled SQL reaper for
+ * soft-deleted attachments is a future option, not currently scheduled —
+ * no formal SLA exists.
+ */
+export const postGamePgnAttachments = pgTable(
+  'post_game_pgn_attachments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    postId: uuid('post_id')
+      .notNull()
+      .unique()
+      .references(() => topicPosts.id, { onDelete: 'cascade' }),
+    source: varchar('source', { length: 20 }).notNull(), // 'pgn' | 'lichess' | (future)
+    /**
+     * 添付の元 URL（Lichess の game URL or chess.com の attribution URL）。
+     * @security audit-only — 絶対に href として直接 render してはならない。
+     *   表示用 href は (source, sourceGameId) または (attributionPlatform, attributionPath) から
+     *   サーバ側で再構築する。詳細は AttachedGameCard.tsx 参照。
+     *   `chk_source_url_audit_https` により、`https://` 以外のスキーム
+     *   （`javascript:` / `data:` / `file:` 等）は DB レベルで拒否される。
+     */
+    sourceUrl: varchar('source_url', { length: 512 }), // canonical URL when source != 'pgn'
+    sourceGameId: varchar('source_game_id', { length: 64 }), // Lichess gameId, etc.
+    pgn: text('pgn').notNull(), // normalized PGN, always present
+    pgnByteLength: integer('pgn_byte_length').notNull(), // for size-based moderation
+    startingFen: varchar('starting_fen', { length: 100 }), // non-default starting position only
+    moveCount: integer('move_count').notNull().default(0),
+    // Extracted PGN headers (denormalized for list/preview without re-parsing).
+    // All nullable: minimal "1. e4 e5" PGN has no headers.
+    headerWhite: varchar('header_white', { length: 100 }),
+    headerBlack: varchar('header_black', { length: 100 }),
+    headerResult: varchar('header_result', { length: 10 }), // '1-0' | '0-1' | '1/2-1/2' | '*'
+    headerEvent: varchar('header_event', { length: 200 }),
+    headerSite: varchar('header_site', { length: 200 }),
+    headerDate: varchar('header_date', { length: 20 }),
+    // Privacy: poster opted to anonymize player names. The stored PGN is
+    // already anonymized when this is true; the original headers are
+    // discarded at save time (we never persist the real names).
+    anonymized: boolean('anonymized').notNull().default(false),
+    // Off-platform game attribution. Stored as a (platform, path) pair
+    // rather than a free-form URL so the rendered href can be rebuilt
+    // server-side from validated components — never from a persisted URL
+    // that could have drifted via direct REST writes or future migrations.
+    // `attribution_platform` is currently 'chesscom' only; `attribution_path`
+    // is the URL pathname (e.g. '/game/live/12345'). Both are NULL together
+    // or NOT NULL together — enforced by `chk_attribution_pair` at the DB.
+    // See `apps/web/src/lib/games/chesscom-attribution.ts` for the parser.
+    attributionPlatform: varchar('attribution_platform', { length: 20 }),
+    attributionPath: varchar('attribution_path', { length: 160 }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    check(
+      'post_game_pgn_attachments_chk_pgn_byte_length',
+      sql`${table.pgnByteLength} > 0 AND ${table.pgnByteLength} <= 102400`
+    ),
+    check('post_game_pgn_attachments_chk_source_valid', sql`${table.source} IN ('pgn', 'lichess')`),
+    check(
+      'post_game_pgn_attachments_chk_source_url_required_for_external',
+      sql`${table.source} = 'pgn' OR ${table.sourceUrl} IS NOT NULL`
+    ),
+    // Phase H (M-3): even though `source_url` is audit-only and never
+    // rendered directly as an href, pin its scheme to `https://` at the
+    // DB so that an accidental future render (e.g. a refactor that
+    // forgets the rebuild-from-components rule, a debug page that
+    // dumps the row) cannot turn a `javascript:` / `data:` / `file:`
+    // payload into a clickable link. Last line of defense.
+    check(
+      'post_game_pgn_attachments_chk_source_url_audit_https',
+      sql`${table.sourceUrl} IS NULL OR ${table.sourceUrl} ~ '^https://'`
+    ),
+    // (M-3) Defense-in-depth against PGN length spoofing: the cached
+    // `pgn_byte_length` column is also a CHECK input for the byte_length check,
+    // so a writer that submits a low precomputed length together with an
+    // oversized PGN body would otherwise bypass the size cap. This CHECK
+    // pins the precomputed value to the actual byte length at the DB level.
+    check(
+      'post_game_pgn_attachments_chk_pgn_byte_length_matches_octet_length',
+      sql`${table.pgnByteLength} = octet_length(${table.pgn})`
+    ),
+    // attribution_platform allow-list: MVP supports 'chesscom' only.
+    check(
+      'post_game_pgn_attachments_chk_attribution_platform_valid',
+      sql`${table.attributionPlatform} IS NULL OR ${table.attributionPlatform} IN ('chesscom')`
+    ),
+    // attribution_path format: must be a `/`-prefixed path of allowed
+    // characters, length 1..128. Mirrors the regex enforced by
+    // `parseChesscomAttribution` so a direct REST write cannot bypass it.
+    check(
+      'post_game_pgn_attachments_chk_attribution_path_format',
+      sql`${table.attributionPath} IS NULL OR ${table.attributionPath} ~ '^/[A-Za-z0-9/_-]{1,128}$'`
+    ),
+    // Pair invariant: either both attribution columns are NULL or both
+    // are NOT NULL. Prevents partial writes that would render with a
+    // broken href.
+    check(
+      'post_game_pgn_attachments_chk_attribution_pair',
+      sql`(${table.attributionPlatform} IS NULL AND ${table.attributionPath} IS NULL)
+        OR (${table.attributionPlatform} IS NOT NULL AND ${table.attributionPath} IS NOT NULL)`
+    ),
+    // Forensic / admin filtering for oversized attachments.
+    index('idx_post_game_pgn_attachments_size').on(table.pgnByteLength),
+    // Lichess fetch reuse lookup: `(source='lichess', source_game_id='abcd1234')`
+    // — see `apps/web/src/lib/games/resolve-lichess-attachment.ts`.
+    index('idx_post_game_pgn_attachments_source_game').on(table.source, table.sourceGameId),
+  ]
+);
+
+export type PostGamePgnAttachment = typeof postGamePgnAttachments.$inferSelect;
+export type NewPostGamePgnAttachment = typeof postGamePgnAttachments.$inferInsert;
+
+/**
+ * Embed Game Attachments — iframe embed chess game attached to a topic post.
+ *
+ * @description
+ * Phase A scaffold only. No application code reads or writes this table in
+ * Phase A. Phase B (SPEC2) will add the iframe embed feature implementation:
+ * chess.com `<iframe src="https://www.chess.com/emboard?id={embed_id}">` and
+ * Lichess `<iframe src="https://lichess.org/embed/{embed_id}">`.
+ *
+ * See `docs/design/SPEC1-embed-data-model-ADR.md` for the full design
+ * rationale, including the decision to keep this as a separate table from
+ * `post_game_pgn_attachments` (Pattern 5 per-kind tables). The `pgn` sibling
+ * stores PGN-text games; this table stores embed-only games that have no PGN
+ * body — they carry only an embed identifier and provider discriminator.
+ *
+ * @design 1:0..1 invariant (UNIQUE on post_id)
+ *
+ * Same as `post_game_pgn_attachments`: one post has at most one embed attachment.
+ *
+ * @design embed_id format
+ *
+ * Provider-specific identifier. chess.com: the `id` query param from the
+ * emboard URL (numeric diagram ID). Lichess: the 8-character game ID (same
+ * namespace as `post_game_pgn_attachments.source_game_id` for Lichess games).
+ * The CHECK `^[A-Za-z0-9_-]{1,64}$` intentionally excludes `/` so Lichess
+ * study chapter IDs (`{studyId}/{chapterId}`) cannot be stored — those are
+ * out of scope for SPEC2 (ADR §4.1).
+ *
+ * @design attribution columns mirror post_game_pgn_attachments
+ *
+ * The `(attribution_platform, attribution_path)` pair serves the same purpose
+ * as in the PGN table: a validated decomposition of a click-through URL that
+ * the renderer rebuilds server-side. The allow-list differs: embed table
+ * supports both 'chesscom' and 'lichess' (Lichess embeds do require
+ * attribution; PGN Lichess games use `source='lichess'` instead).
+ */
+export const postGameEmbedAttachments = pgTable(
+  'post_game_embed_attachments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    postId: uuid('post_id')
+      .notNull()
+      .unique()
+      .references(() => topicPosts.id, { onDelete: 'cascade' }),
+    embedProvider: varchar('embed_provider', { length: 20 }).notNull(), // 'chesscom' | 'lichess'
+    embedId: varchar('embed_id', { length: 64 }).notNull(),
+    /**
+     * @design Audit-only canonical embed URL. NEVER read into the rendered
+     *   iframe `src` or any clickable href — the renderer reconstructs the
+     *   URL from `(embed_provider, embed_id)` server-side. This column exists
+     *   for forensics / migration / debug only.
+     * @security audit-only — never render this as a src or href directly.
+     *   The embed URL is always reconstructed from (embedProvider, embedId)
+     *   at render time. `chk_embed_source_url_https` pins the scheme.
+     */
+    sourceUrl: varchar('source_url', { length: 512 }),
+    attributionPlatform: varchar('attribution_platform', { length: 20 }),
+    attributionPath: varchar('attribution_path', { length: 160 }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    check(
+      'post_game_embed_attachments_chk_embed_provider_valid',
+      sql`${table.embedProvider} IN ('chesscom', 'lichess')`
+    ),
+    check(
+      'post_game_embed_attachments_chk_embed_id_format',
+      sql`${table.embedId} ~ '^[A-Za-z0-9_-]{1,64}$'`
+    ),
+    check(
+      'post_game_embed_attachments_chk_embed_source_url_https',
+      sql`${table.sourceUrl} IS NULL OR ${table.sourceUrl} ~ '^https://'`
+    ),
+    check(
+      'post_game_embed_attachments_chk_embed_attribution_platform_valid',
+      sql`${table.attributionPlatform} IS NULL OR ${table.attributionPlatform} IN ('chesscom', 'lichess')`
+    ),
+    check(
+      'post_game_embed_attachments_chk_embed_attribution_path_format',
+      sql`${table.attributionPath} IS NULL OR ${table.attributionPath} ~ '^/[A-Za-z0-9/_-]{1,128}$'`
+    ),
+    check(
+      'post_game_embed_attachments_chk_embed_attribution_pair',
+      sql`(${table.attributionPlatform} IS NULL AND ${table.attributionPath} IS NULL) OR (${table.attributionPlatform} IS NOT NULL AND ${table.attributionPath} IS NOT NULL)`
+    ),
+    // Future embed dedup: mirrors the Lichess reuse index on the PGN table.
+    index('idx_post_game_embed_attachments_provider_id').on(table.embedProvider, table.embedId),
+  ]
+);
+
+export type PostGameEmbedAttachment = typeof postGameEmbedAttachments.$inferSelect;
+export type NewPostGameEmbedAttachment = typeof postGameEmbedAttachments.$inferInsert;
 
 // User Follows
 export const userFollows = pgTable(
@@ -1658,7 +1967,7 @@ export type NewUserGrant = typeof userGrants.$inferInsert;
  * @description
  * A generic table that holds user-submitted chess positions.
  * Used across multiple practice modules: position-memory, puzzles,
- * move-sequence, and future modules that need a stored FEN with metadata.
+ * and future modules that need a stored FEN with metadata.
  *
  * @design No uniqueness constraint on FEN
  * The same FEN may appear in multiple rows with different titles and
@@ -1780,6 +2089,16 @@ export type NewPositionTag = typeof positionTags.$inferInsert;
  * The UI navigation places chunks alongside topics (linked from `/topics`)
  * because both are UGC, but the URL is `/chunks` (not `/topics/chunks`)
  * to reflect that chunks are a catalog, not a discussion forum.
+ *
+ * @design comments live in `topic_posts` (topicType='chunk')
+ * The chunks/topic_posts table separation is about the catalog body itself
+ * (see "@design catalog, not discussion" above). Discussions about a chunk
+ * are stored in `topic_posts` with `topic_type='chunk'` and
+ * `topic_key=chunk.slug`, following the same polymorphic pattern as 'square'
+ * and 'opening' topic types. This preserves the rule that chunks are a catalog
+ * (not a discussion forum) while letting the existing UGC discussion
+ * infrastructure (replies, likes, moderation, rate-limit, activity log) be
+ * reused unchanged.
  *
  * @design catalog of piece-coordination patterns
  * `chunks` is a catalog — not per-user scratch data. Each row represents one

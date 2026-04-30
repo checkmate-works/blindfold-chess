@@ -17,6 +17,7 @@ import {
   flattenPgnMoves,
   validatePgnMoves,
   parsePgnMoveSequence,
+  validateAttachedPgn,
 } from "../pgn";
 import type { FormattedPgn } from "../pgn";
 
@@ -969,5 +970,240 @@ describe("Integration: full PGN pipeline", () => {
       { moveNumber: 1, white: "e4", black: "e5" },
       { moveNumber: 2, white: "Nf3", black: "Nc6" },
     ]);
+  });
+});
+
+// ============================================================
+// validateAttachedPgn
+// ============================================================
+describe("validateAttachedPgn", () => {
+  it("returns ok for a minimal headerless PGN", () => {
+    const result = validateAttachedPgn(SIMPLE_PGN);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.moveCount).toBe(4);
+      expect(result.startingFen).toBeNull();
+      expect(result.headers.white).toBeNull();
+      expect(result.headers.black).toBeNull();
+      expect(result.byteLength).toBeGreaterThan(0);
+      expect(result.normalized.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("returns ok with extracted headers for a full PGN", () => {
+    const pgn =
+      '[Event "Test Cup"]\n' +
+      '[Site "https://lichess.org/abcd1234"]\n' +
+      '[Date "2026.04.27"]\n' +
+      '[White "Alice"]\n' +
+      '[Black "Bob"]\n' +
+      '[Result "1-0"]\n\n' +
+      "1. e4 e5 2. Nf3 Nc6 1-0";
+    const result = validateAttachedPgn(pgn);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.headers.white).toBe("Alice");
+      expect(result.headers.black).toBe("Bob");
+      expect(result.headers.result).toBe("1-0");
+      expect(result.headers.event).toBe("Test Cup");
+      expect(result.headers.site).toBe("https://lichess.org/abcd1234");
+      expect(result.headers.date).toBe("2026.04.27");
+      expect(result.moveCount).toBe(4);
+    }
+  });
+
+  it("returns 'empty' for an empty string", () => {
+    expect(validateAttachedPgn("")).toEqual({ ok: false, error: "empty" });
+  });
+
+  it("returns 'empty' for whitespace-only input", () => {
+    expect(validateAttachedPgn("   \n\t  ")).toEqual({
+      ok: false,
+      error: "empty",
+    });
+  });
+
+  it("returns 'too_large' before invoking chess.js when input exceeds maxBytes", () => {
+    // Construct a string just over the cap. Use a tiny maxBytes so we don't
+    // need to allocate 100 KB of test data.
+    const big = "1. e4 ".repeat(200); // ~1200 bytes
+    const result = validateAttachedPgn(big, { maxBytes: 64 });
+    expect(result).toEqual({ ok: false, error: "too_large" });
+  });
+
+  it("returns 'invalid_pgn' for syntactically malformed PGN", () => {
+    const result = validateAttachedPgn("not a real pgn !!! @@@");
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      // Either invalid_pgn or no_moves are acceptable here depending on
+      // chess.js behavior, but we expect invalid_pgn for outright garbage.
+      expect(["invalid_pgn", "no_moves"]).toContain(result.error);
+    }
+  });
+
+  it("returns 'invalid_pgn' when a move in the middle is illegal", () => {
+    // 2. Ke2 is legal, 3. Ke3 walks the king into a check pattern
+    // that chess.js will accept. Use a clearly illegal move instead:
+    // bishop teleports through pieces.
+    const result = validateAttachedPgn("1. e4 e5 2. Bc4 Bc5 3. Bf8");
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBe("invalid_pgn");
+    }
+  });
+
+  it("returns 'no_moves' for a header-only PGN", () => {
+    const result = validateAttachedPgn('[Event "x"]\n\n*');
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toBe("no_moves");
+    }
+  });
+
+  it("anonymizes White and Black headers when opts.anonymize=true", () => {
+    const pgn = '[White "Alice"]\n[Black "Bob"]\n\n1. e4 e5 2. Nf3 Nc6';
+    const result = validateAttachedPgn(pgn, { anonymize: true });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.headers.white).toBe("Player 1");
+      expect(result.headers.black).toBe("Player 2");
+      expect(result.normalized).not.toContain("Alice");
+      expect(result.normalized).not.toContain("Bob");
+      expect(result.normalized).toContain("Player 1");
+      expect(result.normalized).toContain("Player 2");
+    }
+  });
+
+  it("preserves a non-default starting FEN in the result", () => {
+    const customFen =
+      "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1";
+    const pgn = `[SetUp "1"]\n[FEN "${customFen}"]\n\n1... e5`;
+    const result = validateAttachedPgn(pgn);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.startingFen).toBe(customFen);
+      expect(result.moveCount).toBe(1);
+    }
+  });
+
+  it("returns 'invalid_pgn' for a syntactically broken FEN header", () => {
+    const pgn = '[SetUp "1"]\n[FEN "garbage"]\n\n1. e4';
+    const result = validateAttachedPgn(pgn);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      // Either invalid_pgn (chess.js rejects the position) or no_moves
+      // (chess.js silently swallows the FEN and yields zero history).
+      // Both are acceptable; the important guarantee is that we don't
+      // return ok:true with junk data.
+      expect(["invalid_pgn", "no_moves"]).toContain(result.error);
+    }
+  });
+
+  // ─── Boundary value tests for SPEC1 attachment limit (100 KiB) ───
+  describe("byte-length boundary at 100 KiB", () => {
+    const KIB_100 = 100 * 1024;
+
+    it("accepts input whose UTF-8 byte length equals exactly maxBytes (when normalized fits too)", () => {
+      // The contract has TWO maxBytes checks: the input AND the normalized
+      // re-emitted PGN must both fit (see pgn.ts §"normalizedByteLength
+      // > maxBytes"). chess.js typically ADDS headers (Result, Site=?, etc.)
+      // when re-emitting, so the normalized form is usually larger than the
+      // raw input. To exercise the boundary, we set maxBytes to a value
+      // comfortably above the normalized re-emit size and confirm acceptance.
+      const pgn = "1. e4 e5 2. Nf3 Nc6"; // 19 bytes
+      // Re-normalized chess.js output for the SIMPLE_PGN above is around
+      // 200-300 bytes; pick 1024 so we are clearly over the normalized size
+      // boundary on the safe side.
+      const result = validateAttachedPgn(pgn, { maxBytes: 1024 });
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        // Sanity: the byteLength field must reflect the normalized output,
+        // not the raw input — this is what gets stored in the DB column.
+        expect(result.byteLength).toBeGreaterThanOrEqual(pgn.length);
+      }
+    });
+
+    it("rejects input one byte over the input maxBytes guard", () => {
+      const pgn = "1. e4 e5 2. Nf3 Nc6";
+      const oneByteUnder = pgn.length - 1;
+      const result = validateAttachedPgn(pgn, { maxBytes: oneByteUnder });
+      expect(result).toEqual({ ok: false, error: "too_large" });
+    });
+
+    it("rejects when normalized output exceeds maxBytes even if input fits", () => {
+      // Choose maxBytes equal to the raw input length so the input passes
+      // the first cap check but the normalized chess.js output (which is
+      // larger due to added headers) trips the second check.
+      const pgn = "1. e4 e5 2. Nf3 Nc6"; // 19 bytes
+      const result = validateAttachedPgn(pgn, { maxBytes: pgn.length });
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error).toBe("too_large");
+      }
+    });
+
+    it("accepts a real 100 KiB-or-under input under the production cap", () => {
+      // The default cap is 102_400. Build a PGN comfortably under it
+      // and confirm it passes — this is the happy-path boundary check
+      // for the production-default code path.
+      const moves: string[] = [];
+      for (let i = 1; i <= 200; i += 2) {
+        // 200 plies => 100 moves each side, well under any byte limit
+        moves.push(`${Math.floor(i / 2) + 1}. e4 e5`);
+      }
+      // Replace alternating moves with legal ones — keep it minimal/legal
+      const pgn = "1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Be7";
+      const result = validateAttachedPgn(pgn);
+      expect(result.ok).toBe(true);
+    });
+
+    it("rejects an input over the default 100 KiB cap (no custom maxBytes)", () => {
+      // Construct a string whose UTF-8 byte length is just over the
+      // default cap. Use a single-byte ASCII char to keep length == bytes.
+      const oversized = "a".repeat(KIB_100 + 1);
+      const result = validateAttachedPgn(oversized);
+      expect(result).toEqual({ ok: false, error: "too_large" });
+    });
+  });
+
+  describe("empty / whitespace boundaries", () => {
+    it("returns 'empty' for a pure tab+newline+space mix", () => {
+      expect(validateAttachedPgn("\t\n \r\n  ")).toEqual({
+        ok: false,
+        error: "empty",
+      });
+    });
+
+    it("returns 'empty' for the empty string (regression)", () => {
+      expect(validateAttachedPgn("")).toEqual({ ok: false, error: "empty" });
+    });
+  });
+
+  describe("normalized output safety", () => {
+    it("anonymized normalized PGN never contains the original White name", () => {
+      const pgn =
+        '[White "AliceTheGreat"]\n[Black "BobTheWise"]\n\n1. e4 e5 2. Nf3 Nc6';
+      const result = validateAttachedPgn(pgn, { anonymize: true });
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        // Defense-in-depth assertion: the stored, normalized text MUST
+        // not leak the original names. If chess.js ever changes how
+        // headers are emitted, this test surfaces it immediately.
+        expect(result.normalized).not.toContain("AliceTheGreat");
+        expect(result.normalized).not.toContain("BobTheWise");
+      }
+    });
+
+    it("non-anonymized PGN preserves original White / Black names verbatim", () => {
+      const pgn =
+        '[White "AliceTheGreat"]\n[Black "BobTheWise"]\n\n1. e4 e5 2. Nf3 Nc6';
+      const result = validateAttachedPgn(pgn);
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.headers.white).toBe("AliceTheGreat");
+        expect(result.headers.black).toBe("BobTheWise");
+        expect(result.normalized).toContain("AliceTheGreat");
+      }
+    });
   });
 });

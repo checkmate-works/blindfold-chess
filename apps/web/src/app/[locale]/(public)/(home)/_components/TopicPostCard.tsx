@@ -4,6 +4,8 @@ import { memo } from 'react';
 
 import Image from 'next/image';
 
+import { Link } from '@/i18n/routing';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { getStartingFen } from '@blindfold-chess/features/chess-core';
 import { FaRegComment } from 'react-icons/fa';
 
@@ -40,6 +42,7 @@ export const TopicPostCard = memo(function TopicPostCard({
   newReplyTemplate,
   variant,
 }: Props) {
+  const tTopics = useTranslations('topics');
   const displayName = post.author?.displayName || post.author?.username || 'Anonymous';
   const contentPreview = truncateContent(post.content);
   const isTruncated = contentPreview !== post.content;
@@ -52,9 +55,17 @@ export const TopicPostCard = memo(function TopicPostCard({
     ? `/topics/openings/${post.topicKey}/posts/${postId}${anchor}`
     : `/topics/squares/${post.topicKey}/posts/${postId}${anchor}`;
 
+  // Layout note (HTML / a11y): FeedItemCard is rendered with `href={null}`
+  // so the card body is NOT wrapped in an outer <a>. Wrapping it would
+  // nest the inline <a> elements emitted by <LinkedText> for URLs in the
+  // post body, and would also nest the <button> in <LikeButton> — both
+  // are invalid HTML and produce hydration errors.
+  // The post-detail link is rendered as a permalink anchor on the
+  // relative timestamp (Twitter / Mastodon / GitHub pattern), keeping a
+  // crawler-discoverable <a href> per post for SEO.
   return (
     <FeedItemCard
-      href={href}
+      href={null}
       locale={locale}
       variant={variant}
       thumbnail={
@@ -79,9 +90,16 @@ export const TopicPostCard = memo(function TopicPostCard({
         country={post.author?.country}
       />
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <time dateTime={post.createdAt.toISOString()}>
-          {formatRelativeTime(new Date(post.createdAt), locale, justNowLabel)}
-        </time>
+        <Link
+          href={href}
+          locale={locale}
+          className="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+          aria-label={tTopics('permalinkAriaLabel')}
+        >
+          <time dateTime={post.createdAt.toISOString()}>
+            {formatRelativeTime(new Date(post.createdAt), locale, justNowLabel)}
+          </time>
+        </Link>
       </div>
       {isOpening ? (
         post.openingName && (
@@ -106,7 +124,13 @@ export const TopicPostCard = memo(function TopicPostCard({
         <LinkedText text={contentPreview} locale={locale} />
       </p>
       {isTruncated && (
-        <span className="text-sm text-link-primary hover:underline">{showMoreLabel}</span>
+        <Link
+          href={href}
+          locale={locale}
+          className="text-sm text-link-primary hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+        >
+          {showMoreLabel}
+        </Link>
       )}
 
       <div className="flex items-center gap-4 mt-1 pt-2 border-t border-border">

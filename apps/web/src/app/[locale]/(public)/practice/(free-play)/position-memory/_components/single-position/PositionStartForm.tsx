@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { useRouter } from '@/i18n/routing';
+import { FaPlay } from 'react-icons/fa';
 
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
@@ -47,7 +48,7 @@ export function PositionStartForm({ positionId, locale }: Props) {
         </div>
       </div>
 
-      <Button onClick={handleStart} variant="primary" size="lg" fullWidth>
+      <Button onClick={handleStart} variant="primary" size="lg" icon={<FaPlay />} fullWidth>
         {t('start')}
       </Button>
 

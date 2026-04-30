@@ -1,0 +1,1 @@
+ALTER TABLE "topic_posts" ADD COLUMN "is_spoiler" boolean DEFAULT false NOT NULL;

@@ -1,16 +1,10 @@
 'use client';
 
-import { type ReactNode, useActionState, useCallback, useRef, useState } from 'react';
+import { type ReactNode, useActionState, useCallback, useState } from 'react';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { Button, FormErrorBanner, Textarea, UnsavedChangesDialog } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-
-import { GRANT_TYPE_DEFAULTS } from '@/lib/db/data/grant-types';
-
-import { GrantInfoModal } from './GrantInfoModal';
-
-const GRANT_INFO_MODAL_STORAGE_KEY = 'bc_topic_post_grant_modal_shown_v1';
 
 type Props = {
   /** Bound server action (locale/slug already bound) */
@@ -26,11 +20,31 @@ type Props = {
   beforeContent?: (markDirty: () => void) => ReactNode;
   /** Callback when content textarea value changes (receives whether textarea has content) */
   onContentChange?: (hasContent: boolean) => void;
-  /** When true, show a one-time pre-submit modal explaining the ad-free grant policy.
-   *  Persisted via localStorage so it only appears until the user confirms once. */
-  showGrantInfoModal?: boolean;
+  /**
+   * When `true`, render an `isSpoiler` checkbox below the content textarea.
+   * Currently surfaced only by the puzzle comment form so the author can
+   * self-flag a comment that reveals the solution. The checkbox name is
+   * `isSpoiler` and the value submitted is the standard `'on'` — the
+   * Server Action wrapper is responsible for normalizing it to a boolean.
+   */
+  enableSpoilerToggle?: boolean;
 };
 
+/**
+ * Shared post form rendering content + submit, used by every new-post form
+ * across topics (squares, openings, chunks).
+ *
+ * @description
+ * The "Who can reply" selector is intentionally not rendered while reply-
+ * permission control is hidden from end users (planned to ship later as a
+ * paid feature). A hidden input still submits the schema default
+ * (`'everyone'`) so `createPostBase` and the rest of the Server Action
+ * pipeline continue to receive a valid `replyPermission` value with no
+ * server-side changes. Replacing the hidden input with the original
+ * `<label>` + `<select>` (everyone / followers / nobody, i18n keys
+ * preserved in every locale message file) is the only change required to
+ * re-enable the flow.
+ */
 export function BasePostForm({
   action,
   translationNamespace,
@@ -38,14 +52,14 @@ export function BasePostForm({
   contentRequired = true,
   beforeContent,
   onContentChange,
-  showGrantInfoModal = false,
+  enableSpoilerToggle = false,
 }: Props) {
   const t = useTranslations(translationNamespace);
+  const tTopics = useTranslations('topics');
+  const tGlobal = useTranslations();
   const tUnsaved = useTranslations('unsavedChanges');
   const [state, formAction, isPending] = useActionState(action, {});
   const [isDirty, setIsDirty] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const formRef = useRef<HTMLFormElement>(null);
 
   const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
 
@@ -53,45 +67,21 @@ export function BasePostForm({
     setIsDirty(true);
   }, []);
 
-  const handleSubmitClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (!showGrantInfoModal) return;
-
-    let alreadyShown = false;
-    try {
-      alreadyShown =
-        typeof window !== 'undefined' && localStorage.getItem(GRANT_INFO_MODAL_STORAGE_KEY) === '1';
-    } catch {
-      // localStorage may be disabled (e.g., Safari private mode); fall through
-    }
-
-    if (alreadyShown) return;
-
-    e.preventDefault();
-    setShowModal(true);
-  };
-
-  const handleModalConfirm = () => {
-    try {
-      localStorage.setItem(GRANT_INFO_MODAL_STORAGE_KEY, '1');
-    } catch {
-      // ignore storage failures
-    }
-    setShowModal(false);
-    formRef.current?.requestSubmit();
-  };
-
-  const handleModalCancel = () => {
-    setShowModal(false);
-  };
-
+  // Errors come back from server actions either as plain keys (resolved
+  // against the form's namespace) or as fully-qualified dotted paths
+  // (e.g. `attachment.error.tooLarge`). The latter are resolved against
+  // the global translator. If neither resolves, fall back to the form's
+  // generic `error` key.
   const errorMessage = state.error
     ? t.has(state.error)
       ? t(state.error as string)
-      : t('error')
+      : state.error.includes('.') && tGlobal.has(state.error)
+        ? tGlobal(state.error)
+        : t('error')
     : null;
 
   return (
-    <form ref={formRef} action={formAction} className="space-y-4">
+    <form action={formAction} className="space-y-4">
       <FormErrorBanner message={errorMessage} />
 
       {beforeContent?.(markDirty)}
@@ -114,21 +104,19 @@ export function BasePostForm({
         />
       </div>
 
-      <div className="space-y-2">
-        <label htmlFor="replyPermission" className="block text-sm font-medium text-foreground">
-          {t('replyPermissionLabel')}
+      <input type="hidden" name="replyPermission" value="everyone" />
+
+      {enableSpoilerToggle && (
+        <label className="flex items-center gap-2 text-sm text-foreground">
+          <input
+            type="checkbox"
+            name="isSpoiler"
+            className="h-4 w-4 rounded border-border"
+            onChange={() => setIsDirty(true)}
+          />
+          {tTopics('spoiler.toggleLabel')}
         </label>
-        <select
-          id="replyPermission"
-          name="replyPermission"
-          defaultValue="everyone"
-          className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
-        >
-          <option value="everyone">{t('replyPermission_everyone')}</option>
-          <option value="followers">{t('replyPermission_followers')}</option>
-          <option value="nobody">{t('replyPermission_nobody')}</option>
-        </select>
-      </div>
+      )}
 
       <Button
         type="submit"
@@ -136,7 +124,6 @@ export function BasePostForm({
         fullWidth
         disabled={isPending || submitDisabled}
         loading={isPending}
-        onClick={handleSubmitClick}
       >
         {isPending ? t('submitting') : t('submit')}
       </Button>
@@ -149,13 +136,6 @@ export function BasePostForm({
         message={tUnsaved('message')}
         confirmLabel={tUnsaved('confirm')}
         cancelLabel={tUnsaved('cancel')}
-      />
-
-      <GrantInfoModal
-        open={showModal}
-        durationDays={GRANT_TYPE_DEFAULTS.topic_post.durationDays}
-        onConfirm={handleModalConfirm}
-        onCancel={handleModalCancel}
       />
     </form>
   );

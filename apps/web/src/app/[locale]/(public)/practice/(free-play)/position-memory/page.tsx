@@ -14,9 +14,11 @@
 import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
 
+import { Button } from '@/app/_components';
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
+import { FaPlus } from 'react-icons/fa';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getPaginationParams } from '@/lib/pagination';
@@ -183,13 +185,11 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
         <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
 
         {currentUser && (
-          <div className="flex justify-center py-4">
-            <Link
-              href="/practice/position-memory/new"
-              locale={locale}
-              className="px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-            >
-              {t('list.createButton')}
+          <div className="py-4">
+            <Link href="/practice/position-memory/new" locale={locale}>
+              <Button asChild variant="primary" size="lg" icon={<FaPlus />} fullWidth>
+                {t('list.createButton')}
+              </Button>
             </Link>
           </div>
         )}

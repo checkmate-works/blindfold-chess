@@ -918,7 +918,11 @@
         "tabBoard": "Tablero",
         "tabFen": "FEN",
         "positionInvalid": "Por favor configura una posición válida",
-        "flipBoard": "Voltear tablero"
+        "flipBoard": "Voltear tablero",
+        "clearBoardConfirmTitle": "¿Limpiar el tablero?",
+        "clearBoardConfirmMessage": "Esto eliminará todas las piezas colocadas. Esta acción no se puede deshacer.",
+        "clearBoardConfirmConfirm": "Limpiar",
+        "clearBoardConfirmCancel": "Cancelar"
       },
       "detail": {
         "title": "Detalle de Posición",
@@ -1261,101 +1265,6 @@
     "common": {
       "play": "Reproducir",
       "replay": "Repetir"
-    },
-    "moveSequence": {
-      "title": "Yakusoku Kumite",
-      "description": "Memoriza y visualiza una secuencia de movimientos en el tablero",
-      "betaNotice": "Esta función está en beta y puede contener errores inesperados.",
-      "articles": {
-        "algebraicNotation": {
-          "title": "Notación Algebraica",
-          "description": "Aprende a leer y escribir movimientos de ajedrez en notación estándar"
-        }
-      },
-      "showBoard": "Mostrar Tablero",
-      "hideBoard": "Ocultar Tablero",
-      "fenRequired": "El FEN es obligatorio",
-      "pgnRequired": "Los movimientos PGN son obligatorios",
-      "invalidFen": "Formato FEN inválido",
-      "invalidPgn": "Formato PGN inválido. No se pudieron analizar los movimientos.",
-      "invalidMoves": "Algunos movimientos son inválidos en esta posición",
-      "invalidMove": "Movimiento inválido",
-      "noMovesFound": "No se encontraron movimientos en el PGN",
-      "invalidMoveAt": "El movimiento {index} \"{move}\" es inválido",
-      "fenLabel": "Posición Inicial (FEN)",
-      "fenPlaceholder": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-      "fenHint": "Introduce la cadena FEN para la posición inicial",
-      "pgnLabel": "Movimientos (PGN)",
-      "pgnPlaceholder": "1. e4 e5 2. Nf3 Nc6 3. Bb5 (máx. 50 movimientos)",
-      "pgnHint": "Introduce los movimientos en formato PGN",
-      "pgnTooLong": "El PGN es demasiado largo. Máximo {max} movimientos permitidos.",
-      "start": "Iniciar",
-      "problemSource": "Origen del Problema",
-      "presetProblems": "Problemas Predefinidos",
-      "enterCustom": "Introducir FEN/PGN",
-      "presetDescription": "Selecciona una apertura para practicar",
-      "preview": "Vista Previa",
-      "memorizeInstructions": "Observa la secuencia y memoriza los movimientos",
-      "moves": "movimientos",
-      "pressPlayToStart": "Presiona reproducir para iniciar la secuencia",
-      "playingMove": "Movimiento {current} de {total}",
-      "startRecall": "Iniciar Recuerdo",
-      "progress": "Progreso",
-      "moveProgress": "Movimiento {current} de {total}",
-      "yourMove": "Tu Movimiento",
-      "opponentTurn": "Esperando el movimiento del rival...",
-      "switchToSelect": "Cambiar a selección por lista",
-      "switchToText": "Cambiar a entrada de texto",
-      "switchInputMode": "Cambiar modo de entrada",
-      "wrongMove": "{move} es incorrecto",
-      "perfect": "¡Perfecto!",
-      "completed": "Completado",
-      "perfectMessage": "¡Reprodujiste todos los movimientos correctamente!",
-      "completedMessage": "Sesión de práctica completada",
-      "accuracy": "Precisión",
-      "correctMoves": "Movimientos Correctos",
-      "moveDetails": "Detalles del Movimiento",
-      "correct": "Correcto",
-      "attempts": "{count, plural, one {# intento} other {# intentos}}",
-      "backToSetup": "Volver a Configuración",
-      "includeOpponentMoves": "Incluir movimientos del rival",
-      "moveHistory": "Historial de Movimientos",
-      "whiteTurn": "Turno de Blancas",
-      "blackTurn": "Turno de Negras",
-      "copyShareLink": "Copiar Enlace para Compartir",
-      "shareLinkHelp": "Introduce la URL copiada en la barra de direcciones de tu navegador para recrear la práctica. Útil para compartir con amigos o como respaldo.",
-      "linkCopied": "Enlace copiado al portapapeles",
-      "copyFailed": "Error al copiar el enlace",
-      "urlTooLong": "La URL es demasiado larga (debe tener menos de 1000 caracteres)",
-      "url_too_long": "La URL para compartir es demasiado larga. Reduce la longitud del PGN.",
-      "invalid_data": "URL para compartir inválida",
-      "invalid_fen": "Contiene formato FEN inválido",
-      "session": "Sesión",
-      "endPractice": "Finalizar Práctica",
-      "clickMoveToJump": "Haz clic en un movimiento para saltar a esa posición",
-      "wrongAttempts": "Intentos incorrectos",
-      "tutorial": {
-        "title": "Tutorial",
-        "description": "Observa una secuencia de movimientos desarrollarse, luego reprodúcelos de memoria.\nProbemos con una apertura sencilla.",
-        "start": "Iniciar Práctica",
-        "skip": "Saltar",
-        "watchFirst": "Observa los movimientos primero presionando reproducir"
-      },
-      "aboutFeature": {
-        "title": "Acerca de Esta Función",
-        "description1": "Yakusoku Kumite es una forma de combate prearreglado practicado en artes marciales como Karate y Taekwondo, donde la secuencia de ataques y defensas está predeterminada.",
-        "description2": "En esta práctica, asumimos los movimientos del rival como en Yakusoku Kumite, y entrenamos para responder con la secuencia correcta de movimientos.",
-        "description3": "Este entrenamiento te ayudará a mejorar tu capacidad para memorizar aperturas de ajedrez."
-      },
-      "tutorialComplete": "¡Esos son los fundamentos!\nPrueba otras aperturas o desafíate con secuencias de tus propias partidas.",
-      "finishTutorial": "Finalizar Tutorial",
-      "resetSettings": "Restablecer configuración",
-      "resetSettingsConfirm": {
-        "title": "¿Restablecer configuración?",
-        "message": "Todos los ajustes se restablecerán y volverás a la pantalla del tutorial."
-      },
-      "cancel": "Cancelar",
-      "relatedArticles": "Artículos Relacionados"
     },
     "quadrantAnchors": {
       "title": "Anclas de Cuadrante",
@@ -2363,6 +2272,7 @@
     "unknownNotification": "Tienes una nueva notificación",
     "announcementMessage": "Nuevo anuncio: {title}",
     "newPostMessage": "{actor} compartió una nueva publicación",
+    "newCommentOnTopicMessage": "{actor} comentó en tu problema",
     "newPositionMemoryMessage": "{actor} creó un nuevo problema de memoria de posición",
     "newPuzzleMessage": "{actor} creó un nuevo puzzle",
     "achievementSingleMessage": "🏆 Obtuviste {name}",
@@ -2961,6 +2871,7 @@
     "moreTopicPosts": "Más temas",
     "showMore": "Mostrar más",
     "showLess": "Mostrar menos",
+    "permalinkAriaLabel": "Ver esta publicación",
     "categories": {
       "squares": {
         "title": "Casillas",
@@ -3264,6 +3175,124 @@
         "cancel": "Cancelar",
         "deleting": "Eliminando..."
       }
+    },
+    "chunks": {
+      "commentsTitle": "Comentarios",
+      "postCount": "{count, plural, one {# comentario} other {# comentarios}}",
+      "noPosts": "Aún no hay comentarios. ¡Sé el primero en compartir tu opinión!",
+      "signInToComment": "Inicia sesión para comentar",
+      "readMore": "Leer más",
+      "detail": {
+        "pageTitle": "Comentario del Chunk"
+      },
+      "postDetail": {
+        "authorView": "Opinión de {author} sobre {name}",
+        "backToChunk": "Volver a {name}"
+      },
+      "sort": {
+        "new": "Nuevo",
+        "popular": "Popular",
+        "active": "Activo"
+      },
+      "newPostForm": {
+        "contentLabel": "Comentario",
+        "contentPlaceholder": "Comparte tu opinión sobre este chunk...",
+        "replyPermissionLabel": "Quién puede responder",
+        "replyPermission_everyone": "Todos",
+        "replyPermission_followers": "Solo seguidores",
+        "replyPermission_nobody": "Nadie",
+        "invalidReplyPermission": "Configuración de permiso de respuesta inválida",
+        "submit": "Comentar",
+        "submitting": "Publicando...",
+        "contentRequired": "Introduce algún contenido",
+        "contentTooLong": "El contenido debe tener 5000 caracteres o menos",
+        "error": "Ocurrió un error. Por favor, inténtalo de nuevo.",
+        "signInRequired": "Inicia sesión para comentar",
+        "rateLimited": "Demasiados comentarios. Por favor, inténtalo más tarde."
+      },
+      "like": "Me gusta",
+      "unlike": "Ya no me gusta",
+      "newReply": "Nueva Respuesta {time}",
+      "justNow": "ahora mismo",
+      "replies": {
+        "title": "Respuestas",
+        "count": "{count, plural, one {# respuesta} other {# respuestas}}",
+        "noReplies": "Aún no hay respuestas. ¡Sé el primero en responder!",
+        "contentLabel": "Tu respuesta",
+        "contentPlaceholder": "Comparte tu opinión...",
+        "submit": "Responder",
+        "submitting": "Respondiendo...",
+        "contentRequired": "Introduce algún contenido",
+        "contentTooLong": "El contenido debe tener 5000 caracteres o menos",
+        "error": "Ocurrió un error. Por favor, inténtalo de nuevo.",
+        "signInRequired": "Inicia sesión para responder",
+        "loginToReply": "Inicia sesión para responder",
+        "rateLimited": "Demasiadas respuestas. Por favor, inténtalo más tarde.",
+        "repliesDisabled": "El autor ha desactivado las respuestas en este comentario.",
+        "followRequired": "Solo los seguidores del autor pueden responder a este comentario.",
+        "replyButton": "Responder",
+        "replyingTo": "Respondiendo a @{username}",
+        "cancelReply": "Cancelar"
+      },
+      "deletePost": {
+        "button": "Eliminar",
+        "confirmTitle": "Eliminar Comentario",
+        "confirmMessage": "¿Estás seguro de que deseas eliminar este comentario? Esta acción no se puede deshacer.",
+        "confirm": "Eliminar",
+        "cancel": "Cancelar",
+        "deleting": "Eliminando..."
+      }
+    },
+    "positionMemory": {
+      "commentsTitle": "Comentarios",
+      "postCount": "{count, plural, one {# comentario} other {# comentarios}}",
+      "noPosts": "Aún no hay comentarios. ¡Sé el primero en compartir tus ideas!",
+      "signInToComment": "Inicia sesión para comentar",
+      "newPostForm": {
+        "contentLabel": "Comentario",
+        "contentPlaceholder": "Comparte tus ideas sobre esta posición...",
+        "submit": "Comentar",
+        "submitting": "Publicando...",
+        "contentRequired": "Por favor escribe algún contenido",
+        "contentTooLong": "El contenido debe tener 5000 caracteres o menos",
+        "error": "Ocurrió un error. Inténtalo de nuevo.",
+        "signInRequired": "Inicia sesión para comentar",
+        "invalidReplyPermission": "Configuración de permiso de respuesta inválida",
+        "rateLimited": "Demasiados comentarios. Inténtalo de nuevo más tarde."
+      },
+      "like": "Me gusta",
+      "unlike": "Quitar me gusta",
+      "newReply": "Nueva respuesta {time}",
+      "justNow": "ahora mismo"
+    },
+    "positionPuzzle": {
+      "commentsTitle": "Comentarios",
+      "postCount": "{count, plural, one {# comentario} other {# comentarios}}",
+      "noPosts": "Aún no hay comentarios. ¡Sé el primero en compartir tus ideas!",
+      "signInToComment": "Inicia sesión para comentar",
+      "commentGuidelineSpoiler": "Si tu comentario revela la solución, marca \"Contiene la solución\".",
+      "newPostForm": {
+        "contentLabel": "Comentario",
+        "contentPlaceholder": "Comparte tus ideas sobre este puzzle...",
+        "submit": "Comentar",
+        "submitting": "Publicando...",
+        "contentRequired": "Por favor escribe algún contenido",
+        "contentTooLong": "El contenido debe tener 5000 caracteres o menos",
+        "error": "Ocurrió un error. Inténtalo de nuevo.",
+        "signInRequired": "Inicia sesión para comentar",
+        "invalidReplyPermission": "Configuración de permiso de respuesta inválida",
+        "rateLimited": "Demasiados comentarios. Inténtalo de nuevo más tarde."
+      },
+      "like": "Me gusta",
+      "unlike": "Quitar me gusta",
+      "newReply": "Nueva respuesta {time}",
+      "justNow": "ahora mismo"
+    },
+    "spoiler": {
+      "toggleLabel": "Contiene la solución",
+      "overlayTitle": "Contiene la solución",
+      "overlayHint": "Pulsa para mostrar",
+      "overlayAriaLabel": "Mostrar comentario que puede contener la solución del puzzle"
     }
   },
   "unsavedChanges": {
@@ -3835,6 +3864,62 @@
     "navigation": {
       "prevRank": "Rango anterior: guía de {rankName}",
       "nextRank": "Siguiente rango: guía de {rankName}"
+    }
+  },
+  "attachment": {
+    "input": {
+      "show": "Adjuntar una partida",
+      "hide": "Ocultar adjunto",
+      "label": "Partida (PGN o URL de Lichess)",
+      "placeholder": "Pega una URL de partida de Lichess o un PGN completo…",
+      "modeHint": "Acepta una URL de partida de Lichess (lichess.org/…), una URL de emboard de chess.com, una URL de inserción de Lichess o un PGN. Los PGNs de chess.com con encabezado [Link] se atribuyen automáticamente."
+    },
+    "label": {
+      "anonymize": "Anonimizar nombres de jugadores",
+      "anonymizeHint": "Sustituye las cabeceras White / Black por «Player 1» y «Player 2» antes de guardar."
+    },
+    "preview": {
+      "loading": "Generando vista previa…",
+      "openInLichess": "Abrir en Lichess"
+    },
+    "card": {
+      "replayButton": "Abrir reproducción",
+      "collapseButton": "Ocultar reproducción",
+      "movesCount": "{count, plural, one {# jugada} other {# jugadas}}",
+      "headerWhite": "Blancas",
+      "headerBlack": "Negras",
+      "headerEvent": "Evento",
+      "headerDate": "Fecha",
+      "headerSite": "Sitio",
+      "sourceLabel": "Fuente",
+      "viewOnChesscom": "Ver en Chess.com",
+      "anonymizedNote": "Nombres de los jugadores anonimizados por el autor."
+    },
+    "delete": {
+      "confirm": "¿Eliminar la partida adjunta de este comentario?",
+      "success": "Adjunto eliminado."
+    },
+    "error": {
+      "empty": "Pega una URL de Lichess o un PGN, u oculta el campo de adjunto.",
+      "tooLarge": "El PGN es demasiado grande. El tamaño máximo es 100 KB.",
+      "invalidPgn": "No se pudo interpretar como PGN. Revisa las jugadas y las cabeceras.",
+      "noMoves": "El PGN no contiene jugadas. Añade al menos una jugada antes de adjuntarlo.",
+      "lichessFetchFailed": "No se pudo obtener la partida de Lichess. Inténtalo de nuevo o pega el PGN directamente.",
+      "lichessNotFound": "Partida de Lichess no encontrada. Revisa la URL.",
+      "lichessRateLimited": "Lichess está saturado en este momento. Espera un poco o pega el PGN directamente.",
+      "chesscomPgnRequired": "Por favor, pega el PGN. Las partidas de chess.com no se pueden obtener automáticamente.",
+      "chesscomInvalidUrl": "Eso no parece una URL válida de chess.com. Usa https://www.chess.com/...",
+      "chesscomInvalidPgn": "El texto debajo de la URL de chess.com no parece un PGN. Pega el cuerpo de la partida exportada.",
+      "lichessStudyUnsupported": "Las URLs de Lichess Study no son compatibles. Pega una URL de partida o un PGN.",
+      "rateLimitedPostWithAttachment": "Puedes adjuntar como máximo 5 partidas por hora."
+    },
+    "embed": {
+      "chesscomDetected": "Diagrama de Chess.com detectado.",
+      "lichessDetected": "Inserción de Lichess detectada.",
+      "viewOnLichess": "Ver en Lichess",
+      "invalidUrl": "Eso no parece ser una URL de inserción válida.",
+      "chesscomCardTitle": "Diagrama de Chess.com",
+      "lichessCardTitle": "Partida de Lichess"
     }
   },
   "Footer": {

@@ -931,7 +931,11 @@
         "tabBoard": "ボード",
         "tabFen": "FEN",
         "positionInvalid": "有効なポジションを設定してください",
-        "flipBoard": "ボードを反転"
+        "flipBoard": "ボードを反転",
+        "clearBoardConfirmTitle": "ボードをクリアしますか？",
+        "clearBoardConfirmMessage": "配置されたすべての駒が削除されます。この操作は取り消せません。",
+        "clearBoardConfirmConfirm": "クリア",
+        "clearBoardConfirmCancel": "キャンセル"
       },
       "detail": {
         "title": "ポジション詳細",
@@ -1274,101 +1278,6 @@
     "common": {
       "play": "再生",
       "replay": "再生"
-    },
-    "moveSequence": {
-      "title": "約束組手",
-      "description": "一連の指し手を記憶し、脳内でビジュアライズする練習",
-      "betaNotice": "この機能はベータ版であり、予期せぬ不具合が含まれている可能性があります。",
-      "articles": {
-        "algebraicNotation": {
-          "title": "代数表記法",
-          "description": "チェスの標準的な棋譜の読み書きを学ぶ"
-        }
-      },
-      "showBoard": "ボードを表示",
-      "hideBoard": "ボードを隠す",
-      "fenRequired": "FENを入力してください",
-      "pgnRequired": "PGN手順を入力してください",
-      "invalidFen": "無効なFEN形式です",
-      "invalidPgn": "無効なPGN形式です。手順を解析できませんでした。",
-      "invalidMoves": "この局面では無効な手が含まれています",
-      "invalidMove": "無効な手です",
-      "noMovesFound": "手順が見つかりません",
-      "invalidMoveAt": "{index}手目の「{move}」が無効です",
-      "fenLabel": "開始局面（FEN）",
-      "fenPlaceholder": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-      "fenHint": "開始局面のFEN文字列を入力してください",
-      "pgnLabel": "手順（PGN）",
-      "pgnPlaceholder": "1. e4 e5 2. Nf3 Nc6 3. Bb5（最大50手）",
-      "pgnHint": "PGN形式で手順を入力してください",
-      "pgnTooLong": "手順が長すぎます。最大{max}手までです。",
-      "start": "開始",
-      "problemSource": "問題の種類",
-      "presetProblems": "プリセット問題",
-      "enterCustom": "FEN/PGNを入力",
-      "presetDescription": "練習するオープニングを選択",
-      "preview": "プレビュー",
-      "memorizeInstructions": "手順を見て記憶してください",
-      "moves": "手",
-      "pressPlayToStart": "再生ボタンを押して開始",
-      "playingMove": "{total}手中{current}手目",
-      "startRecall": "回答を開始",
-      "progress": "進捗",
-      "moveProgress": "{total}手中{current}手目",
-      "yourMove": "あなたの番",
-      "opponentTurn": "相手の手を待っています...",
-      "switchToSelect": "リスト選択に切り替え",
-      "switchToText": "テキスト入力に切り替え",
-      "switchInputMode": "入力モードを切り替え",
-      "wrongMove": "{move}は間違いです",
-      "perfect": "完璧！",
-      "completed": "完了",
-      "perfectMessage": "全ての手を正しく再現できました！",
-      "completedMessage": "練習セッション完了",
-      "accuracy": "正解率",
-      "correctMoves": "正解数",
-      "moveDetails": "手順の詳細",
-      "correct": "正解",
-      "attempts": "{count, plural, other {#回試行}}",
-      "backToSetup": "設定に戻る",
-      "includeOpponentMoves": "相手の手も入力する",
-      "moveHistory": "入力した手順",
-      "whiteTurn": "白の手番",
-      "blackTurn": "黒の手番",
-      "copyShareLink": "共有リンクをコピー",
-      "shareLinkHelp": "コピーしたURLをブラウザのアドレスバーに入力すると、練習内容を再現できます。友人との共有やバックアップに便利です。",
-      "linkCopied": "リンクをクリップボードにコピーしました",
-      "copyFailed": "コピーに失敗しました",
-      "urlTooLong": "URLが長すぎます（1000文字以内に収めてください）",
-      "url_too_long": "共有URLが長すぎます。PGNを短くしてください。",
-      "invalid_data": "無効な共有URLです",
-      "invalid_fen": "無効なFEN形式が含まれています",
-      "session": "練習中",
-      "endPractice": "練習を終了する",
-      "clickMoveToJump": "クリックで局面を表示",
-      "wrongAttempts": "間違い入力",
-      "tutorial": {
-        "title": "チュートリアル",
-        "description": "手順を見て記憶し、再現するトレーニングです。\n簡単なオープニングで試してみましょう。",
-        "start": "練習を開始",
-        "skip": "スキップ",
-        "watchFirst": "まず再生ボタンを押して手順を見てください"
-      },
-      "aboutFeature": {
-        "title": "この機能について",
-        "description1": "約束組手とは空手やテコンドーなどの武道で行われる、あらかじめ攻防の手順を決めて行う模擬的な組手です。",
-        "description2": "ここでは約束組手のように相手の手を仮定し、正しい手順で応手を打てるように訓練を行います。",
-        "description3": "この練習メニューにより、オープニングを記憶する能力を向上させることができます。"
-      },
-      "tutorialComplete": "基本的な使い方は以上です。\n他のオープニングや、自分がプレイしたゲームの手順にも挑戦してみましょう。",
-      "finishTutorial": "チュートリアルを終了する",
-      "resetSettings": "設定をリセット",
-      "resetSettingsConfirm": {
-        "title": "設定をリセットしますか？",
-        "message": "すべての設定がリセットされ、チュートリアル画面に戻ります。"
-      },
-      "cancel": "キャンセル",
-      "relatedArticles": "関連記事"
     },
     "quadrantAnchors": {
       "title": "4分割アンカー",
@@ -2412,7 +2321,8 @@
     "replyMessage": "{actor} があなたの投稿に返信しました",
     "unknownNotification": "新しい通知があります",
     "announcementMessage": "新しいお知らせ: {title}",
-    "newPostMessage": "{actor} が新しい投稿をしました",
+    "newPostMessage": "{actor} さんが新しい投稿をシェアしました",
+    "newCommentOnTopicMessage": "{actor} さんがあなたの問題にコメントしました",
     "newPositionMemoryMessage": "{actor} がポジション記憶の問題を作成しました",
     "newPuzzleMessage": "{actor} がパズルを作成しました",
     "achievementSingleMessage": "🏆 {name} を獲得しました",
@@ -3003,13 +2913,7 @@
     "moreTopicPosts": "トピックをもっと見る",
     "showMore": "さらに表示",
     "showLess": "閉じる",
-    "grantInfoModal": {
-      "title": "広告非表示特典のご案内",
-      "body": "テキスト付きでトピックを投稿すると、{days}日間の広告非表示特典が自動で付与されます。",
-      "note": "選択式の評価のみの投稿は対象外です。",
-      "confirm": "投稿する",
-      "cancel": "キャンセル"
-    },
+    "permalinkAriaLabel": "この投稿を表示",
     "categories": {
       "squares": {
         "title": "マス目",
@@ -3313,6 +3217,124 @@
         "cancel": "キャンセル",
         "deleting": "削除中..."
       }
+    },
+    "chunks": {
+      "commentsTitle": "コメント",
+      "postCount": "{count}件のコメント",
+      "noPosts": "まだコメントがありません。最初のコメントを投稿してみましょう！",
+      "signInToComment": "サインインしてコメントする",
+      "readMore": "続きを読む",
+      "detail": {
+        "pageTitle": "チャンクコメント"
+      },
+      "postDetail": {
+        "authorView": "{author}さんの「{name}」についてのコメント",
+        "backToChunk": "「{name}」に戻る"
+      },
+      "sort": {
+        "new": "新着",
+        "popular": "人気",
+        "active": "活発"
+      },
+      "newPostForm": {
+        "contentLabel": "コメント",
+        "contentPlaceholder": "このチャンクについて思うことを共有しましょう...",
+        "replyPermissionLabel": "返信できるユーザー",
+        "replyPermission_everyone": "全員",
+        "replyPermission_followers": "フォロワーのみ",
+        "replyPermission_nobody": "返信不可",
+        "invalidReplyPermission": "無効な返信許可設定です",
+        "submit": "コメントする",
+        "submitting": "投稿中...",
+        "contentRequired": "内容を入力してください",
+        "contentTooLong": "内容は5000文字以内にしてください",
+        "error": "エラーが発生しました。もう一度お試しください。",
+        "signInRequired": "コメントするにはサインインが必要です",
+        "rateLimited": "コメントが多すぎます。しばらくしてからもう一度お試しください。"
+      },
+      "like": "いいね",
+      "unlike": "いいね解除",
+      "newReply": "新しい返信 {time}",
+      "justNow": "たった今",
+      "replies": {
+        "title": "返信",
+        "count": "{count}件の返信",
+        "noReplies": "まだ返信はありません。最初の返信をしてみましょう！",
+        "contentLabel": "返信内容",
+        "contentPlaceholder": "意見を共有しましょう...",
+        "submit": "返信する",
+        "submitting": "返信中...",
+        "contentRequired": "内容を入力してください",
+        "contentTooLong": "内容は5000文字以内にしてください",
+        "error": "エラーが発生しました。もう一度お試しください。",
+        "signInRequired": "返信するにはサインインが必要です",
+        "loginToReply": "サインインして返信する",
+        "rateLimited": "返信が多すぎます。しばらくしてからもう一度お試しください。",
+        "repliesDisabled": "投稿者がこのコメントへの返信を無効化しています。",
+        "followRequired": "投稿者をフォローしているユーザーのみ返信できます。",
+        "replyButton": "返信",
+        "replyingTo": "@{username} に返信",
+        "cancelReply": "キャンセル"
+      },
+      "deletePost": {
+        "button": "削除",
+        "confirmTitle": "コメントを削除",
+        "confirmMessage": "このコメントを削除してもよろしいですか？この操作は取り消せません。",
+        "confirm": "削除する",
+        "cancel": "キャンセル",
+        "deleting": "削除中..."
+      }
+    },
+    "positionMemory": {
+      "commentsTitle": "コメント",
+      "postCount": "{count}件のコメント",
+      "noPosts": "まだコメントがありません。最初のコメントを投稿してみましょう！",
+      "signInToComment": "サインインしてコメントする",
+      "newPostForm": {
+        "contentLabel": "コメント",
+        "contentPlaceholder": "このポジションについて思うことを共有しましょう...",
+        "submit": "コメントする",
+        "submitting": "投稿中...",
+        "contentRequired": "内容を入力してください",
+        "contentTooLong": "内容は5000文字以内にしてください",
+        "error": "エラーが発生しました。もう一度お試しください。",
+        "signInRequired": "コメントするにはサインインが必要です",
+        "invalidReplyPermission": "無効な返信許可設定です",
+        "rateLimited": "コメントが多すぎます。しばらくしてからもう一度お試しください。"
+      },
+      "like": "いいね",
+      "unlike": "いいね解除",
+      "newReply": "新しい返信 {time}",
+      "justNow": "たった今"
+    },
+    "positionPuzzle": {
+      "commentsTitle": "コメント",
+      "postCount": "{count}件のコメント",
+      "noPosts": "まだコメントがありません。最初のコメントを投稿してみましょう！",
+      "signInToComment": "サインインしてコメントする",
+      "commentGuidelineSpoiler": "解法を含むコメントは「解法を含む」にチェックを入れてください。",
+      "newPostForm": {
+        "contentLabel": "コメント",
+        "contentPlaceholder": "このパズルについて思うことを共有しましょう...",
+        "submit": "コメントする",
+        "submitting": "投稿中...",
+        "contentRequired": "内容を入力してください",
+        "contentTooLong": "内容は5000文字以内にしてください",
+        "error": "エラーが発生しました。もう一度お試しください。",
+        "signInRequired": "コメントするにはサインインが必要です",
+        "invalidReplyPermission": "無効な返信許可設定です",
+        "rateLimited": "コメントが多すぎます。しばらくしてからもう一度お試しください。"
+      },
+      "like": "いいね",
+      "unlike": "いいね解除",
+      "newReply": "新しい返信 {time}",
+      "justNow": "たった今"
+    },
+    "spoiler": {
+      "toggleLabel": "解法を含む",
+      "overlayTitle": "ネタバレを含みます",
+      "overlayHint": "タップで表示",
+      "overlayAriaLabel": "パズルの解法を含む可能性のあるコメントを表示"
     }
   },
   "unsavedChanges": {
@@ -3885,6 +3907,62 @@
     "navigation": {
       "prevRank": "前の段級位: {rankName} ガイド",
       "nextRank": "次の段級位: {rankName} ガイド"
+    }
+  },
+  "attachment": {
+    "input": {
+      "show": "ゲームを添付",
+      "hide": "添付を閉じる",
+      "label": "ゲーム（PGN または Lichess の URL）",
+      "placeholder": "Lichess の対局 URL または PGN を貼り付け…",
+      "modeHint": "Lichess の対局 URL（lichess.org/…）、chess.com の emboard URL、Lichess の埋め込み URL、または PGN を貼り付けてください。[Link] ヘッダ付きの chess.com PGN は自動で帰属情報が付与されます。"
+    },
+    "label": {
+      "anonymize": "対局者名を匿名化",
+      "anonymizeHint": "保存時に White / Black ヘッダを「Player 1」「Player 2」に置き換えます。"
+    },
+    "preview": {
+      "loading": "プレビュー生成中…",
+      "openInLichess": "Lichess で開く"
+    },
+    "card": {
+      "replayButton": "リプレイを開く",
+      "collapseButton": "リプレイを閉じる",
+      "movesCount": "{count} 手",
+      "headerWhite": "白",
+      "headerBlack": "黒",
+      "headerEvent": "イベント",
+      "headerDate": "日付",
+      "headerSite": "サイト",
+      "sourceLabel": "出典",
+      "viewOnChesscom": "Chess.com で開く",
+      "anonymizedNote": "投稿者により対局者名が匿名化されています。"
+    },
+    "delete": {
+      "confirm": "このコメントから添付ゲームを削除しますか？",
+      "success": "添付を削除しました。"
+    },
+    "error": {
+      "empty": "Lichess URL または PGN を入力するか、添付欄を閉じてください。",
+      "tooLarge": "PGN が大きすぎます。最大サイズは 100 KB です。",
+      "invalidPgn": "PGN として解釈できませんでした。指し手とヘッダを確認してください。",
+      "noMoves": "PGN に指し手がありません。少なくとも 1 手追加してください。",
+      "lichessFetchFailed": "Lichess の対局を取得できませんでした。少し待つか、PGN を直接貼り付けてください。",
+      "lichessNotFound": "Lichess に対局が見つかりませんでした。URL を確認してください。",
+      "lichessRateLimited": "Lichess が混雑しています。少し待つか、PGN を直接貼り付けてください。",
+      "chesscomPgnRequired": "PGN を貼り付けてください。chess.com の対局は自動取得できません。",
+      "chesscomInvalidUrl": "chess.com の URL が不正です。https://www.chess.com/... の形式で貼り付けてください。",
+      "chesscomInvalidPgn": "chess.com の URL の下のテキストが PGN として認識できません。エクスポートした対局本文を貼り付けてください。",
+      "lichessStudyUnsupported": "Lichess の Study URL には対応していません。対局 URL または PGN を貼り付けてください。",
+      "rateLimitedPostWithAttachment": "添付付きの投稿は 1 時間に 5 件までです。"
+    },
+    "embed": {
+      "chesscomDetected": "Chess.com の図を検出しました。",
+      "lichessDetected": "Lichess の埋め込みを検出しました。",
+      "viewOnLichess": "Lichess で開く",
+      "invalidUrl": "埋め込み URL の形式が正しくありません。",
+      "chesscomCardTitle": "Chess.com の図",
+      "lichessCardTitle": "Lichess の対局"
     }
   },
   "Footer": {

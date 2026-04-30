@@ -1,6 +1,10 @@
 import { getTranslations } from 'next-intl/server';
 
+import { eq } from 'drizzle-orm';
+
 import { getAuthenticatedUser } from '@/lib/auth';
+import { db, profiles } from '@/lib/db';
+import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
@@ -22,9 +26,16 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function NewPositionPage({ params }: Props) {
   const { locale } = await params;
-  await getAuthenticatedUser();
+  const user = await getAuthenticatedUser();
   const t = await getTranslations({ locale, namespace: 'practice.positionMemory' });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
+
+  const [profile] = await db
+    .select({ displayName: profiles.displayName, username: profiles.username })
+    .from(profiles)
+    .where(eq(profiles.id, user.id))
+    .limit(1);
+  const displayName = resolveAuthorName(profile, { fallback: '' });
 
   return (
     <div className="space-y-8">
@@ -32,7 +43,7 @@ export default async function NewPositionPage({ params }: Props) {
 
       <PagePanel>
         <SectionTitle>{t('create.title')}</SectionTitle>
-        <CreatePositionForm />
+        <CreatePositionForm displayName={displayName} />
 
         <Divider />
 

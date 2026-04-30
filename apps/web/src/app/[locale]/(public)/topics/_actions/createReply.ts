@@ -13,6 +13,8 @@ import { logActivityEvent } from '@/lib/users/activity-log';
 import { MAX_CONTENT_LENGTH } from '@/lib/validations/content';
 import { UUID_RE } from '@/lib/validations/uuid';
 
+import type { TopicType } from '../_lib/constants';
+
 export type CreateReplyState = {
   error?: string;
 };
@@ -21,10 +23,22 @@ export async function createReplyBase(params: {
   locale: string;
   topicIdentifier: string;
   postId: string;
-  topicType: 'square' | 'opening';
+  topicType: TopicType;
   topicKey: string;
   urlSegment: string;
   validateTopic: (identifier: string) => boolean | Promise<boolean>;
+  /**
+   * Override the post-creation redirect URL. Receives `(postId, replyId)` —
+   * `postId` is the top-level post being replied to, `replyId` is the new
+   * reply's id. When omitted, defaults to the legacy
+   * `/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${postId}?toast=post_created` URL.
+   */
+  redirectPath?: (postId: string, replyId: string) => string;
+  /**
+   * Override the path passed to `revalidatePath` after insertion. When omitted,
+   * defaults to the legacy `/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${postId}` path.
+   */
+  revalidate?: (postId: string) => string;
   formData: FormData;
 }): Promise<CreateReplyState> {
   const {
@@ -35,6 +49,8 @@ export async function createReplyBase(params: {
     topicKey,
     urlSegment,
     validateTopic,
+    redirectPath,
+    revalidate,
     formData,
   } = params;
 
@@ -199,7 +215,15 @@ export async function createReplyBase(params: {
     }
   }
 
-  revalidatePath(`/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${postId}`);
+  revalidatePath(
+    revalidate
+      ? revalidate(postId)
+      : `/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${postId}`
+  );
 
-  redirect(`/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${postId}?toast=post_created`);
+  redirect(
+    redirectPath
+      ? redirectPath(postId, inserted.id)
+      : `/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${postId}?toast=post_created`
+  );
 }

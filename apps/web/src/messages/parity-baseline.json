@@ -114,12 +114,7 @@
         "faq.items.adFreeBenefits.question",
         "faq.items.adFreeBenefits.tableTitle",
         "toast.positionCreated",
-        "toast.positionDeleted",
-        "topics.grantInfoModal.body",
-        "topics.grantInfoModal.cancel",
-        "topics.grantInfoModal.confirm",
-        "topics.grantInfoModal.note",
-        "topics.grantInfoModal.title"
+        "toast.positionDeleted"
       ],
       "extra": []
     },

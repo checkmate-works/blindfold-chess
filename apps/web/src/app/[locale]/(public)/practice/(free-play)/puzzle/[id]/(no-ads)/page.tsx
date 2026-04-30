@@ -12,6 +12,7 @@ import { notFound } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
+import { FaPlay, FaPlusCircle } from 'react-icons/fa';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getLinkedChunksForPosition } from '@/lib/chunks/queries';
@@ -20,6 +21,10 @@ import { resolveDisplayName } from '@/lib/users/display-name';
 
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_actions/toggleLike';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
+import {
+  getPostCountByTopicKey,
+  getPostsWithReplyMetaPaginatedByTopicKey,
+} from '@/app/[locale]/(public)/topics/_lib/queries';
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { RelatedChunks } from '@/app/[locale]/_components/RelatedChunks';
@@ -28,6 +33,8 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { PuzzlePiecesInfo } from '../../_components/PuzzlePiecesInfo';
 import { loadPuzzleWithSolutions } from '../../_lib/load-puzzle';
+import { NewPostForm } from './_components/NewPostForm';
+import { PostCard } from './_components/PostCard';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,6 +44,8 @@ type Props = {
     id: string;
   }>;
 };
+
+const COMMENT_PAGE_SIZE = 20;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, id } = await params;
@@ -62,7 +71,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function PuzzleDetailPage({ params }: Props) {
   const { locale, id } = await params;
   const t = await getTranslations({ locale, namespace: 'practice.puzzle' });
+  const tComments = await getTranslations({ locale, namespace: 'topics.positionPuzzle' });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
+  const tPlay = await getTranslations({ locale, namespace: 'play' });
 
   const row = await loadPuzzleWithSolutions(id);
 
@@ -74,10 +85,20 @@ export default async function PuzzleDetailPage({ params }: Props) {
   const displayName = resolveDisplayName(profile);
 
   const currentUser = await getOptionalUser();
-  const [likeMeta, relatedChunks] = await Promise.all([
+  const [likeMeta, relatedChunks, commentCount] = await Promise.all([
     getPositionLikeMeta(position.id, currentUser?.id),
     getLinkedChunksForPosition(position.id),
+    getPostCountByTopicKey('position_puzzle', position.id),
   ]);
+
+  const comments = await getPostsWithReplyMetaPaginatedByTopicKey(
+    'position_puzzle',
+    position.id,
+    COMMENT_PAGE_SIZE,
+    0,
+    currentUser?.id,
+    'new'
+  );
 
   const authorBadge = (
     <>
@@ -117,6 +138,14 @@ export default async function PuzzleDetailPage({ params }: Props) {
 
           <PuzzlePiecesInfo fen={position.fen} locale={locale} />
 
+          <div className="flex justify-center">
+            <Link href={`/games/new/position?fen=${encodeURIComponent(position.fen)}`}>
+              <Button asChild variant="secondary" icon={<FaPlusCircle className="w-3 h-3" />}>
+                {tPlay('newGameFromHere')}
+              </Button>
+            </Link>
+          </div>
+
           <RelatedChunks chunks={relatedChunks} locale={locale} />
 
           <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
@@ -155,11 +184,41 @@ export default async function PuzzleDetailPage({ params }: Props) {
 
           <div className="pt-2">
             <Link href={`/practice/puzzle/${position.id}/session`}>
-              <Button asChild variant="primary" fullWidth>
+              <Button asChild variant="primary" size="lg" icon={<FaPlay />} fullWidth>
                 {t('detail.startSolving')}
               </Button>
             </Link>
           </div>
+
+          <SectionTitle>{tComments('commentsTitle')}</SectionTitle>
+
+          <p className="text-sm text-muted-foreground">
+            {tComments('postCount', { count: commentCount })}
+          </p>
+
+          <p className="text-sm text-muted-foreground">{tComments('commentGuidelineSpoiler')}</p>
+
+          {currentUser ? (
+            <NewPostForm locale={locale} positionId={position.id} />
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              <Link href={`/${locale}/sign-in`} className="text-link-primary hover:underline">
+                {tComments('signInToComment')}
+              </Link>
+            </p>
+          )}
+
+          {comments.length > 0 ? (
+            <div className="space-y-3">
+              {comments.map((post) => (
+                <div key={post.id} id={`post-${post.id}`}>
+                  <PostCard post={post} locale={locale} positionId={position.id} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-center py-8">{tComments('noPosts')}</p>
+          )}
         </div>
 
         <Divider />

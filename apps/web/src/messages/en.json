@@ -930,7 +930,11 @@
         "tabBoard": "Board",
         "tabFen": "FEN",
         "positionInvalid": "Please set up a valid position",
-        "flipBoard": "Flip board"
+        "flipBoard": "Flip board",
+        "clearBoardConfirmTitle": "Clear the board?",
+        "clearBoardConfirmMessage": "This will remove all placed pieces. This action cannot be undone.",
+        "clearBoardConfirmConfirm": "Clear",
+        "clearBoardConfirmCancel": "Cancel"
       },
       "detail": {
         "title": "Position Detail",
@@ -1273,101 +1277,6 @@
     "common": {
       "play": "Play",
       "replay": "Replay"
-    },
-    "moveSequence": {
-      "title": "Yakusoku Kumite",
-      "description": "Memorize and visualize a sequence of moves on the board",
-      "betaNotice": "This feature is in beta and may contain unexpected bugs.",
-      "articles": {
-        "algebraicNotation": {
-          "title": "Algebraic Notation",
-          "description": "Learn to read and write chess moves in standard notation"
-        }
-      },
-      "showBoard": "Show Board",
-      "hideBoard": "Hide Board",
-      "fenRequired": "FEN is required",
-      "pgnRequired": "PGN moves are required",
-      "invalidFen": "Invalid FEN format",
-      "invalidPgn": "Invalid PGN format. Moves could not be parsed.",
-      "invalidMoves": "Some moves are invalid in this position",
-      "invalidMove": "Invalid move",
-      "noMovesFound": "No moves found in PGN",
-      "invalidMoveAt": "Move {index} \"{move}\" is invalid",
-      "fenLabel": "Starting Position (FEN)",
-      "fenPlaceholder": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-      "fenHint": "Enter the FEN string for the starting position",
-      "pgnLabel": "Moves (PGN)",
-      "pgnPlaceholder": "1. e4 e5 2. Nf3 Nc6 3. Bb5 (max 50 moves)",
-      "pgnHint": "Enter the moves in PGN format",
-      "pgnTooLong": "PGN is too long. Maximum {max} moves allowed.",
-      "start": "Start",
-      "problemSource": "Problem Source",
-      "presetProblems": "Preset Problems",
-      "enterCustom": "Enter FEN/PGN",
-      "presetDescription": "Select an opening to practice",
-      "preview": "Preview",
-      "memorizeInstructions": "Watch the sequence and memorize the moves",
-      "moves": "moves",
-      "pressPlayToStart": "Press play to start the sequence",
-      "playingMove": "Move {current} of {total}",
-      "startRecall": "Start Recall",
-      "progress": "Progress",
-      "moveProgress": "Move {current} of {total}",
-      "yourMove": "Your Move",
-      "opponentTurn": "Waiting for opponent's move...",
-      "switchToSelect": "Switch to list selection",
-      "switchToText": "Switch to text input",
-      "switchInputMode": "Switch input mode",
-      "wrongMove": "{move} is incorrect",
-      "perfect": "Perfect!",
-      "completed": "Completed",
-      "perfectMessage": "You reproduced all moves correctly!",
-      "completedMessage": "Practice session completed",
-      "accuracy": "Accuracy",
-      "correctMoves": "Correct Moves",
-      "moveDetails": "Move Details",
-      "correct": "Correct",
-      "attempts": "{count, plural, one {# attempt} other {# attempts}}",
-      "backToSetup": "Back to Setup",
-      "includeOpponentMoves": "Include opponent's moves",
-      "moveHistory": "Move History",
-      "whiteTurn": "White's Turn",
-      "blackTurn": "Black's Turn",
-      "copyShareLink": "Copy Share Link",
-      "shareLinkHelp": "Enter the copied URL in your browser's address bar to recreate the practice. Useful for sharing with friends or as a backup.",
-      "linkCopied": "Link copied to clipboard",
-      "copyFailed": "Failed to copy link",
-      "urlTooLong": "URL is too long (must be under 1000 characters)",
-      "url_too_long": "Share URL is too long. Please reduce the PGN length.",
-      "invalid_data": "Invalid share URL",
-      "invalid_fen": "Contains invalid FEN format",
-      "session": "Session",
-      "endPractice": "End Practice",
-      "clickMoveToJump": "Click a move to jump to that position",
-      "wrongAttempts": "Wrong attempts",
-      "tutorial": {
-        "title": "Tutorial",
-        "description": "Watch a sequence of moves play out, then reproduce them from memory.\nLet's try with a simple opening.",
-        "start": "Start Practice",
-        "skip": "Skip",
-        "watchFirst": "Watch the moves first by pressing play"
-      },
-      "aboutFeature": {
-        "title": "About This Feature",
-        "description1": "Yakusoku Kumite is a form of pre-arranged sparring practiced in martial arts like Karate and Taekwondo, where the sequence of attacks and defenses is predetermined.",
-        "description2": "In this practice, we assume the opponent's moves like in Yakusoku Kumite, and train to respond with the correct sequence of moves.",
-        "description3": "This training will help improve your ability to memorize chess openings."
-      },
-      "tutorialComplete": "That's the basics!\nTry other openings or challenge yourself with sequences from your own games.",
-      "finishTutorial": "Finish Tutorial",
-      "resetSettings": "Reset settings",
-      "resetSettingsConfirm": {
-        "title": "Reset settings?",
-        "message": "All settings will be reset and you will return to the tutorial screen."
-      },
-      "cancel": "Cancel",
-      "relatedArticles": "Related Articles"
     },
     "quadrantAnchors": {
       "title": "Quadrant Anchors",
@@ -2412,6 +2321,7 @@
     "unknownNotification": "You have a new notification",
     "announcementMessage": "New announcement: {title}",
     "newPostMessage": "{actor} shared a new post",
+    "newCommentOnTopicMessage": "{actor} commented on your problem",
     "newPositionMemoryMessage": "{actor} created a new position memory problem",
     "newPuzzleMessage": "{actor} created a new puzzle",
     "achievementSingleMessage": "🏆 You earned {name}",
@@ -3107,13 +3017,7 @@
     "moreTopicPosts": "More topics",
     "showMore": "Show more",
     "showLess": "Show less",
-    "grantInfoModal": {
-      "title": "Ad-Free Benefit Notice",
-      "body": "Posting a topic with text content automatically grants you {days} days of ad-free access.",
-      "note": "Posts containing only ratings without text content do not qualify.",
-      "confirm": "Continue posting",
-      "cancel": "Cancel"
-    },
+    "permalinkAriaLabel": "View this post",
     "categories": {
       "squares": {
         "title": "Squares",
@@ -3417,6 +3321,124 @@
         "cancel": "Cancel",
         "deleting": "Deleting..."
       }
+    },
+    "chunks": {
+      "commentsTitle": "Comments",
+      "postCount": "{count, plural, one {# comment} other {# comments}}",
+      "noPosts": "No comments yet. Be the first to share your thoughts!",
+      "signInToComment": "Sign in to comment",
+      "readMore": "Read more",
+      "detail": {
+        "pageTitle": "Chunk Comment"
+      },
+      "postDetail": {
+        "authorView": "{author}'s thoughts on {name}",
+        "backToChunk": "Back to {name}"
+      },
+      "sort": {
+        "new": "New",
+        "popular": "Popular",
+        "active": "Active"
+      },
+      "newPostForm": {
+        "contentLabel": "Comment",
+        "contentPlaceholder": "Share your thoughts about this chunk...",
+        "replyPermissionLabel": "Who can reply",
+        "replyPermission_everyone": "Everyone",
+        "replyPermission_followers": "Followers only",
+        "replyPermission_nobody": "No one",
+        "invalidReplyPermission": "Invalid reply permission setting",
+        "submit": "Comment",
+        "submitting": "Posting...",
+        "contentRequired": "Please enter some content",
+        "contentTooLong": "Content must be 5000 characters or less",
+        "error": "An error occurred. Please try again.",
+        "signInRequired": "Please sign in to comment",
+        "rateLimited": "Too many comments. Please try again later."
+      },
+      "like": "Like",
+      "unlike": "Unlike",
+      "newReply": "New Reply {time}",
+      "justNow": "just now",
+      "replies": {
+        "title": "Replies",
+        "count": "{count, plural, one {# reply} other {# replies}}",
+        "noReplies": "No replies yet. Be the first to reply!",
+        "contentLabel": "Your reply",
+        "contentPlaceholder": "Share your thoughts...",
+        "submit": "Reply",
+        "submitting": "Replying...",
+        "contentRequired": "Please enter some content",
+        "contentTooLong": "Content must be 5000 characters or less",
+        "error": "An error occurred. Please try again.",
+        "signInRequired": "Please sign in to reply",
+        "loginToReply": "Sign in to reply",
+        "rateLimited": "Too many replies. Please try again later.",
+        "repliesDisabled": "The author has disabled replies on this comment.",
+        "followRequired": "Only followers of the author can reply to this comment.",
+        "replyButton": "Reply",
+        "replyingTo": "Replying to @{username}",
+        "cancelReply": "Cancel"
+      },
+      "deletePost": {
+        "button": "Delete",
+        "confirmTitle": "Delete Comment",
+        "confirmMessage": "Are you sure you want to delete this comment? This action cannot be undone.",
+        "confirm": "Delete",
+        "cancel": "Cancel",
+        "deleting": "Deleting..."
+      }
+    },
+    "positionMemory": {
+      "commentsTitle": "Comments",
+      "postCount": "{count, plural, one {# comment} other {# comments}}",
+      "noPosts": "No comments yet. Be the first to share your thoughts!",
+      "signInToComment": "Sign in to comment",
+      "newPostForm": {
+        "contentLabel": "Comment",
+        "contentPlaceholder": "Share your thoughts about this position...",
+        "submit": "Comment",
+        "submitting": "Posting...",
+        "contentRequired": "Please enter some content",
+        "contentTooLong": "Content must be 5000 characters or less",
+        "error": "An error occurred. Please try again.",
+        "signInRequired": "Please sign in to comment",
+        "invalidReplyPermission": "Invalid reply permission setting",
+        "rateLimited": "Too many comments. Please try again later."
+      },
+      "like": "Like",
+      "unlike": "Unlike",
+      "newReply": "New Reply {time}",
+      "justNow": "just now"
+    },
+    "positionPuzzle": {
+      "commentsTitle": "Comments",
+      "postCount": "{count, plural, one {# comment} other {# comments}}",
+      "noPosts": "No comments yet. Be the first to share your thoughts!",
+      "signInToComment": "Sign in to comment",
+      "commentGuidelineSpoiler": "If your comment reveals the solution, please tick \"Contains solution\".",
+      "newPostForm": {
+        "contentLabel": "Comment",
+        "contentPlaceholder": "Share your thoughts about this puzzle...",
+        "submit": "Comment",
+        "submitting": "Posting...",
+        "contentRequired": "Please enter some content",
+        "contentTooLong": "Content must be 5000 characters or less",
+        "error": "An error occurred. Please try again.",
+        "signInRequired": "Please sign in to comment",
+        "invalidReplyPermission": "Invalid reply permission setting",
+        "rateLimited": "Too many comments. Please try again later."
+      },
+      "like": "Like",
+      "unlike": "Unlike",
+      "newReply": "New Reply {time}",
+      "justNow": "just now"
+    },
+    "spoiler": {
+      "toggleLabel": "Contains solution",
+      "overlayTitle": "Contains solution",
+      "overlayHint": "Tap to reveal",
+      "overlayAriaLabel": "Reveal comment that may contain the puzzle solution"
     }
   },
   "unsavedChanges": {
@@ -3989,6 +4011,62 @@
     "navigation": {
       "prevRank": "Previous rank: {rankName} guide",
       "nextRank": "Next rank: {rankName} guide"
+    }
+  },
+  "attachment": {
+    "input": {
+      "show": "Attach a game",
+      "hide": "Hide attachment",
+      "label": "Game (PGN or Lichess URL)",
+      "placeholder": "Paste a Lichess game URL or full PGN…",
+      "modeHint": "Accepts a Lichess game URL (lichess.org/…), a chess.com emboard URL, a Lichess embed URL, or a PGN. chess.com PGNs with a [Link] header are auto-attributed."
+    },
+    "label": {
+      "anonymize": "Anonymize player names",
+      "anonymizeHint": "Replaces White / Black headers with \"Player 1\" and \"Player 2\" before saving."
+    },
+    "preview": {
+      "loading": "Generating preview…",
+      "openInLichess": "Open in Lichess"
+    },
+    "card": {
+      "replayButton": "Open replay",
+      "collapseButton": "Hide replay",
+      "movesCount": "{count, plural, one {# move} other {# moves}}",
+      "headerWhite": "White",
+      "headerBlack": "Black",
+      "headerEvent": "Event",
+      "headerDate": "Date",
+      "headerSite": "Site",
+      "sourceLabel": "Source",
+      "viewOnChesscom": "View on Chess.com",
+      "anonymizedNote": "Player names anonymized by the poster."
+    },
+    "delete": {
+      "confirm": "Remove the attached game from this comment?",
+      "success": "Attachment removed."
+    },
+    "error": {
+      "empty": "Paste a Lichess URL or PGN, or hide the attachment field.",
+      "tooLarge": "PGN is too large. The maximum size is 100 KB.",
+      "invalidPgn": "Could not parse that as a PGN. Check the moves and headers.",
+      "noMoves": "PGN has no moves. Add at least one move before attaching.",
+      "lichessFetchFailed": "Could not fetch the Lichess game. Try again, or paste the PGN directly.",
+      "lichessNotFound": "Lichess game not found. Check the URL.",
+      "lichessRateLimited": "Lichess is busy right now. Wait a moment, or paste the PGN directly.",
+      "chesscomPgnRequired": "Please paste the PGN. chess.com games cannot be auto-fetched.",
+      "chesscomInvalidUrl": "That doesn't look like a valid chess.com URL. Use https://www.chess.com/...",
+      "chesscomInvalidPgn": "The text below the chess.com URL doesn't look like a PGN. Paste the exported game body.",
+      "lichessStudyUnsupported": "Lichess Study URLs are not supported. Please paste a game URL or PGN.",
+      "rateLimitedPostWithAttachment": "You can attach at most 5 games per hour."
+    },
+    "embed": {
+      "chesscomDetected": "Chess.com diagram detected.",
+      "lichessDetected": "Lichess embed detected.",
+      "viewOnLichess": "View on Lichess",
+      "invalidUrl": "That doesn't look like a valid embed URL.",
+      "chesscomCardTitle": "Chess.com diagram",
+      "lichessCardTitle": "Lichess game"
     }
   },
   "Footer": {

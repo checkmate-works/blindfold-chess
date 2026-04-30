@@ -127,3 +127,30 @@ export function notifyFollowersOfNewPosition(params: {
     console.error('[notifyFollowersOfNewPosition] failed:', error);
   });
 }
+
+/**
+ * Notify the author of a topic about a new comment.
+ * Fire-and-forget — failures are silently caught.
+ */
+export function notifyTopicAuthorOfNewComment(params: {
+  authorId: string;
+  actorId: string;
+  postId: string;
+  topicType: string;
+  topicKey: string;
+}): void {
+  if (params.authorId === params.actorId) return;
+
+  createNotification({
+    userId: params.authorId,
+    actorId: params.actorId,
+    type: 'new_comment_on_topic',
+    targetType: 'topic_post',
+    targetId: params.postId,
+    metadata: {
+      topicType: params.topicType,
+      topicKey: params.topicKey,
+      postId: params.postId,
+    },
+  });
+}

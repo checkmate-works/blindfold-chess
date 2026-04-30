@@ -10,6 +10,12 @@ import type { ProfilePostWithReplyMeta } from './shared';
 
 /**
  * Get the count of top-level posts across all topic types (square + opening).
+ *
+ * `chunk` and the position-backed types (`position_memory`,
+ * `position_puzzle`) are intentionally excluded — they are reply-equivalent
+ * comments scoped to their own catalog page and should not surface in
+ * cross-topic lists (mypage feeds, profile post lists, etc.). Same rationale
+ * as chunk: see TOPIC_TYPES TSDoc.
  */
 export const getPostCountAcrossTopics = unstable_cache(
   async (): Promise<number> => {
