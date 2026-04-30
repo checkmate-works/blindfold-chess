@@ -105,6 +105,7 @@ export function PositionGameForm({ locale }: Props) {
     if (parts[1] === 'w' || parts[1] === 'b') {
       skipEnPassantResetRef.current = true;
       setColor(parts[1] === 'w' ? 'white' : 'black');
+      setFlipped(parts[1] === 'b');
     }
 
     // Castling rights
