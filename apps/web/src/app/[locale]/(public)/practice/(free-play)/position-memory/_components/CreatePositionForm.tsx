@@ -5,10 +5,11 @@ import { useCallback, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { BoardSkeleton, FlipBoardButton, UnsavedChangesDialog } from '@/app/_components';
+import { BoardSkeleton, Button, FlipBoardButton, UnsavedChangesDialog } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 import { validateFen } from '@blindfold-chess/features/chess-core';
 import { flushSync } from 'react-dom';
+import { FaPlay } from 'react-icons/fa';
 
 import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -19,7 +20,25 @@ const EMPTY_BOARD_FEN = '8/8/8/8/8/8/8/8 w - - 0 1';
 
 type EditorTab = 'board' | 'fen';
 
-export function CreatePositionForm() {
+function formatLocalIsoDate(d: Date): string {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function buildDefaultTitle(displayName: string | undefined): string {
+  if (displayName === undefined) return '';
+  const date = formatLocalIsoDate(new Date());
+  const trimmed = displayName.trim();
+  return trimmed ? `Position ${date} - ${trimmed}` : `Position ${date}`;
+}
+
+type Props = {
+  displayName?: string;
+};
+
+export function CreatePositionForm({ displayName }: Props = {}) {
   const router = useRouter();
   const t = useTranslations('practice.positionMemory.create');
   const tBoard = useTranslations('practice.positionMemory');
@@ -27,7 +46,7 @@ export function CreatePositionForm() {
   const { preferences, isLoaded } = useGamePreferences();
   const [fenInput, setFenInput] = useState('');
   const [boardFen, setBoardFen] = useState(EMPTY_BOARD_FEN);
-  const [title, setTitle] = useState('');
+  const [title, setTitle] = useState(() => buildDefaultTitle(displayName));
   const [description, setDescription] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [positionError, setPositionError] = useState(false);
@@ -238,13 +257,16 @@ export function CreatePositionForm() {
           </div>
         )}
 
-        <button
+        <Button
           type="submit"
+          variant="primary"
+          size="lg"
+          icon={<FaPlay />}
+          fullWidth
           disabled={pending || !isFenValid || title.trim() === ''}
-          className="w-full px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity"
         >
           {pending ? t('submitting') : t('submit')}
-        </button>
+        </Button>
       </form>
 
       <UnsavedChangesDialog

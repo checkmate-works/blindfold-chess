@@ -12,7 +12,7 @@ import { notFound } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
-import { FaPlusCircle } from 'react-icons/fa';
+import { FaPlay, FaPlusCircle } from 'react-icons/fa';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getLinkedChunksForPosition } from '@/lib/chunks/queries';
@@ -184,7 +184,7 @@ export default async function PuzzleDetailPage({ params }: Props) {
 
           <div className="pt-2">
             <Link href={`/practice/puzzle/${position.id}/session`}>
-              <Button asChild variant="primary" fullWidth>
+              <Button asChild variant="primary" size="lg" icon={<FaPlay />} fullWidth>
                 {t('detail.startSolving')}
               </Button>
             </Link>
