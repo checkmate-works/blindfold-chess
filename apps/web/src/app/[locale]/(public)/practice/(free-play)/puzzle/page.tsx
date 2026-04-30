@@ -28,7 +28,6 @@ import { truncate } from '@/lib/text';
 import { resolveDisplayName } from '@/lib/users/display-name';
 
 import {
-  BetaNotice,
   Divider,
   PagePanel,
   PageTitle,
@@ -94,10 +93,6 @@ export default async function PuzzleListPage({ params, searchParams }: Props) {
 
       <PagePanel>
         <SectionTitle>{t('list.sectionTitle')}</SectionTitle>
-
-        <BetaNotice className="mb-4">
-          <p>{t('list.betaNotice')}</p>
-        </BetaNotice>
 
         {rows.length === 0 ? (
           <p className="text-muted-foreground text-center py-8">{t('list.empty')}</p>
