@@ -1,17 +1,16 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FaArrowRight, FaPlay } from 'react-icons/fa';
+import { FaArrowRight } from 'react-icons/fa';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { TUTORIAL_SKIP_CONFIG } from '../../../_lib/tutorial-skip-config';
+import { PracticeSetupActions } from '../../_components/PracticeSetupActions';
 
 const BOARD_SYMMETRY_TUTORIAL_SKIPPED_KEY = TUTORIAL_SKIP_CONFIG.boardSymmetry.storageKey;
 
@@ -21,7 +20,6 @@ type Props = {
 
 export function BoardSymmetrySetup({ locale }: Props) {
   const t = useTranslations('practice.boardSymmetry');
-  const tp = useTranslations('practice');
   const router = useRouter();
 
   const handleViewTutorial = () => {
@@ -48,19 +46,7 @@ export function BoardSymmetrySetup({ locale }: Props) {
           </button>
         </div>
 
-        <Link href={`/${locale}/practice/board-symmetry/challenge/session`}>
-          <Button asChild variant="primary" size="lg" icon={<FaPlay />} className="w-full">
-            {tp('startChallenge')}
-          </Button>
-        </Link>
-        <div className="mt-4 text-center">
-          <Link
-            href={`/${locale}/practice/board-symmetry/training#board-symmetry-training-session`}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {tp('switchToTraining')}
-          </Link>
-        </div>
+        <PracticeSetupActions locale={locale} moduleSlug="board-symmetry" />
       </div>
     </div>
   );
