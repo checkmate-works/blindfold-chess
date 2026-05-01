@@ -48,6 +48,8 @@ export {
 } from "./piece-moves";
 export type { MirrorAxis } from "./geometry";
 export { mirrorSquare, flipForOrientation } from "./geometry";
+export type { MobilityPiece } from "./piece-mobility";
+export { getMovesForPiece } from "./piece-mobility";
 export type {
   CoordinateBackspaceResult,
   StagedCoordinateSelection,

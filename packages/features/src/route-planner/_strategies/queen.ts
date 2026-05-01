@@ -1,5 +1,5 @@
-import { BishopRouteStrategy } from "./bishop";
-import { RookRouteStrategy } from "./rook";
+import { getMovesForPiece } from "../../common";
+
 import type { RoutePlannerStrategy } from "./types";
 
 /**
@@ -9,10 +9,7 @@ import type { RoutePlannerStrategy } from "./types";
  */
 export const QueenRouteStrategy: RoutePlannerStrategy = {
   getMoves(f, r) {
-    return [
-      ...BishopRouteStrategy.getMoves(f, r),
-      ...RookRouteStrategy.getMoves(f, r),
-    ];
+    return getMovesForPiece("q", f, r);
   },
   meetsConstraint(pathLength) {
     return pathLength >= 3;
