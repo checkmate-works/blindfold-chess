@@ -1,11 +1,24 @@
 import type { Square } from "@blindfold-chess/types";
 
-import type { RandomSource } from "../common";
-import { BOARD_LAST_INDEX } from "../common/constants";
+import type { MirrorAxis, RandomSource } from "../common";
+import { mirrorSquare } from "../common";
 
 import { FILES, RANKS } from "./constants";
 import type { BoardSymmetryProblem, SymmetryType } from "./types";
 import { SYMMETRY_TYPES } from "./types";
+
+/**
+ * Map the `board-symmetry` `SymmetryType` ("horizontal" | "vertical" | "point")
+ * onto the geometric `MirrorAxis` used by {@link mirrorSquare}. Note that
+ * "horizontal" symmetry on the board surface corresponds to a reflection
+ * across the file axis (left-right mirror), and "vertical" to a reflection
+ * across the rank axis (top-bottom mirror).
+ */
+const SYMMETRY_TYPE_TO_AXIS: Record<SymmetryType, MirrorAxis> = {
+  horizontal: "file",
+  vertical: "rank",
+  point: "point",
+};
 
 /**
  * Generate a random board symmetry problem
@@ -34,26 +47,7 @@ export function calculateSymmetricSquare(
   square: Square,
   type: SymmetryType,
 ): Square {
-  const fileIndex = FILES.indexOf(square[0] as (typeof FILES)[number]);
-  const rankIndex = RANKS.indexOf(square[1] as (typeof RANKS)[number]);
-
-  let targetFileIndex = fileIndex;
-  let targetRankIndex = rankIndex;
-
-  switch (type) {
-    case "horizontal":
-      targetFileIndex = BOARD_LAST_INDEX - fileIndex;
-      break;
-    case "vertical":
-      targetRankIndex = BOARD_LAST_INDEX - rankIndex;
-      break;
-    case "point":
-      targetFileIndex = BOARD_LAST_INDEX - fileIndex;
-      targetRankIndex = BOARD_LAST_INDEX - rankIndex;
-      break;
-  }
-
-  return `${FILES[targetFileIndex]}${RANKS[targetRankIndex]}` as Square;
+  return mirrorSquare(square, SYMMETRY_TYPE_TO_AXIS[type]);
 }
 
 /**

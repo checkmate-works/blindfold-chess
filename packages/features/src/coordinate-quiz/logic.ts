@@ -2,11 +2,11 @@ import type { Square } from "@blindfold-chess/types";
 
 import {
   type RandomSource,
+  fileRankToSquare,
+  mirrorSquare,
   squareToFileIndex,
   squareToRankIndex,
-  fileRankToSquare,
 } from "../common";
-import { BOARD_LAST_INDEX } from "../common/constants";
 import { allSquares } from "./squares";
 import type { BoardOrientation, CoordinateQuestion } from "./types";
 
@@ -57,42 +57,41 @@ export function checkAnswer(
 }
 
 /**
- * Convert square to board coordinates based on orientation
+ * Convert square to board coordinates based on orientation.
+ *
+ * The board is rendered as an 8x8 grid where row 0 is the top row on screen.
+ * For white perspective, rank 8 is on top (so screen row = `BOARD_LAST_INDEX - rank`).
+ * For black perspective, file h is on the left of the screen (so screen col =
+ * `BOARD_LAST_INDEX - file`). The two perspectives flip across different axes,
+ * which is why this is not a simple `flipForOrientation` of both indices.
  */
 export function squareToCoordinates(
   square: Square,
   orientation: "white" | "black",
 ): { file: number; rank: number } {
-  const file = squareToFileIndex(square);
-  const rank = squareToRankIndex(square);
-
-  if (orientation === "white") {
-    return { file, rank: BOARD_LAST_INDEX - rank }; // Flip rank for white perspective
-  } else {
-    return { file: BOARD_LAST_INDEX - file, rank }; // Flip file for black perspective
-  }
+  // For each orientation, mirror across the axis that turns chess coordinates
+  // into screen coordinates: white flips rank, black flips file.
+  const screenAxis = orientation === "white" ? "rank" : "file";
+  const mirrored = mirrorSquare(square, screenAxis);
+  return {
+    file: squareToFileIndex(mirrored),
+    rank: squareToRankIndex(mirrored),
+  };
 }
 
 /**
- * Convert board coordinates to square based on orientation
+ * Convert board coordinates to square based on orientation.
+ * Inverse of {@link squareToCoordinates}; reflection is its own inverse,
+ * so the same axis is used.
  */
 export function coordinatesToSquare(
   file: number,
   rank: number,
   orientation: "white" | "black",
 ): Square {
-  let actualFile: number;
-  let actualRank: number;
-
-  if (orientation === "white") {
-    actualFile = file;
-    actualRank = BOARD_LAST_INDEX - rank; // Flip rank back
-  } else {
-    actualFile = BOARD_LAST_INDEX - file; // Flip file back
-    actualRank = rank;
-  }
-
-  return fileRankToSquare(actualFile, actualRank) as Square;
+  const screenSquare = fileRankToSquare(file, rank);
+  const screenAxis = orientation === "white" ? "rank" : "file";
+  return mirrorSquare(screenSquare, screenAxis);
 }
 
 /**

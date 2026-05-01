@@ -46,6 +46,8 @@ export {
   QUEEN_DIRS,
   KING_OFFSETS,
 } from "./piece-moves";
+export type { MirrorAxis } from "./geometry";
+export { mirrorSquare, flipForOrientation } from "./geometry";
 export type {
   CoordinateBackspaceResult,
   StagedCoordinateSelection,
