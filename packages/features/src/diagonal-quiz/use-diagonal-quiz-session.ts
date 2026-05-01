@@ -4,8 +4,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useTimedSession } from "../practice-session/use-timed-session";
 import { FEEDBACK_FLASH_MS } from "../common/flash-policy";
+import { generateSquareSequence } from "../common/utils";
 import {
-  generateSquareSequence,
+  EXCLUDED_QUIZ_SQUARES,
   getDiagonals,
   isValidDiagonalAnswer,
   normalizeDiagonal,
@@ -46,7 +47,9 @@ export function useDiagonalQuizSession({
   onAnswerEffect,
   mistakeAllowance,
 }: UseDiagonalQuizSessionConfig): UseDiagonalQuizSessionReturn {
-  const squaresRef = useRef<string[]>(generateSquareSequence(200));
+  const squaresRef = useRef<string[]>(
+    generateSquareSequence(200, Math.random, EXCLUDED_QUIZ_SQUARES),
+  );
   const indexRef = useRef(0);
   const questionTimesRef = useRef<number[]>([]);
   // per-question timing — useTimedSession tracks session-wide elapsed time only
@@ -74,7 +77,7 @@ export function useDiagonalQuizSession({
     if (indexRef.current >= squaresRef.current.length - 10) {
       squaresRef.current = [
         ...squaresRef.current,
-        ...generateSquareSequence(100),
+        ...generateSquareSequence(100, Math.random, EXCLUDED_QUIZ_SQUARES),
       ];
     }
     return squaresRef.current[indexRef.current];

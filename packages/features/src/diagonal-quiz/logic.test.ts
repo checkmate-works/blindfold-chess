@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 
+import { generateRandomSquare, generateSquareSequence } from "../common/utils";
+
 import {
   EXCLUDED_QUIZ_SQUARES,
-  generateRandomSquare,
-  generateSquareSequence,
   getCornerInfo,
   getDiagonals,
   getDiagonalSquares,
@@ -522,14 +522,14 @@ describe("generateRandomSquare (diagonal-quiz)", () => {
       3 / 8, // d4
     ];
     const rng = () => rngValues[callIndex++];
-    const square = generateRandomSquare(rng);
+    const square = generateRandomSquare(rng, EXCLUDED_QUIZ_SQUARES);
     expect(square).toBe("d4");
     expect(cornerSquares.has(square)).toBe(false);
   });
 
   it("returns valid non-corner squares over many calls", () => {
     for (let i = 0; i < 200; i++) {
-      const square = generateRandomSquare();
+      const square = generateRandomSquare(Math.random, EXCLUDED_QUIZ_SQUARES);
       expect(square).toMatch(/^[a-h][1-8]$/);
       expect(cornerSquares.has(square)).toBe(false);
     }
@@ -540,7 +540,7 @@ describe("generateRandomSquare (diagonal-quiz)", () => {
     let callIndex = 0;
     const rngValues = [0 / 8, 1 / 8]; // a2
     const rng = () => rngValues[callIndex++];
-    const square = generateRandomSquare(rng);
+    const square = generateRandomSquare(rng, EXCLUDED_QUIZ_SQUARES);
     expect(square).toBe("a2");
   });
 });
@@ -550,30 +550,32 @@ describe("generateRandomSquare (diagonal-quiz)", () => {
 // ============================================================
 describe("generateSquareSequence (diagonal-quiz)", () => {
   const cornerSquares = new Set(["a1", "a8", "h1", "h8"]);
+  const gen = (count: number) =>
+    generateSquareSequence(count, Math.random, EXCLUDED_QUIZ_SQUARES);
 
   it("never includes corner squares", () => {
-    const squares = generateSquareSequence(100);
+    const squares = gen(100);
     for (const square of squares) {
       expect(cornerSquares.has(square)).toBe(false);
     }
   });
 
   it("returns the requested number of squares", () => {
-    expect(generateSquareSequence(0)).toHaveLength(0);
-    expect(generateSquareSequence(1)).toHaveLength(1);
-    expect(generateSquareSequence(10)).toHaveLength(10);
-    expect(generateSquareSequence(60)).toHaveLength(60);
+    expect(gen(0)).toHaveLength(0);
+    expect(gen(1)).toHaveLength(1);
+    expect(gen(10)).toHaveLength(10);
+    expect(gen(60)).toHaveLength(60);
   });
 
   it("returns all valid squares", () => {
-    const squares = generateSquareSequence(20);
+    const squares = gen(20);
     for (const square of squares) {
       expect(square).toMatch(/^[a-h][1-8]$/);
     }
   });
 
   it("contains no consecutive duplicates within a batch", () => {
-    const squares = generateSquareSequence(20);
+    const squares = gen(20);
     const unique = new Set(squares);
     expect(unique.size).toBe(squares.length);
   });
@@ -612,13 +614,17 @@ describe("EXCLUDED_QUIZ_SQUARES (generalized exclusion rule)", () => {
 
   it("never emits an excluded square via generateRandomSquare", () => {
     for (let i = 0; i < 500; i++) {
-      const square = generateRandomSquare();
+      const square = generateRandomSquare(Math.random, EXCLUDED_QUIZ_SQUARES);
       expect(EXCLUDED_QUIZ_SQUARES.has(square)).toBe(false);
     }
   });
 
   it("never emits an excluded square via generateSquareSequence", () => {
-    const squares = generateSquareSequence(200);
+    const squares = generateSquareSequence(
+      200,
+      Math.random,
+      EXCLUDED_QUIZ_SQUARES,
+    );
     for (const square of squares) {
       expect(EXCLUDED_QUIZ_SQUARES.has(square as never)).toBe(false);
     }
@@ -627,7 +633,9 @@ describe("EXCLUDED_QUIZ_SQUARES (generalized exclusion rule)", () => {
   it("includes representative non-corner squares in generated sequences", () => {
     // With 60 eligible squares and reset every 30, a 500-square sequence
     // should hit every eligible square many times over.
-    const squares = new Set<string>(generateSquareSequence(500));
+    const squares = new Set<string>(
+      generateSquareSequence(500, Math.random, EXCLUDED_QUIZ_SQUARES),
+    );
     for (const square of ["d4", "e5", "a2", "h4"]) {
       expect(squares.has(square)).toBe(true);
     }

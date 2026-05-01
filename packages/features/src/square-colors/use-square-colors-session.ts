@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useRef } from "react";
 
 import { useTimedSession } from "../practice-session/use-timed-session";
+import { generateSquareSequence } from "../common/utils";
 import type { SquareColor, SquareColorsResult } from "./types";
-import { generateSquareSequence, getSquareColor } from "./logic";
+import { getSquareColor } from "./logic";
 
 export type UseSquareColorsSessionConfig = {
   timeLimit: number;

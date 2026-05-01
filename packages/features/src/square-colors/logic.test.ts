@@ -1,11 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  getSquareColor,
-  isValidSquare,
-  generateRandomSquare,
-  generateSquareSequence,
-} from "./logic";
+import { generateRandomSquare, generateSquareSequence } from "../common/utils";
+
+import { getSquareColor, isValidSquare } from "./logic";
 
 // ============================================================
 // isValidSquare

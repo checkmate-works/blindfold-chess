@@ -5,9 +5,9 @@ import { useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FEEDBACK_FLASH_MS } from '@blindfold-chess/features/common';
+import { FEEDBACK_FLASH_MS, generateSquareSequence } from '@blindfold-chess/features/common';
 import {
-  generateSquareSequence,
+  EXCLUDED_QUIZ_SQUARES,
   getDiagonals,
   isValidDiagonalAnswer,
   normalizeDiagonal,
@@ -45,7 +45,7 @@ export default function DiagonalQuizTrainingSession({ locale }: Props) {
     handleNextAfterIncorrect,
   } = useBatchTrainingSession<string, { diagonalAnswer: string; antiDiagonalAnswer: string }>({
     batchSize: BATCH_SIZE,
-    generateBatch: () => generateSquareSequence(BATCH_SIZE),
+    generateBatch: () => generateSquareSequence(BATCH_SIZE, Math.random, EXCLUDED_QUIZ_SQUARES),
     checkAnswer: (square, { diagonalAnswer, antiDiagonalAnswer }) => {
       const { diagonal, antiDiagonal } = getDiagonals(square);
 
