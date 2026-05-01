@@ -4,13 +4,14 @@ import { useCallback } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import type { PieceShapeMode } from '@blindfold-chess/types';
+
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { OnboardingStepLayout, PieceSettingsStep } from '../../_components';
 
-type PieceShapeMode = GamePreferences['pieceShapeMode'];
 type PieceColors = GamePreferences['pieceColors'];
 
 type Props = {
