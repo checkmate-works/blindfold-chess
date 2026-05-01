@@ -151,15 +151,25 @@ export function CommentNode({
             flair={node.author?.flair}
             country={node.author?.country}
           >
-            <time dateTime={node.createdAt.toISOString()} className="text-xs text-muted-foreground">
-              {node.createdAt.toLocaleDateString(locale, {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-            </time>
+            {/*
+              Wrap the timestamp in a block-level <div> so it lands below the
+              displayName instead of running inline next to it. UserAvatar
+              renders the displayName in a `inline-flex` <span>, so a bare
+              <time> child would flow on the same line — matching that to
+              `BaseTopicPostCard`, which wraps its timestamp in a <div> for
+              the same reason.
+            */}
+            <div className="text-xs text-muted-foreground">
+              <time dateTime={node.createdAt.toISOString()}>
+                {node.createdAt.toLocaleDateString(locale, {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </time>
+            </div>
           </UserAvatar>
 
           {isCollapsed ? (
