@@ -1,6 +1,7 @@
 import type { Square } from "@blindfold-chess/types";
 
 import type { RandomSource } from "../common";
+import { BOARD_LAST_INDEX } from "../common/constants";
 
 import { FILES, RANKS } from "./constants";
 import type { BoardSymmetryProblem, SymmetryType } from "./types";
@@ -41,14 +42,14 @@ export function calculateSymmetricSquare(
 
   switch (type) {
     case "horizontal":
-      targetFileIndex = 7 - fileIndex;
+      targetFileIndex = BOARD_LAST_INDEX - fileIndex;
       break;
     case "vertical":
-      targetRankIndex = 7 - rankIndex;
+      targetRankIndex = BOARD_LAST_INDEX - rankIndex;
       break;
     case "point":
-      targetFileIndex = 7 - fileIndex;
-      targetRankIndex = 7 - rankIndex;
+      targetFileIndex = BOARD_LAST_INDEX - fileIndex;
+      targetRankIndex = BOARD_LAST_INDEX - rankIndex;
       break;
   }
 

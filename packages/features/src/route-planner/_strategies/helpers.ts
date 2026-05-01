@@ -1,3 +1,4 @@
+import { BOARD_SIZE } from "../../common/constants";
 import { coordsToSquare } from "../coords";
 
 /**
@@ -20,7 +21,7 @@ export const getValidLines = (
 ): string[] => {
   return dirs.flatMap((d) => {
     const lineMoves: string[] = [];
-    for (let i = 1; i < 8; i++) {
+    for (let i = 1; i < BOARD_SIZE; i++) {
       const nf = f + d[0] * i;
       const nr = r + d[1] * i;
       const sq = coordsToSquare(nf, nr);

@@ -11,6 +11,7 @@ import {
   generateRandomSquare as generateRandomSquareBase,
   generateSquareSequence as generateSquareSequenceBase,
 } from "../common";
+import { BOARD_LAST_INDEX } from "../common/constants";
 
 import type { DiagonalPair } from "./types";
 
@@ -47,12 +48,16 @@ function computeDiagonalParams(f: number, r: number) {
   const diag = f - r;
   const diagStartF = diag >= 0 ? diag : 0;
   const diagStartR = diag >= 0 ? 0 : -diag;
-  const diagLength = Math.min(7 - diagStartF, 7 - diagStartR);
+  const diagLength = Math.min(
+    BOARD_LAST_INDEX - diagStartF,
+    BOARD_LAST_INDEX - diagStartR,
+  );
 
   const antiDiag = f + r;
-  const antiStartF = antiDiag <= 7 ? antiDiag : 7;
-  const antiStartR = antiDiag <= 7 ? 0 : antiDiag - 7;
-  const antiLength = Math.min(antiStartF, 7 - antiStartR);
+  const antiStartF = antiDiag <= BOARD_LAST_INDEX ? antiDiag : BOARD_LAST_INDEX;
+  const antiStartR =
+    antiDiag <= BOARD_LAST_INDEX ? 0 : antiDiag - BOARD_LAST_INDEX;
+  const antiLength = Math.min(antiStartF, BOARD_LAST_INDEX - antiStartR);
 
   return {
     diagStartF,

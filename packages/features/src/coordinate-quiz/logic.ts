@@ -6,6 +6,7 @@ import {
   squareToRankIndex,
   fileRankToSquare,
 } from "../common";
+import { BOARD_LAST_INDEX } from "../common/constants";
 import { allSquares } from "./squares";
 import type { BoardOrientation, CoordinateQuestion } from "./types";
 
@@ -66,9 +67,9 @@ export function squareToCoordinates(
   const rank = squareToRankIndex(square);
 
   if (orientation === "white") {
-    return { file, rank: 7 - rank }; // Flip rank for white perspective
+    return { file, rank: BOARD_LAST_INDEX - rank }; // Flip rank for white perspective
   } else {
-    return { file: 7 - file, rank }; // Flip file for black perspective
+    return { file: BOARD_LAST_INDEX - file, rank }; // Flip file for black perspective
   }
 }
 
@@ -85,9 +86,9 @@ export function coordinatesToSquare(
 
   if (orientation === "white") {
     actualFile = file;
-    actualRank = 7 - rank; // Flip rank back
+    actualRank = BOARD_LAST_INDEX - rank; // Flip rank back
   } else {
-    actualFile = 7 - file; // Flip file back
+    actualFile = BOARD_LAST_INDEX - file; // Flip file back
     actualRank = rank;
   }
 

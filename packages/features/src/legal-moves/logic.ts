@@ -8,6 +8,7 @@ import {
   RANKS,
   shuffleArray,
 } from "../common";
+import { BOARD_SIZE } from "../common/constants";
 
 import type { MoveQuestion, PieceType } from "./types";
 
@@ -91,9 +92,9 @@ const BishopMoveStrategy: PieceMoveStrategy = {
 const RookMoveStrategy: PieceMoveStrategy = {
   generateCandidateMove(fromFile, fromRank, rng) {
     if (rng() < 0.5) {
-      return { toFile: Math.floor(rng() * 8), toRank: fromRank }; // Horizontal
+      return { toFile: Math.floor(rng() * BOARD_SIZE), toRank: fromRank }; // Horizontal
     } else {
-      return { toFile: fromFile, toRank: Math.floor(rng() * 8) }; // Vertical
+      return { toFile: fromFile, toRank: Math.floor(rng() * BOARD_SIZE) }; // Vertical
     }
   },
 };
@@ -140,15 +141,24 @@ export function generateMoveQuestionForPiece(
   const strategy = PieceStrategies[pieceType];
 
   for (let attempts = 0; attempts < 200; attempts++) {
-    const fromFile = Math.floor(rng() * 8);
-    const fromRank = Math.floor(rng() * 8);
+    const fromFile = Math.floor(rng() * BOARD_SIZE);
+    const fromRank = Math.floor(rng() * BOARD_SIZE);
     const fromSquare = FILES[fromFile] + RANKS[fromRank];
 
     const { toFile, toRank } = preferLegal
       ? strategy.generateCandidateMove(fromFile, fromRank, rng)
-      : { toFile: Math.floor(rng() * 8), toRank: Math.floor(rng() * 8) };
+      : {
+          toFile: Math.floor(rng() * BOARD_SIZE),
+          toRank: Math.floor(rng() * BOARD_SIZE),
+        };
 
-    if (toFile < 0 || toFile >= 8 || toRank < 0 || toRank >= 8) continue;
+    if (
+      toFile < 0 ||
+      toFile >= BOARD_SIZE ||
+      toRank < 0 ||
+      toRank >= BOARD_SIZE
+    )
+      continue;
 
     const toSquare = FILES[toFile] + RANKS[toRank];
     if (toSquare === fromSquare) continue;

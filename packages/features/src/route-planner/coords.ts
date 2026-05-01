@@ -4,13 +4,20 @@ import {
   squareToFileIndex,
   squareToRankIndex,
 } from "../common";
+import { BOARD_LAST_INDEX } from "../common/constants";
 
 export function squareToCoords(square: string): [number, number] {
   return [squareToFileIndex(square), squareToRankIndex(square)];
 }
 
 export function coordsToSquare(file: number, rank: number): string {
-  if (file < 0 || file > 7 || rank < 0 || rank > 7) return "";
+  if (
+    file < 0 ||
+    file > BOARD_LAST_INDEX ||
+    rank < 0 ||
+    rank > BOARD_LAST_INDEX
+  )
+    return "";
   return fileRankToSquare(file, rank);
 }
 
