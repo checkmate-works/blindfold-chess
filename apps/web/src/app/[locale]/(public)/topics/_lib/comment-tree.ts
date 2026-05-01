@@ -146,3 +146,35 @@ export function flattenReplies(root: CommentTreeNode): FlatReply[] {
   walk(root, true);
   return out;
 }
+
+/**
+ * A first-level reply (direct reply to the thread root) plus all of its own
+ * descendants flattened into a single list. Used by the three-level layout:
+ * root → first-level reply (1 indent) → deeper replies flattened under it
+ * (2 indents max). The `deeper` array uses the same shape as `flattenReplies`,
+ * with `@<parent>` prefixes set only when the parent is NOT the first-level
+ * reply itself.
+ */
+export type ReplyGroup = {
+  first: CommentTreeNode;
+  deeper: FlatReply[];
+};
+
+/**
+ * Group a root's descendant tree by first-level reply.
+ *
+ * Each entry is `{ first, deeper }` where `first` is a direct reply to the
+ * root (rendered with one indent) and `deeper` is everything under `first`
+ * flattened DFS-pre-order (rendered with two indents — the maximum). Replies
+ * whose immediate parent is `first` itself get `replyToDisplayName: null`
+ * (no @-prefix); deeper replies carry their parent's display name so the
+ * "in reply to" cue survives the flattening. This is the structural cap:
+ * indentation never exceeds two levels regardless of how deep the underlying
+ * `parent_id` chain goes.
+ */
+export function groupReplies(root: CommentTreeNode): ReplyGroup[] {
+  return root.children.map((first) => ({
+    first,
+    deeper: flattenReplies(first),
+  }));
+}

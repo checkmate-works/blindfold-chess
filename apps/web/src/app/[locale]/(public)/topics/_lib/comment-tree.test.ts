@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildCommentTree, countDescendants, flattenReplies } from './comment-tree';
+import { buildCommentTree, countDescendants, flattenReplies, groupReplies } from './comment-tree';
 import type { PostWithReplyMeta } from './shared';
 
 function makePost(overrides: Partial<PostWithReplyMeta> & { id: string }): PostWithReplyMeta {
@@ -237,5 +237,90 @@ describe('flattenReplies', () => {
     const replies = flattenReplies(tree[0]);
     // r1a's parent is r1, whose author is null → "Anonymous"
     expect(replies.find((r) => r.node.id === 'r1a')?.replyToDisplayName).toBe('Anonymous');
+  });
+});
+
+describe('groupReplies', () => {
+  function alice(id: string, overrides: Partial<PostWithReplyMeta> = {}): PostWithReplyMeta {
+    return makePost({
+      id,
+      author: {
+        username: 'alice',
+        displayName: 'Alice',
+        avatarUrl: null,
+        flair: null,
+        country: null,
+      },
+      ...overrides,
+    });
+  }
+  function bob(id: string, overrides: Partial<PostWithReplyMeta> = {}): PostWithReplyMeta {
+    return makePost({
+      id,
+      author: {
+        username: 'bob',
+        displayName: 'Bob',
+        avatarUrl: null,
+        flair: null,
+        country: null,
+      },
+      ...overrides,
+    });
+  }
+
+  it('returns one entry per direct reply to the root', () => {
+    const flat = [
+      alice('root'),
+      bob('r1', { parentId: 'root', rootPostId: 'root' }),
+      bob('r2', { parentId: 'root', rootPostId: 'root' }),
+    ];
+    const tree = buildCommentTree(flat);
+    const groups = groupReplies(tree[0]);
+
+    expect(groups.map((g) => g.first.id)).toEqual(['r1', 'r2']);
+    expect(groups.every((g) => g.deeper.length === 0)).toBe(true);
+  });
+
+  it("packs each first-level reply's full subtree into its `deeper` list", () => {
+    // root ← r1 ← r1a ← r1b ; root ← r2
+    // r1's group should contain r1a and r1b (DFS), r2's group should be empty.
+    const flat = [
+      alice('root'),
+      bob('r1', { parentId: 'root', rootPostId: 'root' }),
+      alice('r1a', { parentId: 'r1', rootPostId: 'root' }),
+      bob('r1b', { parentId: 'r1a', rootPostId: 'root' }),
+      bob('r2', { parentId: 'root', rootPostId: 'root' }),
+    ];
+    const tree = buildCommentTree(flat);
+    const groups = groupReplies(tree[0]);
+
+    expect(groups).toHaveLength(2);
+    expect(groups[0].first.id).toBe('r1');
+    expect(groups[0].deeper.map((r) => r.node.id)).toEqual(['r1a', 'r1b']);
+    expect(groups[1].first.id).toBe('r2');
+    expect(groups[1].deeper).toEqual([]);
+  });
+
+  it('marks deeper replies whose parent IS the first-level with replyToDisplayName=null', () => {
+    // r1a's parent is r1 (the first-level), so no @-prefix.
+    // r1aa's parent is r1a (deeper, NOT the first-level), so @r1a.
+    const flat = [
+      alice('root'),
+      bob('r1', { parentId: 'root', rootPostId: 'root' }),
+      alice('r1a', { parentId: 'r1', rootPostId: 'root' }),
+      bob('r1aa', { parentId: 'r1a', rootPostId: 'root' }),
+    ];
+    const tree = buildCommentTree(flat);
+    const [group] = groupReplies(tree[0]);
+
+    expect(group.deeper.map((r) => ({ id: r.node.id, parent: r.replyToDisplayName }))).toEqual([
+      { id: 'r1a', parent: null }, // direct reply to first-level → no prefix
+      { id: 'r1aa', parent: 'Alice' }, // r1a's author
+    ]);
+  });
+
+  it('returns an empty array when the root has no replies', () => {
+    const tree = buildCommentTree([alice('root')]);
+    expect(groupReplies(tree[0])).toEqual([]);
   });
 });

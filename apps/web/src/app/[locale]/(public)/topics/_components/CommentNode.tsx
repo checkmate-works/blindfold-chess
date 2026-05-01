@@ -9,7 +9,7 @@ import type { ActionResult } from '@/lib/action-types';
 
 import { LinkedText } from '@/app/[locale]/_components/LinkedText';
 
-import type { CommentTreeNode, FlatReply } from '../_lib/comment-tree';
+import type { CommentTreeNode, FlatReply, ReplyGroup } from '../_lib/comment-tree';
 import { DeletePostButton } from './DeletePostButton';
 import { LikeButton } from './LikeButton';
 import { ReplyForm } from './ReplyForm';
@@ -63,20 +63,31 @@ type Props = {
   deletePostAction: DeletePostAction;
   i18n: I18n;
   /**
-   * Pre-flattened descendants of this node. Provided ONLY when this node is
-   * a thread root: the server-side parent (`CommentTree`) calls
-   * `flattenReplies(root)` and passes the result here. Each entry is rendered
-   * as a depth-1 sibling under the root, never recursively — this is the
-   * YouTube-style two-level layout (root + flat replies). When `undefined`,
-   * the node is itself a flat reply and renders no descendants of its own.
+   * Reply groups for a thread root. Provided ONLY when this node is the
+   * thread root: the server-side parent (`CommentTree`) calls
+   * `groupReplies(root)` and passes the result here. Each group is one
+   * direct reply to the root (the "first-level reply"), rendered with one
+   * indent, plus all of that reply's own descendants flattened DFS-pre-order
+   * to render with two indents — never deeper. This is the structural cap
+   * on nesting: even a reply chain 20 levels deep in the data renders as
+   * at most two visual indents.
+   */
+  replyGroups?: ReplyGroup[];
+  /**
+   * Pre-flattened deeper replies. Provided ONLY on a first-level reply — the
+   * direct reply to the thread root. Each entry is rendered as a sibling
+   * under the first-level reply (the second indent level). When `undefined`,
+   * this node is either the root (use `replyGroups` instead) or a deeper
+   * reply (renders no descendants of its own).
    */
   flatReplies?: FlatReply[];
   /**
-   * The immediate parent's display name, set on flat replies whose parent is
-   * NOT the root. Renders as "@<name>" above the body so a mid-chain reply
-   * keeps its "in reply to" cue once flattening removes the visual nesting.
-   * Omitted on the root and on direct replies to the root, where the
-   * relationship is already obvious from placement.
+   * The immediate parent's display name, set on deeper replies whose parent
+   * is NOT the first-level reply. Renders as "@<name>" above the body so the
+   * "in reply to" cue survives the flattening at the deepest level. Omitted
+   * on the root, on first-level replies (their parent IS the root), and on
+   * deeper replies whose parent IS the first-level reply (placement is the
+   * cue).
    */
   replyToDisplayName?: string;
 };
@@ -94,6 +105,7 @@ export function CommentNode({
   createReplyAction,
   deletePostAction,
   i18n,
+  replyGroups,
   flatReplies,
   replyToDisplayName,
 }: Props) {
@@ -107,12 +119,13 @@ export function CommentNode({
 
   const showSpoiler = enableSpoiler && node.isSpoiler && !isSpoilerRevealed;
   const isOwnComment = currentUserId !== undefined && currentUserId === node.userId;
-  const isRoot = flatReplies !== undefined;
-  // Only the root has descendants in the rendered tree (flat replies are
-  // siblings of one another under the root, not children of each other).
-  // Counting `flatReplies.length` rather than walking the data tree keeps the
-  // "N replies hidden" label consistent with what collapse actually hides.
-  const hiddenReplyCount = flatReplies?.length ?? 0;
+  const isRoot = replyGroups !== undefined;
+  // The "N replies hidden" label needs to match what collapsing actually
+  // hides. On the root, that is every first-level reply plus every deeper
+  // reply they own — i.e. the total descendant count, summed across groups.
+  // On non-root nodes, collapse is unavailable so the count is unused.
+  const hiddenReplyCount =
+    replyGroups?.reduce((acc, group) => acc + 1 + group.deeper.length, 0) ?? 0;
 
   return (
     <div id={`post-${node.id}`} className="scroll-mt-20">
@@ -228,6 +241,29 @@ export function CommentNode({
                     onCancelReply={() => setIsReplyOpen(false)}
                     enableSpoilerToggle={enableSpoiler}
                   />
+                </div>
+              )}
+
+              {replyGroups && replyGroups.length > 0 && (
+                <div className="mt-3 border-l-2 border-border pl-4 space-y-4">
+                  {replyGroups.map((group) => (
+                    <CommentNode
+                      key={group.first.id}
+                      node={group.first}
+                      rootPostId={rootPostId}
+                      locale={locale}
+                      topicKey={topicKey}
+                      currentUserId={currentUserId}
+                      canReply={canReply}
+                      enableSpoiler={enableSpoiler}
+                      redirectPath={redirectPath}
+                      toggleLikeAction={toggleLikeAction}
+                      createReplyAction={createReplyAction}
+                      deletePostAction={deletePostAction}
+                      i18n={i18n}
+                      flatReplies={group.deeper}
+                    />
+                  ))}
                 </div>
               )}
 

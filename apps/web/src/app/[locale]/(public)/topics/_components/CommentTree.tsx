@@ -1,7 +1,7 @@
 import type { ActionResult } from '@/lib/action-types';
 
 import type { CommentTreeNode } from '../_lib/comment-tree';
-import { flattenReplies } from '../_lib/comment-tree';
+import { groupReplies } from '../_lib/comment-tree';
 import { canUserReply } from '../_lib/permissions';
 import { CommentNode } from './CommentNode';
 
@@ -41,17 +41,18 @@ type Props = {
 };
 
 /**
- * Server-rendered comment thread (YouTube-style two-level layout).
+ * Server-rendered comment thread (three-level layout).
  *
  * Resolves per-root reply permission once on the server (reply permission
- * lives on the top-level post; every descendant inherits it), flattens each
- * root's descendant tree via `flattenReplies` so all replies render at one
- * indent level under the root, then hands the root + flat replies to
- * `CommentNode` (client) for collapse / spoiler-reveal / inline reply-form
- * state. Indent is capped at one level by construction — deeper "reply to a
- * reply" chains keep their context via an "@<parent>" prefix on each flat
- * reply rather than visual nesting, so the layout never breaks under deep
- * reply chains the way recursive indentation does.
+ * lives on the top-level post; every descendant inherits it), groups each
+ * root's descendant tree by first-level reply via `groupReplies`, then hands
+ * the root + reply groups to `CommentNode` (client) for collapse / spoiler-
+ * reveal / inline reply-form state. Indentation is structurally capped at
+ * two levels: a first-level reply gets one indent, everything deeper under
+ * it gets a second indent and is flattened (with an "@<parent>" prefix when
+ * the parent is not the first-level reply itself). The layout therefore
+ * cannot break under deep reply chains, regardless of how deep the
+ * underlying `parent_id` data goes.
  */
 export async function CommentTree({
   comments,
@@ -84,7 +85,7 @@ export async function CommentTree({
           key={root.id}
           node={root}
           rootPostId={root.id}
-          flatReplies={flattenReplies(root)}
+          replyGroups={groupReplies(root)}
           locale={locale}
           topicKey={topicKey}
           currentUserId={currentUserId}
