@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
 import { IS_LOCAL_DEV } from '@/config';
-import { FaTachometerAlt } from 'react-icons/fa';
+import { FaQuestionCircle } from 'react-icons/fa';
 
 import { shouldShowAdsForUser } from '@/lib/ads/ad';
 import { JsonLd, generateWebApplicationSchema } from '@/lib/seo/jsonld';
@@ -93,11 +93,11 @@ export default async function HomePage({ params }: Props) {
         <PageTitle>{tHome('pageTitle')}</PageTitle>
         {user && (
           <Link
-            href="/"
+            href={`/${locale}/manual`}
             className="text-muted-foreground hover:text-foreground transition-colors"
-            aria-label={tHeader('dashboard')}
+            aria-label={tHeader('manual')}
           >
-            <FaTachometerAlt className="h-5 w-5" />
+            <FaQuestionCircle className="h-5 w-5" />
           </Link>
         )}
       </div>

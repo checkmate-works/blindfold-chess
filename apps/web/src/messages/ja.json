@@ -211,8 +211,8 @@
   },
   "Header": {
     "title": "心眼チェス",
-    "dashboard": "ダッシュボード",
-    "home": "ホーム",
+    "dashboard": "トップ",
+    "home": "フィード",
     "gettingStarted": "はじめに",
     "learn": "学ぶ",
     "practice": "練習",

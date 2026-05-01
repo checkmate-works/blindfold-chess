@@ -11,7 +11,6 @@ import {
   FaNewspaper,
   FaQuestionCircle,
   FaRocket,
-  FaTachometerAlt,
   FaTrophy,
   FaUsers,
 } from 'react-icons/fa';
@@ -22,11 +21,11 @@ import type { NavigationIconName } from './types';
 export const getIcon = (iconName: NavigationIconName) => {
   switch (iconName) {
     case 'home':
-      return <FaHome className="h-5 w-5" />;
+      return <FaList className="h-5 w-5" />;
     case 'games':
       return <GiCrossedSwords className="h-5 w-5" />;
     case 'dashboard':
-      return <FaTachometerAlt className="h-5 w-5" />;
+      return <FaHome className="h-5 w-5" />;
     case 'articles':
       return <FaNewspaper className="h-5 w-5" />;
     case 'getting-started':
