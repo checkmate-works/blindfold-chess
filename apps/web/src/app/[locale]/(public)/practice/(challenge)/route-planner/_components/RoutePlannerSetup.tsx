@@ -12,10 +12,12 @@ import { SectionTitle } from '@/app/[locale]/_components';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { TUTORIAL_SKIP_CONFIG } from '../../../_lib/tutorial-skip-config';
 import { PIECE_TYPE_TO_NAME } from '../_lib/utils';
 import type { RoutePlannerPieceSelection } from '../_lib/utils';
 import { RoutePlannerSettings } from './RoutePlannerSettings';
-import { ROUTE_PLANNER_TUTORIAL_SKIPPED_KEY } from './RoutePlannerTutorialSkipLink';
+
+const ROUTE_PLANNER_TUTORIAL_SKIPPED_KEY = TUTORIAL_SKIP_CONFIG.routePlanner.storageKey;
 
 type Props = {
   locale: Locale;

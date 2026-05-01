@@ -9,7 +9,9 @@ import { SectionTitle } from '@/app/[locale]/_components';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { DIAGONAL_QUIZ_TUTORIAL_SKIPPED_KEY } from './DiagonalQuizTutorialSkipLink';
+import { TUTORIAL_SKIP_CONFIG } from '../../../_lib/tutorial-skip-config';
+
+const DIAGONAL_QUIZ_TUTORIAL_SKIPPED_KEY = TUTORIAL_SKIP_CONFIG.diagonalQuiz.storageKey;
 
 type Props = {
   locale: Locale;

@@ -12,7 +12,9 @@ import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { ROUTE_PLANNER_TUTORIAL_SKIPPED_KEY } from './RoutePlannerTutorialSkipLink';
+import { TUTORIAL_SKIP_CONFIG } from '../../../_lib/tutorial-skip-config';
+
+const ROUTE_PLANNER_TUTORIAL_SKIPPED_KEY = TUTORIAL_SKIP_CONFIG.routePlanner.storageKey;
 
 type Props = {
   locale: Locale;
