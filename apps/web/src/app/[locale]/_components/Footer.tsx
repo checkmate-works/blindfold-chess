@@ -8,9 +8,10 @@ import { LanguageSwitcher } from './LanguageSwitcher';
 
 type Props = {
   locale: string;
+  hideLanguageSwitcher?: boolean;
 };
 
-export async function Footer({ locale }: Props) {
+export async function Footer({ locale, hideLanguageSwitcher }: Props) {
   const [
     tFooter,
     tManual,
@@ -146,7 +147,7 @@ export async function Footer({ locale }: Props) {
               <FaGithub className="h-5 w-5" />
             </a>
 
-            <LanguageSwitcher currentLocale={locale} />
+            {!hideLanguageSwitcher && <LanguageSwitcher currentLocale={locale} />}
           </div>
 
           {/* Copyright & Disclaimer */}

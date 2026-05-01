@@ -1904,7 +1904,12 @@
       "welcomeGreeting": "こんにちは、{name} さん",
       "welcomeDefaultName": "プレイヤー",
       "viewMypage": "マイページ",
-      "viewHome": "ホーム"
+      "viewHome": "ホーム",
+      "dailyPuzzleTitle": "今日の問題",
+      "dailyPuzzleAction": "挑戦する",
+      "announcements": "お知らせ",
+      "articles": "記事・ガイド",
+      "viewAll": "すべて見る"
     }
   },
   "AuthStatusDisplay": {

@@ -9,6 +9,8 @@ import { ErrorBoundary } from '@/app/_components/ErrorBoundary';
 import { IntlAvailableContext } from '@/i18n/IntlAvailableContext';
 import { getMessageFallback, handleIntlError } from '@/i18n/error-handling';
 
+import { GamePreferencesProvider } from '@/app/[locale]/_contexts/GamePreferencesContext';
+
 type Props = {
   children: ReactNode;
   locale: string;
@@ -32,7 +34,7 @@ export function Providers({ children, locale, messages }: Props) {
             enableSystem
             disableTransitionOnChange
           >
-            {children}
+            <GamePreferencesProvider>{children}</GamePreferencesProvider>
           </ThemeProvider>
         </IntlAvailableContext.Provider>
       </NextIntlClientProvider>

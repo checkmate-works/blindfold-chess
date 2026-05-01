@@ -8,7 +8,7 @@ type Props = {
 
 export function DashboardHero({ t, siteName }: Props) {
   return (
-    <section className="flex flex-col items-center justify-center p-6 bg-gradient-to-br from-secondary via-background to-secondary">
+    <section className="flex flex-col items-center justify-center pt-12 pb-6 bg-gradient-to-br from-secondary via-background to-secondary">
       <div className="text-center w-full max-w-4xl mx-auto space-y-6">
         <div className="flex justify-center">
           <Image

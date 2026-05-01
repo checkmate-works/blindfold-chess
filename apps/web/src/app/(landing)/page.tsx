@@ -27,6 +27,7 @@ import { getOptionalUser } from '@/lib/auth';
 import { db, profiles } from '@/lib/db';
 import { buildLandingLanguageAlternates, buildLandingUrl } from '@/lib/seo/landing-urls';
 
+import { Footer as GlobalFooter } from '../[locale]/_components/Footer';
 import {
   AiBattleSection,
   DashboardPlaceholder,
@@ -34,7 +35,6 @@ import {
   RanksSection,
   TrainingSection,
 } from './_components';
-import { DashboardFooter } from './_components/DashboardFooter';
 import { Footer } from './_components/Footer';
 import { getLandingLocale } from './_lib/getLandingLocale';
 
@@ -121,8 +121,9 @@ export default async function RootPage({ searchParams }: { searchParams: SearchP
           siteName={metaT('siteName')}
           displayName={displayName}
           avatarUrl={avatarUrl}
+          userId={user.id}
         />
-        <DashboardFooter locale={locale} />
+        <GlobalFooter locale={locale} hideLanguageSwitcher={true} />
       </>
     );
   }

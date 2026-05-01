@@ -1,6 +1,6 @@
 import { cache } from 'react';
 
-import { type SQL, and, count, desc, eq, isNull } from 'drizzle-orm';
+import { type SQL, and, count, desc, eq, isNull, sql } from 'drizzle-orm';
 
 import { db, positions, profiles } from '@/lib/db';
 import { UUID_RE } from '@/lib/validations/uuid';
@@ -155,3 +155,16 @@ export const getPositionWithProfileById = cache(
     return row ?? null;
   }
 );
+/**
+ * Fetch a single random position of a given type.
+ */
+export async function getRandomPosition({ type }: { type: PositionType }) {
+  const [row] = await db
+    .select()
+    .from(positions)
+    .where(and(eq(positions.type, type), isNull(positions.deletedAt)))
+    .orderBy(sql`RANDOM()`)
+    .limit(1);
+
+  return row ?? null;
+}

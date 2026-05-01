@@ -1903,7 +1903,12 @@
       "welcomeGreeting": "Hello, {name}!",
       "welcomeDefaultName": "Player",
       "viewMypage": "My Page",
-      "viewHome": "Home"
+      "viewHome": "Home",
+      "dailyPuzzleTitle": "Daily Puzzle",
+      "dailyPuzzleAction": "Challenge",
+      "announcements": "Announcements",
+      "articles": "Articles & Guides",
+      "viewAll": "View All"
     }
   },
   "AuthStatusDisplay": {
