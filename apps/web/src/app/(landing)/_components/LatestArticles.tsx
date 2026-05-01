@@ -24,9 +24,13 @@ export async function LatestArticles({ locale }: Props) {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {articles.map((article) => (
-          <ListLink key={article.id} href={`/articles/${article.slug}`} locale={locale}>
-            {article.title}
-          </ListLink>
+          <ListLink
+            key={article.id}
+            href={`/articles/${article.slug}`}
+            locale={locale}
+            icon="📖"
+            title={article.title}
+          />
         ))}
       </div>
       <div className="mt-4 text-right">
