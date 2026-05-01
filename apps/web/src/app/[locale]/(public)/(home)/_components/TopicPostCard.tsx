@@ -12,7 +12,6 @@ import { FaRegComment } from 'react-icons/fa';
 import { truncateContent } from '@/lib/content/truncate-content';
 
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
-import { UserAvatar } from '@/app/[locale]/(public)/topics/_components/UserAvatar';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
 import { RatingDisplay } from '@/app/[locale]/(public)/topics/openings/[slug]/_components/RatingDisplay';
@@ -21,6 +20,7 @@ import { MiniBoard } from '@/app/[locale]/(public)/topics/openings/_components/M
 import { isBlackOpening } from '@/app/[locale]/(public)/topics/openings/_lib/openings';
 import { toggleLike as toggleLikeSquare } from '@/app/[locale]/(public)/topics/squares/[square]/posts/[postId]/_actions/toggleLike';
 import { LinkedText } from '@/app/[locale]/_components';
+import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 
 import { FeedItemCard } from './FeedItemCard';
 import { TopicSquareBoard } from './TopicSquareBoard';

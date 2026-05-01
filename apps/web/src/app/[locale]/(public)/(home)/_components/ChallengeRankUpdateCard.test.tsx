@@ -51,7 +51,7 @@ vi.mock('@/app/[locale]/(public)/leaderboard/_lib/types', () => ({
   moduleToSlug: (module: string) => module.replace(/_/g, '-'),
 }));
 
-vi.mock('@/app/[locale]/(public)/topics/_components/UserAvatar', () => ({
+vi.mock('@/app/[locale]/_components/UserAvatar', () => ({
   UserAvatar: ({ displayName }: { displayName: string }) => (
     <span data-testid="user-avatar">{displayName}</span>
   ),

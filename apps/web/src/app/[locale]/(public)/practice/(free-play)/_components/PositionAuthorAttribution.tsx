@@ -1,7 +1,4 @@
-import Image from 'next/image';
-
-import { Link } from '@/i18n/routing';
-
+import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 type ProfileLike = {
@@ -25,51 +22,23 @@ type Props = {
  * a single-letter fallback) and the display name. When the author has a
  * username, the whole avatar + name segment links to their profile.
  *
- * Identical markup was previously duplicated in both detail pages; extract
- * here to give a single owner for the avatar fallback styling and the
- * username link behaviour. Avatar rendering is deliberately kept inline
- * (instead of `UserAvatar`) because adopting that component requires a
- * separate API change tracked in another ticket.
+ * Avatar rendering is delegated to the unified `UserAvatar` component
+ * (`size="xs"`, `layout="inline"`). The wrapper still owns the
+ * `createdByLabel` prefix and the right-aligned positioning specific to
+ * this attribution row.
  */
 export function PositionAuthorAttribution({ profile, displayName, createdByLabel, locale }: Props) {
-  const badge = (
-    <>
-      {profile?.avatarUrl ? (
-        <Image
-          src={profile.avatarUrl}
-          alt={displayName}
-          width={24}
-          height={24}
-          className="w-6 h-6 rounded-full object-cover flex-shrink-0"
-          unoptimized
-        />
-      ) : (
-        <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-          <span className="text-xs text-muted-foreground">
-            {displayName.charAt(0).toUpperCase()}
-          </span>
-        </div>
-      )}
-      <span className={`font-medium text-foreground${profile?.username ? ' hover:underline' : ''}`}>
-        {displayName}
-      </span>
-    </>
-  );
-
   return (
     <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
       <span>{createdByLabel}</span>
-      {profile?.username ? (
-        <Link
-          href={`/u/${profile.username}`}
-          locale={locale}
-          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-        >
-          {badge}
-        </Link>
-      ) : (
-        badge
-      )}
+      <UserAvatar
+        profileHref={profile?.username ? `/u/${profile.username}` : null}
+        avatarUrl={profile?.avatarUrl}
+        displayName={displayName}
+        locale={locale}
+        size="xs"
+        layout="inline"
+      />
     </div>
   );
 }

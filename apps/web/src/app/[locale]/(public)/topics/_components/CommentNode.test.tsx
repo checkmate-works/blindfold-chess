@@ -20,7 +20,7 @@ vi.mock('@/app/[locale]/(public)/topics/_components/LikeButton', () => ({
   LikeButton: () => <div data-testid="like-button" />,
 }));
 
-vi.mock('@/app/[locale]/(public)/topics/_components/UserAvatar', () => ({
+vi.mock('@/app/[locale]/_components/UserAvatar', () => ({
   UserAvatar: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="user-avatar">{children}</div>
   ),

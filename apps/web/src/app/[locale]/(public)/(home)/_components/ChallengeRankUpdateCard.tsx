@@ -11,8 +11,8 @@ import {
   type LeaderboardModule,
   moduleToSlug,
 } from '@/app/[locale]/(public)/leaderboard/_lib/types';
-import { UserAvatar } from '@/app/[locale]/(public)/topics/_components/UserAvatar';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
+import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 
 import type { ChallengeRankUpdateData } from '../_lib/types';
 import { FeedItemCard } from './FeedItemCard';

@@ -8,11 +8,11 @@ import { FaEyeSlash } from 'react-icons/fa';
 import { truncateContent } from '@/lib/content/truncate-content';
 
 import { LinkedText } from '@/app/[locale]/_components/LinkedText';
+import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import type { PostWithReplyMeta } from '../_lib/shared';
 import { LikeButton } from './LikeButton';
-import { UserAvatar } from './UserAvatar';
 
 type ToggleLikeAction = (
   postId: string,

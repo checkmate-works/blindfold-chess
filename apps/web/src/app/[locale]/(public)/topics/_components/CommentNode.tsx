@@ -8,12 +8,12 @@ import { FaEyeSlash } from 'react-icons/fa';
 import type { ActionResult } from '@/lib/action-types';
 
 import { LinkedText } from '@/app/[locale]/_components/LinkedText';
+import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 
 import type { CommentTreeNode, FlatReply, ReplyGroup } from '../_lib/comment-tree';
 import { DeletePostButton } from './DeletePostButton';
 import { LikeButton } from './LikeButton';
 import { ReplyForm } from './ReplyForm';
-import { UserAvatar } from './UserAvatar';
 
 type ToggleLikeAction = (
   postId: string,

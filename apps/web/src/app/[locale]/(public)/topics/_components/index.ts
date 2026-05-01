@@ -18,4 +18,3 @@ export { TopicListPageLayout } from './TopicListPageLayout';
 // TopicPostDetailLayout imports PostDetailContent which imports AdSenseGuard (server-only).
 // Excluded from barrel to prevent server-only modules leaking into client bundles.
 // Import directly: import { TopicPostDetailLayout } from './TopicPostDetailLayout';
-export { UserAvatar } from './UserAvatar';
