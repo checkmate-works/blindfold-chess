@@ -238,6 +238,7 @@ export function BaseTopicPostCard({
         replyMeta={replyMeta}
         toggleLikeAction={toggleLikeAction}
         i18nNamespace={i18nNamespace}
+        postHref={postHref}
       />
     </div>
   );

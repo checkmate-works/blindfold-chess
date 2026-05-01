@@ -39,6 +39,14 @@ export async function createReplyBase(params: {
    * defaults to the legacy `/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${postId}` path.
    */
   revalidate?: (postId: string) => string;
+  /**
+   * Self-declared "this reply contains spoilers" flag, persisted to
+   * `topic_posts.is_spoiler`. Surface today is `topic_type='position_puzzle'`
+   * only — every other call site can omit this and the column defaults to
+   * `false`. Wrappers that accept user input for this field should validate
+   * the FormData value upstream and pass a strict boolean here.
+   */
+  isSpoiler?: boolean;
   formData: FormData;
 }): Promise<CreateReplyState> {
   const {
@@ -51,6 +59,7 @@ export async function createReplyBase(params: {
     validateTopic,
     redirectPath,
     revalidate,
+    isSpoiler,
     formData,
   } = params;
 
@@ -177,6 +186,7 @@ export async function createReplyBase(params: {
       parentId,
       rootPostId,
       content: content.trim(),
+      ...(isSpoiler !== undefined ? { isSpoiler } : {}),
     })
     .returning({ id: topicPosts.id });
 

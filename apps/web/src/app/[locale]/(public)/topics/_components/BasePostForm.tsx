@@ -6,6 +6,8 @@ import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { Button, FormErrorBanner, Textarea, UnsavedChangesDialog } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { MAX_CONTENT_LENGTH } from '@/lib/validations/content';
+
 type Props = {
   /** Bound server action (locale/slug already bound) */
   action: (prevState: { error?: string }, formData: FormData) => Promise<{ error?: string }>;
@@ -94,7 +96,7 @@ export function BasePostForm({
           id="content"
           name="content"
           rows={6}
-          maxLength={5000}
+          maxLength={MAX_CONTENT_LENGTH}
           placeholder={t('contentPlaceholder')}
           required={contentRequired}
           onChange={(e) => {

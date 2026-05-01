@@ -252,6 +252,48 @@ export async function getPostsByTopicTypePaginated(
 }
 
 /**
+ * Get every comment row (top-level posts AND replies) for a given topic in a
+ * single query, with author info and like / reply metadata attached.
+ *
+ * Used by Reddit-style inline tree views (currently `position_memory` and
+ * `position_puzzle` parent pages). The caller passes the result to
+ * `buildCommentTree` to materialize the parent-child structure on the server.
+ *
+ * Sort order: `createdAt ASC` so that when the tree is built, sibling
+ * replies under the same parent end up in chronological order. Top-level
+ * sort (new / popular / active) is applied AFTER tree building, by the
+ * caller.
+ */
+export async function getCommentTreeForTopic(
+  topicType: TopicType,
+  topicKey: string,
+  currentUserId?: string
+): Promise<PostWithReplyMeta[]> {
+  const results = await db
+    .select({
+      post: topicPosts,
+      author: authorSelect,
+    })
+    .from(topicPosts)
+    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+    .where(
+      and(
+        eq(topicPosts.topicType, topicType),
+        eq(topicPosts.topicKey, topicKey),
+        isNull(topicPosts.deletedAt)
+      )
+    )
+    .orderBy(asc(topicPosts.createdAt));
+
+  const posts: TopicPostWithAuthor[] = results.map((r) => ({
+    ...r.post,
+    author: r.author,
+  }));
+
+  return attachPostMeta(posts, currentUserId);
+}
+
+/**
  * Get replies for a specific post with like metadata.
  * Topic-generic: works on any postId regardless of topicType.
  */

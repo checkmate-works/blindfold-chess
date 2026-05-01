@@ -58,6 +58,13 @@ type Props = {
   redirectPath: string;
   i18n: PostDetailI18n;
   extraContent?: React.ReactNode;
+  /**
+   * When `true`, the reply form renders an `isSpoiler` checkbox and the
+   * reply list applies the same click-to-reveal overlay to flagged replies
+   * that `BaseTopicPostCard` applies to top-level posts. Surfaced only by
+   * `topic_type='position_puzzle'` today.
+   */
+  enableReplySpoiler?: boolean;
 };
 
 export function PostDetailContent({
@@ -75,6 +82,7 @@ export function PostDetailContent({
   redirectPath,
   i18n,
   extraContent,
+  enableReplySpoiler = false,
 }: Props) {
   const authorName = post.author?.displayName || post.author?.username || 'Anonymous';
   const profileHref = post.author?.username ? `/u/${post.author.username}` : null;
@@ -154,6 +162,7 @@ export function PostDetailContent({
             likeI18nNamespace={i18n.likeNamespace}
             replyI18nNamespace={i18n.replyNamespace}
             showForm
+            enableSpoiler={enableReplySpoiler}
           />
         ) : (
           <>
@@ -168,6 +177,7 @@ export function PostDetailContent({
                 likeI18nNamespace={i18n.likeNamespace}
                 replyI18nNamespace={i18n.replyNamespace}
                 showForm={false}
+                enableSpoiler={enableReplySpoiler}
               />
             )}
             <p className="text-sm text-muted-foreground">
@@ -194,6 +204,7 @@ export function PostDetailContent({
               likeI18nNamespace={i18n.likeNamespace}
               replyI18nNamespace={i18n.replyNamespace}
               showForm={false}
+              enableSpoiler={enableReplySpoiler}
             />
           )}
           {replyRestrictionMessage && (

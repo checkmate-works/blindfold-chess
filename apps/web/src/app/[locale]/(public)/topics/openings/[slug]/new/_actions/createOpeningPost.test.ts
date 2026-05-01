@@ -186,8 +186,8 @@ describe('createOpeningPost', () => {
       expect(mockInsertValues).not.toHaveBeenCalled();
     });
 
-    it('should return contentTooLong when content exceeds 5000 characters', async () => {
-      const longContent = 'a'.repeat(5001);
+    it('should return contentTooLong when content exceeds MAX_CONTENT_LENGTH', async () => {
+      const longContent = 'a'.repeat(2001);
       const result = await createOpeningPost(
         'en',
         'french-defense',
@@ -339,7 +339,7 @@ describe('createOpeningPost', () => {
     });
 
     it('should NOT consume rate limit when content exceeds max length', async () => {
-      const longContent = 'a'.repeat(5001);
+      const longContent = 'a'.repeat(2001);
       const result = await createOpeningPost(
         'en',
         'french-defense',

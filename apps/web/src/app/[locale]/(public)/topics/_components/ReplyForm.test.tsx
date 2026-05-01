@@ -75,7 +75,7 @@ describe('ReplyForm', () => {
     expect(textarea.getAttribute('required')).not.toBeNull();
   });
 
-  it('should set maxLength=5000 on textarea', () => {
+  it('should set maxLength=2000 on textarea (matches MAX_CONTENT_LENGTH)', () => {
     render(
       <ReplyForm
         locale="en"
@@ -87,6 +87,6 @@ describe('ReplyForm', () => {
     );
 
     const textarea = screen.getByLabelText('contentLabel');
-    expect(textarea.getAttribute('maxlength')).toBe('5000');
+    expect(textarea.getAttribute('maxlength')).toBe('2000');
   });
 });
