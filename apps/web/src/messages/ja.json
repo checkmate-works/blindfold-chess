@@ -304,7 +304,6 @@
       "text": "テキスト",
       "icon": "アイコン",
       "enableAutoComplete": "補完を有効にする",
-      "switchInputMode": "入力モードを切り替え",
       "peekMode": "盤面ピークモード",
       "peekModeDescription": "対局中の盤面表示方式",
       "peekModes": {
@@ -1037,7 +1036,7 @@
       },
       "session": {
         "title": "挑戦",
-        "correct": "正解！\ud83c\udf89",
+        "correct": "正解！🎉",
         "incorrect": "不正解です。もう一度挑戦してください。",
         "showBoard": "ボードを表示",
         "whitePlayed": "白が {move} を指しました",
@@ -2512,6 +2511,13 @@
           "positions": {
             "memory": "メモリー"
           }
+        },
+        "help": {
+          "avgPerActivePoster": {
+            "title": "投稿者あたりの平均",
+            "ariaLabel": "投稿者あたりの平均の説明を表示",
+            "description": "選択期間内の UGC 投稿の総数を、その期間内に少なくとも 1 件の UGC を投稿した個別ユーザー数で割った値です。\n\n複数種類の UGC（例: トピック投稿と保存ポジションの両方）に貢献したユーザーは、2 人ではなく 1 人のアクティブ投稿者として数えます。\n\n論理削除された投稿は分子からもアクティブ投稿者数からも除外されます。"
+          }
         }
       }
     },
@@ -2653,6 +2659,39 @@
       "previousPage": "Previous",
       "nextPage": "Next"
     },
+    "positionMemory": "Position Memory",
+    "chunks": "チャンク",
+    "puzzle": "Puzzle",
+    "topicPosts": {
+      "navLabel": "トピック投稿",
+      "title": "トピック投稿",
+      "filterByUser": "ユーザーで絞り込み",
+      "filterByTopicType": "トピックタイプで絞り込み",
+      "filterByStatus": "ステータスで絞り込み",
+      "allTopicTypes": "すべてのタイプ",
+      "allStatuses": "すべてのステータス",
+      "filterButton": "絞り込み",
+      "content": "内容",
+      "topicType": "トピックタイプ",
+      "topicKey": "トピックキー",
+      "author": "投稿者",
+      "status": "ステータス",
+      "createdAt": "作成日時",
+      "actions": "操作",
+      "active": "公開中",
+      "deleted": "削除済み",
+      "noPostsFound": "投稿が見つかりません。",
+      "deleteButton": "削除",
+      "deleteModalTitle": "投稿を削除",
+      "deleteModalReasonLabel": "削除理由",
+      "deleteModalReasonPlaceholder": "この投稿を削除する理由を入力してください...",
+      "deleteModalCancel": "キャンセル",
+      "deleteModalConfirm": "削除を確認",
+      "deleteModalDeleting": "削除中...",
+      "deleteModalReasonRequired": "理由は必須です",
+      "previousPage": "前へ",
+      "nextPage": "次へ"
+    },
     "announcements": "Announcements",
     "announcementsTable": {
       "title": "Announcements",
@@ -2792,38 +2831,103 @@
         "publishedConfirmCancel": "キャンセル"
       }
     },
-    "positionMemory": "Position Memory",
-    "chunks": "チャンク",
-    "puzzle": "Puzzle",
-    "topicPosts": {
-      "navLabel": "トピック投稿",
-      "title": "トピック投稿",
-      "filterByUser": "ユーザーで絞り込み",
-      "filterByTopicType": "トピックタイプで絞り込み",
-      "filterByStatus": "ステータスで絞り込み",
-      "allTopicTypes": "すべてのタイプ",
-      "allStatuses": "すべてのステータス",
-      "filterButton": "絞り込み",
-      "content": "内容",
-      "topicType": "トピックタイプ",
-      "topicKey": "トピックキー",
-      "author": "投稿者",
-      "status": "ステータス",
-      "createdAt": "作成日時",
+    "ads": "広告",
+    "adsManagement": {
+      "title": "広告管理",
+      "globalToggle": "広告を表示",
+      "globalToggleDescription": "サイト全体の広告表示を有効化／無効化します",
+      "enabled": "有効",
+      "disabled": "無効",
+      "banners": "広告バナー",
+      "slot": "スロット",
+      "href": "リンク URL",
+      "imagePath": "画像パス",
+      "imagePreview": "プレビュー",
+      "alt": "代替テキスト",
+      "isActive": "有効",
       "actions": "操作",
-      "active": "公開中",
-      "deleted": "削除済み",
-      "noPostsFound": "投稿が見つかりません。",
-      "deleteButton": "削除",
-      "deleteModalTitle": "投稿を削除",
-      "deleteModalReasonLabel": "削除理由",
-      "deleteModalReasonPlaceholder": "この投稿を削除する理由を入力してください...",
-      "deleteModalCancel": "キャンセル",
-      "deleteModalConfirm": "削除を確認",
-      "deleteModalDeleting": "削除中...",
-      "deleteModalReasonRequired": "理由は必須です",
-      "previousPage": "前へ",
-      "nextPage": "次へ"
+      "edit": "編集",
+      "save": "保存",
+      "cancel": "キャンセル",
+      "saving": "保存中...",
+      "active": "有効",
+      "inactive": "無効",
+      "noBanners": "広告バナーがありません。",
+      "newBanner": "新規バナー",
+      "createTitle": "広告バナーの作成",
+      "slotPlaceholder": "例: native-ad",
+      "hrefPlaceholder": "https://example.com",
+      "imagePathPlaceholder": "/images/ads/banner.png",
+      "altPlaceholder": "広告",
+      "width": "幅",
+      "height": "高さ",
+      "sortOrder": "表示順",
+      "startAt": "開始日時",
+      "endAt": "終了日時",
+      "create": "作成",
+      "creating": "作成中..."
+    },
+    "grants": {
+      "title": "特典付与",
+      "navLabel": "特典付与",
+      "noGrantsFound": "特典が見つかりません",
+      "showing": "全 {total} 件中 {from}–{to} 件を表示",
+      "columns": {
+        "user": "ユーザー",
+        "benefit": "特典",
+        "grantType": "付与種別",
+        "reason": "理由",
+        "period": "期間",
+        "status": "状態",
+        "actions": "操作"
+      },
+      "status": {
+        "revoked": "取消済み",
+        "expired": "期限切れ",
+        "active": "有効"
+      }
+    },
+    "achievements": {
+      "title": "実績",
+      "navLabel": "実績",
+      "description": "実績の定義の管理と達成者の確認を行います。",
+      "noAchievementsFound": "実績が見つかりません",
+      "showing": "全 {total} 件中 {from}–{to} 件を表示",
+      "viewHolders": "達成者を見る",
+      "columns": {
+        "displayName": "名前",
+        "iconKey": "アイコンキー",
+        "slug": "スラグ",
+        "category": "カテゴリ",
+        "repeatable": "繰り返し可能",
+        "displayOrder": "表示順",
+        "holderCount": "達成者数",
+        "actions": "操作"
+      },
+      "yes": "はい",
+      "no": "いいえ",
+      "detail": {
+        "backToList": "実績一覧に戻る",
+        "notFound": "実績が見つかりません",
+        "headerTitle": "実績の詳細",
+        "slug": "スラグ",
+        "category": "カテゴリ",
+        "iconKey": "アイコンキー",
+        "repeatable": "繰り返し可能",
+        "displayOrder": "表示順",
+        "holderCount": "達成者数",
+        "createdAt": "作成日時",
+        "holdersTitle": "達成者",
+        "showingHolders": "全 {total} 名中 {from}–{to} 名を表示",
+        "noHoldersFound": "まだ達成者はいません",
+        "columns": {
+          "username": "ユーザー名",
+          "userId": "ユーザー ID",
+          "achievedAt": "達成日時",
+          "metadata": "メタデータ"
+        },
+        "anonymous": "(プロフィールなし)"
+      }
     }
   },
   "publicProfile": {

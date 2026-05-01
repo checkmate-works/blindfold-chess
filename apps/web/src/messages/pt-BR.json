@@ -1906,7 +1906,12 @@
       "welcomeGreeting": "Olá, {name}!",
       "welcomeDefaultName": "Jogador",
       "viewMypage": "Minha Página",
-      "viewHome": "Início"
+      "viewHome": "Início",
+      "dailyPuzzleTitle": "Puzzle do Dia",
+      "dailyPuzzleAction": "Resolver",
+      "announcements": "Avisos",
+      "articles": "Artigos e Guias",
+      "viewAll": "Ver tudo"
     }
   },
   "AuthStatusDisplay": {
