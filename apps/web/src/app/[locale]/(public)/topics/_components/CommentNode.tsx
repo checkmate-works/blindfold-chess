@@ -9,8 +9,7 @@ import type { ActionResult } from '@/lib/action-types';
 
 import { LinkedText } from '@/app/[locale]/_components/LinkedText';
 
-import type { CommentTreeNode } from '../_lib/comment-tree';
-import { countDescendants } from '../_lib/comment-tree';
+import type { CommentTreeNode, FlatReply } from '../_lib/comment-tree';
 import { DeletePostButton } from './DeletePostButton';
 import { LikeButton } from './LikeButton';
 import { ReplyForm } from './ReplyForm';
@@ -64,22 +63,23 @@ type Props = {
   deletePostAction: DeletePostAction;
   i18n: I18n;
   /**
-   * Zero-based depth: 0 = top-level comment, 1 = first reply, etc. Used to
-   * stop adding visual indentation past `MAX_INDENT_DEPTH` so the layout
-   * does not break on narrow screens — siblings beyond that depth still
-   * nest in the DOM (and continue to draw the border-left guide), but the
-   * left padding is held constant. Mirrors Reddit's "soft cap" behavior:
-   * the data is unlimited, the indentation is not.
+   * Pre-flattened descendants of this node. Provided ONLY when this node is
+   * a thread root: the server-side parent (`CommentTree`) calls
+   * `flattenReplies(root)` and passes the result here. Each entry is rendered
+   * as a depth-1 sibling under the root, never recursively — this is the
+   * YouTube-style two-level layout (root + flat replies). When `undefined`,
+   * the node is itself a flat reply and renders no descendants of its own.
    */
-  depth?: number;
+  flatReplies?: FlatReply[];
+  /**
+   * The immediate parent's display name, set on flat replies whose parent is
+   * NOT the root. Renders as "@<name>" above the body so a mid-chain reply
+   * keeps its "in reply to" cue once flattening removes the visual nesting.
+   * Omitted on the root and on direct replies to the root, where the
+   * relationship is already obvious from placement.
+   */
+  replyToDisplayName?: string;
 };
-
-/**
- * Visual cap for nested-reply indentation. Reddit caps around ~6–9 depending
- * on viewport; 8 is a middle-of-the-road default that holds up on a 360px
- * mobile viewport when each level adds `pl-4` (~16px).
- */
-const MAX_INDENT_DEPTH = 8;
 
 export function CommentNode({
   node,
@@ -94,7 +94,8 @@ export function CommentNode({
   createReplyAction,
   deletePostAction,
   i18n,
-  depth = 0,
+  flatReplies,
+  replyToDisplayName,
 }: Props) {
   const tTopics = useTranslations('topics');
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -106,20 +107,27 @@ export function CommentNode({
 
   const showSpoiler = enableSpoiler && node.isSpoiler && !isSpoilerRevealed;
   const isOwnComment = currentUserId !== undefined && currentUserId === node.userId;
-  const descendantCount = countDescendants(node);
+  const isRoot = flatReplies !== undefined;
+  // Only the root has descendants in the rendered tree (flat replies are
+  // siblings of one another under the root, not children of each other).
+  // Counting `flatReplies.length` rather than walking the data tree keeps the
+  // "N replies hidden" label consistent with what collapse actually hides.
+  const hiddenReplyCount = flatReplies?.length ?? 0;
 
   return (
     <div id={`post-${node.id}`} className="scroll-mt-20">
       <div className="flex items-start gap-2">
-        <button
-          type="button"
-          onClick={() => setIsCollapsed((prev) => !prev)}
-          aria-label={tTopics(isCollapsed ? 'expandAriaLabel' : 'collapseAriaLabel')}
-          aria-expanded={!isCollapsed}
-          className="flex-shrink-0 mt-1 w-5 h-5 flex items-center justify-center text-xs text-muted-foreground hover:text-foreground border border-border rounded cursor-pointer"
-        >
-          {isCollapsed ? '+' : '−'}
-        </button>
+        {isRoot && (
+          <button
+            type="button"
+            onClick={() => setIsCollapsed((prev) => !prev)}
+            aria-label={tTopics(isCollapsed ? 'expandAriaLabel' : 'collapseAriaLabel')}
+            aria-expanded={!isCollapsed}
+            className="flex-shrink-0 mt-1 w-5 h-5 flex items-center justify-center text-xs text-muted-foreground hover:text-foreground border border-border rounded cursor-pointer"
+          >
+            {isCollapsed ? '+' : '−'}
+          </button>
+        )}
 
         <div className="flex-1 min-w-0 space-y-2">
           <UserAvatar
@@ -142,14 +150,17 @@ export function CommentNode({
           </UserAvatar>
 
           {isCollapsed ? (
-            descendantCount > 0 && (
+            hiddenReplyCount > 0 && (
               <p className="text-xs text-muted-foreground italic">
-                {tTopics('hiddenReplies', { count: descendantCount })}
+                {tTopics('hiddenReplies', { count: hiddenReplyCount })}
               </p>
             )
           ) : (
             <>
               <div className="relative" aria-live="polite">
+                {replyToDisplayName && (
+                  <p className="text-sm font-medium text-primary mb-1">@{replyToDisplayName}</p>
+                )}
                 <p
                   className="text-sm text-foreground whitespace-pre-wrap break-words leading-relaxed"
                   aria-hidden={showSpoiler || undefined}
@@ -220,16 +231,12 @@ export function CommentNode({
                 </div>
               )}
 
-              {node.children.length > 0 && (
-                <div
-                  className={`mt-3 border-l-2 border-border space-y-4 ${
-                    depth < MAX_INDENT_DEPTH ? 'pl-4' : 'pl-0'
-                  }`}
-                >
-                  {node.children.map((child) => (
+              {flatReplies && flatReplies.length > 0 && (
+                <div className="mt-3 border-l-2 border-border pl-4 space-y-4">
+                  {flatReplies.map(({ node: replyNode, replyToDisplayName: prefix }) => (
                     <CommentNode
-                      key={child.id}
-                      node={child}
+                      key={replyNode.id}
+                      node={replyNode}
                       rootPostId={rootPostId}
                       locale={locale}
                       topicKey={topicKey}
@@ -241,7 +248,7 @@ export function CommentNode({
                       createReplyAction={createReplyAction}
                       deletePostAction={deletePostAction}
                       i18n={i18n}
-                      depth={depth + 1}
+                      replyToDisplayName={prefix ?? undefined}
                     />
                   ))}
                 </div>

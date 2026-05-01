@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import type { CommentTreeNode } from '../_lib/comment-tree';
+import type { CommentTreeNode, FlatReply } from '../_lib/comment-tree';
 import { CommentNode } from './CommentNode';
 
 afterEach(() => {
@@ -93,14 +93,15 @@ function renderNode(props: Partial<Parameters<typeof CommentNode>[0]> & { node: 
       createReplyAction={mockCreateReply}
       deletePostAction={mockDeletePost}
       i18n={i18n}
-      depth={props.depth}
+      flatReplies={props.flatReplies}
+      replyToDisplayName={props.replyToDisplayName}
     />
   );
 }
 
 describe('CommentNode', () => {
   it('renders the comment body and the reply button when canReply is true and viewer is logged in', () => {
-    renderNode({ node: makeNode({ id: 'a', content: 'hello world' }) });
+    renderNode({ node: makeNode({ id: 'a', content: 'hello world' }), flatReplies: [] });
 
     expect(screen.getByText('hello world')).toBeDefined();
     expect(screen.getByText('replyButton')).toBeDefined();
@@ -111,19 +112,20 @@ describe('CommentNode', () => {
       node: makeNode({ id: 'a' }),
       currentUserId: undefined,
       canReply: true,
+      flatReplies: [],
     });
 
     expect(screen.queryByText('replyButton')).toBeNull();
   });
 
   it('hides the reply button when canReply is false (e.g. replyPermission=nobody)', () => {
-    renderNode({ node: makeNode({ id: 'a' }), canReply: false });
+    renderNode({ node: makeNode({ id: 'a' }), canReply: false, flatReplies: [] });
 
     expect(screen.queryByText('replyButton')).toBeNull();
   });
 
   it('toggles an inline ReplyForm under the comment when Reply is clicked', () => {
-    renderNode({ node: makeNode({ id: 'a' }) });
+    renderNode({ node: makeNode({ id: 'a' }), flatReplies: [] });
 
     expect(screen.queryByTestId('reply-form')).toBeNull();
     fireEvent.click(screen.getByText('replyButton'));
@@ -131,156 +133,160 @@ describe('CommentNode', () => {
   });
 
   it('passes the displayName as replyToUsername (so the form shows "Replying to @Alice")', () => {
-    renderNode({ node: makeNode({ id: 'a' }) });
+    renderNode({ node: makeNode({ id: 'a' }), flatReplies: [] });
 
     fireEvent.click(screen.getByText('replyButton'));
     expect(screen.getByTestId('reply-form').textContent).toContain('Alice');
   });
 
-  it('renders nested children recursively when not collapsed', () => {
-    const child = makeNode({
-      id: 'child',
-      content: 'nested reply',
-      parentId: 'a',
-      rootPostId: 'a',
+  describe('flat replies (YouTube-style two-level layout)', () => {
+    it('renders each flatReply as a sibling under the root, never recursively', () => {
+      const reply1 = makeNode({ id: 'r1', content: 'first reply' });
+      const reply2 = makeNode({ id: 'r2', content: 'second reply' });
+      const root = makeNode({ id: 'a', content: 'root comment' });
+      const flatReplies: FlatReply[] = [
+        { node: reply1, replyToDisplayName: null },
+        { node: reply2, replyToDisplayName: null },
+      ];
+
+      renderNode({ node: root, flatReplies });
+
+      expect(screen.getByText('root comment')).toBeDefined();
+      expect(screen.getByText('first reply')).toBeDefined();
+      expect(screen.getByText('second reply')).toBeDefined();
     });
-    const parent = makeNode({ id: 'a', content: 'parent comment', children: [child] });
 
-    renderNode({ node: parent });
+    it('shows "@<parent>" only on flat replies whose parent is NOT the root', () => {
+      const directReply = makeNode({ id: 'r1', content: 'direct' });
+      const midChainReply = makeNode({ id: 'r1a', content: 'mid-chain' });
+      const root = makeNode({ id: 'a' });
+      const flatReplies: FlatReply[] = [
+        { node: directReply, replyToDisplayName: null }, // parent is root → no prefix
+        { node: midChainReply, replyToDisplayName: 'Bob' }, // parent is r1 (Bob)
+      ];
 
-    expect(screen.getByText('parent comment')).toBeDefined();
-    expect(screen.getByText('nested reply')).toBeDefined();
+      renderNode({ node: root, flatReplies });
+
+      // The mid-chain reply gets a "@Bob" prefix above its body. Direct
+      // reply gets nothing.
+      const prefixes = screen.queryAllByText(/^@/);
+      expect(prefixes).toHaveLength(1);
+      expect(prefixes[0].textContent).toBe('@Bob');
+    });
+
+    it('does NOT recurse into a flat reply (its own .children are ignored at this level)', () => {
+      // Even if a flat reply still carries .children in the data (it does —
+      // CommentTreeNode is the same shape), CommentNode rendered without
+      // `flatReplies` must not render those children. They live in the root's
+      // flatReplies list as siblings instead.
+      const grandchild = makeNode({ id: 'g', content: 'grandchild' });
+      const reply = makeNode({ id: 'r1', content: 'r1', children: [grandchild] });
+      const root = makeNode({ id: 'a' });
+
+      renderNode({
+        node: root,
+        flatReplies: [{ node: reply, replyToDisplayName: null }],
+      });
+
+      // r1 renders, but its grandchild does NOT (it would be a sibling in
+      // the real flat list, never nested under r1).
+      expect(screen.getByText('r1')).toBeDefined();
+      expect(screen.queryByText('grandchild')).toBeNull();
+    });
   });
 
-  it('hides body, toolbar, and children when collapsed; shows hiddenReplies counter', () => {
-    const grandchild = makeNode({
-      id: 'grand',
-      content: 'grandchild',
-      parentId: 'child',
-      rootPostId: 'a',
+  describe('collapse', () => {
+    it('shows the collapse button only on the root (when flatReplies is provided)', () => {
+      // A flat reply (no flatReplies prop) has no collapse affordance —
+      // collapsing a single reply on its own is not a useful action in the
+      // YouTube-style layout, where descendants are siblings of the reply.
+      renderNode({ node: makeNode({ id: 'a' }), flatReplies: undefined });
+      expect(screen.queryByLabelText('collapseAriaLabel')).toBeNull();
+
+      cleanup();
+
+      renderNode({ node: makeNode({ id: 'a' }), flatReplies: [] });
+      expect(screen.getByLabelText('collapseAriaLabel')).toBeDefined();
     });
-    const child = makeNode({
-      id: 'child',
-      content: 'child reply',
-      parentId: 'a',
-      rootPostId: 'a',
-      children: [grandchild],
+
+    it('hides body, toolbar, and ALL flat replies when the root is collapsed', () => {
+      const reply1 = makeNode({ id: 'r1', content: 'first reply' });
+      const reply2 = makeNode({ id: 'r2', content: 'second reply' });
+      const root = makeNode({ id: 'a', content: 'root comment' });
+
+      renderNode({
+        node: root,
+        flatReplies: [
+          { node: reply1, replyToDisplayName: null },
+          { node: reply2, replyToDisplayName: null },
+        ],
+      });
+
+      fireEvent.click(screen.getByLabelText('collapseAriaLabel'));
+
+      expect(screen.queryByText('root comment')).toBeNull();
+      expect(screen.queryByText('first reply')).toBeNull();
+      expect(screen.queryByText('second reply')).toBeNull();
+      // 2 replies hidden → label shown, count == flatReplies.length
+      expect(screen.getByText('hiddenReplies')).toBeDefined();
+      expect(screen.getByLabelText('expandAriaLabel')).toBeDefined();
     });
-    const parent = makeNode({ id: 'a', content: 'parent', children: [child] });
 
-    renderNode({ node: parent });
+    it('does NOT show the "N replies hidden" label on a root with no replies', () => {
+      renderNode({ node: makeNode({ id: 'a', content: 'lonely' }), flatReplies: [] });
 
-    // Sanity: 3 collapse buttons (parent + child + grandchild) before collapse
-    expect(screen.getAllByLabelText('collapseAriaLabel')).toHaveLength(3);
+      fireEvent.click(screen.getByLabelText('collapseAriaLabel'));
 
-    // Click the OUTERMOST collapse button (the parent's). DOM order = render
-    // order, so the first match is the parent's own button.
-    fireEvent.click(screen.getAllByLabelText('collapseAriaLabel')[0]);
-
-    // Body, children gone
-    expect(screen.queryByText('parent')).toBeNull();
-    expect(screen.queryByText('child reply')).toBeNull();
-    expect(screen.queryByText('grandchild')).toBeNull();
-    // 2 descendants total (child + grandchild) → hiddenReplies key shown
-    expect(screen.getByText('hiddenReplies')).toBeDefined();
-    // Aria label flips to expand
-    expect(screen.getByLabelText('expandAriaLabel')).toBeDefined();
+      expect(screen.queryByText('lonely')).toBeNull();
+      expect(screen.queryByText('hiddenReplies')).toBeNull();
+    });
   });
 
   it('renders the spoiler overlay only when enableSpoiler AND node.isSpoiler are both true', () => {
-    renderNode({ node: makeNode({ id: 'a', isSpoiler: true }), enableSpoiler: true });
+    renderNode({
+      node: makeNode({ id: 'a', isSpoiler: true }),
+      enableSpoiler: true,
+      flatReplies: [],
+    });
 
     expect(screen.getByLabelText('spoiler.overlayAriaLabel')).toBeDefined();
   });
 
   it('does NOT render spoiler overlay for a node with isSpoiler=false even when enableSpoiler is true', () => {
-    renderNode({ node: makeNode({ id: 'a', isSpoiler: false }), enableSpoiler: true });
+    renderNode({
+      node: makeNode({ id: 'a', isSpoiler: false }),
+      enableSpoiler: true,
+      flatReplies: [],
+    });
 
     expect(screen.queryByLabelText('spoiler.overlayAriaLabel')).toBeNull();
   });
 
   it('does NOT render spoiler overlay when enableSpoiler is false even if isSpoiler=true (e.g. position_memory thread)', () => {
-    renderNode({ node: makeNode({ id: 'a', isSpoiler: true }), enableSpoiler: false });
+    renderNode({
+      node: makeNode({ id: 'a', isSpoiler: true }),
+      enableSpoiler: false,
+      flatReplies: [],
+    });
 
     expect(screen.queryByLabelText('spoiler.overlayAriaLabel')).toBeNull();
   });
 
   it("renders Delete button only on the viewer's own comment", () => {
-    renderNode({ node: makeNode({ id: 'a', userId: 'viewer-1' }), currentUserId: 'viewer-1' });
+    renderNode({
+      node: makeNode({ id: 'a', userId: 'viewer-1' }),
+      currentUserId: 'viewer-1',
+      flatReplies: [],
+    });
     expect(screen.getByTestId('delete-button')).toBeDefined();
 
     cleanup();
 
-    renderNode({ node: makeNode({ id: 'a', userId: 'someone-else' }), currentUserId: 'viewer-1' });
+    renderNode({
+      node: makeNode({ id: 'a', userId: 'someone-else' }),
+      currentUserId: 'viewer-1',
+      flatReplies: [],
+    });
     expect(screen.queryByTestId('delete-button')).toBeNull();
-  });
-
-  describe('indent soft-cap', () => {
-    function findChildContainer(rootText: string, container: HTMLElement): HTMLElement | null {
-      // The reply container is a sibling of the body paragraph of the parent
-      // node. We locate the parent by its body text, climb to the
-      // CommentNode wrapper, then return the only child <div> with a
-      // border-l-2 class (the reply group).
-      const bodyP = Array.from(container.querySelectorAll('p')).find(
-        (el) => el.textContent === rootText
-      );
-      if (!bodyP) return null;
-      let cursor: HTMLElement | null = bodyP;
-      while (cursor && !cursor.id.startsWith('post-')) {
-        cursor = cursor.parentElement;
-      }
-      if (!cursor) return null;
-      return cursor.querySelector(':scope > div > div > div.border-l-2') as HTMLElement | null;
-    }
-
-    it('adds left padding (pl-4) on the children container while depth < cap', () => {
-      const child = makeNode({ id: 'r', content: 'child', parentId: 'a', rootPostId: 'a' });
-      const parent = makeNode({ id: 'a', content: 'parent', children: [child] });
-
-      const { container } = renderNode({ node: parent, depth: 0 });
-
-      const childContainer = findChildContainer('parent', container);
-      expect(childContainer?.className).toContain('pl-4');
-      expect(childContainer?.className).not.toContain('pl-0');
-    });
-
-    it('drops the left padding once depth reaches MAX_INDENT_DEPTH (8) so layout does not break on narrow screens', () => {
-      // We can simulate "we are already at depth 8" by passing depth=8
-      // directly. The wrapper this CommentNode renders for ITS children
-      // should drop pl-4.
-      const child = makeNode({ id: 'r', content: 'child', parentId: 'a', rootPostId: 'a' });
-      const parent = makeNode({ id: 'a', content: 'parent', children: [child] });
-
-      const { container } = renderNode({ node: parent, depth: 8 });
-
-      const childContainer = findChildContainer('parent', container);
-      expect(childContainer?.className).toContain('pl-0');
-      expect(childContainer?.className).not.toContain('pl-4');
-    });
-
-    it('still renders nested children past the cap (cap is visual indent, not data)', () => {
-      const grandchild = makeNode({
-        id: 'g',
-        content: 'grandchild',
-        parentId: 'r',
-        rootPostId: 'a',
-      });
-      const child = makeNode({
-        id: 'r',
-        content: 'child',
-        parentId: 'a',
-        rootPostId: 'a',
-        children: [grandchild],
-      });
-      const parent = makeNode({ id: 'a', content: 'parent', children: [child] });
-
-      // Render starting deep so even the "child" group is past the cap.
-      renderNode({ node: parent, depth: 10 });
-
-      // All three bodies still in the DOM
-      expect(screen.getByText('parent')).toBeDefined();
-      expect(screen.getByText('child')).toBeDefined();
-      expect(screen.getByText('grandchild')).toBeDefined();
-    });
   });
 });

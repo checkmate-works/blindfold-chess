@@ -101,3 +101,48 @@ export function countDescendants(node: CommentTreeNode): number {
   }
   return total;
 }
+
+/**
+ * A flat reply produced by `flattenReplies`. The `node` is the reply itself;
+ * `replyToDisplayName` carries the immediate parent's display name when the
+ * parent is NOT the root, so the UI can show "@<parent>" to keep mid-chain
+ * replies legible. When the parent IS the root, this is `null` — every flat
+ * reply is rendered indented under the root, so an "@<root>" prefix would be
+ * redundant noise.
+ */
+export type FlatReply = {
+  node: CommentTreeNode;
+  replyToDisplayName: string | null;
+};
+
+function displayNameOf(node: CommentTreeNode): string {
+  return node.author?.displayName || node.author?.username || 'Anonymous';
+}
+
+/**
+ * Flatten every descendant of `root` into a single ordered list (DFS pre-order)
+ * so the UI can render all replies at one indent level (YouTube-style) instead
+ * of recursively nesting them. Each entry carries its immediate parent's
+ * display name, but only when the parent is NOT the root — direct replies to
+ * the root get `null` because their relationship is already conveyed by being
+ * placed under the root.
+ *
+ * Why DFS pre-order: it keeps a "C replied to B replied to A" chain adjacent
+ * in the rendered list, which matches how readers scan a conversation. A pure
+ * chronological sort would interleave unrelated chains and make the @-prefix
+ * the only way to recover context.
+ */
+export function flattenReplies(root: CommentTreeNode): FlatReply[] {
+  const out: FlatReply[] = [];
+  function walk(node: CommentTreeNode, parentIsRoot: boolean) {
+    for (const child of node.children) {
+      out.push({
+        node: child,
+        replyToDisplayName: parentIsRoot ? null : displayNameOf(node),
+      });
+      walk(child, false);
+    }
+  }
+  walk(root, true);
+  return out;
+}
