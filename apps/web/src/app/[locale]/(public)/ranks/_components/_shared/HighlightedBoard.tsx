@@ -25,12 +25,12 @@ export type RectOverlay = {
   fill: string;
   opacity?: number;
   /**
-   * Optional currentColor wrapper. When set, the SVG group uses Tailwind
-   * `text-...` class so children using `fill="currentColor"` inherit it.
-   * Used by Diagonal/AntiDiagonal full-line boards which fill via
+   * Optional Tailwind `text-...` class applied to a wrapping `<g>`. When
+   * set, the rects fill with `currentColor`, so they inherit this class's
+   * color. Used by Diagonal/AntiDiagonal full-line boards which fill via
    * `text-emerald-500` and `fill="currentColor"`.
    */
-  useCurrentColor?: string;
+  currentColorClass?: string;
 };
 
 export type LineOverlay = {
@@ -113,13 +113,13 @@ function OverlayLayer({ overlay }: { overlay: Overlay }) {
         y={sq.y}
         width={12.5}
         height={12.5}
-        fill={overlay.useCurrentColor ? 'currentColor' : overlay.fill}
+        fill={overlay.currentColorClass ? 'currentColor' : overlay.fill}
         opacity={overlay.opacity ?? 1}
       />
     ));
 
-    if (overlay.useCurrentColor) {
-      return <g className={overlay.useCurrentColor}>{rects}</g>;
+    if (overlay.currentColorClass) {
+      return <g className={overlay.currentColorClass}>{rects}</g>;
     }
 
     return <>{rects}</>;

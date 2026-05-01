@@ -13,6 +13,7 @@ const factory = createIconRenderer({
   Circle: "circle",
   Path: "path",
   G: "g",
+  passXmlns: true,
 });
 
 type WebSpinnerIconProps = SpinnerIconProps & {

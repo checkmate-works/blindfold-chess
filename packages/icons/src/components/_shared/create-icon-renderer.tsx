@@ -26,10 +26,18 @@ export type IconPrimitives = {
   Circle: ElementType;
   Path: ElementType;
   G: ElementType;
+  /**
+   * Whether to emit the `xmlns="http://www.w3.org/2000/svg"` attribute on the
+   * root `<Svg>` element. Required for inline SVG in HTML (web), but should
+   * be omitted on `react-native-svg` where the attribute is meaningless and
+   * silently ignored by v15. Defaults to `false`.
+   */
+  passXmlns?: boolean;
 };
 
 export function createIconRenderer(primitives: IconPrimitives) {
-  const { Svg, Circle, Path, G } = primitives;
+  const { Svg, Circle, Path, G, passXmlns = false } = primitives;
+  const xmlnsProps = passXmlns ? { xmlns: "http://www.w3.org/2000/svg" } : {};
 
   function renderElement(element: SvgElement, index: number): ReactNode {
     if (element.type === "circle") {
@@ -55,7 +63,7 @@ export function createIconRenderer(primitives: IconPrimitives) {
   }: SpinnerIconProps & ContainerExtras) {
     return (
       <Svg
-        xmlns="http://www.w3.org/2000/svg"
+        {...xmlnsProps}
         viewBox={spinnerData.viewBox}
         width={size}
         height={size}
@@ -89,7 +97,7 @@ export function createIconRenderer(primitives: IconPrimitives) {
 
     return (
       <Svg
-        xmlns="http://www.w3.org/2000/svg"
+        {...xmlnsProps}
         viewBox={data.viewBox}
         width={size}
         height={size}
@@ -108,7 +116,7 @@ export function createIconRenderer(primitives: IconPrimitives) {
     }: StrokeIconProps & ContainerExtras) {
       return (
         <Svg
-          xmlns="http://www.w3.org/2000/svg"
+          {...xmlnsProps}
           viewBox={data.viewBox}
           width={size}
           height={size}
@@ -139,7 +147,7 @@ export function createIconRenderer(primitives: IconPrimitives) {
 
     return (
       <Svg
-        xmlns="http://www.w3.org/2000/svg"
+        {...xmlnsProps}
         viewBox={data.viewBox}
         width={size}
         height={size}

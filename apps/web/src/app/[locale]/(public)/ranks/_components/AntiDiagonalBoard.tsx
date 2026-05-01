@@ -19,7 +19,7 @@ const OVERLAYS: Overlay[] = [
     squares: ANTI_DIAGONAL_SQUARES,
     fill: 'currentColor',
     opacity: 0.4,
-    useCurrentColor: 'text-emerald-500',
+    currentColorClass: 'text-emerald-500',
   },
 ];
 

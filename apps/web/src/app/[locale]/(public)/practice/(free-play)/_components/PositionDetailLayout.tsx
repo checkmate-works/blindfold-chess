@@ -11,7 +11,7 @@ type Props = {
    */
   children: ReactNode;
   /**
-   * Optional pre-built breadcrumb slot rendered at the bottom of the panel.
+   * Pre-built breadcrumb slot rendered at the bottom of the panel.
    * Leaving this as a slot rather than reconstructing it inside the layout
    * keeps the i18n namespaces (and the `Breadcrumb` import path) at the
    * call site, where every detail page already resolves its own labels.

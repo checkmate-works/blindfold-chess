@@ -4,6 +4,14 @@
  * Shared across learn and practice sections for consistent module identification,
  * translation keys, and visual representation.
  *
+ * NOTE: This module (`practice-modules.ts`) is the learn / nav-side identifier
+ * list using the UPPER_SNAKE access pattern (e.g. `PRACTICE_MODULES.COORDINATE_QUIZ`)
+ * and is intentionally NOT derived from `PRACTICE_MODULE_REGISTRY` in
+ * `apps/web/src/lib/practice/registry.ts`. The two entry points coexist:
+ * the registry is the single source of truth for challenge / leaderboard
+ * module integration. For challenge / leaderboard module additions see
+ * `apps/web/CLAUDE.md` "Adding Leaderboard Support to a Practice Module".
+ *
  * ## Adding a new practice module
  *
  * ### 1. Register the module (this file: `_lib/practice-modules.ts`)
