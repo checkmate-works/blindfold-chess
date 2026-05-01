@@ -10,6 +10,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { savePositionMemoryResult } from '../../_actions/save-result';
 import { buildSingleResultUrl } from '../../_lib/result-url';
+import type { DisplayMode } from '../../_lib/session-config';
 import type { PositionData } from '../../_lib/types';
 import {
   PositionMemorySessionView,
@@ -29,6 +30,7 @@ type Props = {
   locale: Locale;
   positionId: string;
   timeLimit: number;
+  displayMode?: DisplayMode;
   position: PositionData;
 };
 
@@ -40,7 +42,13 @@ type Props = {
  * result page is skipped, and completion redirects to the per-position
  * result route.
  */
-export function SinglePositionSession({ locale, positionId, timeLimit, position }: Props) {
+export function SinglePositionSession({
+  locale,
+  positionId,
+  timeLimit,
+  displayMode = 'board',
+  position,
+}: Props) {
   const router = useRouter();
   const savedRef = useRef(false);
 
@@ -93,6 +101,7 @@ export function SinglePositionSession({ locale, positionId, timeLimit, position 
       timeLimit={timeLimit}
       shuffle={false}
       presetPositions={[position]}
+      displayMode={displayMode}
       behavior={{
         enablePause: true,
         skipBehavesAsQuit: true,

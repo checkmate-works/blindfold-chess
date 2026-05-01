@@ -1,16 +1,22 @@
-import { getTranslations } from 'next-intl/server';
+'use client';
 
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { fenToPieceList, isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
-
-import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
   fen: string;
-  locale: Locale;
 };
 
-export async function PuzzlePiecesInfo({ fen, locale }: Props) {
-  const t = await getTranslations({ locale, namespace: 'practice.puzzle.detail' });
+/**
+ * Character-based piece list display ("White Pieces: Kh4 g2 h3").
+ * Shared between the puzzle and position-memory features so both render
+ * identically.
+ *
+ * Translation keys live under `practice.puzzle.detail` for historical
+ * reasons — they are semantically piece-label strings, not puzzle-specific.
+ */
+export function PiecesInfo({ fen }: Props) {
+  const t = useTranslations('practice.puzzle.detail');
 
   const isBlackToMove = isBlackToMoveFromFen(fen);
   const pieceList = fenToPieceList(fen);
