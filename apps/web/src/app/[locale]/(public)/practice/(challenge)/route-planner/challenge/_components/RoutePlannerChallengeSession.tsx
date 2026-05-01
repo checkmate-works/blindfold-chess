@@ -2,8 +2,6 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
-import { useRouter } from 'next/navigation';
-
 import { BoardOverlay } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { useRoutePlannerSession } from '@blindfold-chess/features/route-planner/client';
@@ -13,6 +11,7 @@ import { MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
 import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-challenge-result-save';
+import { useQuitConfirm } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-quit-confirm';
 import { saveRoutePlannerResult } from '@/app/[locale]/(public)/practice/(challenge)/route-planner/_actions/save-result';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
@@ -39,10 +38,8 @@ export default function RoutePlannerChallengeSession({
 }: Props) {
   const tPractice = useTranslations('practice');
   const quitConfirmLabels = useQuitConfirmLabels();
-  const router = useRouter();
 
   const [problemResults, setProblemResults] = useState<ProblemResult[]>([]);
-  const [showQuitModal, setShowQuitModal] = useState(false);
 
   const piecesForGeneration = useMemo(
     () => (allowedPieces.length > 0 ? allowedPieces : (['n', 'b'] as PieceType[])),
@@ -75,19 +72,12 @@ export default function RoutePlannerChallengeSession({
     setProblemResults((prev) => [...prev, result]);
   }, []);
 
-  const handleQuitRequest = useCallback(() => {
-    if (!isPaused) togglePause();
-    setShowQuitModal(true);
-  }, [isPaused, togglePause]);
-
-  const handleQuitConfirm = useCallback(() => {
-    router.push(`/${locale}/practice/route-planner/challenge`);
-  }, [router, locale]);
-
-  const handleQuitCancel = useCallback(() => {
-    setShowQuitModal(false);
-    if (isPaused) togglePause();
-  }, [isPaused, togglePause]);
+  const { showQuitModal, handleQuitRequest, handleQuitConfirm, handleQuitCancel } = useQuitConfirm({
+    locale,
+    moduleSlug: 'route-planner',
+    isPaused,
+    togglePause,
+  });
 
   const total = correctCount + incorrectCount;
 
