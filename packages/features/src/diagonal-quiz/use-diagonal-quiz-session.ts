@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useTimedSession } from "../practice-session/use-timed-session";
 import { FEEDBACK_FLASH_MS } from "../common/flash-policy";
+import { computePracticeResult } from "../common/practice-result";
 import { generateSquareSequence } from "../common/utils";
 import {
   EXCLUDED_QUIZ_SQUARES,
@@ -109,20 +110,13 @@ export function useDiagonalQuizSession({
   useEffect(() => {
     if (!isFinished) return;
 
-    const total = correctCount + incorrectCount;
-    const accuracy = total > 0 ? (correctCount / total) * 100 : 0;
-    const times = questionTimesRef.current;
-    const averageTime =
-      times.length > 0 ? times.reduce((a, b) => a + b, 0) / times.length : 0;
-
-    const result: DiagonalQuizResult = {
-      correctAnswers: correctCount,
-      incorrectAnswers: incorrectCount,
-      totalQuestions: total,
-      accuracy,
-      timeTaken: Math.min(timeElapsed, timeLimit),
-      averageTime,
-    };
+    const result: DiagonalQuizResult = computePracticeResult(
+      correctCount,
+      incorrectCount,
+      timeElapsed,
+      timeLimit,
+      questionTimesRef.current,
+    );
 
     onCompleteRef.current?.(result);
   }, [isFinished, correctCount, incorrectCount, timeElapsed, timeLimit]);
