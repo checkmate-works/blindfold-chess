@@ -4,8 +4,10 @@ import { useCallback, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import type { Locale } from '@/app/[locale]/_lib/types';
+
 type Args = {
-  locale: string;
+  locale: Locale;
   /**
    * Module slug used to construct the redirect URL on quit confirm
    * (`/${locale}/practice/${moduleSlug}/challenge`). Examples:

@@ -1,4 +1,11 @@
-export { FILES, RANKS, DISPLAY_RANKS } from "./constants";
+export {
+  FILES,
+  RANKS,
+  DISPLAY_RANKS,
+  BOARD_SIZE,
+  TOTAL_SQUARES,
+  BOARD_LAST_INDEX,
+} from "./constants";
 export type {
   BasePracticeResult,
   BasePracticeSettings,
