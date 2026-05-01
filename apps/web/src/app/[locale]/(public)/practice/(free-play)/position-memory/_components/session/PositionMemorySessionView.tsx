@@ -16,6 +16,7 @@ import { usePositionMemorySession } from '../../_hooks/use-position-memory-sessi
 import type { SessionMode } from '../../_lib/machines/types';
 import { calculateAccuracy } from '../../_lib/preset-problems';
 import type { SessionCompletePayload } from '../../_lib/result-serde';
+import type { DisplayMode } from '../../_lib/session-config';
 import type { PositionData } from '../../_lib/types';
 import { PositionMemorySessionPhase } from './PositionMemorySessionPhase';
 
@@ -46,6 +47,8 @@ type Props = {
   problemCount?: number;
   mode?: SessionMode;
   skipMemorize?: boolean;
+  /** How to present the position during the memorize phase. Default: 'board'. */
+  displayMode?: DisplayMode;
   behavior?: SessionBehavior;
   /** Called once when the machine enters `sessionResult`. */
   onSessionComplete: (payload: SessionCompletePayload) => void;
@@ -70,6 +73,7 @@ export function PositionMemorySessionView({
   problemCount = 1,
   mode = 'custom',
   skipMemorize = false,
+  displayMode = 'board',
   behavior,
   onSessionComplete,
   onFinishTutorial,
@@ -167,6 +171,7 @@ export function PositionMemorySessionView({
         isPaused={isPaused}
         showSkipButton={showSkipButton}
         skipProblemResult={skipProblemResult}
+        displayMode={displayMode}
         onMemorized={() => send({ type: 'MEMORIZED' })}
         onTogglePause={togglePause}
         onSkip={handleSkip}

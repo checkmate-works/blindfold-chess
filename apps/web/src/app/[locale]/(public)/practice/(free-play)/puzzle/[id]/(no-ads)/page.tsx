@@ -20,6 +20,7 @@ import { getPositionLikeMeta } from '@/lib/positions/like-queries';
 import { resolveDisplayName } from '@/lib/users/display-name';
 
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_actions/toggleLike';
+import { PiecesInfo } from '@/app/[locale]/(public)/practice/_components/PiecesInfo';
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
 import { CommentTree } from '@/app/[locale]/(public)/topics/_components/CommentTree';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
@@ -34,7 +35,6 @@ import { RelatedChunks } from '@/app/[locale]/_components/RelatedChunks';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { PuzzlePiecesInfo } from '../../_components/PuzzlePiecesInfo';
 import { loadPuzzleWithSolutions } from '../../_lib/load-puzzle';
 import { createReply } from './_actions/createReply';
 import { togglePositionPuzzlePostLike } from './_actions/togglePositionPuzzlePostLike';
@@ -132,7 +132,7 @@ export default async function PuzzleDetailPage({ params }: Props) {
             <p className="text-foreground whitespace-pre-wrap">{position.description}</p>
           )}
 
-          <PuzzlePiecesInfo fen={position.fen} locale={locale} />
+          <PiecesInfo fen={position.fen} />
 
           <div className="flex justify-center">
             <Link href={`/games/new/position?fen=${encodeURIComponent(position.fen)}`}>

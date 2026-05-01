@@ -11,6 +11,19 @@ export const MAX_TIME_LIMIT = 60;
 export const DEFAULT_TIME_LIMIT = 30;
 
 /**
+ * The user can choose how the position is presented during the memorize phase:
+ * - `board`: render the chess board (default)
+ * - `text`: render the algebraic piece list (e.g. "White Pieces: Kh4 g2 h3")
+ */
+export const DISPLAY_MODES = ['board', 'text'] as const;
+export type DisplayMode = (typeof DISPLAY_MODES)[number];
+export const DEFAULT_DISPLAY_MODE: DisplayMode = 'board';
+
+export function parseDisplayMode(value: unknown): DisplayMode {
+  return value === 'text' ? 'text' : 'board';
+}
+
+/**
  * localStorage key used to remember that the user skipped the position-memory
  * tutorial. Lives here (not in a component file) so both the setup flow and
  * the session view can import it without creating cross-component coupling.

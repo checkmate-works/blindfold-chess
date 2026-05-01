@@ -11,7 +11,7 @@ import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/met
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { SinglePositionSession } from '../../_components/session/SinglePositionSession';
-import { clampTimeLimit } from '../../_lib/session-config';
+import { clampTimeLimit, parseDisplayMode } from '../../_lib/session-config';
 
 type Props = {
   params: Promise<{
@@ -39,6 +39,7 @@ export default async function PositionSessionPage({ params, searchParams }: Prop
   const t = await getTranslations({ locale });
   const sp = await searchParams;
   const timeLimit = clampTimeLimit(sp.timeLimit);
+  const displayMode = parseDisplayMode(sp.displayMode);
 
   const position = await getPositionById({ id, type: 'memory' });
 
@@ -62,6 +63,7 @@ export default async function PositionSessionPage({ params, searchParams }: Prop
         locale={locale}
         positionId={position.id}
         timeLimit={timeLimit}
+        displayMode={displayMode}
         position={{ fen: position.fen, isBlackToMove }}
       />
     </PracticeSessionPage>
