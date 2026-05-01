@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { FaEyeSlash } from 'react-icons/fa';
 
 import { truncateContent } from '@/lib/content/truncate-content';
 
@@ -27,20 +28,55 @@ type Props = {
   likeI18nNamespace: string;
   replyI18nNamespace: string;
   onReplyClick?: (replyId: string, username: string) => void;
+  /**
+   * When `true`, replies whose `isSpoiler` flag is set are rendered behind a
+   * click-to-reveal overlay matching `BaseTopicPostCard`. Unflagged replies
+   * render normally. Surfaced only by `topic_type='position_puzzle'` today.
+   */
+  enableSpoiler?: boolean;
 };
 
-function ReplyContent({ content, locale }: { content: string; locale: string }) {
+function ReplyContent({
+  content,
+  locale,
+  isSpoiler,
+}: {
+  content: string;
+  locale: string;
+  isSpoiler: boolean;
+}) {
   const t = useTranslations('topics');
   const truncated = truncateContent(content);
   const isTruncated = truncated !== content;
   const [expanded, setExpanded] = useState(false);
+  const [isRevealed, setIsRevealed] = useState(false);
+  const showOverlay = isSpoiler && !isRevealed;
 
   return (
     <>
-      <div className="text-foreground whitespace-pre-wrap break-words text-sm leading-relaxed">
-        <LinkedText text={expanded ? content : truncated} locale={locale} />
+      <div className="relative" aria-live="polite">
+        <div
+          className="text-foreground whitespace-pre-wrap break-words text-sm leading-relaxed"
+          aria-hidden={showOverlay || undefined}
+        >
+          <LinkedText text={expanded ? content : truncated} locale={locale} />
+        </div>
+        {showOverlay && (
+          <button
+            type="button"
+            onClick={() => setIsRevealed(true)}
+            aria-label={t('spoiler.overlayAriaLabel')}
+            className="absolute inset-0 flex flex-col items-center justify-center gap-1 rounded-sm bg-muted text-muted-foreground hover:bg-muted/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors cursor-pointer"
+          >
+            <span className="flex items-center gap-1.5 text-sm font-medium">
+              <FaEyeSlash aria-hidden="true" />
+              {t('spoiler.overlayTitle')}
+            </span>
+            <span className="text-xs text-muted-foreground/80">{t('spoiler.overlayHint')}</span>
+          </button>
+        )}
       </div>
-      {isTruncated && !expanded && (
+      {isTruncated && !expanded && !showOverlay && (
         <button
           type="button"
           onClick={() => setExpanded(true)}
@@ -73,6 +109,7 @@ export function ReplyList({
   likeI18nNamespace,
   replyI18nNamespace,
   onReplyClick,
+  enableSpoiler = false,
 }: Props) {
   const t = useTranslations(replyI18nNamespace);
 
@@ -113,7 +150,11 @@ export function ReplyList({
             {mentionName && (
               <span className="text-sm font-medium text-primary">@{mentionName}</span>
             )}
-            <ReplyContent content={reply.content} locale={locale} />
+            <ReplyContent
+              content={reply.content}
+              locale={locale}
+              isSpoiler={enableSpoiler && reply.isSpoiler}
+            />
             <div className="flex items-center gap-4">
               <LikeButton
                 postId={reply.id}

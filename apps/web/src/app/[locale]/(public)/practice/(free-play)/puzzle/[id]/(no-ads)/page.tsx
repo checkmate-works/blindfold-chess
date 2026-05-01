@@ -20,10 +20,13 @@ import { getPositionLikeMeta } from '@/lib/positions/like-queries';
 import { resolveDisplayName } from '@/lib/users/display-name';
 
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_actions/toggleLike';
+import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
+import { CommentTree } from '@/app/[locale]/(public)/topics/_components/CommentTree';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
+import { buildCommentTree } from '@/app/[locale]/(public)/topics/_lib/comment-tree';
 import {
+  getCommentTreeForTopic,
   getPostCountByTopicKey,
-  getPostsWithReplyMetaPaginatedByTopicKey,
 } from '@/app/[locale]/(public)/topics/_lib/queries';
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
@@ -33,8 +36,9 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { PuzzlePiecesInfo } from '../../_components/PuzzlePiecesInfo';
 import { loadPuzzleWithSolutions } from '../../_lib/load-puzzle';
+import { createReply } from './_actions/createReply';
+import { togglePositionPuzzlePostLike } from './_actions/togglePositionPuzzlePostLike';
 import { NewPostForm } from './_components/NewPostForm';
-import { PostCard } from './_components/PostCard';
 
 export const dynamic = 'force-dynamic';
 
@@ -44,8 +48,6 @@ type Props = {
     id: string;
   }>;
 };
-
-const COMMENT_PAGE_SIZE = 20;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, id } = await params;
@@ -85,20 +87,14 @@ export default async function PuzzleDetailPage({ params }: Props) {
   const displayName = resolveDisplayName(profile);
 
   const currentUser = await getOptionalUser();
-  const [likeMeta, relatedChunks, commentCount] = await Promise.all([
+  const [likeMeta, relatedChunks, commentCount, allComments] = await Promise.all([
     getPositionLikeMeta(position.id, currentUser?.id),
     getLinkedChunksForPosition(position.id),
     getPostCountByTopicKey('position_puzzle', position.id),
+    getCommentTreeForTopic('position_puzzle', position.id, currentUser?.id),
   ]);
 
-  const comments = await getPostsWithReplyMetaPaginatedByTopicKey(
-    'position_puzzle',
-    position.id,
-    COMMENT_PAGE_SIZE,
-    0,
-    currentUser?.id,
-    'new'
-  );
+  const commentTree = buildCommentTree(allComments, 'new');
 
   const authorBadge = (
     <>
@@ -208,14 +204,23 @@ export default async function PuzzleDetailPage({ params }: Props) {
             </p>
           )}
 
-          {comments.length > 0 ? (
-            <div className="space-y-3">
-              {comments.map((post) => (
-                <div key={post.id} id={`post-${post.id}`}>
-                  <PostCard post={post} locale={locale} positionId={position.id} />
-                </div>
-              ))}
-            </div>
+          {commentTree.length > 0 ? (
+            <CommentTree
+              comments={commentTree}
+              locale={locale}
+              topicKey={position.id}
+              currentUserId={currentUser?.id}
+              enableSpoiler
+              redirectPath={`/${locale}/practice/puzzle/${position.id}`}
+              toggleLikeAction={togglePositionPuzzlePostLike}
+              createReplyAction={createReply}
+              deletePostAction={deletePost}
+              i18n={{
+                likeNamespace: 'topics.positionPuzzle',
+                replyNamespace: 'topics.positionPuzzle.replies',
+                deleteNamespace: 'topics.positionPuzzle.deletePost',
+              }}
+            />
           ) : (
             <p className="text-muted-foreground text-center py-8">{tComments('noPosts')}</p>
           )}

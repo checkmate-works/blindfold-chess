@@ -166,15 +166,15 @@ describe('createPost', () => {
       expect(mockInsertValues).not.toHaveBeenCalled();
     });
 
-    it('should return contentTooLong when content exceeds 5000 characters', async () => {
-      const longContent = 'a'.repeat(5001);
+    it('should return contentTooLong when content exceeds MAX_CONTENT_LENGTH', async () => {
+      const longContent = 'a'.repeat(2001);
       const result = await createPost('en', 'e4', {}, makeFormData(longContent));
       expect(result).toEqual({ error: 'contentTooLong' });
       expect(mockInsertValues).not.toHaveBeenCalled();
     });
 
-    it('should accept content at exactly 5000 characters', async () => {
-      const maxContent = 'a'.repeat(5000);
+    it('should accept content at exactly MAX_CONTENT_LENGTH', async () => {
+      const maxContent = 'a'.repeat(2000);
       await expect(createPost('en', 'e4', {}, makeFormData(maxContent))).rejects.toThrow(
         'NEXT_REDIRECT'
       );

@@ -61,6 +61,8 @@ type Props = {
   extraContent?: ReactNode;
   /** Breadcrumb items */
   breadcrumbItems: BreadcrumbItem[];
+  /** Forwarded to `PostDetailContent` to enable per-reply spoiler treatment. */
+  enableReplySpoiler?: boolean;
 };
 
 export function TopicPostDetailLayout({
@@ -83,6 +85,7 @@ export function TopicPostDetailLayout({
   i18n,
   extraContent,
   breadcrumbItems,
+  enableReplySpoiler = false,
 }: Props) {
   return (
     <div className="space-y-8">
@@ -118,6 +121,7 @@ export function TopicPostDetailLayout({
           redirectPath={redirectPath}
           i18n={i18n}
           extraContent={extraContent}
+          enableReplySpoiler={enableReplySpoiler}
         />
 
         <Breadcrumb items={breadcrumbItems} locale={locale} />

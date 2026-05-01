@@ -3018,6 +3018,11 @@
     "showMore": "Mostrar mais",
     "showLess": "Mostrar menos",
     "permalinkAriaLabel": "Ver esta postagem",
+    "replyAriaLabel": "Ver respostas e responder",
+    "hiddenReplies": "{count, plural, one {# resposta oculta} other {# respostas ocultas}}",
+    "collapseAriaLabel": "Recolher linha",
+    "expandAriaLabel": "Expandir linha",
+    "replyButton": "Responder",
     "categories": {
       "squares": {
         "title": "Casas",
@@ -3188,7 +3193,7 @@
         "submit": "Publicar",
         "submitting": "Publicando...",
         "contentOrRatingRequired": "Insira algum conteúdo ou forneça pelo menos uma avaliação",
-        "contentTooLong": "O conteúdo deve ter 5000 caracteres ou menos",
+        "contentTooLong": "O conteúdo deve ter 2000 caracteres ou menos",
         "invalidOpening": "Abertura inválida",
         "error": "Ocorreu um erro. Por favor, tente novamente.",
         "signInRequired": "Faça login para criar uma publicação",
@@ -3223,7 +3228,7 @@
         "submit": "Responder",
         "submitting": "Respondendo...",
         "contentRequired": "Insira algum conteúdo",
-        "contentTooLong": "O conteúdo deve ter 5000 caracteres ou menos",
+        "contentTooLong": "O conteúdo deve ter 2000 caracteres ou menos",
         "error": "Ocorreu um erro. Por favor, tente novamente.",
         "signInRequired": "Faça login para responder",
         "loginToReply": "Faça login para responder",
@@ -3280,7 +3285,7 @@
         "submit": "Publicar",
         "submitting": "Publicando...",
         "contentRequired": "Insira algum conteúdo",
-        "contentTooLong": "O conteúdo deve ter 5000 caracteres ou menos",
+        "contentTooLong": "O conteúdo deve ter 2000 caracteres ou menos",
         "error": "Ocorreu um erro. Por favor, tente novamente.",
         "signInRequired": "Faça login para criar uma publicação",
         "rateLimited": "Muitas publicações. Por favor, tente mais tarde."
@@ -3302,7 +3307,7 @@
         "submit": "Responder",
         "submitting": "Respondendo...",
         "contentRequired": "Insira algum conteúdo",
-        "contentTooLong": "O conteúdo deve ter 5000 caracteres ou menos",
+        "contentTooLong": "O conteúdo deve ter 2000 caracteres ou menos",
         "error": "Ocorreu um erro. Por favor, tente novamente.",
         "signInRequired": "Faça login para responder",
         "loginToReply": "Faça login para responder",
@@ -3351,7 +3356,7 @@
         "submit": "Comentar",
         "submitting": "Publicando...",
         "contentRequired": "Insira algum conteúdo",
-        "contentTooLong": "O conteúdo deve ter 5000 caracteres ou menos",
+        "contentTooLong": "O conteúdo deve ter 2000 caracteres ou menos",
         "error": "Ocorreu um erro. Por favor, tente novamente.",
         "signInRequired": "Faça login para comentar",
         "rateLimited": "Muitos comentários. Por favor, tente novamente mais tarde."
@@ -3369,7 +3374,7 @@
         "submit": "Responder",
         "submitting": "Respondendo...",
         "contentRequired": "Insira algum conteúdo",
-        "contentTooLong": "O conteúdo deve ter 5000 caracteres ou menos",
+        "contentTooLong": "O conteúdo deve ter 2000 caracteres ou menos",
         "error": "Ocorreu um erro. Por favor, tente novamente.",
         "signInRequired": "Faça login para responder",
         "loginToReply": "Faça login para responder",
@@ -3394,13 +3399,21 @@
       "postCount": "{count, plural, one {# comentário} other {# comentários}}",
       "noPosts": "Ainda não há comentários. Seja o primeiro a compartilhar suas ideias!",
       "signInToComment": "Entre para comentar",
+      "readMore": "Ler mais",
+      "detail": {
+        "pageTitle": "Comentário sobre Memória de Posição"
+      },
+      "postDetail": {
+        "authorView": "Comentário de {author} sobre {name}",
+        "backToPosition": "Voltar para {name}"
+      },
       "newPostForm": {
         "contentLabel": "Comentário",
         "contentPlaceholder": "Compartilhe suas ideias sobre esta posição...",
         "submit": "Comentar",
         "submitting": "Publicando...",
         "contentRequired": "Por favor, insira algum conteúdo",
-        "contentTooLong": "O conteúdo deve ter 5000 caracteres ou menos",
+        "contentTooLong": "O conteúdo deve ter 2000 caracteres ou menos",
         "error": "Ocorreu um erro. Tente novamente.",
         "signInRequired": "Entre para comentar",
         "invalidReplyPermission": "Configuração de permissão de resposta inválida",
@@ -3409,7 +3422,35 @@
       "like": "Curtir",
       "unlike": "Descurtir",
       "newReply": "Nova resposta {time}",
-      "justNow": "agora mesmo"
+      "justNow": "agora mesmo",
+      "replies": {
+        "title": "Respostas",
+        "count": "{count, plural, one {# resposta} other {# respostas}}",
+        "noReplies": "Ainda não há respostas. Seja o primeiro a responder!",
+        "contentLabel": "Sua resposta",
+        "contentPlaceholder": "Compartilhe suas ideias...",
+        "submit": "Responder",
+        "submitting": "Respondendo...",
+        "contentRequired": "Por favor, insira algum conteúdo",
+        "contentTooLong": "O conteúdo deve ter 2000 caracteres ou menos",
+        "error": "Ocorreu um erro. Tente novamente.",
+        "signInRequired": "Entre para responder",
+        "loginToReply": "Entre para responder",
+        "rateLimited": "Respostas demais. Tente novamente mais tarde.",
+        "repliesDisabled": "O autor desativou as respostas neste comentário.",
+        "followRequired": "Apenas seguidores do autor podem responder a este comentário.",
+        "replyButton": "Responder",
+        "replyingTo": "Respondendo a @{username}",
+        "cancelReply": "Cancelar"
+      },
+      "deletePost": {
+        "button": "Excluir",
+        "confirmTitle": "Excluir comentário",
+        "confirmMessage": "Tem certeza de que deseja excluir este comentário? Esta ação não pode ser desfeita.",
+        "confirm": "Excluir",
+        "cancel": "Cancelar",
+        "deleting": "Excluindo..."
+      }
     },
     "positionPuzzle": {
       "commentsTitle": "Comentários",
@@ -3417,13 +3458,21 @@
       "noPosts": "Ainda não há comentários. Seja o primeiro a compartilhar suas ideias!",
       "signInToComment": "Entre para comentar",
       "commentGuidelineSpoiler": "Se o seu comentário revelar a solução, marque \"Contém a solução\".",
+      "readMore": "Ler mais",
+      "detail": {
+        "pageTitle": "Comentário sobre Puzzle"
+      },
+      "postDetail": {
+        "authorView": "Comentário de {author} sobre {name}",
+        "backToPuzzle": "Voltar para {name}"
+      },
       "newPostForm": {
         "contentLabel": "Comentário",
         "contentPlaceholder": "Compartilhe suas ideias sobre este puzzle...",
         "submit": "Comentar",
         "submitting": "Publicando...",
         "contentRequired": "Por favor, insira algum conteúdo",
-        "contentTooLong": "O conteúdo deve ter 5000 caracteres ou menos",
+        "contentTooLong": "O conteúdo deve ter 2000 caracteres ou menos",
         "error": "Ocorreu um erro. Tente novamente.",
         "signInRequired": "Entre para comentar",
         "invalidReplyPermission": "Configuração de permissão de resposta inválida",
@@ -3432,7 +3481,35 @@
       "like": "Curtir",
       "unlike": "Descurtir",
       "newReply": "Nova resposta {time}",
-      "justNow": "agora mesmo"
+      "justNow": "agora mesmo",
+      "replies": {
+        "title": "Respostas",
+        "count": "{count, plural, one {# resposta} other {# respostas}}",
+        "noReplies": "Ainda não há respostas. Seja o primeiro a responder!",
+        "contentLabel": "Sua resposta",
+        "contentPlaceholder": "Compartilhe suas ideias...",
+        "submit": "Responder",
+        "submitting": "Respondendo...",
+        "contentRequired": "Por favor, insira algum conteúdo",
+        "contentTooLong": "O conteúdo deve ter 2000 caracteres ou menos",
+        "error": "Ocorreu um erro. Tente novamente.",
+        "signInRequired": "Entre para responder",
+        "loginToReply": "Entre para responder",
+        "rateLimited": "Respostas demais. Tente novamente mais tarde.",
+        "repliesDisabled": "O autor desativou as respostas neste comentário.",
+        "followRequired": "Apenas seguidores do autor podem responder a este comentário.",
+        "replyButton": "Responder",
+        "replyingTo": "Respondendo a @{username}",
+        "cancelReply": "Cancelar"
+      },
+      "deletePost": {
+        "button": "Excluir",
+        "confirmTitle": "Excluir comentário",
+        "confirmMessage": "Tem certeza de que deseja excluir este comentário? Esta ação não pode ser desfeita.",
+        "confirm": "Excluir",
+        "cancel": "Cancelar",
+        "deleting": "Excluindo..."
+      }
     },
     "spoiler": {
       "toggleLabel": "Contém a solução",

@@ -15,10 +15,13 @@ import { getPositionLikeMeta } from '@/lib/positions/like-queries';
 import { getPositionWithProfileById } from '@/lib/positions/queries';
 import { resolveDisplayName } from '@/lib/users/display-name';
 
+import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
+import { CommentTree } from '@/app/[locale]/(public)/topics/_components/CommentTree';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
+import { buildCommentTree } from '@/app/[locale]/(public)/topics/_lib/comment-tree';
 import {
+  getCommentTreeForTopic,
   getPostCountByTopicKey,
-  getPostsWithReplyMetaPaginatedByTopicKey,
 } from '@/app/[locale]/(public)/topics/_lib/queries';
 import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
@@ -31,8 +34,9 @@ import { toggleLike } from '../_actions/toggleLike';
 import { DeletePositionButton } from '../_components/DeletePositionButton';
 import { PositionDetailBoard } from '../_components/single-position/PositionDetailBoard';
 import { PositionStartForm } from '../_components/single-position/PositionStartForm';
+import { createReply } from './_actions/createReply';
+import { togglePositionMemoryPostLike } from './_actions/togglePositionMemoryPostLike';
 import { NewPostForm } from './_components/NewPostForm';
-import { PostCard } from './_components/PostCard';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,8 +46,6 @@ type Props = {
     id: string;
   }>;
 };
-
-const COMMENT_PAGE_SIZE = 20;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, id } = await params;
@@ -84,20 +86,14 @@ export default async function PositionDetailPage({ params }: Props) {
   const isBlackToMove = isBlackToMoveFromFen(position.fen);
 
   const currentUser = await getOptionalUser();
-  const [likeMeta, relatedChunks, commentCount] = await Promise.all([
+  const [likeMeta, relatedChunks, commentCount, allComments] = await Promise.all([
     getPositionLikeMeta(position.id, currentUser?.id),
     getLinkedChunksForPosition(position.id),
     getPostCountByTopicKey('position_memory', position.id),
+    getCommentTreeForTopic('position_memory', position.id, currentUser?.id),
   ]);
 
-  const comments = await getPostsWithReplyMetaPaginatedByTopicKey(
-    'position_memory',
-    position.id,
-    COMMENT_PAGE_SIZE,
-    0,
-    currentUser?.id,
-    'new'
-  );
+  const commentTree = buildCommentTree(allComments, 'new');
 
   const authorBadge = (
     <>
@@ -207,14 +203,23 @@ export default async function PositionDetailPage({ params }: Props) {
             </p>
           )}
 
-          {comments.length > 0 ? (
-            <div className="space-y-3">
-              {comments.map((post) => (
-                <div key={post.id} id={`post-${post.id}`}>
-                  <PostCard post={post} locale={locale} positionId={position.id} />
-                </div>
-              ))}
-            </div>
+          {commentTree.length > 0 ? (
+            <CommentTree
+              comments={commentTree}
+              locale={locale}
+              topicKey={position.id}
+              currentUserId={currentUser?.id}
+              enableSpoiler={false}
+              redirectPath={`/${locale}/practice/position-memory/${position.id}`}
+              toggleLikeAction={togglePositionMemoryPostLike}
+              createReplyAction={createReply}
+              deletePostAction={deletePost}
+              i18n={{
+                likeNamespace: 'topics.positionMemory',
+                replyNamespace: 'topics.positionMemory.replies',
+                deleteNamespace: 'topics.positionMemory.deletePost',
+              }}
+            />
           ) : (
             <p className="text-muted-foreground text-center py-8">{tComments('noPosts')}</p>
           )}

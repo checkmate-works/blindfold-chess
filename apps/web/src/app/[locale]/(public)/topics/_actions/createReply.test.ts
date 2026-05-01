@@ -288,18 +288,18 @@ describe('createReplyBase', () => {
       expect(mockInsertValues).not.toHaveBeenCalled();
     });
 
-    it('should return contentTooLong when content exceeds 5000 characters', async () => {
+    it('should return contentTooLong when content exceeds MAX_CONTENT_LENGTH', async () => {
       const result = await createReplyBase({
         ...baseParams,
-        formData: makeFormData('a'.repeat(5001)),
+        formData: makeFormData('a'.repeat(2001)),
       });
       expect(result).toEqual({ error: 'contentTooLong' });
       expect(mockInsertValues).not.toHaveBeenCalled();
     });
 
-    it('should accept content at exactly 5000 characters', async () => {
+    it('should accept content at exactly MAX_CONTENT_LENGTH', async () => {
       await expect(
-        createReplyBase({ ...baseParams, formData: makeFormData('a'.repeat(5000)) })
+        createReplyBase({ ...baseParams, formData: makeFormData('a'.repeat(2000)) })
       ).rejects.toThrow('NEXT_REDIRECT');
       expect(mockInsertValues).toHaveBeenCalled();
     });

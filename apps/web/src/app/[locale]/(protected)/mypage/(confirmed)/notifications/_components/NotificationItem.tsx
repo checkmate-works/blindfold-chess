@@ -156,21 +156,35 @@ export function NotificationItem({ notification, currentUsername }: Props) {
    * Build the post-detail URL for a notification keyed off `topicType`.
    *
    * `topic_posts` is polymorphic, but the routes that render those posts
-   * are not — squares/openings live under `/topics/...`, while
-   * `position_memory` / `position_puzzle` live under `/practice/...`. Until
-   * (or unless) post-detail pages are added under `/practice/...`, those
-   * notifications point back at the parent position page; the trailing
-   * `#post-{postId}` anchor scrolls to the comment in the inline list.
+   * are not:
+   *   - `square` / `opening` → `/topics/{segment}/{key}/posts/{postId}` detail
+   *     page; reply anchors use `#reply-{replyId}` because the detail page's
+   *     `ReplyList` renders each reply with `id="reply-{id}"`.
+   *   - `chunk` → `/chunks/{slug}/posts/{postId}` detail page; same reply
+   *     anchor convention.
+   *   - `position_memory` / `position_puzzle` → no detail page; the parent
+   *     puzzle / position page renders a Reddit-style inline tree where every
+   *     `CommentNode` has `id="post-{id}"`. Both top-level and reply
+   *     notifications point at `parent#post-{targetId}` (replyId for replies,
+   *     postId for top-level).
    */
-  function buildPostDetailUrl(topicType: string, topicKey: string, postId: string): string {
+  function buildPostDetailUrl(
+    topicType: string,
+    topicKey: string,
+    postId: string,
+    replyId?: string
+  ): string {
     if (topicType === 'position_memory') {
-      return `/practice/position-memory/${topicKey}#post-${postId}`;
+      const targetId = replyId ?? postId;
+      return `/practice/position-memory/${topicKey}#post-${targetId}`;
     }
     if (topicType === 'position_puzzle') {
-      return `/practice/puzzle/${topicKey}#post-${postId}`;
+      const targetId = replyId ?? postId;
+      return `/practice/puzzle/${topicKey}#post-${targetId}`;
     }
     const segment = getTopicSegment(topicType);
-    return `/topics/${segment}/${topicKey}/posts/${postId}`;
+    const baseUrl = `/topics/${segment}/${topicKey}/posts/${postId}`;
+    return replyId ? `${baseUrl}#reply-${replyId}` : baseUrl;
   }
 
   function getLink(): string | null {
@@ -207,15 +221,16 @@ export function NotificationItem({ notification, currentUsername }: Props) {
         notification.type === 'new_comment_on_topic') &&
       isPostMetadata(notification.metadata)
     ) {
-      const base = buildPostDetailUrl(
+      const replyId =
+        notification.type === 'reply' && isReplyMetadata(notification.metadata)
+          ? notification.metadata.replyId
+          : undefined;
+      return buildPostDetailUrl(
         notification.metadata.topicType,
         notification.metadata.topicKey,
-        notification.metadata.postId
+        notification.metadata.postId,
+        replyId
       );
-      if (notification.type === 'reply' && isReplyMetadata(notification.metadata)) {
-        return `${base}#reply-${notification.metadata.replyId}`;
-      }
-      return base;
     }
     if (notification.type === 'announcement' && isAnnouncementMetadata(notification.metadata)) {
       return `/announcements/${notification.metadata.slug}`;

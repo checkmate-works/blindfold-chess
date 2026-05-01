@@ -37,6 +37,8 @@ type Props = {
   likeI18nNamespace: string;
   replyI18nNamespace: string;
   showForm: boolean;
+  /** Forwarded to `ReplyForm` and used to render reply-side spoiler overlays in `ReplyList`. */
+  enableSpoiler?: boolean;
 };
 
 export function ReplySection({
@@ -49,6 +51,7 @@ export function ReplySection({
   likeI18nNamespace,
   replyI18nNamespace,
   showForm,
+  enableSpoiler = false,
 }: Props) {
   const [replyTarget, setReplyTarget] = useState<ReplyTarget | null>(null);
   const formRef = useRef<HTMLDivElement>(null);
@@ -76,6 +79,7 @@ export function ReplySection({
           likeI18nNamespace={likeI18nNamespace}
           replyI18nNamespace={replyI18nNamespace}
           onReplyClick={showForm ? handleReplyClick : undefined}
+          enableSpoiler={enableSpoiler}
         />
       )}
       {showForm && (
@@ -89,6 +93,7 @@ export function ReplySection({
             replyToId={replyTarget?.replyToId}
             replyToUsername={replyTarget?.replyToUsername}
             onCancelReply={handleCancelReply}
+            enableSpoilerToggle={enableSpoiler}
           />
         </div>
       )}
