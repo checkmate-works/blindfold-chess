@@ -1,7 +1,9 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient, User } from '@supabase/supabase-js';
 import { and, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 
 import { db, profiles, userActivityLog } from '@/lib/db';
+
+import { loadUsersEmailMap } from '../../_lib/users-email-map';
 
 const PAGE_SIZE = 20;
 
@@ -33,6 +35,10 @@ export async function fetchActivityLogPageData(
 
   // If user filter is set, find matching user IDs from profiles
   let filteredUserIds: string[] | null = null;
+  // Cache the auth user list fetched while resolving the user filter so the
+  // later email-map step can reuse it instead of paying for a second
+  // identical `listUsers` round-trip in the same request.
+  let preloadedAuthUsers: User[] | undefined;
   if (userFilter) {
     const matchingProfiles = await db
       .select({ id: profiles.id })
@@ -45,11 +51,12 @@ export async function fetchActivityLogPageData(
       );
 
     // Also search by email via Supabase admin client
-    const { data: usersData } = await adminClient.auth.admin.listUsers({
+    const listUsersResult = await adminClient.auth.admin.listUsers({
       page: 1,
       perPage: 100,
     });
-    const matchingEmailUserIds = (usersData?.users ?? [])
+    preloadedAuthUsers = listUsersResult.data?.users;
+    const matchingEmailUserIds = (preloadedAuthUsers ?? [])
       .filter((u) => u.email?.toLowerCase().includes(userFilter.toLowerCase()))
       .map((u) => u.id);
 
@@ -99,19 +106,13 @@ export async function fetchActivityLogPageData(
       : [];
   const profileMap = new Map(lookupProfiles.map((p) => [p.id, p]));
 
-  // Fetch emails from Supabase Auth
-  const emailMap = new Map<string, string>();
-  if (allLookupIds.length > 0) {
-    const { data: usersData } = await adminClient.auth.admin.listUsers({
-      page: 1,
-      perPage: 100,
-    });
-    for (const u of usersData?.users ?? []) {
-      if (u.email) {
-        emailMap.set(u.id, u.email);
-      }
-    }
-  }
+  // Fetch emails from Supabase Auth. Reuses the user list already fetched
+  // above (when a user filter was active) to avoid a second identical Auth
+  // round-trip in the same request.
+  const emailMap = await loadUsersEmailMap(allLookupIds, {
+    adminClient,
+    preloadedUsers: preloadedAuthUsers,
+  });
 
   // Get distinct action types for filter dropdown
   const actionTypes = await db
