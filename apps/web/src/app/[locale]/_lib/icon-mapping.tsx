@@ -3,10 +3,10 @@ import {
   FaBookOpen,
   FaBullhorn,
   FaCog,
+  FaCompass,
   FaDumbbell,
   FaEnvelope,
   FaGraduationCap,
-  FaHome,
   FaList,
   FaNewspaper,
   FaQuestionCircle,
@@ -25,7 +25,7 @@ export const getIcon = (iconName: NavigationIconName) => {
     case 'games':
       return <GiCrossedSwords className="h-5 w-5" />;
     case 'dashboard':
-      return <FaHome className="h-5 w-5" />;
+      return <FaCompass className="h-5 w-5" />;
     case 'articles':
       return <FaNewspaper className="h-5 w-5" />;
     case 'getting-started':
