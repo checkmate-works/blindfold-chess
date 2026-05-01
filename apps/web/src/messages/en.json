@@ -1033,7 +1033,7 @@
       },
       "session": {
         "title": "Solve",
-        "correct": "Correct! \ud83c\udf89",
+        "correct": "Correct! 🎉",
         "incorrect": "Incorrect. Try again.",
         "showBoard": "Show Board",
         "whitePlayed": "White plays {move}",
@@ -1044,7 +1044,7 @@
         "replaySection": "Solution Replay",
         "historySection": "Attempt History",
         "solution": "Solution: {move}",
-        "note": "\u2014 {note}",
+        "note": "— {note}",
         "attemptCorrect": "Correct",
         "attemptIncorrect": "Incorrect",
         "backToList": "Back to Puzzles",
@@ -1428,6 +1428,17 @@
       "level": "Lv",
       "moves": "moves",
       "recent": "Recent"
+    },
+    "help": {
+      "label": "Help",
+      "vsAi": {
+        "title": "Play vs AI",
+        "description": "Start a new AI game or resume an in-progress one. Games are saved to your computer's or phone's local storage."
+      },
+      "feed": {
+        "title": "Timeline",
+        "description": "Topics like openings and new puzzles show up in the feed. Leaderboard top-rank changes appear too, but feed entries of this kind are kept for one month — older ones are removed."
+      }
     }
   },
   "gamesPage": {
@@ -2868,7 +2879,7 @@
       "title": "Grants",
       "navLabel": "Grants",
       "noGrantsFound": "No grants found",
-      "showing": "Showing {from}\u2013{to} of {total} grants",
+      "showing": "Showing {from}–{to} of {total} grants",
       "columns": {
         "user": "User",
         "benefit": "Benefit",
@@ -2889,7 +2900,7 @@
       "navLabel": "Achievements",
       "description": "Manage achievement definitions and view holders.",
       "noAchievementsFound": "No achievements found",
-      "showing": "Showing {from}\u2013{to} of {total} achievements",
+      "showing": "Showing {from}–{to} of {total} achievements",
       "viewHolders": "View holders",
       "columns": {
         "displayName": "Name",
@@ -2915,7 +2926,7 @@
         "holderCount": "Holders",
         "createdAt": "Created at",
         "holdersTitle": "Holders",
-        "showingHolders": "Showing {from}\u2013{to} of {total} holders",
+        "showingHolders": "Showing {from}–{to} of {total} holders",
         "noHoldersFound": "No holders yet",
         "columns": {
           "username": "Username",

@@ -1416,6 +1416,17 @@
       "level": "Nv",
       "moves": "movimientos",
       "recent": "Recientes"
+    },
+    "help": {
+      "label": "Ayuda",
+      "vsAi": {
+        "title": "Jugar contra la IA",
+        "description": "Empieza una nueva partida contra la IA o retoma una en curso. Las partidas se guardan en el almacenamiento local de tu ordenador o móvil."
+      },
+      "feed": {
+        "title": "Cronología",
+        "description": "En la cronología aparecen temas como aperturas y nuevos puzles. También se muestran los cambios en lo más alto de la clasificación, pero las entradas de este tipo se conservan un mes — las más antiguas se eliminan."
+      }
     }
   },
   "gamesPage": {

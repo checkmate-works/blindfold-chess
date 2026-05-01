@@ -1,15 +1,14 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import Link from 'next/link';
 
 import { IS_LOCAL_DEV } from '@/config';
-import { FaQuestionCircle } from 'react-icons/fa';
 
 import { shouldShowAdsForUser } from '@/lib/ads/ad';
 import { JsonLd, generateWebApplicationSchema } from '@/lib/seo/jsonld';
 import { createClient } from '@/lib/supabase/server';
 
-import { DashboardCard, PageTitle } from '@/app/[locale]/_components';
+import { DashboardCard, HelpTourButton, PageTitle } from '@/app/[locale]/_components';
+import type { HelpStep } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -69,12 +68,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function HomePage({ params }: Props) {
   const { locale } = await params;
-  const [tMetadata, tHome, tTopics, tSquares, tHeader, supabase] = await Promise.all([
+  const [tMetadata, tHome, tTopics, tSquares, supabase] = await Promise.all([
     getTranslations({ locale, namespace: 'metadata' }),
     getTranslations({ locale, namespace: 'home' }),
     getTranslations({ locale, namespace: 'topics' }),
     getTranslations({ locale, namespace: 'topics.squares' }),
-    getTranslations({ locale, namespace: 'Header' }),
     createClient(),
   ]);
   const {
@@ -87,19 +85,28 @@ export default async function HomePage({ params }: Props) {
   ]);
   const showAds = IS_LOCAL_DEV || showAdsResult;
 
+  const helpSteps: HelpStep[] = [
+    {
+      targetId: 'vs-ai-card',
+      title: tHome('help.vsAi.title'),
+      description: tHome('help.vsAi.description'),
+      side: 'bottom',
+      align: 'start',
+    },
+    {
+      targetId: 'home-feed',
+      title: tHome('help.feed.title'),
+      description: tHome('help.feed.description'),
+      side: 'top',
+      align: 'start',
+    },
+  ];
+
   return (
     <>
       <div className="mb-8 flex items-center justify-center gap-2">
         <PageTitle>{tHome('pageTitle')}</PageTitle>
-        {user && (
-          <Link
-            href={`/${locale}/manual`}
-            className="text-muted-foreground hover:text-foreground transition-colors"
-            aria-label={tHeader('manual')}
-          >
-            <FaQuestionCircle className="h-5 w-5" />
-          </Link>
-        )}
+        {user && <HelpTourButton steps={helpSteps} label={tHome('help.label')} />}
       </div>
 
       <div className="space-y-6">
@@ -111,17 +118,21 @@ export default async function HomePage({ params }: Props) {
         />
 
         <DashboardCard>
-          <VsAiCard locale={locale} />
+          <div data-tour-id="vs-ai-card">
+            <VsAiCard locale={locale} />
+          </div>
           {/* initialItems: SSR'd into FeedClient — see FeedClient prop TSDoc for the SSR invariant. */}
-          <FeedClient
-            initialItems={initialFeed.items}
-            initialCursor={initialFeed.nextCursor}
-            locale={locale}
-            showMoreLabel={tTopics('showMore')}
-            justNowLabel={tSquares('justNow')}
-            newReplyTemplate={tSquares('newReply', { time: '{time}' })}
-            showAds={showAds}
-          />
+          <div data-tour-id="home-feed">
+            <FeedClient
+              initialItems={initialFeed.items}
+              initialCursor={initialFeed.nextCursor}
+              locale={locale}
+              showMoreLabel={tTopics('showMore')}
+              justNowLabel={tSquares('justNow')}
+              newReplyTemplate={tSquares('newReply', { time: '{time}' })}
+              showAds={showAds}
+            />
+          </div>
         </DashboardCard>
       </div>
     </>

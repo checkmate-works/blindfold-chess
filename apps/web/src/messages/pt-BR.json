@@ -1428,6 +1428,17 @@
       "level": "Nv",
       "moves": "movimentos",
       "recent": "Recentes"
+    },
+    "help": {
+      "label": "Ajuda",
+      "vsAi": {
+        "title": "Jogar contra a IA",
+        "description": "Comece uma nova partida contra a IA ou retome uma em andamento. As partidas são salvas no armazenamento local do seu computador ou celular."
+      },
+      "feed": {
+        "title": "Linha do tempo",
+        "description": "Tópicos como aberturas e novos quebra-cabeças aparecem na linha do tempo. Mudanças no topo do ranking também são exibidas, mas entradas desse tipo são mantidas por um mês — as mais antigas são removidas."
+      }
     }
   },
   "gamesPage": {

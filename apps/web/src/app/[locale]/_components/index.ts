@@ -10,6 +10,7 @@ export { PagePanel } from './PagePanel';
 export { Divider } from './Divider';
 export { FormErrorMessage } from './FormErrorMessage';
 export { GameListItemBase } from './GameListItemBase';
+export { HelpTourButton, type HelpStep } from './HelpTourButton';
 export { LanguageSwitcher } from './LanguageSwitcher';
 export { LinkedText } from './LinkedText';
 export { ListLink, ListLinkContainer } from './ListLink';
