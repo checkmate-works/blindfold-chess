@@ -12,21 +12,40 @@ export type TailwindThemeClasses = {
   darkCoordinates: string;
 };
 
-// Board theme Tailwind class definitions
+/*
+ * Board theme Tailwind class definitions.
+ *
+ * The actual hex values are owned by `boardThemeColors` in
+ * @blindfold-chess/ui (`packages/ui/src/theme/colors.ts`) and emitted as
+ * CSS custom properties (--color-board-<theme>-<role>) by
+ * `generateThemeCSS()`. The arbitrary-value class strings below are
+ * static literals (so Tailwind's static analysis can find them) that
+ * resolve to the colors injected at runtime — there are no hex codes
+ * duplicated here.
+ *
+ * The `monotone` theme intentionally uses Tailwind's `stone-*` palette
+ * (rather than the CSS variables) because that theme has light/dark-mode
+ * variants that depend on the document's color scheme; the lichess and
+ * chesscom themes do not vary with light/dark mode.
+ */
 const boardThemes: Record<BoardTheme, TailwindThemeClasses> = {
   lichess: {
-    // Lichess brown theme
-    light: 'bg-[#f0d9b5] dark:bg-[#f0d9b5]',
-    dark: 'bg-[#b58863] dark:bg-[#b58863]',
-    lightCoordinates: 'text-[#b58863] dark:text-[#b58863]',
-    darkCoordinates: 'text-[#f0d9b5] dark:text-[#f0d9b5]',
+    // Lichess brown theme — see boardThemeColors.lichess in @blindfold-chess/ui
+    light: 'bg-[var(--color-board-lichess-light)] dark:bg-[var(--color-board-lichess-light)]',
+    dark: 'bg-[var(--color-board-lichess-dark)] dark:bg-[var(--color-board-lichess-dark)]',
+    lightCoordinates:
+      'text-[var(--color-board-lichess-light-text)] dark:text-[var(--color-board-lichess-light-text)]',
+    darkCoordinates:
+      'text-[var(--color-board-lichess-dark-text)] dark:text-[var(--color-board-lichess-dark-text)]',
   },
   chesscom: {
-    // Chess.com green theme
-    light: 'bg-[#eeeed2] dark:bg-[#eeeed2]',
-    dark: 'bg-[#769656] dark:bg-[#769656]',
-    lightCoordinates: 'text-[#769656] dark:text-[#769656]',
-    darkCoordinates: 'text-[#eeeed2] dark:text-[#eeeed2]',
+    // Chess.com green theme — see boardThemeColors.chesscom in @blindfold-chess/ui
+    light: 'bg-[var(--color-board-chesscom-light)] dark:bg-[var(--color-board-chesscom-light)]',
+    dark: 'bg-[var(--color-board-chesscom-dark)] dark:bg-[var(--color-board-chesscom-dark)]',
+    lightCoordinates:
+      'text-[var(--color-board-chesscom-light-text)] dark:text-[var(--color-board-chesscom-light-text)]',
+    darkCoordinates:
+      'text-[var(--color-board-chesscom-dark-text)] dark:text-[var(--color-board-chesscom-dark-text)]',
   },
   monotone: {
     light: 'bg-stone-200 dark:bg-stone-300',
