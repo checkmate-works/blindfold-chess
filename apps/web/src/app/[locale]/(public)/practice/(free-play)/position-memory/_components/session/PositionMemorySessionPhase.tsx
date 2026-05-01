@@ -106,6 +106,7 @@ export function PositionMemorySessionPhase({
         problemCount={problemCount}
         boardTheme={boardTheme}
         isTutorial={isTutorial}
+        showSkip={showSkipButton}
         onPositionChange={onPositionChange}
         onSubmit={onSubmit}
         onViewAgain={onViewAgain}
