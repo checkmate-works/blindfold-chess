@@ -21,8 +21,6 @@ import { selectInitialPositions } from '../_lib/select-initial-positions';
 import { FenProblemResult } from './FenProblemResult';
 import { FenRecreate } from './FenRecreate';
 
-const TUTORIAL_SKIPPED_KEY = TUTORIAL_SKIP_CONFIG.fen.storageKey;
-
 type GamePhase = 'recreate' | 'problem-result' | 'result';
 
 type Props = {
@@ -118,7 +116,7 @@ export function FenSession({
 
   const handlePlayAgain = useCallback(() => {
     if (isTutorial) {
-      localStorage.setItem(TUTORIAL_SKIPPED_KEY, 'true');
+      localStorage.setItem(TUTORIAL_SKIP_CONFIG.fen.storageKey, 'true');
     }
     // Always navigate to setup page
     window.location.href = `/${locale}/practice/fen`;

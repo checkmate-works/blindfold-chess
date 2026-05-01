@@ -21,8 +21,6 @@ import { useFenSettings } from '../_hooks/use-fen-settings';
 import { CustomFenSection } from './CustomFenSection';
 import { PresetProblemSection } from './PresetProblemSection';
 
-const TUTORIAL_SKIPPED_KEY = TUTORIAL_SKIP_CONFIG.fen.storageKey;
-
 type Props = {
   locale: Locale;
 };
@@ -80,7 +78,7 @@ export function FenSetup({ locale }: Props) {
 
   const handleResetConfirm = () => {
     localStorage.removeItem('fenPracticeSettings');
-    localStorage.removeItem(TUTORIAL_SKIPPED_KEY);
+    localStorage.removeItem(TUTORIAL_SKIP_CONFIG.fen.storageKey);
     setIsResetConfirmOpen(false);
     router.push(`/${locale}/practice/fen/tutorial`);
   };

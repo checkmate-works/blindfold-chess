@@ -14,8 +14,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { TUTORIAL_SKIP_CONFIG } from '../../../_lib/tutorial-skip-config';
 import { KnightTourBoard } from './KnightTourBoard';
 
-const TUTORIAL_SKIPPED_KEY = TUTORIAL_SKIP_CONFIG.knightTour.storageKey;
-
 type Props = {
   locale: Locale;
 };
@@ -157,7 +155,7 @@ export function KnightTourTutorial({ locale }: Props) {
   }, []);
 
   const handleStart = () => {
-    localStorage.setItem(TUTORIAL_SKIPPED_KEY, 'true');
+    localStorage.setItem(TUTORIAL_SKIP_CONFIG.knightTour.storageKey, 'true');
     router.push(`/${locale}/practice/knight-tour/session?mode=tutorial&startingSquare=a1`);
   };
 

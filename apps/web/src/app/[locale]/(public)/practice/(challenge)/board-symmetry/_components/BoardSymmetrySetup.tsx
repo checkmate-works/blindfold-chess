@@ -12,8 +12,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { TUTORIAL_SKIP_CONFIG } from '../../../_lib/tutorial-skip-config';
 import { PracticeSetupActions } from '../../_components/PracticeSetupActions';
 
-const BOARD_SYMMETRY_TUTORIAL_SKIPPED_KEY = TUTORIAL_SKIP_CONFIG.boardSymmetry.storageKey;
-
 type Props = {
   locale: Locale;
 };
@@ -23,7 +21,7 @@ export function BoardSymmetrySetup({ locale }: Props) {
   const router = useRouter();
 
   const handleViewTutorial = () => {
-    localStorage.removeItem(BOARD_SYMMETRY_TUTORIAL_SKIPPED_KEY);
+    localStorage.removeItem(TUTORIAL_SKIP_CONFIG.boardSymmetry.storageKey);
     router.push(`/${locale}/practice/board-symmetry/tutorial`);
   };
 

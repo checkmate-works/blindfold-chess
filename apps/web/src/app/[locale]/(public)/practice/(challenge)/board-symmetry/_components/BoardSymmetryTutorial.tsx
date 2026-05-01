@@ -14,8 +14,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { TUTORIAL_SKIP_CONFIG } from '../../../_lib/tutorial-skip-config';
 
-const BOARD_SYMMETRY_TUTORIAL_SKIPPED_KEY = TUTORIAL_SKIP_CONFIG.boardSymmetry.storageKey;
-
 type Props = {
   locale: Locale;
 };
@@ -29,12 +27,12 @@ export function BoardSymmetryTutorial({ locale }: Props) {
   const [step, setStep] = useState<TutorialStep>('intro');
 
   const handleStartChallenge = () => {
-    localStorage.setItem(BOARD_SYMMETRY_TUTORIAL_SKIPPED_KEY, 'true');
+    localStorage.setItem(TUTORIAL_SKIP_CONFIG.boardSymmetry.storageKey, 'true');
     router.push(`/${locale}/practice/board-symmetry/challenge`);
   };
 
   const handleSwitchToTraining = () => {
-    localStorage.setItem(BOARD_SYMMETRY_TUTORIAL_SKIPPED_KEY, 'true');
+    localStorage.setItem(TUTORIAL_SKIP_CONFIG.boardSymmetry.storageKey, 'true');
     router.push(`/${locale}/practice/board-symmetry/training`);
   };
 

@@ -14,8 +14,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { TUTORIAL_SKIP_CONFIG } from '../../../_lib/tutorial-skip-config';
 
-const ROUTE_PLANNER_TUTORIAL_SKIPPED_KEY = TUTORIAL_SKIP_CONFIG.routePlanner.storageKey;
-
 type Props = {
   locale: Locale;
 };
@@ -29,12 +27,12 @@ export function RoutePlannerTutorial({ locale }: Props) {
   const [step, setStep] = useState<TutorialStep>('intro');
 
   const handleStartChallenge = () => {
-    localStorage.setItem(ROUTE_PLANNER_TUTORIAL_SKIPPED_KEY, 'true');
+    localStorage.setItem(TUTORIAL_SKIP_CONFIG.routePlanner.storageKey, 'true');
     router.push(`/${locale}/practice/route-planner/challenge`);
   };
 
   const handleSwitchToTraining = () => {
-    localStorage.setItem(ROUTE_PLANNER_TUTORIAL_SKIPPED_KEY, 'true');
+    localStorage.setItem(TUTORIAL_SKIP_CONFIG.routePlanner.storageKey, 'true');
     router.push(`/${locale}/practice/route-planner/training`);
   };
 

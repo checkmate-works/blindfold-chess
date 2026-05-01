@@ -11,8 +11,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { TUTORIAL_SKIP_CONFIG } from '../../../_lib/tutorial-skip-config';
 
-const DIAGONAL_QUIZ_TUTORIAL_SKIPPED_KEY = TUTORIAL_SKIP_CONFIG.diagonalQuiz.storageKey;
-
 type Props = {
   locale: Locale;
 };
@@ -22,7 +20,7 @@ export function DiagonalQuizSetup({ locale }: Props) {
   const router = useRouter();
 
   const handleViewTutorial = () => {
-    localStorage.removeItem(DIAGONAL_QUIZ_TUTORIAL_SKIPPED_KEY);
+    localStorage.removeItem(TUTORIAL_SKIP_CONFIG.diagonalQuiz.storageKey);
     router.push(`/${locale}/practice/diagonal-quiz/tutorial`);
   };
 

@@ -16,8 +16,6 @@ import { PIECE_TYPE_TO_NAME } from '../_lib/utils';
 import type { RoutePlannerPieceSelection } from '../_lib/utils';
 import { RoutePlannerSettings } from './RoutePlannerSettings';
 
-const ROUTE_PLANNER_TUTORIAL_SKIPPED_KEY = TUTORIAL_SKIP_CONFIG.routePlanner.storageKey;
-
 type Props = {
   locale: Locale;
   pieceSelection: RoutePlannerPieceSelection;
@@ -29,7 +27,7 @@ export function RoutePlannerSetup({ locale, pieceSelection, onPieceSelect }: Pro
   const router = useRouter();
 
   const handleViewTutorial = () => {
-    localStorage.removeItem(ROUTE_PLANNER_TUTORIAL_SKIPPED_KEY);
+    localStorage.removeItem(TUTORIAL_SKIP_CONFIG.routePlanner.storageKey);
     router.push(`/${locale}/practice/route-planner/tutorial`);
   };
 
