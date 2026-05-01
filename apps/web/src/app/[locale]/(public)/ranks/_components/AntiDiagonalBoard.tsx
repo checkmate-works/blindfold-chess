@@ -1,8 +1,6 @@
 'use client';
 
-import { BoardLayout, BoardSkeleton } from '@/app/_components';
-
-import { useBoardTheme } from './useBoardTheme';
+import { HighlightedBoard, type Overlay } from './_shared/HighlightedBoard';
 
 const ANTI_DIAGONAL_SQUARES = [
   { x: 0, y: 0 },
@@ -15,42 +13,16 @@ const ANTI_DIAGONAL_SQUARES = [
   { x: 87.5, y: 87.5 },
 ];
 
+const OVERLAYS: Overlay[] = [
+  {
+    kind: 'rect',
+    squares: ANTI_DIAGONAL_SQUARES,
+    fill: 'currentColor',
+    opacity: 0.4,
+    useCurrentColor: 'text-emerald-500',
+  },
+];
+
 export function AntiDiagonalBoard({ className }: { className?: string }) {
-  const { themeColors, showCoordinates, isLoaded } = useBoardTheme();
-
-  if (!isLoaded) {
-    return (
-      <div className={className ?? 'mx-auto max-w-xs sm:max-w-sm'}>
-        <BoardSkeleton />
-      </div>
-    );
-  }
-
-  return (
-    <div className={`relative ${className ?? 'mx-auto max-w-xs sm:max-w-sm'}`}>
-      <BoardLayout
-        themeColors={themeColors}
-        showCoordinates={showCoordinates}
-        renderSquare={() => null}
-        rounded
-      />
-      <svg
-        viewBox="0 0 100 100"
-        preserveAspectRatio="none"
-        className="pointer-events-none absolute inset-0 h-full w-full text-emerald-500"
-      >
-        {ANTI_DIAGONAL_SQUARES.map((sq, i) => (
-          <rect
-            key={i}
-            x={sq.x}
-            y={sq.y}
-            width={12.5}
-            height={12.5}
-            fill="currentColor"
-            opacity={0.4}
-          />
-        ))}
-      </svg>
-    </div>
-  );
+  return <HighlightedBoard overlays={OVERLAYS} className={className} />;
 }
