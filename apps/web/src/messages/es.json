@@ -3040,6 +3040,8 @@
     "replyButton": "Responder",
     "sortByLabel": "Ordenar por",
     "joinConversation": "Únete a la conversación",
+    "communityThoughts": "Pensamientos de la comunidad",
+    "signInToJoin": "Inicia sesión para unirte a la conversación",
     "categories": {
       "squares": {
         "title": "Casillas",

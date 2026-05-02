@@ -2,13 +2,15 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE, IS_LOCAL_DEV } from '@/config';
+import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
+import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { paginateItems } from '@/lib/pagination';
 import { createOpeningPostRateLimit, isRateLimited } from '@/lib/security/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
+import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
 import { TopicListPageLayout } from '@/app/[locale]/(public)/topics/_components/TopicListPageLayout';
 import {
@@ -16,6 +18,7 @@ import {
   buildPaginationHref,
   validateSort,
 } from '@/app/[locale]/(public)/topics/_lib/pagination';
+import { SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -24,6 +27,7 @@ import { OpeningBoardWithMoves } from '../_components/OpeningBoardWithMoves';
 import { getOpeningDisplayName } from '../_lib/get-opening-display-name';
 import { getOpeningBySlug, getOpeningPostsWithReplyMeta } from '../_lib/queries';
 import { OpeningPostCard } from './_components';
+import { NewOpeningPostForm } from './new/_components';
 
 export const dynamic = 'force-dynamic';
 
@@ -99,19 +103,50 @@ export default async function OpeningDetailPage({ params, searchParams }: Props)
   const buildHref = (p: number) =>
     buildPaginationHref(locale, `/topics/openings/${slug}`, p, sortBy);
 
-  const showNewPostButton =
-    !user || !(await isRateLimited(user.id, createOpeningPostRateLimit(slug)));
+  const canPost = !!user && !(await isRateLimited(user.id, createOpeningPostRateLimit(slug)));
+
+  const newPostForm = <NewOpeningPostForm locale={locale} slug={slug} />;
+
+  const communitySection = (
+    <>
+      <SectionTitle>{t('communityThoughts')}</SectionTitle>
+
+      {user ? (
+        canPost ? (
+          totalCount === 0 ? (
+            newPostForm
+          ) : (
+            <JoinConversationToggle
+              countText={dt('postCount', { count: totalCount })}
+              joinLabel={t('joinConversation')}
+            >
+              {newPostForm}
+            </JoinConversationToggle>
+          )
+        ) : null
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          <Link href="/sign-in" locale={locale} className="text-link-primary hover:underline">
+            {t('signInToJoin')}
+          </Link>
+        </p>
+      )}
+
+      {totalCount > 0 && (
+        <SortSelect
+          basePath={`/topics/openings/${slug}`}
+          translationKey="topics.openings.sort"
+          currentSort={sortBy}
+        />
+      )}
+    </>
+  );
 
   return (
     <TopicListPageLayout
       locale={locale}
       pageTitle={dt('pageTitle')}
       sectionTitle={displayName}
-      adMiddle={
-        (IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE) && (
-          <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
-        )
-      }
       adBottom={
         (IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
           <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
@@ -122,21 +157,8 @@ export default async function OpeningDetailPage({ params, searchParams }: Props)
           <OpeningBoardWithMoves fen={opening.fen} pgn={opening.pgn} />
         ) : undefined
       }
-      postCountText={dt('postCount', { count: totalCount })}
-      newPostButton={
-        showNewPostButton
-          ? { href: `/topics/openings/${slug}/new`, label: dt('newPost') }
-          : undefined
-      }
-      sortSelect={
-        <SortSelect
-          basePath={`/topics/openings/${slug}`}
-          translationKey="topics.openings.sort"
-          currentSort={sortBy}
-        />
-      }
+      communitySection={communitySection}
       hasPosts={posts.length > 0}
-      noPostsText={dt('noPosts')}
       postCards={posts.map((post) => (
         <OpeningPostCard key={post.id} post={post} locale={locale} slug={slug} />
       ))}

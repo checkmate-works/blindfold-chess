@@ -3040,6 +3040,8 @@
     "replyButton": "返信",
     "sortByLabel": "並び替え",
     "joinConversation": "コメントする",
+    "communityThoughts": "みんなの考え",
+    "signInToJoin": "サインインしてコメントする",
     "categories": {
       "squares": {
         "title": "マス目",

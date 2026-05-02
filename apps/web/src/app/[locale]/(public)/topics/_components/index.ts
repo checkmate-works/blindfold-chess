@@ -8,7 +8,6 @@ export { AttachmentInput } from './AttachmentInput';
 export { BaseTopicPostCard } from './BaseTopicPostCard';
 export { DeletePostButton } from './DeletePostButton';
 export { LikeButton } from './LikeButton';
-export { NewTopicPostLayout } from './NewTopicPostLayout';
 export { PostFooter } from './PostFooter';
 export { ReplyForm } from './ReplyForm';
 export { SortSelect } from './SortSelect';

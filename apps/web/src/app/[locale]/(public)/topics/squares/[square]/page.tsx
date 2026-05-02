@@ -9,6 +9,7 @@ import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/ser
 import { getPaginationParams } from '@/lib/pagination';
 import { createClient } from '@/lib/supabase/server';
 
+import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
 import { TopicListPageLayout } from '@/app/[locale]/(public)/topics/_components/TopicListPageLayout';
 import {
@@ -28,6 +29,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { getPostCountForSquare, getPostsWithReplyMetaPaginated } from '../_lib/queries';
 import { isValidSquare } from '../_lib/squares';
 import { PostCard, SquareHighlightBoard } from './_components';
+import { NewPostForm } from './new/_components';
 
 export const dynamic = 'force-dynamic';
 
@@ -129,6 +131,41 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
     </>
   );
 
+  const newPostForm = <NewPostForm locale={locale} square={square} />;
+
+  const communitySection = (
+    <>
+      <SectionTitle>{t('communityThoughts')}</SectionTitle>
+
+      {user ? (
+        totalCount === 0 ? (
+          newPostForm
+        ) : (
+          <JoinConversationToggle
+            countText={t('squares.postCount', { count: totalCount })}
+            joinLabel={t('joinConversation')}
+          >
+            {newPostForm}
+          </JoinConversationToggle>
+        )
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          <Link href="/sign-in" locale={locale} className="text-link-primary hover:underline">
+            {t('signInToJoin')}
+          </Link>
+        </p>
+      )}
+
+      {totalCount > 0 && (
+        <SortSelect
+          basePath={`/topics/squares/${square}`}
+          translationKey="topics.squares.sort"
+          currentSort={sortBy}
+        />
+      )}
+    </>
+  );
+
   return (
     <TopicListPageLayout
       locale={locale}
@@ -145,17 +182,8 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
           <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
         )
       }
-      postCountText={t('squares.postCount', { count: totalCount })}
-      newPostButton={{ href: `/topics/squares/${square}/new`, label: t('squares.newPost') }}
-      sortSelect={
-        <SortSelect
-          basePath={`/topics/squares/${square}`}
-          translationKey="topics.squares.sort"
-          currentSort={sortBy}
-        />
-      }
+      communitySection={communitySection}
       hasPosts={posts.length > 0}
-      noPostsText={t('squares.noPosts')}
       postCards={posts.map((post) => (
         <PostCard key={post.id} post={post} locale={locale} square={square} />
       ))}

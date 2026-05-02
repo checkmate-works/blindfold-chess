@@ -3040,6 +3040,8 @@
     "replyButton": "Reply",
     "sortByLabel": "Sort by",
     "joinConversation": "Join the conversation",
+    "communityThoughts": "Community thoughts",
+    "signInToJoin": "Sign in to join the conversation",
     "categories": {
       "squares": {
         "title": "Squares",
