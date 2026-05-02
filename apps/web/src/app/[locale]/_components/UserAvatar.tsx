@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { Link, useRouter } from '@/i18n/routing';
 
 import { countryCodeToFlag } from '@/lib/countries';
+import { IS_LOCAL_SUPABASE } from '@/lib/image-optimization';
 
 /**
  * Unified user-avatar component.
@@ -92,7 +93,7 @@ export function UserAvatar({
       width={px}
       height={px}
       className={`${className} rounded-full object-cover flex-shrink-0`}
-      unoptimized
+      unoptimized={IS_LOCAL_SUPABASE}
     />
   ) : (
     <div

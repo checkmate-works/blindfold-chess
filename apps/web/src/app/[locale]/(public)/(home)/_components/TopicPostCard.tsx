@@ -10,6 +10,7 @@ import { getStartingFen } from '@blindfold-chess/features/chess-core';
 import { FaRegComment } from 'react-icons/fa';
 
 import { truncateContent } from '@/lib/content/truncate-content';
+import { IS_LOCAL_SUPABASE } from '@/lib/image-optimization';
 
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
@@ -161,7 +162,7 @@ export const TopicPostCard = memo(function TopicPostCard({
                     width={24}
                     height={24}
                     className="rounded-full border-2 border-card object-cover w-6 h-6"
-                    unoptimized
+                    unoptimized={IS_LOCAL_SUPABASE}
                   />
                 ) : (
                   <div
