@@ -82,7 +82,6 @@ export default async function LikesPage({ params, searchParams }: Props) {
                   locale={locale}
                   showMoreLabel={tTopics('showMore')}
                   justNowLabel={tTopic('justNow')}
-                  newReplyTemplate={tTopic('newReply', { time: '{time}' })}
                   variant="card"
                 />
               );

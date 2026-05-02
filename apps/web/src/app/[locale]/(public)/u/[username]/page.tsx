@@ -293,10 +293,6 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
               showMore: tTopics('showMore'),
               justNow: (topicType) =>
                 topicType === 'opening' ? tOpenings('justNow') : tSquares('justNow'),
-              newReply: (topicType) =>
-                topicType === 'opening'
-                  ? tOpenings('newReply', { time: '{time}' })
-                  : tSquares('newReply', { time: '{time}' }),
             }}
           >
             <ProfileProblems

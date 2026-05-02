@@ -20,7 +20,6 @@ type Props = {
     noTopicPosts: string;
     showMore: string;
     justNow: (topicType: string) => string;
-    newReply: (topicType: string) => string;
   };
   children?: React.ReactNode;
 };
@@ -78,7 +77,6 @@ export function ProfilePosts({
                   locale={locale}
                   showMoreLabel={labels.showMore}
                   justNowLabel={labels.justNow(post.topicType)}
-                  newReplyTemplate={labels.newReply(post.topicType)}
                   variant="card"
                 />
               ))

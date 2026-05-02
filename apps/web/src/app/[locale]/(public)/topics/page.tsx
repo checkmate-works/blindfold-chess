@@ -122,7 +122,6 @@ export default async function TopicsPage({ params, searchParams }: Props) {
                   locale={locale}
                   showMoreLabel={t('showMore')}
                   justNowLabel={tTopic('justNow')}
-                  newReplyTemplate={tTopic('newReply', { time: '{time}' })}
                   variant="card"
                 />
               );

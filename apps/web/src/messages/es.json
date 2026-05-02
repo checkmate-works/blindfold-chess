@@ -788,6 +788,8 @@
       "description": "Entrena tu capacidad para recordar y recrear posiciones de ajedrez",
       "like": "Me gusta",
       "unlike": "Quitar me gusta",
+      "newReply": "Nueva Respuesta {time}",
+      "justNow": "ahora mismo",
       "session": "En Progreso",
       "settings": "Configuración del Problema",
       "problemSource": "Origen del Problema",
@@ -1021,6 +1023,10 @@
       "blackPieces": "Piezas Negras",
       "removePieceMode": "Modo de eliminar pieza - Haz clic en una casilla para eliminar la pieza",
       "placingPiece": "Colocando",
+      "like": "Me gusta",
+      "unlike": "Quitar me gusta",
+      "newReply": "Nueva Respuesta {time}",
+      "justNow": "ahora mismo",
       "detail": {
         "title": "Detalle del Puzzle",
         "descriptionSection": "Sobre Este Puzzle",
@@ -1030,9 +1036,7 @@
         "whiteToMove": "Mueven blancas",
         "blackToMove": "Mueven negras",
         "createdBy": "Creado por",
-        "noPieces": "Ninguna",
-        "like": "Me gusta",
-        "unlike": "Quitar me gusta"
+        "noPieces": "Ninguna"
       },
       "result": {
         "title": "Resultado del Puzzle",

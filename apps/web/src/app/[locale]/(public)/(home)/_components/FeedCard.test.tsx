@@ -81,7 +81,6 @@ const defaultProps = {
   locale: 'en',
   showMoreLabel: 'Show more',
   justNowLabel: 'Just now',
-  newReplyTemplate: 'New reply {time}',
 };
 
 // --- Tests ---
@@ -162,6 +161,12 @@ describe('FeedCard', () => {
           likeCount: 0,
           likedByMe: false,
         },
+        replyMeta: {
+          replyCount: 0,
+          latestReplyAt: null,
+          repliers: [],
+          uniqueReplierCount: 0,
+        },
       },
     };
 
@@ -192,6 +197,12 @@ describe('FeedCard', () => {
         likeMeta: {
           likeCount: 3,
           likedByMe: true,
+        },
+        replyMeta: {
+          replyCount: 0,
+          latestReplyAt: null,
+          repliers: [],
+          uniqueReplierCount: 0,
         },
       },
     };

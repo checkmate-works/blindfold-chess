@@ -20,14 +20,11 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 import { FaPlus } from 'react-icons/fa';
 
 import { getOptionalUser } from '@/lib/auth';
+import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
 import { getPaginationParams } from '@/lib/pagination';
 import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
 import { countPositions, listPositionsWithProfile } from '@/lib/positions/queries';
-import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
-import { truncate } from '@/lib/text';
-import { resolveDisplayName } from '@/lib/users/display-name';
 
-import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import {
   Divider,
   PagePanel,
@@ -37,16 +34,17 @@ import {
 } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
-import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
+import { PositionListCard } from '../_components/PositionListCard';
 import { toggleLike } from './_actions/toggleLike';
 
 export const dynamic = 'force-dynamic';
 
 const PAGE_SIZE = 12;
+const FOOTER_NAMESPACE = 'practice.positionMemory';
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -84,10 +82,11 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
   const rows = await listPositionsWithProfile({ type: 'memory', limit, offset });
 
   const currentUser = await getOptionalUser();
-  const likeMetaMap = await getPositionLikeMetaMap(
-    rows.map((r) => r.position.id),
-    currentUser?.id
-  );
+  const positionIds = rows.map((r) => r.position.id);
+  const [likeMetaMap, replyMetaMap] = await Promise.all([
+    getPositionLikeMetaMap(positionIds, currentUser?.id),
+    getReplyMetaMap('position_memory', positionIds),
+  ]);
 
   const buildHref = (p: number) => {
     const params = new URLSearchParams();
@@ -95,6 +94,8 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
     const qs = params.toString();
     return `/${locale}/practice/position-memory${qs ? `?${qs}` : ''}`;
   };
+
+  const justNowLabel = t('justNow');
 
   return (
     <div className="space-y-8">
@@ -117,59 +118,20 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
           <p className="text-muted-foreground text-center py-8">{t('list.empty')}</p>
         ) : (
           <div className="space-y-3">
-            {rows.map(({ position, profile }) => {
-              const displayName = resolveDisplayName(profile);
-              const descriptionExcerpt = truncate(position.description);
-              const likeMeta = likeMetaMap.get(position.id) ?? {
-                likeCount: 0,
-                likedByMe: false,
-              };
-
-              return (
-                <Link
-                  key={position.id}
-                  href={`/practice/position-memory/${position.id}`}
-                  locale={locale}
-                  className="block p-4 rounded-md border border-border bg-card hover:border-foreground/20 transition-colors"
-                >
-                  <div className="flex gap-4">
-                    <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
-                      <ThemedBoardThumbnail fen={position.fen} className="w-full h-full" />
-                    </div>
-                    <div className="flex-1 min-w-0 flex flex-col gap-1">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <UserAvatar
-                          profileHref={null}
-                          avatarUrl={profile?.avatarUrl}
-                          displayName={displayName}
-                          locale={locale}
-                          size="xs"
-                          layout="inline"
-                        />
-                        <span className="whitespace-nowrap">{t('list.submittedBy')}</span>
-                      </div>
-                      <h3 className="font-medium text-foreground truncate">{position.title}</h3>
-                      {descriptionExcerpt && (
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {descriptionExcerpt}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border">
-                    <LikeButton
-                      postId={position.id}
-                      locale={locale}
-                      topicKey=""
-                      initialLikeCount={likeMeta.likeCount}
-                      initialLikedByMe={likeMeta.likedByMe}
-                      toggleLikeAction={toggleLike}
-                      i18nNamespace="practice.positionMemory"
-                    />
-                  </div>
-                </Link>
-              );
-            })}
+            {rows.map(({ position, profile }) => (
+              <PositionListCard
+                key={position.id}
+                position={position}
+                profile={profile}
+                likeMeta={likeMetaMap.get(position.id) ?? { likeCount: 0, likedByMe: false }}
+                replyMeta={replyMetaMap.get(position.id) ?? EMPTY_REPLY_META}
+                detailHref={`/practice/position-memory/${position.id}`}
+                i18nNamespace={FOOTER_NAMESPACE}
+                toggleLikeAction={toggleLike}
+                justNowLabel={justNowLabel}
+                locale={locale}
+              />
+            ))}
           </div>
         )}
 

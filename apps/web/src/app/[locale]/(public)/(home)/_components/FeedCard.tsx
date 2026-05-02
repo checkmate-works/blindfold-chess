@@ -8,10 +8,9 @@ type Props = {
   locale: string;
   showMoreLabel: string;
   justNowLabel: string;
-  newReplyTemplate: string;
 };
 
-export function FeedCard({ item, locale, showMoreLabel, justNowLabel, newReplyTemplate }: Props) {
+export function FeedCard({ item, locale, showMoreLabel, justNowLabel }: Props) {
   switch (item.entityType) {
     case 'topic_post':
       return (
@@ -20,7 +19,6 @@ export function FeedCard({ item, locale, showMoreLabel, justNowLabel, newReplyTe
           locale={locale}
           showMoreLabel={showMoreLabel}
           justNowLabel={justNowLabel}
-          newReplyTemplate={newReplyTemplate}
         />
       );
     case 'position':

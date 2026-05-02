@@ -9,6 +9,7 @@ import {
   topicPostRatings,
   topicPosts,
 } from '@/lib/db';
+import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
 import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
 import { parsePositionType } from '@/lib/positions/types';
 
@@ -145,7 +146,17 @@ export async function getFeedData(
         .where(and(inArray(positions.id, positionIds), isNull(positions.deletedAt)));
 
       const foundIds = rows.map((r) => r.id);
-      const likeMetaMap = await getPositionLikeMetaMap(foundIds, currentUserId);
+      // Comments are stored in `topic_posts` keyed by topicType +
+      // positionId. Memory and puzzle positions use different
+      // topicTypes; sequence positions have no thread. Split the IDs
+      // and fetch the two pools in parallel.
+      const memoryIds = rows.filter((r) => parsePositionType(r.type) === 'memory').map((r) => r.id);
+      const puzzleIds = rows.filter((r) => parsePositionType(r.type) === 'puzzle').map((r) => r.id);
+      const [likeMetaMap, memoryReplyMap, puzzleReplyMap] = await Promise.all([
+        getPositionLikeMetaMap(foundIds, currentUserId),
+        getReplyMetaMap('position_memory', memoryIds),
+        getReplyMetaMap('position_puzzle', puzzleIds),
+      ]);
 
       for (const row of rows) {
         const positionType = parsePositionType(row.type);
@@ -154,6 +165,8 @@ export async function getFeedData(
         // used elsewhere in this function.
         if (positionType === null) continue;
         const likeMeta = likeMetaMap.get(row.id) ?? { likeCount: 0, likedByMe: false };
+        const replyMeta =
+          memoryReplyMap.get(row.id) ?? puzzleReplyMap.get(row.id) ?? EMPTY_REPLY_META;
         map.set(row.id, {
           id: row.id,
           type: positionType,
@@ -169,6 +182,7 @@ export async function getFeedData(
               }
             : null,
           likeMeta,
+          replyMeta,
         });
       }
 
