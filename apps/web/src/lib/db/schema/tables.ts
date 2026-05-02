@@ -438,7 +438,18 @@ export const topicPosts = pgTable(
       .$onUpdateFn(() => new Date()),
   },
   (table) => [
-    index('idx_topic_posts_topic').on(table.topicType, table.topicKey),
+    // Partial index — every production read of `topic_posts` filters
+    // `deleted_at IS NULL`, so excluding soft-deleted rows from the
+    // index keeps the b-tree small and lets Postgres treat the
+    // partial as an index-only scan for the common case (list pages,
+    // reply-meta aggregates, like queries). A plain
+    // `(topic_type, topic_key)` index is replaced by this partial in
+    // the same migration; if a future query genuinely needs to see
+    // tombstoned rows it should add its own index rather than widen
+    // this one.
+    index('idx_topic_posts_topic')
+      .on(table.topicType, table.topicKey)
+      .where(sql`deleted_at IS NULL`),
     index('idx_topic_posts_user').on(table.userId),
     index('idx_topic_posts_parent').on(table.parentId),
     index('idx_topic_posts_root').on(table.rootPostId),
