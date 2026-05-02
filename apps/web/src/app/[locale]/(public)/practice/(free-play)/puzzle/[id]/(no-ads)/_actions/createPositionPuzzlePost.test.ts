@@ -226,13 +226,16 @@ describe('createPositionPuzzlePost', () => {
       mockInsertReturning.mockResolvedValue([{ id: generatedPostId }]);
     });
 
-    it('redirects to /{locale}/practice/puzzle/{id}#post-{postId}', async () => {
+    it('redirects through /thanks with the post URL as returnUrl', async () => {
       await expect(
         createPositionPuzzlePost('ja', testPositionId, {}, makeFormData('hello'))
       ).rejects.toThrow('NEXT_REDIRECT');
 
+      // Text-bearing puzzle comments trigger an automated grant; the toast is
+      // suppressed because the user is routed through /thanks instead.
+      const returnUrl = `/ja/practice/puzzle/${testPositionId}#post-${generatedPostId}`;
       expect(mockRedirect).toHaveBeenCalledWith(
-        `/ja/practice/puzzle/${testPositionId}?toast=post_created#post-${generatedPostId}`
+        `/ja/thanks?grantId=g1&returnUrl=${encodeURIComponent(returnUrl)}`
       );
     });
 

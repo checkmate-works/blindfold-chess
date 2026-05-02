@@ -3550,6 +3550,23 @@
     "goBack": "Volver",
     "invalidUrl": "La URL proporcionada es inválida."
   },
+  "thanks": {
+    "title": "¡Gracias!",
+    "sectionTitle": "Tu beneficio",
+    "continueButton": "Ver tu publicación",
+    "genericMessage": "Gracias por tu contribución.",
+    "explanation": {
+      "square": "Tu publicación en un tema de casilla te ha otorgado el siguiente beneficio:",
+      "opening": "Tu publicación en un tema de apertura te ha otorgado el siguiente beneficio:",
+      "position_memory": "Tu publicación en una posición de memorización te ha otorgado el siguiente beneficio:",
+      "position_puzzle": "Tu publicación en una posición de puzzle te ha otorgado el siguiente beneficio:",
+      "default": "Tu publicación te ha otorgado el siguiente beneficio:"
+    },
+    "benefits": {
+      "ad_free": "Sin anuncios durante {days, plural, one {# día} other {# días}}",
+      "paywall_access": "Acceso premium durante {days, plural, one {# día} other {# días}}"
+    }
+  },
   "authPrompt": {
     "title": "Inicia sesión para continuar",
     "description": "Inicia sesión para dar me gusta a publicaciones, unirte a discusiones y sacar el máximo provecho de Ajedrez a Ciegas.",

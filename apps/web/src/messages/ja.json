@@ -3550,6 +3550,23 @@
     "goBack": "戻る",
     "invalidUrl": "指定されたURLは無効です。"
   },
+  "thanks": {
+    "title": "御礼",
+    "sectionTitle": "獲得した特典",
+    "continueButton": "投稿内容を確認する",
+    "genericMessage": "ご投稿ありがとうございます。",
+    "explanation": {
+      "square": "マスのトピックへのご投稿により、以下の特典が付与されました。",
+      "opening": "オープニングのトピックへのご投稿により、以下の特典が付与されました。",
+      "position_memory": "ポジション記憶のポジションへのご投稿により、以下の特典が付与されました。",
+      "position_puzzle": "パズルのポジションへのご投稿により、以下の特典が付与されました。",
+      "default": "ご投稿により、以下の特典が付与されました。"
+    },
+    "benefits": {
+      "ad_free": "{days}日間の広告非表示",
+      "paywall_access": "{days}日間のプレミアムアクセス"
+    }
+  },
   "authPrompt": {
     "title": "サインインして続行",
     "description": "サインインすると、いいねやディスカッションへの参加など、Blindfold Chessをより楽しめます。",

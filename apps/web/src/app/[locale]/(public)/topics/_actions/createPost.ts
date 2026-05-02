@@ -45,11 +45,15 @@ export async function createPostBase(params: {
   emitFeedItem?: boolean;
   /**
    * Override the post-creation redirect URL. The function receives the new
-   * post ID and must return the absolute path to redirect to. When omitted,
-   * the legacy `/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${postId}?toast=post_created`
-   * URL is used.
+   * post ID and a `toast` flag and must return the absolute path to redirect
+   * to. The flag is `true` when the post does NOT trigger an automated grant
+   * (legacy "post created" toast) and `false` when a grant was applied (the
+   * toast is suppressed because the user is sent through `/thanks` instead —
+   * see the redirect logic below). When `redirectPath` is omitted, the
+   * legacy `/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${postId}`
+   * URL is used (with `?toast=post_created` appended when `toast` is true).
    */
-  redirectPath?: (postId: string) => string;
+  redirectPath?: (postId: string, opts: { toast: boolean }) => string;
   /**
    * Self-declared "this comment contains spoilers" flag, persisted to
    * `topic_posts.is_spoiler`. Surface today is `topic_type='position_puzzle'`
@@ -205,9 +209,20 @@ export async function createPostBase(params: {
     });
   }
 
-  redirect(
-    redirectPath
-      ? redirectPath(inserted.id)
-      : `/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${inserted.id}?toast=post_created`
-  );
+  // When an automated grant fires we route through the generic /thanks page
+  // (with the original destination preserved as `returnUrl`) so the user sees
+  // the awarded benefit. The post-created toast is suppressed in that path —
+  // the thanks page is the celebration moment. No-grant posts (chunks,
+  // rating-only opening posts, etc.) keep the legacy in-place toast UX.
+  const finalUrl = redirectPath
+    ? redirectPath(inserted.id, { toast: !grantApplied })
+    : `/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${inserted.id}${
+        !grantApplied ? '?toast=post_created' : ''
+      }`;
+
+  if (grantApplied && grantInfo) {
+    const info: { grantId: string; expiresAt: Date } = grantInfo;
+    redirect(`/${locale}/thanks?grantId=${info.grantId}&returnUrl=${encodeURIComponent(finalUrl)}`);
+  }
+  redirect(finalUrl);
 }

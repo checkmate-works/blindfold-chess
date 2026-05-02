@@ -3550,6 +3550,23 @@
     "goBack": "Voltar",
     "invalidUrl": "A URL fornecida é inválida."
   },
+  "thanks": {
+    "title": "Obrigado!",
+    "sectionTitle": "Seu benefício",
+    "continueButton": "Ver sua publicação",
+    "genericMessage": "Obrigado pela sua contribuição.",
+    "explanation": {
+      "square": "Sua publicação em um tópico de casa lhe rendeu o seguinte benefício:",
+      "opening": "Sua publicação em um tópico de abertura lhe rendeu o seguinte benefício:",
+      "position_memory": "Sua publicação em uma posição de memorização lhe rendeu o seguinte benefício:",
+      "position_puzzle": "Sua publicação em uma posição de puzzle lhe rendeu o seguinte benefício:",
+      "default": "Sua publicação lhe rendeu o seguinte benefício:"
+    },
+    "benefits": {
+      "ad_free": "Sem anúncios por {days, plural, one {# dia} other {# dias}}",
+      "paywall_access": "Acesso premium por {days, plural, one {# dia} other {# dias}}"
+    }
+  },
   "authPrompt": {
     "title": "Faça login para continuar",
     "description": "Faça login para curtir publicações, participar de discussões e aproveitar ao máximo o Xadrez às Cegas.",

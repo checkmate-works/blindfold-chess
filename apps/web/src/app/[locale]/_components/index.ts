@@ -1,6 +1,7 @@
 export { AuthStatusDisplay } from './AuthStatusDisplay';
 export { BetaNotice } from './BetaNotice';
 export { CardLink } from './CardLink';
+export { CertificateFrame } from './CertificateFrame';
 export { CurriculumToc } from './CurriculumToc';
 export { DashboardCard } from './DashboardCard';
 export { DashboardSection } from './DashboardSection';

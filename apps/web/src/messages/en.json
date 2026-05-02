@@ -3550,6 +3550,23 @@
     "goBack": "Go Back",
     "invalidUrl": "The provided URL is invalid."
   },
+  "thanks": {
+    "title": "Thanks!",
+    "sectionTitle": "Your benefit",
+    "continueButton": "View your post",
+    "genericMessage": "Thanks for your contribution.",
+    "explanation": {
+      "square": "Your post on a square topic earned you the following benefit:",
+      "opening": "Your post on an opening topic earned you the following benefit:",
+      "position_memory": "Your post on a memory position earned you the following benefit:",
+      "position_puzzle": "Your post on a puzzle position earned you the following benefit:",
+      "default": "Your post earned you the following benefit:"
+    },
+    "benefits": {
+      "ad_free": "Ad-free for {days, plural, one {# day} other {# days}}",
+      "paywall_access": "Premium access for {days, plural, one {# day} other {# days}}"
+    }
+  },
   "authPrompt": {
     "title": "Sign in to continue",
     "description": "Sign in to like posts, join discussions, and get the most out of Blindfold Chess.",

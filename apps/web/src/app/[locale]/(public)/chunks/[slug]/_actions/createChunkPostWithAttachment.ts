@@ -113,7 +113,8 @@ export async function createChunkPostWithAttachment(
       rateLimit: RATE_LIMITS.createPost,
       validateContent,
       emitFeedItem: false,
-      redirectPath: (postId) => `/${locale}/chunks/${slug}?toast=post_created#post-${postId}`,
+      redirectPath: (postId, { toast }) =>
+        `/${locale}/chunks/${slug}${toast ? '?toast=post_created' : ''}#post-${postId}`,
       formData,
     });
   }
@@ -232,7 +233,8 @@ export async function createChunkPostWithAttachment(
     rateLimit: RATE_LIMITS.createPost,
     validateContent,
     emitFeedItem: false,
-    redirectPath: (postId) => `/${locale}/chunks/${slug}?toast=post_created#post-${postId}`,
+    redirectPath: (postId, { toast }) =>
+      `/${locale}/chunks/${slug}${toast ? '?toast=post_created' : ''}#post-${postId}`,
     afterInsert: async (tx, postId) => {
       await tx.insert(postGamePgnAttachments).values({
         postId,
