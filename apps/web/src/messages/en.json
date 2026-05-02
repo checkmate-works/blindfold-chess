@@ -3039,6 +3039,7 @@
     "expandAriaLabel": "Expand thread",
     "replyButton": "Reply",
     "sortByLabel": "Sort by",
+    "joinConversation": "Join the conversation",
     "categories": {
       "squares": {
         "title": "Squares",
@@ -3478,7 +3479,6 @@
       "postCount": "{count, plural, one {# comment} other {# comments}}",
       "noPosts": "No comments yet. Be the first to share your thoughts!",
       "signInToComment": "Sign in to comment",
-      "commentGuidelineSpoiler": "If your comment reveals the solution, please tick \"Contains solution\".",
       "readMore": "Read more",
       "sort": {
         "new": "New",

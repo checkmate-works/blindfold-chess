@@ -3039,6 +3039,7 @@
     "expandAriaLabel": "Expandir linha",
     "replyButton": "Responder",
     "sortByLabel": "Ordenar por",
+    "joinConversation": "Participe da conversa",
     "categories": {
       "squares": {
         "title": "Casas",
@@ -3478,7 +3479,6 @@
       "postCount": "{count, plural, one {# comentário} other {# comentários}}",
       "noPosts": "Ainda não há comentários. Seja o primeiro a compartilhar suas ideias!",
       "signInToComment": "Entre para comentar",
-      "commentGuidelineSpoiler": "Se o seu comentário revelar a solução, marque \"Contém a solução\".",
       "readMore": "Ler mais",
       "sort": {
         "new": "Novos",

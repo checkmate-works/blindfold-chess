@@ -16,6 +16,7 @@ import { resolveDisplayName } from '@/lib/users/display-name';
 
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
 import { CommentTree } from '@/app/[locale]/(public)/topics/_components/CommentTree';
+import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
 import { buildCommentTree } from '@/app/[locale]/(public)/topics/_lib/comment-tree';
@@ -77,6 +78,7 @@ export default async function PositionDetailPage({ params, searchParams }: Props
   const sortBy = validateSort(((await searchParams).sort as string | undefined) ?? 'new');
   const t = await getTranslations({ locale, namespace: 'practice.positionMemory' });
   const tComments = await getTranslations({ locale, namespace: 'topics.positionMemory' });
+  const tTopics = await getTranslations({ locale, namespace: 'topics' });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
   const tPlay = await getTranslations({ locale, namespace: 'play' });
 
@@ -175,12 +177,13 @@ export default async function PositionDetailPage({ params, searchParams }: Props
 
       <SectionTitle>{tComments('commentsTitle')}</SectionTitle>
 
-      <p className="text-sm text-muted-foreground">
-        {tComments('postCount', { count: commentCount })}
-      </p>
-
       {currentUser ? (
-        <NewPostForm locale={locale} positionId={position.id} />
+        <JoinConversationToggle
+          countText={tComments('postCount', { count: commentCount })}
+          joinLabel={tTopics('joinConversation')}
+        >
+          <NewPostForm locale={locale} positionId={position.id} />
+        </JoinConversationToggle>
       ) : (
         <p className="text-sm text-muted-foreground">
           <Link href={`/${locale}/sign-in`} className="text-link-primary hover:underline">

@@ -3039,6 +3039,7 @@
     "expandAriaLabel": "スレッドを展開",
     "replyButton": "返信",
     "sortByLabel": "並び替え",
+    "joinConversation": "コメントする",
     "categories": {
       "squares": {
         "title": "マス目",
@@ -3478,7 +3479,6 @@
       "postCount": "{count}件のコメント",
       "noPosts": "まだコメントがありません。最初のコメントを投稿してみましょう！",
       "signInToComment": "サインインしてコメントする",
-      "commentGuidelineSpoiler": "解法を含むコメントは「解法を含む」にチェックを入れてください。",
       "readMore": "続きを読む",
       "sort": {
         "new": "新着",

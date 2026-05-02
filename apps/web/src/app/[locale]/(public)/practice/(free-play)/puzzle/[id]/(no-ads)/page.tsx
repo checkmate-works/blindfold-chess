@@ -22,6 +22,7 @@ import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/positio
 import { PiecesInfo } from '@/app/[locale]/(public)/practice/_components/PiecesInfo';
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
 import { CommentTree } from '@/app/[locale]/(public)/topics/_components/CommentTree';
+import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
 import { buildCommentTree } from '@/app/[locale]/(public)/topics/_lib/comment-tree';
@@ -79,6 +80,7 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
   const sortBy = validateSort(((await searchParams).sort as string | undefined) ?? 'new');
   const t = await getTranslations({ locale, namespace: 'practice.puzzle' });
   const tComments = await getTranslations({ locale, namespace: 'topics.positionPuzzle' });
+  const tTopics = await getTranslations({ locale, namespace: 'topics' });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
   const tPlay = await getTranslations({ locale, namespace: 'play' });
 
@@ -169,14 +171,13 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
 
       <SectionTitle>{tComments('commentsTitle')}</SectionTitle>
 
-      <p className="text-sm text-muted-foreground">
-        {tComments('postCount', { count: commentCount })}
-      </p>
-
-      <p className="text-sm text-muted-foreground">{tComments('commentGuidelineSpoiler')}</p>
-
       {currentUser ? (
-        <NewPostForm locale={locale} positionId={position.id} />
+        <JoinConversationToggle
+          countText={tComments('postCount', { count: commentCount })}
+          joinLabel={tTopics('joinConversation')}
+        >
+          <NewPostForm locale={locale} positionId={position.id} />
+        </JoinConversationToggle>
       ) : (
         <p className="text-sm text-muted-foreground">
           <Link href={`/${locale}/sign-in`} className="text-link-primary hover:underline">
