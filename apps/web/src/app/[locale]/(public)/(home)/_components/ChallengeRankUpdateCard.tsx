@@ -80,6 +80,8 @@ export const ChallengeRankUpdateCard = memo(function ChallengeRankUpdateCard({
 
   return (
     <ActivityCard
+      href={href}
+      locale={locale}
       thumbnail={thumbnail}
       thumbnailClassName="flex items-center justify-center"
       author={

@@ -60,6 +60,8 @@ export const TopicPostCard = memo(function TopicPostCard({
   return (
     <ActivityCard
       variant={variant}
+      href={href}
+      locale={locale}
       thumbnail={
         isOpening ? (
           <MiniBoard

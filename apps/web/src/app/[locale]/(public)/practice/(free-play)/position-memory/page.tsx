@@ -140,6 +140,8 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
                 <ActivityCard
                   key={position.id}
                   variant="card"
+                  href={detailHref}
+                  locale={locale}
                   thumbnail={<ThemedBoardThumbnail fen={position.fen} className="w-full h-full" />}
                   author={
                     <UserAvatar

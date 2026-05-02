@@ -45,6 +45,8 @@ export const PositionFeedCard = memo(function PositionFeedCard({
 
   return (
     <ActivityCard
+      href={href}
+      locale={locale}
       thumbnail={
         <BoardThumbnail
           fen={data.fen}

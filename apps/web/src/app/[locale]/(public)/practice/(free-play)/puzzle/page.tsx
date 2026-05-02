@@ -133,6 +133,8 @@ export default async function PuzzleListPage({ params, searchParams }: Props) {
                 <ActivityCard
                   key={position.id}
                   variant="card"
+                  href={detailHref}
+                  locale={locale}
                   thumbnail={<ThemedBoardThumbnail fen={position.fen} className="w-full h-full" />}
                   author={
                     <UserAvatar
