@@ -1023,6 +1023,10 @@
       "blackPieces": "黒の駒",
       "removePieceMode": "駒を削除 - マスをクリックして駒を削除",
       "placingPiece": "配置中:",
+      "like": "いいね",
+      "unlike": "いいね解除",
+      "newReply": "新しい返信 {time}",
+      "justNow": "たった今",
       "detail": {
         "title": "パズル詳細",
         "descriptionSection": "このパズルについて",
@@ -1032,11 +1036,7 @@
         "whiteToMove": "白の手番",
         "blackToMove": "黒の手番",
         "createdBy": "作成者",
-        "noPieces": "なし",
-        "like": "いいね",
-        "unlike": "いいね解除",
-        "newReply": "新しい返信 {time}",
-        "justNow": "たった今"
+        "noPieces": "なし"
       },
       "session": {
         "title": "挑戦",

@@ -43,7 +43,7 @@ import { toggleLike } from './_actions/toggleLike';
 export const dynamic = 'force-dynamic';
 
 const PAGE_SIZE = 12;
-const FOOTER_NAMESPACE = 'practice.puzzle.detail';
+const FOOTER_NAMESPACE = 'practice.puzzle';
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -66,10 +66,6 @@ export default async function PuzzleListPage({ params, searchParams }: Props) {
   const { locale } = await params;
   const { page } = await searchParamsCache.parse(searchParams);
   const t = await getTranslations({ locale, namespace: 'practice.puzzle' });
-  // PostFooter needs `like`/`unlike`/`newReply`/`justNow`, all defined under
-  // the `.detail` sub-namespace. Reuse it here so the list-page timestamp
-  // and the footer agree on the relative-time wording.
-  const tFooter = await getTranslations({ locale, namespace: FOOTER_NAMESPACE });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
 
   // TODO: Consider a composite index on (type, deleted_at, created_at DESC)
@@ -98,7 +94,7 @@ export default async function PuzzleListPage({ params, searchParams }: Props) {
     return `/${locale}/practice/puzzle${qs ? `?${qs}` : ''}`;
   };
 
-  const justNowLabel = tFooter('justNow');
+  const justNowLabel = t('justNow');
 
   return (
     <div className="space-y-8">

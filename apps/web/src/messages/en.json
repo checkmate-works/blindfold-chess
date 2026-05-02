@@ -1023,6 +1023,10 @@
       "blackPieces": "Black Pieces",
       "removePieceMode": "Remove piece mode - Click on a square to remove piece",
       "placingPiece": "Placing",
+      "like": "Like",
+      "unlike": "Unlike",
+      "newReply": "New Reply {time}",
+      "justNow": "just now",
       "detail": {
         "title": "Puzzle Detail",
         "descriptionSection": "About This Puzzle",
@@ -1032,11 +1036,7 @@
         "whiteToMove": "White to move",
         "blackToMove": "Black to move",
         "createdBy": "Created by",
-        "noPieces": "None",
-        "like": "Like",
-        "unlike": "Unlike",
-        "newReply": "New Reply {time}",
-        "justNow": "just now"
+        "noPieces": "None"
       },
       "session": {
         "title": "Solve",

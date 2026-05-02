@@ -1023,6 +1023,10 @@
       "blackPieces": "Peças Pretas",
       "removePieceMode": "Modo de remoção de peça - Clique em uma casa para remover a peça",
       "placingPiece": "Colocando",
+      "like": "Curtir",
+      "unlike": "Descurtir",
+      "newReply": "Nova Resposta {time}",
+      "justNow": "agora mesmo",
       "detail": {
         "title": "Detalhes do Puzzle",
         "descriptionSection": "Sobre Este Puzzle",
@@ -1032,11 +1036,7 @@
         "whiteToMove": "Brancas jogam",
         "blackToMove": "Pretas jogam",
         "createdBy": "Criado por",
-        "noPieces": "Nenhuma",
-        "like": "Curtir",
-        "unlike": "Descurtir",
-        "newReply": "Nova Resposta {time}",
-        "justNow": "agora mesmo"
+        "noPieces": "Nenhuma"
       },
       "result": {
         "title": "Resultado do Puzzle",

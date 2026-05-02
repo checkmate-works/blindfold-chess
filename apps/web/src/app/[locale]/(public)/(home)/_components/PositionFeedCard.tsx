@@ -87,9 +87,7 @@ export const PositionFeedCard = memo(function PositionFeedCard({
             likeMeta={data.likeMeta}
             replyMeta={data.replyMeta}
             toggleLikeAction={toggleLike}
-            i18nNamespace={
-              data.type === 'puzzle' ? 'practice.puzzle.detail' : 'practice.positionMemory'
-            }
+            i18nNamespace={data.type === 'puzzle' ? 'practice.puzzle' : 'practice.positionMemory'}
             postHref={href}
           />
         ) : undefined
