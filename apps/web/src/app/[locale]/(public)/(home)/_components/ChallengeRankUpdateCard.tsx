@@ -2,6 +2,7 @@
 
 import { memo } from 'react';
 
+import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { getMedalEmoji } from '@/lib/users/rank-emoji';
@@ -77,15 +78,20 @@ export const ChallengeRankUpdateCard = memo(function ChallengeRankUpdateCard({
     </div>
   );
 
+  // FeedItemCard is rendered with `href={null}` because the avatar is now a
+  // link to the actor's profile (`/u/<username>`). Wrapping the whole card
+  // in another <a> would nest anchors, which is invalid HTML. The
+  // leaderboard link is preserved as a permalink anchor on the relative
+  // timestamp.
   return (
     <FeedItemCard
-      href={href}
+      href={null}
       locale={locale}
       thumbnail={thumbnail}
       thumbnailClassName="flex items-center justify-center"
     >
       <UserAvatar
-        profileHref={null}
+        profileHref={data.actor.username ? `/u/${data.actor.username}` : null}
         avatarUrl={data.actor.avatarUrl}
         displayName={displayName}
         locale={locale}
@@ -94,9 +100,15 @@ export const ChallengeRankUpdateCard = memo(function ChallengeRankUpdateCard({
         country={data.actor.country}
       />
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <time dateTime={createdAt}>
-          {formatRelativeTime(new Date(createdAt), locale, justNowLabel)}
-        </time>
+        <Link
+          href={href}
+          locale={locale}
+          className="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+        >
+          <time dateTime={createdAt}>
+            {formatRelativeTime(new Date(createdAt), locale, justNowLabel)}
+          </time>
+        </Link>
       </div>
       <span className="inline-flex items-center self-start px-1.5 py-0.5 rounded text-xs font-semibold bg-muted text-muted-foreground">
         {label}

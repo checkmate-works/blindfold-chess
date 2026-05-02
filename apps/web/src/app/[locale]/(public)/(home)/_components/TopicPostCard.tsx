@@ -82,7 +82,7 @@ export const TopicPostCard = memo(function TopicPostCard({
       }
     >
       <UserAvatar
-        profileHref={null}
+        profileHref={post.author?.username ? `/u/${post.author.username}` : null}
         avatarUrl={post.author?.avatarUrl}
         displayName={displayName}
         locale={locale}

@@ -2,6 +2,7 @@
 
 import { memo } from 'react';
 
+import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { getPositionDetailPath } from '@/lib/positions/routes';
@@ -36,9 +37,22 @@ export const PositionFeedCard = memo(function PositionFeedCard({
   // which case `FeedItemCard` renders the card as a non-interactive element.
   const href = getPositionDetailPath(data.type, data.id);
 
+  // Layout note (HTML / a11y): FeedItemCard is rendered with `href={null}`
+  // so the card body is NOT wrapped in an outer <a>. Wrapping it would
+  // nest the inline <button> emitted by <LikeButton> and the inline <a>
+  // emitted by <UserAvatar> when `profileHref` is set — both are invalid
+  // HTML and produce hydration errors. The detail-page link is rendered
+  // as a permalink anchor on the relative timestamp (Twitter / Mastodon /
+  // GitHub pattern), keeping a crawler-discoverable <a href> per item.
+  const time = (
+    <time dateTime={data.createdAt}>
+      {formatRelativeTime(new Date(data.createdAt), locale, justNowLabel)}
+    </time>
+  );
+
   return (
     <FeedItemCard
-      href={href}
+      href={null}
       locale={locale}
       thumbnail={
         <BoardThumbnail
@@ -49,7 +63,7 @@ export const PositionFeedCard = memo(function PositionFeedCard({
       }
     >
       <UserAvatar
-        profileHref={null}
+        profileHref={data.author?.username ? `/u/${data.author.username}` : null}
         avatarUrl={data.author?.avatarUrl}
         displayName={displayName}
         locale={locale}
@@ -58,9 +72,17 @@ export const PositionFeedCard = memo(function PositionFeedCard({
         country={data.author?.country}
       />
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <time dateTime={data.createdAt}>
-          {formatRelativeTime(new Date(data.createdAt), locale, justNowLabel)}
-        </time>
+        {href ? (
+          <Link
+            href={href}
+            locale={locale}
+            className="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+          >
+            {time}
+          </Link>
+        ) : (
+          time
+        )}
       </div>
       <p className="text-sm text-foreground mt-1">{tFeed('action')}</p>
 

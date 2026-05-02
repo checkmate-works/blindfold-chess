@@ -27,6 +27,22 @@ vi.mock('@/i18n/use-safe-translations', () => ({
   useSafeTranslations: () => (key: string) => key,
 }));
 
+vi.mock('@/i18n/routing', () => ({
+  Link: ({
+    children,
+    href,
+    ...props
+  }: {
+    children: React.ReactNode;
+    href: string;
+    locale?: string;
+  }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
+}));
+
 // Mock unrelated child components / actions that would otherwise pull in
 // server-only code. These are not the subject of this regression test.
 vi.mock('./FeedItemCard', () => ({
@@ -125,6 +141,11 @@ describe('PositionFeedCard', () => {
     // Regression guard for the 404 bug: puzzle-type positions were being linked
     // to `/practice/position-memory/{id}`, which filters by `type = 'memory'`
     // and returned 404 for puzzle rows surfaced in the home feed.
+    //
+    // The detail-page link is now rendered as a permalink anchor on the
+    // relative timestamp (instead of wrapping the whole card) so that the
+    // avatar can link to the author's profile and the LikeButton is no
+    // longer nested inside an outer <a>.
     mockUseGamePreferences.mockReturnValue({
       preferences: { boardTheme: 'default' },
     });
@@ -136,8 +157,8 @@ describe('PositionFeedCard', () => {
       />
     );
 
-    const card = screen.getByTestId('feed-item-card');
-    expect(card).toHaveAttribute('data-href', '/practice/position-memory/mem-1');
+    const link = screen.getByRole('link');
+    expect(link).toHaveAttribute('href', '/practice/position-memory/mem-1');
   });
 
   it('routes puzzle-type positions to the puzzle detail page', () => {
@@ -152,11 +173,11 @@ describe('PositionFeedCard', () => {
       />
     );
 
-    const card = screen.getByTestId('feed-item-card');
-    expect(card).toHaveAttribute('data-href', '/practice/puzzle/puz-1');
+    const link = screen.getByRole('link');
+    expect(link).toHaveAttribute('href', '/practice/puzzle/puz-1');
   });
 
-  it('renders sequence-type positions without a link (no detail page implemented)', () => {
+  it('renders sequence-type positions without a permalink (no detail page implemented)', () => {
     // `sequence` has no detail page yet. We still surface the card in the
     // feed so the content is visible, but we must not generate a link that
     // would 404.
@@ -171,8 +192,8 @@ describe('PositionFeedCard', () => {
       />
     );
 
+    expect(screen.queryByRole('link')).toBeNull();
     const card = screen.getByTestId('feed-item-card');
-    expect(card).not.toHaveAttribute('data-href');
     expect(card).toHaveAttribute('data-has-link', 'false');
   });
 });
