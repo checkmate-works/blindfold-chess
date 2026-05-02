@@ -1,4 +1,4 @@
-import { and, count, desc, eq, inArray, isNull, max } from 'drizzle-orm';
+import { and, asc, count, countDistinct, desc, eq, inArray, isNull, max } from 'drizzle-orm';
 
 import { db, profiles, topicPosts } from './index';
 
@@ -38,13 +38,24 @@ const MAX_REPLIERS_DISPLAY = 3;
  *
  * "Topic" here is the same `(topicType, topicKey)` shape that the
  * `topicPosts` table uses to attach a discussion thread to any
- * polymorphic owner — opening, square, position-memory puzzle, etc.
+ * polymorphic owner — opening, square, position-memory, puzzle, etc.
  *
  * The aggregate counts include both root-level comments and their
  * replies, so a list-page badge of "X comments" reflects total
  * discussion volume on the topic. (Compare {@link attachPostMeta},
  * which aggregates replies under a single root post — different shape,
  * different keying.)
+ *
+ * @perf
+ * Two parallel queries:
+ *   1. Per-topic GROUP BY for `replyCount`, `latestReplyAt`, and
+ *      `uniqueReplierCount` (via `count(distinct user_id)`).
+ *   2. `SELECT DISTINCT ON (topic_key, user_id)` joined with profiles,
+ *      returning only the latest comment per (topic, user) pair. Without
+ *      DISTINCT ON the query would transfer every comment row for matching
+ *      topics — for a popular topic with 100 comments × 12 topics on a
+ *      feed page that would be ~1200 rows just to keep 36. With DISTINCT
+ *      ON, transfer is bounded by `unique repliers × topics`.
  */
 export async function getReplyMetaMap(
   topicType: string,
@@ -53,73 +64,70 @@ export async function getReplyMetaMap(
   const map = new Map<string, ReplyMeta>();
   if (topicKeys.length === 0) return map;
 
-  const [stats, repliesWithAuthors] = await Promise.all([
+  const filter = and(
+    eq(topicPosts.topicType, topicType),
+    inArray(topicPosts.topicKey, topicKeys),
+    isNull(topicPosts.deletedAt)
+  );
+
+  const [stats, dedupedRepliers] = await Promise.all([
     db
       .select({
         topicKey: topicPosts.topicKey,
         replyCount: count(),
         latestReplyAt: max(topicPosts.createdAt),
+        uniqueReplierCount: countDistinct(topicPosts.userId),
       })
       .from(topicPosts)
-      .where(
-        and(
-          eq(topicPosts.topicType, topicType),
-          inArray(topicPosts.topicKey, topicKeys),
-          isNull(topicPosts.deletedAt)
-        )
-      )
+      .where(filter)
       .groupBy(topicPosts.topicKey),
+    // DISTINCT ON (topic_key, user_id) keeps only the latest comment
+    // each user made on each topic. The DISTINCT ON columns must lead
+    // the ORDER BY so Postgres can pick the right "first" row per group;
+    // the trailing `desc(createdAt)` makes that "first" row the most
+    // recent. JS-side we still sort within a topic to slice the top 3.
     db
-      .select({
+      .selectDistinctOn([topicPosts.topicKey, topicPosts.userId], {
         topicKey: topicPosts.topicKey,
         userId: topicPosts.userId,
+        createdAt: topicPosts.createdAt,
         avatarUrl: profiles.avatarUrl,
         displayName: profiles.displayName,
         username: profiles.username,
       })
       .from(topicPosts)
       .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
-      .where(
-        and(
-          eq(topicPosts.topicType, topicType),
-          inArray(topicPosts.topicKey, topicKeys),
-          isNull(topicPosts.deletedAt)
-        )
-      )
-      .orderBy(desc(topicPosts.createdAt)),
+      .where(filter)
+      .orderBy(asc(topicPosts.topicKey), asc(topicPosts.userId), desc(topicPosts.createdAt)),
   ]);
 
-  const statsMap = new Map(
-    stats.map((s) => [s.topicKey, { replyCount: s.replyCount, latestReplyAt: s.latestReplyAt }])
-  );
+  const statsMap = new Map(stats.map((s) => [s.topicKey, s]));
 
-  // Collect up to 3 unique repliers per topicKey (most recent first,
-  // dedup by userId) while tracking ALL unique repliers for the +N
-  // overflow count. Mirrors the algorithm used by `attachPostMeta`.
-  const repliersMap = new Map<string, Replier[]>();
-  const seenUsers = new Map<string, Set<string>>();
-  for (const row of repliesWithAuthors) {
-    const seen = seenUsers.get(row.topicKey) ?? new Set<string>();
-    if (seen.has(row.userId)) continue;
-    seen.add(row.userId);
-    seenUsers.set(row.topicKey, seen);
-    const existing = repliersMap.get(row.topicKey) ?? [];
-    if (existing.length < MAX_REPLIERS_DISPLAY) {
-      existing.push({
-        avatarUrl: row.avatarUrl,
-        displayName: row.displayName || row.username || 'Anonymous',
-      });
-      repliersMap.set(row.topicKey, existing);
-    }
+  // Group deduped rows by topicKey, then sort each group by createdAt
+  // DESC and take the most-recent N for display.
+  const repliersByKey = new Map<string, typeof dedupedRepliers>();
+  for (const row of dedupedRepliers) {
+    const arr = repliersByKey.get(row.topicKey) ?? [];
+    arr.push(row);
+    repliersByKey.set(row.topicKey, arr);
   }
 
   for (const topicKey of topicKeys) {
-    const stats = statsMap.get(topicKey);
+    const s = statsMap.get(topicKey);
+    const dedupedForKey = repliersByKey.get(topicKey) ?? [];
+    const repliers = dedupedForKey
+      .slice()
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice(0, MAX_REPLIERS_DISPLAY)
+      .map<Replier>((r) => ({
+        avatarUrl: r.avatarUrl,
+        displayName: r.displayName || r.username || 'Anonymous',
+      }));
     map.set(topicKey, {
-      replyCount: stats?.replyCount ?? 0,
-      latestReplyAt: stats?.latestReplyAt ?? null,
-      repliers: repliersMap.get(topicKey) ?? [],
-      uniqueReplierCount: seenUsers.get(topicKey)?.size ?? 0,
+      replyCount: s?.replyCount ?? 0,
+      latestReplyAt: s?.latestReplyAt ?? null,
+      repliers,
+      uniqueReplierCount: s?.uniqueReplierCount ?? 0,
     });
   }
 
