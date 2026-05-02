@@ -6,10 +6,12 @@ import { useTranslations } from 'next-intl';
 
 import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
+import type { ExpInfo } from '@blindfold-chess/features/exp';
 import { FaEye } from 'react-icons/fa';
 
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
 
+import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
 import { SectionTitle } from '@/app/[locale]/_components';
 
 import { PuzzleSolutionReplay } from './PuzzleSolutionReplay';
@@ -21,9 +23,22 @@ type Props = {
   fen: string;
   solutionLines: string[];
   solutionMoveLists: PuzzleSolutionMove[][];
+  /**
+   * EXP info fetched server-side via `getExpInfoBySource` from the
+   * `?grant=<expEventId>` query param the session client appends on solve.
+   * `null` when unauthenticated, when the param is missing, or when the
+   * event was not found — in which case `<ExpGainDisplay>` renders nothing.
+   */
+  expInfo: ExpInfo | null;
 };
 
-export function PuzzleResultClient({ positionId, fen, solutionLines, solutionMoveLists }: Props) {
+export function PuzzleResultClient({
+  positionId,
+  fen,
+  solutionLines,
+  solutionMoveLists,
+  expInfo,
+}: Props) {
   const t = useTranslations('practice.puzzle.result');
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   const [solutionLine, setSolutionLine] = useState<string>(solutionLines[0] ?? '');
@@ -106,6 +121,12 @@ export function PuzzleResultClient({ positionId, fen, solutionLines, solutionMov
           <span>{t('peekCount', { count: peekCount })}</span>
         </div>
       )}
+
+      {/* EXP gained banner — renders nothing if `expInfo` is null (guest user,
+       *  no `?grant=` param, or event not found). Placed just above the Try
+       *  Again button so the EXP card sits directly over the primary CTA,
+       *  matching position-memory's layout. */}
+      <ExpGainDisplay expInfo={expInfo} />
 
       {/* (D) Action buttons */}
       <div className="flex flex-col gap-3 pt-4">

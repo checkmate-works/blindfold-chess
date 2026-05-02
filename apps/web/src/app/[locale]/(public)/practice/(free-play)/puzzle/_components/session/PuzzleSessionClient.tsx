@@ -9,6 +9,7 @@ import { Link, useRouter } from '@/i18n/routing';
 import { executeMove } from '@blindfold-chess/features/chess-core';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
+import * as Sentry from '@sentry/nextjs';
 
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
 import type { PeekPreferenceHint } from '@/lib/games/peek-cookie';
@@ -26,6 +27,7 @@ import { PagePanel } from '@/app/[locale]/_components/PagePanel';
 import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
+import { savePuzzleResult } from '../../_actions/savePuzzleResult';
 import { CircleMarker } from '../CircleMarker';
 
 type Attempt = { move: string; isCorrect: boolean };
@@ -133,6 +135,13 @@ export function PuzzleSessionClient({
   const [isBoardVisible, setIsBoardVisible] = useState(false);
   const [isSolved, setIsSolved] = useState(false);
   /**
+   * Guards against double-invocation of `finishSolve` (e.g. StrictMode
+   * re-mount, fast rerenders). Mirrors the `savedRef` pattern used in
+   * position-memory's `SinglePositionSession` and `useChallengeResultSave`,
+   * so the EXP-grant Server Action is invoked at most once per solved run.
+   */
+  const savedRef = useRef(false);
+  /**
    * Flipped to `true` in the short window between the puzzle being solved
    * and the router.push to /result completing, so the PageTitle can show
    * "Loading..." instead of the stale puzzle name. Mirrors the
@@ -232,7 +241,10 @@ export function PuzzleSessionClient({
 
   const hasErrors = session.attempts.some((a) => !a.isCorrect);
 
-  function finishSolve(solutionLine: string, attempts: Attempt[]) {
+  function finishSolve(solutionLine: string, attempts: Attempt[], playerMoveCount: number) {
+    if (savedRef.current) return;
+    savedRef.current = true;
+
     try {
       sessionStorage.setItem(
         `puzzle_result_${positionId}`,
@@ -242,8 +254,34 @@ export function PuzzleSessionClient({
       // sessionStorage may be unavailable
     }
     setIsNavigatingToResult(true);
+
+    const baseUrl = `/practice/puzzle/${positionId}/result`;
+    const incorrectAttempts = attempts.filter((a) => !a.isCorrect).length;
+
+    // Fire the EXP grant in parallel with the auto-navigate timer. We capture
+    // the resulting `expEventId` in a closure variable so the eventual
+    // `router.push` can append `?grant=<id>` if the save resolves before the
+    // 1s feedback delay elapses. If it doesn't (slow network, error), the
+    // grant is still persisted DB-side — only the result page's EXP display
+    // misses out on this navigation, and it is acceptable degradation.
+    let expEventId: string | undefined;
+    void savePuzzleResult({
+      playerMoveCount,
+      incorrectAttempts,
+      peekCount,
+    })
+      .then((result) => {
+        if (result.success && result.expEventId) {
+          expEventId = result.expEventId;
+        }
+      })
+      .catch((err) => {
+        Sentry.captureException(err);
+      });
+
     setTimeout(() => {
-      router.push(`/practice/puzzle/${positionId}/result`);
+      const finalUrl = expEventId ? `${baseUrl}?grant=${encodeURIComponent(expEventId)}` : baseUrl;
+      router.push(finalUrl);
     }, AUTO_NAVIGATE_DELAY_MS);
   }
 
@@ -318,7 +356,11 @@ export function PuzzleSessionClient({
 
     if (solved) {
       setIsSolved(true);
-      finishSolve(solutions[locked]!.map((m) => m.san).join(' '), updatedAttempts);
+      finishSolve(
+        solutions[locked]!.map((m) => m.san).join(' '),
+        updatedAttempts,
+        solution.playerSlots.length
+      );
     }
 
     return true;

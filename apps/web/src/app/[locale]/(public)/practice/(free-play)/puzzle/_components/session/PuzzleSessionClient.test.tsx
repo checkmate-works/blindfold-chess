@@ -78,6 +78,17 @@ vi.mock('@/app/[locale]/(public)/games/play/_components/ShowBoardButton', () => 
   ),
 }));
 
+// Mock the EXP-grant Server Action so the session component does not attempt
+// to call into server-only modules (auth, db) from a jsdom test. The default
+// resolution returns `{ success: true }` WITHOUT an `expEventId`, which keeps
+// the navigation URL grant-less — that matches every existing assertion that
+// checks `router.push('/practice/puzzle/<id>/result')`. The dedicated EXP-grant
+// describe block below overrides this default to assert the grant-param path.
+const mockSavePuzzleResult = vi.fn();
+vi.mock('../../_actions/savePuzzleResult', () => ({
+  savePuzzleResult: (...args: unknown[]) => mockSavePuzzleResult(...args),
+}));
+
 vi.mock('@/app/[locale]/_components/MoveInputPanel', () => ({
   MoveInputPanel: ({
     disabled,
@@ -166,6 +177,11 @@ function renderSession(solutions: string[] = ['Nf3'], fen: string = STARTING_FEN
 
 beforeEach(() => {
   mockPush.mockReset();
+  mockSavePuzzleResult.mockReset();
+  // Default: report a successful grant with NO `expEventId`, so the URL the
+  // session pushes stays `/practice/puzzle/<id>/result` (no `?grant=...`).
+  // Tests that exercise the grant-URL path override this in their own block.
+  mockSavePuzzleResult.mockResolvedValue({ success: true });
   sessionStorage.clear();
 });
 
@@ -528,6 +544,167 @@ describe('PuzzleSessionClient', () => {
       expect(screen.queryByTestId('opponent-status')).not.toBeInTheDocument();
       expect(screen.getByTestId('loading-title')).toBeInTheDocument();
       expect(heading).not.toHaveTextContent(POSITION_TITLE);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // EXP-grant Server Action wiring
+  //
+  // The session component fires `savePuzzleResult` on solve and, if the action
+  // resolves with an `expEventId` before the auto-navigate timer fires, appends
+  // it to the `/result` URL as a `?grant=<id>` query param. The result page
+  // uses that param to refetch the granted EXP and surface the gain banner.
+  // ---------------------------------------------------------------------------
+  describe('EXP grant', () => {
+    /**
+     * Wait for queued microtasks to drain. With fake timers, advancing the
+     * timer triggers the auto-navigate callback, but the closure-captured
+     * `expEventId` is set by the savePuzzleResult promise's `.then`, which is
+     * a microtask. Awaiting `Promise.resolve()` once flushes the microtask
+     * queue so the assignment lands before the timer runs.
+     */
+    async function flushMicrotasks() {
+      await act(async () => {});
+    }
+
+    it('appends ?grant=<id> to the result URL when the action resolves with an expEventId before the auto-navigate timer', async () => {
+      mockSavePuzzleResult.mockResolvedValueOnce({
+        success: true,
+        expEventId: 'evt-puzzle-abc',
+      });
+
+      vi.useFakeTimers();
+      try {
+        renderSession(['Nf3']);
+
+        await act(async () => {
+          fireEvent.click(screen.getByTestId('stub-submit'));
+        });
+        // Drain the savePuzzleResult `.then` microtask so the closure-captured
+        // expEventId is set before the auto-navigate timer fires.
+        await flushMicrotasks();
+
+        act(() => {
+          vi.advanceTimersByTime(1000);
+        });
+
+        expect(mockPush).toHaveBeenCalledWith(
+          `/practice/puzzle/${POSITION_ID}/result?grant=evt-puzzle-abc`
+        );
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('navigates without ?grant= when the action returns success but no expEventId (e.g., guest user)', async () => {
+      mockSavePuzzleResult.mockResolvedValueOnce({ success: true });
+
+      vi.useFakeTimers();
+      try {
+        renderSession(['Nf3']);
+
+        await act(async () => {
+          fireEvent.click(screen.getByTestId('stub-submit'));
+        });
+        await flushMicrotasks();
+
+        act(() => {
+          vi.advanceTimersByTime(1000);
+        });
+
+        expect(mockPush).toHaveBeenCalledWith(`/practice/puzzle/${POSITION_ID}/result`);
+        expect(mockPush).not.toHaveBeenCalledWith(expect.stringContaining('grant='));
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('navigates without ?grant= when the action rejects (Sentry-logged failure)', async () => {
+      mockSavePuzzleResult.mockRejectedValueOnce(new Error('db_down'));
+
+      vi.useFakeTimers();
+      try {
+        renderSession(['Nf3']);
+
+        await act(async () => {
+          fireEvent.click(screen.getByTestId('stub-submit'));
+        });
+        await flushMicrotasks();
+
+        act(() => {
+          vi.advanceTimersByTime(1000);
+        });
+
+        expect(mockPush).toHaveBeenCalledWith(`/practice/puzzle/${POSITION_ID}/result`);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('passes incorrectAttempts (count of wrong submits before solve) and peekCount to savePuzzleResult', async () => {
+      // Solution accepts 'Nf3'. The stub-submit button always submits 'Nf3',
+      // so we can not generate wrong submits with it; use a multi-solution
+      // line where a wrong move can be submitted via the custom-submit path
+      // before the correct one.
+      vi.useFakeTimers();
+      try {
+        renderSession(['Nf3']);
+
+        const peekButton = screen.getByRole('button', { name: 'showBoard' });
+        fireEvent.click(peekButton);
+        fireEvent.click(peekButton);
+
+        // One wrong submit, then the correct one.
+        (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'e4';
+        await act(async () => {
+          fireEvent.click(screen.getByTestId('stub-custom-submit'));
+        });
+
+        (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'Nf3';
+        await act(async () => {
+          fireEvent.click(screen.getByTestId('stub-custom-submit'));
+        });
+
+        expect(mockSavePuzzleResult).toHaveBeenCalledTimes(1);
+        expect(mockSavePuzzleResult).toHaveBeenCalledWith({
+          playerMoveCount: 1,
+          incorrectAttempts: 1,
+          peekCount: 2,
+        });
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('does NOT invoke savePuzzleResult when the user bails out via "view result" without solving', async () => {
+      renderSession(['e4']); // wrong submit since stub submits Nf3
+
+      // One incorrect submit
+      fireEvent.click(screen.getByTestId('stub-submit'));
+      // Bail out via the view-result link
+      fireEvent.click(screen.getByTestId('view-result-link'));
+
+      expect(mockSavePuzzleResult).not.toHaveBeenCalled();
+    });
+
+    it('invokes savePuzzleResult at most once even if the solve commit re-runs', async () => {
+      vi.useFakeTimers();
+      try {
+        renderSession(['Nf3']);
+
+        await act(async () => {
+          fireEvent.click(screen.getByTestId('stub-submit'));
+        });
+        // Second click after solve — disabled MoveInputPanel still allows the
+        // stub to invoke onSubmit, but the session is locked (`isSolved`).
+        await act(async () => {
+          fireEvent.click(screen.getByTestId('stub-submit'));
+        });
+
+        expect(mockSavePuzzleResult).toHaveBeenCalledTimes(1);
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 });
