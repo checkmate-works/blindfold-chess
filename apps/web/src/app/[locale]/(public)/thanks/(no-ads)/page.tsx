@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 
+import { Button } from '@/app/_components';
 import { and, eq, isNull } from 'drizzle-orm';
 
 import { db, topicPosts, userGrants } from '@/lib/db';
@@ -130,12 +131,16 @@ export default async function ThanksPage({ params, searchParams }: Props) {
           <p className="text-muted-foreground text-center py-4">{t('genericMessage')}</p>
         )}
 
-        <div className="flex justify-center pb-4">
-          <Link
-            href={returnUrl}
-            className="inline-block px-6 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity"
-          >
-            {t('continueButton')}
+        <div className="flex flex-col gap-3 pb-4">
+          <Link href={returnUrl} className="block">
+            <Button asChild variant="primary" size="lg" fullWidth>
+              {t('continueButton')}
+            </Button>
+          </Link>
+          <Link href={`/${locale}/mypage/benefits`} className="block">
+            <Button asChild variant="outline" size="lg" fullWidth>
+              {t('viewBenefitsButton')}
+            </Button>
           </Link>
         </div>
       </PagePanel>

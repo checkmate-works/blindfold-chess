@@ -3554,6 +3554,7 @@
     "title": "¡Gracias!",
     "sectionTitle": "Tu beneficio",
     "continueButton": "Ver tu publicación",
+    "viewBenefitsButton": "Ver tus beneficios",
     "genericMessage": "Gracias por tu contribución.",
     "explanation": {
       "square": "Tu publicación en un tema de casilla te ha otorgado el siguiente beneficio:",

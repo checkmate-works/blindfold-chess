@@ -3554,6 +3554,7 @@
     "title": "御礼",
     "sectionTitle": "獲得した特典",
     "continueButton": "投稿内容を確認する",
+    "viewBenefitsButton": "獲得した特典を確認する",
     "genericMessage": "ご投稿ありがとうございます。",
     "explanation": {
       "square": "マスのトピックへのご投稿により、以下の特典が付与されました。",

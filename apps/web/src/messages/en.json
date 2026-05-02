@@ -3554,6 +3554,7 @@
     "title": "Thanks!",
     "sectionTitle": "Your benefit",
     "continueButton": "View your post",
+    "viewBenefitsButton": "View your benefits",
     "genericMessage": "Thanks for your contribution.",
     "explanation": {
       "square": "Your post on a square topic earned you the following benefit:",
