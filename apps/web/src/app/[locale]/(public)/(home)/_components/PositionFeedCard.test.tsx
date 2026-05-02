@@ -45,26 +45,7 @@ vi.mock('@/i18n/routing', () => ({
 
 // Mock unrelated child components / actions that would otherwise pull in
 // server-only code. These are not the subject of this regression test.
-vi.mock('./FeedItemCard', () => ({
-  FeedItemCard: ({
-    href,
-    thumbnail,
-    children,
-  }: {
-    href: string | null;
-    thumbnail: React.ReactNode;
-    children: React.ReactNode;
-  }) => (
-    <div
-      data-testid="feed-item-card"
-      {...(href === null ? { 'data-has-link': 'false' } : { 'data-href': href })}
-    >
-      <div data-testid="feed-item-card-thumbnail">{thumbnail}</div>
-      <div>{children}</div>
-    </div>
-  ),
-}));
-
+// ActivityCard is rendered for real — it is purely structural.
 vi.mock('@/app/[locale]/(public)/topics/_components/LikeButton', () => ({
   LikeButton: () => <div data-testid="like-button" />,
 }));
@@ -193,7 +174,5 @@ describe('PositionFeedCard', () => {
     );
 
     expect(screen.queryByRole('link')).toBeNull();
-    const card = screen.getByTestId('feed-item-card');
-    expect(card).toHaveAttribute('data-has-link', 'false');
   });
 });

@@ -13,10 +13,10 @@ import {
   moduleToSlug,
 } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
+import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 
 import type { ChallengeRankUpdateData } from '../_lib/types';
-import { FeedItemCard } from './FeedItemCard';
 
 // ---------------------------------------------------------------------------
 // Rank → Emoji mapping (ranks 4–10 are local to this card)
@@ -78,28 +78,22 @@ export const ChallengeRankUpdateCard = memo(function ChallengeRankUpdateCard({
     </div>
   );
 
-  // FeedItemCard is rendered with `href={null}` because the avatar is now a
-  // link to the actor's profile (`/u/<username>`). Wrapping the whole card
-  // in another <a> would nest anchors, which is invalid HTML. The
-  // leaderboard link is preserved as a permalink anchor on the relative
-  // timestamp.
   return (
-    <FeedItemCard
-      href={null}
-      locale={locale}
+    <ActivityCard
       thumbnail={thumbnail}
       thumbnailClassName="flex items-center justify-center"
-    >
-      <UserAvatar
-        profileHref={data.actor.username ? `/u/${data.actor.username}` : null}
-        avatarUrl={data.actor.avatarUrl}
-        displayName={displayName}
-        locale={locale}
-        size="sm"
-        flair={data.actor.flair}
-        country={data.actor.country}
-      />
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+      author={
+        <UserAvatar
+          profileHref={data.actor.username ? `/u/${data.actor.username}` : null}
+          avatarUrl={data.actor.avatarUrl}
+          displayName={displayName}
+          locale={locale}
+          size="sm"
+          flair={data.actor.flair}
+          country={data.actor.country}
+        />
+      }
+      permalink={
         <Link
           href={href}
           locale={locale}
@@ -109,7 +103,8 @@ export const ChallengeRankUpdateCard = memo(function ChallengeRankUpdateCard({
             {formatRelativeTime(new Date(createdAt), locale, justNowLabel)}
           </time>
         </Link>
-      </div>
+      }
+    >
       <span className="inline-flex items-center self-start px-1.5 py-0.5 rounded text-xs font-semibold bg-muted text-muted-foreground">
         {label}
       </span>
@@ -117,6 +112,6 @@ export const ChallengeRankUpdateCard = memo(function ChallengeRankUpdateCard({
         {data.isNewEntry ? tFeed('newEntry') : tFeed('improved')}
         {rankEmoji && <span className="ml-1">{rankEmoji}</span>}
       </p>
-    </FeedItemCard>
+    </ActivityCard>
   );
 });

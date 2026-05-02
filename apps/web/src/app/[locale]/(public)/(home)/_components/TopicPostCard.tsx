@@ -17,9 +17,9 @@ import { MiniBoard } from '@/app/[locale]/(public)/topics/openings/_components/M
 import { isBlackOpening } from '@/app/[locale]/(public)/topics/openings/_lib/openings';
 import { toggleLike as toggleLikeSquare } from '@/app/[locale]/(public)/topics/squares/[square]/posts/[postId]/_actions/toggleLike';
 import { LinkedText } from '@/app/[locale]/_components';
+import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 
-import { FeedItemCard } from './FeedItemCard';
 import { TopicSquareBoard } from './TopicSquareBoard';
 
 type Props = {
@@ -50,18 +50,15 @@ export const TopicPostCard = memo(function TopicPostCard({
     ? `/topics/openings/${post.topicKey}/posts/${postId}${anchor}`
     : `/topics/squares/${post.topicKey}/posts/${postId}${anchor}`;
 
-  // Layout note (HTML / a11y): FeedItemCard is rendered with `href={null}`
-  // so the card body is NOT wrapped in an outer <a>. Wrapping it would
-  // nest the inline <a> elements emitted by <LinkedText> for URLs in the
-  // post body, and would also nest the <button> in <LikeButton> — both
-  // are invalid HTML and produce hydration errors.
-  // The post-detail link is rendered as a permalink anchor on the
-  // relative timestamp (Twitter / Mastodon / GitHub pattern), keeping a
-  // crawler-discoverable <a href> per post for SEO.
+  // Layout note (HTML / a11y): ActivityCard never wraps its body in an
+  // outer <a>. Wrapping it would nest the inline <a> elements emitted by
+  // <LinkedText> for URLs in the post body, and would also nest the
+  // <button> in <LikeButton> — both are invalid HTML and produce
+  // hydration errors. The post-detail link is rendered as a permalink
+  // anchor on the relative timestamp (Twitter / Mastodon / GitHub
+  // pattern), keeping a crawler-discoverable <a href> per post for SEO.
   return (
-    <FeedItemCard
-      href={null}
-      locale={locale}
+    <ActivityCard
       variant={variant}
       thumbnail={
         isOpening ? (
@@ -74,17 +71,18 @@ export const TopicPostCard = memo(function TopicPostCard({
           <TopicSquareBoard square={post.topicKey} />
         )
       }
-    >
-      <UserAvatar
-        profileHref={post.author?.username ? `/u/${post.author.username}` : null}
-        avatarUrl={post.author?.avatarUrl}
-        displayName={displayName}
-        locale={locale}
-        size="sm"
-        flair={post.author?.flair}
-        country={post.author?.country}
-      />
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+      author={
+        <UserAvatar
+          profileHref={post.author?.username ? `/u/${post.author.username}` : null}
+          avatarUrl={post.author?.avatarUrl}
+          displayName={displayName}
+          locale={locale}
+          size="sm"
+          flair={post.author?.flair}
+          country={post.author?.country}
+        />
+      }
+      permalink={
         <Link
           href={href}
           locale={locale}
@@ -95,7 +93,20 @@ export const TopicPostCard = memo(function TopicPostCard({
             {formatRelativeTime(new Date(post.createdAt), locale, justNowLabel)}
           </time>
         </Link>
-      </div>
+      }
+      footer={
+        <PostFooter
+          postId={post.id}
+          locale={locale}
+          topicKey={post.topicKey}
+          likeMeta={post.likeMeta}
+          replyMeta={post.replyMeta}
+          toggleLikeAction={isOpening ? toggleLikeOpening : toggleLikeSquare}
+          i18nNamespace={isOpening ? 'topics.openings' : 'topics.squares'}
+          postHref={href}
+        />
+      }
+    >
       {isOpening ? (
         post.openingName && (
           <span className="inline-flex items-center self-start px-1.5 py-0.5 rounded text-xs font-semibold bg-muted text-muted-foreground">
@@ -127,17 +138,6 @@ export const TopicPostCard = memo(function TopicPostCard({
           {showMoreLabel}
         </Link>
       )}
-
-      <PostFooter
-        postId={post.id}
-        locale={locale}
-        topicKey={post.topicKey}
-        likeMeta={post.likeMeta}
-        replyMeta={post.replyMeta}
-        toggleLikeAction={isOpening ? toggleLikeOpening : toggleLikeSquare}
-        i18nNamespace={isOpening ? 'topics.openings' : 'topics.squares'}
-        postHref={href}
-      />
-    </FeedItemCard>
+    </ActivityCard>
   );
 });
