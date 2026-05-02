@@ -324,9 +324,24 @@ export function PuzzleSessionClient({
         ? [session.lockedSolutionIndex]
         : parsedSolutions.map((_, i) => i);
 
-    const matchIdx = candidates.find(
-      (i) => parsedSolutions[i]!.playerSlots[nextPlayerIndex] === canonicalSan
-    );
+    // Both sides need to be canonical for the comparison to be sound.
+    // The user's input is canonicalized above; the stored solution SAN is
+    // canonicalized here by feeding it through chess.js against the same
+    // pre-move FEN. Without this, a solution stored without check decoration
+    // (e.g. `Rxd8`, when chess.js's canonical form for the same move is
+    // `Rxd8+`) would never match — even when the user types the *exact*
+    // string from the DB. Reproduced 2026-05-02 on puzzle
+    // `d4f46cc3-dfbd-4c1b-bb8c-ed7a952f8a46` whose stored solution `Rxd8`
+    // could not be solved by any input. `executeMove` is null only if the
+    // server-stored SAN is itself illegal at this point in the line, which
+    // would indicate corrupted puzzle data — we fail closed (no match) in
+    // that case rather than crashing.
+    const matchIdx = candidates.find((i) => {
+      const expected = parsedSolutions[i]!.playerSlots[nextPlayerIndex];
+      if (expected === undefined) return false;
+      const expectedExec = executeMove(session.currentFen, expected);
+      return expectedExec !== null && expectedExec.moveResult.san === canonicalSan;
+    });
 
     const attempt: Attempt = { move: trimmed, isCorrect: matchIdx !== undefined };
     const updatedAttempts = [...session.attempts, attempt];

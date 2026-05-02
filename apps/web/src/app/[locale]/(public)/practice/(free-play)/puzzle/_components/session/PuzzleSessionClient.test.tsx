@@ -630,6 +630,39 @@ describe('PuzzleSessionClient', () => {
       expect(screen.queryByTestId('panel-error')).not.toBeInTheDocument();
       expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'true');
     });
+
+    // -------------------------------------------------------------------------
+    // Solution SAN canonicalization
+    //
+    // The earlier fix only canonicalized the user's input but compared
+    // against the raw stored solution SAN. That broke any puzzle whose
+    // stored SAN is missing decorations chess.js would insert (most often
+    // `+` for check). The fix runs both sides through chess.js so the
+    // comparison is symmetric. The FEN below is the actual position from
+    // the bug report (puzzle d4f46cc3-…), where the stored solution is
+    // `Rxd8` but chess.js canonicalizes the same move to `Rxd8+` because
+    // the rook capture also delivers check.
+    // -------------------------------------------------------------------------
+    const UNDECORATED_SOLUTION_FEN = '2rr2k1/n1pR1pp1/1p2p2p/pP1bP3/P7/5N2/1BP3PP/3R2K1 w - - 3 21';
+
+    it('accepts the user input when the stored solution SAN is missing the check mark', () => {
+      // Stored solution is `Rxd8` (no `+`); chess.js canonical is `Rxd8+`.
+      // User typing the literal stored string must still be accepted.
+      renderSession(['Rxd8'], UNDECORATED_SOLUTION_FEN);
+      setCustomInputAndSubmit('Rxd8');
+      expect(screen.queryByTestId('panel-error')).not.toBeInTheDocument();
+      // Single-move solution → solved immediately.
+      expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'true');
+    });
+
+    it('accepts the user input when both sides are missing different decorations', () => {
+      // Stored solution `Rxd8` (no `+`), user input `Rd8` (no `x`, no `+`):
+      // both canonicalize to `Rxd8+` against the position, so they match.
+      renderSession(['Rxd8'], UNDECORATED_SOLUTION_FEN);
+      setCustomInputAndSubmit('Rd8');
+      expect(screen.queryByTestId('panel-error')).not.toBeInTheDocument();
+      expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'true');
+    });
   });
 
   // ---------------------------------------------------------------------------
