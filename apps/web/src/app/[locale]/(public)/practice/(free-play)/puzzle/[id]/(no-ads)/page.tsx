@@ -172,12 +172,16 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
       <SectionTitle>{tComments('commentsTitle')}</SectionTitle>
 
       {currentUser ? (
-        <JoinConversationToggle
-          countText={tComments('postCount', { count: commentCount })}
-          joinLabel={tTopics('joinConversation')}
-        >
+        commentCount === 0 ? (
           <NewPostForm locale={locale} positionId={position.id} />
-        </JoinConversationToggle>
+        ) : (
+          <JoinConversationToggle
+            countText={tComments('postCount', { count: commentCount })}
+            joinLabel={tTopics('joinConversation')}
+          >
+            <NewPostForm locale={locale} positionId={position.id} />
+          </JoinConversationToggle>
+        )
       ) : (
         <p className="text-sm text-muted-foreground">
           <Link href={`/${locale}/sign-in`} className="text-link-primary hover:underline">
@@ -186,7 +190,7 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
         </p>
       )}
 
-      {commentTree.length > 0 ? (
+      {commentTree.length > 0 && (
         <>
           <SortSelect
             basePath={`/practice/puzzle/${position.id}`}
@@ -210,8 +214,6 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
             }}
           />
         </>
-      ) : (
-        <p className="text-muted-foreground text-center py-8">{tComments('noPosts')}</p>
       )}
     </PositionDetailLayout>
   );
