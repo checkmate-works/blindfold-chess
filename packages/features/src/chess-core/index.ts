@@ -65,20 +65,7 @@ export {
   validateAttachedPgn,
 } from "./pgn";
 
-export type { PositionQuery } from "./position";
-
-export {
-  queryPosition,
-  isCheckmate,
-  isStalemate,
-  isCheck,
-  isDraw,
-  isInsufficientMaterial,
-  isGameOver,
-  isSquareAttacked,
-  findKingSquare,
-  validatePosition,
-} from "./position";
+export { validatePosition } from "./position";
 
 export { formatLastMove } from "./format";
 
