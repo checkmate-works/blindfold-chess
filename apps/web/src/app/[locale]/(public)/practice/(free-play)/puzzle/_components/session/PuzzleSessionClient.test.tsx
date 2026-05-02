@@ -548,6 +548,91 @@ describe('PuzzleSessionClient', () => {
   });
 
   // ---------------------------------------------------------------------------
+  // Lenient SAN matching
+  //
+  // The puzzle session feeds the user's input through chess.js and matches
+  // against the canonical SAN it returns, NOT against the user's literal
+  // string. This means decorative marks (`x`, `+`, `#`) can be omitted when
+  // chess.js can still uniquely determine the move from the position. End
+  // users should not have to type `Qxe6+` to solve a puzzle whose stored
+  // solution is `Qxe6+` — `Qe6` works because chess.js normalizes it.
+  // ---------------------------------------------------------------------------
+  describe('lenient SAN matching', () => {
+    // White Q on f5, black bishop on e6, black king on e8: Qxe6+ is a legal
+    // capture-with-check. Plenty of legal alternatives exist (Qxe6+ is not
+    // forced) so chess.js's lenient parser cannot pick this move ambiguously
+    // from a partial input — any acceptance must be because the canonical
+    // SAN of the user's input happens to be `Qxe6+`.
+    const CAPTURE_CHECK_FEN = '4k3/8/4b3/5Q2/8/8/8/4K3 w - - 0 1';
+
+    function setCustomInputAndSubmit(value: string) {
+      (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = value;
+      fireEvent.click(screen.getByTestId('stub-custom-submit'));
+    }
+
+    it('accepts the move when the user omits the capture mark `x` (Qe6+ for Qxe6+)', () => {
+      renderSession(['Qxe6+'], CAPTURE_CHECK_FEN);
+      setCustomInputAndSubmit('Qe6+');
+      expect(screen.queryByTestId('panel-error')).not.toBeInTheDocument();
+      expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'true');
+    });
+
+    it('accepts the move when the user omits the check mark `+` (Qxe6 for Qxe6+)', () => {
+      renderSession(['Qxe6+'], CAPTURE_CHECK_FEN);
+      setCustomInputAndSubmit('Qxe6');
+      expect(screen.queryByTestId('panel-error')).not.toBeInTheDocument();
+      expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'true');
+    });
+
+    it('accepts the move when the user omits both `x` and `+` (Qe6 for Qxe6+)', () => {
+      renderSession(['Qxe6+'], CAPTURE_CHECK_FEN);
+      setCustomInputAndSubmit('Qe6');
+      expect(screen.queryByTestId('panel-error')).not.toBeInTheDocument();
+      expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'true');
+    });
+
+    it("preserves the user's raw input in the recorded attempt even when it differs from the canonical SAN", () => {
+      // The result page lists the SAN the user actually typed; correctness
+      // is judged on the canonical SAN but display semantics show input.
+      renderSession(['Qxe6+'], CAPTURE_CHECK_FEN);
+      setCustomInputAndSubmit('Qe6');
+
+      const parsed = JSON.parse(sessionStorage.getItem(`puzzle_result_${POSITION_ID}`)!);
+      expect(parsed.attempts).toEqual([{ move: 'Qe6', isCorrect: true }]);
+      // Solution line in storage is still the canonical form from the DB.
+      expect(parsed.solutionLine).toBe('Qxe6+');
+    });
+
+    it('rejects an illegal move outright (cannot be normalized into the solution)', () => {
+      // From the starting position, the white knight on b1 cannot reach e5.
+      // chess.js rejects the input, so the attempt records as incorrect
+      // without any normalization shenanigans.
+      renderSession(['Nf3']);
+      setCustomInputAndSubmit('Ne5');
+      expect(screen.getByTestId('panel-error')).toHaveTextContent('incorrect');
+      expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'false');
+    });
+
+    it("rejects a legal move that does not match the solution's canonical SAN", () => {
+      // From the starting position, e4 and Nf3 are both legal. The puzzle
+      // solution accepts only Nf3, so chess.js accepts e4 (canonical=`e4`)
+      // but the canonical SAN does not equal the solution `Nf3` and the
+      // attempt is incorrect.
+      renderSession(['Nf3']);
+      setCustomInputAndSubmit('e4');
+      expect(screen.getByTestId('panel-error')).toHaveTextContent('incorrect');
+    });
+
+    it('still accepts the move when the user types the strict, fully-decorated SAN', () => {
+      // Regression guard: the lenient path must not bounce strict input.
+      renderSession(['Qxe6+'], CAPTURE_CHECK_FEN);
+      setCustomInputAndSubmit('Qxe6+');
+      expect(screen.queryByTestId('panel-error')).not.toBeInTheDocument();
+      expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'true');
+    });
+  });
+
+  // ---------------------------------------------------------------------------
   // EXP-grant Server Action wiring
   //
   // The session component fires `savePuzzleResult` on solve and, if the action

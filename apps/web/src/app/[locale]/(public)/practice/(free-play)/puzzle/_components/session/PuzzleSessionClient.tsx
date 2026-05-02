@@ -291,6 +291,32 @@ export function PuzzleSessionClient({
 
     const nextPlayerIndex = session.playerMoves.length;
 
+    // Run the user's input through chess.js FIRST. We rely on this for two
+    // things at once:
+    //   (a) legality check — illegal SAN against the current position is
+    //       rejected outright (afterPlayer === null), and
+    //   (b) SAN normalization — chess.js fills in missing capture marks
+    //       (`x`), check marks (`+`), and checkmate marks (`#`) and returns
+    //       the canonical SAN via `moveResult.san`. Matching against that
+    //       canonical form means a user typing `Qe6` for a stored solution
+    //       of `Qxe6+` no longer gets bounced as "incorrect" — the report
+    //       a user filed about being stuck on a puzzle for 10 minutes
+    //       trying to type the exact decorations was caused by the previous
+    //       string-equality check on the raw input.
+    //
+    // The user's original typed input is still preserved in `attempt.move`
+    // so the result page shows what they actually typed; correctness is
+    // judged on the canonical SAN.
+    const afterPlayer = executeMove(session.currentFen, trimmed);
+    if (!afterPlayer) {
+      const attempt: Attempt = { move: trimmed, isCorrect: false };
+      setSession({ ...session, attempts: [...session.attempts, attempt] });
+      setError(t('incorrect'));
+      return false;
+    }
+
+    const canonicalSan = afterPlayer.moveResult.san;
+
     // Which solution lines accept this move at the current player slot? If we
     // have already locked to a line, restrict to it; otherwise scan all.
     const candidates =
@@ -299,22 +325,13 @@ export function PuzzleSessionClient({
         : parsedSolutions.map((_, i) => i);
 
     const matchIdx = candidates.find(
-      (i) => parsedSolutions[i]!.playerSlots[nextPlayerIndex] === trimmed
+      (i) => parsedSolutions[i]!.playerSlots[nextPlayerIndex] === canonicalSan
     );
 
     const attempt: Attempt = { move: trimmed, isCorrect: matchIdx !== undefined };
     const updatedAttempts = [...session.attempts, attempt];
 
     if (matchIdx === undefined) {
-      setSession({ ...session, attempts: updatedAttempts });
-      setError(t('incorrect'));
-      return false;
-    }
-
-    // Accept the player move and advance FEN.
-    const afterPlayer = executeMove(session.currentFen, trimmed);
-    if (!afterPlayer) {
-      // Should not happen — the solution line was pre-validated server-side.
       setSession({ ...session, attempts: updatedAttempts });
       setError(t('incorrect'));
       return false;
