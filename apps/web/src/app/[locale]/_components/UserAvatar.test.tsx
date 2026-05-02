@@ -1,10 +1,16 @@
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { UserAvatar } from './UserAvatar';
 
+const mockPush = vi.fn();
+
 afterEach(() => {
   cleanup();
+});
+
+beforeEach(() => {
+  mockPush.mockClear();
 });
 
 vi.mock('@/i18n/routing', () => ({
@@ -22,7 +28,7 @@ vi.mock('@/i18n/routing', () => ({
       {children}
     </a>
   ),
-  useRouter: () => ({ push: vi.fn() }),
+  useRouter: () => ({ push: mockPush }),
 }));
 
 vi.mock('next/image', () => ({
@@ -140,9 +146,73 @@ describe('UserAvatar', () => {
 
       const inlineWrapper = container.querySelector('.inline-flex');
       expect(inlineWrapper).not.toBeNull();
-      expect(inlineWrapper?.textContent).toContain('Carol');
-      // Children are intentionally ignored in inline layout — there is no
-      // 2-row affordance.
+      // Use getByText to assert the displayName is rendered as its own
+      // node, not via a substring match that could be satisfied by the
+      // initial-letter fallback (e.g. 'C' + 'Carol' both contain 'Carol').
+      expect(screen.getByText('Carol')).toBeDefined();
+    });
+
+    it('inline layout ignores children (block-only affordance)', () => {
+      render(
+        <UserAvatar
+          profileHref={null}
+          avatarUrl={null}
+          displayName="Carol"
+          locale="en"
+          size="xs"
+          layout="inline"
+        >
+          <span data-testid="inline-child">should-not-render</span>
+        </UserAvatar>
+      );
+
+      expect(screen.queryByTestId('inline-child')).toBeNull();
+    });
+
+    it('block layout renders children passed alongside the displayName', () => {
+      // Pair test for the "inline ignores children" assertion above —
+      // the same children prop must render in block layout to confirm
+      // the inline omission is layout-driven, not children-driven.
+      render(
+        <UserAvatar
+          profileHref={null}
+          avatarUrl={null}
+          displayName="Carol"
+          locale="en"
+          size="xs"
+          layout="block"
+        >
+          <span data-testid="block-child">should-render</span>
+        </UserAvatar>
+      );
+
+      expect(screen.getByTestId('block-child')).toBeDefined();
+    });
+
+    it('inline layout renders flair and country flag alongside the name', () => {
+      render(
+        <UserAvatar
+          profileHref={null}
+          avatarUrl={null}
+          displayName="Frank"
+          locale="en"
+          size="xs"
+          layout="inline"
+          flair="GM"
+          country="JP"
+        />
+      );
+
+      expect(screen.getByText('Frank')).toBeDefined();
+      expect(screen.getByText('GM')).toBeDefined();
+      // countryCodeToFlag('JP') yields the regional indicator pair for J + P.
+      // Assert structurally (a non-empty 2-codepoint flag string) rather than
+      // hard-coding the emoji literal so the test does not need to depend on
+      // editor / encoding round-tripping of high-codepoint characters.
+      const expectedFlag = [...'JP']
+        .map((c) => String.fromCodePoint(0x1f1e6 + c.charCodeAt(0) - 65))
+        .join('');
+      expect(screen.getByText(expectedFlag)).toBeDefined();
     });
   });
 
@@ -171,6 +241,88 @@ describe('UserAvatar', () => {
       );
 
       expect(screen.queryByTestId('link')).toBeNull();
+    });
+
+    it('renders <button> elements (no Link) when asLink=false in block layout', () => {
+      const { container } = render(
+        <UserAvatar
+          profileHref="/u/alice"
+          avatarUrl={null}
+          displayName="Alice"
+          locale="en"
+          size="sm"
+          asLink={false}
+        />
+      );
+
+      // No <Link> stub — the entire navigation is imperative via router.push.
+      expect(screen.queryByTestId('link')).toBeNull();
+      const buttons = container.querySelectorAll('button[type="button"]');
+      expect(buttons.length).toBeGreaterThan(0);
+    });
+
+    it('navigates via router.push when asLink=false button is clicked (block layout)', () => {
+      const { container } = render(
+        <UserAvatar
+          profileHref="/u/alice"
+          avatarUrl={null}
+          displayName="Alice"
+          locale="en"
+          size="sm"
+          asLink={false}
+        />
+      );
+
+      const button = container.querySelector('button[type="button"]');
+      expect(button).not.toBeNull();
+      fireEvent.click(button as Element);
+
+      expect(mockPush).toHaveBeenCalledTimes(1);
+      expect(mockPush).toHaveBeenCalledWith('/u/alice');
+    });
+
+    it('navigates via router.push when asLink=false button is clicked (inline layout)', () => {
+      render(
+        <UserAvatar
+          profileHref="/u/alice"
+          avatarUrl={null}
+          displayName="Alice"
+          locale="en"
+          size="xs"
+          layout="inline"
+          asLink={false}
+        />
+      );
+
+      // Inline layout collapses the wrapper into a single <button> around the
+      // avatar + name, so a click on the displayName text triggers push().
+      const button = screen.getByText('Alice').closest('button');
+      expect(button).not.toBeNull();
+      fireEvent.click(button as Element);
+
+      expect(mockPush).toHaveBeenCalledTimes(1);
+      expect(mockPush).toHaveBeenCalledWith('/u/alice');
+    });
+
+    it('navigates via router.push when asLink=false avatar-only button is clicked', () => {
+      const { container } = render(
+        <UserAvatar
+          profileHref="/u/alice"
+          avatarUrl={null}
+          displayName="Alice"
+          locale="en"
+          size="lg"
+          showName={false}
+          asLink={false}
+        />
+      );
+
+      const button = container.querySelector('button[type="button"]');
+      expect(button).not.toBeNull();
+      fireEvent.click(button as Element);
+
+      expect(mockPush).toHaveBeenCalledTimes(1);
+      expect(mockPush).toHaveBeenCalledWith('/u/alice');
     });
   });
 
@@ -233,6 +385,25 @@ describe('UserAvatar', () => {
       expect(screen.getByText('Alice')).toBeDefined();
       expect(screen.getByText('GM')).toBeDefined();
       expect(screen.getByTestId('timestamp')).toBeDefined();
+    });
+
+    it('renders without crashing when displayName is empty (fallback initial collapses to "")', () => {
+      // Pin the current behaviour: an empty displayName produces an empty
+      // initial-fallback span (`''.charAt(0).toUpperCase() === ''`). The
+      // avatar wrapper still renders, no error is thrown, and no stray
+      // single-character node leaks into the output. If we ever decide to
+      // render a placeholder glyph instead, this test will fail loudly.
+      const { container } = render(
+        <UserAvatar profileHref={null} avatarUrl={null} displayName="" locale="en" size="sm" />
+      );
+
+      // The rounded fallback wrapper is still present in the DOM.
+      const fallbackWrapper = container.querySelector('.rounded-full.bg-muted');
+      expect(fallbackWrapper).not.toBeNull();
+      // Inner span exists but its text content is empty.
+      const initialSpan = fallbackWrapper?.querySelector('span');
+      expect(initialSpan).not.toBeNull();
+      expect(initialSpan?.textContent).toBe('');
     });
 
     it('supports the mypage / ProfileHeader avatar-only pattern with size lg', () => {

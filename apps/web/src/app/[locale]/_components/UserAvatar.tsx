@@ -65,6 +65,7 @@ type Props = {
   asLink?: boolean;
   flair?: string | null;
   country?: string | null;
+  /** Only rendered in `block` layout — ignored when `layout="inline"`. */
   children?: ReactNode;
 };
 
