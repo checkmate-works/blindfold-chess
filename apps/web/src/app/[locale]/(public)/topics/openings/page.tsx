@@ -118,7 +118,6 @@ export default async function OpeningsPage({ params, searchParams }: Props) {
                     locale={locale}
                     showMoreLabel={t('showMore')}
                     justNowLabel={tTopic('justNow')}
-                    newReplyTemplate={tTopic('newReply', { time: '{time}' })}
                     variant="card"
                   />
                 );

@@ -2,17 +2,13 @@
 
 import { memo } from 'react';
 
-import Image from 'next/image';
-
 import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { getStartingFen } from '@blindfold-chess/features/chess-core';
-import { FaRegComment } from 'react-icons/fa';
 
 import { truncateContent } from '@/lib/content/truncate-content';
-import { IS_LOCAL_SUPABASE } from '@/lib/image-optimization';
 
-import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
+import { PostFooter } from '@/app/[locale]/(public)/topics/_components/PostFooter';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
 import { RatingDisplay } from '@/app/[locale]/(public)/topics/openings/[slug]/_components/RatingDisplay';
@@ -31,7 +27,6 @@ type Props = {
   locale: string;
   showMoreLabel: string;
   justNowLabel: string;
-  newReplyTemplate: string;
   variant?: 'feed' | 'card';
 };
 
@@ -40,7 +35,6 @@ export const TopicPostCard = memo(function TopicPostCard({
   locale,
   showMoreLabel,
   justNowLabel,
-  newReplyTemplate,
   variant,
 }: Props) {
   const tTopics = useTranslations('topics');
@@ -134,66 +128,16 @@ export const TopicPostCard = memo(function TopicPostCard({
         </Link>
       )}
 
-      <div className="flex items-center gap-4 mt-1 pt-2 border-t border-border">
-        <LikeButton
-          postId={post.id}
-          locale={locale}
-          topicKey={post.topicKey}
-          initialLikeCount={post.likeMeta.likeCount}
-          initialLikedByMe={post.likeMeta.likedByMe}
-          toggleLikeAction={isOpening ? toggleLikeOpening : toggleLikeSquare}
-          i18nNamespace={isOpening ? 'topics.openings' : 'topics.squares'}
-        />
-
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <FaRegComment className="w-4 h-4" />
-          {post.replyMeta.replyCount > 0 && <span>{post.replyMeta.replyCount}</span>}
-        </div>
-
-        {post.replyMeta.replyCount > 0 && (
-          <div className="flex items-center gap-3 ml-auto">
-            <div className="flex -space-x-2">
-              {post.replyMeta.repliers.map((replier, i) =>
-                replier.avatarUrl ? (
-                  <Image
-                    key={i}
-                    src={replier.avatarUrl}
-                    alt={replier.displayName}
-                    width={24}
-                    height={24}
-                    className="rounded-full border-2 border-card object-cover w-6 h-6"
-                    unoptimized={IS_LOCAL_SUPABASE}
-                  />
-                ) : (
-                  <div
-                    key={i}
-                    className="w-6 h-6 rounded-full bg-muted border-2 border-card flex items-center justify-center"
-                  >
-                    <span className="text-[10px] text-muted-foreground">
-                      {replier.displayName.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                )
-              )}
-              {post.replyMeta.uniqueReplierCount > post.replyMeta.repliers.length && (
-                <div className="w-6 h-6 rounded-full bg-muted border-2 border-card flex items-center justify-center">
-                  <span className="text-[10px] text-muted-foreground">
-                    +{post.replyMeta.uniqueReplierCount - post.replyMeta.repliers.length}
-                  </span>
-                </div>
-              )}
-            </div>
-            {post.replyMeta.latestReplyAt && (
-              <span className="text-xs text-muted-foreground">
-                {newReplyTemplate.replace(
-                  '{time}',
-                  formatRelativeTime(post.replyMeta.latestReplyAt, locale, justNowLabel)
-                )}
-              </span>
-            )}
-          </div>
-        )}
-      </div>
+      <PostFooter
+        postId={post.id}
+        locale={locale}
+        topicKey={post.topicKey}
+        likeMeta={post.likeMeta}
+        replyMeta={post.replyMeta}
+        toggleLikeAction={isOpening ? toggleLikeOpening : toggleLikeSquare}
+        i18nNamespace={isOpening ? 'topics.openings' : 'topics.squares'}
+        postHref={href}
+      />
     </FeedItemCard>
   );
 });

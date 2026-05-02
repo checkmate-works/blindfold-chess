@@ -22,7 +22,6 @@ type Props = {
   locale: string;
   showMoreLabel: string;
   justNowLabel: string;
-  newReplyTemplate: string;
   showAds?: boolean;
 };
 
@@ -32,7 +31,6 @@ export function FeedClient({
   locale,
   showMoreLabel,
   justNowLabel,
-  newReplyTemplate,
   showAds = false,
 }: Props) {
   const [items, setItems] = useState<FeedItem[]>(initialItems);
@@ -59,12 +57,11 @@ export function FeedClient({
             locale={locale}
             showMoreLabel={showMoreLabel}
             justNowLabel={justNowLabel}
-            newReplyTemplate={newReplyTemplate}
           />
         </div>
       );
     },
-    [locale, showMoreLabel, justNowLabel, newReplyTemplate]
+    [locale, showMoreLabel, justNowLabel]
   );
 
   const loadMore = useCallback(async () => {

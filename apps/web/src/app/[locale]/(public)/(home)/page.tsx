@@ -119,7 +119,6 @@ export default async function HomePage({ params }: Props) {
             locale={locale}
             showMoreLabel={tTopics('showMore')}
             justNowLabel={tSquares('justNow')}
-            newReplyTemplate={tSquares('newReply', { time: '{time}' })}
             showAds={showAds}
           />
         </DashboardCard>
