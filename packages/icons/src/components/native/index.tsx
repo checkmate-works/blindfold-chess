@@ -1,12 +1,7 @@
 import type { StyleProp, ViewStyle } from "react-native";
 import Svg, { Circle, G, Path } from "react-native-svg";
 
-import { getPieceData } from "../../data/chess-pieces";
-import { flagData } from "../../data/flag";
-import { getRatingFaceData } from "../../data/rating-faces";
-import { spinnerData } from "../../data/spinner";
-import type { SvgElement, StrokeIconSvgData } from "../../data/types";
-import { undoData } from "../../data/undo";
+import { createIconRenderer } from "../_shared/create-icon-renderer";
 import type {
   ChessPieceIconProps,
   RatingFaceIconProps,
@@ -14,129 +9,44 @@ import type {
   StrokeIconProps,
 } from "../types";
 
-function renderElement(element: SvgElement, index: number): React.ReactNode {
-  if (element.type === "circle") {
-    const { type: _type, ...attrs } = element;
-    return <Circle key={index} {...attrs} />;
-  }
-  if (element.type === "path") {
-    const { type: _type, ...attrs } = element;
-    return <Path key={index} {...attrs} />;
-  }
-  const { type: _type, children, ...attrs } = element;
-  return (
-    <G key={index} {...attrs}>
-      {children.map((child, i) => renderElement(child, i))}
-    </G>
-  );
-}
+const factory = createIconRenderer({
+  Svg,
+  Circle,
+  Path,
+  G,
+});
 
 type NativeSpinnerIconProps = SpinnerIconProps & {
   style?: StyleProp<ViewStyle>;
 };
 
-export function SpinnerIcon({
-  size = 24,
-  color = "currentColor",
-  style,
-}: NativeSpinnerIconProps) {
-  return (
-    <Svg
-      viewBox={spinnerData.viewBox}
-      width={size}
-      height={size}
-      fill="none"
-      style={style}
-    >
-      <Circle
-        cx={spinnerData.circle.cx}
-        cy={spinnerData.circle.cy}
-        r={spinnerData.circle.r}
-        stroke={color}
-        strokeWidth={spinnerData.circle.strokeWidth}
-        opacity={spinnerData.circle.opacity}
-      />
-      <Path
-        d={spinnerData.path.d}
-        fill={color}
-        opacity={spinnerData.path.opacity}
-      />
-    </Svg>
-  );
-}
-
 type NativeChessPieceIconProps = ChessPieceIconProps & {
   style?: StyleProp<ViewStyle>;
 };
-
-export function ChessPieceIcon({
-  type,
-  color,
-  size = 45,
-  style,
-}: NativeChessPieceIconProps) {
-  const data = getPieceData(type, color);
-
-  return (
-    <Svg viewBox={data.viewBox} width={size} height={size} style={style}>
-      {data.elements.map((el, i) => renderElement(el, i))}
-    </Svg>
-  );
-}
 
 type NativeStrokeIconProps = StrokeIconProps & {
   style?: StyleProp<ViewStyle>;
 };
 
-function createStrokeIcon(data: StrokeIconSvgData, displayName: string) {
-  function Icon({
-    size = 24,
-    color = "currentColor",
-    style,
-  }: NativeStrokeIconProps) {
-    return (
-      <Svg
-        viewBox={data.viewBox}
-        width={size}
-        height={size}
-        fill="none"
-        stroke={color}
-        strokeWidth={data.strokeWidth}
-        strokeLinecap={data.strokeLinecap}
-        strokeLinejoin={data.strokeLinejoin}
-        style={style}
-      >
-        {data.paths.map((d, i) => (
-          <Path key={i} d={d} />
-        ))}
-      </Svg>
-    );
-  }
-  Icon.displayName = displayName;
-  return Icon;
-}
-
-export const UndoIcon = createStrokeIcon(undoData, "UndoIcon");
-export const FlagIcon = createStrokeIcon(flagData, "FlagIcon");
-
 type NativeRatingFaceIconProps = RatingFaceIconProps & {
   style?: StyleProp<ViewStyle>;
 };
 
-export function RatingFaceIcon({
-  level,
-  size = 24,
-  faceColor,
-  style,
-}: NativeRatingFaceIconProps) {
-  const data = getRatingFaceData(level, faceColor);
-
-  return (
-    <Svg viewBox={data.viewBox} width={size} height={size} style={style}>
-      {data.elements.map((el, i) => renderElement(el, i))}
-    </Svg>
-  );
-}
+export const SpinnerIcon = factory.SpinnerIcon as (
+  props: NativeSpinnerIconProps,
+) => ReturnType<typeof factory.SpinnerIcon>;
+export const ChessPieceIcon = factory.ChessPieceIcon as (
+  props: NativeChessPieceIconProps,
+) => ReturnType<typeof factory.ChessPieceIcon>;
+export const RatingFaceIcon = factory.RatingFaceIcon as (
+  props: NativeRatingFaceIconProps,
+) => ReturnType<typeof factory.RatingFaceIcon>;
+export const UndoIcon = factory.UndoIcon as (
+  props: NativeStrokeIconProps,
+) => ReturnType<typeof factory.UndoIcon>;
+export const FlagIcon = factory.FlagIcon as (
+  props: NativeStrokeIconProps,
+) => ReturnType<typeof factory.FlagIcon>;
 
 export type {
   ChessPieceIconProps,

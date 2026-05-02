@@ -1,25 +1,20 @@
 import type { RankedLeaderboardRow } from '@/lib/db/challenge-queries';
 import { LEADERBOARD_KEYS } from '@/lib/games/leaderboard-keys';
+import {
+  CHALLENGE_MENU_TYPES,
+  type ChallengeMenuType,
+  MODULE_TO_SLUG as REGISTRY_MODULE_TO_SLUG,
+  SLUG_TO_MODULE as REGISTRY_SLUG_TO_MODULE,
+  type LeaderboardModuleSlug as RegistryLeaderboardModuleSlug,
+} from '@/lib/practice/registry';
 
 export type LeaderboardPeriod = 'all-time' | 'weekly' | 'monthly';
 
-export type LeaderboardModule =
-  | 'coordinate_quiz'
-  | 'legal_moves'
-  | 'square_colors'
-  | 'diagonal_quiz'
-  | 'board_symmetry'
-  | 'route_planner';
+/** Re-exported from the registry so existing leaderboard-side imports keep working. */
+export type LeaderboardModule = ChallengeMenuType;
+export type LeaderboardModuleSlug = RegistryLeaderboardModuleSlug;
 
 export type ModuleFilterValue = 'all' | LeaderboardModule;
-
-export type LeaderboardModuleSlug =
-  | 'coordinate-quiz'
-  | 'legal-moves'
-  | 'square-colors'
-  | 'diagonal-quiz'
-  | 'board-symmetry'
-  | 'route-planner';
 
 export type LeaderboardRow = RankedLeaderboardRow;
 
@@ -40,14 +35,13 @@ export type UserRankInfo = {
   rank: number;
 };
 
-export const MODULES = [
-  'coordinate_quiz',
-  'legal_moves',
-  'square_colors',
-  'diagonal_quiz',
-  'board_symmetry',
-  'route_planner',
-] as const satisfies readonly LeaderboardModule[];
+/**
+ * Modules that appear on the leaderboard, in display order. Derived from
+ * `CHALLENGE_MENU_TYPES` (the registry's view of which modules are
+ * challenge-enabled) — `as const satisfies` is replaced by a runtime cast
+ * to a tuple type because the source array is built up from the registry.
+ */
+export const MODULES = CHALLENGE_MENU_TYPES as readonly LeaderboardModule[];
 
 export const MODULE_KEYS = LEADERBOARD_KEYS;
 
@@ -57,15 +51,11 @@ export const VALID_PERIODS = [
   'monthly',
 ] as const satisfies readonly LeaderboardPeriod[];
 
-export const VALID_MODULE_FILTERS = [
-  'all',
-  'coordinate_quiz',
-  'legal_moves',
-  'square_colors',
-  'diagonal_quiz',
-  'board_symmetry',
-  'route_planner',
-] as const satisfies readonly ModuleFilterValue[];
+/**
+ * Module filter values for the leaderboard UI. `'all'` (cross-module view)
+ * is prepended to the registry-derived module list.
+ */
+export const VALID_MODULE_FILTERS: readonly ModuleFilterValue[] = ['all', ...MODULES];
 
 export const PAGE_SIZE = 20;
 
@@ -75,40 +65,23 @@ export const ALL_LEADERBOARD_ENTRIES: LeaderboardEntry[] = MODULES.flatMap((modu
 );
 
 // ---------------------------------------------------------------------------
-// URL slug <-> DB module name conversion
+// URL slug <-> DB module name conversion (re-exported from the registry).
 // ---------------------------------------------------------------------------
 
-export const MODULE_TO_SLUG: Record<LeaderboardModule, LeaderboardModuleSlug> = {
-  coordinate_quiz: 'coordinate-quiz',
-  legal_moves: 'legal-moves',
-  square_colors: 'square-colors',
-  diagonal_quiz: 'diagonal-quiz',
-  board_symmetry: 'board-symmetry',
-  route_planner: 'route-planner',
-};
+export const MODULE_TO_SLUG: Record<LeaderboardModule, LeaderboardModuleSlug> =
+  REGISTRY_MODULE_TO_SLUG;
 
-export const SLUG_TO_MODULE: Record<LeaderboardModuleSlug, LeaderboardModule> = {
-  'coordinate-quiz': 'coordinate_quiz',
-  'legal-moves': 'legal_moves',
-  'square-colors': 'square_colors',
-  'diagonal-quiz': 'diagonal_quiz',
-  'board-symmetry': 'board_symmetry',
-  'route-planner': 'route_planner',
-};
+export const SLUG_TO_MODULE: Record<LeaderboardModuleSlug, LeaderboardModule> =
+  REGISTRY_SLUG_TO_MODULE;
 
 /**
  * All valid module URL slugs (hyphenated form). Parallel to `VALID_MODULE_FILTERS`
  * (underscore form). Used by the path-segment-based module filter on the
  * category-first canonical route `/leaderboard/score/[period]/[module-slug]`.
  */
-export const VALID_MODULE_SLUGS = [
-  'coordinate-quiz',
-  'legal-moves',
-  'square-colors',
-  'diagonal-quiz',
-  'board-symmetry',
-  'route-planner',
-] as const satisfies readonly LeaderboardModuleSlug[];
+export const VALID_MODULE_SLUGS: readonly LeaderboardModuleSlug[] = MODULES.map(
+  (m) => MODULE_TO_SLUG[m]
+);
 
 export function moduleToSlug(module: LeaderboardModule): LeaderboardModuleSlug {
   return MODULE_TO_SLUG[module];

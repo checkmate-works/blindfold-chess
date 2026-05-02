@@ -1,8 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
-
-import { useRouter } from 'next/navigation';
+import { useCallback, useMemo } from 'react';
 
 import { BoardSkeleton } from '@/app/_components';
 import { useSquareColorsSession } from '@blindfold-chess/features/square-colors/client';
@@ -10,6 +8,7 @@ import { useSquareColorsSession } from '@blindfold-chess/features/square-colors/
 import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
 import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-challenge-result-save';
+import { useQuitConfirm } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-quit-confirm';
 import { saveSquareColorsResult } from '@/app/[locale]/(public)/practice/(challenge)/square-colors/_actions/save-result';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
@@ -23,7 +22,6 @@ type Props = {
 };
 
 export default function SquareColorsChallenge({ locale }: Props) {
-  const router = useRouter();
   const { preferences, isLoaded } = useGamePreferences();
 
   const {
@@ -46,21 +44,12 @@ export default function SquareColorsChallenge({ locale }: Props) {
 
   useScrollToElement('square-colors-challenge');
 
-  const [showQuitModal, setShowQuitModal] = useState(false);
-
-  const handleQuitRequest = useCallback(() => {
-    if (!isPaused) togglePause();
-    setShowQuitModal(true);
-  }, [isPaused, togglePause]);
-
-  const handleQuitConfirm = useCallback(() => {
-    router.push(`/${locale}/practice/square-colors/challenge`);
-  }, [router, locale]);
-
-  const handleQuitCancel = useCallback(() => {
-    setShowQuitModal(false);
-    if (isPaused) togglePause();
-  }, [isPaused, togglePause]);
+  const { showQuitModal, handleQuitRequest, handleQuitConfirm, handleQuitCancel } = useQuitConfirm({
+    locale,
+    moduleSlug: 'square-colors',
+    isPaused,
+    togglePause,
+  });
 
   // Save result and redirect on finish
   const total = correctCount + incorrectCount;

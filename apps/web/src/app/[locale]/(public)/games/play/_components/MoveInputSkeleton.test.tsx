@@ -3,11 +3,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { MoveInputSkeleton } from './MoveInputSkeleton';
 
-// The `Skeleton` barrel in `@/app/[locale]/_components` transitively imports
-// at least one `server-only` module (e.g. via `UserAvatar` / server-aware
-// components re-exported there). Stub the barrel with a minimal `Skeleton`
-// that mirrors the real one's output shape so jsdom tests can load the
-// client component under test without pulling server-only code.
+// Stub the `_components` barrel with a minimal `Skeleton` that mirrors the
+// real one's output shape. We only need a structural placeholder for the
+// component under test, and stubbing the barrel avoids dragging the rest of
+// its re-exports (and their dependency graph) into the unit-test environment.
 vi.mock('@/app/[locale]/_components', () => ({
   Skeleton: ({
     className = '',

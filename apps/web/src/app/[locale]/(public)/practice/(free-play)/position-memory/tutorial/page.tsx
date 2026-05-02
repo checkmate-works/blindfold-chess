@@ -1,8 +1,7 @@
 import dynamic from 'next/dynamic';
 
+import { ModuleTutorialSkipLink } from '@/app/[locale]/(public)/practice/_components/TutorialSkipLink';
 import { createPracticeTutorialPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeSessionPages';
-
-import { TutorialSkipLink } from '../_components/TutorialSkipLink';
 
 const PositionMemoryTutorial = dynamic(() =>
   import('../_components/PositionMemoryTutorial').then((mod) => mod.PositionMemoryTutorial)
@@ -16,7 +15,7 @@ const { generateMetadata, generateStaticParams, Page } = createPracticeTutorialP
     { labelKey: 'positionMemory.title', href: '/practice/position-memory' },
     { labelKey: 'positionMemory.tutorial.title' },
   ],
-  renderSkipLink: (locale) => <TutorialSkipLink locale={locale} />,
+  renderSkipLink: (locale) => <ModuleTutorialSkipLink locale={locale} moduleId="positionMemory" />,
   renderTutorial: (locale) => <PositionMemoryTutorial locale={locale} />,
 });
 

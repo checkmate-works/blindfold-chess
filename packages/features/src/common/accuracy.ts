@@ -7,6 +7,8 @@
  * per-square status list for board overlay rendering.
  */
 import { fenToBoardFlat } from "../chess-core/fen-pure";
+import { BOARD_LAST_INDEX, BOARD_SIZE, TOTAL_SQUARES } from "./constants";
+import { fileRankToSquare } from "./utils";
 
 export type ScoreDetail = {
   square: string;
@@ -38,9 +40,11 @@ export type SquareDiff = {
 };
 
 function indexToSquare(index: number): string {
-  const file = String.fromCharCode(97 + (index % 8)); // a-h
-  const rank = 8 - Math.floor(index / 8); // 8-1
-  return file + rank;
+  // index 0 = a8, index 63 = h1 (rank-major, top-down ordering used by FEN board flat)
+  return fileRankToSquare(
+    index % BOARD_SIZE,
+    BOARD_LAST_INDEX - Math.floor(index / BOARD_SIZE),
+  );
 }
 
 function getPieceDescription(
@@ -74,7 +78,7 @@ export function calculateAccuracy(
   let extraPieces = 0;
   const details: ScoreDetail[] = [];
 
-  for (let i = 0; i < 64; i++) {
+  for (let i = 0; i < TOTAL_SQUARES; i++) {
     const originalPiece = originalBoard[i];
     const recreatedPiece = recreatedBoard[i];
     const square = indexToSquare(i);
@@ -163,7 +167,7 @@ export function calculateSquareDifferences(
 
   const differences: SquareDiff[] = [];
 
-  for (let i = 0; i < 64; i++) {
+  for (let i = 0; i < TOTAL_SQUARES; i++) {
     const originalPiece = originalBoard[i];
     const recreatedPiece = recreatedBoard[i];
     const square = indexToSquare(i);

@@ -1,4 +1,11 @@
-export { FILES, RANKS, DISPLAY_RANKS } from "./constants";
+export {
+  FILES,
+  RANKS,
+  DISPLAY_RANKS,
+  BOARD_SIZE,
+  TOTAL_SQUARES,
+  BOARD_LAST_INDEX,
+} from "./constants";
 export type {
   BasePracticeResult,
   BasePracticeSettings,
@@ -39,6 +46,10 @@ export {
   QUEEN_DIRS,
   KING_OFFSETS,
 } from "./piece-moves";
+export type { MirrorAxis } from "./geometry";
+export { mirrorSquare, flipForOrientation } from "./geometry";
+export type { MobilityPiece } from "./piece-mobility";
+export { getMovesForPiece } from "./piece-mobility";
 export type {
   CoordinateBackspaceResult,
   StagedCoordinateSelection,

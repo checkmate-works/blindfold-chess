@@ -10,17 +10,33 @@ type Props = {
   displayName: string | null;
   flair: string | null;
   country: string | null;
+  locale: string;
   /** Right-aligned action(s). Pass leaf elements; the wrapper handles flex layout — do not pre-style with width/grow utilities. */
   action: ReactNode;
 };
 
-export function ProfileHeader({ avatarUrl, username, displayName, flair, country, action }: Props) {
+export function ProfileHeader({
+  avatarUrl,
+  username,
+  displayName,
+  flair,
+  country,
+  locale,
+  action,
+}: Props) {
   const altText = displayName ?? username;
 
   return (
     <div className="flex items-start justify-between gap-4">
       <div className="flex items-center gap-4 min-w-0">
-        <UserAvatar src={avatarUrl} alt={altText} size={64} />
+        <UserAvatar
+          profileHref={null}
+          avatarUrl={avatarUrl}
+          displayName={altText}
+          locale={locale}
+          size="lg"
+          showName={false}
+        />
         <div className="min-w-0">
           <h1 className="text-xl font-bold tracking-tight break-words">
             {displayName}

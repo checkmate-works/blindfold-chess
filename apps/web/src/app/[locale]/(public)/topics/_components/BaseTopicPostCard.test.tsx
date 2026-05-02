@@ -37,7 +37,7 @@ vi.mock('@/app/[locale]/_components', () => ({
   LinkedText: ({ text }: { text: string }) => <span>{text}</span>,
 }));
 
-vi.mock('./UserAvatar', () => ({
+vi.mock('@/app/[locale]/_components/UserAvatar', () => ({
   UserAvatar: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 

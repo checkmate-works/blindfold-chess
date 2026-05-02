@@ -208,6 +208,7 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
             displayName={profile.displayName}
             flair={profile.flair}
             country={profile.country}
+            locale={locale}
             action={
               isOwnProfile ? (
                 <Link

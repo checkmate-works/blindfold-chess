@@ -1,6 +1,5 @@
-import { BISHOP_DIRS } from "../../common";
+import { getMovesForPiece } from "../../common";
 
-import { getValidLines } from "./helpers";
 import type { RoutePlannerStrategy } from "./types";
 
 /**
@@ -11,7 +10,7 @@ import type { RoutePlannerStrategy } from "./types";
  */
 export const BishopRouteStrategy: RoutePlannerStrategy = {
   getMoves(f, r) {
-    return getValidLines(f, r, BISHOP_DIRS);
+    return getMovesForPiece("b", f, r);
   },
   meetsConstraint(pathLength) {
     return pathLength === 3;

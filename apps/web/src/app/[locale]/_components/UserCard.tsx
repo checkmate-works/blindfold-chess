@@ -3,6 +3,8 @@ import type { ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { IS_LOCAL_SUPABASE } from '@/lib/image-optimization';
+
 type Props = {
   username: string;
   displayName: string | null;
@@ -24,7 +26,7 @@ export function UserCard({ username, displayName, avatarUrl, locale, actions }: 
             width={48}
             height={48}
             className="rounded-full object-cover h-12 w-12 flex-shrink-0"
-            unoptimized
+            unoptimized={IS_LOCAL_SUPABASE}
           />
         ) : (
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground flex-shrink-0">

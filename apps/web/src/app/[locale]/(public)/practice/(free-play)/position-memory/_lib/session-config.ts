@@ -5,6 +5,7 @@
  * start form (`[id]/page.tsx` → `PositionStartForm`) and the single-position
  * session entry (`[id]/session/page.tsx`), so they live in one place.
  */
+import { TUTORIAL_SKIP_CONFIG } from '@/app/[locale]/(public)/practice/_lib/tutorial-skip-config';
 
 export const MIN_TIME_LIMIT = 5;
 export const MAX_TIME_LIMIT = 60;
@@ -25,10 +26,11 @@ export function parseDisplayMode(value: unknown): DisplayMode {
 
 /**
  * localStorage key used to remember that the user skipped the position-memory
- * tutorial. Lives here (not in a component file) so both the setup flow and
- * the session view can import it without creating cross-component coupling.
+ * tutorial. Re-exported from {@link TUTORIAL_SKIP_CONFIG} (the SSOT) so both
+ * the setup flow and the session view can import it without creating
+ * cross-component coupling.
  */
-export const TUTORIAL_SKIPPED_KEY = 'positionMemoryTutorialSkipped';
+export const TUTORIAL_SKIPPED_KEY = TUTORIAL_SKIP_CONFIG.positionMemory.storageKey;
 
 /**
  * Clamp an arbitrary value into the valid time-limit range.

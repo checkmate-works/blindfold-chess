@@ -49,7 +49,7 @@ vi.mock('./ReplySection', () => ({
   ReplySection: () => <div data-testid="reply-section" />,
 }));
 
-vi.mock('./UserAvatar', () => ({
+vi.mock('@/app/[locale]/_components/UserAvatar', () => ({
   UserAvatar: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 

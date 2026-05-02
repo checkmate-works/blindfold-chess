@@ -1,4 +1,9 @@
-import { generateRandomSquare } from "../common";
+import {
+  generateRandomSquare,
+  squareToFileIndex,
+  squareToRankIndex,
+} from "../common";
+import { BOARD_SIZE } from "../common/constants";
 import type { BoardOrientation, QuadrantId, QuadrantQuestion } from "./types";
 
 /**
@@ -12,10 +17,11 @@ import type { BoardOrientation, QuadrantId, QuadrantQuestion } from "./types";
  * Ranks 1-4 = Your side, Ranks 5-8 = Opponent side
  */
 export function getCorrectQuadrant(square: string): QuadrantId {
-  const file = square[0];
-  const rank = parseInt(square[1]);
-  const isKingSide = ["e", "f", "g", "h"].includes(file);
-  const isUpper = rank >= 5;
+  // BOARD_SIZE / 2 partitions the 8 files into two 4-file halves
+  // (a-d = queen-side, e-h = king-side) and the 8 ranks into two 4-rank halves.
+  const halfBoard = BOARD_SIZE / 2;
+  const isKingSide = squareToFileIndex(square) >= halfBoard;
+  const isUpper = squareToRankIndex(square) >= halfBoard;
 
   if (isKingSide && isUpper) return "q1";
   if (!isKingSide && isUpper) return "q2";

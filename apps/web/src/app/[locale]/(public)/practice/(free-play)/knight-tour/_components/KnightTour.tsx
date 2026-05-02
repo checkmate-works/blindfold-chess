@@ -5,17 +5,17 @@ import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
-
-import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
-import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
-import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
-
 import {
   getAvailableKnightMoves,
   isClosedTourPossible,
   isTourComplete,
   isValidKnightMove,
-} from '../_lib/utils';
+} from '@blindfold-chess/features/knight-tour';
+
+import { QuitConfirmModal } from '@/app/[locale]/(public)/practice/_components/QuitConfirmModal';
+import { useQuitConfirmLabels } from '@/app/[locale]/(public)/practice/_hooks/use-quit-confirm-labels';
+import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
+
 import { KnightTourBlindPlaying } from './KnightTourBlindPlaying';
 import { KnightTourPlaying } from './KnightTourPlaying';
 // import { KnightTourResult } from './KnightTourResult'; // Logic moved to page

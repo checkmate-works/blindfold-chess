@@ -11,8 +11,8 @@ import { FaPlay } from 'react-icons/fa';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { TUTORIAL_SKIP_CONFIG } from '../../../_lib/tutorial-skip-config';
 import { KnightTourBoard } from './KnightTourBoard';
-import { TUTORIAL_SKIPPED_KEY } from './TutorialSkipLink';
 
 type Props = {
   locale: Locale;
@@ -155,7 +155,7 @@ export function KnightTourTutorial({ locale }: Props) {
   }, []);
 
   const handleStart = () => {
-    localStorage.setItem(TUTORIAL_SKIPPED_KEY, 'true');
+    localStorage.setItem(TUTORIAL_SKIP_CONFIG.knightTour.storageKey, 'true');
     router.push(`/${locale}/practice/knight-tour/session?mode=tutorial&startingSquare=a1`);
   };
 

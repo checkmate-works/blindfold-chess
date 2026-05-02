@@ -1,24 +1,13 @@
 /**
  * Utility functions for Knight's Tour puzzle
  */
+import { KNIGHT_OFFSETS } from "../common/piece-moves";
 import {
   fileRankToSquare,
   isValidSquare,
   squareToFileIndex,
   squareToRankIndex,
 } from "../common/utils";
-
-// Knight move offsets (L-shaped: 2 squares in one direction, 1 in perpendicular)
-const KNIGHT_MOVES = [
-  { file: 2, rank: 1 },
-  { file: 2, rank: -1 },
-  { file: -2, rank: 1 },
-  { file: -2, rank: -1 },
-  { file: 1, rank: 2 },
-  { file: 1, rank: -2 },
-  { file: -1, rank: 2 },
-  { file: -1, rank: -2 },
-];
 
 /**
  * Get all legal knight moves from a given square
@@ -30,9 +19,9 @@ export function getKnightMoves(square: string): string[] {
   const rankIndex = squareToRankIndex(square);
 
   const moves: string[] = [];
-  for (const offset of KNIGHT_MOVES) {
-    const newFile = fileIndex + offset.file;
-    const newRank = rankIndex + offset.rank;
+  for (const [df, dr] of KNIGHT_OFFSETS) {
+    const newFile = fileIndex + df;
+    const newRank = rankIndex + dr;
     if (newFile >= 0 && newFile <= 7 && newRank >= 0 && newRank <= 7) {
       moves.push(fileRankToSquare(newFile, newRank));
     }
