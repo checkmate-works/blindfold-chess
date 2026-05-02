@@ -139,7 +139,6 @@ export async function createChunkPostWithEmbedAttachment(
     invalidTopicError: 'Invalid chunk',
     rateLimit: RATE_LIMITS.createPost,
     validateContent,
-    grantConfig: null,
     emitFeedItem: false,
     redirectPath: (postId) => `/${locale}/chunks/${slug}?toast=post_created#post-${postId}`,
     afterInsert: async (tx, postId) => {

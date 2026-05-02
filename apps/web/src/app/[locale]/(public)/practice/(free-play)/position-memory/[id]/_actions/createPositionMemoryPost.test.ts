@@ -171,13 +171,19 @@ describe('createPositionMemoryPost', () => {
       );
     });
 
-    it('does NOT apply an automated grant (grantConfig: null, like chunks)', async () => {
+    it('applies an automated topic_post grant for text-bearing memory comments', async () => {
       await expect(
         createPositionMemoryPost('en', testPositionId, {}, makeFormData('comment'))
       ).rejects.toThrow('NEXT_REDIRECT');
 
-      expect(applyAutomatedGrant).not.toHaveBeenCalled();
-      expect(revalidateTag).not.toHaveBeenCalled();
+      expect(applyAutomatedGrant).toHaveBeenCalledTimes(1);
+      expect(applyAutomatedGrant).toHaveBeenCalledWith(
+        expect.anything(),
+        testUserId,
+        'topic_post',
+        { type: 'topic_post', id: generatedPostId }
+      );
+      expect(revalidateTag).toHaveBeenCalledWith('grant-status', { expire: 60 });
     });
 
     it('does NOT emit a feed_items row', async () => {

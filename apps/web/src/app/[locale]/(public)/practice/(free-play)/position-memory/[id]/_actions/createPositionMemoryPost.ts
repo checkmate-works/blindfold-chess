@@ -29,7 +29,6 @@ export async function createPositionMemoryPost(
     invalidTopicError: 'Invalid position',
     rateLimit: RATE_LIMITS.createPost,
     validateContent,
-    grantConfig: null,
     emitFeedItem: false,
     topicAuthorId: position?.userId,
     redirectPath: (postId) =>

@@ -5,7 +5,7 @@ import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
 import { getModuleWeight } from '@blindfold-chess/features/exp';
 
-import { type AutomatedGrantType, GRANT_TYPE_DEFAULTS } from '@/lib/db/data/grant-types';
+import { GRANT_TYPE_DEFAULTS, TOPIC_POST_GRANT_TOPIC_TYPES } from '@/lib/db/data/grant-types';
 import { JsonLd, generateFAQPageSchema } from '@/lib/seo/jsonld';
 
 import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
@@ -199,12 +199,12 @@ export default async function FAQPage({ params }: Props) {
               </tr>
             </thead>
             <tbody>
-              {(Object.keys(GRANT_TYPE_DEFAULTS) as AutomatedGrantType[]).map((key) => (
-                <tr key={key} className="border-b border-border">
-                  <td className="py-1.5 px-2">{t(`items.adFreeBenefits.actions.${key}`)}</td>
+              {TOPIC_POST_GRANT_TOPIC_TYPES.map((topicType) => (
+                <tr key={topicType} className="border-b border-border">
+                  <td className="py-1.5 px-2">{t(`items.adFreeBenefits.actions.${topicType}`)}</td>
                   <td className="py-1.5 px-2">
                     {t('items.adFreeBenefits.durationDays', {
-                      days: GRANT_TYPE_DEFAULTS[key].durationDays,
+                      days: GRANT_TYPE_DEFAULTS.topic_post.durationDays,
                     })}
                   </td>
                 </tr>

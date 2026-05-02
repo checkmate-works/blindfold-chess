@@ -26,7 +26,6 @@ export async function createChunkPost(
     invalidTopicError: 'Invalid chunk',
     rateLimit: RATE_LIMITS.createPost,
     validateContent,
-    grantConfig: null,
     emitFeedItem: false,
     redirectPath: (postId) => `/${locale}/chunks/${slug}?toast=post_created#post-${postId}`,
     formData,

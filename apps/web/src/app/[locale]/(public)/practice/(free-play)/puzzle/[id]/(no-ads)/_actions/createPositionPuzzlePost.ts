@@ -32,7 +32,6 @@ export async function createPositionPuzzlePost(
     invalidTopicError: 'Invalid position',
     rateLimit: RATE_LIMITS.createPost,
     validateContent,
-    grantConfig: null,
     emitFeedItem: false,
     isSpoiler,
     topicAuthorId: position?.userId,

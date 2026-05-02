@@ -5,8 +5,7 @@ import { redirect } from 'next/navigation';
 
 import { authenticateAndCheckBan } from '@/lib/auth';
 import { db, feedItems, topicPosts } from '@/lib/db';
-import type { AutomatedGrantType } from '@/lib/db/data/grant-types';
-import { GRANT_TYPE_DEFAULTS } from '@/lib/db/data/grant-types';
+import { GRANT_TYPE_DEFAULTS, isTopicPostGrantTopicType } from '@/lib/db/data/grant-types';
 import {
   createNotification,
   notifyFollowersOfNewPost,
@@ -24,15 +23,6 @@ export type CreatePostState = {
   error?: string;
 };
 
-/**
- * Configuration for the automated benefit grant applied to a new post.
- * Pass `null` to skip the grant entirely (e.g. for topic types that should
- * not earn ad-free time, like 'chunk' comments).
- */
-export type GrantConfig = {
-  grantType: AutomatedGrantType;
-};
-
 export async function createPostBase(params: {
   locale: string;
   topicIdentifier: string;
@@ -47,12 +37,6 @@ export async function createPostBase(params: {
     tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
     postId: string
   ) => Promise<void>;
-  /**
-   * Grant policy for this post. Defaults to `{ grantType: 'topic_post' }` —
-   * the existing squares/openings behavior. Pass `null` to skip the grant
-   * (used by 'chunk' comments per the design spec).
-   */
-  grantConfig?: GrantConfig | null;
   /**
    * Whether to insert a row into `feed_items` for this post. Defaults to `true`
    * for parity with the legacy behavior. 'chunk' comments pass `false` because
@@ -92,7 +76,6 @@ export async function createPostBase(params: {
     rateLimit,
     validateContent,
     afterInsert,
-    grantConfig,
     emitFeedItem,
     redirectPath,
     isSpoiler,
@@ -100,9 +83,6 @@ export async function createPostBase(params: {
     formData,
   } = params;
 
-  // grantConfig === undefined → use legacy default; grantConfig === null → skip.
-  const resolvedGrantConfig: GrantConfig | null =
-    grantConfig === undefined ? { grantType: 'topic_post' } : grantConfig;
   const shouldEmitFeedItem = emitFeedItem ?? true;
 
   if (!(await validateTopic(topicIdentifier))) {
@@ -164,13 +144,14 @@ export async function createPostBase(params: {
       await afterInsert(tx, post.id);
     }
 
-    // Automated grant for text-bearing topic posts.
-    // Rating-only posts (e.g., opening preference rating without comment)
-    // do NOT qualify — the user must have written text to earn the grant.
+    // Automated 'topic_post' grant for text-bearing posts on eligible topic
+    // types. Two gates compose: TOPIC_POST_GRANT_TOPIC_TYPES (in grant-types.ts)
+    // is the single source of truth for which surfaces qualify — also drives
+    // the FAQ table — and rating-only or empty-text posts are excluded.
     // Source linkage (sourceType + sourceId) enables targeted revocation
     // if the post is later deleted — see schema.ts userGrants @design source*.
-    if (resolvedGrantConfig && contentResult.content.trim() !== '') {
-      grantInfo = await applyAutomatedGrant(tx, user.id, resolvedGrantConfig.grantType, {
+    if (isTopicPostGrantTopicType(topicType) && contentResult.content.trim() !== '') {
+      grantInfo = await applyAutomatedGrant(tx, user.id, 'topic_post', {
         type: 'topic_post',
         id: post.id,
       });
@@ -180,17 +161,17 @@ export async function createPostBase(params: {
     return post;
   });
 
-  if (grantApplied && grantInfo && resolvedGrantConfig) {
+  if (grantApplied && grantInfo) {
     revalidateTag('grant-status', { expire: 60 });
     const info: { grantId: string; expiresAt: Date } = grantInfo;
-    const grantTypeConfig = GRANT_TYPE_DEFAULTS[resolvedGrantConfig.grantType];
+    const grantTypeConfig = GRANT_TYPE_DEFAULTS.topic_post;
     createNotification({
       userId: user.id,
       type: 'benefit_grant',
       targetType: 'user_grant',
       targetId: info.grantId,
       metadata: {
-        grantType: resolvedGrantConfig.grantType,
+        grantType: 'topic_post',
         benefitType: grantTypeConfig.benefitType,
         durationDays: grantTypeConfig.durationDays,
         expiresAt: info.expiresAt.toISOString(),
