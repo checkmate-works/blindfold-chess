@@ -109,17 +109,34 @@ export const TopicPostCard = memo(function TopicPostCard({
         />
       }
     >
-      {isOpening ? (
-        post.openingName && (
-          <span className="inline-flex items-center self-start px-1.5 py-0.5 rounded text-xs font-semibold bg-muted text-muted-foreground">
-            {post.openingName}
-          </span>
-        )
-      ) : (
-        <span className="inline-flex items-center self-start px-1.5 py-0.5 rounded text-xs font-mono font-semibold bg-muted text-muted-foreground">
-          {post.topicKey}
-        </span>
-      )}
+      {isOpening
+        ? // For opening posts the badge text is the opening's name
+          // (e.g. "Sicilian Defense") — wrap it in a Link to the post
+          // detail so it doubles as the SEO-friendly title anchor for
+          // the card. Without this the only crawler-visible anchor
+          // text is the relative timestamp on the permalink, which is
+          // a weak signal for the destination.
+          post.openingName && (
+            <Link
+              href={href}
+              locale={locale}
+              className="inline-flex items-center self-start px-1.5 py-0.5 rounded text-xs font-semibold bg-muted text-muted-foreground hover:bg-muted/80 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {post.openingName}
+            </Link>
+          )
+        : // Square posts use the algebraic-notation key (e.g. "e4") as
+          // the badge. Same Link treatment applies — the square name
+          // is meaningful anchor text for crawlers.
+          post.topicKey && (
+            <Link
+              href={href}
+              locale={locale}
+              className="inline-flex items-center self-start px-1.5 py-0.5 rounded text-xs font-mono font-semibold bg-muted text-muted-foreground hover:bg-muted/80 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {post.topicKey}
+            </Link>
+          )}
       {isOpening && post.rating && (
         <div className="mb-1">
           <RatingDisplay
