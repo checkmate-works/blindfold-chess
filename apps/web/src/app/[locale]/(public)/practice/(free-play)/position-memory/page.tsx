@@ -24,12 +24,7 @@ import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
 import { getPaginationParams } from '@/lib/pagination';
 import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
 import { countPositions, listPositionsWithProfile } from '@/lib/positions/queries';
-import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
-import { truncate } from '@/lib/text';
-import { resolveDisplayName } from '@/lib/users/display-name';
 
-import { PostFooter } from '@/app/[locale]/(public)/topics/_components/PostFooter';
-import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 import {
   Divider,
   PagePanel,
@@ -37,19 +32,19 @@ import {
   PaginationNav,
   SectionTitle,
 } from '@/app/[locale]/_components';
-import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
-import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
+import { PositionListCard } from '../_components/PositionListCard';
 import { toggleLike } from './_actions/toggleLike';
 
 export const dynamic = 'force-dynamic';
 
 const PAGE_SIZE = 12;
+const FOOTER_NAMESPACE = 'practice.positionMemory';
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -100,6 +95,8 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
     return `/${locale}/practice/position-memory${qs ? `?${qs}` : ''}`;
   };
 
+  const justNowLabel = t('justNow');
+
   return (
     <div className="space-y-8">
       <PageTitle>{t('list.title')}</PageTitle>
@@ -121,73 +118,20 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
           <p className="text-muted-foreground text-center py-8">{t('list.empty')}</p>
         ) : (
           <div className="space-y-3">
-            {rows.map(({ position, profile }) => {
-              const displayName = resolveDisplayName(profile);
-              const descriptionExcerpt = truncate(position.description);
-              const detailHref = `/practice/position-memory/${position.id}`;
-              const likeMeta = likeMetaMap.get(position.id) ?? {
-                likeCount: 0,
-                likedByMe: false,
-              };
-              const replyMeta = replyMetaMap.get(position.id) ?? EMPTY_REPLY_META;
-
-              return (
-                <ActivityCard
-                  key={position.id}
-                  variant="card"
-                  href={detailHref}
-                  locale={locale}
-                  thumbnail={<ThemedBoardThumbnail fen={position.fen} className="w-full h-full" />}
-                  author={
-                    <UserAvatar
-                      profileHref={profile?.username ? `/u/${profile.username}` : null}
-                      avatarUrl={profile?.avatarUrl}
-                      displayName={displayName}
-                      locale={locale}
-                      size="sm"
-                    />
-                  }
-                  permalink={
-                    <Link
-                      href={detailHref}
-                      locale={locale}
-                      className="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
-                    >
-                      <time dateTime={position.createdAt.toISOString()}>
-                        {formatRelativeTime(position.createdAt, locale, t('justNow'))}
-                      </time>
-                    </Link>
-                  }
-                  footer={
-                    <PostFooter
-                      postId={position.id}
-                      locale={locale}
-                      topicKey={position.id}
-                      likeMeta={likeMeta}
-                      replyMeta={replyMeta}
-                      toggleLikeAction={toggleLike}
-                      i18nNamespace="practice.positionMemory"
-                      postHref={detailHref}
-                    />
-                  }
-                >
-                  <h3 className="font-medium text-foreground truncate mt-2">
-                    <Link
-                      href={detailHref}
-                      locale={locale}
-                      className="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
-                    >
-                      {position.title}
-                    </Link>
-                  </h3>
-                  {descriptionExcerpt && (
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {descriptionExcerpt}
-                    </p>
-                  )}
-                </ActivityCard>
-              );
-            })}
+            {rows.map(({ position, profile }) => (
+              <PositionListCard
+                key={position.id}
+                position={position}
+                profile={profile}
+                likeMeta={likeMetaMap.get(position.id) ?? { likeCount: 0, likedByMe: false }}
+                replyMeta={replyMetaMap.get(position.id) ?? EMPTY_REPLY_META}
+                detailHref={`/practice/position-memory/${position.id}`}
+                i18nNamespace={FOOTER_NAMESPACE}
+                toggleLikeAction={toggleLike}
+                justNowLabel={justNowLabel}
+                locale={locale}
+              />
+            ))}
           </div>
         )}
 
