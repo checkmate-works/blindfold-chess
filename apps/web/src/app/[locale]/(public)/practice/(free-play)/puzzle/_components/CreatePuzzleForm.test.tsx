@@ -135,6 +135,9 @@ vi.mock('@/app/_components', () => ({
       {children}
     </button>
   ),
+  FlipBoardButton: ({ onClick, title }: { onClick: () => void; title: string }) => (
+    <button type="button" onClick={onClick} title={title} />
+  ),
 }));
 
 const VALID_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';

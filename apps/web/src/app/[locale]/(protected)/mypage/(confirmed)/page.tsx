@@ -79,9 +79,12 @@ export default async function MypagePage({ params }: Props) {
         {/* User profile card */}
         <div className="flex items-center gap-4">
           <UserAvatar
-            src={data.avatarUrl}
-            alt={data.displayName ?? data.username ?? ''}
-            size={64}
+            profileHref={null}
+            avatarUrl={data.avatarUrl}
+            displayName={data.displayName ?? data.username ?? ''}
+            locale={locale}
+            size="lg"
+            showName={false}
           />
           <div className="min-w-0">
             <h2 className="text-lg font-semibold text-foreground truncate">

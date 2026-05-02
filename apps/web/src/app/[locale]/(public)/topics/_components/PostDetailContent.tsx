@@ -6,6 +6,7 @@ import type { ActionResult } from '@/lib/action-types';
 
 import { LinkedText, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
+import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { LikeMeta, PostWithReplyMeta, TopicPostWithAuthor } from '../_lib/shared';
@@ -13,7 +14,6 @@ import { DeletePostButton } from './DeletePostButton';
 import { HashScrollTarget } from './HashScrollTarget';
 import { LikeButton } from './LikeButton';
 import { ReplySection } from './ReplySection';
-import { UserAvatar } from './UserAvatar';
 
 type CreateReplyState = { error?: string };
 

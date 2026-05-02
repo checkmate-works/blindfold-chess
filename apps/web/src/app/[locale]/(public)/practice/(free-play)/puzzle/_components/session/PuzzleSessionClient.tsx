@@ -37,9 +37,8 @@ type Props = {
   positionTitle: string;
   /**
    * Pieces-info card (white/black to move + piece lists). Passed in as a
-   * server-rendered node so the same `PuzzlePiecesInfo` component used on
-   * the puzzle detail page can be reused as-is here without duplicating its
-   * locale-aware translations.
+   * pre-rendered node from the server page so the shared `PiecesInfo`
+   * component is reused as-is here.
    */
   piecesInfo: ReactNode;
   /**

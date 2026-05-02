@@ -1,21 +1,20 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { Button } from '@/app/_components';
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FaArrowRight, FaPlay } from 'react-icons/fa';
+import { FaArrowRight } from 'react-icons/fa';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { TUTORIAL_SKIP_CONFIG } from '../../../_lib/tutorial-skip-config';
+import { PracticeSetupActions } from '../../_components/PracticeSetupActions';
 import { PIECE_TYPE_TO_NAME } from '../_lib/utils';
 import type { RoutePlannerPieceSelection } from '../_lib/utils';
 import { RoutePlannerSettings } from './RoutePlannerSettings';
-import { ROUTE_PLANNER_TUTORIAL_SKIPPED_KEY } from './RoutePlannerTutorialSkipLink';
 
 type Props = {
   locale: Locale;
@@ -25,15 +24,15 @@ type Props = {
 
 export function RoutePlannerSetup({ locale, pieceSelection, onPieceSelect }: Props) {
   const t = useTranslations('practice.routePlanner');
-  const tp = useTranslations('practice');
   const router = useRouter();
 
   const handleViewTutorial = () => {
-    localStorage.removeItem(ROUTE_PLANNER_TUTORIAL_SKIPPED_KEY);
+    localStorage.removeItem(TUTORIAL_SKIP_CONFIG.routePlanner.storageKey);
     router.push(`/${locale}/practice/route-planner/tutorial`);
   };
 
   const pieceName = PIECE_TYPE_TO_NAME[pieceSelection] ?? 'knight';
+  const settingsQuery = `piece=${pieceName}`;
 
   return (
     <div>
@@ -58,19 +57,13 @@ export function RoutePlannerSetup({ locale, pieceSelection, onPieceSelect }: Pro
 
         <RoutePlannerSettings pieceSelection={pieceSelection} onPieceSelect={onPieceSelect} />
 
-        <Link href={`/${locale}/practice/route-planner/challenge/session?piece=${pieceName}`}>
-          <Button asChild variant="primary" size="lg" icon={<FaPlay />} className="w-full mt-6">
-            {tp('startChallenge')}
-          </Button>
-        </Link>
-        <div className="mt-4 text-center">
-          <Link
-            href={`/${locale}/practice/route-planner/training?piece=${pieceName}#route-planner-session`}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {tp('switchToTraining')}
-          </Link>
-        </div>
+        <PracticeSetupActions
+          locale={locale}
+          moduleSlug="route-planner"
+          settingsQuery={settingsQuery}
+          trainingHref={`/${locale}/practice/route-planner/training?${settingsQuery}#route-planner-session`}
+          buttonClassName="w-full mt-6"
+        />
       </div>
     </div>
   );

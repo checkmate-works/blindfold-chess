@@ -14,8 +14,8 @@ import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { TUTORIAL_SKIP_CONFIG } from '../../../_lib/tutorial-skip-config';
 import { DiagonalQuizPlaying } from '../challenge/_components/DiagonalQuizPlaying';
-import { DIAGONAL_QUIZ_TUTORIAL_SKIPPED_KEY } from './DiagonalQuizTutorialSkipLink';
 
 type Props = {
   locale: Locale;
@@ -101,12 +101,12 @@ export function DiagonalQuizTutorial({ locale }: Props) {
   }, []);
 
   const handleStartChallenge = () => {
-    localStorage.setItem(DIAGONAL_QUIZ_TUTORIAL_SKIPPED_KEY, 'true');
+    localStorage.setItem(TUTORIAL_SKIP_CONFIG.diagonalQuiz.storageKey, 'true');
     router.push(`/${locale}/practice/diagonal-quiz/challenge`);
   };
 
   const handleSwitchToTraining = () => {
-    localStorage.setItem(DIAGONAL_QUIZ_TUTORIAL_SKIPPED_KEY, 'true');
+    localStorage.setItem(TUTORIAL_SKIP_CONFIG.diagonalQuiz.storageKey, 'true');
     router.push(`/${locale}/practice/diagonal-quiz/training`);
   };
 

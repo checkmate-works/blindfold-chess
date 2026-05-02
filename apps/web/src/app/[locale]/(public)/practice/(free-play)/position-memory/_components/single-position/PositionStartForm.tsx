@@ -9,9 +9,16 @@ import { Link } from '@/i18n/routing';
 import { useRouter } from '@/i18n/routing';
 import { FaPlay } from 'react-icons/fa';
 
+import { SegmentedControl } from '@/app/[locale]/(public)/practice/_components/SegmentedControl';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
-import { DEFAULT_TIME_LIMIT, MAX_TIME_LIMIT, MIN_TIME_LIMIT } from '../../_lib/session-config';
+import {
+  DEFAULT_DISPLAY_MODE,
+  DEFAULT_TIME_LIMIT,
+  type DisplayMode,
+  MAX_TIME_LIMIT,
+  MIN_TIME_LIMIT,
+} from '../../_lib/session-config';
 
 type Props = {
   positionId: string;
@@ -20,15 +27,32 @@ type Props = {
 
 export function PositionStartForm({ positionId, locale }: Props) {
   const [timeLimit, setTimeLimit] = useState(DEFAULT_TIME_LIMIT);
+  const [displayMode, setDisplayMode] = useState<DisplayMode>(DEFAULT_DISPLAY_MODE);
   const router = useRouter();
   const t = useTranslations('practice.positionMemory.detail');
 
   const handleStart = () => {
-    router.push(`/practice/position-memory/${positionId}/session?timeLimit=${timeLimit}`);
+    const params = new URLSearchParams({
+      timeLimit: String(timeLimit),
+      displayMode,
+    });
+    router.push(`/practice/position-memory/${positionId}/session?${params.toString()}`);
   };
 
   return (
     <div className="space-y-6">
+      <div>
+        <label className="block text-sm font-medium text-foreground mb-2">{t('displayMode')}</label>
+        <SegmentedControl<DisplayMode>
+          options={[
+            { value: 'board', label: t('displayModeBoard') },
+            { value: 'text', label: t('displayModeText') },
+          ]}
+          value={displayMode}
+          onChange={setDisplayMode}
+        />
+      </div>
+
       <div>
         <label className="block text-sm font-medium text-foreground mb-2">
           {t('timeLimit')}: {t('seconds', { count: timeLimit })}

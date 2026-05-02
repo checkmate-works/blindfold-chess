@@ -2,7 +2,7 @@ import { memo } from "react";
 import { TouchableOpacity, StyleSheet } from "react-native";
 import { useTheme, touchTarget } from "../../../theme";
 import type { Square, AnswerFeedback } from "../lib/types";
-import { getSquareColor } from "../lib/utils";
+import { computeSquareColor } from "../lib/utils";
 
 type ChessBoardSquareProps = {
   square: Square;
@@ -22,7 +22,7 @@ export const ChessBoardSquare = memo(function ChessBoardSquare({
   size,
 }: ChessBoardSquareProps) {
   const { chessColors } = useTheme();
-  const squareColorType = getSquareColor(square);
+  const squareColorType = computeSquareColor(square);
 
   const getBackgroundColor = () => {
     // Show feedback colors when there's feedback and this is the target

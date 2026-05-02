@@ -12,7 +12,7 @@ import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { ROUTE_PLANNER_TUTORIAL_SKIPPED_KEY } from './RoutePlannerTutorialSkipLink';
+import { TUTORIAL_SKIP_CONFIG } from '../../../_lib/tutorial-skip-config';
 
 type Props = {
   locale: Locale;
@@ -27,12 +27,12 @@ export function RoutePlannerTutorial({ locale }: Props) {
   const [step, setStep] = useState<TutorialStep>('intro');
 
   const handleStartChallenge = () => {
-    localStorage.setItem(ROUTE_PLANNER_TUTORIAL_SKIPPED_KEY, 'true');
+    localStorage.setItem(TUTORIAL_SKIP_CONFIG.routePlanner.storageKey, 'true');
     router.push(`/${locale}/practice/route-planner/challenge`);
   };
 
   const handleSwitchToTraining = () => {
-    localStorage.setItem(ROUTE_PLANNER_TUTORIAL_SKIPPED_KEY, 'true');
+    localStorage.setItem(TUTORIAL_SKIP_CONFIG.routePlanner.storageKey, 'true');
     router.push(`/${locale}/practice/route-planner/training`);
   };
 

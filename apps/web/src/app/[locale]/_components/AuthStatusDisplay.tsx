@@ -10,6 +10,8 @@ import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FiLogOut, FiSettings, FiUser } from 'react-icons/fi';
 
+import { IS_LOCAL_SUPABASE } from '@/lib/image-optimization';
+
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import { useAuth } from '../_contexts/AuthContext';
@@ -57,7 +59,7 @@ export function AuthStatusDisplay({ isAuthenticated, avatarUrl, displayName }: P
               width={32}
               height={32}
               className="w-8 h-8 rounded-full object-cover"
-              unoptimized
+              unoptimized={IS_LOCAL_SUPABASE}
             />
           ) : (
             <span className="flex items-center justify-center w-8 h-8 rounded-full bg-muted text-muted-foreground text-xs">

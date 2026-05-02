@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef } from "react";
 
+import { computePracticeResult } from "../common/practice-result";
 import { useTimedSession } from "../practice-session/use-timed-session";
 import { generateBalancedMoveQuestions, isLegalMove } from "./logic";
 import type { LegalMovesResult, MoveQuestion, PieceType } from "./types";
@@ -76,20 +77,13 @@ export function useLegalMovesSession({
   useEffect(() => {
     if (!isFinished) return;
 
-    const total = correctCount + incorrectCount;
-    const accuracy = total > 0 ? (correctCount / total) * 100 : 0;
-    const times = questionTimesRef.current;
-    const averageTime =
-      times.length > 0 ? times.reduce((a, b) => a + b, 0) / times.length : 0;
-
-    const result: LegalMovesResult = {
-      correctAnswers: correctCount,
-      incorrectAnswers: incorrectCount,
-      totalQuestions: total,
-      accuracy,
-      timeTaken: Math.min(timeElapsed, timeLimit),
-      averageTime,
-    };
+    const result: LegalMovesResult = computePracticeResult(
+      correctCount,
+      incorrectCount,
+      timeElapsed,
+      timeLimit,
+      questionTimesRef.current,
+    );
 
     onCompleteRef.current?.(result);
   }, [isFinished, correctCount, incorrectCount, timeElapsed, timeLimit]);

@@ -1,8 +1,7 @@
 import dynamic from 'next/dynamic';
 
+import { ModuleTutorialSkipLink } from '@/app/[locale]/(public)/practice/_components/TutorialSkipLink';
 import { createPracticeTutorialPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeSessionPages';
-
-import { DiagonalQuizTutorialSkipLink } from '../_components/DiagonalQuizTutorialSkipLink';
 
 const DiagonalQuizTutorial = dynamic(() =>
   import('../_components/DiagonalQuizTutorial').then((mod) => mod.DiagonalQuizTutorial)
@@ -15,7 +14,7 @@ const { generateMetadata, generateStaticParams, Page } = createPracticeTutorialP
     { labelKey: 'diagonalQuiz.title', href: '/practice/diagonal-quiz' },
     { labelKey: 'diagonalQuiz.tutorial.title' },
   ],
-  renderSkipLink: (locale) => <DiagonalQuizTutorialSkipLink locale={locale} />,
+  renderSkipLink: (locale) => <ModuleTutorialSkipLink locale={locale} moduleId="diagonalQuiz" />,
   renderTutorial: (locale) => <DiagonalQuizTutorial locale={locale} />,
 });
 

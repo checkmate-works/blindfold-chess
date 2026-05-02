@@ -1,6 +1,5 @@
-import { ROOK_DIRS } from "../../common";
+import { getMovesForPiece } from "../../common";
 
-import { getValidLines } from "./helpers";
 import type { RoutePlannerStrategy } from "./types";
 
 /**
@@ -10,7 +9,7 @@ import type { RoutePlannerStrategy } from "./types";
  */
 export const RookRouteStrategy: RoutePlannerStrategy = {
   getMoves(f, r) {
-    return getValidLines(f, r, ROOK_DIRS);
+    return getMovesForPiece("r", f, r);
   },
   meetsConstraint(pathLength) {
     return pathLength >= 3;

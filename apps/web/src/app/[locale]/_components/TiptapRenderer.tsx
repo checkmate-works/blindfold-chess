@@ -5,6 +5,8 @@ import type { TiptapJsonContent, TiptapMark, TiptapNode } from '@/app/admin/arti
 import { extractYouTubeVideoId } from '@/app/admin/articles/_lib/youtube';
 import { Tweet } from 'react-tweet';
 
+import { IS_LOCAL_SUPABASE } from '@/lib/image-optimization';
+
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import { SectionTitle } from './SectionTitle';
@@ -220,7 +222,7 @@ function ImageNode({ node }: { node: TiptapNode }) {
         alt={alt}
         width={size === 'small' ? 400 : 800}
         height={size === 'small' ? 300 : 600}
-        unoptimized
+        unoptimized={IS_LOCAL_SUPABASE}
         className="rounded-md object-contain"
         sizes={size === 'small' ? '400px' : '(max-width: 768px) 100vw, 800px'}
       />

@@ -21,8 +21,8 @@ export type AdGuardResult = 'show' | 'placeholder' | 'hidden';
  *   3. `IS_LOCAL_DEV` — render a visible placeholder locally.
  *   4. Otherwise: return `'show'` so the caller renders the real slot.
  *
- * Note: since `AdSenseGuard` / `AdSenseInFeedGuard` now inline these same
- * checks (they need to own their `.ad-slot-wrapper` hook for the CSS
+ * Note: since `AdSenseGuard` and in-feed slot consumers now inline these
+ * same checks (they need to own their `.ad-slot-wrapper` hook for the CSS
  * hide-rule), this function is kept for any future consumer that wants
  * a uniform decision type.
  */

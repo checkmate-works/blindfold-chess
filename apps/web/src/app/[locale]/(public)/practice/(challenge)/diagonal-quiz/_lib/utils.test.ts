@@ -1,10 +1,14 @@
+import { generateSquareSequence as generateSquareSequenceBase } from '@blindfold-chess/features/common';
 import {
-  generateSquareSequence,
+  EXCLUDED_QUIZ_SQUARES,
   getDiagonals,
   isValidDiagonalAnswer,
   normalizeDiagonal,
 } from '@blindfold-chess/features/diagonal-quiz';
 import { describe, expect, it } from 'vitest';
+
+const generateSquareSequence = (count: number) =>
+  generateSquareSequenceBase(count, Math.random, EXCLUDED_QUIZ_SQUARES);
 
 describe('getDiagonals', () => {
   describe('corner squares', () => {

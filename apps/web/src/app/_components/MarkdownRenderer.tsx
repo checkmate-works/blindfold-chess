@@ -7,6 +7,8 @@ import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
+import { IS_LOCAL_SUPABASE } from '@/lib/image-optimization';
+
 import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 import { SubsectionTitle } from '@/app/[locale]/_components/SubsectionTitle';
@@ -108,7 +110,7 @@ export function MarkdownRenderer({ content, skipFirstH1 = false }: Props) {
                   src={src}
                   alt={alt || ''}
                   fill
-                  unoptimized
+                  unoptimized={IS_LOCAL_SUPABASE}
                   className="rounded-md object-contain"
                   sizes="(max-width: 768px) 100vw, 672px"
                 />

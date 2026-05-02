@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
 import { Button } from '@/app/_components';
@@ -23,13 +22,15 @@ import {
   getCommentTreeForTopic,
   getPostCountByTopicKey,
 } from '@/app/[locale]/(public)/topics/_lib/queries';
-import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { RelatedChunks } from '@/app/[locale]/_components/RelatedChunks';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { PositionAuthorAttribution } from '../../_components/PositionAuthorAttribution';
+import { PositionDetailLayout } from '../../_components/PositionDetailLayout';
 import { toggleLike } from '../_actions/toggleLike';
 import { DeletePositionButton } from '../_components/DeletePositionButton';
 import { PositionDetailBoard } from '../_components/single-position/PositionDetailBoard';
@@ -95,142 +96,15 @@ export default async function PositionDetailPage({ params }: Props) {
 
   const commentTree = buildCommentTree(allComments, 'new');
 
-  const authorBadge = (
-    <>
-      {profile?.avatarUrl ? (
-        <Image
-          src={profile.avatarUrl}
-          alt={displayName}
-          width={24}
-          height={24}
-          className="w-6 h-6 rounded-full object-cover flex-shrink-0"
-          unoptimized
-        />
-      ) : (
-        <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-          <span className="text-xs text-muted-foreground">
-            {displayName.charAt(0).toUpperCase()}
-          </span>
-        </div>
-      )}
-      <span className={`font-medium text-foreground${profile?.username ? ' hover:underline' : ''}`}>
-        {displayName}
-      </span>
-    </>
-  );
-
   return (
-    <div className="space-y-8">
-      <PageTitle>{position.title}</PageTitle>
-
-      <PagePanel>
-        <div className="space-y-6">
-          <SectionTitle>{t('detail.descriptionSection')}</SectionTitle>
-
-          {position.description && (
-            <p className="text-foreground whitespace-pre-wrap">{position.description}</p>
-          )}
-
-          <div className="max-w-md mx-auto">
-            <PositionDetailBoard fen={position.fen} flipped={isBlackToMove} />
-            <div className="flex justify-center mt-4">
-              <Link href={`/games/new/position?fen=${encodeURIComponent(position.fen)}`}>
-                <Button asChild variant="secondary" icon={<FaPlusCircle className="w-3 h-3" />}>
-                  {tPlay('newGameFromHere')}
-                </Button>
-              </Link>
-            </div>
-          </div>
-
-          <RelatedChunks chunks={relatedChunks} locale={locale} />
-
-          <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
-            <span>{t('detail.createdBy')}</span>
-            {profile?.username ? (
-              <Link
-                href={`/u/${profile.username}`}
-                locale={locale}
-                className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-              >
-                {authorBadge}
-              </Link>
-            ) : (
-              authorBadge
-            )}
-          </div>
-
-          <div className="flex items-center justify-between gap-4 text-xs text-muted-foreground">
-            <LikeButton
-              postId={position.id}
-              locale={locale}
-              topicKey=""
-              initialLikeCount={likeMeta.likeCount}
-              initialLikedByMe={likeMeta.likedByMe}
-              toggleLikeAction={toggleLike}
-              i18nNamespace="practice.positionMemory"
-            />
-            <div className="flex items-center gap-4">
-              {currentUser?.id === position.userId && (
-                <DeletePositionButton positionId={position.id} locale={locale} />
-              )}
-              <time dateTime={position.createdAt.toISOString()}>
-                {position.createdAt.toLocaleDateString(locale, {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
-              </time>
-            </div>
-          </div>
-
-          <SectionTitle>{t('detail.solveSection')}</SectionTitle>
-
-          <PositionStartForm positionId={position.id} locale={locale} />
-
-          <SectionTitle>{tComments('commentsTitle')}</SectionTitle>
-
-          <p className="text-sm text-muted-foreground">
-            {tComments('postCount', { count: commentCount })}
-          </p>
-
-          {currentUser ? (
-            <NewPostForm locale={locale} positionId={position.id} />
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              <Link href={`/${locale}/sign-in`} className="text-link-primary hover:underline">
-                {tComments('signInToComment')}
-              </Link>
-            </p>
-          )}
-
-          {commentTree.length > 0 ? (
-            <CommentTree
-              comments={commentTree}
-              locale={locale}
-              topicKey={position.id}
-              currentUserId={currentUser?.id}
-              enableSpoiler={false}
-              redirectPath={`/${locale}/practice/position-memory/${position.id}`}
-              toggleLikeAction={togglePositionMemoryPostLike}
-              createReplyAction={createReply}
-              deletePostAction={deletePost}
-              i18n={{
-                likeNamespace: 'topics.positionMemory',
-                replyNamespace: 'topics.positionMemory.replies',
-                deleteNamespace: 'topics.positionMemory.deletePost',
-              }}
-            />
-          ) : (
-            <p className="text-muted-foreground text-center py-8">{tComments('noPosts')}</p>
-          )}
-        </div>
-
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+    <PositionDetailLayout
+      title={position.title}
+      bottomAdSense={
+        (IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
           <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-        )}
-
-        <Divider />
-
+        )
+      }
+      breadcrumb={
         <Breadcrumb
           items={[
             { label: tNav('practice'), href: '/practice' },
@@ -239,7 +113,98 @@ export default async function PositionDetailPage({ params }: Props) {
           ]}
           locale={locale}
         />
-      </PagePanel>
-    </div>
+      }
+    >
+      <SectionTitle>{t('detail.descriptionSection')}</SectionTitle>
+
+      {position.description && (
+        <p className="text-foreground whitespace-pre-wrap">{position.description}</p>
+      )}
+
+      <div className="max-w-md mx-auto">
+        <PositionDetailBoard fen={position.fen} flipped={isBlackToMove} />
+        <div className="flex justify-center mt-4">
+          <Link href={`/games/new/position?fen=${encodeURIComponent(position.fen)}`}>
+            <Button asChild variant="secondary" icon={<FaPlusCircle className="w-3 h-3" />}>
+              {tPlay('newGameFromHere')}
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      <RelatedChunks chunks={relatedChunks} locale={locale} />
+
+      <PositionAuthorAttribution
+        profile={profile}
+        displayName={displayName}
+        createdByLabel={t('detail.createdBy')}
+        locale={locale}
+      />
+
+      <div className="flex items-center justify-between gap-4 text-xs text-muted-foreground">
+        <LikeButton
+          postId={position.id}
+          locale={locale}
+          topicKey=""
+          initialLikeCount={likeMeta.likeCount}
+          initialLikedByMe={likeMeta.likedByMe}
+          toggleLikeAction={toggleLike}
+          i18nNamespace="practice.positionMemory"
+        />
+        <div className="flex items-center gap-4">
+          {currentUser?.id === position.userId && (
+            <DeletePositionButton positionId={position.id} locale={locale} />
+          )}
+          <time dateTime={position.createdAt.toISOString()}>
+            {position.createdAt.toLocaleDateString(locale, {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
+          </time>
+        </div>
+      </div>
+
+      <SectionTitle>{t('detail.solveSection')}</SectionTitle>
+
+      <PositionStartForm positionId={position.id} locale={locale} />
+
+      <SectionTitle>{tComments('commentsTitle')}</SectionTitle>
+
+      <p className="text-sm text-muted-foreground">
+        {tComments('postCount', { count: commentCount })}
+      </p>
+
+      {currentUser ? (
+        <NewPostForm locale={locale} positionId={position.id} />
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          <Link href={`/${locale}/sign-in`} className="text-link-primary hover:underline">
+            {tComments('signInToComment')}
+          </Link>
+        </p>
+      )}
+
+      {commentTree.length > 0 ? (
+        <CommentTree
+          comments={commentTree}
+          locale={locale}
+          topicKey={position.id}
+          currentUserId={currentUser?.id}
+          enableSpoiler={false}
+          redirectPath={`/${locale}/practice/position-memory/${position.id}`}
+          toggleLikeAction={togglePositionMemoryPostLike}
+          createReplyAction={createReply}
+          deletePostAction={deletePost}
+          i18n={{
+            likeNamespace: 'topics.positionMemory',
+            replyNamespace: 'topics.positionMemory.replies',
+            deleteNamespace: 'topics.positionMemory.deletePost',
+          }}
+        />
+      ) : (
+        <p className="text-muted-foreground text-center py-8">{tComments('noPosts')}</p>
+      )}
+    </PositionDetailLayout>
   );
 }

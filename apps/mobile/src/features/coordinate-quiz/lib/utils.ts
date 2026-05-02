@@ -5,5 +5,5 @@ export {
   coordinatesToSquare,
   formatTime,
   calculateScore,
-  getSquareColor,
+  computeSquareColor,
 } from "@blindfold-chess/features/coordinate-quiz";

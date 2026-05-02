@@ -342,21 +342,14 @@ A martial arts-inspired progression system (5級 → 初段). Users earn ranks b
 
 When a practice module has challenge mode and should record scores on the leaderboard, follow these steps:
 
-1. **Register as challenge module** — Add module name to `CHALLENGE_MENU_TYPES` in `src/lib/db/practice-menu-types.ts`
-2. **Add leaderboard key derivation** — Add a case in `deriveLeaderboardKey()` in `src/lib/db/leaderboard-key.ts`. Return `'default'` for modules with no settings-based segmentation, or derive from settings (e.g., `boardOrientation` for coordinate_quiz)
-3. **Register in leaderboard types** — In `src/app/[locale]/(public)/leaderboard/_lib/types.ts`:
-   - Add to `LeaderboardModule` type
-   - Add to `LeaderboardModuleSlug` type (kebab-case)
-   - Add to `MODULES` array
-   - Add to `MODULE_KEYS` (e.g., `diagonal_quiz: ['default']`)
-   - Add to `VALID_MODULE_FILTERS`
-   - Add to `MODULE_TO_SLUG` and `SLUG_TO_MODULE` mappings
-   - Add to `buildChallengePath()` switch
-4. **Add module emoji** — Add entry in `src/app/[locale]/(public)/leaderboard/_lib/icons.tsx` (`MODULE_EMOJIS`)
-5. **Create save-result action** — Create `src/app/[locale]/(public)/practice/{module}/_actions/save-result.ts` as a thin wrapper calling `savePracticeResult(menuType, settings, challengeFields)`
-6. **Call save on challenge finish** — In the challenge session component, call the save action before redirecting to results. Use `savedRef` to prevent double saves. Handle `grantedRanks` (sessionStorage) and errors (toast flag)
-7. **Switch result page to leaderboard version** — Change from `createSimplePracticeResultPage(ResultClient)` to `createLeaderboardPracticeResultPage(ResultClient, { module, resolveKey })`. Update `ResultClient` to accept and render `leaderboardRows` and `leaderboardDetailPath` via `LeaderboardPreview`
-8. **Update tests** — Update hardcoded entry counts in `leaderboard/_lib/__tests__/types.test.ts`, `leaderboard/_actions/__tests__/getUserRanks.test.ts`, and `src/lib/db/leaderboard-key.test.ts`
+1. **Register the module in `PRACTICE_MODULE_REGISTRY`** — Add (or update) an entry in `src/lib/practice/registry.ts` with `slugSnake`, `slugKebab`, and `hasChallenge: true`. The registry is the single source of truth: `PRACTICE_MENU_TYPES`, `CHALLENGE_MENU_TYPES`, `MODULE_TO_SLUG`, `SLUG_TO_MODULE`, and the leaderboard's `MODULES` / `VALID_MODULE_SLUGS` / `VALID_MODULE_FILTERS` are all derived from it. Also add the matching kebab/snake literals to the `PracticeMenuType`, `ChallengeMenuType`, `PracticeModuleSlugKebab`, and `LeaderboardModuleSlug` union types in the same file.
+2. **Add leaderboard key derivation** — Add a case in `deriveLeaderboardKey()` in `src/lib/db/leaderboard-key.ts`. Return `'default'` for modules with no settings-based segmentation, or derive from settings (e.g., `boardOrientation` for coordinate_quiz). Then add the keys to `LEADERBOARD_KEYS` in `src/lib/games/leaderboard-keys.ts`.
+3. **Wire up the build-challenge-path switch** — Add a case in `buildChallengePath()` in `src/app/[locale]/(public)/leaderboard/_lib/types.ts`.
+4. **Add module emoji** — Add entry in `src/app/[locale]/(public)/practice/_lib/practice-emojis.ts` (`PRACTICE_EMOJIS`).
+5. **Create save-result action** — Create `src/app/[locale]/(public)/practice/{module}/_actions/save-result.ts` as a thin wrapper calling `savePracticeResult(menuType, settings, challengeFields)`.
+6. **Call save on challenge finish** — In the challenge session component, call the save action before redirecting to results. Use `savedRef` to prevent double saves. Handle `grantedRanks` (sessionStorage) and errors (toast flag).
+7. **Switch result page to leaderboard version** — Change from `createSimplePracticeResultPage(ResultClient)` to `createLeaderboardPracticeResultPage(ResultClient, { module, resolveKey })`. Update `ResultClient` to accept and render `leaderboardRows` and `leaderboardDetailPath` via `LeaderboardPreview`.
+8. **Update tests** — Update hardcoded entry counts in `leaderboard/_lib/__tests__/types.test.ts`, `leaderboard/_actions/__tests__/getUserRanks.test.ts`, and `src/lib/db/leaderboard-key.test.ts`.
 
 ## Article Management (記事管理)
 

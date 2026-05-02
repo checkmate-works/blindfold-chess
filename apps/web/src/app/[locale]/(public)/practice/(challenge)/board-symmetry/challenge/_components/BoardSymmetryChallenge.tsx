@@ -1,14 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-
-import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useMemo } from 'react';
 
 import { useBoardSymmetrySession } from '@blindfold-chess/features/board-symmetry/client';
 
 import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
 import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-challenge-result-save';
+import { useQuitConfirm } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-quit-confirm';
 import { saveBoardSymmetryResult } from '@/app/[locale]/(public)/practice/(challenge)/board-symmetry/_actions/save-result';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
@@ -21,10 +20,6 @@ type Props = {
 };
 
 export default function BoardSymmetryChallenge({ locale }: Props) {
-  const router = useRouter();
-
-  const [showQuitModal, setShowQuitModal] = useState(false);
-
   const {
     currentProblem: problem,
     timeRemaining,
@@ -52,19 +47,12 @@ export default function BoardSymmetryChallenge({ locale }: Props) {
 
   useScrollToElement('board-symmetry-challenge');
 
-  const handleQuitRequest = useCallback(() => {
-    if (!isPaused) togglePause();
-    setShowQuitModal(true);
-  }, [isPaused, togglePause]);
-
-  const handleQuitConfirm = useCallback(() => {
-    router.push(`/${locale}/practice/board-symmetry/challenge`);
-  }, [router, locale]);
-
-  const handleQuitCancel = useCallback(() => {
-    setShowQuitModal(false);
-    if (isPaused) togglePause();
-  }, [isPaused, togglePause]);
+  const { showQuitModal, handleQuitRequest, handleQuitConfirm, handleQuitCancel } = useQuitConfirm({
+    locale,
+    moduleSlug: 'board-symmetry',
+    isPaused,
+    togglePause,
+  });
 
   // Auto-submit when both file and rank are selected
   useEffect(() => {

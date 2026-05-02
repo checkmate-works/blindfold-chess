@@ -371,6 +371,18 @@
         "multiplier12": "×1.2",
         "multiplier11": "×1.1",
         "multiplier10": "×1.0"
+      },
+      "adFreeBenefits": {
+        "question": "¿Cómo se obtienen los beneficios sin anuncios?",
+        "answer": "Los beneficios sin anuncios se conceden automáticamente cuando contribuyes con contenido textual en las páginas de temas. Las concesiones se acumulan — publicar varias veces extiende tu periodo sin anuncios.",
+        "tableTitle": "Formas de obtener beneficios sin anuncios",
+        "headerAction": "Acción",
+        "headerDuration": "Duración",
+        "actions": {
+          "topic_post": "Publicar un tema con texto"
+        },
+        "durationDays": "{days} días",
+        "note": "Las publicaciones que solo contienen valoraciones sin contenido textual no califican para la concesión."
       }
     }
   },
@@ -929,6 +941,9 @@
         "descriptionSection": "Descripción de la Posición",
         "solveSection": "Resolver el Problema",
         "start": "Iniciar",
+        "displayMode": "Modo de Visualización",
+        "displayModeBoard": "Tablero",
+        "displayModeText": "Texto",
         "timeLimit": "Límite de Tiempo",
         "seconds": "{count, plural, one {# segundo} other {# segundos}}",
         "createdBy": "Creado por",
@@ -1902,7 +1917,12 @@
       "welcomeGreeting": "¡Hola, {name}!",
       "welcomeDefaultName": "Jugador",
       "viewMypage": "Mi Página",
-      "viewHome": "Inicio"
+      "viewHome": "Inicio",
+      "dailyPuzzleTitle": "Puzzle del Día",
+      "dailyPuzzleAction": "Resolver",
+      "announcements": "Anuncios",
+      "articles": "Artículos y Guías",
+      "viewAll": "Ver todo"
     }
   },
   "AuthStatusDisplay": {
@@ -2209,9 +2229,46 @@
       "move_sequence": "Yakusoku Kumite",
       "algebraic_notation": "Notación Algebraica",
       "fen": "Reconstrucción FEN",
-      "quadrant_anchors": "Anclas de Cuadrante"
+      "quadrant_anchors": "Anclas de Cuadrante",
+      "unknown": "Otro"
     },
     "practiceThisChallenge": "Practicar Este Desafío"
+  },
+  "MypageBenefits": {
+    "title": "Beneficios",
+    "sectionTitle": "Beneficios sin anuncios",
+    "breadcrumbMypage": "Mi Página",
+    "adFree": {
+      "statusActive": "Modo sin anuncios activo",
+      "statusInactive": "El modo sin anuncios no está activo actualmente",
+      "activeUntil": "hasta {date}",
+      "sourceSubscription": "Por tu suscripción",
+      "sourceGrants": "Por concesiones de beneficios",
+      "pastBenefits": "Beneficios anteriores",
+      "learnHowToEarn": "Aprende cómo obtener beneficios sin anuncios",
+      "viewFullHistory": "Ver historial completo",
+      "grantPeriod": "{startDate} – {endDate}",
+      "grantStatusActive": "Activa",
+      "grantStatusUpcoming": "Próxima",
+      "grantStatusExpired": "Expirada"
+    },
+    "grantTypeLabel": {
+      "admin_manual": "Concedido por el equipo",
+      "topic_post": "Concedido por publicación de tema"
+    }
+  },
+  "MypageBenefitHistory": {
+    "title": "Historial de beneficios",
+    "sectionTitle": "Tus concesiones de beneficios",
+    "breadcrumbMypage": "Mi Página",
+    "breadcrumbBenefits": "Beneficios",
+    "showing": "Mostrando {from}-{to} de {total}",
+    "empty": "No se encontraron concesiones de beneficios.",
+    "grantPeriod": "{startDate} – {endDate}",
+    "statusActive": "Activa",
+    "statusUpcoming": "Próxima",
+    "statusExpired": "Expirada",
+    "statusRevoked": "Revocada"
   },
   "MypageLikes": {
     "title": "Publicaciones que te Gustan",
@@ -2287,7 +2344,11 @@
     "newPositionMemoryMessage": "{actor} creó un nuevo problema de memoria de posición",
     "newPuzzleMessage": "{actor} creó un nuevo puzzle",
     "achievementSingleMessage": "🏆 Obtuviste {name}",
-    "achievementMultipleMessage": "🏆 Obtuviste {count} logros"
+    "achievementMultipleMessage": "🏆 Obtuviste {count} logros",
+    "benefitGrantMessage": {
+      "topic_post": "Gracias por tu publicación de tema — recibiste {days} días de beneficio sin anuncios",
+      "default": "Recibiste {days} días de beneficio sin anuncios"
+    }
   },
   "deleteAccount": {
     "title": "Eliminar Cuenta",
@@ -2312,7 +2373,9 @@
     "gameSaved": "Partida guardada correctamente",
     "gamesDeleted": "{count, plural, one {# partida eliminada correctamente} other {# partidas eliminadas correctamente}}",
     "accountDeleted": "Tu cuenta ha sido eliminada",
-    "practiceResultSaveFailed": "Error al guardar tu resultado. Por favor, inténtalo de nuevo."
+    "practiceResultSaveFailed": "Error al guardar tu resultado. Por favor, inténtalo de nuevo.",
+    "positionCreated": "Posición creada con éxito",
+    "positionDeleted": "Problema eliminado"
   },
   "setupUsername": {
     "title": "Crea tu Cuenta",
@@ -2459,6 +2522,13 @@
           "positions": {
             "memory": "memoria"
           }
+        },
+        "help": {
+          "avgPerActivePoster": {
+            "title": "Promedio por publicador activo",
+            "ariaLabel": "Mostrar explicación de Promedio por publicador activo",
+            "description": "Total de publicaciones UGC en el periodo seleccionado dividido entre el número de usuarios distintos que publicaron al menos un elemento UGC en ese periodo.\n\nUn usuario que contribuyó con varios tipos de UGC (por ejemplo, una publicación de tema y una posición guardada) se cuenta como un único publicador activo, no como dos.\n\nLas publicaciones eliminadas lógicamente se excluyen tanto del numerador como del recuento de publicadores activos."
+          }
         }
       }
     },
@@ -2483,6 +2553,12 @@
       "free": "Gratuito",
       "viewSubscriptions": "Suscripciones",
       "deleted": "Eliminado",
+      "signupMethod": "Método de registro",
+      "filterByProvider": "Método de registro",
+      "allProviders": "Todos",
+      "providerGoogle": "Google",
+      "providerEmail": "Correo electrónico",
+      "providerUnknown": "Desconocido",
       "copyUserId": "Copiar ID de usuario",
       "copyUserIdSuccess": "Copiado",
       "columnId": "ID",
@@ -2496,8 +2572,24 @@
     },
     "stats": {
       "usersByCountry": "Usuarios por País",
+      "usersByRank": "Usuarios por rango",
+      "usersBySignupMethod": "Usuarios por método de registro",
       "noData": "Sin datos disponibles",
-      "users": "usuarios"
+      "users": "usuarios",
+      "rankNames": {
+        "1dan": "1 Dan",
+        "1kyu": "1 Kyu",
+        "2kyu": "2 Kyu",
+        "3kyu": "3 Kyu",
+        "4kyu": "4 Kyu",
+        "5kyu": "5 Kyu",
+        "mukyu": "Sin rango"
+      }
+    },
+    "filters": {
+      "clearAll": "Borrar todo",
+      "country": "País",
+      "rank": "Rango"
     },
     "subscriptions": "Suscripciones",
     "subscriptionsTable": {
@@ -2785,6 +2877,68 @@
       "endAt": "Fin",
       "create": "Crear",
       "creating": "Creando..."
+    },
+    "grants": {
+      "title": "Concesiones",
+      "navLabel": "Concesiones",
+      "noGrantsFound": "No se encontraron concesiones",
+      "showing": "Mostrando {from}–{to} de {total} concesiones",
+      "columns": {
+        "user": "Usuario",
+        "benefit": "Beneficio",
+        "grantType": "Tipo de concesión",
+        "reason": "Motivo",
+        "period": "Periodo",
+        "status": "Estado",
+        "actions": "Acciones"
+      },
+      "status": {
+        "revoked": "Revocada",
+        "expired": "Expirada",
+        "active": "Activa"
+      }
+    },
+    "achievements": {
+      "title": "Logros",
+      "navLabel": "Logros",
+      "description": "Gestiona definiciones de logros y consulta titulares.",
+      "noAchievementsFound": "No se encontraron logros",
+      "showing": "Mostrando {from}–{to} de {total} logros",
+      "viewHolders": "Ver titulares",
+      "columns": {
+        "displayName": "Nombre",
+        "iconKey": "Clave de icono",
+        "slug": "Slug",
+        "category": "Categoría",
+        "repeatable": "Repetible",
+        "displayOrder": "Orden",
+        "holderCount": "Titulares",
+        "actions": "Acciones"
+      },
+      "yes": "Sí",
+      "no": "No",
+      "detail": {
+        "backToList": "Volver a Logros",
+        "notFound": "Logro no encontrado",
+        "headerTitle": "Detalles del Logro",
+        "slug": "Slug",
+        "category": "Categoría",
+        "iconKey": "Clave de icono",
+        "repeatable": "Repetible",
+        "displayOrder": "Orden",
+        "holderCount": "Titulares",
+        "createdAt": "Creado el",
+        "holdersTitle": "Titulares",
+        "showingHolders": "Mostrando {from}–{to} de {total} titulares",
+        "noHoldersFound": "Aún sin titulares",
+        "columns": {
+          "username": "Usuario",
+          "userId": "ID de usuario",
+          "achievedAt": "Conseguido el",
+          "metadata": "Metadatos"
+        },
+        "anonymous": "(sin perfil)"
+      }
     }
   },
   "publicProfile": {
@@ -3558,6 +3712,7 @@
   },
   "MypageSubscription": {
     "title": "Suscripción",
+    "sectionTitle": "Plan actual",
     "breadcrumbMypage": "Mi Página",
     "successMessage": "¡Tu suscripción está activa! Los anuncios han sido eliminados.",
     "noSubscription": "Sin suscripción activa",

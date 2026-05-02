@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
+import type { User } from '@supabase/supabase-js';
 import { and, desc, eq, ilike, inArray, isNotNull, isNull, or, sql } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
@@ -9,6 +10,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 
 import { AdminDataTable } from '../_components/AdminDataTable';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
+import { loadUsersEmailMap } from '../_lib/users-email-map';
 import { DeletePostAdminButton } from '../users/_components/DeletePostAdminButton';
 
 const searchParamsCache = createSearchParamsCache({
@@ -49,6 +51,10 @@ export default async function AdminTopicPostsPage({
 
   // If user filter is set, find matching user IDs from profiles and email
   let filteredUserIds: string[] | null = null;
+  // Cache the auth user list fetched while resolving the user filter so the
+  // later email-map step can reuse it instead of paying for a second
+  // identical `listUsers` round-trip in the same request.
+  let preloadedAuthUsers: User[] | undefined;
   if (userFilter) {
     const matchingProfiles = await db
       .select({ id: profiles.id })
@@ -61,11 +67,12 @@ export default async function AdminTopicPostsPage({
       );
 
     // Also search by email via Supabase admin client
-    const { data: usersData } = await adminClient.auth.admin.listUsers({
+    const listUsersResult = await adminClient.auth.admin.listUsers({
       page: 1,
       perPage: 100,
     });
-    const matchingEmailUserIds = (usersData?.users ?? [])
+    preloadedAuthUsers = listUsersResult.data?.users;
+    const matchingEmailUserIds = (preloadedAuthUsers ?? [])
       .filter((u) => u.email?.toLowerCase().includes(userFilter.toLowerCase()))
       .map((u) => u.id);
 
@@ -115,19 +122,13 @@ export default async function AdminTopicPostsPage({
       : [];
   const profileMap = new Map(authorProfiles.map((p) => [p.id, p]));
 
-  // Fetch emails from Supabase Auth
-  const emailMap = new Map<string, string>();
-  if (authorIds.length > 0) {
-    const { data: usersData } = await adminClient.auth.admin.listUsers({
-      page: 1,
-      perPage: 100,
-    });
-    for (const u of usersData?.users ?? []) {
-      if (u.email) {
-        emailMap.set(u.id, u.email);
-      }
-    }
-  }
+  // Fetch emails from Supabase Auth. Reuses the user list already fetched
+  // above (when a user filter was active) to avoid a second identical Auth
+  // round-trip in the same request.
+  const emailMap = await loadUsersEmailMap(authorIds, {
+    adminClient,
+    preloadedUsers: preloadedAuthUsers,
+  });
 
   // Fetch distinct topic types for filter dropdown
   const topicTypes = await db.selectDistinct({ topicType: topicPosts.topicType }).from(topicPosts);

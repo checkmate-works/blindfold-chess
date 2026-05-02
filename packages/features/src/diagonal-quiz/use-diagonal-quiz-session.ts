@@ -4,8 +4,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useTimedSession } from "../practice-session/use-timed-session";
 import { FEEDBACK_FLASH_MS } from "../common/flash-policy";
+import { computePracticeResult } from "../common/practice-result";
+import { generateSquareSequence } from "../common/utils";
 import {
-  generateSquareSequence,
+  EXCLUDED_QUIZ_SQUARES,
   getDiagonals,
   isValidDiagonalAnswer,
   normalizeDiagonal,
@@ -46,7 +48,9 @@ export function useDiagonalQuizSession({
   onAnswerEffect,
   mistakeAllowance,
 }: UseDiagonalQuizSessionConfig): UseDiagonalQuizSessionReturn {
-  const squaresRef = useRef<string[]>(generateSquareSequence(200));
+  const squaresRef = useRef<string[]>(
+    generateSquareSequence(200, Math.random, EXCLUDED_QUIZ_SQUARES),
+  );
   const indexRef = useRef(0);
   const questionTimesRef = useRef<number[]>([]);
   // per-question timing — useTimedSession tracks session-wide elapsed time only
@@ -74,7 +78,7 @@ export function useDiagonalQuizSession({
     if (indexRef.current >= squaresRef.current.length - 10) {
       squaresRef.current = [
         ...squaresRef.current,
-        ...generateSquareSequence(100),
+        ...generateSquareSequence(100, Math.random, EXCLUDED_QUIZ_SQUARES),
       ];
     }
     return squaresRef.current[indexRef.current];
@@ -106,20 +110,13 @@ export function useDiagonalQuizSession({
   useEffect(() => {
     if (!isFinished) return;
 
-    const total = correctCount + incorrectCount;
-    const accuracy = total > 0 ? (correctCount / total) * 100 : 0;
-    const times = questionTimesRef.current;
-    const averageTime =
-      times.length > 0 ? times.reduce((a, b) => a + b, 0) / times.length : 0;
-
-    const result: DiagonalQuizResult = {
-      correctAnswers: correctCount,
-      incorrectAnswers: incorrectCount,
-      totalQuestions: total,
-      accuracy,
-      timeTaken: Math.min(timeElapsed, timeLimit),
-      averageTime,
-    };
+    const result: DiagonalQuizResult = computePracticeResult(
+      correctCount,
+      incorrectCount,
+      timeElapsed,
+      timeLimit,
+      questionTimesRef.current,
+    );
 
     onCompleteRef.current?.(result);
   }, [isFinished, correctCount, incorrectCount, timeElapsed, timeLimit]);

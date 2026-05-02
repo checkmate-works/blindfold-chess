@@ -53,7 +53,7 @@ vi.mock('@/app/[locale]/(public)/topics/_components/LikeButton', () => ({
   LikeButton: () => <div data-testid="like-button" />,
 }));
 
-vi.mock('@/app/[locale]/(public)/topics/_components/UserAvatar', () => ({
+vi.mock('@/app/[locale]/_components/UserAvatar', () => ({
   UserAvatar: () => <div data-testid="user-avatar" />,
 }));
 

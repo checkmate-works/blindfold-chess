@@ -1,14 +1,13 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
-
-import { useRouter } from 'next/navigation';
+import { useCallback, useMemo } from 'react';
 
 import { useDiagonalQuizSession } from '@blindfold-chess/features/diagonal-quiz/client';
 
 import { MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
 import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-challenge-result-save';
+import { useQuitConfirm } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-quit-confirm';
 import { saveDiagonalQuizResult } from '@/app/[locale]/(public)/practice/(challenge)/diagonal-quiz/_actions/save-result';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
@@ -22,8 +21,6 @@ type Props = {
 };
 
 export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props) {
-  const router = useRouter();
-
   const {
     currentSquare,
     timeRemaining,
@@ -45,21 +42,12 @@ export default function DiagonalQuizSession({ locale, initialTimeLimit }: Props)
 
   useScrollToElement('diagonal-quiz-session');
 
-  const [showQuitModal, setShowQuitModal] = useState(false);
-
-  const handleQuitRequest = useCallback(() => {
-    if (!isPaused) togglePause();
-    setShowQuitModal(true);
-  }, [isPaused, togglePause]);
-
-  const handleQuitConfirm = useCallback(() => {
-    router.push(`/${locale}/practice/diagonal-quiz/challenge`);
-  }, [router, locale]);
-
-  const handleQuitCancel = useCallback(() => {
-    setShowQuitModal(false);
-    if (isPaused) togglePause();
-  }, [isPaused, togglePause]);
+  const { showQuitModal, handleQuitRequest, handleQuitConfirm, handleQuitCancel } = useQuitConfirm({
+    locale,
+    moduleSlug: 'diagonal-quiz',
+    isPaused,
+    togglePause,
+  });
 
   // Save result and redirect on finish
   const resultUrl = useMemo(() => {

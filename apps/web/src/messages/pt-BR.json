@@ -941,6 +941,9 @@
         "descriptionSection": "Descrição da Posição",
         "solveSection": "Resolver o Problema",
         "start": "Iniciar",
+        "displayMode": "Modo de Exibição",
+        "displayModeBoard": "Tabuleiro",
+        "displayModeText": "Texto",
         "timeLimit": "Limite de Tempo",
         "seconds": "{count, plural, one {# segundo} other {# segundos}}",
         "createdBy": "Criado por",
@@ -1914,7 +1917,12 @@
       "welcomeGreeting": "Olá, {name}!",
       "welcomeDefaultName": "Jogador",
       "viewMypage": "Minha Página",
-      "viewHome": "Início"
+      "viewHome": "Início",
+      "dailyPuzzleTitle": "Puzzle do Dia",
+      "dailyPuzzleAction": "Resolver",
+      "announcements": "Avisos",
+      "articles": "Artigos e Guias",
+      "viewAll": "Ver tudo"
     }
   },
   "AuthStatusDisplay": {

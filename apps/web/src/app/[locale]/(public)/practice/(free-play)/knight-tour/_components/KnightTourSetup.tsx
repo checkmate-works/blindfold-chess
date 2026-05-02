@@ -6,12 +6,11 @@ import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { generateRandomSquare as getRandomSquare } from '@blindfold-chess/features/common';
 import { FaPlay } from 'react-icons/fa';
 
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
-
-import { getRandomSquare } from '../_lib/utils';
 
 type Props = {
   startingSquare: string;

@@ -2,14 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { useRouter } from 'next/navigation';
-
 import { useCoordinateQuizSession } from '@blindfold-chess/features/coordinate-quiz/client';
 import type { Square } from '@blindfold-chess/types';
 
 import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
 import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-challenge-result-save';
+import { useQuitConfirm } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-quit-confirm';
 import { saveCoordinateQuizResult } from '@/app/[locale]/(public)/practice/(challenge)/coordinate-quiz/_actions/save-result';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
@@ -29,8 +28,6 @@ export default function CoordinateQuizChallenge({
   initialBoardOrientation,
   initialFeedbackSpeed,
 }: Props) {
-  const router = useRouter();
-
   const boardOrientation = initialBoardOrientation as BoardOrientation;
   const feedbackSpeed = initialFeedbackSpeed as FeedbackSpeed;
 
@@ -58,21 +55,12 @@ export default function CoordinateQuizChallenge({
 
   useScrollToElement('quiz-session', !!currentQuestion);
 
-  const [showQuitModal, setShowQuitModal] = useState(false);
-
-  const handleQuitRequest = useCallback(() => {
-    if (!isPaused) togglePause();
-    setShowQuitModal(true);
-  }, [isPaused, togglePause]);
-
-  const handleQuitConfirm = useCallback(() => {
-    router.push(`/${locale}/practice/coordinate-quiz/challenge`);
-  }, [router, locale]);
-
-  const handleQuitCancel = useCallback(() => {
-    setShowQuitModal(false);
-    if (isPaused) togglePause();
-  }, [isPaused, togglePause]);
+  const { showQuitModal, handleQuitRequest, handleQuitConfirm, handleQuitCancel } = useQuitConfirm({
+    locale,
+    moduleSlug: 'coordinate-quiz',
+    isPaused,
+    togglePause,
+  });
 
   // Clear lastClickedSquare when feedback ends
   useEffect(() => {

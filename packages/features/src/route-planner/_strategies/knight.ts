@@ -1,6 +1,5 @@
-import { KNIGHT_OFFSETS } from "../../common";
+import { getMovesForPiece } from "../../common";
 
-import { getValidMove } from "./helpers";
 import type { RoutePlannerStrategy } from "./types";
 
 /**
@@ -10,7 +9,7 @@ import type { RoutePlannerStrategy } from "./types";
  */
 export const KnightRouteStrategy: RoutePlannerStrategy = {
   getMoves(f, r) {
-    return KNIGHT_OFFSETS.flatMap((d) => getValidMove(f + d[0], r + d[1]));
+    return getMovesForPiece("n", f, r);
   },
   meetsConstraint(pathLength) {
     return pathLength >= 3 && pathLength <= 4;

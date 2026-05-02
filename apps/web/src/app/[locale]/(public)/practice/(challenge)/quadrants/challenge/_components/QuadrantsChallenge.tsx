@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -17,6 +17,7 @@ import {
 
 import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
+import { useQuitConfirm } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-quit-confirm';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -73,21 +74,12 @@ export default function QuadrantsChallenge({ locale, orientation }: Props) {
 
   useScrollToElement('quadrants-challenge');
 
-  const [showQuitModal, setShowQuitModal] = useState(false);
-
-  const handleQuitRequest = useCallback(() => {
-    if (!isPaused) togglePause();
-    setShowQuitModal(true);
-  }, [isPaused, togglePause]);
-
-  const handleQuitConfirm = useCallback(() => {
-    router.push(`/${locale}/practice/quadrants/challenge`);
-  }, [router, locale]);
-
-  const handleQuitCancel = useCallback(() => {
-    setShowQuitModal(false);
-    if (isPaused) togglePause();
-  }, [isPaused, togglePause]);
+  const { showQuitModal, handleQuitRequest, handleQuitConfirm, handleQuitCancel } = useQuitConfirm({
+    locale,
+    moduleSlug: 'quadrants',
+    isPaused,
+    togglePause,
+  });
 
   const handleQuadrantAnswer = useCallback(
     (selectedQuadrant: QuadrantId) => {
