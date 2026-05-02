@@ -1045,7 +1045,10 @@
         "backToList": "Volver a Puzzles",
         "tryAgain": "Intentar de Nuevo",
         "viewResult": "Ver Resultado",
-        "peekCount": "Vistas del Tablero: {count}"
+        "peekCount": "Vistas del Tablero: {count}",
+        "statusSolved": "Resuelto",
+        "statusPartial": "{correct}/{total} resueltos",
+        "statusRevealed": "Solución revelada"
       },
       "session": {
         "title": "Resolver",

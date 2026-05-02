@@ -7,6 +7,7 @@ export const MODULE_WEIGHT: Record<string, number> = {
   board_symmetry: 2.5,
   route_planner: 15,
   position_memory: 5,
+  puzzle: 12,
 };
 
 // Default weight (applied for unknown menuType)

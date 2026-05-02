@@ -85,6 +85,14 @@ const DEFAULT_PREFS: Preferences = {
 
 let currentPreferences: Preferences = { ...DEFAULT_PREFS };
 
+// Mock the EXP-grant Server Action so the session component does not attempt
+// to call into server-only modules (auth, db) from a jsdom test. Default to
+// `{ success: true }` (no expEventId) — these peek tests do not assert on the
+// post-solve grant URL, so the simplest stub is fine.
+vi.mock('../../_actions/savePuzzleResult', () => ({
+  savePuzzleResult: vi.fn().mockResolvedValue({ success: true }),
+}));
+
 vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
   useGamePreferences: () => ({
     preferences: currentPreferences,
