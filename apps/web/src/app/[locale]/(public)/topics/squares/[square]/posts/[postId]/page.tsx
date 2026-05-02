@@ -59,7 +59,10 @@ export default async function PostDetailPage({ params }: Props) {
     notFound();
   }
 
-  const { user, replies, likeMeta, isAuthor, canReply } = await fetchPostDetailData(postId, post);
+  const { user, rootWithMeta, replies, isAuthor, canReply } = await fetchPostDetailData(
+    postId,
+    post
+  );
 
   const t = await getTranslations({ locale, namespace: 'topics' });
 
@@ -80,11 +83,10 @@ export default async function PostDetailPage({ params }: Props) {
         href: `/topics/squares/${square}`,
         label: t('squares.postDetail.backToSquare', { square }),
       }}
-      post={post}
+      rootWithMeta={rootWithMeta}
+      replies={replies}
       user={user}
       topicKey={square}
-      likeMeta={likeMeta}
-      replies={replies}
       canReply={canReply}
       replyRestrictionMessage={replyRestrictionMessage}
       toggleLikeAction={toggleLike}
@@ -95,10 +97,6 @@ export default async function PostDetailPage({ params }: Props) {
         likeNamespace: 'topics.squares',
         deleteNamespace: 'topics.squares.deletePost',
         replyNamespace: 'topics.squares.replies',
-        repliesTitle: t('squares.replies.title'),
-        repliesCount: t('squares.replies.count', { count: replies.length }),
-        noReplies: t('squares.replies.noReplies'),
-        loginToReply: t('squares.replies.loginToReply'),
       }}
       breadcrumbItems={[
         { label: t('title'), href: '/topics' },

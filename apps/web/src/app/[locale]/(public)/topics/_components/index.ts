@@ -11,10 +11,8 @@ export { LikeButton } from './LikeButton';
 export { NewTopicPostLayout } from './NewTopicPostLayout';
 export { PostFooter } from './PostFooter';
 export { ReplyForm } from './ReplyForm';
-export { ReplyList } from './ReplyList';
-export { ReplySection } from './ReplySection';
-export { SortTabs } from './SortTabs';
+export { SortSelect } from './SortSelect';
 export { TopicListPageLayout } from './TopicListPageLayout';
-// TopicPostDetailLayout imports PostDetailContent which imports AdSenseGuard (server-only).
-// Excluded from barrel to prevent server-only modules leaking into client bundles.
+// TopicPostDetailLayout imports AdSenseGuard (server-only). Excluded from
+// barrel to prevent server-only modules leaking into client bundles.
 // Import directly: import { TopicPostDetailLayout } from './TopicPostDetailLayout';

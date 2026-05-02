@@ -3038,6 +3038,7 @@
     "collapseAriaLabel": "スレッドを折りたたむ",
     "expandAriaLabel": "スレッドを展開",
     "replyButton": "返信",
+    "sortByLabel": "並び替え",
     "categories": {
       "squares": {
         "title": "マス目",
@@ -3415,6 +3416,11 @@
       "noPosts": "まだコメントがありません。最初のコメントを投稿してみましょう！",
       "signInToComment": "サインインしてコメントする",
       "readMore": "続きを読む",
+      "sort": {
+        "new": "新着",
+        "popular": "人気",
+        "active": "活発"
+      },
       "detail": {
         "pageTitle": "ポジション記憶コメント"
       },
@@ -3474,6 +3480,11 @@
       "signInToComment": "サインインしてコメントする",
       "commentGuidelineSpoiler": "解法を含むコメントは「解法を含む」にチェックを入れてください。",
       "readMore": "続きを読む",
+      "sort": {
+        "new": "新着",
+        "popular": "人気",
+        "active": "活発"
+      },
       "detail": {
         "pageTitle": "パズルコメント"
       },

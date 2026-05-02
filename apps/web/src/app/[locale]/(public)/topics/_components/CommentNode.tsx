@@ -90,6 +90,13 @@ type Props = {
    * cue).
    */
   replyToDisplayName?: string;
+  /**
+   * Per-root payload rendered between the body and the like/reply row.
+   * Carries topic-specific data attached to the OP — e.g. an opening rating
+   * display, an attached game card. Ignored on every non-root node so deeper
+   * replies stay visually uniform regardless of which page renders them.
+   */
+  extraContent?: React.ReactNode;
 };
 
 export function CommentNode({
@@ -108,6 +115,7 @@ export function CommentNode({
   replyGroups,
   flatReplies,
   replyToDisplayName,
+  extraContent,
 }: Props) {
   const tTopics = useTranslations('topics');
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -207,6 +215,8 @@ export function CommentNode({
                   </button>
                 )}
               </div>
+
+              {isRoot && extraContent}
 
               <div className="flex items-center gap-4">
                 <LikeButton

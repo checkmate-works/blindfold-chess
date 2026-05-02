@@ -2,22 +2,29 @@ import type { User } from '@supabase/supabase-js';
 
 import { createClient } from '@/lib/supabase/server';
 
-import { getLikeMetaForPost } from './like-queries';
 import { canUserReply } from './permissions';
+import { attachPostMeta } from './post-meta';
 import { getRepliesByPostId } from './queries';
-import type { LikeMeta, PostWithReplyMeta, TopicPostWithAuthor } from './shared';
+import type { PostWithReplyMeta, TopicPostWithAuthor } from './shared';
 
 export type PostDetailData = {
   user: User | null;
+  /**
+   * The OP enriched with `likeMeta` + `replyMeta` so it can be fed into
+   * `buildCommentTree` alongside its replies and rendered as the single
+   * root of a `CommentNode` thread (matches puzzle / position-memory).
+   */
+  rootWithMeta: PostWithReplyMeta;
   replies: PostWithReplyMeta[];
-  likeMeta: LikeMeta;
   isAuthor: boolean;
   canReply: boolean;
 };
 
 /**
- * Fetch shared data needed by both opening and square post detail pages.
- * Handles auth, replies, likes, and reply permission in one call.
+ * Fetch shared data needed by every topic post detail page (openings,
+ * squares, chunks). Returns the OP with full meta + all descendants in one
+ * call so the page can build a single-root `CommentTreeNode` and render via
+ * `CommentNode`.
  */
 export async function fetchPostDetailData(
   postId: string,
@@ -28,9 +35,9 @@ export async function fetchPostDetailData(
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [replies, likeMeta] = await Promise.all([
+  const [replies, [rootWithMeta]] = await Promise.all([
     getRepliesByPostId(postId, user?.id),
-    getLikeMetaForPost(postId, user?.id),
+    attachPostMeta([post], user?.id),
   ]);
 
   const isAuthor = user?.id === post.userId;
@@ -40,5 +47,5 @@ export async function fetchPostDetailData(
     replyPermission: post.replyPermission,
   });
 
-  return { user, replies, likeMeta, isAuthor, canReply };
+  return { user, rootWithMeta, replies, isAuthor, canReply };
 }

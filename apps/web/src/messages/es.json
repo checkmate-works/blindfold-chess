@@ -3038,6 +3038,7 @@
     "collapseAriaLabel": "Contraer hilo",
     "expandAriaLabel": "Expandir hilo",
     "replyButton": "Responder",
+    "sortByLabel": "Ordenar por",
     "categories": {
       "squares": {
         "title": "Casillas",
@@ -3415,6 +3416,11 @@
       "noPosts": "Aún no hay comentarios. ¡Sé el primero en compartir tus ideas!",
       "signInToComment": "Inicia sesión para comentar",
       "readMore": "Leer más",
+      "sort": {
+        "new": "Nuevos",
+        "popular": "Populares",
+        "active": "Activos"
+      },
       "detail": {
         "pageTitle": "Comentario sobre Memoria de Posición"
       },
@@ -3474,6 +3480,11 @@
       "signInToComment": "Inicia sesión para comentar",
       "commentGuidelineSpoiler": "Si tu comentario revela la solución, marca \"Contiene la solución\".",
       "readMore": "Leer más",
+      "sort": {
+        "new": "Nuevos",
+        "popular": "Populares",
+        "active": "Activos"
+      },
       "detail": {
         "pageTitle": "Comentario sobre Puzzle"
       },

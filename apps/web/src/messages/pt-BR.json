@@ -3038,6 +3038,7 @@
     "collapseAriaLabel": "Recolher linha",
     "expandAriaLabel": "Expandir linha",
     "replyButton": "Responder",
+    "sortByLabel": "Ordenar por",
     "categories": {
       "squares": {
         "title": "Casas",
@@ -3415,6 +3416,11 @@
       "noPosts": "Ainda não há comentários. Seja o primeiro a compartilhar suas ideias!",
       "signInToComment": "Entre para comentar",
       "readMore": "Ler mais",
+      "sort": {
+        "new": "Novos",
+        "popular": "Populares",
+        "active": "Ativos"
+      },
       "detail": {
         "pageTitle": "Comentário sobre Memória de Posição"
       },
@@ -3474,6 +3480,11 @@
       "signInToComment": "Entre para comentar",
       "commentGuidelineSpoiler": "Se o seu comentário revelar a solução, marque \"Contém a solução\".",
       "readMore": "Ler mais",
+      "sort": {
+        "new": "Novos",
+        "popular": "Populares",
+        "active": "Ativos"
+      },
       "detail": {
         "pageTitle": "Comentário sobre Puzzle"
       },

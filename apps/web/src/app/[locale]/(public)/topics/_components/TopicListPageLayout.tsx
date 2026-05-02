@@ -31,8 +31,8 @@ type Props = {
     href: string;
     label: string;
   };
-  /** Sort tabs component */
-  sortTabs: ReactNode;
+  /** Sort switcher rendered between the post-count line and the post list */
+  sortSelect: ReactNode;
   /** Rendered post cards */
   postCards: ReactNode;
   /** Text shown when there are no posts */
@@ -58,7 +58,7 @@ export function TopicListPageLayout({
   adBottom,
   postCountText,
   newPostButton,
-  sortTabs,
+  sortSelect,
   postCards,
   noPostsText,
   hasPosts,
@@ -88,7 +88,7 @@ export function TopicListPageLayout({
           )}
         </div>
 
-        {sortTabs}
+        {sortSelect}
 
         {hasPosts ? (
           <div className="space-y-3">{postCards}</div>

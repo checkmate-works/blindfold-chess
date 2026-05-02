@@ -1,16 +1,20 @@
 import type { ReactNode } from 'react';
 
+import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE, IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
 import type { User } from '@supabase/supabase-js';
 
+import type { ActionResult } from '@/lib/action-types';
+
 import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import type { BreadcrumbItem } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import type { LikeMeta, PostWithReplyMeta, TopicPostWithAuthor } from '../_lib/shared';
-import type { PostDetailI18n } from './PostDetailContent';
-import { PostDetailContent } from './PostDetailContent';
+import { buildCommentTree, groupReplies } from '../_lib/comment-tree';
+import type { PostWithReplyMeta } from '../_lib/shared';
+import { CommentNode } from './CommentNode';
 
 type CreateReplyState = { error?: string };
 
@@ -20,10 +24,7 @@ type ToggleLikeAction = (
   topicKey: string
 ) => Promise<{ liked: boolean; likeCount: number } | { error: string }>;
 
-type DeletePostAction = (
-  postId: string,
-  locale: string
-) => Promise<{ success: true } | { error: string }>;
+type DeletePostAction = (postId: string, locale: string) => Promise<ActionResult>;
 
 type CreateReplyAction = (
   locale: string,
@@ -37,45 +38,66 @@ type Props = {
   locale: Locale;
   pageTitle: string;
   sectionTitle: string;
-  /** Topic-specific visual (board component) */
+  /** Topic-specific visual rendered above the comment thread (board component, etc.) */
   topicVisual: ReactNode;
-  /** Back link config */
   backLink: {
     href: string;
     label: string;
   };
-  /** Post detail content props */
-  post: TopicPostWithAuthor;
+  /** OP enriched with reply / like meta. Becomes the single root of the comment tree. */
+  rootWithMeta: PostWithReplyMeta;
+  /** All descendants of the OP (every level, flat). Fed to `buildCommentTree`. */
+  replies: PostWithReplyMeta[];
   user: User | null;
   topicKey: string;
-  likeMeta: LikeMeta;
-  replies: PostWithReplyMeta[];
+  /**
+   * Whether the *current user* may post replies in this thread (derived from
+   * the OP's `replyPermission`). Forwarded to every node so the inline
+   * Reply button only appears when authorized.
+   */
   canReply: boolean;
+  /**
+   * Human-readable explanation shown when `canReply` is false because of a
+   * follower-only / nobody restriction (rather than because the user is
+   * signed out). Rendered below the thread.
+   */
   replyRestrictionMessage: string | null;
   toggleLikeAction: ToggleLikeAction;
   deletePostAction: DeletePostAction;
   createReplyAction: CreateReplyAction;
   redirectPath: string;
-  i18n: PostDetailI18n;
-  /** Extra content rendered inside PostDetailContent (e.g., rating display) */
+  i18n: {
+    likeNamespace: string;
+    replyNamespace: string;
+    deleteNamespace: string;
+  };
+  /** Per-OP payload (rating display, attached game card) rendered inside the root node. */
   extraContent?: ReactNode;
-  /** Breadcrumb items */
+  /**
+   * Forwarded to `CommentNode`. Currently only `position_puzzle` flips this
+   * on; topic post detail pages keep replies fully visible.
+   */
+  enableSpoiler?: boolean;
   breadcrumbItems: BreadcrumbItem[];
-  /** Forwarded to `PostDetailContent` to enable per-reply spoiler treatment. */
-  enableReplySpoiler?: boolean;
 };
 
+/**
+ * Page-level layout for `/topics/<family>/<key>/posts/<postId>` and
+ * `/chunks/<slug>/posts/<postId>`. Renders the OP and every descendant as
+ * a single-root `CommentNode` tree so the visual treatment matches the
+ * puzzle / position-memory threads (Reddit-style nested replies, inline
+ * reply form per node, optional spoiler overlay).
+ */
 export function TopicPostDetailLayout({
   locale,
   pageTitle,
   sectionTitle,
   topicVisual,
   backLink,
-  post,
+  rootWithMeta,
+  replies,
   user,
   topicKey,
-  likeMeta,
-  replies,
   canReply,
   replyRestrictionMessage,
   toggleLikeAction,
@@ -84,9 +106,11 @@ export function TopicPostDetailLayout({
   redirectPath,
   i18n,
   extraContent,
+  enableSpoiler = false,
   breadcrumbItems,
-  enableReplySpoiler = false,
 }: Props) {
+  const [root] = buildCommentTree([rootWithMeta, ...replies], 'new');
+
   return (
     <div className="space-y-8">
       <PageTitle>{pageTitle}</PageTitle>
@@ -106,23 +130,34 @@ export function TopicPostDetailLayout({
           </Link>
         </div>
 
-        <PostDetailContent
-          post={post}
-          user={user}
+        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE) && (
+          <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
+        )}
+
+        <CommentNode
+          node={root}
+          rootPostId={root.id}
+          replyGroups={groupReplies(root)}
           locale={locale}
           topicKey={topicKey}
-          likeMeta={likeMeta}
-          replies={replies}
+          currentUserId={user?.id}
           canReply={canReply}
-          replyRestrictionMessage={replyRestrictionMessage}
-          toggleLikeAction={toggleLikeAction}
-          deletePostAction={deletePostAction}
-          createReplyAction={createReplyAction}
+          enableSpoiler={enableSpoiler}
           redirectPath={redirectPath}
+          toggleLikeAction={toggleLikeAction}
+          createReplyAction={createReplyAction}
+          deletePostAction={deletePostAction}
           i18n={i18n}
           extraContent={extraContent}
-          enableReplySpoiler={enableReplySpoiler}
         />
+
+        {replyRestrictionMessage && (
+          <p className="text-xs text-muted-foreground/60 italic">{replyRestrictionMessage}</p>
+        )}
+
+        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+        )}
 
         <Breadcrumb items={breadcrumbItems} locale={locale} />
       </PagePanel>

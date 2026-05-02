@@ -9,6 +9,7 @@ import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/ser
 import { getPaginationParams } from '@/lib/pagination';
 import { createClient } from '@/lib/supabase/server';
 
+import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
 import { TopicListPageLayout } from '@/app/[locale]/(public)/topics/_components/TopicListPageLayout';
 import {
   TOPIC_PAGE_SIZE,
@@ -24,7 +25,6 @@ import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { SortTabs } from '../_components';
 import { getPostCountForSquare, getPostsWithReplyMetaPaginated } from '../_lib/queries';
 import { isValidSquare } from '../_lib/squares';
 import { PostCard, SquareHighlightBoard } from './_components';
@@ -147,7 +147,13 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
       }
       postCountText={t('squares.postCount', { count: totalCount })}
       newPostButton={{ href: `/topics/squares/${square}/new`, label: t('squares.newPost') }}
-      sortTabs={<SortTabs square={square} locale={locale} />}
+      sortSelect={
+        <SortSelect
+          basePath={`/topics/squares/${square}`}
+          translationKey="topics.squares.sort"
+          currentSort={sortBy}
+        />
+      }
       hasPosts={posts.length > 0}
       noPostsText={t('squares.noPosts')}
       postCards={posts.map((post) => (

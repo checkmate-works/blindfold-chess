@@ -65,7 +65,10 @@ export default async function OpeningPostDetailPage({ params }: Props) {
     notFound();
   }
 
-  const { user, replies, likeMeta, isAuthor, canReply } = await fetchPostDetailData(postId, post);
+  const { user, rootWithMeta, replies, isAuthor, canReply } = await fetchPostDetailData(
+    postId,
+    post
+  );
 
   const t = await getTranslations({ locale, namespace: 'topics' });
   const dt = await getTranslations({ locale, namespace: 'topics.openings' });
@@ -90,11 +93,10 @@ export default async function OpeningPostDetailPage({ params }: Props) {
         href: `/topics/openings/${slug}`,
         label: dt('postDetail.backToOpening', { name: displayName }),
       }}
-      post={post}
+      rootWithMeta={rootWithMeta}
+      replies={replies}
       user={user}
       topicKey={slug}
-      likeMeta={likeMeta}
-      replies={replies}
       canReply={canReply}
       replyRestrictionMessage={replyRestrictionMessage}
       toggleLikeAction={toggleLike}
@@ -105,10 +107,6 @@ export default async function OpeningPostDetailPage({ params }: Props) {
         likeNamespace: 'topics.openings.postDetail',
         deleteNamespace: 'topics.openings.deletePost',
         replyNamespace: 'topics.openings.replies',
-        repliesTitle: dt('replies.title'),
-        repliesCount: dt('replies.count', { count: replies.length }),
-        noReplies: dt('replies.noReplies'),
-        loginToReply: dt('replies.loginToReply'),
       }}
       extraContent={
         post.rating ? (

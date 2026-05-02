@@ -9,6 +9,7 @@ import { paginateItems } from '@/lib/pagination';
 import { createOpeningPostRateLimit, isRateLimited } from '@/lib/security/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
+import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
 import { TopicListPageLayout } from '@/app/[locale]/(public)/topics/_components/TopicListPageLayout';
 import {
   TOPIC_PAGE_SIZE,
@@ -19,7 +20,6 @@ import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { OpeningSortTabs } from '../_components';
 import { OpeningBoardWithMoves } from '../_components/OpeningBoardWithMoves';
 import { getOpeningDisplayName } from '../_lib/get-opening-display-name';
 import { getOpeningBySlug, getOpeningPostsWithReplyMeta } from '../_lib/queries';
@@ -128,7 +128,13 @@ export default async function OpeningDetailPage({ params, searchParams }: Props)
           ? { href: `/topics/openings/${slug}/new`, label: dt('newPost') }
           : undefined
       }
-      sortTabs={<OpeningSortTabs slug={slug} locale={locale} />}
+      sortSelect={
+        <SortSelect
+          basePath={`/topics/openings/${slug}`}
+          translationKey="topics.openings.sort"
+          currentSort={sortBy}
+        />
+      }
       hasPosts={posts.length > 0}
       noPostsText={dt('noPosts')}
       postCards={posts.map((post) => (

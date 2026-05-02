@@ -63,7 +63,10 @@ export default async function ChunkPostDetailPage({ params }: Props) {
     notFound();
   }
 
-  const { user, replies, likeMeta, isAuthor, canReply } = await fetchPostDetailData(postId, post);
+  const { user, rootWithMeta, replies, isAuthor, canReply } = await fetchPostDetailData(
+    postId,
+    post
+  );
 
   const attachments = await getAttachmentsForPosts([postId]);
   const attachment = attachments.get(postId) ?? null;
@@ -91,11 +94,10 @@ export default async function ChunkPostDetailPage({ params }: Props) {
         href: `/chunks/${slug}`,
         label: ct('postDetail.backToChunk', { name: chunk.title }),
       }}
-      post={post}
+      rootWithMeta={rootWithMeta}
+      replies={replies}
       user={user}
       topicKey={slug}
-      likeMeta={likeMeta}
-      replies={replies}
       canReply={canReply}
       replyRestrictionMessage={replyRestrictionMessage}
       toggleLikeAction={toggleLike}
@@ -106,10 +108,6 @@ export default async function ChunkPostDetailPage({ params }: Props) {
         likeNamespace: 'topics.chunks',
         deleteNamespace: 'topics.chunks.deletePost',
         replyNamespace: 'topics.chunks.replies',
-        repliesTitle: ct('replies.title'),
-        repliesCount: ct('replies.count', { count: replies.length }),
-        noReplies: ct('replies.noReplies'),
-        loginToReply: ct('replies.loginToReply'),
       }}
       breadcrumbItems={[
         { label: 'Chunks', href: '/chunks' },

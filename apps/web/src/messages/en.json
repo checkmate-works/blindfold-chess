@@ -3038,6 +3038,7 @@
     "collapseAriaLabel": "Collapse thread",
     "expandAriaLabel": "Expand thread",
     "replyButton": "Reply",
+    "sortByLabel": "Sort by",
     "categories": {
       "squares": {
         "title": "Squares",
@@ -3415,6 +3416,11 @@
       "noPosts": "No comments yet. Be the first to share your thoughts!",
       "signInToComment": "Sign in to comment",
       "readMore": "Read more",
+      "sort": {
+        "new": "New",
+        "popular": "Popular",
+        "active": "Active"
+      },
       "detail": {
         "pageTitle": "Position Memory Comment"
       },
@@ -3474,6 +3480,11 @@
       "signInToComment": "Sign in to comment",
       "commentGuidelineSpoiler": "If your comment reveals the solution, please tick \"Contains solution\".",
       "readMore": "Read more",
+      "sort": {
+        "new": "New",
+        "popular": "Popular",
+        "active": "Active"
+      },
       "detail": {
         "pageTitle": "Puzzle Comment"
       },

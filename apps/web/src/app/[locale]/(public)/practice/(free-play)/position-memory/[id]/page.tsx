@@ -17,7 +17,9 @@ import { resolveDisplayName } from '@/lib/users/display-name';
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
 import { CommentTree } from '@/app/[locale]/(public)/topics/_components/CommentTree';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
+import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
 import { buildCommentTree } from '@/app/[locale]/(public)/topics/_lib/comment-tree';
+import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import {
   getCommentTreeForTopic,
   getPostCountByTopicKey,
@@ -46,6 +48,7 @@ type Props = {
     locale: Locale;
     id: string;
   }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -69,8 +72,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function PositionDetailPage({ params }: Props) {
+export default async function PositionDetailPage({ params, searchParams }: Props) {
   const { locale, id } = await params;
+  const sortBy = validateSort(((await searchParams).sort as string | undefined) ?? 'new');
   const t = await getTranslations({ locale, namespace: 'practice.positionMemory' });
   const tComments = await getTranslations({ locale, namespace: 'topics.positionMemory' });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
@@ -94,7 +98,7 @@ export default async function PositionDetailPage({ params }: Props) {
     getCommentTreeForTopic('position_memory', position.id, currentUser?.id),
   ]);
 
-  const commentTree = buildCommentTree(allComments, 'new');
+  const commentTree = buildCommentTree(allComments, sortBy);
 
   return (
     <PositionDetailLayout
@@ -186,22 +190,29 @@ export default async function PositionDetailPage({ params }: Props) {
       )}
 
       {commentTree.length > 0 ? (
-        <CommentTree
-          comments={commentTree}
-          locale={locale}
-          topicKey={position.id}
-          currentUserId={currentUser?.id}
-          enableSpoiler={false}
-          redirectPath={`/${locale}/practice/position-memory/${position.id}`}
-          toggleLikeAction={togglePositionMemoryPostLike}
-          createReplyAction={createReply}
-          deletePostAction={deletePost}
-          i18n={{
-            likeNamespace: 'topics.positionMemory',
-            replyNamespace: 'topics.positionMemory.replies',
-            deleteNamespace: 'topics.positionMemory.deletePost',
-          }}
-        />
+        <>
+          <SortSelect
+            basePath={`/practice/position-memory/${position.id}`}
+            translationKey="topics.positionMemory.sort"
+            currentSort={sortBy}
+          />
+          <CommentTree
+            comments={commentTree}
+            locale={locale}
+            topicKey={position.id}
+            currentUserId={currentUser?.id}
+            enableSpoiler={false}
+            redirectPath={`/${locale}/practice/position-memory/${position.id}`}
+            toggleLikeAction={togglePositionMemoryPostLike}
+            createReplyAction={createReply}
+            deletePostAction={deletePost}
+            i18n={{
+              likeNamespace: 'topics.positionMemory',
+              replyNamespace: 'topics.positionMemory.replies',
+              deleteNamespace: 'topics.positionMemory.deletePost',
+            }}
+          />
+        </>
       ) : (
         <p className="text-muted-foreground text-center py-8">{tComments('noPosts')}</p>
       )}
