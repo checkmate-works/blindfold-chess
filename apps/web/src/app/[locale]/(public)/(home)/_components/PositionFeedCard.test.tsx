@@ -77,6 +77,12 @@ function createPositionFeedData(overrides: Partial<PositionFeedData> = {}): Posi
       likeCount: 0,
       likedByMe: false,
     },
+    replyMeta: {
+      replyCount: 0,
+      latestReplyAt: null,
+      repliers: [],
+      uniqueReplierCount: 0,
+    },
     ...overrides,
   };
 }
@@ -138,8 +144,14 @@ describe('PositionFeedCard', () => {
       />
     );
 
-    const link = screen.getByRole('link');
-    expect(link).toHaveAttribute('href', '/practice/position-memory/mem-1');
+    // Multiple links resolve to the detail page now: the permalink anchor
+    // on the timestamp and PostFooter's reply-icon affordance both point
+    // there. Asserting "at least one" avoids brittleness as the footer
+    // grows more affordances.
+    const links = screen.getAllByRole('link');
+    expect(links.some((l) => l.getAttribute('href') === '/practice/position-memory/mem-1')).toBe(
+      true
+    );
   });
 
   it('routes puzzle-type positions to the puzzle detail page', () => {
@@ -154,8 +166,8 @@ describe('PositionFeedCard', () => {
       />
     );
 
-    const link = screen.getByRole('link');
-    expect(link).toHaveAttribute('href', '/practice/puzzle/puz-1');
+    const links = screen.getAllByRole('link');
+    expect(links.some((l) => l.getAttribute('href') === '/practice/puzzle/puz-1')).toBe(true);
   });
 
   it('renders sequence-type positions without a permalink (no detail page implemented)', () => {

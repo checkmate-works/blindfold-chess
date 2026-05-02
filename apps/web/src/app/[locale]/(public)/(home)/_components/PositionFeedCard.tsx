@@ -10,7 +10,7 @@ import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
 import { resolveDisplayName } from '@/lib/users/display-name';
 
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_actions/toggleLike';
-import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
+import { PostFooter } from '@/app/[locale]/(public)/topics/_components/PostFooter';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
@@ -79,17 +79,20 @@ export const PositionFeedCard = memo(function PositionFeedCard({
         )
       }
       footer={
-        <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border">
-          <LikeButton
+        href ? (
+          <PostFooter
             postId={data.id}
             locale={locale}
-            topicKey=""
-            initialLikeCount={data.likeMeta.likeCount}
-            initialLikedByMe={data.likeMeta.likedByMe}
+            topicKey={data.id}
+            likeMeta={data.likeMeta}
+            replyMeta={data.replyMeta}
             toggleLikeAction={toggleLike}
-            i18nNamespace="practice.positionMemory"
+            i18nNamespace={
+              data.type === 'puzzle' ? 'practice.puzzle.detail' : 'practice.positionMemory'
+            }
+            postHref={href}
           />
-        </div>
+        ) : undefined
       }
     >
       <p className="text-sm text-foreground mt-1">{tFeed('action')}</p>
