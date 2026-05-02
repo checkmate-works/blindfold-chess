@@ -2241,15 +2241,16 @@
       "statusActive": "Sem anúncios ativo",
       "statusInactive": "Sem anúncios não está ativo no momento",
       "activeUntil": "até {date}",
-      "sourceSubscription": "Da sua assinatura",
-      "sourceGrants": "De benefícios concedidos",
-      "pastBenefits": "Benefícios anteriores",
+      "sourceSubscription": "Assinatura",
       "learnHowToEarn": "Saiba como ganhar benefícios sem anúncios",
       "viewFullHistory": "Ver histórico completo",
       "grantPeriod": "{startDate} – {endDate}",
       "grantStatusActive": "Ativo",
       "grantStatusUpcoming": "Próximo",
-      "grantStatusExpired": "Expirado"
+      "grantStatusExpired": "Expirado",
+      "tableSourceHeader": "Fonte",
+      "tablePeriodHeader": "Período",
+      "tableStatusHeader": "Status"
     },
     "grantTypeLabel": {
       "admin_manual": "Concedido pela equipe",

@@ -6,13 +6,13 @@
  * aggregated across both sources:
  *   - Stripe subscriptions (managed at /mypage/subscription)
  *   - user_grants table (automated UGC bonuses + admin manual grants)
- * Both the aggregate status banner and the detailed "From benefit grants"
- * list read from the same population: non-revoked ad_free grants for the
- * user, regardless of grantType. admin_manual and automated UGC grants
- * (e.g., topic_post) appear together, differentiated only by their
- * per-row grantTypeLabel. This keeps the banner and the list consistent —
- * a user who sees "active" in the banner also sees the contributing
- * grants in the list below.
+ * Both the aggregate status banner and the entitlement table read from the
+ * same population: non-revoked ad_free grants for the user, regardless of
+ * grantType, plus the active subscription (if any). admin_manual and
+ * automated UGC grants (e.g., topic_post) appear together, differentiated
+ * only by their per-row sourceLabel. This keeps the banner and the table
+ * consistent — a user who sees "active" in the banner also sees the
+ * contributing rows in the table below.
  * Guidance on how to earn benefits lives in the FAQ (/faq#ad-free-benefits),
  * linked from this page when ad_free is inactive.
  *
@@ -37,13 +37,14 @@
  * 2. Page queries Stripe subscription status (via existing helper) +
  *    user_grants (benefitType='ad_free', not revoked), computes latest
  *    effective expiresAt across both sources.
- * 3. Renders aggregate status banner, subscription source (if active),
- *    and a grant list filtered by benefitType='ad_free' (latest 5, desc
- *    by startsAt). When >5 grants exist, a "View full history" link
- *    routes to /mypage/benefits/[benefitType] for paginated history
- *    (which also includes revoked grants for audit purposes).
- * 4. On inactive state, displays an FAQ link to /faq#ad-free-benefits
- *    and swaps the grant list title to "Past benefits".
+ * 3. Renders aggregate status banner, then a unified entitlement table:
+ *    one row for the active subscription (if any) + up to 5 most recent
+ *    grants, sorted by startsAt desc. Each row shows source / period /
+ *    status. When >5 grants exist, a "View full history" link routes to
+ *    /mypage/benefits/[benefitType] for paginated history (which also
+ *    includes revoked grants for audit purposes); subscription is not
+ *    counted toward the 5-row cap.
+ * 4. On inactive state, displays an FAQ link to /faq#ad-free-benefits.
  */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
@@ -62,9 +63,17 @@ import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
-type GrantRowStatus = 'active' | 'upcoming' | 'expired';
+type RowStatus = 'active' | 'upcoming' | 'expired';
 
-function classifyGrant(now: Date, startsAt: Date, expiresAt: Date): GrantRowStatus {
+type EntitlementRow = {
+  id: string;
+  sourceLabel: string;
+  startsAt: Date;
+  expiresAt: Date;
+  status: RowStatus;
+};
+
+function classify(now: Date, startsAt: Date, expiresAt: Date): RowStatus {
   if (expiresAt <= now) return 'expired';
   if (startsAt > now) return 'upcoming';
   return 'active';
@@ -105,13 +114,6 @@ export default async function BenefitsPage({ params }: Props) {
 
   const now = new Date();
 
-  // Display all ad_free grants regardless of grantType. The aggregate banner
-  // and the display list share the same population, so admin_manual grants
-  // appear alongside automated UGC grants. Row labels (via grantTypeLabel)
-  // still differentiate the source.
-  const displayGrants = allGrants.slice(0, 5);
-  const hasMoreGrants = allGrants.length > 5;
-
   // Subscription confers ad_free if status is in BENEFIT_ACTIVE_STATUSES
   // and the period has not yet ended.
   const subscriptionActive =
@@ -139,6 +141,60 @@ export default async function BenefitsPage({ params }: Props) {
   const adFreeActive = latestExpiresAt !== null;
 
   const dateFmt = (d: Date) => d.toLocaleDateString(locale);
+
+  // Build a single unified entitlement list across both sources. Subscription
+  // and each grant share the same row shape (sourceLabel / period / status),
+  // which removes the visual asymmetry of the previous two-section layout.
+  // Subscription is only included when active — matching the prior behavior
+  // of the (now-removed) per-source subscription card. Grants are kept
+  // capped at 5 like before; the "View full history" link still routes to
+  // the grant-only audit page, so subscription is not counted toward the cap.
+  const entitlementRows: EntitlementRow[] = [];
+  if (subscriptionActive && subscription && subscriptionExpiresAt) {
+    entitlementRows.push({
+      id: 'subscription',
+      sourceLabel: t('adFree.sourceSubscription'),
+      startsAt: new Date(subscription.currentPeriodStart),
+      expiresAt: subscriptionExpiresAt,
+      status: 'active',
+    });
+  }
+  for (const g of allGrants.slice(0, 5)) {
+    const startsAt = new Date(g.startsAt);
+    const expiresAt = new Date(g.expiresAt);
+    const grantTypeKey: GrantType = isGrantType(g.grantType) ? g.grantType : 'admin_manual';
+    entitlementRows.push({
+      id: g.id,
+      sourceLabel: t(`grantTypeLabel.${grantTypeKey}`),
+      startsAt,
+      expiresAt,
+      status: classify(now, startsAt, expiresAt),
+    });
+  }
+  entitlementRows.sort((a, b) => b.startsAt.getTime() - a.startsAt.getTime());
+  const hasMoreGrants = allGrants.length > 5;
+
+  const statusLabel = (status: RowStatus) => {
+    switch (status) {
+      case 'active':
+        return t('adFree.grantStatusActive');
+      case 'upcoming':
+        return t('adFree.grantStatusUpcoming');
+      case 'expired':
+        return t('adFree.grantStatusExpired');
+    }
+  };
+
+  const statusClass = (status: RowStatus) => {
+    switch (status) {
+      case 'active':
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200';
+      case 'upcoming':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200';
+      case 'expired':
+        return 'bg-muted text-muted-foreground';
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -179,83 +235,59 @@ export default async function BenefitsPage({ params }: Props) {
             )}
           </div>
 
-          {/* Per-source breakdown */}
-          <div className="space-y-4">
-            {/* Subscription source */}
-            {subscriptionActive && subscriptionExpiresAt && (
-              <div className="rounded-xl border border-border bg-card p-6">
-                <h3 className="font-semibold text-foreground">{t('adFree.sourceSubscription')}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {t('adFree.activeUntil', { date: dateFmt(subscriptionExpiresAt) })}
-                </p>
+          {/* Unified entitlement table — subscription + grants in one list,
+              keyed by source. Removes the visual asymmetry of the previous
+              two separate cards (one with text, one with nested cards). */}
+          {entitlementRows.length > 0 && (
+            <div className="rounded-xl border border-border bg-card overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border bg-muted/30 text-left text-xs font-medium text-muted-foreground whitespace-nowrap">
+                      <th className="px-4 py-2 font-medium">{t('adFree.tableSourceHeader')}</th>
+                      <th className="px-4 py-2 font-medium">{t('adFree.tablePeriodHeader')}</th>
+                      <th className="px-4 py-2 font-medium text-right">
+                        {t('adFree.tableStatusHeader')}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {entitlementRows.map((row) => (
+                      <tr key={row.id}>
+                        <td className="px-4 py-3 font-medium text-foreground">{row.sourceLabel}</td>
+                        <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
+                          {t('adFree.grantPeriod', {
+                            startDate: dateFmt(row.startsAt),
+                            endDate: dateFmt(row.expiresAt),
+                          })}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <span
+                            className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${statusClass(
+                              row.status
+                            )}`}
+                          >
+                            {statusLabel(row.status)}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            )}
-
-            {/* Grants source — filtered to topic_post, limited to latest 5 */}
-            {displayGrants.length > 0 && (
-              <div className="rounded-xl border border-border bg-card p-6">
-                <h3 className="font-semibold text-foreground">
-                  {adFreeActive ? t('adFree.sourceGrants') : t('adFree.pastBenefits')}
-                </h3>
-                <ul className="mt-3 space-y-3">
-                  {displayGrants.map((g) => {
-                    const startsAt = new Date(g.startsAt);
-                    const expiresAt = new Date(g.expiresAt);
-                    const status = classifyGrant(now, startsAt, expiresAt);
-                    const grantTypeKey: GrantType = isGrantType(g.grantType)
-                      ? g.grantType
-                      : 'admin_manual';
-                    const statusLabel =
-                      status === 'active'
-                        ? t('adFree.grantStatusActive')
-                        : status === 'upcoming'
-                          ? t('adFree.grantStatusUpcoming')
-                          : t('adFree.grantStatusExpired');
-                    const statusClass =
-                      status === 'active'
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200'
-                        : status === 'upcoming'
-                          ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200'
-                          : 'bg-muted text-muted-foreground';
-                    return (
-                      <li
-                        key={g.id}
-                        className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-background p-3"
-                      >
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-foreground">
-                            {t(`grantTypeLabel.${grantTypeKey}`)}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {t('adFree.grantPeriod', {
-                              startDate: dateFmt(startsAt),
-                              endDate: dateFmt(expiresAt),
-                            })}
-                          </p>
-                        </div>
-                        <span
-                          className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusClass}`}
-                        >
-                          {statusLabel}
-                        </span>
-                      </li>
-                    );
-                  })}
-                </ul>
-                {hasMoreGrants && (
-                  <div className="mt-4">
-                    <Link
-                      href={`/mypage/benefits/ad_free`}
-                      locale={locale}
-                      className="text-sm text-foreground underline hover:opacity-80 transition-colors"
-                    >
-                      {t('adFree.viewFullHistory')}
-                    </Link>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+              {hasMoreGrants && (
+                <div className="border-t border-border px-4 py-3">
+                  <Link
+                    href={`/mypage/benefits/ad_free`}
+                    locale={locale}
+                    className="text-sm text-foreground underline hover:opacity-80 transition-colors"
+                  >
+                    {t('adFree.viewFullHistory')}
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <Divider />

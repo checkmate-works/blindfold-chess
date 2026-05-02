@@ -2241,15 +2241,16 @@
       "statusActive": "広告非表示が有効です",
       "statusInactive": "現在広告非表示は有効ではありません",
       "activeUntil": "{date}まで",
-      "sourceSubscription": "プラン契約による",
-      "sourceGrants": "特典付与による",
-      "pastBenefits": "過去の特典",
+      "sourceSubscription": "サブスクリプション",
       "learnHowToEarn": "広告非表示特典の獲得方法を見る",
       "viewFullHistory": "すべての履歴を見る",
       "grantPeriod": "{startDate} 〜 {endDate}",
       "grantStatusActive": "有効",
-      "grantStatusUpcoming": "開始予定",
-      "grantStatusExpired": "終了"
+      "grantStatusUpcoming": "開始前",
+      "grantStatusExpired": "終了",
+      "tableSourceHeader": "ソース",
+      "tablePeriodHeader": "期間",
+      "tableStatusHeader": "ステータス"
     },
     "grantTypeLabel": {
       "admin_manual": "運営からの付与",
@@ -2265,7 +2266,7 @@
     "empty": "付与された特典はありません。",
     "grantPeriod": "{startDate} 〜 {endDate}",
     "statusActive": "有効",
-    "statusUpcoming": "開始予定",
+    "statusUpcoming": "開始前",
     "statusExpired": "終了",
     "statusRevoked": "取り消し"
   },

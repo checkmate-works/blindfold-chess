@@ -2241,15 +2241,16 @@
       "statusActive": "Ad-free is active",
       "statusInactive": "Ad-free is not currently active",
       "activeUntil": "until {date}",
-      "sourceSubscription": "From your plan subscription",
-      "sourceGrants": "From benefit grants",
-      "pastBenefits": "Past benefits",
+      "sourceSubscription": "Subscription",
       "learnHowToEarn": "Learn how to earn ad-free benefits",
       "viewFullHistory": "View full history",
       "grantPeriod": "{startDate} – {endDate}",
       "grantStatusActive": "Active",
       "grantStatusUpcoming": "Upcoming",
-      "grantStatusExpired": "Expired"
+      "grantStatusExpired": "Expired",
+      "tableSourceHeader": "Source",
+      "tablePeriodHeader": "Period",
+      "tableStatusHeader": "Status"
     },
     "grantTypeLabel": {
       "admin_manual": "Granted by staff",

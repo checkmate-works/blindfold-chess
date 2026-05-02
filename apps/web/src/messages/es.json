@@ -2241,15 +2241,16 @@
       "statusActive": "Modo sin anuncios activo",
       "statusInactive": "El modo sin anuncios no está activo actualmente",
       "activeUntil": "hasta {date}",
-      "sourceSubscription": "Por tu suscripción",
-      "sourceGrants": "Por concesiones de beneficios",
-      "pastBenefits": "Beneficios anteriores",
+      "sourceSubscription": "Suscripción",
       "learnHowToEarn": "Aprende cómo obtener beneficios sin anuncios",
       "viewFullHistory": "Ver historial completo",
       "grantPeriod": "{startDate} – {endDate}",
       "grantStatusActive": "Activa",
       "grantStatusUpcoming": "Próxima",
-      "grantStatusExpired": "Expirada"
+      "grantStatusExpired": "Expirada",
+      "tableSourceHeader": "Fuente",
+      "tablePeriodHeader": "Período",
+      "tableStatusHeader": "Estado"
     },
     "grantTypeLabel": {
       "admin_manual": "Concedido por el equipo",
