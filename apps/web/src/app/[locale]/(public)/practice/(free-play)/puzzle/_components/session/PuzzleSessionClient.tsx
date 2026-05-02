@@ -410,17 +410,31 @@ export function PuzzleSessionClient({
 
           {showInlinePeek && (
             // Puzzle peek always reveals all pieces — overrides blindfold prefs from games/play.
-            <InlineBoardView
-              fen={session.currentFen}
-              playerSide={playerColor === 'b' ? 'black' : 'white'}
-              flipped={playerColor === 'b'}
-              lastMove={null}
-              preferences={{ ...preferences, showOwnPieces: true, showOpponentPieces: true }}
-              movesLength={0}
-              currentPosition={-1}
-              formattedPgn={[]}
-              onPeek={() => setPeekCount((c) => c + 1)}
-            />
+            //
+            // The inline-peek board is constrained to the same width as
+            // `games/play`'s `lg:col-span-2` of `lg:grid-cols-3 lg:gap-8`,
+            // i.e. `(2W - 32px) / 3` where W is the PagePanel's inner
+            // width — so the ChessBoard renders at the same size on both
+            // pages on desktop. Only the board itself is constrained:
+            // the surrounding pieces info, move input, status messages,
+            // and peek button keep the original full-width layout. The
+            // `mx-auto` centers the constrained board within the panel
+            // (since there is no analog of the games/play moves panel to
+            // fill the right side, left-aligning would leave a visually
+            // unbalanced empty band).
+            <div className="lg:mx-auto lg:max-w-[calc((200%_-_2rem)/3)]">
+              <InlineBoardView
+                fen={session.currentFen}
+                playerSide={playerColor === 'b' ? 'black' : 'white'}
+                flipped={playerColor === 'b'}
+                lastMove={null}
+                preferences={{ ...preferences, showOwnPieces: true, showOpponentPieces: true }}
+                movesLength={0}
+                currentPosition={-1}
+                formattedPgn={[]}
+                onPeek={() => setPeekCount((c) => c + 1)}
+              />
+            </div>
           )}
 
           <MoveInputPanel
