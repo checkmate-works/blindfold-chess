@@ -14,6 +14,11 @@ import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
 import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
 import { SectionTitle } from '@/app/[locale]/_components';
 
+import {
+  AttemptHistoryPanel,
+  AttemptStatusBadge,
+  computeAttemptStatus,
+} from './AttemptHistoryPanel';
 import { PuzzleSolutionReplay } from './PuzzleSolutionReplay';
 
 type Attempt = { move: string; isCorrect: boolean };
@@ -83,35 +88,30 @@ export function PuzzleResultClient({
       .map((san) => ({ san, note: null }));
   }, [solutionLine, solutionMoveLists]);
 
+  const lockedSans = useMemo(() => lockedMoves.map((m) => m.san), [lockedMoves]);
+  const attemptStatus = useMemo(
+    () => computeAttemptStatus(attempts, lockedSans),
+    [attempts, lockedSans]
+  );
+
   return (
     <div className="space-y-6">
       <PuzzleSolutionReplay fen={fen} solutionMoves={lockedMoves} showSectionTitle />
 
-      {/* (B) Attempt history — unordered list. Each bullet is one submitted
-       *     move, which may or may not have been correct; we intentionally
-       *     do NOT number the bullets because an incorrect attempt would
-       *     shift the numbering out of step with the puzzle's actual move
-       *     sequence and mislead the reader.
+      {/* (B) Attempt history — laid out in PGN-style W/B rows so the
+       *     numbering matches the puzzle's actual move sequence (derived
+       *     from the FEN's fullmove number + side-to-move). Each player
+       *     turn cell shows wrong attempts as struck-through chips followed
+       *     by the correct move; opponent auto-replies render as plain SAN.
        */}
       {attempts.length > 0 && (
-        <>
+        <div className="space-y-3">
           <SectionTitle>{t('historySection')}</SectionTitle>
-          <ul className="mx-auto max-w-md flex flex-col gap-1 text-sm list-disc list-inside">
-            {attempts.map((attempt, index) => (
-              <li key={index}>
-                {attempt.isCorrect ? (
-                  <span className="text-green-600 dark:text-green-400 font-medium">
-                    &#x2705; {attempt.move}
-                  </span>
-                ) : (
-                  <span className="text-red-600 dark:text-red-400 line-through">
-                    &#x274C; {attempt.move}
-                  </span>
-                )}
-              </li>
-            ))}
-          </ul>
-        </>
+          <AttemptHistoryPanel fen={fen} solutionSans={lockedSans} attempts={attempts} />
+          <div className="flex justify-end">
+            <AttemptStatusBadge status={attemptStatus} />
+          </div>
+        </div>
       )}
 
       {/* (C) Peek count */}
