@@ -20,7 +20,7 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 import { FaPlus } from 'react-icons/fa';
 
 import { getOptionalUser } from '@/lib/auth';
-import { getReplyMetaMap } from '@/lib/db/reply-meta-queries';
+import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
 import { getPaginationParams } from '@/lib/pagination';
 import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
 import { countPositions, listPositionsWithProfile } from '@/lib/positions/queries';
@@ -129,12 +129,7 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
                 likeCount: 0,
                 likedByMe: false,
               };
-              const replyMeta = replyMetaMap.get(position.id) ?? {
-                replyCount: 0,
-                latestReplyAt: null,
-                repliers: [],
-                uniqueReplierCount: 0,
-              };
+              const replyMeta = replyMetaMap.get(position.id) ?? EMPTY_REPLY_META;
 
               return (
                 <ActivityCard

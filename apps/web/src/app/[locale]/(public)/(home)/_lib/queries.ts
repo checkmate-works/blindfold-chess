@@ -9,7 +9,7 @@ import {
   topicPostRatings,
   topicPosts,
 } from '@/lib/db';
-import { getReplyMetaMap } from '@/lib/db/reply-meta-queries';
+import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
 import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
 import { parsePositionType } from '@/lib/positions/types';
 
@@ -158,13 +158,6 @@ export async function getFeedData(
         getReplyMetaMap('position_puzzle', puzzleIds),
       ]);
 
-      const emptyReplyMeta = {
-        replyCount: 0,
-        latestReplyAt: null,
-        repliers: [],
-        uniqueReplierCount: 0,
-      };
-
       for (const row of rows) {
         const positionType = parsePositionType(row.type);
         // Defensive: drop rows with an unexpected `type` value rather than
@@ -173,7 +166,7 @@ export async function getFeedData(
         if (positionType === null) continue;
         const likeMeta = likeMetaMap.get(row.id) ?? { likeCount: 0, likedByMe: false };
         const replyMeta =
-          memoryReplyMap.get(row.id) ?? puzzleReplyMap.get(row.id) ?? emptyReplyMeta;
+          memoryReplyMap.get(row.id) ?? puzzleReplyMap.get(row.id) ?? EMPTY_REPLY_META;
         map.set(row.id, {
           id: row.id,
           type: positionType,

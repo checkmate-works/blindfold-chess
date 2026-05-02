@@ -14,6 +14,21 @@ export type ReplyMeta = {
   uniqueReplierCount: number;
 };
 
+/**
+ * The "no comments" reply-meta value. Use as the fallback when a
+ * `getReplyMetaMap` lookup returns `undefined` for a key (e.g. a topic
+ * that has never received a comment, or a position type with no thread
+ * such as `sequence`). Re-exporting a single shared instance keeps
+ * call-site shape consistent and avoids dotting fresh literals around
+ * the codebase.
+ */
+export const EMPTY_REPLY_META: ReplyMeta = {
+  replyCount: 0,
+  latestReplyAt: null,
+  repliers: [],
+  uniqueReplierCount: 0,
+};
+
 const MAX_REPLIERS_DISPLAY = 3;
 
 /**
