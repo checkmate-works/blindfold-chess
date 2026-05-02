@@ -10,6 +10,7 @@ import { executeMove } from '@blindfold-chess/features/chess-core';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import * as Sentry from '@sentry/nextjs';
+import { FaTimes } from 'react-icons/fa';
 
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
 import type { PeekPreferenceHint } from '@/lib/games/peek-cookie';
@@ -59,6 +60,15 @@ type Props = {
 };
 
 const AUTO_NAVIGATE_DELAY_MS = 1000;
+
+/**
+ * How long the transient submit-feedback chip stays mounted. Matches the
+ * total length of the `feedback-pop` CSS keyframe in `globals.css` —
+ * after this window the chip has fully faded out, so unmounting it
+ * leaves no visual residue while resetting the React state for the next
+ * submit (which gives a fresh `key` and a fresh animation cycle).
+ */
+const FEEDBACK_DURATION_MS = 1200;
 
 type SessionState = {
   currentFen: string;
@@ -130,7 +140,27 @@ export function PuzzleSessionClient({
     lastOpponentMove: null,
   });
   const [moveInput, setMoveInput] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  /**
+   * Transient red chip shown when a submit is rejected. The success path
+   * has no chip on purpose — the PageTitle's "Black plays Nh2 (1/3)"
+   * highlight + progress update already signals "your move was correct
+   * and the puzzle has advanced", and a third green chip on top of that
+   * was visually overpowering the title channel. Incorrect submits, on
+   * the other hand, leave the PageTitle and input untouched, so the chip
+   * is the *only* signal that anything happened — keep it.
+   *
+   * The chip auto-clears via `FEEDBACK_DURATION_MS`. Successful submits
+   * also clear it (rather than leaving a stale red chip from the prior
+   * wrong attempt sitting next to a now-correct state).
+   *
+   * `count` is incremented on every reject so the chip's React `key`
+   * changes — that re-mounts the element and replays the CSS animation
+   * when two wrong attempts fire back-to-back. Without the counter the
+   * second submit would silently keep the existing element and skip the
+   * animation.
+   */
+  const [incorrectFlash, setIncorrectFlash] = useState<{ count: number } | null>(null);
+  const incorrectCountRef = useRef(0);
   const [peekCount, setPeekCount] = useState(0);
   const [isBoardVisible, setIsBoardVisible] = useState(false);
   const [isSolved, setIsSolved] = useState(false);
@@ -239,6 +269,17 @@ export function PuzzleSessionClient({
     // ref being populated (first render) misses the scroll on SSR hydration.
   }, [playerMoveCount, session.lastOpponentMove]);
 
+  // Unmount the incorrect-feedback chip once its CSS animation has
+  // completed. Keying off `incorrectFlash.count` (rather than the whole
+  // object) ensures the timer resets on every new wrong attempt, so
+  // back-to-back rejects each get the full duration on screen instead of
+  // the latest one being cut short by the previous timer.
+  useEffect(() => {
+    if (incorrectFlash === null) return;
+    const timer = setTimeout(() => setIncorrectFlash(null), FEEDBACK_DURATION_MS);
+    return () => clearTimeout(timer);
+  }, [incorrectFlash]);
+
   const hasErrors = session.attempts.some((a) => !a.isCorrect);
 
   function finishSolve(solutionLine: string, attempts: Attempt[], playerMoveCount: number) {
@@ -285,6 +326,11 @@ export function PuzzleSessionClient({
     }, AUTO_NAVIGATE_DELAY_MS);
   }
 
+  function flashIncorrect() {
+    incorrectCountRef.current += 1;
+    setIncorrectFlash({ count: incorrectCountRef.current });
+  }
+
   function handleSubmit(move: AlgebraicNotation): boolean {
     const trimmed = move.trim();
     if (!trimmed || isSolved) return false;
@@ -311,7 +357,7 @@ export function PuzzleSessionClient({
     if (!afterPlayer) {
       const attempt: Attempt = { move: trimmed, isCorrect: false };
       setSession({ ...session, attempts: [...session.attempts, attempt] });
-      setError(t('incorrect'));
+      flashIncorrect();
       return false;
     }
 
@@ -348,7 +394,7 @@ export function PuzzleSessionClient({
 
     if (matchIdx === undefined) {
       setSession({ ...session, attempts: updatedAttempts });
-      setError(t('incorrect'));
+      flashIncorrect();
       return false;
     }
 
@@ -384,7 +430,11 @@ export function PuzzleSessionClient({
       lastOpponentMove: playedOpponentMove,
     });
     setMoveInput('');
-    setError(null);
+    // Clear any leftover red chip from a prior wrong attempt — there is
+    // no green chip on success (the PageTitle update is the success
+    // signal), but a stale red chip would lie about the just-accepted
+    // move if we did not reset here.
+    setIncorrectFlash(null);
 
     if (solved) {
       setIsSolved(true);
@@ -460,19 +510,6 @@ export function PuzzleSessionClient({
     titleContent = positionTitle;
   }
 
-  // Persistent reserved-height status slot below the input panel.
-  // Showing the success message only on the final solve felt inconsistent
-  // (intermediate correct moves got no acknowledgement) and the conditional
-  // also caused layout shift the moment the puzzle was solved. Reserving
-  // the slot height eliminates the CLS, and surfacing the message after
-  // every accepted player move makes the feedback consistent across the
-  // whole solve. `error === null` excludes the post-wrong-attempt window
-  // (the MoveInputPanel itself surfaces the "Incorrect" message there);
-  // `!isNavigatingToResult` avoids holding a stale "Correct" line on
-  // screen during the auto-redirect to /result.
-  const showCorrectFeedback =
-    session.playerMoves.length > 0 && error === null && !isNavigatingToResult;
-
   return (
     <div className="space-y-8">
       <div ref={titleAnchorRef} data-testid="title-anchor">
@@ -512,32 +549,53 @@ export function PuzzleSessionClient({
             </div>
           )}
 
-          <MoveInputPanel
-            preferences={preferences}
-            updatePreferences={updatePreferences}
-            currentFen={session.currentFen}
-            moveInput={moveInput}
-            onMoveInputChange={setMoveInput}
-            error={error}
-            onErrorClear={() => setError(null)}
-            onSubmit={handleSubmit}
-            disabled={isSolved}
-            inputPlaceholder={tPlay('inputMove')}
-            selectPlaceholder={tPlay('selectMove')}
-            toggleTitle={tPlay('switchInputMode')}
-            playerColor={playerColor}
-            showLegalMovesHint={false}
-          />
-
-          <p
-            data-testid="correct-feedback"
-            aria-live="polite"
-            className="min-h-[1.25rem] text-sm font-medium"
-          >
-            {showCorrectFeedback && (
-              <span className="text-green-600 dark:text-green-400">&#x2713; {t('correct')}</span>
-            )}
-          </p>
+          {/*
+            Wrap the panel in a `relative` container so the transient
+            incorrect-feedback chip can absolutely-position itself over
+            the panel's top-right corner without affecting layout. The
+            chip is the *only* acknowledgement the user gets for a wrong
+            submit — the inline "Incorrect" string inside the panel was
+            retired because it stayed on screen until the next submit and
+            felt noisy. There is intentionally no chip on success: the
+            PageTitle's highlight pulse + (N/total) progress update is
+            already the success signal, and a green chip on top of that
+            was visually overpowering the title channel.
+            `error={null}` + `showInlineError={false}` prevent the panel
+            from surfacing its own error string, so the chip is the sole
+            negative-feedback channel. `aria-live` on the chip wrapper
+            announces the rejection to screen-reader users.
+          */}
+          <div className="relative">
+            <MoveInputPanel
+              preferences={preferences}
+              updatePreferences={updatePreferences}
+              currentFen={session.currentFen}
+              moveInput={moveInput}
+              onMoveInputChange={setMoveInput}
+              error={null}
+              onErrorClear={() => {}}
+              onSubmit={handleSubmit}
+              disabled={isSolved}
+              inputPlaceholder={tPlay('inputMove')}
+              selectPlaceholder={tPlay('selectMove')}
+              toggleTitle={tPlay('switchInputMode')}
+              playerColor={playerColor}
+              showLegalMovesHint={false}
+              showInlineError={false}
+            />
+            <div aria-live="polite" className="pointer-events-none absolute -top-2 right-2 z-10">
+              {incorrectFlash && (
+                <span
+                  key={`incorrect-${incorrectFlash.count}`}
+                  data-testid="submit-feedback-incorrect"
+                  className="motion-safe:animate-feedback-pop inline-flex items-center gap-1 rounded-full border border-red-500/30 bg-red-500/15 px-2.5 py-1 text-xs font-semibold text-red-700 shadow-sm dark:text-red-300"
+                >
+                  <FaTimes className="h-3 w-3" />
+                  <span>{t('incorrect')}</span>
+                </span>
+              )}
+            </div>
+          </div>
 
           {hasErrors && !isSolved && (
             <Link

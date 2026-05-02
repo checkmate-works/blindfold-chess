@@ -250,12 +250,16 @@ describe('PuzzleSessionClient', () => {
   });
 
   describe('incorrect answer', () => {
-    it('records the attempt and surfaces the incorrect-move message', () => {
+    it('records the attempt and surfaces the incorrect-move feedback chip', () => {
       renderSession(['e4']);
 
       fireEvent.click(screen.getByTestId('stub-submit'));
 
-      expect(screen.getByTestId('panel-error')).toHaveTextContent('incorrect');
+      // The persistent inline-error string used to live inside the panel
+      // (`panel-error`); it was retired in favour of the transient chip
+      // because both Correct and Incorrect feedback would otherwise stay
+      // on screen until the next submit and felt noisy.
+      expect(screen.getByTestId('submit-feedback-incorrect')).toBeInTheDocument();
       expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'false');
       expect(screen.getByTestId('view-result-link')).toBeInTheDocument();
     });
@@ -307,23 +311,33 @@ describe('PuzzleSessionClient', () => {
   });
 
   describe('input lifecycle', () => {
-    it('clears the incorrect-move error when the user edits the input (onErrorClear)', () => {
-      renderSession(['e4']);
+    it('auto-dismisses the incorrect-move chip after the feedback duration elapses', () => {
+      vi.useFakeTimers();
+      try {
+        renderSession(['e4']);
 
-      fireEvent.click(screen.getByTestId('stub-submit'));
-      expect(screen.getByTestId('panel-error')).toHaveTextContent('incorrect');
+        fireEvent.click(screen.getByTestId('stub-submit'));
+        expect(screen.getByTestId('submit-feedback-incorrect')).toBeInTheDocument();
 
-      fireEvent.click(screen.getByTestId('stub-clear-error'));
+        // The chip's auto-clear timer is what keeps the surface from going
+        // stale. Advance past the timer and the element should be gone.
+        // 1500 > the FEEDBACK_DURATION_MS constant; we deliberately pick a
+        // value larger than the timer so this test is robust against minor
+        // tuning of the duration without needing a re-export.
+        act(() => {
+          vi.advanceTimersByTime(1500);
+        });
 
-      expect(screen.queryByTestId('panel-error')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('submit-feedback-incorrect')).not.toBeInTheDocument();
+      } finally {
+        vi.useRealTimers();
+      }
     });
 
-    it('ignores onErrorClear before any incorrect attempt (no-op when error is null)', () => {
+    it('does not surface a feedback chip before any submit', () => {
       renderSession(['Nf3']);
 
-      fireEvent.click(screen.getByTestId('stub-clear-error'));
-
-      expect(screen.queryByTestId('panel-error')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('submit-feedback-incorrect')).not.toBeInTheDocument();
       expect(screen.queryByTestId('view-result-link')).not.toBeInTheDocument();
     });
   });
@@ -435,7 +449,7 @@ describe('PuzzleSessionClient', () => {
       (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'Nh2';
       fireEvent.click(screen.getByTestId('stub-custom-submit'));
 
-      expect(screen.getByTestId('panel-error')).toHaveTextContent('incorrect');
+      expect(screen.getByTestId('submit-feedback-incorrect')).toBeInTheDocument();
     });
 
     it('solves a single-move black-to-move puzzle and records the payload with the black-side FEN', () => {
@@ -578,49 +592,59 @@ describe('PuzzleSessionClient', () => {
   });
 
   // ---------------------------------------------------------------------------
-  // Success-feedback status line
+  // Submit-feedback chip
   //
-  // A persistent reserved-height slot below the input panel that surfaces
-  // a "✓ Correct" message after every accepted player move. Earlier the
-  // message rendered only on the final solve, which (a) gave intermediate
-  // correct moves no acknowledgement and (b) caused a layout shift the
-  // moment the puzzle was solved (the conditional element appeared from
-  // nowhere). Reserving the slot eliminates the CLS, and broadening the
-  // trigger to every correct move makes feedback consistent.
+  // A transient floating chip that pops over the top-right of the input
+  // panel and fades out after ~1.2s. Replaced two earlier surfaces — the
+  // persistent inline-error string in MoveInputPanel and the reserved
+  // success-feedback slot below it — both of which lingered until the
+  // next submit and felt noisy. The chip handles BOTH outcomes (correct
+  // and incorrect) through a single channel, and both auto-dismiss the
+  // same way.
   // ---------------------------------------------------------------------------
-  describe('success feedback status line', () => {
-    const BLACK_TO_MOVE_FEN =
-      'r2q1rk1/2pb1ppn/pp1p3p/6b1/2P1P1N1/1P1P3P/PB1N1RP1/R2Q2K1 b - - 4 16';
-
-    it('renders an empty status slot before any submit (preserves layout)', () => {
+  describe('submit-feedback chip', () => {
+    it('renders no feedback chip before any submit', () => {
       renderSession(['Nf3']);
-      const slot = screen.getByTestId('correct-feedback');
-      expect(slot).toBeInTheDocument();
-      // No success message until the user submits a correct move.
-      expect(slot).not.toHaveTextContent('correct');
+      expect(screen.queryByTestId('submit-feedback-incorrect')).not.toBeInTheDocument();
     });
 
-    it('shows the correct status after an intermediate correct move (not just on final solve)', () => {
-      renderSession(['h5 Nh2 Bh4'], BLACK_TO_MOVE_FEN);
+    it('does NOT pop a chip on a correct submit (the PageTitle update is the success signal)', () => {
+      // Earlier iterations rendered a green "Correct" chip on every
+      // accepted submit, but stacking it on top of the PageTitle's
+      // green highlight + (N/total) progress was visually overpowering
+      // and felt redundant. The success channel is now the PageTitle
+      // alone — no chip should appear when the user gets it right.
+      renderSession(['Nf3']);
 
-      (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'h5';
-      fireEvent.click(screen.getByTestId('stub-custom-submit'));
+      fireEvent.click(screen.getByTestId('stub-submit'));
 
-      // Translation mock returns the key verbatim — `t('correct')` → 'correct'.
-      expect(screen.getByTestId('correct-feedback')).toHaveTextContent('correct');
-      // Puzzle is NOT solved yet (Bh4 still pending), so this proves the
-      // slot is no longer gated on the final-solve condition.
-      expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'false');
+      expect(screen.queryByTestId('submit-feedback-incorrect')).not.toBeInTheDocument();
     });
 
-    it('hides the correct status after an incorrect submit (the panel error owns the surface)', () => {
+    it('pops the failure chip after an incorrect submit', () => {
       renderSession(['Nf3']);
 
       (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'e4';
       fireEvent.click(screen.getByTestId('stub-custom-submit'));
 
-      expect(screen.getByTestId('correct-feedback')).not.toHaveTextContent('correct');
-      expect(screen.getByTestId('panel-error')).toHaveTextContent('incorrect');
+      expect(screen.getByTestId('submit-feedback-incorrect')).toBeInTheDocument();
+    });
+
+    it('clears a stale incorrect chip immediately on the next correct submit', () => {
+      // Sequence: wrong → chip appears → correct → chip is cleared
+      // even before the auto-clear timer would have fired. Without this
+      // explicit clear, a red "Incorrect" chip would briefly linger
+      // alongside an already-accepted move, which would lie to the user.
+      renderSession(['Nf3']);
+
+      (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'e4';
+      fireEvent.click(screen.getByTestId('stub-custom-submit'));
+      expect(screen.getByTestId('submit-feedback-incorrect')).toBeInTheDocument();
+
+      (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'Nf3';
+      fireEvent.click(screen.getByTestId('stub-custom-submit'));
+
+      expect(screen.queryByTestId('submit-feedback-incorrect')).not.toBeInTheDocument();
     });
   });
 
@@ -686,7 +710,7 @@ describe('PuzzleSessionClient', () => {
       // without any normalization shenanigans.
       renderSession(['Nf3']);
       setCustomInputAndSubmit('Ne5');
-      expect(screen.getByTestId('panel-error')).toHaveTextContent('incorrect');
+      expect(screen.getByTestId('submit-feedback-incorrect')).toBeInTheDocument();
       expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'false');
     });
 
@@ -697,7 +721,7 @@ describe('PuzzleSessionClient', () => {
       // attempt is incorrect.
       renderSession(['Nf3']);
       setCustomInputAndSubmit('e4');
-      expect(screen.getByTestId('panel-error')).toHaveTextContent('incorrect');
+      expect(screen.getByTestId('submit-feedback-incorrect')).toBeInTheDocument();
     });
 
     it('still accepts the move when the user types the strict, fully-decorated SAN', () => {
