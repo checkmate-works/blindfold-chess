@@ -788,6 +788,8 @@
       "description": "チェスの位置を記憶して再現する能力を訓練",
       "like": "いいね",
       "unlike": "いいね解除",
+      "newReply": "新しい返信 {time}",
+      "justNow": "たった今",
       "session": "練習中",
       "settings": "出題の設定",
       "problemSource": "出題方式",
@@ -1032,7 +1034,9 @@
         "createdBy": "作成者",
         "noPieces": "なし",
         "like": "いいね",
-        "unlike": "いいね解除"
+        "unlike": "いいね解除",
+        "newReply": "新しい返信 {time}",
+        "justNow": "たった今"
       },
       "session": {
         "title": "挑戦",

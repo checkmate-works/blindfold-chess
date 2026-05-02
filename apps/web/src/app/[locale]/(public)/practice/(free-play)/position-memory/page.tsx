@@ -20,6 +20,7 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 import { FaPlus } from 'react-icons/fa';
 
 import { getOptionalUser } from '@/lib/auth';
+import { getReplyMetaMap } from '@/lib/db/reply-meta-queries';
 import { getPaginationParams } from '@/lib/pagination';
 import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
 import { countPositions, listPositionsWithProfile } from '@/lib/positions/queries';
@@ -27,7 +28,8 @@ import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 import { truncate } from '@/lib/text';
 import { resolveDisplayName } from '@/lib/users/display-name';
 
-import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
+import { PostFooter } from '@/app/[locale]/(public)/topics/_components/PostFooter';
+import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 import {
   Divider,
   PagePanel,
@@ -35,6 +37,7 @@ import {
   PaginationNav,
   SectionTitle,
 } from '@/app/[locale]/_components';
+import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
@@ -84,10 +87,11 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
   const rows = await listPositionsWithProfile({ type: 'memory', limit, offset });
 
   const currentUser = await getOptionalUser();
-  const likeMetaMap = await getPositionLikeMetaMap(
-    rows.map((r) => r.position.id),
-    currentUser?.id
-  );
+  const positionIds = rows.map((r) => r.position.id);
+  const [likeMetaMap, replyMetaMap] = await Promise.all([
+    getPositionLikeMetaMap(positionIds, currentUser?.id),
+    getReplyMetaMap('position_memory', positionIds),
+  ]);
 
   const buildHref = (p: number) => {
     const params = new URLSearchParams();
@@ -120,54 +124,71 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
             {rows.map(({ position, profile }) => {
               const displayName = resolveDisplayName(profile);
               const descriptionExcerpt = truncate(position.description);
+              const detailHref = `/practice/position-memory/${position.id}`;
               const likeMeta = likeMetaMap.get(position.id) ?? {
                 likeCount: 0,
                 likedByMe: false,
               };
+              const replyMeta = replyMetaMap.get(position.id) ?? {
+                replyCount: 0,
+                latestReplyAt: null,
+                repliers: [],
+                uniqueReplierCount: 0,
+              };
 
               return (
-                <Link
+                <ActivityCard
                   key={position.id}
-                  href={`/practice/position-memory/${position.id}`}
-                  locale={locale}
-                  className="block p-4 rounded-md border border-border bg-card hover:border-foreground/20 transition-colors"
-                >
-                  <div className="flex gap-4">
-                    <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
-                      <ThemedBoardThumbnail fen={position.fen} className="w-full h-full" />
-                    </div>
-                    <div className="flex-1 min-w-0 flex flex-col gap-1">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <UserAvatar
-                          profileHref={null}
-                          avatarUrl={profile?.avatarUrl}
-                          displayName={displayName}
-                          locale={locale}
-                          size="xs"
-                          layout="inline"
-                        />
-                        <span className="whitespace-nowrap">{t('list.submittedBy')}</span>
-                      </div>
-                      <h3 className="font-medium text-foreground truncate">{position.title}</h3>
-                      {descriptionExcerpt && (
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {descriptionExcerpt}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border">
-                    <LikeButton
+                  variant="card"
+                  thumbnail={<ThemedBoardThumbnail fen={position.fen} className="w-full h-full" />}
+                  author={
+                    <UserAvatar
+                      profileHref={profile?.username ? `/u/${profile.username}` : null}
+                      avatarUrl={profile?.avatarUrl}
+                      displayName={displayName}
+                      locale={locale}
+                      size="sm"
+                    />
+                  }
+                  permalink={
+                    <Link
+                      href={detailHref}
+                      locale={locale}
+                      className="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                    >
+                      <time dateTime={position.createdAt.toISOString()}>
+                        {formatRelativeTime(position.createdAt, locale, t('justNow'))}
+                      </time>
+                    </Link>
+                  }
+                  footer={
+                    <PostFooter
                       postId={position.id}
                       locale={locale}
-                      topicKey=""
-                      initialLikeCount={likeMeta.likeCount}
-                      initialLikedByMe={likeMeta.likedByMe}
+                      topicKey={position.id}
+                      likeMeta={likeMeta}
+                      replyMeta={replyMeta}
                       toggleLikeAction={toggleLike}
                       i18nNamespace="practice.positionMemory"
+                      postHref={detailHref}
                     />
-                  </div>
-                </Link>
+                  }
+                >
+                  <h3 className="font-medium text-foreground truncate mt-2">
+                    <Link
+                      href={detailHref}
+                      locale={locale}
+                      className="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                    >
+                      {position.title}
+                    </Link>
+                  </h3>
+                  {descriptionExcerpt && (
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {descriptionExcerpt}
+                    </p>
+                  )}
+                </ActivityCard>
               );
             })}
           </div>

@@ -788,6 +788,8 @@
       "description": "Train your ability to remember and recreate chess positions",
       "like": "Like",
       "unlike": "Unlike",
+      "newReply": "New Reply {time}",
+      "justNow": "just now",
       "session": "In Progress",
       "settings": "Problem Settings",
       "problemSource": "Problem Source",
@@ -1032,7 +1034,9 @@
         "createdBy": "Created by",
         "noPieces": "None",
         "like": "Like",
-        "unlike": "Unlike"
+        "unlike": "Unlike",
+        "newReply": "New Reply {time}",
+        "justNow": "just now"
       },
       "session": {
         "title": "Solve",

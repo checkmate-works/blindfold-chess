@@ -788,6 +788,8 @@
       "description": "Entrena tu capacidad para recordar y recrear posiciones de ajedrez",
       "like": "Me gusta",
       "unlike": "Quitar me gusta",
+      "newReply": "Nueva Respuesta {time}",
+      "justNow": "ahora mismo",
       "session": "En Progreso",
       "settings": "Configuración del Problema",
       "problemSource": "Origen del Problema",
@@ -1032,7 +1034,9 @@
         "createdBy": "Creado por",
         "noPieces": "Ninguna",
         "like": "Me gusta",
-        "unlike": "Quitar me gusta"
+        "unlike": "Quitar me gusta",
+        "newReply": "Nueva Respuesta {time}",
+        "justNow": "ahora mismo"
       },
       "result": {
         "title": "Resultado del Puzzle",

@@ -788,6 +788,8 @@
       "description": "Treine sua capacidade de lembrar e recriar posições de xadrez",
       "like": "Curtir",
       "unlike": "Descurtir",
+      "newReply": "Nova Resposta {time}",
+      "justNow": "agora mesmo",
       "session": "Em Andamento",
       "settings": "Configuração do Problema",
       "problemSource": "Origem do Problema",
@@ -1032,7 +1034,9 @@
         "createdBy": "Criado por",
         "noPieces": "Nenhuma",
         "like": "Curtir",
-        "unlike": "Descurtir"
+        "unlike": "Descurtir",
+        "newReply": "Nova Resposta {time}",
+        "justNow": "agora mesmo"
       },
       "result": {
         "title": "Resultado do Puzzle",
