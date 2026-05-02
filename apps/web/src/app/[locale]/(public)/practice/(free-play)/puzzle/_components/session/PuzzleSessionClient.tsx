@@ -412,6 +412,17 @@ export function PuzzleSessionClient({
   const opponentColor: 'w' | 'b' = playerColor === 'w' ? 'b' : 'w';
   const opponentStatusKey = opponentColor === 'w' ? 'whitePlayed' : 'blackPlayed';
   const showOpponentStatus = session.lastOpponentMove !== null && !isSolved;
+  // Once the user lands a first correct move, `lockedSolutionIndex` pins the
+  // active line and we know exactly how many player moves the puzzle has,
+  // which lets us label progress as "(2/3)". Before locking — i.e. while the
+  // user is still on their first move — there is no canonical total, but the
+  // opponent-status branch only fires after a correct move so locking has
+  // already happened by the time the badge is rendered. The conditional is
+  // defensive in case this contract ever changes.
+  const totalPlayerSlots =
+    session.lockedSolutionIndex !== null
+      ? parsedSolutions[session.lockedSolutionIndex]!.playerSlots.length
+      : null;
   let titleContent: ReactNode;
   if (isNavigatingToResult) {
     titleContent = (
@@ -421,14 +432,46 @@ export function PuzzleSessionClient({
     );
   } else if (showOpponentStatus) {
     titleContent = (
-      <span data-testid="opponent-status" className="inline-flex items-center gap-1.5">
+      <span data-testid="opponent-status" className="inline-flex items-baseline gap-1.5">
         <CircleMarker color={opponentColor} />
-        <span>{t(opponentStatusKey, { move: session.lastOpponentMove! })}</span>
+        {/* Re-mounting via `key` is what retriggers the one-shot CSS
+         *  animation: each new opponent reply gives a fresh element and so a
+         *  fresh animation cycle, even when the SAN happens to repeat from
+         *  the previous reply. `motion-safe:` makes the animation a no-op
+         *  for users with `prefers-reduced-motion: reduce`. */}
+        <span
+          key={`opp-${playerMoveCount}`}
+          data-testid="opponent-status-text"
+          className="motion-safe:animate-title-highlight rounded px-1"
+        >
+          {t(opponentStatusKey, { move: session.lastOpponentMove! })}
+        </span>
+        {totalPlayerSlots !== null && (
+          <span
+            data-testid="opponent-progress"
+            className="text-sm font-normal text-muted-foreground"
+          >
+            ({playerMoveCount}/{totalPlayerSlots})
+          </span>
+        )}
       </span>
     );
   } else {
     titleContent = positionTitle;
   }
+
+  // Persistent reserved-height status slot below the input panel.
+  // Showing the success message only on the final solve felt inconsistent
+  // (intermediate correct moves got no acknowledgement) and the conditional
+  // also caused layout shift the moment the puzzle was solved. Reserving
+  // the slot height eliminates the CLS, and surfacing the message after
+  // every accepted player move makes the feedback consistent across the
+  // whole solve. `error === null` excludes the post-wrong-attempt window
+  // (the MoveInputPanel itself surfaces the "Incorrect" message there);
+  // `!isNavigatingToResult` avoids holding a stale "Correct" line on
+  // screen during the auto-redirect to /result.
+  const showCorrectFeedback =
+    session.playerMoves.length > 0 && error === null && !isNavigatingToResult;
 
   return (
     <div className="space-y-8">
@@ -486,9 +529,15 @@ export function PuzzleSessionClient({
             showLegalMovesHint={false}
           />
 
-          {isSolved && (
-            <p className="text-sm font-medium text-green-600 dark:text-green-400">{t('correct')}</p>
-          )}
+          <p
+            data-testid="correct-feedback"
+            aria-live="polite"
+            className="min-h-[1.25rem] text-sm font-medium"
+          >
+            {showCorrectFeedback && (
+              <span className="text-green-600 dark:text-green-400">&#x2713; {t('correct')}</span>
+            )}
+          </p>
 
           {hasErrors && !isSolved && (
             <Link

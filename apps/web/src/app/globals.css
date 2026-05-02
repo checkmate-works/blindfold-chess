@@ -75,4 +75,25 @@
   --color-ring: var(--color-ring);
   --color-link-primary: var(--color-link-primary);
   --color-link-secondary: var(--color-link-secondary);
+
+  /*
+   * One-shot success-tinted highlight used to draw the eye to a piece of
+   * UI that just changed without any preceding user-perceived latency.
+   * Currently powers the puzzle session's PageTitle: the opponent reply
+   * appears instantly (no Stockfish lag like in games/play), so the
+   * "Black plays Nh2" line gets a brief background flash to signal that
+   * the position has advanced. The animation is opt-in via the
+   * `motion-safe:` Tailwind variant — users who set
+   * `prefers-reduced-motion: reduce` see no animation at all.
+   */
+  --animate-title-highlight: title-highlight 1s ease-out;
+}
+
+@keyframes title-highlight {
+  from {
+    background-color: var(--color-success-soft);
+  }
+  to {
+    background-color: transparent;
+  }
 }

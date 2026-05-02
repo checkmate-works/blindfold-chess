@@ -525,6 +525,36 @@ describe('PuzzleSessionClient', () => {
       expect(heading).not.toHaveTextContent(POSITION_TITLE);
     });
 
+    it('appends progress `(done/total)` to the opponent status after a correct player move', () => {
+      // The puzzle session is unique vs games/play in that the opponent
+      // reply lands instantly with no perceivable latency — so the user
+      // can lose track of how far through the puzzle they are. Surfacing
+      // the (done/total) counter alongside the opponent status gives
+      // explicit progress without having to count moves themselves.
+      renderSession(['h5 Nh2 Bh4'], BLACK_TO_MOVE_FEN);
+
+      (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'h5';
+      fireEvent.click(screen.getByTestId('stub-custom-submit'));
+
+      // 1 of 2 player slots solved (the puzzle has 2 player moves: h5 and Bh4).
+      expect(screen.getByTestId('opponent-progress')).toHaveTextContent('(1/2)');
+    });
+
+    it('marks the opponent status text with the title-highlight animation class', () => {
+      // The animation class is gated on `motion-safe:` so users who set
+      // `prefers-reduced-motion` see no animation. Asserting the class
+      // presence is enough — the actual one-shot animation behaviour is a
+      // CSS detail tested by the keyframe definition in globals.css.
+      renderSession(['h5 Nh2 Bh4'], BLACK_TO_MOVE_FEN);
+
+      (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'h5';
+      fireEvent.click(screen.getByTestId('stub-custom-submit'));
+
+      expect(screen.getByTestId('opponent-status-text').className).toContain(
+        'motion-safe:animate-title-highlight'
+      );
+    });
+
     it('swaps the PageTitle to the Loading... placeholder once the puzzle is solved and navigation starts', () => {
       // 2-token line: h5 is the only player slot, so submitting it flips
       // `isSolved` to true AND kicks off `finishSolve`, which sets
@@ -544,6 +574,53 @@ describe('PuzzleSessionClient', () => {
       expect(screen.queryByTestId('opponent-status')).not.toBeInTheDocument();
       expect(screen.getByTestId('loading-title')).toBeInTheDocument();
       expect(heading).not.toHaveTextContent(POSITION_TITLE);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Success-feedback status line
+  //
+  // A persistent reserved-height slot below the input panel that surfaces
+  // a "✓ Correct" message after every accepted player move. Earlier the
+  // message rendered only on the final solve, which (a) gave intermediate
+  // correct moves no acknowledgement and (b) caused a layout shift the
+  // moment the puzzle was solved (the conditional element appeared from
+  // nowhere). Reserving the slot eliminates the CLS, and broadening the
+  // trigger to every correct move makes feedback consistent.
+  // ---------------------------------------------------------------------------
+  describe('success feedback status line', () => {
+    const BLACK_TO_MOVE_FEN =
+      'r2q1rk1/2pb1ppn/pp1p3p/6b1/2P1P1N1/1P1P3P/PB1N1RP1/R2Q2K1 b - - 4 16';
+
+    it('renders an empty status slot before any submit (preserves layout)', () => {
+      renderSession(['Nf3']);
+      const slot = screen.getByTestId('correct-feedback');
+      expect(slot).toBeInTheDocument();
+      // No success message until the user submits a correct move.
+      expect(slot).not.toHaveTextContent('correct');
+    });
+
+    it('shows the correct status after an intermediate correct move (not just on final solve)', () => {
+      renderSession(['h5 Nh2 Bh4'], BLACK_TO_MOVE_FEN);
+
+      (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'h5';
+      fireEvent.click(screen.getByTestId('stub-custom-submit'));
+
+      // Translation mock returns the key verbatim — `t('correct')` → 'correct'.
+      expect(screen.getByTestId('correct-feedback')).toHaveTextContent('correct');
+      // Puzzle is NOT solved yet (Bh4 still pending), so this proves the
+      // slot is no longer gated on the final-solve condition.
+      expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'false');
+    });
+
+    it('hides the correct status after an incorrect submit (the panel error owns the surface)', () => {
+      renderSession(['Nf3']);
+
+      (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'e4';
+      fireEvent.click(screen.getByTestId('stub-custom-submit'));
+
+      expect(screen.getByTestId('correct-feedback')).not.toHaveTextContent('correct');
+      expect(screen.getByTestId('panel-error')).toHaveTextContent('incorrect');
     });
   });
 
