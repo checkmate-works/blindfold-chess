@@ -32,8 +32,13 @@ export type ExpSource = 'challenge_result' | 'practice_result';
  * param is missing, or when no matching event is found. The lookup is
  * scoped to the current user, so passing another user's `sourceId` yields
  * `null` (authorization guard enforced at the query level).
+ *
+ * Exported so non-factory result pages (e.g. the puzzle result page, which
+ * has its own custom layout that does not flow through
+ * `createSimplePracticeResultPage`) can reuse the same grant-resolution
+ * logic without duplicating it.
  */
-async function resolveExpInfoFromGrantParam(
+export async function resolveExpInfoFromGrantParam(
   searchParams: Record<string, string | string[] | undefined>,
   expSource: ExpSource
 ): Promise<ExpInfo | null> {

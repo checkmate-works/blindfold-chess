@@ -1049,7 +1049,10 @@
         "backToList": "Voltar para Puzzles",
         "tryAgain": "Tentar Novamente",
         "viewResult": "Ver Resultado",
-        "peekCount": "Visualizações do Tabuleiro: {count}"
+        "peekCount": "Visualizações do Tabuleiro: {count}",
+        "statusSolved": "Resolvido",
+        "statusPartial": "{correct}/{total} resolvidos",
+        "statusRevealed": "Solução revelada"
       },
       "session": {
         "title": "Resolver",

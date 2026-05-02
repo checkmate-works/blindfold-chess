@@ -1057,7 +1057,10 @@
         "backToList": "Back to Puzzles",
         "tryAgain": "Try Again",
         "viewResult": "View Result",
-        "peekCount": "Board Peeks: {count}"
+        "peekCount": "Board Peeks: {count}",
+        "statusSolved": "Solved",
+        "statusPartial": "{correct}/{total} solved",
+        "statusRevealed": "Revealed"
       }
     },
     "knightTour": {
