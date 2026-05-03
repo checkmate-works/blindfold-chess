@@ -3,7 +3,6 @@ import type { ReactNode } from 'react';
 import { getTranslations } from 'next-intl/server';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
-import { Link } from '@/i18n/routing';
 import type { User } from '@supabase/supabase-js';
 
 import type { ActionResult } from '@/lib/action-types';
@@ -99,8 +98,6 @@ type Props = {
   comments: {
     /** Section title above the form / sort / list (e.g. "Replies"). */
     sectionTitle: string;
-    /** "Sign in to reply" — anonymous-user CTA text linking to /sign-in. */
-    signInLabel: string;
     /**
      * Pre-formatted reply count (e.g. "5 replies") — already plural-aware
      * via `next-intl`. Passed to `JoinConversationToggle` as `countText`.
@@ -233,41 +230,31 @@ export async function TopicPostDetailLayout({
 
         <SectionTitle>{comments.sectionTitle}</SectionTitle>
 
-        {user ? (
-          canReply ? (
-            replyCount === 0 ? (
-              <ReplyForm
-                locale={locale}
-                topicKey={topicKey}
-                postId={rootWithMeta.id}
-                createReplyAction={createReplyAction}
-                i18nNamespace={i18n.replyNamespace}
-              />
-            ) : (
-              <JoinConversationToggle
-                countText={comments.countText}
-                joinLabel={tTopics('joinConversation')}
-              >
-                <ReplyForm
-                  locale={locale}
-                  topicKey={topicKey}
-                  postId={rootWithMeta.id}
-                  createReplyAction={createReplyAction}
-                  i18nNamespace={i18n.replyNamespace}
-                />
-              </JoinConversationToggle>
-            )
-          ) : (
-            replyRestrictionMessage && (
-              <p className="text-sm text-muted-foreground italic">{replyRestrictionMessage}</p>
-            )
+        {user && !canReply ? (
+          replyRestrictionMessage && (
+            <p className="text-sm text-muted-foreground italic">{replyRestrictionMessage}</p>
           )
+        ) : user && replyCount === 0 ? (
+          <ReplyForm
+            locale={locale}
+            topicKey={topicKey}
+            postId={rootWithMeta.id}
+            createReplyAction={createReplyAction}
+            i18nNamespace={i18n.replyNamespace}
+          />
         ) : (
-          <p className="text-sm text-muted-foreground">
-            <Link href="/sign-in" locale={locale} className="text-link-primary hover:underline">
-              {comments.signInLabel}
-            </Link>
-          </p>
+          <JoinConversationToggle
+            countText={comments.countText}
+            joinLabel={tTopics('joinConversation')}
+          >
+            <ReplyForm
+              locale={locale}
+              topicKey={topicKey}
+              postId={rootWithMeta.id}
+              createReplyAction={createReplyAction}
+              i18nNamespace={i18n.replyNamespace}
+            />
+          </JoinConversationToggle>
         )}
 
         {replyCount > 0 && (

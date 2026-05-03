@@ -171,23 +171,15 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
 
       <SectionTitle>{tComments('commentsTitle')}</SectionTitle>
 
-      {currentUser ? (
-        commentCount === 0 ? (
-          <NewPostForm locale={locale} positionId={position.id} />
-        ) : (
-          <JoinConversationToggle
-            countText={tComments('postCount', { count: commentCount })}
-            joinLabel={tTopics('joinConversation')}
-          >
-            <NewPostForm locale={locale} positionId={position.id} />
-          </JoinConversationToggle>
-        )
+      {currentUser && commentCount === 0 ? (
+        <NewPostForm locale={locale} positionId={position.id} />
       ) : (
-        <p className="text-sm text-muted-foreground">
-          <Link href={`/${locale}/sign-in`} className="text-link-primary hover:underline">
-            {tComments('signInToComment')}
-          </Link>
-        </p>
+        <JoinConversationToggle
+          countText={tComments('postCount', { count: commentCount })}
+          joinLabel={tTopics('joinConversation')}
+        >
+          <NewPostForm locale={locale} positionId={position.id} />
+        </JoinConversationToggle>
       )}
 
       {commentTree.length > 0 && (

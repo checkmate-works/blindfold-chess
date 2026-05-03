@@ -119,7 +119,6 @@ export default async function ChunkPostDetailPage({ params, searchParams }: Prop
       }}
       comments={{
         sectionTitle: ct('replies.title'),
-        signInLabel: ct('replies.loginToReply'),
         countText: ct('replies.count', { count: replies.length }),
         sortBy,
         sortBasePath: `/chunks/${slug}/posts/${postId}`,

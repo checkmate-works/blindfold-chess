@@ -137,23 +137,15 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
     <section className="space-y-4">
       <SectionTitle>{t('communityThoughts')}</SectionTitle>
 
-      {user ? (
-        totalCount === 0 ? (
-          newPostForm
-        ) : (
-          <JoinConversationToggle
-            countText={t('squares.postCount', { count: totalCount })}
-            joinLabel={t('joinConversation')}
-          >
-            {newPostForm}
-          </JoinConversationToggle>
-        )
+      {user && totalCount === 0 ? (
+        newPostForm
       ) : (
-        <p className="text-sm text-muted-foreground">
-          <Link href="/sign-in" locale={locale} className="text-link-primary hover:underline">
-            {t('signInToJoin')}
-          </Link>
-        </p>
+        <JoinConversationToggle
+          countText={t('squares.postCount', { count: totalCount })}
+          joinLabel={t('joinConversation')}
+        >
+          {newPostForm}
+        </JoinConversationToggle>
       )}
 
       {totalCount > 0 && (

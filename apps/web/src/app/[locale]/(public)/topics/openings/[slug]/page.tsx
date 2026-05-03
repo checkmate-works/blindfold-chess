@@ -3,7 +3,6 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
-import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { paginateItems } from '@/lib/pagination';
@@ -125,11 +124,12 @@ export default async function OpeningDetailPage({ params, searchParams }: Props)
           )
         ) : null
       ) : (
-        <p className="text-sm text-muted-foreground">
-          <Link href="/sign-in" locale={locale} className="text-link-primary hover:underline">
-            {t('signInToJoin')}
-          </Link>
-        </p>
+        <JoinConversationToggle
+          countText={dt('postCount', { count: totalCount })}
+          joinLabel={t('joinConversation')}
+        >
+          {newPostForm}
+        </JoinConversationToggle>
       )}
 
       {totalCount > 0 && (
