@@ -4,9 +4,8 @@ import { getTranslations } from 'next-intl/server';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 
-import { CardLink, Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { CardLink, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -52,40 +51,36 @@ export default async function LearnPage({ params }: Props) {
   }));
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('learn.title')}</PageTitle>
+    <PageLayout
+      title={t('learn.title')}
+      locale={locale}
+      breadcrumb={[{ label: t('navigation.learn') }]}
+    >
+      <SectionTitle>{t('learn.browseByCategory')}</SectionTitle>
 
-      <PagePanel>
-        <SectionTitle>{t('learn.browseByCategory')}</SectionTitle>
+      <div className="space-y-4">
+        {categoryInfos.map((info) => {
+          const style = CATEGORY_STYLES[info.category];
+          // Determine description - for now using a generic one or looking up if exists
+          // Since existing code didn't have detailed description per category in utils, we construct it.
+          // Accessing style.icon directly for icon.
 
-        <div className="space-y-4">
-          {categoryInfos.map((info) => {
-            const style = CATEGORY_STYLES[info.category];
-            // Determine description - for now using a generic one or looking up if exists
-            // Since existing code didn't have detailed description per category in utils, we construct it.
-            // Accessing style.icon directly for icon.
+          return (
+            <CardLink
+              key={info.category}
+              href={`/learn/${info.category}`}
+              icon={style.icon}
+              title={info.label}
+              description={t('learn.articleCount', { count: info.count })}
+              locale={locale}
+            />
+          );
+        })}
+      </div>
 
-            return (
-              <CardLink
-                key={info.category}
-                href={`/learn/${info.category}`}
-                icon={style.icon}
-                title={info.label}
-                description={t('learn.articleCount', { count: info.count })}
-                locale={locale}
-              />
-            );
-          })}
-        </div>
-
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-        )}
-
-        <Divider />
-
-        <Breadcrumb items={[{ label: t('navigation.learn') }]} locale={locale} />
-      </PagePanel>
-    </div>
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+      )}
+    </PageLayout>
   );
 }

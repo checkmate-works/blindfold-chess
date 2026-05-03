@@ -200,10 +200,10 @@ export function SinglePositionResult({
         </div>
 
         {breadcrumb && (
-          <>
+          <div className="!mt-4 space-y-4">
             <Divider />
             {breadcrumb}
-          </>
+          </div>
         )}
       </PagePanel>
     </div>

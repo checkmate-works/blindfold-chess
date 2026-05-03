@@ -9,9 +9,8 @@ import {
   SUPPORTED_LOCALES,
 } from '@/config';
 
-import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -71,33 +70,26 @@ export default async function GlossaryLetterPage({ params }: Props) {
   const filteredTerms = await getTermsByLetter(letter, locale);
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('letterPage.title', { letter: upperLetter })}</PageTitle>
+    <PageLayout
+      title={t('letterPage.title', { letter: upperLetter })}
+      locale={locale}
+      breadcrumb={[{ label: t('title'), href: '/glossary' }, { label: upperLetter }]}
+    >
+      <SectionTitle>{t('letterPage.termsTitle')}</SectionTitle>
 
-      <PagePanel>
-        <SectionTitle>{t('letterPage.termsTitle')}</SectionTitle>
+      <GlossaryTermList terms={filteredTerms} locale={locale} />
 
-        <GlossaryTermList terms={filteredTerms} locale={locale} />
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE) && (
+        <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
+      )}
 
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE) && (
-          <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
-        )}
+      <SectionTitle>{t('alphabeticalIndexTitle')}</SectionTitle>
 
-        <SectionTitle>{t('alphabeticalIndexTitle')}</SectionTitle>
+      <AlphabeticalIndex locale={locale} currentLetter={letter.toLowerCase()} />
 
-        <AlphabeticalIndex locale={locale} currentLetter={letter.toLowerCase()} />
-
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-        )}
-
-        <Divider />
-
-        <Breadcrumb
-          items={[{ label: t('title'), href: '/glossary' }, { label: upperLetter }]}
-          locale={locale}
-        />
-      </PagePanel>
-    </div>
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+      )}
+    </PageLayout>
   );
 }

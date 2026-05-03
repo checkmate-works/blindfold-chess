@@ -25,15 +25,8 @@ import { getPaginationParams } from '@/lib/pagination';
 import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
 import { countPositions, listPositionsWithProfile } from '@/lib/positions/queries';
 
-import {
-  Divider,
-  PagePanel,
-  PageTitle,
-  PaginationNav,
-  SectionTitle,
-} from '@/app/[locale]/_components';
+import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
@@ -98,66 +91,59 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
   const justNowLabel = t('justNow');
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('list.title')}</PageTitle>
+    <PageLayout
+      title={t('list.title')}
+      locale={locale}
+      breadcrumb={[{ label: tNav('practice'), href: '/practice' }, { label: t('list.title') }]}
+    >
+      <SectionTitle>{t('list.sectionTitle')}</SectionTitle>
 
-      <PagePanel>
-        <SectionTitle>{t('list.sectionTitle')}</SectionTitle>
+      <div className="flex justify-end mb-4">
+        <Link
+          href="/practice/position-memory/tutorial"
+          locale={locale}
+          className={`text-sm ${TEXT_LINK_CLASSES}`}
+        >
+          {t('list.tutorialLink')}
+        </Link>
+      </div>
 
-        <div className="flex justify-end mb-4">
-          <Link
-            href="/practice/position-memory/tutorial"
-            locale={locale}
-            className={`text-sm ${TEXT_LINK_CLASSES}`}
-          >
-            {t('list.tutorialLink')}
+      {rows.length === 0 ? (
+        <p className="text-muted-foreground text-center py-8">{t('list.empty')}</p>
+      ) : (
+        <div className="space-y-3">
+          {rows.map(({ position, profile }) => (
+            <PositionListCard
+              key={position.id}
+              position={position}
+              profile={profile}
+              likeMeta={likeMetaMap.get(position.id) ?? { likeCount: 0, likedByMe: false }}
+              replyMeta={replyMetaMap.get(position.id) ?? EMPTY_REPLY_META}
+              detailHref={`/practice/position-memory/${position.id}`}
+              i18nNamespace={FOOTER_NAMESPACE}
+              toggleLikeAction={toggleLike}
+              justNowLabel={justNowLabel}
+              locale={locale}
+            />
+          ))}
+        </div>
+      )}
+
+      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+
+      {currentUser && (
+        <div className="py-4">
+          <Link href="/practice/position-memory/new" locale={locale}>
+            <Button asChild variant="primary" size="lg" icon={<FaPlus />} fullWidth>
+              {t('list.createButton')}
+            </Button>
           </Link>
         </div>
+      )}
 
-        {rows.length === 0 ? (
-          <p className="text-muted-foreground text-center py-8">{t('list.empty')}</p>
-        ) : (
-          <div className="space-y-3">
-            {rows.map(({ position, profile }) => (
-              <PositionListCard
-                key={position.id}
-                position={position}
-                profile={profile}
-                likeMeta={likeMetaMap.get(position.id) ?? { likeCount: 0, likedByMe: false }}
-                replyMeta={replyMetaMap.get(position.id) ?? EMPTY_REPLY_META}
-                detailHref={`/practice/position-memory/${position.id}`}
-                i18nNamespace={FOOTER_NAMESPACE}
-                toggleLikeAction={toggleLike}
-                justNowLabel={justNowLabel}
-                locale={locale}
-              />
-            ))}
-          </div>
-        )}
-
-        <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
-
-        {currentUser && (
-          <div className="py-4">
-            <Link href="/practice/position-memory/new" locale={locale}>
-              <Button asChild variant="primary" size="lg" icon={<FaPlus />} fullWidth>
-                {t('list.createButton')}
-              </Button>
-            </Link>
-          </div>
-        )}
-
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-        )}
-
-        <Divider />
-
-        <Breadcrumb
-          items={[{ label: tNav('practice'), href: '/practice' }, { label: t('list.title') }]}
-          locale={locale}
-        />
-      </PagePanel>
-    </div>
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+      )}
+    </PageLayout>
   );
 }

@@ -226,23 +226,29 @@ describe('createPositionPuzzlePost', () => {
       mockInsertReturning.mockResolvedValue([{ id: generatedPostId }]);
     });
 
-    it('redirects to /{locale}/practice/puzzle/{id}#post-{postId}', async () => {
+    it('redirects back to the puzzle page with the post-created toast', async () => {
       await expect(
         createPositionPuzzlePost('ja', testPositionId, {}, makeFormData('hello'))
       ).rejects.toThrow('NEXT_REDIRECT');
 
+      // Comments on a puzzle page do not earn a grant (the grant is earned
+      // by *creating* the puzzle via createPuzzle). The user is sent
+      // straight back to the puzzle with the legacy in-place toast.
       expect(mockRedirect).toHaveBeenCalledWith(
         `/ja/practice/puzzle/${testPositionId}?toast=post_created#post-${generatedPostId}`
       );
     });
 
-    it('does NOT apply an automated grant', async () => {
+    it('does NOT apply an automated grant for puzzle comments', async () => {
       await expect(
         createPositionPuzzlePost('en', testPositionId, {}, makeFormData('comment'))
       ).rejects.toThrow('NEXT_REDIRECT');
 
+      // position_puzzle is excluded from TOPIC_POST_GRANT_TOPIC_TYPES, so
+      // the gate in createPostBase short-circuits before applyAutomatedGrant
+      // is reached. revalidateTag('grant-status') likewise must not fire.
       expect(applyAutomatedGrant).not.toHaveBeenCalled();
-      expect(revalidateTag).not.toHaveBeenCalled();
+      expect(revalidateTag).not.toHaveBeenCalledWith('grant-status', expect.anything());
     });
 
     it('does NOT emit a feed_items row', async () => {

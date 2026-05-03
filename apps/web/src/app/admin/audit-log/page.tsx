@@ -149,6 +149,8 @@ export default async function AdminAuditLogPage({
             <option value="unban">unban</option>
             <option value="delete_post">delete_post</option>
             <option value="delete_position">delete_position</option>
+            <option value="create_grant">create_grant</option>
+            <option value="revoke_grant">revoke_grant</option>
           </select>
         </div>
         <div>
@@ -196,9 +198,11 @@ export default async function AdminAuditLogPage({
                   className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
                     log.action === 'ban'
                       ? 'bg-destructive-soft text-destructive-soft-foreground'
-                      : log.action === 'unban'
+                      : log.action === 'unban' || log.action === 'create_grant'
                         ? 'bg-success-soft text-success-soft-foreground'
-                        : log.action === 'delete_post' || log.action === 'delete_position'
+                        : log.action === 'delete_post' ||
+                            log.action === 'delete_position' ||
+                            log.action === 'revoke_grant'
                           ? 'bg-caution-soft text-caution-soft-foreground'
                           : 'bg-secondary text-secondary-foreground'
                   }`}

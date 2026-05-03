@@ -29,11 +29,12 @@ export async function createPositionMemoryPost(
     invalidTopicError: 'Invalid position',
     rateLimit: RATE_LIMITS.createPost,
     validateContent,
-    grantConfig: null,
     emitFeedItem: false,
     topicAuthorId: position?.userId,
-    redirectPath: (postId) =>
-      `/${locale}/practice/position-memory/${positionId}?toast=post_created#post-${postId}`,
+    redirectPath: (postId, { toast }) =>
+      `/${locale}/practice/position-memory/${positionId}${
+        toast ? '?toast=post_created' : ''
+      }#post-${postId}`,
     formData,
   });
 }

@@ -1,13 +1,6 @@
 import type { ReactNode } from 'react';
 
-import {
-  Divider,
-  PagePanel,
-  PageTitle,
-  PaginationNav,
-  SectionTitle,
-} from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
 import type { BreadcrumbItem } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -55,32 +48,24 @@ export function TopicListPageLayout({
   breadcrumbItems,
 }: Props) {
   return (
-    <div className="space-y-8">
-      <PageTitle>{pageTitle}</PageTitle>
+    <PageLayout title={pageTitle} locale={locale} breadcrumb={breadcrumbItems}>
+      <SectionTitle>{sectionTitle}</SectionTitle>
 
-      <PagePanel>
-        <SectionTitle>{sectionTitle}</SectionTitle>
+      {topicHeader}
 
-        {topicHeader}
+      {adMiddle}
 
-        {adMiddle}
+      {communitySection}
 
-        {communitySection}
+      {hasPosts && <div className="space-y-3">{postCards}</div>}
 
-        {hasPosts && <div className="space-y-3">{postCards}</div>}
+      {adBottom}
 
-        {adBottom}
-
-        <PaginationNav
-          currentPage={pagination.currentPage}
-          totalPages={pagination.totalPages}
-          buildHref={pagination.buildHref}
-        />
-
-        <Divider />
-
-        <Breadcrumb items={breadcrumbItems} locale={locale} />
-      </PagePanel>
-    </div>
+      <PaginationNav
+        currentPage={pagination.currentPage}
+        totalPages={pagination.totalPages}
+        buildHref={pagination.buildHref}
+      />
+    </PageLayout>
   );
 }

@@ -7,8 +7,7 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { db, profiles, userFollows } from '@/lib/db';
 
-import { Divider, PagePanel, PageTitle, PaginationNav, UserCard } from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { PageLayout, PaginationNav, UserCard } from '@/app/[locale]/_components';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -98,37 +97,31 @@ export default async function FollowersPage({ params, searchParams }: Props) {
   };
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('followersPageTitle')}</PageTitle>
-      <PagePanel>
-        {followerList.length === 0 ? (
-          <p className="text-muted-foreground">{t('noFollowers')}</p>
-        ) : (
-          <div className="space-y-3">
-            {followerList.map((user) => (
-              <UserCard
-                key={user.id}
-                username={user.username}
-                displayName={user.displayName}
-                avatarUrl={user.avatarUrl}
-                locale={locale}
-              />
-            ))}
-          </div>
-        )}
+    <PageLayout
+      title={t('followersPageTitle')}
+      locale={locale}
+      breadcrumb={[
+        { label: displayName, href: `/u/${username}` },
+        { label: t('followersPageTitle') },
+      ]}
+    >
+      {followerList.length === 0 ? (
+        <p className="text-muted-foreground">{t('noFollowers')}</p>
+      ) : (
+        <div className="space-y-3">
+          {followerList.map((user) => (
+            <UserCard
+              key={user.id}
+              username={user.username}
+              displayName={user.displayName}
+              avatarUrl={user.avatarUrl}
+              locale={locale}
+            />
+          ))}
+        </div>
+      )}
 
-        <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
-
-        <Divider />
-
-        <Breadcrumb
-          locale={locale}
-          items={[
-            { label: displayName, href: `/u/${username}` },
-            { label: t('followersPageTitle') },
-          ]}
-        />
-      </PagePanel>
-    </div>
+      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+    </PageLayout>
   );
 }

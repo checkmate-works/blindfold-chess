@@ -27,6 +27,7 @@ vi.mock('@/i18n/routing', () => ({
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string, params?: Record<string, unknown>) =>
     params ? `${key}:${JSON.stringify(params)}` : key,
+  useLocale: () => 'en',
 }));
 
 // createPuzzle server action — default is success; individual tests override.

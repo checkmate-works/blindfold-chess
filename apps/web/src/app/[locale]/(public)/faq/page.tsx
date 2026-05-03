@@ -5,12 +5,11 @@ import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
 import { getModuleWeight } from '@blindfold-chess/features/exp';
 
-import { type AutomatedGrantType, GRANT_TYPE_DEFAULTS } from '@/lib/db/data/grant-types';
+import { GRANT_TYPE_DEFAULTS } from '@/lib/db/data/grant-types';
 import { JsonLd, generateFAQPageSchema } from '@/lib/seo/jsonld';
 
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { PageLayout } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
@@ -199,43 +198,35 @@ export default async function FAQPage({ params }: Props) {
               </tr>
             </thead>
             <tbody>
-              {(Object.keys(GRANT_TYPE_DEFAULTS) as AutomatedGrantType[]).map((key) => (
-                <tr key={key} className="border-b border-border">
-                  <td className="py-1.5 px-2">{t(`items.adFreeBenefits.actions.${key}`)}</td>
+              {(['topic_post', 'position_creation'] as const).map((action) => (
+                <tr key={action} className="border-b border-border">
+                  <td className="py-1.5 px-2">{t(`items.adFreeBenefits.actions.${action}`)}</td>
                   <td className="py-1.5 px-2">
                     {t('items.adFreeBenefits.durationDays', {
-                      days: GRANT_TYPE_DEFAULTS[key].durationDays,
+                      days: GRANT_TYPE_DEFAULTS.topic_post.durationDays,
                     })}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-
-          <p className="text-sm text-muted-foreground">{t('items.adFreeBenefits.note')}</p>
         </div>
       ),
     },
   ];
 
   return (
-    <div className="space-y-8">
+    <>
       {/* NOTE: FAQPage rich results are limited to government/healthcare sites since Aug 2023.
           Keeping schema for semantic markup purposes, but no rich result expected. */}
       <JsonLd data={generateFAQPageSchema(faqSchemaItems)} />
-      <PageTitle>{t('title')}</PageTitle>
-
-      <PagePanel>
+      <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
         <FAQClient items={faqItems} />
 
         {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
           <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
         )}
-
-        <Divider />
-
-        <Breadcrumb items={[{ label: t('title') }]} locale={locale} />
-      </PagePanel>
-    </div>
+      </PageLayout>
+    </>
   );
 }

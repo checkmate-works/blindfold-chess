@@ -1,5 +1,4 @@
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { PageLayout } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 type BreadcrumbItem = {
@@ -18,38 +17,32 @@ type Props = {
   children: React.ReactNode;
   /** Optional className override for the outer container div. Defaults to "space-y-8". */
   containerClassName?: string;
-  /** Optional className for the Divider. */
+  /** Optional className for the trailing Divider. */
   dividerClassName?: string;
 };
 
 /**
- * Shared layout wrapper for all practice result pages.
- *
- * Renders the standard structure:
- *   <PageTitle> ... </PageTitle>
- *   {children}
- *   <Divider />
- *   <Breadcrumb />
+ * Shared layout wrapper for all practice result pages. Delegates to `PageLayout`
+ * so spacing rules (panel padding, breadcrumb gap) stay aligned with the rest
+ * of the app.
  */
 export function PracticeResultPage({
   locale,
   title,
   breadcrumbItems,
   children,
-  containerClassName = 'space-y-8',
+  containerClassName,
   dividerClassName,
 }: Props) {
   return (
-    <div className={containerClassName}>
-      <PageTitle>{title}</PageTitle>
-
-      <PagePanel>
-        {children}
-
-        <Divider className={dividerClassName} />
-
-        <Breadcrumb items={breadcrumbItems} locale={locale} />
-      </PagePanel>
-    </div>
+    <PageLayout
+      title={title}
+      locale={locale}
+      breadcrumb={breadcrumbItems}
+      className={containerClassName}
+      dividerClassName={dividerClassName}
+    >
+      {children}
+    </PageLayout>
   );
 }

@@ -7,9 +7,8 @@ import type { User } from '@supabase/supabase-js';
 
 import type { ActionResult } from '@/lib/action-types';
 
-import { LinkedText, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { LinkedText, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import type { BreadcrumbItem } from '@/app/[locale]/_components/Breadcrumb';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -167,74 +166,83 @@ export async function TopicPostDetailLayout({
   const isOwnPost = user?.id === rootWithMeta.userId;
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{pageTitle}</PageTitle>
+    <PageLayout title={pageTitle} locale={locale} breadcrumb={breadcrumbItems} divider={false}>
+      <SectionTitle>{sectionTitle}</SectionTitle>
 
-      <PagePanel>
-        <SectionTitle>{sectionTitle}</SectionTitle>
+      {topicVisual}
 
-        {topicVisual}
-
-        {/*
-          OP card — the bordered surface ("カード" in product language)
-          that surfaces the post text as the page's main content. Mirrors
-          the shape `main`'s `PostDetailContent` carried before the
-          fix-comments refactor unified everything into CommentNode; the
-          unified treatment was rolled back here because readers were
-          interpreting the OP as just-another comment.
-        */}
-        <div className="p-4 bg-card border border-border rounded-lg space-y-4">
-          <UserAvatar
-            profileHref={profileHref}
-            avatarUrl={rootWithMeta.author?.avatarUrl}
-            displayName={authorName}
-            locale={locale}
-            size="md"
-            flair={rootWithMeta.author?.flair}
-            country={rootWithMeta.author?.country}
-          >
-            <div className="text-sm text-muted-foreground">
-              <time dateTime={rootWithMeta.createdAt.toISOString()}>
-                {formatAbsoluteDateTime(rootWithMeta.createdAt, locale, 'long')}
-              </time>
-            </div>
-          </UserAvatar>
-
-          {opMeta}
-
-          <div className="text-foreground whitespace-pre-wrap break-words leading-relaxed">
-            <LinkedText text={rootWithMeta.content} locale={locale} />
+      {/*
+        OP card — the bordered surface ("カード" in product language)
+        that surfaces the post text as the page's main content. Mirrors
+        the shape `main`'s `PostDetailContent` carried before the
+        fix-comments refactor unified everything into CommentNode; the
+        unified treatment was rolled back here because readers were
+        interpreting the OP as just-another comment.
+      */}
+      <div className="p-4 bg-card border border-border rounded-lg space-y-4">
+        <UserAvatar
+          profileHref={profileHref}
+          avatarUrl={rootWithMeta.author?.avatarUrl}
+          displayName={authorName}
+          locale={locale}
+          size="md"
+          flair={rootWithMeta.author?.flair}
+          country={rootWithMeta.author?.country}
+        >
+          <div className="text-sm text-muted-foreground">
+            <time dateTime={rootWithMeta.createdAt.toISOString()}>
+              {formatAbsoluteDateTime(rootWithMeta.createdAt, locale, 'long')}
+            </time>
           </div>
+        </UserAvatar>
 
-          <div className="flex items-center gap-4">
-            <LikeButton
-              postId={rootWithMeta.id}
-              locale={locale}
-              topicKey={topicKey}
-              initialLikeCount={rootWithMeta.likeMeta.likeCount}
-              initialLikedByMe={rootWithMeta.likeMeta.likedByMe}
-              toggleLikeAction={toggleLikeAction}
-              i18nNamespace={i18n.likeNamespace}
-            />
-            {isOwnPost && (
-              <DeletePostButton
-                postId={rootWithMeta.id}
-                locale={locale}
-                redirectPath={redirectPath}
-                deletePostAction={deletePostAction}
-                i18nNamespace={i18n.deleteNamespace}
-              />
-            )}
-          </div>
+        {opMeta}
+
+        <div className="text-foreground whitespace-pre-wrap break-words leading-relaxed">
+          <LinkedText text={rootWithMeta.content} locale={locale} />
         </div>
 
-        <SectionTitle>{comments.sectionTitle}</SectionTitle>
+        <div className="flex items-center gap-4">
+          <LikeButton
+            postId={rootWithMeta.id}
+            locale={locale}
+            topicKey={topicKey}
+            initialLikeCount={rootWithMeta.likeMeta.likeCount}
+            initialLikedByMe={rootWithMeta.likeMeta.likedByMe}
+            toggleLikeAction={toggleLikeAction}
+            i18nNamespace={i18n.likeNamespace}
+          />
+          {isOwnPost && (
+            <DeletePostButton
+              postId={rootWithMeta.id}
+              locale={locale}
+              redirectPath={redirectPath}
+              deletePostAction={deletePostAction}
+              i18nNamespace={i18n.deleteNamespace}
+            />
+          )}
+        </div>
+      </div>
 
-        {user && !canReply ? (
-          replyRestrictionMessage && (
-            <p className="text-sm text-muted-foreground italic">{replyRestrictionMessage}</p>
-          )
-        ) : user && replyCount === 0 ? (
+      <SectionTitle>{comments.sectionTitle}</SectionTitle>
+
+      {user && !canReply ? (
+        replyRestrictionMessage && (
+          <p className="text-sm text-muted-foreground italic">{replyRestrictionMessage}</p>
+        )
+      ) : user && replyCount === 0 ? (
+        <ReplyForm
+          locale={locale}
+          topicKey={topicKey}
+          postId={rootWithMeta.id}
+          createReplyAction={createReplyAction}
+          i18nNamespace={i18n.replyNamespace}
+        />
+      ) : (
+        <JoinConversationToggle
+          countText={comments.countText}
+          joinLabel={tTopics('joinConversation')}
+        >
           <ReplyForm
             locale={locale}
             topicKey={topicKey}
@@ -242,50 +250,35 @@ export async function TopicPostDetailLayout({
             createReplyAction={createReplyAction}
             i18nNamespace={i18n.replyNamespace}
           />
-        ) : (
-          <JoinConversationToggle
-            countText={comments.countText}
-            joinLabel={tTopics('joinConversation')}
-          >
-            <ReplyForm
-              locale={locale}
-              topicKey={topicKey}
-              postId={rootWithMeta.id}
-              createReplyAction={createReplyAction}
-              i18nNamespace={i18n.replyNamespace}
-            />
-          </JoinConversationToggle>
-        )}
+        </JoinConversationToggle>
+      )}
 
-        {replyCount > 0 && (
-          <>
-            <SortSelect
-              basePath={comments.sortBasePath}
-              translationKey={comments.sortTranslationKey}
-              currentSort={comments.sortBy}
-            />
-            <CommentTree
-              comments={replyRoots}
-              locale={locale}
-              topicKey={topicKey}
-              currentUserId={user?.id}
-              enableSpoiler={enableSpoiler}
-              redirectPath={redirectPath}
-              toggleLikeAction={toggleLikeAction}
-              createReplyAction={createReplyAction}
-              deletePostAction={deletePostAction}
-              i18n={i18n}
-              threadRootPostId={rootWithMeta.id}
-            />
-          </>
-        )}
+      {replyCount > 0 && (
+        <>
+          <SortSelect
+            basePath={comments.sortBasePath}
+            translationKey={comments.sortTranslationKey}
+            currentSort={comments.sortBy}
+          />
+          <CommentTree
+            comments={replyRoots}
+            locale={locale}
+            topicKey={topicKey}
+            currentUserId={user?.id}
+            enableSpoiler={enableSpoiler}
+            redirectPath={redirectPath}
+            toggleLikeAction={toggleLikeAction}
+            createReplyAction={createReplyAction}
+            deletePostAction={deletePostAction}
+            i18n={i18n}
+            threadRootPostId={rootWithMeta.id}
+          />
+        </>
+      )}
 
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-        )}
-
-        <Breadcrumb items={breadcrumbItems} locale={locale} />
-      </PagePanel>
-    </div>
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+      )}
+    </PageLayout>
   );
 }

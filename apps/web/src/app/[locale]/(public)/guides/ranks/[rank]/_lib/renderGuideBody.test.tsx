@@ -122,6 +122,12 @@ vi.mock('@/app/[locale]/(public)/guides/_components/GuidePageFooter', () => ({
 // Swap the shared UI primitives for minimal stand-ins.
 vi.mock('@/app/[locale]/_components', () => ({
   Divider: () => <hr data-testid="divider" />,
+  PageLayout: ({ title, children }: { title: React.ReactNode; children: React.ReactNode }) => (
+    <>
+      <h1>{title}</h1>
+      <section>{children}</section>
+    </>
+  ),
   PagePanel: ({ children }: { children: React.ReactNode }) => <section>{children}</section>,
   PageTitle: ({ children }: { children: React.ReactNode }) => <h1>{children}</h1>,
   PaginationNav: ({ totalPages }: { totalPages: number }) => (

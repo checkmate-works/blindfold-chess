@@ -15,8 +15,7 @@ import { Link } from '@/i18n/routing';
 
 import { createClient } from '@/lib/supabase/server';
 
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { Divider, PageLayout } from '@/app/[locale]/_components';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -67,48 +66,46 @@ export default async function SignUpPage({ params, searchParams }: Props) {
   const t = await getTranslations({ locale, namespace: 'signUp' });
 
   return (
-    <div className="space-y-8">
-      <PageTitle>
-        {t('title')}
-        <span className="ml-2 inline-flex items-center rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success align-middle">
-          {t('freeBadge')}
-        </span>
-      </PageTitle>
+    <PageLayout
+      title={
+        <>
+          {t('title')}
+          <span className="ml-2 inline-flex items-center rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success align-middle">
+            {t('freeBadge')}
+          </span>
+        </>
+      }
+      locale={locale}
+      breadcrumb={[{ label: t('title') }]}
+    >
+      {error && <AuthErrorMessage namespace="signUp" />}
 
-      <PagePanel>
-        {error && <AuthErrorMessage namespace="signUp" />}
+      <div>
+        <GoogleOAuthButton namespace="signUp" />
+      </div>
 
-        <div>
-          <GoogleOAuthButton namespace="signUp" />
-        </div>
+      <p className="mt-2 text-center text-xs text-muted-foreground">
+        <span aria-hidden="true" className="text-success">
+          &#x2713;
+        </span>{' '}
+        {t('freeAssurance')}
+      </p>
 
-        <p className="mt-2 text-center text-xs text-muted-foreground">
-          <span aria-hidden="true" className="text-success">
-            &#x2713;
-          </span>{' '}
-          {t('freeAssurance')}
-        </p>
+      <div className="flex items-center gap-4 max-w-sm mx-auto">
+        <Divider className="flex-1" />
+        <span className="text-sm text-muted-foreground">{t('orDivider')}</span>
+        <Divider className="flex-1" />
+      </div>
 
-        <div className="flex items-center gap-4 max-w-sm mx-auto">
-          <Divider className="flex-1" />
-          <span className="text-sm text-muted-foreground">{t('orDivider')}</span>
-          <Divider className="flex-1" />
-        </div>
+      <EmailSignUpForm />
+      <p className="mt-6 text-center text-sm text-muted-foreground">
+        {t('alreadyHaveAccount')}{' '}
+        <Link href="/sign-in" locale={locale} className={TEXT_LINK_CLASSES}>
+          {t('signIn')}
+        </Link>
+      </p>
 
-        <EmailSignUpForm />
-        <p className="mt-6 text-center text-sm text-muted-foreground">
-          {t('alreadyHaveAccount')}{' '}
-          <Link href="/sign-in" locale={locale} className={TEXT_LINK_CLASSES}>
-            {t('signIn')}
-          </Link>
-        </p>
-
-        <FeatureCardsSection t={t} />
-
-        <Divider />
-
-        <Breadcrumb items={[{ label: t('title') }]} locale={locale} />
-      </PagePanel>
-    </div>
+      <FeatureCardsSection t={t} />
+    </PageLayout>
   );
 }

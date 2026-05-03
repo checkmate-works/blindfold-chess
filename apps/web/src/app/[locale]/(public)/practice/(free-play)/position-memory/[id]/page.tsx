@@ -27,7 +27,6 @@ import {
 } from '@/app/[locale]/(public)/topics/_lib/queries';
 import { SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { RelatedChunks } from '@/app/[locale]/_components/RelatedChunks';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -105,21 +104,17 @@ export default async function PositionDetailPage({ params, searchParams }: Props
   return (
     <PositionDetailLayout
       title={position.title}
+      locale={locale}
       bottomAdSense={
         (IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
           <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
         )
       }
-      breadcrumb={
-        <Breadcrumb
-          items={[
-            { label: tNav('practice'), href: '/practice' },
-            { label: t('list.title'), href: '/practice/position-memory' },
-            { label: position.title },
-          ]}
-          locale={locale}
-        />
-      }
+      breadcrumbItems={[
+        { label: tNav('practice'), href: '/practice' },
+        { label: t('list.title'), href: '/practice/position-memory' },
+        { label: position.title },
+      ]}
     >
       <SectionTitle>{t('detail.descriptionSection')}</SectionTitle>
 

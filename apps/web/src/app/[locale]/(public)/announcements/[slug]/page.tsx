@@ -10,9 +10,8 @@ import { Link, routing } from '@/i18n/routing';
 
 import { getOptionalUser } from '@/lib/auth';
 
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { PageLayout } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -96,32 +95,25 @@ export default async function AnnouncementPage({ params }: Props) {
 
     if (!user) {
       return (
-        <div className="space-y-8">
-          <PageTitle>{announcement.title}</PageTitle>
+        <PageLayout
+          title={announcement.title}
+          locale={locale}
+          breadcrumb={[
+            { label: t('pageTitle'), href: '/announcements' },
+            { label: announcement.title },
+          ]}
+        >
+          <div className="text-center py-8">
+            <p className="text-muted-foreground mb-4">{t('membersOnly')}</p>
+            <Link href="/sign-in" locale={locale} className={`font-medium ${TEXT_LINK_CLASSES}`}>
+              {t('signInToView')}
+            </Link>
+          </div>
 
-          <PagePanel>
-            <div className="text-center py-8">
-              <p className="text-muted-foreground mb-4">{t('membersOnly')}</p>
-              <Link href="/sign-in" locale={locale} className={`font-medium ${TEXT_LINK_CLASSES}`}>
-                {t('signInToView')}
-              </Link>
-            </div>
-
-            {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-              <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-            )}
-
-            <Divider />
-
-            <Breadcrumb
-              items={[
-                { label: t('pageTitle'), href: '/announcements' },
-                { label: announcement.title },
-              ]}
-              locale={locale}
-            />
-          </PagePanel>
-        </div>
+          {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+            <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+          )}
+        </PageLayout>
       );
     }
   }
@@ -135,29 +127,23 @@ export default async function AnnouncementPage({ params }: Props) {
     : undefined;
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{announcement.title}</PageTitle>
+    <PageLayout
+      title={announcement.title}
+      locale={locale}
+      breadcrumb={[
+        { label: t('pageTitle'), href: '/announcements' },
+        { label: announcement.title },
+      ]}
+    >
+      <article className="prose prose-slate dark:prose-invert max-w-none break-words">
+        <MarkdownRenderer content={announcement.content} skipFirstH1={true} />
+      </article>
 
-      <PagePanel>
-        <article className="prose prose-slate dark:prose-invert max-w-none break-words">
-          <MarkdownRenderer content={announcement.content} skipFirstH1={true} />
-        </article>
+      {publishedDate && <p className="text-sm text-muted-foreground text-right">{publishedDate}</p>}
 
-        {publishedDate && (
-          <p className="text-sm text-muted-foreground text-right">{publishedDate}</p>
-        )}
-
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-        )}
-
-        <Divider />
-
-        <Breadcrumb
-          items={[{ label: t('pageTitle'), href: '/announcements' }, { label: announcement.title }]}
-          locale={locale}
-        />
-      </PagePanel>
-    </div>
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+      )}
+    </PageLayout>
   );
 }

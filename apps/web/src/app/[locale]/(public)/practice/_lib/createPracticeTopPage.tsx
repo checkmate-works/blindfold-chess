@@ -12,9 +12,8 @@ import type {
 } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { buildDetailPath } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { LeaderboardPreview } from '@/app/[locale]/(public)/practice/_components/LeaderboardPreview';
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { PageLayout } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -71,37 +70,30 @@ export function createPracticeTopPage(config: PracticeTopPageConfig) {
     const leaderboardData = await resolveLeaderboardData(config.leaderboard);
 
     return (
-      <div className="space-y-8">
-        <PageTitle>{t(`practice.${config.i18nKey}.title`)}</PageTitle>
+      <PageLayout
+        title={t(`practice.${config.i18nKey}.title`)}
+        locale={locale}
+        breadcrumb={[
+          { label: t('navigation.practice'), href: '/practice' },
+          { label: t(`practice.${config.i18nKey}.title`) },
+        ]}
+      >
+        {config.renderSetup(locale)}
 
-        <PagePanel>
-          {config.renderSetup(locale)}
+        {config.renderArticles(t, locale)}
 
-          {config.renderArticles(t, locale)}
-
-          {leaderboardData && (
-            <LeaderboardPreview
-              rows={leaderboardData.rows}
-              detailPath={leaderboardData.detailPath}
-              locale={locale}
-            />
-          )}
-
-          {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-            <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-          )}
-
-          <Divider />
-
-          <Breadcrumb
-            items={[
-              { label: t('navigation.practice'), href: '/practice' },
-              { label: t(`practice.${config.i18nKey}.title`) },
-            ]}
+        {leaderboardData && (
+          <LeaderboardPreview
+            rows={leaderboardData.rows}
+            detailPath={leaderboardData.detailPath}
             locale={locale}
           />
-        </PagePanel>
-      </div>
+        )}
+
+        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+        )}
+      </PageLayout>
     );
   }
 

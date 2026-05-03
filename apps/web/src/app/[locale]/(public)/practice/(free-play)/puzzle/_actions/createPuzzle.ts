@@ -1,14 +1,29 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, feedItems, positions, puzzleSolutions } from '@/lib/db';
-import { notifyFollowersOfNewPosition } from '@/lib/notifications/notification';
+import { GRANT_TYPE_DEFAULTS } from '@/lib/db/data/grant-types';
+import { createNotification, notifyFollowersOfNewPosition } from '@/lib/notifications/notification';
 import { normalizePuzzleMoves, validatePuzzleMutationData } from '@/lib/positions/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
+import { applyAutomatedGrant } from '@/lib/users/user-grants';
 
-export type CreatePuzzleResult = { success: true; id: string } | { error: string };
+export type CreatePuzzleResult =
+  | {
+      success: true;
+      id: string;
+      /**
+       * Present when the create triggered an automated `topic_post` grant.
+       * Callers route the user through `/thanks?grantId=...&returnUrl=...`
+       * in this case; otherwise they fall back to the legacy result page.
+       * `expiresAt` is serialized to ISO so the value crosses the
+       * server-action JSON boundary unchanged.
+       */
+      grant?: { grantId: string; expiresAt: string };
+    }
+  | { error: string };
 
 export async function createPuzzle(data: {
   fen: string;
@@ -38,6 +53,7 @@ export async function createPuzzle(data: {
     return { error: validationError };
   }
 
+  let grantInfo: { grantId: string; expiresAt: Date } | null = null;
   const inserted = await db.transaction(async (tx) => {
     const [position] = await tx
       .insert(positions)
@@ -62,8 +78,37 @@ export async function createPuzzle(data: {
       metadata: { type: 'puzzle' },
     });
 
+    // Automated 'topic_post' grant for creating a puzzle position. Stays on
+    // the same grantType as comment-driven grants so duration policy and
+    // benefit stacking flow through one pipeline; sourceType='position'
+    // distinguishes the trigger surface for /thanks copy resolution and
+    // future targeted revocation if the position is deleted.
+    grantInfo = await applyAutomatedGrant(tx, user.id, 'topic_post', {
+      type: 'position',
+      id: position.id,
+    });
+
     return position;
   });
+
+  if (grantInfo) {
+    revalidateTag('grant-status', { expire: 60 });
+    const info: { grantId: string; expiresAt: Date } = grantInfo;
+    const grantTypeConfig = GRANT_TYPE_DEFAULTS.topic_post;
+    createNotification({
+      userId: user.id,
+      type: 'benefit_grant',
+      targetType: 'user_grant',
+      targetId: info.grantId,
+      metadata: {
+        grantType: 'topic_post',
+        benefitType: grantTypeConfig.benefitType,
+        durationDays: grantTypeConfig.durationDays,
+        expiresAt: info.expiresAt.toISOString(),
+        reason: null,
+      },
+    });
+  }
 
   notifyFollowersOfNewPosition({
     actorId: user.id,
@@ -73,5 +118,16 @@ export async function createPuzzle(data: {
 
   revalidatePath('/practice/puzzle');
 
-  return { success: true, id: inserted.id };
+  return {
+    success: true,
+    id: inserted.id,
+    ...(grantInfo
+      ? {
+          grant: {
+            grantId: (grantInfo as { grantId: string; expiresAt: Date }).grantId,
+            expiresAt: (grantInfo as { grantId: string; expiresAt: Date }).expiresAt.toISOString(),
+          },
+        }
+      : {}),
+  };
 }

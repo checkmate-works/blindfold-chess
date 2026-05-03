@@ -26,12 +26,9 @@ import {
   DashboardCard,
   DashboardSection,
   DashboardSectionHeader,
-  Divider,
-  PagePanel,
-  PageTitle,
+  PageLayout,
 } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
@@ -156,11 +153,13 @@ export default async function PracticePage({ params }: Props) {
   );
 
   return (
-    <div className="space-y-8">
+    <>
       <JsonLd data={generateItemListSchema(itemListItems)} />
-      <PageTitle>{t('practice.title')}</PageTitle>
-
-      <PagePanel>
+      <PageLayout
+        title={t('practice.title')}
+        locale={locale}
+        breadcrumb={[{ label: t('navigation.practice') }]}
+      >
         <DashboardCard>
           {sections.map((section) => (
             <DashboardSection key={section.title}>
@@ -195,11 +194,7 @@ export default async function PracticePage({ params }: Props) {
         {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
           <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
         )}
-
-        <Divider />
-
-        <Breadcrumb items={[{ label: t('navigation.practice') }]} locale={locale} />
-      </PagePanel>
-    </div>
+      </PageLayout>
+    </>
   );
 }

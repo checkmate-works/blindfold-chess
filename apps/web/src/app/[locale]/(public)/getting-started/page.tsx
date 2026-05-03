@@ -7,8 +7,7 @@ import { FaChess, FaComments, FaDumbbell } from 'react-icons/fa';
 
 import { RankCard } from '@/app/[locale]/(public)/ranks/_components/RankCard';
 import { buildRankTeaserCards } from '@/app/[locale]/(public)/ranks/_lib/helpers';
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { PageLayout } from '@/app/[locale]/_components';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
@@ -50,106 +49,101 @@ export default async function GettingStartedPage({ params }: Props) {
   ));
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
+    <PageLayout
+      title={t('title')}
+      locale={locale}
+      breadcrumb={[{ label: t('title') }]}
+      panelClassName="space-y-8"
+    >
+      <p className="text-center text-lg text-muted-foreground">{t('headline')}</p>
 
-      <PagePanel className="space-y-8">
-        <p className="text-center text-lg text-muted-foreground">{t('headline')}</p>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Card 1: Try */}
-          <div className="bg-card border border-border rounded-lg p-6 flex flex-col items-center text-center space-y-4">
-            <div className="text-primary text-3xl">
-              <FaChess />
-            </div>
-            <h2 className="text-lg font-semibold text-foreground">{t('cards.try.title')}</h2>
-            <div className="w-48">
-              <ChessBoard fen={SIMPLE_FEN} showCoordinates={false} />
-            </div>
-            <div className="mt-auto pt-2 flex flex-col items-center gap-4">
-              <Link href={`/games/new/position?fen=${encodeURIComponent(SIMPLE_FEN)}`}>
-                <Button asChild variant="primary" size="lg">
-                  {t('cards.try.cta')}
-                </Button>
-              </Link>
-              <Link href="/games/new/standard" className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
-                {t('cards.try.startFromInitial')}
-              </Link>
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Card 1: Try */}
+        <div className="bg-card border border-border rounded-lg p-6 flex flex-col items-center text-center space-y-4">
+          <div className="text-primary text-3xl">
+            <FaChess />
           </div>
-
-          {/* Card 2: Train */}
-          <div className="bg-card border border-border rounded-lg p-6 flex flex-col items-center text-center space-y-4">
-            <div className="text-primary text-3xl">
-              <FaDumbbell />
-            </div>
-            <h2 className="text-lg font-semibold text-foreground">{t('cards.train.title')}</h2>
-            <p className="text-sm text-muted-foreground">{t('cards.train.description')}</p>
-            <div className="w-48 bg-muted/30 rounded-lg p-4 flex flex-col items-center justify-center gap-3 aspect-square">
-              <p className="text-sm font-bold text-foreground">
-                {t('cards.train.previewQuestion')}
-              </p>
-              <div className="text-6xl">{'\u2658'}</div>
-              <div className="grid grid-cols-2 gap-2 w-full">
-                <div className="px-2 py-1 bg-success/10 text-success border border-success/30 rounded text-sm font-medium flex items-center justify-center gap-1 opacity-60">
-                  <span>○</span>
-                </div>
-                <div className="px-2 py-1 bg-destructive/10 text-destructive border border-destructive/30 rounded text-sm font-medium flex items-center justify-center gap-1 opacity-60">
-                  <span>×</span>
-                </div>
-              </div>
-            </div>
-            <div className="mt-auto pt-2 flex flex-col items-center gap-4">
-              <Link href="/practice/legal-moves?mode=timed">
-                <Button asChild variant="primary" size="lg">
-                  {t('cards.train.cta')}
-                </Button>
-              </Link>
-              <Link href="/practice" className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
-                {t('cards.train.viewOtherMenus')}
-              </Link>
-            </div>
+          <h2 className="text-lg font-semibold text-foreground">{t('cards.try.title')}</h2>
+          <div className="w-48">
+            <ChessBoard fen={SIMPLE_FEN} showCoordinates={false} />
           </div>
-
-          {/* Card 3: Community */}
-          <div className="bg-card border border-border rounded-lg p-6 flex flex-col items-center text-center space-y-4">
-            <div className="text-primary text-3xl">
-              <FaComments />
-            </div>
-            <h2 className="text-lg font-semibold text-foreground">{t('cards.community.title')}</h2>
-            <p className="text-sm text-muted-foreground">{t('cards.community.description')}</p>
-            <div className="mt-auto pt-2 flex flex-col items-center gap-4">
-              <Link href="/topics">
-                <Button asChild variant="primary" size="lg">
-                  {t('cards.community.cta')}
-                </Button>
-              </Link>
-              <Link href="/sign-up" className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
-                {t('cards.community.signUp')}
-              </Link>
-            </div>
+          <div className="mt-auto pt-2 flex flex-col items-center gap-4">
+            <Link href={`/games/new/position?fen=${encodeURIComponent(SIMPLE_FEN)}`}>
+              <Button asChild variant="primary" size="lg">
+                {t('cards.try.cta')}
+              </Button>
+            </Link>
+            <Link href="/games/new/standard" className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
+              {t('cards.try.startFromInitial')}
+            </Link>
           </div>
         </div>
 
-        {/* Belt Ranks Teaser */}
-        <section className="space-y-6">
-          <h2 className="text-xl font-bold text-foreground text-center">{t('ranks.title')}</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{teaserCards}</div>
-
-          <div className="text-center">
-            <Link href="/ranks">
+        {/* Card 2: Train */}
+        <div className="bg-card border border-border rounded-lg p-6 flex flex-col items-center text-center space-y-4">
+          <div className="text-primary text-3xl">
+            <FaDumbbell />
+          </div>
+          <h2 className="text-lg font-semibold text-foreground">{t('cards.train.title')}</h2>
+          <p className="text-sm text-muted-foreground">{t('cards.train.description')}</p>
+          <div className="w-48 bg-muted/30 rounded-lg p-4 flex flex-col items-center justify-center gap-3 aspect-square">
+            <p className="text-sm font-bold text-foreground">{t('cards.train.previewQuestion')}</p>
+            <div className="text-6xl">{'\u2658'}</div>
+            <div className="grid grid-cols-2 gap-2 w-full">
+              <div className="px-2 py-1 bg-success/10 text-success border border-success/30 rounded text-sm font-medium flex items-center justify-center gap-1 opacity-60">
+                <span>○</span>
+              </div>
+              <div className="px-2 py-1 bg-destructive/10 text-destructive border border-destructive/30 rounded text-sm font-medium flex items-center justify-center gap-1 opacity-60">
+                <span>×</span>
+              </div>
+            </div>
+          </div>
+          <div className="mt-auto pt-2 flex flex-col items-center gap-4">
+            <Link href="/practice/legal-moves?mode=timed">
               <Button asChild variant="primary" size="lg">
-                {t('ranks.viewAll')}
+                {t('cards.train.cta')}
               </Button>
             </Link>
+            <Link href="/practice" className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
+              {t('cards.train.viewOtherMenus')}
+            </Link>
           </div>
-        </section>
+        </div>
 
-        <Divider />
+        {/* Card 3: Community */}
+        <div className="bg-card border border-border rounded-lg p-6 flex flex-col items-center text-center space-y-4">
+          <div className="text-primary text-3xl">
+            <FaComments />
+          </div>
+          <h2 className="text-lg font-semibold text-foreground">{t('cards.community.title')}</h2>
+          <p className="text-sm text-muted-foreground">{t('cards.community.description')}</p>
+          <div className="mt-auto pt-2 flex flex-col items-center gap-4">
+            <Link href="/topics">
+              <Button asChild variant="primary" size="lg">
+                {t('cards.community.cta')}
+              </Button>
+            </Link>
+            <Link href="/sign-up" className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
+              {t('cards.community.signUp')}
+            </Link>
+          </div>
+        </div>
+      </div>
 
-        <Breadcrumb items={[{ label: t('title') }]} locale={locale} />
-      </PagePanel>
-    </div>
+      {/* Belt Ranks Teaser */}
+      <section className="space-y-6">
+        <h2 className="text-xl font-bold text-foreground text-center">{t('ranks.title')}</h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{teaserCards}</div>
+
+        <div className="text-center">
+          <Link href="/ranks">
+            <Button asChild variant="primary" size="lg">
+              {t('ranks.viewAll')}
+            </Button>
+          </Link>
+        </div>
+      </section>
+    </PageLayout>
   );
 }

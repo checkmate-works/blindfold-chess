@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { PageLayout } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
@@ -33,14 +33,10 @@ export default async function ContactPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'contact' });
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
-
-      <PagePanel>
-        <Suspense>
-          <ContactForm locale={locale} />
-        </Suspense>
-      </PagePanel>
-    </div>
+    <PageLayout title={t('title')} locale={locale}>
+      <Suspense>
+        <ContactForm locale={locale} />
+      </Suspense>
+    </PageLayout>
   );
 }

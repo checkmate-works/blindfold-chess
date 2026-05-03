@@ -374,15 +374,15 @@
       },
       "adFreeBenefits": {
         "question": "How are ad-free benefits earned?",
-        "answer": "Ad-free benefits are granted automatically when you contribute text-bearing content on topic pages. The grants stack additively — posting multiple times extends your ad-free period.",
+        "answer": "Ad-free benefits are granted automatically when you take an eligible action below. Grants stack additively — repeated actions extend your ad-free period.",
         "tableTitle": "Ways to earn ad-free benefits",
         "headerAction": "Action",
         "headerDuration": "Duration",
         "actions": {
-          "topic_post": "Post a text topic"
+          "topic_post": "Submit a topic post (square / opening)",
+          "position_creation": "Submit a position problem (memory / puzzle)"
         },
-        "durationDays": "{days} days",
-        "note": "Posts containing only ratings without text content do not qualify for the grant."
+        "durationDays": "{days} days"
       }
     }
   },
@@ -2238,19 +2238,21 @@
       "statusActive": "Ad-free is active",
       "statusInactive": "Ad-free is not currently active",
       "activeUntil": "until {date}",
-      "sourceSubscription": "From your plan subscription",
-      "sourceGrants": "From benefit grants",
-      "pastBenefits": "Past benefits",
+      "sourceSubscription": "Subscription",
       "learnHowToEarn": "Learn how to earn ad-free benefits",
       "viewFullHistory": "View full history",
       "grantPeriod": "{startDate} – {endDate}",
       "grantStatusActive": "Active",
       "grantStatusUpcoming": "Upcoming",
-      "grantStatusExpired": "Expired"
+      "grantStatusExpired": "Expired",
+      "tableSourceHeader": "Source",
+      "tablePeriodHeader": "Period",
+      "tableStatusHeader": "Status"
     },
     "grantTypeLabel": {
       "admin_manual": "Granted by staff",
-      "topic_post": "Granted for topic post"
+      "topic_post": "Granted for topic post",
+      "position_creation": "Granted for position submission"
     }
   },
   "MypageBenefitHistory": {
@@ -3559,6 +3561,22 @@
     "continue": "Continue",
     "goBack": "Go Back",
     "invalidUrl": "The provided URL is invalid."
+  },
+  "thanks": {
+    "title": "Thanks!",
+    "sectionTitle": "Your benefit",
+    "continueButton": "View your post",
+    "viewBenefitsButton": "View your benefits",
+    "genericMessage": "Thanks for your contribution.",
+    "explanation": {
+      "topic_post": "Your topic post earned you the following benefit:",
+      "position_creation": "Your position submission earned you the following benefit:",
+      "default": "Your post earned you the following benefit:"
+    },
+    "benefits": {
+      "ad_free": "Ad-free for {days, plural, one {# day} other {# days}}",
+      "paywall_access": "Premium access for {days, plural, one {# day} other {# days}}"
+    }
   },
   "authPrompt": {
     "title": "Sign in to continue",

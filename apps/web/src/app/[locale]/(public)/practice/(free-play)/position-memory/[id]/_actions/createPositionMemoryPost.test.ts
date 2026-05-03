@@ -161,23 +161,29 @@ describe('createPositionMemoryPost', () => {
       });
     });
 
-    it('redirects to /{locale}/practice/position-memory/{id}#post-{postId}', async () => {
+    it('redirects back to the position page with the post-created toast', async () => {
       await expect(
         createPositionMemoryPost('ja', testPositionId, {}, makeFormData('hello'))
       ).rejects.toThrow('NEXT_REDIRECT');
 
+      // Comments on a position-memory page do not earn a grant (the grant is
+      // earned by *creating* the position via createPosition). The user is
+      // sent straight back to the position with the legacy in-place toast.
       expect(mockRedirect).toHaveBeenCalledWith(
         `/ja/practice/position-memory/${testPositionId}?toast=post_created#post-${generatedPostId}`
       );
     });
 
-    it('does NOT apply an automated grant (grantConfig: null, like chunks)', async () => {
+    it('does NOT apply an automated grant for memory comments', async () => {
       await expect(
         createPositionMemoryPost('en', testPositionId, {}, makeFormData('comment'))
       ).rejects.toThrow('NEXT_REDIRECT');
 
+      // position_memory is excluded from TOPIC_POST_GRANT_TOPIC_TYPES, so
+      // the gate in createPostBase short-circuits before applyAutomatedGrant
+      // is reached. revalidateTag('grant-status') likewise must not fire.
       expect(applyAutomatedGrant).not.toHaveBeenCalled();
-      expect(revalidateTag).not.toHaveBeenCalled();
+      expect(revalidateTag).not.toHaveBeenCalledWith('grant-status', expect.anything());
     });
 
     it('does NOT emit a feed_items row', async () => {

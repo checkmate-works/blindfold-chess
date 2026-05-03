@@ -20,7 +20,7 @@ import enMessages from '@/messages/en.json';
 import { buildGuidePath, enumerateGuideRoutes } from '@/lib/guides';
 import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
 
-import { PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { PageLayout } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
@@ -64,12 +64,9 @@ export default async function GuidesTopPage({ params }: LocalePageProps) {
   }));
 
   return (
-    <div className="space-y-8">
+    <>
       <JsonLd data={generateItemListSchema(itemListItems)} />
-
-      <PageTitle>{t('top.title')}</PageTitle>
-
-      <PagePanel>
+      <PageLayout title={t('top.title')} locale={locale}>
         <div className="space-y-10">
           {sections.map(({ id, Component }) => (
             <Component key={id} locale={locale} />
@@ -77,7 +74,7 @@ export default async function GuidesTopPage({ params }: LocalePageProps) {
         </div>
 
         <GuidePageFooter items={[{ label: t('breadcrumb.guides') }]} locale={locale} />
-      </PagePanel>
-    </div>
+      </PageLayout>
+    </>
   );
 }

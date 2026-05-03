@@ -32,7 +32,6 @@ import {
   getPostCountByTopicKey,
 } from '@/app/[locale]/(public)/topics/_lib/queries';
 import { SectionTitle } from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { RelatedChunks } from '@/app/[locale]/_components/RelatedChunks';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -106,16 +105,12 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
   return (
     <PositionDetailLayout
       title={position.title}
-      breadcrumb={
-        <Breadcrumb
-          items={[
-            { label: tNav('practice'), href: '/practice' },
-            { label: t('list.title'), href: '/practice/puzzle' },
-            { label: position.title },
-          ]}
-          locale={locale}
-        />
-      }
+      locale={locale}
+      breadcrumbItems={[
+        { label: tNav('practice'), href: '/practice' },
+        { label: t('list.title'), href: '/practice/puzzle' },
+        { label: position.title },
+      ]}
     >
       <SectionTitle>{t('detail.descriptionSection')}</SectionTitle>
 
