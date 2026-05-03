@@ -3037,6 +3037,7 @@
     "permalinkAriaLabel": "View this post",
     "replyAriaLabel": "View replies and reply",
     "hiddenReplies": "{count, plural, one {# reply hidden} other {# replies hidden}}",
+    "deletedComment": "[Comment deleted by user]",
     "collapseAriaLabel": "Collapse thread",
     "expandAriaLabel": "Expand thread",
     "replyButton": "Reply",

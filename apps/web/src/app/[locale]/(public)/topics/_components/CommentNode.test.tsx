@@ -360,6 +360,78 @@ describe('CommentNode', () => {
     });
   });
 
+  describe('tombstone (deleted comment)', () => {
+    it('renders the deletedComment placeholder and hides body / avatar / buttons', () => {
+      const deleted = makeNode({
+        id: 'a',
+        content: 'original body — must NOT render',
+        deletedAt: new Date('2026-01-02T00:00:00Z'),
+      });
+
+      renderNode({ node: deleted, currentUserId: 'user-1', replyGroups: [] });
+
+      // Tombstone copy is shown via `topics.deletedComment` (mock echoes key).
+      expect(screen.getByText('deletedComment')).toBeDefined();
+      // Original body must NOT leak.
+      expect(screen.queryByText('original body — must NOT render')).toBeNull();
+      // Avatar (and through it: displayName, profile link, country, flair) is gone.
+      expect(screen.queryByTestId('user-avatar')).toBeNull();
+      // No like / reply / delete affordances.
+      expect(screen.queryByTestId('like-button')).toBeNull();
+      expect(screen.queryByText('replyButton')).toBeNull();
+      expect(screen.queryByTestId('delete-button')).toBeNull();
+    });
+
+    it('still renders descendants under a deleted root (replies survive the tombstone)', () => {
+      // The whole point of keeping deleted-with-live-descendants nodes in the
+      // tree: their children must remain visible.
+      const r1 = makeNode({ id: 'r1', content: 'live reply' });
+      const root = makeNode({
+        id: 'a',
+        deletedAt: new Date('2026-01-02T00:00:00Z'),
+      });
+
+      renderNode({
+        node: root,
+        replyGroups: [{ first: r1, deeper: [] }],
+      });
+
+      expect(screen.getByText('deletedComment')).toBeDefined();
+      expect(screen.getByText('live reply')).toBeDefined();
+    });
+
+    it('does not render the spoiler overlay on a tombstone, even if the row was a spoiler', () => {
+      // Spoiler is anchored to the (deleted) author's content; with the body
+      // gone there is nothing to gate.
+      renderNode({
+        node: makeNode({
+          id: 'a',
+          isSpoiler: true,
+          deletedAt: new Date('2026-01-02T00:00:00Z'),
+        }),
+        enableSpoiler: true,
+        replyGroups: [],
+      });
+
+      expect(screen.queryByLabelText('spoiler.overlayAriaLabel')).toBeNull();
+    });
+
+    it("does not render the Delete button on a tombstone, even when the viewer matches the original author's userId", () => {
+      // The row is already deleted — surfacing Delete again is misleading.
+      renderNode({
+        node: makeNode({
+          id: 'a',
+          userId: 'viewer-1',
+          deletedAt: new Date('2026-01-02T00:00:00Z'),
+        }),
+        currentUserId: 'viewer-1',
+        replyGroups: [],
+      });
+
+      expect(screen.queryByTestId('delete-button')).toBeNull();
+    });
+  });
+
   it("renders Delete button only on the viewer's own comment", () => {
     renderNode({
       node: makeNode({ id: 'a', userId: 'viewer-1' }),

@@ -62,6 +62,12 @@ export type CommentTreeNode = PostWithReplyMeta & {
  * the parent was deleted at the DB level after this list was fetched) are
  * dropped from the tree rather than promoted to roots — this avoids
  * surprising the reader with replies that look like top-level comments.
+ *
+ * Soft-deleted posts (`deletedAt != null`) survive only when they retain at
+ * least one live descendant; otherwise they are pruned. The kept ones are
+ * rendered as Reddit-style "[deleted]" tombstones by `CommentNode` so the
+ * thread structure (parent-child) under them stays intact, while leaf
+ * deletions disappear entirely (a tombstone with no replies is just noise).
  */
 export function buildCommentTree(
   flat: PostWithReplyMeta[],
@@ -87,7 +93,24 @@ export function buildCommentTree(
     // else: orphan — silently dropped per the docstring.
   }
 
-  return sortRoots(roots, topLevelSort);
+  return sortRoots(roots.flatMap(pruneDeleted), topLevelSort);
+}
+
+/**
+ * Prune a subtree so that deleted nodes survive only when they have at least
+ * one live descendant. Returns 0 or 1 nodes (an array for `flatMap` use).
+ *
+ * A deleted leaf — or a deleted node whose entire subtree is also deleted —
+ * is removed. A deleted node with at least one live descendant somewhere
+ * below is kept, with its `children` recursively pruned, so the rendering
+ * layer can still place a tombstone in the right structural position.
+ */
+function pruneDeleted(node: CommentTreeNode): CommentTreeNode[] {
+  const prunedChildren = node.children.flatMap(pruneDeleted);
+  if (node.deletedAt && prunedChildren.length === 0) {
+    return [];
+  }
+  return [{ ...node, children: prunedChildren }];
 }
 
 /**
@@ -115,7 +138,14 @@ export type FlatReply = {
   replyToDisplayName: string | null;
 };
 
-function displayNameOf(node: CommentTreeNode): string {
+/**
+ * Resolve the display name to attribute "@<parent>" prefixes to. Returns
+ * `null` for soft-deleted nodes so the rendering layer suppresses the
+ * @-prefix entirely — tombstones must not leak the original author's name
+ * via descendants' "in reply to" cues.
+ */
+function displayNameOf(node: CommentTreeNode): string | null {
+  if (node.deletedAt) return null;
   return node.author?.displayName || node.author?.username || 'Anonymous';
 }
 

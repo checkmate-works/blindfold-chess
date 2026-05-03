@@ -123,11 +123,15 @@ export function CommentNode({
   const [isReplyOpen, setIsReplyOpen] = useState(false);
   const [isSpoilerRevealed, setIsSpoilerRevealed] = useState(false);
 
+  const isDeleted = node.deletedAt !== null;
   const displayName = node.author?.displayName || node.author?.username || 'Anonymous';
   const profileHref = node.author?.username ? `/u/${node.author.username}` : null;
 
-  const showSpoiler = enableSpoiler && node.isSpoiler && !isSpoilerRevealed;
-  const isOwnComment = currentUserId !== undefined && currentUserId === node.userId;
+  // Tombstones never run spoiler / like / reply / delete affordances — those
+  // are anchored to the (deleted) author and would either leak identity or
+  // act on a row the author has already retracted.
+  const showSpoiler = !isDeleted && enableSpoiler && node.isSpoiler && !isSpoilerRevealed;
+  const isOwnComment = !isDeleted && currentUserId !== undefined && currentUserId === node.userId;
   const isRoot = replyGroups !== undefined;
   // The "N replies hidden" label needs to match what collapsing actually
   // hides. On the root, that is every first-level reply plus every deeper
@@ -152,28 +156,41 @@ export function CommentNode({
         )}
 
         <div className="flex-1 min-w-0 space-y-2">
-          <UserAvatar
-            profileHref={profileHref}
-            avatarUrl={node.author?.avatarUrl}
-            displayName={displayName}
-            locale={locale}
-            flair={node.author?.flair}
-            country={node.author?.country}
-          >
-            {/*
-              Wrap the timestamp in a block-level <div> so it lands below the
-              displayName instead of running inline next to it. UserAvatar
-              renders the displayName in a `inline-flex` <span>, so a bare
-              <time> child would flow on the same line — matching that to
-              `BaseTopicPostCard`, which wraps its timestamp in a <div> for
-              the same reason.
-            */}
-            <div className="text-xs text-muted-foreground">
-              <time dateTime={node.createdAt.toISOString()}>
+          {isDeleted ? (
+            // Tombstone: hide avatar, displayName, profile link, country, and
+            // flair so a deleted comment cannot be traced back to its author.
+            // Keep the timestamp — it's not identifying and helps readers
+            // place the deletion in the conversation flow.
+            <div className="flex items-baseline gap-2 text-xs text-muted-foreground italic">
+              <span>{tTopics('deletedComment')}</span>
+              <time dateTime={node.createdAt.toISOString()} className="not-italic">
                 {formatAbsoluteDateTime(node.createdAt, locale, 'short')}
               </time>
             </div>
-          </UserAvatar>
+          ) : (
+            <UserAvatar
+              profileHref={profileHref}
+              avatarUrl={node.author?.avatarUrl}
+              displayName={displayName}
+              locale={locale}
+              flair={node.author?.flair}
+              country={node.author?.country}
+            >
+              {/*
+                Wrap the timestamp in a block-level <div> so it lands below the
+                displayName instead of running inline next to it. UserAvatar
+                renders the displayName in a `inline-flex` <span>, so a bare
+                <time> child would flow on the same line — matching that to
+                `BaseTopicPostCard`, which wraps its timestamp in a <div> for
+                the same reason.
+              */}
+              <div className="text-xs text-muted-foreground">
+                <time dateTime={node.createdAt.toISOString()}>
+                  {formatAbsoluteDateTime(node.createdAt, locale, 'short')}
+                </time>
+              </div>
+            </UserAvatar>
+          )}
 
           {isCollapsed ? (
             hiddenReplyCount > 0 && (
@@ -183,65 +200,69 @@ export function CommentNode({
             )
           ) : (
             <>
-              <div className="relative" aria-live="polite">
-                {replyToDisplayName && (
-                  <p className="text-sm font-medium text-primary mb-1">@{replyToDisplayName}</p>
-                )}
-                <p
-                  className="text-sm text-foreground whitespace-pre-wrap break-words leading-relaxed"
-                  aria-hidden={showSpoiler || undefined}
-                >
-                  <LinkedText text={node.content} locale={locale} />
-                </p>
-                {showSpoiler && (
-                  <button
-                    type="button"
-                    onClick={() => setIsSpoilerRevealed(true)}
-                    aria-label={tTopics('spoiler.overlayAriaLabel')}
-                    className="absolute inset-0 flex flex-col items-center justify-center gap-1 rounded-sm bg-muted text-muted-foreground hover:bg-muted/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors cursor-pointer"
+              {!isDeleted && (
+                <div className="relative" aria-live="polite">
+                  {replyToDisplayName && (
+                    <p className="text-sm font-medium text-primary mb-1">@{replyToDisplayName}</p>
+                  )}
+                  <p
+                    className="text-sm text-foreground whitespace-pre-wrap break-words leading-relaxed"
+                    aria-hidden={showSpoiler || undefined}
                   >
-                    <span className="flex items-center gap-1.5 text-sm font-medium">
-                      <FaEyeSlash aria-hidden="true" />
-                      {tTopics('spoiler.overlayTitle')}
-                    </span>
-                    <span className="text-xs text-muted-foreground/80">
-                      {tTopics('spoiler.overlayHint')}
-                    </span>
-                  </button>
-                )}
-              </div>
+                    <LinkedText text={node.content} locale={locale} />
+                  </p>
+                  {showSpoiler && (
+                    <button
+                      type="button"
+                      onClick={() => setIsSpoilerRevealed(true)}
+                      aria-label={tTopics('spoiler.overlayAriaLabel')}
+                      className="absolute inset-0 flex flex-col items-center justify-center gap-1 rounded-sm bg-muted text-muted-foreground hover:bg-muted/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors cursor-pointer"
+                    >
+                      <span className="flex items-center gap-1.5 text-sm font-medium">
+                        <FaEyeSlash aria-hidden="true" />
+                        {tTopics('spoiler.overlayTitle')}
+                      </span>
+                      <span className="text-xs text-muted-foreground/80">
+                        {tTopics('spoiler.overlayHint')}
+                      </span>
+                    </button>
+                  )}
+                </div>
+              )}
 
-              {isRoot && extraContent}
+              {isRoot && !isDeleted && extraContent}
 
-              <div className="flex items-center gap-4">
-                <LikeButton
-                  postId={node.id}
-                  locale={locale}
-                  topicKey={topicKey}
-                  initialLikeCount={node.likeMeta.likeCount}
-                  initialLikedByMe={node.likeMeta.likedByMe}
-                  toggleLikeAction={toggleLikeAction}
-                  i18nNamespace={i18n.likeNamespace}
-                />
-                {canReply && currentUserId !== undefined && (
-                  <button
-                    type="button"
-                    onClick={() => setIsReplyOpen((prev) => !prev)}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                  >
-                    {tTopics('replyButton')}
-                  </button>
-                )}
-                {isOwnComment && (
-                  <DeletePostButton
+              {!isDeleted && (
+                <div className="flex items-center gap-4">
+                  <LikeButton
                     postId={node.id}
                     locale={locale}
-                    redirectPath={redirectPath}
-                    deletePostAction={deletePostAction}
-                    i18nNamespace={i18n.deleteNamespace}
+                    topicKey={topicKey}
+                    initialLikeCount={node.likeMeta.likeCount}
+                    initialLikedByMe={node.likeMeta.likedByMe}
+                    toggleLikeAction={toggleLikeAction}
+                    i18nNamespace={i18n.likeNamespace}
                   />
-                )}
-              </div>
+                  {canReply && currentUserId !== undefined && (
+                    <button
+                      type="button"
+                      onClick={() => setIsReplyOpen((prev) => !prev)}
+                      className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                    >
+                      {tTopics('replyButton')}
+                    </button>
+                  )}
+                  {isOwnComment && (
+                    <DeletePostButton
+                      postId={node.id}
+                      locale={locale}
+                      redirectPath={redirectPath}
+                      deletePostAction={deletePostAction}
+                      i18nNamespace={i18n.deleteNamespace}
+                    />
+                  )}
+                </div>
+              )}
 
               {isReplyOpen && (
                 <div className="mt-2">

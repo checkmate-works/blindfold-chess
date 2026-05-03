@@ -3037,6 +3037,7 @@
     "permalinkAriaLabel": "この投稿を表示",
     "replyAriaLabel": "返信を表示・投稿",
     "hiddenReplies": "返信 {count} 件を非表示",
+    "deletedComment": "[投稿者により削除されました]",
     "collapseAriaLabel": "スレッドを折りたたむ",
     "expandAriaLabel": "スレッドを展開",
     "replyButton": "返信",

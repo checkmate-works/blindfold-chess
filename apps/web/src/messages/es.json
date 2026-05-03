@@ -3037,6 +3037,7 @@
     "permalinkAriaLabel": "Ver esta publicación",
     "replyAriaLabel": "Ver respuestas y responder",
     "hiddenReplies": "{count, plural, one {# respuesta oculta} other {# respuestas ocultas}}",
+    "deletedComment": "[Comentario eliminado por el usuario]",
     "collapseAriaLabel": "Contraer hilo",
     "expandAriaLabel": "Expandir hilo",
     "replyButton": "Responder",

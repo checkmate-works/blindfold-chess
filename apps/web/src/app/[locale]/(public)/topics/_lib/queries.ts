@@ -263,6 +263,13 @@ export async function getPostsByTopicTypePaginated(
  * replies under the same parent end up in chronological order. Top-level
  * sort (new / popular / active) is applied AFTER tree building, by the
  * caller.
+ *
+ * Soft-deleted posts ARE included so `buildCommentTree` can keep deleted
+ * nodes that still have live descendants and render them as Reddit-style
+ * `[deleted]` tombstones. Without them, every reply under a deleted parent
+ * would orphan and silently disappear from the thread. `attachPostMeta`'s
+ * reply / replier batch queries already filter out deleted rows, so the
+ * tombstones do not contribute to reply counts or replier avatar strips.
  */
 export async function getCommentTreeForTopic(
   topicType: TopicType,
@@ -276,13 +283,7 @@ export async function getCommentTreeForTopic(
     })
     .from(topicPosts)
     .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
-    .where(
-      and(
-        eq(topicPosts.topicType, topicType),
-        eq(topicPosts.topicKey, topicKey),
-        isNull(topicPosts.deletedAt)
-      )
-    )
+    .where(and(eq(topicPosts.topicType, topicType), eq(topicPosts.topicKey, topicKey)))
     .orderBy(asc(topicPosts.createdAt));
 
   const posts: TopicPostWithAuthor[] = results.map((r) => ({
@@ -296,6 +297,10 @@ export async function getCommentTreeForTopic(
 /**
  * Get replies for a specific post with like metadata.
  * Topic-generic: works on any postId regardless of topicType.
+ *
+ * Soft-deleted replies ARE included for the same reason as
+ * `getCommentTreeForTopic` — `buildCommentTree` keeps deleted-with-replies
+ * nodes as tombstones so descendants stay anchored to their thread.
  */
 export async function getRepliesByPostId(
   postId: string,
@@ -308,7 +313,7 @@ export async function getRepliesByPostId(
     })
     .from(topicPosts)
     .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
-    .where(and(eq(topicPosts.rootPostId, postId), isNull(topicPosts.deletedAt)))
+    .where(eq(topicPosts.rootPostId, postId))
     .orderBy(asc(topicPosts.createdAt));
 
   const posts: TopicPostWithAuthor[] = results.map((r) => ({
