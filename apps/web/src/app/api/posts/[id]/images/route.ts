@@ -219,11 +219,16 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   // future internal columns like soft-delete flags or moderation hints)
   // into a public API contract by accident. The fields below are the
   // subset clients actually need.
+  //
+  // `storagePath` is intentionally OMITTED — the client only needs
+  // `publicUrl` (already derived from the path), and exposing the raw
+  // storage path leaks the path-construction scheme to anyone with a
+  // valid auth session. The path layout is already pinned by RLS and a
+  // DB CHECK, but minimizing exposure keeps the bar high.
   return NextResponse.json(
     {
       id: inserted.id,
       postId: inserted.postId,
-      storagePath: inserted.storagePath,
       contentType: inserted.contentType,
       fileSize: inserted.fileSize,
       width: inserted.width,
