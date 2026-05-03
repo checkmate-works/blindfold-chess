@@ -4207,6 +4207,7 @@
         "fileTooLarge": "La imagen es demasiado grande. El tamaño máximo es 2 MB.",
         "invalidFileType": "Solo se aceptan imágenes JPEG, PNG y WebP.",
         "imageTooLarge": "Las dimensiones de la imagen son demasiado grandes (límite de 50 megapíxeles).",
+        "animatedImageNotSupported": "Las imágenes animadas no son compatibles. Sube una imagen estática.",
         "tooManyImages": "Has alcanzado el límite de {max} imágenes para esta publicación.",
         "uploadFailed": "Error al subir. Inténtalo de nuevo.",
         "rateLimited": "Demasiadas subidas. Espera unos minutos e inténtalo de nuevo."

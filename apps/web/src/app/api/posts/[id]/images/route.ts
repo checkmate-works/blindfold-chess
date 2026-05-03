@@ -7,6 +7,7 @@ import 'server-only';
 import { authenticateAndGuardApi } from '@/lib/auth';
 import { db, postImageAttachments, topicPosts } from '@/lib/db';
 import {
+  AnimatedImageNotSupportedError,
   isWithinMegapixelCap,
   probeImageDimensions,
   stripExifAndApplyOrientation,
@@ -125,11 +126,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: 'invalid_file_type' }, { status: 400 });
   }
 
-  // Sharp probe (dimensions + 50 MP cap).
+  // Sharp probe (dimensions + 50 MP cap + animated reject).
   let probe;
   try {
     probe = await probeImageDimensions(arrayBuffer);
-  } catch {
+  } catch (err) {
+    if (err instanceof AnimatedImageNotSupportedError) {
+      return NextResponse.json({ error: 'animated_image_not_supported' }, { status: 400 });
+    }
     return NextResponse.json({ error: 'invalid_image' }, { status: 400 });
   }
   if (!isWithinMegapixelCap(probe)) {

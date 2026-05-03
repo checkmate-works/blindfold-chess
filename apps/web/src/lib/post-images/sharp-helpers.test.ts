@@ -2,6 +2,8 @@ import sharpDefault from 'sharp';
 import { describe, expect, it, vi } from 'vitest';
 
 import {
+  AnimatedImageNotSupportedError,
+  SHARP_INPUT_OPTIONS,
   isWithinMegapixelCap,
   probeImageDimensions,
   stripExifAndApplyOrientation,
@@ -12,14 +14,21 @@ vi.mock('server-only', () => ({}));
 
 vi.mock('sharp', () => {
   // Minimal sharp mock that surfaces the chain we use:
-  //   sharp(buffer).metadata()
-  //   sharp(buffer).rotate().toBuffer()
+  //   sharp(buffer, options).metadata()
+  //   sharp(buffer, options).rotate().toBuffer()
   // The callback storage on the mock factory lets each test case
   // configure what metadata() returns and what toBuffer() produces.
+  // `lastOptions` records the second arg passed to the constructor so
+  // tests can assert SHARP_INPUT_OPTIONS is applied.
   const state = {
-    metadata: { width: 100, height: 50 },
+    metadata: { width: 100, height: 50, pages: 1 } as {
+      width: number;
+      height: number;
+      pages?: number;
+    },
     outputBuffer: Buffer.from([1, 2, 3]),
     metadataThrows: false,
+    lastOptions: undefined as unknown,
   };
 
   function chain() {
@@ -35,7 +44,8 @@ vi.mock('sharp', () => {
     };
   }
 
-  function sharp() {
+  function sharp(_input: unknown, options?: unknown) {
+    state.lastOptions = options;
     return chain();
   }
 
@@ -48,15 +58,16 @@ vi.mock('sharp', () => {
 const mockState = (
   sharpDefault as unknown as {
     __mockState: {
-      metadata: { width: number; height: number };
+      metadata: { width: number; height: number; pages?: number };
       outputBuffer: Buffer;
       metadataThrows: boolean;
+      lastOptions: unknown;
     };
   }
 ).__mockState;
 
-function setMockMetadata(metadata: { width: number; height: number }) {
-  mockState.metadata = metadata;
+function setMockMetadata(metadata: { width: number; height: number; pages?: number }) {
+  mockState.metadata = { pages: 1, ...metadata };
   mockState.metadataThrows = false;
 }
 
@@ -83,6 +94,33 @@ describe('probeImageDimensions', () => {
     mockState.metadataThrows = true;
     await expect(probeImageDimensions(Buffer.from([0]))).rejects.toThrow();
     mockState.metadataThrows = false;
+  });
+
+  it('rejects animated input (pages > 1) with AnimatedImageNotSupportedError', async () => {
+    setMockMetadata({ width: 200, height: 200, pages: 7 });
+    await expect(probeImageDimensions(Buffer.from([0]))).rejects.toBeInstanceOf(
+      AnimatedImageNotSupportedError
+    );
+  });
+
+  it('accepts non-animated input when pages is exactly 1', async () => {
+    setMockMetadata({ width: 200, height: 200, pages: 1 });
+    await expect(probeImageDimensions(Buffer.from([0]))).resolves.toEqual({
+      width: 200,
+      height: 200,
+    });
+  });
+
+  it('passes SHARP_INPUT_OPTIONS to the sharp constructor', async () => {
+    setMockMetadata({ width: 100, height: 100 });
+    await probeImageDimensions(Buffer.from([0]));
+    // SHARP_INPUT_OPTIONS is the contract — it MUST contain failOn:'error'
+    // and pages:1 so animated WebP / APNG cannot decompress to GBs in
+    // libvips and OOM the function. If this assertion fails, the
+    // constants in sharp-helpers.ts have drifted from the security
+    // contract documented in the module-level TSDoc.
+    expect(mockState.lastOptions).toEqual(SHARP_INPUT_OPTIONS);
+    expect(SHARP_INPUT_OPTIONS).toEqual({ failOn: 'error', pages: 1 });
   });
 });
 
@@ -119,5 +157,17 @@ describe('stripExifAndApplyOrientation', () => {
       contentType: 'image/jpeg',
     });
     expect(Buffer.compare(result, Buffer.from([0xff, 0xd8, 0xff, 0xe0]))).toBe(0);
+  });
+
+  it('passes SHARP_INPUT_OPTIONS to the sharp constructor', async () => {
+    // Same security contract as probeImageDimensions: failOn:'error' +
+    // pages:1 must apply to the encoder path too, otherwise an animated
+    // input that slipped past the probe could still OOM during encode.
+    mockState.outputBuffer = Buffer.from([0xff, 0xd8]);
+    await stripExifAndApplyOrientation({
+      buffer: Buffer.from([0]),
+      contentType: 'image/jpeg',
+    });
+    expect(mockState.lastOptions).toEqual(SHARP_INPUT_OPTIONS);
   });
 });
