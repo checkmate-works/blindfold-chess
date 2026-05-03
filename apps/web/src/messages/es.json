@@ -374,18 +374,15 @@
       },
       "adFreeBenefits": {
         "question": "¿Cómo se obtienen los beneficios sin anuncios?",
-        "answer": "Los beneficios sin anuncios se conceden automáticamente cuando publicas contenido textual en las páginas elegibles que se indican a continuación. Las concesiones se acumulan — publicar varias veces extiende tu periodo sin anuncios.",
+        "answer": "Los beneficios sin anuncios se conceden automáticamente cuando realizas una acción elegible de las indicadas a continuación. Las concesiones se acumulan — repetir las acciones extiende tu periodo sin anuncios.",
         "tableTitle": "Formas de obtener beneficios sin anuncios",
         "headerAction": "Acción",
         "headerDuration": "Duración",
         "actions": {
-          "square": "Publicar un comentario con texto en un tema de casilla",
-          "opening": "Publicar un comentario con texto en un tema de apertura",
-          "position_memory": "Publicar un comentario con texto en una posición de memorización",
-          "position_puzzle": "Publicar un comentario con texto en una posición de puzzle"
+          "topic_post": "Publicar en un tema (casilla / apertura)",
+          "position_creation": "Publicar un problema de posición (memorización / puzzle)"
         },
-        "durationDays": "{days} días",
-        "note": "Las publicaciones que solo contienen valoraciones sin contenido textual no califican para la concesión."
+        "durationDays": "{days} días"
       }
     }
   },

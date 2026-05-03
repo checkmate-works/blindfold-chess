@@ -161,32 +161,29 @@ describe('createPositionMemoryPost', () => {
       });
     });
 
-    it('redirects through /thanks with the post URL as returnUrl', async () => {
+    it('redirects back to the position page with the post-created toast', async () => {
       await expect(
         createPositionMemoryPost('ja', testPositionId, {}, makeFormData('hello'))
       ).rejects.toThrow('NEXT_REDIRECT');
 
-      // Text-bearing memory comments trigger an automated grant; the toast is
-      // suppressed because the user is routed through /thanks instead.
-      const returnUrl = `/ja/practice/position-memory/${testPositionId}#post-${generatedPostId}`;
+      // Comments on a position-memory page do not earn a grant (the grant is
+      // earned by *creating* the position via createPosition). The user is
+      // sent straight back to the position with the legacy in-place toast.
       expect(mockRedirect).toHaveBeenCalledWith(
-        `/ja/thanks?grantId=g1&returnUrl=${encodeURIComponent(returnUrl)}`
+        `/ja/practice/position-memory/${testPositionId}?toast=post_created#post-${generatedPostId}`
       );
     });
 
-    it('applies an automated topic_post grant for text-bearing memory comments', async () => {
+    it('does NOT apply an automated grant for memory comments', async () => {
       await expect(
         createPositionMemoryPost('en', testPositionId, {}, makeFormData('comment'))
       ).rejects.toThrow('NEXT_REDIRECT');
 
-      expect(applyAutomatedGrant).toHaveBeenCalledTimes(1);
-      expect(applyAutomatedGrant).toHaveBeenCalledWith(
-        expect.anything(),
-        testUserId,
-        'topic_post',
-        { type: 'topic_post', id: generatedPostId }
-      );
-      expect(revalidateTag).toHaveBeenCalledWith('grant-status', { expire: 60 });
+      // position_memory is excluded from TOPIC_POST_GRANT_TOPIC_TYPES, so
+      // the gate in createPostBase short-circuits before applyAutomatedGrant
+      // is reached. revalidateTag('grant-status') likewise must not fire.
+      expect(applyAutomatedGrant).not.toHaveBeenCalled();
+      expect(revalidateTag).not.toHaveBeenCalledWith('grant-status', expect.anything());
     });
 
     it('does NOT emit a feed_items row', async () => {

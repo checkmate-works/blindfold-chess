@@ -26,23 +26,25 @@ export const GRANT_TYPE_DEFAULTS: Record<AutomatedGrantType, GrantTypeConfig> = 
 
 /**
  * `topic_posts.topicType` values that earn an automated `topic_post` ad-free
- * grant when a user creates a text-bearing post. Single source of truth
- * shared by:
+ * grant when a user creates a text-bearing post.
+ *
+ * Scoped to the **standalone topic surfaces** (`square`, `opening`) only —
+ * `position_memory` / `position_puzzle` are excluded because, although they
+ * share the `topic_posts` table, in product language they are "comments on a
+ * problem" rather than first-class submissions; the grant for those flows is
+ * earned by *creating the problem* via `createPosition` / `createPuzzle`
+ * (see `applyAutomatedGrant` callers in those actions). `chunk` posts have
+ * always been excluded.
+ *
+ * Used as the single source of truth for:
  *
  *   1. `createPostBase` — gates `applyAutomatedGrant` on `topicType` membership.
- *   2. `/[locale]/faq` "Ways to earn ad-free benefits" table — renders one row
- *      per entry so the FAQ never drifts from the runtime gate.
+ *   2. `/[locale]/faq` "Ways to earn ad-free benefits" table — see the
+ *      `actions.*` keys under `faq.items.adFreeBenefits` in every locale.
  *
- * Topic types NOT listed here (today: `'chunk'`) are excluded from the grant
- * regardless of post content. Add a topic type here together with its i18n
- * label under `faq.items.adFreeBenefits.actions.<topicType>` in every locale.
+ * Add a topic type here together with its i18n label in every locale.
  */
-export const TOPIC_POST_GRANT_TOPIC_TYPES = [
-  'square',
-  'opening',
-  'position_memory',
-  'position_puzzle',
-] as const;
+export const TOPIC_POST_GRANT_TOPIC_TYPES = ['square', 'opening'] as const;
 
 export type TopicPostGrantTopicType = (typeof TOPIC_POST_GRANT_TOPIC_TYPES)[number];
 

@@ -374,18 +374,15 @@
       },
       "adFreeBenefits": {
         "question": "How are ad-free benefits earned?",
-        "answer": "Ad-free benefits are granted automatically when you post text content on the eligible pages below. Grants stack additively — posting multiple times extends your ad-free period.",
+        "answer": "Ad-free benefits are granted automatically when you take an eligible action below. Grants stack additively — repeated actions extend your ad-free period.",
         "tableTitle": "Ways to earn ad-free benefits",
         "headerAction": "Action",
         "headerDuration": "Duration",
         "actions": {
-          "square": "Post a text comment on a square topic",
-          "opening": "Post a text comment on an opening topic",
-          "position_memory": "Post a text comment on a position-memory position",
-          "position_puzzle": "Post a text comment on a puzzle position"
+          "topic_post": "Submit a topic post (square / opening)",
+          "position_creation": "Submit a position problem (memory / puzzle)"
         },
-        "durationDays": "{days} days",
-        "note": "Posts containing only ratings without text content do not qualify for the grant."
+        "durationDays": "{days} days"
       }
     }
   },

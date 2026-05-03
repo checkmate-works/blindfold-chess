@@ -226,32 +226,29 @@ describe('createPositionPuzzlePost', () => {
       mockInsertReturning.mockResolvedValue([{ id: generatedPostId }]);
     });
 
-    it('redirects through /thanks with the post URL as returnUrl', async () => {
+    it('redirects back to the puzzle page with the post-created toast', async () => {
       await expect(
         createPositionPuzzlePost('ja', testPositionId, {}, makeFormData('hello'))
       ).rejects.toThrow('NEXT_REDIRECT');
 
-      // Text-bearing puzzle comments trigger an automated grant; the toast is
-      // suppressed because the user is routed through /thanks instead.
-      const returnUrl = `/ja/practice/puzzle/${testPositionId}#post-${generatedPostId}`;
+      // Comments on a puzzle page do not earn a grant (the grant is earned
+      // by *creating* the puzzle via createPuzzle). The user is sent
+      // straight back to the puzzle with the legacy in-place toast.
       expect(mockRedirect).toHaveBeenCalledWith(
-        `/ja/thanks?grantId=g1&returnUrl=${encodeURIComponent(returnUrl)}`
+        `/ja/practice/puzzle/${testPositionId}?toast=post_created#post-${generatedPostId}`
       );
     });
 
-    it('applies an automated topic_post grant for text-bearing puzzle comments', async () => {
+    it('does NOT apply an automated grant for puzzle comments', async () => {
       await expect(
         createPositionPuzzlePost('en', testPositionId, {}, makeFormData('comment'))
       ).rejects.toThrow('NEXT_REDIRECT');
 
-      expect(applyAutomatedGrant).toHaveBeenCalledTimes(1);
-      expect(applyAutomatedGrant).toHaveBeenCalledWith(
-        expect.anything(),
-        testUserId,
-        'topic_post',
-        { type: 'topic_post', id: generatedPostId }
-      );
-      expect(revalidateTag).toHaveBeenCalledWith('grant-status', { expire: 60 });
+      // position_puzzle is excluded from TOPIC_POST_GRANT_TOPIC_TYPES, so
+      // the gate in createPostBase short-circuits before applyAutomatedGrant
+      // is reached. revalidateTag('grant-status') likewise must not fire.
+      expect(applyAutomatedGrant).not.toHaveBeenCalled();
+      expect(revalidateTag).not.toHaveBeenCalledWith('grant-status', expect.anything());
     });
 
     it('does NOT emit a feed_items row', async () => {

@@ -374,18 +374,15 @@
       },
       "adFreeBenefits": {
         "question": "Como os benefícios sem anúncios são obtidos?",
-        "answer": "Benefícios sem anúncios são concedidos automaticamente quando você publica conteúdo de texto nas páginas elegíveis listadas abaixo. Os benefícios se acumulam — publicar várias vezes estende seu período sem anúncios.",
+        "answer": "Benefícios sem anúncios são concedidos automaticamente quando você realiza uma ação elegível listada abaixo. Os benefícios se acumulam — ações repetidas estendem seu período sem anúncios.",
         "tableTitle": "Formas de ganhar benefícios sem anúncios",
         "headerAction": "Ação",
         "headerDuration": "Duração",
         "actions": {
-          "square": "Publicar um comentário com texto em um tópico de casa",
-          "opening": "Publicar um comentário com texto em um tópico de abertura",
-          "position_memory": "Publicar um comentário com texto em uma posição de memorização",
-          "position_puzzle": "Publicar um comentário com texto em uma posição de puzzle"
+          "topic_post": "Publicar em um tópico (casa / abertura)",
+          "position_creation": "Publicar um problema de posição (memorização / puzzle)"
         },
-        "durationDays": "{days} dias",
-        "note": "Publicações contendo apenas avaliações sem conteúdo de texto não se qualificam para o benefício."
+        "durationDays": "{days} dias"
       }
     }
   },
