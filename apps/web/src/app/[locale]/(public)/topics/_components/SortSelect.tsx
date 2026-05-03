@@ -2,8 +2,7 @@
 
 import { useId } from 'react';
 
-import { useRouter } from 'next/navigation';
-
+import { useRouter } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { SortMode } from '../_lib/shared';
