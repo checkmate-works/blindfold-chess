@@ -109,24 +109,50 @@ ON CONFLICT (id) DO UPDATE SET
   file_size_limit = EXCLUDED.file_size_limit,
   allowed_mime_types = EXCLUDED.allowed_mime_types;
 
--- SELECT: public (matches the bucket's public flag).
+-- SELECT: gated on existence of a non-soft-deleted parent topic_post.
+-- Plain `bucket_id = 'post-images'` would let anonymous users LIST the
+-- bucket and enumerate every leaf UUID (including images of soft-deleted
+-- posts that have not yet been swept by the 7-day reaper). Joining
+-- storage.objects.name -> post_image_attachments.storage_path -> topic_posts
+-- couples the public read to the same lifecycle as the DB row: a
+-- soft-deleted post's images become un-fetchable immediately, and LIST
+-- traversal returns zero rows because no row matches a directory prefix.
+-- The lookup is O(log n) via the unique index on storage_path created
+-- in the post_image_attachments migration.
 DROP POLICY IF EXISTS "post_images_select_public" ON storage.objects;
 CREATE POLICY "post_images_select_public" ON storage.objects
   FOR SELECT
-  USING (bucket_id = 'post-images');
+  USING (
+    bucket_id = 'post-images'
+    AND EXISTS (
+      SELECT 1
+      FROM post_image_attachments pia
+      JOIN topic_posts p ON p.id = pia.post_id
+      WHERE pia.storage_path = storage.objects.name
+        AND p.deleted_at IS NULL
+    )
+  );
 
--- INSERT: authenticated user may write only into their own folder
--- (`${auth.uid()}/...`). Path traversal (`..`) and Windows-style
--- separators (`\`) are rejected, and the overall name length is capped
--- at 256 bytes. The application handler also enforces this shape and
--- the DB CHECK on post_image_attachments.storage_path validates the
--- exact regex once the row reaches the DB.
+-- INSERT: authenticated user may write only into a path matching the
+-- canonical layout `${userId-uuid}/${postId-uuid}/${randomUuid}.${ext}`.
+-- The regex is byte-for-byte identical to the DB CHECK on
+-- post_image_attachments.storage_path and to POST_IMAGE_STORAGE_PATH_REGEX
+-- in src/lib/post-images/validation.ts. Without this regex the policy
+-- only required the first folder to equal auth.uid(), which let an
+-- attacker upload arbitrary bytes to `<uid>/foo.jpg` directly via
+-- Supabase REST and create an unbounded user-controlled storage region
+-- on the (public) bucket.
+--
+-- The path-traversal (`..`) and backslash checks are subsumed by the
+-- regex (the character set is restricted to `[0-9a-f-/.a-z]`) but are
+-- kept here because they read at a glance.
 DROP POLICY IF EXISTS "post_images_insert_own" ON storage.objects;
 CREATE POLICY "post_images_insert_own" ON storage.objects
   FOR INSERT TO authenticated
   WITH CHECK (
     bucket_id = 'post-images'
     AND (storage.foldername(name))[1] = auth.uid()::text
+    AND name ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp)$'
     AND position('..' in name) = 0
     AND position('\' in name) = 0
     AND length(name) <= 256

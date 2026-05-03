@@ -980,6 +980,17 @@ export const postImageAttachments = pgTable(
     ),
     index('idx_post_image_attachments_post').on(table.postId),
     index('idx_post_image_attachments_post_order').on(table.postId, table.displayOrder),
+    /**
+     * Unique on storage_path. Two purposes:
+     *   1. Logical uniqueness — every storage_path embeds a random UUID, so
+     *      a duplicate row would be a bug.
+     *   2. RLS SELECT policy lookup — the `post_images_select_public` storage
+     *      policy joins `storage.objects.name` to `storage_path` to gate
+     *      reads on a non-soft-deleted parent post; without this index,
+     *      every public-bucket read would trigger a sequential scan over
+     *      this table.
+     */
+    uniqueIndex('idx_post_image_attachments_storage_path').on(table.storagePath),
   ]
 );
 

@@ -76,6 +76,18 @@ CREATE INDEX "idx_post_image_attachments_post_order"
   ON "post_image_attachments" USING btree ("post_id", "display_order");
 --> statement-breakpoint
 
+-- Unique index on storage_path. Two purposes:
+--   1. Logical uniqueness — every storage_path embeds a random UUID, so a
+--      duplicate row would be a bug. Enforce it at the DB.
+--   2. RLS SELECT policy lookup — the `post_images_select_public` storage
+--      policy joins storage.objects.name -> post_image_attachments.storage_path
+--      to gate object reads on a non-soft-deleted parent post. Without this
+--      index, every read against the public bucket would trigger a
+--      sequential scan over post_image_attachments.
+CREATE UNIQUE INDEX "idx_post_image_attachments_storage_path"
+  ON "post_image_attachments" USING btree ("storage_path");
+--> statement-breakpoint
+
 -- Per-post counter on topic_posts. Maintained by the BEFORE INSERT /
 -- AFTER DELETE triggers below. Used both for the cap CHECK in the trigger
 -- and as a list/short-circuit hint for callers that just want to know
