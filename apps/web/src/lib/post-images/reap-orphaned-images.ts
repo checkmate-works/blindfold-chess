@@ -1,9 +1,10 @@
-import { POST_IMAGES_BUCKET } from '@/app/api/posts/[id]/images/post-image-validation';
 import { and, eq, inArray, isNotNull, lt } from 'drizzle-orm';
 import 'server-only';
 
 import { db, postImageAttachments, topicPosts } from '@/lib/db';
 import { createAdminClient } from '@/lib/supabase/admin';
+
+import { POST_IMAGES_BUCKET } from './validation';
 
 /**
  * Reaper for orphaned post-image storage objects.

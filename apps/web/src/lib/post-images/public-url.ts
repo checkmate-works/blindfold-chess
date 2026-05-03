@@ -1,4 +1,4 @@
-import { POST_IMAGES_BUCKET } from '@/app/api/posts/[id]/images/post-image-validation';
+import { POST_IMAGES_BUCKET } from './validation';
 
 /**
  * Read-time public URL rebuild for post image attachments.

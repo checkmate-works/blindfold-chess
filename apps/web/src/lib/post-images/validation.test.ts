@@ -9,7 +9,7 @@ import {
   buildPostImageStoragePath,
   isAllowedPostImageMimeType,
   validatePostImageBinarySignature,
-} from './post-image-validation';
+} from './validation';
 
 describe('POST_IMAGES_* constants', () => {
   it('allow-list contains only the three accepted MIME types', () => {

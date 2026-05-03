@@ -2,12 +2,12 @@
 
 import { revalidatePath, revalidateTag } from 'next/cache';
 
-import { POST_IMAGES_BUCKET } from '@/app/api/posts/[id]/images/post-image-validation';
 import { and, eq, isNull } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, postImageAttachments, topicPosts, userGrants } from '@/lib/db';
+import { POST_IMAGES_BUCKET } from '@/lib/post-images/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { createClient as createSupabaseSessionClient } from '@/lib/supabase/server';
 import { logActivityEvent } from '@/lib/users/activity-log';

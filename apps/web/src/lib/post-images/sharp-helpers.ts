@@ -1,7 +1,3 @@
-import {
-  POST_IMAGES_MAX_MEGAPIXELS,
-  type PostImageMimeType,
-} from '@/app/api/posts/[id]/images/post-image-validation';
 import 'server-only';
 /**
  * Sharp-backed processing for user-uploaded post images.
@@ -33,6 +29,8 @@ import 'server-only';
  * for this code path — every additional dependency is another bug surface.
  */
 import sharp from 'sharp';
+
+import { POST_IMAGES_MAX_MEGAPIXELS, type PostImageMimeType } from './validation';
 
 export type ProbeResult = { width: number; height: number };
 

@@ -2,11 +2,11 @@
 
 import { revalidatePath, revalidateTag } from 'next/cache';
 
-import { POST_IMAGES_BUCKET } from '@/app/api/posts/[id]/images/post-image-validation';
 import { and, eq, isNull } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
 import { db, moderationActions, postImageAttachments, topicPosts, userGrants } from '@/lib/db';
+import { POST_IMAGES_BUCKET } from '@/lib/post-images/validation';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 import { requireAdmin } from '../../_lib/auth';

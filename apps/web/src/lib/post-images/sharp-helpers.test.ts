@@ -1,4 +1,3 @@
-import { POST_IMAGES_MAX_MEGAPIXELS } from '@/app/api/posts/[id]/images/post-image-validation';
 import sharpDefault from 'sharp';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -7,6 +6,7 @@ import {
   probeImageDimensions,
   stripExifAndApplyOrientation,
 } from './sharp-helpers';
+import { POST_IMAGES_MAX_MEGAPIXELS } from './validation';
 
 vi.mock('server-only', () => ({}));
 
