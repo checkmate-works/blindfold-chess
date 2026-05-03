@@ -2,10 +2,12 @@
 
 import { revalidatePath, revalidateTag } from 'next/cache';
 
+import { POST_IMAGES_BUCKET } from '@/app/api/posts/[id]/images/post-image-validation';
 import { and, eq, isNull } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
-import { db, moderationActions, topicPosts, userGrants } from '@/lib/db';
+import { db, moderationActions, postImageAttachments, topicPosts, userGrants } from '@/lib/db';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 import { requireAdmin } from '../../_lib/auth';
 import { getClientIp } from './getClientIp';
@@ -42,6 +44,36 @@ export async function deletePostAdmin(postId: string, reason: string): Promise<A
   }
 
   const ipAddress = await getClientIp();
+
+  // Best-effort image-attachment Storage cleanup BEFORE soft-deleting the
+  // post. Mirrors the user-side `deletePost` flow but uses the admin
+  // client (admin is not the post owner; RLS would otherwise block the
+  // remove). Failures are non-blocking — the daily reaper sweeps anything
+  // that survives within 7 days.
+  const imageRows = await db
+    .select({ storagePath: postImageAttachments.storagePath })
+    .from(postImageAttachments)
+    .where(eq(postImageAttachments.postId, postId));
+
+  if (imageRows.length > 0) {
+    try {
+      const admin = createAdminClient();
+      const { error } = await admin.storage
+        .from(POST_IMAGES_BUCKET)
+        .remove(imageRows.map((r) => r.storagePath));
+      if (error) {
+        console.warn('deletePostAdmin: storage remove returned error', {
+          postId,
+          message: error.message,
+        });
+      }
+    } catch (err) {
+      console.warn('deletePostAdmin: storage remove threw', {
+        postId,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
 
   await db.transaction(async (tx) => {
     await tx.update(topicPosts).set({ deletedAt: new Date() }).where(eq(topicPosts.id, postId));

@@ -2,12 +2,14 @@
 
 import { revalidatePath, revalidateTag } from 'next/cache';
 
+import { POST_IMAGES_BUCKET } from '@/app/api/posts/[id]/images/post-image-validation';
 import { and, eq, isNull } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
-import { db, topicPosts, userGrants } from '@/lib/db';
+import { db, postImageAttachments, topicPosts, userGrants } from '@/lib/db';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
+import { createClient as createSupabaseSessionClient } from '@/lib/supabase/server';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
 export type DeletePostResult = ActionResult;
@@ -55,6 +57,37 @@ export async function deletePost(postId: string, locale: string): Promise<Delete
 
   if (post.deletedAt) {
     return { error: 'alreadyDeleted' };
+  }
+
+  // Best-effort: remove any image attachment Storage objects BEFORE the
+  // soft delete. The post row stays (soft delete) and the attachment rows
+  // stay (no hard delete); only the bytes in the bucket are reaped here.
+  // Failures are logged but do not block the soft delete — the daily
+  // reaper (apps/web/src/lib/post-images/reap-orphaned-images.ts) sweeps
+  // anything that survives this best-effort path within 7 days.
+  const imageRows = await db
+    .select({ storagePath: postImageAttachments.storagePath })
+    .from(postImageAttachments)
+    .where(eq(postImageAttachments.postId, postId));
+
+  if (imageRows.length > 0) {
+    try {
+      const supabase = await createSupabaseSessionClient();
+      const { error } = await supabase.storage
+        .from(POST_IMAGES_BUCKET)
+        .remove(imageRows.map((r) => r.storagePath));
+      if (error) {
+        console.warn('deletePost: storage remove returned error', {
+          postId,
+          message: error.message,
+        });
+      }
+    } catch (err) {
+      console.warn('deletePost: storage remove threw', {
+        postId,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
   }
 
   await db.transaction(async (tx) => {

@@ -20,6 +20,11 @@ vi.mock('@/lib/supabase/server', () => ({
       auth: {
         getUser: mockGetUser,
       },
+      storage: {
+        from: () => ({
+          remove: vi.fn().mockResolvedValue({ error: null }),
+        }),
+      },
     }),
 }));
 
@@ -27,9 +32,19 @@ vi.mock('@/lib/db', () => ({
   db: {
     select: () => ({
       from: () => ({
-        where: () => ({
-          limit: () => mockSelectFromWhereLimit(),
-        }),
+        // The post-fetch chain is `select().from().where().limit(1)` and the
+        // image-attachment-fetch chain is `select().from().where()` (no
+        // limit). Both share the same mock here; we hand them distinct
+        // call paths via the `where()` thenable + limit branch.
+        where: (..._args: unknown[]) => {
+          const result: PromiseLike<unknown[]> & {
+            limit: (n?: number) => Promise<unknown[]>;
+          } = {
+            then: (resolve, reject) => Promise.resolve([]).then(resolve, reject),
+            limit: () => mockSelectFromWhereLimit(),
+          };
+          return result;
+        },
       }),
     }),
     update: () => ({
@@ -54,6 +69,10 @@ vi.mock('@/lib/db', () => ({
     topicType: 'topic_type',
     topicKey: 'topic_key',
     deletedAt: 'deleted_at',
+  },
+  postImageAttachments: {
+    postId: 'post_id',
+    storagePath: 'storage_path',
   },
   userGrants: {
     sourceType: 'source_type',

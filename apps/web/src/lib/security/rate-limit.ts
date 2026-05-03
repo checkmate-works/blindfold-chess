@@ -52,6 +52,14 @@ export const RATE_LIMITS = {
   updateProfile: { action: 'update_profile', maxAttempts: 5, windowMs: 600_000 },
   uploadAvatar: { action: 'upload_avatar', maxAttempts: 5, windowMs: 600_000 },
   uploadArticleImage: { action: 'upload_article_image', maxAttempts: 20, windowMs: 600_000 },
+  /**
+   * Per-user limit for post image uploads. Same window as
+   * `uploadArticleImage` (10 minutes) but lower max because post images
+   * are user-generated content (vs admin-only articles) and the per-post
+   * cap is 3 — a user creating a fresh post needs at most 3 uploads, so
+   * 15 / 10 min covers ~5 fresh posts before the limit kicks in.
+   */
+  uploadPostImage: { action: 'upload_post_image', maxAttempts: 15, windowMs: 600_000 },
   changePassword: { action: 'change_password', maxAttempts: 5, windowMs: 3_600_000 },
   deleteAccount: { action: 'delete_account', maxAttempts: 3, windowMs: 3_600_000 },
   savePracticeResult: { action: 'save_practice_result', maxAttempts: 60, windowMs: 3_600_000 },
