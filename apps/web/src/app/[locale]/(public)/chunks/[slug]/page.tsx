@@ -12,6 +12,7 @@ import { getPaginationParams } from '@/lib/pagination';
 import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 import { createClient } from '@/lib/supabase/server';
 
+import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
 import {
   TOPIC_PAGE_SIZE,
   buildPaginationHref,
@@ -28,7 +29,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { NewPostForm } from './_components/NewPostForm';
 import { PostCard } from './_components/PostCard';
-import { SortTabs } from './_components/SortTabs';
 
 export const dynamic = 'force-dynamic';
 
@@ -160,7 +160,11 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
         </p>
       )}
 
-      <SortTabs slug={slug} locale={locale} />
+      <SortSelect
+        basePath={`/chunks/${slug}`}
+        translationKey="topics.chunks.sort"
+        currentSort={sortBy}
+      />
 
       {posts.length > 0 ? (
         <div className="space-y-3">

@@ -10,6 +10,7 @@ import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
 import { AttachedEmbedCard } from '@/app/[locale]/(public)/topics/_components/AttachedEmbedCard';
 import { AttachedGameCard } from '@/app/[locale]/(public)/topics/_components/AttachedGameCard';
 import { TopicPostDetailLayout } from '@/app/[locale]/(public)/topics/_components/TopicPostDetailLayout';
+import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { fetchPostDetailData } from '@/app/[locale]/(public)/topics/_lib/post-detail';
 import { getPostByIdAndTopicKey } from '@/app/[locale]/(public)/topics/_lib/queries';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -20,6 +21,7 @@ import { toggleLike } from './_actions/toggleLike';
 
 type Props = {
   params: Promise<{ locale: Locale; slug: string; postId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -50,8 +52,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function ChunkPostDetailPage({ params }: Props) {
+export default async function ChunkPostDetailPage({ params, searchParams }: Props) {
   const { locale, slug, postId } = await params;
+  const sortBy = validateSort(((await searchParams).sort as string | undefined) ?? 'new');
 
   const chunk = await getChunkBySlug(slug);
   if (!chunk) {
@@ -63,7 +66,10 @@ export default async function ChunkPostDetailPage({ params }: Props) {
     notFound();
   }
 
-  const { user, replies, likeMeta, isAuthor, canReply } = await fetchPostDetailData(postId, post);
+  const { user, rootWithMeta, replies, isAuthor, canReply } = await fetchPostDetailData(
+    postId,
+    post
+  );
 
   const attachments = await getAttachmentsForPosts([postId]);
   const attachment = attachments.get(postId) ?? null;
@@ -87,15 +93,19 @@ export default async function ChunkPostDetailPage({ params }: Props) {
           <ThemedBoardThumbnail fen={chunk.representativeFen} className="w-full" />
         </div>
       }
-      backLink={{
-        href: `/chunks/${slug}`,
-        label: ct('postDetail.backToChunk', { name: chunk.title }),
-      }}
-      post={post}
+      opMeta={
+        attachment ? (
+          attachment.kind === 'pgn' ? (
+            <AttachedGameCard attachment={attachment.data} />
+          ) : (
+            <AttachedEmbedCard attachment={attachment.data} />
+          )
+        ) : undefined
+      }
+      rootWithMeta={rootWithMeta}
+      replies={replies}
       user={user}
       topicKey={slug}
-      likeMeta={likeMeta}
-      replies={replies}
       canReply={canReply}
       replyRestrictionMessage={replyRestrictionMessage}
       toggleLikeAction={toggleLike}
@@ -106,25 +116,19 @@ export default async function ChunkPostDetailPage({ params }: Props) {
         likeNamespace: 'topics.chunks',
         deleteNamespace: 'topics.chunks.deletePost',
         replyNamespace: 'topics.chunks.replies',
-        repliesTitle: ct('replies.title'),
-        repliesCount: ct('replies.count', { count: replies.length }),
-        noReplies: ct('replies.noReplies'),
-        loginToReply: ct('replies.loginToReply'),
+      }}
+      comments={{
+        sectionTitle: ct('replies.title'),
+        countText: ct('replies.count', { count: replies.length }),
+        sortBy,
+        sortBasePath: `/chunks/${slug}/posts/${postId}`,
+        sortTranslationKey: 'topics.chunks.sort',
       }}
       breadcrumbItems={[
         { label: 'Chunks', href: '/chunks' },
         { label: chunk.title, href: `/chunks/${slug}` },
         { label: ct('readMore') },
       ]}
-      extraContent={
-        attachment ? (
-          attachment.kind === 'pgn' ? (
-            <AttachedGameCard attachment={attachment.data} />
-          ) : (
-            <AttachedEmbedCard attachment={attachment.data} />
-          )
-        ) : undefined
-      }
     />
   );
 }

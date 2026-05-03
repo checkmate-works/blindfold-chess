@@ -134,24 +134,22 @@ export default async function InterviewQuestionDetailPage({ params }: Props) {
       <SectionTitle>{t(`questions.${typedKey}.description` as never)}</SectionTitle>
 
       {!user ? (
-        <div className="rounded-lg border border-border bg-muted/50 p-6 text-center space-y-4">
+        <div className="space-y-4">
           <p className="text-sm text-muted-foreground">{tDetail('signInRequired')}</p>
-          <div className="flex justify-center gap-3">
-            <Link
-              href="/sign-in"
-              locale={locale}
-              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-            >
-              {tDetail('signIn')}
-            </Link>
-            <Link
-              href="/sign-up"
-              locale={locale}
-              className="rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
-            >
-              {tDetail('signUp')}
-            </Link>
-          </div>
+          <Link
+            href="/sign-in"
+            locale={locale}
+            className="flex w-full items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+          >
+            {tDetail('signIn')}
+          </Link>
+          <Link
+            href="/sign-up"
+            locale={locale}
+            className="flex w-full items-center justify-center rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+          >
+            {tDetail('signUp')}
+          </Link>
         </div>
       ) : answer ? (
         <>
@@ -183,14 +181,14 @@ export default async function InterviewQuestionDetailPage({ params }: Props) {
             answerOpening &&
             answerDisplayName &&
             !alreadyPosted && (
-              <div className="rounded-lg border border-border bg-muted/30 p-4 mt-4 space-y-3">
+              <div className="mt-4 space-y-3">
                 <p className="text-sm text-foreground">
                   {tDetail('sharePrompt', { name: answerDisplayName })}
                 </p>
                 <Link
-                  href={`/topics/openings/${answer.answerValue}/new`}
+                  href={`/topics/openings/${answer.answerValue}`}
                   locale={locale}
-                  className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                  className="flex w-full items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
                 >
                   {tDetail('shareLink')}
                 </Link>
