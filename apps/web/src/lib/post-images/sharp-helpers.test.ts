@@ -13,7 +13,7 @@ vi.mock('server-only', () => ({}));
 vi.mock('sharp', () => {
   // Minimal sharp mock that surfaces the chain we use:
   //   sharp(buffer).metadata()
-  //   sharp(buffer).rotate().withMetadata({}).toBuffer()
+  //   sharp(buffer).rotate().toBuffer()
   // The callback storage on the mock factory lets each test case
   // configure what metadata() returns and what toBuffer() produces.
   const state = {
@@ -25,7 +25,6 @@ vi.mock('sharp', () => {
   function chain() {
     return {
       rotate: () => chain(),
-      withMetadata: () => chain(),
       toBuffer: async () => state.outputBuffer,
       metadata: async () => {
         if (state.metadataThrows) {
@@ -107,7 +106,13 @@ describe('isWithinMegapixelCap', () => {
 });
 
 describe('stripExifAndApplyOrientation', () => {
-  it('returns the post-strip buffer from sharp', async () => {
+  it('returns the post-strip buffer produced by sharp().rotate().toBuffer()', async () => {
+    // We rely on Sharp's default-strip-on-toBuffer behavior (no
+    // .withMetadata() / .keepMetadata() in the chain), so the test only
+    // asserts the buffer is the one Sharp produced. The
+    // GPS-doesn't-leak regression lives in
+    // sharp-helpers.exif-strip.test.ts, which exercises the real
+    // sharp library against a fixture with embedded GPS EXIF.
     mockState.outputBuffer = Buffer.from([0xff, 0xd8, 0xff, 0xe0]);
     const result = await stripExifAndApplyOrientation({
       buffer: Buffer.from([0]),

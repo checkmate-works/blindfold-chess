@@ -17,8 +17,9 @@ import 'server-only';
  * 2. **EXIF GPS strip + orientation bake-in** — re-encode the buffer so the
  *    persisted bytes carry no EXIF metadata (notably no GPS coordinates).
  *    `.rotate()` reads the EXIF orientation tag, applies it to the pixel
- *    data, and then strips it; `.withMetadata({})` ensures no EXIF chunk
- *    is re-written into the output.
+ *    data, and then strips it. Sharp's documented default is to drop ALL
+ *    metadata on `.toBuffer()` unless `.withMetadata()` / `.keepMetadata()`
+ *    is called explicitly — so omitting that call is the strip.
  *
  * The two functions are kept separate so unit tests can probe a tiny fixture
  * for dimensions without invoking the encoder. The handler always calls
@@ -63,9 +64,12 @@ export function isWithinMegapixelCap(probe: ProbeResult): boolean {
  * EXIF strip + orientation bake-in.
  *
  * Sharp reads the EXIF orientation tag, applies the corresponding rotation
- * to the pixel data, and then drops EXIF entirely (because we pass an
- * empty `withMetadata({})`). The output preserves the original encoding
- * (no format conversion).
+ * to the pixel data, and then drops ALL metadata (EXIF, XMP, IPTC, ICC) —
+ * that strip behavior is Sharp's documented default for `.toBuffer()` when
+ * neither `.withMetadata()` nor `.keepMetadata()` is called. Calling
+ * `.withMetadata({})` is the inverse: it PRESERVES most metadata, including
+ * GPS. We deliberately do NOT call it here. The output preserves the
+ * original encoding (no format conversion).
  *
  * The output buffer is what we upload to Storage and record in the DB.
  */
@@ -74,9 +78,11 @@ export async function stripExifAndApplyOrientation(args: {
   contentType: PostImageMimeType;
 }): Promise<Buffer> {
   const input = Buffer.isBuffer(args.buffer) ? args.buffer : Buffer.from(args.buffer);
-  // .rotate() with no arg reads EXIF orientation and bakes it in.
-  // .withMetadata({}) writes an empty metadata block — no EXIF passes through.
+  // .rotate() with no arg reads EXIF orientation and bakes it in, then
+  // discards the orientation tag. Omitting .withMetadata() / .keepMetadata()
+  // is what causes Sharp to strip ALL remaining metadata (incl. GPS) on
+  // the way out — this is the documented default.
   // Output keeps the input format (sharp infers from the input by default
   // when no format() is called explicitly).
-  return sharp(input).rotate().withMetadata({}).toBuffer();
+  return sharp(input).rotate().toBuffer();
 }
