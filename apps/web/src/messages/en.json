@@ -4192,6 +4192,25 @@
       "invalidUrl": "That doesn't look like a valid embed URL.",
       "chesscomCardTitle": "Chess.com diagram",
       "lichessCardTitle": "Lichess game"
+    },
+    "image": {
+      "label": "Images (optional)",
+      "uploadButton": "Add image",
+      "altLabel": "Image description (alt text)",
+      "altPlaceholder": "Describe the image for screen readers",
+      "limitHint": "JPEG, PNG, or WebP. Up to {max} per post, 2 MB each.",
+      "removeButton": "Remove image",
+      "uploading": "Uploading…",
+      "deletionDisclosure": "Images attached to a deleted post may remain accessible on storage for up to 7 days.",
+      "error": {
+        "fileRequired": "Choose an image file to upload.",
+        "fileTooLarge": "Image is too large. The maximum size is 2 MB.",
+        "invalidFileType": "Only JPEG, PNG, and WebP images are accepted.",
+        "imageTooLarge": "Image dimensions are too large (50 megapixel cap).",
+        "tooManyImages": "You have reached the {max}-image limit for this post.",
+        "uploadFailed": "Upload failed. Please try again.",
+        "rateLimited": "Too many uploads. Please wait a few minutes and try again."
+      }
     }
   },
   "Footer": {

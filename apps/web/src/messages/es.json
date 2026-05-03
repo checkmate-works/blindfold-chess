@@ -4192,6 +4192,25 @@
       "invalidUrl": "Eso no parece ser una URL de inserción válida.",
       "chesscomCardTitle": "Diagrama de Chess.com",
       "lichessCardTitle": "Partida de Lichess"
+    },
+    "image": {
+      "label": "Imágenes (opcional)",
+      "uploadButton": "Añadir imagen",
+      "altLabel": "Descripción de la imagen (texto alternativo)",
+      "altPlaceholder": "Describe la imagen para lectores de pantalla",
+      "limitHint": "JPEG, PNG o WebP. Hasta {max} por publicación, 2 MB cada una.",
+      "removeButton": "Eliminar imagen",
+      "uploading": "Subiendo…",
+      "deletionDisclosure": "Las imágenes adjuntas a una publicación eliminada pueden seguir siendo accesibles en el almacenamiento hasta 7 días.",
+      "error": {
+        "fileRequired": "Selecciona un archivo de imagen para subir.",
+        "fileTooLarge": "La imagen es demasiado grande. El tamaño máximo es 2 MB.",
+        "invalidFileType": "Solo se aceptan imágenes JPEG, PNG y WebP.",
+        "imageTooLarge": "Las dimensiones de la imagen son demasiado grandes (límite de 50 megapíxeles).",
+        "tooManyImages": "Has alcanzado el límite de {max} imágenes para esta publicación.",
+        "uploadFailed": "Error al subir. Inténtalo de nuevo.",
+        "rateLimited": "Demasiadas subidas. Espera unos minutos e inténtalo de nuevo."
+      }
     }
   },
   "Footer": {

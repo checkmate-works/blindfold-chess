@@ -4192,6 +4192,25 @@
       "invalidUrl": "埋め込み URL の形式が正しくありません。",
       "chesscomCardTitle": "Chess.com の図",
       "lichessCardTitle": "Lichess の対局"
+    },
+    "image": {
+      "label": "画像（任意）",
+      "uploadButton": "画像を追加",
+      "altLabel": "画像の説明（alt テキスト）",
+      "altPlaceholder": "スクリーンリーダー向けに画像を説明してください",
+      "limitHint": "JPEG・PNG・WebP に対応。1 投稿あたり最大 {max} 枚、各 2 MB まで。",
+      "removeButton": "画像を削除",
+      "uploading": "アップロード中…",
+      "deletionDisclosure": "投稿削除後、Storage 上の画像は最大 7 日間アクセス可能な場合があります。",
+      "error": {
+        "fileRequired": "アップロードする画像を選択してください。",
+        "fileTooLarge": "画像が大きすぎます。最大サイズは 2 MB です。",
+        "invalidFileType": "JPEG・PNG・WebP のみ対応しています。",
+        "imageTooLarge": "画像の解像度が大きすぎます（最大 5,000 万ピクセル）。",
+        "tooManyImages": "1 投稿あたりの画像枚数の上限（{max} 枚）に達しました。",
+        "uploadFailed": "アップロードに失敗しました。再度お試しください。",
+        "rateLimited": "アップロードが多すぎます。しばらく待ってから再度お試しください。"
+      }
     }
   },
   "Footer": {
