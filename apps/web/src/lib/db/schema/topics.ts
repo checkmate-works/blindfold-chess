@@ -1,7 +1,15 @@
 /**
- * UGC topic post tables — topic posts, likes, ratings, follows/blocks.
+ * UGC topic post tables — topic posts, likes, ratings, follows/blocks,
+ * and the per-kind attachment family (PGN, embed, image).
  */
-export { topicPosts, likes, topicPostRatings, userFollows, userBlocks } from './tables';
+export {
+  topicPosts,
+  likes,
+  topicPostRatings,
+  userFollows,
+  userBlocks,
+  postImageAttachments,
+} from './tables';
 
 export type {
   TopicPost,
@@ -14,4 +22,6 @@ export type {
   NewUserFollow,
   UserBlock,
   NewUserBlock,
+  PostImageAttachment,
+  NewPostImageAttachment,
 } from './tables';

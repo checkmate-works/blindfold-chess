@@ -430,6 +430,17 @@ export const topicPosts = pgTable(
      * exactly as before.
      */
     isSpoiler: boolean('is_spoiler').notNull().default(false),
+    /**
+     * Per-post image attachment counter. Maintained by the BEFORE INSERT /
+     * AFTER DELETE triggers on `post_image_attachments` (see migration
+     * `20260504053253_create_post_image_attachments.sql`). Used by the
+     * trigger to enforce MAX_IMAGES_PER_POST under concurrent INSERT
+     * pressure (the trigger does `SELECT image_attachment_count ... FOR
+     * UPDATE` on the parent row before incrementing). Application code
+     * MUST NOT write to this column directly — the triggers are the
+     * single source of truth.
+     */
+    imageAttachmentCount: smallint('image_attachment_count').notNull().default(0),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true })
@@ -847,6 +858,132 @@ export const postGameEmbedAttachments = pgTable(
 
 export type PostGameEmbedAttachment = typeof postGameEmbedAttachments.$inferSelect;
 export type NewPostGameEmbedAttachment = typeof postGameEmbedAttachments.$inferInsert;
+
+/**
+ * Image Attachments — N:1 (max 3) image attachments per topic post.
+ *
+ * @description
+ * Sibling of `post_game_pgn_attachments` and `post_game_embed_attachments`
+ * (Pattern 5 per-kind tables; see `docs/design/SPEC1-embed-data-model-ADR.md`).
+ * Stores up to 3 images per post; the cap is enforced race-free by a
+ * BEFORE INSERT trigger on this table that takes a row lock on the parent
+ * `topic_posts` row (`SELECT ... FOR UPDATE`) and consults
+ * `topic_posts.image_attachment_count`. The constant `MAX_IMAGES_PER_POST = 3`
+ * is hardcoded inside the trigger function — to change it, ship a new
+ * migration that does `CREATE OR REPLACE FUNCTION
+ * public.enforce_post_image_count_limit()` with the new constant.
+ *
+ * @design Why a separate sibling table (Pattern 5)
+ *
+ * Same rationale as the sibling `post_game_*_attachments` tables: each
+ * attachment kind has its own column shape (PGN body / embed id / image
+ * blob metadata), index needs, and validation surface, so collapsing them
+ * into one polymorphic `attachments` table would either bloat every row
+ * with NULLs or push validation to the app layer. Per-kind tables keep
+ * each attachment kind self-describing at the DB level.
+ *
+ * @design No `public_url` column (rebuild from `storage_path` at read time)
+ *
+ * The bucket is public, so the URL is purely a function of
+ * `(bucket, storage_path)`. Persisting it is redundant and a drift risk:
+ * if the project ever moves to a CDN or a different bucket, every stored
+ * URL would need a backfill. The renderer derives the URL from
+ * `storage_path` at read time via the Supabase client's `getPublicUrl`
+ * (or by string concatenation against a known public-URL prefix).
+ *
+ * @design `storage_path` regex pin
+ *
+ * The CHECK constraint pins `storage_path` to
+ * `^[0-9a-f-]{36}/[0-9a-f-]{36}/[0-9a-f-]{36}\.(jpg|png|webp)$`, which is
+ * exactly `${userId}/${postId}/${randomUuid}.${ext}`. This is a defense-
+ * in-depth measure: the upload handler builds the path correctly, the
+ * Storage RLS forbids the user from writing outside their own folder, and
+ * this CHECK forbids a direct REST insert from registering a path that
+ * violates the layout (e.g. `..` traversal, synthetic filenames, or
+ * paths that point to another user's folder).
+ *
+ * @design 50 megapixel cap
+ *
+ * Decompression-bomb defense. A 50 MP cap comfortably exceeds reasonable
+ * camera output (12 MP smartphone JPEG ≪ 50 MP) while making it hard to
+ * craft a small JPEG that decodes to a multi-GB pixel buffer.
+ *
+ * @design SVG hard reject
+ *
+ * SVG is **not** in the allow-list. SVG is XML and can carry inline
+ * scripts; even with a sanitizer, a future renderer change could
+ * accidentally inline-render an SVG and reintroduce the XSS vector. The
+ * Storage bucket also excludes `image/svg+xml` from `allowed_mime_types`,
+ * and the API handler rejects SVG before reaching the DB.
+ *
+ * @design FK to topic_posts (CASCADE)
+ *
+ * Hard delete of the parent post cascades the attachment rows. Soft
+ * delete (`deleted_at` set on `topic_posts`) leaves the rows in place,
+ * but the application's `deletePost` Server Action issues a best-effort
+ * Storage `remove()` for every attachment path before setting
+ * `deleted_at`, and a daily reaper sweeps any storage objects whose
+ * post is missing or has been soft-deleted longer than 7 days.
+ *
+ * @design `image_attachment_count` on parent (NOT on this table)
+ *
+ * The counter lives on `topic_posts` rather than being computed via a
+ * COUNT() because the BEFORE INSERT trigger needs to lock a single row
+ * (`SELECT ... FOR UPDATE`) to serialize the count check. Locking
+ * `post_image_attachments` rows would not help because there is nothing
+ * to lock for a row that does not yet exist. The counter is maintained
+ * exclusively by the BEFORE INSERT / AFTER DELETE triggers in the
+ * migration; application code MUST NOT write it.
+ */
+export const postImageAttachments = pgTable(
+  'post_image_attachments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    postId: uuid('post_id')
+      .notNull()
+      .references(() => topicPosts.id, { onDelete: 'cascade' }),
+    /**
+     * `${userId}/${postId}/${randomUuid}.${ext}`. The shape is pinned by a
+     * DB-level CHECK; the upload handler enforces the same shape before
+     * the INSERT.
+     */
+    storagePath: varchar('storage_path', { length: 1024 }).notNull(),
+    contentType: varchar('content_type', { length: 50 }).notNull(),
+    fileSize: integer('file_size').notNull(),
+    width: integer('width').notNull(),
+    height: integer('height').notNull(),
+    altText: varchar('alt_text', { length: 255 }),
+    displayOrder: smallint('display_order').notNull().default(0),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    check(
+      'post_image_attachments_chk_content_type',
+      sql`${table.contentType} IN ('image/jpeg', 'image/png', 'image/webp')`
+    ),
+    check(
+      'post_image_attachments_chk_file_size',
+      sql`${table.fileSize} > 0 AND ${table.fileSize} <= 2097152`
+    ),
+    check(
+      'post_image_attachments_chk_dimensions_positive',
+      sql`${table.width} > 0 AND ${table.height} > 0`
+    ),
+    check(
+      'post_image_attachments_chk_megapixels',
+      sql`${table.width} * ${table.height} <= 50000000`
+    ),
+    check(
+      'post_image_attachments_chk_storage_path_format',
+      sql`${table.storagePath} ~ '^[0-9a-f-]{36}/[0-9a-f-]{36}/[0-9a-f-]{36}\\.(jpg|png|webp)$'`
+    ),
+    index('idx_post_image_attachments_post').on(table.postId),
+    index('idx_post_image_attachments_post_order').on(table.postId, table.displayOrder),
+  ]
+);
+
+export type PostImageAttachment = typeof postImageAttachments.$inferSelect;
+export type NewPostImageAttachment = typeof postImageAttachments.$inferInsert;
 
 // User Follows
 export const userFollows = pgTable(
