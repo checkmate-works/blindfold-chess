@@ -19,6 +19,14 @@ import { reapOrphanedPostImages } from '@/lib/post-images/reap-orphaned-images';
  * Vercel Cron sends a `Bearer ${CRON_SECRET}` header, and the route
  * rejects anything else with 401. The reaper does not run under any user
  * session — it bypasses RLS via the admin client by design.
+ *
+ * @design Schedule timezone
+ *
+ * Vercel Cron schedules are interpreted in UTC. The 7-day retention
+ * window is also computed in UTC (`new Date()` returns a UTC instant;
+ * the reaper subtracts `REAP_RETENTION_MS` from it). End users see
+ * dates in their local TZ via `toLocaleString()` at render time, but
+ * the reaper itself does not branch on timezone.
  */
 export async function GET(request: Request): Promise<NextResponse> {
   const authHeader = request.headers.get('authorization');
