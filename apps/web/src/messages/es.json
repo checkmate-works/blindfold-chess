@@ -3582,6 +3582,7 @@
   "authPrompt": {
     "title": "Inicia sesión para continuar",
     "description": "Inicia sesión para dar me gusta a publicaciones, unirte a discusiones y sacar el máximo provecho de Ajedrez a Ciegas.",
+    "createDescription": "Regístrate gratis para guardar y publicar lo que creas.",
     "signUpButton": "Crear Cuenta Gratuita",
     "signInButton": "¿Ya tienes una cuenta? Iniciar sesión"
   },

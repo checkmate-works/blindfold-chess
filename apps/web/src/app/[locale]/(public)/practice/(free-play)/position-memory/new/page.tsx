@@ -2,11 +2,12 @@ import { getTranslations } from 'next-intl/server';
 
 import { eq } from 'drizzle-orm';
 
-import { getAuthenticatedUser } from '@/lib/auth';
+import { getOptionalUser } from '@/lib/auth';
 import { db, profiles } from '@/lib/db';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { GuestCreateGate } from '@/app/[locale]/_components/GuestCreateGate';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
@@ -25,16 +26,21 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function NewPositionPage({ params }: Props) {
   const { locale } = await params;
-  const user = await getAuthenticatedUser();
+  const user = await getOptionalUser();
   const t = await getTranslations({ locale, namespace: 'practice.positionMemory' });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
 
-  const [profile] = await db
-    .select({ displayName: profiles.displayName, username: profiles.username })
-    .from(profiles)
-    .where(eq(profiles.id, user.id))
-    .limit(1);
-  const displayName = resolveAuthorName(profile, { fallback: '' });
+  let displayName = '';
+  if (user) {
+    const [profile] = await db
+      .select({ displayName: profiles.displayName, username: profiles.username })
+      .from(profiles)
+      .where(eq(profiles.id, user.id))
+      .limit(1);
+    displayName = resolveAuthorName(profile, { fallback: '' });
+  }
+
+  const form = <CreatePositionForm displayName={displayName} />;
 
   return (
     <PageLayout
@@ -47,7 +53,7 @@ export default async function NewPositionPage({ params }: Props) {
       ]}
     >
       <SectionTitle>{t('create.title')}</SectionTitle>
-      <CreatePositionForm displayName={displayName} />
+      {user ? form : <GuestCreateGate>{form}</GuestCreateGate>}
     </PageLayout>
   );
 }

@@ -3582,6 +3582,7 @@
   "authPrompt": {
     "title": "サインインして続行",
     "description": "サインインすると、いいねやディスカッションへの参加など、Blindfold Chessをより楽しめます。",
+    "createDescription": "無料ユーザー登録で、作成した内容を保存・公開できます。",
     "signUpButton": "無料ユーザー登録",
     "signInButton": "アカウントをお持ちの方はログイン"
   },

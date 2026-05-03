@@ -3582,6 +3582,7 @@
   "authPrompt": {
     "title": "Faça login para continuar",
     "description": "Faça login para curtir publicações, participar de discussões e aproveitar ao máximo o Xadrez às Cegas.",
+    "createDescription": "Cadastre-se grátis para salvar e publicar o que você criar.",
     "signUpButton": "Criar Conta Gratuita",
     "signInButton": "Já tem uma conta? Entrar"
   },
