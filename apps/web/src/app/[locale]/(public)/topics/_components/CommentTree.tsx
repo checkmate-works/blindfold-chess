@@ -38,6 +38,26 @@ type Props = {
     replyNamespace: string;
     deleteNamespace: string;
   };
+  /**
+   * Override the `rootPostId` passed down to every rendered `CommentNode`
+   * (and through to the inline `ReplyForm` it spawns). Defaults to each
+   * root's own id, which is correct when each entry in `comments` is
+   * itself the head of an independent thread (e.g. position-memory /
+   * puzzle, where every top-level comment owns its own URL hash anchor
+   * and createReply redirect target).
+   *
+   * On topic post detail pages (`/topics/<family>/<key>/posts/<postId>`,
+   * `/chunks/<slug>/posts/<postId>`) the actual thread root is the OP,
+   * which is rendered separately above the tree; the entries in
+   * `comments` are direct replies to the OP, promoted to roots for
+   * layout purposes only. Their database `rootPostId` is still the
+   * OP's id, and the createReply redirect must land on the OP's URL
+   * (`/posts/${OP.id}`), not on `/posts/${reply.id}`. Pass the OP's id
+   * here so the inline ReplyForm binds the right `postId` and the
+   * redirect resolves to a URL whose page actually contains the new
+   * reply.
+   */
+  threadRootPostId?: string;
 };
 
 /**
@@ -65,6 +85,7 @@ export async function CommentTree({
   createReplyAction,
   deletePostAction,
   i18n,
+  threadRootPostId,
 }: Props) {
   const canReplyByRootId = new Map<string, boolean>();
   await Promise.all(
@@ -84,7 +105,7 @@ export async function CommentTree({
         <CommentNode
           key={root.id}
           node={root}
-          rootPostId={root.id}
+          rootPostId={threadRootPostId ?? root.id}
           replyGroups={groupReplies(root)}
           locale={locale}
           topicKey={topicKey}

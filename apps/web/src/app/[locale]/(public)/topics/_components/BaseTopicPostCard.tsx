@@ -9,6 +9,7 @@ import { FaEyeSlash } from 'react-icons/fa';
 import { truncateContent } from '@/lib/content/truncate-content';
 
 import { LinkedText } from '@/app/[locale]/_components';
+import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 
 import { formatRelativeTime } from '../_lib/relative-time';
@@ -117,129 +118,139 @@ export function BaseTopicPostCard({
     return () => ro.disconnect();
   }, [showInlineExpanded, bodyText]);
 
-  // Layout note (HTML / a11y): the card MUST NOT wrap its body in a
+  // Layout note (HTML / a11y): the card body MUST NOT be wrapped in a
   // top-level <a>. The body renders user-submitted content via
-  // <LinkedText>, which itself emits inline <a> elements for URLs in
-  // the comment text — and <a> nested inside <a> is invalid HTML and
+  // <LinkedText>, which itself emits inline <a> elements for URLs in the
+  // comment text — and <a> nested inside <a> is invalid HTML and
   // produces a hydration error in React. The body also contains
   // <button>s (spoiler reveal, expand-inline) and the LikeButton in
   // PostFooter, which similarly cannot live inside an anchor.
   //
-  // Instead, the click-to-detail affordance is a permalink anchor
-  // wrapping the relative timestamp — the same Twitter / Mastodon /
-  // GitHub pattern. Crawlers still discover the post URL via a real
-  // <a href> rendered in semantic <time> markup, keyboard users still
-  // tab to a focusable post-detail link, and the body remains free of
-  // illegal nested interactive content.
+  // Whole-card click is therefore implemented by ActivityCard's
+  // "stretched link" pattern: an absolutely-positioned <Link> sits at
+  // z-0 behind the visible content (z-10), which wraps in a layer that
+  // is transparent to pointer events. Inline <a> and <button>
+  // descendants opt back in via pointer-events-auto, so the avatar
+  // profile link, the permalink anchor, the spoiler overlay button,
+  // the expand-inline button, and the LikeButton continue to take
+  // their own clicks. The background link is `aria-hidden`/tabIndex=-1
+  // so keyboard and screen-reader users navigate via the visible
+  // permalink anchor (Twitter / Mastodon / GitHub pattern).
   return (
-    <div className="group p-4 rounded-md border border-border bg-card hover:border-foreground/20 transition-colors">
-      <UserAvatar
-        profileHref={profileHref}
-        avatarUrl={author?.avatarUrl}
-        displayName={displayName}
-        locale={locale}
-        flair={author?.flair}
-        country={author?.country}
-      >
-        <div className="text-sm text-muted-foreground mb-4">
+    <ActivityCard
+      variant="card"
+      href={postHref}
+      locale={locale}
+      author={
+        <UserAvatar
+          profileHref={profileHref}
+          avatarUrl={author?.avatarUrl}
+          displayName={displayName}
+          locale={locale}
+          size="sm"
+          flair={author?.flair}
+          country={author?.country}
+        />
+      }
+      permalink={
+        <Link
+          href={postHref}
+          locale={locale}
+          className="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+          aria-label={tTopics('permalinkAriaLabel')}
+        >
+          <time dateTime={createdAt.toISOString()}>
+            {formatRelativeTime(new Date(createdAt), locale, justNowLabel)}
+          </time>
+        </Link>
+      }
+      footer={
+        <PostFooter
+          postId={postId}
+          locale={locale}
+          topicKey={topicKey}
+          likeMeta={likeMeta}
+          replyMeta={replyMeta}
+          toggleLikeAction={toggleLikeAction}
+          i18nNamespace={i18nNamespace}
+          postHref={postHref}
+        />
+      }
+    >
+      {badge}
+      {/*
+        i18n note: Japanese intentionally uses different wording for the
+        writer-side toggle label (`spoiler.toggleLabel` = "解法を含む") and
+        the reader-side overlay title (`spoiler.overlayTitle` =
+        "ネタバレを含みます"). "ネタバレ" is the standard Japanese term for
+        a reader-facing spoiler warning, while "解法を含む" reads more
+        naturally as a self-declaration on the composer. Other locales
+        (en/es/pt-BR) use parallel "Contains solution" wording for both
+        because there is no equivalent natural-cognate distinction. Do
+        NOT normalize without product input.
+
+        a11y note: `aria-live="polite"` on the wrapper announces the
+        revealed body to screen readers when the overlay is dismissed,
+        so the user who clicked "reveal" hears the comment they just
+        opted into.
+      */}
+      {hasContent && (
+        <div className="relative" aria-live="polite">
+          <p
+            id={bodyId}
+            ref={bodyRef}
+            className={
+              showInlineExpanded
+                ? 'text-sm text-foreground whitespace-pre-wrap break-words'
+                : 'text-sm text-foreground whitespace-pre-wrap break-words line-clamp-3'
+            }
+            aria-hidden={showSpoilerOverlay || undefined}
+          >
+            <LinkedText text={bodyText} locale={locale} />
+          </p>
+          {showSpoilerOverlay && (
+            <button
+              type="button"
+              onClick={() => setIsRevealed(true)}
+              aria-label={tTopics('spoiler.overlayAriaLabel')}
+              className="absolute inset-0 flex flex-col items-center justify-center gap-1 rounded-sm bg-muted text-muted-foreground hover:bg-muted/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors cursor-pointer"
+            >
+              <span className="flex items-center gap-1.5 text-sm font-medium">
+                <FaEyeSlash aria-hidden="true" />
+                {tTopics('spoiler.overlayTitle')}
+              </span>
+              <span className="text-xs text-muted-foreground/80">
+                {tTopics('spoiler.overlayHint')}
+              </span>
+            </button>
+          )}
+        </div>
+      )}
+      {hasContent &&
+        isTruncated &&
+        (!isSpoiler || isRevealed) &&
+        (expandInline ? (
+          !isExpanded && (
+            <button
+              type="button"
+              onClick={() => setIsExpanded(true)}
+              aria-expanded={false}
+              aria-controls={bodyId}
+              className="self-start text-sm text-link-primary hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm cursor-pointer"
+            >
+              {tTopics('showMore')}
+            </button>
+          )
+        ) : (
           <Link
             href={postHref}
             locale={locale}
-            className="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
-            aria-label={tTopics('permalinkAriaLabel')}
+            className="self-start text-sm text-link-primary hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
           >
-            <time dateTime={createdAt.toISOString()}>
-              {formatRelativeTime(new Date(createdAt), locale, justNowLabel)}
-            </time>
+            {tTopics('showMore')}
           </Link>
-          {badge}
-        </div>
-        {/*
-          i18n note: Japanese intentionally uses different wording for the
-          writer-side toggle label (`spoiler.toggleLabel` = "解法を含む") and
-          the reader-side overlay title (`spoiler.overlayTitle` =
-          "ネタバレを含みます"). "ネタバレ" is the standard Japanese term for
-          a reader-facing spoiler warning, while "解法を含む" reads more
-          naturally as a self-declaration on the composer. Other locales
-          (en/es/pt-BR) use parallel "Contains solution" wording for both
-          because there is no equivalent natural-cognate distinction. Do
-          NOT normalize without product input.
-
-          a11y note: `aria-live="polite"` on the wrapper announces the
-          revealed body to screen readers when the overlay is dismissed,
-          so the user who clicked "reveal" hears the comment they just
-          opted into.
-        */}
-        {hasContent && (
-          <div className="relative" aria-live="polite">
-            <p
-              id={bodyId}
-              ref={bodyRef}
-              className={
-                showInlineExpanded
-                  ? 'text-sm text-foreground whitespace-pre-wrap break-words'
-                  : 'text-sm text-foreground whitespace-pre-wrap break-words line-clamp-3'
-              }
-              aria-hidden={showSpoilerOverlay || undefined}
-            >
-              <LinkedText text={bodyText} locale={locale} />
-            </p>
-            {showSpoilerOverlay && (
-              <button
-                type="button"
-                onClick={() => setIsRevealed(true)}
-                aria-label={tTopics('spoiler.overlayAriaLabel')}
-                className="absolute inset-0 flex flex-col items-center justify-center gap-1 rounded-sm bg-muted text-muted-foreground hover:bg-muted/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors cursor-pointer"
-              >
-                <span className="flex items-center gap-1.5 text-sm font-medium">
-                  <FaEyeSlash aria-hidden="true" />
-                  {tTopics('spoiler.overlayTitle')}
-                </span>
-                <span className="text-xs text-muted-foreground/80">
-                  {tTopics('spoiler.overlayHint')}
-                </span>
-              </button>
-            )}
-          </div>
-        )}
-        {hasContent &&
-          isTruncated &&
-          (!isSpoiler || isRevealed) &&
-          (expandInline ? (
-            !isExpanded && (
-              <button
-                type="button"
-                onClick={() => setIsExpanded(true)}
-                aria-expanded={false}
-                aria-controls={bodyId}
-                className="text-sm text-link-primary hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm cursor-pointer"
-              >
-                {tTopics('showMore')}
-              </button>
-            )
-          ) : (
-            <Link
-              href={postHref}
-              locale={locale}
-              className="text-sm text-link-primary hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
-            >
-              {tTopics('showMore')}
-            </Link>
-          ))}
-      </UserAvatar>
-
+        ))}
       {extraContent}
-
-      <PostFooter
-        postId={postId}
-        locale={locale}
-        topicKey={topicKey}
-        likeMeta={likeMeta}
-        replyMeta={replyMeta}
-        toggleLikeAction={toggleLikeAction}
-        i18nNamespace={i18nNamespace}
-        postHref={postHref}
-      />
-    </div>
+    </ActivityCard>
   );
 }

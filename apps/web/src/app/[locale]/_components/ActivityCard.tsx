@@ -12,8 +12,14 @@ type Props = {
    *   appropriate for stand-alone list pages (topics, profile, etc.).
    */
   variant?: Variant;
-  /** Square thumbnail rendered on the left column (~80–96 px). */
-  thumbnail: ReactNode;
+  /**
+   * Square thumbnail rendered on the left column (~80–96 px). Optional —
+   * surfaces that already provide topic context elsewhere on the page
+   * (e.g. topics list pages that render the opening board / square
+   * highlight at the top of the page) can omit it; the right column then
+   * occupies the full width.
+   */
+  thumbnail?: ReactNode;
   /** Extra classes appended to the thumbnail wrapper (e.g. centering icons). */
   thumbnailClassName?: string;
   /**
@@ -108,9 +114,13 @@ export const ActivityCard = memo(function ActivityCard({
           className="absolute inset-0 z-0"
         />
       )}
-      <div className={`w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 ${thumbnailClassName ?? ''}`.trim()}>
-        {thumbnail}
-      </div>
+      {thumbnail && (
+        <div
+          className={`w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 ${thumbnailClassName ?? ''}`.trim()}
+        >
+          {thumbnail}
+        </div>
+      )}
       <div className={rightColumnClass}>
         {author}
         {permalink && (

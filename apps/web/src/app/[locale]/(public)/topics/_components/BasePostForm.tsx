@@ -89,7 +89,7 @@ export function BasePostForm({
       {beforeContent?.(markDirty)}
 
       <div className="space-y-2">
-        <label htmlFor="content" className="block text-sm font-medium text-foreground">
+        <label htmlFor="content" className="sr-only">
           {t('contentLabel')}
         </label>
         <Textarea

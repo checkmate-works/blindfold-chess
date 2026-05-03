@@ -243,7 +243,7 @@ describe('NotificationItem', () => {
       expect(link!.getAttribute('href')).toBe('/topics/squares/e4/posts/post-42');
     });
 
-    it('should link to post with #reply-{replyId} fragment when metadata includes replyId', () => {
+    it('should link to post with #post-{replyId} fragment when metadata includes replyId', () => {
       const notification = createNotification({
         type: 'reply',
         metadata: {
@@ -259,11 +259,11 @@ describe('NotificationItem', () => {
       const link = screen.getByText('Alice replied to your post').closest('a');
       expect(link).not.toBeNull();
       expect(link!.getAttribute('href')).toBe(
-        '/topics/openings/sicilian-defense/posts/post-1#reply-reply-99'
+        '/topics/openings/sicilian-defense/posts/post-1#post-reply-99'
       );
     });
 
-    it('should link to square post with #reply-{replyId} fragment when metadata includes replyId', () => {
+    it('should link to square post with #post-{replyId} fragment when metadata includes replyId', () => {
       const notification = createNotification({
         type: 'reply',
         metadata: { topicType: 'square', topicKey: 'e4', postId: 'post-42', replyId: 'reply-7' },
@@ -273,7 +273,7 @@ describe('NotificationItem', () => {
 
       const link = screen.getByText('Alice replied to your post').closest('a');
       expect(link).not.toBeNull();
-      expect(link!.getAttribute('href')).toBe('/topics/squares/e4/posts/post-42#reply-reply-7');
+      expect(link!.getAttribute('href')).toBe('/topics/squares/e4/posts/post-42#post-reply-7');
     });
 
     it('should render as button when metadata is missing', () => {

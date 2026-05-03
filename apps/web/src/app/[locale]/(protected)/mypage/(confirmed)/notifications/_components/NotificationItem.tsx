@@ -158,16 +158,15 @@ export function NotificationItem({ notification, currentUsername }: Props) {
    *
    * `topic_posts` is polymorphic, but the routes that render those posts
    * are not:
-   *   - `square` / `opening` → `/topics/{segment}/{key}/posts/{postId}` detail
-   *     page; reply anchors use `#reply-{replyId}` because the detail page's
-   *     `ReplyList` renders each reply with `id="reply-{id}"`.
-   *   - `chunk` → `/chunks/{slug}/posts/{postId}` detail page; same reply
-   *     anchor convention.
+   *   - `square` / `opening` / `chunk` → `/topics/{segment}/{key}/posts/{postId}`
+   *     (chunks use `/chunks/{slug}/...`) detail page. The page renders the
+   *     OP and every reply as a single-root `CommentNode` tree, where every
+   *     node has `id="post-{id}"` — same anchor scheme as the position
+   *     pages, so reply deep-links use `#post-{replyId}`.
    *   - `position_memory` / `position_puzzle` → no detail page; the parent
-   *     puzzle / position page renders a Reddit-style inline tree where every
-   *     `CommentNode` has `id="post-{id}"`. Both top-level and reply
-   *     notifications point at `parent#post-{targetId}` (replyId for replies,
-   *     postId for top-level).
+   *     puzzle / position page renders the same inline tree. Both top-level
+   *     and reply notifications point at `parent#post-{targetId}` (replyId
+   *     for replies, postId for top-level).
    */
   function buildPostDetailUrl(
     topicType: string,
@@ -185,7 +184,7 @@ export function NotificationItem({ notification, currentUsername }: Props) {
     }
     const segment = getTopicSegment(topicType);
     const baseUrl = `/topics/${segment}/${topicKey}/posts/${postId}`;
-    return replyId ? `${baseUrl}#reply-${replyId}` : baseUrl;
+    return replyId ? `${baseUrl}#post-${replyId}` : baseUrl;
   }
 
   function getLink(): string | null {
