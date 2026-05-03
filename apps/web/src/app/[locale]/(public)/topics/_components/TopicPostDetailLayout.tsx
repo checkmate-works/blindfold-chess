@@ -49,10 +49,11 @@ type Props = {
   /** Topic-specific visual rendered above the OP body (board component, etc.) */
   topicVisual: ReactNode;
   /**
-   * Per-OP metadata rendered between `topicVisual` and the OP card — e.g.
-   * an opening's preference / proficiency rating, a chunk's attached game
-   * card or embed. Conceptually part of the OP, surfaced as a peer of the
-   * board so it is visible without scrolling past the card.
+   * Per-OP metadata rendered inside the OP card, between the author
+   * header and the body — e.g. an opening's preference / proficiency
+   * rating, a chunk's attached game card or embed. Sitting inside the
+   * card keeps these visually attached to the post they belong to,
+   * matching how `main`'s `PostDetailContent` placed `extraContent`.
    */
   opMeta?: ReactNode;
   /** OP enriched with reply / like meta. Rendered as a standalone card. */
@@ -176,8 +177,6 @@ export async function TopicPostDetailLayout({
 
         {topicVisual}
 
-        {opMeta}
-
         {/*
           OP card — the bordered surface ("カード" in product language)
           that surfaces the post text as the page's main content. Mirrors
@@ -208,6 +207,8 @@ export async function TopicPostDetailLayout({
               </time>
             </div>
           </UserAvatar>
+
+          {opMeta}
 
           <div className="text-foreground whitespace-pre-wrap break-words leading-relaxed">
             <LinkedText text={rootWithMeta.content} locale={locale} />
@@ -292,6 +293,7 @@ export async function TopicPostDetailLayout({
               createReplyAction={createReplyAction}
               deletePostAction={deletePostAction}
               i18n={i18n}
+              threadRootPostId={rootWithMeta.id}
             />
           </>
         )}
