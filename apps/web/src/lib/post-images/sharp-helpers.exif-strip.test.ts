@@ -50,20 +50,16 @@ describe('stripExifAndApplyOrientation — EXIF strip regression (real sharp)', 
       .jpeg()
       .toBuffer();
 
-    // Re-encode with explicit EXIF. The IFD0 Software tag is the most
-    // portable indicator across Sharp versions; we also include a GPS
-    // block in case a future Sharp version starts honoring it (the test
-    // would then become strictly stronger without code changes).
+    // Re-encode with explicit EXIF. Sharp 0.34's `withExif` typing exposes
+    // only IFD0/IFD1/IFD2/IFD3 directories — there is no `GPS` key in the
+    // declared type. The IFD0 `Software` tag is sufficient to prove the
+    // strip behavior because GPS lat/long would be embedded in the same
+    // EXIF block; if `metadata.exif === undefined` after stripping, no
+    // EXIF tag of any kind survived.
     return sharp(baseJpeg)
       .withExif({
         IFD0: {
           Software: 'blindfold-chess-test-fixture',
-        },
-        GPS: {
-          GPSLatitudeRef: 'N',
-          GPSLatitude: '35/1, 39/1, 2914/100',
-          GPSLongitudeRef: 'E',
-          GPSLongitude: '139/1, 41/1, 3015/100',
         },
       })
       .jpeg()

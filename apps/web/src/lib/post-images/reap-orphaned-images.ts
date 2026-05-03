@@ -1,5 +1,5 @@
 import { POST_IMAGES_BUCKET } from '@/app/api/posts/[id]/images/post-image-validation';
-import { eq, inArray, isNotNull, lt, or } from 'drizzle-orm';
+import { and, eq, inArray, isNotNull, lt } from 'drizzle-orm';
 import 'server-only';
 
 import { db, postImageAttachments, topicPosts } from '@/lib/db';
@@ -10,34 +10,39 @@ import { createAdminClient } from '@/lib/supabase/admin';
  *
  * @description
  * The user-facing flow ("delete post → best-effort storage remove") is the
- * happy path. This function is the catch-net for everything that escapes:
+ * happy path. This function is the catch-net for the case that escapes it:
  *
- *   1. Storage remove failed (transient network, transient Supabase
- *      outage, etc.). The DB row gets soft-deleted but the bytes stay.
- *   2. The DB row was hard-deleted (admin tooling, FK CASCADE) without a
- *      corresponding storage clean-up.
- *   3. A user uploaded an image and abandoned the form before saving (the
- *      DB row never existed in the first place).
+ *   - Storage remove failed (transient network, transient Supabase
+ *     outage, etc.). The post row gets soft-deleted but the bytes stay.
  *
- * Strategy:
- *   - Phase A — soft-deleted parent post older than `RETENTION_MS`:
- *     enumerate `post_image_attachments.storage_path` for those posts,
- *     remove from Storage in batches, then hard-delete the attachment
- *     rows (CASCADE-equivalent at the app layer).
- *   - Phase B — orphaned storage objects without a DB row:
- *     iterate the bucket via `storage.list()`, batch the keys, query the
- *     DB for which keys still have a matching `storage_path`, and remove
- *     keys that don't.
+ * Strategy (Phase A — currently the only implemented phase):
+ *   Find every `post_image_attachments` row whose parent post has been
+ *   soft-deleted for longer than `REAP_RETENTION_MS`, remove the bytes
+ *   from Storage in batches, then hard-delete the attachment rows.
  *
  * The function returns a summary so the cron route can log / surface
  * counts. It tolerates partial failures: each batch is best-effort and
- * non-fatal.
+ * non-fatal. If the storage remove fails for a batch, the matching DB
+ * rows are intentionally left in place so the next run retries.
  *
  * @design Why service-role (admin) client
  *
  * The reaper runs on a Vercel Cron schedule (no user session) and needs
  * to delete bytes belonging to many users. It bypasses RLS by design —
  * the cron route is gated by `CRON_SECRET`, not by per-user auth.
+ *
+ * @design Phase A scope and Phase B status
+ *
+ * "Phase A" covers the only orphan source we can identify with a single
+ * indexed JOIN: attachments whose parent post has been soft-deleted for
+ * longer than the retention window. The hard-delete + FK-CASCADE path
+ * already removes attachment rows synchronously, so admin hard-deletes
+ * do NOT produce orphan rows here.
+ *
+ * "Phase B" — orphaned Storage keys with NO matching DB row (e.g. a
+ * user uploaded an image and then abandoned the form before saving the
+ * post) — is NOT yet implemented. See the `TODO(#73-phase-b)` marker
+ * inside the function body for the design sketch.
  */
 
 /**
@@ -67,64 +72,31 @@ export async function reapOrphanedPostImages(now: Date = new Date()): Promise<Re
   const admin = createAdminClient();
 
   // ---- Phase A: post soft-deleted long enough → reap attachment rows + bytes
-  // Pull (postId, storagePath, attachmentId) for any attachment whose parent
-  // post has either:
-  //   (a) been soft-deleted before the cutoff, OR
-  //   (b) been physically deleted (FK CASCADE would normally have removed
-  //       the row, but a manual SQL hard-delete with FK disabled, or a
-  //       legacy migration, could leave orphan attachment rows pointing at
-  //       a missing parent — we pick those up here).
   //
-  // SQL surface: a LEFT JOIN-style filter expressed as a single SELECT
-  // because Drizzle's join helpers and the schema column types make a
-  // direct LEFT JOIN here verbose. The two cases collapse into:
+  // Single indexed query. The composite predicate
   //   parent.deleted_at IS NOT NULL AND parent.deleted_at < cutoff
-  //   OR parent does not exist.
+  // reuses the soft-delete index on topic_posts.deleted_at, and we project
+  // (attachmentId, storagePath) directly so there is no second round-trip
+  // and no in-JS post-filter loop. This avoids unbounded memory growth as
+  // the soft-deleted set grows and removes the previous subtle correctness
+  // gap (the old `OR` predicate matched any non-null deleted_at, including
+  // posts soft-deleted only minutes ago).
   //
-  // For (b) we query `post_image_attachments` whose post_id is NOT in
-  // topic_posts; for (a) we query the inner-join case. They are disjoint
-  // and union-friendly.
-  const reapableA = await db
+  // TODO(#73-phase-b): iterate the `post-images` bucket via
+  // `admin.storage.from(POST_IMAGES_BUCKET).list(prefix, { limit, offset })`,
+  // batch the discovered keys, and reap any key that has no matching
+  // `post_image_attachments.storage_path`. This catches Storage objects
+  // uploaded by users who abandoned the form before saving the post (no
+  // DB row was ever inserted). Currently this reaper only handles Phase
+  // A (parents soft-deleted >= REAP_RETENTION_MS).
+  const phaseATargets = await db
     .select({
       attachmentId: postImageAttachments.id,
       storagePath: postImageAttachments.storagePath,
     })
     .from(postImageAttachments)
     .innerJoin(topicPosts, eq(topicPosts.id, postImageAttachments.postId))
-    .where(or(isNotNull(topicPosts.deletedAt), lt(topicPosts.deletedAt, cutoff)))
-    // Refine: take rows where deleted_at is non-null AND older than cutoff.
-    // The OR above keeps the index in play; we tighten in app code.
-    .then(
-      (rows) =>
-        // Drizzle does not give us a clean way to compose
-        // `deleted_at IS NOT NULL AND deleted_at < cutoff` *while* keeping
-        // both predicates inside the same `where()` and reusing the index;
-        // filtering in JS for the small candidate set is fine here.
-        rows
-    );
-
-  // Apply the strict filter: only rows whose parent post is soft-deleted
-  // at-or-before cutoff. We deliberately don't query the deletedAt column
-  // back into the projection to keep the DB-side work tight; instead we
-  // re-fetch in a tiny round-trip when there are candidates.
-  const phaseATargets: Array<{ attachmentId: string; storagePath: string }> = [];
-  if (reapableA.length > 0) {
-    const ids = reapableA.map((r) => r.attachmentId);
-    const verified = await db
-      .select({
-        attachmentId: postImageAttachments.id,
-        storagePath: postImageAttachments.storagePath,
-        parentDeletedAt: topicPosts.deletedAt,
-      })
-      .from(postImageAttachments)
-      .innerJoin(topicPosts, eq(topicPosts.id, postImageAttachments.postId))
-      .where(inArray(postImageAttachments.id, ids));
-    for (const row of verified) {
-      if (row.parentDeletedAt && row.parentDeletedAt <= cutoff) {
-        phaseATargets.push({ attachmentId: row.attachmentId, storagePath: row.storagePath });
-      }
-    }
-  }
+    .where(and(isNotNull(topicPosts.deletedAt), lt(topicPosts.deletedAt, cutoff)));
 
   if (phaseATargets.length > 0) {
     // Remove storage objects in batches.
