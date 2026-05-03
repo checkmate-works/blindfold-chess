@@ -15,6 +15,7 @@ import type { BreadcrumbItem } from '@/app/[locale]/_components/Breadcrumb';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { formatAbsoluteDateTime } from '../_lib/absolute-time';
 import { buildCommentTree } from '../_lib/comment-tree';
 import type { PostWithReplyMeta, SortMode } from '../_lib/shared';
 import { CommentTree } from './CommentTree';
@@ -197,13 +198,7 @@ export async function TopicPostDetailLayout({
           >
             <div className="text-sm text-muted-foreground">
               <time dateTime={rootWithMeta.createdAt.toISOString()}>
-                {rootWithMeta.createdAt.toLocaleDateString(locale, {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
+                {formatAbsoluteDateTime(rootWithMeta.createdAt, locale, 'long')}
               </time>
             </div>
           </UserAvatar>
