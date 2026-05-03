@@ -11,10 +11,6 @@ import {
   probeImageDimensions,
   stripExifAndApplyOrientation,
 } from '@/lib/post-images/sharp-helpers';
-import { RATE_LIMITS } from '@/lib/security/rate-limit';
-import { createAdminClient } from '@/lib/supabase/admin';
-import { createClient as createServerClient } from '@/lib/supabase/server';
-
 import {
   POST_IMAGES_ALLOWED_MIME_TYPES,
   POST_IMAGES_BUCKET,
@@ -22,7 +18,10 @@ import {
   buildPostImageStoragePath,
   isAllowedPostImageMimeType,
   validatePostImageBinarySignature,
-} from './post-image-validation';
+} from '@/lib/post-images/validation';
+import { RATE_LIMITS } from '@/lib/security/rate-limit';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { createClient as createServerClient } from '@/lib/supabase/server';
 
 /**
  * POST /api/posts/[id]/images
@@ -215,9 +214,23 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     .from(POST_IMAGES_BUCKET)
     .getPublicUrl(storagePath);
 
+  // Explicit response shape: do NOT spread `inserted` directly. Spreading
+  // would leak every column from `post_image_attachments` (including any
+  // future internal columns like soft-delete flags or moderation hints)
+  // into a public API contract by accident. The fields below are the
+  // subset clients actually need.
   return NextResponse.json(
     {
-      ...inserted,
+      id: inserted.id,
+      postId: inserted.postId,
+      storagePath: inserted.storagePath,
+      contentType: inserted.contentType,
+      fileSize: inserted.fileSize,
+      width: inserted.width,
+      height: inserted.height,
+      altText: inserted.altText,
+      displayOrder: inserted.displayOrder,
+      createdAt: inserted.createdAt,
       publicUrl: urlData.publicUrl,
     },
     { status: 201 }
