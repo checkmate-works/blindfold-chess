@@ -131,7 +131,7 @@ describe('applyAutomatedGrant', () => {
     vi.useRealTimers();
   });
 
-  const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+  const FIVE_DAYS_MS = 5 * 24 * 60 * 60 * 1000;
 
   it('applies a fresh grant when no existing active grants', async () => {
     vi.useFakeTimers();
@@ -152,9 +152,9 @@ describe('applyAutomatedGrant', () => {
     expect(captured.values!.sourceType).toBe('topic_post');
     expect(captured.values!.sourceId).toBe('post-abc');
     expect(captured.values!.startsAt.getTime()).toBe(now.getTime());
-    expect(captured.values!.expiresAt.getTime()).toBe(now.getTime() + SEVEN_DAYS_MS);
+    expect(captured.values!.expiresAt.getTime()).toBe(now.getTime() + FIVE_DAYS_MS);
     expect(result.grantId).toBe('new-grant-id');
-    expect(result.expiresAt.getTime()).toBe(now.getTime() + SEVEN_DAYS_MS);
+    expect(result.expiresAt.getTime()).toBe(now.getTime() + FIVE_DAYS_MS);
   });
 
   it('stacks on top of latest existing active grant', async () => {
@@ -171,7 +171,7 @@ describe('applyAutomatedGrant', () => {
     });
 
     expect(captured.values!.startsAt.getTime()).toBe(existingExpires.getTime());
-    expect(captured.values!.expiresAt.getTime()).toBe(existingExpires.getTime() + SEVEN_DAYS_MS);
+    expect(captured.values!.expiresAt.getTime()).toBe(existingExpires.getTime() + FIVE_DAYS_MS);
   });
 
   it('leaves source* NULL when source argument is omitted', async () => {
@@ -200,7 +200,7 @@ describe('applyAutomatedGrant', () => {
     });
 
     const delta = captured.values!.expiresAt.getTime() - captured.values!.startsAt.getTime();
-    expect(delta).toBe(SEVEN_DAYS_MS);
+    expect(delta).toBe(FIVE_DAYS_MS);
   });
 
   it('requests a row-level lock via .for("update")', async () => {
