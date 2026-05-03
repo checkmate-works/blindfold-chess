@@ -57,6 +57,7 @@
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
     "resend": "^6.10.0",
+    "sharp": "^0.34.0",
     "stripe": "^20.4.1",
     "xstate": "5.30.0",
     "zod": "^4.3.6"
