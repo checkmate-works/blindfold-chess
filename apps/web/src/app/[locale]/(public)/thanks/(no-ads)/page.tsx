@@ -5,8 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/app/_components';
 import { and, eq, isNull } from 'drizzle-orm';
 
-import { db, topicPosts, userGrants } from '@/lib/db';
-import { isTopicPostGrantTopicType } from '@/lib/db/data/grant-types';
+import { db, userGrants } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
 import { CertificateFrame, PageLayout, SectionTitle } from '@/app/[locale]/_components';
@@ -91,24 +90,16 @@ export default async function ThanksPage({ params, searchParams }: Props) {
       const durationMs = grant.expiresAt.getTime() - grant.startsAt.getTime();
       const durationDays = Math.max(1, Math.round(durationMs / (24 * 60 * 60 * 1000)));
 
-      // Resolve the source surface (e.g., square/opening) so the explanation
-      // copy can be specific. Done as a second tiny query rather than a join
-      // because `userGrants.sourceId` is varchar and `topicPosts.id` is uuid —
-      // keeping the type-safe equality on a single column avoids cross-type
-      // cast juggling. Position-creation grants share one award message
-      // regardless of memory/puzzle: the duration policy is identical and
-      // the user-visible distinction is not meaningful here, so we skip the
-      // extra `positions` lookup entirely.
+      // Map the source surface to one of two unified award messages — the
+      // per-topicType variants (square / opening / position_memory /
+      // position_puzzle) collapsed into a single "topic post" copy because
+      // the duration policy is identical across them and the user-visible
+      // distinction adds no value on the award screen. Position-creation
+      // grants get their own copy because "creating" reads differently from
+      // "commenting" even when the benefit is the same.
       let explanationKey: string | null = null;
-      if (grant.sourceType === 'topic_post' && grant.sourceId) {
-        const [post] = await db
-          .select({ topicType: topicPosts.topicType })
-          .from(topicPosts)
-          .where(eq(topicPosts.id, grant.sourceId))
-          .limit(1);
-        if (post && isTopicPostGrantTopicType(post.topicType)) {
-          explanationKey = `explanation.${post.topicType}`;
-        }
+      if (grant.sourceType === 'topic_post') {
+        explanationKey = 'explanation.topic_post';
       } else if (grant.sourceType === 'position') {
         explanationKey = 'explanation.position_creation';
       }

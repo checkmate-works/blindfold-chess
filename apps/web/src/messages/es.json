@@ -2254,7 +2254,8 @@
     },
     "grantTypeLabel": {
       "admin_manual": "Concedido por el equipo",
-      "topic_post": "Concedido por publicación de tema"
+      "topic_post": "Concedido por publicación de tema",
+      "position_creation": "Concedido por envío de posición"
     }
   },
   "MypageBenefitHistory": {
@@ -3571,10 +3572,7 @@
     "viewBenefitsButton": "Ver tus beneficios",
     "genericMessage": "Gracias por tu contribución.",
     "explanation": {
-      "square": "Tu publicación en un tema de casilla te ha otorgado el siguiente beneficio:",
-      "opening": "Tu publicación en un tema de apertura te ha otorgado el siguiente beneficio:",
-      "position_memory": "Tu publicación en una posición de memorización te ha otorgado el siguiente beneficio:",
-      "position_puzzle": "Tu publicación en una posición de puzzle te ha otorgado el siguiente beneficio:",
+      "topic_post": "Tu publicación en un tema te ha otorgado el siguiente beneficio:",
       "position_creation": "El envío de tu posición te ha otorgado el siguiente beneficio:",
       "default": "Tu publicación te ha otorgado el siguiente beneficio:"
     },

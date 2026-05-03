@@ -2254,7 +2254,8 @@
     },
     "grantTypeLabel": {
       "admin_manual": "Granted by staff",
-      "topic_post": "Granted for topic post"
+      "topic_post": "Granted for topic post",
+      "position_creation": "Granted for position submission"
     }
   },
   "MypageBenefitHistory": {
@@ -3571,10 +3572,7 @@
     "viewBenefitsButton": "View your benefits",
     "genericMessage": "Thanks for your contribution.",
     "explanation": {
-      "square": "Your post on a square topic earned you the following benefit:",
-      "opening": "Your post on an opening topic earned you the following benefit:",
-      "position_memory": "Your post on a memory position earned you the following benefit:",
-      "position_puzzle": "Your post on a puzzle position earned you the following benefit:",
+      "topic_post": "Your topic post earned you the following benefit:",
       "position_creation": "Your position submission earned you the following benefit:",
       "default": "Your post earned you the following benefit:"
     },

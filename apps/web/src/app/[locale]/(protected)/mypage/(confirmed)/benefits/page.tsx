@@ -50,12 +50,12 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 import { Link } from '@/i18n/routing';
-import { and, desc, eq, isNull } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
 
 import { getAuthenticatedUser } from '@/lib/auth';
 import { getUserSubscription } from '@/lib/billing/subscription';
 import { BENEFIT_ACTIVE_STATUSES } from '@/lib/billing/subscription-constants';
-import { db, userGrants } from '@/lib/db';
+import { db, positions, topicPosts, userGrants } from '@/lib/db';
 import { type GrantType, isGrantType } from '@/lib/db/data/grant-types';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
@@ -67,10 +67,49 @@ type RowStatus = 'active' | 'upcoming' | 'expired';
 type EntitlementRow = {
   id: string;
   sourceLabel: string;
+  /**
+   * Locale-prefixed absolute path to the post / position that triggered this
+   * grant, when resolvable. Null for the subscription row, admin_manual
+   * grants, and grants whose source row could not be looked up (e.g., the
+   * post was hard-deleted). When non-null, the source label is rendered as
+   * a link so the user can confirm "which submission earned me this".
+   */
+  sourceHref: string | null;
   startsAt: Date;
   expiresAt: Date;
   status: RowStatus;
 };
+
+/**
+ * Convert a `topic_posts.topic_type` into the URL segment the public route
+ * uses. Mirrors `getTopicSegment` in the notification item for consistency.
+ */
+function topicTypeToSegment(topicType: string): string {
+  if (topicType === 'opening') return 'openings';
+  return `${topicType}s`;
+}
+
+/**
+ * Build a public detail path for a topic_post (no locale prefix — the
+ * next-intl `Link` adds it). position_memory / position_puzzle topics live
+ * under `/practice/...` (same anchor scheme NotificationItem uses);
+ * everything else routes to `/topics/...`.
+ */
+function buildTopicPostHref(topicType: string, topicKey: string, postId: string): string {
+  if (topicType === 'position_memory') {
+    return `/practice/position-memory/${topicKey}#post-${postId}`;
+  }
+  if (topicType === 'position_puzzle') {
+    return `/practice/puzzle/${topicKey}#post-${postId}`;
+  }
+  return `/topics/${topicTypeToSegment(topicType)}/${topicKey}/posts/${postId}`;
+}
+
+function buildPositionHref(positionType: string, positionId: string): string | null {
+  if (positionType === 'puzzle') return `/practice/puzzle/${positionId}`;
+  if (positionType === 'memory') return `/practice/position-memory/${positionId}`;
+  return null;
+}
 
 function classify(now: Date, startsAt: Date, expiresAt: Date): RowStatus {
   if (expiresAt <= now) return 'expired';
@@ -141,6 +180,40 @@ export default async function BenefitsPage({ params }: Props) {
 
   const dateFmt = (d: Date) => d.toLocaleDateString(locale);
 
+  // Resolve each visible grant's source row (topic_post or position) so the
+  // table can show "which submission earned me this" as a link. Batched into
+  // two IN queries to avoid N+1, scoped to the 5 rows actually rendered.
+  // Hard-deleted source rows fall back to a non-link label rather than 404ing.
+  const recentGrants = allGrants.slice(0, 5);
+  const topicPostIds = recentGrants
+    .filter((g) => g.sourceType === 'topic_post' && g.sourceId)
+    .map((g) => g.sourceId as string);
+  const positionIds = recentGrants
+    .filter((g) => g.sourceType === 'position' && g.sourceId)
+    .map((g) => g.sourceId as string);
+
+  const [topicPostRows, positionRows] = await Promise.all([
+    topicPostIds.length
+      ? db
+          .select({
+            id: topicPosts.id,
+            topicType: topicPosts.topicType,
+            topicKey: topicPosts.topicKey,
+          })
+          .from(topicPosts)
+          .where(inArray(topicPosts.id, topicPostIds))
+      : Promise.resolve([] as Array<{ id: string; topicType: string; topicKey: string }>),
+    positionIds.length
+      ? db
+          .select({ id: positions.id, type: positions.type })
+          .from(positions)
+          .where(inArray(positions.id, positionIds))
+      : Promise.resolve([] as Array<{ id: string; type: string }>),
+  ]);
+
+  const topicPostMap = new Map(topicPostRows.map((r) => [r.id, r]));
+  const positionMap = new Map(positionRows.map((r) => [r.id, r]));
+
   // Build a single unified entitlement list across both sources. Subscription
   // and each grant share the same row shape (sourceLabel / period / status),
   // which removes the visual asymmetry of the previous two-section layout.
@@ -153,18 +226,46 @@ export default async function BenefitsPage({ params }: Props) {
     entitlementRows.push({
       id: 'subscription',
       sourceLabel: t('adFree.sourceSubscription'),
+      sourceHref: null,
       startsAt: new Date(subscription.currentPeriodStart),
       expiresAt: subscriptionExpiresAt,
       status: 'active',
     });
   }
-  for (const g of allGrants.slice(0, 5)) {
+  for (const g of recentGrants) {
     const startsAt = new Date(g.startsAt);
     const expiresAt = new Date(g.expiresAt);
     const grantTypeKey: GrantType = isGrantType(g.grantType) ? g.grantType : 'admin_manual';
+
+    // Pick the label and (optional) link in lockstep:
+    //   - admin_manual / unknown grantType → fixed staff-grant label, no link
+    //   - topic_post grant + sourceType='topic_post' → "topic post" label,
+    //     link to the public post detail (squares/openings/chunks) or to
+    //     the practice surface (position_memory / position_puzzle)
+    //   - topic_post grant + sourceType='position' → distinct
+    //     "position submission" label; link to the practice detail page
+    //   - source row missing (hard-deleted) → keep the label, drop the link
+    let sourceLabel = t(`grantTypeLabel.${grantTypeKey}`);
+    let sourceHref: string | null = null;
+    if (grantTypeKey === 'topic_post') {
+      if (g.sourceType === 'topic_post' && g.sourceId) {
+        const post = topicPostMap.get(g.sourceId);
+        if (post) {
+          sourceHref = buildTopicPostHref(post.topicType, post.topicKey, post.id);
+        }
+      } else if (g.sourceType === 'position' && g.sourceId) {
+        sourceLabel = t('grantTypeLabel.position_creation');
+        const pos = positionMap.get(g.sourceId);
+        if (pos) {
+          sourceHref = buildPositionHref(pos.type, pos.id);
+        }
+      }
+    }
+
     entitlementRows.push({
       id: g.id,
-      sourceLabel: t(`grantTypeLabel.${grantTypeKey}`),
+      sourceLabel,
+      sourceHref,
       startsAt,
       expiresAt,
       status: classify(now, startsAt, expiresAt),
@@ -255,7 +356,19 @@ export default async function BenefitsPage({ params }: Props) {
                 <tbody className="divide-y divide-border">
                   {entitlementRows.map((row) => (
                     <tr key={row.id}>
-                      <td className="px-4 py-3 font-medium text-foreground">{row.sourceLabel}</td>
+                      <td className="px-4 py-3 font-medium text-foreground">
+                        {row.sourceHref ? (
+                          <Link
+                            href={row.sourceHref}
+                            locale={locale}
+                            className="text-link-primary hover:underline"
+                          >
+                            {row.sourceLabel}
+                          </Link>
+                        ) : (
+                          row.sourceLabel
+                        )}
+                      </td>
                       <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
                         {t('adFree.grantPeriod', {
                           startDate: dateFmt(row.startsAt),
