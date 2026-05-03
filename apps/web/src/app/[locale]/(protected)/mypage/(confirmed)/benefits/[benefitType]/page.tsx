@@ -32,16 +32,20 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { and, desc, eq, sql } from 'drizzle-orm';
+import { Link } from '@/i18n/routing';
+import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getAuthenticatedUser } from '@/lib/auth';
-import { db, userGrants } from '@/lib/db';
+import { db, positions, topicPosts, userGrants } from '@/lib/db';
+import { type GrantType, isGrantType } from '@/lib/db/data/grant-types';
 import { getPaginationParams } from '@/lib/pagination';
 
 import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
+
+import { resolveGrantSourceMeta } from '../_lib/source';
 
 const PAGE_SIZE = 20;
 
@@ -88,7 +92,14 @@ export default async function BenefitHistoryPage({ params, searchParams }: Props
     notFound();
   }
 
-  const t = await getTranslations({ locale, namespace: 'MypageBenefitHistory' });
+  // Two namespaces: history page strings live under MypageBenefitHistory,
+  // but the source-column label keys (grantTypeLabel.*) and table headers
+  // are shared with /mypage/benefits and stay under MypageBenefits — both
+  // pages render the same vocabulary so users see consistent terminology.
+  const [t, tBenefits] = await Promise.all([
+    getTranslations({ locale, namespace: 'MypageBenefitHistory' }),
+    getTranslations({ locale, namespace: 'MypageBenefits' }),
+  ]);
 
   const user = await getAuthenticatedUser();
 
@@ -115,6 +126,39 @@ export default async function BenefitHistoryPage({ params, searchParams }: Props
     .orderBy(desc(userGrants.startsAt))
     .limit(limit)
     .offset(offset);
+
+  // Batch-resolve source rows (topic_posts / positions) for the visible
+  // page only — keeps the lookup proportional to PAGE_SIZE rather than to
+  // the user's full grant history. Hard-deleted source rows fall through
+  // to a non-link label, mirroring /mypage/benefits.
+  const topicPostIds = rows
+    .filter((g) => g.sourceType === 'topic_post' && g.sourceId)
+    .map((g) => g.sourceId as string);
+  const positionIds = rows
+    .filter((g) => g.sourceType === 'position' && g.sourceId)
+    .map((g) => g.sourceId as string);
+
+  const [topicPostRows, positionRows] = await Promise.all([
+    topicPostIds.length
+      ? db
+          .select({
+            id: topicPosts.id,
+            topicType: topicPosts.topicType,
+            topicKey: topicPosts.topicKey,
+          })
+          .from(topicPosts)
+          .where(inArray(topicPosts.id, topicPostIds))
+      : Promise.resolve([] as Array<{ id: string; topicType: string; topicKey: string }>),
+    positionIds.length
+      ? db
+          .select({ id: positions.id, type: positions.type })
+          .from(positions)
+          .where(inArray(positions.id, positionIds))
+      : Promise.resolve([] as Array<{ id: string; type: string }>),
+  ]);
+
+  const topicPostMap = new Map(topicPostRows.map((r) => [r.id, r]));
+  const positionMap = new Map(positionRows.map((r) => [r.id, r]));
 
   const now = new Date();
   const dateFmt = (d: Date) => d.toLocaleDateString(locale);
@@ -173,36 +217,79 @@ export default async function BenefitHistoryPage({ params, searchParams }: Props
               total: totalCount,
             })}
           </p>
-          <ul className="space-y-3">
-            {rows.map((g) => {
-              const startsAt = new Date(g.startsAt);
-              const expiresAt = new Date(g.expiresAt);
-              const revokedAt = g.revokedAt ? new Date(g.revokedAt) : null;
-              const status = classifyGrantForHistory(now, startsAt, expiresAt, revokedAt);
-              return (
-                <li
-                  key={g.id}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-background p-3"
-                >
-                  <div className="min-w-0">
-                    <p className="text-xs text-muted-foreground">
-                      {t('grantPeriod', {
-                        startDate: dateFmt(startsAt),
-                        endDate: dateFmt(expiresAt),
-                      })}
-                    </p>
-                  </div>
-                  <span
-                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusClass(
-                      status
-                    )}`}
-                  >
-                    {statusLabel(status)}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-muted/30 text-left text-xs font-medium text-muted-foreground whitespace-nowrap">
+                    <th className="px-4 py-2 font-medium">
+                      {tBenefits('adFree.tableSourceHeader')}
+                    </th>
+                    <th className="px-4 py-2 font-medium">
+                      {tBenefits('adFree.tablePeriodHeader')}
+                    </th>
+                    <th className="px-4 py-2 font-medium text-right">
+                      {tBenefits('adFree.tableStatusHeader')}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {rows.map((g) => {
+                    const startsAt = new Date(g.startsAt);
+                    const expiresAt = new Date(g.expiresAt);
+                    const revokedAt = g.revokedAt ? new Date(g.revokedAt) : null;
+                    const status = classifyGrantForHistory(now, startsAt, expiresAt, revokedAt);
+                    const grantTypeKey: GrantType = isGrantType(g.grantType)
+                      ? g.grantType
+                      : 'admin_manual';
+                    const { labelKey, href } = resolveGrantSourceMeta(
+                      {
+                        grantType: grantTypeKey,
+                        sourceType: g.sourceType,
+                        sourceId: g.sourceId,
+                      },
+                      topicPostMap,
+                      positionMap
+                    );
+                    const sourceLabel = tBenefits(`grantTypeLabel.${labelKey}`);
+
+                    return (
+                      <tr key={g.id}>
+                        <td className="px-4 py-3 font-medium text-foreground">
+                          {href ? (
+                            <Link
+                              href={href}
+                              locale={locale}
+                              className="text-link-primary hover:underline"
+                            >
+                              {sourceLabel}
+                            </Link>
+                          ) : (
+                            sourceLabel
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
+                          {t('grantPeriod', {
+                            startDate: dateFmt(startsAt),
+                            endDate: dateFmt(expiresAt),
+                          })}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <span
+                            className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${statusClass(
+                              status
+                            )}`}
+                          >
+                            {statusLabel(status)}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </>
       )}
 

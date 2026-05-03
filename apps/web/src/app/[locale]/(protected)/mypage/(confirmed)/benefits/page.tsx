@@ -62,6 +62,8 @@ import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
+import { resolveGrantSourceMeta } from './_lib/source';
+
 type RowStatus = 'active' | 'upcoming' | 'expired';
 
 type EntitlementRow = {
@@ -79,37 +81,6 @@ type EntitlementRow = {
   expiresAt: Date;
   status: RowStatus;
 };
-
-/**
- * Convert a `topic_posts.topic_type` into the URL segment the public route
- * uses. Mirrors `getTopicSegment` in the notification item for consistency.
- */
-function topicTypeToSegment(topicType: string): string {
-  if (topicType === 'opening') return 'openings';
-  return `${topicType}s`;
-}
-
-/**
- * Build a public detail path for a topic_post (no locale prefix — the
- * next-intl `Link` adds it). position_memory / position_puzzle topics live
- * under `/practice/...` (same anchor scheme NotificationItem uses);
- * everything else routes to `/topics/...`.
- */
-function buildTopicPostHref(topicType: string, topicKey: string, postId: string): string {
-  if (topicType === 'position_memory') {
-    return `/practice/position-memory/${topicKey}#post-${postId}`;
-  }
-  if (topicType === 'position_puzzle') {
-    return `/practice/puzzle/${topicKey}#post-${postId}`;
-  }
-  return `/topics/${topicTypeToSegment(topicType)}/${topicKey}/posts/${postId}`;
-}
-
-function buildPositionHref(positionType: string, positionId: string): string | null {
-  if (positionType === 'puzzle') return `/practice/puzzle/${positionId}`;
-  if (positionType === 'memory') return `/practice/position-memory/${positionId}`;
-  return null;
-}
 
 function classify(now: Date, startsAt: Date, expiresAt: Date): RowStatus {
   if (expiresAt <= now) return 'expired';
@@ -237,35 +208,16 @@ export default async function BenefitsPage({ params }: Props) {
     const expiresAt = new Date(g.expiresAt);
     const grantTypeKey: GrantType = isGrantType(g.grantType) ? g.grantType : 'admin_manual';
 
-    // Pick the label and (optional) link in lockstep:
-    //   - admin_manual / unknown grantType → fixed staff-grant label, no link
-    //   - topic_post grant + sourceType='topic_post' → "topic post" label,
-    //     link to the public post detail (squares/openings/chunks) or to
-    //     the practice surface (position_memory / position_puzzle)
-    //   - topic_post grant + sourceType='position' → distinct
-    //     "position submission" label; link to the practice detail page
-    //   - source row missing (hard-deleted) → keep the label, drop the link
-    let sourceLabel = t(`grantTypeLabel.${grantTypeKey}`);
-    let sourceHref: string | null = null;
-    if (grantTypeKey === 'topic_post') {
-      if (g.sourceType === 'topic_post' && g.sourceId) {
-        const post = topicPostMap.get(g.sourceId);
-        if (post) {
-          sourceHref = buildTopicPostHref(post.topicType, post.topicKey, post.id);
-        }
-      } else if (g.sourceType === 'position' && g.sourceId) {
-        sourceLabel = t('grantTypeLabel.position_creation');
-        const pos = positionMap.get(g.sourceId);
-        if (pos) {
-          sourceHref = buildPositionHref(pos.type, pos.id);
-        }
-      }
-    }
+    const { labelKey, href } = resolveGrantSourceMeta(
+      { grantType: grantTypeKey, sourceType: g.sourceType, sourceId: g.sourceId },
+      topicPostMap,
+      positionMap
+    );
 
     entitlementRows.push({
       id: g.id,
-      sourceLabel,
-      sourceHref,
+      sourceLabel: t(`grantTypeLabel.${labelKey}`),
+      sourceHref: href,
       startsAt,
       expiresAt,
       status: classify(now, startsAt, expiresAt),
