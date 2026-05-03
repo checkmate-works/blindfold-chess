@@ -59,8 +59,14 @@ export default async function ThanksPage({ params, searchParams }: Props) {
   let benefit: {
     type: string;
     durationDays: number;
-    /** Source topic_type when the grant was triggered by a topic_post; null otherwise. */
-    topicType: string | null;
+    /**
+     * Pre-resolved i18n key under `thanks` for the explanation paragraph.
+     * Computed at fetch time so the JSX layer does not need to know which
+     * source surfaces map to which copy. Null when the source cannot be
+     * resolved (e.g., admin_manual grants reaching this page); the JSX
+     * then falls back to `explanation.default`.
+     */
+    explanationKey: string | null;
   } | null = null;
   if (user && grantId) {
     const [grant] = await db
@@ -85,32 +91,33 @@ export default async function ThanksPage({ params, searchParams }: Props) {
       const durationMs = grant.expiresAt.getTime() - grant.startsAt.getTime();
       const durationDays = Math.max(1, Math.round(durationMs / (24 * 60 * 60 * 1000)));
 
-      // Resolve the source surface (e.g., square/opening/position_memory/
-      // position_puzzle) so the explanation copy can be specific. Done as a
-      // second tiny query rather than a join because `userGrants.sourceId`
-      // is varchar and `topicPosts.id` is uuid — keeping the type-safe
-      // equality on a single column avoids cross-type cast juggling.
-      let topicType: string | null = null;
+      // Resolve the source surface (e.g., square/opening) so the explanation
+      // copy can be specific. Done as a second tiny query rather than a join
+      // because `userGrants.sourceId` is varchar and `topicPosts.id` is uuid —
+      // keeping the type-safe equality on a single column avoids cross-type
+      // cast juggling. Position-creation grants share one award message
+      // regardless of memory/puzzle: the duration policy is identical and
+      // the user-visible distinction is not meaningful here, so we skip the
+      // extra `positions` lookup entirely.
+      let explanationKey: string | null = null;
       if (grant.sourceType === 'topic_post' && grant.sourceId) {
         const [post] = await db
           .select({ topicType: topicPosts.topicType })
           .from(topicPosts)
           .where(eq(topicPosts.id, grant.sourceId))
           .limit(1);
-        topicType = post?.topicType ?? null;
+        if (post && isTopicPostGrantTopicType(post.topicType)) {
+          explanationKey = `explanation.${post.topicType}`;
+        }
+      } else if (grant.sourceType === 'position') {
+        explanationKey = 'explanation.position_creation';
       }
 
-      benefit = { type: grant.benefitType, durationDays, topicType };
+      benefit = { type: grant.benefitType, durationDays, explanationKey };
     }
   }
 
-  // Pick the explanation copy based on the resolved source surface; fall back
-  // to a generic phrasing when the surface is unknown (e.g., admin_manual
-  // grants reaching this page via a hand-crafted URL, or future grant types).
-  const explanationKey =
-    benefit && benefit.topicType && isTopicPostGrantTopicType(benefit.topicType)
-      ? `explanation.${benefit.topicType}`
-      : 'explanation.default';
+  const explanationKey = benefit?.explanationKey ?? 'explanation.default';
 
   return (
     <PageLayout title={t('title')} locale={locale}>

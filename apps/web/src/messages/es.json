@@ -3575,6 +3575,7 @@
       "opening": "Tu publicación en un tema de apertura te ha otorgado el siguiente beneficio:",
       "position_memory": "Tu publicación en una posición de memorización te ha otorgado el siguiente beneficio:",
       "position_puzzle": "Tu publicación en una posición de puzzle te ha otorgado el siguiente beneficio:",
+      "position_creation": "El envío de tu posición te ha otorgado el siguiente beneficio:",
       "default": "Tu publicación te ha otorgado el siguiente beneficio:"
     },
     "benefits": {

@@ -3575,6 +3575,7 @@
       "opening": "Sua publicação em um tópico de abertura lhe rendeu o seguinte benefício:",
       "position_memory": "Sua publicação em uma posição de memorização lhe rendeu o seguinte benefício:",
       "position_puzzle": "Sua publicação em uma posição de puzzle lhe rendeu o seguinte benefício:",
+      "position_creation": "O envio da sua posição lhe rendeu o seguinte benefício:",
       "default": "Sua publicação lhe rendeu o seguinte benefício:"
     },
     "benefits": {

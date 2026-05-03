@@ -3575,6 +3575,7 @@
       "opening": "Your post on an opening topic earned you the following benefit:",
       "position_memory": "Your post on a memory position earned you the following benefit:",
       "position_puzzle": "Your post on a puzzle position earned you the following benefit:",
+      "position_creation": "Your position submission earned you the following benefit:",
       "default": "Your post earned you the following benefit:"
     },
     "benefits": {
