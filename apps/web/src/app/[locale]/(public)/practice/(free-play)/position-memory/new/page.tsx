@@ -40,7 +40,7 @@ export default async function NewPositionPage({ params }: Props) {
     displayName = resolveAuthorName(profile, { fallback: '' });
   }
 
-  const form = <CreatePositionForm displayName={displayName} />;
+  const form = <CreatePositionForm displayName={displayName} disableUnsavedGuard={!user} />;
 
   return (
     <PageLayout

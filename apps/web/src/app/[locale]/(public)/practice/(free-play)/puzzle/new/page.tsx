@@ -40,7 +40,7 @@ export default async function NewPuzzlePage({ params }: Props) {
     displayName = resolveAuthorName(profile, { fallback: '' });
   }
 
-  const form = <CreatePuzzleForm displayName={displayName} />;
+  const form = <CreatePuzzleForm displayName={displayName} disableUnsavedGuard={!user} />;
 
   return (
     <PageLayout

@@ -51,6 +51,14 @@ type Props = {
    * is used.
    */
   displayName?: string;
+  /**
+   * Skip the unsaved-changes navigation guard. Used when the form is
+   * rendered behind a guest sign-up overlay: the guest cannot submit, so
+   * any "dirty" state (e.g. a draft hydrated from a previous logged-in
+   * session) is not theirs to lose, and the guard would otherwise block
+   * the sign-up CTA click with a modal that makes no sense in context.
+   */
+  disableUnsavedGuard?: boolean;
 };
 
 function replaceSideToMove(fen: string, side: SideToMove): string {
@@ -65,7 +73,7 @@ function readSideToMove(fen: string): SideToMove {
   return parts[1] === 'b' ? 'b' : 'w';
 }
 
-export function CreatePuzzleForm({ displayName }: Props = {}) {
+export function CreatePuzzleForm({ displayName, disableUnsavedGuard = false }: Props = {}) {
   const router = useRouter();
   const t = useTranslations('practice.puzzle.create');
   const tBoard = useTranslations('practice.puzzle');
@@ -169,7 +177,9 @@ export function CreatePuzzleForm({ displayName }: Props = {}) {
       notes.some((n) => n.trim() !== '') ||
       (fenInput.trim() !== '' && fenInput !== EMPTY_BOARD_FEN));
 
-  const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
+  const { isBlocking, confirm, cancel } = useUnsavedChanges({
+    isDirty: disableUnsavedGuard ? false : isDirty,
+  });
 
   const handleFlip = useCallback(() => {
     setFlipped((prev) => !prev);

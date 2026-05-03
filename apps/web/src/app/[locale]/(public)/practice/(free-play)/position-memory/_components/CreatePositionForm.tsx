@@ -37,9 +37,16 @@ function buildDefaultTitle(displayName: string | undefined): string {
 
 type Props = {
   displayName?: string;
+  /**
+   * Skip the unsaved-changes navigation guard. Used when the form is
+   * rendered behind a guest sign-up overlay: the guest cannot submit, so
+   * the guard would otherwise block the sign-up CTA click with a modal
+   * that makes no sense in context.
+   */
+  disableUnsavedGuard?: boolean;
 };
 
-export function CreatePositionForm({ displayName }: Props = {}) {
+export function CreatePositionForm({ displayName, disableUnsavedGuard = false }: Props = {}) {
   const router = useRouter();
   const locale = useLocale();
   const t = useTranslations('practice.positionMemory.create');
@@ -64,7 +71,9 @@ export function CreatePositionForm({ displayName }: Props = {}) {
       description.trim() !== '' ||
       (fenInput.trim() !== '' && fenInput !== EMPTY_BOARD_FEN));
 
-  const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
+  const { isBlocking, confirm, cancel } = useUnsavedChanges({
+    isDirty: disableUnsavedGuard ? false : isDirty,
+  });
 
   const handleFlip = useCallback(() => setFlipped((prev) => !prev), []);
 
