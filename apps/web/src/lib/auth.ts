@@ -1,5 +1,6 @@
 import { cache } from 'react';
 
+import { getLocale } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 import { NextResponse } from 'next/server';
 
@@ -13,9 +14,11 @@ import { createClient } from '@/lib/supabase/server';
 /**
  * Returns the authenticated user or redirects to sign-in.
  *
- * Intended for use within `(protected)/` routes where the parent layout
- * already performs an auth guard. The redirect here is a fallback that
- * should never be reached under normal conditions.
+ * For `(protected)/` routes the parent layout already performs an auth
+ * guard, so the redirect here is normally unreachable. It is also reached
+ * directly from a few `(public)/` pages that gate their own access (e.g.
+ * `practice/puzzle/new`); the locale prefix on the redirect target is
+ * required so those callers don't land on an unlocalized 404.
  */
 export const getAuthenticatedUser = cache(async () => {
   const supabase = await createClient();
@@ -23,7 +26,8 @@ export const getAuthenticatedUser = cache(async () => {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    redirect('/sign-in?toast=sign_in_required');
+    const locale = await getLocale();
+    redirect(`/${locale}/sign-in?toast=sign_in_required`);
   }
   return user;
 });
