@@ -246,6 +246,13 @@
       "when": 1777714727729,
       "tag": "20260502093847_partial_index_topic_posts_active",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1778080373253,
+      "tag": "20260504053253_create_post_image_attachments",
+      "breakpoints": true
     }
   ]
 }

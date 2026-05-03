@@ -91,3 +91,59 @@ CREATE POLICY "article_images_delete_admin" ON storage.objects
     bucket_id = 'article-images'
     AND (auth.jwt() ->> 'user_role') = 'admin'
   );
+
+-- =============================================================================
+-- Post Images Storage Bucket Setup
+-- =============================================================================
+-- Public bucket for user-uploaded images attached to topic_posts.
+-- file_size_limit: 2MB per image (the DB CHECK on
+-- post_image_attachments.file_size enforces the same cap).
+-- allowed_mime_types: JPEG, PNG, WebP. SVG is intentionally excluded
+-- (XSS / script-injection vector — see post_image_attachments TSDoc).
+-- Path layout enforced by RLS + DB CHECK: ${userId}/${postId}/${randomUuid}.${ext}.
+
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES ('post-images', 'post-images', true, 2097152, ARRAY['image/jpeg', 'image/png', 'image/webp'])
+ON CONFLICT (id) DO UPDATE SET
+  public = EXCLUDED.public,
+  file_size_limit = EXCLUDED.file_size_limit,
+  allowed_mime_types = EXCLUDED.allowed_mime_types;
+
+-- SELECT: public (matches the bucket's public flag).
+DROP POLICY IF EXISTS "post_images_select_public" ON storage.objects;
+CREATE POLICY "post_images_select_public" ON storage.objects
+  FOR SELECT
+  USING (bucket_id = 'post-images');
+
+-- INSERT: authenticated user may write only into their own folder
+-- (`${auth.uid()}/...`). Path traversal (`..`) and Windows-style
+-- separators (`\`) are rejected, and the overall name length is capped
+-- at 256 bytes. The application handler also enforces this shape and
+-- the DB CHECK on post_image_attachments.storage_path validates the
+-- exact regex once the row reaches the DB.
+DROP POLICY IF EXISTS "post_images_insert_own" ON storage.objects;
+CREATE POLICY "post_images_insert_own" ON storage.objects
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    bucket_id = 'post-images'
+    AND (storage.foldername(name))[1] = auth.uid()::text
+    AND position('..' in name) = 0
+    AND position('\' in name) = 0
+    AND length(name) <= 256
+  );
+
+-- DELETE: authenticated user may delete only objects under their own folder.
+-- Used by the post-deletion best-effort cleanup and the daily reaper
+-- (running under the user-session client when the user is the deleter,
+-- under the service role client when the reaper is the deleter — service
+-- role bypasses RLS).
+DROP POLICY IF EXISTS "post_images_delete_own" ON storage.objects;
+CREATE POLICY "post_images_delete_own" ON storage.objects
+  FOR DELETE TO authenticated
+  USING (
+    bucket_id = 'post-images'
+    AND (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+-- No UPDATE policy: post images are immutable once uploaded (mirrors
+-- the post_game_*_attachments policy posture).
