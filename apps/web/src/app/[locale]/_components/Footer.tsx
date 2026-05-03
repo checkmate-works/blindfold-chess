@@ -1,3 +1,5 @@
+import { Suspense } from 'react';
+
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
@@ -147,7 +149,11 @@ export async function Footer({ locale, hideLanguageSwitcher }: Props) {
               <FaGithub className="h-5 w-5" />
             </a>
 
-            {!hideLanguageSwitcher && <LanguageSwitcher currentLocale={locale} />}
+            {!hideLanguageSwitcher && (
+              <Suspense fallback={null}>
+                <LanguageSwitcher currentLocale={locale} />
+              </Suspense>
+            )}
           </div>
 
           {/* Copyright & Disclaimer */}
