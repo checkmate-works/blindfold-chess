@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
 import { TopicPostDetailLayout } from '@/app/[locale]/(public)/topics/_components/TopicPostDetailLayout';
+import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { fetchPostDetailData } from '@/app/[locale]/(public)/topics/_lib/post-detail';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -16,6 +17,7 @@ import { toggleLike } from './_actions/toggleLike';
 
 type Props = {
   params: Promise<{ locale: Locale; square: string; postId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -47,8 +49,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function PostDetailPage({ params }: Props) {
+export default async function PostDetailPage({ params, searchParams }: Props) {
   const { locale, square, postId } = await params;
+  const sortBy = validateSort(((await searchParams).sort as string | undefined) ?? 'new');
 
   if (!isValidSquare(square)) {
     notFound();
@@ -65,10 +68,11 @@ export default async function PostDetailPage({ params }: Props) {
   );
 
   const t = await getTranslations({ locale, namespace: 'topics' });
+  const st = await getTranslations({ locale, namespace: 'topics.squares' });
 
   const replyRestrictionMessage =
     !isAuthor && post.replyPermission === 'followers' && !canReply
-      ? t('squares.replies.followRequired')
+      ? st('replies.followRequired')
       : null;
 
   const displayName = post.author?.displayName || post.author?.username || 'Anonymous';
@@ -79,10 +83,6 @@ export default async function PostDetailPage({ params }: Props) {
       pageTitle={t('squares.pageTitle')}
       sectionTitle={t('squares.postDetail.authorView', { author: displayName, square })}
       topicVisual={<SquareHighlightBoard square={square} locale={locale} />}
-      backLink={{
-        href: `/topics/squares/${square}`,
-        label: t('squares.postDetail.backToSquare', { square }),
-      }}
       rootWithMeta={rootWithMeta}
       replies={replies}
       user={user}
@@ -97,6 +97,14 @@ export default async function PostDetailPage({ params }: Props) {
         likeNamespace: 'topics.squares',
         deleteNamespace: 'topics.squares.deletePost',
         replyNamespace: 'topics.squares.replies',
+      }}
+      comments={{
+        sectionTitle: st('replies.title'),
+        signInLabel: st('replies.loginToReply'),
+        countText: st('replies.count', { count: replies.length }),
+        sortBy,
+        sortBasePath: `/topics/squares/${square}/posts/${postId}`,
+        sortTranslationKey: 'topics.squares.sort',
       }}
       breadcrumbItems={[
         { label: t('title'), href: '/topics' },

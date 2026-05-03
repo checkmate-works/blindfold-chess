@@ -1,20 +1,28 @@
 import type { ReactNode } from 'react';
 
-import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE, IS_LOCAL_DEV } from '@/config';
+import { getTranslations } from 'next-intl/server';
+
+import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
 import type { User } from '@supabase/supabase-js';
 
 import type { ActionResult } from '@/lib/action-types';
 
-import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { LinkedText, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import type { BreadcrumbItem } from '@/app/[locale]/_components/Breadcrumb';
+import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { buildCommentTree, groupReplies } from '../_lib/comment-tree';
-import type { PostWithReplyMeta } from '../_lib/shared';
-import { CommentNode } from './CommentNode';
+import { buildCommentTree } from '../_lib/comment-tree';
+import type { PostWithReplyMeta, SortMode } from '../_lib/shared';
+import { CommentTree } from './CommentTree';
+import { DeletePostButton } from './DeletePostButton';
+import { JoinConversationToggle } from './JoinConversationToggle';
+import { LikeButton } from './LikeButton';
+import { ReplyForm } from './ReplyForm';
+import { SortSelect } from './SortSelect';
 
 type CreateReplyState = { error?: string };
 
@@ -38,28 +46,35 @@ type Props = {
   locale: Locale;
   pageTitle: string;
   sectionTitle: string;
-  /** Topic-specific visual rendered above the comment thread (board component, etc.) */
+  /** Topic-specific visual rendered above the OP body (board component, etc.) */
   topicVisual: ReactNode;
-  backLink: {
-    href: string;
-    label: string;
-  };
-  /** OP enriched with reply / like meta. Becomes the single root of the comment tree. */
+  /**
+   * Per-OP metadata rendered between `topicVisual` and the OP card — e.g.
+   * an opening's preference / proficiency rating, a chunk's attached game
+   * card or embed. Conceptually part of the OP, surfaced as a peer of the
+   * board so it is visible without scrolling past the card.
+   */
+  opMeta?: ReactNode;
+  /** OP enriched with reply / like meta. Rendered as a standalone card. */
   rootWithMeta: PostWithReplyMeta;
-  /** All descendants of the OP (every level, flat). Fed to `buildCommentTree`. */
+  /**
+   * All descendants of the OP (every level, flat). Direct children of the
+   * OP become the roots of the comment tree shown below the OP card; their
+   * own descendants stay nested under them.
+   */
   replies: PostWithReplyMeta[];
   user: User | null;
   topicKey: string;
   /**
    * Whether the *current user* may post replies in this thread (derived from
-   * the OP's `replyPermission`). Forwarded to every node so the inline
-   * Reply button only appears when authorized.
+   * the OP's `replyPermission`). Controls whether the JoinConversationToggle
+   * / ReplyForm renders or whether the restriction message is shown instead.
    */
   canReply: boolean;
   /**
    * Human-readable explanation shown when `canReply` is false because of a
    * follower-only / nobody restriction (rather than because the user is
-   * signed out). Rendered below the thread.
+   * signed out).
    */
   replyRestrictionMessage: string | null;
   toggleLikeAction: ToggleLikeAction;
@@ -71,29 +86,56 @@ type Props = {
     replyNamespace: string;
     deleteNamespace: string;
   };
-  /** Per-OP payload (rating display, attached game card) rendered inside the root node. */
-  extraContent?: ReactNode;
   /**
-   * Forwarded to `CommentNode`. Currently only `position_puzzle` flips this
-   * on; topic post detail pages keep replies fully visible.
+   * Forwarded to `CommentTree` to enable per-reply spoiler treatment.
+   * Currently no topic post detail surface flips this on (puzzle, which
+   * does, lives under `/practice/...` and renders its own page); kept as a
+   * knob for future use.
    */
   enableSpoiler?: boolean;
+  /** Comments-section i18n + sort wiring. */
+  comments: {
+    /** Section title above the form / sort / list (e.g. "Replies"). */
+    sectionTitle: string;
+    /** "Sign in to reply" — anonymous-user CTA text linking to /sign-in. */
+    signInLabel: string;
+    /**
+     * Pre-formatted reply count (e.g. "5 replies") — already plural-aware
+     * via `next-intl`. Passed to `JoinConversationToggle` as `countText`.
+     */
+    countText: string;
+    sortBy: SortMode;
+    sortBasePath: string;
+    sortTranslationKey: string;
+  };
   breadcrumbItems: BreadcrumbItem[];
 };
 
 /**
  * Page-level layout for `/topics/<family>/<key>/posts/<postId>` and
- * `/chunks/<slug>/posts/<postId>`. Renders the OP and every descendant as
- * a single-root `CommentNode` tree so the visual treatment matches the
- * puzzle / position-memory threads (Reddit-style nested replies, inline
- * reply form per node, optional spoiler overlay).
+ * `/chunks/<slug>/posts/<postId>`. Layout shape:
+ *
+ *   1. Topic visual (board) + per-OP metadata (rating, attachment) up top.
+ *   2. The OP rendered as a self-contained card (avatar, time, body,
+ *      like, delete) — same shape `PostDetailContent` carried on `main`,
+ *      so readers do not perceive the OP as just-another comment.
+ *   3. A "Replies" section: Reddit-style JoinConversationToggle CTA →
+ *      ReplyForm, SortSelect, then the reply tree with each direct child
+ *      of the OP rendered as its own root via `CommentTree`.
+ *
+ * The OP is intentionally NOT routed through `buildCommentTree`: the URL
+ * `postId` is occasionally a reply id (notification deep links, manually
+ * pasted reply URLs), and treating that as a tree root yields an empty
+ * tree (the reply has a non-null `parentId` whose target is not in the
+ * fetched window). Rendering the OP directly from `rootWithMeta` matches
+ * how `main` displayed it and keeps the page resilient to that case.
  */
-export function TopicPostDetailLayout({
+export async function TopicPostDetailLayout({
   locale,
   pageTitle,
   sectionTitle,
   topicVisual,
-  backLink,
+  opMeta,
   rootWithMeta,
   replies,
   user,
@@ -105,11 +147,25 @@ export function TopicPostDetailLayout({
   createReplyAction,
   redirectPath,
   i18n,
-  extraContent,
   enableSpoiler = false,
+  comments,
   breadcrumbItems,
 }: Props) {
-  const [root] = buildCommentTree([rootWithMeta, ...replies], 'new');
+  const tTopics = await getTranslations({ locale, namespace: 'topics' });
+
+  // Promote direct replies to OP into roots of the reply tree so each one
+  // shows as a peer comment (like position-memory / puzzle) instead of
+  // being indented one level under the OP. Deeper replies keep their
+  // `parentId` and remain nested under their actual parent reply.
+  const opId = rootWithMeta.id;
+  const repliesAsRoots = replies.map((r) => (r.parentId === opId ? { ...r, parentId: null } : r));
+  const replyRoots = buildCommentTree(repliesAsRoots, comments.sortBy);
+  const replyCount = replies.length;
+
+  const authorName =
+    rootWithMeta.author?.displayName || rootWithMeta.author?.username || 'Anonymous';
+  const profileHref = rootWithMeta.author?.username ? `/u/${rootWithMeta.author.username}` : null;
+  const isOwnPost = user?.id === rootWithMeta.userId;
 
   return (
     <div className="space-y-8">
@@ -120,39 +176,124 @@ export function TopicPostDetailLayout({
 
         {topicVisual}
 
-        <div>
-          <Link
-            href={backLink.href}
+        {opMeta}
+
+        {/*
+          OP card — the bordered surface ("カード" in product language)
+          that surfaces the post text as the page's main content. Mirrors
+          the shape `main`'s `PostDetailContent` carried before the
+          fix-comments refactor unified everything into CommentNode; the
+          unified treatment was rolled back here because readers were
+          interpreting the OP as just-another comment.
+        */}
+        <div className="p-4 bg-card border border-border rounded-lg space-y-4">
+          <UserAvatar
+            profileHref={profileHref}
+            avatarUrl={rootWithMeta.author?.avatarUrl}
+            displayName={authorName}
             locale={locale}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            size="md"
+            flair={rootWithMeta.author?.flair}
+            country={rootWithMeta.author?.country}
           >
-            &larr; {backLink.label}
-          </Link>
+            <div className="text-sm text-muted-foreground">
+              <time dateTime={rootWithMeta.createdAt.toISOString()}>
+                {rootWithMeta.createdAt.toLocaleDateString(locale, {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </time>
+            </div>
+          </UserAvatar>
+
+          <div className="text-foreground whitespace-pre-wrap break-words leading-relaxed">
+            <LinkedText text={rootWithMeta.content} locale={locale} />
+          </div>
+
+          <div className="flex items-center gap-4">
+            <LikeButton
+              postId={rootWithMeta.id}
+              locale={locale}
+              topicKey={topicKey}
+              initialLikeCount={rootWithMeta.likeMeta.likeCount}
+              initialLikedByMe={rootWithMeta.likeMeta.likedByMe}
+              toggleLikeAction={toggleLikeAction}
+              i18nNamespace={i18n.likeNamespace}
+            />
+            {isOwnPost && (
+              <DeletePostButton
+                postId={rootWithMeta.id}
+                locale={locale}
+                redirectPath={redirectPath}
+                deletePostAction={deletePostAction}
+                i18nNamespace={i18n.deleteNamespace}
+              />
+            )}
+          </div>
         </div>
 
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE) && (
-          <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
+        <SectionTitle>{comments.sectionTitle}</SectionTitle>
+
+        {user ? (
+          canReply ? (
+            replyCount === 0 ? (
+              <ReplyForm
+                locale={locale}
+                topicKey={topicKey}
+                postId={rootWithMeta.id}
+                createReplyAction={createReplyAction}
+                i18nNamespace={i18n.replyNamespace}
+              />
+            ) : (
+              <JoinConversationToggle
+                countText={comments.countText}
+                joinLabel={tTopics('joinConversation')}
+              >
+                <ReplyForm
+                  locale={locale}
+                  topicKey={topicKey}
+                  postId={rootWithMeta.id}
+                  createReplyAction={createReplyAction}
+                  i18nNamespace={i18n.replyNamespace}
+                />
+              </JoinConversationToggle>
+            )
+          ) : (
+            replyRestrictionMessage && (
+              <p className="text-sm text-muted-foreground italic">{replyRestrictionMessage}</p>
+            )
+          )
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            <Link href="/sign-in" locale={locale} className="text-link-primary hover:underline">
+              {comments.signInLabel}
+            </Link>
+          </p>
         )}
 
-        <CommentNode
-          node={root}
-          rootPostId={root.id}
-          replyGroups={groupReplies(root)}
-          locale={locale}
-          topicKey={topicKey}
-          currentUserId={user?.id}
-          canReply={canReply}
-          enableSpoiler={enableSpoiler}
-          redirectPath={redirectPath}
-          toggleLikeAction={toggleLikeAction}
-          createReplyAction={createReplyAction}
-          deletePostAction={deletePostAction}
-          i18n={i18n}
-          extraContent={extraContent}
-        />
-
-        {replyRestrictionMessage && (
-          <p className="text-xs text-muted-foreground/60 italic">{replyRestrictionMessage}</p>
+        {replyCount > 0 && (
+          <>
+            <SortSelect
+              basePath={comments.sortBasePath}
+              translationKey={comments.sortTranslationKey}
+              currentSort={comments.sortBy}
+            />
+            <CommentTree
+              comments={replyRoots}
+              locale={locale}
+              topicKey={topicKey}
+              currentUserId={user?.id}
+              enableSpoiler={enableSpoiler}
+              redirectPath={redirectPath}
+              toggleLikeAction={toggleLikeAction}
+              createReplyAction={createReplyAction}
+              deletePostAction={deletePostAction}
+              i18n={i18n}
+            />
+          </>
         )}
 
         {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (

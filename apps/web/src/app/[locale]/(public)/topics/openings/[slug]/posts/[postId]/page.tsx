@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
 import { TopicPostDetailLayout } from '@/app/[locale]/(public)/topics/_components/TopicPostDetailLayout';
+import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { fetchPostDetailData } from '@/app/[locale]/(public)/topics/_lib/post-detail';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -17,6 +18,7 @@ import { toggleLike } from './_actions/toggleLike';
 
 type Props = {
   params: Promise<{ locale: Locale; slug: string; postId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -52,8 +54,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function OpeningPostDetailPage({ params }: Props) {
+export default async function OpeningPostDetailPage({ params, searchParams }: Props) {
   const { locale, slug, postId } = await params;
+  const sortBy = validateSort(((await searchParams).sort as string | undefined) ?? 'new');
 
   const opening = await getOpeningBySlug(slug);
   if (!opening) {
@@ -89,10 +92,14 @@ export default async function OpeningPostDetailPage({ params }: Props) {
       pageTitle={dt('detail.pageTitle')}
       sectionTitle={dt('postDetail.authorView', { author: authorName, name: displayName })}
       topicVisual={<OpeningBoardWithMoves fen={opening.fen} pgn={opening.pgn} />}
-      backLink={{
-        href: `/topics/openings/${slug}`,
-        label: dt('postDetail.backToOpening', { name: displayName }),
-      }}
+      opMeta={
+        post.rating ? (
+          <RatingDisplay
+            preferenceRating={post.rating.preferenceRating}
+            proficiencyRating={post.rating.proficiencyRating}
+          />
+        ) : undefined
+      }
       rootWithMeta={rootWithMeta}
       replies={replies}
       user={user}
@@ -108,14 +115,14 @@ export default async function OpeningPostDetailPage({ params }: Props) {
         deleteNamespace: 'topics.openings.deletePost',
         replyNamespace: 'topics.openings.replies',
       }}
-      extraContent={
-        post.rating ? (
-          <RatingDisplay
-            preferenceRating={post.rating.preferenceRating}
-            proficiencyRating={post.rating.proficiencyRating}
-          />
-        ) : undefined
-      }
+      comments={{
+        sectionTitle: dt('replies.title'),
+        signInLabel: dt('replies.loginToReply'),
+        countText: dt('replies.count', { count: replies.length }),
+        sortBy,
+        sortBasePath: `/topics/openings/${slug}/posts/${postId}`,
+        sortTranslationKey: 'topics.openings.sort',
+      }}
       breadcrumbItems={[
         { label: t('title'), href: '/topics' },
         { label: t('openings.title'), href: '/topics/openings' },
