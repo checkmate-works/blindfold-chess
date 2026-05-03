@@ -39,14 +39,7 @@ import { getAuthenticatedUser } from '@/lib/auth';
 import { db, userGrants } from '@/lib/db';
 import { getPaginationParams } from '@/lib/pagination';
 
-import {
-  Divider,
-  PagePanel,
-  PageTitle,
-  PaginationNav,
-  SectionTitle,
-} from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -158,68 +151,62 @@ export default async function BenefitHistoryPage({ params, searchParams }: Props
   };
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
-      <PagePanel>
-        <SectionTitle>{t('sectionTitle')}</SectionTitle>
+    <PageLayout
+      title={t('title')}
+      locale={locale}
+      breadcrumb={[
+        { label: t('breadcrumbMypage'), href: '/mypage' },
+        { label: t('breadcrumbBenefits'), href: '/mypage/benefits' },
+        { label: t('title') },
+      ]}
+    >
+      <SectionTitle>{t('sectionTitle')}</SectionTitle>
 
-        {rows.length === 0 ? (
-          <p className="text-muted-foreground">{t('empty')}</p>
-        ) : (
-          <>
-            <p className="text-sm text-muted-foreground mb-2">
-              {t('showing', {
-                from: (currentPage - 1) * PAGE_SIZE + 1,
-                to: (currentPage - 1) * PAGE_SIZE + rows.length,
-                total: totalCount,
-              })}
-            </p>
-            <ul className="space-y-3">
-              {rows.map((g) => {
-                const startsAt = new Date(g.startsAt);
-                const expiresAt = new Date(g.expiresAt);
-                const revokedAt = g.revokedAt ? new Date(g.revokedAt) : null;
-                const status = classifyGrantForHistory(now, startsAt, expiresAt, revokedAt);
-                return (
-                  <li
-                    key={g.id}
-                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-background p-3"
+      {rows.length === 0 ? (
+        <p className="text-muted-foreground">{t('empty')}</p>
+      ) : (
+        <>
+          <p className="text-sm text-muted-foreground mb-2">
+            {t('showing', {
+              from: (currentPage - 1) * PAGE_SIZE + 1,
+              to: (currentPage - 1) * PAGE_SIZE + rows.length,
+              total: totalCount,
+            })}
+          </p>
+          <ul className="space-y-3">
+            {rows.map((g) => {
+              const startsAt = new Date(g.startsAt);
+              const expiresAt = new Date(g.expiresAt);
+              const revokedAt = g.revokedAt ? new Date(g.revokedAt) : null;
+              const status = classifyGrantForHistory(now, startsAt, expiresAt, revokedAt);
+              return (
+                <li
+                  key={g.id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-background p-3"
+                >
+                  <div className="min-w-0">
+                    <p className="text-xs text-muted-foreground">
+                      {t('grantPeriod', {
+                        startDate: dateFmt(startsAt),
+                        endDate: dateFmt(expiresAt),
+                      })}
+                    </p>
+                  </div>
+                  <span
+                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusClass(
+                      status
+                    )}`}
                   >
-                    <div className="min-w-0">
-                      <p className="text-xs text-muted-foreground">
-                        {t('grantPeriod', {
-                          startDate: dateFmt(startsAt),
-                          endDate: dateFmt(expiresAt),
-                        })}
-                      </p>
-                    </div>
-                    <span
-                      className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusClass(
-                        status
-                      )}`}
-                    >
-                      {statusLabel(status)}
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-          </>
-        )}
+                    {statusLabel(status)}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </>
+      )}
 
-        <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
-
-        <Divider />
-
-        <Breadcrumb
-          locale={locale}
-          items={[
-            { label: t('breadcrumbMypage'), href: '/mypage' },
-            { label: t('breadcrumbBenefits'), href: '/mypage/benefits' },
-            { label: t('title') },
-          ]}
-        />
-      </PagePanel>
-    </div>
+      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+    </PageLayout>
   );
 }

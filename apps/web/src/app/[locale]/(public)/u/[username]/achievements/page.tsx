@@ -10,8 +10,7 @@ import {
   getUserAchievementsPaginated,
 } from '@/lib/db/achievement-queries';
 
-import { Divider, PagePanel, PageTitle, PaginationNav } from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { PageLayout, PaginationNav } from '@/app/[locale]/_components';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -81,32 +80,26 @@ export default async function AchievementsPage({ params, searchParams }: Props) 
   };
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('achievementsPageTitle')}</PageTitle>
-      <PagePanel>
-        <ProfileAchievements
-          achievements={achievements}
-          locale={locale}
-          totalCount={totalCount}
-          labels={{
-            sectionTitle: t('achievementsSection'),
-            noAchievements: t('noAchievements'),
-            categoryNames: getAchievementCategoryNames(t),
-          }}
-        />
+    <PageLayout
+      title={t('achievementsPageTitle')}
+      locale={locale}
+      breadcrumb={[
+        { label: displayName, href: `/u/${username}` },
+        { label: t('achievementsPageTitle') },
+      ]}
+    >
+      <ProfileAchievements
+        achievements={achievements}
+        locale={locale}
+        totalCount={totalCount}
+        labels={{
+          sectionTitle: t('achievementsSection'),
+          noAchievements: t('noAchievements'),
+          categoryNames: getAchievementCategoryNames(t),
+        }}
+      />
 
-        <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
-
-        <Divider />
-
-        <Breadcrumb
-          locale={locale}
-          items={[
-            { label: displayName, href: `/u/${username}` },
-            { label: t('achievementsPageTitle') },
-          ]}
-        />
-      </PagePanel>
-    </div>
+      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+    </PageLayout>
   );
 }

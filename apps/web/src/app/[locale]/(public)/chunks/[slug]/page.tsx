@@ -21,15 +21,8 @@ import {
   getPostCountByTopicKey,
   getPostsWithReplyMetaPaginatedByTopicKey,
 } from '@/app/[locale]/(public)/topics/_lib/queries';
-import {
-  Divider,
-  PagePanel,
-  PageTitle,
-  PaginationNav,
-  SectionTitle,
-} from '@/app/[locale]/_components';
+import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -116,88 +109,81 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
   const buildHref = (p: number) => buildPaginationHref(locale, `/chunks/${slug}`, p, sortBy);
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{chunk.title}</PageTitle>
+    <PageLayout
+      title={chunk.title}
+      locale={locale}
+      breadcrumb={[{ label: 'Chunks', href: '/chunks' }, { label: chunk.title }]}
+    >
+      {chunk.description && (
+        <>
+          <SectionTitle>Description</SectionTitle>
+          <p className="text-muted-foreground">{chunk.description}</p>
+        </>
+      )}
 
-      <PagePanel>
-        {chunk.description && (
-          <>
-            <SectionTitle>Description</SectionTitle>
-            <p className="text-muted-foreground">{chunk.description}</p>
-          </>
-        )}
+      <div className="max-w-xs mx-auto">
+        <ThemedBoardThumbnail fen={chunk.representativeFen} className="w-full" />
+      </div>
 
-        <div className="max-w-xs mx-auto">
-          <ThemedBoardThumbnail fen={chunk.representativeFen} className="w-full" />
-        </div>
-
-        {linkedPositions.length > 0 && (
-          <>
-            <SectionTitle>Positions</SectionTitle>
-            <p className="text-sm text-muted-foreground">
-              Problems where this chunk pattern is effective.
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {linkedPositions.map((position) => (
-                <Link
-                  key={position.id}
-                  href={`/${locale}/practice/position-memory/${position.id}`}
-                  className="block p-4 rounded border border-border hover:bg-muted transition-colors"
-                >
-                  <ThemedBoardThumbnail fen={position.fen} className="w-full mb-2" />
-                  <p className="text-sm font-medium truncate">{position.title}</p>
-                </Link>
-              ))}
-            </div>
-          </>
-        )}
-
-        <SectionTitle>{t('commentsTitle')}</SectionTitle>
-
-        <p className="text-sm text-muted-foreground">{t('postCount', { count: totalCount })}</p>
-
-        {user ? (
-          <NewPostForm locale={locale} slug={slug} />
-        ) : (
+      {linkedPositions.length > 0 && (
+        <>
+          <SectionTitle>Positions</SectionTitle>
           <p className="text-sm text-muted-foreground">
-            <Link href={`/${locale}/sign-in`} className="text-link-primary hover:underline">
-              {t('signInToComment')}
-            </Link>
+            Problems where this chunk pattern is effective.
           </p>
-        )}
-
-        <SortTabs slug={slug} locale={locale} />
-
-        {posts.length > 0 ? (
-          <div className="space-y-3">
-            {posts.map((post) => (
-              <div key={post.id} id={`post-${post.id}`}>
-                <PostCard
-                  post={post}
-                  locale={locale}
-                  slug={slug}
-                  attachment={attachments.get(post.id) ?? null}
-                />
-              </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {linkedPositions.map((position) => (
+              <Link
+                key={position.id}
+                href={`/${locale}/practice/position-memory/${position.id}`}
+                className="block p-4 rounded border border-border hover:bg-muted transition-colors"
+              >
+                <ThemedBoardThumbnail fen={position.fen} className="w-full mb-2" />
+                <p className="text-sm font-medium truncate">{position.title}</p>
+              </Link>
             ))}
           </div>
-        ) : (
-          <p className="text-muted-foreground text-center py-8">{t('noPosts')}</p>
-        )}
+        </>
+      )}
 
-        <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+      <SectionTitle>{t('commentsTitle')}</SectionTitle>
 
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-        )}
+      <p className="text-sm text-muted-foreground">{t('postCount', { count: totalCount })}</p>
 
-        <Divider />
+      {user ? (
+        <NewPostForm locale={locale} slug={slug} />
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          <Link href={`/${locale}/sign-in`} className="text-link-primary hover:underline">
+            {t('signInToComment')}
+          </Link>
+        </p>
+      )}
 
-        <Breadcrumb
-          items={[{ label: 'Chunks', href: '/chunks' }, { label: chunk.title }]}
-          locale={locale}
-        />
-      </PagePanel>
-    </div>
+      <SortTabs slug={slug} locale={locale} />
+
+      {posts.length > 0 ? (
+        <div className="space-y-3">
+          {posts.map((post) => (
+            <div key={post.id} id={`post-${post.id}`}>
+              <PostCard
+                post={post}
+                locale={locale}
+                slug={slug}
+                attachment={attachments.get(post.id) ?? null}
+              />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-muted-foreground text-center py-8">{t('noPosts')}</p>
+      )}
+
+      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+      )}
+    </PageLayout>
   );
 }

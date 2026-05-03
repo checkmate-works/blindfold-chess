@@ -6,8 +6,7 @@ import { Link } from '@/i18n/routing';
 
 import { createClient } from '@/lib/supabase/server';
 
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { Divider, PageLayout } from '@/app/[locale]/_components';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -58,35 +57,27 @@ export default async function SignInPage({ params, searchParams }: Props) {
   const t = await getTranslations({ locale, namespace: 'signIn' });
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
+    <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
+      {error && <AuthErrorMessage namespace="signIn" />}
 
-      <PagePanel>
-        {error && <AuthErrorMessage namespace="signIn" />}
+      <div>
+        <GoogleOAuthButton namespace="signIn" />
+      </div>
 
-        <div>
-          <GoogleOAuthButton namespace="signIn" />
-        </div>
+      <div className="flex items-center gap-4 max-w-sm mx-auto">
+        <Divider className="flex-1" />
+        <span className="text-sm text-muted-foreground">{t('orDivider')}</span>
+        <Divider className="flex-1" />
+      </div>
 
-        <div className="flex items-center gap-4 max-w-sm mx-auto">
-          <Divider className="flex-1" />
-          <span className="text-sm text-muted-foreground">{t('orDivider')}</span>
-          <Divider className="flex-1" />
-        </div>
+      <EmailPasswordForm />
 
-        <EmailPasswordForm />
-
-        <p className="mt-6 text-center text-sm text-muted-foreground">
-          {t('noAccount')}{' '}
-          <Link href="/sign-up" locale={locale} className={TEXT_LINK_CLASSES}>
-            {t('signUp')}
-          </Link>
-        </p>
-
-        <Divider />
-
-        <Breadcrumb items={[{ label: t('title') }]} locale={locale} />
-      </PagePanel>
-    </div>
+      <p className="mt-6 text-center text-sm text-muted-foreground">
+        {t('noAccount')}{' '}
+        <Link href="/sign-up" locale={locale} className={TEXT_LINK_CLASSES}>
+          {t('signUp')}
+        </Link>
+      </p>
+    </PageLayout>
   );
 }

@@ -8,15 +8,8 @@ import { getPaginationParams } from '@/lib/pagination';
 import { createClient } from '@/lib/supabase/server';
 
 import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
-import {
-  Divider,
-  PagePanel,
-  PageTitle,
-  PaginationNav,
-  SectionTitle,
-} from '@/app/[locale]/_components';
+import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
@@ -68,52 +61,45 @@ export default async function SquaresPage({ params, searchParams }: Props) {
   };
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('squares.title')}</PageTitle>
+    <PageLayout
+      title={t('squares.title')}
+      locale={locale}
+      breadcrumb={[{ label: t('title'), href: '/topics' }, { label: t('squares.title') }]}
+    >
+      {currentPage === 1 && (
+        <>
+          <SectionTitle>{t('squares.sectionTitle')}</SectionTitle>
+          <SquareBoard locale={locale} />
+        </>
+      )}
 
-      <PagePanel>
-        {currentPage === 1 && (
-          <>
-            <SectionTitle>{t('squares.sectionTitle')}</SectionTitle>
-            <SquareBoard locale={locale} />
-          </>
-        )}
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE) && (
+        <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
+      )}
 
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE) && (
-          <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
-        )}
+      <SectionTitle>{t('squares.recentPosts')}</SectionTitle>
 
-        <SectionTitle>{t('squares.recentPosts')}</SectionTitle>
+      {recentPosts.length === 0 ? (
+        <p className="text-muted-foreground text-center py-8">{t('squares.noRecentPosts')}</p>
+      ) : (
+        <div className="space-y-3">
+          {recentPosts.map((post) => (
+            <PostCard
+              key={post.id}
+              post={post}
+              locale={locale}
+              square={post.topicKey}
+              showSquareBadge
+            />
+          ))}
+        </div>
+      )}
 
-        {recentPosts.length === 0 ? (
-          <p className="text-muted-foreground text-center py-8">{t('squares.noRecentPosts')}</p>
-        ) : (
-          <div className="space-y-3">
-            {recentPosts.map((post) => (
-              <PostCard
-                key={post.id}
-                post={post}
-                locale={locale}
-                square={post.topicKey}
-                showSquareBadge
-              />
-            ))}
-          </div>
-        )}
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+      )}
 
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-        )}
-
-        <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
-
-        <Divider />
-
-        <Breadcrumb
-          items={[{ label: t('title'), href: '/topics' }, { label: t('squares.title') }]}
-          locale={locale}
-        />
-      </PagePanel>
-    </div>
+      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+    </PageLayout>
   );
 }

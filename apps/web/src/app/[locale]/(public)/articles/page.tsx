@@ -7,16 +7,13 @@ import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV, SITE_URL } from '@/config';
 import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
 
 import {
-  Divider,
   ListLink,
   ListLinkContainer,
-  PagePanel,
-  PageTitle,
+  PageLayout,
   PaginationNav,
   SectionTitle,
 } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -71,11 +68,9 @@ export default async function ArticlesPage({ params, searchParams }: Props) {
   }));
 
   return (
-    <div className="space-y-8">
+    <>
       <JsonLd data={generateItemListSchema(itemListItems)} />
-      <PageTitle>{t('pageTitle')}</PageTitle>
-
-      <PagePanel>
+      <PageLayout title={t('pageTitle')} locale={locale} breadcrumb={[{ label: t('pageTitle') }]}>
         {articles.length === 0 ? (
           <p className="text-muted-foreground">{t('noArticles')}</p>
         ) : (
@@ -115,11 +110,7 @@ export default async function ArticlesPage({ params, searchParams }: Props) {
         {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
           <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
         )}
-
-        <Divider />
-
-        <Breadcrumb items={[{ label: t('pageTitle') }]} locale={locale} />
-      </PagePanel>
-    </div>
+      </PageLayout>
+    </>
   );
 }

@@ -70,6 +70,7 @@ export default async function PostmortemPage({ params, searchParams }: Props) {
       ]}
       locale={locale}
       brandName={tMetadata('siteName')}
+      density="compact"
     />
   );
 

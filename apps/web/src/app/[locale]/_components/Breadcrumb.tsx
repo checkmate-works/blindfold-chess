@@ -11,28 +11,37 @@ export type BreadcrumbItem = {
   href?: string;
 };
 
+type Density = 'default' | 'compact';
+
 type BreadcrumbContentProps = {
   items: BreadcrumbItem[];
   locale?: string;
   brandName: string;
+  /**
+   * `'default'` reserves a 40px tall band (CLS-safe for 2-line wraps on narrow
+   * viewports — e.g. es `/games/play/postmortem`) and adds a 16px bottom margin.
+   * `'compact'` halves that visible spacing for use inside `PageLayout`, where the
+   * panel's `space-y-*` flow plus its bottom padding already supply most of the
+   * surrounding gap. Use `'default'` for standalone breadcrumbs that are not
+   * wrapped by `PageLayout`.
+   */
+  density?: Density;
 };
 
-export function BreadcrumbContent({ items, locale, brandName }: BreadcrumbContentProps) {
+export function BreadcrumbContent({
+  items,
+  locale,
+  brandName,
+  density = 'default',
+}: BreadcrumbContentProps) {
   const effectiveLocale = locale || 'en';
+  const navClass =
+    density === 'compact' ? 'flex min-h-6 items-center' : 'mb-4 flex min-h-10 items-center';
 
   return (
     <>
       <JsonLd data={generateBreadcrumbListSchema(items, effectiveLocale, brandName)} />
-      {/*
-        Reserve 2-line height (text-sm line-height 20px x 2 = 40px) so that
-        long i18n labels (e.g. es `/games/play/postmortem` with
-        "Partidas / Resultado de la Partida / Revisión de Partida") do not
-        trigger CLS when they wrap on narrow viewports. The single-line
-        case simply leaves bottom whitespace inside the reserved block; the
-        `items-end` alignment keeps the label anchored to the bottom so the
-        visual rhythm with the following `mb-4` block is preserved.
-      */}
-      <nav aria-label="Breadcrumb" className="mb-4 flex min-h-10 items-end">
+      <nav aria-label="Breadcrumb" className={navClass}>
         <ol className="flex flex-wrap items-center gap-x-1 text-sm">
           <li>
             <Link
@@ -73,8 +82,9 @@ export function BreadcrumbContent({ items, locale, brandName }: BreadcrumbConten
 type BreadcrumbProps = {
   items: BreadcrumbItem[];
   locale?: string;
+  density?: Density;
 };
 
-export function Breadcrumb({ items, locale }: BreadcrumbProps) {
-  return <BreadcrumbContent items={items} locale={locale} brandName="Home" />;
+export function Breadcrumb({ items, locale, density }: BreadcrumbProps) {
+  return <BreadcrumbContent items={items} locale={locale} brandName="Home" density={density} />;
 }

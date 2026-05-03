@@ -5,8 +5,7 @@ import { asc } from 'drizzle-orm';
 
 import { chessOpenings, db } from '@/lib/db';
 
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { PageLayout } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -61,22 +60,18 @@ export default async function OpeningGamePage({ params }: Props) {
   });
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('newGame.openingPageTitle')}</PageTitle>
-      <PagePanel>
-        <GameLimitCheck locale={locale}>
-          <OpeningGameForm openings={openings} />
-          <Divider />
-          <Breadcrumb
-            locale={locale}
-            items={[
-              { label: tGames('pageTitle'), href: '/games' },
-              { label: t('newGame.title'), href: '/games/new' },
-              { label: t('newGame.openingPageTitle') },
-            ]}
-          />
-        </GameLimitCheck>
-      </PagePanel>
-    </div>
+    <PageLayout
+      title={t('newGame.openingPageTitle')}
+      locale={locale}
+      breadcrumb={[
+        { label: tGames('pageTitle'), href: '/games' },
+        { label: t('newGame.title'), href: '/games/new' },
+        { label: t('newGame.openingPageTitle') },
+      ]}
+    >
+      <GameLimitCheck locale={locale}>
+        <OpeningGameForm openings={openings} />
+      </GameLimitCheck>
+    </PageLayout>
   );
 }

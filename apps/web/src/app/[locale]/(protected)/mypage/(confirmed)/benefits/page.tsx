@@ -58,8 +58,7 @@ import { BENEFIT_ACTIVE_STATUSES } from '@/lib/billing/subscription-constants';
 import { db, userGrants } from '@/lib/db';
 import { type GrantType, isGrantType } from '@/lib/db/data/grant-types';
 
-import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
@@ -197,106 +196,100 @@ export default async function BenefitsPage({ params }: Props) {
   };
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
-      <PagePanel>
-        <SectionTitle>{t('sectionTitle')}</SectionTitle>
-        <div className="space-y-6">
-          {/* Aggregate status banner */}
-          <div
-            className={`rounded-xl border p-6 ${
-              adFreeActive
-                ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/30'
-                : 'border-border bg-card'
-            }`}
-          >
-            {adFreeActive && latestExpiresAt ? (
-              <>
-                <h2 className="font-semibold text-green-900 dark:text-green-100">
-                  {t('adFree.statusActive')}
-                </h2>
-                <p className="mt-1 text-sm text-green-800 dark:text-green-200">
-                  {t('adFree.activeUntil', { date: dateFmt(latestExpiresAt) })}
-                </p>
-              </>
-            ) : (
-              <>
-                <h2 className="font-semibold text-foreground">{t('adFree.statusInactive')}</h2>
-                <div className="mt-3">
-                  <Link
-                    href="/faq#ad-free-benefits"
-                    locale={locale}
-                    className="text-sm text-foreground underline hover:opacity-80 transition-colors"
-                  >
-                    {t('adFree.learnHowToEarn')}
-                  </Link>
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Unified entitlement table — subscription + grants in one list,
-              keyed by source. Removes the visual asymmetry of the previous
-              two separate cards (one with text, one with nested cards). */}
-          {entitlementRows.length > 0 && (
-            <div className="rounded-xl border border-border bg-card overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-border bg-muted/30 text-left text-xs font-medium text-muted-foreground whitespace-nowrap">
-                      <th className="px-4 py-2 font-medium">{t('adFree.tableSourceHeader')}</th>
-                      <th className="px-4 py-2 font-medium">{t('adFree.tablePeriodHeader')}</th>
-                      <th className="px-4 py-2 font-medium text-right">
-                        {t('adFree.tableStatusHeader')}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {entitlementRows.map((row) => (
-                      <tr key={row.id}>
-                        <td className="px-4 py-3 font-medium text-foreground">{row.sourceLabel}</td>
-                        <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
-                          {t('adFree.grantPeriod', {
-                            startDate: dateFmt(row.startsAt),
-                            endDate: dateFmt(row.expiresAt),
-                          })}
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <span
-                            className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${statusClass(
-                              row.status
-                            )}`}
-                          >
-                            {statusLabel(row.status)}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+    <PageLayout
+      title={t('title')}
+      locale={locale}
+      breadcrumb={[{ label: t('breadcrumbMypage'), href: '/mypage' }, { label: t('title') }]}
+    >
+      <SectionTitle>{t('sectionTitle')}</SectionTitle>
+      <div className="space-y-6">
+        {/* Aggregate status banner */}
+        <div
+          className={`rounded-xl border p-6 ${
+            adFreeActive
+              ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/30'
+              : 'border-border bg-card'
+          }`}
+        >
+          {adFreeActive && latestExpiresAt ? (
+            <>
+              <h2 className="font-semibold text-green-900 dark:text-green-100">
+                {t('adFree.statusActive')}
+              </h2>
+              <p className="mt-1 text-sm text-green-800 dark:text-green-200">
+                {t('adFree.activeUntil', { date: dateFmt(latestExpiresAt) })}
+              </p>
+            </>
+          ) : (
+            <>
+              <h2 className="font-semibold text-foreground">{t('adFree.statusInactive')}</h2>
+              <div className="mt-3">
+                <Link
+                  href="/faq#ad-free-benefits"
+                  locale={locale}
+                  className="text-sm text-foreground underline hover:opacity-80 transition-colors"
+                >
+                  {t('adFree.learnHowToEarn')}
+                </Link>
               </div>
-              {hasMoreGrants && (
-                <div className="border-t border-border px-4 py-3">
-                  <Link
-                    href={`/mypage/benefits/ad_free`}
-                    locale={locale}
-                    className="text-sm text-foreground underline hover:opacity-80 transition-colors"
-                  >
-                    {t('adFree.viewFullHistory')}
-                  </Link>
-                </div>
-              )}
-            </div>
+            </>
           )}
         </div>
 
-        <Divider />
-
-        <Breadcrumb
-          locale={locale}
-          items={[{ label: t('breadcrumbMypage'), href: '/mypage' }, { label: t('title') }]}
-        />
-      </PagePanel>
-    </div>
+        {/* Unified entitlement table — subscription + grants in one list,
+              keyed by source. Removes the visual asymmetry of the previous
+              two separate cards (one with text, one with nested cards). */}
+        {entitlementRows.length > 0 && (
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-muted/30 text-left text-xs font-medium text-muted-foreground whitespace-nowrap">
+                    <th className="px-4 py-2 font-medium">{t('adFree.tableSourceHeader')}</th>
+                    <th className="px-4 py-2 font-medium">{t('adFree.tablePeriodHeader')}</th>
+                    <th className="px-4 py-2 font-medium text-right">
+                      {t('adFree.tableStatusHeader')}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {entitlementRows.map((row) => (
+                    <tr key={row.id}>
+                      <td className="px-4 py-3 font-medium text-foreground">{row.sourceLabel}</td>
+                      <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
+                        {t('adFree.grantPeriod', {
+                          startDate: dateFmt(row.startsAt),
+                          endDate: dateFmt(row.expiresAt),
+                        })}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <span
+                          className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${statusClass(
+                            row.status
+                          )}`}
+                        >
+                          {statusLabel(row.status)}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {hasMoreGrants && (
+              <div className="border-t border-border px-4 py-3">
+                <Link
+                  href={`/mypage/benefits/ad_free`}
+                  locale={locale}
+                  className="text-sm text-foreground underline hover:opacity-80 transition-colors"
+                >
+                  {t('adFree.viewFullHistory')}
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </PageLayout>
   );
 }

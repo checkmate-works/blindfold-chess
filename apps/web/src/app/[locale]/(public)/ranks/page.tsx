@@ -22,9 +22,8 @@ import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { ALL_RANK_SLUGS, isMukyuSlug, parseRequirements } from '@/lib/db/data/ranks';
 import { createClient } from '@/lib/supabase/server';
 
-import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { SignUpBanner } from '@/app/[locale]/_components/SignUpBanner';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
@@ -72,70 +71,27 @@ export default async function RanksPage({ params }: LocalePageProps) {
   }
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('pageTitle')}</PageTitle>
+    <PageLayout title={t('pageTitle')} locale={locale} breadcrumb={[{ label: t('pageTitle') }]}>
+      <SectionTitle>{t('pageTitle')}</SectionTitle>
+      <p className="text-muted-foreground">{t('pageSubtitle')}</p>
 
-      <PagePanel>
-        <SectionTitle>{t('pageTitle')}</SectionTitle>
-        <p className="text-muted-foreground">{t('pageSubtitle')}</p>
+      <Suspense fallback={null}>
+        <SignUpBanner
+          locale={locale}
+          message={t('signUpBanner.message')}
+          description={t('signUpBanner.description')}
+          ctaLabel={t('signUpBanner.cta')}
+        />
+      </Suspense>
 
-        <Suspense fallback={null}>
-          <SignUpBanner
-            locale={locale}
-            message={t('signUpBanner.message')}
-            description={t('signUpBanner.description')}
-            ctaLabel={t('signUpBanner.cta')}
-          />
-        </Suspense>
-
-        <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {ALL_RANK_SLUGS.map((slug, index) => {
-            // Mukyu (無級) is a UI-only rank — not in DB, always accessible.
-            // It uses i18n text for requirements instead of challenge_score entries.
-            if (isMukyuSlug(slug)) {
-              const beltColor = getBeltColorHex(slug);
-              const mukyuRequirements = t.raw('detail.mukyuRequirements') as string[];
-              const mukyuState = user && achievedSlugs.has('5kyu') ? 'achieved' : 'next';
-              return (
-                <RankCard
-                  key={slug}
-                  slug={slug}
-                  locale={locale}
-                  beltColor={beltColor}
-                  rankName={t(`rankNames.${slug}`)}
-                  state={mukyuState}
-                  requirementLabels={mukyuRequirements}
-                  requirementsHeading={t('requirements')}
-                  comingSoonLabel={t('comingSoon')}
-                />
-              );
-            }
-
-            const rank = dbRanksBySlug.get(slug);
+      <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {ALL_RANK_SLUGS.map((slug, index) => {
+          // Mukyu (無級) is a UI-only rank — not in DB, always accessible.
+          // It uses i18n text for requirements instead of challenge_score entries.
+          if (isMukyuSlug(slug)) {
             const beltColor = getBeltColorHex(slug);
-            const isFirstRank = index === 1; // index 1 because mukyu is index 0
-            const previousSlug = ALL_RANK_SLUGS[index - 1];
-            const previousAchieved = previousSlug ? achievedSlugs.has(previousSlug) : false;
-            const isAchieved = achievedSlugs.has(slug);
-            const requirements = rank ? parseRequirements(rank.requirements) : [];
-
-            const state = getRankCardState(
-              !!rank,
-              requirements,
-              isAchieved,
-              previousAchieved,
-              !!user,
-              isFirstRank
-            );
-
-            const requirementLabels = requirements.map((req) => {
-              const challengeKey = buildChallengeNameKey(req);
-              return t('challengeScore', {
-                minScore: req.minScore,
-                challengeName: t(`challengeNames.${challengeKey}`),
-              });
-            });
-
+            const mukyuRequirements = t.raw('detail.mukyuRequirements') as string[];
+            const mukyuState = user && achievedSlugs.has('5kyu') ? 'achieved' : 'next';
             return (
               <RankCard
                 key={slug}
@@ -143,25 +99,60 @@ export default async function RanksPage({ params }: LocalePageProps) {
                 locale={locale}
                 beltColor={beltColor}
                 rankName={t(`rankNames.${slug}`)}
-                state={state}
-                requirementLabels={requirementLabels}
+                state={mukyuState}
+                requirementLabels={mukyuRequirements}
                 requirementsHeading={t('requirements')}
                 comingSoonLabel={t('comingSoon')}
-                previousRankName={previousSlug ? t(`rankNames.${previousSlug}`) : undefined}
-                previousSlug={previousSlug}
               />
             );
-          })}
-        </div>
+          }
 
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-        )}
+          const rank = dbRanksBySlug.get(slug);
+          const beltColor = getBeltColorHex(slug);
+          const isFirstRank = index === 1; // index 1 because mukyu is index 0
+          const previousSlug = ALL_RANK_SLUGS[index - 1];
+          const previousAchieved = previousSlug ? achievedSlugs.has(previousSlug) : false;
+          const isAchieved = achievedSlugs.has(slug);
+          const requirements = rank ? parseRequirements(rank.requirements) : [];
 
-        <Divider />
+          const state = getRankCardState(
+            !!rank,
+            requirements,
+            isAchieved,
+            previousAchieved,
+            !!user,
+            isFirstRank
+          );
 
-        <Breadcrumb items={[{ label: t('pageTitle') }]} locale={locale} />
-      </PagePanel>
-    </div>
+          const requirementLabels = requirements.map((req) => {
+            const challengeKey = buildChallengeNameKey(req);
+            return t('challengeScore', {
+              minScore: req.minScore,
+              challengeName: t(`challengeNames.${challengeKey}`),
+            });
+          });
+
+          return (
+            <RankCard
+              key={slug}
+              slug={slug}
+              locale={locale}
+              beltColor={beltColor}
+              rankName={t(`rankNames.${slug}`)}
+              state={state}
+              requirementLabels={requirementLabels}
+              requirementsHeading={t('requirements')}
+              comingSoonLabel={t('comingSoon')}
+              previousRankName={previousSlug ? t(`rankNames.${previousSlug}`) : undefined}
+              previousSlug={previousSlug}
+            />
+          );
+        })}
+      </div>
+
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+      )}
+    </PageLayout>
   );
 }

@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import type { BreadcrumbItem } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -26,20 +25,12 @@ export function NewTopicPostLayout({
   breadcrumbItems,
 }: Props) {
   return (
-    <div className="space-y-8">
-      <PageTitle>{pageTitle}</PageTitle>
+    <PageLayout title={pageTitle} locale={locale} breadcrumb={breadcrumbItems}>
+      <SectionTitle>{sectionTitle}</SectionTitle>
 
-      <PagePanel>
-        <SectionTitle>{sectionTitle}</SectionTitle>
+      {topicVisual}
 
-        {topicVisual}
-
-        {form}
-
-        <Divider />
-
-        <Breadcrumb items={breadcrumbItems} locale={locale} />
-      </PagePanel>
-    </div>
+      {form}
+    </PageLayout>
   );
 }

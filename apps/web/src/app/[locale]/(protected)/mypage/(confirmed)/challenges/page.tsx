@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { PageLayout } from '@/app/[locale]/_components';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
@@ -26,18 +25,12 @@ export default async function ChallengesPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'MypageChallenges' });
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
-      <PagePanel>
-        <MypageContent />
-
-        <Divider />
-
-        <Breadcrumb
-          locale={locale}
-          items={[{ label: t('breadcrumbMypage'), href: '/mypage' }, { label: t('title') }]}
-        />
-      </PagePanel>
-    </div>
+    <PageLayout
+      title={t('title')}
+      locale={locale}
+      breadcrumb={[{ label: t('breadcrumbMypage'), href: '/mypage' }, { label: t('title') }]}
+    >
+      <MypageContent />
+    </PageLayout>
   );
 }

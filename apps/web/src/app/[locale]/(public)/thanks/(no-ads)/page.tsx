@@ -9,7 +9,7 @@ import { db, topicPosts, userGrants } from '@/lib/db';
 import { isTopicPostGrantTopicType } from '@/lib/db/data/grant-types';
 import { createClient } from '@/lib/supabase/server';
 
-import { CertificateFrame, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { CertificateFrame, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
@@ -113,37 +113,34 @@ export default async function ThanksPage({ params, searchParams }: Props) {
       : 'explanation.default';
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
-      <PagePanel>
-        <SectionTitle>{t('sectionTitle')}</SectionTitle>
+    <PageLayout title={t('title')} locale={locale}>
+      <SectionTitle>{t('sectionTitle')}</SectionTitle>
 
-        {benefit ? (
-          <div className="space-y-4">
-            <p className="text-foreground">{t(explanationKey)}</p>
-            <CertificateFrame>
-              <p className="text-base sm:text-2xl font-serif font-bold text-podium-gold-foreground tracking-widest text-center">
-                {t(`benefits.${benefit.type}`, { days: benefit.durationDays })}
-              </p>
-            </CertificateFrame>
-          </div>
-        ) : (
-          <p className="text-muted-foreground text-center py-4">{t('genericMessage')}</p>
-        )}
-
-        <div className="flex flex-col gap-3 pb-4">
-          <Link href={returnUrl} className="block">
-            <Button asChild variant="primary" size="lg" fullWidth>
-              {t('continueButton')}
-            </Button>
-          </Link>
-          <Link href={`/${locale}/mypage/benefits`} className="block">
-            <Button asChild variant="outline" size="lg" fullWidth>
-              {t('viewBenefitsButton')}
-            </Button>
-          </Link>
+      {benefit ? (
+        <div className="space-y-4">
+          <p className="text-foreground">{t(explanationKey)}</p>
+          <CertificateFrame>
+            <p className="text-base sm:text-2xl font-serif font-bold text-podium-gold-foreground tracking-widest text-center">
+              {t(`benefits.${benefit.type}`, { days: benefit.durationDays })}
+            </p>
+          </CertificateFrame>
         </div>
-      </PagePanel>
-    </div>
+      ) : (
+        <p className="text-muted-foreground text-center py-4">{t('genericMessage')}</p>
+      )}
+
+      <div className="flex flex-col gap-3 pb-4">
+        <Link href={returnUrl} className="block">
+          <Button asChild variant="primary" size="lg" fullWidth>
+            {t('continueButton')}
+          </Button>
+        </Link>
+        <Link href={`/${locale}/mypage/benefits`} className="block">
+          <Button asChild variant="outline" size="lg" fullWidth>
+            {t('viewBenefitsButton')}
+          </Button>
+        </Link>
+      </div>
+    </PageLayout>
   );
 }

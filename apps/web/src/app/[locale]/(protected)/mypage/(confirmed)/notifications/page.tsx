@@ -7,8 +7,7 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { db, profiles } from '@/lib/db';
 
-import { Divider, PagePanel, PageTitle, PaginationNav } from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { PageLayout, PaginationNav } from '@/app/[locale]/_components';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
@@ -55,38 +54,32 @@ export default async function NotificationsPage({ params, searchParams }: Props)
   };
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
-      <PagePanel>
-        {unreadCount > 0 && (
-          <div className="flex justify-end">
-            <MarkAllReadButton label={t('markAllAsRead')} />
-          </div>
-        )}
+    <PageLayout
+      title={t('title')}
+      locale={locale}
+      breadcrumb={[{ label: t('breadcrumbMypage'), href: '/mypage' }, { label: t('title') }]}
+    >
+      {unreadCount > 0 && (
+        <div className="flex justify-end">
+          <MarkAllReadButton label={t('markAllAsRead')} />
+        </div>
+      )}
 
-        {items.length === 0 ? (
-          <p className="text-muted-foreground">{t('empty')}</p>
-        ) : (
-          <div className="space-y-3">
-            {items.map((notification) => (
-              <NotificationItem
-                key={notification.id}
-                notification={notification}
-                currentUsername={profile?.username}
-              />
-            ))}
-          </div>
-        )}
+      {items.length === 0 ? (
+        <p className="text-muted-foreground">{t('empty')}</p>
+      ) : (
+        <div className="space-y-3">
+          {items.map((notification) => (
+            <NotificationItem
+              key={notification.id}
+              notification={notification}
+              currentUsername={profile?.username}
+            />
+          ))}
+        </div>
+      )}
 
-        <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
-
-        <Divider />
-
-        <Breadcrumb
-          locale={locale}
-          items={[{ label: t('breadcrumbMypage'), href: '/mypage' }, { label: t('title') }]}
-        />
-      </PagePanel>
-    </div>
+      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+    </PageLayout>
   );
 }

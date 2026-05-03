@@ -3,8 +3,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { createClient } from '@/lib/supabase/server';
 
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { PageLayout } from '@/app/[locale]/_components';
 import { INTERVIEW_QUESTION_KEYS } from '@/app/[locale]/_lib/interview';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
@@ -43,34 +42,26 @@ export default async function InterviewPage({ params }: Props) {
   const answerMap = new Map(answers.map((a) => [a.questionKey, a]));
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
+    <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {INTERVIEW_QUESTION_KEYS.map((key) => {
+          const answer = answerMap.get(key);
 
-      <PagePanel>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {INTERVIEW_QUESTION_KEYS.map((key) => {
-            const answer = answerMap.get(key);
-
-            return (
-              <InterviewQuestionCard
-                key={key}
-                questionKey={key}
-                label={t(`questions.${key}.label` as never)}
-                description={t(`questions.${key}.description` as never)}
-                isAuthenticated={!!user}
-                isAnswered={!!answer}
-                answeredLabel={t('answered')}
-                notAnsweredLabel={t('noAnswer')}
-                locale={locale}
-              />
-            );
-          })}
-        </div>
-
-        <Divider />
-
-        <Breadcrumb items={[{ label: t('title') }]} locale={locale} />
-      </PagePanel>
-    </div>
+          return (
+            <InterviewQuestionCard
+              key={key}
+              questionKey={key}
+              label={t(`questions.${key}.label` as never)}
+              description={t(`questions.${key}.description` as never)}
+              isAuthenticated={!!user}
+              isAnswered={!!answer}
+              answeredLabel={t('answered')}
+              notAnsweredLabel={t('noAnswer')}
+              locale={locale}
+            />
+          );
+        })}
+      </div>
+    </PageLayout>
   );
 }

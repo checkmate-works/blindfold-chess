@@ -12,14 +12,7 @@ import {
   getLikedPostsByUser,
 } from '@/app/[locale]/(public)/topics/_lib/like-queries';
 import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
-import {
-  Divider,
-  PagePanel,
-  PageTitle,
-  PaginationNav,
-  SectionTitle,
-} from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
@@ -65,39 +58,33 @@ export default async function LikesPage({ params, searchParams }: Props) {
   };
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
-      <PagePanel>
-        <SectionTitle>{t('sectionTitle')}</SectionTitle>
-        {posts.length === 0 ? (
-          <p className="text-muted-foreground">{t('empty')}</p>
-        ) : (
-          <div className="space-y-4">
-            {posts.map((post) => {
-              const tTopic = post.topicType === 'opening' ? tOpenings : tSquares;
-              return (
-                <TopicPostCard
-                  key={post.id}
-                  post={post}
-                  locale={locale}
-                  showMoreLabel={tTopics('showMore')}
-                  justNowLabel={tTopic('justNow')}
-                  variant="card"
-                />
-              );
-            })}
-          </div>
-        )}
+    <PageLayout
+      title={t('title')}
+      locale={locale}
+      breadcrumb={[{ label: t('breadcrumbMypage'), href: '/mypage' }, { label: t('title') }]}
+    >
+      <SectionTitle>{t('sectionTitle')}</SectionTitle>
+      {posts.length === 0 ? (
+        <p className="text-muted-foreground">{t('empty')}</p>
+      ) : (
+        <div className="space-y-4">
+          {posts.map((post) => {
+            const tTopic = post.topicType === 'opening' ? tOpenings : tSquares;
+            return (
+              <TopicPostCard
+                key={post.id}
+                post={post}
+                locale={locale}
+                showMoreLabel={tTopics('showMore')}
+                justNowLabel={tTopic('justNow')}
+                variant="card"
+              />
+            );
+          })}
+        </div>
+      )}
 
-        <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
-
-        <Divider />
-
-        <Breadcrumb
-          locale={locale}
-          items={[{ label: t('breadcrumbMypage'), href: '/mypage' }, { label: t('title') }]}
-        />
-      </PagePanel>
-    </div>
+      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+    </PageLayout>
   );
 }

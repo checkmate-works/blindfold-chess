@@ -11,9 +11,8 @@ import { routing } from '@/i18n/routing';
 
 import { JsonLd, generateBlogPostingSchema } from '@/lib/seo/jsonld';
 
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { PageLayout } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { TiptapRenderer } from '@/app/[locale]/_components/TiptapRenderer';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -102,7 +101,7 @@ export default async function ArticlePage({ params }: Props) {
     : undefined;
 
   return (
-    <div className="space-y-8">
+    <>
       <JsonLd
         data={generateBlogPostingSchema({
           title: article.title,
@@ -113,9 +112,11 @@ export default async function ArticlePage({ params }: Props) {
         })}
       />
 
-      <PageTitle>{article.title}</PageTitle>
-
-      <PagePanel>
+      <PageLayout
+        title={article.title}
+        locale={locale}
+        breadcrumb={[{ label: t('pageTitle'), href: '/articles' }, { label: article.title }]}
+      >
         {isFallback && (
           <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">
             {t('notTranslatedNotice')}
@@ -136,14 +137,7 @@ export default async function ArticlePage({ params }: Props) {
         {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
           <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
         )}
-
-        <Divider />
-
-        <Breadcrumb
-          items={[{ label: t('pageTitle'), href: '/articles' }, { label: article.title }]}
-          locale={locale}
-        />
-      </PagePanel>
-    </div>
+      </PageLayout>
+    </>
   );
 }

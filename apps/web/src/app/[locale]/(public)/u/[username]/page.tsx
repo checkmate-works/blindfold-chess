@@ -31,7 +31,7 @@ import { countPositions, listPositions } from '@/lib/positions/queries';
 import { createClient } from '@/lib/supabase/server';
 
 import { getPostsByUserId } from '@/app/[locale]/(public)/topics/_lib/user-post-queries';
-import { LinkedText, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { LinkedText, PageLayout } from '@/app/[locale]/_components';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -198,135 +198,131 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
   };
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('pageTitle')}</PageTitle>
-      <PagePanel>
-        <div className="space-y-6">
-          <ProfileHeader
-            avatarUrl={profile.avatarUrl}
-            username={profile.username}
-            displayName={profile.displayName}
-            flair={profile.flair}
-            country={profile.country}
-            locale={locale}
-            action={
-              isOwnProfile ? (
-                <Link
-                  href="/mypage/profile"
-                  locale={locale}
-                  className="rounded-full border border-border px-4 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
-                >
-                  {t('editProfile')}
-                </Link>
-              ) : (
-                <>
-                  {followedByProfile && (
-                    <span className="rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground mr-3 sm:mr-0">
-                      {t('followsYou')}
-                    </span>
-                  )}
-                  <FollowButton
-                    targetUsername={profile.username}
-                    locale={locale}
-                    initialFollowing={initialFollowing}
-                    isAuthenticated={!!user}
-                  />
-                </>
-              )
-            }
-          />
-
-          {/* Stats Row */}
-          <p className="text-sm text-muted-foreground">
-            {isOwnProfile && (
+    <PageLayout title={t('pageTitle')} locale={locale}>
+      <div className="space-y-6">
+        <ProfileHeader
+          avatarUrl={profile.avatarUrl}
+          username={profile.username}
+          displayName={profile.displayName}
+          flair={profile.flair}
+          country={profile.country}
+          locale={locale}
+          action={
+            isOwnProfile ? (
+              <Link
+                href="/mypage/profile"
+                locale={locale}
+                className="rounded-full border border-border px-4 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+              >
+                {t('editProfile')}
+              </Link>
+            ) : (
               <>
-                <Link href="/mypage/following" locale={locale} className={TEXT_LINK_CLASSES}>
-                  <span className="font-semibold text-foreground">{followingCount}</span>{' '}
-                  {t('followingCount')}
-                </Link>
-                <span className="mx-2" />
+                {followedByProfile && (
+                  <span className="rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground mr-3 sm:mr-0">
+                    {t('followsYou')}
+                  </span>
+                )}
+                <FollowButton
+                  targetUsername={profile.username}
+                  locale={locale}
+                  initialFollowing={initialFollowing}
+                  isAuthenticated={!!user}
+                />
               </>
-            )}
-            <Link href={`/u/${username}/followers`} locale={locale} className={TEXT_LINK_CLASSES}>
-              <span className="font-semibold text-foreground">{followerCount}</span>{' '}
-              {t('followers')}
-            </Link>
-          </p>
+            )
+          }
+        />
 
-          {/* External Links */}
-          <SocialLinks
-            fideId={profile.fideId}
-            chesscomUsername={profile.chesscomUsername}
-            lichessUsername={profile.lichessUsername}
-            xUsername={profile.xUsername}
-            instagramUsername={profile.instagramUsername}
-            youtubeHandle={profile.youtubeHandle}
-          />
-
-          {/* Bio */}
-          {profile.bio && (
-            <div className="space-y-3">
-              <h2 className="text-base md:text-lg font-medium border-b border-border pb-2 leading-normal">
-                {t('bio')}
-              </h2>
-              <p className="text-foreground whitespace-pre-wrap break-words">
-                <LinkedText text={profile.bio} locale={locale} />
-              </p>
-            </div>
+        {/* Stats Row */}
+        <p className="text-sm text-muted-foreground">
+          {isOwnProfile && (
+            <>
+              <Link href="/mypage/following" locale={locale} className={TEXT_LINK_CLASSES}>
+                <span className="font-semibold text-foreground">{followingCount}</span>{' '}
+                {t('followingCount')}
+              </Link>
+              <span className="mx-2" />
+            </>
           )}
+          <Link href={`/u/${username}/followers`} locale={locale} className={TEXT_LINK_CLASSES}>
+            <span className="font-semibold text-foreground">{followerCount}</span> {t('followers')}
+          </Link>
+        </p>
 
-          {/* Topics / Problems Tabs */}
-          <ProfilePosts
-            posts={posts}
-            totalCount={topicsCount}
-            problemsCount={problemsCount}
-            activeTab={activeTab}
-            currentPage={topicsCurrentPage}
-            totalPages={topicsTotalPages}
+        {/* External Links */}
+        <SocialLinks
+          fideId={profile.fideId}
+          chesscomUsername={profile.chesscomUsername}
+          lichessUsername={profile.lichessUsername}
+          xUsername={profile.xUsername}
+          instagramUsername={profile.instagramUsername}
+          youtubeHandle={profile.youtubeHandle}
+        />
+
+        {/* Bio */}
+        {profile.bio && (
+          <div className="space-y-3">
+            <h2 className="text-base md:text-lg font-medium border-b border-border pb-2 leading-normal">
+              {t('bio')}
+            </h2>
+            <p className="text-foreground whitespace-pre-wrap break-words">
+              <LinkedText text={profile.bio} locale={locale} />
+            </p>
+          </div>
+        )}
+
+        {/* Topics / Problems Tabs */}
+        <ProfilePosts
+          posts={posts}
+          totalCount={topicsCount}
+          problemsCount={problemsCount}
+          activeTab={activeTab}
+          currentPage={topicsCurrentPage}
+          totalPages={topicsTotalPages}
+          locale={locale}
+          buildHref={buildHref}
+          buildTabHref={buildTabHref}
+          labels={{
+            topicsTab: t('topicsTab'),
+            problemsTab: t('problemsTab'),
+            noTopicPosts: t('noTopicPosts'),
+            showMore: tTopics('showMore'),
+            justNow: (topicType) =>
+              topicType === 'opening' ? tOpenings('justNow') : tSquares('justNow'),
+          }}
+        >
+          <ProfileProblems
+            positions={problemPositions}
+            currentPage={problemsCurrentPage}
+            totalPages={problemsTotalPages}
             locale={locale}
             buildHref={buildHref}
-            buildTabHref={buildTabHref}
             labels={{
-              topicsTab: t('topicsTab'),
-              problemsTab: t('problemsTab'),
-              noTopicPosts: t('noTopicPosts'),
-              showMore: tTopics('showMore'),
-              justNow: (topicType) =>
-                topicType === 'opening' ? tOpenings('justNow') : tSquares('justNow'),
+              noProblems: t('noProblems'),
+              problemTypeMemory: t('problemTypeMemory'),
+              problemTypePuzzle: t('problemTypePuzzle'),
             }}
-          >
-            <ProfileProblems
-              positions={problemPositions}
-              currentPage={problemsCurrentPage}
-              totalPages={problemsTotalPages}
-              locale={locale}
-              buildHref={buildHref}
-              labels={{
-                noProblems: t('noProblems'),
-                problemTypeMemory: t('problemTypeMemory'),
-                problemTypePuzzle: t('problemTypePuzzle'),
-              }}
-            />
-          </ProfilePosts>
+          />
+        </ProfilePosts>
 
-          {/* Achievements */}
-          {userAchievementRows.length > 0 && (
-            <ProfileAchievements
-              achievements={userAchievementRows}
-              locale={locale}
-              limit={4}
-              totalCount={userAchievementRows.length}
-              username={username}
-              labels={{
-                sectionTitle: t('achievementsSection'),
-                noAchievements: t('noAchievements'),
-                viewAll: t('viewAllAchievements'),
-                categoryNames: getAchievementCategoryNames(t),
-              }}
-            />
-          )}
-        </div>
-      </PagePanel>
-    </div>
+        {/* Achievements */}
+        {userAchievementRows.length > 0 && (
+          <ProfileAchievements
+            achievements={userAchievementRows}
+            locale={locale}
+            limit={4}
+            totalCount={userAchievementRows.length}
+            username={username}
+            labels={{
+              sectionTitle: t('achievementsSection'),
+              noAchievements: t('noAchievements'),
+              viewAll: t('viewAllAchievements'),
+              categoryNames: getAchievementCategoryNames(t),
+            }}
+          />
+        )}
+      </div>
+    </PageLayout>
   );
 }

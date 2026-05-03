@@ -81,6 +81,7 @@ export default async function PlayPage({ params }: Props) {
       items={[{ label: tGames('pageTitle'), href: '/games' }, { label: tPlay('title') }]}
       locale={locale}
       brandName={tMetadata('siteName')}
+      density="compact"
     />
   );
 

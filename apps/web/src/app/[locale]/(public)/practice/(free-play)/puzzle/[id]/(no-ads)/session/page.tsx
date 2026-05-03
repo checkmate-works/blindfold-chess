@@ -73,6 +73,7 @@ export default async function PuzzleSessionPage({ params }: Props) {
         { label: t('session.title') },
       ]}
       locale={locale}
+      density="compact"
     />
   );
 

@@ -3,14 +3,7 @@ import type { ReactNode } from 'react';
 import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 
-import {
-  Divider,
-  PagePanel,
-  PageTitle,
-  PaginationNav,
-  SectionTitle,
-} from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
 import type { BreadcrumbItem } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -66,48 +59,40 @@ export function TopicListPageLayout({
   breadcrumbItems,
 }: Props) {
   return (
-    <div className="space-y-8">
-      <PageTitle>{pageTitle}</PageTitle>
+    <PageLayout title={pageTitle} locale={locale} breadcrumb={breadcrumbItems}>
+      <SectionTitle>{sectionTitle}</SectionTitle>
 
-      <PagePanel>
-        <SectionTitle>{sectionTitle}</SectionTitle>
+      {topicHeader}
 
-        {topicHeader}
+      {adMiddle}
 
-        {adMiddle}
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">{postCountText}</p>
 
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">{postCountText}</p>
-
-          {newPostButton && (
-            <Link href={newPostButton.href} locale={locale}>
-              <Button variant="primary" asChild>
-                {newPostButton.label}
-              </Button>
-            </Link>
-          )}
-        </div>
-
-        {sortTabs}
-
-        {hasPosts ? (
-          <div className="space-y-3">{postCards}</div>
-        ) : (
-          <p className="text-muted-foreground text-center py-8">{noPostsText}</p>
+        {newPostButton && (
+          <Link href={newPostButton.href} locale={locale}>
+            <Button variant="primary" asChild>
+              {newPostButton.label}
+            </Button>
+          </Link>
         )}
+      </div>
 
-        {adBottom}
+      {sortTabs}
 
-        <PaginationNav
-          currentPage={pagination.currentPage}
-          totalPages={pagination.totalPages}
-          buildHref={pagination.buildHref}
-        />
+      {hasPosts ? (
+        <div className="space-y-3">{postCards}</div>
+      ) : (
+        <p className="text-muted-foreground text-center py-8">{noPostsText}</p>
+      )}
 
-        <Divider />
+      {adBottom}
 
-        <Breadcrumb items={breadcrumbItems} locale={locale} />
-      </PagePanel>
-    </div>
+      <PaginationNav
+        currentPage={pagination.currentPage}
+        totalPages={pagination.totalPages}
+        buildHref={pagination.buildHref}
+      />
+    </PageLayout>
   );
 }

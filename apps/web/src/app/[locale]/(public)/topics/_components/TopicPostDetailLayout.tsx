@@ -3,8 +3,7 @@ import type { ReactNode } from 'react';
 import { Link } from '@/i18n/routing';
 import type { User } from '@supabase/supabase-js';
 
-import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import type { BreadcrumbItem } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -88,44 +87,38 @@ export function TopicPostDetailLayout({
   enableReplySpoiler = false,
 }: Props) {
   return (
-    <div className="space-y-8">
-      <PageTitle>{pageTitle}</PageTitle>
+    <PageLayout title={pageTitle} locale={locale} breadcrumb={breadcrumbItems} divider={false}>
+      <SectionTitle>{sectionTitle}</SectionTitle>
 
-      <PagePanel>
-        <SectionTitle>{sectionTitle}</SectionTitle>
+      {topicVisual}
 
-        {topicVisual}
-
-        <div>
-          <Link
-            href={backLink.href}
-            locale={locale}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            &larr; {backLink.label}
-          </Link>
-        </div>
-
-        <PostDetailContent
-          post={post}
-          user={user}
+      <div>
+        <Link
+          href={backLink.href}
           locale={locale}
-          topicKey={topicKey}
-          likeMeta={likeMeta}
-          replies={replies}
-          canReply={canReply}
-          replyRestrictionMessage={replyRestrictionMessage}
-          toggleLikeAction={toggleLikeAction}
-          deletePostAction={deletePostAction}
-          createReplyAction={createReplyAction}
-          redirectPath={redirectPath}
-          i18n={i18n}
-          extraContent={extraContent}
-          enableReplySpoiler={enableReplySpoiler}
-        />
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          &larr; {backLink.label}
+        </Link>
+      </div>
 
-        <Breadcrumb items={breadcrumbItems} locale={locale} />
-      </PagePanel>
-    </div>
+      <PostDetailContent
+        post={post}
+        user={user}
+        locale={locale}
+        topicKey={topicKey}
+        likeMeta={likeMeta}
+        replies={replies}
+        canReply={canReply}
+        replyRestrictionMessage={replyRestrictionMessage}
+        toggleLikeAction={toggleLikeAction}
+        deletePostAction={deletePostAction}
+        createReplyAction={createReplyAction}
+        redirectPath={redirectPath}
+        i18n={i18n}
+        extraContent={extraContent}
+        enableReplySpoiler={enableReplySpoiler}
+      />
+    </PageLayout>
   );
 }

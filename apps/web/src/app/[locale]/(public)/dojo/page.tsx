@@ -33,15 +33,8 @@ import {
   resolveNextRank,
 } from '@/app/[locale]/(public)/ranks/_lib/helpers';
 import { getAllRanks, getUserAchievedRankIds } from '@/app/[locale]/(public)/ranks/_lib/queries';
-import {
-  CurriculumToc,
-  Divider,
-  PagePanel,
-  PageTitle,
-  SectionTitle,
-} from '@/app/[locale]/_components';
+import { CurriculumToc, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
@@ -135,105 +128,97 @@ export default async function DojoPage({ params }: LocalePageProps) {
   const nextBeltColor = next ? getBeltColorHex(next.slug) : getBeltColorHex('mukyu');
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('pageTitle')}</PageTitle>
+    <PageLayout title={t('pageTitle')} locale={locale} breadcrumb={[{ label: t('pageTitle') }]}>
+      {/* Section 1: Current rank belt */}
+      <section className="space-y-3">
+        <SectionTitle>{t('currentRankTitle')}</SectionTitle>
+        <BeltStrip slug={beltSlug} rankName={beltLabel} />
+      </section>
 
-      <PagePanel>
-        {/* Section 1: Current rank belt */}
-        <section className="space-y-3">
-          <SectionTitle>{t('currentRankTitle')}</SectionTitle>
-          <BeltStrip slug={beltSlug} rankName={beltLabel} />
-        </section>
+      {/* Section 2: Next rank */}
+      <section className="mt-8 space-y-4" aria-labelledby="dojo-next-rank-title">
+        <h3
+          id="dojo-next-rank-title"
+          className="mb-0 text-left text-sm font-medium text-muted-foreground"
+        >
+          {t('nextRankTitle')}
+        </h3>
 
-        {/* Section 2: Next rank */}
-        <section className="mt-8 space-y-4" aria-labelledby="dojo-next-rank-title">
-          <h3
-            id="dojo-next-rank-title"
-            className="mb-0 text-left text-sm font-medium text-muted-foreground"
-          >
-            {t('nextRankTitle')}
-          </h3>
+        {nextCardProps ? (
+          <>
+            <RankCard {...nextCardProps} />
 
-          {nextCardProps ? (
-            <>
-              <RankCard {...nextCardProps} />
+            {/* Centered "View all ranks" link directly below the card */}
+            <div className="flex justify-center">
+              <Link href={`/${locale}/ranks`} className={`text-sm ${TEXT_LINK_CLASSES}`}>
+                {t('viewAllRanks')}
+              </Link>
+            </div>
 
-              {/* Centered "View all ranks" link directly below the card */}
-              <div className="flex justify-center">
-                <Link href={`/${locale}/ranks`} className={`text-sm ${TEXT_LINK_CLASSES}`}>
-                  {t('viewAllRanks')}
-                </Link>
-              </div>
-
-              {/* Requirement items — rendered as a Zenn-style flat list
+            {/* Requirement items — rendered as a Zenn-style flat list
                   (same visual treatment as the curriculum TOC below) so
                   rows are tightly grouped under a single bordered card.
                   Intentionally differs from `/ranks/[slug]`, which keeps
                   the spaced `RequirementsList` look. */}
-              <div className="mt-4 space-y-3">
-                {nextRequirementItems.length > 0 ? (
-                  <NextRankRequirements items={nextRequirementItems} beltColor={nextBeltColor} />
-                ) : (
-                  <p className="text-center text-sm text-muted-foreground">
-                    {t('nextRankRequirementsComingSoon')}
-                  </p>
-                )}
+            <div className="mt-4 space-y-3">
+              {nextRequirementItems.length > 0 ? (
+                <NextRankRequirements items={nextRequirementItems} beltColor={nextBeltColor} />
+              ) : (
+                <p className="text-center text-sm text-muted-foreground">
+                  {t('nextRankRequirementsComingSoon')}
+                </p>
+              )}
 
-                {/* Centered "View all practices" link directly below the list */}
-                <div className="flex justify-center">
-                  <Link href={`/${locale}/practice`} className={`text-sm ${TEXT_LINK_CLASSES}`}>
-                    {t('viewAllPractices')}
-                  </Link>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="space-y-3">
-              <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
-                <p className="text-foreground">{t('allAchieved')}</p>
-              </div>
-              <div className="flex justify-center">
-                <Link href={`/${locale}/ranks`} className={`text-sm ${TEXT_LINK_CLASSES}`}>
-                  {t('viewAllRanks')}
-                </Link>
-              </div>
+              {/* Centered "View all practices" link directly below the list */}
               <div className="flex justify-center">
                 <Link href={`/${locale}/practice`} className={`text-sm ${TEXT_LINK_CLASSES}`}>
                   {t('viewAllPractices')}
                 </Link>
               </div>
             </div>
-          )}
-        </section>
-
-        {/* Section 3: Curriculum table of contents */}
-        <section className="mt-8 space-y-3">
-          <SectionTitle>{t('curriculum.title')}</SectionTitle>
-          <CurriculumToc
-            achievedSlugs={achievedSlugs}
-            nextSlug={next?.slug ?? null}
-            maxVisibleSlug={next?.slug ?? ALL_RANK_SLUGS[ALL_RANK_SLUGS.length - 1]}
-            rankName={(slug) => tRanks(`rankNames.${slug}`)}
-            sectionTitle={(key) => t(`curriculum.sections.${key}`)}
-            emptyLabel={t('curriculum.empty')}
-            achievedLabel={t('curriculum.achieved')}
-            guideHrefBySlug={guideHrefBySlug}
-          />
-          <div className="flex justify-center">
-            <Link href={`/${locale}/guides`} className={`text-sm ${TEXT_LINK_CLASSES}`}>
-              {t('viewAllGuides')}
-            </Link>
+          </>
+        ) : (
+          <div className="space-y-3">
+            <div className="rounded-lg border border-border bg-card p-4 sm:p-6">
+              <p className="text-foreground">{t('allAchieved')}</p>
+            </div>
+            <div className="flex justify-center">
+              <Link href={`/${locale}/ranks`} className={`text-sm ${TEXT_LINK_CLASSES}`}>
+                {t('viewAllRanks')}
+              </Link>
+            </div>
+            <div className="flex justify-center">
+              <Link href={`/${locale}/practice`} className={`text-sm ${TEXT_LINK_CLASSES}`}>
+                {t('viewAllPractices')}
+              </Link>
+            </div>
           </div>
-        </section>
-
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
         )}
+      </section>
 
-        <Divider />
+      {/* Section 3: Curriculum table of contents */}
+      <section className="mt-8 space-y-3">
+        <SectionTitle>{t('curriculum.title')}</SectionTitle>
+        <CurriculumToc
+          achievedSlugs={achievedSlugs}
+          nextSlug={next?.slug ?? null}
+          maxVisibleSlug={next?.slug ?? ALL_RANK_SLUGS[ALL_RANK_SLUGS.length - 1]}
+          rankName={(slug) => tRanks(`rankNames.${slug}`)}
+          sectionTitle={(key) => t(`curriculum.sections.${key}`)}
+          emptyLabel={t('curriculum.empty')}
+          achievedLabel={t('curriculum.achieved')}
+          guideHrefBySlug={guideHrefBySlug}
+        />
+        <div className="flex justify-center">
+          <Link href={`/${locale}/guides`} className={`text-sm ${TEXT_LINK_CLASSES}`}>
+            {t('viewAllGuides')}
+          </Link>
+        </div>
+      </section>
 
-        <Breadcrumb items={[{ label: t('pageTitle') }]} locale={locale} />
-      </PagePanel>
-    </div>
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+      )}
+    </PageLayout>
   );
 }

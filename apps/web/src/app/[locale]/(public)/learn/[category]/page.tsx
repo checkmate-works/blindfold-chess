@@ -5,16 +5,8 @@ import { notFound } from 'next/navigation';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV, SUPPORTED_LOCALES } from '@/config';
 
-import {
-  Divider,
-  ListLink,
-  ListLinkContainer,
-  PagePanel,
-  PageTitle,
-  SectionTitle,
-} from '@/app/[locale]/_components';
+import { ListLink, ListLinkContainer, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -76,39 +68,32 @@ export default async function LearnCategoryPage({ params }: Props) {
   const categoryLabel = t(`learn.categories.${category}`);
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{categoryLabel}</PageTitle>
+    <PageLayout
+      title={categoryLabel}
+      locale={locale}
+      breadcrumb={[{ label: t('navigation.learn'), href: '/learn' }, { label: categoryLabel }]}
+    >
+      <SectionTitle>{t('learn.articlesTitle')}</SectionTitle>
 
-      <PagePanel>
-        <SectionTitle>{t('learn.articlesTitle')}</SectionTitle>
+      {articles.length === 0 ? (
+        <p className="text-muted-foreground text-center py-8">{t('learn.noArticles')}</p>
+      ) : (
+        <ListLinkContainer>
+          {articles.map((article) => (
+            <ListLink
+              key={article.slug}
+              href={`/learn/${category}/${article.slug}`}
+              icon={ARTICLE_ICONS[article.slug as ArticleSlug] || '📚'}
+              title={article.title}
+              locale={locale}
+            />
+          ))}
+        </ListLinkContainer>
+      )}
 
-        {articles.length === 0 ? (
-          <p className="text-muted-foreground text-center py-8">{t('learn.noArticles')}</p>
-        ) : (
-          <ListLinkContainer>
-            {articles.map((article) => (
-              <ListLink
-                key={article.slug}
-                href={`/learn/${category}/${article.slug}`}
-                icon={ARTICLE_ICONS[article.slug as ArticleSlug] || '📚'}
-                title={article.title}
-                locale={locale}
-              />
-            ))}
-          </ListLinkContainer>
-        )}
-
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-        )}
-
-        <Divider />
-
-        <Breadcrumb
-          items={[{ label: t('navigation.learn'), href: '/learn' }, { label: categoryLabel }]}
-          locale={locale}
-        />
-      </PagePanel>
-    </div>
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+      )}
+    </PageLayout>
   );
 }

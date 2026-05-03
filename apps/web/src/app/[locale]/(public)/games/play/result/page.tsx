@@ -9,7 +9,7 @@ import { eq } from 'drizzle-orm';
 import { db, profiles } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
-import { PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { PageLayout } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { BreadcrumbContent } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -72,17 +72,14 @@ export default async function ResultPage({ params }: Props) {
   );
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{tPlay('resultTitle')}</PageTitle>
-      <PagePanel>
-        <Suspense>
-          <ResultClient locale={locale} displayName={displayName} breadcrumb={breadcrumb} />
-        </Suspense>
+    <PageLayout title={tPlay('resultTitle')} locale={locale}>
+      <Suspense>
+        <ResultClient locale={locale} displayName={displayName} breadcrumb={breadcrumb} />
+      </Suspense>
 
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-        )}
-      </PagePanel>
-    </div>
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+      )}
+    </PageLayout>
   );
 }
