@@ -4206,7 +4206,7 @@
         "fileRequired": "アップロードする画像を選択してください。",
         "fileTooLarge": "画像が大きすぎます。最大サイズは 2 MB です。",
         "invalidFileType": "JPEG・PNG・WebP のみ対応しています。",
-        "imageTooLarge": "画像の解像度が大きすぎます（最大 5,000 万ピクセル）。",
+        "imageTooLarge": "画像の解像度が大きすぎます（最大 50 メガピクセル）。",
         "tooManyImages": "1 投稿あたりの画像枚数の上限（{max} 枚）に達しました。",
         "uploadFailed": "アップロードに失敗しました。再度お試しください。",
         "rateLimited": "アップロードが多すぎます。しばらく待ってから再度お試しください。"
