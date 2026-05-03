@@ -48,9 +48,12 @@ CREATE TABLE "post_image_attachments" (
   -- Pin storage_path to the canonical layout. Mirrors the regex used by
   -- the upload handler so a direct REST write cannot bypass it.
   --   ${userId-uuid}/${postId-uuid}/${random-uuid}.(jpg|png|webp)
+  -- Each segment is the canonical 8-4-4-4-12 UUID layout (defense in
+  -- depth — a 36-char string of hex+dash in the wrong shape must not
+  -- pass).
   CONSTRAINT "post_image_attachments_chk_storage_path_format"
     CHECK (
-      "storage_path" ~ '^[0-9a-f-]{36}/[0-9a-f-]{36}/[0-9a-f-]{36}\.(jpg|png|webp)$'
+      "storage_path" ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(jpg|png|webp)$'
     )
 );
 --> statement-breakpoint
@@ -103,9 +106,15 @@ BEGIN
   FOR UPDATE;
 
   IF current_count IS NULL THEN
-    -- Parent post does not exist; let the FK take care of the rejection.
-    -- (The FK is checked after BEFORE INSERT triggers run.)
-    RETURN NEW;
+    -- Parent post does not exist. The FK on post_id would normally
+    -- catch this AFTER the BEFORE INSERT triggers run, but if a future
+    -- migration ever marks the FK as DEFERRABLE INITIALLY DEFERRED, the
+    -- FK check would slide to commit time and the count update below
+    -- could RACE against the missing parent. Raise explicitly here so
+    -- the rejection is local to this trigger and the message is
+    -- actionable in logs.
+    RAISE EXCEPTION 'parent_post_missing'
+      USING ERRCODE = 'foreign_key_violation';
   END IF;
 
   IF current_count >= max_images THEN
