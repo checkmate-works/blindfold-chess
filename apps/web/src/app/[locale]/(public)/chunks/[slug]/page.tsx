@@ -9,6 +9,8 @@ import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/ser
 import { getChunkBySlug, getLinkedPositionsForChunk } from '@/lib/chunks/queries';
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { getPaginationParams } from '@/lib/pagination';
+import { getPositionDetailPath } from '@/lib/positions/routes';
+import { parsePositionType } from '@/lib/positions/types';
 import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 import { createClient } from '@/lib/supabase/server';
 
@@ -132,16 +134,31 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
             Problems where this chunk pattern is effective.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {linkedPositions.map((position) => (
-              <Link
-                key={position.id}
-                href={`/${locale}/practice/position-memory/${position.id}`}
-                className="block p-4 rounded border border-border hover:bg-muted transition-colors"
-              >
-                <ThemedBoardThumbnail fen={position.fen} className="w-full mb-2" />
-                <p className="text-sm font-medium truncate">{position.title}</p>
-              </Link>
-            ))}
+            {linkedPositions.map((position) => {
+              const positionType = parsePositionType(position.type);
+              const detailPath = positionType
+                ? getPositionDetailPath(positionType, position.id)
+                : null;
+              const cardContent = (
+                <>
+                  <ThemedBoardThumbnail fen={position.fen} className="w-full mb-2" />
+                  <p className="text-sm font-medium truncate">{position.title}</p>
+                </>
+              );
+              return detailPath ? (
+                <Link
+                  key={position.id}
+                  href={`/${locale}${detailPath}`}
+                  className="block p-4 rounded border border-border hover:bg-muted transition-colors"
+                >
+                  {cardContent}
+                </Link>
+              ) : (
+                <div key={position.id} className="block p-4 rounded border border-border">
+                  {cardContent}
+                </div>
+              );
+            })}
           </div>
         </>
       )}
