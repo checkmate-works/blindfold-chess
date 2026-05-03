@@ -134,7 +134,7 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
   const newPostForm = <NewPostForm locale={locale} square={square} />;
 
   const communitySection = (
-    <>
+    <section className="space-y-4">
       <SectionTitle>{t('communityThoughts')}</SectionTitle>
 
       {user ? (
@@ -163,7 +163,7 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
           currentSort={sortBy}
         />
       )}
-    </>
+    </section>
   );
 
   return (

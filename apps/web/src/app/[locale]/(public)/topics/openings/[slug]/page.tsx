@@ -108,7 +108,7 @@ export default async function OpeningDetailPage({ params, searchParams }: Props)
   const newPostForm = <NewOpeningPostForm locale={locale} slug={slug} />;
 
   const communitySection = (
-    <>
+    <section className="space-y-4">
       <SectionTitle>{t('communityThoughts')}</SectionTitle>
 
       {user ? (
@@ -139,7 +139,7 @@ export default async function OpeningDetailPage({ params, searchParams }: Props)
           currentSort={sortBy}
         />
       )}
-    </>
+    </section>
   );
 
   return (
