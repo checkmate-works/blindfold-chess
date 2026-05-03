@@ -893,10 +893,11 @@ export type NewPostGameEmbedAttachment = typeof postGameEmbedAttachments.$inferI
  *
  * @design `storage_path` regex pin
  *
- * The CHECK constraint pins `storage_path` to
- * `^[0-9a-f-]{36}/[0-9a-f-]{36}/[0-9a-f-]{36}\.(jpg|png|webp)$`, which is
- * exactly `${userId}/${postId}/${randomUuid}.${ext}`. This is a defense-
- * in-depth measure: the upload handler builds the path correctly, the
+ * The CHECK constraint pins `storage_path` to the canonical UUID
+ * 8-4-4-4-12 layout for each segment:
+ * `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/...$`,
+ * which is exactly `${userId}/${postId}/${randomUuid}.${ext}`. This is a
+ * defense-in-depth measure: the upload handler builds the path correctly, the
  * Storage RLS forbids the user from writing outside their own folder, and
  * this CHECK forbids a direct REST insert from registering a path that
  * violates the layout (e.g. `..` traversal, synthetic filenames, or
@@ -975,7 +976,7 @@ export const postImageAttachments = pgTable(
     ),
     check(
       'post_image_attachments_chk_storage_path_format',
-      sql`${table.storagePath} ~ '^[0-9a-f-]{36}/[0-9a-f-]{36}/[0-9a-f-]{36}\\.(jpg|png|webp)$'`
+      sql`${table.storagePath} ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\.(jpg|png|webp)$'`
     ),
     index('idx_post_image_attachments_post').on(table.postId),
     index('idx_post_image_attachments_post_order').on(table.postId, table.displayOrder),
