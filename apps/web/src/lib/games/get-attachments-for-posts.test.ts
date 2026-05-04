@@ -327,4 +327,317 @@ describe('getAttachmentsForPosts — 5-kind union', () => {
     expect(entry.kind).toBe('image');
     expect(entry.data.map((d) => d.displayOrder)).toEqual([0, 1, 2]);
   });
+
+  // ─── Boundary pins (Tester Phase 1) ───────────────────────────────────
+  // Pairwise conflict pins not directly covered by the 5-way preferring
+  // case + cardinality boundary pins for the image branch + an empty-row
+  // sanity pin for posts with no attachments at all.
+
+  it('returns no entry for a post with no rows in any of the 5 tables', async () => {
+    queue([], [], [], [], []);
+    const result = await getAttachmentsForPosts([POST_A]);
+    // The contract shape is `Map<postId, PostAttachment>`; absence is
+    // `map.get(id) === undefined`. PostCard / detail page already use
+    // `map.get(id) ?? null` so pinning the absent-entry shape protects
+    // that idiom against accidental "render an empty card" regressions.
+    expect(result.size).toBe(0);
+    expect(result.get(POST_A)).toBeUndefined();
+    expect(sentryWarn).not.toHaveBeenCalled();
+  });
+
+  it('image cardinality 1: a single image row produces a one-element data array', async () => {
+    queue(
+      [],
+      [],
+      [
+        {
+          id: 'only',
+          postId: POST_A,
+          storagePath: 'u/p/only.jpg',
+          width: 50,
+          height: 50,
+          altText: 'only one',
+          displayOrder: 0,
+        },
+      ],
+      [],
+      []
+    );
+    const result = await getAttachmentsForPosts([POST_A]);
+    const entry = result.get(POST_A) as Extract<PostAttachment, { kind: 'image' }>;
+    expect(entry.kind).toBe('image');
+    expect(entry.data.length).toBe(1);
+    expect(entry.data[0].altText).toBe('only one');
+  });
+
+  it('image cardinality 3: three image rows for the same post produce one map entry, three data items', async () => {
+    queue(
+      [],
+      [],
+      [
+        {
+          id: 'i0',
+          postId: POST_A,
+          storagePath: 'u/p/a.jpg',
+          width: 1,
+          height: 1,
+          altText: null,
+          displayOrder: 0,
+        },
+        {
+          id: 'i1',
+          postId: POST_A,
+          storagePath: 'u/p/b.jpg',
+          width: 1,
+          height: 1,
+          altText: null,
+          displayOrder: 1,
+        },
+        {
+          id: 'i2',
+          postId: POST_A,
+          storagePath: 'u/p/c.jpg',
+          width: 1,
+          height: 1,
+          altText: null,
+          displayOrder: 2,
+        },
+      ],
+      [],
+      []
+    );
+    const result = await getAttachmentsForPosts([POST_A]);
+    expect(result.size).toBe(1); // 3 image rows → 1 Map entry
+    const entry = result.get(POST_A) as Extract<PostAttachment, { kind: 'image' }>;
+    expect(entry.kind).toBe('image');
+    expect(entry.data.length).toBe(3);
+  });
+
+  it('pgn vs image conflict: prefers pgn and warns once', async () => {
+    queue(
+      [
+        {
+          id: 'pgn-pi',
+          postId: POST_A,
+          source: 'pgn',
+          sourceUrl: null,
+          sourceGameId: null,
+          pgn: '<pgn>',
+          moveCount: 1,
+          headerWhite: null,
+          headerBlack: null,
+          headerResult: null,
+          headerEvent: null,
+          headerSite: null,
+          headerDate: null,
+          anonymized: false,
+          attributionPlatform: null,
+          attributionPath: null,
+        },
+      ],
+      [],
+      [
+        {
+          id: 'img-pi',
+          postId: POST_A,
+          storagePath: 'u/p/r.jpg',
+          width: 10,
+          height: 10,
+          altText: null,
+          displayOrder: 0,
+        },
+      ],
+      [],
+      []
+    );
+    const result = await getAttachmentsForPosts([POST_A]);
+    expect(result.get(POST_A)?.kind).toBe('pgn');
+    expect(sentryWarn).toHaveBeenCalledTimes(1);
+    // The warn payload identifies the dropped kind so we can grep it
+    // in Sentry. Pin the message shape so a refactor doesn't silently
+    // change it.
+    const [msg] = sentryWarn.mock.calls[0];
+    expect(msg).toMatch(/preferring pgn/);
+  });
+
+  it('embed vs fen conflict: prefers embed and warns once', async () => {
+    queue(
+      [],
+      [
+        {
+          id: 'embed-ef',
+          postId: POST_A,
+          embedProvider: 'lichess',
+          embedId: 'abcd1234',
+          attributionPlatform: 'lichess',
+          attributionPath: '/abcd1234',
+        },
+      ],
+      [],
+      [
+        {
+          id: 'fen-ef',
+          postId: POST_A,
+          fen: '8/8/8/8/4k3/8/4K3/8 w - - 0 1',
+          caption: null,
+        },
+      ],
+      []
+    );
+    const result = await getAttachmentsForPosts([POST_A]);
+    expect(result.get(POST_A)?.kind).toBe('embed');
+    expect(sentryWarn).toHaveBeenCalledTimes(1);
+  });
+
+  it('fen vs video conflict: prefers fen and warns once', async () => {
+    queue(
+      [],
+      [],
+      [],
+      [
+        {
+          id: 'fen-fv',
+          postId: POST_A,
+          fen: '8/8/8/8/4k3/8/4K3/8 w - - 0 1',
+          caption: null,
+        },
+      ],
+      [
+        {
+          id: 'vid-fv',
+          postId: POST_A,
+          provider: 'youtube',
+          providerVideoId: 'dQw4w9WgXcQ',
+          title: null,
+        },
+      ]
+    );
+    const result = await getAttachmentsForPosts([POST_A]);
+    expect(result.get(POST_A)?.kind).toBe('fen');
+    expect(sentryWarn).toHaveBeenCalledTimes(1);
+  });
+
+  it('mixes attached and orphan posts: only posts with rows appear in the Map', async () => {
+    // POST_A has a fen row; POST_B is requested but has nothing in any
+    // of the 5 tables. Pin the contract that the Map is sparse.
+    queue(
+      [],
+      [],
+      [],
+      [
+        {
+          id: 'fen-only',
+          postId: POST_A,
+          fen: '8/8/8/8/4k3/8/4K3/8 w - - 0 1',
+          caption: null,
+        },
+      ],
+      []
+    );
+    const result = await getAttachmentsForPosts([POST_A, POST_B]);
+    expect(result.size).toBe(1);
+    expect(result.get(POST_A)?.kind).toBe('fen');
+    expect(result.get(POST_B)).toBeUndefined();
+  });
+
+  it('multiple images across different posts: each post gets its own entry', async () => {
+    queue(
+      [],
+      [],
+      [
+        {
+          id: 'a-1',
+          postId: POST_A,
+          storagePath: 'u/p/a1.jpg',
+          width: 1,
+          height: 1,
+          altText: null,
+          displayOrder: 0,
+        },
+        {
+          id: 'b-1',
+          postId: POST_B,
+          storagePath: 'u/p/b1.jpg',
+          width: 1,
+          height: 1,
+          altText: null,
+          displayOrder: 0,
+        },
+        {
+          id: 'b-2',
+          postId: POST_B,
+          storagePath: 'u/p/b2.jpg',
+          width: 1,
+          height: 1,
+          altText: null,
+          displayOrder: 1,
+        },
+      ],
+      [],
+      []
+    );
+    const result = await getAttachmentsForPosts([POST_A, POST_B]);
+    expect(result.size).toBe(2);
+    const aEntry = result.get(POST_A) as Extract<PostAttachment, { kind: 'image' }>;
+    const bEntry = result.get(POST_B) as Extract<PostAttachment, { kind: 'image' }>;
+    expect(aEntry.data.length).toBe(1);
+    expect(bEntry.data.length).toBe(2);
+  });
+
+  it('image entry exposes a publicUrl built from the configured Supabase URL', async () => {
+    // Pins that buildPostImagePublicUrl is invoked with the row's
+    // storagePath and that the result follows the standard
+    // /storage/v1/object/public/post-images/<path> shape.
+    queue(
+      [],
+      [],
+      [
+        {
+          id: 'pub-url',
+          postId: POST_A,
+          storagePath: 'user-1/post-2/abc.png',
+          width: 1,
+          height: 1,
+          altText: null,
+          displayOrder: 0,
+        },
+      ],
+      [],
+      []
+    );
+    const result = await getAttachmentsForPosts([POST_A]);
+    const entry = result.get(POST_A) as Extract<PostAttachment, { kind: 'image' }>;
+    expect(entry.data[0].publicUrl).toBe(
+      'https://supabase.test/storage/v1/object/public/post-images/user-1/post-2/abc.png'
+    );
+  });
+
+  it('exhaustiveness: PostAttachment.kind narrowing covers all 5 kinds (TS + runtime check)', () => {
+    // Compile-time exhaustiveness pin (Lessons §13). If a new kind is
+    // added to PostAttachment without updating this switch, the `_never`
+    // assignment fails to compile. The runtime `expect(true)` keeps the
+    // case visible in the suite output.
+    const sample: PostAttachment[] = [
+      { kind: 'pgn', data: {} as never },
+      { kind: 'embed', data: {} as never },
+      { kind: 'image', data: [] },
+      { kind: 'fen', data: {} as never },
+      { kind: 'video', data: {} as never },
+    ];
+    for (const a of sample) {
+      switch (a.kind) {
+        case 'pgn':
+        case 'embed':
+        case 'image':
+        case 'fen':
+        case 'video':
+          break;
+        default: {
+          const _never: never = a;
+          void _never;
+        }
+      }
+    }
+    expect(true).toBe(true);
+  });
 });
