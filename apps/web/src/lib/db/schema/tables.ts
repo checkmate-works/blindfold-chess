@@ -997,6 +997,96 @@ export const postImageAttachments = pgTable(
 export type PostImageAttachment = typeof postImageAttachments.$inferSelect;
 export type NewPostImageAttachment = typeof postImageAttachments.$inferInsert;
 
+/**
+ * FEN Attachments — 1:0..1 FEN attachment per topic post.
+ *
+ * @description
+ * Sibling of `post_game_pgn_attachments`, `post_game_embed_attachments`, and
+ * `post_image_attachments` (Pattern 5 per-kind tables; see
+ * `docs/design/SPEC1-embed-data-model-ADR.md`). Stores a single FEN string
+ * representing a static chess position attached to a topic post — used to
+ * render a mini-board next to the post (renderer is deferred to a follow-up
+ * issue; this table only carries the data).
+ *
+ * @design 1:0..1 invariant (UNIQUE on post_id)
+ *
+ * Same as `post_game_pgn_attachments` / `post_game_embed_attachments`:
+ * one post has at most one FEN attachment. The INSERT path uses
+ * `createPostBase`'s `afterInsert(tx, postId)` hook so the attachment is
+ * atomic with the post.
+ *
+ * @design Two-layer FEN validation
+ *
+ *   1. Structural CHECK constraint (this table) — coarse net that rejects
+ *      whitespace-only input, control characters, malformed shape, illegal
+ *      castling characters, and impossible en passant ranks.
+ *   2. Application-layer chess-core `validateFenSemantic` — enforces
+ *      piece counts (exactly one king per side, ≤ 8 pawns, no pawns on rank
+ *      1 or 8), castling-rights consistency (rook + king on starting
+ *      squares), and en passant target consistency (correct rank for side
+ *      to move + pawn behind the target). Runs inside the Server Action
+ *      before the INSERT.
+ *
+ * The DB CHECK is the last line of defense against a direct REST insert
+ * that bypassed the Server Action.
+ *
+ * @design FEN regex tightening vs. issue #74 spec
+ *
+ * Issue #74 proposed `(-|[KQkqA-Ha-h]+)` for castling and `(-|[a-h][1-8])`
+ * for en passant. We tighten both:
+ *   - Castling is restricted to standard FEN (`[KQkq]+`), dropping the
+ *     Shredder-FEN A-H/a-h files. Chess960 is out of scope for this MVP.
+ *   - En passant rank is restricted to 3 or 6 (`[a-h][36]`). FIDE FEN allows
+ *     en passant only on those two ranks (the rank behind the just-pushed
+ *     pawn); the issue's loose `[1-8]` would have admitted nonsensical
+ *     squares like `e1` or `e8` that semantic validation would reject anyway.
+ *
+ * Placement is intentionally permissive (`[rnbqkpRNBQKP1-8/]+`); semantic
+ * validation handles rank-sum / king-count / pawn-rank checks.
+ *
+ * @design FK to topic_posts (CASCADE)
+ *
+ * Hard delete of the parent post cascades the attachment row. Soft delete
+ * (`deleted_at` set on `topic_posts`) leaves the row in place; the RLS
+ * SELECT policy gates reads on `deleted_at IS NULL` for defense in depth.
+ */
+export const postFenAttachments = pgTable(
+  'post_fen_attachments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    postId: uuid('post_id')
+      .notNull()
+      .unique()
+      .references(() => topicPosts.id, { onDelete: 'cascade' }),
+    /**
+     * Full FEN string. Length cap 100 chars covers the longest realistic
+     * FEN (~88 chars for a 32-piece middlegame with full castling and an
+     * en passant square) with comfortable headroom.
+     */
+    fen: varchar('fen', { length: 100 }).notNull(),
+    /**
+     * Optional human caption for the position. Sanitized via
+     * `sanitizeFenCaption` (see `@/lib/post-fens/sanitize-fen-caption.ts`)
+     * to strip Trojan Source / zero-width / TAG / Musical Symbol formatter
+     * codepoints before persistence. The DB column width matches
+     * `post_game_pgn_attachments.header_event` / `header_site` (200) to
+     * keep the sanitizer cap aligned across the attachment family.
+     */
+    caption: varchar('caption', { length: 200 }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    check(
+      'post_fen_attachments_chk_fen_format',
+      sql`${table.fen} ~ '^[rnbqkpRNBQKP1-8/]+ [wb] (-|[KQkq]+) (-|[a-h][36]) [0-9]+ [0-9]+$'`
+    ),
+    index('idx_post_fen_attachments_post').on(table.postId),
+  ]
+);
+
+export type PostFenAttachment = typeof postFenAttachments.$inferSelect;
+export type NewPostFenAttachment = typeof postFenAttachments.$inferInsert;
+
 // User Follows
 export const userFollows = pgTable(
   'user_follows',
