@@ -19,7 +19,6 @@ import {
 function RoutePlannerChildren() {
   const searchParams = useSearchParams();
   const { preferences, isLoaded } = useGamePreferences();
-  const t = useTranslations('practice.routePlanner');
   const tPractice = useTranslations('practice');
   const dataParam = searchParams.get('data');
 
@@ -43,14 +42,7 @@ function RoutePlannerChildren() {
       <RoutePlannerResultList
         results={results}
         boardTheme={preferences.boardTheme}
-        labels={{
-          correct: t('correct'),
-          badEnd: t('badEnd'),
-          badMove: t('incorrect'),
-          shortestPath: t('shortestPath'),
-          yourPath: t('yourPath'),
-          skipped: tPractice('skip'),
-        }}
+        labels={{ skipped: tPractice('skip') }}
       />
     </div>
   );

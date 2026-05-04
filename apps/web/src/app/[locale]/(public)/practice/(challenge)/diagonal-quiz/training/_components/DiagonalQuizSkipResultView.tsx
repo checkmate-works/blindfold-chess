@@ -33,14 +33,12 @@ export function DiagonalQuizSkipResultView({
       onNext={onNextAfterSkip}
       onEndTraining={onEndTraining}
     >
-      <div className="mb-6">
-        <p className="text-sm text-muted-foreground mb-2">
-          {t('correctAnswer', {
-            diagonal: correctDiagonal,
-            antiDiagonal: correctAntiDiagonal,
-          })}
-        </p>
-      </div>
+      <p className="text-sm text-muted-foreground">
+        {t('correctAnswer', {
+          diagonal: correctDiagonal,
+          antiDiagonal: correctAntiDiagonal,
+        })}
+      </p>
     </DiagonalQuizResultLayout>
   );
 }

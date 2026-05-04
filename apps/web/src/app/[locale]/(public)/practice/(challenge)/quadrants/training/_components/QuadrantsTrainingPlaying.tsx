@@ -1,13 +1,11 @@
 'use client';
 
-import Link from 'next/link';
-
-import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { QuadrantId, QuadrantQuestion } from '@blindfold-chess/features/quadrants';
 import { getCorrectQuadrant } from '@blindfold-chess/features/quadrants';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
+import { TrainingChallengeCTA } from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingChallengeCTA';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import QuadrantBoard from '../../_components/QuadrantBoard';
@@ -100,19 +98,7 @@ export function QuadrantsTrainingPlaying({
         </button>
       </div>
 
-      <hr className="border-border mt-8" />
-
-      <div className="mt-6 text-center">
-        <p className="text-sm text-muted-foreground">{tp('trainingModeActive')}</p>
-        <p className="mt-2 text-base font-medium text-foreground">{tp('readyForChallenge')}</p>
-        <div className="mt-4">
-          <Link href={`/${locale}/practice/quadrants/challenge`}>
-            <Button asChild variant="primary" size="lg" className="w-full">
-              {tp('goToChallenge')}
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <TrainingChallengeCTA challengeHref={`/${locale}/practice/quadrants/challenge`} />
     </div>
   );
 }

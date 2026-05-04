@@ -12,7 +12,7 @@ export default function GlobalError({ error }: { error: Error & { digest?: strin
   }, [error]);
 
   return (
-    <html>
+    <html data-scroll-behavior="smooth">
       <body>
         {/* This is the global error UI */}
         <NextError statusCode={500} />
