@@ -653,3 +653,47 @@ CREATE POLICY "post_fen_attachments_delete" ON "post_fen_attachments"
         AND p.user_id = auth.uid()
     )
   );
+
+-- =============================================================================
+-- post_video_attachments (1:0..1 video attachment per topic_post)
+-- =============================================================================
+-- Mirrors the posture of post_fen_attachments: defense-in-depth select gated
+-- on parent post NOT being soft-deleted, INSERT restricted to the parent
+-- post's owner, DELETE restricted to the parent post's owner. No UPDATE
+-- policy — attachments are immutable once created. The 1:0..1 invariant is
+-- enforced at the DB by the UNIQUE constraint on post_id (set in the
+-- migration), not in policy.
+ALTER TABLE "post_video_attachments" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "post_video_attachments_select" ON "post_video_attachments";
+CREATE POLICY "post_video_attachments_select" ON "post_video_attachments"
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM topic_posts p
+      WHERE p.id = post_video_attachments.post_id
+        AND p.deleted_at IS NULL
+    )
+  );
+
+DROP POLICY IF EXISTS "post_video_attachments_insert" ON "post_video_attachments";
+CREATE POLICY "post_video_attachments_insert" ON "post_video_attachments"
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM topic_posts p
+      WHERE p.id = post_video_attachments.post_id
+        AND p.user_id = auth.uid()
+        AND p.deleted_at IS NULL
+    )
+  );
+
+-- No UPDATE policy: video attachments are immutable once created.
+
+DROP POLICY IF EXISTS "post_video_attachments_delete" ON "post_video_attachments";
+CREATE POLICY "post_video_attachments_delete" ON "post_video_attachments"
+  FOR DELETE USING (
+    EXISTS (
+      SELECT 1 FROM topic_posts p
+      WHERE p.id = post_video_attachments.post_id
+        AND p.user_id = auth.uid()
+    )
+  );

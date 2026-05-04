@@ -1087,6 +1087,119 @@ export const postFenAttachments = pgTable(
 export type PostFenAttachment = typeof postFenAttachments.$inferSelect;
 export type NewPostFenAttachment = typeof postFenAttachments.$inferInsert;
 
+/**
+ * Video Attachments — 1:0..1 video attachment per topic post.
+ *
+ * @description
+ * Sibling of `post_game_pgn_attachments`, `post_game_embed_attachments`,
+ * `post_image_attachments`, and `post_fen_attachments` (Pattern 5 per-kind
+ * tables; see `docs/design/SPEC1-embed-data-model-ADR.md`). Stores a single
+ * embeddable video reference attached to a topic post. MVP supports only
+ * the `'youtube'` provider; the schema is shaped so adding `'vimeo'` /
+ * `'twitch'` is a CHECK widen + parser branch + renderer mapping change.
+ *
+ * @design 1:0..1 invariant (UNIQUE on post_id)
+ *
+ * Same as `post_fen_attachments`: a post has at most one video attachment.
+ * Concurrent inserts surface as a `23505` unique-violation, mapped by the
+ * Server Action to `alreadyAttached`.
+ *
+ * @design Two-layer video validation
+ *
+ *   1. Application-layer URL parser — `parseYouTubeUrl` in
+ *      `@/lib/games/youtube-validator.ts` decomposes a user-supplied URL
+ *      into `(provider, providerVideoId, sourceUrl)` and rejects hostile
+ *      shapes (non-https, userinfo trick, IDN homograph, wrong host,
+ *      param pollution, fragment, non-11-char id, embedded NUL/ZWSP).
+ *   2. CHECK constraints below — the DB-level last line of defense
+ *      against a direct REST insert that bypassed the Server Action. The
+ *      `provider_video_id` regex is byte-for-byte aligned with the JS
+ *      regex enforced after URL parsing (a static test pins the
+ *      equivalence in `youtube-validator.test.ts`).
+ *
+ * @design Render-time `src` rebuild (audit-only `source_url`)
+ *
+ * The renderer reconstructs the iframe `src` from
+ * `(provider, provider_video_id)` via the privacy-enhanced
+ * `youtube-nocookie.com` host. `source_url` is never passed to the iframe;
+ * it exists for audit only. This mirrors the Lichess embed pattern in
+ * `parseLichessEmbedUrl` — the persisted URL is monotonically derived from
+ * a validated provider id at write time, and the read path reconstructs
+ * from the validated fields.
+ *
+ * @design `title` / `thumbnail_url` are NULL in MVP (oEmbed deferred)
+ *
+ * Issue #75 M-6 defers oEmbed (which would populate title + CDN
+ * thumbnail) until the SSRF defense pattern in `lichess.ts` is replicated
+ * for the YouTube oEmbed endpoint. The MVP renderer derives the thumbnail
+ * URL from `provider_video_id` via the canonical YouTube template
+ * (`img.youtube.com/vi/{id}/hqdefault.jpg`) and uses a localized
+ * fallback for the iframe `title` attribute.
+ */
+export const postVideoAttachments = pgTable(
+  'post_video_attachments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    postId: uuid('post_id')
+      .notNull()
+      .unique()
+      .references(() => topicPosts.id, { onDelete: 'cascade' }),
+    /**
+     * Provider discriminator. MVP allows only `'youtube'`; CHECK widens
+     * with explicit migration when a new provider lands.
+     */
+    provider: varchar('provider', { length: 20 }).notNull(),
+    /**
+     * Provider-scoped video id. YouTube ids are exactly 11 chars from
+     * the URL-safe base64 alphabet `[A-Za-z0-9_-]`. The CHECK regex is
+     * byte-for-byte aligned with `YOUTUBE_VIDEO_ID_RE` in the URL parser.
+     */
+    providerVideoId: varchar('provider_video_id', { length: 64 }).notNull(),
+    /**
+     * Audit-only original URL. The renderer NEVER reads this; the iframe
+     * src is rebuilt from `(provider, providerVideoId)`. Capped at 512 to
+     * match the URL parser's `MAX_INPUT_LENGTH`.
+     */
+    sourceUrl: varchar('source_url', { length: 512 }),
+    /**
+     * Optional human-supplied or oEmbed-derived title. MVP persists
+     * NULL — see oEmbed deferred note above.
+     */
+    title: varchar('title', { length: 200 }),
+    /**
+     * Optional CDN thumbnail URL. MVP persists NULL; reserved for the
+     * oEmbed flow that may want to cache a CDN-hosted thumbnail.
+     */
+    thumbnailUrl: varchar('thumbnail_url', { length: 1024 }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    check('post_video_attachments_chk_provider', sql`${table.provider} IN ('youtube')`),
+    check(
+      'post_video_attachments_chk_provider_video_id',
+      sql`${table.providerVideoId} ~ '^[A-Za-z0-9_-]{11}$'`
+    ),
+    check(
+      'post_video_attachments_chk_source_url',
+      sql`${table.sourceUrl} IS NULL
+      OR ${table.sourceUrl} ~ '^https://www\\.youtube\\.com/'
+      OR ${table.sourceUrl} ~ '^https://youtube\\.com/'
+      OR ${table.sourceUrl} ~ '^https://youtu\\.be/'
+      OR ${table.sourceUrl} ~ '^https://www\\.youtube-nocookie\\.com/'`
+    ),
+    check(
+      'post_video_attachments_chk_thumbnail_url',
+      sql`${table.thumbnailUrl} IS NULL
+      OR ${table.thumbnailUrl} ~ '^https://i\\.ytimg\\.com/'
+      OR ${table.thumbnailUrl} ~ '^https://img\\.youtube\\.com/'`
+    ),
+    index('idx_post_video_attachments_post').on(table.postId),
+  ]
+);
+
+export type PostVideoAttachment = typeof postVideoAttachments.$inferSelect;
+export type NewPostVideoAttachment = typeof postVideoAttachments.$inferInsert;
+
 // User Follows
 export const userFollows = pgTable(
   'user_follows',

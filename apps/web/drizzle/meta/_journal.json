@@ -260,6 +260,13 @@
       "when": 1778097600000,
       "tag": "20260504070000_create_post_fen_attachments",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1778100000000,
+      "tag": "20260504080000_create_post_video_attachments",
+      "breakpoints": true
     }
   ]
 }
