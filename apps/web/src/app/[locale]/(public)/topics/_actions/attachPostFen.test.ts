@@ -241,6 +241,35 @@ describe('attachPostFen — input validation', () => {
     expect(result).toEqual({ error: 'postFenAttachment.error.fenRequired' });
   });
 
+  it('rejects FEN with trailing zero-width space (U+200B) as invalidFenStructure', async () => {
+    // String.prototype.trim() does NOT strip U+200B, and `\s+` does not
+    // match it either, so the appended ZWSP survives canonicalization
+    // and ends up as part of the last FEN field, failing the structural
+    // regex. Pin this behavior so a future "trim more aggressively"
+    // change is forced to confront it intentionally.
+    const result = await attachPostFen({
+      postId,
+      fen: `${STARTING_FEN}\u200B`,
+    });
+    expect(result).toEqual({ error: 'postFenAttachment.error.invalidFenStructure' });
+    expect(mockInsertValues).not.toHaveBeenCalled();
+  });
+
+  it('accepts FEN whose RAW length exceeds 100 if the TRIMMED length fits', async () => {
+    // The fix-pass ordering trims first, then length-checks the trimmed
+    // value. ` `.repeat(150) + STARTING_FEN is 206 chars raw but only
+    // 56 chars after trim, so the action should succeed and the
+    // persisted value should be the canonical STARTING_FEN.
+    const padded = ' '.repeat(150) + STARTING_FEN;
+    const result = await attachPostFen({ postId, fen: padded });
+    expect(result).toMatchObject({ success: true });
+    expect(mockInsertValues).toHaveBeenCalledWith({
+      postId,
+      fen: STARTING_FEN,
+      caption: null,
+    });
+  });
+
   it('rejects caption longer than 200 chars with captionTooLong', async () => {
     const result = await attachPostFen({
       postId,
