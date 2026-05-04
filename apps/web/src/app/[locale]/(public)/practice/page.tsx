@@ -174,19 +174,19 @@ export default async function PracticePage({ params }: Props) {
             <div className="flex flex-wrap justify-center gap-3">
               {section.practices.map((practice) => {
                 const rankSlug = getRankSlugForMenuType(practice.menuType);
+                const rankLabel = rankSlug ? tRanks(`rankNames.${rankSlug}`) : null;
                 return (
-                  <ChallengeCard
-                    key={practice.id}
-                    locale={locale}
-                    href={`/practice/${practice.id}`}
-                    label={practice.title}
-                    icon={practice.icon}
-                    overlay={
-                      rankSlug ? (
-                        <RankBadge slug={rankSlug} label={tRanks(`rankNames.${rankSlug}`)} />
-                      ) : undefined
-                    }
-                  />
+                  <div key={practice.id} className="flex flex-col items-center gap-5">
+                    <ChallengeCard
+                      locale={locale}
+                      href={`/practice/${practice.id}`}
+                      label={practice.title}
+                      icon={practice.icon}
+                    />
+                    {rankSlug && rankLabel ? (
+                      <RankBadge slug={rankSlug} label={rankLabel} locale={locale} />
+                    ) : null}
+                  </div>
                 );
               })}
             </div>
