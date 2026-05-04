@@ -8,11 +8,14 @@ import { Button, FormErrorBanner, Textarea } from '@/app/_components';
 
 import { MAX_CONTENT_LENGTH } from '@/lib/validations/content';
 
+import { AttachmentInput } from '@/app/[locale]/(public)/topics/_components/AttachmentInput';
+import type { AttachmentInputMode } from '@/app/[locale]/(public)/topics/_components/AttachmentInput';
 import { MediaAttachmentInput } from '@/app/[locale]/(public)/topics/_components/MediaAttachmentInput';
 import type { MediaAttachmentMode } from '@/app/[locale]/(public)/topics/_components/MediaAttachmentInput';
 
 import { createChunkPostForImageAttach } from '../_actions/createChunkPostForImageAttach';
 import { createChunkPostWithAttachment } from '../_actions/createChunkPostWithAttachment';
+import { createChunkPostWithEmbedAttachment } from '../_actions/createChunkPostWithEmbedAttachment';
 import { createChunkPostWithFenAttachment } from '../_actions/createChunkPostWithFenAttachment';
 import { createChunkPostWithVideoAttachment } from '../_actions/createChunkPostWithVideoAttachment';
 
@@ -25,16 +28,13 @@ type Props = {
  * @design Single-kind constraint
  *
  * SPEC2 D3 case (iii): a post may carry attachments from at most one
- * family. The Game family lives in `<AttachmentInput>` (a textarea with
- * auto-detect — kept hidden in this issue's MVP scope, the chunks new-post
- * form has historically only exposed Media). The Media family is the
- * `<MediaAttachmentInput>` expander below; submitting with an image / FEN /
- * video selection routes to the matching atomic Server Action (or, for
- * image, the 2-step inline flow per D1 case B).
- *
- * Today only the Media family is wired into this form; the Game family
- * surface is added in the same shape as `BasePostForm` once chunks
- * comments need PGN attachments.
+ * family. Both families are now wired in. Game family lives in
+ * `<AttachmentInput>` (textarea + auto-detect: PGN, chesscom_embed,
+ * lichess_embed). Media family lives in `<MediaAttachmentInput>` (image /
+ * FEN / video). Submit routes to the matching atomic Server Action (or,
+ * for image, the 2-step inline flow per D1 case B). When both expanders
+ * are non-empty the form blocks submit with an inline warning so a single
+ * post never carries attachments from more than one family.
  *
  * @design Phase machine for image upload (D1 case B)
  *
@@ -56,11 +56,16 @@ export function NewPostForm({ locale, slug }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mediaMode, setMediaMode] = useState<MediaAttachmentMode>({ kind: 'empty' });
+  const [gameMode, setGameMode] = useState<AttachmentInputMode>({ kind: 'empty' });
   const [imagePhase, setImagePhase] = useState<ImagePhase>('compose');
   const [createdPostId, setCreatedPostId] = useState<string | null>(null);
 
   const onModeChange = useCallback((mode: MediaAttachmentMode) => {
     setMediaMode(mode);
+  }, []);
+
+  const onGameModeChange = useCallback((mode: AttachmentInputMode) => {
+    setGameMode(mode);
   }, []);
 
   const submit = async (formData: FormData) => {
@@ -145,7 +150,21 @@ export function NewPostForm({ locale, slug }: Props) {
         }
       }
 
-      // No attachment: plain comment.
+      // Game family — embed (chesscom / lichess). The hidden
+      // `embedProvider` / `embedSourceUrl` fields are emitted by
+      // `<AttachmentInput>` when its detected mode is `embed`.
+      if (gameMode.kind === 'embed') {
+        const result = await createChunkPostWithEmbedAttachment(locale, slug, {}, formData);
+        if (result?.error) {
+          setError(result.error);
+          setSubmitting(false);
+        }
+        return;
+      }
+
+      // Game family — PGN (or no attachment): both fall through to
+      // `createChunkPostWithAttachment`, which inspects the `attachment`
+      // textarea field to decide whether a PGN row is created.
       const result = await createChunkPostWithAttachment(locale, slug, {}, formData);
       if (result?.error) {
         setError(result.error);
@@ -163,12 +182,19 @@ export function NewPostForm({ locale, slug }: Props) {
     }
   };
 
+  const bothFamiliesActive = gameMode.kind !== 'empty' && mediaMode.kind !== 'empty';
+
   const submitDisabled =
-    submitting || (mediaMode.kind === 'fen' && !mediaMode.valid) || imagePhase === 'attaching';
+    submitting ||
+    (mediaMode.kind === 'fen' && !mediaMode.valid) ||
+    imagePhase === 'attaching' ||
+    bothFamiliesActive;
 
   return (
     <form action={submit} className="space-y-4">
       <FormErrorBanner message={error} />
+
+      <AttachmentInput onModeChange={onGameModeChange} />
 
       <MediaAttachmentInput onModeChange={onModeChange} />
 
@@ -199,6 +225,13 @@ export function NewPostForm({ locale, slug }: Props) {
         {/* TODO(i18n): topics.chunks.newPostForm.submit (existing key) */}
         {imagePhase === 'attaching' ? 'Uploading images…' : submitting ? 'Submitting…' : 'Submit'}
       </Button>
+
+      {bothFamiliesActive && (
+        <p className="text-xs text-destructive" role="alert">
+          {/* TODO(i18n): attachment.error.singleKindConstraint (D3 case iii) */}
+          Please choose only one attachment type — Game or Media.
+        </p>
+      )}
 
       {imagePhase === 'error' && createdPostId !== null && (
         <p className="text-xs text-muted-foreground">
