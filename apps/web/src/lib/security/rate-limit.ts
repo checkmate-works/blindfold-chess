@@ -68,6 +68,13 @@ export const RATE_LIMITS = {
    * FEN does not run into a tighter ceiling for the second action.
    */
   attachPostFen: { action: 'attach_post_fen', maxAttempts: 10, windowMs: 3_600_000 },
+  /**
+   * Per-user limit for attaching a video (YouTube) to a post. Mirrors
+   * `attachPostFen`'s shape: the 1:0..1 invariant caps successful
+   * inserts at one per post, so this limit guards against spam attempts
+   * that hit the URL validator. 10 / hour aligns with `createPost`.
+   */
+  attachPostVideo: { action: 'attach_post_video', maxAttempts: 10, windowMs: 3_600_000 },
   changePassword: { action: 'change_password', maxAttempts: 5, windowMs: 3_600_000 },
   deleteAccount: { action: 'delete_account', maxAttempts: 3, windowMs: 3_600_000 },
   savePracticeResult: { action: 'save_practice_result', maxAttempts: 60, windowMs: 3_600_000 },
