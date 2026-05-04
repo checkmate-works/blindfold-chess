@@ -1,8 +1,8 @@
 'use client';
 
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { normalizeDiagonal } from '@blindfold-chess/features/diagonal-quiz';
 
+import { DiagonalAnswerComparison } from '../../_components/DiagonalAnswerComparison';
 import { DiagonalQuizResultLayout } from './DiagonalQuizResultLayout';
 
 type Props = {
@@ -28,8 +28,6 @@ export function DiagonalQuizIncorrectResultView({
   onNextAfterIncorrect,
   onEndTraining,
 }: Props) {
-  const t = useTranslations('practice.diagonalQuiz');
-
   const isDiagonalCorrect = normalizeDiagonal(userDiagonal) === normalizeDiagonal(correctDiagonal);
   const isAntiDiagonalCorrect =
     normalizeDiagonal(userAntiDiagonal) === normalizeDiagonal(correctAntiDiagonal);
@@ -42,26 +40,14 @@ export function DiagonalQuizIncorrectResultView({
       onNext={onNextAfterIncorrect}
       onEndTraining={onEndTraining}
     >
-      <div className="mt-4 mb-6 space-y-3 text-sm">
-        <div>
-          <p className="font-bold text-muted-foreground mb-1">{t('diagonalLabel')}</p>
-          <p className="text-muted-foreground">
-            <span className="font-medium">{t('correctAnswerLabel')}:</span> {correctDiagonal}
-          </p>
-          <p className={isDiagonalCorrect ? 'text-success' : 'text-destructive'}>
-            <span className="font-medium">{t('yourAnswer')}:</span> {userDiagonal}
-          </p>
-        </div>
-        <div>
-          <p className="font-bold text-muted-foreground mb-1">{t('antiDiagonalLabel')}</p>
-          <p className="text-muted-foreground">
-            <span className="font-medium">{t('correctAnswerLabel')}:</span> {correctAntiDiagonal}
-          </p>
-          <p className={isAntiDiagonalCorrect ? 'text-success' : 'text-destructive'}>
-            <span className="font-medium">{t('yourAnswer')}:</span> {userAntiDiagonal}
-          </p>
-        </div>
-      </div>
+      <DiagonalAnswerComparison
+        correctDiagonal={correctDiagonal}
+        correctAntiDiagonal={correctAntiDiagonal}
+        userDiagonal={userDiagonal}
+        userAntiDiagonal={userAntiDiagonal}
+        isDiagonalCorrect={isDiagonalCorrect}
+        isAntiDiagonalCorrect={isAntiDiagonalCorrect}
+      />
     </DiagonalQuizResultLayout>
   );
 }

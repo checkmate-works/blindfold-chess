@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 
 import { Link } from '@/i18n/routing';
 import { FaThumbtack } from 'react-icons/fa';
+import { HiChevronRight } from 'react-icons/hi2';
 
 type ListLinkContainerProps = {
   children: ReactNode;
@@ -37,6 +38,7 @@ export function ListLink({ href, icon, title, meta, locale, isPinned, badge }: L
           )}
           {isPinned && <FaThumbtack className="text-muted-foreground flex-shrink-0" />}
           {meta && <span className="text-xs text-muted-foreground flex-shrink-0">{meta}</span>}
+          <HiChevronRight aria-hidden="true" className="size-4 text-foreground/40 flex-shrink-0" />
         </div>
       </Link>
     </li>

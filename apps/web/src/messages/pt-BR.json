@@ -504,7 +504,9 @@
     "levelIntermediate": "Intermediário",
     "levelAdvanced": "Avançado",
     "levelIntroduction": "Introdução",
-    "viewLeaderboard": "🏆 Ver Ranking",
+    "viewLeaderboard": "Ver Ranking",
+    "viewDojo": "Ver Dojo",
+    "related": "Relacionado",
     "tryAgain": "Tentar Novamente",
     "changeSettings": "Alterar Configurações",
     "doOtherPractice": "Fazer outra prática",
@@ -539,7 +541,7 @@
     "challengeDescription": "Limite de tempo de 1 minuto. 3 respostas incorretas e acabou. Sua pontuação será registrada.",
     "startTraining": "Iniciar Treinamento",
     "startChallenge": "Iniciar Desafio",
-    "switchToTraining": "📖 Praticar em modo treinamento",
+    "orDivider": "ou",
     "challengeSetup": {
       "title": "Regras do Desafio",
       "timeLimit": "Responda o máximo de perguntas que puder em {seconds} segundos.",
@@ -550,9 +552,9 @@
     "skip": "Pular",
     "endTraining": "Finalizar",
     "trainingEnded": "Treinamento finalizado",
-    "trainingModeActive": "📖 Praticando em modo treinamento",
+    "trainingModeActive": "Praticando em modo treinamento",
     "readyForChallenge": "Você está pronto?",
-    "goToChallenge": "⚔️ Aceitar o Desafio",
+    "goToChallenge": "Aceitar o Desafio",
     "quitConfirmModal": {
       "title": "Abandonar a Prática?",
       "message": "Seu progresso será perdido. Tem certeza de que deseja sair?",
@@ -612,7 +614,6 @@
         "next": "Próximo",
         "start": "Iniciar",
         "startChallenge": "Iniciar Desafio",
-        "switchToTraining": "📖 Praticar em modo treinamento",
         "steps": {
           "intro": {
             "title": "O que é a Simetria do Tabuleiro?",
@@ -1280,8 +1281,7 @@
         "skip": "Pular",
         "complete": "Esses são os fundamentos!\nExperimente treinar com diferentes peças e distâncias.",
         "restart": "Reiniciar",
-        "startChallenge": "Iniciar Desafio",
-        "switchToTraining": "📖 Praticar em modo treinamento"
+        "startChallenge": "Iniciar Desafio"
       }
     },
     "common": {
@@ -1326,6 +1326,10 @@
       "question": "Quais são as diagonais de {square}?",
       "diagonalLabel": "Diagonal (direção a1-h8)",
       "antiDiagonalLabel": "Anti-diagonal (direção h1-a8)",
+      "diagonalShortLabel": "Diagonal",
+      "antiDiagonalShortLabel": "Anti-diagonal",
+      "diagonalDirectionNote": "(direção a1-h8)",
+      "antiDiagonalDirectionNote": "(direção h1-a8)",
       "inputPlaceholder": "ex., b1-h7",
       "squarePlaceholder": "??",
       "singleSquarePlaceholder": "ex., a1",
@@ -1375,7 +1379,6 @@
         "next": "Próximo",
         "previous": "Voltar",
         "startChallenge": "Iniciar Desafio",
-        "switchToTraining": "📖 Praticar em modo treinamento",
         "diagonalLegend": "Diagonal (a1-h8)",
         "antiDiagonalLegend": "Anti-diagonal (h1-a8)",
         "trialCorrectAnswer": "Resposta: {diagonal}, {antiDiagonal}"
