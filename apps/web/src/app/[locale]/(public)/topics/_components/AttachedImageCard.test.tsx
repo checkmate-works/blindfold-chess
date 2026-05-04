@@ -52,4 +52,74 @@ describe('AttachedImageCard', () => {
     expect(img?.getAttribute('loading')).toBe('lazy');
     expect(img?.getAttribute('referrerpolicy')).toBe('no-referrer');
   });
+
+  // ─── Cardinality / layout pins (Tester Phase 1) ────────────────────────
+
+  it('renders a 1-col layout for cardinality 1', () => {
+    const { container } = render(<AttachedImageCard attachments={[fixture()]} />);
+    const ul = container.querySelector('ul');
+    // The 1-image branch picks `grid-cols-1`; the 2+ branch picks
+    // `grid-cols-2 sm:grid-cols-3`. Pin the class so a refactor can't
+    // silently flatten the visual contrast.
+    expect(ul?.className).toMatch(/grid-cols-1/);
+    expect(ul?.className).not.toMatch(/grid-cols-2/);
+  });
+
+  it('renders a 2-col / sm:3-col layout for cardinality 2 and 3', () => {
+    const items2 = [fixture({ id: 'a' }), fixture({ id: 'b' })];
+    const items3 = [fixture({ id: 'a' }), fixture({ id: 'b' }), fixture({ id: 'c' })];
+    const r2 = render(<AttachedImageCard attachments={items2} />);
+    expect(r2.container.querySelector('ul')?.className).toMatch(/grid-cols-2/);
+    expect(r2.container.querySelector('ul')?.className).toMatch(/sm:grid-cols-3/);
+    cleanup();
+    const r3 = render(<AttachedImageCard attachments={items3} />);
+    expect(r3.container.querySelector('ul')?.className).toMatch(/grid-cols-2/);
+    expect(r3.container.querySelector('ul')?.className).toMatch(/sm:grid-cols-3/);
+    expect(r3.container.querySelectorAll('img').length).toBe(3);
+  });
+
+  it('uses attachment.id as the React key (one <li> per id)', () => {
+    const items = [
+      fixture({ id: 'k-1', publicUrl: 'https://example.test/k1.jpg' }),
+      fixture({ id: 'k-2', publicUrl: 'https://example.test/k2.jpg' }),
+      fixture({ id: 'k-3', publicUrl: 'https://example.test/k3.jpg' }),
+    ];
+    const { container } = render(<AttachedImageCard attachments={items} />);
+    const lis = container.querySelectorAll('li');
+    expect(lis.length).toBe(3);
+  });
+
+  it('forwards displayOrder ordering: caller-supplied order is preserved', () => {
+    // The aggregator sorts by displayOrder asc; the renderer must NOT
+    // re-sort. Pass an out-of-order array and check the rendered DOM
+    // order matches the input order, not the displayOrder field.
+    const items = [
+      fixture({ id: 'z', publicUrl: 'https://example.test/z.jpg', displayOrder: 2 }),
+      fixture({ id: 'a', publicUrl: 'https://example.test/a.jpg', displayOrder: 0 }),
+      fixture({ id: 'm', publicUrl: 'https://example.test/m.jpg', displayOrder: 1 }),
+    ];
+    const { container } = render(<AttachedImageCard attachments={items} />);
+    const srcs = Array.from(container.querySelectorAll('img')).map((img) =>
+      img.getAttribute('src')
+    );
+    expect(srcs).toEqual([
+      'https://example.test/z.jpg',
+      'https://example.test/a.jpg',
+      'https://example.test/m.jpg',
+    ]);
+  });
+
+  it('preserves altText with special characters (XSS-relevant chars are passed as text)', () => {
+    // React text-child escaping is the second layer of defense even
+    // after sanitization. Pin that potentially-dangerous chars in
+    // altText survive but are NOT interpreted as markup.
+    const items = [
+      fixture({ altText: '<script>alert(1)</script>', publicUrl: 'https://example.test/s.jpg' }),
+    ];
+    const { container } = render(<AttachedImageCard attachments={items} />);
+    const img = container.querySelector('img');
+    expect(img?.getAttribute('alt')).toBe('<script>alert(1)</script>');
+    // No actual <script> tag should have been rendered.
+    expect(container.querySelector('script')).toBeNull();
+  });
 });

@@ -49,4 +49,52 @@ describe('AttachedFenCard', () => {
     const { container } = render(<AttachedFenCard attachment={fixture({ fen })} />);
     expect(container.textContent).toContain(fen);
   });
+
+  // ─── Renderer pins (Tester Phase 1) ────────────────────────────────────
+
+  it('renders empty caption gracefully when caption is an empty string', () => {
+    // The component branches on `attachment.caption &&`, so an empty
+    // string is also falsy and must not produce an empty <p>. Pin the
+    // contract: only the FEN-string fallback paragraph is present.
+    const { container } = render(<AttachedFenCard attachment={fixture({ caption: '' })} />);
+    const ps = container.querySelectorAll('p');
+    // 1: card title + 1: FEN font-mono fallback = exactly 2 paragraphs.
+    // (No caption paragraph for falsy caption.)
+    expect(ps.length).toBe(2);
+  });
+
+  it('renders caption text as a React text child (XSS-relevant chars are escaped)', () => {
+    const { container } = render(
+      <AttachedFenCard attachment={fixture({ caption: '<img src=x onerror=alert(1)>' })} />
+    );
+    // The caption text is forwarded verbatim as text but no <img> tag
+    // should appear in the DOM other than the chess preview's. (We
+    // mocked MiniBoard, so no real <img> exists.)
+    expect(container.textContent).toContain('<img src=x onerror=alert(1)>');
+    expect(container.querySelector('img')).toBeNull();
+  });
+
+  it('passes the canonical FEN unchanged to MiniBoard (including atypical positions)', () => {
+    // The renderer must not mutate the FEN — `MiniBoard` validates &
+    // renders. Pin a non-starting position to catch any accidental
+    // canonicalization in the renderer.
+    const fen = 'r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 5 12';
+    const { getByTestId } = render(<AttachedFenCard attachment={fixture({ fen })} />);
+    expect(getByTestId('mini-board').getAttribute('data-fen')).toBe(fen);
+  });
+
+  it('renders the card title even when caption is missing', () => {
+    const { container } = render(<AttachedFenCard attachment={fixture({ caption: null })} />);
+    expect(container.textContent).toContain('Attached position');
+  });
+
+  it('renders both caption and FEN string when caption is present (independent paragraphs)', () => {
+    const { container } = render(
+      <AttachedFenCard attachment={fixture({ caption: 'Italian opening' })} />
+    );
+    expect(container.textContent).toContain('Italian opening');
+    expect(container.textContent).toContain(
+      'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
+    );
+  });
 });
