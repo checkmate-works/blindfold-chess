@@ -300,6 +300,18 @@ describe('attachPostFen — DB error mapping', () => {
     expect(result).toEqual({ error: 'postFenAttachment.error.invalidFenStructure' });
   });
 
+  it('maps string-data-right-truncation (22001) to fenTooLong', async () => {
+    // Defense-in-depth: app-layer length pre-checks should normally
+    // catch this case before the INSERT, but if a value slips through
+    // (e.g. column shrunk via migration) we still surface a structured
+    // user-facing error rather than rethrowing.
+    const err = Object.assign(new Error('value too long'), { code: '22001' });
+    mockInsertReturning.mockRejectedValueOnce(err);
+
+    const result = await attachPostFen({ postId, fen: STARTING_FEN });
+    expect(result).toEqual({ error: 'postFenAttachment.error.fenTooLong' });
+  });
+
   it('rethrows unknown DB errors', async () => {
     const err = new Error('oops');
     mockInsertReturning.mockRejectedValueOnce(err);

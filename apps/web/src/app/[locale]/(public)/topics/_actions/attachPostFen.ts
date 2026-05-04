@@ -26,6 +26,17 @@ const FEN_MAX_LENGTH = 100;
 const CAPTION_MAX_LENGTH = 200;
 
 /**
+ * Extract a Postgres `code` from a thrown DB error. Drizzle / `pg` attach
+ * the SQLSTATE code on the Error instance; we narrow defensively so the
+ * cast is centralized rather than repeated at every catch branch.
+ */
+function pgCode(err: unknown): string | undefined {
+  return err instanceof Error && 'code' in err
+    ? (err as Error & { code?: string }).code
+    : undefined;
+}
+
+/**
  * Server Action: attach a FEN position to an existing topic post.
  *
  * @description
@@ -165,21 +176,26 @@ export async function attachPostFen(input: {
       },
     };
   } catch (err) {
-    if (
-      err instanceof Error &&
-      'code' in err &&
-      (err as Error & { code?: string }).code === '23505'
-    ) {
+    const code = pgCode(err);
+    if (code === '23505') {
       return { error: 'postFenAttachment.error.alreadyAttached' };
     }
-    if (
-      err instanceof Error &&
-      'code' in err &&
-      (err as Error & { code?: string }).code === '23514'
-    ) {
-      // CHECK violation — the structural regex caught something the
-      // application validators missed. Surface a generic structural error.
+    if (code === '23514') {
+      // CHECK violation — defense-in-depth. The structural regex and
+      // `validateFenSemantic` above catch every condition the DB CHECK
+      // could fail on, so this branch is practically unreachable from
+      // the action layer; it exists in case the CHECK ever drifts ahead
+      // of the app-side regex.
       return { error: 'postFenAttachment.error.invalidFenStructure' };
+    }
+    if (code === '22001') {
+      // string_data_right_truncation — value exceeded the column's
+      // varchar width. The pre-checks for FEN length and caption length
+      // already guard against this from the user's perspective, so this
+      // branch is also defense-in-depth. Map to `fenTooLong` as the
+      // FEN is the more user-visible field; the caption pre-check fires
+      // before we reach the INSERT for caption-driven cases.
+      return { error: 'postFenAttachment.error.fenTooLong' };
     }
     throw err;
   }
