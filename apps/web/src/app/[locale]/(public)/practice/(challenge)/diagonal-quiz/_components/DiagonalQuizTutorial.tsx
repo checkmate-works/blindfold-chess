@@ -7,10 +7,11 @@ import { useRouter } from 'next/navigation';
 import { BoardSkeleton, Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { getDiagonals } from '@blindfold-chess/features/diagonal-quiz';
-import { FaArrowLeft, FaArrowRight, FaPlay } from 'react-icons/fa';
+import { FaArrowLeft, FaArrowRight, FaInfinity, FaPlay } from 'react-icons/fa';
 
 import { AnswerFeedback } from '@/app/[locale]/(public)/practice/(challenge)/_components/AnswerFeedback';
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
+import { Divider } from '@/app/[locale]/_components';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -53,6 +54,7 @@ const ANTI_DIAGONAL_SQUARES = [
 export function DiagonalQuizTutorial({ locale }: Props) {
   const t = useTranslations('practice.diagonalQuiz.tutorial');
   const t_quiz = useTranslations('practice.diagonalQuiz');
+  const tp = useTranslations('practice');
   const router = useRouter();
   const { preferences, isLoaded } = useGamePreferences();
   const [step, setStep] = useState<TutorialStep>('diagonal');
@@ -278,19 +280,22 @@ export function DiagonalQuizTutorial({ locale }: Props) {
         )}
 
         {step === 'trial' ? (
-          <div className="space-y-3">
+          <div>
             <Button onClick={handleStartChallenge} variant="primary" className="w-full">
               <FaPlay className="mr-2 h-4 w-4" />
               {t('startChallenge')}
             </Button>
-            <div className="text-center">
-              <button
-                onClick={handleSwitchToTraining}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {t('switchToTraining')}
-              </button>
+
+            <div className="my-6 mx-auto flex w-4/5 items-center gap-4">
+              <Divider className="flex-1" />
+              <span className="text-sm text-muted-foreground">{tp('orDivider')}</span>
+              <Divider className="flex-1" />
             </div>
+
+            <Button onClick={handleSwitchToTraining} variant="outline" className="w-full">
+              <FaInfinity className="mr-2 h-4 w-4" />
+              {tp('startTraining')}
+            </Button>
           </div>
         ) : (
           <div className="flex gap-4">

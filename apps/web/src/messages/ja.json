@@ -539,7 +539,6 @@
     "challengeDescription": "制限時間1分。3回間違えたら終了のラッシュ形式。スコアが記録されます。",
     "startTraining": "トレーニング開始",
     "startChallenge": "チャレンジ開始",
-    "switchToTraining": "📖 トレーニングモードで練習する",
     "orDivider": "または",
     "challengeSetup": {
       "title": "チャレンジルール",
@@ -613,7 +612,6 @@
         "next": "次へ",
         "start": "始める",
         "startChallenge": "チャレンジ開始",
-        "switchToTraining": "📖 トレーニングモードで練習する",
         "steps": {
           "intro": {
             "title": "ボードの対称性とは",
@@ -1281,8 +1279,7 @@
         "skip": "スキップ",
         "complete": "基本的な使い方は以上です。\n様々な駒や距離でトレーニングしてみましょう。",
         "restart": "もう一度",
-        "startChallenge": "チャレンジを開始",
-        "switchToTraining": "📖 トレーニングモードで練習する"
+        "startChallenge": "チャレンジを開始"
       }
     },
     "common": {
@@ -1376,7 +1373,6 @@
         "next": "次へ",
         "previous": "戻る",
         "startChallenge": "チャレンジ開始",
-        "switchToTraining": "📖 トレーニングモードで練習する",
         "diagonalLegend": "対角線 (a1-h8)",
         "antiDiagonalLegend": "逆対角線 (h1-a8)",
         "trialCorrectAnswer": "正解: {diagonal}, {antiDiagonal}"

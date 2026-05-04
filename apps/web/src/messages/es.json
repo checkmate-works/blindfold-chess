@@ -539,7 +539,6 @@
     "challengeDescription": "Límite de tiempo de 1 minuto. 3 respuestas incorrectas y se acaba. Tu puntuación será registrada.",
     "startTraining": "Iniciar Entrenamiento",
     "startChallenge": "Iniciar Desafío",
-    "switchToTraining": "📖 Practicar en modo entrenamiento",
     "orDivider": "o",
     "challengeSetup": {
       "title": "Reglas del Desafío",
@@ -613,7 +612,6 @@
         "next": "Siguiente",
         "start": "Iniciar",
         "startChallenge": "Iniciar Desafío",
-        "switchToTraining": "📖 Practicar en modo entrenamiento",
         "steps": {
           "intro": {
             "title": "¿Qué es la Simetría del Tablero?",
@@ -1281,8 +1279,7 @@
         "skip": "Saltar",
         "complete": "¡Esos son los fundamentos!\nPrueba entrenar con diferentes piezas y distancias.",
         "restart": "Reiniciar",
-        "startChallenge": "Iniciar Desafío",
-        "switchToTraining": "📖 Practicar en modo entrenamiento"
+        "startChallenge": "Iniciar Desafío"
       }
     },
     "common": {
@@ -1376,7 +1373,6 @@
         "next": "Siguiente",
         "previous": "Atrás",
         "startChallenge": "Iniciar Desafío",
-        "switchToTraining": "📖 Practicar en modo entrenamiento",
         "diagonalLegend": "Diagonal (a1-h8)",
         "antiDiagonalLegend": "Anti-diagonal (h1-a8)",
         "trialCorrectAnswer": "Respuesta: {diagonal}, {antiDiagonal}"

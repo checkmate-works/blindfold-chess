@@ -539,7 +539,6 @@
     "challengeDescription": "1-minute time limit. 3 wrong answers and it's over. Your score will be recorded.",
     "startTraining": "Start Training",
     "startChallenge": "Start Challenge",
-    "switchToTraining": "📖 Practice in training mode",
     "orDivider": "or",
     "challengeSetup": {
       "title": "Challenge Rules",
@@ -613,7 +612,6 @@
         "next": "Next",
         "start": "Start",
         "startChallenge": "Start Challenge",
-        "switchToTraining": "📖 Practice in training mode",
         "steps": {
           "intro": {
             "title": "What is Board Symmetry?",
@@ -1041,7 +1039,7 @@
       },
       "session": {
         "title": "Solve",
-        "correct": "Correct! \ud83c\udf89",
+        "correct": "Correct! 🎉",
         "incorrect": "Incorrect. Try again.",
         "showBoard": "Show Board",
         "whitePlayed": "White plays {move}",
@@ -1052,7 +1050,7 @@
         "replaySection": "Solution Replay",
         "historySection": "Attempt History",
         "solution": "Solution: {move}",
-        "note": "\u2014 {note}",
+        "note": "— {note}",
         "attemptCorrect": "Correct",
         "attemptIncorrect": "Incorrect",
         "backToList": "Back to Puzzles",
@@ -1281,8 +1279,7 @@
         "skip": "Skip",
         "complete": "That's the basics!\nTry training with different pieces and distances.",
         "restart": "Restart",
-        "startChallenge": "Start Challenge",
-        "switchToTraining": "📖 Practice in training mode"
+        "startChallenge": "Start Challenge"
       }
     },
     "common": {
@@ -1376,7 +1373,6 @@
         "next": "Next",
         "previous": "Back",
         "startChallenge": "Start Challenge",
-        "switchToTraining": "📖 Practice in training mode",
         "diagonalLegend": "Diagonal (a1-h8)",
         "antiDiagonalLegend": "Anti-diagonal (h1-a8)",
         "trialCorrectAnswer": "Answer: {diagonal}, {antiDiagonal}"
@@ -2881,7 +2877,7 @@
       "title": "Grants",
       "navLabel": "Grants",
       "noGrantsFound": "No grants found",
-      "showing": "Showing {from}\u2013{to} of {total} grants",
+      "showing": "Showing {from}–{to} of {total} grants",
       "columns": {
         "user": "User",
         "benefit": "Benefit",
@@ -2902,7 +2898,7 @@
       "navLabel": "Achievements",
       "description": "Manage achievement definitions and view holders.",
       "noAchievementsFound": "No achievements found",
-      "showing": "Showing {from}\u2013{to} of {total} achievements",
+      "showing": "Showing {from}–{to} of {total} achievements",
       "viewHolders": "View holders",
       "columns": {
         "displayName": "Name",
@@ -2928,7 +2924,7 @@
         "holderCount": "Holders",
         "createdAt": "Created at",
         "holdersTitle": "Holders",
-        "showingHolders": "Showing {from}\u2013{to} of {total} holders",
+        "showingHolders": "Showing {from}–{to} of {total} holders",
         "noHoldersFound": "No holders yet",
         "columns": {
           "username": "Username",

@@ -539,7 +539,6 @@
     "challengeDescription": "Limite de tempo de 1 minuto. 3 respostas incorretas e acabou. Sua pontuação será registrada.",
     "startTraining": "Iniciar Treinamento",
     "startChallenge": "Iniciar Desafio",
-    "switchToTraining": "📖 Praticar em modo treinamento",
     "orDivider": "ou",
     "challengeSetup": {
       "title": "Regras do Desafio",
@@ -613,7 +612,6 @@
         "next": "Próximo",
         "start": "Iniciar",
         "startChallenge": "Iniciar Desafio",
-        "switchToTraining": "📖 Praticar em modo treinamento",
         "steps": {
           "intro": {
             "title": "O que é a Simetria do Tabuleiro?",
@@ -1281,8 +1279,7 @@
         "skip": "Pular",
         "complete": "Esses são os fundamentos!\nExperimente treinar com diferentes peças e distâncias.",
         "restart": "Reiniciar",
-        "startChallenge": "Iniciar Desafio",
-        "switchToTraining": "📖 Praticar em modo treinamento"
+        "startChallenge": "Iniciar Desafio"
       }
     },
     "common": {
@@ -1376,7 +1373,6 @@
         "next": "Próximo",
         "previous": "Voltar",
         "startChallenge": "Iniciar Desafio",
-        "switchToTraining": "📖 Praticar em modo treinamento",
         "diagonalLegend": "Diagonal (a1-h8)",
         "antiDiagonalLegend": "Anti-diagonal (h1-a8)",
         "trialCorrectAnswer": "Resposta: {diagonal}, {antiDiagonal}"
