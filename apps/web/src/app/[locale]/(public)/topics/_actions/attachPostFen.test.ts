@@ -207,6 +207,40 @@ describe('attachPostFen — input validation', () => {
     expect(result).toEqual({ error: 'postFenAttachment.error.invalidFenSemantic' });
   });
 
+  it('canonicalizes FEN with trailing whitespace before validate and insert', async () => {
+    // The validator internally trims, but the DB CHECK regex is
+    // anchored. Trim canonicalization at the action level keeps both
+    // paths consistent and avoids a confusing 23514 leak.
+    const result = await attachPostFen({
+      postId,
+      fen: `${STARTING_FEN}   `,
+    });
+    expect(result).toMatchObject({ success: true });
+    expect(mockInsertValues).toHaveBeenCalledWith({
+      postId,
+      fen: STARTING_FEN,
+      caption: null,
+    });
+  });
+
+  it('canonicalizes FEN with leading whitespace before validate and insert', async () => {
+    const result = await attachPostFen({
+      postId,
+      fen: `\t  ${STARTING_FEN}`,
+    });
+    expect(result).toMatchObject({ success: true });
+    expect(mockInsertValues).toHaveBeenCalledWith({
+      postId,
+      fen: STARTING_FEN,
+      caption: null,
+    });
+  });
+
+  it('rejects whitespace-only FEN with fenRequired (post-trim empty)', async () => {
+    const result = await attachPostFen({ postId, fen: '   \t\n' });
+    expect(result).toEqual({ error: 'postFenAttachment.error.fenRequired' });
+  });
+
   it('rejects caption longer than 200 chars with captionTooLong', async () => {
     const result = await attachPostFen({
       postId,

@@ -66,9 +66,17 @@ export async function attachPostFen(input: {
     };
   }>
 > {
-  const { postId, fen: rawFen, caption: rawCaption = null } = input;
+  const { postId, fen: rawFenInput, caption: rawCaption = null } = input;
 
-  if (typeof rawFen !== 'string' || rawFen.length === 0) {
+  // Canonicalize FEN by trimming once at the top. `validateFenSemantic`
+  // also calls `.trim()` internally, but the DB CHECK regex is anchored
+  // (`^...$`) and does NOT trim — so passing the untrimmed value through
+  // would let whitespace-padded FENs pass validation and then trip the
+  // CHECK constraint, leaking a confusing 23514 error to the user.
+  // Trimming here keeps the validator's contract honest end-to-end.
+  const rawFen = typeof rawFenInput === 'string' ? rawFenInput.trim() : '';
+
+  if (rawFen.length === 0) {
     return { error: 'postFenAttachment.error.fenRequired' };
   }
   if (rawFen.length > FEN_MAX_LENGTH) {
