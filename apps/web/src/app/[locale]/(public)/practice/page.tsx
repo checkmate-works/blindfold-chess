@@ -20,6 +20,8 @@ import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV, SITE_URL } from '@/config';
 
 import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
 
+import { RankBadge } from '@/app/[locale]/(public)/practice/_components/RankBadge';
+import { getRankSlugForMenuType } from '@/app/[locale]/(public)/practice/_lib/module-rank-mapping';
 import { PRACTICE_EMOJIS } from '@/app/[locale]/(public)/practice/_lib/practice-emojis';
 import { ListLink, ListLinkContainer, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
@@ -54,6 +56,7 @@ export default async function PracticePage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale });
+  const tRanks = await getTranslations({ locale, namespace: 'ranks' });
 
   const sections = [
     {
@@ -61,16 +64,19 @@ export default async function PracticePage({ params }: Props) {
       practices: [
         {
           id: 'square-colors',
+          menuType: 'square_colors',
           title: t('practice.squareColors.title'),
           icon: PRACTICE_EMOJIS.square_colors,
         },
         {
           id: 'coordinate-quiz',
+          menuType: 'coordinate_quiz',
           title: t('practice.coordinateQuiz.title'),
           icon: PRACTICE_EMOJIS.coordinate_quiz,
         },
         {
           id: 'legal-moves',
+          menuType: 'legal_moves',
           title: t('practice.legalMoves.title'),
           icon: PRACTICE_EMOJIS.legal_moves,
         },
@@ -81,16 +87,19 @@ export default async function PracticePage({ params }: Props) {
       practices: [
         {
           id: 'diagonal-quiz',
+          menuType: 'diagonal_quiz',
           title: t('practice.diagonalQuiz.title'),
           icon: PRACTICE_EMOJIS.diagonal_quiz,
         },
         {
           id: 'board-symmetry',
+          menuType: 'board_symmetry',
           title: t('practice.boardSymmetry.title'),
           icon: PRACTICE_EMOJIS.board_symmetry,
         },
         {
           id: 'route-planner',
+          menuType: 'route_planner',
           title: t('practice.routePlanner.title'),
           icon: PRACTICE_EMOJIS.route_planner,
         },
@@ -101,16 +110,19 @@ export default async function PracticePage({ params }: Props) {
       practices: [
         {
           id: 'position-memory',
+          menuType: 'position_memory',
           title: t('practice.positionMemory.title'),
           icon: PRACTICE_EMOJIS.position_memory,
         },
         {
           id: 'puzzle',
+          menuType: 'puzzle',
           title: t('practice.puzzle.title'),
           icon: PRACTICE_EMOJIS.puzzle,
         },
         {
           id: 'knight-tour',
+          menuType: 'knight_tour',
           title: t('practice.knightTour.title'),
           icon: PRACTICE_EMOJIS.knight_tour,
         },
@@ -121,12 +133,19 @@ export default async function PracticePage({ params }: Props) {
       practices: [
         {
           id: 'algebraic-notation',
+          menuType: 'algebraic_notation',
           title: t('practice.algebraicNotation.title'),
           icon: PRACTICE_EMOJIS.algebraic_notation,
         },
-        { id: 'fen', title: t('practice.fen.title'), icon: PRACTICE_EMOJIS.fen },
+        {
+          id: 'fen',
+          menuType: 'fen',
+          title: t('practice.fen.title'),
+          icon: PRACTICE_EMOJIS.fen,
+        },
         {
           id: 'quadrants',
+          menuType: 'quadrant_anchors',
           title: t('practice.quadrantAnchors.title'),
           icon: PRACTICE_EMOJIS.quadrant_anchors,
         },
@@ -153,15 +172,23 @@ export default async function PracticePage({ params }: Props) {
           <section key={section.title} className="space-y-4">
             <SectionTitle>{section.title}</SectionTitle>
             <div className="flex flex-wrap justify-center gap-3">
-              {section.practices.map((practice) => (
-                <ChallengeCard
-                  key={practice.id}
-                  locale={locale}
-                  href={`/practice/${practice.id}`}
-                  label={practice.title}
-                  icon={practice.icon}
-                />
-              ))}
+              {section.practices.map((practice) => {
+                const rankSlug = getRankSlugForMenuType(practice.menuType);
+                return (
+                  <ChallengeCard
+                    key={practice.id}
+                    locale={locale}
+                    href={`/practice/${practice.id}`}
+                    label={practice.title}
+                    icon={practice.icon}
+                    overlay={
+                      rankSlug ? (
+                        <RankBadge slug={rankSlug} label={tRanks(`rankNames.${rankSlug}`)} />
+                      ) : undefined
+                    }
+                  />
+                );
+              })}
             </div>
           </section>
         ))}
