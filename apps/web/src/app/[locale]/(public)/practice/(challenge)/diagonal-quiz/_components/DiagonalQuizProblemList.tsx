@@ -77,15 +77,15 @@ export function DiagonalBoard({ targetSquare }: { targetSquare: string }) {
 
       {/* Legend */}
       <div className="flex justify-center gap-4 mt-3 text-xs">
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-3 bg-emerald-500/40 rounded border border-border" />
-          <span className="text-muted-foreground">
+        <div className="flex items-start gap-1.5">
+          <div className="w-3 h-3 mt-0.5 bg-emerald-500/40 rounded border border-border flex-shrink-0" />
+          <span className="text-muted-foreground leading-tight">
             <DiagonalLabel type="diagonal" />
           </span>
         </div>
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-3 bg-sky-500/40 rounded border border-border" />
-          <span className="text-muted-foreground">
+        <div className="flex items-start gap-1.5">
+          <div className="w-3 h-3 mt-0.5 bg-sky-500/40 rounded border border-border flex-shrink-0" />
+          <span className="text-muted-foreground leading-tight">
             <DiagonalLabel type="antiDiagonal" />
           </span>
         </div>
@@ -96,7 +96,16 @@ export function DiagonalBoard({ targetSquare }: { targetSquare: string }) {
 
 function DiagonalLabel({ type }: { type: 'diagonal' | 'antiDiagonal' }) {
   const t = useTranslations('practice.diagonalQuiz');
-  return <>{type === 'diagonal' ? t('diagonalLabel') : t('antiDiagonalLabel')}</>;
+  const isDiagonal = type === 'diagonal';
+  return (
+    <>
+      {t(isDiagonal ? 'diagonalShortLabel' : 'antiDiagonalShortLabel')}
+      <br />
+      <span className="opacity-75">
+        {t(isDiagonal ? 'diagonalDirectionNote' : 'antiDiagonalDirectionNote')}
+      </span>
+    </>
+  );
 }
 
 export function DiagonalQuizProblemList({ results }: { results: QuestionResult[] }) {

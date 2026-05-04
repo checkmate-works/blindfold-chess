@@ -42,24 +42,35 @@ export function DiagonalQuizIncorrectResultView({
       onNext={onNextAfterIncorrect}
       onEndTraining={onEndTraining}
     >
-      <div className="mt-4 mb-6 space-y-3 text-sm">
-        <div>
-          <p className="font-bold text-muted-foreground mb-1">{t('diagonalLabel')}</p>
-          <p className="text-muted-foreground">
-            <span className="font-medium">{t('correctAnswerLabel')}:</span> {correctDiagonal}
-          </p>
-          <p className={isDiagonalCorrect ? 'text-success' : 'text-destructive'}>
-            <span className="font-medium">{t('yourAnswer')}:</span> {userDiagonal}
-          </p>
+      <div className="mt-4 mb-6 mx-auto max-w-xs grid grid-cols-[auto_1fr_1fr] gap-x-4 gap-y-2 text-sm text-left">
+        <div />
+        <div className="text-xs font-medium text-success uppercase tracking-wide">
+          {t('correctAnswerLabel')}
         </div>
-        <div>
-          <p className="font-bold text-muted-foreground mb-1">{t('antiDiagonalLabel')}</p>
-          <p className="text-muted-foreground">
-            <span className="font-medium">{t('correctAnswerLabel')}:</span> {correctAntiDiagonal}
-          </p>
-          <p className={isAntiDiagonalCorrect ? 'text-success' : 'text-destructive'}>
-            <span className="font-medium">{t('yourAnswer')}:</span> {userAntiDiagonal}
-          </p>
+        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          {t('yourAnswer')}
+        </div>
+
+        <div className="font-bold flex items-center gap-1.5">
+          <span aria-hidden className="text-muted-foreground font-mono">
+            ╱
+          </span>
+          {t('diagonalShortLabel')}
+        </div>
+        <div className="font-mono text-success">{correctDiagonal}</div>
+        <div className={`font-mono ${isDiagonalCorrect ? 'text-success' : 'text-destructive'}`}>
+          {userDiagonal}
+        </div>
+
+        <div className="font-bold flex items-center gap-1.5">
+          <span aria-hidden className="text-muted-foreground font-mono">
+            ╲
+          </span>
+          {t('antiDiagonalShortLabel')}
+        </div>
+        <div className="font-mono text-success">{correctAntiDiagonal}</div>
+        <div className={`font-mono ${isAntiDiagonalCorrect ? 'text-success' : 'text-destructive'}`}>
+          {userAntiDiagonal}
         </div>
       </div>
     </DiagonalQuizResultLayout>
