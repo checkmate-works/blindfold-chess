@@ -4214,6 +4214,19 @@
       }
     }
   },
+  "postFenAttachment": {
+    "error": {
+      "fenRequired": "FEN を入力してください。",
+      "fenTooLong": "FEN が長すぎます。最大 100 文字です。",
+      "invalidFenStructure": "FEN の形式が不正です。盤面・手番・キャスリング・アンパッサンを確認してください。",
+      "invalidFenSemantic": "FEN が合法な局面を表していません。キング・ポーン配置・キャスリング権・アンパッサンを確認してください。",
+      "captionTooLong": "キャプションが長すぎます。最大 200 文字です。",
+      "captionContainsDisallowedChars": "キャプションに使用できない文字が含まれています。",
+      "alreadyAttached": "この投稿には既に FEN が添付されています。",
+      "postNotFound": "投稿が見つかりませんでした。",
+      "notOwner": "FEN は自分の投稿にのみ添付できます。"
+    }
+  },
   "Footer": {
     "resources": "リソース",
     "support": "サポート",
