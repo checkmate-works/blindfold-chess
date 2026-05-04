@@ -8,7 +8,7 @@ import {
   parsePgnWithFen,
 } from '@blindfold-chess/features/chess-core';
 
-import { MiniBoard } from '@/app/[locale]/(public)/topics/openings/_components/MiniBoard';
+import { MiniBoard } from '@/lib/positions/ui/MiniBoard';
 
 /**
  * Per-move replay UI for an attached game.

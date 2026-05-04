@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import { MiniBoard } from '@/app/[locale]/(public)/topics/openings/_components/MiniBoard';
+import { MiniBoard } from '@/lib/positions/ui/MiniBoard';
 
 /**
  * Subset of `post_game_pgn_attachments` columns that the card needs.

@@ -16,7 +16,7 @@ vi.mock('@/i18n/use-safe-translations', () => ({
 // MiniBoard pulls in chess-pieces / icons / GamePreferencesContext, none of
 // which are relevant here. Stub it to a marker div so we can assert
 // "thumbnail rendered" without exercising the chessboard rendering stack.
-vi.mock('@/app/[locale]/(public)/topics/openings/_components/MiniBoard', () => ({
+vi.mock('@/lib/positions/ui/MiniBoard', () => ({
   MiniBoard: ({ fen }: { fen: string }) => <div data-testid="mini-board" data-fen={fen} />,
 }));
 

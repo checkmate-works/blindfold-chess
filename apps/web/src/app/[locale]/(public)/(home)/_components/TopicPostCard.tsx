@@ -7,13 +7,13 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { getStartingFen } from '@blindfold-chess/features/chess-core';
 
 import { truncateContent } from '@/lib/content/truncate-content';
+import { MiniBoard } from '@/lib/positions/ui/MiniBoard';
 
 import { PostFooter } from '@/app/[locale]/(public)/topics/_components/PostFooter';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
 import { RatingDisplay } from '@/app/[locale]/(public)/topics/openings/[slug]/_components/RatingDisplay';
 import { toggleLike as toggleLikeOpening } from '@/app/[locale]/(public)/topics/openings/[slug]/posts/[postId]/_actions/toggleLike';
-import { MiniBoard } from '@/app/[locale]/(public)/topics/openings/_components/MiniBoard';
 import { isBlackOpening } from '@/app/[locale]/(public)/topics/openings/_lib/openings';
 import { toggleLike as toggleLikeSquare } from '@/app/[locale]/(public)/topics/squares/[square]/posts/[postId]/_actions/toggleLike';
 import { LinkedText } from '@/app/[locale]/_components';
