@@ -4226,6 +4226,28 @@
       "notOwner": "Solo puedes adjuntar un FEN a tus propias publicaciones."
     }
   },
+  "postVideoAttachment": {
+    "error": {
+      "urlRequired": "Introduce una URL de YouTube para adjuntar un vídeo.",
+      "inputTooLong": "La URL es demasiado larga. La longitud máxima es 512 caracteres.",
+      "invalidUrl": "No se pudo analizar la URL. Pega un enlace de YouTube.",
+      "protocolNotHttps": "La URL debe usar https.",
+      "userinfoPresent": "La URL no debe contener nombre de usuario ni contraseña.",
+      "fragmentNotAllowed": "La URL no debe contener un fragmento (#…).",
+      "hostNotAllowed": "El host de la URL no es de YouTube.",
+      "pathnameNotSupported": "Formato de enlace de YouTube no admitido (solo watch / shorts / live / embed).",
+      "paramPollution": "La URL contiene parámetros repetidos.",
+      "invalidId": "El ID de vídeo de YouTube no es válido.",
+      "invalidVideoStructure": "No se pudo guardar el enlace del vídeo. Prueba con otra URL de YouTube.",
+      "tooLong": "El enlace del vídeo es demasiado largo. La longitud máxima es 512 caracteres.",
+      "alreadyAttached": "Esta publicación ya tiene un vídeo adjunto.",
+      "postNotFound": "Publicación no encontrada.",
+      "notOwner": "Solo puedes adjuntar un vídeo a tus propias publicaciones."
+    }
+  },
+  "postVideoAttachmentRender": {
+    "fallbackTitle": "Vídeo de YouTube"
+  },
   "Footer": {
     "resources": "Recursos",
     "support": "Soporte",

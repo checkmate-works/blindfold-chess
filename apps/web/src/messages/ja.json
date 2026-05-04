@@ -4226,6 +4226,28 @@
       "notOwner": "FEN は自分の投稿にのみ添付できます。"
     }
   },
+  "postVideoAttachment": {
+    "error": {
+      "urlRequired": "YouTube の URL を入力してください。",
+      "inputTooLong": "URL が長すぎます。最大 512 文字です。",
+      "invalidUrl": "URL を解析できませんでした。YouTube のリンクを貼り付けてください。",
+      "protocolNotHttps": "URL は https である必要があります。",
+      "userinfoPresent": "URL にユーザー名・パスワードを含めることはできません。",
+      "fragmentNotAllowed": "URL にフラグメント (#…) を含めることはできません。",
+      "hostNotAllowed": "URL のホストは YouTube ではありません。",
+      "pathnameNotSupported": "対応していない YouTube リンク形式です(watch / shorts / live / embed のみ)。",
+      "paramPollution": "URL に同じクエリパラメータが重複しています。",
+      "invalidId": "YouTube の動画 ID が不正です。",
+      "invalidVideoStructure": "動画リンクを保存できませんでした。別の YouTube URL を試してください。",
+      "tooLong": "動画リンクが長すぎます。最大 512 文字です。",
+      "alreadyAttached": "この投稿には既に動画が添付されています。",
+      "postNotFound": "投稿が見つかりませんでした。",
+      "notOwner": "動画は自分の投稿にのみ添付できます。"
+    }
+  },
+  "postVideoAttachmentRender": {
+    "fallbackTitle": "YouTube 動画"
+  },
   "Footer": {
     "resources": "リソース",
     "support": "サポート",

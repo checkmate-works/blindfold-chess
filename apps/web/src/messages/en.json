@@ -4226,6 +4226,28 @@
       "notOwner": "You can only attach a FEN to your own posts."
     }
   },
+  "postVideoAttachment": {
+    "error": {
+      "urlRequired": "Enter a YouTube URL to attach a video.",
+      "inputTooLong": "URL is too long. The maximum length is 512 characters.",
+      "invalidUrl": "URL could not be parsed. Paste a YouTube link.",
+      "protocolNotHttps": "URL must use https.",
+      "userinfoPresent": "URL must not contain a username or password.",
+      "fragmentNotAllowed": "URL must not contain a fragment (#…).",
+      "hostNotAllowed": "URL host is not a YouTube host.",
+      "pathnameNotSupported": "URL is not a supported YouTube watch / shorts / live / embed link.",
+      "paramPollution": "URL contains repeated query parameters.",
+      "invalidId": "YouTube video id is invalid.",
+      "invalidVideoStructure": "Video link could not be saved. Please try a different YouTube URL.",
+      "tooLong": "Video link is too long. The maximum length is 512 characters.",
+      "alreadyAttached": "This post already has a video attachment.",
+      "postNotFound": "Post not found.",
+      "notOwner": "You can only attach a video to your own posts."
+    }
+  },
+  "postVideoAttachmentRender": {
+    "fallbackTitle": "YouTube video"
+  },
   "Footer": {
     "resources": "Resources",
     "support": "Support",
