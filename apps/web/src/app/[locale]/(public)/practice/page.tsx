@@ -22,12 +22,7 @@ import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV, SITE_URL } from '@/config';
 import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
 
 import { PRACTICE_EMOJIS } from '@/app/[locale]/(public)/practice/_lib/practice-emojis';
-import {
-  DashboardCard,
-  DashboardSection,
-  DashboardSectionHeader,
-  PageLayout,
-} from '@/app/[locale]/_components';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -65,7 +60,6 @@ export default async function PracticePage({ params }: Props) {
   const sections = [
     {
       title: t('practice.levelBeginner'),
-      sectionIcon: '🌱',
       practices: [
         {
           id: 'square-colors',
@@ -86,7 +80,6 @@ export default async function PracticePage({ params }: Props) {
     },
     {
       title: t('practice.levelIntermediate'),
-      sectionIcon: '📚',
       practices: [
         {
           id: 'diagonal-quiz',
@@ -107,7 +100,6 @@ export default async function PracticePage({ params }: Props) {
     },
     {
       title: t('practice.levelAdvanced'),
-      sectionIcon: '🎓',
       practices: [
         {
           id: 'position-memory',
@@ -128,7 +120,6 @@ export default async function PracticePage({ params }: Props) {
     },
     {
       title: t('practice.levelIntroduction'),
-      sectionIcon: '📖',
       practices: [
         {
           id: 'algebraic-notation',
@@ -160,27 +151,22 @@ export default async function PracticePage({ params }: Props) {
         locale={locale}
         breadcrumb={[{ label: t('navigation.practice') }]}
       >
-        <DashboardCard>
-          {sections.map((section) => (
-            <DashboardSection key={section.title}>
-              <DashboardSectionHeader
-                icon={<span className="text-lg">{section.sectionIcon}</span>}
-                title={section.title}
-              />
-              <div className="flex flex-wrap gap-3 mt-3">
-                {section.practices.map((practice) => (
-                  <ChallengeCard
-                    key={practice.id}
-                    locale={locale}
-                    href={`/practice/${practice.id}`}
-                    label={practice.title}
-                    icon={practice.icon}
-                  />
-                ))}
-              </div>
-            </DashboardSection>
-          ))}
-        </DashboardCard>
+        {sections.map((section) => (
+          <section key={section.title} className="space-y-4">
+            <SectionTitle>{section.title}</SectionTitle>
+            <div className="flex flex-wrap justify-center gap-3">
+              {section.practices.map((practice) => (
+                <ChallengeCard
+                  key={practice.id}
+                  locale={locale}
+                  href={`/practice/${practice.id}`}
+                  label={practice.title}
+                  icon={practice.icon}
+                />
+              ))}
+            </div>
+          </section>
+        ))}
 
         <div className="text-center pt-4">
           <Link
