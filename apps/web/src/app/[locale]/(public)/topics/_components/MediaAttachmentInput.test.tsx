@@ -279,4 +279,21 @@ describe('MediaAttachmentInput', () => {
     ) as HTMLInputElement;
     expect(checked.value).toBe('image');
   });
+
+  // Lessons §10 alignment pin: the FEN <input>'s maxLength must lock-step
+  // with the canonical FEN_MAX_LENGTH constant (=100). Drift here is the
+  // exact bug the Phase 1 Reviewer Medium finding called out — a 120-char
+  // maxLength let users type up to 120 chars while the validator rejected
+  // anything over 100, producing a confusing "FEN format is invalid"
+  // message for a length-only problem.
+  it('FEN <input> maxLength matches FEN_MAX_LENGTH (=100)', () => {
+    const { container, getByText } = setup();
+    fireEvent.click(getByText('Attach media (image / FEN / video)'));
+    const fenRadio = container.querySelector(
+      'input[name="mediaAttachmentKind"][value="fen"]'
+    ) as HTMLInputElement;
+    fireEvent.click(fenRadio);
+    const fenInput = container.querySelector('#attachmentFen') as HTMLInputElement;
+    expect(fenInput.maxLength).toBe(100);
+  });
 });
