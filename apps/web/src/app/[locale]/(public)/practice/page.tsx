@@ -14,7 +14,6 @@
  */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import Link from 'next/link';
 
 import { ChallengeCard } from '@/app/_components';
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV, SITE_URL } from '@/config';
@@ -22,9 +21,8 @@ import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV, SITE_URL } from '@/config';
 import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
 
 import { PRACTICE_EMOJIS } from '@/app/[locale]/(public)/practice/_lib/practice-emojis';
-import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { ListLink, ListLinkContainer, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -168,14 +166,18 @@ export default async function PracticePage({ params }: Props) {
           </section>
         ))}
 
-        <div className="text-center pt-4">
-          <Link
-            href={`/${locale}/leaderboard/score/all-time`}
-            className={`text-sm font-medium ${TEXT_LINK_CLASSES}`}
-          >
-            {t('practice.viewLeaderboard')}
-          </Link>
-        </div>
+        <section className="space-y-4">
+          <SectionTitle>{t('practice.related')}</SectionTitle>
+          <ListLinkContainer>
+            <ListLink href="/dojo" icon="🥋" title={t('practice.viewDojo')} locale={locale} />
+            <ListLink
+              href="/leaderboard/score/all-time"
+              icon="🏆"
+              title={t('practice.viewLeaderboard')}
+              locale={locale}
+            />
+          </ListLinkContainer>
+        </section>
 
         {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
           <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
