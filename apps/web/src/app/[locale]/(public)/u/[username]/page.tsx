@@ -27,6 +27,8 @@ import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/ser
 import { getAchievementCategoryNames } from '@/lib/achievements/display';
 import { db, profiles, userFollows } from '@/lib/db';
 import { getUserAchievements } from '@/lib/db/achievement-queries';
+import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
+import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
 import { countPositions, listPositions } from '@/lib/positions/queries';
 import { createClient } from '@/lib/supabase/server';
 
@@ -137,6 +139,8 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
     tTopics,
     tSquares,
     tOpenings,
+    tPuzzle,
+    tMemory,
     allPosts,
     userAchievementRows,
   ] = await Promise.all([
@@ -148,6 +152,8 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
     getTranslations({ locale, namespace: 'topics' }),
     getTranslations({ locale, namespace: 'topics.squares' }),
     getTranslations({ locale, namespace: 'topics.openings' }),
+    getTranslations({ locale, namespace: 'practice.puzzle' }),
+    getTranslations({ locale, namespace: 'practice.positionMemory' }),
     getPostsByUserId(profile.id, user?.id),
     getUserAchievements(profile.id),
   ]);
@@ -183,6 +189,26 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
           offset: (problemsCurrentPage - 1) * PAGE_SIZE,
         })
       : [];
+
+  // Reply meta is keyed by `(topicType, topicKey)`. Position IDs are unique
+  // across types, so we can fetch puzzle + memory reply meta in parallel and
+  // merge into a single Map<positionId, ReplyMeta> for ProfileProblems.
+  const puzzleIds = problemPositions.filter((p) => p.type === 'puzzle').map((p) => p.id);
+  const memoryIds = problemPositions.filter((p) => p.type === 'memory').map((p) => p.id);
+
+  const [problemLikeMetaMap, puzzleReplyMetaMap, memoryReplyMetaMap] =
+    activeTab === 'problems'
+      ? await Promise.all([
+          getPositionLikeMetaMap(
+            problemPositions.map((p) => p.id),
+            user?.id
+          ),
+          getReplyMetaMap('position_puzzle', puzzleIds),
+          getReplyMetaMap('position_memory', memoryIds),
+        ])
+      : [new Map(), new Map(), new Map()];
+
+  const problemReplyMetaMap = new Map([...puzzleReplyMetaMap, ...memoryReplyMetaMap]);
 
   const buildHref = (p: number) => {
     const params = new URLSearchParams();
@@ -294,10 +320,22 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
         >
           <ProfileProblems
             positions={problemPositions}
+            authorProfile={{
+              username: profile.username,
+              displayName: profile.displayName,
+              avatarUrl: profile.avatarUrl,
+            }}
+            likeMetaMap={problemLikeMetaMap}
+            replyMetaMap={problemReplyMetaMap}
+            emptyReplyMeta={EMPTY_REPLY_META}
             currentPage={problemsCurrentPage}
             totalPages={problemsTotalPages}
             locale={locale}
             buildHref={buildHref}
+            justNowLabels={{
+              puzzle: tPuzzle('justNow'),
+              memory: tMemory('justNow'),
+            }}
             labels={{
               noProblems: t('noProblems'),
               problemTypeMemory: t('problemTypeMemory'),

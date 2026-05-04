@@ -1,30 +1,42 @@
-import { Link } from '@/i18n/routing';
+import type { LikeMeta } from '@/lib/db/like-queries';
+import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
+import type { Position } from '@/lib/db/schema';
 
-import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
-
+import { PositionListCard } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionListCard';
 import { PaginationNav } from '@/app/[locale]/_components';
 
-type Position = {
-  id: string;
-  type: string;
-  fen: string;
-  title: string;
-  description: string | null;
-  createdAt: Date;
+import { toggleLike } from '../_actions/toggleLike';
+
+type AuthorProfile = {
+  username: string;
+  displayName: string | null;
+  avatarUrl: string | null;
 };
 
 type Props = {
   positions: Position[];
+  /** Page-owner profile, reused for every row's avatar slot. */
+  authorProfile: AuthorProfile;
+  likeMetaMap: Map<string, LikeMeta>;
+  replyMetaMap: Map<string, ReplyMeta>;
+  emptyReplyMeta: ReplyMeta;
   currentPage: number;
   totalPages: number;
   locale: string;
   buildHref: (page: number) => string;
+  /** `t('justNow')` resolved per practice namespace. */
+  justNowLabels: {
+    puzzle: string;
+    memory: string;
+  };
   labels: {
     noProblems: string;
     problemTypeMemory: string;
     problemTypePuzzle: string;
   };
 };
+
+const EMPTY_LIKE_META: LikeMeta = { likeCount: 0, likedByMe: false };
 
 function getPositionHref(type: string, id: string): string {
   if (type === 'puzzle') return `/practice/puzzle/${id}`;
@@ -38,7 +50,9 @@ function TypeBadge({ type, label }: { type: string; label: string }) {
       : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
 
   return (
-    <span className={`inline-block rounded px-1.5 py-0.5 text-xs font-medium ${colorClass}`}>
+    <span
+      className={`inline-block shrink-0 rounded px-1.5 py-0.5 text-xs font-medium ${colorClass}`}
+    >
       {label}
     </span>
   );
@@ -46,59 +60,44 @@ function TypeBadge({ type, label }: { type: string; label: string }) {
 
 export function ProfileProblems({
   positions,
+  authorProfile,
+  likeMetaMap,
+  replyMetaMap,
+  emptyReplyMeta,
   currentPage,
   totalPages,
   locale,
   buildHref,
+  justNowLabels,
   labels,
 }: Props) {
   return (
     <div>
       <div className="mt-4 space-y-3">
         {positions.length > 0 ? (
-          positions.map((position) => (
-            <Link
-              key={position.id}
-              href={getPositionHref(position.type, position.id)}
-              locale={locale}
-              className="flex gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-muted"
-            >
-              <ThemedBoardThumbnail
-                fen={position.fen}
-                className="w-16 h-16 sm:w-20 sm:h-20 shrink-0"
-              />
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-semibold text-foreground truncate">
-                    {position.title}
-                  </h3>
+          positions.map((position) => {
+            const isPuzzle = position.type === 'puzzle';
+            return (
+              <PositionListCard
+                key={position.id}
+                position={position}
+                profile={authorProfile}
+                likeMeta={likeMetaMap.get(position.id) ?? EMPTY_LIKE_META}
+                replyMeta={replyMetaMap.get(position.id) ?? emptyReplyMeta}
+                detailHref={getPositionHref(position.type, position.id)}
+                i18nNamespace={isPuzzle ? 'practice.puzzle' : 'practice.positionMemory'}
+                toggleLikeAction={toggleLike}
+                justNowLabel={isPuzzle ? justNowLabels.puzzle : justNowLabels.memory}
+                locale={locale}
+                badge={
                   <TypeBadge
                     type={position.type}
-                    label={
-                      position.type === 'puzzle'
-                        ? labels.problemTypePuzzle
-                        : labels.problemTypeMemory
-                    }
+                    label={isPuzzle ? labels.problemTypePuzzle : labels.problemTypeMemory}
                   />
-                </div>
-                {position.description && (
-                  <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">
-                    {position.description}
-                  </p>
-                )}
-                <time
-                  dateTime={position.createdAt.toISOString()}
-                  className="mt-1 block text-xs text-muted-foreground"
-                >
-                  {position.createdAt.toLocaleDateString(locale, {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                  })}
-                </time>
-              </div>
-            </Link>
-          ))
+                }
+              />
+            );
+          })
         ) : (
           <p className="py-8 text-center text-muted-foreground">{labels.noProblems}</p>
         )}

@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import { Link } from '@/i18n/routing';
 
 import type { LikeMeta } from '@/lib/db/like-queries';
@@ -49,6 +51,13 @@ type Props = {
   /** Resolved `t('justNow')` from `i18nNamespace`. */
   justNowLabel: string;
   locale: string;
+  /**
+   * Optional badge rendered next to the title (e.g. a "Puzzle" / "Memory"
+   * type indicator on mixed-type lists like the public profile). Single-type
+   * list pages (puzzle, position-memory) omit this since the type is implicit
+   * from the page itself.
+   */
+  badge?: ReactNode;
 };
 
 /**
@@ -78,6 +87,7 @@ export function PositionListCard({
   toggleLikeAction,
   justNowLabel,
   locale,
+  badge,
 }: Props) {
   const displayName = resolveDisplayName(profile);
   const descriptionExcerpt = truncate(position.description);
@@ -121,15 +131,18 @@ export function PositionListCard({
         />
       }
     >
-      <h3 className="font-medium text-foreground truncate mt-2">
-        <Link
-          href={detailHref}
-          locale={locale}
-          className="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
-        >
-          {position.title}
-        </Link>
-      </h3>
+      <div className="flex items-center gap-2 mt-2 min-w-0">
+        <h3 className="font-medium text-foreground truncate">
+          <Link
+            href={detailHref}
+            locale={locale}
+            className="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+          >
+            {position.title}
+          </Link>
+        </h3>
+        {badge}
+      </div>
       {descriptionExcerpt && (
         <p className="text-sm text-muted-foreground line-clamp-2">{descriptionExcerpt}</p>
       )}
