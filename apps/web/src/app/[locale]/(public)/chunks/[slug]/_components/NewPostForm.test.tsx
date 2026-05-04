@@ -9,6 +9,7 @@ const mockCreateChunkPostForImageAttach = vi.fn();
 const mockCreateChunkPostWithFenAttachment = vi.fn();
 const mockCreateChunkPostWithVideoAttachment = vi.fn();
 const mockCreateChunkPostWithAttachment = vi.fn();
+const mockCreateChunkPostWithEmbedAttachment = vi.fn();
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
@@ -30,6 +31,10 @@ vi.mock('../_actions/createChunkPostWithVideoAttachment', () => ({
 }));
 vi.mock('../_actions/createChunkPostWithAttachment', () => ({
   createChunkPostWithAttachment: (...args: unknown[]) => mockCreateChunkPostWithAttachment(...args),
+}));
+vi.mock('../_actions/createChunkPostWithEmbedAttachment', () => ({
+  createChunkPostWithEmbedAttachment: (...args: unknown[]) =>
+    mockCreateChunkPostWithEmbedAttachment(...args),
 }));
 
 // Stub MiniBoard so MediaAttachmentInput's FEN preview does not pull in
@@ -319,5 +324,137 @@ describe('NewPostForm — Media attachment integration', () => {
     await waitFor(() => {
       expect(container.textContent).toMatch(/postFenAttachment\.error\.invalidFenStructure/);
     });
+  });
+});
+
+// ─── Game family expander wire-up (PGN + chesscom_embed + lichess_embed) ─
+//
+// `<AttachmentInput>` uses `useSafeTranslations`, which falls back to
+// echoing the key path when the next-intl provider is absent — so in
+// tests its expander button reads `attachment.input.show`. The PGN /
+// embed branches in NewPostForm are exercised by typing into the
+// rendered textarea (id=`attachment`) once the expander is open.
+
+const PGN_SAMPLE =
+  '[Event "Test"]\n[Site "?"]\n[Date "2024.01.01"]\n[Round "?"]\n[White "A"]\n[Black "B"]\n[Result "1-0"]\n\n1. e4 e5 1-0';
+const LICHESS_EMBED_URL = 'https://lichess.org/embed/abcd1234';
+const CHESSCOM_EMBED_URL = 'https://www.chess.com/emboard?id=12345';
+
+describe('NewPostForm — Game attachment integration', () => {
+  it('renders the Game expander above the Media expander', () => {
+    const { container } = render(<NewPostForm locale="en" slug="rook-battery" />);
+    const buttons = Array.from(
+      container.querySelectorAll('button[type="button"]')
+    ) as HTMLButtonElement[];
+    const gameIndex = buttons.findIndex((b) => b.textContent === 'attachment.input.show');
+    const mediaIndex = buttons.findIndex(
+      (b) => b.textContent === 'Attach media (image / FEN / video)'
+    );
+    expect(gameIndex).toBeGreaterThanOrEqual(0);
+    expect(mediaIndex).toBeGreaterThanOrEqual(0);
+    expect(gameIndex).toBeLessThan(mediaIndex);
+  });
+
+  it('plain comment with empty attachment textarea routes to createChunkPostWithAttachment', async () => {
+    mockCreateChunkPostWithAttachment.mockResolvedValue({});
+    const { container, getByText } = render(<NewPostForm locale="en" slug="rook-battery" />);
+
+    // Open the Game expander but leave its textarea empty.
+    fireEvent.click(getByText('attachment.input.show'));
+    const content = container.querySelector('#content') as HTMLTextAreaElement;
+    fireEvent.change(content, { target: { value: 'just a plain comment' } });
+    const form = container.querySelector('form') as HTMLFormElement;
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(mockCreateChunkPostWithAttachment).toHaveBeenCalledTimes(1);
+    });
+    expect(mockCreateChunkPostWithEmbedAttachment).not.toHaveBeenCalled();
+  });
+
+  it('PGN-shaped attachment text routes to createChunkPostWithAttachment with the textarea content', async () => {
+    mockCreateChunkPostWithAttachment.mockResolvedValue({});
+    const { container, getByText } = render(<NewPostForm locale="en" slug="rook-battery" />);
+
+    fireEvent.click(getByText('attachment.input.show'));
+    const attachment = container.querySelector('#attachment') as HTMLTextAreaElement;
+    fireEvent.change(attachment, { target: { value: PGN_SAMPLE } });
+    const content = container.querySelector('#content') as HTMLTextAreaElement;
+    fireEvent.change(content, { target: { value: 'see the game' } });
+
+    const form = container.querySelector('form') as HTMLFormElement;
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(mockCreateChunkPostWithAttachment).toHaveBeenCalledTimes(1);
+    });
+    const fd = mockCreateChunkPostWithAttachment.mock.calls[0][3] as FormData;
+    expect(fd.get('attachment')).toBe(PGN_SAMPLE);
+    expect(mockCreateChunkPostWithEmbedAttachment).not.toHaveBeenCalled();
+  });
+
+  it('Lichess embed URL routes to createChunkPostWithEmbedAttachment with provider=lichess', async () => {
+    mockCreateChunkPostWithEmbedAttachment.mockResolvedValue({});
+    const { container, getByText } = render(<NewPostForm locale="en" slug="rook-battery" />);
+
+    fireEvent.click(getByText('attachment.input.show'));
+    const attachment = container.querySelector('#attachment') as HTMLTextAreaElement;
+    fireEvent.change(attachment, { target: { value: LICHESS_EMBED_URL } });
+    const content = container.querySelector('#content') as HTMLTextAreaElement;
+    fireEvent.change(content, { target: { value: 'replay this' } });
+
+    const form = container.querySelector('form') as HTMLFormElement;
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(mockCreateChunkPostWithEmbedAttachment).toHaveBeenCalledTimes(1);
+    });
+    const fd = mockCreateChunkPostWithEmbedAttachment.mock.calls[0][3] as FormData;
+    expect(fd.get('embedProvider')).toBe('lichess');
+    expect(fd.get('embedSourceUrl')).toBe(LICHESS_EMBED_URL);
+    expect(mockCreateChunkPostWithAttachment).not.toHaveBeenCalled();
+  });
+
+  it('chess.com embed URL routes to createChunkPostWithEmbedAttachment with provider=chesscom', async () => {
+    mockCreateChunkPostWithEmbedAttachment.mockResolvedValue({});
+    const { container, getByText } = render(<NewPostForm locale="en" slug="rook-battery" />);
+
+    fireEvent.click(getByText('attachment.input.show'));
+    const attachment = container.querySelector('#attachment') as HTMLTextAreaElement;
+    fireEvent.change(attachment, { target: { value: CHESSCOM_EMBED_URL } });
+    const content = container.querySelector('#content') as HTMLTextAreaElement;
+    fireEvent.change(content, { target: { value: 'replay this' } });
+
+    const form = container.querySelector('form') as HTMLFormElement;
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(mockCreateChunkPostWithEmbedAttachment).toHaveBeenCalledTimes(1);
+    });
+    const fd = mockCreateChunkPostWithEmbedAttachment.mock.calls[0][3] as FormData;
+    expect(fd.get('embedProvider')).toBe('chesscom');
+    expect(fd.get('embedSourceUrl')).toBe(CHESSCOM_EMBED_URL);
+    expect(mockCreateChunkPostWithAttachment).not.toHaveBeenCalled();
+  });
+
+  it('D3 single-kind: Game (PGN) + Media (image) both active → submit disabled and warning shown', () => {
+    const { container, getByText } = render(<NewPostForm locale="en" slug="rook-battery" />);
+
+    // Game expander → paste PGN
+    fireEvent.click(getByText('attachment.input.show'));
+    const attachment = container.querySelector('#attachment') as HTMLTextAreaElement;
+    fireEvent.change(attachment, { target: { value: PGN_SAMPLE } });
+
+    // Media expander → select an image
+    fireEvent.click(getByText('Attach media (image / FEN / video)'));
+    const fileInput = container.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File(['x'], 'a.png', { type: 'image/png' });
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
+    // Submit must be blocked.
+    const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
+    expect(button.disabled).toBe(true);
+    // Warning text rendered (D6 hardcoded English + TODO(i18n) marker).
+    expect(container.textContent).toMatch(/Please choose only one attachment type/i);
   });
 });
