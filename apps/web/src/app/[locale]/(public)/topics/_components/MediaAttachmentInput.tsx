@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { validateFenSemantic } from '@blindfold-chess/features/chess-core';
 
 import { MiniBoard } from '@/lib/positions/ui/MiniBoard';
+import { FEN_MAX_LENGTH } from '@/lib/post-fens/constants';
 import { MAX_IMAGES_PER_POST, POST_IMAGES_MAX_FILE_SIZE } from '@/lib/post-images/validation';
 
 /**
@@ -49,7 +50,7 @@ export function MediaAttachmentInput({ onChange, onModeChange }: Props) {
 
   const fenTrimmed = fen.trim();
   const fenValidation =
-    fenTrimmed.length > 0 && fenTrimmed.length <= 100
+    fenTrimmed.length > 0 && fenTrimmed.length <= FEN_MAX_LENGTH
       ? validateFenSemantic(fenTrimmed)
       : { ok: false as const, reason: 'structure' as const, error: '' };
   const fenValid = fenValidation.ok;
@@ -241,7 +242,7 @@ function FenInput({ fen, caption, onFenChange, onCaptionChange, valid }: FenInpu
         id="attachmentFen"
         name="attachmentFen"
         type="text"
-        maxLength={120}
+        maxLength={FEN_MAX_LENGTH}
         placeholder="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
         value={fen}
         onChange={(e) => onFenChange(e.target.value)}

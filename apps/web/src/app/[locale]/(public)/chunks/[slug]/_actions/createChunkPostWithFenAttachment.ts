@@ -5,19 +5,13 @@ import { validateFenSemantic } from '@blindfold-chess/features/chess-core';
 import { getChunkBySlug } from '@/lib/chunks/queries';
 import { postFenAttachments } from '@/lib/db';
 import { extractPgErrorCode } from '@/lib/db/extract-pg-error-code';
+import { FEN_MAX_LENGTH } from '@/lib/post-fens/constants';
 import { sanitizeFenCaption } from '@/lib/post-fens/sanitize-fen-caption';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { validateContent } from '@/lib/validations/content';
 
 import type { CreatePostState } from '@/app/[locale]/(public)/topics/_actions/createPost';
 import { createPostBase } from '@/app/[locale]/(public)/topics/_actions/createPost';
-
-/**
- * Maximum length of a stored FEN string. Mirrors the
- * `post_fen_attachments.fen` column width and the DB-level CHECK is the
- * last line of defense. Pinned in lock-step with `attachPostFen.ts`.
- */
-const FEN_MAX_LENGTH = 100;
 
 /**
  * Maximum length of a stored caption. Aligned with

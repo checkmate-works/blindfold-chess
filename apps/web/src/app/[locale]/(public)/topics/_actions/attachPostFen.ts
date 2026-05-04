@@ -6,15 +6,9 @@ import { eq } from 'drizzle-orm';
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, postFenAttachments, topicPosts } from '@/lib/db';
+import { FEN_MAX_LENGTH } from '@/lib/post-fens/constants';
 import { sanitizeFenCaption } from '@/lib/post-fens/sanitize-fen-caption';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
-
-/**
- * Maximum length of a stored FEN string. Mirrors the
- * `post_fen_attachments.fen` column width and the DB-level CHECK is the
- * last line of defense.
- */
-const FEN_MAX_LENGTH = 100;
 
 /**
  * Maximum length of a stored caption. Aligned with
