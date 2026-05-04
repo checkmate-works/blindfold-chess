@@ -552,9 +552,9 @@
     "skip": "Skip",
     "endTraining": "End",
     "trainingEnded": "Training ended",
-    "trainingModeActive": "📖 Practicing in training mode",
+    "trainingModeActive": "Practicing in training mode",
     "readyForChallenge": "Are you ready?",
-    "goToChallenge": "⚔️ Take the Challenge",
+    "goToChallenge": "Take the Challenge",
     "quitConfirmModal": {
       "title": "Quit Practice?",
       "message": "Your progress will be lost. Are you sure you want to quit?",

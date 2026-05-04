@@ -552,9 +552,9 @@
     "skip": "Saltar",
     "endTraining": "Finalizar",
     "trainingEnded": "Entrenamiento finalizado",
-    "trainingModeActive": "📖 Practicando en modo entrenamiento",
+    "trainingModeActive": "Practicando en modo entrenamiento",
     "readyForChallenge": "¿Estás listo?",
-    "goToChallenge": "⚔️ Aceptar el Desafío",
+    "goToChallenge": "Aceptar el Desafío",
     "quitConfirmModal": {
       "title": "¿Abandonar la Práctica?",
       "message": "Tu progreso se perderá. ¿Estás seguro de que quieres salir?",

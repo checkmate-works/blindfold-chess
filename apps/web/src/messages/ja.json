@@ -552,9 +552,9 @@
     "skip": "スキップ",
     "endTraining": "終了",
     "trainingEnded": "訓練を終了しました",
-    "trainingModeActive": "📖 トレーニングモードで練習中",
+    "trainingModeActive": "トレーニングモードで練習中",
     "readyForChallenge": "準備はできましたか？",
-    "goToChallenge": "⚔️ チャレンジに挑戦",
+    "goToChallenge": "チャレンジに挑戦",
     "quitConfirmModal": {
       "title": "練習を終了しますか？",
       "message": "進捗は失われます。本当に終了しますか？",

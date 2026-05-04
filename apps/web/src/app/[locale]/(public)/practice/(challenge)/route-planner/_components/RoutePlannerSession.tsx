@@ -1,7 +1,5 @@
 'use client';
 
-import Link from 'next/link';
-
 import { Button } from '@/app/_components';
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -13,6 +11,7 @@ import { PieceCoordinateInput } from '@/app/[locale]/(public)/practice/_componen
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
 
+import { TrainingChallengeCTA } from '../../_components/TrainingChallengeCTA';
 import { useRoutePlannerGame } from '../_hooks/use-route-planner-game';
 import { useStagedCoordinate } from '../_hooks/use-staged-coordinate';
 import { PIECES } from '../_lib/utils';
@@ -190,21 +189,7 @@ export function RoutePlannerSession({
         </div>
       </div>
 
-      {/* Challenge link */}
-      <hr className="border-border mt-8" />
-      <div className="mt-6 text-center">
-        <p className="text-sm text-muted-foreground">{tPractice('trainingModeActive')}</p>
-        <p className="mt-2 text-base font-medium text-foreground">
-          {tPractice('readyForChallenge')}
-        </p>
-        <div className="mt-4">
-          <Link href={`/${locale}/practice/route-planner/challenge`}>
-            <Button asChild variant="primary" size="lg" className="w-full">
-              {tPractice('goToChallenge')}
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <TrainingChallengeCTA challengeHref={`/${locale}/practice/route-planner/challenge`} />
     </div>
   );
 }
