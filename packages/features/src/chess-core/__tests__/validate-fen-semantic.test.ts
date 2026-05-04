@@ -1,8 +1,24 @@
 import { describe, expect, it } from "vitest";
 
+import type {
+  FenSemanticReason,
+  FenSemanticResult,
+} from "../validate-fen-semantic";
 import { validateFenSemantic } from "../validate-fen-semantic";
 
 const STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+/**
+ * Type-narrowing assertion: if the result is `{ ok: true }`, fail the test;
+ * otherwise narrow the input to the failure variant so callers can read
+ * `reason` / `error` without an extra `if` block. Mirrors the discriminated
+ * union exposed by `FenSemanticResult`.
+ */
+function assertFailure(
+  result: FenSemanticResult,
+): asserts result is { ok: false; reason: FenSemanticReason; error: string } {
+  expect(result.ok).toBe(false);
+}
 
 // ============================================================
 // Accepted cases
@@ -69,31 +85,31 @@ describe("validateFenSemantic — accepted cases", () => {
 describe("validateFenSemantic — king invariants", () => {
   it("rejects a position with no kings", () => {
     const result = validateFenSemantic("8/8/8/8/8/8/8/8 w - - 0 1");
-    expect(result.ok).toBe(false);
+    assertFailure(result);
     expect(result.reason).toBe("kings");
   });
 
   it("rejects a position with only one king (white missing)", () => {
     const result = validateFenSemantic("4k3/8/8/8/8/8/8/8 w - - 0 1");
-    expect(result.ok).toBe(false);
+    assertFailure(result);
     expect(result.reason).toBe("kings");
   });
 
   it("rejects a position with two white kings", () => {
     const result = validateFenSemantic("4k3/8/8/8/8/8/8/3KK3 w - - 0 1");
-    expect(result.ok).toBe(false);
+    assertFailure(result);
     expect(result.reason).toBe("kings");
   });
 
   it("rejects a position with two black kings", () => {
     const result = validateFenSemantic("3kk3/8/8/8/8/8/8/4K3 w - - 0 1");
-    expect(result.ok).toBe(false);
+    assertFailure(result);
     expect(result.reason).toBe("kings");
   });
 
   it("rejects a position with only one king (black missing)", () => {
     const result = validateFenSemantic("8/8/8/8/8/8/8/4K3 w - - 0 1");
-    expect(result.ok).toBe(false);
+    assertFailure(result);
     expect(result.reason).toBe("kings");
   });
 });
@@ -105,25 +121,25 @@ describe("validateFenSemantic — pawn placement", () => {
   it("rejects a white pawn on rank 8", () => {
     // P on a8 (top-left).
     const result = validateFenSemantic("P3k3/8/8/8/8/8/8/4K3 w - - 0 1");
-    expect(result.ok).toBe(false);
+    assertFailure(result);
     expect(result.reason).toBe("pawn_placement");
   });
 
   it("rejects a black pawn on rank 1", () => {
     const result = validateFenSemantic("4k3/8/8/8/8/8/8/p3K3 w - - 0 1");
-    expect(result.ok).toBe(false);
+    assertFailure(result);
     expect(result.reason).toBe("pawn_placement");
   });
 
   it("rejects a black pawn on rank 8", () => {
     const result = validateFenSemantic("p3k3/8/8/8/8/8/8/4K3 w - - 0 1");
-    expect(result.ok).toBe(false);
+    assertFailure(result);
     expect(result.reason).toBe("pawn_placement");
   });
 
   it("rejects a white pawn on rank 1", () => {
     const result = validateFenSemantic("4k3/8/8/8/8/8/8/P3K3 w - - 0 1");
-    expect(result.ok).toBe(false);
+    assertFailure(result);
     expect(result.reason).toBe("pawn_placement");
   });
 });
@@ -135,14 +151,14 @@ describe("validateFenSemantic — piece counts", () => {
   it("rejects a side with 9 pawns", () => {
     // 9 white pawns: 8 on rank 2 plus an extra on rank 3.
     const result = validateFenSemantic("4k3/8/8/8/8/P7/PPPPPPPP/4K3 w - - 0 1");
-    expect(result.ok).toBe(false);
+    assertFailure(result);
     expect(result.reason).toBe("piece_count");
   });
 
   it("rejects a side with 9 black pawns", () => {
     // 9 black pawns: 8 on rank 7 plus an extra on rank 6.
     const result = validateFenSemantic("4k3/pppppppp/p7/8/8/8/8/4K3 w - - 0 1");
-    expect(result.ok).toBe(false);
+    assertFailure(result);
     expect(result.reason).toBe("piece_count");
   });
 
@@ -153,7 +169,7 @@ describe("validateFenSemantic — piece counts", () => {
     const result = validateFenSemantic(
       "4k3/8/8/8/4B3/8/PPPPPPPP/RNBQKBNR w KQ - 0 1",
     );
-    expect(result.ok).toBe(false);
+    assertFailure(result);
     expect(result.reason).toBe("piece_count");
   });
 });
@@ -165,32 +181,32 @@ describe("validateFenSemantic — castling rights", () => {
   it("rejects K when white rook is missing from h1", () => {
     // King on e1, no rook on h1, but castling has 'K'.
     const result = validateFenSemantic("4k3/8/8/8/8/8/8/4K3 w K - 0 1");
-    expect(result.ok).toBe(false);
+    assertFailure(result);
     expect(result.reason).toBe("castling_rights");
   });
 
   it("rejects Q when white rook is missing from a1", () => {
     const result = validateFenSemantic("4k3/8/8/8/8/8/8/4K3 w Q - 0 1");
-    expect(result.ok).toBe(false);
+    assertFailure(result);
     expect(result.reason).toBe("castling_rights");
   });
 
   it("rejects k when black rook is missing from h8", () => {
     const result = validateFenSemantic("4k3/8/8/8/8/8/8/4K3 w k - 0 1");
-    expect(result.ok).toBe(false);
+    assertFailure(result);
     expect(result.reason).toBe("castling_rights");
   });
 
   it("rejects q when black rook is missing from a8", () => {
     const result = validateFenSemantic("4k3/8/8/8/8/8/8/4K3 w q - 0 1");
-    expect(result.ok).toBe(false);
+    assertFailure(result);
     expect(result.reason).toBe("castling_rights");
   });
 
   it("rejects K when white king is not on e1", () => {
     // King on d1, rook on h1, but K castling implies king on e1.
     const result = validateFenSemantic("4k3/8/8/8/8/8/8/3K3R w K - 0 1");
-    expect(result.ok).toBe(false);
+    assertFailure(result);
     expect(result.reason).toBe("castling_rights");
   });
 
@@ -204,14 +220,14 @@ describe("validateFenSemantic — castling rights", () => {
     // King on e1, kings on starting squares for both, but no white rook on
     // a1 OR h1 — chess.js is permissive here, our pre-check is the gate.
     const result = validateFenSemantic("r3k2r/8/8/8/8/8/8/4K3 w KQkq - 0 1");
-    expect(result.ok).toBe(false);
+    assertFailure(result);
     expect(result.reason).toBe("castling_rights");
   });
 
   it("rejects k when black king is not on e8", () => {
     // Black king on d8, rook on h8, but k castling implies king on e8.
     const result = validateFenSemantic("3k3r/8/8/8/8/8/8/4K3 w k - 0 1");
-    expect(result.ok).toBe(false);
+    assertFailure(result);
     expect(result.reason).toBe("castling_rights");
   });
 
@@ -232,7 +248,7 @@ describe("validateFenSemantic — en passant", () => {
     const result = validateFenSemantic(
       "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq e3 0 1",
     );
-    expect(result.ok).toBe(false);
+    assertFailure(result);
     expect(result.reason).toBe("en_passant");
   });
 
@@ -240,7 +256,7 @@ describe("validateFenSemantic — en passant", () => {
     const result = validateFenSemantic(
       "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq e6 0 1",
     );
-    expect(result.ok).toBe(false);
+    assertFailure(result);
     expect(result.reason).toBe("en_passant");
   });
 
@@ -249,7 +265,7 @@ describe("validateFenSemantic — en passant", () => {
     const result = validateFenSemantic(
       "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq f6 0 1",
     );
-    expect(result.ok).toBe(false);
+    assertFailure(result);
     expect(result.reason).toBe("en_passant");
   });
 
@@ -259,7 +275,7 @@ describe("validateFenSemantic — en passant", () => {
     // black knight, which is illegal. The validator must reject on the
     // "target square must be empty" rule.
     const result = validateFenSemantic("4k3/8/5n2/5p2/8/8/8/4K3 w - f6 0 1");
-    expect(result.ok).toBe(false);
+    assertFailure(result);
     expect(result.reason).toBe("en_passant");
   });
 });
@@ -270,7 +286,7 @@ describe("validateFenSemantic — en passant", () => {
 describe("validateFenSemantic — hostile inputs", () => {
   it("rejects whitespace-only input via structural delegation", () => {
     const result = validateFenSemantic("   ");
-    expect(result.ok).toBe(false);
+    assertFailure(result);
     expect(result.reason).toBe("structure");
   });
 
@@ -278,14 +294,14 @@ describe("validateFenSemantic — hostile inputs", () => {
     const result = validateFenSemantic(
       "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
     );
-    expect(result.ok).toBe(false);
+    assertFailure(result);
     expect(result.reason).toBe("structure");
   });
 
   it("rejects a FEN with consecutive rank digits", () => {
     // 17 on a rank trips the structural check.
     const result = validateFenSemantic("17/8/8/8/8/8/8/8 w - - 0 1");
-    expect(result.ok).toBe(false);
+    assertFailure(result);
     expect(result.reason).toBe("structure");
   });
 
@@ -295,7 +311,7 @@ describe("validateFenSemantic — hostile inputs", () => {
     const result = validateFenSemantic(
       `‮rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1`,
     );
-    expect(result.ok).toBe(false);
+    assertFailure(result);
     expect(result.reason).toBe("structure");
   });
 

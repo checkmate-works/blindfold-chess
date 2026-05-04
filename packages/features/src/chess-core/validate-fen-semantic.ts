@@ -41,11 +41,15 @@ export type FenSemanticReason =
   | "en_passant"
   | "illegal_position";
 
-export interface FenSemanticResult {
-  ok: boolean;
-  reason?: FenSemanticReason;
-  error?: string;
-}
+/**
+ * Discriminated union: when `ok` is `false`, both `reason` and `error` are
+ * always present. Every `ok: false` return path inside `validateFenSemantic`
+ * populates both fields, so callers can narrow on `ok` and access the
+ * failure context without an extra `undefined` guard.
+ */
+export type FenSemanticResult =
+  | { ok: true }
+  | { ok: false; reason: FenSemanticReason; error: string };
 
 const FILE_INDEX: Record<string, number> = {
   a: 0,
@@ -131,7 +135,14 @@ function squareToIndex(square: string): number | null {
 export function validateFenSemantic(fen: string): FenSemanticResult {
   const structural = validateFenStructure(fen);
   if (!structural.ok) {
-    return { ok: false, reason: "structure", error: structural.error };
+    // `FenStructureResult.error` is typed optional, but every `ok: false`
+    // branch in `validateFenStructure` populates it. Coalesce defensively
+    // to satisfy the discriminated-union contract here.
+    return {
+      ok: false,
+      reason: "structure",
+      error: structural.error ?? "FEN structure is invalid",
+    };
   }
 
   const trimmed = fen.trim();

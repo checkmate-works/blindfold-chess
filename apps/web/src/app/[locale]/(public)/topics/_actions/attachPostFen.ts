@@ -125,12 +125,9 @@ export async function attachPostFen(input: {
   // 1 + 2: structural + semantic FEN validation in one call.
   const fenResult = validateFenSemantic(rawFen);
   if (!fenResult.ok) {
-    // `reason` is typed optional on the result, but every `ok: false`
-    // branch in `validateFenSemantic` populates it; treat the absent
-    // case as a generic semantic failure.
-    if (fenResult.reason === undefined) {
-      return { error: 'postFenAttachment.error.invalidFenSemantic' };
-    }
+    // `FenSemanticResult` is a discriminated union, so `reason` is
+    // guaranteed to be present on the `ok: false` branch — narrow and
+    // dispatch directly.
     switch (fenResult.reason) {
       case 'structure':
         return { error: 'postFenAttachment.error.invalidFenStructure' };
@@ -198,7 +195,16 @@ export async function attachPostFen(input: {
       // `validateFenSemantic` above catch every condition the DB CHECK
       // could fail on, so this branch is practically unreachable from
       // the action layer; it exists in case the CHECK ever drifts ahead
-      // of the app-side regex.
+      // of the app-side regex. If this branch ever fires, triage by
+      // comparing the upstream guards against the DB CHECK:
+      //   - structural FEN regex (JS pin):
+      //       apps/web/src/lib/post-fens/fen-check-regex.test.ts
+      //   - DB CHECK source (constraint
+      //       `post_fen_attachments_chk_fen_format`):
+      //       apps/web/drizzle/20260504070000_create_post_fen_attachments.sql
+      //       apps/web/src/lib/db/schema/tables.ts (postFenAttachments)
+      //   - semantic validator:
+      //       packages/features/src/chess-core/validate-fen-semantic.ts
       return { error: 'postFenAttachment.error.invalidFenStructure' };
     }
     if (code === '22001') {
