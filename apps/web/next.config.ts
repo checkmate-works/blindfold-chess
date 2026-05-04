@@ -10,7 +10,7 @@ const cspDirectives = [
   "img-src 'self' data: blob: *.supabase.co pagead2.googlesyndication.com *.doubleclick.net",
   "font-src 'self'",
   "connect-src 'self' www.google-analytics.com *.sentry.io *.ingest.sentry.io *.supabase.co pagead2.googlesyndication.com adservice.google.com",
-  'frame-src googleads.g.doubleclick.net tpc.googlesyndication.com ep2.adtrafficquality.google www.google.com www.chess.com lichess.org',
+  'frame-src googleads.g.doubleclick.net tpc.googlesyndication.com ep2.adtrafficquality.google www.google.com www.chess.com lichess.org www.youtube-nocookie.com',
   "frame-ancestors 'none'",
 ];
 

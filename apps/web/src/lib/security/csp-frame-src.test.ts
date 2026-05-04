@@ -52,6 +52,29 @@ describe('CSP frame-src — Phase B Tester #43 / #44', () => {
     expect(directive).toContain('lichess.org');
   });
 
+  // #75 — frame-src includes www.youtube-nocookie.com (issue #75 video
+  // attachments). The renderer always rebuilds the iframe src to use
+  // the privacy-enhanced nocookie host, so the standard youtube.com
+  // origin is intentionally NOT in the allow-list — adding it would
+  // expand the attack surface for cookies/tracking without enabling
+  // any user flow.
+  it('#75 next.config.ts CSP frame-src directive contains www.youtube-nocookie.com', async () => {
+    const source = await readNextConfigSource();
+    const directive = extractFrameSrcDirective(source);
+    expect(directive).toContain('www.youtube-nocookie.com');
+  });
+
+  it('#75 next.config.ts CSP frame-src directive does NOT include the standard www.youtube.com host', async () => {
+    const source = await readNextConfigSource();
+    const directive = extractFrameSrcDirective(source);
+    // The renderer is pinned to nocookie. If www.youtube.com ever
+    // appears in this directive, it should be a deliberate decision
+    // documented in the same change.
+    const tokens = directive.replace(/^['"]/, '').replace(/['"]$/, '').trim().split(/\s+/).slice(1);
+    expect(tokens).not.toContain('www.youtube.com');
+    expect(tokens).not.toContain('youtube.com');
+  });
+
   // #43b — directive is wired into the Content-Security-Policy-Report-Only
   //        header (not just defined-but-unused). Cheap regression guard.
   it('#43b the CSP directives array is consumed by the response header', async () => {
