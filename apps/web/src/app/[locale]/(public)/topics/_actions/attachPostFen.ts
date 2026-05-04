@@ -125,6 +125,12 @@ export async function attachPostFen(input: {
   // 1 + 2: structural + semantic FEN validation in one call.
   const fenResult = validateFenSemantic(rawFen);
   if (!fenResult.ok) {
+    // `reason` is typed optional on the result, but every `ok: false`
+    // branch in `validateFenSemantic` populates it; treat the absent
+    // case as a generic semantic failure.
+    if (fenResult.reason === undefined) {
+      return { error: 'postFenAttachment.error.invalidFenSemantic' };
+    }
     switch (fenResult.reason) {
       case 'structure':
         return { error: 'postFenAttachment.error.invalidFenStructure' };
@@ -135,8 +141,15 @@ export async function attachPostFen(input: {
       case 'en_passant':
       case 'illegal_position':
         return { error: 'postFenAttachment.error.invalidFenSemantic' };
-      default:
+      default: {
+        // Compile-time exhaustiveness guard. If `FenSemanticReason`
+        // gains a new variant without a matching case above, this
+        // assignment fails at build time and forces explicit handling.
+        // Pattern matches `createChunkPostWithAttachment.ts`.
+        const _exhaustive: never = fenResult.reason;
+        void _exhaustive;
         return { error: 'postFenAttachment.error.invalidFenSemantic' };
+      }
     }
   }
 

@@ -4221,7 +4221,6 @@
       "invalidFenStructure": "FEN format is invalid. Check the position, side to move, castling, and en passant fields.",
       "invalidFenSemantic": "FEN is not a legal chess position. Check kings, pawn placement, castling rights, and the en passant square.",
       "captionTooLong": "Caption is too long. The maximum length is 200 characters.",
-      "captionContainsDisallowedChars": "Caption contains characters that are not allowed.",
       "alreadyAttached": "This post already has a FEN attachment.",
       "postNotFound": "Post not found.",
       "notOwner": "You can only attach a FEN to your own posts."

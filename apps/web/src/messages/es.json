@@ -4221,7 +4221,6 @@
       "invalidFenStructure": "El formato FEN no es válido. Revisa la posición, el turno, el enroque y el campo de al paso.",
       "invalidFenSemantic": "El FEN no representa una posición legal. Revisa los reyes, la colocación de peones, los derechos de enroque y la casilla de al paso.",
       "captionTooLong": "El pie de foto es demasiado largo. La longitud máxima es 200 caracteres.",
-      "captionContainsDisallowedChars": "El pie de foto contiene caracteres no permitidos.",
       "alreadyAttached": "Esta publicación ya tiene un FEN adjunto.",
       "postNotFound": "Publicación no encontrada.",
       "notOwner": "Solo puedes adjuntar un FEN a tus propias publicaciones."

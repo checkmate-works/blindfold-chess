@@ -4221,7 +4221,6 @@
       "invalidFenStructure": "Formato FEN inválido. Verifique a posição, o lado a jogar, o roque e o campo de en passant.",
       "invalidFenSemantic": "O FEN não representa uma posição legal. Verifique os reis, a colocação dos peões, os direitos de roque e a casa de en passant.",
       "captionTooLong": "A legenda é muito longa. O tamanho máximo é 200 caracteres.",
-      "captionContainsDisallowedChars": "A legenda contém caracteres não permitidos.",
       "alreadyAttached": "Esta postagem já possui um FEN anexado.",
       "postNotFound": "Postagem não encontrada.",
       "notOwner": "Você só pode anexar um FEN às suas próprias postagens."
