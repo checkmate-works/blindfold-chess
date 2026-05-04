@@ -55,7 +55,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const t = await getTranslations({ locale: 'en', namespace: 'Admin' });
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <ThemeScript />
         <style dangerouslySetInnerHTML={{ __html: generateThemeCSS() }} />

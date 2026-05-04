@@ -3,7 +3,7 @@ import Link from 'next/link';
 export default function NotFound() {
   return (
     // lang="en" as fallback: root-level not-found has no access to the user's locale
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth">
       <body
         style={{
           margin: 0,

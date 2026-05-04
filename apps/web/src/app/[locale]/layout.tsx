@@ -187,7 +187,7 @@ export default async function Layout({
   );
 
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={locale} data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <ThemeScript />
         <JsonLd data={generateWebSiteSchema(locale, t('siteName'))} />
