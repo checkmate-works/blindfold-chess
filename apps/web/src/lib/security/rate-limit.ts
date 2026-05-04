@@ -60,6 +60,14 @@ export const RATE_LIMITS = {
    * 15 / 10 min covers ~5 fresh posts before the limit kicks in.
    */
   uploadPostImage: { action: 'upload_post_image', maxAttempts: 15, windowMs: 600_000 },
+  /**
+   * Per-user limit for attaching a FEN to a post. The 1:0..1 invariant
+   * already caps successful inserts at one per post; this limit guards
+   * against spam attempts that hit the validator. 10 / hour matches
+   * `createPost` so a user who creates a post and immediately attaches a
+   * FEN does not run into a tighter ceiling for the second action.
+   */
+  attachPostFen: { action: 'attach_post_fen', maxAttempts: 10, windowMs: 3_600_000 },
   changePassword: { action: 'change_password', maxAttempts: 5, windowMs: 3_600_000 },
   deleteAccount: { action: 'delete_account', maxAttempts: 3, windowMs: 3_600_000 },
   savePracticeResult: { action: 'save_practice_result', maxAttempts: 60, windowMs: 3_600_000 },
