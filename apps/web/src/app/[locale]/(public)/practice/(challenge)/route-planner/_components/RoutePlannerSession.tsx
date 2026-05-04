@@ -1,7 +1,5 @@
 'use client';
 
-import { useCallback } from 'react';
-
 import Link from 'next/link';
 
 import { Button } from '@/app/_components';
@@ -15,7 +13,6 @@ import { PieceCoordinateInput } from '@/app/[locale]/(public)/practice/_componen
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
 
-import { useResultPathHover } from '../_hooks/use-result-path-hover';
 import { useRoutePlannerGame } from '../_hooks/use-route-planner-game';
 import { useStagedCoordinate } from '../_hooks/use-staged-coordinate';
 import { PIECES } from '../_lib/utils';
@@ -37,7 +34,6 @@ export function RoutePlannerSession({
   const tPractice = useTranslations('practice');
 
   const staged = useStagedCoordinate();
-  const resultHover = useResultPathHover();
 
   const {
     gameState,
@@ -51,7 +47,7 @@ export function RoutePlannerSession({
     handleUndo,
     handleSubmitAnswer,
     handleSkip,
-    handleNextProblem: handleNextProblemRaw,
+    handleNextProblem,
     handleEndTraining,
   } = useRoutePlannerGame({
     locale,
@@ -59,12 +55,6 @@ export function RoutePlannerSession({
     mode,
     stagedCoordinate: staged,
   });
-
-  const { resetHover } = resultHover;
-  const handleNextProblem = useCallback(() => {
-    resetHover();
-    handleNextProblemRaw();
-  }, [resetHover, handleNextProblemRaw]);
 
   const isInputActive = gameState === 'playing';
 
@@ -165,9 +155,6 @@ export function RoutePlannerSession({
             problem={problem}
             result={result}
             moves={moves}
-            highlightedPathIndex={resultHover.highlightedPathIndex}
-            onHoverPathIndex={resultHover.setHoveredPathIndex}
-            onLockPathIndex={resultHover.setLockedPathIndex}
             onNextProblem={handleNextProblem}
             isTraining={true}
             isLastProblem={false}
