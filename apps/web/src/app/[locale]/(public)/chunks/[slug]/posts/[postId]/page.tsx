@@ -3,12 +3,16 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { getChunkBySlug } from '@/lib/chunks/queries';
+import type { PostAttachment } from '@/lib/games/get-attachments-for-posts';
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
 import { AttachedEmbedCard } from '@/app/[locale]/(public)/topics/_components/AttachedEmbedCard';
+import { AttachedFenCard } from '@/app/[locale]/(public)/topics/_components/AttachedFenCard';
 import { AttachedGameCard } from '@/app/[locale]/(public)/topics/_components/AttachedGameCard';
+import { AttachedImageCard } from '@/app/[locale]/(public)/topics/_components/AttachedImageCard';
+import { AttachedVideoCard } from '@/app/[locale]/(public)/topics/_components/AttachedVideoCard';
 import { TopicPostDetailLayout } from '@/app/[locale]/(public)/topics/_components/TopicPostDetailLayout';
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { fetchPostDetailData } from '@/app/[locale]/(public)/topics/_lib/post-detail';
@@ -75,6 +79,26 @@ export default async function ChunkPostDetailPage({ params, searchParams }: Prop
   const attachment = attachments.get(postId) ?? null;
 
   const ct = await getTranslations({ locale, namespace: 'topics.chunks' });
+  const tVideo = await getTranslations({ locale, namespace: 'postVideoAttachmentRender' });
+  const renderAttachment = (a: PostAttachment) => {
+    switch (a.kind) {
+      case 'pgn':
+        return <AttachedGameCard attachment={a.data} />;
+      case 'embed':
+        return <AttachedEmbedCard attachment={a.data} />;
+      case 'image':
+        return <AttachedImageCard attachments={a.data} />;
+      case 'fen':
+        return <AttachedFenCard attachment={a.data} />;
+      case 'video':
+        return <AttachedVideoCard attachment={a.data} fallbackTitle={tVideo('fallbackTitle')} />;
+      default: {
+        const _exhaustive: never = a;
+        void _exhaustive;
+        return null;
+      }
+    }
+  };
 
   const replyRestrictionMessage =
     !isAuthor && post.replyPermission === 'followers' && !canReply
@@ -93,15 +117,7 @@ export default async function ChunkPostDetailPage({ params, searchParams }: Prop
           <ThemedBoardThumbnail fen={chunk.representativeFen} className="w-full" />
         </div>
       }
-      opMeta={
-        attachment ? (
-          attachment.kind === 'pgn' ? (
-            <AttachedGameCard attachment={attachment.data} />
-          ) : (
-            <AttachedEmbedCard attachment={attachment.data} />
-          )
-        ) : undefined
-      }
+      opMeta={attachment ? renderAttachment(attachment) : undefined}
       rootWithMeta={rootWithMeta}
       replies={replies}
       user={user}
