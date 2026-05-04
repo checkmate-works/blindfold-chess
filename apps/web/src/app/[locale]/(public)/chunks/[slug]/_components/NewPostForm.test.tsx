@@ -190,4 +190,134 @@ describe('NewPostForm — Media attachment integration', () => {
     // but no router.push happened — the form stays so the user can react.
     expect(mockRouterPush).not.toHaveBeenCalled();
   });
+
+  // ─── Phase machine + single-kind constraint pins (Tester Phase 1) ─────
+
+  it('FEN error returned by Server Action is surfaced via FormErrorBanner', async () => {
+    mockCreateChunkPostWithFenAttachment.mockResolvedValue({
+      error: 'postFenAttachment.error.alreadyAttached',
+    });
+    const { container, getByText } = render(<NewPostForm locale="en" slug="rook-battery" />);
+    fireEvent.click(getByText('Attach media (image / FEN / video)'));
+    const fenRadio = container.querySelector(
+      'input[name="mediaAttachmentKind"][value="fen"]'
+    ) as HTMLInputElement;
+    fireEvent.click(fenRadio);
+    const fenInput = container.querySelector('#attachmentFen') as HTMLInputElement;
+    fireEvent.change(fenInput, { target: { value: VALID_FEN } });
+    const content = container.querySelector('#content') as HTMLTextAreaElement;
+    fireEvent.change(content, { target: { value: 'see the position' } });
+    const form = container.querySelector('form') as HTMLFormElement;
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(mockCreateChunkPostWithFenAttachment).toHaveBeenCalledTimes(1);
+    });
+    // FormErrorBanner renders the error key text or its translation.
+    await waitFor(() => {
+      expect(container.textContent).toMatch(/postFenAttachment\.error\.alreadyAttached/);
+    });
+  });
+
+  it('Video error returned by Server Action is surfaced and submit becomes available again', async () => {
+    mockCreateChunkPostWithVideoAttachment.mockResolvedValue({
+      error: 'postVideoAttachment.error.hostNotAllowed',
+    });
+    const { container, getByText } = render(<NewPostForm locale="en" slug="rook-battery" />);
+    fireEvent.click(getByText('Attach media (image / FEN / video)'));
+    const videoRadio = container.querySelector(
+      'input[name="mediaAttachmentKind"][value="video"]'
+    ) as HTMLInputElement;
+    fireEvent.click(videoRadio);
+    const urlInput = container.querySelector('#attachmentVideoUrl') as HTMLInputElement;
+    fireEvent.change(urlInput, { target: { value: 'https://vimeo.com/12345' } });
+    const content = container.querySelector('#content') as HTMLTextAreaElement;
+    fireEvent.change(content, { target: { value: 'lecture clip' } });
+    const form = container.querySelector('form') as HTMLFormElement;
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(mockCreateChunkPostWithVideoAttachment).toHaveBeenCalledTimes(1);
+    });
+    await waitFor(() => {
+      expect(container.textContent).toMatch(/postVideoAttachment\.error\.hostNotAllowed/);
+    });
+    // After error, submit must be re-enabled (submitting=false again).
+    const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
+    expect(button.disabled).toBe(false);
+  });
+
+  it('image partial-failure path shows the partial-upload hint and does NOT push the router', async () => {
+    mockCreateChunkPostForImageAttach.mockResolvedValue({ ok: true, postId: 'p-003' });
+    // First file uploads OK, second fails.
+    fetchMock
+      .mockResolvedValueOnce({ ok: true, json: async () => ({}) })
+      .mockResolvedValueOnce({ ok: false, json: async () => ({ error: 'upload_failed' }) });
+
+    const { container, getByText } = render(<NewPostForm locale="en" slug="rook-battery" />);
+    fireEvent.click(getByText('Attach media (image / FEN / video)'));
+    const fileInput = container.querySelector('input[type="file"]') as HTMLInputElement;
+    const f1 = new File(['x'], 'a.png', { type: 'image/png' });
+    const f2 = new File(['x'], 'b.png', { type: 'image/png' });
+    fireEvent.change(fileInput, { target: { files: [f1, f2] } });
+    const content = container.querySelector('#content') as HTMLTextAreaElement;
+    fireEvent.change(content, { target: { value: 'with images' } });
+    const form = container.querySelector('form') as HTMLFormElement;
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+    // The partial-upload hint is rendered when imagePhase === 'error'
+    // and createdPostId !== null.
+    await waitFor(() => {
+      expect(container.textContent).toMatch(/comment was posted but image upload failed/i);
+    });
+    expect(mockRouterPush).not.toHaveBeenCalled();
+  });
+
+  it('plain comment error from Server Action surfaces the error and submit is re-enabled', async () => {
+    mockCreateChunkPostWithAttachment.mockResolvedValue({ error: 'rate_limited' });
+    const { container } = render(<NewPostForm locale="en" slug="rook-battery" />);
+    const content = container.querySelector('#content') as HTMLTextAreaElement;
+    fireEvent.change(content, { target: { value: 'just a plain comment' } });
+    const form = container.querySelector('form') as HTMLFormElement;
+    fireEvent.submit(form);
+    await waitFor(() => {
+      expect(mockCreateChunkPostWithAttachment).toHaveBeenCalledTimes(1);
+    });
+    await waitFor(() => {
+      expect(container.textContent).toMatch(/rate_limited/);
+    });
+    const button = container.querySelector('button[type="submit"]') as HTMLButtonElement;
+    expect(button.disabled).toBe(false);
+  });
+
+  it('FEN attach: when invalid mode reaches submit (race), action is not called', async () => {
+    // Pin the front-line guard: mediaMode.valid===false short-circuits
+    // before calling createChunkPostWithFenAttachment, even if (somehow)
+    // the submit fires while the FEN sub-input still reports invalid.
+    const { container, getByText } = render(<NewPostForm locale="en" slug="rook-battery" />);
+    fireEvent.click(getByText('Attach media (image / FEN / video)'));
+    const fenRadio = container.querySelector(
+      'input[name="mediaAttachmentKind"][value="fen"]'
+    ) as HTMLInputElement;
+    fireEvent.click(fenRadio);
+    const fenInput = container.querySelector('#attachmentFen') as HTMLInputElement;
+    fireEvent.change(fenInput, { target: { value: 'not a fen' } });
+    const content = container.querySelector('#content') as HTMLTextAreaElement;
+    fireEvent.change(content, { target: { value: 'see the position' } });
+    // Try to submit even though button is disabled — fireEvent.submit
+    // bypasses the button disabled check.
+    const form = container.querySelector('form') as HTMLFormElement;
+    fireEvent.submit(form);
+    // The action must not be invoked because submit() short-circuits
+    // on `mediaMode.valid === false`.
+    await new Promise((r) => setTimeout(r, 30));
+    expect(mockCreateChunkPostWithFenAttachment).not.toHaveBeenCalled();
+    // The validation error banner should appear instead.
+    await waitFor(() => {
+      expect(container.textContent).toMatch(/postFenAttachment\.error\.invalidFenStructure/);
+    });
+  });
 });
