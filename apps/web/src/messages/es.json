@@ -540,6 +540,7 @@
     "startTraining": "Iniciar Entrenamiento",
     "startChallenge": "Iniciar Desafío",
     "switchToTraining": "📖 Practicar en modo entrenamiento",
+    "orDivider": "o",
     "challengeSetup": {
       "title": "Reglas del Desafío",
       "timeLimit": "Responde tantas preguntas como puedas en {seconds} segundos.",

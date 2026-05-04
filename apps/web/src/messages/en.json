@@ -540,6 +540,7 @@
     "startTraining": "Start Training",
     "startChallenge": "Start Challenge",
     "switchToTraining": "📖 Practice in training mode",
+    "orDivider": "or",
     "challengeSetup": {
       "title": "Challenge Rules",
       "timeLimit": "Answer as many questions as you can within {seconds} seconds.",

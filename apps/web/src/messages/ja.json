@@ -540,6 +540,7 @@
     "startTraining": "トレーニング開始",
     "startChallenge": "チャレンジ開始",
     "switchToTraining": "📖 トレーニングモードで練習する",
+    "orDivider": "または",
     "challengeSetup": {
       "title": "チャレンジルール",
       "timeLimit": "制限時間{seconds}秒以内にできるだけ多くの問題に正解してください。",
