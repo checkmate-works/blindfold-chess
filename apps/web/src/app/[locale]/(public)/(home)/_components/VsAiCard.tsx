@@ -15,6 +15,7 @@ import { useGameList } from '../_hooks/use-game-list';
 
 type Props = {
   locale: string;
+  'data-tour-id'?: string;
 };
 
 function ResumeGameInfo({
@@ -40,13 +41,13 @@ function ResumeGameInfo({
   );
 }
 
-export function VsAiCard({ locale }: Props) {
+export function VsAiCard({ locale, ...rest }: Props) {
   const t = useTranslations('home.vsAi');
   const { games, isLoading } = useGameList('lastPlayed', 'desc');
 
   if (isLoading) {
     return (
-      <DashboardSection>
+      <DashboardSection {...rest}>
         <div className="animate-pulse">
           {/* Top row: icon + title on left, link placeholder on right */}
           <div className="flex items-center justify-between gap-3">
@@ -82,7 +83,7 @@ export function VsAiCard({ locale }: Props) {
   const latestGame = inProgressGames[0] ?? null;
 
   return (
-    <DashboardSection>
+    <DashboardSection {...rest}>
       <DashboardSectionHeader
         icon={<ChessPieceIcon type="p" color="w" size={20} />}
         title={t('title')}

@@ -106,7 +106,7 @@ export default async function HomePage({ params }: Props) {
     <>
       <div className="mb-8 flex items-center justify-center gap-2">
         <PageTitle>{tHome('pageTitle')}</PageTitle>
-        {user && <HelpTourButton steps={helpSteps} label={tHome('help.label')} />}
+        <HelpTourButton steps={helpSteps} label={tHome('help.label')} />
       </div>
 
       <div className="space-y-6">
@@ -118,20 +118,17 @@ export default async function HomePage({ params }: Props) {
         />
 
         <DashboardCard>
-          <div data-tour-id="vs-ai-card">
-            <VsAiCard locale={locale} />
-          </div>
+          <VsAiCard locale={locale} data-tour-id="vs-ai-card" />
           {/* initialItems: SSR'd into FeedClient — see FeedClient prop TSDoc for the SSR invariant. */}
-          <div data-tour-id="home-feed">
-            <FeedClient
-              initialItems={initialFeed.items}
-              initialCursor={initialFeed.nextCursor}
-              locale={locale}
-              showMoreLabel={tTopics('showMore')}
-              justNowLabel={tSquares('justNow')}
-              showAds={showAds}
-            />
-          </div>
+          <FeedClient
+            initialItems={initialFeed.items}
+            initialCursor={initialFeed.nextCursor}
+            locale={locale}
+            showMoreLabel={tTopics('showMore')}
+            justNowLabel={tSquares('justNow')}
+            showAds={showAds}
+            data-tour-id="home-feed"
+          />
         </DashboardCard>
       </div>
     </>
