@@ -1446,7 +1446,7 @@
       "label": "Help",
       "vsAi": {
         "title": "Play vs AI",
-        "description": "Start a new AI game or resume an in-progress one. Games are saved to your computer's or phone's local storage."
+        "description": "Start a new AI game or resume an in-progress one."
       },
       "feed": {
         "title": "Timeline",
@@ -1455,7 +1455,22 @@
     }
   },
   "gamesPage": {
-    "pageTitle": "Games"
+    "pageTitle": "Games",
+    "help": {
+      "label": "Help",
+      "newGame": {
+        "title": "Start a new game",
+        "description": "Press this button to start a game against the AI."
+      },
+      "autoSave": {
+        "title": "Auto-saved games",
+        "description": "Games are auto-saved on your device, and the most recent 20 are kept. See <link>data handling</link> for details."
+      },
+      "bulkDelete": {
+        "title": "Bulk delete",
+        "description": "Use \"Bulk Delete\" to clear out multiple games at once."
+      }
+    }
   },
   "bulkDelete": {
     "title": "Bulk Delete Games",

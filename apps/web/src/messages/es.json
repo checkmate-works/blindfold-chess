@@ -1446,7 +1446,7 @@
       "label": "Ayuda",
       "vsAi": {
         "title": "Jugar contra la IA",
-        "description": "Empieza una nueva partida contra la IA o retoma una en curso. Las partidas se guardan en el almacenamiento local de tu ordenador o móvil."
+        "description": "Empieza una nueva partida contra la IA o retoma una en curso."
       },
       "feed": {
         "title": "Cronología",
@@ -1455,7 +1455,22 @@
     }
   },
   "gamesPage": {
-    "pageTitle": "Partidas"
+    "pageTitle": "Partidas",
+    "help": {
+      "label": "Ayuda",
+      "newGame": {
+        "title": "Empezar una nueva partida",
+        "description": "Pulsa este botón para empezar una partida contra la IA."
+      },
+      "autoSave": {
+        "title": "Guardado automático",
+        "description": "Las partidas se guardan automáticamente en tu dispositivo y se conservan las 20 más recientes. Consulta <link>manejo de datos</link> para más detalles."
+      },
+      "bulkDelete": {
+        "title": "Eliminación masiva",
+        "description": "Usa «Eliminación Masiva» para borrar varias partidas a la vez."
+      }
+    }
   },
   "bulkDelete": {
     "title": "Eliminación Masiva de Partidas",

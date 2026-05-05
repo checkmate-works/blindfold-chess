@@ -14,7 +14,8 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { NewGameButton } from '@/app/[locale]/(public)/(home)/_components/NewGameButton';
-import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { HelpTourButton, PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import type { HelpStep } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -49,16 +50,47 @@ export default async function GamesPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'gamesPage' });
+  const tHelp = await getTranslations({ locale, namespace: 'gamesPage.help' });
   const tGameList = await getTranslations({ locale, namespace: 'home.gameList' });
+
+  const helpSteps: HelpStep[] = [
+    {
+      targetId: 'games-new-button',
+      title: tHelp('newGame.title'),
+      description: tHelp('newGame.description'),
+      side: 'bottom',
+      align: 'start',
+    },
+    {
+      targetId: 'games-list',
+      title: tHelp('autoSave.title'),
+      description: tHelp.markup('autoSave.description', {
+        link: (chunks) =>
+          `<a href="/${locale}/manual/data-handling-caution" class="underline">${chunks}</a>`,
+      }),
+      side: 'top',
+      align: 'start',
+    },
+    {
+      targetId: 'games-bulk-delete',
+      title: tHelp('bulkDelete.title'),
+      description: tHelp('bulkDelete.description'),
+      side: 'top',
+      align: 'end',
+    },
+  ];
 
   return (
     <PageLayout
       title={t('pageTitle')}
+      titleAction={<HelpTourButton steps={helpSteps} label={tHelp('label')} />}
       locale={locale}
       breadcrumb={[{ label: t('pageTitle'), href: undefined }]}
     >
       <SectionTitle>{tGameList('title')}</SectionTitle>
-      <NewGameButton locale={locale} />
+      <div data-tour-id="games-new-button">
+        <NewGameButton locale={locale} />
+      </div>
       <GamesPageClient locale={locale} />
     </PageLayout>
   );

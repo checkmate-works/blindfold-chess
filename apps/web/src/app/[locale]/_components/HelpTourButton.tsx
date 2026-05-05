@@ -1,5 +1,9 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
+
+import { usePathname } from 'next/navigation';
+
 import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
 import { FaQuestionCircle } from 'react-icons/fa';
@@ -20,7 +24,21 @@ type Props = {
 };
 
 export function HelpTourButton({ steps, label }: Props) {
+  const driverRef = useRef<ReturnType<typeof driver> | null>(null);
+  const pathname = usePathname();
+
+  // Driver renders its overlay/popover into <body>, outside the React tree, so
+  // a route change leaves them stranded if the highlighted element was a link
+  // the user clicked through. Destroy on pathname change (and on unmount).
+  useEffect(() => {
+    return () => {
+      driverRef.current?.destroy();
+      driverRef.current = null;
+    };
+  }, [pathname]);
+
   const startTour = () => {
+    driverRef.current?.destroy();
     const d = driver({
       showProgress: steps.length > 1,
       steps: steps.map((step) => ({
@@ -33,7 +51,7 @@ export function HelpTourButton({ steps, label }: Props) {
         },
       })),
     });
-
+    driverRef.current = d;
     d.drive();
   };
 
