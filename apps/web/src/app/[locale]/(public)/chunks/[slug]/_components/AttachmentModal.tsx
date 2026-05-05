@@ -37,8 +37,13 @@ export type AttachmentTabKind = 'game' | 'position' | 'media';
  */
 export type AggregatedAttachmentMode =
   | { kind: 'empty' }
-  | { kind: 'pgn' }
-  | { kind: 'embed'; provider: 'chesscom' | 'lichess'; sourceUrl: string }
+  | { kind: 'pgn'; pgn: string; anonymize: boolean }
+  | {
+      kind: 'embed';
+      provider: 'chesscom' | 'lichess';
+      sourceUrl: string;
+      anonymize: boolean;
+    }
   | { kind: 'image'; files: readonly File[] }
   | { kind: 'fen'; fen: string; caption: string | null; valid: boolean }
   | { kind: 'video'; url: string };

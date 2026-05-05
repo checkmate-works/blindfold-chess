@@ -20,8 +20,13 @@ import { detectAttachmentInput } from '@/lib/games/validation';
  */
 export type AttachmentInputMode =
   | { kind: 'empty' }
-  | { kind: 'pgn' }
-  | { kind: 'embed'; provider: 'chesscom' | 'lichess'; sourceUrl: string };
+  | { kind: 'pgn'; pgn: string; anonymize: boolean }
+  | {
+      kind: 'embed';
+      provider: 'chesscom' | 'lichess';
+      sourceUrl: string;
+      anonymize: boolean;
+    };
 
 type Props = {
   /** Notify the parent form that the user typed in the attachment field. */
@@ -52,6 +57,7 @@ export function AttachmentInput({ onChange, onModeChange }: Props) {
   const t = useTranslations('attachment');
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState('');
+  const [anonymize, setAnonymize] = useState(false);
 
   // Memoize the detection result so the same trimmed input does not
   // re-run the regex chain on every render. The detection is pure and
@@ -65,13 +71,23 @@ export function AttachmentInput({ onChange, onModeChange }: Props) {
   const mode: AttachmentInputMode = useMemo(() => {
     if (!detected || detected.kind === 'empty') return { kind: 'empty' };
     if (detected.kind === 'lichess_embed') {
-      return { kind: 'embed', provider: 'lichess', sourceUrl: detected.sourceUrl };
+      return {
+        kind: 'embed',
+        provider: 'lichess',
+        sourceUrl: detected.sourceUrl,
+        anonymize,
+      };
     }
     if (detected.kind === 'chesscom_embed') {
-      return { kind: 'embed', provider: 'chesscom', sourceUrl: detected.sourceUrl };
+      return {
+        kind: 'embed',
+        provider: 'chesscom',
+        sourceUrl: detected.sourceUrl,
+        anonymize,
+      };
     }
-    return { kind: 'pgn' };
-  }, [detected]);
+    return { kind: 'pgn', pgn: value, anonymize };
+  }, [detected, anonymize, value]);
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -162,6 +178,8 @@ export function AttachmentInput({ onChange, onModeChange }: Props) {
               name="attachmentAnonymize"
               type="checkbox"
               className="mt-0.5"
+              checked={anonymize}
+              onChange={(e) => setAnonymize(e.target.checked)}
             />
             <span>
               <span className="font-medium">{t('label.anonymize')}</span>

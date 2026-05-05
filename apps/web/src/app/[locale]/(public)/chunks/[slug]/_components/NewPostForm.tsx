@@ -8,16 +8,13 @@ import { Button, FormErrorBanner, Textarea } from '@/app/_components';
 
 import { MAX_CONTENT_LENGTH } from '@/lib/validations/content';
 
-import { AttachmentInput } from '@/app/[locale]/(public)/topics/_components/AttachmentInput';
-import type { AttachmentInputMode } from '@/app/[locale]/(public)/topics/_components/AttachmentInput';
-import { MediaAttachmentInput } from '@/app/[locale]/(public)/topics/_components/MediaAttachmentInput';
-import type { MediaAttachmentMode } from '@/app/[locale]/(public)/topics/_components/MediaAttachmentInput';
-
 import { createChunkPostForImageAttach } from '../_actions/createChunkPostForImageAttach';
 import { createChunkPostWithAttachment } from '../_actions/createChunkPostWithAttachment';
 import { createChunkPostWithEmbedAttachment } from '../_actions/createChunkPostWithEmbedAttachment';
 import { createChunkPostWithFenAttachment } from '../_actions/createChunkPostWithFenAttachment';
 import { createChunkPostWithVideoAttachment } from '../_actions/createChunkPostWithVideoAttachment';
+import { AttachmentModal } from './AttachmentModal';
+import type { AggregatedAttachmentMode } from './AttachmentModal';
 
 type Props = {
   locale: string;
@@ -27,14 +24,11 @@ type Props = {
 /**
  * @design Single-kind constraint
  *
- * SPEC2 D3 case (iii): a post may carry attachments from at most one
- * family. Both families are now wired in. Game family lives in
- * `<AttachmentInput>` (textarea + auto-detect: PGN, chesscom_embed,
- * lichess_embed). Media family lives in `<MediaAttachmentInput>` (image /
- * FEN / video). Submit routes to the matching atomic Server Action (or,
- * for image, the 2-step inline flow per D1 case B). When both expanders
- * are non-empty the form blocks submit with an inline warning so a single
- * post never carries attachments from more than one family.
+ * SPEC2 D3 case (iii) is now satisfied structurally rather than through
+ * a runtime warning: the AttachmentModal aggregates the active tab's
+ * mode into a single discriminated `AggregatedAttachmentMode`, and only
+ * that one is forwarded here. The previous `bothFamiliesActive` check
+ * is removed because it is impossible to reach.
  *
  * @design Phase machine for image upload (D1 case B)
  *
@@ -55,17 +49,13 @@ export function NewPostForm({ locale, slug }: Props) {
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [mediaMode, setMediaMode] = useState<MediaAttachmentMode>({ kind: 'empty' });
-  const [gameMode, setGameMode] = useState<AttachmentInputMode>({ kind: 'empty' });
+  const [attachment, setAttachment] = useState<AggregatedAttachmentMode>({ kind: 'empty' });
+  const [modalOpen, setModalOpen] = useState(false);
   const [imagePhase, setImagePhase] = useState<ImagePhase>('compose');
   const [createdPostId, setCreatedPostId] = useState<string | null>(null);
 
-  const onModeChange = useCallback((mode: MediaAttachmentMode) => {
-    setMediaMode(mode);
-  }, []);
-
-  const onGameModeChange = useCallback((mode: AttachmentInputMode) => {
-    setGameMode(mode);
+  const onApply = useCallback((mode: AggregatedAttachmentMode) => {
+    setAttachment(mode);
   }, []);
 
   const submit = async (formData: FormData) => {
@@ -73,102 +63,117 @@ export function NewPostForm({ locale, slug }: Props) {
     setSubmitting(true);
 
     try {
-      // FEN: atomic single-call action.
-      if (mediaMode.kind === 'fen') {
-        if (!mediaMode.valid) {
-          setError('postFenAttachment.error.invalidFenStructure');
-          setSubmitting(false);
-          return;
-        }
-        // Ensure the canonical (trimmed) FEN reaches the action even if
-        // the textarea retained whitespace.
-        formData.set('attachmentFen', mediaMode.fen);
-        if (mediaMode.caption !== null) {
-          formData.set('attachmentFenCaption', mediaMode.caption);
-        }
-        const result = await createChunkPostWithFenAttachment(locale, slug, {}, formData);
-        // The action redirects on success; if we got here the only paths
-        // are an early validation error or an exception — the latter is
-        // already caught below.
-        if (result?.error) {
-          setError(result.error);
-          setSubmitting(false);
-        }
-        return;
-      }
-
-      // Video: atomic single-call action.
-      if (mediaMode.kind === 'video') {
-        formData.set('attachmentVideoUrl', mediaMode.url);
-        const result = await createChunkPostWithVideoAttachment(locale, slug, {}, formData);
-        if (result?.error) {
-          setError(result.error);
-          setSubmitting(false);
-        }
-        return;
-      }
-
-      // Image: 2-step (post create -> per-file upload). The post is
-      // persisted before any image upload happens; if uploads fail the
-      // post stays as a text-only comment (graceful degradation, see
-      // Lessons §5 / SPEC2 D1 case B rationale).
-      if (mediaMode.kind === 'image') {
-        const createResult = await createChunkPostForImageAttach(locale, slug, formData);
-        if (!createResult.ok) {
-          setError(createResult.error);
-          setSubmitting(false);
-          return;
-        }
-        setCreatedPostId(createResult.postId);
-        setImagePhase('attaching');
-        try {
-          for (const file of mediaMode.files) {
-            const fd = new FormData();
-            fd.set('file', file);
-            const res = await fetch(`/api/posts/${createResult.postId}/images`, {
-              method: 'POST',
-              body: fd,
-              credentials: 'same-origin',
-            });
-            if (!res.ok) {
-              const body = (await res.json().catch(() => ({}))) as { error?: string };
-              setError(body.error ?? 'attachment.image.error.uploadFailed');
-              setImagePhase('error');
-              setSubmitting(false);
-              return;
-            }
+      switch (attachment.kind) {
+        case 'fen': {
+          if (!attachment.valid) {
+            setError('postFenAttachment.error.invalidFenStructure');
+            setSubmitting(false);
+            return;
           }
-          setImagePhase('done');
-          router.push(`/${locale}/chunks/${slug}#post-${createResult.postId}`);
-          router.refresh();
-          return;
-        } catch {
-          setError('attachment.image.error.uploadFailed');
-          setImagePhase('error');
-          setSubmitting(false);
+          formData.set('attachmentFen', attachment.fen);
+          if (attachment.caption !== null) {
+            formData.set('attachmentFenCaption', attachment.caption);
+          }
+          const result = await createChunkPostWithFenAttachment(locale, slug, {}, formData);
+          if (result?.error) {
+            setError(result.error);
+            setSubmitting(false);
+          }
           return;
         }
-      }
-
-      // Game family — embed (chesscom / lichess). The hidden
-      // `embedProvider` / `embedSourceUrl` fields are emitted by
-      // `<AttachmentInput>` when its detected mode is `embed`.
-      if (gameMode.kind === 'embed') {
-        const result = await createChunkPostWithEmbedAttachment(locale, slug, {}, formData);
-        if (result?.error) {
-          setError(result.error);
-          setSubmitting(false);
+        case 'video': {
+          formData.set('attachmentVideoUrl', attachment.url);
+          const result = await createChunkPostWithVideoAttachment(locale, slug, {}, formData);
+          if (result?.error) {
+            setError(result.error);
+            setSubmitting(false);
+          }
+          return;
         }
-        return;
-      }
-
-      // Game family — PGN (or no attachment): both fall through to
-      // `createChunkPostWithAttachment`, which inspects the `attachment`
-      // textarea field to decide whether a PGN row is created.
-      const result = await createChunkPostWithAttachment(locale, slug, {}, formData);
-      if (result?.error) {
-        setError(result.error);
-        setSubmitting(false);
+        case 'image': {
+          // 2-step (post create -> per-file upload). The post is
+          // persisted before any image upload happens; if uploads fail
+          // the post stays as a text-only comment (graceful
+          // degradation, see Lessons §5 / SPEC2 D1 case B rationale).
+          const createResult = await createChunkPostForImageAttach(locale, slug, formData);
+          if (!createResult.ok) {
+            setError(createResult.error);
+            setSubmitting(false);
+            return;
+          }
+          setCreatedPostId(createResult.postId);
+          setImagePhase('attaching');
+          try {
+            for (const file of attachment.files) {
+              const fd = new FormData();
+              fd.set('file', file);
+              const res = await fetch(`/api/posts/${createResult.postId}/images`, {
+                method: 'POST',
+                body: fd,
+                credentials: 'same-origin',
+              });
+              if (!res.ok) {
+                const body = (await res.json().catch(() => ({}))) as { error?: string };
+                setError(body.error ?? 'attachment.image.error.uploadFailed');
+                setImagePhase('error');
+                setSubmitting(false);
+                return;
+              }
+            }
+            setImagePhase('done');
+            router.push(`/${locale}/chunks/${slug}#post-${createResult.postId}`);
+            router.refresh();
+            return;
+          } catch {
+            setError('attachment.image.error.uploadFailed');
+            setImagePhase('error');
+            setSubmitting(false);
+            return;
+          }
+        }
+        case 'embed': {
+          formData.set('embedProvider', attachment.provider);
+          formData.set('embedSourceUrl', attachment.sourceUrl);
+          if (attachment.anonymize) {
+            formData.set('attachmentAnonymize', 'on');
+          }
+          const result = await createChunkPostWithEmbedAttachment(locale, slug, {}, formData);
+          if (result?.error) {
+            setError(result.error);
+            setSubmitting(false);
+          }
+          return;
+        }
+        case 'pgn': {
+          // The AttachmentInput textarea lives inside a portal'd modal
+          // so its `attachment` / `attachmentAnonymize` fields are not
+          // captured by the parent form's FormData. Synthesize them
+          // here from the captured mode.
+          formData.set('attachment', attachment.pgn);
+          if (attachment.anonymize) {
+            formData.set('attachmentAnonymize', 'on');
+          }
+          const result = await createChunkPostWithAttachment(locale, slug, {}, formData);
+          if (result?.error) {
+            setError(result.error);
+            setSubmitting(false);
+          }
+          return;
+        }
+        case 'empty': {
+          // No attachment — `createChunkPostWithAttachment` posts a
+          // plain comment when its `attachment` field is empty.
+          const result = await createChunkPostWithAttachment(locale, slug, {}, formData);
+          if (result?.error) {
+            setError(result.error);
+            setSubmitting(false);
+          }
+          return;
+        }
+        default: {
+          const _exhaustive: never = attachment;
+          return _exhaustive;
+        }
       }
     } catch (err) {
       // next/navigation's `redirect()` throws an internal error to abort
@@ -182,21 +187,28 @@ export function NewPostForm({ locale, slug }: Props) {
     }
   };
 
-  const bothFamiliesActive = gameMode.kind !== 'empty' && mediaMode.kind !== 'empty';
-
   const submitDisabled =
-    submitting ||
-    (mediaMode.kind === 'fen' && !mediaMode.valid) ||
-    imagePhase === 'attaching' ||
-    bothFamiliesActive;
+    submitting || (attachment.kind === 'fen' && !attachment.valid) || imagePhase === 'attaching';
+
+  const attachmentSummary = describeAttachment(attachment);
 
   return (
     <form action={submit} className="space-y-4">
       <FormErrorBanner message={error} />
 
-      <AttachmentInput onModeChange={onGameModeChange} />
+      <div className="space-y-1">
+        <button
+          type="button"
+          onClick={() => setModalOpen(true)}
+          className="text-sm text-link-primary hover:underline"
+        >
+          {/* TODO(i18n): attachment.modal.openButton */}
+          {attachment.kind === 'empty' ? 'Add attachment' : 'Edit attachment'}
+        </button>
+        {attachmentSummary && <p className="text-xs text-muted-foreground">{attachmentSummary}</p>}
+      </div>
 
-      <MediaAttachmentInput onModeChange={onModeChange} />
+      <AttachmentModal isOpen={modalOpen} onClose={() => setModalOpen(false)} onApply={onApply} />
 
       <div className="space-y-2">
         <label htmlFor="content" className="sr-only">
@@ -226,13 +238,6 @@ export function NewPostForm({ locale, slug }: Props) {
         {imagePhase === 'attaching' ? 'Uploading images…' : submitting ? 'Submitting…' : 'Submit'}
       </Button>
 
-      {bothFamiliesActive && (
-        <p className="text-xs text-destructive" role="alert">
-          {/* TODO(i18n): attachment.error.singleKindConstraint (D3 case iii) */}
-          Please choose only one attachment type — Game or Media.
-        </p>
-      )}
-
       {imagePhase === 'error' && createdPostId !== null && (
         <p className="text-xs text-muted-foreground">
           {/* TODO(i18n): attachment.image.error.partialUploadHint */}
@@ -241,4 +246,30 @@ export function NewPostForm({ locale, slug }: Props) {
       )}
     </form>
   );
+}
+
+function describeAttachment(mode: AggregatedAttachmentMode): string | null {
+  switch (mode.kind) {
+    case 'empty':
+      return null;
+    case 'pgn':
+      // TODO(i18n): attachment.modal.summary.pgn
+      return 'Game (PGN) attached.';
+    case 'embed':
+      // TODO(i18n): attachment.modal.summary.embed
+      return `Game (${mode.provider} embed) attached.`;
+    case 'image':
+      // TODO(i18n): attachment.modal.summary.image
+      return `${mode.files.length} image${mode.files.length === 1 ? '' : 's'} attached.`;
+    case 'fen':
+      // TODO(i18n): attachment.modal.summary.fen
+      return mode.valid ? 'Position (FEN) attached.' : 'Position (FEN) attached (invalid).';
+    case 'video':
+      // TODO(i18n): attachment.modal.summary.video
+      return 'Video attached.';
+    default: {
+      const _exhaustive: never = mode;
+      return _exhaustive;
+    }
+  }
 }
