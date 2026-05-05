@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 /**
  * Trap focus inside a container while it is active.
@@ -16,13 +16,14 @@ import { useEffect, useRef } from 'react';
  *   the dialog).
  *
  * @design
- * - Static descendant query — focusable elements are recomputed on every
- *   Tab keystroke, so DOM nodes added/removed after open are picked up
- *   without a MutationObserver. This is cheap for the small subtrees a
- *   modal contains and avoids the complexity / SE attack-surface of
- *   observing the document.
- * - The container ref is intentionally returned (not provided as a prop)
- *   so consumers can mount it anywhere in their JSX.
+ * - Uses a callback ref so activation re-runs when the container node
+ *   actually attaches (e.g., when a parent component renders the
+ *   container only after `mounted=true`). A plain `useRef` would be
+ *   stale because the activation effect would fire before the ref
+ *   binds.
+ * - Static descendant query — focusable elements are recomputed on
+ *   every Tab keystroke, so DOM nodes added/removed after open are
+ *   picked up without a MutationObserver.
  */
 const FOCUSABLE_SELECTOR = [
   'a[href]',
@@ -34,32 +35,35 @@ const FOCUSABLE_SELECTOR = [
 ].join(',');
 
 export function useFocusTrap<T extends HTMLElement>(active: boolean) {
-  const containerRef = useRef<T | null>(null);
+  const [node, setNode] = useState<T | null>(null);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
+
+  const containerRef = useCallback((el: T | null) => {
+    setNode(el);
+  }, []);
 
   useEffect(() => {
-    if (!active) return;
-    const container = containerRef.current;
-    if (!container) return;
+    if (!active || !node) return;
 
-    const previouslyFocused = document.activeElement as HTMLElement | null;
+    previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
 
-    const focusables = container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
-    const first = focusables[0] ?? container;
+    const focusables = node.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
+    const first = focusables[0] ?? node;
     first.focus();
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key !== 'Tab') return;
-      const list = container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
+      const list = node.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
       if (list.length === 0) {
         e.preventDefault();
-        container.focus();
+        node.focus();
         return;
       }
       const firstEl = list[0];
       const lastEl = list[list.length - 1];
       const activeEl = document.activeElement as HTMLElement | null;
       if (e.shiftKey) {
-        if (activeEl === firstEl || !container.contains(activeEl)) {
+        if (activeEl === firstEl || !node.contains(activeEl)) {
           e.preventDefault();
           lastEl.focus();
         }
@@ -75,9 +79,9 @@ export function useFocusTrap<T extends HTMLElement>(active: boolean) {
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      previouslyFocused?.focus?.();
+      previouslyFocusedRef.current?.focus?.();
     };
-  }, [active]);
+  }, [active, node]);
 
   return containerRef;
 }
