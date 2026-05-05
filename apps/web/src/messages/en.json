@@ -3918,6 +3918,17 @@
         "blindfoldLegalMoves": "Legal move detection in blindfold chess",
         "diagonals": "Computing diagonals and anti-diagonals"
       }
+    },
+    "help": {
+      "label": "Help",
+      "overview": {
+        "title": "Dojo",
+        "description": "The curriculum is structured so that, by climbing the ranks to black belt, you build the skill to beat low-rated AI at blindfold chess."
+      },
+      "viewAllRanks": {
+        "title": "All ranks",
+        "description": "Check each rank's requirements and guides from here."
+      }
     }
   },
   "guides": {

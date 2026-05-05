@@ -3918,6 +3918,17 @@
         "blindfoldLegalMoves": "Detecção de movimentos legais no xadrez às cegas",
         "diagonals": "Cálculo de diagonais e antidiagonais"
       }
+    },
+    "help": {
+      "label": "Ajuda",
+      "overview": {
+        "title": "Dojo",
+        "description": "O programa foi pensado para que, ao subir de graduação até a faixa preta, você desenvolva a habilidade para vencer a IA de baixa pontuação no xadrez às cegas."
+      },
+      "viewAllRanks": {
+        "title": "Todas as graduações",
+        "description": "Aqui você pode conferir os requisitos e os guias de cada graduação."
+      }
     }
   },
   "guides": {

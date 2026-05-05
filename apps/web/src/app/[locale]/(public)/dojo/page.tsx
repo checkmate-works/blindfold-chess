@@ -33,7 +33,13 @@ import {
   resolveNextRank,
 } from '@/app/[locale]/(public)/ranks/_lib/helpers';
 import { getAllRanks, getUserAchievedRankIds } from '@/app/[locale]/(public)/ranks/_lib/queries';
-import { CurriculumToc, PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import {
+  CurriculumToc,
+  HelpTourButton,
+  PageLayout,
+  SectionTitle,
+} from '@/app/[locale]/_components';
+import type { HelpStep } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -61,6 +67,7 @@ export async function generateMetadata({ params }: LocalePageProps): Promise<Met
 export default async function DojoPage({ params }: LocalePageProps) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'dojo' });
+  const tHelp = await getTranslations({ locale, namespace: 'dojo.help' });
   const tRanks = await getTranslations({ locale, namespace: 'ranks' });
   const tGuides = await getTranslations({ locale, namespace: 'guides' });
   const guidesPages = tGuides.raw('pages') as Record<string, unknown>;
@@ -127,16 +134,42 @@ export default async function DojoPage({ params }: LocalePageProps) {
   const nextRequirementItems = next ? buildRequirementItems(next.requirements, locale, tRanks) : [];
   const nextBeltColor = next ? getBeltColorHex(next.slug) : getBeltColorHex('mukyu');
 
+  const helpSteps: HelpStep[] = [
+    {
+      targetId: 'dojo-current-rank',
+      title: tHelp('overview.title'),
+      description: tHelp('overview.description'),
+      side: 'bottom',
+      align: 'start',
+    },
+    {
+      targetId: 'dojo-next-rank',
+      title: tHelp('viewAllRanks.title'),
+      description: tHelp('viewAllRanks.description'),
+      side: 'top',
+      align: 'center',
+    },
+  ];
+
   return (
-    <PageLayout title={t('pageTitle')} locale={locale} breadcrumb={[{ label: t('pageTitle') }]}>
+    <PageLayout
+      title={t('pageTitle')}
+      titleAction={<HelpTourButton steps={helpSteps} label={tHelp('label')} />}
+      locale={locale}
+      breadcrumb={[{ label: t('pageTitle') }]}
+    >
       {/* Section 1: Current rank belt */}
-      <section className="space-y-3">
+      <section className="space-y-3" data-tour-id="dojo-current-rank">
         <SectionTitle>{t('currentRankTitle')}</SectionTitle>
         <BeltStrip slug={beltSlug} rankName={beltLabel} />
       </section>
 
       {/* Section 2: Next rank */}
-      <section className="mt-8 space-y-4" aria-labelledby="dojo-next-rank-title">
+      <section
+        className="mt-8 space-y-4"
+        aria-labelledby="dojo-next-rank-title"
+        data-tour-id="dojo-next-rank"
+      >
         <h3
           id="dojo-next-rank-title"
           className="mb-0 text-left text-sm font-medium text-muted-foreground"

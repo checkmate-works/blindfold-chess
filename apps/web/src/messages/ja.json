@@ -3918,6 +3918,17 @@
         "blindfoldLegalMoves": "目隠しチェスでのリーガルムーブ判定",
         "diagonals": "ダイアゴナルと逆ダイアゴナルの算出"
       }
+    },
+    "help": {
+      "label": "ヘルプ",
+      "overview": {
+        "title": "道場(Dojo)",
+        "description": "ランクアップを繰り返し、黒帯まで到達すると低いレートの AI に目隠しチェスで勝てる実力がつくようカリキュラムが組まれています。"
+      },
+      "viewAllRanks": {
+        "title": "段級位一覧",
+        "description": "各ランクの合格条件やガイドなどはここから確認できます。"
+      }
     }
   },
   "guides": {
