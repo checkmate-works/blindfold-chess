@@ -8,7 +8,10 @@ import { SUPPORTED_LOCALES } from '@/config';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
 
-import type { LeaderboardRow } from '@/app/[locale]/(public)/leaderboard/_lib/types';
+import type {
+  LeaderboardPeriod,
+  LeaderboardRow,
+} from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { LeaderboardPreview } from '@/app/[locale]/(public)/practice/_components/LeaderboardPreview';
 import { PracticeComplete } from '@/app/[locale]/(public)/practice/_components/PracticeComplete';
 import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
@@ -31,6 +34,11 @@ export type ResultClientProps = {
   adBannerStandard?: ReactNode;
   leaderboardRows?: LeaderboardRow[];
   leaderboardDetailPath?: string;
+  /**
+   * Period the leaderboard rows came from. Used by `LeaderboardPreview`
+   * to label the heading correctly when weekly falls back to all-time.
+   */
+  leaderboardPeriod?: LeaderboardPeriod;
   /**
    * EXP info fetched server-side via `getExpInfoBySource` from the
    * `?grant=<challenge_result_id>` query param. `null` when unauthenticated,
@@ -223,6 +231,7 @@ export function createPracticeResultClient(config: ResultClientConfig) {
     adBannerStandard,
     leaderboardRows,
     leaderboardDetailPath,
+    leaderboardPeriod,
     expInfo = null,
   }: ResultClientProps) {
     const t = useTranslations(`practice.${i18nKey}`);
@@ -371,6 +380,7 @@ export function createPracticeResultClient(config: ResultClientConfig) {
           <LeaderboardPreview
             rows={leaderboardRows}
             detailPath={leaderboardDetailPath}
+            period={leaderboardPeriod}
             locale={locale}
           />
         )}
