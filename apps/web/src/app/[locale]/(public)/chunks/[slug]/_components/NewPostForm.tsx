@@ -5,6 +5,7 @@ import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { Button, FormErrorBanner, Textarea } from '@/app/_components';
+import { FaPaperclip } from 'react-icons/fa';
 
 import { MAX_CONTENT_LENGTH } from '@/lib/validations/content';
 
@@ -200,10 +201,11 @@ export function NewPostForm({ locale, slug }: Props) {
         <button
           type="button"
           onClick={() => setModalOpen(true)}
-          className="text-sm text-link-primary hover:underline"
+          className="inline-flex items-center gap-1 text-link-primary hover:opacity-80"
+          // TODO(i18n): attachment.modal.openButton (Add attachment / Edit attachment)
+          aria-label={attachment.kind === 'empty' ? 'Add attachment' : 'Edit attachment'}
         >
-          {/* TODO(i18n): attachment.modal.openButton */}
-          {attachment.kind === 'empty' ? 'Add attachment' : 'Edit attachment'}
+          <FaPaperclip aria-hidden="true" className="w-4 h-4" />
         </button>
         {attachmentSummary && <p className="text-xs text-muted-foreground">{attachmentSummary}</p>}
       </div>

@@ -60,9 +60,10 @@ const LICHESS_EMBED_URL = 'https://lichess.org/embed/abcd1234';
 const CHESSCOM_EMBED_URL = 'https://www.chess.com/emboard?id=12345';
 
 function openModal() {
-  const openBtn = Array.from(document.querySelectorAll('button')).find(
-    (b) => b.textContent === 'Add attachment' || b.textContent === 'Edit attachment'
-  ) as HTMLButtonElement;
+  const openBtn = Array.from(document.querySelectorAll('button')).find((b) => {
+    const label = b.getAttribute('aria-label');
+    return label === 'Add attachment' || label === 'Edit attachment';
+  }) as HTMLButtonElement;
   fireEvent.click(openBtn);
 }
 
