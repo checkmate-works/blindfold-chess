@@ -40,6 +40,19 @@ export type PositionFeedData = {
     likeCount: number;
     likedByMe: boolean;
   };
+  /**
+   * Aggregate comment-thread meta for the position. Comments live in
+   * `topic_posts` keyed by `(topicType, topicKey)` where `topicKey` is
+   * the position's id and `topicType` is `'position_memory'` or
+   * `'position_puzzle'`. `sequence`-type positions have no comment
+   * thread and receive an empty meta block.
+   */
+  replyMeta: {
+    replyCount: number;
+    latestReplyAt: Date | null;
+    repliers: { avatarUrl: string | null; displayName: string }[];
+    uniqueReplierCount: number;
+  };
 };
 
 /** Re-exported for convenience. */

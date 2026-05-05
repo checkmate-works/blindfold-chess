@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { PracticeSessionPage } from '@/app/[locale]/(public)/practice/_components/PracticeSessionPage';
-import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { Divider, PageLayout, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
@@ -269,35 +269,32 @@ export function createPracticeTutorialPage(config: TutorialPageConfig) {
 
     const sectionTitle = config.renderSectionTitle ? config.renderSectionTitle(t) : null;
 
-    const inner = (
-      <>
-        {sectionTitle ?? (
-          <SectionTitle>{t(`practice.${config.i18nKey}.tutorial.title`)}</SectionTitle>
-        )}
-
-        <div className="text-right">{config.renderSkipLink(locale)}</div>
-
-        {config.renderTutorial(locale)}
-
-        <Divider />
-
-        <Breadcrumb items={breadcrumbItems} locale={locale} />
-      </>
-    );
-
     if (usePagePanel) {
       return (
-        <div className="space-y-8">
-          <PageTitle>{t(`practice.${config.i18nKey}.title`)}</PageTitle>
-          <PagePanel>{inner}</PagePanel>
-        </div>
+        <PageLayout
+          title={t(`practice.${config.i18nKey}.title`)}
+          locale={locale}
+          breadcrumb={breadcrumbItems}
+        >
+          {sectionTitle ?? (
+            <SectionTitle>{t(`practice.${config.i18nKey}.tutorial.title`)}</SectionTitle>
+          )}
+          <div className="text-right">{config.renderSkipLink(locale)}</div>
+          {config.renderTutorial(locale)}
+        </PageLayout>
       );
     }
 
     return (
       <div className="space-y-8">
         <PageTitle>{t(`practice.${config.i18nKey}.title`)}</PageTitle>
-        {inner}
+        {sectionTitle ?? (
+          <SectionTitle>{t(`practice.${config.i18nKey}.tutorial.title`)}</SectionTitle>
+        )}
+        <div className="text-right">{config.renderSkipLink(locale)}</div>
+        {config.renderTutorial(locale)}
+        <Divider />
+        <Breadcrumb items={breadcrumbItems} locale={locale} />
       </div>
     );
   }

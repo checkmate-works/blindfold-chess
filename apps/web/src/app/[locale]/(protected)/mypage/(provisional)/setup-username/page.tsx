@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { PageLayout } from '@/app/[locale]/_components';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
@@ -25,11 +25,8 @@ export default async function SetupUsernamePage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'setupUsername' });
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
-      <PagePanel>
-        <UsernameForm locale={locale} />
-      </PagePanel>
-    </div>
+    <PageLayout title={t('title')} locale={locale}>
+      <UsernameForm locale={locale} />
+    </PageLayout>
   );
 }

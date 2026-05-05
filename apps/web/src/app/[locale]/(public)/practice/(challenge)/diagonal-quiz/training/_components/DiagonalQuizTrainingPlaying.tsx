@@ -2,9 +2,6 @@
 
 import { useCallback, useEffect, useRef } from 'react';
 
-import Link from 'next/link';
-
-import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { getCornerInfo } from '@blindfold-chess/features/diagonal-quiz';
 import type { ActiveField } from '@blindfold-chess/features/diagonal-quiz';
@@ -12,6 +9,7 @@ import { useDiagonalInput } from '@blindfold-chess/features/diagonal-quiz/client
 
 import { AnswerFeedback } from '@/app/[locale]/(public)/practice/(challenge)/_components/AnswerFeedback';
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
+import { TrainingChallengeCTA } from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingChallengeCTA';
 import { AlgebraicKeyboardHint } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
 import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
 import { SectionTitle } from '@/app/[locale]/_components';
@@ -267,18 +265,7 @@ export function DiagonalQuizTrainingPlaying({
         </div>
       </div>
 
-      <hr className="border-border mt-8" />
-      <div className="mt-6 text-center">
-        <p className="text-sm text-muted-foreground">{tp('trainingModeActive')}</p>
-        <p className="mt-2 text-base font-medium text-foreground">{tp('readyForChallenge')}</p>
-        <div className="mt-4">
-          <Link href={`/${locale}/practice/diagonal-quiz/challenge`}>
-            <Button asChild variant="primary" size="lg" className="w-full">
-              {tp('goToChallenge')}
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <TrainingChallengeCTA challengeHref={`/${locale}/practice/diagonal-quiz/challenge`} />
     </div>
   );
 }

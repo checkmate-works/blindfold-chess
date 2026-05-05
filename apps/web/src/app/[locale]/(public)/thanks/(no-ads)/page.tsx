@@ -1,0 +1,144 @@
+import type { Metadata } from 'next';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
+import Link from 'next/link';
+
+import { Button } from '@/app/_components';
+import { and, eq, isNull } from 'drizzle-orm';
+
+import { db, userGrants } from '@/lib/db';
+import { createClient } from '@/lib/supabase/server';
+
+import { CertificateFrame, PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { resolveTitle } from '@/app/[locale]/_lib/metadata';
+import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
+
+export const dynamic = 'force-dynamic';
+
+/**
+ * Same-origin path validator. Accepts only absolute paths the app itself owns
+ * (`/...`) and rejects protocol-relative (`//evil.example.com`) and Windows
+ * backslash variants that some browsers historically resolved as schemes.
+ * Anything else falls back to the locale root, so a tampered or omitted
+ * `returnUrl` cannot be used as an open-redirect.
+ */
+function isSafeReturnPath(path: string): boolean {
+  return path.startsWith('/') && !path.startsWith('//') && !path.startsWith('/\\');
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'thanks' });
+  return {
+    title: resolveTitle(t('title'), locale),
+    robots: { index: false, follow: false },
+  };
+}
+
+export default async function ThanksPage({ params, searchParams }: Props) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
+  const sp = await searchParams;
+  const grantId = typeof sp.grantId === 'string' ? sp.grantId : '';
+  const returnUrlRaw = typeof sp.returnUrl === 'string' ? sp.returnUrl : '';
+  const returnUrl = isSafeReturnPath(returnUrlRaw) ? returnUrlRaw : `/${locale}`;
+
+  const t = await getTranslations({ locale, namespace: 'thanks' });
+
+  // Resolve grant details with auth + ownership filter. Anonymous visitors
+  // and mismatched users get the generic message; the page never reveals
+  // another user's grant. durationDays is computed from `expiresAt - startsAt`
+  // rather than looked up in `GRANT_TYPE_DEFAULTS` so this page works for
+  // any grant type (including admin_manual) without a per-type lookup.
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let benefit: {
+    type: string;
+    durationDays: number;
+    /**
+     * Pre-resolved i18n key under `thanks` for the explanation paragraph.
+     * Computed at fetch time so the JSX layer does not need to know which
+     * source surfaces map to which copy. Null when the source cannot be
+     * resolved (e.g., admin_manual grants reaching this page); the JSX
+     * then falls back to `explanation.default`.
+     */
+    explanationKey: string | null;
+  } | null = null;
+  if (user && grantId) {
+    const [grant] = await db
+      .select({
+        benefitType: userGrants.benefitType,
+        startsAt: userGrants.startsAt,
+        expiresAt: userGrants.expiresAt,
+        sourceType: userGrants.sourceType,
+        sourceId: userGrants.sourceId,
+      })
+      .from(userGrants)
+      .where(
+        and(
+          eq(userGrants.id, grantId),
+          eq(userGrants.userId, user.id),
+          isNull(userGrants.revokedAt)
+        )
+      )
+      .limit(1);
+
+    if (grant) {
+      const durationMs = grant.expiresAt.getTime() - grant.startsAt.getTime();
+      const durationDays = Math.max(1, Math.round(durationMs / (24 * 60 * 60 * 1000)));
+
+      // Map the source surface to one of two unified award messages — the
+      // per-topicType variants (square / opening / position_memory /
+      // position_puzzle) collapsed into a single "topic post" copy because
+      // the duration policy is identical across them and the user-visible
+      // distinction adds no value on the award screen. Position-creation
+      // grants get their own copy because "creating" reads differently from
+      // "commenting" even when the benefit is the same.
+      let explanationKey: string | null = null;
+      if (grant.sourceType === 'topic_post') {
+        explanationKey = 'explanation.topic_post';
+      } else if (grant.sourceType === 'position') {
+        explanationKey = 'explanation.position_creation';
+      }
+
+      benefit = { type: grant.benefitType, durationDays, explanationKey };
+    }
+  }
+
+  const explanationKey = benefit?.explanationKey ?? 'explanation.default';
+
+  return (
+    <PageLayout title={t('title')} locale={locale}>
+      <SectionTitle>{t('sectionTitle')}</SectionTitle>
+
+      {benefit ? (
+        <div className="space-y-4">
+          <p className="text-foreground">{t(explanationKey)}</p>
+          <CertificateFrame>
+            <p className="text-base sm:text-2xl font-serif font-bold text-podium-gold-foreground tracking-widest text-center">
+              {t(`benefits.${benefit.type}`, { days: benefit.durationDays })}
+            </p>
+          </CertificateFrame>
+        </div>
+      ) : (
+        <p className="text-muted-foreground text-center py-4">{t('genericMessage')}</p>
+      )}
+
+      <div className="flex flex-col gap-3 pb-4">
+        <Link href={returnUrl} className="block">
+          <Button asChild variant="primary" size="lg" fullWidth>
+            {t('continueButton')}
+          </Button>
+        </Link>
+        <Link href={`/${locale}/mypage/benefits`} className="block">
+          <Button asChild variant="outline" size="lg" fullWidth>
+            {t('viewBenefitsButton')}
+          </Button>
+        </Link>
+      </div>
+    </PageLayout>
+  );
+}

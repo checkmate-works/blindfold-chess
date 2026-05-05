@@ -5,8 +5,9 @@ import { revalidateTag } from 'next/cache';
 import { requireAdmin } from '@/app/admin/_lib/auth';
 import { addDays } from 'date-fns';
 
-import { db, userGrants } from '@/lib/db';
+import { db, moderationActions, userGrants } from '@/lib/db';
 import { createNotification } from '@/lib/notifications/notification';
+import { getClientIp } from '@/lib/security/client-ip';
 import { calcGrantStartsAt } from '@/lib/users/user-grants';
 
 import { validateDurationDays, validateUuid } from '../_lib/validation';
@@ -47,6 +48,8 @@ export async function createBulkGrants(params: BulkGrantParams): Promise<BulkGra
 
   const benefitType = 'ad_free';
   const grantType = 'admin_manual';
+  const trimmedReason = reason.trim();
+  const ipAddress = await getClientIp();
 
   try {
     type GrantCreatedInfo = { userId: string; grantId: string; expiresAt: Date };
@@ -63,11 +66,30 @@ export async function createBulkGrants(params: BulkGrantParams): Promise<BulkGra
             userId,
             benefitType,
             grantType,
-            reason: reason.trim(),
+            reason: trimmedReason,
             startsAt,
             expiresAt,
           })
           .returning({ id: userGrants.id });
+
+        // One audit row per granted user keeps the (action, target_id) lookup
+        // fast and lets `/admin/audit-log`'s user-filter find every grant a
+        // given user has ever received. The grantId lives in metadata.
+        await tx.insert(moderationActions).values({
+          actorId: auth.userId,
+          action: 'create_grant',
+          targetType: 'user',
+          targetId: userId,
+          reason: trimmedReason,
+          metadata: {
+            grantId: inserted.id,
+            grantType,
+            benefitType,
+            durationDays,
+            expiresAt: expiresAt.toISOString(),
+          },
+          ipAddress,
+        });
 
         created.push({ userId, grantId: inserted.id, expiresAt });
       }
@@ -77,7 +99,6 @@ export async function createBulkGrants(params: BulkGrantParams): Promise<BulkGra
 
     revalidateTag('grant-status', { expire: 60 });
 
-    const trimmedReason = reason.trim();
     for (const grant of result.created) {
       createNotification({
         userId: grant.userId,

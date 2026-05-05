@@ -98,12 +98,21 @@ export default async function GlossaryCategoryPage({ params }: Props) {
           <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
         )}
 
-        <Divider />
-
-        <Breadcrumb
-          items={[{ label: t('title'), href: '/glossary' }, { label: t(`categories.${category}`) }]}
-          locale={locale}
-        />
+        {/* Mirror `PageLayout`'s trailing block — see PageLayout.tsx. The page
+            uses a custom-styled `<PageTitle>` (icon + label flex layout) that
+            doesn't fit the standard `PageLayout` shape, so the chrome is kept
+            inline here while still applying the same compact breadcrumb gap. */}
+        <div className="!mt-4 space-y-4">
+          <Divider />
+          <Breadcrumb
+            items={[
+              { label: t('title'), href: '/glossary' },
+              { label: t(`categories.${category}`) },
+            ]}
+            locale={locale}
+            density="compact"
+          />
+        </div>
       </PagePanel>
     </div>
   );

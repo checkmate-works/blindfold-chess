@@ -3,8 +3,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { PageLayout } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
@@ -36,15 +35,10 @@ export default async function PreferencesPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'Preferences' });
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
-      <PagePanel>
-        <Suspense>
-          <PreferencesTabs locale={locale} />
-        </Suspense>
-        <Divider />
-        <Breadcrumb items={[{ label: t('title') }]} locale={locale} />
-      </PagePanel>
-    </div>
+    <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
+      <Suspense>
+        <PreferencesTabs locale={locale} />
+      </Suspense>
+    </PageLayout>
   );
 }

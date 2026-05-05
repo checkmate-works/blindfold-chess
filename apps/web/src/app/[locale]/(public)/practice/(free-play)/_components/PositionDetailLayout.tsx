@@ -1,22 +1,20 @@
 import type { ReactNode } from 'react';
 
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { PageLayout } from '@/app/[locale]/_components';
+import type { BreadcrumbItem } from '@/app/[locale]/_components/Breadcrumb';
+import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
   /** Page title shown above the panel. */
   title: string;
+  locale: Locale;
   /**
    * Main detail content (description, board, related chunks, author,
    * comments, etc.). Wrapped in a `space-y-6` flow inside the page panel.
    */
   children: ReactNode;
-  /**
-   * Pre-built breadcrumb slot rendered at the bottom of the panel.
-   * Leaving this as a slot rather than reconstructing it inside the layout
-   * keeps the i18n namespaces (and the `Breadcrumb` import path) at the
-   * call site, where every detail page already resolves its own labels.
-   */
-  breadcrumb: ReactNode;
+  /** Breadcrumb items rendered at the bottom of the panel. */
+  breadcrumbItems: BreadcrumbItem[];
   /**
    * Optional bottom AdSense slot. Rendered between the content area and
    * the divider. The puzzle detail page lives under a `(no-ads)` route
@@ -29,37 +27,23 @@ type Props = {
  * Shared page-shell for free-play position detail screens
  * (`position-memory/[id]` and `puzzle/[id]`).
  *
- * Captures the outer markup that was duplicated between the two pages:
- *   <div className="space-y-8">
- *     <PageTitle>{title}</PageTitle>
- *     <PagePanel>
- *       <div className="space-y-6">{children}</div>
- *       {bottomAdSense}
- *       <Divider />
- *       {breadcrumb}
- *     </PagePanel>
- *   </div>
- *
- * The variable parts (board renderer, action buttons, comment-tree
- * configuration, author attribution, i18n namespaces) stay at the call
- * site where each detail page resolves its own translations. This avoids
- * pushing a wide prop surface onto the layout while still removing the
- * shell-level duplication.
+ * Wraps `PageLayout` with a `space-y-6`-flowed inner content area. The variable
+ * parts (board renderer, action buttons, comment-tree configuration, author
+ * attribution, i18n namespaces) stay at the call site where each detail page
+ * resolves its own translations. This avoids pushing a wide prop surface onto
+ * the layout while still removing the shell-level duplication.
  */
-export function PositionDetailLayout({ title, children, breadcrumb, bottomAdSense }: Props) {
+export function PositionDetailLayout({
+  title,
+  locale,
+  children,
+  breadcrumbItems,
+  bottomAdSense,
+}: Props) {
   return (
-    <div className="space-y-8">
-      <PageTitle>{title}</PageTitle>
-
-      <PagePanel>
-        <div className="space-y-6">{children}</div>
-
-        {bottomAdSense}
-
-        <Divider />
-
-        {breadcrumb}
-      </PagePanel>
-    </div>
+    <PageLayout title={title} locale={locale} breadcrumb={breadcrumbItems}>
+      <div className="space-y-6">{children}</div>
+      {bottomAdSense}
+    </PageLayout>
   );
 }

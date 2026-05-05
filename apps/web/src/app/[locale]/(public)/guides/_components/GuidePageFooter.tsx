@@ -22,6 +22,11 @@ type GuidePageFooterProps = {
  * Extracted so that `renderGuideBody`'s three layout branches and the
  * `/guides` hub top page do not duplicate the same AdSense + Divider +
  * Breadcrumb triple — only the breadcrumb items differ between call sites.
+ *
+ * The divider + breadcrumb pair is wrapped in `!mt-4 space-y-4` to match
+ * `PageLayout`'s trailing-block spacing (see PageLayout.tsx). The AdSense
+ * slot stays a sibling of the panel's `space-y-*` flow so it keeps the same
+ * gap from the surrounding content.
  */
 export function GuidePageFooter({ items, locale }: GuidePageFooterProps) {
   return (
@@ -29,8 +34,10 @@ export function GuidePageFooter({ items, locale }: GuidePageFooterProps) {
       {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
         <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
       )}
-      <Divider />
-      <Breadcrumb items={items} locale={locale} />
+      <div className="!mt-4 space-y-4">
+        <Divider />
+        <Breadcrumb items={items} locale={locale} density="compact" />
+      </div>
     </>
   );
 }

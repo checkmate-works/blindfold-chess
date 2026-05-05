@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { SUPPORTED_LOCALES } from '@/config';
 import { FaGlobe } from 'react-icons/fa';
@@ -29,6 +29,7 @@ type Props = {
 export function LanguageSwitcher({ currentLocale }: Props) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   // Pages where language switching should be disabled to prevent state loss
   const shouldHideLanguageSwitcher = () => {
@@ -51,7 +52,8 @@ export function LanguageSwitcher({ currentLocale }: Props) {
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newLocale = e.target.value;
     const newPathname = pathname.replace(`/${currentLocale}`, `/${newLocale}`);
-    router.push(newPathname);
+    const qs = searchParams.toString();
+    router.push(qs ? `${newPathname}?${qs}` : newPathname);
   };
 
   if (shouldHideLanguageSwitcher()) {

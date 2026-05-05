@@ -16,15 +16,17 @@ import { resolveDisplayName } from '@/lib/users/display-name';
 
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
 import { CommentTree } from '@/app/[locale]/(public)/topics/_components/CommentTree';
+import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
+import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
 import { buildCommentTree } from '@/app/[locale]/(public)/topics/_lib/comment-tree';
+import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import {
   getCommentTreeForTopic,
   getPostCountByTopicKey,
 } from '@/app/[locale]/(public)/topics/_lib/queries';
 import { SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { RelatedChunks } from '@/app/[locale]/_components/RelatedChunks';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -46,6 +48,7 @@ type Props = {
     locale: Locale;
     id: string;
   }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -69,10 +72,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function PositionDetailPage({ params }: Props) {
+export default async function PositionDetailPage({ params, searchParams }: Props) {
   const { locale, id } = await params;
+  const sortBy = validateSort(((await searchParams).sort as string | undefined) ?? 'new');
   const t = await getTranslations({ locale, namespace: 'practice.positionMemory' });
   const tComments = await getTranslations({ locale, namespace: 'topics.positionMemory' });
+  const tTopics = await getTranslations({ locale, namespace: 'topics' });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
   const tPlay = await getTranslations({ locale, namespace: 'play' });
 
@@ -94,26 +99,22 @@ export default async function PositionDetailPage({ params }: Props) {
     getCommentTreeForTopic('position_memory', position.id, currentUser?.id),
   ]);
 
-  const commentTree = buildCommentTree(allComments, 'new');
+  const commentTree = buildCommentTree(allComments, sortBy);
 
   return (
     <PositionDetailLayout
       title={position.title}
+      locale={locale}
       bottomAdSense={
         (IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
           <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
         )
       }
-      breadcrumb={
-        <Breadcrumb
-          items={[
-            { label: tNav('practice'), href: '/practice' },
-            { label: t('list.title'), href: '/practice/position-memory' },
-            { label: position.title },
-          ]}
-          locale={locale}
-        />
-      }
+      breadcrumbItems={[
+        { label: tNav('practice'), href: '/practice' },
+        { label: t('list.title'), href: '/practice/position-memory' },
+        { label: position.title },
+      ]}
     >
       <SectionTitle>{t('detail.descriptionSection')}</SectionTitle>
 
@@ -171,39 +172,41 @@ export default async function PositionDetailPage({ params }: Props) {
 
       <SectionTitle>{tComments('commentsTitle')}</SectionTitle>
 
-      <p className="text-sm text-muted-foreground">
-        {tComments('postCount', { count: commentCount })}
-      </p>
-
-      {currentUser ? (
+      {currentUser && commentCount === 0 ? (
         <NewPostForm locale={locale} positionId={position.id} />
       ) : (
-        <p className="text-sm text-muted-foreground">
-          <Link href={`/${locale}/sign-in`} className="text-link-primary hover:underline">
-            {tComments('signInToComment')}
-          </Link>
-        </p>
+        <JoinConversationToggle
+          countText={tComments('postCount', { count: commentCount })}
+          joinLabel={tTopics('joinConversation')}
+        >
+          <NewPostForm locale={locale} positionId={position.id} />
+        </JoinConversationToggle>
       )}
 
-      {commentTree.length > 0 ? (
-        <CommentTree
-          comments={commentTree}
-          locale={locale}
-          topicKey={position.id}
-          currentUserId={currentUser?.id}
-          enableSpoiler={false}
-          redirectPath={`/${locale}/practice/position-memory/${position.id}`}
-          toggleLikeAction={togglePositionMemoryPostLike}
-          createReplyAction={createReply}
-          deletePostAction={deletePost}
-          i18n={{
-            likeNamespace: 'topics.positionMemory',
-            replyNamespace: 'topics.positionMemory.replies',
-            deleteNamespace: 'topics.positionMemory.deletePost',
-          }}
-        />
-      ) : (
-        <p className="text-muted-foreground text-center py-8">{tComments('noPosts')}</p>
+      {commentTree.length > 0 && (
+        <>
+          <SortSelect
+            basePath={`/practice/position-memory/${position.id}`}
+            translationKey="topics.positionMemory.sort"
+            currentSort={sortBy}
+          />
+          <CommentTree
+            comments={commentTree}
+            locale={locale}
+            topicKey={position.id}
+            currentUserId={currentUser?.id}
+            enableSpoiler={false}
+            redirectPath={`/${locale}/practice/position-memory/${position.id}`}
+            toggleLikeAction={togglePositionMemoryPostLike}
+            createReplyAction={createReply}
+            deletePostAction={deletePost}
+            i18n={{
+              likeNamespace: 'topics.positionMemory',
+              replyNamespace: 'topics.positionMemory.replies',
+              deleteNamespace: 'topics.positionMemory.deletePost',
+            }}
+          />
+        </>
       )}
     </PositionDetailLayout>
   );

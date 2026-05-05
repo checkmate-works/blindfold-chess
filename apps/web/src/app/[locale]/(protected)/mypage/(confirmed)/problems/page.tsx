@@ -10,8 +10,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { ChallengeCard } from '@/app/_components';
 
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { PageLayout } from '@/app/[locale]/_components';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
@@ -33,31 +32,25 @@ export default async function ProblemsIndexPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'MypageProblemsIndex' });
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
-      <PagePanel>
-        <div className="flex flex-wrap gap-3">
-          <ChallengeCard
-            locale={locale}
-            href="/mypage/problems/memory"
-            label={t('positionMemory')}
-            icon="🧠"
-          />
-          <ChallengeCard
-            locale={locale}
-            href="/mypage/problems/puzzles"
-            label={t('puzzles')}
-            icon="🧩"
-          />
-        </div>
-
-        <Divider />
-
-        <Breadcrumb
+    <PageLayout
+      title={t('title')}
+      locale={locale}
+      breadcrumb={[{ label: t('breadcrumbMypage'), href: '/mypage' }, { label: t('title') }]}
+    >
+      <div className="flex flex-wrap gap-3">
+        <ChallengeCard
           locale={locale}
-          items={[{ label: t('breadcrumbMypage'), href: '/mypage' }, { label: t('title') }]}
+          href="/mypage/problems/memory"
+          label={t('positionMemory')}
+          icon="🧠"
         />
-      </PagePanel>
-    </div>
+        <ChallengeCard
+          locale={locale}
+          href="/mypage/problems/puzzles"
+          label={t('puzzles')}
+          icon="🧩"
+        />
+      </div>
+    </PageLayout>
   );
 }

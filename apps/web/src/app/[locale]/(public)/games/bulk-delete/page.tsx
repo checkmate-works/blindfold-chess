@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -38,18 +37,14 @@ export default async function BulkDeletePage({ params }: Props) {
   const tGameList = await getTranslations({ locale, namespace: 'home.gameList' });
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
-
-      <PagePanel>
-        <SectionTitle>{tGameList('title')}</SectionTitle>
-        <BulkDeleteClient />
-
-        <Breadcrumb
-          items={[{ label: tGamesPage('pageTitle'), href: '/games' }, { label: t('title') }]}
-          locale={locale}
-        />
-      </PagePanel>
-    </div>
+    <PageLayout
+      title={t('title')}
+      locale={locale}
+      breadcrumb={[{ label: tGamesPage('pageTitle'), href: '/games' }, { label: t('title') }]}
+      divider={false}
+    >
+      <SectionTitle>{tGameList('title')}</SectionTitle>
+      <BulkDeleteClient />
+    </PageLayout>
   );
 }

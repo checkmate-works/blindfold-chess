@@ -1,16 +1,6 @@
 import type { ReactNode } from 'react';
 
-import { Button } from '@/app/_components';
-import { Link } from '@/i18n/routing';
-
-import {
-  Divider,
-  PagePanel,
-  PageTitle,
-  PaginationNav,
-  SectionTitle,
-} from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
 import type { BreadcrumbItem } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -20,32 +10,27 @@ type Props = {
   sectionTitle: string;
   /** Topic-specific header rendered below the section title (board, opening cards, etc.) */
   topicHeader?: ReactNode;
-  /** Ad slot rendered between the topic header and the post list */
+  /** Optional ad slot rendered between the topic header and the community section */
   adMiddle?: ReactNode;
-  /** Ad slot rendered between the post list and the pagination */
-  adBottom?: ReactNode;
-  /** Post count display text */
-  postCountText: string;
-  /** New post button config -- omit to hide the button */
-  newPostButton?: {
-    href: string;
-    label: string;
-  };
-  /** Sort tabs component */
-  sortTabs: ReactNode;
-  /** Rendered post cards */
+  /**
+   * Comment-section block rendered between the topic header and the post
+   * list. Owned by the page so it can compose the SectionTitle, the inline
+   * new-post CTA / form, and the sort switcher under one auth / rate-limit
+   * conditional. Replaces the old `postCountText` + `newPostButton` +
+   * `sortSelect` props.
+   */
+  communitySection: ReactNode;
+  /** Pre-rendered post cards (already mapped). */
   postCards: ReactNode;
-  /** Text shown when there are no posts */
-  noPostsText: string;
-  /** Whether there are posts to show */
+  /** Whether there are posts to render in the post list. */
   hasPosts: boolean;
-  /** Pagination config */
+  /** Optional ad slot rendered between the post list and pagination */
+  adBottom?: ReactNode;
   pagination: {
     currentPage: number;
     totalPages: number;
     buildHref: (page: number) => string;
   };
-  /** Breadcrumb items */
   breadcrumbItems: BreadcrumbItem[];
 };
 
@@ -55,59 +40,32 @@ export function TopicListPageLayout({
   sectionTitle,
   topicHeader,
   adMiddle,
-  adBottom,
-  postCountText,
-  newPostButton,
-  sortTabs,
+  communitySection,
   postCards,
-  noPostsText,
   hasPosts,
+  adBottom,
   pagination,
   breadcrumbItems,
 }: Props) {
   return (
-    <div className="space-y-8">
-      <PageTitle>{pageTitle}</PageTitle>
+    <PageLayout title={pageTitle} locale={locale} breadcrumb={breadcrumbItems}>
+      <SectionTitle>{sectionTitle}</SectionTitle>
 
-      <PagePanel>
-        <SectionTitle>{sectionTitle}</SectionTitle>
+      {topicHeader}
 
-        {topicHeader}
+      {adMiddle}
 
-        {adMiddle}
+      {communitySection}
 
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">{postCountText}</p>
+      {hasPosts && <div className="space-y-3">{postCards}</div>}
 
-          {newPostButton && (
-            <Link href={newPostButton.href} locale={locale}>
-              <Button variant="primary" asChild>
-                {newPostButton.label}
-              </Button>
-            </Link>
-          )}
-        </div>
+      {adBottom}
 
-        {sortTabs}
-
-        {hasPosts ? (
-          <div className="space-y-3">{postCards}</div>
-        ) : (
-          <p className="text-muted-foreground text-center py-8">{noPostsText}</p>
-        )}
-
-        {adBottom}
-
-        <PaginationNav
-          currentPage={pagination.currentPage}
-          totalPages={pagination.totalPages}
-          buildHref={pagination.buildHref}
-        />
-
-        <Divider />
-
-        <Breadcrumb items={breadcrumbItems} locale={locale} />
-      </PagePanel>
-    </div>
+      <PaginationNav
+        currentPage={pagination.currentPage}
+        totalPages={pagination.totalPages}
+        buildHref={pagination.buildHref}
+      />
+    </PageLayout>
   );
 }

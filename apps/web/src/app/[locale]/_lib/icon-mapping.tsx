@@ -55,13 +55,6 @@ export const getIcon = (iconName: NavigationIconName) => {
     case 'guides':
       return <FaBookOpen className="h-5 w-5" />;
     case 'dojo':
-      return (
-        <span
-          aria-hidden="true"
-          className="inline-flex h-5 w-5 items-center justify-center text-[18px] leading-none"
-        >
-          🥋
-        </span>
-      );
+      return <GiBlackBelt className="h-5 w-5" />;
   }
 };

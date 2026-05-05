@@ -9,16 +9,8 @@ import { createClient } from '@/lib/supabase/server';
 
 import { TopicPostCard } from '@/app/[locale]/(public)/(home)/_components/TopicPostCard';
 import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
-import {
-  CardLink,
-  Divider,
-  PagePanel,
-  PageTitle,
-  PaginationNav,
-  SectionTitle,
-} from '@/app/[locale]/_components';
+import { CardLink, PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
@@ -74,72 +66,63 @@ export default async function TopicsPage({ params, searchParams }: Props) {
   };
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
-
-      <PagePanel>
-        {currentPage === 1 && (
-          <>
-            <SectionTitle>Category</SectionTitle>
-            <div className="space-y-4">
-              <CardLink
-                href="/topics/squares"
-                icon="♟"
-                title={t('categories.squares.title')}
-                description={t('categories.squares.description')}
-                locale={locale}
-              />
-              <CardLink
-                href="/topics/openings"
-                icon="♞"
-                title={t('categories.openings.title')}
-                description={t('categories.openings.description')}
-                locale={locale}
-              />
-              <CardLink
-                href="/chunks"
-                icon="🧩"
-                title="Chunks"
-                description="Piece-coordination pattern catalog for position memory training"
-                locale={locale}
-              />
-            </div>
-          </>
-        )}
-
-        <SectionTitle>{t('recentPosts')}</SectionTitle>
-
-        {recentPosts.length === 0 ? (
-          <p className="text-muted-foreground text-center py-8">{t('noRecentPosts')}</p>
-        ) : (
-          <div className="space-y-3">
-            {recentPosts.map((post) => {
-              const tTopic = post.topicType === 'opening' ? tOpenings : tSquares;
-              return (
-                <TopicPostCard
-                  key={post.id}
-                  post={post}
-                  locale={locale}
-                  showMoreLabel={t('showMore')}
-                  justNowLabel={tTopic('justNow')}
-                  newReplyTemplate={tTopic('newReply', { time: '{time}' })}
-                  variant="card"
-                />
-              );
-            })}
+    <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
+      {currentPage === 1 && (
+        <>
+          <SectionTitle>Category</SectionTitle>
+          <div className="space-y-4">
+            <CardLink
+              href="/topics/squares"
+              icon="♟"
+              title={t('categories.squares.title')}
+              description={t('categories.squares.description')}
+              locale={locale}
+            />
+            <CardLink
+              href="/topics/openings"
+              icon="♞"
+              title={t('categories.openings.title')}
+              description={t('categories.openings.description')}
+              locale={locale}
+            />
+            <CardLink
+              href="/chunks"
+              icon="🧩"
+              title="Chunks"
+              description="Piece-coordination pattern catalog for position memory training"
+              locale={locale}
+            />
           </div>
-        )}
+        </>
+      )}
 
-        <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+      <SectionTitle>{t('recentPosts')}</SectionTitle>
 
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-        )}
+      {recentPosts.length === 0 ? (
+        <p className="text-muted-foreground text-center py-8">{t('noRecentPosts')}</p>
+      ) : (
+        <div className="space-y-3">
+          {recentPosts.map((post) => {
+            const tTopic = post.topicType === 'opening' ? tOpenings : tSquares;
+            return (
+              <TopicPostCard
+                key={post.id}
+                post={post}
+                locale={locale}
+                showMoreLabel={t('showMore')}
+                justNowLabel={tTopic('justNow')}
+                variant="card"
+              />
+            );
+          })}
+        </div>
+      )}
 
-        <Divider />
+      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
 
-        <Breadcrumb items={[{ label: t('title') }]} locale={locale} />
-      </PagePanel>
-    </div>
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+      )}
+    </PageLayout>
   );
 }

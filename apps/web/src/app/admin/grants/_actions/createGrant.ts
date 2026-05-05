@@ -5,8 +5,9 @@ import { revalidateTag } from 'next/cache';
 import { requireAdmin } from '@/app/admin/_lib/auth';
 import { addDays } from 'date-fns';
 
-import { db, userGrants } from '@/lib/db';
+import { db, moderationActions, userGrants } from '@/lib/db';
 import { createNotification } from '@/lib/notifications/notification';
+import { getClientIp } from '@/lib/security/client-ip';
 import { calcGrantStartsAt } from '@/lib/users/user-grants';
 
 import { validateDurationDays, validateUuid } from '../_lib/validation';
@@ -38,28 +39,52 @@ export async function createGrant(formData: FormData): Promise<ActionResult> {
     return { error: durationError };
   }
 
-  // NOTE: calcGrantStartsAt read + insert are not wrapped in a transaction.
-  // Concurrent calls for the same user+benefitType could produce overlapping
-  // grants instead of stacking. Acceptable here because admin_manual is a
-  // low-frequency single-operator flow. Automated grant types (topic_post,
-  // etc.) use the separate `applyAutomatedGrant` helper in src/lib/user-grants.ts
-  // which performs the read + insert inside a db.transaction with row-level
-  // locking.
-  try {
-    const startsAt = await calcGrantStartsAt(userId.trim(), benefitType.trim());
-    const expiresAt = addDays(startsAt, durationDays);
+  const trimmedUserId = userId.trim();
+  const trimmedBenefitType = benefitType.trim();
+  const trimmedReason = reason?.trim() || null;
+  const ipAddress = await getClientIp();
 
-    const [inserted] = await db
-      .insert(userGrants)
-      .values({
-        userId: userId.trim(),
-        benefitType: benefitType.trim(),
-        grantType: 'admin_manual',
-        reason: reason?.trim() || null,
-        startsAt,
-        expiresAt,
-      })
-      .returning({ id: userGrants.id });
+  // calcGrantStartsAt + userGrants insert + moderation_actions insert run in a
+  // single transaction so the audit-log row cannot be lost if the grant insert
+  // fails after a partial write — and the user-grants stacking calculation is
+  // serialized against concurrent admin actions on the same user/benefit pair.
+  // Granted_by provenance lives in `moderation_actions` per the design note on
+  // `userGrants` (`schema.ts` @design revokedAt for logical deletion).
+  try {
+    const result = await db.transaction(async (tx) => {
+      const startsAt = await calcGrantStartsAt(trimmedUserId, trimmedBenefitType, tx);
+      const expiresAt = addDays(startsAt, durationDays);
+
+      const [inserted] = await tx
+        .insert(userGrants)
+        .values({
+          userId: trimmedUserId,
+          benefitType: trimmedBenefitType,
+          grantType: 'admin_manual',
+          reason: trimmedReason,
+          startsAt,
+          expiresAt,
+        })
+        .returning({ id: userGrants.id });
+
+      await tx.insert(moderationActions).values({
+        actorId: auth.userId,
+        action: 'create_grant',
+        targetType: 'user',
+        targetId: trimmedUserId,
+        reason: trimmedReason,
+        metadata: {
+          grantId: inserted.id,
+          grantType: 'admin_manual',
+          benefitType: trimmedBenefitType,
+          durationDays,
+          expiresAt: expiresAt.toISOString(),
+        },
+        ipAddress,
+      });
+
+      return { grantId: inserted.id, expiresAt };
+    });
 
     revalidateTag('grant-status', { expire: 60 });
 
@@ -71,17 +96,17 @@ export async function createGrant(formData: FormData): Promise<ActionResult> {
     // (7 days). `grant-status` tag revalidation above ensures the next
     // render recomputes entitlement freshly from DB.
     createNotification({
-      userId: userId.trim(),
+      userId: trimmedUserId,
       actorId: auth.userId,
       type: 'benefit_grant',
       targetType: 'user_grant',
-      targetId: inserted.id,
+      targetId: result.grantId,
       metadata: {
         grantType: 'admin_manual',
-        benefitType: benefitType.trim(),
+        benefitType: trimmedBenefitType,
         durationDays,
-        expiresAt: expiresAt.toISOString(),
-        reason: reason?.trim() || null,
+        expiresAt: result.expiresAt.toISOString(),
+        reason: trimmedReason,
       },
     });
 

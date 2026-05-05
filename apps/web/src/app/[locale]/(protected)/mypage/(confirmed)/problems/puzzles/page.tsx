@@ -22,14 +22,7 @@ import { countPositions, listPositionsWithProfile } from '@/lib/positions/querie
 import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 import { truncate } from '@/lib/text';
 
-import {
-  Divider,
-  PagePanel,
-  PageTitle,
-  PaginationNav,
-  SectionTitle,
-} from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
@@ -74,63 +67,57 @@ export default async function PuzzleProblemsPage({ params, searchParams }: Props
   };
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
-      <PagePanel>
-        <SectionTitle>{t('sectionTitle')}</SectionTitle>
-        {rows.length === 0 ? (
-          <p className="text-muted-foreground text-center py-8">{t('empty')}</p>
-        ) : (
-          <div className="space-y-3">
-            {rows.map(({ position }) => {
-              const descriptionExcerpt = truncate(position.description);
+    <PageLayout
+      title={t('title')}
+      locale={locale}
+      breadcrumb={[
+        { label: t('breadcrumbMypage'), href: '/mypage' },
+        { label: t('breadcrumbProblems'), href: '/mypage/problems' },
+        { label: t('title') },
+      ]}
+    >
+      <SectionTitle>{t('sectionTitle')}</SectionTitle>
+      {rows.length === 0 ? (
+        <p className="text-muted-foreground text-center py-8">{t('empty')}</p>
+      ) : (
+        <div className="space-y-3">
+          {rows.map(({ position }) => {
+            const descriptionExcerpt = truncate(position.description);
 
-              return (
-                <Link
-                  key={position.id}
-                  href={`/practice/puzzle/${position.id}`}
-                  locale={locale}
-                  className="block p-4 rounded-md border border-border bg-card hover:border-foreground/20 transition-colors"
-                >
-                  <div className="flex gap-4">
-                    <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
-                      <ThemedBoardThumbnail fen={position.fen} className="w-full h-full" />
-                    </div>
-                    <div className="flex-1 min-w-0 flex flex-col gap-1">
-                      <h3 className="font-medium text-foreground truncate">{position.title}</h3>
-                      {descriptionExcerpt && (
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {descriptionExcerpt}
-                        </p>
-                      )}
-                      <p className="text-xs text-muted-foreground mt-auto">
-                        {new Date(position.createdAt).toLocaleDateString(locale, {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                        })}
-                      </p>
-                    </div>
+            return (
+              <Link
+                key={position.id}
+                href={`/practice/puzzle/${position.id}`}
+                locale={locale}
+                className="block p-4 rounded-md border border-border bg-card hover:border-foreground/20 transition-colors"
+              >
+                <div className="flex gap-4">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
+                    <ThemedBoardThumbnail fen={position.fen} className="w-full h-full" />
                   </div>
-                </Link>
-              );
-            })}
-          </div>
-        )}
+                  <div className="flex-1 min-w-0 flex flex-col gap-1">
+                    <h3 className="font-medium text-foreground truncate">{position.title}</h3>
+                    {descriptionExcerpt && (
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {descriptionExcerpt}
+                      </p>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-auto">
+                      {new Date(position.createdAt).toLocaleDateString(locale, {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      )}
 
-        <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
-
-        <Divider />
-
-        <Breadcrumb
-          locale={locale}
-          items={[
-            { label: t('breadcrumbMypage'), href: '/mypage' },
-            { label: t('breadcrumbProblems'), href: '/mypage/problems' },
-            { label: t('title') },
-          ]}
-        />
-      </PagePanel>
-    </div>
+      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+    </PageLayout>
   );
 }

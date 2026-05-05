@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { BoardSkeleton, Button, FlipBoardButton, UnsavedChangesDialog } from '@/app/_components';
@@ -37,10 +37,18 @@ function buildDefaultTitle(displayName: string | undefined): string {
 
 type Props = {
   displayName?: string;
+  /**
+   * Skip the unsaved-changes navigation guard. Used when the form is
+   * rendered behind a guest sign-up overlay: the guest cannot submit, so
+   * the guard would otherwise block the sign-up CTA click with a modal
+   * that makes no sense in context.
+   */
+  disableUnsavedGuard?: boolean;
 };
 
-export function CreatePositionForm({ displayName }: Props = {}) {
+export function CreatePositionForm({ displayName, disableUnsavedGuard = false }: Props = {}) {
   const router = useRouter();
+  const locale = useLocale();
   const t = useTranslations('practice.positionMemory.create');
   const tBoard = useTranslations('practice.positionMemory');
   const tUnsaved = useTranslations('unsavedChanges');
@@ -63,7 +71,9 @@ export function CreatePositionForm({ displayName }: Props = {}) {
       description.trim() !== '' ||
       (fenInput.trim() !== '' && fenInput !== EMPTY_BOARD_FEN));
 
-  const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
+  const { isBlocking, confirm, cancel } = useUnsavedChanges({
+    isDirty: disableUnsavedGuard ? false : isDirty,
+  });
 
   const handleFlip = useCallback(() => setFlipped((prev) => !prev), []);
 
@@ -125,7 +135,18 @@ export function CreatePositionForm({ displayName }: Props = {}) {
       // flushSync ensures the re-render (isDirty → false) completes
       // before router.push triggers the navigation guard check.
       flushSync(() => setSubmitted(true));
-      router.push(`/practice/position-memory/${result.id}?toast=position_created`);
+      // Grant fired → route via /thanks so the user lands on the award screen,
+      // then continues to the position detail (toast suppressed because the
+      // /thanks page already celebrates the create). No-grant flows keep the
+      // legacy in-place toast UX.
+      if (result.grant) {
+        const returnUrl = `/${locale}/practice/position-memory/${result.id}`;
+        router.push(
+          `/thanks?grantId=${result.grant.grantId}&returnUrl=${encodeURIComponent(returnUrl)}`
+        );
+      } else {
+        router.push(`/practice/position-memory/${result.id}?toast=position_created`);
+      }
     } catch {
       setError('An unexpected error occurred. Please try again.');
     } finally {

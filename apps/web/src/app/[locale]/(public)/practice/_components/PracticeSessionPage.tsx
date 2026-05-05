@@ -1,5 +1,4 @@
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { PageLayout } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 type BreadcrumbItem = {
@@ -25,13 +24,8 @@ type Props = {
 };
 
 /**
- * Shared layout wrapper for all practice session pages.
- *
- * Renders the standard structure:
- *   <PageTitle> ... </PageTitle>
- *   {children}
- *   <Divider />
- *   <Breadcrumb />
+ * Shared layout wrapper for all practice session pages. Delegates to
+ * `PageLayout`.
  */
 export function PracticeSessionPage({
   locale,
@@ -39,20 +33,19 @@ export function PracticeSessionPage({
   breadcrumbItems,
   children,
   showDivider = true,
-  containerClassName = 'space-y-8',
+  containerClassName,
   dividerClassName,
 }: Props) {
   return (
-    <div className={containerClassName}>
-      <PageTitle>{title}</PageTitle>
-
-      <PagePanel>
-        {children}
-
-        {showDivider && <Divider className={dividerClassName} />}
-
-        <Breadcrumb items={breadcrumbItems} locale={locale} />
-      </PagePanel>
-    </div>
+    <PageLayout
+      title={title}
+      locale={locale}
+      breadcrumb={breadcrumbItems}
+      divider={showDivider}
+      dividerClassName={dividerClassName}
+      className={containerClassName}
+    >
+      {children}
+    </PageLayout>
   );
 }

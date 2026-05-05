@@ -8,16 +8,13 @@ import { HiLockClosed } from 'react-icons/hi2';
 import { getOptionalUser } from '@/lib/auth';
 
 import {
-  Divider,
   ListLink,
   ListLinkContainer,
-  PagePanel,
-  PageTitle,
+  PageLayout,
   PaginationNav,
   SectionTitle,
 } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -72,61 +69,53 @@ export default async function AnnouncementsPage({ params, searchParams }: Props)
   );
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('pageTitle')}</PageTitle>
+    <PageLayout title={t('pageTitle')} locale={locale} breadcrumb={[{ label: t('pageTitle') }]}>
+      {announcements.length === 0 ? (
+        <p className="text-muted-foreground">{t('noAnnouncements')}</p>
+      ) : (
+        <>
+          <SectionTitle>{t('announcementsListTitle')}</SectionTitle>
+          <ListLinkContainer>
+            {announcements.map((announcement) => {
+              const publishedDate = announcement.publishedAt
+                ? new Date(announcement.publishedAt).toLocaleDateString(locale, {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                  })
+                : undefined;
 
-      <PagePanel>
-        {announcements.length === 0 ? (
-          <p className="text-muted-foreground">{t('noAnnouncements')}</p>
-        ) : (
-          <>
-            <SectionTitle>{t('announcementsListTitle')}</SectionTitle>
-            <ListLinkContainer>
-              {announcements.map((announcement) => {
-                const publishedDate = announcement.publishedAt
-                  ? new Date(announcement.publishedAt).toLocaleDateString(locale, {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                    })
-                  : undefined;
+              return (
+                <ListLink
+                  key={announcement.id}
+                  href={`/announcements/${announcement.slug}`}
+                  icon="📢"
+                  title={announcement.title}
+                  meta={publishedDate}
+                  locale={locale}
+                  isPinned={announcement.pinnedAt !== null}
+                  badge={
+                    announcement.visibility === 'members_only' && !user ? (
+                      <>
+                        <HiLockClosed className="size-3" /> {t('membersOnlyBadge')}
+                      </>
+                    ) : undefined
+                  }
+                />
+              );
+            })}
+          </ListLinkContainer>
+          <PaginationNav
+            currentPage={currentPage}
+            totalPages={totalPages}
+            buildHref={(p) => `/${locale}/announcements${p > 1 ? `?page=${p}` : ''}`}
+          />
+        </>
+      )}
 
-                return (
-                  <ListLink
-                    key={announcement.id}
-                    href={`/announcements/${announcement.slug}`}
-                    icon="📢"
-                    title={announcement.title}
-                    meta={publishedDate}
-                    locale={locale}
-                    isPinned={announcement.pinnedAt !== null}
-                    badge={
-                      announcement.visibility === 'members_only' && !user ? (
-                        <>
-                          <HiLockClosed className="size-3" /> {t('membersOnlyBadge')}
-                        </>
-                      ) : undefined
-                    }
-                  />
-                );
-              })}
-            </ListLinkContainer>
-            <PaginationNav
-              currentPage={currentPage}
-              totalPages={totalPages}
-              buildHref={(p) => `/${locale}/announcements${p > 1 ? `?page=${p}` : ''}`}
-            />
-          </>
-        )}
-
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-        )}
-
-        <Divider />
-
-        <Breadcrumb items={[{ label: t('pageTitle') }]} locale={locale} />
-      </PagePanel>
-    </div>
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+      )}
+    </PageLayout>
   );
 }

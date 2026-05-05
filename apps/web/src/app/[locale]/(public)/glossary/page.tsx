@@ -6,9 +6,8 @@ import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV, SITE_URL } from '@/config';
 
 import { JsonLd, generateDefinedTermSetSchema } from '@/lib/seo/jsonld';
 
-import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
@@ -59,11 +58,9 @@ export default async function GlossaryIndexPage({ params }: Props) {
   });
 
   return (
-    <div className="space-y-8">
+    <>
       <JsonLd data={definedTermSetSchema} />
-      <PageTitle>{t('title')}</PageTitle>
-
-      <PagePanel>
+      <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
         <div className="space-y-6">
           <SectionTitle>{t('index.alphabetical')}</SectionTitle>
           <AlphabeticalIndex locale={locale} />
@@ -77,11 +74,7 @@ export default async function GlossaryIndexPage({ params }: Props) {
         {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
           <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
         )}
-
-        <Divider />
-
-        <Breadcrumb items={[{ label: t('title') }]} locale={locale} />
-      </PagePanel>
-    </div>
+      </PageLayout>
+    </>
   );
 }

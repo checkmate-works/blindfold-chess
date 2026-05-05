@@ -9,6 +9,8 @@ import { Link, useRouter } from '@/i18n/routing';
 import { executeMove } from '@blindfold-chess/features/chess-core';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
+import * as Sentry from '@sentry/nextjs';
+import { FaTimes } from 'react-icons/fa';
 
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
 import type { PeekPreferenceHint } from '@/lib/games/peek-cookie';
@@ -26,6 +28,7 @@ import { PagePanel } from '@/app/[locale]/_components/PagePanel';
 import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
+import { savePuzzleResult } from '../../_actions/savePuzzleResult';
 import { CircleMarker } from '../CircleMarker';
 
 type Attempt = { move: string; isCorrect: boolean };
@@ -57,6 +60,15 @@ type Props = {
 };
 
 const AUTO_NAVIGATE_DELAY_MS = 1000;
+
+/**
+ * How long the transient submit-feedback chip stays mounted. Matches the
+ * total length of the `feedback-pop` CSS keyframe in `globals.css` —
+ * after this window the chip has fully faded out, so unmounting it
+ * leaves no visual residue while resetting the React state for the next
+ * submit (which gives a fresh `key` and a fresh animation cycle).
+ */
+const FEEDBACK_DURATION_MS = 1200;
 
 type SessionState = {
   currentFen: string;
@@ -128,10 +140,37 @@ export function PuzzleSessionClient({
     lastOpponentMove: null,
   });
   const [moveInput, setMoveInput] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  /**
+   * Transient red chip shown when a submit is rejected. The success path
+   * has no chip on purpose — the PageTitle's "Black plays Nh2 (1/3)"
+   * highlight + progress update already signals "your move was correct
+   * and the puzzle has advanced", and a third green chip on top of that
+   * was visually overpowering the title channel. Incorrect submits, on
+   * the other hand, leave the PageTitle and input untouched, so the chip
+   * is the *only* signal that anything happened — keep it.
+   *
+   * The chip auto-clears via `FEEDBACK_DURATION_MS`. Successful submits
+   * also clear it (rather than leaving a stale red chip from the prior
+   * wrong attempt sitting next to a now-correct state).
+   *
+   * `count` is incremented on every reject so the chip's React `key`
+   * changes — that re-mounts the element and replays the CSS animation
+   * when two wrong attempts fire back-to-back. Without the counter the
+   * second submit would silently keep the existing element and skip the
+   * animation.
+   */
+  const [incorrectFlash, setIncorrectFlash] = useState<{ count: number } | null>(null);
+  const incorrectCountRef = useRef(0);
   const [peekCount, setPeekCount] = useState(0);
   const [isBoardVisible, setIsBoardVisible] = useState(false);
   const [isSolved, setIsSolved] = useState(false);
+  /**
+   * Guards against double-invocation of `finishSolve` (e.g. StrictMode
+   * re-mount, fast rerenders). Mirrors the `savedRef` pattern used in
+   * position-memory's `SinglePositionSession` and `useChallengeResultSave`,
+   * so the EXP-grant Server Action is invoked at most once per solved run.
+   */
+  const savedRef = useRef(false);
   /**
    * Flipped to `true` in the short window between the puzzle being solved
    * and the router.push to /result completing, so the PageTitle can show
@@ -230,9 +269,23 @@ export function PuzzleSessionClient({
     // ref being populated (first render) misses the scroll on SSR hydration.
   }, [playerMoveCount, session.lastOpponentMove]);
 
+  // Unmount the incorrect-feedback chip once its CSS animation has
+  // completed. Keying off `incorrectFlash.count` (rather than the whole
+  // object) ensures the timer resets on every new wrong attempt, so
+  // back-to-back rejects each get the full duration on screen instead of
+  // the latest one being cut short by the previous timer.
+  useEffect(() => {
+    if (incorrectFlash === null) return;
+    const timer = setTimeout(() => setIncorrectFlash(null), FEEDBACK_DURATION_MS);
+    return () => clearTimeout(timer);
+  }, [incorrectFlash]);
+
   const hasErrors = session.attempts.some((a) => !a.isCorrect);
 
-  function finishSolve(solutionLine: string, attempts: Attempt[]) {
+  function finishSolve(solutionLine: string, attempts: Attempt[], playerMoveCount: number) {
+    if (savedRef.current) return;
+    savedRef.current = true;
+
     try {
       sessionStorage.setItem(
         `puzzle_result_${positionId}`,
@@ -242,9 +295,40 @@ export function PuzzleSessionClient({
       // sessionStorage may be unavailable
     }
     setIsNavigatingToResult(true);
+
+    const baseUrl = `/practice/puzzle/${positionId}/result`;
+    const incorrectAttempts = attempts.filter((a) => !a.isCorrect).length;
+
+    // Fire the EXP grant in parallel with the auto-navigate timer. We capture
+    // the resulting `expEventId` in a closure variable so the eventual
+    // `router.push` can append `?grant=<id>` if the save resolves before the
+    // 1s feedback delay elapses. If it doesn't (slow network, error), the
+    // grant is still persisted DB-side — only the result page's EXP display
+    // misses out on this navigation, and it is acceptable degradation.
+    let expEventId: string | undefined;
+    void savePuzzleResult({
+      playerMoveCount,
+      incorrectAttempts,
+      peekCount,
+    })
+      .then((result) => {
+        if (result.success && result.expEventId) {
+          expEventId = result.expEventId;
+        }
+      })
+      .catch((err) => {
+        Sentry.captureException(err);
+      });
+
     setTimeout(() => {
-      router.push(`/practice/puzzle/${positionId}/result`);
+      const finalUrl = expEventId ? `${baseUrl}?grant=${encodeURIComponent(expEventId)}` : baseUrl;
+      router.push(finalUrl);
     }, AUTO_NAVIGATE_DELAY_MS);
+  }
+
+  function flashIncorrect() {
+    incorrectCountRef.current += 1;
+    setIncorrectFlash({ count: incorrectCountRef.current });
   }
 
   function handleSubmit(move: AlgebraicNotation): boolean {
@@ -253,6 +337,32 @@ export function PuzzleSessionClient({
 
     const nextPlayerIndex = session.playerMoves.length;
 
+    // Run the user's input through chess.js FIRST. We rely on this for two
+    // things at once:
+    //   (a) legality check — illegal SAN against the current position is
+    //       rejected outright (afterPlayer === null), and
+    //   (b) SAN normalization — chess.js fills in missing capture marks
+    //       (`x`), check marks (`+`), and checkmate marks (`#`) and returns
+    //       the canonical SAN via `moveResult.san`. Matching against that
+    //       canonical form means a user typing `Qe6` for a stored solution
+    //       of `Qxe6+` no longer gets bounced as "incorrect" — the report
+    //       a user filed about being stuck on a puzzle for 10 minutes
+    //       trying to type the exact decorations was caused by the previous
+    //       string-equality check on the raw input.
+    //
+    // The user's original typed input is still preserved in `attempt.move`
+    // so the result page shows what they actually typed; correctness is
+    // judged on the canonical SAN.
+    const afterPlayer = executeMove(session.currentFen, trimmed);
+    if (!afterPlayer) {
+      const attempt: Attempt = { move: trimmed, isCorrect: false };
+      setSession({ ...session, attempts: [...session.attempts, attempt] });
+      flashIncorrect();
+      return false;
+    }
+
+    const canonicalSan = afterPlayer.moveResult.san;
+
     // Which solution lines accept this move at the current player slot? If we
     // have already locked to a line, restrict to it; otherwise scan all.
     const candidates =
@@ -260,25 +370,31 @@ export function PuzzleSessionClient({
         ? [session.lockedSolutionIndex]
         : parsedSolutions.map((_, i) => i);
 
-    const matchIdx = candidates.find(
-      (i) => parsedSolutions[i]!.playerSlots[nextPlayerIndex] === trimmed
-    );
+    // Both sides need to be canonical for the comparison to be sound.
+    // The user's input is canonicalized above; the stored solution SAN is
+    // canonicalized here by feeding it through chess.js against the same
+    // pre-move FEN. Without this, a solution stored without check decoration
+    // (e.g. `Rxd8`, when chess.js's canonical form for the same move is
+    // `Rxd8+`) would never match — even when the user types the *exact*
+    // string from the DB. Reproduced 2026-05-02 on puzzle
+    // `d4f46cc3-dfbd-4c1b-bb8c-ed7a952f8a46` whose stored solution `Rxd8`
+    // could not be solved by any input. `executeMove` is null only if the
+    // server-stored SAN is itself illegal at this point in the line, which
+    // would indicate corrupted puzzle data — we fail closed (no match) in
+    // that case rather than crashing.
+    const matchIdx = candidates.find((i) => {
+      const expected = parsedSolutions[i]!.playerSlots[nextPlayerIndex];
+      if (expected === undefined) return false;
+      const expectedExec = executeMove(session.currentFen, expected);
+      return expectedExec !== null && expectedExec.moveResult.san === canonicalSan;
+    });
 
     const attempt: Attempt = { move: trimmed, isCorrect: matchIdx !== undefined };
     const updatedAttempts = [...session.attempts, attempt];
 
     if (matchIdx === undefined) {
       setSession({ ...session, attempts: updatedAttempts });
-      setError(t('incorrect'));
-      return false;
-    }
-
-    // Accept the player move and advance FEN.
-    const afterPlayer = executeMove(session.currentFen, trimmed);
-    if (!afterPlayer) {
-      // Should not happen — the solution line was pre-validated server-side.
-      setSession({ ...session, attempts: updatedAttempts });
-      setError(t('incorrect'));
+      flashIncorrect();
       return false;
     }
 
@@ -314,11 +430,19 @@ export function PuzzleSessionClient({
       lastOpponentMove: playedOpponentMove,
     });
     setMoveInput('');
-    setError(null);
+    // Clear any leftover red chip from a prior wrong attempt — there is
+    // no green chip on success (the PageTitle update is the success
+    // signal), but a stale red chip would lie about the just-accepted
+    // move if we did not reset here.
+    setIncorrectFlash(null);
 
     if (solved) {
       setIsSolved(true);
-      finishSolve(solutions[locked]!.map((m) => m.san).join(' '), updatedAttempts);
+      finishSolve(
+        solutions[locked]!.map((m) => m.san).join(' '),
+        updatedAttempts,
+        solution.playerSlots.length
+      );
     }
 
     return true;
@@ -338,6 +462,17 @@ export function PuzzleSessionClient({
   const opponentColor: 'w' | 'b' = playerColor === 'w' ? 'b' : 'w';
   const opponentStatusKey = opponentColor === 'w' ? 'whitePlayed' : 'blackPlayed';
   const showOpponentStatus = session.lastOpponentMove !== null && !isSolved;
+  // Once the user lands a first correct move, `lockedSolutionIndex` pins the
+  // active line and we know exactly how many player moves the puzzle has,
+  // which lets us label progress as "(2/3)". Before locking — i.e. while the
+  // user is still on their first move — there is no canonical total, but the
+  // opponent-status branch only fires after a correct move so locking has
+  // already happened by the time the badge is rendered. The conditional is
+  // defensive in case this contract ever changes.
+  const totalPlayerSlots =
+    session.lockedSolutionIndex !== null
+      ? parsedSolutions[session.lockedSolutionIndex]!.playerSlots.length
+      : null;
   let titleContent: ReactNode;
   if (isNavigatingToResult) {
     titleContent = (
@@ -347,9 +482,28 @@ export function PuzzleSessionClient({
     );
   } else if (showOpponentStatus) {
     titleContent = (
-      <span data-testid="opponent-status" className="inline-flex items-center gap-1.5">
+      <span data-testid="opponent-status" className="inline-flex items-baseline gap-1.5">
         <CircleMarker color={opponentColor} />
-        <span>{t(opponentStatusKey, { move: session.lastOpponentMove! })}</span>
+        {/* Re-mounting via `key` is what retriggers the one-shot CSS
+         *  animation: each new opponent reply gives a fresh element and so a
+         *  fresh animation cycle, even when the SAN happens to repeat from
+         *  the previous reply. `motion-safe:` makes the animation a no-op
+         *  for users with `prefers-reduced-motion: reduce`. */}
+        <span
+          key={`opp-${playerMoveCount}`}
+          data-testid="opponent-status-text"
+          className="motion-safe:animate-title-highlight rounded px-1"
+        >
+          {t(opponentStatusKey, { move: session.lastOpponentMove! })}
+        </span>
+        {totalPlayerSlots !== null && (
+          <span
+            data-testid="opponent-progress"
+            className="text-sm font-normal text-muted-foreground"
+          >
+            ({playerMoveCount}/{totalPlayerSlots})
+          </span>
+        )}
       </span>
     );
   } else {
@@ -368,39 +522,80 @@ export function PuzzleSessionClient({
 
           {showInlinePeek && (
             // Puzzle peek always reveals all pieces — overrides blindfold prefs from games/play.
-            <InlineBoardView
-              fen={session.currentFen}
-              playerSide={playerColor === 'b' ? 'black' : 'white'}
-              flipped={playerColor === 'b'}
-              lastMove={null}
-              preferences={{ ...preferences, showOwnPieces: true, showOpponentPieces: true }}
-              movesLength={0}
-              currentPosition={-1}
-              formattedPgn={[]}
-              onPeek={() => setPeekCount((c) => c + 1)}
+            //
+            // The inline-peek board is constrained to the same width as
+            // `games/play`'s `lg:col-span-2` of `lg:grid-cols-3 lg:gap-8`,
+            // i.e. `(2W - 32px) / 3` where W is the PagePanel's inner
+            // width — so the ChessBoard renders at the same size on both
+            // pages on desktop. Only the board itself is constrained:
+            // the surrounding pieces info, move input, status messages,
+            // and peek button keep the original full-width layout. The
+            // `mx-auto` centers the constrained board within the panel
+            // (since there is no analog of the games/play moves panel to
+            // fill the right side, left-aligning would leave a visually
+            // unbalanced empty band).
+            <div className="lg:mx-auto lg:max-w-[calc((200%_-_2rem)/3)]">
+              <InlineBoardView
+                fen={session.currentFen}
+                playerSide={playerColor === 'b' ? 'black' : 'white'}
+                flipped={playerColor === 'b'}
+                lastMove={null}
+                preferences={{ ...preferences, showOwnPieces: true, showOpponentPieces: true }}
+                movesLength={0}
+                currentPosition={-1}
+                formattedPgn={[]}
+                onPeek={() => setPeekCount((c) => c + 1)}
+              />
+            </div>
+          )}
+
+          {/*
+            Wrap the panel in a `relative` container so the transient
+            incorrect-feedback chip can absolutely-position itself over
+            the panel's top-right corner without affecting layout. The
+            chip is the *only* acknowledgement the user gets for a wrong
+            submit — the inline "Incorrect" string inside the panel was
+            retired because it stayed on screen until the next submit and
+            felt noisy. There is intentionally no chip on success: the
+            PageTitle's highlight pulse + (N/total) progress update is
+            already the success signal, and a green chip on top of that
+            was visually overpowering the title channel.
+            `error={null}` + `showInlineError={false}` prevent the panel
+            from surfacing its own error string, so the chip is the sole
+            negative-feedback channel. `aria-live` on the chip wrapper
+            announces the rejection to screen-reader users.
+          */}
+          <div className="relative">
+            <MoveInputPanel
+              preferences={preferences}
+              updatePreferences={updatePreferences}
+              currentFen={session.currentFen}
+              moveInput={moveInput}
+              onMoveInputChange={setMoveInput}
+              error={null}
+              onErrorClear={() => {}}
+              onSubmit={handleSubmit}
+              disabled={isSolved}
+              inputPlaceholder={tPlay('inputMove')}
+              selectPlaceholder={tPlay('selectMove')}
+              toggleTitle={tPlay('switchInputMode')}
+              playerColor={playerColor}
+              showLegalMovesHint={false}
+              showInlineError={false}
             />
-          )}
-
-          <MoveInputPanel
-            preferences={preferences}
-            updatePreferences={updatePreferences}
-            currentFen={session.currentFen}
-            moveInput={moveInput}
-            onMoveInputChange={setMoveInput}
-            error={error}
-            onErrorClear={() => setError(null)}
-            onSubmit={handleSubmit}
-            disabled={isSolved}
-            inputPlaceholder={tPlay('inputMove')}
-            selectPlaceholder={tPlay('selectMove')}
-            toggleTitle={tPlay('switchInputMode')}
-            playerColor={playerColor}
-            showLegalMovesHint={false}
-          />
-
-          {isSolved && (
-            <p className="text-sm font-medium text-green-600 dark:text-green-400">{t('correct')}</p>
-          )}
+            <div aria-live="polite" className="pointer-events-none absolute -top-2 right-2 z-10">
+              {incorrectFlash && (
+                <span
+                  key={`incorrect-${incorrectFlash.count}`}
+                  data-testid="submit-feedback-incorrect"
+                  className="motion-safe:animate-feedback-pop inline-flex items-center gap-1 rounded-full border border-red-500/30 bg-red-500/15 px-2.5 py-1 text-xs font-semibold text-red-700 shadow-sm dark:text-red-300"
+                >
+                  <FaTimes className="h-3 w-3" />
+                  <span>{t('incorrect')}</span>
+                </span>
+              )}
+            </div>
+          </div>
 
           {hasErrors && !isSolved && (
             <Link
@@ -464,9 +659,11 @@ export function PuzzleSessionClient({
           )}
         </div>
 
-        <Divider />
-
-        {breadcrumb}
+        {/* Mirror `PageLayout`'s trailing block — see PageLayout.tsx. */}
+        <div className="!mt-4 space-y-4">
+          <Divider />
+          {breadcrumb}
+        </div>
       </PagePanel>
     </div>
   );

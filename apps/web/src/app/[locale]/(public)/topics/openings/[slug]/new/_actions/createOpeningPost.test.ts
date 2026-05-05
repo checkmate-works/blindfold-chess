@@ -275,8 +275,12 @@ describe('createOpeningPost', () => {
         replyPermission: 'everyone',
       });
 
+      // Text-bearing opening posts trigger an automated grant, so the user
+      // is routed through /thanks with the original post URL preserved as
+      // returnUrl. The post-created toast is suppressed in this path.
+      const returnUrl = `/en/topics/openings/french-defense/posts/${generatedPostId}`;
       expect(mockRedirect).toHaveBeenCalledWith(
-        `/en/topics/openings/french-defense/posts/${generatedPostId}?toast=post_created`
+        `/en/thanks?grantId=g1&returnUrl=${encodeURIComponent(returnUrl)}`
       );
     });
 
@@ -320,8 +324,9 @@ describe('createOpeningPost', () => {
         createOpeningPost('ja', 'sicilian-defense', {}, makeFormData({ content: 'post' }))
       ).rejects.toThrow('NEXT_REDIRECT');
 
+      const returnUrl = `/ja/topics/openings/sicilian-defense/posts/${generatedPostId}`;
       expect(mockRedirect).toHaveBeenCalledWith(
-        `/ja/topics/openings/sicilian-defense/posts/${generatedPostId}?toast=post_created`
+        `/ja/thanks?grantId=g1&returnUrl=${encodeURIComponent(returnUrl)}`
       );
     });
   });

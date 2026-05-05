@@ -1,11 +1,13 @@
 export { AuthStatusDisplay } from './AuthStatusDisplay';
 export { BetaNotice } from './BetaNotice';
 export { CardLink } from './CardLink';
+export { CertificateFrame } from './CertificateFrame';
 export { CurriculumToc } from './CurriculumToc';
 export { DashboardCard } from './DashboardCard';
 export { DashboardSection } from './DashboardSection';
 export { DashboardSectionHeader } from './DashboardSectionHeader';
 export { ChessBoardDemo } from './ChessBoardDemo';
+export { PageLayout } from './PageLayout';
 export { PagePanel } from './PagePanel';
 export { Divider } from './Divider';
 export { FormErrorMessage } from './FormErrorMessage';

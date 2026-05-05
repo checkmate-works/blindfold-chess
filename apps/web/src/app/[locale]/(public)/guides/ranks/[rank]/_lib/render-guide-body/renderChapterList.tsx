@@ -7,7 +7,7 @@ import { JsonLd } from '@/lib/seo/jsonld';
 import { GuidePageFooter } from '@/app/[locale]/(public)/guides/_components/GuidePageFooter';
 import { GuideLinkCard } from '@/app/[locale]/(public)/ranks/_components/GuideLinkCard';
 import { RankHeader } from '@/app/[locale]/(public)/ranks/_components/RankHeader';
-import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 
 import { buildChapterListBreadcrumbs, buildChapterListItemListSchema } from '../guide-metadata';
 import type { GuideContext } from './context';
@@ -19,12 +19,9 @@ export function renderChapterList(ctx: GuideContext, guide: ChapteredGuide): Rea
   const itemListSchema = buildChapterListItemListSchema(locale, rankSlug, guide);
 
   return (
-    <div className="space-y-8">
+    <>
       <JsonLd data={itemListSchema} />
-
-      <PageTitle>{rankName}</PageTitle>
-
-      <PagePanel>
+      <PageLayout title={rankName} locale={locale}>
         <RankHeader beltColor={beltColor}>{tGuides('ranks.indexTitle')}</RankHeader>
 
         <SectionTitle>{tGuides('ranks.chapterListHeading')}</SectionTitle>
@@ -45,7 +42,7 @@ export function renderChapterList(ctx: GuideContext, guide: ChapteredGuide): Rea
         </ul>
 
         <GuidePageFooter locale={locale} items={breadcrumbItems} />
-      </PagePanel>
-    </div>
+      </PageLayout>
+    </>
   );
 }

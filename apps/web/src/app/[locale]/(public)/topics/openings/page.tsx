@@ -12,15 +12,8 @@ import { createClient } from '@/lib/supabase/server';
 import { TopicPostCard } from '@/app/[locale]/(public)/(home)/_components/TopicPostCard';
 import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { isValidSquare } from '@/app/[locale]/(public)/topics/squares/_lib/squares';
-import {
-  Divider,
-  PagePanel,
-  PageTitle,
-  PaginationNav,
-  SectionTitle,
-} from '@/app/[locale]/_components';
+import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
@@ -101,92 +94,80 @@ export default async function OpeningsPage({ params, searchParams }: Props) {
   };
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('openings.title')}</PageTitle>
+    <PageLayout
+      title={t('openings.title')}
+      locale={locale}
+      breadcrumb={[{ label: t('title'), href: '/topics' }, { label: t('openings.title') }]}
+    >
+      {recentPosts.length > 0 && (
+        <>
+          <SectionTitle>{t('openings.recentPosts')}</SectionTitle>
+          <div className="space-y-3">
+            {recentPosts.map((post) => {
+              const tTopic = post.topicType === 'opening' ? tOpenings : tSquares;
+              return (
+                <TopicPostCard
+                  key={post.id}
+                  post={post}
+                  locale={locale}
+                  showMoreLabel={t('showMore')}
+                  justNowLabel={tTopic('justNow')}
+                  variant="card"
+                />
+              );
+            })}
+          </div>
+          <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+        </>
+      )}
 
-      <PagePanel>
-        {recentPosts.length > 0 && (
-          <>
-            <SectionTitle>{t('openings.recentPosts')}</SectionTitle>
-            <div className="space-y-3">
-              {recentPosts.map((post) => {
-                const tTopic = post.topicType === 'opening' ? tOpenings : tSquares;
-                return (
-                  <TopicPostCard
-                    key={post.id}
-                    post={post}
-                    locale={locale}
-                    showMoreLabel={t('showMore')}
-                    justNowLabel={tTopic('justNow')}
-                    newReplyTemplate={tTopic('newReply', { time: '{time}' })}
-                    variant="card"
-                  />
-                );
-              })}
-            </div>
-            <PaginationNav
-              currentPage={currentPage}
-              totalPages={totalPages}
-              buildHref={buildHref}
-            />
-          </>
-        )}
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE) && (
+        <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
+      )}
 
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE) && (
-          <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
-        )}
+      {firstMoveSquare
+        ? currentPage === 1 && (
+            <>
+              <SectionTitle>
+                {t('openings.firstMoveFilter.title', { square: firstMoveSquare })}
+              </SectionTitle>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {openings.map((opening) => (
+                  <div key={opening.id}>
+                    <OpeningCard
+                      opening={opening}
+                      displayName={getOpeningDisplayName(nameT, opening.slug, opening.name)}
+                      locale={locale}
+                    />
+                    {opening.children.length > 0 && (
+                      <div className="border-l-2 border-border ml-4 pl-2 mt-1 space-y-1">
+                        {opening.children.map((child) => (
+                          <OpeningCard
+                            key={child.id}
+                            opening={child}
+                            displayName={getOpeningDisplayName(nameT, child.slug, child.name)}
+                            locale={locale}
+                            compact
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
+          )
+        : currentPage === 1 && (
+            <Suspense>
+              <OpeningCategorySectionTitle />
+              <OpeningCategoryFilter />
+              <OpeningsListByCategory openings={openings} locale={locale} />
+            </Suspense>
+          )}
 
-        {firstMoveSquare
-          ? currentPage === 1 && (
-              <>
-                <SectionTitle>
-                  {t('openings.firstMoveFilter.title', { square: firstMoveSquare })}
-                </SectionTitle>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {openings.map((opening) => (
-                    <div key={opening.id}>
-                      <OpeningCard
-                        opening={opening}
-                        displayName={getOpeningDisplayName(nameT, opening.slug, opening.name)}
-                        locale={locale}
-                      />
-                      {opening.children.length > 0 && (
-                        <div className="border-l-2 border-border ml-4 pl-2 mt-1 space-y-1">
-                          {opening.children.map((child) => (
-                            <OpeningCard
-                              key={child.id}
-                              opening={child}
-                              displayName={getOpeningDisplayName(nameT, child.slug, child.name)}
-                              locale={locale}
-                              compact
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </>
-            )
-          : currentPage === 1 && (
-              <Suspense>
-                <OpeningCategorySectionTitle />
-                <OpeningCategoryFilter />
-                <OpeningsListByCategory openings={openings} locale={locale} />
-              </Suspense>
-            )}
-
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-        )}
-
-        <Divider />
-
-        <Breadcrumb
-          items={[{ label: t('title'), href: '/topics' }, { label: t('openings.title') }]}
-          locale={locale}
-        />
-      </PagePanel>
-    </div>
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+      )}
+    </PageLayout>
   );
 }

@@ -4,8 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { getOptionalUser } from '@/lib/auth';
 import { hasActiveSubscription } from '@/lib/billing/subscription';
 
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { PageLayout } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
@@ -34,42 +33,35 @@ export default async function PricingPage({ params }: Props) {
   const isSubscribed = user ? await hasActiveSubscription(user.id) : false;
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
+    <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
+      <p className="text-muted-foreground">{t('subtitle')}</p>
 
-      <PagePanel>
-        <p className="text-muted-foreground">{t('subtitle')}</p>
+      <div className="grid gap-6 sm:grid-cols-2 max-w-2xl mx-auto">
+        {/* Free Plan */}
+        <PricingCard
+          variant="free"
+          name={t('freePlan.name')}
+          price={t('freePlan.price')}
+          features={[t('freePlan.feature1')]}
+          isCurrent={!isSubscribed}
+          currentLabel={t('currentPlan')}
+        />
 
-        <div className="grid gap-6 sm:grid-cols-2 max-w-2xl mx-auto">
-          {/* Free Plan */}
-          <PricingCard
-            variant="free"
-            name={t('freePlan.name')}
-            price={t('freePlan.price')}
-            features={[t('freePlan.feature1')]}
-            isCurrent={!isSubscribed}
-            currentLabel={t('currentPlan')}
-          />
-
-          {/* Ad-Free Plan */}
-          <PricingCard
-            variant="paid"
-            name={t('adFreePlan.name')}
-            price={t('adFreePlan.price')}
-            priceUnit={t('adFreePlan.priceUnit')}
-            features={[t('adFreePlan.feature1'), t('adFreePlan.feature2')]}
-            isCurrent={isSubscribed}
-            currentLabel={t('currentPlan')}
-            ctaLabel={isSubscribed ? t('managePlan') : t('subscribe')}
-            ctaHref={isSubscribed ? `/${locale}/mypage/subscription` : undefined}
-            locale={locale}
-            isAuthenticated={!!user}
-          />
-        </div>
-
-        <Divider />
-        <Breadcrumb items={[{ label: t('title') }]} locale={locale} />
-      </PagePanel>
-    </div>
+        {/* Ad-Free Plan */}
+        <PricingCard
+          variant="paid"
+          name={t('adFreePlan.name')}
+          price={t('adFreePlan.price')}
+          priceUnit={t('adFreePlan.priceUnit')}
+          features={[t('adFreePlan.feature1'), t('adFreePlan.feature2')]}
+          isCurrent={isSubscribed}
+          currentLabel={t('currentPlan')}
+          ctaLabel={isSubscribed ? t('managePlan') : t('subscribe')}
+          ctaHref={isSubscribed ? `/${locale}/mypage/subscription` : undefined}
+          locale={locale}
+          isAuthenticated={!!user}
+        />
+      </div>
+    </PageLayout>
   );
 }

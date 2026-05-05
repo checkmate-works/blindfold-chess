@@ -189,7 +189,7 @@ describe('createPost', () => {
       mockInsertReturning.mockResolvedValue([{ id: generatedPostId }]);
     });
 
-    it('should insert post and redirect on success', async () => {
+    it('should insert post and redirect to /thanks on grant-eligible success', async () => {
       await expect(createPost('en', 'e4', {}, makeFormData('My post about e4'))).rejects.toThrow(
         'NEXT_REDIRECT'
       );
@@ -202,8 +202,12 @@ describe('createPost', () => {
         replyPermission: 'everyone',
       });
 
+      // Text-bearing square posts trigger an automated grant, so the user is
+      // routed through /thanks with the original post URL preserved as
+      // returnUrl. The post-created toast is suppressed in this path.
+      const returnUrl = `/en/topics/squares/e4/posts/${generatedPostId}`;
       expect(mockRedirect).toHaveBeenCalledWith(
-        `/en/topics/squares/e4/posts/${generatedPostId}?toast=post_created`
+        `/en/thanks?grantId=g1&returnUrl=${encodeURIComponent(returnUrl)}`
       );
     });
 
@@ -226,8 +230,9 @@ describe('createPost', () => {
         'NEXT_REDIRECT'
       );
 
+      const returnUrl = `/ja/topics/squares/h8/posts/${generatedPostId}`;
       expect(mockRedirect).toHaveBeenCalledWith(
-        `/ja/topics/squares/h8/posts/${generatedPostId}?toast=post_created`
+        `/ja/thanks?grantId=g1&returnUrl=${encodeURIComponent(returnUrl)}`
       );
     });
   });

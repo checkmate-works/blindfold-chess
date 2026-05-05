@@ -78,6 +78,17 @@ vi.mock('@/app/[locale]/(public)/games/play/_components/ShowBoardButton', () => 
   ),
 }));
 
+// Mock the EXP-grant Server Action so the session component does not attempt
+// to call into server-only modules (auth, db) from a jsdom test. The default
+// resolution returns `{ success: true }` WITHOUT an `expEventId`, which keeps
+// the navigation URL grant-less — that matches every existing assertion that
+// checks `router.push('/practice/puzzle/<id>/result')`. The dedicated EXP-grant
+// describe block below overrides this default to assert the grant-param path.
+const mockSavePuzzleResult = vi.fn();
+vi.mock('../../_actions/savePuzzleResult', () => ({
+  savePuzzleResult: (...args: unknown[]) => mockSavePuzzleResult(...args),
+}));
+
 vi.mock('@/app/[locale]/_components/MoveInputPanel', () => ({
   MoveInputPanel: ({
     disabled,
@@ -166,6 +177,11 @@ function renderSession(solutions: string[] = ['Nf3'], fen: string = STARTING_FEN
 
 beforeEach(() => {
   mockPush.mockReset();
+  mockSavePuzzleResult.mockReset();
+  // Default: report a successful grant with NO `expEventId`, so the URL the
+  // session pushes stays `/practice/puzzle/<id>/result` (no `?grant=...`).
+  // Tests that exercise the grant-URL path override this in their own block.
+  mockSavePuzzleResult.mockResolvedValue({ success: true });
   sessionStorage.clear();
 });
 
@@ -234,12 +250,16 @@ describe('PuzzleSessionClient', () => {
   });
 
   describe('incorrect answer', () => {
-    it('records the attempt and surfaces the incorrect-move message', () => {
+    it('records the attempt and surfaces the incorrect-move feedback chip', () => {
       renderSession(['e4']);
 
       fireEvent.click(screen.getByTestId('stub-submit'));
 
-      expect(screen.getByTestId('panel-error')).toHaveTextContent('incorrect');
+      // The persistent inline-error string used to live inside the panel
+      // (`panel-error`); it was retired in favour of the transient chip
+      // because both Correct and Incorrect feedback would otherwise stay
+      // on screen until the next submit and felt noisy.
+      expect(screen.getByTestId('submit-feedback-incorrect')).toBeInTheDocument();
       expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'false');
       expect(screen.getByTestId('view-result-link')).toBeInTheDocument();
     });
@@ -291,23 +311,33 @@ describe('PuzzleSessionClient', () => {
   });
 
   describe('input lifecycle', () => {
-    it('clears the incorrect-move error when the user edits the input (onErrorClear)', () => {
-      renderSession(['e4']);
+    it('auto-dismisses the incorrect-move chip after the feedback duration elapses', () => {
+      vi.useFakeTimers();
+      try {
+        renderSession(['e4']);
 
-      fireEvent.click(screen.getByTestId('stub-submit'));
-      expect(screen.getByTestId('panel-error')).toHaveTextContent('incorrect');
+        fireEvent.click(screen.getByTestId('stub-submit'));
+        expect(screen.getByTestId('submit-feedback-incorrect')).toBeInTheDocument();
 
-      fireEvent.click(screen.getByTestId('stub-clear-error'));
+        // The chip's auto-clear timer is what keeps the surface from going
+        // stale. Advance past the timer and the element should be gone.
+        // 1500 > the FEEDBACK_DURATION_MS constant; we deliberately pick a
+        // value larger than the timer so this test is robust against minor
+        // tuning of the duration without needing a re-export.
+        act(() => {
+          vi.advanceTimersByTime(1500);
+        });
 
-      expect(screen.queryByTestId('panel-error')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('submit-feedback-incorrect')).not.toBeInTheDocument();
+      } finally {
+        vi.useRealTimers();
+      }
     });
 
-    it('ignores onErrorClear before any incorrect attempt (no-op when error is null)', () => {
+    it('does not surface a feedback chip before any submit', () => {
       renderSession(['Nf3']);
 
-      fireEvent.click(screen.getByTestId('stub-clear-error'));
-
-      expect(screen.queryByTestId('panel-error')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('submit-feedback-incorrect')).not.toBeInTheDocument();
       expect(screen.queryByTestId('view-result-link')).not.toBeInTheDocument();
     });
   });
@@ -419,7 +449,7 @@ describe('PuzzleSessionClient', () => {
       (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'Nh2';
       fireEvent.click(screen.getByTestId('stub-custom-submit'));
 
-      expect(screen.getByTestId('panel-error')).toHaveTextContent('incorrect');
+      expect(screen.getByTestId('submit-feedback-incorrect')).toBeInTheDocument();
     });
 
     it('solves a single-move black-to-move puzzle and records the payload with the black-side FEN', () => {
@@ -509,6 +539,36 @@ describe('PuzzleSessionClient', () => {
       expect(heading).not.toHaveTextContent(POSITION_TITLE);
     });
 
+    it('appends progress `(done/total)` to the opponent status after a correct player move', () => {
+      // The puzzle session is unique vs games/play in that the opponent
+      // reply lands instantly with no perceivable latency — so the user
+      // can lose track of how far through the puzzle they are. Surfacing
+      // the (done/total) counter alongside the opponent status gives
+      // explicit progress without having to count moves themselves.
+      renderSession(['h5 Nh2 Bh4'], BLACK_TO_MOVE_FEN);
+
+      (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'h5';
+      fireEvent.click(screen.getByTestId('stub-custom-submit'));
+
+      // 1 of 2 player slots solved (the puzzle has 2 player moves: h5 and Bh4).
+      expect(screen.getByTestId('opponent-progress')).toHaveTextContent('(1/2)');
+    });
+
+    it('marks the opponent status text with the title-highlight animation class', () => {
+      // The animation class is gated on `motion-safe:` so users who set
+      // `prefers-reduced-motion` see no animation. Asserting the class
+      // presence is enough — the actual one-shot animation behaviour is a
+      // CSS detail tested by the keyframe definition in globals.css.
+      renderSession(['h5 Nh2 Bh4'], BLACK_TO_MOVE_FEN);
+
+      (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'h5';
+      fireEvent.click(screen.getByTestId('stub-custom-submit'));
+
+      expect(screen.getByTestId('opponent-status-text').className).toContain(
+        'motion-safe:animate-title-highlight'
+      );
+    });
+
     it('swaps the PageTitle to the Loading... placeholder once the puzzle is solved and navigation starts', () => {
       // 2-token line: h5 is the only player slot, so submitting it flips
       // `isSolved` to true AND kicks off `finishSolve`, which sets
@@ -528,6 +588,342 @@ describe('PuzzleSessionClient', () => {
       expect(screen.queryByTestId('opponent-status')).not.toBeInTheDocument();
       expect(screen.getByTestId('loading-title')).toBeInTheDocument();
       expect(heading).not.toHaveTextContent(POSITION_TITLE);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Submit-feedback chip
+  //
+  // A transient floating chip that pops over the top-right of the input
+  // panel and fades out after ~1.2s. Replaced two earlier surfaces — the
+  // persistent inline-error string in MoveInputPanel and the reserved
+  // success-feedback slot below it — both of which lingered until the
+  // next submit and felt noisy. The chip handles BOTH outcomes (correct
+  // and incorrect) through a single channel, and both auto-dismiss the
+  // same way.
+  // ---------------------------------------------------------------------------
+  describe('submit-feedback chip', () => {
+    it('renders no feedback chip before any submit', () => {
+      renderSession(['Nf3']);
+      expect(screen.queryByTestId('submit-feedback-incorrect')).not.toBeInTheDocument();
+    });
+
+    it('does NOT pop a chip on a correct submit (the PageTitle update is the success signal)', () => {
+      // Earlier iterations rendered a green "Correct" chip on every
+      // accepted submit, but stacking it on top of the PageTitle's
+      // green highlight + (N/total) progress was visually overpowering
+      // and felt redundant. The success channel is now the PageTitle
+      // alone — no chip should appear when the user gets it right.
+      renderSession(['Nf3']);
+
+      fireEvent.click(screen.getByTestId('stub-submit'));
+
+      expect(screen.queryByTestId('submit-feedback-incorrect')).not.toBeInTheDocument();
+    });
+
+    it('pops the failure chip after an incorrect submit', () => {
+      renderSession(['Nf3']);
+
+      (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'e4';
+      fireEvent.click(screen.getByTestId('stub-custom-submit'));
+
+      expect(screen.getByTestId('submit-feedback-incorrect')).toBeInTheDocument();
+    });
+
+    it('clears a stale incorrect chip immediately on the next correct submit', () => {
+      // Sequence: wrong → chip appears → correct → chip is cleared
+      // even before the auto-clear timer would have fired. Without this
+      // explicit clear, a red "Incorrect" chip would briefly linger
+      // alongside an already-accepted move, which would lie to the user.
+      renderSession(['Nf3']);
+
+      (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'e4';
+      fireEvent.click(screen.getByTestId('stub-custom-submit'));
+      expect(screen.getByTestId('submit-feedback-incorrect')).toBeInTheDocument();
+
+      (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'Nf3';
+      fireEvent.click(screen.getByTestId('stub-custom-submit'));
+
+      expect(screen.queryByTestId('submit-feedback-incorrect')).not.toBeInTheDocument();
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Lenient SAN matching
+  //
+  // The puzzle session feeds the user's input through chess.js and matches
+  // against the canonical SAN it returns, NOT against the user's literal
+  // string. This means decorative marks (`x`, `+`, `#`) can be omitted when
+  // chess.js can still uniquely determine the move from the position. End
+  // users should not have to type `Qxe6+` to solve a puzzle whose stored
+  // solution is `Qxe6+` — `Qe6` works because chess.js normalizes it.
+  // ---------------------------------------------------------------------------
+  describe('lenient SAN matching', () => {
+    // White Q on f5, black bishop on e6, black king on e8: Qxe6+ is a legal
+    // capture-with-check. Plenty of legal alternatives exist (Qxe6+ is not
+    // forced) so chess.js's lenient parser cannot pick this move ambiguously
+    // from a partial input — any acceptance must be because the canonical
+    // SAN of the user's input happens to be `Qxe6+`.
+    const CAPTURE_CHECK_FEN = '4k3/8/4b3/5Q2/8/8/8/4K3 w - - 0 1';
+
+    function setCustomInputAndSubmit(value: string) {
+      (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = value;
+      fireEvent.click(screen.getByTestId('stub-custom-submit'));
+    }
+
+    it('accepts the move when the user omits the capture mark `x` (Qe6+ for Qxe6+)', () => {
+      renderSession(['Qxe6+'], CAPTURE_CHECK_FEN);
+      setCustomInputAndSubmit('Qe6+');
+      expect(screen.queryByTestId('panel-error')).not.toBeInTheDocument();
+      expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'true');
+    });
+
+    it('accepts the move when the user omits the check mark `+` (Qxe6 for Qxe6+)', () => {
+      renderSession(['Qxe6+'], CAPTURE_CHECK_FEN);
+      setCustomInputAndSubmit('Qxe6');
+      expect(screen.queryByTestId('panel-error')).not.toBeInTheDocument();
+      expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'true');
+    });
+
+    it('accepts the move when the user omits both `x` and `+` (Qe6 for Qxe6+)', () => {
+      renderSession(['Qxe6+'], CAPTURE_CHECK_FEN);
+      setCustomInputAndSubmit('Qe6');
+      expect(screen.queryByTestId('panel-error')).not.toBeInTheDocument();
+      expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'true');
+    });
+
+    it("preserves the user's raw input in the recorded attempt even when it differs from the canonical SAN", () => {
+      // The result page lists the SAN the user actually typed; correctness
+      // is judged on the canonical SAN but display semantics show input.
+      renderSession(['Qxe6+'], CAPTURE_CHECK_FEN);
+      setCustomInputAndSubmit('Qe6');
+
+      const parsed = JSON.parse(sessionStorage.getItem(`puzzle_result_${POSITION_ID}`)!);
+      expect(parsed.attempts).toEqual([{ move: 'Qe6', isCorrect: true }]);
+      // Solution line in storage is still the canonical form from the DB.
+      expect(parsed.solutionLine).toBe('Qxe6+');
+    });
+
+    it('rejects an illegal move outright (cannot be normalized into the solution)', () => {
+      // From the starting position, the white knight on b1 cannot reach e5.
+      // chess.js rejects the input, so the attempt records as incorrect
+      // without any normalization shenanigans.
+      renderSession(['Nf3']);
+      setCustomInputAndSubmit('Ne5');
+      expect(screen.getByTestId('submit-feedback-incorrect')).toBeInTheDocument();
+      expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'false');
+    });
+
+    it("rejects a legal move that does not match the solution's canonical SAN", () => {
+      // From the starting position, e4 and Nf3 are both legal. The puzzle
+      // solution accepts only Nf3, so chess.js accepts e4 (canonical=`e4`)
+      // but the canonical SAN does not equal the solution `Nf3` and the
+      // attempt is incorrect.
+      renderSession(['Nf3']);
+      setCustomInputAndSubmit('e4');
+      expect(screen.getByTestId('submit-feedback-incorrect')).toBeInTheDocument();
+    });
+
+    it('still accepts the move when the user types the strict, fully-decorated SAN', () => {
+      // Regression guard: the lenient path must not bounce strict input.
+      renderSession(['Qxe6+'], CAPTURE_CHECK_FEN);
+      setCustomInputAndSubmit('Qxe6+');
+      expect(screen.queryByTestId('panel-error')).not.toBeInTheDocument();
+      expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'true');
+    });
+
+    // -------------------------------------------------------------------------
+    // Solution SAN canonicalization
+    //
+    // The earlier fix only canonicalized the user's input but compared
+    // against the raw stored solution SAN. That broke any puzzle whose
+    // stored SAN is missing decorations chess.js would insert (most often
+    // `+` for check). The fix runs both sides through chess.js so the
+    // comparison is symmetric. The FEN below is the actual position from
+    // the bug report (puzzle d4f46cc3-…), where the stored solution is
+    // `Rxd8` but chess.js canonicalizes the same move to `Rxd8+` because
+    // the rook capture also delivers check.
+    // -------------------------------------------------------------------------
+    const UNDECORATED_SOLUTION_FEN = '2rr2k1/n1pR1pp1/1p2p2p/pP1bP3/P7/5N2/1BP3PP/3R2K1 w - - 3 21';
+
+    it('accepts the user input when the stored solution SAN is missing the check mark', () => {
+      // Stored solution is `Rxd8` (no `+`); chess.js canonical is `Rxd8+`.
+      // User typing the literal stored string must still be accepted.
+      renderSession(['Rxd8'], UNDECORATED_SOLUTION_FEN);
+      setCustomInputAndSubmit('Rxd8');
+      expect(screen.queryByTestId('panel-error')).not.toBeInTheDocument();
+      // Single-move solution → solved immediately.
+      expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'true');
+    });
+
+    it('accepts the user input when both sides are missing different decorations', () => {
+      // Stored solution `Rxd8` (no `+`), user input `Rd8` (no `x`, no `+`):
+      // both canonicalize to `Rxd8+` against the position, so they match.
+      renderSession(['Rxd8'], UNDECORATED_SOLUTION_FEN);
+      setCustomInputAndSubmit('Rd8');
+      expect(screen.queryByTestId('panel-error')).not.toBeInTheDocument();
+      expect(screen.getByTestId('move-input-panel')).toHaveAttribute('data-disabled', 'true');
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // EXP-grant Server Action wiring
+  //
+  // The session component fires `savePuzzleResult` on solve and, if the action
+  // resolves with an `expEventId` before the auto-navigate timer fires, appends
+  // it to the `/result` URL as a `?grant=<id>` query param. The result page
+  // uses that param to refetch the granted EXP and surface the gain banner.
+  // ---------------------------------------------------------------------------
+  describe('EXP grant', () => {
+    /**
+     * Wait for queued microtasks to drain. With fake timers, advancing the
+     * timer triggers the auto-navigate callback, but the closure-captured
+     * `expEventId` is set by the savePuzzleResult promise's `.then`, which is
+     * a microtask. Awaiting `Promise.resolve()` once flushes the microtask
+     * queue so the assignment lands before the timer runs.
+     */
+    async function flushMicrotasks() {
+      await act(async () => {});
+    }
+
+    it('appends ?grant=<id> to the result URL when the action resolves with an expEventId before the auto-navigate timer', async () => {
+      mockSavePuzzleResult.mockResolvedValueOnce({
+        success: true,
+        expEventId: 'evt-puzzle-abc',
+      });
+
+      vi.useFakeTimers();
+      try {
+        renderSession(['Nf3']);
+
+        await act(async () => {
+          fireEvent.click(screen.getByTestId('stub-submit'));
+        });
+        // Drain the savePuzzleResult `.then` microtask so the closure-captured
+        // expEventId is set before the auto-navigate timer fires.
+        await flushMicrotasks();
+
+        act(() => {
+          vi.advanceTimersByTime(1000);
+        });
+
+        expect(mockPush).toHaveBeenCalledWith(
+          `/practice/puzzle/${POSITION_ID}/result?grant=evt-puzzle-abc`
+        );
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('navigates without ?grant= when the action returns success but no expEventId (e.g., guest user)', async () => {
+      mockSavePuzzleResult.mockResolvedValueOnce({ success: true });
+
+      vi.useFakeTimers();
+      try {
+        renderSession(['Nf3']);
+
+        await act(async () => {
+          fireEvent.click(screen.getByTestId('stub-submit'));
+        });
+        await flushMicrotasks();
+
+        act(() => {
+          vi.advanceTimersByTime(1000);
+        });
+
+        expect(mockPush).toHaveBeenCalledWith(`/practice/puzzle/${POSITION_ID}/result`);
+        expect(mockPush).not.toHaveBeenCalledWith(expect.stringContaining('grant='));
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('navigates without ?grant= when the action rejects (Sentry-logged failure)', async () => {
+      mockSavePuzzleResult.mockRejectedValueOnce(new Error('db_down'));
+
+      vi.useFakeTimers();
+      try {
+        renderSession(['Nf3']);
+
+        await act(async () => {
+          fireEvent.click(screen.getByTestId('stub-submit'));
+        });
+        await flushMicrotasks();
+
+        act(() => {
+          vi.advanceTimersByTime(1000);
+        });
+
+        expect(mockPush).toHaveBeenCalledWith(`/practice/puzzle/${POSITION_ID}/result`);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('passes incorrectAttempts (count of wrong submits before solve) and peekCount to savePuzzleResult', async () => {
+      // Solution accepts 'Nf3'. The stub-submit button always submits 'Nf3',
+      // so we can not generate wrong submits with it; use a multi-solution
+      // line where a wrong move can be submitted via the custom-submit path
+      // before the correct one.
+      vi.useFakeTimers();
+      try {
+        renderSession(['Nf3']);
+
+        const peekButton = screen.getByRole('button', { name: 'showBoard' });
+        fireEvent.click(peekButton);
+        fireEvent.click(peekButton);
+
+        // One wrong submit, then the correct one.
+        (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'e4';
+        await act(async () => {
+          fireEvent.click(screen.getByTestId('stub-custom-submit'));
+        });
+
+        (screen.getByTestId('stub-custom-move-value') as HTMLInputElement).value = 'Nf3';
+        await act(async () => {
+          fireEvent.click(screen.getByTestId('stub-custom-submit'));
+        });
+
+        expect(mockSavePuzzleResult).toHaveBeenCalledTimes(1);
+        expect(mockSavePuzzleResult).toHaveBeenCalledWith({
+          playerMoveCount: 1,
+          incorrectAttempts: 1,
+          peekCount: 2,
+        });
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('does NOT invoke savePuzzleResult when the user bails out via "view result" without solving', async () => {
+      renderSession(['e4']); // wrong submit since stub submits Nf3
+
+      // One incorrect submit
+      fireEvent.click(screen.getByTestId('stub-submit'));
+      // Bail out via the view-result link
+      fireEvent.click(screen.getByTestId('view-result-link'));
+
+      expect(mockSavePuzzleResult).not.toHaveBeenCalled();
+    });
+
+    it('invokes savePuzzleResult at most once even if the solve commit re-runs', async () => {
+      vi.useFakeTimers();
+      try {
+        renderSession(['Nf3']);
+
+        await act(async () => {
+          fireEvent.click(screen.getByTestId('stub-submit'));
+        });
+        // Second click after solve — disabled MoveInputPanel still allows the
+        // stub to invoke onSubmit, but the session is locked (`isSolved`).
+        await act(async () => {
+          fireEvent.click(screen.getByTestId('stub-submit'));
+        });
+
+        expect(mockSavePuzzleResult).toHaveBeenCalledTimes(1);
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 });

@@ -71,7 +71,6 @@ const defaultProps = {
   locale: 'en',
   showMoreLabel: 'Show more',
   justNowLabel: 'Just now',
-  newReplyTemplate: 'New reply {time}',
   showAds: true,
 };
 

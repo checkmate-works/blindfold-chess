@@ -8,9 +8,8 @@ import { countChunks, listChunks } from '@/lib/chunks/queries';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
 import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 
-import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -59,47 +58,39 @@ export default async function ChunksListPage({ params, searchParams }: Props) {
   const rows = await listChunks({ includeDeleted: false, limit, offset });
 
   return (
-    <div className="space-y-8">
-      <PageTitle>Chunks</PageTitle>
+    <PageLayout title="Chunks" locale={locale} breadcrumb={[{ label: 'Chunks' }]}>
+      <SectionTitle>Chess piece-coordination patterns</SectionTitle>
 
-      <PagePanel>
-        <SectionTitle>Chess piece-coordination patterns</SectionTitle>
+      {rows.length === 0 && <p className="text-muted-foreground">No chunks yet.</p>}
 
-        {rows.length === 0 && <p className="text-muted-foreground">No chunks yet.</p>}
+      {rows.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {rows.map((chunk) => (
+            <Link
+              key={chunk.id}
+              href={`/chunks/${chunk.slug}` as '/chunks/[slug]'}
+              locale={locale}
+              className="block p-4 rounded border border-border hover:bg-muted transition-colors"
+            >
+              <ThemedBoardThumbnail fen={chunk.representativeFen} className="w-full mb-3" />
+              <p className="font-medium truncate">{chunk.title}</p>
+              {chunk.description && <DescriptionPreview description={chunk.description} />}
+            </Link>
+          ))}
+        </div>
+      )}
 
-        {rows.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {rows.map((chunk) => (
-              <Link
-                key={chunk.id}
-                href={`/chunks/${chunk.slug}` as '/chunks/[slug]'}
-                locale={locale}
-                className="block p-4 rounded border border-border hover:bg-muted transition-colors"
-              >
-                <ThemedBoardThumbnail fen={chunk.representativeFen} className="w-full mb-3" />
-                <p className="font-medium truncate">{chunk.title}</p>
-                {chunk.description && <DescriptionPreview description={chunk.description} />}
-              </Link>
-            ))}
-          </div>
-        )}
+      {totalPages > 1 && (
+        <PaginationNav
+          currentPage={currentPage}
+          totalPages={totalPages}
+          buildHref={(p) => `/${locale}/chunks?page=${p}`}
+        />
+      )}
 
-        {totalPages > 1 && (
-          <PaginationNav
-            currentPage={currentPage}
-            totalPages={totalPages}
-            buildHref={(p) => `/${locale}/chunks?page=${p}`}
-          />
-        )}
-
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-        )}
-
-        <Divider />
-
-        <Breadcrumb items={[{ label: 'Chunks' }]} locale={locale} />
-      </PagePanel>
-    </div>
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+      )}
+    </PageLayout>
   );
 }

@@ -84,6 +84,7 @@ export default async function PositionResultPage({ params, searchParams }: Props
         { label: t('result') },
       ]}
       locale={locale}
+      density="compact"
     />
   );
 

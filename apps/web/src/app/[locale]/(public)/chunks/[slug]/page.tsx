@@ -9,9 +9,12 @@ import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/ser
 import { getChunkBySlug, getLinkedPositionsForChunk } from '@/lib/chunks/queries';
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { getPaginationParams } from '@/lib/pagination';
+import { getPositionDetailPath } from '@/lib/positions/routes';
+import { parsePositionType } from '@/lib/positions/types';
 import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 import { createClient } from '@/lib/supabase/server';
 
+import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
 import {
   TOPIC_PAGE_SIZE,
   buildPaginationHref,
@@ -21,21 +24,13 @@ import {
   getPostCountByTopicKey,
   getPostsWithReplyMetaPaginatedByTopicKey,
 } from '@/app/[locale]/(public)/topics/_lib/queries';
-import {
-  Divider,
-  PagePanel,
-  PageTitle,
-  PaginationNav,
-  SectionTitle,
-} from '@/app/[locale]/_components';
+import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { NewPostForm } from './_components/NewPostForm';
 import { PostCard } from './_components/PostCard';
-import { SortTabs } from './_components/SortTabs';
 
 export const dynamic = 'force-dynamic';
 
@@ -116,88 +111,100 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
   const buildHref = (p: number) => buildPaginationHref(locale, `/chunks/${slug}`, p, sortBy);
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{chunk.title}</PageTitle>
+    <PageLayout
+      title={chunk.title}
+      locale={locale}
+      breadcrumb={[{ label: 'Chunks', href: '/chunks' }, { label: chunk.title }]}
+    >
+      {chunk.description && (
+        <>
+          <SectionTitle>Description</SectionTitle>
+          <p className="text-muted-foreground">{chunk.description}</p>
+        </>
+      )}
 
-      <PagePanel>
-        {chunk.description && (
-          <>
-            <SectionTitle>Description</SectionTitle>
-            <p className="text-muted-foreground">{chunk.description}</p>
-          </>
-        )}
+      <div className="max-w-xs mx-auto">
+        <ThemedBoardThumbnail fen={chunk.representativeFen} className="w-full" />
+      </div>
 
-        <div className="max-w-xs mx-auto">
-          <ThemedBoardThumbnail fen={chunk.representativeFen} className="w-full" />
-        </div>
-
-        {linkedPositions.length > 0 && (
-          <>
-            <SectionTitle>Positions</SectionTitle>
-            <p className="text-sm text-muted-foreground">
-              Problems where this chunk pattern is effective.
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {linkedPositions.map((position) => (
-                <Link
-                  key={position.id}
-                  href={`/${locale}/practice/position-memory/${position.id}`}
-                  className="block p-4 rounded border border-border hover:bg-muted transition-colors"
-                >
+      {linkedPositions.length > 0 && (
+        <>
+          <SectionTitle>Positions</SectionTitle>
+          <p className="text-sm text-muted-foreground">
+            Problems where this chunk pattern is effective.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {linkedPositions.map((position) => {
+              const positionType = parsePositionType(position.type);
+              const detailPath = positionType
+                ? getPositionDetailPath(positionType, position.id)
+                : null;
+              const cardContent = (
+                <>
                   <ThemedBoardThumbnail fen={position.fen} className="w-full mb-2" />
                   <p className="text-sm font-medium truncate">{position.title}</p>
+                </>
+              );
+              return detailPath ? (
+                <Link
+                  key={position.id}
+                  href={`/${locale}${detailPath}`}
+                  className="block p-4 rounded border border-border hover:bg-muted transition-colors"
+                >
+                  {cardContent}
                 </Link>
-              ))}
-            </div>
-          </>
-        )}
-
-        <SectionTitle>{t('commentsTitle')}</SectionTitle>
-
-        <p className="text-sm text-muted-foreground">{t('postCount', { count: totalCount })}</p>
-
-        {user ? (
-          <NewPostForm locale={locale} slug={slug} />
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            <Link href={`/${locale}/sign-in`} className="text-link-primary hover:underline">
-              {t('signInToComment')}
-            </Link>
-          </p>
-        )}
-
-        <SortTabs slug={slug} locale={locale} />
-
-        {posts.length > 0 ? (
-          <div className="space-y-3">
-            {posts.map((post) => (
-              <div key={post.id} id={`post-${post.id}`}>
-                <PostCard
-                  post={post}
-                  locale={locale}
-                  slug={slug}
-                  attachment={attachments.get(post.id) ?? null}
-                />
-              </div>
-            ))}
+              ) : (
+                <div key={position.id} className="block p-4 rounded border border-border">
+                  {cardContent}
+                </div>
+              );
+            })}
           </div>
-        ) : (
-          <p className="text-muted-foreground text-center py-8">{t('noPosts')}</p>
-        )}
+        </>
+      )}
 
-        <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+      <SectionTitle>{t('commentsTitle')}</SectionTitle>
 
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-        )}
+      <p className="text-sm text-muted-foreground">{t('postCount', { count: totalCount })}</p>
 
-        <Divider />
+      {user ? (
+        <NewPostForm locale={locale} slug={slug} />
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          <Link href={`/${locale}/sign-in`} className="text-link-primary hover:underline">
+            {t('signInToComment')}
+          </Link>
+        </p>
+      )}
 
-        <Breadcrumb
-          items={[{ label: 'Chunks', href: '/chunks' }, { label: chunk.title }]}
-          locale={locale}
-        />
-      </PagePanel>
-    </div>
+      <SortSelect
+        basePath={`/chunks/${slug}`}
+        translationKey="topics.chunks.sort"
+        currentSort={sortBy}
+      />
+
+      {posts.length > 0 ? (
+        <div className="space-y-3">
+          {posts.map((post) => (
+            <div key={post.id} id={`post-${post.id}`}>
+              <PostCard
+                post={post}
+                locale={locale}
+                slug={slug}
+                attachment={attachments.get(post.id) ?? null}
+              />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-muted-foreground text-center py-8">{t('noPosts')}</p>
+      )}
+
+      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+      )}
+    </PageLayout>
   );
 }

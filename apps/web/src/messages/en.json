@@ -374,15 +374,15 @@
       },
       "adFreeBenefits": {
         "question": "How are ad-free benefits earned?",
-        "answer": "Ad-free benefits are granted automatically when you contribute text-bearing content on topic pages. The grants stack additively — posting multiple times extends your ad-free period.",
+        "answer": "Ad-free benefits are granted automatically when you take an eligible action below. Grants stack additively — repeated actions extend your ad-free period.",
         "tableTitle": "Ways to earn ad-free benefits",
         "headerAction": "Action",
         "headerDuration": "Duration",
         "actions": {
-          "topic_post": "Post a text topic"
+          "topic_post": "Submit a topic post (square / opening)",
+          "position_creation": "Submit a position problem (memory / puzzle)"
         },
-        "durationDays": "{days} days",
-        "note": "Posts containing only ratings without text content do not qualify for the grant."
+        "durationDays": "{days} days"
       }
     }
   },
@@ -504,7 +504,9 @@
     "levelIntermediate": "Intermediate",
     "levelAdvanced": "Advanced",
     "levelIntroduction": "Introduction",
-    "viewLeaderboard": "🏆 View Leaderboard",
+    "viewLeaderboard": "View Leaderboard",
+    "viewDojo": "View Dojo",
+    "related": "Related",
     "tryAgain": "Try Again",
     "changeSettings": "Change Settings",
     "doOtherPractice": "Do other practice",
@@ -539,7 +541,7 @@
     "challengeDescription": "1-minute time limit. 3 wrong answers and it's over. Your score will be recorded.",
     "startTraining": "Start Training",
     "startChallenge": "Start Challenge",
-    "switchToTraining": "📖 Practice in training mode",
+    "orDivider": "or",
     "challengeSetup": {
       "title": "Challenge Rules",
       "timeLimit": "Answer as many questions as you can within {seconds} seconds.",
@@ -550,9 +552,9 @@
     "skip": "Skip",
     "endTraining": "End",
     "trainingEnded": "Training ended",
-    "trainingModeActive": "📖 Practicing in training mode",
+    "trainingModeActive": "Practicing in training mode",
     "readyForChallenge": "Are you ready?",
-    "goToChallenge": "⚔️ Take the Challenge",
+    "goToChallenge": "Take the Challenge",
     "quitConfirmModal": {
       "title": "Quit Practice?",
       "message": "Your progress will be lost. Are you sure you want to quit?",
@@ -612,7 +614,6 @@
         "next": "Next",
         "start": "Start",
         "startChallenge": "Start Challenge",
-        "switchToTraining": "📖 Practice in training mode",
         "steps": {
           "intro": {
             "title": "What is Board Symmetry?",
@@ -788,6 +789,8 @@
       "description": "Train your ability to remember and recreate chess positions",
       "like": "Like",
       "unlike": "Unlike",
+      "newReply": "New Reply {time}",
+      "justNow": "just now",
       "session": "In Progress",
       "settings": "Problem Settings",
       "problemSource": "Problem Source",
@@ -1021,6 +1024,10 @@
       "blackPieces": "Black Pieces",
       "removePieceMode": "Remove piece mode - Click on a square to remove piece",
       "placingPiece": "Placing",
+      "like": "Like",
+      "unlike": "Unlike",
+      "newReply": "New Reply {time}",
+      "justNow": "just now",
       "detail": {
         "title": "Puzzle Detail",
         "descriptionSection": "About This Puzzle",
@@ -1030,9 +1037,7 @@
         "whiteToMove": "White to move",
         "blackToMove": "Black to move",
         "createdBy": "Created by",
-        "noPieces": "None",
-        "like": "Like",
-        "unlike": "Unlike"
+        "noPieces": "None"
       },
       "session": {
         "title": "Solve",
@@ -1053,7 +1058,10 @@
         "backToList": "Back to Puzzles",
         "tryAgain": "Try Again",
         "viewResult": "View Result",
-        "peekCount": "Board Peeks: {count}"
+        "peekCount": "Board Peeks: {count}",
+        "statusSolved": "Solved",
+        "statusPartial": "{correct}/{total} solved",
+        "statusRevealed": "Revealed"
       }
     },
     "knightTour": {
@@ -1273,8 +1281,7 @@
         "skip": "Skip",
         "complete": "That's the basics!\nTry training with different pieces and distances.",
         "restart": "Restart",
-        "startChallenge": "Start Challenge",
-        "switchToTraining": "📖 Practice in training mode"
+        "startChallenge": "Start Challenge"
       }
     },
     "common": {
@@ -1319,6 +1326,10 @@
       "question": "What are the diagonals of {square}?",
       "diagonalLabel": "Diagonal (a1-h8 direction)",
       "antiDiagonalLabel": "Anti-diagonal (h1-a8 direction)",
+      "diagonalShortLabel": "Diagonal",
+      "antiDiagonalShortLabel": "Anti-diagonal",
+      "diagonalDirectionNote": "(a1-h8 direction)",
+      "antiDiagonalDirectionNote": "(h1-a8 direction)",
       "inputPlaceholder": "e.g., b1-h7",
       "squarePlaceholder": "??",
       "singleSquarePlaceholder": "e.g., a1",
@@ -1368,7 +1379,6 @@
         "next": "Next",
         "previous": "Back",
         "startChallenge": "Start Challenge",
-        "switchToTraining": "📖 Practice in training mode",
         "diagonalLegend": "Diagonal (a1-h8)",
         "antiDiagonalLegend": "Anti-diagonal (h1-a8)",
         "trialCorrectAnswer": "Answer: {diagonal}, {antiDiagonal}"
@@ -2242,19 +2252,21 @@
       "statusActive": "Ad-free is active",
       "statusInactive": "Ad-free is not currently active",
       "activeUntil": "until {date}",
-      "sourceSubscription": "From your plan subscription",
-      "sourceGrants": "From benefit grants",
-      "pastBenefits": "Past benefits",
+      "sourceSubscription": "Subscription",
       "learnHowToEarn": "Learn how to earn ad-free benefits",
       "viewFullHistory": "View full history",
       "grantPeriod": "{startDate} – {endDate}",
       "grantStatusActive": "Active",
       "grantStatusUpcoming": "Upcoming",
-      "grantStatusExpired": "Expired"
+      "grantStatusExpired": "Expired",
+      "tableSourceHeader": "Source",
+      "tablePeriodHeader": "Period",
+      "tableStatusHeader": "Status"
     },
     "grantTypeLabel": {
       "admin_manual": "Granted by staff",
-      "topic_post": "Granted for topic post"
+      "topic_post": "Granted for topic post",
+      "position_creation": "Granted for position submission"
     }
   },
   "MypageBenefitHistory": {
@@ -3039,9 +3051,14 @@
     "permalinkAriaLabel": "View this post",
     "replyAriaLabel": "View replies and reply",
     "hiddenReplies": "{count, plural, one {# reply hidden} other {# replies hidden}}",
+    "deletedComment": "[Comment deleted by user]",
     "collapseAriaLabel": "Collapse thread",
     "expandAriaLabel": "Expand thread",
     "replyButton": "Reply",
+    "sortByLabel": "Sort by",
+    "joinConversation": "Join the conversation",
+    "communityThoughts": "Community thoughts",
+    "signInToJoin": "Sign in to join the conversation",
     "categories": {
       "squares": {
         "title": "Squares",
@@ -3419,6 +3436,11 @@
       "noPosts": "No comments yet. Be the first to share your thoughts!",
       "signInToComment": "Sign in to comment",
       "readMore": "Read more",
+      "sort": {
+        "new": "New",
+        "popular": "Popular",
+        "active": "Active"
+      },
       "detail": {
         "pageTitle": "Position Memory Comment"
       },
@@ -3476,8 +3498,12 @@
       "postCount": "{count, plural, one {# comment} other {# comments}}",
       "noPosts": "No comments yet. Be the first to share your thoughts!",
       "signInToComment": "Sign in to comment",
-      "commentGuidelineSpoiler": "If your comment reveals the solution, please tick \"Contains solution\".",
       "readMore": "Read more",
+      "sort": {
+        "new": "New",
+        "popular": "Popular",
+        "active": "Active"
+      },
       "detail": {
         "pageTitle": "Puzzle Comment"
       },
@@ -3551,9 +3577,26 @@
     "goBack": "Go Back",
     "invalidUrl": "The provided URL is invalid."
   },
+  "thanks": {
+    "title": "Thanks!",
+    "sectionTitle": "Your benefit",
+    "continueButton": "View your post",
+    "viewBenefitsButton": "View your benefits",
+    "genericMessage": "Thanks for your contribution.",
+    "explanation": {
+      "topic_post": "Your topic post earned you the following benefit:",
+      "position_creation": "Your position submission earned you the following benefit:",
+      "default": "Your post earned you the following benefit:"
+    },
+    "benefits": {
+      "ad_free": "Ad-free for {days, plural, one {# day} other {# days}}",
+      "paywall_access": "Premium access for {days, plural, one {# day} other {# days}}"
+    }
+  },
   "authPrompt": {
     "title": "Sign in to continue",
     "description": "Sign in to like posts, join discussions, and get the most out of Blindfold Chess.",
+    "createDescription": "Sign up free to save and publish what you create.",
     "signUpButton": "Create Free Account",
     "signInButton": "Already have an account? Sign in"
   },

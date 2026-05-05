@@ -97,6 +97,52 @@ describe('buildCommentTree', () => {
     expect(tree.map((n) => n.id)).toEqual(['top']);
   });
 
+  it('drops a deleted leaf (no live descendants left to anchor to)', () => {
+    const flat = [
+      makePost({ id: 'top' }),
+      makePost({ id: 'gone', deletedAt: new Date('2026-01-02T00:00:00Z') }),
+    ];
+    const tree = buildCommentTree(flat);
+    expect(tree.map((n) => n.id)).toEqual(['top']);
+  });
+
+  it('keeps a deleted node that still has a live descendant (Reddit tombstone shape)', () => {
+    // top is deleted but its reply is live → tombstone must remain so the
+    // reply has somewhere to hang.
+    const flat = [
+      makePost({ id: 'top', deletedAt: new Date('2026-01-02T00:00:00Z') }),
+      makePost({ id: 'r1', parentId: 'top', rootPostId: 'top' }),
+    ];
+    const tree = buildCommentTree(flat);
+    expect(tree.map((n) => n.id)).toEqual(['top']);
+    expect(tree[0].children.map((c) => c.id)).toEqual(['r1']);
+  });
+
+  it('drops a deleted subtree where every descendant is also deleted', () => {
+    const ts = new Date('2026-01-02T00:00:00Z');
+    const flat = [
+      makePost({ id: 'top', deletedAt: ts }),
+      makePost({ id: 'r1', parentId: 'top', rootPostId: 'top', deletedAt: ts }),
+      makePost({ id: 'r1a', parentId: 'r1', rootPostId: 'top', deletedAt: ts }),
+    ];
+    expect(buildCommentTree(flat)).toEqual([]);
+  });
+
+  it('keeps a chain of deleted parents when a deeper descendant is live', () => {
+    // top (deleted) → r1 (deleted) → r1a (live). Both deleted ancestors must
+    // survive so r1a stays anchored to its real position in the thread.
+    const ts = new Date('2026-01-02T00:00:00Z');
+    const flat = [
+      makePost({ id: 'top', deletedAt: ts }),
+      makePost({ id: 'r1', parentId: 'top', rootPostId: 'top', deletedAt: ts }),
+      makePost({ id: 'r1a', parentId: 'r1', rootPostId: 'top' }),
+    ];
+    const tree = buildCommentTree(flat);
+    expect(tree.map((n) => n.id)).toEqual(['top']);
+    expect(tree[0].children.map((c) => c.id)).toEqual(['r1']);
+    expect(tree[0].children[0].children.map((c) => c.id)).toEqual(['r1a']);
+  });
+
   it('applies the requested top-level sort while keeping children chronological', () => {
     const flat = [
       makePost({
@@ -237,6 +283,25 @@ describe('flattenReplies', () => {
     const replies = flattenReplies(tree[0]);
     // r1a's parent is r1, whose author is null → "Anonymous"
     expect(replies.find((r) => r.node.id === 'r1a')?.replyToDisplayName).toBe('Anonymous');
+  });
+
+  it('returns null replyToDisplayName when the parent is a deleted tombstone', () => {
+    // root (Alice) ← r1 (Bob, deleted) ← r1a (Bob)
+    // r1a's parent is r1 which is deleted, so the @-prefix must be suppressed
+    // — leaking the original author's name through a child's "in reply to"
+    // cue would defeat the tombstone's anonymization.
+    const flat = [
+      alice('root'),
+      bob('r1', {
+        parentId: 'root',
+        rootPostId: 'root',
+        deletedAt: new Date('2026-01-02T00:00:00Z'),
+      }),
+      bob('r1a', { parentId: 'r1', rootPostId: 'root' }),
+    ];
+    const tree = buildCommentTree(flat);
+    const replies = flattenReplies(tree[0]);
+    expect(replies.find((r) => r.node.id === 'r1a')?.replyToDisplayName).toBeNull();
   });
 });
 

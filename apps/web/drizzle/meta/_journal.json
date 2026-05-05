@@ -239,6 +239,13 @@
       "when": 1777463350006,
       "tag": "20260429114910_add_is_spoiler_to_topic_posts",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1777714727729,
+      "tag": "20260502093847_partial_index_topic_posts_active",
+      "breakpoints": true
     }
   ]
 }

@@ -90,32 +90,38 @@ export async function PracticeResultLoadingSkeleton() {
           </div>
         </div>
 
-        <Divider />
+        {/* Mirror `PageLayout`'s trailing `!mt-4 space-y-4` block (see
+            PageLayout.tsx) so the divider→breadcrumb spacing matches the
+            real page exactly during loading. */}
+        <div className="!mt-4 space-y-4">
+          <Divider />
 
-        {/* Breadcrumb: [Home logo] / Practice / <module> / Result. Leading
-            home-logo `<li>` mirrors `BreadcrumbContent` (Breadcrumb.tsx:36-50)
-            so the logo + first separator do not pop in on hydration. The
-            first and last text items are static i18n strings; the middle
-            module name uses a bar placeholder. */}
-        <nav aria-label="Breadcrumb" className="mb-4 flex min-h-10 items-end">
-          <ol className="flex flex-wrap items-center gap-x-1 text-sm">
-            <li>
-              <div className="w-6 h-6 rounded-sm bg-muted animate-pulse" />
-            </li>
-            <li className="flex items-center">
-              <span className="mx-1 text-muted-foreground">/</span>
-              <span className="text-muted-foreground">{tNav('practice')}</span>
-            </li>
-            <li className="flex items-center">
-              <span className="mx-1 text-muted-foreground">/</span>
-              <div className="h-4 w-32 bg-muted rounded animate-pulse" />
-            </li>
-            <li className="flex items-center">
-              <span className="mx-1 text-muted-foreground">/</span>
-              <span className="text-foreground font-medium">{tPractice('result')}</span>
-            </li>
-          </ol>
-        </nav>
+          {/* Breadcrumb: [Home logo] / Practice / <module> / Result. Leading
+              home-logo `<li>` mirrors `BreadcrumbContent` (Breadcrumb.tsx)
+              so the logo + first separator do not pop in on hydration. The
+              first and last text items are static i18n strings; the middle
+              module name uses a bar placeholder. Compact density (`min-h-6`,
+              no `mb-4`) matches the `PageLayout` loaded state. */}
+          <nav aria-label="Breadcrumb" className="flex min-h-6 items-center">
+            <ol className="flex flex-wrap items-center gap-x-1 text-sm">
+              <li>
+                <div className="w-6 h-6 rounded-sm bg-muted animate-pulse" />
+              </li>
+              <li className="flex items-center">
+                <span className="mx-1 text-muted-foreground">/</span>
+                <span className="text-muted-foreground">{tNav('practice')}</span>
+              </li>
+              <li className="flex items-center">
+                <span className="mx-1 text-muted-foreground">/</span>
+                <div className="h-4 w-32 bg-muted rounded animate-pulse" />
+              </li>
+              <li className="flex items-center">
+                <span className="mx-1 text-muted-foreground">/</span>
+                <span className="text-foreground font-medium">{tPractice('result')}</span>
+              </li>
+            </ol>
+          </nav>
+        </div>
       </PagePanel>
     </div>
   );

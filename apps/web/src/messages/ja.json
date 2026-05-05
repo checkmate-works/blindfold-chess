@@ -374,15 +374,15 @@
       },
       "adFreeBenefits": {
         "question": "広告非表示特典はどうやって獲得できますか？",
-        "answer": "テキスト付きのトピック投稿を行うと、自動的に広告非表示特典が付与されます。複数回投稿することで、広告非表示の期間は加算で延長されます。",
+        "answer": "対象アクションを行うと、自動的に広告非表示特典が付与されます。複数回行うことで、広告非表示の期間は加算で延長されます。",
         "tableTitle": "特典を獲得する方法",
         "headerAction": "アクション",
         "headerDuration": "付与期間",
         "actions": {
-          "topic_post": "テキスト付きでトピックに投稿する"
+          "topic_post": "トピック（マス / オープニング）を投稿する",
+          "position_creation": "問題（ポジションの記憶 / パズル）を投稿する"
         },
-        "durationDays": "{days}日間",
-        "note": "選択式の評価(rating)のみでテキストがない投稿は特典の対象外です。"
+        "durationDays": "{days}日間"
       }
     }
   },
@@ -504,7 +504,9 @@
     "levelIntermediate": "中級",
     "levelAdvanced": "上級",
     "levelIntroduction": "入門",
-    "viewLeaderboard": "🏆 ランキングを見る",
+    "viewLeaderboard": "ランキングを見る",
+    "viewDojo": "道場を見る",
+    "related": "関連",
     "tryAgain": "もう一度行う",
     "changeSettings": "設定を変更する",
     "doOtherPractice": "他の練習を行う",
@@ -539,7 +541,7 @@
     "challengeDescription": "制限時間1分。3回間違えたら終了のラッシュ形式。スコアが記録されます。",
     "startTraining": "トレーニング開始",
     "startChallenge": "チャレンジ開始",
-    "switchToTraining": "📖 トレーニングモードで練習する",
+    "orDivider": "または",
     "challengeSetup": {
       "title": "チャレンジルール",
       "timeLimit": "制限時間{seconds}秒以内にできるだけ多くの問題に正解してください。",
@@ -550,9 +552,9 @@
     "skip": "スキップ",
     "endTraining": "終了",
     "trainingEnded": "訓練を終了しました",
-    "trainingModeActive": "📖 トレーニングモードで練習中",
+    "trainingModeActive": "トレーニングモードで練習中",
     "readyForChallenge": "準備はできましたか？",
-    "goToChallenge": "⚔️ チャレンジに挑戦",
+    "goToChallenge": "チャレンジに挑戦",
     "quitConfirmModal": {
       "title": "練習を終了しますか？",
       "message": "進捗は失われます。本当に終了しますか？",
@@ -612,7 +614,6 @@
         "next": "次へ",
         "start": "始める",
         "startChallenge": "チャレンジ開始",
-        "switchToTraining": "📖 トレーニングモードで練習する",
         "steps": {
           "intro": {
             "title": "ボードの対称性とは",
@@ -788,6 +789,8 @@
       "description": "チェスの位置を記憶して再現する能力を訓練",
       "like": "いいね",
       "unlike": "いいね解除",
+      "newReply": "新しい返信 {time}",
+      "justNow": "たった今",
       "session": "練習中",
       "settings": "出題の設定",
       "problemSource": "出題方式",
@@ -1021,6 +1024,10 @@
       "blackPieces": "黒の駒",
       "removePieceMode": "駒を削除 - マスをクリックして駒を削除",
       "placingPiece": "配置中:",
+      "like": "いいね",
+      "unlike": "いいね解除",
+      "newReply": "新しい返信 {time}",
+      "justNow": "たった今",
       "detail": {
         "title": "パズル詳細",
         "descriptionSection": "このパズルについて",
@@ -1030,9 +1037,7 @@
         "whiteToMove": "白の手番",
         "blackToMove": "黒の手番",
         "createdBy": "作成者",
-        "noPieces": "なし",
-        "like": "いいね",
-        "unlike": "いいね解除"
+        "noPieces": "なし"
       },
       "session": {
         "title": "挑戦",
@@ -1053,7 +1058,10 @@
         "backToList": "パズル一覧に戻る",
         "tryAgain": "もう一度",
         "viewResult": "結果を見る",
-        "peekCount": "盤面確認: {count}回"
+        "peekCount": "盤面確認: {count}回",
+        "statusSolved": "全問正解",
+        "statusPartial": "{correct}/{total} 正解",
+        "statusRevealed": "解答表示"
       }
     },
     "knightTour": {
@@ -1273,8 +1281,7 @@
         "skip": "スキップ",
         "complete": "基本的な使い方は以上です。\n様々な駒や距離でトレーニングしてみましょう。",
         "restart": "もう一度",
-        "startChallenge": "チャレンジを開始",
-        "switchToTraining": "📖 トレーニングモードで練習する"
+        "startChallenge": "チャレンジを開始"
       }
     },
     "common": {
@@ -1319,6 +1326,10 @@
       "question": "{square}の対角線は？",
       "diagonalLabel": "対角線 (a1-h8方向)",
       "antiDiagonalLabel": "逆対角線 (h1-a8方向)",
+      "diagonalShortLabel": "対角線",
+      "antiDiagonalShortLabel": "逆対角線",
+      "diagonalDirectionNote": "(a1-h8方向)",
+      "antiDiagonalDirectionNote": "(h1-a8方向)",
       "inputPlaceholder": "例: b1-h7",
       "squarePlaceholder": "??",
       "singleSquarePlaceholder": "例: a1",
@@ -1368,7 +1379,6 @@
         "next": "次へ",
         "previous": "戻る",
         "startChallenge": "チャレンジ開始",
-        "switchToTraining": "📖 トレーニングモードで練習する",
         "diagonalLegend": "対角線 (a1-h8)",
         "antiDiagonalLegend": "逆対角線 (h1-a8)",
         "trialCorrectAnswer": "正解: {diagonal}, {antiDiagonal}"
@@ -2242,19 +2252,21 @@
       "statusActive": "広告非表示が有効です",
       "statusInactive": "現在広告非表示は有効ではありません",
       "activeUntil": "{date}まで",
-      "sourceSubscription": "プラン契約による",
-      "sourceGrants": "特典付与による",
-      "pastBenefits": "過去の特典",
+      "sourceSubscription": "サブスクリプション",
       "learnHowToEarn": "広告非表示特典の獲得方法を見る",
       "viewFullHistory": "すべての履歴を見る",
       "grantPeriod": "{startDate} 〜 {endDate}",
       "grantStatusActive": "有効",
-      "grantStatusUpcoming": "開始予定",
-      "grantStatusExpired": "終了"
+      "grantStatusUpcoming": "開始前",
+      "grantStatusExpired": "終了",
+      "tableSourceHeader": "ソース",
+      "tablePeriodHeader": "期間",
+      "tableStatusHeader": "ステータス"
     },
     "grantTypeLabel": {
       "admin_manual": "運営からの付与",
-      "topic_post": "トピック投稿による付与"
+      "topic_post": "トピック投稿による付与",
+      "position_creation": "問題投稿による付与"
     }
   },
   "MypageBenefitHistory": {
@@ -2266,7 +2278,7 @@
     "empty": "付与された特典はありません。",
     "grantPeriod": "{startDate} 〜 {endDate}",
     "statusActive": "有効",
-    "statusUpcoming": "開始予定",
+    "statusUpcoming": "開始前",
     "statusExpired": "終了",
     "statusRevoked": "取り消し"
   },
@@ -3039,9 +3051,14 @@
     "permalinkAriaLabel": "この投稿を表示",
     "replyAriaLabel": "返信を表示・投稿",
     "hiddenReplies": "返信 {count} 件を非表示",
+    "deletedComment": "[投稿者により削除されました]",
     "collapseAriaLabel": "スレッドを折りたたむ",
     "expandAriaLabel": "スレッドを展開",
     "replyButton": "返信",
+    "sortByLabel": "並び替え",
+    "joinConversation": "コメントする",
+    "communityThoughts": "みんなの考え",
+    "signInToJoin": "サインインしてコメントする",
     "categories": {
       "squares": {
         "title": "マス目",
@@ -3419,6 +3436,11 @@
       "noPosts": "まだコメントがありません。最初のコメントを投稿してみましょう！",
       "signInToComment": "サインインしてコメントする",
       "readMore": "続きを読む",
+      "sort": {
+        "new": "新着",
+        "popular": "人気",
+        "active": "活発"
+      },
       "detail": {
         "pageTitle": "ポジション記憶コメント"
       },
@@ -3476,8 +3498,12 @@
       "postCount": "{count}件のコメント",
       "noPosts": "まだコメントがありません。最初のコメントを投稿してみましょう！",
       "signInToComment": "サインインしてコメントする",
-      "commentGuidelineSpoiler": "解法を含むコメントは「解法を含む」にチェックを入れてください。",
       "readMore": "続きを読む",
+      "sort": {
+        "new": "新着",
+        "popular": "人気",
+        "active": "活発"
+      },
       "detail": {
         "pageTitle": "パズルコメント"
       },
@@ -3551,9 +3577,26 @@
     "goBack": "戻る",
     "invalidUrl": "指定されたURLは無効です。"
   },
+  "thanks": {
+    "title": "御礼",
+    "sectionTitle": "獲得した特典",
+    "continueButton": "投稿内容を確認する",
+    "viewBenefitsButton": "獲得した特典を確認する",
+    "genericMessage": "ご投稿ありがとうございます。",
+    "explanation": {
+      "topic_post": "トピックへの投稿に対して以下の特典が付与されました。",
+      "position_creation": "問題の投稿に対して以下の特典が付与されました。",
+      "default": "ご投稿により、以下の特典が付与されました。"
+    },
+    "benefits": {
+      "ad_free": "{days}日間の広告非表示",
+      "paywall_access": "{days}日間のプレミアムアクセス"
+    }
+  },
   "authPrompt": {
     "title": "サインインして続行",
     "description": "サインインすると、いいねやディスカッションへの参加など、Blindfold Chessをより楽しめます。",
+    "createDescription": "無料ユーザー登録で、作成した内容を保存・公開できます。",
     "signUpButton": "無料ユーザー登録",
     "signInButton": "アカウントをお持ちの方はログイン"
   },

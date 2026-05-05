@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
@@ -30,21 +29,13 @@ export default async function AffiliateDisclosurePage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'affiliateDisclosure' });
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
+    <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
+      <article className="prose prose-slate dark:prose-invert max-w-none space-y-4">
+        <p className="text-muted-foreground">{t('lastUpdated')}</p>
 
-      <PagePanel>
-        <article className="prose prose-slate dark:prose-invert max-w-none space-y-4">
-          <p className="text-muted-foreground">{t('lastUpdated')}</p>
-
-          <SectionTitle>{t('amazonDisclosureTitle')}</SectionTitle>
-          <p>{t('amazonDisclosureDescription')}</p>
-        </article>
-
-        <Divider />
-
-        <Breadcrumb items={[{ label: t('title') }]} locale={locale} />
-      </PagePanel>
-    </div>
+        <SectionTitle>{t('amazonDisclosureTitle')}</SectionTitle>
+        <p>{t('amazonDisclosureDescription')}</p>
+      </article>
+    </PageLayout>
   );
 }

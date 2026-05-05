@@ -3,8 +3,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { Link } from '@/i18n/routing';
 
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { PageLayout } from '@/app/[locale]/_components';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
@@ -32,22 +31,14 @@ export default async function ForgotPasswordPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'forgotPassword' });
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
+    <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
+      <ForgotPasswordForm />
 
-      <PagePanel>
-        <ForgotPasswordForm />
-
-        <p className="mt-6 text-center text-sm text-muted-foreground">
-          <Link href="/sign-in" locale={locale} className={TEXT_LINK_CLASSES}>
-            {t('backToSignIn')}
-          </Link>
-        </p>
-
-        <Divider />
-
-        <Breadcrumb items={[{ label: t('title') }]} locale={locale} />
-      </PagePanel>
-    </div>
+      <p className="mt-6 text-center text-sm text-muted-foreground">
+        <Link href="/sign-in" locale={locale} className={TEXT_LINK_CLASSES}>
+          {t('backToSignIn')}
+        </Link>
+      </p>
+    </PageLayout>
   );
 }

@@ -374,15 +374,15 @@
       },
       "adFreeBenefits": {
         "question": "Como os benefícios sem anúncios são obtidos?",
-        "answer": "Benefícios sem anúncios são concedidos automaticamente quando você contribui com conteúdo de texto nas páginas de tópicos. Os benefícios se acumulam — publicar várias vezes estende seu período sem anúncios.",
+        "answer": "Benefícios sem anúncios são concedidos automaticamente quando você realiza uma ação elegível listada abaixo. Os benefícios se acumulam — ações repetidas estendem seu período sem anúncios.",
         "tableTitle": "Formas de ganhar benefícios sem anúncios",
         "headerAction": "Ação",
         "headerDuration": "Duração",
         "actions": {
-          "topic_post": "Publicar um tópico com texto"
+          "topic_post": "Publicar em um tópico (casa / abertura)",
+          "position_creation": "Publicar um problema de posição (memorização / puzzle)"
         },
-        "durationDays": "{days} dias",
-        "note": "Publicações contendo apenas avaliações sem conteúdo de texto não se qualificam para o benefício."
+        "durationDays": "{days} dias"
       }
     }
   },
@@ -504,7 +504,9 @@
     "levelIntermediate": "Intermediário",
     "levelAdvanced": "Avançado",
     "levelIntroduction": "Introdução",
-    "viewLeaderboard": "🏆 Ver Ranking",
+    "viewLeaderboard": "Ver Ranking",
+    "viewDojo": "Ver Dojo",
+    "related": "Relacionado",
     "tryAgain": "Tentar Novamente",
     "changeSettings": "Alterar Configurações",
     "doOtherPractice": "Fazer outra prática",
@@ -539,7 +541,7 @@
     "challengeDescription": "Limite de tempo de 1 minuto. 3 respostas incorretas e acabou. Sua pontuação será registrada.",
     "startTraining": "Iniciar Treinamento",
     "startChallenge": "Iniciar Desafio",
-    "switchToTraining": "📖 Praticar em modo treinamento",
+    "orDivider": "ou",
     "challengeSetup": {
       "title": "Regras do Desafio",
       "timeLimit": "Responda o máximo de perguntas que puder em {seconds} segundos.",
@@ -550,9 +552,9 @@
     "skip": "Pular",
     "endTraining": "Finalizar",
     "trainingEnded": "Treinamento finalizado",
-    "trainingModeActive": "📖 Praticando em modo treinamento",
+    "trainingModeActive": "Praticando em modo treinamento",
     "readyForChallenge": "Você está pronto?",
-    "goToChallenge": "⚔️ Aceitar o Desafio",
+    "goToChallenge": "Aceitar o Desafio",
     "quitConfirmModal": {
       "title": "Abandonar a Prática?",
       "message": "Seu progresso será perdido. Tem certeza de que deseja sair?",
@@ -612,7 +614,6 @@
         "next": "Próximo",
         "start": "Iniciar",
         "startChallenge": "Iniciar Desafio",
-        "switchToTraining": "📖 Praticar em modo treinamento",
         "steps": {
           "intro": {
             "title": "O que é a Simetria do Tabuleiro?",
@@ -788,6 +789,8 @@
       "description": "Treine sua capacidade de lembrar e recriar posições de xadrez",
       "like": "Curtir",
       "unlike": "Descurtir",
+      "newReply": "Nova Resposta {time}",
+      "justNow": "agora mesmo",
       "session": "Em Andamento",
       "settings": "Configuração do Problema",
       "problemSource": "Origem do Problema",
@@ -1021,6 +1024,10 @@
       "blackPieces": "Peças Pretas",
       "removePieceMode": "Modo de remoção de peça - Clique em uma casa para remover a peça",
       "placingPiece": "Colocando",
+      "like": "Curtir",
+      "unlike": "Descurtir",
+      "newReply": "Nova Resposta {time}",
+      "justNow": "agora mesmo",
       "detail": {
         "title": "Detalhes do Puzzle",
         "descriptionSection": "Sobre Este Puzzle",
@@ -1030,9 +1037,7 @@
         "whiteToMove": "Brancas jogam",
         "blackToMove": "Pretas jogam",
         "createdBy": "Criado por",
-        "noPieces": "Nenhuma",
-        "like": "Curtir",
-        "unlike": "Descurtir"
+        "noPieces": "Nenhuma"
       },
       "result": {
         "title": "Resultado do Puzzle",
@@ -1045,7 +1050,10 @@
         "backToList": "Voltar para Puzzles",
         "tryAgain": "Tentar Novamente",
         "viewResult": "Ver Resultado",
-        "peekCount": "Visualizações do Tabuleiro: {count}"
+        "peekCount": "Visualizações do Tabuleiro: {count}",
+        "statusSolved": "Resolvido",
+        "statusPartial": "{correct}/{total} resolvidos",
+        "statusRevealed": "Solução revelada"
       },
       "session": {
         "title": "Resolver",
@@ -1273,8 +1281,7 @@
         "skip": "Pular",
         "complete": "Esses são os fundamentos!\nExperimente treinar com diferentes peças e distâncias.",
         "restart": "Reiniciar",
-        "startChallenge": "Iniciar Desafio",
-        "switchToTraining": "📖 Praticar em modo treinamento"
+        "startChallenge": "Iniciar Desafio"
       }
     },
     "common": {
@@ -1319,6 +1326,10 @@
       "question": "Quais são as diagonais de {square}?",
       "diagonalLabel": "Diagonal (direção a1-h8)",
       "antiDiagonalLabel": "Anti-diagonal (direção h1-a8)",
+      "diagonalShortLabel": "Diagonal",
+      "antiDiagonalShortLabel": "Anti-diagonal",
+      "diagonalDirectionNote": "(direção a1-h8)",
+      "antiDiagonalDirectionNote": "(direção h1-a8)",
       "inputPlaceholder": "ex., b1-h7",
       "squarePlaceholder": "??",
       "singleSquarePlaceholder": "ex., a1",
@@ -1368,7 +1379,6 @@
         "next": "Próximo",
         "previous": "Voltar",
         "startChallenge": "Iniciar Desafio",
-        "switchToTraining": "📖 Praticar em modo treinamento",
         "diagonalLegend": "Diagonal (a1-h8)",
         "antiDiagonalLegend": "Anti-diagonal (h1-a8)",
         "trialCorrectAnswer": "Resposta: {diagonal}, {antiDiagonal}"
@@ -2242,19 +2252,21 @@
       "statusActive": "Sem anúncios ativo",
       "statusInactive": "Sem anúncios não está ativo no momento",
       "activeUntil": "até {date}",
-      "sourceSubscription": "Da sua assinatura",
-      "sourceGrants": "De benefícios concedidos",
-      "pastBenefits": "Benefícios anteriores",
+      "sourceSubscription": "Assinatura",
       "learnHowToEarn": "Saiba como ganhar benefícios sem anúncios",
       "viewFullHistory": "Ver histórico completo",
       "grantPeriod": "{startDate} – {endDate}",
       "grantStatusActive": "Ativo",
       "grantStatusUpcoming": "Próximo",
-      "grantStatusExpired": "Expirado"
+      "grantStatusExpired": "Expirado",
+      "tableSourceHeader": "Fonte",
+      "tablePeriodHeader": "Período",
+      "tableStatusHeader": "Status"
     },
     "grantTypeLabel": {
       "admin_manual": "Concedido pela equipe",
-      "topic_post": "Concedido por postagem em tópico"
+      "topic_post": "Concedido por postagem em tópico",
+      "position_creation": "Concedido por envio de posição"
     }
   },
   "MypageBenefitHistory": {
@@ -3039,9 +3051,14 @@
     "permalinkAriaLabel": "Ver esta postagem",
     "replyAriaLabel": "Ver respostas e responder",
     "hiddenReplies": "{count, plural, one {# resposta oculta} other {# respostas ocultas}}",
+    "deletedComment": "[Comentário excluído pelo usuário]",
     "collapseAriaLabel": "Recolher linha",
     "expandAriaLabel": "Expandir linha",
     "replyButton": "Responder",
+    "sortByLabel": "Ordenar por",
+    "joinConversation": "Participe da conversa",
+    "communityThoughts": "Pensamentos da comunidade",
+    "signInToJoin": "Entre para participar da conversa",
     "categories": {
       "squares": {
         "title": "Casas",
@@ -3419,6 +3436,11 @@
       "noPosts": "Ainda não há comentários. Seja o primeiro a compartilhar suas ideias!",
       "signInToComment": "Entre para comentar",
       "readMore": "Ler mais",
+      "sort": {
+        "new": "Novos",
+        "popular": "Populares",
+        "active": "Ativos"
+      },
       "detail": {
         "pageTitle": "Comentário sobre Memória de Posição"
       },
@@ -3476,8 +3498,12 @@
       "postCount": "{count, plural, one {# comentário} other {# comentários}}",
       "noPosts": "Ainda não há comentários. Seja o primeiro a compartilhar suas ideias!",
       "signInToComment": "Entre para comentar",
-      "commentGuidelineSpoiler": "Se o seu comentário revelar a solução, marque \"Contém a solução\".",
       "readMore": "Ler mais",
+      "sort": {
+        "new": "Novos",
+        "popular": "Populares",
+        "active": "Ativos"
+      },
       "detail": {
         "pageTitle": "Comentário sobre Puzzle"
       },
@@ -3551,9 +3577,26 @@
     "goBack": "Voltar",
     "invalidUrl": "A URL fornecida é inválida."
   },
+  "thanks": {
+    "title": "Obrigado!",
+    "sectionTitle": "Seu benefício",
+    "continueButton": "Ver sua publicação",
+    "viewBenefitsButton": "Ver seus benefícios",
+    "genericMessage": "Obrigado pela sua contribuição.",
+    "explanation": {
+      "topic_post": "Sua publicação em um tópico lhe rendeu o seguinte benefício:",
+      "position_creation": "O envio da sua posição lhe rendeu o seguinte benefício:",
+      "default": "Sua publicação lhe rendeu o seguinte benefício:"
+    },
+    "benefits": {
+      "ad_free": "Sem anúncios por {days, plural, one {# dia} other {# dias}}",
+      "paywall_access": "Acesso premium por {days, plural, one {# dia} other {# dias}}"
+    }
+  },
   "authPrompt": {
     "title": "Faça login para continuar",
     "description": "Faça login para curtir publicações, participar de discussões e aproveitar ao máximo o Xadrez às Cegas.",
+    "createDescription": "Cadastre-se grátis para salvar e publicar o que você criar.",
     "signUpButton": "Criar Conta Gratuita",
     "signInButton": "Já tem uma conta? Entrar"
   },
