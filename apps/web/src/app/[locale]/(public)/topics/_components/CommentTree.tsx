@@ -58,6 +58,16 @@ type Props = {
    * reply.
    */
   threadRootPostId?: string;
+  /**
+   * Per-root `extraContent` payload, keyed by root post id. Looked up once
+   * per root and forwarded to that root's `CommentNode` as `extraContent`
+   * (rendered between the body and the like/reply row on the root only).
+   * Use this on pages that attach topic-specific data to top-level posts
+   * — e.g. chunks list page rendering an attached game / FEN / image card
+   * under each comment. Roots without a matching entry render no extra
+   * content. Existing callsites that omit the prop are unaffected.
+   */
+  extraContentByRootId?: ReadonlyMap<string, React.ReactNode>;
 };
 
 /**
@@ -86,6 +96,7 @@ export async function CommentTree({
   deletePostAction,
   i18n,
   threadRootPostId,
+  extraContentByRootId,
 }: Props) {
   const canReplyByRootId = new Map<string, boolean>();
   await Promise.all(
@@ -117,6 +128,7 @@ export async function CommentTree({
           createReplyAction={createReplyAction}
           deletePostAction={deletePostAction}
           i18n={i18n}
+          extraContent={extraContentByRootId?.get(root.id)}
         />
       ))}
     </div>
