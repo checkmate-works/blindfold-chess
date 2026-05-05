@@ -1,0 +1,167 @@
+import { cleanup, fireEvent, render } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import { Modal } from './Modal';
+
+afterEach(() => {
+  cleanup();
+});
+
+describe('Modal — default behavior (regression baseline for SPEC2 Invariant 18)', () => {
+  it('omitting trapFocus does NOT trap Tab — outside elements remain reachable', () => {
+    const onClose = vi.fn();
+    const outside = document.createElement('button');
+    outside.id = 'outside-btn';
+    outside.textContent = 'outside';
+    document.body.appendChild(outside);
+    outside.focus();
+
+    render(
+      <Modal isOpen={true} onClose={onClose}>
+        <button type="button" data-testid="inside-btn">
+          inside
+        </button>
+      </Modal>
+    );
+
+    // Sanity: outside button is still focused — default Modal does not
+    // pull focus into the dialog. Only the trapFocus opt-in callers
+    // (AttachmentModal) should observe focus migration.
+    expect(document.activeElement).toBe(outside);
+    outside.remove();
+  });
+
+  it('default classes preserve the centered-card layout (no fullHeightOnMobile)', () => {
+    render(
+      <Modal isOpen={true} onClose={vi.fn()}>
+        <div>body</div>
+      </Modal>
+    );
+    const dialog = document.querySelector('[role="dialog"]') as HTMLDivElement;
+    // Default container: centered with p-4 padding.
+    const container = dialog.parentElement!;
+    expect(container.className).toContain('items-center');
+    expect(container.className).toContain('justify-center');
+    expect(container.className).toContain('p-4');
+
+    // Default dialog: rounded-lg + max-h-[90vh] + overflow-y-auto.
+    expect(dialog.className).toContain('rounded-lg');
+    expect(dialog.className).toContain('max-h-[90vh]');
+    expect(dialog.className).toContain('overflow-y-auto');
+
+    // The fullHeight-only class set must NOT be present.
+    expect(dialog.className).not.toContain('h-full');
+    expect(dialog.className).not.toContain('max-h-screen');
+  });
+
+  it('respects custom maxWidth in the default layout', () => {
+    render(
+      <Modal isOpen={true} onClose={vi.fn()} maxWidth="max-w-md">
+        <div>body</div>
+      </Modal>
+    );
+    const dialog = document.querySelector('[role="dialog"]') as HTMLDivElement;
+    expect(dialog.className).toContain('max-w-md');
+  });
+
+  it('always sets data-app-modal=true (keyboard-guards contract preserved)', () => {
+    render(
+      <Modal isOpen={true} onClose={vi.fn()}>
+        <div>body</div>
+      </Modal>
+    );
+    const dialog = document.querySelector('[role="dialog"]') as HTMLDivElement;
+    expect(dialog.getAttribute('data-app-modal')).toBe('true');
+    expect(dialog.getAttribute('aria-modal')).toBe('true');
+  });
+
+  it('renders nothing when isOpen=false', () => {
+    render(
+      <Modal isOpen={false} onClose={vi.fn()}>
+        <div>body</div>
+      </Modal>
+    );
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+  });
+
+  it('Escape key closes the modal regardless of trapFocus', () => {
+    const onClose = vi.fn();
+    render(
+      <Modal isOpen={true} onClose={onClose}>
+        <div>body</div>
+      </Modal>
+    );
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('clicking the backdrop area calls onClose', () => {
+    const onClose = vi.fn();
+    render(
+      <Modal isOpen={true} onClose={onClose}>
+        <div>body</div>
+      </Modal>
+    );
+    const dialog = document.querySelector('[role="dialog"]') as HTMLDivElement;
+    fireEvent.click(dialog.parentElement!);
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('clicking inside the dialog does NOT close it', () => {
+    const onClose = vi.fn();
+    render(
+      <Modal isOpen={true} onClose={onClose}>
+        <div data-testid="inner">body</div>
+      </Modal>
+    );
+    const inner = document.querySelector('[data-testid="inner"]') as HTMLDivElement;
+    fireEvent.click(inner);
+    expect(onClose).not.toHaveBeenCalled();
+  });
+});
+
+describe('Modal — opt-in fullHeightOnMobile', () => {
+  it('uses the mobile-fullscreen class set when fullHeightOnMobile=true', () => {
+    render(
+      <Modal isOpen={true} onClose={vi.fn()} fullHeightOnMobile>
+        <div>body</div>
+      </Modal>
+    );
+    const dialog = document.querySelector('[role="dialog"]') as HTMLDivElement;
+    expect(dialog.className).toContain('h-full');
+    expect(dialog.className).toContain('max-h-screen');
+    // The sm:* breakpoint variants remain so desktop falls back to the
+    // centered card layout.
+    expect(dialog.className).toContain('sm:rounded-lg');
+    expect(dialog.className).toContain('sm:max-w-2xl');
+
+    const container = dialog.parentElement!;
+    // The fullHeight container drops items-center / justify-center on
+    // mobile and only re-introduces them at sm:.
+    expect(container.className).toContain('sm:items-center');
+    expect(container.className).toContain('sm:justify-center');
+    expect(container.className).not.toMatch(/(^|\s)items-center(\s|$)/);
+  });
+});
+
+describe('Modal — opt-in trapFocus', () => {
+  it('moves focus inside the dialog when trapFocus=true', () => {
+    const trigger = document.createElement('button');
+    trigger.id = 'opener';
+    document.body.appendChild(trigger);
+    trigger.focus();
+    expect(document.activeElement).toBe(trigger);
+
+    render(
+      <Modal isOpen={true} onClose={vi.fn()} trapFocus>
+        <button type="button" data-testid="first-inner">
+          inside
+        </button>
+      </Modal>
+    );
+    const inner = document.querySelector('[data-testid="first-inner"]') as HTMLButtonElement;
+    expect(document.activeElement).toBe(inner);
+
+    trigger.remove();
+  });
+});
