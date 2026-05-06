@@ -135,7 +135,17 @@ export function AttachedEmbedCard({ attachment }: Props) {
       <div className="mt-2 mb-2 rounded-md border border-border bg-card overflow-hidden">
         <div className="p-3 space-y-2">
           <p className="text-sm font-medium text-foreground">{t('embed.lichessCardTitle')}</p>
-          <div className="aspect-video w-full">
+          {/* aspect-[60/43]: Lichess /embed/{id} widget is the "Lichess PGN
+              viewer" (board + bottom navigation bar / replay controls). It
+              loads `site.lpvEmbed` ESM and renders the same kind of widget as
+              chess.com /emboard — board + bottom nav, no side panel. The
+              natural ratio therefore matches chess.com's `60/43`. Verified
+              during Phase 11 user acceptance testing — `aspect-video` (16:9)
+              left the embed too wide on mobile, squeezing the board into a
+              horizontal strip. (Note: `/embed/game/{id}` is a different widget
+              — full sidepanel layout — but the parser only accepts /embed/{id}
+              today, so this ratio matches what is actually rendered.) */}
+          <div className="aspect-[60/43] w-full">
             {/*
               sandbox token rationale (SecurityEngineer Phase A finding M-2):
                 - allow-scripts: required so the embed can run its own
