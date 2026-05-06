@@ -34,7 +34,7 @@ function makeAttachment(overrides: Partial<AttachedEmbedCardData> = {}): Attache
  */
 describe('AttachedEmbedCard — iframe rendering (Phase B Tester #30〜#34, #47)', () => {
   // #30 — chess.com sandbox literal
-  it('#30 chess.com renders an iframe with sandbox="allow-scripts" exactly (string-equality)', () => {
+  it('#30 chess.com renders an iframe with sandbox="allow-scripts allow-same-origin" exactly (string-equality)', () => {
     const att = makeAttachment({
       embedProvider: 'chesscom',
       embedId: '12345',
@@ -46,11 +46,14 @@ describe('AttachedEmbedCard — iframe rendering (Phase B Tester #30〜#34, #47)
     expect(iframe).not.toBeNull();
     // Exact string-equality, not contains-check. The SecurityEngineer
     // baseline (D1) pins this literal — anything broader is a regression.
-    expect(iframe?.getAttribute('sandbox')).toBe('allow-scripts');
+    // fix-pass #9 (Phase 9): allow-same-origin added — chess.com's Vue +
+    // pinia bootloader unconditionally reads localStorage and fetches
+    // its own /manifest.json, both of which fail as null-origin.
+    expect(iframe?.getAttribute('sandbox')).toBe('allow-scripts allow-same-origin');
   });
 
   // #31 — Lichess sandbox literal
-  it('#31 Lichess renders an iframe with sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox" exactly', () => {
+  it('#31 Lichess renders an iframe with sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox" exactly', () => {
     const att = makeAttachment();
     const { container } = render(<AttachedEmbedCard attachment={att} />);
     const iframe = container.querySelector('iframe');
@@ -58,9 +61,85 @@ describe('AttachedEmbedCard — iframe rendering (Phase B Tester #30〜#34, #47)
     // SecurityEngineer baseline (D1) Lichess literal. Order matters
     // because we are doing a strict equality; if a future change reorders
     // the tokens this test will fire and force a deliberate update.
+    // fix-pass #9 (Phase 9): allow-same-origin added — without it the
+    // Lichess embed cannot use its own localStorage or fetch its own
+    // origin, surfacing as console SecurityError + Unsafe-attempt-to-
+    // load-URL warnings even though the board renders.
     expect(iframe?.getAttribute('sandbox')).toBe(
-      'allow-scripts allow-popups allow-popups-to-escape-sandbox'
+      'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox'
     );
+  });
+
+  // #30b / #31b — regression-prevention: allow-same-origin is present on
+  //                both providers (Phase 9 fix). Token-membership check
+  //                complements the strict-equality tests above by making
+  //                the intent of *this specific token* explicit.
+  it('#30b chess.com sandbox includes allow-same-origin (Phase 9 fix-pass #9)', () => {
+    const att = makeAttachment({
+      embedProvider: 'chesscom',
+      embedId: '12345',
+      attributionPlatform: null,
+      attributionPath: null,
+    });
+    const { container } = render(<AttachedEmbedCard attachment={att} />);
+    const iframe = container.querySelector('iframe');
+    const tokens = (iframe?.getAttribute('sandbox') ?? '').split(/\s+/).filter(Boolean);
+    expect(tokens).toContain('allow-scripts');
+    expect(tokens).toContain('allow-same-origin');
+  });
+
+  it('#31b Lichess sandbox includes allow-same-origin alongside the existing tokens (Phase 9 fix-pass #9)', () => {
+    const att = makeAttachment();
+    const { container } = render(<AttachedEmbedCard attachment={att} />);
+    const iframe = container.querySelector('iframe');
+    const tokens = (iframe?.getAttribute('sandbox') ?? '').split(/\s+/).filter(Boolean);
+    expect(tokens).toContain('allow-scripts');
+    expect(tokens).toContain('allow-same-origin');
+    // Pre-existing Phase B tokens must remain — `allow-same-origin`
+    // is added to the allowlist, not a replacement for them.
+    expect(tokens).toContain('allow-popups');
+    expect(tokens).toContain('allow-popups-to-escape-sandbox');
+  });
+
+  // #30c / #31c — regression-prevention: tokens that were never on the
+  //                allowlist must NOT silently appear. allow-top-navigation
+  //                / allow-presentation / allow-forms / allow-modals etc.
+  //                would meaningfully widen the sandbox; pin their absence.
+  it('#30c chess.com sandbox does NOT include unrelated dangerous tokens', () => {
+    const att = makeAttachment({
+      embedProvider: 'chesscom',
+      embedId: '12345',
+      attributionPlatform: null,
+      attributionPath: null,
+    });
+    const { container } = render(<AttachedEmbedCard attachment={att} />);
+    const iframe = container.querySelector('iframe');
+    const tokens = (iframe?.getAttribute('sandbox') ?? '').split(/\s+/).filter(Boolean);
+    expect(tokens).not.toContain('allow-top-navigation');
+    expect(tokens).not.toContain('allow-top-navigation-by-user-activation');
+    expect(tokens).not.toContain('allow-presentation');
+    expect(tokens).not.toContain('allow-forms');
+    expect(tokens).not.toContain('allow-modals');
+    expect(tokens).not.toContain('allow-pointer-lock');
+    expect(tokens).not.toContain('allow-downloads');
+    // chess.com is a static diagram — popup tokens are not allowed here
+    // (only Lichess needs them).
+    expect(tokens).not.toContain('allow-popups');
+    expect(tokens).not.toContain('allow-popups-to-escape-sandbox');
+  });
+
+  it('#31c Lichess sandbox does NOT include unrelated dangerous tokens', () => {
+    const att = makeAttachment();
+    const { container } = render(<AttachedEmbedCard attachment={att} />);
+    const iframe = container.querySelector('iframe');
+    const tokens = (iframe?.getAttribute('sandbox') ?? '').split(/\s+/).filter(Boolean);
+    expect(tokens).not.toContain('allow-top-navigation');
+    expect(tokens).not.toContain('allow-top-navigation-by-user-activation');
+    expect(tokens).not.toContain('allow-presentation');
+    expect(tokens).not.toContain('allow-forms');
+    expect(tokens).not.toContain('allow-modals');
+    expect(tokens).not.toContain('allow-pointer-lock');
+    expect(tokens).not.toContain('allow-downloads');
   });
 
   // #32 — referrerpolicy + loading on both providers

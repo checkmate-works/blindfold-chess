@@ -67,9 +67,40 @@ export function AttachedEmbedCard({ attachment }: Props) {
               breakpoints; if there is a controls bar that pushes the layout
               out of square, revisit. */}
           <div className="aspect-square w-full">
+            {/*
+              sandbox token rationale (chess.com):
+                - allow-scripts: required so the embed can run its own
+                  JavaScript (board rendering).
+                - allow-same-origin: required so the embed document is
+                  treated as living at its real origin (www.chess.com)
+                  rather than as a "null origin" sandboxed document.
+                  Without it, the chess.com emboard breaks at boot:
+                  it is a Vue + pinia app whose state-management layer
+                  unconditionally reads/writes localStorage during
+                  initialization, and a null-origin document throws
+                  SecurityError on any localStorage access. It also
+                  fetches its own /manifest.json from www.chess.com,
+                  which a null-origin document is blocked from doing
+                  by CORS. The result was a fully blank emboard.
+                  See the Lichess block below for the full safety
+                  argument — the same reasoning applies here: parent
+                  (our site) and iframe (chess.com) are different
+                  origins, so MDN's "do not combine allow-scripts and
+                  allow-same-origin" warning (which is about same-
+                  origin iframes that could clear their own sandbox)
+                  does not apply.
+                  Phase B M-2 history note: the original SecurityEngineer
+                  baseline omitted allow-same-origin; live testing showed
+                  the embed cannot initialize without it.
+
+              The chess.com emboard is a static diagram with no
+              "open in new tab" affordance, so neither allow-popups
+              nor allow-popups-to-escape-sandbox are needed (unlike
+              the Lichess case below).
+            */}
             <iframe
               src={`https://www.chess.com/emboard?id=${attachment.embedId}`}
-              sandbox="allow-scripts"
+              sandbox="allow-scripts allow-same-origin"
               referrerPolicy="no-referrer"
               loading="lazy"
               title="Chess.com diagram embed"
@@ -107,6 +138,29 @@ export function AttachedEmbedCard({ attachment }: Props) {
               sandbox token rationale (SecurityEngineer Phase A finding M-2):
                 - allow-scripts: required so the embed can run its own
                   JavaScript (board rendering + interaction).
+                - allow-same-origin: required so the embed document is
+                  treated as living at its real origin (lichess.org)
+                  rather than as a "null origin" sandboxed document.
+                  Without it, the Lichess embed renders the board but
+                  the embed app cannot read/write its own
+                  localStorage / sessionStorage and cannot fetch
+                  same-origin resources from lichess.org — the browser
+                  console showed `Failed to read 'localStorage' ...
+                  document is sandboxed and lacks the
+                  'allow-same-origin' flag` and `Unsafe attempt to
+                  load URL https://lichess.org/embed/... from frame
+                  with URL https://lichess.org/embed/...` (the embed
+                  trying to fetch its own origin while running as
+                  null-origin). The board appeared to work but the
+                  page was internally half-broken.
+                  Phase B M-2 history note: the original
+                  SecurityEngineer baseline omitted allow-same-origin
+                  because it was not needed for board rendering alone;
+                  live testing surfaced the half-broken state and
+                  added allow-same-origin to the allowlist. This
+                  aligns with SPEC2 §17 (#75)'s embed recommendation
+                  of `sandbox="allow-scripts allow-same-origin"` as
+                  the minimum-viable embed sandbox.
                 - allow-popups: required so links inside the embed (e.g.
                   "open this game on Lichess.org") can open at all.
                 - allow-popups-to-escape-sandbox: trade-off. A script
@@ -130,16 +184,40 @@ export function AttachedEmbedCard({ attachment }: Props) {
                   served scripts could open arbitrary unsandboxed pages
                   via window.open from inside the iframe.
 
-              Asymmetry vs. the chess.com iframe above (which uses only
-              `sandbox="allow-scripts"`): the chess.com emboard is a
-              static diagram with no "open in new tab" affordance, so
-              neither allow-popups nor escape-sandbox are needed. The
-              Lichess embed is a full game-replay UI whose pop-out flow
-              is part of the expected UX, hence the wider sandbox.
+              Safety of `allow-scripts` + `allow-same-origin` together:
+              MDN warns that these two tokens combined "effectively
+              remove the sandbox" — but that warning targets the case
+              where the iframe document is served from the SAME origin
+              as the parent (a same-origin script can call
+              `parent.document.querySelector('iframe').sandbox = ''`
+              and clear the sandbox attribute on itself). Our embeds
+              are CROSS-ORIGIN (parent on `localhost` /
+              `blindfold-chess.app`, iframe on `lichess.org` /
+              `www.chess.com`), so the cross-origin Same-Origin Policy
+              keeps the iframe walled off from our document object —
+              the MDN warning does not apply. `allow-same-origin` here
+              only re-enables the iframe's access to ITS OWN origin
+              (its own localStorage, its own /manifest.json), which
+              the parent never had access to in the first place.
+              Comparison: `allow-popups-to-escape-sandbox` (already
+              accepted on this iframe) is a strictly broader privilege
+              than `allow-same-origin` — it lets the iframe spawn
+              arbitrary unsandboxed top-level windows, whereas
+              `allow-same-origin` only restores intra-iframe behavior.
+              If we accept the former, accepting the latter is
+              consistent.
+
+              Asymmetry vs. the chess.com iframe above (which uses
+              `sandbox="allow-scripts allow-same-origin"` without the
+              popup tokens): the chess.com emboard is a static diagram
+              with no "open in new tab" affordance, so neither
+              allow-popups nor escape-sandbox are needed. The Lichess
+              embed is a full game-replay UI whose pop-out flow is
+              part of the expected UX, hence the wider sandbox.
             */}
             <iframe
               src={`https://lichess.org/embed/${attachment.embedId}?theme=auto&bg=auto`}
-              sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
+              sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
               referrerPolicy="no-referrer"
               loading="lazy"
               title="Lichess game replay"
