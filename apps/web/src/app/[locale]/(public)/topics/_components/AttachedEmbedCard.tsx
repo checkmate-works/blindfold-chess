@@ -61,12 +61,14 @@ export function AttachedEmbedCard({ attachment }: Props) {
       <div className="mt-2 mb-2 rounded-md border border-border bg-card overflow-hidden">
         <div className="p-3 space-y-2">
           <p className="text-sm font-medium text-foreground">{t('embed.chesscomCardTitle')}</p>
-          {/* aspect-square: chess.com emboard renders an 8x8 board (square).
-              Manual verification step (deferred to merge): confirm that the
-              chess.com emboard fits the square frame at the chosen width
-              breakpoints; if there is a controls bar that pushes the layout
-              out of square, revisit. */}
-          <div className="aspect-square w-full">
+          {/* aspect-[60/43]: chess.com emboard renders an 8x8 board PLUS a
+              bottom navigation bar (replay controls / fullscreen). The natural
+              layout is therefore not square. The aspect ratio matches the
+              chess.com Share → Embed default (`width="600" height="430"`,
+              i.e. 600:430 = 60:43). Verified during Phase 10 user acceptance
+              testing — `aspect-square` left a vertical gap below the embed at
+              all breakpoints. */}
+          <div className="aspect-[60/43] w-full">
             {/*
               sandbox token rationale (chess.com):
                 - allow-scripts: required so the embed can run its own
