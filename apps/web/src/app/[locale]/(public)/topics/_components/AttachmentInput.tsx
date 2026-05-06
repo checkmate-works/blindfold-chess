@@ -104,6 +104,54 @@ export function AttachmentInput({ onChange, onModeChange }: Props) {
     }
   }, [subKind, detected]);
 
+  // PGN sub-mode preview hint / error.
+  //
+  // The legacy single-textarea UX surfaced only embed-detection hints
+  // here. Phase 7 extends this to explicitly call out URL shapes that
+  // are *not* PGN and not embeddable — Lichess game URLs, Lichess study
+  // URLs, and chess.com game URLs — so that pasting one of them into
+  // the PGN textarea no longer falls through to "submit as PGN" → the
+  // server rejects it → the modal silently closes (the parent's Apply
+  // handler runs `onClose()` regardless of submit outcome). Now the
+  // user sees an in-modal error and can either switch tabs or paste a
+  // PGN body.
+  let pgnPreviewHint: string | null = null;
+  let pgnPreviewError: string | null = null;
+  if (subKind === 'pgn' && detected) {
+    switch (detected.kind) {
+      case 'chesscom_embed':
+        // TODO(i18n): attachment.embed.chesscomDetected
+        pgnPreviewHint = 'chess.com embed URL detected.';
+        break;
+      case 'lichess_embed':
+        // TODO(i18n): attachment.embed.lichessDetected
+        pgnPreviewHint = 'Lichess embed URL detected.';
+        break;
+      case 'chesscom_embed_invalid_url':
+      case 'lichess_embed_invalid_url':
+        // TODO(i18n): attachment.embed.invalidUrl
+        pgnPreviewError = 'Invalid embed URL.';
+        break;
+      case 'lichess':
+        // TODO(i18n): attachment.game.pgn.error.lichessGameUrl
+        pgnPreviewError = 'This is a Lichess game URL. Switch to the Lichess URL tab to attach.';
+        break;
+      case 'lichess_unsupported':
+        // TODO(i18n): attachment.game.pgn.error.lichessStudy
+        pgnPreviewError = 'Lichess study URLs are not supported.';
+        break;
+      case 'chesscom_attribution':
+      case 'chesscom_invalid_url':
+      case 'chesscom_invalid_pgn':
+        // TODO(i18n): attachment.game.pgn.error.chesscomNeedsPgn
+        pgnPreviewError =
+          'For chess.com URLs, paste the PGN body — chess.com TOS prevents auto-fetch.';
+        break;
+      default:
+        break;
+    }
+  }
+
   const mode: AttachmentInputMode = useMemo(() => {
     if (!detected || detected.kind === 'empty') return { kind: 'empty' };
 
@@ -130,6 +178,21 @@ export function AttachmentInput({ onChange, onModeChange }: Props) {
         anonymize,
       };
     }
+    // PGN sub-mode: if the textarea content looks like a non-PGN URL
+    // shape (Lichess game URL, Lichess study, chess.com URL), fall
+    // through to `empty` so the parent form does not push a known-bad
+    // attachment. The user already sees `pgnPreviewError` explaining
+    // why, so this is no longer "silent".
+    if (
+      subKind === 'pgn' &&
+      (detected.kind === 'lichess' ||
+        detected.kind === 'lichess_unsupported' ||
+        detected.kind === 'chesscom_attribution' ||
+        detected.kind === 'chesscom_invalid_url' ||
+        detected.kind === 'chesscom_invalid_pgn')
+    ) {
+      return { kind: 'empty' };
+    }
     return { kind: 'pgn', pgn: activeValue, anonymize };
   }, [detected, anonymize, activeValue, subKind, urlValidationError]);
 
@@ -144,30 +207,6 @@ export function AttachmentInput({ onChange, onModeChange }: Props) {
   useEffect(() => {
     if (onChange) onChange(activeValue.trim().length > 0);
   }, [activeValue, onChange]);
-
-  // PGN-mode preview hint (kept from the legacy single-textarea UX).
-  // URL mode surfaces `urlValidationError` instead.
-  let pgnPreviewHint: string | null = null;
-  let pgnPreviewError: string | null = null;
-  if (subKind === 'pgn' && detected) {
-    switch (detected.kind) {
-      case 'chesscom_embed':
-        // TODO(i18n): attachment.embed.chesscomDetected
-        pgnPreviewHint = 'chess.com embed URL detected.';
-        break;
-      case 'lichess_embed':
-        // TODO(i18n): attachment.embed.lichessDetected
-        pgnPreviewHint = 'Lichess embed URL detected.';
-        break;
-      case 'chesscom_embed_invalid_url':
-      case 'lichess_embed_invalid_url':
-        // TODO(i18n): attachment.embed.invalidUrl
-        pgnPreviewError = 'Invalid embed URL.';
-        break;
-      default:
-        break;
-    }
-  }
 
   return (
     <div className="space-y-3">

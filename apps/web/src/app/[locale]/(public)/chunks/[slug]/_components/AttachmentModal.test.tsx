@@ -311,6 +311,82 @@ describe('AttachmentModal — single-kind structural guarantee (D3)', () => {
   });
 });
 
+describe('AttachmentModal — PGN sub-mode URL silent-close guard (Phase 7)', () => {
+  const LICHESS_GAME_URL = 'https://lichess.org/0zeJx5nICLsH';
+  const CHESSCOM_GAME_URL = 'https://www.chess.com/game/live/12345678';
+  const LICHESS_STUDY_URL = 'https://lichess.org/study/abcdefgh';
+
+  it('shows an explicit error when a Lichess game URL is pasted into the PGN textarea', async () => {
+    const { onApply } = setup();
+    const textarea = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
+    fireEvent.change(textarea, { target: { value: LICHESS_GAME_URL } });
+
+    // The PGN sub-mode now surfaces an inline error pointing the user
+    // at the Lichess URL tab.
+    await waitFor(() => {
+      const dialog = document.querySelector('[role="dialog"]') as HTMLElement;
+      expect(dialog.textContent).toMatch(/Lichess game URL/i);
+      expect(dialog.textContent).toMatch(/Lichess URL tab/i);
+    });
+
+    // Apply must not emit a `pgn` mode (would trip a server-side
+    // reject and silently close the modal). It falls through to
+    // `empty` instead.
+    const applyBtn = Array.from(document.querySelectorAll('button')).find(
+      (b) => b.textContent === 'Apply'
+    ) as HTMLButtonElement;
+    fireEvent.click(applyBtn);
+
+    await waitFor(() => {
+      expect(onApply).toHaveBeenCalledTimes(1);
+    });
+    expect(onApply.mock.calls[0][0].kind).toBe('empty');
+  });
+
+  it('shows an explicit error when a chess.com game URL is pasted into the PGN textarea', async () => {
+    const { onApply } = setup();
+    const textarea = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
+    fireEvent.change(textarea, { target: { value: CHESSCOM_GAME_URL } });
+
+    await waitFor(() => {
+      const dialog = document.querySelector('[role="dialog"]') as HTMLElement;
+      expect(dialog.textContent).toMatch(/chess\.com/i);
+      expect(dialog.textContent).toMatch(/PGN body/i);
+    });
+
+    const applyBtn = Array.from(document.querySelectorAll('button')).find(
+      (b) => b.textContent === 'Apply'
+    ) as HTMLButtonElement;
+    fireEvent.click(applyBtn);
+
+    await waitFor(() => {
+      expect(onApply).toHaveBeenCalledTimes(1);
+    });
+    expect(onApply.mock.calls[0][0].kind).toBe('empty');
+  });
+
+  it('shows an explicit error when a Lichess study URL is pasted into the PGN textarea', async () => {
+    const { onApply } = setup();
+    const textarea = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
+    fireEvent.change(textarea, { target: { value: LICHESS_STUDY_URL } });
+
+    await waitFor(() => {
+      const dialog = document.querySelector('[role="dialog"]') as HTMLElement;
+      expect(dialog.textContent).toMatch(/study URLs are not supported/i);
+    });
+
+    const applyBtn = Array.from(document.querySelectorAll('button')).find(
+      (b) => b.textContent === 'Apply'
+    ) as HTMLButtonElement;
+    fireEvent.click(applyBtn);
+
+    await waitFor(() => {
+      expect(onApply).toHaveBeenCalledTimes(1);
+    });
+    expect(onApply.mock.calls[0][0].kind).toBe('empty');
+  });
+});
+
 describe('AttachmentModal — close behavior', () => {
   it('Cancel button calls onClose without onApply', () => {
     const { onApply, onClose } = setup();
