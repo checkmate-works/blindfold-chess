@@ -147,6 +147,11 @@ export function AttachmentInput({ onChange, onModeChange }: Props) {
         pgnPreviewError =
           'For chess.com URLs, paste the PGN body — chess.com TOS prevents auto-fetch.';
         break;
+      case 'unknown':
+        // TODO(i18n): attachment.game.pgn.error.unknown
+        pgnPreviewError =
+          'This does not look like a PGN body. Paste a complete PGN, or use the Lichess URL tab for a URL.';
+        break;
       default:
         break;
     }
@@ -179,17 +184,19 @@ export function AttachmentInput({ onChange, onModeChange }: Props) {
       };
     }
     // PGN sub-mode: if the textarea content looks like a non-PGN URL
-    // shape (Lichess game URL, Lichess study, chess.com URL), fall
-    // through to `empty` so the parent form does not push a known-bad
-    // attachment. The user already sees `pgnPreviewError` explaining
-    // why, so this is no longer "silent".
+    // shape (Lichess game URL, Lichess study, chess.com URL) or is an
+    // unparseable non-PGN-non-URL string ('unknown'), fall through to
+    // `empty` so the parent form does not push a known-bad attachment.
+    // The user already sees `pgnPreviewError` explaining why, so this
+    // is no longer "silent".
     if (
       subKind === 'pgn' &&
       (detected.kind === 'lichess' ||
         detected.kind === 'lichess_unsupported' ||
         detected.kind === 'chesscom_attribution' ||
         detected.kind === 'chesscom_invalid_url' ||
-        detected.kind === 'chesscom_invalid_pgn')
+        detected.kind === 'chesscom_invalid_pgn' ||
+        detected.kind === 'unknown')
     ) {
       return { kind: 'empty' };
     }

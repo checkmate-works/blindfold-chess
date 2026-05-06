@@ -405,6 +405,31 @@ describe('AttachmentModal — close behavior', () => {
   });
 });
 
+describe('AttachmentModal — PGN sub-mode unknown-input guard (Phase 8 Fix 3)', () => {
+  it('shows an inline error for non-PGN-non-URL text (e.g. "aaa") and falls through to empty', async () => {
+    const { onApply } = setup();
+    const textarea = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
+    fireEvent.change(textarea, { target: { value: 'aaa' } });
+
+    await waitFor(() => {
+      const dialog = document.querySelector('[role="dialog"]') as HTMLElement;
+      expect(dialog.textContent).toMatch(/does not look like a PGN/i);
+    });
+
+    // The reported mode for `unknown` PGN input is `empty`, so Apply
+    // emits an empty mode (no attachment) instead of pushing a
+    // server-bound malformed PGN.
+    const applyBtn = Array.from(document.querySelectorAll('button')).find(
+      (b) => b.textContent === 'Apply'
+    ) as HTMLButtonElement;
+    fireEvent.click(applyBtn);
+    await waitFor(() => {
+      expect(onApply).toHaveBeenCalledTimes(1);
+    });
+    expect(onApply.mock.calls[0][0].kind).toBe('empty');
+  });
+});
+
 describe('AttachmentModal — focus trap (a11y)', () => {
   let prevElement: HTMLButtonElement;
 
