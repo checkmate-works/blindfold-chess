@@ -54,6 +54,19 @@ export function NewPostForm({ locale, slug }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
   const [imagePhase, setImagePhase] = useState<ImagePhase>('compose');
   const [createdPostId, setCreatedPostId] = useState<string | null>(null);
+  const [contentLength, setContentLength] = useState(0);
+
+  // Counter color logic synced from
+  // `apps/web/src/app/_components/Textarea.tsx:39-45`. Inlined here so
+  // the counter can render alongside the paperclip icon row instead of
+  // the default below-textarea slot.
+  const ratio = MAX_CONTENT_LENGTH ? contentLength / MAX_CONTENT_LENGTH : 0;
+  const counterColor =
+    ratio >= 1
+      ? 'text-destructive'
+      : ratio >= 0.9
+        ? 'text-warning dark:text-yellow-400'
+        : 'text-muted-foreground';
 
   const onApply = useCallback((mode: AggregatedAttachmentMode) => {
     setAttachment(mode);
@@ -209,20 +222,27 @@ export function NewPostForm({ locale, slug }: Props) {
           maxLength={MAX_CONTENT_LENGTH}
           placeholder=""
           required
+          showCount={false}
+          onChange={(e) => setContentLength(e.target.value.length)}
         />
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setModalOpen(true)}
-            className="inline-flex items-center text-link-primary hover:opacity-80"
-            // TODO(i18n): attachment.modal.openButton (Add attachment / Edit attachment)
-            aria-label={attachment.kind === 'empty' ? 'Add attachment' : 'Edit attachment'}
-          >
-            <FaPaperclip aria-hidden="true" className="w-4 h-4" />
-          </button>
-          {attachmentSummary && (
-            <p className="text-xs text-muted-foreground">{attachmentSummary}</p>
-          )}
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setModalOpen(true)}
+              className="inline-flex items-center text-link-primary hover:opacity-80"
+              // TODO(i18n): attachment.modal.openButton (Add attachment / Edit attachment)
+              aria-label={attachment.kind === 'empty' ? 'Add attachment' : 'Edit attachment'}
+            >
+              <FaPaperclip aria-hidden="true" className="w-4 h-4" />
+            </button>
+            {attachmentSummary && (
+              <p className="text-xs text-muted-foreground">{attachmentSummary}</p>
+            )}
+          </div>
+          <p className={`text-xs ${counterColor}`}>
+            {contentLength.toLocaleString()} / {MAX_CONTENT_LENGTH.toLocaleString()}
+          </p>
         </div>
       </div>
 

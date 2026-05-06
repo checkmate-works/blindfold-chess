@@ -367,6 +367,51 @@ describe('NewPostForm — Game family routing via the modal', () => {
   });
 });
 
+describe('NewPostForm — paperclip + counter row layout (Phase 7)', () => {
+  it('renders the content character counter inline with the paperclip icon row, not below the textarea', () => {
+    const { container } = render(<NewPostForm locale="en" slug="rook-battery" />);
+
+    // The Textarea ships its own internal counter slot below the
+    // textarea when `showCount` is unset; Phase 7 disables that and
+    // re-renders the counter alongside the paperclip icon. The
+    // resulting DOM should contain exactly one counter element with
+    // the canonical `<current> / <max>` shape.
+    const counters = Array.from(container.querySelectorAll('p')).filter((p) =>
+      /^\s*\d[\d,]*\s*\/\s*\d[\d,]*\s*$/.test(p.textContent ?? '')
+    );
+    expect(counters.length).toBe(1);
+    expect(counters[0].textContent).toBe('0 / 2,000');
+
+    // The counter and the paperclip button must share a common flex
+    // container — i.e. the paperclip's nearest flex ancestor must
+    // also contain the counter.
+    const paperclipButton = container.querySelector(
+      'button[aria-label="Add attachment"]'
+    ) as HTMLButtonElement;
+    expect(paperclipButton).not.toBeNull();
+    let row: HTMLElement | null = paperclipButton.parentElement;
+    while (row && !(row.classList.contains('flex') && row.contains(counters[0]))) {
+      row = row.parentElement;
+    }
+    expect(row).not.toBeNull();
+    expect(row?.contains(counters[0])).toBe(true);
+    expect(row?.contains(paperclipButton)).toBe(true);
+  });
+
+  it('updates the counter as the user types into the content textarea', () => {
+    const { container } = render(<NewPostForm locale="en" slug="rook-battery" />);
+
+    const content = container.querySelector('#content') as HTMLTextAreaElement;
+    fireEvent.change(content, { target: { value: 'hello' } });
+
+    const counters = Array.from(container.querySelectorAll('p')).filter((p) =>
+      /^\s*\d[\d,]*\s*\/\s*\d[\d,]*\s*$/.test(p.textContent ?? '')
+    );
+    expect(counters.length).toBe(1);
+    expect(counters[0].textContent).toBe('5 / 2,000');
+  });
+});
+
 describe('NewPostForm — single-kind structural guarantee (D3 case iii)', () => {
   it('two tabs filled, only the active tab’s mode is applied so submit routes one Server Action', async () => {
     mockCreateChunkPostWithFenAttachment.mockResolvedValue({});
