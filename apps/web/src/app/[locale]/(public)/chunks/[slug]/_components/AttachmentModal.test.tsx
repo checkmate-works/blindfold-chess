@@ -214,11 +214,6 @@ describe('AttachmentModal — apply per tab', () => {
 
   it('Game tab with a Lichess embed URL emits an embed mode with provider=lichess', async () => {
     const { onApply } = setup();
-    const expander = Array.from(document.querySelectorAll('button')).find(
-      (b) => b.textContent === 'attachment.input.show'
-    ) as HTMLButtonElement;
-    fireEvent.click(expander);
-
     const textarea = document.querySelector('#attachment') as HTMLTextAreaElement;
     fireEvent.change(textarea, { target: { value: LICHESS_EMBED_URL } });
 
@@ -257,10 +252,6 @@ describe('AttachmentModal — single-kind structural guarantee (D3)', () => {
   it('Game-tab PGN + Media-tab image both entered: only the active tab’s mode is applied', async () => {
     const { onApply } = setup();
     // Game tab: type PGN.
-    const expander = Array.from(document.querySelectorAll('button')).find(
-      (b) => b.textContent === 'attachment.input.show'
-    ) as HTMLButtonElement;
-    fireEvent.click(expander);
     const textarea = document.querySelector('#attachment') as HTMLTextAreaElement;
     fireEvent.change(textarea, { target: { value: PGN_SAMPLE } });
 
