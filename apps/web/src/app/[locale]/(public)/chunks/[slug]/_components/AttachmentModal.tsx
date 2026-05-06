@@ -131,7 +131,7 @@ export function AttachmentModal({ isOpen, onClose, onApply }: Props) {
       fullHeightOnMobile
       aria-labelledby={titleId}
     >
-      <div className="flex h-full flex-col sm:h-auto">
+      <div className="flex h-full flex-col sm:h-[500px]">
         <h2 id={titleId} className="text-xl font-semibold text-foreground">
           {/* TODO(i18n): attachment.modal.title */}
           Attach to your post
@@ -171,7 +171,7 @@ export function AttachmentModal({ isOpen, onClose, onApply }: Props) {
         </div>
 
         {/* Tab panels */}
-        <div className="mt-4 flex-1 overflow-y-auto sm:overflow-visible">
+        <div className="mt-4 flex-1 overflow-y-auto">
           <div
             role="tabpanel"
             id={`${tabIdPrefix}-panel-game`}
