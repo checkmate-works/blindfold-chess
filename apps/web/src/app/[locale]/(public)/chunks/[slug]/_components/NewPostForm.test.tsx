@@ -294,8 +294,9 @@ describe('NewPostForm — Game family routing via the modal', () => {
     const { container } = render(<NewPostForm locale="en" slug="rook-battery" />);
 
     openModal();
-    // Game tab is selected by default; the textarea is rendered inline.
-    const attachment = document.querySelector('#attachment') as HTMLTextAreaElement;
+    // Game tab is selected by default; PGN sub-mode is the default
+    // sub-kind so the PGN textarea is rendered inline.
+    const attachment = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
     fireEvent.change(attachment, { target: { value: PGN_SAMPLE } });
     clickApply();
 
@@ -317,7 +318,11 @@ describe('NewPostForm — Game family routing via the modal', () => {
     const { container } = render(<NewPostForm locale="en" slug="rook-battery" />);
 
     openModal();
-    const attachment = document.querySelector('#attachment') as HTMLTextAreaElement;
+    const urlRadio = document.querySelector(
+      'input[name="gameAttachmentKind"][value="url"]'
+    ) as HTMLInputElement;
+    fireEvent.click(urlRadio);
+    const attachment = document.querySelector('#attachmentUrl') as HTMLInputElement;
     fireEvent.change(attachment, { target: { value: LICHESS_EMBED_URL } });
     clickApply();
 
@@ -340,7 +345,11 @@ describe('NewPostForm — Game family routing via the modal', () => {
     const { container } = render(<NewPostForm locale="en" slug="rook-battery" />);
 
     openModal();
-    const attachment = document.querySelector('#attachment') as HTMLTextAreaElement;
+    const urlRadio = document.querySelector(
+      'input[name="gameAttachmentKind"][value="url"]'
+    ) as HTMLInputElement;
+    fireEvent.click(urlRadio);
+    const attachment = document.querySelector('#attachmentUrl') as HTMLInputElement;
     fireEvent.change(attachment, { target: { value: CHESSCOM_EMBED_URL } });
     clickApply();
 
@@ -364,8 +373,8 @@ describe('NewPostForm — single-kind structural guarantee (D3 case iii)', () =>
     const { container } = render(<NewPostForm locale="en" slug="rook-battery" />);
 
     openModal();
-    // Game tab: PGN.
-    const attachment = document.querySelector('#attachment') as HTMLTextAreaElement;
+    // Game tab: PGN sub-mode is the default; the PGN textarea is inline.
+    const attachment = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
     fireEvent.change(attachment, { target: { value: PGN_SAMPLE } });
     // Switch to Position tab and enter a FEN.
     fireEvent.click(getTab(1));

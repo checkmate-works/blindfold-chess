@@ -192,8 +192,9 @@ describe('AttachmentModal — apply per tab', () => {
 
   it('Game tab with PGN-shaped textarea content emits a pgn mode with raw pgn captured', async () => {
     const { onApply } = setup();
-    // Game tab is selected by default; the textarea is rendered inline.
-    const textarea = document.querySelector('#attachment') as HTMLTextAreaElement;
+    // Game tab is selected by default; PGN sub-mode is the default
+    // sub-kind, so the PGN textarea is rendered inline.
+    const textarea = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
     fireEvent.change(textarea, { target: { value: PGN_SAMPLE } });
 
     const applyBtn = Array.from(document.querySelectorAll('button')).find(
@@ -214,8 +215,13 @@ describe('AttachmentModal — apply per tab', () => {
 
   it('Game tab with a Lichess embed URL emits an embed mode with provider=lichess', async () => {
     const { onApply } = setup();
-    const textarea = document.querySelector('#attachment') as HTMLTextAreaElement;
-    fireEvent.change(textarea, { target: { value: LICHESS_EMBED_URL } });
+    // Switch to URL sub-mode and paste the embed URL into the URL input.
+    const urlRadio = document.querySelector(
+      'input[name="gameAttachmentKind"][value="url"]'
+    ) as HTMLInputElement;
+    fireEvent.click(urlRadio);
+    const urlInput = document.querySelector('#attachmentUrl') as HTMLInputElement;
+    fireEvent.change(urlInput, { target: { value: LICHESS_EMBED_URL } });
 
     const applyBtn = Array.from(document.querySelectorAll('button')).find(
       (b) => b.textContent === 'Apply'
@@ -251,8 +257,8 @@ describe('AttachmentModal — apply per tab', () => {
 describe('AttachmentModal — single-kind structural guarantee (D3)', () => {
   it('Game-tab PGN + Media-tab image both entered: only the active tab’s mode is applied', async () => {
     const { onApply } = setup();
-    // Game tab: type PGN.
-    const textarea = document.querySelector('#attachment') as HTMLTextAreaElement;
+    // Game tab: type PGN into the default PGN sub-mode textarea.
+    const textarea = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
     fireEvent.change(textarea, { target: { value: PGN_SAMPLE } });
 
     // Switch to Media tab, select an image.
