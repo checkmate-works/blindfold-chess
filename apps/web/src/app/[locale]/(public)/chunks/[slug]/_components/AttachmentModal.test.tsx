@@ -329,18 +329,14 @@ describe('AttachmentModal — PGN sub-mode URL silent-close guard (Phase 7)', ()
       expect(dialog.textContent).toMatch(/Lichess URL tab/i);
     });
 
-    // Apply must not emit a `pgn` mode (would trip a server-side
-    // reject and silently close the modal). It falls through to
-    // `empty` instead.
+    // Phase 8 Fix 4: Apply is disabled while the active tab is in error.
+    // Clicking it is a no-op; nothing is emitted to onApply.
     const applyBtn = Array.from(document.querySelectorAll('button')).find(
       (b) => b.textContent === 'Apply'
     ) as HTMLButtonElement;
+    expect(applyBtn.disabled).toBe(true);
     fireEvent.click(applyBtn);
-
-    await waitFor(() => {
-      expect(onApply).toHaveBeenCalledTimes(1);
-    });
-    expect(onApply.mock.calls[0][0].kind).toBe('empty');
+    expect(onApply).not.toHaveBeenCalled();
   });
 
   it('shows an explicit error when a chess.com game URL is pasted into the PGN textarea', async () => {
@@ -357,12 +353,9 @@ describe('AttachmentModal — PGN sub-mode URL silent-close guard (Phase 7)', ()
     const applyBtn = Array.from(document.querySelectorAll('button')).find(
       (b) => b.textContent === 'Apply'
     ) as HTMLButtonElement;
+    expect(applyBtn.disabled).toBe(true);
     fireEvent.click(applyBtn);
-
-    await waitFor(() => {
-      expect(onApply).toHaveBeenCalledTimes(1);
-    });
-    expect(onApply.mock.calls[0][0].kind).toBe('empty');
+    expect(onApply).not.toHaveBeenCalled();
   });
 
   it('shows an explicit error when a Lichess study URL is pasted into the PGN textarea', async () => {
@@ -378,12 +371,9 @@ describe('AttachmentModal — PGN sub-mode URL silent-close guard (Phase 7)', ()
     const applyBtn = Array.from(document.querySelectorAll('button')).find(
       (b) => b.textContent === 'Apply'
     ) as HTMLButtonElement;
+    expect(applyBtn.disabled).toBe(true);
     fireEvent.click(applyBtn);
-
-    await waitFor(() => {
-      expect(onApply).toHaveBeenCalledTimes(1);
-    });
-    expect(onApply.mock.calls[0][0].kind).toBe('empty');
+    expect(onApply).not.toHaveBeenCalled();
   });
 });
 
@@ -406,7 +396,7 @@ describe('AttachmentModal — close behavior', () => {
 });
 
 describe('AttachmentModal — PGN sub-mode unknown-input guard (Phase 8 Fix 3)', () => {
-  it('shows an inline error for non-PGN-non-URL text (e.g. "aaa") and falls through to empty', async () => {
+  it('shows an inline error and disables Apply when non-PGN-non-URL text (e.g. "aaa") is pasted', async () => {
     const { onApply } = setup();
     const textarea = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
     fireEvent.change(textarea, { target: { value: 'aaa' } });
@@ -416,17 +406,112 @@ describe('AttachmentModal — PGN sub-mode unknown-input guard (Phase 8 Fix 3)',
       expect(dialog.textContent).toMatch(/does not look like a PGN/i);
     });
 
-    // The reported mode for `unknown` PGN input is `empty`, so Apply
-    // emits an empty mode (no attachment) instead of pushing a
-    // server-bound malformed PGN.
     const applyBtn = Array.from(document.querySelectorAll('button')).find(
       (b) => b.textContent === 'Apply'
     ) as HTMLButtonElement;
+    expect(applyBtn.disabled).toBe(true);
     fireEvent.click(applyBtn);
+    expect(onApply).not.toHaveBeenCalled();
+  });
+});
+
+describe('AttachmentModal — Apply disable across tabs (Phase 8 Fix 4)', () => {
+  it('Game tab: Apply is disabled when the PGN textarea has an unknown-input error', async () => {
+    setup();
+    const textarea = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
+    fireEvent.change(textarea, { target: { value: 'aaa' } });
     await waitFor(() => {
-      expect(onApply).toHaveBeenCalledTimes(1);
+      const applyBtn = Array.from(document.querySelectorAll('button')).find(
+        (b) => b.textContent === 'Apply'
+      ) as HTMLButtonElement;
+      expect(applyBtn.disabled).toBe(true);
     });
-    expect(onApply.mock.calls[0][0].kind).toBe('empty');
+  });
+
+  it('Game tab URL sub-mode: Apply is disabled while a non-supported URL is pasted', async () => {
+    setup();
+    const urlRadio = document.querySelector(
+      'input[name="gameAttachmentKind"][value="url"]'
+    ) as HTMLInputElement;
+    fireEvent.click(urlRadio);
+    const urlInput = document.querySelector('#attachmentUrl') as HTMLInputElement;
+    fireEvent.change(urlInput, { target: { value: 'not a url' } });
+    await waitFor(() => {
+      const applyBtn = Array.from(document.querySelectorAll('button')).find(
+        (b) => b.textContent === 'Apply'
+      ) as HTMLButtonElement;
+      expect(applyBtn.disabled).toBe(true);
+    });
+  });
+
+  it('Position tab: Apply is disabled while the FEN is invalid (status=error)', () => {
+    setup();
+    const positionTab = document.querySelectorAll('[role="tab"]')[1] as HTMLButtonElement;
+    fireEvent.click(positionTab);
+    const fenInput = document.querySelector('#attachmentFen') as HTMLInputElement;
+    fireEvent.change(fenInput, { target: { value: 'not a fen' } });
+    const applyBtn = Array.from(document.querySelectorAll('button')).find(
+      (b) => b.textContent === 'Apply'
+    ) as HTMLButtonElement;
+    expect(applyBtn.disabled).toBe(true);
+  });
+
+  it('Position tab: Apply is enabled when the FEN is valid', () => {
+    setup();
+    const positionTab = document.querySelectorAll('[role="tab"]')[1] as HTMLButtonElement;
+    fireEvent.click(positionTab);
+    const fenInput = document.querySelector('#attachmentFen') as HTMLInputElement;
+    fireEvent.change(fenInput, { target: { value: VALID_FEN } });
+    const applyBtn = Array.from(document.querySelectorAll('button')).find(
+      (b) => b.textContent === 'Apply'
+    ) as HTMLButtonElement;
+    expect(applyBtn.disabled).toBe(false);
+  });
+
+  it('Media video sub-mode: Apply is disabled when the URL fails the YouTube parser', async () => {
+    setup();
+    const mediaTab = document.querySelectorAll('[role="tab"]')[2] as HTMLButtonElement;
+    fireEvent.click(mediaTab);
+    const videoRadio = document.querySelector(
+      'input[name="mediaAttachmentKind"][value="video"]'
+    ) as HTMLInputElement;
+    fireEvent.click(videoRadio);
+    const urlInput = document.querySelector('#attachmentVideoUrl') as HTMLInputElement;
+    fireEvent.change(urlInput, { target: { value: 'https://vimeo.com/12345' } });
+    await waitFor(() => {
+      const applyBtn = Array.from(document.querySelectorAll('button')).find(
+        (b) => b.textContent === 'Apply'
+      ) as HTMLButtonElement;
+      expect(applyBtn.disabled).toBe(true);
+    });
+  });
+
+  it('Cancel button stays enabled even when the active tab has a validation error', () => {
+    setup();
+    const textarea = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
+    fireEvent.change(textarea, { target: { value: 'aaa' } });
+    const cancelBtn = Array.from(document.querySelectorAll('button')).find(
+      (b) => b.textContent === 'Cancel'
+    ) as HTMLButtonElement;
+    expect(cancelBtn.disabled).toBe(false);
+  });
+
+  it('Inactive-tab error does NOT block Apply on the active tab', () => {
+    setup();
+    // Position tab: invalid FEN (error).
+    const positionTab = document.querySelectorAll('[role="tab"]')[1] as HTMLButtonElement;
+    fireEvent.click(positionTab);
+    const fenInput = document.querySelector('#attachmentFen') as HTMLInputElement;
+    fireEvent.change(fenInput, { target: { value: 'not a fen' } });
+
+    // Switch back to Game tab — it is empty / ok, so Apply must be enabled.
+    const gameTab = document.querySelectorAll('[role="tab"]')[0] as HTMLButtonElement;
+    fireEvent.click(gameTab);
+
+    const applyBtn = Array.from(document.querySelectorAll('button')).find(
+      (b) => b.textContent === 'Apply'
+    ) as HTMLButtonElement;
+    expect(applyBtn.disabled).toBe(false);
   });
 });
 

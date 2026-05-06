@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { FenAttachmentInput } from './FenAttachmentInput';
-import type { FenAttachmentMode } from './FenAttachmentInput';
+import type { FenAttachmentMode, ValidationStatus } from './FenAttachmentInput';
 
 vi.mock('@/lib/positions/ui/MiniBoard', () => ({
   MiniBoard: ({ fen }: { fen: string }) => <div data-testid="mini-board" data-fen={fen} />,
@@ -125,5 +125,47 @@ describe('FenAttachmentInput', () => {
     fireEvent.change(input, { target: { value: '     ' } });
     expect(lastMode(onModeChange).kind).toBe('empty');
     expect(container.textContent).not.toMatch(/FEN format is invalid/i);
+  });
+});
+
+describe('FenAttachmentInput — onValidationStatusChange (Phase 8 Fix 4)', () => {
+  function setupWithStatus() {
+    const onValidationStatusChange = vi.fn<(status: ValidationStatus) => void>();
+    const result = render(
+      <FenAttachmentInput onValidationStatusChange={onValidationStatusChange} />
+    );
+    return { onValidationStatusChange, ...result };
+  }
+
+  function lastStatus(fn: ReturnType<typeof vi.fn>): ValidationStatus {
+    const calls = fn.mock.calls;
+    return calls[calls.length - 1]?.[0] as ValidationStatus;
+  }
+
+  it('reports empty initially', () => {
+    const { onValidationStatusChange } = setupWithStatus();
+    expect(lastStatus(onValidationStatusChange)).toBe('empty');
+  });
+
+  it('reports ok when the FEN parses', () => {
+    const { onValidationStatusChange } = setupWithStatus();
+    const input = document.querySelector('#attachmentFen') as HTMLInputElement;
+    fireEvent.change(input, { target: { value: VALID_FEN } });
+    expect(lastStatus(onValidationStatusChange)).toBe('ok');
+  });
+
+  it('reports error when the FEN is malformed', () => {
+    const { onValidationStatusChange } = setupWithStatus();
+    const input = document.querySelector('#attachmentFen') as HTMLInputElement;
+    fireEvent.change(input, { target: { value: 'not a fen' } });
+    expect(lastStatus(onValidationStatusChange)).toBe('error');
+  });
+
+  it('returns to empty when the FEN is cleared', () => {
+    const { onValidationStatusChange } = setupWithStatus();
+    const input = document.querySelector('#attachmentFen') as HTMLInputElement;
+    fireEvent.change(input, { target: { value: VALID_FEN } });
+    fireEvent.change(input, { target: { value: '' } });
+    expect(lastStatus(onValidationStatusChange)).toBe('empty');
   });
 });

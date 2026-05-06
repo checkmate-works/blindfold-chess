@@ -29,6 +29,18 @@ export type AttachmentInputMode =
       anonymize: boolean;
     };
 
+/**
+ * Validation status surfaced to the parent so it can disable the
+ * Apply button when the active tab has a known-bad input.
+ *
+ *   - `empty` — nothing meaningful entered (Apply allowed; emits
+ *     `{ kind: 'empty' }` mode = no attachment row).
+ *   - `ok`    — input parses to a kind the server can accept (Apply
+ *     allowed; emits a non-empty mode).
+ *   - `error` — client detected a known-bad input (Apply disabled).
+ */
+export type ValidationStatus = 'empty' | 'ok' | 'error';
+
 type Props = {
   /** Notify the parent form that the user typed in the attachment field. */
   onChange?: (hasContent: boolean) => void;
@@ -36,6 +48,9 @@ type Props = {
    *  The parent uses this to pick the right Server Action and to render
    *  hidden form fields for the embed flow. */
   onModeChange?: (mode: AttachmentInputMode) => void;
+  /** Notify the parent of the current validation status so it can
+   *  disable the Apply button while the active tab is in `error`. */
+  onValidationStatusChange?: (status: ValidationStatus) => void;
 };
 
 type GameSubKind = 'pgn' | 'url';
@@ -55,7 +70,7 @@ type GameSubKind = 'pgn' | 'url';
  * `detectAttachmentInput` + `validateAttachedPgn` — the client
  * detection result is advisory, not a security boundary.
  */
-export function AttachmentInput({ onChange, onModeChange }: Props) {
+export function AttachmentInput({ onChange, onModeChange, onValidationStatusChange }: Props) {
   const [subKind, setSubKind] = useState<GameSubKind>('pgn');
   const [pgnValue, setPgnValue] = useState('');
   const [urlValue, setUrlValue] = useState('');
@@ -214,6 +229,25 @@ export function AttachmentInput({ onChange, onModeChange }: Props) {
   useEffect(() => {
     if (onChange) onChange(activeValue.trim().length > 0);
   }, [activeValue, onChange]);
+
+  // Validation status reported to the parent. The parent uses this to
+  // gate the modal's Apply button — `'error'` blocks Apply, `'empty'`
+  // and `'ok'` allow it. `'empty'` is preserved (not coerced to error)
+  // so the user can still Apply with no attachment selected.
+  const validationStatus: ValidationStatus = useMemo(() => {
+    if (activeValue.trim().length === 0) return 'empty';
+    if (subKind === 'pgn') {
+      if (pgnPreviewError !== null) return 'error';
+      return 'ok';
+    }
+    // url sub-mode
+    if (urlValidationError !== null) return 'error';
+    return 'ok';
+  }, [activeValue, subKind, pgnPreviewError, urlValidationError]);
+
+  useEffect(() => {
+    if (onValidationStatusChange) onValidationStatusChange(validationStatus);
+  }, [validationStatus, onValidationStatusChange]);
 
   return (
     <div className="space-y-3">

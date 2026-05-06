@@ -252,7 +252,12 @@ describe('NewPostForm — modal-driven attachment routing', () => {
     ) as HTMLInputElement;
     fireEvent.click(videoRadio);
     const urlInput = document.querySelector('#attachmentVideoUrl') as HTMLInputElement;
-    fireEvent.change(urlInput, { target: { value: 'https://vimeo.com/12345' } });
+    // Client-side validator now rejects non-YouTube hosts up-front, so the
+    // URL must pass the client check; the Server Action mock is what
+    // simulates the host_not_allowed reject below.
+    fireEvent.change(urlInput, {
+      target: { value: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
+    });
     clickApply();
 
     const content = container.querySelector('#content') as HTMLTextAreaElement;

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
+import { parseYouTubeUrl } from '@/lib/games/youtube-validator';
 import { MAX_IMAGES_PER_POST, POST_IMAGES_MAX_FILE_SIZE } from '@/lib/post-images/validation';
 
 /**
@@ -25,20 +26,37 @@ export type MediaAttachmentMode =
   | { kind: 'image'; files: readonly File[] }
   | { kind: 'video'; url: string };
 
+/**
+ * Validation status surfaced to the parent. See AttachmentInput.tsx
+ * for the contract — same three-state union, used by AttachmentModal
+ * to disable the Apply button when the active tab is in `error`.
+ */
+export type ValidationStatus = 'empty' | 'ok' | 'error';
+
 type Props = {
   /** Notify the parent form when the input becomes non-empty. */
   onChange?: (hasContent: boolean) => void;
   /** Notify the parent form which mode the input is currently in. */
   onModeChange?: (mode: MediaAttachmentMode) => void;
+  /** Notify the parent of the current validation status so it can
+   *  disable the Apply button while the active tab is in `error`. */
+  onValidationStatusChange?: (status: ValidationStatus) => void;
 };
 
 type SubKind = 'image' | 'video';
 
-export function MediaAttachmentInput({ onChange, onModeChange }: Props) {
+export function MediaAttachmentInput({ onChange, onModeChange, onValidationStatusChange }: Props) {
   const [subKind, setSubKind] = useState<SubKind>('image');
 
   const [imageFiles, setImageFiles] = useState<readonly File[]>([]);
   const [videoUrl, setVideoUrl] = useState('');
+
+  // Client-side YouTube URL parse — reused so the modal's Apply gate
+  // matches the server-side validator. The parser never throws and
+  // returns a discriminated `{ ok }` result.
+  const videoTrimmed = videoUrl.trim();
+  const videoParseError =
+    subKind === 'video' && videoTrimmed.length > 0 ? !parseYouTubeUrl(videoTrimmed).ok : false;
 
   useEffect(() => {
     if (subKind === 'image') {
@@ -56,6 +74,20 @@ export function MediaAttachmentInput({ onChange, onModeChange }: Props) {
       onChange?.(mode.kind !== 'empty');
     }
   }, [subKind, imageFiles, videoUrl, onChange, onModeChange]);
+
+  useEffect(() => {
+    if (!onValidationStatusChange) return;
+    if (subKind === 'image') {
+      onValidationStatusChange(imageFiles.length === 0 ? 'empty' : 'ok');
+      return;
+    }
+    // video sub-mode
+    if (videoTrimmed.length === 0) {
+      onValidationStatusChange('empty');
+      return;
+    }
+    onValidationStatusChange(videoParseError ? 'error' : 'ok');
+  }, [subKind, imageFiles, videoTrimmed, videoParseError, onValidationStatusChange]);
 
   const handleFilesChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files ? Array.from(e.target.files) : [];
@@ -89,7 +121,9 @@ export function MediaAttachmentInput({ onChange, onModeChange }: Props) {
         />
       )}
 
-      {subKind === 'video' && <VideoInput url={videoUrl} onChange={setVideoUrl} />}
+      {subKind === 'video' && (
+        <VideoInput url={videoUrl} onChange={setVideoUrl} validationError={videoParseError} />
+      )}
     </div>
   );
 }
@@ -151,9 +185,10 @@ function ImageInput({ files, onChange, onClear }: ImageInputProps) {
 type VideoInputProps = {
   url: string;
   onChange: (value: string) => void;
+  validationError: boolean;
 };
 
-function VideoInput({ url, onChange }: VideoInputProps) {
+function VideoInput({ url, onChange, validationError }: VideoInputProps) {
   return (
     <div className="space-y-2">
       <label htmlFor="attachmentVideoUrl" className="block text-sm font-medium text-foreground">
@@ -174,6 +209,12 @@ function VideoInput({ url, onChange }: VideoInputProps) {
         {/* TODO(i18n): attachment.video.input.hint */}
         Paste a YouTube URL (watch / shorts / live / embed). Server validates the URL on submit.
       </p>
+      {validationError && (
+        <p className="text-xs text-destructive">
+          {/* TODO(i18n): attachment.video.input.invalid */}
+          That does not look like a supported YouTube URL.
+        </p>
+      )}
     </div>
   );
 }

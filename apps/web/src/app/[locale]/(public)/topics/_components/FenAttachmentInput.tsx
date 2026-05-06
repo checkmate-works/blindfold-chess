@@ -21,14 +21,24 @@ export type FenAttachmentMode =
   | { kind: 'empty' }
   | { kind: 'fen'; fen: string; caption: string | null; valid: boolean };
 
+/**
+ * Validation status surfaced to the parent. See AttachmentInput.tsx
+ * for the contract — same three-state union, used by AttachmentModal
+ * to disable the Apply button when the active tab is in `error`.
+ */
+export type ValidationStatus = 'empty' | 'ok' | 'error';
+
 type Props = {
   /** Notify the parent when the input becomes non-empty. */
   onChange?: (hasContent: boolean) => void;
   /** Notify the parent of the current discriminated mode. */
   onModeChange?: (mode: FenAttachmentMode) => void;
+  /** Notify the parent of the current validation status so it can
+   *  disable the Apply button while the active tab is in `error`. */
+  onValidationStatusChange?: (status: ValidationStatus) => void;
 };
 
-export function FenAttachmentInput({ onChange, onModeChange }: Props) {
+export function FenAttachmentInput({ onChange, onModeChange, onValidationStatusChange }: Props) {
   const [fen, setFen] = useState('');
   const [caption, setCaption] = useState('');
 
@@ -53,6 +63,15 @@ export function FenAttachmentInput({ onChange, onModeChange }: Props) {
     });
     onChange?.(true);
   }, [fenTrimmed, caption, fenValid, onChange, onModeChange]);
+
+  useEffect(() => {
+    if (!onValidationStatusChange) return;
+    if (fenTrimmed.length === 0) {
+      onValidationStatusChange('empty');
+      return;
+    }
+    onValidationStatusChange(fenValid ? 'ok' : 'error');
+  }, [fenTrimmed, fenValid, onValidationStatusChange]);
 
   const showPreview = fenTrimmed.length > 0 && fenValid;
   const showInvalidHint = fenTrimmed.length > 0 && !fenValid;

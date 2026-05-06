@@ -5,7 +5,10 @@ import { type KeyboardEvent, useCallback, useId, useState } from 'react';
 import { Button } from '@/app/_components';
 
 import { AttachmentInput } from '@/app/[locale]/(public)/topics/_components/AttachmentInput';
-import type { AttachmentInputMode } from '@/app/[locale]/(public)/topics/_components/AttachmentInput';
+import type {
+  AttachmentInputMode,
+  ValidationStatus,
+} from '@/app/[locale]/(public)/topics/_components/AttachmentInput';
 import { FenAttachmentInput } from '@/app/[locale]/(public)/topics/_components/FenAttachmentInput';
 import type { FenAttachmentMode } from '@/app/[locale]/(public)/topics/_components/FenAttachmentInput';
 import { MediaAttachmentInput } from '@/app/[locale]/(public)/topics/_components/MediaAttachmentInput';
@@ -84,12 +87,28 @@ export function AttachmentModal({ isOpen, onClose, onApply }: Props) {
   const onPositionModeChange = useCallback((mode: FenAttachmentMode) => setPositionMode(mode), []);
   const onMediaModeChange = useCallback((mode: MediaAttachmentMode) => setMediaMode(mode), []);
 
+  // Per-tab validation status. Apply is disabled when the *active* tab
+  // is in `error`. Inactive tabs' errors do not block Apply because
+  // only the active tab's mode is committed (single-kind D3 guarantee).
+  const [gameStatus, setGameStatus] = useState<ValidationStatus>('empty');
+  const [positionStatus, setPositionStatus] = useState<ValidationStatus>('empty');
+  const [mediaStatus, setMediaStatus] = useState<ValidationStatus>('empty');
+
+  const onGameStatusChange = useCallback((s: ValidationStatus) => setGameStatus(s), []);
+  const onPositionStatusChange = useCallback((s: ValidationStatus) => setPositionStatus(s), []);
+  const onMediaStatusChange = useCallback((s: ValidationStatus) => setMediaStatus(s), []);
+
   const aggregated: AggregatedAttachmentMode =
     activeTab === 'game' ? gameMode : activeTab === 'position' ? positionMode : mediaMode;
 
-  // FEN-tab apply is blocked while the FEN is invalid — the same client
-  // guard the legacy inline form had.
-  const applyDisabled = aggregated.kind === 'fen' && !aggregated.valid;
+  const activeStatus: ValidationStatus =
+    activeTab === 'game' ? gameStatus : activeTab === 'position' ? positionStatus : mediaStatus;
+
+  // Apply is blocked whenever the active tab has a known-bad input.
+  // The legacy `aggregated.kind === 'fen' && !aggregated.valid` guard
+  // is now subsumed by `activeStatus === 'error'` because
+  // FenAttachmentInput emits `'error'` whenever `fenValid === false`.
+  const applyDisabled = activeStatus === 'error';
 
   const handleApply = useCallback(() => {
     if (applyDisabled) return;
@@ -178,7 +197,10 @@ export function AttachmentModal({ isOpen, onClose, onApply }: Props) {
             aria-labelledby={`${tabIdPrefix}-tab-game`}
             hidden={activeTab !== 'game'}
           >
-            <AttachmentInput onModeChange={onGameModeChange} />
+            <AttachmentInput
+              onModeChange={onGameModeChange}
+              onValidationStatusChange={onGameStatusChange}
+            />
           </div>
           <div
             role="tabpanel"
@@ -186,7 +208,10 @@ export function AttachmentModal({ isOpen, onClose, onApply }: Props) {
             aria-labelledby={`${tabIdPrefix}-tab-position`}
             hidden={activeTab !== 'position'}
           >
-            <FenAttachmentInput onModeChange={onPositionModeChange} />
+            <FenAttachmentInput
+              onModeChange={onPositionModeChange}
+              onValidationStatusChange={onPositionStatusChange}
+            />
           </div>
           <div
             role="tabpanel"
@@ -194,7 +219,10 @@ export function AttachmentModal({ isOpen, onClose, onApply }: Props) {
             aria-labelledby={`${tabIdPrefix}-tab-media`}
             hidden={activeTab !== 'media'}
           >
-            <MediaAttachmentInput onModeChange={onMediaModeChange} />
+            <MediaAttachmentInput
+              onModeChange={onMediaModeChange}
+              onValidationStatusChange={onMediaStatusChange}
+            />
           </div>
         </div>
 
