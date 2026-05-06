@@ -144,6 +144,75 @@ describe('Modal — opt-in fullHeightOnMobile', () => {
   });
 });
 
+describe('Modal — opt-in keepMounted (Phase 8 Fix 5)', () => {
+  it('default behavior: omitting keepMounted unmounts on close (regression baseline)', () => {
+    const { rerender } = render(
+      <Modal isOpen={true} onClose={vi.fn()}>
+        <div data-testid="inside">body</div>
+      </Modal>
+    );
+    expect(document.querySelector('[role="dialog"]')).not.toBeNull();
+    rerender(
+      <Modal isOpen={false} onClose={vi.fn()}>
+        <div data-testid="inside">body</div>
+      </Modal>
+    );
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+    expect(document.querySelector('[data-testid="inside"]')).toBeNull();
+  });
+
+  it('keepMounted=true: children stay in the DOM when closed and the wrapper is hidden', () => {
+    const { rerender } = render(
+      <Modal isOpen={true} onClose={vi.fn()} keepMounted>
+        <div data-testid="inside">body</div>
+      </Modal>
+    );
+    expect(document.querySelector('[role="dialog"]')).not.toBeNull();
+    rerender(
+      <Modal isOpen={false} onClose={vi.fn()} keepMounted>
+        <div data-testid="inside">body</div>
+      </Modal>
+    );
+    // Children + dialog still mounted.
+    const dialog = document.querySelector('[role="dialog"]');
+    expect(dialog).not.toBeNull();
+    expect(document.querySelector('[data-testid="inside"]')).not.toBeNull();
+    // Wrapper is hidden via Tailwind `hidden` and aria-hidden=true.
+    const wrapper = dialog!.parentElement!.parentElement!;
+    expect(wrapper.className).toContain('hidden');
+    expect(wrapper.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('keepMounted=true: re-opening preserves the children identity (state persistence)', () => {
+    const { rerender } = render(
+      <Modal isOpen={true} onClose={vi.fn()} keepMounted>
+        <input data-testid="state-input" defaultValue="" />
+      </Modal>
+    );
+    const input = document.querySelector('[data-testid="state-input"]') as HTMLInputElement;
+    fireEvent.change(input, { target: { value: 'persistent' } });
+    expect(input.value).toBe('persistent');
+
+    rerender(
+      <Modal isOpen={false} onClose={vi.fn()} keepMounted>
+        <input data-testid="state-input" defaultValue="" />
+      </Modal>
+    );
+    // Same DOM node; uncontrolled input value is retained.
+    const inputClosed = document.querySelector('[data-testid="state-input"]') as HTMLInputElement;
+    expect(inputClosed).toBe(input);
+    expect(inputClosed.value).toBe('persistent');
+
+    rerender(
+      <Modal isOpen={true} onClose={vi.fn()} keepMounted>
+        <input data-testid="state-input" defaultValue="" />
+      </Modal>
+    );
+    const inputReopened = document.querySelector('[data-testid="state-input"]') as HTMLInputElement;
+    expect(inputReopened.value).toBe('persistent');
+  });
+});
+
 describe('Modal — opt-in trapFocus', () => {
   it('moves focus inside the dialog when trapFocus=true', () => {
     const trigger = document.createElement('button');

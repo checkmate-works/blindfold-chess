@@ -148,6 +148,7 @@ export function AttachmentModal({ isOpen, onClose, onApply }: Props) {
       maxWidth="max-w-2xl"
       trapFocus
       fullHeightOnMobile
+      keepMounted
       aria-labelledby={titleId}
     >
       <div className="flex h-full flex-col sm:h-[500px]">

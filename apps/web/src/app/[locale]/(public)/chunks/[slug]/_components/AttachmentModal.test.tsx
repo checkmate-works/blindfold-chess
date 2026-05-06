@@ -34,9 +34,17 @@ describe('AttachmentModal — rendering and aria roles', () => {
     expect(dialog?.getAttribute('aria-modal')).toBe('true');
   });
 
-  it('renders nothing when closed', () => {
+  it('keeps the dialog mounted but visually hidden when closed (keepMounted opt-in)', () => {
     setup({ isOpen: false });
-    expect(document.querySelector('[role="dialog"]')).toBeNull();
+    // The dialog now stays mounted to preserve in-progress draft state
+    // across open/close cycles. The portal wrapper hides it via
+    // `display: none` and `aria-hidden="true"`.
+    const dialog = document.querySelector('[role="dialog"]');
+    expect(dialog).not.toBeNull();
+    // Walk up to the portal wrapper that owns the visibility.
+    const wrapper = dialog!.parentElement!.parentElement!;
+    expect(wrapper.className).toContain('hidden');
+    expect(wrapper.getAttribute('aria-hidden')).toBe('true');
   });
 
   it('renders three tabs with correct roles and the first tab selected by default', () => {
@@ -512,6 +520,32 @@ describe('AttachmentModal — Apply disable across tabs (Phase 8 Fix 4)', () => 
       (b) => b.textContent === 'Apply'
     ) as HTMLButtonElement;
     expect(applyBtn.disabled).toBe(false);
+  });
+});
+
+describe('AttachmentModal — keepMounted preserves draft state (Phase 8 Fix 5)', () => {
+  it('PGN textarea value persists across an isOpen=true → false → true cycle', () => {
+    const onApply = vi.fn<(mode: AggregatedAttachmentMode) => void>();
+    const onClose = vi.fn();
+    const { rerender } = render(
+      <AttachmentModal isOpen={true} onClose={onClose} onApply={onApply} />
+    );
+    const textarea = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
+    fireEvent.change(textarea, { target: { value: PGN_SAMPLE } });
+    expect(textarea.value).toBe(PGN_SAMPLE);
+
+    // Close the modal.
+    rerender(<AttachmentModal isOpen={false} onClose={onClose} onApply={onApply} />);
+    // The dialog stays mounted (keepMounted) but the wrapper is hidden.
+    const dialogClosed = document.querySelector('[role="dialog"]') as HTMLElement;
+    expect(dialogClosed).not.toBeNull();
+    const wrapper = dialogClosed.parentElement!.parentElement!;
+    expect(wrapper.className).toContain('hidden');
+
+    // Re-open: the textarea value is still there.
+    rerender(<AttachmentModal isOpen={true} onClose={onClose} onApply={onApply} />);
+    const textareaAgain = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
+    expect(textareaAgain.value).toBe(PGN_SAMPLE);
   });
 });
 
