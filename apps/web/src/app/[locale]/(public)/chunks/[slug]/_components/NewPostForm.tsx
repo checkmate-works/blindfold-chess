@@ -197,21 +197,6 @@ export function NewPostForm({ locale, slug }: Props) {
     <form action={submit} className="space-y-4">
       <FormErrorBanner message={error} />
 
-      <div className="space-y-1">
-        <button
-          type="button"
-          onClick={() => setModalOpen(true)}
-          className="inline-flex items-center gap-1 text-link-primary hover:opacity-80"
-          // TODO(i18n): attachment.modal.openButton (Add attachment / Edit attachment)
-          aria-label={attachment.kind === 'empty' ? 'Add attachment' : 'Edit attachment'}
-        >
-          <FaPaperclip aria-hidden="true" className="w-4 h-4" />
-        </button>
-        {attachmentSummary && <p className="text-xs text-muted-foreground">{attachmentSummary}</p>}
-      </div>
-
-      <AttachmentModal isOpen={modalOpen} onClose={() => setModalOpen(false)} onApply={onApply} />
-
       <div className="space-y-2">
         <label htmlFor="content" className="sr-only">
           {/* TODO(i18n): topics.chunks.newPostForm.contentLabel (existing key) */}
@@ -225,7 +210,23 @@ export function NewPostForm({ locale, slug }: Props) {
           placeholder=""
           required
         />
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setModalOpen(true)}
+            className="inline-flex items-center text-link-primary hover:opacity-80"
+            // TODO(i18n): attachment.modal.openButton (Add attachment / Edit attachment)
+            aria-label={attachment.kind === 'empty' ? 'Add attachment' : 'Edit attachment'}
+          >
+            <FaPaperclip aria-hidden="true" className="w-4 h-4" />
+          </button>
+          {attachmentSummary && (
+            <p className="text-xs text-muted-foreground">{attachmentSummary}</p>
+          )}
+        </div>
       </div>
+
+      <AttachmentModal isOpen={modalOpen} onClose={() => setModalOpen(false)} onApply={onApply} />
 
       <input type="hidden" name="replyPermission" value="everyone" />
 
