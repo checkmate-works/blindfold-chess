@@ -294,11 +294,7 @@ describe('NewPostForm — Game family routing via the modal', () => {
     const { container } = render(<NewPostForm locale="en" slug="rook-battery" />);
 
     openModal();
-    // Game tab is selected by default. Open the inner expander.
-    const expander = Array.from(document.querySelectorAll('button')).find(
-      (b) => b.textContent === 'attachment.input.show'
-    ) as HTMLButtonElement;
-    fireEvent.click(expander);
+    // Game tab is selected by default; the textarea is rendered inline.
     const attachment = document.querySelector('#attachment') as HTMLTextAreaElement;
     fireEvent.change(attachment, { target: { value: PGN_SAMPLE } });
     clickApply();
@@ -321,10 +317,6 @@ describe('NewPostForm — Game family routing via the modal', () => {
     const { container } = render(<NewPostForm locale="en" slug="rook-battery" />);
 
     openModal();
-    const expander = Array.from(document.querySelectorAll('button')).find(
-      (b) => b.textContent === 'attachment.input.show'
-    ) as HTMLButtonElement;
-    fireEvent.click(expander);
     const attachment = document.querySelector('#attachment') as HTMLTextAreaElement;
     fireEvent.change(attachment, { target: { value: LICHESS_EMBED_URL } });
     clickApply();
@@ -348,10 +340,6 @@ describe('NewPostForm — Game family routing via the modal', () => {
     const { container } = render(<NewPostForm locale="en" slug="rook-battery" />);
 
     openModal();
-    const expander = Array.from(document.querySelectorAll('button')).find(
-      (b) => b.textContent === 'attachment.input.show'
-    ) as HTMLButtonElement;
-    fireEvent.click(expander);
     const attachment = document.querySelector('#attachment') as HTMLTextAreaElement;
     fireEvent.change(attachment, { target: { value: CHESSCOM_EMBED_URL } });
     clickApply();
@@ -377,10 +365,6 @@ describe('NewPostForm — single-kind structural guarantee (D3 case iii)', () =>
 
     openModal();
     // Game tab: PGN.
-    const expander = Array.from(document.querySelectorAll('button')).find(
-      (b) => b.textContent === 'attachment.input.show'
-    ) as HTMLButtonElement;
-    fireEvent.click(expander);
     const attachment = document.querySelector('#attachment') as HTMLTextAreaElement;
     fireEvent.change(attachment, { target: { value: PGN_SAMPLE } });
     // Switch to Position tab and enter a FEN.

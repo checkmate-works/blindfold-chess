@@ -42,10 +42,8 @@ type Props = {
  *
  * @description
  * Accepts a Lichess game URL, raw PGN, or (SPEC2 Phase B) a chess.com
- * emboard / Lichess embed URL. The field is intentionally collapsed
- * behind an "Attach a game" expander so the default comment form stays
- * uncluttered. An anonymize checkbox lets the poster mask player names
- * at storage time (server enforces).
+ * emboard / Lichess embed URL. An anonymize checkbox lets the poster
+ * mask player names at storage time (server enforces).
  *
  * Client-side detection runs on every change to surface a friendly
  * preview hint and to report the mode to the parent form. Authoritative
@@ -55,7 +53,6 @@ type Props = {
  */
 export function AttachmentInput({ onChange, onModeChange }: Props) {
   const t = useTranslations('attachment');
-  const [open, setOpen] = useState(false);
   const [value, setValue] = useState('');
   const [anonymize, setAnonymize] = useState(false);
 
@@ -128,67 +125,57 @@ export function AttachmentInput({ onChange, onModeChange }: Props) {
 
   return (
     <div className="space-y-2">
-      <button
-        type="button"
-        className="text-sm text-link-primary hover:underline"
-        onClick={() => setOpen((prev) => !prev)}
-      >
-        {open ? t('input.hide') : t('input.show')}
-      </button>
+      <div className="space-y-2 rounded-md border border-border bg-card p-3">
+        <label htmlFor="attachment" className="block text-sm font-medium text-foreground">
+          {t('input.label')}
+        </label>
+        <Textarea
+          id="attachment"
+          name="attachment"
+          rows={6}
+          // Generous client cap; server-side limit is 100 KB per
+          // `post_game_pgn_attachments.chk_pgn_byte_length`.
+          maxLength={120_000}
+          placeholder={t('input.placeholder')}
+          onChange={handleChange}
+        />
+        <p className="text-xs text-muted-foreground">{t('input.modeHint')}</p>
 
-      {open && (
-        <div className="space-y-2 rounded-md border border-border bg-card p-3">
-          <label htmlFor="attachment" className="block text-sm font-medium text-foreground">
-            {t('input.label')}
-          </label>
-          <Textarea
-            id="attachment"
-            name="attachment"
-            rows={6}
-            // Generous client cap; server-side limit is 100 KB per
-            // `post_game_pgn_attachments.chk_pgn_byte_length`.
-            maxLength={120_000}
-            placeholder={t('input.placeholder')}
-            onChange={handleChange}
+        {previewHint && <p className="text-xs text-foreground">{previewHint}</p>}
+        {previewError && <p className="text-xs text-destructive">{previewError}</p>}
+
+        {/*
+          Embed flow hidden fields. When the input is detected as an
+          embed URL the parent form switches to
+          `createChunkPostWithEmbedAttachment` and reads these fields.
+          The `attachment` textarea is still submitted but the embed
+          action ignores it. Server-side re-validation re-parses the
+          URL — we never trust the client-detected provider as
+          authoritative.
+        */}
+        {mode.kind === 'embed' && (
+          <>
+            <input type="hidden" name="embedProvider" value={mode.provider} />
+            <input type="hidden" name="embedSourceUrl" value={mode.sourceUrl} />
+          </>
+        )}
+
+        <label className="flex items-start gap-2 text-sm text-foreground">
+          <input
+            id="attachmentAnonymize"
+            name="attachmentAnonymize"
+            type="checkbox"
+            className="mt-0.5"
+            checked={anonymize}
+            onChange={(e) => setAnonymize(e.target.checked)}
           />
-          <p className="text-xs text-muted-foreground">{t('input.modeHint')}</p>
-
-          {previewHint && <p className="text-xs text-foreground">{previewHint}</p>}
-          {previewError && <p className="text-xs text-destructive">{previewError}</p>}
-
-          {/*
-            Embed flow hidden fields. When the input is detected as an
-            embed URL the parent form switches to
-            `createChunkPostWithEmbedAttachment` and reads these fields.
-            The `attachment` textarea is still submitted but the embed
-            action ignores it. Server-side re-validation re-parses the
-            URL — we never trust the client-detected provider as
-            authoritative.
-          */}
-          {mode.kind === 'embed' && (
-            <>
-              <input type="hidden" name="embedProvider" value={mode.provider} />
-              <input type="hidden" name="embedSourceUrl" value={mode.sourceUrl} />
-            </>
-          )}
-
-          <label className="flex items-start gap-2 text-sm text-foreground">
-            <input
-              id="attachmentAnonymize"
-              name="attachmentAnonymize"
-              type="checkbox"
-              className="mt-0.5"
-              checked={anonymize}
-              onChange={(e) => setAnonymize(e.target.checked)}
-            />
-            <span>
-              <span className="font-medium">{t('label.anonymize')}</span>
-              <br />
-              <span className="text-xs text-muted-foreground">{t('label.anonymizeHint')}</span>
-            </span>
-          </label>
-        </div>
-      )}
+          <span>
+            <span className="font-medium">{t('label.anonymize')}</span>
+            <br />
+            <span className="text-xs text-muted-foreground">{t('label.anonymizeHint')}</span>
+          </span>
+        </label>
+      </div>
     </div>
   );
 }

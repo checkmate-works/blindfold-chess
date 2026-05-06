@@ -192,14 +192,7 @@ describe('AttachmentModal — apply per tab', () => {
 
   it('Game tab with PGN-shaped textarea content emits a pgn mode with raw pgn captured', async () => {
     const { onApply } = setup();
-    // Game tab is selected by default; AttachmentInput has its own
-    // expander button (label is the i18n key path under useSafeTranslations
-    // when no provider is mounted).
-    const expander = Array.from(document.querySelectorAll('button')).find(
-      (b) => b.textContent === 'attachment.input.show'
-    ) as HTMLButtonElement;
-    fireEvent.click(expander);
-
+    // Game tab is selected by default; the textarea is rendered inline.
     const textarea = document.querySelector('#attachment') as HTMLTextAreaElement;
     fireEvent.change(textarea, { target: { value: PGN_SAMPLE } });
 
