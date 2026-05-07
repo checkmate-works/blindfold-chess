@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaArrowRight } from 'react-icons/fa';
@@ -9,7 +9,6 @@ import { SectionTitle } from '@/app/[locale]/_components';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { TUTORIAL_SKIP_CONFIG } from '../../../_lib/tutorial-skip-config';
 import { PracticeSetupActions } from '../../_components/PracticeSetupActions';
 
 type Props = {
@@ -18,12 +17,6 @@ type Props = {
 
 export function BoardSymmetrySetup({ locale }: Props) {
   const t = useTranslations('practice.boardSymmetry');
-  const router = useRouter();
-
-  const handleViewTutorial = () => {
-    localStorage.removeItem(TUTORIAL_SKIP_CONFIG.boardSymmetry.storageKey);
-    router.push(`/${locale}/practice/board-symmetry/tutorial`);
-  };
 
   return (
     <div>
@@ -38,13 +31,21 @@ export function BoardSymmetrySetup({ locale }: Props) {
             <span className="text-lg font-bold">?</span>
           </div>
         </div>
-        <div className="mb-6 text-center">
-          <button onClick={handleViewTutorial} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
+        <div className="mb-6 text-center" data-tour-id="board-symmetry-tutorial">
+          <Link
+            href={`/${locale}/practice/board-symmetry/tutorial`}
+            className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}
+          >
             {t('viewTutorial')}
-          </button>
+          </Link>
         </div>
 
-        <PracticeSetupActions locale={locale} moduleSlug="board-symmetry" />
+        <PracticeSetupActions
+          locale={locale}
+          moduleSlug="board-symmetry"
+          challengeTourId="board-symmetry-challenge"
+          trainingTourId="board-symmetry-training"
+        />
       </div>
     </div>
   );
