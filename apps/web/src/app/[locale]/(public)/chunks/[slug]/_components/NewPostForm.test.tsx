@@ -318,8 +318,13 @@ describe('NewPostForm — Game family routing via the modal', () => {
     expect(mockCreateChunkPostWithEmbedAttachment).not.toHaveBeenCalled();
   });
 
-  it('Lichess embed URL routes to createChunkPostWithEmbedAttachment with provider=lichess', async () => {
-    mockCreateChunkPostWithEmbedAttachment.mockResolvedValue({});
+  it('Lichess embed URL routes to createChunkPostWithAttachment (Phase 13 #83 — PGN auto-fetch)', async () => {
+    // Phase 13 (#83): Lichess /embed/{id} URLs are routed through the
+    // PGN attachment action so the self-hosted AttachedGameCard renders
+    // them, not the Lichess iframe. The form pumps the embed URL as
+    // `attachment` and createChunkPostWithAttachment.detectAttachmentInput
+    // re-detects + dispatches it.
+    mockCreateChunkPostWithAttachment.mockResolvedValue({});
     const { container } = render(<NewPostForm locale="en" slug="rook-battery" />);
 
     openModal();
@@ -337,12 +342,14 @@ describe('NewPostForm — Game family routing via the modal', () => {
     fireEvent.submit(form);
 
     await waitFor(() => {
-      expect(mockCreateChunkPostWithEmbedAttachment).toHaveBeenCalledTimes(1);
+      expect(mockCreateChunkPostWithAttachment).toHaveBeenCalledTimes(1);
     });
-    const fd = mockCreateChunkPostWithEmbedAttachment.mock.calls[0][3] as FormData;
-    expect(fd.get('embedProvider')).toBe('lichess');
-    expect(fd.get('embedSourceUrl')).toBe(LICHESS_EMBED_URL);
-    expect(mockCreateChunkPostWithAttachment).not.toHaveBeenCalled();
+    const fd = mockCreateChunkPostWithAttachment.mock.calls[0][3] as FormData;
+    expect(fd.get('attachment')).toBe(LICHESS_EMBED_URL);
+    // Embed-specific hidden fields are NOT emitted for Lichess.
+    expect(fd.get('embedProvider')).toBeNull();
+    expect(fd.get('embedSourceUrl')).toBeNull();
+    expect(mockCreateChunkPostWithEmbedAttachment).not.toHaveBeenCalled();
   });
 
   it('chess.com embed URL routes to createChunkPostWithEmbedAttachment with provider=chesscom', async () => {

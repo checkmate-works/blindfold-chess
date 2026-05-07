@@ -10,6 +10,11 @@ import { createChunkPostWithEmbedAttachment } from './createChunkPostWithEmbedAt
  * action with controlled FormData and observe (a) which embed row is
  * persisted, (b) what canonical source_url is reconstructed, and
  * (c) that the per-attachment rate-limit is consumed.
+ *
+ * Phase 13 (#83) narrowed `post_game_embed_attachments.embed_provider`
+ * to `'chesscom'` only. The Lichess-specific test cases in this file
+ * were removed; Lichess /embed/{id} URLs are now exercised by
+ * createChunkPostWithAttachment.test.ts (PGN auto-fetch path).
  */
 
 const mockGetUser = vi.fn();
@@ -165,37 +170,6 @@ describe('createChunkPostWithEmbedAttachment — Phase B Tester #45 / #46', () =
 
   // #45 — DB CHECK passes but per-provider regex fails
   describe('#45 per-provider regex stricter than DB CHECK', () => {
-    it('rejects a Lichess embedSourceUrl whose id has an underscore (allowed by DB CHECK, disallowed by per-provider regex)', async () => {
-      // The DB CHECK is `^[A-Za-z0-9_-]{1,64}$` — an underscore is
-      // permitted there. The Lichess per-provider regex is
-      // `^[A-Za-z0-9]{8}$`, which forbids the underscore. The Server
-      // Action's parser must use the per-provider regex, NOT the
-      // looser DB CHECK, so this URL should never reach the DB.
-      //
-      // The provider on the form claims `lichess`. The id is exactly
-      // 8 chars, all in [A-Za-z0-9_-], so it satisfies the DB CHECK.
-      // But the URL parser path regex is `^/embed/([A-Za-z0-9]{8})$`,
-      // which excludes `_`, so the parser fails with `invalid_path`
-      // (or `invalid_id` — collapsed to a single user-facing key).
-      const result = await createChunkPostWithEmbedAttachment(
-        'en',
-        testSlug,
-        {},
-        makeFormData({
-          embedProvider: 'lichess',
-          embedSourceUrl: 'https://lichess.org/embed/abc_1234',
-        })
-      );
-
-      // Single user-facing error key. The granular reason is logged
-      // server-side but not exposed.
-      expect(result).toEqual({ error: 'attachment.embed.invalidUrl' });
-
-      // No embed row was persisted, no post was created.
-      expect(mockEmbedInsertValues).not.toHaveBeenCalled();
-      expect(mockInsertValues).not.toHaveBeenCalled();
-    });
-
     it('rejects a chess.com embedSourceUrl whose id is alphabetic (DB CHECK allows letters, per-provider regex does not)', async () => {
       // chess.com per-provider regex is `^[0-9]{1,15}$` — letters are
       // forbidden. The DB CHECK `^[A-Za-z0-9_-]{1,64}$` allows them.
@@ -218,46 +192,6 @@ describe('createChunkPostWithEmbedAttachment — Phase B Tester #45 / #46', () =
   // #46 — canonical source_url reconstruction; client-passed embedId is
   //       ignored entirely; raw user input is discarded.
   describe('#46 canonical source_url reconstruction', () => {
-    it('persists a Lichess embed with source_url rebuilt from (provider, embedId), discarding tracker query strings', async () => {
-      // The user pastes a URL that carries a hostile-looking tracker
-      // query string. The parser tolerates trailing query (the embed
-      // path itself is exact), but the persisted source_url must be
-      // the canonical form built from the validated (provider, embedId).
-      const userInput = 'https://lichess.org/embed/abcd1234?utm_source=evil&pwn=1';
-      await expect(
-        createChunkPostWithEmbedAttachment(
-          'en',
-          testSlug,
-          {},
-          makeFormData({
-            embedProvider: 'lichess',
-            embedSourceUrl: userInput,
-          })
-        )
-      ).rejects.toThrow('NEXT_REDIRECT');
-
-      expect(mockEmbedInsertValues).toHaveBeenCalledTimes(1);
-      const inserted = mockEmbedInsertValues.mock.calls[0][0];
-
-      // Canonical source_url — NOT the user input. The tracker params
-      // and any other extra structure of the user input have been
-      // stripped; only the validated id survives.
-      expect(inserted.sourceUrl).toBe('https://lichess.org/embed/abcd1234');
-      expect(inserted.sourceUrl).not.toContain('utm_source');
-      expect(inserted.sourceUrl).not.toContain('pwn');
-
-      // Validated discriminator + id pair persisted.
-      expect(inserted.embedProvider).toBe('lichess');
-      expect(inserted.embedId).toBe('abcd1234');
-
-      // Lichess attribution is auto-derived from the validated id.
-      expect(inserted.attributionPlatform).toBe('lichess');
-      expect(inserted.attributionPath).toBe('/abcd1234');
-
-      // postId points at the just-created post.
-      expect(inserted.postId).toBe(generatedPostId);
-    });
-
     it('persists a chess.com embed with NULL attribution columns and the canonical source_url', async () => {
       const userInput = 'https://www.chess.com/emboard?id=98765&irrelevant=track';
       await expect(
@@ -289,17 +223,17 @@ describe('createChunkPostWithEmbedAttachment — Phase B Tester #45 / #46', () =
 
     it('IGNORES a client-supplied embedId field — the id is taken from the re-parsed embedSourceUrl', async () => {
       // The form pumps a hostile `embedId='hostileX'` field alongside
-      // a legitimate Lichess embedSourceUrl. The Server Action MUST
+      // a legitimate chess.com embedSourceUrl. The Server Action MUST
       // re-parse the URL and discard the hostile id — we never trust
       // a client-passed id (SecurityEngineer baseline D8 #46).
-      const userInput = 'https://lichess.org/embed/abcd1234';
+      const userInput = 'https://www.chess.com/emboard?id=98765';
       await expect(
         createChunkPostWithEmbedAttachment(
           'en',
           testSlug,
           {},
           makeFormData({
-            embedProvider: 'lichess',
+            embedProvider: 'chesscom',
             embedSourceUrl: userInput,
             embedId: 'hostileX', // client tries to override
           })
@@ -311,13 +245,11 @@ describe('createChunkPostWithEmbedAttachment — Phase B Tester #45 / #46', () =
 
       // The persisted id is the validated one from the URL — NOT the
       // hostile client-passed value.
-      expect(inserted.embedId).toBe('abcd1234');
+      expect(inserted.embedId).toBe('98765');
       expect(inserted.embedId).not.toBe('hostileX');
       // Same for the canonical sourceUrl.
-      expect(inserted.sourceUrl).toBe('https://lichess.org/embed/abcd1234');
+      expect(inserted.sourceUrl).toBe('https://www.chess.com/emboard?id=98765');
       expect(inserted.sourceUrl).not.toContain('hostileX');
-      // Auto-derived attribution path is also from the validated id.
-      expect(inserted.attributionPath).toBe('/abcd1234');
     });
 
     it('rejects a provider/URL mismatch (form says chesscom, URL is Lichess)', async () => {
@@ -334,38 +266,79 @@ describe('createChunkPostWithEmbedAttachment — Phase B Tester #45 / #46', () =
       );
 
       // The chess.com parser will reject the lichess.org host with
-      // `wrong_host` BEFORE the cross-check runs, so the user-facing
-      // error is still the single invalidUrl key. Either path lands
-      // on the same error — both are correct fail-closed behavior.
+      // `wrong_host`, so the user-facing error is the single invalidUrl
+      // key. Fail-closed behavior is correct.
       expect(result).toEqual({ error: 'attachment.embed.invalidUrl' });
       expect(mockEmbedInsertValues).not.toHaveBeenCalled();
     });
   });
 
-  // #45 cross-check: a happy-path Lichess insert succeeds (sanity check
+  // #45 cross-check: a happy-path chess.com insert succeeds (sanity check
   //                   that the validation tests above are testing real
   //                   rejection, not generic unhappy-path behavior).
-  it('happy path: a valid Lichess embed URL passes both DB-CHECK-shape and per-provider regex', async () => {
+  it('happy path: a valid chess.com embed URL passes both DB-CHECK-shape and per-provider regex', async () => {
     await expect(
       createChunkPostWithEmbedAttachment(
         'en',
         testSlug,
         {},
         makeFormData({
-          embedProvider: 'lichess',
-          embedSourceUrl: 'https://lichess.org/embed/abcd1234',
+          embedProvider: 'chesscom',
+          embedSourceUrl: 'https://www.chess.com/emboard?id=98765',
         })
       )
     ).rejects.toThrow('NEXT_REDIRECT');
 
     expect(mockEmbedInsertValues).toHaveBeenCalledTimes(1);
     expect(mockEmbedInsertValues.mock.calls[0][0]).toMatchObject({
-      embedProvider: 'lichess',
-      embedId: 'abcd1234',
-      sourceUrl: 'https://lichess.org/embed/abcd1234',
-      attributionPlatform: 'lichess',
-      attributionPath: '/abcd1234',
+      embedProvider: 'chesscom',
+      embedId: '98765',
+      sourceUrl: 'https://www.chess.com/emboard?id=98765',
+      attributionPlatform: null,
+      attributionPath: null,
     });
+  });
+});
+
+/**
+ * Phase 13 (#83) regression suite — Lichess provider rejection.
+ *
+ * The action is now chess.com-only. A form pumping `embedProvider='lichess'`
+ * (e.g. a stale page load) must fail closed at the action layer BEFORE
+ * any DB insert. This pins the action's narrowed input contract — the
+ * underlying DB CHECK (narrowed in the same commit) is the second line
+ * of defense.
+ */
+describe('createChunkPostWithEmbedAttachment — Phase 13 (#83) lichess narrowing', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockGetChunkBySlug.mockResolvedValue({ id: 'chunk-1', slug: testSlug });
+    mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
+    mockIsUserBanned.mockResolvedValue(false);
+    mockInsertReturning.mockResolvedValue([{ id: generatedPostId }]);
+    mockCheckRateLimit.mockResolvedValue({ success: true });
+    mockPgnSelectWhereLimit.mockResolvedValue([]);
+  });
+
+  it('rejects embedProvider="lichess" with the invalidUrl error key (Phase 13 narrowing)', async () => {
+    // A form claiming `lichess` is no longer a valid provider here —
+    // Lichess /embed/{id} URLs are routed to createChunkPostWithAttachment.
+    // The action returns the same generic error key as malformed input.
+    const result = await createChunkPostWithEmbedAttachment(
+      'en',
+      testSlug,
+      {},
+      makeFormData({
+        embedProvider: 'lichess',
+        embedSourceUrl: 'https://lichess.org/embed/abcd1234',
+      })
+    );
+
+    expect(result).toEqual({ error: 'attachment.embed.invalidUrl' });
+
+    // Nothing reached the DB layer.
+    expect(mockEmbedInsertValues).not.toHaveBeenCalled();
+    expect(mockInsertValues).not.toHaveBeenCalled();
   });
 });
 
@@ -400,8 +373,8 @@ describe('createChunkPostWithEmbedAttachment — application-layer exclusivity (
         testSlug,
         {},
         makeFormData({
-          embedProvider: 'lichess',
-          embedSourceUrl: 'https://lichess.org/embed/abcd1234',
+          embedProvider: 'chesscom',
+          embedSourceUrl: 'https://www.chess.com/emboard?id=98765',
         })
       )
     ).rejects.toThrow(/PGN\/embed exclusivity/);

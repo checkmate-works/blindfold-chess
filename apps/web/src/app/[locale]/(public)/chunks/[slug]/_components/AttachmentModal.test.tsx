@@ -221,9 +221,14 @@ describe('AttachmentModal — apply per tab', () => {
     }
   });
 
-  it('Game tab with a Lichess embed URL emits an embed mode with provider=lichess', async () => {
+  it('Game tab with a Lichess embed URL emits a pgn mode (Phase 13: routes through PGN auto-fetch)', async () => {
+    // Phase 13 (#83): Lichess /embed/{id} URLs are no longer rendered
+    // as a Lichess iframe — they are auto-fetched via the PGN flow and
+    // displayed by the self-hosted AttachedGameCard. The modal therefore
+    // emits `kind: 'pgn'` for an embed URL so NewPostForm routes to
+    // createChunkPostWithAttachment, where the URL is re-detected by
+    // detectAttachmentInput and dispatched into resolveLichessAttachmentPgn.
     const { onApply } = setup();
-    // Switch to URL sub-mode and paste the embed URL into the URL input.
     const urlRadio = document.querySelector(
       'input[name="gameAttachmentKind"][value="url"]'
     ) as HTMLInputElement;
@@ -240,10 +245,12 @@ describe('AttachmentModal — apply per tab', () => {
       expect(onApply).toHaveBeenCalledTimes(1);
     });
     const mode = onApply.mock.calls[0][0];
-    expect(mode.kind).toBe('embed');
-    if (mode.kind === 'embed') {
-      expect(mode.provider).toBe('lichess');
-      expect(mode.sourceUrl).toBe(LICHESS_EMBED_URL);
+    expect(mode.kind).toBe('pgn');
+    if (mode.kind === 'pgn') {
+      // The PGN action accepts the raw embed URL and `detectAttachmentInput`
+      // re-runs server-side to dispatch into the lichess_embed branch.
+      expect(mode.pgn).toBe(LICHESS_EMBED_URL);
+      expect(mode.anonymize).toBe(false);
     }
   });
 

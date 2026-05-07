@@ -8,7 +8,10 @@ import { describe, expect, it } from 'vitest';
  *
  * SecurityEngineer Phase 1 baseline (D2) requires the CSP `frame-src`
  * directive to:
- *   - allow `www.chess.com` and `lichess.org` (Phase B embed origins)
+ *   - allow `www.chess.com` (the only chess-embed origin remaining
+ *     after Phase 13 (#83) — Lichess /embed/{id} URLs are now
+ *     rendered by the self-hosted PGN replay UI, no iframe needed,
+ *     so `lichess.org` is intentionally NOT in frame-src)
  *   - NOT use `*` or `https:` schema-only tokens (regression guard
  *     against accidental over-broadening)
  *
@@ -32,7 +35,7 @@ async function readNextConfigSource(): Promise<string> {
 
 function extractFrameSrcDirective(source: string): string {
   // The directive is a single line of the form
-  //   'frame-src googleads.g.doubleclick.net ... www.chess.com lichess.org',
+  //   'frame-src googleads.g.doubleclick.net ... www.chess.com',
   // Single OR double quoted, with the directive name `frame-src` first.
   // We extract the entire string literal that contains `frame-src`.
   const match = source.match(/['"]\s*frame-src\b[^'"\n]*['"]/);
@@ -43,13 +46,26 @@ function extractFrameSrcDirective(source: string): string {
 }
 
 describe('CSP frame-src — Phase B Tester #43 / #44', () => {
-  // #43 — frame-src includes both chess.com and lichess.org
-  it('#43 next.config.ts CSP frame-src directive contains both www.chess.com and lichess.org', async () => {
+  // #43 — frame-src includes www.chess.com (the only chess-embed origin
+  //         remaining after Phase 13 (#83); Lichess /embed/{id} is now
+  //         rendered by the self-hosted PGN replay UI and no longer
+  //         requires an iframe origin in the allow-list).
+  it('#43 next.config.ts CSP frame-src directive contains www.chess.com', async () => {
     const source = await readNextConfigSource();
     const directive = extractFrameSrcDirective(source);
-    // Both Phase B embed origins must be in the allow-list.
     expect(directive).toContain('www.chess.com');
-    expect(directive).toContain('lichess.org');
+  });
+
+  // #43-phase13 — Phase 13 (#83) regression: `lichess.org` MUST NOT
+  //                 appear in frame-src. The Lichess iframe was removed;
+  //                 keeping the origin in frame-src would expand the
+  //                 attack surface for no user-flow benefit.
+  it('#43-phase13 frame-src directive does NOT contain lichess.org (Phase 13 #83)', async () => {
+    const source = await readNextConfigSource();
+    const directive = extractFrameSrcDirective(source);
+    const tokens = directive.replace(/^['"]/, '').replace(/['"]$/, '').trim().split(/\s+/).slice(1);
+    expect(tokens).not.toContain('lichess.org');
+    expect(tokens).not.toContain('www.lichess.org');
   });
 
   // #75 — frame-src includes www.youtube-nocookie.com (issue #75 video

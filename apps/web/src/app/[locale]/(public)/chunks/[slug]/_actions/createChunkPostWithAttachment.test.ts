@@ -362,6 +362,67 @@ describe('createChunkPostWithAttachment', () => {
     });
   });
 
+  // ─── Phase 13 (#83): Lichess /embed/{id} URLs route through this PGN ───
+  //   action via the same auto-fetch path as plain Lichess game URLs.
+  describe('Phase 13 (#83) — lichess_embed URL routes through PGN auto-fetch', () => {
+    it('resolves a Lichess embed URL via resolveLichessAttachmentPgn (gameId from embedId)', async () => {
+      const fetchedPgn = '[White "Foo"]\n[Black "Bar"]\n\n1. d4 d5 2. c4 e6';
+      mockResolveLichessAttachmentPgn.mockResolvedValue({
+        ok: true,
+        pgn: fetchedPgn,
+        canonicalUrl: 'https://lichess.org/wxyz5678',
+      });
+
+      await expect(
+        createChunkPostWithAttachment(
+          'en',
+          testSlug,
+          {},
+          makeFormData({ attachment: 'https://lichess.org/embed/wxyz5678' })
+        )
+      ).rejects.toThrow('NEXT_REDIRECT');
+
+      // The embedId (8-char) is used as the Lichess gameId — same
+      // namespace per Phase 13 SA Q1 invariant 2.
+      expect(mockResolveLichessAttachmentPgn).toHaveBeenCalledWith('wxyz5678');
+
+      // The persisted attachment row carries source='lichess' (NOT
+      // 'embed' — embed table is chess.com-only post-Phase-13) and the
+      // canonical game URL is normalized to `https://lichess.org/{id}`
+      // so the source_game cache index hits across both URL shapes.
+      expect(mockAttachmentInsertValues).toHaveBeenCalledTimes(1);
+      const inserted = mockAttachmentInsertValues.mock.calls[0][0];
+      expect(inserted.source).toBe('lichess');
+      expect(inserted.sourceGameId).toBe('wxyz5678');
+      expect(inserted.sourceUrl).toBe('https://lichess.org/wxyz5678');
+    });
+
+    it('surfaces resolveLichessAttachmentPgn errors via the same key set as the plain game URL path', async () => {
+      mockResolveLichessAttachmentPgn.mockResolvedValue({
+        ok: false,
+        error: 'rate_limited',
+      });
+
+      const result = await createChunkPostWithAttachment(
+        'en',
+        testSlug,
+        {},
+        makeFormData({ attachment: 'https://lichess.org/embed/wxyz5678' })
+      );
+
+      expect(result).toEqual({ error: 'attachment.error.lichessRateLimited' });
+
+      // Per-attachment slot was still consumed (M4 finding parity with
+      // the plain Lichess game URL path).
+      const actions = mockCheckRateLimit.mock.calls.map((c) => (c[1] as { action: string }).action);
+      expect(actions).toContain('create_post_with_attachment');
+
+      expect(mockResolveLichessAttachmentPgn).toHaveBeenCalledWith('wxyz5678');
+      expect(mockInsertValues).not.toHaveBeenCalled();
+      expect(mockAttachmentInsertValues).not.toHaveBeenCalled();
+    });
+  });
+
   describe('detectAttachmentInput error mapping', () => {
     it('returns the chesscomPgnRequired i18n key when chess.com URL is pasted alone', async () => {
       // chess.com URL with no PGN body — the user must paste both.
