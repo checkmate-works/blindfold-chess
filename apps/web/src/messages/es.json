@@ -746,6 +746,17 @@
           "title": "El Movimiento del Alfil",
           "description": "Aprende los patrones de movimiento diagonal"
         }
+      },
+      "help": {
+        "label": "Ayuda",
+        "challenge": {
+          "title": "Modo Desafío",
+          "description": "Compite para ver cuántas respuestas correctas puedes dar dentro del límite de tiempo. Tu puntuación se registra y aparece en la tabla de clasificación."
+        },
+        "training": {
+          "title": "Modo Entrenamiento",
+          "description": "Practica a tu propio ritmo sin límite de tiempo. Las puntuaciones no se registran."
+        }
       }
     },
     "coordinateQuiz": {

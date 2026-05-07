@@ -746,6 +746,17 @@
           "title": "The Bishop's Movement",
           "description": "Learn diagonal movement patterns"
         }
+      },
+      "help": {
+        "label": "Help",
+        "challenge": {
+          "title": "Challenge Mode",
+          "description": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
+        },
+        "training": {
+          "title": "Training Mode",
+          "description": "Practice at your own pace with no time limit. Scores are not recorded."
+        }
       }
     },
     "coordinateQuiz": {
