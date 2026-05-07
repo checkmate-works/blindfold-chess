@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
@@ -9,20 +9,12 @@ import { SectionTitle } from '@/app/[locale]/_components';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { TUTORIAL_SKIP_CONFIG } from '../../../_lib/tutorial-skip-config';
-
 type Props = {
   locale: Locale;
 };
 
 export function DiagonalQuizSetup({ locale }: Props) {
   const t = useTranslations('practice.diagonalQuiz');
-  const router = useRouter();
-
-  const handleViewTutorial = () => {
-    localStorage.removeItem(TUTORIAL_SKIP_CONFIG.diagonalQuiz.storageKey);
-    router.push(`/${locale}/practice/diagonal-quiz/tutorial`);
-  };
 
   return (
     <div>
@@ -36,13 +28,21 @@ export function DiagonalQuizSetup({ locale }: Props) {
             <p>{t('antiDiagonalLabel')}: ??-??</p>
           </div>
         </div>
-        <div className="mb-6 text-center">
-          <button onClick={handleViewTutorial} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
+        <div className="mb-6 text-center" data-tour-id="diagonal-quiz-tutorial">
+          <Link
+            href={`/${locale}/practice/diagonal-quiz/tutorial`}
+            className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}
+          >
             {t('tutorial.viewTutorial')}
-          </button>
+          </Link>
         </div>
 
-        <PracticeSetupActions locale={locale} moduleSlug="diagonal-quiz" />
+        <PracticeSetupActions
+          locale={locale}
+          moduleSlug="diagonal-quiz"
+          challengeTourId="diagonal-quiz-challenge"
+          trainingTourId="diagonal-quiz-training"
+        />
       </div>
     </div>
   );

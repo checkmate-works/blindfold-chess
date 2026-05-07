@@ -1395,6 +1395,21 @@
       "yourAnswer": "Sua resposta",
       "correctAnswerLabel": "Resposta correta",
       "nextProblem": "Próximo Problema",
+      "help": {
+        "label": "Ajuda",
+        "tutorial": {
+          "title": "Tutorial",
+          "description": "Se for sua primeira vez, recomendamos assistir ao tutorial."
+        },
+        "challenge": {
+          "title": "Modo Desafio",
+          "description": "Compita para ver quantas respostas corretas você consegue dar dentro do limite de tempo. Sua pontuação é registrada e aparece na tabela de classificação."
+        },
+        "training": {
+          "title": "Modo Treino",
+          "description": "Pratique no seu ritmo, sem limite de tempo. As pontuações não são registradas."
+        }
+      },
       "tutorial": {
         "title": "Tutorial",
         "skip": "Pular",

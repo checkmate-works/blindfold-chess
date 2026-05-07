@@ -1395,6 +1395,21 @@
       "yourAnswer": "あなたの回答",
       "correctAnswerLabel": "正解",
       "nextProblem": "次の問題",
+      "help": {
+        "label": "ヘルプ",
+        "tutorial": {
+          "title": "チュートリアル",
+          "description": "初めて利用する方はチュートリアルを閲覧することをおすすめします。"
+        },
+        "challenge": {
+          "title": "チャレンジモード",
+          "description": "制限時間内にどれほど多く正答できるかを競うモードです。スコアが記録され、リーダーボードに掲載されます。"
+        },
+        "training": {
+          "title": "トレーニングモード",
+          "description": "時間制限なしで、自分のペースで取り組めるモードです。スコアは記録されません。"
+        }
+      },
       "tutorial": {
         "title": "チュートリアル",
         "skip": "スキップ",
