@@ -129,19 +129,20 @@ export function useRoutePlannerGame({ locale, allowedPieces, mode, stagedCoordin
     const shortestPath = findShortestPath(problem.piece, problem.start, problem.end) || [];
 
     if (validation.valid) {
-      setResult({ success: true, shortestPath, message: t('correct'), skipped: false });
+      setResult({ success: true, shortestPath, message: tPractice('correct'), skipped: false });
     } else {
       setResult({
         success: false,
         shortestPath,
-        message: validation.error === 'Path does not end at goal' ? t('badEnd') : t('incorrect'),
+        message:
+          validation.error === 'Path does not end at goal' ? t('badEnd') : tPractice('incorrect'),
         skipped: false,
       });
     }
 
     setMoves(finalMoves);
     setGameState('result');
-  }, [problem, moves, t]);
+  }, [problem, moves, t, tPractice]);
 
   const handleSkip = useCallback(() => {
     if (!problem) return;

@@ -1277,8 +1277,6 @@
       "findPath": "Encuentra el camino para {piece} de {start} a {target}",
       "yourPath": "Tu Camino",
       "shortestPath": "Camino Más Corto",
-      "correct": "Correcto",
-      "incorrect": "Incorrecto",
       "badEnd": "El camino no llega al objetivo",
       "badMove": "Incorrecto",
       "finalTarget": "(Auto-completado)",

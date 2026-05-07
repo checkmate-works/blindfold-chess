@@ -1277,8 +1277,6 @@
       "findPath": "Find path for {piece} from {start} to {target}",
       "yourPath": "Your Path",
       "shortestPath": "Shortest Path",
-      "correct": "Correct",
-      "incorrect": "Incorrect",
       "badEnd": "Path does not reach the goal",
       "badMove": "Incorrect",
       "finalTarget": "(Auto-completed)",

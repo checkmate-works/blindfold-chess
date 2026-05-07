@@ -1277,8 +1277,6 @@
       "findPath": "{piece}を{start}から{target}へ移動させる経路を見つけてください",
       "yourPath": "あなたの回答",
       "shortestPath": "最短経路",
-      "correct": "正解",
-      "incorrect": "不正解",
       "badEnd": "ゴールに到達していません",
       "badMove": "不正解",
       "finalTarget": "（自動補完）",
