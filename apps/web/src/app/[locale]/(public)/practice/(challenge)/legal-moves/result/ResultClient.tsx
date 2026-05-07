@@ -26,9 +26,4 @@ export const ResultClient = createPracticeResultClient({
     const avg = ctx.total > 0 ? (ctx.timeElapsed / ctx.total).toFixed(1) : '0.0';
     return ctx.tPractice('secondsFormat', { seconds: avg });
   },
-  labelOverrides: (ctx) => ({
-    recreationProgress: ctx.t('accuracy'),
-    correct: ctx.t('correct'),
-    incorrect: ctx.t('incorrect'),
-  }),
 });
