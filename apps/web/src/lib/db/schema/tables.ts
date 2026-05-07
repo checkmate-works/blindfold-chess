@@ -810,7 +810,7 @@ export const postGameEmbedAttachments = pgTable(
       .notNull()
       .unique()
       .references(() => topicPosts.id, { onDelete: 'cascade' }),
-    embedProvider: varchar('embed_provider', { length: 20 }).notNull(), // 'chesscom' | 'lichess'
+    embedProvider: varchar('embed_provider', { length: 20 }).notNull(), // 'chesscom' (Phase 13: Lichess narrowed out)
     embedId: varchar('embed_id', { length: 64 }).notNull(),
     /**
      * @design Audit-only canonical embed URL. NEVER read into the rendered
@@ -829,7 +829,7 @@ export const postGameEmbedAttachments = pgTable(
   (table) => [
     check(
       'post_game_embed_attachments_chk_embed_provider_valid',
-      sql`${table.embedProvider} IN ('chesscom', 'lichess')`
+      sql`${table.embedProvider} IN ('chesscom')`
     ),
     check(
       'post_game_embed_attachments_chk_embed_id_format',
@@ -841,7 +841,7 @@ export const postGameEmbedAttachments = pgTable(
     ),
     check(
       'post_game_embed_attachments_chk_embed_attribution_platform_valid',
-      sql`${table.attributionPlatform} IS NULL OR ${table.attributionPlatform} IN ('chesscom', 'lichess')`
+      sql`${table.attributionPlatform} IS NULL OR ${table.attributionPlatform} IN ('chesscom')`
     ),
     check(
       'post_game_embed_attachments_chk_embed_attribution_path_format',

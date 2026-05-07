@@ -2673,7 +2673,7 @@
       "checkConstraints": {
         "post_game_embed_attachments_chk_embed_provider_valid": {
           "name": "post_game_embed_attachments_chk_embed_provider_valid",
-          "value": "\"post_game_embed_attachments\".\"embed_provider\" IN ('chesscom', 'lichess')"
+          "value": "\"post_game_embed_attachments\".\"embed_provider\" IN ('chesscom')"
         },
         "post_game_embed_attachments_chk_embed_id_format": {
           "name": "post_game_embed_attachments_chk_embed_id_format",
@@ -2685,7 +2685,7 @@
         },
         "post_game_embed_attachments_chk_embed_attribution_platform_valid": {
           "name": "post_game_embed_attachments_chk_embed_attribution_platform_valid",
-          "value": "\"post_game_embed_attachments\".\"attribution_platform\" IS NULL OR \"post_game_embed_attachments\".\"attribution_platform\" IN ('chesscom', 'lichess')"
+          "value": "\"post_game_embed_attachments\".\"attribution_platform\" IS NULL OR \"post_game_embed_attachments\".\"attribution_platform\" IN ('chesscom')"
         },
         "post_game_embed_attachments_chk_embed_attribution_path_format": {
           "name": "post_game_embed_attachments_chk_embed_attribution_path_format",
