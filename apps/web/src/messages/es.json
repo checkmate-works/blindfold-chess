@@ -606,6 +606,21 @@
       "accuracy": "Precisión",
       "timeTaken": "Tiempo Empleado",
       "averageTime": "Tiempo Promedio",
+      "help": {
+        "label": "Ayuda",
+        "tutorial": {
+          "title": "Tutorial",
+          "description": "Si es tu primera vez, te recomendamos ver el tutorial."
+        },
+        "challenge": {
+          "title": "Modo Desafío",
+          "description": "Compite para ver cuántas respuestas correctas puedes dar dentro del límite de tiempo. Tu puntuación se registra y aparece en la tabla de clasificación."
+        },
+        "training": {
+          "title": "Modo Entrenamiento",
+          "description": "Practica a tu propio ritmo sin límite de tiempo. Las puntuaciones no se registran."
+        }
+      },
       "tutorial": {
         "title": "Tutorial",
         "description": "Aprende los tres tipos de simetría en el tablero de ajedrez: Columna, Fila y Simetría central.",
@@ -683,7 +698,18 @@
       "averageTime": "Tiempo Promedio",
       "requiredKnowledge": "Conocimiento Necesario",
       "viewArticle": "Aprende sobre el color de las casillas",
-      "articleDescription": "Aprende a identificar rápidamente si una casilla es clara u oscura"
+      "articleDescription": "Aprende a identificar rápidamente si una casilla es clara u oscura",
+      "help": {
+        "label": "Ayuda",
+        "challenge": {
+          "title": "Modo Desafío",
+          "description": "Compite para ver cuántas respuestas correctas puedes dar dentro del límite de tiempo. Tu puntuación se registra y aparece en la tabla de clasificación."
+        },
+        "training": {
+          "title": "Modo Entrenamiento",
+          "description": "Practica a tu propio ritmo sin límite de tiempo. Las puntuaciones no se registran."
+        }
+      }
     },
     "legalMoves": {
       "title": "Movimientos Legales",
@@ -735,6 +761,17 @@
           "title": "El Movimiento del Alfil",
           "description": "Aprende los patrones de movimiento diagonal"
         }
+      },
+      "help": {
+        "label": "Ayuda",
+        "challenge": {
+          "title": "Modo Desafío",
+          "description": "Compite para ver cuántas respuestas correctas puedes dar dentro del límite de tiempo. Tu puntuación se registra y aparece en la tabla de clasificación."
+        },
+        "training": {
+          "title": "Modo Entrenamiento",
+          "description": "Practica a tu propio ritmo sin límite de tiempo. Las puntuaciones no se registran."
+        }
       }
     },
     "coordinateQuiz": {
@@ -781,6 +818,21 @@
         "algebraicNotation": {
           "title": "Notación Algebraica",
           "description": "Domina el lenguaje de las coordenadas de ajedrez"
+        }
+      },
+      "help": {
+        "label": "Ayuda",
+        "feedbackSpeed": {
+          "title": "Velocidad de Respuesta",
+          "description": "Ajusta la rapidez con la que se reproduce el efecto de acierto/error. Este ajuste no afecta al cronómetro: el tiempo no avanza mientras se muestra el efecto de respuesta."
+        },
+        "challenge": {
+          "title": "Modo Desafío",
+          "description": "Compite para ver cuántas respuestas correctas puedes dar dentro del límite de tiempo. Tu puntuación se registra y aparece en la tabla de clasificación."
+        },
+        "training": {
+          "title": "Modo Entrenamiento",
+          "description": "Practica a tu propio ritmo sin límite de tiempo. Las puntuaciones no se registran."
         }
       }
     },
@@ -1256,6 +1308,21 @@
         "title": "¿Restablecer configuración?",
         "message": "Todos los ajustes se restablecerán y volverás a la pantalla del tutorial."
       },
+      "help": {
+        "label": "Ayuda",
+        "tutorial": {
+          "title": "Tutorial",
+          "description": "Si es tu primera vez, te recomendamos ver el tutorial."
+        },
+        "challenge": {
+          "title": "Modo Desafío",
+          "description": "Compite para ver cuántas respuestas correctas puedes dar dentro del límite de tiempo. Tu puntuación se registra y aparece en la tabla de clasificación."
+        },
+        "training": {
+          "title": "Modo Entrenamiento",
+          "description": "Practica a tu propio ritmo sin límite de tiempo. Las puntuaciones no se registran."
+        }
+      },
       "tutorial": {
         "title": "Tutorial",
         "steps": {
@@ -1358,6 +1425,21 @@
       "yourAnswer": "Tu respuesta",
       "correctAnswerLabel": "Respuesta correcta",
       "nextProblem": "Siguiente Problema",
+      "help": {
+        "label": "Ayuda",
+        "tutorial": {
+          "title": "Tutorial",
+          "description": "Si es tu primera vez, te recomendamos ver el tutorial."
+        },
+        "challenge": {
+          "title": "Modo Desafío",
+          "description": "Compite para ver cuántas respuestas correctas puedes dar dentro del límite de tiempo. Tu puntuación se registra y aparece en la tabla de clasificación."
+        },
+        "training": {
+          "title": "Modo Entrenamiento",
+          "description": "Practica a tu propio ritmo sin límite de tiempo. Las puntuaciones no se registran."
+        }
+      },
       "tutorial": {
         "title": "Tutorial",
         "skip": "Saltar",
@@ -1441,10 +1523,36 @@
       "level": "Nv",
       "moves": "movimientos",
       "recent": "Recientes"
+    },
+    "help": {
+      "label": "Ayuda",
+      "vsAi": {
+        "title": "Jugar contra la IA",
+        "description": "Empieza una nueva partida contra la IA o retoma una en curso."
+      },
+      "feed": {
+        "title": "Cronología",
+        "description": "En la cronología aparecen temas como aperturas y nuevos puzles. También se muestran los cambios en lo más alto de la clasificación, pero las entradas de este tipo se conservan un mes — las más antiguas se eliminan."
+      }
     }
   },
   "gamesPage": {
-    "pageTitle": "Partidas"
+    "pageTitle": "Partidas",
+    "help": {
+      "label": "Ayuda",
+      "newGame": {
+        "title": "Empezar una nueva partida",
+        "description": "Pulsa este botón para empezar una partida contra la IA."
+      },
+      "autoSave": {
+        "title": "Guardado automático",
+        "description": "Las partidas se guardan automáticamente en tu dispositivo y se conservan las 20 más recientes. Consulta <link>manejo de datos</link> para más detalles."
+      },
+      "bulkDelete": {
+        "title": "Eliminación masiva",
+        "description": "Usa «Eliminación Masiva» para borrar varias partidas a la vez."
+      }
+    }
   },
   "bulkDelete": {
     "title": "Eliminación Masiva de Partidas",
@@ -3892,6 +4000,17 @@
         "anchorPoints": "Percepción del tablero con puntos de anclaje",
         "blindfoldLegalMoves": "Detección de movimientos legales en ajedrez a ciegas",
         "diagonals": "Cálculo de diagonales y antidiagonales"
+      }
+    },
+    "help": {
+      "label": "Ayuda",
+      "overview": {
+        "title": "Dojo",
+        "description": "El programa está diseñado para que, al subir de rango hasta el cinturón negro, adquieras el nivel necesario para vencer a la IA de baja puntuación al ajedrez a ciegas."
+      },
+      "viewAllRanks": {
+        "title": "Todos los rangos",
+        "description": "Aquí puedes consultar los requisitos y las guías de cada rango."
       }
     }
   },

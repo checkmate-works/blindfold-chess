@@ -69,12 +69,15 @@ export function GamesPageClient({ locale }: Props) {
         <EmptyGameList locale={locale} />
       ) : (
         <>
-          <GameList games={displayGames} locale={locale} onDeleteGame={handleDeleteGame} />
+          <div data-tour-id="games-list">
+            <GameList games={displayGames} locale={locale} onDeleteGame={handleDeleteGame} />
+          </div>
           <div className="mt-4 text-right">
             <Link
               href="/games/bulk-delete"
               locale={locale}
               className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}
+              data-tour-id="games-bulk-delete"
             >
               {t('bulkDelete')}
             </Link>

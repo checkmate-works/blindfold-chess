@@ -211,8 +211,8 @@
   },
   "Header": {
     "title": "Shingan Chess",
-    "dashboard": "Dashboard",
-    "home": "Home",
+    "dashboard": "Top",
+    "home": "Feed",
     "gettingStarted": "Getting Started",
     "learn": "Learn",
     "practice": "Practice",
@@ -606,6 +606,21 @@
       "accuracy": "Accuracy",
       "timeTaken": "Time Taken",
       "averageTime": "Average Time",
+      "help": {
+        "label": "Help",
+        "tutorial": {
+          "title": "Tutorial",
+          "description": "If this is your first time, we recommend viewing the tutorial."
+        },
+        "challenge": {
+          "title": "Challenge Mode",
+          "description": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
+        },
+        "training": {
+          "title": "Training Mode",
+          "description": "Practice at your own pace with no time limit. Scores are not recorded."
+        }
+      },
       "tutorial": {
         "title": "Tutorial",
         "description": "Learn the three types of symmetry on the chess board: File, Rank, and Point symmetry.",
@@ -683,7 +698,18 @@
       "averageTime": "Average Time",
       "requiredKnowledge": "Required Knowledge",
       "viewArticle": "Learn about square colors",
-      "articleDescription": "Learn how to quickly identify whether a square is light or dark"
+      "articleDescription": "Learn how to quickly identify whether a square is light or dark",
+      "help": {
+        "label": "Help",
+        "challenge": {
+          "title": "Challenge Mode",
+          "description": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
+        },
+        "training": {
+          "title": "Training Mode",
+          "description": "Practice at your own pace with no time limit. Scores are not recorded."
+        }
+      }
     },
     "legalMoves": {
       "title": "Legal Moves",
@@ -735,6 +761,17 @@
           "title": "The Bishop's Movement",
           "description": "Learn diagonal movement patterns"
         }
+      },
+      "help": {
+        "label": "Help",
+        "challenge": {
+          "title": "Challenge Mode",
+          "description": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
+        },
+        "training": {
+          "title": "Training Mode",
+          "description": "Practice at your own pace with no time limit. Scores are not recorded."
+        }
       }
     },
     "coordinateQuiz": {
@@ -781,6 +818,21 @@
         "algebraicNotation": {
           "title": "Algebraic Notation",
           "description": "Master the language of chess coordinates"
+        }
+      },
+      "help": {
+        "label": "Help",
+        "feedbackSpeed": {
+          "title": "Feedback Speed",
+          "description": "Adjusts how quickly the correct/incorrect feedback effect plays. This setting does not affect timing — the time limit does not tick down while the feedback effect is playing."
+        },
+        "challenge": {
+          "title": "Challenge Mode",
+          "description": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
+        },
+        "training": {
+          "title": "Training Mode",
+          "description": "Practice at your own pace with no time limit. Scores are not recorded."
         }
       }
     },
@@ -1256,6 +1308,21 @@
         "title": "Reset settings?",
         "message": "All settings will be reset and you will return to the tutorial screen."
       },
+      "help": {
+        "label": "Help",
+        "tutorial": {
+          "title": "Tutorial",
+          "description": "If this is your first time, we recommend viewing the tutorial."
+        },
+        "challenge": {
+          "title": "Challenge Mode",
+          "description": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
+        },
+        "training": {
+          "title": "Training Mode",
+          "description": "Practice at your own pace with no time limit. Scores are not recorded."
+        }
+      },
       "tutorial": {
         "title": "Tutorial",
         "steps": {
@@ -1358,6 +1425,21 @@
       "yourAnswer": "Your answer",
       "correctAnswerLabel": "Correct answer",
       "nextProblem": "Next Problem",
+      "help": {
+        "label": "Help",
+        "tutorial": {
+          "title": "Tutorial",
+          "description": "If this is your first time, we recommend viewing the tutorial."
+        },
+        "challenge": {
+          "title": "Challenge Mode",
+          "description": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
+        },
+        "training": {
+          "title": "Training Mode",
+          "description": "Practice at your own pace with no time limit. Scores are not recorded."
+        }
+      },
       "tutorial": {
         "title": "Tutorial",
         "skip": "Skip",
@@ -1441,10 +1523,36 @@
       "level": "Lv",
       "moves": "moves",
       "recent": "Recent"
+    },
+    "help": {
+      "label": "Help",
+      "vsAi": {
+        "title": "Play vs AI",
+        "description": "Start a new AI game or resume an in-progress one."
+      },
+      "feed": {
+        "title": "Timeline",
+        "description": "Topics like openings and new puzzles show up in the feed. Leaderboard top-rank changes appear too, but feed entries of this kind are kept for one month — older ones are removed."
+      }
     }
   },
   "gamesPage": {
-    "pageTitle": "Games"
+    "pageTitle": "Games",
+    "help": {
+      "label": "Help",
+      "newGame": {
+        "title": "Start a new game",
+        "description": "Press this button to start a game against the AI."
+      },
+      "autoSave": {
+        "title": "Auto-saved games",
+        "description": "Games are auto-saved on your device, and the most recent 20 are kept. See <link>data handling</link> for details."
+      },
+      "bulkDelete": {
+        "title": "Bulk delete",
+        "description": "Use \"Bulk Delete\" to clear out multiple games at once."
+      }
+    }
   },
   "bulkDelete": {
     "title": "Bulk Delete Games",
@@ -3892,6 +4000,17 @@
         "anchorPoints": "Board awareness with anchor points",
         "blindfoldLegalMoves": "Legal move detection in blindfold chess",
         "diagonals": "Computing diagonals and anti-diagonals"
+      }
+    },
+    "help": {
+      "label": "Help",
+      "overview": {
+        "title": "Dojo",
+        "description": "The curriculum is structured so that, by climbing the ranks to black belt, you build the skill to beat low-rated AI at blindfold chess."
+      },
+      "viewAllRanks": {
+        "title": "All ranks",
+        "description": "Check each rank's requirements and guides from here."
       }
     }
   },

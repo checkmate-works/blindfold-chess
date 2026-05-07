@@ -1,5 +1,6 @@
 import { createPracticeTopPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeTopPage';
-import { CardLink, SectionTitle } from '@/app/[locale]/_components';
+import { CardLink, HelpTourButton, SectionTitle } from '@/app/[locale]/_components';
+import type { HelpStep } from '@/app/[locale]/_components';
 
 import CoordinateQuiz from './_components/CoordinateQuiz';
 
@@ -9,6 +10,32 @@ const { generateMetadata, Page } = createPracticeTopPage({
   i18nKey: 'coordinateQuiz',
   canonicalPath: 'practice/coordinate-quiz',
   renderSetup: (locale) => <CoordinateQuiz locale={locale} />,
+  renderTitleAction: (t) => {
+    const steps: HelpStep[] = [
+      {
+        targetId: 'coordinate-quiz-feedback-speed',
+        title: t('practice.coordinateQuiz.help.feedbackSpeed.title'),
+        description: t('practice.coordinateQuiz.help.feedbackSpeed.description'),
+        side: 'top',
+        align: 'center',
+      },
+      {
+        targetId: 'coordinate-quiz-challenge',
+        title: t('practice.coordinateQuiz.help.challenge.title'),
+        description: t('practice.coordinateQuiz.help.challenge.description'),
+        side: 'top',
+        align: 'center',
+      },
+      {
+        targetId: 'coordinate-quiz-training',
+        title: t('practice.coordinateQuiz.help.training.title'),
+        description: t('practice.coordinateQuiz.help.training.description'),
+        side: 'top',
+        align: 'center',
+      },
+    ];
+    return <HelpTourButton steps={steps} label={t('practice.coordinateQuiz.help.label')} />;
+  },
   renderArticles: (t, locale) => (
     <div className="mt-8 space-y-4">
       <SectionTitle>{t('practice.coordinateQuiz.relatedArticles')}</SectionTitle>

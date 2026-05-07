@@ -8,10 +8,9 @@
  * that pass through that square.
  *
  * @flow
- * - Tutorial: redirects first-time visitors to the tutorial (skippable;
- *   the skip state is remembered in localStorage).
- * - Setup: after the tutorial, the user can start a challenge or switch to
- *   training mode.
+ * - Setup: the user can start a challenge or switch to training mode. A
+ *   "View Tutorial" link is offered for first-time visitors; the help tour
+ *   on this page also recommends viewing the tutorial first.
  * - Challenge: time-limited; the score is recorded and reflected on the
  *   leaderboard.
  * - Training: untimed free practice.
@@ -19,15 +18,43 @@
  *   mode).
  */
 import { createPracticeTopPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeTopPage';
+import { HelpTourButton } from '@/app/[locale]/_components';
+import type { HelpStep } from '@/app/[locale]/_components';
 
-import { DiagonalQuizPageContent } from './_components/DiagonalQuizPageContent';
+import { DiagonalQuizSetup } from './_components/DiagonalQuizSetup';
 
 export const revalidate = 300;
 
 const { generateMetadata, Page } = createPracticeTopPage({
   i18nKey: 'diagonalQuiz',
   canonicalPath: 'practice/diagonal-quiz',
-  renderSetup: (locale) => <DiagonalQuizPageContent locale={locale} />,
+  renderSetup: (locale) => <DiagonalQuizSetup locale={locale} />,
+  renderTitleAction: (t) => {
+    const steps: HelpStep[] = [
+      {
+        targetId: 'diagonal-quiz-tutorial',
+        title: t('practice.diagonalQuiz.help.tutorial.title'),
+        description: t('practice.diagonalQuiz.help.tutorial.description'),
+        side: 'top',
+        align: 'center',
+      },
+      {
+        targetId: 'diagonal-quiz-challenge',
+        title: t('practice.diagonalQuiz.help.challenge.title'),
+        description: t('practice.diagonalQuiz.help.challenge.description'),
+        side: 'top',
+        align: 'center',
+      },
+      {
+        targetId: 'diagonal-quiz-training',
+        title: t('practice.diagonalQuiz.help.training.title'),
+        description: t('practice.diagonalQuiz.help.training.description'),
+        side: 'top',
+        align: 'center',
+      },
+    ];
+    return <HelpTourButton steps={steps} label={t('practice.diagonalQuiz.help.label')} />;
+  },
   renderArticles: () => null,
   leaderboard: {
     module: 'diagonal_quiz',

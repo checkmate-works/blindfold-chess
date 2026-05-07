@@ -59,6 +59,8 @@ export function LegalMovesSetup({ locale, pieceSelection, onPieceSelect }: Props
         moduleSlug="legal-moves"
         settingsQuery={`piece=${pieceName}`}
         buttonClassName="w-full mt-6"
+        challengeTourId="legal-moves-challenge"
+        trainingTourId="legal-moves-training"
       />
     </div>
   );

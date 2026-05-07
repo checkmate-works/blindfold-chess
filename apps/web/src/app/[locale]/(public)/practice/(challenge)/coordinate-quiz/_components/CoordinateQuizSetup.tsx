@@ -60,6 +60,8 @@ export function CoordinateQuizSetup({
         moduleSlug="coordinate-quiz"
         settingsQuery={settingsQuery}
         buttonClassName="w-full mt-6"
+        challengeTourId="coordinate-quiz-challenge"
+        trainingTourId="coordinate-quiz-training"
       />
     </div>
   );
