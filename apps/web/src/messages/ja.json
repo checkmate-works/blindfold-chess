@@ -683,7 +683,18 @@
       "averageTime": "平均時間",
       "requiredKnowledge": "関連記事",
       "viewArticle": "マスの色について学ぶ",
-      "articleDescription": "マスが明るいか暗いかを素早く識別する方法を学ぶ"
+      "articleDescription": "マスが明るいか暗いかを素早く識別する方法を学ぶ",
+      "help": {
+        "label": "ヘルプ",
+        "challenge": {
+          "title": "チャレンジモード",
+          "description": "制限時間内にどれほど多く正答できるかを競うモードです。スコアが記録され、リーダーボードに掲載されます。"
+        },
+        "training": {
+          "title": "トレーニングモード",
+          "description": "時間制限なしで、自分のペースで取り組めるモードです。スコアは記録されません。"
+        }
+      }
     },
     "legalMoves": {
       "title": "合法手",

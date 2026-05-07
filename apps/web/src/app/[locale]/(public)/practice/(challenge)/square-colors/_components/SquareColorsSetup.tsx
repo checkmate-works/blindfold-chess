@@ -33,7 +33,12 @@ export function SquareColorsSetup({ locale }: Props) {
         </div>
       </div>
 
-      <PracticeSetupActions locale={locale} moduleSlug="square-colors" />
+      <PracticeSetupActions
+        locale={locale}
+        moduleSlug="square-colors"
+        challengeTourId="square-colors-challenge"
+        trainingTourId="square-colors-training"
+      />
     </div>
   );
 }

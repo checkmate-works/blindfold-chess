@@ -683,7 +683,18 @@
       "averageTime": "Average Time",
       "requiredKnowledge": "Required Knowledge",
       "viewArticle": "Learn about square colors",
-      "articleDescription": "Learn how to quickly identify whether a square is light or dark"
+      "articleDescription": "Learn how to quickly identify whether a square is light or dark",
+      "help": {
+        "label": "Help",
+        "challenge": {
+          "title": "Challenge Mode",
+          "description": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
+        },
+        "training": {
+          "title": "Training Mode",
+          "description": "Practice at your own pace with no time limit. Scores are not recorded."
+        }
+      }
     },
     "legalMoves": {
       "title": "Legal Moves",

@@ -683,7 +683,18 @@
       "averageTime": "Tiempo Promedio",
       "requiredKnowledge": "Conocimiento Necesario",
       "viewArticle": "Aprende sobre el color de las casillas",
-      "articleDescription": "Aprende a identificar rápidamente si una casilla es clara u oscura"
+      "articleDescription": "Aprende a identificar rápidamente si una casilla es clara u oscura",
+      "help": {
+        "label": "Ayuda",
+        "challenge": {
+          "title": "Modo Desafío",
+          "description": "Compite para ver cuántas respuestas correctas puedes dar dentro del límite de tiempo. Tu puntuación se registra y aparece en la tabla de clasificación."
+        },
+        "training": {
+          "title": "Modo Entrenamiento",
+          "description": "Practica a tu propio ritmo sin límite de tiempo. Las puntuaciones no se registran."
+        }
+      }
     },
     "legalMoves": {
       "title": "Movimientos Legales",

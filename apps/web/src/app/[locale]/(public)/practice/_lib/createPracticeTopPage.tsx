@@ -29,6 +29,12 @@ type PracticeTopPageConfig = {
   renderSetup: (locale: Locale) => ReactNode;
   /** Render the articles section. Receives the translation function. */
   renderArticles: (t: Awaited<ReturnType<typeof getTranslations>>, locale: Locale) => ReactNode;
+  /**
+   * Optional element rendered to the right of the page title (typically a
+   * `HelpTourButton`). Returning `null` skips it entirely — useful when the
+   * page only ships the help tour for some locales.
+   */
+  renderTitleAction?: (t: Awaited<ReturnType<typeof getTranslations>>, locale: Locale) => ReactNode;
   /** Optional leaderboard preview (reuses LeaderboardPreview from result pages) */
   leaderboard?: {
     module: LeaderboardModule;
@@ -60,9 +66,12 @@ export function createPracticeTopPage(config: PracticeTopPageConfig) {
 
     const leaderboardData = await resolveLeaderboardData(config.leaderboard);
 
+    const titleAction = config.renderTitleAction?.(t, locale);
+
     return (
       <PageLayout
         title={t(`practice.${config.i18nKey}.title`)}
+        titleAction={titleAction}
         locale={locale}
         breadcrumb={[
           { label: t('navigation.practice'), href: '/practice' },
