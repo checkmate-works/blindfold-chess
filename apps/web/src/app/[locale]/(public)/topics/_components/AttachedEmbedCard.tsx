@@ -31,19 +31,21 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
  * change to these values is therefore a deliberate edit to the literal
  * here, with a corresponding test update.
  *
- * @design postMessage handler — DEFER
+ * @design Phase 13 narrowing (#83)
  *
- * Phase B does NOT install a `window.addEventListener('message', ...)`
- * listener (D3 — dead code reduction + smaller attack surface). If a
- * future feature needs to consume Lichess embed move events, the
- * listener MUST pin origin: `if (event.origin !== 'https://lichess.org') return;`
- * — never `'*'`, never substring match, never `endsWith('lichess.org')`.
- * It must also validate `event.source === iframeRef.current?.contentWindow`
- * and treat `event.data` as untrusted input.
+ * Lichess /embed/{id} URLs were originally rendered as a Lichess
+ * iframe alongside chess.com. Phase 13 retired that path: Lichess
+ * embed URLs are now routed through `createChunkPostWithAttachment`
+ * and rendered by `AttachedGameCard` + `AttachedGameCardReplay`
+ * (the self-hosted PGN replay UI). This component is therefore
+ * chess.com-only — the DB CHECK on
+ * `post_game_embed_attachments.embed_provider` is narrowed to
+ * `IN ('chesscom')` as the load-bearing invariant. The `lichess`
+ * branch and its postMessage / popup-sandbox rationale are removed.
  */
 export type AttachedEmbedCardData = {
   id: string;
-  embedProvider: string; // 'chesscom' | 'lichess'
+  embedProvider: string; // 'chesscom' (Phase 13: Lichess narrowed out)
   embedId: string;
   attributionPlatform: string | null;
   attributionPath: string | null;
@@ -84,21 +86,18 @@ export function AttachedEmbedCard({ attachment }: Props) {
                   fetches its own /manifest.json from www.chess.com,
                   which a null-origin document is blocked from doing
                   by CORS. The result was a fully blank emboard.
-                  See the Lichess block below for the full safety
-                  argument — the same reasoning applies here: parent
-                  (our site) and iframe (chess.com) are different
-                  origins, so MDN's "do not combine allow-scripts and
-                  allow-same-origin" warning (which is about same-
-                  origin iframes that could clear their own sandbox)
-                  does not apply.
+                  Parent (our site) and iframe (chess.com) are
+                  different origins, so MDN's "do not combine
+                  allow-scripts and allow-same-origin" warning (which
+                  is about same-origin iframes that could clear their
+                  own sandbox) does not apply.
                   Phase B M-2 history note: the original SecurityEngineer
                   baseline omitted allow-same-origin; live testing showed
                   the embed cannot initialize without it.
 
               The chess.com emboard is a static diagram with no
               "open in new tab" affordance, so neither allow-popups
-              nor allow-popups-to-escape-sandbox are needed (unlike
-              the Lichess case below).
+              nor allow-popups-to-escape-sandbox are needed.
             */}
             <iframe
               src={`https://www.chess.com/emboard?id=${attachment.embedId}`}
@@ -114,147 +113,10 @@ export function AttachedEmbedCard({ attachment }: Props) {
     );
   }
 
-  if (attachment.embedProvider === 'lichess') {
-    // Lichess attribution. `attribution_path` is auto-derived as
-    // `/{embedId}` at write time per Q2, so this resolves to
-    // `https://lichess.org/{embedId}` — safe per D7 (rebuild from
-    // validated components, never use persisted source_url as href).
-    //
-    // Defense in depth: even though the writer always sets
-    // attributionPath to `/${embedId}`, we still cross-check that the
-    // path matches that shape before rendering. A drifted DB row with a
-    // surprise path will fall back to no attribution link rather than
-    // becoming a clickable link to wherever.
-    const expectedPath = `/${attachment.embedId}`;
-    const lichessHref =
-      attachment.attributionPlatform === 'lichess' && attachment.attributionPath === expectedPath
-        ? `https://lichess.org${expectedPath}`
-        : null;
-
-    return (
-      <div className="mt-2 mb-2 rounded-md border border-border bg-card overflow-hidden">
-        <div className="p-3 space-y-2">
-          <p className="text-sm font-medium text-foreground">{t('embed.lichessCardTitle')}</p>
-          {/* aspect-[60/43]: Lichess /embed/{id} widget is the "Lichess PGN
-              viewer" (board + bottom navigation bar / replay controls). It
-              loads `site.lpvEmbed` ESM and renders the same kind of widget as
-              chess.com /emboard — board + bottom nav, no side panel. The
-              natural ratio therefore matches chess.com's `60/43`. Verified
-              during Phase 11 user acceptance testing — `aspect-video` (16:9)
-              left the embed too wide on mobile, squeezing the board into a
-              horizontal strip. (Note: `/embed/game/{id}` is a different widget
-              — full sidepanel layout — but the parser only accepts /embed/{id}
-              today, so this ratio matches what is actually rendered.) */}
-          <div className="aspect-[60/43] w-full">
-            {/*
-              sandbox token rationale (SecurityEngineer Phase A finding M-2):
-                - allow-scripts: required so the embed can run its own
-                  JavaScript (board rendering + interaction).
-                - allow-same-origin: required so the embed document is
-                  treated as living at its real origin (lichess.org)
-                  rather than as a "null origin" sandboxed document.
-                  Without it, the Lichess embed renders the board but
-                  the embed app cannot read/write its own
-                  localStorage / sessionStorage and cannot fetch
-                  same-origin resources from lichess.org — the browser
-                  console showed `Failed to read 'localStorage' ...
-                  document is sandboxed and lacks the
-                  'allow-same-origin' flag` and `Unsafe attempt to
-                  load URL https://lichess.org/embed/... from frame
-                  with URL https://lichess.org/embed/...` (the embed
-                  trying to fetch its own origin while running as
-                  null-origin). The board appeared to work but the
-                  page was internally half-broken.
-                  Phase B M-2 history note: the original
-                  SecurityEngineer baseline omitted allow-same-origin
-                  because it was not needed for board rendering alone;
-                  live testing surfaced the half-broken state and
-                  added allow-same-origin to the allowlist. This
-                  aligns with SPEC2 §17 (#75)'s embed recommendation
-                  of `sandbox="allow-scripts allow-same-origin"` as
-                  the minimum-viable embed sandbox.
-                - allow-popups: required so links inside the embed (e.g.
-                  "open this game on Lichess.org") can open at all.
-                - allow-popups-to-escape-sandbox: trade-off. A script
-                  inside the iframe can `window.open()` a URL, and the
-                  resulting popup is itself UNsandboxed — i.e. the new
-                  tab renders Lichess's full UI without inheriting our
-                  sandbox restrictions. We accept this because (a) the
-                  rendered URL is a trusted origin (lichess.org), (b)
-                  the user-facing UX of "open in new tab" requires an
-                  unsandboxed page to look/behave like the user expects,
-                  and (c) the embedId is regex-validated at write time
-                  by `parseLichessEmbedUrl` to the canonical Lichess
-                  8-char game-ID shape (`^[A-Za-z0-9]{8}$`, see
-                  `apps/web/src/lib/games/parse-embed-url.ts`) AND
-                  backstopped by the DB CHECK `^[A-Za-z0-9_-]{1,64}$`
-                  on `post_game_embed_attachments.embed_id`, so the
-                  substring interpolated into the iframe `src` cannot
-                  contain URL-special characters and we only ever embed
-                  `lichess.org/embed/<8-alnum>`.
-                  Residual risk: a supply-chain compromise of Lichess's
-                  served scripts could open arbitrary unsandboxed pages
-                  via window.open from inside the iframe.
-
-              Safety of `allow-scripts` + `allow-same-origin` together:
-              MDN warns that these two tokens combined "effectively
-              remove the sandbox" — but that warning targets the case
-              where the iframe document is served from the SAME origin
-              as the parent (a same-origin script can call
-              `parent.document.querySelector('iframe').sandbox = ''`
-              and clear the sandbox attribute on itself). Our embeds
-              are CROSS-ORIGIN (parent on `localhost` /
-              `blindfold-chess.app`, iframe on `lichess.org` /
-              `www.chess.com`), so the cross-origin Same-Origin Policy
-              keeps the iframe walled off from our document object —
-              the MDN warning does not apply. `allow-same-origin` here
-              only re-enables the iframe's access to ITS OWN origin
-              (its own localStorage, its own /manifest.json), which
-              the parent never had access to in the first place.
-              Comparison: `allow-popups-to-escape-sandbox` (already
-              accepted on this iframe) is a strictly broader privilege
-              than `allow-same-origin` — it lets the iframe spawn
-              arbitrary unsandboxed top-level windows, whereas
-              `allow-same-origin` only restores intra-iframe behavior.
-              If we accept the former, accepting the latter is
-              consistent.
-
-              Asymmetry vs. the chess.com iframe above (which uses
-              `sandbox="allow-scripts allow-same-origin"` without the
-              popup tokens): the chess.com emboard is a static diagram
-              with no "open in new tab" affordance, so neither
-              allow-popups nor escape-sandbox are needed. The Lichess
-              embed is a full game-replay UI whose pop-out flow is
-              part of the expected UX, hence the wider sandbox.
-            */}
-            <iframe
-              src={`https://lichess.org/embed/${attachment.embedId}?theme=auto&bg=auto`}
-              sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
-              referrerPolicy="no-referrer"
-              loading="lazy"
-              title="Lichess game replay"
-              className="w-full h-full border-0"
-            />
-          </div>
-          {lichessHref && (
-            <p className="text-xs text-muted-foreground pt-1">
-              <a
-                href={lichessHref}
-                target="_blank"
-                rel="noopener noreferrer nofollow"
-                className="text-link-primary hover:underline"
-              >
-                {t('embed.viewOnLichess')}
-              </a>
-            </p>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  // Unknown provider — render nothing. The DB CHECK constrains
-  // embed_provider to 'chesscom' | 'lichess', so this branch is
-  // unreachable in practice; surfacing nothing is the safest fallback.
+  // Unknown provider — render nothing. As of Phase 13 (#83), the DB
+  // CHECK constrains embed_provider to 'chesscom' only, so this branch
+  // is unreachable in practice (Lichess embed URLs are routed to the
+  // PGN attachment path and rendered by AttachedGameCard instead).
+  // Surfacing nothing is the safest fallback for a drifted row.
   return null;
 }
