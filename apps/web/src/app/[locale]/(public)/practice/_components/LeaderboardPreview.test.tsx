@@ -136,6 +136,22 @@ describe('LeaderboardPreview', () => {
     expect(screen.getByText('weeklyRanking')).toBeInTheDocument();
   });
 
+  it('should render the allTimeRanking title when period is "all-time"', () => {
+    const rows = [createRow({ userId: 'u1', rank: 1 })];
+
+    render(
+      <LeaderboardPreview
+        rows={rows}
+        detailPath="/leaderboard/score/all-time/coordinate-quiz/white"
+        period="all-time"
+        locale="ja"
+      />
+    );
+
+    expect(screen.getByText('allTimeRanking')).toBeInTheDocument();
+    expect(screen.queryByText('weeklyRanking')).not.toBeInTheDocument();
+  });
+
   it('should use the locale in the link href', () => {
     const rows = [createRow({ userId: 'u1', rank: 1 })];
 
