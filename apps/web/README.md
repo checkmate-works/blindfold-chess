@@ -88,6 +88,18 @@ To test Google Sign-In locally, you need to configure OAuth credentials:
 
 For detailed authentication documentation, see [docs/authentication-setup.md](docs/authentication-setup.md).
 
+### Local Test Data
+
+For UI verification that depends on populated data (e.g. the practice leaderboard preview), seed predictable fixtures into local Supabase:
+
+```bash
+pnpm db:seed:dev
+```
+
+This creates 5 test users (`alice`/`bob`/`carol`/`dave`/`eve` @ `example.local`, password `dev-password`) and inserts `challenge_results` + `challenge_best_scores` rows distributed over the past 30 days, exercising both the weekly and all-time leaderboards. The script is idempotent (re-runs replace seed-user rows only) and refuses to run against any non-local DB or Supabase URL.
+
+This is intentionally separate from `pnpm db:seed`, which seeds master data (ranks, glossary, etc.) and runs in production as well.
+
 ### Local Services
 
 - **Supabase Studio**: http://127.0.0.1:54323
@@ -190,7 +202,8 @@ After deploying, verify the following in the Vercel dashboard:
 Standard scripts (`pnpm dev`, `pnpm build`, `pnpm start`, `pnpm lint`, `pnpm test`) work as expected. Below are project-specific scripts worth noting:
 
 - `pnpm run copy-stockfish` - Copy Stockfish AI engine files to public directory (required before first run)
-- `pnpm db:seed` - Seed initial data (categories)
+- `pnpm db:seed` - Seed master data (ranks, glossary, etc.). Runs in production too
+- `pnpm db:seed:dev` - Seed local-only fixtures (test users + challenge results). Refuses to run against non-local hosts
 - `npx drizzle-kit generate --name=<migration_name>` - Generate migrations from schema changes (always specify `--name`)
 - `pnpm db:run-migrate` - Run migrations + Supabase SQL (auto-detects Supabase)
 - `pnpm db:studio` - Open Drizzle Studio (database GUI)
