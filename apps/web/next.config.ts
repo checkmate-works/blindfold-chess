@@ -10,7 +10,13 @@ const cspDirectives = [
   "img-src 'self' data: blob: *.supabase.co pagead2.googlesyndication.com *.doubleclick.net",
   "font-src 'self'",
   "connect-src 'self' www.google-analytics.com *.sentry.io *.ingest.sentry.io *.supabase.co pagead2.googlesyndication.com adservice.google.com",
-  'frame-src googleads.g.doubleclick.net tpc.googlesyndication.com ep2.adtrafficquality.google www.google.com www.chess.com lichess.org www.youtube-nocookie.com',
+  // Phase 13 (#83): `lichess.org` removed from frame-src — Lichess
+  // /embed/{id} URLs are now rendered by the self-hosted PGN replay UI
+  // (AttachedGameCard), not a Lichess iframe. Lichess game-export PGN
+  // fetches happen server-side and do not require frame-src; the
+  // server-side `fetch('https://lichess.org/...')` is unaffected by
+  // the page-CSP frame-src directive.
+  'frame-src googleads.g.doubleclick.net tpc.googlesyndication.com ep2.adtrafficquality.google www.google.com www.chess.com www.youtube-nocookie.com',
   "frame-ancestors 'none'",
 ];
 
