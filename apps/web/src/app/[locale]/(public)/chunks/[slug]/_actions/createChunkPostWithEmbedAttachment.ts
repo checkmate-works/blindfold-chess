@@ -6,7 +6,7 @@ import { eq } from 'drizzle-orm';
 import { authenticateAndCheckBan } from '@/lib/auth';
 import { getChunkBySlug } from '@/lib/chunks/queries';
 import { postGameEmbedAttachments, postGamePgnAttachments } from '@/lib/db';
-import { parseChesscomEmboardUrl, parseLichessEmbedUrl } from '@/lib/games/parse-embed-url';
+import { parseChesscomEmboardUrl } from '@/lib/games/parse-embed-url';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
 import { validateContent } from '@/lib/validations/content';
 
@@ -30,12 +30,12 @@ function embedErrorKey(reason: string): string {
 }
 
 /**
- * Server Action: create a chunk-topic post with an attached iframe embed
- * (chess.com emboard or Lichess embed).
+ * Server Action: create a chunk-topic post with an attached chess.com
+ * iframe embed.
  *
  * @description
- * Mirrors `createChunkPostWithAttachment` for the embed kind. Differences
- * vs the PGN flow:
+ * Mirrors `createChunkPostWithAttachment` for the chess.com /emboard
+ * kind. Differences vs the PGN flow:
  *   1. Input: `embedProvider` + `embedSourceUrl` from the form. The raw
  *      `embedSourceUrl` is re-parsed server-side; we NEVER trust a
  *      client-passed `embedId`. (SecurityEngineer baseline D8 #46.)
@@ -43,11 +43,8 @@ function embedErrorKey(reason: string): string {
  *      `(provider, embedId)` and persisted; the raw user input is
  *      discarded so a hostile-but-shaped-correct paste cannot land in
  *      the DB.
- *   3. Attribution:
- *        - Lichess: auto-derived as `(platform='lichess', path='/{embedId}')`
- *          per Q2.
- *        - chess.com: NULL/NULL per Q1 (emboard URL only, no separate
- *          attribution input in Phase B).
+ *   3. Attribution: NULL/NULL per Q1 (emboard URL only, no separate
+ *      attribution input in Phase B).
  *   4. PGN/embed exclusivity: a defensive query against
  *      `post_game_pgn_attachments` ensures we never associate an embed
  *      with a post that already has a PGN attachment. The post is
@@ -59,6 +56,15 @@ function embedErrorKey(reason: string): string {
  * `createChunkPostWithAttachment` (`RATE_LIMITS.createPostWithAttachment`)
  * — embed attachments share the same per-user budget as PGN attachments
  * because the hosting cost (iframe / DB row) is comparable.
+ *
+ * @design Phase 13 narrowing (#83)
+ *
+ * Lichess /embed/{id} URLs were originally handled here too, but #83
+ * (Phase 13) routed them through `createChunkPostWithAttachment`
+ * instead — the self-hosted PGN replay UI replaces the Lichess iframe
+ * for license + UX reasons. This action is therefore chess.com-only;
+ * the DB CHECK on `post_game_embed_attachments.embed_provider` is
+ * narrowed to `IN ('chesscom')` as the load-bearing invariant.
  */
 export async function createChunkPostWithEmbedAttachment(
   locale: string,
@@ -69,10 +75,11 @@ export async function createChunkPostWithEmbedAttachment(
   const rawProvider = formData.get('embedProvider');
   const rawSourceUrl = formData.get('embedSourceUrl');
 
-  const embedProvider =
-    typeof rawProvider === 'string' && (rawProvider === 'chesscom' || rawProvider === 'lichess')
-      ? rawProvider
-      : null;
+  // Phase 13 (#83): only `chesscom` is a valid embed provider now.
+  // The form may still surface `lichess` as an in-flight client value
+  // during a stale page load; we fail closed rather than treating it
+  // as chesscom.
+  const embedProvider = rawProvider === 'chesscom' ? 'chesscom' : null;
   const embedSourceUrl =
     typeof rawSourceUrl === 'string' && rawSourceUrl.trim().length > 0 ? rawSourceUrl.trim() : null;
 
@@ -98,10 +105,7 @@ export async function createChunkPostWithEmbedAttachment(
   // Server-side re-validation. We re-parse the raw URL here regardless
   // of what the client claimed — never trust a client-passed embed id.
   // (SecurityEngineer baseline D8 #46.)
-  const parsed =
-    embedProvider === 'chesscom'
-      ? parseChesscomEmboardUrl(embedSourceUrl)
-      : parseLichessEmbedUrl(embedSourceUrl);
+  const parsed = parseChesscomEmboardUrl(embedSourceUrl);
   if (!parsed.ok) {
     return { error: embedErrorKey(parsed.reason) };
   }
@@ -120,14 +124,11 @@ export async function createChunkPostWithEmbedAttachment(
   // though the row's `source_url` is audit-only and never rendered as a
   // src/href, having a canonical form makes downstream forensics
   // unambiguous.
-  const canonicalSourceUrl =
-    embedProvider === 'chesscom'
-      ? `https://www.chess.com/emboard?id=${embedId}`
-      : `https://lichess.org/embed/${embedId}`;
+  const canonicalSourceUrl = `https://www.chess.com/emboard?id=${embedId}`;
 
-  // Attribution columns. Lichess auto-derives, chess.com is NULL.
-  const attributionPlatform = embedProvider === 'lichess' ? 'lichess' : null;
-  const attributionPath = embedProvider === 'lichess' ? `/${embedId}` : null;
+  // Attribution columns. chess.com is NULL/NULL per Q1.
+  const attributionPlatform: string | null = null;
+  const attributionPath: string | null = null;
 
   return createPostBase({
     locale,

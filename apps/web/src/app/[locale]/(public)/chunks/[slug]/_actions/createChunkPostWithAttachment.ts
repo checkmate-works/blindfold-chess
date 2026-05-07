@@ -144,15 +144,28 @@ export async function createChunkPostWithAttachment(
   let attributionPath: string | null = null;
 
   switch (detected.kind) {
-    case 'lichess': {
-      const resolved = await resolveLichessAttachmentPgn(detected.gameId);
+    case 'lichess':
+    case 'lichess_embed': {
+      // Phase 13 (#83): Lichess /embed/{id} URLs share the same PGN
+      // auto-fetch path as plain Lichess game URLs. The embedId and
+      // gameId are both 8-character alnum strings drawn from the same
+      // namespace (`/^[A-Za-z0-9]{8}$/`), so the same
+      // `resolveLichessAttachmentPgn` call resolves both. The persisted
+      // `source_url` is normalized to `https://lichess.org/{id}` (the
+      // canonical game URL) regardless of which form the user pasted —
+      // the renderer rebuilds the attribution link from `sourceGameId`
+      // (D7 pattern), and the canonical form lets the
+      // `post_game_pgn_attachments` reuse cache (idx_..._source_game)
+      // hit across both URL shapes.
+      const lichessId = detected.kind === 'lichess' ? detected.gameId : detected.embedId;
+      const resolved = await resolveLichessAttachmentPgn(lichessId);
       if (!resolved.ok) {
         return { error: attachmentErrorKey(resolved.error) };
       }
       pgnText = resolved.pgn;
       sourceKind = 'lichess';
       canonicalUrl = resolved.canonicalUrl;
-      lichessGameId = detected.gameId;
+      lichessGameId = lichessId;
       break;
     }
     case 'pgn': {
@@ -193,16 +206,18 @@ export async function createChunkPostWithAttachment(
     case 'chesscom_invalid_pgn':
     case 'unknown':
       return { error: attachmentErrorKey(detected.kind) };
-    // Embed URL kinds (SPEC2 Phase B). The PGN-flavoured action does NOT
-    // accept embed URLs — those are routed to
-    // `createChunkPostWithEmbedAttachment` from the UI layer. If a user
-    // pastes an embed URL into the PGN textarea here we surface the
-    // generic "invalid pgn" error rather than silently dropping the
-    // input; the UI's `detectAttachmentInput` should have routed them
-    // away from this action before submit.
+    // Embed URL kinds. As of Phase 13 (#83), Lichess `lichess_embed`
+    // URLs are routed THROUGH this action via the merged `lichess` arm
+    // above (auto-fetch + post_game_pgn_attachments insert). chess.com
+    // embed URLs remain routed to `createChunkPostWithEmbedAttachment`
+    // from the UI layer; if a user pastes a chess.com embed URL into
+    // this action's input we surface the generic "invalid pgn" error
+    // rather than silently dropping it. The malformed-URL variants
+    // (lichess_embed_invalid_url, chesscom_embed_invalid_url) likewise
+    // fall through to the generic key — the UI's `detectAttachmentInput`
+    // should have surfaced a granular error before submit.
     case 'chesscom_embed':
     case 'chesscom_embed_invalid_url':
-    case 'lichess_embed':
     case 'lichess_embed_invalid_url':
       return { error: attachmentErrorKey('unknown') };
     default: {

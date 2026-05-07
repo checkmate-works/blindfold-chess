@@ -182,13 +182,16 @@ export function AttachmentInput({ onChange, onModeChange, onValidationStatusChan
       return { kind: 'empty' };
     }
 
+    // Phase 13 (#83): Lichess /embed/{id} URLs are routed through the
+    // PGN attachment action — the same flow as a plain Lichess game
+    // URL — so the user sees the self-hosted PGN replay UI instead of
+    // a Lichess iframe. The PGN action's `detectAttachmentInput`
+    // re-runs server-side and dispatches `lichess_embed` into the
+    // PGN auto-fetch path. The textarea/url-input value (the original
+    // embed URL) is forwarded as `attachment` and the embed-specific
+    // hidden fields are NOT emitted.
     if (detected.kind === 'lichess_embed') {
-      return {
-        kind: 'embed',
-        provider: 'lichess',
-        sourceUrl: detected.sourceUrl,
-        anonymize,
-      };
+      return { kind: 'pgn', pgn: activeValue, anonymize };
     }
     if (detected.kind === 'chesscom_embed') {
       return {
