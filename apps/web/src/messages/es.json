@@ -1308,6 +1308,21 @@
         "title": "¿Restablecer configuración?",
         "message": "Todos los ajustes se restablecerán y volverás a la pantalla del tutorial."
       },
+      "help": {
+        "label": "Ayuda",
+        "tutorial": {
+          "title": "Tutorial",
+          "description": "Si es tu primera vez, te recomendamos ver el tutorial."
+        },
+        "challenge": {
+          "title": "Modo Desafío",
+          "description": "Compite para ver cuántas respuestas correctas puedes dar dentro del límite de tiempo. Tu puntuación se registra y aparece en la tabla de clasificación."
+        },
+        "training": {
+          "title": "Modo Entrenamiento",
+          "description": "Practica a tu propio ritmo sin límite de tiempo. Las puntuaciones no se registran."
+        }
+      },
       "tutorial": {
         "title": "Tutorial",
         "steps": {

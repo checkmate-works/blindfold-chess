@@ -1308,6 +1308,21 @@
         "title": "Reset settings?",
         "message": "All settings will be reset and you will return to the tutorial screen."
       },
+      "help": {
+        "label": "Help",
+        "tutorial": {
+          "title": "Tutorial",
+          "description": "If this is your first time, we recommend viewing the tutorial."
+        },
+        "challenge": {
+          "title": "Challenge Mode",
+          "description": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
+        },
+        "training": {
+          "title": "Training Mode",
+          "description": "Practice at your own pace with no time limit. Scores are not recorded."
+        }
+      },
       "tutorial": {
         "title": "Tutorial",
         "steps": {
