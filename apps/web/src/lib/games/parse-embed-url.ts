@@ -5,7 +5,13 @@
  * @description
  * SPEC2 / Phase B accepts two embed URL shapes:
  *   - chess.com emboard: `https://www.chess.com/emboard?id={diagramId}`
- *   - Lichess embed:    `https://lichess.org/embed/{gameId}`
+ *   - Lichess embed:    `https://lichess.org/embed/{gameId}` or
+ *                       `https://lichess.org/embed/game/{gameId}`
+ *     (Lichess Share → Embed currently emits the `/embed/game/{id}`
+ *     shape; both forms reference the same canonical 8-char gameId,
+ *     so Phase 13 (#83) accepts both and normalizes to the same
+ *     `embedId` for downstream PGN auto-fetch via
+ *     `https://lichess.org/api/game/{id}/pgn`.)
  *
  * In both cases we decompose the URL at write time into a discriminator
  * (`'chesscom'` | `'lichess'`) plus the validated provider-specific
@@ -32,10 +38,12 @@
  *   are rejected with `invalid_path`. The `id` query parameter is the
  *   only piece of state we read; everything else (`extra`, tracking
  *   params, etc.) is silently ignored as long as `id` parses.
- * - Lichess: pathname must match `^/embed/{8-alnum}$` exactly. Trailing
- *   segments and missing IDs are rejected with `invalid_path`. Query
- *   strings are tolerated (we discard them — the renderer adds its own
- *   `?theme=auto&bg=auto`).
+ * - Lichess: pathname must match `^/embed(?:/game)?/{8-alnum}$` exactly
+ *   — i.e. either `/embed/{id}` (PGN-viewer widget shape) or
+ *   `/embed/game/{id}` (the shape Lichess Share → Embed currently
+ *   produces). Trailing segments and missing IDs are rejected with
+ *   `invalid_path`. Query strings are tolerated (we discard them — the
+ *   renderer adds its own `?theme=auto&bg=auto`).
  *
  * @design `embed_id` re-validation
  *
@@ -69,7 +77,12 @@ const CHESSCOM_EMBED_PATH = '/emboard';
 const CHESSCOM_EMBED_ID_RE = /^[0-9]{1,15}$/;
 
 const LICHESS_HOSTNAME = 'lichess.org';
-const LICHESS_EMBED_PATH_RE = /^\/embed\/([A-Za-z0-9]{8})$/;
+// Accepts both `/embed/{8-alnum}` (PGN-viewer widget URL) and
+// `/embed/game/{8-alnum}` (the shape Lichess Share → Embed currently
+// emits). Phase 13 (#83) routes both to the same PGN auto-fetch path
+// keyed by the captured 8-char gameId, so downstream code does not
+// need to track which shape the user pasted.
+const LICHESS_EMBED_PATH_RE = /^\/embed(?:\/game)?\/([A-Za-z0-9]{8})$/;
 /**
  * Mirrors `LICHESS_GAME_ID_RE` in `./lichess.ts`. Defined locally rather
  * than imported so the embed parser does not drag the server-only
