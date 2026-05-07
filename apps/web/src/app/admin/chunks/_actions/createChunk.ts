@@ -4,11 +4,11 @@ import { revalidatePath } from 'next/cache';
 
 import type { MutationResult } from '@/app/admin/_lib/action-factories';
 import { requireAdmin } from '@/app/admin/_lib/auth';
-import { eq } from 'drizzle-orm';
 
+import { buildChunkMutationValues, verifyChunkAuthor } from '@/lib/chunks/mutation-helpers';
 import type { ChunkMutationData } from '@/lib/chunks/validation';
 import { validateChunkMutationData } from '@/lib/chunks/validation';
-import { chunks, db, profiles } from '@/lib/db';
+import { chunks, db } from '@/lib/db';
 
 // NOTE: this action does not use `adminMutationGuard` / `mutationSuccess`
 // factories because it needs to validate the user_id from the form and
@@ -27,29 +27,14 @@ export async function createChunk(data: ChunkMutationData): Promise<MutationResu
     return { error: validationError };
   }
 
-  // Verify the specified user exists in the profiles table.
-  const [profile] = await db
-    .select({ id: profiles.id })
-    .from(profiles)
-    .where(eq(profiles.id, data.userId.trim()))
-    .limit(1);
-
-  if (!profile) {
-    return { error: 'User not found' };
+  const authorError = await verifyChunkAuthor(data.userId);
+  if (authorError) {
+    return authorError;
   }
 
   const [chunk] = await db
     .insert(chunks)
-    .values({
-      representativeFen: data.representativeFen.trim(),
-      title: data.title.trim(),
-      slug: data.slug.trim(),
-      description: data.description?.trim() || null,
-      // The admin specifies the author via the form — this allows creating
-      // chunks on behalf of any user. The form-supplied userId is validated
-      // against the profiles table above.
-      userId: data.userId.trim(),
-    })
+    .values(buildChunkMutationValues(data))
     .returning({ id: chunks.id });
 
   revalidatePath('/admin/chunks');
