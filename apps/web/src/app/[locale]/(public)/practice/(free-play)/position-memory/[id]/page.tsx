@@ -7,6 +7,7 @@ import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import { FaPlusCircle } from 'react-icons/fa';
+import { FiEdit2 } from 'react-icons/fi';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getLinkedChunksForPosition } from '@/lib/chunks/queries';
@@ -157,8 +158,9 @@ export default async function PositionDetailPage({ params, searchParams }: Props
             <>
               <Link
                 href={`/practice/position-memory/${position.id}/edit`}
-                className="hover:text-foreground transition-colors"
+                className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-muted-foreground hover:border-foreground/20 hover:text-foreground transition-colors"
               >
+                <FiEdit2 className="h-3 w-3" aria-hidden />
                 {t('detail.editAction')}
               </Link>
               <DeletePositionButton positionId={position.id} locale={locale} />

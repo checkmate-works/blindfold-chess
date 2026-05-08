@@ -15,6 +15,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
+import { FiEdit2 } from 'react-icons/fi';
 
 import { getAuthenticatedUser } from '@/lib/auth';
 import { getPaginationParams } from '@/lib/pagination';
@@ -23,6 +24,7 @@ import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 import { truncate } from '@/lib/text';
 
 import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
+import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
@@ -82,51 +84,43 @@ export default async function PositionMemoryProblemsPage({ params, searchParams 
       ) : (
         <div className="space-y-3">
           {rows.map(({ position }) => {
+            const detailHref = `/practice/position-memory/${position.id}`;
+            const editHref = `${detailHref}/edit`;
             const descriptionExcerpt = truncate(position.description);
 
             return (
-              <div
+              <ActivityCard
                 key={position.id}
-                className="flex gap-4 p-4 rounded-md border border-border bg-card hover:border-foreground/20 transition-colors"
-              >
-                <Link
-                  href={`/practice/position-memory/${position.id}`}
-                  locale={locale}
-                  className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0"
-                >
-                  <ThemedBoardThumbnail fen={position.fen} className="w-full h-full" />
-                </Link>
-                <div className="flex-1 min-w-0 flex flex-col gap-1">
+                variant="card"
+                href={detailHref}
+                locale={locale}
+                thumbnail={<ThemedBoardThumbnail fen={position.fen} className="w-full h-full" />}
+                author={null}
+                permalink={
+                  <time dateTime={position.createdAt.toISOString()}>
+                    {new Date(position.createdAt).toLocaleDateString(locale, {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                    })}
+                  </time>
+                }
+                footer={
                   <Link
-                    href={`/practice/position-memory/${position.id}`}
+                    href={editHref}
                     locale={locale}
-                    className="font-medium text-foreground truncate hover:underline"
+                    className="mt-2 inline-flex items-center gap-1 self-start rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:border-foreground/20 hover:text-foreground transition-colors"
                   >
-                    {position.title}
+                    <FiEdit2 className="h-3 w-3" aria-hidden />
+                    {t('editAction')}
                   </Link>
-                  {descriptionExcerpt && (
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {descriptionExcerpt}
-                    </p>
-                  )}
-                  <div className="flex items-center justify-between gap-2 mt-auto">
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(position.createdAt).toLocaleDateString(locale, {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                      })}
-                    </p>
-                    <Link
-                      href={`/practice/position-memory/${position.id}/edit`}
-                      locale={locale}
-                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {t('editAction')}
-                    </Link>
-                  </div>
-                </div>
-              </div>
+                }
+              >
+                <h3 className="font-medium text-foreground truncate">{position.title}</h3>
+                {descriptionExcerpt && (
+                  <p className="text-sm text-muted-foreground line-clamp-2">{descriptionExcerpt}</p>
+                )}
+              </ActivityCard>
             );
           })}
         </div>
