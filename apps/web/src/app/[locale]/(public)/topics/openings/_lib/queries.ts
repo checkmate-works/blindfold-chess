@@ -1,3 +1,5 @@
+import { cache } from 'react';
+
 import { and, count, desc, eq, inArray, isNull } from 'drizzle-orm';
 
 import { chessOpenings, db, profiles, topicPostRatings, topicPosts } from '@/lib/db';
@@ -85,41 +87,43 @@ export type OpeningPostWithReplyMeta = OpeningPostWithAuthor & {
 
 /**
  * Get a single opening post by ID, verifying it belongs to the given slug.
+ *
+ * Wrapped with `React.cache` so the metadata generator and the page
+ * component dedupe to a single lookup per request on the post detail page.
  */
-export async function getOpeningPostById(
-  postId: string,
-  slug: string
-): Promise<OpeningPostWithAuthor | null> {
-  const results = await db
-    .select({
-      post: topicPosts,
-      author: authorSelect,
-      rating: ratingSelect,
-    })
-    .from(topicPosts)
-    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
-    .leftJoin(topicPostRatings, eq(topicPosts.id, topicPostRatings.postId))
-    .where(
-      and(
-        eq(topicPosts.id, postId),
-        eq(topicPosts.topicType, 'opening'),
-        eq(topicPosts.topicKey, slug),
-        isNull(topicPosts.deletedAt)
+export const getOpeningPostById = cache(
+  async (postId: string, slug: string): Promise<OpeningPostWithAuthor | null> => {
+    const results = await db
+      .select({
+        post: topicPosts,
+        author: authorSelect,
+        rating: ratingSelect,
+      })
+      .from(topicPosts)
+      .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+      .leftJoin(topicPostRatings, eq(topicPosts.id, topicPostRatings.postId))
+      .where(
+        and(
+          eq(topicPosts.id, postId),
+          eq(topicPosts.topicType, 'opening'),
+          eq(topicPosts.topicKey, slug),
+          isNull(topicPosts.deletedAt)
+        )
       )
-    )
-    .limit(1);
+      .limit(1);
 
-  if (results.length === 0) {
-    return null;
+    if (results.length === 0) {
+      return null;
+    }
+
+    const r = results[0];
+    return {
+      ...r.post,
+      author: r.author,
+      rating: normalizeRating(r.rating),
+    };
   }
-
-  const r = results[0];
-  return {
-    ...r.post,
-    author: r.author,
-    rating: normalizeRating(r.rating),
-  };
-}
+);
 
 /**
  * Get top-level posts for an opening with reply metadata, sorted by the given mode.

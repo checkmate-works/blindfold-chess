@@ -1,3 +1,5 @@
+import { cache } from 'react';
+
 import { and, asc, count, desc, eq, isNull } from 'drizzle-orm';
 
 import { db, profiles, topicPosts } from '@/lib/db';
@@ -58,38 +60,44 @@ export async function getTopLevelPostsByTopicKey(
 /**
  * Get a single post by ID, verifying it belongs to the given topicType + topicKey.
  * Base function shared by squares and openings.
+ *
+ * Wrapped with `React.cache` so the post-detail metadata generator and
+ * page component dedupe to a single lookup per request, both for squares
+ * (via `getPostById`) and chunks (called directly).
  */
-export async function getPostByIdAndTopicKey(
-  postId: string,
-  topicType: TopicType,
-  topicKey: string
-): Promise<TopicPostWithAuthor | null> {
-  const results = await db
-    .select({
-      post: topicPosts,
-      author: authorSelect,
-    })
-    .from(topicPosts)
-    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
-    .where(
-      and(
-        eq(topicPosts.id, postId),
-        eq(topicPosts.topicType, topicType),
-        eq(topicPosts.topicKey, topicKey),
-        isNull(topicPosts.deletedAt)
+export const getPostByIdAndTopicKey = cache(
+  async (
+    postId: string,
+    topicType: TopicType,
+    topicKey: string
+  ): Promise<TopicPostWithAuthor | null> => {
+    const results = await db
+      .select({
+        post: topicPosts,
+        author: authorSelect,
+      })
+      .from(topicPosts)
+      .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
+      .where(
+        and(
+          eq(topicPosts.id, postId),
+          eq(topicPosts.topicType, topicType),
+          eq(topicPosts.topicKey, topicKey),
+          isNull(topicPosts.deletedAt)
+        )
       )
-    )
-    .limit(1);
+      .limit(1);
 
-  if (results.length === 0) {
-    return null;
+    if (results.length === 0) {
+      return null;
+    }
+
+    return {
+      ...results[0].post,
+      author: results[0].author,
+    };
   }
-
-  return {
-    ...results[0].post,
-    author: results[0].author,
-  };
-}
+);
 
 /**
  * Get the most recent top-level posts for a specific topic type with reply metadata.

@@ -141,20 +141,22 @@ export async function getPublishedAnnouncementCount(): Promise<number> {
  * only emitted for locales that actually have a translation. Mirrors the
  * shape of `getPublishedArticle`.
  */
-export async function getPublishedAnnouncement(
-  slug: string,
-  locale: string
-): Promise<{ announcement: Announcement; availableLocales: string[] } | null> {
-  const results = await db
-    .select()
-    .from(announcements)
-    .where(and(eq(announcements.slug, slug), eq(announcements.status, 'published')));
+export const getPublishedAnnouncement = cache(
+  async (
+    slug: string,
+    locale: string
+  ): Promise<{ announcement: Announcement; availableLocales: string[] } | null> => {
+    const results = await db
+      .select()
+      .from(announcements)
+      .where(and(eq(announcements.slug, slug), eq(announcements.status, 'published')));
 
-  if (results.length === 0) return null;
+    if (results.length === 0) return null;
 
-  const availableLocales = results.map((r) => r.locale);
-  return { announcement: pickByLocale(results, locale), availableLocales };
-}
+    const availableLocales = results.map((r) => r.locale);
+    return { announcement: pickByLocale(results, locale), availableLocales };
+  }
+);
 
 /**
  * Get the latest published public announcement for the top banner.

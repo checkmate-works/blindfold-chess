@@ -1,3 +1,5 @@
+import { cache } from 'react';
+
 import { unstable_cache } from 'next/cache';
 
 import { and, asc, eq, isNull } from 'drizzle-orm';
@@ -93,8 +95,12 @@ export function buildTree(openings: ChessOpening[]): OpeningWithChildren[] {
 /**
  * Get a single opening by its slug.
  * Returns null if the slug does not exist.
+ *
+ * Wrapped with `React.cache` so the metadata generator and the page
+ * component dedupe to a single lookup per request (same pattern as
+ * `getProfileByUsername`, `getPublishedArticle`, etc.).
  */
-export async function getOpeningBySlug(slug: string): Promise<ChessOpening | null> {
+export const getOpeningBySlug = cache(async (slug: string): Promise<ChessOpening | null> => {
   const results = await db
     .select()
     .from(chessOpenings)
@@ -102,7 +108,7 @@ export async function getOpeningBySlug(slug: string): Promise<ChessOpening | nul
     .limit(1);
 
   return results[0] ?? null;
-}
+});
 
 /**
  * Check whether a slug exists in the chess_openings table.
