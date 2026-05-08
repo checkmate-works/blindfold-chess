@@ -147,13 +147,26 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
           toggleLikeAction={toggleLike}
           i18nNamespace="practice.puzzle"
         />
-        <time dateTime={position.createdAt.toISOString()}>
-          {position.createdAt.toLocaleDateString(locale, {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          })}
-        </time>
+        <div className="flex items-center gap-4">
+          {currentUser?.id === position.userId && (
+            <Link
+              href={`/practice/puzzle/${position.id}/edit`}
+              className="hover:text-foreground transition-colors"
+            >
+              {t('detail.editAction')}
+            </Link>
+          )}
+          <time dateTime={position.createdAt.toISOString()}>
+            {position.createdAt.toLocaleDateString(locale, {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
+          </time>
+          {position.updatedAt.getTime() - position.createdAt.getTime() > 1000 && (
+            <span className="text-muted-foreground">{t('detail.edited')}</span>
+          )}
+        </div>
       </div>
 
       <div className="pt-2">
