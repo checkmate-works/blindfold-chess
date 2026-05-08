@@ -50,43 +50,18 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 import { Link } from '@/i18n/routing';
-import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
 
 import { getAuthenticatedUser } from '@/lib/auth';
-import { getUserSubscription } from '@/lib/billing/subscription';
-import { BENEFIT_ACTIVE_STATUSES } from '@/lib/billing/subscription-constants';
-import { db, positions, topicPosts, userGrants } from '@/lib/db';
-import { type GrantType, isGrantType } from '@/lib/db/data/grant-types';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
-import { resolveGrantSourceMeta } from './_lib/source';
-
-type RowStatus = 'active' | 'upcoming' | 'expired';
-
-type EntitlementRow = {
-  id: string;
-  sourceLabel: string;
-  /**
-   * Locale-prefixed absolute path to the post / position that triggered this
-   * grant, when resolvable. Null for the subscription row, admin_manual
-   * grants, and grants whose source row could not be looked up (e.g., the
-   * post was hard-deleted). When non-null, the source label is rendered as
-   * a link so the user can confirm "which submission earned me this".
-   */
-  sourceHref: string | null;
-  startsAt: Date;
-  expiresAt: Date;
-  status: RowStatus;
-};
-
-function classify(now: Date, startsAt: Date, expiresAt: Date): RowStatus {
-  if (expiresAt <= now) return 'expired';
-  if (startsAt > now) return 'upcoming';
-  return 'active';
-}
+import {
+  type EntitlementSourceLabelKey,
+  type RowStatus,
+  getBenefitsPageData,
+} from './_lib/getBenefitsPageData';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
@@ -105,126 +80,13 @@ export default async function BenefitsPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'MypageBenefits' });
 
   const user = await getAuthenticatedUser();
-
-  const [subscription, allGrants] = await Promise.all([
-    getUserSubscription(user.id),
-    db
-      .select()
-      .from(userGrants)
-      .where(
-        and(
-          eq(userGrants.userId, user.id),
-          eq(userGrants.benefitType, 'ad_free'),
-          isNull(userGrants.revokedAt)
-        )
-      )
-      .orderBy(desc(userGrants.startsAt)),
-  ]);
-
-  const now = new Date();
-
-  // Subscription confers ad_free if status is in BENEFIT_ACTIVE_STATUSES
-  // and the period has not yet ended.
-  const subscriptionActive =
-    !!subscription &&
-    (BENEFIT_ACTIVE_STATUSES as readonly string[]).includes(subscription.status) &&
-    new Date(subscription.currentPeriodEnd) > now;
-
-  const subscriptionExpiresAt = subscriptionActive ? new Date(subscription.currentPeriodEnd) : null;
-
-  // Find latest expiresAt among currently-active grants.
-  const activeGrants = allGrants.filter(
-    (g) => new Date(g.startsAt) <= now && new Date(g.expiresAt) > now
-  );
-  const latestGrantExpiresAt = activeGrants.reduce<Date | null>((acc, g) => {
-    const exp = new Date(g.expiresAt);
-    return !acc || exp > acc ? exp : acc;
-  }, null);
-
-  // Aggregate latest expiresAt across both sources.
-  const candidates: Date[] = [];
-  if (subscriptionExpiresAt) candidates.push(subscriptionExpiresAt);
-  if (latestGrantExpiresAt) candidates.push(latestGrantExpiresAt);
-  const latestExpiresAt = candidates.length ? candidates.reduce((a, b) => (a > b ? a : b)) : null;
-
-  const adFreeActive = latestExpiresAt !== null;
+  const { adFreeActive, latestExpiresAt, entitlementRows, hasMoreGrants } =
+    await getBenefitsPageData(user.id);
 
   const dateFmt = (d: Date) => d.toLocaleDateString(locale);
 
-  // Resolve each visible grant's source row (topic_post or position) so the
-  // table can show "which submission earned me this" as a link. Batched into
-  // two IN queries to avoid N+1, scoped to the 5 rows actually rendered.
-  // Hard-deleted source rows fall back to a non-link label rather than 404ing.
-  const recentGrants = allGrants.slice(0, 5);
-  const topicPostIds = recentGrants
-    .filter((g) => g.sourceType === 'topic_post' && g.sourceId)
-    .map((g) => g.sourceId as string);
-  const positionIds = recentGrants
-    .filter((g) => g.sourceType === 'position' && g.sourceId)
-    .map((g) => g.sourceId as string);
-
-  const [topicPostRows, positionRows] = await Promise.all([
-    topicPostIds.length
-      ? db
-          .select({
-            id: topicPosts.id,
-            topicType: topicPosts.topicType,
-            topicKey: topicPosts.topicKey,
-          })
-          .from(topicPosts)
-          .where(inArray(topicPosts.id, topicPostIds))
-      : Promise.resolve([] as Array<{ id: string; topicType: string; topicKey: string }>),
-    positionIds.length
-      ? db
-          .select({ id: positions.id, type: positions.type })
-          .from(positions)
-          .where(inArray(positions.id, positionIds))
-      : Promise.resolve([] as Array<{ id: string; type: string }>),
-  ]);
-
-  const topicPostMap = new Map(topicPostRows.map((r) => [r.id, r]));
-  const positionMap = new Map(positionRows.map((r) => [r.id, r]));
-
-  // Build a single unified entitlement list across both sources. Subscription
-  // and each grant share the same row shape (sourceLabel / period / status),
-  // which removes the visual asymmetry of the previous two-section layout.
-  // Subscription is only included when active — matching the prior behavior
-  // of the (now-removed) per-source subscription card. Grants are kept
-  // capped at 5 like before; the "View full history" link still routes to
-  // the grant-only audit page, so subscription is not counted toward the cap.
-  const entitlementRows: EntitlementRow[] = [];
-  if (subscriptionActive && subscription && subscriptionExpiresAt) {
-    entitlementRows.push({
-      id: 'subscription',
-      sourceLabel: t('adFree.sourceSubscription'),
-      sourceHref: null,
-      startsAt: new Date(subscription.currentPeriodStart),
-      expiresAt: subscriptionExpiresAt,
-      status: 'active',
-    });
-  }
-  for (const g of recentGrants) {
-    const startsAt = new Date(g.startsAt);
-    const expiresAt = new Date(g.expiresAt);
-    const grantTypeKey: GrantType = isGrantType(g.grantType) ? g.grantType : 'admin_manual';
-
-    const { labelKey, href } = resolveGrantSourceMeta(
-      { grantType: grantTypeKey, sourceType: g.sourceType, sourceId: g.sourceId },
-      topicPostMap,
-      positionMap
-    );
-
-    entitlementRows.push({
-      id: g.id,
-      sourceLabel: t(`grantTypeLabel.${labelKey}`),
-      sourceHref: href,
-      startsAt,
-      expiresAt,
-      status: classify(now, startsAt, expiresAt),
-    });
-  }
-  entitlementRows.sort((a, b) => b.startsAt.getTime() - a.startsAt.getTime());
-  const hasMoreGrants = allGrants.length > 5;
+  const sourceLabel = (key: EntitlementSourceLabelKey): string =>
+    key === 'subscription' ? t('adFree.sourceSubscription') : t(`grantTypeLabel.${key}`);
 
   const statusLabel = (status: RowStatus) => {
     switch (status) {
@@ -315,10 +177,10 @@ export default async function BenefitsPage({ params }: Props) {
                             locale={locale}
                             className="text-link-primary hover:underline"
                           >
-                            {row.sourceLabel}
+                            {sourceLabel(row.sourceLabelKey)}
                           </Link>
                         ) : (
-                          row.sourceLabel
+                          sourceLabel(row.sourceLabelKey)
                         )}
                       </td>
                       <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
