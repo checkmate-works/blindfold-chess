@@ -1017,11 +1017,13 @@
         "editAction": "編集"
       },
       "delete": {
-        "button": "削除",
+        "button": "問題を削除",
         "confirmTitle": "問題を削除",
         "confirmMessage": "この問題を削除しますか？この操作は元に戻せません。",
         "confirm": "削除",
-        "cancel": "キャンセル"
+        "cancel": "キャンセル",
+        "sectionTitle": "危険な操作",
+        "sectionDescription": "問題を削除すると元に戻せません。紐付いているコメントやいいねも一緒に失われ、復旧はできません。"
       }
     },
     "puzzle": {
@@ -1113,6 +1115,15 @@
         "noPieces": "なし",
         "edited": "（編集済み）",
         "editAction": "編集"
+      },
+      "delete": {
+        "button": "パズルを削除",
+        "confirmTitle": "パズルを削除",
+        "confirmMessage": "このパズルを削除しますか？コメントや解答データも一緒に失われ、復旧はできません。この操作は取り消せません。",
+        "confirm": "削除",
+        "cancel": "キャンセル",
+        "sectionTitle": "危険な操作",
+        "sectionDescription": "パズルを削除すると元に戻せません。紐付いているコメントは文脈を失い、復旧できなくなります。"
       },
       "session": {
         "title": "挑戦",
@@ -2511,7 +2522,8 @@
     "positionCreated": "問題を作成しました",
     "positionDeleted": "問題を削除しました",
     "positionUpdated": "変更を保存しました",
-    "puzzleUpdated": "変更を保存しました"
+    "puzzleUpdated": "変更を保存しました",
+    "puzzleDeleted": "パズルを削除しました"
   },
   "setupUsername": {
     "title": "アカウント登録",

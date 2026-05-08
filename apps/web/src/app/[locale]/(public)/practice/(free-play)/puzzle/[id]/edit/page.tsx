@@ -8,6 +8,7 @@ import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { DeletePuzzleButton } from '../../_components/DeletePuzzleButton';
 import { EditPuzzleForm } from '../../_components/EditPuzzleForm';
 import { loadPuzzleWithSolutions } from '../../_lib/load-puzzle';
 
@@ -72,6 +73,17 @@ export default async function EditPuzzlePage({ params }: Props) {
           solutionMoves,
         }}
       />
+
+      <section
+        aria-labelledby="danger-zone-heading"
+        className="mt-12 rounded-md border border-destructive/40 p-4 space-y-3"
+      >
+        <h2 id="danger-zone-heading" className="text-sm font-semibold text-destructive">
+          {t('delete.sectionTitle')}
+        </h2>
+        <p className="text-sm text-muted-foreground">{t('delete.sectionDescription')}</p>
+        <DeletePuzzleButton puzzleId={position.id} locale={locale} />
+      </section>
     </PageLayout>
   );
 }

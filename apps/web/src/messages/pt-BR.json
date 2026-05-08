@@ -1021,7 +1021,9 @@
         "confirmTitle": "Excluir Problema",
         "confirmMessage": "Tem certeza de que deseja excluir este problema? Esta ação não pode ser desfeita.",
         "confirm": "Excluir",
-        "cancel": "Cancelar"
+        "cancel": "Cancelar",
+        "sectionTitle": "Zona de perigo",
+        "sectionDescription": "A exclusão deste problema é permanente. Os comentários e curtidas vinculados serão removidos e não poderão ser recuperados."
       }
     },
     "puzzle": {
@@ -1113,6 +1115,15 @@
         "noPieces": "Nenhuma",
         "edited": "(editado)",
         "editAction": "Editar"
+      },
+      "delete": {
+        "button": "Excluir Puzzle",
+        "confirmTitle": "Excluir Puzzle",
+        "confirmMessage": "Tem certeza de que deseja excluir este puzzle? Os comentários e os dados da solução também serão removidos. Esta ação não pode ser desfeita.",
+        "confirm": "Excluir",
+        "cancel": "Cancelar",
+        "sectionTitle": "Zona de perigo",
+        "sectionDescription": "A exclusão deste puzzle é permanente — os comentários vinculados perderão o contexto e não poderão ser recuperados."
       },
       "result": {
         "title": "Resultado do Puzzle",
@@ -2511,7 +2522,8 @@
     "positionCreated": "Posição criada com sucesso",
     "positionDeleted": "Problema excluído",
     "positionUpdated": "Alterações salvas",
-    "puzzleUpdated": "Alterações salvas"
+    "puzzleUpdated": "Alterações salvas",
+    "puzzleDeleted": "Puzzle excluído"
   },
   "setupUsername": {
     "title": "Crie sua Conta",

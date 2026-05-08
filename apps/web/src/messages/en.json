@@ -1021,7 +1021,9 @@
         "confirmTitle": "Delete Problem",
         "confirmMessage": "Are you sure you want to delete this problem? This action cannot be undone.",
         "confirm": "Delete",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "sectionTitle": "Danger zone",
+        "sectionDescription": "Removing this problem is permanent. Comments and likes attached to it will be removed and cannot be recovered."
       }
     },
     "puzzle": {
@@ -1113,6 +1115,15 @@
         "noPieces": "None",
         "edited": "(edited)",
         "editAction": "Edit"
+      },
+      "delete": {
+        "button": "Delete Puzzle",
+        "confirmTitle": "Delete Puzzle",
+        "confirmMessage": "Are you sure you want to delete this puzzle? Comments and solution data will be removed along with it. This action cannot be undone.",
+        "confirm": "Delete",
+        "cancel": "Cancel",
+        "sectionTitle": "Danger zone",
+        "sectionDescription": "Removing this puzzle is permanent — comments tied to it will lose their context and cannot be recovered."
       },
       "session": {
         "title": "Solve",
@@ -2511,7 +2522,8 @@
     "positionCreated": "Position created successfully",
     "positionDeleted": "Problem deleted",
     "positionUpdated": "Changes saved",
-    "puzzleUpdated": "Changes saved"
+    "puzzleUpdated": "Changes saved",
+    "puzzleDeleted": "Puzzle deleted"
   },
   "setupUsername": {
     "title": "Create Your Account",
