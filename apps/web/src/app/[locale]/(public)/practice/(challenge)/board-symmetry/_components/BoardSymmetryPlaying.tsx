@@ -16,8 +16,6 @@ import { SectionTitle } from '@/app/[locale]/_components';
 import { CoordinateInput } from '@/app/[locale]/_components/CoordinateInput';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
-export type { BoardSymmetryProblem, SymmetryType } from '@blindfold-chess/features/board-symmetry';
-
 type Props = {
   problem: BoardSymmetryProblem;
   selectedFile: string | null;
