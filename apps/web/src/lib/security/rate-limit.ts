@@ -70,7 +70,9 @@ export const RATE_LIMITS = {
   },
   createPosition: { action: 'create_position', maxAttempts: 10, windowMs: 3_600_000 },
   deletePosition: { action: 'delete_position', maxAttempts: 10, windowMs: 3_600_000 },
+  updatePosition: { action: 'update_position', maxAttempts: 20, windowMs: 3_600_000 },
   createPuzzle: { action: 'create_puzzle', maxAttempts: 10, windowMs: 3_600_000 },
+  updatePuzzle: { action: 'update_puzzle', maxAttempts: 20, windowMs: 3_600_000 },
 } as const;
 
 /**
