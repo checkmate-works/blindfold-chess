@@ -2,6 +2,11 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { EMPTY_ADMIN_USER_FILTERS } from './filters';
 
+// `population.ts` now pulls in `@/lib/supabase/list-all-auth-users` →
+// `@/lib/supabase/admin` → `server-only`. The package is a no-op import
+// guard for production; in tests it throws when loaded outside an RSC.
+vi.mock('server-only', () => ({}));
+
 /**
  * Tests for fetchUsersPageData totalCount integration.
  *
