@@ -58,22 +58,11 @@ export async function getOpeningsAsTreeByFirstMoveSquare(
 }
 
 /**
- * Get children of a specific opening by its slug.
- */
-export async function getChildOpenings(slug: string): Promise<ChessOpening[]> {
-  return db
-    .select()
-    .from(chessOpenings)
-    .where(eq(chessOpenings.parentSlug, slug))
-    .orderBy(asc(chessOpenings.sortOrder));
-}
-
-/**
  * Build a tree from a flat list of openings.
  * Roots are openings with parentSlug === null.
  * Children are grouped under their parent.
  */
-export function buildTree(openings: ChessOpening[]): OpeningWithChildren[] {
+function buildTree(openings: ChessOpening[]): OpeningWithChildren[] {
   const childrenByParent = new Map<string, ChessOpening[]>();
 
   for (const opening of openings) {
