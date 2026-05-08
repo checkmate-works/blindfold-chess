@@ -1,9 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-
-import { searchUsers } from '../_actions/searchUsers';
 import type { ProfileStatus, SearchedUser } from '../_actions/searchUsers';
+import { useUserSearchFilters } from './useUserSearchFilters';
+import { useUserSearchResults } from './useUserSearchResults';
 
 type UseUserSearchResult = {
   // filter state
@@ -35,92 +34,37 @@ type UseUserSearchResult = {
  * Owns the filter form state and search result state for the bulk grant
  * "Search Users" flow. Selection is auto-populated to all found users on
  * a successful search.
+ *
+ * Implementation: thin orchestrator that composes `useUserSearchFilters`
+ * (filter form) and `useUserSearchResults` (rows + selection + request
+ * lifecycle). Each sub-hook owns one cohesive slice of state and can be
+ * tested independently. The flat return shape is preserved so consumers
+ * (currently only `BulkGrantForm`) do not have to change.
  */
 export function useUserSearch(): UseUserSearchResult {
-  const [createdFrom, setCreatedFrom] = useState('');
-  const [createdTo, setCreatedTo] = useState('');
-  const [lastSignInFrom, setLastSignInFrom] = useState('');
-  const [lastSignInTo, setLastSignInTo] = useState('');
-  const [profileStatus, setProfileStatus] = useState<ProfileStatus>('all');
-
-  const [users, setUsers] = useState<SearchedUser[]>([]);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [searching, setSearching] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleSearch() {
-    setSearching(true);
-    setError(null);
-    setHasSearched(true);
-
-    const result = await searchUsers({
-      createdFrom: createdFrom || undefined,
-      createdTo: createdTo || undefined,
-      lastSignInFrom: lastSignInFrom || undefined,
-      lastSignInTo: lastSignInTo || undefined,
-      profileStatus,
-    });
-
-    setSearching(false);
-
-    if ('error' in result) {
-      setError(result.error);
-      setUsers([]);
-      setSelectedIds(new Set());
-      return;
-    }
-
-    setUsers(result.users);
-    setSelectedIds(new Set(result.users.map((u) => u.userId)));
-  }
-
-  function toggleUser(userId: string) {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(userId)) {
-        next.delete(userId);
-      } else {
-        next.add(userId);
-      }
-      return next;
-    });
-  }
-
-  function selectAll() {
-    setSelectedIds(new Set(users.map((u) => u.userId)));
-  }
-
-  function deselectAll() {
-    setSelectedIds(new Set());
-  }
-
-  function reset() {
-    setUsers([]);
-    setSelectedIds(new Set());
-    setHasSearched(false);
-  }
+  const filters = useUserSearchFilters();
+  const results = useUserSearchResults();
 
   return {
-    createdFrom,
-    createdTo,
-    lastSignInFrom,
-    lastSignInTo,
-    profileStatus,
-    setCreatedFrom,
-    setCreatedTo,
-    setLastSignInFrom,
-    setLastSignInTo,
-    setProfileStatus,
-    users,
-    selectedIds,
-    searching,
-    hasSearched,
-    error,
-    handleSearch,
-    toggleUser,
-    selectAll,
-    deselectAll,
-    reset,
+    createdFrom: filters.createdFrom,
+    createdTo: filters.createdTo,
+    lastSignInFrom: filters.lastSignInFrom,
+    lastSignInTo: filters.lastSignInTo,
+    profileStatus: filters.profileStatus,
+    setCreatedFrom: filters.setCreatedFrom,
+    setCreatedTo: filters.setCreatedTo,
+    setLastSignInFrom: filters.setLastSignInFrom,
+    setLastSignInTo: filters.setLastSignInTo,
+    setProfileStatus: filters.setProfileStatus,
+    users: results.users,
+    selectedIds: results.selectedIds,
+    searching: results.searching,
+    hasSearched: results.hasSearched,
+    error: results.error,
+    handleSearch: () => results.runSearch(filters),
+    toggleUser: results.toggleUser,
+    selectAll: results.selectAll,
+    deselectAll: results.deselectAll,
+    reset: results.reset,
   };
 }
