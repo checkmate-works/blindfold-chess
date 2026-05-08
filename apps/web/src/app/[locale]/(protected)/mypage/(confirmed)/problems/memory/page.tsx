@@ -18,17 +18,19 @@ import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 import { FiEdit2 } from 'react-icons/fi';
 
 import { getAuthenticatedUser } from '@/lib/auth';
+import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
 import { getPaginationParams } from '@/lib/pagination';
+import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
 import { countPositions, listPositionsWithProfile } from '@/lib/positions/queries';
-import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
-import { truncate } from '@/lib/text';
 
+import { PositionListCard } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionListCard';
+import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_actions/toggleLike';
 import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
-import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
 const PAGE_SIZE = 12;
+const FOOTER_NAMESPACE = 'practice.positionMemory';
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -50,6 +52,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function PositionMemoryProblemsPage({ params, searchParams }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'MypageProblems' });
+  const tFooter = await getTranslations({ locale, namespace: FOOTER_NAMESPACE });
 
   const user = await getAuthenticatedUser();
 
@@ -62,6 +65,14 @@ export default async function PositionMemoryProblemsPage({ params, searchParams 
     PAGE_SIZE
   );
   const rows = await listPositionsWithProfile({ type: 'memory', userId: user.id, limit, offset });
+
+  const positionIds = rows.map((r) => r.position.id);
+  const [likeMetaMap, replyMetaMap] = await Promise.all([
+    getPositionLikeMetaMap(positionIds, user.id),
+    getReplyMetaMap('position_memory', positionIds),
+  ]);
+
+  const justNowLabel = tFooter('justNow');
 
   const buildHref = (p: number) => {
     const qs = p > 1 ? `?page=${p}` : '';
@@ -83,44 +94,31 @@ export default async function PositionMemoryProblemsPage({ params, searchParams 
         <p className="text-muted-foreground text-center py-8">{t('empty')}</p>
       ) : (
         <div className="space-y-3">
-          {rows.map(({ position }) => {
+          {rows.map(({ position, profile }) => {
             const detailHref = `/practice/position-memory/${position.id}`;
-            const editHref = `${detailHref}/edit`;
-            const descriptionExcerpt = truncate(position.description);
-
             return (
-              <ActivityCard
+              <PositionListCard
                 key={position.id}
-                variant="card"
-                href={detailHref}
+                position={position}
+                profile={profile}
+                likeMeta={likeMetaMap.get(position.id) ?? { likeCount: 0, likedByMe: false }}
+                replyMeta={replyMetaMap.get(position.id) ?? EMPTY_REPLY_META}
+                detailHref={detailHref}
+                i18nNamespace={FOOTER_NAMESPACE}
+                toggleLikeAction={toggleLike}
+                justNowLabel={justNowLabel}
                 locale={locale}
-                thumbnail={<ThemedBoardThumbnail fen={position.fen} className="w-full h-full" />}
-                author={null}
-                permalink={
-                  <time dateTime={position.createdAt.toISOString()}>
-                    {new Date(position.createdAt).toLocaleDateString(locale, {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                    })}
-                  </time>
-                }
-                footer={
+                actions={
                   <Link
-                    href={editHref}
+                    href={`${detailHref}/edit`}
                     locale={locale}
-                    className="mt-2 inline-flex items-center gap-1 self-start rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:border-foreground/20 hover:text-foreground transition-colors"
+                    className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:border-foreground/20 hover:text-foreground transition-colors"
                   >
                     <FiEdit2 className="h-3 w-3" aria-hidden />
                     {t('editAction')}
                   </Link>
                 }
-              >
-                <h3 className="font-medium text-foreground truncate">{position.title}</h3>
-                {descriptionExcerpt && (
-                  <p className="text-sm text-muted-foreground line-clamp-2">{descriptionExcerpt}</p>
-                )}
-              </ActivityCard>
+              />
             );
           })}
         </div>
