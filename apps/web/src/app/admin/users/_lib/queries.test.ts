@@ -1,5 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import {
+  STANDARD_RANK_ROWS,
+  createMockAdminClient,
+  makeUser,
+  setupFilterMock,
+} from './__test-helpers__/admin-users-mocks';
 import { EMPTY_ADMIN_USER_FILTERS } from './filters';
 
 // `population.ts` now pulls in `@/lib/supabase/list-all-auth-users` →
@@ -64,19 +70,7 @@ describe('fetchUsersPageData', () => {
       { id: 'user-2', email: 'b@example.com' },
     ];
 
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: {
-              users: mockUsers,
-              total: 50,
-            },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient(mockUsers, { total: 50 });
 
     const { fetchUsersPageData } = await import('./queries');
     const result = await fetchUsersPageData(mockAdminClient as never, 1, EMPTY_ADMIN_USER_FILTERS);
@@ -92,19 +86,7 @@ describe('fetchUsersPageData', () => {
       { id: 'user-3', email: 'c@example.com' },
     ];
 
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: {
-              users: mockUsers,
-              total: 3,
-            },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient(mockUsers, { total: 3 });
 
     // All users have no profile → they are all "anonymous"
     const { fetchUsersPageData } = await import('./queries');
@@ -118,19 +100,7 @@ describe('fetchUsersPageData', () => {
   });
 
   it('should return totalCount of 0 when no users match the filter', async () => {
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: {
-              users: [],
-              total: 0,
-            },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient([], { total: 0 });
 
     const { fetchUsersPageData } = await import('./queries');
     const result = await fetchUsersPageData(mockAdminClient as never, 1, {
@@ -143,19 +113,7 @@ describe('fetchUsersPageData', () => {
   });
 
   it('should return totalCount of 0 when no status filter and API returns total 0', async () => {
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: {
-              users: [],
-              total: 0,
-            },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient([], { total: 0 });
 
     const { fetchUsersPageData } = await import('./queries');
     const result = await fetchUsersPageData(mockAdminClient as never, 1, EMPTY_ADMIN_USER_FILTERS);
@@ -168,10 +126,10 @@ describe('fetchUsersPageData', () => {
     const mockAdminClient = {
       auth: {
         admin: {
+          // Intentionally omit `total` to exercise the "missing total" code
+          // path; the shared `createMockAdminClient` always includes one.
           listUsers: vi.fn().mockResolvedValue({
-            data: {
-              users: [],
-            },
+            data: { users: [] },
             error: null,
           }),
         },
@@ -191,16 +149,7 @@ describe('fetchUsersPageData', () => {
       { id: 'user-3', email: 'anon@example.com' },
     ];
 
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: mockUsers, total: 3 },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient(mockUsers, { total: 3 });
 
     // Mock profiles: user-1 is active, user-2 is banned, user-3 has no profile (anonymous)
     const { db } = await import('@/lib/db');
@@ -234,16 +183,7 @@ describe('fetchUsersPageData', () => {
       { id: 'user-2', email: 'banned@example.com' },
     ];
 
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: mockUsers, total: 2 },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient(mockUsers, { total: 2 });
 
     const { db } = await import('@/lib/db');
     const mockSelect = db.select as ReturnType<typeof vi.fn>;
@@ -276,16 +216,7 @@ describe('fetchUsersPageData', () => {
       { id: 'user-2', email: 'deleted@example.com' },
     ];
 
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: mockUsers, total: 2 },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient(mockUsers, { total: 2 });
 
     const { db } = await import('@/lib/db');
     const mockSelect = db.select as ReturnType<typeof vi.fn>;
@@ -314,22 +245,11 @@ describe('fetchUsersPageData', () => {
 
   it('should return correct pagination and totalCount for last page with fewer items', async () => {
     // Simulate 25 total users, page 2 should have 5 users (DEFAULT_PAGE_SIZE = 20)
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: {
-              users: Array.from({ length: 5 }, (_, i) => ({
-                id: `user-${i + 21}`,
-                email: `user${i + 21}@example.com`,
-              })),
-              total: 25,
-            },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockUsers = Array.from({ length: 5 }, (_, i) => ({
+      id: `user-${i + 21}`,
+      email: `user${i + 21}@example.com`,
+    }));
+    const mockAdminClient = createMockAdminClient(mockUsers, { total: 25 });
 
     const { fetchUsersPageData } = await import('./queries');
     const result = await fetchUsersPageData(mockAdminClient as never, 2, EMPTY_ADMIN_USER_FILTERS);
@@ -341,16 +261,7 @@ describe('fetchUsersPageData', () => {
   });
 
   it('should include all required properties in UsersPageData', async () => {
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: [], total: 0 },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient([], { total: 0 });
 
     const { fetchUsersPageData } = await import('./queries');
     const result = await fetchUsersPageData(mockAdminClient as never, 1, EMPTY_ADMIN_USER_FILTERS);
@@ -374,16 +285,7 @@ describe('fetchCountryStats', () => {
       { id: 'user-3', email: 'c@example.com' },
     ];
 
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: mockUsers, total: 3 },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient(mockUsers, { total: 3 });
 
     const { db } = await import('@/lib/db');
     const mockSelect = db.select as ReturnType<typeof vi.fn>;
@@ -419,16 +321,7 @@ describe('fetchCountryStats', () => {
       { id: 'user-5', email: 'e@example.com' },
     ];
 
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: mockUsers, total: 5 },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient(mockUsers, { total: 5 });
 
     const { db } = await import('@/lib/db');
     const mockSelect = db.select as ReturnType<typeof vi.fn>;
@@ -464,16 +357,7 @@ describe('fetchCountryStats', () => {
       { id: 'user-3', email: 'c@example.com' },
     ];
 
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: mockUsers, total: 3 },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient(mockUsers, { total: 3 });
 
     const { db } = await import('@/lib/db');
     const mockSelect = db.select as ReturnType<typeof vi.fn>;
@@ -501,16 +385,7 @@ describe('fetchCountryStats', () => {
   });
 
   it('should return empty array when there are no users', async () => {
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: [], total: 0 },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient([], { total: 0 });
 
     const { fetchCountryStats } = await import('./queries');
     const result = await fetchCountryStats(mockAdminClient as never, EMPTY_ADMIN_USER_FILTERS);
@@ -525,16 +400,7 @@ describe('fetchCountryStats', () => {
       { id: 'user-3', email: 'active2@example.com' },
     ];
 
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: mockUsers, total: 3 },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient(mockUsers, { total: 3 });
 
     const { db } = await import('@/lib/db');
     const mockSelect = db.select as ReturnType<typeof vi.fn>;
@@ -569,16 +435,7 @@ describe('fetchCountryStats', () => {
       { id: 'user-3', email: 'banned2@example.com' },
     ];
 
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: mockUsers, total: 3 },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient(mockUsers, { total: 3 });
 
     const { db } = await import('@/lib/db');
     const mockSelect = db.select as ReturnType<typeof vi.fn>;
@@ -615,16 +472,7 @@ describe('fetchCountryStats', () => {
       { id: 'user-3', email: 'c@example.com' },
     ];
 
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: mockUsers, total: 3 },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient(mockUsers, { total: 3 });
 
     const { db } = await import('@/lib/db');
     const mockSelect = db.select as ReturnType<typeof vi.fn>;
@@ -656,16 +504,7 @@ describe('fetchCountryStats', () => {
       { id: 'user-2', email: 'b@example.com' },
     ];
 
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: mockUsers, total: 2 },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient(mockUsers, { total: 2 });
 
     const { db } = await import('@/lib/db');
     const mockSelect = db.select as ReturnType<typeof vi.fn>;
@@ -699,16 +538,7 @@ describe('fetchCountryStats', () => {
       { id: 'user-3', email: 'c@example.com' },
     ];
 
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: mockUsers, total: 3 },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient(mockUsers, { total: 3 });
 
     const { db } = await import('@/lib/db');
     const mockSelect = db.select as ReturnType<typeof vi.fn>;
@@ -738,16 +568,7 @@ describe('fetchCountryStats', () => {
       { id: 'user-2', email: 'b@example.com' },
     ];
 
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: mockUsers, total: 2 },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient(mockUsers, { total: 2 });
 
     const { db } = await import('@/lib/db');
     const mockSelect = db.select as ReturnType<typeof vi.fn>;
@@ -831,16 +652,7 @@ describe('fetchRankStats', () => {
       { id: 'user-3', email: 'c@example.com' },
     ];
 
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: mockUsers, total: 3 },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient(mockUsers, { total: 3 });
 
     await setupRankStatsMock({
       profileRows: [
@@ -875,16 +687,7 @@ describe('fetchRankStats', () => {
   });
 
   it('should include all ranks from ALL_RANK_SLUGS in results', async () => {
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: [], total: 0 },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient([], { total: 0 });
 
     await setupRankStatsMock({
       profileRows: [],
@@ -913,16 +716,7 @@ describe('fetchRankStats', () => {
   it('should return results sorted by level in ascending order', async () => {
     const mockUsers = [{ id: 'user-1', email: 'a@example.com' }];
 
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: mockUsers, total: 1 },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient(mockUsers, { total: 1 });
 
     await setupRankStatsMock({
       profileRows: [{ id: 'user-1', bannedAt: null, deletedAt: null }],
@@ -955,16 +749,7 @@ describe('fetchRankStats', () => {
       { id: 'user-2', email: 'b@example.com' },
     ];
 
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: mockUsers, total: 2 },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient(mockUsers, { total: 2 });
 
     await setupRankStatsMock({
       profileRows: [
@@ -1005,16 +790,7 @@ describe('fetchRankStats', () => {
       { id: 'user-5', email: 'e@example.com' },
     ];
 
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: mockUsers, total: 5 },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient(mockUsers, { total: 5 });
 
     await setupRankStatsMock({
       profileRows: [
@@ -1052,16 +828,7 @@ describe('fetchRankStats', () => {
   });
 
   it('should return all ranks with count 0 when there are no users', async () => {
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: [], total: 0 },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient([], { total: 0 });
 
     await setupRankStatsMock({
       profileRows: [],
@@ -1086,16 +853,7 @@ describe('fetchRankStats', () => {
   });
 
   it('should assign correct colors from BELT_COLOR_HEX for each rank', async () => {
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: [], total: 0 },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient([], { total: 0 });
 
     await setupRankStatsMock({
       profileRows: [],
@@ -1123,16 +881,7 @@ describe('fetchRankStats', () => {
   });
 
   it('should assign correct level values from seed data', async () => {
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: [], total: 0 },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient([], { total: 0 });
 
     await setupRankStatsMock({
       profileRows: [],
@@ -1165,16 +914,7 @@ describe('fetchRankStats', () => {
       { id: 'user-2', email: 'b@example.com' },
     ];
 
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: mockUsers, total: 2 },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient(mockUsers, { total: 2 });
 
     await setupRankStatsMock({
       profileRows: [
@@ -1207,16 +947,7 @@ describe('fetchRankStats', () => {
   });
 
   it('should use name equal to slug for each rank', async () => {
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: [], total: 0 },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient([], { total: 0 });
 
     await setupRankStatsMock({
       profileRows: [],
@@ -1246,16 +977,7 @@ describe('fetchRankStats', () => {
       { id: 'user-3', email: 'active2@example.com' },
     ];
 
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: mockUsers, total: 3 },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient(mockUsers, { total: 3 });
 
     await setupRankStatsMock({
       profileRows: [
@@ -1290,78 +1012,6 @@ describe('fetchRankStats', () => {
   });
 });
 
-/**
- * Helper to create a db.select mock that dispatches by table reference,
- * with support for country field in profile rows.
- */
-async function setupFilterMock(options: {
-  profileRows: Array<{
-    id: string;
-    country?: string | null;
-    bannedAt: Date | null;
-    deletedAt: Date | null;
-  }>;
-  rankRows: Array<{ id: number; slug: string }>;
-  userRankRows: Array<{ userId: string; rankId: number }>;
-}) {
-  const dbMod = await import('@/lib/db');
-  const mockSelect = dbMod.db.select as ReturnType<typeof vi.fn>;
-  const ranksRef = dbMod.ranks;
-  const userRanksRef = dbMod.userRanks;
-
-  mockSelect.mockImplementation(() => ({
-    from: vi.fn().mockImplementation((table: unknown) => {
-      if (table === ranksRef) {
-        return {
-          where: vi.fn().mockReturnValue({
-            then: (resolve: (val: unknown[]) => void, reject?: (err: unknown) => void) =>
-              Promise.resolve(options.rankRows).then(resolve, reject),
-          }),
-          then: (resolve: (val: unknown[]) => void, reject?: (err: unknown) => void) =>
-            Promise.resolve(options.rankRows).then(resolve, reject),
-        };
-      } else if (table === userRanksRef) {
-        return {
-          where: vi.fn().mockReturnValue({
-            then: (resolve: (val: unknown[]) => void, reject?: (err: unknown) => void) =>
-              Promise.resolve(options.userRankRows).then(resolve, reject),
-          }),
-        };
-      } else {
-        return {
-          where: vi.fn().mockReturnValue({
-            orderBy: vi.fn().mockResolvedValue([]),
-            then: (resolve: (val: unknown[]) => void, reject?: (err: unknown) => void) =>
-              Promise.resolve(options.profileRows).then(resolve, reject),
-          }),
-        };
-      }
-    }),
-  }));
-}
-
-function createMockAdminClient(users: Array<{ id: string; email: string }>) {
-  return {
-    auth: {
-      admin: {
-        listUsers: vi.fn().mockResolvedValue({
-          data: { users, total: users.length },
-          error: null,
-        }),
-      },
-    },
-  };
-}
-
-const standardRankRows = [
-  { id: 1, slug: '5kyu' },
-  { id: 2, slug: '4kyu' },
-  { id: 3, slug: '3kyu' },
-  { id: 4, slug: '2kyu' },
-  { id: 5, slug: '1kyu' },
-  { id: 6, slug: '1dan' },
-];
-
 describe('fetchFilteredUsers — country filter', () => {
   it('should return only users from the specified country', async () => {
     const mockUsers = [
@@ -1377,7 +1027,7 @@ describe('fetchFilteredUsers — country filter', () => {
         { id: 'user-2', country: 'US', bannedAt: null, deletedAt: null },
         { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
       ],
-      rankRows: standardRankRows,
+      rankRows: STANDARD_RANK_ROWS,
       userRankRows: [],
     });
 
@@ -1397,7 +1047,7 @@ describe('fetchFilteredUsers — country filter', () => {
 
     await setupFilterMock({
       profileRows: [{ id: 'user-1', country: 'JP', bannedAt: null, deletedAt: null }],
-      rankRows: standardRankRows,
+      rankRows: STANDARD_RANK_ROWS,
       userRankRows: [],
     });
 
@@ -1423,7 +1073,7 @@ describe('fetchFilteredUsers — country filter', () => {
         // user-1 has a profile, user-2 does not (anonymous)
         { id: 'user-1', country: 'JP', bannedAt: null, deletedAt: null },
       ],
-      rankRows: standardRankRows,
+      rankRows: STANDARD_RANK_ROWS,
       userRankRows: [],
     });
 
@@ -1468,7 +1118,7 @@ describe('fetchFilteredUsers — rank filter', () => {
         { id: 'user-2', country: 'US', bannedAt: null, deletedAt: null },
         { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
       ],
-      rankRows: standardRankRows,
+      rankRows: STANDARD_RANK_ROWS,
       userRankRows: [
         { userId: 'user-1', rankId: 1 }, // 5kyu
         { userId: 'user-2', rankId: 2 }, // 4kyu
@@ -1500,7 +1150,7 @@ describe('fetchFilteredUsers — rank filter', () => {
         { id: 'user-2', country: 'US', bannedAt: null, deletedAt: null },
         { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
       ],
-      rankRows: standardRankRows,
+      rankRows: STANDARD_RANK_ROWS,
       userRankRows: [
         { userId: 'user-1', rankId: 1 }, // 5kyu
       ],
@@ -1523,7 +1173,7 @@ describe('fetchFilteredUsers — rank filter', () => {
 
     await setupFilterMock({
       profileRows: [{ id: 'user-1', country: 'JP', bannedAt: null, deletedAt: null }],
-      rankRows: standardRankRows,
+      rankRows: STANDARD_RANK_ROWS,
       userRankRows: [], // no ranks at all
     });
 
@@ -1557,7 +1207,7 @@ describe('fetchFilteredUsers — combined filters (AND)', () => {
         { id: 'user-4', country: 'JP', bannedAt: null, deletedAt: null },
         { id: 'user-5', country: 'JP', bannedAt: null, deletedAt: null },
       ],
-      rankRows: standardRankRows,
+      rankRows: STANDARD_RANK_ROWS,
       userRankRows: [
         { userId: 'user-1', rankId: 1 }, // 5kyu
         { userId: 'user-2', rankId: 1 }, // 5kyu
@@ -1591,7 +1241,7 @@ describe('fetchFilteredUsers — combined filters (AND)', () => {
         { id: 'user-1', country: 'JP', bannedAt: null, deletedAt: null },
         { id: 'user-2', country: 'US', bannedAt: null, deletedAt: null },
       ],
-      rankRows: standardRankRows,
+      rankRows: STANDARD_RANK_ROWS,
       userRankRows: [
         { userId: 'user-1', rankId: 1 }, // 5kyu
       ],
@@ -1624,7 +1274,7 @@ describe('fetchFilteredUsers — combined filters (AND)', () => {
         { id: 'user-2', country: 'JP', bannedAt: null, deletedAt: null },
         { id: 'user-3', country: 'US', bannedAt: null, deletedAt: null },
       ],
-      rankRows: standardRankRows,
+      rankRows: STANDARD_RANK_ROWS,
       userRankRows: [
         { userId: 'user-1', rankId: 1 }, // 5kyu
       ],
@@ -1658,7 +1308,7 @@ describe('fetchUsersPageData — hasFilter branch', () => {
         { id: 'user-2', country: 'US', bannedAt: null, deletedAt: null },
         { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
       ],
-      rankRows: standardRankRows,
+      rankRows: STANDARD_RANK_ROWS,
       userRankRows: [],
     });
 
@@ -1685,7 +1335,7 @@ describe('fetchUsersPageData — hasFilter branch', () => {
         { id: 'user-1', country: 'JP', bannedAt: null, deletedAt: null },
         { id: 'user-2', country: 'US', bannedAt: null, deletedAt: null },
       ],
-      rankRows: standardRankRows,
+      rankRows: STANDARD_RANK_ROWS,
       userRankRows: [
         { userId: 'user-1', rankId: 1 }, // 5kyu
       ],
@@ -1718,7 +1368,7 @@ describe('fetchCountryStats — with country/rank filters', () => {
         { id: 'user-2', country: 'US', bannedAt: null, deletedAt: null },
         { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
       ],
-      rankRows: standardRankRows,
+      rankRows: STANDARD_RANK_ROWS,
       userRankRows: [],
     });
 
@@ -1746,7 +1396,7 @@ describe('fetchCountryStats — with country/rank filters', () => {
         { id: 'user-2', country: 'US', bannedAt: null, deletedAt: null },
         { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
       ],
-      rankRows: standardRankRows,
+      rankRows: STANDARD_RANK_ROWS,
       userRankRows: [
         { userId: 'user-1', rankId: 1 }, // 5kyu
         { userId: 'user-3', rankId: 1 }, // 5kyu
@@ -1781,7 +1431,7 @@ describe('fetchRankStats — with country/rank filters', () => {
         { id: 'user-2', country: 'US', bannedAt: null, deletedAt: null },
         { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
       ],
-      rankRows: standardRankRows,
+      rankRows: STANDARD_RANK_ROWS,
       // Only include rank rows for JP users (user-1), since mock returns all rows without SQL filtering
       // The fetchRankStats internally re-queries userRanks for filteredUserIds,
       // but our mock returns ALL userRankRows regardless of the where clause.
@@ -1821,7 +1471,7 @@ describe('fetchRankStats — with country/rank filters', () => {
         { id: 'user-2', country: 'US', bannedAt: null, deletedAt: null },
         { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
       ],
-      rankRows: standardRankRows,
+      rankRows: STANDARD_RANK_ROWS,
       userRankRows: [
         { userId: 'user-1', rankId: 1 }, // 5kyu
         { userId: 'user-2', rankId: 2 }, // 4kyu
@@ -1871,7 +1521,7 @@ describe('fetchRankStats — with country/rank filters', () => {
         { id: 'user-1', country: 'JP', bannedAt: null, deletedAt: null },
         { id: 'user-2', country: 'US', bannedAt: null, deletedAt: null },
       ],
-      rankRows: standardRankRows,
+      rankRows: STANDARD_RANK_ROWS,
       // No rank rows at all — both users are mukyu
       userRankRows: [],
     });
@@ -1902,7 +1552,7 @@ describe('fetchRankStats — with country/rank filters', () => {
         { id: 'user-2', country: 'JP', bannedAt: new Date('2024-01-15'), deletedAt: null },
         { id: 'user-3', country: 'US', bannedAt: null, deletedAt: null },
       ],
-      rankRows: standardRankRows,
+      rankRows: STANDARD_RANK_ROWS,
       userRankRows: [],
     });
 
@@ -1917,39 +1567,6 @@ describe('fetchRankStats — with country/rank filters', () => {
     expect(result.find((r) => r.slug === 'mukyu')!.count).toBe(1);
   });
 });
-
-/**
- * Helper to build a mock Supabase user shape with arbitrary provider metadata.
- * Mirrors the relevant fields read by `getSignupMethod` without needing the
- * full `@supabase/supabase-js` User type.
- */
-function makeUser(
-  id: string,
-  opts: {
-    appMetadataProvider?: string | null | undefined;
-    appMetadataMissing?: boolean;
-    appMetadataNull?: boolean;
-    identityProviders?: Array<string | undefined>;
-    noIdentities?: boolean;
-  } = {}
-) {
-  const user: Record<string, unknown> = { id, email: `${id}@example.com` };
-
-  if (opts.appMetadataNull) {
-    user.app_metadata = null;
-  } else if (opts.appMetadataMissing) {
-    // leave app_metadata undefined
-  } else {
-    user.app_metadata =
-      opts.appMetadataProvider === undefined ? {} : { provider: opts.appMetadataProvider };
-  }
-
-  if (!opts.noIdentities && opts.identityProviders) {
-    user.identities = opts.identityProviders.map((p) => ({ provider: p }));
-  }
-
-  return user;
-}
 
 describe('getSignupMethod', () => {
   it('should return "google" when app_metadata.provider is "google"', async () => {
@@ -2039,16 +1656,7 @@ describe('fetchUsersPageData — provider filter', () => {
       makeUser('user-2', { appMetadataProvider: 'email' }),
       makeUser('user-3', { appMetadataProvider: 'apple' }),
     ];
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: mockUsers, total: mockUsers.length },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient(mockUsers);
 
     await setupFilterMock({
       profileRows: [
@@ -2056,7 +1664,7 @@ describe('fetchUsersPageData — provider filter', () => {
         { id: 'user-2', country: 'JP', bannedAt: null, deletedAt: null },
         { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
       ],
-      rankRows: standardRankRows,
+      rankRows: STANDARD_RANK_ROWS,
       userRankRows: [],
     });
 
@@ -2076,16 +1684,7 @@ describe('fetchUsersPageData — provider filter', () => {
       makeUser('user-2', { appMetadataProvider: 'email' }),
       makeUser('user-3', { appMetadataProvider: 'email' }),
     ];
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: mockUsers, total: mockUsers.length },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient(mockUsers);
 
     await setupFilterMock({
       profileRows: [
@@ -2093,7 +1692,7 @@ describe('fetchUsersPageData — provider filter', () => {
         { id: 'user-2', country: 'JP', bannedAt: null, deletedAt: null },
         { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
       ],
-      rankRows: standardRankRows,
+      rankRows: STANDARD_RANK_ROWS,
       userRankRows: [],
     });
 
@@ -2113,16 +1712,7 @@ describe('fetchUsersPageData — provider filter', () => {
       makeUser('user-2', { appMetadataProvider: 'apple' }),
       makeUser('user-3', { appMetadataMissing: true, noIdentities: true }),
     ];
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: mockUsers, total: mockUsers.length },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient(mockUsers);
 
     await setupFilterMock({
       profileRows: [
@@ -2130,7 +1720,7 @@ describe('fetchUsersPageData — provider filter', () => {
         { id: 'user-2', country: 'JP', bannedAt: null, deletedAt: null },
         { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
       ],
-      rankRows: standardRankRows,
+      rankRows: STANDARD_RANK_ROWS,
       userRankRows: [],
     });
 
@@ -2150,16 +1740,7 @@ describe('fetchUsersPageData — provider filter', () => {
       makeUser('user-2', { appMetadataProvider: 'email' }),
       makeUser('user-3', { appMetadataProvider: 'apple' }),
     ];
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: mockUsers, total: mockUsers.length },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient(mockUsers);
 
     // No filter at all → takes the non-filtered branch of fetchUsersPageData,
     // which reads total from the Supabase response.
@@ -2176,16 +1757,7 @@ describe('fetchUsersPageData — provider filter', () => {
       makeUser('user-2', { appMetadataProvider: 'google' }), // banned + google → excluded
       makeUser('user-3', { appMetadataProvider: 'email' }), // active + email → excluded
     ];
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: mockUsers, total: mockUsers.length },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient(mockUsers);
 
     await setupFilterMock({
       profileRows: [
@@ -2193,7 +1765,7 @@ describe('fetchUsersPageData — provider filter', () => {
         { id: 'user-2', country: 'JP', bannedAt: new Date('2024-01-15'), deletedAt: null },
         { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
       ],
-      rankRows: standardRankRows,
+      rankRows: STANDARD_RANK_ROWS,
       userRankRows: [],
     });
 
@@ -2215,23 +1787,14 @@ describe('fetchSignupMethodStats', () => {
       makeUser('user-1', { appMetadataProvider: 'google' }),
       makeUser('user-2', { appMetadataProvider: 'email' }),
     ];
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: mockUsers, total: mockUsers.length },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient(mockUsers);
 
     await setupFilterMock({
       profileRows: [
         { id: 'user-1', country: 'JP', bannedAt: null, deletedAt: null },
         { id: 'user-2', country: 'JP', bannedAt: null, deletedAt: null },
       ],
-      rankRows: standardRankRows,
+      rankRows: STANDARD_RANK_ROWS,
       userRankRows: [],
     });
 
@@ -2256,16 +1819,7 @@ describe('fetchSignupMethodStats', () => {
       makeUser('user-5', { appMetadataProvider: 'apple' }), // unknown
       makeUser('user-6', { appMetadataMissing: true, noIdentities: true }), // unknown
     ];
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: mockUsers, total: mockUsers.length },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient(mockUsers);
 
     await setupFilterMock({
       profileRows: mockUsers.map((u) => ({
@@ -2274,7 +1828,7 @@ describe('fetchSignupMethodStats', () => {
         bannedAt: null,
         deletedAt: null,
       })),
-      rankRows: standardRankRows,
+      rankRows: STANDARD_RANK_ROWS,
       userRankRows: [],
     });
 
@@ -2294,16 +1848,7 @@ describe('fetchSignupMethodStats', () => {
       makeUser('user-2', { appMetadataProvider: 'google' }), // banned → excluded
       makeUser('user-3', { appMetadataProvider: 'email' }), // active
     ];
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: mockUsers, total: mockUsers.length },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient(mockUsers);
 
     await setupFilterMock({
       profileRows: [
@@ -2311,7 +1856,7 @@ describe('fetchSignupMethodStats', () => {
         { id: 'user-2', country: 'JP', bannedAt: new Date('2024-01-15'), deletedAt: null },
         { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
       ],
-      rankRows: standardRankRows,
+      rankRows: STANDARD_RANK_ROWS,
       userRankRows: [],
     });
 
@@ -2334,16 +1879,7 @@ describe('fetchSignupMethodStats', () => {
       makeUser('user-2', { appMetadataProvider: 'email' }), // US → excluded
       makeUser('user-3', { appMetadataProvider: 'google' }), // JP
     ];
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: mockUsers, total: mockUsers.length },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient(mockUsers);
 
     await setupFilterMock({
       profileRows: [
@@ -2351,7 +1887,7 @@ describe('fetchSignupMethodStats', () => {
         { id: 'user-2', country: 'US', bannedAt: null, deletedAt: null },
         { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
       ],
-      rankRows: standardRankRows,
+      rankRows: STANDARD_RANK_ROWS,
       userRankRows: [],
     });
 
@@ -2374,16 +1910,7 @@ describe('fetchSignupMethodStats', () => {
       makeUser('user-2', { appMetadataProvider: 'email' }), // mukyu → excluded
       makeUser('user-3', { appMetadataProvider: 'google' }), // 5kyu
     ];
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: mockUsers, total: mockUsers.length },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient(mockUsers);
 
     await setupFilterMock({
       profileRows: [
@@ -2391,7 +1918,7 @@ describe('fetchSignupMethodStats', () => {
         { id: 'user-2', country: 'JP', bannedAt: null, deletedAt: null },
         { id: 'user-3', country: 'JP', bannedAt: null, deletedAt: null },
       ],
-      rankRows: standardRankRows,
+      rankRows: STANDARD_RANK_ROWS,
       userRankRows: [
         { userId: 'user-1', rankId: 1 }, // 5kyu
         { userId: 'user-3', rankId: 1 }, // 5kyu
@@ -2412,16 +1939,7 @@ describe('fetchSignupMethodStats', () => {
   });
 
   it('should return all three buckets with count 0 for an empty user set', async () => {
-    const mockAdminClient = {
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: [], total: 0 },
-            error: null,
-          }),
-        },
-      },
-    };
+    const mockAdminClient = createMockAdminClient([], { total: 0 });
 
     const { fetchSignupMethodStats } = await import('./queries');
     const result = await fetchSignupMethodStats(mockAdminClient as never, EMPTY_ADMIN_USER_FILTERS);
