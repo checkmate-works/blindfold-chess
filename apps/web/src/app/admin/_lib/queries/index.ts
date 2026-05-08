@@ -4,5 +4,5 @@
  */
 export { aggregateByDay, fillDateRange, type DailyCount } from './aggregate-by-day';
 export { getNewUsersPerDay } from './auth-users';
-export { UGC_SOURCES, getPostsPerDay, type UgcSource } from './ugc-aggregation';
+export { getPostsPerDay } from './ugc-aggregation';
 export { getKpiSummary, type KpiSummary, type UgcBreakdownRow } from './kpi-summary';

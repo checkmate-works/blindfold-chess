@@ -26,7 +26,7 @@ export function buildChallengeNameKey(req: ChallengeScoreRequirement): string {
  * Assumes that the resulting slug corresponds to an existing practice route
  * (e.g. `square_colors` → `/practice/square-colors`).
  */
-export function menuTypeToPracticeSlug(menuType: string): string {
+function menuTypeToPracticeSlug(menuType: string): string {
   return menuType.replace(/_/g, '-');
 }
 

@@ -30,7 +30,7 @@ export async function getPostCountByTopicType(topicType: TopicType): Promise<num
  * Get top-level posts for a specific topicType + topicKey, with author info.
  * Base function shared by squares and openings.
  */
-export async function getTopLevelPostsByTopicKey(
+async function getTopLevelPostsByTopicKey(
   topicType: TopicType,
   topicKey: string
 ): Promise<TopicPostWithAuthor[]> {
@@ -98,40 +98,6 @@ export const getPostByIdAndTopicKey = cache(
     };
   }
 );
-
-/**
- * Get the most recent top-level posts for a specific topic type with reply metadata.
- * Base function shared by squares and openings.
- */
-export async function getRecentPostsByTopicType(
-  topicType: TopicType,
-  limit = 5,
-  currentUserId?: string
-): Promise<PostWithReplyMeta[]> {
-  const results = await db
-    .select({
-      post: topicPosts,
-      author: authorSelect,
-    })
-    .from(topicPosts)
-    .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
-    .where(
-      and(
-        eq(topicPosts.topicType, topicType),
-        isNull(topicPosts.parentId),
-        isNull(topicPosts.deletedAt)
-      )
-    )
-    .orderBy(desc(topicPosts.createdAt))
-    .limit(limit);
-
-  const posts: TopicPostWithAuthor[] = results.map((r) => ({
-    ...r.post,
-    author: r.author,
-  }));
-
-  return attachPostMeta(posts, currentUserId);
-}
 
 /**
  * Get top-level posts for a specific topicType + topicKey with reply metadata, sorted.
