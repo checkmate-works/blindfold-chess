@@ -50,7 +50,9 @@ export async function deletePuzzle(puzzleId: string, locale: string): Promise<Ac
   await db
     .update(positions)
     .set({ deletedAt: new Date() })
-    .where(and(eq(positions.id, puzzleId), isNull(positions.deletedAt)));
+    .where(
+      and(eq(positions.id, puzzleId), eq(positions.userId, user.id), isNull(positions.deletedAt))
+    );
 
   revalidatePath(`/${locale}/practice/puzzle`);
   revalidatePath(`/${locale}/practice/puzzle/${puzzleId}`);

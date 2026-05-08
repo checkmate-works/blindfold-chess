@@ -66,7 +66,9 @@ export async function updatePosition(data: {
       title: data.title.trim(),
       description: data.description?.trim() || null,
     })
-    .where(and(eq(positions.id, data.id), isNull(positions.deletedAt)));
+    .where(
+      and(eq(positions.id, data.id), eq(positions.userId, user.id), isNull(positions.deletedAt))
+    );
 
   revalidatePath('/practice/position-memory');
   revalidatePath(`/practice/position-memory/${data.id}`);

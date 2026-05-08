@@ -70,7 +70,9 @@ export async function updatePuzzle(data: {
       title: data.title.trim(),
       description: data.description?.trim() || null,
     })
-    .where(and(eq(positions.id, data.id), isNull(positions.deletedAt)));
+    .where(
+      and(eq(positions.id, data.id), eq(positions.userId, user.id), isNull(positions.deletedAt))
+    );
 
   revalidatePath('/practice/puzzle');
   revalidatePath(`/practice/puzzle/${data.id}`);
