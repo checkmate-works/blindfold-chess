@@ -6,6 +6,7 @@ import { inArray } from 'drizzle-orm';
 import { db, profiles, ranks, userRanks } from '@/lib/db';
 import { MUKYU_SLUG } from '@/lib/db/data/ranks';
 
+import type { AdminUserFilters } from '../filters';
 import { getSignupMethod } from './signup-methods';
 
 type Profile = typeof profiles.$inferSelect;
@@ -67,15 +68,9 @@ async function fetchAllUsers(adminClient: SupabaseClient): Promise<User[]> {
  * arguments return the same promise.
  */
 export const getFilteredPopulation = cache(
-  async (
-    adminClient: SupabaseClient,
-    statusFilter: string,
-    countryFilter?: string,
-    rankFilter?: string,
-    providerFilter?: string,
-    usernameFilter?: string
-  ): Promise<FilteredPopulation> => {
-    const normalizedUsernameQuery = usernameFilter?.trim().toLowerCase() ?? '';
+  async (adminClient: SupabaseClient, filters: AdminUserFilters): Promise<FilteredPopulation> => {
+    const { statusFilter, countryFilter, rankFilter, providerFilter, usernameFilter } = filters;
+    const normalizedUsernameQuery = usernameFilter.trim().toLowerCase();
     const allUsers = await fetchAllUsers(adminClient);
     const allUserIds = allUsers.map((u) => u.id);
 

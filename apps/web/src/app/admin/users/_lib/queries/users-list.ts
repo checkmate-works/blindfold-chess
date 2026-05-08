@@ -5,6 +5,7 @@ import { BENEFIT_ACTIVE_STATUSES } from '@/lib/billing/subscription-constants';
 import { db, moderationActions, profiles, subscriptions, userRanks, userRoles } from '@/lib/db';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
 
+import type { AdminUserFilters } from '../filters';
 import { type CountryStat, aggregateCountryStats } from './country-stats';
 import { getAllRanks, getFilteredPopulation } from './population';
 import { type RankStat, aggregateRankStats } from './rank-stats';
@@ -26,12 +27,9 @@ export type UsersPageData = {
 export async function fetchUsersPageData(
   adminClient: SupabaseClient,
   page: number,
-  statusFilter: string,
-  countryFilter?: string,
-  rankFilter?: string,
-  providerFilter?: string,
-  usernameFilter?: string
+  filters: AdminUserFilters
 ): Promise<UsersPageData> {
+  const { statusFilter, countryFilter, rankFilter, providerFilter, usernameFilter } = filters;
   let users: User[];
   let currentPage: number;
   let totalPages: number;
@@ -43,11 +41,7 @@ export async function fetchUsersPageData(
   if (hasFilter) {
     const { filteredUsers, profileMap: allProfileMap } = await getFilteredPopulation(
       adminClient,
-      statusFilter,
-      countryFilter,
-      rankFilter,
-      providerFilter,
-      usernameFilter
+      filters
     );
 
     totalCount = filteredUsers.length;
@@ -150,20 +144,9 @@ export async function fetchUsersPageData(
  */
 export async function fetchCountryStats(
   adminClient: SupabaseClient,
-  statusFilter: string,
-  countryFilter?: string,
-  rankFilter?: string,
-  providerFilter?: string,
-  usernameFilter?: string
+  filters: AdminUserFilters
 ): Promise<CountryStat[]> {
-  const { filteredUsers, profileMap } = await getFilteredPopulation(
-    adminClient,
-    statusFilter,
-    countryFilter,
-    rankFilter,
-    providerFilter,
-    usernameFilter
-  );
+  const { filteredUsers, profileMap } = await getFilteredPopulation(adminClient, filters);
   return aggregateCountryStats(filteredUsers, profileMap);
 }
 
@@ -175,20 +158,9 @@ export async function fetchCountryStats(
  */
 export async function fetchRankStats(
   adminClient: SupabaseClient,
-  statusFilter: string,
-  countryFilter?: string,
-  rankFilter?: string,
-  providerFilter?: string,
-  usernameFilter?: string
+  filters: AdminUserFilters
 ): Promise<RankStat[]> {
-  const { filteredUsers } = await getFilteredPopulation(
-    adminClient,
-    statusFilter,
-    countryFilter,
-    rankFilter,
-    providerFilter,
-    usernameFilter
-  );
+  const { filteredUsers } = await getFilteredPopulation(adminClient, filters);
 
   const filteredUserIds = filteredUsers.map((u) => u.id);
   const rankById = await getAllRanks();
@@ -220,19 +192,8 @@ export async function fetchRankStats(
  */
 export async function fetchSignupMethodStats(
   adminClient: SupabaseClient,
-  statusFilter: string,
-  countryFilter?: string,
-  rankFilter?: string,
-  providerFilter?: string,
-  usernameFilter?: string
+  filters: AdminUserFilters
 ): Promise<SignupMethodStat[]> {
-  const { filteredUsers } = await getFilteredPopulation(
-    adminClient,
-    statusFilter,
-    countryFilter,
-    rankFilter,
-    providerFilter,
-    usernameFilter
-  );
+  const { filteredUsers } = await getFilteredPopulation(adminClient, filters);
   return aggregateSignupMethodStats(filteredUsers);
 }
