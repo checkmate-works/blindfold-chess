@@ -85,33 +85,48 @@ export default async function PuzzleProblemsPage({ params, searchParams }: Props
             const descriptionExcerpt = truncate(position.description);
 
             return (
-              <Link
+              <div
                 key={position.id}
-                href={`/practice/puzzle/${position.id}`}
-                locale={locale}
-                className="block p-4 rounded-md border border-border bg-card hover:border-foreground/20 transition-colors"
+                className="flex gap-4 p-4 rounded-md border border-border bg-card hover:border-foreground/20 transition-colors"
               >
-                <div className="flex gap-4">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
-                    <ThemedBoardThumbnail fen={position.fen} className="w-full h-full" />
-                  </div>
-                  <div className="flex-1 min-w-0 flex flex-col gap-1">
-                    <h3 className="font-medium text-foreground truncate">{position.title}</h3>
-                    {descriptionExcerpt && (
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {descriptionExcerpt}
-                      </p>
-                    )}
-                    <p className="text-xs text-muted-foreground mt-auto">
+                <Link
+                  href={`/practice/puzzle/${position.id}`}
+                  locale={locale}
+                  className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0"
+                >
+                  <ThemedBoardThumbnail fen={position.fen} className="w-full h-full" />
+                </Link>
+                <div className="flex-1 min-w-0 flex flex-col gap-1">
+                  <Link
+                    href={`/practice/puzzle/${position.id}`}
+                    locale={locale}
+                    className="font-medium text-foreground truncate hover:underline"
+                  >
+                    {position.title}
+                  </Link>
+                  {descriptionExcerpt && (
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {descriptionExcerpt}
+                    </p>
+                  )}
+                  <div className="flex items-center justify-between gap-2 mt-auto">
+                    <p className="text-xs text-muted-foreground">
                       {new Date(position.createdAt).toLocaleDateString(locale, {
                         year: 'numeric',
                         month: 'short',
                         day: 'numeric',
                       })}
                     </p>
+                    <Link
+                      href={`/practice/puzzle/${position.id}/edit`}
+                      locale={locale}
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {t('editAction')}
+                    </Link>
                   </div>
                 </div>
-              </Link>
+              </div>
             );
           })}
         </div>
