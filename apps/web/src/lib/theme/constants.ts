@@ -3,7 +3,6 @@
 // client provider can read the same values.
 
 export const THEME_STORAGE_KEY = 'theme';
-export const THEME_ATTRIBUTE = 'class';
 export const THEME_LIGHT_CLASS = 'light';
 export const THEME_DARK_CLASS = 'dark';
 

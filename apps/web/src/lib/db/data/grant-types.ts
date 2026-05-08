@@ -44,7 +44,7 @@ export const GRANT_TYPE_DEFAULTS: Record<AutomatedGrantType, GrantTypeConfig> = 
  *
  * Add a topic type here together with its i18n label in every locale.
  */
-export const TOPIC_POST_GRANT_TOPIC_TYPES = ['square', 'opening'] as const;
+const TOPIC_POST_GRANT_TOPIC_TYPES = ['square', 'opening'] as const;
 
 export type TopicPostGrantTopicType = (typeof TOPIC_POST_GRANT_TOPIC_TYPES)[number];
 

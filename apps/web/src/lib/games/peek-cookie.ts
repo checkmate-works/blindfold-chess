@@ -53,7 +53,7 @@ export const PEEK_COOKIE_NAME = 'bfc_peek_pref';
 
 export const PEEK_COOKIE_MAX_AGE_SEC = 60 * 60 * 24 * 365; // 1 year
 
-export const PEEK_MODES = ['modal', 'inline'] as const;
+const PEEK_MODES = ['modal', 'inline'] as const;
 export type PeekMode = (typeof PEEK_MODES)[number];
 
 export type PeekPreferenceHint = {
