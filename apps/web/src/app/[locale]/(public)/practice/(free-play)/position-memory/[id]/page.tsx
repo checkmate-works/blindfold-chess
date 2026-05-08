@@ -154,7 +154,15 @@ export default async function PositionDetailPage({ params, searchParams }: Props
         />
         <div className="flex items-center gap-4">
           {currentUser?.id === position.userId && (
-            <DeletePositionButton positionId={position.id} locale={locale} />
+            <>
+              <Link
+                href={`/practice/position-memory/${position.id}/edit`}
+                className="hover:text-foreground transition-colors"
+              >
+                {t('detail.editAction')}
+              </Link>
+              <DeletePositionButton positionId={position.id} locale={locale} />
+            </>
           )}
           <time dateTime={position.createdAt.toISOString()}>
             {position.createdAt.toLocaleDateString(locale, {
@@ -163,6 +171,9 @@ export default async function PositionDetailPage({ params, searchParams }: Props
               day: 'numeric',
             })}
           </time>
+          {position.updatedAt.getTime() - position.createdAt.getTime() > 1000 && (
+            <span className="text-muted-foreground">{t('detail.edited')}</span>
+          )}
         </div>
       </div>
 
