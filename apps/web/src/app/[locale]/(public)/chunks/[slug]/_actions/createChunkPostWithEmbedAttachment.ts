@@ -1,5 +1,17 @@
 'use server';
 
+/**
+ * @deprecated #84 Pre-release scope reduction: the Game tab is
+ * restricted to PGN-only and rejects every URL shape on the client
+ * side, so this Server Action (chess.com /emboard URL → embed
+ * attachment) is no longer reached by any UI flow. The file is kept
+ * intact (rather than deleted) so a future release can re-enable
+ * chess.com embed input by restoring the URL sub-mode in
+ * `AttachmentInput` + the `kind: 'embed'` arm in `NewPostForm`'s
+ * submit handler. The render layer (`AttachedEmbedCard`,
+ * chess.com-only after Phase 13) remains wired so existing posts
+ * still display.
+ */
 import * as Sentry from '@sentry/nextjs';
 import { eq } from 'drizzle-orm';
 

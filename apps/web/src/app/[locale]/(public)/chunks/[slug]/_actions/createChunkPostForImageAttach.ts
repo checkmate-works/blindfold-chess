@@ -1,5 +1,15 @@
 'use server';
 
+/**
+ * @deprecated #84 Pre-release scope reduction: the Media tab is
+ * removed from `AttachmentModal`, so this Server Action is no longer
+ * invoked by any UI flow. The file is kept intact (rather than
+ * deleted) so a future release can re-enable the 2-step image upload
+ * flow by restoring the Media tab + `kind: 'image'` arm in
+ * `NewPostForm`'s submit handler. The render layer
+ * (`AttachedImageCard`) and the `/api/posts/[id]/images` endpoint
+ * remain wired so existing posts still display.
+ */
 import { revalidateTag } from 'next/cache';
 
 import { authenticateAndCheckBan } from '@/lib/auth';

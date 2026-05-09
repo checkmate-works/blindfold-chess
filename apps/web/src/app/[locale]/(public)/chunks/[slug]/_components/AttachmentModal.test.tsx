@@ -15,7 +15,6 @@ afterEach(() => {
 const VALID_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 const PGN_SAMPLE =
   '[Event "Test"]\n[Site "?"]\n[Date "2024.01.01"]\n[Round "?"]\n[White "A"]\n[Black "B"]\n[Result "1-0"]\n\n1. e4 e5 1-0';
-const LICHESS_EMBED_URL = 'https://lichess.org/embed/abcd1234';
 
 function setup(props?: Partial<{ isOpen: boolean }>) {
   const onApply = vi.fn<(mode: AggregatedAttachmentMode) => void>();
@@ -36,35 +35,35 @@ describe('AttachmentModal — rendering and aria roles', () => {
 
   it('keeps the dialog mounted but visually hidden when closed (keepMounted opt-in)', () => {
     setup({ isOpen: false });
-    // The dialog now stays mounted to preserve in-progress draft state
-    // across open/close cycles. The portal wrapper hides it via
-    // `display: none` and `aria-hidden="true"`.
+    // The dialog stays mounted to preserve in-progress draft state across
+    // open/close cycles. The portal wrapper hides it via `display: none`
+    // and `aria-hidden="true"`.
     const dialog = document.querySelector('[role="dialog"]');
     expect(dialog).not.toBeNull();
-    // Walk up to the portal wrapper that owns the visibility.
     const wrapper = dialog!.parentElement!.parentElement!;
     expect(wrapper.className).toContain('hidden');
     expect(wrapper.getAttribute('aria-hidden')).toBe('true');
   });
 
-  it('renders three tabs with correct roles and the first tab selected by default', () => {
+  // #84: Pre-release reduction → Media tab removed; only Game / Position
+  // tabs remain. The PGN-only Game tab and the unchanged FEN Position
+  // tab are the supported entry points for this release.
+  it('renders two tabs (Game / Position) with the first selected by default', () => {
     setup();
     const tablist = document.querySelector('[role="tablist"]');
     expect(tablist).not.toBeNull();
     const tabs = document.querySelectorAll('[role="tab"]');
-    expect(tabs.length).toBe(3);
+    expect(tabs.length).toBe(2);
     const labels = Array.from(tabs).map((t) => t.textContent?.trim());
-    expect(labels).toEqual(['Game', 'Position', 'Media']);
+    expect(labels).toEqual(['Game', 'Position']);
     expect(tabs[0].getAttribute('aria-selected')).toBe('true');
     expect(tabs[1].getAttribute('aria-selected')).toBe('false');
-    expect(tabs[2].getAttribute('aria-selected')).toBe('false');
   });
 
-  it('renders three tabpanels and shows only the active one', () => {
+  it('renders two tabpanels and shows only the active one', () => {
     setup();
     const panels = document.querySelectorAll('[role="tabpanel"]');
-    expect(panels.length).toBe(3);
-    // Active panel has hidden=false; inactive ones have hidden attribute.
+    expect(panels.length).toBe(2);
     const visible = Array.from(panels).filter((p) => !p.hasAttribute('hidden'));
     expect(visible.length).toBe(1);
   });
@@ -85,15 +84,15 @@ describe('AttachmentModal — keyboard navigation', () => {
     const firstTab = document.querySelectorAll('[role="tab"]')[0] as HTMLButtonElement;
     fireEvent.keyDown(firstTab, { key: 'ArrowLeft' });
     const tabs = document.querySelectorAll('[role="tab"]');
-    expect(tabs[2].getAttribute('aria-selected')).toBe('true');
+    expect(tabs[1].getAttribute('aria-selected')).toBe('true');
   });
 
   it('Home jumps to the first tab', () => {
     setup();
     const tabs = document.querySelectorAll('[role="tab"]');
-    fireEvent.click(tabs[2]);
-    expect(tabs[2].getAttribute('aria-selected')).toBe('true');
-    fireEvent.keyDown(tabs[2], { key: 'Home' });
+    fireEvent.click(tabs[1]);
+    expect(tabs[1].getAttribute('aria-selected')).toBe('true');
+    fireEvent.keyDown(tabs[1], { key: 'Home' });
     expect(tabs[0].getAttribute('aria-selected')).toBe('true');
   });
 
@@ -101,7 +100,7 @@ describe('AttachmentModal — keyboard navigation', () => {
     setup();
     const tabs = document.querySelectorAll('[role="tab"]');
     fireEvent.keyDown(tabs[0], { key: 'End' });
-    expect(tabs[2].getAttribute('aria-selected')).toBe('true');
+    expect(tabs[1].getAttribute('aria-selected')).toBe('true');
   });
 });
 
@@ -145,63 +144,10 @@ describe('AttachmentModal — apply per tab', () => {
     expect(applyBtn.disabled).toBe(true);
   });
 
-  it('Media tab with image files emits an image mode on apply', async () => {
-    const { onApply } = setup();
-    const mediaTab = document.querySelectorAll('[role="tab"]')[2] as HTMLButtonElement;
-    fireEvent.click(mediaTab);
-
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    const file = new File(['x'], 'a.png', { type: 'image/png' });
-    fireEvent.change(fileInput, { target: { files: [file] } });
-
-    const applyBtn = Array.from(document.querySelectorAll('button')).find(
-      (b) => b.textContent === 'Apply'
-    ) as HTMLButtonElement;
-    fireEvent.click(applyBtn);
-
-    await waitFor(() => {
-      expect(onApply).toHaveBeenCalledTimes(1);
-    });
-    const mode = onApply.mock.calls[0][0];
-    expect(mode.kind).toBe('image');
-    if (mode.kind === 'image') {
-      expect(mode.files.length).toBe(1);
-    }
-  });
-
-  it('Media tab with video URL emits a video mode on apply', async () => {
-    const { onApply } = setup();
-    const mediaTab = document.querySelectorAll('[role="tab"]')[2] as HTMLButtonElement;
-    fireEvent.click(mediaTab);
-
-    const videoRadio = document.querySelector(
-      'input[name="mediaAttachmentKind"][value="video"]'
-    ) as HTMLInputElement;
-    fireEvent.click(videoRadio);
-    const urlInput = document.querySelector('#attachmentVideoUrl') as HTMLInputElement;
-    fireEvent.change(urlInput, {
-      target: { value: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' },
-    });
-
-    const applyBtn = Array.from(document.querySelectorAll('button')).find(
-      (b) => b.textContent === 'Apply'
-    ) as HTMLButtonElement;
-    fireEvent.click(applyBtn);
-
-    await waitFor(() => {
-      expect(onApply).toHaveBeenCalledTimes(1);
-    });
-    const mode = onApply.mock.calls[0][0];
-    expect(mode.kind).toBe('video');
-    if (mode.kind === 'video') {
-      expect(mode.url).toBe('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
-    }
-  });
-
   it('Game tab with PGN-shaped textarea content emits a pgn mode with raw pgn captured', async () => {
     const { onApply } = setup();
-    // Game tab is selected by default; PGN sub-mode is the default
-    // sub-kind, so the PGN textarea is rendered inline.
+    // Game tab is the default. #84 removes the PGN/URL sub-mode radio
+    // split — the tab is now a single PGN textarea.
     const textarea = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
     fireEvent.change(textarea, { target: { value: PGN_SAMPLE } });
 
@@ -217,39 +163,6 @@ describe('AttachmentModal — apply per tab', () => {
     expect(mode.kind).toBe('pgn');
     if (mode.kind === 'pgn') {
       expect(mode.pgn).toBe(PGN_SAMPLE);
-      expect(mode.anonymize).toBe(false);
-    }
-  });
-
-  it('Game tab with a Lichess embed URL emits a pgn mode (Phase 13: routes through PGN auto-fetch)', async () => {
-    // Phase 13 (#83): Lichess /embed/{id} URLs are no longer rendered
-    // as a Lichess iframe — they are auto-fetched via the PGN flow and
-    // displayed by the self-hosted AttachedGameCard. The modal therefore
-    // emits `kind: 'pgn'` for an embed URL so NewPostForm routes to
-    // createChunkPostWithAttachment, where the URL is re-detected by
-    // detectAttachmentInput and dispatched into resolveLichessAttachmentPgn.
-    const { onApply } = setup();
-    const urlRadio = document.querySelector(
-      'input[name="gameAttachmentKind"][value="url"]'
-    ) as HTMLInputElement;
-    fireEvent.click(urlRadio);
-    const urlInput = document.querySelector('#attachmentUrl') as HTMLInputElement;
-    fireEvent.change(urlInput, { target: { value: LICHESS_EMBED_URL } });
-
-    const applyBtn = Array.from(document.querySelectorAll('button')).find(
-      (b) => b.textContent === 'Apply'
-    ) as HTMLButtonElement;
-    fireEvent.click(applyBtn);
-
-    await waitFor(() => {
-      expect(onApply).toHaveBeenCalledTimes(1);
-    });
-    const mode = onApply.mock.calls[0][0];
-    expect(mode.kind).toBe('pgn');
-    if (mode.kind === 'pgn') {
-      // The PGN action accepts the raw embed URL and `detectAttachmentInput`
-      // re-runs server-side to dispatch into the lichess_embed branch.
-      expect(mode.pgn).toBe(LICHESS_EMBED_URL);
       expect(mode.anonymize).toBe(false);
     }
   });
@@ -270,51 +183,26 @@ describe('AttachmentModal — apply per tab', () => {
 });
 
 describe('AttachmentModal — single-kind structural guarantee (D3)', () => {
-  it('Game-tab PGN + Media-tab image both entered: only the active tab’s mode is applied', async () => {
+  it('switching tabs preserves each tab’s in-progress state', async () => {
     const { onApply } = setup();
-    // Game tab: type PGN into the default PGN sub-mode textarea.
+    // Game tab: type a PGN.
     const textarea = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
     fireEvent.change(textarea, { target: { value: PGN_SAMPLE } });
 
-    // Switch to Media tab, select an image.
-    const mediaTab = document.querySelectorAll('[role="tab"]')[2] as HTMLButtonElement;
-    fireEvent.click(mediaTab);
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    fireEvent.change(fileInput, {
-      target: { files: [new File(['x'], 'a.png', { type: 'image/png' })] },
-    });
-
-    // Apply with Media tab active: the emitted mode is `image`, NOT `pgn`.
-    const applyBtn = Array.from(document.querySelectorAll('button')).find(
-      (b) => b.textContent === 'Apply'
-    ) as HTMLButtonElement;
-    fireEvent.click(applyBtn);
-
-    await waitFor(() => {
-      expect(onApply).toHaveBeenCalledTimes(1);
-    });
-    const mode = onApply.mock.calls[0][0];
-    expect(mode.kind).toBe('image');
-  });
-
-  it('switching tabs preserves each tab’s in-progress state', async () => {
-    const { onApply } = setup();
-    // Position tab: enter a FEN.
+    // Switch to Position, enter a FEN, then back to Game.
     const positionTab = document.querySelectorAll('[role="tab"]')[1] as HTMLButtonElement;
     fireEvent.click(positionTab);
     const fenInput = document.querySelector('#attachmentFen') as HTMLInputElement;
     fireEvent.change(fenInput, { target: { value: VALID_FEN } });
+    const gameTab = document.querySelectorAll('[role="tab"]')[0] as HTMLButtonElement;
+    fireEvent.click(gameTab);
 
-    // Switch away to Media, then back to Position.
-    const mediaTab = document.querySelectorAll('[role="tab"]')[2] as HTMLButtonElement;
-    fireEvent.click(mediaTab);
-    fireEvent.click(positionTab);
+    // The PGN value persisted.
+    const textareaAgain = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
+    expect(textareaAgain.value).toBe(PGN_SAMPLE);
 
-    // The FEN value persisted.
-    const fenInputAgain = document.querySelector('#attachmentFen') as HTMLInputElement;
-    expect(fenInputAgain.value).toBe(VALID_FEN);
-
-    // Apply emits the FEN mode.
+    // Apply emits the active tab's (Game / PGN) mode, not the inactive
+    // Position tab's FEN, even though both have content.
     const applyBtn = Array.from(document.querySelectorAll('button')).find(
       (b) => b.textContent === 'Apply'
     ) as HTMLButtonElement;
@@ -322,65 +210,53 @@ describe('AttachmentModal — single-kind structural guarantee (D3)', () => {
     await waitFor(() => {
       expect(onApply).toHaveBeenCalledTimes(1);
     });
-    expect(onApply.mock.calls[0][0].kind).toBe('fen');
+    expect(onApply.mock.calls[0][0].kind).toBe('pgn');
   });
 });
 
-describe('AttachmentModal — PGN sub-mode URL silent-close guard (Phase 7)', () => {
+describe('AttachmentModal — Game tab URL rejection guard (#84)', () => {
+  // Pre-release: every URL shape (Lichess game, Lichess embed, chess.com,
+  // study, …) collapses to the same generic "URLs are not accepted"
+  // error and Apply stays disabled. The previous per-shape preview hints
+  // were load-bearing for the URL sub-mode which no longer exists.
   const LICHESS_GAME_URL = 'https://lichess.org/0zeJx5nICLsH';
+  const LICHESS_EMBED_URL = 'https://lichess.org/embed/abcd1234';
   const CHESSCOM_GAME_URL = 'https://www.chess.com/game/live/12345678';
   const LICHESS_STUDY_URL = 'https://lichess.org/study/abcdefgh';
 
-  it('shows an explicit error when a Lichess game URL is pasted into the PGN textarea', async () => {
-    const { onApply } = setup();
-    const textarea = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
-    fireEvent.change(textarea, { target: { value: LICHESS_GAME_URL } });
+  for (const [label, value] of [
+    ['Lichess game URL', LICHESS_GAME_URL],
+    ['Lichess embed URL', LICHESS_EMBED_URL],
+    ['chess.com game URL', CHESSCOM_GAME_URL],
+    ['Lichess study URL', LICHESS_STUDY_URL],
+  ] as const) {
+    it(`shows the generic URL-rejected error and disables Apply for ${label}`, async () => {
+      const { onApply } = setup();
+      const textarea = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
+      fireEvent.change(textarea, { target: { value } });
 
-    // The PGN sub-mode now surfaces an inline error pointing the user
-    // at the Lichess URL tab.
-    await waitFor(() => {
-      const dialog = document.querySelector('[role="dialog"]') as HTMLElement;
-      expect(dialog.textContent).toMatch(/Lichess game URL/i);
-      expect(dialog.textContent).toMatch(/Lichess URL tab/i);
+      await waitFor(() => {
+        const dialog = document.querySelector('[role="dialog"]') as HTMLElement;
+        expect(dialog.textContent).toMatch(/URLs are not accepted/i);
+      });
+
+      const applyBtn = Array.from(document.querySelectorAll('button')).find(
+        (b) => b.textContent === 'Apply'
+      ) as HTMLButtonElement;
+      expect(applyBtn.disabled).toBe(true);
+      fireEvent.click(applyBtn);
+      expect(onApply).not.toHaveBeenCalled();
     });
+  }
 
-    // Phase 8 Fix 4: Apply is disabled while the active tab is in error.
-    // Clicking it is a no-op; nothing is emitted to onApply.
-    const applyBtn = Array.from(document.querySelectorAll('button')).find(
-      (b) => b.textContent === 'Apply'
-    ) as HTMLButtonElement;
-    expect(applyBtn.disabled).toBe(true);
-    fireEvent.click(applyBtn);
-    expect(onApply).not.toHaveBeenCalled();
-  });
-
-  it('shows an explicit error when a chess.com game URL is pasted into the PGN textarea', async () => {
+  it('shows the generic error and disables Apply for non-PGN-non-URL text ("aaa")', async () => {
     const { onApply } = setup();
     const textarea = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
-    fireEvent.change(textarea, { target: { value: CHESSCOM_GAME_URL } });
+    fireEvent.change(textarea, { target: { value: 'aaa' } });
 
     await waitFor(() => {
       const dialog = document.querySelector('[role="dialog"]') as HTMLElement;
-      expect(dialog.textContent).toMatch(/chess\.com/i);
-      expect(dialog.textContent).toMatch(/PGN body/i);
-    });
-
-    const applyBtn = Array.from(document.querySelectorAll('button')).find(
-      (b) => b.textContent === 'Apply'
-    ) as HTMLButtonElement;
-    expect(applyBtn.disabled).toBe(true);
-    fireEvent.click(applyBtn);
-    expect(onApply).not.toHaveBeenCalled();
-  });
-
-  it('shows an explicit error when a Lichess study URL is pasted into the PGN textarea', async () => {
-    const { onApply } = setup();
-    const textarea = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
-    fireEvent.change(textarea, { target: { value: LICHESS_STUDY_URL } });
-
-    await waitFor(() => {
-      const dialog = document.querySelector('[role="dialog"]') as HTMLElement;
-      expect(dialog.textContent).toMatch(/study URLs are not supported/i);
+      expect(dialog.textContent).toMatch(/URLs are not accepted/i);
     });
 
     const applyBtn = Array.from(document.querySelectorAll('button')).find(
@@ -410,55 +286,7 @@ describe('AttachmentModal — close behavior', () => {
   });
 });
 
-describe('AttachmentModal — PGN sub-mode unknown-input guard (Phase 8 Fix 3)', () => {
-  it('shows an inline error and disables Apply when non-PGN-non-URL text (e.g. "aaa") is pasted', async () => {
-    const { onApply } = setup();
-    const textarea = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
-    fireEvent.change(textarea, { target: { value: 'aaa' } });
-
-    await waitFor(() => {
-      const dialog = document.querySelector('[role="dialog"]') as HTMLElement;
-      expect(dialog.textContent).toMatch(/does not look like a PGN/i);
-    });
-
-    const applyBtn = Array.from(document.querySelectorAll('button')).find(
-      (b) => b.textContent === 'Apply'
-    ) as HTMLButtonElement;
-    expect(applyBtn.disabled).toBe(true);
-    fireEvent.click(applyBtn);
-    expect(onApply).not.toHaveBeenCalled();
-  });
-});
-
-describe('AttachmentModal — Apply disable across tabs (Phase 8 Fix 4)', () => {
-  it('Game tab: Apply is disabled when the PGN textarea has an unknown-input error', async () => {
-    setup();
-    const textarea = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
-    fireEvent.change(textarea, { target: { value: 'aaa' } });
-    await waitFor(() => {
-      const applyBtn = Array.from(document.querySelectorAll('button')).find(
-        (b) => b.textContent === 'Apply'
-      ) as HTMLButtonElement;
-      expect(applyBtn.disabled).toBe(true);
-    });
-  });
-
-  it('Game tab URL sub-mode: Apply is disabled while a non-supported URL is pasted', async () => {
-    setup();
-    const urlRadio = document.querySelector(
-      'input[name="gameAttachmentKind"][value="url"]'
-    ) as HTMLInputElement;
-    fireEvent.click(urlRadio);
-    const urlInput = document.querySelector('#attachmentUrl') as HTMLInputElement;
-    fireEvent.change(urlInput, { target: { value: 'not a url' } });
-    await waitFor(() => {
-      const applyBtn = Array.from(document.querySelectorAll('button')).find(
-        (b) => b.textContent === 'Apply'
-      ) as HTMLButtonElement;
-      expect(applyBtn.disabled).toBe(true);
-    });
-  });
-
+describe('AttachmentModal — Apply disable across tabs', () => {
   it('Position tab: Apply is disabled while the FEN is invalid (status=error)', () => {
     setup();
     const positionTab = document.querySelectorAll('[role="tab"]')[1] as HTMLButtonElement;
@@ -483,24 +311,6 @@ describe('AttachmentModal — Apply disable across tabs (Phase 8 Fix 4)', () => 
     expect(applyBtn.disabled).toBe(false);
   });
 
-  it('Media video sub-mode: Apply is disabled when the URL fails the YouTube parser', async () => {
-    setup();
-    const mediaTab = document.querySelectorAll('[role="tab"]')[2] as HTMLButtonElement;
-    fireEvent.click(mediaTab);
-    const videoRadio = document.querySelector(
-      'input[name="mediaAttachmentKind"][value="video"]'
-    ) as HTMLInputElement;
-    fireEvent.click(videoRadio);
-    const urlInput = document.querySelector('#attachmentVideoUrl') as HTMLInputElement;
-    fireEvent.change(urlInput, { target: { value: 'https://vimeo.com/12345' } });
-    await waitFor(() => {
-      const applyBtn = Array.from(document.querySelectorAll('button')).find(
-        (b) => b.textContent === 'Apply'
-      ) as HTMLButtonElement;
-      expect(applyBtn.disabled).toBe(true);
-    });
-  });
-
   it('Cancel button stays enabled even when the active tab has a validation error', () => {
     setup();
     const textarea = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
@@ -519,7 +329,7 @@ describe('AttachmentModal — Apply disable across tabs (Phase 8 Fix 4)', () => 
     const fenInput = document.querySelector('#attachmentFen') as HTMLInputElement;
     fireEvent.change(fenInput, { target: { value: 'not a fen' } });
 
-    // Switch back to Game tab — it is empty / ok, so Apply must be enabled.
+    // Switch back to Game tab — empty / ok, so Apply must be enabled.
     const gameTab = document.querySelectorAll('[role="tab"]')[0] as HTMLButtonElement;
     fireEvent.click(gameTab);
 
@@ -530,7 +340,7 @@ describe('AttachmentModal — Apply disable across tabs (Phase 8 Fix 4)', () => 
   });
 });
 
-describe('AttachmentModal — keepMounted preserves draft state (Phase 8 Fix 5)', () => {
+describe('AttachmentModal — keepMounted preserves draft state', () => {
   it('PGN textarea value persists across an isOpen=true → false → true cycle', () => {
     const onApply = vi.fn<(mode: AggregatedAttachmentMode) => void>();
     const onClose = vi.fn();
@@ -541,15 +351,14 @@ describe('AttachmentModal — keepMounted preserves draft state (Phase 8 Fix 5)'
     fireEvent.change(textarea, { target: { value: PGN_SAMPLE } });
     expect(textarea.value).toBe(PGN_SAMPLE);
 
-    // Close the modal.
+    // Close.
     rerender(<AttachmentModal isOpen={false} onClose={onClose} onApply={onApply} />);
-    // The dialog stays mounted (keepMounted) but the wrapper is hidden.
     const dialogClosed = document.querySelector('[role="dialog"]') as HTMLElement;
     expect(dialogClosed).not.toBeNull();
     const wrapper = dialogClosed.parentElement!.parentElement!;
     expect(wrapper.className).toContain('hidden');
 
-    // Re-open: the textarea value is still there.
+    // Re-open: textarea value still there.
     rerender(<AttachmentModal isOpen={true} onClose={onClose} onApply={onApply} />);
     const textareaAgain = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
     expect(textareaAgain.value).toBe(PGN_SAMPLE);

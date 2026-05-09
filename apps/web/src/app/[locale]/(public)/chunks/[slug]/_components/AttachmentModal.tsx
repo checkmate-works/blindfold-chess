@@ -11,45 +11,43 @@ import type {
 } from '@/app/[locale]/(public)/topics/_components/AttachmentInput';
 import { FenAttachmentInput } from '@/app/[locale]/(public)/topics/_components/FenAttachmentInput';
 import type { FenAttachmentMode } from '@/app/[locale]/(public)/topics/_components/FenAttachmentInput';
-import { MediaAttachmentInput } from '@/app/[locale]/(public)/topics/_components/MediaAttachmentInput';
-import type { MediaAttachmentMode } from '@/app/[locale]/(public)/topics/_components/MediaAttachmentInput';
 import { Modal } from '@/app/[locale]/_components/Modal';
 
 /**
  * @design Single-kind constraint
  *
  * SPEC2 D3 case (iii): a post may carry attachments from at most one
- * family. Each tab owns one or two sub-kinds (Game = pgn|embed, Position
- * = fen, Media = image|video). The user picks the active tab and only
- * that tab's mode is forwarded to the parent at submit time. Tab state
- * persists across switches so a user can compare drafts without losing
- * work, but only the active tab's attachment is committed — the
- * structural guarantee replaces the previous bothFamiliesActive
- * warning.
+ * family. Each tab owns one sub-kind. The user picks the active tab
+ * and only that tab's mode is forwarded to the parent at submit time.
+ * Tab state persists across switches so a user can compare drafts
+ * without losing work, but only the active tab's attachment is
+ * committed — the structural guarantee replaces the previous
+ * bothFamiliesActive warning.
+ *
+ * @design Pre-release scope (#84): 2 tabs only
+ *
+ * The Media tab (image / video) is removed for the current release —
+ * `MediaAttachmentInput` and the `image` / `video` Server Actions
+ * remain in the codebase as dead code. The `embed` arm of the input
+ * mode is also gone (Game tab is PGN-only). Existing image / video /
+ * embed rows stored before this change still render via the topic
+ * post detail components; only the input UI is restricted.
  */
-export type AttachmentTabKind = 'game' | 'position' | 'media';
+export type AttachmentTabKind = 'game' | 'position';
 
 /**
  * Aggregated mode emitted on submit.
  *
- * Each branch maps to one of the five attachment kinds (`pgn`,
- * `embed`, `fen`, `image`, `video`) plus an `empty` no-attachment
- * shape. Submitting `empty` posts a plain comment with no attachment
- * row — that path stays valid because the parent form falls back to
+ * Each branch maps to one of the supported attachment kinds (`pgn`,
+ * `fen`) plus an `empty` no-attachment shape. Submitting `empty`
+ * posts a plain comment with no attachment row — that path stays
+ * valid because the parent form falls back to
  * `createChunkPostWithAttachment` for the empty case.
  */
 export type AggregatedAttachmentMode =
   | { kind: 'empty' }
   | { kind: 'pgn'; pgn: string; anonymize: boolean }
-  | {
-      kind: 'embed';
-      provider: 'chesscom' | 'lichess';
-      sourceUrl: string;
-      anonymize: boolean;
-    }
-  | { kind: 'image'; files: readonly File[] }
-  | { kind: 'fen'; fen: string; caption: string | null; valid: boolean }
-  | { kind: 'video'; url: string };
+  | { kind: 'fen'; fen: string; caption: string | null; valid: boolean };
 
 type Props = {
   isOpen: boolean;
@@ -67,8 +65,6 @@ const TABS: readonly { key: AttachmentTabKind; label: string }[] = [
   { key: 'game', label: 'Game' },
   // TODO(i18n): attachment.modal.tab.position
   { key: 'position', label: 'Position' },
-  // TODO(i18n): attachment.modal.tab.media
-  { key: 'media', label: 'Media' },
 ];
 
 export function AttachmentModal({ isOpen, onClose, onApply }: Props) {
@@ -81,28 +77,22 @@ export function AttachmentModal({ isOpen, onClose, onApply }: Props) {
   // on submit.
   const [gameMode, setGameMode] = useState<AttachmentInputMode>({ kind: 'empty' });
   const [positionMode, setPositionMode] = useState<FenAttachmentMode>({ kind: 'empty' });
-  const [mediaMode, setMediaMode] = useState<MediaAttachmentMode>({ kind: 'empty' });
 
   const onGameModeChange = useCallback((mode: AttachmentInputMode) => setGameMode(mode), []);
   const onPositionModeChange = useCallback((mode: FenAttachmentMode) => setPositionMode(mode), []);
-  const onMediaModeChange = useCallback((mode: MediaAttachmentMode) => setMediaMode(mode), []);
 
   // Per-tab validation status. Apply is disabled when the *active* tab
   // is in `error`. Inactive tabs' errors do not block Apply because
   // only the active tab's mode is committed (single-kind D3 guarantee).
   const [gameStatus, setGameStatus] = useState<ValidationStatus>('empty');
   const [positionStatus, setPositionStatus] = useState<ValidationStatus>('empty');
-  const [mediaStatus, setMediaStatus] = useState<ValidationStatus>('empty');
 
   const onGameStatusChange = useCallback((s: ValidationStatus) => setGameStatus(s), []);
   const onPositionStatusChange = useCallback((s: ValidationStatus) => setPositionStatus(s), []);
-  const onMediaStatusChange = useCallback((s: ValidationStatus) => setMediaStatus(s), []);
 
-  const aggregated: AggregatedAttachmentMode =
-    activeTab === 'game' ? gameMode : activeTab === 'position' ? positionMode : mediaMode;
+  const aggregated: AggregatedAttachmentMode = activeTab === 'game' ? gameMode : positionMode;
 
-  const activeStatus: ValidationStatus =
-    activeTab === 'game' ? gameStatus : activeTab === 'position' ? positionStatus : mediaStatus;
+  const activeStatus: ValidationStatus = activeTab === 'game' ? gameStatus : positionStatus;
 
   // Apply is blocked whenever the active tab has a known-bad input.
   // The legacy `aggregated.kind === 'fen' && !aggregated.valid` guard
@@ -212,17 +202,6 @@ export function AttachmentModal({ isOpen, onClose, onApply }: Props) {
             <FenAttachmentInput
               onModeChange={onPositionModeChange}
               onValidationStatusChange={onPositionStatusChange}
-            />
-          </div>
-          <div
-            role="tabpanel"
-            id={`${tabIdPrefix}-panel-media`}
-            aria-labelledby={`${tabIdPrefix}-tab-media`}
-            hidden={activeTab !== 'media'}
-          >
-            <MediaAttachmentInput
-              onModeChange={onMediaModeChange}
-              onValidationStatusChange={onMediaStatusChange}
             />
           </div>
         </div>

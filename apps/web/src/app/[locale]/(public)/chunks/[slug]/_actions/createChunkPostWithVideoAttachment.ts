@@ -1,5 +1,14 @@
 'use server';
 
+/**
+ * @deprecated #84 Pre-release scope reduction: the Media tab is
+ * removed from `AttachmentModal`, so this Server Action is no longer
+ * invoked by any UI flow. The file is kept intact (rather than
+ * deleted) so a future release can re-enable YouTube video input by
+ * restoring the Media tab + `kind: 'video'` arm in `NewPostForm`'s
+ * submit handler. The render layer (`AttachedVideoCard`) remains
+ * wired so existing posts still display.
+ */
 import { getChunkBySlug } from '@/lib/chunks/queries';
 import { postVideoAttachments } from '@/lib/db';
 import { extractPgErrorCode } from '@/lib/db/extract-pg-error-code';

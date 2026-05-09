@@ -2,18 +2,13 @@
 
 import { useCallback, useState } from 'react';
 
-import { useRouter } from 'next/navigation';
-
 import { Button, FormErrorBanner, Textarea } from '@/app/_components';
 import { FaPaperclip } from 'react-icons/fa';
 
 import { MAX_CONTENT_LENGTH } from '@/lib/validations/content';
 
-import { createChunkPostForImageAttach } from '../_actions/createChunkPostForImageAttach';
 import { createChunkPostWithAttachment } from '../_actions/createChunkPostWithAttachment';
-import { createChunkPostWithEmbedAttachment } from '../_actions/createChunkPostWithEmbedAttachment';
 import { createChunkPostWithFenAttachment } from '../_actions/createChunkPostWithFenAttachment';
-import { createChunkPostWithVideoAttachment } from '../_actions/createChunkPostWithVideoAttachment';
 import { AttachmentModal } from './AttachmentModal';
 import type { AggregatedAttachmentMode } from './AttachmentModal';
 
@@ -31,29 +26,19 @@ type Props = {
  * that one is forwarded here. The previous `bothFamiliesActive` check
  * is removed because it is impossible to reach.
  *
- * @design Phase machine for image upload (D1 case B)
+ * @design Pre-release scope (#84)
  *
- *   compose  — user fills text + selects file(s); submit creates the post
- *   attaching — post id is in hand; each File is POSTed to
- *               `/api/posts/[id]/images` sequentially
- *   done     — `router.push` to the chunk page
- *   error    — image upload failed; the post itself is persisted (this
- *              is acceptable per Lessons §5 — the reaper handles the
- *              orphan-row case in normal operation; here we keep the
- *              post but surface the upload failure so the user can
- *              retry the image flow if desired)
+ * The form only routes PGN / FEN / empty attachments. The image,
+ * video, and embed Server Actions plus the 2-step image-upload flow
+ * stay in the codebase as dead code and can be re-enabled by reverting
+ * the AttachmentModal / AttachmentInput restrictions and restoring
+ * the corresponding switch arms here.
  */
-type ImagePhase = 'compose' | 'attaching' | 'done' | 'error';
-
 export function NewPostForm({ locale, slug }: Props) {
-  const router = useRouter();
-
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [attachment, setAttachment] = useState<AggregatedAttachmentMode>({ kind: 'empty' });
   const [modalOpen, setModalOpen] = useState(false);
-  const [imagePhase, setImagePhase] = useState<ImagePhase>('compose');
-  const [createdPostId, setCreatedPostId] = useState<string | null>(null);
   const [contentLength, setContentLength] = useState(0);
 
   // Counter color logic synced from
@@ -89,69 +74,6 @@ export function NewPostForm({ locale, slug }: Props) {
             formData.set('attachmentFenCaption', attachment.caption);
           }
           const result = await createChunkPostWithFenAttachment(locale, slug, {}, formData);
-          if (result?.error) {
-            setError(result.error);
-            setSubmitting(false);
-          }
-          return;
-        }
-        case 'video': {
-          formData.set('attachmentVideoUrl', attachment.url);
-          const result = await createChunkPostWithVideoAttachment(locale, slug, {}, formData);
-          if (result?.error) {
-            setError(result.error);
-            setSubmitting(false);
-          }
-          return;
-        }
-        case 'image': {
-          // 2-step (post create -> per-file upload). The post is
-          // persisted before any image upload happens; if uploads fail
-          // the post stays as a text-only comment (graceful
-          // degradation, see Lessons §5 / SPEC2 D1 case B rationale).
-          const createResult = await createChunkPostForImageAttach(locale, slug, formData);
-          if (!createResult.ok) {
-            setError(createResult.error);
-            setSubmitting(false);
-            return;
-          }
-          setCreatedPostId(createResult.postId);
-          setImagePhase('attaching');
-          try {
-            for (const file of attachment.files) {
-              const fd = new FormData();
-              fd.set('file', file);
-              const res = await fetch(`/api/posts/${createResult.postId}/images`, {
-                method: 'POST',
-                body: fd,
-                credentials: 'same-origin',
-              });
-              if (!res.ok) {
-                const body = (await res.json().catch(() => ({}))) as { error?: string };
-                setError(body.error ?? 'attachment.image.error.uploadFailed');
-                setImagePhase('error');
-                setSubmitting(false);
-                return;
-              }
-            }
-            setImagePhase('done');
-            router.push(`/${locale}/chunks/${slug}#post-${createResult.postId}`);
-            router.refresh();
-            return;
-          } catch {
-            setError('attachment.image.error.uploadFailed');
-            setImagePhase('error');
-            setSubmitting(false);
-            return;
-          }
-        }
-        case 'embed': {
-          formData.set('embedProvider', attachment.provider);
-          formData.set('embedSourceUrl', attachment.sourceUrl);
-          if (attachment.anonymize) {
-            formData.set('attachmentAnonymize', 'on');
-          }
-          const result = await createChunkPostWithEmbedAttachment(locale, slug, {}, formData);
           if (result?.error) {
             setError(result.error);
             setSubmitting(false);
@@ -201,8 +123,7 @@ export function NewPostForm({ locale, slug }: Props) {
     }
   };
 
-  const submitDisabled =
-    submitting || (attachment.kind === 'fen' && !attachment.valid) || imagePhase === 'attaching';
+  const submitDisabled = submitting || (attachment.kind === 'fen' && !attachment.valid);
 
   const attachmentSummary = describeAttachment(attachment);
 
@@ -258,15 +179,8 @@ export function NewPostForm({ locale, slug }: Props) {
         loading={submitting}
       >
         {/* TODO(i18n): topics.chunks.newPostForm.submit (existing key) */}
-        {imagePhase === 'attaching' ? 'Uploading images…' : submitting ? 'Submitting…' : 'Submit'}
+        {submitting ? 'Submitting…' : 'Submit'}
       </Button>
-
-      {imagePhase === 'error' && createdPostId !== null && (
-        <p className="text-xs text-muted-foreground">
-          {/* TODO(i18n): attachment.image.error.partialUploadHint */}
-          The comment was posted but image upload failed. The post is visible without images.
-        </p>
-      )}
     </form>
   );
 }
@@ -278,18 +192,9 @@ function describeAttachment(mode: AggregatedAttachmentMode): string | null {
     case 'pgn':
       // TODO(i18n): attachment.modal.summary.pgn
       return 'Game (PGN) attached.';
-    case 'embed':
-      // TODO(i18n): attachment.modal.summary.embed
-      return `Game (${mode.provider} embed) attached.`;
-    case 'image':
-      // TODO(i18n): attachment.modal.summary.image
-      return `${mode.files.length} image${mode.files.length === 1 ? '' : 's'} attached.`;
     case 'fen':
       // TODO(i18n): attachment.modal.summary.fen
       return mode.valid ? 'Position (FEN) attached.' : 'Position (FEN) attached (invalid).';
-    case 'video':
-      // TODO(i18n): attachment.modal.summary.video
-      return 'Video attached.';
     default: {
       const _exhaustive: never = mode;
       return _exhaustive;

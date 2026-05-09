@@ -6,6 +6,19 @@ import { parseYouTubeUrl } from '@/lib/games/youtube-validator';
 import { MAX_IMAGES_PER_POST, POST_IMAGES_MAX_FILE_SIZE } from '@/lib/post-images/validation';
 
 /**
+ * @deprecated #84 Pre-release scope reduction: the Media tab is removed
+ * from `AttachmentModal`, so this component is currently unreferenced
+ * by any callsite. The file is kept intact (rather than deleted) so a
+ * future release can re-enable image / video input by restoring the
+ * `'media'` entry in `AttachmentModal`'s TABS array and re-adding the
+ * `image` / `video` arms of `AggregatedAttachmentMode` + the matching
+ * switch arms in `NewPostForm`'s submit handler. The render layer
+ * (`AttachedImageCard` / `AttachedVideoCard`) and the Server Actions
+ * (`createChunkPostFor{ImageAttach,WithVideoAttachment}`) remain wired
+ * so existing posts still display.
+ */
+
+/**
  * Discriminated mode reported to the parent form.
  *
  * @design Why a separate Media expander
