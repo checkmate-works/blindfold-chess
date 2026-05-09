@@ -1082,6 +1082,17 @@
         "notFound": "このパズルは見つかりませんでした。",
         "unauthorized": "自分のパズルのみ編集できます。"
       },
+      "tags": {
+        "section": "テーマ・チャンク",
+        "help": "テーマは標準語彙(ピン、パスポーンなど)、チャンクは作成者が共有する駒のパターンです。",
+        "placeholder": "テーマやチャンクを検索して追加…",
+        "badge": {
+          "theme": "テーマ",
+          "chunk": "チャンク"
+        },
+        "noResults": "該当なし",
+        "remove": "{label} を外す"
+      },
       "detail": {
         "title": "パズル詳細",
         "descriptionSection": "このパズルについて",

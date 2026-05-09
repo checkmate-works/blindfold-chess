@@ -12,6 +12,7 @@ import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/met
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { CreatePuzzleForm } from '../_components/CreatePuzzleForm';
+import { loadAvailableTags } from '../_lib/load-puzzle-tags';
 
 export async function generateMetadata({ params }: Props) {
   const { locale } = await params;
@@ -40,7 +41,16 @@ export default async function NewPuzzlePage({ params }: Props) {
     displayName = resolveAuthorName(profile, { fallback: '' });
   }
 
-  const form = <CreatePuzzleForm displayName={displayName} disableUnsavedGuard={!user} />;
+  const availableTags = await loadAvailableTags(locale);
+
+  const form = (
+    <CreatePuzzleForm
+      displayName={displayName}
+      disableUnsavedGuard={!user}
+      availableThemes={availableTags.themes}
+      availableChunks={availableTags.chunks}
+    />
+  );
 
   return (
     <PageLayout

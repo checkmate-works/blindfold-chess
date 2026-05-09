@@ -21,6 +21,8 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 
 import { usePuzzleDraftHydration } from '../_hooks/use-puzzle-draft-hydration';
 import { clearDraft, writeDraft } from '../_lib/draft-storage';
+import type { ChunkOption, ThemeOption } from '../_lib/load-puzzle-tags';
+import { PuzzleTagPicker } from './PuzzleTagPicker';
 import { SolutionMoveList } from './SolutionMoveList';
 
 const EMPTY_BOARD_FEN = '8/8/8/8/8/8/8/8 w - - 0 1';
@@ -60,6 +62,16 @@ type Props = {
    * the sign-up CTA click with a modal that makes no sense in context.
    */
   disableUnsavedGuard?: boolean;
+  /**
+   * Theme + chunk catalog for the tag picker. Loaded server-side so the
+   * picker can render immediately without an extra round-trip and so
+   * draft hydration can resolve persisted IDs to display labels.
+   * Optional with empty defaults so the form stays renderable in tests
+   * and on routes that don't supply this data (e.g. the legacy guest
+   * gate path before sign-in completes).
+   */
+  availableThemes?: ThemeOption[];
+  availableChunks?: ChunkOption[];
 };
 
 function replaceSideToMove(fen: string, side: SideToMove): string {
@@ -74,10 +86,16 @@ function readSideToMove(fen: string): SideToMove {
   return parts[1] === 'b' ? 'b' : 'w';
 }
 
-export function CreatePuzzleForm({ displayName, disableUnsavedGuard = false }: Props = {}) {
+export function CreatePuzzleForm({
+  displayName,
+  disableUnsavedGuard = false,
+  availableThemes = [],
+  availableChunks = [],
+}: Props = {}) {
   const router = useRouter();
   const t = useTranslations('practice.puzzle.create');
   const tBoard = useTranslations('practice.puzzle');
+  const tTags = useTranslations('practice.puzzle.tags');
   const tPlay = useTranslations('play');
   const tUnsaved = useTranslations('unsavedChanges');
   const { preferences, updatePreferences, isLoaded } = useGamePreferences();
@@ -102,6 +120,31 @@ export function CreatePuzzleForm({ displayName, disableUnsavedGuard = false }: P
   const [submitted, setSubmitted] = useState(false);
   const [startOverOpen, setStartOverOpen] = useState(false);
   const [clearBoardOpen, setClearBoardOpen] = useState(false);
+  const [selectedThemes, setSelectedThemes] = useState<ThemeOption[]>([]);
+  const [selectedChunks, setSelectedChunks] = useState<ChunkOption[]>([]);
+
+  const handleTagChange = useCallback((themes: ThemeOption[], chunks: ChunkOption[]) => {
+    setSelectedThemes(themes);
+    setSelectedChunks(chunks);
+  }, []);
+
+  // Resolve draft IDs against the loaded catalog so the picker has full
+  // option objects (label + slug + category) to render. IDs not present
+  // in the catalog (e.g. a chunk soft-deleted between draft write and
+  // hydration) silently drop, since attaching them would fail validation
+  // anyway and we'd rather hydrate cleanly than block the author.
+  const tagPickerLabels = useMemo(
+    () => ({
+      section: tTags('section'),
+      help: tTags('help'),
+      placeholder: tTags('placeholder'),
+      badgeTheme: tTags('badge.theme'),
+      badgeChunk: tTags('badge.chunk'),
+      noResults: tTags('noResults'),
+      remove: (label: string) => tTags('remove', { label }),
+    }),
+    [tTags]
+  );
 
   const { hydratedFromDraft, resetHydrated } = usePuzzleDraftHydration({
     apply: (draft) => {
@@ -115,6 +158,18 @@ export function CreatePuzzleForm({ displayName, disableUnsavedGuard = false }: P
       setActiveTab(draft.activeTab);
       setFlipped(draft.flipped);
       setUserFlipped(draft.userFlipped);
+      if (draft.themeIds && draft.themeIds.length > 0) {
+        const resolved = draft.themeIds
+          .map((id) => availableThemes.find((t) => t.id === id))
+          .filter((t): t is ThemeOption => t !== undefined);
+        setSelectedThemes(resolved);
+      }
+      if (draft.chunkIds && draft.chunkIds.length > 0) {
+        const resolved = draft.chunkIds
+          .map((id) => availableChunks.find((c) => c.id === id))
+          .filter((c): c is ChunkOption => c !== undefined);
+        setSelectedChunks(resolved);
+      }
     },
   });
 
@@ -166,7 +221,9 @@ export function CreatePuzzleForm({ displayName, disableUnsavedGuard = false }: P
       description.trim() !== '' ||
       moves.length > 0 ||
       notes.some((n) => n.trim() !== '') ||
-      (fenInput.trim() !== '' && fenInput !== EMPTY_BOARD_FEN));
+      (fenInput.trim() !== '' && fenInput !== EMPTY_BOARD_FEN) ||
+      selectedThemes.length > 0 ||
+      selectedChunks.length > 0);
 
   const { isBlocking, confirm, cancel } = useUnsavedChanges({
     isDirty: disableUnsavedGuard ? false : isDirty,
@@ -320,6 +377,8 @@ export function CreatePuzzleForm({ displayName, disableUnsavedGuard = false }: P
       sideToMove,
       flipped,
       userFlipped,
+      themeIds: selectedThemes.map((t) => t.id),
+      chunkIds: selectedChunks.map((c) => c.id),
     });
     if (!ok) {
       setError(t('draftWriteFailed'));
@@ -351,6 +410,8 @@ export function CreatePuzzleForm({ displayName, disableUnsavedGuard = false }: P
     setActiveTab('board');
     setFlipped(false);
     setUserFlipped(false);
+    setSelectedThemes([]);
+    setSelectedChunks([]);
     resetHydrated();
     setStartOverOpen(false);
   }
@@ -601,6 +662,16 @@ export function CreatePuzzleForm({ displayName, disableUnsavedGuard = false }: P
             {solutionError && <p className="text-sm text-destructive">{solutionError}</p>}
           </div>
         )}
+
+        <PuzzleTagPicker
+          selectedThemes={selectedThemes}
+          selectedChunks={selectedChunks}
+          availableThemes={availableThemes}
+          availableChunks={availableChunks}
+          disabled={pending}
+          onChange={handleTagChange}
+          labels={tagPickerLabels}
+        />
 
         <Button
           type="submit"

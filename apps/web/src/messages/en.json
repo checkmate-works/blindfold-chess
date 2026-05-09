@@ -1082,6 +1082,17 @@
         "notFound": "This puzzle could not be found.",
         "unauthorized": "You can only edit your own puzzles."
       },
+      "tags": {
+        "section": "Themes & chunks",
+        "help": "Themes are curated vocabulary (pin, passed pawn, …). Chunks are personal piece patterns shared by other solvers.",
+        "placeholder": "Search to add a theme or chunk…",
+        "badge": {
+          "theme": "Theme",
+          "chunk": "Chunk"
+        },
+        "noResults": "No matches",
+        "remove": "Remove {label}"
+      },
       "detail": {
         "title": "Puzzle Detail",
         "descriptionSection": "About This Puzzle",

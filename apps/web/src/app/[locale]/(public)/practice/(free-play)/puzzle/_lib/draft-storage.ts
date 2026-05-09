@@ -19,6 +19,11 @@ export const DRAFT_STORAGE_KEY = 'blindfold_chess_puzzle_draft';
  * clears the slot. Bumping the version is a deliberate breaking change —
  * in-flight drafts are intentionally sacrificed at upgrade time since no
  * server state has been persisted yet.
+ *
+ * `themeIds` and `chunkIds` were added after the initial release. They
+ * remain optional so existing v1 drafts (written before the picker
+ * landed) continue to hydrate cleanly with no tags rather than being
+ * silently discarded mid-author.
  */
 export type PuzzleDraftV1 = {
   version: 1;
@@ -31,6 +36,8 @@ export type PuzzleDraftV1 = {
   sideToMove: 'w' | 'b';
   flipped: boolean;
   userFlipped: boolean;
+  themeIds?: string[];
+  chunkIds?: string[];
 };
 
 function isStringArray(value: unknown): value is string[] {
@@ -50,6 +57,11 @@ function isPuzzleDraftV1(value: unknown): value is PuzzleDraftV1 {
   if (v.sideToMove !== 'w' && v.sideToMove !== 'b') return false;
   if (typeof v.flipped !== 'boolean') return false;
   if (typeof v.userFlipped !== 'boolean') return false;
+  // themeIds / chunkIds are optional — accept missing (legacy drafts) or
+  // valid string arrays. Anything else (e.g. malformed JSON injected by
+  // a buggy producer) is treated as corrupt.
+  if (v.themeIds !== undefined && !isStringArray(v.themeIds)) return false;
+  if (v.chunkIds !== undefined && !isStringArray(v.chunkIds)) return false;
   return true;
 }
 

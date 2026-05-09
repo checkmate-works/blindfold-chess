@@ -73,6 +73,8 @@ export function PuzzlePreviewClient() {
         title: draft.title,
         description: draft.description || null,
         solutionMoves,
+        themeIds: draft.themeIds,
+        chunkIds: draft.chunkIds,
       });
       if ('error' in result) {
         setError(result.error);

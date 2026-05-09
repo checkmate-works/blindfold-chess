@@ -1082,6 +1082,17 @@
         "notFound": "No se pudo encontrar este puzzle.",
         "unauthorized": "Solo puedes editar tus propios puzzles."
       },
+      "tags": {
+        "section": "Temas y chunks",
+        "help": "Los temas son vocabulario curado (clavada, peón pasado, …). Los chunks son patrones de piezas personales compartidos por otros solucionadores.",
+        "placeholder": "Buscar para añadir un tema o chunk…",
+        "badge": {
+          "theme": "Tema",
+          "chunk": "Chunk"
+        },
+        "noResults": "Sin resultados",
+        "remove": "Quitar {label}"
+      },
       "detail": {
         "title": "Detalle del Puzzle",
         "descriptionSection": "Sobre Este Puzzle",

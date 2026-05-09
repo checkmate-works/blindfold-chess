@@ -19,6 +19,8 @@ import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { updatePuzzle } from '../_actions/updatePuzzle';
+import type { ChunkOption, ThemeOption } from '../_lib/load-puzzle-tags';
+import { PuzzleTagPicker } from './PuzzleTagPicker';
 import { SolutionMoveList } from './SolutionMoveList';
 
 const EMPTY_BOARD_FEN = '8/8/8/8/8/8/8/8 w - - 0 1';
@@ -46,14 +48,21 @@ type Props = {
     description: string | null;
     fen: string;
     solutionMoves: Array<{ san: string; note: string | null }>;
+    themes: ThemeOption[];
+    chunks: ChunkOption[];
+  };
+  available: {
+    themes: ThemeOption[];
+    chunks: ChunkOption[];
   };
 };
 
-export function EditPuzzleForm({ positionId, initial }: Props) {
+export function EditPuzzleForm({ positionId, initial, available }: Props) {
   const router = useRouter();
   const t = useTranslations('practice.puzzle.edit');
   const tCreate = useTranslations('practice.puzzle.create');
   const tBoard = useTranslations('practice.puzzle');
+  const tTags = useTranslations('practice.puzzle.tags');
   const tPlay = useTranslations('play');
   const tUnsaved = useTranslations('unsavedChanges');
   const { preferences, updatePreferences, isLoaded } = useGamePreferences();
@@ -61,6 +70,8 @@ export function EditPuzzleForm({ positionId, initial }: Props) {
   const initialMovesRef = useRef(initial.solutionMoves.map((m) => m.san));
   const initialNotesRef = useRef(initial.solutionMoves.map((m) => m.note ?? ''));
   const initialDescription = initial.description ?? '';
+  const initialThemeIdsRef = useRef(initial.themes.map((t) => t.id));
+  const initialChunkIdsRef = useRef(initial.chunks.map((c) => c.id));
 
   const [fenInput, setFenInput] = useState(initial.fen);
   const [boardFen, setBoardFen] = useState(initial.fen);
@@ -80,6 +91,39 @@ export function EditPuzzleForm({ positionId, initial }: Props) {
   const [userFlipped, setUserFlipped] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [clearBoardOpen, setClearBoardOpen] = useState(false);
+  const [selectedThemes, setSelectedThemes] = useState<ThemeOption[]>(initial.themes);
+  const [selectedChunks, setSelectedChunks] = useState<ChunkOption[]>(initial.chunks);
+
+  const themeIds = useMemo(() => selectedThemes.map((t) => t.id), [selectedThemes]);
+  const chunkIds = useMemo(() => selectedChunks.map((c) => c.id), [selectedChunks]);
+
+  const handleTagChange = useCallback((themes: ThemeOption[], chunks: ChunkOption[]) => {
+    setSelectedThemes(themes);
+    setSelectedChunks(chunks);
+  }, []);
+
+  const tagsChanged = useMemo(() => {
+    const initialThemeIds = initialThemeIdsRef.current;
+    const initialChunkIds = initialChunkIdsRef.current;
+    if (themeIds.length !== initialThemeIds.length) return true;
+    if (chunkIds.length !== initialChunkIds.length) return true;
+    const themeSet = new Set(initialThemeIds);
+    const chunkSet = new Set(initialChunkIds);
+    return themeIds.some((id) => !themeSet.has(id)) || chunkIds.some((id) => !chunkSet.has(id));
+  }, [themeIds, chunkIds]);
+
+  const tagPickerLabels = useMemo(
+    () => ({
+      section: tTags('section'),
+      help: tTags('help'),
+      placeholder: tTags('placeholder'),
+      badgeTheme: tTags('badge.theme'),
+      badgeChunk: tTags('badge.chunk'),
+      noResults: tTags('noResults'),
+      remove: (label: string) => tTags('remove', { label }),
+    }),
+    [tTags]
+  );
 
   const trimmedFen = fenInput.trim();
   const isFenValid = trimmedFen !== '' && validateFen(trimmedFen);
@@ -131,7 +175,8 @@ export function EditPuzzleForm({ positionId, initial }: Props) {
       description !== initialDescription ||
       fenInput.trim() !== initial.fen ||
       movesChanged ||
-      notesChanged);
+      notesChanged ||
+      tagsChanged);
 
   const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
 
@@ -270,6 +315,8 @@ export function EditPuzzleForm({ positionId, initial }: Props) {
         title,
         description: description || null,
         solutionMoves: moves.map((san, i) => ({ san, note: notes[i] || null })),
+        themeIds,
+        chunkIds,
       });
 
       if ('error' in result) {
@@ -508,6 +555,16 @@ export function EditPuzzleForm({ positionId, initial }: Props) {
             {solutionError && <p className="text-sm text-destructive">{solutionError}</p>}
           </div>
         )}
+
+        <PuzzleTagPicker
+          selectedThemes={selectedThemes}
+          selectedChunks={selectedChunks}
+          availableThemes={available.themes}
+          availableChunks={available.chunks}
+          disabled={pending}
+          onChange={handleTagChange}
+          labels={tagPickerLabels}
+        />
 
         <Button
           type="submit"

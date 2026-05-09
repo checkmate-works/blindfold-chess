@@ -2,10 +2,18 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, eq, inArray, isNull } from 'drizzle-orm';
 
 import { authenticateAndGuard } from '@/lib/auth';
-import { db, positions, puzzleSolutions } from '@/lib/db';
+import {
+  chunks,
+  db,
+  glossaryTerms,
+  positionChunks,
+  positionThemes,
+  positions,
+  puzzleSolutions,
+} from '@/lib/db';
 import { normalizePuzzleMoves, validatePuzzleMutationData } from '@/lib/positions/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { logActivityEvent } from '@/lib/users/activity-log';
@@ -31,6 +39,18 @@ export async function updatePuzzle(data: {
   title: string;
   description?: string | null;
   solutionMoves: Array<{ san: string; note?: string | null }>;
+  /**
+   * When provided (even as []) replaces the position's theme tags. Theme
+   * IDs must reference `glossary_terms` rows with `is_theme = true`.
+   * Omit to leave existing tags untouched.
+   */
+  themeIds?: string[];
+  /**
+   * When provided (even as []) replaces the position's chunk tags.
+   * Chunk IDs must reference non-soft-deleted `chunks` rows. Omit to
+   * leave existing tags untouched.
+   */
+  chunkIds?: string[];
 }): Promise<UpdatePuzzleResult> {
   const guardResult = await authenticateAndGuard(RATE_LIMITS.updatePuzzle);
 
@@ -77,6 +97,34 @@ export async function updatePuzzle(data: {
     return { error: 'alreadyDeleted' };
   }
 
+  // App-layer validation of tag IDs. The application connects with
+  // service-role-equivalent privileges so the RLS predicates on
+  // position_themes / position_chunks (which would also enforce
+  // is_theme = true and chunks.deleted_at IS NULL) do not fire on
+  // these writes — we re-assert the same predicates here.
+  const dedupedThemeIds = data.themeIds ? Array.from(new Set(data.themeIds)) : undefined;
+  const dedupedChunkIds = data.chunkIds ? Array.from(new Set(data.chunkIds)) : undefined;
+
+  if (dedupedThemeIds && dedupedThemeIds.length > 0) {
+    const validThemes = await db
+      .select({ id: glossaryTerms.id })
+      .from(glossaryTerms)
+      .where(and(inArray(glossaryTerms.id, dedupedThemeIds), eq(glossaryTerms.isTheme, true)));
+    if (validThemes.length !== dedupedThemeIds.length) {
+      return { error: 'invalidTheme' };
+    }
+  }
+
+  if (dedupedChunkIds && dedupedChunkIds.length > 0) {
+    const validChunks = await db
+      .select({ id: chunks.id })
+      .from(chunks)
+      .where(and(inArray(chunks.id, dedupedChunkIds), isNull(chunks.deletedAt)));
+    if (validChunks.length !== dedupedChunkIds.length) {
+      return { error: 'invalidChunk' };
+    }
+  }
+
   await db.transaction(async (tx) => {
     await tx
       .update(positions)
@@ -94,6 +142,32 @@ export async function updatePuzzle(data: {
       positionId: data.id,
       solutionMoves: normalizedMoves,
     });
+
+    if (dedupedThemeIds !== undefined) {
+      await tx.delete(positionThemes).where(eq(positionThemes.positionId, data.id));
+      if (dedupedThemeIds.length > 0) {
+        await tx.insert(positionThemes).values(
+          dedupedThemeIds.map((termId) => ({
+            positionId: data.id,
+            termId,
+            attachedByUserId: user.id,
+          }))
+        );
+      }
+    }
+
+    if (dedupedChunkIds !== undefined) {
+      await tx.delete(positionChunks).where(eq(positionChunks.positionId, data.id));
+      if (dedupedChunkIds.length > 0) {
+        await tx.insert(positionChunks).values(
+          dedupedChunkIds.map((chunkId) => ({
+            positionId: data.id,
+            chunkId,
+            attachedByUserId: user.id,
+          }))
+        );
+      }
+    }
   });
 
   logActivityEvent({

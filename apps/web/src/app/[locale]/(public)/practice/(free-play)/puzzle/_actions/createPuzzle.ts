@@ -2,8 +2,19 @@
 
 import { revalidatePath, revalidateTag } from 'next/cache';
 
+import { and, eq, inArray, isNull } from 'drizzle-orm';
+
 import { authenticateAndGuard } from '@/lib/auth';
-import { db, feedItems, positions, puzzleSolutions } from '@/lib/db';
+import {
+  chunks,
+  db,
+  feedItems,
+  glossaryTerms,
+  positionChunks,
+  positionThemes,
+  positions,
+  puzzleSolutions,
+} from '@/lib/db';
 import { GRANT_TYPE_DEFAULTS } from '@/lib/db/data/grant-types';
 import { createNotification, notifyFollowersOfNewPosition } from '@/lib/notifications/notification';
 import { normalizePuzzleMoves, validatePuzzleMutationData } from '@/lib/positions/validation';
@@ -31,6 +42,15 @@ export async function createPuzzle(data: {
   title: string;
   description?: string | null;
   solutionMoves: Array<{ san: string; note?: string | null }>;
+  /**
+   * Optional theme tags (glossary terms with `is_theme = true`) to
+   * attach to the new position. Validated against the database before
+   * the insert transaction begins so a bad ID rejects the whole create
+   * up-front rather than failing partway in.
+   */
+  themeIds?: string[];
+  /** Optional chunk tags (non-soft-deleted) to attach. */
+  chunkIds?: string[];
 }): Promise<CreatePuzzleResult> {
   const guardResult = await authenticateAndGuard(RATE_LIMITS.createPuzzle);
 
@@ -54,6 +74,33 @@ export async function createPuzzle(data: {
     return { error: validationError };
   }
 
+  // Same defensive validation as updatePuzzle: the application connects
+  // with service-role-equivalent privileges so the RLS predicates on
+  // position_themes / position_chunks (is_theme = true,
+  // chunks.deleted_at IS NULL) do not fire — re-assert here.
+  const dedupedThemeIds = data.themeIds ? Array.from(new Set(data.themeIds)) : undefined;
+  const dedupedChunkIds = data.chunkIds ? Array.from(new Set(data.chunkIds)) : undefined;
+
+  if (dedupedThemeIds && dedupedThemeIds.length > 0) {
+    const validThemes = await db
+      .select({ id: glossaryTerms.id })
+      .from(glossaryTerms)
+      .where(and(inArray(glossaryTerms.id, dedupedThemeIds), eq(glossaryTerms.isTheme, true)));
+    if (validThemes.length !== dedupedThemeIds.length) {
+      return { error: 'invalidTheme' };
+    }
+  }
+
+  if (dedupedChunkIds && dedupedChunkIds.length > 0) {
+    const validChunks = await db
+      .select({ id: chunks.id })
+      .from(chunks)
+      .where(and(inArray(chunks.id, dedupedChunkIds), isNull(chunks.deletedAt)));
+    if (validChunks.length !== dedupedChunkIds.length) {
+      return { error: 'invalidChunk' };
+    }
+  }
+
   let grantInfo: { grantId: string; expiresAt: Date } | null = null;
   const inserted = await db.transaction(async (tx) => {
     const [position] = await tx
@@ -71,6 +118,26 @@ export async function createPuzzle(data: {
       positionId: position.id,
       solutionMoves: normalizedMoves,
     });
+
+    if (dedupedThemeIds && dedupedThemeIds.length > 0) {
+      await tx.insert(positionThemes).values(
+        dedupedThemeIds.map((termId) => ({
+          positionId: position.id,
+          termId,
+          attachedByUserId: user.id,
+        }))
+      );
+    }
+
+    if (dedupedChunkIds && dedupedChunkIds.length > 0) {
+      await tx.insert(positionChunks).values(
+        dedupedChunkIds.map((chunkId) => ({
+          positionId: position.id,
+          chunkId,
+          attachedByUserId: user.id,
+        }))
+      );
+    }
 
     await tx.insert(feedItems).values({
       entityType: 'position',
