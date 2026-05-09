@@ -5,10 +5,9 @@ import { revalidateTag } from 'next/cache';
 import { requireAdmin } from '@/app/admin/_lib/auth';
 import { eq } from 'drizzle-orm';
 
+import type { ActionResult } from '@/lib/action-types';
 import { db, moderationActions, userGrants } from '@/lib/db';
 import { getClientIp } from '@/lib/security/client-ip';
-
-type ActionResult = { success: true } | { error: string };
 
 type RevokeTxResult = { ok: true } | { error: 'notFound' | 'alreadyRevoked' };
 
