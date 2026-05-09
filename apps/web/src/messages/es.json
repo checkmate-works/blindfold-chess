@@ -2221,15 +2221,12 @@
   },
   "Mypage": {
     "title": "Mi Página",
-    "challengeLink": "Historial de Desafíos",
     "dashboard": {
       "viewProfile": "Perfil público",
       "challengeTitle": "Historial de Desafíos",
       "likesTitle": "Publicaciones que te Gustan",
       "postsTitle": "Mis Publicaciones",
       "editProfile": "Editar",
-      "interviewTitle": "Entrevista",
-      "beltSystem": "Sistema de Cinturones",
       "myRecords": "Mis Registros",
       "socialTitle": "Social",
       "interviewBanner": "Responde preguntas de entrevista y cuéntanos sobre ti",
@@ -2247,7 +2244,6 @@
       "subscriptionTitle": "Suscripción",
       "benefitsTitle": "Beneficios",
       "practiceTitle": "Práctica",
-      "myProblems": "Mis Problemas",
       "myPositionMemory": "Memoria de Posición",
       "myPuzzles": "Puzzles"
     },

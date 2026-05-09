@@ -2221,15 +2221,12 @@
   },
   "Mypage": {
     "title": "My Page",
-    "challengeLink": "Challenge Records",
     "dashboard": {
       "viewProfile": "Public profile",
       "challengeTitle": "Challenge Records",
       "likesTitle": "Liked Posts",
       "postsTitle": "My Posts",
       "editProfile": "Edit",
-      "interviewTitle": "Interview",
-      "beltSystem": "Belt System",
       "myRecords": "My Records",
       "socialTitle": "Social",
       "interviewBanner": "Answer interview questions and tell us about yourself",
@@ -2247,7 +2244,6 @@
       "subscriptionTitle": "Subscription",
       "benefitsTitle": "Benefits",
       "practiceTitle": "Practice",
-      "myProblems": "My Problems",
       "myPositionMemory": "Position Memory",
       "myPuzzles": "Puzzles"
     },

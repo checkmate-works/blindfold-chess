@@ -2221,15 +2221,12 @@
   },
   "Mypage": {
     "title": "マイページ",
-    "challengeLink": "チャレンジ記録",
     "dashboard": {
       "viewProfile": "公開プロフィール",
       "challengeTitle": "チャレンジ記録",
       "likesTitle": "いいねした投稿",
       "postsTitle": "自分の投稿",
       "editProfile": "編集",
-      "interviewTitle": "インタビュー",
-      "beltSystem": "段級位",
       "myRecords": "マイレコード",
       "socialTitle": "ソーシャル",
       "interviewBanner": "インタビューに答えてあなたのことを教えてください",
@@ -2247,7 +2244,6 @@
       "subscriptionTitle": "サブスクリプション",
       "benefitsTitle": "特典",
       "practiceTitle": "練習",
-      "myProblems": "マイ問題",
       "myPositionMemory": "ポジションの記憶",
       "myPuzzles": "パズル"
     },
