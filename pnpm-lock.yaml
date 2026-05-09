@@ -173,6 +173,9 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2.103.0
         version: 2.103.0
+      '@tiptap/core':
+        specifier: ^3.22.3
+        version: 3.22.3(@tiptap/pm@3.22.3)
       '@tiptap/extension-image':
         specifier: ^3.22.3
         version: 3.22.3(@tiptap/core@3.22.3(@tiptap/pm@3.22.3))
@@ -260,6 +263,9 @@ importers:
       resend:
         specifier: ^6.10.0
         version: 6.10.0
+      server-only:
+        specifier: ^0.0.1
+        version: 0.0.1
       stripe:
         specifier: ^20.4.1
         version: 20.4.1(@types/node@24.12.2)
@@ -306,6 +312,15 @@ importers:
       eslint:
         specifier: ^9.39.4
         version: 9.39.4(jiti@2.6.1)
+      fast-glob:
+        specifier: ^3.3.1
+        version: 3.3.1
+      globals:
+        specifier: ^15.15.0
+        version: 15.15.0
+      intl-messageformat:
+        specifier: ^11.2.0
+        version: 11.2.0
       jsdom:
         specifier: ^27.4.0
         version: 27.4.0
