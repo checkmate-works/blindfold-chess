@@ -4248,8 +4248,7 @@
       "anonymizeHint": "Substitui os cabeçalhos White / Black por «Player 1» e «Player 2» antes de salvar."
     },
     "preview": {
-      "loading": "Gerando pré-visualização…",
-      "openInLichess": "Abrir no Lichess"
+      "loading": "Gerando pré-visualização…"
     },
     "card": {
       "replayButton": "Abrir replay",

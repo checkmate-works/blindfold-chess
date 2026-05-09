@@ -4248,8 +4248,7 @@
       "anonymizeHint": "Replaces White / Black headers with \"Player 1\" and \"Player 2\" before saving."
     },
     "preview": {
-      "loading": "Generating preview…",
-      "openInLichess": "Open in Lichess"
+      "loading": "Generating preview…"
     },
     "card": {
       "replayButton": "Open replay",

@@ -4248,8 +4248,7 @@
       "anonymizeHint": "Sustituye las cabeceras White / Black por «Player 1» y «Player 2» antes de guardar."
     },
     "preview": {
-      "loading": "Generando vista previa…",
-      "openInLichess": "Abrir en Lichess"
+      "loading": "Generando vista previa…"
     },
     "card": {
       "replayButton": "Abrir reproducción",

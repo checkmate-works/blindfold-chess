@@ -4248,8 +4248,7 @@
       "anonymizeHint": "保存時に White / Black ヘッダを「Player 1」「Player 2」に置き換えます。"
     },
     "preview": {
-      "loading": "プレビュー生成中…",
-      "openInLichess": "Lichess で開く"
+      "loading": "プレビュー生成中…"
     },
     "card": {
       "replayButton": "リプレイを開く",
