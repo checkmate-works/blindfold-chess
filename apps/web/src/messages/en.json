@@ -1902,7 +1902,6 @@
   },
   "company": {
     "title": "Company Information",
-    "companyInfo": "Operator Information",
     "companyName": "Company Name",
     "companyNameValue": "Fuji Enterprise",
     "location": "Location",
