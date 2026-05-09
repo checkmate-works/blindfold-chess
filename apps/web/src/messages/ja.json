@@ -3780,8 +3780,7 @@
       "exp": "Exp",
       "level": "レベル"
     },
-    "emptyState": "まだExpの記録がありません。練習を始めてExpを獲得しましょう！",
-    "backToScoreLeaderboard": "スコアランキングへ戻る"
+    "emptyState": "まだExpの記録がありません。練習を始めてExpを獲得しましょう！"
   },
   "validation": {
     "password": {

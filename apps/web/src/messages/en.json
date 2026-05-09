@@ -3780,8 +3780,7 @@
       "exp": "Exp",
       "level": "Level"
     },
-    "emptyState": "No Exp records yet. Start practicing to earn Exp!",
-    "backToScoreLeaderboard": "Back to Score Leaderboard"
+    "emptyState": "No Exp records yet. Start practicing to earn Exp!"
   },
   "validation": {
     "password": {

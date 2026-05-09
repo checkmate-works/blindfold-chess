@@ -3780,8 +3780,7 @@
       "exp": "Exp",
       "level": "Nivel"
     },
-    "emptyState": "Aún no hay registros de Exp. ¡Empieza a practicar para ganar Exp!",
-    "backToScoreLeaderboard": "Volver a Clasificación de Puntuación"
+    "emptyState": "Aún no hay registros de Exp. ¡Empieza a practicar para ganar Exp!"
   },
   "validation": {
     "password": {
