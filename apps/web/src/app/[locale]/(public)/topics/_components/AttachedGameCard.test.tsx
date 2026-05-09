@@ -180,20 +180,28 @@ describe('AttachedGameCard — DOM / a11y structure', () => {
     expect(queryWithout('card.anonymizedNote')).toBeNull();
   });
 
-  it('renders the player names and event header rows', () => {
+  it('renders the player names and result row', () => {
     const att = makeAttachment({
       headerWhite: 'Alice',
       headerBlack: 'Bob',
-      headerEvent: 'Test Cup',
       headerResult: '1-0',
     });
     const { container } = render(<AttachedGameCard attachment={att} />);
     const text = container.textContent ?? '';
     expect(text).toContain('Alice');
     expect(text).toContain('Bob');
-    expect(text).toContain('Test Cup');
     // result "1-0" is shown when not '*'
     expect(text).toContain('1-0');
+  });
+
+  it('does NOT render the [Event] header anymore (#84 metadata cleanup)', () => {
+    const att = makeAttachment({
+      headerEvent: 'rated rapid game',
+    });
+    const { container } = render(<AttachedGameCard attachment={att} />);
+    const text = container.textContent ?? '';
+    expect(text).not.toContain('rated rapid game');
+    expect(text).not.toContain('card.headerEvent');
   });
 
   it('hides the result span when result is "*"', () => {
@@ -206,16 +214,43 @@ describe('AttachedGameCard — DOM / a11y structure', () => {
     expect(container.textContent ?? '').not.toContain('*');
   });
 
-  it('does NOT render the player-line <p> when both white and black are null', () => {
+  it('always renders the player line, falling back to ? placeholders when white/black are null (#84)', () => {
+    // Pre-#84 the player-line <p> was hidden when both white and black
+    // were null. That made the metadata column shorter than the board
+    // and visually centered the surviving rows. The line is now always
+    // rendered with `?` placeholders so the layout stays identical
+    // regardless of how many headers the PGN body actually carried.
     const att = makeAttachment({
       headerWhite: null,
       headerBlack: null,
     });
     const { container, queryByText } = render(<AttachedGameCard attachment={att} />);
-    // No "vs" connector text should appear when neither side is present.
-    expect(queryByText(/vs/)).toBeNull();
-    // The mini board still renders (it is the always-on visual anchor).
+    expect(queryByText(/vs/)).not.toBeNull();
+    const text = container.textContent ?? '';
+    // Two `?` placeholders, one for each side.
+    expect(text.match(/\?/g)?.length ?? 0).toBeGreaterThanOrEqual(2);
     expect(container.querySelector('[data-testid="mini-board"]')).not.toBeNull();
+  });
+
+  it('renders the "Attached game" label so the layout matches AttachedFenCard (#84)', () => {
+    const { container } = render(<AttachedGameCard attachment={makeAttachment()} />);
+    expect(container.textContent ?? '').toContain('Attached game');
+  });
+
+  it('always renders a Date row, falling back to ????.??.?? when headerDate is null (#84)', () => {
+    const att = makeAttachment({ headerDate: null });
+    const { container } = render(<AttachedGameCard attachment={att} />);
+    const text = container.textContent ?? '';
+    expect(text).toContain('card.headerDate');
+    expect(text).toContain('????.??.??');
+  });
+
+  it('always renders a Site row for source=pgn, falling back to ???? when headerSite is null (#84)', () => {
+    const att = makeAttachment({ source: 'pgn', headerSite: null });
+    const { container } = render(<AttachedGameCard attachment={att} />);
+    const text = container.textContent ?? '';
+    expect(text).toContain('card.headerSite');
+    expect(text).toContain('????');
   });
 
   it('toggles the "Open replay" button label when clicked', () => {

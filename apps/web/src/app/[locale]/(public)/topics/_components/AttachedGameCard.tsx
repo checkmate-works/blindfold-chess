@@ -117,40 +117,42 @@ export function AttachedGameCard({ attachment }: Props) {
   return (
     <div className="mt-2 mb-2 rounded-md border border-border bg-card overflow-hidden">
       <div className="p-3 space-y-2">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3 gap-2">
+        {/* TODO(i18n): attachment.game.cardTitle — paired with
+            `Attached position` in AttachedFenCard so both attachment
+            kinds wear the same "this is an attached X" label. */}
+        <p className="text-sm font-medium text-foreground">Attached game</p>
+        <div className="flex flex-col sm:flex-row sm:items-start sm:gap-3 gap-2">
           <div className="w-32 shrink-0 mx-auto sm:mx-0">
             <MiniBoard fen={attachment.finalFen} responsive />
           </div>
+          {/* The metadata column is always rendered with the same set
+              of rows so the layout stays identical between PGN exports
+              that carry full headers and bare PGN bodies. Missing
+              header values fall back to `?` / `????` placeholders
+              (matching the chess.js default `Date "????.??.??"` shape)
+              instead of being hidden, which used to leave the column
+              shorter than the board and visually centered the residual
+              rows. */}
           <div className="flex-1 min-w-0 space-y-1">
-            {(attachment.headerWhite || attachment.headerBlack) && (
-              <p className="text-sm font-medium text-foreground truncate">
-                <span>{attachment.headerWhite ?? '?'}</span>
-                <span className="text-muted-foreground"> vs </span>
-                <span>{attachment.headerBlack ?? '?'}</span>
-                {attachment.headerResult && attachment.headerResult !== '*' && (
-                  <span className="text-muted-foreground ml-2">{attachment.headerResult}</span>
-                )}
-              </p>
-            )}
+            <p className="text-sm font-medium text-foreground truncate">
+              <span>{attachment.headerWhite ?? '?'}</span>
+              <span className="text-muted-foreground"> vs </span>
+              <span>{attachment.headerBlack ?? '?'}</span>
+              {attachment.headerResult && attachment.headerResult !== '*' && (
+                <span className="text-muted-foreground ml-2">{attachment.headerResult}</span>
+              )}
+            </p>
             <p className="text-xs text-muted-foreground">
               {t('card.movesCount', { count: attachment.moveCount })}
             </p>
-            {attachment.headerEvent && (
-              <p className="text-xs text-muted-foreground truncate">
-                <span className="font-medium">{t('card.headerEvent')}: </span>
-                <span>{attachment.headerEvent}</span>
-              </p>
-            )}
-            {attachment.headerDate && (
-              <p className="text-xs text-muted-foreground truncate">
-                <span className="font-medium">{t('card.headerDate')}: </span>
-                <span>{attachment.headerDate}</span>
-              </p>
-            )}
-            {pgnSiteText && (
+            <p className="text-xs text-muted-foreground truncate">
+              <span className="font-medium">{t('card.headerDate')}: </span>
+              <span>{attachment.headerDate ?? '????.??.??'}</span>
+            </p>
+            {attachment.source === 'pgn' && (
               <p className="text-xs text-muted-foreground truncate">
                 <span className="font-medium">{t('card.headerSite')}: </span>
-                <span>{pgnSiteText}</span>
+                <span>{pgnSiteText ?? '????'}</span>
               </p>
             )}
             <button
