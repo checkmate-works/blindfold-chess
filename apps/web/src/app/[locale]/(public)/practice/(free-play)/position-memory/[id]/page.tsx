@@ -7,6 +7,7 @@ import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import { FaPlusCircle } from 'react-icons/fa';
+import { FiEdit2 } from 'react-icons/fi';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getLinkedChunksForPosition } from '@/lib/chunks/queries';
@@ -34,7 +35,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { PositionAuthorAttribution } from '../../_components/PositionAuthorAttribution';
 import { PositionDetailLayout } from '../../_components/PositionDetailLayout';
 import { toggleLike } from '../_actions/toggleLike';
-import { DeletePositionButton } from '../_components/DeletePositionButton';
 import { PositionDetailBoard } from '../_components/single-position/PositionDetailBoard';
 import { PositionStartForm } from '../_components/single-position/PositionStartForm';
 import { createReply } from './_actions/createReply';
@@ -154,7 +154,13 @@ export default async function PositionDetailPage({ params, searchParams }: Props
         />
         <div className="flex items-center gap-4">
           {currentUser?.id === position.userId && (
-            <DeletePositionButton positionId={position.id} locale={locale} />
+            <Link
+              href={`/practice/position-memory/${position.id}/edit`}
+              className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-muted-foreground hover:border-foreground/20 hover:text-foreground transition-colors"
+            >
+              <FiEdit2 className="h-3 w-3" aria-hidden />
+              {t('detail.editAction')}
+            </Link>
           )}
           <time dateTime={position.createdAt.toISOString()}>
             {position.createdAt.toLocaleDateString(locale, {
@@ -163,6 +169,9 @@ export default async function PositionDetailPage({ params, searchParams }: Props
               day: 'numeric',
             })}
           </time>
+          {position.updatedAt.getTime() - position.createdAt.getTime() > 1000 && (
+            <span className="text-muted-foreground">{t('detail.edited')}</span>
+          )}
         </div>
       </div>
 

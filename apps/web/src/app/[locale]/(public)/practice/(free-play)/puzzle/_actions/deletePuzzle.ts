@@ -11,16 +11,15 @@ import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
 /**
- * User-facing position-memory soft-delete.
+ * User-facing puzzle soft-delete.
  *
- * Restricts to `type = 'memory'` so that a puzzle id passed through this
- * entry point is rejected with `notFound`, matching the symmetric guard in
- * `deletePuzzle`. Admin-side deletion (which records a `moderation_actions`
- * row) lives separately under
- * `apps/web/src/app/admin/positions/memory/_actions/deletePosition.ts`.
+ * Restricts to `type = 'puzzle'` so a memory position can never be removed
+ * through this entry point even if a caller passes its id. Admin-side
+ * deletion (which records a `moderation_actions` row) lives separately under
+ * `apps/web/src/app/admin/positions/puzzle/_actions/deletePuzzle.ts`.
  */
-export async function deletePosition(positionId: string, locale: string): Promise<ActionResult> {
-  const guardResult = await authenticateAndGuard(RATE_LIMITS.deletePosition);
+export async function deletePuzzle(puzzleId: string, locale: string): Promise<ActionResult> {
+  const guardResult = await authenticateAndGuard(RATE_LIMITS.deletePuzzle);
   if ('error' in guardResult) {
     return { error: guardResult.error };
   }
@@ -35,10 +34,10 @@ export async function deletePosition(positionId: string, locale: string): Promis
       deletedAt: positions.deletedAt,
     })
     .from(positions)
-    .where(eq(positions.id, positionId))
+    .where(eq(positions.id, puzzleId))
     .limit(1);
 
-  if (!position || position.type !== 'memory') {
+  if (!position || position.type !== 'puzzle') {
     return { error: 'notFound' };
   }
 
@@ -54,19 +53,19 @@ export async function deletePosition(positionId: string, locale: string): Promis
     .update(positions)
     .set({ deletedAt: new Date() })
     .where(
-      and(eq(positions.id, positionId), eq(positions.userId, user.id), isNull(positions.deletedAt))
+      and(eq(positions.id, puzzleId), eq(positions.userId, user.id), isNull(positions.deletedAt))
     );
 
   logActivityEvent({
     userId: user.id,
-    action: 'delete_position',
+    action: 'delete_puzzle',
     targetType: 'position',
-    targetId: positionId,
-    metadata: { type: 'memory', title: position.title },
+    targetId: puzzleId,
+    metadata: { type: 'puzzle', title: position.title },
   });
 
-  revalidatePath(`/${locale}/practice/position-memory`);
-  revalidatePath(`/${locale}/practice/position-memory/${positionId}`);
+  revalidatePath(`/${locale}/practice/puzzle`);
+  revalidatePath(`/${locale}/practice/puzzle/${puzzleId}`);
 
   return { success: true };
 }

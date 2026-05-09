@@ -130,11 +130,16 @@ export function ActivityLogRow({ log, profileMap, emailMap }: ActivityLogRowProp
           <span className="text-muted-foreground">-</span>
         )}
       </td>
-      <td className="px-4 py-3">
+      <td className="px-4 py-3 align-top">
         {metadataStr !== '-' && metadataStr !== '{}' ? (
-          <span title={metadataStr} className="text-xs text-muted-foreground">
-            {metadataStr.length > 60 ? `${metadataStr.slice(0, 60)}...` : metadataStr}
-          </span>
+          <details>
+            <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground">
+              {metadataStr.length > 60 ? `${metadataStr.slice(0, 60)}...` : metadataStr}
+            </summary>
+            <pre className="mt-2 max-w-md whitespace-pre-wrap break-words rounded bg-muted px-2 py-1 text-xs text-foreground">
+              {JSON.stringify(metadata, null, 2)}
+            </pre>
+          </details>
         ) : (
           <span className="text-muted-foreground">-</span>
         )}

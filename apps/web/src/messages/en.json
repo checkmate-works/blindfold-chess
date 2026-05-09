@@ -991,6 +991,14 @@
         "clearBoardConfirmConfirm": "Clear",
         "clearBoardConfirmCancel": "Cancel"
       },
+      "edit": {
+        "title": "Edit Problem",
+        "submit": "Save changes",
+        "submitting": "Saving...",
+        "saveError": "An unexpected error occurred. Please try again.",
+        "notFound": "This problem could not be found.",
+        "unauthorized": "You can only edit your own problems."
+      },
       "detail": {
         "title": "Position Detail",
         "descriptionSection": "Position Description",
@@ -1004,14 +1012,18 @@
         "createdBy": "Created by",
         "tutorialLink": "View Tutorial",
         "tryAgain": "Try Again",
-        "backToList": "Back to List"
+        "backToList": "Back to List",
+        "edited": "(edited)",
+        "editAction": "Edit"
       },
       "delete": {
         "button": "Delete Problem",
         "confirmTitle": "Delete Problem",
         "confirmMessage": "Are you sure you want to delete this problem? This action cannot be undone.",
         "confirm": "Delete",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "sectionTitle": "Danger zone",
+        "sectionDescription": "Removing this problem is permanent. Comments and likes attached to it will be removed and cannot be recovered."
       }
     },
     "puzzle": {
@@ -1080,6 +1092,14 @@
       "unlike": "Unlike",
       "newReply": "New Reply {time}",
       "justNow": "just now",
+      "edit": {
+        "title": "Edit Puzzle",
+        "submit": "Save changes",
+        "submitting": "Saving...",
+        "saveError": "An unexpected error occurred. Please try again.",
+        "notFound": "This puzzle could not be found.",
+        "unauthorized": "You can only edit your own puzzles."
+      },
       "detail": {
         "title": "Puzzle Detail",
         "descriptionSection": "About This Puzzle",
@@ -1089,7 +1109,18 @@
         "whiteToMove": "White to move",
         "blackToMove": "Black to move",
         "createdBy": "Created by",
-        "noPieces": "None"
+        "noPieces": "None",
+        "edited": "(edited)",
+        "editAction": "Edit"
+      },
+      "delete": {
+        "button": "Delete Puzzle",
+        "confirmTitle": "Delete Puzzle",
+        "confirmMessage": "Are you sure you want to delete this puzzle? Comments and solution data will be removed along with it. This action cannot be undone.",
+        "confirm": "Delete",
+        "cancel": "Cancel",
+        "sectionTitle": "Danger zone",
+        "sectionDescription": "Removing this puzzle is permanent — comments tied to it will lose their context and cannot be recovered."
       },
       "session": {
         "title": "Solve",
@@ -2396,14 +2427,16 @@
     "sectionTitle": "Problems You Created",
     "empty": "You haven't created any problems yet.",
     "breadcrumbMypage": "My Page",
-    "breadcrumbProblems": "My Problems"
+    "breadcrumbProblems": "My Problems",
+    "editAction": "Edit"
   },
   "MypagePuzzles": {
     "title": "My Puzzles",
     "sectionTitle": "Puzzles You Created",
     "empty": "You haven't created any puzzles yet.",
     "breadcrumbMypage": "My Page",
-    "breadcrumbProblems": "My Problems"
+    "breadcrumbProblems": "My Problems",
+    "editAction": "Edit"
   },
   "MypageProblemsIndex": {
     "title": "My Problems",
@@ -2484,7 +2517,10 @@
     "accountDeleted": "Your account has been deleted",
     "practiceResultSaveFailed": "Failed to save your result. Please try again.",
     "positionCreated": "Position created successfully",
-    "positionDeleted": "Problem deleted"
+    "positionDeleted": "Problem deleted",
+    "positionUpdated": "Changes saved",
+    "puzzleUpdated": "Changes saved",
+    "puzzleDeleted": "Puzzle deleted"
   },
   "setupUsername": {
     "title": "Create Your Account",

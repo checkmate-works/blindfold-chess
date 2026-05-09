@@ -991,6 +991,14 @@
         "clearBoardConfirmConfirm": "Limpiar",
         "clearBoardConfirmCancel": "Cancelar"
       },
+      "edit": {
+        "title": "Editar Problema",
+        "submit": "Guardar cambios",
+        "submitting": "Guardando...",
+        "saveError": "Ocurrió un error inesperado. Inténtalo de nuevo.",
+        "notFound": "No se pudo encontrar este problema.",
+        "unauthorized": "Solo puedes editar tus propios problemas."
+      },
       "detail": {
         "title": "Detalle de Posición",
         "descriptionSection": "Descripción de la Posición",
@@ -1004,14 +1012,18 @@
         "createdBy": "Creado por",
         "tutorialLink": "Ver Tutorial",
         "tryAgain": "Intentar de nuevo",
-        "backToList": "Volver a la lista"
+        "backToList": "Volver a la lista",
+        "edited": "(editado)",
+        "editAction": "Editar"
       },
       "delete": {
         "button": "Eliminar Problema",
         "confirmTitle": "Eliminar Problema",
         "confirmMessage": "¿Estás seguro de que deseas eliminar este problema? Esta acción no se puede deshacer.",
         "confirm": "Eliminar",
-        "cancel": "Cancelar"
+        "cancel": "Cancelar",
+        "sectionTitle": "Zona de peligro",
+        "sectionDescription": "Eliminar este problema es permanente. Los comentarios y los me gusta asociados se eliminarán y no se podrán recuperar."
       }
     },
     "puzzle": {
@@ -1080,6 +1092,14 @@
       "unlike": "Quitar me gusta",
       "newReply": "Nueva Respuesta {time}",
       "justNow": "ahora mismo",
+      "edit": {
+        "title": "Editar Puzzle",
+        "submit": "Guardar cambios",
+        "submitting": "Guardando...",
+        "saveError": "Ocurrió un error inesperado. Inténtalo de nuevo.",
+        "notFound": "No se pudo encontrar este puzzle.",
+        "unauthorized": "Solo puedes editar tus propios puzzles."
+      },
       "detail": {
         "title": "Detalle del Puzzle",
         "descriptionSection": "Sobre Este Puzzle",
@@ -1089,7 +1109,18 @@
         "whiteToMove": "Mueven blancas",
         "blackToMove": "Mueven negras",
         "createdBy": "Creado por",
-        "noPieces": "Ninguna"
+        "noPieces": "Ninguna",
+        "edited": "(editado)",
+        "editAction": "Editar"
+      },
+      "delete": {
+        "button": "Eliminar Puzzle",
+        "confirmTitle": "Eliminar Puzzle",
+        "confirmMessage": "¿Estás seguro de que deseas eliminar este puzzle? Los comentarios y los datos de la solución se eliminarán también. Esta acción no se puede deshacer.",
+        "confirm": "Eliminar",
+        "cancel": "Cancelar",
+        "sectionTitle": "Zona de peligro",
+        "sectionDescription": "Eliminar este puzzle es permanente — los comentarios vinculados perderán su contexto y no podrán recuperarse."
       },
       "result": {
         "title": "Resultado del Puzzle",
@@ -2396,14 +2427,16 @@
     "sectionTitle": "Problemas que Has Creado",
     "empty": "Aún no has creado ningún problema.",
     "breadcrumbMypage": "Mi Página",
-    "breadcrumbProblems": "Mis Problemas"
+    "breadcrumbProblems": "Mis Problemas",
+    "editAction": "Editar"
   },
   "MypagePuzzles": {
     "title": "Mis Puzzles",
     "sectionTitle": "Puzzles que Has Creado",
     "empty": "Aún no has creado ningún puzzle.",
     "breadcrumbMypage": "Mi Página",
-    "breadcrumbProblems": "Mis Problemas"
+    "breadcrumbProblems": "Mis Problemas",
+    "editAction": "Editar"
   },
   "MypageProblemsIndex": {
     "title": "Mis Problemas",
@@ -2484,7 +2517,10 @@
     "accountDeleted": "Tu cuenta ha sido eliminada",
     "practiceResultSaveFailed": "Error al guardar tu resultado. Por favor, inténtalo de nuevo.",
     "positionCreated": "Posición creada con éxito",
-    "positionDeleted": "Problema eliminado"
+    "positionDeleted": "Problema eliminado",
+    "positionUpdated": "Cambios guardados",
+    "puzzleUpdated": "Cambios guardados",
+    "puzzleDeleted": "Puzzle eliminado"
   },
   "setupUsername": {
     "title": "Crea tu Cuenta",

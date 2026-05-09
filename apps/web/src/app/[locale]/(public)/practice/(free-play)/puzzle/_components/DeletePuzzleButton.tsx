@@ -7,25 +7,25 @@ import { useRouter } from 'next/navigation';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
-import { deletePosition } from '../_actions/deletePosition';
+import { deletePuzzle } from '../_actions/deletePuzzle';
 
 type Props = {
-  positionId: string;
+  puzzleId: string;
   locale: string;
 };
 
-export function DeletePositionButton({ positionId, locale }: Props) {
+export function DeletePuzzleButton({ puzzleId, locale }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const t = useTranslations('practice.positionMemory.delete');
+  const t = useTranslations('practice.puzzle.delete');
   const router = useRouter();
 
   async function handleDelete() {
     setIsPending(true);
     setError(null);
 
-    const result = await deletePosition(positionId, locale);
+    const result = await deletePuzzle(puzzleId, locale);
 
     if ('error' in result) {
       setError(result.error);
@@ -33,7 +33,7 @@ export function DeletePositionButton({ positionId, locale }: Props) {
     } else {
       setIsOpen(false);
       setIsPending(false);
-      router.push(`/${locale}/practice/position-memory?toast=position_deleted`);
+      router.push(`/${locale}/practice/puzzle?toast=puzzle_deleted`);
     }
   }
 
