@@ -1479,7 +1479,6 @@
     },
     "yourRankings": {
       "title": "Your Rankings",
-      "noRanks": "You haven't ranked in any leaderboard yet. Try some practice modules!",
       "viewAll": "View all leaderboards"
     },
     "feed": {
