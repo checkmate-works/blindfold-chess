@@ -200,6 +200,16 @@ export function AttachedGameCard({ attachment }: Props) {
               <span className="font-medium">{t('card.headerDate')}: </span>
               <span>{attachment.headerDate ?? '????.??.??'}</span>
             </p>
+            {/* Site / Source rows live in the metadata column so PGN
+                and Lichess attachments share the same visual rhythm.
+                PGN attachments show the [Site] header; Lichess
+                attachments show a Source row built from
+                `sourceGameId`; chess.com-attribution PGN attachments
+                show a Source row built from
+                `(attribution_platform, attribution_path)`. The two
+                Source paths share `card.sourceLabel`; the PGN-only
+                Site row keeps its own `card.headerSite` label so the
+                exported PGN's [Site] tag is recognisable as such. */}
             {pgnSite && (
               <p className="text-xs text-muted-foreground truncate">
                 <span className="font-medium">{t('card.headerSite')}: </span>
@@ -221,6 +231,33 @@ export function AttachedGameCard({ attachment }: Props) {
                   ))}
               </p>
             )}
+            {lichessSource && (
+              <p className="text-xs text-muted-foreground truncate">
+                <span className="font-medium">{t('card.sourceLabel')}: </span>
+                <a
+                  href={buildCushionPageUrl(lichessSource.href, locale)}
+                  rel="noopener noreferrer nofollow"
+                  className={`break-all ${TEXT_LINK_CLASSES}`}
+                >
+                  {lichessSource.label}
+                </a>
+              </p>
+            )}
+            {chesscomSource && (
+              <p className="text-xs text-muted-foreground truncate">
+                <span className="font-medium">{t('card.sourceLabel')}: </span>
+                <a
+                  href={buildCushionPageUrl(chesscomSource.href, locale)}
+                  rel="noopener noreferrer nofollow"
+                  className={`break-all ${TEXT_LINK_CLASSES}`}
+                >
+                  {t('card.viewOnChesscom')}
+                </a>
+              </p>
+            )}
+            {attachment.anonymized && (
+              <p className="text-xs text-muted-foreground italic">{t('card.anonymizedNote')}</p>
+            )}
           </div>
         </div>
 
@@ -231,45 +268,6 @@ export function AttachedGameCard({ attachment }: Props) {
             isOpen={modalOpen}
             onClose={() => setModalOpen(false)}
           />
-        )}
-
-        {lichessSource && (
-          <p className="text-xs text-muted-foreground pt-1">
-            <span>{t('card.sourceLabel')}: </span>
-            {/*
-              `rel="noopener noreferrer nofollow"` matches the chess.com
-              attribution link below (Phase H L-1):
-                - noopener / noreferrer — standard cross-origin link hardening
-                - nofollow — UGC link, do not transfer PageRank to lichess.org
-                  via comment-attachment posts, same posture as chess.com.
-            */}
-            <a
-              href={lichessSource.href}
-              target="_blank"
-              rel="noopener noreferrer nofollow"
-              className="text-link-primary hover:underline"
-            >
-              {lichessSource.label}
-            </a>
-          </p>
-        )}
-
-        {chesscomSource && (
-          <p className="text-xs text-muted-foreground pt-1">
-            <span>{t('card.sourceLabel')}: </span>
-            <a
-              href={chesscomSource.href}
-              target="_blank"
-              rel="noopener noreferrer nofollow"
-              className="text-link-primary hover:underline"
-            >
-              {t('card.viewOnChesscom')}
-            </a>
-          </p>
-        )}
-
-        {attachment.anonymized && (
-          <p className="text-xs text-muted-foreground italic">{t('card.anonymizedNote')}</p>
         )}
       </div>
     </div>

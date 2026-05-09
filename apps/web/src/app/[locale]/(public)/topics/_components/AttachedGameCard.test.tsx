@@ -141,10 +141,13 @@ describe('AttachedGameCard — DOM / a11y structure', () => {
     expect(evil).toBeUndefined();
   });
 
-  it('renders a chess.com attribution link rebuilt from attribution_path (NOT from sourceUrl)', () => {
+  it('renders a chess.com attribution link rebuilt from attribution_path (NOT from sourceUrl), routed through the cushion page', () => {
     // The persisted sourceUrl is intentionally a hostile string to
     // verify the renderer never reads it back as an href. Only the
-    // (platform, path) pair drives the rendered link.
+    // (platform, path) pair drives the rendered link, and the
+    // canonical chess.com URL is then routed through
+    // /[locale]/redirect?url=... so the user sees the destination
+    // before navigating.
     const att = makeAttachment({
       source: 'pgn',
       sourceUrl: 'https://evil.tld/payload',
@@ -154,18 +157,20 @@ describe('AttachedGameCard — DOM / a11y structure', () => {
     const { container } = render(<AttachedGameCard attachment={att} />);
 
     const anchors = Array.from(container.querySelectorAll('a'));
-    const chesscomAnchor = anchors.find(
-      (a) => a.getAttribute('href') === 'https://www.chess.com/game/live/12345'
+    const cushionedChesscom = anchors.find(
+      (a) =>
+        (a.getAttribute('href') ?? '').startsWith('/en/redirect?url=') &&
+        decodeURIComponent(a.getAttribute('href')!.split('?url=')[1]) ===
+          'https://www.chess.com/game/live/12345'
     );
-    expect(chesscomAnchor).toBeDefined();
-    expect(chesscomAnchor?.getAttribute('target')).toBe('_blank');
-    const rel = chesscomAnchor?.getAttribute('rel') ?? '';
+    expect(cushionedChesscom).toBeDefined();
+    const rel = cushionedChesscom?.getAttribute('rel') ?? '';
     expect(rel).toContain('noopener');
     expect(rel).toContain('noreferrer');
-    // UGC link must NOT transfer PageRank to chess.com.
     expect(rel).toContain('nofollow');
 
-    // The hostile sourceUrl must not have produced an anchor.
+    // The hostile sourceUrl must not have produced an anchor — neither
+    // directly nor inside a cushion href.
     const evilAnchor = anchors.find((a) => (a.getAttribute('href') ?? '').includes('evil.tld'));
     expect(evilAnchor).toBeUndefined();
   });
@@ -185,7 +190,11 @@ describe('AttachedGameCard — DOM / a11y structure', () => {
     ).toBeUndefined();
   });
 
-  it('renders a real <a> for Lichess-source attachments (canonical URL only)', () => {
+  it('renders the Lichess Source row inside the metadata column, routed through the cushion page', () => {
+    // Lichess attachments build the canonical URL from `sourceGameId`
+    // and route it through /[locale]/redirect?url=... — same posture
+    // as the PGN [Site] header so both attachment kinds carry a
+    // single, consistent outbound-link UX.
     const att = makeAttachment({
       source: 'lichess',
       sourceGameId: 'abcd1234',
@@ -195,25 +204,41 @@ describe('AttachedGameCard — DOM / a11y structure', () => {
     const { container } = render(<AttachedGameCard attachment={att} />);
 
     const anchors = Array.from(container.querySelectorAll('a'));
-    // The canonical Lichess URL must be linked.
-    const lichessAnchor = anchors.find(
-      (a) => a.getAttribute('href') === 'https://lichess.org/abcd1234'
+    const cushionedLichess = anchors.find(
+      (a) =>
+        (a.getAttribute('href') ?? '').startsWith('/en/redirect?url=') &&
+        decodeURIComponent(a.getAttribute('href')!.split('?url=')[1]) ===
+          'https://lichess.org/abcd1234'
     );
-    expect(lichessAnchor).toBeDefined();
-    // target=_blank with noopener noreferrer + UGC nofollow (Phase H L-1).
-    // Same posture as the chess.com attribution link: a comment-attached
-    // outbound link must not transfer PageRank to lichess.org via UGC.
-    expect(lichessAnchor?.getAttribute('target')).toBe('_blank');
-    const lichessRel = lichessAnchor?.getAttribute('rel') ?? '';
-    expect(lichessRel).toContain('noopener');
-    expect(lichessRel).toContain('noreferrer');
-    expect(lichessRel).toContain('nofollow');
+    expect(cushionedLichess).toBeDefined();
+    expect(cushionedLichess?.textContent).toBe('lichess.org/abcd1234');
+    const rel = cushionedLichess?.getAttribute('rel') ?? '';
+    expect(rel).toContain('noopener');
+    expect(rel).toContain('noreferrer');
+    expect(rel).toContain('nofollow');
 
-    // The hostile [Site] header value must NOT have been linked.
+    // The hostile [Site] header value must NOT have been linked —
+    // Lichess attachments do not surface a Site row, only a Source
+    // row built from the validated sourceGameId.
     const evilAnchor = anchors.find((a) =>
       (a.getAttribute('href') ?? '').includes('malicious.example')
     );
     expect(evilAnchor).toBeUndefined();
+  });
+
+  it('does NOT render a Site row for source=lichess (Source row supersedes it)', () => {
+    // Lichess attachments use the Source row (rebuilt from
+    // sourceGameId) as the canonical outbound pointer. The PGN [Site]
+    // header is suppressed for Lichess because it would duplicate the
+    // Source row at best, and at worst surface a hostile-but-shaped
+    // value (sourceUrl is rebuilt server-side; headerSite is not).
+    const att = makeAttachment({
+      source: 'lichess',
+      sourceGameId: 'abcd1234',
+      headerSite: 'https://lichess.org/abcd1234',
+    });
+    const { container } = render(<AttachedGameCard attachment={att} />);
+    expect(container.textContent).not.toContain('card.headerSite');
   });
 
   it('shows the anonymized note only when attachment.anonymized=true', () => {
@@ -335,15 +360,12 @@ describe('AttachedGameCard — DOM / a11y structure', () => {
   // text-child / attribute-value escape MUST keep it from becoming
   // executable markup or an attribute-injection vector.
   it('does not produce an unsafe href when attribution_path is set to a hostile string (XSS defense in depth)', () => {
-    // Quote-break + script tag inside the path. React renders the
-    // entire concatenated string as a single attribute value; per the
-    // HTML serialization rules React only needs to escape `"` and `&`
-    // inside attribute values (the `<` / `>` characters are legal
-    // inside attribute values and never start a tag). The hostile
-    // payload therefore lands in the href attribute as inert text —
-    // no <script> *element* node is created in the DOM, no quote
-    // breaks out of the attribute, no JS executes. We assert exactly
-    // those structural invariants.
+    // Quote-break + script tag inside the path. The chess.com anchor
+    // is now routed through the cushion redirect, so the hostile
+    // path is encoded into the `?url=...` query parameter. React's
+    // attribute serializer + the encodeURIComponent inside
+    // buildCushionPageUrl together render the payload inert: no
+    // <script> element node, no quote-break, no JS execution.
     const att = makeAttachment({
       source: 'pgn',
       attributionPlatform: 'chesscom',
@@ -357,27 +379,20 @@ describe('AttachedGameCard — DOM / a11y structure', () => {
     // never become a real <script> child.
     expect(container.querySelector('script')).toBeNull();
 
-    // (2) The anchor renders with a single href attribute whose value
-    // is the full concatenated string. React's attribute serializer
-    // must NOT have closed the attribute early on the embedded `"`,
-    // because if it had, the trailing `<script>...` would have escaped
-    // into the markup as a sibling element — and the previous assertion
-    // would have failed.
+    // (2) The anchor renders with a single href attribute pointing at
+    // the cushion page. The decoded `url` parameter contains the full
+    // hostile path verbatim — encoded, then decoded once — so a
+    // future renderer change that mangled the path would be caught.
     const anchors = Array.from(container.querySelectorAll('a'));
-    const chesscomAnchor = anchors.find((a) =>
-      (a.getAttribute('href') ?? '').startsWith('https://www.chess.com/admin')
+    const cushioned = anchors.find((a) =>
+      (a.getAttribute('href') ?? '').startsWith('/en/redirect?url=')
     );
-    expect(chesscomAnchor).toBeDefined();
-    // The href value contains the full hostile path because React did
-    // NOT silently strip it — it kept it inside the attribute value,
-    // where it is harmless. Pin the exact value so a future renderer
-    // change (e.g. naive `escape()` that mangles the path) is caught.
-    expect(chesscomAnchor?.getAttribute('href')).toBe(
-      'https://www.chess.com/admin"><script>alert(1)</script>'
-    );
+    expect(cushioned).toBeDefined();
+    const decodedUrl = decodeURIComponent(cushioned!.getAttribute('href')!.split('?url=')[1]);
+    expect(decodedUrl).toBe('https://www.chess.com/admin"><script>alert(1)</script>');
 
     // (3) Attribute hardening still applies even on the hostile path.
-    const rel = chesscomAnchor?.getAttribute('rel') ?? '';
+    const rel = cushioned?.getAttribute('rel') ?? '';
     expect(rel).toContain('noopener');
     expect(rel).toContain('noreferrer');
     expect(rel).toContain('nofollow');
@@ -388,12 +403,12 @@ describe('AttachedGameCard — DOM / a11y structure', () => {
     // attempts to override the scheme via the path are inert because
     // the scheme is not user-controlled. Pin this so a future refactor
     // that derives the prefix from a data field cannot regress to a
-    // scheme-injection bug.
+    // scheme-injection bug. The cushion page additionally validates
+    // protocols server-side; here we assert no anchor's href ever
+    // surfaces a `javascript:` prefix at the renderer layer.
     const att = makeAttachment({
       source: 'pgn',
       attributionPlatform: 'chesscom',
-      // Even with a colon and "javascript" word in the path, the
-      // resulting concatenated href still starts with `https://`.
       attributionPath: '/javascript:alert(1)',
     });
     const { container } = render(<AttachedGameCard attachment={att} />);
@@ -402,12 +417,16 @@ describe('AttachedGameCard — DOM / a11y structure', () => {
       .map((a) => a.getAttribute('href') ?? '')
       .find((h) => h.startsWith('javascript:'));
     expect(evilHref).toBeUndefined();
-    // The chess.com anchor itself still rendered with the literal
-    // (inert) path inside the attribute.
-    const chesscomAnchor = anchors.find((a) =>
-      (a.getAttribute('href') ?? '').startsWith('https://www.chess.com/javascript:')
+    // The cushion link is still rendered, with the literal (inert)
+    // path embedded inside the encoded url parameter.
+    const cushioned = anchors.find(
+      (a) =>
+        (a.getAttribute('href') ?? '').startsWith('/en/redirect?url=') &&
+        decodeURIComponent(a.getAttribute('href')!.split('?url=')[1]).startsWith(
+          'https://www.chess.com/javascript:'
+        )
     );
-    expect(chesscomAnchor).toBeDefined();
+    expect(cushioned).toBeDefined();
   });
 });
 
