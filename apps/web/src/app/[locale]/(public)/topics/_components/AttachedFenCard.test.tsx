@@ -1,4 +1,4 @@
-import { cleanup, render } from '@testing-library/react';
+import { cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { AttachedFenCard } from './AttachedFenCard';
@@ -55,12 +55,38 @@ describe('AttachedFenCard', () => {
   it('renders empty caption gracefully when caption is an empty string', () => {
     // The component branches on `attachment.caption &&`, so an empty
     // string is also falsy and must not produce an empty <p>. Pin the
-    // contract: only the FEN-string fallback paragraph is present.
+    // contract: only the card-title and FEN-string fallback paragraphs
+    // are present; the BoardReviewModal stays mounted but `isOpen=false`
+    // so it returns null and contributes no paragraphs.
     const { container } = render(<AttachedFenCard attachment={fixture({ caption: '' })} />);
     const ps = container.querySelectorAll('p');
     // 1: card title + 1: FEN font-mono fallback = exactly 2 paragraphs.
     // (No caption paragraph for falsy caption.)
     expect(ps.length).toBe(2);
+  });
+
+  it('wraps the thumbnail in a button so tapping it opens the enlarge modal', () => {
+    const { container } = render(<AttachedFenCard attachment={fixture()} />);
+    const board = container.querySelector('[data-testid="mini-board"]');
+    expect(board).not.toBeNull();
+    const thumbnailButton = board?.closest('button');
+    expect(thumbnailButton).not.toBeNull();
+    expect(thumbnailButton?.getAttribute('aria-label')).toMatch(/enlarge|position/i);
+  });
+
+  it('opens the BoardReviewModal when the thumbnail is clicked', () => {
+    const { container } = render(<AttachedFenCard attachment={fixture()} />);
+    // No dialog before the click.
+    expect(container.querySelector('[role="dialog"]')).toBeNull();
+    const thumbnailButton = container
+      .querySelector('[data-testid="mini-board"]')
+      ?.closest('button') as HTMLButtonElement;
+    fireEvent.click(thumbnailButton);
+    // Click renders the modal (BoardReviewModal renders an aria-modal
+    // dialog). Two boards now exist: the card thumbnail and the modal
+    // body. Both share the FEN since FEN cards display a single position.
+    expect(document.querySelector('[role="dialog"]')).not.toBeNull();
+    expect(document.querySelectorAll('[data-testid="mini-board"]').length).toBe(2);
   });
 
   it('renders caption text as a React text child (XSS-relevant chars are escaped)', () => {

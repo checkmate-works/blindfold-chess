@@ -8,6 +8,10 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 
 import { MiniBoard } from '@/lib/positions/ui/MiniBoard';
 
+const GameReplayModal = dynamic(() => import('./GameReplayModal').then((m) => m.GameReplayModal), {
+  ssr: false,
+});
+
 /**
  * Subset of `post_game_pgn_attachments` columns that the card needs.
  *
@@ -24,9 +28,10 @@ import { MiniBoard } from '@/lib/positions/ui/MiniBoard';
  * `finalFen` is computed server-side by `getAttachmentsForPosts`, so
  * the summary card can render its FEN thumbnail without importing
  * `chess.js` into the chunk-page first-paint client bundle. The
- * chess.js-bearing replay UI lives in `AttachedGameCardReplay` and
- * is loaded lazily via `next/dynamic({ ssr: false })` only when the
- * user clicks the "Open replay" button. See SPEC1 §5-1.
+ * chess.js-bearing replay modal lives in `GameReplayModal` and is
+ * loaded lazily via `next/dynamic({ ssr: false })` only when the
+ * user taps the thumbnail to open the board review modal. See
+ * SPEC1 §5-1.
  */
 export type AttachedGameCardData = {
   id: string;
@@ -57,18 +62,13 @@ export type AttachedGameCardData = {
   finalFen: string;
 };
 
-const AttachedGameCardReplay = dynamic(
-  () => import('./AttachedGameCardReplay').then((m) => m.AttachedGameCardReplay),
-  { ssr: false }
-);
-
 type Props = {
   attachment: AttachedGameCardData;
 };
 
 export function AttachedGameCard({ attachment }: Props) {
   const t = useTranslations('attachment');
-  const [expanded, setExpanded] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
 
   // Build the source attribution. For Lichess we ALWAYS rebuild the URL
   // from `sourceGameId` rather than trusting any persisted `sourceUrl`
@@ -122,9 +122,15 @@ export function AttachedGameCard({ attachment }: Props) {
             kinds wear the same "this is an attached X" label. */}
         <p className="text-sm font-medium text-foreground">Attached game</p>
         <div className="flex flex-col sm:flex-row sm:items-start sm:gap-3 gap-2">
-          <div className="w-32 shrink-0 mx-auto sm:mx-0">
+          <button
+            type="button"
+            onClick={() => setModalOpen(true)}
+            className="w-32 shrink-0 mx-auto sm:mx-0 cursor-pointer block focus:outline-none focus-visible:ring-2 focus-visible:ring-link-primary rounded-sm"
+            // TODO(i18n): attachment.game.openReplayLabel
+            aria-label="Open game replay"
+          >
             <MiniBoard fen={attachment.finalFen} responsive />
-          </div>
+          </button>
           {/* The metadata column is always rendered with the same set
               of rows so the layout stays identical between PGN exports
               that carry full headers and bare PGN bodies. Missing
@@ -155,18 +161,16 @@ export function AttachedGameCard({ attachment }: Props) {
                 <span>{pgnSiteText ?? '????'}</span>
               </p>
             )}
-            <button
-              type="button"
-              onClick={() => setExpanded((prev) => !prev)}
-              className="text-sm text-link-primary hover:underline"
-            >
-              {expanded ? t('card.collapseButton') : t('card.replayButton')}
-            </button>
           </div>
         </div>
 
-        {expanded && (
-          <AttachedGameCardReplay pgn={attachment.pgn} fallbackFen={attachment.finalFen} />
+        {modalOpen && (
+          <GameReplayModal
+            pgn={attachment.pgn}
+            fallbackFen={attachment.finalFen}
+            isOpen={modalOpen}
+            onClose={() => setModalOpen(false)}
+          />
         )}
 
         {lichessSource && (

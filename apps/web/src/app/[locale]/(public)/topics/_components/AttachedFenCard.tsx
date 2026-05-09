@@ -1,6 +1,10 @@
 'use client';
 
+import { useState } from 'react';
+
 import { MiniBoard } from '@/lib/positions/ui/MiniBoard';
+
+import { BoardReviewModal } from './BoardReviewModal';
 
 /**
  * Subset of `post_fen_attachments` columns the card needs.
@@ -33,15 +37,24 @@ type Props = {
 };
 
 export function AttachedFenCard({ attachment }: Props) {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [flipped, setFlipped] = useState(false);
+
   return (
     <div className="mt-2 mb-2 rounded-md border border-border bg-card overflow-hidden">
       <div className="p-3 space-y-2">
         {/* TODO(i18n): attachment.fen.cardTitle */}
         <p className="text-sm font-medium text-foreground">Attached position</p>
         <div className="flex flex-col sm:flex-row sm:items-start sm:gap-3 gap-2">
-          <div className="w-32 shrink-0 mx-auto sm:mx-0">
+          <button
+            type="button"
+            onClick={() => setModalOpen(true)}
+            className="w-32 shrink-0 mx-auto sm:mx-0 cursor-pointer block focus:outline-none focus-visible:ring-2 focus-visible:ring-link-primary rounded-sm"
+            // TODO(i18n): attachment.fen.openModalLabel
+            aria-label="Enlarge position"
+          >
             <MiniBoard fen={attachment.fen} responsive />
-          </div>
+          </button>
           <div className="flex-1 min-w-0 space-y-1">
             {attachment.caption && (
               <p className="text-sm text-foreground break-words">{attachment.caption}</p>
@@ -50,6 +63,13 @@ export function AttachedFenCard({ attachment }: Props) {
           </div>
         </div>
       </div>
+      <BoardReviewModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        fen={attachment.fen}
+        flipped={flipped}
+        onFlip={() => setFlipped((f) => !f)}
+      />
     </div>
   );
 }

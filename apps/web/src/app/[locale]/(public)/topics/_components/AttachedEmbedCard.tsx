@@ -36,7 +36,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
  * Lichess /embed/{id} URLs were originally rendered as a Lichess
  * iframe alongside chess.com. Phase 13 retired that path: Lichess
  * embed URLs are now routed through `createChunkPostWithAttachment`
- * and rendered by `AttachedGameCard` + `AttachedGameCardReplay`
+ * and rendered by `AttachedGameCard` + `GameReplayModal`
  * (the self-hosted PGN replay UI). This component is therefore
  * chess.com-only — the DB CHECK on
  * `post_game_embed_attachments.embed_provider` is narrowed to

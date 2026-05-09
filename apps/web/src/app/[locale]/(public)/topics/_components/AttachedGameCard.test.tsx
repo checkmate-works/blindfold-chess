@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render } from '@testing-library/react';
+import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { AttachedGameCardData } from './AttachedGameCard';
@@ -253,14 +253,24 @@ describe('AttachedGameCard — DOM / a11y structure', () => {
     expect(text).toContain('????');
   });
 
-  it('toggles the "Open replay" button label when clicked', () => {
-    const { getByText } = render(<AttachedGameCard attachment={makeAttachment()} />);
-    // Initial label
-    const button = getByText('card.replayButton') as HTMLButtonElement;
-    expect(button.tagName).toBe('BUTTON');
+  it('wraps the thumbnail in a button so tapping it opens the replay modal', () => {
+    const { container } = render(<AttachedGameCard attachment={makeAttachment()} />);
+    const board = container.querySelector('[data-testid="mini-board"]');
+    expect(board).not.toBeNull();
+    // The thumbnail must be inside a real <button> with a meaningful
+    // aria-label so screen-reader users can discover the replay action.
+    const thumbnailButton = board?.closest('button');
+    expect(thumbnailButton).not.toBeNull();
+    expect(thumbnailButton?.getAttribute('aria-label')).toMatch(/replay/i);
+  });
 
-    fireEvent.click(button);
-    expect(getByText('card.collapseButton')).not.toBeNull();
+  it('does NOT render the legacy "Open replay" toggle button anymore', () => {
+    const { queryByText } = render(<AttachedGameCard attachment={makeAttachment()} />);
+    // The pre-modal UI showed an inline replay button; tapping the
+    // thumbnail now opens the modal instead. Pin the absence so a
+    // future refactor cannot quietly bring back two trigger surfaces.
+    expect(queryByText('card.replayButton')).toBeNull();
+    expect(queryByText('card.collapseButton')).toBeNull();
   });
 
   // ─── Phase I: defense-in-depth — hostile attribution_path render ───
@@ -355,7 +365,7 @@ describe('AttachedGameCard — DOM / a11y structure', () => {
 //
 // The summary card MUST NOT statically import `chess-core` — that would
 // pull chess.js into the chunk-page first-paint client bundle. The
-// chess.js-bearing replay UI lives in a separate file (AttachedGameCardReplay)
+// chess.js-bearing replay UI lives in a separate file (GameReplayModal)
 // loaded lazily via `next/dynamic({ ssr: false })`. We pin this contract
 // with a source-text grep so a future refactor that moves a chess-core
 // import into the summary card surfaces here in CI rather than in a
@@ -369,19 +379,19 @@ describe('AttachedGameCard — module graph contract (M2)', () => {
     const here = path.dirname(fileURLToPath(import.meta.url));
     const source = await readFile(path.join(here, 'AttachedGameCard.tsx'), 'utf8');
 
-    // The replay sub-component IS allowed to import chess-core; the
-    // summary card must not. Grep accepts both quote styles.
+    // The replay modal IS allowed to import chess-core; the summary
+    // card must not. Grep accepts both quote styles.
     expect(source).not.toMatch(/from\s+['"]@blindfold-chess\/features\/chess-core['"]/);
     expect(source).not.toMatch(/from\s+['"]chess\.js['"]/);
   });
 
-  it('the replay sub-component IS allowed to import chess-core (sanity check)', async () => {
+  it('the replay modal IS allowed to import chess-core (sanity check)', async () => {
     const { readFile } = await import('node:fs/promises');
     const { fileURLToPath } = await import('node:url');
     const path = await import('node:path');
 
     const here = path.dirname(fileURLToPath(import.meta.url));
-    const replaySource = await readFile(path.join(here, 'AttachedGameCardReplay.tsx'), 'utf8');
+    const replaySource = await readFile(path.join(here, 'GameReplayModal.tsx'), 'utf8');
 
     expect(replaySource).toMatch(/from\s+['"]@blindfold-chess\/features\/chess-core['"]/);
   });
