@@ -4,6 +4,8 @@ import { useMemo, useState } from 'react';
 
 import { useCombobox } from 'downshift';
 
+import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
+
 import type { ChunkOption, ThemeOption } from '../_lib/load-puzzle-tags';
 
 type ThemeItem = ThemeOption & { kind: 'theme' };
@@ -199,7 +201,7 @@ export function PuzzleTagPicker({
 
         <ul
           {...getMenuProps()}
-          className={`absolute z-10 mt-1 w-full max-h-60 overflow-auto rounded border border-border bg-card shadow ${
+          className={`absolute z-10 mt-1 w-full max-h-96 overflow-auto rounded border border-border bg-card shadow ${
             showMenu ? '' : 'hidden'
           }`}
         >
@@ -207,26 +209,40 @@ export function PuzzleTagPicker({
             filteredItems.length > 0 &&
             filteredItems.map((item, index) => {
               const isHighlighted = highlightedIndex === index;
+              const previewFen = item.kind === 'chunk' ? item.representativeFen : item.previewFen;
               return (
                 <li
                   key={`${item.kind}-${item.id}`}
                   {...getItemProps({ item, index })}
-                  className={`px-3 py-2 text-sm cursor-pointer flex items-center gap-2 ${
+                  className={`px-3 py-2 text-sm cursor-pointer flex items-center gap-3 ${
                     isHighlighted ? 'bg-primary text-primary-foreground' : ''
                   }`}
                 >
+                  {/* Reserve the thumbnail slot even when previewFen is
+                      null so that text aligns vertically across rows
+                      regardless of which items have boards (most theme
+                      rows do not — abstract concepts like "Pin" have no
+                      single canonical position). */}
                   <span
-                    className={`text-[10px] uppercase tracking-wider rounded px-1 ${
-                      isHighlighted
-                        ? 'bg-primary-foreground/20'
-                        : item.kind === 'theme'
-                          ? 'bg-primary/10 text-primary'
-                          : 'bg-secondary text-secondary-foreground'
-                    }`}
+                    aria-hidden
+                    className="flex-shrink-0 w-12 h-12 flex items-center justify-center"
                   >
-                    {item.kind === 'theme' ? labels.badgeTheme : labels.badgeChunk}
+                    {previewFen ? <BoardThumbnail fen={previewFen} className="w-12 h-12" /> : null}
                   </span>
-                  <span>{item.label}</span>
+                  <span className="flex-1 flex items-center gap-2 min-w-0">
+                    <span
+                      className={`text-[10px] uppercase tracking-wider rounded px-1 flex-shrink-0 ${
+                        isHighlighted
+                          ? 'bg-primary-foreground/20'
+                          : item.kind === 'theme'
+                            ? 'bg-primary/10 text-primary'
+                            : 'bg-secondary text-secondary-foreground'
+                      }`}
+                    >
+                      {item.kind === 'theme' ? labels.badgeTheme : labels.badgeChunk}
+                    </span>
+                    <span className="truncate">{item.label}</span>
+                  </span>
                 </li>
               );
             })}

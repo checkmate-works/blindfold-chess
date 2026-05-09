@@ -1,10 +1,11 @@
 import { cache } from 'react';
 
-import { and, asc, eq, isNull } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull } from 'drizzle-orm';
 
 import {
   chunks,
   db,
+  glossaryTermPositions,
   glossaryTermTranslations,
   glossaryTerms,
   positionChunks,
@@ -18,13 +19,45 @@ export type ThemeOption = {
   slug: string;
   label: string;
   category: string;
+  /**
+   * First example FEN attached to this glossary term (lowest
+   * `sort_order` row in `glossary_term_positions`). `null` for terms
+   * with no example positions seeded — most theme-eligible terms are
+   * abstract concepts (pin, prophylaxis, …) that don't have a single
+   * canonical board.
+   */
+  previewFen: string | null;
 };
 
 export type ChunkOption = {
   id: string;
   slug: string;
   label: string;
+  representativeFen: string;
 };
+
+/**
+ * Build a `term_id → first FEN` map for a list of term IDs. Picks the
+ * lowest `sort_order` row per term — this matches how the public
+ * glossary page surfaces a term's "primary" example. Returns an empty
+ * map when the input is empty (avoids an `IN ()` query).
+ */
+async function loadFirstThemePositions(termIds: string[]): Promise<Map<string, string>> {
+  if (termIds.length === 0) return new Map();
+  const rows = await db
+    .select({
+      termId: glossaryTermPositions.termId,
+      fen: glossaryTermPositions.fen,
+    })
+    .from(glossaryTermPositions)
+    .where(inArray(glossaryTermPositions.termId, termIds))
+    .orderBy(asc(glossaryTermPositions.termId), asc(glossaryTermPositions.sortOrder));
+  const map = new Map<string, string>();
+  for (const row of rows) {
+    if (!map.has(row.termId)) map.set(row.termId, row.fen);
+  }
+  return map;
+}
 
 export type PuzzleTagBundle = {
   themes: ThemeOption[];
@@ -63,11 +96,14 @@ export const loadPuzzleTags = cache(
         id: chunks.id,
         slug: chunks.slug,
         title: chunks.title,
+        representativeFen: chunks.representativeFen,
       })
       .from(positionChunks)
       .innerJoin(chunks, eq(chunks.id, positionChunks.chunkId))
       .where(and(eq(positionChunks.positionId, positionId), isNull(chunks.deletedAt)))
       .orderBy(asc(chunks.title));
+
+    const previewByTerm = await loadFirstThemePositions(themeRows.map((r) => r.id));
 
     return {
       themes: themeRows.map((r) => ({
@@ -75,11 +111,13 @@ export const loadPuzzleTags = cache(
         slug: r.slug,
         label: r.term ?? r.termEn,
         category: r.category,
+        previewFen: previewByTerm.get(r.id) ?? null,
       })),
       chunks: chunkRows.map((r) => ({
         id: r.id,
         slug: r.slug,
         label: r.title,
+        representativeFen: r.representativeFen,
       })),
     };
   }
@@ -117,10 +155,13 @@ export const loadAvailableTags = cache(async (locale: Locale): Promise<PuzzleTag
       id: chunks.id,
       slug: chunks.slug,
       title: chunks.title,
+      representativeFen: chunks.representativeFen,
     })
     .from(chunks)
     .where(isNull(chunks.deletedAt))
     .orderBy(asc(chunks.title));
+
+  const previewByTerm = await loadFirstThemePositions(themeRows.map((r) => r.id));
 
   return {
     themes: themeRows.map((r) => ({
@@ -128,11 +169,13 @@ export const loadAvailableTags = cache(async (locale: Locale): Promise<PuzzleTag
       slug: r.slug,
       label: r.term ?? r.termEn,
       category: r.category,
+      previewFen: previewByTerm.get(r.id) ?? null,
     })),
     chunks: chunkRows.map((r) => ({
       id: r.id,
       slug: r.slug,
       label: r.title,
+      representativeFen: r.representativeFen,
     })),
   };
 });
