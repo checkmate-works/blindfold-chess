@@ -50,7 +50,8 @@ export default async function EditPuzzlePage({ params }: Props) {
     redirect(`/${locale}/practice/puzzle/${id}`);
   }
 
-  const solutionMoves = solutions[0]?.solutionMoves.map((m) => m.san) ?? [];
+  const solutionMoves =
+    solutions[0]?.solutionMoves.map((m) => ({ san: m.san, note: m.note ?? null })) ?? [];
 
   return (
     <PageLayout

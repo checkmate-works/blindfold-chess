@@ -46,26 +46,6 @@ export function validatePositionMutationData(data: PositionMutationData): string
 }
 
 /**
- * Validate metadata-only puzzle update payloads (title + optional description).
- *
- * Used by the puzzle edit flow, which deliberately does not allow editing
- * `fen` or `solutionMoves` to avoid breaking spoiler-tagged comments and
- * `puzzle_solutions` integrity. Identity (`userId`) is enforced by the
- * server action's ownership check, not here.
- *
- * @returns An error message string if validation fails, or `null` if valid.
- */
-export function validatePuzzleMetadataMutationData(data: {
-  title: string;
-  description?: string | null;
-}): string | null {
-  if (!data.title || !data.title.trim()) {
-    return 'Title is required';
-  }
-  return null;
-}
-
-/**
  * Validate puzzle mutation data before persisting.
  *
  * Extends position validation with solution moves validation.

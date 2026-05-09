@@ -2,7 +2,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockAuthenticateAndGuard = vi.fn();
 const mockSelectLimit = vi.fn();
-const mockUpdateWhere = vi.fn();
+const mockTxUpdateWhere = vi.fn();
+const mockTxDeleteWhere = vi.fn();
+const mockTxInsertValues = vi.fn();
 
 vi.mock('server-only', () => ({}));
 
@@ -19,17 +21,31 @@ vi.mock('@/lib/db', () => ({
         }),
       }),
     }),
-    update: () => ({
-      set: () => ({
-        where: (...args: unknown[]) => mockUpdateWhere(...args),
-      }),
-    }),
+    transaction: async (fn: (tx: unknown) => Promise<unknown>) => {
+      const tx = {
+        update: () => ({
+          set: () => ({
+            where: (...args: unknown[]) => mockTxUpdateWhere(...args),
+          }),
+        }),
+        delete: () => ({
+          where: (...args: unknown[]) => mockTxDeleteWhere(...args),
+        }),
+        insert: () => ({
+          values: (...args: unknown[]) => mockTxInsertValues(...args),
+        }),
+      };
+      return fn(tx);
+    },
   },
   positions: {
     id: 'id',
     userId: 'user_id',
     type: 'type',
     deletedAt: 'deleted_at',
+  },
+  puzzleSolutions: {
+    positionId: 'position_id',
   },
 }));
 
@@ -43,6 +59,9 @@ vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
 }));
 
+const VALID_FEN = 'r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3';
+const VALID_SOLUTION = [{ san: 'Nc3', note: null }];
+
 const TEST_USER_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 const OTHER_USER_ID = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
 const TEST_PUZZLE_ID = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
@@ -51,14 +70,21 @@ describe('updatePuzzle', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: TEST_USER_ID } });
-    mockUpdateWhere.mockResolvedValue(undefined);
+    mockTxUpdateWhere.mockResolvedValue(undefined);
+    mockTxDeleteWhere.mockResolvedValue(undefined);
+    mockTxInsertValues.mockResolvedValue(undefined);
   });
 
   it('returns guard error when authentication fails', async () => {
     mockAuthenticateAndGuard.mockResolvedValue({ error: 'signInRequired' });
 
     const { updatePuzzle } = await import('./updatePuzzle');
-    const result = await updatePuzzle({ id: TEST_PUZZLE_ID, title: 'New title' });
+    const result = await updatePuzzle({
+      id: TEST_PUZZLE_ID,
+      fen: VALID_FEN,
+      title: 'New title',
+      solutionMoves: VALID_SOLUTION,
+    });
 
     expect(result).toEqual({ error: 'signInRequired' });
     expect(mockSelectLimit).not.toHaveBeenCalled();
@@ -66,9 +92,40 @@ describe('updatePuzzle', () => {
 
   it('returns validation error when title is empty', async () => {
     const { updatePuzzle } = await import('./updatePuzzle');
-    const result = await updatePuzzle({ id: TEST_PUZZLE_ID, title: '   ' });
+    const result = await updatePuzzle({
+      id: TEST_PUZZLE_ID,
+      fen: VALID_FEN,
+      title: '   ',
+      solutionMoves: VALID_SOLUTION,
+    });
 
     expect(result).toEqual({ error: 'Title is required' });
+    expect(mockSelectLimit).not.toHaveBeenCalled();
+  });
+
+  it('returns validation error for invalid FEN', async () => {
+    const { updatePuzzle } = await import('./updatePuzzle');
+    const result = await updatePuzzle({
+      id: TEST_PUZZLE_ID,
+      fen: 'not-a-fen',
+      title: 'Title',
+      solutionMoves: VALID_SOLUTION,
+    });
+
+    expect(result).toEqual({ error: 'Invalid FEN — must be a legal chess position' });
+    expect(mockSelectLimit).not.toHaveBeenCalled();
+  });
+
+  it('returns validation error when solution is empty', async () => {
+    const { updatePuzzle } = await import('./updatePuzzle');
+    const result = await updatePuzzle({
+      id: TEST_PUZZLE_ID,
+      fen: VALID_FEN,
+      title: 'Title',
+      solutionMoves: [],
+    });
+
+    expect(result).toEqual({ error: 'Solution is required' });
     expect(mockSelectLimit).not.toHaveBeenCalled();
   });
 
@@ -76,7 +133,12 @@ describe('updatePuzzle', () => {
     mockSelectLimit.mockResolvedValue([]);
 
     const { updatePuzzle } = await import('./updatePuzzle');
-    const result = await updatePuzzle({ id: TEST_PUZZLE_ID, title: 'Title' });
+    const result = await updatePuzzle({
+      id: TEST_PUZZLE_ID,
+      fen: VALID_FEN,
+      title: 'Title',
+      solutionMoves: VALID_SOLUTION,
+    });
 
     expect(result).toEqual({ error: 'notFound' });
   });
@@ -92,10 +154,15 @@ describe('updatePuzzle', () => {
     ]);
 
     const { updatePuzzle } = await import('./updatePuzzle');
-    const result = await updatePuzzle({ id: TEST_PUZZLE_ID, title: 'Title' });
+    const result = await updatePuzzle({
+      id: TEST_PUZZLE_ID,
+      fen: VALID_FEN,
+      title: 'Title',
+      solutionMoves: VALID_SOLUTION,
+    });
 
     expect(result).toEqual({ error: 'notFound' });
-    expect(mockUpdateWhere).not.toHaveBeenCalled();
+    expect(mockTxUpdateWhere).not.toHaveBeenCalled();
   });
 
   it('returns unauthorized when user is not the owner', async () => {
@@ -109,10 +176,15 @@ describe('updatePuzzle', () => {
     ]);
 
     const { updatePuzzle } = await import('./updatePuzzle');
-    const result = await updatePuzzle({ id: TEST_PUZZLE_ID, title: 'Title' });
+    const result = await updatePuzzle({
+      id: TEST_PUZZLE_ID,
+      fen: VALID_FEN,
+      title: 'Title',
+      solutionMoves: VALID_SOLUTION,
+    });
 
     expect(result).toEqual({ error: 'unauthorized' });
-    expect(mockUpdateWhere).not.toHaveBeenCalled();
+    expect(mockTxUpdateWhere).not.toHaveBeenCalled();
   });
 
   it('returns alreadyDeleted when puzzle is soft-deleted', async () => {
@@ -126,13 +198,18 @@ describe('updatePuzzle', () => {
     ]);
 
     const { updatePuzzle } = await import('./updatePuzzle');
-    const result = await updatePuzzle({ id: TEST_PUZZLE_ID, title: 'Title' });
+    const result = await updatePuzzle({
+      id: TEST_PUZZLE_ID,
+      fen: VALID_FEN,
+      title: 'Title',
+      solutionMoves: VALID_SOLUTION,
+    });
 
     expect(result).toEqual({ error: 'alreadyDeleted' });
-    expect(mockUpdateWhere).not.toHaveBeenCalled();
+    expect(mockTxUpdateWhere).not.toHaveBeenCalled();
   });
 
-  it('updates the row when caller owns it', async () => {
+  it('updates the row + replaces solution_moves when caller owns it', async () => {
     mockSelectLimit.mockResolvedValue([
       {
         id: TEST_PUZZLE_ID,
@@ -145,40 +222,21 @@ describe('updatePuzzle', () => {
     const { updatePuzzle } = await import('./updatePuzzle');
     const result = await updatePuzzle({
       id: TEST_PUZZLE_ID,
+      fen: VALID_FEN,
       title: '  New title  ',
       description: '  notes  ',
+      solutionMoves: VALID_SOLUTION,
     });
 
     expect(result).toEqual({ success: true });
-    expect(mockUpdateWhere).toHaveBeenCalledTimes(1);
-  });
-
-  it('does not include fen in the update payload', async () => {
-    mockSelectLimit.mockResolvedValue([
-      {
-        id: TEST_PUZZLE_ID,
-        userId: TEST_USER_ID,
-        type: 'puzzle',
-        deletedAt: null,
-      },
-    ]);
-
-    let capturedSet: Record<string, unknown> | null = null;
-    const dbModule = await import('@/lib/db');
-    const setSpy = vi.fn((values: Record<string, unknown>) => {
-      capturedSet = values;
-      return { where: mockUpdateWhere };
-    });
-    (dbModule.db as unknown as { update: () => unknown }).update = () => ({ set: setSpy });
-
-    const { updatePuzzle } = await import('./updatePuzzle');
-    await updatePuzzle({
-      id: TEST_PUZZLE_ID,
-      title: 'Title',
-      description: 'desc',
-    });
-
-    expect(capturedSet).not.toBeNull();
-    expect(Object.keys(capturedSet!)).toEqual(['title', 'description']);
+    expect(mockTxUpdateWhere).toHaveBeenCalledTimes(1);
+    expect(mockTxDeleteWhere).toHaveBeenCalledTimes(1);
+    expect(mockTxInsertValues).toHaveBeenCalledTimes(1);
+    expect(mockTxInsertValues).toHaveBeenCalledWith(
+      expect.objectContaining({
+        positionId: TEST_PUZZLE_ID,
+        solutionMoves: [{ san: 'Nc3', note: null }],
+      })
+    );
   });
 });

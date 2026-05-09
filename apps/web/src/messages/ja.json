@@ -1098,10 +1098,7 @@
         "submitting": "保存中...",
         "saveError": "予期しないエラーが発生しました。もう一度お試しください。",
         "notFound": "このパズルは見つかりませんでした。",
-        "unauthorized": "自分のパズルのみ編集できます。",
-        "fenLockedHint": "ポジションと正解手は編集できません。誤りがある場合はパズルを削除して新しく作成してください。コメントの文脈が壊れるのを避けるためです。",
-        "lockedPositionLabel": "ポジション",
-        "lockedSolutionLabel": "正解手"
+        "unauthorized": "自分のパズルのみ編集できます。"
       },
       "detail": {
         "title": "パズル詳細",

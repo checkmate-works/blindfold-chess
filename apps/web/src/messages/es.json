@@ -1098,10 +1098,7 @@
         "submitting": "Guardando...",
         "saveError": "Ocurrió un error inesperado. Inténtalo de nuevo.",
         "notFound": "No se pudo encontrar este puzzle.",
-        "unauthorized": "Solo puedes editar tus propios puzzles.",
-        "fenLockedHint": "La posición y la solución no pueden editarse. Si están equivocadas, elimina el puzzle y crea uno nuevo — de lo contrario los comentarios vinculados a la posición original perderían su contexto.",
-        "lockedPositionLabel": "Posición",
-        "lockedSolutionLabel": "Solución"
+        "unauthorized": "Solo puedes editar tus propios puzzles."
       },
       "detail": {
         "title": "Detalle del Puzzle",
