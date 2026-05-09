@@ -474,7 +474,6 @@
     "articlesTitle": "Artículos",
     "relatedArticles": "Artículos Relacionados",
     "browseByCategory": "Explorar por Categoría",
-    "allCategories": "Todas",
     "articleCount": "{count, plural, one {# artículo} other {# artículos}}",
     "categories": {
       "piece-movement": "Movimiento de Piezas",
