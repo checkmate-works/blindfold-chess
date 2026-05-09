@@ -18,6 +18,7 @@ export const termsAC: ChessTerm[] = [
       "A tactic that lures an opponent's piece to a specific square. The strategy aims to guide the king or important pieces to disadvantageous squares to set up subsequent attacks. Nearly synonymous with Decoy",
     aliases: ['Decoy'],
     category: 'tactics',
+    isTheme: true,
   },
   {
     term: 'Backward Pawn',
@@ -27,6 +28,7 @@ export const termsAC: ChessTerm[] = [
     definitionEn:
       'A pawn that has been left behind by neighboring pawns and cannot obtain support from other pawns. Without nearby pawns to advance and protect it, it becomes isolated and vulnerable. The square in front of it can be used as an outpost by the opponent. It is susceptible to attacks from long-range pieces like rooks and bishops. It becomes particularly weak when on open or semi-open files. Difficult to defend, it often becomes a long-term positional weakness',
     category: 'structure',
+    isTheme: true,
   },
   {
     term: 'Battery',
@@ -51,6 +53,7 @@ export const termsAC: ChessTerm[] = [
       },
     ],
     category: 'structure',
+    isTheme: true,
   },
   {
     term: 'Calculation',
@@ -87,6 +90,7 @@ export const termsAC: ChessTerm[] = [
     definitionEn:
       'A tactic involving moving a piece to make use of the piece or square behind it. Used to set up checkmates or powerful tactics. Often involves a sacrifice',
     category: 'tactics',
+    isTheme: true,
   },
   {
     term: 'Closed Pawn',
@@ -96,6 +100,7 @@ export const termsAC: ChessTerm[] = [
     definitionEn:
       'Pawns on a file where opposing pawns face each other and cannot advance. These contribute to creating a closed position',
     category: 'structure',
+    isTheme: true,
   },
   {
     term: 'Closed Position',
@@ -105,6 +110,7 @@ export const termsAC: ChessTerm[] = [
     definitionEn:
       'A position where the pawn structure is fixed and the board is closed. Pawn breaks and piece maneuvering (repositioning) become important, requiring different strategies than in open positions',
     category: 'strategy',
+    isTheme: true,
   },
   {
     term: 'Color Complex',
@@ -114,6 +120,7 @@ export const termsAC: ChessTerm[] = [
     definitionEn:
       'A state where control over squares of a particular color becomes weak. This can occur after exchanging bishops or due to pawn structure that weakens specific colored squares',
     category: 'strategy',
+    isTheme: true,
   },
   {
     term: 'Combination',

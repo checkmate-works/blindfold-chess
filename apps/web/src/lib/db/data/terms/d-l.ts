@@ -10,6 +10,7 @@ export const termsDL: ChessTerm[] = [
       "A tactic that intentionally lures an opponent's piece to an unfavorable or dangerous square. The purpose is to use the lured piece to set up subsequent tactics (forks, pins, mate, etc.)",
     aliases: ['Attraction'],
     category: 'tactics',
+    isTheme: true,
   },
   {
     term: 'Deflection',
@@ -19,6 +20,7 @@ export const termsDL: ChessTerm[] = [
     definitionEn:
       "A tactic that draws an opponent's piece away from a specific defensive position. While Attraction (Decoy) aims to lure to a specific place, Deflection aims to draw away from a specific place",
     category: 'tactics',
+    isTheme: true,
   },
   {
     term: 'Desperado',
@@ -28,6 +30,7 @@ export const termsDL: ChessTerm[] = [
     definitionEn:
       'Spanish for "desperado" or "outlaw." A tactic where a piece that will be captured anyway inflicts maximum damage before being taken. A move where a piece with no escape tries to gain something before being captured for free',
     category: 'tactics',
+    isTheme: true,
   },
   {
     term: 'Disposal',
@@ -45,6 +48,7 @@ export const termsDL: ChessTerm[] = [
     definitionEn:
       "A tactic that completely restricts and contains the movement of opponent's pieces. A technique that creates situations where opponent's pieces lose escape squares and are eventually captured, or positions where pieces cannot function effectively",
     category: 'tactics',
+    isTheme: true,
   },
   {
     term: 'Double-Edged Game',
@@ -97,6 +101,7 @@ export const termsDL: ChessTerm[] = [
     definitionEn:
       'An undefended piece. Also expressed as a "hanging piece," it refers to a piece that is attacked but not defended, meaning it can be captured for free',
     category: 'tactics',
+    isTheme: true,
   },
   {
     term: 'Half Point',
@@ -113,6 +118,7 @@ export const termsDL: ChessTerm[] = [
     definitionEn:
       "A square not defended by pawns that can easily be used as an outpost by opponent's pieces. Likely to become an outpost for opponent's knights or bishops, and cannot be easily driven away by your pieces. Strategically controlling such squares provides significant advantages",
     category: 'structure',
+    isTheme: true,
   },
   {
     term: 'Interference',
@@ -122,6 +128,7 @@ export const termsDL: ChessTerm[] = [
     definitionEn:
       "A move that intentionally blocks the coordination, defense, or lines of movement of opponent's pieces. Gaining a tactical advantage by interposing your piece to disrupt the connection between two enemy pieces",
     category: 'tactics',
+    isTheme: true,
   },
   {
     term: 'Interposition',
@@ -131,6 +138,7 @@ export const termsDL: ChessTerm[] = [
     definitionEn:
       'A defensive technique of placing a piece between an attacker and the attacked piece (especially the king) to block the attack. Commonly used to block checks by interposing a piece between the checking piece and the king',
     category: 'tactics',
+    isTheme: true,
   },
   {
     term: 'Isolated Pawn',
@@ -147,6 +155,7 @@ export const termsDL: ChessTerm[] = [
       },
     ],
     category: 'structure',
+    isTheme: true,
   },
   {
     term: 'Jarchow Bishop',
@@ -170,6 +179,7 @@ export const termsDL: ChessTerm[] = [
       'Squares where reaching them ensures victory for the advantaged side or a draw for the disadvantaged side. Important squares in the endgame where king occupation significantly contributes to winning or drawing. Also called Critical Squares',
     aliases: ['Critical Squares'],
     category: 'endgame',
+    isTheme: true,
   },
   {
     term: 'Kicks',
