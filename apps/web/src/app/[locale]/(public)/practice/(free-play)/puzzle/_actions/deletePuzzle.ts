@@ -8,6 +8,7 @@ import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, positions } from '@/lib/db';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
+import { logActivityEvent } from '@/lib/users/activity-log';
 
 /**
  * User-facing puzzle soft-delete.
@@ -29,6 +30,7 @@ export async function deletePuzzle(puzzleId: string, locale: string): Promise<Ac
       id: positions.id,
       userId: positions.userId,
       type: positions.type,
+      title: positions.title,
       deletedAt: positions.deletedAt,
     })
     .from(positions)
@@ -53,6 +55,14 @@ export async function deletePuzzle(puzzleId: string, locale: string): Promise<Ac
     .where(
       and(eq(positions.id, puzzleId), eq(positions.userId, user.id), isNull(positions.deletedAt))
     );
+
+  logActivityEvent({
+    userId: user.id,
+    action: 'delete_puzzle',
+    targetType: 'position',
+    targetId: puzzleId,
+    metadata: { type: 'puzzle', title: position.title },
+  });
 
   revalidatePath(`/${locale}/practice/puzzle`);
   revalidatePath(`/${locale}/practice/puzzle/${puzzleId}`);

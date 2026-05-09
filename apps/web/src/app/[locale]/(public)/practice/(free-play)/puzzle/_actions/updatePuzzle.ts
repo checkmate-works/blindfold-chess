@@ -8,6 +8,7 @@ import { authenticateAndGuard } from '@/lib/auth';
 import { db, positions, puzzleSolutions } from '@/lib/db';
 import { normalizePuzzleMoves, validatePuzzleMutationData } from '@/lib/positions/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
+import { logActivityEvent } from '@/lib/users/activity-log';
 
 export type UpdatePuzzleResult = { success: true } | { error: string };
 
@@ -93,6 +94,14 @@ export async function updatePuzzle(data: {
       positionId: data.id,
       solutionMoves: normalizedMoves,
     });
+  });
+
+  logActivityEvent({
+    userId: user.id,
+    action: 'update_puzzle',
+    targetType: 'position',
+    targetId: data.id,
+    metadata: { type: 'puzzle' },
   });
 
   revalidatePath('/practice/puzzle');

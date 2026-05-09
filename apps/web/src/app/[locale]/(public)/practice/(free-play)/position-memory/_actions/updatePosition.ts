@@ -8,6 +8,7 @@ import { authenticateAndGuard } from '@/lib/auth';
 import { db, positions } from '@/lib/db';
 import { validatePositionMutationData } from '@/lib/positions/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
+import { logActivityEvent } from '@/lib/users/activity-log';
 
 export type UpdatePositionResult = { success: true } | { error: string };
 
@@ -69,6 +70,14 @@ export async function updatePosition(data: {
     .where(
       and(eq(positions.id, data.id), eq(positions.userId, user.id), isNull(positions.deletedAt))
     );
+
+  logActivityEvent({
+    userId: user.id,
+    action: 'update_position',
+    targetType: 'position',
+    targetId: data.id,
+    metadata: { type: 'memory' },
+  });
 
   revalidatePath('/practice/position-memory');
   revalidatePath(`/practice/position-memory/${data.id}`);

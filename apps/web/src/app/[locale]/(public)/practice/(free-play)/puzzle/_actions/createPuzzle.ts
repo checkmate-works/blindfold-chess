@@ -8,6 +8,7 @@ import { GRANT_TYPE_DEFAULTS } from '@/lib/db/data/grant-types';
 import { createNotification, notifyFollowersOfNewPosition } from '@/lib/notifications/notification';
 import { normalizePuzzleMoves, validatePuzzleMutationData } from '@/lib/positions/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
+import { logActivityEvent } from '@/lib/users/activity-log';
 import { applyAutomatedGrant } from '@/lib/users/user-grants';
 
 export type CreatePuzzleResult =
@@ -114,6 +115,14 @@ export async function createPuzzle(data: {
     actorId: user.id,
     positionId: inserted.id,
     positionType: 'puzzle',
+  });
+
+  logActivityEvent({
+    userId: user.id,
+    action: 'create_puzzle',
+    targetType: 'position',
+    targetId: inserted.id,
+    metadata: { type: 'puzzle' },
   });
 
   revalidatePath('/practice/puzzle');

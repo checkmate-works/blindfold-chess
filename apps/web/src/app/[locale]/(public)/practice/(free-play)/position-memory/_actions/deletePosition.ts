@@ -8,6 +8,7 @@ import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, positions } from '@/lib/db';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
+import { logActivityEvent } from '@/lib/users/activity-log';
 
 /**
  * User-facing position-memory soft-delete.
@@ -30,6 +31,7 @@ export async function deletePosition(positionId: string, locale: string): Promis
       id: positions.id,
       userId: positions.userId,
       type: positions.type,
+      title: positions.title,
       deletedAt: positions.deletedAt,
     })
     .from(positions)
@@ -54,6 +56,14 @@ export async function deletePosition(positionId: string, locale: string): Promis
     .where(
       and(eq(positions.id, positionId), eq(positions.userId, user.id), isNull(positions.deletedAt))
     );
+
+  logActivityEvent({
+    userId: user.id,
+    action: 'delete_position',
+    targetType: 'position',
+    targetId: positionId,
+    metadata: { type: 'memory', title: position.title },
+  });
 
   revalidatePath(`/${locale}/practice/position-memory`);
   revalidatePath(`/${locale}/practice/position-memory/${positionId}`);
