@@ -1093,6 +1093,7 @@
         "noResults": "Sem resultados",
         "remove": "Remover {label}",
         "openDetail": "Mostrar detalhes de {label}",
+        "moreItemsHint": "+{count} mais — digite para filtrar",
         "detail": {
           "readingPrefix": "Leitura: ",
           "noDescription": "Sem descrição disponível.",

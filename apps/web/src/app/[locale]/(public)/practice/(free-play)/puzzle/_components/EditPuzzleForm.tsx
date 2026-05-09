@@ -122,6 +122,7 @@ export function EditPuzzleForm({ positionId, initial, available }: Props) {
       noResults: tTags('noResults'),
       remove: (label: string) => tTags('remove', { label }),
       openDetail: (label: string) => tTags('openDetail', { label }),
+      moreItemsHint: (count: number) => tTags('moreItemsHint', { count }),
       detail: {
         readingPrefix: tTags('detail.readingPrefix'),
         noDescription: tTags('detail.noDescription'),

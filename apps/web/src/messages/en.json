@@ -1093,6 +1093,7 @@
         "noResults": "No matches",
         "remove": "Remove {label}",
         "openDetail": "Show details for {label}",
+        "moreItemsHint": "+{count} more — type to filter",
         "detail": {
           "readingPrefix": "Reading: ",
           "noDescription": "No description available.",

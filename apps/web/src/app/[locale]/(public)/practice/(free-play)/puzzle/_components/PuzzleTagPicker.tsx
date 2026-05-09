@@ -13,6 +13,17 @@ type ThemeItem = ThemeOption & { kind: 'theme' };
 type ChunkItem = ChunkOption & { kind: 'chunk' };
 type TagItem = ThemeItem | ChunkItem;
 
+/**
+ * Idle dropdown caps. When the user has not typed anything we render
+ * at most this many of each kind so the initial open is responsive
+ * even as the chunk catalog grows. Each row holds a 48px mini-board
+ * (≈64 divs of layout work each), so capping keeps DOM cost bounded.
+ * The full filtered set is shown the moment the user types, since
+ * filtering naturally narrows the result and intent is now known.
+ */
+const IDLE_MAX_THEMES = 10;
+const IDLE_MAX_CHUNKS = 10;
+
 type Props = {
   /**
    * Currently selected themes. The parent owns this state — the picker
@@ -35,6 +46,7 @@ type Props = {
     noResults: string;
     remove: (label: string) => string;
     openDetail: (label: string) => string;
+    moreItemsHint: (count: number) => string;
     detail: {
       readingPrefix: string;
       noDescription: string;
@@ -70,20 +82,43 @@ export function PuzzleTagPicker({
     [selectedChunks]
   );
 
-  const filteredItems = useMemo<TagItem[]>(() => {
+  const isIdle = inputValue.trim().length === 0;
+
+  const matchedThemes = useMemo<ThemeItem[]>(() => {
     const q = inputValue.toLowerCase().trim();
     const matches = (label: string) => !q || label.toLowerCase().includes(q);
-    // Themes (curated master vocabulary) lead the suggestions; chunks
-    // (UGC) follow. This biases new users toward standard terminology
-    // while still surfacing personal patterns.
-    const themes: TagItem[] = availableThemes
+    return availableThemes
       .filter((t) => !selectedThemeIdSet.has(t.id) && matches(t.label))
       .map(toThemeItem);
-    const chunks: TagItem[] = availableChunks
+  }, [availableThemes, selectedThemeIdSet, inputValue]);
+
+  const matchedChunks = useMemo<ChunkItem[]>(() => {
+    const q = inputValue.toLowerCase().trim();
+    const matches = (label: string) => !q || label.toLowerCase().includes(q);
+    return availableChunks
       .filter((c) => !selectedChunkIdSet.has(c.id) && matches(c.label))
       .map(toChunkItem);
-    return [...themes, ...chunks];
-  }, [availableThemes, availableChunks, selectedThemeIdSet, selectedChunkIdSet, inputValue]);
+  }, [availableChunks, selectedChunkIdSet, inputValue]);
+
+  // Themes (curated master vocabulary) lead the suggestions; chunks
+  // (UGC) follow. This biases new users toward standard terminology
+  // while still surfacing personal patterns. At idle, cap each kind
+  // independently so both groups remain visible regardless of how
+  // many themes outrank chunks alphabetically.
+  const displayItems = useMemo<TagItem[]>(() => {
+    if (isIdle) {
+      return [
+        ...matchedThemes.slice(0, IDLE_MAX_THEMES),
+        ...matchedChunks.slice(0, IDLE_MAX_CHUNKS),
+      ];
+    }
+    return [...matchedThemes, ...matchedChunks];
+  }, [matchedThemes, matchedChunks, isIdle]);
+
+  const hiddenCount = isIdle
+    ? Math.max(0, matchedThemes.length - IDLE_MAX_THEMES) +
+      Math.max(0, matchedChunks.length - IDLE_MAX_CHUNKS)
+    : 0;
 
   function addItem(item: TagItem) {
     if (item.kind === 'theme') {
@@ -118,7 +153,7 @@ export function PuzzleTagPicker({
 
   const { isOpen, getMenuProps, getInputProps, getItemProps, highlightedIndex, openMenu } =
     useCombobox<TagItem>({
-      items: filteredItems,
+      items: displayItems,
       inputValue,
       selectedItem: null,
       defaultHighlightedIndex: 0,
@@ -128,6 +163,14 @@ export function PuzzleTagPicker({
           case useCombobox.stateChangeTypes.InputKeyDownEnter:
           case useCombobox.stateChangeTypes.ItemClick:
             return { ...changes, isOpen: true, highlightedIndex: 0, inputValue: '' };
+          // Downshift's default InputClick action toggles isOpen, which
+          // collides with our onFocus → openMenu() flow: focus opens the
+          // menu, then the click that caused the focus immediately
+          // toggles it closed. Override to always open instead — clicks
+          // outside the input still close the menu via the standard
+          // outside-click handler.
+          case useCombobox.stateChangeTypes.InputClick:
+            return { ...changes, isOpen: true };
           default:
             return changes;
         }
@@ -151,7 +194,7 @@ export function PuzzleTagPicker({
     });
 
   const showMenu =
-    isOpen && (filteredItems.length > 0 || (inputValue.length > 0 && filteredItems.length === 0));
+    isOpen && (displayItems.length > 0 || (inputValue.length > 0 && displayItems.length === 0));
 
   return (
     <div>
@@ -210,8 +253,8 @@ export function PuzzleTagPicker({
           }`}
         >
           {isOpen &&
-            filteredItems.length > 0 &&
-            filteredItems.map((item, index) => {
+            displayItems.length > 0 &&
+            displayItems.map((item, index) => {
               const isHighlighted = highlightedIndex === index;
               const previewFen = item.kind === 'chunk' ? item.representativeFen : item.previewFen;
               return (
@@ -250,8 +293,13 @@ export function PuzzleTagPicker({
                 </li>
               );
             })}
-          {isOpen && filteredItems.length === 0 && inputValue.length > 0 && (
+          {isOpen && displayItems.length === 0 && inputValue.length > 0 && (
             <li className="px-3 py-2 text-sm text-muted-foreground">{labels.noResults}</li>
+          )}
+          {isOpen && hiddenCount > 0 && (
+            <li className="px-3 py-2 text-xs text-muted-foreground italic border-t border-border">
+              {labels.moreItemsHint(hiddenCount)}
+            </li>
           )}
         </ul>
       </div>

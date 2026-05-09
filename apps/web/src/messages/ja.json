@@ -1093,6 +1093,7 @@
         "noResults": "該当なし",
         "remove": "{label} を外す",
         "openDetail": "{label} の詳細を表示",
+        "moreItemsHint": "他 {count} 件 — 入力して絞り込み",
         "detail": {
           "readingPrefix": "読み: ",
           "noDescription": "説明はありません。",
