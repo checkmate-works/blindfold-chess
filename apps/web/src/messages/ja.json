@@ -312,12 +312,6 @@
       }
     }
   },
-  "Common": {
-    "sponsoredLink": "スポンサーリンク",
-    "testAd": "テスト広告",
-    "adLabel": "広告",
-    "sponsor": "スポンサー"
-  },
   "openingSearch": {
     "selectOpening": "オープニングを選択",
     "searchPlaceholder": "オープニングを検索..."

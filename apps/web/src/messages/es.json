@@ -312,12 +312,6 @@
       }
     }
   },
-  "Common": {
-    "sponsoredLink": "Enlace Patrocinado",
-    "testAd": "Anuncio de Prueba",
-    "adLabel": "Publicidad",
-    "sponsor": "Patrocinador"
-  },
   "openingSearch": {
     "selectOpening": "Selecciona una apertura",
     "searchPlaceholder": "Buscar aperturas..."

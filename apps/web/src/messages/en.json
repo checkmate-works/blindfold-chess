@@ -312,12 +312,6 @@
       }
     }
   },
-  "Common": {
-    "sponsoredLink": "Sponsored Link",
-    "testAd": "Test Ad",
-    "adLabel": "Ad",
-    "sponsor": "Sponsor"
-  },
   "openingSearch": {
     "selectOpening": "Select an opening",
     "searchPlaceholder": "Search openings..."
