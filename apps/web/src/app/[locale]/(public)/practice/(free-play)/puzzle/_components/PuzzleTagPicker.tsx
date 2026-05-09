@@ -7,6 +7,7 @@ import { useCombobox } from 'downshift';
 import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
 
 import type { ChunkOption, ThemeOption } from '../_lib/load-puzzle-tags';
+import { type TagDetailItem, TagDetailModal } from './TagDetailModal';
 
 type ThemeItem = ThemeOption & { kind: 'theme' };
 type ChunkItem = ChunkOption & { kind: 'chunk' };
@@ -33,6 +34,15 @@ type Props = {
     badgeChunk: string;
     noResults: string;
     remove: (label: string) => string;
+    openDetail: (label: string) => string;
+    detail: {
+      readingPrefix: string;
+      noDescription: string;
+      viewInGlossary: string;
+      viewChunkPage: string;
+      detach: string;
+      close: string;
+    };
   };
 };
 
@@ -49,6 +59,7 @@ export function PuzzleTagPicker({
   labels,
 }: Props) {
   const [inputValue, setInputValue] = useState('');
+  const [detailItem, setDetailItem] = useState<TagDetailItem | null>(null);
 
   const selectedThemeIdSet = useMemo(
     () => new Set(selectedThemes.map((t) => t.id)),
@@ -100,6 +111,11 @@ export function PuzzleTagPicker({
     );
   }
 
+  function handleDetach(item: TagDetailItem) {
+    if (item.kind === 'theme') removeTheme(item.id);
+    else removeChunk(item.id);
+  }
+
   const { isOpen, getMenuProps, getInputProps, getItemProps, highlightedIndex, openMenu } =
     useCombobox<TagItem>({
       items: filteredItems,
@@ -143,46 +159,34 @@ export function PuzzleTagPicker({
       {labels.help && <p className="text-xs text-muted-foreground mb-2">{labels.help}</p>}
 
       {(selectedThemes.length > 0 || selectedChunks.length > 0) && (
-        <ul className="mb-2 flex flex-wrap gap-2">
+        <ul className="mb-3 flex flex-wrap gap-3">
           {selectedThemes.map((item) => (
-            <li
+            <SelectedTagCard
               key={`theme-${item.id}`}
-              className="inline-flex items-center gap-1 rounded bg-primary/10 text-primary px-2 py-1 text-xs"
-            >
-              <span className="text-[10px] uppercase tracking-wider opacity-70">
-                {labels.badgeTheme}
-              </span>
-              <span>{item.label}</span>
-              <button
-                type="button"
-                onClick={() => removeTheme(item.id)}
-                aria-label={labels.remove(item.label)}
-                disabled={disabled}
-                className="ml-1 text-current opacity-60 hover:opacity-100 disabled:opacity-30"
-              >
-                ×
-              </button>
-            </li>
+              kind="theme"
+              label={item.label}
+              previewFen={item.previewFen}
+              badgeText={labels.badgeTheme}
+              disabled={disabled}
+              openDetailLabel={labels.openDetail(item.label)}
+              removeLabel={labels.remove(item.label)}
+              onOpen={() => setDetailItem({ kind: 'theme', ...item })}
+              onRemove={() => removeTheme(item.id)}
+            />
           ))}
           {selectedChunks.map((item) => (
-            <li
+            <SelectedTagCard
               key={`chunk-${item.id}`}
-              className="inline-flex items-center gap-1 rounded bg-secondary text-secondary-foreground px-2 py-1 text-xs"
-            >
-              <span className="text-[10px] uppercase tracking-wider opacity-70">
-                {labels.badgeChunk}
-              </span>
-              <span>{item.label}</span>
-              <button
-                type="button"
-                onClick={() => removeChunk(item.id)}
-                aria-label={labels.remove(item.label)}
-                disabled={disabled}
-                className="ml-1 text-current opacity-60 hover:opacity-100 disabled:opacity-30"
-              >
-                ×
-              </button>
-            </li>
+              kind="chunk"
+              label={item.label}
+              previewFen={item.representativeFen}
+              badgeText={labels.badgeChunk}
+              disabled={disabled}
+              openDetailLabel={labels.openDetail(item.label)}
+              removeLabel={labels.remove(item.label)}
+              onOpen={() => setDetailItem({ kind: 'chunk', ...item })}
+              onRemove={() => removeChunk(item.id)}
+            />
           ))}
         </ul>
       )}
@@ -251,6 +255,90 @@ export function PuzzleTagPicker({
           )}
         </ul>
       </div>
+
+      <TagDetailModal
+        item={detailItem}
+        onClose={() => setDetailItem(null)}
+        onDetach={handleDetach}
+        labels={{
+          badgeTheme: labels.badgeTheme,
+          badgeChunk: labels.badgeChunk,
+          ...labels.detail,
+        }}
+      />
     </div>
+  );
+}
+
+type SelectedTagCardProps = {
+  kind: 'theme' | 'chunk';
+  label: string;
+  previewFen: string | null;
+  badgeText: string;
+  disabled: boolean;
+  openDetailLabel: string;
+  removeLabel: string;
+  onOpen: () => void;
+  onRemove: () => void;
+};
+
+/**
+ * Card-style chip showing a selected tag with its preview board.
+ * Click the body to open the detail modal; click the corner × to
+ * detach. The two buttons are siblings (not nested) to satisfy the
+ * "no button-in-button" HTML rule — the × is absolute-positioned over
+ * the card via CSS, so a click on it dispatches only its own handler
+ * and never reaches the card's onClick.
+ */
+function SelectedTagCard({
+  kind,
+  label,
+  previewFen,
+  badgeText,
+  disabled,
+  openDetailLabel,
+  removeLabel,
+  onOpen,
+  onRemove,
+}: SelectedTagCardProps) {
+  return (
+    <li className="relative w-40">
+      <button
+        type="button"
+        onClick={onOpen}
+        disabled={disabled}
+        aria-label={openDetailLabel}
+        className="w-full p-2 rounded border border-border bg-card hover:bg-muted/40 transition-colors flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-left"
+      >
+        <span aria-hidden className="w-32 h-32 flex items-center justify-center">
+          {previewFen ? (
+            <BoardThumbnail fen={previewFen} className="w-32 h-32" />
+          ) : (
+            <span className="w-32 h-32 rounded-sm border border-dashed border-border" />
+          )}
+        </span>
+        <span className="w-full flex flex-col gap-1">
+          <span
+            className={`self-start text-[10px] uppercase tracking-wider rounded px-1 ${
+              kind === 'theme'
+                ? 'bg-primary/10 text-primary'
+                : 'bg-secondary text-secondary-foreground'
+            }`}
+          >
+            {badgeText}
+          </span>
+          <span className="text-sm text-foreground line-clamp-2 break-words">{label}</span>
+        </span>
+      </button>
+      <button
+        type="button"
+        onClick={onRemove}
+        disabled={disabled}
+        aria-label={removeLabel}
+        className="absolute top-1 right-1 w-6 h-6 rounded-full bg-card/80 border border-border text-muted-foreground hover:bg-destructive hover:text-destructive-foreground hover:border-destructive transition-colors flex items-center justify-center text-sm leading-none disabled:opacity-30"
+      >
+        ×
+      </button>
+    </li>
   );
 }

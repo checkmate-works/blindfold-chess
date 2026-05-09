@@ -14,6 +14,12 @@ import {
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+export type ThemePosition = {
+  fen: string;
+  sortOrder: number;
+  caption: string | null;
+};
+
 export type ThemeOption = {
   id: string;
   slug: string;
@@ -27,6 +33,16 @@ export type ThemeOption = {
    * canonical board.
    */
   previewFen: string | null;
+  /**
+   * Locale-resolved definition body. Falls back to the English
+   * translation row when no row exists for the requested locale, then
+   * to `null` if even that is missing.
+   */
+  definition: string | null;
+  /** Optional pronunciation hint (furigana for Japanese). */
+  reading: string | null;
+  /** All example positions for the term, ordered by sort_order. */
+  positions: ThemePosition[];
 };
 
 export type ChunkOption = {
@@ -34,27 +50,37 @@ export type ChunkOption = {
   slug: string;
   label: string;
   representativeFen: string;
+  description: string | null;
 };
 
 /**
- * Build a `term_id → first FEN` map for a list of term IDs. Picks the
- * lowest `sort_order` row per term — this matches how the public
- * glossary page surfaces a term's "primary" example. Returns an empty
- * map when the input is empty (avoids an `IN ()` query).
+ * Build a `term_id → ThemePosition[]` map for a list of term IDs. Each
+ * entry is sorted by `sort_order` so callers can take `[0]` as the
+ * primary example or render the full carousel. Returns an empty map
+ * when the input is empty (avoids an `IN ()` query).
  */
-async function loadFirstThemePositions(termIds: string[]): Promise<Map<string, string>> {
+async function loadThemePositions(termIds: string[]): Promise<Map<string, ThemePosition[]>> {
   if (termIds.length === 0) return new Map();
   const rows = await db
     .select({
       termId: glossaryTermPositions.termId,
       fen: glossaryTermPositions.fen,
+      sortOrder: glossaryTermPositions.sortOrder,
+      caption: glossaryTermPositions.caption,
     })
     .from(glossaryTermPositions)
     .where(inArray(glossaryTermPositions.termId, termIds))
     .orderBy(asc(glossaryTermPositions.termId), asc(glossaryTermPositions.sortOrder));
-  const map = new Map<string, string>();
+  const map = new Map<string, ThemePosition[]>();
   for (const row of rows) {
-    if (!map.has(row.termId)) map.set(row.termId, row.fen);
+    const list = map.get(row.termId);
+    const entry: ThemePosition = {
+      fen: row.fen,
+      sortOrder: row.sortOrder ?? 0,
+      caption: row.caption ?? null,
+    };
+    if (list) list.push(entry);
+    else map.set(row.termId, [entry]);
   }
   return map;
 }
@@ -78,6 +104,8 @@ export const loadPuzzleTags = cache(
         termEn: glossaryTerms.termEn,
         category: glossaryTerms.category,
         term: glossaryTermTranslations.term,
+        definition: glossaryTermTranslations.definition,
+        reading: glossaryTermTranslations.reading,
       })
       .from(positionThemes)
       .innerJoin(glossaryTerms, eq(glossaryTerms.id, positionThemes.termId))
@@ -97,27 +125,35 @@ export const loadPuzzleTags = cache(
         slug: chunks.slug,
         title: chunks.title,
         representativeFen: chunks.representativeFen,
+        description: chunks.description,
       })
       .from(positionChunks)
       .innerJoin(chunks, eq(chunks.id, positionChunks.chunkId))
       .where(and(eq(positionChunks.positionId, positionId), isNull(chunks.deletedAt)))
       .orderBy(asc(chunks.title));
 
-    const previewByTerm = await loadFirstThemePositions(themeRows.map((r) => r.id));
+    const positionsByTerm = await loadThemePositions(themeRows.map((r) => r.id));
 
     return {
-      themes: themeRows.map((r) => ({
-        id: r.id,
-        slug: r.slug,
-        label: r.term ?? r.termEn,
-        category: r.category,
-        previewFen: previewByTerm.get(r.id) ?? null,
-      })),
+      themes: themeRows.map((r) => {
+        const positions = positionsByTerm.get(r.id) ?? [];
+        return {
+          id: r.id,
+          slug: r.slug,
+          label: r.term ?? r.termEn,
+          category: r.category,
+          previewFen: positions[0]?.fen ?? null,
+          definition: r.definition ?? null,
+          reading: r.reading ?? null,
+          positions,
+        };
+      }),
       chunks: chunkRows.map((r) => ({
         id: r.id,
         slug: r.slug,
         label: r.title,
         representativeFen: r.representativeFen,
+        description: r.description ?? null,
       })),
     };
   }
@@ -138,6 +174,8 @@ export const loadAvailableTags = cache(async (locale: Locale): Promise<PuzzleTag
       termEn: glossaryTerms.termEn,
       category: glossaryTerms.category,
       term: glossaryTermTranslations.term,
+      definition: glossaryTermTranslations.definition,
+      reading: glossaryTermTranslations.reading,
     })
     .from(glossaryTerms)
     .leftJoin(
@@ -156,26 +194,34 @@ export const loadAvailableTags = cache(async (locale: Locale): Promise<PuzzleTag
       slug: chunks.slug,
       title: chunks.title,
       representativeFen: chunks.representativeFen,
+      description: chunks.description,
     })
     .from(chunks)
     .where(isNull(chunks.deletedAt))
     .orderBy(asc(chunks.title));
 
-  const previewByTerm = await loadFirstThemePositions(themeRows.map((r) => r.id));
+  const positionsByTerm = await loadThemePositions(themeRows.map((r) => r.id));
 
   return {
-    themes: themeRows.map((r) => ({
-      id: r.id,
-      slug: r.slug,
-      label: r.term ?? r.termEn,
-      category: r.category,
-      previewFen: previewByTerm.get(r.id) ?? null,
-    })),
+    themes: themeRows.map((r) => {
+      const positions = positionsByTerm.get(r.id) ?? [];
+      return {
+        id: r.id,
+        slug: r.slug,
+        label: r.term ?? r.termEn,
+        category: r.category,
+        previewFen: positions[0]?.fen ?? null,
+        definition: r.definition ?? null,
+        reading: r.reading ?? null,
+        positions,
+      };
+    }),
     chunks: chunkRows.map((r) => ({
       id: r.id,
       slug: r.slug,
       label: r.title,
       representativeFen: r.representativeFen,
+      description: r.description ?? null,
     })),
   };
 });

@@ -142,6 +142,15 @@ export function CreatePuzzleForm({
       badgeChunk: tTags('badge.chunk'),
       noResults: tTags('noResults'),
       remove: (label: string) => tTags('remove', { label }),
+      openDetail: (label: string) => tTags('openDetail', { label }),
+      detail: {
+        readingPrefix: tTags('detail.readingPrefix'),
+        noDescription: tTags('detail.noDescription'),
+        viewInGlossary: tTags('detail.viewInGlossary'),
+        viewChunkPage: tTags('detail.viewChunkPage'),
+        detach: tTags('detail.detach'),
+        close: tTags('detail.close'),
+      },
     }),
     [tTags]
   );

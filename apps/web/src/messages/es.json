@@ -1091,7 +1091,16 @@
           "chunk": "Chunk"
         },
         "noResults": "Sin resultados",
-        "remove": "Quitar {label}"
+        "remove": "Quitar {label}",
+        "openDetail": "Mostrar detalles de {label}",
+        "detail": {
+          "readingPrefix": "Lectura: ",
+          "noDescription": "No hay descripción disponible.",
+          "viewInGlossary": "Ver en el glosario",
+          "viewChunkPage": "Ver página del chunk",
+          "detach": "Quitar",
+          "close": "Cerrar"
+        }
       },
       "detail": {
         "title": "Detalle del Puzzle",
