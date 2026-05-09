@@ -1,8 +1,3 @@
-export type CategoryStyle = {
-  color: string;
-  icon: string;
-};
-
 export const CATEGORY_STYLES = {
   tactics: { color: 'bg-destructive/10 text-destructive', icon: '⚔️' },
   strategy: { color: 'bg-primary/10 text-primary', icon: '🎯' },

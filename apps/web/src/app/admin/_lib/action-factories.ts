@@ -3,12 +3,13 @@ import { revalidatePath } from 'next/cache';
 import { eq } from 'drizzle-orm';
 import type { PgTableWithColumns } from 'drizzle-orm/pg-core';
 
+import type { ActionResult } from '@/lib/action-types';
 import { db } from '@/lib/db';
 
 import { requireAdmin } from './auth';
 
-export type DeleteResult = { success: true } | { error: string };
-export type MutationResult = { success: true; id: string } | { error: string };
+export type DeleteResult = ActionResult;
+export type MutationResult = ActionResult<{ id: string }>;
 
 type DeleteConfig = {
   /** Drizzle table reference */

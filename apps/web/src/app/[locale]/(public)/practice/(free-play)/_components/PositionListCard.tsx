@@ -58,6 +58,13 @@ type Props = {
    * from the page itself.
    */
   badge?: ReactNode;
+  /**
+   * Optional owner-only / management actions (e.g. an Edit link) rendered
+   * directly below `PostFooter`. Used by mypage list pages so the same
+   * card primitive can show both social engagement and an editing
+   * affordance. Public list pages omit this.
+   */
+  actions?: ReactNode;
 };
 
 /**
@@ -88,6 +95,7 @@ export function PositionListCard({
   justNowLabel,
   locale,
   badge,
+  actions,
 }: Props) {
   const displayName = resolveDisplayName(profile);
   const descriptionExcerpt = truncate(position.description);
@@ -119,16 +127,19 @@ export function PositionListCard({
         </Link>
       }
       footer={
-        <PostFooter
-          postId={position.id}
-          locale={locale}
-          topicKey={position.id}
-          likeMeta={likeMeta}
-          replyMeta={replyMeta}
-          toggleLikeAction={toggleLikeAction}
-          i18nNamespace={i18nNamespace}
-          postHref={detailHref}
-        />
+        <>
+          <PostFooter
+            postId={position.id}
+            locale={locale}
+            topicKey={position.id}
+            likeMeta={likeMeta}
+            replyMeta={replyMeta}
+            toggleLikeAction={toggleLikeAction}
+            i18nNamespace={i18nNamespace}
+            postHref={detailHref}
+          />
+          {actions && <div className="flex items-center gap-2 mt-2">{actions}</div>}
+        </>
       }
     >
       <div className="flex items-center gap-2 mt-2 min-w-0">

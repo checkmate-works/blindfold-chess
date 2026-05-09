@@ -13,20 +13,20 @@ import type { LeaderboardPage, RankedLeaderboardRow } from '@/lib/db/challenge-q
 
 import type { LeaderboardPeriod } from './types';
 
-export type RankingFn = (
+type RankingFn = (
   menuType: string,
   leaderboardKey: string,
   offset: number,
   limit: number
 ) => Promise<LeaderboardPage>;
 
-export type UserRankedRowFn = (
+type UserRankedRowFn = (
   userId: string,
   menuType: string,
   leaderboardKey: string
 ) => Promise<RankedLeaderboardRow | null>;
 
-export type UserRankFn = (
+type UserRankFn = (
   userId: string,
   menuType: string,
   leaderboardKey: string

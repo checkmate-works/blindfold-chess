@@ -53,7 +53,7 @@ export function ModuleTutorialSkipLink({
   );
 }
 
-export function TutorialSkipLink(props: Props) {
+function TutorialSkipLink(props: Props) {
   const t = useTranslations(props.translationNamespace);
   const router = useRouter();
 

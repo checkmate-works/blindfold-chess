@@ -52,7 +52,7 @@ type GrantExpResult =
  * amount/metadata and the user's current totalExp WITHOUT incrementing
  * `user_exp` a second time.
  */
-export async function grantExp(
+async function grantExp(
   tx: TransactionClient,
   params: {
     userId: string;

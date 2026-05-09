@@ -5,8 +5,8 @@ import { useCallback, useState } from 'react';
 import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
 
 import { useStagedCoordinate } from '../../../_hooks/use-staged-coordinate';
-import { findShortestPath, validateUserPath } from '../../../_lib/utils';
-import type { PieceType } from '../../../_lib/utils';
+import type { PieceType } from '../../../_lib/pieces';
+import { findShortestPath, validateUserPath } from '../../../_lib/route-planner-api';
 import { MovesHistory } from './MovesHistory';
 import { SubmitArea } from './SubmitArea';
 

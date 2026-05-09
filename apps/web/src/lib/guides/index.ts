@@ -29,8 +29,6 @@ export {
   buildGuidePath,
   buildGuidePathRelative,
 } from './buildGuidePath';
-export type { GuidePathTarget } from './buildGuidePath';
 
 // -- Route enumeration (sitemap + generateStaticParams) --
 export { enumerateGuideRoutes, guideRouteToSegments } from './enumerateGuideRoutes';
-export type { GuideRoutePath } from './enumerateGuideRoutes';

@@ -39,10 +39,10 @@ export function ExpLeaderboardTable({ rows, locale }: Props) {
               <th className="py-3 px-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 {t('table.player')}
               </th>
-              <th className="py-3 px-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider w-24">
+              <th className="py-3 px-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider w-20 sm:w-24">
                 {t('table.exp')}
               </th>
-              <th className="py-3 px-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider w-20">
+              <th className="hidden sm:table-cell py-3 px-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider w-20">
                 {t('table.level')}
               </th>
             </tr>
@@ -70,10 +70,10 @@ export function ExpLeaderboardTable({ rows, locale }: Props) {
                   <td className="py-3 px-3">
                     <PlayerCell row={row} locale={locale} />
                   </td>
-                  <td className="py-3 px-3 text-right tabular-nums font-semibold text-foreground w-24">
+                  <td className="py-3 px-3 text-right tabular-nums font-semibold text-foreground w-20 sm:w-24">
                     {row.totalExp.toLocaleString()}
                   </td>
-                  <td className="py-3 px-3 text-center tabular-nums text-muted-foreground w-20">
+                  <td className="hidden sm:table-cell py-3 px-3 text-center tabular-nums text-muted-foreground w-20">
                     {level}
                   </td>
                 </tr>

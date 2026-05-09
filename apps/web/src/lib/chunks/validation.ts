@@ -25,7 +25,7 @@ export const CHUNK_SLUG_MAX_LENGTH = 50;
  * Valid slug pattern: lowercase alphanumeric segments separated by single
  * hyphens. No leading/trailing hyphens, no consecutive hyphens.
  */
-export const CHUNK_SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+const CHUNK_SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
 /**
  * Practical upper bound for `chunks.description`. The DB column is `text`
@@ -33,7 +33,7 @@ export const CHUNK_SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
  * inputs. 5,000 chars comfortably covers long annotations while still being
  * safe to render in the admin UI.
  */
-export const CHUNK_DESCRIPTION_MAX_LENGTH = 5000;
+const CHUNK_DESCRIPTION_MAX_LENGTH = 5000;
 
 export type ChunkMutationData = {
   representativeFen: string;

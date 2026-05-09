@@ -211,8 +211,8 @@
   },
   "Header": {
     "title": "心眼チェス",
-    "dashboard": "ダッシュボード",
-    "home": "ホーム",
+    "dashboard": "トップ",
+    "home": "フィード",
     "gettingStarted": "はじめに",
     "learn": "学ぶ",
     "practice": "練習",
@@ -311,12 +311,6 @@
         "inline": "インライン"
       }
     }
-  },
-  "Common": {
-    "sponsoredLink": "スポンサーリンク",
-    "testAd": "テスト広告",
-    "adLabel": "広告",
-    "sponsor": "スポンサー"
   },
   "openingSearch": {
     "selectOpening": "オープニングを選択",
@@ -480,7 +474,6 @@
     "articlesTitle": "記事一覧",
     "relatedArticles": "関連記事",
     "browseByCategory": "カテゴリーから探す",
-    "allCategories": "すべて",
     "articleCount": "{count}件の記事",
     "categories": {
       "piece-movement": "駒の動き",
@@ -606,6 +599,21 @@
       "accuracy": "正答率",
       "timeTaken": "かかった時間",
       "averageTime": "平均時間",
+      "help": {
+        "label": "ヘルプ",
+        "tutorial": {
+          "title": "チュートリアル",
+          "description": "初めて利用する方はチュートリアルを閲覧することをおすすめします。"
+        },
+        "challenge": {
+          "title": "チャレンジモード",
+          "description": "制限時間内にどれほど多く正答できるかを競うモードです。スコアが記録され、リーダーボードに掲載されます。"
+        },
+        "training": {
+          "title": "トレーニングモード",
+          "description": "時間制限なしで、自分のペースで取り組めるモードです。スコアは記録されません。"
+        }
+      },
       "tutorial": {
         "title": "チュートリアル",
         "description": "チェス盤の3種類の対称性（ファイル、ランク、点対称）について学びます。",
@@ -669,8 +677,6 @@
       "howToPlayDescription": "以下のような問題が繰り返し出題されます。表示されたマスが白か黒かを答えましょう。",
       "white": "白",
       "black": "黒",
-      "correct": "正解",
-      "incorrect": "不正解",
       "settings": "ゲーム設定",
       "timeLimit": "制限時間",
       "seconds": "秒",
@@ -678,12 +684,21 @@
       "timeRemaining": "残り時間",
       "finished": "練習完了！",
       "correctAnswers": "正解数",
-      "accuracy": "正解率",
       "timeTaken": "所要時間",
-      "averageTime": "平均時間",
       "requiredKnowledge": "関連記事",
       "viewArticle": "マスの色について学ぶ",
-      "articleDescription": "マスが明るいか暗いかを素早く識別する方法を学ぶ"
+      "articleDescription": "マスが明るいか暗いかを素早く識別する方法を学ぶ",
+      "help": {
+        "label": "ヘルプ",
+        "challenge": {
+          "title": "チャレンジモード",
+          "description": "制限時間内にどれほど多く正答できるかを競うモードです。スコアが記録され、リーダーボードに掲載されます。"
+        },
+        "training": {
+          "title": "トレーニングモード",
+          "description": "時間制限なしで、自分のペースで取り組めるモードです。スコアは記録されません。"
+        }
+      }
     },
     "legalMoves": {
       "title": "合法手",
@@ -707,16 +722,12 @@
       "start": "開始",
       "question": "{from}から{to}へ移動できますか？",
       "questionFormat": "{from}から{to}へ移動できますか？",
-      "correct": "正解",
-      "incorrect": "不正解",
       "legal": "できる",
       "illegal": "できない",
       "timeRemaining": "残り時間",
       "finished": "練習完了！",
       "correctAnswers": "正解数",
-      "accuracy": "正解率",
       "timeTaken": "所要時間",
-      "averageTime": "平均時間",
       "relatedArticles": "関連記事",
       "articles": {
         "king": {
@@ -734,6 +745,17 @@
         "bishop": {
           "title": "ビショップの動き",
           "description": "斜め移動のパターンを学ぶ"
+        }
+      },
+      "help": {
+        "label": "ヘルプ",
+        "challenge": {
+          "title": "チャレンジモード",
+          "description": "制限時間内にどれほど多く正答できるかを競うモードです。スコアが記録され、リーダーボードに掲載されます。"
+        },
+        "training": {
+          "title": "トレーニングモード",
+          "description": "時間制限なしで、自分のペースで取り組めるモードです。スコアは記録されません。"
         }
       }
     },
@@ -758,15 +780,12 @@
       "clickSquare": "このマスをクリック",
       "whiteToMove": "白番",
       "blackToMove": "黒番",
-      "correct": "正解",
       "wrong": "不正解",
       "timeRemaining": "残り時間",
       "finished": "クイズ完了！",
       "points": "ポイント",
       "correctAnswers": "正解数",
-      "accuracy": "正解率",
       "timeTaken": "所要時間",
-      "averageTime": "平均時間",
       "session": "練習中",
       "relatedArticles": "関連記事",
       "articles": {
@@ -781,6 +800,21 @@
         "algebraicNotation": {
           "title": "代数表記法",
           "description": "チェスの座標言語をマスターする"
+        }
+      },
+      "help": {
+        "label": "ヘルプ",
+        "feedbackSpeed": {
+          "title": "フィードバック速度の設定",
+          "description": "正解・不正解時のエフェクトの再生速度を切り替えられます。この設定はタイム計測には影響せず、フィードバックエフェクトの実行中に制限時間が減ることはありません。"
+        },
+        "challenge": {
+          "title": "チャレンジモード",
+          "description": "制限時間内にどれほど多く正答できるかを競うモードです。スコアが記録され、リーダーボードに掲載されます。"
+        },
+        "training": {
+          "title": "トレーニングモード",
+          "description": "時間制限なしで、自分のペースで取り組めるモードです。スコアは記録されません。"
         }
       }
     },
@@ -939,6 +973,14 @@
         "clearBoardConfirmConfirm": "クリア",
         "clearBoardConfirmCancel": "キャンセル"
       },
+      "edit": {
+        "title": "問題を編集",
+        "submit": "変更を保存",
+        "submitting": "保存中...",
+        "saveError": "予期しないエラーが発生しました。もう一度お試しください。",
+        "notFound": "この問題は見つかりませんでした。",
+        "unauthorized": "自分の問題のみ編集できます。"
+      },
       "detail": {
         "title": "ポジション詳細",
         "descriptionSection": "ポジションの説明",
@@ -952,14 +994,18 @@
         "createdBy": "作成者",
         "tutorialLink": "チュートリアルを見る",
         "tryAgain": "もう一度挑戦",
-        "backToList": "一覧に戻る"
+        "backToList": "一覧に戻る",
+        "edited": "（編集済み）",
+        "editAction": "編集"
       },
       "delete": {
-        "button": "削除",
+        "button": "問題を削除",
         "confirmTitle": "問題を削除",
         "confirmMessage": "この問題を削除しますか？この操作は元に戻せません。",
         "confirm": "削除",
-        "cancel": "キャンセル"
+        "cancel": "キャンセル",
+        "sectionTitle": "危険な操作",
+        "sectionDescription": "問題を削除すると元に戻せません。紐付いているコメントやいいねも一緒に失われ、復旧はできません。"
       }
     },
     "puzzle": {
@@ -1028,6 +1074,14 @@
       "unlike": "いいね解除",
       "newReply": "新しい返信 {time}",
       "justNow": "たった今",
+      "edit": {
+        "title": "パズルを編集",
+        "submit": "変更を保存",
+        "submitting": "保存中...",
+        "saveError": "予期しないエラーが発生しました。もう一度お試しください。",
+        "notFound": "このパズルは見つかりませんでした。",
+        "unauthorized": "自分のパズルのみ編集できます。"
+      },
       "detail": {
         "title": "パズル詳細",
         "descriptionSection": "このパズルについて",
@@ -1037,7 +1091,18 @@
         "whiteToMove": "白の手番",
         "blackToMove": "黒の手番",
         "createdBy": "作成者",
-        "noPieces": "なし"
+        "noPieces": "なし",
+        "edited": "（編集済み）",
+        "editAction": "編集"
+      },
+      "delete": {
+        "button": "パズルを削除",
+        "confirmTitle": "パズルを削除",
+        "confirmMessage": "このパズルを削除しますか？コメントや解答データも一緒に失われ、復旧はできません。この操作は取り消せません。",
+        "confirm": "削除",
+        "cancel": "キャンセル",
+        "sectionTitle": "危険な操作",
+        "sectionDescription": "パズルを削除すると元に戻せません。紐付いているコメントは文脈を失い、復旧できなくなります。"
       },
       "session": {
         "title": "挑戦",
@@ -1225,8 +1290,6 @@
       "findPath": "{piece}を{start}から{target}へ移動させる経路を見つけてください",
       "yourPath": "あなたの回答",
       "shortestPath": "最短経路",
-      "correct": "正解",
-      "incorrect": "不正解",
       "badEnd": "ゴールに到達していません",
       "badMove": "不正解",
       "finalTarget": "（自動補完）",
@@ -1255,6 +1318,21 @@
       "resetSettingsConfirm": {
         "title": "設定をリセットしますか？",
         "message": "すべての設定がリセットされ、チュートリアル画面に戻ります。"
+      },
+      "help": {
+        "label": "ヘルプ",
+        "tutorial": {
+          "title": "チュートリアル",
+          "description": "初めて利用する方はチュートリアルを閲覧することをおすすめします。"
+        },
+        "challenge": {
+          "title": "チャレンジモード",
+          "description": "制限時間内にどれほど多く正答できるかを競うモードです。スコアが記録され、リーダーボードに掲載されます。"
+        },
+        "training": {
+          "title": "トレーニングモード",
+          "description": "時間制限なしで、自分のペースで取り組めるモードです。スコアは記録されません。"
+        }
       },
       "tutorial": {
         "title": "チュートリアル",
@@ -1358,6 +1436,21 @@
       "yourAnswer": "あなたの回答",
       "correctAnswerLabel": "正解",
       "nextProblem": "次の問題",
+      "help": {
+        "label": "ヘルプ",
+        "tutorial": {
+          "title": "チュートリアル",
+          "description": "初めて利用する方はチュートリアルを閲覧することをおすすめします。"
+        },
+        "challenge": {
+          "title": "チャレンジモード",
+          "description": "制限時間内にどれほど多く正答できるかを競うモードです。スコアが記録され、リーダーボードに掲載されます。"
+        },
+        "training": {
+          "title": "トレーニングモード",
+          "description": "時間制限なしで、自分のペースで取り組めるモードです。スコアは記録されません。"
+        }
+      },
       "tutorial": {
         "title": "チュートリアル",
         "skip": "スキップ",
@@ -1416,7 +1509,6 @@
     },
     "yourRankings": {
       "title": "あなたのランキング",
-      "noRanks": "まだランキングに参加していません。練習モジュールに挑戦してみましょう！",
       "viewAll": "すべてのランキングを見る"
     },
     "feed": {
@@ -1441,10 +1533,36 @@
       "level": "Lv",
       "moves": "手",
       "recent": "直近"
+    },
+    "help": {
+      "label": "ヘルプ",
+      "vsAi": {
+        "title": "AI と対局",
+        "description": "新規対局を開始するか、進行中の対局を再開できます。"
+      },
+      "feed": {
+        "title": "タイムライン",
+        "description": "オープニングなどのトピックや新しいパズルの問題がフィードとして表示されます。リーダーボード上位の入れ替わりも表示されますが、この種のフィードの表示期間は1ヶ月で、それ以前のものは消えます。"
+      }
     }
   },
   "gamesPage": {
-    "pageTitle": "ゲーム"
+    "pageTitle": "ゲーム",
+    "help": {
+      "label": "ヘルプ",
+      "newGame": {
+        "title": "新しいゲームを始める",
+        "description": "このボタンを押すと AI との対局を開始できます。"
+      },
+      "autoSave": {
+        "title": "対局の自動保存",
+        "description": "対局はお使いの端末に自動保存され、最新の20件まで残ります。詳しくは<link>データの取り扱い</link>をご確認ください。"
+      },
+      "bulkDelete": {
+        "title": "まとめて削除",
+        "description": "「一括削除」から複数のゲームを一度に整理できます。"
+      }
+    }
   },
   "bulkDelete": {
     "title": "ゲームの一括削除",
@@ -1452,11 +1570,8 @@
     "noGames": "削除できるゲームがありません",
     "selectedCount": "{count, plural, other {#個のゲームを選択中}}",
     "selectAll": "すべて選択",
-    "unselectAll": "選択を解除",
     "delete": "削除",
     "cancel": "キャンセル",
-    "processing": "処理中...",
-    "errorDeleting": "削除に失敗しました。もう一度お試しください。",
     "confirmTitle": "選択したゲームを削除しますか？",
     "confirmMessage": "{count}個のゲームを削除してもよろしいですか？この操作は取り消せません。",
     "deletedToast": "{count, plural, other {#個のゲームを削除しました}}",
@@ -1560,11 +1675,8 @@
     "infoModalTitle": "感想戦について",
     "description": "終了したゲームの棋譜を思い出して再現してみましょう。ここでエンジン評価も行えます。",
     "autoOpponentMoves": "相手の手を自動入力",
-    "autoOpponentMovesDescription": "自分の手だけを入力し、相手の手は自動的に入力されます",
     "inputMove": "手を入力",
     "selectMove": "手を選択",
-    "switchToSelect": "リスト選択に切り替え",
-    "switchToText": "テキスト入力に切り替え",
     "switchInputMode": "入力モードを切り替え",
     "dontKnow": "わからない",
     "autoFillAll": "全て自動入力",
@@ -1572,16 +1684,11 @@
     "confirmAutoFillAllMessage": "残りの全ての手を自動入力します。",
     "correctMove": "正解！",
     "incorrectMove": "違う手です。もう一度試してください。",
-    "logIncorrect": "は間違い",
     "moveNumber": "{number}手目",
-    "yourTurn": "あなたの番",
-    "opponentTurn": "相手の番",
     "completed": "感想戦完了！",
     "completedMessage": "全ての手を正しく再現できました！",
-    "backToGame": "対局に戻る",
     "progress": "進捗: {current} / {total} 手",
     "showBoard": "ボードを表示",
-    "hideBoard": "ボードを隠す",
     "moves": "棋譜",
     "noMovesYet": "手を入力すると、ここに棋譜が表示されます",
     "copyPgn": "PGNをコピー",
@@ -1590,7 +1697,6 @@
     "analyzeOnLichess": "Lichessで解析",
     "moveLog": "手のログ",
     "backToCurrentPosition": "現在の局面に戻る",
-    "configureBoardAppearance": "ボードの外観を設定する",
     "cancel": "キャンセル",
     "save": "保存",
     "guidanceStep1": "対局の手を記憶から入力してください",
@@ -1816,7 +1922,6 @@
   },
   "company": {
     "title": "運営者情報",
-    "companyInfo": "運営会社情報",
     "companyName": "事業者名",
     "companyNameValue": "富士エンタープライズ",
     "location": "所在地",
@@ -1835,18 +1940,14 @@
     "description": "ご質問やご意見がありましたら、お気軽にお問い合わせください。",
     "form": {
       "name": "お名前",
-      "namePlaceholder": "山田 太郎",
       "nameRequired": "お名前を入力してください",
       "email": "メールアドレス",
       "emailPlaceholder": "example@email.com",
       "emailRequired": "メールアドレスを入力してください",
       "emailInvalid": "有効なメールアドレスを入力してください",
       "subject": "件名",
-      "subjectPlaceholder": "お問い合わせの件名",
       "subjectRequired": "件名を入力してください",
       "message": "お問い合わせ内容",
-      "messagePlaceholder": "お問い合わせ内容を詳しくご記入ください",
-      "messageRequired": "お問い合わせ内容を入力してください",
       "messageMinLength": "お問い合わせ内容は10文字以上で入力してください",
       "submit": "確認画面へ",
       "submitting": "送信中...",
@@ -1900,9 +2001,7 @@
       "title": "ダッシュボード",
       "comingSoon": "準備中...",
       "vsAi": "🤖 AI と対局",
-      "myGames": "ゲーム一覧",
       "newGame": "新規ゲーム",
-      "gameCount": "{count, plural, =0 {ゲームなし} other {#件のゲーム}}",
       "challenge": "🏆 チャレンジ",
       "squareColors": "マスの色",
       "coordinateQuiz": "座標クイズ",
@@ -1911,8 +2010,6 @@
       "boardSymmetry": "ボードの対称性",
       "viewLeaderboard": "リーダーボードを見る →",
       "topics": "💬 トピック",
-      "topicSquares": "マス目",
-      "topicOpenings": "オープニング",
       "welcomeGreeting": "こんにちは、{name} さん",
       "welcomeDefaultName": "プレイヤー",
       "viewMypage": "マイページ",
@@ -2038,7 +2135,6 @@
     "pageTitle": "記事",
     "noArticles": "記事はまだありません。",
     "articlesListTitle": "すべての記事",
-    "moreArticles": "その他の記事",
     "articleNotFound": "記事が見つかりません",
     "notTranslatedNotice": "この記事はまだあなたの言語に翻訳されていません。原文を表示しています。"
   },
@@ -2147,15 +2243,12 @@
   },
   "Mypage": {
     "title": "マイページ",
-    "challengeLink": "チャレンジ記録",
     "dashboard": {
       "viewProfile": "公開プロフィール",
       "challengeTitle": "チャレンジ記録",
       "likesTitle": "いいねした投稿",
       "postsTitle": "自分の投稿",
       "editProfile": "編集",
-      "interviewTitle": "インタビュー",
-      "beltSystem": "段級位",
       "myRecords": "マイレコード",
       "socialTitle": "ソーシャル",
       "interviewBanner": "インタビューに答えてあなたのことを教えてください",
@@ -2173,7 +2266,6 @@
       "subscriptionTitle": "サブスクリプション",
       "benefitsTitle": "特典",
       "practiceTitle": "練習",
-      "myProblems": "マイ問題",
       "myPositionMemory": "ポジションの記憶",
       "myPuzzles": "パズル"
     },
@@ -2288,14 +2380,16 @@
     "sectionTitle": "作成した問題",
     "empty": "まだ問題を作成していません。",
     "breadcrumbMypage": "マイページ",
-    "breadcrumbProblems": "マイ問題"
+    "breadcrumbProblems": "マイ問題",
+    "editAction": "編集"
   },
   "MypagePuzzles": {
     "title": "マイパズル",
     "sectionTitle": "作成したパズル",
     "empty": "まだパズルを作成していません。",
     "breadcrumbMypage": "マイページ",
-    "breadcrumbProblems": "マイ問題"
+    "breadcrumbProblems": "マイ問題",
+    "editAction": "編集"
   },
   "MypageProblemsIndex": {
     "title": "マイ問題",
@@ -2376,7 +2470,10 @@
     "accountDeleted": "退会が完了しました",
     "practiceResultSaveFailed": "結果の保存に失敗しました。もう一度お試しください。",
     "positionCreated": "問題を作成しました",
-    "positionDeleted": "問題を削除しました"
+    "positionDeleted": "問題を削除しました",
+    "positionUpdated": "変更を保存しました",
+    "puzzleUpdated": "変更を保存しました",
+    "puzzleDeleted": "パズルを削除しました"
   },
   "setupUsername": {
     "title": "アカウント登録",
@@ -2486,8 +2583,6 @@
     "dashboard": "Dashboard",
     "users": "Users",
     "auditLog": "Audit Log",
-    "totalUsers": "Total Users",
-    "roleAssignments": "Role Assignments",
     "dashboardKpi": {
       "from": "開始日",
       "to": "終了日",
@@ -2622,8 +2717,6 @@
       "title": "{username} の投稿",
       "email": "メール",
       "username": "ユーザー名",
-      "backToUsers": "ユーザー一覧に戻る",
-      "topic": "トピック",
       "content": "内容",
       "createdAt": "作成日時",
       "status": "ステータス",
@@ -2639,8 +2732,6 @@
       "deleteModalConfirm": "削除を確認",
       "deleteModalDeleting": "削除中...",
       "deleteModalReasonRequired": "理由は必須です",
-      "previousPage": "前へ",
-      "nextPage": "次へ",
       "userNotFound": "ユーザーが見つかりません"
     },
     "auditLogTable": {
@@ -2653,9 +2744,7 @@
       "noLogsFound": "No audit logs found",
       "filterByAction": "Filter by action",
       "filterByUser": "Filter by user",
-      "allActions": "All Actions",
-      "previousPage": "Previous",
-      "nextPage": "Next"
+      "allActions": "All Actions"
     },
     "activityLog": "Activity Log",
     "activityLogTable": {
@@ -2667,9 +2756,7 @@
       "noLogsFound": "No activity logs found",
       "filterByAction": "Filter by action",
       "filterByUser": "Filter by user",
-      "allActions": "All Actions",
-      "previousPage": "Previous",
-      "nextPage": "Next"
+      "allActions": "All Actions"
     },
     "positionMemory": "Position Memory",
     "chunks": "チャンク",
@@ -2700,9 +2787,7 @@
       "deleteModalCancel": "キャンセル",
       "deleteModalConfirm": "削除を確認",
       "deleteModalDeleting": "削除中...",
-      "deleteModalReasonRequired": "理由は必須です",
-      "previousPage": "前へ",
-      "nextPage": "次へ"
+      "deleteModalReasonRequired": "理由は必須です"
     },
     "announcements": "Announcements",
     "announcementsTable": {
@@ -2948,7 +3033,6 @@
     "defaultDescription": "{displayName}のBlindfold Chessプロフィール",
     "chessAccounts": "チェスアカウント",
     "bio": "自己紹介",
-    "emptyProfile": "このユーザーはまだプロフィール情報を追加していません。",
     "followers": "フォロワー",
     "followingCount": "フォロー中",
     "follow": "フォローする",
@@ -3649,7 +3733,7 @@
     },
     "moduleFilterLabel": "モジュールフィルター",
     "moduleFilter": {
-      "all": "すべて",
+      "all": "全",
       "coordinate_quiz": "座標クイズ",
       "legal_moves": "合法手",
       "square_colors": "マスの色",
@@ -3692,6 +3776,7 @@
     "backToList": "ランキング一覧へ戻る",
     "viewMore": "ランキングをもっと見る",
     "weeklyRanking": "週間ランキング",
+    "allTimeRanking": "総合ランキング",
     "signUpBanner": {
       "message": "ランキングに参加しよう！",
       "description": "無料アカウントを作成して、スコアを記録し他のプレイヤーと競い合いましょう。",
@@ -3711,8 +3796,7 @@
       "exp": "Exp",
       "level": "レベル"
     },
-    "emptyState": "まだExpの記録がありません。練習を始めてExpを獲得しましょう！",
-    "backToScoreLeaderboard": "スコアランキングへ戻る"
+    "emptyState": "まだExpの記録がありません。練習を始めてExpを獲得しましょう！"
   },
   "validation": {
     "password": {
@@ -3796,11 +3880,8 @@
         "3kyu": "視覚的な補助がなくても、全ての駒でマヌーバリングができること。"
       },
       "tips": "解説",
-      "guide": "解説",
       "tryChallenge": "チャレンジしてみよう",
       "showMore": "もっと見る",
-      "prevPage": "前へ",
-      "nextPage": "次へ",
       "pageOf": "{total}ページ中{current}ページ目",
       "mukyuRequirements": ["代数記法を理解していること"],
       "mukyuRelatedLinks": {
@@ -3891,6 +3972,17 @@
         "anchorPoints": "アンカーポイントによる盤面の把握",
         "blindfoldLegalMoves": "目隠しチェスでのリーガルムーブ判定",
         "diagonals": "ダイアゴナルと逆ダイアゴナルの算出"
+      }
+    },
+    "help": {
+      "label": "ヘルプ",
+      "overview": {
+        "title": "道場(Dojo)",
+        "description": "ランクアップを繰り返し、黒帯まで到達すると低いレートの AI に目隠しチェスで勝てる実力がつくようカリキュラムが組まれています。"
+      },
+      "viewAllRanks": {
+        "title": "段級位一覧",
+        "description": "各ランクの合格条件やガイドなどはここから確認できます。"
       }
     }
   },
@@ -4154,8 +4246,7 @@
       "anonymizeHint": "保存時に White / Black ヘッダを「Player 1」「Player 2」に置き換えます。"
     },
     "preview": {
-      "loading": "プレビュー生成中…",
-      "openInLichess": "Lichess で開く"
+      "loading": "プレビュー生成中…"
     },
     "card": {
       "replayButton": "リプレイを開く",

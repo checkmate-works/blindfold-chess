@@ -36,8 +36,8 @@ const sizeMap = {
   lg: { px: 64, className: 'w-16 h-16', textClassName: 'text-base' },
 } as const;
 
-export type UserAvatarSize = keyof typeof sizeMap;
-export type UserAvatarLayout = 'block' | 'inline';
+type UserAvatarSize = keyof typeof sizeMap;
+type UserAvatarLayout = 'block' | 'inline';
 
 type Props = {
   /**

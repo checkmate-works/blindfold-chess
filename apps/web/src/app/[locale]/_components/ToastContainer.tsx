@@ -26,6 +26,9 @@ const TOAST_PARAM_CONFIG: Record<string, { messageKey: string; type: ToastType }
   account_deleted: { messageKey: 'accountDeleted', type: 'success' },
   position_created: { messageKey: 'positionCreated', type: 'success' },
   position_deleted: { messageKey: 'positionDeleted', type: 'success' },
+  position_updated: { messageKey: 'positionUpdated', type: 'success' },
+  puzzle_updated: { messageKey: 'puzzleUpdated', type: 'success' },
+  puzzle_deleted: { messageKey: 'puzzleDeleted', type: 'success' },
 };
 
 export function ToastContainer() {

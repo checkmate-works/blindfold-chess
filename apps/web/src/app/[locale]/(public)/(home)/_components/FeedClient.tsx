@@ -23,6 +23,7 @@ type Props = {
   showMoreLabel: string;
   justNowLabel: string;
   showAds?: boolean;
+  'data-tour-id'?: string;
 };
 
 export function FeedClient({
@@ -32,6 +33,7 @@ export function FeedClient({
   showMoreLabel,
   justNowLabel,
   showAds = false,
+  ...rest
 }: Props) {
   const [items, setItems] = useState<FeedItem[]>(initialItems);
   const [cursor, setCursor] = useState<string | null>(initialCursor);
@@ -96,7 +98,7 @@ export function FeedClient({
   }, [cursor, loadMore]);
 
   return (
-    <div>
+    <div {...rest}>
       {displayItems.map((displayItem, index) => renderDisplayItem(index, displayItem))}
       {isLoading && <FeedSkeleton />}
       {cursor && !isLoading && <div ref={sentinelRef} />}

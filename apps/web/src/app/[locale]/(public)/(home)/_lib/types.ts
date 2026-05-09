@@ -55,9 +55,6 @@ export type PositionFeedData = {
   };
 };
 
-/** Re-exported for convenience. */
-export type { PositionType };
-
 type FeedItemBase = {
   id: string;
   entityType: string;

@@ -5,14 +5,13 @@ import { revalidateTag } from 'next/cache';
 import { requireAdmin } from '@/app/admin/_lib/auth';
 import { addDays } from 'date-fns';
 
+import type { ActionResult } from '@/lib/action-types';
 import { db, moderationActions, userGrants } from '@/lib/db';
 import { createNotification } from '@/lib/notifications/notification';
 import { getClientIp } from '@/lib/security/client-ip';
 import { calcGrantStartsAt } from '@/lib/users/user-grants';
 
 import { validateDurationDays, validateUuid } from '../_lib/validation';
-
-type ActionResult = { success: true } | { error: string };
 
 export async function createGrant(formData: FormData): Promise<ActionResult> {
   const auth = await requireAdmin();

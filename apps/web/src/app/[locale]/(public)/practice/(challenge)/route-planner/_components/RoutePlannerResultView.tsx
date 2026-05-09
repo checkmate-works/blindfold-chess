@@ -6,7 +6,7 @@ import { FaRedo } from 'react-icons/fa';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
-import type { PieceType } from '../_lib/utils';
+import type { PieceType } from '../_lib/pieces';
 import { RoutePlannerProblemFeedback } from './RoutePlannerProblemFeedback';
 
 type Props = {

@@ -206,15 +206,7 @@ async function UsersListContent({
     roleMap,
     subscriptionMap,
     banReasonMap,
-  } = await fetchUsersPageData(
-    adminClient,
-    page,
-    statusFilter,
-    countryFilter,
-    rankFilter,
-    providerFilter,
-    usernameFilter
-  );
+  } = await fetchUsersPageData(adminClient, page, filters);
 
   const buildHref = (p: number) => buildAdminUsersHref(filters, p);
 
@@ -311,32 +303,10 @@ async function StatsContent({
   providerNames: Record<(typeof SIGNUP_METHOD_ORDER)[number], string>;
   t: Awaited<ReturnType<typeof getTranslations>>;
 }) {
-  const { statusFilter, countryFilter, rankFilter, providerFilter, usernameFilter } = filters;
   const [countryStats, rankStats, signupMethodStats] = await Promise.all([
-    fetchCountryStats(
-      adminClient,
-      statusFilter,
-      countryFilter,
-      rankFilter,
-      providerFilter,
-      usernameFilter
-    ),
-    fetchRankStats(
-      adminClient,
-      statusFilter,
-      countryFilter,
-      rankFilter,
-      providerFilter,
-      usernameFilter
-    ),
-    fetchSignupMethodStats(
-      adminClient,
-      statusFilter,
-      countryFilter,
-      rankFilter,
-      providerFilter,
-      usernameFilter
-    ),
+    fetchCountryStats(adminClient, filters),
+    fetchRankStats(adminClient, filters),
+    fetchSignupMethodStats(adminClient, filters),
   ]);
 
   const rankNames: Record<string, string> = {};

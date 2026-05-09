@@ -1,7 +1,6 @@
 export { Button } from './Button';
 export { FormErrorBanner } from './FormErrorBanner';
 export { ChallengeCard } from './ChallengeCard';
-export { IconShortcutCard } from './IconShortcutCard';
 export { TextInput } from './TextInput';
 export { Textarea } from './Textarea';
 export * from './BoardOverlay';
@@ -11,7 +10,6 @@ export { FlipBoardButton } from './chess/FlipBoardButton';
 export type { SquareRenderInfo } from './chess/BoardLayout';
 export { ChessBoard } from './chess/ChessBoard';
 export { ChessPiece } from './chess/ChessPiece';
-export { InfoModal } from './InfoModal';
 export { PieceSelector } from './practice/PieceSelector';
 export type { PieceSelection } from './practice/PieceSelector';
 export { ProgressBar } from './ProgressBar';

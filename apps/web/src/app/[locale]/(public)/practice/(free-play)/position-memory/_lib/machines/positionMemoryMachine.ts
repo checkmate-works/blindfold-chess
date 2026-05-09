@@ -215,5 +215,3 @@ export const positionMemoryMachine = setup({
     },
   },
 });
-
-export type PositionMemoryMachine = typeof positionMemoryMachine;

@@ -5,7 +5,7 @@ import {
   applyCoordinateBackspace,
 } from '@blindfold-chess/features/common';
 
-export type StagedCoordinateState = StagedCoordinateSelection;
+type StagedCoordinateState = StagedCoordinateSelection;
 
 type UseStagedCoordinateOptions = {
   /** When true, every press/clear is a no-op. */

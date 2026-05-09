@@ -16,8 +16,7 @@ export const DEFAULT_TIME_LIMIT = 30;
  * - `board`: render the chess board (default)
  * - `text`: render the algebraic piece list (e.g. "White Pieces: Kh4 g2 h3")
  */
-export const DISPLAY_MODES = ['board', 'text'] as const;
-export type DisplayMode = (typeof DISPLAY_MODES)[number];
+export type DisplayMode = 'board' | 'text';
 export const DEFAULT_DISPLAY_MODE: DisplayMode = 'board';
 
 export function parseDisplayMode(value: unknown): DisplayMode {

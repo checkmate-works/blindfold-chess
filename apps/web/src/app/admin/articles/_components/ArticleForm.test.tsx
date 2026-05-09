@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ArticleForm } from './ArticleForm';
 
@@ -130,8 +130,28 @@ function openMetadataPanel() {
 }
 
 describe('ArticleForm', () => {
+  // ArticleForm calls `window.location.replace(...)` after a successful save of
+  // a new article (see `redirectAfterSave`). jsdom does not implement real
+  // navigation, so without a stub every "new article save" test would emit
+  // "Not implemented: navigation to another Document" on stderr. Install the
+  // stub here so individual tests do not need to remember.
+  let originalLocation: Location;
   beforeEach(() => {
     vi.clearAllMocks();
+    originalLocation = window.location;
+    Object.defineProperty(window, 'location', {
+      value: { ...originalLocation, replace: vi.fn(), assign: vi.fn() },
+      writable: true,
+      configurable: true,
+    });
+  });
+
+  afterEach(() => {
+    Object.defineProperty(window, 'location', {
+      value: originalLocation,
+      writable: true,
+      configurable: true,
+    });
   });
 
   it('should render title field and Tiptap editor', () => {
@@ -225,13 +245,6 @@ describe('ArticleForm', () => {
   });
 
   it('should call onSaveDraft with form data including contentJson and show toast', async () => {
-    const mockLocationReplace = vi.fn();
-    const originalLocation = window.location;
-    Object.defineProperty(window, 'location', {
-      value: { ...originalLocation, replace: mockLocationReplace },
-      writable: true,
-    });
-
     const mockOnSaveDraft = vi.fn().mockResolvedValue({ success: true, id: 'test-id' });
 
     render(<ArticleForm onSaveDraft={mockOnSaveDraft} labels={defaultLabels} />);
@@ -257,13 +270,8 @@ describe('ArticleForm', () => {
       })
     );
     expect(mockPush).not.toHaveBeenCalled();
-    expect(mockLocationReplace).toHaveBeenCalledWith('/admin/articles/test-id/edit');
+    expect(window.location.replace).toHaveBeenCalledWith('/admin/articles/test-id/edit');
     expect(mockShowToast).toHaveBeenCalledWith('Draft saved', 'success');
-
-    Object.defineProperty(window, 'location', {
-      value: originalLocation,
-      writable: true,
-    });
   });
 
   it('should call onSaveDraft and navigate to publish page on Publish Settings', async () => {
@@ -1145,13 +1153,6 @@ describe('ArticleForm', () => {
   });
 
   it('should redirect with window.location.replace after successful Save Draft for new articles', async () => {
-    const mockLocationReplace = vi.fn();
-    const originalLocation = window.location;
-    Object.defineProperty(window, 'location', {
-      value: { ...originalLocation, replace: mockLocationReplace },
-      writable: true,
-    });
-
     const mockOnSaveDraft = vi.fn().mockResolvedValue({ success: true, id: 'draft-id' });
 
     render(<ArticleForm onSaveDraft={mockOnSaveDraft} labels={defaultLabels} />);
@@ -1168,12 +1169,7 @@ describe('ArticleForm', () => {
 
     // After successful save of a new article, window.location.replace is used
     // to bypass the client-side navigation guard entirely.
-    expect(mockLocationReplace).toHaveBeenCalledWith('/admin/articles/draft-id/edit');
-
-    Object.defineProperty(window, 'location', {
-      value: originalLocation,
-      writable: true,
-    });
+    expect(window.location.replace).toHaveBeenCalledWith('/admin/articles/draft-id/edit');
   });
 
   it('should disable navigation guard for markdown Publish Settings navigation', async () => {

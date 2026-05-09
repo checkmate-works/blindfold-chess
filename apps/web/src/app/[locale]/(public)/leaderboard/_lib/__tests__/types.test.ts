@@ -24,9 +24,9 @@ describe('MODULES', () => {
   it('contains exactly six modules', () => {
     expect(MODULES).toHaveLength(6);
     expect(MODULES).toEqual([
+      'square_colors',
       'coordinate_quiz',
       'legal_moves',
-      'square_colors',
       'diagonal_quiz',
       'board_symmetry',
       'route_planner',
@@ -88,9 +88,9 @@ describe('VALID_PERIODS', () => {
 describe('VALID_MODULE_SLUGS', () => {
   it('contains exactly six hyphenated slugs parallel to MODULES', () => {
     expect(VALID_MODULE_SLUGS).toEqual([
+      'square-colors',
       'coordinate-quiz',
       'legal-moves',
-      'square-colors',
       'diagonal-quiz',
       'board-symmetry',
       'route-planner',
@@ -174,18 +174,18 @@ describe('ALL_LEADERBOARD_ENTRIES', () => {
     ]);
   });
 
-  it('entries are in module order: coordinate_quiz, legal_moves, square_colors, diagonal_quiz, board_symmetry, route_planner', () => {
+  it('entries are in module order: square_colors, coordinate_quiz, legal_moves, diagonal_quiz, board_symmetry, route_planner', () => {
     const modules = ALL_LEADERBOARD_ENTRIES.map((e) => e.module);
+    const firstCoordinateQuiz = modules.indexOf('coordinate_quiz');
+    const lastSquareColors = modules.lastIndexOf('square_colors');
     const firstLegalMoves = modules.indexOf('legal_moves');
     const lastCoordinateQuiz = modules.lastIndexOf('coordinate_quiz');
-    const firstSquareColors = modules.indexOf('square_colors');
-    const lastLegalMoves = modules.lastIndexOf('legal_moves');
     const firstDiagonalQuiz = modules.indexOf('diagonal_quiz');
-    const lastSquareColors = modules.lastIndexOf('square_colors');
+    const lastLegalMoves = modules.lastIndexOf('legal_moves');
 
+    expect(lastSquareColors).toBeLessThan(firstCoordinateQuiz);
     expect(lastCoordinateQuiz).toBeLessThan(firstLegalMoves);
-    expect(lastLegalMoves).toBeLessThan(firstSquareColors);
-    expect(lastSquareColors).toBeLessThan(firstDiagonalQuiz);
+    expect(lastLegalMoves).toBeLessThan(firstDiagonalQuiz);
 
     const firstBoardSymmetry = modules.indexOf('board_symmetry');
     const lastDiagonalQuiz = modules.lastIndexOf('diagonal_quiz');

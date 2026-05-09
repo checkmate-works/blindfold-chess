@@ -12,8 +12,8 @@ import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { generateBalancedMoveQuestions, isLegalMove } from '../../_lib/legal-moves-api';
 import type { MoveQuestion, PieceType } from '../../_lib/types';
-import { generateBalancedMoveQuestions, isLegalMove } from '../../_lib/utils';
 import { LegalMovesTrainingPlaying } from './LegalMovesTrainingPlaying';
 
 type Props = {

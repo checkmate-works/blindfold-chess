@@ -2,9 +2,7 @@ import { BishopRouteStrategy } from "./bishop";
 import { KnightRouteStrategy } from "./knight";
 import { QueenRouteStrategy } from "./queen";
 import { RookRouteStrategy } from "./rook";
-import type { RoutePlannerStrategy, RouteStrategyMap } from "./types";
-
-export type { RoutePlannerStrategy, RouteStrategyMap };
+import type { RouteStrategyMap } from "./types";
 
 export const RouteStrategies: RouteStrategyMap = {
   n: KnightRouteStrategy,

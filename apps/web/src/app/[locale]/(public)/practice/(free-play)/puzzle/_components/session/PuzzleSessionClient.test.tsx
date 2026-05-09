@@ -15,10 +15,20 @@ vi.mock('@/i18n/routing', () => ({
     children,
   }: {
     href: string;
-    onClick?: () => void;
+    onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
     children: React.ReactNode;
   }) => (
-    <a data-testid="view-result-link" href={href} onClick={onClick}>
+    // preventDefault mimics next/link's client-side navigation, so jsdom
+    // does not queue a `setTimeout(0)` "navigation to another Document"
+    // that fires after the test and pollutes stderr.
+    <a
+      data-testid="view-result-link"
+      href={href}
+      onClick={(e) => {
+        e.preventDefault();
+        onClick?.(e);
+      }}
+    >
       {children}
     </a>
   ),

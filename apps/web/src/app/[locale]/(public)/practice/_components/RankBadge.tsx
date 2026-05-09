@@ -6,9 +6,15 @@ import { getBeltColorHex, isWhiteBelt } from '@/app/[locale]/(public)/ranks/_lib
 
 /**
  * Belt colors light enough to need dark text for contrast.
- * Other colors (orange/blue/green/brown/black) get white text.
+ *
+ * Only the white belt (mukyu) qualifies. Yellow (3kyu) intentionally uses
+ * white text along with the other kyu/dan ranks: in dark mode the
+ * `text-foreground` token resolves to a light tone, which collapses contrast
+ * against a yellow background, and visually it kept 3kyu out of sync with
+ * the other belts. White-on-yellow is the consistent choice that reads
+ * acceptably under both color schemes.
  */
-const LIGHT_BELT_COLORS = new Set(['white', 'yellow']);
+const LIGHT_BELT_COLORS = new Set(['white']);
 
 type Props = {
   slug: RankSlug;

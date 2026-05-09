@@ -6,12 +6,6 @@ import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreference
 // Re-export the canonical SkillLevel type from @blindfold-chess/features
 export type SkillLevel = AiGameSkillLevel;
 
-// Game settings
-export type GameSettings = {
-  color: Side;
-  skillLevel: SkillLevel;
-};
-
 // Re-export the canonical GameOutcome type from @blindfold-chess/types
 export type { GameOutcome } from '@blindfold-chess/types';
 

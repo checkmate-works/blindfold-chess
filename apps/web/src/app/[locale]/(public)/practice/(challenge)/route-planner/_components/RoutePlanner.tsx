@@ -4,8 +4,8 @@ import { useLocalStorageSettings } from '@/lib/persistent-settings/use-local-sto
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import type { RoutePlannerPieceSelection } from '../_lib/utils';
-import { RoutePlannerPageContent } from './RoutePlannerPageContent';
+import type { RoutePlannerPieceSelection } from '../_lib/pieces';
+import { RoutePlannerSetup } from './RoutePlannerSetup';
 import { STORAGE_KEY } from './constants';
 
 type Props = {
@@ -23,7 +23,7 @@ export default function RoutePlanner({ locale }: Props) {
   const { settings, updateSettings } = useLocalStorageSettings(STORAGE_KEY, DEFAULTS);
 
   return (
-    <RoutePlannerPageContent
+    <RoutePlannerSetup
       locale={locale}
       pieceSelection={settings.pieceSelection}
       onPieceSelect={(pieceSelection) => updateSettings({ pieceSelection })}

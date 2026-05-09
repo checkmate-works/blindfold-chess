@@ -6,6 +6,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
 import { db, moderationActions, postImageAttachments, topicPosts, userGrants } from '@/lib/db';
+import { validateModerationReason } from '@/lib/moderation/validate-reason';
 import { POST_IMAGES_BUCKET } from '@/lib/post-images/validation';
 import { createAdminClient } from '@/lib/supabase/admin';
 
@@ -18,14 +19,11 @@ export async function deletePostAdmin(postId: string, reason: string): Promise<A
     return auth;
   }
 
-  const trimmedReason = reason.trim();
-  if (!trimmedReason) {
-    return { error: 'reasonRequired' };
+  const reasonResult = validateModerationReason(reason);
+  if ('error' in reasonResult) {
+    return reasonResult;
   }
-
-  if (trimmedReason.length > 1000) {
-    return { error: 'reasonTooLong' };
-  }
+  const trimmedReason = reasonResult.trimmed;
 
   const [post] = await db
     .select({

@@ -33,7 +33,7 @@ export type ArrowKeyBinding = {
 };
 
 /** Map of arrow key → binding. Only populated keys are listened for. */
-export type ArrowKeyBindings = Partial<Record<ArrowKey, ArrowKeyBinding>>;
+type ArrowKeyBindings = Partial<Record<ArrowKey, ArrowKeyBinding>>;
 
 type Props = {
   bindings: ArrowKeyBindings;

@@ -381,6 +381,68 @@ describe('AuthContext', () => {
     });
   });
 
+  describe('ads-hidden attribute sync', () => {
+    // Regression test: the inline bootstrap script in <head> only runs at
+    // initial document parse. On the first sign-in within a session, the
+    // `bfc_ads_hidden` cookie is written by `getSessionUser()` AFTER the
+    // bootstrap has already run, so without an explicit client-side
+    // re-assertion the `<html data-ads-hidden>` attribute is never set even
+    // though the cookie is. AdSense gates push solely on the attribute, so
+    // ads would leak on subsequent client-side navigations (e.g., language
+    // switch) until a hard reload re-ran the bootstrap with the cookie now
+    // present. Confirmed in production by manual repro 2026-05-09.
+    function clearAdsHiddenState() {
+      document.cookie = 'bfc_ads_hidden=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+      delete document.documentElement.dataset.adsHidden;
+    }
+
+    beforeEach(clearAdsHiddenState);
+    afterEach(clearAdsHiddenState);
+
+    it("sets data-ads-hidden='true' when the cookie is present after getSessionUser", async () => {
+      document.cookie = 'bfc_ads_hidden=1; path=/';
+      mockGetUser.mockResolvedValue({ data: { user: seededUser } });
+      mockGetSession.mockResolvedValue({
+        data: { session: { access_token: 'tok', user: seededUser } },
+      });
+
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(document.documentElement.dataset.adsHidden).toBe('true');
+    });
+
+    it('removes a stale data-ads-hidden when the cookie is absent (e.g., entitlement lapsed)', async () => {
+      // Pre-existing attribute simulates the lingering state from a previous
+      // session before the entitlement lapsed.
+      document.documentElement.setAttribute('data-ads-hidden', 'true');
+      mockGetSessionUser.mockResolvedValue(null);
+
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(document.documentElement.dataset.adsHidden).toBeUndefined();
+    });
+
+    it('does not set data-ads-hidden when neither cookie nor entitlement exists', async () => {
+      mockGetSessionUser.mockResolvedValue(null);
+
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(document.documentElement.dataset.adsHidden).toBeUndefined();
+    });
+  });
+
   describe('signOut', () => {
     it('calls supabase.auth.signOut', async () => {
       mockGetUser.mockResolvedValue({ data: { user: { id: '1', email: 'a@b.com' } } });

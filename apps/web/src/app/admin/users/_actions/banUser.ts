@@ -6,6 +6,7 @@ import { eq } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
 import { db, moderationActions, profiles } from '@/lib/db';
+import { validateModerationReason } from '@/lib/moderation/validate-reason';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 import { requireAdmin } from '../../_lib/auth';
@@ -22,14 +23,11 @@ export async function banUser(targetUserId: string, reason: string): Promise<Act
     return { error: 'cannotBanSelf' };
   }
 
-  const trimmedReason = reason.trim();
-  if (!trimmedReason) {
-    return { error: 'reasonRequired' };
+  const reasonResult = validateModerationReason(reason);
+  if ('error' in reasonResult) {
+    return reasonResult;
   }
-
-  if (trimmedReason.length > 1000) {
-    return { error: 'reasonTooLong' };
-  }
+  const trimmedReason = reasonResult.trimmed;
 
   // 1. Ban at Supabase Auth level first (external API, can't be in DB transaction)
   const adminClient = createAdminClient();

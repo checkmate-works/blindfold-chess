@@ -6,9 +6,10 @@ import type { MutationResult } from '@/app/admin/_lib/action-factories';
 import { requireAdmin } from '@/app/admin/_lib/auth';
 import { and, eq, isNull } from 'drizzle-orm';
 
+import { buildChunkMutationValues, verifyChunkAuthor } from '@/lib/chunks/mutation-helpers';
 import type { ChunkMutationData } from '@/lib/chunks/validation';
 import { validateChunkMutationData } from '@/lib/chunks/validation';
-import { chunks, db, profiles } from '@/lib/db';
+import { chunks, db } from '@/lib/db';
 
 // NOTE: kept hand-written (not using adminMutationGuard factory) for
 // consistency with createChunk. See createChunk.ts for context.
@@ -41,27 +42,12 @@ export async function updateChunk(id: string, data: ChunkMutationData): Promise<
     return { error: 'Chunk not found' };
   }
 
-  // Verify the specified user exists in the profiles table.
-  const [profile] = await db
-    .select({ id: profiles.id })
-    .from(profiles)
-    .where(eq(profiles.id, data.userId.trim()))
-    .limit(1);
-
-  if (!profile) {
-    return { error: 'User not found' };
+  const authorError = await verifyChunkAuthor(data.userId);
+  if (authorError) {
+    return authorError;
   }
 
-  await db
-    .update(chunks)
-    .set({
-      representativeFen: data.representativeFen.trim(),
-      title: data.title.trim(),
-      slug: data.slug.trim(),
-      description: data.description?.trim() || null,
-      userId: data.userId.trim(),
-    })
-    .where(eq(chunks.id, id));
+  await db.update(chunks).set(buildChunkMutationValues(data)).where(eq(chunks.id, id));
 
   revalidatePath('/admin/chunks');
   revalidatePath(`/admin/chunks/${id}/edit`);

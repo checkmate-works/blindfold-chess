@@ -9,6 +9,12 @@ import { PageTitle } from './PageTitle';
 type Props = {
   /** Title shown in the centered `<h1>` above the panel. */
   title: ReactNode;
+  /**
+   * Optional element rendered to the right of the title in a centered flex row.
+   * Intended for a `HelpTourButton` or similar small affordance — keeps the
+   * title visually centered as a group.
+   */
+  titleAction?: ReactNode;
   /** Locale used by `Breadcrumb` to prefix link `href`s and emit `BreadcrumbList` JSON-LD. */
   locale: string;
   /**
@@ -39,6 +45,7 @@ type Props = {
  */
 export function PageLayout({
   title,
+  titleAction,
   locale,
   breadcrumb,
   divider = true,
@@ -51,7 +58,14 @@ export function PageLayout({
 
   return (
     <div className={className}>
-      <PageTitle>{title}</PageTitle>
+      {titleAction ? (
+        <div className="flex items-center justify-center gap-2">
+          <PageTitle>{title}</PageTitle>
+          {titleAction}
+        </div>
+      ) : (
+        <PageTitle>{title}</PageTitle>
+      )}
       <PagePanel className={panelClassName}>
         {children}
         {hasBreadcrumb && (

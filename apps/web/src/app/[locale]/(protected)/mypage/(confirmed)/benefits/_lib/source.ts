@@ -13,7 +13,7 @@ import type { GrantType } from '@/lib/db/data/grant-types';
  * Convert a `topic_posts.topic_type` into the URL segment the public route
  * uses. Mirrors `getTopicSegment` in NotificationItem for consistency.
  */
-export function topicTypeToSegment(topicType: string): string {
+function topicTypeToSegment(topicType: string): string {
   if (topicType === 'opening') return 'openings';
   return `${topicType}s`;
 }
@@ -27,7 +27,7 @@ export function topicTypeToSegment(topicType: string): string {
  * branches are kept so historical rows whose grants were issued before the
  * scope change still resolve to a usable link.
  */
-export function buildTopicPostHref(topicType: string, topicKey: string, postId: string): string {
+function buildTopicPostHref(topicType: string, topicKey: string, postId: string): string {
   if (topicType === 'position_memory') {
     return `/practice/position-memory/${topicKey}#post-${postId}`;
   }
@@ -42,7 +42,7 @@ export function buildTopicPostHref(topicType: string, topicKey: string, postId: 
  * Returns `null` for position types without a dedicated detail page (e.g.,
  * `'sequence'`); callers render the row without a link in that case.
  */
-export function buildPositionHref(positionType: string, positionId: string): string | null {
+function buildPositionHref(positionType: string, positionId: string): string | null {
   if (positionType === 'puzzle') return `/practice/puzzle/${positionId}`;
   if (positionType === 'memory') return `/practice/position-memory/${positionId}`;
   return null;

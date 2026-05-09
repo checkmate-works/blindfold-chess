@@ -312,12 +312,6 @@
       }
     }
   },
-  "Common": {
-    "sponsoredLink": "Enlace Patrocinado",
-    "testAd": "Anuncio de Prueba",
-    "adLabel": "Publicidad",
-    "sponsor": "Patrocinador"
-  },
   "openingSearch": {
     "selectOpening": "Selecciona una apertura",
     "searchPlaceholder": "Buscar aperturas..."
@@ -480,7 +474,6 @@
     "articlesTitle": "Artículos",
     "relatedArticles": "Artículos Relacionados",
     "browseByCategory": "Explorar por Categoría",
-    "allCategories": "Todas",
     "articleCount": "{count, plural, one {# artículo} other {# artículos}}",
     "categories": {
       "piece-movement": "Movimiento de Piezas",
@@ -606,6 +599,21 @@
       "accuracy": "Precisión",
       "timeTaken": "Tiempo Empleado",
       "averageTime": "Tiempo Promedio",
+      "help": {
+        "label": "Ayuda",
+        "tutorial": {
+          "title": "Tutorial",
+          "description": "Si es tu primera vez, te recomendamos ver el tutorial."
+        },
+        "challenge": {
+          "title": "Modo Desafío",
+          "description": "Compite para ver cuántas respuestas correctas puedes dar dentro del límite de tiempo. Tu puntuación se registra y aparece en la tabla de clasificación."
+        },
+        "training": {
+          "title": "Modo Entrenamiento",
+          "description": "Practica a tu propio ritmo sin límite de tiempo. Las puntuaciones no se registran."
+        }
+      },
       "tutorial": {
         "title": "Tutorial",
         "description": "Aprende los tres tipos de simetría en el tablero de ajedrez: Columna, Fila y Simetría central.",
@@ -669,8 +677,6 @@
       "howToPlayDescription": "Se harán preguntas como la siguiente repetidamente. Identifica si la casilla dada es clara u oscura.",
       "white": "Clara",
       "black": "Oscura",
-      "correct": "Correcto",
-      "incorrect": "Incorrecto",
       "settings": "Configuración del Juego",
       "timeLimit": "Límite de Tiempo",
       "seconds": "segundos",
@@ -678,12 +684,21 @@
       "timeRemaining": "Tiempo",
       "finished": "¡Práctica Completada!",
       "correctAnswers": "Respuestas Correctas",
-      "accuracy": "Precisión",
       "timeTaken": "Tiempo Empleado",
-      "averageTime": "Tiempo Promedio",
       "requiredKnowledge": "Conocimiento Necesario",
       "viewArticle": "Aprende sobre el color de las casillas",
-      "articleDescription": "Aprende a identificar rápidamente si una casilla es clara u oscura"
+      "articleDescription": "Aprende a identificar rápidamente si una casilla es clara u oscura",
+      "help": {
+        "label": "Ayuda",
+        "challenge": {
+          "title": "Modo Desafío",
+          "description": "Compite para ver cuántas respuestas correctas puedes dar dentro del límite de tiempo. Tu puntuación se registra y aparece en la tabla de clasificación."
+        },
+        "training": {
+          "title": "Modo Entrenamiento",
+          "description": "Practica a tu propio ritmo sin límite de tiempo. Las puntuaciones no se registran."
+        }
+      }
     },
     "legalMoves": {
       "title": "Movimientos Legales",
@@ -707,16 +722,12 @@
       "start": "Iniciar",
       "question": "¿Puede la pieza moverse de {from} a {to}?",
       "questionFormat": "¿Puede la pieza moverse de {from} a {to}?",
-      "correct": "Correcto",
-      "incorrect": "Incorrecto",
       "legal": "Sí",
       "illegal": "No",
       "timeRemaining": "Tiempo",
       "finished": "¡Práctica Completada!",
       "correctAnswers": "Respuestas Correctas",
-      "accuracy": "Precisión",
       "timeTaken": "Tiempo Empleado",
-      "averageTime": "Tiempo Promedio",
       "relatedArticles": "Artículos Relacionados",
       "articles": {
         "king": {
@@ -734,6 +745,17 @@
         "bishop": {
           "title": "El Movimiento del Alfil",
           "description": "Aprende los patrones de movimiento diagonal"
+        }
+      },
+      "help": {
+        "label": "Ayuda",
+        "challenge": {
+          "title": "Modo Desafío",
+          "description": "Compite para ver cuántas respuestas correctas puedes dar dentro del límite de tiempo. Tu puntuación se registra y aparece en la tabla de clasificación."
+        },
+        "training": {
+          "title": "Modo Entrenamiento",
+          "description": "Practica a tu propio ritmo sin límite de tiempo. Las puntuaciones no se registran."
         }
       }
     },
@@ -758,15 +780,12 @@
       "clickSquare": "Haz clic en esta casilla",
       "whiteToMove": "Mueven las blancas",
       "blackToMove": "Mueven las negras",
-      "correct": "Correcto",
       "wrong": "Incorrecto",
       "timeRemaining": "Tiempo",
       "finished": "¡Cuestionario Completado!",
       "points": "puntos",
       "correctAnswers": "Respuestas Correctas",
-      "accuracy": "Precisión",
       "timeTaken": "Tiempo Empleado",
-      "averageTime": "Tiempo Promedio",
       "session": "En Progreso",
       "relatedArticles": "Artículos Relacionados",
       "articles": {
@@ -781,6 +800,21 @@
         "algebraicNotation": {
           "title": "Notación Algebraica",
           "description": "Domina el lenguaje de las coordenadas de ajedrez"
+        }
+      },
+      "help": {
+        "label": "Ayuda",
+        "feedbackSpeed": {
+          "title": "Velocidad de Respuesta",
+          "description": "Ajusta la rapidez con la que se reproduce el efecto de acierto/error. Este ajuste no afecta al cronómetro: el tiempo no avanza mientras se muestra el efecto de respuesta."
+        },
+        "challenge": {
+          "title": "Modo Desafío",
+          "description": "Compite para ver cuántas respuestas correctas puedes dar dentro del límite de tiempo. Tu puntuación se registra y aparece en la tabla de clasificación."
+        },
+        "training": {
+          "title": "Modo Entrenamiento",
+          "description": "Practica a tu propio ritmo sin límite de tiempo. Las puntuaciones no se registran."
         }
       }
     },
@@ -939,6 +973,14 @@
         "clearBoardConfirmConfirm": "Limpiar",
         "clearBoardConfirmCancel": "Cancelar"
       },
+      "edit": {
+        "title": "Editar Problema",
+        "submit": "Guardar cambios",
+        "submitting": "Guardando...",
+        "saveError": "Ocurrió un error inesperado. Inténtalo de nuevo.",
+        "notFound": "No se pudo encontrar este problema.",
+        "unauthorized": "Solo puedes editar tus propios problemas."
+      },
       "detail": {
         "title": "Detalle de Posición",
         "descriptionSection": "Descripción de la Posición",
@@ -952,14 +994,18 @@
         "createdBy": "Creado por",
         "tutorialLink": "Ver Tutorial",
         "tryAgain": "Intentar de nuevo",
-        "backToList": "Volver a la lista"
+        "backToList": "Volver a la lista",
+        "edited": "(editado)",
+        "editAction": "Editar"
       },
       "delete": {
         "button": "Eliminar Problema",
         "confirmTitle": "Eliminar Problema",
         "confirmMessage": "¿Estás seguro de que deseas eliminar este problema? Esta acción no se puede deshacer.",
         "confirm": "Eliminar",
-        "cancel": "Cancelar"
+        "cancel": "Cancelar",
+        "sectionTitle": "Zona de peligro",
+        "sectionDescription": "Eliminar este problema es permanente. Los comentarios y los me gusta asociados se eliminarán y no se podrán recuperar."
       }
     },
     "puzzle": {
@@ -1028,6 +1074,14 @@
       "unlike": "Quitar me gusta",
       "newReply": "Nueva Respuesta {time}",
       "justNow": "ahora mismo",
+      "edit": {
+        "title": "Editar Puzzle",
+        "submit": "Guardar cambios",
+        "submitting": "Guardando...",
+        "saveError": "Ocurrió un error inesperado. Inténtalo de nuevo.",
+        "notFound": "No se pudo encontrar este puzzle.",
+        "unauthorized": "Solo puedes editar tus propios puzzles."
+      },
       "detail": {
         "title": "Detalle del Puzzle",
         "descriptionSection": "Sobre Este Puzzle",
@@ -1037,7 +1091,18 @@
         "whiteToMove": "Mueven blancas",
         "blackToMove": "Mueven negras",
         "createdBy": "Creado por",
-        "noPieces": "Ninguna"
+        "noPieces": "Ninguna",
+        "edited": "(editado)",
+        "editAction": "Editar"
+      },
+      "delete": {
+        "button": "Eliminar Puzzle",
+        "confirmTitle": "Eliminar Puzzle",
+        "confirmMessage": "¿Estás seguro de que deseas eliminar este puzzle? Los comentarios y los datos de la solución se eliminarán también. Esta acción no se puede deshacer.",
+        "confirm": "Eliminar",
+        "cancel": "Cancelar",
+        "sectionTitle": "Zona de peligro",
+        "sectionDescription": "Eliminar este puzzle es permanente — los comentarios vinculados perderán su contexto y no podrán recuperarse."
       },
       "result": {
         "title": "Resultado del Puzzle",
@@ -1225,8 +1290,6 @@
       "findPath": "Encuentra el camino para {piece} de {start} a {target}",
       "yourPath": "Tu Camino",
       "shortestPath": "Camino Más Corto",
-      "correct": "Correcto",
-      "incorrect": "Incorrecto",
       "badEnd": "El camino no llega al objetivo",
       "badMove": "Incorrecto",
       "finalTarget": "(Auto-completado)",
@@ -1255,6 +1318,21 @@
       "resetSettingsConfirm": {
         "title": "¿Restablecer configuración?",
         "message": "Todos los ajustes se restablecerán y volverás a la pantalla del tutorial."
+      },
+      "help": {
+        "label": "Ayuda",
+        "tutorial": {
+          "title": "Tutorial",
+          "description": "Si es tu primera vez, te recomendamos ver el tutorial."
+        },
+        "challenge": {
+          "title": "Modo Desafío",
+          "description": "Compite para ver cuántas respuestas correctas puedes dar dentro del límite de tiempo. Tu puntuación se registra y aparece en la tabla de clasificación."
+        },
+        "training": {
+          "title": "Modo Entrenamiento",
+          "description": "Practica a tu propio ritmo sin límite de tiempo. Las puntuaciones no se registran."
+        }
       },
       "tutorial": {
         "title": "Tutorial",
@@ -1358,6 +1436,21 @@
       "yourAnswer": "Tu respuesta",
       "correctAnswerLabel": "Respuesta correcta",
       "nextProblem": "Siguiente Problema",
+      "help": {
+        "label": "Ayuda",
+        "tutorial": {
+          "title": "Tutorial",
+          "description": "Si es tu primera vez, te recomendamos ver el tutorial."
+        },
+        "challenge": {
+          "title": "Modo Desafío",
+          "description": "Compite para ver cuántas respuestas correctas puedes dar dentro del límite de tiempo. Tu puntuación se registra y aparece en la tabla de clasificación."
+        },
+        "training": {
+          "title": "Modo Entrenamiento",
+          "description": "Practica a tu propio ritmo sin límite de tiempo. Las puntuaciones no se registran."
+        }
+      },
       "tutorial": {
         "title": "Tutorial",
         "skip": "Saltar",
@@ -1416,7 +1509,6 @@
     },
     "yourRankings": {
       "title": "Tus Clasificaciones",
-      "noRanks": "Aún no estás en ninguna clasificación. ¡Prueba algunos módulos de práctica!",
       "viewAll": "Ver todas las clasificaciones"
     },
     "feed": {
@@ -1441,10 +1533,36 @@
       "level": "Nv",
       "moves": "movimientos",
       "recent": "Recientes"
+    },
+    "help": {
+      "label": "Ayuda",
+      "vsAi": {
+        "title": "Jugar contra la IA",
+        "description": "Empieza una nueva partida contra la IA o retoma una en curso."
+      },
+      "feed": {
+        "title": "Cronología",
+        "description": "En la cronología aparecen temas como aperturas y nuevos puzles. También se muestran los cambios en lo más alto de la clasificación, pero las entradas de este tipo se conservan un mes — las más antiguas se eliminan."
+      }
     }
   },
   "gamesPage": {
-    "pageTitle": "Partidas"
+    "pageTitle": "Partidas",
+    "help": {
+      "label": "Ayuda",
+      "newGame": {
+        "title": "Empezar una nueva partida",
+        "description": "Pulsa este botón para empezar una partida contra la IA."
+      },
+      "autoSave": {
+        "title": "Guardado automático",
+        "description": "Las partidas se guardan automáticamente en tu dispositivo y se conservan las 20 más recientes. Consulta <link>manejo de datos</link> para más detalles."
+      },
+      "bulkDelete": {
+        "title": "Eliminación masiva",
+        "description": "Usa «Eliminación Masiva» para borrar varias partidas a la vez."
+      }
+    }
   },
   "bulkDelete": {
     "title": "Eliminación Masiva de Partidas",
@@ -1452,11 +1570,8 @@
     "noGames": "No hay partidas para eliminar",
     "selectedCount": "{count, plural, one {# partida seleccionada} other {# partidas seleccionadas}}",
     "selectAll": "Seleccionar Todas",
-    "unselectAll": "Deseleccionar Todas",
     "delete": "Eliminar",
     "cancel": "Cancelar",
-    "processing": "Procesando...",
-    "errorDeleting": "Error al eliminar. Por favor, inténtalo de nuevo.",
     "confirmTitle": "¿Eliminar Partidas Seleccionadas?",
     "confirmMessage": "¿Estás seguro de que deseas eliminar {count} partidas? Esta acción no se puede deshacer.",
     "deletedToast": "{count, plural, one {# partida eliminada correctamente} other {# partidas eliminadas correctamente}}",
@@ -1560,11 +1675,8 @@
     "infoModalTitle": "Acerca de la Revisión de Partida",
     "description": "Intenta recordar y reproducir los movimientos de tu partida terminada. También puedes ejecutar la evaluación del motor aquí.",
     "autoOpponentMoves": "Auto-rellenar movimientos del rival",
-    "autoOpponentMovesDescription": "Solo introduce tus propios movimientos; los movimientos del rival se rellenarán automáticamente",
     "inputMove": "Introduce un movimiento",
     "selectMove": "Selecciona un movimiento",
-    "switchToSelect": "Cambiar a selección por lista",
-    "switchToText": "Cambiar a entrada de texto",
     "switchInputMode": "Cambiar modo de entrada",
     "dontKnow": "No lo sé",
     "autoFillAll": "Auto-rellenar Todo",
@@ -1572,16 +1684,11 @@
     "confirmAutoFillAllMessage": "Esto auto-rellenará todos los movimientos restantes.",
     "correctMove": "¡Correcto!",
     "incorrectMove": "Movimiento incorrecto. Inténtalo de nuevo.",
-    "logIncorrect": "es incorrecto",
     "moveNumber": "Movimiento {number}",
-    "yourTurn": "Tu turno",
-    "opponentTurn": "Turno del rival",
     "completed": "¡Revisión de Partida Completada!",
     "completedMessage": "¡Reprodujiste correctamente todos los movimientos de la partida!",
-    "backToGame": "Volver a la Partida",
     "progress": "Progreso: {current} / {total} movimientos",
     "showBoard": "Mostrar Tablero",
-    "hideBoard": "Ocultar Tablero",
     "moves": "Movimientos",
     "noMovesYet": "Aún no hay movimientos",
     "copyPgn": "Copiar PGN",
@@ -1590,7 +1697,6 @@
     "analyzeOnLichess": "Analizar en Lichess",
     "moveLog": "Registro de Movimientos",
     "backToCurrentPosition": "Volver a la posición actual",
-    "configureBoardAppearance": "Configurar apariencia del tablero",
     "cancel": "Cancelar",
     "save": "Guardar",
     "guidanceStep1": "Introduce cada movimiento de memoria",
@@ -1816,7 +1922,6 @@
   },
   "company": {
     "title": "Información de la Empresa",
-    "companyInfo": "Información del Operador",
     "companyName": "Nombre de la Empresa",
     "companyNameValue": "Fuji Enterprise",
     "location": "Ubicación",
@@ -1835,18 +1940,14 @@
     "description": "Si tienes alguna pregunta o comentario, no dudes en contactarnos.",
     "form": {
       "name": "Nombre",
-      "namePlaceholder": "Juan Pérez",
       "nameRequired": "Por favor, introduce tu nombre",
       "email": "Correo Electrónico",
       "emailPlaceholder": "ejemplo@email.com",
       "emailRequired": "Por favor, introduce tu correo electrónico",
       "emailInvalid": "Por favor, introduce un correo electrónico válido",
       "subject": "Asunto",
-      "subjectPlaceholder": "Asunto de tu consulta",
       "subjectRequired": "Por favor, introduce un asunto",
       "message": "Mensaje",
-      "messagePlaceholder": "Describe tu consulta en detalle",
-      "messageRequired": "Por favor, introduce tu mensaje",
       "messageMinLength": "El mensaje debe tener al menos 10 caracteres",
       "submit": "Ir a Confirmación",
       "submitting": "Enviando...",
@@ -1900,9 +2001,7 @@
       "title": "Panel",
       "comingSoon": "Próximamente...",
       "vsAi": "🤖 VS IA",
-      "myGames": "Mis Partidas",
       "newGame": "Nueva Partida",
-      "gameCount": "{count, plural, =0 {Sin partidas aún} one {# partida} other {# partidas}}",
       "challenge": "🏆 Desafío",
       "squareColors": "Color de Casillas",
       "coordinateQuiz": "Cuestionario de Coordenadas",
@@ -1911,8 +2010,6 @@
       "boardSymmetry": "Simetría del Tablero",
       "viewLeaderboard": "Ver Clasificación →",
       "topics": "💬 Temas",
-      "topicSquares": "Casillas",
-      "topicOpenings": "Aperturas",
       "welcomeGreeting": "¡Hola, {name}!",
       "welcomeDefaultName": "Jugador",
       "viewMypage": "Mi Página",
@@ -2038,7 +2135,6 @@
     "pageTitle": "Artículos",
     "noArticles": "Aún no hay artículos.",
     "articlesListTitle": "Todos los Artículos",
-    "moreArticles": "Más artículos",
     "articleNotFound": "Artículo No Encontrado",
     "notTranslatedNotice": "Este artículo aún no ha sido traducido a tu idioma. Estás viendo la versión original."
   },
@@ -2147,15 +2243,12 @@
   },
   "Mypage": {
     "title": "Mi Página",
-    "challengeLink": "Historial de Desafíos",
     "dashboard": {
       "viewProfile": "Perfil público",
       "challengeTitle": "Historial de Desafíos",
       "likesTitle": "Publicaciones que te Gustan",
       "postsTitle": "Mis Publicaciones",
       "editProfile": "Editar",
-      "interviewTitle": "Entrevista",
-      "beltSystem": "Sistema de Cinturones",
       "myRecords": "Mis Registros",
       "socialTitle": "Social",
       "interviewBanner": "Responde preguntas de entrevista y cuéntanos sobre ti",
@@ -2173,7 +2266,6 @@
       "subscriptionTitle": "Suscripción",
       "benefitsTitle": "Beneficios",
       "practiceTitle": "Práctica",
-      "myProblems": "Mis Problemas",
       "myPositionMemory": "Memoria de Posición",
       "myPuzzles": "Puzzles"
     },
@@ -2288,14 +2380,16 @@
     "sectionTitle": "Problemas que Has Creado",
     "empty": "Aún no has creado ningún problema.",
     "breadcrumbMypage": "Mi Página",
-    "breadcrumbProblems": "Mis Problemas"
+    "breadcrumbProblems": "Mis Problemas",
+    "editAction": "Editar"
   },
   "MypagePuzzles": {
     "title": "Mis Puzzles",
     "sectionTitle": "Puzzles que Has Creado",
     "empty": "Aún no has creado ningún puzzle.",
     "breadcrumbMypage": "Mi Página",
-    "breadcrumbProblems": "Mis Problemas"
+    "breadcrumbProblems": "Mis Problemas",
+    "editAction": "Editar"
   },
   "MypageProblemsIndex": {
     "title": "Mis Problemas",
@@ -2376,7 +2470,10 @@
     "accountDeleted": "Tu cuenta ha sido eliminada",
     "practiceResultSaveFailed": "Error al guardar tu resultado. Por favor, inténtalo de nuevo.",
     "positionCreated": "Posición creada con éxito",
-    "positionDeleted": "Problema eliminado"
+    "positionDeleted": "Problema eliminado",
+    "positionUpdated": "Cambios guardados",
+    "puzzleUpdated": "Cambios guardados",
+    "puzzleDeleted": "Puzzle eliminado"
   },
   "setupUsername": {
     "title": "Crea tu Cuenta",
@@ -2486,8 +2583,6 @@
     "dashboard": "Panel",
     "users": "Usuarios",
     "auditLog": "Registro de Auditoría",
-    "totalUsers": "Total de Usuarios",
-    "roleAssignments": "Asignaciones de Roles",
     "dashboardKpi": {
       "from": "Desde",
       "to": "Hasta",
@@ -2622,8 +2717,6 @@
       "title": "Publicaciones de {username}",
       "email": "Correo",
       "username": "Nombre de usuario",
-      "backToUsers": "Volver a Usuarios",
-      "topic": "Tema",
       "content": "Contenido",
       "createdAt": "Fecha de Creación",
       "status": "Estado",
@@ -2639,8 +2732,6 @@
       "deleteModalConfirm": "Confirmar Eliminación",
       "deleteModalDeleting": "Eliminando...",
       "deleteModalReasonRequired": "El motivo es obligatorio",
-      "previousPage": "Anterior",
-      "nextPage": "Siguiente",
       "userNotFound": "Usuario no encontrado"
     },
     "auditLogTable": {
@@ -2653,9 +2744,7 @@
       "noLogsFound": "No se encontraron registros de auditoría",
       "filterByAction": "Filtrar por acción",
       "filterByUser": "Filtrar por usuario",
-      "allActions": "Todas las Acciones",
-      "previousPage": "Anterior",
-      "nextPage": "Siguiente"
+      "allActions": "Todas las Acciones"
     },
     "activityLog": "Registro de Actividad",
     "activityLogTable": {
@@ -2667,9 +2756,7 @@
       "noLogsFound": "No se encontraron registros de actividad",
       "filterByAction": "Filtrar por acción",
       "filterByUser": "Filtrar por usuario",
-      "allActions": "Todas las Acciones",
-      "previousPage": "Anterior",
-      "nextPage": "Siguiente"
+      "allActions": "Todas las Acciones"
     },
     "positionMemory": "Position Memory",
     "chunks": "Chunks",
@@ -2700,9 +2787,7 @@
       "deleteModalCancel": "Cancelar",
       "deleteModalConfirm": "Confirmar Eliminación",
       "deleteModalDeleting": "Eliminando...",
-      "deleteModalReasonRequired": "El motivo es obligatorio",
-      "previousPage": "Anterior",
-      "nextPage": "Siguiente"
+      "deleteModalReasonRequired": "El motivo es obligatorio"
     },
     "announcements": "Anuncios",
     "announcementsTable": {
@@ -2948,7 +3033,6 @@
     "defaultDescription": "Perfil de {displayName} en Ajedrez a Ciegas",
     "chessAccounts": "Cuentas de Ajedrez",
     "bio": "Acerca de",
-    "emptyProfile": "Este usuario aún no ha añadido información a su perfil.",
     "followers": "Seguidores",
     "followingCount": "Siguiendo",
     "follow": "Seguir",
@@ -3692,6 +3776,7 @@
     "backToList": "Volver a la Clasificación",
     "viewMore": "Ver Clasificación Completa",
     "weeklyRanking": "Clasificación Semanal",
+    "allTimeRanking": "Clasificación General",
     "signUpBanner": {
       "message": "¡Únete a la clasificación!",
       "description": "Crea una cuenta gratuita para seguir tus puntuaciones y competir con otros jugadores.",
@@ -3711,8 +3796,7 @@
       "exp": "Exp",
       "level": "Nivel"
     },
-    "emptyState": "Aún no hay registros de Exp. ¡Empieza a practicar para ganar Exp!",
-    "backToScoreLeaderboard": "Volver a Clasificación de Puntuación"
+    "emptyState": "Aún no hay registros de Exp. ¡Empieza a practicar para ganar Exp!"
   },
   "validation": {
     "password": {
@@ -3796,11 +3880,8 @@
         "3kyu": "Capacidad de planificar rutas de maniobra para todas las piezas sin ayudas visuales."
       },
       "tips": "Consejos",
-      "guide": "Guía",
       "tryChallenge": "Probar el Desafío",
       "showMore": "Mostrar más",
-      "prevPage": "Anterior",
-      "nextPage": "Siguiente",
       "pageOf": "Página {current} de {total}",
       "mukyuRequirements": ["Comprensión de la notación algebraica"],
       "mukyuRelatedLinks": {
@@ -3891,6 +3972,17 @@
         "anchorPoints": "Percepción del tablero con puntos de anclaje",
         "blindfoldLegalMoves": "Detección de movimientos legales en ajedrez a ciegas",
         "diagonals": "Cálculo de diagonales y antidiagonales"
+      }
+    },
+    "help": {
+      "label": "Ayuda",
+      "overview": {
+        "title": "Dojo",
+        "description": "El programa está diseñado para que, al subir de rango hasta el cinturón negro, adquieras el nivel necesario para vencer a la IA de baja puntuación al ajedrez a ciegas."
+      },
+      "viewAllRanks": {
+        "title": "Todos los rangos",
+        "description": "Aquí puedes consultar los requisitos y las guías de cada rango."
       }
     }
   },
@@ -4154,8 +4246,7 @@
       "anonymizeHint": "Sustituye las cabeceras White / Black por «Player 1» y «Player 2» antes de guardar."
     },
     "preview": {
-      "loading": "Generando vista previa…",
-      "openInLichess": "Abrir en Lichess"
+      "loading": "Generando vista previa…"
     },
     "card": {
       "replayButton": "Abrir reproducción",

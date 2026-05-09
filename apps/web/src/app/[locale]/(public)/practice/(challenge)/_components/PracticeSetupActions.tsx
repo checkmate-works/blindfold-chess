@@ -20,6 +20,10 @@ type Props = {
   trainingHref?: string;
   /** Additional CSS class for the start button */
   buttonClassName?: string;
+  /** `data-tour-id` attribute for the challenge button (used by `HelpTourButton`). */
+  challengeTourId?: string;
+  /** `data-tour-id` attribute for the training button (used by `HelpTourButton`). */
+  trainingTourId?: string;
 };
 
 export function PracticeSetupActions({
@@ -29,6 +33,8 @@ export function PracticeSetupActions({
   challengeHref,
   trainingHref,
   buttonClassName,
+  challengeTourId,
+  trainingTourId,
 }: Props) {
   const tp = useTranslations('practice');
 
@@ -40,7 +46,7 @@ export function PracticeSetupActions({
 
   return (
     <>
-      <Link href={challengeLink}>
+      <Link href={challengeLink} data-tour-id={challengeTourId}>
         <Button
           asChild
           variant="primary"
@@ -58,7 +64,7 @@ export function PracticeSetupActions({
         <Divider className="flex-1" />
       </div>
 
-      <Link href={trainingLink}>
+      <Link href={trainingLink} data-tour-id={trainingTourId}>
         <Button
           asChild
           variant="outline"

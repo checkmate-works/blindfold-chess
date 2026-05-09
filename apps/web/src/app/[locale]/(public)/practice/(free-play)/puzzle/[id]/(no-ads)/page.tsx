@@ -12,6 +12,7 @@ import { notFound } from 'next/navigation';
 import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { FaPlay, FaPlusCircle } from 'react-icons/fa';
+import { FiEdit2 } from 'react-icons/fi';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getLinkedChunksForPosition } from '@/lib/chunks/queries';
@@ -147,13 +148,27 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
           toggleLikeAction={toggleLike}
           i18nNamespace="practice.puzzle"
         />
-        <time dateTime={position.createdAt.toISOString()}>
-          {position.createdAt.toLocaleDateString(locale, {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          })}
-        </time>
+        <div className="flex items-center gap-4">
+          {currentUser?.id === position.userId && (
+            <Link
+              href={`/practice/puzzle/${position.id}/edit`}
+              className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-muted-foreground hover:border-foreground/20 hover:text-foreground transition-colors"
+            >
+              <FiEdit2 className="h-3 w-3" aria-hidden />
+              {t('detail.editAction')}
+            </Link>
+          )}
+          <time dateTime={position.createdAt.toISOString()}>
+            {position.createdAt.toLocaleDateString(locale, {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
+          </time>
+          {position.updatedAt.getTime() - position.createdAt.getTime() > 1000 && (
+            <span className="text-muted-foreground">{t('detail.edited')}</span>
+          )}
+        </div>
       </div>
 
       <div className="pt-2">

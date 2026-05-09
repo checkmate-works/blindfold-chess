@@ -13,7 +13,7 @@ import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/games/board-them
 
 import type { FenPieceChar } from './types';
 
-export type EditableChessBoardLabels = {
+type EditableChessBoardLabels = {
   whitePieces: string;
   blackPieces: string;
   removePieceMode: string;

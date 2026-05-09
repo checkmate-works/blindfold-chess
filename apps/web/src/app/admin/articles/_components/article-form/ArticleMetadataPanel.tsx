@@ -121,5 +121,3 @@ export function ArticleMetadataPanel({
     </div>
   );
 }
-
-export type { ArticleMetadataPanelLabels };

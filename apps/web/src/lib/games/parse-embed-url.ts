@@ -94,7 +94,7 @@ const LICHESS_EMBED_ID_RE = /^[A-Za-z0-9]{8}$/;
 
 const MAX_INPUT_LENGTH = 512;
 
-export type EmbedAttachment =
+type EmbedAttachment =
   | { provider: 'chesscom'; embedId: string }
   | { provider: 'lichess'; embedId: string };
 

@@ -8,6 +8,7 @@ import { GRANT_TYPE_DEFAULTS } from '@/lib/db/data/grant-types';
 import { createNotification, notifyFollowersOfNewPosition } from '@/lib/notifications/notification';
 import { validatePositionMutationData } from '@/lib/positions/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
+import { logActivityEvent } from '@/lib/users/activity-log';
 import { applyAutomatedGrant } from '@/lib/users/user-grants';
 
 export type CreatePositionResult =
@@ -104,6 +105,14 @@ export async function createPosition(data: {
     actorId: user.id,
     positionId: inserted.id,
     positionType: 'memory',
+  });
+
+  logActivityEvent({
+    userId: user.id,
+    action: 'create_position',
+    targetType: 'position',
+    targetId: inserted.id,
+    metadata: { type: 'memory' },
   });
 
   revalidatePath('/practice/position-memory');

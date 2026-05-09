@@ -18,12 +18,3 @@ export const FEN_STRINGS = [
   '2Q5/1B1k3p/3P2p1/4Pp2/5P2/1b6/5P1P/6K1 b - - 0 38',
   'r1bqk1nr/ppp1bppp/2n5/1P2P3/2Pp4/P4N2/3BPPPP/RN1QKB1R b KQkq - 0 8',
 ] as const;
-
-/**
- * Preset position type for trial mode
- */
-export type PresetPosition = {
-  id: string;
-  fen: string;
-  title: string;
-};

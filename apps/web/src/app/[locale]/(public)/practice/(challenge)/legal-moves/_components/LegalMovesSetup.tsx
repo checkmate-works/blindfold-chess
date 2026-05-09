@@ -8,7 +8,7 @@ import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { pieceDisplayMap } from '../_data/constants';
-import { PIECE_TYPE_TO_NAME } from '../_lib/utils';
+import { PIECE_TYPE_TO_NAME } from '../_lib/query-params';
 import { LegalMovesSettings } from './LegalMovesSettings';
 
 type Props = {
@@ -59,6 +59,8 @@ export function LegalMovesSetup({ locale, pieceSelection, onPieceSelect }: Props
         moduleSlug="legal-moves"
         settingsQuery={`piece=${pieceName}`}
         buttonClassName="w-full mt-6"
+        challengeTourId="legal-moves-challenge"
+        trainingTourId="legal-moves-training"
       />
     </div>
   );

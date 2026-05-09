@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -10,10 +10,9 @@ import { SectionTitle } from '@/app/[locale]/_components';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { TUTORIAL_SKIP_CONFIG } from '../../../_lib/tutorial-skip-config';
 import { PracticeSetupActions } from '../../_components/PracticeSetupActions';
-import { PIECE_TYPE_TO_NAME } from '../_lib/utils';
-import type { RoutePlannerPieceSelection } from '../_lib/utils';
+import type { RoutePlannerPieceSelection } from '../_lib/pieces';
+import { PIECE_TYPE_TO_NAME } from '../_lib/query-params';
 import { RoutePlannerSettings } from './RoutePlannerSettings';
 
 type Props = {
@@ -24,12 +23,6 @@ type Props = {
 
 export function RoutePlannerSetup({ locale, pieceSelection, onPieceSelect }: Props) {
   const t = useTranslations('practice.routePlanner');
-  const router = useRouter();
-
-  const handleViewTutorial = () => {
-    localStorage.removeItem(TUTORIAL_SKIP_CONFIG.routePlanner.storageKey);
-    router.push(`/${locale}/practice/route-planner/tutorial`);
-  };
 
   const pieceName = PIECE_TYPE_TO_NAME[pieceSelection] ?? 'knight';
   const settingsQuery = `piece=${pieceName}`;
@@ -47,10 +40,13 @@ export function RoutePlannerSetup({ locale, pieceSelection, onPieceSelect }: Pro
             <span className="text-lg font-bold">g3</span>
           </div>
         </div>
-        <div className="mb-6 text-center">
-          <button onClick={handleViewTutorial} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
+        <div className="mb-6 text-center" data-tour-id="route-planner-tutorial">
+          <Link
+            href={`/${locale}/practice/route-planner/tutorial`}
+            className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}
+          >
             {t('tutorial.viewTutorial')}
-          </button>
+          </Link>
         </div>
 
         <SectionTitle className="mb-4">{t('settings')}</SectionTitle>
@@ -63,6 +59,8 @@ export function RoutePlannerSetup({ locale, pieceSelection, onPieceSelect }: Pro
           settingsQuery={settingsQuery}
           trainingHref={`/${locale}/practice/route-planner/training?${settingsQuery}#route-planner-session`}
           buttonClassName="w-full mt-6"
+          challengeTourId="route-planner-challenge"
+          trainingTourId="route-planner-training"
         />
       </div>
     </div>

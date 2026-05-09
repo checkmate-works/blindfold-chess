@@ -55,16 +55,16 @@ export type PracticeModuleRegistryEntry = {
  */
 export const PRACTICE_MODULE_REGISTRY = [
   {
+    slugSnake: 'square_colors',
+    slugKebab: 'square-colors',
+    hasChallenge: true,
+  },
+  {
     slugSnake: 'coordinate_quiz',
     slugKebab: 'coordinate-quiz',
     hasChallenge: true,
   },
   { slugSnake: 'legal_moves', slugKebab: 'legal-moves', hasChallenge: true },
-  {
-    slugSnake: 'square_colors',
-    slugKebab: 'square-colors',
-    hasChallenge: true,
-  },
   {
     slugSnake: 'diagonal_quiz',
     slugKebab: 'diagonal-quiz',
@@ -119,9 +119,6 @@ export type ChallengeMenuType = Extract<
   PracticeModuleRegistryEntryLiteral,
   { hasChallenge: true }
 >['slugSnake'];
-
-/** Kebab-case URL slug — used in `/practice/<slug>/...` routes (when present) and in leaderboard URLs (for challenge modules). */
-export type PracticeModuleSlugKebab = PracticeModuleRegistryEntryLiteral['slugKebab'];
 
 /** Kebab-case slug for the modules that appear on the leaderboard (subset of ChallengeMenuType, same set, different casing). */
 export type LeaderboardModuleSlug = Extract<

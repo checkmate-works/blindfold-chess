@@ -1,10 +1,10 @@
 import dynamic from 'next/dynamic';
 
-import type { PieceType } from '@/app/[locale]/(public)/practice/(challenge)/legal-moves/_lib/types';
 import {
   PIECE_NAME_TO_TYPE,
   VALID_PIECE_NAMES,
-} from '@/app/[locale]/(public)/practice/(challenge)/legal-moves/_lib/utils';
+} from '@/app/[locale]/(public)/practice/(challenge)/legal-moves/_lib/query-params';
+import type { PieceType } from '@/app/[locale]/(public)/practice/(challenge)/legal-moves/_lib/types';
 import { createPracticeChallengeSessionPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeSessionPages';
 
 const LegalMovesSession = dynamic(() => import('../_components/LegalMovesSession'));
