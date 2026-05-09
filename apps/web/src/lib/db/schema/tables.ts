@@ -197,11 +197,24 @@ export type Announcement = typeof announcements.$inferSelect;
 export type NewAnnouncement = typeof announcements.$inferInsert;
 
 // Glossary tables
+/**
+ * @design is_theme — opt-in flag for theme tagging
+ * `is_theme` controls whether a term is selectable as a theme tag on
+ * positions (via `position_themes`). Default is `false`: many glossary
+ * entries (e.g. "Calculation", "Flank", "Algebraic notation") describe
+ * concepts or vocabulary that do not meaningfully tag specific positions
+ * and would be noise in a theme picker. Admins flip this flag on for the
+ * subset of terms that work as position tags (pin, passed pawn, battery,
+ * fianchetto, etc.). The DB-level RLS policy on `position_themes` also
+ * enforces `is_theme = true`, so the column is the canonical gate, not a
+ * UI-only convention.
+ */
 export const glossaryTerms = pgTable('glossary_terms', {
   id: uuid('id').primaryKey().defaultRandom(),
   slug: varchar('slug', { length: 255 }).unique().notNull(),
   termEn: varchar('term_en', { length: 255 }).notNull(),
   category: varchar('category', { length: 50 }).notNull(),
+  isTheme: boolean('is_theme').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true })
     .defaultNow()
@@ -2254,6 +2267,12 @@ export const positionChunks = pgTable(
     chunkId: uuid('chunk_id')
       .notNull()
       .references(() => chunks.id, { onDelete: 'restrict' }),
+    // references auth.users — FK defined in custom SQL (ON DELETE SET NULL).
+    // Records who attached the chunk to the position. NULL means the
+    // attachment was made by an admin batch / service role rather than an
+    // end user. Preserved across user hard-deletes (SET NULL) so the
+    // junction row itself isn't broken.
+    attachedByUserId: uuid('attached_by_user_id'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
@@ -2265,6 +2284,64 @@ export const positionChunks = pgTable(
 
 export type PositionChunk = typeof positionChunks.$inferSelect;
 export type NewPositionChunk = typeof positionChunks.$inferInsert;
+
+/**
+ * Position Themes — junction between positions and the glossary terms
+ * (themes) that describe them.
+ *
+ * @design master-vocabulary tag, mirror of position_chunks
+ * Where `position_chunks` attaches user-generated cognitive units (UGC)
+ * to a position, `position_themes` attaches curated vocabulary terms
+ * from `glossary_terms` (e.g. pin, passed pawn, battery, kingside
+ * attack). The two junctions share the same shape but live in different
+ * lifecycles: chunks are created by users; themes are seeded master data
+ * and tagged to positions through admin curation (initially) and
+ * eventually by position owners and other-user proposals.
+ *
+ * Two separate junctions (rather than a polymorphic `position_tags`
+ * table) keep referential integrity strict, simplify RLS, and let each
+ * side evolve its lifecycle (visibility, voting, proposals) without
+ * affecting the other.
+ *
+ * @design ON DELETE RESTRICT on term_id
+ * Glossary terms are seeded master data and are not normally deleted.
+ * The RESTRICT on `term_id` blocks accidental physical deletion of a
+ * term that still has positions tagged with it; intentional removal
+ * requires an explicit cleanup step (untag first, then delete).
+ *
+ * @design is_theme gate enforced in RLS
+ * Only `glossary_terms` rows with `is_theme = true` are valid theme
+ * tags. The application's theme picker filters on `is_theme = true`,
+ * and the `position_themes` INSERT RLS policy re-asserts the same
+ * predicate so the rule is enforced at the DB level rather than only in
+ * the UI.
+ *
+ * Junction tables have no `updated_at` by convention (see the
+ * file-level `@design updated_at update policy` note on `positions`).
+ */
+export const positionThemes = pgTable(
+  'position_themes',
+  {
+    positionId: uuid('position_id')
+      .notNull()
+      .references(() => positions.id, { onDelete: 'cascade' }),
+    termId: uuid('term_id')
+      .notNull()
+      .references(() => glossaryTerms.id, { onDelete: 'restrict' }),
+    // references auth.users — FK defined in custom SQL (ON DELETE SET NULL).
+    // NULL means the tag was attached by an admin batch / service role.
+    attachedByUserId: uuid('attached_by_user_id'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.positionId, table.termId] }),
+    // Reverse lookup index: "positions tagged with term X".
+    index('idx_position_themes_term').on(table.termId),
+  ]
+);
+
+export type PositionTheme = typeof positionThemes.$inferSelect;
+export type NewPositionTheme = typeof positionThemes.$inferInsert;
 
 /**
  * Puzzle Solutions — correct move sequences for puzzle-type positions.
