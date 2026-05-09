@@ -14,8 +14,8 @@ import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { RoutePlannerSettings } from '../../_components/RoutePlannerSettings';
-import { PIECE_NAME_TO_TYPE, PIECE_TYPE_TO_NAME } from '../../_lib/utils';
-import type { RoutePlannerPieceSelection } from '../../_lib/utils';
+import type { RoutePlannerPieceSelection } from '../../_lib/pieces';
+import { PIECE_NAME_TO_TYPE, PIECE_TYPE_TO_NAME } from '../../_lib/query-params';
 
 type Props = {
   locale: Locale;

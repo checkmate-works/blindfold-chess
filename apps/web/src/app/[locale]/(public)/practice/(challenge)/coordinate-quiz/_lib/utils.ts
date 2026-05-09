@@ -1,8 +1,1 @@
-export {
-  generateSingleQuestion,
-  checkAnswer,
-  squareToCoordinates,
-  coordinatesToSquare,
-  formatTime,
-  calculateScore,
-} from '@blindfold-chess/features/coordinate-quiz';
+export { checkAnswer, generateSingleQuestion } from '@blindfold-chess/features/coordinate-quiz';

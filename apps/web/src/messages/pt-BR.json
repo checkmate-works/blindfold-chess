@@ -312,12 +312,6 @@
       }
     }
   },
-  "Common": {
-    "sponsoredLink": "Link Patrocinado",
-    "testAd": "Anúncio de Teste",
-    "adLabel": "Publicidade",
-    "sponsor": "Patrocinador"
-  },
   "openingSearch": {
     "selectOpening": "Selecione uma abertura",
     "searchPlaceholder": "Buscar aberturas..."
@@ -480,7 +474,6 @@
     "articlesTitle": "Artigos",
     "relatedArticles": "Artigos Relacionados",
     "browseByCategory": "Explorar por Categoria",
-    "allCategories": "Todas",
     "articleCount": "{count, plural, one {# artigo} other {# artigos}}",
     "categories": {
       "piece-movement": "Movimento de Peças",
@@ -1516,7 +1509,6 @@
     },
     "yourRankings": {
       "title": "Seus Rankings",
-      "noRanks": "Você ainda não está em nenhum ranking. Experimente alguns módulos de prática!",
       "viewAll": "Ver todos os rankings"
     },
     "feed": {
@@ -1578,11 +1570,8 @@
     "noGames": "Não há partidas para excluir",
     "selectedCount": "{count, plural, one {# partida selecionada} other {# partidas selecionadas}}",
     "selectAll": "Selecionar Todas",
-    "unselectAll": "Desmarcar Todas",
     "delete": "Excluir",
     "cancel": "Cancelar",
-    "processing": "Processando...",
-    "errorDeleting": "Erro ao excluir. Por favor, tente novamente.",
     "confirmTitle": "Excluir Partidas Selecionadas?",
     "confirmMessage": "Tem certeza de que deseja excluir {count} partidas? Esta ação não pode ser desfeita.",
     "deletedToast": "{count, plural, one {# partida excluída com sucesso} other {# partidas excluídas com sucesso}}",
@@ -1686,11 +1675,8 @@
     "infoModalTitle": "Sobre a Revisão da Partida",
     "description": "Tente lembrar e reproduzir os movimentos da sua partida finalizada. Você também pode executar a avaliação do motor aqui.",
     "autoOpponentMoves": "Preencher automaticamente movimentos do adversário",
-    "autoOpponentMovesDescription": "Apenas insira seus próprios movimentos; os movimentos do adversário serão preenchidos automaticamente",
     "inputMove": "Insira um movimento",
     "selectMove": "Selecione um movimento",
-    "switchToSelect": "Mudar para seleção por lista",
-    "switchToText": "Mudar para entrada de texto",
     "switchInputMode": "Mudar modo de entrada",
     "dontKnow": "Não sei",
     "autoFillAll": "Preencher Tudo Automaticamente",
@@ -1698,16 +1684,11 @@
     "confirmAutoFillAllMessage": "Isso preencherá automaticamente todos os movimentos restantes.",
     "correctMove": "Correto!",
     "incorrectMove": "Movimento incorreto. Tente novamente.",
-    "logIncorrect": "está incorreto",
     "moveNumber": "Movimento {number}",
-    "yourTurn": "Seu turno",
-    "opponentTurn": "Turno do adversário",
     "completed": "Revisão da Partida Concluída!",
     "completedMessage": "Você reproduziu corretamente todos os movimentos da partida!",
-    "backToGame": "Voltar à Partida",
     "progress": "Progresso: {current} / {total} movimentos",
     "showBoard": "Mostrar Tabuleiro",
-    "hideBoard": "Ocultar Tabuleiro",
     "moves": "Movimentos",
     "noMovesYet": "Ainda não há movimentos",
     "copyPgn": "Copiar PGN",
@@ -1716,7 +1697,6 @@
     "analyzeOnLichess": "Analisar no Lichess",
     "moveLog": "Registro de Movimentos",
     "backToCurrentPosition": "Voltar à posição atual",
-    "configureBoardAppearance": "Configurar aparência do tabuleiro",
     "cancel": "Cancelar",
     "save": "Salvar",
     "guidanceStep1": "Insira cada movimento de memória",
@@ -1942,7 +1922,6 @@
   },
   "company": {
     "title": "Informações da Empresa",
-    "companyInfo": "Informações do Operador",
     "companyName": "Nome da Empresa",
     "companyNameValue": "Fuji Enterprise",
     "location": "Localização",
@@ -1961,18 +1940,14 @@
     "description": "Se você tiver alguma pergunta ou comentário, não hesite em nos contatar.",
     "form": {
       "name": "Nome",
-      "namePlaceholder": "João Silva",
       "nameRequired": "Por favor, insira seu nome",
       "email": "E-mail",
       "emailPlaceholder": "exemplo@email.com",
       "emailRequired": "Por favor, insira seu e-mail",
       "emailInvalid": "Por favor, insira um e-mail válido",
       "subject": "Assunto",
-      "subjectPlaceholder": "Assunto da sua consulta",
       "subjectRequired": "Por favor, insira um assunto",
       "message": "Mensagem",
-      "messagePlaceholder": "Descreva sua consulta em detalhes",
-      "messageRequired": "Por favor, insira sua mensagem",
       "messageMinLength": "A mensagem deve ter pelo menos 10 caracteres",
       "submit": "Ir para Confirmação",
       "submitting": "Enviando...",
@@ -2026,9 +2001,7 @@
       "title": "Painel",
       "comingSoon": "Em breve...",
       "vsAi": "🤖 VS IA",
-      "myGames": "Minhas Partidas",
       "newGame": "Nova Partida",
-      "gameCount": "{count, plural, =0 {Sem partidas ainda} one {# partida} other {# partidas}}",
       "challenge": "🏆 Desafio",
       "squareColors": "Cor das Casas",
       "coordinateQuiz": "Quiz de Coordenadas",
@@ -2037,8 +2010,6 @@
       "boardSymmetry": "Simetria do Tabuleiro",
       "viewLeaderboard": "Ver Ranking →",
       "topics": "💬 Tópicos",
-      "topicSquares": "Casas",
-      "topicOpenings": "Aberturas",
       "welcomeGreeting": "Olá, {name}!",
       "welcomeDefaultName": "Jogador",
       "viewMypage": "Minha Página",
@@ -2164,7 +2135,6 @@
     "pageTitle": "Artigos",
     "noArticles": "Ainda não há artigos.",
     "articlesListTitle": "Todos os Artigos",
-    "moreArticles": "Mais artigos",
     "articleNotFound": "Artigo Não Encontrado",
     "notTranslatedNotice": "Este artigo ainda não foi traduzido para o seu idioma. Você está vendo a versão original."
   },
@@ -2273,15 +2243,12 @@
   },
   "Mypage": {
     "title": "Minha Página",
-    "challengeLink": "Histórico de Desafios",
     "dashboard": {
       "viewProfile": "Perfil público",
       "challengeTitle": "Histórico de Desafios",
       "likesTitle": "Publicações Curtidas",
       "postsTitle": "Minhas Publicações",
       "editProfile": "Editar",
-      "interviewTitle": "Entrevista",
-      "beltSystem": "Sistema de Faixas",
       "myRecords": "Meus Registros",
       "socialTitle": "Social",
       "interviewBanner": "Responda perguntas de entrevista e conte-nos sobre você",
@@ -2299,7 +2266,6 @@
       "subscriptionTitle": "Assinatura",
       "benefitsTitle": "Benefícios",
       "practiceTitle": "Prática",
-      "myProblems": "Meus Problemas",
       "myPositionMemory": "Memória de Posição",
       "myPuzzles": "Puzzles"
     },
@@ -2618,8 +2584,6 @@
     "dashboard": "Painel",
     "users": "Usuários",
     "auditLog": "Registro de Auditoria",
-    "totalUsers": "Total de Usuários",
-    "roleAssignments": "Atribuições de Funções",
     "dashboardKpi": {
       "from": "De",
       "to": "Até",
@@ -2754,8 +2718,6 @@
       "title": "Publicações de {username}",
       "email": "E-mail",
       "username": "Nome de usuário",
-      "backToUsers": "Voltar a Usuários",
-      "topic": "Tópico",
       "content": "Conteúdo",
       "createdAt": "Data de Criação",
       "status": "Status",
@@ -2771,8 +2733,6 @@
       "deleteModalConfirm": "Confirmar Exclusão",
       "deleteModalDeleting": "Excluindo...",
       "deleteModalReasonRequired": "O motivo é obrigatório",
-      "previousPage": "Anterior",
-      "nextPage": "Próximo",
       "userNotFound": "Usuário não encontrado"
     },
     "auditLogTable": {
@@ -2785,9 +2745,7 @@
       "noLogsFound": "Nenhum registro de auditoria encontrado",
       "filterByAction": "Filtrar por ação",
       "filterByUser": "Filtrar por usuário",
-      "allActions": "Todas as Ações",
-      "previousPage": "Anterior",
-      "nextPage": "Próximo"
+      "allActions": "Todas as Ações"
     },
     "activityLog": "Registro de Atividade",
     "activityLogTable": {
@@ -2799,9 +2757,7 @@
       "noLogsFound": "Nenhum registro de atividade encontrado",
       "filterByAction": "Filtrar por ação",
       "filterByUser": "Filtrar por usuário",
-      "allActions": "Todas as Ações",
-      "previousPage": "Anterior",
-      "nextPage": "Próximo"
+      "allActions": "Todas as Ações"
     },
     "positionMemory": "Memória de Posições",
     "puzzle": "Puzzle",
@@ -2831,9 +2787,7 @@
       "deleteModalCancel": "Cancelar",
       "deleteModalConfirm": "Confirmar Exclusão",
       "deleteModalDeleting": "Excluindo...",
-      "deleteModalReasonRequired": "O motivo é obrigatório",
-      "previousPage": "Anterior",
-      "nextPage": "Próximo"
+      "deleteModalReasonRequired": "O motivo é obrigatório"
     },
     "announcements": "Anúncios",
     "announcementsTable": {
@@ -3079,7 +3033,6 @@
     "defaultDescription": "Perfil de {displayName} no Xadrez às Cegas",
     "chessAccounts": "Contas de Xadrez",
     "bio": "Sobre",
-    "emptyProfile": "Este usuário ainda não adicionou informações ao seu perfil.",
     "followers": "Seguidores",
     "followingCount": "Seguindo",
     "follow": "Seguir",
@@ -3843,8 +3796,7 @@
       "exp": "Exp",
       "level": "Nível"
     },
-    "emptyState": "Ainda não há registros de Exp. Comece a praticar para ganhar Exp!",
-    "backToScoreLeaderboard": "Voltar para Ranking de Pontuação"
+    "emptyState": "Ainda não há registros de Exp. Comece a praticar para ganhar Exp!"
   },
   "validation": {
     "password": {
@@ -3928,11 +3880,8 @@
         "3kyu": "Capacidade de planejar rotas de manobra de peças para todas as peças sem auxílios visuais."
       },
       "tips": "Dicas",
-      "guide": "Guia",
       "tryChallenge": "Experimentar o Desafio",
       "showMore": "Mostrar mais",
-      "prevPage": "Anterior",
-      "nextPage": "Próximo",
       "pageOf": "Página {current} de {total}",
       "mukyuRequirements": ["Compreensão da notação algébrica"],
       "mukyuRelatedLinks": {
@@ -4297,8 +4246,7 @@
       "anonymizeHint": "Substitui os cabeçalhos White / Black por «Player 1» e «Player 2» antes de salvar."
     },
     "preview": {
-      "loading": "Gerando pré-visualização…",
-      "openInLichess": "Abrir no Lichess"
+      "loading": "Gerando pré-visualização…"
     },
     "card": {
       "replayButton": "Abrir replay",

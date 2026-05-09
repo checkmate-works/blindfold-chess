@@ -1,7 +1,5 @@
 export const VALID_REPLY_PERMISSIONS = ['everyone', 'followers', 'nobody'] as const;
 
-export type ReplyPermission = (typeof VALID_REPLY_PERMISSIONS)[number];
-
 /**
  * Topic types supported by `topic_posts.topicType`. The polymorphic
  * discriminator keys discussion threads to their underlying catalog row:
@@ -24,12 +22,4 @@ export type ReplyPermission = (typeof VALID_REPLY_PERMISSIONS)[number];
  * a JOIN — keeping URL/route mapping (see `deletePost`) and per-type UI
  * branching (e.g. spoiler toggle) trivially `switch`-able.
  */
-export const TOPIC_TYPES = [
-  'square',
-  'opening',
-  'chunk',
-  'position_memory',
-  'position_puzzle',
-] as const;
-
-export type TopicType = (typeof TOPIC_TYPES)[number];
+export type TopicType = 'square' | 'opening' | 'chunk' | 'position_memory' | 'position_puzzle';

@@ -7,7 +7,7 @@ import { FaArrowRight, FaChevronDown, FaChevronRight } from 'react-icons/fa';
 
 import type { BoardTheme } from '@/lib/games/board-themes';
 
-import type { PieceType } from '../_lib/utils';
+import type { PieceType } from '../_lib/pieces';
 import { RoutePlannerProblemFeedback } from './RoutePlannerProblemFeedback';
 
 export type RoutePlannerResult = {

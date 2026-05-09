@@ -9,7 +9,7 @@
  */
 import type { RankSlug } from './ranks';
 
-export type CurriculumSection = {
+type CurriculumSection = {
   /** i18n key under `dojo.curriculum.sections` */
   titleKey: string;
   // NOTE: Future work may add sub-pages beneath a section (e.g., separate

@@ -7,7 +7,7 @@
  * 2. `getPaginationParams` — for DB-level pagination (returns limit/offset for a query).
  */
 
-export { type PaginatedResult, paginateItems } from '@blindfold-chess/features/utils';
+export { paginateItems } from '@blindfold-chess/features/utils';
 
 /** Default page size for paginated queries. */
 export const DEFAULT_PAGE_SIZE = 20;

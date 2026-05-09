@@ -21,18 +21,12 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
-import { and, count, eq, isNull } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { getAchievementCategoryNames } from '@/lib/achievements/display';
-import { db, profiles, userFollows } from '@/lib/db';
-import { getUserAchievements } from '@/lib/db/achievement-queries';
-import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
-import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
-import { countPositions, listPositions } from '@/lib/positions/queries';
+import { EMPTY_REPLY_META } from '@/lib/db/reply-meta-queries';
 import { createClient } from '@/lib/supabase/server';
 
-import { getPostsByUserId } from '@/app/[locale]/(public)/topics/_lib/user-post-queries';
 import { LinkedText, PageLayout } from '@/app/[locale]/_components';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -44,6 +38,7 @@ import { ProfileHeader } from './_components/ProfileHeader';
 import { ProfilePosts } from './_components/ProfilePosts';
 import { ProfileProblems } from './_components/ProfileProblems';
 import { SocialLinks } from './_components/SocialLinks';
+import { loadPublicProfilePageData } from './_lib/load-page-data';
 import { getProfileByUsername } from './_lib/queries';
 
 export const dynamic = 'force-dynamic';
@@ -84,131 +79,54 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function PublicProfilePage({ params, searchParams }: Props) {
   const { locale, username } = await params;
 
-  const profile = await getProfileByUsername(username);
+  const supabase = await createClient();
+  const [profile, parsedParams, authResult] = await Promise.all([
+    getProfileByUsername(username),
+    searchParamsCache.parse(searchParams),
+    supabase.auth.getUser(),
+  ]);
 
   if (!profile) {
     notFound();
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const user = authResult.data.user;
   const isOwnProfile = user?.id === profile.id;
 
-  // Build all independent follow queries and run them in parallel
-  const followCheckPromise =
-    user && !isOwnProfile
-      ? db
-          .select({ id: userFollows.id })
-          .from(userFollows)
-          .where(and(eq(userFollows.followerId, user.id), eq(userFollows.followingId, profile.id)))
-          .limit(1)
-      : Promise.resolve([]);
-
-  const reverseFollowCheckPromise =
-    user && !isOwnProfile
-      ? db
-          .select({ id: userFollows.id })
-          .from(userFollows)
-          .where(and(eq(userFollows.followerId, profile.id), eq(userFollows.followingId, user.id)))
-          .limit(1)
-      : Promise.resolve([]);
-
-  const followerCountPromise = db
-    .select({ count: count() })
-    .from(userFollows)
-    .innerJoin(profiles, eq(userFollows.followerId, profiles.id))
-    .where(and(eq(userFollows.followingId, profile.id), isNull(profiles.deletedAt)));
-
-  const followingCountPromise = isOwnProfile
-    ? db
-        .select({ count: count() })
-        .from(userFollows)
-        .innerJoin(profiles, eq(userFollows.followingId, profiles.id))
-        .where(and(eq(userFollows.followerId, profile.id), isNull(profiles.deletedAt)))
-    : Promise.resolve([{ count: 0 }]);
-
-  const [
-    existingFollowRows,
-    reverseFollowRows,
-    [followerResult],
-    [followingResult],
-    t,
-    tTopics,
-    tSquares,
-    tOpenings,
-    tPuzzle,
-    tMemory,
-    allPosts,
-    userAchievementRows,
-  ] = await Promise.all([
-    followCheckPromise,
-    reverseFollowCheckPromise,
-    followerCountPromise,
-    followingCountPromise,
+  const [pageData, t, tTopics, tSquares, tOpenings, tPuzzle, tMemory] = await Promise.all([
+    loadPublicProfilePageData({
+      profileId: profile.id,
+      currentUserId: user?.id,
+      isOwnProfile,
+      parsedParams,
+      pageSize: PAGE_SIZE,
+    }),
     getTranslations({ locale, namespace: 'publicProfile' }),
     getTranslations({ locale, namespace: 'topics' }),
     getTranslations({ locale, namespace: 'topics.squares' }),
     getTranslations({ locale, namespace: 'topics.openings' }),
     getTranslations({ locale, namespace: 'practice.puzzle' }),
     getTranslations({ locale, namespace: 'practice.positionMemory' }),
-    getPostsByUserId(profile.id, user?.id),
-    getUserAchievements(profile.id),
   ]);
 
-  const initialFollowing = !!existingFollowRows[0];
-  const followedByProfile = !!reverseFollowRows[0];
-  const followerCount = followerResult.count;
-  const followingCount = followingResult.count;
-
-  const { page, tab } = await searchParamsCache.parse(searchParams);
-  const activeTab = tab === 'problems' ? 'problems' : 'topics';
-
-  const topicsCount = allPosts.length;
-
-  // Problems tab data
-  const problemsCount = await countPositions({ userId: profile.id });
-
-  // Topics pagination
-  const topicsTotalPages = Math.ceil(topicsCount / PAGE_SIZE);
-  const topicsCurrentPage =
-    activeTab === 'topics' ? Math.max(1, Math.min(page, topicsTotalPages || 1)) : 1;
-  const posts = allPosts.slice((topicsCurrentPage - 1) * PAGE_SIZE, topicsCurrentPage * PAGE_SIZE);
-
-  // Problems pagination
-  const problemsTotalPages = Math.ceil(problemsCount / PAGE_SIZE);
-  const problemsCurrentPage =
-    activeTab === 'problems' ? Math.max(1, Math.min(page, problemsTotalPages || 1)) : 1;
-  const problemPositions =
-    activeTab === 'problems'
-      ? await listPositions({
-          userId: profile.id,
-          limit: PAGE_SIZE,
-          offset: (problemsCurrentPage - 1) * PAGE_SIZE,
-        })
-      : [];
-
-  // Reply meta is keyed by `(topicType, topicKey)`. Position IDs are unique
-  // across types, so we can fetch puzzle + memory reply meta in parallel and
-  // merge into a single Map<positionId, ReplyMeta> for ProfileProblems.
-  const puzzleIds = problemPositions.filter((p) => p.type === 'puzzle').map((p) => p.id);
-  const memoryIds = problemPositions.filter((p) => p.type === 'memory').map((p) => p.id);
-
-  const [problemLikeMetaMap, puzzleReplyMetaMap, memoryReplyMetaMap] =
-    activeTab === 'problems'
-      ? await Promise.all([
-          getPositionLikeMetaMap(
-            problemPositions.map((p) => p.id),
-            user?.id
-          ),
-          getReplyMetaMap('position_puzzle', puzzleIds),
-          getReplyMetaMap('position_memory', memoryIds),
-        ])
-      : [new Map(), new Map(), new Map()];
-
-  const problemReplyMetaMap = new Map([...puzzleReplyMetaMap, ...memoryReplyMetaMap]);
+  const {
+    activeTab,
+    initialFollowing,
+    followedByProfile,
+    followerCount,
+    followingCount,
+    posts,
+    topicsCount,
+    topicsCurrentPage,
+    topicsTotalPages,
+    problemPositions,
+    problemsCount,
+    problemsCurrentPage,
+    problemsTotalPages,
+    problemLikeMetaMap,
+    problemReplyMetaMap,
+    userAchievementRows,
+  } = pageData;
 
   const buildHref = (p: number) => {
     const params = new URLSearchParams();

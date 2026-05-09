@@ -14,8 +14,8 @@ import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hoo
 import { TrainingChallengeCTA } from '../../_components/TrainingChallengeCTA';
 import { useRoutePlannerGame } from '../_hooks/use-route-planner-game';
 import { useStagedCoordinate } from '../_hooks/use-staged-coordinate';
-import { PIECES } from '../_lib/utils';
-import type { PieceType } from '../_lib/utils';
+import { PIECES } from '../_lib/pieces';
+import type { PieceType } from '../_lib/pieces';
 import { RoutePlannerResultView } from './RoutePlannerResultView';
 
 type Props = {

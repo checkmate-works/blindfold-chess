@@ -9,7 +9,7 @@ import { MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
 import { QuizTimer } from '@/app/[locale]/(public)/practice/_components/QuizTimer';
 
-import type { PieceType } from '../../../_lib/utils';
+import type { PieceType } from '../../../_lib/pieces';
 
 type Props = {
   incorrectCount: number;

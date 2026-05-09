@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
 
-import { PIECES, PIECE_NAME_TO_TYPE, PIECE_TYPE_TO_NAME } from './utils';
-import type { RoutePlannerPieceSelection } from './utils';
+import { PIECES } from './pieces';
+import type { RoutePlannerPieceSelection } from './pieces';
+import { PIECE_NAME_TO_TYPE, PIECE_TYPE_TO_NAME } from './query-params';
 
-describe('route-planner _lib/utils', () => {
+describe('route-planner _lib pieces and query-params', () => {
   describe('PIECES', () => {
     it('contains only knight and bishop', () => {
       expect(PIECES).toEqual(['n', 'b']);

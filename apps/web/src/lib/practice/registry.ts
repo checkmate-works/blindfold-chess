@@ -120,9 +120,6 @@ export type ChallengeMenuType = Extract<
   { hasChallenge: true }
 >['slugSnake'];
 
-/** Kebab-case URL slug — used in `/practice/<slug>/...` routes (when present) and in leaderboard URLs (for challenge modules). */
-export type PracticeModuleSlugKebab = PracticeModuleRegistryEntryLiteral['slugKebab'];
-
 /** Kebab-case slug for the modules that appear on the leaderboard (subset of ChallengeMenuType, same set, different casing). */
 export type LeaderboardModuleSlug = Extract<
   PracticeModuleRegistryEntryLiteral,

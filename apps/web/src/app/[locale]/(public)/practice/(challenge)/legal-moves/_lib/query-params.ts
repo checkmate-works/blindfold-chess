@@ -30,5 +30,3 @@ export const VALID_PIECE_NAMES = [
   'knight',
   'random',
 ] as const satisfies readonly PieceFullName[];
-
-export type ValidPieceName = (typeof VALID_PIECE_NAMES)[number];

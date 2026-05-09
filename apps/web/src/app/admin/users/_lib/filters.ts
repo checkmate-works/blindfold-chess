@@ -14,6 +14,18 @@ export type AdminUserFilters = {
 };
 
 /**
+ * The "no filter applied" baseline. Useful as the default in tests and
+ * anywhere a single filter override needs to be expressed (`{ ...EMPTY_ADMIN_USER_FILTERS, statusFilter: 'banned' }`).
+ */
+export const EMPTY_ADMIN_USER_FILTERS: AdminUserFilters = {
+  statusFilter: '',
+  countryFilter: '',
+  rankFilter: '',
+  providerFilter: '',
+  usernameFilter: '',
+};
+
+/**
  * Build the `/admin/users?...` URL for a given filter set and page number.
  * Empty filter values are omitted from the resulting query string so the
  * URL stays clean.

@@ -15,7 +15,7 @@ import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { LegalMovesSettings } from '../../_components/LegalMovesSettings';
-import { PIECE_NAME_TO_TYPE, PIECE_TYPE_TO_NAME } from '../../_lib/utils';
+import { PIECE_NAME_TO_TYPE, PIECE_TYPE_TO_NAME } from '../../_lib/query-params';
 
 type Props = {
   locale: Locale;

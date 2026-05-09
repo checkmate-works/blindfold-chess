@@ -1,4 +1,4 @@
-export type ProgressBarSegment = {
+type ProgressBarSegment = {
   key: string;
   value: number;
   color: string; // Tailwind class like 'bg-success'

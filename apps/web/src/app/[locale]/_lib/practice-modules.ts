@@ -52,7 +52,6 @@
  *    - `TimeDisplay`           — Formatted time remaining/elapsed display
  *    - `ProgressBar`           — Simple progress bar for problem-count-based sessions
  *    - `SegmentedControl`      — Button group selector for training/challenge mode selection
- *    - `ProblemCountSlider`    — Slider for selecting number of problems in setup
  *    - `TimeSlider`            — Slider for selecting time limit in setup
  *    - `AnswerFeedback`        — Correct/incorrect flash feedback overlay
  *    - `BoardOrientationSelector` — White/Black perspective toggle

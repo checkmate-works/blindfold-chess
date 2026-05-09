@@ -312,12 +312,6 @@
       }
     }
   },
-  "Common": {
-    "sponsoredLink": "Sponsored Link",
-    "testAd": "Test Ad",
-    "adLabel": "Ad",
-    "sponsor": "Sponsor"
-  },
   "openingSearch": {
     "selectOpening": "Select an opening",
     "searchPlaceholder": "Search openings..."
@@ -480,7 +474,6 @@
     "articlesTitle": "Articles",
     "relatedArticles": "Related Articles",
     "browseByCategory": "Browse by Category",
-    "allCategories": "All",
     "articleCount": "{count, plural, one {# article} other {# articles}}",
     "categories": {
       "piece-movement": "Piece Movement",
@@ -1516,7 +1509,6 @@
     },
     "yourRankings": {
       "title": "Your Rankings",
-      "noRanks": "You haven't ranked in any leaderboard yet. Try some practice modules!",
       "viewAll": "View all leaderboards"
     },
     "feed": {
@@ -1578,11 +1570,8 @@
     "noGames": "No games to delete",
     "selectedCount": "{count, plural, one {# game selected} other {# games selected}}",
     "selectAll": "Select All",
-    "unselectAll": "Unselect All",
     "delete": "Delete",
     "cancel": "Cancel",
-    "processing": "Processing...",
-    "errorDeleting": "Failed to delete. Please try again.",
     "confirmTitle": "Delete Selected Games?",
     "confirmMessage": "Are you sure you want to delete {count} games? This action cannot be undone.",
     "deletedToast": "{count, plural, one {# game deleted successfully} other {# games deleted successfully}}",
@@ -1686,11 +1675,8 @@
     "infoModalTitle": "About Game Review",
     "description": "Try to recall and replay the moves from your finished game. You can also run engine evaluation here.",
     "autoOpponentMoves": "Auto-fill opponent's moves",
-    "autoOpponentMovesDescription": "Only enter your own moves; opponent's moves will be filled automatically",
     "inputMove": "Enter move",
     "selectMove": "Select a move",
-    "switchToSelect": "Switch to list selection",
-    "switchToText": "Switch to text input",
     "switchInputMode": "Switch input mode",
     "dontKnow": "I don't know",
     "autoFillAll": "Auto-fill All",
@@ -1698,16 +1684,11 @@
     "confirmAutoFillAllMessage": "This will auto-fill all remaining moves.",
     "correctMove": "Correct!",
     "incorrectMove": "Incorrect move. Try again.",
-    "logIncorrect": "is incorrect",
     "moveNumber": "Move {number}",
-    "yourTurn": "Your turn",
-    "opponentTurn": "Opponent's turn",
     "completed": "Game Review Completed!",
     "completedMessage": "You successfully replayed all moves from the game!",
-    "backToGame": "Back to Game",
     "progress": "Progress: {current} / {total} moves",
     "showBoard": "Show Board",
-    "hideBoard": "Hide Board",
     "moves": "Moves",
     "noMovesYet": "Moves will appear here as you enter them",
     "copyPgn": "Copy PGN",
@@ -1716,7 +1697,6 @@
     "analyzeOnLichess": "Analyze on Lichess",
     "moveLog": "Move Log",
     "backToCurrentPosition": "Back to current position",
-    "configureBoardAppearance": "Configure board appearance",
     "cancel": "Cancel",
     "save": "Save",
     "guidanceStep1": "Enter each move from memory",
@@ -1942,7 +1922,6 @@
   },
   "company": {
     "title": "Company Information",
-    "companyInfo": "Operator Information",
     "companyName": "Company Name",
     "companyNameValue": "Fuji Enterprise",
     "location": "Location",
@@ -1961,18 +1940,14 @@
     "description": "If you have any questions or feedback, please feel free to contact us.",
     "form": {
       "name": "Name",
-      "namePlaceholder": "John Doe",
       "nameRequired": "Please enter your name",
       "email": "Email Address",
       "emailPlaceholder": "example@email.com",
       "emailRequired": "Please enter your email address",
       "emailInvalid": "Please enter a valid email address",
       "subject": "Subject",
-      "subjectPlaceholder": "Subject of your inquiry",
       "subjectRequired": "Please enter a subject",
       "message": "Message",
-      "messagePlaceholder": "Please describe your inquiry in detail",
-      "messageRequired": "Please enter your message",
       "messageMinLength": "Message must be at least 10 characters",
       "submit": "Proceed to Confirmation",
       "submitting": "Submitting...",
@@ -2026,9 +2001,7 @@
       "title": "Dashboard",
       "comingSoon": "Coming soon...",
       "vsAi": "🤖 VS AI",
-      "myGames": "My Games",
       "newGame": "New Game",
-      "gameCount": "{count, plural, =0 {No games yet} one {# game} other {# games}}",
       "challenge": "🏆 Challenge",
       "squareColors": "Square Colors",
       "coordinateQuiz": "Coordinate Quiz",
@@ -2037,8 +2010,6 @@
       "boardSymmetry": "Board Symmetry",
       "viewLeaderboard": "View Leaderboard →",
       "topics": "💬 Topics",
-      "topicSquares": "Squares",
-      "topicOpenings": "Openings",
       "welcomeGreeting": "Hello, {name}!",
       "welcomeDefaultName": "Player",
       "viewMypage": "My Page",
@@ -2164,7 +2135,6 @@
     "pageTitle": "Articles",
     "noArticles": "No articles yet.",
     "articlesListTitle": "All Articles",
-    "moreArticles": "More articles",
     "articleNotFound": "Article Not Found",
     "notTranslatedNotice": "This article has not been translated into your language yet. You are viewing the original version."
   },
@@ -2273,15 +2243,12 @@
   },
   "Mypage": {
     "title": "My Page",
-    "challengeLink": "Challenge Records",
     "dashboard": {
       "viewProfile": "Public profile",
       "challengeTitle": "Challenge Records",
       "likesTitle": "Liked Posts",
       "postsTitle": "My Posts",
       "editProfile": "Edit",
-      "interviewTitle": "Interview",
-      "beltSystem": "Belt System",
       "myRecords": "My Records",
       "socialTitle": "Social",
       "interviewBanner": "Answer interview questions and tell us about yourself",
@@ -2299,7 +2266,6 @@
       "subscriptionTitle": "Subscription",
       "benefitsTitle": "Benefits",
       "practiceTitle": "Practice",
-      "myProblems": "My Problems",
       "myPositionMemory": "Position Memory",
       "myPuzzles": "Puzzles"
     },
@@ -2617,8 +2583,6 @@
     "dashboard": "Dashboard",
     "users": "Users",
     "auditLog": "Audit Log",
-    "totalUsers": "Total Users",
-    "roleAssignments": "Role Assignments",
     "dashboardKpi": {
       "from": "From",
       "to": "To",
@@ -2753,8 +2717,6 @@
       "title": "Posts by {username}",
       "email": "Email",
       "username": "Username",
-      "backToUsers": "Back to Users",
-      "topic": "Topic",
       "content": "Content",
       "createdAt": "Created At",
       "status": "Status",
@@ -2770,8 +2732,6 @@
       "deleteModalConfirm": "Confirm Delete",
       "deleteModalDeleting": "Deleting...",
       "deleteModalReasonRequired": "Reason is required",
-      "previousPage": "Previous",
-      "nextPage": "Next",
       "userNotFound": "User not found"
     },
     "auditLogTable": {
@@ -2784,9 +2744,7 @@
       "noLogsFound": "No audit logs found",
       "filterByAction": "Filter by action",
       "filterByUser": "Filter by user",
-      "allActions": "All Actions",
-      "previousPage": "Previous",
-      "nextPage": "Next"
+      "allActions": "All Actions"
     },
     "activityLog": "Activity Log",
     "activityLogTable": {
@@ -2798,9 +2756,7 @@
       "noLogsFound": "No activity logs found",
       "filterByAction": "Filter by action",
       "filterByUser": "Filter by user",
-      "allActions": "All Actions",
-      "previousPage": "Previous",
-      "nextPage": "Next"
+      "allActions": "All Actions"
     },
     "positionMemory": "Position Memory",
     "chunks": "Chunks",
@@ -2831,9 +2787,7 @@
       "deleteModalCancel": "Cancel",
       "deleteModalConfirm": "Confirm Delete",
       "deleteModalDeleting": "Deleting...",
-      "deleteModalReasonRequired": "Reason is required",
-      "previousPage": "Previous",
-      "nextPage": "Next"
+      "deleteModalReasonRequired": "Reason is required"
     },
     "announcements": "Announcements",
     "announcementsTable": {
@@ -3079,7 +3033,6 @@
     "defaultDescription": "{displayName}'s profile on Blindfold Chess",
     "chessAccounts": "Chess Accounts",
     "bio": "About",
-    "emptyProfile": "This user hasn't added any profile information yet.",
     "followers": "Followers",
     "followingCount": "Following",
     "follow": "Follow",
@@ -3843,8 +3796,7 @@
       "exp": "Exp",
       "level": "Level"
     },
-    "emptyState": "No Exp records yet. Start practicing to earn Exp!",
-    "backToScoreLeaderboard": "Back to Score Leaderboard"
+    "emptyState": "No Exp records yet. Start practicing to earn Exp!"
   },
   "validation": {
     "password": {
@@ -3928,11 +3880,8 @@
         "3kyu": "Ability to plan piece maneuvering routes for all pieces without visual aids."
       },
       "tips": "Tips",
-      "guide": "Guide",
       "tryChallenge": "Try the Challenge",
       "showMore": "Show more",
-      "prevPage": "Previous",
-      "nextPage": "Next",
       "pageOf": "Page {current} of {total}",
       "mukyuRequirements": ["Understanding of algebraic notation"],
       "mukyuRelatedLinks": {
@@ -4297,8 +4246,7 @@
       "anonymizeHint": "Replaces White / Black headers with \"Player 1\" and \"Player 2\" before saving."
     },
     "preview": {
-      "loading": "Generating preview…",
-      "openInLichess": "Open in Lichess"
+      "loading": "Generating preview…"
     },
     "card": {
       "replayButton": "Open replay",

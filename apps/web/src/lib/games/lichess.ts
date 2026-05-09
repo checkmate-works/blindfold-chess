@@ -193,10 +193,3 @@ export async function fetchLichessGamePgn(
     clearTimeout(timeout);
   }
 }
-
-/** Test-only: expose the module throttle for inspection. */
-export const __testOnly = {
-  defaultThrottle,
-  LICHESS_GAME_ID_RE,
-  LICHESS_MAX_RESPONSE_BYTES,
-};

@@ -1,22 +1,10 @@
 import { and, count, desc, eq, inArray, isNull } from 'drizzle-orm';
 
 import { chessOpenings, db, likes, profiles, topicPostRatings, topicPosts } from '@/lib/db';
-import { getLikeMeta } from '@/lib/db/like-queries';
 
 import { attachProfilePostMeta } from './post-meta';
 import { authorSelect, ratingSelect } from './shared';
-import type { LikeMeta, ProfilePostWithReplyMeta } from './shared';
-
-/**
- * Get like metadata for a single post.
- * Topic-generic: works on any postId regardless of topicType.
- *
- * Thin wrapper around the generic {@link getLikeMeta} helper that fixes
- * `targetType` to `'topic_post'`.
- */
-export function getLikeMetaForPost(postId: string, currentUserId?: string): Promise<LikeMeta> {
-  return getLikeMeta('topic_post', postId, currentUserId);
-}
+import type { ProfilePostWithReplyMeta } from './shared';
 
 /**
  * Get the count of posts liked by a specific user (across all topic types).

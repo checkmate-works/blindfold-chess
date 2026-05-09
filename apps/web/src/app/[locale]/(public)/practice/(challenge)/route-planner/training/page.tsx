@@ -13,8 +13,8 @@ import dynamic from 'next/dynamic';
 
 import { createPracticeTrainingPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeSessionPages';
 
-import { PIECE_NAME_TO_TYPE, VALID_PIECE_NAMES } from '../_lib/utils';
-import type { PieceType } from '../_lib/utils';
+import type { PieceType } from '../_lib/pieces';
+import { PIECE_NAME_TO_TYPE, VALID_PIECE_NAMES } from '../_lib/query-params';
 
 const RoutePlannerSession = dynamic(() =>
   import('../_components/RoutePlannerSession').then((mod) => mod.RoutePlannerSession)

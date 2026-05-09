@@ -22,9 +22,7 @@ import { BoardLayout } from './BoardLayout';
  * avoiding unnecessary re-renders on hot paths (play, move navigation,
  * feed/thumbnail lists). Frozen to prevent accidental mutation.
  */
-export const EMPTY_HIGHLIGHTED_SQUARES: string[] = Object.freeze(
-  [] as string[]
-) as unknown as string[];
+const EMPTY_HIGHLIGHTED_SQUARES: string[] = Object.freeze([] as string[]) as unknown as string[];
 
 type Props = {
   fen: string;

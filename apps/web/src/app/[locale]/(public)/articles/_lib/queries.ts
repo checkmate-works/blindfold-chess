@@ -1,3 +1,5 @@
+import { cache } from 'react';
+
 import { unstable_cache } from 'next/cache';
 
 import { and, desc, eq, isNotNull, sql } from 'drizzle-orm';
@@ -135,26 +137,28 @@ export async function getPublishedArticlesPaginated(
  *   2. Default locale (en)
  *   3. Any available locale
  */
-export async function getPublishedArticle(
-  slug: string,
-  locale: string
-): Promise<{ article: Article; availableLocales: string[] } | null> {
-  const results = await db
-    .select()
-    .from(articles)
-    .where(
-      and(
-        eq(articles.slug, slug),
-        eq(articles.status, 'published'),
-        isNotNull(articles.publishedAt)
-      )
-    );
+export const getPublishedArticle = cache(
+  async (
+    slug: string,
+    locale: string
+  ): Promise<{ article: Article; availableLocales: string[] } | null> => {
+    const results = await db
+      .select()
+      .from(articles)
+      .where(
+        and(
+          eq(articles.slug, slug),
+          eq(articles.status, 'published'),
+          isNotNull(articles.publishedAt)
+        )
+      );
 
-  if (results.length === 0) return null;
+    if (results.length === 0) return null;
 
-  const availableLocales = results.map((r) => r.locale);
-  return { article: pickByLocale(results, locale), availableLocales };
-}
+    const availableLocales = results.map((r) => r.locale);
+    return { article: pickByLocale(results, locale), availableLocales };
+  }
+);
 
 /**
  * Get all published articles for sitemap generation (all locales)

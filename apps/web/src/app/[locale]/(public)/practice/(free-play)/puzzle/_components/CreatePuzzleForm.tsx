@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -19,7 +19,8 @@ import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal'
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
-import { clearDraft, readDraft, writeDraft } from '../_lib/draft-storage';
+import { usePuzzleDraftHydration } from '../_hooks/use-puzzle-draft-hydration';
+import { clearDraft, writeDraft } from '../_lib/draft-storage';
 import { SolutionMoveList } from './SolutionMoveList';
 
 const EMPTY_BOARD_FEN = '8/8/8/8/8/8/8/8 w - - 0 1';
@@ -99,33 +100,23 @@ export function CreatePuzzleForm({ displayName, disableUnsavedGuard = false }: P
   const [flipped, setFlipped] = useState(false);
   const [userFlipped, setUserFlipped] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [hydratedFromDraft, setHydratedFromDraft] = useState(false);
   const [startOverOpen, setStartOverOpen] = useState(false);
   const [clearBoardOpen, setClearBoardOpen] = useState(false);
 
-  // Hydrate once on mount. `didHydrate` guards against remounts (e.g., Fast
-  // Refresh during dev) clobbering user edits mid-authoring. The draft is
-  // intentionally NOT cleared here — it survives `/new ↔ /new/preview`
-  // round-trips and is only cleared by explicit "Start over", successful
-  // create, or readDraft rejecting the blob as corrupt.
-  const didHydrate = useRef(false);
-  useEffect(() => {
-    if (didHydrate.current) return;
-    didHydrate.current = true;
-    const draft = readDraft();
-    if (!draft) return;
-    setFenInput(draft.fen);
-    setBoardFen(draft.fen);
-    setSideToMove(draft.sideToMove);
-    setTitle(draft.title);
-    setDescription(draft.description);
-    setMoves(draft.moves);
-    setNotes(draft.notes);
-    setActiveTab(draft.activeTab);
-    setFlipped(draft.flipped);
-    setUserFlipped(draft.userFlipped);
-    setHydratedFromDraft(true);
-  }, []);
+  const { hydratedFromDraft, resetHydrated } = usePuzzleDraftHydration({
+    apply: (draft) => {
+      setFenInput(draft.fen);
+      setBoardFen(draft.fen);
+      setSideToMove(draft.sideToMove);
+      setTitle(draft.title);
+      setDescription(draft.description);
+      setMoves(draft.moves);
+      setNotes(draft.notes);
+      setActiveTab(draft.activeTab);
+      setFlipped(draft.flipped);
+      setUserFlipped(draft.userFlipped);
+    },
+  });
 
   const trimmedFen = fenInput.trim();
   const isFenValid = trimmedFen !== '' && validateFen(trimmedFen);
@@ -360,7 +351,7 @@ export function CreatePuzzleForm({ displayName, disableUnsavedGuard = false }: P
     setActiveTab('board');
     setFlipped(false);
     setUserFlipped(false);
-    setHydratedFromDraft(false);
+    resetHydrated();
     setStartOverOpen(false);
   }
 

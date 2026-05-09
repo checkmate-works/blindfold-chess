@@ -5,12 +5,7 @@
  * symbols are renamed.
  */
 export {
-  coordsToSquare,
   findShortestPath,
   generateProblem,
-  getPossibleMoves,
-  isSameColor,
-  isValidRoutePlannerSquare as isValidSquare,
-  squareToCoords,
   validateUserPath,
 } from '@blindfold-chess/features/route-planner';

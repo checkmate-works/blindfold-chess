@@ -19,5 +19,3 @@ export const PIECE_NAME_TO_TYPE: Record<string, RoutePlannerPieceType> = {
  * challenge/training pages.
  */
 export const VALID_PIECE_NAMES = ['bishop', 'knight'] as const;
-
-export type ValidPieceName = (typeof VALID_PIECE_NAMES)[number];

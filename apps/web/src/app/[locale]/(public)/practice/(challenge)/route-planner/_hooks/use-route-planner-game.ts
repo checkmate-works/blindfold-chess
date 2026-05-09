@@ -7,7 +7,8 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 
-import { type PieceType, findShortestPath, generateProblem, validateUserPath } from '../_lib/utils';
+import type { PieceType } from '../_lib/pieces';
+import { findShortestPath, generateProblem, validateUserPath } from '../_lib/route-planner-api';
 import type { StagedCoordinate } from './use-staged-coordinate';
 
 type GameState = 'playing' | 'result';

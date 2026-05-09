@@ -9,7 +9,7 @@ export const passwordSchema = z
   .regex(/[a-zA-Z]/, 'missingLetter') // letters_digits: requires at least one letter
   .regex(/\d/, 'missingDigit'); // letters_digits: requires at least one digit
 
-export const PASSWORD_VALIDATION_ERROR_KEYS = [
+const PASSWORD_VALIDATION_ERROR_KEYS = [
   'tooShort',
   'missingLetter',
   'missingDigit',

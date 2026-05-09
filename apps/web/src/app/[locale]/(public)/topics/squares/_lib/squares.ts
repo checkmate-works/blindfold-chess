@@ -5,7 +5,7 @@ import {
 import type { Square } from '@blindfold-chess/types';
 import { FILES, RANKS } from '@blindfold-chess/types';
 
-export type { File, Rank, Square } from '@blindfold-chess/types';
+export type { Square } from '@blindfold-chess/types';
 
 export function isValidSquare(value: string): value is Square {
   return isValidSquareBase(value);

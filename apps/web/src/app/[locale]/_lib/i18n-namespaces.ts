@@ -94,15 +94,13 @@ export const NAMESPACE_CLASSIFICATION = {
   verifyEmail: 'client',
 } as const satisfies Record<string, NamespaceClassification>;
 
-export type KnownNamespace = keyof typeof NAMESPACE_CLASSIFICATION;
+type KnownNamespace = keyof typeof NAMESPACE_CLASSIFICATION;
 
 /**
  * The set of namespaces used only by Server Components. These are removed from
  * the messages object passed to the client-side `NextIntlClientProvider`.
  */
-export const SERVER_ONLY_NAMESPACES: readonly KnownNamespace[] = Object.entries(
-  NAMESPACE_CLASSIFICATION
-)
+const SERVER_ONLY_NAMESPACES: readonly KnownNamespace[] = Object.entries(NAMESPACE_CLASSIFICATION)
   .filter(([, kind]) => kind === 'server')
   .map(([name]) => name as KnownNamespace);
 

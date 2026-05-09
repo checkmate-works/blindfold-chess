@@ -4,7 +4,7 @@ import { db } from './index';
 import { startOfCurrentMonth, startOfCurrentWeek } from './period-range';
 import { challengeBestScores, challengeResults, profiles } from './schema';
 
-export type LeaderboardRow = {
+type LeaderboardRow = {
   userId: string;
   username: string;
   score: number;
@@ -113,25 +113,30 @@ async function getPeriodRanking(
     )
     .as('best_per_user');
 
-  const rows = await db
-    .select({
-      userId: bestPerUser.userId,
-      username: profiles.username,
-      score: bestPerUser.score,
-      incorrectAnswers: bestPerUser.incorrectAnswers,
-      timeTaken: bestPerUser.timeTaken,
-      displayName: profiles.displayName,
-      avatarUrl: profiles.avatarUrl,
-      country: profiles.country,
-      flair: profiles.flair,
-    })
-    .from(bestPerUser)
-    .innerJoin(profiles, eq(bestPerUser.userId, profiles.id))
-    .orderBy(desc(bestPerUser.score), asc(bestPerUser.incorrectAnswers), asc(bestPerUser.timeTaken))
-    .offset(offset)
-    .limit(limit);
-
-  const [countRow] = await db.select({ count: sql<number>`count(*)::int` }).from(bestPerUser);
+  const [rows, [countRow]] = await Promise.all([
+    db
+      .select({
+        userId: bestPerUser.userId,
+        username: profiles.username,
+        score: bestPerUser.score,
+        incorrectAnswers: bestPerUser.incorrectAnswers,
+        timeTaken: bestPerUser.timeTaken,
+        displayName: profiles.displayName,
+        avatarUrl: profiles.avatarUrl,
+        country: profiles.country,
+        flair: profiles.flair,
+      })
+      .from(bestPerUser)
+      .innerJoin(profiles, eq(bestPerUser.userId, profiles.id))
+      .orderBy(
+        desc(bestPerUser.score),
+        asc(bestPerUser.incorrectAnswers),
+        asc(bestPerUser.timeTaken)
+      )
+      .offset(offset)
+      .limit(limit),
+    db.select({ count: sql<number>`count(*)::int` }).from(bestPerUser),
+  ]);
 
   return { rows, total: countRow?.count ?? 0 };
 }

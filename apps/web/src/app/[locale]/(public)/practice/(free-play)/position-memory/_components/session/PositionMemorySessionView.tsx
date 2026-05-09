@@ -27,7 +27,7 @@ export type { SessionCompletePayload };
  * flavors of the session view. Grouped together so wrappers only pass one
  * object and the view's top-level prop list stays manageable.
  */
-export type SessionBehavior = {
+type SessionBehavior = {
   /** Enable pause/resume UI. Default: false. */
   enablePause?: boolean;
   /** When true, pressing skip acts like quit (single-position mode). */

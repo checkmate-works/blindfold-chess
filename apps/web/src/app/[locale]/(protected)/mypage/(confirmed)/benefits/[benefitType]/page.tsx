@@ -33,19 +33,18 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
-import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getAuthenticatedUser } from '@/lib/auth';
-import { db, positions, topicPosts, userGrants } from '@/lib/db';
-import { type GrantType, isGrantType } from '@/lib/db/data/grant-types';
-import { getPaginationParams } from '@/lib/pagination';
 
 import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { resolveGrantSourceMeta } from '../_lib/source';
+import {
+  type GrantHistoryRowStatus,
+  getBenefitHistoryPageData,
+} from './_lib/getBenefitHistoryPageData';
 
 const PAGE_SIZE = 20;
 
@@ -57,20 +56,6 @@ type Props = {
   params: Promise<{ locale: Locale; benefitType: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
-
-type GrantRowStatus = 'active' | 'upcoming' | 'expired' | 'revoked';
-
-function classifyGrantForHistory(
-  now: Date,
-  startsAt: Date,
-  expiresAt: Date,
-  revokedAt: Date | null
-): GrantRowStatus {
-  if (revokedAt) return 'revoked';
-  if (expiresAt <= now) return 'expired';
-  if (startsAt > now) return 'upcoming';
-  return 'active';
-}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, benefitType } = await params;
@@ -96,74 +81,23 @@ export default async function BenefitHistoryPage({ params, searchParams }: Props
   // but the source-column label keys (grantTypeLabel.*) and table headers
   // are shared with /mypage/benefits and stay under MypageBenefits — both
   // pages render the same vocabulary so users see consistent terminology.
-  const [t, tBenefits] = await Promise.all([
+  const [t, tBenefits, parsedParams, user] = await Promise.all([
     getTranslations({ locale, namespace: 'MypageBenefitHistory' }),
     getTranslations({ locale, namespace: 'MypageBenefits' }),
+    searchParamsCache.parse(searchParams),
+    getAuthenticatedUser(),
   ]);
 
-  const user = await getAuthenticatedUser();
+  const { rows, totalCount, currentPage, totalPages } = await getBenefitHistoryPageData({
+    userId: user.id,
+    benefitType,
+    page: parsedParams.page,
+    pageSize: PAGE_SIZE,
+  });
 
-  const { page } = await searchParamsCache.parse(searchParams);
-
-  // Include revoked grants — this is the audit/history view.
-  const [countResult] = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(userGrants)
-    .where(and(eq(userGrants.userId, user.id), eq(userGrants.benefitType, benefitType)));
-
-  const totalCount = Number(countResult?.count ?? 0);
-
-  const { currentPage, totalPages, limit, offset } = getPaginationParams(
-    page,
-    totalCount,
-    PAGE_SIZE
-  );
-
-  const rows = await db
-    .select()
-    .from(userGrants)
-    .where(and(eq(userGrants.userId, user.id), eq(userGrants.benefitType, benefitType)))
-    .orderBy(desc(userGrants.startsAt))
-    .limit(limit)
-    .offset(offset);
-
-  // Batch-resolve source rows (topic_posts / positions) for the visible
-  // page only — keeps the lookup proportional to PAGE_SIZE rather than to
-  // the user's full grant history. Hard-deleted source rows fall through
-  // to a non-link label, mirroring /mypage/benefits.
-  const topicPostIds = rows
-    .filter((g) => g.sourceType === 'topic_post' && g.sourceId)
-    .map((g) => g.sourceId as string);
-  const positionIds = rows
-    .filter((g) => g.sourceType === 'position' && g.sourceId)
-    .map((g) => g.sourceId as string);
-
-  const [topicPostRows, positionRows] = await Promise.all([
-    topicPostIds.length
-      ? db
-          .select({
-            id: topicPosts.id,
-            topicType: topicPosts.topicType,
-            topicKey: topicPosts.topicKey,
-          })
-          .from(topicPosts)
-          .where(inArray(topicPosts.id, topicPostIds))
-      : Promise.resolve([] as Array<{ id: string; topicType: string; topicKey: string }>),
-    positionIds.length
-      ? db
-          .select({ id: positions.id, type: positions.type })
-          .from(positions)
-          .where(inArray(positions.id, positionIds))
-      : Promise.resolve([] as Array<{ id: string; type: string }>),
-  ]);
-
-  const topicPostMap = new Map(topicPostRows.map((r) => [r.id, r]));
-  const positionMap = new Map(positionRows.map((r) => [r.id, r]));
-
-  const now = new Date();
   const dateFmt = (d: Date) => d.toLocaleDateString(locale);
 
-  const statusLabel = (status: GrantRowStatus) => {
+  const statusLabel = (status: GrantHistoryRowStatus) => {
     switch (status) {
       case 'active':
         return t('statusActive');
@@ -176,7 +110,7 @@ export default async function BenefitHistoryPage({ params, searchParams }: Props
     }
   };
 
-  const statusClass = (status: GrantRowStatus) => {
+  const statusClass = (status: GrantHistoryRowStatus) => {
     switch (status) {
       case 'active':
         return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200';
@@ -234,31 +168,14 @@ export default async function BenefitHistoryPage({ params, searchParams }: Props
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {rows.map((g) => {
-                    const startsAt = new Date(g.startsAt);
-                    const expiresAt = new Date(g.expiresAt);
-                    const revokedAt = g.revokedAt ? new Date(g.revokedAt) : null;
-                    const status = classifyGrantForHistory(now, startsAt, expiresAt, revokedAt);
-                    const grantTypeKey: GrantType = isGrantType(g.grantType)
-                      ? g.grantType
-                      : 'admin_manual';
-                    const { labelKey, href } = resolveGrantSourceMeta(
-                      {
-                        grantType: grantTypeKey,
-                        sourceType: g.sourceType,
-                        sourceId: g.sourceId,
-                      },
-                      topicPostMap,
-                      positionMap
-                    );
-                    const sourceLabel = tBenefits(`grantTypeLabel.${labelKey}`);
-
+                  {rows.map((row) => {
+                    const sourceLabel = tBenefits(`grantTypeLabel.${row.sourceLabelKey}`);
                     return (
-                      <tr key={g.id}>
+                      <tr key={row.id}>
                         <td className="px-4 py-3 font-medium text-foreground">
-                          {href ? (
+                          {row.sourceHref ? (
                             <Link
-                              href={href}
+                              href={row.sourceHref}
                               locale={locale}
                               className="text-link-primary hover:underline"
                             >
@@ -270,17 +187,17 @@ export default async function BenefitHistoryPage({ params, searchParams }: Props
                         </td>
                         <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
                           {t('grantPeriod', {
-                            startDate: dateFmt(startsAt),
-                            endDate: dateFmt(expiresAt),
+                            startDate: dateFmt(row.startsAt),
+                            endDate: dateFmt(row.expiresAt),
                           })}
                         </td>
                         <td className="px-4 py-3 text-right">
                           <span
                             className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${statusClass(
-                              status
+                              row.status
                             )}`}
                           >
-                            {statusLabel(status)}
+                            {statusLabel(row.status)}
                           </span>
                         </td>
                       </tr>

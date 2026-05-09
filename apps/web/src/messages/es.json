@@ -312,12 +312,6 @@
       }
     }
   },
-  "Common": {
-    "sponsoredLink": "Enlace Patrocinado",
-    "testAd": "Anuncio de Prueba",
-    "adLabel": "Publicidad",
-    "sponsor": "Patrocinador"
-  },
   "openingSearch": {
     "selectOpening": "Selecciona una apertura",
     "searchPlaceholder": "Buscar aperturas..."
@@ -480,7 +474,6 @@
     "articlesTitle": "Artículos",
     "relatedArticles": "Artículos Relacionados",
     "browseByCategory": "Explorar por Categoría",
-    "allCategories": "Todas",
     "articleCount": "{count, plural, one {# artículo} other {# artículos}}",
     "categories": {
       "piece-movement": "Movimiento de Piezas",
@@ -1516,7 +1509,6 @@
     },
     "yourRankings": {
       "title": "Tus Clasificaciones",
-      "noRanks": "Aún no estás en ninguna clasificación. ¡Prueba algunos módulos de práctica!",
       "viewAll": "Ver todas las clasificaciones"
     },
     "feed": {
@@ -1578,11 +1570,8 @@
     "noGames": "No hay partidas para eliminar",
     "selectedCount": "{count, plural, one {# partida seleccionada} other {# partidas seleccionadas}}",
     "selectAll": "Seleccionar Todas",
-    "unselectAll": "Deseleccionar Todas",
     "delete": "Eliminar",
     "cancel": "Cancelar",
-    "processing": "Procesando...",
-    "errorDeleting": "Error al eliminar. Por favor, inténtalo de nuevo.",
     "confirmTitle": "¿Eliminar Partidas Seleccionadas?",
     "confirmMessage": "¿Estás seguro de que deseas eliminar {count} partidas? Esta acción no se puede deshacer.",
     "deletedToast": "{count, plural, one {# partida eliminada correctamente} other {# partidas eliminadas correctamente}}",
@@ -1686,11 +1675,8 @@
     "infoModalTitle": "Acerca de la Revisión de Partida",
     "description": "Intenta recordar y reproducir los movimientos de tu partida terminada. También puedes ejecutar la evaluación del motor aquí.",
     "autoOpponentMoves": "Auto-rellenar movimientos del rival",
-    "autoOpponentMovesDescription": "Solo introduce tus propios movimientos; los movimientos del rival se rellenarán automáticamente",
     "inputMove": "Introduce un movimiento",
     "selectMove": "Selecciona un movimiento",
-    "switchToSelect": "Cambiar a selección por lista",
-    "switchToText": "Cambiar a entrada de texto",
     "switchInputMode": "Cambiar modo de entrada",
     "dontKnow": "No lo sé",
     "autoFillAll": "Auto-rellenar Todo",
@@ -1698,16 +1684,11 @@
     "confirmAutoFillAllMessage": "Esto auto-rellenará todos los movimientos restantes.",
     "correctMove": "¡Correcto!",
     "incorrectMove": "Movimiento incorrecto. Inténtalo de nuevo.",
-    "logIncorrect": "es incorrecto",
     "moveNumber": "Movimiento {number}",
-    "yourTurn": "Tu turno",
-    "opponentTurn": "Turno del rival",
     "completed": "¡Revisión de Partida Completada!",
     "completedMessage": "¡Reprodujiste correctamente todos los movimientos de la partida!",
-    "backToGame": "Volver a la Partida",
     "progress": "Progreso: {current} / {total} movimientos",
     "showBoard": "Mostrar Tablero",
-    "hideBoard": "Ocultar Tablero",
     "moves": "Movimientos",
     "noMovesYet": "Aún no hay movimientos",
     "copyPgn": "Copiar PGN",
@@ -1716,7 +1697,6 @@
     "analyzeOnLichess": "Analizar en Lichess",
     "moveLog": "Registro de Movimientos",
     "backToCurrentPosition": "Volver a la posición actual",
-    "configureBoardAppearance": "Configurar apariencia del tablero",
     "cancel": "Cancelar",
     "save": "Guardar",
     "guidanceStep1": "Introduce cada movimiento de memoria",
@@ -1942,7 +1922,6 @@
   },
   "company": {
     "title": "Información de la Empresa",
-    "companyInfo": "Información del Operador",
     "companyName": "Nombre de la Empresa",
     "companyNameValue": "Fuji Enterprise",
     "location": "Ubicación",
@@ -1961,18 +1940,14 @@
     "description": "Si tienes alguna pregunta o comentario, no dudes en contactarnos.",
     "form": {
       "name": "Nombre",
-      "namePlaceholder": "Juan Pérez",
       "nameRequired": "Por favor, introduce tu nombre",
       "email": "Correo Electrónico",
       "emailPlaceholder": "ejemplo@email.com",
       "emailRequired": "Por favor, introduce tu correo electrónico",
       "emailInvalid": "Por favor, introduce un correo electrónico válido",
       "subject": "Asunto",
-      "subjectPlaceholder": "Asunto de tu consulta",
       "subjectRequired": "Por favor, introduce un asunto",
       "message": "Mensaje",
-      "messagePlaceholder": "Describe tu consulta en detalle",
-      "messageRequired": "Por favor, introduce tu mensaje",
       "messageMinLength": "El mensaje debe tener al menos 10 caracteres",
       "submit": "Ir a Confirmación",
       "submitting": "Enviando...",
@@ -2026,9 +2001,7 @@
       "title": "Panel",
       "comingSoon": "Próximamente...",
       "vsAi": "🤖 VS IA",
-      "myGames": "Mis Partidas",
       "newGame": "Nueva Partida",
-      "gameCount": "{count, plural, =0 {Sin partidas aún} one {# partida} other {# partidas}}",
       "challenge": "🏆 Desafío",
       "squareColors": "Color de Casillas",
       "coordinateQuiz": "Cuestionario de Coordenadas",
@@ -2037,8 +2010,6 @@
       "boardSymmetry": "Simetría del Tablero",
       "viewLeaderboard": "Ver Clasificación →",
       "topics": "💬 Temas",
-      "topicSquares": "Casillas",
-      "topicOpenings": "Aperturas",
       "welcomeGreeting": "¡Hola, {name}!",
       "welcomeDefaultName": "Jugador",
       "viewMypage": "Mi Página",
@@ -2164,7 +2135,6 @@
     "pageTitle": "Artículos",
     "noArticles": "Aún no hay artículos.",
     "articlesListTitle": "Todos los Artículos",
-    "moreArticles": "Más artículos",
     "articleNotFound": "Artículo No Encontrado",
     "notTranslatedNotice": "Este artículo aún no ha sido traducido a tu idioma. Estás viendo la versión original."
   },
@@ -2273,15 +2243,12 @@
   },
   "Mypage": {
     "title": "Mi Página",
-    "challengeLink": "Historial de Desafíos",
     "dashboard": {
       "viewProfile": "Perfil público",
       "challengeTitle": "Historial de Desafíos",
       "likesTitle": "Publicaciones que te Gustan",
       "postsTitle": "Mis Publicaciones",
       "editProfile": "Editar",
-      "interviewTitle": "Entrevista",
-      "beltSystem": "Sistema de Cinturones",
       "myRecords": "Mis Registros",
       "socialTitle": "Social",
       "interviewBanner": "Responde preguntas de entrevista y cuéntanos sobre ti",
@@ -2299,7 +2266,6 @@
       "subscriptionTitle": "Suscripción",
       "benefitsTitle": "Beneficios",
       "practiceTitle": "Práctica",
-      "myProblems": "Mis Problemas",
       "myPositionMemory": "Memoria de Posición",
       "myPuzzles": "Puzzles"
     },
@@ -2617,8 +2583,6 @@
     "dashboard": "Panel",
     "users": "Usuarios",
     "auditLog": "Registro de Auditoría",
-    "totalUsers": "Total de Usuarios",
-    "roleAssignments": "Asignaciones de Roles",
     "dashboardKpi": {
       "from": "Desde",
       "to": "Hasta",
@@ -2753,8 +2717,6 @@
       "title": "Publicaciones de {username}",
       "email": "Correo",
       "username": "Nombre de usuario",
-      "backToUsers": "Volver a Usuarios",
-      "topic": "Tema",
       "content": "Contenido",
       "createdAt": "Fecha de Creación",
       "status": "Estado",
@@ -2770,8 +2732,6 @@
       "deleteModalConfirm": "Confirmar Eliminación",
       "deleteModalDeleting": "Eliminando...",
       "deleteModalReasonRequired": "El motivo es obligatorio",
-      "previousPage": "Anterior",
-      "nextPage": "Siguiente",
       "userNotFound": "Usuario no encontrado"
     },
     "auditLogTable": {
@@ -2784,9 +2744,7 @@
       "noLogsFound": "No se encontraron registros de auditoría",
       "filterByAction": "Filtrar por acción",
       "filterByUser": "Filtrar por usuario",
-      "allActions": "Todas las Acciones",
-      "previousPage": "Anterior",
-      "nextPage": "Siguiente"
+      "allActions": "Todas las Acciones"
     },
     "activityLog": "Registro de Actividad",
     "activityLogTable": {
@@ -2798,9 +2756,7 @@
       "noLogsFound": "No se encontraron registros de actividad",
       "filterByAction": "Filtrar por acción",
       "filterByUser": "Filtrar por usuario",
-      "allActions": "Todas las Acciones",
-      "previousPage": "Anterior",
-      "nextPage": "Siguiente"
+      "allActions": "Todas las Acciones"
     },
     "positionMemory": "Position Memory",
     "chunks": "Chunks",
@@ -2831,9 +2787,7 @@
       "deleteModalCancel": "Cancelar",
       "deleteModalConfirm": "Confirmar Eliminación",
       "deleteModalDeleting": "Eliminando...",
-      "deleteModalReasonRequired": "El motivo es obligatorio",
-      "previousPage": "Anterior",
-      "nextPage": "Siguiente"
+      "deleteModalReasonRequired": "El motivo es obligatorio"
     },
     "announcements": "Anuncios",
     "announcementsTable": {
@@ -3079,7 +3033,6 @@
     "defaultDescription": "Perfil de {displayName} en Ajedrez a Ciegas",
     "chessAccounts": "Cuentas de Ajedrez",
     "bio": "Acerca de",
-    "emptyProfile": "Este usuario aún no ha añadido información a su perfil.",
     "followers": "Seguidores",
     "followingCount": "Siguiendo",
     "follow": "Seguir",
@@ -3843,8 +3796,7 @@
       "exp": "Exp",
       "level": "Nivel"
     },
-    "emptyState": "Aún no hay registros de Exp. ¡Empieza a practicar para ganar Exp!",
-    "backToScoreLeaderboard": "Volver a Clasificación de Puntuación"
+    "emptyState": "Aún no hay registros de Exp. ¡Empieza a practicar para ganar Exp!"
   },
   "validation": {
     "password": {
@@ -3928,11 +3880,8 @@
         "3kyu": "Capacidad de planificar rutas de maniobra para todas las piezas sin ayudas visuales."
       },
       "tips": "Consejos",
-      "guide": "Guía",
       "tryChallenge": "Probar el Desafío",
       "showMore": "Mostrar más",
-      "prevPage": "Anterior",
-      "nextPage": "Siguiente",
       "pageOf": "Página {current} de {total}",
       "mukyuRequirements": ["Comprensión de la notación algebraica"],
       "mukyuRelatedLinks": {
@@ -4297,8 +4246,7 @@
       "anonymizeHint": "Sustituye las cabeceras White / Black por «Player 1» y «Player 2» antes de guardar."
     },
     "preview": {
-      "loading": "Generando vista previa…",
-      "openInLichess": "Abrir en Lichess"
+      "loading": "Generando vista previa…"
     },
     "card": {
       "replayButton": "Abrir reproducción",

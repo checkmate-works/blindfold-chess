@@ -5,14 +5,13 @@ import { inArray } from 'drizzle-orm';
 
 import { db, profiles, ranks, userRanks } from '@/lib/db';
 import { MUKYU_SLUG } from '@/lib/db/data/ranks';
+import { listAllAuthUsers } from '@/lib/supabase/list-all-auth-users';
 
+import type { AdminUserFilters } from '../filters';
 import { getSignupMethod } from './signup-methods';
 
 type Profile = typeof profiles.$inferSelect;
 type Rank = typeof ranks.$inferSelect;
-
-const FETCH_ALL_PAGE_SIZE = 1000;
-const MAX_PAGES = 100;
 
 export type FilteredPopulation = {
   filteredUsers: User[];
@@ -31,30 +30,6 @@ export const getAllRanks = cache(async (): Promise<Map<string, Rank>> => {
   return new Map(allRanksData.map((r) => [r.id, r]));
 });
 
-async function fetchAllUsers(adminClient: SupabaseClient): Promise<User[]> {
-  const allUsers: User[] = [];
-  let page = 1;
-
-  while (page <= MAX_PAGES) {
-    const { data, error } = await adminClient.auth.admin.listUsers({
-      page,
-      perPage: FETCH_ALL_PAGE_SIZE,
-    });
-
-    if (error) {
-      throw new Error(`Failed to fetch users (page ${page}): ${error.message}`);
-    }
-
-    const users = data?.users ?? [];
-    allUsers.push(...users);
-
-    if (users.length < FETCH_ALL_PAGE_SIZE) break;
-    page++;
-  }
-
-  return allUsers;
-}
-
 /**
  * Fetch and filter the full user population for a given filter combination.
  *
@@ -67,16 +42,10 @@ async function fetchAllUsers(adminClient: SupabaseClient): Promise<User[]> {
  * arguments return the same promise.
  */
 export const getFilteredPopulation = cache(
-  async (
-    adminClient: SupabaseClient,
-    statusFilter: string,
-    countryFilter?: string,
-    rankFilter?: string,
-    providerFilter?: string,
-    usernameFilter?: string
-  ): Promise<FilteredPopulation> => {
-    const normalizedUsernameQuery = usernameFilter?.trim().toLowerCase() ?? '';
-    const allUsers = await fetchAllUsers(adminClient);
+  async (adminClient: SupabaseClient, filters: AdminUserFilters): Promise<FilteredPopulation> => {
+    const { statusFilter, countryFilter, rankFilter, providerFilter, usernameFilter } = filters;
+    const normalizedUsernameQuery = usernameFilter.trim().toLowerCase();
+    const allUsers = await listAllAuthUsers(adminClient);
     const allUserIds = allUsers.map((u) => u.id);
 
     const allProfiles =

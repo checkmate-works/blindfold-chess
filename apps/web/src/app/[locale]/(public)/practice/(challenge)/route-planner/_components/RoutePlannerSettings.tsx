@@ -3,8 +3,8 @@
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import { PIECES } from '../_lib/utils';
-import type { RoutePlannerPieceSelection } from '../_lib/utils';
+import { PIECES } from '../_lib/pieces';
+import type { RoutePlannerPieceSelection } from '../_lib/pieces';
 
 type Props = {
   pieceSelection: RoutePlannerPieceSelection;

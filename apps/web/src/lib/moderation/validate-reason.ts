@@ -2,7 +2,7 @@
  * Maximum length of an admin-supplied moderation reason. Mirrors the column
  * constraint and the UI form's `maxLength`.
  */
-export const MODERATION_REASON_MAX_LENGTH = 1000;
+const MODERATION_REASON_MAX_LENGTH = 1000;
 
 export type ValidatedReason = { trimmed: string } | { error: 'reasonRequired' | 'reasonTooLong' };
 

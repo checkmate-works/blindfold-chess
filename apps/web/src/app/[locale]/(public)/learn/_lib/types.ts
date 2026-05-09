@@ -1,8 +1,5 @@
 import type { PracticeModuleId } from '@/app/[locale]/_lib/practice-modules';
 import { PRACTICE_MODULES } from '@/app/[locale]/_lib/practice-modules';
-import type { Locale } from '@/app/[locale]/_lib/types';
-
-export type { Locale };
 
 export const ARTICLE_CATEGORIES = {
   NOTATION: 'notation',
@@ -39,7 +36,7 @@ export type ArticleSlug =
   | 'rook-movement'
   | 'square-colors';
 
-export type ArticleDifficulty = 'beginner' | 'intermediate' | 'advanced';
+type ArticleDifficulty = 'beginner' | 'intermediate' | 'advanced';
 
 export type ArticleMetadata = {
   slug: string;

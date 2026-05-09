@@ -8,7 +8,7 @@ import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { pieceDisplayMap } from '../_data/constants';
-import { PIECE_TYPE_TO_NAME } from '../_lib/utils';
+import { PIECE_TYPE_TO_NAME } from '../_lib/query-params';
 import { LegalMovesSettings } from './LegalMovesSettings';
 
 type Props = {

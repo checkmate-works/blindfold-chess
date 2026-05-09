@@ -4,7 +4,7 @@ import { useLocalStorageSettings } from '@/lib/persistent-settings/use-local-sto
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import type { RoutePlannerPieceSelection } from '../_lib/utils';
+import type { RoutePlannerPieceSelection } from '../_lib/pieces';
 import { RoutePlannerSetup } from './RoutePlannerSetup';
 import { STORAGE_KEY } from './constants';
 

@@ -8,7 +8,7 @@ import { FaArrowRight } from 'react-icons/fa';
 
 import type { BoardTheme } from '@/lib/games/board-themes';
 
-import type { PieceType } from '../_lib/utils';
+import type { PieceType } from '../_lib/pieces';
 import { RoutePlannerBoard } from './RoutePlannerBoard';
 
 type TabValue = 'yours' | 'shortest';

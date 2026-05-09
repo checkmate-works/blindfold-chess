@@ -312,12 +312,6 @@
       }
     }
   },
-  "Common": {
-    "sponsoredLink": "スポンサーリンク",
-    "testAd": "テスト広告",
-    "adLabel": "広告",
-    "sponsor": "スポンサー"
-  },
   "openingSearch": {
     "selectOpening": "オープニングを選択",
     "searchPlaceholder": "オープニングを検索..."
@@ -480,7 +474,6 @@
     "articlesTitle": "記事一覧",
     "relatedArticles": "関連記事",
     "browseByCategory": "カテゴリーから探す",
-    "allCategories": "すべて",
     "articleCount": "{count}件の記事",
     "categories": {
       "piece-movement": "駒の動き",
@@ -1516,7 +1509,6 @@
     },
     "yourRankings": {
       "title": "あなたのランキング",
-      "noRanks": "まだランキングに参加していません。練習モジュールに挑戦してみましょう！",
       "viewAll": "すべてのランキングを見る"
     },
     "feed": {
@@ -1578,11 +1570,8 @@
     "noGames": "削除できるゲームがありません",
     "selectedCount": "{count, plural, other {#個のゲームを選択中}}",
     "selectAll": "すべて選択",
-    "unselectAll": "選択を解除",
     "delete": "削除",
     "cancel": "キャンセル",
-    "processing": "処理中...",
-    "errorDeleting": "削除に失敗しました。もう一度お試しください。",
     "confirmTitle": "選択したゲームを削除しますか？",
     "confirmMessage": "{count}個のゲームを削除してもよろしいですか？この操作は取り消せません。",
     "deletedToast": "{count, plural, other {#個のゲームを削除しました}}",
@@ -1686,11 +1675,8 @@
     "infoModalTitle": "感想戦について",
     "description": "終了したゲームの棋譜を思い出して再現してみましょう。ここでエンジン評価も行えます。",
     "autoOpponentMoves": "相手の手を自動入力",
-    "autoOpponentMovesDescription": "自分の手だけを入力し、相手の手は自動的に入力されます",
     "inputMove": "手を入力",
     "selectMove": "手を選択",
-    "switchToSelect": "リスト選択に切り替え",
-    "switchToText": "テキスト入力に切り替え",
     "switchInputMode": "入力モードを切り替え",
     "dontKnow": "わからない",
     "autoFillAll": "全て自動入力",
@@ -1698,16 +1684,11 @@
     "confirmAutoFillAllMessage": "残りの全ての手を自動入力します。",
     "correctMove": "正解！",
     "incorrectMove": "違う手です。もう一度試してください。",
-    "logIncorrect": "は間違い",
     "moveNumber": "{number}手目",
-    "yourTurn": "あなたの番",
-    "opponentTurn": "相手の番",
     "completed": "感想戦完了！",
     "completedMessage": "全ての手を正しく再現できました！",
-    "backToGame": "対局に戻る",
     "progress": "進捗: {current} / {total} 手",
     "showBoard": "ボードを表示",
-    "hideBoard": "ボードを隠す",
     "moves": "棋譜",
     "noMovesYet": "手を入力すると、ここに棋譜が表示されます",
     "copyPgn": "PGNをコピー",
@@ -1716,7 +1697,6 @@
     "analyzeOnLichess": "Lichessで解析",
     "moveLog": "手のログ",
     "backToCurrentPosition": "現在の局面に戻る",
-    "configureBoardAppearance": "ボードの外観を設定する",
     "cancel": "キャンセル",
     "save": "保存",
     "guidanceStep1": "対局の手を記憶から入力してください",
@@ -1942,7 +1922,6 @@
   },
   "company": {
     "title": "運営者情報",
-    "companyInfo": "運営会社情報",
     "companyName": "事業者名",
     "companyNameValue": "富士エンタープライズ",
     "location": "所在地",
@@ -1961,18 +1940,14 @@
     "description": "ご質問やご意見がありましたら、お気軽にお問い合わせください。",
     "form": {
       "name": "お名前",
-      "namePlaceholder": "山田 太郎",
       "nameRequired": "お名前を入力してください",
       "email": "メールアドレス",
       "emailPlaceholder": "example@email.com",
       "emailRequired": "メールアドレスを入力してください",
       "emailInvalid": "有効なメールアドレスを入力してください",
       "subject": "件名",
-      "subjectPlaceholder": "お問い合わせの件名",
       "subjectRequired": "件名を入力してください",
       "message": "お問い合わせ内容",
-      "messagePlaceholder": "お問い合わせ内容を詳しくご記入ください",
-      "messageRequired": "お問い合わせ内容を入力してください",
       "messageMinLength": "お問い合わせ内容は10文字以上で入力してください",
       "submit": "確認画面へ",
       "submitting": "送信中...",
@@ -2026,9 +2001,7 @@
       "title": "ダッシュボード",
       "comingSoon": "準備中...",
       "vsAi": "🤖 AI と対局",
-      "myGames": "ゲーム一覧",
       "newGame": "新規ゲーム",
-      "gameCount": "{count, plural, =0 {ゲームなし} other {#件のゲーム}}",
       "challenge": "🏆 チャレンジ",
       "squareColors": "マスの色",
       "coordinateQuiz": "座標クイズ",
@@ -2037,8 +2010,6 @@
       "boardSymmetry": "ボードの対称性",
       "viewLeaderboard": "リーダーボードを見る →",
       "topics": "💬 トピック",
-      "topicSquares": "マス目",
-      "topicOpenings": "オープニング",
       "welcomeGreeting": "こんにちは、{name} さん",
       "welcomeDefaultName": "プレイヤー",
       "viewMypage": "マイページ",
@@ -2164,7 +2135,6 @@
     "pageTitle": "記事",
     "noArticles": "記事はまだありません。",
     "articlesListTitle": "すべての記事",
-    "moreArticles": "その他の記事",
     "articleNotFound": "記事が見つかりません",
     "notTranslatedNotice": "この記事はまだあなたの言語に翻訳されていません。原文を表示しています。"
   },
@@ -2273,15 +2243,12 @@
   },
   "Mypage": {
     "title": "マイページ",
-    "challengeLink": "チャレンジ記録",
     "dashboard": {
       "viewProfile": "公開プロフィール",
       "challengeTitle": "チャレンジ記録",
       "likesTitle": "いいねした投稿",
       "postsTitle": "自分の投稿",
       "editProfile": "編集",
-      "interviewTitle": "インタビュー",
-      "beltSystem": "段級位",
       "myRecords": "マイレコード",
       "socialTitle": "ソーシャル",
       "interviewBanner": "インタビューに答えてあなたのことを教えてください",
@@ -2299,7 +2266,6 @@
       "subscriptionTitle": "サブスクリプション",
       "benefitsTitle": "特典",
       "practiceTitle": "練習",
-      "myProblems": "マイ問題",
       "myPositionMemory": "ポジションの記憶",
       "myPuzzles": "パズル"
     },
@@ -2617,8 +2583,6 @@
     "dashboard": "Dashboard",
     "users": "Users",
     "auditLog": "Audit Log",
-    "totalUsers": "Total Users",
-    "roleAssignments": "Role Assignments",
     "dashboardKpi": {
       "from": "開始日",
       "to": "終了日",
@@ -2753,8 +2717,6 @@
       "title": "{username} の投稿",
       "email": "メール",
       "username": "ユーザー名",
-      "backToUsers": "ユーザー一覧に戻る",
-      "topic": "トピック",
       "content": "内容",
       "createdAt": "作成日時",
       "status": "ステータス",
@@ -2770,8 +2732,6 @@
       "deleteModalConfirm": "削除を確認",
       "deleteModalDeleting": "削除中...",
       "deleteModalReasonRequired": "理由は必須です",
-      "previousPage": "前へ",
-      "nextPage": "次へ",
       "userNotFound": "ユーザーが見つかりません"
     },
     "auditLogTable": {
@@ -2784,9 +2744,7 @@
       "noLogsFound": "No audit logs found",
       "filterByAction": "Filter by action",
       "filterByUser": "Filter by user",
-      "allActions": "All Actions",
-      "previousPage": "Previous",
-      "nextPage": "Next"
+      "allActions": "All Actions"
     },
     "activityLog": "Activity Log",
     "activityLogTable": {
@@ -2798,9 +2756,7 @@
       "noLogsFound": "No activity logs found",
       "filterByAction": "Filter by action",
       "filterByUser": "Filter by user",
-      "allActions": "All Actions",
-      "previousPage": "Previous",
-      "nextPage": "Next"
+      "allActions": "All Actions"
     },
     "positionMemory": "Position Memory",
     "chunks": "チャンク",
@@ -2831,9 +2787,7 @@
       "deleteModalCancel": "キャンセル",
       "deleteModalConfirm": "削除を確認",
       "deleteModalDeleting": "削除中...",
-      "deleteModalReasonRequired": "理由は必須です",
-      "previousPage": "前へ",
-      "nextPage": "次へ"
+      "deleteModalReasonRequired": "理由は必須です"
     },
     "announcements": "Announcements",
     "announcementsTable": {
@@ -3079,7 +3033,6 @@
     "defaultDescription": "{displayName}のBlindfold Chessプロフィール",
     "chessAccounts": "チェスアカウント",
     "bio": "自己紹介",
-    "emptyProfile": "このユーザーはまだプロフィール情報を追加していません。",
     "followers": "フォロワー",
     "followingCount": "フォロー中",
     "follow": "フォローする",
@@ -3843,8 +3796,7 @@
       "exp": "Exp",
       "level": "レベル"
     },
-    "emptyState": "まだExpの記録がありません。練習を始めてExpを獲得しましょう！",
-    "backToScoreLeaderboard": "スコアランキングへ戻る"
+    "emptyState": "まだExpの記録がありません。練習を始めてExpを獲得しましょう！"
   },
   "validation": {
     "password": {
@@ -3928,11 +3880,8 @@
         "3kyu": "視覚的な補助がなくても、全ての駒でマヌーバリングができること。"
       },
       "tips": "解説",
-      "guide": "解説",
       "tryChallenge": "チャレンジしてみよう",
       "showMore": "もっと見る",
-      "prevPage": "前へ",
-      "nextPage": "次へ",
       "pageOf": "{total}ページ中{current}ページ目",
       "mukyuRequirements": ["代数記法を理解していること"],
       "mukyuRelatedLinks": {
@@ -4297,8 +4246,7 @@
       "anonymizeHint": "保存時に White / Black ヘッダを「Player 1」「Player 2」に置き換えます。"
     },
     "preview": {
-      "loading": "プレビュー生成中…",
-      "openInLichess": "Lichess で開く"
+      "loading": "プレビュー生成中…"
     },
     "card": {
       "replayButton": "リプレイを開く",
