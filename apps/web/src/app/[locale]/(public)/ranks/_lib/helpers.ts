@@ -164,7 +164,7 @@ export function buildRankTeaserCards(
  * `current` is `null` for unranked users (mukyu / not logged in).
  * `next` is `null` only when the user has achieved the top rank.
  */
-export type ResolvedRankView = {
+type ResolvedRankView = {
   slug: RankSlug;
   dbRank: Rank | null;
   requirements: ChallengeScoreRequirement[];

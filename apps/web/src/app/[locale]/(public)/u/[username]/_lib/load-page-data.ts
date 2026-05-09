@@ -9,7 +9,7 @@ import { countPositions, listPositions } from '@/lib/positions/queries';
 import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
 import { getPostsByUserId } from '@/app/[locale]/(public)/topics/_lib/user-post-queries';
 
-export type ProfileTab = 'topics' | 'problems';
+type ProfileTab = 'topics' | 'problems';
 
 type ListedPosition = Awaited<ReturnType<typeof listPositions>>[number];
 

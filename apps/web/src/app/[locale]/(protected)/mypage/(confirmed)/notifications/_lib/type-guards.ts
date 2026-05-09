@@ -47,7 +47,7 @@ export function isAnnouncementMetadata(m: unknown): m is AnnouncementMetadata {
   return typeof r.slug === 'string' && typeof r.title === 'string';
 }
 
-export type AchievementBadge = {
+type AchievementBadge = {
   slug: string;
   menuType: string;
   leaderboardKey: string;

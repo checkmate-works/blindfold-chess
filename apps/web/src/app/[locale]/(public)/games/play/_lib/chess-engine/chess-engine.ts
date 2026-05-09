@@ -2,6 +2,8 @@ import { ChessEngine } from '@blindfold-chess/features/ai-game/engine';
 
 import { createWorkerMessageChannel } from './worker-message-channel';
 
+export { ChessEngine };
+
 /**
  * Web-app-local singleton + lifecycle helpers for the shared `ChessEngine`.
  *
@@ -16,9 +18,6 @@ import { createWorkerMessageChannel } from './worker-message-channel';
  */
 
 const WORKER_PATH = '/stockfish.js';
-
-export type { EvaluationResult } from '@blindfold-chess/features/ai-game/engine';
-export { ChessEngine } from '@blindfold-chess/features/ai-game/engine';
 
 let engineInstance: ChessEngine | null = null;
 

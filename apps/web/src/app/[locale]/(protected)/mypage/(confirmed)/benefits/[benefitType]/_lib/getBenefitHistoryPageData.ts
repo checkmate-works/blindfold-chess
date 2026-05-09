@@ -8,7 +8,7 @@ import { type GrantSourceMeta, resolveGrantSourceMeta } from '../../_lib/source'
 
 export type GrantHistoryRowStatus = 'active' | 'upcoming' | 'expired' | 'revoked';
 
-export type BenefitHistoryRow = {
+type BenefitHistoryRow = {
   id: string;
   /** Discriminator the page maps to `t(`grantTypeLabel.${labelKey}`)`. */
   sourceLabelKey: GrantSourceMeta['labelKey'];

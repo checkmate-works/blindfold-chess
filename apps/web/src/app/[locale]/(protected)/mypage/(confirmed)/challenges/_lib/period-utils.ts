@@ -1,6 +1,5 @@
 export {
   type DatePeriod,
-  type PeriodRange,
   getMondayOfWeek,
   getPeriodRange,
   getPreviousPeriodRange,

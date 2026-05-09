@@ -22,7 +22,7 @@ export type EntitlementSourceLabelKey =
   | 'topic_post'
   | 'position_creation';
 
-export type EntitlementRow = {
+type EntitlementRow = {
   id: string;
   sourceLabelKey: EntitlementSourceLabelKey;
   /**
