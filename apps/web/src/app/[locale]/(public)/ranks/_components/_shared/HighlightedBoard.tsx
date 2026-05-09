@@ -11,14 +11,14 @@ import { useBoardTheme } from '../useBoardTheme';
  * Coordinate of a single square on the SVG overlay (0..100 viewBox space).
  * Each square is 12.5 x 12.5 in this coordinate system.
  */
-export type SquareCoord = { x: number; y: number };
+type SquareCoord = { x: number; y: number };
 
 /**
  * Endpoints of an arrow line on the SVG overlay (0..100 viewBox space).
  */
-export type LineEndpoints = { x1: number; y1: number; x2: number; y2: number };
+type LineEndpoints = { x1: number; y1: number; x2: number; y2: number };
 
-export type RectOverlay = {
+type RectOverlay = {
   kind: 'rect';
   /** Squares to fill, in 12.5-unit SVG coordinates */
   squares: SquareCoord[];
@@ -33,7 +33,7 @@ export type RectOverlay = {
   currentColorClass?: string;
 };
 
-export type LineOverlay = {
+type LineOverlay = {
   kind: 'line';
   lines: LineEndpoints[];
   stroke: string;

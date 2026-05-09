@@ -20,7 +20,7 @@ import type { FormattedPgn, FormattedPgnMove } from '../_lib';
 import { MoveNavigationControls } from './MoveNavigationControls';
 
 /** Everything needed to render and click-to-navigate the move list. */
-export type MovesPanelMoveListProps = {
+type MovesPanelMoveListProps = {
   formattedPgn: FormattedPgn;
   currentPosition: number;
   movesLength: number;
@@ -30,7 +30,7 @@ export type MovesPanelMoveListProps = {
 };
 
 /** Navigation callbacks for the start/prev/next/end controls and list clicks. */
-export type MovesPanelNavigationProps = {
+type MovesPanelNavigationProps = {
   onNavigateToPosition: (position: number) => void;
   onNavigateToStart: () => void;
   onNavigatePrevious: () => void;
@@ -43,7 +43,7 @@ export type MovesPanelNavigationProps = {
  * move list. `lichessAnalysisUrl` is pre-computed by the parent — this panel
  * does not own the FEN→URL concern.
  */
-export type MovesPanelActionsProps = {
+type MovesPanelActionsProps = {
   gameInProgress: boolean;
   lichessAnalysisUrl: string;
   onRestartFromPosition: (position: number) => void;
