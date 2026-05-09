@@ -165,36 +165,70 @@ describe('NewPostForm — Game tab routing via the modal (#84: PGN-only)', () =>
     expect(fd.get('attachment')).toBe(PGN_SAMPLE);
   });
 
-  it('Lichess embed URL is rejected client-side and Apply stays disabled (#84: URL paste blocked)', async () => {
+  function selectUrlSubMode() {
+    const urlRadio = document.querySelector(
+      'input[name="gameAttachmentKind"][value="url"]'
+    ) as HTMLInputElement;
+    fireEvent.click(urlRadio);
+  }
+
+  it('Lichess embed URL is forwarded as the raw `attachment` field via the URL sub-mode', async () => {
     mockCreateChunkPostWithAttachment.mockResolvedValue({});
-    render(<NewPostForm locale="en" slug="rook-battery" />);
+    const { container } = render(<NewPostForm locale="en" slug="rook-battery" />);
 
     openModal();
-    const attachment = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
-    fireEvent.change(attachment, { target: { value: 'https://lichess.org/embed/abcd1234' } });
+    selectUrlSubMode();
+    const url = 'https://lichess.org/embed/abcd1234';
+    const urlInput = document.querySelector('#attachmentUrl') as HTMLInputElement;
+    fireEvent.change(urlInput, { target: { value: url } });
+    clickApply();
+
+    const content = container.querySelector('#content') as HTMLTextAreaElement;
+    fireEvent.change(content, { target: { value: 'replay' } });
+    const form = container.querySelector('form') as HTMLFormElement;
+    fireEvent.submit(form);
 
     await waitFor(() => {
-      const dialog = document.querySelector('[role="dialog"]') as HTMLElement;
-      expect(dialog.textContent).toMatch(/URLs are not accepted/i);
+      expect(mockCreateChunkPostWithAttachment).toHaveBeenCalledTimes(1);
     });
-
-    const applyBtn = Array.from(document.querySelectorAll('button')).find(
-      (b) => b.textContent === 'Apply'
-    ) as HTMLButtonElement;
-    expect(applyBtn.disabled).toBe(true);
+    const fd = mockCreateChunkPostWithAttachment.mock.calls[0][3] as FormData;
+    expect(fd.get('attachment')).toBe(url);
   });
 
-  it('chess.com embed URL is rejected client-side and Apply stays disabled (#84: URL paste blocked)', async () => {
+  it('Lichess game URL is forwarded as the raw `attachment` field via the URL sub-mode', async () => {
     mockCreateChunkPostWithAttachment.mockResolvedValue({});
+    const { container } = render(<NewPostForm locale="en" slug="rook-battery" />);
+
+    openModal();
+    selectUrlSubMode();
+    const url = 'https://lichess.org/0zeJx5nICLsH';
+    const urlInput = document.querySelector('#attachmentUrl') as HTMLInputElement;
+    fireEvent.change(urlInput, { target: { value: url } });
+    clickApply();
+
+    const content = container.querySelector('#content') as HTMLTextAreaElement;
+    fireEvent.change(content, { target: { value: 'replay' } });
+    const form = container.querySelector('form') as HTMLFormElement;
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(mockCreateChunkPostWithAttachment).toHaveBeenCalledTimes(1);
+    });
+    const fd = mockCreateChunkPostWithAttachment.mock.calls[0][3] as FormData;
+    expect(fd.get('attachment')).toBe(url);
+  });
+
+  it('URL sub-mode rejects a chess.com /emboard URL and disables Apply', async () => {
     render(<NewPostForm locale="en" slug="rook-battery" />);
 
     openModal();
-    const attachment = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
-    fireEvent.change(attachment, { target: { value: 'https://www.chess.com/emboard?id=12345' } });
+    selectUrlSubMode();
+    const urlInput = document.querySelector('#attachmentUrl') as HTMLInputElement;
+    fireEvent.change(urlInput, { target: { value: 'https://www.chess.com/emboard?id=12345' } });
 
     await waitFor(() => {
       const dialog = document.querySelector('[role="dialog"]') as HTMLElement;
-      expect(dialog.textContent).toMatch(/URLs are not accepted/i);
+      expect(dialog.textContent).toMatch(/chess\.com URLs are not accepted/i);
     });
 
     const applyBtn = Array.from(document.querySelectorAll('button')).find(

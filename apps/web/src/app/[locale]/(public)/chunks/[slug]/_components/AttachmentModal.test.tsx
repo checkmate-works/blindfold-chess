@@ -214,49 +214,75 @@ describe('AttachmentModal — single-kind structural guarantee (D3)', () => {
   });
 });
 
-describe('AttachmentModal — Game tab URL rejection guard (#84)', () => {
-  // Pre-release: every URL shape (Lichess game, Lichess embed, chess.com,
-  // study, …) collapses to the same generic "URLs are not accepted"
-  // error and Apply stays disabled. The previous per-shape preview hints
-  // were load-bearing for the URL sub-mode which no longer exists.
+describe('AttachmentModal — Game tab radio split (#84: PGN + Lichess URL sub-modes)', () => {
+  // The Game tab is split into PGN / Lichess URL radios. Each
+  // sub-mode keeps its own buffer and runs its own client-side
+  // whitelist. Both emit `mode = { kind: 'pgn', pgn: <raw value> }`
+  // so the server's `detectAttachmentInput` re-runs and dispatches
+  // Lichess URLs into `resolveLichessAttachmentPgn` (Phase 13 path).
   const LICHESS_GAME_URL = 'https://lichess.org/0zeJx5nICLsH';
   const LICHESS_EMBED_URL = 'https://lichess.org/embed/abcd1234';
-  const CHESSCOM_GAME_URL = 'https://www.chess.com/game/live/12345678';
+  const LICHESS_EMBED_GAME_URL = 'https://lichess.org/embed/game/abcd1234';
+  const CHESSCOM_EMBOARD_URL = 'https://www.chess.com/emboard?id=12345';
   const LICHESS_STUDY_URL = 'https://lichess.org/study/abcdefgh';
+
+  function selectUrlSubMode() {
+    const urlRadio = document.querySelector(
+      'input[name="gameAttachmentKind"][value="url"]'
+    ) as HTMLInputElement;
+    fireEvent.click(urlRadio);
+  }
+
+  it('renders the PGN sub-mode by default with the textarea visible', () => {
+    setup();
+    expect(document.querySelector('#attachmentPgn')).not.toBeNull();
+    expect(document.querySelector('#attachmentUrl')).toBeNull();
+  });
+
+  it('switching to the URL sub-mode swaps the textarea for the URL input', () => {
+    setup();
+    selectUrlSubMode();
+    expect(document.querySelector('#attachmentPgn')).toBeNull();
+    expect(document.querySelector('#attachmentUrl')).not.toBeNull();
+  });
 
   for (const [label, value] of [
     ['Lichess game URL', LICHESS_GAME_URL],
     ['Lichess embed URL', LICHESS_EMBED_URL],
-    ['chess.com game URL', CHESSCOM_GAME_URL],
-    ['Lichess study URL', LICHESS_STUDY_URL],
+    ['Lichess embed/game URL (Share→Embed shape)', LICHESS_EMBED_GAME_URL],
   ] as const) {
-    it(`shows the generic URL-rejected error and disables Apply for ${label}`, async () => {
+    it(`URL sub-mode accepts ${label} and emits a pgn mode carrying the raw URL`, async () => {
       const { onApply } = setup();
-      const textarea = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
-      fireEvent.change(textarea, { target: { value } });
-
-      await waitFor(() => {
-        const dialog = document.querySelector('[role="dialog"]') as HTMLElement;
-        expect(dialog.textContent).toMatch(/URLs are not accepted/i);
-      });
+      selectUrlSubMode();
+      const urlInput = document.querySelector('#attachmentUrl') as HTMLInputElement;
+      fireEvent.change(urlInput, { target: { value } });
 
       const applyBtn = Array.from(document.querySelectorAll('button')).find(
         (b) => b.textContent === 'Apply'
       ) as HTMLButtonElement;
-      expect(applyBtn.disabled).toBe(true);
+      expect(applyBtn.disabled).toBe(false);
       fireEvent.click(applyBtn);
-      expect(onApply).not.toHaveBeenCalled();
+
+      await waitFor(() => {
+        expect(onApply).toHaveBeenCalledTimes(1);
+      });
+      const mode = onApply.mock.calls[0][0];
+      expect(mode.kind).toBe('pgn');
+      if (mode.kind === 'pgn') {
+        expect(mode.pgn).toBe(value);
+      }
     });
   }
 
-  it('shows the generic error and disables Apply for non-PGN-non-URL text ("aaa")', async () => {
+  it('URL sub-mode rejects a chess.com /emboard URL with a chess.com-specific error', async () => {
     const { onApply } = setup();
-    const textarea = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
-    fireEvent.change(textarea, { target: { value: 'aaa' } });
+    selectUrlSubMode();
+    const urlInput = document.querySelector('#attachmentUrl') as HTMLInputElement;
+    fireEvent.change(urlInput, { target: { value: CHESSCOM_EMBOARD_URL } });
 
     await waitFor(() => {
       const dialog = document.querySelector('[role="dialog"]') as HTMLElement;
-      expect(dialog.textContent).toMatch(/URLs are not accepted/i);
+      expect(dialog.textContent).toMatch(/chess\.com URLs are not accepted/i);
     });
 
     const applyBtn = Array.from(document.querySelectorAll('button')).find(
@@ -265,6 +291,89 @@ describe('AttachmentModal — Game tab URL rejection guard (#84)', () => {
     expect(applyBtn.disabled).toBe(true);
     fireEvent.click(applyBtn);
     expect(onApply).not.toHaveBeenCalled();
+  });
+
+  it('URL sub-mode rejects a Lichess study URL with a study-specific error', async () => {
+    setup();
+    selectUrlSubMode();
+    const urlInput = document.querySelector('#attachmentUrl') as HTMLInputElement;
+    fireEvent.change(urlInput, { target: { value: LICHESS_STUDY_URL } });
+
+    await waitFor(() => {
+      const dialog = document.querySelector('[role="dialog"]') as HTMLElement;
+      expect(dialog.textContent).toMatch(/study URLs are not supported/i);
+    });
+  });
+
+  it('URL sub-mode points the user at the PGN tab when they paste a PGN body into the URL input', async () => {
+    setup();
+    selectUrlSubMode();
+    const urlInput = document.querySelector('#attachmentUrl') as HTMLInputElement;
+    fireEvent.change(urlInput, { target: { value: PGN_SAMPLE } });
+
+    await waitFor(() => {
+      const dialog = document.querySelector('[role="dialog"]') as HTMLElement;
+      expect(dialog.textContent).toMatch(/PGN body detected/i);
+      expect(dialog.textContent).toMatch(/PGN tab/i);
+    });
+  });
+
+  it('PGN sub-mode points the user at the URL tab when they paste a Lichess URL into the textarea', async () => {
+    setup();
+    const textarea = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
+    fireEvent.change(textarea, { target: { value: LICHESS_GAME_URL } });
+
+    await waitFor(() => {
+      const dialog = document.querySelector('[role="dialog"]') as HTMLElement;
+      expect(dialog.textContent).toMatch(/Lichess URL detected/i);
+      expect(dialog.textContent).toMatch(/Lichess URL tab/i);
+    });
+  });
+
+  it('PGN sub-mode rejects a chess.com URL with a chess.com-specific error', async () => {
+    setup();
+    const textarea = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
+    fireEvent.change(textarea, { target: { value: CHESSCOM_EMBOARD_URL } });
+
+    await waitFor(() => {
+      const dialog = document.querySelector('[role="dialog"]') as HTMLElement;
+      expect(dialog.textContent).toMatch(/chess\.com URLs are not accepted/i);
+    });
+  });
+
+  it('PGN sub-mode rejects free text ("aaa") with the unknown-input error', async () => {
+    const { onApply } = setup();
+    const textarea = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
+    fireEvent.change(textarea, { target: { value: 'aaa' } });
+
+    await waitFor(() => {
+      const dialog = document.querySelector('[role="dialog"]') as HTMLElement;
+      expect(dialog.textContent).toMatch(/does not look like a PGN body/i);
+    });
+
+    const applyBtn = Array.from(document.querySelectorAll('button')).find(
+      (b) => b.textContent === 'Apply'
+    ) as HTMLButtonElement;
+    expect(applyBtn.disabled).toBe(true);
+    fireEvent.click(applyBtn);
+    expect(onApply).not.toHaveBeenCalled();
+  });
+
+  it('switching tabs preserves each sub-mode buffer (PGN draft survives a trip to URL and back)', () => {
+    setup();
+    const textarea = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
+    fireEvent.change(textarea, { target: { value: PGN_SAMPLE } });
+    selectUrlSubMode();
+    const urlInput = document.querySelector('#attachmentUrl') as HTMLInputElement;
+    fireEvent.change(urlInput, { target: { value: LICHESS_GAME_URL } });
+
+    // Flip back to PGN — the textarea value persisted.
+    const pgnRadio = document.querySelector(
+      'input[name="gameAttachmentKind"][value="pgn"]'
+    ) as HTMLInputElement;
+    fireEvent.click(pgnRadio);
+    const textareaAgain = document.querySelector('#attachmentPgn') as HTMLTextAreaElement;
+    expect(textareaAgain.value).toBe(PGN_SAMPLE);
   });
 });
 
