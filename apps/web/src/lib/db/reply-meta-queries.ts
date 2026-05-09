@@ -2,7 +2,7 @@ import { and, asc, count, countDistinct, desc, eq, inArray, isNull, max } from '
 
 import { db, profiles, topicPosts } from './index';
 
-export type Replier = {
+type Replier = {
   avatarUrl: string | null;
   displayName: string;
 };

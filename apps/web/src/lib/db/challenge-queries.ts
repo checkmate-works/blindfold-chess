@@ -4,7 +4,7 @@ import { db } from './index';
 import { startOfCurrentMonth, startOfCurrentWeek } from './period-range';
 import { challengeBestScores, challengeResults, profiles } from './schema';
 
-export type LeaderboardRow = {
+type LeaderboardRow = {
   userId: string;
   username: string;
   score: number;
