@@ -13,6 +13,10 @@ vi.mock('@/i18n/use-safe-translations', () => ({
     params ? `${key}:${JSON.stringify(params)}` : key,
 }));
 
+vi.mock('next-intl', () => ({
+  useLocale: () => 'en',
+}));
+
 // MiniBoard pulls in chess-pieces / icons / GamePreferencesContext, none of
 // which are relevant here. Stub it to a marker div so we can assert
 // "thumbnail rendered" without exercising the chessboard rendering stack.
@@ -74,21 +78,67 @@ describe('AttachedGameCard — DOM / a11y structure', () => {
     expect(board.getAttribute('data-fen')).toBe(STARTING_FEN);
   });
 
-  it('renders header text rows but NO <a href> for the [Site] PGN header (XSS / SPEC1 §7-4)', () => {
+  it('routes a [Site] PGN URL through the cushion redirect page (#84 update of SPEC1 §7-4)', () => {
+    // The cushion redirect (`/[locale]/redirect?url=...`) was added
+    // after SPEC1 §7-4 was written. It surfaces the destination URL
+    // before navigation, mitigating the original phishing concern,
+    // so external Site URLs are now rendered as cushion-routed
+    // anchors instead of plain text.
     const att = makeAttachment({
       source: 'pgn',
       headerSite: 'https://lichess.org/abcd1234',
     });
-    const { container, queryByText } = render(<AttachedGameCard attachment={att} />);
+    const { container } = render(<AttachedGameCard attachment={att} />);
 
-    // The site value is shown as text…
-    expect(queryByText('https://lichess.org/abcd1234')).not.toBeNull();
-    // …but NOT as an anchor href.
     const anchors = Array.from(container.querySelectorAll('a'));
-    const siteAnchor = anchors.find((a) =>
-      (a.getAttribute('href') ?? '').includes('lichess.org/abcd1234')
+    const siteAnchor = anchors.find(
+      (a) =>
+        (a.getAttribute('href') ?? '').startsWith('/en/redirect?url=') &&
+        decodeURIComponent(a.getAttribute('href')!.split('?url=')[1]).includes(
+          'lichess.org/abcd1234'
+        )
     );
-    expect(siteAnchor).toBeUndefined();
+    expect(siteAnchor).toBeDefined();
+    // The cushion link must NOT echo the raw external URL as href, and
+    // must carry standard cross-origin link hardening.
+    const rel = siteAnchor?.getAttribute('rel') ?? '';
+    expect(rel).toContain('noopener');
+    expect(rel).toContain('noreferrer');
+    expect(rel).toContain('nofollow');
+    // The visible label is the original URL — the redirection is
+    // mechanical (href), not visible.
+    expect(siteAnchor?.textContent).toBe('https://lichess.org/abcd1234');
+  });
+
+  it('renders a non-URL [Site] header as inert text (no anchor)', () => {
+    // PGN spec allows free-form Site values (e.g. `Site "Internet"`).
+    // Anything that does not parse as a real URL must NOT become an
+    // anchor — there is no destination to route through the cushion
+    // page.
+    const att = makeAttachment({
+      source: 'pgn',
+      headerSite: 'Internet',
+    });
+    const { container } = render(<AttachedGameCard attachment={att} />);
+    expect(container.textContent).toContain('Internet');
+    const anchors = Array.from(container.querySelectorAll('a'));
+    const internetAnchor = anchors.find((a) => (a.getAttribute('href') ?? '').includes('Internet'));
+    expect(internetAnchor).toBeUndefined();
+  });
+
+  it('renders a dangerous-scheme [Site] header as inert text (XSS defense)', () => {
+    // `javascript:` / `data:` / similar must never become anchors,
+    // even via the cushion redirect (the cushion validates schemes
+    // server-side too, but defense-in-depth pins this at the
+    // renderer).
+    const att = makeAttachment({
+      source: 'pgn',
+      headerSite: 'javascript:alert(1)',
+    });
+    const { container } = render(<AttachedGameCard attachment={att} />);
+    const anchors = Array.from(container.querySelectorAll('a'));
+    const evil = anchors.find((a) => (a.getAttribute('href') ?? '').includes('javascript'));
+    expect(evil).toBeUndefined();
   });
 
   it('renders a chess.com attribution link rebuilt from attribution_path (NOT from sourceUrl)', () => {

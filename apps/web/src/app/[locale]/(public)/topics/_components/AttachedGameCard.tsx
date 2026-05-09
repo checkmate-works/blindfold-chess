@@ -2,11 +2,15 @@
 
 import { useState } from 'react';
 
+import { useLocale } from 'next-intl';
 import dynamic from 'next/dynamic';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { buildCushionPageUrl, isDangerousUrl, isInternalUrl } from '@/lib/content/linkify-urls';
 import { MiniBoard } from '@/lib/positions/ui/MiniBoard';
+
+import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 const GameReplayModal = dynamic(() => import('./GameReplayModal').then((m) => m.GameReplayModal), {
   ssr: false,
@@ -66,8 +70,48 @@ type Props = {
   attachment: AttachedGameCardData;
 };
 
+/**
+ * Classify a PGN [Site] header value for rendering. Most attachments
+ * carry a URL (lichess.org / chess.com / arena tournament site /
+ * personal blog), but the spec also allows free text like
+ * `[Site "Internet"]`. The result tells the caller whether to render
+ * a link (cushion-routed for external) or fall back to inert text.
+ *
+ * @design SPEC1 §7-4 superseded by #84
+ *
+ * Phase A.2 originally rendered the Site header as plain text on the
+ * grounds that user-supplied URLs could phish. The cushion redirect
+ * page (`/[locale]/redirect?url=...`) added since then surfaces the
+ * full destination URL to the user before navigation, mitigating the
+ * phishing concern, so we now route external Site URLs through it.
+ * `javascript:` / `data:` / other dangerous schemes are still
+ * rejected up-front via `isDangerousUrl`.
+ */
+function classifySiteHeader(
+  siteText: string | null
+):
+  | { kind: 'empty' }
+  | { kind: 'text'; value: string }
+  | { kind: 'link'; href: string; isExternal: boolean } {
+  if (!siteText) return { kind: 'empty' };
+  let url: URL;
+  try {
+    url = new URL(siteText);
+  } catch {
+    return { kind: 'text', value: siteText };
+  }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+    return { kind: 'text', value: siteText };
+  }
+  if (isDangerousUrl(siteText)) {
+    return { kind: 'text', value: siteText };
+  }
+  return { kind: 'link', href: siteText, isExternal: !isInternalUrl(siteText) };
+}
+
 export function AttachedGameCard({ attachment }: Props) {
   const t = useTranslations('attachment');
+  const locale = useLocale();
   const [modalOpen, setModalOpen] = useState(false);
 
   // Build the source attribution. For Lichess we ALWAYS rebuild the URL
@@ -109,10 +153,11 @@ export function AttachedGameCard({ attachment }: Props) {
         }
       : null;
 
-  // For PGN-mode attachments, surface the sanitized [Site] header as
-  // plain text (no auto-link, no <a href>) per SPEC1 §7-4.
-  const pgnSiteText =
-    attachment.source === 'pgn' && attachment.headerSite ? attachment.headerSite : null;
+  // For PGN-mode attachments, classify the [Site] header so external
+  // URLs become cushion-routed links and free-text values render
+  // inert. See `classifySiteHeader` for the full rationale (SPEC1
+  // §7-4 superseded by #84 once the cushion redirect page existed).
+  const pgnSite = attachment.source === 'pgn' ? classifySiteHeader(attachment.headerSite) : null;
 
   return (
     <div className="mt-2 mb-2 rounded-md border border-border bg-card overflow-hidden">
@@ -155,10 +200,25 @@ export function AttachedGameCard({ attachment }: Props) {
               <span className="font-medium">{t('card.headerDate')}: </span>
               <span>{attachment.headerDate ?? '????.??.??'}</span>
             </p>
-            {attachment.source === 'pgn' && (
+            {pgnSite && (
               <p className="text-xs text-muted-foreground truncate">
                 <span className="font-medium">{t('card.headerSite')}: </span>
-                <span>{pgnSiteText ?? '????'}</span>
+                {pgnSite.kind === 'empty' && <span>????</span>}
+                {pgnSite.kind === 'text' && <span>{pgnSite.value}</span>}
+                {pgnSite.kind === 'link' &&
+                  (pgnSite.isExternal ? (
+                    <a
+                      href={buildCushionPageUrl(pgnSite.href, locale)}
+                      rel="noopener noreferrer nofollow"
+                      className={`break-all ${TEXT_LINK_CLASSES}`}
+                    >
+                      {pgnSite.href}
+                    </a>
+                  ) : (
+                    <a href={pgnSite.href} className={`break-all ${TEXT_LINK_CLASSES}`}>
+                      {pgnSite.href}
+                    </a>
+                  ))}
               </p>
             )}
           </div>
