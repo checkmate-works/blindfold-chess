@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import {
   PIECE_NAME_TO_TYPE,
   VALID_PIECE_NAMES,
-} from '@/app/[locale]/(public)/practice/(challenge)/legal-moves/_lib/utils';
+} from '@/app/[locale]/(public)/practice/(challenge)/legal-moves/_lib/query-params';
 
 /**
  * Tests for LegalMovesSession challenge mode logic.

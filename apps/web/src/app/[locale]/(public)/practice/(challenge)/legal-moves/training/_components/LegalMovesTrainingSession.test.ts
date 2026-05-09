@@ -7,7 +7,7 @@ import {
   PIECE_NAME_TO_TYPE,
   PIECE_TYPE_TO_NAME,
   VALID_PIECE_NAMES,
-} from '@/app/[locale]/(public)/practice/(challenge)/legal-moves/_lib/utils';
+} from '@/app/[locale]/(public)/practice/(challenge)/legal-moves/_lib/query-params';
 
 const BATCH_SIZE = 100;
 const ALL_PIECES: PieceType[] = ['k', 'q', 'r', 'b', 'n'];

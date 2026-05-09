@@ -14,8 +14,8 @@ import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_compon
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { isLegalMove } from '../../_lib/legal-moves-api';
 import type { PieceType } from '../../_lib/types';
-import { isLegalMove } from '../../_lib/utils';
 import { LegalMovesPlaying } from './LegalMovesPlaying';
 
 type Props = {
