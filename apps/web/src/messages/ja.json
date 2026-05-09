@@ -2580,8 +2580,6 @@
     "dashboard": "Dashboard",
     "users": "Users",
     "auditLog": "Audit Log",
-    "totalUsers": "Total Users",
-    "roleAssignments": "Role Assignments",
     "dashboardKpi": {
       "from": "開始日",
       "to": "終了日",
@@ -2716,8 +2714,6 @@
       "title": "{username} の投稿",
       "email": "メール",
       "username": "ユーザー名",
-      "backToUsers": "ユーザー一覧に戻る",
-      "topic": "トピック",
       "content": "内容",
       "createdAt": "作成日時",
       "status": "ステータス",
@@ -2733,8 +2729,6 @@
       "deleteModalConfirm": "削除を確認",
       "deleteModalDeleting": "削除中...",
       "deleteModalReasonRequired": "理由は必須です",
-      "previousPage": "前へ",
-      "nextPage": "次へ",
       "userNotFound": "ユーザーが見つかりません"
     },
     "auditLogTable": {
@@ -2747,9 +2741,7 @@
       "noLogsFound": "No audit logs found",
       "filterByAction": "Filter by action",
       "filterByUser": "Filter by user",
-      "allActions": "All Actions",
-      "previousPage": "Previous",
-      "nextPage": "Next"
+      "allActions": "All Actions"
     },
     "activityLog": "Activity Log",
     "activityLogTable": {
@@ -2761,9 +2753,7 @@
       "noLogsFound": "No activity logs found",
       "filterByAction": "Filter by action",
       "filterByUser": "Filter by user",
-      "allActions": "All Actions",
-      "previousPage": "Previous",
-      "nextPage": "Next"
+      "allActions": "All Actions"
     },
     "positionMemory": "Position Memory",
     "chunks": "チャンク",
@@ -2794,9 +2784,7 @@
       "deleteModalCancel": "キャンセル",
       "deleteModalConfirm": "削除を確認",
       "deleteModalDeleting": "削除中...",
-      "deleteModalReasonRequired": "理由は必須です",
-      "previousPage": "前へ",
-      "nextPage": "次へ"
+      "deleteModalReasonRequired": "理由は必須です"
     },
     "announcements": "Announcements",
     "announcementsTable": {

@@ -2580,8 +2580,6 @@
     "dashboard": "Panel",
     "users": "Usuarios",
     "auditLog": "Registro de Auditoría",
-    "totalUsers": "Total de Usuarios",
-    "roleAssignments": "Asignaciones de Roles",
     "dashboardKpi": {
       "from": "Desde",
       "to": "Hasta",
@@ -2716,8 +2714,6 @@
       "title": "Publicaciones de {username}",
       "email": "Correo",
       "username": "Nombre de usuario",
-      "backToUsers": "Volver a Usuarios",
-      "topic": "Tema",
       "content": "Contenido",
       "createdAt": "Fecha de Creación",
       "status": "Estado",
@@ -2733,8 +2729,6 @@
       "deleteModalConfirm": "Confirmar Eliminación",
       "deleteModalDeleting": "Eliminando...",
       "deleteModalReasonRequired": "El motivo es obligatorio",
-      "previousPage": "Anterior",
-      "nextPage": "Siguiente",
       "userNotFound": "Usuario no encontrado"
     },
     "auditLogTable": {
@@ -2747,9 +2741,7 @@
       "noLogsFound": "No se encontraron registros de auditoría",
       "filterByAction": "Filtrar por acción",
       "filterByUser": "Filtrar por usuario",
-      "allActions": "Todas las Acciones",
-      "previousPage": "Anterior",
-      "nextPage": "Siguiente"
+      "allActions": "Todas las Acciones"
     },
     "activityLog": "Registro de Actividad",
     "activityLogTable": {
@@ -2761,9 +2753,7 @@
       "noLogsFound": "No se encontraron registros de actividad",
       "filterByAction": "Filtrar por acción",
       "filterByUser": "Filtrar por usuario",
-      "allActions": "Todas las Acciones",
-      "previousPage": "Anterior",
-      "nextPage": "Siguiente"
+      "allActions": "Todas las Acciones"
     },
     "positionMemory": "Position Memory",
     "chunks": "Chunks",
@@ -2794,9 +2784,7 @@
       "deleteModalCancel": "Cancelar",
       "deleteModalConfirm": "Confirmar Eliminación",
       "deleteModalDeleting": "Eliminando...",
-      "deleteModalReasonRequired": "El motivo es obligatorio",
-      "previousPage": "Anterior",
-      "nextPage": "Siguiente"
+      "deleteModalReasonRequired": "El motivo es obligatorio"
     },
     "announcements": "Anuncios",
     "announcementsTable": {

@@ -2580,8 +2580,6 @@
     "dashboard": "Dashboard",
     "users": "Users",
     "auditLog": "Audit Log",
-    "totalUsers": "Total Users",
-    "roleAssignments": "Role Assignments",
     "dashboardKpi": {
       "from": "From",
       "to": "To",
@@ -2716,8 +2714,6 @@
       "title": "Posts by {username}",
       "email": "Email",
       "username": "Username",
-      "backToUsers": "Back to Users",
-      "topic": "Topic",
       "content": "Content",
       "createdAt": "Created At",
       "status": "Status",
@@ -2733,8 +2729,6 @@
       "deleteModalConfirm": "Confirm Delete",
       "deleteModalDeleting": "Deleting...",
       "deleteModalReasonRequired": "Reason is required",
-      "previousPage": "Previous",
-      "nextPage": "Next",
       "userNotFound": "User not found"
     },
     "auditLogTable": {
@@ -2747,9 +2741,7 @@
       "noLogsFound": "No audit logs found",
       "filterByAction": "Filter by action",
       "filterByUser": "Filter by user",
-      "allActions": "All Actions",
-      "previousPage": "Previous",
-      "nextPage": "Next"
+      "allActions": "All Actions"
     },
     "activityLog": "Activity Log",
     "activityLogTable": {
@@ -2761,9 +2753,7 @@
       "noLogsFound": "No activity logs found",
       "filterByAction": "Filter by action",
       "filterByUser": "Filter by user",
-      "allActions": "All Actions",
-      "previousPage": "Previous",
-      "nextPage": "Next"
+      "allActions": "All Actions"
     },
     "positionMemory": "Position Memory",
     "chunks": "Chunks",
@@ -2794,9 +2784,7 @@
       "deleteModalCancel": "Cancel",
       "deleteModalConfirm": "Confirm Delete",
       "deleteModalDeleting": "Deleting...",
-      "deleteModalReasonRequired": "Reason is required",
-      "previousPage": "Previous",
-      "nextPage": "Next"
+      "deleteModalReasonRequired": "Reason is required"
     },
     "announcements": "Announcements",
     "announcementsTable": {

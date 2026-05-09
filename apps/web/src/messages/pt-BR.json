@@ -2581,8 +2581,6 @@
     "dashboard": "Painel",
     "users": "Usuários",
     "auditLog": "Registro de Auditoria",
-    "totalUsers": "Total de Usuários",
-    "roleAssignments": "Atribuições de Funções",
     "dashboardKpi": {
       "from": "De",
       "to": "Até",
@@ -2717,8 +2715,6 @@
       "title": "Publicações de {username}",
       "email": "E-mail",
       "username": "Nome de usuário",
-      "backToUsers": "Voltar a Usuários",
-      "topic": "Tópico",
       "content": "Conteúdo",
       "createdAt": "Data de Criação",
       "status": "Status",
@@ -2734,8 +2730,6 @@
       "deleteModalConfirm": "Confirmar Exclusão",
       "deleteModalDeleting": "Excluindo...",
       "deleteModalReasonRequired": "O motivo é obrigatório",
-      "previousPage": "Anterior",
-      "nextPage": "Próximo",
       "userNotFound": "Usuário não encontrado"
     },
     "auditLogTable": {
@@ -2748,9 +2742,7 @@
       "noLogsFound": "Nenhum registro de auditoria encontrado",
       "filterByAction": "Filtrar por ação",
       "filterByUser": "Filtrar por usuário",
-      "allActions": "Todas as Ações",
-      "previousPage": "Anterior",
-      "nextPage": "Próximo"
+      "allActions": "Todas as Ações"
     },
     "activityLog": "Registro de Atividade",
     "activityLogTable": {
@@ -2762,9 +2754,7 @@
       "noLogsFound": "Nenhum registro de atividade encontrado",
       "filterByAction": "Filtrar por ação",
       "filterByUser": "Filtrar por usuário",
-      "allActions": "Todas as Ações",
-      "previousPage": "Anterior",
-      "nextPage": "Próximo"
+      "allActions": "Todas as Ações"
     },
     "positionMemory": "Memória de Posições",
     "puzzle": "Puzzle",
@@ -2794,9 +2784,7 @@
       "deleteModalCancel": "Cancelar",
       "deleteModalConfirm": "Confirmar Exclusão",
       "deleteModalDeleting": "Excluindo...",
-      "deleteModalReasonRequired": "O motivo é obrigatório",
-      "previousPage": "Anterior",
-      "nextPage": "Próximo"
+      "deleteModalReasonRequired": "O motivo é obrigatório"
     },
     "announcements": "Anúncios",
     "announcementsTable": {
