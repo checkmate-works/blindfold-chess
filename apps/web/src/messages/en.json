@@ -3844,11 +3844,8 @@
         "3kyu": "Ability to plan piece maneuvering routes for all pieces without visual aids."
       },
       "tips": "Tips",
-      "guide": "Guide",
       "tryChallenge": "Try the Challenge",
       "showMore": "Show more",
-      "prevPage": "Previous",
-      "nextPage": "Next",
       "pageOf": "Page {current} of {total}",
       "mukyuRequirements": ["Understanding of algebraic notation"],
       "mukyuRelatedLinks": {

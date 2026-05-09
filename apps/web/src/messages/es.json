@@ -3844,11 +3844,8 @@
         "3kyu": "Capacidad de planificar rutas de maniobra para todas las piezas sin ayudas visuales."
       },
       "tips": "Consejos",
-      "guide": "Guía",
       "tryChallenge": "Probar el Desafío",
       "showMore": "Mostrar más",
-      "prevPage": "Anterior",
-      "nextPage": "Siguiente",
       "pageOf": "Página {current} de {total}",
       "mukyuRequirements": ["Comprensión de la notación algebraica"],
       "mukyuRelatedLinks": {
