@@ -20,7 +20,7 @@ import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import type { PieceType } from '../../_lib/utils';
+import type { PieceType } from '../../_lib/pieces';
 import type { ProblemResult } from './_parts/ProblemBody';
 import { ProblemBody } from './_parts/ProblemBody';
 import { SessionHeader } from './_parts/SessionHeader';

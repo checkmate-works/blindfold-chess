@@ -4,8 +4,8 @@ import { CHALLENGE_TIME_LIMIT } from '@/lib/challenge/constants';
 
 import { createPracticeChallengeSessionPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeSessionPages';
 
-import { PIECE_NAME_TO_TYPE, VALID_PIECE_NAMES } from '../../_lib/utils';
-import type { PieceType } from '../../_lib/utils';
+import type { PieceType } from '../../_lib/pieces';
+import { PIECE_NAME_TO_TYPE, VALID_PIECE_NAMES } from '../../_lib/query-params';
 
 const RoutePlannerChallengeSession = dynamic(
   () => import('../_components/RoutePlannerChallengeSession')

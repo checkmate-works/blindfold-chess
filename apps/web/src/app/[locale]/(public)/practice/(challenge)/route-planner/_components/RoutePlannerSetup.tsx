@@ -11,8 +11,8 @@ import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { PracticeSetupActions } from '../../_components/PracticeSetupActions';
-import { PIECE_TYPE_TO_NAME } from '../_lib/utils';
-import type { RoutePlannerPieceSelection } from '../_lib/utils';
+import type { RoutePlannerPieceSelection } from '../_lib/pieces';
+import { PIECE_TYPE_TO_NAME } from '../_lib/query-params';
 import { RoutePlannerSettings } from './RoutePlannerSettings';
 
 type Props = {

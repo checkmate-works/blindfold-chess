@@ -7,7 +7,7 @@ import { FaFlagCheckered } from 'react-icons/fa';
 import { AlgebraicKeyboardHint } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
 import { PieceCoordinateInput } from '@/app/[locale]/(public)/practice/_components/PieceCoordinateInput';
 
-import type { PieceType } from '../../../_lib/utils';
+import type { PieceType } from '../../../_lib/pieces';
 
 type Props = {
   piece: PieceType;
