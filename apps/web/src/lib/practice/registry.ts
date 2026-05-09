@@ -55,16 +55,16 @@ export type PracticeModuleRegistryEntry = {
  */
 export const PRACTICE_MODULE_REGISTRY = [
   {
+    slugSnake: 'square_colors',
+    slugKebab: 'square-colors',
+    hasChallenge: true,
+  },
+  {
     slugSnake: 'coordinate_quiz',
     slugKebab: 'coordinate-quiz',
     hasChallenge: true,
   },
   { slugSnake: 'legal_moves', slugKebab: 'legal-moves', hasChallenge: true },
-  {
-    slugSnake: 'square_colors',
-    slugKebab: 'square-colors',
-    hasChallenge: true,
-  },
   {
     slugSnake: 'diagonal_quiz',
     slugKebab: 'diagonal-quiz',

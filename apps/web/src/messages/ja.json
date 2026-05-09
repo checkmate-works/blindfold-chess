@@ -3733,7 +3733,7 @@
     },
     "moduleFilterLabel": "モジュールフィルター",
     "moduleFilter": {
-      "all": "すべて",
+      "all": "全",
       "coordinate_quiz": "座標クイズ",
       "legal_moves": "合法手",
       "square_colors": "マスの色",
