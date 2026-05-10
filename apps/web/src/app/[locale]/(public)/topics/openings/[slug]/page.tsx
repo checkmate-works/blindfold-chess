@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
+import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { paginateItems } from '@/lib/pagination';
 import { createOpeningPostRateLimit, isRateLimited } from '@/lib/security/rate-limit';
 import { createClient } from '@/lib/supabase/server';
@@ -12,6 +13,7 @@ import { createClient } from '@/lib/supabase/server';
 import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
 import { TopicListPageLayout } from '@/app/[locale]/(public)/topics/_components/TopicListPageLayout';
+import { renderAttachment } from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import {
   TOPIC_PAGE_SIZE,
   buildPaginationHref,
@@ -99,6 +101,15 @@ export default async function OpeningDetailPage({ params, searchParams }: Props)
     paginatedItems: posts,
   } = paginateItems(allPosts, TOPIC_PAGE_SIZE, page);
 
+  // Pre-resolve each visible post's attachment slot upstream because
+  // OpeningPostCard is a client component and `getAttachmentsForPosts`
+  // is server-only. The OpeningPostCard composes this with the
+  // optional rating display in its `extraContent` slot.
+  const postIds = posts.map((p) => p.id);
+  const attachments = postIds.length > 0 ? await getAttachmentsForPosts(postIds) : new Map();
+  const tVideo = await getTranslations({ locale, namespace: 'postVideoAttachmentRender' });
+  const fallbackVideoTitle = tVideo('fallbackTitle');
+
   const buildHref = (p: number) =>
     buildPaginationHref(locale, `/topics/openings/${slug}`, p, sortBy);
 
@@ -115,19 +126,13 @@ export default async function OpeningDetailPage({ params, searchParams }: Props)
           totalCount === 0 ? (
             newPostForm
           ) : (
-            <JoinConversationToggle
-              countText={dt('postCount', { count: totalCount })}
-              joinLabel={t('joinConversation')}
-            >
+            <JoinConversationToggle count={totalCount} joinLabel={t('joinConversation')}>
               {newPostForm}
             </JoinConversationToggle>
           )
         ) : null
       ) : (
-        <JoinConversationToggle
-          countText={dt('postCount', { count: totalCount })}
-          joinLabel={t('joinConversation')}
-        >
+        <JoinConversationToggle count={totalCount} joinLabel={t('joinConversation')}>
           {newPostForm}
         </JoinConversationToggle>
       )}
@@ -159,9 +164,18 @@ export default async function OpeningDetailPage({ params, searchParams }: Props)
       }
       communitySection={communitySection}
       hasPosts={posts.length > 0}
-      postCards={posts.map((post) => (
-        <OpeningPostCard key={post.id} post={post} locale={locale} slug={slug} />
-      ))}
+      postCards={posts.map((post) => {
+        const att = attachments.get(post.id);
+        return (
+          <OpeningPostCard
+            key={post.id}
+            post={post}
+            locale={locale}
+            slug={slug}
+            attachment={att ? renderAttachment(att, fallbackVideoTitle) : undefined}
+          />
+        );
+      })}
       pagination={{ currentPage, totalPages, buildHref }}
       breadcrumbItems={[
         { label: t('title'), href: '/topics' },

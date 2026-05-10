@@ -2,8 +2,14 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
+
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
 import { TopicPostDetailLayout } from '@/app/[locale]/(public)/topics/_components/TopicPostDetailLayout';
+import {
+  buildAttachmentNodeMap,
+  renderAttachment,
+} from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { fetchPostDetailData } from '@/app/[locale]/(public)/topics/_lib/post-detail';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -13,7 +19,8 @@ import { OpeningBoardWithMoves } from '../../../_components/OpeningBoardWithMove
 import { getOpeningDisplayName } from '../../../_lib/get-opening-display-name';
 import { getOpeningBySlug, getOpeningPostById } from '../../../_lib/queries';
 import { RatingDisplay } from '../../_components';
-import { createReply } from './_actions/createReply';
+import { createReplyWithAttachment } from './_actions/createReplyWithAttachment';
+import { createReplyWithFenAttachment } from './_actions/createReplyWithFenAttachment';
 import { toggleLike } from './_actions/toggleLike';
 
 type Props = {
@@ -73,9 +80,40 @@ export default async function OpeningPostDetailPage({ params, searchParams }: Pr
     post
   );
 
+  // Fetch attachments for the OP AND every reply in one round-trip.
+  // The OP's attachment renders inside the OP card's `opAttachment`
+  // slot (rendered after the body — matching CommentNode's
+  // attachment position so the OP and replies stay layout-aligned).
+  // The opening's rating display stays in the `opMeta` slot ABOVE
+  // the body because it reads as metadata about the post (a rating
+  // annotation), not as inline content. Each reply's attachment
+  // flows into `extraContentByPostId` for the same after-body
+  // placement under each CommentNode.
+  const replyIds = replies.map((r) => r.id);
+  const allPostIds = [postId, ...replyIds];
+  const attachments = await getAttachmentsForPosts(allPostIds);
+  const opAttachmentRow = attachments.get(postId) ?? null;
+
   const t = await getTranslations({ locale, namespace: 'topics' });
   const dt = await getTranslations({ locale, namespace: 'topics.openings' });
   const nameT = await getTranslations({ locale, namespace: 'topics.openings.names' });
+  const tVideo = await getTranslations({ locale, namespace: 'postVideoAttachmentRender' });
+  const fallbackVideoTitle = tVideo('fallbackTitle');
+  const opAttachment = opAttachmentRow
+    ? renderAttachment(opAttachmentRow, fallbackVideoTitle)
+    : undefined;
+  const replyExtraContentByPostId = buildAttachmentNodeMap(
+    replyIds,
+    attachments,
+    fallbackVideoTitle
+  );
+
+  const opMeta = post.rating ? (
+    <RatingDisplay
+      preferenceRating={post.rating.preferenceRating}
+      proficiencyRating={post.rating.proficiencyRating}
+    />
+  ) : undefined;
 
   const replyRestrictionMessage =
     !isAuthor && post.replyPermission === 'followers' && !canReply
@@ -92,14 +130,8 @@ export default async function OpeningPostDetailPage({ params, searchParams }: Pr
       pageTitle={dt('detail.pageTitle')}
       sectionTitle={dt('postDetail.authorView', { author: authorName, name: displayName })}
       topicVisual={<OpeningBoardWithMoves fen={opening.fen} pgn={opening.pgn} />}
-      opMeta={
-        post.rating ? (
-          <RatingDisplay
-            preferenceRating={post.rating.preferenceRating}
-            proficiencyRating={post.rating.proficiencyRating}
-          />
-        ) : undefined
-      }
+      opMeta={opMeta}
+      opAttachment={opAttachment}
       rootWithMeta={rootWithMeta}
       replies={replies}
       user={user}
@@ -108,7 +140,11 @@ export default async function OpeningPostDetailPage({ params, searchParams }: Pr
       replyRestrictionMessage={replyRestrictionMessage}
       toggleLikeAction={toggleLike}
       deletePostAction={deletePost}
-      createReplyAction={createReply}
+      replyAttachmentActions={{
+        pgn: createReplyWithAttachment,
+        fen: createReplyWithFenAttachment,
+      }}
+      extraContentByPostId={replyExtraContentByPostId}
       redirectPath={`/${locale}/topics/openings/${slug}`}
       i18n={{
         likeNamespace: 'topics.openings.postDetail',
@@ -117,7 +153,7 @@ export default async function OpeningPostDetailPage({ params, searchParams }: Pr
       }}
       comments={{
         sectionTitle: dt('replies.title'),
-        countText: dt('replies.count', { count: replies.length }),
+        count: replies.length,
         sortBy,
         sortBasePath: `/topics/openings/${slug}/posts/${postId}`,
         sortTranslationKey: 'topics.openings.sort',

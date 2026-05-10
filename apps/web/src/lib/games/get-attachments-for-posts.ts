@@ -4,47 +4,59 @@ import {
   parsePgnWithFen,
 } from '@blindfold-chess/features/chess-core';
 import * as Sentry from '@sentry/nextjs';
-import { and, eq, inArray, isNull } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull } from 'drizzle-orm';
 import 'server-only';
 
-import { db, postGameEmbedAttachments, postGamePgnAttachments, topicPosts } from '@/lib/db';
+import {
+  db,
+  postFenAttachments,
+  postGameEmbedAttachments,
+  postGamePgnAttachments,
+  postImageAttachments,
+  postVideoAttachments,
+  topicPosts,
+} from '@/lib/db';
+import { buildPostImagePublicUrl } from '@/lib/post-images/public-url';
 
 import type { AttachedEmbedCardData } from '@/app/[locale]/(public)/topics/_components/AttachedEmbedCard';
+import type { AttachedFenCardData } from '@/app/[locale]/(public)/topics/_components/AttachedFenCard';
 import type { AttachedGameCardData } from '@/app/[locale]/(public)/topics/_components/AttachedGameCard';
+import type { AttachedImageCardData } from '@/app/[locale]/(public)/topics/_components/AttachedImageCard';
+import type { AttachedVideoCardData } from '@/app/[locale]/(public)/topics/_components/AttachedVideoCard';
 
 /**
- * Per-post attachment payload. SPEC2 Phase B introduces the `embed`
- * variant alongside the existing `pgn` variant.
+ * Per-post attachment payload. SPEC2 UI integration widens the union
+ * from `'pgn' | 'embed'` to the full 5-kind family of attachments.
  *
- * @design Application-layer 1:0..1 invariant
+ * @design Application-layer single-kind invariant (SPEC2 D3 case (iii))
  *
- * The two attachment tables (`post_game_pgn_attachments` and
- * `post_game_embed_attachments`) are independently RLS-gated and
- * write-once. The Server Actions only expose one entry point per kind,
- * so a given `post_id` is expected to have AT MOST ONE row across the
- * two tables. The loader below enforces that invariant defensively: if
- * a post somehow has both, it logs a warning and returns the PGN
- * variant (older + better-tested rendering path).
+ * Each attachment table is independently RLS-gated and write-once. The
+ * Server Actions only expose one attach-path per kind, so a given
+ * `post_id` is expected to carry rows in AT MOST ONE of the five
+ * tables. The loader below enforces that invariant defensively: when a
+ * post somehow lands rows in multiple tables, the preferring order is
+ *   pgn > embed > image > fen > video
+ * (PGN/embed are the longest-running, best-tested rendering paths;
+ * image is preferred over fen/video because the user explicitly
+ * uploaded a file, a stronger intent signal than a URL paste).
  *
- * @design Future widening for #73 / #74 / #75
+ * The `Map<postId, PostAttachment>` shape is preserved so callers
+ * (PostCard, post detail page) can keep using `map.get(id) ?? null`.
  *
- * The downstream `Map<postId, PostAttachment>` shape returned by
- * `getAttachmentsForPosts` assumes **at most one attachment per post** —
- * this is the "PGN xor embed" rule enforced today by the Server Action
- * layer. Once additional attachment kinds land (#73 image N, #74 FEN
- * 0..1, #75 video 0..1), this single-value-per-post shape will need to
- * widen — most likely to a per-post bundle along the lines of
- * `{ game?, fen?, video?, images? }` — because #72 R2 explicitly allows
- * multiple kinds on the same post (e.g. game + FEN + 2 images).
+ * @design image cardinality (SPEC2 D4 γ-1)
  *
- * The "preferring PGN" branch in this file (the `Sentry.captureMessage(...)`
- * call inside the embed-row loop's `if (map.has(row.postId))` PGN-preference
- * branch below) encodes the current "PGN xor embed" exclusivity rule and
- * will need to be widened or removed at the same time the union widens.
+ * `kind: 'image'` carries `data: readonly AttachedImageCardData[]`
+ * because per-post image cardinality is 1:N (up to 3 enforced by a
+ * trigger). Using a single map entry whose `data` is an array keeps
+ * the `Map<postId, PostAttachment>` semantics intact while letting the
+ * renderer iterate.
  */
 export type PostAttachment =
   | { kind: 'pgn'; data: AttachedGameCardData }
-  | { kind: 'embed'; data: AttachedEmbedCardData };
+  | { kind: 'embed'; data: AttachedEmbedCardData }
+  | { kind: 'image'; data: readonly AttachedImageCardData[] }
+  | { kind: 'fen'; data: AttachedFenCardData }
+  | { kind: 'video'; data: AttachedVideoCardData };
 
 /**
  * Fetch attachments for the given set of post IDs, filtering by parent
@@ -52,25 +64,31 @@ export type PostAttachment =
  *
  * @description
  * Returns a `Map<postId, PostAttachment>` so callers can attach the
- * game data to their per-post objects in O(1) without re-querying.
- * Includes both PGN attachments (post_game_pgn_attachments) and embed
- * attachments (post_game_embed_attachments).
+ * payload to their per-post objects in O(1) without re-querying. The
+ * five attachment families (`post_game_pgn_attachments`,
+ * `post_game_embed_attachments`, `post_image_attachments`,
+ * `post_fen_attachments`, `post_video_attachments`) are queried in
+ * parallel and reduced to a single map entry per post per the
+ * single-kind preference order documented on `PostAttachment`.
  *
  * @design Soft-delete safety
  *
- * Joins back to `topic_posts` and filters `deleted_at IS NULL`. The
- * application's standard post queries already exclude soft-deleted posts,
- * so this filter is redundant in the happy path — but it ensures that any
- * future caller that forgets the filter (or fetches by post ID from a
- * less-strict source) cannot leak attachments belonging to deleted posts
- * to the UI. This is the application-side mirror of the RLS SELECT policy.
+ * Every SELECT joins back to `topic_posts` and filters
+ * `deleted_at IS NULL`. The application's standard post queries already
+ * exclude soft-deleted posts, so this filter is redundant in the happy
+ * path — but it ensures any future caller that forgets the filter (or
+ * fetches by post ID from a less-strict source) cannot leak attachments
+ * belonging to deleted posts to the UI. Application-side mirror of the
+ * RLS SELECT policy on each table.
  */
 export async function getAttachmentsForPosts(
   postIds: readonly string[]
 ): Promise<Map<string, PostAttachment>> {
   if (postIds.length === 0) return new Map();
 
-  const [pgnRows, embedRows] = await Promise.all([
+  const ids = [...postIds];
+
+  const [pgnRows, embedRows, imageRows, fenRows, videoRows] = await Promise.all([
     db
       .select({
         id: postGamePgnAttachments.id,
@@ -92,9 +110,7 @@ export async function getAttachmentsForPosts(
       })
       .from(postGamePgnAttachments)
       .innerJoin(topicPosts, eq(topicPosts.id, postGamePgnAttachments.postId))
-      .where(
-        and(inArray(postGamePgnAttachments.postId, [...postIds]), isNull(topicPosts.deletedAt))
-      ),
+      .where(and(inArray(postGamePgnAttachments.postId, ids), isNull(topicPosts.deletedAt))),
     db
       .select({
         id: postGameEmbedAttachments.id,
@@ -106,12 +122,50 @@ export async function getAttachmentsForPosts(
       })
       .from(postGameEmbedAttachments)
       .innerJoin(topicPosts, eq(topicPosts.id, postGameEmbedAttachments.postId))
-      .where(
-        and(inArray(postGameEmbedAttachments.postId, [...postIds]), isNull(topicPosts.deletedAt))
-      ),
+      .where(and(inArray(postGameEmbedAttachments.postId, ids), isNull(topicPosts.deletedAt))),
+    db
+      .select({
+        id: postImageAttachments.id,
+        postId: postImageAttachments.postId,
+        storagePath: postImageAttachments.storagePath,
+        width: postImageAttachments.width,
+        height: postImageAttachments.height,
+        altText: postImageAttachments.altText,
+        displayOrder: postImageAttachments.displayOrder,
+      })
+      .from(postImageAttachments)
+      .innerJoin(topicPosts, eq(topicPosts.id, postImageAttachments.postId))
+      .where(and(inArray(postImageAttachments.postId, ids), isNull(topicPosts.deletedAt)))
+      .orderBy(asc(postImageAttachments.postId), asc(postImageAttachments.displayOrder)),
+    db
+      .select({
+        id: postFenAttachments.id,
+        postId: postFenAttachments.postId,
+        fen: postFenAttachments.fen,
+        caption: postFenAttachments.caption,
+      })
+      .from(postFenAttachments)
+      .innerJoin(topicPosts, eq(topicPosts.id, postFenAttachments.postId))
+      .where(and(inArray(postFenAttachments.postId, ids), isNull(topicPosts.deletedAt))),
+    db
+      .select({
+        id: postVideoAttachments.id,
+        postId: postVideoAttachments.postId,
+        provider: postVideoAttachments.provider,
+        providerVideoId: postVideoAttachments.providerVideoId,
+        title: postVideoAttachments.title,
+      })
+      .from(postVideoAttachments)
+      .innerJoin(topicPosts, eq(topicPosts.id, postVideoAttachments.postId))
+      .where(and(inArray(postVideoAttachments.postId, ids), isNull(topicPosts.deletedAt))),
   ]);
 
   const map = new Map<string, PostAttachment>();
+
+  // Order matters: pgn > embed > image > fen > video. The preference
+  // is documented on PostAttachment and enforced here by the order of
+  // the loops + the `if (map.has(...))` guard.
+
   for (const row of pgnRows) {
     // Compute the final-position FEN server-side. The summary card
     // only needs a static FEN string for its thumbnail, so doing the
@@ -153,23 +207,10 @@ export async function getAttachmentsForPosts(
       },
     });
   }
+
   for (const row of embedRows) {
     if (map.has(row.postId)) {
-      // PGN/embed exclusivity invariant violated. The Server Actions
-      // enforce 1:0..1 by construction, so this branch only fires if
-      // a future flow inserts both kinds for the same post (or via a
-      // direct DB write). We prefer the PGN variant for safety: it is
-      // the older, better-tested rendering path. Reported via Sentry
-      // (mirroring the `embedErrorKey` pattern in
-      // `createChunkPostWithEmbedAttachment`) so the invariant break
-      // is surfaced in observability without throwing.
-      Sentry.captureMessage(
-        `[get-attachments-for-posts] post ${row.postId} has both PGN and embed attachments; preferring PGN`,
-        {
-          level: 'warning',
-          tags: { component: 'get-attachments-for-posts', postId: row.postId },
-        }
-      );
+      conflictWarn(row.postId, 'pgn', 'embed');
       continue;
     }
     map.set(row.postId, {
@@ -183,5 +224,86 @@ export async function getAttachmentsForPosts(
       },
     });
   }
+
+  // Image cardinality is 1:N — group rows by post into an array entry.
+  // Rows are already ordered by (postId, displayOrder) ascending.
+  const imagesByPost = new Map<string, AttachedImageCardData[]>();
+  for (const row of imageRows) {
+    const item: AttachedImageCardData = {
+      id: row.id,
+      publicUrl: buildPostImagePublicUrl(row.storagePath),
+      width: row.width,
+      height: row.height,
+      altText: row.altText,
+      displayOrder: row.displayOrder,
+    };
+    const bucket = imagesByPost.get(row.postId);
+    if (bucket) {
+      bucket.push(item);
+    } else {
+      imagesByPost.set(row.postId, [item]);
+    }
+  }
+  for (const [postId, images] of imagesByPost) {
+    if (map.has(postId)) {
+      const existingKind = map.get(postId)!.kind;
+      conflictWarn(postId, existingKind, 'image');
+      continue;
+    }
+    map.set(postId, { kind: 'image', data: images });
+  }
+
+  for (const row of fenRows) {
+    if (map.has(row.postId)) {
+      const existingKind = map.get(row.postId)!.kind;
+      conflictWarn(row.postId, existingKind, 'fen');
+      continue;
+    }
+    map.set(row.postId, {
+      kind: 'fen',
+      data: {
+        id: row.id,
+        fen: row.fen,
+        caption: row.caption,
+      },
+    });
+  }
+
+  for (const row of videoRows) {
+    if (map.has(row.postId)) {
+      const existingKind = map.get(row.postId)!.kind;
+      conflictWarn(row.postId, existingKind, 'video');
+      continue;
+    }
+    map.set(row.postId, {
+      kind: 'video',
+      data: {
+        id: row.id,
+        provider: row.provider,
+        providerVideoId: row.providerVideoId,
+        title: row.title,
+      },
+    });
+  }
+
   return map;
+}
+
+/**
+ * Surface a multi-kind invariant break to observability without throwing.
+ * Mirrors the Sentry posture from the original 2-kind aggregator.
+ */
+function conflictWarn(postId: string, preferredKind: string, droppedKind: string): void {
+  Sentry.captureMessage(
+    `[get-attachments-for-posts] post ${postId} has both ${preferredKind} and ${droppedKind} attachments; preferring ${preferredKind}`,
+    {
+      level: 'warning',
+      tags: {
+        component: 'get-attachments-for-posts',
+        postId,
+        preferredKind,
+        droppedKind,
+      },
+    }
+  );
 }

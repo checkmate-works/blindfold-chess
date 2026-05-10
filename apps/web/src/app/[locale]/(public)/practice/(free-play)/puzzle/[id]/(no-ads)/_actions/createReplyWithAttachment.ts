@@ -1,0 +1,41 @@
+'use server';
+
+import { getPositionById } from '@/lib/positions/queries';
+
+import type { CreateReplyState } from '@/app/[locale]/(public)/topics/_actions/createReply';
+import { createReplyWithAttachmentBase } from '@/app/[locale]/(public)/topics/_actions/createReplyWithAttachmentBase';
+
+/**
+ * Thin wrapper around `createReplyWithAttachmentBase` for the puzzle
+ * inline reply surface (#84 phase D). Mirrors the plain `createReply`
+ * shape — including the `isSpoiler` FormData read so an attachment-
+ * bearing reply can still self-flag as containing the solution.
+ */
+export async function createReplyWithAttachment(
+  locale: string,
+  positionId: string,
+  postId: string,
+  _prevState: CreateReplyState,
+  formData: FormData
+): Promise<CreateReplyState> {
+  // Same `'on'` / `'true'` normalization as the plain `createReply`
+  // wrapper so a missing or forged value never silently flags a reply
+  // as containing the solution.
+  const rawSpoiler = formData.get('isSpoiler');
+  const isSpoiler = rawSpoiler === 'on' || rawSpoiler === 'true';
+
+  return createReplyWithAttachmentBase({
+    locale,
+    topicIdentifier: positionId,
+    postId,
+    topicType: 'position_puzzle',
+    topicKey: positionId,
+    urlSegment: 'practice/puzzle',
+    validateTopic: async (id) => (await getPositionById({ id, type: 'puzzle' })) !== null,
+    redirectPath: (_postId, replyId) =>
+      `/${locale}/practice/puzzle/${positionId}?toast=post_created#post-${replyId}`,
+    revalidate: () => `/${locale}/practice/puzzle/${positionId}`,
+    isSpoiler,
+    formData,
+  });
+}

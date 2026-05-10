@@ -1,5 +1,7 @@
 'use client';
 
+import type { ReactNode } from 'react';
+
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { BaseTopicPostCard } from '@/app/[locale]/(public)/topics/_components';
@@ -12,9 +14,17 @@ type Props = {
   locale: string;
   square: string;
   showSquareBadge?: boolean;
+  /**
+   * Pre-rendered attachment slot (e.g. an `<AttachedGameCard />`).
+   * Server pages resolve `getAttachmentsForPosts` + `renderAttachment`
+   * upstream and hand the ReactNode here, since `getAttachmentsForPosts`
+   * is server-only and PostCard is a client component. Unused when the
+   * post has no attachment row.
+   */
+  attachment?: ReactNode;
 };
 
-export function PostCard({ post, locale, square, showSquareBadge = false }: Props) {
+export function PostCard({ post, locale, square, showSquareBadge = false, attachment }: Props) {
   const t = useTranslations('topics.squares');
 
   return (
@@ -40,6 +50,7 @@ export function PostCard({ post, locale, square, showSquareBadge = false }: Prop
           </div>
         ) : undefined
       }
+      extraContent={attachment}
     />
   );
 }

@@ -1,5 +1,7 @@
 'use client';
 
+import type { ReactNode } from 'react';
+
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { BaseTopicPostCard } from '@/app/[locale]/(public)/topics/_components';
@@ -13,10 +15,39 @@ type Props = {
   locale: string;
   slug: string;
   openingName?: string | null;
+  /**
+   * Pre-rendered attachment slot (e.g. `<AttachedGameCard />`). Composed
+   * with the optional `RatingDisplay` so a single `extraContent` slot
+   * surfaces both the opening rating and any attached game / FEN /
+   * embed card. Server pages resolve the ReactNode upstream because
+   * `getAttachmentsForPosts` is server-only and OpeningPostCard is a
+   * client component.
+   */
+  attachment?: ReactNode;
 };
 
-export function OpeningPostCard({ post, locale, slug, openingName }: Props) {
+export function OpeningPostCard({ post, locale, slug, openingName, attachment }: Props) {
   const t = useTranslations('topics.openings');
+
+  const rating = post.rating ? (
+    <div className="mb-2">
+      <RatingDisplay
+        preferenceRating={post.rating.preferenceRating}
+        proficiencyRating={post.rating.proficiencyRating}
+      />
+    </div>
+  ) : null;
+
+  // Compose rating + attachment into a single `extraContent` slot.
+  // When neither is present pass `undefined` so BaseTopicPostCard does
+  // not emit an empty wrapper that would create stray vertical space.
+  const extraContent =
+    rating || attachment ? (
+      <>
+        {rating}
+        {attachment}
+      </>
+    ) : undefined;
 
   return (
     <BaseTopicPostCard
@@ -41,16 +72,7 @@ export function OpeningPostCard({ post, locale, slug, openingName }: Props) {
           </div>
         ) : undefined
       }
-      extraContent={
-        post.rating ? (
-          <div className="mb-2">
-            <RatingDisplay
-              preferenceRating={post.rating.preferenceRating}
-              proficiencyRating={post.rating.proficiencyRating}
-            />
-          </div>
-        ) : undefined
-      }
+      extraContent={extraContent}
     />
   );
 }

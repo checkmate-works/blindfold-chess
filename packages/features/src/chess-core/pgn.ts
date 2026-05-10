@@ -251,6 +251,27 @@ function nullableHeader(value: string | undefined | null): string | null {
 }
 
 /**
+ * chess.js 1.4.0 fails to parse two adjacent `{...}` PGN comment
+ * blocks (e.g. `1. d4 { Mistake. } { [%eval 1.56] [%clk 0:09:46] }`).
+ * The PGN spec allows adjacent comment blocks, and Lichess deliberately
+ * separates textual annotation from structured `[%eval][%clk]`
+ * annotation, so Lichess PGN exports do not load via chess.js as-is.
+ *
+ * Merge `} <whitespace> {` into a single comment by collapsing the
+ * separator to a space. Semantics are preserved (both blocks were
+ * comments on the same move) and chess.js then accepts the result.
+ *
+ * Comment text in PGN cannot contain `{` or `}` (PGN spec, reserved
+ * delimiters), so this regex has no false-positive risk inside comment
+ * bodies. Comments inside RAV `(...)` are handled by the same rule.
+ *
+ * @internal — not exported; only used by `validateAttachedPgn`.
+ */
+function mergeAdjacentPgnComments(pgn: string): string {
+  return pgn.replace(/\}\s+\{/g, " ");
+}
+
+/**
  * Validate, normalize, and extract metadata from a PGN string in one call.
  *
  * Designed for the comment-attachment use case: returns everything the
@@ -292,7 +313,10 @@ export function validateAttachedPgn(
   let chess: Chess;
   try {
     chess = new Chess();
-    chess.loadPgn(pgn);
+    // Preprocess Lichess-style adjacent comment blocks before chess.js
+    // parsing. See `mergeAdjacentPgnComments` for rationale.
+    const preprocessed = mergeAdjacentPgnComments(pgn);
+    chess.loadPgn(preprocessed);
   } catch (error) {
     return {
       ok: false,

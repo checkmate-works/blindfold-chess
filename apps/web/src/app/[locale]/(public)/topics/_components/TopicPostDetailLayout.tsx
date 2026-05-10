@@ -21,9 +21,8 @@ import { DeletePostButton } from './DeletePostButton';
 import { JoinConversationToggle } from './JoinConversationToggle';
 import { LikeButton } from './LikeButton';
 import { ReplyForm } from './ReplyForm';
+import type { ReplyAttachmentActions } from './ReplyForm';
 import { SortSelect } from './SortSelect';
-
-type CreateReplyState = { error?: string };
 
 type ToggleLikeAction = (
   postId: string,
@@ -32,14 +31,6 @@ type ToggleLikeAction = (
 ) => Promise<{ liked: boolean; likeCount: number } | { error: string }>;
 
 type DeletePostAction = (postId: string, locale: string) => Promise<ActionResult>;
-
-type CreateReplyAction = (
-  locale: string,
-  topicKey: string,
-  postId: string,
-  prevState: CreateReplyState,
-  formData: FormData
-) => Promise<CreateReplyState>;
 
 type Props = {
   locale: Locale;
@@ -50,11 +41,22 @@ type Props = {
   /**
    * Per-OP metadata rendered inside the OP card, between the author
    * header and the body — e.g. an opening's preference / proficiency
-   * rating, a chunk's attached game card or embed. Sitting inside the
-   * card keeps these visually attached to the post they belong to,
-   * matching how `main`'s `PostDetailContent` placed `extraContent`.
+   * rating. Sits ABOVE the body so it reads as metadata about the
+   * post (rating-style annotations) rather than inline content.
+   * Attachments don't go here — use `opAttachment` so the layout
+   * matches how comments render their attachments (after the body).
    */
   opMeta?: ReactNode;
+  /**
+   * Per-OP attachment payload rendered inside the OP card BELOW the
+   * body, just above the like / delete row. Mirrors how `CommentNode`
+   * positions its own attachment relative to the comment body, so the
+   * OP and every reply present attachments in the same place. Pass
+   * the resolved `<AttachedGameCard />` / `<AttachedFenCard />` /
+   * etc. directly — the page does the `getAttachmentsForPosts` +
+   * `renderAttachment` upstream because this is a server component.
+   */
+  opAttachment?: ReactNode;
   /** OP enriched with reply / like meta. Rendered as a standalone card. */
   rootWithMeta: PostWithReplyMeta;
   /**
@@ -79,7 +81,12 @@ type Props = {
   replyRestrictionMessage: string | null;
   toggleLikeAction: ToggleLikeAction;
   deletePostAction: DeletePostAction;
-  createReplyAction: CreateReplyAction;
+  /**
+   * Attachment-aware reply Server Actions (PGN + FEN). Bound by every
+   * `ReplyForm` rendered on this page (top-level CTA + inline replies
+   * inside `CommentTree`) so submits route through the right base.
+   */
+  replyAttachmentActions: ReplyAttachmentActions;
   redirectPath: string;
   i18n: {
     likeNamespace: string;
@@ -93,15 +100,23 @@ type Props = {
    * knob for future use.
    */
   enableSpoiler?: boolean;
+  /**
+   * Per-post attachment payload for entries inside the reply tree, keyed
+   * by post id. The OP's own attachment continues to flow through
+   * `opMeta` (rendered inside the OP card); this prop covers each reply.
+   * Pages compute this with one `getAttachmentsForPosts(replies.map(r =>
+   * r.id))` call and `renderAttachment(...)` per entry.
+   */
+  extraContentByPostId?: ReadonlyMap<string, React.ReactNode>;
   /** Comments-section i18n + sort wiring. */
   comments: {
     /** Section title above the form / sort / list (e.g. "Replies"). */
     sectionTitle: string;
     /**
-     * Pre-formatted reply count (e.g. "5 replies") — already plural-aware
-     * via `next-intl`. Passed to `JoinConversationToggle` as `countText`.
+     * Number of replies. Passed to `JoinConversationToggle` as `count`
+     * — the icon disambiguates the unit so the noun is suppressed.
      */
-    countText: string;
+    count: number;
     sortBy: SortMode;
     sortBasePath: string;
     sortTranslationKey: string;
@@ -134,6 +149,7 @@ export async function TopicPostDetailLayout({
   sectionTitle,
   topicVisual,
   opMeta,
+  opAttachment,
   rootWithMeta,
   replies,
   user,
@@ -142,10 +158,11 @@ export async function TopicPostDetailLayout({
   replyRestrictionMessage,
   toggleLikeAction,
   deletePostAction,
-  createReplyAction,
+  replyAttachmentActions,
   redirectPath,
   i18n,
   enableSpoiler = false,
+  extraContentByPostId,
   comments,
   breadcrumbItems,
 }: Props) {
@@ -202,6 +219,8 @@ export async function TopicPostDetailLayout({
           <LinkedText text={rootWithMeta.content} locale={locale} />
         </div>
 
+        {opAttachment}
+
         <div className="flex items-center gap-4">
           <LikeButton
             postId={rootWithMeta.id}
@@ -235,19 +254,16 @@ export async function TopicPostDetailLayout({
           locale={locale}
           topicKey={topicKey}
           postId={rootWithMeta.id}
-          createReplyAction={createReplyAction}
+          attachmentActions={replyAttachmentActions}
           i18nNamespace={i18n.replyNamespace}
         />
       ) : (
-        <JoinConversationToggle
-          countText={comments.countText}
-          joinLabel={tTopics('joinConversation')}
-        >
+        <JoinConversationToggle count={comments.count} joinLabel={tTopics('joinConversation')}>
           <ReplyForm
             locale={locale}
             topicKey={topicKey}
             postId={rootWithMeta.id}
-            createReplyAction={createReplyAction}
+            attachmentActions={replyAttachmentActions}
             i18nNamespace={i18n.replyNamespace}
           />
         </JoinConversationToggle>
@@ -268,10 +284,11 @@ export async function TopicPostDetailLayout({
             enableSpoiler={enableSpoiler}
             redirectPath={redirectPath}
             toggleLikeAction={toggleLikeAction}
-            createReplyAction={createReplyAction}
+            replyAttachmentActions={replyAttachmentActions}
             deletePostAction={deletePostAction}
             i18n={i18n}
             threadRootPostId={rootWithMeta.id}
+            extraContentByPostId={extraContentByPostId}
           />
         </>
       )}

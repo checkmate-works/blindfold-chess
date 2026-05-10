@@ -19,17 +19,35 @@ vi.mock('@/lib/supabase/server', () => ({
     }),
 }));
 
+vi.mock('@/lib/supabase/admin', () => ({
+  createAdminClient: () => ({
+    storage: {
+      from: () => ({
+        remove: vi.fn().mockResolvedValue({ error: null }),
+      }),
+    },
+  }),
+}));
+
 vi.mock('@/lib/db', () => {
   const makeDbOps = () => ({
     select: () => ({
       from: () => ({
         where: (...args: unknown[]) => {
           mockSelectFromWhere(...args);
-          return {
-            limit: () =>
-              mockSelectFromWhere.mock.results[mockSelectFromWhere.mock.calls.length - 1]?.value ??
-              [],
+          // Two chain shapes share this mock:
+          //   (a) post lookup: select().from().where().limit(1) → single-row array
+          //   (b) image-attachment lookup: select().from().where() (no .limit) → array
+          // To support (b), the returned object is itself a thenable so a bare
+          // `await db.select()...where(...)` resolves to an empty array.
+          const lastResult =
+            mockSelectFromWhere.mock.results[mockSelectFromWhere.mock.calls.length - 1]?.value ??
+            [];
+          const chain: PromiseLike<unknown> & { limit: (n?: number) => Promise<unknown> } = {
+            then: (resolve, reject) => Promise.resolve(lastResult).then(resolve, reject),
+            limit: () => Promise.resolve(lastResult),
           };
+          return chain;
         },
       }),
     }),
@@ -58,6 +76,10 @@ vi.mock('@/lib/db', () => {
       topicKey: 'topic_key',
       content: 'content',
       deletedAt: 'deleted_at',
+    },
+    postImageAttachments: {
+      postId: 'post_id',
+      storagePath: 'storage_path',
     },
     userRoles: { userId: 'user_id' },
     moderationActions: {

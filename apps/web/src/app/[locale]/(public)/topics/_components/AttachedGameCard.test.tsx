@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render } from '@testing-library/react';
+import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { AttachedGameCardData } from './AttachedGameCard';
@@ -13,10 +13,14 @@ vi.mock('@/i18n/use-safe-translations', () => ({
     params ? `${key}:${JSON.stringify(params)}` : key,
 }));
 
+vi.mock('next-intl', () => ({
+  useLocale: () => 'en',
+}));
+
 // MiniBoard pulls in chess-pieces / icons / GamePreferencesContext, none of
 // which are relevant here. Stub it to a marker div so we can assert
 // "thumbnail rendered" without exercising the chessboard rendering stack.
-vi.mock('@/app/[locale]/(public)/topics/openings/_components/MiniBoard', () => ({
+vi.mock('@/lib/positions/ui/MiniBoard', () => ({
   MiniBoard: ({ fen }: { fen: string }) => <div data-testid="mini-board" data-fen={fen} />,
 }));
 
@@ -74,27 +78,76 @@ describe('AttachedGameCard — DOM / a11y structure', () => {
     expect(board.getAttribute('data-fen')).toBe(STARTING_FEN);
   });
 
-  it('renders header text rows but NO <a href> for the [Site] PGN header (XSS / SPEC1 §7-4)', () => {
+  it('routes a [Site] PGN URL through the cushion redirect page (#84 update of SPEC1 §7-4)', () => {
+    // The cushion redirect (`/[locale]/redirect?url=...`) was added
+    // after SPEC1 §7-4 was written. It surfaces the destination URL
+    // before navigation, mitigating the original phishing concern,
+    // so external Site URLs are now rendered as cushion-routed
+    // anchors instead of plain text.
     const att = makeAttachment({
       source: 'pgn',
       headerSite: 'https://lichess.org/abcd1234',
     });
-    const { container, queryByText } = render(<AttachedGameCard attachment={att} />);
+    const { container } = render(<AttachedGameCard attachment={att} />);
 
-    // The site value is shown as text…
-    expect(queryByText('https://lichess.org/abcd1234')).not.toBeNull();
-    // …but NOT as an anchor href.
     const anchors = Array.from(container.querySelectorAll('a'));
-    const siteAnchor = anchors.find((a) =>
-      (a.getAttribute('href') ?? '').includes('lichess.org/abcd1234')
+    const siteAnchor = anchors.find(
+      (a) =>
+        (a.getAttribute('href') ?? '').startsWith('/en/redirect?url=') &&
+        decodeURIComponent(a.getAttribute('href')!.split('?url=')[1]).includes(
+          'lichess.org/abcd1234'
+        )
     );
-    expect(siteAnchor).toBeUndefined();
+    expect(siteAnchor).toBeDefined();
+    // The cushion link must NOT echo the raw external URL as href, and
+    // must carry standard cross-origin link hardening.
+    const rel = siteAnchor?.getAttribute('rel') ?? '';
+    expect(rel).toContain('noopener');
+    expect(rel).toContain('noreferrer');
+    expect(rel).toContain('nofollow');
+    // The visible label is the original URL — the redirection is
+    // mechanical (href), not visible.
+    expect(siteAnchor?.textContent).toBe('https://lichess.org/abcd1234');
   });
 
-  it('renders a chess.com attribution link rebuilt from attribution_path (NOT from sourceUrl)', () => {
+  it('renders a non-URL [Site] header as inert text (no anchor)', () => {
+    // PGN spec allows free-form Site values (e.g. `Site "Internet"`).
+    // Anything that does not parse as a real URL must NOT become an
+    // anchor — there is no destination to route through the cushion
+    // page.
+    const att = makeAttachment({
+      source: 'pgn',
+      headerSite: 'Internet',
+    });
+    const { container } = render(<AttachedGameCard attachment={att} />);
+    expect(container.textContent).toContain('Internet');
+    const anchors = Array.from(container.querySelectorAll('a'));
+    const internetAnchor = anchors.find((a) => (a.getAttribute('href') ?? '').includes('Internet'));
+    expect(internetAnchor).toBeUndefined();
+  });
+
+  it('renders a dangerous-scheme [Site] header as inert text (XSS defense)', () => {
+    // `javascript:` / `data:` / similar must never become anchors,
+    // even via the cushion redirect (the cushion validates schemes
+    // server-side too, but defense-in-depth pins this at the
+    // renderer).
+    const att = makeAttachment({
+      source: 'pgn',
+      headerSite: 'javascript:alert(1)',
+    });
+    const { container } = render(<AttachedGameCard attachment={att} />);
+    const anchors = Array.from(container.querySelectorAll('a'));
+    const evil = anchors.find((a) => (a.getAttribute('href') ?? '').includes('javascript'));
+    expect(evil).toBeUndefined();
+  });
+
+  it('renders a chess.com attribution link rebuilt from attribution_path (NOT from sourceUrl), routed through the cushion page', () => {
     // The persisted sourceUrl is intentionally a hostile string to
     // verify the renderer never reads it back as an href. Only the
-    // (platform, path) pair drives the rendered link.
+    // (platform, path) pair drives the rendered link, and the
+    // canonical chess.com URL is then routed through
+    // /[locale]/redirect?url=... so the user sees the destination
+    // before navigating.
     const att = makeAttachment({
       source: 'pgn',
       sourceUrl: 'https://evil.tld/payload',
@@ -104,18 +157,20 @@ describe('AttachedGameCard — DOM / a11y structure', () => {
     const { container } = render(<AttachedGameCard attachment={att} />);
 
     const anchors = Array.from(container.querySelectorAll('a'));
-    const chesscomAnchor = anchors.find(
-      (a) => a.getAttribute('href') === 'https://www.chess.com/game/live/12345'
+    const cushionedChesscom = anchors.find(
+      (a) =>
+        (a.getAttribute('href') ?? '').startsWith('/en/redirect?url=') &&
+        decodeURIComponent(a.getAttribute('href')!.split('?url=')[1]) ===
+          'https://www.chess.com/game/live/12345'
     );
-    expect(chesscomAnchor).toBeDefined();
-    expect(chesscomAnchor?.getAttribute('target')).toBe('_blank');
-    const rel = chesscomAnchor?.getAttribute('rel') ?? '';
+    expect(cushionedChesscom).toBeDefined();
+    const rel = cushionedChesscom?.getAttribute('rel') ?? '';
     expect(rel).toContain('noopener');
     expect(rel).toContain('noreferrer');
-    // UGC link must NOT transfer PageRank to chess.com.
     expect(rel).toContain('nofollow');
 
-    // The hostile sourceUrl must not have produced an anchor.
+    // The hostile sourceUrl must not have produced an anchor — neither
+    // directly nor inside a cushion href.
     const evilAnchor = anchors.find((a) => (a.getAttribute('href') ?? '').includes('evil.tld'));
     expect(evilAnchor).toBeUndefined();
   });
@@ -135,7 +190,11 @@ describe('AttachedGameCard — DOM / a11y structure', () => {
     ).toBeUndefined();
   });
 
-  it('renders a real <a> for Lichess-source attachments (canonical URL only)', () => {
+  it('renders the Lichess Source row inside the metadata column, routed through the cushion page', () => {
+    // Lichess attachments build the canonical URL from `sourceGameId`
+    // and route it through /[locale]/redirect?url=... — same posture
+    // as the PGN [Site] header so both attachment kinds carry a
+    // single, consistent outbound-link UX.
     const att = makeAttachment({
       source: 'lichess',
       sourceGameId: 'abcd1234',
@@ -145,25 +204,41 @@ describe('AttachedGameCard — DOM / a11y structure', () => {
     const { container } = render(<AttachedGameCard attachment={att} />);
 
     const anchors = Array.from(container.querySelectorAll('a'));
-    // The canonical Lichess URL must be linked.
-    const lichessAnchor = anchors.find(
-      (a) => a.getAttribute('href') === 'https://lichess.org/abcd1234'
+    const cushionedLichess = anchors.find(
+      (a) =>
+        (a.getAttribute('href') ?? '').startsWith('/en/redirect?url=') &&
+        decodeURIComponent(a.getAttribute('href')!.split('?url=')[1]) ===
+          'https://lichess.org/abcd1234'
     );
-    expect(lichessAnchor).toBeDefined();
-    // target=_blank with noopener noreferrer + UGC nofollow (Phase H L-1).
-    // Same posture as the chess.com attribution link: a comment-attached
-    // outbound link must not transfer PageRank to lichess.org via UGC.
-    expect(lichessAnchor?.getAttribute('target')).toBe('_blank');
-    const lichessRel = lichessAnchor?.getAttribute('rel') ?? '';
-    expect(lichessRel).toContain('noopener');
-    expect(lichessRel).toContain('noreferrer');
-    expect(lichessRel).toContain('nofollow');
+    expect(cushionedLichess).toBeDefined();
+    expect(cushionedLichess?.textContent).toBe('lichess.org/abcd1234');
+    const rel = cushionedLichess?.getAttribute('rel') ?? '';
+    expect(rel).toContain('noopener');
+    expect(rel).toContain('noreferrer');
+    expect(rel).toContain('nofollow');
 
-    // The hostile [Site] header value must NOT have been linked.
+    // The hostile [Site] header value must NOT have been linked —
+    // Lichess attachments do not surface a Site row, only a Source
+    // row built from the validated sourceGameId.
     const evilAnchor = anchors.find((a) =>
       (a.getAttribute('href') ?? '').includes('malicious.example')
     );
     expect(evilAnchor).toBeUndefined();
+  });
+
+  it('does NOT render a Site row for source=lichess (Source row supersedes it)', () => {
+    // Lichess attachments use the Source row (rebuilt from
+    // sourceGameId) as the canonical outbound pointer. The PGN [Site]
+    // header is suppressed for Lichess because it would duplicate the
+    // Source row at best, and at worst surface a hostile-but-shaped
+    // value (sourceUrl is rebuilt server-side; headerSite is not).
+    const att = makeAttachment({
+      source: 'lichess',
+      sourceGameId: 'abcd1234',
+      headerSite: 'https://lichess.org/abcd1234',
+    });
+    const { container } = render(<AttachedGameCard attachment={att} />);
+    expect(container.textContent).not.toContain('card.headerSite');
   });
 
   it('shows the anonymized note only when attachment.anonymized=true', () => {
@@ -180,20 +255,28 @@ describe('AttachedGameCard — DOM / a11y structure', () => {
     expect(queryWithout('card.anonymizedNote')).toBeNull();
   });
 
-  it('renders the player names and event header rows', () => {
+  it('renders the player names and result row', () => {
     const att = makeAttachment({
       headerWhite: 'Alice',
       headerBlack: 'Bob',
-      headerEvent: 'Test Cup',
       headerResult: '1-0',
     });
     const { container } = render(<AttachedGameCard attachment={att} />);
     const text = container.textContent ?? '';
     expect(text).toContain('Alice');
     expect(text).toContain('Bob');
-    expect(text).toContain('Test Cup');
     // result "1-0" is shown when not '*'
     expect(text).toContain('1-0');
+  });
+
+  it('does NOT render the [Event] header anymore (#84 metadata cleanup)', () => {
+    const att = makeAttachment({
+      headerEvent: 'rated rapid game',
+    });
+    const { container } = render(<AttachedGameCard attachment={att} />);
+    const text = container.textContent ?? '';
+    expect(text).not.toContain('rated rapid game');
+    expect(text).not.toContain('card.headerEvent');
   });
 
   it('hides the result span when result is "*"', () => {
@@ -206,26 +289,63 @@ describe('AttachedGameCard — DOM / a11y structure', () => {
     expect(container.textContent ?? '').not.toContain('*');
   });
 
-  it('does NOT render the player-line <p> when both white and black are null', () => {
+  it('always renders the player line, falling back to ? placeholders when white/black are null (#84)', () => {
+    // Pre-#84 the player-line <p> was hidden when both white and black
+    // were null. That made the metadata column shorter than the board
+    // and visually centered the surviving rows. The line is now always
+    // rendered with `?` placeholders so the layout stays identical
+    // regardless of how many headers the PGN body actually carried.
     const att = makeAttachment({
       headerWhite: null,
       headerBlack: null,
     });
     const { container, queryByText } = render(<AttachedGameCard attachment={att} />);
-    // No "vs" connector text should appear when neither side is present.
-    expect(queryByText(/vs/)).toBeNull();
-    // The mini board still renders (it is the always-on visual anchor).
+    expect(queryByText(/vs/)).not.toBeNull();
+    const text = container.textContent ?? '';
+    // Two `?` placeholders, one for each side.
+    expect(text.match(/\?/g)?.length ?? 0).toBeGreaterThanOrEqual(2);
     expect(container.querySelector('[data-testid="mini-board"]')).not.toBeNull();
   });
 
-  it('toggles the "Open replay" button label when clicked', () => {
-    const { getByText } = render(<AttachedGameCard attachment={makeAttachment()} />);
-    // Initial label
-    const button = getByText('card.replayButton') as HTMLButtonElement;
-    expect(button.tagName).toBe('BUTTON');
+  it('renders the "Attached game" label so the layout matches AttachedFenCard (#84)', () => {
+    const { container } = render(<AttachedGameCard attachment={makeAttachment()} />);
+    expect(container.textContent ?? '').toContain('Attached game');
+  });
 
-    fireEvent.click(button);
-    expect(getByText('card.collapseButton')).not.toBeNull();
+  it('always renders a Date row, falling back to ????.??.?? when headerDate is null (#84)', () => {
+    const att = makeAttachment({ headerDate: null });
+    const { container } = render(<AttachedGameCard attachment={att} />);
+    const text = container.textContent ?? '';
+    expect(text).toContain('card.headerDate');
+    expect(text).toContain('????.??.??');
+  });
+
+  it('always renders a Site row for source=pgn, falling back to ???? when headerSite is null (#84)', () => {
+    const att = makeAttachment({ source: 'pgn', headerSite: null });
+    const { container } = render(<AttachedGameCard attachment={att} />);
+    const text = container.textContent ?? '';
+    expect(text).toContain('card.headerSite');
+    expect(text).toContain('????');
+  });
+
+  it('wraps the thumbnail in a button so tapping it opens the replay modal', () => {
+    const { container } = render(<AttachedGameCard attachment={makeAttachment()} />);
+    const board = container.querySelector('[data-testid="mini-board"]');
+    expect(board).not.toBeNull();
+    // The thumbnail must be inside a real <button> with a meaningful
+    // aria-label so screen-reader users can discover the replay action.
+    const thumbnailButton = board?.closest('button');
+    expect(thumbnailButton).not.toBeNull();
+    expect(thumbnailButton?.getAttribute('aria-label')).toMatch(/replay/i);
+  });
+
+  it('does NOT render the legacy "Open replay" toggle button anymore', () => {
+    const { queryByText } = render(<AttachedGameCard attachment={makeAttachment()} />);
+    // The pre-modal UI showed an inline replay button; tapping the
+    // thumbnail now opens the modal instead. Pin the absence so a
+    // future refactor cannot quietly bring back two trigger surfaces.
+    expect(queryByText('card.replayButton')).toBeNull();
+    expect(queryByText('card.collapseButton')).toBeNull();
   });
 
   // ─── Phase I: defense-in-depth — hostile attribution_path render ───
@@ -240,15 +360,12 @@ describe('AttachedGameCard — DOM / a11y structure', () => {
   // text-child / attribute-value escape MUST keep it from becoming
   // executable markup or an attribute-injection vector.
   it('does not produce an unsafe href when attribution_path is set to a hostile string (XSS defense in depth)', () => {
-    // Quote-break + script tag inside the path. React renders the
-    // entire concatenated string as a single attribute value; per the
-    // HTML serialization rules React only needs to escape `"` and `&`
-    // inside attribute values (the `<` / `>` characters are legal
-    // inside attribute values and never start a tag). The hostile
-    // payload therefore lands in the href attribute as inert text —
-    // no <script> *element* node is created in the DOM, no quote
-    // breaks out of the attribute, no JS executes. We assert exactly
-    // those structural invariants.
+    // Quote-break + script tag inside the path. The chess.com anchor
+    // is now routed through the cushion redirect, so the hostile
+    // path is encoded into the `?url=...` query parameter. React's
+    // attribute serializer + the encodeURIComponent inside
+    // buildCushionPageUrl together render the payload inert: no
+    // <script> element node, no quote-break, no JS execution.
     const att = makeAttachment({
       source: 'pgn',
       attributionPlatform: 'chesscom',
@@ -262,27 +379,20 @@ describe('AttachedGameCard — DOM / a11y structure', () => {
     // never become a real <script> child.
     expect(container.querySelector('script')).toBeNull();
 
-    // (2) The anchor renders with a single href attribute whose value
-    // is the full concatenated string. React's attribute serializer
-    // must NOT have closed the attribute early on the embedded `"`,
-    // because if it had, the trailing `<script>...` would have escaped
-    // into the markup as a sibling element — and the previous assertion
-    // would have failed.
+    // (2) The anchor renders with a single href attribute pointing at
+    // the cushion page. The decoded `url` parameter contains the full
+    // hostile path verbatim — encoded, then decoded once — so a
+    // future renderer change that mangled the path would be caught.
     const anchors = Array.from(container.querySelectorAll('a'));
-    const chesscomAnchor = anchors.find((a) =>
-      (a.getAttribute('href') ?? '').startsWith('https://www.chess.com/admin')
+    const cushioned = anchors.find((a) =>
+      (a.getAttribute('href') ?? '').startsWith('/en/redirect?url=')
     );
-    expect(chesscomAnchor).toBeDefined();
-    // The href value contains the full hostile path because React did
-    // NOT silently strip it — it kept it inside the attribute value,
-    // where it is harmless. Pin the exact value so a future renderer
-    // change (e.g. naive `escape()` that mangles the path) is caught.
-    expect(chesscomAnchor?.getAttribute('href')).toBe(
-      'https://www.chess.com/admin"><script>alert(1)</script>'
-    );
+    expect(cushioned).toBeDefined();
+    const decodedUrl = decodeURIComponent(cushioned!.getAttribute('href')!.split('?url=')[1]);
+    expect(decodedUrl).toBe('https://www.chess.com/admin"><script>alert(1)</script>');
 
     // (3) Attribute hardening still applies even on the hostile path.
-    const rel = chesscomAnchor?.getAttribute('rel') ?? '';
+    const rel = cushioned?.getAttribute('rel') ?? '';
     expect(rel).toContain('noopener');
     expect(rel).toContain('noreferrer');
     expect(rel).toContain('nofollow');
@@ -293,12 +403,12 @@ describe('AttachedGameCard — DOM / a11y structure', () => {
     // attempts to override the scheme via the path are inert because
     // the scheme is not user-controlled. Pin this so a future refactor
     // that derives the prefix from a data field cannot regress to a
-    // scheme-injection bug.
+    // scheme-injection bug. The cushion page additionally validates
+    // protocols server-side; here we assert no anchor's href ever
+    // surfaces a `javascript:` prefix at the renderer layer.
     const att = makeAttachment({
       source: 'pgn',
       attributionPlatform: 'chesscom',
-      // Even with a colon and "javascript" word in the path, the
-      // resulting concatenated href still starts with `https://`.
       attributionPath: '/javascript:alert(1)',
     });
     const { container } = render(<AttachedGameCard attachment={att} />);
@@ -307,12 +417,16 @@ describe('AttachedGameCard — DOM / a11y structure', () => {
       .map((a) => a.getAttribute('href') ?? '')
       .find((h) => h.startsWith('javascript:'));
     expect(evilHref).toBeUndefined();
-    // The chess.com anchor itself still rendered with the literal
-    // (inert) path inside the attribute.
-    const chesscomAnchor = anchors.find((a) =>
-      (a.getAttribute('href') ?? '').startsWith('https://www.chess.com/javascript:')
+    // The cushion link is still rendered, with the literal (inert)
+    // path embedded inside the encoded url parameter.
+    const cushioned = anchors.find(
+      (a) =>
+        (a.getAttribute('href') ?? '').startsWith('/en/redirect?url=') &&
+        decodeURIComponent(a.getAttribute('href')!.split('?url=')[1]).startsWith(
+          'https://www.chess.com/javascript:'
+        )
     );
-    expect(chesscomAnchor).toBeDefined();
+    expect(cushioned).toBeDefined();
   });
 });
 
@@ -320,7 +434,7 @@ describe('AttachedGameCard — DOM / a11y structure', () => {
 //
 // The summary card MUST NOT statically import `chess-core` — that would
 // pull chess.js into the chunk-page first-paint client bundle. The
-// chess.js-bearing replay UI lives in a separate file (AttachedGameCardReplay)
+// chess.js-bearing replay UI lives in a separate file (GameReplayModal)
 // loaded lazily via `next/dynamic({ ssr: false })`. We pin this contract
 // with a source-text grep so a future refactor that moves a chess-core
 // import into the summary card surfaces here in CI rather than in a
@@ -334,19 +448,19 @@ describe('AttachedGameCard — module graph contract (M2)', () => {
     const here = path.dirname(fileURLToPath(import.meta.url));
     const source = await readFile(path.join(here, 'AttachedGameCard.tsx'), 'utf8');
 
-    // The replay sub-component IS allowed to import chess-core; the
-    // summary card must not. Grep accepts both quote styles.
+    // The replay modal IS allowed to import chess-core; the summary
+    // card must not. Grep accepts both quote styles.
     expect(source).not.toMatch(/from\s+['"]@blindfold-chess\/features\/chess-core['"]/);
     expect(source).not.toMatch(/from\s+['"]chess\.js['"]/);
   });
 
-  it('the replay sub-component IS allowed to import chess-core (sanity check)', async () => {
+  it('the replay modal IS allowed to import chess-core (sanity check)', async () => {
     const { readFile } = await import('node:fs/promises');
     const { fileURLToPath } = await import('node:url');
     const path = await import('node:path');
 
     const here = path.dirname(fileURLToPath(import.meta.url));
-    const replaySource = await readFile(path.join(here, 'AttachedGameCardReplay.tsx'), 'utf8');
+    const replaySource = await readFile(path.join(here, 'GameReplayModal.tsx'), 'utf8');
 
     expect(replaySource).toMatch(/from\s+['"]@blindfold-chess\/features\/chess-core['"]/);
   });

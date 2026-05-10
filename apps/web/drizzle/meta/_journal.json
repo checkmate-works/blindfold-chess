@@ -246,6 +246,27 @@
       "when": 1777714727729,
       "tag": "20260502093847_partial_index_topic_posts_active",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1778080373253,
+      "tag": "20260504053253_create_post_image_attachments",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1778097600000,
+      "tag": "20260504070000_create_post_fen_attachments",
+      "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1778100000000,
+      "tag": "20260504080000_create_post_video_attachments",
+      "breakpoints": true
     }
   ]
 }

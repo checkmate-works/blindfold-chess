@@ -1206,4 +1206,52 @@ describe("validateAttachedPgn", () => {
       }
     });
   });
+
+  // ─── Lichess-style adjacent comment block compatibility ───
+  // chess.js 1.4.0 cannot parse two consecutive `{...}` comment blocks,
+  // but the PGN spec allows them and Lichess's export deliberately
+  // separates textual annotations from `{ [%eval][%clk] }` annotation.
+  // `validateAttachedPgn` preprocesses `} <ws> {` into a single comment
+  // before chess.js parses, so Lichess PGN should round-trip cleanly.
+  describe("Lichess-style adjacent comment blocks", () => {
+    it("accepts two adjacent comment blocks on the same move", () => {
+      const pgn =
+        "1. d4 { Mistake. Nb6 was best. } { [%eval 1.56] [%clk 0:09:46] } d5 1-0";
+      const result = validateAttachedPgn(pgn);
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.moveCount).toBe(2);
+      }
+    });
+
+    it("accepts a Lichess-style PGN with RAV, NAG suffixes, and adjacent comments", () => {
+      const pgn =
+        '[Event "rated rapid game"]\n' +
+        '[White "a"]\n' +
+        '[Black "b"]\n' +
+        '[Result "1-0"]\n\n' +
+        "1. d4 { [%eval 0.15] [%clk 0:10:00] } 1... d5 { [%eval 0.27] [%clk 0:10:00] } " +
+        "2. Nd2 { [%eval 0.0] [%clk 0:09:59] } 2... b6? { (0.13 → 1.56) Mistake. } " +
+        "{ [%eval 1.56] [%clk 0:09:46] } (2... Nb6 3. e4 Bg6) 3. Ngf3 1-0";
+      const result = validateAttachedPgn(pgn);
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.moveCount).toBe(5);
+        expect(result.headers.white).toBe("a");
+        expect(result.headers.black).toBe("b");
+        expect(result.headers.result).toBe("1-0");
+      }
+    });
+
+    it("accepts three or more adjacent comment blocks in a row", () => {
+      // Defense-in-depth: the regex is global so multiple consecutive
+      // `} { ... } {` separators all collapse, not just the first.
+      const pgn = "1. e4 { a } { b } { c } e5 1-0";
+      const result = validateAttachedPgn(pgn);
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.moveCount).toBe(2);
+      }
+    });
+  });
 });

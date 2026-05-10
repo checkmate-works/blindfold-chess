@@ -7,16 +7,19 @@ import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
-import { AttachedEmbedCard } from '@/app/[locale]/(public)/topics/_components/AttachedEmbedCard';
-import { AttachedGameCard } from '@/app/[locale]/(public)/topics/_components/AttachedGameCard';
 import { TopicPostDetailLayout } from '@/app/[locale]/(public)/topics/_components/TopicPostDetailLayout';
+import {
+  buildAttachmentNodeMap,
+  renderAttachment,
+} from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { fetchPostDetailData } from '@/app/[locale]/(public)/topics/_lib/post-detail';
 import { getPostByIdAndTopicKey } from '@/app/[locale]/(public)/topics/_lib/queries';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { createReply } from './_actions/createReply';
+import { createReplyWithAttachment } from './_actions/createReplyWithAttachment';
+import { createReplyWithFenAttachment } from './_actions/createReplyWithFenAttachment';
 import { toggleLike } from './_actions/toggleLike';
 
 type Props = {
@@ -71,10 +74,29 @@ export default async function ChunkPostDetailPage({ params, searchParams }: Prop
     post
   );
 
-  const attachments = await getAttachmentsForPosts([postId]);
-  const attachment = attachments.get(postId) ?? null;
+  // Fetch in one round-trip the OP's attachment AND every reply's
+  // attachment. The OP's render flows into the OP card via the
+  // `opAttachment` slot (rendered after the body, matching how
+  // CommentNode positions its own attachment relative to the comment
+  // body); each reply's flows into `extraContentByPostId` so
+  // CommentTree surfaces the same Attached* card under the matching
+  // reply.
+  const replyIds = replies.map((r) => r.id);
+  const allPostIds = [postId, ...replyIds];
+  const attachments = await getAttachmentsForPosts(allPostIds);
+  const opAttachmentRow = attachments.get(postId) ?? null;
 
   const ct = await getTranslations({ locale, namespace: 'topics.chunks' });
+  const tVideo = await getTranslations({ locale, namespace: 'postVideoAttachmentRender' });
+  const fallbackVideoTitle = tVideo('fallbackTitle');
+  const opAttachment = opAttachmentRow
+    ? renderAttachment(opAttachmentRow, fallbackVideoTitle)
+    : undefined;
+  const replyExtraContentByPostId = buildAttachmentNodeMap(
+    replyIds,
+    attachments,
+    fallbackVideoTitle
+  );
 
   const replyRestrictionMessage =
     !isAuthor && post.replyPermission === 'followers' && !canReply
@@ -93,15 +115,7 @@ export default async function ChunkPostDetailPage({ params, searchParams }: Prop
           <ThemedBoardThumbnail fen={chunk.representativeFen} className="w-full" />
         </div>
       }
-      opMeta={
-        attachment ? (
-          attachment.kind === 'pgn' ? (
-            <AttachedGameCard attachment={attachment.data} />
-          ) : (
-            <AttachedEmbedCard attachment={attachment.data} />
-          )
-        ) : undefined
-      }
+      opAttachment={opAttachment}
       rootWithMeta={rootWithMeta}
       replies={replies}
       user={user}
@@ -110,7 +124,11 @@ export default async function ChunkPostDetailPage({ params, searchParams }: Prop
       replyRestrictionMessage={replyRestrictionMessage}
       toggleLikeAction={toggleLike}
       deletePostAction={deletePost}
-      createReplyAction={createReply}
+      replyAttachmentActions={{
+        pgn: createReplyWithAttachment,
+        fen: createReplyWithFenAttachment,
+      }}
+      extraContentByPostId={replyExtraContentByPostId}
       redirectPath={`/${locale}/chunks/${slug}`}
       i18n={{
         likeNamespace: 'topics.chunks',
@@ -119,7 +137,7 @@ export default async function ChunkPostDetailPage({ params, searchParams }: Prop
       }}
       comments={{
         sectionTitle: ct('replies.title'),
-        countText: ct('replies.count', { count: replies.length }),
+        count: replies.length,
         sortBy,
         sortBasePath: `/chunks/${slug}/posts/${postId}`,
         sortTranslationKey: 'topics.chunks.sort',

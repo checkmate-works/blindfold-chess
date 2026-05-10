@@ -4,38 +4,39 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
-import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
+import { createSearchParamsCache, parseAsString } from 'nuqs/server';
 
 import { getChunkBySlug, getLinkedPositionsForChunk } from '@/lib/chunks/queries';
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
-import { getPaginationParams } from '@/lib/pagination';
 import { getPositionDetailPath } from '@/lib/positions/routes';
 import { parsePositionType } from '@/lib/positions/types';
 import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 import { createClient } from '@/lib/supabase/server';
 
+import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
+import { CommentTree } from '@/app/[locale]/(public)/topics/_components/CommentTree';
+import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
+import { buildAttachmentNodeMap } from '@/app/[locale]/(public)/topics/_components/render-attachment';
+import { buildCommentTree } from '@/app/[locale]/(public)/topics/_lib/comment-tree';
+import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import {
-  TOPIC_PAGE_SIZE,
-  buildPaginationHref,
-  validateSort,
-} from '@/app/[locale]/(public)/topics/_lib/pagination';
-import {
+  getCommentTreeForTopic,
   getPostCountByTopicKey,
-  getPostsWithReplyMetaPaginatedByTopicKey,
 } from '@/app/[locale]/(public)/topics/_lib/queries';
-import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { createChunkReplyWithAttachment } from './_actions/createChunkReplyWithAttachment';
+import { createChunkReplyWithFenAttachment } from './_actions/createChunkReplyWithFenAttachment';
+import { toggleChunkLike } from './_actions/toggleChunkLike';
 import { NewPostForm } from './_components/NewPostForm';
-import { PostCard } from './_components/PostCard';
 
 export const dynamic = 'force-dynamic';
 
 const searchParamsCache = createSearchParamsCache({
-  page: parseAsInteger.withDefault(1),
   sort: parseAsString.withDefault('new'),
 });
 
@@ -77,7 +78,7 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
     notFound();
   }
 
-  const { page, sort } = await searchParamsCache.parse(searchParams);
+  const { sort } = await searchParamsCache.parse(searchParams);
   const sortBy = validateSort(sort);
 
   const supabase = await createClient();
@@ -85,30 +86,28 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [linkedPositions, totalCount, t] = await Promise.all([
+  const [linkedPositions, commentCount, allComments, t, tTopics, tVideo] = await Promise.all([
     getLinkedPositionsForChunk(chunk.id),
     getPostCountByTopicKey('chunk', slug),
+    getCommentTreeForTopic('chunk', slug, user?.id),
     getTranslations({ locale, namespace: 'topics.chunks' }),
+    getTranslations({ locale, namespace: 'topics' }),
+    getTranslations({ locale, namespace: 'postVideoAttachmentRender' }),
   ]);
 
-  const { totalPages, currentPage, limit, offset } = getPaginationParams(
-    page,
-    totalCount,
-    TOPIC_PAGE_SIZE
+  const commentTree = buildCommentTree(allComments, sortBy);
+
+  // Fetch attachments for every post in the topic — top-level posts AND
+  // every reply — so an attached PGN/FEN/embed/image card renders under
+  // its author regardless of depth. CommentTree threads the resulting
+  // Map through to every CommentNode it spawns.
+  const allPostIds = allComments.map((c) => c.id);
+  const attachments = allPostIds.length > 0 ? await getAttachmentsForPosts(allPostIds) : new Map();
+  const extraContentByPostId = buildAttachmentNodeMap(
+    allPostIds,
+    attachments,
+    tVideo('fallbackTitle')
   );
-
-  const posts = await getPostsWithReplyMetaPaginatedByTopicKey(
-    'chunk',
-    slug,
-    limit,
-    offset,
-    user?.id,
-    sortBy
-  );
-
-  const attachments = await getAttachmentsForPosts(posts.map((p) => p.id));
-
-  const buildHref = (p: number) => buildPaginationHref(locale, `/chunks/${slug}`, p, sortBy);
 
   return (
     <PageLayout
@@ -165,10 +164,12 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
 
       <SectionTitle>{t('commentsTitle')}</SectionTitle>
 
-      <p className="text-sm text-muted-foreground">{t('postCount', { count: totalCount })}</p>
-
-      {user ? (
+      {user && commentCount === 0 ? (
         <NewPostForm locale={locale} slug={slug} />
+      ) : user ? (
+        <JoinConversationToggle count={commentCount} joinLabel={tTopics('joinConversation')}>
+          <NewPostForm locale={locale} slug={slug} />
+        </JoinConversationToggle>
       ) : (
         <p className="text-sm text-muted-foreground">
           <Link href={`/${locale}/sign-in`} className="text-link-primary hover:underline">
@@ -177,30 +178,35 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
         </p>
       )}
 
-      <SortSelect
-        basePath={`/chunks/${slug}`}
-        translationKey="topics.chunks.sort"
-        currentSort={sortBy}
-      />
-
-      {posts.length > 0 ? (
-        <div className="space-y-3">
-          {posts.map((post) => (
-            <div key={post.id} id={`post-${post.id}`}>
-              <PostCard
-                post={post}
-                locale={locale}
-                slug={slug}
-                attachment={attachments.get(post.id) ?? null}
-              />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-muted-foreground text-center py-8">{t('noPosts')}</p>
+      {commentTree.length > 0 && (
+        <>
+          <SortSelect
+            basePath={`/chunks/${slug}`}
+            translationKey="topics.chunks.sort"
+            currentSort={sortBy}
+          />
+          <CommentTree
+            comments={commentTree}
+            locale={locale}
+            topicKey={slug}
+            currentUserId={user?.id}
+            enableSpoiler={false}
+            redirectPath={`/${locale}/chunks/${slug}`}
+            toggleLikeAction={toggleChunkLike}
+            replyAttachmentActions={{
+              pgn: createChunkReplyWithAttachment,
+              fen: createChunkReplyWithFenAttachment,
+            }}
+            deletePostAction={deletePost}
+            extraContentByPostId={extraContentByPostId}
+            i18n={{
+              likeNamespace: 'topics.chunks',
+              replyNamespace: 'topics.chunks.replies',
+              deleteNamespace: 'topics.chunks.deletePost',
+            }}
+          />
+        </>
       )}
-
-      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
 
       {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
         <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />

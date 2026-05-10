@@ -87,7 +87,7 @@ CREATE TABLE "post_game_embed_attachments" (
   "attribution_path" varchar(160),
   "created_at" timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT "post_game_embed_attachments_chk_embed_provider_valid"
-    CHECK ("embed_provider" IN ('chesscom', 'lichess')),
+    CHECK ("embed_provider" IN ('chesscom')),
   CONSTRAINT "post_game_embed_attachments_chk_embed_id_format"
     CHECK ("embed_id" ~ '^[A-Za-z0-9_-]{1,64}$'),
   CONSTRAINT "post_game_embed_attachments_chk_embed_source_url_https"
@@ -95,7 +95,7 @@ CREATE TABLE "post_game_embed_attachments" (
   CONSTRAINT "post_game_embed_attachments_chk_embed_attribution_platform_valid"
     CHECK (
       "attribution_platform" IS NULL
-      OR "attribution_platform" IN ('chesscom', 'lichess')
+      OR "attribution_platform" IN ('chesscom')
     ),
   CONSTRAINT "post_game_embed_attachments_chk_embed_attribution_path_format"
     CHECK (
