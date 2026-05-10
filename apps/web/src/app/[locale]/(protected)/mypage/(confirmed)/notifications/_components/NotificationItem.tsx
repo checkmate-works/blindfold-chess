@@ -13,7 +13,6 @@ import { HiGift, HiMegaphone, HiTrophy } from 'react-icons/hi2';
 
 import { getAchievementDisplayName } from '@/lib/achievements/display';
 import { truncateContent } from '@/lib/content/truncate-content';
-import { IS_LOCAL_SUPABASE } from '@/lib/image-optimization';
 import { getPositionDetailPath } from '@/lib/positions/routes';
 
 import { markAsRead } from '../_actions';
@@ -286,7 +285,8 @@ export function NotificationItem({ notification, currentUsername }: Props) {
           width={40}
           height={40}
           className="rounded-full object-cover h-10 w-10 flex-shrink-0"
-          unoptimized={IS_LOCAL_SUPABASE}
+          // Pre-resized 256×256 WebP at upload; bypass Vercel optimization.
+          unoptimized
         />
       ) : (
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground flex-shrink-0">

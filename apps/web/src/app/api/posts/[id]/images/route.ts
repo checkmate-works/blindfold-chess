@@ -9,8 +9,8 @@ import { db, postImageAttachments, topicPosts } from '@/lib/db';
 import {
   AnimatedImageNotSupportedError,
   isWithinMegapixelCap,
+  normalizePostImageBuffer,
   probeImageDimensions,
-  stripExifAndApplyOrientation,
 } from '@/lib/post-images/sharp-helpers';
 import {
   POST_IMAGES_ALLOWED_MIME_TYPES,
@@ -140,10 +140,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: 'image_too_large' }, { status: 400 });
   }
 
-  // EXIF strip + orientation bake-in. The persisted bytes must carry no GPS.
+  // Orient → resize → strip in one Sharp pass. Persisted bytes carry no
+  // GPS / EXIF, and the long-edge cap eliminates Vercel Image Optimization
+  // transformations: the output buffer is what every viewer downloads.
   let processedBuffer: Buffer;
   try {
-    processedBuffer = await stripExifAndApplyOrientation({
+    processedBuffer = await normalizePostImageBuffer({
       buffer: arrayBuffer,
       contentType: file.type,
     });
@@ -151,9 +153,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: 'image_processing_failed' }, { status: 500 });
   }
 
-  // Re-probe the processed buffer in case the rotation changed the
-  // recorded dimensions (portrait orientation flipped). Falls back to
-  // the original probe if re-probe fails.
+  // Re-probe the processed buffer because rotation can swap dimensions
+  // (portrait orientation) and the resize step caps the long edge to
+  // POST_IMAGE_MAX_LONG_EDGE. Falls back to the original probe if re-probe
+  // fails.
   const finalDimensions = await probeImageDimensions(processedBuffer).catch(() => probe);
   if (!isWithinMegapixelCap(finalDimensions)) {
     return NextResponse.json({ error: 'image_too_large' }, { status: 400 });

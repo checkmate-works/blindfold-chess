@@ -3,10 +3,11 @@ import { describe, expect, it, vi } from 'vitest';
 
 import {
   AnimatedImageNotSupportedError,
+  POST_IMAGE_MAX_LONG_EDGE,
   SHARP_INPUT_OPTIONS,
   isWithinMegapixelCap,
+  normalizePostImageBuffer,
   probeImageDimensions,
-  stripExifAndApplyOrientation,
 } from './sharp-helpers';
 import { POST_IMAGES_MAX_MEGAPIXELS } from './validation';
 
@@ -29,11 +30,16 @@ vi.mock('sharp', () => {
     outputBuffer: Buffer.from([1, 2, 3]),
     metadataThrows: false,
     lastOptions: undefined as unknown,
+    lastResizeArgs: undefined as unknown[] | undefined,
   };
 
   function chain() {
     return {
       rotate: () => chain(),
+      resize: (...args: unknown[]) => {
+        state.lastResizeArgs = args;
+        return chain();
+      },
       toBuffer: async () => state.outputBuffer,
       metadata: async () => {
         if (state.metadataThrows) {
@@ -62,6 +68,7 @@ const mockState = (
       outputBuffer: Buffer;
       metadataThrows: boolean;
       lastOptions: unknown;
+      lastResizeArgs: unknown[] | undefined;
     };
   }
 ).__mockState;
@@ -143,20 +150,39 @@ describe('isWithinMegapixelCap', () => {
   });
 });
 
-describe('stripExifAndApplyOrientation', () => {
-  it('returns the post-strip buffer produced by sharp().rotate().toBuffer()', async () => {
-    // We rely on Sharp's default-strip-on-toBuffer behavior (no
-    // .withMetadata() / .keepMetadata() in the chain), so the test only
-    // asserts the buffer is the one Sharp produced. The
+describe('normalizePostImageBuffer', () => {
+  it('returns the buffer produced by sharp().rotate().resize().toBuffer()', async () => {
+    // Sharp's default-strip-on-toBuffer behavior (no .withMetadata() /
+    // .keepMetadata() in the chain) is what removes EXIF / GPS; the
     // GPS-doesn't-leak regression lives in
-    // sharp-helpers.exif-strip.test.ts, which exercises the real
-    // sharp library against a fixture with embedded GPS EXIF.
+    // sharp-helpers.exif-strip.test.ts, which exercises the real sharp
+    // library against a fixture with embedded GPS EXIF.
     mockState.outputBuffer = Buffer.from([0xff, 0xd8, 0xff, 0xe0]);
-    const result = await stripExifAndApplyOrientation({
+    const result = await normalizePostImageBuffer({
       buffer: Buffer.from([0]),
       contentType: 'image/jpeg',
     });
     expect(Buffer.compare(result, Buffer.from([0xff, 0xd8, 0xff, 0xe0]))).toBe(0);
+  });
+
+  it('caps the long edge to POST_IMAGE_MAX_LONG_EDGE without enlarging smaller inputs', async () => {
+    // The resize call is the load-bearing piece for the
+    // Image-Optimization-cost reduction: without it, 50-MP camera
+    // originals would be served straight to viewers (and to Vercel
+    // optimization). `fit: 'inside'` preserves aspect; `withoutEnlargement`
+    // makes the resize a no-op for small inputs. If any of these change,
+    // the cost story drifts.
+    mockState.outputBuffer = Buffer.from([0]);
+    await normalizePostImageBuffer({
+      buffer: Buffer.from([0]),
+      contentType: 'image/jpeg',
+    });
+    expect(mockState.lastResizeArgs).toEqual([
+      POST_IMAGE_MAX_LONG_EDGE,
+      POST_IMAGE_MAX_LONG_EDGE,
+      { fit: 'inside', withoutEnlargement: true },
+    ]);
+    expect(POST_IMAGE_MAX_LONG_EDGE).toBe(1600);
   });
 
   it('passes SHARP_INPUT_OPTIONS to the sharp constructor', async () => {
@@ -164,7 +190,7 @@ describe('stripExifAndApplyOrientation', () => {
     // pages:1 must apply to the encoder path too, otherwise an animated
     // input that slipped past the probe could still OOM during encode.
     mockState.outputBuffer = Buffer.from([0xff, 0xd8]);
-    await stripExifAndApplyOrientation({
+    await normalizePostImageBuffer({
       buffer: Buffer.from([0]),
       contentType: 'image/jpeg',
     });

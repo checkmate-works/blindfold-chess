@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { requireAdmin } from '@/app/admin/_lib/auth';
 import { eq } from 'drizzle-orm';
+import sharp from 'sharp';
 
 import { articleImages, articles, db } from '@/lib/db';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
@@ -14,6 +15,17 @@ import {
   MIME_TO_EXTENSION,
   validateBinarySignature,
 } from './image-validation';
+
+/**
+ * Long-edge cap (pixels) applied to raster article images at upload time.
+ * Mirrors POST_IMAGE_MAX_LONG_EDGE: 1600 covers retina (2× DPR) of the
+ * widest article content slot (~800 px). Resizing here means each viewer
+ * downloads bounded bytes from Storage and Vercel Image Optimization
+ * generates variants from a smaller source — both contribute to the
+ * Image Optimization Transformation cost story. SVG is excluded
+ * (resizing a vector image to a fixed bounding box would rasterize it).
+ */
+const ARTICLE_IMAGE_MAX_LONG_EDGE = 1600;
 
 async function authenticateAdmin(): Promise<NextResponse | { userId: string }> {
   const auth = await requireAdmin();
@@ -87,6 +99,28 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const { file, buffer, altText } = fileResult;
 
+  // Raster images go through Sharp: rotate (bake in EXIF orientation, strip
+  // metadata) → cap long edge to ARTICLE_IMAGE_MAX_LONG_EDGE → re-encode in
+  // the source format. SVG bypasses this entirely (resizing a vector to a
+  // raster bounding box would lose its scalability).
+  let payload: Buffer | ArrayBuffer = buffer;
+  let payloadByteLength = file.size;
+  if (file.type !== 'image/svg+xml') {
+    try {
+      const processed = await sharp(Buffer.from(buffer), { failOn: 'error', pages: 1 })
+        .rotate()
+        .resize(ARTICLE_IMAGE_MAX_LONG_EDGE, ARTICLE_IMAGE_MAX_LONG_EDGE, {
+          fit: 'inside',
+          withoutEnlargement: true,
+        })
+        .toBuffer();
+      payload = processed;
+      payloadByteLength = processed.byteLength;
+    } catch {
+      return NextResponse.json({ error: 'invalid_file_type' }, { status: 400 });
+    }
+  }
+
   const ext = MIME_TO_EXTENSION[file.type];
   const timestamp = Date.now();
   const storagePath = `${articleId}/${timestamp}.${ext}`;
@@ -95,7 +129,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const { error: uploadError } = await supabase.storage
     .from(ARTICLE_IMAGES_BUCKET)
-    .upload(storagePath, buffer, {
+    .upload(storagePath, payload, {
       contentType: file.type,
       upsert: false,
     });
@@ -116,7 +150,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         publicUrl: urlData.publicUrl,
         altText,
         contentType: file.type,
-        fileSize: file.size,
+        // Use the post-Sharp byte length so the row reflects what's
+        // actually in Storage; SVG falls through with its original size.
+        fileSize: payloadByteLength,
       })
       .returning();
   } catch (err) {
