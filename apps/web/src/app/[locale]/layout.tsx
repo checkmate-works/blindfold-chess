@@ -41,10 +41,12 @@ const inter = Inter({
  * prevents stray URLs (e.g. bare `/pt/...` or `/fr/...`) from throwing
  * 500-level errors inside metadata generation.
  *
- * Nested dynamic segments (e.g. `[locale]/articles/[slug]`,
- * `[locale]/glossary/letter/[letter]`) are unaffected — `dynamicParams` is
- * scoped to the segment it is declared on, so their DB- / on-demand-driven
- * params continue to resolve per their own declarations.
+ * Nested dynamic segments (e.g. `[locale]/articles/[slug]`) are unaffected —
+ * `dynamicParams` is scoped to the segment it is declared on, so their DB-
+ * / on-demand-driven params continue to resolve per their own declarations.
+ * Note: `[locale]/glossary/letter/[letter]` declares its own
+ * `dynamicParams = false` to stop bots from filling the on-demand ISR cache
+ * with non-Latin letter URLs that always resolve to empty results.
  */
 export const generateStaticParams = generateLocaleStaticParams;
 

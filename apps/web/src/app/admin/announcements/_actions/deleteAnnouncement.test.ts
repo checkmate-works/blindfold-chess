@@ -94,14 +94,6 @@ describe('deleteAnnouncement', () => {
     expect(mockRevalidatePath).toHaveBeenCalledWith('/admin/announcements');
   });
 
-  it('should call revalidatePath("/", "layout") after successful deletion to evict ISR HTML', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
-    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
-
-    await deleteAnnouncement(announcementId);
-    expect(mockRevalidatePath).toHaveBeenCalledWith('/', 'layout');
-  });
-
   it('should call revalidateTag("announcements") after successful deletion', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
     mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
@@ -115,7 +107,6 @@ describe('deleteAnnouncement', () => {
 
     await deleteAnnouncement(announcementId);
     expect(mockRevalidatePath).not.toHaveBeenCalled();
-    expect(mockRevalidatePath).not.toHaveBeenCalledWith('/', 'layout');
   });
 
   it('should not call revalidateTag when unauthorized', async () => {

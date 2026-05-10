@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath, updateTag } from 'next/cache';
+import { updateTag } from 'next/cache';
 
 import { adBanners, db } from '@/lib/db';
 
@@ -64,10 +64,11 @@ export async function createAdBanner(data: CreateData): Promise<CreateResult> {
       })
       .returning({ id: adBanners.id });
 
-    // updateTag invalidates the unstable_cache-wrapped data; revalidatePath
-    // evicts ISR-rendered HTML that has the ad markup baked in.
+    // Invalidate the unstable_cache-wrapped ads config. Each ISR page picks up
+    // the change on its next natural revalidation cycle — a layout-wide
+    // revalidatePath here would evict every ISR entry under [locale]/(public),
+    // which previously caused a 305x ISR Writes spike on Vercel.
     updateTag('ads-config');
-    revalidatePath('/', 'layout');
 
     return { success: true, id: inserted.id };
   } catch (error) {

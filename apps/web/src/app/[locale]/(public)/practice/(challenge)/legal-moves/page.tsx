@@ -4,7 +4,7 @@ import type { HelpStep } from '@/app/[locale]/_components';
 
 import { LegalMoves } from './_components/LegalMoves';
 
-export const revalidate = 300;
+export const revalidate = 3600;
 
 const { generateMetadata, Page } = createPracticeTopPage({
   i18nKey: 'legalMoves',
