@@ -6,7 +6,8 @@ import { and, eq, isNull } from 'drizzle-orm';
 
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, positions, puzzleSolutions } from '@/lib/db';
-import { replacePositionTags, validateAndDedupeTagIds } from '@/lib/positions/tag-validation';
+import { validateAndDedupeTagIds } from '@/lib/positions/tag-validation';
+import { replacePositionTags } from '@/lib/positions/tag-writes';
 import { normalizePuzzleMoves, validatePuzzleMutationData } from '@/lib/positions/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { logActivityEvent } from '@/lib/users/activity-log';
