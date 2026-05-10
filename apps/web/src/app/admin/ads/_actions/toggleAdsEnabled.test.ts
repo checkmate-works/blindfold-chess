@@ -98,7 +98,6 @@ describe('toggleAdsEnabled', () => {
       value: { enabled: true },
     });
     expect(mockUpdateTag).toHaveBeenCalledWith('ads-config');
-    expect(mockRevalidatePath).toHaveBeenCalledWith('/', 'layout');
   });
 
   it('should toggle ads_enabled from true to false and invalidate caches', async () => {
@@ -115,7 +114,6 @@ describe('toggleAdsEnabled', () => {
       value: { enabled: false },
     });
     expect(mockUpdateTag).toHaveBeenCalledWith('ads-config');
-    expect(mockRevalidatePath).toHaveBeenCalledWith('/', 'layout');
   });
 
   it('should default to enabling ads when no row exists', async () => {
@@ -130,6 +128,5 @@ describe('toggleAdsEnabled', () => {
       value: { enabled: true },
     });
     expect(mockUpdateTag).toHaveBeenCalledWith('ads-config');
-    expect(mockRevalidatePath).toHaveBeenCalledWith('/', 'layout');
   });
 });

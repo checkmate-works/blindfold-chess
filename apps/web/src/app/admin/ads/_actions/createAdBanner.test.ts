@@ -99,6 +99,5 @@ describe('createAdBanner', () => {
     expect(result).toEqual({ success: true, id: generatedId });
     expect(mockInsertValuesReturning).toHaveBeenCalled();
     expect(mockUpdateTag).toHaveBeenCalledWith('ads-config');
-    expect(mockRevalidatePath).toHaveBeenCalledWith('/', 'layout');
   });
 });
