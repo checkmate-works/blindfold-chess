@@ -13,8 +13,8 @@ export async function createReply(
   formData: FormData
 ): Promise<CreateReplyState> {
   // Self-declared spoiler flag. Same `'on'` / `'true'` normalization as
-  // `createPositionPuzzlePost` so a missing or forged value never silently
-  // flags a reply as containing the solution.
+  // `createPositionPuzzlePostWithAttachment` so a missing or forged value
+  // never silently flags a reply as containing the solution.
   const rawSpoiler = formData.get('isSpoiler');
   const isSpoiler = rawSpoiler === 'on' || rawSpoiler === 'true';
 
