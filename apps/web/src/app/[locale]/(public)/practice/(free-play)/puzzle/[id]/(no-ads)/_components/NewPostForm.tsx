@@ -2,7 +2,8 @@
 
 import { BasePostForm } from '@/app/[locale]/(public)/topics/_components/BasePostForm';
 
-import { createPositionPuzzlePost } from '../_actions/createPositionPuzzlePost';
+import { createPositionPuzzlePostWithAttachment } from '../_actions/createPositionPuzzlePostWithAttachment';
+import { createPositionPuzzlePostWithFenAttachment } from '../_actions/createPositionPuzzlePostWithFenAttachment';
 
 type Props = {
   locale: string;
@@ -10,11 +11,12 @@ type Props = {
 };
 
 export function NewPostForm({ locale, positionId }: Props) {
-  const action = createPositionPuzzlePost.bind(null, locale, positionId);
+  const pgn = createPositionPuzzlePostWithAttachment.bind(null, locale, positionId);
+  const fen = createPositionPuzzlePostWithFenAttachment.bind(null, locale, positionId);
 
   return (
     <BasePostForm
-      action={action}
+      attachmentActions={{ pgn, fen }}
       translationNamespace="topics.positionPuzzle.newPostForm"
       contentRequired
       enableSpoilerToggle
