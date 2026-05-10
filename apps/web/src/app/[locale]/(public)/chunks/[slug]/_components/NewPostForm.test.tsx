@@ -19,6 +19,49 @@ vi.mock('@/lib/positions/ui/MiniBoard', () => ({
   MiniBoard: ({ fen }: { fen: string }) => <div data-testid="mini-board" data-fen={fen} />,
 }));
 
+// Pass-through translator: returns the key verbatim. `has()` reports
+// every key as known so BasePostForm's error-message resolution
+// short-circuits to `t(state.error)` (which equals the original
+// error key) instead of falling back to the generic 'error' key.
+// Test expectations therefore match against the raw error key
+// (e.g. 'rate_limited', 'postFenAttachment.error.alreadyAttached').
+vi.mock('@/i18n/use-safe-translations', () => ({
+  useSafeTranslations: () => {
+    const t = (key: string) => key;
+    t.has = (_key: string) => true;
+    return t;
+  },
+}));
+
+vi.mock('next-navigation-guard', () => ({
+  useNavigationGuard: () => ({
+    active: false,
+    accept: vi.fn(),
+    reject: vi.fn(),
+  }),
+}));
+
+// Make `useActionState` invoke the wrapped server action and
+// reflect its resolved state back into the component so error
+// messages flow through `<FormErrorBanner>`. `useTransition` is
+// re-exported untouched.
+vi.mock('react', async () => {
+  const actual = await vi.importActual<typeof import('react')>('react');
+  return {
+    ...actual,
+    useActionState: <S, P>(
+      action: (state: S, payload: P) => Promise<S>,
+      initialState: S
+    ): [S, (payload: P) => void, boolean] => {
+      const [state, setState] = actual.useState(initialState);
+      const formAction = (payload: P) => {
+        void Promise.resolve(action(state, payload)).then(setState);
+      };
+      return [state, formAction, false];
+    },
+  };
+});
+
 beforeEach(() => {
   vi.clearAllMocks();
 });
