@@ -17,6 +17,7 @@ import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
 import { CommentTree } from '@/app/[locale]/(public)/topics/_components/CommentTree';
 import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
+import { buildAttachmentNodeMap } from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import { buildCommentTree } from '@/app/[locale]/(public)/topics/_lib/comment-tree';
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import {
@@ -32,7 +33,6 @@ import { createChunkReplyWithAttachment } from './_actions/createChunkReplyWithA
 import { createChunkReplyWithFenAttachment } from './_actions/createChunkReplyWithFenAttachment';
 import { toggleChunkLike } from './_actions/toggleChunkLike';
 import { NewPostForm } from './_components/NewPostForm';
-import { renderAttachment } from './_components/render-attachment';
 
 export const dynamic = 'force-dynamic';
 
@@ -97,15 +97,17 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
 
   const commentTree = buildCommentTree(allComments, sortBy);
 
-  const rootIds = commentTree.map((root) => root.id);
-  const attachments = rootIds.length > 0 ? await getAttachmentsForPosts(rootIds) : new Map();
-  const extraContentByRootId = new Map<string, React.ReactNode>();
-  for (const root of commentTree) {
-    const att = attachments.get(root.id);
-    if (att) {
-      extraContentByRootId.set(root.id, renderAttachment(att, tVideo('fallbackTitle')));
-    }
-  }
+  // Fetch attachments for every post in the topic — top-level posts AND
+  // every reply — so an attached PGN/FEN/embed/image card renders under
+  // its author regardless of depth. CommentTree threads the resulting
+  // Map through to every CommentNode it spawns.
+  const allPostIds = allComments.map((c) => c.id);
+  const attachments = allPostIds.length > 0 ? await getAttachmentsForPosts(allPostIds) : new Map();
+  const extraContentByPostId = buildAttachmentNodeMap(
+    allPostIds,
+    attachments,
+    tVideo('fallbackTitle')
+  );
 
   return (
     <PageLayout
@@ -196,7 +198,7 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
               fen: createChunkReplyWithFenAttachment,
             }}
             deletePostAction={deletePost}
-            extraContentByRootId={extraContentByRootId}
+            extraContentByPostId={extraContentByPostId}
             i18n={{
               likeNamespace: 'topics.chunks',
               replyNamespace: 'topics.chunks.replies',

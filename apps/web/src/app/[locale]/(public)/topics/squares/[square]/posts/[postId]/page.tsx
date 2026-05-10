@@ -2,8 +2,11 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
+
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
 import { TopicPostDetailLayout } from '@/app/[locale]/(public)/topics/_components/TopicPostDetailLayout';
+import { buildAttachmentNodeMap } from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { fetchPostDetailData } from '@/app/[locale]/(public)/topics/_lib/post-detail';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -68,8 +71,22 @@ export default async function PostDetailPage({ params, searchParams }: Props) {
     post
   );
 
+  // Reply-side attachment payload: fetch attachments for every reply
+  // id so a PGN/FEN/embed/image attached to a reply renders inline
+  // under that reply via CommentTree. The OP itself doesn't surface
+  // an attachment on this page (squares' OP card has no attachment
+  // slot), so the OP id is intentionally not in the fetch.
+  const replyIds = replies.map((r) => r.id);
+  const replyAttachments = replyIds.length > 0 ? await getAttachmentsForPosts(replyIds) : new Map();
+
   const t = await getTranslations({ locale, namespace: 'topics' });
   const st = await getTranslations({ locale, namespace: 'topics.squares' });
+  const tVideo = await getTranslations({ locale, namespace: 'postVideoAttachmentRender' });
+  const replyExtraContentByPostId = buildAttachmentNodeMap(
+    replyIds,
+    replyAttachments,
+    tVideo('fallbackTitle')
+  );
 
   const replyRestrictionMessage =
     !isAuthor && post.replyPermission === 'followers' && !canReply
@@ -96,6 +113,7 @@ export default async function PostDetailPage({ params, searchParams }: Props) {
         pgn: createReplyWithAttachment,
         fen: createReplyWithFenAttachment,
       }}
+      extraContentByPostId={replyExtraContentByPostId}
       redirectPath={`/${locale}/topics/squares/${square}`}
       i18n={{
         likeNamespace: 'topics.squares',

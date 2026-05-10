@@ -16,6 +16,7 @@ import { FiEdit2 } from 'react-icons/fi';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getLinkedChunksForPosition } from '@/lib/chunks/queries';
+import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { getPositionLikeMeta } from '@/lib/positions/like-queries';
 import { resolveDisplayName } from '@/lib/users/display-name';
 
@@ -26,6 +27,7 @@ import { CommentTree } from '@/app/[locale]/(public)/topics/_components/CommentT
 import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
+import { buildAttachmentNodeMap } from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import { buildCommentTree } from '@/app/[locale]/(public)/topics/_lib/comment-tree';
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import {
@@ -103,6 +105,18 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
   ]);
 
   const commentTree = buildCommentTree(allComments, sortBy);
+
+  // Fetch attachments for every post in the topic (root + every reply)
+  // so attached PGN/FEN/embed/image cards render under each author
+  // regardless of depth in the thread.
+  const allPostIds = allComments.map((c) => c.id);
+  const attachments = allPostIds.length > 0 ? await getAttachmentsForPosts(allPostIds) : new Map();
+  const tVideo = await getTranslations({ locale, namespace: 'postVideoAttachmentRender' });
+  const extraContentByPostId = buildAttachmentNodeMap(
+    allPostIds,
+    attachments,
+    tVideo('fallbackTitle')
+  );
 
   return (
     <PositionDetailLayout
@@ -210,6 +224,7 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
               fen: createReplyWithFenAttachment,
             }}
             deletePostAction={deletePost}
+            extraContentByPostId={extraContentByPostId}
             i18n={{
               likeNamespace: 'topics.positionPuzzle',
               replyNamespace: 'topics.positionPuzzle.replies',

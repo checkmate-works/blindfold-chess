@@ -2,8 +2,11 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
+
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
 import { TopicPostDetailLayout } from '@/app/[locale]/(public)/topics/_components/TopicPostDetailLayout';
+import { buildAttachmentNodeMap } from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { fetchPostDetailData } from '@/app/[locale]/(public)/topics/_lib/post-detail';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -74,9 +77,21 @@ export default async function OpeningPostDetailPage({ params, searchParams }: Pr
     post
   );
 
+  // Reply attachment payload: openings' OP card surfaces a rating
+  // display via `opMeta` (no attachment slot on the OP), so the OP id
+  // is not in the fetch — only reply ids.
+  const replyIds = replies.map((r) => r.id);
+  const replyAttachments = replyIds.length > 0 ? await getAttachmentsForPosts(replyIds) : new Map();
+
   const t = await getTranslations({ locale, namespace: 'topics' });
   const dt = await getTranslations({ locale, namespace: 'topics.openings' });
   const nameT = await getTranslations({ locale, namespace: 'topics.openings.names' });
+  const tVideo = await getTranslations({ locale, namespace: 'postVideoAttachmentRender' });
+  const replyExtraContentByPostId = buildAttachmentNodeMap(
+    replyIds,
+    replyAttachments,
+    tVideo('fallbackTitle')
+  );
 
   const replyRestrictionMessage =
     !isAuthor && post.replyPermission === 'followers' && !canReply
@@ -113,6 +128,7 @@ export default async function OpeningPostDetailPage({ params, searchParams }: Pr
         pgn: createReplyWithAttachment,
         fen: createReplyWithFenAttachment,
       }}
+      extraContentByPostId={replyExtraContentByPostId}
       redirectPath={`/${locale}/topics/openings/${slug}`}
       i18n={{
         likeNamespace: 'topics.openings.postDetail',

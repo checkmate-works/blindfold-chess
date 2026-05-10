@@ -89,6 +89,14 @@ type Props = {
    * knob for future use.
    */
   enableSpoiler?: boolean;
+  /**
+   * Per-post attachment payload for entries inside the reply tree, keyed
+   * by post id. The OP's own attachment continues to flow through
+   * `opMeta` (rendered inside the OP card); this prop covers each reply.
+   * Pages compute this with one `getAttachmentsForPosts(replies.map(r =>
+   * r.id))` call and `renderAttachment(...)` per entry.
+   */
+  extraContentByPostId?: ReadonlyMap<string, React.ReactNode>;
   /** Comments-section i18n + sort wiring. */
   comments: {
     /** Section title above the form / sort / list (e.g. "Replies"). */
@@ -142,6 +150,7 @@ export async function TopicPostDetailLayout({
   redirectPath,
   i18n,
   enableSpoiler = false,
+  extraContentByPostId,
   comments,
   breadcrumbItems,
 }: Props) {
@@ -265,6 +274,7 @@ export async function TopicPostDetailLayout({
             deletePostAction={deletePostAction}
             i18n={i18n}
             threadRootPostId={rootWithMeta.id}
+            extraContentByPostId={extraContentByPostId}
           />
         </>
       )}

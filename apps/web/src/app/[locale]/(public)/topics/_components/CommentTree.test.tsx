@@ -14,13 +14,15 @@ vi.mock('../_lib/permissions', () => ({
 
 const commentNodeProps = vi.fn();
 vi.mock('./CommentNode', () => ({
-  CommentNode: (props: { node: { id: string }; extraContent?: React.ReactNode }) => {
+  CommentNode: (props: {
+    node: { id: string };
+    extraContentByPostId?: ReadonlyMap<string, React.ReactNode>;
+  }) => {
     commentNodeProps(props);
+    const extra = props.extraContentByPostId?.get(props.node.id);
     return (
       <div data-testid={`comment-node-${props.node.id}`}>
-        {props.extraContent !== undefined && (
-          <div data-testid={`extra-${props.node.id}`}>{props.extraContent}</div>
-        )}
+        {extra !== undefined && <div data-testid={`extra-${props.node.id}`}>{extra}</div>}
       </div>
     );
   },
@@ -80,13 +82,13 @@ async function renderTree(
     replyAttachmentActions: { pgn: mockReplyPgn, fen: mockReplyFen },
     deletePostAction: mockDeletePost,
     i18n,
-    extraContentByRootId: extra,
+    extraContentByPostId: extra,
   });
   return render(ui);
 }
 
-describe('CommentTree — extraContentByRootId contract', () => {
-  it('forwards no extraContent prop to any CommentNode when extraContentByRootId is omitted (back-compat)', async () => {
+describe('CommentTree — extraContentByPostId contract', () => {
+  it('forwards no Map prop to any CommentNode when extraContentByPostId is omitted (back-compat)', async () => {
     commentNodeProps.mockClear();
     const r1 = makeRoot('r1');
     const r2 = makeRoot('r2');
@@ -96,13 +98,11 @@ describe('CommentTree — extraContentByRootId contract', () => {
     expect(commentNodeProps).toHaveBeenCalledTimes(2);
     const call1 = commentNodeProps.mock.calls[0][0];
     const call2 = commentNodeProps.mock.calls[1][0];
-    // The prop is forwarded as `extraContentByRootId?.get(root.id)` which is
-    // `undefined` when the map itself is undefined.
-    expect(call1.extraContent).toBeUndefined();
-    expect(call2.extraContent).toBeUndefined();
+    expect(call1.extraContentByPostId).toBeUndefined();
+    expect(call2.extraContentByPostId).toBeUndefined();
   });
 
-  it('forwards a per-root extraContent payload to the matching CommentNode and only that one', async () => {
+  it('forwards the same Map to every root CommentNode and the test renderer surfaces only the entries whose key matches the node id', async () => {
     commentNodeProps.mockClear();
     const r1 = makeRoot('r1');
     const r2 = makeRoot('r2');
@@ -119,9 +119,14 @@ describe('CommentTree — extraContentByRootId contract', () => {
     expect(screen.getByTestId('extra-r2')).toBeDefined();
     expect(screen.getByTestId('game-card-r1')).toBeDefined();
     expect(screen.getByTestId('image-card-r2')).toBeDefined();
+    // Both roots receive the SAME map reference — CommentNode is the
+    // one that does the per-id lookup, not CommentTree.
+    const calls = commentNodeProps.mock.calls.map((c) => c[0]);
+    expect(calls[0].extraContentByPostId).toBe(map);
+    expect(calls[1].extraContentByPostId).toBe(map);
   });
 
-  it('passes extraContent=undefined to roots without a matching map entry', async () => {
+  it('renders no extra payload for roots whose id is missing from the map', async () => {
     commentNodeProps.mockClear();
     const r1 = makeRoot('r1');
     const r2 = makeRoot('r2');
@@ -131,21 +136,17 @@ describe('CommentTree — extraContentByRootId contract', () => {
 
     await renderTree([r1, r2], map);
 
-    const calls = commentNodeProps.mock.calls.map((c) => c[0]);
-    const r1Props = calls.find((p) => p.node.id === 'r1');
-    const r2Props = calls.find((p) => p.node.id === 'r2');
-    expect(r1Props.extraContent).toBeDefined();
-    expect(r2Props.extraContent).toBeUndefined();
+    expect(screen.getByTestId('extra-r1')).toBeDefined();
+    expect(screen.queryByTestId('extra-r2')).toBeNull();
   });
 
-  it('does not match unrelated root ids: a map keyed by an absent id forwards undefined to every root', async () => {
+  it('does not match unrelated post ids: a map keyed by an absent id renders nothing extra anywhere', async () => {
     commentNodeProps.mockClear();
     const r1 = makeRoot('r1');
     const map = new Map<string, React.ReactNode>([['some-other-id', <span key="x">orphan</span>]]);
 
     await renderTree([r1], map);
 
-    const r1Props = commentNodeProps.mock.calls[0][0];
-    expect(r1Props.extraContent).toBeUndefined();
+    expect(screen.queryByTestId('extra-r1')).toBeNull();
   });
 });

@@ -91,12 +91,23 @@ type Props = {
    */
   replyToDisplayName?: string;
   /**
-   * Per-root payload rendered between the body and the like/reply row.
-   * Carries topic-specific data attached to the OP — e.g. an opening rating
-   * display, an attached game card. Ignored on every non-root node so deeper
-   * replies stay visually uniform regardless of which page renders them.
+   * Per-post extra payload, looked up by post id and rendered between the
+   * body and the like/reply row. Used to surface attached game / FEN /
+   * embed cards on every node in the tree — both top-level posts (chunks
+   * list page) and replies (every detail page that shows reply
+   * attachments under their author). The Map is threaded all the way down
+   * the recursion so first- and second-level replies render their
+   * attachment too.
+   *
+   * @design Why a Map and not a pre-resolved ReactNode prop
+   *
+   * Pre-resolving at `CommentTree` and passing one ReactNode per CommentNode
+   * would force the parent to walk the full tree to discover descendant
+   * ids; threading a Map keeps the discovery local to each node and lets
+   * the pages compute the attachment payload from a flat
+   * `getAttachmentsForPosts(allPostIds)` call.
    */
-  extraContent?: React.ReactNode;
+  extraContentByPostId?: ReadonlyMap<string, React.ReactNode>;
 };
 
 export function CommentNode({
@@ -115,7 +126,7 @@ export function CommentNode({
   replyGroups,
   flatReplies,
   replyToDisplayName,
-  extraContent,
+  extraContentByPostId,
 }: Props) {
   const tTopics = useTranslations('topics');
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -229,7 +240,7 @@ export function CommentNode({
                 </div>
               )}
 
-              {isRoot && !isDeleted && extraContent}
+              {!isDeleted && extraContentByPostId?.get(node.id)}
 
               {!isDeleted && (
                 <div className="flex items-center gap-4">
@@ -297,6 +308,7 @@ export function CommentNode({
                       deletePostAction={deletePostAction}
                       i18n={i18n}
                       flatReplies={group.deeper}
+                      extraContentByPostId={extraContentByPostId}
                     />
                   ))}
                 </div>
@@ -320,6 +332,7 @@ export function CommentNode({
                       deletePostAction={deletePostAction}
                       i18n={i18n}
                       replyToDisplayName={prefix ?? undefined}
+                      extraContentByPostId={extraContentByPostId}
                     />
                   ))}
                 </div>
