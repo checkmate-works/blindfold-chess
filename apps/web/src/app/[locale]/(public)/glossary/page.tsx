@@ -18,7 +18,7 @@ import { getGlossaryTerms } from './_lib/queries';
 
 export const generateStaticParams = generateLocaleStaticParams;
 
-export const revalidate = 300;
+export const revalidate = 3600;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;

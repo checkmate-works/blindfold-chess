@@ -19,7 +19,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { getPublishedArticle } from '../_lib/queries';
 
-export const revalidate = 300;
+export const revalidate = 1800;
 
 const MarkdownRenderer = nextDynamic(
   () =>

@@ -22,7 +22,7 @@ import type { HelpStep } from '@/app/[locale]/_components';
 
 import RoutePlanner from './_components/RoutePlanner';
 
-export const revalidate = 300;
+export const revalidate = 3600;
 
 const { generateMetadata, Page } = createPracticeTopPage({
   i18nKey: 'routePlanner',
