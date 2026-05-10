@@ -6,10 +6,12 @@ import { getTranslations } from 'next-intl/server';
 import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE, IS_LOCAL_DEV } from '@/config';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
+import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { getPaginationParams } from '@/lib/pagination';
 import { createClient } from '@/lib/supabase/server';
 
 import { TopicPostCard } from '@/app/[locale]/(public)/(home)/_components/TopicPostCard';
+import { renderAttachment } from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { isValidSquare } from '@/app/[locale]/(public)/topics/squares/_lib/squares';
 import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
@@ -81,6 +83,14 @@ export default async function OpeningsPage({ params, searchParams }: Props) {
     ? await getPostsByFirstMoveSquarePaginated(firstMoveSquare, limit, offset, user?.id)
     : await getPostsAcrossOpeningsPaginated(limit, offset, user?.id);
 
+  // Pre-resolve each visible post's attachment slot upstream because
+  // TopicPostCard is a client component and `getAttachmentsForPosts`
+  // is server-only. Posts with no attachment row drop out of the map.
+  const postIds = recentPosts.map((p) => p.id);
+  const attachments = postIds.length > 0 ? await getAttachmentsForPosts(postIds) : new Map();
+  const tVideo = await getTranslations({ locale, namespace: 'postVideoAttachmentRender' });
+  const fallbackVideoTitle = tVideo('fallbackTitle');
+
   const openings = firstMoveSquare
     ? await getOpeningsAsTreeByFirstMoveSquare(firstMoveSquare)
     : await getOpeningsAsTree();
@@ -105,6 +115,7 @@ export default async function OpeningsPage({ params, searchParams }: Props) {
           <div className="space-y-3">
             {recentPosts.map((post) => {
               const tTopic = post.topicType === 'opening' ? tOpenings : tSquares;
+              const att = attachments.get(post.id);
               return (
                 <TopicPostCard
                   key={post.id}
@@ -113,6 +124,7 @@ export default async function OpeningsPage({ params, searchParams }: Props) {
                   showMoreLabel={t('showMore')}
                   justNowLabel={tTopic('justNow')}
                   variant="card"
+                  attachment={att ? renderAttachment(att, fallbackVideoTitle) : undefined}
                 />
               );
             })}

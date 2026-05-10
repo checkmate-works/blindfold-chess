@@ -1,6 +1,7 @@
 'use client';
 
 import { memo } from 'react';
+import type { ReactNode } from 'react';
 
 import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -28,6 +29,14 @@ type Props = {
   showMoreLabel: string;
   justNowLabel: string;
   variant?: 'feed' | 'card';
+  /**
+   * Pre-rendered attachment slot (e.g. `<AttachedGameCard />`). Currently
+   * surfaced by the openings index page so a top-level post with an
+   * attached game / FEN / embed renders the card alongside the content
+   * preview. The home feed call site intentionally omits this — feed
+   * variants stay compact and don't surface per-post attachments.
+   */
+  attachment?: ReactNode;
 };
 
 export const TopicPostCard = memo(function TopicPostCard({
@@ -36,6 +45,7 @@ export const TopicPostCard = memo(function TopicPostCard({
   showMoreLabel,
   justNowLabel,
   variant,
+  attachment,
 }: Props) {
   const tTopics = useTranslations('topics');
   const displayName = post.author?.displayName || post.author?.username || 'Anonymous';
@@ -157,6 +167,7 @@ export const TopicPostCard = memo(function TopicPostCard({
           {showMoreLabel}
         </Link>
       )}
+      {attachment && <div className="mt-3">{attachment}</div>}
     </ActivityCard>
   );
 });
