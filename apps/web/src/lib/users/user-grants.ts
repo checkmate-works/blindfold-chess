@@ -7,6 +7,7 @@ import 'server-only';
 import { db, userGrants } from '@/lib/db';
 import { withTimeout } from '@/lib/db-timeout';
 import { type AutomatedGrantType, GRANT_TYPE_DEFAULTS } from '@/lib/db/data/grant-types';
+import type { DbTx } from '@/lib/db/types';
 
 /**
  * Check if the user has an active (non-revoked, currently valid) grant
@@ -41,9 +42,6 @@ export const hasActiveGrant = unstable_cache(
   { tags: ['grant-status'], revalidate: 60 }
 );
 
-/** Transaction client type — matches the callback parameter of `db.transaction()`. */
-type TransactionClient = Parameters<Parameters<typeof db.transaction>[0]>[0];
-
 /**
  * Calculate the start time for a new additive grant.
  * If the user has an existing active grant that expires in the future,
@@ -56,7 +54,7 @@ type TransactionClient = Parameters<Parameters<typeof db.transaction>[0]>[0];
 export async function calcGrantStartsAt(
   userId: string,
   benefitType: string,
-  executor: TransactionClient | typeof db = db
+  executor: DbTx | typeof db = db
 ): Promise<Date> {
   const now = new Date();
 
@@ -94,7 +92,7 @@ export async function calcGrantStartsAt(
  * @returns The new grant's id and computed expiresAt
  */
 export async function applyAutomatedGrant(
-  tx: TransactionClient,
+  tx: DbTx,
   userId: string,
   grantType: AutomatedGrantType,
   source?: { type: string; id: string }

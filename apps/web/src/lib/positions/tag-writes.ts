@@ -1,9 +1,7 @@
 import { eq } from 'drizzle-orm';
 
-import type { db } from '@/lib/db';
 import { positionChunks, positionThemes } from '@/lib/db';
-
-type TxOrDb = Parameters<Parameters<typeof db.transaction>[0]>[0] | typeof db;
+import type { DbTxOrDb } from '@/lib/db/types';
 
 /**
  * Insert junction rows for theme/chunk tags on a newly created
@@ -11,7 +9,7 @@ type TxOrDb = Parameters<Parameters<typeof db.transaction>[0]>[0] | typeof db;
  * skips both kinds when the corresponding array is undefined or empty.
  */
 export async function insertPositionTags(
-  tx: TxOrDb,
+  tx: DbTxOrDb,
   positionId: string,
   attachedByUserId: string,
   themeIds: string[] | undefined,
@@ -37,7 +35,7 @@ export async function insertPositionTags(
  * omitting a field preserves it.
  */
 export async function replacePositionTags(
-  tx: TxOrDb,
+  tx: DbTxOrDb,
   positionId: string,
   attachedByUserId: string,
   themeIds: string[] | undefined,
