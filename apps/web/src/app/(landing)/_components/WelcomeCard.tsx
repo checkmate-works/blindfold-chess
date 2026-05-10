@@ -4,8 +4,6 @@ import Link from 'next/link';
 
 import { FiHome, FiUser } from 'react-icons/fi';
 
-import { IS_LOCAL_SUPABASE } from '@/lib/image-optimization';
-
 type Props = {
   t: Awaited<ReturnType<typeof getTranslations<'landing'>>>;
   locale: string;
@@ -25,7 +23,8 @@ export function WelcomeCard({ t, locale, displayName, avatarUrl }: Props) {
           width={48}
           height={48}
           className="w-12 h-12 rounded-full object-cover shrink-0"
-          unoptimized={IS_LOCAL_SUPABASE}
+          // Pre-resized 256×256 WebP at upload; bypass Vercel optimization.
+          unoptimized
         />
       ) : (
         <span className="flex items-center justify-center w-12 h-12 rounded-full bg-muted text-muted-foreground text-lg font-semibold shrink-0">

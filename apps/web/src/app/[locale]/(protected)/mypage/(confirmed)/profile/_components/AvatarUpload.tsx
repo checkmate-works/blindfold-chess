@@ -7,8 +7,6 @@ import Image from 'next/image';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import { IS_LOCAL_SUPABASE } from '@/lib/image-optimization';
-
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 
 type Props = {
@@ -108,7 +106,9 @@ export function AvatarUpload({ currentAvatarUrl, onUploaded }: Props) {
             alt={t('avatarAlt')}
             fill
             className="object-cover"
-            unoptimized={IS_LOCAL_SUPABASE}
+            // Pre-resized 256×256 WebP at upload (and the live preview is a
+            // local blob: URL anyway); bypass Vercel optimization.
+            unoptimized
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-muted text-muted-foreground text-3xl">
