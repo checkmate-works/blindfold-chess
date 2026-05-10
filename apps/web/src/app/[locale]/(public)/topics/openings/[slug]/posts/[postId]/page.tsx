@@ -6,7 +6,10 @@ import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
 import { TopicPostDetailLayout } from '@/app/[locale]/(public)/topics/_components/TopicPostDetailLayout';
-import { buildAttachmentNodeMap } from '@/app/[locale]/(public)/topics/_components/render-attachment';
+import {
+  buildAttachmentNodeMap,
+  renderAttachment,
+} from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { fetchPostDetailData } from '@/app/[locale]/(public)/topics/_lib/post-detail';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -77,21 +80,44 @@ export default async function OpeningPostDetailPage({ params, searchParams }: Pr
     post
   );
 
-  // Reply attachment payload: openings' OP card surfaces a rating
-  // display via `opMeta` (no attachment slot on the OP), so the OP id
-  // is not in the fetch — only reply ids.
+  // Fetch attachments for the OP AND every reply in one round-trip.
+  // The OP's attachment renders inside the OP card's `opMeta` slot,
+  // composed with the optional rating display so both can coexist.
+  // Each reply's attachment flows into `extraContentByPostId` and is
+  // rendered under the matching CommentNode in the tree.
   const replyIds = replies.map((r) => r.id);
-  const replyAttachments = replyIds.length > 0 ? await getAttachmentsForPosts(replyIds) : new Map();
+  const allPostIds = [postId, ...replyIds];
+  const attachments = await getAttachmentsForPosts(allPostIds);
+  const opAttachment = attachments.get(postId) ?? null;
 
   const t = await getTranslations({ locale, namespace: 'topics' });
   const dt = await getTranslations({ locale, namespace: 'topics.openings' });
   const nameT = await getTranslations({ locale, namespace: 'topics.openings.names' });
   const tVideo = await getTranslations({ locale, namespace: 'postVideoAttachmentRender' });
+  const fallbackVideoTitle = tVideo('fallbackTitle');
   const replyExtraContentByPostId = buildAttachmentNodeMap(
     replyIds,
-    replyAttachments,
-    tVideo('fallbackTitle')
+    attachments,
+    fallbackVideoTitle
   );
+
+  // Compose the OP card meta. Rating + attachment can both be present
+  // (a rating-bearing post can also carry an attached game/FEN), so
+  // render them in order so the rating stays anchored at the top.
+  const ratingNode = post.rating ? (
+    <RatingDisplay
+      preferenceRating={post.rating.preferenceRating}
+      proficiencyRating={post.rating.proficiencyRating}
+    />
+  ) : null;
+  const attachmentNode = opAttachment ? renderAttachment(opAttachment, fallbackVideoTitle) : null;
+  const opMeta =
+    ratingNode || attachmentNode ? (
+      <>
+        {ratingNode}
+        {attachmentNode}
+      </>
+    ) : undefined;
 
   const replyRestrictionMessage =
     !isAuthor && post.replyPermission === 'followers' && !canReply
@@ -108,14 +134,7 @@ export default async function OpeningPostDetailPage({ params, searchParams }: Pr
       pageTitle={dt('detail.pageTitle')}
       sectionTitle={dt('postDetail.authorView', { author: authorName, name: displayName })}
       topicVisual={<OpeningBoardWithMoves fen={opening.fen} pgn={opening.pgn} />}
-      opMeta={
-        post.rating ? (
-          <RatingDisplay
-            preferenceRating={post.rating.preferenceRating}
-            proficiencyRating={post.rating.proficiencyRating}
-          />
-        ) : undefined
-      }
+      opMeta={opMeta}
       rootWithMeta={rootWithMeta}
       replies={replies}
       user={user}

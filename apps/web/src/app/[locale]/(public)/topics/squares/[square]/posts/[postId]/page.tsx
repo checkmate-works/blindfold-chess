@@ -6,7 +6,10 @@ import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
 import { TopicPostDetailLayout } from '@/app/[locale]/(public)/topics/_components/TopicPostDetailLayout';
-import { buildAttachmentNodeMap } from '@/app/[locale]/(public)/topics/_components/render-attachment';
+import {
+  buildAttachmentNodeMap,
+  renderAttachment,
+} from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { fetchPostDetailData } from '@/app/[locale]/(public)/topics/_lib/post-detail';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -71,21 +74,23 @@ export default async function PostDetailPage({ params, searchParams }: Props) {
     post
   );
 
-  // Reply-side attachment payload: fetch attachments for every reply
-  // id so a PGN/FEN/embed/image attached to a reply renders inline
-  // under that reply via CommentTree. The OP itself doesn't surface
-  // an attachment on this page (squares' OP card has no attachment
-  // slot), so the OP id is intentionally not in the fetch.
+  // Fetch in one round-trip the OP's attachment AND every reply's.
+  // The OP's render flows into the OP card via `opMeta`; each reply's
+  // flows into `extraContentByPostId` so CommentTree surfaces the
+  // matching Attached* card under the reply that owns it.
   const replyIds = replies.map((r) => r.id);
-  const replyAttachments = replyIds.length > 0 ? await getAttachmentsForPosts(replyIds) : new Map();
+  const allPostIds = [postId, ...replyIds];
+  const attachments = await getAttachmentsForPosts(allPostIds);
+  const opAttachment = attachments.get(postId) ?? null;
 
   const t = await getTranslations({ locale, namespace: 'topics' });
   const st = await getTranslations({ locale, namespace: 'topics.squares' });
   const tVideo = await getTranslations({ locale, namespace: 'postVideoAttachmentRender' });
+  const fallbackVideoTitle = tVideo('fallbackTitle');
   const replyExtraContentByPostId = buildAttachmentNodeMap(
     replyIds,
-    replyAttachments,
-    tVideo('fallbackTitle')
+    attachments,
+    fallbackVideoTitle
   );
 
   const replyRestrictionMessage =
@@ -101,6 +106,7 @@ export default async function PostDetailPage({ params, searchParams }: Props) {
       pageTitle={t('squares.pageTitle')}
       sectionTitle={t('squares.postDetail.authorView', { author: displayName, square })}
       topicVisual={<SquareHighlightBoard square={square} locale={locale} />}
+      opMeta={opAttachment ? renderAttachment(opAttachment, fallbackVideoTitle) : undefined}
       rootWithMeta={rootWithMeta}
       replies={replies}
       user={user}
