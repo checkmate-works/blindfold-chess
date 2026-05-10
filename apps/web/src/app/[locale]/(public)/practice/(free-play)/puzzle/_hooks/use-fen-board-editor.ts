@@ -10,21 +10,12 @@ import { EMPTY_BOARD_FEN, type EditorTab, type SideToMove } from '../_lib/puzzle
 export type FenBoardEditorOptions = {
   initialFen?: string;
   /**
-   * Called whenever the board content actually changes (FEN input,
-   * drag-drop edits, side-to-move toggle, clear). Used by the host
-   * form to reset solution moves that depended on the old position.
-   * Not fired when the user merely flips orientation or switches tabs.
+   * Fires when the board content changes (FEN input, drag-drop, side-
+   * to-move toggle, clear) — not on orientation flip or tab switch.
    */
   onBoardChange?: () => void;
 };
 
-/**
- * State + handlers for the FEN/board half of the puzzle authoring
- * form: textual FEN input, the editable board it mirrors, side-to-
- * move, board orientation, editor tab, and the derived validation /
- * turn-indicator values. Cross-cutting reset of solution moves is
- * delegated to the host via `onBoardChange`.
- */
 export function useFenBoardEditor({ initialFen, onBoardChange }: FenBoardEditorOptions = {}) {
   const baseFenInput = initialFen ?? '';
   const baseBoardFen = initialFen ?? EMPTY_BOARD_FEN;
@@ -98,10 +89,6 @@ export function useFenBoardEditor({ initialFen, onBoardChange }: FenBoardEditorO
     onBoardChange?.();
   }
 
-  /**
-   * Reset to the initialFen / default board state. Used by Create's
-   * "Start Over" flow.
-   */
   function resetBoard() {
     setFenInput(baseFenInput);
     setBoardFen(baseBoardFen);

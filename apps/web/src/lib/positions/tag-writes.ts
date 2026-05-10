@@ -3,11 +3,6 @@ import { eq } from 'drizzle-orm';
 import { positionChunks, positionThemes } from '@/lib/db';
 import type { DbTxOrDb } from '@/lib/db/types';
 
-/**
- * Insert junction rows for theme/chunk tags on a newly created
- * position. Used by `createPuzzle` inside the create transaction —
- * skips both kinds when the corresponding array is undefined or empty.
- */
 export async function insertPositionTags(
   tx: DbTxOrDb,
   positionId: string,
@@ -28,11 +23,9 @@ export async function insertPositionTags(
 }
 
 /**
- * Replace junction rows for a position wholesale. Used by
- * `updatePuzzle` inside the update transaction. `undefined` for either
- * array means "leave existing tags untouched"; explicit `[]` means
- * "remove all". This asymmetry mirrors the action's contract where
- * omitting a field preserves it.
+ * `undefined` for either array means "leave existing tags untouched";
+ * explicit `[]` means "remove all". Asymmetric on purpose so callers
+ * can distinguish "field omitted" from "explicit empty replacement".
  */
 export async function replacePositionTags(
   tx: DbTxOrDb,

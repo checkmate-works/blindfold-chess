@@ -10,12 +10,6 @@ export type PuzzleTagSelectionOptions = {
   initialChunks?: ChunkOption[];
 };
 
-/**
- * State + handler for the puzzle authoring form's tag picker. Splits
- * out the (themes, chunks) pair so the rest of the form mechanics
- * (board, moves) don't have to thread through tag state they don't
- * touch.
- */
 export function usePuzzleTagSelection({
   initialThemes,
   initialChunks,
