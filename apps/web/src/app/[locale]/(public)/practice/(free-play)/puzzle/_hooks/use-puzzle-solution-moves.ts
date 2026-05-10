@@ -1,36 +1,26 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { executeMove, getTurnFromFen } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { MAX_SOLUTION_MOVES, type SideToMove } from '../_lib/puzzle-form-constants';
-
-export type MoveSubmitLabels = {
-  positionInvalid: string;
-  maxMovesReached: string;
-  invalidMove: string;
-};
+import type { MoveSubmitLabels } from './use-move-submit-labels';
 
 export type PuzzleSolutionMovesOptions = {
   /** Validated starting FEN. Empty string while the board is invalid. */
   baseFen: string;
   initialMoves?: string[];
   initialNotes?: string[];
+  moveSubmitLabels: MoveSubmitLabels;
 };
 
-/**
- * State + handlers for the solution-move list of the puzzle authoring
- * form. Owns the move array, per-move note array, in-flight move
- * input, and the derived "current FEN" (baseFen with moves replayed)
- * along with first / current turn for MoveInputPanel piece-icon
- * coloring.
- */
 export function usePuzzleSolutionMoves({
   baseFen,
   initialMoves,
   initialNotes,
+  moveSubmitLabels,
 }: PuzzleSolutionMovesOptions) {
   const [moves, setMoves] = useState<string[]>(initialMoves ?? []);
   const [notes, setNotes] = useState<string[]>(initialNotes ?? []);
@@ -38,10 +28,9 @@ export function usePuzzleSolutionMoves({
   const [moveError, setMoveError] = useState<string | null>(null);
   const [solutionError, setSolutionError] = useState<string | null>(null);
 
-  // Replay the entered moves on top of baseFen for "current FEN" in
-  // the move input panel. Defensively returns the last good FEN if
-  // executeMove ever rejects — makeMoveSubmitHandler already
-  // validates each move before storage so this branch should not fire.
+  // Defensive: executeMove rejection here would only fire if a move
+  // somehow got stored without going through handleMoveSubmit (which
+  // validates first). Fall back to the last good FEN rather than throw.
   const currentFen = useMemo(() => {
     if (!baseFen) return '';
     let fen = baseFen;
@@ -62,10 +51,9 @@ export function usePuzzleSolutionMoves({
     }
   }, [baseFen]);
 
-  // Side to move at the *current* position along the line. Drives
-  // MoveInputPanel's piece-icon color: pieces displayed should belong
-  // to whichever side is about to play, which alternates as moves are
-  // appended. firstTurn only reflects the puzzle's starting side.
+  // Drives MoveInputPanel's piece-icon color — must reflect the side
+  // about to play at the *current* position, not the puzzle's starting
+  // side (which would freeze after the first move).
   const currentTurn: SideToMove = useMemo(() => {
     if (!currentFen) return firstTurn;
     try {
@@ -75,21 +63,21 @@ export function usePuzzleSolutionMoves({
     }
   }, [currentFen, firstTurn]);
 
-  function makeMoveSubmitHandler(labels: MoveSubmitLabels) {
-    return function handleMoveSubmit(move: AlgebraicNotation): boolean {
+  const handleMoveSubmit = useCallback(
+    (move: AlgebraicNotation): boolean => {
       const trimmed = move.trim();
       if (!trimmed) return false;
       if (!baseFen) {
-        setMoveError(labels.positionInvalid);
+        setMoveError(moveSubmitLabels.positionInvalid);
         return false;
       }
       if (moves.length >= MAX_SOLUTION_MOVES) {
-        setMoveError(labels.maxMovesReached);
+        setMoveError(moveSubmitLabels.maxMovesReached);
         return false;
       }
       const r = executeMove(currentFen, trimmed);
       if (!r) {
-        setMoveError(labels.invalidMove);
+        setMoveError(moveSubmitLabels.invalidMove);
         return false;
       }
       setMoves((prev) => [...prev, trimmed]);
@@ -98,8 +86,9 @@ export function usePuzzleSolutionMoves({
       setMoveError(null);
       setSolutionError(null);
       return true;
-    };
-  }
+    },
+    [baseFen, currentFen, moves, moveSubmitLabels]
+  );
 
   function handleRemoveLast() {
     setMoves((prev) => prev.slice(0, -1));
@@ -116,11 +105,6 @@ export function usePuzzleSolutionMoves({
     });
   }
 
-  /**
-   * Clear moves, notes, and in-flight input. Used both as the side
-   * effect of board changes (host form wires this via onBoardChange)
-   * and by Create's "Start Over" reset.
-   */
   function reset() {
     setMoves(initialMoves ?? []);
     setNotes(initialNotes ?? []);
@@ -130,7 +114,6 @@ export function usePuzzleSolutionMoves({
   }
 
   return {
-    // state
     moves,
     setMoves,
     notes,
@@ -141,12 +124,10 @@ export function usePuzzleSolutionMoves({
     setMoveError,
     solutionError,
     setSolutionError,
-    // derived
     currentFen,
     firstTurn,
     currentTurn,
-    // handlers
-    makeMoveSubmitHandler,
+    handleMoveSubmit,
     handleRemoveLast,
     handleNoteChange,
     reset,

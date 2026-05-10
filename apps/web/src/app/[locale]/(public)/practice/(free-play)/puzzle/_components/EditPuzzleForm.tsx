@@ -21,6 +21,7 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 import { updatePuzzle } from '../_actions/updatePuzzle';
 import { useEditableBoardLabels } from '../_hooks/use-editable-board-labels';
 import { useFenBoardEditor } from '../_hooks/use-fen-board-editor';
+import { useMoveSubmitLabels } from '../_hooks/use-move-submit-labels';
 import { usePuzzleSolutionMoves } from '../_hooks/use-puzzle-solution-moves';
 import { usePuzzleTagSelection } from '../_hooks/use-puzzle-tag-selection';
 import { useTagPickerLabels } from '../_hooks/use-tag-picker-labels';
@@ -52,6 +53,7 @@ export function EditPuzzleForm({ positionId, initial, available }: Props) {
   const tUnsaved = useTranslations('unsavedChanges');
   const tagPickerLabels = useTagPickerLabels();
   const editableBoardLabels = useEditableBoardLabels();
+  const moveSubmitLabels = useMoveSubmitLabels();
   const { preferences, updatePreferences, isLoaded } = useGamePreferences();
 
   const initialMovesRef = useRef(initial.solutionMoves.map((m) => m.san));
@@ -80,22 +82,13 @@ export function EditPuzzleForm({ positionId, initial, available }: Props) {
     baseFen: board.baseFen,
     initialMoves: initialMovesRef.current,
     initialNotes: initialNotesRef.current,
+    moveSubmitLabels,
   });
   solutionResetRef.current = solution.reset;
   const tags = usePuzzleTagSelection({
     initialThemes: initial.themes,
     initialChunks: initial.chunks,
   });
-  const handleMoveSubmit = useMemo(
-    () =>
-      solution.makeMoveSubmitHandler({
-        positionInvalid: tCreate('positionInvalid'),
-        maxMovesReached: tCreate('maxMovesReached'),
-        invalidMove: tPlay('invalidMove'),
-      }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [board.baseFen, solution.currentFen, solution.moves, tCreate, tPlay]
-  );
 
   const themeIds = useMemo(() => tags.selectedThemes.map((t) => t.id), [tags.selectedThemes]);
   const chunkIds = useMemo(() => tags.selectedChunks.map((c) => c.id), [tags.selectedChunks]);
@@ -383,7 +376,7 @@ export function EditPuzzleForm({ positionId, initial, available }: Props) {
                 onMoveInputChange={solution.setMoveInput}
                 error={solution.moveError}
                 onErrorClear={() => solution.setMoveError(null)}
-                onSubmit={handleMoveSubmit}
+                onSubmit={solution.handleMoveSubmit}
                 disabled={pending}
                 inputPlaceholder={tCreate('movePlaceholder')}
                 selectPlaceholder={tPlay('selectMove')}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
@@ -21,6 +21,7 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 
 import { useEditableBoardLabels } from '../_hooks/use-editable-board-labels';
 import { useFenBoardEditor } from '../_hooks/use-fen-board-editor';
+import { useMoveSubmitLabels } from '../_hooks/use-move-submit-labels';
 import { usePuzzleDraftHydration } from '../_hooks/use-puzzle-draft-hydration';
 import { usePuzzleSolutionMoves } from '../_hooks/use-puzzle-solution-moves';
 import { usePuzzleTagSelection } from '../_hooks/use-puzzle-tag-selection';
@@ -85,6 +86,7 @@ export function CreatePuzzleForm({
   const tUnsaved = useTranslations('unsavedChanges');
   const tagPickerLabels = useTagPickerLabels();
   const editableBoardLabels = useEditableBoardLabels();
+  const moveSubmitLabels = useMoveSubmitLabels();
   const { preferences, updatePreferences, isLoaded } = useGamePreferences();
 
   const defaultTitleRef = useRef(buildDefaultTitle(displayName));
@@ -96,27 +98,17 @@ export function CreatePuzzleForm({
   const [startOverOpen, setStartOverOpen] = useState(false);
   const [clearBoardOpen, setClearBoardOpen] = useState(false);
 
-  // Compose the three authoring hooks. `moves` needs `board.baseFen`
-  // to validate new moves, and `board` needs to reset `moves` when
-  // the position changes — break the cycle with a ref that the
-  // board's onBoardChange dereferences lazily.
+  // `solution` reads `board.baseFen`, and `board` resets `solution`
+  // on position change — break the cycle with a ref the board's
+  // onBoardChange dereferences lazily.
   const solutionResetRef = useRef<() => void>(() => {});
   const board = useFenBoardEditor({ onBoardChange: () => solutionResetRef.current() });
-  const solution = usePuzzleSolutionMoves({ baseFen: board.baseFen });
+  const solution = usePuzzleSolutionMoves({
+    baseFen: board.baseFen,
+    moveSubmitLabels,
+  });
   solutionResetRef.current = solution.reset;
   const tags = usePuzzleTagSelection();
-  const handleMoveSubmit = useMemo(
-    () =>
-      solution.makeMoveSubmitHandler({
-        positionInvalid: t('positionInvalid'),
-        maxMovesReached: t('maxMovesReached'),
-        invalidMove: tPlay('invalidMove'),
-      }),
-    // makeMoveSubmitHandler closes over current state (moves, baseFen,
-    // currentFen) so re-derive whenever those change.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [board.baseFen, solution.currentFen, solution.moves, t, tPlay]
-  );
 
   // Resolve draft IDs against the loaded catalog so the picker has full
   // option objects (label + slug + category) to render. IDs not present
@@ -458,7 +450,7 @@ export function CreatePuzzleForm({
                 onMoveInputChange={solution.setMoveInput}
                 error={solution.moveError}
                 onErrorClear={() => solution.setMoveError(null)}
-                onSubmit={handleMoveSubmit}
+                onSubmit={solution.handleMoveSubmit}
                 disabled={pending}
                 inputPlaceholder={t('movePlaceholder')}
                 selectPlaceholder={tPlay('selectMove')}
