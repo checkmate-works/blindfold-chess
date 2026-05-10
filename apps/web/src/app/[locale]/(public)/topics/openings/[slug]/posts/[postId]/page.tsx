@@ -81,43 +81,39 @@ export default async function OpeningPostDetailPage({ params, searchParams }: Pr
   );
 
   // Fetch attachments for the OP AND every reply in one round-trip.
-  // The OP's attachment renders inside the OP card's `opMeta` slot,
-  // composed with the optional rating display so both can coexist.
-  // Each reply's attachment flows into `extraContentByPostId` and is
-  // rendered under the matching CommentNode in the tree.
+  // The OP's attachment renders inside the OP card's `opAttachment`
+  // slot (rendered after the body — matching CommentNode's
+  // attachment position so the OP and replies stay layout-aligned).
+  // The opening's rating display stays in the `opMeta` slot ABOVE
+  // the body because it reads as metadata about the post (a rating
+  // annotation), not as inline content. Each reply's attachment
+  // flows into `extraContentByPostId` for the same after-body
+  // placement under each CommentNode.
   const replyIds = replies.map((r) => r.id);
   const allPostIds = [postId, ...replyIds];
   const attachments = await getAttachmentsForPosts(allPostIds);
-  const opAttachment = attachments.get(postId) ?? null;
+  const opAttachmentRow = attachments.get(postId) ?? null;
 
   const t = await getTranslations({ locale, namespace: 'topics' });
   const dt = await getTranslations({ locale, namespace: 'topics.openings' });
   const nameT = await getTranslations({ locale, namespace: 'topics.openings.names' });
   const tVideo = await getTranslations({ locale, namespace: 'postVideoAttachmentRender' });
   const fallbackVideoTitle = tVideo('fallbackTitle');
+  const opAttachment = opAttachmentRow
+    ? renderAttachment(opAttachmentRow, fallbackVideoTitle)
+    : undefined;
   const replyExtraContentByPostId = buildAttachmentNodeMap(
     replyIds,
     attachments,
     fallbackVideoTitle
   );
 
-  // Compose the OP card meta. Rating + attachment can both be present
-  // (a rating-bearing post can also carry an attached game/FEN), so
-  // render them in order so the rating stays anchored at the top.
-  const ratingNode = post.rating ? (
+  const opMeta = post.rating ? (
     <RatingDisplay
       preferenceRating={post.rating.preferenceRating}
       proficiencyRating={post.rating.proficiencyRating}
     />
-  ) : null;
-  const attachmentNode = opAttachment ? renderAttachment(opAttachment, fallbackVideoTitle) : null;
-  const opMeta =
-    ratingNode || attachmentNode ? (
-      <>
-        {ratingNode}
-        {attachmentNode}
-      </>
-    ) : undefined;
+  ) : undefined;
 
   const replyRestrictionMessage =
     !isAuthor && post.replyPermission === 'followers' && !canReply
@@ -135,6 +131,7 @@ export default async function OpeningPostDetailPage({ params, searchParams }: Pr
       sectionTitle={dt('postDetail.authorView', { author: authorName, name: displayName })}
       topicVisual={<OpeningBoardWithMoves fen={opening.fen} pgn={opening.pgn} />}
       opMeta={opMeta}
+      opAttachment={opAttachment}
       rootWithMeta={rootWithMeta}
       replies={replies}
       user={user}

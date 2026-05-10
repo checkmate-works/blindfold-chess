@@ -41,11 +41,22 @@ type Props = {
   /**
    * Per-OP metadata rendered inside the OP card, between the author
    * header and the body — e.g. an opening's preference / proficiency
-   * rating, a chunk's attached game card or embed. Sitting inside the
-   * card keeps these visually attached to the post they belong to,
-   * matching how `main`'s `PostDetailContent` placed `extraContent`.
+   * rating. Sits ABOVE the body so it reads as metadata about the
+   * post (rating-style annotations) rather than inline content.
+   * Attachments don't go here — use `opAttachment` so the layout
+   * matches how comments render their attachments (after the body).
    */
   opMeta?: ReactNode;
+  /**
+   * Per-OP attachment payload rendered inside the OP card BELOW the
+   * body, just above the like / delete row. Mirrors how `CommentNode`
+   * positions its own attachment relative to the comment body, so the
+   * OP and every reply present attachments in the same place. Pass
+   * the resolved `<AttachedGameCard />` / `<AttachedFenCard />` /
+   * etc. directly — the page does the `getAttachmentsForPosts` +
+   * `renderAttachment` upstream because this is a server component.
+   */
+  opAttachment?: ReactNode;
   /** OP enriched with reply / like meta. Rendered as a standalone card. */
   rootWithMeta: PostWithReplyMeta;
   /**
@@ -138,6 +149,7 @@ export async function TopicPostDetailLayout({
   sectionTitle,
   topicVisual,
   opMeta,
+  opAttachment,
   rootWithMeta,
   replies,
   user,
@@ -206,6 +218,8 @@ export async function TopicPostDetailLayout({
         <div className="text-foreground whitespace-pre-wrap break-words leading-relaxed">
           <LinkedText text={rootWithMeta.content} locale={locale} />
         </div>
+
+        {opAttachment}
 
         <div className="flex items-center gap-4">
           <LikeButton

@@ -75,18 +75,23 @@ export default async function PostDetailPage({ params, searchParams }: Props) {
   );
 
   // Fetch in one round-trip the OP's attachment AND every reply's.
-  // The OP's render flows into the OP card via `opMeta`; each reply's
-  // flows into `extraContentByPostId` so CommentTree surfaces the
-  // matching Attached* card under the reply that owns it.
+  // The OP's render flows into the OP card via the `opAttachment`
+  // slot (rendered after the body, mirroring CommentNode's own
+  // attachment position); each reply's flows into
+  // `extraContentByPostId` so CommentTree surfaces the matching
+  // Attached* card under the reply that owns it.
   const replyIds = replies.map((r) => r.id);
   const allPostIds = [postId, ...replyIds];
   const attachments = await getAttachmentsForPosts(allPostIds);
-  const opAttachment = attachments.get(postId) ?? null;
+  const opAttachmentRow = attachments.get(postId) ?? null;
 
   const t = await getTranslations({ locale, namespace: 'topics' });
   const st = await getTranslations({ locale, namespace: 'topics.squares' });
   const tVideo = await getTranslations({ locale, namespace: 'postVideoAttachmentRender' });
   const fallbackVideoTitle = tVideo('fallbackTitle');
+  const opAttachment = opAttachmentRow
+    ? renderAttachment(opAttachmentRow, fallbackVideoTitle)
+    : undefined;
   const replyExtraContentByPostId = buildAttachmentNodeMap(
     replyIds,
     attachments,
@@ -106,7 +111,7 @@ export default async function PostDetailPage({ params, searchParams }: Props) {
       pageTitle={t('squares.pageTitle')}
       sectionTitle={t('squares.postDetail.authorView', { author: displayName, square })}
       topicVisual={<SquareHighlightBoard square={square} locale={locale} />}
-      opMeta={opAttachment ? renderAttachment(opAttachment, fallbackVideoTitle) : undefined}
+      opAttachment={opAttachment}
       rootWithMeta={rootWithMeta}
       replies={replies}
       user={user}
