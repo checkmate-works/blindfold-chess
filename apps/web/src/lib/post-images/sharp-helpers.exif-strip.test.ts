@@ -1,7 +1,7 @@
 import sharp from 'sharp';
 import { describe, expect, it, vi } from 'vitest';
 
-import { stripExifAndApplyOrientation } from './sharp-helpers';
+import { normalizePostImageBuffer } from './sharp-helpers';
 
 vi.mock('server-only', () => ({}));
 
@@ -22,7 +22,7 @@ vi.mock('server-only', () => ({}));
  *   strip-by-default behavior takes over. This test would FAIL on the
  *   pre-fix code and PASS on the post-fix code.
  */
-describe('stripExifAndApplyOrientation — EXIF strip regression (real sharp)', () => {
+describe('normalizePostImageBuffer — EXIF strip regression (real sharp)', () => {
   /**
    * Build a small JPEG buffer carrying real EXIF metadata. We'd love to
    * embed actual GPS tags here (the bug was specifically about GPS
@@ -78,7 +78,7 @@ describe('stripExifAndApplyOrientation — EXIF strip regression (real sharp)', 
   it('produces an output buffer with NO EXIF block — proves GPS cannot leak', async () => {
     const fixture = await buildJpegWithExif();
 
-    const stripped = await stripExifAndApplyOrientation({
+    const stripped = await normalizePostImageBuffer({
       buffer: fixture,
       contentType: 'image/jpeg',
     });

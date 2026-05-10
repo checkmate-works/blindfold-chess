@@ -58,6 +58,16 @@ import { POST_IMAGES_MAX_MEGAPIXELS, type PostImageMimeType } from './validation
  */
 export const SHARP_INPUT_OPTIONS = { failOn: 'error', pages: 1 } as const;
 
+/**
+ * Long-edge cap (pixels) applied to every persisted post image. 1600 px
+ * covers retina (2× DPR) of the widest content slot we render in the UI
+ * (~800 px), so resizing here costs no perceptible quality. Capping at
+ * upload time means the bytes that hit Storage are also the bytes the
+ * client downloads — no Vercel Image Optimization variants needed, and
+ * we avoid serving 50-MP camera originals to every viewer.
+ */
+export const POST_IMAGE_MAX_LONG_EDGE = 1600;
+
 export type ProbeResult = { width: number; height: number };
 
 /**
@@ -105,30 +115,45 @@ export function isWithinMegapixelCap(probe: ProbeResult): boolean {
 }
 
 /**
- * EXIF strip + orientation bake-in.
+ * Single-pass post-image normalization: orient → resize → strip.
  *
- * Sharp reads the EXIF orientation tag, applies the corresponding rotation
- * to the pixel data, and then drops ALL metadata (EXIF, XMP, IPTC, ICC) —
- * that strip behavior is Sharp's documented default for `.toBuffer()` when
- * neither `.withMetadata()` nor `.keepMetadata()` is called. Calling
- * `.withMetadata({})` is the inverse: it PRESERVES most metadata, including
- * GPS. We deliberately do NOT call it here. The output preserves the
- * original encoding (no format conversion).
+ * Steps, all chained on one Sharp pipeline so libvips decodes the input
+ * exactly once:
  *
- * The output buffer is what we upload to Storage and record in the DB.
+ * 1. `.rotate()` (no argument) reads the EXIF orientation tag, bakes the
+ *    corresponding rotation into the pixel data, and discards the tag.
+ *
+ * 2. `.resize(POST_IMAGE_MAX_LONG_EDGE, POST_IMAGE_MAX_LONG_EDGE,
+ *    { fit: 'inside', withoutEnlargement: true })` caps the long edge so
+ *    every persisted image is bounded above. `fit: 'inside'` preserves
+ *    aspect ratio (the image is sized to fit *within* the box, not
+ *    cropped), and `withoutEnlargement: true` is a no-op on already-small
+ *    images (we never up-scale a 320 px thumbnail to 1600 px). Without
+ *    this step we used to ship 50-MP camera originals straight to viewers
+ *    and let Vercel Image Optimization manufacture variants on demand —
+ *    that is what drove the +406% transformations spike.
+ *
+ * 3. `.toBuffer()` drops ALL remaining metadata (EXIF / XMP / IPTC / ICC)
+ *    by default — Sharp's documented behavior when neither
+ *    `.withMetadata()` nor `.keepMetadata()` is called. Calling
+ *    `.withMetadata({})` is the inverse: it PRESERVES most metadata,
+ *    including GPS. We deliberately do NOT call it here. The output
+ *    keeps the input encoding (Sharp infers the output format from the
+ *    input when no `.format()` is called explicitly).
+ *
+ * SHARP_INPUT_OPTIONS bounds decode memory (`pages: 1`) and rejects
+ * malformed input (`failOn: 'error'`); see the module-level TSDoc.
  */
-export async function stripExifAndApplyOrientation(args: {
+export async function normalizePostImageBuffer(args: {
   buffer: Buffer | ArrayBuffer;
   contentType: PostImageMimeType;
 }): Promise<Buffer> {
   const input = Buffer.isBuffer(args.buffer) ? args.buffer : Buffer.from(args.buffer);
-  // .rotate() with no arg reads EXIF orientation and bakes it in, then
-  // discards the orientation tag. Omitting .withMetadata() / .keepMetadata()
-  // is what causes Sharp to strip ALL remaining metadata (incl. GPS) on
-  // the way out — this is the documented default.
-  // Output keeps the input format (sharp infers from the input by default
-  // when no format() is called explicitly).
-  // SHARP_INPUT_OPTIONS bounds decode memory (`pages: 1`) and rejects
-  // malformed inputs (`failOn: 'error'`); see the module-level TSDoc.
-  return sharp(input, SHARP_INPUT_OPTIONS).rotate().toBuffer();
+  return sharp(input, SHARP_INPUT_OPTIONS)
+    .rotate()
+    .resize(POST_IMAGE_MAX_LONG_EDGE, POST_IMAGE_MAX_LONG_EDGE, {
+      fit: 'inside',
+      withoutEnlargement: true,
+    })
+    .toBuffer();
 }
