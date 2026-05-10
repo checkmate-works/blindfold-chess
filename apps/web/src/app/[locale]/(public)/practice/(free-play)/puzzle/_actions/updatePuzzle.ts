@@ -2,18 +2,11 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { and, eq, inArray, isNull } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 
 import { authenticateAndGuard } from '@/lib/auth';
-import {
-  chunks,
-  db,
-  glossaryTerms,
-  positionChunks,
-  positionThemes,
-  positions,
-  puzzleSolutions,
-} from '@/lib/db';
+import { db, positions, puzzleSolutions } from '@/lib/db';
+import { replacePositionTags, validateAndDedupeTagIds } from '@/lib/positions/tag-validation';
 import { normalizePuzzleMoves, validatePuzzleMutationData } from '@/lib/positions/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { logActivityEvent } from '@/lib/users/activity-log';
@@ -97,33 +90,14 @@ export async function updatePuzzle(data: {
     return { error: 'alreadyDeleted' };
   }
 
-  // App-layer validation of tag IDs. The application connects with
-  // service-role-equivalent privileges so the RLS predicates on
-  // position_themes / position_chunks (which would also enforce
-  // is_theme = true and chunks.deleted_at IS NULL) do not fire on
-  // these writes — we re-assert the same predicates here.
-  const dedupedThemeIds = data.themeIds ? Array.from(new Set(data.themeIds)) : undefined;
-  const dedupedChunkIds = data.chunkIds ? Array.from(new Set(data.chunkIds)) : undefined;
-
-  if (dedupedThemeIds && dedupedThemeIds.length > 0) {
-    const validThemes = await db
-      .select({ id: glossaryTerms.id })
-      .from(glossaryTerms)
-      .where(and(inArray(glossaryTerms.id, dedupedThemeIds), eq(glossaryTerms.isTheme, true)));
-    if (validThemes.length !== dedupedThemeIds.length) {
-      return { error: 'invalidTheme' };
-    }
+  const tagValidation = await validateAndDedupeTagIds({
+    themeIds: data.themeIds,
+    chunkIds: data.chunkIds,
+  });
+  if (!tagValidation.ok) {
+    return { error: tagValidation.error };
   }
-
-  if (dedupedChunkIds && dedupedChunkIds.length > 0) {
-    const validChunks = await db
-      .select({ id: chunks.id })
-      .from(chunks)
-      .where(and(inArray(chunks.id, dedupedChunkIds), isNull(chunks.deletedAt)));
-    if (validChunks.length !== dedupedChunkIds.length) {
-      return { error: 'invalidChunk' };
-    }
-  }
+  const { themeIds: dedupedThemeIds, chunkIds: dedupedChunkIds } = tagValidation.deduped;
 
   await db.transaction(async (tx) => {
     await tx
@@ -143,31 +117,7 @@ export async function updatePuzzle(data: {
       solutionMoves: normalizedMoves,
     });
 
-    if (dedupedThemeIds !== undefined) {
-      await tx.delete(positionThemes).where(eq(positionThemes.positionId, data.id));
-      if (dedupedThemeIds.length > 0) {
-        await tx.insert(positionThemes).values(
-          dedupedThemeIds.map((termId) => ({
-            positionId: data.id,
-            termId,
-            attachedByUserId: user.id,
-          }))
-        );
-      }
-    }
-
-    if (dedupedChunkIds !== undefined) {
-      await tx.delete(positionChunks).where(eq(positionChunks.positionId, data.id));
-      if (dedupedChunkIds.length > 0) {
-        await tx.insert(positionChunks).values(
-          dedupedChunkIds.map((chunkId) => ({
-            positionId: data.id,
-            chunkId,
-            attachedByUserId: user.id,
-          }))
-        );
-      }
-    }
+    await replacePositionTags(tx, data.id, user.id, dedupedThemeIds, dedupedChunkIds);
   });
 
   logActivityEvent({
