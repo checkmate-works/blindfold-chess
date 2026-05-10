@@ -4,6 +4,7 @@ import type { CommentTreeNode } from '../_lib/comment-tree';
 import { groupReplies } from '../_lib/comment-tree';
 import { canUserReply } from '../_lib/permissions';
 import { CommentNode } from './CommentNode';
+import type { ReplyAttachmentActions } from './ReplyForm';
 
 type ToggleLikeAction = (
   postId: string,
@@ -12,14 +13,6 @@ type ToggleLikeAction = (
 ) => Promise<{ liked: boolean; likeCount: number } | { error: string }>;
 
 type DeletePostAction = (postId: string, locale: string) => Promise<ActionResult>;
-
-type CreateReplyAction = (
-  locale: string,
-  topicKey: string,
-  postId: string,
-  prevState: { error?: string },
-  formData: FormData
-) => Promise<{ error?: string }>;
 
 type Props = {
   /** Root nodes already built by `buildCommentTree`. */
@@ -31,7 +24,12 @@ type Props = {
   enableSpoiler: boolean;
   redirectPath: string;
   toggleLikeAction: ToggleLikeAction;
-  createReplyAction: CreateReplyAction;
+  /**
+   * Attachment-aware reply Server Actions (PGN + FEN). Forwarded to
+   * every `CommentNode` so the inline `ReplyForm` it spawns can route
+   * submits through the right base.
+   */
+  replyAttachmentActions: ReplyAttachmentActions;
   deletePostAction: DeletePostAction;
   i18n: {
     likeNamespace: string;
@@ -58,6 +56,16 @@ type Props = {
    * reply.
    */
   threadRootPostId?: string;
+  /**
+   * Per-post extra payload, keyed by ANY post id in the tree (root or
+   * descendant). Threaded through every `CommentNode` so an attached
+   * game / FEN / embed card renders on top-level posts AND on replies.
+   * Pages compute this via a single `getAttachmentsForPosts(allPostIds)`
+   * call and `renderAttachment(...)` per entry. Posts without a matching
+   * entry render nothing extra; existing callsites that omit the prop
+   * are unaffected.
+   */
+  extraContentByPostId?: ReadonlyMap<string, React.ReactNode>;
 };
 
 /**
@@ -82,10 +90,11 @@ export async function CommentTree({
   enableSpoiler,
   redirectPath,
   toggleLikeAction,
-  createReplyAction,
+  replyAttachmentActions,
   deletePostAction,
   i18n,
   threadRootPostId,
+  extraContentByPostId,
 }: Props) {
   const canReplyByRootId = new Map<string, boolean>();
   await Promise.all(
@@ -114,9 +123,10 @@ export async function CommentTree({
           enableSpoiler={enableSpoiler}
           redirectPath={redirectPath}
           toggleLikeAction={toggleLikeAction}
-          createReplyAction={createReplyAction}
+          replyAttachmentActions={replyAttachmentActions}
           deletePostAction={deletePostAction}
           i18n={i18n}
+          extraContentByPostId={extraContentByPostId}
         />
       ))}
     </div>

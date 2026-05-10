@@ -4307,7 +4307,61 @@
       "invalidUrl": "埋め込み URL の形式が正しくありません。",
       "chesscomCardTitle": "Chess.com の図",
       "lichessCardTitle": "Lichess の対局"
+    },
+    "image": {
+      "label": "画像（任意）",
+      "uploadButton": "画像を追加",
+      "altLabel": "画像の説明（alt テキスト）",
+      "altPlaceholder": "スクリーンリーダー向けに画像を説明してください",
+      "limitHint": "JPEG・PNG・WebP に対応。1 投稿あたり最大 {max} 枚、各 2 MB まで。",
+      "removeButton": "画像を削除",
+      "uploading": "アップロード中…",
+      "deletionDisclosure": "投稿削除後、Storage 上の画像は最大 7 日間アクセス可能な場合があります。",
+      "error": {
+        "fileRequired": "アップロードする画像を選択してください。",
+        "fileTooLarge": "画像が大きすぎます。最大サイズは 2 MB です。",
+        "invalidFileType": "JPEG・PNG・WebP のみ対応しています。",
+        "imageTooLarge": "画像の解像度が大きすぎます（最大 50 メガピクセル）。",
+        "animatedImageNotSupported": "アニメーション画像は対応していません。静止画をアップロードしてください。",
+        "tooManyImages": "1 投稿あたりの画像枚数の上限（{max} 枚）に達しました。",
+        "uploadFailed": "アップロードに失敗しました。再度お試しください。",
+        "rateLimited": "アップロードが多すぎます。しばらく待ってから再度お試しください。"
+      }
     }
+  },
+  "postFenAttachment": {
+    "error": {
+      "fenRequired": "FEN を入力してください。",
+      "fenTooLong": "FEN が長すぎます。最大 100 文字です。",
+      "invalidFenStructure": "FEN の形式が不正です。盤面・手番・キャスリング・アンパッサンを確認してください。",
+      "invalidFenSemantic": "FEN が合法な局面を表していません。キング・ポーン配置・キャスリング権・アンパッサンを確認してください。",
+      "captionTooLong": "キャプションが長すぎます。最大 200 文字です。",
+      "alreadyAttached": "この投稿には既に FEN が添付されています。",
+      "postNotFound": "投稿が見つかりませんでした。",
+      "notOwner": "FEN は自分の投稿にのみ添付できます。"
+    }
+  },
+  "postVideoAttachment": {
+    "error": {
+      "urlRequired": "YouTube の URL を入力してください。",
+      "inputTooLong": "URL が長すぎます。最大 512 文字です。",
+      "invalidUrl": "URL を解析できませんでした。YouTube のリンクを貼り付けてください。",
+      "protocolNotHttps": "URL は https である必要があります。",
+      "userinfoPresent": "URL にユーザー名・パスワードを含めることはできません。",
+      "fragmentNotAllowed": "URL にフラグメント (#…) を含めることはできません。",
+      "hostNotAllowed": "URL のホストは YouTube ではありません。",
+      "pathnameNotSupported": "対応していない YouTube リンク形式です(watch / shorts / live / embed のみ)。",
+      "paramPollution": "URL に同じクエリパラメータが重複しています。",
+      "invalidId": "YouTube の動画 ID が不正です。",
+      "invalidVideoStructure": "動画リンクを保存できませんでした。別の YouTube URL を試してください。",
+      "tooLong": "動画リンクが長すぎます。最大 512 文字です。",
+      "alreadyAttached": "この投稿には既に動画が添付されています。",
+      "postNotFound": "投稿が見つかりませんでした。",
+      "notOwner": "動画は自分の投稿にのみ添付できます。"
+    }
+  },
+  "postVideoAttachmentRender": {
+    "fallbackTitle": "YouTube 動画"
   },
   "Footer": {
     "resources": "リソース",

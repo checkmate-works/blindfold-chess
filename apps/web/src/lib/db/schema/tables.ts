@@ -443,6 +443,17 @@ export const topicPosts = pgTable(
      * exactly as before.
      */
     isSpoiler: boolean('is_spoiler').notNull().default(false),
+    /**
+     * Per-post image attachment counter. Maintained by the BEFORE INSERT /
+     * AFTER DELETE triggers on `post_image_attachments` (see migration
+     * `20260504053253_create_post_image_attachments.sql`). Used by the
+     * trigger to enforce MAX_IMAGES_PER_POST under concurrent INSERT
+     * pressure (the trigger does `SELECT image_attachment_count ... FOR
+     * UPDATE` on the parent row before incrementing). Application code
+     * MUST NOT write to this column directly — the triggers are the
+     * single source of truth.
+     */
+    imageAttachmentCount: smallint('image_attachment_count').notNull().default(0),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true })
@@ -812,7 +823,7 @@ export const postGameEmbedAttachments = pgTable(
       .notNull()
       .unique()
       .references(() => topicPosts.id, { onDelete: 'cascade' }),
-    embedProvider: varchar('embed_provider', { length: 20 }).notNull(), // 'chesscom' | 'lichess'
+    embedProvider: varchar('embed_provider', { length: 20 }).notNull(), // 'chesscom' (Phase 13: Lichess narrowed out)
     embedId: varchar('embed_id', { length: 64 }).notNull(),
     /**
      * @design Audit-only canonical embed URL. NEVER read into the rendered
@@ -831,7 +842,7 @@ export const postGameEmbedAttachments = pgTable(
   (table) => [
     check(
       'post_game_embed_attachments_chk_embed_provider_valid',
-      sql`${table.embedProvider} IN ('chesscom', 'lichess')`
+      sql`${table.embedProvider} IN ('chesscom')`
     ),
     check(
       'post_game_embed_attachments_chk_embed_id_format',
@@ -843,7 +854,7 @@ export const postGameEmbedAttachments = pgTable(
     ),
     check(
       'post_game_embed_attachments_chk_embed_attribution_platform_valid',
-      sql`${table.attributionPlatform} IS NULL OR ${table.attributionPlatform} IN ('chesscom', 'lichess')`
+      sql`${table.attributionPlatform} IS NULL OR ${table.attributionPlatform} IN ('chesscom')`
     ),
     check(
       'post_game_embed_attachments_chk_embed_attribution_path_format',
@@ -860,6 +871,347 @@ export const postGameEmbedAttachments = pgTable(
 
 export type PostGameEmbedAttachment = typeof postGameEmbedAttachments.$inferSelect;
 export type NewPostGameEmbedAttachment = typeof postGameEmbedAttachments.$inferInsert;
+
+/**
+ * Image Attachments — N:1 (max 3) image attachments per topic post.
+ *
+ * @description
+ * Sibling of `post_game_pgn_attachments` and `post_game_embed_attachments`
+ * (Pattern 5 per-kind tables; see `docs/design/SPEC1-embed-data-model-ADR.md`).
+ * Stores up to 3 images per post; the cap is enforced race-free by a
+ * BEFORE INSERT trigger on this table that takes a row lock on the parent
+ * `topic_posts` row (`SELECT ... FOR UPDATE`) and consults
+ * `topic_posts.image_attachment_count`. The constant `MAX_IMAGES_PER_POST = 3`
+ * is hardcoded inside the trigger function — to change it, ship a new
+ * migration that does `CREATE OR REPLACE FUNCTION
+ * public.enforce_post_image_count_limit()` with the new constant.
+ *
+ * @design Why a separate sibling table (Pattern 5)
+ *
+ * Same rationale as the sibling `post_game_*_attachments` tables: each
+ * attachment kind has its own column shape (PGN body / embed id / image
+ * blob metadata), index needs, and validation surface, so collapsing them
+ * into one polymorphic `attachments` table would either bloat every row
+ * with NULLs or push validation to the app layer. Per-kind tables keep
+ * each attachment kind self-describing at the DB level.
+ *
+ * @design No `public_url` column (rebuild from `storage_path` at read time)
+ *
+ * The bucket is public, so the URL is purely a function of
+ * `(bucket, storage_path)`. Persisting it is redundant and a drift risk:
+ * if the project ever moves to a CDN or a different bucket, every stored
+ * URL would need a backfill. The renderer derives the URL from
+ * `storage_path` at read time via the Supabase client's `getPublicUrl`
+ * (or by string concatenation against a known public-URL prefix).
+ *
+ * @design `storage_path` regex pin
+ *
+ * The CHECK constraint pins `storage_path` to the canonical UUID
+ * 8-4-4-4-12 layout for each segment:
+ * `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/...$`,
+ * which is exactly `${userId}/${postId}/${randomUuid}.${ext}`. This is a
+ * defense-in-depth measure: the upload handler builds the path correctly, the
+ * Storage RLS forbids the user from writing outside their own folder, and
+ * this CHECK forbids a direct REST insert from registering a path that
+ * violates the layout (e.g. `..` traversal, synthetic filenames, or
+ * paths that point to another user's folder).
+ *
+ * @design 50 megapixel cap
+ *
+ * Decompression-bomb defense. A 50 MP cap comfortably exceeds reasonable
+ * camera output (12 MP smartphone JPEG ≪ 50 MP) while making it hard to
+ * craft a small JPEG that decodes to a multi-GB pixel buffer.
+ *
+ * @design SVG hard reject
+ *
+ * SVG is **not** in the allow-list. SVG is XML and can carry inline
+ * scripts; even with a sanitizer, a future renderer change could
+ * accidentally inline-render an SVG and reintroduce the XSS vector. The
+ * Storage bucket also excludes `image/svg+xml` from `allowed_mime_types`,
+ * and the API handler rejects SVG before reaching the DB.
+ *
+ * @design FK to topic_posts (CASCADE)
+ *
+ * Hard delete of the parent post cascades the attachment rows. Soft
+ * delete (`deleted_at` set on `topic_posts`) leaves the rows in place,
+ * but the application's `deletePost` Server Action issues a best-effort
+ * Storage `remove()` for every attachment path before setting
+ * `deleted_at`, and a daily reaper sweeps any storage objects whose
+ * post is missing or has been soft-deleted longer than 7 days.
+ *
+ * @design `image_attachment_count` on parent (NOT on this table)
+ *
+ * The counter lives on `topic_posts` rather than being computed via a
+ * COUNT() because the BEFORE INSERT trigger needs to lock a single row
+ * (`SELECT ... FOR UPDATE`) to serialize the count check. Locking
+ * `post_image_attachments` rows would not help because there is nothing
+ * to lock for a row that does not yet exist. The counter is maintained
+ * exclusively by the BEFORE INSERT / AFTER DELETE triggers in the
+ * migration; application code MUST NOT write it.
+ */
+export const postImageAttachments = pgTable(
+  'post_image_attachments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    postId: uuid('post_id')
+      .notNull()
+      .references(() => topicPosts.id, { onDelete: 'cascade' }),
+    /**
+     * `${userId}/${postId}/${randomUuid}.${ext}`. The shape is pinned by a
+     * DB-level CHECK; the upload handler enforces the same shape before
+     * the INSERT.
+     */
+    storagePath: varchar('storage_path', { length: 1024 }).notNull(),
+    contentType: varchar('content_type', { length: 50 }).notNull(),
+    fileSize: integer('file_size').notNull(),
+    width: integer('width').notNull(),
+    height: integer('height').notNull(),
+    altText: varchar('alt_text', { length: 255 }),
+    displayOrder: smallint('display_order').notNull().default(0),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    check(
+      'post_image_attachments_chk_content_type',
+      sql`${table.contentType} IN ('image/jpeg', 'image/png', 'image/webp')`
+    ),
+    check(
+      'post_image_attachments_chk_file_size',
+      sql`${table.fileSize} > 0 AND ${table.fileSize} <= 2097152`
+    ),
+    check(
+      'post_image_attachments_chk_dimensions_positive',
+      sql`${table.width} > 0 AND ${table.height} > 0`
+    ),
+    check(
+      'post_image_attachments_chk_megapixels',
+      sql`${table.width} * ${table.height} <= 50000000`
+    ),
+    check(
+      'post_image_attachments_chk_storage_path_format',
+      sql`${table.storagePath} ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\.(jpg|png|webp)$'`
+    ),
+    index('idx_post_image_attachments_post').on(table.postId),
+    index('idx_post_image_attachments_post_order').on(table.postId, table.displayOrder),
+    /**
+     * Unique on storage_path. Two purposes:
+     *   1. Logical uniqueness — every storage_path embeds a random UUID, so
+     *      a duplicate row would be a bug.
+     *   2. RLS SELECT policy lookup — the `post_images_select_public` storage
+     *      policy joins `storage.objects.name` to `storage_path` to gate
+     *      reads on a non-soft-deleted parent post; without this index,
+     *      every public-bucket read would trigger a sequential scan over
+     *      this table.
+     */
+    uniqueIndex('idx_post_image_attachments_storage_path').on(table.storagePath),
+  ]
+);
+
+export type PostImageAttachment = typeof postImageAttachments.$inferSelect;
+export type NewPostImageAttachment = typeof postImageAttachments.$inferInsert;
+
+/**
+ * FEN Attachments — 1:0..1 FEN attachment per topic post.
+ *
+ * @description
+ * Sibling of `post_game_pgn_attachments`, `post_game_embed_attachments`, and
+ * `post_image_attachments` (Pattern 5 per-kind tables; see
+ * `docs/design/SPEC1-embed-data-model-ADR.md`). Stores a single FEN string
+ * representing a static chess position attached to a topic post — used to
+ * render a mini-board next to the post (renderer is deferred to a follow-up
+ * issue; this table only carries the data).
+ *
+ * @design 1:0..1 invariant (UNIQUE on post_id)
+ *
+ * Same as `post_game_pgn_attachments` / `post_game_embed_attachments`:
+ * one post has at most one FEN attachment. The INSERT path uses
+ * `createPostBase`'s `afterInsert(tx, postId)` hook so the attachment is
+ * atomic with the post.
+ *
+ * @design Two-layer FEN validation
+ *
+ *   1. Structural CHECK constraint (this table) — coarse net that rejects
+ *      whitespace-only input, control characters, malformed shape, illegal
+ *      castling characters, and impossible en passant ranks.
+ *   2. Application-layer chess-core `validateFenSemantic` — enforces
+ *      piece counts (exactly one king per side, ≤ 8 pawns, no pawns on rank
+ *      1 or 8), castling-rights consistency (rook + king on starting
+ *      squares), and en passant target consistency (correct rank for side
+ *      to move + pawn behind the target). Runs inside the Server Action
+ *      before the INSERT.
+ *
+ * The DB CHECK is the last line of defense against a direct REST insert
+ * that bypassed the Server Action.
+ *
+ * @design FEN regex tightening vs. issue #74 spec
+ *
+ * Issue #74 proposed `(-|[KQkqA-Ha-h]+)` for castling and `(-|[a-h][1-8])`
+ * for en passant. We tighten both:
+ *   - Castling is restricted to standard FEN (`[KQkq]+`), dropping the
+ *     Shredder-FEN A-H/a-h files. Chess960 is out of scope for this MVP.
+ *   - En passant rank is restricted to 3 or 6 (`[a-h][36]`). FIDE FEN allows
+ *     en passant only on those two ranks (the rank behind the just-pushed
+ *     pawn); the issue's loose `[1-8]` would have admitted nonsensical
+ *     squares like `e1` or `e8` that semantic validation would reject anyway.
+ *
+ * Placement is intentionally permissive (`[rnbqkpRNBQKP1-8/]+`); semantic
+ * validation handles rank-sum / king-count / pawn-rank checks.
+ *
+ * @design FK to topic_posts (CASCADE)
+ *
+ * Hard delete of the parent post cascades the attachment row. Soft delete
+ * (`deleted_at` set on `topic_posts`) leaves the row in place; the RLS
+ * SELECT policy gates reads on `deleted_at IS NULL` for defense in depth.
+ */
+export const postFenAttachments = pgTable(
+  'post_fen_attachments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    postId: uuid('post_id')
+      .notNull()
+      .unique()
+      .references(() => topicPosts.id, { onDelete: 'cascade' }),
+    /**
+     * Full FEN string. Length cap 100 chars covers the longest realistic
+     * FEN (~88 chars for a 32-piece middlegame with full castling and an
+     * en passant square) with comfortable headroom.
+     */
+    fen: varchar('fen', { length: 100 }).notNull(),
+    /**
+     * Optional human caption for the position. Sanitized via
+     * `sanitizeFenCaption` (see `@/lib/post-fens/sanitize-fen-caption.ts`)
+     * to strip Trojan Source / zero-width / TAG / Musical Symbol formatter
+     * codepoints before persistence. The DB column width matches
+     * `post_game_pgn_attachments.header_event` / `header_site` (200) to
+     * keep the sanitizer cap aligned across the attachment family.
+     */
+    caption: varchar('caption', { length: 200 }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    check(
+      'post_fen_attachments_chk_fen_format',
+      sql`${table.fen} ~ '^[rnbqkpRNBQKP1-8/]+ [wb] (-|[KQkq]+) (-|[a-h][36]) [0-9]+ [0-9]+$'`
+    ),
+    index('idx_post_fen_attachments_post').on(table.postId),
+  ]
+);
+
+export type PostFenAttachment = typeof postFenAttachments.$inferSelect;
+export type NewPostFenAttachment = typeof postFenAttachments.$inferInsert;
+
+/**
+ * Video Attachments — 1:0..1 video attachment per topic post.
+ *
+ * @description
+ * Sibling of `post_game_pgn_attachments`, `post_game_embed_attachments`,
+ * `post_image_attachments`, and `post_fen_attachments` (Pattern 5 per-kind
+ * tables; see `docs/design/SPEC1-embed-data-model-ADR.md`). Stores a single
+ * embeddable video reference attached to a topic post. MVP supports only
+ * the `'youtube'` provider; the schema is shaped so adding `'vimeo'` /
+ * `'twitch'` is a CHECK widen + parser branch + renderer mapping change.
+ *
+ * @design 1:0..1 invariant (UNIQUE on post_id)
+ *
+ * Same as `post_fen_attachments`: a post has at most one video attachment.
+ * Concurrent inserts surface as a `23505` unique-violation, mapped by the
+ * Server Action to `alreadyAttached`.
+ *
+ * @design Two-layer video validation
+ *
+ *   1. Application-layer URL parser — `parseYouTubeUrl` in
+ *      `@/lib/games/youtube-validator.ts` decomposes a user-supplied URL
+ *      into `(provider, providerVideoId, sourceUrl)` and rejects hostile
+ *      shapes (non-https, userinfo trick, IDN homograph, wrong host,
+ *      param pollution, fragment, non-11-char id, embedded NUL/ZWSP).
+ *   2. CHECK constraints below — the DB-level last line of defense
+ *      against a direct REST insert that bypassed the Server Action. The
+ *      `provider_video_id` regex is byte-for-byte aligned with the JS
+ *      regex enforced after URL parsing (a static test pins the
+ *      equivalence in `youtube-validator.test.ts`).
+ *
+ * @design Render-time `src` rebuild (audit-only `source_url`)
+ *
+ * The renderer reconstructs the iframe `src` from
+ * `(provider, provider_video_id)` via the privacy-enhanced
+ * `youtube-nocookie.com` host. `source_url` is never passed to the iframe;
+ * it exists for audit only. This mirrors the Lichess embed pattern in
+ * `parseLichessEmbedUrl` — the persisted URL is monotonically derived from
+ * a validated provider id at write time, and the read path reconstructs
+ * from the validated fields.
+ *
+ * @design `title` / `thumbnail_url` are NULL in MVP (oEmbed deferred)
+ *
+ * Issue #75 M-6 defers oEmbed (which would populate title + CDN
+ * thumbnail) until the SSRF defense pattern in `lichess.ts` is replicated
+ * for the YouTube oEmbed endpoint. The MVP renderer derives the thumbnail
+ * URL from `provider_video_id` via the canonical YouTube template
+ * (`img.youtube.com/vi/{id}/hqdefault.jpg`) and uses a localized
+ * fallback for the iframe `title` attribute.
+ */
+export const postVideoAttachments = pgTable(
+  'post_video_attachments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    postId: uuid('post_id')
+      .notNull()
+      .unique()
+      .references(() => topicPosts.id, { onDelete: 'cascade' }),
+    /**
+     * Provider discriminator. MVP allows only `'youtube'`; CHECK widens
+     * with explicit migration when a new provider lands.
+     */
+    provider: varchar('provider', { length: 20 }).notNull(),
+    /**
+     * Provider-scoped video id. YouTube ids are exactly 11 chars from
+     * the URL-safe base64 alphabet `[A-Za-z0-9_-]`. The CHECK regex is
+     * byte-for-byte aligned with `YOUTUBE_VIDEO_ID_RE` in the URL parser.
+     */
+    providerVideoId: varchar('provider_video_id', { length: 64 }).notNull(),
+    /**
+     * Audit-only original URL. The renderer NEVER reads this; the iframe
+     * src is rebuilt from `(provider, providerVideoId)`. Capped at 512 to
+     * match the URL parser's `MAX_INPUT_LENGTH`.
+     */
+    sourceUrl: varchar('source_url', { length: 512 }),
+    /**
+     * Optional human-supplied or oEmbed-derived title. MVP persists
+     * NULL — see oEmbed deferred note above.
+     */
+    title: varchar('title', { length: 200 }),
+    /**
+     * Optional CDN thumbnail URL. MVP persists NULL; reserved for the
+     * oEmbed flow that may want to cache a CDN-hosted thumbnail.
+     */
+    thumbnailUrl: varchar('thumbnail_url', { length: 1024 }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    check('post_video_attachments_chk_provider', sql`${table.provider} IN ('youtube')`),
+    check(
+      'post_video_attachments_chk_provider_video_id',
+      sql`${table.providerVideoId} ~ '^[A-Za-z0-9_-]{11}$'`
+    ),
+    check(
+      'post_video_attachments_chk_source_url',
+      sql`${table.sourceUrl} IS NULL
+      OR ${table.sourceUrl} ~ '^https://www\\.youtube\\.com/'
+      OR ${table.sourceUrl} ~ '^https://youtube\\.com/'
+      OR ${table.sourceUrl} ~ '^https://youtu\\.be/'
+      OR ${table.sourceUrl} ~ '^https://www\\.youtube-nocookie\\.com/'`
+    ),
+    check(
+      'post_video_attachments_chk_thumbnail_url',
+      sql`${table.thumbnailUrl} IS NULL
+      OR ${table.thumbnailUrl} ~ '^https://i\\.ytimg\\.com/'
+      OR ${table.thumbnailUrl} ~ '^https://img\\.youtube\\.com/'`
+    ),
+    index('idx_post_video_attachments_post').on(table.postId),
+  ]
+);
+
+export type PostVideoAttachment = typeof postVideoAttachments.$inferSelect;
+export type NewPostVideoAttachment = typeof postVideoAttachments.$inferInsert;
 
 // User Follows
 export const userFollows = pgTable(

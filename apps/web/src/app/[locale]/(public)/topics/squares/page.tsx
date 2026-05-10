@@ -4,9 +4,11 @@ import { getTranslations } from 'next-intl/server';
 import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE, IS_LOCAL_DEV } from '@/config';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
+import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { getPaginationParams } from '@/lib/pagination';
 import { createClient } from '@/lib/supabase/server';
 
+import { renderAttachment } from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
@@ -53,6 +55,14 @@ export default async function SquaresPage({ params, searchParams }: Props) {
 
   const recentPosts = await getPostsAcrossSquaresPaginated(limit, offset, user?.id);
 
+  // Pre-resolve each visible post's attachment slot upstream because
+  // PostCard is a client component and `getAttachmentsForPosts` is
+  // server-only.
+  const postIds = recentPosts.map((p) => p.id);
+  const attachments = postIds.length > 0 ? await getAttachmentsForPosts(postIds) : new Map();
+  const tVideo = await getTranslations({ locale, namespace: 'postVideoAttachmentRender' });
+  const fallbackVideoTitle = tVideo('fallbackTitle');
+
   const buildHref = (p: number) => {
     const params = new URLSearchParams();
     if (p > 1) params.set('page', String(p));
@@ -83,15 +93,19 @@ export default async function SquaresPage({ params, searchParams }: Props) {
         <p className="text-muted-foreground text-center py-8">{t('squares.noRecentPosts')}</p>
       ) : (
         <div className="space-y-3">
-          {recentPosts.map((post) => (
-            <PostCard
-              key={post.id}
-              post={post}
-              locale={locale}
-              square={post.topicKey}
-              showSquareBadge
-            />
-          ))}
+          {recentPosts.map((post) => {
+            const att = attachments.get(post.id);
+            return (
+              <PostCard
+                key={post.id}
+                post={post}
+                locale={locale}
+                square={post.topicKey}
+                showSquareBadge
+                attachment={att ? renderAttachment(att, fallbackVideoTitle) : undefined}
+              />
+            );
+          })}
         </div>
       )}
 

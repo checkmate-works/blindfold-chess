@@ -1,28 +1,41 @@
 'use client';
 
-import { useActionState, useId, useState } from 'react';
-
-import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
-import { Button, FormErrorBanner, Textarea, UnsavedChangesDialog } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import { MAX_CONTENT_LENGTH } from '@/lib/validations/content';
+import { BasePostForm } from './BasePostForm';
+import type { AttachmentActions } from './BasePostForm';
 
-type CreateReplyState = { error?: string };
-
-type CreateReplyAction = (
+type ReplyAction = (
   locale: string,
   topicKey: string,
   postId: string,
-  prevState: CreateReplyState,
+  prevState: { error?: string },
   formData: FormData
-) => Promise<CreateReplyState>;
+) => Promise<{ error?: string }>;
+
+/**
+ * Per-form Server Actions for the attachment-enabled reply flow.
+ * Mirrors `AttachmentActions` on `BasePostForm` but with the
+ * reply-specific `(locale, topicKey, postId, prevState, formData)`
+ * binding shape that `CommentNode` already passes down.
+ */
+export type ReplyAttachmentActions = {
+  pgn: ReplyAction;
+  fen: ReplyAction;
+};
 
 type Props = {
   locale: string;
   topicKey: string;
   postId: string;
-  createReplyAction: CreateReplyAction;
+  /**
+   * Attachment-aware Server Actions (PGN + FEN). The base form
+   * dispatches to `pgn` for plain / PGN / Lichess URL attachments and
+   * to `fen` for FEN attachments. The `pgn` action also handles the
+   * empty-attachment fast-path (plain reply, no attachment row),
+   * matching the post form contract.
+   */
+  attachmentActions: ReplyAttachmentActions;
   i18nNamespace: string;
   replyToId?: string;
   replyToUsername?: string;
@@ -30,18 +43,35 @@ type Props = {
   /**
    * When `true`, render an `isSpoiler` checkbox below the content textarea.
    * Mirrors `BasePostForm.enableSpoilerToggle` so a reply can self-flag as
-   * containing the puzzle solution. The checkbox name is `isSpoiler` and the
-   * value submitted is the standard `'on'` — the Server Action wrapper is
-   * responsible for normalizing it to a boolean.
+   * containing the puzzle solution.
    */
   enableSpoilerToggle?: boolean;
 };
 
+/**
+ * Inline reply form rendered under each `CommentNode`.
+ *
+ * @design Attachment integration (#84 phase D)
+ *
+ * `ReplyForm` is now a thin wrapper around `BasePostForm` — the form
+ * chrome (textarea, paperclip + AttachmentModal, content counter,
+ * spoiler toggle, submit button, unsaved-changes guard) is inherited.
+ * The reply-specific UI (the "replying to @username" cue + cancel
+ * button + `replyToId` hidden input) is injected via `beforeContent`.
+ *
+ * The `(locale, topicKey, postId)` curry happens here so the bound
+ * action presented to `BasePostForm` matches the
+ * `(prevState, formData) => Promise<...>` shape its action contract
+ * expects. `useActionState`'s identity-pinning concern stays inside
+ * `BasePostForm` — `attachmentActions` is recreated per render but the
+ * wrapped action's identity is stable across re-renders thanks to
+ * `useCallback` + the attachment ref pattern there.
+ */
 export function ReplyForm({
   locale,
   topicKey,
   postId,
-  createReplyAction,
+  attachmentActions,
   i18nNamespace,
   replyToId,
   replyToUsername,
@@ -49,93 +79,37 @@ export function ReplyForm({
   enableSpoilerToggle = false,
 }: Props) {
   const t = useTranslations(i18nNamespace);
-  const tTopics = useTranslations('topics');
-  const tUnsaved = useTranslations('unsavedChanges');
-  const boundCreateReply = createReplyAction.bind(null, locale, topicKey, postId);
-  const [state, formAction, isPending] = useActionState(boundCreateReply, {});
-  const [isDirty, setIsDirty] = useState(false);
-  // Unique per-instance id for the textarea so multiple ReplyForms can
-  // coexist on the same page (Reddit-style inline reply forms under each
-  // CommentNode) without colliding `id` / `htmlFor` and without breaking
-  // assistive-tech labelling.
-  const textareaId = useId();
 
-  const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
-
-  const errorMessage = state.error
-    ? t.has(state.error)
-      ? t(
-          state.error as
-            | 'contentRequired'
-            | 'contentTooLong'
-            | 'error'
-            | 'signInRequired'
-            | 'rateLimited'
-        )
-      : t('error')
-    : null;
+  const boundActions: AttachmentActions = {
+    pgn: attachmentActions.pgn.bind(null, locale, topicKey, postId),
+    fen: attachmentActions.fen.bind(null, locale, topicKey, postId),
+  };
 
   return (
-    <form action={formAction} className="space-y-4">
-      <FormErrorBanner message={errorMessage} />
-
-      {replyToId && replyToUsername && (
-        <>
-          <input type="hidden" name="replyToId" value={replyToId} />
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>{t('replyingTo', { username: replyToUsername })}</span>
-            <button
-              type="button"
-              onClick={onCancelReply}
-              className="text-muted-foreground hover:text-foreground transition-colors"
-              aria-label={t('cancelReply')}
-            >
-              &times;
-            </button>
-          </div>
-        </>
-      )}
-
-      <div className="space-y-2">
-        <label htmlFor={textareaId} className="block text-sm font-medium text-foreground">
-          {t('contentLabel')}
-        </label>
-        <Textarea
-          id={textareaId}
-          name="content"
-          rows={4}
-          maxLength={MAX_CONTENT_LENGTH}
-          placeholder={t('contentPlaceholder')}
-          required
-          onChange={(e) => setIsDirty(e.target.value.length > 0)}
-        />
-      </div>
-
-      {enableSpoilerToggle && (
-        <label className="flex items-center gap-2 text-sm text-foreground">
-          <input
-            type="checkbox"
-            name="isSpoiler"
-            className="h-4 w-4 rounded border-border"
-            onChange={() => setIsDirty(true)}
-          />
-          {tTopics('spoiler.toggleLabel')}
-        </label>
-      )}
-
-      <Button type="submit" variant="primary" fullWidth disabled={isPending} loading={isPending}>
-        {isPending ? t('submitting') : t('submit')}
-      </Button>
-
-      <UnsavedChangesDialog
-        open={isBlocking}
-        onConfirm={confirm}
-        onCancel={cancel}
-        title={tUnsaved('title')}
-        message={tUnsaved('message')}
-        confirmLabel={tUnsaved('confirm')}
-        cancelLabel={tUnsaved('cancel')}
-      />
-    </form>
+    <BasePostForm
+      attachmentActions={boundActions}
+      translationNamespace={i18nNamespace}
+      enableSpoilerToggle={enableSpoilerToggle}
+      textareaRows={4}
+      emitReplyPermissionField={false}
+      beforeContent={() =>
+        replyToId && replyToUsername ? (
+          <>
+            <input type="hidden" name="replyToId" value={replyToId} />
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>{t('replyingTo', { username: replyToUsername })}</span>
+              <button
+                type="button"
+                onClick={onCancelReply}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label={t('cancelReply')}
+              >
+                &times;
+              </button>
+            </div>
+          </>
+        ) : null
+      }
+    />
   );
 }

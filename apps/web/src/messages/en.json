@@ -4307,7 +4307,61 @@
       "invalidUrl": "That doesn't look like a valid embed URL.",
       "chesscomCardTitle": "Chess.com diagram",
       "lichessCardTitle": "Lichess game"
+    },
+    "image": {
+      "label": "Images (optional)",
+      "uploadButton": "Add image",
+      "altLabel": "Image description (alt text)",
+      "altPlaceholder": "Describe the image for screen readers",
+      "limitHint": "JPEG, PNG, or WebP. Up to {max} per post, 2 MB each.",
+      "removeButton": "Remove image",
+      "uploading": "Uploading…",
+      "deletionDisclosure": "Images attached to a deleted post may remain accessible on storage for up to 7 days.",
+      "error": {
+        "fileRequired": "Choose an image file to upload.",
+        "fileTooLarge": "Image is too large. The maximum size is 2 MB.",
+        "invalidFileType": "Only JPEG, PNG, and WebP images are accepted.",
+        "imageTooLarge": "Image dimensions are too large (50 megapixel cap).",
+        "animatedImageNotSupported": "Animated images are not supported. Please upload a still image.",
+        "tooManyImages": "You have reached the {max}-image limit for this post.",
+        "uploadFailed": "Upload failed. Please try again.",
+        "rateLimited": "Too many uploads. Please wait a few minutes and try again."
+      }
     }
+  },
+  "postFenAttachment": {
+    "error": {
+      "fenRequired": "Enter a FEN string to attach a position.",
+      "fenTooLong": "FEN is too long. The maximum length is 100 characters.",
+      "invalidFenStructure": "FEN format is invalid. Check the position, side to move, castling, and en passant fields.",
+      "invalidFenSemantic": "FEN is not a legal chess position. Check kings, pawn placement, castling rights, and the en passant square.",
+      "captionTooLong": "Caption is too long. The maximum length is 200 characters.",
+      "alreadyAttached": "This post already has a FEN attachment.",
+      "postNotFound": "Post not found.",
+      "notOwner": "You can only attach a FEN to your own posts."
+    }
+  },
+  "postVideoAttachment": {
+    "error": {
+      "urlRequired": "Enter a YouTube URL to attach a video.",
+      "inputTooLong": "URL is too long. The maximum length is 512 characters.",
+      "invalidUrl": "URL could not be parsed. Paste a YouTube link.",
+      "protocolNotHttps": "URL must use https.",
+      "userinfoPresent": "URL must not contain a username or password.",
+      "fragmentNotAllowed": "URL must not contain a fragment (#…).",
+      "hostNotAllowed": "URL host is not a YouTube host.",
+      "pathnameNotSupported": "URL is not a supported YouTube watch / shorts / live / embed link.",
+      "paramPollution": "URL contains repeated query parameters.",
+      "invalidId": "YouTube video id is invalid.",
+      "invalidVideoStructure": "Video link could not be saved. Please try a different YouTube URL.",
+      "tooLong": "Video link is too long. The maximum length is 512 characters.",
+      "alreadyAttached": "This post already has a video attachment.",
+      "postNotFound": "Post not found.",
+      "notOwner": "You can only attach a video to your own posts."
+    }
+  },
+  "postVideoAttachmentRender": {
+    "fallbackTitle": "YouTube video"
   },
   "Footer": {
     "resources": "Resources",

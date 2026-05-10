@@ -73,3 +73,9 @@ export { ChessGameManager } from "./game-manager";
 
 export type { FenStructureResult } from "./validate-fen-structure";
 export { validateFenStructure } from "./validate-fen-structure";
+
+export type {
+  FenSemanticReason,
+  FenSemanticResult,
+} from "./validate-fen-semantic";
+export { validateFenSemantic } from "./validate-fen-semantic";

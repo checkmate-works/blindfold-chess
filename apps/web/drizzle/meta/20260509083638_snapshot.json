@@ -1,6 +1,6 @@
 {
-  "id": "e559551d-2467-4122-a9ce-7e24d0dcfa2b",
-  "prevId": "9c30a7e6-96c9-4f69-924e-5cf6f615d7a7",
+  "id": "a986c4ca-4239-459e-8a7b-37fe423d3467",
+  "prevId": "89ea449c-076c-40d9-bfb9-1956b4de9efb",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -1773,13 +1773,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "is_theme": {
-          "name": "is_theme",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -1793,6 +1786,13 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "is_theme": {
+          "name": "is_theme",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
         }
       },
       "indexes": {},
@@ -2267,18 +2267,18 @@
           "primaryKey": false,
           "notNull": true
         },
-        "attached_by_user_id": {
-          "name": "attached_by_user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "attached_by_user_id": {
+          "name": "attached_by_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
@@ -2395,84 +2395,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.position_themes": {
-      "name": "position_themes",
-      "schema": "",
-      "columns": {
-        "position_id": {
-          "name": "position_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "term_id": {
-          "name": "term_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "attached_by_user_id": {
-          "name": "attached_by_user_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "idx_position_themes_term": {
-          "name": "idx_position_themes_term",
-          "columns": [
-            {
-              "expression": "term_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "position_themes_position_id_positions_id_fk": {
-          "name": "position_themes_position_id_positions_id_fk",
-          "tableFrom": "position_themes",
-          "tableTo": "positions",
-          "columnsFrom": ["position_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "position_themes_term_id_glossary_terms_id_fk": {
-          "name": "position_themes_term_id_glossary_terms_id_fk",
-          "tableFrom": "position_themes",
-          "tableTo": "glossary_terms",
-          "columnsFrom": ["term_id"],
-          "columnsTo": ["id"],
-          "onDelete": "restrict",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "position_themes_position_id_term_id_pk": {
-          "name": "position_themes_position_id_term_id_pk",
-          "columns": ["position_id", "term_id"]
-        }
-      },
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.positions": {
       "name": "positions",
       "schema": "",
@@ -2581,6 +2503,88 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.post_fen_attachments": {
+      "name": "post_fen_attachments",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "post_id": {
+          "name": "post_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fen": {
+          "name": "fen",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "caption": {
+          "name": "caption",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_post_fen_attachments_post": {
+          "name": "idx_post_fen_attachments_post",
+          "columns": [
+            {
+              "expression": "post_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "post_fen_attachments_post_id_topic_posts_id_fk": {
+          "name": "post_fen_attachments_post_id_topic_posts_id_fk",
+          "tableFrom": "post_fen_attachments",
+          "tableTo": "topic_posts",
+          "columnsFrom": ["post_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "post_fen_attachments_post_id_unique": {
+          "name": "post_fen_attachments_post_id_unique",
+          "nullsNotDistinct": false,
+          "columns": ["post_id"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "post_fen_attachments_chk_fen_format": {
+          "name": "post_fen_attachments_chk_fen_format",
+          "value": "\"post_fen_attachments\".\"fen\" ~ '^[rnbqkpRNBQKP1-8/]+ [wb] (-|[KQkq]+) (-|[a-h][36]) [0-9]+ [0-9]+$'"
+        }
+      },
+      "isRLSEnabled": false
+    },
     "public.post_game_embed_attachments": {
       "name": "post_game_embed_attachments",
       "schema": "",
@@ -2682,7 +2686,7 @@
       "checkConstraints": {
         "post_game_embed_attachments_chk_embed_provider_valid": {
           "name": "post_game_embed_attachments_chk_embed_provider_valid",
-          "value": "\"post_game_embed_attachments\".\"embed_provider\" IN ('chesscom', 'lichess')"
+          "value": "\"post_game_embed_attachments\".\"embed_provider\" IN ('chesscom')"
         },
         "post_game_embed_attachments_chk_embed_id_format": {
           "name": "post_game_embed_attachments_chk_embed_id_format",
@@ -2694,7 +2698,7 @@
         },
         "post_game_embed_attachments_chk_embed_attribution_platform_valid": {
           "name": "post_game_embed_attachments_chk_embed_attribution_platform_valid",
-          "value": "\"post_game_embed_attachments\".\"attribution_platform\" IS NULL OR \"post_game_embed_attachments\".\"attribution_platform\" IN ('chesscom', 'lichess')"
+          "value": "\"post_game_embed_attachments\".\"attribution_platform\" IS NULL OR \"post_game_embed_attachments\".\"attribution_platform\" IN ('chesscom')"
         },
         "post_game_embed_attachments_chk_embed_attribution_path_format": {
           "name": "post_game_embed_attachments_chk_embed_attribution_path_format",
@@ -2920,6 +2924,277 @@
         "post_game_pgn_attachments_chk_attribution_pair": {
           "name": "post_game_pgn_attachments_chk_attribution_pair",
           "value": "(\"post_game_pgn_attachments\".\"attribution_platform\" IS NULL AND \"post_game_pgn_attachments\".\"attribution_path\" IS NULL)\n        OR (\"post_game_pgn_attachments\".\"attribution_platform\" IS NOT NULL AND \"post_game_pgn_attachments\".\"attribution_path\" IS NOT NULL)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.post_image_attachments": {
+      "name": "post_image_attachments",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "post_id": {
+          "name": "post_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "storage_path": {
+          "name": "storage_path",
+          "type": "varchar(1024)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "content_type": {
+          "name": "content_type",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "file_size": {
+          "name": "file_size",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "width": {
+          "name": "width",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "height": {
+          "name": "height",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "alt_text": {
+          "name": "alt_text",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "display_order": {
+          "name": "display_order",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_post_image_attachments_post": {
+          "name": "idx_post_image_attachments_post",
+          "columns": [
+            {
+              "expression": "post_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_post_image_attachments_post_order": {
+          "name": "idx_post_image_attachments_post_order",
+          "columns": [
+            {
+              "expression": "post_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "display_order",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_post_image_attachments_storage_path": {
+          "name": "idx_post_image_attachments_storage_path",
+          "columns": [
+            {
+              "expression": "storage_path",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "post_image_attachments_post_id_topic_posts_id_fk": {
+          "name": "post_image_attachments_post_id_topic_posts_id_fk",
+          "tableFrom": "post_image_attachments",
+          "tableTo": "topic_posts",
+          "columnsFrom": ["post_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "post_image_attachments_chk_content_type": {
+          "name": "post_image_attachments_chk_content_type",
+          "value": "\"post_image_attachments\".\"content_type\" IN ('image/jpeg', 'image/png', 'image/webp')"
+        },
+        "post_image_attachments_chk_file_size": {
+          "name": "post_image_attachments_chk_file_size",
+          "value": "\"post_image_attachments\".\"file_size\" > 0 AND \"post_image_attachments\".\"file_size\" <= 2097152"
+        },
+        "post_image_attachments_chk_dimensions_positive": {
+          "name": "post_image_attachments_chk_dimensions_positive",
+          "value": "\"post_image_attachments\".\"width\" > 0 AND \"post_image_attachments\".\"height\" > 0"
+        },
+        "post_image_attachments_chk_megapixels": {
+          "name": "post_image_attachments_chk_megapixels",
+          "value": "\"post_image_attachments\".\"width\" * \"post_image_attachments\".\"height\" <= 50000000"
+        },
+        "post_image_attachments_chk_storage_path_format": {
+          "name": "post_image_attachments_chk_storage_path_format",
+          "value": "\"post_image_attachments\".\"storage_path\" ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\.(jpg|png|webp)$'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.post_video_attachments": {
+      "name": "post_video_attachments",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "post_id": {
+          "name": "post_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider": {
+          "name": "provider",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider_video_id": {
+          "name": "provider_video_id",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_url": {
+          "name": "source_url",
+          "type": "varchar(512)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "thumbnail_url": {
+          "name": "thumbnail_url",
+          "type": "varchar(1024)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_post_video_attachments_post": {
+          "name": "idx_post_video_attachments_post",
+          "columns": [
+            {
+              "expression": "post_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "post_video_attachments_post_id_topic_posts_id_fk": {
+          "name": "post_video_attachments_post_id_topic_posts_id_fk",
+          "tableFrom": "post_video_attachments",
+          "tableTo": "topic_posts",
+          "columnsFrom": ["post_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "post_video_attachments_post_id_unique": {
+          "name": "post_video_attachments_post_id_unique",
+          "nullsNotDistinct": false,
+          "columns": ["post_id"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "post_video_attachments_chk_provider": {
+          "name": "post_video_attachments_chk_provider",
+          "value": "\"post_video_attachments\".\"provider\" IN ('youtube')"
+        },
+        "post_video_attachments_chk_provider_video_id": {
+          "name": "post_video_attachments_chk_provider_video_id",
+          "value": "\"post_video_attachments\".\"provider_video_id\" ~ '^[A-Za-z0-9_-]{11}$'"
+        },
+        "post_video_attachments_chk_source_url": {
+          "name": "post_video_attachments_chk_source_url",
+          "value": "\"post_video_attachments\".\"source_url\" IS NULL\n      OR \"post_video_attachments\".\"source_url\" ~ '^https://www\\.youtube\\.com/'\n      OR \"post_video_attachments\".\"source_url\" ~ '^https://youtube\\.com/'\n      OR \"post_video_attachments\".\"source_url\" ~ '^https://youtu\\.be/'\n      OR \"post_video_attachments\".\"source_url\" ~ '^https://www\\.youtube-nocookie\\.com/'"
+        },
+        "post_video_attachments_chk_thumbnail_url": {
+          "name": "post_video_attachments_chk_thumbnail_url",
+          "value": "\"post_video_attachments\".\"thumbnail_url\" IS NULL\n      OR \"post_video_attachments\".\"thumbnail_url\" ~ '^https://i\\.ytimg\\.com/'\n      OR \"post_video_attachments\".\"thumbnail_url\" ~ '^https://img\\.youtube\\.com/'"
         }
       },
       "isRLSEnabled": false
@@ -3659,6 +3934,13 @@
           "primaryKey": false,
           "notNull": true,
           "default": false
+        },
+        "image_attachment_count": {
+          "name": "image_attachment_count",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
         },
         "deleted_at": {
           "name": "deleted_at",
@@ -4539,6 +4821,84 @@
           "columns": ["user_id", "role"]
         }
       },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.position_themes": {
+      "name": "position_themes",
+      "schema": "",
+      "columns": {
+        "position_id": {
+          "name": "position_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "term_id": {
+          "name": "term_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "attached_by_user_id": {
+          "name": "attached_by_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_position_themes_term": {
+          "name": "idx_position_themes_term",
+          "columns": [
+            {
+              "expression": "term_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "position_themes_position_id_positions_id_fk": {
+          "name": "position_themes_position_id_positions_id_fk",
+          "tableFrom": "position_themes",
+          "tableTo": "positions",
+          "columnsFrom": ["position_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "position_themes_term_id_glossary_terms_id_fk": {
+          "name": "position_themes_term_id_glossary_terms_id_fk",
+          "tableFrom": "position_themes",
+          "tableTo": "glossary_terms",
+          "columnsFrom": ["term_id"],
+          "columnsTo": ["id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "position_themes_position_id_term_id_pk": {
+          "name": "position_themes_position_id_term_id_pk",
+          "columns": ["position_id", "term_id"]
+        }
+      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

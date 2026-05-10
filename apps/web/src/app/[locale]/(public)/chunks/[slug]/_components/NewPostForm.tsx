@@ -3,6 +3,7 @@
 import { BasePostForm } from '@/app/[locale]/(public)/topics/_components/BasePostForm';
 
 import { createChunkPostWithAttachment } from '../_actions/createChunkPostWithAttachment';
+import { createChunkPostWithFenAttachment } from '../_actions/createChunkPostWithFenAttachment';
 
 type Props = {
   locale: string;
@@ -10,21 +11,23 @@ type Props = {
 };
 
 /**
- * New-post form for chunk topics.
+ * @design Thin wrapper around `BasePostForm` (#84 horizontal rollout)
  *
- * @description
- * The attachment entry point is intentionally not rendered while the
- * attachment feature is hidden from end users. The Server Action still
- * handles posts without an attachment via its empty-attachment fast path,
- * so this form behaves like a plain comment form. Re-mounting
- * `<AttachmentInput>` is the only change required to re-enable the flow.
+ * The chunks new-post form was the original attachment-aware form
+ * (#80 / Phase 13 / #84). Its UI now lives in `BasePostForm` so any
+ * future tweak (paperclip placement, modal layout, attachment
+ * summary text) propagates to every form that opts in. This file
+ * is intentionally limited to (a) binding the chunks-specific
+ * Server Actions to the `(locale, slug)` pair, and (b) declaring
+ * the i18n namespace.
  */
 export function NewPostForm({ locale, slug }: Props) {
-  const action = createChunkPostWithAttachment.bind(null, locale, slug);
+  const pgn = createChunkPostWithAttachment.bind(null, locale, slug);
+  const fen = createChunkPostWithFenAttachment.bind(null, locale, slug);
 
   return (
     <BasePostForm
-      action={action}
+      attachmentActions={{ pgn, fen }}
       translationNamespace="topics.chunks.newPostForm"
       contentRequired
     />

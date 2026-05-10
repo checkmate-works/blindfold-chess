@@ -16,6 +16,7 @@ import { FiEdit2 } from 'react-icons/fi';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getLinkedChunksForPosition } from '@/lib/chunks/queries';
+import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { getPositionLikeMeta } from '@/lib/positions/like-queries';
 import { resolveDisplayName } from '@/lib/users/display-name';
 
@@ -26,6 +27,7 @@ import { CommentTree } from '@/app/[locale]/(public)/topics/_components/CommentT
 import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
+import { buildAttachmentNodeMap } from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import { buildCommentTree } from '@/app/[locale]/(public)/topics/_lib/comment-tree';
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import {
@@ -40,7 +42,8 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { PositionAuthorAttribution } from '../../../_components/PositionAuthorAttribution';
 import { PositionDetailLayout } from '../../../_components/PositionDetailLayout';
 import { loadPuzzleWithSolutions } from '../../_lib/load-puzzle';
-import { createReply } from './_actions/createReply';
+import { createReplyWithAttachment } from './_actions/createReplyWithAttachment';
+import { createReplyWithFenAttachment } from './_actions/createReplyWithFenAttachment';
 import { togglePositionPuzzlePostLike } from './_actions/togglePositionPuzzlePostLike';
 import { NewPostForm } from './_components/NewPostForm';
 
@@ -102,6 +105,18 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
   ]);
 
   const commentTree = buildCommentTree(allComments, sortBy);
+
+  // Fetch attachments for every post in the topic (root + every reply)
+  // so attached PGN/FEN/embed/image cards render under each author
+  // regardless of depth in the thread.
+  const allPostIds = allComments.map((c) => c.id);
+  const attachments = allPostIds.length > 0 ? await getAttachmentsForPosts(allPostIds) : new Map();
+  const tVideo = await getTranslations({ locale, namespace: 'postVideoAttachmentRender' });
+  const extraContentByPostId = buildAttachmentNodeMap(
+    allPostIds,
+    attachments,
+    tVideo('fallbackTitle')
+  );
 
   return (
     <PositionDetailLayout
@@ -184,10 +199,7 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
       {currentUser && commentCount === 0 ? (
         <NewPostForm locale={locale} positionId={position.id} />
       ) : (
-        <JoinConversationToggle
-          countText={tComments('postCount', { count: commentCount })}
-          joinLabel={tTopics('joinConversation')}
-        >
+        <JoinConversationToggle count={commentCount} joinLabel={tTopics('joinConversation')}>
           <NewPostForm locale={locale} positionId={position.id} />
         </JoinConversationToggle>
       )}
@@ -207,8 +219,12 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
             enableSpoiler
             redirectPath={`/${locale}/practice/puzzle/${position.id}`}
             toggleLikeAction={togglePositionPuzzlePostLike}
-            createReplyAction={createReply}
+            replyAttachmentActions={{
+              pgn: createReplyWithAttachment,
+              fen: createReplyWithFenAttachment,
+            }}
             deletePostAction={deletePost}
+            extraContentByPostId={extraContentByPostId}
             i18n={{
               likeNamespace: 'topics.positionPuzzle',
               replyNamespace: 'topics.positionPuzzle.replies',

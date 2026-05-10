@@ -15,6 +15,7 @@ import type { CommentTreeNode, FlatReply, ReplyGroup } from '../_lib/comment-tre
 import { DeletePostButton } from './DeletePostButton';
 import { LikeButton } from './LikeButton';
 import { ReplyForm } from './ReplyForm';
+import type { ReplyAttachmentActions } from './ReplyForm';
 
 type ToggleLikeAction = (
   postId: string,
@@ -23,14 +24,6 @@ type ToggleLikeAction = (
 ) => Promise<{ liked: boolean; likeCount: number } | { error: string }>;
 
 type DeletePostAction = (postId: string, locale: string) => Promise<ActionResult>;
-
-type CreateReplyAction = (
-  locale: string,
-  topicKey: string,
-  postId: string,
-  prevState: { error?: string },
-  formData: FormData
-) => Promise<{ error?: string }>;
 
 type I18n = {
   likeNamespace: string;
@@ -60,7 +53,13 @@ type Props = {
   enableSpoiler: boolean;
   redirectPath: string;
   toggleLikeAction: ToggleLikeAction;
-  createReplyAction: CreateReplyAction;
+  /**
+   * Attachment-aware reply Server Actions (PGN + FEN). The inline
+   * `ReplyForm` rendered inside this node binds these against the
+   * thread's `(locale, topicKey, rootPostId)` and dispatches between
+   * the two based on the AttachmentModal's selected kind.
+   */
+  replyAttachmentActions: ReplyAttachmentActions;
   deletePostAction: DeletePostAction;
   i18n: I18n;
   /**
@@ -92,12 +91,23 @@ type Props = {
    */
   replyToDisplayName?: string;
   /**
-   * Per-root payload rendered between the body and the like/reply row.
-   * Carries topic-specific data attached to the OP — e.g. an opening rating
-   * display, an attached game card. Ignored on every non-root node so deeper
-   * replies stay visually uniform regardless of which page renders them.
+   * Per-post extra payload, looked up by post id and rendered between the
+   * body and the like/reply row. Used to surface attached game / FEN /
+   * embed cards on every node in the tree — both top-level posts (chunks
+   * list page) and replies (every detail page that shows reply
+   * attachments under their author). The Map is threaded all the way down
+   * the recursion so first- and second-level replies render their
+   * attachment too.
+   *
+   * @design Why a Map and not a pre-resolved ReactNode prop
+   *
+   * Pre-resolving at `CommentTree` and passing one ReactNode per CommentNode
+   * would force the parent to walk the full tree to discover descendant
+   * ids; threading a Map keeps the discovery local to each node and lets
+   * the pages compute the attachment payload from a flat
+   * `getAttachmentsForPosts(allPostIds)` call.
    */
-  extraContent?: React.ReactNode;
+  extraContentByPostId?: ReadonlyMap<string, React.ReactNode>;
 };
 
 export function CommentNode({
@@ -110,13 +120,13 @@ export function CommentNode({
   enableSpoiler,
   redirectPath,
   toggleLikeAction,
-  createReplyAction,
+  replyAttachmentActions,
   deletePostAction,
   i18n,
   replyGroups,
   flatReplies,
   replyToDisplayName,
-  extraContent,
+  extraContentByPostId,
 }: Props) {
   const tTopics = useTranslations('topics');
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -230,7 +240,7 @@ export function CommentNode({
                 </div>
               )}
 
-              {isRoot && !isDeleted && extraContent}
+              {!isDeleted && extraContentByPostId?.get(node.id)}
 
               {!isDeleted && (
                 <div className="flex items-center gap-4">
@@ -270,7 +280,7 @@ export function CommentNode({
                     locale={locale}
                     topicKey={topicKey}
                     postId={rootPostId}
-                    createReplyAction={createReplyAction}
+                    attachmentActions={replyAttachmentActions}
                     i18nNamespace={i18n.replyNamespace}
                     replyToId={node.id}
                     replyToUsername={displayName}
@@ -294,10 +304,11 @@ export function CommentNode({
                       enableSpoiler={enableSpoiler}
                       redirectPath={redirectPath}
                       toggleLikeAction={toggleLikeAction}
-                      createReplyAction={createReplyAction}
+                      replyAttachmentActions={replyAttachmentActions}
                       deletePostAction={deletePostAction}
                       i18n={i18n}
                       flatReplies={group.deeper}
+                      extraContentByPostId={extraContentByPostId}
                     />
                   ))}
                 </div>
@@ -317,10 +328,11 @@ export function CommentNode({
                       enableSpoiler={enableSpoiler}
                       redirectPath={redirectPath}
                       toggleLikeAction={toggleLikeAction}
-                      createReplyAction={createReplyAction}
+                      replyAttachmentActions={replyAttachmentActions}
                       deletePostAction={deletePostAction}
                       i18n={i18n}
                       replyToDisplayName={prefix ?? undefined}
+                      extraContentByPostId={extraContentByPostId}
                     />
                   ))}
                 </div>

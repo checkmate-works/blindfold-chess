@@ -4307,7 +4307,61 @@
       "invalidUrl": "Isso não parece ser uma URL de incorporação válida.",
       "chesscomCardTitle": "Diagrama do Chess.com",
       "lichessCardTitle": "Partida do Lichess"
+    },
+    "image": {
+      "label": "Imagens (opcional)",
+      "uploadButton": "Adicionar imagem",
+      "altLabel": "Descrição da imagem (texto alternativo)",
+      "altPlaceholder": "Descreva a imagem para leitores de tela",
+      "limitHint": "JPEG, PNG ou WebP. Até {max} por postagem, 2 MB cada.",
+      "removeButton": "Remover imagem",
+      "uploading": "Enviando…",
+      "deletionDisclosure": "Imagens anexadas a uma postagem excluída podem permanecer acessíveis no armazenamento por até 7 dias.",
+      "error": {
+        "fileRequired": "Selecione um arquivo de imagem para enviar.",
+        "fileTooLarge": "A imagem é muito grande. O tamanho máximo é 2 MB.",
+        "invalidFileType": "Apenas imagens JPEG, PNG e WebP são aceitas.",
+        "imageTooLarge": "As dimensões da imagem são muito grandes (limite de 50 megapixels).",
+        "animatedImageNotSupported": "Imagens animadas não são suportadas. Envie uma imagem estática.",
+        "tooManyImages": "Você atingiu o limite de {max} imagens para esta postagem.",
+        "uploadFailed": "Falha ao enviar. Tente novamente.",
+        "rateLimited": "Muitos envios. Aguarde alguns minutos e tente novamente."
+      }
     }
+  },
+  "postFenAttachment": {
+    "error": {
+      "fenRequired": "Informe uma string FEN para anexar uma posição.",
+      "fenTooLong": "O FEN é muito longo. O tamanho máximo é 100 caracteres.",
+      "invalidFenStructure": "Formato FEN inválido. Verifique a posição, o lado a jogar, o roque e o campo de en passant.",
+      "invalidFenSemantic": "O FEN não representa uma posição legal. Verifique os reis, a colocação dos peões, os direitos de roque e a casa de en passant.",
+      "captionTooLong": "A legenda é muito longa. O tamanho máximo é 200 caracteres.",
+      "alreadyAttached": "Esta postagem já possui um FEN anexado.",
+      "postNotFound": "Postagem não encontrada.",
+      "notOwner": "Você só pode anexar um FEN às suas próprias postagens."
+    }
+  },
+  "postVideoAttachment": {
+    "error": {
+      "urlRequired": "Informe uma URL do YouTube para anexar um vídeo.",
+      "inputTooLong": "A URL é muito longa. O tamanho máximo é 512 caracteres.",
+      "invalidUrl": "Não foi possível interpretar a URL. Cole um link do YouTube.",
+      "protocolNotHttps": "A URL deve usar https.",
+      "userinfoPresent": "A URL não pode conter nome de usuário nem senha.",
+      "fragmentNotAllowed": "A URL não pode conter um fragmento (#…).",
+      "hostNotAllowed": "O host da URL não é do YouTube.",
+      "pathnameNotSupported": "Formato de link do YouTube não suportado (apenas watch / shorts / live / embed).",
+      "paramPollution": "A URL contém parâmetros de consulta repetidos.",
+      "invalidId": "O ID do vídeo do YouTube é inválido.",
+      "invalidVideoStructure": "Não foi possível salvar o link do vídeo. Tente outra URL do YouTube.",
+      "tooLong": "O link do vídeo é muito longo. O tamanho máximo é 512 caracteres.",
+      "alreadyAttached": "Esta postagem já possui um vídeo anexado.",
+      "postNotFound": "Postagem não encontrada.",
+      "notOwner": "Você só pode anexar um vídeo às suas próprias postagens."
+    }
+  },
+  "postVideoAttachmentRender": {
+    "fallbackTitle": "Vídeo do YouTube"
   },
   "Footer": {
     "resources": "Recursos",

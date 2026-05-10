@@ -2,7 +2,8 @@
 
 import { BasePostForm } from '@/app/[locale]/(public)/topics/_components/BasePostForm';
 
-import { createPositionMemoryPost } from '../_actions/createPositionMemoryPost';
+import { createPositionMemoryPostWithAttachment } from '../_actions/createPositionMemoryPostWithAttachment';
+import { createPositionMemoryPostWithFenAttachment } from '../_actions/createPositionMemoryPostWithFenAttachment';
 
 type Props = {
   locale: string;
@@ -10,11 +11,12 @@ type Props = {
 };
 
 export function NewPostForm({ locale, positionId }: Props) {
-  const action = createPositionMemoryPost.bind(null, locale, positionId);
+  const pgn = createPositionMemoryPostWithAttachment.bind(null, locale, positionId);
+  const fen = createPositionMemoryPostWithFenAttachment.bind(null, locale, positionId);
 
   return (
     <BasePostForm
-      action={action}
+      attachmentActions={{ pgn, fen }}
       translationNamespace="topics.positionMemory.newPostForm"
       contentRequired
     />

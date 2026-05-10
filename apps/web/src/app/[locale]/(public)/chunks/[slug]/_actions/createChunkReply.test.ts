@@ -31,6 +31,15 @@ vi.mock('@/lib/supabase/server', () => ({
     }),
 }));
 
+const txInsert = () => ({
+  values: (...args: unknown[]) => {
+    mockInsertValues(...args);
+    return {
+      returning: () => mockInsertReturning(),
+    };
+  },
+});
+
 vi.mock('@/lib/db', () => ({
   db: {
     select: () => ({
@@ -51,6 +60,8 @@ vi.mock('@/lib/db', () => ({
         };
       },
     }),
+    transaction: async (cb: (tx: { insert: typeof txInsert }) => Promise<unknown>) =>
+      cb({ insert: txInsert }),
   },
   topicPosts: {
     id: 'id',

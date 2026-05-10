@@ -47,6 +47,17 @@ export async function createReplyBase(params: {
    * the FormData value upstream and pass a strict boolean here.
    */
   isSpoiler?: boolean;
+  /**
+   * Optional hook fired inside the same transaction as the reply INSERT so
+   * topic-specific extra rows (e.g. `post_game_pgn_attachments`,
+   * `post_fen_attachments`) land atomically with the reply itself. Mirrors
+   * the contract on `createPostBase`. Side effects that don't need atomicity
+   * (notifications, activity log, revalidate) stay outside the transaction.
+   */
+  afterInsert?: (
+    tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
+    replyId: string
+  ) => Promise<void>;
   formData: FormData;
 }): Promise<CreateReplyState> {
   const {
@@ -60,6 +71,7 @@ export async function createReplyBase(params: {
     redirectPath,
     revalidate,
     isSpoiler,
+    afterInsert,
     formData,
   } = params;
 
@@ -177,18 +189,26 @@ export async function createReplyBase(params: {
     return { error: 'contentTooLong' };
   }
 
-  const [inserted] = await db
-    .insert(topicPosts)
-    .values({
-      userId: user.id,
-      topicType,
-      topicKey,
-      parentId,
-      rootPostId,
-      content: content.trim(),
-      ...(isSpoiler !== undefined ? { isSpoiler } : {}),
-    })
-    .returning({ id: topicPosts.id });
+  const inserted = await db.transaction(async (tx) => {
+    const [reply] = await tx
+      .insert(topicPosts)
+      .values({
+        userId: user.id,
+        topicType,
+        topicKey,
+        parentId,
+        rootPostId,
+        content: content.trim(),
+        ...(isSpoiler !== undefined ? { isSpoiler } : {}),
+      })
+      .returning({ id: topicPosts.id });
+
+    if (afterInsert) {
+      await afterInsert(tx, reply.id);
+    }
+
+    return reply;
+  });
 
   logActivityEvent({
     userId: user.id,

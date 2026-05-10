@@ -11,6 +11,7 @@ import { FiEdit2 } from 'react-icons/fi';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getLinkedChunksForPosition } from '@/lib/chunks/queries';
+import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { getPositionLikeMeta } from '@/lib/positions/like-queries';
 import { getPositionWithProfileById } from '@/lib/positions/queries';
 import { resolveDisplayName } from '@/lib/users/display-name';
@@ -20,6 +21,7 @@ import { CommentTree } from '@/app/[locale]/(public)/topics/_components/CommentT
 import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
+import { buildAttachmentNodeMap } from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import { buildCommentTree } from '@/app/[locale]/(public)/topics/_lib/comment-tree';
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import {
@@ -37,7 +39,8 @@ import { PositionDetailLayout } from '../../_components/PositionDetailLayout';
 import { toggleLike } from '../_actions/toggleLike';
 import { PositionDetailBoard } from '../_components/single-position/PositionDetailBoard';
 import { PositionStartForm } from '../_components/single-position/PositionStartForm';
-import { createReply } from './_actions/createReply';
+import { createReplyWithAttachment } from './_actions/createReplyWithAttachment';
+import { createReplyWithFenAttachment } from './_actions/createReplyWithFenAttachment';
 import { togglePositionMemoryPostLike } from './_actions/togglePositionMemoryPostLike';
 import { NewPostForm } from './_components/NewPostForm';
 
@@ -100,6 +103,18 @@ export default async function PositionDetailPage({ params, searchParams }: Props
   ]);
 
   const commentTree = buildCommentTree(allComments, sortBy);
+
+  // Fetch attachments for every post in the topic (root + every reply)
+  // so attached PGN/FEN/embed/image cards render under each author
+  // regardless of depth in the thread.
+  const allPostIds = allComments.map((c) => c.id);
+  const attachments = allPostIds.length > 0 ? await getAttachmentsForPosts(allPostIds) : new Map();
+  const tVideo = await getTranslations({ locale, namespace: 'postVideoAttachmentRender' });
+  const extraContentByPostId = buildAttachmentNodeMap(
+    allPostIds,
+    attachments,
+    tVideo('fallbackTitle')
+  );
 
   return (
     <PositionDetailLayout
@@ -184,10 +199,7 @@ export default async function PositionDetailPage({ params, searchParams }: Props
       {currentUser && commentCount === 0 ? (
         <NewPostForm locale={locale} positionId={position.id} />
       ) : (
-        <JoinConversationToggle
-          countText={tComments('postCount', { count: commentCount })}
-          joinLabel={tTopics('joinConversation')}
-        >
+        <JoinConversationToggle count={commentCount} joinLabel={tTopics('joinConversation')}>
           <NewPostForm locale={locale} positionId={position.id} />
         </JoinConversationToggle>
       )}
@@ -207,8 +219,12 @@ export default async function PositionDetailPage({ params, searchParams }: Props
             enableSpoiler={false}
             redirectPath={`/${locale}/practice/position-memory/${position.id}`}
             toggleLikeAction={togglePositionMemoryPostLike}
-            createReplyAction={createReply}
+            replyAttachmentActions={{
+              pgn: createReplyWithAttachment,
+              fen: createReplyWithFenAttachment,
+            }}
             deletePostAction={deletePost}
+            extraContentByPostId={extraContentByPostId}
             i18n={{
               likeNamespace: 'topics.positionMemory',
               replyNamespace: 'topics.positionMemory.replies',

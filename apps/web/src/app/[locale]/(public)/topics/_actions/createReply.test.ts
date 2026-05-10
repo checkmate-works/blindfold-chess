@@ -31,6 +31,15 @@ vi.mock('@/lib/supabase/server', () => ({
     }),
 }));
 
+const txInsert = () => ({
+  values: (...args: unknown[]) => {
+    mockInsertValues(...args);
+    return {
+      returning: () => mockInsertReturning(),
+    };
+  },
+});
+
 vi.mock('@/lib/db', () => ({
   db: {
     select: () => ({
@@ -51,6 +60,8 @@ vi.mock('@/lib/db', () => ({
         };
       },
     }),
+    transaction: async (cb: (tx: { insert: typeof txInsert }) => Promise<unknown>) =>
+      cb({ insert: txInsert }),
   },
   topicPosts: {
     id: 'id',
@@ -665,6 +676,42 @@ describe('createReplyBase', () => {
           rootPostId: validPostId,
         })
       );
+    });
+  });
+
+  describe('afterInsert hook', () => {
+    beforeEach(() => {
+      setupAuthenticatedUser();
+      setupParentPostExists();
+    });
+
+    it('should call afterInsert with the new reply id inside the same transaction', async () => {
+      const afterInsert = vi.fn().mockResolvedValue(undefined);
+
+      await expect(
+        createReplyBase({
+          ...baseParams,
+          afterInsert,
+          formData: makeFormData('with hook'),
+        })
+      ).rejects.toThrow('NEXT_REDIRECT');
+
+      // Hook receives (tx, replyId) — the second arg is the inserted reply's id.
+      expect(afterInsert).toHaveBeenCalledTimes(1);
+      expect(afterInsert).toHaveBeenCalledWith(expect.anything(), generatedReplyId);
+    });
+
+    it('should not invoke afterInsert when content validation fails', async () => {
+      const afterInsert = vi.fn().mockResolvedValue(undefined);
+
+      const result = await createReplyBase({
+        ...baseParams,
+        afterInsert,
+        formData: makeFormData(''),
+      });
+
+      expect(result).toEqual({ error: 'contentRequired' });
+      expect(afterInsert).not.toHaveBeenCalled();
     });
   });
 });

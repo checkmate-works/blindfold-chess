@@ -2,7 +2,8 @@
 
 import { BasePostForm } from '@/app/[locale]/(public)/topics/_components/BasePostForm';
 
-import { createPost } from '../_actions/createPost';
+import { createSquarePostWithAttachment } from '../_actions/createSquarePostWithAttachment';
+import { createSquarePostWithFenAttachment } from '../_actions/createSquarePostWithFenAttachment';
 
 type Props = {
   locale: string;
@@ -10,11 +11,12 @@ type Props = {
 };
 
 export function NewPostForm({ locale, square }: Props) {
-  const boundCreatePost = createPost.bind(null, locale, square);
+  const pgn = createSquarePostWithAttachment.bind(null, locale, square);
+  const fen = createSquarePostWithFenAttachment.bind(null, locale, square);
 
   return (
     <BasePostForm
-      action={boundCreatePost}
+      attachmentActions={{ pgn, fen }}
       translationNamespace="topics.squares.newPostForm"
       contentRequired
     />
