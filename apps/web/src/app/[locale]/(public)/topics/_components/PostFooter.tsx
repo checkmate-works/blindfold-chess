@@ -6,8 +6,6 @@ import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaRegComment } from 'react-icons/fa';
 
-import { IS_LOCAL_SUPABASE } from '@/lib/image-optimization';
-
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 
 import type { LikeMeta, ReplyMeta } from '../_lib/shared';
@@ -98,7 +96,8 @@ export function PostFooter({
                   width={24}
                   height={24}
                   className="rounded-full border-2 border-card object-cover w-6 h-6"
-                  unoptimized={IS_LOCAL_SUPABASE}
+                  // Pre-resized 256×256 WebP at upload; bypass Vercel optimization.
+                  unoptimized
                 />
               ) : (
                 <div

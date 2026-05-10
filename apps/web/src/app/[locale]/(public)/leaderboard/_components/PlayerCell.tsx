@@ -1,8 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { IS_LOCAL_SUPABASE } from '@/lib/image-optimization';
-
 type PlayerInfo = {
   username: string;
   displayName?: string | null;
@@ -26,7 +24,8 @@ export function PlayerCell({ row, locale }: Props) {
           width={36}
           height={36}
           className="rounded-full object-cover h-9 w-9 flex-shrink-0 ring-1 ring-border"
-          unoptimized={IS_LOCAL_SUPABASE}
+          // Pre-resized to 256×256 WebP at upload; bypass Vercel optimization.
+          unoptimized
         />
       ) : (
         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-muted-foreground flex-shrink-0 ring-1 ring-border">
