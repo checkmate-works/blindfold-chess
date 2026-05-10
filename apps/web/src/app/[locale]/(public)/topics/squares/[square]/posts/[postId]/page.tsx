@@ -100,7 +100,7 @@ export default async function PostDetailPage({ params, searchParams }: Props) {
       }}
       comments={{
         sectionTitle: st('replies.title'),
-        countText: st('replies.count', { count: replies.length }),
+        count: replies.length,
         sortBy,
         sortBasePath: `/topics/squares/${square}/posts/${postId}`,
         sortTranslationKey: 'topics.squares.sort',

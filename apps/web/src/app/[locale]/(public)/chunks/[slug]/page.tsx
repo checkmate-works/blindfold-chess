@@ -164,10 +164,7 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
       {user && commentCount === 0 ? (
         <NewPostForm locale={locale} slug={slug} />
       ) : user ? (
-        <JoinConversationToggle
-          countText={t('postCount', { count: commentCount })}
-          joinLabel={tTopics('joinConversation')}
-        >
+        <JoinConversationToggle count={commentCount} joinLabel={tTopics('joinConversation')}>
           <NewPostForm locale={locale} slug={slug} />
         </JoinConversationToggle>
       ) : (

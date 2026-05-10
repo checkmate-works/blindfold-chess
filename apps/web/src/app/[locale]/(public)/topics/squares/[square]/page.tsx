@@ -140,10 +140,7 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
       {user && totalCount === 0 ? (
         newPostForm
       ) : (
-        <JoinConversationToggle
-          countText={t('squares.postCount', { count: totalCount })}
-          joinLabel={t('joinConversation')}
-        >
+        <JoinConversationToggle count={totalCount} joinLabel={t('joinConversation')}>
           {newPostForm}
         </JoinConversationToggle>
       )}

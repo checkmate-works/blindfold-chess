@@ -135,7 +135,7 @@ export default async function ChunkPostDetailPage({ params, searchParams }: Prop
       }}
       comments={{
         sectionTitle: ct('replies.title'),
-        countText: ct('replies.count', { count: replies.length }),
+        count: replies.length,
         sortBy,
         sortBasePath: `/chunks/${slug}/posts/${postId}`,
         sortTranslationKey: 'topics.chunks.sort',

@@ -117,7 +117,7 @@ export default async function OpeningPostDetailPage({ params, searchParams }: Pr
       }}
       comments={{
         sectionTitle: dt('replies.title'),
-        countText: dt('replies.count', { count: replies.length }),
+        count: replies.length,
         sortBy,
         sortBasePath: `/topics/openings/${slug}/posts/${postId}`,
         sortTranslationKey: 'topics.openings.sort',

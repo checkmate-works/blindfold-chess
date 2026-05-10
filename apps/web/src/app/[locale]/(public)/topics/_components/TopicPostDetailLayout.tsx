@@ -98,10 +98,10 @@ type Props = {
     /** Section title above the form / sort / list (e.g. "Replies"). */
     sectionTitle: string;
     /**
-     * Pre-formatted reply count (e.g. "5 replies") — already plural-aware
-     * via `next-intl`. Passed to `JoinConversationToggle` as `countText`.
+     * Number of replies. Passed to `JoinConversationToggle` as `count`
+     * — the icon disambiguates the unit so the noun is suppressed.
      */
-    countText: string;
+    count: number;
     sortBy: SortMode;
     sortBasePath: string;
     sortTranslationKey: string;
@@ -239,10 +239,7 @@ export async function TopicPostDetailLayout({
           i18nNamespace={i18n.replyNamespace}
         />
       ) : (
-        <JoinConversationToggle
-          countText={comments.countText}
-          joinLabel={tTopics('joinConversation')}
-        >
+        <JoinConversationToggle count={comments.count} joinLabel={tTopics('joinConversation')}>
           <ReplyForm
             locale={locale}
             topicKey={topicKey}

@@ -115,19 +115,13 @@ export default async function OpeningDetailPage({ params, searchParams }: Props)
           totalCount === 0 ? (
             newPostForm
           ) : (
-            <JoinConversationToggle
-              countText={dt('postCount', { count: totalCount })}
-              joinLabel={t('joinConversation')}
-            >
+            <JoinConversationToggle count={totalCount} joinLabel={t('joinConversation')}>
               {newPostForm}
             </JoinConversationToggle>
           )
         ) : null
       ) : (
-        <JoinConversationToggle
-          countText={dt('postCount', { count: totalCount })}
-          joinLabel={t('joinConversation')}
-        >
+        <JoinConversationToggle count={totalCount} joinLabel={t('joinConversation')}>
           {newPostForm}
         </JoinConversationToggle>
       )}

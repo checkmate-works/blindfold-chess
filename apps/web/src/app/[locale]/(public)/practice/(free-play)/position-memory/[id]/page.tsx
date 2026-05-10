@@ -184,10 +184,7 @@ export default async function PositionDetailPage({ params, searchParams }: Props
       {currentUser && commentCount === 0 ? (
         <NewPostForm locale={locale} positionId={position.id} />
       ) : (
-        <JoinConversationToggle
-          countText={tComments('postCount', { count: commentCount })}
-          joinLabel={tTopics('joinConversation')}
-        >
+        <JoinConversationToggle count={commentCount} joinLabel={tTopics('joinConversation')}>
           <NewPostForm locale={locale} positionId={position.id} />
         </JoinConversationToggle>
       )}
