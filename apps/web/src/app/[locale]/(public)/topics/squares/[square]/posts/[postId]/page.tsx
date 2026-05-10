@@ -12,7 +12,8 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { getPostById } from '../../../_lib/queries';
 import { isValidSquare } from '../../../_lib/squares';
 import { SquareHighlightBoard } from '../../_components';
-import { createReply } from './_actions/createReply';
+import { createReplyWithAttachment } from './_actions/createReplyWithAttachment';
+import { createReplyWithFenAttachment } from './_actions/createReplyWithFenAttachment';
 import { toggleLike } from './_actions/toggleLike';
 
 type Props = {
@@ -91,7 +92,10 @@ export default async function PostDetailPage({ params, searchParams }: Props) {
       replyRestrictionMessage={replyRestrictionMessage}
       toggleLikeAction={toggleLike}
       deletePostAction={deletePost}
-      createReplyAction={createReply}
+      replyAttachmentActions={{
+        pgn: createReplyWithAttachment,
+        fen: createReplyWithFenAttachment,
+      }}
       redirectPath={`/${locale}/topics/squares/${square}`}
       i18n={{
         likeNamespace: 'topics.squares',

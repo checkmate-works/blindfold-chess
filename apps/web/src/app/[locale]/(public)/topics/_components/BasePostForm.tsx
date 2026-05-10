@@ -1,6 +1,14 @@
 'use client';
 
-import { type ReactNode, useActionState, useCallback, useEffect, useRef, useState } from 'react';
+import {
+  type ReactNode,
+  useActionState,
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from 'react';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { Button, FormErrorBanner, Textarea, UnsavedChangesDialog } from '@/app/_components';
@@ -66,6 +74,19 @@ type Props = {
    * Server Action wrapper is responsible for normalizing it to a boolean.
    */
   enableSpoilerToggle?: boolean;
+  /**
+   * Number of rows for the content textarea. Defaults to 6 (the new-post
+   * form default). Set to 4 for inline reply forms so the textarea sits
+   * comfortably under each comment without dominating the layout.
+   */
+  textareaRows?: number;
+  /**
+   * Whether to render the hidden `replyPermission` input. Defaults to
+   * `true` for parity with the new-post form contract. Reply forms pass
+   * `false` because reply permission lives on the root post — `createReplyBase`
+   * does not read this field, so emitting it would be inert noise.
+   */
+  emitReplyPermissionField?: boolean;
 };
 
 /**
@@ -99,11 +120,19 @@ export function BasePostForm({
   beforeContent,
   onContentChange,
   enableSpoilerToggle = false,
+  textareaRows = 6,
+  emitReplyPermissionField = true,
 }: Props) {
   const t = useTranslations(translationNamespace);
   const tTopics = useTranslations('topics');
   const tGlobal = useTranslations();
   const tUnsaved = useTranslations('unsavedChanges');
+
+  // Per-instance id so multiple BasePostForms can coexist on the same
+  // page (every CommentNode renders its own inline ReplyForm — without
+  // this they would share `id="content"` and break the label/htmlFor
+  // pairing for assistive tech).
+  const textareaId = useId();
 
   const [attachment, setAttachment] = useState<AggregatedAttachmentMode>({ kind: 'empty' });
   const [modalOpen, setModalOpen] = useState(false);
@@ -203,13 +232,13 @@ export function BasePostForm({
       {beforeContent?.(markDirty)}
 
       <div className="space-y-2">
-        <label htmlFor="content" className="sr-only">
+        <label htmlFor={textareaId} className="sr-only">
           {t('contentLabel')}
         </label>
         <Textarea
-          id="content"
+          id={textareaId}
           name="content"
-          rows={6}
+          rows={textareaRows}
           maxLength={MAX_CONTENT_LENGTH}
           placeholder={t('contentPlaceholder')}
           required={contentRequired}
@@ -251,7 +280,7 @@ export function BasePostForm({
         />
       )}
 
-      <input type="hidden" name="replyPermission" value="everyone" />
+      {emitReplyPermissionField && <input type="hidden" name="replyPermission" value="everyone" />}
 
       {enableSpoilerToggle && (
         <label className="flex items-center gap-2 text-sm text-foreground">

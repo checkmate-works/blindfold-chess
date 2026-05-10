@@ -4,6 +4,7 @@ import type { CommentTreeNode } from '../_lib/comment-tree';
 import { groupReplies } from '../_lib/comment-tree';
 import { canUserReply } from '../_lib/permissions';
 import { CommentNode } from './CommentNode';
+import type { ReplyAttachmentActions } from './ReplyForm';
 
 type ToggleLikeAction = (
   postId: string,
@@ -12,14 +13,6 @@ type ToggleLikeAction = (
 ) => Promise<{ liked: boolean; likeCount: number } | { error: string }>;
 
 type DeletePostAction = (postId: string, locale: string) => Promise<ActionResult>;
-
-type CreateReplyAction = (
-  locale: string,
-  topicKey: string,
-  postId: string,
-  prevState: { error?: string },
-  formData: FormData
-) => Promise<{ error?: string }>;
 
 type Props = {
   /** Root nodes already built by `buildCommentTree`. */
@@ -31,7 +24,12 @@ type Props = {
   enableSpoiler: boolean;
   redirectPath: string;
   toggleLikeAction: ToggleLikeAction;
-  createReplyAction: CreateReplyAction;
+  /**
+   * Attachment-aware reply Server Actions (PGN + FEN). Forwarded to
+   * every `CommentNode` so the inline `ReplyForm` it spawns can route
+   * submits through the right base.
+   */
+  replyAttachmentActions: ReplyAttachmentActions;
   deletePostAction: DeletePostAction;
   i18n: {
     likeNamespace: string;
@@ -92,7 +90,7 @@ export async function CommentTree({
   enableSpoiler,
   redirectPath,
   toggleLikeAction,
-  createReplyAction,
+  replyAttachmentActions,
   deletePostAction,
   i18n,
   threadRootPostId,
@@ -125,7 +123,7 @@ export async function CommentTree({
           enableSpoiler={enableSpoiler}
           redirectPath={redirectPath}
           toggleLikeAction={toggleLikeAction}
-          createReplyAction={createReplyAction}
+          replyAttachmentActions={replyAttachmentActions}
           deletePostAction={deletePostAction}
           i18n={i18n}
           extraContent={extraContentByRootId?.get(root.id)}

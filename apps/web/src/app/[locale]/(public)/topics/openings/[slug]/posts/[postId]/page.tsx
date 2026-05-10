@@ -13,7 +13,8 @@ import { OpeningBoardWithMoves } from '../../../_components/OpeningBoardWithMove
 import { getOpeningDisplayName } from '../../../_lib/get-opening-display-name';
 import { getOpeningBySlug, getOpeningPostById } from '../../../_lib/queries';
 import { RatingDisplay } from '../../_components';
-import { createReply } from './_actions/createReply';
+import { createReplyWithAttachment } from './_actions/createReplyWithAttachment';
+import { createReplyWithFenAttachment } from './_actions/createReplyWithFenAttachment';
 import { toggleLike } from './_actions/toggleLike';
 
 type Props = {
@@ -108,7 +109,10 @@ export default async function OpeningPostDetailPage({ params, searchParams }: Pr
       replyRestrictionMessage={replyRestrictionMessage}
       toggleLikeAction={toggleLike}
       deletePostAction={deletePost}
-      createReplyAction={createReply}
+      replyAttachmentActions={{
+        pgn: createReplyWithAttachment,
+        fen: createReplyWithFenAttachment,
+      }}
       redirectPath={`/${locale}/topics/openings/${slug}`}
       i18n={{
         likeNamespace: 'topics.openings.postDetail',

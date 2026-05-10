@@ -27,7 +27,8 @@ vi.mock('./CommentNode', () => ({
 }));
 
 const mockToggleLike = vi.fn();
-const mockCreateReply = vi.fn();
+const mockReplyPgn = vi.fn();
+const mockReplyFen = vi.fn();
 const mockDeletePost = vi.fn();
 
 const i18n = {
@@ -76,7 +77,7 @@ async function renderTree(
     enableSpoiler: false,
     redirectPath: '/en/chunks/rook-battery',
     toggleLikeAction: mockToggleLike,
-    createReplyAction: mockCreateReply,
+    replyAttachmentActions: { pgn: mockReplyPgn, fen: mockReplyFen },
     deletePostAction: mockDeletePost,
     i18n,
     extraContentByRootId: extra,

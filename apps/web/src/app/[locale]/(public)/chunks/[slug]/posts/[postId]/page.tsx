@@ -20,7 +20,8 @@ import { getPostByIdAndTopicKey } from '@/app/[locale]/(public)/topics/_lib/quer
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { createReply } from './_actions/createReply';
+import { createReplyWithAttachment } from './_actions/createReplyWithAttachment';
+import { createReplyWithFenAttachment } from './_actions/createReplyWithFenAttachment';
 import { toggleLike } from './_actions/toggleLike';
 
 type Props = {
@@ -126,7 +127,10 @@ export default async function ChunkPostDetailPage({ params, searchParams }: Prop
       replyRestrictionMessage={replyRestrictionMessage}
       toggleLikeAction={toggleLike}
       deletePostAction={deletePost}
-      createReplyAction={createReply}
+      replyAttachmentActions={{
+        pgn: createReplyWithAttachment,
+        fen: createReplyWithFenAttachment,
+      }}
       redirectPath={`/${locale}/chunks/${slug}`}
       i18n={{
         likeNamespace: 'topics.chunks',

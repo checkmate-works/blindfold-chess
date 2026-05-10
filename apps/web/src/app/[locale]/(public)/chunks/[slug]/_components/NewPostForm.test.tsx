@@ -98,7 +98,7 @@ describe('NewPostForm — modal-driven attachment routing', () => {
     mockCreateChunkPostWithAttachment.mockResolvedValue({});
     const { container } = render(<NewPostForm locale="en" slug="rook-battery" />);
 
-    const content = container.querySelector('#content') as HTMLTextAreaElement;
+    const content = container.querySelector('textarea[name="content"]') as HTMLTextAreaElement;
     fireEvent.change(content, { target: { value: 'just a plain comment' } });
     const form = container.querySelector('form') as HTMLFormElement;
     fireEvent.submit(form);
@@ -118,7 +118,7 @@ describe('NewPostForm — modal-driven attachment routing', () => {
     fireEvent.change(fenInput, { target: { value: `   ${VALID_FEN}   ` } });
     clickApply();
 
-    const content = container.querySelector('#content') as HTMLTextAreaElement;
+    const content = container.querySelector('textarea[name="content"]') as HTMLTextAreaElement;
     fireEvent.change(content, { target: { value: 'see the position' } });
     const form = container.querySelector('form') as HTMLFormElement;
     fireEvent.submit(form);
@@ -153,7 +153,7 @@ describe('NewPostForm — modal-driven attachment routing', () => {
     fireEvent.change(fenInput, { target: { value: VALID_FEN } });
     clickApply();
 
-    const content = container.querySelector('#content') as HTMLTextAreaElement;
+    const content = container.querySelector('textarea[name="content"]') as HTMLTextAreaElement;
     fireEvent.change(content, { target: { value: 'see the position' } });
     const form = container.querySelector('form') as HTMLFormElement;
     fireEvent.submit(form);
@@ -169,7 +169,7 @@ describe('NewPostForm — modal-driven attachment routing', () => {
   it('plain comment error from Server Action surfaces and submit is re-enabled', async () => {
     mockCreateChunkPostWithAttachment.mockResolvedValue({ error: 'rate_limited' });
     const { container } = render(<NewPostForm locale="en" slug="rook-battery" />);
-    const content = container.querySelector('#content') as HTMLTextAreaElement;
+    const content = container.querySelector('textarea[name="content"]') as HTMLTextAreaElement;
     fireEvent.change(content, { target: { value: 'just a plain comment' } });
     const form = container.querySelector('form') as HTMLFormElement;
     fireEvent.submit(form);
@@ -196,7 +196,7 @@ describe('NewPostForm — Game tab routing via the modal (#84: PGN-only)', () =>
     fireEvent.change(attachment, { target: { value: PGN_SAMPLE } });
     clickApply();
 
-    const content = container.querySelector('#content') as HTMLTextAreaElement;
+    const content = container.querySelector('textarea[name="content"]') as HTMLTextAreaElement;
     fireEvent.change(content, { target: { value: 'see the game' } });
     const form = container.querySelector('form') as HTMLFormElement;
     fireEvent.submit(form);
@@ -226,7 +226,7 @@ describe('NewPostForm — Game tab routing via the modal (#84: PGN-only)', () =>
     fireEvent.change(urlInput, { target: { value: url } });
     clickApply();
 
-    const content = container.querySelector('#content') as HTMLTextAreaElement;
+    const content = container.querySelector('textarea[name="content"]') as HTMLTextAreaElement;
     fireEvent.change(content, { target: { value: 'replay' } });
     const form = container.querySelector('form') as HTMLFormElement;
     fireEvent.submit(form);
@@ -249,7 +249,7 @@ describe('NewPostForm — Game tab routing via the modal (#84: PGN-only)', () =>
     fireEvent.change(urlInput, { target: { value: url } });
     clickApply();
 
-    const content = container.querySelector('#content') as HTMLTextAreaElement;
+    const content = container.querySelector('textarea[name="content"]') as HTMLTextAreaElement;
     fireEvent.change(content, { target: { value: 'replay' } });
     const form = container.querySelector('form') as HTMLFormElement;
     fireEvent.submit(form);
@@ -315,7 +315,7 @@ describe('NewPostForm — paperclip + counter row layout (Phase 7)', () => {
   it('updates the counter as the user types into the content textarea', () => {
     const { container } = render(<NewPostForm locale="en" slug="rook-battery" />);
 
-    const content = container.querySelector('#content') as HTMLTextAreaElement;
+    const content = container.querySelector('textarea[name="content"]') as HTMLTextAreaElement;
     fireEvent.change(content, { target: { value: 'hello' } });
 
     const counters = Array.from(container.querySelectorAll('p')).filter((p) =>
@@ -341,7 +341,7 @@ describe('NewPostForm — single-kind structural guarantee (D3 case iii)', () =>
     fireEvent.change(fenInput, { target: { value: VALID_FEN } });
     clickApply();
 
-    const content = container.querySelector('#content') as HTMLTextAreaElement;
+    const content = container.querySelector('textarea[name="content"]') as HTMLTextAreaElement;
     fireEvent.change(content, { target: { value: 'two-kind input' } });
     const form = container.querySelector('form') as HTMLFormElement;
     fireEvent.submit(form);

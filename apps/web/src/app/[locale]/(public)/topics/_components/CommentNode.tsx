@@ -15,6 +15,7 @@ import type { CommentTreeNode, FlatReply, ReplyGroup } from '../_lib/comment-tre
 import { DeletePostButton } from './DeletePostButton';
 import { LikeButton } from './LikeButton';
 import { ReplyForm } from './ReplyForm';
+import type { ReplyAttachmentActions } from './ReplyForm';
 
 type ToggleLikeAction = (
   postId: string,
@@ -23,14 +24,6 @@ type ToggleLikeAction = (
 ) => Promise<{ liked: boolean; likeCount: number } | { error: string }>;
 
 type DeletePostAction = (postId: string, locale: string) => Promise<ActionResult>;
-
-type CreateReplyAction = (
-  locale: string,
-  topicKey: string,
-  postId: string,
-  prevState: { error?: string },
-  formData: FormData
-) => Promise<{ error?: string }>;
 
 type I18n = {
   likeNamespace: string;
@@ -60,7 +53,13 @@ type Props = {
   enableSpoiler: boolean;
   redirectPath: string;
   toggleLikeAction: ToggleLikeAction;
-  createReplyAction: CreateReplyAction;
+  /**
+   * Attachment-aware reply Server Actions (PGN + FEN). The inline
+   * `ReplyForm` rendered inside this node binds these against the
+   * thread's `(locale, topicKey, rootPostId)` and dispatches between
+   * the two based on the AttachmentModal's selected kind.
+   */
+  replyAttachmentActions: ReplyAttachmentActions;
   deletePostAction: DeletePostAction;
   i18n: I18n;
   /**
@@ -110,7 +109,7 @@ export function CommentNode({
   enableSpoiler,
   redirectPath,
   toggleLikeAction,
-  createReplyAction,
+  replyAttachmentActions,
   deletePostAction,
   i18n,
   replyGroups,
@@ -270,7 +269,7 @@ export function CommentNode({
                     locale={locale}
                     topicKey={topicKey}
                     postId={rootPostId}
-                    createReplyAction={createReplyAction}
+                    attachmentActions={replyAttachmentActions}
                     i18nNamespace={i18n.replyNamespace}
                     replyToId={node.id}
                     replyToUsername={displayName}
@@ -294,7 +293,7 @@ export function CommentNode({
                       enableSpoiler={enableSpoiler}
                       redirectPath={redirectPath}
                       toggleLikeAction={toggleLikeAction}
-                      createReplyAction={createReplyAction}
+                      replyAttachmentActions={replyAttachmentActions}
                       deletePostAction={deletePostAction}
                       i18n={i18n}
                       flatReplies={group.deeper}
@@ -317,7 +316,7 @@ export function CommentNode({
                       enableSpoiler={enableSpoiler}
                       redirectPath={redirectPath}
                       toggleLikeAction={toggleLikeAction}
-                      createReplyAction={createReplyAction}
+                      replyAttachmentActions={replyAttachmentActions}
                       deletePostAction={deletePostAction}
                       i18n={i18n}
                       replyToDisplayName={prefix ?? undefined}

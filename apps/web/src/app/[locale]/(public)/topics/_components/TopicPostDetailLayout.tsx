@@ -21,9 +21,8 @@ import { DeletePostButton } from './DeletePostButton';
 import { JoinConversationToggle } from './JoinConversationToggle';
 import { LikeButton } from './LikeButton';
 import { ReplyForm } from './ReplyForm';
+import type { ReplyAttachmentActions } from './ReplyForm';
 import { SortSelect } from './SortSelect';
-
-type CreateReplyState = { error?: string };
 
 type ToggleLikeAction = (
   postId: string,
@@ -32,14 +31,6 @@ type ToggleLikeAction = (
 ) => Promise<{ liked: boolean; likeCount: number } | { error: string }>;
 
 type DeletePostAction = (postId: string, locale: string) => Promise<ActionResult>;
-
-type CreateReplyAction = (
-  locale: string,
-  topicKey: string,
-  postId: string,
-  prevState: CreateReplyState,
-  formData: FormData
-) => Promise<CreateReplyState>;
 
 type Props = {
   locale: Locale;
@@ -79,7 +70,12 @@ type Props = {
   replyRestrictionMessage: string | null;
   toggleLikeAction: ToggleLikeAction;
   deletePostAction: DeletePostAction;
-  createReplyAction: CreateReplyAction;
+  /**
+   * Attachment-aware reply Server Actions (PGN + FEN). Bound by every
+   * `ReplyForm` rendered on this page (top-level CTA + inline replies
+   * inside `CommentTree`) so submits route through the right base.
+   */
+  replyAttachmentActions: ReplyAttachmentActions;
   redirectPath: string;
   i18n: {
     likeNamespace: string;
@@ -142,7 +138,7 @@ export async function TopicPostDetailLayout({
   replyRestrictionMessage,
   toggleLikeAction,
   deletePostAction,
-  createReplyAction,
+  replyAttachmentActions,
   redirectPath,
   i18n,
   enableSpoiler = false,
@@ -235,7 +231,7 @@ export async function TopicPostDetailLayout({
           locale={locale}
           topicKey={topicKey}
           postId={rootWithMeta.id}
-          createReplyAction={createReplyAction}
+          attachmentActions={replyAttachmentActions}
           i18nNamespace={i18n.replyNamespace}
         />
       ) : (
@@ -244,7 +240,7 @@ export async function TopicPostDetailLayout({
             locale={locale}
             topicKey={topicKey}
             postId={rootWithMeta.id}
-            createReplyAction={createReplyAction}
+            attachmentActions={replyAttachmentActions}
             i18nNamespace={i18n.replyNamespace}
           />
         </JoinConversationToggle>
@@ -265,7 +261,7 @@ export async function TopicPostDetailLayout({
             enableSpoiler={enableSpoiler}
             redirectPath={redirectPath}
             toggleLikeAction={toggleLikeAction}
-            createReplyAction={createReplyAction}
+            replyAttachmentActions={replyAttachmentActions}
             deletePostAction={deletePostAction}
             i18n={i18n}
             threadRootPostId={rootWithMeta.id}

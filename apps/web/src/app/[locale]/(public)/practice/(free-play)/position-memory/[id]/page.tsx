@@ -37,7 +37,8 @@ import { PositionDetailLayout } from '../../_components/PositionDetailLayout';
 import { toggleLike } from '../_actions/toggleLike';
 import { PositionDetailBoard } from '../_components/single-position/PositionDetailBoard';
 import { PositionStartForm } from '../_components/single-position/PositionStartForm';
-import { createReply } from './_actions/createReply';
+import { createReplyWithAttachment } from './_actions/createReplyWithAttachment';
+import { createReplyWithFenAttachment } from './_actions/createReplyWithFenAttachment';
 import { togglePositionMemoryPostLike } from './_actions/togglePositionMemoryPostLike';
 import { NewPostForm } from './_components/NewPostForm';
 
@@ -204,7 +205,10 @@ export default async function PositionDetailPage({ params, searchParams }: Props
             enableSpoiler={false}
             redirectPath={`/${locale}/practice/position-memory/${position.id}`}
             toggleLikeAction={togglePositionMemoryPostLike}
-            createReplyAction={createReply}
+            replyAttachmentActions={{
+              pgn: createReplyWithAttachment,
+              fen: createReplyWithFenAttachment,
+            }}
             deletePostAction={deletePost}
             i18n={{
               likeNamespace: 'topics.positionMemory',

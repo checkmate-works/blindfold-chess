@@ -41,7 +41,8 @@ vi.mock('@/app/[locale]/_components/LinkedText', () => ({
 }));
 
 const mockToggleLike = vi.fn();
-const mockCreateReply = vi.fn();
+const mockReplyPgn = vi.fn();
+const mockReplyFen = vi.fn();
 const mockDeletePost = vi.fn();
 
 const i18n = {
@@ -91,7 +92,7 @@ function renderNode(props: Partial<Parameters<typeof CommentNode>[0]> & { node: 
       enableSpoiler={props.enableSpoiler ?? false}
       redirectPath="/en/practice/puzzle/pos-1"
       toggleLikeAction={mockToggleLike}
-      createReplyAction={mockCreateReply}
+      replyAttachmentActions={{ pgn: mockReplyPgn, fen: mockReplyFen }}
       deletePostAction={mockDeletePost}
       i18n={i18n}
       replyGroups={props.replyGroups}

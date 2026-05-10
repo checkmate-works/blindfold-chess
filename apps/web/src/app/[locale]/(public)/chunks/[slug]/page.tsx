@@ -28,7 +28,8 @@ import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { createChunkReply } from './_actions/createChunkReply';
+import { createChunkReplyWithAttachment } from './_actions/createChunkReplyWithAttachment';
+import { createChunkReplyWithFenAttachment } from './_actions/createChunkReplyWithFenAttachment';
 import { toggleChunkLike } from './_actions/toggleChunkLike';
 import { NewPostForm } from './_components/NewPostForm';
 import { renderAttachment } from './_components/render-attachment';
@@ -190,7 +191,10 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
             enableSpoiler={false}
             redirectPath={`/${locale}/chunks/${slug}`}
             toggleLikeAction={toggleChunkLike}
-            createReplyAction={createChunkReply}
+            replyAttachmentActions={{
+              pgn: createChunkReplyWithAttachment,
+              fen: createChunkReplyWithFenAttachment,
+            }}
             deletePostAction={deletePost}
             extraContentByRootId={extraContentByRootId}
             i18n={{

@@ -40,7 +40,8 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { PositionAuthorAttribution } from '../../../_components/PositionAuthorAttribution';
 import { PositionDetailLayout } from '../../../_components/PositionDetailLayout';
 import { loadPuzzleWithSolutions } from '../../_lib/load-puzzle';
-import { createReply } from './_actions/createReply';
+import { createReplyWithAttachment } from './_actions/createReplyWithAttachment';
+import { createReplyWithFenAttachment } from './_actions/createReplyWithFenAttachment';
 import { togglePositionPuzzlePostLike } from './_actions/togglePositionPuzzlePostLike';
 import { NewPostForm } from './_components/NewPostForm';
 
@@ -204,7 +205,10 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
             enableSpoiler
             redirectPath={`/${locale}/practice/puzzle/${position.id}`}
             toggleLikeAction={togglePositionPuzzlePostLike}
-            createReplyAction={createReply}
+            replyAttachmentActions={{
+              pgn: createReplyWithAttachment,
+              fen: createReplyWithFenAttachment,
+            }}
             deletePostAction={deletePost}
             i18n={{
               likeNamespace: 'topics.positionPuzzle',
