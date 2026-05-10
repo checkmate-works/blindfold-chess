@@ -1114,7 +1114,8 @@
         "createdBy": "Created by",
         "noPieces": "None",
         "edited": "(edited)",
-        "editAction": "Edit"
+        "editAction": "Edit",
+        "usefulSection": "Useful patterns for solving ({count})"
       },
       "delete": {
         "button": "Delete Puzzle",

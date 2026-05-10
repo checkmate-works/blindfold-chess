@@ -1114,7 +1114,8 @@
         "createdBy": "Creado por",
         "noPieces": "Ninguna",
         "edited": "(editado)",
-        "editAction": "Editar"
+        "editAction": "Editar",
+        "usefulSection": "Patrones útiles para resolver ({count})"
       },
       "delete": {
         "button": "Eliminar Puzzle",

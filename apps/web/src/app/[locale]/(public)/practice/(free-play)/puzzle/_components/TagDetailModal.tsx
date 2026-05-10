@@ -4,6 +4,7 @@ import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 
 import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
+import { buildGlossaryUrlForSlug } from '@/lib/themes/url';
 
 import { Modal } from '@/app/[locale]/_components/Modal';
 
@@ -87,7 +88,11 @@ export function TagDetailModal({ item, onClose, onDetach, labels }: Props) {
         {/* Actions */}
         <div className="flex flex-wrap gap-2 justify-end pt-3 border-t border-border">
           <Link
-            href={isTheme ? `/glossary/${item.slug}` : `/chunks/${item.slug}`}
+            href={
+              isTheme
+                ? (buildGlossaryUrlForSlug(item.slug) as '/glossary')
+                : (`/chunks/${item.slug}` as '/chunks/[slug]')
+            }
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center px-3 py-2 text-sm rounded border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
