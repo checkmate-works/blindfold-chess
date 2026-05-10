@@ -1,7 +1,13 @@
 export const SITE_URL = (
   process.env.NEXT_PUBLIC_SITE_URL || 'https://www.blindfold-chess.online'
 ).replace(/\/$/, '');
-export const SITE_DOMAIN = 'blindfold-chess.online';
+export const SITE_DOMAIN = (() => {
+  try {
+    return new URL(SITE_URL).hostname.replace(/^www\./, '');
+  } catch {
+    return 'blindfold-chess.online';
+  }
+})();
 export const AUTHOR_NAME = 'CheckmateWorks';
 export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 export const COOKIEYES_ID = process.env.NEXT_PUBLIC_COOKIEYES_ID;

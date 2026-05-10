@@ -92,6 +92,5 @@ describe('updateAdBanner', () => {
     expect(result).toEqual({ success: true });
     expect(mockUpdateSetWhere).toHaveBeenCalled();
     expect(mockUpdateTag).toHaveBeenCalledWith('ads-config');
-    expect(mockRevalidatePath).toHaveBeenCalledWith('/', 'layout');
   });
 });

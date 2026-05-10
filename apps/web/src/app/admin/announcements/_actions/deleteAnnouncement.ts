@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath, revalidateTag } from 'next/cache';
+import { revalidateTag } from 'next/cache';
 
 import { announcements } from '@/lib/db';
 
@@ -14,12 +14,12 @@ const deleteBase = createAdminDeleteAction({
 export async function deleteAnnouncement(id: string) {
   const result = await deleteBase(id);
 
-  // revalidateTag invalidates the unstable_cache-wrapped banner fetch;
-  // revalidatePath evicts ISR-rendered HTML under [locale]/(public)/ that has
-  // the header/banner markup baked in from [locale]/layout.tsx.
+  // Invalidate the unstable_cache-wrapped banner fetch. Each ISR page picks up
+  // the change on its next natural revalidation cycle — a layout-wide
+  // revalidatePath here would evict every ISR entry under [locale]/(public),
+  // which previously caused a 305x ISR Writes spike on Vercel.
   if ('success' in result) {
     revalidateTag('announcements', { expire: 60 });
-    revalidatePath('/', 'layout');
   }
 
   return result;

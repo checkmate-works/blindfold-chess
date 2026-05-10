@@ -11,7 +11,11 @@ import { PageLayout, PaginationNav, UserCard } from '@/app/[locale]/_components'
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-export const revalidate = 300;
+// Per-user, per-locale URLs explode the on-demand ISR cache (one entry per
+// (locale, username, ?page=N)), and the 5-min revalidate cycle previously
+// triggered ISR Writes on every bot/user revisit. Render dynamically instead —
+// the parent /u/[username]/page.tsx already does the same.
+export const dynamic = 'force-dynamic';
 
 const PAGE_SIZE = 10;
 

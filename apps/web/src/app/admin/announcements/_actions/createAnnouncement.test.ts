@@ -393,14 +393,6 @@ describe('createAnnouncement', () => {
     expect(mockRevalidatePath).toHaveBeenCalledWith('/admin/announcements');
   });
 
-  it('should call revalidatePath("/", "layout") after successful creation to evict ISR HTML', async () => {
-    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
-    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
-
-    await createAnnouncement(validData);
-    expect(mockRevalidatePath).toHaveBeenCalledWith('/', 'layout');
-  });
-
   it('should call revalidateTag("announcements") after successful creation', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
     mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
@@ -414,7 +406,6 @@ describe('createAnnouncement', () => {
 
     await createAnnouncement(validData);
     expect(mockRevalidatePath).not.toHaveBeenCalled();
-    expect(mockRevalidatePath).not.toHaveBeenCalledWith('/', 'layout');
   });
 
   it('should not call revalidateTag when unauthorized', async () => {
@@ -430,7 +421,6 @@ describe('createAnnouncement', () => {
 
     await createAnnouncement({ ...validData, slug: '' });
     expect(mockRevalidatePath).not.toHaveBeenCalled();
-    expect(mockRevalidatePath).not.toHaveBeenCalledWith('/', 'layout');
   });
 
   // --- Edge case tests added by Tester ---
