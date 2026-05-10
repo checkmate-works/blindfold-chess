@@ -20,7 +20,9 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 
 import { updatePuzzle } from '../_actions/updatePuzzle';
 import { useEditableBoardLabels } from '../_hooks/use-editable-board-labels';
-import { usePuzzleAuthoringState } from '../_hooks/use-puzzle-authoring-state';
+import { useFenBoardEditor } from '../_hooks/use-fen-board-editor';
+import { usePuzzleSolutionMoves } from '../_hooks/use-puzzle-solution-moves';
+import { usePuzzleTagSelection } from '../_hooks/use-puzzle-tag-selection';
 import { useTagPickerLabels } from '../_hooks/use-tag-picker-labels';
 import { MAX_SOLUTION_MOVES } from '../_lib/puzzle-form-constants';
 import { PuzzleTagPicker } from './PuzzleTagPicker';
@@ -65,26 +67,38 @@ export function EditPuzzleForm({ positionId, initial, available }: Props) {
   const [submitted, setSubmitted] = useState(false);
   const [clearBoardOpen, setClearBoardOpen] = useState(false);
 
-  const form = usePuzzleAuthoringState({
-    fen: initial.fen,
-    moves: initialMovesRef.current,
-    notes: initialNotesRef.current,
-    themes: initial.themes,
-    chunks: initial.chunks,
+  // Compose the three authoring hooks. `solution` needs `board.baseFen`
+  // to validate new moves, and `board` needs to reset `solution` when
+  // the position changes — break the cycle with a ref that the board's
+  // onBoardChange dereferences lazily.
+  const solutionResetRef = useRef<() => void>(() => {});
+  const board = useFenBoardEditor({
+    initialFen: initial.fen,
+    onBoardChange: () => solutionResetRef.current(),
+  });
+  const solution = usePuzzleSolutionMoves({
+    baseFen: board.baseFen,
+    initialMoves: initialMovesRef.current,
+    initialNotes: initialNotesRef.current,
+  });
+  solutionResetRef.current = solution.reset;
+  const tags = usePuzzleTagSelection({
+    initialThemes: initial.themes,
+    initialChunks: initial.chunks,
   });
   const handleMoveSubmit = useMemo(
     () =>
-      form.makeMoveSubmitHandler({
+      solution.makeMoveSubmitHandler({
         positionInvalid: tCreate('positionInvalid'),
         maxMovesReached: tCreate('maxMovesReached'),
         invalidMove: tPlay('invalidMove'),
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [form.baseFen, form.currentFen, form.moves, tCreate, tPlay]
+    [board.baseFen, solution.currentFen, solution.moves, tCreate, tPlay]
   );
 
-  const themeIds = useMemo(() => form.selectedThemes.map((t) => t.id), [form.selectedThemes]);
-  const chunkIds = useMemo(() => form.selectedChunks.map((c) => c.id), [form.selectedChunks]);
+  const themeIds = useMemo(() => tags.selectedThemes.map((t) => t.id), [tags.selectedThemes]);
+  const chunkIds = useMemo(() => tags.selectedChunks.map((c) => c.id), [tags.selectedChunks]);
 
   const tagsChanged = useMemo(() => {
     const initialThemeIds = initialThemeIdsRef.current;
@@ -99,15 +113,17 @@ export function EditPuzzleForm({ positionId, initial, available }: Props) {
   const initialMoves = initialMovesRef.current;
   const initialNotes = initialNotesRef.current;
   const movesChanged =
-    form.moves.length !== initialMoves.length || form.moves.some((m, i) => m !== initialMoves[i]);
+    solution.moves.length !== initialMoves.length ||
+    solution.moves.some((m, i) => m !== initialMoves[i]);
   const notesChanged =
-    form.notes.length !== initialNotes.length || form.notes.some((n, i) => n !== initialNotes[i]);
+    solution.notes.length !== initialNotes.length ||
+    solution.notes.some((n, i) => n !== initialNotes[i]);
 
   const isDirty =
     !submitted &&
     (title !== initial.title ||
       description !== initialDescription ||
-      form.fenInput.trim() !== initial.fen ||
+      board.fenInput.trim() !== initial.fen ||
       movesChanged ||
       notesChanged ||
       tagsChanged);
@@ -117,16 +133,16 @@ export function EditPuzzleForm({ positionId, initial, available }: Props) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    form.setPositionError(false);
-    form.setSolutionError(null);
+    board.setPositionError(false);
+    solution.setSolutionError(null);
 
-    if (!form.trimmedFen || !form.isFenValid) {
-      form.setPositionError(true);
+    if (!board.trimmedFen || !board.isFenValid) {
+      board.setPositionError(true);
       return;
     }
 
-    if (form.moves.length === 0) {
-      form.setSolutionError(tCreate('solutionRequired'));
+    if (solution.moves.length === 0) {
+      solution.setSolutionError(tCreate('solutionRequired'));
       return;
     }
 
@@ -134,10 +150,10 @@ export function EditPuzzleForm({ positionId, initial, available }: Props) {
     try {
       const result = await updatePuzzle({
         id: positionId,
-        fen: form.trimmedFen,
+        fen: board.trimmedFen,
         title,
         description: description || null,
-        solutionMoves: form.moves.map((san, i) => ({ san, note: form.notes[i] || null })),
+        solutionMoves: solution.moves.map((san, i) => ({ san, note: solution.notes[i] || null })),
         themeIds,
         chunkIds,
       });
@@ -156,7 +172,7 @@ export function EditPuzzleForm({ positionId, initial, available }: Props) {
     }
   }
 
-  const reachedMaxMoves = form.moves.length >= MAX_SOLUTION_MOVES;
+  const reachedMaxMoves = solution.moves.length >= MAX_SOLUTION_MOVES;
 
   return (
     <>
@@ -198,10 +214,10 @@ export function EditPuzzleForm({ positionId, initial, available }: Props) {
           <button
             type="button"
             role="tab"
-            aria-selected={form.activeTab === 'board'}
-            onClick={() => form.setActiveTab('board')}
+            aria-selected={board.activeTab === 'board'}
+            onClick={() => board.setActiveTab('board')}
             className={`flex-1 rounded-md px-4 py-2 text-center text-sm font-medium transition-colors ${
-              form.activeTab === 'board'
+              board.activeTab === 'board'
                 ? 'bg-card text-foreground'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
@@ -211,10 +227,10 @@ export function EditPuzzleForm({ positionId, initial, available }: Props) {
           <button
             type="button"
             role="tab"
-            aria-selected={form.activeTab === 'fen'}
-            onClick={() => form.setActiveTab('fen')}
+            aria-selected={board.activeTab === 'fen'}
+            onClick={() => board.setActiveTab('fen')}
             className={`flex-1 rounded-md px-4 py-2 text-center text-sm font-medium transition-colors ${
-              form.activeTab === 'fen'
+              board.activeTab === 'fen'
                 ? 'bg-card text-foreground'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
@@ -223,7 +239,7 @@ export function EditPuzzleForm({ positionId, initial, available }: Props) {
           </button>
         </nav>
 
-        {form.activeTab === 'board' && (
+        {board.activeTab === 'board' && (
           <>
             <div className="flex items-center justify-between gap-2 mb-2">
               <div
@@ -234,10 +250,10 @@ export function EditPuzzleForm({ positionId, initial, available }: Props) {
                 <button
                   type="button"
                   role="radio"
-                  aria-checked={form.sideToMove === 'w'}
-                  onClick={() => form.handleSideToMoveChange('w')}
+                  aria-checked={board.sideToMove === 'w'}
+                  onClick={() => board.handleSideToMoveChange('w')}
                   className={`px-3 py-1.5 transition-colors ${
-                    form.sideToMove === 'w'
+                    board.sideToMove === 'w'
                       ? 'bg-primary text-primary-foreground'
                       : 'text-muted-foreground hover:bg-muted'
                   }`}
@@ -247,10 +263,10 @@ export function EditPuzzleForm({ positionId, initial, available }: Props) {
                 <button
                   type="button"
                   role="radio"
-                  aria-checked={form.sideToMove === 'b'}
-                  onClick={() => form.handleSideToMoveChange('b')}
+                  aria-checked={board.sideToMove === 'b'}
+                  onClick={() => board.handleSideToMoveChange('b')}
                   className={`px-3 py-1.5 transition-colors ${
-                    form.sideToMove === 'b'
+                    board.sideToMove === 'b'
                       ? 'bg-primary text-primary-foreground'
                       : 'text-muted-foreground hover:bg-muted'
                   }`}
@@ -258,7 +274,7 @@ export function EditPuzzleForm({ positionId, initial, available }: Props) {
                   {tCreate('sideBlack')}
                 </button>
               </div>
-              <FlipBoardButton onClick={form.handleFlip} title={tCreate('flipBoard')} />
+              <FlipBoardButton onClick={board.handleFlip} title={tCreate('flipBoard')} />
             </div>
             <div className="flex justify-center">
               <div className="w-full max-w-md">
@@ -266,11 +282,11 @@ export function EditPuzzleForm({ positionId, initial, available }: Props) {
                   <BoardSkeleton />
                 ) : (
                   <EditableChessBoard
-                    fen={form.boardFen}
-                    onFenChange={form.handleBoardChange}
+                    fen={board.boardFen}
+                    onFenChange={board.handleBoardChange}
                     labels={editableBoardLabels}
                     editable={true}
-                    flipped={form.flipped}
+                    flipped={board.flipped}
                     showCoordinates={true}
                     boardTheme={preferences.boardTheme}
                   />
@@ -278,7 +294,7 @@ export function EditPuzzleForm({ positionId, initial, available }: Props) {
               </div>
             </div>
 
-            {form.positionError && (
+            {board.positionError && (
               <p className="text-sm text-destructive text-center">{tCreate('positionInvalid')}</p>
             )}
 
@@ -294,62 +310,62 @@ export function EditPuzzleForm({ positionId, initial, available }: Props) {
           </>
         )}
 
-        {form.activeTab === 'fen' && (
+        {board.activeTab === 'fen' && (
           <div>
             <label htmlFor="fen" className="block text-sm font-medium mb-1">
               {tCreate('fenLabel')}
             </label>
             <textarea
               id="fen"
-              value={form.fenInput}
-              onChange={form.handleFenInputChange}
+              value={board.fenInput}
+              onChange={board.handleFenInputChange}
               placeholder="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
               rows={2}
               className="w-full px-3 py-2 rounded border border-border bg-card text-foreground text-sm font-mono"
             />
-            {form.fenInput.trim() && !form.isFenValid && (
+            {board.fenInput.trim() && !board.isFenValid && (
               <p className="text-sm text-destructive mt-1">{tCreate('fenInvalid')}</p>
             )}
           </div>
         )}
 
-        {form.turnIndicator && (
+        {board.turnIndicator && (
           <p className="text-sm text-muted-foreground text-center">
             <span aria-hidden className="mr-1">
-              {form.turnIndicator === 'w' ? '⚪' : '⚫'}
+              {board.turnIndicator === 'w' ? '⚪' : '⚫'}
             </span>
-            {form.turnIndicator === 'w' ? tCreate('whiteToMove') : tCreate('blackToMove')}
+            {board.turnIndicator === 'w' ? tCreate('whiteToMove') : tCreate('blackToMove')}
           </p>
         )}
 
-        {form.isFenValid && (
+        {board.isFenValid && (
           <div className="space-y-3">
             <div className="flex items-baseline justify-between">
               <label className="text-sm font-medium">
                 {tCreate('solutionSection')} <span className="text-destructive">*</span>
               </label>
               <span className="text-xs text-muted-foreground">
-                {form.moves.length} / {MAX_SOLUTION_MOVES}
+                {solution.moves.length} / {MAX_SOLUTION_MOVES}
               </span>
             </div>
 
-            {form.moves.length > 0 && (
+            {solution.moves.length > 0 && (
               <SolutionMoveList
-                moves={form.moves}
-                firstTurn={form.firstTurn}
-                onRemoveLast={form.handleRemoveLast}
+                moves={solution.moves}
+                firstTurn={solution.firstTurn}
+                onRemoveLast={solution.handleRemoveLast}
                 removeAriaLabel={tCreate('removeLastMove', {
-                  move: form.moves[form.moves.length - 1]!,
+                  move: solution.moves[solution.moves.length - 1]!,
                 })}
                 disabled={pending}
                 renderAfter={(index) => (
                   <input
                     type="text"
-                    value={form.notes[index] ?? ''}
-                    onChange={(e) => form.handleNoteChange(index, e.target.value)}
+                    value={solution.notes[index] ?? ''}
+                    onChange={(e) => solution.handleNoteChange(index, e.target.value)}
                     maxLength={PUZZLE_NOTE_MAX_LENGTH}
                     placeholder={tCreate('addMoveNote')}
-                    aria-label={tCreate('noteAriaLabel', { move: form.moves[index]! })}
+                    aria-label={tCreate('noteAriaLabel', { move: solution.moves[index]! })}
                     className="w-full px-2 py-1 rounded border border-border bg-card text-foreground text-sm"
                   />
                 )}
@@ -362,32 +378,34 @@ export function EditPuzzleForm({ positionId, initial, available }: Props) {
               <MoveInputPanel
                 preferences={preferences}
                 updatePreferences={updatePreferences}
-                currentFen={form.currentFen}
-                moveInput={form.moveInput}
-                onMoveInputChange={form.setMoveInput}
-                error={form.moveError}
-                onErrorClear={() => form.setMoveError(null)}
+                currentFen={solution.currentFen}
+                moveInput={solution.moveInput}
+                onMoveInputChange={solution.setMoveInput}
+                error={solution.moveError}
+                onErrorClear={() => solution.setMoveError(null)}
                 onSubmit={handleMoveSubmit}
                 disabled={pending}
                 inputPlaceholder={tCreate('movePlaceholder')}
                 selectPlaceholder={tPlay('selectMove')}
                 toggleTitle={tPlay('switchInputMode')}
-                playerColor={form.currentTurn}
+                playerColor={solution.currentTurn}
                 showLegalMovesHint={false}
               />
             )}
 
-            {form.solutionError && <p className="text-sm text-destructive">{form.solutionError}</p>}
+            {solution.solutionError && (
+              <p className="text-sm text-destructive">{solution.solutionError}</p>
+            )}
           </div>
         )}
 
         <PuzzleTagPicker
-          selectedThemes={form.selectedThemes}
-          selectedChunks={form.selectedChunks}
+          selectedThemes={tags.selectedThemes}
+          selectedChunks={tags.selectedChunks}
           availableThemes={available.themes}
           availableChunks={available.chunks}
           disabled={pending}
-          onChange={form.handleTagChange}
+          onChange={tags.handleTagChange}
           labels={tagPickerLabels}
         />
 
@@ -397,8 +415,8 @@ export function EditPuzzleForm({ positionId, initial, available }: Props) {
           fullWidth
           disabled={
             pending ||
-            !form.isFenValid ||
-            form.moves.length === 0 ||
+            !board.isFenValid ||
+            solution.moves.length === 0 ||
             title.trim() === '' ||
             !isDirty
           }
@@ -426,7 +444,7 @@ export function EditPuzzleForm({ positionId, initial, available }: Props) {
         confirmVariant="danger"
         onConfirm={() => {
           setClearBoardOpen(false);
-          form.handleClearBoard();
+          board.handleClearBoard();
         }}
         onCancel={() => setClearBoardOpen(false)}
       />
