@@ -5,8 +5,10 @@ import { useCallback, useMemo, useState } from 'react';
 import { executeMove, getTurnFromFen, validateFen } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
+import type { ChunkOption } from '@/lib/chunks/types';
+import type { ThemeOption } from '@/lib/themes/types';
+
 import { readSideToMove, replaceSideToMove } from '../_lib/fen-utils';
-import type { ChunkOption, ThemeOption } from '../_lib/load-puzzle-tags';
 import {
   EMPTY_BOARD_FEN,
   type EditorTab,

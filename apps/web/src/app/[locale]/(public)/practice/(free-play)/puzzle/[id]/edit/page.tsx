@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { notFound, redirect } from 'next/navigation';
 
 import { getAuthenticatedUser } from '@/lib/auth';
+import { loadAvailableTags, loadPositionTags } from '@/lib/positions/tag-loader';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -11,7 +12,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { DeletePuzzleButton } from '../../_components/DeletePuzzleButton';
 import { EditPuzzleForm } from '../../_components/EditPuzzleForm';
 import { loadPuzzleWithSolutions } from '../../_lib/load-puzzle';
-import { loadAvailableTags, loadPuzzleTags } from '../../_lib/load-puzzle-tags';
 
 type Props = {
   params: Promise<{ locale: Locale; id: string }>;
@@ -55,7 +55,7 @@ export default async function EditPuzzlePage({ params }: Props) {
     solutions[0]?.solutionMoves.map((m) => ({ san: m.san, note: m.note ?? null })) ?? [];
 
   const [attachedTags, availableTags] = await Promise.all([
-    loadPuzzleTags(position.id, locale),
+    loadPositionTags(position.id, locale),
     loadAvailableTags(locale),
   ]);
 

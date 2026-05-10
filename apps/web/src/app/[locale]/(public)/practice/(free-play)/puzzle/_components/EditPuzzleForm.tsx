@@ -9,7 +9,9 @@ import { BoardSkeleton, Button, FlipBoardButton, UnsavedChangesDialog } from '@/
 import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
 
+import type { ChunkOption } from '@/lib/chunks/types';
 import { PUZZLE_NOTE_MAX_LENGTH } from '@/lib/positions/validation';
+import type { ThemeOption } from '@/lib/themes/types';
 
 import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
@@ -20,7 +22,6 @@ import { updatePuzzle } from '../_actions/updatePuzzle';
 import { useEditableBoardLabels } from '../_hooks/use-editable-board-labels';
 import { usePuzzleAuthoringState } from '../_hooks/use-puzzle-authoring-state';
 import { useTagPickerLabels } from '../_hooks/use-tag-picker-labels';
-import type { ChunkOption, ThemeOption } from '../_lib/load-puzzle-tags';
 import { MAX_SOLUTION_MOVES } from '../_lib/puzzle-form-constants';
 import { PuzzleTagPicker } from './PuzzleTagPicker';
 import { SolutionMoveList } from './SolutionMoveList';

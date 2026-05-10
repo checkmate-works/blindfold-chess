@@ -10,7 +10,9 @@ import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
 import { FiInfo } from 'react-icons/fi';
 
+import type { ChunkOption } from '@/lib/chunks/types';
 import { PUZZLE_NOTE_MAX_LENGTH } from '@/lib/positions/validation';
+import type { ThemeOption } from '@/lib/themes/types';
 
 import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
@@ -22,7 +24,6 @@ import { usePuzzleAuthoringState } from '../_hooks/use-puzzle-authoring-state';
 import { usePuzzleDraftHydration } from '../_hooks/use-puzzle-draft-hydration';
 import { useTagPickerLabels } from '../_hooks/use-tag-picker-labels';
 import { clearDraft, writeDraft } from '../_lib/draft-storage';
-import type { ChunkOption, ThemeOption } from '../_lib/load-puzzle-tags';
 import { EMPTY_BOARD_FEN, MAX_SOLUTION_MOVES } from '../_lib/puzzle-form-constants';
 import { PuzzleTagPicker } from './PuzzleTagPicker';
 import { SolutionMoveList } from './SolutionMoveList';

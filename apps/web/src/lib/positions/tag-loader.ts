@@ -10,23 +10,19 @@ import type { ThemeOption } from '@/lib/themes/types';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-// Re-export option types so existing consumers in this feature
-// directory keep their import paths stable.
-export type { ChunkOption } from '@/lib/chunks/types';
-export type { ThemeOption, ThemePosition } from '@/lib/themes/types';
-
-export type PuzzleTagBundle = {
+export type PositionTagBundle = {
   themes: ThemeOption[];
   chunks: ChunkOption[];
 };
 
 /**
- * Bundle of themes + chunks attached to a puzzle. Each kind is loaded
- * by its dedicated query module under lib/<kind>/queries.ts; this
- * function is pure composition.
+ * Bundle of themes + chunks attached to a position. Pure composition
+ * over the dedicated theme/chunk query modules under lib/<kind>/. Used
+ * today by the puzzle editor; consumed by future position-memory and
+ * other position-type editors that grow tagging support.
  */
-export const loadPuzzleTags = cache(
-  async (positionId: string, locale: Locale): Promise<PuzzleTagBundle> => {
+export const loadPositionTags = cache(
+  async (positionId: string, locale: Locale): Promise<PositionTagBundle> => {
     const [themes, chunks] = await Promise.all([
       getLinkedThemesForPosition(positionId, locale),
       getLinkedChunkOptionsForPosition(positionId),
@@ -37,9 +33,9 @@ export const loadPuzzleTags = cache(
 
 /**
  * Catalog of every theme-eligible glossary term and every non-deleted
- * chunk, for the picker.
+ * chunk, for the picker UI.
  */
-export const loadAvailableTags = cache(async (locale: Locale): Promise<PuzzleTagBundle> => {
+export const loadAvailableTags = cache(async (locale: Locale): Promise<PositionTagBundle> => {
   const [themes, chunks] = await Promise.all([
     getAllAvailableThemes(locale),
     getAllAvailableChunkOptions(),

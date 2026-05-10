@@ -4,9 +4,10 @@ import { useMemo, useState } from 'react';
 
 import { useCombobox } from 'downshift';
 
+import type { ChunkOption } from '@/lib/chunks/types';
 import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
+import type { ThemeOption } from '@/lib/themes/types';
 
-import type { ChunkOption, ThemeOption } from '../_lib/load-puzzle-tags';
 import { SelectedTagCard } from './SelectedTagCard';
 import { type TagDetailItem, TagDetailModal } from './TagDetailModal';
 

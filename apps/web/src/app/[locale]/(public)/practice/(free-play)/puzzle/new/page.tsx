@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 
 import { getOptionalUser } from '@/lib/auth';
 import { db, profiles } from '@/lib/db';
+import { loadAvailableTags } from '@/lib/positions/tag-loader';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
@@ -12,7 +13,6 @@ import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/met
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { CreatePuzzleForm } from '../_components/CreatePuzzleForm';
-import { loadAvailableTags } from '../_lib/load-puzzle-tags';
 
 export async function generateMetadata({ params }: Props) {
   const { locale } = await params;

@@ -3,12 +3,12 @@
 import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 
+import type { ChunkOption } from '@/lib/chunks/types';
 import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
+import type { ThemeOption } from '@/lib/themes/types';
 import { buildGlossaryUrlForSlug } from '@/lib/themes/url';
 
 import { Modal } from '@/app/[locale]/_components/Modal';
-
-import type { ChunkOption, ThemeOption } from '../_lib/load-puzzle-tags';
 
 export type TagDetailItem = ({ kind: 'theme' } & ThemeOption) | ({ kind: 'chunk' } & ChunkOption);
 
