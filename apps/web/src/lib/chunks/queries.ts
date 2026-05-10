@@ -1,9 +1,40 @@
 import { cache } from 'react';
 
-import { type SQL, and, count, desc, eq, isNull } from 'drizzle-orm';
+import { type SQL, and, asc, count, desc, eq, isNull } from 'drizzle-orm';
 
 import { chunks, db, positionChunks, positions } from '@/lib/db';
 import { UUID_RE } from '@/lib/validations/uuid';
+
+import type { ChunkOption } from './types';
+
+// Shared select column list for the picker-facing chunk queries.
+// Centralized so the per-position and the global catalog loaders stay
+// in lock-step — adding a chunk column shows up in one place.
+const chunkOptionSelectColumns = {
+  id: chunks.id,
+  slug: chunks.slug,
+  title: chunks.title,
+  representativeFen: chunks.representativeFen,
+  description: chunks.description,
+} as const;
+
+type ChunkOptionRow = {
+  id: string;
+  slug: string;
+  title: string;
+  representativeFen: string;
+  description: string | null;
+};
+
+function mapChunkOption(row: ChunkOptionRow): ChunkOption {
+  return {
+    id: row.id,
+    slug: row.slug,
+    label: row.title,
+    representativeFen: row.representativeFen,
+    description: row.description ?? null,
+  };
+}
 
 type GetChunkByIdOptions = {
   id: string;
@@ -122,6 +153,40 @@ export async function getLinkedChunksForPosition(positionId: string) {
 
   return rows;
 }
+
+/**
+ * Picker-facing variant of `getLinkedChunksForPosition` that returns
+ * the `ChunkOption` shape (with `label` instead of raw `title`). Used
+ * by the puzzle editor when hydrating already-attached chunks; the
+ * detail-page-facing `getLinkedChunksForPosition` stays available
+ * unchanged for read-side consumers.
+ */
+export const getLinkedChunkOptionsForPosition = cache(
+  async (positionId: string): Promise<ChunkOption[]> => {
+    const rows = await db
+      .select(chunkOptionSelectColumns)
+      .from(positionChunks)
+      .innerJoin(chunks, eq(chunks.id, positionChunks.chunkId))
+      .where(and(eq(positionChunks.positionId, positionId), isNull(chunks.deletedAt)))
+      .orderBy(asc(chunks.title));
+    return rows.map(mapChunkOption);
+  }
+);
+
+/**
+ * Load every non-deleted chunk for the picker catalog. Chunks are UGC
+ * and may grow large enough to need server-side search — when that
+ * happens, swap this for a debounced search action without changing
+ * the return type.
+ */
+export const getAllAvailableChunkOptions = cache(async (): Promise<ChunkOption[]> => {
+  const rows = await db
+    .select(chunkOptionSelectColumns)
+    .from(chunks)
+    .where(isNull(chunks.deletedAt))
+    .orderBy(asc(chunks.title));
+  return rows.map(mapChunkOption);
+});
 
 export async function getLinkedPositionsForChunk(chunkId: string) {
   const rows = await db
