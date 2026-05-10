@@ -30,15 +30,18 @@ type Props = {
 const ALPHABET = Array.from({ length: 26 }, (_, i) => String.fromCharCode(97 + i)); // a-z
 
 /**
- * Only a–z letter pages are prerendered at build time. Non-Latin starting
- * letters (e.g., hiragana/katakana terms) fall through to on-demand ISR via
- * Next.js's default `dynamicParams = true`, so they still render correctly.
- * To change this, either widen `ALPHABET` above, or add
- * `export const dynamicParams = false` to return 404 for unknown letters.
+ * `getTermsByLetter` keys on `upper(left(termEn, 1))`, so every valid letter
+ * lives in [A–Z] regardless of `locale`. Pre-rendering all 26 letters per
+ * locale exhausts the legitimate URL space, and `dynamicParams = false`
+ * blocks on-demand ISR for non-Latin URLs that bots otherwise crawl into
+ * (which previously generated empty-result ISR cache entries on every visit
+ * and contributed to the ISR Writes spike).
  */
 export function generateStaticParams(): { locale: Locale; letter: string }[] {
   return SUPPORTED_LOCALES.flatMap((locale) => ALPHABET.map((letter) => ({ locale, letter })));
 }
+
+export const dynamicParams = false;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, letter } = await params;
