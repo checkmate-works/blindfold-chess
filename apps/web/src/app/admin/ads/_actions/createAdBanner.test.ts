@@ -5,8 +5,6 @@ import { createAdBanner } from './createAdBanner';
 const mockGetUser = vi.fn();
 const mockSelectFromWhere = vi.fn();
 const mockInsertValuesReturning = vi.fn();
-const mockUpdateTag = vi.fn();
-const mockRevalidatePath = vi.fn();
 
 const generatedId = 'generated-00000000-0000-0000-0000-000000000001';
 
@@ -46,11 +44,6 @@ vi.mock('@/lib/db', () => ({
   userRoles: { userId: 'user_id' },
 }));
 
-vi.mock('next/cache', () => ({
-  updateTag: (...args: unknown[]) => mockUpdateTag(...args),
-  revalidatePath: (...args: unknown[]) => mockRevalidatePath(...args),
-}));
-
 const adminUserId = 'admin-00000000-0000-0000-0000-000000000001';
 
 const validData = {
@@ -76,8 +69,6 @@ describe('createAdBanner', () => {
 
     const result = await createAdBanner(validData);
     expect(result).toEqual({ error: 'unauthorized' });
-    expect(mockUpdateTag).not.toHaveBeenCalled();
-    expect(mockRevalidatePath).not.toHaveBeenCalled();
   });
 
   it('should return validation error when slot is empty', async () => {
@@ -86,11 +77,9 @@ describe('createAdBanner', () => {
 
     const result = await createAdBanner({ ...validData, slot: '' });
     expect(result).toEqual({ error: 'invalid slot' });
-    expect(mockUpdateTag).not.toHaveBeenCalled();
-    expect(mockRevalidatePath).not.toHaveBeenCalled();
   });
 
-  it('should successfully create banner and invalidate caches', async () => {
+  it('should successfully create banner', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
     mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
 
@@ -98,6 +87,5 @@ describe('createAdBanner', () => {
 
     expect(result).toEqual({ success: true, id: generatedId });
     expect(mockInsertValuesReturning).toHaveBeenCalled();
-    expect(mockUpdateTag).toHaveBeenCalledWith('ads-config');
   });
 });

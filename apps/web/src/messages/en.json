@@ -2954,10 +2954,6 @@
     "ads": "Ads",
     "adsManagement": {
       "title": "Ads Management",
-      "globalToggle": "Ads Enabled",
-      "globalToggleDescription": "Enable or disable all ads site-wide",
-      "enabled": "Enabled",
-      "disabled": "Disabled",
       "banners": "Ad Banners",
       "slot": "Slot",
       "href": "Link URL",

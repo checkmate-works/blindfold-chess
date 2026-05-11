@@ -1,7 +1,5 @@
 'use server';
 
-import { updateTag } from 'next/cache';
-
 import { adBanners, db } from '@/lib/db';
 
 import { requireAdmin } from '../../_lib/auth';
@@ -63,12 +61,6 @@ export async function createAdBanner(data: CreateData): Promise<CreateResult> {
         endAt: data.endAt ? new Date(data.endAt) : null,
       })
       .returning({ id: adBanners.id });
-
-    // Invalidate the unstable_cache-wrapped ads config. Each ISR page picks up
-    // the change on its next natural revalidation cycle — a layout-wide
-    // revalidatePath here would evict every ISR entry under [locale]/(public),
-    // which previously caused a 305x ISR Writes spike on Vercel.
-    updateTag('ads-config');
 
     return { success: true, id: inserted.id };
   } catch (error) {
