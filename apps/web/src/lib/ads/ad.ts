@@ -7,14 +7,6 @@ import { adBanners, db, siteSettings } from '@/lib/db';
 import { withTimeout } from '@/lib/db-timeout';
 import { hasActiveGrant } from '@/lib/users/user-grants';
 
-export type AdBannerConfig = {
-  href: string;
-  imagePath: string;
-  alt: string;
-  width: number;
-  height: number;
-};
-
 async function fetchAdsEnabledFlag(): Promise<boolean> {
   const [row] = await db
     .select({ value: siteSettings.value })
@@ -24,22 +16,6 @@ async function fetchAdsEnabledFlag(): Promise<boolean> {
   if (!row) return false;
   const value = row.value as { enabled?: boolean };
   return value.enabled === true;
-}
-
-function toAdBannerConfig(row: {
-  href: string;
-  imagePath: string;
-  alt: string;
-  width: number;
-  height: number;
-}): AdBannerConfig {
-  return {
-    href: row.href,
-    imagePath: row.imagePath,
-    alt: row.alt,
-    width: row.width,
-    height: row.height,
-  };
 }
 
 export const isAdsEnabled = unstable_cache(
@@ -77,25 +53,6 @@ export async function shouldShowAdsForUser(userId: string | null): Promise<boole
 
   return true;
 }
-
-export const getAdBannerBySlot = unstable_cache(
-  async (slot: string): Promise<AdBannerConfig | null> => {
-    try {
-      const [row] = await withTimeout(
-        db.select().from(adBanners).where(eq(adBanners.slot, slot)).limit(1)
-      );
-
-      if (!row || !row.isActive) return null;
-
-      return toAdBannerConfig(row);
-    } catch (error) {
-      console.warn('Failed to fetch ad banner for slot:', slot, error);
-      return null;
-    }
-  },
-  ['ad-banner-by-slot'],
-  { tags: ['ads-config'], revalidate: 60 }
-);
 
 // No-cache versions for admin pages (always show latest data)
 export async function getAdsEnabledDirect(): Promise<boolean> {
