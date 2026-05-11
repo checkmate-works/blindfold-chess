@@ -1,67 +1,23 @@
-import { unstable_cache } from 'next/cache';
-
-import { eq } from 'drizzle-orm';
-
 import { hasActiveSubscription } from '@/lib/billing/subscription';
-import { adBanners, db, siteSettings } from '@/lib/db';
-import { withTimeout } from '@/lib/db-timeout';
+import { adBanners, db } from '@/lib/db';
 import { hasActiveGrant } from '@/lib/users/user-grants';
-
-async function fetchAdsEnabledFlag(): Promise<boolean> {
-  const [row] = await db
-    .select({ value: siteSettings.value })
-    .from(siteSettings)
-    .where(eq(siteSettings.key, 'ads_enabled'))
-    .limit(1);
-  if (!row) return false;
-  const value = row.value as { enabled?: boolean };
-  return value.enabled === true;
-}
-
-export const isAdsEnabled = unstable_cache(
-  async (): Promise<boolean> => {
-    try {
-      return await withTimeout(fetchAdsEnabledFlag());
-    } catch (error) {
-      console.warn('Failed to fetch ads_enabled setting:', error);
-      return false;
-    }
-  },
-  ['ads-enabled'],
-  { tags: ['ads-config'], revalidate: 60 }
-);
 
 /**
  * Pure decision function: determine whether ads should be shown for a given user.
  *
- * - `null` userId (unauthenticated): always show ads (if globally enabled)
- * - Authenticated user with active subscription: hide ads
- * - Authenticated user without subscription: show ads
+ * - `null` userId (unauthenticated): always show ads
+ * - Authenticated user with active subscription or `ad_free` grant: hide ads
+ * - Authenticated user without either: show ads
  */
 export async function shouldShowAdsForUser(userId: string | null): Promise<boolean> {
-  const adsEnabled = await isAdsEnabled();
-  if (!adsEnabled) return false;
-
-  if (!userId) return true; // Unauthenticated -> show ads
+  if (!userId) return true;
 
   const [hasSub, hasGrant] = await Promise.all([
     hasActiveSubscription(userId),
     hasActiveGrant(userId, 'ad_free'),
   ]);
 
-  if (hasSub || hasGrant) return false;
-
-  return true;
-}
-
-// No-cache versions for admin pages (always show latest data)
-export async function getAdsEnabledDirect(): Promise<boolean> {
-  try {
-    return await fetchAdsEnabledFlag();
-  } catch (error) {
-    console.warn('Failed to fetch ads_enabled setting (direct):', error);
-    return false;
-  }
+  return !(hasSub || hasGrant);
 }
 
 export async function getAllAdBanners() {
