@@ -4,7 +4,7 @@
  * Seeding strategy:
  * - Master data (glossary) → onConflictDoUpdate (upsert)
  *   Overwritten with the latest code data on every deploy. Code is the source of truth.
- * - Initial data (ad_banners, site_settings) → onConflictDoNothing
+ * - Initial data (ad_banners) → onConflictDoNothing
  *   Inserted only on first run; DB is the source of truth afterward.
  *   Values modified via admin UI are never overwritten.
  *

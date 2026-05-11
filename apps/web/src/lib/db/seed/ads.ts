@@ -1,19 +1,12 @@
-import { adBanners, db, siteSettings } from '../index';
+import { adBanners, db } from '../index';
 
 // ---------------------------------------------------------------------------
-// Initial data: Ads & site settings (DB is source of truth, insert once only)
+// Initial data: Ad banners (DB is source of truth, insert once only)
 // ---------------------------------------------------------------------------
 
 export async function seedAds() {
-  console.log('Seeding ads configuration...');
+  console.log('Seeding ad banners...');
 
-  // Site setting: ads_enabled
-  await db
-    .insert(siteSettings)
-    .values({ key: 'ads_enabled', value: { enabled: false } })
-    .onConflictDoNothing({ target: siteSettings.key });
-
-  // Ad banners
   const bannerData = [
     {
       slot: 'banner-wide',
