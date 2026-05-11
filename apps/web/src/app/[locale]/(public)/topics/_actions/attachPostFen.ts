@@ -1,5 +1,7 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
+
 import { validateFenSemantic } from '@blindfold-chess/features/chess-core';
 import { eq } from 'drizzle-orm';
 
@@ -9,6 +11,9 @@ import { db, postFenAttachments, topicPosts } from '@/lib/db';
 import { FEN_MAX_LENGTH } from '@/lib/post-fens/constants';
 import { sanitizeFenCaption } from '@/lib/post-fens/sanitize-fen-caption';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
+import { logActivityEvent } from '@/lib/users/activity-log';
+
+import { buildTopicDetailPath } from '../_lib/topic-paths';
 
 /**
  * Maximum length of a stored caption. Aligned with
@@ -61,6 +66,15 @@ export async function attachPostFen(input: {
   postId: string;
   fen: string;
   caption?: string | null;
+  /**
+   * Locale for the optional post-detail revalidation. When provided, the
+   * action treats the call as part of the edit flow and revalidates the
+   * topic detail path on success, plus logs an `attach_post_fen` activity
+   * event so the moderation surface can audit author-side edits. Omitting
+   * `locale` keeps the legacy "attach later, no edit-flow side effects"
+   * contract intact for any non-UI caller that does not own the path.
+   */
+  locale?: string;
 }): Promise<
   ActionResult<{
     attachment: {
@@ -71,7 +85,7 @@ export async function attachPostFen(input: {
     };
   }>
 > {
-  const { postId, fen: rawFenInput, caption: rawCaption = null } = input;
+  const { postId, fen: rawFenInput, caption: rawCaption = null, locale } = input;
 
   // Canonicalize FEN by trimming once at the top. `validateFenSemantic`
   // also calls `.trim()` internally, but the DB CHECK regex is anchored
@@ -100,6 +114,8 @@ export async function attachPostFen(input: {
     .select({
       id: topicPosts.id,
       userId: topicPosts.userId,
+      topicType: topicPosts.topicType,
+      topicKey: topicPosts.topicKey,
       deletedAt: topicPosts.deletedAt,
     })
     .from(topicPosts)
@@ -169,6 +185,21 @@ export async function attachPostFen(input: {
         caption: postFenAttachments.caption,
         createdAt: postFenAttachments.createdAt,
       });
+
+    if (locale !== undefined) {
+      logActivityEvent({
+        userId: user.id,
+        action: 'attach_post_fen',
+        targetType: 'topic_post',
+        targetId: postId,
+        metadata: {
+          topicType: post.topicType,
+          topicKey: post.topicKey,
+          attachmentId: row.id,
+        },
+      });
+      revalidatePath(buildTopicDetailPath(post.topicType, post.topicKey, locale));
+    }
 
     return {
       success: true,
