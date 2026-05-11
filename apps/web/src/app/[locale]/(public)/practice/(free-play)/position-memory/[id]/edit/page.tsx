@@ -4,6 +4,7 @@ import { notFound, redirect } from 'next/navigation';
 
 import { getAuthenticatedUser } from '@/lib/auth';
 import { getPositionById } from '@/lib/positions/queries';
+import { loadAvailableTags, loadPositionTags } from '@/lib/positions/tag-loader';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -48,6 +49,11 @@ export default async function EditPositionPage({ params }: Props) {
     redirect(`/${locale}/practice/position-memory/${id}`);
   }
 
+  const [attachedTags, availableTags] = await Promise.all([
+    loadPositionTags(position.id, locale),
+    loadAvailableTags(locale),
+  ]);
+
   return (
     <PageLayout
       title={t('list.title')}
@@ -66,7 +72,10 @@ export default async function EditPositionPage({ params }: Props) {
           fen: position.fen,
           title: position.title,
           description: position.description,
+          themes: attachedTags.themes,
+          chunks: attachedTags.chunks,
         }}
+        available={{ themes: availableTags.themes, chunks: availableTags.chunks }}
       />
 
       <section

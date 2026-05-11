@@ -996,7 +996,8 @@
         "tryAgain": "もう一度挑戦",
         "backToList": "一覧に戻る",
         "edited": "（編集済み）",
-        "editAction": "編集"
+        "editAction": "編集",
+        "usefulSection": "解答に役立つパターン ({count})"
       },
       "delete": {
         "button": "問題を削除",

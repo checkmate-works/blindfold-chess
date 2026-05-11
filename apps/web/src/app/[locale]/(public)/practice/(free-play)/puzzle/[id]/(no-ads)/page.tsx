@@ -83,6 +83,7 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
   const { locale, id } = await params;
   const sortBy = validateSort(((await searchParams).sort as string | undefined) ?? 'new');
   const t = await getTranslations({ locale, namespace: 'practice.puzzle' });
+  const tTags = await getTranslations({ locale, namespace: 'practice.tags' });
   const tComments = await getTranslations({ locale, namespace: 'topics.positionPuzzle' });
   const tTopics = await getTranslations({ locale, namespace: 'topics' });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
@@ -152,8 +153,8 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
         locale={locale}
         labels={{
           sectionTitle: (count) => t('detail.usefulSection', { count }),
-          badgeTheme: t('tags.badge.theme'),
-          badgeChunk: t('tags.badge.chunk'),
+          badgeTheme: tTags('badge.theme'),
+          badgeChunk: tTags('badge.chunk'),
         }}
       />
 

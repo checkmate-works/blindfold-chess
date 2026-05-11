@@ -996,7 +996,8 @@
         "tryAgain": "Try Again",
         "backToList": "Back to List",
         "edited": "(edited)",
-        "editAction": "Edit"
+        "editAction": "Edit",
+        "usefulSection": "Useful patterns for solving ({count})"
       },
       "delete": {
         "button": "Delete Problem",

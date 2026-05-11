@@ -996,7 +996,8 @@
         "tryAgain": "Intentar de nuevo",
         "backToList": "Volver a la lista",
         "edited": "(editado)",
-        "editAction": "Editar"
+        "editAction": "Editar",
+        "usefulSection": "Patrones útiles para resolver ({count})"
       },
       "delete": {
         "button": "Eliminar Problema",
