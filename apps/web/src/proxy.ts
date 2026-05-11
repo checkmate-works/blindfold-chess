@@ -116,10 +116,17 @@ export const config = {
      * Match all request paths except:
      * - _next/static (static files)
      * - _next/image (image optimization files)
+     * - api/ (route handlers manage their own auth via @supabase/ssr,
+     *   which refreshes tokens on demand; running the proxy for every
+     *   /api/* call doubles up auth.getUser() and adds an Edge Middleware
+     *   invocation per request)
      * - favicon.ico, sitemap.xml, robots.txt (metadata files)
      * - icon.png, apple-icon.png (icon files)
      * - manifest.webmanifest (PWA manifest)
+     * - common static asset extensions served from `/public/` (e.g.
+     *   /stockfish.wasm, og-image, svg). These bypass /_next/static so
+     *   they need an explicit extension allowlist.
      */
-    '/((?!_next/static|_next/image|favicon\\.ico|sitemap\\.xml|robots\\.txt|icon\\.png|apple-icon\\.png|manifest\\.webmanifest).*)',
+    '/((?!_next/static|_next/image|api/|favicon\\.ico|sitemap\\.xml|robots\\.txt|icon\\.png|apple-icon\\.png|manifest\\.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|woff|woff2|wasm|map)).*)',
   ],
 };
