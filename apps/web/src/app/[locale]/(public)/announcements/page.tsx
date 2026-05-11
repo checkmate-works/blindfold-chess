@@ -3,9 +3,6 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
-import { HiLockClosed } from 'react-icons/hi2';
-
-import { getOptionalUser } from '@/lib/auth';
 
 import {
   ListLink,
@@ -18,9 +15,16 @@ import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { MembersOnlyBadge } from './_components/MembersOnlyBadge';
 import { getPublishedAnnouncementCount, getPublishedAnnouncementsPaginated } from './_lib/queries';
 
-export const dynamic = 'force-dynamic';
+// 10-minute ISR window. Admin create/update/delete actions also call
+// `revalidateTag('announcements', { expire: 60 })`, but the list page's
+// queries are not (yet) wrapped with `unstable_cache`, so this timer is the
+// effective freshness contract for the list itself. The members-only
+// lock badge that previously kept this page on `force-dynamic` has moved
+// into `MembersOnlyBadge` (client component, reads `useAuth`).
+export const revalidate = 600;
 
 const ANNOUNCEMENTS_PER_PAGE = 20;
 
@@ -52,7 +56,6 @@ export default async function AnnouncementsPage({ params, searchParams }: Props)
   const { page } = await searchParams;
   const t = await getTranslations({ locale, namespace: 'announcements' });
 
-  const user = await getOptionalUser();
   const currentPage = Math.max(1, Number(page) || 1);
   const totalCount = await getPublishedAnnouncementCount();
   const totalPages = Math.max(1, Math.ceil(totalCount / ANNOUNCEMENTS_PER_PAGE));
@@ -95,11 +98,7 @@ export default async function AnnouncementsPage({ params, searchParams }: Props)
                   locale={locale}
                   isPinned={announcement.pinnedAt !== null}
                   badge={
-                    announcement.visibility === 'members_only' && !user ? (
-                      <>
-                        <HiLockClosed className="size-3" /> {t('membersOnlyBadge')}
-                      </>
-                    ) : undefined
+                    announcement.visibility === 'members_only' ? <MembersOnlyBadge /> : undefined
                   }
                 />
               );
