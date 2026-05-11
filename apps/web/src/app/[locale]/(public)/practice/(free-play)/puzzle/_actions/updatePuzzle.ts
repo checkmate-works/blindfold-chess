@@ -6,6 +6,8 @@ import { and, eq, isNull } from 'drizzle-orm';
 
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, positions, puzzleSolutions } from '@/lib/db';
+import { validateAndDedupeTagIds } from '@/lib/positions/tag-validation';
+import { replacePositionTags } from '@/lib/positions/tag-writes';
 import { normalizePuzzleMoves, validatePuzzleMutationData } from '@/lib/positions/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { logActivityEvent } from '@/lib/users/activity-log';
@@ -31,6 +33,18 @@ export async function updatePuzzle(data: {
   title: string;
   description?: string | null;
   solutionMoves: Array<{ san: string; note?: string | null }>;
+  /**
+   * When provided (even as []) replaces the position's theme tags. Theme
+   * IDs must reference `glossary_terms` rows with `is_theme = true`.
+   * Omit to leave existing tags untouched.
+   */
+  themeIds?: string[];
+  /**
+   * When provided (even as []) replaces the position's chunk tags.
+   * Chunk IDs must reference non-soft-deleted `chunks` rows. Omit to
+   * leave existing tags untouched.
+   */
+  chunkIds?: string[];
 }): Promise<UpdatePuzzleResult> {
   const guardResult = await authenticateAndGuard(RATE_LIMITS.updatePuzzle);
 
@@ -77,6 +91,15 @@ export async function updatePuzzle(data: {
     return { error: 'alreadyDeleted' };
   }
 
+  const tagValidation = await validateAndDedupeTagIds({
+    themeIds: data.themeIds,
+    chunkIds: data.chunkIds,
+  });
+  if (!tagValidation.ok) {
+    return { error: tagValidation.error };
+  }
+  const { themeIds: dedupedThemeIds, chunkIds: dedupedChunkIds } = tagValidation.deduped;
+
   await db.transaction(async (tx) => {
     await tx
       .update(positions)
@@ -94,6 +117,8 @@ export async function updatePuzzle(data: {
       positionId: data.id,
       solutionMoves: normalizedMoves,
     });
+
+    await replacePositionTags(tx, data.id, user.id, dedupedThemeIds, dedupedChunkIds);
   });
 
   logActivityEvent({

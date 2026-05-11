@@ -1,24 +1,26 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { BoardSkeleton, Button, FlipBoardButton, UnsavedChangesDialog } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
-import { validateFen } from '@blindfold-chess/features/chess-core';
 import { flushSync } from 'react-dom';
 
+import type { ChunkOption } from '@/lib/chunks/types';
+import type { ThemeOption } from '@/lib/themes/types';
+
 import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
+import { TagPicker } from '@/app/[locale]/(public)/practice/(free-play)/_components/TagPicker';
+import { useFenBoardEditor } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-fen-board-editor';
+import { useTagPickerLabels } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-tag-picker-labels';
+import { useTagSelection } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-tag-selection';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { updatePosition } from '../_actions/updatePosition';
-
-const EMPTY_BOARD_FEN = '8/8/8/8/8/8/8/8 w - - 0 1';
-
-type EditorTab = 'board' | 'fen';
 
 type Props = {
   positionId: string;
@@ -26,41 +28,58 @@ type Props = {
     fen: string;
     title: string;
     description: string | null;
+    themes: ThemeOption[];
+    chunks: ChunkOption[];
+  };
+  available: {
+    themes: ThemeOption[];
+    chunks: ChunkOption[];
   };
 };
 
-export function EditPositionForm({ positionId, initial }: Props) {
+export function EditPositionForm({ positionId, initial, available }: Props) {
   const router = useRouter();
   const t = useTranslations('practice.positionMemory.edit');
   const tCreate = useTranslations('practice.positionMemory.create');
   const tBoard = useTranslations('practice.positionMemory');
   const tUnsaved = useTranslations('unsavedChanges');
+  const tagPickerLabels = useTagPickerLabels();
   const { preferences, isLoaded } = useGamePreferences();
 
   const initialDescription = initial.description ?? '';
-  const [fenInput, setFenInput] = useState(initial.fen);
-  const [boardFen, setBoardFen] = useState(initial.fen);
+  const initialThemeIdsRef = useRef(initial.themes.map((th) => th.id));
+  const initialChunkIdsRef = useRef(initial.chunks.map((c) => c.id));
+
+  const board = useFenBoardEditor({ initialFen: initial.fen });
+  const tags = useTagSelection({ initialThemes: initial.themes, initialChunks: initial.chunks });
   const [title, setTitle] = useState(initial.title);
   const [description, setDescription] = useState(initialDescription);
   const [error, setError] = useState<string | null>(null);
-  const [positionError, setPositionError] = useState(false);
   const [pending, setPending] = useState(false);
-  const [activeTab, setActiveTab] = useState<EditorTab>('board');
-  const [flipped, setFlipped] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [clearBoardOpen, setClearBoardOpen] = useState(false);
+
+  const themeIds = useMemo(() => tags.selectedThemes.map((th) => th.id), [tags.selectedThemes]);
+  const chunkIds = useMemo(() => tags.selectedChunks.map((c) => c.id), [tags.selectedChunks]);
+
+  const tagsChanged = useMemo(() => {
+    const initialThemeIds = initialThemeIdsRef.current;
+    const initialChunkIds = initialChunkIdsRef.current;
+    if (themeIds.length !== initialThemeIds.length) return true;
+    if (chunkIds.length !== initialChunkIds.length) return true;
+    const themeSet = new Set(initialThemeIds);
+    const chunkSet = new Set(initialChunkIds);
+    return themeIds.some((id) => !themeSet.has(id)) || chunkIds.some((id) => !chunkSet.has(id));
+  }, [themeIds, chunkIds]);
 
   const isDirty =
     !submitted &&
     (title !== initial.title ||
       description !== initialDescription ||
-      fenInput.trim() !== initial.fen);
+      board.fenInput.trim() !== initial.fen ||
+      tagsChanged);
 
   const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
-
-  const handleFlip = useCallback(() => setFlipped((prev) => !prev), []);
-
-  const isFenValid = fenInput.trim() !== '' && validateFen(fenInput.trim());
 
   const editableBoardLabels = useMemo(
     () => ({
@@ -72,32 +91,15 @@ export function EditPositionForm({ positionId, initial }: Props) {
     [tBoard]
   );
 
-  function handleFenInputChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
-    const value = e.target.value;
-    setFenInput(value);
-    if (value.trim() !== '' && validateFen(value.trim())) {
-      setBoardFen(value.trim());
-    }
-  }
-
-  function handleBoardChange(newFen: string) {
-    setFenInput(newFen);
-    setBoardFen(newFen);
-    setPositionError(false);
-  }
-
-  function handleClearBoard() {
-    setFenInput(EMPTY_BOARD_FEN);
-    setBoardFen(EMPTY_BOARD_FEN);
-  }
+  const handleFlip = useCallback(() => board.setFlipped((prev) => !prev), [board]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    setPositionError(false);
+    board.setPositionError(false);
 
-    if (!fenInput.trim() || !isFenValid) {
-      setPositionError(true);
+    if (!board.trimmedFen || !board.isFenValid) {
+      board.setPositionError(true);
       return;
     }
 
@@ -105,9 +107,11 @@ export function EditPositionForm({ positionId, initial }: Props) {
     try {
       const result = await updatePosition({
         id: positionId,
-        fen: fenInput.trim(),
+        fen: board.trimmedFen,
         title,
         description: description || null,
+        themeIds,
+        chunkIds,
       });
 
       if ('error' in result) {
@@ -164,10 +168,10 @@ export function EditPositionForm({ positionId, initial }: Props) {
           <button
             type="button"
             role="tab"
-            aria-selected={activeTab === 'board'}
-            onClick={() => setActiveTab('board')}
+            aria-selected={board.activeTab === 'board'}
+            onClick={() => board.setActiveTab('board')}
             className={`flex-1 rounded-md px-4 py-2 text-center text-sm font-medium transition-colors ${
-              activeTab === 'board'
+              board.activeTab === 'board'
                 ? 'bg-card text-foreground'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
@@ -177,10 +181,10 @@ export function EditPositionForm({ positionId, initial }: Props) {
           <button
             type="button"
             role="tab"
-            aria-selected={activeTab === 'fen'}
-            onClick={() => setActiveTab('fen')}
+            aria-selected={board.activeTab === 'fen'}
+            onClick={() => board.setActiveTab('fen')}
             className={`flex-1 rounded-md px-4 py-2 text-center text-sm font-medium transition-colors ${
-              activeTab === 'fen'
+              board.activeTab === 'fen'
                 ? 'bg-card text-foreground'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
@@ -189,7 +193,7 @@ export function EditPositionForm({ positionId, initial }: Props) {
           </button>
         </nav>
 
-        {activeTab === 'board' && (
+        {board.activeTab === 'board' && (
           <>
             <div className="flex justify-end mb-2">
               <FlipBoardButton onClick={handleFlip} title={tCreate('flipBoard')} />
@@ -200,11 +204,11 @@ export function EditPositionForm({ positionId, initial }: Props) {
                   <BoardSkeleton />
                 ) : (
                   <EditableChessBoard
-                    fen={boardFen}
-                    onFenChange={handleBoardChange}
+                    fen={board.boardFen}
+                    onFenChange={board.handleBoardChange}
                     labels={editableBoardLabels}
                     editable={true}
-                    flipped={flipped}
+                    flipped={board.flipped}
                     showCoordinates={true}
                     boardTheme={preferences.boardTheme}
                   />
@@ -212,7 +216,7 @@ export function EditPositionForm({ positionId, initial }: Props) {
               </div>
             </div>
 
-            {positionError && (
+            {board.positionError && (
               <p className="text-sm text-destructive text-center">{tCreate('positionInvalid')}</p>
             )}
 
@@ -228,31 +232,41 @@ export function EditPositionForm({ positionId, initial }: Props) {
           </>
         )}
 
-        {activeTab === 'fen' && (
+        {board.activeTab === 'fen' && (
           <div>
             <label htmlFor="fen" className="block text-sm font-medium mb-1">
               {tCreate('fenLabel')}
             </label>
             <textarea
               id="fen"
-              value={fenInput}
-              onChange={handleFenInputChange}
+              value={board.fenInput}
+              onChange={board.handleFenInputChange}
               placeholder="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
               rows={2}
               className="w-full px-3 py-2 rounded border border-border bg-card text-foreground text-sm font-mono"
             />
-            {fenInput.trim() && !isFenValid && (
+            {board.fenInput.trim() && !board.isFenValid && (
               <p className="text-sm text-destructive mt-1">{tCreate('fenInvalid')}</p>
             )}
           </div>
         )}
+
+        <TagPicker
+          selectedThemes={tags.selectedThemes}
+          selectedChunks={tags.selectedChunks}
+          availableThemes={available.themes}
+          availableChunks={available.chunks}
+          disabled={pending}
+          onChange={tags.handleTagChange}
+          labels={tagPickerLabels}
+        />
 
         <Button
           type="submit"
           variant="primary"
           size="lg"
           fullWidth
-          disabled={pending || !isFenValid || title.trim() === '' || !isDirty}
+          disabled={pending || !board.isFenValid || title.trim() === '' || !isDirty}
         >
           {pending ? t('submitting') : t('submit')}
         </Button>
@@ -277,7 +291,7 @@ export function EditPositionForm({ positionId, initial }: Props) {
         confirmVariant="danger"
         onConfirm={() => {
           setClearBoardOpen(false);
-          handleClearBoard();
+          board.handleClearBoard();
         }}
         onCancel={() => setClearBoardOpen(false)}
       />

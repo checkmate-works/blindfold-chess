@@ -996,7 +996,8 @@
         "tryAgain": "Tentar Novamente",
         "backToList": "Voltar para a lista",
         "edited": "(editado)",
-        "editAction": "Editar"
+        "editAction": "Editar",
+        "usefulSection": "Padrões úteis para resolver ({count})"
       },
       "delete": {
         "button": "Excluir Problema",
@@ -1093,7 +1094,8 @@
         "createdBy": "Criado por",
         "noPieces": "Nenhuma",
         "edited": "(editado)",
-        "editAction": "Editar"
+        "editAction": "Editar",
+        "usefulSection": "Padrões úteis para resolver ({count})"
       },
       "delete": {
         "button": "Excluir Puzzle",
@@ -1475,6 +1477,27 @@
         "diagonalLegend": "Diagonal (a1-h8)",
         "antiDiagonalLegend": "Anti-diagonal (h1-a8)",
         "trialCorrectAnswer": "Resposta: {diagonal}, {antiDiagonal}"
+      }
+    },
+    "tags": {
+      "section": "Temas e chunks",
+      "help": "Temas são vocabulário curado (cravada, peão passado, …). Chunks são padrões de peças pessoais compartilhados por outros solucionadores.",
+      "placeholder": "Pesquisar para adicionar um tema ou chunk…",
+      "badge": {
+        "theme": "Tema",
+        "chunk": "Chunk"
+      },
+      "noResults": "Sem resultados",
+      "remove": "Remover {label}",
+      "openDetail": "Mostrar detalhes de {label}",
+      "moreItemsHint": "+{count} mais — digite para filtrar",
+      "detail": {
+        "readingPrefix": "Leitura: ",
+        "noDescription": "Sem descrição disponível.",
+        "viewInGlossary": "Ver no glossário",
+        "viewChunkPage": "Ver página do chunk",
+        "detach": "Remover",
+        "close": "Fechar"
       }
     }
   },

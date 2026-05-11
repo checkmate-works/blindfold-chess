@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import { authenticateAndCheckBan } from '@/lib/auth';
 import { db, feedItems, topicPosts } from '@/lib/db';
 import { GRANT_TYPE_DEFAULTS, isTopicPostGrantTopicType } from '@/lib/db/data/grant-types';
+import type { DbTx } from '@/lib/db/types';
 import {
   createNotification,
   notifyFollowersOfNewPost,
@@ -33,10 +34,7 @@ export async function createPostBase(params: {
   invalidTopicError: string;
   rateLimit: RateLimitConfig;
   validateContent: (formData: FormData) => { error: string } | { content: string };
-  afterInsert?: (
-    tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
-    postId: string
-  ) => Promise<void>;
+  afterInsert?: (tx: DbTx, postId: string) => Promise<void>;
   /**
    * Whether to insert a row into `feed_items` for this post. Defaults to `true`
    * for parity with the legacy behavior. 'chunk' comments pass `false` because

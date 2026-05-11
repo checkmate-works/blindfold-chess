@@ -3,8 +3,8 @@
 import { validateAttachedPgn } from '@blindfold-chess/features/chess-core';
 
 import { authenticateAndCheckBan } from '@/lib/auth';
-import type { db } from '@/lib/db';
 import { postGamePgnAttachments } from '@/lib/db';
+import type { DbTx } from '@/lib/db/types';
 import { resolveLichessAttachmentPgn } from '@/lib/games/resolve-lichess-attachment';
 import { sanitizePgnHeader } from '@/lib/games/sanitize-pgn-header';
 import { detectAttachmentInput } from '@/lib/games/validation';
@@ -78,10 +78,7 @@ function attachmentErrorKey(
   }
 }
 
-type ExtraAfterInsert = (
-  tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
-  postId: string
-) => Promise<void>;
+type ExtraAfterInsert = (tx: DbTx, postId: string) => Promise<void>;
 
 /**
  * Shared attachment-aware createPost body. Each topicType wrapper

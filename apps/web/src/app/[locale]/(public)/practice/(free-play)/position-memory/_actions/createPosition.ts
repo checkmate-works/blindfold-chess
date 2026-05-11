@@ -6,6 +6,8 @@ import { authenticateAndGuard } from '@/lib/auth';
 import { db, feedItems, positions } from '@/lib/db';
 import { GRANT_TYPE_DEFAULTS } from '@/lib/db/data/grant-types';
 import { createNotification, notifyFollowersOfNewPosition } from '@/lib/notifications/notification';
+import { validateAndDedupeTagIds } from '@/lib/positions/tag-validation';
+import { insertPositionTags } from '@/lib/positions/tag-writes';
 import { validatePositionMutationData } from '@/lib/positions/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { logActivityEvent } from '@/lib/users/activity-log';
@@ -30,6 +32,8 @@ export async function createPosition(data: {
   fen: string;
   title: string;
   description?: string | null;
+  themeIds?: string[];
+  chunkIds?: string[];
 }): Promise<CreatePositionResult> {
   const guardResult = await authenticateAndGuard(RATE_LIMITS.createPosition);
 
@@ -50,6 +54,15 @@ export async function createPosition(data: {
     return { error: validationError };
   }
 
+  const tagValidation = await validateAndDedupeTagIds({
+    themeIds: data.themeIds,
+    chunkIds: data.chunkIds,
+  });
+  if (!tagValidation.ok) {
+    return { error: tagValidation.error };
+  }
+  const { themeIds: dedupedThemeIds, chunkIds: dedupedChunkIds } = tagValidation.deduped;
+
   let grantInfo: { grantId: string; expiresAt: Date } | null = null;
   const inserted = await db.transaction(async (tx) => {
     const [position] = await tx
@@ -62,6 +75,8 @@ export async function createPosition(data: {
         type: 'memory',
       })
       .returning({ id: positions.id });
+
+    await insertPositionTags(tx, position.id, user.id, dedupedThemeIds, dedupedChunkIds);
 
     await tx.insert(feedItems).values({
       entityType: 'position',
