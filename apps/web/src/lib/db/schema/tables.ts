@@ -1411,21 +1411,6 @@ export const userActivityLog = pgTable(
 export type UserActivityLog = typeof userActivityLog.$inferSelect;
 export type NewUserActivityLog = typeof userActivityLog.$inferInsert;
 
-// Site Settings
-export const siteSettings = pgTable('site_settings', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  key: varchar('key', { length: 100 }).unique().notNull(),
-  value: jsonb('value').notNull().default({}),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { withTimezone: true })
-    .defaultNow()
-    .notNull()
-    .$onUpdateFn(() => new Date()),
-});
-
-export type SiteSetting = typeof siteSettings.$inferSelect;
-export type NewSiteSetting = typeof siteSettings.$inferInsert;
-
 // Ad Banners
 export const adBanners = pgTable(
   'ad_banners',
