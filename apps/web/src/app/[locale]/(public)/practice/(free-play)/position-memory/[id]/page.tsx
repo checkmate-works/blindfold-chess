@@ -18,6 +18,7 @@ import { getLinkedThemesForPosition } from '@/lib/themes/queries';
 import { resolveDisplayName } from '@/lib/users/display-name';
 
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
+import { editPost } from '@/app/[locale]/(public)/topics/_actions/editPost';
 import { CommentTree } from '@/app/[locale]/(public)/topics/_components/CommentTree';
 import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
@@ -236,6 +237,7 @@ export default async function PositionDetailPage({ params, searchParams }: Props
               fen: createReplyWithFenAttachment,
             }}
             deletePostAction={deletePost}
+            editPostAction={editPost}
             extraContentByPostId={extraContentByPostId}
             i18n={{
               likeNamespace: 'topics.positionMemory',

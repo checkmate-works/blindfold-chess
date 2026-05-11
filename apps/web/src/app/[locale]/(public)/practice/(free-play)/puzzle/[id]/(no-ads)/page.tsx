@@ -24,6 +24,7 @@ import { resolveDisplayName } from '@/lib/users/display-name';
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_actions/toggleLike';
 import { PiecesInfo } from '@/app/[locale]/(public)/practice/_components/PiecesInfo';
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
+import { editPost } from '@/app/[locale]/(public)/topics/_actions/editPost';
 import { CommentTree } from '@/app/[locale]/(public)/topics/_components/CommentTree';
 import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
@@ -236,6 +237,7 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
               fen: createReplyWithFenAttachment,
             }}
             deletePostAction={deletePost}
+            editPostAction={editPost}
             extraContentByPostId={extraContentByPostId}
             i18n={{
               likeNamespace: 'topics.positionPuzzle',
