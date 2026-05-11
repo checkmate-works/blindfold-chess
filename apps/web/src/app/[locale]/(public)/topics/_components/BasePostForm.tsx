@@ -17,6 +17,7 @@ import { FaPaperclip } from 'react-icons/fa';
 
 import { MAX_CONTENT_LENGTH } from '@/lib/validations/content';
 
+import { applyAttachmentMode } from '../_lib/attachment-form-data';
 import { AttachmentModal } from './AttachmentModal';
 import type { AggregatedAttachmentMode } from './AttachmentModal';
 
@@ -153,29 +154,15 @@ export function BasePostForm({
     async (prev, formData) => {
       if (attachmentActions) {
         const att = attachmentRef.current;
-        if (att.kind === 'fen') {
-          if (!att.valid) {
-            return { error: 'postFenAttachment.error.invalidFenStructure' };
-          }
-          formData.set('attachmentFen', att.fen);
-          if (att.caption !== null) {
-            formData.set('attachmentFenCaption', att.caption);
-          }
-          return attachmentActions.fen(prev, formData);
+        const applied = applyAttachmentMode(att, formData);
+        if (!applied.ok) {
+          return { error: 'postFenAttachment.error.invalidFenStructure' };
         }
-        if (att.kind === 'pgn') {
-          // The AttachmentInput textarea lives inside a portal'd
-          // modal so its `attachment` / `attachmentAnonymize` fields
-          // are not captured by the parent form's FormData.
-          // Synthesise them here from the captured mode.
-          formData.set('attachment', att.pgn);
-          if (att.anonymize) {
-            formData.set('attachmentAnonymize', 'on');
-          }
-        }
-        // `empty` falls through here — `pgn` action treats an empty
-        // `attachment` field as a plain comment (chunks contract).
-        return attachmentActions.pgn(prev, formData);
+        // `empty` and `pgn` both route through the pgn action — the
+        // legacy chunks contract treats an empty `attachment` field as
+        // a plain comment with no attachment row.
+        const action$ = applied.kind === 'fen' ? attachmentActions.fen : attachmentActions.pgn;
+        return action$(prev, formData);
       }
       if (action) return action(prev, formData);
       return { error: 'error' };

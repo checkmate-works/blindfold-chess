@@ -14,6 +14,7 @@ import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal'
 
 import type { AttachmentKind } from '../_actions/removePostAttachment';
 import type { AttachAction, RemoveAttachmentAction } from '../_lib/action-types';
+import { applyAttachmentMode } from '../_lib/attachment-form-data';
 import { AttachedEmbedCard } from './AttachedEmbedCard';
 import { AttachedFenCard } from './AttachedFenCard';
 import { AttachedGameCard } from './AttachedGameCard';
@@ -126,22 +127,18 @@ export function EditableAttachments({
     setIsAttaching(true);
 
     const fd = new FormData();
-    let action: AttachAction | undefined;
-
-    if (mode.kind === 'pgn') {
-      fd.set('attachment', mode.pgn);
-      if (mode.anonymize) fd.set('attachmentAnonymize', 'on');
-      action = attachPgnAction;
-    } else if (mode.kind === 'fen') {
-      if (!mode.valid) {
-        setAttachError(tAdd('invalidFen'));
-        setIsAttaching(false);
-        return;
-      }
-      fd.set('attachmentFen', mode.fen);
-      if (mode.caption !== null) fd.set('attachmentFenCaption', mode.caption);
-      action = attachFenAction;
+    const applied = applyAttachmentMode(mode, fd);
+    if (!applied.ok) {
+      setAttachError(tAdd('invalidFen'));
+      setIsAttaching(false);
+      return;
     }
+    const action: AttachAction | undefined =
+      applied.kind === 'pgn'
+        ? attachPgnAction
+        : applied.kind === 'fen'
+          ? attachFenAction
+          : undefined;
 
     if (!action) {
       setAttachError(tAdd('error'));
