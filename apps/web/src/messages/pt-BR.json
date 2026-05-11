@@ -3685,6 +3685,18 @@
       "error": "Não foi possível remover o anexo. Tente novamente.",
       "attachmentNotFound": "Este anexo não existe mais.",
       "rateLimited": "Muitas alterações de anexo. Tente novamente mais tarde."
+    },
+    "addAttachment": {
+      "button": "Adicionar anexo",
+      "attaching": "Anexando...",
+      "invalidFen": "Insira um FEN válido antes de anexar.",
+      "error": "Não foi possível anexar. Tente novamente.",
+      "signInRequired": "Faça login para anexar.",
+      "rateLimited": "Muitas tentativas de anexar. Tente novamente mais tarde.",
+      "alreadyAttached": "Esta publicação já tem um anexo. Remova o existente primeiro.",
+      "alreadyDeleted": "Esta publicação foi excluída.",
+      "notFound": "Esta publicação não existe mais.",
+      "unauthorized": "Você só pode anexar às suas próprias publicações."
     }
   },
   "unsavedChanges": {

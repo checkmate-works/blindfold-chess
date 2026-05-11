@@ -3685,6 +3685,18 @@
       "error": "添付を削除できませんでした。もう一度お試しください。",
       "attachmentNotFound": "この添付はすでに存在しません。",
       "rateLimited": "添付変更の上限に達しました。しばらくしてからお試しください。"
+    },
+    "addAttachment": {
+      "button": "添付を追加",
+      "attaching": "追加中...",
+      "invalidFen": "有効な FEN を入力してください。",
+      "error": "添付を追加できませんでした。もう一度お試しください。",
+      "signInRequired": "添付するにはサインインしてください。",
+      "rateLimited": "添付試行の上限に達しました。しばらくしてからお試しください。",
+      "alreadyAttached": "この投稿にはすでに添付があります。先に既存の添付を削除してください。",
+      "alreadyDeleted": "この投稿は削除されています。",
+      "notFound": "この投稿は存在しません。",
+      "unauthorized": "自分の投稿にのみ添付できます。"
     }
   },
   "unsavedChanges": {

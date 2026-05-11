@@ -3685,6 +3685,18 @@
       "error": "Could not remove the attachment. Please try again.",
       "attachmentNotFound": "This attachment no longer exists.",
       "rateLimited": "Too many attachment changes. Please try again later."
+    },
+    "addAttachment": {
+      "button": "Add attachment",
+      "attaching": "Attaching...",
+      "invalidFen": "Please enter a valid FEN before attaching.",
+      "error": "Could not attach. Please try again.",
+      "signInRequired": "Please sign in to attach.",
+      "rateLimited": "Too many attach attempts. Please try again later.",
+      "alreadyAttached": "This post already has an attachment. Remove the existing one first.",
+      "alreadyDeleted": "This post has been deleted.",
+      "notFound": "This post no longer exists.",
+      "unauthorized": "You can only attach to your own posts."
     }
   },
   "unsavedChanges": {

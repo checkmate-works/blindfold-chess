@@ -23,6 +23,8 @@ import { resolveDisplayName } from '@/lib/users/display-name';
 
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_actions/toggleLike';
 import { PiecesInfo } from '@/app/[locale]/(public)/practice/_components/PiecesInfo';
+import { attachPostFenFromForm } from '@/app/[locale]/(public)/topics/_actions/attachPostFen';
+import { attachPostPgn } from '@/app/[locale]/(public)/topics/_actions/attachPostPgn';
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
 import { editPost } from '@/app/[locale]/(public)/topics/_actions/editPost';
 import { removePostAttachment } from '@/app/[locale]/(public)/topics/_actions/removePostAttachment';
@@ -240,6 +242,8 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
             deletePostAction={deletePost}
             editPostAction={editPost}
             removeAttachmentAction={removePostAttachment}
+            attachPgnAction={attachPostPgn}
+            attachFenAction={attachPostFenFromForm}
             attachmentsByPostId={attachments}
             attachmentFallbackVideoTitle={tVideo('fallbackTitle')}
             extraContentByPostId={extraContentByPostId}

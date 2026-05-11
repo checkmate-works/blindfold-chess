@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation';
 
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 
+import { attachPostFenFromForm } from '@/app/[locale]/(public)/topics/_actions/attachPostFen';
+import { attachPostPgn } from '@/app/[locale]/(public)/topics/_actions/attachPostPgn';
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
 import { editPost } from '@/app/[locale]/(public)/topics/_actions/editPost';
 import { removePostAttachment } from '@/app/[locale]/(public)/topics/_actions/removePostAttachment';
@@ -144,6 +146,8 @@ export default async function OpeningPostDetailPage({ params, searchParams }: Pr
       deletePostAction={deletePost}
       editPostAction={editPost}
       removeAttachmentAction={removePostAttachment}
+      attachPgnAction={attachPostPgn}
+      attachFenAction={attachPostFenFromForm}
       attachmentsByPostId={attachments}
       attachmentFallbackVideoTitle={fallbackVideoTitle}
       replyAttachmentActions={{

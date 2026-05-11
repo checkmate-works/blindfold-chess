@@ -31,6 +31,12 @@ type RemoveAttachmentAction = (
   locale: string
 ) => Promise<{ success: true } | { error: string }>;
 
+type AttachAction = (
+  postId: string,
+  locale: string,
+  formData: FormData
+) => Promise<{ success: true; attachment: { id: string } } | { error: string }>;
+
 type Props = {
   /** Root nodes already built by `buildCommentTree`. */
   comments: CommentTreeNode[];
@@ -64,6 +70,13 @@ type Props = {
    * image for the 1:N image kind, single for the 1:0..1 kinds).
    */
   removeAttachmentAction?: RemoveAttachmentAction;
+  /**
+   * Optional edit-flow attach actions. Forwarded down to every
+   * `CommentNode` so a comment whose post has no current attachment can
+   * surface an "Add attachment" affordance in edit mode.
+   */
+  attachPgnAction?: AttachAction;
+  attachFenAction?: AttachAction;
   /**
    * Raw attachment payloads keyed by post id. Threaded through to every
    * `CommentNode` so edit mode can wire remove buttons against the same
@@ -137,6 +150,8 @@ export async function CommentTree({
   deletePostAction,
   editPostAction,
   removeAttachmentAction,
+  attachPgnAction,
+  attachFenAction,
   attachmentsByPostId,
   attachmentFallbackVideoTitle,
   i18n,
@@ -174,6 +189,8 @@ export async function CommentTree({
           deletePostAction={deletePostAction}
           editPostAction={editPostAction}
           removeAttachmentAction={removeAttachmentAction}
+          attachPgnAction={attachPgnAction}
+          attachFenAction={attachFenAction}
           attachmentsByPostId={attachmentsByPostId}
           attachmentFallbackVideoTitle={attachmentFallbackVideoTitle}
           i18n={i18n}

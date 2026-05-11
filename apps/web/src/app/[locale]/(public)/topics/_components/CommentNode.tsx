@@ -45,6 +45,12 @@ type RemoveAttachmentAction = (
   locale: string
 ) => Promise<{ success: true } | { error: string }>;
 
+type AttachAction = (
+  postId: string,
+  locale: string,
+  formData: FormData
+) => Promise<{ success: true; attachment: { id: string } } | { error: string }>;
+
 type I18n = {
   likeNamespace: string;
   replyNamespace: string;
@@ -97,6 +103,14 @@ type Props = {
    * side; the UI gate here is purely a redundancy.
    */
   removeAttachmentAction?: RemoveAttachmentAction;
+  /**
+   * Optional edit-flow attach actions. Forwarded to `EditableAttachments`
+   * so a node whose post currently has NO attachment can surface an
+   * "Add attachment" button (paperclip → AttachmentModal). Omitting both
+   * keeps edit mode as remove-only for that surface.
+   */
+  attachPgnAction?: AttachAction;
+  attachFenAction?: AttachAction;
   /**
    * Raw attachment payloads keyed by post id. Threaded all the way down
    * the recursion (like `extraContentByPostId`) so each `CommentNode`
@@ -178,6 +192,8 @@ export function CommentNode({
   deletePostAction,
   editPostAction,
   removeAttachmentAction,
+  attachPgnAction,
+  attachFenAction,
   attachmentsByPostId,
   attachmentFallbackVideoTitle,
   i18n,
@@ -295,15 +311,20 @@ export function CommentNode({
                     }}
                     onCancel={() => setIsEditing(false)}
                   />
-                  {removeAttachmentAction && attachmentsByPostId?.get(node.id) && (
-                    <EditableAttachments
-                      postId={node.id}
-                      locale={locale}
-                      attachment={attachmentsByPostId.get(node.id) ?? null}
-                      removeAttachmentAction={removeAttachmentAction}
-                      fallbackVideoTitle={attachmentFallbackVideoTitle ?? ''}
-                    />
-                  )}
+                  {removeAttachmentAction &&
+                    (attachmentsByPostId?.get(node.id) ||
+                      attachPgnAction !== undefined ||
+                      attachFenAction !== undefined) && (
+                      <EditableAttachments
+                        postId={node.id}
+                        locale={locale}
+                        attachment={attachmentsByPostId?.get(node.id) ?? null}
+                        removeAttachmentAction={removeAttachmentAction}
+                        attachPgnAction={attachPgnAction}
+                        attachFenAction={attachFenAction}
+                        fallbackVideoTitle={attachmentFallbackVideoTitle ?? ''}
+                      />
+                    )}
                 </>
               ) : (
                 !isDeleted && (
@@ -414,6 +435,8 @@ export function CommentNode({
                       deletePostAction={deletePostAction}
                       editPostAction={editPostAction}
                       removeAttachmentAction={removeAttachmentAction}
+                      attachPgnAction={attachPgnAction}
+                      attachFenAction={attachFenAction}
                       attachmentsByPostId={attachmentsByPostId}
                       attachmentFallbackVideoTitle={attachmentFallbackVideoTitle}
                       i18n={i18n}
@@ -442,6 +465,8 @@ export function CommentNode({
                       deletePostAction={deletePostAction}
                       editPostAction={editPostAction}
                       removeAttachmentAction={removeAttachmentAction}
+                      attachPgnAction={attachPgnAction}
+                      attachFenAction={attachFenAction}
                       attachmentsByPostId={attachmentsByPostId}
                       attachmentFallbackVideoTitle={attachmentFallbackVideoTitle}
                       i18n={i18n}

@@ -41,6 +41,12 @@ type RemoveAttachmentAction = (
   locale: string
 ) => Promise<{ success: true } | { error: string }>;
 
+type AttachAction = (
+  postId: string,
+  locale: string,
+  formData: FormData
+) => Promise<{ success: true; attachment: { id: string } } | { error: string }>;
+
 type Author = {
   username: string | null;
   displayName: string | null;
@@ -80,6 +86,14 @@ type Props = {
    * mode still flows through the pre-rendered `opAttachment` slot.
    */
   removeAttachmentAction?: RemoveAttachmentAction;
+  /**
+   * Optional edit-flow attach actions. When provided AND the OP currently
+   * has no attachment, the edit mode surfaces an "Add attachment" button
+   * that opens the AttachmentModal and routes the apply payload to the
+   * matching action.
+   */
+  attachPgnAction?: AttachAction;
+  attachFenAction?: AttachAction;
   /** Raw OP attachment payload (typed); see `opAttachment` for read-mode render. */
   opAttachmentRaw?: PostAttachment | null;
   /** Fallback `<AttachedVideoCard>` title for the edit-side renderer. */
@@ -117,6 +131,8 @@ export function OpCard({
   deletePostAction,
   editPostAction,
   removeAttachmentAction,
+  attachPgnAction,
+  attachFenAction,
   opAttachmentRaw,
   attachmentFallbackVideoTitle,
   redirectPath,
@@ -173,15 +189,18 @@ export function OpCard({
             }}
             onCancel={() => setIsEditing(false)}
           />
-          {opAttachmentRaw && removeAttachmentAction && (
-            <EditableAttachments
-              postId={postId}
-              locale={locale}
-              attachment={opAttachmentRaw}
-              removeAttachmentAction={removeAttachmentAction}
-              fallbackVideoTitle={attachmentFallbackVideoTitle ?? ''}
-            />
-          )}
+          {removeAttachmentAction &&
+            (opAttachmentRaw || attachPgnAction !== undefined || attachFenAction !== undefined) && (
+              <EditableAttachments
+                postId={postId}
+                locale={locale}
+                attachment={opAttachmentRaw ?? null}
+                removeAttachmentAction={removeAttachmentAction}
+                attachPgnAction={attachPgnAction}
+                attachFenAction={attachFenAction}
+                fallbackVideoTitle={attachmentFallbackVideoTitle ?? ''}
+              />
+            )}
         </>
       ) : (
         <>

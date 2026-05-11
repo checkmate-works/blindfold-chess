@@ -46,6 +46,12 @@ type RemoveAttachmentAction = (
   locale: string
 ) => Promise<{ success: true } | { error: string }>;
 
+type AttachAction = (
+  postId: string,
+  locale: string,
+  formData: FormData
+) => Promise<{ success: true; attachment: { id: string } } | { error: string }>;
+
 type Props = {
   locale: Locale;
   pageTitle: string;
@@ -108,6 +114,13 @@ type Props = {
    * affordance for its attachment in edit mode.
    */
   removeAttachmentAction?: RemoveAttachmentAction;
+  /**
+   * Optional edit-flow attach actions. When provided, every author-owned
+   * post in the tree (OP card + replies) surfaces an "Add attachment"
+   * affordance in edit mode whenever the post has no current attachment.
+   */
+  attachPgnAction?: AttachAction;
+  attachFenAction?: AttachAction;
   /**
    * Raw attachment payloads keyed by post id, used by the edit-side
    * renderer. Pages already compute this via `getAttachmentsForPosts`
@@ -197,6 +210,8 @@ export async function TopicPostDetailLayout({
   deletePostAction,
   editPostAction,
   removeAttachmentAction,
+  attachPgnAction,
+  attachFenAction,
   attachmentsByPostId,
   attachmentFallbackVideoTitle,
   replyAttachmentActions,
@@ -251,6 +266,8 @@ export async function TopicPostDetailLayout({
         deletePostAction={deletePostAction}
         editPostAction={editPostAction}
         removeAttachmentAction={removeAttachmentAction}
+        attachPgnAction={attachPgnAction}
+        attachFenAction={attachFenAction}
         opAttachmentRaw={attachmentsByPostId?.get(rootWithMeta.id) ?? null}
         attachmentFallbackVideoTitle={attachmentFallbackVideoTitle}
         redirectPath={redirectPath}
@@ -303,6 +320,8 @@ export async function TopicPostDetailLayout({
             deletePostAction={deletePostAction}
             editPostAction={editPostAction}
             removeAttachmentAction={removeAttachmentAction}
+            attachPgnAction={attachPgnAction}
+            attachFenAction={attachFenAction}
             attachmentsByPostId={attachmentsByPostId}
             attachmentFallbackVideoTitle={attachmentFallbackVideoTitle}
             i18n={i18n}

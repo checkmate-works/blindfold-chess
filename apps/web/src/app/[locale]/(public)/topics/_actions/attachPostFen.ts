@@ -36,6 +36,32 @@ function pgCode(err: unknown): string | undefined {
 }
 
 /**
+ * Edit-flow adapter: same auth + validation pipeline as `attachPostFen`,
+ * but called with the `(postId, locale, formData)` shape the client-side
+ * `EditableAttachments` builds when the user submits the AttachmentModal.
+ * Reads `attachmentFen` + `attachmentFenCaption` off the FormData (the
+ * field names the create flow already emits) and forwards to the typed
+ * action. Pulling the inputs off FormData lives here rather than in the
+ * client component so the dotted-error-key contract stays a property of
+ * the action, not the caller.
+ */
+export async function attachPostFenFromForm(
+  postId: string,
+  locale: string,
+  formData: FormData
+): Promise<
+  ActionResult<{
+    attachment: { id: string; fen: string; caption: string | null; createdAt: Date };
+  }>
+> {
+  const rawFen = formData.get('attachmentFen');
+  const fen = typeof rawFen === 'string' ? rawFen : '';
+  const rawCaption = formData.get('attachmentFenCaption');
+  const caption = typeof rawCaption === 'string' ? rawCaption : null;
+  return attachPostFen({ postId, fen, caption, locale });
+}
+
+/**
  * Server Action: attach a FEN position to an existing topic post.
  *
  * @description

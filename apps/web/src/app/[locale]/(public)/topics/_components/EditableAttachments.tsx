@@ -1,9 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
+import { useRouter } from 'next/navigation';
+
+import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FaTimes } from 'react-icons/fa';
+import { FaPaperclip, FaTimes } from 'react-icons/fa';
 
 import type { PostAttachment } from '@/lib/games/get-attachments-for-posts';
 
@@ -14,6 +17,8 @@ import { AttachedEmbedCard } from './AttachedEmbedCard';
 import { AttachedFenCard } from './AttachedFenCard';
 import { AttachedGameCard } from './AttachedGameCard';
 import { AttachedVideoCard } from './AttachedVideoCard';
+import type { AggregatedAttachmentMode } from './AttachmentModal';
+import { AttachmentModal } from './AttachmentModal';
 
 type RemoveAttachmentAction = (
   postId: string,
@@ -22,12 +27,27 @@ type RemoveAttachmentAction = (
   locale: string
 ) => Promise<{ success: true } | { error: string }>;
 
+type AttachAction = (
+  postId: string,
+  locale: string,
+  formData: FormData
+) => Promise<{ success: true; attachment: { id: string } } | { error: string }>;
+
 type Props = {
   postId: string;
   locale: string;
   /** Current attachment for this post, or `null` if none. */
   attachment: PostAttachment | null;
   removeAttachmentAction: RemoveAttachmentAction;
+  /**
+   * Optional attach actions. When present, the component surfaces an
+   * "Add attachment" affordance whenever the post has no current
+   * attachment — clicking it opens `AttachmentModal` and routes the
+   * selected kind to the matching action. Omitting both keeps the
+   * component remove-only (Phase 2A contract).
+   */
+  attachPgnAction?: AttachAction;
+  attachFenAction?: AttachAction;
   fallbackVideoTitle: string;
 };
 
@@ -51,9 +71,13 @@ export function EditableAttachments({
   locale,
   attachment,
   removeAttachmentAction,
+  attachPgnAction,
+  attachFenAction,
   fallbackVideoTitle,
 }: Props) {
   const t = useTranslations('topics.removeAttachment');
+  const tAdd = useTranslations('topics.addAttachment');
+  const router = useRouter();
 
   const [local, setLocal] = useState<PostAttachment | null>(attachment);
   const [pendingConfirm, setPendingConfirm] = useState<{ id: string; kind: AttachmentKind } | null>(
@@ -62,7 +86,24 @@ export function EditableAttachments({
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (!local) return null;
+  // Add-mode state — separate from remove-mode so a failed attach error
+  // doesn't poison the remove flow's banner (and vice versa).
+  const [isAttachModalOpen, setIsAttachModalOpen] = useState(false);
+  const [isAttaching, setIsAttaching] = useState(false);
+  const [attachError, setAttachError] = useState<string | null>(null);
+
+  // After a successful attach we router.refresh() to pick up the new
+  // attachment server-side (the action only returns the row id; the
+  // Attached*Card data has more fields than we cheaply reconstruct
+  // client-side). The parent re-renders with the new `attachment` prop;
+  // this effect keeps `local` in sync so the read card swaps in.
+  useEffect(() => {
+    setLocal(attachment);
+  }, [attachment]);
+
+  const canAttach = !local && (attachPgnAction !== undefined || attachFenAction !== undefined);
+
+  if (!local && !canAttach) return null;
 
   async function performRemove(attachmentId: string, kind: AttachmentKind) {
     setIsPending(true);
@@ -85,6 +126,91 @@ export function EditableAttachments({
       }
       return null;
     });
+  }
+
+  async function performAttach(mode: AggregatedAttachmentMode) {
+    if (mode.kind === 'empty') {
+      setIsAttachModalOpen(false);
+      return;
+    }
+
+    setAttachError(null);
+    setIsAttaching(true);
+
+    const fd = new FormData();
+    let action: AttachAction | undefined;
+
+    if (mode.kind === 'pgn') {
+      fd.set('attachment', mode.pgn);
+      if (mode.anonymize) fd.set('attachmentAnonymize', 'on');
+      action = attachPgnAction;
+    } else if (mode.kind === 'fen') {
+      if (!mode.valid) {
+        setAttachError(tAdd('invalidFen'));
+        setIsAttaching(false);
+        return;
+      }
+      fd.set('attachmentFen', mode.fen);
+      if (mode.caption !== null) fd.set('attachmentFenCaption', mode.caption);
+      action = attachFenAction;
+    }
+
+    if (!action) {
+      setAttachError(tAdd('error'));
+      setIsAttaching(false);
+      return;
+    }
+
+    const result = await action(postId, locale, fd);
+    setIsAttaching(false);
+
+    if ('error' in result) {
+      // Try the page-local 'add' namespace first, then fall back to the
+      // dotted error keys the create flow uses for PGN attachments
+      // (`attachment.error.*`) and FEN attachments
+      // (`postFenAttachment.error.*`).
+      setAttachError(tAdd.has(result.error) ? tAdd(result.error) : tAdd('error'));
+      return;
+    }
+
+    // Trigger a server re-render so the page picks up the new attachment
+    // via getAttachmentsForPosts on the next render. The useEffect above
+    // syncs `local` once the fresh `attachment` prop reaches us.
+    setIsAttachModalOpen(false);
+    router.refresh();
+  }
+
+  if (!local) {
+    return (
+      <div className="mt-2">
+        <button
+          type="button"
+          onClick={() => setIsAttachModalOpen(true)}
+          disabled={isAttaching}
+          className="inline-flex items-center gap-1.5 text-xs text-link-primary hover:opacity-80 transition-opacity disabled:opacity-50"
+        >
+          <FaPaperclip aria-hidden="true" className="h-3 w-3" />
+          {tAdd('button')}
+        </button>
+        {attachError && <p className="mt-1 text-sm text-destructive">{attachError}</p>}
+        {isAttachModalOpen && (
+          <AttachmentModal
+            isOpen={isAttachModalOpen}
+            onClose={() => setIsAttachModalOpen(false)}
+            onApply={(mode) => {
+              void performAttach(mode);
+            }}
+          />
+        )}
+        {isAttaching && (
+          <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+            <Button type="button" variant="outline" size="sm" disabled loading>
+              {tAdd('attaching')}
+            </Button>
+          </div>
+        )}
+      </div>
+    );
   }
 
   if (local.kind === 'image') {
