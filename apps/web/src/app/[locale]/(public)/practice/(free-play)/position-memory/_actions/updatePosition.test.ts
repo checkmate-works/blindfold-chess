@@ -2,7 +2,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockAuthenticateAndGuard = vi.fn();
 const mockSelectLimit = vi.fn();
-const mockUpdateWhere = vi.fn();
+const mockTxUpdateSet = vi.fn();
+const mockTxUpdateWhere = vi.fn();
+const mockTxDeleteWhere = vi.fn();
+const mockTxInsertValues = vi.fn();
 
 vi.mock('server-only', () => ({}));
 
@@ -23,11 +26,25 @@ vi.mock('@/lib/db', () => ({
         }),
       }),
     }),
-    update: () => ({
-      set: () => ({
-        where: (...args: unknown[]) => mockUpdateWhere(...args),
-      }),
-    }),
+    transaction: async (fn: (tx: unknown) => Promise<unknown>) => {
+      const tx = {
+        update: () => ({
+          set: (values: unknown) => {
+            mockTxUpdateSet(values);
+            return {
+              where: (...args: unknown[]) => mockTxUpdateWhere(...args),
+            };
+          },
+        }),
+        delete: () => ({
+          where: (...args: unknown[]) => mockTxDeleteWhere(...args),
+        }),
+        insert: () => ({
+          values: (...args: unknown[]) => mockTxInsertValues(...args),
+        }),
+      };
+      return fn(tx);
+    },
   },
   positions: {
     id: 'id',
@@ -35,6 +52,8 @@ vi.mock('@/lib/db', () => ({
     type: 'type',
     deletedAt: 'deleted_at',
   },
+  positionThemes: { positionId: 'position_id' },
+  positionChunks: { positionId: 'position_id' },
 }));
 
 vi.mock('@/lib/security/rate-limit', () => ({
@@ -56,7 +75,7 @@ describe('updatePosition', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: TEST_USER_ID } });
-    mockUpdateWhere.mockResolvedValue(undefined);
+    mockTxUpdateWhere.mockResolvedValue(undefined);
   });
 
   it('returns guard error when authentication fails', async () => {
@@ -116,7 +135,7 @@ describe('updatePosition', () => {
     });
 
     expect(result).toEqual({ error: 'notFound' });
-    expect(mockUpdateWhere).not.toHaveBeenCalled();
+    expect(mockTxUpdateWhere).not.toHaveBeenCalled();
   });
 
   it('returns unauthorized when user is not the owner', async () => {
@@ -137,7 +156,7 @@ describe('updatePosition', () => {
     });
 
     expect(result).toEqual({ error: 'unauthorized' });
-    expect(mockUpdateWhere).not.toHaveBeenCalled();
+    expect(mockTxUpdateWhere).not.toHaveBeenCalled();
   });
 
   it('returns alreadyDeleted when position is soft-deleted', async () => {
@@ -158,7 +177,7 @@ describe('updatePosition', () => {
     });
 
     expect(result).toEqual({ error: 'alreadyDeleted' });
-    expect(mockUpdateWhere).not.toHaveBeenCalled();
+    expect(mockTxUpdateWhere).not.toHaveBeenCalled();
   });
 
   it('updates the row when caller owns it', async () => {
@@ -180,7 +199,7 @@ describe('updatePosition', () => {
     });
 
     expect(result).toEqual({ success: true });
-    expect(mockUpdateWhere).toHaveBeenCalledTimes(1);
+    expect(mockTxUpdateWhere).toHaveBeenCalledTimes(1);
   });
 
   it('coerces empty description to null', async () => {
@@ -193,14 +212,6 @@ describe('updatePosition', () => {
       },
     ]);
 
-    let capturedSet: { description: string | null } | null = null;
-    const dbModule = await import('@/lib/db');
-    const setSpy = vi.fn((values: { description: string | null }) => {
-      capturedSet = values;
-      return { where: mockUpdateWhere };
-    });
-    (dbModule.db as unknown as { update: () => unknown }).update = () => ({ set: setSpy });
-
     const { updatePosition } = await import('./updatePosition');
     await updatePosition({
       id: TEST_POSITION_ID,
@@ -209,7 +220,7 @@ describe('updatePosition', () => {
       description: '   ',
     });
 
-    expect(capturedSet).not.toBeNull();
-    expect(capturedSet!.description).toBeNull();
+    expect(mockTxUpdateSet).toHaveBeenCalledTimes(1);
+    expect(mockTxUpdateSet.mock.calls[0]![0]).toMatchObject({ description: null });
   });
 });

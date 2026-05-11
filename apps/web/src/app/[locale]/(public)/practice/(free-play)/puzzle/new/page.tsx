@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 
 import { getOptionalUser } from '@/lib/auth';
 import { db, profiles } from '@/lib/db';
+import { loadAvailableTags } from '@/lib/positions/tag-loader';
 import { resolveAuthorName } from '@/lib/users/display-name';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
@@ -40,7 +41,16 @@ export default async function NewPuzzlePage({ params }: Props) {
     displayName = resolveAuthorName(profile, { fallback: '' });
   }
 
-  const form = <CreatePuzzleForm displayName={displayName} disableUnsavedGuard={!user} />;
+  const availableTags = await loadAvailableTags(locale);
+
+  const form = (
+    <CreatePuzzleForm
+      displayName={displayName}
+      disableUnsavedGuard={!user}
+      availableThemes={availableTags.themes}
+      availableChunks={availableTags.chunks}
+    />
+  );
 
   return (
     <PageLayout

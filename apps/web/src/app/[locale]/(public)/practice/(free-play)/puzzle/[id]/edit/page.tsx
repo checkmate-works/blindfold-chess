@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { notFound, redirect } from 'next/navigation';
 
 import { getAuthenticatedUser } from '@/lib/auth';
+import { loadAvailableTags, loadPositionTags } from '@/lib/positions/tag-loader';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -53,6 +54,11 @@ export default async function EditPuzzlePage({ params }: Props) {
   const solutionMoves =
     solutions[0]?.solutionMoves.map((m) => ({ san: m.san, note: m.note ?? null })) ?? [];
 
+  const [attachedTags, availableTags] = await Promise.all([
+    loadPositionTags(position.id, locale),
+    loadAvailableTags(locale),
+  ]);
+
   return (
     <PageLayout
       title={t('list.title')}
@@ -72,7 +78,10 @@ export default async function EditPuzzlePage({ params }: Props) {
           description: position.description,
           fen: position.fen,
           solutionMoves,
+          themes: attachedTags.themes,
+          chunks: attachedTags.chunks,
         }}
+        available={{ themes: availableTags.themes, chunks: availableTags.chunks }}
       />
 
       <section

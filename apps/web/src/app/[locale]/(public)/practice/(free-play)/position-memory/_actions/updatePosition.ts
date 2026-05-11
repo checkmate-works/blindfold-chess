@@ -6,6 +6,8 @@ import { and, eq, isNull } from 'drizzle-orm';
 
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, positions } from '@/lib/db';
+import { validateAndDedupeTagIds } from '@/lib/positions/tag-validation';
+import { replacePositionTags } from '@/lib/positions/tag-writes';
 import { validatePositionMutationData } from '@/lib/positions/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { logActivityEvent } from '@/lib/users/activity-log';
@@ -17,6 +19,16 @@ export async function updatePosition(data: {
   fen: string;
   title: string;
   description?: string | null;
+  /**
+   * When provided (even as []) replaces the position's theme tags.
+   * Omit to leave existing tags untouched.
+   */
+  themeIds?: string[];
+  /**
+   * When provided (even as []) replaces the position's chunk tags.
+   * Omit to leave existing tags untouched.
+   */
+  chunkIds?: string[];
 }): Promise<UpdatePositionResult> {
   const guardResult = await authenticateAndGuard(RATE_LIMITS.updatePosition);
 
@@ -60,16 +72,29 @@ export async function updatePosition(data: {
     return { error: 'alreadyDeleted' };
   }
 
-  await db
-    .update(positions)
-    .set({
-      fen: data.fen.trim(),
-      title: data.title.trim(),
-      description: data.description?.trim() || null,
-    })
-    .where(
-      and(eq(positions.id, data.id), eq(positions.userId, user.id), isNull(positions.deletedAt))
-    );
+  const tagValidation = await validateAndDedupeTagIds({
+    themeIds: data.themeIds,
+    chunkIds: data.chunkIds,
+  });
+  if (!tagValidation.ok) {
+    return { error: tagValidation.error };
+  }
+  const { themeIds: dedupedThemeIds, chunkIds: dedupedChunkIds } = tagValidation.deduped;
+
+  await db.transaction(async (tx) => {
+    await tx
+      .update(positions)
+      .set({
+        fen: data.fen.trim(),
+        title: data.title.trim(),
+        description: data.description?.trim() || null,
+      })
+      .where(
+        and(eq(positions.id, data.id), eq(positions.userId, user.id), isNull(positions.deletedAt))
+      );
+
+    await replacePositionTags(tx, data.id, user.id, dedupedThemeIds, dedupedChunkIds);
+  });
 
   logActivityEvent({
     userId: user.id,

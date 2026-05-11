@@ -30,14 +30,15 @@ export async function seedGlossaryTerms() {
   for (const chessTerm of chessTerms) {
     const slug = slugify(chessTerm.term);
     const category = chessTerm.category || 'general';
+    const isTheme = chessTerm.isTheme ?? false;
 
     // Upsert term (idempotent on slug)
     const [term] = await db
       .insert(glossaryTerms)
-      .values({ slug, termEn: chessTerm.term, category })
+      .values({ slug, termEn: chessTerm.term, category, isTheme })
       .onConflictDoUpdate({
         target: glossaryTerms.slug,
-        set: { termEn: chessTerm.term, category, updatedAt: new Date() },
+        set: { termEn: chessTerm.term, category, isTheme, updatedAt: new Date() },
       })
       .returning({ id: glossaryTerms.id });
 

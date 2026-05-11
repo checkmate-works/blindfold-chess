@@ -2,9 +2,9 @@
 
 import { validateFenSemantic } from '@blindfold-chess/features/chess-core';
 
-import type { db } from '@/lib/db';
 import { postFenAttachments } from '@/lib/db';
 import { extractPgErrorCode } from '@/lib/db/extract-pg-error-code';
+import type { DbTx } from '@/lib/db/types';
 import { FEN_MAX_LENGTH } from '@/lib/post-fens/constants';
 import { sanitizeFenCaption } from '@/lib/post-fens/sanitize-fen-caption';
 
@@ -25,10 +25,7 @@ import { createReplyBase } from './createReply';
 
 const CAPTION_MAX_LENGTH = 200;
 
-type ExtraAfterInsert = (
-  tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
-  replyId: string
-) => Promise<void>;
+type ExtraAfterInsert = (tx: DbTx, replyId: string) => Promise<void>;
 
 export async function createReplyWithFenAttachmentBase(args: {
   locale: string;

@@ -18,6 +18,7 @@ import { getOptionalUser } from '@/lib/auth';
 import { getLinkedChunksForPosition } from '@/lib/chunks/queries';
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { getPositionLikeMeta } from '@/lib/positions/like-queries';
+import { getLinkedThemesForPosition } from '@/lib/themes/queries';
 import { resolveDisplayName } from '@/lib/users/display-name';
 
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_actions/toggleLike';
@@ -35,7 +36,7 @@ import {
   getPostCountByTopicKey,
 } from '@/app/[locale]/(public)/topics/_lib/queries';
 import { SectionTitle } from '@/app/[locale]/_components';
-import { RelatedChunks } from '@/app/[locale]/_components/RelatedChunks';
+import { RelatedTags } from '@/app/[locale]/_components/RelatedTags';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -82,6 +83,7 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
   const { locale, id } = await params;
   const sortBy = validateSort(((await searchParams).sort as string | undefined) ?? 'new');
   const t = await getTranslations({ locale, namespace: 'practice.puzzle' });
+  const tTags = await getTranslations({ locale, namespace: 'practice.tags' });
   const tComments = await getTranslations({ locale, namespace: 'topics.positionPuzzle' });
   const tTopics = await getTranslations({ locale, namespace: 'topics' });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
@@ -97,9 +99,10 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
   const displayName = resolveDisplayName(profile);
 
   const currentUser = await getOptionalUser();
-  const [likeMeta, relatedChunks, commentCount, allComments] = await Promise.all([
+  const [likeMeta, relatedChunks, relatedThemes, commentCount, allComments] = await Promise.all([
     getPositionLikeMeta(position.id, currentUser?.id),
     getLinkedChunksForPosition(position.id),
+    getLinkedThemesForPosition(position.id, locale),
     getPostCountByTopicKey('position_puzzle', position.id),
     getCommentTreeForTopic('position_puzzle', position.id, currentUser?.id),
   ]);
@@ -144,7 +147,16 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
         </Link>
       </div>
 
-      <RelatedChunks chunks={relatedChunks} locale={locale} />
+      <RelatedTags
+        themes={relatedThemes}
+        chunks={relatedChunks}
+        locale={locale}
+        labels={{
+          sectionTitle: (count) => t('detail.usefulSection', { count }),
+          badgeTheme: tTags('badge.theme'),
+          badgeChunk: tTags('badge.chunk'),
+        }}
+      />
 
       <PositionAuthorAttribution
         profile={profile}

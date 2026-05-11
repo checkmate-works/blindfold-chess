@@ -996,7 +996,8 @@
         "tryAgain": "Try Again",
         "backToList": "Back to List",
         "edited": "(edited)",
-        "editAction": "Edit"
+        "editAction": "Edit",
+        "usefulSection": "Useful patterns for solving ({count})"
       },
       "delete": {
         "button": "Delete Problem",
@@ -1093,7 +1094,8 @@
         "createdBy": "Created by",
         "noPieces": "None",
         "edited": "(edited)",
-        "editAction": "Edit"
+        "editAction": "Edit",
+        "usefulSection": "Useful patterns for solving ({count})"
       },
       "delete": {
         "button": "Delete Puzzle",
@@ -1475,6 +1477,27 @@
         "diagonalLegend": "Diagonal (a1-h8)",
         "antiDiagonalLegend": "Anti-diagonal (h1-a8)",
         "trialCorrectAnswer": "Answer: {diagonal}, {antiDiagonal}"
+      }
+    },
+    "tags": {
+      "section": "Themes & chunks",
+      "help": "Themes are curated vocabulary (pin, passed pawn, …). Chunks are personal piece patterns shared by other solvers.",
+      "placeholder": "Search to add a theme or chunk…",
+      "badge": {
+        "theme": "Theme",
+        "chunk": "Chunk"
+      },
+      "noResults": "No matches",
+      "remove": "Remove {label}",
+      "openDetail": "Show details for {label}",
+      "moreItemsHint": "+{count} more — type to filter",
+      "detail": {
+        "readingPrefix": "Reading: ",
+        "noDescription": "No description available.",
+        "viewInGlossary": "View in glossary",
+        "viewChunkPage": "View chunk page",
+        "detach": "Detach",
+        "close": "Close"
       }
     }
   },

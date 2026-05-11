@@ -7,6 +7,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, topicPosts, userFollows } from '@/lib/db';
+import type { DbTx } from '@/lib/db/types';
 import { createNotification } from '@/lib/notifications/notification';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { logActivityEvent } from '@/lib/users/activity-log';
@@ -54,10 +55,7 @@ export async function createReplyBase(params: {
    * the contract on `createPostBase`. Side effects that don't need atomicity
    * (notifications, activity log, revalidate) stay outside the transaction.
    */
-  afterInsert?: (
-    tx: Parameters<Parameters<typeof db.transaction>[0]>[0],
-    replyId: string
-  ) => Promise<void>;
+  afterInsert?: (tx: DbTx, replyId: string) => Promise<void>;
   formData: FormData;
 }): Promise<CreateReplyState> {
   const {

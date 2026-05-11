@@ -447,6 +447,45 @@ CREATE POLICY "position_chunks_delete" ON "position_chunks"
   );
 
 -- =============================================================================
+-- position_themes (junction — public read, position-owner write)
+-- =============================================================================
+-- Mirrors `position_chunks`: INSERT/DELETE are gated on the POSITION owner.
+-- The INSERT path additionally requires `glossary_terms.is_theme = true` so
+-- non-theme glossary entries (Calculation, Flank, Algebraic notation, etc.)
+-- cannot be attached as theme tags even by a direct REST write.
+ALTER TABLE "position_themes" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "position_themes_select" ON "position_themes";
+CREATE POLICY "position_themes_select" ON "position_themes"
+  FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "position_themes_insert" ON "position_themes";
+CREATE POLICY "position_themes_insert" ON "position_themes"
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM positions p
+      WHERE p.id = position_id
+      AND p.user_id = auth.uid()
+      AND p.deleted_at IS NULL
+    )
+    AND EXISTS (
+      SELECT 1 FROM glossary_terms gt
+      WHERE gt.id = term_id
+      AND gt.is_theme = true
+    )
+  );
+
+DROP POLICY IF EXISTS "position_themes_delete" ON "position_themes";
+CREATE POLICY "position_themes_delete" ON "position_themes"
+  FOR DELETE USING (
+    EXISTS (
+      SELECT 1 FROM positions p
+      WHERE p.id = position_id
+      AND p.user_id = auth.uid()
+    )
+  );
+
+-- =============================================================================
 -- puzzle_solutions (public read, service role only write)
 -- =============================================================================
 ALTER TABLE "puzzle_solutions" ENABLE ROW LEVEL SECURITY;

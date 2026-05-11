@@ -546,8 +546,49 @@ GRANT SELECT ON TABLE public.chunks TO anon;
 -- position_chunks
 -- =============================================================================
 
--- No FK to auth.users on this junction table (the FKs to positions and chunks
--- are managed by Drizzle). Grants only: public read, authenticated
--- INSERT/DELETE gated by RLS on the position's owner.
+-- FK constraint: position_chunks.attached_by_user_id → auth.users(id) ON DELETE SET NULL
+-- Records who attached the chunk to the position. SET NULL on user
+-- hard-delete preserves the junction row itself (the chunk-position
+-- association remains valid even if the attaching user is gone) and
+-- mirrors the rationale used for `chunks.user_id`.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'position_chunks_attached_by_user_id_fkey'
+  ) THEN
+    ALTER TABLE public.position_chunks
+      ADD CONSTRAINT position_chunks_attached_by_user_id_fkey
+      FOREIGN KEY (attached_by_user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+  END IF;
+END;
+$$;
+
+-- The FKs to positions and chunks are managed by Drizzle. Grants only: public
+-- read, authenticated INSERT/DELETE gated by RLS on the position's owner.
 GRANT SELECT, INSERT, DELETE ON TABLE public.position_chunks TO authenticated;
 GRANT SELECT ON TABLE public.position_chunks TO anon;
+
+-- =============================================================================
+-- position_themes
+-- =============================================================================
+
+-- FK constraint: position_themes.attached_by_user_id → auth.users(id) ON DELETE SET NULL
+-- Same rationale as position_chunks.attached_by_user_id: preserve the
+-- tag association across user hard-deletes.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'position_themes_attached_by_user_id_fkey'
+  ) THEN
+    ALTER TABLE public.position_themes
+      ADD CONSTRAINT position_themes_attached_by_user_id_fkey
+      FOREIGN KEY (attached_by_user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+  END IF;
+END;
+$$;
+
+-- The FKs to positions and glossary_terms are managed by Drizzle. Grants only:
+-- public read, authenticated INSERT/DELETE gated by RLS on the position's
+-- owner (and DB-enforced is_theme = true on insert).
+GRANT SELECT, INSERT, DELETE ON TABLE public.position_themes TO authenticated;
+GRANT SELECT ON TABLE public.position_themes TO anon;

@@ -28,4 +28,14 @@ export interface ChessTerm {
   relatedTerms?: string[];
   positions?: { fen: string; sortOrder: number; caption?: string }[];
   category?: GlossaryCategory;
+  /**
+   * Whether this term is selectable as a theme tag on positions (via
+   * `position_themes`). Default `false`. Set to `true` only for terms
+   * that meaningfully tag specific positions for learning/filtering
+   * (tactical motifs, structural features, positional themes, endgame
+   * patterns). Concept vocabulary (Calculation, Flank, Tactics, ...),
+   * meta-game terms, and concrete piece-config templates that belong
+   * in the chunks UGC system stay `false`.
+   */
+  isTheme?: boolean;
 }
