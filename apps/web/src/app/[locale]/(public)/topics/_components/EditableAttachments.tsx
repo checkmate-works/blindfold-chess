@@ -13,25 +13,13 @@ import type { PostAttachment } from '@/lib/games/get-attachments-for-posts';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
 import type { AttachmentKind } from '../_actions/removePostAttachment';
+import type { AttachAction, RemoveAttachmentAction } from '../_lib/action-types';
 import { AttachedEmbedCard } from './AttachedEmbedCard';
 import { AttachedFenCard } from './AttachedFenCard';
 import { AttachedGameCard } from './AttachedGameCard';
 import { AttachedVideoCard } from './AttachedVideoCard';
 import type { AggregatedAttachmentMode } from './AttachmentModal';
 import { AttachmentModal } from './AttachmentModal';
-
-type RemoveAttachmentAction = (
-  postId: string,
-  attachmentId: string,
-  kind: AttachmentKind,
-  locale: string
-) => Promise<{ success: true } | { error: string }>;
-
-type AttachAction = (
-  postId: string,
-  locale: string,
-  formData: FormData
-) => Promise<{ success: true; attachment: { id: string } } | { error: string }>;
 
 type Props = {
   postId: string;

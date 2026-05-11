@@ -8,11 +8,7 @@ import { AiFillHeart, AiOutlineHeart } from 'react-icons/ai';
 import { AuthPromptModal } from '@/app/[locale]/_components/AuthPromptModal';
 import { useAuthGuard } from '@/app/[locale]/_hooks/use-auth-guard';
 
-type ToggleLikeAction = (
-  postId: string,
-  locale: string,
-  topicKey: string
-) => Promise<{ liked: boolean; likeCount: number } | { error: string }>;
+import type { ToggleLikeAction } from '../_lib/action-types';
 
 type Props = {
   postId: string;

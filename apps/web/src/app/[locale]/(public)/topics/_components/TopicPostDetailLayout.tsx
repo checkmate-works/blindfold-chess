@@ -5,7 +5,6 @@ import { getTranslations } from 'next-intl/server';
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import type { User } from '@supabase/supabase-js';
 
-import type { ActionResult } from '@/lib/action-types';
 import type { PostAttachment } from '@/lib/games/get-attachments-for-posts';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
@@ -13,7 +12,13 @@ import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import type { BreadcrumbItem } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import type { AttachmentKind } from '../_actions/removePostAttachment';
+import type {
+  AttachAction,
+  DeletePostAction,
+  EditPostAction,
+  RemoveAttachmentAction,
+  ToggleLikeAction,
+} from '../_lib/action-types';
 import { buildCommentTree } from '../_lib/comment-tree';
 import type { PostWithReplyMeta, SortMode } from '../_lib/shared';
 import { CommentTree } from './CommentTree';
@@ -22,35 +27,6 @@ import { OpCard } from './OpCard';
 import { ReplyForm } from './ReplyForm';
 import type { ReplyAttachmentActions } from './ReplyForm';
 import { SortSelect } from './SortSelect';
-
-type ToggleLikeAction = (
-  postId: string,
-  locale: string,
-  topicKey: string
-) => Promise<{ liked: boolean; likeCount: number } | { error: string }>;
-
-type DeletePostAction = (postId: string, locale: string) => Promise<ActionResult>;
-
-type EditPostAction = (
-  postId: string,
-  locale: string,
-  formData: FormData
-) => Promise<
-  { success: true; content: string; isSpoiler: boolean; updatedAt: Date } | { error: string }
->;
-
-type RemoveAttachmentAction = (
-  postId: string,
-  attachmentId: string,
-  kind: AttachmentKind,
-  locale: string
-) => Promise<{ success: true } | { error: string }>;
-
-type AttachAction = (
-  postId: string,
-  locale: string,
-  formData: FormData
-) => Promise<{ success: true; attachment: { id: string } } | { error: string }>;
 
 type Props = {
   locale: Locale;

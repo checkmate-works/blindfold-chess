@@ -7,13 +7,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 
 import { MAX_CONTENT_LENGTH } from '@/lib/validations/content';
 
-type EditPostAction = (
-  postId: string,
-  locale: string,
-  formData: FormData
-) => Promise<
-  { success: true; content: string; isSpoiler: boolean; updatedAt: Date } | { error: string }
->;
+import type { EditPostAction } from '../_lib/action-types';
 
 type Props = {
   postId: string;

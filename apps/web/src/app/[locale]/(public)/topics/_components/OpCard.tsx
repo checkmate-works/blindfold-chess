@@ -4,48 +4,24 @@ import { type ReactNode, useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import type { ActionResult } from '@/lib/action-types';
 import type { PostAttachment } from '@/lib/games/get-attachments-for-posts';
 
 import { LinkedText } from '@/app/[locale]/_components/LinkedText';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 
-import type { AttachmentKind } from '../_actions/removePostAttachment';
 import { formatAbsoluteDateTime } from '../_lib/absolute-time';
+import type {
+  AttachAction,
+  DeletePostAction,
+  EditPostAction,
+  RemoveAttachmentAction,
+  ToggleLikeAction,
+} from '../_lib/action-types';
 import { DeletePostButton } from './DeletePostButton';
 import { EditPostForm } from './EditPostForm';
 import { EditableAttachments } from './EditableAttachments';
 import { EditedIndicator } from './EditedIndicator';
 import { LikeButton } from './LikeButton';
-
-type ToggleLikeAction = (
-  postId: string,
-  locale: string,
-  topicKey: string
-) => Promise<{ liked: boolean; likeCount: number } | { error: string }>;
-
-type DeletePostAction = (postId: string, locale: string) => Promise<ActionResult>;
-
-type EditPostAction = (
-  postId: string,
-  locale: string,
-  formData: FormData
-) => Promise<
-  { success: true; content: string; isSpoiler: boolean; updatedAt: Date } | { error: string }
->;
-
-type RemoveAttachmentAction = (
-  postId: string,
-  attachmentId: string,
-  kind: AttachmentKind,
-  locale: string
-) => Promise<{ success: true } | { error: string }>;
-
-type AttachAction = (
-  postId: string,
-  locale: string,
-  formData: FormData
-) => Promise<{ success: true; attachment: { id: string } } | { error: string }>;
 
 type Author = {
   username: string | null;

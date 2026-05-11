@@ -1,41 +1,17 @@
-import type { ActionResult } from '@/lib/action-types';
 import type { PostAttachment } from '@/lib/games/get-attachments-for-posts';
 
-import type { AttachmentKind } from '../_actions/removePostAttachment';
+import type {
+  AttachAction,
+  DeletePostAction,
+  EditPostAction,
+  RemoveAttachmentAction,
+  ToggleLikeAction,
+} from '../_lib/action-types';
 import type { CommentTreeNode } from '../_lib/comment-tree';
 import { groupReplies } from '../_lib/comment-tree';
 import { canUserReply } from '../_lib/permissions';
 import { CommentNode } from './CommentNode';
 import type { ReplyAttachmentActions } from './ReplyForm';
-
-type ToggleLikeAction = (
-  postId: string,
-  locale: string,
-  topicKey: string
-) => Promise<{ liked: boolean; likeCount: number } | { error: string }>;
-
-type DeletePostAction = (postId: string, locale: string) => Promise<ActionResult>;
-
-type EditPostAction = (
-  postId: string,
-  locale: string,
-  formData: FormData
-) => Promise<
-  { success: true; content: string; isSpoiler: boolean; updatedAt: Date } | { error: string }
->;
-
-type RemoveAttachmentAction = (
-  postId: string,
-  attachmentId: string,
-  kind: AttachmentKind,
-  locale: string
-) => Promise<{ success: true } | { error: string }>;
-
-type AttachAction = (
-  postId: string,
-  locale: string,
-  formData: FormData
-) => Promise<{ success: true; attachment: { id: string } } | { error: string }>;
 
 type Props = {
   /** Root nodes already built by `buildCommentTree`. */
