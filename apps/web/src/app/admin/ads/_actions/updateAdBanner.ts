@@ -1,7 +1,5 @@
 'use server';
 
-import { updateTag } from 'next/cache';
-
 import { eq } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
@@ -40,12 +38,6 @@ export async function updateAdBanner(id: string, data: UpdateData): Promise<Acti
       updatedAt: new Date(),
     })
     .where(eq(adBanners.id, id));
-
-  // Invalidate the unstable_cache-wrapped ads config. Each ISR page picks up
-  // the change on its next natural revalidation cycle — a layout-wide
-  // revalidatePath here would evict every ISR entry under [locale]/(public),
-  // which previously caused a 305x ISR Writes spike on Vercel.
-  updateTag('ads-config');
 
   return { success: true };
 }

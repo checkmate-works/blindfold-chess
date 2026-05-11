@@ -5,8 +5,6 @@ import { updateAdBanner } from './updateAdBanner';
 const mockGetUser = vi.fn();
 const mockSelectFromWhere = vi.fn();
 const mockUpdateSetWhere = vi.fn();
-const mockUpdateTag = vi.fn();
-const mockRevalidatePath = vi.fn();
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () =>
@@ -44,11 +42,6 @@ vi.mock('@/lib/db', () => ({
   userRoles: { userId: 'user_id' },
 }));
 
-vi.mock('next/cache', () => ({
-  updateTag: (...args: unknown[]) => mockUpdateTag(...args),
-  revalidatePath: (...args: unknown[]) => mockRevalidatePath(...args),
-}));
-
 const adminUserId = 'admin-00000000-0000-0000-0000-000000000001';
 const bannerId = 'banner-00000000-0000-0000-0000-000000000001';
 
@@ -69,8 +62,6 @@ describe('updateAdBanner', () => {
 
     const result = await updateAdBanner(bannerId, validData);
     expect(result).toEqual({ error: 'unauthorized' });
-    expect(mockUpdateTag).not.toHaveBeenCalled();
-    expect(mockRevalidatePath).not.toHaveBeenCalled();
   });
 
   it('should return validation error when href is empty', async () => {
@@ -79,11 +70,9 @@ describe('updateAdBanner', () => {
 
     const result = await updateAdBanner(bannerId, { ...validData, href: '' });
     expect(result).toEqual({ error: 'invalid href' });
-    expect(mockUpdateTag).not.toHaveBeenCalled();
-    expect(mockRevalidatePath).not.toHaveBeenCalled();
   });
 
-  it('should successfully update banner and invalidate caches', async () => {
+  it('should successfully update banner', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
     mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
 
@@ -91,6 +80,5 @@ describe('updateAdBanner', () => {
 
     expect(result).toEqual({ success: true });
     expect(mockUpdateSetWhere).toHaveBeenCalled();
-    expect(mockUpdateTag).toHaveBeenCalledWith('ads-config');
   });
 });
