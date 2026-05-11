@@ -60,6 +60,15 @@ export const RATE_LIMITS = {
    * image-removal as a side channel.
    */
   removePostAttachment: { action: 'remove_post_attachment', maxAttempts: 30, windowMs: 3_600_000 },
+  /**
+   * Per-user limit for attaching a PGN to an existing topic_post via the
+   * edit flow. Aligned with `attachPostFen` (1:0..1 invariant already caps
+   * successful inserts at one per post, so this guards against spam
+   * attempts that hit the validator / Lichess fetcher). The legacy
+   * create-flow `createPostWithAttachment` budget stays separate so a
+   * stuck edit loop cannot starve a user out of creating new posts.
+   */
+  attachPostPgn: { action: 'attach_post_pgn', maxAttempts: 10, windowMs: 3_600_000 },
   setupUsername: { action: 'setup_username', maxAttempts: 5, windowMs: 600_000 },
   updateProfile: { action: 'update_profile', maxAttempts: 5, windowMs: 600_000 },
   uploadAvatar: { action: 'upload_avatar', maxAttempts: 5, windowMs: 600_000 },
