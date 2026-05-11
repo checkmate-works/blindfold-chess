@@ -26,6 +26,25 @@ export type AttachmentKind = 'pgn' | 'fen' | 'image' | 'video' | 'embed';
 export type RemovePostAttachmentResult = { success: true } | { error: string };
 
 /**
+ * Drizzle table reference per attachment kind that follows the 1:0..1
+ * invariant on `(post_id)`. All four expose `id` and `postId` columns
+ * via Drizzle's `$inferSelect` shape, so the polymorphic DELETE below
+ * can reduce to a single `(id, post_id)`-scoped delete keyed by table
+ * — eliminating the per-kind switch arm.
+ *
+ * `image` is intentionally excluded: it is 1:N (up to 3 per post) AND
+ * requires a pre-DELETE `storage_path` lookup plus a post-DELETE
+ * Storage cleanup, neither of which the 1:0..1 kinds need. Its branch
+ * stays inline in the action body.
+ */
+const TABLE_BY_1_TO_0_OR_1_KIND = {
+  pgn: postGamePgnAttachments,
+  fen: postFenAttachments,
+  video: postVideoAttachments,
+  embed: postGameEmbedAttachments,
+} as const satisfies Record<Exclude<AttachmentKind, 'image'>, unknown>;
+
+/**
  * Author-only delete of a single attachment row off one of their own
  * `topic_posts`. Polymorphic by `kind`; the action picks the matching
  * attachment table and deletes the row whose (id, post_id) pair matches
@@ -89,74 +108,32 @@ export async function removePostAttachment(
   // truth and the reaper covers any survivors.
   let imageStoragePath: string | null = null;
 
-  switch (kind) {
-    case 'image': {
-      const [row] = await db
-        .select({ storagePath: postImageAttachments.storagePath })
-        .from(postImageAttachments)
-        .where(
-          and(eq(postImageAttachments.id, attachmentId), eq(postImageAttachments.postId, post.id))
-        )
-        .limit(1);
-      if (!row) return { error: 'attachmentNotFound' };
-      imageStoragePath = row.storagePath;
+  if (kind === 'image') {
+    const [row] = await db
+      .select({ storagePath: postImageAttachments.storagePath })
+      .from(postImageAttachments)
+      .where(
+        and(eq(postImageAttachments.id, attachmentId), eq(postImageAttachments.postId, post.id))
+      )
+      .limit(1);
+    if (!row) return { error: 'attachmentNotFound' };
+    imageStoragePath = row.storagePath;
 
-      await db
-        .delete(postImageAttachments)
-        .where(
-          and(eq(postImageAttachments.id, attachmentId), eq(postImageAttachments.postId, post.id))
-        );
-      break;
-    }
-    case 'pgn': {
-      const result = await db
-        .delete(postGamePgnAttachments)
-        .where(
-          and(
-            eq(postGamePgnAttachments.id, attachmentId),
-            eq(postGamePgnAttachments.postId, post.id)
-          )
-        )
-        .returning({ id: postGamePgnAttachments.id });
-      if (result.length === 0) return { error: 'attachmentNotFound' };
-      break;
-    }
-    case 'fen': {
-      const result = await db
-        .delete(postFenAttachments)
-        .where(and(eq(postFenAttachments.id, attachmentId), eq(postFenAttachments.postId, post.id)))
-        .returning({ id: postFenAttachments.id });
-      if (result.length === 0) return { error: 'attachmentNotFound' };
-      break;
-    }
-    case 'video': {
-      const result = await db
-        .delete(postVideoAttachments)
-        .where(
-          and(eq(postVideoAttachments.id, attachmentId), eq(postVideoAttachments.postId, post.id))
-        )
-        .returning({ id: postVideoAttachments.id });
-      if (result.length === 0) return { error: 'attachmentNotFound' };
-      break;
-    }
-    case 'embed': {
-      const result = await db
-        .delete(postGameEmbedAttachments)
-        .where(
-          and(
-            eq(postGameEmbedAttachments.id, attachmentId),
-            eq(postGameEmbedAttachments.postId, post.id)
-          )
-        )
-        .returning({ id: postGameEmbedAttachments.id });
-      if (result.length === 0) return { error: 'attachmentNotFound' };
-      break;
-    }
-    default: {
-      const _exhaustive: never = kind;
-      void _exhaustive;
-      return { error: 'unsupportedKind' };
-    }
+    await db
+      .delete(postImageAttachments)
+      .where(
+        and(eq(postImageAttachments.id, attachmentId), eq(postImageAttachments.postId, post.id))
+      );
+  } else {
+    // 1:0..1 kinds share the same `(id, post_id)`-scoped DELETE + RETURNING
+    // shape — the table reference is the only thing that differs. Looking
+    // the table up by kind keeps each branch one line.
+    const table = TABLE_BY_1_TO_0_OR_1_KIND[kind];
+    const result = await db
+      .delete(table)
+      .where(and(eq(table.id, attachmentId), eq(table.postId, post.id)))
+      .returning({ id: table.id });
+    if (result.length === 0) return { error: 'attachmentNotFound' };
   }
 
   if (kind === 'image' && imageStoragePath) {

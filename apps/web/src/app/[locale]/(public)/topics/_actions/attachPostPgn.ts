@@ -6,6 +6,7 @@ import { eq } from 'drizzle-orm';
 
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, postGamePgnAttachments, topicPosts } from '@/lib/db';
+import { extractPgErrorCode } from '@/lib/db/extract-pg-error-code';
 import {
   buildPgnAttachmentValues,
   pgnAttachmentErrorKey,
@@ -118,16 +119,10 @@ export async function attachPostPgn(
       attachment: { id: row.id, createdAt: row.createdAt },
     };
   } catch (err) {
-    const code = pgCode(err);
+    const code = extractPgErrorCode(err);
     if (code === '23505') {
       return { error: 'alreadyAttached' };
     }
     throw err;
   }
-}
-
-function pgCode(err: unknown): string | undefined {
-  return err instanceof Error && 'code' in err
-    ? (err as Error & { code?: string }).code
-    : undefined;
 }

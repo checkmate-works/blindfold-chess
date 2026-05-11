@@ -8,6 +8,7 @@ import { eq } from 'drizzle-orm';
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, postFenAttachments, topicPosts } from '@/lib/db';
+import { extractPgErrorCode } from '@/lib/db/extract-pg-error-code';
 import { FEN_MAX_LENGTH } from '@/lib/post-fens/constants';
 import { sanitizeFenCaption } from '@/lib/post-fens/sanitize-fen-caption';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
@@ -23,17 +24,6 @@ import { buildTopicDetailPath } from '../_lib/topic-paths';
  * truncating.
  */
 const CAPTION_MAX_LENGTH = 200;
-
-/**
- * Extract a Postgres `code` from a thrown DB error. Drizzle / `pg` attach
- * the SQLSTATE code on the Error instance; we narrow defensively so the
- * cast is centralized rather than repeated at every catch branch.
- */
-function pgCode(err: unknown): string | undefined {
-  return err instanceof Error && 'code' in err
-    ? (err as Error & { code?: string }).code
-    : undefined;
-}
 
 /**
  * Edit-flow adapter: same auth + validation pipeline as `attachPostFen`,
@@ -237,7 +227,7 @@ export async function attachPostFen(input: {
       },
     };
   } catch (err) {
-    const code = pgCode(err);
+    const code = extractPgErrorCode(err);
     if (code === '23505') {
       return { error: 'postFenAttachment.error.alreadyAttached' };
     }
