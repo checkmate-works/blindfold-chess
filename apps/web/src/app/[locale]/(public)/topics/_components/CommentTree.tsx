@@ -14,6 +14,14 @@ type ToggleLikeAction = (
 
 type DeletePostAction = (postId: string, locale: string) => Promise<ActionResult>;
 
+type EditPostAction = (
+  postId: string,
+  locale: string,
+  formData: FormData
+) => Promise<
+  { success: true; content: string; isSpoiler: boolean; updatedAt: Date } | { error: string }
+>;
+
 type Props = {
   /** Root nodes already built by `buildCommentTree`. */
   comments: CommentTreeNode[];
@@ -31,6 +39,15 @@ type Props = {
    */
   replyAttachmentActions: ReplyAttachmentActions;
   deletePostAction: DeletePostAction;
+  /**
+   * Optional in-place edit Server Action. When provided, every author-owned
+   * `CommentNode` in the tree exposes an "Edit" button alongside "Delete".
+   * Threading this through the tree (rather than letting `CommentNode`
+   * import it directly) keeps the per-page wiring centralised in the page
+   * component, matching the existing pattern for `deletePostAction` /
+   * `toggleLikeAction`.
+   */
+  editPostAction?: EditPostAction;
   i18n: {
     likeNamespace: string;
     replyNamespace: string;
@@ -92,6 +109,7 @@ export async function CommentTree({
   toggleLikeAction,
   replyAttachmentActions,
   deletePostAction,
+  editPostAction,
   i18n,
   threadRootPostId,
   extraContentByPostId,
@@ -125,6 +143,7 @@ export async function CommentTree({
           toggleLikeAction={toggleLikeAction}
           replyAttachmentActions={replyAttachmentActions}
           deletePostAction={deletePostAction}
+          editPostAction={editPostAction}
           i18n={i18n}
           extraContentByPostId={extraContentByPostId}
         />

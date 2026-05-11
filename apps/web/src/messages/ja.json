@@ -3657,6 +3657,22 @@
       "overlayTitle": "ネタバレを含みます",
       "overlayHint": "タップで表示",
       "overlayAriaLabel": "パズルの解法を含む可能性のあるコメントを表示"
+    },
+    "edit": {
+      "button": "編集",
+      "save": "保存",
+      "cancel": "キャンセル",
+      "saving": "保存中...",
+      "editedLabel": "(編集済み)",
+      "editedTitle": "最終編集 {date}",
+      "contentRequired": "本文を入力してください",
+      "contentTooLong": "本文は2000文字以内にしてください",
+      "error": "エラーが発生しました。もう一度お試しください。",
+      "signInRequired": "編集するにはサインインしてください",
+      "rateLimited": "編集回数の上限に達しました。しばらくしてからお試しください。",
+      "notFound": "この投稿は存在しません。",
+      "unauthorized": "自分の投稿のみ編集できます。",
+      "alreadyDeleted": "この投稿は削除されています。"
     }
   },
   "unsavedChanges": {

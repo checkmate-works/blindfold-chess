@@ -3657,6 +3657,22 @@
       "overlayTitle": "Contains solution",
       "overlayHint": "Tap to reveal",
       "overlayAriaLabel": "Reveal comment that may contain the puzzle solution"
+    },
+    "edit": {
+      "button": "Edit",
+      "save": "Save",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "editedLabel": "(edited)",
+      "editedTitle": "Last edited {date}",
+      "contentRequired": "Please enter some content",
+      "contentTooLong": "Content must be 2000 characters or less",
+      "error": "An error occurred. Please try again.",
+      "signInRequired": "Please sign in to edit",
+      "rateLimited": "Too many edits. Please try again later.",
+      "notFound": "This post no longer exists.",
+      "unauthorized": "You can only edit your own posts.",
+      "alreadyDeleted": "This post has been deleted."
     }
   },
   "unsavedChanges": {

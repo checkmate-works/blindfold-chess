@@ -3657,6 +3657,22 @@
       "overlayTitle": "Contiene la solución",
       "overlayHint": "Pulsa para mostrar",
       "overlayAriaLabel": "Mostrar comentario que puede contener la solución del puzzle"
+    },
+    "edit": {
+      "button": "Editar",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "saving": "Guardando...",
+      "editedLabel": "(editado)",
+      "editedTitle": "Última edición {date}",
+      "contentRequired": "Por favor, introduce algún contenido",
+      "contentTooLong": "El contenido debe tener 2000 caracteres o menos",
+      "error": "Ocurrió un error. Por favor, inténtalo de nuevo.",
+      "signInRequired": "Inicia sesión para editar",
+      "rateLimited": "Demasiadas ediciones. Por favor, inténtalo más tarde.",
+      "notFound": "Esta publicación ya no existe.",
+      "unauthorized": "Solo puedes editar tus propias publicaciones.",
+      "alreadyDeleted": "Esta publicación ha sido eliminada."
     }
   },
   "unsavedChanges": {
