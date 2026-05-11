@@ -63,7 +63,7 @@ type Props = {
 const toThemeItem = (t: ThemeOption): ThemeItem => ({ ...t, kind: 'theme' });
 const toChunkItem = (c: ChunkOption): ChunkItem => ({ ...c, kind: 'chunk' });
 
-export function PuzzleTagPicker({
+export function TagPicker({
   selectedThemes,
   selectedChunks,
   availableThemes,

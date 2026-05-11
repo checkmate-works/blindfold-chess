@@ -18,15 +18,15 @@ import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal'
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
+import { TagPicker } from '../../_components/TagPicker';
+import { useFenBoardEditor } from '../../_hooks/use-fen-board-editor';
+import { useTagPickerLabels } from '../../_hooks/use-tag-picker-labels';
+import { useTagSelection } from '../../_hooks/use-tag-selection';
 import { updatePuzzle } from '../_actions/updatePuzzle';
 import { useEditableBoardLabels } from '../_hooks/use-editable-board-labels';
-import { useFenBoardEditor } from '../_hooks/use-fen-board-editor';
 import { useMoveSubmitLabels } from '../_hooks/use-move-submit-labels';
 import { usePuzzleSolutionMoves } from '../_hooks/use-puzzle-solution-moves';
-import { usePuzzleTagSelection } from '../_hooks/use-puzzle-tag-selection';
-import { useTagPickerLabels } from '../_hooks/use-tag-picker-labels';
-import { MAX_SOLUTION_MOVES } from '../_lib/puzzle-form-constants';
-import { PuzzleTagPicker } from './PuzzleTagPicker';
+import { MAX_SOLUTION_MOVES } from '../_hooks/use-puzzle-solution-moves';
 import { SolutionMoveList } from './SolutionMoveList';
 
 type Props = {
@@ -85,7 +85,7 @@ export function EditPuzzleForm({ positionId, initial, available }: Props) {
     moveSubmitLabels,
   });
   solutionResetRef.current = solution.reset;
-  const tags = usePuzzleTagSelection({
+  const tags = useTagSelection({
     initialThemes: initial.themes,
     initialChunks: initial.chunks,
   });
@@ -392,7 +392,7 @@ export function EditPuzzleForm({ positionId, initial, available }: Props) {
           </div>
         )}
 
-        <PuzzleTagPicker
+        <TagPicker
           selectedThemes={tags.selectedThemes}
           selectedChunks={tags.selectedChunks}
           availableThemes={available.themes}

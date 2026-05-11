@@ -4,8 +4,8 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { getTurnFromFen, validateFen } from '@blindfold-chess/features/chess-core';
 
+import { EMPTY_BOARD_FEN, type EditorTab, type SideToMove } from '../_lib/board-editor-constants';
 import { readSideToMove, replaceSideToMove } from '../_lib/fen-utils';
-import { EMPTY_BOARD_FEN, type EditorTab, type SideToMove } from '../_lib/puzzle-form-constants';
 
 export type FenBoardEditorOptions = {
   initialFen?: string;

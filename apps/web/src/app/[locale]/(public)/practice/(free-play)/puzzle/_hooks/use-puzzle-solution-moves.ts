@@ -5,8 +5,11 @@ import { useCallback, useMemo, useState } from 'react';
 import { executeMove, getTurnFromFen } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
-import { MAX_SOLUTION_MOVES, type SideToMove } from '../_lib/puzzle-form-constants';
+import type { SideToMove } from '../../_lib/board-editor-constants';
 import type { MoveSubmitLabels } from './use-move-submit-labels';
+
+/** Per-puzzle solution-move ceiling (UI hard limit). */
+export const MAX_SOLUTION_MOVES = 20;
 
 export type PuzzleSolutionMovesOptions = {
   /** Validated starting FEN. Empty string while the board is invalid. */

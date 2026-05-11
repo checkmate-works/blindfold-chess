@@ -5,15 +5,12 @@ import { useCallback, useState } from 'react';
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { ThemeOption } from '@/lib/themes/types';
 
-export type PuzzleTagSelectionOptions = {
+export type TagSelectionOptions = {
   initialThemes?: ThemeOption[];
   initialChunks?: ChunkOption[];
 };
 
-export function usePuzzleTagSelection({
-  initialThemes,
-  initialChunks,
-}: PuzzleTagSelectionOptions = {}) {
+export function useTagSelection({ initialThemes, initialChunks }: TagSelectionOptions = {}) {
   const [selectedThemes, setSelectedThemes] = useState<ThemeOption[]>(initialThemes ?? []);
   const [selectedChunks, setSelectedChunks] = useState<ChunkOption[]>(initialChunks ?? []);
 
@@ -37,4 +34,4 @@ export function usePuzzleTagSelection({
   };
 }
 
-export type PuzzleTagSelection = ReturnType<typeof usePuzzleTagSelection>;
+export type TagSelection = ReturnType<typeof useTagSelection>;

@@ -1,4 +1,4 @@
-import type { SideToMove } from './puzzle-form-constants';
+import type { SideToMove } from './board-editor-constants';
 
 /**
  * Swap the side-to-move byte in a FEN string. Returns the input

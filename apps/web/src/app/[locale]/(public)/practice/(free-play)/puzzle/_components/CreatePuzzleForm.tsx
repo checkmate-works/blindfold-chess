@@ -19,16 +19,17 @@ import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal'
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
+import { TagPicker } from '../../_components/TagPicker';
+import { useFenBoardEditor } from '../../_hooks/use-fen-board-editor';
+import { useTagPickerLabels } from '../../_hooks/use-tag-picker-labels';
+import { useTagSelection } from '../../_hooks/use-tag-selection';
+import { EMPTY_BOARD_FEN } from '../../_lib/board-editor-constants';
 import { useEditableBoardLabels } from '../_hooks/use-editable-board-labels';
-import { useFenBoardEditor } from '../_hooks/use-fen-board-editor';
 import { useMoveSubmitLabels } from '../_hooks/use-move-submit-labels';
 import { usePuzzleDraftHydration } from '../_hooks/use-puzzle-draft-hydration';
 import { usePuzzleSolutionMoves } from '../_hooks/use-puzzle-solution-moves';
-import { usePuzzleTagSelection } from '../_hooks/use-puzzle-tag-selection';
-import { useTagPickerLabels } from '../_hooks/use-tag-picker-labels';
+import { MAX_SOLUTION_MOVES } from '../_hooks/use-puzzle-solution-moves';
 import { clearDraft, writeDraft } from '../_lib/draft-storage';
-import { EMPTY_BOARD_FEN, MAX_SOLUTION_MOVES } from '../_lib/puzzle-form-constants';
-import { PuzzleTagPicker } from './PuzzleTagPicker';
 import { SolutionMoveList } from './SolutionMoveList';
 
 function formatLocalIsoDate(d: Date): string {
@@ -108,7 +109,7 @@ export function CreatePuzzleForm({
     moveSubmitLabels,
   });
   solutionResetRef.current = solution.reset;
-  const tags = usePuzzleTagSelection();
+  const tags = useTagSelection();
 
   // Resolve draft IDs against the loaded catalog so the picker has full
   // option objects (label + slug + category) to render. IDs not present
@@ -466,7 +467,7 @@ export function CreatePuzzleForm({
           </div>
         )}
 
-        <PuzzleTagPicker
+        <TagPicker
           selectedThemes={tags.selectedThemes}
           selectedChunks={tags.selectedChunks}
           availableThemes={availableThemes}
