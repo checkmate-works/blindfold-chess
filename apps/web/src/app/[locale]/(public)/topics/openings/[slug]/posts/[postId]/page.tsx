@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
+import { editPost } from '@/app/[locale]/(public)/topics/_actions/editPost';
 import { TopicPostDetailLayout } from '@/app/[locale]/(public)/topics/_components/TopicPostDetailLayout';
 import {
   buildAttachmentNodeMap,
@@ -140,6 +141,7 @@ export default async function OpeningPostDetailPage({ params, searchParams }: Pr
       replyRestrictionMessage={replyRestrictionMessage}
       toggleLikeAction={toggleLike}
       deletePostAction={deletePost}
+      editPostAction={editPost}
       replyAttachmentActions={{
         pgn: createReplyWithAttachment,
         fen: createReplyWithFenAttachment,

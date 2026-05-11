@@ -7,6 +7,7 @@ import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
+import { editPost } from '@/app/[locale]/(public)/topics/_actions/editPost';
 import { TopicPostDetailLayout } from '@/app/[locale]/(public)/topics/_components/TopicPostDetailLayout';
 import {
   buildAttachmentNodeMap,
@@ -124,6 +125,7 @@ export default async function ChunkPostDetailPage({ params, searchParams }: Prop
       replyRestrictionMessage={replyRestrictionMessage}
       toggleLikeAction={toggleLike}
       deletePostAction={deletePost}
+      editPostAction={editPost}
       replyAttachmentActions={{
         pgn: createReplyWithAttachment,
         fen: createReplyWithFenAttachment,
