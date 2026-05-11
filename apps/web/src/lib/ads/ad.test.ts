@@ -34,13 +34,8 @@ vi.mock('@/lib/users/user-grants', () => ({
   hasActiveGrant: (...args: unknown[]) => mockHasActiveGrant(...args),
 }));
 
-const {
-  isAdsEnabled,
-  getAdBannerBySlot,
-  getAdsEnabledDirect,
-  getAllAdBanners,
-  shouldShowAdsForUser,
-} = await import('./ad');
+const { isAdsEnabled, getAdsEnabledDirect, getAllAdBanners, shouldShowAdsForUser } =
+  await import('./ad');
 
 describe('isAdsEnabled', () => {
   beforeEach(() => {
@@ -87,94 +82,6 @@ describe('isAdsEnabled', () => {
     const result = await resultPromise;
 
     expect(result).toBe(false);
-    vi.useRealTimers();
-  });
-});
-
-describe('getAdBannerBySlot', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it('should return config when an active banner exists', async () => {
-    mockLimit.mockResolvedValue([
-      {
-        href: 'https://example.com',
-        imagePath: '/images/ad.png',
-        alt: 'Test Ad',
-        width: 728,
-        height: 90,
-        isActive: true,
-      },
-    ]);
-
-    const result = await getAdBannerBySlot('header');
-    expect(result).toEqual({
-      href: 'https://example.com',
-      imagePath: '/images/ad.png',
-      alt: 'Test Ad',
-      width: 728,
-      height: 90,
-    });
-  });
-
-  it('should return null when no banner exists', async () => {
-    mockLimit.mockResolvedValue([]);
-
-    const result = await getAdBannerBySlot('header');
-    expect(result).toBeNull();
-  });
-
-  it('should return null when banner is inactive', async () => {
-    mockLimit.mockResolvedValue([
-      {
-        href: 'https://example.com',
-        imagePath: '/images/ad.png',
-        alt: 'Test Ad',
-        width: 728,
-        height: 90,
-        isActive: false,
-      },
-    ]);
-
-    const result = await getAdBannerBySlot('header');
-    expect(result).toBeNull();
-  });
-
-  it('should return null when DB query throws an exception (fallback)', async () => {
-    mockLimit.mockRejectedValue(new Error('DB connection failed'));
-
-    const result = await getAdBannerBySlot('header');
-    expect(result).toBeNull();
-  });
-
-  it('should return null when DB query exceeds timeout (withTimeout fallback)', async () => {
-    vi.useFakeTimers();
-    mockLimit.mockImplementation(
-      () =>
-        new Promise((resolve) =>
-          setTimeout(
-            () =>
-              resolve([
-                {
-                  href: 'https://example.com',
-                  imagePath: '/images/ad.png',
-                  alt: 'Test Ad',
-                  width: 728,
-                  height: 90,
-                  isActive: true,
-                },
-              ]),
-            10000
-          )
-        )
-    );
-
-    const resultPromise = getAdBannerBySlot('header');
-    await vi.advanceTimersByTimeAsync(5000);
-    const result = await resultPromise;
-
-    expect(result).toBeNull();
     vi.useRealTimers();
   });
 });
