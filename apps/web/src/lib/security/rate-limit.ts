@@ -49,6 +49,17 @@ export const RATE_LIMITS = {
   toggleFollow: { action: 'toggle_follow', maxAttempts: 100, windowMs: 86_400_000 },
   deletePost: { action: 'delete_post', maxAttempts: 10, windowMs: 3_600_000 },
   editPost: { action: 'edit_post', maxAttempts: 30, windowMs: 3_600_000 },
+  /**
+   * Per-user limit for removing an attachment from one of the author's own
+   * topic_posts (PGN / FEN / image / video / embed). 30 / hour matches
+   * `editPost`: removing the wrong attachment is the kind of correction a
+   * legitimate author may iterate on, so the budget is intentionally
+   * looser than `deletePost`. Storage-touching kinds (image) still consume
+   * the same budget — overwriting that limit per kind would let a sustained
+   * abuser burn out the cap on a cheap kind (embed) and fall back on
+   * image-removal as a side channel.
+   */
+  removePostAttachment: { action: 'remove_post_attachment', maxAttempts: 30, windowMs: 3_600_000 },
   setupUsername: { action: 'setup_username', maxAttempts: 5, windowMs: 600_000 },
   updateProfile: { action: 'update_profile', maxAttempts: 5, windowMs: 600_000 },
   uploadAvatar: { action: 'upload_avatar', maxAttempts: 5, windowMs: 600_000 },
