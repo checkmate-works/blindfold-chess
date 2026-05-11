@@ -8,6 +8,7 @@ import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
 import { editPost } from '@/app/[locale]/(public)/topics/_actions/editPost';
+import { removePostAttachment } from '@/app/[locale]/(public)/topics/_actions/removePostAttachment';
 import { TopicPostDetailLayout } from '@/app/[locale]/(public)/topics/_components/TopicPostDetailLayout';
 import {
   buildAttachmentNodeMap,
@@ -126,6 +127,9 @@ export default async function ChunkPostDetailPage({ params, searchParams }: Prop
       toggleLikeAction={toggleLike}
       deletePostAction={deletePost}
       editPostAction={editPost}
+      removeAttachmentAction={removePostAttachment}
+      attachmentsByPostId={attachments}
+      attachmentFallbackVideoTitle={fallbackVideoTitle}
       replyAttachmentActions={{
         pgn: createReplyWithAttachment,
         fen: createReplyWithFenAttachment,

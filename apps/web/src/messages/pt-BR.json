@@ -3673,6 +3673,18 @@
       "notFound": "Esta publicação não existe mais.",
       "unauthorized": "Você só pode editar suas próprias publicações.",
       "alreadyDeleted": "Esta publicação foi excluída."
+    },
+    "removeAttachment": {
+      "button": "Remover anexo",
+      "removeImageAriaLabel": "Remover imagem {index}",
+      "removing": "Removendo...",
+      "confirmTitle": "Remover anexo?",
+      "confirmMessage": "Apenas o anexo será removido da publicação. A publicação permanece.",
+      "confirm": "Remover",
+      "cancel": "Cancelar",
+      "error": "Não foi possível remover o anexo. Tente novamente.",
+      "attachmentNotFound": "Este anexo não existe mais.",
+      "rateLimited": "Muitas alterações de anexo. Tente novamente mais tarde."
     }
   },
   "unsavedChanges": {

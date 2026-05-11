@@ -5,13 +5,16 @@ import { type ReactNode, useState } from 'react';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { ActionResult } from '@/lib/action-types';
+import type { PostAttachment } from '@/lib/games/get-attachments-for-posts';
 
 import { LinkedText } from '@/app/[locale]/_components/LinkedText';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 
+import type { AttachmentKind } from '../_actions/removePostAttachment';
 import { formatAbsoluteDateTime } from '../_lib/absolute-time';
 import { DeletePostButton } from './DeletePostButton';
 import { EditPostForm } from './EditPostForm';
+import { EditableAttachments } from './EditableAttachments';
 import { EditedIndicator } from './EditedIndicator';
 import { LikeButton } from './LikeButton';
 
@@ -30,6 +33,13 @@ type EditPostAction = (
 ) => Promise<
   { success: true; content: string; isSpoiler: boolean; updatedAt: Date } | { error: string }
 >;
+
+type RemoveAttachmentAction = (
+  postId: string,
+  attachmentId: string,
+  kind: AttachmentKind,
+  locale: string
+) => Promise<{ success: true } | { error: string }>;
 
 type Author = {
   username: string | null;
@@ -64,6 +74,16 @@ type Props = {
    * form has the card to itself.
    */
   editPostAction?: EditPostAction;
+  /**
+   * Optional attachment-remove Server Action. Paired with `opAttachmentRaw`
+   * so the edit-mode body can surface a "Remove attachment" control. Read-
+   * mode still flows through the pre-rendered `opAttachment` slot.
+   */
+  removeAttachmentAction?: RemoveAttachmentAction;
+  /** Raw OP attachment payload (typed); see `opAttachment` for read-mode render. */
+  opAttachmentRaw?: PostAttachment | null;
+  /** Fallback `<AttachedVideoCard>` title for the edit-side renderer. */
+  attachmentFallbackVideoTitle?: string;
   redirectPath: string;
   likeI18nNamespace: string;
   deleteI18nNamespace: string;
@@ -96,6 +116,9 @@ export function OpCard({
   toggleLikeAction,
   deletePostAction,
   editPostAction,
+  removeAttachmentAction,
+  opAttachmentRaw,
+  attachmentFallbackVideoTitle,
   redirectPath,
   likeI18nNamespace,
   deleteI18nNamespace,
@@ -135,20 +158,31 @@ export function OpCard({
       {opMeta}
 
       {isEditing && editPostAction ? (
-        <EditPostForm
-          postId={postId}
-          locale={locale}
-          initialContent={localContent}
-          initialIsSpoiler={false}
-          enableSpoilerToggle={false}
-          editPostAction={editPostAction}
-          onSaved={(next) => {
-            setLocalContent(next.content);
-            setLocalUpdatedAt(next.updatedAt);
-            setIsEditing(false);
-          }}
-          onCancel={() => setIsEditing(false)}
-        />
+        <>
+          <EditPostForm
+            postId={postId}
+            locale={locale}
+            initialContent={localContent}
+            initialIsSpoiler={false}
+            enableSpoilerToggle={false}
+            editPostAction={editPostAction}
+            onSaved={(next) => {
+              setLocalContent(next.content);
+              setLocalUpdatedAt(next.updatedAt);
+              setIsEditing(false);
+            }}
+            onCancel={() => setIsEditing(false)}
+          />
+          {opAttachmentRaw && removeAttachmentAction && (
+            <EditableAttachments
+              postId={postId}
+              locale={locale}
+              attachment={opAttachmentRaw}
+              removeAttachmentAction={removeAttachmentAction}
+              fallbackVideoTitle={attachmentFallbackVideoTitle ?? ''}
+            />
+          )}
+        </>
       ) : (
         <>
           <div className="text-foreground whitespace-pre-wrap break-words leading-relaxed">

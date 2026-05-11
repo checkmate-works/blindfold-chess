@@ -6,14 +6,17 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { FaEyeSlash } from 'react-icons/fa';
 
 import type { ActionResult } from '@/lib/action-types';
+import type { PostAttachment } from '@/lib/games/get-attachments-for-posts';
 
 import { LinkedText } from '@/app/[locale]/_components/LinkedText';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 
+import type { AttachmentKind } from '../_actions/removePostAttachment';
 import { formatAbsoluteDateTime } from '../_lib/absolute-time';
 import type { CommentTreeNode, FlatReply, ReplyGroup } from '../_lib/comment-tree';
 import { DeletePostButton } from './DeletePostButton';
 import { EditPostForm } from './EditPostForm';
+import { EditableAttachments } from './EditableAttachments';
 import { EditedIndicator } from './EditedIndicator';
 import { LikeButton } from './LikeButton';
 import { ReplyForm } from './ReplyForm';
@@ -34,6 +37,13 @@ type EditPostAction = (
 ) => Promise<
   { success: true; content: string; isSpoiler: boolean; updatedAt: Date } | { error: string }
 >;
+
+type RemoveAttachmentAction = (
+  postId: string,
+  attachmentId: string,
+  kind: AttachmentKind,
+  locale: string
+) => Promise<{ success: true } | { error: string }>;
 
 type I18n = {
   likeNamespace: string;
@@ -79,6 +89,32 @@ type Props = {
    * "Delete" and can rewrite the body inline.
    */
   editPostAction?: EditPostAction;
+  /**
+   * Optional attachment-remove Server Action. When provided alongside an
+   * `attachment` for this node, the in-place edit form surfaces a
+   * "Remove attachment" affordance (per-image for 1:N images, single for
+   * the 1:0..1 kinds). The action is gated on author ownership server-
+   * side; the UI gate here is purely a redundancy.
+   */
+  removeAttachmentAction?: RemoveAttachmentAction;
+  /**
+   * Raw attachment payloads keyed by post id. Threaded all the way down
+   * the recursion (like `extraContentByPostId`) so each `CommentNode`
+   * can look up its own attachment in edit mode. Read-mode rendering
+   * still flows through `extraContentByPostId` — pages already compute
+   * the per-post lookup once via `getAttachmentsForPosts`, so passing
+   * the raw map here is essentially free.
+   */
+  attachmentsByPostId?: ReadonlyMap<string, PostAttachment>;
+  /**
+   * Fallback title for `<AttachedVideoCard>` inside `EditableAttachments`.
+   * Only consulted when the node's attachment kind is `video` and edit
+   * mode is active. Pages already resolve the i18n string for the read-
+   * side renderer (`renderAttachment`); threading it here lets the edit-
+   * side EditableAttachments reuse the same value without a second
+   * `useTranslations` lookup.
+   */
+  attachmentFallbackVideoTitle?: string;
   i18n: I18n;
   /**
    * Reply groups for a thread root. Provided ONLY when this node is the
@@ -141,6 +177,9 @@ export function CommentNode({
   replyAttachmentActions,
   deletePostAction,
   editPostAction,
+  removeAttachmentAction,
+  attachmentsByPostId,
+  attachmentFallbackVideoTitle,
   i18n,
   replyGroups,
   flatReplies,
@@ -240,21 +279,32 @@ export function CommentNode({
           ) : (
             <>
               {!isDeleted && isEditing && editPostAction ? (
-                <EditPostForm
-                  postId={node.id}
-                  locale={locale}
-                  initialContent={localContent}
-                  initialIsSpoiler={localIsSpoiler}
-                  enableSpoilerToggle={enableSpoiler}
-                  editPostAction={editPostAction}
-                  onSaved={(next) => {
-                    setLocalContent(next.content);
-                    setLocalIsSpoiler(next.isSpoiler);
-                    setLocalUpdatedAt(next.updatedAt);
-                    setIsEditing(false);
-                  }}
-                  onCancel={() => setIsEditing(false)}
-                />
+                <>
+                  <EditPostForm
+                    postId={node.id}
+                    locale={locale}
+                    initialContent={localContent}
+                    initialIsSpoiler={localIsSpoiler}
+                    enableSpoilerToggle={enableSpoiler}
+                    editPostAction={editPostAction}
+                    onSaved={(next) => {
+                      setLocalContent(next.content);
+                      setLocalIsSpoiler(next.isSpoiler);
+                      setLocalUpdatedAt(next.updatedAt);
+                      setIsEditing(false);
+                    }}
+                    onCancel={() => setIsEditing(false)}
+                  />
+                  {removeAttachmentAction && attachmentsByPostId?.get(node.id) && (
+                    <EditableAttachments
+                      postId={node.id}
+                      locale={locale}
+                      attachment={attachmentsByPostId.get(node.id) ?? null}
+                      removeAttachmentAction={removeAttachmentAction}
+                      fallbackVideoTitle={attachmentFallbackVideoTitle ?? ''}
+                    />
+                  )}
+                </>
               ) : (
                 !isDeleted && (
                   <div className="relative" aria-live="polite">
@@ -363,6 +413,9 @@ export function CommentNode({
                       replyAttachmentActions={replyAttachmentActions}
                       deletePostAction={deletePostAction}
                       editPostAction={editPostAction}
+                      removeAttachmentAction={removeAttachmentAction}
+                      attachmentsByPostId={attachmentsByPostId}
+                      attachmentFallbackVideoTitle={attachmentFallbackVideoTitle}
                       i18n={i18n}
                       flatReplies={group.deeper}
                       extraContentByPostId={extraContentByPostId}
@@ -388,6 +441,9 @@ export function CommentNode({
                       replyAttachmentActions={replyAttachmentActions}
                       deletePostAction={deletePostAction}
                       editPostAction={editPostAction}
+                      removeAttachmentAction={removeAttachmentAction}
+                      attachmentsByPostId={attachmentsByPostId}
+                      attachmentFallbackVideoTitle={attachmentFallbackVideoTitle}
                       i18n={i18n}
                       replyToDisplayName={prefix ?? undefined}
                       extraContentByPostId={extraContentByPostId}

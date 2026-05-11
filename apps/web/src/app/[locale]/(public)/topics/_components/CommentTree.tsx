@@ -1,5 +1,7 @@
 import type { ActionResult } from '@/lib/action-types';
+import type { PostAttachment } from '@/lib/games/get-attachments-for-posts';
 
+import type { AttachmentKind } from '../_actions/removePostAttachment';
 import type { CommentTreeNode } from '../_lib/comment-tree';
 import { groupReplies } from '../_lib/comment-tree';
 import { canUserReply } from '../_lib/permissions';
@@ -21,6 +23,13 @@ type EditPostAction = (
 ) => Promise<
   { success: true; content: string; isSpoiler: boolean; updatedAt: Date } | { error: string }
 >;
+
+type RemoveAttachmentAction = (
+  postId: string,
+  attachmentId: string,
+  kind: AttachmentKind,
+  locale: string
+) => Promise<{ success: true } | { error: string }>;
 
 type Props = {
   /** Root nodes already built by `buildCommentTree`. */
@@ -48,6 +57,23 @@ type Props = {
    * `toggleLikeAction`.
    */
   editPostAction?: EditPostAction;
+  /**
+   * Optional attachment-remove Server Action. When provided alongside
+   * `attachmentsByPostId`, every author-owned `CommentNode` in the tree
+   * surfaces a remove affordance for its attachment in edit mode (per-
+   * image for the 1:N image kind, single for the 1:0..1 kinds).
+   */
+  removeAttachmentAction?: RemoveAttachmentAction;
+  /**
+   * Raw attachment payloads keyed by post id. Threaded through to every
+   * `CommentNode` so edit mode can wire remove buttons against the same
+   * `getAttachmentsForPosts` result that `extraContentByPostId` was
+   * pre-rendered from. Read-side rendering still flows through
+   * `extraContentByPostId`.
+   */
+  attachmentsByPostId?: ReadonlyMap<string, PostAttachment>;
+  /** Fallback `<AttachedVideoCard>` title for the edit-side renderer. */
+  attachmentFallbackVideoTitle?: string;
   i18n: {
     likeNamespace: string;
     replyNamespace: string;
@@ -110,6 +136,9 @@ export async function CommentTree({
   replyAttachmentActions,
   deletePostAction,
   editPostAction,
+  removeAttachmentAction,
+  attachmentsByPostId,
+  attachmentFallbackVideoTitle,
   i18n,
   threadRootPostId,
   extraContentByPostId,
@@ -144,6 +173,9 @@ export async function CommentTree({
           replyAttachmentActions={replyAttachmentActions}
           deletePostAction={deletePostAction}
           editPostAction={editPostAction}
+          removeAttachmentAction={removeAttachmentAction}
+          attachmentsByPostId={attachmentsByPostId}
+          attachmentFallbackVideoTitle={attachmentFallbackVideoTitle}
           i18n={i18n}
           extraContentByPostId={extraContentByPostId}
         />

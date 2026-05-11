@@ -3673,6 +3673,18 @@
       "notFound": "この投稿は存在しません。",
       "unauthorized": "自分の投稿のみ編集できます。",
       "alreadyDeleted": "この投稿は削除されています。"
+    },
+    "removeAttachment": {
+      "button": "添付を削除",
+      "removeImageAriaLabel": "画像{index}を削除",
+      "removing": "削除中...",
+      "confirmTitle": "添付を削除しますか？",
+      "confirmMessage": "添付ファイルだけが投稿から外れます。投稿本体は残ります。",
+      "confirm": "削除",
+      "cancel": "キャンセル",
+      "error": "添付を削除できませんでした。もう一度お試しください。",
+      "attachmentNotFound": "この添付はすでに存在しません。",
+      "rateLimited": "添付変更の上限に達しました。しばらくしてからお試しください。"
     }
   },
   "unsavedChanges": {

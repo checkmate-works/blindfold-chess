@@ -6,12 +6,14 @@ import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import type { User } from '@supabase/supabase-js';
 
 import type { ActionResult } from '@/lib/action-types';
+import type { PostAttachment } from '@/lib/games/get-attachments-for-posts';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import type { BreadcrumbItem } from '@/app/[locale]/_components/Breadcrumb';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import type { AttachmentKind } from '../_actions/removePostAttachment';
 import { buildCommentTree } from '../_lib/comment-tree';
 import type { PostWithReplyMeta, SortMode } from '../_lib/shared';
 import { CommentTree } from './CommentTree';
@@ -36,6 +38,13 @@ type EditPostAction = (
 ) => Promise<
   { success: true; content: string; isSpoiler: boolean; updatedAt: Date } | { error: string }
 >;
+
+type RemoveAttachmentAction = (
+  postId: string,
+  attachmentId: string,
+  kind: AttachmentKind,
+  locale: string
+) => Promise<{ success: true } | { error: string }>;
 
 type Props = {
   locale: Locale;
@@ -93,6 +102,22 @@ type Props = {
    * — the action is polymorphic across topic types.
    */
   editPostAction?: EditPostAction;
+  /**
+   * Optional attachment-remove Server Action. When provided, every
+   * author-owned post in the tree — OP card included — exposes a remove
+   * affordance for its attachment in edit mode.
+   */
+  removeAttachmentAction?: RemoveAttachmentAction;
+  /**
+   * Raw attachment payloads keyed by post id, used by the edit-side
+   * renderer. Pages already compute this via `getAttachmentsForPosts`
+   * for the read-side `extraContentByPostId` / `opAttachment` slots;
+   * pass the same map through here so the edit-side EditableAttachments
+   * can wire remove buttons against the same data.
+   */
+  attachmentsByPostId?: ReadonlyMap<string, PostAttachment>;
+  /** Fallback `<AttachedVideoCard>` title used by the edit-side renderer. */
+  attachmentFallbackVideoTitle?: string;
   /**
    * Attachment-aware reply Server Actions (PGN + FEN). Bound by every
    * `ReplyForm` rendered on this page (top-level CTA + inline replies
@@ -171,6 +196,9 @@ export async function TopicPostDetailLayout({
   toggleLikeAction,
   deletePostAction,
   editPostAction,
+  removeAttachmentAction,
+  attachmentsByPostId,
+  attachmentFallbackVideoTitle,
   replyAttachmentActions,
   redirectPath,
   i18n,
@@ -222,6 +250,9 @@ export async function TopicPostDetailLayout({
         toggleLikeAction={toggleLikeAction}
         deletePostAction={deletePostAction}
         editPostAction={editPostAction}
+        removeAttachmentAction={removeAttachmentAction}
+        opAttachmentRaw={attachmentsByPostId?.get(rootWithMeta.id) ?? null}
+        attachmentFallbackVideoTitle={attachmentFallbackVideoTitle}
         redirectPath={redirectPath}
         likeI18nNamespace={i18n.likeNamespace}
         deleteI18nNamespace={i18n.deleteNamespace}
@@ -271,6 +302,9 @@ export async function TopicPostDetailLayout({
             replyAttachmentActions={replyAttachmentActions}
             deletePostAction={deletePostAction}
             editPostAction={editPostAction}
+            removeAttachmentAction={removeAttachmentAction}
+            attachmentsByPostId={attachmentsByPostId}
+            attachmentFallbackVideoTitle={attachmentFallbackVideoTitle}
             i18n={i18n}
             threadRootPostId={rootWithMeta.id}
             extraContentByPostId={extraContentByPostId}

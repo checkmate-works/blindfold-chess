@@ -3673,6 +3673,18 @@
       "notFound": "Esta publicación ya no existe.",
       "unauthorized": "Solo puedes editar tus propias publicaciones.",
       "alreadyDeleted": "Esta publicación ha sido eliminada."
+    },
+    "removeAttachment": {
+      "button": "Quitar adjunto",
+      "removeImageAriaLabel": "Quitar imagen {index}",
+      "removing": "Quitando...",
+      "confirmTitle": "¿Quitar adjunto?",
+      "confirmMessage": "Solo se desvinculará del post. La publicación permanece.",
+      "confirm": "Quitar",
+      "cancel": "Cancelar",
+      "error": "No se pudo quitar el adjunto. Inténtalo de nuevo.",
+      "attachmentNotFound": "Este adjunto ya no existe.",
+      "rateLimited": "Demasiados cambios de adjunto. Inténtalo más tarde."
     }
   },
   "unsavedChanges": {

@@ -3673,6 +3673,18 @@
       "notFound": "This post no longer exists.",
       "unauthorized": "You can only edit your own posts.",
       "alreadyDeleted": "This post has been deleted."
+    },
+    "removeAttachment": {
+      "button": "Remove attachment",
+      "removeImageAriaLabel": "Remove image {index}",
+      "removing": "Removing...",
+      "confirmTitle": "Remove attachment?",
+      "confirmMessage": "This will detach it from your post. The post itself stays.",
+      "confirm": "Remove",
+      "cancel": "Cancel",
+      "error": "Could not remove the attachment. Please try again.",
+      "attachmentNotFound": "This attachment no longer exists.",
+      "rateLimited": "Too many attachment changes. Please try again later."
     }
   },
   "unsavedChanges": {
