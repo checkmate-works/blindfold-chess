@@ -1082,27 +1082,6 @@
         "notFound": "このパズルは見つかりませんでした。",
         "unauthorized": "自分のパズルのみ編集できます。"
       },
-      "tags": {
-        "section": "テーマ・チャンク",
-        "help": "テーマは標準語彙(ピン、パスポーンなど)、チャンクは作成者が共有する駒のパターンです。",
-        "placeholder": "テーマやチャンクを検索して追加…",
-        "badge": {
-          "theme": "テーマ",
-          "chunk": "チャンク"
-        },
-        "noResults": "該当なし",
-        "remove": "{label} を外す",
-        "openDetail": "{label} の詳細を表示",
-        "moreItemsHint": "他 {count} 件 — 入力して絞り込み",
-        "detail": {
-          "readingPrefix": "読み: ",
-          "noDescription": "説明はありません。",
-          "viewInGlossary": "用語集で詳しく見る",
-          "viewChunkPage": "チャンクページを見る",
-          "detach": "外す",
-          "close": "閉じる"
-        }
-      },
       "detail": {
         "title": "パズル詳細",
         "descriptionSection": "このパズルについて",
@@ -1497,6 +1476,27 @@
         "diagonalLegend": "対角線 (a1-h8)",
         "antiDiagonalLegend": "逆対角線 (h1-a8)",
         "trialCorrectAnswer": "正解: {diagonal}, {antiDiagonal}"
+      }
+    },
+    "tags": {
+      "section": "テーマ・チャンク",
+      "help": "テーマは標準語彙(ピン、パスポーンなど)、チャンクは作成者が共有する駒のパターンです。",
+      "placeholder": "テーマやチャンクを検索して追加…",
+      "badge": {
+        "theme": "テーマ",
+        "chunk": "チャンク"
+      },
+      "noResults": "該当なし",
+      "remove": "{label} を外す",
+      "openDetail": "{label} の詳細を表示",
+      "moreItemsHint": "他 {count} 件 — 入力して絞り込み",
+      "detail": {
+        "readingPrefix": "読み: ",
+        "noDescription": "説明はありません。",
+        "viewInGlossary": "用語集で詳しく見る",
+        "viewChunkPage": "チャンクページを見る",
+        "detach": "外す",
+        "close": "閉じる"
       }
     }
   },

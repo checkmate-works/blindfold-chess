@@ -4,13 +4,8 @@ import { useMemo } from 'react';
 
 import { useTranslations } from 'next-intl';
 
-/**
- * Build the locale-resolved label bag for `<PuzzleTagPicker />` and
- * its detail modal. Memoized on the translator identity so callers
- * can pass the result by reference to memoized child components.
- */
 export function useTagPickerLabels() {
-  const t = useTranslations('practice.puzzle.tags');
+  const t = useTranslations('practice.tags');
   return useMemo(
     () => ({
       section: t('section'),
