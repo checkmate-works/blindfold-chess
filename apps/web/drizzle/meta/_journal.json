@@ -288,6 +288,13 @@
       "when": 1778553194368,
       "tag": "20260512023314_add_annotations_to_chunks_and_glossary_term_positions",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1778567925886,
+      "tag": "20260512063845_create_chunk_themes",
+      "breakpoints": true
     }
   ]
 }

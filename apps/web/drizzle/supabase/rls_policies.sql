@@ -486,6 +486,46 @@ CREATE POLICY "position_themes_delete" ON "position_themes"
   );
 
 -- =============================================================================
+-- chunk_themes (junction — public read, chunk-owner write)
+-- =============================================================================
+-- Anchored on the CHUNK owner (chunks.user_id), not the term (glossary_terms
+-- has no per-row owner — it is master data). The INSERT path additionally
+-- requires `glossary_terms.is_theme = true` so non-theme entries
+-- (Calculation, Flank, ...) cannot be attached as theme tags even by a
+-- direct REST write — same rule as position_themes.
+ALTER TABLE "chunk_themes" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "chunk_themes_select" ON "chunk_themes";
+CREATE POLICY "chunk_themes_select" ON "chunk_themes"
+  FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "chunk_themes_insert" ON "chunk_themes";
+CREATE POLICY "chunk_themes_insert" ON "chunk_themes"
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM chunks c
+      WHERE c.id = chunk_id
+      AND c.user_id = auth.uid()
+      AND c.deleted_at IS NULL
+    )
+    AND EXISTS (
+      SELECT 1 FROM glossary_terms gt
+      WHERE gt.id = term_id
+      AND gt.is_theme = true
+    )
+  );
+
+DROP POLICY IF EXISTS "chunk_themes_delete" ON "chunk_themes";
+CREATE POLICY "chunk_themes_delete" ON "chunk_themes"
+  FOR DELETE USING (
+    EXISTS (
+      SELECT 1 FROM chunks c
+      WHERE c.id = chunk_id
+      AND c.user_id = auth.uid()
+    )
+  );
+
+-- =============================================================================
 -- puzzle_solutions (public read, service role only write)
 -- =============================================================================
 ALTER TABLE "puzzle_solutions" ENABLE ROW LEVEL SECURITY;

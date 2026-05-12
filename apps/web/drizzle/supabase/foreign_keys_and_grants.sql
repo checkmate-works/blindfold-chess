@@ -592,3 +592,29 @@ $$;
 -- owner (and DB-enforced is_theme = true on insert).
 GRANT SELECT, INSERT, DELETE ON TABLE public.position_themes TO authenticated;
 GRANT SELECT ON TABLE public.position_themes TO anon;
+
+-- =============================================================================
+-- chunk_themes
+-- =============================================================================
+
+-- FK constraint: chunk_themes.attached_by_user_id → auth.users(id) ON DELETE SET NULL
+-- Mirrors position_chunks / position_themes. SET NULL keeps the (chunk,
+-- term) link intact even after the attaching user is hard-deleted; the
+-- relationship is between two catalog entities and outlives any one user.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'chunk_themes_attached_by_user_id_fkey'
+  ) THEN
+    ALTER TABLE public.chunk_themes
+      ADD CONSTRAINT chunk_themes_attached_by_user_id_fkey
+      FOREIGN KEY (attached_by_user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+  END IF;
+END;
+$$;
+
+-- The FKs to chunks and glossary_terms are managed by Drizzle. Grants only:
+-- public read, authenticated INSERT/DELETE gated by RLS on the chunk's owner
+-- (and DB-enforced is_theme = true on insert).
+GRANT SELECT, INSERT, DELETE ON TABLE public.chunk_themes TO authenticated;
+GRANT SELECT ON TABLE public.chunk_themes TO anon;
