@@ -1124,6 +1124,7 @@
         "attemptIncorrect": "不正解",
         "backToList": "パズル一覧に戻る",
         "tryAgain": "もう一度",
+        "analyzeOnLichess": "Lichessで解析",
         "viewResult": "結果を見る",
         "peekCount": "盤面確認: {count}回",
         "statusSolved": "全問正解",

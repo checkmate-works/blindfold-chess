@@ -1116,6 +1116,7 @@
         "attemptIncorrect": "Incorrecto",
         "backToList": "Volver a Puzzles",
         "tryAgain": "Intentar de Nuevo",
+        "analyzeOnLichess": "Analizar en Lichess",
         "viewResult": "Ver Resultado",
         "peekCount": "Vistas del Tablero: {count}",
         "statusSolved": "Resuelto",

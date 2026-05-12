@@ -6,8 +6,9 @@ import { useTranslations } from 'next-intl';
 
 import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
+import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
-import { FaEye } from 'react-icons/fa';
+import { FaExternalLinkAlt, FaEye } from 'react-icons/fa';
 
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
 
@@ -140,6 +141,14 @@ export function PuzzleResultClient({
             {t('backToList')}
           </Button>
         </Link>
+        <Button
+          onClick={() => window.open(fenToLichessUrl(fen), '_blank')}
+          variant="secondary"
+          fullWidth
+          icon={<FaExternalLinkAlt className="w-4 h-4" />}
+        >
+          {t('analyzeOnLichess')}
+        </Button>
       </div>
     </div>
   );
