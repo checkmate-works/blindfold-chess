@@ -7,13 +7,13 @@ import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import { FaPlusCircle } from 'react-icons/fa';
-import { FiEdit2 } from 'react-icons/fi';
+import { FiEdit2, FiGitBranch } from 'react-icons/fi';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getLinkedChunksForPosition } from '@/lib/chunks/queries';
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { getPositionLikeMeta } from '@/lib/positions/like-queries';
-import { getPositionWithProfileById } from '@/lib/positions/queries';
+import { getPositionLineageMetaById, getPositionWithProfileById } from '@/lib/positions/queries';
 import { getLinkedThemesForPosition } from '@/lib/themes/queries';
 import { resolveDisplayName } from '@/lib/users/display-name';
 
@@ -101,13 +101,20 @@ export default async function PositionDetailPage({ params, searchParams }: Props
   const isBlackToMove = isBlackToMoveFromFen(position.fen);
 
   const currentUser = await getOptionalUser();
-  const [likeMeta, relatedChunks, relatedThemes, commentCount, allComments] = await Promise.all([
-    getPositionLikeMeta(position.id, currentUser?.id),
-    getLinkedChunksForPosition(position.id),
-    getLinkedThemesForPosition(position.id, locale),
-    getPostCountByTopicKey('position_memory', position.id),
-    getCommentTreeForTopic('position_memory', position.id, currentUser?.id),
-  ]);
+  const [likeMeta, relatedChunks, relatedThemes, commentCount, allComments, forkParent] =
+    await Promise.all([
+      getPositionLikeMeta(position.id, currentUser?.id),
+      getLinkedChunksForPosition(position.id),
+      getLinkedThemesForPosition(position.id, locale),
+      getPostCountByTopicKey('position_memory', position.id),
+      getCommentTreeForTopic('position_memory', position.id, currentUser?.id),
+      position.forkedFromId
+        ? getPositionLineageMetaById(position.forkedFromId)
+        : Promise.resolve(null),
+    ]);
+
+  const canFork =
+    currentUser != null && currentUser.id !== position.userId && position.forksDisabledAt === null;
 
   const commentTree = buildCommentTree(allComments, sortBy);
 
@@ -173,6 +180,25 @@ export default async function PositionDetailPage({ params, searchParams }: Props
         locale={locale}
       />
 
+      {position.forkedFromId && (
+        <p className="text-xs text-muted-foreground">
+          <FiGitBranch className="inline h-3 w-3 mr-1" aria-hidden />
+          {forkParent && forkParent.deletedAt === null ? (
+            <>
+              {t('detail.forkedFrom')}{' '}
+              <Link
+                href={`/practice/position-memory/${forkParent.id}`}
+                className="underline hover:text-foreground"
+              >
+                {forkParent.title}
+              </Link>
+            </>
+          ) : (
+            <span>{t('detail.forkedFromDeleted')}</span>
+          )}
+        </p>
+      )}
+
       <div className="flex items-center justify-between gap-4 text-xs text-muted-foreground">
         <LikeButton
           postId={position.id}
@@ -191,6 +217,15 @@ export default async function PositionDetailPage({ params, searchParams }: Props
             >
               <FiEdit2 className="h-3 w-3" aria-hidden />
               {t('detail.editAction')}
+            </Link>
+          )}
+          {canFork && (
+            <Link
+              href={`/practice/position-memory/new?from=${position.id}`}
+              className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-muted-foreground hover:border-foreground/20 hover:text-foreground transition-colors"
+            >
+              <FiGitBranch className="h-3 w-3" aria-hidden />
+              {t('detail.forkAction')}
             </Link>
           )}
           <time dateTime={position.createdAt.toISOString()}>
