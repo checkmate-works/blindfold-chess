@@ -33,10 +33,18 @@ export interface ChessTerm {
     sortOrder: number;
     caption?: string;
     /**
-     * Display-only annotations for this (term, fen) row. Optional — if
-     * omitted (e.g. in seed data) callers should treat it as the empty
-     * {@link BoardAnnotations} singleton. Always populated when the value
-     * originates from the DB layer (`mergeTermRows` normalizes).
+     * Display-only annotations for this (term, fen) row.
+     *
+     * **In code (seed input)**: a one-time bootstrap value used only on
+     * the initial INSERT. The seed deliberately omits this field from
+     * the conflict UPDATE set so that subsequent runs do not overwrite
+     * admin edits made via `/admin/glossary/[slug]`. If you need to
+     * permanently change annotations on a seeded position, do it in the
+     * admin UI rather than this file.
+     *
+     * **From the DB query path**: always populated — `mergeTermRows`
+     * normalizes through `parseBoardAnnotations` and falls back to the
+     * shared empty singleton when the JSONB column is unset.
      */
     annotations?: BoardAnnotations;
   }[];
