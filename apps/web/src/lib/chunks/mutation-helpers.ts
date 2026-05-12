@@ -18,6 +18,11 @@ export function buildChunkMutationValues(data: ChunkMutationData) {
     slug: data.slug.trim(),
     description: data.description?.trim() || null,
     userId: data.userId.trim(),
+    // Forward `annotations` verbatim. Drizzle treats `undefined` as
+    // "do not set this column", so omitting it from the payload preserves
+    // existing values on UPDATE and falls back to the DB default
+    // (`{arrows:[], circles:[]}`) on INSERT.
+    annotations: data.annotations,
   };
 }
 

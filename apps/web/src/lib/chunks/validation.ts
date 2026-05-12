@@ -1,5 +1,6 @@
 import { validateFenStructure } from '@blindfold-chess/features/chess-core';
 
+import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 /**
@@ -41,6 +42,16 @@ export type ChunkMutationData = {
   slug: string;
   description?: string | null;
   userId: string;
+  /**
+   * Optional display-only annotations. Omitted by callers that don't need
+   * to set or change them (the DB column has a NOT NULL DEFAULT of the
+   * empty singleton, so omission preserves whatever was previously stored
+   * on UPDATE and writes the empty shape on INSERT). The shape is trusted
+   * here — runtime validation lives in `parseBoardAnnotations` on the
+   * read path, and the editor produces well-typed objects via
+   * `toggleArrow`/`toggleCircle`.
+   */
+  annotations?: BoardAnnotations;
 };
 
 /**

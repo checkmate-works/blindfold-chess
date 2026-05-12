@@ -1,7 +1,15 @@
+import type { BoardAnnotations } from '@/lib/board-annotations/types';
+
 export type ThemePosition = {
   fen: string;
   sortOrder: number;
   caption: string | null;
+  /**
+   * Validated annotation set for this (term, fen) row, ready to render
+   * via `<BoardAnnotationOverlay>`. Always present (empty singleton when
+   * the DB column is unset) so callers can render unconditionally.
+   */
+  annotations: BoardAnnotations;
 };
 
 export type ThemeOption = {

@@ -73,6 +73,10 @@ export const termsMP: ChessTerm[] = [
         fen: '8/4k3/8/4K3/8/4P3/8/8 w - - 0 1',
         sortOrder: 0,
         caption: 'White has the opposition with a passed pawn on e2',
+        annotations: {
+          arrows: [],
+          circles: [{ square: 'e6', color: 'yellow' }],
+        },
       },
     ],
     category: 'endgame',

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
 import { db } from '@/lib/db';
 
 import {
@@ -48,6 +49,7 @@ vi.mock('@/lib/db', () => {
       fen: 'glossary_term_positions.fen',
       sortOrder: 'glossary_term_positions.sort_order',
       caption: 'glossary_term_positions.caption',
+      annotations: 'glossary_term_positions.annotations',
     },
   };
 });
@@ -136,8 +138,8 @@ describe('mergeTermRows', () => {
     expect(result[0].term).toBe('Fork');
     expect(result[0].aliases).toEqual(['Double Attack', 'Family Fork']);
     expect(result[0].positions).toEqual([
-      { fen: 'fen-1', sortOrder: 1, caption: 'Example 1' },
-      { fen: 'fen-2', sortOrder: 2, caption: undefined },
+      { fen: 'fen-1', sortOrder: 1, caption: 'Example 1', annotations: EMPTY_BOARD_ANNOTATIONS },
+      { fen: 'fen-2', sortOrder: 2, caption: undefined, annotations: EMPTY_BOARD_ANNOTATIONS },
     ]);
   });
 
@@ -202,8 +204,8 @@ describe('mergeTermRows', () => {
     expect(result).toHaveLength(1);
     expect(result[0].aliases).toEqual(['Castle', 'O-O']);
     expect(result[0].positions).toEqual([
-      { fen: 'fen-a', sortOrder: 1, caption: undefined },
-      { fen: 'fen-b', sortOrder: 2, caption: undefined },
+      { fen: 'fen-a', sortOrder: 1, caption: undefined, annotations: EMPTY_BOARD_ANNOTATIONS },
+      { fen: 'fen-b', sortOrder: 2, caption: undefined, annotations: EMPTY_BOARD_ANNOTATIONS },
     ]);
   });
 
@@ -250,7 +252,14 @@ describe('mergeTermRows', () => {
     expect(result).toHaveLength(1);
     expect(result[0].aliases).toBeUndefined();
     // Only one position despite two rows with the same fen
-    expect(result[0].positions).toEqual([{ fen: 'same-fen', sortOrder: 1, caption: 'Caption A' }]);
+    expect(result[0].positions).toEqual([
+      {
+        fen: 'same-fen',
+        sortOrder: 1,
+        caption: 'Caption A',
+        annotations: EMPTY_BOARD_ANNOTATIONS,
+      },
+    ]);
   });
 
   it('should return undefined aliases when all alias values are null', () => {
@@ -414,9 +423,9 @@ describe('mergeTermRows', () => {
     const result = mergeTermRows(aliasRows, positionRows);
 
     expect(result[0].positions).toEqual([
-      { fen: 'fen-step-1', sortOrder: 1, caption: 'Step 1' },
-      { fen: 'fen-step-2', sortOrder: 2, caption: undefined },
-      { fen: 'fen-step-3', sortOrder: 3, caption: 'Step 3' },
+      { fen: 'fen-step-1', sortOrder: 1, caption: 'Step 1', annotations: EMPTY_BOARD_ANNOTATIONS },
+      { fen: 'fen-step-2', sortOrder: 2, caption: undefined, annotations: EMPTY_BOARD_ANNOTATIONS },
+      { fen: 'fen-step-3', sortOrder: 3, caption: 'Step 3', annotations: EMPTY_BOARD_ANNOTATIONS },
     ]);
   });
 
@@ -449,7 +458,14 @@ describe('mergeTermRows', () => {
 
     const result = mergeTermRows(aliasRows, positionRows);
 
-    expect(result[0].positions).toEqual([{ fen: 'battery-fen', sortOrder: 0, caption: undefined }]);
+    expect(result[0].positions).toEqual([
+      {
+        fen: 'battery-fen',
+        sortOrder: 0,
+        caption: undefined,
+        annotations: EMPTY_BOARD_ANNOTATIONS,
+      },
+    ]);
   });
 
   it('should separate rows for different terms correctly', () => {
@@ -517,7 +533,9 @@ describe('mergeTermRows', () => {
 
     expect(result[1].term).toBe('Knight');
     expect(result[1].aliases).toEqual(['N', 'Kt']);
-    expect(result[1].positions).toEqual([{ fen: 'knight-fen', sortOrder: 1, caption: undefined }]);
+    expect(result[1].positions).toEqual([
+      { fen: 'knight-fen', sortOrder: 1, caption: undefined, annotations: EMPTY_BOARD_ANNOTATIONS },
+    ]);
   });
 
   it('should return empty array for empty input', () => {
@@ -935,7 +953,12 @@ describe('queries (integration with DB mock)', () => {
       const result = await getTermsByLetter('f', 'ja');
 
       expect(result[0].positions).toEqual([
-        { fen: 'fork-fen', sortOrder: 1, caption: 'Fork position' },
+        {
+          fen: 'fork-fen',
+          sortOrder: 1,
+          caption: 'Fork position',
+          annotations: EMPTY_BOARD_ANNOTATIONS,
+        },
       ]);
     });
   });
@@ -1037,7 +1060,9 @@ describe('queries (integration with DB mock)', () => {
 
       const result = await getTermsByCategory('tactics', 'ja');
 
-      expect(result[0].positions).toEqual([{ fen: 'pin-fen', sortOrder: 1, caption: undefined }]);
+      expect(result[0].positions).toEqual([
+        { fen: 'pin-fen', sortOrder: 1, caption: undefined, annotations: EMPTY_BOARD_ANNOTATIONS },
+      ]);
     });
   });
 

@@ -1,5 +1,7 @@
 import { not, sql } from 'drizzle-orm';
 
+import { EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
+
 import { chessTerms } from '../data/chess-terms';
 import {
   db,
@@ -93,9 +95,17 @@ export async function seedGlossaryTerms() {
       }
     }
 
-    // Upsert positions (idempotent on term_id + fen unique constraint)
+    // Upsert positions (idempotent on term_id + fen unique constraint).
+    //
+    // `annotations` is INTENTIONALLY excluded from the conflict UPDATE
+    // set: it is admin-managed via `/admin/glossary/[slug]`, and
+    // overwriting it on every seed run would let a code-only deploy
+    // silently clobber curated arrows and circles. Code's optional
+    // `pos.annotations` is therefore a one-time bootstrap value used on
+    // INSERT and ignored on UPDATE.
     if (chessTerm.positions && chessTerm.positions.length > 0) {
       for (const pos of chessTerm.positions) {
+        const annotations = pos.annotations ?? EMPTY_BOARD_ANNOTATIONS;
         await db
           .insert(glossaryTermPositions)
           .values({
@@ -103,12 +113,14 @@ export async function seedGlossaryTerms() {
             fen: pos.fen,
             sortOrder: pos.sortOrder,
             caption: pos.caption || null,
+            annotations,
           })
           .onConflictDoUpdate({
             target: [glossaryTermPositions.termId, glossaryTermPositions.fen],
             set: {
               sortOrder: pos.sortOrder,
               caption: pos.caption || null,
+              // annotations omitted by design — see comment above.
             },
           });
         validPositions.push({ termId: term.id, fen: pos.fen });

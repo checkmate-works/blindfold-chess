@@ -17,6 +17,10 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 
+import type { BoardAnnotations } from '@/lib/board-annotations/types';
+
+const EMPTY_BOARD_ANNOTATIONS_DEFAULT: BoardAnnotations = { arrows: [], circles: [] };
+
 /**
  * @design updated_at update policy
  *
@@ -265,6 +269,22 @@ export const glossaryTermPositions = pgTable(
     fen: varchar('fen', { length: 100 }).notNull(),
     sortOrder: integer('sort_order').default(0),
     caption: varchar('caption', { length: 255 }),
+    /**
+     * Display-only board markup (arrows and squares to highlight) drawn on
+     * top of the example board. Many glossary entries — `pin`, `skewer`,
+     * `discovered-attack` — are unintelligible without indicating WHICH
+     * piece is pinned / skewered / hidden, so the annotation lives on each
+     * (term, fen) pair rather than on the FEN itself: the same position may
+     * illustrate different terms with different arrows.
+     *
+     * Schema: `{ arrows: Arrow[]; circles: Circle[] }`. See
+     * `apps/web/src/lib/board-annotations/types.ts`. JSONB shape validation
+     * is enforced at the application layer via `parseBoardAnnotations`.
+     */
+    annotations: jsonb('annotations')
+      .$type<BoardAnnotations>()
+      .notNull()
+      .default(EMPTY_BOARD_ANNOTATIONS_DEFAULT),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [unique('uq_term_position').on(table.termId, table.fen)]
@@ -2540,6 +2560,19 @@ export const chunks = pgTable(
     slug: varchar('slug', { length: 255 }).notNull().unique(),
     description: text('description'),
     representativeFen: varchar('representative_fen', { length: 100 }).notNull(),
+    /**
+     * Display-only board markup (arrows + circles) drawn on top of the
+     * representative board to make the pattern instantly readable
+     * (e.g. arrows showing the bishop's diagonal in a fianchetto, or the
+     * rook battery's file). Inline JSONB rather than a side table because
+     * each chunk owns at most one set of annotations and the data has no
+     * independent identity. See
+     * `apps/web/src/lib/board-annotations/types.ts` for the schema.
+     */
+    annotations: jsonb('annotations')
+      .$type<BoardAnnotations>()
+      .notNull()
+      .default(EMPTY_BOARD_ANNOTATIONS_DEFAULT),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true })

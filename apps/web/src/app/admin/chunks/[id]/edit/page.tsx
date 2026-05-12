@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
 import { getChunkById } from '@/lib/chunks/queries';
 
 import { getLinkedPositions } from '../../_actions/positionChunkActions';
@@ -65,6 +66,7 @@ export default async function EditChunkPage({ params }: { params: Promise<{ id: 
           slug: chunk.slug,
           description: chunk.description,
           userId: chunk.userId,
+          annotations: parseBoardAnnotations(chunk.annotations),
         }}
       />
 

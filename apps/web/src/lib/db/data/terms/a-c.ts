@@ -37,6 +37,17 @@ export const termsAC: ChessTerm[] = [
       '2つ以上の駒を一直線（縦、横、斜め）に並べて、同じ方向に攻撃の圧力をかける配置のこと。代表的な例として、ルーク+クイーン、ビショップ+クイーン、ルーク+ルークなどがある',
     definitionEn:
       'A configuration where two or more pieces are aligned in a straight line (vertical, horizontal, or diagonal) to apply attacking pressure in the same direction. Common examples include rook+queen, bishop+queen, and rook+rook combinations',
+    positions: [
+      {
+        fen: '7k/8/8/8/8/8/R7/Q6K w - - 0 1',
+        sortOrder: 0,
+        caption: 'Queen behind Rook — heavy battery aiming down the a-file.',
+        annotations: {
+          arrows: [{ from: 'a1', to: 'a8', color: 'green' }],
+          circles: [],
+        },
+      },
+    ],
     category: 'tactics',
   },
   {

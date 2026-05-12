@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation';
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { createSearchParamsCache, parseAsString } from 'nuqs/server';
 
+import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
 import { getChunkBySlug, getLinkedPositionsForChunk } from '@/lib/chunks/queries';
 import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
@@ -155,7 +156,11 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
       )}
 
       <div className="max-w-xs mx-auto">
-        <ThemedBoardThumbnail fen={chunk.representativeFen} className="w-full" />
+        <ThemedBoardThumbnail
+          fen={chunk.representativeFen}
+          annotations={parseBoardAnnotations(chunk.annotations)}
+          className="w-full"
+        />
       </div>
 
       {linkedPositions.length > 0 && (

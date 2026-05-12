@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 
 import { isLightSquare } from '@blindfold-chess/features/common';
 
+import { BoardAnnotationOverlay } from '@/lib/board-annotations/BoardAnnotationOverlay';
+import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import type { TailwindThemeClasses } from '@/lib/games/board-themes';
 
 import { Square } from './Square';
@@ -30,6 +32,12 @@ type Props = {
   onBoardClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
   rounded?: boolean;
   className?: string;
+  /**
+   * Optional pre-parsed display annotations (arrows + circles). Rendered
+   * inside the same `relative` container as the squares so the SVG layer
+   * shares the board's coordinate space.
+   */
+  annotations?: BoardAnnotations | null;
 };
 
 // Visual rows/cols `0..7`, left→right / top→bottom as rendered. The mapping
@@ -47,6 +55,7 @@ export function BoardLayout({
   onBoardClick,
   rounded = true,
   className = '',
+  annotations = null,
 }: Props) {
   return (
     <div className={`w-full ${className}`}>
@@ -98,6 +107,7 @@ export function BoardLayout({
             </div>
           );
         })}
+        {annotations && <BoardAnnotationOverlay annotations={annotations} flipped={flipped} />}
       </div>
     </div>
   );

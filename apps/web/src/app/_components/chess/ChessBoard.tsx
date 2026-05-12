@@ -7,6 +7,7 @@ import type { BoardPiece } from '@blindfold-chess/features/chess-core';
 import { fenToBoard } from '@blindfold-chess/features/chess-core';
 import type { Side } from '@blindfold-chess/types';
 
+import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import type { BoardTheme } from '@/lib/games/board-themes';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/games/board-themes';
 import type { EvaluationMark } from '@/lib/games/evaluation';
@@ -40,6 +41,12 @@ type Props = {
   rounded?: boolean;
   evaluationMark?: EvaluationMark | null;
   className?: string;
+  /**
+   * Optional pre-parsed display annotations. Passed straight through to
+   * {@link BoardLayout}; callers feed JSONB through `parseBoardAnnotations`
+   * on the server side first.
+   */
+  annotations?: BoardAnnotations | null;
 };
 
 export const ChessBoard = memo(function ChessBoard({
@@ -58,6 +65,7 @@ export const ChessBoard = memo(function ChessBoard({
   rounded = true,
   evaluationMark = null,
   className = '',
+  annotations = null,
 }: Props) {
   const themeColors = getBoardThemeColors(boardTheme);
 
@@ -185,6 +193,7 @@ export const ChessBoard = memo(function ChessBoard({
       onBoardClick={onSquareClick ? handleBoardClick : undefined}
       rounded={rounded}
       className={className}
+      annotations={annotations}
     />
   );
 });
