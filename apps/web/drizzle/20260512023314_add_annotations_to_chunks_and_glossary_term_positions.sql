@@ -1,0 +1,2 @@
+ALTER TABLE "chunks" ADD COLUMN "annotations" jsonb DEFAULT '{"arrows":[],"circles":[]}'::jsonb NOT NULL;--> statement-breakpoint
+ALTER TABLE "glossary_term_positions" ADD COLUMN "annotations" jsonb DEFAULT '{"arrows":[],"circles":[]}'::jsonb NOT NULL;

@@ -281,6 +281,13 @@
       "when": 1778537880478,
       "tag": "20260511221800_drop_site_settings_table",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1778553194368,
+      "tag": "20260512023314_add_annotations_to_chunks_and_glossary_term_positions",
+      "breakpoints": true
     }
   ]
 }
