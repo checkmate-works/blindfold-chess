@@ -5,10 +5,9 @@ import { redirect } from 'next/navigation';
 
 import { authenticateAndCheckBan } from '@/lib/auth';
 import { db, feedItems, topicPosts } from '@/lib/db';
-import { GRANT_TYPE_DEFAULTS, isTopicPostGrantTopicType } from '@/lib/db/data/grant-types';
+import { isTopicPostGrantTopicType } from '@/lib/db/data/grant-types';
 import type { DbTx } from '@/lib/db/types';
 import {
-  createNotification,
   notifyFollowersOfNewPost,
   notifyTopicAuthorOfNewComment,
 } from '@/lib/notifications/notification';
@@ -165,21 +164,9 @@ export async function createPostBase(params: {
 
   if (grantApplied && grantInfo) {
     revalidateTag('grant-status', { expire: 60 });
-    const info: { grantId: string; expiresAt: Date } = grantInfo;
-    const grantTypeConfig = GRANT_TYPE_DEFAULTS.topic_post;
-    createNotification({
-      userId: user.id,
-      type: 'benefit_grant',
-      targetType: 'user_grant',
-      targetId: info.grantId,
-      metadata: {
-        grantType: 'topic_post',
-        benefitType: grantTypeConfig.benefitType,
-        durationDays: grantTypeConfig.durationDays,
-        expiresAt: info.expiresAt.toISOString(),
-        reason: null,
-      },
-    });
+    // No in-app notification: this flow redirects to /thanks on grant, which
+    // is the celebration moment. Admin-manual grants (no /thanks) still notify
+    // — see admin/grants/_actions/createGrant.ts.
   }
 
   logActivityEvent({

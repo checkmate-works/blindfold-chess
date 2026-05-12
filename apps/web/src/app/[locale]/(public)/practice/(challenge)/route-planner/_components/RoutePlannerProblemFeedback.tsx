@@ -38,8 +38,18 @@ export function RoutePlannerProblemFeedback({
 }: Props) {
   const t = useTranslations('practice.routePlanner');
 
-  const showTabs = !success && !skipped;
-  const [activeTab, setActiveTab] = useState<TabValue>(showTabs ? 'yours' : 'shortest');
+  const userPath = useMemo(() => [start, ...moves], [start, moves]);
+
+  // Comparing the user's path to the deterministic shortest path is only useful
+  // when there is something to learn from the comparison: a wrong answer, or a
+  // correct-but-longer-than-optimal answer. When the user found an equally-short
+  // route — even if it goes through different squares (e.g., knight g5→f3→g1
+  // vs. g5→h3→g1) — showing the BFS-derived shortest as "the answer" reads as
+  // "your answer was wrong" and is confusing. Skipped problems have no user
+  // path, so only the shortest is meaningful.
+  const tookOptimalLength = success && userPath.length === shortestPath.length;
+  const showTabs = !skipped && !tookOptimalLength;
+  const [activeTab, setActiveTab] = useState<TabValue>(skipped ? 'shortest' : 'yours');
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [lockedIndex, setLockedIndex] = useState<number | null>(null);
   const highlightedIndex = hoveredIndex ?? lockedIndex;
@@ -50,8 +60,6 @@ export function RoutePlannerProblemFeedback({
     setLockedIndex(null);
     setActiveTab(tab);
   };
-
-  const userPath = useMemo(() => [start, ...moves], [start, moves]);
 
   // On the user's path, mark every illegal move (each square not reachable from its predecessor).
   const wrongSquares = useMemo(() => {

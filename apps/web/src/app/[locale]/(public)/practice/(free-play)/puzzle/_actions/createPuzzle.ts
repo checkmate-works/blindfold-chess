@@ -4,8 +4,7 @@ import { revalidatePath, revalidateTag } from 'next/cache';
 
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, feedItems, positions, puzzleSolutions } from '@/lib/db';
-import { GRANT_TYPE_DEFAULTS } from '@/lib/db/data/grant-types';
-import { createNotification, notifyFollowersOfNewPosition } from '@/lib/notifications/notification';
+import { notifyFollowersOfNewPosition } from '@/lib/notifications/notification';
 import { validateAndDedupeTagIds } from '@/lib/positions/tag-validation';
 import { insertPositionTags } from '@/lib/positions/tag-writes';
 import { normalizePuzzleMoves, validatePuzzleMutationData } from '@/lib/positions/validation';
@@ -116,21 +115,9 @@ export async function createPuzzle(data: {
 
   if (grantInfo) {
     revalidateTag('grant-status', { expire: 60 });
-    const info: { grantId: string; expiresAt: Date } = grantInfo;
-    const grantTypeConfig = GRANT_TYPE_DEFAULTS.topic_post;
-    createNotification({
-      userId: user.id,
-      type: 'benefit_grant',
-      targetType: 'user_grant',
-      targetId: info.grantId,
-      metadata: {
-        grantType: 'topic_post',
-        benefitType: grantTypeConfig.benefitType,
-        durationDays: grantTypeConfig.durationDays,
-        expiresAt: info.expiresAt.toISOString(),
-        reason: null,
-      },
-    });
+    // No in-app notification: the client redirects to /thanks on grant, which
+    // is the celebration moment. Admin-manual grants (no /thanks) still notify
+    // — see admin/grants/_actions/createGrant.ts.
   }
 
   notifyFollowersOfNewPosition({
