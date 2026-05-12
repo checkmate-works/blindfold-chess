@@ -1,5 +1,7 @@
 import { not, sql } from 'drizzle-orm';
 
+import { EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
+
 import { chessTerms } from '../data/chess-terms';
 import {
   db,
@@ -96,6 +98,7 @@ export async function seedGlossaryTerms() {
     // Upsert positions (idempotent on term_id + fen unique constraint)
     if (chessTerm.positions && chessTerm.positions.length > 0) {
       for (const pos of chessTerm.positions) {
+        const annotations = pos.annotations ?? EMPTY_BOARD_ANNOTATIONS;
         await db
           .insert(glossaryTermPositions)
           .values({
@@ -103,12 +106,14 @@ export async function seedGlossaryTerms() {
             fen: pos.fen,
             sortOrder: pos.sortOrder,
             caption: pos.caption || null,
+            annotations,
           })
           .onConflictDoUpdate({
             target: [glossaryTermPositions.termId, glossaryTermPositions.fen],
             set: {
               sortOrder: pos.sortOrder,
               caption: pos.caption || null,
+              annotations,
             },
           });
         validPositions.push({ termId: term.id, fen: pos.fen });
