@@ -1,9 +1,11 @@
 import { cache } from 'react';
 
-import { and, asc, eq, inArray } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull } from 'drizzle-orm';
 
 import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
 import {
+  chunkThemes,
+  chunks,
   db,
   glossaryTermPositions,
   glossaryTermTranslations,
@@ -115,6 +117,67 @@ export const getLinkedThemesForPosition = cache(
       .orderBy(asc(glossaryTerms.termEn));
 
     return hydrateThemes(themeRows);
+  }
+);
+
+/**
+ * Fetch glossary terms tagged on a chunk via `chunk_themes`. Mirrors
+ * {@link getLinkedThemesForPosition} but anchored on a chunk row. Used
+ * on chunk detail pages and inside the admin chunk editor.
+ */
+export const getLinkedThemesForChunk = cache(
+  async (chunkId: string, locale: Locale): Promise<ThemeOption[]> => {
+    const themeRows = await db
+      .select(themeSelectColumns)
+      .from(chunkThemes)
+      .innerJoin(glossaryTerms, eq(glossaryTerms.id, chunkThemes.termId))
+      .leftJoin(
+        glossaryTermTranslations,
+        and(
+          eq(glossaryTermTranslations.termId, glossaryTerms.id),
+          eq(glossaryTermTranslations.locale, locale)
+        )
+      )
+      .where(eq(chunkThemes.chunkId, chunkId))
+      .orderBy(asc(glossaryTerms.termEn));
+
+    return hydrateThemes(themeRows);
+  }
+);
+
+/**
+ * Fetch chunks tagged with a glossary term via `chunk_themes`. Only
+ * non-deleted chunks are returned; the link itself is preserved across
+ * a chunk's soft-delete so an undelete restores the relationship, but
+ * public reads filter the chunk out at this query layer.
+ *
+ * Used on the public `/glossary/[slug]` term page and inside the admin
+ * term editor.
+ */
+export const getLinkedChunksForTerm = cache(
+  async (
+    termId: string
+  ): Promise<
+    Array<{
+      id: string;
+      slug: string;
+      title: string;
+      representativeFen: string;
+      description: string | null;
+    }>
+  > => {
+    return db
+      .select({
+        id: chunks.id,
+        slug: chunks.slug,
+        title: chunks.title,
+        representativeFen: chunks.representativeFen,
+        description: chunks.description,
+      })
+      .from(chunkThemes)
+      .innerJoin(chunks, eq(chunks.id, chunkThemes.chunkId))
+      .where(and(eq(chunkThemes.termId, termId), isNull(chunks.deletedAt)))
+      .orderBy(asc(chunks.title));
   }
 );
 
