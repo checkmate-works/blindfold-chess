@@ -156,6 +156,34 @@ export const getPositionWithProfileById = cache(
   }
 );
 /**
+ * Lightweight lookup for fork lineage display on detail pages: returns
+ * just enough metadata to render a "Forked from <title>" link, including
+ * `deletedAt` so the caller can fall back to a "(deleted)" label when the
+ * source has been soft-deleted (the lineage stamp is intentionally
+ * orphan-tolerant — see `positions.forkedFromId` schema comment). Returns
+ * `null` when the row was hard-deleted or the id never existed.
+ *
+ * `includeDeleted` is implicit here (we always want to show the parent
+ * even if it has been soft-deleted), so the option is omitted.
+ */
+export const getPositionLineageMetaById = cache(async (id: string) => {
+  if (!UUID_RE.test(id)) return null;
+
+  const [row] = await db
+    .select({
+      id: positions.id,
+      title: positions.title,
+      type: positions.type,
+      deletedAt: positions.deletedAt,
+    })
+    .from(positions)
+    .where(eq(positions.id, id))
+    .limit(1);
+
+  return row ?? null;
+});
+
+/**
  * Fetch a single random position of a given type.
  */
 export async function getRandomPosition({ type }: { type: PositionType }) {
