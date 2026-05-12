@@ -95,10 +95,9 @@ export async function getBenefitsPageData(userId: string): Promise<BenefitsPageD
     return !acc || exp > acc ? exp : acc;
   }, null);
 
-  const candidates: Date[] = [];
-  if (subscriptionExpiresAt) candidates.push(subscriptionExpiresAt);
-  if (latestGrantExpiresAt) candidates.push(latestGrantExpiresAt);
-  const latestExpiresAt = candidates.length ? candidates.reduce((a, b) => (a > b ? a : b)) : null;
+  const latestExpiresAt = [subscriptionExpiresAt, latestGrantExpiresAt]
+    .filter((d): d is Date => d !== null)
+    .reduce<Date | null>((max, d) => (!max || d > max ? d : max), null);
 
   const adFreeActive = latestExpiresAt !== null;
 
@@ -135,18 +134,19 @@ export async function getBenefitsPageData(userId: string): Promise<BenefitsPageD
   const topicPostMap = new Map(topicPostRows.map((r) => [r.id, r]));
   const positionMap = new Map(positionRows.map((r) => [r.id, r]));
 
-  const entitlementRows: EntitlementRow[] = [];
-  if (subscriptionActive && subscription && subscriptionExpiresAt) {
-    entitlementRows.push({
-      id: 'subscription',
-      sourceLabelKey: 'subscription',
-      sourceHref: null,
-      startsAt: new Date(subscription.currentPeriodStart),
-      expiresAt: subscriptionExpiresAt,
-      status: 'active',
-    });
-  }
-  for (const g of recentGrants) {
+  const subscriptionRow: EntitlementRow | null =
+    subscriptionActive && subscription && subscriptionExpiresAt
+      ? {
+          id: 'subscription',
+          sourceLabelKey: 'subscription',
+          sourceHref: null,
+          startsAt: new Date(subscription.currentPeriodStart),
+          expiresAt: subscriptionExpiresAt,
+          status: 'active',
+        }
+      : null;
+
+  const grantRows: EntitlementRow[] = recentGrants.map((g) => {
     const startsAt = new Date(g.startsAt);
     const expiresAt = new Date(g.expiresAt);
     const grantTypeKey: GrantType = isGrantType(g.grantType) ? g.grantType : 'admin_manual';
@@ -157,16 +157,20 @@ export async function getBenefitsPageData(userId: string): Promise<BenefitsPageD
       positionMap
     );
 
-    entitlementRows.push({
+    return {
       id: g.id,
       sourceLabelKey: labelKey,
       sourceHref: href,
       startsAt,
       expiresAt,
       status: classify(now, startsAt, expiresAt),
-    });
-  }
-  entitlementRows.sort((a, b) => b.startsAt.getTime() - a.startsAt.getTime());
+    };
+  });
+
+  const entitlementRows: EntitlementRow[] = [
+    ...(subscriptionRow ? [subscriptionRow] : []),
+    ...grantRows,
+  ].toSorted((a, b) => b.startsAt.getTime() - a.startsAt.getTime());
 
   return {
     adFreeActive,

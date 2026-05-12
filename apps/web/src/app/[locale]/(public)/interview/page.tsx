@@ -1,17 +1,17 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-import { createClient } from '@/lib/supabase/server';
-
 import { PageLayout } from '@/app/[locale]/_components';
-import { INTERVIEW_QUESTION_KEYS } from '@/app/[locale]/_lib/interview';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
-import { InterviewQuestionCard } from './_components/InterviewQuestionCard';
-import { type InterviewAnswerRow, getInterviewAnswers } from './_lib/queries';
+import { InterviewQuestionGrid } from './_components/InterviewQuestionGrid';
 
-export const dynamic = 'force-dynamic';
+// Interview questions are code-defined (`INTERVIEW_QUESTION_KEYS`) and the
+// labels are i18n-driven, so the page itself only changes on deploy. The
+// per-user "answered ✓" badge is overlaid client-side by
+// `InterviewQuestionGrid` after hydration.
+export const revalidate = 3600;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
@@ -31,37 +31,9 @@ export default async function InterviewPage({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'interview' });
 
-  // Check auth state without requiring login
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  // Only fetch answers for authenticated users
-  const answers: InterviewAnswerRow[] = user ? await getInterviewAnswers(user.id) : [];
-  const answerMap = new Map(answers.map((a) => [a.questionKey, a]));
-
   return (
     <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {INTERVIEW_QUESTION_KEYS.map((key) => {
-          const answer = answerMap.get(key);
-
-          return (
-            <InterviewQuestionCard
-              key={key}
-              questionKey={key}
-              label={t(`questions.${key}.label` as never)}
-              description={t(`questions.${key}.description` as never)}
-              isAuthenticated={!!user}
-              isAnswered={!!answer}
-              answeredLabel={t('answered')}
-              notAnsweredLabel={t('noAnswer')}
-              locale={locale}
-            />
-          );
-        })}
-      </div>
+      <InterviewQuestionGrid locale={locale} />
     </PageLayout>
   );
 }

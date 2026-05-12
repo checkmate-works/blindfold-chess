@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import * as Sentry from '@sentry/nextjs';
@@ -79,12 +80,12 @@ export function PricingCard(props: Props) {
       {props.variant === 'paid' &&
         props.ctaLabel &&
         (props.ctaHref ? (
-          <a
+          <Link
             href={props.ctaHref}
             className="mt-6 block w-full rounded-lg bg-primary px-4 py-2.5 text-center text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
           >
             {props.ctaLabel}
-          </a>
+          </Link>
         ) : (
           <button
             onClick={handleSubscribe}
