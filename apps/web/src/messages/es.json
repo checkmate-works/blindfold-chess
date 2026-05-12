@@ -1001,6 +1001,8 @@
         "forkAction": "Bifurcar",
         "forkedFrom": "Bifurcado de:",
         "forkedFromDeleted": "Bifurcado de una posición eliminada",
+        "forksSection": "{count, plural, one {# bifurcación} other {# bifurcaciones}}",
+        "forksByAuthor": "por {name}",
         "usefulSection": "Patrones útiles para resolver ({count})"
       },
       "delete": {
@@ -1103,6 +1105,8 @@
         "forkAction": "Bifurcar",
         "forkedFrom": "Bifurcado de:",
         "forkedFromDeleted": "Bifurcado de un puzzle eliminado",
+        "forksSection": "{count, plural, one {# bifurcación} other {# bifurcaciones}}",
+        "forksByAuthor": "por {name}",
         "usefulSection": "Patrones útiles para resolver ({count})"
       },
       "delete": {

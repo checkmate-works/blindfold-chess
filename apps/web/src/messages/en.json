@@ -1001,6 +1001,8 @@
         "forkAction": "Fork",
         "forkedFrom": "Forked from:",
         "forkedFromDeleted": "Forked from a deleted position",
+        "forksSection": "{count, plural, one {# fork} other {# forks}}",
+        "forksByAuthor": "by {name}",
         "usefulSection": "Useful patterns for solving ({count})"
       },
       "delete": {
@@ -1103,6 +1105,8 @@
         "forkAction": "Fork",
         "forkedFrom": "Forked from:",
         "forkedFromDeleted": "Forked from a deleted puzzle",
+        "forksSection": "{count, plural, one {# fork} other {# forks}}",
+        "forksByAuthor": "by {name}",
         "usefulSection": "Useful patterns for solving ({count})"
       },
       "delete": {

@@ -1001,6 +1001,8 @@
         "forkAction": "フォーク",
         "forkedFrom": "フォーク元:",
         "forkedFromDeleted": "フォーク元は削除されています",
+        "forksSection": "フォーク {count} 件",
+        "forksByAuthor": "{name} による",
         "usefulSection": "解答に役立つパターン ({count})"
       },
       "delete": {
@@ -1103,6 +1105,8 @@
         "forkAction": "フォーク",
         "forkedFrom": "フォーク元:",
         "forkedFromDeleted": "フォーク元は削除されています",
+        "forksSection": "フォーク {count} 件",
+        "forksByAuthor": "{name} による",
         "usefulSection": "解答に役立つパターン ({count})"
       },
       "delete": {

@@ -18,7 +18,11 @@ import { getOptionalUser } from '@/lib/auth';
 import { getLinkedChunksForPosition } from '@/lib/chunks/queries';
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { getPositionLikeMeta } from '@/lib/positions/like-queries';
-import { getPositionLineageMetaById } from '@/lib/positions/queries';
+import {
+  countPositions,
+  getPositionLineageMetaById,
+  listPositionsWithProfile,
+} from '@/lib/positions/queries';
 import { getLinkedThemesForPosition } from '@/lib/themes/queries';
 import { resolveDisplayName } from '@/lib/users/display-name';
 
@@ -45,6 +49,7 @@ import { RelatedTags } from '@/app/[locale]/_components/RelatedTags';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { ForksSection } from '../../../_components/ForksSection';
 import { PositionAuthorAttribution } from '../../../_components/PositionAuthorAttribution';
 import { PositionDetailLayout } from '../../../_components/PositionDetailLayout';
 import { loadPuzzleWithSolutions } from '../../_lib/load-puzzle';
@@ -104,17 +109,34 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
   const displayName = resolveDisplayName(profile);
 
   const currentUser = await getOptionalUser();
-  const [likeMeta, relatedChunks, relatedThemes, commentCount, allComments, forkParent] =
-    await Promise.all([
-      getPositionLikeMeta(position.id, currentUser?.id),
-      getLinkedChunksForPosition(position.id),
-      getLinkedThemesForPosition(position.id, locale),
-      getPostCountByTopicKey('position_puzzle', position.id),
-      getCommentTreeForTopic('position_puzzle', position.id, currentUser?.id),
-      position.forkedFromId
-        ? getPositionLineageMetaById(position.forkedFromId)
-        : Promise.resolve(null),
-    ]);
+  const [
+    likeMeta,
+    relatedChunks,
+    relatedThemes,
+    commentCount,
+    allComments,
+    forkParent,
+    forkCount,
+    forkChildren,
+  ] = await Promise.all([
+    getPositionLikeMeta(position.id, currentUser?.id),
+    getLinkedChunksForPosition(position.id),
+    getLinkedThemesForPosition(position.id, locale),
+    getPostCountByTopicKey('position_puzzle', position.id),
+    getCommentTreeForTopic('position_puzzle', position.id, currentUser?.id),
+    position.forkedFromId
+      ? getPositionLineageMetaById(position.forkedFromId)
+      : Promise.resolve(null),
+    countPositions({ type: 'puzzle', forkedFromId: position.id }),
+    // FORK_LIST_PAGE_SIZE = 20 — keep this aligned with the position-memory
+    // detail page and revisit only if descendants pages need pagination.
+    listPositionsWithProfile({
+      type: 'puzzle',
+      forkedFromId: position.id,
+      limit: 20,
+      offset: 0,
+    }),
+  ]);
 
   const canFork =
     currentUser != null && currentUser.id !== position.userId && position.forksDisabledAt === null;
@@ -246,6 +268,16 @@ export default async function PuzzleDetailPage({ params, searchParams }: Props) 
           </Button>
         </Link>
       </div>
+
+      <ForksSection
+        forks={forkChildren}
+        totalCount={forkCount}
+        basePath="/practice/puzzle"
+        labels={{
+          sectionTitle: (count) => t('detail.forksSection', { count }),
+          byAuthor: (name) => t('detail.forksByAuthor', { name }),
+        }}
+      />
 
       <SectionTitle>{tComments('commentsTitle')}</SectionTitle>
 
