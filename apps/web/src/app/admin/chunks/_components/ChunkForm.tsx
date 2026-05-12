@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation';
 
 import { validateFenStructure } from '@blindfold-chess/features/chess-core';
 
-import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
+import { BoardAnnotationEditor } from '@/lib/board-annotations/BoardAnnotationEditor';
+import { type BoardAnnotations, EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
 
 import { createChunk } from '../_actions/createChunk';
 import { updateChunk } from '../_actions/updateChunk';
@@ -20,6 +21,7 @@ type ChunkFormProps = {
     slug: string;
     description: string | null;
     userId: string | null;
+    annotations?: BoardAnnotations;
   };
 };
 
@@ -30,6 +32,9 @@ export function ChunkForm({ mode, initial }: ChunkFormProps) {
   const [title, setTitle] = useState(initial?.title ?? '');
   const [slug, setSlug] = useState(initial?.slug ?? '');
   const [description, setDescription] = useState(initial?.description ?? '');
+  const [annotations, setAnnotations] = useState<BoardAnnotations>(
+    initial?.annotations ?? EMPTY_BOARD_ANNOTATIONS
+  );
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -61,6 +66,7 @@ export function ChunkForm({ mode, initial }: ChunkFormProps) {
       title,
       slug,
       description: description || null,
+      annotations,
     };
 
     const result =
@@ -120,13 +126,18 @@ export function ChunkForm({ mode, initial }: ChunkFormProps) {
       {isFenValid && (
         <div className="w-64">
           {/*
-           * Use `BoardThumbnail` (chess.js-free FEN parser) rather than
-           * `AnimatedChessBoard`, which would internally call chess.js's
-           * `fenToBoard` and throw on kingless patterns. Chunks may
-           * legitimately have no kings, so the preview must accept any
-           * structurally valid FEN.
+           * Use `BoardAnnotationEditor` (which itself wraps the chess.js-free
+           * `BoardThumbnail`) rather than `AnimatedChessBoard`: chunks may
+           * legitimately omit kings, and chess.js's `fenToBoard` would
+           * reject those. The editor doubles as the preview, so there is no
+           * separate `<BoardThumbnail>` here.
            */}
-          <BoardThumbnail fen={representativeFen.trim()} className="w-full" />
+          <BoardAnnotationEditor
+            fen={representativeFen.trim()}
+            value={annotations}
+            onChange={setAnnotations}
+            disabled={pending}
+          />
         </div>
       )}
 
