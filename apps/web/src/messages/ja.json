@@ -1002,8 +1002,14 @@
         "forkedFrom": "フォーク元:",
         "forkedFromDeleted": "フォーク元は削除されています",
         "forksSection": "フォーク {count} 件",
-        "forksByAuthor": "{name} による",
         "usefulSection": "解答に役立つパターン ({count})"
+      },
+      "forksList": {
+        "title": "フォーク一覧",
+        "titleOf": "「{parentTitle}」のフォーク一覧",
+        "breadcrumb": "フォーク一覧",
+        "sectionTitle": "フォーク {count} 件",
+        "empty": "まだフォークはありません。"
       },
       "delete": {
         "button": "問題を削除",
@@ -1106,8 +1112,14 @@
         "forkedFrom": "フォーク元:",
         "forkedFromDeleted": "フォーク元は削除されています",
         "forksSection": "フォーク {count} 件",
-        "forksByAuthor": "{name} による",
         "usefulSection": "解答に役立つパターン ({count})"
+      },
+      "forksList": {
+        "title": "フォーク一覧",
+        "titleOf": "「{parentTitle}」のフォーク一覧",
+        "breadcrumb": "フォーク一覧",
+        "sectionTitle": "フォーク {count} 件",
+        "empty": "まだフォークはありません。"
       },
       "delete": {
         "button": "パズルを削除",

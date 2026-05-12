@@ -17,7 +17,6 @@ import {
   countPositions,
   getPositionLineageMetaById,
   getPositionWithProfileById,
-  listPositionsWithProfile,
 } from '@/lib/positions/queries';
 import { getLinkedThemesForPosition } from '@/lib/themes/queries';
 import { resolveDisplayName } from '@/lib/users/display-name';
@@ -44,7 +43,6 @@ import { RelatedTags } from '@/app/[locale]/_components/RelatedTags';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { ForksSection } from '../../_components/ForksSection';
 import { PositionAuthorAttribution } from '../../_components/PositionAuthorAttribution';
 import { PositionDetailLayout } from '../../_components/PositionDetailLayout';
 import { toggleLike } from '../_actions/toggleLike';
@@ -107,34 +105,20 @@ export default async function PositionDetailPage({ params, searchParams }: Props
   const isBlackToMove = isBlackToMoveFromFen(position.fen);
 
   const currentUser = await getOptionalUser();
-  const [
-    likeMeta,
-    relatedChunks,
-    relatedThemes,
-    commentCount,
-    allComments,
-    forkParent,
-    forkCount,
-    forkChildren,
-  ] = await Promise.all([
-    getPositionLikeMeta(position.id, currentUser?.id),
-    getLinkedChunksForPosition(position.id),
-    getLinkedThemesForPosition(position.id, locale),
-    getPostCountByTopicKey('position_memory', position.id),
-    getCommentTreeForTopic('position_memory', position.id, currentUser?.id),
-    position.forkedFromId
-      ? getPositionLineageMetaById(position.forkedFromId)
-      : Promise.resolve(null),
-    countPositions({ type: 'memory', forkedFromId: position.id }),
-    // FORK_LIST_PAGE_SIZE = 20 — matches the puzzle detail page; revisit if
-    // descendants pages need pagination.
-    listPositionsWithProfile({
-      type: 'memory',
-      forkedFromId: position.id,
-      limit: 20,
-      offset: 0,
-    }),
-  ]);
+  const [likeMeta, relatedChunks, relatedThemes, commentCount, allComments, forkParent, forkCount] =
+    await Promise.all([
+      getPositionLikeMeta(position.id, currentUser?.id),
+      getLinkedChunksForPosition(position.id),
+      getLinkedThemesForPosition(position.id, locale),
+      getPostCountByTopicKey('position_memory', position.id),
+      getCommentTreeForTopic('position_memory', position.id, currentUser?.id),
+      position.forkedFromId
+        ? getPositionLineageMetaById(position.forkedFromId)
+        : Promise.resolve(null),
+      // Only the count is needed at this surface — the dedicated /forks
+      // page handles the listing (with pagination).
+      countPositions({ type: 'memory', forkedFromId: position.id }),
+    ]);
 
   const canFork =
     currentUser != null && currentUser.id !== position.userId && position.forksDisabledAt === null;
@@ -153,7 +137,11 @@ export default async function PositionDetailPage({ params, searchParams }: Props
     tVideo('fallbackTitle')
   );
 
-  const forkedFromNote = position.forkedFromId ? (
+  // Two-segment provenance line: "forked from <parent>" and / or
+  // "<N> forks". Each segment is independently optional, separated by `·`
+  // when both render. When neither is present the headerNote slot stays
+  // null and the layout falls back to the bare title.
+  const forkedFromSegment = position.forkedFromId ? (
     <span className="inline-flex items-center gap-1">
       <FiGitBranch className="h-3 w-3" aria-hidden />
       {forkParent && forkParent.deletedAt === null ? (
@@ -171,6 +159,24 @@ export default async function PositionDetailPage({ params, searchParams }: Props
       )}
     </span>
   ) : null;
+  const forksLinkSegment =
+    forkCount > 0 ? (
+      <Link
+        href={`/practice/position-memory/${position.id}/forks`}
+        className="inline-flex items-center gap-1 underline hover:text-foreground"
+      >
+        <FiGitBranch className="h-3 w-3" aria-hidden />
+        {t('detail.forksSection', { count: forkCount })}
+      </Link>
+    ) : null;
+  const forkedFromNote =
+    forkedFromSegment || forksLinkSegment ? (
+      <span className="inline-flex flex-wrap items-center justify-center gap-x-2">
+        {forkedFromSegment}
+        {forkedFromSegment && forksLinkSegment && <span aria-hidden>·</span>}
+        {forksLinkSegment}
+      </span>
+    ) : null;
 
   return (
     <PositionDetailLayout
@@ -268,16 +274,6 @@ export default async function PositionDetailPage({ params, searchParams }: Props
       <SectionTitle>{t('detail.solveSection')}</SectionTitle>
 
       <PositionStartForm positionId={position.id} locale={locale} />
-
-      <ForksSection
-        forks={forkChildren}
-        totalCount={forkCount}
-        basePath="/practice/position-memory"
-        labels={{
-          sectionTitle: (count) => t('detail.forksSection', { count }),
-          byAuthor: (name) => t('detail.forksByAuthor', { name }),
-        }}
-      />
 
       <SectionTitle>{tComments('commentsTitle')}</SectionTitle>
 

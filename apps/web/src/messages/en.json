@@ -1002,8 +1002,14 @@
         "forkedFrom": "Forked from:",
         "forkedFromDeleted": "Forked from a deleted position",
         "forksSection": "{count, plural, one {# fork} other {# forks}}",
-        "forksByAuthor": "by {name}",
         "usefulSection": "Useful patterns for solving ({count})"
+      },
+      "forksList": {
+        "title": "Forks",
+        "titleOf": "Forks of {parentTitle}",
+        "breadcrumb": "Forks",
+        "sectionTitle": "{count, plural, one {# fork} other {# forks}}",
+        "empty": "No forks yet."
       },
       "delete": {
         "button": "Delete Problem",
@@ -1106,8 +1112,14 @@
         "forkedFrom": "Forked from:",
         "forkedFromDeleted": "Forked from a deleted puzzle",
         "forksSection": "{count, plural, one {# fork} other {# forks}}",
-        "forksByAuthor": "by {name}",
         "usefulSection": "Useful patterns for solving ({count})"
+      },
+      "forksList": {
+        "title": "Forks",
+        "titleOf": "Forks of {parentTitle}",
+        "breadcrumb": "Forks",
+        "sectionTitle": "{count, plural, one {# fork} other {# forks}}",
+        "empty": "No forks yet."
       },
       "delete": {
         "button": "Delete Puzzle",

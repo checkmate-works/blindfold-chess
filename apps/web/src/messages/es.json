@@ -1002,8 +1002,14 @@
         "forkedFrom": "Bifurcado de:",
         "forkedFromDeleted": "Bifurcado de una posición eliminada",
         "forksSection": "{count, plural, one {# bifurcación} other {# bifurcaciones}}",
-        "forksByAuthor": "por {name}",
         "usefulSection": "Patrones útiles para resolver ({count})"
+      },
+      "forksList": {
+        "title": "Bifurcaciones",
+        "titleOf": "Bifurcaciones de {parentTitle}",
+        "breadcrumb": "Bifurcaciones",
+        "sectionTitle": "{count, plural, one {# bifurcación} other {# bifurcaciones}}",
+        "empty": "Aún no hay bifurcaciones."
       },
       "delete": {
         "button": "Eliminar Problema",
@@ -1106,8 +1112,14 @@
         "forkedFrom": "Bifurcado de:",
         "forkedFromDeleted": "Bifurcado de un puzzle eliminado",
         "forksSection": "{count, plural, one {# bifurcación} other {# bifurcaciones}}",
-        "forksByAuthor": "por {name}",
         "usefulSection": "Patrones útiles para resolver ({count})"
+      },
+      "forksList": {
+        "title": "Bifurcaciones",
+        "titleOf": "Bifurcaciones de {parentTitle}",
+        "breadcrumb": "Bifurcaciones",
+        "sectionTitle": "{count, plural, one {# bifurcación} other {# bifurcaciones}}",
+        "empty": "Aún no hay bifurcaciones."
       },
       "delete": {
         "button": "Eliminar Puzzle",
