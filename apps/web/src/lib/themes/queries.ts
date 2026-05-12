@@ -2,6 +2,7 @@ import { cache } from 'react';
 
 import { and, asc, eq, inArray } from 'drizzle-orm';
 
+import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
 import {
   db,
   glossaryTermPositions,
@@ -64,6 +65,7 @@ async function loadThemePositions(termIds: string[]): Promise<Map<string, ThemeP
       fen: glossaryTermPositions.fen,
       sortOrder: glossaryTermPositions.sortOrder,
       caption: glossaryTermPositions.caption,
+      annotations: glossaryTermPositions.annotations,
     })
     .from(glossaryTermPositions)
     .where(inArray(glossaryTermPositions.termId, termIds))
@@ -75,6 +77,7 @@ async function loadThemePositions(termIds: string[]): Promise<Map<string, ThemeP
       fen: row.fen,
       sortOrder: row.sortOrder ?? 0,
       caption: row.caption ?? null,
+      annotations: parseBoardAnnotations(row.annotations),
     };
     if (list) list.push(entry);
     else map.set(row.termId, [entry]);

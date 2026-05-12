@@ -1,3 +1,5 @@
+import type { BoardAnnotations } from '@/lib/board-annotations/types';
+
 export const CATEGORY_STYLES = {
   tactics: { color: 'bg-destructive/10 text-destructive', icon: '⚔️' },
   strategy: { color: 'bg-primary/10 text-primary', icon: '🎯' },
@@ -26,7 +28,18 @@ export interface ChessTerm {
   definitionEn?: string;
   aliases?: string[];
   relatedTerms?: string[];
-  positions?: { fen: string; sortOrder: number; caption?: string }[];
+  positions?: {
+    fen: string;
+    sortOrder: number;
+    caption?: string;
+    /**
+     * Display-only annotations for this (term, fen) row. Optional — if
+     * omitted (e.g. in seed data) callers should treat it as the empty
+     * {@link BoardAnnotations} singleton. Always populated when the value
+     * originates from the DB layer (`mergeTermRows` normalizes).
+     */
+    annotations?: BoardAnnotations;
+  }[];
   category?: GlossaryCategory;
   /**
    * Whether this term is selectable as a theme tag on positions (via
