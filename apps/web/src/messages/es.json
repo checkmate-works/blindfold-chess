@@ -2954,10 +2954,6 @@
     "ads": "Anuncios",
     "adsManagement": {
       "title": "Gestión de Anuncios",
-      "globalToggle": "Anuncios Activados",
-      "globalToggleDescription": "Activar o desactivar todos los anuncios en todo el sitio",
-      "enabled": "Activado",
-      "disabled": "Desactivado",
       "banners": "Banners Publicitarios",
       "slot": "Espacio",
       "href": "URL del Enlace",

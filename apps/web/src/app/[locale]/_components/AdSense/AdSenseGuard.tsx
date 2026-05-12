@@ -1,6 +1,5 @@
 import { IS_LOCAL_DEV } from '@/config';
 
-import { isAdsEnabled } from '@/lib/ads/ad';
 import { isNoAdsScope } from '@/lib/ads/no-ads-scope';
 
 import { AdPlaceholder } from './AdPlaceholder';
@@ -13,10 +12,8 @@ type Props = {
 };
 
 /**
- * Renders an AdSense slot guarded by:
- *   1. The `(no-ads)` route group opt-out (`isNoAdsScope()`).
- *   2. The global `ads_enabled` setting (`isAdsEnabled()` — cached, no
- *      `cookies()` access).
+ * Renders an AdSense slot guarded by the `(no-ads)` route group opt-out
+ * (`isNoAdsScope()`).
  *
  * Per-user hiding (subscribers / ad_free grant holders) is handled
  * downstream via the `bfc_ads_hidden` cookie and a CSS rule — see
@@ -29,7 +26,6 @@ type Props = {
  */
 export async function AdSenseGuard({ slot, slotId, className }: Props) {
   if (isNoAdsScope()) return null;
-  if (!(await isAdsEnabled())) return null;
   if (IS_LOCAL_DEV) return <AdPlaceholder slot={slot} />;
 
   return (

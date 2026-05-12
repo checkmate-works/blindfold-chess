@@ -1,35 +1,17 @@
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
-import { getAdsEnabledDirect, getAllAdBanners } from '@/lib/ads/ad';
+import { getAllAdBanners } from '@/lib/ads/ad';
 
-import { AdsToggle } from './_components/AdsToggle';
 import { BannerEditRow } from './_components/BannerEditRow';
 
 export default async function AdminAdsPage() {
   const t = await getTranslations({ locale: 'en', namespace: 'Admin.adsManagement' });
-  const enabled = await getAdsEnabledDirect();
   const banners = await getAllAdBanners();
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">{t('title')}</h1>
-
-      <div className="rounded-lg border border-border bg-secondary p-6 mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold">{t('globalToggle')}</h2>
-            <p className="text-sm text-muted-foreground">{t('globalToggleDescription')}</p>
-          </div>
-          <AdsToggle
-            enabled={enabled}
-            labels={{
-              enabled: t('enabled'),
-              disabled: t('disabled'),
-            }}
-          />
-        </div>
-      </div>
 
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold">{t('banners')}</h2>

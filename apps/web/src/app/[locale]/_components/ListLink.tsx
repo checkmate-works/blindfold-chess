@@ -32,7 +32,11 @@ export function ListLink({ href, icon, title, meta, locale, isPinned, badge }: L
             <span className="text-foreground font-medium truncate block">{title}</span>
           </div>
           {badge && (
-            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded flex-shrink-0">
+            // `empty:hidden` collapses the chip when `badge` is a client
+            // component that conditionally returns null at runtime (e.g.
+            // `MembersOnlyBadge`). Without it, the padded chip would show as
+            // a tiny empty pill for users that the badge chose to hide.
+            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded flex-shrink-0 empty:hidden">
               {badge}
             </span>
           )}

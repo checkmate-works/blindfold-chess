@@ -2954,10 +2954,6 @@
     "ads": "広告",
     "adsManagement": {
       "title": "広告管理",
-      "globalToggle": "広告を表示",
-      "globalToggleDescription": "サイト全体の広告表示を有効化／無効化します",
-      "enabled": "有効",
-      "disabled": "無効",
       "banners": "広告バナー",
       "slot": "スロット",
       "href": "リンク URL",
