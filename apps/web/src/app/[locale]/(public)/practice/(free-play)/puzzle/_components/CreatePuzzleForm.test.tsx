@@ -648,6 +648,41 @@ describe('CreatePuzzleForm', () => {
       expect(mockPush).toHaveBeenCalledWith('/practice/puzzle/new/preview');
     });
 
+    it('preserves forkedFromId across the Back-to-edit round-trip (draft → /new without ?from=)', () => {
+      // Reproduces the regression where a forked puzzle was created with
+      // forked_from_id=NULL because "Back to edit" pushes to /practice/puzzle/new
+      // without preserving ?from=<id>. The form then arrives without forkSeed,
+      // and without state-level forkedFromId the next writeDraft would silently
+      // drop the lineage. Hydration restores it from the draft so subsequent
+      // submits keep the parent pointer.
+      sessionStorage.setItem(
+        DRAFT_STORAGE_KEY,
+        JSON.stringify({
+          version: 1,
+          fen: VALID_FEN,
+          title: 'Fork in progress',
+          description: '',
+          moves: ['Nf3'],
+          notes: [''],
+          activeTab: 'board',
+          sideToMove: 'w',
+          flipped: false,
+          userFlipped: false,
+          forkedFromId: FORK_SOURCE_ID,
+        })
+      );
+
+      // No forkSeed prop — simulating arrival via "Back to edit" → /new.
+      render(<CreatePuzzleForm />);
+
+      // Hydration restored the draft, so the Preview button is enabled.
+      fireEvent.click(screen.getByRole('button', { name: 'continueToPreview' }));
+
+      const raw = sessionStorage.getItem(DRAFT_STORAGE_KEY);
+      const parsed = JSON.parse(raw!);
+      expect(parsed.forkedFromId).toBe(FORK_SOURCE_ID);
+    });
+
     it('skips draft hydration so a leftover unrelated draft does not overwrite the fork seed', () => {
       // Pre-populate sessionStorage with a draft from an unrelated previous
       // authoring session. Without the fork-seed escape hatch on hydration,

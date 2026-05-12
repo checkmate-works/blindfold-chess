@@ -126,6 +126,12 @@ export function CreatePuzzleForm({
   const defaultTitleRef = useRef(forkSeed ? forkSeed.title : buildDefaultTitle(displayName));
   const [title, setTitle] = useState(defaultTitleRef.current);
   const [description, setDescription] = useState(forkSeed?.description ?? '');
+  // forkedFromId lives in React state (not just the prop) so the lineage
+  // survives a `/new?from=X` → preview → "Back to edit" round-trip: that
+  // second `/new` arrives WITHOUT the `?from=` query, so `forkSeed` is
+  // undefined and only the draft remembers the source. Draft hydration
+  // restores this state below, and writeDraft reads it on submit.
+  const [forkedFromId, setForkedFromId] = useState<string | undefined>(forkSeed?.sourceId);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -203,6 +209,13 @@ export function CreatePuzzleForm({
           .filter((c): c is ChunkOption => c !== undefined);
         tags.setSelectedChunks(resolved);
       }
+      // Restore the fork lineage that writeDraft persisted on the previous
+      // /new visit. Without this, the "Back to edit" round-trip (which
+      // pushes to `/practice/puzzle/new` without preserving `?from=<id>`)
+      // would silently drop forkedFromId on the next submit.
+      if (draft.forkedFromId) {
+        setForkedFromId(draft.forkedFromId);
+      }
     },
   });
 
@@ -256,7 +269,7 @@ export function CreatePuzzleForm({
       userFlipped: board.userFlipped,
       themeIds: tags.selectedThemes.map((t) => t.id),
       chunkIds: tags.selectedChunks.map((c) => c.id),
-      ...(forkSeed ? { forkedFromId: forkSeed.sourceId } : {}),
+      ...(forkedFromId ? { forkedFromId } : {}),
     });
     if (!ok) {
       setError(t('draftWriteFailed'));
@@ -278,6 +291,10 @@ export function CreatePuzzleForm({
     tags.reset();
     setTitle(defaultTitleRef.current);
     setDescription('');
+    // Start-over also clears the fork lineage held in component state —
+    // otherwise the next submit would still pin to the old parent even
+    // though the user has explicitly asked for a clean slate.
+    setForkedFromId(undefined);
     setError(null);
     resetHydrated();
     setStartOverOpen(false);
