@@ -971,7 +971,8 @@
         "clearBoardConfirmTitle": "Clear the board?",
         "clearBoardConfirmMessage": "This will remove all placed pieces. This action cannot be undone.",
         "clearBoardConfirmConfirm": "Clear",
-        "clearBoardConfirmCancel": "Cancel"
+        "clearBoardConfirmCancel": "Cancel",
+        "forkBanner": "Forking from \"{sourceTitle}\""
       },
       "edit": {
         "title": "Edit Problem",
@@ -997,7 +998,18 @@
         "backToList": "Back to List",
         "edited": "(edited)",
         "editAction": "Edit",
+        "forkAction": "Fork",
+        "forkedFrom": "Forked from:",
+        "forkedFromDeleted": "Forked from a deleted position",
+        "forksSection": "{count, plural, one {# fork} other {# forks}}",
         "usefulSection": "Useful patterns for solving ({count})"
+      },
+      "forksList": {
+        "title": "Forks",
+        "titleOf": "Forks of {parentTitle}",
+        "breadcrumb": "Forks",
+        "sectionTitle": "{count, plural, one {# fork} other {# forks}}",
+        "empty": "No forks yet."
       },
       "delete": {
         "button": "Delete Problem",
@@ -1058,7 +1070,8 @@
         "clearBoardConfirmMessage": "This will remove all placed pieces and entered solution moves. This cannot be undone.",
         "clearBoardConfirmConfirm": "Clear board",
         "clearBoardConfirmCancel": "Cancel",
-        "draftWriteFailed": "Could not save the draft. Check that your browser allows storage and try again."
+        "draftWriteFailed": "Could not save the draft. Check that your browser allows storage and try again.",
+        "forkBanner": "Forking from \"{sourceTitle}\""
       },
       "preview": {
         "title": "Preview Puzzle",
@@ -1095,7 +1108,18 @@
         "noPieces": "None",
         "edited": "(edited)",
         "editAction": "Edit",
+        "forkAction": "Fork",
+        "forkedFrom": "Forked from:",
+        "forkedFromDeleted": "Forked from a deleted puzzle",
+        "forksSection": "{count, plural, one {# fork} other {# forks}}",
         "usefulSection": "Useful patterns for solving ({count})"
+      },
+      "forksList": {
+        "title": "Forks",
+        "titleOf": "Forks of {parentTitle}",
+        "breadcrumb": "Forks",
+        "sectionTitle": "{count, plural, one {# fork} other {# forks}}",
+        "empty": "No forks yet."
       },
       "delete": {
         "button": "Delete Puzzle",

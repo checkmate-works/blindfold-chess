@@ -2393,6 +2393,25 @@ export const positions = pgTable(
     fen: varchar('fen', { length: 100 }).notNull(),
     title: varchar('title', { length: 255 }).notNull(),
     description: text('description'),
+    /**
+     * @design Fork lineage (GitHub-style fork)
+     * Points at the original `positions.id` this row was forked from.
+     * NULL for original (non-fork) submissions. No FK constraint here — the
+     * parent row may be physically deleted later, and we deliberately allow
+     * orphan pointers so the lineage stamp survives. The application layer
+     * resolves NULL / not-found / soft-deleted parents as "(deleted)".
+     */
+    forkedFromId: uuid('forked_from_id'),
+    /**
+     * @design Fork-disable lock (timestamp-as-flag)
+     * NULL = forks allowed; NOT NULL = forks are denied at try-time and the
+     * timestamp records when the lock was applied. The lock is permanent by
+     * design: a row that was ever locked stays locked even if the author's
+     * paid-plan privilege later lapses. Only the "set / unset" UI is gated by
+     * plan status — the fork-attempt path checks this column alone, so plan
+     * lapse does not silently re-open previously locked rows.
+     */
+    forksDisabledAt: timestamp('forks_disabled_at', { withTimezone: true }),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true })
@@ -2409,6 +2428,11 @@ export const positions = pgTable(
     index('idx_positions_type_created_at')
       .on(table.type, table.createdAt.desc())
       .where(sql`deleted_at IS NULL`),
+    // Reverse lookup: "show forks of this position". Partial, so the index
+    // only carries rows that actually have a parent (NULL is the common case).
+    index('idx_positions_forked_from')
+      .on(table.forkedFromId)
+      .where(sql`forked_from_id IS NOT NULL`),
   ]
 );
 

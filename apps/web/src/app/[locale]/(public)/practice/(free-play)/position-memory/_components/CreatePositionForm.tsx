@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { useLocale, useTranslations } from 'next-intl';
 
@@ -9,6 +9,7 @@ import { BoardSkeleton, Button, FlipBoardButton, UnsavedChangesDialog } from '@/
 import { useRouter } from '@/i18n/routing';
 import { flushSync } from 'react-dom';
 import { FaPlay } from 'react-icons/fa';
+import { FiInfo } from 'react-icons/fi';
 
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { ThemeOption } from '@/lib/themes/types';
@@ -38,6 +39,22 @@ function buildDefaultTitle(displayName: string | undefined): string {
   return trimmed ? `Position ${date} - ${trimmed}` : `Position ${date}`;
 }
 
+/**
+ * Seed payload when the form is opened via `?from=<id>` on the new page.
+ * The author's display name is intentionally ignored when this is present:
+ * forks copy the source's title verbatim (GitHub-style — repo name carries
+ * over). `themeIds` / `chunkIds` are resolved against the loaded catalogs.
+ */
+export type PositionForkSeed = {
+  sourceId: string;
+  sourceTitle: string;
+  fen: string;
+  title: string;
+  description: string;
+  themeIds: string[];
+  chunkIds: string[];
+};
+
 type Props = {
   displayName?: string;
   /**
@@ -49,6 +66,13 @@ type Props = {
   disableUnsavedGuard?: boolean;
   availableThemes?: ThemeOption[];
   availableChunks?: ChunkOption[];
+  /**
+   * Fork-source data when the form is opened via `?from=<id>`. When
+   * present, every field is seeded from the source row and the default
+   * title generator is bypassed. `sourceId` rides through to
+   * `createPosition` as `forkedFromId` and is re-validated server-side.
+   */
+  forkSeed?: PositionForkSeed;
 };
 
 export function CreatePositionForm({
@@ -56,6 +80,7 @@ export function CreatePositionForm({
   disableUnsavedGuard = false,
   availableThemes = [],
   availableChunks = [],
+  forkSeed,
 }: Props = {}) {
   const router = useRouter();
   const locale = useLocale();
@@ -65,10 +90,32 @@ export function CreatePositionForm({
   const tagPickerLabels = useTagPickerLabels();
   const { preferences, isLoaded } = useGamePreferences();
 
-  const board = useFenBoardEditor();
-  const tags = useTagSelection();
-  const [title, setTitle] = useState(() => buildDefaultTitle(displayName));
-  const [description, setDescription] = useState('');
+  // Resolve fork seed tag IDs into option objects using the loaded catalog.
+  // Computed once via useRef so option lookups don't repeat each render.
+  const seededThemes = useRef<ThemeOption[]>(
+    forkSeed
+      ? forkSeed.themeIds
+          .map((id) => availableThemes.find((t) => t.id === id))
+          .filter((t): t is ThemeOption => t !== undefined)
+      : []
+  ).current;
+  const seededChunks = useRef<ChunkOption[]>(
+    forkSeed
+      ? forkSeed.chunkIds
+          .map((id) => availableChunks.find((c) => c.id === id))
+          .filter((c): c is ChunkOption => c !== undefined)
+      : []
+  ).current;
+
+  const board = useFenBoardEditor({ initialFen: forkSeed?.fen });
+  const tags = useTagSelection({
+    initialThemes: seededThemes,
+    initialChunks: seededChunks,
+  });
+  const [title, setTitle] = useState(() =>
+    forkSeed ? forkSeed.title : buildDefaultTitle(displayName)
+  );
+  const [description, setDescription] = useState(forkSeed?.description ?? '');
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -117,6 +164,7 @@ export function CreatePositionForm({
         description: description || null,
         themeIds: tags.selectedThemes.map((th) => th.id),
         chunkIds: tags.selectedChunks.map((c) => c.id),
+        ...(forkSeed ? { forkedFromId: forkSeed.sourceId } : {}),
       });
 
       if ('error' in result) {
@@ -152,6 +200,17 @@ export function CreatePositionForm({
         {error && (
           <div className="p-3 rounded bg-destructive-soft text-destructive-soft-foreground text-sm">
             {error}
+          </div>
+        )}
+
+        {forkSeed && (
+          <div
+            role="status"
+            aria-live="polite"
+            className="flex items-center gap-2 rounded-md border border-border bg-secondary px-3 py-2 text-sm text-muted-foreground"
+          >
+            <FiInfo className="h-4 w-4 flex-shrink-0" aria-hidden />
+            <span>{t('forkBanner', { sourceTitle: forkSeed.sourceTitle })}</span>
           </div>
         )}
 

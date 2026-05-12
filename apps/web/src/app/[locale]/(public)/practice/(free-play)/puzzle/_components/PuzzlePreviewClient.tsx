@@ -75,6 +75,7 @@ export function PuzzlePreviewClient() {
         solutionMoves,
         themeIds: draft.themeIds,
         chunkIds: draft.chunkIds,
+        forkedFromId: draft.forkedFromId ?? null,
       });
       if ('error' in result) {
         setError(result.error);

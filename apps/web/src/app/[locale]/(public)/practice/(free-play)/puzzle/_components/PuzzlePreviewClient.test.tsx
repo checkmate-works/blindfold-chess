@@ -201,6 +201,9 @@ describe('PuzzlePreviewClient', () => {
         title: 'Preview Title',
         description: 'Preview description',
         solutionMoves: [{ san: 'Nf3', note: 'only move' }],
+        themeIds: undefined,
+        chunkIds: undefined,
+        forkedFromId: null,
       });
 
       expect(sessionStorage.getItem(DRAFT_STORAGE_KEY)).toBeNull();

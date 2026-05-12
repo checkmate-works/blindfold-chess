@@ -7,13 +7,17 @@ import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import { FaPlusCircle } from 'react-icons/fa';
-import { FiEdit2 } from 'react-icons/fi';
+import { FiEdit2, FiGitBranch } from 'react-icons/fi';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getLinkedChunksForPosition } from '@/lib/chunks/queries';
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { getPositionLikeMeta } from '@/lib/positions/like-queries';
-import { getPositionWithProfileById } from '@/lib/positions/queries';
+import {
+  countPositions,
+  getPositionLineageMetaById,
+  getPositionWithProfileById,
+} from '@/lib/positions/queries';
 import { getLinkedThemesForPosition } from '@/lib/themes/queries';
 import { resolveDisplayName } from '@/lib/users/display-name';
 
@@ -101,13 +105,23 @@ export default async function PositionDetailPage({ params, searchParams }: Props
   const isBlackToMove = isBlackToMoveFromFen(position.fen);
 
   const currentUser = await getOptionalUser();
-  const [likeMeta, relatedChunks, relatedThemes, commentCount, allComments] = await Promise.all([
-    getPositionLikeMeta(position.id, currentUser?.id),
-    getLinkedChunksForPosition(position.id),
-    getLinkedThemesForPosition(position.id, locale),
-    getPostCountByTopicKey('position_memory', position.id),
-    getCommentTreeForTopic('position_memory', position.id, currentUser?.id),
-  ]);
+  const [likeMeta, relatedChunks, relatedThemes, commentCount, allComments, forkParent, forkCount] =
+    await Promise.all([
+      getPositionLikeMeta(position.id, currentUser?.id),
+      getLinkedChunksForPosition(position.id),
+      getLinkedThemesForPosition(position.id, locale),
+      getPostCountByTopicKey('position_memory', position.id),
+      getCommentTreeForTopic('position_memory', position.id, currentUser?.id),
+      position.forkedFromId
+        ? getPositionLineageMetaById(position.forkedFromId)
+        : Promise.resolve(null),
+      // Only the count is needed at this surface — the dedicated /forks
+      // page handles the listing (with pagination).
+      countPositions({ type: 'memory', forkedFromId: position.id }),
+    ]);
+
+  const canFork =
+    currentUser != null && currentUser.id !== position.userId && position.forksDisabledAt === null;
 
   const commentTree = buildCommentTree(allComments, sortBy);
 
@@ -123,10 +137,52 @@ export default async function PositionDetailPage({ params, searchParams }: Props
     tVideo('fallbackTitle')
   );
 
+  // Two-segment provenance line: "forked from <parent>" and / or
+  // "<N> forks". Each segment is independently optional, separated by `·`
+  // when both render. When neither is present the headerNote slot stays
+  // null and the layout falls back to the bare title.
+  const forkedFromSegment = position.forkedFromId ? (
+    <span className="inline-flex items-center gap-1">
+      <FiGitBranch className="h-3 w-3" aria-hidden />
+      {forkParent && forkParent.deletedAt === null ? (
+        <>
+          {t('detail.forkedFrom')}{' '}
+          <Link
+            href={`/practice/position-memory/${forkParent.id}`}
+            className="underline hover:text-foreground"
+          >
+            {forkParent.title}
+          </Link>
+        </>
+      ) : (
+        <span>{t('detail.forkedFromDeleted')}</span>
+      )}
+    </span>
+  ) : null;
+  const forksLinkSegment =
+    forkCount > 0 ? (
+      <Link
+        href={`/practice/position-memory/${position.id}/forks`}
+        className="inline-flex items-center gap-1 underline hover:text-foreground"
+      >
+        <FiGitBranch className="h-3 w-3" aria-hidden />
+        {t('detail.forksSection', { count: forkCount })}
+      </Link>
+    ) : null;
+  const forkedFromNote =
+    forkedFromSegment || forksLinkSegment ? (
+      <span className="inline-flex flex-wrap items-center justify-center gap-x-2">
+        {forkedFromSegment}
+        {forkedFromSegment && forksLinkSegment && <span aria-hidden>·</span>}
+        {forksLinkSegment}
+      </span>
+    ) : null;
+
   return (
     <PositionDetailLayout
       title={position.title}
       locale={locale}
+      headerNote={forkedFromNote}
       bottomAdSense={
         (IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
           <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
@@ -191,6 +247,15 @@ export default async function PositionDetailPage({ params, searchParams }: Props
             >
               <FiEdit2 className="h-3 w-3" aria-hidden />
               {t('detail.editAction')}
+            </Link>
+          )}
+          {canFork && (
+            <Link
+              href={`/practice/position-memory/new?from=${position.id}`}
+              className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-muted-foreground hover:border-foreground/20 hover:text-foreground transition-colors"
+            >
+              <FiGitBranch className="h-3 w-3" aria-hidden />
+              {t('detail.forkAction')}
             </Link>
           )}
           <time dateTime={position.createdAt.toISOString()}>

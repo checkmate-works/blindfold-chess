@@ -15,6 +15,13 @@ type Props = {
    * title visually centered as a group.
    */
   titleAction?: ReactNode;
+  /**
+   * Optional sub-line rendered directly below the title (and above the panel)
+   * with tight `mt-1` spacing so it visually attaches to the heading rather
+   * than floating in the `space-y-8` gap. Intended for GitHub-style page-level
+   * provenance notes (e.g. "forked from …").
+   */
+  headerNote?: ReactNode;
   /** Locale used by `Breadcrumb` to prefix link `href`s and emit `BreadcrumbList` JSON-LD. */
   locale: string;
   /**
@@ -46,6 +53,7 @@ type Props = {
 export function PageLayout({
   title,
   titleAction,
+  headerNote,
   locale,
   breadcrumb,
   divider = true,
@@ -56,8 +64,11 @@ export function PageLayout({
 }: Props) {
   const hasBreadcrumb = breadcrumb && breadcrumb.length > 0;
 
-  return (
-    <div className={className}>
+  // Group the heading and its `headerNote` in one block so the outer
+  // `space-y-8` only fires between (title-group) and (panel), not between
+  // title and note. `mt-1` keeps the note visually attached to the H1.
+  const heading = (
+    <div>
       {titleAction ? (
         <div className="flex items-center justify-center gap-2">
           <PageTitle>{title}</PageTitle>
@@ -66,6 +77,15 @@ export function PageLayout({
       ) : (
         <PageTitle>{title}</PageTitle>
       )}
+      {headerNote && (
+        <div className="mt-1 text-center text-sm text-muted-foreground">{headerNote}</div>
+      )}
+    </div>
+  );
+
+  return (
+    <div className={className}>
+      {heading}
       <PagePanel className={panelClassName}>
         {children}
         {hasBreadcrumb && (

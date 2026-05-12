@@ -971,7 +971,8 @@
         "clearBoardConfirmTitle": "¿Limpiar el tablero?",
         "clearBoardConfirmMessage": "Esto eliminará todas las piezas colocadas. Esta acción no se puede deshacer.",
         "clearBoardConfirmConfirm": "Limpiar",
-        "clearBoardConfirmCancel": "Cancelar"
+        "clearBoardConfirmCancel": "Cancelar",
+        "forkBanner": "Bifurcando desde «{sourceTitle}»"
       },
       "edit": {
         "title": "Editar Problema",
@@ -997,7 +998,18 @@
         "backToList": "Volver a la lista",
         "edited": "(editado)",
         "editAction": "Editar",
+        "forkAction": "Bifurcar",
+        "forkedFrom": "Bifurcado de:",
+        "forkedFromDeleted": "Bifurcado de una posición eliminada",
+        "forksSection": "{count, plural, one {# bifurcación} other {# bifurcaciones}}",
         "usefulSection": "Patrones útiles para resolver ({count})"
+      },
+      "forksList": {
+        "title": "Bifurcaciones",
+        "titleOf": "Bifurcaciones de {parentTitle}",
+        "breadcrumb": "Bifurcaciones",
+        "sectionTitle": "{count, plural, one {# bifurcación} other {# bifurcaciones}}",
+        "empty": "Aún no hay bifurcaciones."
       },
       "delete": {
         "button": "Eliminar Problema",
@@ -1058,7 +1070,8 @@
         "clearBoardConfirmMessage": "Esto eliminará todas las piezas colocadas y los movimientos de la solución ingresados. Esta acción no se puede deshacer.",
         "clearBoardConfirmConfirm": "Limpiar",
         "clearBoardConfirmCancel": "Cancelar",
-        "draftWriteFailed": "No se pudo guardar el borrador. Verifica que tu navegador permita el almacenamiento e inténtalo de nuevo."
+        "draftWriteFailed": "No se pudo guardar el borrador. Verifica que tu navegador permita el almacenamiento e inténtalo de nuevo.",
+        "forkBanner": "Bifurcando desde «{sourceTitle}»"
       },
       "preview": {
         "title": "Previsualizar Puzzle",
@@ -1095,7 +1108,18 @@
         "noPieces": "Ninguna",
         "edited": "(editado)",
         "editAction": "Editar",
+        "forkAction": "Bifurcar",
+        "forkedFrom": "Bifurcado de:",
+        "forkedFromDeleted": "Bifurcado de un puzzle eliminado",
+        "forksSection": "{count, plural, one {# bifurcación} other {# bifurcaciones}}",
         "usefulSection": "Patrones útiles para resolver ({count})"
+      },
+      "forksList": {
+        "title": "Bifurcaciones",
+        "titleOf": "Bifurcaciones de {parentTitle}",
+        "breadcrumb": "Bifurcaciones",
+        "sectionTitle": "{count, plural, one {# bifurcación} other {# bifurcaciones}}",
+        "empty": "Aún no hay bifurcaciones."
       },
       "delete": {
         "button": "Eliminar Puzzle",

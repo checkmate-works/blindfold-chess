@@ -106,6 +106,34 @@ describe('draft-storage', () => {
       expect(readDraft()).toBeNull();
       expect(sessionStorage.getItem(DRAFT_STORAGE_KEY)).toBeNull();
     });
+
+    it('rejects forkedFromId when present but not a string', () => {
+      // Optional field, but if it is present its shape must match. Anything
+      // non-string here means a buggy producer wrote the slot and the safe
+      // recovery is to drop the whole draft.
+      const bad = { ...makeDraft(), forkedFromId: 42 };
+      sessionStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(bad));
+      expect(readDraft()).toBeNull();
+      expect(sessionStorage.getItem(DRAFT_STORAGE_KEY)).toBeNull();
+    });
+  });
+
+  describe('forkedFromId round-trip', () => {
+    it('preserves forkedFromId on round-trip', () => {
+      const draft = makeDraft({ forkedFromId: '11111111-1111-1111-1111-111111111111' });
+      expect(writeDraft(draft)).toBe(true);
+      expect(readDraft()).toEqual(draft);
+    });
+
+    it('hydrates legacy drafts (no forkedFromId field) cleanly', () => {
+      // Drafts written before fork support landed do not carry the field at
+      // all; readDraft must accept them and return forkedFromId === undefined.
+      const draft = makeDraft();
+      expect(writeDraft(draft)).toBe(true);
+      const recovered = readDraft();
+      expect(recovered).not.toBeNull();
+      expect(recovered!.forkedFromId).toBeUndefined();
+    });
   });
 
   describe('writeDraft (failures)', () => {
