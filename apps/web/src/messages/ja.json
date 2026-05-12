@@ -971,7 +971,8 @@
         "clearBoardConfirmTitle": "ボードをクリアしますか？",
         "clearBoardConfirmMessage": "配置されたすべての駒が削除されます。この操作は取り消せません。",
         "clearBoardConfirmConfirm": "クリア",
-        "clearBoardConfirmCancel": "キャンセル"
+        "clearBoardConfirmCancel": "キャンセル",
+        "forkBanner": "「{sourceTitle}」からフォーク中"
       },
       "edit": {
         "title": "問題を編集",
@@ -997,6 +998,9 @@
         "backToList": "一覧に戻る",
         "edited": "（編集済み）",
         "editAction": "編集",
+        "forkAction": "フォーク",
+        "forkedFrom": "フォーク元:",
+        "forkedFromDeleted": "フォーク元は削除されています",
         "usefulSection": "解答に役立つパターン ({count})"
       },
       "delete": {
@@ -1058,7 +1062,8 @@
         "clearBoardConfirmMessage": "配置した駒と入力した解手がすべて削除されます。この操作は取り消せません。",
         "clearBoardConfirmConfirm": "クリア",
         "clearBoardConfirmCancel": "キャンセル",
-        "draftWriteFailed": "下書きを保存できませんでした。ブラウザのストレージが有効か確認してもう一度お試しください。"
+        "draftWriteFailed": "下書きを保存できませんでした。ブラウザのストレージが有効か確認してもう一度お試しください。",
+        "forkBanner": "「{sourceTitle}」からフォーク中"
       },
       "preview": {
         "title": "パズルをプレビュー",
@@ -1095,6 +1100,9 @@
         "noPieces": "なし",
         "edited": "（編集済み）",
         "editAction": "編集",
+        "forkAction": "フォーク",
+        "forkedFrom": "フォーク元:",
+        "forkedFromDeleted": "フォーク元は削除されています",
         "usefulSection": "解答に役立つパターン ({count})"
       },
       "delete": {

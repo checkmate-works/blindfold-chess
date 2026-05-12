@@ -971,7 +971,8 @@
         "clearBoardConfirmTitle": "¿Limpiar el tablero?",
         "clearBoardConfirmMessage": "Esto eliminará todas las piezas colocadas. Esta acción no se puede deshacer.",
         "clearBoardConfirmConfirm": "Limpiar",
-        "clearBoardConfirmCancel": "Cancelar"
+        "clearBoardConfirmCancel": "Cancelar",
+        "forkBanner": "Bifurcando desde «{sourceTitle}»"
       },
       "edit": {
         "title": "Editar Problema",
@@ -997,6 +998,9 @@
         "backToList": "Volver a la lista",
         "edited": "(editado)",
         "editAction": "Editar",
+        "forkAction": "Bifurcar",
+        "forkedFrom": "Bifurcado de:",
+        "forkedFromDeleted": "Bifurcado de una posición eliminada",
         "usefulSection": "Patrones útiles para resolver ({count})"
       },
       "delete": {
@@ -1058,7 +1062,8 @@
         "clearBoardConfirmMessage": "Esto eliminará todas las piezas colocadas y los movimientos de la solución ingresados. Esta acción no se puede deshacer.",
         "clearBoardConfirmConfirm": "Limpiar",
         "clearBoardConfirmCancel": "Cancelar",
-        "draftWriteFailed": "No se pudo guardar el borrador. Verifica que tu navegador permita el almacenamiento e inténtalo de nuevo."
+        "draftWriteFailed": "No se pudo guardar el borrador. Verifica que tu navegador permita el almacenamiento e inténtalo de nuevo.",
+        "forkBanner": "Bifurcando desde «{sourceTitle}»"
       },
       "preview": {
         "title": "Previsualizar Puzzle",
@@ -1095,6 +1100,9 @@
         "noPieces": "Ninguna",
         "edited": "(editado)",
         "editAction": "Editar",
+        "forkAction": "Bifurcar",
+        "forkedFrom": "Bifurcado de:",
+        "forkedFromDeleted": "Bifurcado de un puzzle eliminado",
         "usefulSection": "Patrones útiles para resolver ({count})"
       },
       "delete": {
