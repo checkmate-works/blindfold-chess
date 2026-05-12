@@ -12,21 +12,9 @@ import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { createClient as createSupabaseSessionClient } from '@/lib/supabase/server';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
-export type DeletePostResult = ActionResult;
+import { buildTopicDetailPath } from '../_lib/topic-paths';
 
-const TOPIC_TYPE_TO_URL_SEGMENT: Record<string, string> = {
-  square: 'squares',
-  opening: 'openings',
-  chunk: 'chunks',
-  // Position-backed topic types live under `/practice/...`, not
-  // `/topics/...`. The mapped segment is consumed by the legacy
-  // `/topics/{segment}/{key}` builder which we override below for these
-  // types — the entry is still present so cross-references that look up
-  // the segment by topicType (e.g. analytics, activity log labels) get a
-  // sensible value.
-  position_memory: 'practice/position-memory',
-  position_puzzle: 'practice/puzzle',
-};
+export type DeletePostResult = ActionResult;
 
 export async function deletePost(postId: string, locale: string): Promise<DeletePostResult> {
   const guardResult = await authenticateAndGuard(RATE_LIMITS.deletePost);
@@ -127,21 +115,7 @@ export async function deletePost(postId: string, locale: string): Promise<Delete
     metadata: { topicType: post.topicType, topicKey: post.topicKey },
   });
 
-  const urlSegment = TOPIC_TYPE_TO_URL_SEGMENT[post.topicType] ?? post.topicType;
-  // 'chunk' lives at /chunks/{slug}, and `position_memory` / `position_puzzle`
-  // live under /practice/{kind}/{id} — these topic types host comments via
-  // topic_posts but are not segments of the /topics route tree.
-  let detailPath: string;
-  if (post.topicType === 'chunk') {
-    detailPath = `/${locale}/chunks/${post.topicKey}`;
-  } else if (post.topicType === 'position_memory') {
-    detailPath = `/${locale}/practice/position-memory/${post.topicKey}`;
-  } else if (post.topicType === 'position_puzzle') {
-    detailPath = `/${locale}/practice/puzzle/${post.topicKey}`;
-  } else {
-    detailPath = `/${locale}/topics/${urlSegment}/${post.topicKey}`;
-  }
-  revalidatePath(detailPath);
+  revalidatePath(buildTopicDetailPath(post.topicType, post.topicKey, locale));
 
   return { success: true };
 }

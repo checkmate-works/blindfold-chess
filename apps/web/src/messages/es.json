@@ -3657,6 +3657,46 @@
       "overlayTitle": "Contiene la solución",
       "overlayHint": "Pulsa para mostrar",
       "overlayAriaLabel": "Mostrar comentario que puede contener la solución del puzzle"
+    },
+    "edit": {
+      "button": "Editar",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "saving": "Guardando...",
+      "editedLabel": "(editado)",
+      "editedTitle": "Última edición {date}",
+      "contentRequired": "Por favor, introduce algún contenido",
+      "contentTooLong": "El contenido debe tener 2000 caracteres o menos",
+      "error": "Ocurrió un error. Por favor, inténtalo de nuevo.",
+      "signInRequired": "Inicia sesión para editar",
+      "rateLimited": "Demasiadas ediciones. Por favor, inténtalo más tarde.",
+      "notFound": "Esta publicación ya no existe.",
+      "unauthorized": "Solo puedes editar tus propias publicaciones.",
+      "alreadyDeleted": "Esta publicación ha sido eliminada."
+    },
+    "removeAttachment": {
+      "button": "Quitar adjunto",
+      "removeImageAriaLabel": "Quitar imagen {index}",
+      "removing": "Quitando...",
+      "confirmTitle": "¿Quitar adjunto?",
+      "confirmMessage": "Solo se desvinculará del post. La publicación permanece.",
+      "confirm": "Quitar",
+      "cancel": "Cancelar",
+      "error": "No se pudo quitar el adjunto. Inténtalo de nuevo.",
+      "attachmentNotFound": "Este adjunto ya no existe.",
+      "rateLimited": "Demasiados cambios de adjunto. Inténtalo más tarde."
+    },
+    "addAttachment": {
+      "button": "Añadir adjunto",
+      "attaching": "Adjuntando...",
+      "invalidFen": "Introduce un FEN válido antes de adjuntar.",
+      "error": "No se pudo adjuntar. Inténtalo de nuevo.",
+      "signInRequired": "Inicia sesión para adjuntar.",
+      "rateLimited": "Demasiados intentos de adjuntar. Inténtalo más tarde.",
+      "alreadyAttached": "Esta publicación ya tiene un adjunto. Quita el existente primero.",
+      "alreadyDeleted": "Esta publicación ha sido eliminada.",
+      "notFound": "Esta publicación ya no existe.",
+      "unauthorized": "Solo puedes adjuntar a tus propias publicaciones."
     }
   },
   "unsavedChanges": {

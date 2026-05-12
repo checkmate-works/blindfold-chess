@@ -3657,6 +3657,46 @@
       "overlayTitle": "Contém a solução",
       "overlayHint": "Toque para revelar",
       "overlayAriaLabel": "Mostrar comentário que pode conter a solução do quebra-cabeça"
+    },
+    "edit": {
+      "button": "Editar",
+      "save": "Salvar",
+      "cancel": "Cancelar",
+      "saving": "Salvando...",
+      "editedLabel": "(editado)",
+      "editedTitle": "Última edição em {date}",
+      "contentRequired": "Por favor, insira algum conteúdo",
+      "contentTooLong": "O conteúdo deve ter 2000 caracteres ou menos",
+      "error": "Ocorreu um erro. Tente novamente.",
+      "signInRequired": "Faça login para editar",
+      "rateLimited": "Muitas edições. Tente novamente mais tarde.",
+      "notFound": "Esta publicação não existe mais.",
+      "unauthorized": "Você só pode editar suas próprias publicações.",
+      "alreadyDeleted": "Esta publicação foi excluída."
+    },
+    "removeAttachment": {
+      "button": "Remover anexo",
+      "removeImageAriaLabel": "Remover imagem {index}",
+      "removing": "Removendo...",
+      "confirmTitle": "Remover anexo?",
+      "confirmMessage": "Apenas o anexo será removido da publicação. A publicação permanece.",
+      "confirm": "Remover",
+      "cancel": "Cancelar",
+      "error": "Não foi possível remover o anexo. Tente novamente.",
+      "attachmentNotFound": "Este anexo não existe mais.",
+      "rateLimited": "Muitas alterações de anexo. Tente novamente mais tarde."
+    },
+    "addAttachment": {
+      "button": "Adicionar anexo",
+      "attaching": "Anexando...",
+      "invalidFen": "Insira um FEN válido antes de anexar.",
+      "error": "Não foi possível anexar. Tente novamente.",
+      "signInRequired": "Faça login para anexar.",
+      "rateLimited": "Muitas tentativas de anexar. Tente novamente mais tarde.",
+      "alreadyAttached": "Esta publicação já tem um anexo. Remova o existente primeiro.",
+      "alreadyDeleted": "Esta publicação foi excluída.",
+      "notFound": "Esta publicação não existe mais.",
+      "unauthorized": "Você só pode anexar às suas próprias publicações."
     }
   },
   "unsavedChanges": {

@@ -1,18 +1,17 @@
-import type { ActionResult } from '@/lib/action-types';
+import type { PostAttachment } from '@/lib/games/get-attachments-for-posts';
 
+import type {
+  AttachAction,
+  DeletePostAction,
+  EditPostAction,
+  RemoveAttachmentAction,
+  ToggleLikeAction,
+} from '../_lib/action-types';
 import type { CommentTreeNode } from '../_lib/comment-tree';
 import { groupReplies } from '../_lib/comment-tree';
 import { canUserReply } from '../_lib/permissions';
 import { CommentNode } from './CommentNode';
 import type { ReplyAttachmentActions } from './ReplyForm';
-
-type ToggleLikeAction = (
-  postId: string,
-  locale: string,
-  topicKey: string
-) => Promise<{ liked: boolean; likeCount: number } | { error: string }>;
-
-type DeletePostAction = (postId: string, locale: string) => Promise<ActionResult>;
 
 type Props = {
   /** Root nodes already built by `buildCommentTree`. */
@@ -31,6 +30,39 @@ type Props = {
    */
   replyAttachmentActions: ReplyAttachmentActions;
   deletePostAction: DeletePostAction;
+  /**
+   * Optional in-place edit Server Action. When provided, every author-owned
+   * `CommentNode` in the tree exposes an "Edit" button alongside "Delete".
+   * Threading this through the tree (rather than letting `CommentNode`
+   * import it directly) keeps the per-page wiring centralised in the page
+   * component, matching the existing pattern for `deletePostAction` /
+   * `toggleLikeAction`.
+   */
+  editPostAction?: EditPostAction;
+  /**
+   * Optional attachment-remove Server Action. When provided alongside
+   * `attachmentsByPostId`, every author-owned `CommentNode` in the tree
+   * surfaces a remove affordance for its attachment in edit mode (per-
+   * image for the 1:N image kind, single for the 1:0..1 kinds).
+   */
+  removeAttachmentAction?: RemoveAttachmentAction;
+  /**
+   * Optional edit-flow attach actions. Forwarded down to every
+   * `CommentNode` so a comment whose post has no current attachment can
+   * surface an "Add attachment" affordance in edit mode.
+   */
+  attachPgnAction?: AttachAction;
+  attachFenAction?: AttachAction;
+  /**
+   * Raw attachment payloads keyed by post id. Threaded through to every
+   * `CommentNode` so edit mode can wire remove buttons against the same
+   * `getAttachmentsForPosts` result that `extraContentByPostId` was
+   * pre-rendered from. Read-side rendering still flows through
+   * `extraContentByPostId`.
+   */
+  attachmentsByPostId?: ReadonlyMap<string, PostAttachment>;
+  /** Fallback `<AttachedVideoCard>` title for the edit-side renderer. */
+  attachmentFallbackVideoTitle?: string;
   i18n: {
     likeNamespace: string;
     replyNamespace: string;
@@ -92,6 +124,12 @@ export async function CommentTree({
   toggleLikeAction,
   replyAttachmentActions,
   deletePostAction,
+  editPostAction,
+  removeAttachmentAction,
+  attachPgnAction,
+  attachFenAction,
+  attachmentsByPostId,
+  attachmentFallbackVideoTitle,
   i18n,
   threadRootPostId,
   extraContentByPostId,
@@ -125,6 +163,12 @@ export async function CommentTree({
           toggleLikeAction={toggleLikeAction}
           replyAttachmentActions={replyAttachmentActions}
           deletePostAction={deletePostAction}
+          editPostAction={editPostAction}
+          removeAttachmentAction={removeAttachmentAction}
+          attachPgnAction={attachPgnAction}
+          attachFenAction={attachFenAction}
+          attachmentsByPostId={attachmentsByPostId}
+          attachmentFallbackVideoTitle={attachmentFallbackVideoTitle}
           i18n={i18n}
           extraContentByPostId={extraContentByPostId}
         />

@@ -5,25 +5,27 @@ import { useState } from 'react';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaEyeSlash } from 'react-icons/fa';
 
-import type { ActionResult } from '@/lib/action-types';
+import type { PostAttachment } from '@/lib/games/get-attachments-for-posts';
 
 import { LinkedText } from '@/app/[locale]/_components/LinkedText';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 
 import { formatAbsoluteDateTime } from '../_lib/absolute-time';
+import type {
+  AttachAction,
+  DeletePostAction,
+  EditPostAction,
+  RemoveAttachmentAction,
+  ToggleLikeAction,
+} from '../_lib/action-types';
 import type { CommentTreeNode, FlatReply, ReplyGroup } from '../_lib/comment-tree';
 import { DeletePostButton } from './DeletePostButton';
+import { EditPostForm } from './EditPostForm';
+import { EditableAttachments } from './EditableAttachments';
+import { EditedIndicator } from './EditedIndicator';
 import { LikeButton } from './LikeButton';
 import { ReplyForm } from './ReplyForm';
 import type { ReplyAttachmentActions } from './ReplyForm';
-
-type ToggleLikeAction = (
-  postId: string,
-  locale: string,
-  topicKey: string
-) => Promise<{ liked: boolean; likeCount: number } | { error: string }>;
-
-type DeletePostAction = (postId: string, locale: string) => Promise<ActionResult>;
 
 type I18n = {
   likeNamespace: string;
@@ -61,6 +63,48 @@ type Props = {
    */
   replyAttachmentActions: ReplyAttachmentActions;
   deletePostAction: DeletePostAction;
+  /**
+   * In-place edit Server Action. Optional so a page can roll out the edit
+   * affordance incrementally; when omitted, the Edit button does not render
+   * and the comment is read-only (matching the pre-edit contract). When
+   * provided, the author of a comment sees an "Edit" button next to
+   * "Delete" and can rewrite the body inline.
+   */
+  editPostAction?: EditPostAction;
+  /**
+   * Optional attachment-remove Server Action. When provided alongside an
+   * `attachment` for this node, the in-place edit form surfaces a
+   * "Remove attachment" affordance (per-image for 1:N images, single for
+   * the 1:0..1 kinds). The action is gated on author ownership server-
+   * side; the UI gate here is purely a redundancy.
+   */
+  removeAttachmentAction?: RemoveAttachmentAction;
+  /**
+   * Optional edit-flow attach actions. Forwarded to `EditableAttachments`
+   * so a node whose post currently has NO attachment can surface an
+   * "Add attachment" button (paperclip → AttachmentModal). Omitting both
+   * keeps edit mode as remove-only for that surface.
+   */
+  attachPgnAction?: AttachAction;
+  attachFenAction?: AttachAction;
+  /**
+   * Raw attachment payloads keyed by post id. Threaded all the way down
+   * the recursion (like `extraContentByPostId`) so each `CommentNode`
+   * can look up its own attachment in edit mode. Read-mode rendering
+   * still flows through `extraContentByPostId` — pages already compute
+   * the per-post lookup once via `getAttachmentsForPosts`, so passing
+   * the raw map here is essentially free.
+   */
+  attachmentsByPostId?: ReadonlyMap<string, PostAttachment>;
+  /**
+   * Fallback title for `<AttachedVideoCard>` inside `EditableAttachments`.
+   * Only consulted when the node's attachment kind is `video` and edit
+   * mode is active. Pages already resolve the i18n string for the read-
+   * side renderer (`renderAttachment`); threading it here lets the edit-
+   * side EditableAttachments reuse the same value without a second
+   * `useTranslations` lookup.
+   */
+  attachmentFallbackVideoTitle?: string;
   i18n: I18n;
   /**
    * Reply groups for a thread root. Provided ONLY when this node is the
@@ -122,6 +166,12 @@ export function CommentNode({
   toggleLikeAction,
   replyAttachmentActions,
   deletePostAction,
+  editPostAction,
+  removeAttachmentAction,
+  attachPgnAction,
+  attachFenAction,
+  attachmentsByPostId,
+  attachmentFallbackVideoTitle,
   i18n,
   replyGroups,
   flatReplies,
@@ -132,6 +182,14 @@ export function CommentNode({
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isReplyOpen, setIsReplyOpen] = useState(false);
   const [isSpoilerRevealed, setIsSpoilerRevealed] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  // Local-state mirror of the comment fields that the in-place edit
+  // form can change. Initialised from the server-rendered `node` and
+  // updated on successful save so the UI swaps to the fresh text
+  // without a router round-trip.
+  const [localContent, setLocalContent] = useState(node.content);
+  const [localIsSpoiler, setLocalIsSpoiler] = useState(node.isSpoiler);
+  const [localUpdatedAt, setLocalUpdatedAt] = useState<Date>(new Date(node.updatedAt));
 
   const isDeleted = node.deletedAt !== null;
   const displayName = node.author?.displayName || node.author?.username || 'Anonymous';
@@ -140,8 +198,9 @@ export function CommentNode({
   // Tombstones never run spoiler / like / reply / delete affordances — those
   // are anchored to the (deleted) author and would either leak identity or
   // act on a row the author has already retracted.
-  const showSpoiler = !isDeleted && enableSpoiler && node.isSpoiler && !isSpoilerRevealed;
+  const showSpoiler = !isDeleted && enableSpoiler && localIsSpoiler && !isSpoilerRevealed;
   const isOwnComment = !isDeleted && currentUserId !== undefined && currentUserId === node.userId;
+  const wasEdited = localUpdatedAt.getTime() > new Date(node.createdAt).getTime();
   const isRoot = replyGroups !== undefined;
   // The "N replies hidden" label needs to match what collapsing actually
   // hides. On the root, that is every first-level reply plus every deeper
@@ -194,10 +253,11 @@ export function CommentNode({
                 `BaseTopicPostCard`, which wraps its timestamp in a <div> for
                 the same reason.
               */}
-              <div className="text-xs text-muted-foreground">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <time dateTime={node.createdAt.toISOString()}>
                   {formatAbsoluteDateTime(node.createdAt, locale, 'short')}
                 </time>
+                {wasEdited && <EditedIndicator updatedAt={localUpdatedAt} locale={locale} />}
               </div>
             </UserAvatar>
           )}
@@ -210,39 +270,73 @@ export function CommentNode({
             )
           ) : (
             <>
-              {!isDeleted && (
-                <div className="relative" aria-live="polite">
-                  {replyToDisplayName && (
-                    <p className="text-sm font-medium text-primary mb-1">@{replyToDisplayName}</p>
-                  )}
-                  <p
-                    className="text-sm text-foreground whitespace-pre-wrap break-words leading-relaxed"
-                    aria-hidden={showSpoiler || undefined}
-                  >
-                    <LinkedText text={node.content} locale={locale} />
-                  </p>
-                  {showSpoiler && (
-                    <button
-                      type="button"
-                      onClick={() => setIsSpoilerRevealed(true)}
-                      aria-label={tTopics('spoiler.overlayAriaLabel')}
-                      className="absolute inset-0 flex flex-col items-center justify-center gap-1 rounded-sm bg-muted text-muted-foreground hover:bg-muted/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors cursor-pointer"
+              {!isDeleted && isEditing && editPostAction ? (
+                <>
+                  <EditPostForm
+                    postId={node.id}
+                    locale={locale}
+                    initialContent={localContent}
+                    initialIsSpoiler={localIsSpoiler}
+                    enableSpoilerToggle={enableSpoiler}
+                    editPostAction={editPostAction}
+                    onSaved={(next) => {
+                      setLocalContent(next.content);
+                      setLocalIsSpoiler(next.isSpoiler);
+                      setLocalUpdatedAt(next.updatedAt);
+                      setIsEditing(false);
+                    }}
+                    onCancel={() => setIsEditing(false)}
+                  />
+                  {removeAttachmentAction &&
+                    (attachmentsByPostId?.get(node.id) ||
+                      attachPgnAction !== undefined ||
+                      attachFenAction !== undefined) && (
+                      <EditableAttachments
+                        postId={node.id}
+                        locale={locale}
+                        attachment={attachmentsByPostId?.get(node.id) ?? null}
+                        removeAttachmentAction={removeAttachmentAction}
+                        attachPgnAction={attachPgnAction}
+                        attachFenAction={attachFenAction}
+                        fallbackVideoTitle={attachmentFallbackVideoTitle ?? ''}
+                      />
+                    )}
+                </>
+              ) : (
+                !isDeleted && (
+                  <div className="relative" aria-live="polite">
+                    {replyToDisplayName && (
+                      <p className="text-sm font-medium text-primary mb-1">@{replyToDisplayName}</p>
+                    )}
+                    <p
+                      className="text-sm text-foreground whitespace-pre-wrap break-words leading-relaxed"
+                      aria-hidden={showSpoiler || undefined}
                     >
-                      <span className="flex items-center gap-1.5 text-sm font-medium">
-                        <FaEyeSlash aria-hidden="true" />
-                        {tTopics('spoiler.overlayTitle')}
-                      </span>
-                      <span className="text-xs text-muted-foreground/80">
-                        {tTopics('spoiler.overlayHint')}
-                      </span>
-                    </button>
-                  )}
-                </div>
+                      <LinkedText text={localContent} locale={locale} />
+                    </p>
+                    {showSpoiler && (
+                      <button
+                        type="button"
+                        onClick={() => setIsSpoilerRevealed(true)}
+                        aria-label={tTopics('spoiler.overlayAriaLabel')}
+                        className="absolute inset-0 flex flex-col items-center justify-center gap-1 rounded-sm bg-muted text-muted-foreground hover:bg-muted/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors cursor-pointer"
+                      >
+                        <span className="flex items-center gap-1.5 text-sm font-medium">
+                          <FaEyeSlash aria-hidden="true" />
+                          {tTopics('spoiler.overlayTitle')}
+                        </span>
+                        <span className="text-xs text-muted-foreground/80">
+                          {tTopics('spoiler.overlayHint')}
+                        </span>
+                      </button>
+                    )}
+                  </div>
+                )
               )}
 
-              {!isDeleted && extraContentByPostId?.get(node.id)}
+              {!isDeleted && !isEditing && extraContentByPostId?.get(node.id)}
 
-              {!isDeleted && (
+              {!isDeleted && !isEditing && (
                 <div className="flex items-center gap-4">
                   <LikeButton
                     postId={node.id}
@@ -260,6 +354,15 @@ export function CommentNode({
                       className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                     >
                       {tTopics('replyButton')}
+                    </button>
+                  )}
+                  {isOwnComment && editPostAction && (
+                    <button
+                      type="button"
+                      onClick={() => setIsEditing(true)}
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                    >
+                      {tTopics('edit.button')}
                     </button>
                   )}
                   {isOwnComment && (
@@ -306,6 +409,12 @@ export function CommentNode({
                       toggleLikeAction={toggleLikeAction}
                       replyAttachmentActions={replyAttachmentActions}
                       deletePostAction={deletePostAction}
+                      editPostAction={editPostAction}
+                      removeAttachmentAction={removeAttachmentAction}
+                      attachPgnAction={attachPgnAction}
+                      attachFenAction={attachFenAction}
+                      attachmentsByPostId={attachmentsByPostId}
+                      attachmentFallbackVideoTitle={attachmentFallbackVideoTitle}
                       i18n={i18n}
                       flatReplies={group.deeper}
                       extraContentByPostId={extraContentByPostId}
@@ -330,6 +439,12 @@ export function CommentNode({
                       toggleLikeAction={toggleLikeAction}
                       replyAttachmentActions={replyAttachmentActions}
                       deletePostAction={deletePostAction}
+                      editPostAction={editPostAction}
+                      removeAttachmentAction={removeAttachmentAction}
+                      attachPgnAction={attachPgnAction}
+                      attachFenAction={attachFenAction}
+                      attachmentsByPostId={attachmentsByPostId}
+                      attachmentFallbackVideoTitle={attachmentFallbackVideoTitle}
                       i18n={i18n}
                       replyToDisplayName={prefix ?? undefined}
                       extraContentByPostId={extraContentByPostId}

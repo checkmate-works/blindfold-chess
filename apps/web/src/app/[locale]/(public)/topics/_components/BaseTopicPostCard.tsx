@@ -12,15 +12,10 @@ import { LinkedText } from '@/app/[locale]/_components';
 import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 
+import type { ToggleLikeAction } from '../_lib/action-types';
 import { formatRelativeTime } from '../_lib/relative-time';
 import type { LikeMeta, ReplyMeta } from '../_lib/shared';
 import { PostFooter } from './PostFooter';
-
-type ToggleLikeAction = (
-  postId: string,
-  locale: string,
-  topicKey: string
-) => Promise<{ liked: boolean; likeCount: number } | { error: string }>;
 
 type Props = {
   postId: string;

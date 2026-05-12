@@ -3657,6 +3657,46 @@
       "overlayTitle": "Contains solution",
       "overlayHint": "Tap to reveal",
       "overlayAriaLabel": "Reveal comment that may contain the puzzle solution"
+    },
+    "edit": {
+      "button": "Edit",
+      "save": "Save",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "editedLabel": "(edited)",
+      "editedTitle": "Last edited {date}",
+      "contentRequired": "Please enter some content",
+      "contentTooLong": "Content must be 2000 characters or less",
+      "error": "An error occurred. Please try again.",
+      "signInRequired": "Please sign in to edit",
+      "rateLimited": "Too many edits. Please try again later.",
+      "notFound": "This post no longer exists.",
+      "unauthorized": "You can only edit your own posts.",
+      "alreadyDeleted": "This post has been deleted."
+    },
+    "removeAttachment": {
+      "button": "Remove attachment",
+      "removeImageAriaLabel": "Remove image {index}",
+      "removing": "Removing...",
+      "confirmTitle": "Remove attachment?",
+      "confirmMessage": "This will detach it from your post. The post itself stays.",
+      "confirm": "Remove",
+      "cancel": "Cancel",
+      "error": "Could not remove the attachment. Please try again.",
+      "attachmentNotFound": "This attachment no longer exists.",
+      "rateLimited": "Too many attachment changes. Please try again later."
+    },
+    "addAttachment": {
+      "button": "Add attachment",
+      "attaching": "Attaching...",
+      "invalidFen": "Please enter a valid FEN before attaching.",
+      "error": "Could not attach. Please try again.",
+      "signInRequired": "Please sign in to attach.",
+      "rateLimited": "Too many attach attempts. Please try again later.",
+      "alreadyAttached": "This post already has an attachment. Remove the existing one first.",
+      "alreadyDeleted": "This post has been deleted.",
+      "notFound": "This post no longer exists.",
+      "unauthorized": "You can only attach to your own posts."
     }
   },
   "unsavedChanges": {

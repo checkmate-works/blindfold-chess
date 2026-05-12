@@ -9,6 +9,14 @@ const mockInsertReturning = vi.fn();
 const mockIsUserBanned = vi.fn();
 const mockCheckRateLimit = vi.fn();
 
+vi.mock('@/lib/users/activity-log', () => ({
+  logActivityEvent: vi.fn(),
+}));
+
+vi.mock('next/cache', () => ({
+  revalidatePath: vi.fn(),
+}));
+
 vi.mock('@/lib/supabase/server', () => ({
   createClient: () =>
     Promise.resolve({
@@ -50,6 +58,8 @@ vi.mock('@/lib/db', () => ({
   topicPosts: {
     id: 'id',
     userId: 'user_id',
+    topicType: 'topic_type',
+    topicKey: 'topic_key',
     deletedAt: 'deleted_at',
   },
 }));
@@ -75,7 +85,9 @@ beforeEach(() => {
   mockGetUser.mockResolvedValue({ data: { user: { id: userId } } });
   mockIsUserBanned.mockResolvedValue(false);
   mockCheckRateLimit.mockResolvedValue({ allowed: true });
-  mockSelectWhere.mockReturnValue([{ id: postId, userId, deletedAt: null }]);
+  mockSelectWhere.mockReturnValue([
+    { id: postId, userId, topicType: 'opening', topicKey: 'sicilian', deletedAt: null },
+  ]);
   mockInsertReturning.mockResolvedValue([
     {
       id: 'attach-id',
@@ -346,5 +358,37 @@ describe('attachPostFen — DB error mapping', () => {
     mockInsertReturning.mockRejectedValueOnce(err);
 
     await expect(attachPostFen({ postId, fen: STARTING_FEN })).rejects.toThrow('oops');
+  });
+});
+
+describe('attachPostFen — edit-flow side effects', () => {
+  it('omits the activity log + revalidate when locale is not provided', async () => {
+    const { logActivityEvent } = await import('@/lib/users/activity-log');
+    const { revalidatePath } = await import('next/cache');
+
+    await attachPostFen({ postId, fen: STARTING_FEN });
+
+    expect(logActivityEvent).not.toHaveBeenCalled();
+    expect(revalidatePath).not.toHaveBeenCalled();
+  });
+
+  it('logs an activity event + revalidates the topic path when locale is provided', async () => {
+    const { logActivityEvent } = await import('@/lib/users/activity-log');
+    const { revalidatePath } = await import('next/cache');
+
+    await attachPostFen({ postId, fen: STARTING_FEN, locale: 'en' });
+
+    expect(logActivityEvent).toHaveBeenCalledWith({
+      userId,
+      action: 'attach_post_fen',
+      targetType: 'topic_post',
+      targetId: postId,
+      metadata: {
+        topicType: 'opening',
+        topicKey: 'sicilian',
+        attachmentId: 'attach-id',
+      },
+    });
+    expect(revalidatePath).toHaveBeenCalledWith('/en/topics/openings/sicilian');
   });
 });

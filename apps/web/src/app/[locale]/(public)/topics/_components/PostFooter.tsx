@@ -8,14 +8,9 @@ import { FaRegComment } from 'react-icons/fa';
 
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
 
+import type { ToggleLikeAction } from '../_lib/action-types';
 import type { LikeMeta, ReplyMeta } from '../_lib/shared';
 import { LikeButton } from './LikeButton';
-
-type ToggleLikeAction = (
-  postId: string,
-  locale: string,
-  topicKey: string
-) => Promise<{ liked: boolean; likeCount: number } | { error: string }>;
 
 type Props = {
   postId: string;

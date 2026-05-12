@@ -1,14 +1,20 @@
 'use server';
 
+import { revalidatePath } from 'next/cache';
+
 import { validateFenSemantic } from '@blindfold-chess/features/chess-core';
 import { eq } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, postFenAttachments, topicPosts } from '@/lib/db';
+import { extractPgErrorCode } from '@/lib/db/extract-pg-error-code';
 import { FEN_MAX_LENGTH } from '@/lib/post-fens/constants';
 import { sanitizeFenCaption } from '@/lib/post-fens/sanitize-fen-caption';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
+import { logActivityEvent } from '@/lib/users/activity-log';
+
+import { buildTopicDetailPath } from '../_lib/topic-paths';
 
 /**
  * Maximum length of a stored caption. Aligned with
@@ -20,14 +26,29 @@ import { RATE_LIMITS } from '@/lib/security/rate-limit';
 const CAPTION_MAX_LENGTH = 200;
 
 /**
- * Extract a Postgres `code` from a thrown DB error. Drizzle / `pg` attach
- * the SQLSTATE code on the Error instance; we narrow defensively so the
- * cast is centralized rather than repeated at every catch branch.
+ * Edit-flow adapter: same auth + validation pipeline as `attachPostFen`,
+ * but called with the `(postId, locale, formData)` shape the client-side
+ * `EditableAttachments` builds when the user submits the AttachmentModal.
+ * Reads `attachmentFen` + `attachmentFenCaption` off the FormData (the
+ * field names the create flow already emits) and forwards to the typed
+ * action. Pulling the inputs off FormData lives here rather than in the
+ * client component so the dotted-error-key contract stays a property of
+ * the action, not the caller.
  */
-function pgCode(err: unknown): string | undefined {
-  return err instanceof Error && 'code' in err
-    ? (err as Error & { code?: string }).code
-    : undefined;
+export async function attachPostFenFromForm(
+  postId: string,
+  locale: string,
+  formData: FormData
+): Promise<
+  ActionResult<{
+    attachment: { id: string; fen: string; caption: string | null; createdAt: Date };
+  }>
+> {
+  const rawFen = formData.get('attachmentFen');
+  const fen = typeof rawFen === 'string' ? rawFen : '';
+  const rawCaption = formData.get('attachmentFenCaption');
+  const caption = typeof rawCaption === 'string' ? rawCaption : null;
+  return attachPostFen({ postId, fen, caption, locale });
 }
 
 /**
@@ -61,6 +82,15 @@ export async function attachPostFen(input: {
   postId: string;
   fen: string;
   caption?: string | null;
+  /**
+   * Locale for the optional post-detail revalidation. When provided, the
+   * action treats the call as part of the edit flow and revalidates the
+   * topic detail path on success, plus logs an `attach_post_fen` activity
+   * event so the moderation surface can audit author-side edits. Omitting
+   * `locale` keeps the legacy "attach later, no edit-flow side effects"
+   * contract intact for any non-UI caller that does not own the path.
+   */
+  locale?: string;
 }): Promise<
   ActionResult<{
     attachment: {
@@ -71,7 +101,7 @@ export async function attachPostFen(input: {
     };
   }>
 > {
-  const { postId, fen: rawFenInput, caption: rawCaption = null } = input;
+  const { postId, fen: rawFenInput, caption: rawCaption = null, locale } = input;
 
   // Canonicalize FEN by trimming once at the top. `validateFenSemantic`
   // also calls `.trim()` internally, but the DB CHECK regex is anchored
@@ -100,6 +130,8 @@ export async function attachPostFen(input: {
     .select({
       id: topicPosts.id,
       userId: topicPosts.userId,
+      topicType: topicPosts.topicType,
+      topicKey: topicPosts.topicKey,
       deletedAt: topicPosts.deletedAt,
     })
     .from(topicPosts)
@@ -170,6 +202,21 @@ export async function attachPostFen(input: {
         createdAt: postFenAttachments.createdAt,
       });
 
+    if (locale !== undefined) {
+      logActivityEvent({
+        userId: user.id,
+        action: 'attach_post_fen',
+        targetType: 'topic_post',
+        targetId: postId,
+        metadata: {
+          topicType: post.topicType,
+          topicKey: post.topicKey,
+          attachmentId: row.id,
+        },
+      });
+      revalidatePath(buildTopicDetailPath(post.topicType, post.topicKey, locale));
+    }
+
     return {
       success: true,
       attachment: {
@@ -180,7 +227,7 @@ export async function attachPostFen(input: {
       },
     };
   } catch (err) {
-    const code = pgCode(err);
+    const code = extractPgErrorCode(err);
     if (code === '23505') {
       return { error: 'postFenAttachment.error.alreadyAttached' };
     }

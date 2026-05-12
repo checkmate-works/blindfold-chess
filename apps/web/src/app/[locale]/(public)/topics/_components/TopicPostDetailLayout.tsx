@@ -5,32 +5,28 @@ import { getTranslations } from 'next-intl/server';
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import type { User } from '@supabase/supabase-js';
 
-import type { ActionResult } from '@/lib/action-types';
+import type { PostAttachment } from '@/lib/games/get-attachments-for-posts';
 
-import { LinkedText, PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import type { BreadcrumbItem } from '@/app/[locale]/_components/Breadcrumb';
-import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { formatAbsoluteDateTime } from '../_lib/absolute-time';
+import type {
+  AttachAction,
+  DeletePostAction,
+  EditPostAction,
+  RemoveAttachmentAction,
+  ToggleLikeAction,
+} from '../_lib/action-types';
 import { buildCommentTree } from '../_lib/comment-tree';
 import type { PostWithReplyMeta, SortMode } from '../_lib/shared';
 import { CommentTree } from './CommentTree';
-import { DeletePostButton } from './DeletePostButton';
 import { JoinConversationToggle } from './JoinConversationToggle';
-import { LikeButton } from './LikeButton';
+import { OpCard } from './OpCard';
 import { ReplyForm } from './ReplyForm';
 import type { ReplyAttachmentActions } from './ReplyForm';
 import { SortSelect } from './SortSelect';
-
-type ToggleLikeAction = (
-  postId: string,
-  locale: string,
-  topicKey: string
-) => Promise<{ liked: boolean; likeCount: number } | { error: string }>;
-
-type DeletePostAction = (postId: string, locale: string) => Promise<ActionResult>;
 
 type Props = {
   locale: Locale;
@@ -81,6 +77,36 @@ type Props = {
   replyRestrictionMessage: string | null;
   toggleLikeAction: ToggleLikeAction;
   deletePostAction: DeletePostAction;
+  /**
+   * Optional in-place edit Server Action. When provided, the OP card and
+   * every author-owned reply in the tree expose an "Edit" button. Pages
+   * pass `editPost` from `@/app/[locale]/(public)/topics/_actions/editPost`
+   * — the action is polymorphic across topic types.
+   */
+  editPostAction?: EditPostAction;
+  /**
+   * Optional attachment-remove Server Action. When provided, every
+   * author-owned post in the tree — OP card included — exposes a remove
+   * affordance for its attachment in edit mode.
+   */
+  removeAttachmentAction?: RemoveAttachmentAction;
+  /**
+   * Optional edit-flow attach actions. When provided, every author-owned
+   * post in the tree (OP card + replies) surfaces an "Add attachment"
+   * affordance in edit mode whenever the post has no current attachment.
+   */
+  attachPgnAction?: AttachAction;
+  attachFenAction?: AttachAction;
+  /**
+   * Raw attachment payloads keyed by post id, used by the edit-side
+   * renderer. Pages already compute this via `getAttachmentsForPosts`
+   * for the read-side `extraContentByPostId` / `opAttachment` slots;
+   * pass the same map through here so the edit-side EditableAttachments
+   * can wire remove buttons against the same data.
+   */
+  attachmentsByPostId?: ReadonlyMap<string, PostAttachment>;
+  /** Fallback `<AttachedVideoCard>` title used by the edit-side renderer. */
+  attachmentFallbackVideoTitle?: string;
   /**
    * Attachment-aware reply Server Actions (PGN + FEN). Bound by every
    * `ReplyForm` rendered on this page (top-level CTA + inline replies
@@ -158,6 +184,12 @@ export async function TopicPostDetailLayout({
   replyRestrictionMessage,
   toggleLikeAction,
   deletePostAction,
+  editPostAction,
+  removeAttachmentAction,
+  attachPgnAction,
+  attachFenAction,
+  attachmentsByPostId,
+  attachmentFallbackVideoTitle,
   replyAttachmentActions,
   redirectPath,
   i18n,
@@ -177,11 +209,6 @@ export async function TopicPostDetailLayout({
   const replyRoots = buildCommentTree(repliesAsRoots, comments.sortBy);
   const replyCount = replies.length;
 
-  const authorName =
-    rootWithMeta.author?.displayName || rootWithMeta.author?.username || 'Anonymous';
-  const profileHref = rootWithMeta.author?.username ? `/u/${rootWithMeta.author.username}` : null;
-  const isOwnPost = user?.id === rootWithMeta.userId;
-
   return (
     <PageLayout title={pageTitle} locale={locale} breadcrumb={breadcrumbItems} divider={false}>
       <SectionTitle>{sectionTitle}</SectionTitle>
@@ -190,58 +217,39 @@ export async function TopicPostDetailLayout({
 
       {/*
         OP card — the bordered surface ("カード" in product language)
-        that surfaces the post text as the page's main content. Mirrors
-        the shape `main`'s `PostDetailContent` carried before the
-        fix-comments refactor unified everything into CommentNode; the
-        unified treatment was rolled back here because readers were
-        interpreting the OP as just-another comment.
+        that surfaces the post text as the page's main content. Lifted
+        into its own client boundary (`OpCard`) so the body can swap to
+        an inline edit form when the author clicks "Edit". The card
+        otherwise mirrors `main`'s pre-refactor `PostDetailContent` shape;
+        treating the OP as a peer comment was rolled back because readers
+        were interpreting it as just-another reply.
       */}
-      <div className="p-4 bg-card border border-border rounded-lg space-y-4">
-        <UserAvatar
-          profileHref={profileHref}
-          avatarUrl={rootWithMeta.author?.avatarUrl}
-          displayName={authorName}
-          locale={locale}
-          size="md"
-          flair={rootWithMeta.author?.flair}
-          country={rootWithMeta.author?.country}
-        >
-          <div className="text-sm text-muted-foreground">
-            <time dateTime={rootWithMeta.createdAt.toISOString()}>
-              {formatAbsoluteDateTime(rootWithMeta.createdAt, locale, 'long')}
-            </time>
-          </div>
-        </UserAvatar>
-
-        {opMeta}
-
-        <div className="text-foreground whitespace-pre-wrap break-words leading-relaxed">
-          <LinkedText text={rootWithMeta.content} locale={locale} />
-        </div>
-
-        {opAttachment}
-
-        <div className="flex items-center gap-4">
-          <LikeButton
-            postId={rootWithMeta.id}
-            locale={locale}
-            topicKey={topicKey}
-            initialLikeCount={rootWithMeta.likeMeta.likeCount}
-            initialLikedByMe={rootWithMeta.likeMeta.likedByMe}
-            toggleLikeAction={toggleLikeAction}
-            i18nNamespace={i18n.likeNamespace}
-          />
-          {isOwnPost && (
-            <DeletePostButton
-              postId={rootWithMeta.id}
-              locale={locale}
-              redirectPath={redirectPath}
-              deletePostAction={deletePostAction}
-              i18nNamespace={i18n.deleteNamespace}
-            />
-          )}
-        </div>
-      </div>
+      <OpCard
+        postId={rootWithMeta.id}
+        locale={locale}
+        topicKey={topicKey}
+        userId={rootWithMeta.userId}
+        currentUserId={user?.id}
+        author={rootWithMeta.author}
+        initialContent={rootWithMeta.content}
+        createdAt={rootWithMeta.createdAt}
+        updatedAt={rootWithMeta.updatedAt}
+        opMeta={opMeta}
+        opAttachment={opAttachment}
+        initialLikeCount={rootWithMeta.likeMeta.likeCount}
+        initialLikedByMe={rootWithMeta.likeMeta.likedByMe}
+        toggleLikeAction={toggleLikeAction}
+        deletePostAction={deletePostAction}
+        editPostAction={editPostAction}
+        removeAttachmentAction={removeAttachmentAction}
+        attachPgnAction={attachPgnAction}
+        attachFenAction={attachFenAction}
+        opAttachmentRaw={attachmentsByPostId?.get(rootWithMeta.id) ?? null}
+        attachmentFallbackVideoTitle={attachmentFallbackVideoTitle}
+        redirectPath={redirectPath}
+        likeI18nNamespace={i18n.likeNamespace}
+        deleteI18nNamespace={i18n.deleteNamespace}
+      />
 
       <SectionTitle>{comments.sectionTitle}</SectionTitle>
 
@@ -286,6 +294,12 @@ export async function TopicPostDetailLayout({
             toggleLikeAction={toggleLikeAction}
             replyAttachmentActions={replyAttachmentActions}
             deletePostAction={deletePostAction}
+            editPostAction={editPostAction}
+            removeAttachmentAction={removeAttachmentAction}
+            attachPgnAction={attachPgnAction}
+            attachFenAction={attachFenAction}
+            attachmentsByPostId={attachmentsByPostId}
+            attachmentFallbackVideoTitle={attachmentFallbackVideoTitle}
             i18n={i18n}
             threadRootPostId={rootWithMeta.id}
             extraContentByPostId={extraContentByPostId}
