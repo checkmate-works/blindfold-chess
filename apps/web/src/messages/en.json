@@ -1968,6 +1968,27 @@
     "changesTitle": "Changes to Terms",
     "changesDescription": "The operator may change these Terms of Service as necessary. Changed Terms will take effect from the time they are posted on this page."
   },
+  "licenses": {
+    "title": "Open Source Licenses",
+    "description": "Open source software acknowledgements and license information",
+    "lastUpdated": "Last Updated: May 13, 2026",
+    "introduction": "Blindfold Chess uses open source chess engines to provide its AI opponent functionality. We are grateful to the authors and communities behind these projects, and we provide attribution and license information below.",
+    "componentsTitle": "Bundled Open Source Components",
+    "componentsIntro": "The following components are bundled with this application and delivered to your browser when you use related features. Each engine runs as a separate Web Worker process and communicates with the application only through the standard text-based UCI protocol.",
+    "stockfishName": "Stockfish",
+    "stockfishDescription": "A strong open source UCI chess engine, used here as the default AI opponent.",
+    "lc0Name": "Lc0 (Leela Chess Zero)",
+    "lc0Description": "A neural network chess engine, used here to run Maia weights for human-like AI opponents.",
+    "maiaName": "Maia Chess (neural network weights)",
+    "maiaDescription": "Neural network weights that model human chess play at specific rating levels, developed by the Computational Social Science Lab at the University of Toronto.",
+    "sourceCodeLabel": "Source code:",
+    "licenseLabel": "License:",
+    "licenseValue": "GNU General Public License v3.0",
+    "complianceTitle": "GPL v3 Compliance",
+    "complianceIntro": "The components above are licensed under the GNU General Public License version 3 (GPL v3) and are bundled here without modification. The corresponding source code is publicly available at the upstream repositories linked above.",
+    "viewFullLicense": "View the full GPL v3 license text",
+    "viewFullLicenseGnu": "Also available at the GNU Project website"
+  },
   "company": {
     "title": "Company Information",
     "companyName": "Company Name",

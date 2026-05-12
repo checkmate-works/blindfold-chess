@@ -1968,6 +1968,27 @@
     "changesTitle": "Alterações nos Termos",
     "changesDescription": "O operador pode alterar estes Termos de Serviço conforme necessário. Os Termos modificados entrarão em vigor a partir do momento em que forem publicados nesta página."
   },
+  "licenses": {
+    "title": "Licenças de Código Aberto",
+    "description": "Atribuições e informações de licenças do software de código aberto utilizado",
+    "lastUpdated": "Última atualização: 13 de maio de 2026",
+    "introduction": "O Xadrez às Cegas utiliza motores de xadrez de código aberto para fornecer sua funcionalidade de oponente de IA. Somos gratos aos autores e comunidades por trás desses projetos e fornecemos informações de atribuição e licenças abaixo.",
+    "componentsTitle": "Componentes de Código Aberto Incluídos",
+    "componentsIntro": "Os componentes a seguir são incluídos com este aplicativo e entregues ao seu navegador quando você usa os recursos relacionados. Cada motor é executado como um processo Web Worker separado e se comunica com o aplicativo apenas através do protocolo de texto padrão UCI.",
+    "stockfishName": "Stockfish",
+    "stockfishDescription": "Um motor de xadrez UCI de código aberto e poderoso, usado aqui como oponente de IA padrão.",
+    "lc0Name": "Lc0 (Leela Chess Zero)",
+    "lc0Description": "Um motor de xadrez baseado em redes neurais, usado aqui para executar os pesos do Maia para oponentes de IA com estilo humano.",
+    "maiaName": "Maia Chess (pesos da rede neural)",
+    "maiaDescription": "Pesos de rede neural que modelam o jogo humano de xadrez em níveis específicos de classificação, desenvolvidos pelo Computational Social Science Lab da Universidade de Toronto.",
+    "sourceCodeLabel": "Código-fonte:",
+    "licenseLabel": "Licença:",
+    "licenseValue": "GNU General Public License v3.0",
+    "complianceTitle": "Conformidade com GPL v3",
+    "complianceIntro": "Os componentes acima são licenciados sob a GNU General Public License versão 3 (GPL v3) e são incluídos aqui sem modificações. O código-fonte correspondente está disponível publicamente nos repositórios upstream listados acima.",
+    "viewFullLicense": "Ver o texto completo da licença GPL v3",
+    "viewFullLicenseGnu": "Também disponível no site do Projeto GNU"
+  },
   "company": {
     "title": "Informações da Empresa",
     "companyName": "Nome da Empresa",

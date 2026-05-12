@@ -1968,6 +1968,27 @@
     "changesTitle": "規約の変更",
     "changesDescription": "運営者は、必要に応じて本利用規約を変更することがあります。変更後の利用規約は、本ページに掲載した時点で効力を生じるものとします。"
   },
+  "licenses": {
+    "title": "オープンソースライセンス",
+    "description": "本サービスで利用しているオープンソースソフトウェアのライセンス情報",
+    "lastUpdated": "最終更新日: 2026年5月13日",
+    "introduction": "Blindfold Chess は AI 対局機能の提供にあたり、複数のオープンソースのチェスエンジンを利用しています。これらのプロジェクトの作者およびコミュニティに感謝するとともに、本ページで帰属表示およびライセンス情報を明示いたします。",
+    "componentsTitle": "同梱しているオープンソースコンポーネント",
+    "componentsIntro": "以下のコンポーネントは本アプリケーションに同梱されており、関連機能のご利用時にブラウザに配信されます。各エンジンは独立した Web Worker プロセスとして実行され、アプリケーション本体とは UCI と呼ばれるテキストベースの標準プロトコルを介してのみ通信を行います。",
+    "stockfishName": "Stockfish",
+    "stockfishDescription": "オープンソースの強力な UCI チェスエンジン。本サービスでは既定の AI 対局相手として使用しています。",
+    "lc0Name": "Lc0 (Leela Chess Zero)",
+    "lc0Description": "ニューラルネットワークベースのチェスエンジン。本サービスでは Maia の重みファイルを実行するエンジンとして使用しています。",
+    "maiaName": "Maia Chess (ニューラルネットワーク重みファイル)",
+    "maiaDescription": "特定のレーティング帯における人間の指し手を模倣するように学習されたニューラルネットワーク重みファイル。トロント大学 Computational Social Science Lab により開発されています。",
+    "sourceCodeLabel": "ソースコード:",
+    "licenseLabel": "ライセンス:",
+    "licenseValue": "GNU General Public License v3.0",
+    "complianceTitle": "GPL v3 コンプライアンスについて",
+    "complianceIntro": "上記コンポーネントはいずれも GNU General Public License version 3 (GPL v3) のもとで提供されており、本サービスでは改変を加えずにそのまま同梱しています。対応するソースコードは上記の各上流リポジトリで公開されています。",
+    "viewFullLicense": "GPL v3 ライセンス本文を表示",
+    "viewFullLicenseGnu": "GNU Project の公式サイトでも閲覧できます"
+  },
   "company": {
     "title": "運営者情報",
     "companyName": "事業者名",

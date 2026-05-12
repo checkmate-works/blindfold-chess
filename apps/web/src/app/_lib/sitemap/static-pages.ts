@@ -42,6 +42,7 @@ const STATIC_PAGES = [
   '/guides',
   '/pricing',
   '/affiliate-disclosure',
+  '/licenses',
   '/topics',
   '/topics/openings',
   '/topics/squares',

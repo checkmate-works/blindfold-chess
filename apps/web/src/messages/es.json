@@ -1968,6 +1968,27 @@
     "changesTitle": "Cambios en los Términos",
     "changesDescription": "El operador puede cambiar estos Términos de Servicio según sea necesario. Los Términos modificados entrarán en vigor desde el momento en que se publiquen en esta página."
   },
+  "licenses": {
+    "title": "Licencias de código abierto",
+    "description": "Reconocimientos e información de licencias del software de código abierto utilizado",
+    "lastUpdated": "Última actualización: 13 de mayo de 2026",
+    "introduction": "Blindfold Chess utiliza motores de ajedrez de código abierto para proporcionar su funcionalidad de oponente de IA. Agradecemos a los autores y comunidades detrás de estos proyectos, y proporcionamos información de atribución y licencias a continuación.",
+    "componentsTitle": "Componentes de código abierto incluidos",
+    "componentsIntro": "Los siguientes componentes están incluidos con esta aplicación y se entregan a su navegador cuando utiliza las funciones relacionadas. Cada motor se ejecuta como un proceso Web Worker separado y se comunica con la aplicación únicamente a través del protocolo estándar de texto UCI.",
+    "stockfishName": "Stockfish",
+    "stockfishDescription": "Un potente motor de ajedrez UCI de código abierto, utilizado aquí como oponente de IA predeterminado.",
+    "lc0Name": "Lc0 (Leela Chess Zero)",
+    "lc0Description": "Un motor de ajedrez basado en redes neuronales, utilizado aquí para ejecutar los pesos de Maia para oponentes de IA con estilo humano.",
+    "maiaName": "Maia Chess (pesos de red neuronal)",
+    "maiaDescription": "Pesos de red neuronal que modelan el juego humano de ajedrez en niveles específicos de puntuación, desarrollados por el Computational Social Science Lab de la Universidad de Toronto.",
+    "sourceCodeLabel": "Código fuente:",
+    "licenseLabel": "Licencia:",
+    "licenseValue": "GNU General Public License v3.0",
+    "complianceTitle": "Cumplimiento de GPL v3",
+    "complianceIntro": "Los componentes anteriores tienen licencia GNU General Public License versión 3 (GPL v3) y se incluyen aquí sin modificaciones. El código fuente correspondiente está disponible públicamente en los repositorios upstream enlazados arriba.",
+    "viewFullLicense": "Ver el texto completo de la licencia GPL v3",
+    "viewFullLicenseGnu": "También disponible en el sitio web del Proyecto GNU"
+  },
   "company": {
     "title": "Información de la Empresa",
     "companyName": "Nombre de la Empresa",
