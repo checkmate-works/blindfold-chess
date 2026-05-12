@@ -130,10 +130,30 @@ export default async function PositionDetailPage({ params, searchParams }: Props
     tVideo('fallbackTitle')
   );
 
+  const forkedFromNote = position.forkedFromId ? (
+    <span className="inline-flex items-center gap-1">
+      <FiGitBranch className="h-3 w-3" aria-hidden />
+      {forkParent && forkParent.deletedAt === null ? (
+        <>
+          {t('detail.forkedFrom')}{' '}
+          <Link
+            href={`/practice/position-memory/${forkParent.id}`}
+            className="underline hover:text-foreground"
+          >
+            {forkParent.title}
+          </Link>
+        </>
+      ) : (
+        <span>{t('detail.forkedFromDeleted')}</span>
+      )}
+    </span>
+  ) : null;
+
   return (
     <PositionDetailLayout
       title={position.title}
       locale={locale}
+      headerNote={forkedFromNote}
       bottomAdSense={
         (IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
           <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
@@ -179,25 +199,6 @@ export default async function PositionDetailPage({ params, searchParams }: Props
         createdByLabel={t('detail.createdBy')}
         locale={locale}
       />
-
-      {position.forkedFromId && (
-        <p className="text-xs text-muted-foreground">
-          <FiGitBranch className="inline h-3 w-3 mr-1" aria-hidden />
-          {forkParent && forkParent.deletedAt === null ? (
-            <>
-              {t('detail.forkedFrom')}{' '}
-              <Link
-                href={`/practice/position-memory/${forkParent.id}`}
-                className="underline hover:text-foreground"
-              >
-                {forkParent.title}
-              </Link>
-            </>
-          ) : (
-            <span>{t('detail.forkedFromDeleted')}</span>
-          )}
-        </p>
-      )}
 
       <div className="flex items-center justify-between gap-4 text-xs text-muted-foreground">
         <LikeButton

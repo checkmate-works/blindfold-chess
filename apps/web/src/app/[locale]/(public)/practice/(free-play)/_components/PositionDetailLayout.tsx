@@ -16,6 +16,12 @@ type Props = {
   /** Breadcrumb items rendered at the bottom of the panel. */
   breadcrumbItems: BreadcrumbItem[];
   /**
+   * Optional sub-line shown directly under the H1 (above the panel). Used
+   * for GitHub-style "forked from …" provenance notes that should sit with
+   * the heading rather than be buried in the content area.
+   */
+  headerNote?: ReactNode;
+  /**
    * Optional bottom AdSense slot. Rendered between the content area and
    * the divider. The puzzle detail page lives under a `(no-ads)` route
    * group, so it omits this slot entirely.
@@ -38,10 +44,11 @@ export function PositionDetailLayout({
   locale,
   children,
   breadcrumbItems,
+  headerNote,
   bottomAdSense,
 }: Props) {
   return (
-    <PageLayout title={title} locale={locale} breadcrumb={breadcrumbItems}>
+    <PageLayout title={title} locale={locale} breadcrumb={breadcrumbItems} headerNote={headerNote}>
       <div className="space-y-6">{children}</div>
       {bottomAdSense}
     </PageLayout>
