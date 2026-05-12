@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 
+import Link from 'next/link';
+
 type Props = {
   id: string;
   title: string;
@@ -30,9 +32,9 @@ export function AnnouncementBanner({ id, title, href }: Props) {
       className="bg-primary text-primary-foreground"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between py-2 text-sm">
-        <a href={href} className="truncate hover:underline">
+        <Link href={href} className="truncate hover:underline">
           📢 {title}
-        </a>
+        </Link>
         <button
           type="button"
           onClick={handleDismiss}
