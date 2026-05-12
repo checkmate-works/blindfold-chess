@@ -2,7 +2,7 @@ import { cache } from 'react';
 
 import { type SQL, and, asc, count, desc, eq, isNull } from 'drizzle-orm';
 
-import { chunks, db, positionChunks, positions } from '@/lib/db';
+import { chunks, db, positionChunks, positions, profiles } from '@/lib/db';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import type { ChunkOption } from './types';
@@ -188,16 +188,28 @@ export const getAllAvailableChunkOptions = cache(async (): Promise<ChunkOption[]
   return rows.map(mapChunkOption);
 });
 
+/**
+ * Linked positions for the chunk detail page.
+ *
+ * Returns the full Position row plus the author profile fields needed by the
+ * shared `PositionListCard` so the chunk page can render the same card UI as
+ * `/practice/puzzle` and `/practice/position-memory`. Soft-deleted positions
+ * are excluded; profile join is `LEFT` so a deleted-author position still
+ * surfaces with a null profile (matches `listPositionsWithProfile`).
+ */
 export async function getLinkedPositionsForChunk(chunkId: string) {
   const rows = await db
     .select({
-      id: positions.id,
-      title: positions.title,
-      fen: positions.fen,
-      type: positions.type,
+      position: positions,
+      profile: {
+        username: profiles.username,
+        displayName: profiles.displayName,
+        avatarUrl: profiles.avatarUrl,
+      },
     })
     .from(positionChunks)
     .innerJoin(positions, eq(positionChunks.positionId, positions.id))
+    .leftJoin(profiles, eq(positions.userId, profiles.id))
     .where(and(eq(positionChunks.chunkId, chunkId), isNull(positions.deletedAt)))
     .orderBy(desc(positions.createdAt));
 
