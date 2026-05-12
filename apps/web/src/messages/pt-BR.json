@@ -2604,6 +2604,7 @@
   "Admin": {
     "title": "Admin",
     "chunks": "Chunks",
+    "glossary": "Glossário",
     "dashboard": "Painel",
     "users": "Usuários",
     "auditLog": "Registro de Auditoria",
