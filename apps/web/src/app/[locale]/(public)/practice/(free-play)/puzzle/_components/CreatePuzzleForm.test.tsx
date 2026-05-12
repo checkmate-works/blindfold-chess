@@ -605,4 +605,75 @@ describe('CreatePuzzleForm', () => {
       expect(screen.getByRole('button', { name: 'continueToPreview' })).not.toBeDisabled();
     });
   });
+
+  describe('forkSeed', () => {
+    const FORK_SOURCE_ID = '11111111-1111-1111-1111-111111111111';
+
+    function makeForkSeed() {
+      return {
+        sourceId: FORK_SOURCE_ID,
+        sourceTitle: 'Source Puzzle',
+        fen: VALID_FEN,
+        title: 'Source Puzzle',
+        description: 'Source description',
+        moves: ['Nf3'],
+        notes: ['develop'],
+        themeIds: [],
+        chunkIds: [],
+      };
+    }
+
+    it('prefills title and description from the fork seed (verbatim, not from displayName)', () => {
+      render(<CreatePuzzleForm displayName="alice" forkSeed={makeForkSeed()} />);
+
+      expect(screen.getByLabelText(/titleLabel/)).toHaveValue('Source Puzzle');
+      expect(screen.getByLabelText(/descriptionLabel/)).toHaveValue('Source description');
+    });
+
+    it('writeDraft carries forkedFromId through to the preview hand-off', () => {
+      render(<CreatePuzzleForm forkSeed={makeForkSeed()} />);
+
+      // FEN + title + at least one move are all already seeded, so the Preview
+      // button is enabled without further input.
+      fireEvent.click(screen.getByRole('button', { name: 'continueToPreview' }));
+
+      const raw = sessionStorage.getItem(DRAFT_STORAGE_KEY);
+      expect(raw).not.toBeNull();
+      const parsed = JSON.parse(raw!);
+      expect(parsed.forkedFromId).toBe(FORK_SOURCE_ID);
+      expect(parsed.fen).toBe(VALID_FEN);
+      expect(parsed.title).toBe('Source Puzzle');
+      expect(parsed.moves).toEqual(['Nf3']);
+
+      expect(mockPush).toHaveBeenCalledWith('/practice/puzzle/new/preview');
+    });
+
+    it('skips draft hydration so a leftover unrelated draft does not overwrite the fork seed', () => {
+      // Pre-populate sessionStorage with a draft from an unrelated previous
+      // authoring session. Without the fork-seed escape hatch on hydration,
+      // the form would silently switch to this draft's contents.
+      sessionStorage.setItem(
+        DRAFT_STORAGE_KEY,
+        JSON.stringify({
+          version: 1,
+          fen: VALID_FEN,
+          title: 'Unrelated Draft',
+          description: '',
+          moves: [],
+          notes: [],
+          activeTab: 'board',
+          sideToMove: 'w',
+          flipped: false,
+          userFlipped: false,
+        })
+      );
+
+      render(<CreatePuzzleForm forkSeed={makeForkSeed()} />);
+
+      // Fork seed wins over the leftover draft.
+      expect(screen.getByLabelText(/titleLabel/)).toHaveValue('Source Puzzle');
+      // And the "draft restored" banner is suppressed entirely.
+      expect(screen.queryByText('draftRestoredBanner')).not.toBeInTheDocument();
+    });
+  });
 });

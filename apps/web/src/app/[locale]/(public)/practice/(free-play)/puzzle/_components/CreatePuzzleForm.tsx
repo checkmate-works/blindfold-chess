@@ -46,6 +46,26 @@ function buildDefaultTitle(displayName: string | undefined): string {
   return trimmed ? `Puzzle ${date} - ${trimmed}` : `Puzzle ${date}`;
 }
 
+/**
+ * Seed payload when the form is opened via `?from=<id>` on the new page.
+ * The author's display name is intentionally ignored when this is present:
+ * forks copy the source's title verbatim (GitHub-style — repo name carries
+ * over) and the user can edit before submitting. `themeIds` / `chunkIds`
+ * are resolved against `availableThemes` / `availableChunks` the same way
+ * draft hydration does.
+ */
+export type PuzzleForkSeed = {
+  sourceId: string;
+  sourceTitle: string;
+  fen: string;
+  title: string;
+  description: string;
+  moves: string[];
+  notes: string[];
+  themeIds: string[];
+  chunkIds: string[];
+};
+
 type Props = {
   /**
    * Author's display name used to seed the default title as
@@ -73,6 +93,15 @@ type Props = {
    */
   availableThemes?: ThemeOption[];
   availableChunks?: ChunkOption[];
+  /**
+   * Fork-source data when the form is opened via `?from=<id>`. When
+   * present, every field is seeded from the source row, the default-title
+   * generator is bypassed, and draft hydration is skipped (an unrelated
+   * leftover draft would silently overwrite the fork's initial state
+   * otherwise). `sourceId` rides through `writeDraft` as `forkedFromId`
+   * and is re-validated server-side at create time.
+   */
+  forkSeed?: PuzzleForkSeed;
 };
 
 export function CreatePuzzleForm({
@@ -80,6 +109,7 @@ export function CreatePuzzleForm({
   disableUnsavedGuard = false,
   availableThemes = [],
   availableChunks = [],
+  forkSeed,
 }: Props = {}) {
   const router = useRouter();
   const t = useTranslations('practice.puzzle.create');
@@ -90,33 +120,66 @@ export function CreatePuzzleForm({
   const moveSubmitLabels = useMoveSubmitLabels();
   const { preferences, updatePreferences, isLoaded } = useGamePreferences();
 
-  const defaultTitleRef = useRef(buildDefaultTitle(displayName));
+  // When forking, the source's title carries over verbatim; otherwise the
+  // date-based default is used. defaultTitleRef anchors the dirty-check
+  // baseline so a forked title is "clean" until the user edits it.
+  const defaultTitleRef = useRef(forkSeed ? forkSeed.title : buildDefaultTitle(displayName));
   const [title, setTitle] = useState(defaultTitleRef.current);
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState(forkSeed?.description ?? '');
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [startOverOpen, setStartOverOpen] = useState(false);
   const [clearBoardOpen, setClearBoardOpen] = useState(false);
 
+  // Resolve fork seed tag IDs into option objects using the loaded catalog,
+  // mirroring the draft-hydration resolution. Computed once via lazy useRef
+  // initializer so it survives subsequent renders without re-running the
+  // .find() lookups.
+  const seededThemes = useRef<ThemeOption[]>(
+    forkSeed
+      ? forkSeed.themeIds
+          .map((id) => availableThemes.find((t) => t.id === id))
+          .filter((t): t is ThemeOption => t !== undefined)
+      : []
+  ).current;
+  const seededChunks = useRef<ChunkOption[]>(
+    forkSeed
+      ? forkSeed.chunkIds
+          .map((id) => availableChunks.find((c) => c.id === id))
+          .filter((c): c is ChunkOption => c !== undefined)
+      : []
+  ).current;
+
   // `solution` reads `board.baseFen`, and `board` resets `solution`
   // on position change — break the cycle with a ref the board's
   // onBoardChange dereferences lazily.
   const solutionResetRef = useRef<() => void>(() => {});
-  const board = useFenBoardEditor({ onBoardChange: () => solutionResetRef.current() });
+  const board = useFenBoardEditor({
+    initialFen: forkSeed?.fen,
+    onBoardChange: () => solutionResetRef.current(),
+  });
   const solution = usePuzzleSolutionMoves({
     baseFen: board.baseFen,
+    initialMoves: forkSeed?.moves,
+    initialNotes: forkSeed?.notes,
     moveSubmitLabels,
   });
   solutionResetRef.current = solution.reset;
-  const tags = useTagSelection();
+  const tags = useTagSelection({
+    initialThemes: seededThemes,
+    initialChunks: seededChunks,
+  });
 
   // Resolve draft IDs against the loaded catalog so the picker has full
   // option objects (label + slug + category) to render. IDs not present
   // in the catalog (e.g. a chunk soft-deleted between draft write and
   // hydration) silently drop, since attaching them would fail validation
   // anyway and we'd rather hydrate cleanly than block the author.
+  // Skipped entirely when forking — the fork seed owns initial state and
+  // an unrelated leftover draft would silently overwrite it.
   const { hydratedFromDraft, resetHydrated } = usePuzzleDraftHydration({
+    enabled: !forkSeed,
     apply: (draft) => {
       board.setFenInput(draft.fen);
       board.setBoardFen(draft.fen);
@@ -193,6 +256,7 @@ export function CreatePuzzleForm({
       userFlipped: board.userFlipped,
       themeIds: tags.selectedThemes.map((t) => t.id),
       chunkIds: tags.selectedChunks.map((c) => c.id),
+      ...(forkSeed ? { forkedFromId: forkSeed.sourceId } : {}),
     });
     if (!ok) {
       setError(t('draftWriteFailed'));
@@ -247,6 +311,17 @@ export function CreatePuzzleForm({
             >
               {t('draftRestoredDiscard')}
             </button>
+          </div>
+        )}
+
+        {forkSeed && (
+          <div
+            role="status"
+            aria-live="polite"
+            className="flex items-center gap-2 rounded-md border border-border bg-secondary px-3 py-2 text-sm text-muted-foreground"
+          >
+            <FiInfo className="h-4 w-4 flex-shrink-0" aria-hidden />
+            <span>{t('forkBanner', { sourceTitle: forkSeed.sourceTitle })}</span>
           </div>
         )}
 

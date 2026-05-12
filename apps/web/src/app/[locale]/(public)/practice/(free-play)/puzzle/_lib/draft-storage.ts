@@ -24,6 +24,11 @@ export const DRAFT_STORAGE_KEY = 'blindfold_chess_puzzle_draft';
  * remain optional so existing v1 drafts (written before the picker
  * landed) continue to hydrate cleanly with no tags rather than being
  * silently discarded mid-author.
+ *
+ * `forkedFromId` was added when GitHub-style fork support landed. It is
+ * optional for the same reason — pre-fork drafts must continue to hydrate.
+ * Validated server-side at create time via `validateForkSource`, so the
+ * client never has to trust this value.
  */
 export type PuzzleDraftV1 = {
   version: 1;
@@ -38,6 +43,7 @@ export type PuzzleDraftV1 = {
   userFlipped: boolean;
   themeIds?: string[];
   chunkIds?: string[];
+  forkedFromId?: string;
 };
 
 function isStringArray(value: unknown): value is string[] {
@@ -62,6 +68,9 @@ function isPuzzleDraftV1(value: unknown): value is PuzzleDraftV1 {
   // a buggy producer) is treated as corrupt.
   if (v.themeIds !== undefined && !isStringArray(v.themeIds)) return false;
   if (v.chunkIds !== undefined && !isStringArray(v.chunkIds)) return false;
+  // forkedFromId is optional and only carries a UUID string when set;
+  // shape-only validation here (UUID format is re-checked server-side).
+  if (v.forkedFromId !== undefined && typeof v.forkedFromId !== 'string') return false;
   return true;
 }
 

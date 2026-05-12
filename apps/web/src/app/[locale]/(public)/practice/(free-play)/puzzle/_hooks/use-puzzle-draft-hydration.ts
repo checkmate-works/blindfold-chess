@@ -13,6 +13,13 @@ type Options = {
    * render without re-firing the hydration effect.
    */
   apply: (draft: PuzzleDraftV1) => void;
+  /**
+   * Skip the hydration effect entirely. Used when the form is seeded from
+   * a fork source (`?from=<id>`): the source payload owns the initial form
+   * state, and silently overwriting it with an unrelated leftover draft
+   * would confuse the user mid-fork.
+   */
+  enabled?: boolean;
 };
 
 type Return = {
@@ -35,7 +42,7 @@ type Return = {
  * cleared by explicit "Start over", successful create, or `readDraft`
  * rejecting the blob as corrupt.
  */
-export function usePuzzleDraftHydration({ apply }: Options): Return {
+export function usePuzzleDraftHydration({ apply, enabled = true }: Options): Return {
   const didHydrate = useRef(false);
   const [hydratedFromDraft, setHydratedFromDraft] = useState(false);
 
@@ -46,13 +53,14 @@ export function usePuzzleDraftHydration({ apply }: Options): Return {
   applyRef.current = apply;
 
   useEffect(() => {
+    if (!enabled) return;
     if (didHydrate.current) return;
     didHydrate.current = true;
     const draft = readDraft();
     if (!draft) return;
     applyRef.current(draft);
     setHydratedFromDraft(true);
-  }, []);
+  }, [enabled]);
 
   return {
     hydratedFromDraft,
