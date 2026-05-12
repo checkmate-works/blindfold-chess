@@ -18,13 +18,18 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { MembersOnlyBadge } from './_components/MembersOnlyBadge';
 import { getPublishedAnnouncementCount, getPublishedAnnouncementsPaginated } from './_lib/queries';
 
-// 10-minute ISR window. Admin create/update/delete actions also call
-// `revalidateTag('announcements', { expire: 60 })`, but the list page's
-// queries are not (yet) wrapped with `unstable_cache`, so this timer is the
-// effective freshness contract for the list itself. The members-only
-// lock badge that previously kept this page on `force-dynamic` has moved
-// into `MembersOnlyBadge` (client component, reads `useAuth`).
-export const revalidate = 600;
+// 24h ISR window. Admin create/update/delete actions also call
+// `revalidateTag('announcements', { expire: 60 })`, which together with
+// the explicit `revalidatePath` in those actions is what guarantees
+// freshness — the timer here is only a safety net for the rare case where
+// the underlying row changes outside the admin action path (service-role
+// SQL etc.). The previous 600s timer added no real freshness over the
+// tag-driven invalidation but did generate a steady drip of ISR Writes;
+// 86400s removes the drip without losing any user-visible behaviour.
+// The members-only lock badge that previously kept this page on
+// `force-dynamic` has moved into `MembersOnlyBadge` (client component,
+// reads `useAuth`).
+export const revalidate = 86400;
 
 const ANNOUNCEMENTS_PER_PAGE = 20;
 
