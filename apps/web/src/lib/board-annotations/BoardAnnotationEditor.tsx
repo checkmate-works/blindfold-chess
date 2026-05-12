@@ -122,6 +122,7 @@ export function BoardAnnotationEditor({
         <span>
           Hold <kbd>Shift</kbd> red, <kbd>Alt</kbd> blue, <kbd>Ctrl</kbd> yellow.
         </span>
+        <span>Repeat the same mark to remove it; use a different color to recolor.</span>
         <button
           type="button"
           onClick={handleClear}
