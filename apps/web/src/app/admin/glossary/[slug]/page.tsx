@@ -2,9 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { getGlossaryTermForAdmin } from '@/lib/glossary-admin/queries';
-import { getLinkedChunksForTerm } from '@/lib/themes/queries';
 
-import { ChunkLinker } from '../_components/ChunkLinker';
 import { TermPositionEditor } from '../_components/TermPositionEditor';
 
 export default async function AdminGlossaryTermPage({
@@ -18,8 +16,6 @@ export default async function AdminGlossaryTermPage({
   if (!term) {
     notFound();
   }
-
-  const linkedChunks = await getLinkedChunksForTerm(term.id);
 
   return (
     <div className="space-y-8">
@@ -40,16 +36,14 @@ export default async function AdminGlossaryTermPage({
         </p>
       </header>
 
-      <section>
-        <ChunkLinker termId={term.id} termSlug={term.slug} initialLinkedChunks={linkedChunks} />
-      </section>
-
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">Example Positions</h2>
         <p className="text-sm text-muted-foreground">
           The FEN, caption, and sort order are managed in code (
           <code className="text-xs">src/lib/db/data/terms/*.ts</code>). Use the editor below to draw
-          arrows and circles — each row saves independently.
+          arrows and circles — each row saves independently. Positions tagged with this theme are
+          managed from the position editor side via <code className="text-xs">position_themes</code>
+          , not here.
         </p>
 
         {term.positions.length === 0 ? (

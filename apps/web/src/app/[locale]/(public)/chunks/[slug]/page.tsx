@@ -15,7 +15,6 @@ import { getPositionDetailPath } from '@/lib/positions/routes';
 import { parsePositionType } from '@/lib/positions/types';
 import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 import { createClient } from '@/lib/supabase/server';
-import { getLinkedThemesForChunk } from '@/lib/themes/queries';
 
 import { PositionListCard } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionListCard';
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
@@ -92,27 +91,17 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [
-    linkedPositions,
-    linkedThemes,
-    commentCount,
-    allComments,
-    t,
-    tTopics,
-    tVideo,
-    tPuzzle,
-    tMemory,
-  ] = await Promise.all([
-    getLinkedPositionsForChunk(chunk.id),
-    getLinkedThemesForChunk(chunk.id, locale),
-    getPostCountByTopicKey('chunk', slug),
-    getCommentTreeForTopic('chunk', slug, user?.id),
-    getTranslations({ locale, namespace: 'topics.chunks' }),
-    getTranslations({ locale, namespace: 'topics' }),
-    getTranslations({ locale, namespace: 'postVideoAttachmentRender' }),
-    getTranslations({ locale, namespace: 'practice.puzzle' }),
-    getTranslations({ locale, namespace: 'practice.positionMemory' }),
-  ]);
+  const [linkedPositions, commentCount, allComments, t, tTopics, tVideo, tPuzzle, tMemory] =
+    await Promise.all([
+      getLinkedPositionsForChunk(chunk.id),
+      getPostCountByTopicKey('chunk', slug),
+      getCommentTreeForTopic('chunk', slug, user?.id),
+      getTranslations({ locale, namespace: 'topics.chunks' }),
+      getTranslations({ locale, namespace: 'topics' }),
+      getTranslations({ locale, namespace: 'postVideoAttachmentRender' }),
+      getTranslations({ locale, namespace: 'practice.puzzle' }),
+      getTranslations({ locale, namespace: 'practice.positionMemory' }),
+    ]);
 
   // Linked positions can mix puzzle and memory types. Reply meta is keyed by
   // `(topicType, topicKey)` so the two types are fetched in parallel and merged
@@ -173,27 +162,6 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
           className="w-full"
         />
       </div>
-
-      {linkedThemes.length > 0 && (
-        <>
-          <SectionTitle>Related glossary terms</SectionTitle>
-          {/*
-           * Plain spans rather than links: the per-term public page
-           * (`/glossary/[slug]`) lands in a follow-up PR. Once it ships,
-           * wrap each badge in `<Link href={`/glossary/${theme.slug}`}>`.
-           */}
-          <div className="flex flex-wrap gap-2">
-            {linkedThemes.map((theme) => (
-              <span
-                key={theme.id}
-                className="px-3 py-1 text-sm rounded-full bg-muted text-muted-foreground"
-              >
-                {theme.label}
-              </span>
-            ))}
-          </div>
-        </>
-      )}
 
       {linkedPositions.length > 0 && (
         <>

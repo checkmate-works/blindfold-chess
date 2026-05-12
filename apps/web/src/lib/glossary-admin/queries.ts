@@ -1,10 +1,10 @@
 import { cache } from 'react';
 
-import { and, asc, eq, ilike, isNull, notInArray } from 'drizzle-orm';
+import { asc, eq } from 'drizzle-orm';
 
 import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
-import { chunks, db, glossaryTermPositions, glossaryTerms } from '@/lib/db';
+import { db, glossaryTermPositions, glossaryTerms } from '@/lib/db';
 
 export type AdminGlossaryTerm = {
   id: string;
@@ -93,39 +93,3 @@ export const listGlossaryTermsForAdmin = cache(
       .orderBy(asc(glossaryTerms.termEn));
   }
 );
-
-export type ChunkSearchResult = {
-  id: string;
-  slug: string;
-  title: string;
-  representativeFen: string;
-};
-
-/**
- * Title-prefix search across non-deleted chunks, excluding any chunk
- * already linked to the term. Used by the admin `ChunkLinker` to fill
- * the candidate list.
- */
-export async function searchChunksForLinker(
-  query: string,
-  excludeIds: string[]
-): Promise<ChunkSearchResult[]> {
-  const trimmed = query.trim();
-  if (trimmed.length === 0) return [];
-
-  const conditions = [isNull(chunks.deletedAt), ilike(chunks.title, `%${trimmed}%`)];
-  if (excludeIds.length > 0) {
-    conditions.push(notInArray(chunks.id, excludeIds));
-  }
-
-  return db
-    .select({
-      id: chunks.id,
-      slug: chunks.slug,
-      title: chunks.title,
-      representativeFen: chunks.representativeFen,
-    })
-    .from(chunks)
-    .where(and(...conditions))
-    .limit(20);
-}

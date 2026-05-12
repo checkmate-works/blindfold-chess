@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation';
 
 import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
 import { getChunkById } from '@/lib/chunks/queries';
-import { getLinkedThemesForChunk } from '@/lib/themes/queries';
 
 import { getLinkedPositions } from '../../_actions/positionChunkActions';
 import { ChunkForm } from '../../_components/ChunkForm';
@@ -19,13 +18,7 @@ export default async function EditChunkPage({ params }: { params: Promise<{ id: 
     notFound();
   }
 
-  const [linkedPositions, linkedThemes] = await Promise.all([
-    getLinkedPositions(id),
-    // Locale is irrelevant in admin context — we only render `termEn` —
-    // but the query insists on a Locale to share the public shape, so
-    // pass 'en' as the canonical admin locale.
-    getLinkedThemesForChunk(chunk.id, 'en'),
-  ]);
+  const linkedPositions = await getLinkedPositions(id);
 
   return (
     <div>
@@ -80,32 +73,6 @@ export default async function EditChunkPage({ params }: { params: Promise<{ id: 
       {!chunk.deletedAt && (
         <PositionLinker chunkId={chunk.id} initialLinkedPositions={linkedPositions} />
       )}
-
-      <div className="mt-8 space-y-3">
-        <h2 className="text-lg font-semibold">Linked Glossary Terms</h2>
-        <p className="text-sm text-muted-foreground">
-          Read-only here. Edit the link from{' '}
-          <Link href="/admin/glossary" className="underline hover:no-underline">
-            /admin/glossary
-          </Link>{' '}
-          on the term's own page.
-        </p>
-        {linkedThemes.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No glossary terms linked.</p>
-        ) : (
-          <div className="flex flex-wrap gap-2">
-            {linkedThemes.map((theme) => (
-              <Link
-                key={theme.id}
-                href={`/admin/glossary/${theme.slug}`}
-                className="px-3 py-1 text-sm rounded-full bg-muted text-foreground hover:bg-secondary transition-colors"
-              >
-                {theme.label}
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
     </div>
   );
 }
