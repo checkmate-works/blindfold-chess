@@ -5,6 +5,7 @@ import { revalidatePath, revalidateTag } from 'next/cache';
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, feedItems, positions, puzzleSolutions } from '@/lib/db';
 import { notifyFollowersOfNewPosition } from '@/lib/notifications/notification';
+import { validateForkSource } from '@/lib/positions/fork';
 import { validateAndDedupeTagIds } from '@/lib/positions/tag-validation';
 import { insertPositionTags } from '@/lib/positions/tag-writes';
 import { normalizePuzzleMoves, validatePuzzleMutationData } from '@/lib/positions/validation';
@@ -41,6 +42,13 @@ export async function createPuzzle(data: {
   themeIds?: string[];
   /** Optional chunk tags (non-soft-deleted) to attach. */
   chunkIds?: string[];
+  /**
+   * When forking from an existing puzzle, the id of the source row.
+   * Validated against the database (must exist, share `type='puzzle'`,
+   * not be soft-deleted, not be owned by the current user, and not have
+   * `forks_disabled_at` set) before the insert begins.
+   */
+  forkedFromId?: string | null;
 }): Promise<CreatePuzzleResult> {
   const guardResult = await authenticateAndGuard(RATE_LIMITS.createPuzzle);
 
@@ -64,6 +72,19 @@ export async function createPuzzle(data: {
     return { error: validationError };
   }
 
+  let resolvedForkedFromId: string | null = null;
+  if (data.forkedFromId) {
+    const forkCheck = await validateForkSource({
+      forkedFromId: data.forkedFromId,
+      currentUserId: user.id,
+      type: 'puzzle',
+    });
+    if (!forkCheck.ok) {
+      return { error: `fork_source_${forkCheck.reason}` };
+    }
+    resolvedForkedFromId = forkCheck.source.id;
+  }
+
   const tagValidation = await validateAndDedupeTagIds({
     themeIds: data.themeIds,
     chunkIds: data.chunkIds,
@@ -83,6 +104,7 @@ export async function createPuzzle(data: {
         description: data.description?.trim() || null,
         userId: user.id,
         type: 'puzzle',
+        forkedFromId: resolvedForkedFromId,
       })
       .returning({ id: positions.id });
 

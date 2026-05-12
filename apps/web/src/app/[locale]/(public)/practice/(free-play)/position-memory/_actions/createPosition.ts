@@ -5,6 +5,7 @@ import { revalidatePath, revalidateTag } from 'next/cache';
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, feedItems, positions } from '@/lib/db';
 import { notifyFollowersOfNewPosition } from '@/lib/notifications/notification';
+import { validateForkSource } from '@/lib/positions/fork';
 import { validateAndDedupeTagIds } from '@/lib/positions/tag-validation';
 import { insertPositionTags } from '@/lib/positions/tag-writes';
 import { validatePositionMutationData } from '@/lib/positions/validation';
@@ -33,6 +34,13 @@ export async function createPosition(data: {
   description?: string | null;
   themeIds?: string[];
   chunkIds?: string[];
+  /**
+   * When forking from an existing position-memory entry, the id of the
+   * source row. Validated against the database (must exist, share
+   * `type='memory'`, not be soft-deleted, not be owned by the current
+   * user, and not have `forks_disabled_at` set) before the insert begins.
+   */
+  forkedFromId?: string | null;
 }): Promise<CreatePositionResult> {
   const guardResult = await authenticateAndGuard(RATE_LIMITS.createPosition);
 
@@ -51,6 +59,19 @@ export async function createPosition(data: {
 
   if (validationError) {
     return { error: validationError };
+  }
+
+  let resolvedForkedFromId: string | null = null;
+  if (data.forkedFromId) {
+    const forkCheck = await validateForkSource({
+      forkedFromId: data.forkedFromId,
+      currentUserId: user.id,
+      type: 'memory',
+    });
+    if (!forkCheck.ok) {
+      return { error: `fork_source_${forkCheck.reason}` };
+    }
+    resolvedForkedFromId = forkCheck.source.id;
   }
 
   const tagValidation = await validateAndDedupeTagIds({
@@ -72,6 +93,7 @@ export async function createPosition(data: {
         description: data.description?.trim() || null,
         userId: user.id,
         type: 'memory',
+        forkedFromId: resolvedForkedFromId,
       })
       .returning({ id: positions.id });
 
