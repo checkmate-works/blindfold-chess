@@ -10,16 +10,12 @@
  * (`AttachedImageCard`) and the `/api/posts/[id]/images` endpoint
  * remain wired so existing posts still display.
  */
-import { revalidateTag } from 'next/cache';
-
 import { authenticateAndCheckBan } from '@/lib/auth';
 import { getChunkBySlug } from '@/lib/chunks/queries';
 import { db, topicPosts } from '@/lib/db';
-import { GRANT_TYPE_DEFAULTS, isTopicPostGrantTopicType } from '@/lib/db/data/grant-types';
-import { createNotification, notifyFollowersOfNewPost } from '@/lib/notifications/notification';
+import { notifyFollowersOfNewPost } from '@/lib/notifications/notification';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
 import { logActivityEvent } from '@/lib/users/activity-log';
-import { applyAutomatedGrant } from '@/lib/users/user-grants';
 import { validateContent } from '@/lib/validations/content';
 
 import { VALID_REPLY_PERMISSIONS } from '@/app/[locale]/(public)/topics/_lib/constants';
@@ -101,7 +97,6 @@ export async function createChunkPostForImageAttach(
     return { ok: false, error: rateLimitResult.error };
   }
 
-  let grantInfo: { grantId: string; expiresAt: Date } | null = null;
   const inserted = await db.transaction(async (tx) => {
     const [post] = await tx
       .insert(topicPosts)
@@ -116,35 +111,14 @@ export async function createChunkPostForImageAttach(
 
     // Chunk posts intentionally do NOT emit feed_items (mirrors
     // createChunkPost's `emitFeedItem: false`).
-
-    if (isTopicPostGrantTopicType('chunk') && contentResult.content.trim() !== '') {
-      grantInfo = await applyAutomatedGrant(tx, user.id, 'topic_post', {
-        type: 'topic_post',
-        id: post.id,
-      });
-    }
+    //
+    // No point grant: chunks are not user-facing UGC. The legacy
+    // `topic_post` ad-free grant once fired here through a never-true gate
+    // (TOPIC_POST_GRANT_TOPIC_TYPES never included `chunk`); it was removed
+    // when grant-types.ts was retired in favor of the point system.
 
     return post;
   });
-
-  if (grantInfo) {
-    revalidateTag('grant-status', { expire: 60 });
-    const info: { grantId: string; expiresAt: Date } = grantInfo;
-    const grantTypeConfig = GRANT_TYPE_DEFAULTS.topic_post;
-    createNotification({
-      userId: user.id,
-      type: 'benefit_grant',
-      targetType: 'user_grant',
-      targetId: info.grantId,
-      metadata: {
-        grantType: 'topic_post',
-        benefitType: grantTypeConfig.benefitType,
-        durationDays: grantTypeConfig.durationDays,
-        expiresAt: info.expiresAt.toISOString(),
-        reason: null,
-      },
-    });
-  }
 
   logActivityEvent({
     userId: user.id,

@@ -367,16 +367,16 @@
         "multiplier10": "×1.0"
       },
       "adFreeBenefits": {
-        "question": "How are ad-free benefits earned?",
-        "answer": "Ad-free benefits are granted automatically when you take an eligible action below. Grants stack additively — repeated actions extend your ad-free period.",
-        "tableTitle": "Ways to earn ad-free benefits",
+        "question": "How do I earn points, and how do they become ad-free time?",
+        "answer": "Each eligible contribution awards points. Newly earned points are held for {maturationDays} days before they can be redeemed — if you remove the contribution during that window, the points are reversed. Once they mature, 1 point redeems 1 day of ad-free browsing (redemption flow coming soon).",
+        "tableTitle": "Ways to earn points",
         "headerAction": "Action",
-        "headerDuration": "Duration",
+        "headerPoints": "Points",
         "actions": {
           "topic_post": "Submit a topic post (square / opening)",
           "position_creation": "Submit a position problem (memory / puzzle)"
         },
-        "durationDays": "{days} days"
+        "pointsAmount": "{amount} pt"
       }
     }
   },
@@ -3737,19 +3737,18 @@
   },
   "thanks": {
     "title": "Thanks!",
-    "sectionTitle": "Your benefit",
+    "sectionTitle": "Points earned",
     "continueButton": "View your post",
     "viewBenefitsButton": "View your benefits",
     "genericMessage": "Thanks for your contribution.",
-    "explanation": {
-      "topic_post": "Your topic post earned you the following benefit:",
-      "position_creation": "Your position submission earned you the following benefit:",
-      "default": "Your post earned you the following benefit:"
+    "pointsExplanation": {
+      "puzzle_created": "Your puzzle submission earned you points:",
+      "position_memory_created": "Your position-memory submission earned you points:",
+      "topic_post_created": "Your topic post earned you points:",
+      "default": "Your contribution earned you points:"
     },
-    "benefits": {
-      "ad_free": "Ad-free for {days, plural, one {# day} other {# days}}",
-      "paywall_access": "Premium access for {days, plural, one {# day} other {# days}}"
-    }
+    "pointsAward": "+{amount} pt",
+    "maturationNote": "These points become available for redemption in {days, plural, one {# day} other {# days}}, provided your post is not removed before then."
   },
   "authPrompt": {
     "title": "Sign in to continue",

@@ -1,20 +1,18 @@
 'use server';
 
-import { revalidateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 import { authenticateAndCheckBan } from '@/lib/auth';
 import { db, feedItems, topicPosts } from '@/lib/db';
-import { isTopicPostGrantTopicType } from '@/lib/db/data/grant-types';
 import type { DbTx } from '@/lib/db/types';
 import {
   notifyFollowersOfNewPost,
   notifyTopicAuthorOfNewComment,
 } from '@/lib/notifications/notification';
+import { grantPendingPointsForPost, isPointEligibleTopicType } from '@/lib/points';
 import type { RateLimitConfig } from '@/lib/security/rate-limit';
 import { checkRateLimit } from '@/lib/security/rate-limit';
 import { logActivityEvent } from '@/lib/users/activity-log';
-import { applyAutomatedGrant } from '@/lib/users/user-grants';
 
 import { VALID_REPLY_PERMISSIONS } from '../_lib/constants';
 import type { TopicType } from '../_lib/constants';
@@ -117,8 +115,7 @@ export async function createPostBase(params: {
     return { error: rateLimitResult.error };
   }
 
-  let grantApplied = false;
-  let grantInfo: { grantId: string; expiresAt: Date } | null = null;
+  let pointGrantResult: { pointEventId: string; amount: number } | null = null;
   const inserted = await db.transaction(async (tx) => {
     const [post] = await tx
       .insert(topicPosts)
@@ -145,29 +142,19 @@ export async function createPostBase(params: {
       await afterInsert(tx, post.id);
     }
 
-    // Automated 'topic_post' grant for text-bearing posts on eligible topic
-    // types. Two gates compose: TOPIC_POST_GRANT_TOPIC_TYPES (in grant-types.ts)
-    // is the single source of truth for which surfaces qualify — also drives
-    // the FAQ table — and rating-only or empty-text posts are excluded.
-    // Source linkage (sourceType + sourceId) enables targeted revocation
-    // if the post is later deleted — see schema.ts userGrants @design source*.
-    if (isTopicPostGrantTopicType(topicType) && contentResult.content.trim() !== '') {
-      grantInfo = await applyAutomatedGrant(tx, user.id, 'topic_post', {
+    // Award pending points for text-bearing posts on eligible topic types.
+    // Gate is `isTopicPostGrantTopicType` (square / opening) plus a non-empty
+    // body — rating-only and empty posts are excluded. See grantPendingPoints
+    // ForPost for lifecycle / clawback semantics.
+    if (isPointEligibleTopicType(topicType) && contentResult.content.trim() !== '') {
+      pointGrantResult = await grantPendingPointsForPost(tx, user.id, {
         type: 'topic_post',
         id: post.id,
       });
-      grantApplied = true;
     }
 
     return post;
   });
-
-  if (grantApplied && grantInfo) {
-    revalidateTag('grant-status', { expire: 60 });
-    // No in-app notification: this flow redirects to /thanks on grant, which
-    // is the celebration moment. Admin-manual grants (no /thanks) still notify
-    // — see admin/grants/_actions/createGrant.ts.
-  }
 
   logActivityEvent({
     userId: user.id,
@@ -194,20 +181,24 @@ export async function createPostBase(params: {
     });
   }
 
-  // When an automated grant fires we route through the generic /thanks page
+  // When a point grant fires we route through the generic /thanks page
   // (with the original destination preserved as `returnUrl`) so the user sees
-  // the awarded benefit. The post-created toast is suppressed in that path —
-  // the thanks page is the celebration moment. No-grant posts (chunks,
-  // rating-only opening posts, etc.) keep the legacy in-place toast UX.
+  // how many points were earned and the maturation window. The post-created
+  // toast is suppressed in that path — the thanks page is the celebration
+  // moment. No-grant posts (chunks, rating-only opening posts, etc.) keep
+  // the legacy in-place toast UX.
+  const grantApplied = pointGrantResult !== null;
   const finalUrl = redirectPath
     ? redirectPath(inserted.id, { toast: !grantApplied })
     : `/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${inserted.id}${
         !grantApplied ? '?toast=post_created' : ''
       }`;
 
-  if (grantApplied && grantInfo) {
-    const info: { grantId: string; expiresAt: Date } = grantInfo;
-    redirect(`/${locale}/thanks?grantId=${info.grantId}&returnUrl=${encodeURIComponent(finalUrl)}`);
+  if (pointGrantResult) {
+    const info: { pointEventId: string; amount: number } = pointGrantResult;
+    redirect(
+      `/${locale}/thanks?pointEventId=${info.pointEventId}&returnUrl=${encodeURIComponent(finalUrl)}`
+    );
   }
   redirect(finalUrl);
 }

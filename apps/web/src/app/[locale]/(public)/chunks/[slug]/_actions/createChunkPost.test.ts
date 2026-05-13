@@ -1,9 +1,7 @@
-import { revalidateTag } from 'next/cache';
-
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { grantPendingPointsForPost } from '@/lib/points';
 import { logActivityEvent } from '@/lib/users/activity-log';
-import { applyAutomatedGrant } from '@/lib/users/user-grants';
 
 import { createChunkPost } from './createChunkPost';
 
@@ -79,8 +77,12 @@ vi.mock('next/cache', () => ({
   revalidateTag: vi.fn(),
 }));
 
-vi.mock('@/lib/users/user-grants', () => ({
-  applyAutomatedGrant: vi.fn().mockResolvedValue({ grantId: 'g1', expiresAt: new Date() }),
+vi.mock('@/lib/points', () => ({
+  grantPendingPointsForPost: vi.fn().mockResolvedValue({ pointEventId: 'pe-1', amount: 3 }),
+  clawbackPendingPointsForPost: vi.fn().mockResolvedValue(undefined),
+  isPointEligibleTopicType: (v: string) => v === 'square' || v === 'opening',
+  POST_CREATION_POINTS: 3,
+  POST_MATURATION_DAYS: 7,
 }));
 
 vi.mock('@/lib/chunks/queries', () => ({
@@ -145,20 +147,19 @@ describe('createChunkPost', () => {
     });
   });
 
-  describe('grant policy (chunks should not earn ad-free time)', () => {
+  describe('grant policy (chunks should not earn points)', () => {
     beforeEach(() => {
       mockGetUser.mockResolvedValue({ data: { user: { id: testUserId } } });
       mockIsUserBanned.mockResolvedValue(false);
       mockInsertReturning.mockResolvedValue([{ id: generatedPostId }]);
     });
 
-    it('should NOT call applyAutomatedGrant for chunk posts', async () => {
+    it('should NOT call grantPendingPointsForPost for chunk posts', async () => {
       await expect(createChunkPost('en', testSlug, {}, makeFormData('Nice chunk'))).rejects.toThrow(
         'NEXT_REDIRECT'
       );
 
-      expect(applyAutomatedGrant).not.toHaveBeenCalled();
-      expect(revalidateTag).not.toHaveBeenCalled();
+      expect(grantPendingPointsForPost).not.toHaveBeenCalled();
     });
   });
 

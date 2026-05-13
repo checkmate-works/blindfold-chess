@@ -3,9 +3,10 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 
 import { Button } from '@/app/_components';
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
-import { db, userGrants } from '@/lib/db';
+import { db, pointEvents } from '@/lib/db';
+import { POST_MATURATION_DAYS, type PointSource } from '@/lib/points';
 import { createClient } from '@/lib/supabase/server';
 
 import { CertificateFrame, PageLayout, SectionTitle } from '@/app/[locale]/_components';
@@ -34,94 +35,72 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+/**
+ * Map a `point_events.source` value to the explanation i18n key. Falls
+ * through to `'default'` for unknown sources so the page stays graceful.
+ */
+function explanationKeyFor(source: string): string {
+  const map: Record<PointSource, string> = {
+    puzzle_created: 'pointsExplanation.puzzle_created',
+    position_memory_created: 'pointsExplanation.position_memory_created',
+    topic_post_created: 'pointsExplanation.topic_post_created',
+  };
+  return (map as Record<string, string>)[source] ?? 'pointsExplanation.default';
+}
+
 export default async function ThanksPage({ params, searchParams }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
   const sp = await searchParams;
-  const grantId = typeof sp.grantId === 'string' ? sp.grantId : '';
+  const pointEventId = typeof sp.pointEventId === 'string' ? sp.pointEventId : '';
   const returnUrlRaw = typeof sp.returnUrl === 'string' ? sp.returnUrl : '';
   const returnUrl = isSafeReturnPath(returnUrlRaw) ? returnUrlRaw : `/${locale}`;
 
   const t = await getTranslations({ locale, namespace: 'thanks' });
 
-  // Resolve grant details with auth + ownership filter. Anonymous visitors
+  // Resolve the point grant with auth + ownership filter. Anonymous visitors
   // and mismatched users get the generic message; the page never reveals
-  // another user's grant. durationDays is computed from `expiresAt - startsAt`
-  // rather than looked up in `GRANT_TYPE_DEFAULTS` so this page works for
-  // any grant type (including admin_manual) without a per-type lookup.
+  // another user's grant.
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  let benefit: {
-    type: string;
-    durationDays: number;
-    /**
-     * Pre-resolved i18n key under `thanks` for the explanation paragraph.
-     * Computed at fetch time so the JSX layer does not need to know which
-     * source surfaces map to which copy. Null when the source cannot be
-     * resolved (e.g., admin_manual grants reaching this page); the JSX
-     * then falls back to `explanation.default`.
-     */
-    explanationKey: string | null;
-  } | null = null;
-  if (user && grantId) {
-    const [grant] = await db
+  let award: { amount: number; explanationKey: string } | null = null;
+  if (user && pointEventId) {
+    const [row] = await db
       .select({
-        benefitType: userGrants.benefitType,
-        startsAt: userGrants.startsAt,
-        expiresAt: userGrants.expiresAt,
-        sourceType: userGrants.sourceType,
-        sourceId: userGrants.sourceId,
+        amount: pointEvents.delta,
+        source: pointEvents.source,
       })
-      .from(userGrants)
-      .where(
-        and(
-          eq(userGrants.id, grantId),
-          eq(userGrants.userId, user.id),
-          isNull(userGrants.revokedAt)
-        )
-      )
+      .from(pointEvents)
+      .where(and(eq(pointEvents.id, pointEventId), eq(pointEvents.userId, user.id)))
       .limit(1);
 
-    if (grant) {
-      const durationMs = grant.expiresAt.getTime() - grant.startsAt.getTime();
-      const durationDays = Math.max(1, Math.round(durationMs / (24 * 60 * 60 * 1000)));
-
-      // Map the source surface to one of two unified award messages — the
-      // per-topicType variants (square / opening / position_memory /
-      // position_puzzle) collapsed into a single "topic post" copy because
-      // the duration policy is identical across them and the user-visible
-      // distinction adds no value on the award screen. Position-creation
-      // grants get their own copy because "creating" reads differently from
-      // "commenting" even when the benefit is the same.
-      let explanationKey: string | null = null;
-      if (grant.sourceType === 'topic_post') {
-        explanationKey = 'explanation.topic_post';
-      } else if (grant.sourceType === 'position') {
-        explanationKey = 'explanation.position_creation';
-      }
-
-      benefit = { type: grant.benefitType, durationDays, explanationKey };
+    if (row && row.amount > 0) {
+      award = {
+        amount: row.amount,
+        explanationKey: explanationKeyFor(row.source),
+      };
     }
   }
-
-  const explanationKey = benefit?.explanationKey ?? 'explanation.default';
 
   return (
     <PageLayout title={t('title')} locale={locale}>
       <SectionTitle>{t('sectionTitle')}</SectionTitle>
 
-      {benefit ? (
+      {award ? (
         <div className="space-y-4">
-          <p className="text-foreground">{t(explanationKey)}</p>
+          <p className="text-foreground">{t(award.explanationKey)}</p>
           <CertificateFrame>
             <p className="text-base sm:text-2xl font-serif font-bold text-podium-gold-foreground tracking-widest text-center">
-              {t(`benefits.${benefit.type}`, { days: benefit.durationDays })}
+              {t('pointsAward', { amount: award.amount })}
             </p>
           </CertificateFrame>
+          <p className="text-sm text-muted-foreground text-center">
+            {t('maturationNote', { days: POST_MATURATION_DAYS })}
+          </p>
         </div>
       ) : (
         <p className="text-muted-foreground text-center py-4">{t('genericMessage')}</p>

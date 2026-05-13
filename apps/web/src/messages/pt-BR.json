@@ -367,16 +367,16 @@
         "multiplier10": "×1.0"
       },
       "adFreeBenefits": {
-        "question": "Como os benefícios sem anúncios são obtidos?",
-        "answer": "Benefícios sem anúncios são concedidos automaticamente quando você realiza uma ação elegível listada abaixo. Os benefícios se acumulam — ações repetidas estendem seu período sem anúncios.",
-        "tableTitle": "Formas de ganhar benefícios sem anúncios",
+        "question": "Como ganho pontos e como eles viram tempo sem anúncios?",
+        "answer": "Cada contribuição elegível concede pontos. Pontos recém-ganhos ficam retidos por {maturationDays} dias antes de poderem ser resgatados — se você remover a publicação durante esse período, os pontos são revertidos. Quando confirmados, 1 ponto resgata 1 dia sem anúncios (o resgate será liberado em breve).",
+        "tableTitle": "Formas de ganhar pontos",
         "headerAction": "Ação",
-        "headerDuration": "Duração",
+        "headerPoints": "Pontos",
         "actions": {
           "topic_post": "Publicar em um tópico (casa / abertura)",
           "position_creation": "Publicar um problema de posição (memorização / puzzle)"
         },
-        "durationDays": "{days} dias"
+        "pointsAmount": "{amount} pt"
       }
     }
   },
@@ -3737,19 +3737,18 @@
   },
   "thanks": {
     "title": "Obrigado!",
-    "sectionTitle": "Seu benefício",
+    "sectionTitle": "Pontos ganhos",
     "continueButton": "Ver sua publicação",
     "viewBenefitsButton": "Ver seus benefícios",
     "genericMessage": "Obrigado pela sua contribuição.",
-    "explanation": {
-      "topic_post": "Sua publicação em um tópico lhe rendeu o seguinte benefício:",
-      "position_creation": "O envio da sua posição lhe rendeu o seguinte benefício:",
-      "default": "Sua publicação lhe rendeu o seguinte benefício:"
+    "pointsExplanation": {
+      "puzzle_created": "O envio do seu puzzle lhe rendeu pontos:",
+      "position_memory_created": "O envio do seu problema de memória lhe rendeu pontos:",
+      "topic_post_created": "Sua publicação em um tópico lhe rendeu pontos:",
+      "default": "Sua contribuição lhe rendeu pontos:"
     },
-    "benefits": {
-      "ad_free": "Sem anúncios por {days, plural, one {# dia} other {# dias}}",
-      "paywall_access": "Acesso premium por {days, plural, one {# dia} other {# dias}}"
-    }
+    "pointsAward": "+{amount} pt",
+    "maturationNote": "Esses pontos ficarão disponíveis para resgate em {days, plural, one {# dia} other {# dias}}, desde que sua publicação não seja removida antes."
   },
   "authPrompt": {
     "title": "Faça login para continuar",

@@ -105,6 +105,11 @@ vi.mock('next/cache', () => ({
   revalidateTag: vi.fn(),
 }));
 
+vi.mock('@/lib/points', () => ({
+  // Stub point clawback to a no-op; this test does not exercise the ledger.
+  clawbackPendingPointsForPost: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock('./getClientIp', () => ({
   getClientIp: () => Promise.resolve('127.0.0.1'),
 }));

@@ -367,16 +367,16 @@
         "multiplier10": "×1.0"
       },
       "adFreeBenefits": {
-        "question": "¿Cómo se obtienen los beneficios sin anuncios?",
-        "answer": "Los beneficios sin anuncios se conceden automáticamente cuando realizas una acción elegible de las indicadas a continuación. Las concesiones se acumulan — repetir las acciones extiende tu periodo sin anuncios.",
-        "tableTitle": "Formas de obtener beneficios sin anuncios",
+        "question": "¿Cómo se obtienen los puntos y cómo se convierten en tiempo sin anuncios?",
+        "answer": "Cada contribución elegible otorga puntos. Los puntos recién ganados quedan retenidos durante {maturationDays} días antes de poder canjearse — si eliminas la publicación durante ese periodo, los puntos se anulan. Una vez confirmados, 1 punto canjea 1 día sin anuncios (el canje estará disponible próximamente).",
+        "tableTitle": "Formas de obtener puntos",
         "headerAction": "Acción",
-        "headerDuration": "Duración",
+        "headerPoints": "Puntos",
         "actions": {
           "topic_post": "Publicar en un tema (casilla / apertura)",
           "position_creation": "Publicar un problema de posición (memorización / puzzle)"
         },
-        "durationDays": "{days} días"
+        "pointsAmount": "{amount} pt"
       }
     }
   },
@@ -3737,19 +3737,18 @@
   },
   "thanks": {
     "title": "¡Gracias!",
-    "sectionTitle": "Tu beneficio",
+    "sectionTitle": "Puntos obtenidos",
     "continueButton": "Ver tu publicación",
     "viewBenefitsButton": "Ver tus beneficios",
     "genericMessage": "Gracias por tu contribución.",
-    "explanation": {
-      "topic_post": "Tu publicación en un tema te ha otorgado el siguiente beneficio:",
-      "position_creation": "El envío de tu posición te ha otorgado el siguiente beneficio:",
-      "default": "Tu publicación te ha otorgado el siguiente beneficio:"
+    "pointsExplanation": {
+      "puzzle_created": "El envío de tu puzzle te ha otorgado puntos:",
+      "position_memory_created": "El envío de tu problema de memoria te ha otorgado puntos:",
+      "topic_post_created": "Tu publicación en un tema te ha otorgado puntos:",
+      "default": "Tu contribución te ha otorgado puntos:"
     },
-    "benefits": {
-      "ad_free": "Sin anuncios durante {days, plural, one {# día} other {# días}}",
-      "paywall_access": "Acceso premium durante {days, plural, one {# día} other {# días}}"
-    }
+    "pointsAward": "+{amount} pt",
+    "maturationNote": "Estos puntos quedarán disponibles para canjear en {days, plural, one {# día} other {# días}}, siempre que tu publicación no se elimine antes."
   },
   "authPrompt": {
     "title": "Inicia sesión para continuar",

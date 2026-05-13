@@ -367,16 +367,16 @@
         "multiplier10": "×1.0"
       },
       "adFreeBenefits": {
-        "question": "広告非表示特典はどうやって獲得できますか？",
-        "answer": "対象アクションを行うと、自動的に広告非表示特典が付与されます。複数回行うことで、広告非表示の期間は加算で延長されます。",
-        "tableTitle": "特典を獲得する方法",
+        "question": "ポイントの獲得方法と広告非表示との交換について教えてください",
+        "answer": "対象アクションを行うとポイントが付与されます。獲得直後のポイントは {maturationDays} 日間「確定待ち」状態となり、その間に投稿が削除されるとポイントは取り消されます。確定後は 1 ポイントで広告非表示 1 日と交換できます（交換機能は近日公開予定です）。",
+        "tableTitle": "ポイントを獲得する方法",
         "headerAction": "アクション",
-        "headerDuration": "付与期間",
+        "headerPoints": "獲得ポイント",
         "actions": {
           "topic_post": "トピック（マス / オープニング）を投稿する",
           "position_creation": "問題（ポジションの記憶 / パズル）を投稿する"
         },
-        "durationDays": "{days}日間"
+        "pointsAmount": "{amount} pt"
       }
     }
   },
@@ -3737,19 +3737,18 @@
   },
   "thanks": {
     "title": "御礼",
-    "sectionTitle": "獲得した特典",
+    "sectionTitle": "獲得したポイント",
     "continueButton": "投稿内容を確認する",
     "viewBenefitsButton": "獲得した特典を確認する",
     "genericMessage": "ご投稿ありがとうございます。",
-    "explanation": {
-      "topic_post": "トピックへの投稿に対して以下の特典が付与されました。",
-      "position_creation": "問題の投稿に対して以下の特典が付与されました。",
-      "default": "ご投稿により、以下の特典が付与されました。"
+    "pointsExplanation": {
+      "puzzle_created": "パズルの投稿に対してポイントが付与されました。",
+      "position_memory_created": "ポジション記憶問題の投稿に対してポイントが付与されました。",
+      "topic_post_created": "トピックへの投稿に対してポイントが付与されました。",
+      "default": "ご投稿によりポイントが付与されました。"
     },
-    "benefits": {
-      "ad_free": "{days}日間の広告非表示",
-      "paywall_access": "{days}日間のプレミアムアクセス"
-    }
+    "pointsAward": "+{amount} pt",
+    "maturationNote": "このポイントは投稿が削除されないまま {days} 日経過後に交換可能となります。"
   },
   "authPrompt": {
     "title": "サインインして続行",

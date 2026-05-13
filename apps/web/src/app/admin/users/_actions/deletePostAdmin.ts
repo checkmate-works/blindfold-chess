@@ -7,6 +7,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 import type { ActionResult } from '@/lib/action-types';
 import { db, moderationActions, postImageAttachments, topicPosts, userGrants } from '@/lib/db';
 import { validateModerationReason } from '@/lib/moderation/validate-reason';
+import { clawbackPendingPointsForPost } from '@/lib/points';
 import { POST_IMAGES_BUCKET } from '@/lib/post-images/validation';
 import { createAdminClient } from '@/lib/supabase/admin';
 
@@ -76,10 +77,10 @@ export async function deletePostAdmin(postId: string, reason: string): Promise<A
   await db.transaction(async (tx) => {
     await tx.update(topicPosts).set({ deletedAt: new Date() }).where(eq(topicPosts.id, postId));
 
-    // Revoke any benefit grants triggered by this post — same semantics as
-    // the user-initiated deletePost flow. Admin-removed content should not
-    // continue to award the author ad-free time that was earned from that
-    // specific post.
+    // Revoke any legacy ad_free grants triggered by this post — same
+    // semantics as the user-initiated deletePost flow. New posts no longer
+    // create user_grants directly (the point system superseded that path),
+    // but pre-migration rows still need revocation.
     await tx
       .update(userGrants)
       .set({ revokedAt: new Date() })
@@ -90,6 +91,13 @@ export async function deletePostAdmin(postId: string, reason: string): Promise<A
           isNull(userGrants.revokedAt)
         )
       );
+
+    // Clawback any pending point grant earned from this post (against the
+    // post's author, not the admin actor).
+    await clawbackPendingPointsForPost(tx, post.userId, {
+      type: 'topic_post',
+      id: postId,
+    });
 
     await tx.insert(moderationActions).values({
       actorId: auth.userId,

@@ -14,27 +14,36 @@ vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: vi.fn(),
 }));
 
-vi.mock('@/lib/db', () => ({
-  db: {
-    select: () => ({
-      from: () => ({
-        where: () => ({
-          limit: () => mockSelectLimit(),
+vi.mock('@/lib/db', () => {
+  const updateChain = {
+    set: () => ({
+      where: (...args: unknown[]) => mockUpdateWhere(...args),
+    }),
+  };
+  return {
+    db: {
+      select: () => ({
+        from: () => ({
+          where: () => ({
+            limit: () => mockSelectLimit(),
+          }),
         }),
       }),
-    }),
-    update: () => ({
-      set: () => ({
-        where: (...args: unknown[]) => mockUpdateWhere(...args),
-      }),
-    }),
-  },
-  positions: {
-    id: 'id',
-    userId: 'user_id',
-    type: 'type',
-    deletedAt: 'deleted_at',
-  },
+      update: () => updateChain,
+      transaction: async (fn: (tx: unknown) => Promise<unknown>) =>
+        fn({ update: () => updateChain }),
+    },
+    positions: {
+      id: 'id',
+      userId: 'user_id',
+      type: 'type',
+      deletedAt: 'deleted_at',
+    },
+  };
+});
+
+vi.mock('@/lib/points', () => ({
+  clawbackPendingPointsForPost: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('@/lib/security/rate-limit', () => ({

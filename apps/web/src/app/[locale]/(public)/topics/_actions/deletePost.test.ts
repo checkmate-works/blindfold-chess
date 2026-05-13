@@ -85,6 +85,12 @@ vi.mock('@/lib/moderation/ban', () => ({
   isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
 }));
 
+vi.mock('@/lib/points', () => ({
+  // Stub the clawback to a no-op: the deletePost flow calls it inside the
+  // db.transaction(), but this test does not exercise the ledger writes.
+  clawbackPendingPointsForPost: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock('@/lib/security/rate-limit', () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ success: true }),
   RATE_LIMITS: {

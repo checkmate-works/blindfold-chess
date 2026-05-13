@@ -175,14 +175,14 @@ export function CreatePositionForm({
       // flushSync ensures the re-render (isDirty → false) completes
       // before router.push triggers the navigation guard check.
       flushSync(() => setSubmitted(true));
-      // Grant fired → route via /thanks so the user lands on the award screen,
-      // then continues to the position detail (toast suppressed because the
-      // /thanks page already celebrates the create). No-grant flows keep the
-      // legacy in-place toast UX.
-      if (result.grant) {
+      // Point grant fired → route via /thanks so the user lands on the
+      // award screen, then continues to the position detail (toast
+      // suppressed because the /thanks page already celebrates the create).
+      // No-grant flows keep the legacy in-place toast UX.
+      if (result.pointGrant) {
         const returnUrl = `/${locale}/practice/position-memory/${result.id}`;
         router.push(
-          `/thanks?grantId=${result.grant.grantId}&returnUrl=${encodeURIComponent(returnUrl)}`
+          `/thanks?pointEventId=${result.pointGrant.pointEventId}&returnUrl=${encodeURIComponent(returnUrl)}`
         );
       } else {
         router.push(`/practice/position-memory/${result.id}?toast=position_created`);

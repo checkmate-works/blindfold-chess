@@ -7,6 +7,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, positions } from '@/lib/db';
+import { clawbackPendingPointsForPost } from '@/lib/points';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
@@ -49,12 +50,18 @@ export async function deletePuzzle(puzzleId: string, locale: string): Promise<Ac
     return { error: 'alreadyDeleted' };
   }
 
-  await db
-    .update(positions)
-    .set({ deletedAt: new Date() })
-    .where(
-      and(eq(positions.id, puzzleId), eq(positions.userId, user.id), isNull(positions.deletedAt))
-    );
+  await db.transaction(async (tx) => {
+    await tx
+      .update(positions)
+      .set({ deletedAt: new Date() })
+      .where(
+        and(eq(positions.id, puzzleId), eq(positions.userId, user.id), isNull(positions.deletedAt))
+      );
+
+    // Clawback pending points from the original create grant. Confirmed
+    // (matured) points are intentionally preserved.
+    await clawbackPendingPointsForPost(tx, user.id, { type: 'puzzle', id: puzzleId });
+  });
 
   logActivityEvent({
     userId: user.id,

@@ -5,7 +5,20 @@ import { requireAdmin } from '@/app/admin/_lib/auth';
 import { and, eq, isNull } from 'drizzle-orm';
 
 import { db, moderationActions, positions } from '@/lib/db';
+import { type PointPostEntityType, clawbackPendingPointsForPost } from '@/lib/points';
 import { getClientIp } from '@/lib/security/client-ip';
+
+/**
+ * Map a `positions.type` row value to the point-system entity type used
+ * by the ledger. `chunk` and any unrecognized type returns `null` —
+ * those rows did not earn points on creation so there is nothing to
+ * clawback.
+ */
+function pointEntityTypeFor(positionType: string): PointPostEntityType | null {
+  if (positionType === 'puzzle') return 'puzzle';
+  if (positionType === 'memory') return 'position_memory';
+  return null;
+}
 
 type SoftDeletePositionConfig = {
   /** Paths to revalidate after a successful delete. */
@@ -59,8 +72,19 @@ export async function softDeletePosition(
 
   const ipAddress = await getClientIp();
 
+  const pointEntityType = pointEntityTypeFor(position.type);
+
   await db.transaction(async (tx) => {
     await tx.update(positions).set({ deletedAt: new Date() }).where(eq(positions.id, id));
+
+    // Clawback the position author's pending points (NOT the admin actor's).
+    // No-op for position types that never earned points (e.g., `chunk`).
+    if (pointEntityType) {
+      await clawbackPendingPointsForPost(tx, position.userId, {
+        type: pointEntityType,
+        id,
+      });
+    }
 
     await tx.insert(moderationActions).values({
       actorId: auth.userId,

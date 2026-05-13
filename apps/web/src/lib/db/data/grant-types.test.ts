@@ -1,12 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  type AutomatedGrantType,
-  GRANT_TYPES,
-  GRANT_TYPE_DEFAULTS,
-  type GrantType,
-  isGrantType,
-} from './grant-types';
+import { GRANT_TYPES, type GrantType, isGrantType } from './grant-types';
 
 describe('GRANT_TYPES', () => {
   it('contains all expected grant type values', () => {
@@ -21,43 +15,8 @@ describe('GRANT_TYPES', () => {
     expect(GRANT_TYPES).toContain('admin_manual');
   });
 
-  it('includes topic_post', () => {
+  it('includes topic_post (preserved for legacy grant-history display rows)', () => {
     expect(GRANT_TYPES).toContain('topic_post');
-  });
-});
-
-describe('GRANT_TYPE_DEFAULTS', () => {
-  it('has an entry for every AutomatedGrantType (all GrantTypes except admin_manual)', () => {
-    const automatedTypes = GRANT_TYPES.filter((t): t is AutomatedGrantType => t !== 'admin_manual');
-    for (const t of automatedTypes) {
-      expect(GRANT_TYPE_DEFAULTS).toHaveProperty(t);
-    }
-    expect(Object.keys(GRANT_TYPE_DEFAULTS).sort()).toEqual([...automatedTypes].sort());
-  });
-
-  it('does NOT have an entry for admin_manual (intentional — caller must specify)', () => {
-    expect(GRANT_TYPE_DEFAULTS).not.toHaveProperty('admin_manual');
-  });
-
-  it('every entry has a valid benefitType (ad_free or paywall_access)', () => {
-    const allowed = new Set(['ad_free', 'paywall_access']);
-    for (const [key, config] of Object.entries(GRANT_TYPE_DEFAULTS)) {
-      expect(allowed.has(config.benefitType), `${key}.benefitType invalid`).toBe(true);
-    }
-  });
-
-  it('every entry has durationDays > 0', () => {
-    for (const [key, config] of Object.entries(GRANT_TYPE_DEFAULTS)) {
-      expect(config.durationDays, `${key}.durationDays must be > 0`).toBeGreaterThan(0);
-    }
-  });
-
-  it('every entry has an integer durationDays (no fractional days)', () => {
-    for (const [key, config] of Object.entries(GRANT_TYPE_DEFAULTS)) {
-      expect(Number.isInteger(config.durationDays), `${key}.durationDays must be integer`).toBe(
-        true
-      );
-    }
   });
 });
 
