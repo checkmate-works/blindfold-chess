@@ -6,6 +6,7 @@ import { asc } from 'drizzle-orm';
 import { chessOpenings, db } from '@/lib/db';
 
 import { PageLayout } from '@/app/[locale]/_components';
+import { type HelpStep, HelpTourButton } from '@/app/[locale]/_components/HelpTourButton';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -38,8 +39,19 @@ export default async function OpeningGamePage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale });
+  const tNewGame = await getTranslations({ locale, namespace: 'newGame' });
   const tGames = await getTranslations({ locale, namespace: 'gamesPage' });
   const tOpeningNames = await getTranslations({ locale, namespace: 'topics.openings.names' });
+
+  const helpSteps: HelpStep[] = [
+    {
+      targetId: 'opening-search',
+      title: tNewGame('openingPageTitle'),
+      description: tNewGame('helpOpeningIntroDescription'),
+      side: 'bottom',
+      align: 'center',
+    },
+  ];
 
   const allOpenings = await db
     .select({
@@ -62,6 +74,7 @@ export default async function OpeningGamePage({ params }: Props) {
   return (
     <PageLayout
       title={t('newGame.openingPageTitle')}
+      titleAction={<HelpTourButton steps={helpSteps} label={tNewGame('helpLabel')} />}
       locale={locale}
       breadcrumb={[
         { label: tGames('pageTitle'), href: '/games' },

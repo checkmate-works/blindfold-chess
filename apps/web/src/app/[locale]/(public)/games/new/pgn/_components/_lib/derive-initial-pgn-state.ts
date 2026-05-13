@@ -1,11 +1,13 @@
 import type { Side } from '@blindfold-chess/types';
 
+import { type EngineKind, isEngineKind } from '@/lib/engines';
 import type { SkillLevel } from '@/lib/types';
 
 export type InitialPgnState = {
   pgn: string;
   color: Side | null;
   skillLevel: SkillLevel | null;
+  engine: EngineKind | null;
 };
 
 /**
@@ -62,5 +64,8 @@ export function deriveInitialPgnState(searchParams: URLSearchParams): InitialPgn
     }
   }
 
-  return { pgn, color, skillLevel };
+  const urlEngine = searchParams.get('engine');
+  const engine: EngineKind | null = urlEngine && isEngineKind(urlEngine) ? urlEngine : null;
+
+  return { pgn, color, skillLevel, engine };
 }
