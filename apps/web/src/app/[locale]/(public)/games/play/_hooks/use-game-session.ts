@@ -38,6 +38,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
   const {
     playerSide,
     initialSkillLevel,
+    initialEngine,
     initialGameId,
     initialStartingFen,
     initialMovesFromUrl,
@@ -48,6 +49,8 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
 
   // Skill level is immutable during gameplay — set at game start, never changed mid-game.
   const [skillLevel] = useState<SkillLevel>(initialSkillLevel);
+  // Engine choice is similarly immutable per game.
+  const [engine] = useState(initialEngine);
 
   // Per-game preferences (from URL params for new games, loaded from saved game for resumed games)
   const [perGamePrefs, setPerGamePrefs] = useState<PerGamePreferences | undefined>(
@@ -77,7 +80,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     initialMoves: initialMovesFromUrl,
     startingFen,
   });
-  const { getAiMove, reset: resetAiOpponent } = useAiVersus(skillLevel);
+  const { getAiMove, reset: resetAiOpponent } = useAiVersus(skillLevel, engine);
 
   // Game persistence hook
   const { isLoadingFromStorage, savedGameStatus, loadedGameData, gameNotFound } =

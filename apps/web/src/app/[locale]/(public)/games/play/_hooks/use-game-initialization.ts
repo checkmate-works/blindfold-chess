@@ -4,6 +4,7 @@ import { isValidSkillLevel } from '@blindfold-chess/features/ai-game';
 import { getStartingFen, validateMoveSequence } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
+import { DEFAULT_ENGINE, type EngineKind, isEngineKind } from '@/lib/engines';
 import type { SkillLevel } from '@/lib/types';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -11,6 +12,7 @@ import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreference
 type UrlParams = {
   playerSide: Side;
   skillLevel: SkillLevel;
+  engine: EngineKind;
   gameId: string | undefined;
   startingFen: string | undefined;
   urlMoves: string | null;
@@ -27,6 +29,7 @@ type ValidationErrorDetails = {
 type GameInitializationResult = {
   playerSide: Side;
   initialSkillLevel: SkillLevel;
+  initialEngine: EngineKind;
   initialGameId: string | undefined;
   initialStartingFen: string | undefined;
   initialMovesFromUrl: AlgebraicNotation[];
@@ -45,7 +48,7 @@ type GameInitializationResult = {
  */
 export function useGameInitialization(urlParams: UrlParams): GameInitializationResult {
   return useMemo(() => {
-    const { playerSide, skillLevel, gameId, startingFen, urlMoves, gamePrefs } = urlParams;
+    const { playerSide, skillLevel, engine, gameId, startingFen, urlMoves, gamePrefs } = urlParams;
 
     // Get initial moves from URL and validate them
     let parsedMoves: AlgebraicNotation[] = [];
@@ -92,6 +95,7 @@ export function useGameInitialization(urlParams: UrlParams): GameInitializationR
     return {
       playerSide,
       initialSkillLevel: skillLevel,
+      initialEngine: engine,
       initialGameId: gameId,
       initialStartingFen: startingFen,
       initialMovesFromUrl,
@@ -123,9 +127,13 @@ export function parseUrlSearchParams(searchParams: URLSearchParams): UrlParams {
   const parsedSkillLevel = parseInt(searchParams.get('skillLevel') || '5');
   const skillLevel: SkillLevel = isValidSkillLevel(parsedSkillLevel) ? parsedSkillLevel : 5;
 
+  const engineParam = searchParams.get('engine');
+  const engine: EngineKind = isEngineKind(engineParam) ? engineParam : DEFAULT_ENGINE;
+
   return {
     playerSide,
     skillLevel,
+    engine,
     gameId: searchParams.get('gameId') || undefined,
     startingFen: searchParams.get('fen') || undefined,
     urlMoves: searchParams.get('moves'),

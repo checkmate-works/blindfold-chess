@@ -8,7 +8,12 @@ import {
 } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Fen } from '@blindfold-chess/types';
 
-import { createStockfishOpponent } from '@/lib/engines';
+import {
+  DEFAULT_MAIA_CONFIG,
+  type EngineKind,
+  createMaiaOpponent,
+  createStockfishOpponent,
+} from '@/lib/engines';
 import type { SkillLevel } from '@/lib/types';
 
 /**
@@ -36,13 +41,18 @@ function throwOpponentError(error: OpponentError): never {
  * Drives an AI opponent for the human-vs-AI game flow.
  *
  * Lifecycle is owned per mount: a fresh {@link ChessOpponent} is created on
- * mount and torn down on unmount. Skill-level changes recreate the opponent
- * (and therefore the underlying Worker), since skill-level is captured at
- * construction time. `reset()` forces a recreate without changing skill-
- * level — used by the Retry-AI-move affordance to recover from a dead
- * Worker after a fatal error.
+ * mount and torn down on unmount. Switching engines or skill-level
+ * recreates the opponent (and therefore the underlying Worker), since
+ * those are captured at construction time. `reset()` forces a recreate
+ * without changing config — used by the Retry-AI-move affordance to
+ * recover from a dead Worker after a fatal error.
+ *
+ * `engine = 'stockfish'` uses skillLevel as its difficulty knob.
+ * `engine = 'maia'` ignores skillLevel and uses {@link DEFAULT_MAIA_CONFIG};
+ * a future UI may expose Maia's Elo input directly, but for the PoC stage
+ * the static default keeps the surface small.
  */
-export function useAiVersus(skillLevel: SkillLevel) {
+export function useAiVersus(skillLevel: SkillLevel, engine: EngineKind = 'stockfish') {
   const [resetCounter, setResetCounter] = useState(0);
   const opponentRef = useRef<ChessOpponent | null>(null);
 
@@ -51,7 +61,10 @@ export function useAiVersus(skillLevel: SkillLevel) {
 
     let opponent: ChessOpponent;
     try {
-      opponent = createStockfishOpponent({ skillLevel });
+      opponent =
+        engine === 'maia'
+          ? createMaiaOpponent({ ...DEFAULT_MAIA_CONFIG })
+          : createStockfishOpponent({ skillLevel });
     } catch (error) {
       console.error('Failed to construct chess opponent:', error);
       return;
@@ -66,7 +79,7 @@ export function useAiVersus(skillLevel: SkillLevel) {
       }
       void opponent.destroy();
     };
-  }, [skillLevel, resetCounter]);
+  }, [skillLevel, engine, resetCounter]);
 
   const getAiMove = useCallback(
     async (moves: AlgebraicNotation[], startingFen?: string): Promise<AlgebraicNotation> => {
