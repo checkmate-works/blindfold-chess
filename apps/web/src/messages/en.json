@@ -1775,6 +1775,13 @@
     "deleteGame": "Delete Game",
     "deleteDescription": "Remove this corrupted game from your history and start fresh."
   },
+  "largeDownloadConsent": {
+    "title": "Large download required",
+    "body": "Maia AI uses a {size} neural-network model that will be downloaded the first time you play with it. This may use cellular data or take a while on slow connections.",
+    "cachedNote": "After the first download, your browser caches the model and subsequent games start instantly.",
+    "continue": "Continue",
+    "cancel": "Cancel"
+  },
   "newGame": {
     "title": "New Game",
     "selectTitle": "Choose How to Start",

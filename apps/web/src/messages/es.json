@@ -1775,6 +1775,13 @@
     "deleteGame": "Eliminar Partida",
     "deleteDescription": "Eliminar esta partida dañada de tu historial y empezar de nuevo."
   },
+  "largeDownloadConsent": {
+    "title": "Se requiere una descarga grande",
+    "body": "La IA Maia utiliza un modelo de red neuronal de {size} que se descargará la primera vez que juegues con ella. Esto puede consumir datos móviles o tardar bastante en conexiones lentas.",
+    "cachedNote": "Después de la primera descarga, tu navegador almacena el modelo en caché y las partidas siguientes comienzan al instante.",
+    "continue": "Continuar",
+    "cancel": "Cancelar"
+  },
   "newGame": {
     "title": "Nueva Partida",
     "selectTitle": "Elige Cómo Empezar",

@@ -199,6 +199,22 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      {
+        // Maia 3 ONNX model is ~46 MB — by far the largest static asset
+        // shipped to the browser. We treat the file as effectively immutable
+        // (model upgrades require renaming, e.g. maia3_simplified-v2.onnx,
+        // so cached copies stay valid forever). This collapses
+        // "every Maia game = 46 MB re-download" into "once per browser
+        // until model version changes". Crucial both for player experience
+        // on metered connections and for our own Vercel egress bill.
+        source: '/engines/maia/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
     ];
   },
 };
