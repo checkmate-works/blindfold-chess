@@ -88,8 +88,8 @@ export function StandardGameForm({ locale, maiaUnlocked }: Props) {
 
   return (
     <div className="space-y-6">
-      <EngineSelector value={engine} onChange={setEngine} maiaUnlocked={maiaUnlocked} />
       <ColorSelector value={color} onChange={setColor} />
+      <EngineSelector value={engine} onChange={setEngine} maiaUnlocked={maiaUnlocked} />
       <SkillLevelSelector value={skillLevel} onChange={setSkillLevel} engine={engine} />
 
       <SectionTitle>{t('gameSettings')}</SectionTitle>
