@@ -736,3 +736,52 @@ CREATE POLICY "post_video_attachments_delete" ON "post_video_attachments"
         AND p.user_id = auth.uid()
     )
   );
+
+-- =============================================================================
+-- point_events (append-only point ledger — authenticated SELECT own rows, service role only write)
+-- =============================================================================
+-- Mirrors the exp_events pattern. Writes are restricted to the service role
+-- (point grants/consumption flow through server-side logic that holds the
+-- service role key). Users may read their own history for display.
+ALTER TABLE "point_events" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "point_events_select_policy" ON "point_events";
+CREATE POLICY "point_events_select_policy" ON "point_events"
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- =============================================================================
+-- user_point_balances (materialized point balance cache — authenticated SELECT own rows, service role only write)
+-- =============================================================================
+-- Unlike user_exp (which is public for leaderboards), point balances are
+-- per-user financial state and SHOULD NOT be visible to other users.
+ALTER TABLE "user_point_balances" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "user_point_balances_select_policy" ON "user_point_balances";
+CREATE POLICY "user_point_balances_select_policy" ON "user_point_balances"
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- =============================================================================
+-- point_batch_watermarks (internal batch progress — service role only)
+-- =============================================================================
+-- No SELECT policy: this table is internal bookkeeping. The service role
+-- bypasses RLS, so leaving RLS enabled with no policies effectively makes it
+-- inaccessible to authenticated/anon clients.
+ALTER TABLE "point_batch_watermarks" ENABLE ROW LEVEL SECURITY;
+
+-- =============================================================================
+-- point_redemptions (user redemption history — authenticated SELECT own rows, service role only write)
+-- =============================================================================
+ALTER TABLE "point_redemptions" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "point_redemptions_select_policy" ON "point_redemptions";
+CREATE POLICY "point_redemptions_select_policy" ON "point_redemptions"
+  FOR SELECT USING (auth.uid() = user_id);
+
+-- =============================================================================
+-- point_purchases (user purchase history — authenticated SELECT own rows, service role only write)
+-- =============================================================================
+ALTER TABLE "point_purchases" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "point_purchases_select_policy" ON "point_purchases";
+CREATE POLICY "point_purchases_select_policy" ON "point_purchases"
+  FOR SELECT USING (auth.uid() = user_id);

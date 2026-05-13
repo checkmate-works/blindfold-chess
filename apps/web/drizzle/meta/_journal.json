@@ -295,6 +295,13 @@
       "when": 1778619205623,
       "tag": "20260512205325_add_fork_columns_to_positions",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1778648417282,
+      "tag": "20260513050017_create_point_system_tables",
+      "breakpoints": true
     }
   ]
 }
