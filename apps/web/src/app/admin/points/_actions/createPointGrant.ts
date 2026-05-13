@@ -1,0 +1,74 @@
+'use server';
+
+import { revalidatePath } from 'next/cache';
+
+import { requireAdmin } from '@/app/admin/_lib/auth';
+
+import type { ActionResult } from '@/lib/action-types';
+import { db, moderationActions } from '@/lib/db';
+import { grantAdminPoints } from '@/lib/points';
+import { getClientIp } from '@/lib/security/client-ip';
+
+import { validateAmount, validateUuid } from '../_lib/validation';
+
+/**
+ * Issue a confirmed point grant from the admin surface.
+ *
+ * Companion to /admin/grants's `createGrant` (which issues ad_free
+ * user_grants directly). This action writes a `point_events` row in
+ * `category='promotional'` so the points are immediately spendable —
+ * admin-issued points bypass the UGC maturation window.
+ *
+ * The point grant + audit log row commit together in a single transaction.
+ * Granted_by provenance lives in `moderation_actions.actor_id` per the
+ * same design as the ad_free admin grant flow.
+ */
+export async function createPointGrant(formData: FormData): Promise<ActionResult> {
+  const auth = await requireAdmin();
+  if ('error' in auth) return { error: 'unauthorized' };
+
+  const userId = (formData.get('userId') as string | null)?.trim();
+  const amountStr = (formData.get('amount') as string | null)?.trim();
+  const reasonRaw = (formData.get('reason') as string | null)?.trim();
+
+  if (!userId) return { error: 'User ID is required' };
+  const uuidError = validateUuid(userId);
+  if (uuidError) return { error: 'Invalid User ID format (expected UUID)' };
+
+  const amount = Number(amountStr);
+  const amountError = validateAmount(amount);
+  if (amountError) return { error: amountError };
+
+  const reason = reasonRaw || null;
+  const ipAddress = await getClientIp();
+
+  try {
+    await db.transaction(async (tx) => {
+      const grant = await grantAdminPoints(tx, userId, amount, {
+        actorId: auth.userId,
+        reason,
+      });
+
+      await tx.insert(moderationActions).values({
+        actorId: auth.userId,
+        action: 'create_point_grant',
+        targetType: 'user',
+        targetId: userId,
+        reason,
+        metadata: {
+          pointEventId: grant.pointEventId,
+          grantId: grant.grantId,
+          amount,
+          category: 'promotional',
+        },
+        ipAddress,
+      });
+    });
+
+    revalidatePath('/admin/points');
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to create point grant:', error);
+    return { error: 'Failed to create point grant' };
+  }
+}

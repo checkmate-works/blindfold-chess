@@ -3057,6 +3057,10 @@
       "create": "作成",
       "creating": "作成中..."
     },
+    "points": {
+      "title": "ポイント付与",
+      "navLabel": "ポイント付与"
+    },
     "grants": {
       "title": "特典付与",
       "navLabel": "特典付与",

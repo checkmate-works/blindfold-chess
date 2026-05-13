@@ -3057,6 +3057,10 @@
       "create": "Crear",
       "creating": "Creando..."
     },
+    "points": {
+      "title": "Puntos",
+      "navLabel": "Puntos"
+    },
     "grants": {
       "title": "Concesiones",
       "navLabel": "Concesiones",

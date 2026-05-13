@@ -21,6 +21,8 @@ export type { PointBalanceSummary } from './get-balance';
 export { getPostGrantForEntity } from './get-grant';
 export { countPendingPostGrants, getPointHistory, hasAnyPointHistory } from './get-history';
 export type { PointHistoryEntry } from './get-history';
+export { grantAdminPoints } from './grant-admin';
+export type { AdminGrantResult } from './grant-admin';
 export { clawbackPendingPointsForPost, grantPendingPointsForPost } from './grant-points';
 export type { PointGrantResult } from './grant-points';
 export { maturePendingPoints } from './mature-points';
