@@ -52,3 +52,6 @@ next-env.d.ts
 # stockfish files (copied from node_modules)
 /public/stockfish.js
 /public/stockfish.wasm
+
+# maia engine assets (downloaded by scripts/download-maia.ts)
+/public/engines/maia/*.onnx
