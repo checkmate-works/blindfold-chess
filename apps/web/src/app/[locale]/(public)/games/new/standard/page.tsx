@@ -3,6 +3,9 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
+import { getOptionalUser } from '@/lib/auth';
+import { canUseMaia } from '@/lib/users/can-use-maia';
+
 import { PageLayout } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
@@ -17,7 +20,12 @@ type Props = {
   }>;
 };
 
+// `generateStaticParams` is intentionally retained for metadata pre-render
+// but the page reads cookies (auth state for the Maia entitlement check),
+// so Next.js will switch to dynamic rendering at runtime. That is the
+// desired behaviour — the form renders different UI per user.
 export const generateStaticParams = generateLocaleStaticParams;
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
@@ -38,6 +46,9 @@ export default async function StandardGamePage({ params }: Props) {
   const t = await getTranslations({ locale });
   const tGames = await getTranslations({ locale, namespace: 'gamesPage' });
 
+  const user = await getOptionalUser();
+  const maiaUnlocked = await canUseMaia(user?.id ?? null);
+
   return (
     <PageLayout
       title={t('newGame.standardTitle')}
@@ -50,7 +61,7 @@ export default async function StandardGamePage({ params }: Props) {
     >
       <GameLimitCheck locale={locale}>
         <Suspense fallback={null}>
-          <StandardGameForm locale={locale} />
+          <StandardGameForm locale={locale} maiaUnlocked={maiaUnlocked} />
         </Suspense>
       </GameLimitCheck>
     </PageLayout>

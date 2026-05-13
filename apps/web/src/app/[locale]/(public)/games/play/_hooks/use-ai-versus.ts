@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { skillLevelToMaiaElo } from '@blindfold-chess/features/ai-game/maia';
 import type { ChessOpponent, OpponentError } from '@blindfold-chess/features/ai-game/opponent';
 import {
   getFenAfterMoves,
@@ -8,12 +9,7 @@ import {
 } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Fen } from '@blindfold-chess/types';
 
-import {
-  DEFAULT_MAIA_CONFIG,
-  type EngineKind,
-  createMaiaOpponent,
-  createStockfishOpponent,
-} from '@/lib/engines';
+import { type EngineKind, createMaiaOpponent, createStockfishOpponent } from '@/lib/engines';
 import type { SkillLevel } from '@/lib/types';
 
 /**
@@ -48,9 +44,11 @@ function throwOpponentError(error: OpponentError): never {
  * recover from a dead Worker after a fatal error.
  *
  * `engine = 'stockfish'` uses skillLevel as its difficulty knob.
- * `engine = 'maia'` ignores skillLevel and uses {@link DEFAULT_MAIA_CONFIG};
- * a future UI may expose Maia's Elo input directly, but for the PoC stage
- * the static default keeps the surface small.
+ * `engine = 'maia'` maps the same 1..20 skillLevel onto Maia 3's
+ * 1100..1900 Elo training distribution via {@link skillLevelToMaiaElo}.
+ * Both `selfElo` and `opponentElo` are set to the derived value — Maia
+ * uses both inputs, and pairing them at the same Elo gives the most
+ * "natural" play of a self-rated player.
  */
 export function useAiVersus(skillLevel: SkillLevel, engine: EngineKind = 'stockfish') {
   const [resetCounter, setResetCounter] = useState(0);
@@ -61,10 +59,12 @@ export function useAiVersus(skillLevel: SkillLevel, engine: EngineKind = 'stockf
 
     let opponent: ChessOpponent;
     try {
-      opponent =
-        engine === 'maia'
-          ? createMaiaOpponent({ ...DEFAULT_MAIA_CONFIG })
-          : createStockfishOpponent({ skillLevel });
+      if (engine === 'maia') {
+        const elo = skillLevelToMaiaElo(skillLevel);
+        opponent = createMaiaOpponent({ selfElo: elo, opponentElo: elo });
+      } else {
+        opponent = createStockfishOpponent({ skillLevel });
+      }
     } catch (error) {
       console.error('Failed to construct chess opponent:', error);
       return;

@@ -37,6 +37,8 @@ export { mirrorFen, mirrorSquare, mirrorUciMove } from "./mirror";
 
 export { encodeFenToMaia3BoardTokens } from "./fen-encoder";
 
+export { skillLevelToMaiaElo } from "./elo";
+
 export { preprocessForMaia3 } from "./preprocess";
 
 export {
