@@ -2,9 +2,10 @@ import { addDays } from 'date-fns';
 import { and, eq, gt, inArray, isNull, sql } from 'drizzle-orm';
 import 'server-only';
 
-import { db, pointEvents, pointRedemptions, userGrants, userPointBalances } from '@/lib/db';
+import { db, pointRedemptions, userGrants, userPointBalances } from '@/lib/db';
 
 import type { PointCategory } from './constants';
+import { recordPointMovement } from './internal-ledger';
 
 /**
  * Exchange rate set by product: each spendable point buys one day of
@@ -147,6 +148,14 @@ export async function redeemPointsForAdFree(userId: string, cost: number): Promi
       }
 
       // (3) Walk CONSUME_ORDER, debit each bucket and append a ledger row.
+      //
+      // `recordPointMovement`'s INSERT + upsertBalance produces the same end
+      // state as a hand-rolled UPDATE + INSERT pair: the balance row was
+      // locked by the SELECT FOR UPDATE above so the upsert path always
+      // takes the ON CONFLICT UPDATE branch, applying `balance + delta`
+      // (delta < 0 here) to the existing row. Keeping the ledger writes
+      // routed through the shared primitive avoids drifting copies of the
+      // "insert + balance" pattern across the package.
       let remaining = cost;
       const pointEventIds: string[] = [];
       for (const category of CONSUME_ORDER) {
@@ -155,31 +164,17 @@ export async function redeemPointsForAdFree(userId: string, cost: number): Promi
         if (available <= 0) continue;
         const take = Math.min(remaining, available);
 
-        await tx
-          .update(userPointBalances)
-          .set({
-            balance: sql`${userPointBalances.balance} - ${take}`,
-            version: sql`${userPointBalances.version} + 1`,
-            updatedAt: now,
-          })
-          .where(
-            and(eq(userPointBalances.userId, userId), eq(userPointBalances.category, category))
-          );
+        const { pointEventId } = await recordPointMovement(tx, {
+          userId,
+          delta: -take,
+          category,
+          source: 'redemption',
+          sourceId: redemptionRow.id,
+          idempotencyKey: `redemption:${redemptionRow.id}:${category}`,
+          metadata: { productCode: AD_FREE_PRODUCT_CODE, durationDays },
+        });
 
-        const [ledgerRow] = await tx
-          .insert(pointEvents)
-          .values({
-            userId,
-            delta: -take,
-            category,
-            source: 'redemption',
-            sourceId: redemptionRow.id,
-            idempotencyKey: `redemption:${redemptionRow.id}:${category}`,
-            metadata: { productCode: AD_FREE_PRODUCT_CODE, durationDays },
-          })
-          .returning({ id: pointEvents.id });
-
-        pointEventIds.push(ledgerRow.id);
+        pointEventIds.push(pointEventId);
         remaining -= take;
       }
 

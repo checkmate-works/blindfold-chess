@@ -1,5 +1,5 @@
 import { subDays } from 'date-fns';
-import { and, eq, gt, inArray, isNotNull, lte, sql } from 'drizzle-orm';
+import { and, eq, gt, inArray, isNotNull, lte } from 'drizzle-orm';
 import 'server-only';
 
 import { db, pointEvents } from '@/lib/db';
@@ -7,16 +7,11 @@ import { db, pointEvents } from '@/lib/db';
 import {
   POINT_SOURCES,
   POST_MATURATION_DAYS,
-  type PointPostEntityType,
+  type PointSource,
   buildIdempotencyKey,
+  entityTypeForSource,
 } from './constants';
-import { upsertBalance } from './internal-balance';
-
-const SOURCE_TO_ENTITY_TYPE: Record<string, PointPostEntityType> = {
-  puzzle_created: 'puzzle',
-  position_memory_created: 'position_memory',
-  topic_post_created: 'topic_post',
-};
+import { readPendingTotalForEntity, recordPointMovement } from './internal-ledger';
 
 export type MaturationReport = {
   /** Candidate rows considered in this run (before dedup / age check). */
@@ -27,6 +22,69 @@ export type MaturationReport = {
   skipped: number;
 };
 
+function isPointSource(s: string): s is PointSource {
+  return (POINT_SOURCES as readonly string[]).includes(s);
+}
+
+/**
+ * Promote one `(user, source, sourceId)` triple's pending balance into
+ * `earned`. Runs inside its own transaction so a single bad row in a
+ * batch run cannot poison the others.
+ *
+ * Returns `true` when the maturation row was actually written, `false`
+ * when nothing changed — either because the pending net is already zero
+ * (post was clawed back between the scan and the write), or because a
+ * prior run already wrote the maturation row.
+ */
+async function matureOnePending(
+  userId: string,
+  source: PointSource,
+  sourceId: string
+): Promise<boolean> {
+  const entity = { type: entityTypeForSource(source), id: sourceId };
+
+  return db.transaction(async (tx) => {
+    // Recompute pending net under transactional read — a clawback landing
+    // between the candidate scan and here is observed and the write phase
+    // is skipped.
+    const pendingNet = await readPendingTotalForEntity(tx, userId, source, sourceId);
+    if (pendingNet <= 0) return false;
+
+    // First leg: zero out the pending bucket. Idempotent — if a prior run
+    // already wrote this row the conflict swallows the insert and we bail
+    // out before the second leg / balance updates run.
+    const pendingResult = await recordPointMovement(
+      tx,
+      {
+        userId,
+        delta: -pendingNet,
+        category: 'earned_pending',
+        source,
+        sourceId,
+        idempotencyKey: buildIdempotencyKey('post_mature_pending', entity),
+        metadata: { reason: 'maturation' },
+      },
+      { idempotent: true }
+    );
+    if (!pendingResult) return false;
+
+    // Second leg: credit the same amount to `earned`. Non-idempotent because
+    // the pair commits in one TX — if the first row went in, the second
+    // must also be fresh.
+    await recordPointMovement(tx, {
+      userId,
+      delta: pendingNet,
+      category: 'earned',
+      source,
+      sourceId,
+      idempotencyKey: buildIdempotencyKey('post_mature_earned', entity),
+      metadata: { reason: 'maturation' },
+    });
+
+    return true;
+  });
+}
+
 /**
  * Convert `earned_pending` rows into spendable `earned` for any UGC grant
  * whose first grant row is at least `POST_MATURATION_DAYS` days old. Runs
@@ -35,18 +93,17 @@ export type MaturationReport = {
  *
  * @design Per-row clawback safety
  *
- * Reads the current pending sum for each `(user, source, source_id)` triple
- * inside the per-row transaction, so a clawback that landed between the
- * candidate scan and the write phase is observed; the function then writes
- * zero (effectively skipping) instead of double-spending.
+ * `matureOnePending` recomputes the pending sum under the row's own
+ * transaction, so a clawback that landed between the scan and the write
+ * is observed and the write phase becomes a no-op.
  *
  * @design Idempotency
  *
  * Each maturation writes two ledger rows keyed by
  * `post_mature_pending:<type>:<id>` and `post_mature_earned:<type>:<id>`.
  * The UNIQUE constraint on `point_events.idempotency_key` makes re-runs
- * safe — a retried call sees `onConflictDoNothing` swallow the insert and
- * bails out before the second insert / balance update.
+ * safe — a retried call sees `onConflictDoNothing` swallow the first
+ * insert and bails out before the second insert / balance update.
  *
  * @param batchSize - Soft cap on candidates fetched per invocation. Daily
  *   cron with 500 should cover normal traffic; raise if backlog builds.
@@ -80,79 +137,15 @@ export async function maturePendingPoints(
   const seen = new Set<string>();
 
   for (const cand of candidates) {
-    if (!cand.sourceId) {
+    if (!cand.sourceId || !isPointSource(cand.source)) {
       skipped++;
       continue;
     }
-    const key = `${cand.userId}:${cand.source}:${cand.sourceId}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
+    const dedupKey = `${cand.userId}:${cand.source}:${cand.sourceId}`;
+    if (seen.has(dedupKey)) continue;
+    seen.add(dedupKey);
 
-    const entityType = SOURCE_TO_ENTITY_TYPE[cand.source];
-    if (!entityType) {
-      skipped++;
-      continue;
-    }
-
-    const moved = await db.transaction(async (tx) => {
-      // Recompute pending net under the row's serialization. A clawback
-      // landing between the scan and this read is reflected here.
-      const [agg] = await tx
-        .select({
-          net: sql<number>`COALESCE(SUM(${pointEvents.delta}), 0)::int`,
-        })
-        .from(pointEvents)
-        .where(
-          and(
-            eq(pointEvents.userId, cand.userId),
-            eq(pointEvents.source, cand.source),
-            eq(pointEvents.sourceId, cand.sourceId!),
-            eq(pointEvents.category, 'earned_pending')
-          )
-        );
-
-      const pendingNet = agg?.net ?? 0;
-      if (pendingNet <= 0) return false;
-
-      const entity = { type: entityType, id: cand.sourceId! };
-      const pendingKey = buildIdempotencyKey('post_mature_pending', entity);
-      const earnedKey = buildIdempotencyKey('post_mature_earned', entity);
-
-      const insertedPending = await tx
-        .insert(pointEvents)
-        .values({
-          userId: cand.userId,
-          delta: -pendingNet,
-          category: 'earned_pending',
-          source: cand.source,
-          sourceId: cand.sourceId,
-          idempotencyKey: pendingKey,
-          metadata: { reason: 'maturation' },
-        })
-        .onConflictDoNothing({ target: pointEvents.idempotencyKey })
-        .returning({ id: pointEvents.id });
-
-      if (insertedPending.length === 0) {
-        // Already matured by a prior run.
-        return false;
-      }
-
-      await tx.insert(pointEvents).values({
-        userId: cand.userId,
-        delta: pendingNet,
-        category: 'earned',
-        source: cand.source,
-        sourceId: cand.sourceId,
-        idempotencyKey: earnedKey,
-        metadata: { reason: 'maturation' },
-      });
-
-      await upsertBalance(tx, cand.userId, 'earned_pending', -pendingNet);
-      await upsertBalance(tx, cand.userId, 'earned', pendingNet);
-
-      return true;
-    });
-
+    const moved = await matureOnePending(cand.userId, cand.source, cand.sourceId);
     if (moved) matured++;
     else skipped++;
   }

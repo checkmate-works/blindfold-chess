@@ -5,6 +5,7 @@ export {
   POST_CREATION_POINTS,
   POST_MATURATION_DAYS,
   buildIdempotencyKey,
+  entityTypeForSource,
   isPointEligibleTopicType,
   sourceForEntity,
 } from './constants';
@@ -18,8 +19,7 @@ export type {
 } from './constants';
 export { getPointBalanceSummary } from './get-balance';
 export type { PointBalanceSummary } from './get-balance';
-export { getPostGrantForEntity } from './get-grant';
-export { countPendingPostGrants, getPointHistory, hasAnyPointHistory } from './get-history';
+export { getPointHistory } from './get-history';
 export type { PointHistoryEntry } from './get-history';
 export { grantAdminPoints } from './grant-admin';
 export type { AdminGrantResult } from './grant-admin';

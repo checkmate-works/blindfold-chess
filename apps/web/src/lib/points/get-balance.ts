@@ -3,7 +3,7 @@ import 'server-only';
 
 import { db, userPointBalances } from '@/lib/db';
 
-import type { PointCategory } from './constants';
+import { POINT_CATEGORIES, type PointCategory } from './constants';
 
 export type PointBalanceSummary = {
   /** Net spendable points (`earned + purchased + promotional`). */
@@ -59,5 +59,5 @@ export async function getPointBalanceSummary(userId: string): Promise<PointBalan
 }
 
 function isPointCategory(v: string): v is PointCategory {
-  return v === 'earned_pending' || v === 'earned' || v === 'purchased' || v === 'promotional';
+  return (POINT_CATEGORIES as readonly string[]).includes(v);
 }

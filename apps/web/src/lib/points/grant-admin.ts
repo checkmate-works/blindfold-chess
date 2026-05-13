@@ -1,10 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import 'server-only';
 
-import { pointEvents } from '@/lib/db';
 import type { DbTx } from '@/lib/db/types';
 
-import { upsertBalance } from './internal-balance';
+import { recordPointMovement } from './internal-ledger';
 
 export type AdminGrantResult = {
   pointEventId: string;
@@ -46,20 +45,19 @@ export async function grantAdminPoints(
 
   const grantId = randomUUID();
 
-  const [row] = await tx
-    .insert(pointEvents)
-    .values({
-      userId,
-      delta: amount,
-      category: 'promotional',
-      source: 'admin_grant',
-      sourceId: grantId,
-      idempotencyKey: `admin_grant:${grantId}`,
-      metadata,
-    })
-    .returning({ id: pointEvents.id });
+  // Non-idempotent variant: the idempotency key is anchored on a freshly
+  // generated UUID so a UNIQUE conflict here would indicate a serious bug
+  // (UUID collision or programmer error) — let it throw rather than
+  // silently swallow the insert.
+  const { pointEventId } = await recordPointMovement(tx, {
+    userId,
+    delta: amount,
+    category: 'promotional',
+    source: 'admin_grant',
+    sourceId: grantId,
+    idempotencyKey: `admin_grant:${grantId}`,
+    metadata,
+  });
 
-  await upsertBalance(tx, userId, 'promotional', amount);
-
-  return { pointEventId: row.id, grantId };
+  return { pointEventId, grantId };
 }

@@ -47,8 +47,24 @@ const ENTITY_TYPE_TO_SOURCE: Record<PointPostEntityType, PointSource> = {
   topic_post: 'topic_post_created',
 };
 
+/**
+ * Reverse of `ENTITY_TYPE_TO_SOURCE` — derived rather than hand-maintained
+ * so that adding a new entity type cannot accidentally produce a half-wired
+ * map. `Object.fromEntries` of typed entries loses key information at the
+ * type level, so we re-assert the shape with `as`; the runtime contents
+ * are guaranteed correct because the input map is exhaustive over
+ * `PointPostEntityType`.
+ */
+const SOURCE_TO_ENTITY_TYPE: Record<PointSource, PointPostEntityType> = Object.fromEntries(
+  Object.entries(ENTITY_TYPE_TO_SOURCE).map(([entityType, source]) => [source, entityType])
+) as Record<PointSource, PointPostEntityType>;
+
 export function sourceForEntity(entityType: PointPostEntityType): PointSource {
   return ENTITY_TYPE_TO_SOURCE[entityType];
+}
+
+export function entityTypeForSource(source: PointSource): PointPostEntityType {
+  return SOURCE_TO_ENTITY_TYPE[source];
 }
 
 /**

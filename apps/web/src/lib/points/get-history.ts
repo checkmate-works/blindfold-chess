@@ -1,10 +1,15 @@
 import { addDays } from 'date-fns';
-import { and, desc, eq, gt } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import 'server-only';
 
 import { db, pointEvents } from '@/lib/db';
 
-import { POST_MATURATION_DAYS, type PointCategory, type PointSource } from './constants';
+import {
+  POINT_SOURCES,
+  POST_MATURATION_DAYS,
+  type PointCategory,
+  type PointSource,
+} from './constants';
 
 /**
  * One row as rendered on `/mypage/points` — one entry per ledger row.
@@ -32,12 +37,6 @@ export type PointHistoryEntry = {
     | 'admin_grant'
     | 'other';
 };
-
-const UGC_SOURCES: readonly string[] = [
-  'puzzle_created',
-  'position_memory_created',
-  'topic_post_created',
-];
 
 /**
  * Returns the user's point history, newest first, paginated.
@@ -85,41 +84,6 @@ export async function getPointHistory(
   });
 }
 
-/**
- * Whether the user has any history at all. Lets the page render a "first
- * earn your first points" empty state without paginating.
- */
-export async function hasAnyPointHistory(userId: string): Promise<boolean> {
-  const [row] = await db
-    .select({ id: pointEvents.id })
-    .from(pointEvents)
-    .where(eq(pointEvents.userId, userId))
-    .limit(1);
-  return !!row;
-}
-
-/**
- * Count of pending UGC grant rows still expected to mature in the future —
- * powers the "X grants vesting" hint on the page.
- */
-export async function countPendingPostGrants(
-  userId: string,
-  now: Date = new Date()
-): Promise<number> {
-  const rows = await db
-    .select({ delta: pointEvents.delta })
-    .from(pointEvents)
-    .where(
-      and(
-        eq(pointEvents.userId, userId),
-        eq(pointEvents.category, 'earned_pending'),
-        gt(pointEvents.delta, 0),
-        gt(pointEvents.createdAt, addDays(now, -POST_MATURATION_DAYS))
-      )
-    );
-  return rows.length;
-}
-
 function classifyKind(source: string, delta: number, metadata: unknown): PointHistoryEntry['kind'] {
   const meta = (metadata ?? {}) as { reason?: unknown };
   // `reason` here is the lifecycle-stage tag the clawback / maturation
@@ -131,7 +95,7 @@ function classifyKind(source: string, delta: number, metadata: unknown): PointHi
     if (meta.reason === 'post_deleted') return 'post_clawback';
     if (meta.reason === 'maturation') return 'post_matured';
   }
-  if (UGC_SOURCES.includes(source)) {
+  if ((POINT_SOURCES as readonly string[]).includes(source)) {
     return delta > 0 ? 'post_grant' : 'post_clawback';
   }
   if (source === 'admin_grant') return 'admin_grant';

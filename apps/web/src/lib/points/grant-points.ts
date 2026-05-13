@@ -1,7 +1,5 @@
-import { and, eq, sql } from 'drizzle-orm';
 import 'server-only';
 
-import { pointEvents } from '@/lib/db';
 import type { DbTx } from '@/lib/db/types';
 
 import {
@@ -10,7 +8,7 @@ import {
   buildIdempotencyKey,
   sourceForEntity,
 } from './constants';
-import { upsertBalance } from './internal-balance';
+import { readPendingTotalForEntity, recordPointMovement } from './internal-ledger';
 
 export type PointGrantResult = {
   pointEventId: string;
@@ -24,44 +22,29 @@ export type PointGrantResult = {
  *
  * Idempotency is enforced at the DB layer by the UNIQUE constraint on
  * `point_events.idempotency_key` — a retried call for the same entity is a
- * safe no-op (the conflict is swallowed and the existing row is returned).
- *
- * The materialized `user_point_balances` row is upserted in the same
- * transaction. Concurrent grants for the same user/category are serialized
- * by the row-level conflict path (`ON CONFLICT ... DO UPDATE`), which takes
- * a per-row exclusive lock.
+ * safe no-op (the conflict is swallowed and `null` is returned).
  */
 export async function grantPendingPointsForPost(
   tx: DbTx,
   userId: string,
   entity: PointPostEntity
 ): Promise<PointGrantResult | null> {
-  const idempotencyKey = buildIdempotencyKey('post_grant', entity);
-  const source = sourceForEntity(entity.type);
-
-  const inserted = await tx
-    .insert(pointEvents)
-    .values({
+  const result = await recordPointMovement(
+    tx,
+    {
       userId,
       delta: POST_CREATION_POINTS,
       category: 'earned_pending',
-      source,
+      source: sourceForEntity(entity.type),
       sourceId: entity.id,
-      idempotencyKey,
+      idempotencyKey: buildIdempotencyKey('post_grant', entity),
       metadata: { entityType: entity.type },
-    })
-    .onConflictDoNothing({ target: pointEvents.idempotencyKey })
-    .returning({ id: pointEvents.id });
+    },
+    { idempotent: true }
+  );
 
-  // Conflict path: an idempotent retry. Treat as a no-op rather than
-  // double-incrementing the balance.
-  if (inserted.length === 0) {
-    return null;
-  }
-
-  await upsertBalance(tx, userId, 'earned_pending', POST_CREATION_POINTS);
-
-  return { pointEventId: inserted[0].id, amount: POST_CREATION_POINTS };
+  if (!result) return null;
+  return { pointEventId: result.pointEventId, amount: POST_CREATION_POINTS };
 }
 
 /**
@@ -81,44 +64,20 @@ export async function clawbackPendingPointsForPost(
 ): Promise<void> {
   const source = sourceForEntity(entity.type);
 
-  const [agg] = await tx
-    .select({
-      pendingTotal: sql<number>`COALESCE(SUM(${pointEvents.delta}), 0)::int`,
-    })
-    .from(pointEvents)
-    .where(
-      and(
-        eq(pointEvents.userId, userId),
-        eq(pointEvents.source, source),
-        eq(pointEvents.sourceId, entity.id),
-        eq(pointEvents.category, 'earned_pending')
-      )
-    );
+  const pendingTotal = await readPendingTotalForEntity(tx, userId, source, entity.id);
+  if (pendingTotal <= 0) return;
 
-  const pendingTotal = agg?.pendingTotal ?? 0;
-  if (pendingTotal <= 0) {
-    return;
-  }
-
-  const idempotencyKey = buildIdempotencyKey('post_clawback', entity);
-
-  const inserted = await tx
-    .insert(pointEvents)
-    .values({
+  await recordPointMovement(
+    tx,
+    {
       userId,
       delta: -pendingTotal,
       category: 'earned_pending',
       source,
       sourceId: entity.id,
-      idempotencyKey,
+      idempotencyKey: buildIdempotencyKey('post_clawback', entity),
       metadata: { entityType: entity.type, reason: 'post_deleted' },
-    })
-    .onConflictDoNothing({ target: pointEvents.idempotencyKey })
-    .returning({ id: pointEvents.id });
-
-  if (inserted.length === 0) {
-    return;
-  }
-
-  await upsertBalance(tx, userId, 'earned_pending', -pendingTotal);
+    },
+    { idempotent: true }
+  );
 }
