@@ -7,6 +7,7 @@ import { addDays } from 'date-fns';
 
 import type { ActionResult } from '@/lib/action-types';
 import { db, moderationActions, userGrants } from '@/lib/db';
+import { isBenefitType } from '@/lib/db/data/grant-types';
 import { createNotification } from '@/lib/notifications/notification';
 import { getClientIp } from '@/lib/security/client-ip';
 import { calcGrantStartsAt } from '@/lib/users/user-grants';
@@ -31,6 +32,11 @@ export async function createGrant(formData: FormData): Promise<ActionResult> {
   }
   if (!benefitType || !benefitType.trim()) {
     return { error: 'Benefit type is required' };
+  }
+  if (!isBenefitType(benefitType.trim())) {
+    // Guard against form tampering — the UI dropdown only renders known
+    // benefit types, but a hand-crafted POST could supply anything.
+    return { error: `Unknown benefit type: ${benefitType}` };
   }
   const durationDays = Number(durationDaysStr);
   const durationError = validateDurationDays(durationDays);
