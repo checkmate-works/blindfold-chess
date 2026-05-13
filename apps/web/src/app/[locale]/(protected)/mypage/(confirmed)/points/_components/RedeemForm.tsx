@@ -59,8 +59,17 @@ export function RedeemForm({ confirmedBalance, daysPerPoint }: Props) {
         return;
       }
       setSuccess({ days: result.durationDays });
-      // Server Action already revalidated `/mypage/points`; this nudges the
-      // current segment to refetch the new balance / history snapshot.
+      // Toggle the same `<html data-ads-hidden>` attribute the inline
+      // no-flash script writes on initial page load. The Server Action
+      // already wrote the `bfc_ads_hidden` cookie, but the attribute is
+      // only read once at boot — without this update, the CSS rule that
+      // hides ad slots would not apply to the current view and the user
+      // would keep seeing ads until a full reload.
+      if (typeof document !== 'undefined') {
+        document.documentElement.dataset.adsHidden = 'true';
+      }
+      // Refresh the RSC payload so the new balance / history snapshot
+      // renders without a full navigation.
       router.refresh();
     });
   };
