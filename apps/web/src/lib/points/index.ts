@@ -16,6 +16,18 @@ export type {
   PointPostEntityType,
   PointSource,
 } from './constants';
+export { getPointBalanceSummary } from './get-balance';
+export type { PointBalanceSummary } from './get-balance';
+export { getPostGrantForEntity } from './get-grant';
+export { countPendingPostGrants, getPointHistory, hasAnyPointHistory } from './get-history';
+export type { PointHistoryEntry } from './get-history';
 export { clawbackPendingPointsForPost, grantPendingPointsForPost } from './grant-points';
 export type { PointGrantResult } from './grant-points';
-export { getPostGrantForEntity } from './get-grant';
+export { maturePendingPoints } from './mature-points';
+export type { MaturationReport } from './mature-points';
+export {
+  AD_FREE_DAYS_PER_POINT,
+  AD_FREE_PRODUCT_CODE,
+  redeemPointsForAdFree,
+} from './redeem-points';
+export type { RedeemResult } from './redeem-points';

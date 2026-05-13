@@ -2310,6 +2310,8 @@
       "expProgress": "{current} / {next} Exp",
       "expRemaining": "{remaining} Exp to next level",
       "viewExpLeaderboard": "View Exp Leaderboard",
+      "pointsTotal": "{total} pt",
+      "pointsBreakdown": "{confirmed} confirmed · {pending} pending",
       "accountTitle": "Account",
       "subscriptionTitle": "Subscription",
       "benefitsTitle": "Benefits",
@@ -2396,6 +2398,52 @@
       "admin_manual": "Granted by staff",
       "topic_post": "Granted for topic post",
       "position_creation": "Granted for position submission"
+    }
+  },
+  "MypagePoints": {
+    "title": "Points",
+    "sectionTitle": "Your points",
+    "breadcrumbMypage": "My Page",
+    "balance": {
+      "unit": "pt",
+      "confirmedLabel": "Available",
+      "pendingLabel": "Vesting",
+      "amount": "{amount} pt",
+      "pendingNote": "Vesting points unlock {days, plural, one {# day} other {# days}} after the source post, provided it is not removed before then."
+    },
+    "redeem": {
+      "title": "Redeem points for ad-free time",
+      "description": "Each point converts to one day of ad-free browsing. Days stack on top of any ad-free time you already have.",
+      "pointSuffix": "pt",
+      "daysReceived": "{days, plural, one {# day} other {# days}} of ad-free",
+      "submit": "Redeem {amount} pt",
+      "submitting": "Redeeming…",
+      "successMessage": "Done — {days, plural, one {# day} other {# days}} of ad-free time has been added.",
+      "errors": {
+        "invalid_amount": "Please enter a positive whole number.",
+        "insufficient_balance": "You do not have enough confirmed points.",
+        "signInRequired": "Please sign in to redeem.",
+        "banned": "Your account is restricted.",
+        "rateLimited": "Too many redemptions in a short period — try again later."
+      }
+    },
+    "history": {
+      "title": "History",
+      "empty": "No point activity yet.",
+      "learnHowToEarn": "See how to earn points.",
+      "headerDate": "Date",
+      "headerEvent": "Event",
+      "headerDelta": "Amount",
+      "maturesOn": "Vests on {date}",
+      "truncatedNote": "Showing the most recent entries.",
+      "kind": {
+        "post_grant": "Earned from a post",
+        "post_clawback": "Reversed for deleted post",
+        "post_matured": "Vesting completed",
+        "redemption": "Redeemed for ad-free",
+        "purchase": "Purchased",
+        "other": "Adjustment"
+      }
     }
   },
   "MypageBenefitHistory": {

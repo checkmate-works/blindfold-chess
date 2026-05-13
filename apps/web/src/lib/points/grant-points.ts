@@ -1,7 +1,7 @@
 import { and, eq, sql } from 'drizzle-orm';
 import 'server-only';
 
-import { pointEvents, userPointBalances } from '@/lib/db';
+import { pointEvents } from '@/lib/db';
 import type { DbTx } from '@/lib/db/types';
 
 import {
@@ -10,6 +10,7 @@ import {
   buildIdempotencyKey,
   sourceForEntity,
 } from './constants';
+import { upsertBalance } from './internal-balance';
 
 export type PointGrantResult = {
   pointEventId: string;
@@ -120,35 +121,4 @@ export async function clawbackPendingPointsForPost(
   }
 
   await upsertBalance(tx, userId, 'earned_pending', -pendingTotal);
-}
-
-/**
- * Apply a signed delta to `user_point_balances` for `(userId, category)`.
- * Creates the row on first touch; subsequent calls update in place. The
- * UPDATE path uses `balance + EXCLUDED.balance` rather than `EXCLUDED.balance`
- * so concurrent inserts compose additively.
- */
-async function upsertBalance(
-  tx: DbTx,
-  userId: string,
-  category: 'earned_pending' | 'earned' | 'purchased' | 'promotional',
-  delta: number
-): Promise<void> {
-  await tx
-    .insert(userPointBalances)
-    .values({
-      userId,
-      category,
-      balance: delta,
-      version: 1,
-      updatedAt: new Date(),
-    })
-    .onConflictDoUpdate({
-      target: [userPointBalances.userId, userPointBalances.category],
-      set: {
-        balance: sql`${userPointBalances.balance} + ${delta}`,
-        version: sql`${userPointBalances.version} + 1`,
-        updatedAt: new Date(),
-      },
-    });
 }

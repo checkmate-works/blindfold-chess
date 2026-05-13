@@ -2310,6 +2310,8 @@
       "expProgress": "{current} / {next} Exp",
       "expRemaining": "{remaining} Exp até o próximo nível",
       "viewExpLeaderboard": "Ver Ranking de Exp",
+      "pointsTotal": "{total} pt",
+      "pointsBreakdown": "{confirmed} disponíveis · {pending} aguardando",
       "accountTitle": "Conta",
       "subscriptionTitle": "Assinatura",
       "benefitsTitle": "Benefícios",
@@ -2396,6 +2398,52 @@
       "admin_manual": "Concedido pela equipe",
       "topic_post": "Concedido por postagem em tópico",
       "position_creation": "Concedido por envio de posição"
+    }
+  },
+  "MypagePoints": {
+    "title": "Pontos",
+    "sectionTitle": "Seus pontos",
+    "breadcrumbMypage": "Minha Página",
+    "balance": {
+      "unit": "pt",
+      "confirmedLabel": "Disponíveis",
+      "pendingLabel": "Aguardando",
+      "amount": "{amount} pt",
+      "pendingNote": "Os pontos aguardando ficam disponíveis após {days, plural, one {# dia} other {# dias}}, desde que a publicação de origem não seja removida antes."
+    },
+    "redeem": {
+      "title": "Resgatar pontos por tempo sem anúncios",
+      "description": "Cada ponto vira um dia sem anúncios. Os dias são somados ao tempo sem anúncios que você já possui.",
+      "pointSuffix": "pt",
+      "daysReceived": "{days, plural, one {# dia} other {# dias}} sem anúncios",
+      "submit": "Resgatar {amount} pt",
+      "submitting": "Resgatando…",
+      "successMessage": "Pronto — {days, plural, one {# dia} other {# dias}} sem anúncios foram adicionados.",
+      "errors": {
+        "invalid_amount": "Informe um número inteiro positivo.",
+        "insufficient_balance": "Você não tem pontos disponíveis suficientes.",
+        "signInRequired": "Entre na sua conta para resgatar.",
+        "banned": "Sua conta está restrita.",
+        "rateLimited": "Muitos resgates em pouco tempo — tente novamente mais tarde."
+      }
+    },
+    "history": {
+      "title": "Histórico",
+      "empty": "Ainda não há atividade de pontos.",
+      "learnHowToEarn": "Veja como ganhar pontos.",
+      "headerDate": "Data",
+      "headerEvent": "Evento",
+      "headerDelta": "Quantidade",
+      "maturesOn": "Confirma em {date}",
+      "truncatedNote": "Exibindo as entradas mais recentes.",
+      "kind": {
+        "post_grant": "Ganhos por uma publicação",
+        "post_clawback": "Revertidos por publicação removida",
+        "post_matured": "Confirmação concluída",
+        "redemption": "Resgatados por tempo sem anúncios",
+        "purchase": "Comprados",
+        "other": "Ajuste"
+      }
     }
   },
   "MypageBenefitHistory": {

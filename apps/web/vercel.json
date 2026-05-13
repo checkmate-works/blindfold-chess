@@ -7,6 +7,10 @@
     {
       "path": "/api/cron/reap-post-images",
       "schedule": "30 3 * * *"
+    },
+    {
+      "path": "/api/cron/mature-pending-points",
+      "schedule": "0 4 * * *"
     }
   ]
 }

@@ -2310,6 +2310,8 @@
       "expProgress": "{current} / {next} Exp",
       "expRemaining": "次のレベルまで あと {remaining} Exp",
       "viewExpLeaderboard": "Exp ランキングを見る",
+      "pointsTotal": "{total} pt",
+      "pointsBreakdown": "確定 {confirmed} / 確定待ち {pending}",
       "accountTitle": "アカウント",
       "subscriptionTitle": "サブスクリプション",
       "benefitsTitle": "特典",
@@ -2396,6 +2398,52 @@
       "admin_manual": "運営からの付与",
       "topic_post": "トピック投稿による付与",
       "position_creation": "問題投稿による付与"
+    }
+  },
+  "MypagePoints": {
+    "title": "ポイント",
+    "sectionTitle": "ポイント残高",
+    "breadcrumbMypage": "マイページ",
+    "balance": {
+      "unit": "pt",
+      "confirmedLabel": "利用可能",
+      "pendingLabel": "確定待ち",
+      "amount": "{amount} pt",
+      "pendingNote": "確定待ちのポイントは、元の投稿が削除されないまま {days} 日経過すると利用可能になります。"
+    },
+    "redeem": {
+      "title": "ポイントを広告非表示と交換",
+      "description": "1 ポイントで広告非表示 1 日と交換できます。すでに有効な広告非表示期間があれば、その後ろに加算されます。",
+      "pointSuffix": "pt",
+      "daysReceived": "広告非表示 {days} 日分",
+      "submit": "{amount} pt を交換する",
+      "submitting": "交換中…",
+      "successMessage": "完了しました — 広告非表示が {days} 日分追加されました。",
+      "errors": {
+        "invalid_amount": "正の整数を入力してください。",
+        "insufficient_balance": "利用可能なポイントが不足しています。",
+        "signInRequired": "サインインしてから交換してください。",
+        "banned": "アカウントが利用制限されています。",
+        "rateLimited": "短時間に交換しすぎました。しばらく経ってから再度お試しください。"
+      }
+    },
+    "history": {
+      "title": "履歴",
+      "empty": "ポイント関連の履歴はありません。",
+      "learnHowToEarn": "獲得方法を確認する",
+      "headerDate": "日付",
+      "headerEvent": "種別",
+      "headerDelta": "増減",
+      "maturesOn": "確定: {date}",
+      "truncatedNote": "最新の履歴のみを表示しています。",
+      "kind": {
+        "post_grant": "投稿によるポイント獲得",
+        "post_clawback": "投稿削除によるポイント取消",
+        "post_matured": "ポイントの確定",
+        "redemption": "広告非表示との交換",
+        "purchase": "ポイント購入",
+        "other": "調整"
+      }
     }
   },
   "MypageBenefitHistory": {

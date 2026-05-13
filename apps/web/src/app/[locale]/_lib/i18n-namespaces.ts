@@ -47,6 +47,7 @@ export const NAMESPACE_CLASSIFICATION = {
   MypageFollowing: 'client',
   MypageLikes: 'client',
   MypageNotifications: 'client',
+  MypagePoints: 'client',
   MypagePosts: 'client',
   Preferences: 'client',
   affiliateDisclosure: 'client',

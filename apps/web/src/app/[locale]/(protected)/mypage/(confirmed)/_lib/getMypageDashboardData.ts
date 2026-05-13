@@ -1,6 +1,7 @@
 import { and, count, eq, inArray, isNull } from 'drizzle-orm';
 
 import { db, likes, profiles, topicPosts, userExp, userInterviewAnswers } from '@/lib/db';
+import { type PointBalanceSummary, getPointBalanceSummary } from '@/lib/points';
 
 import { INTERVIEW_QUESTION_KEYS } from '@/app/[locale]/_lib/interview';
 
@@ -11,10 +12,11 @@ export type MypageDashboardData = {
   likesCount: number;
   unansweredInterviewCount: number;
   totalExp: number;
+  pointBalance: PointBalanceSummary;
 };
 
 export async function getMypageDashboardData(userId: string): Promise<MypageDashboardData> {
-  const [profileResult, likesResult, answeredResult, expResult] = await Promise.all([
+  const [profileResult, likesResult, answeredResult, expResult, pointBalance] = await Promise.all([
     db
       .select({
         username: profiles.username,
@@ -50,6 +52,7 @@ export async function getMypageDashboardData(userId: string): Promise<MypageDash
       .from(userExp)
       .where(eq(userExp.userId, userId))
       .limit(1),
+    getPointBalanceSummary(userId),
   ]);
 
   const profile = profileResult[0];
@@ -61,5 +64,13 @@ export async function getMypageDashboardData(userId: string): Promise<MypageDash
   const unansweredInterviewCount = Math.max(0, INTERVIEW_QUESTION_KEYS.length - answeredCount);
   const totalExp = expResult[0]?.totalExp ?? 0;
 
-  return { username, displayName, avatarUrl, likesCount, unansweredInterviewCount, totalExp };
+  return {
+    username,
+    displayName,
+    avatarUrl,
+    likesCount,
+    unansweredInterviewCount,
+    totalExp,
+    pointBalance,
+  };
 }

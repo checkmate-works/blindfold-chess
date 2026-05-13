@@ -118,6 +118,14 @@ export const RATE_LIMITS = {
   createPuzzle: { action: 'create_puzzle', maxAttempts: 10, windowMs: 3_600_000 },
   updatePuzzle: { action: 'update_puzzle', maxAttempts: 20, windowMs: 3_600_000 },
   deletePuzzle: { action: 'delete_puzzle', maxAttempts: 10, windowMs: 3_600_000 },
+  /**
+   * Per-user limit for point redemptions. Tight cap (10/hour) because each
+   * redemption mutates `user_point_balances` + writes a `user_grants` row
+   * + writes two ledger rows. A reasonable user never needs to redeem
+   * faster than this; the limit is mostly defense against runaway client
+   * loops or scripted abuse, not a UX budget.
+   */
+  redeemPoints: { action: 'redeem_points', maxAttempts: 10, windowMs: 3_600_000 },
 } as const;
 
 /**

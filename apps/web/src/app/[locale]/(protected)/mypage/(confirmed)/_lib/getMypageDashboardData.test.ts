@@ -103,8 +103,21 @@ vi.mock('@/lib/db', () => {
     topicPosts: hoisted.topicPostsTable,
     userInterviewAnswers: hoisted.userInterviewAnswersTable,
     userExp: hoisted.userExpTable,
+    // The dashboard data fetch now also reads the user's point balance via
+    // `getPointBalanceSummary`, which is mocked below — this sentinel just
+    // satisfies the import resolution.
+    userPointBalances: { __table: 'user_point_balances' },
   };
 });
+
+vi.mock('@/lib/points', () => ({
+  getPointBalanceSummary: vi.fn().mockResolvedValue({
+    confirmed: 0,
+    pending: 0,
+    total: 0,
+    byCategory: { earned_pending: 0, earned: 0, purchased: 0, promotional: 0 },
+  }),
+}));
 
 vi.mock('drizzle-orm', () => ({
   and: (...args: unknown[]) => ({ __and: args }),
@@ -304,6 +317,12 @@ describe('getMypageDashboardData', () => {
         likesCount: 15,
         unansweredInterviewCount: 0,
         totalExp: 5000,
+        pointBalance: {
+          confirmed: 0,
+          pending: 0,
+          total: 0,
+          byCategory: { earned_pending: 0, earned: 0, purchased: 0, promotional: 0 },
+        },
       });
     });
   });
