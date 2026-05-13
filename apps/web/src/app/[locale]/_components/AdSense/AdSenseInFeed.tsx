@@ -54,13 +54,22 @@ export function AdSenseInFeed({ slotId, layoutKey }: AdSenseInFeedProps) {
   }, [availability]);
 
   if (IS_LOCAL_DEV || !ADSENSE_PUBLISHER_ID) {
-    return <AdPlaceholder slot="native-ad" />;
+    // Wrap the placeholder in `.ad-slot-wrapper` so the no-flash hide rule
+    // (in `[locale]/layout.tsx`) applies locally — without the wrapper the
+    // CSS selector has no match and the placeholder would stay visible
+    // even when the user holds an `ad_free` entitlement, masking what is
+    // in fact a working hide.
+    return (
+      <div className="ad-slot-wrapper" data-ad-slot="native-ad">
+        <AdPlaceholder slot="native-ad" />
+      </div>
+    );
   }
 
   if (!availability?.all) return null;
 
   return (
-    <div className="max-w-full overflow-hidden">
+    <div className="ad-slot-wrapper max-w-full overflow-hidden" data-ad-slot="native-ad">
       <ins
         className="adsbygoogle"
         style={{ display: 'block' }}

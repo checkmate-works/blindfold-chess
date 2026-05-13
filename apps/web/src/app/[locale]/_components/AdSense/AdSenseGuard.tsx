@@ -22,15 +22,23 @@ type Props = {
  *
  * The `<div className="ad-slot-wrapper">` is the CSS hook used by the
  * no-flash rule in `globals.css` to hide the reserved ad space before
- * paint when the cookie says the current viewer has opted out.
+ * paint when the cookie says the current viewer has opted out. The
+ * placeholder rendered in `IS_LOCAL_DEV` is wrapped in the same hook so
+ * the ad-free entitlement flow (redemption / subscription) is verifiable
+ * end-to-end locally — without the wrapper the CSS rule would have no
+ * selector match and the placeholder would stay visible forever, masking
+ * what is in fact a working hide.
  */
 export async function AdSenseGuard({ slot, slotId, className }: Props) {
   if (isNoAdsScope()) return null;
-  if (IS_LOCAL_DEV) return <AdPlaceholder slot={slot} />;
 
   return (
     <div className="ad-slot-wrapper" data-ad-slot={slot}>
-      <AdSenseDisplay slot={slot} slotId={slotId} className={className} />
+      {IS_LOCAL_DEV ? (
+        <AdPlaceholder slot={slot} />
+      ) : (
+        <AdSenseDisplay slot={slot} slotId={slotId} className={className} />
+      )}
     </div>
   );
 }

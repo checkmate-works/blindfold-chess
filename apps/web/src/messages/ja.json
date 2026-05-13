@@ -3059,7 +3059,15 @@
     },
     "points": {
       "title": "ポイント付与",
-      "navLabel": "ポイント付与"
+      "navLabel": "ポイント付与",
+      "showing": "全 {total} 件中 {from}–{to} 件を表示",
+      "empty": "管理付与の履歴はまだありません。",
+      "columns": {
+        "user": "ユーザー",
+        "amount": "付与額",
+        "reason": "理由",
+        "grantedAt": "付与日時"
+      }
     },
     "grants": {
       "title": "特典付与",

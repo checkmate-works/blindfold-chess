@@ -3059,7 +3059,15 @@
     },
     "points": {
       "title": "Points",
-      "navLabel": "Points"
+      "navLabel": "Points",
+      "showing": "Showing {from}–{to} of {total} grants",
+      "empty": "No admin point grants yet.",
+      "columns": {
+        "user": "User",
+        "amount": "Amount",
+        "reason": "Reason",
+        "grantedAt": "Granted at"
+      }
     },
     "grants": {
       "title": "Grants",

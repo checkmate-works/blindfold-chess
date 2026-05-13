@@ -3059,7 +3059,15 @@
     },
     "points": {
       "title": "Puntos",
-      "navLabel": "Puntos"
+      "navLabel": "Puntos",
+      "showing": "Mostrando {from}–{to} de {total} concesiones",
+      "empty": "Todavía no hay concesiones de puntos por staff.",
+      "columns": {
+        "user": "Usuario",
+        "amount": "Cantidad",
+        "reason": "Motivo",
+        "grantedAt": "Fecha"
+      }
     },
     "grants": {
       "title": "Concesiones",
