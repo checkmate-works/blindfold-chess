@@ -18,8 +18,8 @@ describe("skillLevelToMaiaElo", () => {
   });
 
   it("places level 10 near the middle of the range", () => {
-    // 1100 + 9/19 * 800 ≈ 1479
-    expect(skillLevelToMaiaElo(10 as SkillLevel)).toBe(1479);
+    // 1100 + 9/19 * 800 ≈ 1479 → rounded to nearest 10 = 1480
+    expect(skillLevelToMaiaElo(10 as SkillLevel)).toBe(1480);
   });
 
   it("is monotonically non-decreasing across all 20 levels", () => {
@@ -28,6 +28,13 @@ describe("skillLevelToMaiaElo", () => {
       const elo = skillLevelToMaiaElo(level as SkillLevel);
       expect(elo).toBeGreaterThanOrEqual(prev);
       prev = elo;
+    }
+  });
+
+  it("rounds every result to a multiple of 10 (no awkward 1268-style values)", () => {
+    for (let level = 1; level <= 20; level++) {
+      const elo = skillLevelToMaiaElo(level as SkillLevel);
+      expect(elo % 10).toBe(0);
     }
   });
 

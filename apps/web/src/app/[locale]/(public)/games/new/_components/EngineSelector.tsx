@@ -7,7 +7,6 @@ import { FaLock } from 'react-icons/fa';
 
 import { type EngineKind } from '@/lib/engines';
 
-import { type HelpStep, HelpTourButton } from '@/app/[locale]/_components/HelpTourButton';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 
 type Props = {
@@ -27,7 +26,6 @@ type EngineOption = {
   kind: EngineKind;
   logoSrc: string;
   labelKey: 'engineStockfishLabel' | 'engineMaiaLabel';
-  descriptionKey: 'engineStockfishDescription' | 'engineMaiaDescription';
 };
 
 /**
@@ -39,24 +37,22 @@ const ENGINE_OPTIONS: ReadonlyArray<EngineOption> = [
     kind: 'stockfish',
     logoSrc: '/images/engines/stockfish.png',
     labelKey: 'engineStockfishLabel',
-    descriptionKey: 'engineStockfishDescription',
   },
   {
     kind: 'maia',
     logoSrc: '/images/engines/maia.png',
     labelKey: 'engineMaiaLabel',
-    descriptionKey: 'engineMaiaDescription',
   },
 ];
 
 /**
  * Card-style two-up engine picker. Each card shows just the engine's
  * official logo and label — the longer "what is this engine?" copy
- * lives behind a `?` help tour (driver.js) anchored to the section
- * title, so the cards stay compact on narrow viewports.
+ * lives behind the page-level `?` help tour, so the cards stay compact
+ * on narrow viewports.
  *
  * When `maiaUnlocked === false`, the Maia card is greyed out and shows
- * a "Subscribers only" lock badge; clicking it is a no-op.
+ * a "Coming soon" lock badge; clicking it is a no-op.
  */
 export function EngineSelector({ value, onChange, maiaUnlocked, disabled = false }: Props) {
   const t = useTranslations('newGame');
@@ -67,20 +63,12 @@ export function EngineSelector({ value, onChange, maiaUnlocked, disabled = false
     onChange(kind);
   };
 
-  const helpSteps: HelpStep[] = ENGINE_OPTIONS.map((opt) => ({
-    targetId: `engine-card-${opt.kind}`,
-    title: t(opt.labelKey),
-    description: t(opt.descriptionKey),
-    side: 'bottom',
-    align: 'center',
-  }));
-
   return (
-    <div className={`space-y-4 ${disabled ? 'opacity-60 pointer-events-none' : ''}`}>
-      <div className="flex items-center gap-2">
-        <SectionTitle>{t('selectEngine')}</SectionTitle>
-        <HelpTourButton steps={helpSteps} label={t('engineHelpLabel')} />
-      </div>
+    <div
+      data-tour-id="engine-selector"
+      className={`space-y-4 ${disabled ? 'opacity-60 pointer-events-none' : ''}`}
+    >
+      <SectionTitle>{t('selectEngine')}</SectionTitle>
 
       <div className="grid grid-cols-2 gap-4">
         {ENGINE_OPTIONS.map((opt) => {
@@ -90,7 +78,6 @@ export function EngineSelector({ value, onChange, maiaUnlocked, disabled = false
             <button
               key={opt.kind}
               type="button"
-              data-tour-id={`engine-card-${opt.kind}`}
               onClick={() => handleClick(opt.kind)}
               disabled={disabled || isLocked}
               aria-pressed={isSelected}
