@@ -5,6 +5,7 @@
   "exports": {
     "./ai-game": "./src/ai-game/index.ts",
     "./ai-game/engine": "./src/ai-game/engine/index.ts",
+    "./ai-game/opponent": "./src/ai-game/opponent/index.ts",
     "./ai-game/notation-input": "./src/ai-game/notation-input/index.ts",
     "./ai-game/notation-input/client": "./src/ai-game/notation-input/client.ts",
     "./chess-core": "./src/chess-core/index.ts",
