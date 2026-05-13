@@ -3787,15 +3787,14 @@
     "title": "¡Gracias!",
     "sectionTitle": "Puntos obtenidos",
     "continueButton": "Ver tu publicación",
-    "viewBenefitsButton": "Ver tus beneficios",
+    "viewPointsButton": "Ver tus puntos",
     "genericMessage": "Gracias por tu contribución.",
-    "pointsExplanation": {
-      "puzzle_created": "El envío de tu puzzle te ha otorgado puntos:",
-      "position_memory_created": "El envío de tu problema de memoria te ha otorgado puntos:",
-      "topic_post_created": "Tu publicación en un tema te ha otorgado puntos:",
-      "default": "Tu contribución te ha otorgado puntos:"
+    "pointsAward": {
+      "puzzle_created": "Como agradecimiento por el envío de tu puzzle, te otorgamos {amount, plural, one {# punto} other {# puntos}}.",
+      "position_memory_created": "Como agradecimiento por el envío de tu problema de memoria, te otorgamos {amount, plural, one {# punto} other {# puntos}}.",
+      "topic_post_created": "Como agradecimiento por tu publicación en un tema, te otorgamos {amount, plural, one {# punto} other {# puntos}}.",
+      "default": "Como agradecimiento por tu contribución, te otorgamos {amount, plural, one {# punto} other {# puntos}}."
     },
-    "pointsAward": "+{amount} pt",
     "maturationNote": "Estos puntos quedarán disponibles para canjear en {days, plural, one {# día} other {# días}}, siempre que tu publicación no se elimine antes."
   },
   "authPrompt": {

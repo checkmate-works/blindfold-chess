@@ -36,16 +36,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 /**
- * Map a `point_events.source` value to the explanation i18n key. Falls
- * through to `'default'` for unknown sources so the page stays graceful.
+ * Map a `point_events.source` value to the certificate-copy i18n key. The
+ * referenced message is a complete sentence that includes the awarded
+ * amount via the `{amount}` placeholder. Unknown sources fall through to
+ * the generic `default` line so the page stays graceful.
  */
-function explanationKeyFor(source: string): string {
+function awardKeyFor(source: string): string {
   const map: Record<PointSource, string> = {
-    puzzle_created: 'pointsExplanation.puzzle_created',
-    position_memory_created: 'pointsExplanation.position_memory_created',
-    topic_post_created: 'pointsExplanation.topic_post_created',
+    puzzle_created: 'pointsAward.puzzle_created',
+    position_memory_created: 'pointsAward.position_memory_created',
+    topic_post_created: 'pointsAward.topic_post_created',
   };
-  return (map as Record<string, string>)[source] ?? 'pointsExplanation.default';
+  return (map as Record<string, string>)[source] ?? 'pointsAward.default';
 }
 
 export default async function ThanksPage({ params, searchParams }: Props) {
@@ -67,7 +69,7 @@ export default async function ThanksPage({ params, searchParams }: Props) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  let award: { amount: number; explanationKey: string } | null = null;
+  let award: { amount: number; awardKey: string } | null = null;
   if (user && pointEventId) {
     const [row] = await db
       .select({
@@ -81,7 +83,7 @@ export default async function ThanksPage({ params, searchParams }: Props) {
     if (row && row.amount > 0) {
       award = {
         amount: row.amount,
-        explanationKey: explanationKeyFor(row.source),
+        awardKey: awardKeyFor(row.source),
       };
     }
   }
@@ -92,10 +94,9 @@ export default async function ThanksPage({ params, searchParams }: Props) {
 
       {award ? (
         <div className="space-y-4">
-          <p className="text-foreground">{t(award.explanationKey)}</p>
           <CertificateFrame>
-            <p className="text-base sm:text-2xl font-serif font-bold text-podium-gold-foreground tracking-widest text-center">
-              {t('pointsAward', { amount: award.amount })}
+            <p className="text-base sm:text-xl font-serif font-bold text-podium-gold-foreground text-center leading-relaxed">
+              {t(award.awardKey, { amount: award.amount })}
             </p>
           </CertificateFrame>
           <p className="text-sm text-muted-foreground text-center">
@@ -112,9 +113,9 @@ export default async function ThanksPage({ params, searchParams }: Props) {
             {t('continueButton')}
           </Button>
         </Link>
-        <Link href={`/${locale}/mypage/benefits`} className="block">
+        <Link href={`/${locale}/mypage/points`} className="block">
           <Button asChild variant="outline" size="lg" fullWidth>
-            {t('viewBenefitsButton')}
+            {t('viewPointsButton')}
           </Button>
         </Link>
       </div>

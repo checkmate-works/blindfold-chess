@@ -3787,15 +3787,14 @@
     "title": "Obrigado!",
     "sectionTitle": "Pontos ganhos",
     "continueButton": "Ver sua publicação",
-    "viewBenefitsButton": "Ver seus benefícios",
+    "viewPointsButton": "Ver seus pontos",
     "genericMessage": "Obrigado pela sua contribuição.",
-    "pointsExplanation": {
-      "puzzle_created": "O envio do seu puzzle lhe rendeu pontos:",
-      "position_memory_created": "O envio do seu problema de memória lhe rendeu pontos:",
-      "topic_post_created": "Sua publicação em um tópico lhe rendeu pontos:",
-      "default": "Sua contribuição lhe rendeu pontos:"
+    "pointsAward": {
+      "puzzle_created": "Como agradecimento pelo envio do seu puzzle, concedemos {amount, plural, one {# ponto} other {# pontos}}.",
+      "position_memory_created": "Como agradecimento pelo envio do seu problema de memória, concedemos {amount, plural, one {# ponto} other {# pontos}}.",
+      "topic_post_created": "Como agradecimento pela sua publicação em um tópico, concedemos {amount, plural, one {# ponto} other {# pontos}}.",
+      "default": "Como agradecimento pela sua contribuição, concedemos {amount, plural, one {# ponto} other {# pontos}}."
     },
-    "pointsAward": "+{amount} pt",
     "maturationNote": "Esses pontos ficarão disponíveis para resgate em {days, plural, one {# dia} other {# dias}}, desde que sua publicação não seja removida antes."
   },
   "authPrompt": {

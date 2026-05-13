@@ -3787,15 +3787,14 @@
     "title": "Thanks!",
     "sectionTitle": "Points earned",
     "continueButton": "View your post",
-    "viewBenefitsButton": "View your benefits",
+    "viewPointsButton": "View your points",
     "genericMessage": "Thanks for your contribution.",
-    "pointsExplanation": {
-      "puzzle_created": "Your puzzle submission earned you points:",
-      "position_memory_created": "Your position-memory submission earned you points:",
-      "topic_post_created": "Your topic post earned you points:",
-      "default": "Your contribution earned you points:"
+    "pointsAward": {
+      "puzzle_created": "As a thank-you for submitting your puzzle, we are awarding you {amount, plural, one {# point} other {# points}}.",
+      "position_memory_created": "As a thank-you for submitting your position-memory problem, we are awarding you {amount, plural, one {# point} other {# points}}.",
+      "topic_post_created": "As a thank-you for your topic post, we are awarding you {amount, plural, one {# point} other {# points}}.",
+      "default": "As a thank-you for your contribution, we are awarding you {amount, plural, one {# point} other {# points}}."
     },
-    "pointsAward": "+{amount} pt",
     "maturationNote": "These points become available for redemption in {days, plural, one {# day} other {# days}}, provided your post is not removed before then."
   },
   "authPrompt": {
