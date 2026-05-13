@@ -2442,6 +2442,7 @@
         "post_matured": "ポイントの確定",
         "redemption": "広告非表示との交換",
         "purchase": "ポイント購入",
+        "admin_grant": "運営からの付与",
         "other": "調整"
       }
     }
@@ -2539,6 +2540,9 @@
     "benefitGrantMessage": {
       "topic_post": "トピックの投稿のお礼として、{days}日間の広告非表示特典が付与されました",
       "default": "{days}日間の広告非表示特典が付与されました"
+    },
+    "pointGrantMessage": {
+      "default": "{amount} ポイントが付与されました"
     }
   },
   "deleteAccount": {

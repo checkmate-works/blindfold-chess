@@ -23,6 +23,7 @@ import {
   isAchievementGrantedMetadata,
   isAnnouncementMetadata,
   isBenefitGrantMetadata,
+  isPointGrantMetadata,
   isPositionMetadata,
   isPostMetadata,
   isReplyMetadata,
@@ -126,6 +127,18 @@ export function NotificationItem({ notification, currentUsername }: Props) {
             return t(specificKey, { days: notification.metadata.durationDays });
           }
           return t('benefitGrantMessage.default', { days: notification.metadata.durationDays });
+        }
+        return t('unknownNotification');
+      case 'point_grant':
+        if (isPointGrantMetadata(notification.metadata)) {
+          // Surface the admin's free-form memo verbatim when it exists —
+          // it is almost always more informative than the generic
+          // "you received N points" fallback (e.g., "Compensation for
+          // outage 2026-05-12").
+          if (notification.metadata.reason) {
+            return notification.metadata.reason;
+          }
+          return t('pointGrantMessage.default', { amount: notification.metadata.amount });
         }
         return t('unknownNotification');
       case 'achievement_granted':
@@ -240,6 +253,9 @@ export function NotificationItem({ notification, currentUsername }: Props) {
     if (notification.type === 'benefit_grant') {
       return '/mypage/benefits';
     }
+    if (notification.type === 'point_grant') {
+      return '/mypage/points';
+    }
     return null;
   }
 
@@ -270,7 +286,7 @@ export function NotificationItem({ notification, currentUsername }: Props) {
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground flex-shrink-0">
           <HiTrophy className="h-5 w-5" />
         </div>
-      ) : notification.type === 'benefit_grant' ? (
+      ) : notification.type === 'benefit_grant' || notification.type === 'point_grant' ? (
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground flex-shrink-0">
           <HiGift className="h-5 w-5" />
         </div>

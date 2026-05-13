@@ -6,6 +6,7 @@ import { requireAdmin } from '@/app/admin/_lib/auth';
 
 import type { ActionResult } from '@/lib/action-types';
 import { db, moderationActions } from '@/lib/db';
+import { createNotification } from '@/lib/notifications/notification';
 import { grantAdminPoints } from '@/lib/points';
 import { getClientIp } from '@/lib/security/client-ip';
 
@@ -43,8 +44,8 @@ export async function createPointGrant(formData: FormData): Promise<ActionResult
   const ipAddress = await getClientIp();
 
   try {
-    await db.transaction(async (tx) => {
-      const grant = await grantAdminPoints(tx, userId, amount, {
+    const grant = await db.transaction(async (tx) => {
+      const inserted = await grantAdminPoints(tx, userId, amount, {
         actorId: auth.userId,
         reason,
       });
@@ -56,13 +57,31 @@ export async function createPointGrant(formData: FormData): Promise<ActionResult
         targetId: userId,
         reason,
         metadata: {
-          pointEventId: grant.pointEventId,
-          grantId: grant.grantId,
+          pointEventId: inserted.pointEventId,
+          grantId: inserted.grantId,
           amount,
           category: 'promotional',
         },
         ipAddress,
       });
+
+      return inserted;
+    });
+
+    // Notify the recipient that they got points. The notification is
+    // fire-and-forget — its failure must not roll back the transaction
+    // above, so we only invoke it once the transaction has committed.
+    createNotification({
+      userId,
+      actorId: auth.userId,
+      type: 'point_grant',
+      targetType: 'point_event',
+      targetId: grant.pointEventId,
+      metadata: {
+        amount,
+        category: 'promotional',
+        reason,
+      },
     });
 
     revalidatePath('/admin/points');

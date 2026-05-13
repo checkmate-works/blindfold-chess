@@ -2442,6 +2442,7 @@
         "post_matured": "Confirmação concluída",
         "redemption": "Resgatados por tempo sem anúncios",
         "purchase": "Comprados",
+        "admin_grant": "Concedidos pela equipe",
         "other": "Ajuste"
       }
     }
@@ -2539,6 +2540,9 @@
     "benefitGrantMessage": {
       "topic_post": "Obrigado pela sua postagem no tópico — você recebeu {days} dias de benefício sem anúncios",
       "default": "Você recebeu {days} dias de benefício sem anúncios"
+    },
+    "pointGrantMessage": {
+      "default": "Você recebeu {amount, plural, one {# ponto} other {# pontos}}"
     }
   },
   "deleteAccount": {

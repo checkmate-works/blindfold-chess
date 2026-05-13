@@ -23,7 +23,14 @@ export type PointHistoryEntry = {
   createdAt: Date;
   maturesAt: Date | null;
   /** Discriminator the UI uses to pick the i18n label key. */
-  kind: 'post_grant' | 'post_clawback' | 'post_matured' | 'redemption' | 'purchase' | 'other';
+  kind:
+    | 'post_grant'
+    | 'post_clawback'
+    | 'post_matured'
+    | 'redemption'
+    | 'purchase'
+    | 'admin_grant'
+    | 'other';
 };
 
 const UGC_SOURCES: readonly string[] = [
@@ -115,6 +122,11 @@ export async function countPendingPostGrants(
 
 function classifyKind(source: string, delta: number, metadata: unknown): PointHistoryEntry['kind'] {
   const meta = (metadata ?? {}) as { reason?: unknown };
+  // `reason` here is the lifecycle-stage tag the clawback / maturation
+  // primitives stamp on the row (`'post_deleted'` / `'maturation'`). Admin
+  // grants also write `reason` but it's free-form text, so only the exact
+  // sentinels above promote a row to the corresponding clawback / matured
+  // kind — anything else falls through to the source-based branches below.
   if (typeof meta.reason === 'string') {
     if (meta.reason === 'post_deleted') return 'post_clawback';
     if (meta.reason === 'maturation') return 'post_matured';
@@ -122,6 +134,7 @@ function classifyKind(source: string, delta: number, metadata: unknown): PointHi
   if (UGC_SOURCES.includes(source)) {
     return delta > 0 ? 'post_grant' : 'post_clawback';
   }
+  if (source === 'admin_grant') return 'admin_grant';
   if (source === 'redemption') return 'redemption';
   if (source === 'purchase') return 'purchase';
   return 'other';

@@ -2442,6 +2442,7 @@
         "post_matured": "Vesting completed",
         "redemption": "Redeemed for ad-free",
         "purchase": "Purchased",
+        "admin_grant": "Granted by staff",
         "other": "Adjustment"
       }
     }
@@ -2539,6 +2540,9 @@
     "benefitGrantMessage": {
       "topic_post": "Thank you for your topic post — you've received {days} days of ad-free benefit",
       "default": "You received {days} days of ad-free benefit"
+    },
+    "pointGrantMessage": {
+      "default": "You received {amount, plural, one {# point} other {# points}}"
     }
   },
   "deleteAccount": {
