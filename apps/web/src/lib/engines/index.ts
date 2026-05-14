@@ -1,6 +1,14 @@
 export type { EngineKind } from './types';
 export { DEFAULT_ENGINE, ENGINE_KINDS, isEngineKind } from './types';
 
+export type { EngineConfig } from './config';
+export {
+  DEFAULT_ENGINE_CONFIG,
+  engineConfigFromUrlParams,
+  engineConfigToUrlParams,
+  isEngineConfig,
+} from './config';
+
 export type { StockfishOpponentConfig } from './stockfish';
 export { createStockfishOpponent } from './stockfish';
 
