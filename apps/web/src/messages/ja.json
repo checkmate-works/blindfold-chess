@@ -2529,8 +2529,13 @@
     "achievementSingleMessage": "🏆 {name} を獲得しました",
     "achievementMultipleMessage": "🏆 {count}件のアチーブメントを獲得しました",
     "benefitGrantMessage": {
-      "topic_post": "トピックの投稿のお礼として、{days}日間の広告非表示特典が付与されました",
-      "default": "{days}日間の広告非表示特典が付与されました"
+      "ad_free": {
+        "topic_post": "トピックの投稿のお礼として、{days}日間の広告非表示特典が付与されました",
+        "default": "{days}日間の広告非表示特典が付与されました"
+      },
+      "maia_access": {
+        "default": "{days}日間のMaiaエンジン利用権が付与されました"
+      }
     }
   },
   "deleteAccount": {

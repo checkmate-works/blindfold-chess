@@ -2529,8 +2529,13 @@
     "achievementSingleMessage": "🏆 Você conquistou {name}",
     "achievementMultipleMessage": "🏆 Você conquistou {count} conquistas",
     "benefitGrantMessage": {
-      "topic_post": "Obrigado pela sua postagem no tópico — você recebeu {days} dias de benefício sem anúncios",
-      "default": "Você recebeu {days} dias de benefício sem anúncios"
+      "ad_free": {
+        "topic_post": "Obrigado pela sua postagem no tópico — você recebeu {days} dias de benefício sem anúncios",
+        "default": "Você recebeu {days} dias de benefício sem anúncios"
+      },
+      "maia_access": {
+        "default": "Você recebeu {days} dias de acesso ao motor Maia"
+      }
     }
   },
   "deleteAccount": {

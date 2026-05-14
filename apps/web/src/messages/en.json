@@ -2529,8 +2529,13 @@
     "achievementSingleMessage": "🏆 You earned {name}",
     "achievementMultipleMessage": "🏆 You earned {count} achievements",
     "benefitGrantMessage": {
-      "topic_post": "Thank you for your topic post — you've received {days} days of ad-free benefit",
-      "default": "You received {days} days of ad-free benefit"
+      "ad_free": {
+        "topic_post": "Thank you for your topic post — you've received {days} days of ad-free benefit",
+        "default": "You received {days} days of ad-free benefit"
+      },
+      "maia_access": {
+        "default": "You received {days} days of Maia engine access"
+      }
     }
   },
   "deleteAccount": {

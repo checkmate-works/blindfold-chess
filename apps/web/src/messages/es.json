@@ -2529,8 +2529,13 @@
     "achievementSingleMessage": "🏆 Obtuviste {name}",
     "achievementMultipleMessage": "🏆 Obtuviste {count} logros",
     "benefitGrantMessage": {
-      "topic_post": "Gracias por tu publicación de tema — recibiste {days} días de beneficio sin anuncios",
-      "default": "Recibiste {days} días de beneficio sin anuncios"
+      "ad_free": {
+        "topic_post": "Gracias por tu publicación de tema — recibiste {days} días de beneficio sin anuncios",
+        "default": "Recibiste {days} días de beneficio sin anuncios"
+      },
+      "maia_access": {
+        "default": "Recibiste {days} días de acceso al motor Maia"
+      }
     }
   },
   "deleteAccount": {
