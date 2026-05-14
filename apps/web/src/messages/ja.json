@@ -1688,6 +1688,11 @@
     "saved": "保存済み",
     "postmortem": "感想戦",
     "resultTitle": "ゲーム結果",
+    "engineInfo": {
+      "title": "対戦相手の情報を表示",
+      "stockfish": "Stockfish · レベル {level}",
+      "maia": "Maia · {rating} ELO"
+    },
     "operationLog": {
       "title": "操作ログ",
       "noLogs": "操作ログはまだありません。",

@@ -1688,6 +1688,11 @@
     "saved": "Salvo",
     "postmortem": "Revisão da Partida",
     "resultTitle": "Resultado da Partida",
+    "engineInfo": {
+      "title": "Mostrar info do oponente",
+      "stockfish": "Stockfish · Nível {level}",
+      "maia": "Maia · {rating} ELO"
+    },
     "operationLog": {
       "title": "Registro de Operações",
       "noLogs": "Ainda não há registros de operações.",

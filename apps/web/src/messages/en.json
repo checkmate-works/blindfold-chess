@@ -1688,6 +1688,11 @@
     "saved": "Saved",
     "postmortem": "Game Review",
     "resultTitle": "Game Result",
+    "engineInfo": {
+      "title": "Show opponent info",
+      "stockfish": "Stockfish · Level {level}",
+      "maia": "Maia · {rating} ELO"
+    },
     "operationLog": {
       "title": "Operation Log",
       "noLogs": "No operation logs yet.",

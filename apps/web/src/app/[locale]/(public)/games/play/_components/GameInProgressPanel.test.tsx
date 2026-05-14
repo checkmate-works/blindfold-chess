@@ -84,6 +84,7 @@ function renderPanel(overrides: Overrides = {}) {
       moves={overrides.moves ?? []}
       confirmationDialogs={makeConfirmationDialogs()}
       onShowBoard={() => {}}
+      engineConfig={{ kind: 'stockfish', skillLevel: 5 }}
       aiMoveError={null}
     />
   );
