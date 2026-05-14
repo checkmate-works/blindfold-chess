@@ -1,3 +1,4 @@
+import { type MaiaRating, isMaiaRating } from '@blindfold-chess/features/ai-game/maia';
 import type { Side } from '@blindfold-chess/types';
 
 import { type EngineKind, isEngineKind } from '@/lib/engines';
@@ -7,6 +8,7 @@ export type InitialPgnState = {
   pgn: string;
   color: Side | null;
   skillLevel: SkillLevel | null;
+  maiaRating: MaiaRating | null;
   engine: EngineKind | null;
 };
 
@@ -64,8 +66,17 @@ export function deriveInitialPgnState(searchParams: URLSearchParams): InitialPgn
     }
   }
 
+  let maiaRating: MaiaRating | null = null;
+  const urlElo = searchParams.get('elo');
+  if (urlElo) {
+    const parsed = parseInt(urlElo);
+    if (Number.isFinite(parsed) && isMaiaRating(parsed)) {
+      maiaRating = parsed;
+    }
+  }
+
   const urlEngine = searchParams.get('engine');
   const engine: EngineKind | null = urlEngine && isEngineKind(urlEngine) ? urlEngine : null;
 
-  return { pgn, color, skillLevel, engine };
+  return { pgn, color, skillLevel, maiaRating, engine };
 }

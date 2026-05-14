@@ -1836,6 +1836,7 @@
     "playAsBlack": "Jogar com Pretas",
     "selectLevel": "Selecione o Nível de Habilidade da IA",
     "levelWithNumber": "Nível {level}",
+    "maiaRatingOption": "{rating} ELO",
     "skillLevelDescription": "Nível 1 (800 ELO, mais fácil) a Nível 20 (3200+ ELO, mais forte). Os níveis mais altos demoram mais para pensar.",
     "selectEngine": "Selecione o motor de IA",
     "engineStockfishLabel": "Stockfish",

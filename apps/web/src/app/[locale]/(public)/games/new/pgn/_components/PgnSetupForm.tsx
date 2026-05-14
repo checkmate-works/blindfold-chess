@@ -2,6 +2,7 @@
 
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { MaiaRating } from '@blindfold-chess/features/ai-game/maia';
 import type { Side } from '@blindfold-chess/types';
 
 import type { EngineKind } from '@/lib/engines';
@@ -24,6 +25,8 @@ type Props = {
   onColorChange: (color: Side) => void;
   skillLevel: SkillLevel;
   onSkillLevelChange: (level: SkillLevel) => void;
+  maiaRating: MaiaRating;
+  onMaiaRatingChange: (rating: MaiaRating) => void;
   engine: EngineKind;
   onEngineChange: (engine: EngineKind) => void;
   maiaUnlocked: boolean;
@@ -48,6 +51,8 @@ export function PgnSetupForm({
   onColorChange,
   skillLevel,
   onSkillLevelChange,
+  maiaRating,
+  onMaiaRatingChange,
   engine,
   onEngineChange,
   maiaUnlocked,
@@ -76,7 +81,13 @@ export function PgnSetupForm({
       )}
 
       <EngineSelector value={engine} onChange={onEngineChange} maiaUnlocked={maiaUnlocked} />
-      <SkillLevelSelector value={skillLevel} onChange={onSkillLevelChange} engine={engine} />
+      <SkillLevelSelector
+        engine={engine}
+        stockfishLevel={skillLevel}
+        onStockfishLevelChange={onSkillLevelChange}
+        maiaRating={maiaRating}
+        onMaiaRatingChange={onMaiaRatingChange}
+      />
 
       <SectionTitle>{t('gameSettings')}</SectionTitle>
       <CollapsibleGameSettings settings={localSettings} onSettingsChange={onSettingsChange} />

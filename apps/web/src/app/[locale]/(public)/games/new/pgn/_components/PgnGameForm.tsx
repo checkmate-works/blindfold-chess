@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useRouter, useSearchParams } from 'next/navigation';
 
+import { DEFAULT_MAIA_RATING, type MaiaRating } from '@blindfold-chess/features/ai-game/maia';
 import { getPgnHeaders, getPgnHistory } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
@@ -47,6 +48,9 @@ export function PgnGameForm({ locale, maiaUnlocked }: Props) {
 
   const [color, setColor] = useState<Side>(initial.color ?? 'white');
   const [skillLevel, setSkillLevel] = useState<SkillLevel>(initial.skillLevel ?? 5);
+  const [maiaRating, setMaiaRating] = useState<MaiaRating>(
+    initial.maiaRating ?? DEFAULT_MAIA_RATING
+  );
   const [engine, setEngine] = useState<EngineKind>(initial.engine ?? DEFAULT_ENGINE);
   const [pgn, setPgn] = useState(initial.pgn);
   const [isLoading, setIsLoading] = useState(false);
@@ -116,10 +120,14 @@ export function PgnGameForm({ locale, maiaUnlocked }: Props) {
 
     const params = new URLSearchParams({
       color,
-      skillLevel: skillLevel.toString(),
       gamePrefs: JSON.stringify(localSettings),
     });
-    if (engine !== DEFAULT_ENGINE) params.set('engine', engine);
+    if (engine === 'maia') {
+      params.set('engine', 'maia');
+      params.set('elo', maiaRating.toString());
+    } else {
+      params.set('skillLevel', skillLevel.toString());
+    }
 
     if (moves && moves.length > 0) {
       params.set('moves', JSON.stringify(moves));
@@ -168,6 +176,8 @@ export function PgnGameForm({ locale, maiaUnlocked }: Props) {
         onColorChange={handleColorChange}
         skillLevel={skillLevel}
         onSkillLevelChange={setSkillLevel}
+        maiaRating={maiaRating}
+        onMaiaRatingChange={setMaiaRating}
         engine={engine}
         onEngineChange={setEngine}
         maiaUnlocked={maiaUnlocked}

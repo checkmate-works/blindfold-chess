@@ -1836,6 +1836,7 @@
     "playAsBlack": "Play as Black",
     "selectLevel": "Select AI Skill Level",
     "levelWithNumber": "Level {level}",
+    "maiaRatingOption": "{rating} ELO",
     "skillLevelDescription": "Level 1 (800 ELO, easiest) to Level 20 (3200+ ELO, strongest). Higher levels take longer to think.",
     "selectEngine": "Select AI Engine",
     "engineStockfishLabel": "Stockfish",

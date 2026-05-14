@@ -33,6 +33,8 @@ export function PlayErrorClient({ locale }: Props) {
   const gameId = searchParams.get('gameId') || null;
   const color = searchParams.get('color') || 'white';
   const skillLevel = searchParams.get('skillLevel') || '5';
+  const engineParam = searchParams.get('engine');
+  const eloParam = searchParams.get('elo');
   const startingFen = searchParams.get('fen') || undefined;
 
   let validMoves: AlgebraicNotation[] = [];
@@ -54,7 +56,12 @@ export function PlayErrorClient({ locale }: Props) {
     // Create URL with only valid moves
     const params = new URLSearchParams();
     params.set('color', color);
-    params.set('skillLevel', skillLevel);
+    if (engineParam === 'maia') {
+      params.set('engine', 'maia');
+      if (eloParam) params.set('elo', eloParam);
+    } else {
+      params.set('skillLevel', skillLevel);
+    }
 
     // Include custom starting FEN if present
     if (startingFen) {

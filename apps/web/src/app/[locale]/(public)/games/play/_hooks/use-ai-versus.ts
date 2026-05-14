@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { skillLevelToMaiaElo } from '@blindfold-chess/features/ai-game/maia';
+import { type MaiaRating, maiaRatingToElo } from '@blindfold-chess/features/ai-game/maia';
 import type { ChessOpponent, OpponentError } from '@blindfold-chess/features/ai-game/opponent';
 import {
   getFenAfterMoves,
@@ -37,20 +37,25 @@ function throwOpponentError(error: OpponentError): never {
  * Drives an AI opponent for the human-vs-AI game flow.
  *
  * Lifecycle is owned per mount: a fresh {@link ChessOpponent} is created on
- * mount and torn down on unmount. Switching engines or skill-level
- * recreates the opponent (and therefore the underlying Worker), since
- * those are captured at construction time. `reset()` forces a recreate
- * without changing config — used by the Retry-AI-move affordance to
- * recover from a dead Worker after a fatal error.
+ * mount and torn down on unmount. Switching engines, skill-level, or Maia
+ * rating recreates the opponent (and therefore the underlying Worker),
+ * since those are captured at construction time. `reset()` forces a
+ * recreate without changing config — used by the Retry-AI-move affordance
+ * to recover from a dead Worker after a fatal error.
  *
- * `engine = 'stockfish'` uses skillLevel as its difficulty knob.
- * `engine = 'maia'` maps the same 1..20 skillLevel onto Maia 3's
- * 1100..1900 Elo training distribution via {@link skillLevelToMaiaElo}.
- * Both `selfElo` and `opponentElo` are set to the derived value — Maia
- * uses both inputs, and pairing them at the same Elo gives the most
- * "natural" play of a self-rated player.
+ * Stockfish reads `skillLevel` (1..20) directly. Maia reads `maiaRating`
+ * (one of the 11 catalog values from {@link MaiaRating}) and applies the
+ * same value to both `selfElo` and `opponentElo` — pairing them at the
+ * same Elo gives the most "natural" play of a self-rated player. The
+ * unused parameter for the inactive engine is just held in state so a
+ * future engine swap mid-session can pick it back up without losing the
+ * previously-selected value.
  */
-export function useAiVersus(skillLevel: SkillLevel, engine: EngineKind = 'stockfish') {
+export function useAiVersus(
+  skillLevel: SkillLevel,
+  maiaRating: MaiaRating,
+  engine: EngineKind = 'stockfish'
+) {
   const [resetCounter, setResetCounter] = useState(0);
   const opponentRef = useRef<ChessOpponent | null>(null);
 
@@ -60,7 +65,7 @@ export function useAiVersus(skillLevel: SkillLevel, engine: EngineKind = 'stockf
     let opponent: ChessOpponent;
     try {
       if (engine === 'maia') {
-        const elo = skillLevelToMaiaElo(skillLevel);
+        const elo = maiaRatingToElo(maiaRating);
         opponent = createMaiaOpponent({ selfElo: elo, opponentElo: elo });
       } else {
         opponent = createStockfishOpponent({ skillLevel });
@@ -79,7 +84,7 @@ export function useAiVersus(skillLevel: SkillLevel, engine: EngineKind = 'stockf
       }
       void opponent.destroy();
     };
-  }, [skillLevel, engine, resetCounter]);
+  }, [skillLevel, maiaRating, engine, resetCounter]);
 
   const getAiMove = useCallback(
     async (moves: AlgebraicNotation[], startingFen?: string): Promise<AlgebraicNotation> => {

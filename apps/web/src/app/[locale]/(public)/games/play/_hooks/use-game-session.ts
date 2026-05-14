@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { MaiaRating } from '@blindfold-chess/features/ai-game/maia';
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
@@ -38,6 +39,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
   const {
     playerSide,
     initialSkillLevel,
+    initialMaiaRating,
     initialEngine,
     initialGameId,
     initialStartingFen,
@@ -49,6 +51,9 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
 
   // Skill level is immutable during gameplay — set at game start, never changed mid-game.
   const [skillLevel] = useState<SkillLevel>(initialSkillLevel);
+  // Same applies to the Maia rating — only meaningful when engine === 'maia',
+  // but always carried so a future engine swap can pick it up unchanged.
+  const [maiaRating] = useState<MaiaRating>(initialMaiaRating);
   // Engine choice is similarly immutable per game.
   const [engine] = useState(initialEngine);
 
@@ -80,7 +85,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     initialMoves: initialMovesFromUrl,
     startingFen,
   });
-  const { getAiMove, reset: resetAiOpponent } = useAiVersus(skillLevel, engine);
+  const { getAiMove, reset: resetAiOpponent } = useAiVersus(skillLevel, maiaRating, engine);
 
   // Game persistence hook
   const { isLoadingFromStorage, savedGameStatus, loadedGameData, gameNotFound } =
@@ -159,6 +164,8 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     initialGameId,
     playerSide,
     skillLevel,
+    maiaRating,
+    engine,
     initialStartingFen,
     shouldRedirectToError,
     errorDetails,
@@ -299,7 +306,12 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
       const params = new URLSearchParams();
       params.set('moves', JSON.stringify(movesToKeep));
       params.set('color', playerSide);
-      params.set('skillLevel', skillLevel.toString());
+      if (engine === 'maia') {
+        params.set('engine', 'maia');
+        params.set('elo', maiaRating.toString());
+      } else {
+        params.set('skillLevel', skillLevel.toString());
+      }
 
       if (startingFen) {
         params.set('fen', startingFen);
@@ -307,7 +319,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
 
       router.push(`/${locale}/games/new/pgn?${params.toString()}`);
     },
-    [moves, playerSide, skillLevel, locale, router, startingFen]
+    [moves, playerSide, skillLevel, maiaRating, engine, locale, router, startingFen]
   );
 
   // Current FEN and formatted PGN are memoized values from useNotation

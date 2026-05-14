@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { BoardSkeleton, Button, FlipBoardButton } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { DEFAULT_MAIA_RATING, type MaiaRating } from '@blindfold-chess/features/ai-game/maia';
 import type { Side } from '@blindfold-chess/types';
 import { FaChevronDown } from 'react-icons/fa';
 
@@ -48,6 +49,7 @@ export function PositionGameForm({ locale, maiaUnlocked }: Props) {
   const { localSettings, handleSettingsChange } = useLocalGameSettings();
   const [color, setColor] = useState<Side>('white');
   const [skillLevel, setSkillLevel] = useState<SkillLevel>(5);
+  const [maiaRating, setMaiaRating] = useState<MaiaRating>(DEFAULT_MAIA_RATING);
   const [engine, setEngine] = useState<EngineKind>(DEFAULT_ENGINE);
   const [isLoading, setIsLoading] = useState(false);
   const [flipped, setFlipped] = useState(false);
@@ -173,11 +175,15 @@ export function PositionGameForm({ locale, maiaUnlocked }: Props) {
   const navigateToGame = () => {
     const params: Record<string, string> = {
       color,
-      skillLevel: skillLevel.toString(),
       fen: fullPositionFen,
       gamePrefs: JSON.stringify(localSettings),
     };
-    if (engine !== DEFAULT_ENGINE) params.engine = engine;
+    if (engine === 'maia') {
+      params.engine = 'maia';
+      params.elo = maiaRating.toString();
+    } else {
+      params.skillLevel = skillLevel.toString();
+    }
     const searchParams = new URLSearchParams(params);
     router.push(`/${locale}/games/play?${searchParams.toString()}`);
   };
@@ -293,7 +299,13 @@ export function PositionGameForm({ locale, maiaUnlocked }: Props) {
 
       {/* Engine + Skill Level Selection */}
       <EngineSelector value={engine} onChange={setEngine} maiaUnlocked={maiaUnlocked} />
-      <SkillLevelSelector value={skillLevel} onChange={setSkillLevel} engine={engine} />
+      <SkillLevelSelector
+        engine={engine}
+        stockfishLevel={skillLevel}
+        onStockfishLevelChange={setSkillLevel}
+        maiaRating={maiaRating}
+        onMaiaRatingChange={setMaiaRating}
+      />
 
       <SectionTitle>{t('gameSettings')}</SectionTitle>
       <CollapsibleGameSettings settings={localSettings} onSettingsChange={handleSettingsChange} />

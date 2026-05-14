@@ -2,8 +2,10 @@ import { useEffect } from 'react';
 
 import { useRouter, useSearchParams } from 'next/navigation';
 
+import type { MaiaRating } from '@blindfold-chess/features/ai-game/maia';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
+import type { EngineKind } from '@/lib/engines';
 import type { SkillLevel } from '@/lib/types';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -21,6 +23,8 @@ type UseUrlSyncOptions = {
   initialGameId: string | undefined;
   playerSide: Side;
   skillLevel: SkillLevel;
+  maiaRating: MaiaRating;
+  engine: EngineKind;
   initialStartingFen: string | undefined;
   shouldRedirectToError: boolean;
   errorDetails: ErrorDetails | null;
@@ -32,6 +36,8 @@ export function useUrlSync({
   initialGameId,
   playerSide,
   skillLevel,
+  maiaRating,
+  engine,
   initialStartingFen,
   shouldRedirectToError,
   errorDetails,
@@ -48,7 +54,12 @@ export function useUrlSync({
       params.set('validMoves', JSON.stringify(errorDetails.validMoves));
       params.set('allMoves', JSON.stringify(errorDetails.allMoves));
       params.set('color', playerSide);
-      params.set('skillLevel', skillLevel.toString());
+      if (engine === 'maia') {
+        params.set('engine', 'maia');
+        params.set('elo', maiaRating.toString());
+      } else {
+        params.set('skillLevel', skillLevel.toString());
+      }
 
       if (initialStartingFen) {
         params.set('fen', initialStartingFen);
@@ -68,6 +79,8 @@ export function useUrlSync({
     locale,
     playerSide,
     skillLevel,
+    maiaRating,
+    engine,
     initialGameId,
     gameId,
     initialStartingFen,

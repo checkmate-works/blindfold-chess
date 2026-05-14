@@ -37,8 +37,6 @@ export { mirrorFen, mirrorSquare, mirrorUciMove } from "./mirror";
 
 export { encodeFenToMaia3BoardTokens } from "./fen-encoder";
 
-export { skillLevelToMaiaElo } from "./elo";
-
 export type { MaiaRating } from "./ratings";
 export {
   DEFAULT_MAIA_RATING,

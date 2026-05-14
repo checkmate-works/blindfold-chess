@@ -1836,6 +1836,7 @@
     "playAsBlack": "黒でプレイ",
     "selectLevel": "AIの強さを選択",
     "levelWithNumber": "レベル {level}",
+    "maiaRatingOption": "{rating} ELO",
     "skillLevelDescription": "レベル1（800 ELO、最も簡単）からレベル20（3200+ ELO、最強）まで。レベルが高いほど思考時間が長くなります。",
     "selectEngine": "AIエンジンを選択",
     "engineStockfishLabel": "Stockfish",

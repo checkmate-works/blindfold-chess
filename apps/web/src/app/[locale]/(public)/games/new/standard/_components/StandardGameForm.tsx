@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { DEFAULT_MAIA_RATING, type MaiaRating } from '@blindfold-chess/features/ai-game/maia';
 import type { Side } from '@blindfold-chess/types';
 
 import { DEFAULT_ENGINE, type EngineKind } from '@/lib/engines';
@@ -40,6 +41,7 @@ export function StandardGameForm({ locale, maiaUnlocked }: Props) {
   const router = useRouter();
   const [color, setColor] = useState<Side>('white');
   const [skillLevel, setSkillLevel] = useState<SkillLevel>(5);
+  const [maiaRating, setMaiaRating] = useState<MaiaRating>(DEFAULT_MAIA_RATING);
   const [engine, setEngine] = useState<EngineKind>(DEFAULT_ENGINE);
   const [isLoading, setIsLoading] = useState(false);
   const [consentDialogOpen, setConsentDialogOpen] = useState(false);
@@ -54,12 +56,19 @@ export function StandardGameForm({ locale, maiaUnlocked }: Props) {
   const navigateToGame = () => {
     const params: Record<string, string> = {
       color,
-      skillLevel: skillLevel.toString(),
       gamePrefs: JSON.stringify(localSettings),
     };
-    // Only include `engine` when it differs from the default — keeps
-    // share-links short for the common Stockfish case.
-    if (engine !== DEFAULT_ENGINE) params.engine = engine;
+    if (engine === 'maia') {
+      // Maia's difficulty is a discrete Elo from the official catalog
+      // (600..2600/200), so we serialise it as `elo=` rather than
+      // pretending it shares the Stockfish 1..20 dimension.
+      params.engine = 'maia';
+      params.elo = maiaRating.toString();
+    } else {
+      // Stockfish is the default — omit `engine` to keep share-links
+      // short and emit the 1..20 skill level.
+      params.skillLevel = skillLevel.toString();
+    }
     const searchParams = new URLSearchParams(params);
     router.push(`/${locale}/games/play?${searchParams.toString()}`);
   };
@@ -90,7 +99,13 @@ export function StandardGameForm({ locale, maiaUnlocked }: Props) {
     <div className="space-y-6">
       <ColorSelector value={color} onChange={setColor} />
       <EngineSelector value={engine} onChange={setEngine} maiaUnlocked={maiaUnlocked} />
-      <SkillLevelSelector value={skillLevel} onChange={setSkillLevel} engine={engine} />
+      <SkillLevelSelector
+        engine={engine}
+        stockfishLevel={skillLevel}
+        onStockfishLevelChange={setSkillLevel}
+        maiaRating={maiaRating}
+        onMaiaRatingChange={setMaiaRating}
+      />
 
       <SectionTitle>{t('gameSettings')}</SectionTitle>
       <CollapsibleGameSettings settings={localSettings} onSettingsChange={handleSettingsChange} />
