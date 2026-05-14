@@ -2,11 +2,13 @@ import type { MaiaConfig } from '@blindfold-chess/features/ai-game/maia';
 
 /**
  * Path at which the Maia 3 "simplified" ONNX model is served. The file
- * is fetched into `apps/web/public/engines/maia/` by
- * `scripts/download-maia.ts` (run by the `prebuild` hook), so it
- * resolves to a same-origin static asset at runtime.
+ * is fetched into `apps/web/engines/maia/` by `scripts/download-maia.ts`
+ * (run by the `prebuild` hook) and exposed via the auth-gated route
+ * handler at `/api/engines/maia/[file]`. The handler runs `canUseMaia`
+ * before reading bytes off disk, so anonymous or unentitled callers
+ * receive 403 without triggering any egress.
  */
-export const DEFAULT_MAIA_MODEL_URL = '/engines/maia/maia3_simplified.onnx';
+export const DEFAULT_MAIA_MODEL_URL = '/api/engines/maia/maia3_simplified.onnx';
 
 /**
  * Sensible mid-range default. Maia 3 takes continuous Elo, so callers

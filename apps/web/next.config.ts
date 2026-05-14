@@ -199,23 +199,22 @@ const nextConfig: NextConfig = {
           },
         ],
       },
-      {
-        // Maia 3 ONNX model is ~46 MB — by far the largest static asset
-        // shipped to the browser. We treat the file as effectively immutable
-        // (model upgrades require renaming, e.g. maia3_simplified-v2.onnx,
-        // so cached copies stay valid forever). This collapses
-        // "every Maia game = 46 MB re-download" into "once per browser
-        // until model version changes". Crucial both for player experience
-        // on metered connections and for our own Vercel egress bill.
-        source: '/engines/maia/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
+      // NOTE: Cache headers for the Maia ONNX model are set inside the
+      // /api/engines/maia/[file] handler itself, not here. The model is
+      // no longer a public static asset — it's served from a server-only
+      // directory through an auth-gated route, and the response is marked
+      // `Cache-Control: private, immutable` so the browser caches per-user
+      // without polluting any shared CDN tier.
     ];
+  },
+  // The Maia ONNX model lives outside `public/` (in `engines/maia/`) so
+  // that the only access path is the auth-gated route handler. Next.js
+  // does not auto-trace files outside the source tree, so we have to tell
+  // it explicitly to bundle the directory into the Vercel Function
+  // artifact for the route handler. Without this, `readFile` would 404
+  // at runtime even though the file exists at build time.
+  outputFileTracingIncludes: {
+    '/api/engines/maia/[file]': ['./engines/maia/**/*'],
   },
 };
 

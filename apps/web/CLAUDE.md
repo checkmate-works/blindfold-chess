@@ -515,16 +515,31 @@ selection.
 
 ### Maia 3 operational notes
 
-- **Model file**: `apps/web/public/engines/maia/maia3_simplified.onnx`
+- **Model file**: `apps/web/engines/maia/maia3_simplified.onnx`
   (~46 MB). **Gitignored** — fetched by `scripts/download-maia.ts`
-  during `prebuild` and `pnpm download-maia` locally.
-- **Long-cached as immutable**: `next.config.ts` serves
-  `/engines/maia/*` with `Cache-Control: public, max-age=31536000,
-immutable`. The file name therefore acts as the cache key — **if you
-  ever update the model, you MUST also rename the file** (e.g.
-  `maia3_simplified-v2.onnx`) and adjust the constants in
-  `src/lib/engines/maia/models.ts` and `scripts/download-maia.ts`.
+  during `prebuild` and `pnpm download-maia` locally. The file is
+  intentionally **outside `public/`** so it cannot be served as a
+  static asset; the only access path is the auth-gated route handler
+  below.
+- **Auth-gated delivery**: `/api/engines/maia/[file]` (see
+  `src/app/api/engines/maia/[file]/route.ts`) is the sole egress
+  path for the model. It calls `canUseMaia(userId)` and returns 403
+  for anonymous / unentitled callers, so the 46 MB never leaves the
+  function on an unauthorised request. `outputFileTracingIncludes`
+  in `next.config.ts` bundles `engines/maia/**/*` into the function
+  artifact at deploy time.
+- **Long-cached as immutable**: the route handler sets
+  `Cache-Control: private, max-age=31536000, immutable`. The
+  filename therefore acts as the cache key — **if you ever update
+  the model, you MUST also rename the file** (e.g.
+  `maia3_simplified-v2.onnx`), add the new filename to
+  `ALLOWED_FILES` in the route handler, and adjust the constants
+  in `src/lib/engines/maia/models.ts` and `scripts/download-maia.ts`.
   Otherwise returning users keep their stale cached copy forever.
+- **Why `private` (not `public`)**: the response is per-user. A
+  future revocation of a `maia_access` grant must not be served from
+  a shared CDN copy. `immutable` still tells the browser to skip
+  revalidation for honest clients.
 - **Large-download consent**: `LargeDownloadConsentDialog` intercepts
   Maia game starts on metered / slow links (driven by
   `shouldWarnBeforeLargeDownload()` in `src/lib/network/connection.ts`).
@@ -538,10 +553,10 @@ immutable`. The file name therefore acts as the cache key — **if you
 
 ### Vercel spend management (MUST be configured)
 
-The Maia model is the largest static asset shipped to browsers, so
-runaway egress costs are a real risk if the project is ever DoS-ed
-before the paid-tier auth gate ships. **A Vercel spending cap is the
-last-line defence against an open-ended bill.**
+The Maia model is the largest asset shipped to browsers, so runaway
+egress costs would be a real risk if the auth gate were ever bypassed
+or misconfigured. **A Vercel spending cap remains the last-line
+defence against an open-ended bill** even with the gate in place.
 
 - Set via Vercel dashboard → Team Settings → Billing → **Spend
   Management** (recently rebranded "Cost Controls" in some views).
@@ -551,9 +566,10 @@ last-line defence against an open-ended bill.**
 - The cap is account-wide, not per-project; pick a number that covers
   every project under the team.
 
-Until the Maia paywall + per-IP rate limit ship, this cap is the only
-mechanical protection against an attacker downloading the 46 MB model
-on a loop.
+The auth gate at `/api/engines/maia/[file]` closes the "anonymous
+attacker loops the model" hole; per-user / per-IP throttling against
+_authenticated_ abusers is intentionally NOT layered yet — add it
+only after observing such abuse.
 
 ## Important Notes
 

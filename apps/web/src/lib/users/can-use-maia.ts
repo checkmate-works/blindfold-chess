@@ -16,14 +16,16 @@ import { hasActiveGrant } from '@/lib/users/user-grants';
  * Unauthenticated users always return `false` — Maia is a paid / granted
  * feature.
  *
- * Note: this check is currently advisory (the ONNX model file under
- * `/engines/maia/` is publicly served and consumed by a Module Worker in
- * the user's browser, so a determined user can still drive the engine by
- * crafting URLs). It exists for **product gating** — hiding Maia in the
- * engine selector UI for non-eligible users — not for enforcement.
- * Promoting this to a true gate requires moving the model behind an
- * authenticated route (signed URL, API handler with auth, etc.), which
- * is deferred to the subscription paywall rollout.
+ * Used in two places:
+ *
+ *   1. **UI product gating** — the engine selector under `/games/new/*`
+ *      calls this to lock the Maia card for non-eligible users.
+ *   2. **Server-side enforcement** — the `/api/engines/maia/[file]`
+ *      route handler calls this before reading the ONNX bytes off
+ *      disk, so the 46 MB egress is unreachable for unauthenticated
+ *      or unentitled callers. The model file is no longer served
+ *      from `public/`; the only way to obtain it is through that
+ *      handler.
  */
 export async function canUseMaia(userId: string | null): Promise<boolean> {
   if (!userId) return false;

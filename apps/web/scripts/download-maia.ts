@@ -27,7 +27,11 @@ import { join } from 'path';
 const MAIA_MODEL_URL =
   process.env.MAIA_MODEL_URL ?? 'https://www.maiachess.com/maia3/maia3_simplified.onnx';
 
-const TARGET_DIR = join('public', 'engines', 'maia');
+// NOT under public/: the file must be readable by the auth-gated
+// route handler (/api/engines/maia/[file]) but unreachable as a static
+// asset. next.config.ts's `outputFileTracingIncludes` bundles this
+// directory into the deployed Vercel Function artifact.
+const TARGET_DIR = join('engines', 'maia');
 const TARGET_FILENAME = 'maia3_simplified.onnx';
 const TARGET_PATH = join(TARGET_DIR, TARGET_FILENAME);
 

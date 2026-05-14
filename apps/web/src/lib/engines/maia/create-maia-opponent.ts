@@ -15,9 +15,9 @@ import type {
 
 export type MaiaOpponentConfig = MaiaConfig & {
   /**
-   * Override the ONNX model URL. Defaults to the same-origin path served
-   * by `apps/web/public/engines/maia/`. Useful for tests or to point at
-   * a mirrored CDN copy.
+   * Override the ONNX model URL. Defaults to the auth-gated route handler
+   * at `/api/engines/maia/[file]`. Useful for tests or to point at a
+   * mirrored CDN copy.
    */
   modelUrl?: string;
 };
