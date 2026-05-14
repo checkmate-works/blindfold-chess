@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { formatEngineConfigLabel } from '@/lib/engines';
 import type { Game } from '@/lib/types';
 
 import { formatLastMove, getStatusIcon, getStatusStyles } from '../_lib/game-display-utils';
@@ -54,9 +55,7 @@ export function GameListItemBase({ game, before, after, statusIconClassName = ''
               {formatLastMove(game.moves, game.playerColor)}
             </span>
 
-            <span className="font-medium">
-              {t('level')} {game.skillLevel}
-            </span>
+            <span className="font-medium">{formatEngineConfigLabel(game.engineConfig, t)}</span>
           </div>
         </div>
 

@@ -47,12 +47,12 @@ export const INIT_RETRY_DELAYS_MS = [500, 1500, 3000] as const;
  * init attempt consumes a fresh channel so a dead Worker / bridge is replaced
  * cleanly on retry.
  *
- * Singleton lifecycle is intentionally **platform-owned**: this class is
- * instance-safe (nothing prevents constructing multiple engines), and apps
- * pick whichever caching strategy suits their process model. The web app
- * caches one instance behind `getChessEngine()` with a `/stockfish.js`-backed
- * Worker channel; mobile (Phase 2) will use a WebView-backed channel with
- * its own lifecycle.
+ * Lifecycle is intentionally **caller-owned**: this class is instance-safe
+ * (nothing prevents constructing multiple engines) and exposes no global
+ * registry. Apps wire a fresh engine through a higher-level `ChessOpponent`
+ * adapter (see `@blindfold-chess/features/ai-game/opponent`) and manage
+ * disposal explicitly — typically tying it to the consumer component's
+ * mount lifecycle.
  */
 export class ChessEngine {
   private channelFactory: () => UciMessageChannel;

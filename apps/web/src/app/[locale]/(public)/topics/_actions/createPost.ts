@@ -143,7 +143,7 @@ export async function createPostBase(params: {
     }
 
     // Award pending points for text-bearing posts on eligible topic types.
-    // Gate is `isTopicPostGrantTopicType` (square / opening) plus a non-empty
+    // Gate is `isPointEligibleTopicType` (square / opening) plus a non-empty
     // body — rating-only and empty posts are excluded. See grantPendingPoints
     // ForPost for lifecycle / clawback semantics.
     if (isPointEligibleTopicType(topicType) && contentResult.content.trim() !== '') {

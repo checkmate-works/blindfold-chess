@@ -330,7 +330,7 @@
       },
       "chessEngine": {
         "question": "What chess engine does the AI use?",
-        "answer": "The AI uses Stockfish 17.1 (Lite Single-threaded version)."
+        "answer": "Two engines are available depending on the mode. The default is Stockfish 17.1 (Lite Single-threaded version). For more human-like play, you can switch to Maia 3 (maia3_simplified), which runs in your browser via onnxruntime-web and uses the publicly available GPL-3.0 licensed model."
       },
       "expSystem": {
         "question": "How is experience (Exp) calculated?",
@@ -1639,7 +1639,8 @@
       "title": "Certificate",
       "honorific": "{name}",
       "guestName": "Guest",
-      "body": "You have defeated Stockfish Level {level}. In recognition of your exceptional blindfold chess ability, this certificate is hereby awarded."
+      "body": "You have defeated Stockfish Level {level}. In recognition of your exceptional blindfold chess ability, this certificate is hereby awarded.",
+      "bodyMaia": "You have defeated Maia at {rating} ELO. In recognition of your exceptional blindfold chess ability, this certificate is hereby awarded."
     },
     "youLose": "You Lose",
     "check": "Check",
@@ -1687,6 +1688,13 @@
     "saved": "Saved",
     "postmortem": "Game Review",
     "resultTitle": "Game Result",
+    "engineInfo": {
+      "title": "Opponent",
+      "engineLabel": "Engine",
+      "difficultyLabel": "Difficulty",
+      "stockfishDifficulty": "Level {level}",
+      "maiaDifficulty": "{rating} ELO"
+    },
     "operationLog": {
       "title": "Operation Log",
       "noLogs": "No operation logs yet.",
@@ -1775,6 +1783,13 @@
     "deleteGame": "Delete Game",
     "deleteDescription": "Remove this corrupted game from your history and start fresh."
   },
+  "largeDownloadConsent": {
+    "title": "Large download required",
+    "body": "Maia AI uses a {size} neural-network model that will be downloaded the first time you play with it. This may use cellular data or take a while on slow connections.",
+    "cachedNote": "After the first download, your browser caches the model and subsequent games start instantly.",
+    "continue": "Continue",
+    "cancel": "Cancel"
+  },
   "newGame": {
     "title": "New Game",
     "selectTitle": "Choose How to Start",
@@ -1829,7 +1844,20 @@
     "playAsBlack": "Play as Black",
     "selectLevel": "Select AI Skill Level",
     "levelWithNumber": "Level {level}",
+    "maiaRatingOption": "{rating} ELO",
     "skillLevelDescription": "Level 1 (800 ELO, easiest) to Level 20 (3200+ ELO, strongest). Higher levels take longer to think.",
+    "selectEngine": "Select AI Engine",
+    "engineStockfishLabel": "Stockfish",
+    "engineStockfishDescription": "A strong open source engine with adjustable skill level — the classic AI opponent.",
+    "engineMaiaLabel": "Maia (human-like)",
+    "engineMaiaDescription": "A neural-network engine that plays like a human at the chosen Elo. The first move takes a few seconds while the model loads (~46 MB).",
+    "engineLockedHint": "Coming soon",
+    "helpLabel": "Show help",
+    "helpEngineDescription": "Stockfish: an open-source chess engine with adjustable strength. Maia: a neural network trained on millions of human games — it plays at the chosen level like a real player would, not like a computer.",
+    "helpSkillLevelDescription": "Level 1 (weakest) to Level 20 (strongest). Stockfish spans roughly 800–3200 ELO. Maia covers 1100–1900 ELO at human-like play; the 20 slider positions are mapped onto that range.",
+    "helpPositionIntroDescription": "Set up any starting position by placing pieces on the editable board. The engine will start thinking from the position you build.",
+    "helpPgnIntroDescription": "Paste a PGN (Portable Game Notation) and play out the variation from any point. Great for studying a specific continuation or recreating a game you saw elsewhere.",
+    "helpOpeningIntroDescription": "Pick a named opening from the list — you'll continue to the PGN setup screen where you can choose engine, color, and difficulty before starting.",
     "previewBoard": "Preview Board",
     "gameSettings": "Advanced Settings",
     "showBoardButtonInGame": "Show 'View Board' button during AI games",
@@ -1967,6 +1995,27 @@
     "governingLawDescription": "These Terms shall be governed by and construed in accordance with Japanese law.",
     "changesTitle": "Changes to Terms",
     "changesDescription": "The operator may change these Terms of Service as necessary. Changed Terms will take effect from the time they are posted on this page."
+  },
+  "licenses": {
+    "title": "Open Source Licenses",
+    "description": "Open source software acknowledgements and license information",
+    "lastUpdated": "Last Updated: May 13, 2026",
+    "introduction": "Blindfold Chess uses open source chess engines to provide its AI opponent functionality. We are grateful to the authors and communities behind these projects, and we provide attribution and license information below.",
+    "componentsTitle": "Bundled Open Source Components",
+    "componentsIntro": "The following components are bundled with this application and delivered to your browser when you use related features. Each engine runs as a separate Web Worker process and communicates with the application only through the standard text-based UCI protocol.",
+    "stockfishName": "Stockfish",
+    "stockfishDescription": "A strong open source UCI chess engine, used here as the default AI opponent.",
+    "lc0Name": "Lc0 (Leela Chess Zero)",
+    "lc0Description": "A neural network chess engine, used here to run Maia weights for human-like AI opponents.",
+    "maiaName": "Maia Chess (neural network weights)",
+    "maiaDescription": "Neural network weights that model human chess play at specific rating levels, developed by the Computational Social Science Lab at the University of Toronto.",
+    "sourceCodeLabel": "Source code:",
+    "licenseLabel": "License:",
+    "licenseValue": "GNU General Public License v3.0",
+    "complianceTitle": "GPL v3 Compliance",
+    "complianceIntro": "The components above are licensed under the GNU General Public License version 3 (GPL v3) and are bundled here without modification. The corresponding source code is publicly available at the upstream repositories linked above.",
+    "viewFullLicense": "View the full GPL v3 license text",
+    "viewFullLicenseGnu": "Also available at the GNU Project website"
   },
   "company": {
     "title": "Company Information",
@@ -2538,8 +2587,13 @@
     "achievementSingleMessage": "🏆 You earned {name}",
     "achievementMultipleMessage": "🏆 You earned {count} achievements",
     "benefitGrantMessage": {
-      "topic_post": "Thank you for your topic post — you've received {days} days of ad-free benefit",
-      "default": "You received {days} days of ad-free benefit"
+      "ad_free": {
+        "topic_post": "Thank you for your topic post — you've received {days} days of ad-free benefit",
+        "default": "You received {days} days of ad-free benefit"
+      },
+      "maia_access": {
+        "default": "You received {days} days of Maia engine access"
+      }
     },
     "pointGrantMessage": {
       "default": "You received {amount, plural, one {# point} other {# points}}"

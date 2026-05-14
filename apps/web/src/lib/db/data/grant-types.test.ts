@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { GRANT_TYPES, type GrantType, isGrantType } from './grant-types';
+import {
+  BENEFIT_TYPES,
+  type BenefitType,
+  GRANT_TYPES,
+  type GrantType,
+  isBenefitType,
+  isGrantType,
+} from './grant-types';
 
 describe('GRANT_TYPES', () => {
   it('contains all expected grant type values', () => {
@@ -80,6 +87,51 @@ describe('isGrantType', () => {
       expect(narrowed).toBe('topic_post');
     } else {
       throw new Error('isGrantType should have returned true for "topic_post"');
+    }
+  });
+});
+
+describe('BENEFIT_TYPES', () => {
+  it('contains the documented set of benefit types', () => {
+    expect(BENEFIT_TYPES).toEqual(['ad_free', 'paywall_access', 'maia_access']);
+  });
+
+  it('includes maia_access (Maia engine entitlement)', () => {
+    expect(BENEFIT_TYPES).toContain('maia_access');
+  });
+});
+
+describe('isBenefitType', () => {
+  it('returns true for every value in BENEFIT_TYPES', () => {
+    for (const bt of BENEFIT_TYPES) {
+      expect(isBenefitType(bt)).toBe(true);
+    }
+  });
+
+  it('returns true for maia_access', () => {
+    expect(isBenefitType('maia_access')).toBe(true);
+  });
+
+  it('returns false for an unknown benefit type', () => {
+    expect(isBenefitType('unknown')).toBe(false);
+  });
+
+  it('returns false for empty string', () => {
+    expect(isBenefitType('')).toBe(false);
+  });
+
+  it('is case-sensitive', () => {
+    expect(isBenefitType('MAIA_ACCESS')).toBe(false);
+    expect(isBenefitType('Ad_Free')).toBe(false);
+  });
+
+  it('type-narrows correctly when used as a guard', () => {
+    const candidate: string = 'maia_access';
+    if (isBenefitType(candidate)) {
+      const narrowed: BenefitType = candidate;
+      expect(narrowed).toBe('maia_access');
+    } else {
+      throw new Error('isBenefitType should have returned true for "maia_access"');
     }
   });
 });

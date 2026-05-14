@@ -14,6 +14,27 @@
 export const GRANT_TYPES = ['admin_manual', 'topic_post'] as const;
 export type GrantType = (typeof GRANT_TYPES)[number];
 
+/**
+ * Every benefit type that an admin or automated grant can issue.
+ *
+ * - `ad_free`        Hides AdSense slots site-wide.
+ * - `paywall_access` Unlocks a scoped resource (currently article paywall).
+ *                    Scoped via `resourceType` + `resourceId` on the row.
+ * - `maia_access`    Unlocks the Maia AI engine on /games/new/* selectors,
+ *                    bypassing the future paywall gate. Granted via admin
+ *                    or as a paid-plan entitlement.
+ *
+ * This array IS the validation source — both the admin grant action and
+ * the UI dropdown read it directly. To add a new benefit type, append a
+ * value here and the rest of the system follows.
+ */
+export const BENEFIT_TYPES = ['ad_free', 'paywall_access', 'maia_access'] as const;
+export type BenefitType = (typeof BENEFIT_TYPES)[number];
+
+export function isBenefitType(v: string): v is BenefitType {
+  return (BENEFIT_TYPES as readonly string[]).includes(v);
+}
+
 export function isGrantType(v: string): v is GrantType {
   return (GRANT_TYPES as readonly string[]).includes(v);
 }

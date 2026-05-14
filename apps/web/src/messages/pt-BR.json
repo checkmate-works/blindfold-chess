@@ -330,7 +330,7 @@
       },
       "chessEngine": {
         "question": "Que motor de xadrez a IA usa?",
-        "answer": "A IA utiliza Stockfish 17.1 (versão Lite de thread único)."
+        "answer": "Existem dois motores disponíveis conforme o modo. O padrão é o Stockfish 17.1 (versão Lite de thread único). Para um jogo mais humano, é possível alternar para Maia 3 (maia3_simplified), que roda no navegador via onnxruntime-web e usa o modelo público sob licença GPL-3.0."
       },
       "expSystem": {
         "question": "Como é calculada a experiência (Exp)?",
@@ -1639,7 +1639,8 @@
       "title": "Certificado",
       "honorific": "{name}",
       "guestName": "Convidado",
-      "body": "Derrotou o Stockfish Nível {level}. Em reconhecimento de sua excepcional habilidade em xadrez às cegas, este certificado é concedido."
+      "body": "Derrotou o Stockfish Nível {level}. Em reconhecimento de sua excepcional habilidade em xadrez às cegas, este certificado é concedido.",
+      "bodyMaia": "Derrotou o Maia com {rating} ELO. Em reconhecimento de sua excepcional habilidade em xadrez às cegas, este certificado é concedido."
     },
     "youLose": "Você Perdeu",
     "check": "Xeque",
@@ -1687,6 +1688,13 @@
     "saved": "Salvo",
     "postmortem": "Revisão da Partida",
     "resultTitle": "Resultado da Partida",
+    "engineInfo": {
+      "title": "Oponente",
+      "engineLabel": "Motor",
+      "difficultyLabel": "Dificuldade",
+      "stockfishDifficulty": "Nível {level}",
+      "maiaDifficulty": "{rating} ELO"
+    },
     "operationLog": {
       "title": "Registro de Operações",
       "noLogs": "Ainda não há registros de operações.",
@@ -1775,6 +1783,13 @@
     "deleteGame": "Excluir Partida",
     "deleteDescription": "Excluir esta partida corrompida do seu histórico e começar do zero."
   },
+  "largeDownloadConsent": {
+    "title": "Download grande necessário",
+    "body": "A IA Maia utiliza um modelo de rede neural de {size} que será baixado na primeira vez que você jogar com ela. Isso pode consumir dados móveis ou demorar em conexões lentas.",
+    "cachedNote": "Após o primeiro download, o navegador armazena o modelo em cache e as próximas partidas começam instantaneamente.",
+    "continue": "Continuar",
+    "cancel": "Cancelar"
+  },
   "newGame": {
     "title": "Nova Partida",
     "selectTitle": "Escolha Como Começar",
@@ -1829,7 +1844,20 @@
     "playAsBlack": "Jogar com Pretas",
     "selectLevel": "Selecione o Nível de Habilidade da IA",
     "levelWithNumber": "Nível {level}",
+    "maiaRatingOption": "{rating} ELO",
     "skillLevelDescription": "Nível 1 (800 ELO, mais fácil) a Nível 20 (3200+ ELO, mais forte). Os níveis mais altos demoram mais para pensar.",
+    "selectEngine": "Selecione o motor de IA",
+    "engineStockfishLabel": "Stockfish",
+    "engineStockfishDescription": "Um motor de código aberto poderoso com nível de habilidade ajustável — o oponente de IA clássico.",
+    "engineMaiaLabel": "Maia (estilo humano)",
+    "engineMaiaDescription": "Um motor baseado em redes neurais que joga como um humano no Elo selecionado. O primeiro movimento demora alguns segundos enquanto o modelo é carregado (~46 MB).",
+    "engineLockedHint": "Coming soon",
+    "helpLabel": "Mostrar ajuda",
+    "helpEngineDescription": "Stockfish: um motor de xadrez de código aberto com força ajustável. Maia: uma rede neural treinada com milhões de partidas humanas — joga no nível selecionado como um jogador real, não como um computador.",
+    "helpSkillLevelDescription": "Nível 1 (mais fraco) a Nível 20 (mais forte). Stockfish abrange aproximadamente 800–3200 ELO. Maia cobre 1100–1900 ELO em jogo estilo humano; as 20 posições do controle deslizante são mapeadas nesse intervalo.",
+    "helpPositionIntroDescription": "Configure qualquer posição inicial colocando peças no tabuleiro editável. O motor começará a pensar a partir da posição que você montou.",
+    "helpPgnIntroDescription": "Cole um PGN (Portable Game Notation) e jogue a variante a partir de qualquer ponto. Ótimo para estudar uma continuação específica ou recriar uma partida vista em outro lugar.",
+    "helpOpeningIntroDescription": "Escolha uma abertura nomeada da lista — você continuará para a tela de configuração PGN onde poderá escolher motor, cor e dificuldade antes de começar.",
     "previewBoard": "Pré-visualização do Tabuleiro",
     "gameSettings": "Configuração Avançada",
     "showBoardButtonInGame": "Mostrar botão 'Ver Tabuleiro' durante partidas contra a IA",
@@ -1967,6 +1995,27 @@
     "governingLawDescription": "Estes Termos serão regidos e interpretados de acordo com as leis japonesas.",
     "changesTitle": "Alterações nos Termos",
     "changesDescription": "O operador pode alterar estes Termos de Serviço conforme necessário. Os Termos modificados entrarão em vigor a partir do momento em que forem publicados nesta página."
+  },
+  "licenses": {
+    "title": "Licenças de Código Aberto",
+    "description": "Atribuições e informações de licenças do software de código aberto utilizado",
+    "lastUpdated": "Última atualização: 13 de maio de 2026",
+    "introduction": "O Xadrez às Cegas utiliza motores de xadrez de código aberto para fornecer sua funcionalidade de oponente de IA. Somos gratos aos autores e comunidades por trás desses projetos e fornecemos informações de atribuição e licenças abaixo.",
+    "componentsTitle": "Componentes de Código Aberto Incluídos",
+    "componentsIntro": "Os componentes a seguir são incluídos com este aplicativo e entregues ao seu navegador quando você usa os recursos relacionados. Cada motor é executado como um processo Web Worker separado e se comunica com o aplicativo apenas através do protocolo de texto padrão UCI.",
+    "stockfishName": "Stockfish",
+    "stockfishDescription": "Um motor de xadrez UCI de código aberto e poderoso, usado aqui como oponente de IA padrão.",
+    "lc0Name": "Lc0 (Leela Chess Zero)",
+    "lc0Description": "Um motor de xadrez baseado em redes neurais, usado aqui para executar os pesos do Maia para oponentes de IA com estilo humano.",
+    "maiaName": "Maia Chess (pesos da rede neural)",
+    "maiaDescription": "Pesos de rede neural que modelam o jogo humano de xadrez em níveis específicos de classificação, desenvolvidos pelo Computational Social Science Lab da Universidade de Toronto.",
+    "sourceCodeLabel": "Código-fonte:",
+    "licenseLabel": "Licença:",
+    "licenseValue": "GNU General Public License v3.0",
+    "complianceTitle": "Conformidade com GPL v3",
+    "complianceIntro": "Os componentes acima são licenciados sob a GNU General Public License versão 3 (GPL v3) e são incluídos aqui sem modificações. O código-fonte correspondente está disponível publicamente nos repositórios upstream listados acima.",
+    "viewFullLicense": "Ver o texto completo da licença GPL v3",
+    "viewFullLicenseGnu": "Também disponível no site do Projeto GNU"
   },
   "company": {
     "title": "Informações da Empresa",
@@ -2538,8 +2587,13 @@
     "achievementSingleMessage": "🏆 Você conquistou {name}",
     "achievementMultipleMessage": "🏆 Você conquistou {count} conquistas",
     "benefitGrantMessage": {
-      "topic_post": "Obrigado pela sua postagem no tópico — você recebeu {days} dias de benefício sem anúncios",
-      "default": "Você recebeu {days} dias de benefício sem anúncios"
+      "ad_free": {
+        "topic_post": "Obrigado pela sua postagem no tópico — você recebeu {days} dias de benefício sem anúncios",
+        "default": "Você recebeu {days} dias de benefício sem anúncios"
+      },
+      "maia_access": {
+        "default": "Você recebeu {days} dias de acesso ao motor Maia"
+      }
     },
     "pointGrantMessage": {
       "default": "Você recebeu {amount, plural, one {# ponto} other {# pontos}}"

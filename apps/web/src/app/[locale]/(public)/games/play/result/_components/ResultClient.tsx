@@ -10,6 +10,7 @@ import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaChartLine, FaClipboardList, FaMinus, FaTimes } from 'react-icons/fa';
 
+import { engineConfigToUrlParams } from '@/lib/engines';
 import type { Game, MoveInputMethod, MoveOperationLog } from '@/lib/types';
 
 import { Divider } from '@/app/[locale]/_components/Divider';
@@ -233,7 +234,9 @@ function ResultContent({ game, gameId, locale, displayName, breadcrumb }: Result
     params.set('autoOpponent', 'true');
     if (game.startingFen) params.set('fen', game.startingFen);
     params.set('gameId', gameId);
-    params.set('skillLevel', game.skillLevel.toString());
+    for (const [key, value] of Object.entries(engineConfigToUrlParams(game.engineConfig))) {
+      params.set(key, value);
+    }
     params.set('moves', JSON.stringify(game.moves));
 
     router.push(`/${locale}/games/play/postmortem?${params.toString()}`);
@@ -244,7 +247,7 @@ function ResultContent({ game, gameId, locale, displayName, breadcrumb }: Result
       <div className="flex flex-col gap-4">
         {/* Game Result */}
         {playerResult === 'win' && (
-          <VictoryCertificate displayName={displayName} skillLevel={game.skillLevel} />
+          <VictoryCertificate displayName={displayName} engineConfig={game.engineConfig} />
         )}
         {playerResult !== 'win' && (
           <div className="py-6 text-center flex flex-col items-center gap-3">

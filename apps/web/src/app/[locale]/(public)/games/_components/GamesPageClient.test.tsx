@@ -107,7 +107,7 @@ function createMockGame(overrides: Partial<Game> & { id: string }): Game {
     lastPlayed: new Date('2024-01-02').toISOString(),
     moves: [],
     playerColor: 'white',
-    skillLevel: 1,
+    engineConfig: { kind: 'stockfish', skillLevel: 1 },
     status: 'in_progress',
     ...overrides,
   };

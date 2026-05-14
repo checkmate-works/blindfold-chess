@@ -330,7 +330,7 @@
       },
       "chessEngine": {
         "question": "AIは具体的に何のチェスエンジンを利用しているのですか？",
-        "answer": "AIはStockfish 17.1（Lite Single-threaded版）を使用しています。"
+        "answer": "用途に応じて2種類のエンジンを切り替えられます。標準はStockfish 17.1（Lite Single-threaded版）です。よりヒューマンライクな指し手を体験したい場合はMaia 3（maia3_simplified）を選択できます — onnxruntime-web経由でブラウザ上で推論し、GPL-3.0ライセンスで公開されているモデルを使用しています。"
       },
       "expSystem": {
         "question": "経験値（Exp）はどのように計算されますか？",
@@ -1639,7 +1639,8 @@
       "title": "賞状",
       "honorific": "{name} 殿",
       "guestName": "ゲスト",
-      "body": "あなたは Stockfish Level {level} に勝利しました。あなたの高い目隠しチェスの能力を讃え、ここに賞します。"
+      "body": "あなたは Stockfish Level {level} に勝利しました。あなたの高い目隠しチェスの能力を讃え、ここに賞します。",
+      "bodyMaia": "あなたは Maia {rating} ELO に勝利しました。あなたの高い目隠しチェスの能力を讃え、ここに賞します。"
     },
     "youLose": "あなたの負け",
     "check": "チェック",
@@ -1687,6 +1688,13 @@
     "saved": "保存済み",
     "postmortem": "感想戦",
     "resultTitle": "ゲーム結果",
+    "engineInfo": {
+      "title": "対戦相手",
+      "engineLabel": "エンジン",
+      "difficultyLabel": "難易度",
+      "stockfishDifficulty": "レベル {level}",
+      "maiaDifficulty": "{rating} ELO"
+    },
     "operationLog": {
       "title": "操作ログ",
       "noLogs": "操作ログはまだありません。",
@@ -1775,6 +1783,13 @@
     "deleteGame": "ゲームを削除",
     "deleteDescription": "破損したゲームを履歴から削除して、新しく始めます。"
   },
+  "largeDownloadConsent": {
+    "title": "大きなファイルのダウンロード",
+    "body": "Maia AI を初めて使用する際、{size} のニューラルネットワークモデルをダウンロードします。モバイル回線では通信量にご注意ください。低速な回線では時間がかかる場合があります。",
+    "cachedNote": "初回ダウンロード後はブラウザがモデルをキャッシュするため、以降の対局は即座に開始できます。",
+    "continue": "続ける",
+    "cancel": "キャンセル"
+  },
   "newGame": {
     "title": "新規ゲーム",
     "selectTitle": "開始方法を選択",
@@ -1829,7 +1844,20 @@
     "playAsBlack": "黒でプレイ",
     "selectLevel": "AIの強さを選択",
     "levelWithNumber": "レベル {level}",
+    "maiaRatingOption": "{rating} ELO",
     "skillLevelDescription": "レベル1（800 ELO、最も簡単）からレベル20（3200+ ELO、最強）まで。レベルが高いほど思考時間が長くなります。",
+    "selectEngine": "AIエンジンを選択",
+    "engineStockfishLabel": "Stockfish",
+    "engineStockfishDescription": "強さを調整できるオープンソースの強力なエンジン。定番のAI対戦相手です。",
+    "engineMaiaLabel": "Maia（人間風）",
+    "engineMaiaDescription": "選択した Elo の人間プレイヤーのような指し方をするニューラルネットワーク型エンジン。初回はモデル（約46MB）の読み込みに数秒かかります。",
+    "engineLockedHint": "Coming soon",
+    "helpLabel": "ヘルプを表示",
+    "helpEngineDescription": "Stockfish: 強さを調整できるオープンソースのチェスエンジン。Maia: 数百万局の人間対局で学習されたニューラルネットワーク。選択したレベルの人間プレイヤーのように、コンピュータらしくない手を指します。",
+    "helpSkillLevelDescription": "レベル1（最弱）からレベル20（最強）まで。Stockfish はおよそ800〜3200 ELO、Maia は人間風プレイの1100〜1900 ELO を 20段階のスライダーにマッピングしています。",
+    "helpPositionIntroDescription": "盤上に駒を配置して任意の開始局面を作成できます。AIは、組み立てた局面から思考を開始します。",
+    "helpPgnIntroDescription": "PGN（Portable Game Notation）を貼り付けて、任意の局面から対局できます。特定の変化を研究したり、他で見た棋譜を再現したりするのに便利です。",
+    "helpOpeningIntroDescription": "リストから定跡を選択すると、続けてPGN設定画面に遷移し、そこでエンジン・色・難易度を選んで対局を開始できます。",
     "previewBoard": "ボードをプレビュー",
     "gameSettings": "詳細設定",
     "showBoardButtonInGame": "AI対局中に「ボードを表示」ボタンを表示する",
@@ -1967,6 +1995,27 @@
     "governingLawDescription": "本規約の解釈および適用は、日本法に準拠するものとします。",
     "changesTitle": "規約の変更",
     "changesDescription": "運営者は、必要に応じて本利用規約を変更することがあります。変更後の利用規約は、本ページに掲載した時点で効力を生じるものとします。"
+  },
+  "licenses": {
+    "title": "オープンソースライセンス",
+    "description": "本サービスで利用しているオープンソースソフトウェアのライセンス情報",
+    "lastUpdated": "最終更新日: 2026年5月13日",
+    "introduction": "Blindfold Chess は AI 対局機能の提供にあたり、複数のオープンソースのチェスエンジンを利用しています。これらのプロジェクトの作者およびコミュニティに感謝するとともに、本ページで帰属表示およびライセンス情報を明示いたします。",
+    "componentsTitle": "同梱しているオープンソースコンポーネント",
+    "componentsIntro": "以下のコンポーネントは本アプリケーションに同梱されており、関連機能のご利用時にブラウザに配信されます。各エンジンは独立した Web Worker プロセスとして実行され、アプリケーション本体とは UCI と呼ばれるテキストベースの標準プロトコルを介してのみ通信を行います。",
+    "stockfishName": "Stockfish",
+    "stockfishDescription": "オープンソースの強力な UCI チェスエンジン。本サービスでは既定の AI 対局相手として使用しています。",
+    "lc0Name": "Lc0 (Leela Chess Zero)",
+    "lc0Description": "ニューラルネットワークベースのチェスエンジン。本サービスでは Maia の重みファイルを実行するエンジンとして使用しています。",
+    "maiaName": "Maia Chess (ニューラルネットワーク重みファイル)",
+    "maiaDescription": "特定のレーティング帯における人間の指し手を模倣するように学習されたニューラルネットワーク重みファイル。トロント大学 Computational Social Science Lab により開発されています。",
+    "sourceCodeLabel": "ソースコード:",
+    "licenseLabel": "ライセンス:",
+    "licenseValue": "GNU General Public License v3.0",
+    "complianceTitle": "GPL v3 コンプライアンスについて",
+    "complianceIntro": "上記コンポーネントはいずれも GNU General Public License version 3 (GPL v3) のもとで提供されており、本サービスでは改変を加えずにそのまま同梱しています。対応するソースコードは上記の各上流リポジトリで公開されています。",
+    "viewFullLicense": "GPL v3 ライセンス本文を表示",
+    "viewFullLicenseGnu": "GNU Project の公式サイトでも閲覧できます"
   },
   "company": {
     "title": "運営者情報",
@@ -2538,8 +2587,13 @@
     "achievementSingleMessage": "🏆 {name} を獲得しました",
     "achievementMultipleMessage": "🏆 {count}件のアチーブメントを獲得しました",
     "benefitGrantMessage": {
-      "topic_post": "トピックの投稿のお礼として、{days}日間の広告非表示特典が付与されました",
-      "default": "{days}日間の広告非表示特典が付与されました"
+      "ad_free": {
+        "topic_post": "トピックの投稿のお礼として、{days}日間の広告非表示特典が付与されました",
+        "default": "{days}日間の広告非表示特典が付与されました"
+      },
+      "maia_access": {
+        "default": "{days}日間のMaiaエンジン利用権が付与されました"
+      }
     },
     "pointGrantMessage": {
       "default": "{amount} ポイントが付与されました"

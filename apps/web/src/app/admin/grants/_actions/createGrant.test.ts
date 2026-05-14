@@ -131,6 +131,35 @@ describe('createGrant', () => {
     expect(result).toEqual({ error: 'Benefit type is required' });
   });
 
+  it('should return error when benefitType is not in the allow-list', async () => {
+    mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
+
+    const fd = makeFormData({
+      userId: validUserId,
+      // A plausible-looking but unregistered benefit type — form tampering
+      // / API-direct-call simulation.
+      benefitType: 'free_unicorns',
+      durationDays: '30',
+    });
+    const result = await createGrant(fd);
+    expect(result).toEqual({ error: 'Unknown benefit type: free_unicorns' });
+  });
+
+  it('should accept the new maia_access benefit type', async () => {
+    mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
+
+    const fd = makeFormData({
+      userId: validUserId,
+      benefitType: 'maia_access',
+      durationDays: '30',
+    });
+    const result = await createGrant(fd);
+    // Past validation, the action proceeds into the DB transaction stubbed
+    // by the existing setup — assert it did NOT bail out at the benefit
+    // type guard.
+    expect(result).not.toMatchObject({ error: expect.stringContaining('Unknown benefit type') });
+  });
+
   it('should return error when durationDays is 0', async () => {
     mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
 

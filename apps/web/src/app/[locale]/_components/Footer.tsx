@@ -25,6 +25,7 @@ export async function Footer({ locale, hideLanguageSwitcher }: Props) {
     tTerms,
     tCompany,
     tAffiliate,
+    tLicenses,
   ] = await Promise.all([
     getTranslations({ locale, namespace: 'Footer' }),
     getTranslations({ locale, namespace: 'manual' }),
@@ -36,6 +37,7 @@ export async function Footer({ locale, hideLanguageSwitcher }: Props) {
     getTranslations({ locale, namespace: 'terms' }),
     getTranslations({ locale, namespace: 'company' }),
     getTranslations({ locale, namespace: 'affiliateDisclosure' }),
+    getTranslations({ locale, namespace: 'licenses' }),
   ]);
 
   const isContactFormEnabled = !!process.env.RESEND_API_KEY;
@@ -129,6 +131,14 @@ export async function Footer({ locale, hideLanguageSwitcher }: Props) {
                   className="hover:text-foreground transition-colors"
                 >
                   {tAffiliate('title')}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={`/${locale}/licenses`}
+                  className="hover:text-foreground transition-colors"
+                >
+                  {tLicenses('title')}
                 </Link>
               </li>
             </ul>
