@@ -1689,9 +1689,11 @@
     "postmortem": "Game Review",
     "resultTitle": "Game Result",
     "engineInfo": {
-      "title": "Show opponent info",
-      "stockfish": "Stockfish · Level {level}",
-      "maia": "Maia · {rating} ELO"
+      "title": "Opponent",
+      "engineLabel": "Engine",
+      "difficultyLabel": "Difficulty",
+      "stockfishDifficulty": "Level {level}",
+      "maiaDifficulty": "{rating} ELO"
     },
     "operationLog": {
       "title": "Operation Log",

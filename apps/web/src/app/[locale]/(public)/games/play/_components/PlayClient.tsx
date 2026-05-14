@@ -23,6 +23,7 @@ import {
   shouldShowModalPeekButton,
 } from '../_lib';
 import { BoardViewModal } from './BoardViewModal';
+import { EngineInfoModal } from './EngineInfoModal';
 import { GameInProgressPanel } from './GameInProgressPanel';
 import { InlineBoardView } from './InlineBoardView';
 import { MoveInputSkeleton } from './MoveInputSkeleton';
@@ -153,6 +154,7 @@ export function PlayClient({
   // UI state
   const [isBoardVisible, setIsBoardVisible] = useState(false);
   const [showOperationLogModal, setShowOperationLogModal] = useState(false);
+  const [showEngineInfoModal, setShowEngineInfoModal] = useState(false);
 
   // Board flip state
   const { effectiveFlipped, toggleFlip: handleFlipBoard } = useBoardFlip({ playerSide });
@@ -257,7 +259,7 @@ export function PlayClient({
                 onMoveCommitted={commitMoveLog}
                 onMovePeek={recordMovePeek}
                 onShowOperationLog={() => setShowOperationLogModal(true)}
-                engineConfig={engineConfig}
+                onShowEngineInfo={() => setShowEngineInfoModal(true)}
                 aiMoveError={
                   aiMoveError.message
                     ? { message: aiMoveError.message, retry: aiMoveError.retry }
@@ -392,6 +394,13 @@ export function PlayClient({
         moves={moves}
         playerSide={playerSide}
         startingFen={startingFen}
+      />
+
+      {/* Engine Info Modal */}
+      <EngineInfoModal
+        isOpen={showEngineInfoModal}
+        onClose={() => setShowEngineInfoModal(false)}
+        engineConfig={engineConfig}
       />
     </div>
   );

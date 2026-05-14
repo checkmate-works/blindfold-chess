@@ -1689,9 +1689,11 @@
     "postmortem": "感想戦",
     "resultTitle": "ゲーム結果",
     "engineInfo": {
-      "title": "対戦相手の情報を表示",
-      "stockfish": "Stockfish · レベル {level}",
-      "maia": "Maia · {rating} ELO"
+      "title": "対戦相手",
+      "engineLabel": "エンジン",
+      "difficultyLabel": "難易度",
+      "stockfishDifficulty": "レベル {level}",
+      "maiaDifficulty": "{rating} ELO"
     },
     "operationLog": {
       "title": "操作ログ",

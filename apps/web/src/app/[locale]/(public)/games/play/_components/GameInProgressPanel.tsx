@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import type { ReactNode } from 'react';
 
 import { Link } from '@/i18n/routing';
@@ -9,7 +8,6 @@ import { FlagIcon, UndoIcon } from '@blindfold-chess/icons';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaClipboardList, FaInfoCircle } from 'react-icons/fa';
 
-import type { EngineConfig } from '@/lib/engines';
 import type { MoveInputMethod } from '@/lib/types';
 
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
@@ -41,12 +39,11 @@ type Props = {
   onMovePeek?: () => void;
   onShowOperationLog?: () => void;
   /**
-   * Engine + difficulty in effect for the current game. Surfaced in the
-   * info popover next to the operation-log button so the user can
-   * remind themselves which opponent they're playing against
-   * mid-session without leaving the page.
+   * Opens the engine info modal — same pattern as `onShowOperationLog`.
+   * The modal itself is owned by the page so its lifecycle is shared
+   * with other modals (focus restoration, scroll lock).
    */
-  engineConfig: EngineConfig;
+  onShowEngineInfo: () => void;
   /**
    * When the last AI move failed, carries the i18n'd error message and a
    * `retry` callback that tears down the dead engine and re-requests a move.
@@ -75,21 +72,11 @@ export function GameInProgressPanel({
   onMoveCommitted,
   onMovePeek,
   onShowOperationLog,
-  engineConfig,
+  onShowEngineInfo,
   aiMoveError,
 }: Props) {
   const t = useTranslations('play');
   const showModalPeekButton = shouldShowModalPeekButton(preferences);
-  const [isEngineInfoOpen, setIsEngineInfoOpen] = useState(false);
-
-  // Verbose, opponent-screen-appropriate label. Distinct from
-  // formatEngineConfigLabel (which is tuned for dense list rows) — here
-  // we show the engine name explicitly because the popover stands alone
-  // and isn't disambiguated by surrounding context.
-  const engineInfoLabel =
-    engineConfig.kind === 'maia'
-      ? t('engineInfo.maia', { rating: engineConfig.rating })
-      : t('engineInfo.stockfish', { level: engineConfig.skillLevel });
 
   return (
     <div className="flex flex-col gap-6">
@@ -168,32 +155,26 @@ export function GameInProgressPanel({
         </Link>
       </div>
 
-      {/* Engine info + Operation Log */}
-      <div className="flex justify-end items-center gap-3 text-muted-foreground">
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => setIsEngineInfoOpen((prev) => !prev)}
-            className="hover:text-foreground"
-            title={t('engineInfo.title')}
-            aria-label={engineInfoLabel}
-            aria-expanded={isEngineInfoOpen}
-          >
-            <FaInfoCircle className="w-4 h-4" />
-          </button>
-          {isEngineInfoOpen && (
-            <div
-              role="status"
-              className="absolute bottom-full right-0 mb-2 px-2 py-1 text-xs rounded bg-foreground text-background whitespace-nowrap shadow z-10"
-            >
-              {engineInfoLabel}
-            </div>
-          )}
-        </div>
+      {/* Engine info + Operation Log. Both icons share the same hit
+          target (`p-1` on a 1rem icon → 1.5rem square) and the row
+          uses `items-center` so the visual centres line up regardless
+          of the icons' internal glyph metrics — FaInfoCircle's filled
+          circle and FaClipboardList's tall rectangle have different
+          centre-of-mass without explicit padding. */}
+      <div className="flex justify-end items-center gap-2 text-muted-foreground">
+        <button
+          type="button"
+          onClick={onShowEngineInfo}
+          className="p-1 leading-none hover:text-foreground"
+          title={t('engineInfo.title')}
+        >
+          <FaInfoCircle className="w-4 h-4" />
+        </button>
         {onShowOperationLog && (
           <button
+            type="button"
             onClick={onShowOperationLog}
-            className="hover:text-foreground"
+            className="p-1 leading-none hover:text-foreground"
             title={t('operationLog.title')}
           >
             <FaClipboardList className="w-4 h-4" />
