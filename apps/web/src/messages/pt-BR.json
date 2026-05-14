@@ -330,7 +330,7 @@
       },
       "chessEngine": {
         "question": "Que motor de xadrez a IA usa?",
-        "answer": "A IA utiliza Stockfish 17.1 (versão Lite de thread único)."
+        "answer": "Existem dois motores disponíveis conforme o modo. O padrão é o Stockfish 17.1 (versão Lite de thread único). Para um jogo mais humano, é possível alternar para Maia 3 (maia3_simplified), que roda no navegador via onnxruntime-web e usa o modelo público sob licença GPL-3.0."
       },
       "expSystem": {
         "question": "Como é calculada a experiência (Exp)?",

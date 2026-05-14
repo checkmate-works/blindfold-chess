@@ -330,7 +330,7 @@
       },
       "chessEngine": {
         "question": "What chess engine does the AI use?",
-        "answer": "The AI uses Stockfish 17.1 (Lite Single-threaded version)."
+        "answer": "Two engines are available depending on the mode. The default is Stockfish 17.1 (Lite Single-threaded version). For more human-like play, you can switch to Maia 3 (maia3_simplified), which runs in your browser via onnxruntime-web and uses the publicly available GPL-3.0 licensed model."
       },
       "expSystem": {
         "question": "How is experience (Exp) calculated?",

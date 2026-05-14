@@ -330,7 +330,7 @@
       },
       "chessEngine": {
         "question": "¿Qué motor de ajedrez usa la IA?",
-        "answer": "La IA utiliza Stockfish 17.1 (versión Lite de un solo hilo)."
+        "answer": "Hay dos motores disponibles según el modo. Por defecto se usa Stockfish 17.1 (versión Lite de un solo hilo). Para un juego más humano, puedes cambiar a Maia 3 (maia3_simplified), que se ejecuta en el navegador mediante onnxruntime-web y utiliza el modelo público bajo licencia GPL-3.0."
       },
       "expSystem": {
         "question": "¿Cómo se calcula la experiencia (Exp)?",

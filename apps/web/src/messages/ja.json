@@ -330,7 +330,7 @@
       },
       "chessEngine": {
         "question": "AIは具体的に何のチェスエンジンを利用しているのですか？",
-        "answer": "AIはStockfish 17.1（Lite Single-threaded版）を使用しています。"
+        "answer": "用途に応じて2種類のエンジンを切り替えられます。標準はStockfish 17.1（Lite Single-threaded版）です。よりヒューマンライクな指し手を体験したい場合はMaia 3（maia3_simplified）を選択できます — onnxruntime-web経由でブラウザ上で推論し、GPL-3.0ライセンスで公開されているモデルを使用しています。"
       },
       "expSystem": {
         "question": "経験値（Exp）はどのように計算されますか？",
