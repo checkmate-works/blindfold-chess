@@ -182,7 +182,31 @@ describe('VsAiCard', () => {
       render(<VsAiCard locale="en" />);
 
       const resumeLink = screen.getByText('resume').closest('a');
-      expect(resumeLink).toHaveAttribute('href', '/games/play?gameId=game-1');
+      expect(resumeLink).toHaveAttribute('href', '/games/play?gameId=game-1&skillLevel=1');
+    });
+
+    it('carries the engine + Elo through the resume link for a Maia game', () => {
+      // Regression: previously the Resume link only emitted `gameId=` and the
+      // play route fell back to Stockfish at the default skill level — a
+      // Maia 1600 game would silently reboot as Stockfish Level 5 after
+      // navigating home and clicking Resume.
+      const game = createMockGame({
+        id: 'game-maia',
+        status: 'in_progress',
+        engineConfig: { kind: 'maia', rating: 1600 },
+      });
+      mockUseGameList.mockReturnValue({
+        games: [game],
+        isLoading: false,
+      });
+
+      render(<VsAiCard locale="en" />);
+
+      const resumeLink = screen.getByText('resume').closest('a');
+      expect(resumeLink).toHaveAttribute(
+        'href',
+        '/games/play?gameId=game-maia&engine=maia&elo=1600'
+      );
     });
 
     it('should link new game button to /games/new', () => {
@@ -252,7 +276,7 @@ describe('VsAiCard', () => {
 
       // Resume link should point to the latest in-progress game's id
       const resumeLink = screen.getByText('resume').closest('a');
-      expect(resumeLink).toHaveAttribute('href', '/games/play?gameId=game-new');
+      expect(resumeLink).toHaveAttribute('href', '/games/play?gameId=game-new&skillLevel=10');
     });
   });
 
@@ -329,7 +353,7 @@ describe('VsAiCard', () => {
 
       // Resume link should use the in-progress game's id, not the completed one
       const resumeLink = screen.getByText('resume').closest('a');
-      expect(resumeLink).toHaveAttribute('href', '/games/play?gameId=game-active');
+      expect(resumeLink).toHaveAttribute('href', '/games/play?gameId=game-active&skillLevel=8');
     });
   });
 
