@@ -6,13 +6,23 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { BoardSkeleton, Button, FlipBoardButton } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { DEFAULT_MAIA_RATING, type MaiaRating } from '@blindfold-chess/features/ai-game/maia';
 import type { Side } from '@blindfold-chess/types';
 import { FaChevronDown } from 'react-icons/fa';
 
+import {
+  DEFAULT_ENGINE,
+  type EngineConfig,
+  type EngineKind,
+  engineConfigToUrlParams,
+} from '@/lib/engines';
+import { shouldWarnBeforeLargeDownload } from '@/lib/network/connection';
 import type { SkillLevel } from '@/lib/types';
 
 import { CollapsibleGameSettings } from '@/app/[locale]/(public)/games/new/_components/CollapsibleGameSettings';
 import { ColorSelector } from '@/app/[locale]/(public)/games/new/_components/ColorSelector';
+import { EngineSelector } from '@/app/[locale]/(public)/games/new/_components/EngineSelector';
+import { LargeDownloadConsentDialog } from '@/app/[locale]/(public)/games/new/_components/LargeDownloadConsentDialog';
 import {
   type CastlingRights,
   PositionSettings,
@@ -29,12 +39,14 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 const EMPTY_BOARD_FEN = '8/8/8/8/8/8/8/8 w - - 0 1';
+const MAIA_MODEL_SIZE_LABEL = '46 MB';
 
 type Props = {
   locale: Locale;
+  maiaUnlocked: boolean;
 };
 
-export function PositionGameForm({ locale }: Props) {
+export function PositionGameForm({ locale, maiaUnlocked }: Props) {
   const t = useTranslations('newGame');
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -42,8 +54,11 @@ export function PositionGameForm({ locale }: Props) {
   const { localSettings, handleSettingsChange } = useLocalGameSettings();
   const [color, setColor] = useState<Side>('white');
   const [skillLevel, setSkillLevel] = useState<SkillLevel>(5);
+  const [maiaRating, setMaiaRating] = useState<MaiaRating>(DEFAULT_MAIA_RATING);
+  const [engine, setEngine] = useState<EngineKind>(DEFAULT_ENGINE);
   const [isLoading, setIsLoading] = useState(false);
   const [flipped, setFlipped] = useState(false);
+  const [consentDialogOpen, setConsentDialogOpen] = useState(false);
 
   // Custom position state
   const [positionFen, setPositionFen] = useState(EMPTY_BOARD_FEN);
@@ -162,6 +177,19 @@ export function PositionGameForm({ locale }: Props) {
     setPositionFen(newFen);
   }, []);
 
+  const engineConfig: EngineConfig =
+    engine === 'maia' ? { kind: 'maia', rating: maiaRating } : { kind: 'stockfish', skillLevel };
+
+  const navigateToGame = () => {
+    const params = new URLSearchParams({
+      color,
+      fen: fullPositionFen,
+      gamePrefs: JSON.stringify(localSettings),
+      ...engineConfigToUrlParams(engineConfig),
+    });
+    router.push(`/${locale}/games/play?${params.toString()}`);
+  };
+
   const handleStartGame = () => {
     setIsLoading(true);
 
@@ -170,14 +198,21 @@ export function PositionGameForm({ locale }: Props) {
       return;
     }
 
-    const searchParams = new URLSearchParams({
-      color,
-      skillLevel: skillLevel.toString(),
-      fen: fullPositionFen,
-      gamePrefs: JSON.stringify(localSettings),
-    });
+    if (engine === 'maia' && shouldWarnBeforeLargeDownload()) {
+      setConsentDialogOpen(true);
+      return;
+    }
+    navigateToGame();
+  };
 
-    router.push(`/${locale}/games/play?${searchParams.toString()}`);
+  const handleConsentConfirm = () => {
+    setConsentDialogOpen(false);
+    navigateToGame();
+  };
+
+  const handleConsentCancel = () => {
+    setConsentDialogOpen(false);
+    setIsLoading(false);
   };
 
   const editableBoardLabels = useMemo(
@@ -194,23 +229,25 @@ export function PositionGameForm({ locale }: Props) {
 
   return (
     <div className="space-y-4">
-      <SectionTitle>{t('customPosition')}</SectionTitle>
-      <div className="flex justify-end mb-2">
-        <FlipBoardButton onClick={() => setFlipped((prev) => !prev)} title={t('flipBoard')} />
+      <div data-tour-id="position-editor">
+        <SectionTitle>{t('customPosition')}</SectionTitle>
+        <div className="flex justify-end mb-2">
+          <FlipBoardButton onClick={() => setFlipped((prev) => !prev)} title={t('flipBoard')} />
+        </div>
+        {!isLoaded ? (
+          <BoardSkeleton />
+        ) : (
+          <EditableChessBoard
+            fen={positionFen}
+            onFenChange={handlePositionFenChange}
+            labels={editableBoardLabels}
+            editable
+            flipped={flipped}
+            boardTheme={preferences.boardTheme}
+            showCoordinates={preferences.showCoordinates}
+          />
+        )}
       </div>
-      {!isLoaded ? (
-        <BoardSkeleton />
-      ) : (
-        <EditableChessBoard
-          fen={positionFen}
-          onFenChange={handlePositionFenChange}
-          labels={editableBoardLabels}
-          editable
-          flipped={flipped}
-          boardTheme={preferences.boardTheme}
-          showCoordinates={preferences.showCoordinates}
-        />
-      )}
 
       {/* Position Settings Accordion */}
       <div className="rounded-md border border-border overflow-hidden">
@@ -253,8 +290,7 @@ export function PositionGameForm({ locale }: Props) {
         </div>
       </div>
 
-      {/* Color Selection */}
-      <SectionTitle>{t('selectColor')}</SectionTitle>
+      {/* Color Selection — ColorSelector provides its own SectionTitle */}
       <ColorSelector value={color} onChange={setColor} />
 
       {/* Validation message */}
@@ -263,8 +299,15 @@ export function PositionGameForm({ locale }: Props) {
       )}
       {positionValidation.valid && <p className="text-sm text-success">{t('positionValid')}</p>}
 
-      {/* Skill Level Selection */}
-      <SkillLevelSelector value={skillLevel} onChange={setSkillLevel} />
+      {/* Engine + Skill Level Selection */}
+      <EngineSelector value={engine} onChange={setEngine} maiaUnlocked={maiaUnlocked} />
+      <SkillLevelSelector
+        engine={engine}
+        stockfishLevel={skillLevel}
+        onStockfishLevelChange={setSkillLevel}
+        maiaRating={maiaRating}
+        onMaiaRatingChange={setMaiaRating}
+      />
 
       <SectionTitle>{t('gameSettings')}</SectionTitle>
       <CollapsibleGameSettings settings={localSettings} onSettingsChange={handleSettingsChange} />
@@ -279,6 +322,13 @@ export function PositionGameForm({ locale }: Props) {
       >
         {t('startGame')}
       </Button>
+
+      <LargeDownloadConsentDialog
+        isOpen={consentDialogOpen}
+        onConfirm={handleConsentConfirm}
+        onCancel={handleConsentCancel}
+        sizeLabel={MAIA_MODEL_SIZE_LABEL}
+      />
     </div>
   );
 }

@@ -330,7 +330,7 @@
       },
       "chessEngine": {
         "question": "¿Qué motor de ajedrez usa la IA?",
-        "answer": "La IA utiliza Stockfish 17.1 (versión Lite de un solo hilo)."
+        "answer": "Hay dos motores disponibles según el modo. Por defecto se usa Stockfish 17.1 (versión Lite de un solo hilo). Para un juego más humano, puedes cambiar a Maia 3 (maia3_simplified), que se ejecuta en el navegador mediante onnxruntime-web y utiliza el modelo público bajo licencia GPL-3.0."
       },
       "expSystem": {
         "question": "¿Cómo se calcula la experiencia (Exp)?",
@@ -1639,7 +1639,8 @@
       "title": "Certificado",
       "honorific": "{name}",
       "guestName": "Invitado",
-      "body": "Ha derrotado a Stockfish Nivel {level}. En reconocimiento de su excepcional habilidad en ajedrez a ciegas, se otorga este certificado."
+      "body": "Ha derrotado a Stockfish Nivel {level}. En reconocimiento de su excepcional habilidad en ajedrez a ciegas, se otorga este certificado.",
+      "bodyMaia": "Ha derrotado a Maia con {rating} ELO. En reconocimiento de su excepcional habilidad en ajedrez a ciegas, se otorga este certificado."
     },
     "youLose": "Has Perdido",
     "check": "Jaque",
@@ -1687,6 +1688,13 @@
     "saved": "Guardado",
     "postmortem": "Revisión de Partida",
     "resultTitle": "Resultado de la Partida",
+    "engineInfo": {
+      "title": "Oponente",
+      "engineLabel": "Motor",
+      "difficultyLabel": "Dificultad",
+      "stockfishDifficulty": "Nivel {level}",
+      "maiaDifficulty": "{rating} ELO"
+    },
     "operationLog": {
       "title": "Registro de Operaciones",
       "noLogs": "Aún no hay registros de operaciones.",
@@ -1775,6 +1783,13 @@
     "deleteGame": "Eliminar Partida",
     "deleteDescription": "Eliminar esta partida dañada de tu historial y empezar de nuevo."
   },
+  "largeDownloadConsent": {
+    "title": "Se requiere una descarga grande",
+    "body": "La IA Maia utiliza un modelo de red neuronal de {size} que se descargará la primera vez que juegues con ella. Esto puede consumir datos móviles o tardar bastante en conexiones lentas.",
+    "cachedNote": "Después de la primera descarga, tu navegador almacena el modelo en caché y las partidas siguientes comienzan al instante.",
+    "continue": "Continuar",
+    "cancel": "Cancelar"
+  },
   "newGame": {
     "title": "Nueva Partida",
     "selectTitle": "Elige Cómo Empezar",
@@ -1829,7 +1844,20 @@
     "playAsBlack": "Jugar con Negras",
     "selectLevel": "Selecciona el Nivel de Habilidad de la IA",
     "levelWithNumber": "Nivel {level}",
+    "maiaRatingOption": "{rating} ELO",
     "skillLevelDescription": "Nivel 1 (800 ELO, más fácil) a Nivel 20 (3200+ ELO, más fuerte). Los niveles más altos tardan más en pensar.",
+    "selectEngine": "Selecciona el motor de IA",
+    "engineStockfishLabel": "Stockfish",
+    "engineStockfishDescription": "Un motor de código abierto potente con nivel de habilidad ajustable — el oponente de IA clásico.",
+    "engineMaiaLabel": "Maia (estilo humano)",
+    "engineMaiaDescription": "Un motor basado en redes neuronales que juega como un humano del Elo seleccionado. El primer movimiento tarda unos segundos mientras se carga el modelo (~46 MB).",
+    "engineLockedHint": "Coming soon",
+    "helpLabel": "Mostrar ayuda",
+    "helpEngineDescription": "Stockfish: un motor de ajedrez de código abierto con fuerza ajustable. Maia: una red neuronal entrenada con millones de partidas humanas, juega al nivel elegido como un humano real, no como una computadora.",
+    "helpSkillLevelDescription": "Nivel 1 (más débil) a Nivel 20 (más fuerte). Stockfish abarca aproximadamente 800–3200 ELO. Maia cubre 1100–1900 ELO con juego estilo humano; las 20 posiciones del deslizador se asignan a ese rango.",
+    "helpPositionIntroDescription": "Configura cualquier posición inicial colocando piezas en el tablero editable. El motor comenzará a pensar desde la posición que crees.",
+    "helpPgnIntroDescription": "Pega un PGN (notación portátil de juego) y juega la variante desde cualquier punto. Ideal para estudiar una continuación específica o recrear una partida que viste en otro lugar.",
+    "helpOpeningIntroDescription": "Elige una apertura con nombre de la lista — continuarás a la pantalla de configuración PGN donde podrás elegir motor, color y dificultad antes de empezar.",
     "previewBoard": "Vista Previa del Tablero",
     "gameSettings": "Configuración Avanzada",
     "showBoardButtonInGame": "Mostrar botón 'Ver Tablero' durante partidas contra la IA",
@@ -1967,6 +1995,27 @@
     "governingLawDescription": "Estos Términos se regirán e interpretarán de acuerdo con las leyes japonesas.",
     "changesTitle": "Cambios en los Términos",
     "changesDescription": "El operador puede cambiar estos Términos de Servicio según sea necesario. Los Términos modificados entrarán en vigor desde el momento en que se publiquen en esta página."
+  },
+  "licenses": {
+    "title": "Licencias de código abierto",
+    "description": "Reconocimientos e información de licencias del software de código abierto utilizado",
+    "lastUpdated": "Última actualización: 13 de mayo de 2026",
+    "introduction": "Blindfold Chess utiliza motores de ajedrez de código abierto para proporcionar su funcionalidad de oponente de IA. Agradecemos a los autores y comunidades detrás de estos proyectos, y proporcionamos información de atribución y licencias a continuación.",
+    "componentsTitle": "Componentes de código abierto incluidos",
+    "componentsIntro": "Los siguientes componentes están incluidos con esta aplicación y se entregan a su navegador cuando utiliza las funciones relacionadas. Cada motor se ejecuta como un proceso Web Worker separado y se comunica con la aplicación únicamente a través del protocolo estándar de texto UCI.",
+    "stockfishName": "Stockfish",
+    "stockfishDescription": "Un potente motor de ajedrez UCI de código abierto, utilizado aquí como oponente de IA predeterminado.",
+    "lc0Name": "Lc0 (Leela Chess Zero)",
+    "lc0Description": "Un motor de ajedrez basado en redes neuronales, utilizado aquí para ejecutar los pesos de Maia para oponentes de IA con estilo humano.",
+    "maiaName": "Maia Chess (pesos de red neuronal)",
+    "maiaDescription": "Pesos de red neuronal que modelan el juego humano de ajedrez en niveles específicos de puntuación, desarrollados por el Computational Social Science Lab de la Universidad de Toronto.",
+    "sourceCodeLabel": "Código fuente:",
+    "licenseLabel": "Licencia:",
+    "licenseValue": "GNU General Public License v3.0",
+    "complianceTitle": "Cumplimiento de GPL v3",
+    "complianceIntro": "Los componentes anteriores tienen licencia GNU General Public License versión 3 (GPL v3) y se incluyen aquí sin modificaciones. El código fuente correspondiente está disponible públicamente en los repositorios upstream enlazados arriba.",
+    "viewFullLicense": "Ver el texto completo de la licencia GPL v3",
+    "viewFullLicenseGnu": "También disponible en el sitio web del Proyecto GNU"
   },
   "company": {
     "title": "Información de la Empresa",
@@ -2489,8 +2538,13 @@
     "achievementSingleMessage": "🏆 Obtuviste {name}",
     "achievementMultipleMessage": "🏆 Obtuviste {count} logros",
     "benefitGrantMessage": {
-      "topic_post": "Gracias por tu publicación de tema — recibiste {days} días de beneficio sin anuncios",
-      "default": "Recibiste {days} días de beneficio sin anuncios"
+      "ad_free": {
+        "topic_post": "Gracias por tu publicación de tema — recibiste {days} días de beneficio sin anuncios",
+        "default": "Recibiste {days} días de beneficio sin anuncios"
+      },
+      "maia_access": {
+        "default": "Recibiste {days} días de acceso al motor Maia"
+      }
     }
   },
   "deleteAccount": {

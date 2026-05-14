@@ -2,15 +2,25 @@
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import type { EngineConfig } from '@/lib/engines';
+
 import { CertificateFrame } from '@/app/[locale]/_components/CertificateFrame';
 
 type Props = {
   displayName: string;
-  skillLevel: number;
+  engineConfig: EngineConfig;
 };
 
-export function VictoryCertificate({ displayName, skillLevel }: Props) {
+export function VictoryCertificate({ displayName, engineConfig }: Props) {
   const t = useTranslations('play');
+
+  // Branch on the discriminator so the body text correctly names the
+  // engine that was defeated. New engines plug in via a new i18n key
+  // and a matching `kind` branch here.
+  const bodyText =
+    engineConfig.kind === 'maia'
+      ? t('certificate.bodyMaia', { rating: engineConfig.rating })
+      : t('certificate.body', { level: engineConfig.skillLevel });
 
   return (
     <CertificateFrame>
@@ -26,7 +36,7 @@ export function VictoryCertificate({ displayName, skillLevel }: Props) {
 
       {/* Body */}
       <p className="text-xs sm:text-sm text-podium-gold-foreground text-center leading-relaxed sm:leading-loose">
-        {t('certificate.body', { level: skillLevel })}
+        {bodyText}
       </p>
     </CertificateFrame>
   );

@@ -5,6 +5,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { ChessPieceIcon } from '@blindfold-chess/icons';
 import { FaPlay, FaPlus } from 'react-icons/fa';
 
+import { engineConfigToUrlParams, formatEngineConfigLabel } from '@/lib/engines';
 import type { Game } from '@/lib/types';
 
 import { DashboardSection, DashboardSectionHeader } from '@/app/[locale]/_components';
@@ -18,6 +19,20 @@ type Props = {
   'data-tour-id'?: string;
 };
 
+/**
+ * Build the Resume URL for a saved game. Must include the engine + difficulty
+ * params alongside `gameId`, because the play route reads engineConfig from
+ * the URL (not from the saved Game record) — without these, every resumed
+ * Maia game would silently boot up as Stockfish at the default skill level.
+ */
+function buildResumeHref(game: Game): string {
+  const params = new URLSearchParams({
+    gameId: game.id,
+    ...engineConfigToUrlParams(game.engineConfig),
+  });
+  return `/games/play?${params.toString()}`;
+}
+
 function ResumeGameInfo({
   game,
   movesLabel,
@@ -27,12 +42,14 @@ function ResumeGameInfo({
   movesLabel: string;
   levelLabel: string;
 }) {
+  // levelLabel is the localised "Level" string from the parent; the
+  // helper consumes it for Stockfish rows and ignores it for Maia rows
+  // (which render their own "Maia {rating}" form).
+  const difficultyText = formatEngineConfigLabel(game.engineConfig, () => levelLabel);
   return (
     <div className="flex items-center gap-1.5 text-sm text-muted-foreground flex-wrap">
       <ColorIcon color={game.playerColor} />
-      <span className="font-medium">
-        {levelLabel} {game.skillLevel}
-      </span>
+      <span className="font-medium">{difficultyText}</span>
       <span aria-hidden="true">&middot;</span>
       <span>
         {game.moves.length} {movesLabel}
@@ -118,7 +135,7 @@ export function VsAiCard({ locale, ...rest }: Props) {
 
             <div className="flex items-center gap-2 ml-auto">
               <Link
-                href={`/games/play?gameId=${latestGame.id}`}
+                href={buildResumeHref(latestGame)}
                 locale={locale}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
               >

@@ -199,7 +199,22 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      // NOTE: Cache headers for the Maia ONNX model are set inside the
+      // /api/engines/maia/[file] handler itself, not here. The model is
+      // no longer a public static asset — it's served from a server-only
+      // directory through an auth-gated route, and the response is marked
+      // `Cache-Control: private, immutable` so the browser caches per-user
+      // without polluting any shared CDN tier.
     ];
+  },
+  // The Maia ONNX model lives outside `public/` (in `engines/maia/`) so
+  // that the only access path is the auth-gated route handler. Next.js
+  // does not auto-trace files outside the source tree, so we have to tell
+  // it explicitly to bundle the directory into the Vercel Function
+  // artifact for the route handler. Without this, `readFile` would 404
+  // at runtime even though the file exists at build time.
+  outputFileTracingIncludes: {
+    '/api/engines/maia/[file]': ['./engines/maia/**/*'],
   },
 };
 

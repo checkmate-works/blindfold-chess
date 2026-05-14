@@ -3,9 +3,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { notifyGameListUpdated } from '@/config';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
+import type { EngineConfig } from '@/lib/engines';
 import { GameLimitError } from '@/lib/errors';
 import { LocalStorageGameRepository } from '@/lib/games/local-storage-repository';
-import type { GameOutcome, MoveOperationLog, SkillLevel } from '@/lib/types';
+import type { GameOutcome, MoveOperationLog } from '@/lib/types';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -22,7 +23,7 @@ export type GameDataRefs = {
   moves: React.RefObject<AlgebraicNotation[]>;
   status: React.RefObject<GameOutcome>;
   playerColor: React.RefObject<Side>;
-  skillLevel: React.RefObject<SkillLevel>;
+  engineConfig: React.RefObject<EngineConfig>;
   startingFen: React.RefObject<string | undefined>;
   gamePreferences: React.RefObject<PerGamePreferences | undefined>;
   operationLogs: React.RefObject<MoveOperationLog[] | undefined>;
@@ -32,7 +33,7 @@ type UseAutoSaveOptions = {
   gameId?: string;
   moves: AlgebraicNotation[];
   playerColor: Side;
-  skillLevel: SkillLevel;
+  engineConfig: EngineConfig;
   status: GameOutcome;
   startingFen?: string;
   gamePreferences?: PerGamePreferences;
@@ -54,7 +55,7 @@ export function useAutoSave({
   gameId,
   moves,
   playerColor,
-  skillLevel,
+  engineConfig,
   status,
   startingFen,
   gamePreferences,
@@ -76,7 +77,7 @@ export function useAutoSave({
     moves: useRef(moves),
     status: useRef(status),
     playerColor: useRef(playerColor),
-    skillLevel: useRef(skillLevel),
+    engineConfig: useRef(engineConfig),
     startingFen: useRef(startingFen),
     gamePreferences: useRef(gamePreferences),
     operationLogs: useRef(operationLogs),
@@ -106,7 +107,7 @@ export function useAutoSave({
     gameDataRefs.moves.current = moves;
     gameDataRefs.status.current = status;
     gameDataRefs.playerColor.current = playerColor;
-    gameDataRefs.skillLevel.current = skillLevel;
+    gameDataRefs.engineConfig.current = engineConfig;
     gameDataRefs.startingFen.current = startingFen;
     gameDataRefs.gamePreferences.current = gamePreferences;
     gameDataRefs.operationLogs.current = operationLogs;
@@ -118,7 +119,7 @@ export function useAutoSave({
     status,
     currentGameId,
     playerColor,
-    skillLevel,
+    engineConfig,
     startingFen,
     gamePreferences,
     operationLogs,
@@ -127,7 +128,7 @@ export function useAutoSave({
     gameDataRefs.moves,
     gameDataRefs.status,
     gameDataRefs.playerColor,
-    gameDataRefs.skillLevel,
+    gameDataRefs.engineConfig,
     gameDataRefs.startingFen,
     gameDataRefs.gamePreferences,
     gameDataRefs.operationLogs,
@@ -172,7 +173,7 @@ export function useAutoSave({
         const gameData = {
           moves: currentMoves,
           playerColor: gameDataRefs.playerColor.current,
-          skillLevel: gameDataRefs.skillLevel.current,
+          engineConfig: gameDataRefs.engineConfig.current,
           status: currentStatus,
           startingFen: gameDataRefs.startingFen.current,
           gamePreferences: gameDataRefs.gamePreferences.current,

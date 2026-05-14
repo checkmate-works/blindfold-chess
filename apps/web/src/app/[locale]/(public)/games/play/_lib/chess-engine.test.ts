@@ -1,7 +1,6 @@
+import { ChessEngine } from '@blindfold-chess/features/ai-game/engine';
 import type { Fen, UciMove } from '@blindfold-chess/types';
 import { beforeEach, describe, expect, it } from 'vitest';
-
-import { ChessEngine } from './chess-engine';
 
 describe('ChessEngine', () => {
   describe('convertUciToAlgebraic', () => {

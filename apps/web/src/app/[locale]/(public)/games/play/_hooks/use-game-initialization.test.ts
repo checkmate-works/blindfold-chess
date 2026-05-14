@@ -29,29 +29,23 @@ describe('parseUrlSearchParams', () => {
     });
   });
 
-  describe('skillLevel parameter', () => {
-    it('should default to 5 when no skillLevel is specified', () => {
+  describe('engineConfig parameter', () => {
+    it('defaults to Stockfish level 5 when no params are specified', () => {
       const params = new URLSearchParams();
       const result = parseUrlSearchParams(params);
-      expect(result.skillLevel).toBe(5);
+      expect(result.engineConfig).toEqual({ kind: 'stockfish', skillLevel: 5 });
     });
 
-    it('should parse valid skill levels', () => {
+    it('parses ?skillLevel=10 as Stockfish at that level', () => {
       const params = new URLSearchParams({ skillLevel: '10' });
       const result = parseUrlSearchParams(params);
-      expect(result.skillLevel).toBe(10);
+      expect(result.engineConfig).toEqual({ kind: 'stockfish', skillLevel: 10 });
     });
 
-    it('should parse skillLevel=1', () => {
-      const params = new URLSearchParams({ skillLevel: '1' });
+    it('parses ?engine=maia&elo=1800 as Maia at that rating', () => {
+      const params = new URLSearchParams({ engine: 'maia', elo: '1800' });
       const result = parseUrlSearchParams(params);
-      expect(result.skillLevel).toBe(1);
-    });
-
-    it('should parse skillLevel=20', () => {
-      const params = new URLSearchParams({ skillLevel: '20' });
-      const result = parseUrlSearchParams(params);
-      expect(result.skillLevel).toBe(20);
+      expect(result.engineConfig).toEqual({ kind: 'maia', rating: 1800 });
     });
   });
 
@@ -142,7 +136,7 @@ describe('parseUrlSearchParams', () => {
       });
       const result = parseUrlSearchParams(params);
       expect(result.playerSide).toBe('black');
-      expect(result.skillLevel).toBe(15);
+      expect(result.engineConfig).toEqual({ kind: 'stockfish', skillLevel: 15 });
       expect(result.urlMoves).toBe(JSON.stringify(['e4', 'e5', 'Nf3', 'Nc6']));
     });
   });

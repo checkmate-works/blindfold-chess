@@ -19,7 +19,7 @@ describe('LocalStorageGameRepository', () => {
         const gameId = await repository.create({
           moves: [],
           playerColor: 'white',
-          skillLevel: 5,
+          engineConfig: { kind: 'stockfish', skillLevel: 5 },
           status: 'in_progress',
         });
         expect(gameId).toBeDefined();
@@ -34,7 +34,7 @@ describe('LocalStorageGameRepository', () => {
         await repository.create({
           moves: [],
           playerColor: 'white',
-          skillLevel: 5,
+          engineConfig: { kind: 'stockfish', skillLevel: 5 },
           status: 'in_progress',
         });
       }
@@ -43,7 +43,7 @@ describe('LocalStorageGameRepository', () => {
         repository.create({
           moves: [],
           playerColor: 'black',
-          skillLevel: 10,
+          engineConfig: { kind: 'stockfish', skillLevel: 10 },
           status: 'in_progress',
         })
       ).rejects.toThrow(GameLimitError);
@@ -55,7 +55,7 @@ describe('LocalStorageGameRepository', () => {
         const gameId = await repository.create({
           moves: [],
           playerColor: 'white',
-          skillLevel: 5,
+          engineConfig: { kind: 'stockfish', skillLevel: 5 },
           status: 'in_progress',
         });
         gameIds.push(gameId);
@@ -64,7 +64,7 @@ describe('LocalStorageGameRepository', () => {
       await repository.update(gameIds[0], {
         moves: ['e4', 'e5'],
         playerColor: 'white',
-        skillLevel: 5,
+        engineConfig: { kind: 'stockfish', skillLevel: 5 },
         status: 'in_progress',
       });
 
@@ -80,7 +80,7 @@ describe('LocalStorageGameRepository', () => {
         await repository.create({
           moves: [],
           playerColor: 'white',
-          skillLevel: 5,
+          engineConfig: { kind: 'stockfish', skillLevel: 5 },
           status: 'in_progress',
         });
       }
@@ -89,7 +89,7 @@ describe('LocalStorageGameRepository', () => {
         await repository.create({
           moves: [],
           playerColor: 'black',
-          skillLevel: 10,
+          engineConfig: { kind: 'stockfish', skillLevel: 10 },
           status: 'in_progress',
         });
         expect.fail('Should have thrown GameLimitError');
@@ -107,7 +107,7 @@ describe('LocalStorageGameRepository', () => {
       const gameId = await repository.create({
         moves: ['e4'],
         playerColor: 'white',
-        skillLevel: 10,
+        engineConfig: { kind: 'stockfish', skillLevel: 10 },
         status: 'in_progress',
       });
 
@@ -118,7 +118,7 @@ describe('LocalStorageGameRepository', () => {
       expect(game).toBeDefined();
       expect(game?.moves).toEqual(['e4']);
       expect(game?.playerColor).toBe('white');
-      expect(game?.skillLevel).toBe(10);
+      expect(game?.engineConfig).toEqual({ kind: 'stockfish', skillLevel: 10 });
       expect(game?.status).toBe('in_progress');
     });
 
@@ -126,14 +126,14 @@ describe('LocalStorageGameRepository', () => {
       const gameId1 = await repository.create({
         moves: [],
         playerColor: 'white',
-        skillLevel: 5,
+        engineConfig: { kind: 'stockfish', skillLevel: 5 },
         status: 'in_progress',
       });
 
       const gameId2 = await repository.create({
         moves: [],
         playerColor: 'black',
-        skillLevel: 5,
+        engineConfig: { kind: 'stockfish', skillLevel: 5 },
         status: 'in_progress',
       });
 
@@ -145,7 +145,7 @@ describe('LocalStorageGameRepository', () => {
       const gameId = await repository.create({
         moves: [],
         playerColor: 'white',
-        skillLevel: 5,
+        engineConfig: { kind: 'stockfish', skillLevel: 5 },
         status: 'in_progress',
       });
       const afterCreate = new Date().toISOString();
@@ -166,7 +166,7 @@ describe('LocalStorageGameRepository', () => {
         await repository.create({
           moves: [],
           playerColor: 'white',
-          skillLevel: 5,
+          engineConfig: { kind: 'stockfish', skillLevel: 5 },
           status: 'in_progress',
         });
       }
@@ -176,7 +176,7 @@ describe('LocalStorageGameRepository', () => {
         repository.create({
           moves: [],
           playerColor: 'black',
-          skillLevel: 10,
+          engineConfig: { kind: 'stockfish', skillLevel: 10 },
           status: 'in_progress',
         })
       ).rejects.toThrow(GameLimitError);
@@ -188,14 +188,14 @@ describe('LocalStorageGameRepository', () => {
       const gameId = await repository.create({
         moves: ['e4'],
         playerColor: 'white',
-        skillLevel: 5,
+        engineConfig: { kind: 'stockfish', skillLevel: 5 },
         status: 'in_progress',
       });
 
       await repository.update(gameId, {
         moves: ['e4', 'e5', 'Nf3'],
         playerColor: 'white',
-        skillLevel: 5,
+        engineConfig: { kind: 'stockfish', skillLevel: 5 },
         status: 'in_progress',
       });
 
@@ -207,7 +207,7 @@ describe('LocalStorageGameRepository', () => {
       const gameId = await repository.create({
         moves: [],
         playerColor: 'white',
-        skillLevel: 5,
+        engineConfig: { kind: 'stockfish', skillLevel: 5 },
         status: 'in_progress',
       });
 
@@ -220,7 +220,7 @@ describe('LocalStorageGameRepository', () => {
       await repository.update(gameId, {
         moves: ['e4'],
         playerColor: 'white',
-        skillLevel: 5,
+        engineConfig: { kind: 'stockfish', skillLevel: 5 },
         status: 'in_progress',
       });
 
@@ -232,7 +232,7 @@ describe('LocalStorageGameRepository', () => {
       const gameId = await repository.create({
         moves: [],
         playerColor: 'white',
-        skillLevel: 5,
+        engineConfig: { kind: 'stockfish', skillLevel: 5 },
         status: 'in_progress',
       });
 
@@ -247,7 +247,7 @@ describe('LocalStorageGameRepository', () => {
       await repository.update(gameId, {
         moves: ['e4'],
         playerColor: 'white',
-        skillLevel: 5,
+        engineConfig: { kind: 'stockfish', skillLevel: 5 },
         status: 'in_progress',
       });
 
@@ -262,7 +262,7 @@ describe('LocalStorageGameRepository', () => {
       const gameId = await repository.create({
         moves: [],
         playerColor: 'white',
-        skillLevel: 5,
+        engineConfig: { kind: 'stockfish', skillLevel: 5 },
         status: 'in_progress',
       });
 
@@ -277,7 +277,7 @@ describe('LocalStorageGameRepository', () => {
         {
           moves: [],
           playerColor: 'white',
-          skillLevel: 5,
+          engineConfig: { kind: 'stockfish', skillLevel: 5 },
           status: 'in_progress',
         },
         { updateLastPlayed: false }
@@ -291,7 +291,7 @@ describe('LocalStorageGameRepository', () => {
       const gameId = await repository.create({
         moves: [],
         playerColor: 'white',
-        skillLevel: 5,
+        engineConfig: { kind: 'stockfish', skillLevel: 5 },
         status: 'in_progress',
       });
 
@@ -306,7 +306,7 @@ describe('LocalStorageGameRepository', () => {
         {
           moves: ['e4'],
           playerColor: 'white',
-          skillLevel: 5,
+          engineConfig: { kind: 'stockfish', skillLevel: 5 },
           status: 'in_progress',
         },
         { updateLastPlayed: true }
@@ -321,7 +321,7 @@ describe('LocalStorageGameRepository', () => {
       const gameId = await repository.create({
         moves: ['e4'],
         playerColor: 'white',
-        skillLevel: 5,
+        engineConfig: { kind: 'stockfish', skillLevel: 5 },
         status: 'in_progress',
       });
 
@@ -337,7 +337,7 @@ describe('LocalStorageGameRepository', () => {
         {
           moves: ['e4', 'e5'],
           playerColor: 'white',
-          skillLevel: 5,
+          engineConfig: { kind: 'stockfish', skillLevel: 5 },
           status: 'in_progress',
         },
         { updateLastPlayed: false }
@@ -352,7 +352,7 @@ describe('LocalStorageGameRepository', () => {
       const gameId = await repository.create({
         moves: [],
         playerColor: 'white',
-        skillLevel: 5,
+        engineConfig: { kind: 'stockfish', skillLevel: 5 },
         status: 'in_progress',
       });
 
@@ -368,7 +368,7 @@ describe('LocalStorageGameRepository', () => {
         {
           moves: ['e4'],
           playerColor: 'white',
-          skillLevel: 5,
+          engineConfig: { kind: 'stockfish', skillLevel: 5 },
           status: 'in_progress',
         },
         {}
@@ -388,7 +388,7 @@ describe('LocalStorageGameRepository', () => {
         date: creationDate,
         moves: [] as string[],
         playerColor: 'white',
-        skillLevel: 5,
+        engineConfig: { kind: 'stockfish', skillLevel: 5 },
         status: 'in_progress',
         // No lastPlayed field — simulating a legacy record
       };
@@ -400,7 +400,7 @@ describe('LocalStorageGameRepository', () => {
         {
           moves: [],
           playerColor: 'white',
-          skillLevel: 5,
+          engineConfig: { kind: 'stockfish', skillLevel: 5 },
           status: 'in_progress',
         },
         { updateLastPlayed: false }
@@ -419,7 +419,7 @@ describe('LocalStorageGameRepository', () => {
         repository.update(nonExistentId, {
           moves: ['e4'],
           playerColor: 'white',
-          skillLevel: 5,
+          engineConfig: { kind: 'stockfish', skillLevel: 5 },
           status: 'in_progress',
         })
       ).rejects.toThrow('Game with ID non-existent-id-12345 not found');
@@ -432,7 +432,7 @@ describe('LocalStorageGameRepository', () => {
         const gameId = await repository.create({
           moves: [],
           playerColor: 'white',
-          skillLevel: 5,
+          engineConfig: { kind: 'stockfish', skillLevel: 5 },
           status: 'in_progress',
         });
         gameIds.push(gameId);
@@ -442,7 +442,7 @@ describe('LocalStorageGameRepository', () => {
       await repository.update(gameIds[0], {
         moves: ['e4', 'e5'],
         playerColor: 'white',
-        skillLevel: 5,
+        engineConfig: { kind: 'stockfish', skillLevel: 5 },
         status: 'in_progress',
       });
 
@@ -458,38 +458,106 @@ describe('LocalStorageGameRepository', () => {
       const gameId = await repository.create({
         moves: ['e4'],
         playerColor: 'white',
-        skillLevel: 5,
+        engineConfig: { kind: 'stockfish', skillLevel: 5 },
         status: 'in_progress',
       });
 
       await repository.update(gameId, {
         moves: ['e4'],
         playerColor: 'white',
-        skillLevel: 15,
+        engineConfig: { kind: 'stockfish', skillLevel: 15 },
         status: 'in_progress',
       });
 
       const game = await repository.load(gameId);
-      expect(game?.skillLevel).toBe(15);
+      expect(game?.engineConfig).toEqual({ kind: 'stockfish', skillLevel: 15 });
     });
 
     it('should update game status correctly', async () => {
       const gameId = await repository.create({
         moves: ['e4', 'e5'],
         playerColor: 'white',
-        skillLevel: 5,
+        engineConfig: { kind: 'stockfish', skillLevel: 5 },
         status: 'in_progress',
       });
 
       await repository.update(gameId, {
         moves: ['e4', 'e5', 'Qh5', 'Nc6', 'Bc4', 'Nf6', 'Qxf7#'],
         playerColor: 'white',
-        skillLevel: 5,
+        engineConfig: { kind: 'stockfish', skillLevel: 5 },
         status: 'win',
       });
 
       const game = await repository.load(gameId);
       expect(game?.status).toBe('win');
+    });
+  });
+
+  describe('legacy format migration on read', () => {
+    it('normalises a record with only the legacy skillLevel field into a Stockfish engineConfig', async () => {
+      // Hand-craft a localStorage payload in the pre-migration shape — this is
+      // exactly what older builds wrote, and what existing users still have on
+      // disk. The repository must read it back as a valid Stockfish game
+      // without losing any data.
+      const legacyPayload = [
+        {
+          id: 'legacy-1',
+          date: '2025-01-01T00:00:00.000Z',
+          lastPlayed: '2025-01-02T00:00:00.000Z',
+          moves: ['e4', 'e5'],
+          playerColor: 'white',
+          skillLevel: 12,
+          status: 'in_progress',
+        },
+      ];
+      localStorage.setItem('blindfold_chess_games', JSON.stringify(legacyPayload));
+
+      const fresh = new LocalStorageGameRepository();
+      const game = await fresh.load('legacy-1');
+
+      expect(game).not.toBeNull();
+      expect(game?.engineConfig).toEqual({ kind: 'stockfish', skillLevel: 12 });
+      // Legacy top-level `skillLevel` is stripped from the in-app shape.
+      expect((game as unknown as { skillLevel?: number }).skillLevel).toBeUndefined();
+      expect(game?.moves).toEqual(['e4', 'e5']);
+    });
+
+    it('keeps a record that already carries engineConfig untouched', async () => {
+      const newPayload = [
+        {
+          id: 'new-1',
+          date: '2026-04-01T00:00:00.000Z',
+          lastPlayed: '2026-04-02T00:00:00.000Z',
+          moves: [],
+          playerColor: 'black',
+          engineConfig: { kind: 'maia', rating: 1800 },
+          status: 'in_progress',
+        },
+      ];
+      localStorage.setItem('blindfold_chess_games', JSON.stringify(newPayload));
+
+      const fresh = new LocalStorageGameRepository();
+      const game = await fresh.load('new-1');
+
+      expect(game?.engineConfig).toEqual({ kind: 'maia', rating: 1800 });
+    });
+
+    it('rejects records that have neither skillLevel nor engineConfig', async () => {
+      const malformed = [
+        {
+          id: 'broken-1',
+          date: '2025-01-01T00:00:00.000Z',
+          moves: [],
+          playerColor: 'white',
+          status: 'in_progress',
+          // Neither skillLevel nor engineConfig present.
+        },
+      ];
+      localStorage.setItem('blindfold_chess_games', JSON.stringify(malformed));
+
+      const fresh = new LocalStorageGameRepository();
+      const games = await fresh.loadAll();
+      expect(games).toEqual([]);
     });
   });
 });

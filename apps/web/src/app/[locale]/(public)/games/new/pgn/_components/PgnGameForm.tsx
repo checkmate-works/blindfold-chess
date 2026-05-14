@@ -4,11 +4,20 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useRouter, useSearchParams } from 'next/navigation';
 
+import { DEFAULT_MAIA_RATING, type MaiaRating } from '@blindfold-chess/features/ai-game/maia';
 import { getPgnHeaders, getPgnHistory } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
+import {
+  DEFAULT_ENGINE,
+  type EngineConfig,
+  type EngineKind,
+  engineConfigToUrlParams,
+} from '@/lib/engines';
+import { shouldWarnBeforeLargeDownload } from '@/lib/network/connection';
 import type { SkillLevel } from '@/lib/types';
 
+import { LargeDownloadConsentDialog } from '@/app/[locale]/(public)/games/new/_components/LargeDownloadConsentDialog';
 import { useLocalGameSettings } from '@/app/[locale]/(public)/games/new/_hooks/use-local-game-settings';
 import { parsePgnWithFen, validatePgn } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -17,11 +26,14 @@ import { PgnPreview } from './PgnPreview';
 import { PgnSetupForm } from './PgnSetupForm';
 import { deriveInitialPgnState } from './_lib/derive-initial-pgn-state';
 
+const MAIA_MODEL_SIZE_LABEL = '46 MB';
+
 type Props = {
   locale: Locale;
+  maiaUnlocked: boolean;
 };
 
-export function PgnGameForm({ locale }: Props) {
+export function PgnGameForm({ locale, maiaUnlocked }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { localSettings, handleSettingsChange } = useLocalGameSettings();
@@ -41,9 +53,14 @@ export function PgnGameForm({ locale }: Props) {
 
   const [color, setColor] = useState<Side>(initial.color ?? 'white');
   const [skillLevel, setSkillLevel] = useState<SkillLevel>(initial.skillLevel ?? 5);
+  const [maiaRating, setMaiaRating] = useState<MaiaRating>(
+    initial.maiaRating ?? DEFAULT_MAIA_RATING
+  );
+  const [engine, setEngine] = useState<EngineKind>(initial.engine ?? DEFAULT_ENGINE);
   const [pgn, setPgn] = useState(initial.pgn);
   const [isLoading, setIsLoading] = useState(false);
   const [colorManuallySet, setColorManuallySet] = useState(initial.color !== null);
+  const [consentDialogOpen, setConsentDialogOpen] = useState(false);
 
   // Parse PGN to get moves array and starting FEN
   const { pgnMoves, startingFen } = useMemo((): {
@@ -101,6 +118,30 @@ export function PgnGameForm({ locale }: Props) {
     setColorManuallySet(true);
   }, []);
 
+  const engineConfig: EngineConfig =
+    engine === 'maia' ? { kind: 'maia', rating: maiaRating } : { kind: 'stockfish', skillLevel };
+
+  const navigateToGame = () => {
+    const parsed = parsePgnWithFen(pgn);
+    const moves = parsed.moves;
+    const fenToPass = parsed.startingFen;
+
+    const params = new URLSearchParams({
+      color,
+      gamePrefs: JSON.stringify(localSettings),
+      ...engineConfigToUrlParams(engineConfig),
+    });
+
+    if (moves && moves.length > 0) {
+      params.set('moves', JSON.stringify(moves));
+    }
+    if (fenToPass) {
+      params.set('fen', fenToPass);
+    }
+
+    router.push(`/${locale}/games/play?${params.toString()}`);
+  };
+
   const handleStartGame = () => {
     setIsLoading(true);
 
@@ -109,45 +150,54 @@ export function PgnGameForm({ locale }: Props) {
       return;
     }
 
-    const parsed = parsePgnWithFen(pgn);
-    const moves = parsed.moves;
-    const fenToPass = parsed.startingFen;
-
-    const params = new URLSearchParams({
-      color,
-      skillLevel: skillLevel.toString(),
-      gamePrefs: JSON.stringify(localSettings),
-    });
-
-    if (moves && moves.length > 0) {
-      params.set('moves', JSON.stringify(moves));
+    if (engine === 'maia' && shouldWarnBeforeLargeDownload()) {
+      setConsentDialogOpen(true);
+      return;
     }
+    navigateToGame();
+  };
 
-    if (fenToPass) {
-      params.set('fen', fenToPass);
-    }
+  const handleConsentConfirm = () => {
+    setConsentDialogOpen(false);
+    navigateToGame();
+  };
 
-    router.push(`/${locale}/games/play?${params.toString()}`);
+  const handleConsentCancel = () => {
+    setConsentDialogOpen(false);
+    setIsLoading(false);
   };
 
   const isStartDisabled = !pgn.trim() || !validatePgn(pgn);
   const showDerivedFromPgnHint = pgn.trim() !== '' && validatePgn(pgn) && !colorManuallySet;
 
   return (
-    <PgnSetupForm
-      pgn={pgn}
-      onPgnChange={handlePgnChange}
-      color={color}
-      onColorChange={handleColorChange}
-      skillLevel={skillLevel}
-      onSkillLevelChange={setSkillLevel}
-      localSettings={localSettings}
-      onSettingsChange={handleSettingsChange}
-      showDerivedFromPgnHint={showDerivedFromPgnHint}
-      isStartDisabled={isStartDisabled}
-      isLoading={isLoading}
-      onStartGame={handleStartGame}
-      previewSlot={<PgnPreview pgnMoves={pgnMoves} startingFen={startingFen} color={color} />}
-    />
+    <>
+      <PgnSetupForm
+        pgn={pgn}
+        onPgnChange={handlePgnChange}
+        color={color}
+        onColorChange={handleColorChange}
+        skillLevel={skillLevel}
+        onSkillLevelChange={setSkillLevel}
+        maiaRating={maiaRating}
+        onMaiaRatingChange={setMaiaRating}
+        engine={engine}
+        onEngineChange={setEngine}
+        maiaUnlocked={maiaUnlocked}
+        localSettings={localSettings}
+        onSettingsChange={handleSettingsChange}
+        showDerivedFromPgnHint={showDerivedFromPgnHint}
+        isStartDisabled={isStartDisabled}
+        isLoading={isLoading}
+        onStartGame={handleStartGame}
+        previewSlot={<PgnPreview pgnMoves={pgnMoves} startingFen={startingFen} color={color} />}
+      />
+      <LargeDownloadConsentDialog
+        isOpen={consentDialogOpen}
+        onConfirm={handleConsentConfirm}
+        onCancel={handleConsentCancel}
+        sizeLabel={MAIA_MODEL_SIZE_LABEL}
+      />
+    </>
   );
 }

@@ -2,12 +2,15 @@
 
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import type { MaiaRating } from '@blindfold-chess/features/ai-game/maia';
 import type { Side } from '@blindfold-chess/types';
 
+import type { EngineKind } from '@/lib/engines';
 import type { SkillLevel } from '@/lib/types';
 
 import { CollapsibleGameSettings } from '@/app/[locale]/(public)/games/new/_components/CollapsibleGameSettings';
 import { ColorSelector } from '@/app/[locale]/(public)/games/new/_components/ColorSelector';
+import { EngineSelector } from '@/app/[locale]/(public)/games/new/_components/EngineSelector';
 import { SkillLevelSelector } from '@/app/[locale]/(public)/games/new/_components/SkillLevelSelector';
 import type { useLocalGameSettings } from '@/app/[locale]/(public)/games/new/_hooks/use-local-game-settings';
 import { PgnInput } from '@/app/[locale]/_components/PgnInput';
@@ -22,6 +25,11 @@ type Props = {
   onColorChange: (color: Side) => void;
   skillLevel: SkillLevel;
   onSkillLevelChange: (level: SkillLevel) => void;
+  maiaRating: MaiaRating;
+  onMaiaRatingChange: (rating: MaiaRating) => void;
+  engine: EngineKind;
+  onEngineChange: (engine: EngineKind) => void;
+  maiaUnlocked: boolean;
   localSettings: LocalSettings;
   onSettingsChange: ReturnType<typeof useLocalGameSettings>['handleSettingsChange'];
   showDerivedFromPgnHint: boolean;
@@ -32,9 +40,9 @@ type Props = {
 };
 
 /**
- * Presentational setup form: PGN input, color/skill selectors, game
- * settings, and the start button. Has no URL-reading or PGN-parsing logic
- * of its own — those live in the parent orchestrator.
+ * Presentational setup form: PGN input, color/engine/skill selectors,
+ * game settings, and the start button. Has no URL-reading or PGN-parsing
+ * logic of its own — those live in the parent orchestrator.
  */
 export function PgnSetupForm({
   pgn,
@@ -43,6 +51,11 @@ export function PgnSetupForm({
   onColorChange,
   skillLevel,
   onSkillLevelChange,
+  maiaRating,
+  onMaiaRatingChange,
+  engine,
+  onEngineChange,
+  maiaUnlocked,
   localSettings,
   onSettingsChange,
   showDerivedFromPgnHint,
@@ -55,17 +68,26 @@ export function PgnSetupForm({
 
   return (
     <div className="space-y-4">
-      <SectionTitle>{t('pgnTitle')}</SectionTitle>
-      <PgnInput value={pgn} onChange={onPgnChange} />
+      <div data-tour-id="pgn-input">
+        <SectionTitle>{t('pgnTitle')}</SectionTitle>
+        <PgnInput value={pgn} onChange={onPgnChange} />
+      </div>
       {previewSlot}
 
-      <SectionTitle>{t('selectColor')}</SectionTitle>
+      {/* ColorSelector provides its own SectionTitle */}
       <ColorSelector value={color} onChange={onColorChange} />
       {showDerivedFromPgnHint && (
         <p className="text-sm text-muted-foreground">{t('derivedFromPgn')}</p>
       )}
 
-      <SkillLevelSelector value={skillLevel} onChange={onSkillLevelChange} />
+      <EngineSelector value={engine} onChange={onEngineChange} maiaUnlocked={maiaUnlocked} />
+      <SkillLevelSelector
+        engine={engine}
+        stockfishLevel={skillLevel}
+        onStockfishLevelChange={onSkillLevelChange}
+        maiaRating={maiaRating}
+        onMaiaRatingChange={onMaiaRatingChange}
+      />
 
       <SectionTitle>{t('gameSettings')}</SectionTitle>
       <CollapsibleGameSettings settings={localSettings} onSettingsChange={onSettingsChange} />

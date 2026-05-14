@@ -6,12 +6,11 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
-import type { SkillLevel } from '@/lib/types';
+import { type EngineConfig, engineConfigToUrlParams } from '@/lib/engines';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { resetChessEngine } from '../_lib/chess-engine';
 import { countPlayerMoves } from '../_lib/fen-utils';
 import { mapGameStatusToOutcome } from '../_lib/map-game-status-to-outcome';
 import { useAiMoveAnnouncer } from './use-ai-move-announcer';
@@ -38,7 +37,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
   const urlParams = parseUrlSearchParams(searchParamsFromHook);
   const {
     playerSide,
-    initialSkillLevel,
+    initialEngineConfig,
     initialGameId,
     initialStartingFen,
     initialMovesFromUrl,
@@ -47,8 +46,11 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     errorDetails,
   } = useGameInitialization(urlParams);
 
-  // Skill level is immutable during gameplay — set at game start, never changed mid-game.
-  const [skillLevel] = useState<SkillLevel>(initialSkillLevel);
+  // Engine + difficulty are immutable during gameplay — captured at game
+  // start and never changed mid-game. The discriminated union encodes
+  // both pieces together so we can't end up with a Maia engine paired
+  // with a Stockfish skill level (or vice versa).
+  const [engineConfig] = useState<EngineConfig>(initialEngineConfig);
 
   // Per-game preferences (from URL params for new games, loaded from saved game for resumed games)
   const [perGamePrefs, setPerGamePrefs] = useState<PerGamePreferences | undefined>(
@@ -78,7 +80,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     initialMoves: initialMovesFromUrl,
     startingFen,
   });
-  const { getAiMove } = useAiVersus(skillLevel);
+  const { getAiMove, reset: resetAiOpponent } = useAiVersus(engineConfig);
 
   // Game persistence hook
   const { isLoadingFromStorage, savedGameStatus, loadedGameData, gameNotFound } =
@@ -141,7 +143,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     gameId: initialGameId,
     moves,
     playerColor: playerSide,
-    skillLevel,
+    engineConfig,
     status: mapGameStatusToOutcome(gameStatus, playerResult),
     startingFen,
     gamePreferences: perGamePrefs,
@@ -156,7 +158,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     gameId,
     initialGameId,
     playerSide,
-    skillLevel,
+    engineConfig,
     initialStartingFen,
     shouldRedirectToError,
     errorDetails,
@@ -199,26 +201,22 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     setShouldMakeAiMove(false);
   }, [t, setShouldMakeAiMove]);
 
-  const retryAiMove = useCallback(async () => {
-    // Clear the error state synchronously *before* the async engine teardown
-    // so the Retry button unmounts on the first click. Without this, a fast
-    // double-click during the `await resetChessEngine()` gap would re-enter
-    // this callback (isLoading is still false until the orchestration effect
-    // schedules). `useAiVersus` re-acquires `getChessEngine()` on every
-    // invocation, so the next `getAiMove` call observes the fresh singleton.
+  const retryAiMove = useCallback(() => {
+    // Clear the error state synchronously so the Retry button unmounts on
+    // the first click; a fast double-click during the recreate window would
+    // otherwise re-enter this callback (isLoading stays false until the
+    // orchestration effect schedules).
     setError(null);
     setAiMoveError(null);
     setLastAttemptedInput('');
-    // Tear down the singleton so the next `getAiMove` call spins up a fresh
-    // Worker; leaving the dead singleton in place would make the retry fail
-    // with the same error the user just saw.
-    try {
-      await resetChessEngine();
-    } catch (resetError) {
-      console.error('Failed to reset chess engine before retry:', resetError);
-    }
+    // Tear down the current opponent so the next `getAiMove` call spins up
+    // a fresh Worker. `reset` is synchronous: it bumps a counter that
+    // re-runs `useAiVersus`'s effect, which destroys the old opponent and
+    // constructs a new one before the next render-driven orchestration
+    // round can observe it.
+    resetAiOpponent();
     setShouldMakeAiMove(true);
-  }, [setShouldMakeAiMove]);
+  }, [resetAiOpponent, setShouldMakeAiMove]);
 
   const { isLoading } = useAiMoveOrchestration({
     shouldMakeAiMove: shouldMakeAiMove && !gameNotFound,
@@ -301,7 +299,9 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
       const params = new URLSearchParams();
       params.set('moves', JSON.stringify(movesToKeep));
       params.set('color', playerSide);
-      params.set('skillLevel', skillLevel.toString());
+      for (const [key, value] of Object.entries(engineConfigToUrlParams(engineConfig))) {
+        params.set(key, value);
+      }
 
       if (startingFen) {
         params.set('fen', startingFen);
@@ -309,7 +309,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
 
       router.push(`/${locale}/games/new/pgn?${params.toString()}`);
     },
-    [moves, playerSide, skillLevel, locale, router, startingFen]
+    [moves, playerSide, engineConfig, locale, router, startingFen]
   );
 
   // Current FEN and formatted PGN are memoized values from useNotation
@@ -343,7 +343,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
   return {
     gameConfig: {
       playerSide,
-      skillLevel,
+      engineConfig,
       initialGameId,
       startingFen,
       locale,
