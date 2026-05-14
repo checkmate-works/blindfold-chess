@@ -39,6 +39,14 @@ export { encodeFenToMaia3BoardTokens } from "./fen-encoder";
 
 export { skillLevelToMaiaElo } from "./elo";
 
+export type { MaiaRating } from "./ratings";
+export {
+  DEFAULT_MAIA_RATING,
+  MAIA_RATINGS,
+  isMaiaRating,
+  maiaRatingToElo,
+} from "./ratings";
+
 export { preprocessForMaia3 } from "./preprocess";
 
 export {
