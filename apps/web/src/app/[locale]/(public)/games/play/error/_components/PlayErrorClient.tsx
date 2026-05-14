@@ -5,12 +5,11 @@ import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { isValidSkillLevel } from '@blindfold-chess/features/ai-game';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaExclamationTriangle, FaTrash, FaWrench } from 'react-icons/fa';
 
+import { engineConfigFromUrlParams, engineConfigToUrlParams } from '@/lib/engines';
 import { LocalStorageGameRepository } from '@/lib/games/local-storage-repository';
-import type { SkillLevel } from '@/lib/types';
 
 import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -32,9 +31,7 @@ export function PlayErrorClient({ locale }: Props) {
   const allMovesJson = searchParams.get('allMoves') || '[]';
   const gameId = searchParams.get('gameId') || null;
   const color = searchParams.get('color') || 'white';
-  const skillLevel = searchParams.get('skillLevel') || '5';
-  const engineParam = searchParams.get('engine');
-  const eloParam = searchParams.get('elo');
+  const engineConfig = engineConfigFromUrlParams(searchParams);
   const startingFen = searchParams.get('fen') || undefined;
 
   let validMoves: AlgebraicNotation[] = [];
@@ -56,11 +53,8 @@ export function PlayErrorClient({ locale }: Props) {
     // Create URL with only valid moves
     const params = new URLSearchParams();
     params.set('color', color);
-    if (engineParam === 'maia') {
-      params.set('engine', 'maia');
-      if (eloParam) params.set('elo', eloParam);
-    } else {
-      params.set('skillLevel', skillLevel);
+    for (const [key, value] of Object.entries(engineConfigToUrlParams(engineConfig))) {
+      params.set(key, value);
     }
 
     // Include custom starting FEN if present
@@ -78,7 +72,7 @@ export function PlayErrorClient({ locale }: Props) {
         await gameRepository.update(gameId, {
           moves: validMoves,
           playerColor: savedGame.playerColor,
-          skillLevel: savedGame.skillLevel,
+          engineConfig: savedGame.engineConfig,
           status: savedGame.status,
           startingFen: savedGame.startingFen,
         });
@@ -90,9 +84,7 @@ export function PlayErrorClient({ locale }: Props) {
         const newGameId = await gameRepository.create({
           moves: validMoves,
           playerColor: color === 'white' || color === 'black' ? color : 'white',
-          skillLevel: isValidSkillLevel(parseInt(skillLevel))
-            ? (parseInt(skillLevel) as SkillLevel)
-            : 5,
+          engineConfig,
           status: 'in_progress',
           startingFen,
         });

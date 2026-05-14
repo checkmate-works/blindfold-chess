@@ -63,7 +63,7 @@ function createMockGame(overrides: Partial<Game> & { id: string }): Game {
     lastPlayed: new Date('2024-01-02').toISOString(),
     moves: [],
     playerColor: 'white',
-    skillLevel: 1,
+    engineConfig: { kind: 'stockfish', skillLevel: 1 },
     status: 'in_progress',
     ...overrides,
   };
@@ -139,7 +139,7 @@ describe('VsAiCard', () => {
       const game = createMockGame({
         id: 'game-1',
         playerColor: 'white',
-        skillLevel: 5,
+        engineConfig: { kind: 'stockfish', skillLevel: 5 },
         moves: ['e4', 'e5', 'Nf3'],
         status: 'in_progress',
       });
@@ -226,14 +226,14 @@ describe('VsAiCard', () => {
     it('should use the latest (first) in-progress game from the list', () => {
       const olderGame = createMockGame({
         id: 'game-old',
-        skillLevel: 3,
+        engineConfig: { kind: 'stockfish', skillLevel: 3 },
         moves: ['d4'],
         status: 'in_progress',
         playerColor: 'black',
       });
       const newerGame = createMockGame({
         id: 'game-new',
-        skillLevel: 10,
+        engineConfig: { kind: 'stockfish', skillLevel: 10 },
         moves: ['e4', 'e5'],
         status: 'in_progress',
         playerColor: 'white',
@@ -308,12 +308,12 @@ describe('VsAiCard', () => {
       const completedGame = createMockGame({
         id: 'game-done',
         status: 'win',
-        skillLevel: 1,
+        engineConfig: { kind: 'stockfish', skillLevel: 1 },
       });
       const inProgressGame = createMockGame({
         id: 'game-active',
         status: 'in_progress',
-        skillLevel: 8,
+        engineConfig: { kind: 'stockfish', skillLevel: 8 },
         moves: ['e4', 'e5', 'Nf3', 'Nc6'],
       });
       mockUseGameList.mockReturnValue({

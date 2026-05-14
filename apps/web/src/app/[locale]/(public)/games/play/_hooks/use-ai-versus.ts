@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { type MaiaRating, maiaRatingToElo } from '@blindfold-chess/features/ai-game/maia';
+import { maiaRatingToElo } from '@blindfold-chess/features/ai-game/maia';
 import type { ChessOpponent, OpponentError } from '@blindfold-chess/features/ai-game/opponent';
 import {
   getFenAfterMoves,
@@ -9,8 +9,7 @@ import {
 } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Fen } from '@blindfold-chess/types';
 
-import { type EngineKind, createMaiaOpponent, createStockfishOpponent } from '@/lib/engines';
-import type { SkillLevel } from '@/lib/types';
+import { type EngineConfig, createMaiaOpponent, createStockfishOpponent } from '@/lib/engines';
 
 /**
  * Translate a domain {@link OpponentError} into a thrown `Error` so that
@@ -37,25 +36,19 @@ function throwOpponentError(error: OpponentError): never {
  * Drives an AI opponent for the human-vs-AI game flow.
  *
  * Lifecycle is owned per mount: a fresh {@link ChessOpponent} is created on
- * mount and torn down on unmount. Switching engines, skill-level, or Maia
- * rating recreates the opponent (and therefore the underlying Worker),
- * since those are captured at construction time. `reset()` forces a
- * recreate without changing config — used by the Retry-AI-move affordance
- * to recover from a dead Worker after a fatal error.
+ * mount and torn down on unmount. Swapping {@link EngineConfig} recreates
+ * the opponent (and therefore the underlying Worker), since those are
+ * captured at construction time. `reset()` forces a recreate without
+ * changing config — used by the Retry-AI-move affordance to recover from
+ * a dead Worker after a fatal error.
  *
- * Stockfish reads `skillLevel` (1..20) directly. Maia reads `maiaRating`
- * (one of the 11 catalog values from {@link MaiaRating}) and applies the
- * same value to both `selfElo` and `opponentElo` — pairing them at the
- * same Elo gives the most "natural" play of a self-rated player. The
- * unused parameter for the inactive engine is just held in state so a
- * future engine swap mid-session can pick it back up without losing the
- * previously-selected value.
+ * The discriminated union lets the dispatch be exhaustive: Stockfish
+ * branch reads `skillLevel`, Maia branch reads `rating` (applied to both
+ * `selfElo` and `opponentElo` for the most "natural" play of a
+ * self-rated player). New engines plug in by extending `EngineConfig`
+ * and adding one factory branch here.
  */
-export function useAiVersus(
-  skillLevel: SkillLevel,
-  maiaRating: MaiaRating,
-  engine: EngineKind = 'stockfish'
-) {
+export function useAiVersus(engineConfig: EngineConfig) {
   const [resetCounter, setResetCounter] = useState(0);
   const opponentRef = useRef<ChessOpponent | null>(null);
 
@@ -64,11 +57,11 @@ export function useAiVersus(
 
     let opponent: ChessOpponent;
     try {
-      if (engine === 'maia') {
-        const elo = maiaRatingToElo(maiaRating);
+      if (engineConfig.kind === 'maia') {
+        const elo = maiaRatingToElo(engineConfig.rating);
         opponent = createMaiaOpponent({ selfElo: elo, opponentElo: elo });
       } else {
-        opponent = createStockfishOpponent({ skillLevel });
+        opponent = createStockfishOpponent({ skillLevel: engineConfig.skillLevel });
       }
     } catch (error) {
       console.error('Failed to construct chess opponent:', error);
@@ -84,7 +77,7 @@ export function useAiVersus(
       }
       void opponent.destroy();
     };
-  }, [skillLevel, maiaRating, engine, resetCounter]);
+  }, [engineConfig, resetCounter]);
 
   const getAiMove = useCallback(
     async (moves: AlgebraicNotation[], startingFen?: string): Promise<AlgebraicNotation> => {

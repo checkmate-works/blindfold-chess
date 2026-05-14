@@ -1639,7 +1639,8 @@
       "title": "Certificado",
       "honorific": "{name}",
       "guestName": "Invitado",
-      "body": "Ha derrotado a Stockfish Nivel {level}. En reconocimiento de su excepcional habilidad en ajedrez a ciegas, se otorga este certificado."
+      "body": "Ha derrotado a Stockfish Nivel {level}. En reconocimiento de su excepcional habilidad en ajedrez a ciegas, se otorga este certificado.",
+      "bodyMaia": "Ha derrotado a Maia con {rating} ELO. En reconocimiento de su excepcional habilidad en ajedrez a ciegas, se otorga este certificado."
     },
     "youLose": "Has Perdido",
     "check": "Jaque",

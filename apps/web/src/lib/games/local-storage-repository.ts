@@ -1,9 +1,11 @@
 import { MAX_GAMES } from '@/config';
+import { isValidSkillLevel } from '@blindfold-chess/features/ai-game';
 import { getStartingFen, validateMoveSequence } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
+import { type EngineConfig, isEngineConfig } from '@/lib/engines';
 import { GameLimitError } from '@/lib/errors';
-import type { Game, GameSortOption, SortDirection } from '@/lib/types';
+import type { Game, GameSortOption, SkillLevel, SortDirection, StoredGame } from '@/lib/types';
 
 type UpdateOptions = {
   updateLastPlayed?: boolean;
@@ -129,12 +131,11 @@ export class LocalStorageGameRepository implements IGameRepository {
         return this.cachedGames;
       }
 
-      // Validate and filter valid games, and ensure lastPlayed field exists
-      this.cachedGames = parsed.filter(this.isValidGame).map((game) => ({
-        ...game,
-        // If lastPlayed doesn't exist, use date as fallback
-        lastPlayed: game.lastPlayed || game.date,
-      }));
+      // Validate, normalise legacy `skillLevel`-only records into the new
+      // `engineConfig` shape, and ensure `lastPlayed` exists.
+      this.cachedGames = parsed
+        .filter(this.isValidStoredGame)
+        .map((stored: StoredGame) => this.normaliseStoredGame(stored));
 
       return this.cachedGames;
     } catch (error) {
@@ -203,7 +204,7 @@ export class LocalStorageGameRepository implements IGameRepository {
       await this.update(gameId, {
         moves: updatedMoves,
         playerColor: game.playerColor,
-        skillLevel: game.skillLevel,
+        engineConfig: game.engineConfig,
         status: game.status,
         startingFen: game.startingFen,
         gamePreferences: game.gamePreferences,
@@ -232,12 +233,23 @@ export class LocalStorageGameRepository implements IGameRepository {
     }
   }
 
-  private isValidGame(game: unknown): game is Game {
-    if (typeof game !== 'object' || game === null) {
+  /**
+   * Accept either the legacy `skillLevel`-only shape or the new
+   * `engineConfig` shape — at least one must be present and valid.
+   * Records older than the EngineConfig migration only carry
+   * `skillLevel`; everything written after the migration carries
+   * `engineConfig`. {@link normaliseStoredGame} folds both into the
+   * single in-app {@link Game} representation.
+   */
+  private isValidStoredGame(stored: unknown): stored is StoredGame {
+    if (typeof stored !== 'object' || stored === null) {
       return false;
     }
 
-    const g = game as Record<string, unknown>;
+    const g = stored as Record<string, unknown>;
+
+    const hasLegacySkillLevel = typeof g.skillLevel === 'number' && isValidSkillLevel(g.skillLevel);
+    const hasNewEngineConfig = isEngineConfig(g.engineConfig);
 
     return (
       typeof g.id === 'string' &&
@@ -245,7 +257,7 @@ export class LocalStorageGameRepository implements IGameRepository {
       Array.isArray(g.moves) &&
       g.moves.every((m) => typeof m === 'string') &&
       (g.playerColor === 'white' || g.playerColor === 'black') &&
-      typeof g.skillLevel === 'number' &&
+      (hasLegacySkillLevel || hasNewEngineConfig) &&
       ['in_progress', 'win', 'loss', 'draw'].includes(g.status as string) &&
       (g.lastPlayed === undefined || typeof g.lastPlayed === 'string') &&
       (g.startingFen === undefined || typeof g.startingFen === 'string') &&
@@ -266,5 +278,31 @@ export class LocalStorageGameRepository implements IGameRepository {
                 (log as Record<string, unknown>).movePeekCount === undefined)
           )))
     );
+  }
+
+  /**
+   * Promote a {@link StoredGame} (which may be in either legacy or new
+   * format) into the strict in-app {@link Game}. Legacy records whose
+   * only difficulty hint is `skillLevel` are assumed Stockfish — there
+   * was no other engine before the migration, so the assumption is
+   * exact, not heuristic. The legacy `skillLevel` field is dropped from
+   * the returned object so downstream code only ever pattern-matches
+   * on `engineConfig`.
+   */
+  private normaliseStoredGame(stored: StoredGame): Game {
+    const { skillLevel: legacySkillLevel, engineConfig: storedConfig, ...rest } = stored;
+    const engineConfig: EngineConfig =
+      storedConfig ??
+      ({
+        kind: 'stockfish',
+        skillLevel: (legacySkillLevel ?? 5) as SkillLevel,
+      } as const);
+
+    return {
+      ...rest,
+      engineConfig,
+      // If lastPlayed doesn't exist, use date as fallback
+      lastPlayed: rest.lastPlayed || rest.date,
+    };
   }
 }

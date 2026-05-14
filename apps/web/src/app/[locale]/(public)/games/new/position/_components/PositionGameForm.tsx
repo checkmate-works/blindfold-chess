@@ -10,7 +10,12 @@ import { DEFAULT_MAIA_RATING, type MaiaRating } from '@blindfold-chess/features/
 import type { Side } from '@blindfold-chess/types';
 import { FaChevronDown } from 'react-icons/fa';
 
-import { DEFAULT_ENGINE, type EngineKind } from '@/lib/engines';
+import {
+  DEFAULT_ENGINE,
+  type EngineConfig,
+  type EngineKind,
+  engineConfigToUrlParams,
+} from '@/lib/engines';
 import { shouldWarnBeforeLargeDownload } from '@/lib/network/connection';
 import type { SkillLevel } from '@/lib/types';
 
@@ -172,20 +177,17 @@ export function PositionGameForm({ locale, maiaUnlocked }: Props) {
     setPositionFen(newFen);
   }, []);
 
+  const engineConfig: EngineConfig =
+    engine === 'maia' ? { kind: 'maia', rating: maiaRating } : { kind: 'stockfish', skillLevel };
+
   const navigateToGame = () => {
-    const params: Record<string, string> = {
+    const params = new URLSearchParams({
       color,
       fen: fullPositionFen,
       gamePrefs: JSON.stringify(localSettings),
-    };
-    if (engine === 'maia') {
-      params.engine = 'maia';
-      params.elo = maiaRating.toString();
-    } else {
-      params.skillLevel = skillLevel.toString();
-    }
-    const searchParams = new URLSearchParams(params);
-    router.push(`/${locale}/games/play?${searchParams.toString()}`);
+      ...engineConfigToUrlParams(engineConfig),
+    });
+    router.push(`/${locale}/games/play?${params.toString()}`);
   };
 
   const handleStartGame = () => {

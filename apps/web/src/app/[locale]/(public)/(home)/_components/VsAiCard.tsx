@@ -5,6 +5,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { ChessPieceIcon } from '@blindfold-chess/icons';
 import { FaPlay, FaPlus } from 'react-icons/fa';
 
+import { formatEngineConfigLabel } from '@/lib/engines';
 import type { Game } from '@/lib/types';
 
 import { DashboardSection, DashboardSectionHeader } from '@/app/[locale]/_components';
@@ -27,12 +28,14 @@ function ResumeGameInfo({
   movesLabel: string;
   levelLabel: string;
 }) {
+  // levelLabel is the localised "Level" string from the parent; the
+  // helper consumes it for Stockfish rows and ignores it for Maia rows
+  // (which render their own "Maia {rating}" form).
+  const difficultyText = formatEngineConfigLabel(game.engineConfig, () => levelLabel);
   return (
     <div className="flex items-center gap-1.5 text-sm text-muted-foreground flex-wrap">
       <ColorIcon color={game.playerColor} />
-      <span className="font-medium">
-        {levelLabel} {game.skillLevel}
-      </span>
+      <span className="font-medium">{difficultyText}</span>
       <span aria-hidden="true">&middot;</span>
       <span>
         {game.moves.length} {movesLabel}

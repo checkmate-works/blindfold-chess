@@ -1,24 +1,15 @@
 import { useMemo } from 'react';
 
-import { isValidSkillLevel } from '@blindfold-chess/features/ai-game';
-import {
-  DEFAULT_MAIA_RATING,
-  type MaiaRating,
-  isMaiaRating,
-} from '@blindfold-chess/features/ai-game/maia';
 import { getStartingFen, validateMoveSequence } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
-import { DEFAULT_ENGINE, type EngineKind, isEngineKind } from '@/lib/engines';
-import type { SkillLevel } from '@/lib/types';
+import { type EngineConfig, engineConfigFromUrlParams } from '@/lib/engines';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 type UrlParams = {
   playerSide: Side;
-  skillLevel: SkillLevel;
-  maiaRating: MaiaRating;
-  engine: EngineKind;
+  engineConfig: EngineConfig;
   gameId: string | undefined;
   startingFen: string | undefined;
   urlMoves: string | null;
@@ -34,9 +25,7 @@ type ValidationErrorDetails = {
 
 type GameInitializationResult = {
   playerSide: Side;
-  initialSkillLevel: SkillLevel;
-  initialMaiaRating: MaiaRating;
-  initialEngine: EngineKind;
+  initialEngineConfig: EngineConfig;
   initialGameId: string | undefined;
   initialStartingFen: string | undefined;
   initialMovesFromUrl: AlgebraicNotation[];
@@ -49,14 +38,13 @@ type GameInitializationResult = {
  * Hook to parse and validate URL parameters for game initialization.
  *
  * Handles:
- * - URL parameter parsing (color, skillLevel, gameId, fen, moves)
+ * - URL parameter parsing (color, engine + difficulty, gameId, fen, moves)
  * - Move validation against chess rules
  * - Error detection for invalid moves (triggers redirect)
  */
 export function useGameInitialization(urlParams: UrlParams): GameInitializationResult {
   return useMemo(() => {
-    const { playerSide, skillLevel, maiaRating, engine, gameId, startingFen, urlMoves, gamePrefs } =
-      urlParams;
+    const { playerSide, engineConfig, gameId, startingFen, urlMoves, gamePrefs } = urlParams;
 
     // Get initial moves from URL and validate them
     let parsedMoves: AlgebraicNotation[] = [];
@@ -102,9 +90,7 @@ export function useGameInitialization(urlParams: UrlParams): GameInitializationR
 
     return {
       playerSide,
-      initialSkillLevel: skillLevel,
-      initialMaiaRating: maiaRating,
-      initialEngine: engine,
+      initialEngineConfig: engineConfig,
       initialGameId: gameId,
       initialStartingFen: startingFen,
       initialMovesFromUrl,
@@ -133,25 +119,9 @@ export function parseUrlSearchParams(searchParams: URLSearchParams): UrlParams {
   const colorParam = searchParams.get('color');
   const playerSide: Side = colorParam === 'white' || colorParam === 'black' ? colorParam : 'white';
 
-  const parsedSkillLevel = parseInt(searchParams.get('skillLevel') || '5');
-  const skillLevel: SkillLevel = isValidSkillLevel(parsedSkillLevel) ? parsedSkillLevel : 5;
-
-  // Maia uses a separate `elo=` URL param drawn from the official 11-value
-  // catalog. We never coerce the Stockfish `skillLevel` into a Maia rating
-  // (or vice versa) — the two scales are domain-distinct, so a missing or
-  // off-catalog `elo` simply falls back to the catalog mid-point.
-  const parsedElo = parseInt(searchParams.get('elo') || '');
-  const maiaRating: MaiaRating =
-    Number.isFinite(parsedElo) && isMaiaRating(parsedElo) ? parsedElo : DEFAULT_MAIA_RATING;
-
-  const engineParam = searchParams.get('engine');
-  const engine: EngineKind = isEngineKind(engineParam) ? engineParam : DEFAULT_ENGINE;
-
   return {
     playerSide,
-    skillLevel,
-    maiaRating,
-    engine,
+    engineConfig: engineConfigFromUrlParams(searchParams),
     gameId: searchParams.get('gameId') || undefined,
     startingFen: searchParams.get('fen') || undefined,
     urlMoves: searchParams.get('moves'),

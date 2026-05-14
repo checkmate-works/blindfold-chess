@@ -1639,7 +1639,8 @@
       "title": "Certificate",
       "honorific": "{name}",
       "guestName": "Guest",
-      "body": "You have defeated Stockfish Level {level}. In recognition of your exceptional blindfold chess ability, this certificate is hereby awarded."
+      "body": "You have defeated Stockfish Level {level}. In recognition of your exceptional blindfold chess ability, this certificate is hereby awarded.",
+      "bodyMaia": "You have defeated Maia at {rating} ELO. In recognition of your exceptional blindfold chess ability, this certificate is hereby awarded."
     },
     "youLose": "You Lose",
     "check": "Check",

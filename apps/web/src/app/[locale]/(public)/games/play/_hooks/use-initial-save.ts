@@ -47,7 +47,7 @@ export function useInitialSave({
           const gameData = {
             moves: gameDataRefs.moves.current,
             playerColor: gameDataRefs.playerColor.current,
-            skillLevel: gameDataRefs.skillLevel.current,
+            engineConfig: gameDataRefs.engineConfig.current,
             status: gameDataRefs.status.current,
             startingFen: gameDataRefs.startingFen.current,
             gamePreferences: gameDataRefs.gamePreferences.current,

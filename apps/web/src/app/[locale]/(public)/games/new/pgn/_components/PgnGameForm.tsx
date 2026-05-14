@@ -8,7 +8,12 @@ import { DEFAULT_MAIA_RATING, type MaiaRating } from '@blindfold-chess/features/
 import { getPgnHeaders, getPgnHistory } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
-import { DEFAULT_ENGINE, type EngineKind } from '@/lib/engines';
+import {
+  DEFAULT_ENGINE,
+  type EngineConfig,
+  type EngineKind,
+  engineConfigToUrlParams,
+} from '@/lib/engines';
 import { shouldWarnBeforeLargeDownload } from '@/lib/network/connection';
 import type { SkillLevel } from '@/lib/types';
 
@@ -113,6 +118,9 @@ export function PgnGameForm({ locale, maiaUnlocked }: Props) {
     setColorManuallySet(true);
   }, []);
 
+  const engineConfig: EngineConfig =
+    engine === 'maia' ? { kind: 'maia', rating: maiaRating } : { kind: 'stockfish', skillLevel };
+
   const navigateToGame = () => {
     const parsed = parsePgnWithFen(pgn);
     const moves = parsed.moves;
@@ -121,13 +129,8 @@ export function PgnGameForm({ locale, maiaUnlocked }: Props) {
     const params = new URLSearchParams({
       color,
       gamePrefs: JSON.stringify(localSettings),
+      ...engineConfigToUrlParams(engineConfig),
     });
-    if (engine === 'maia') {
-      params.set('engine', 'maia');
-      params.set('elo', maiaRating.toString());
-    } else {
-      params.set('skillLevel', skillLevel.toString());
-    }
 
     if (moves && moves.length > 0) {
       params.set('moves', JSON.stringify(moves));

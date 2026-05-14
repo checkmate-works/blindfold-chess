@@ -38,7 +38,7 @@ describe('useAutoSave', () => {
   const defaultProps = {
     moves: [] as AlgebraicNotation[],
     playerColor: 'white' as const,
-    skillLevel: 1 as const,
+    engineConfig: { kind: 'stockfish' as const, skillLevel: 1 as const },
     status: 'in_progress' as const,
     enabled: true,
     saveOnInit: false,
@@ -225,7 +225,7 @@ describe('useAutoSave', () => {
     mockLoad.mockResolvedValue({
       moves: ['e4', 'e5'],
       playerColor: 'white',
-      skillLevel: 1,
+      engineConfig: { kind: 'stockfish', skillLevel: 1 },
       status: 'in_progress',
     });
 
@@ -307,7 +307,7 @@ describe('useAutoSave', () => {
     mockLoad.mockResolvedValue({
       moves: ['e4', 'e5'],
       playerColor: 'white',
-      skillLevel: 1,
+      engineConfig: { kind: 'stockfish', skillLevel: 1 },
       status: 'in_progress',
     });
 
@@ -359,7 +359,7 @@ describe('useAutoSave', () => {
     mockLoad.mockResolvedValue({
       moves: ['e4', 'e5'],
       playerColor: 'white',
-      skillLevel: 1,
+      engineConfig: { kind: 'stockfish', skillLevel: 1 },
       status: 'in_progress',
     });
 

@@ -9,6 +9,8 @@ export {
   isEngineConfig,
 } from './config';
 
+export { formatEngineConfigLabel } from './format-label';
+
 export type { StockfishOpponentConfig } from './stockfish';
 export { createStockfishOpponent } from './stockfish';
 

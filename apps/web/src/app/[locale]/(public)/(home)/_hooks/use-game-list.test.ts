@@ -28,7 +28,7 @@ describe('useGameList', () => {
         lastPlayed: new Date('2024-01-02').toISOString(),
         moves: [],
         playerColor: 'white',
-        skillLevel: 1,
+        engineConfig: { kind: 'stockfish', skillLevel: 1 },
         status: 'in_progress',
       },
       {
@@ -37,7 +37,7 @@ describe('useGameList', () => {
         lastPlayed: new Date('2024-01-04').toISOString(),
         moves: [],
         playerColor: 'black',
-        skillLevel: 5,
+        engineConfig: { kind: 'stockfish', skillLevel: 5 },
         status: 'in_progress',
       },
     ];

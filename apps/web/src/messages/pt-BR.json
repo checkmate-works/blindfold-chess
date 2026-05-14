@@ -1639,7 +1639,8 @@
       "title": "Certificado",
       "honorific": "{name}",
       "guestName": "Convidado",
-      "body": "Derrotou o Stockfish Nível {level}. Em reconhecimento de sua excepcional habilidade em xadrez às cegas, este certificado é concedido."
+      "body": "Derrotou o Stockfish Nível {level}. Em reconhecimento de sua excepcional habilidade em xadrez às cegas, este certificado é concedido.",
+      "bodyMaia": "Derrotou o Maia com {rating} ELO. Em reconhecimento de sua excepcional habilidade em xadrez às cegas, este certificado é concedido."
     },
     "youLose": "Você Perdeu",
     "check": "Xeque",

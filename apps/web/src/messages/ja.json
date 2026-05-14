@@ -1639,7 +1639,8 @@
       "title": "賞状",
       "honorific": "{name} 殿",
       "guestName": "ゲスト",
-      "body": "あなたは Stockfish Level {level} に勝利しました。あなたの高い目隠しチェスの能力を讃え、ここに賞します。"
+      "body": "あなたは Stockfish Level {level} に勝利しました。あなたの高い目隠しチェスの能力を讃え、ここに賞します。",
+      "bodyMaia": "あなたは Maia {rating} ELO に勝利しました。あなたの高い目隠しチェスの能力を讃え、ここに賞します。"
     },
     "youLose": "あなたの負け",
     "check": "チェック",
