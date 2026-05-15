@@ -126,6 +126,13 @@ export const RATE_LIMITS = {
    * loops or scripted abuse, not a UX budget.
    */
   redeemPoints: { action: 'redeem_points', maxAttempts: 10, windowMs: 3_600_000 },
+  /**
+   * Per-user limit for starting a Maia game (the per-game point charge).
+   * Generous (30/hour) — a normal user starts far fewer games than this;
+   * the cap is purely a backstop against scripted loops hammering the
+   * `consumeMaiaGamePoint` transaction.
+   */
+  startMaiaGame: { action: 'start_maia_game', maxAttempts: 30, windowMs: 3_600_000 },
 } as const;
 
 /**

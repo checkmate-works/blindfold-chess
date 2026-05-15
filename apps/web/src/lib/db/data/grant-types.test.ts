@@ -93,11 +93,7 @@ describe('isGrantType', () => {
 
 describe('BENEFIT_TYPES', () => {
   it('contains the documented set of benefit types', () => {
-    expect(BENEFIT_TYPES).toEqual(['ad_free', 'paywall_access', 'maia_access']);
-  });
-
-  it('includes maia_access (Maia engine entitlement)', () => {
-    expect(BENEFIT_TYPES).toContain('maia_access');
+    expect(BENEFIT_TYPES).toEqual(['ad_free', 'paywall_access']);
   });
 });
 
@@ -108,12 +104,12 @@ describe('isBenefitType', () => {
     }
   });
 
-  it('returns true for maia_access', () => {
-    expect(isBenefitType('maia_access')).toBe(true);
-  });
-
   it('returns false for an unknown benefit type', () => {
     expect(isBenefitType('unknown')).toBe(false);
+  });
+
+  it('returns false for a removed benefit type', () => {
+    expect(isBenefitType('maia_access')).toBe(false);
   });
 
   it('returns false for empty string', () => {
@@ -121,17 +117,17 @@ describe('isBenefitType', () => {
   });
 
   it('is case-sensitive', () => {
-    expect(isBenefitType('MAIA_ACCESS')).toBe(false);
+    expect(isBenefitType('PAYWALL_ACCESS')).toBe(false);
     expect(isBenefitType('Ad_Free')).toBe(false);
   });
 
   it('type-narrows correctly when used as a guard', () => {
-    const candidate: string = 'maia_access';
+    const candidate: string = 'paywall_access';
     if (isBenefitType(candidate)) {
       const narrowed: BenefitType = candidate;
-      expect(narrowed).toBe('maia_access');
+      expect(narrowed).toBe('paywall_access');
     } else {
-      throw new Error('isBenefitType should have returned true for "maia_access"');
+      throw new Error('isBenefitType should have returned true for "paywall_access"');
     }
   });
 });

@@ -1851,7 +1851,16 @@
     "engineStockfishDescription": "Um motor de código aberto poderoso com nível de habilidade ajustável — o oponente de IA clássico.",
     "engineMaiaLabel": "Maia (estilo humano)",
     "engineMaiaDescription": "Um motor baseado em redes neurais que joga como um humano no Elo selecionado. O primeiro movimento demora alguns segundos enquanto o modelo é carregado (~46 MB).",
-    "engineLockedHint": "Coming soon",
+    "engineLockedHint": "Pontos insuficientes",
+    "engineMaiaCostBadge": "{cost} pt",
+    "maiaPointModal": {
+      "title": "Maia custa pontos",
+      "body": "Cada partida contra a Maia custa {cost} ponto. Assinantes jogam com a Maia gratuitamente.",
+      "balance": "Você tem atualmente {balance} pontos.",
+      "earnHint": "Ganhe pontos contribuindo com problemas, posições e publicações para a comunidade.",
+      "viewPoints": "Ver meus pontos",
+      "close": "Fechar"
+    },
     "helpLabel": "Mostrar ajuda",
     "helpEngineDescription": "Stockfish: um motor de xadrez de código aberto com força ajustável. Maia: uma rede neural treinada com milhões de partidas humanas — joga no nível selecionado como um jogador real, não como um computador.",
     "helpSkillLevelDescription": "Nível 1 (mais fraco) a Nível 20 (mais forte). Stockfish abrange aproximadamente 800–3200 ELO. Maia cobre 1100–1900 ELO em jogo estilo humano; as 20 posições do controle deslizante são mapeadas nesse intervalo.",
@@ -2492,6 +2501,7 @@
         "redemption": "Resgatados por tempo sem anúncios",
         "purchase": "Comprados",
         "admin_grant": "Concedidos pela equipe",
+        "maia_game": "Partida contra a Maia",
         "other": "Ajuste"
       }
     }
@@ -2590,9 +2600,6 @@
       "ad_free": {
         "topic_post": "Obrigado pela sua postagem no tópico — você recebeu {days} dias de benefício sem anúncios",
         "default": "Você recebeu {days} dias de benefício sem anúncios"
-      },
-      "maia_access": {
-        "default": "Você recebeu {days} dias de acesso ao motor Maia"
       }
     },
     "pointGrantMessage": {

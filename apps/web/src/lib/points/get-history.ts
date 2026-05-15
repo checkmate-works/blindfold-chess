@@ -5,6 +5,7 @@ import 'server-only';
 import { db, pointEvents } from '@/lib/db';
 
 import {
+  MAIA_GAME_SOURCE,
   POINT_SOURCES,
   POST_MATURATION_DAYS,
   type PointCategory,
@@ -35,6 +36,7 @@ export type PointHistoryEntry = {
     | 'redemption'
     | 'purchase'
     | 'admin_grant'
+    | 'maia_game'
     | 'other';
 };
 
@@ -101,5 +103,6 @@ function classifyKind(source: string, delta: number, metadata: unknown): PointHi
   if (source === 'admin_grant') return 'admin_grant';
   if (source === 'redemption') return 'redemption';
   if (source === 'purchase') return 'purchase';
+  if (source === MAIA_GAME_SOURCE) return 'maia_game';
   return 'other';
 }

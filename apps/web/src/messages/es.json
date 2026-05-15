@@ -1851,7 +1851,16 @@
     "engineStockfishDescription": "Un motor de código abierto potente con nivel de habilidad ajustable — el oponente de IA clásico.",
     "engineMaiaLabel": "Maia (estilo humano)",
     "engineMaiaDescription": "Un motor basado en redes neuronales que juega como un humano del Elo seleccionado. El primer movimiento tarda unos segundos mientras se carga el modelo (~46 MB).",
-    "engineLockedHint": "Coming soon",
+    "engineLockedHint": "Faltan puntos",
+    "engineMaiaCostBadge": "{cost} pt",
+    "maiaPointModal": {
+      "title": "Maia cuesta puntos",
+      "body": "Cada partida contra Maia cuesta {cost} punto. Los suscriptores juegan con Maia gratis.",
+      "balance": "Actualmente tienes {balance} puntos.",
+      "earnHint": "Gana puntos contribuyendo con problemas, posiciones y publicaciones a la comunidad.",
+      "viewPoints": "Ver mis puntos",
+      "close": "Cerrar"
+    },
     "helpLabel": "Mostrar ayuda",
     "helpEngineDescription": "Stockfish: un motor de ajedrez de código abierto con fuerza ajustable. Maia: una red neuronal entrenada con millones de partidas humanas, juega al nivel elegido como un humano real, no como una computadora.",
     "helpSkillLevelDescription": "Nivel 1 (más débil) a Nivel 20 (más fuerte). Stockfish abarca aproximadamente 800–3200 ELO. Maia cubre 1100–1900 ELO con juego estilo humano; las 20 posiciones del deslizador se asignan a ese rango.",
@@ -2492,6 +2501,7 @@
         "redemption": "Canjeados por tiempo sin anuncios",
         "purchase": "Comprados",
         "admin_grant": "Concedidos por el equipo",
+        "maia_game": "Partida contra Maia",
         "other": "Ajuste"
       }
     }
@@ -2590,9 +2600,6 @@
       "ad_free": {
         "topic_post": "Gracias por tu publicación de tema — recibiste {days} días de beneficio sin anuncios",
         "default": "Recibiste {days} días de beneficio sin anuncios"
-      },
-      "maia_access": {
-        "default": "Recibiste {days} días de acceso al motor Maia"
       }
     },
     "pointGrantMessage": {

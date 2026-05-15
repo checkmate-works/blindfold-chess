@@ -20,15 +20,16 @@ export type GrantType = (typeof GRANT_TYPES)[number];
  * - `ad_free`        Hides AdSense slots site-wide.
  * - `paywall_access` Unlocks a scoped resource (currently article paywall).
  *                    Scoped via `resourceType` + `resourceId` on the row.
- * - `maia_access`    Unlocks the Maia AI engine on /games/new/* selectors,
- *                    bypassing the future paywall gate. Granted via admin
- *                    or as a paid-plan entitlement.
+ *
+ * Maia engine access is intentionally NOT a benefit type: it is gated by an
+ * active subscription or a per-game point charge (see `canUseMaia`), not by
+ * a `user_grants` row.
  *
  * This array IS the validation source — both the admin grant action and
  * the UI dropdown read it directly. To add a new benefit type, append a
  * value here and the rest of the system follows.
  */
-export const BENEFIT_TYPES = ['ad_free', 'paywall_access', 'maia_access'] as const;
+export const BENEFIT_TYPES = ['ad_free', 'paywall_access'] as const;
 export type BenefitType = (typeof BENEFIT_TYPES)[number];
 
 export function isBenefitType(v: string): v is BenefitType {

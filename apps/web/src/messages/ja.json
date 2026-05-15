@@ -1851,7 +1851,16 @@
     "engineStockfishDescription": "強さを調整できるオープンソースの強力なエンジン。定番のAI対戦相手です。",
     "engineMaiaLabel": "Maia（人間風）",
     "engineMaiaDescription": "選択した Elo の人間プレイヤーのような指し方をするニューラルネットワーク型エンジン。初回はモデル（約46MB）の読み込みに数秒かかります。",
-    "engineLockedHint": "Coming soon",
+    "engineLockedHint": "ポイント不足",
+    "engineMaiaCostBadge": "{cost} pt",
+    "maiaPointModal": {
+      "title": "Maia の対局にはポイントが必要",
+      "body": "Maia との対局には1局あたり {cost} ポイント必要です。サブスクリプション加入者は無料で対局できます。",
+      "balance": "現在の保有ポイント: {balance} ポイント",
+      "earnHint": "ポイントは、パズルや局面の投稿などコミュニティへの貢献で貯められます。",
+      "viewPoints": "ポイントを確認",
+      "close": "閉じる"
+    },
     "helpLabel": "ヘルプを表示",
     "helpEngineDescription": "Stockfish: 強さを調整できるオープンソースのチェスエンジン。Maia: 数百万局の人間対局で学習されたニューラルネットワーク。選択したレベルの人間プレイヤーのように、コンピュータらしくない手を指します。",
     "helpSkillLevelDescription": "レベル1（最弱）からレベル20（最強）まで。Stockfish はおよそ800〜3200 ELO、Maia は人間風プレイの1100〜1900 ELO を 20段階のスライダーにマッピングしています。",
@@ -2492,6 +2501,7 @@
         "redemption": "広告非表示との交換",
         "purchase": "ポイント購入",
         "admin_grant": "運営からの付与",
+        "maia_game": "Maia との対局",
         "other": "調整"
       }
     }
@@ -2590,9 +2600,6 @@
       "ad_free": {
         "topic_post": "トピックの投稿のお礼として、{days}日間の広告非表示特典が付与されました",
         "default": "{days}日間の広告非表示特典が付与されました"
-      },
-      "maia_access": {
-        "default": "{days}日間のMaiaエンジン利用権が付与されました"
       }
     },
     "pointGrantMessage": {

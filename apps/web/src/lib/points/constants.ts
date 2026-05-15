@@ -123,3 +123,42 @@ export type PointEligibleTopicType = (typeof POINT_ELIGIBLE_TOPIC_TYPES)[number]
 export function isPointEligibleTopicType(v: string): v is PointEligibleTopicType {
   return (POINT_ELIGIBLE_TOPIC_TYPES as readonly string[]).includes(v);
 }
+
+/**
+ * Category drain order when spending confirmed points — the bucket on the
+ * left is debited first.
+ *
+ * - `earned`       (UGC-derived): user-side; spend it first so the user
+ *                  visually "uses what they earned" before touching gifts.
+ * - `promotional`  (admin / campaign): spent next. The platform gave these,
+ *                  so they are next-cheapest to "give away" on a spend.
+ * - `purchased`    (real money): spent last. Money-backed points stay in
+ *                  the wallet longest so refunds remain straightforward.
+ *
+ * `earned_pending` is intentionally absent — pending points are not
+ * spendable regardless of this list. Shared by every consumption path
+ * (`redeemPointsForAdFree`, `consumeMaiaGamePoint`).
+ */
+export const SPENDABLE_CONSUME_ORDER: readonly Exclude<PointCategory, 'earned_pending'>[] = [
+  'earned',
+  'promotional',
+  'purchased',
+] as const;
+
+/**
+ * Point cost to start one game against the Maia engine. Charged per game
+ * at game-creation time (model B). Subscribers are exempt and pay nothing.
+ *
+ * Lives in code, not the DB: every `point_events` row carries its concrete
+ * `delta`, so changing this only affects future charges.
+ */
+export const MAIA_GAME_POINT_COST = 1;
+
+/**
+ * `point_events.source` value for a Maia per-game charge. Deliberately NOT
+ * a member of `POINT_SOURCES` — that array is the UGC grant/maturation
+ * surface (`entityTypeForSource` etc.). `maia_game` is a consumption
+ * source, like `'redemption'`: `source_id` holds the client-generated game
+ * UUID and the idempotency key is `maia_game:<uuid>`.
+ */
+export const MAIA_GAME_SOURCE = 'maia_game';

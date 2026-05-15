@@ -125,9 +125,8 @@ export function NotificationItem({ notification, currentUsername }: Props) {
           // Lookup order: benefitType+grantType (most specific) →
           // benefitType default → unknownNotification. Falling back to a
           // generic "ad-free benefit" string is deliberately avoided so
-          // that adding a new benefitType (e.g. maia_access) forces an
-          // explicit i18n entry instead of silently showing the wrong
-          // benefit name.
+          // that adding a new benefitType forces an explicit i18n entry
+          // instead of silently showing the wrong benefit name.
           const { benefitType, grantType, durationDays } = notification.metadata;
           const specificKey = `benefitGrantMessage.${benefitType}.${grantType}`;
           if (t.has(specificKey)) {

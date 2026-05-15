@@ -16,22 +16,26 @@ import {
   type EngineKind,
   engineConfigToUrlParams,
 } from '@/lib/engines';
-import { shouldWarnBeforeLargeDownload } from '@/lib/network/connection';
+import { MAIA_GAME_POINT_COST } from '@/lib/points/constants';
 import type { SkillLevel } from '@/lib/types';
+import type { MaiaEngineAccess } from '@/lib/users/can-use-maia';
 
 import { CollapsibleGameSettings } from '@/app/[locale]/(public)/games/new/_components/CollapsibleGameSettings';
 import { ColorSelector } from '@/app/[locale]/(public)/games/new/_components/ColorSelector';
 import { EngineSelector } from '@/app/[locale]/(public)/games/new/_components/EngineSelector';
 import { LargeDownloadConsentDialog } from '@/app/[locale]/(public)/games/new/_components/LargeDownloadConsentDialog';
+import { MaiaPointInfoModal } from '@/app/[locale]/(public)/games/new/_components/MaiaPointInfoModal';
 import {
   type CastlingRights,
   PositionSettings,
 } from '@/app/[locale]/(public)/games/new/_components/PositionSettings';
 import { SkillLevelSelector } from '@/app/[locale]/(public)/games/new/_components/SkillLevelSelector';
 import { useLocalGameSettings } from '@/app/[locale]/(public)/games/new/_hooks/use-local-game-settings';
+import { useMaiaGameLaunch } from '@/app/[locale]/(public)/games/new/_hooks/use-maia-game-launch';
 import { buildFenFromParts } from '@/app/[locale]/(public)/games/new/_lib/build-fen-from-parts';
 import { getCastlingAvailability } from '@/app/[locale]/(public)/games/new/_lib/get-castling-availability';
 import { getEnPassantAvailability } from '@/app/[locale]/(public)/games/new/_lib/get-en-passant-availability';
+import { deriveMaiaCardMode } from '@/app/[locale]/(public)/games/new/_lib/maia-launch';
 import { validatePosition } from '@/app/[locale]/(public)/games/new/_lib/validate-position';
 import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
@@ -43,10 +47,10 @@ const MAIA_MODEL_SIZE_LABEL = '46 MB';
 
 type Props = {
   locale: Locale;
-  maiaUnlocked: boolean;
+  maiaAccess: MaiaEngineAccess;
 };
 
-export function PositionGameForm({ locale, maiaUnlocked }: Props) {
+export function PositionGameForm({ locale, maiaAccess }: Props) {
   const t = useTranslations('newGame');
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -56,9 +60,7 @@ export function PositionGameForm({ locale, maiaUnlocked }: Props) {
   const [skillLevel, setSkillLevel] = useState<SkillLevel>(5);
   const [maiaRating, setMaiaRating] = useState<MaiaRating>(DEFAULT_MAIA_RATING);
   const [engine, setEngine] = useState<EngineKind>(DEFAULT_ENGINE);
-  const [isLoading, setIsLoading] = useState(false);
   const [flipped, setFlipped] = useState(false);
-  const [consentDialogOpen, setConsentDialogOpen] = useState(false);
 
   // Custom position state
   const [positionFen, setPositionFen] = useState(EMPTY_BOARD_FEN);
@@ -190,30 +192,7 @@ export function PositionGameForm({ locale, maiaUnlocked }: Props) {
     router.push(`/${locale}/games/play?${params.toString()}`);
   };
 
-  const handleStartGame = () => {
-    setIsLoading(true);
-
-    if (!positionValidation.valid) {
-      setIsLoading(false);
-      return;
-    }
-
-    if (engine === 'maia' && shouldWarnBeforeLargeDownload()) {
-      setConsentDialogOpen(true);
-      return;
-    }
-    navigateToGame();
-  };
-
-  const handleConsentConfirm = () => {
-    setConsentDialogOpen(false);
-    navigateToGame();
-  };
-
-  const handleConsentCancel = () => {
-    setConsentDialogOpen(false);
-    setIsLoading(false);
-  };
+  const launch = useMaiaGameLaunch({ maiaAccess, navigateToGame });
 
   const editableBoardLabels = useMemo(
     () => ({
@@ -300,7 +279,13 @@ export function PositionGameForm({ locale, maiaUnlocked }: Props) {
       {positionValidation.valid && <p className="text-sm text-success">{t('positionValid')}</p>}
 
       {/* Engine + Skill Level Selection */}
-      <EngineSelector value={engine} onChange={setEngine} maiaUnlocked={maiaUnlocked} />
+      <EngineSelector
+        value={engine}
+        onChange={setEngine}
+        maiaCardMode={deriveMaiaCardMode(maiaAccess, MAIA_GAME_POINT_COST)}
+        maiaCost={MAIA_GAME_POINT_COST}
+        onMaiaLockedClick={launch.openPointInfo}
+      />
       <SkillLevelSelector
         engine={engine}
         stockfishLevel={skillLevel}
@@ -313,9 +298,9 @@ export function PositionGameForm({ locale, maiaUnlocked }: Props) {
       <CollapsibleGameSettings settings={localSettings} onSettingsChange={handleSettingsChange} />
 
       <Button
-        onClick={handleStartGame}
+        onClick={() => launch.start(engine)}
         disabled={!positionValidation.valid}
-        loading={isLoading}
+        loading={launch.isLoading}
         variant="primary"
         size="lg"
         className="w-full"
@@ -324,10 +309,17 @@ export function PositionGameForm({ locale, maiaUnlocked }: Props) {
       </Button>
 
       <LargeDownloadConsentDialog
-        isOpen={consentDialogOpen}
-        onConfirm={handleConsentConfirm}
-        onCancel={handleConsentCancel}
+        isOpen={launch.consentDialog.isOpen}
+        onConfirm={launch.consentDialog.onConfirm}
+        onCancel={launch.consentDialog.onCancel}
         sizeLabel={MAIA_MODEL_SIZE_LABEL}
+      />
+      <MaiaPointInfoModal
+        isOpen={launch.pointInfoModal.isOpen}
+        onClose={launch.pointInfoModal.onClose}
+        cost={MAIA_GAME_POINT_COST}
+        spendableBalance={maiaAccess.spendableBalance}
+        locale={locale}
       />
     </div>
   );

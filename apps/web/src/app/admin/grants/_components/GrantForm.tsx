@@ -17,7 +17,6 @@ import { createGrant } from '../_actions/createGrant';
 const BENEFIT_TYPE_LABELS: Record<BenefitType, string> = {
   ad_free: 'Ad Free',
   paywall_access: 'Paywall Access',
-  maia_access: 'Maia Engine Access',
 };
 
 export function GrantForm() {

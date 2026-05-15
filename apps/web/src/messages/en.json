@@ -1851,7 +1851,16 @@
     "engineStockfishDescription": "A strong open source engine with adjustable skill level — the classic AI opponent.",
     "engineMaiaLabel": "Maia (human-like)",
     "engineMaiaDescription": "A neural-network engine that plays like a human at the chosen Elo. The first move takes a few seconds while the model loads (~46 MB).",
-    "engineLockedHint": "Coming soon",
+    "engineLockedHint": "Needs points",
+    "engineMaiaCostBadge": "{cost} pt",
+    "maiaPointModal": {
+      "title": "Maia costs points",
+      "body": "Each game against Maia costs {cost} point. Subscribers play Maia for free.",
+      "balance": "You currently have {balance} points.",
+      "earnHint": "Earn points by contributing puzzles, positions, and posts to the community.",
+      "viewPoints": "View my points",
+      "close": "Close"
+    },
     "helpLabel": "Show help",
     "helpEngineDescription": "Stockfish: an open-source chess engine with adjustable strength. Maia: a neural network trained on millions of human games — it plays at the chosen level like a real player would, not like a computer.",
     "helpSkillLevelDescription": "Level 1 (weakest) to Level 20 (strongest). Stockfish spans roughly 800–3200 ELO. Maia covers 1100–1900 ELO at human-like play; the 20 slider positions are mapped onto that range.",
@@ -2492,6 +2501,7 @@
         "redemption": "Redeemed for ad-free",
         "purchase": "Purchased",
         "admin_grant": "Granted by staff",
+        "maia_game": "Maia game",
         "other": "Adjustment"
       }
     }
@@ -2590,9 +2600,6 @@
       "ad_free": {
         "topic_post": "Thank you for your topic post — you've received {days} days of ad-free benefit",
         "default": "You received {days} days of ad-free benefit"
-      },
-      "maia_access": {
-        "default": "You received {days} days of Maia engine access"
       }
     },
     "pointGrantMessage": {

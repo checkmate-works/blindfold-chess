@@ -1,14 +1,19 @@
 export {
+  MAIA_GAME_POINT_COST,
+  MAIA_GAME_SOURCE,
   POINT_CATEGORIES,
   POINT_ELIGIBLE_TOPIC_TYPES,
   POINT_SOURCES,
   POST_CREATION_POINTS,
   POST_MATURATION_DAYS,
+  SPENDABLE_CONSUME_ORDER,
   buildIdempotencyKey,
   entityTypeForSource,
   isPointEligibleTopicType,
   sourceForEntity,
 } from './constants';
+export { consumeMaiaGamePoint } from './consume-maia-game-point';
+export type { ConsumeMaiaGamePointResult } from './consume-maia-game-point';
 export type {
   PointCategory,
   PointEligibleTopicType,

@@ -4,7 +4,7 @@ import 'server-only';
 
 import { db, pointRedemptions, userGrants, userPointBalances } from '@/lib/db';
 
-import type { PointCategory } from './constants';
+import { SPENDABLE_CONSUME_ORDER } from './constants';
 import { recordPointMovement } from './internal-ledger';
 
 /**
@@ -22,26 +22,6 @@ export const AD_FREE_DAYS_PER_POINT = 1;
  * promo bundle redeemable for fewer-than-1 pt/day).
  */
 export const AD_FREE_PRODUCT_CODE = 'ad_free_per_point';
-
-/**
- * Category consumption order — the bucket on the left is drained first.
- *
- * - `earned`       (UGC-derived): user-side; spend it first so the user
- *                  visually "uses what they earned" before touching gifts.
- * - `promotional`  (admin / campaign): spent next. The platform gave these,
- *                  so they are next-cheapest to "give away" by burning
- *                  them on a redemption.
- * - `purchased`    (real money): spent last. Money-backed points stay in
- *                  the user's wallet longest so refunds remain straightforward.
- *
- * `earned_pending` is intentionally absent — pending points are not spendable
- * regardless of this list.
- */
-const CONSUME_ORDER: readonly Exclude<PointCategory, 'earned_pending'>[] = [
-  'earned',
-  'promotional',
-  'purchased',
-] as const;
 
 export type RedeemResult =
   | {
@@ -72,7 +52,7 @@ class InsufficientBalanceError extends Error {
  * can keep distinct rules for refund / expiry per origin (purchased money
  * vs. promotional gift vs. UGC-earned). At redemption time we lock all
  * three balance rows under `SELECT ... FOR UPDATE`, then walk
- * `CONSUME_ORDER` and debit each row in turn until the cost is covered.
+ * `SPENDABLE_CONSUME_ORDER` and debit each row in turn until covered.
  * One `point_events` row is written per debited category so the ledger
  * audit clearly shows which buckets the spend came out of.
  *
@@ -130,7 +110,7 @@ export async function redeemPointsForAdFree(userId: string, cost: number): Promi
         .where(
           and(
             eq(userPointBalances.userId, userId),
-            inArray(userPointBalances.category, CONSUME_ORDER as readonly string[])
+            inArray(userPointBalances.category, SPENDABLE_CONSUME_ORDER as readonly string[])
           )
         )
         .for('update');
@@ -139,7 +119,7 @@ export async function redeemPointsForAdFree(userId: string, cost: number): Promi
       for (const row of balanceRows) {
         byCategory.set(row.category, row.balance);
       }
-      const totalAvailable = CONSUME_ORDER.reduce(
+      const totalAvailable = SPENDABLE_CONSUME_ORDER.reduce(
         (sum, cat) => sum + (byCategory.get(cat) ?? 0),
         0
       );
@@ -147,7 +127,7 @@ export async function redeemPointsForAdFree(userId: string, cost: number): Promi
         throw new InsufficientBalanceError();
       }
 
-      // (3) Walk CONSUME_ORDER, debit each bucket and append a ledger row.
+      // (3) Walk SPENDABLE_CONSUME_ORDER, debit each bucket and append a row.
       //
       // `recordPointMovement`'s INSERT + upsertBalance produces the same end
       // state as a hand-rolled UPDATE + INSERT pair: the balance row was
@@ -158,7 +138,7 @@ export async function redeemPointsForAdFree(userId: string, cost: number): Promi
       // "insert + balance" pattern across the package.
       let remaining = cost;
       const pointEventIds: string[] = [];
-      for (const category of CONSUME_ORDER) {
+      for (const category of SPENDABLE_CONSUME_ORDER) {
         if (remaining === 0) break;
         const available = byCategory.get(category) ?? 0;
         if (available <= 0) continue;
