@@ -21,6 +21,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 import { Link } from '@/i18n/routing';
+import { CoinIcon } from '@blindfold-chess/icons';
 
 import { getAuthenticatedUser } from '@/lib/auth';
 import { AD_FREE_DAYS_PER_POINT, POST_MATURATION_DAYS } from '@/lib/points';
@@ -63,7 +64,8 @@ export default async function PointsPage({ params }: Props) {
       <div className="space-y-6">
         {/* Balance summary card */}
         <div className="rounded-xl border border-border bg-card p-6">
-          <div className="flex items-baseline gap-2">
+          <div className="flex items-center gap-2">
+            <CoinIcon size={32} aria-hidden="true" />
             <span className="text-3xl font-bold text-foreground">{balance.total}</span>
             <span className="text-sm text-muted-foreground">{t('balance.unit')}</span>
           </div>

@@ -4,6 +4,7 @@ import Svg, { Circle, G, Path } from "react-native-svg";
 import { createIconRenderer } from "../_shared/create-icon-renderer";
 import type {
   ChessPieceIconProps,
+  CoinIconProps,
   RatingFaceIconProps,
   SpinnerIconProps,
   StrokeIconProps,
@@ -32,6 +33,10 @@ type NativeRatingFaceIconProps = RatingFaceIconProps & {
   style?: StyleProp<ViewStyle>;
 };
 
+type NativeCoinIconProps = CoinIconProps & {
+  style?: StyleProp<ViewStyle>;
+};
+
 export const SpinnerIcon = factory.SpinnerIcon as (
   props: NativeSpinnerIconProps,
 ) => ReturnType<typeof factory.SpinnerIcon>;
@@ -41,6 +46,9 @@ export const ChessPieceIcon = factory.ChessPieceIcon as (
 export const RatingFaceIcon = factory.RatingFaceIcon as (
   props: NativeRatingFaceIconProps,
 ) => ReturnType<typeof factory.RatingFaceIcon>;
+export const CoinIcon = factory.CoinIcon as (
+  props: NativeCoinIconProps,
+) => ReturnType<typeof factory.CoinIcon>;
 export const UndoIcon = factory.UndoIcon as (
   props: NativeStrokeIconProps,
 ) => ReturnType<typeof factory.UndoIcon>;
@@ -50,6 +58,7 @@ export const FlagIcon = factory.FlagIcon as (
 
 export type {
   ChessPieceIconProps,
+  CoinIconProps,
   RatingFaceIconProps,
   SpinnerIconProps,
   StrokeIconProps,

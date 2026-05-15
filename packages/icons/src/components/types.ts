@@ -22,3 +22,11 @@ export type RatingFaceIconProps = {
   size?: number;
   faceColor?: string;
 };
+
+/**
+ * The coin icon's golden palette is intrinsic to the artwork (it depicts a
+ * coin), so unlike the stroke icons it takes no `color` prop — only `size`.
+ */
+export type CoinIconProps = {
+  size?: number;
+};
