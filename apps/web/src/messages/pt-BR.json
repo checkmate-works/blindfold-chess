@@ -3859,12 +3859,7 @@
     "continueButton": "Ver sua publicação",
     "viewPointsButton": "Ver suas moedas",
     "genericMessage": "Obrigado pela sua contribuição.",
-    "pointsAward": {
-      "puzzle_created": "Como agradecimento pelo envio do seu puzzle, concedemos {amount, plural, one {# moeda} other {# moedas}}.",
-      "position_memory_created": "Como agradecimento pelo envio do seu problema de memória, concedemos {amount, plural, one {# moeda} other {# moedas}}.",
-      "topic_post_created": "Como agradecimento pela sua publicação em um tópico, concedemos {amount, plural, one {# moeda} other {# moedas}}.",
-      "default": "Como agradecimento pela sua contribuição, concedemos {amount, plural, one {# moeda} other {# moedas}}."
-    }
+    "coinsEarned": "Moedas ganhas!"
   },
   "authPrompt": {
     "title": "Faça login para continuar",

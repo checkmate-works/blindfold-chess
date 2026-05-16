@@ -3859,12 +3859,7 @@
     "continueButton": "投稿内容を確認する",
     "viewPointsButton": "獲得したコインを確認する",
     "genericMessage": "ご投稿ありがとうございます。",
-    "pointsAward": {
-      "puzzle_created": "パズルを投稿していただいたお礼として {amount} コインを付与します。",
-      "position_memory_created": "ポジション記憶問題を投稿していただいたお礼として {amount} コインを付与します。",
-      "topic_post_created": "トピックに投稿していただいたお礼として {amount} コインを付与します。",
-      "default": "ご投稿いただいたお礼として {amount} コインを付与します。"
-    }
+    "coinsEarned": "コインを獲得しました"
   },
   "authPrompt": {
     "title": "サインインして続行",

@@ -3,10 +3,10 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 
 import { Button } from '@/app/_components';
+import { CoinIcon } from '@blindfold-chess/icons';
 import { and, eq } from 'drizzle-orm';
 
 import { db, pointEvents } from '@/lib/db';
-import { type PointSource } from '@/lib/points';
 import { createClient } from '@/lib/supabase/server';
 
 import { CertificateFrame, PageLayout, SectionTitle } from '@/app/[locale]/_components';
@@ -35,21 +35,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-/**
- * Map a `point_events.source` value to the certificate-copy i18n key. The
- * referenced message is a complete sentence that includes the awarded
- * amount via the `{amount}` placeholder. Unknown sources fall through to
- * the generic `default` line so the page stays graceful.
- */
-function awardKeyFor(source: string): string {
-  const map: Record<PointSource, string> = {
-    puzzle_created: 'pointsAward.puzzle_created',
-    position_memory_created: 'pointsAward.position_memory_created',
-    topic_post_created: 'pointsAward.topic_post_created',
-  };
-  return (map as Record<string, string>)[source] ?? 'pointsAward.default';
-}
-
 export default async function ThanksPage({ params, searchParams }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -69,22 +54,16 @@ export default async function ThanksPage({ params, searchParams }: Props) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  let award: { amount: number; awardKey: string } | null = null;
+  let awardedCoins: number | null = null;
   if (user && pointEventId) {
     const [row] = await db
-      .select({
-        amount: pointEvents.delta,
-        source: pointEvents.source,
-      })
+      .select({ amount: pointEvents.delta })
       .from(pointEvents)
       .where(and(eq(pointEvents.id, pointEventId), eq(pointEvents.userId, user.id)))
       .limit(1);
 
     if (row && row.amount > 0) {
-      award = {
-        amount: row.amount,
-        awardKey: awardKeyFor(row.source),
-      };
+      awardedCoins = row.amount;
     }
   }
 
@@ -92,14 +71,20 @@ export default async function ThanksPage({ params, searchParams }: Props) {
     <PageLayout title={t('title')} locale={locale}>
       <SectionTitle>{t('sectionTitle')}</SectionTitle>
 
-      {award ? (
-        <div className="space-y-4">
-          <CertificateFrame>
-            <p className="text-base sm:text-xl font-serif font-bold text-podium-gold-foreground text-center leading-relaxed">
-              {t(award.awardKey, { amount: award.amount })}
+      {awardedCoins !== null ? (
+        <CertificateFrame>
+          <div className="flex flex-col items-center gap-3 py-2">
+            <div className="flex items-center gap-2">
+              <CoinIcon size={44} aria-hidden="true" />
+              <span className="text-3xl font-bold text-podium-gold-foreground">
+                ×{awardedCoins}
+              </span>
+            </div>
+            <p className="text-base sm:text-lg font-serif font-bold text-podium-gold-foreground">
+              {t('coinsEarned')}
             </p>
-          </CertificateFrame>
-        </div>
+          </div>
+        </CertificateFrame>
       ) : (
         <p className="text-muted-foreground text-center py-4">{t('genericMessage')}</p>
       )}

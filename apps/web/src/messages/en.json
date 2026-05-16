@@ -3859,12 +3859,7 @@
     "continueButton": "View your post",
     "viewPointsButton": "View your coins",
     "genericMessage": "Thanks for your contribution.",
-    "pointsAward": {
-      "puzzle_created": "As a thank-you for submitting your puzzle, we are awarding you {amount, plural, one {# coin} other {# coins}}.",
-      "position_memory_created": "As a thank-you for submitting your position-memory problem, we are awarding you {amount, plural, one {# coin} other {# coins}}.",
-      "topic_post_created": "As a thank-you for your topic post, we are awarding you {amount, plural, one {# coin} other {# coins}}.",
-      "default": "As a thank-you for your contribution, we are awarding you {amount, plural, one {# coin} other {# coins}}."
-    }
+    "coinsEarned": "Coins earned!"
   },
   "authPrompt": {
     "title": "Sign in to continue",
