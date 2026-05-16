@@ -5,7 +5,7 @@ import { requireAdmin } from '@/app/admin/_lib/auth';
 import { and, eq, isNull } from 'drizzle-orm';
 
 import { db, moderationActions, positions } from '@/lib/db';
-import { type PointPostEntityType, clawbackPendingPointsForPost } from '@/lib/points';
+import { type PointPostEntityType, clawbackPointsForPost } from '@/lib/points';
 import { getClientIp } from '@/lib/security/client-ip';
 
 /**
@@ -77,10 +77,11 @@ export async function softDeletePosition(
   await db.transaction(async (tx) => {
     await tx.update(positions).set({ deletedAt: new Date() }).where(eq(positions.id, id));
 
-    // Clawback the position author's pending points (NOT the admin actor's).
-    // No-op for position types that never earned points (e.g., `chunk`).
+    // Moderator removal claws back the position author's point grant (NOT
+    // the admin actor's), capped at the author's current balance. No-op for
+    // position types that never earned points (e.g., `chunk`).
     if (pointEntityType) {
-      await clawbackPendingPointsForPost(tx, position.userId, {
+      await clawbackPointsForPost(tx, position.userId, {
         type: pointEntityType,
         id,
       });

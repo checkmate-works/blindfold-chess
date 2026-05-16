@@ -7,7 +7,6 @@ import { and, eq, isNull } from 'drizzle-orm';
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, postImageAttachments, topicPosts, userGrants } from '@/lib/db';
-import { clawbackPendingPointsForPost } from '@/lib/points';
 import { POST_IMAGES_BUCKET } from '@/lib/post-images/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { createClient as createSupabaseSessionClient } from '@/lib/supabase/server';
@@ -101,10 +100,9 @@ export async function deletePost(postId: string, locale: string): Promise<Delete
         )
       );
 
-    // Clawback any pending point grant earned from this post. Confirmed
-    // points (post-maturation) are intentionally preserved — users keep
-    // agency over their own content without losing already-earned rewards.
-    await clawbackPendingPointsForPost(tx, user.id, { type: 'topic_post', id: postId });
+    // No point clawback on user self-deletion — users keep the coins they
+    // earned for their own contributions. Moderator removal does claw back
+    // (see deletePostAdmin).
   });
 
   // Invalidate grant cache so the user's ad_free state updates immediately.

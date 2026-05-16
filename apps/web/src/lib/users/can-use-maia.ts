@@ -80,7 +80,7 @@ export async function getMaiaEngineAccess(userId: string | null): Promise<MaiaEn
     isMaiaExempt(userId),
     getPointBalanceSummary(userId),
   ]);
-  return { exempt, spendableBalance: balance.confirmed };
+  return { exempt, spendableBalance: balance.total };
 }
 
 export { isMaiaExempt };

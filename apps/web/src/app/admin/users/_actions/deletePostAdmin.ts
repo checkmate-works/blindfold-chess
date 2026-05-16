@@ -7,7 +7,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 import type { ActionResult } from '@/lib/action-types';
 import { db, moderationActions, postImageAttachments, topicPosts, userGrants } from '@/lib/db';
 import { validateModerationReason } from '@/lib/moderation/validate-reason';
-import { clawbackPendingPointsForPost } from '@/lib/points';
+import { clawbackPointsForPost } from '@/lib/points';
 import { POST_IMAGES_BUCKET } from '@/lib/post-images/validation';
 import { createAdminClient } from '@/lib/supabase/admin';
 
@@ -92,9 +92,10 @@ export async function deletePostAdmin(postId: string, reason: string): Promise<A
         )
       );
 
-    // Clawback any pending point grant earned from this post (against the
-    // post's author, not the admin actor).
-    await clawbackPendingPointsForPost(tx, post.userId, {
+    // Moderator removal claws back the post's point grant (against the
+    // post's author, not the admin actor), capped at the author's current
+    // balance. User self-deletion does NOT claw back.
+    await clawbackPointsForPost(tx, post.userId, {
       type: 'topic_post',
       id: postId,
     });

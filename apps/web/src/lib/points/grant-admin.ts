@@ -14,11 +14,10 @@ export type AdminGrantResult = {
 };
 
 /**
- * Issue a confirmed point grant from the admin surface. Bypasses the
- * `earned_pending` → `earned` maturation window (admins are vouching for
- * the user, no spam-deletion risk to guard against) by writing directly to
- * `category='promotional'`. Promotional points are spendable on the same
- * footing as `earned`; the category just preserves provenance.
+ * Issue a point grant from the admin surface — immediately spendable.
+ * Writes directly to `category='promotional'`; promotional points spend on
+ * the same footing as `earned`, the category just preserves provenance (an
+ * admin / campaign grant rather than a UGC contribution).
  *
  * The caller MUST be inside `db.transaction()` so the ledger insert,
  * balance upsert, and admin-side audit-log row commit atomically.

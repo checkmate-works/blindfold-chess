@@ -5,7 +5,6 @@ export {
   POINT_ELIGIBLE_TOPIC_TYPES,
   POINT_SOURCES,
   POST_CREATION_POINTS,
-  POST_MATURATION_DAYS,
   SPENDABLE_CONSUME_ORDER,
   buildIdempotencyKey,
   entityTypeForSource,
@@ -28,10 +27,8 @@ export { getPointHistory } from './get-history';
 export type { PointHistoryEntry } from './get-history';
 export { grantAdminPoints } from './grant-admin';
 export type { AdminGrantResult } from './grant-admin';
-export { clawbackPendingPointsForPost, grantPendingPointsForPost } from './grant-points';
+export { clawbackPointsForPost, grantPointsForPost } from './grant-points';
 export type { PointGrantResult } from './grant-points';
-export { maturePendingPoints } from './mature-points';
-export type { MaturationReport } from './mature-points';
 export {
   AD_FREE_DAYS_PER_POINT,
   AD_FREE_PRODUCT_CODE,

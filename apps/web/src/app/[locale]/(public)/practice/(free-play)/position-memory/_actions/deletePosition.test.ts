@@ -43,7 +43,7 @@ vi.mock('@/lib/db', () => {
 });
 
 vi.mock('@/lib/points', () => ({
-  clawbackPendingPointsForPost: vi.fn().mockResolvedValue(undefined),
+  clawbackPointsForPost: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('@/lib/security/rate-limit', () => ({

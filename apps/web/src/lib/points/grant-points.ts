@@ -8,7 +8,11 @@ import {
   buildIdempotencyKey,
   sourceForEntity,
 } from './constants';
-import { readPendingTotalForEntity, recordPointMovement } from './internal-ledger';
+import {
+  readEarnedBalanceForUpdate,
+  readEarnedTotalForEntity,
+  recordPointMovement,
+} from './internal-ledger';
 
 export type PointGrantResult = {
   pointEventId: string;
@@ -16,15 +20,17 @@ export type PointGrantResult = {
 };
 
 /**
- * Insert a pending point grant for a newly created UGC post within an
- * ongoing transaction. The caller MUST be inside `db.transaction()` so the
- * entity row and ledger row commit atomically.
+ * Grant points for a newly created UGC post — immediately spendable.
+ *
+ * Points are credited directly to `category='earned'`; there is no
+ * maturation hold. The caller MUST be inside `db.transaction()` so the
+ * entity row and the ledger row commit atomically.
  *
  * Idempotency is enforced at the DB layer by the UNIQUE constraint on
  * `point_events.idempotency_key` — a retried call for the same entity is a
  * safe no-op (the conflict is swallowed and `null` is returned).
  */
-export async function grantPendingPointsForPost(
+export async function grantPointsForPost(
   tx: DbTx,
   userId: string,
   entity: PointPostEntity
@@ -34,7 +40,7 @@ export async function grantPendingPointsForPost(
     {
       userId,
       delta: POST_CREATION_POINTS,
-      category: 'earned_pending',
+      category: 'earned',
       source: sourceForEntity(entity.type),
       sourceId: entity.id,
       idempotencyKey: buildIdempotencyKey('post_grant', entity),
@@ -48,35 +54,45 @@ export async function grantPendingPointsForPost(
 }
 
 /**
- * Reverse a pending grant when the source entity is deleted before
- * maturation. Computes the live pending net for `(source, sourceId)` and,
- * if positive, inserts an offsetting negative row plus updates the cache.
+ * Reverse a post's point grant when a **moderator / admin** removes the
+ * post. This is NOT called for user self-deletion — users keep the coins
+ * they earned for their own contributions even if they later delete them.
  *
- * Idempotent: the offsetting row has its own UNIQUE idempotency key, so a
- * retried delete is a safe no-op. Also no-op when the original grant
- * already matured (pending net = 0) — confirmed points are intentionally
- * preserved past the maturation window even on later deletion.
+ * @design Capped at the live `earned` balance
+ *
+ * Coins the user has already spent are unrecoverable, and
+ * `user_point_balances` must never go negative. So the reversal is
+ * `min(grantedNet, currentEarnedBalance)`: if the user already spent the
+ * grant, this is a best-effort no-op.
+ *
+ * Idempotent: the offsetting row carries its own `post_clawback`
+ * idempotency key, so a retried removal is a safe no-op. Also a no-op when
+ * the grant was already clawed back (net `earned` for the source is 0).
  */
-export async function clawbackPendingPointsForPost(
+export async function clawbackPointsForPost(
   tx: DbTx,
   userId: string,
   entity: PointPostEntity
 ): Promise<void> {
   const source = sourceForEntity(entity.type);
 
-  const pendingTotal = await readPendingTotalForEntity(tx, userId, source, entity.id);
-  if (pendingTotal <= 0) return;
+  const grantedNet = await readEarnedTotalForEntity(tx, userId, source, entity.id);
+  if (grantedNet <= 0) return;
+
+  const earnedBalance = await readEarnedBalanceForUpdate(tx, userId);
+  const clawAmount = Math.min(grantedNet, Math.max(0, earnedBalance));
+  if (clawAmount <= 0) return;
 
   await recordPointMovement(
     tx,
     {
       userId,
-      delta: -pendingTotal,
-      category: 'earned_pending',
+      delta: -clawAmount,
+      category: 'earned',
       source,
       sourceId: entity.id,
       idempotencyKey: buildIdempotencyKey('post_clawback', entity),
-      metadata: { entityType: entity.type, reason: 'post_deleted' },
+      metadata: { entityType: entity.type, reason: 'post_removed' },
     },
     { idempotent: true }
   );

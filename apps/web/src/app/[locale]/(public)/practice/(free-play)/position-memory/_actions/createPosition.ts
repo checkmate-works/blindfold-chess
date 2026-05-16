@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, feedItems, positions } from '@/lib/db';
 import { notifyFollowersOfNewPosition } from '@/lib/notifications/notification';
-import { grantPendingPointsForPost } from '@/lib/points';
+import { grantPointsForPost } from '@/lib/points';
 import { validateForkSource } from '@/lib/positions/fork';
 import { validateAndDedupeTagIds } from '@/lib/positions/tag-validation';
 import { insertPositionTags } from '@/lib/positions/tag-writes';
@@ -18,9 +18,9 @@ export type CreatePositionResult =
       success: true;
       id: string;
       /**
-       * Present when the create awarded pending points. Callers route the
-       * user through `/thanks?pointEventId=...&returnUrl=...` so the Thanks
-       * page can show how many points were earned and the maturation window.
+       * Present when the create awarded points. Callers route the user
+       * through `/thanks?pointEventId=...&returnUrl=...` so the Thanks page
+       * can show how many points were earned.
        */
       pointGrant?: { pointEventId: string; amount: number };
     }
@@ -103,9 +103,8 @@ export async function createPosition(data: {
       metadata: { type: 'memory' },
     });
 
-    // Award pending points for the new position-memory entry. See
-    // grantPendingPointsForPost for lifecycle / clawback semantics.
-    const pointGrant = await grantPendingPointsForPost(tx, user.id, {
+    // Award points for the new position-memory entry — immediately spendable.
+    const pointGrant = await grantPointsForPost(tx, user.id, {
       type: 'position_memory',
       id: position.id,
     });

@@ -367,16 +367,16 @@
         "multiplier10": "×1.0"
       },
       "adFreeBenefits": {
-        "question": "¿Cómo se obtienen los puntos y cómo se convierten en tiempo sin anuncios?",
-        "answer": "Cada contribución elegible otorga puntos. Los puntos recién ganados quedan retenidos durante {maturationDays} días antes de poder canjearse — si eliminas la publicación durante ese periodo, los puntos se anulan. Una vez confirmados, 1 punto canjea 1 día sin anuncios (el canje estará disponible próximamente).",
-        "tableTitle": "Formas de obtener puntos",
+        "question": "¿Cómo se obtienen las monedas y cómo se convierten en tiempo sin anuncios?",
+        "answer": "Cada contribución elegible otorga monedas, utilizables de inmediato. 1 moneda canjea 1 día sin anuncios (el canje estará disponible próximamente).",
+        "tableTitle": "Formas de obtener monedas",
         "headerAction": "Acción",
-        "headerPoints": "Puntos",
+        "headerPoints": "Monedas",
         "actions": {
           "topic_post": "Publicar en un tema (casilla / apertura)",
           "position_creation": "Publicar un problema de posición (memorización / puzzle)"
         },
-        "pointsAmount": "{amount} pt"
+        "pointsAmount": "{amount} monedas"
       }
     }
   },
@@ -1851,14 +1851,14 @@
     "engineStockfishDescription": "Un motor de código abierto potente con nivel de habilidad ajustable — el oponente de IA clásico.",
     "engineMaiaLabel": "Maia (estilo humano)",
     "engineMaiaDescription": "Un motor basado en redes neuronales que juega como un humano del Elo seleccionado. El primer movimiento tarda unos segundos mientras se carga el modelo (~46 MB).",
-    "engineLockedHint": "Faltan puntos",
-    "engineMaiaCostBadge": "{cost} pt",
+    "engineLockedHint": "Faltan monedas",
+    "engineMaiaCostBadge": "{cost} moneda",
     "maiaPointModal": {
-      "title": "Maia cuesta puntos",
-      "body": "Cada partida contra Maia cuesta {cost} punto. Los suscriptores juegan con Maia gratis.",
-      "balance": "Actualmente tienes {balance} puntos.",
-      "earnHint": "Gana puntos contribuyendo con problemas, posiciones y publicaciones a la comunidad.",
-      "viewPoints": "Ver mis puntos",
+      "title": "Maia cuesta monedas",
+      "body": "Cada partida contra Maia cuesta {cost} moneda. Los suscriptores juegan con Maia gratis.",
+      "balance": "Actualmente tienes {balance} monedas.",
+      "earnHint": "Gana monedas contribuyendo con problemas, posiciones y publicaciones a la comunidad.",
+      "viewPoints": "Ver mis monedas",
       "close": "Cerrar"
     },
     "helpLabel": "Mostrar ayuda",
@@ -2368,8 +2368,7 @@
       "expProgress": "{current} / {next} Exp",
       "expRemaining": "{remaining} Exp para el siguiente nivel",
       "viewExpLeaderboard": "Ver Clasificación de Exp",
-      "pointsTotal": "{total} pt",
-      "pointsBreakdown": "{confirmed} disponibles · {pending} pendientes",
+      "pointsTotal": "{total} monedas",
       "accountTitle": "Cuenta",
       "subscriptionTitle": "Suscripción",
       "benefitsTitle": "Beneficios",
@@ -2459,27 +2458,23 @@
     }
   },
   "MypagePoints": {
-    "title": "Puntos",
-    "sectionTitle": "Tus puntos",
+    "title": "Monedas",
+    "sectionTitle": "Tus monedas",
     "breadcrumbMypage": "Mi Página",
     "balance": {
-      "unit": "pt",
-      "confirmedLabel": "Disponibles",
-      "pendingLabel": "Pendientes",
-      "amount": "{amount} pt",
-      "pendingNote": "Los puntos pendientes se desbloquean después de {days, plural, one {# día} other {# días}} si no se elimina la publicación de origen antes."
+      "unit": "monedas"
     },
     "redeem": {
-      "title": "Canjear puntos por tiempo sin anuncios",
-      "description": "Cada punto se convierte en un día sin anuncios. Los días se suman al tiempo sin anuncios que ya tengas.",
-      "pointSuffix": "pt",
+      "title": "Canjear monedas por tiempo sin anuncios",
+      "description": "Cada moneda se convierte en un día sin anuncios. Los días se suman al tiempo sin anuncios que ya tengas.",
+      "pointSuffix": "monedas",
       "daysReceived": "{days, plural, one {# día} other {# días}} sin anuncios",
-      "submit": "Canjear {amount} pt",
+      "submit": "Canjear {amount} monedas",
       "submitting": "Canjeando…",
       "successMessage": "Listo — se han añadido {days, plural, one {# día} other {# días}} sin anuncios.",
       "errors": {
         "invalid_amount": "Introduce un número entero positivo.",
-        "insufficient_balance": "No tienes suficientes puntos disponibles.",
+        "insufficient_balance": "No tienes suficientes monedas disponibles.",
         "signInRequired": "Inicia sesión para canjear.",
         "banned": "Tu cuenta está restringida.",
         "rateLimited": "Demasiados canjes en poco tiempo — inténtalo más tarde."
@@ -2487,20 +2482,18 @@
     },
     "history": {
       "title": "Historial",
-      "empty": "Todavía no tienes actividad de puntos.",
-      "learnHowToEarn": "Ver cómo se obtienen puntos.",
+      "empty": "Todavía no tienes actividad de monedas.",
+      "learnHowToEarn": "Ver cómo se obtienen monedas.",
       "headerDate": "Fecha",
       "headerEvent": "Evento",
       "headerDelta": "Cantidad",
-      "maturesOn": "Se confirma el {date}",
       "truncatedNote": "Mostrando las entradas más recientes.",
       "kind": {
-        "post_grant": "Ganados por una publicación",
-        "post_clawback": "Revertidos por publicación eliminada",
-        "post_matured": "Confirmación completada",
-        "redemption": "Canjeados por tiempo sin anuncios",
-        "purchase": "Comprados",
-        "admin_grant": "Concedidos por el equipo",
+        "post_grant": "Ganadas por una publicación",
+        "post_clawback": "Revertidas por publicación eliminada",
+        "redemption": "Canjeadas por tiempo sin anuncios",
+        "purchase": "Compradas",
+        "admin_grant": "Concedidas por el equipo",
         "maia_game": "Partida contra Maia",
         "other": "Ajuste"
       }
@@ -2603,7 +2596,7 @@
       }
     },
     "pointGrantMessage": {
-      "default": "Recibiste {amount, plural, one {# punto} other {# puntos}}"
+      "default": "Recibiste {amount, plural, one {# moneda} other {# monedas}}"
     }
   },
   "deleteAccount": {
@@ -3862,17 +3855,16 @@
   },
   "thanks": {
     "title": "¡Gracias!",
-    "sectionTitle": "Puntos obtenidos",
+    "sectionTitle": "Monedas obtenidas",
     "continueButton": "Ver tu publicación",
-    "viewPointsButton": "Ver tus puntos",
+    "viewPointsButton": "Ver tus monedas",
     "genericMessage": "Gracias por tu contribución.",
     "pointsAward": {
-      "puzzle_created": "Como agradecimiento por el envío de tu puzzle, te otorgamos {amount, plural, one {# punto} other {# puntos}}.",
-      "position_memory_created": "Como agradecimiento por el envío de tu problema de memoria, te otorgamos {amount, plural, one {# punto} other {# puntos}}.",
-      "topic_post_created": "Como agradecimiento por tu publicación en un tema, te otorgamos {amount, plural, one {# punto} other {# puntos}}.",
-      "default": "Como agradecimiento por tu contribución, te otorgamos {amount, plural, one {# punto} other {# puntos}}."
-    },
-    "maturationNote": "Estos puntos quedarán disponibles para canjear en {days, plural, one {# día} other {# días}}, siempre que tu publicación no se elimine antes."
+      "puzzle_created": "Como agradecimiento por el envío de tu puzzle, te otorgamos {amount, plural, one {# moneda} other {# monedas}}.",
+      "position_memory_created": "Como agradecimiento por el envío de tu problema de memoria, te otorgamos {amount, plural, one {# moneda} other {# monedas}}.",
+      "topic_post_created": "Como agradecimiento por tu publicación en un tema, te otorgamos {amount, plural, one {# moneda} other {# monedas}}.",
+      "default": "Como agradecimiento por tu contribución, te otorgamos {amount, plural, one {# moneda} other {# monedas}}."
+    }
   },
   "authPrompt": {
     "title": "Inicia sesión para continuar",

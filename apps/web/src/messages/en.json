@@ -367,16 +367,16 @@
         "multiplier10": "×1.0"
       },
       "adFreeBenefits": {
-        "question": "How do I earn points, and how do they become ad-free time?",
-        "answer": "Each eligible contribution awards points. Newly earned points are held for {maturationDays} days before they can be redeemed — if you remove the contribution during that window, the points are reversed. Once they mature, 1 point redeems 1 day of ad-free browsing (redemption flow coming soon).",
-        "tableTitle": "Ways to earn points",
+        "question": "How do I earn coins, and how do they become ad-free time?",
+        "answer": "Each eligible contribution awards coins, usable immediately. 1 coin redeems 1 day of ad-free browsing (redemption flow coming soon).",
+        "tableTitle": "Ways to earn coins",
         "headerAction": "Action",
-        "headerPoints": "Points",
+        "headerPoints": "Coins",
         "actions": {
           "topic_post": "Submit a topic post (square / opening)",
           "position_creation": "Submit a position problem (memory / puzzle)"
         },
-        "pointsAmount": "{amount} pt"
+        "pointsAmount": "{amount} coins"
       }
     }
   },
@@ -1851,14 +1851,14 @@
     "engineStockfishDescription": "A strong open source engine with adjustable skill level — the classic AI opponent.",
     "engineMaiaLabel": "Maia (human-like)",
     "engineMaiaDescription": "A neural-network engine that plays like a human at the chosen Elo. The first move takes a few seconds while the model loads (~46 MB).",
-    "engineLockedHint": "Needs points",
-    "engineMaiaCostBadge": "{cost} pt",
+    "engineLockedHint": "Needs coins",
+    "engineMaiaCostBadge": "{cost} coin",
     "maiaPointModal": {
-      "title": "Maia costs points",
-      "body": "Each game against Maia costs {cost} point. Subscribers play Maia for free.",
-      "balance": "You currently have {balance} points.",
-      "earnHint": "Earn points by contributing puzzles, positions, and posts to the community.",
-      "viewPoints": "View my points",
+      "title": "Maia costs coins",
+      "body": "Each game against Maia costs {cost} coin. Subscribers play Maia for free.",
+      "balance": "You currently have {balance} coins.",
+      "earnHint": "Earn coins by contributing puzzles, positions, and posts to the community.",
+      "viewPoints": "View my coins",
       "close": "Close"
     },
     "helpLabel": "Show help",
@@ -2368,8 +2368,7 @@
       "expProgress": "{current} / {next} Exp",
       "expRemaining": "{remaining} Exp to next level",
       "viewExpLeaderboard": "View Exp Leaderboard",
-      "pointsTotal": "{total} pt",
-      "pointsBreakdown": "{confirmed} confirmed · {pending} pending",
+      "pointsTotal": "{total} coins",
       "accountTitle": "Account",
       "subscriptionTitle": "Subscription",
       "benefitsTitle": "Benefits",
@@ -2459,27 +2458,23 @@
     }
   },
   "MypagePoints": {
-    "title": "Points",
-    "sectionTitle": "Your points",
+    "title": "Coins",
+    "sectionTitle": "Your coins",
     "breadcrumbMypage": "My Page",
     "balance": {
-      "unit": "pt",
-      "confirmedLabel": "Available",
-      "pendingLabel": "Vesting",
-      "amount": "{amount} pt",
-      "pendingNote": "Vesting points unlock {days, plural, one {# day} other {# days}} after the source post, provided it is not removed before then."
+      "unit": "coins"
     },
     "redeem": {
-      "title": "Redeem points for ad-free time",
-      "description": "Each point converts to one day of ad-free browsing. Days stack on top of any ad-free time you already have.",
-      "pointSuffix": "pt",
+      "title": "Redeem coins for ad-free time",
+      "description": "Each coin converts to one day of ad-free browsing. Days stack on top of any ad-free time you already have.",
+      "pointSuffix": "coins",
       "daysReceived": "{days, plural, one {# day} other {# days}} of ad-free",
-      "submit": "Redeem {amount} pt",
+      "submit": "Redeem {amount} coins",
       "submitting": "Redeeming…",
       "successMessage": "Done — {days, plural, one {# day} other {# days}} of ad-free time has been added.",
       "errors": {
         "invalid_amount": "Please enter a positive whole number.",
-        "insufficient_balance": "You do not have enough confirmed points.",
+        "insufficient_balance": "You do not have enough confirmed coins.",
         "signInRequired": "Please sign in to redeem.",
         "banned": "Your account is restricted.",
         "rateLimited": "Too many redemptions in a short period — try again later."
@@ -2487,17 +2482,15 @@
     },
     "history": {
       "title": "History",
-      "empty": "No point activity yet.",
-      "learnHowToEarn": "See how to earn points.",
+      "empty": "No coin activity yet.",
+      "learnHowToEarn": "See how to earn coins.",
       "headerDate": "Date",
       "headerEvent": "Event",
       "headerDelta": "Amount",
-      "maturesOn": "Vests on {date}",
       "truncatedNote": "Showing the most recent entries.",
       "kind": {
         "post_grant": "Earned from a post",
         "post_clawback": "Reversed for deleted post",
-        "post_matured": "Vesting completed",
         "redemption": "Redeemed for ad-free",
         "purchase": "Purchased",
         "admin_grant": "Granted by staff",
@@ -2603,7 +2596,7 @@
       }
     },
     "pointGrantMessage": {
-      "default": "You received {amount, plural, one {# point} other {# points}}"
+      "default": "You received {amount, plural, one {# coin} other {# coins}}"
     }
   },
   "deleteAccount": {
@@ -3862,17 +3855,16 @@
   },
   "thanks": {
     "title": "Thanks!",
-    "sectionTitle": "Points earned",
+    "sectionTitle": "Coins earned",
     "continueButton": "View your post",
-    "viewPointsButton": "View your points",
+    "viewPointsButton": "View your coins",
     "genericMessage": "Thanks for your contribution.",
     "pointsAward": {
-      "puzzle_created": "As a thank-you for submitting your puzzle, we are awarding you {amount, plural, one {# point} other {# points}}.",
-      "position_memory_created": "As a thank-you for submitting your position-memory problem, we are awarding you {amount, plural, one {# point} other {# points}}.",
-      "topic_post_created": "As a thank-you for your topic post, we are awarding you {amount, plural, one {# point} other {# points}}.",
-      "default": "As a thank-you for your contribution, we are awarding you {amount, plural, one {# point} other {# points}}."
-    },
-    "maturationNote": "These points become available for redemption in {days, plural, one {# day} other {# days}}, provided your post is not removed before then."
+      "puzzle_created": "As a thank-you for submitting your puzzle, we are awarding you {amount, plural, one {# coin} other {# coins}}.",
+      "position_memory_created": "As a thank-you for submitting your position-memory problem, we are awarding you {amount, plural, one {# coin} other {# coins}}.",
+      "topic_post_created": "As a thank-you for your topic post, we are awarding you {amount, plural, one {# coin} other {# coins}}.",
+      "default": "As a thank-you for your contribution, we are awarding you {amount, plural, one {# coin} other {# coins}}."
+    }
   },
   "authPrompt": {
     "title": "Sign in to continue",

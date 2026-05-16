@@ -7,7 +7,6 @@ import { and, eq, isNull } from 'drizzle-orm';
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, positions } from '@/lib/db';
-import { clawbackPendingPointsForPost } from '@/lib/points';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
@@ -63,11 +62,8 @@ export async function deletePosition(positionId: string, locale: string): Promis
         )
       );
 
-    // Clawback pending points from the original create grant.
-    await clawbackPendingPointsForPost(tx, user.id, {
-      type: 'position_memory',
-      id: positionId,
-    });
+    // No point clawback on user self-deletion — users keep the coins they
+    // earned for their own contributions.
   });
 
   logActivityEvent({

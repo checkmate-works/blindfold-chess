@@ -82,7 +82,7 @@ vi.mock('next/cache', () => ({
 
 vi.mock('@/lib/points', () => ({
   // Stub clawback to a no-op; this test does not exercise the points ledger.
-  clawbackPendingPointsForPost: vi.fn().mockResolvedValue(undefined),
+  clawbackPointsForPost: vi.fn().mockResolvedValue(undefined),
 }));
 
 const adminUserId = 'admin-00000000-0000-0000-0000-000000000001';

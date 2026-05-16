@@ -102,11 +102,10 @@ vi.mock('next/navigation', () => ({
 vi.mock('next/cache', () => ({ revalidateTag: vi.fn() }));
 
 vi.mock('@/lib/points', () => ({
-  grantPendingPointsForPost: vi.fn().mockResolvedValue({ pointEventId: 'pe-1', amount: 3 }),
-  clawbackPendingPointsForPost: vi.fn().mockResolvedValue(undefined),
+  grantPointsForPost: vi.fn().mockResolvedValue({ pointEventId: 'pe-1', amount: 3 }),
+  clawbackPointsForPost: vi.fn().mockResolvedValue(undefined),
   isPointEligibleTopicType: (v: string) => v === 'square' || v === 'opening',
   POST_CREATION_POINTS: 3,
-  POST_MATURATION_DAYS: 7,
 }));
 
 vi.mock('@/lib/chunks/queries', () => ({

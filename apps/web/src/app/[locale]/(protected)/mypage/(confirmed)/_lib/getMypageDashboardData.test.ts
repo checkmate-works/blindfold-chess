@@ -112,10 +112,8 @@ vi.mock('@/lib/db', () => {
 
 vi.mock('@/lib/points', () => ({
   getPointBalanceSummary: vi.fn().mockResolvedValue({
-    confirmed: 0,
-    pending: 0,
     total: 0,
-    byCategory: { earned_pending: 0, earned: 0, purchased: 0, promotional: 0 },
+    byCategory: { earned: 0, purchased: 0, promotional: 0 },
   }),
 }));
 
@@ -318,10 +316,8 @@ describe('getMypageDashboardData', () => {
         unansweredInterviewCount: 0,
         totalExp: 5000,
         pointBalance: {
-          confirmed: 0,
-          pending: 0,
           total: 0,
-          byCategory: { earned_pending: 0, earned: 0, purchased: 0, promotional: 0 },
+          byCategory: { earned: 0, purchased: 0, promotional: 0 },
         },
       });
     });

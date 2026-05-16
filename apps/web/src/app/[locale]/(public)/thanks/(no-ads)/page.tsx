@@ -6,7 +6,7 @@ import { Button } from '@/app/_components';
 import { and, eq } from 'drizzle-orm';
 
 import { db, pointEvents } from '@/lib/db';
-import { POST_MATURATION_DAYS, type PointSource } from '@/lib/points';
+import { type PointSource } from '@/lib/points';
 import { createClient } from '@/lib/supabase/server';
 
 import { CertificateFrame, PageLayout, SectionTitle } from '@/app/[locale]/_components';
@@ -99,9 +99,6 @@ export default async function ThanksPage({ params, searchParams }: Props) {
               {t(award.awardKey, { amount: award.amount })}
             </p>
           </CertificateFrame>
-          <p className="text-sm text-muted-foreground text-center">
-            {t('maturationNote', { days: POST_MATURATION_DAYS })}
-          </p>
         </div>
       ) : (
         <p className="text-muted-foreground text-center py-4">{t('genericMessage')}</p>

@@ -42,7 +42,7 @@ export function PointGrantForm() {
       <h2 className="text-lg font-semibold">Grant points</h2>
       <p className="text-sm text-muted-foreground">
         Admin-issued points are written as <code className="font-mono">promotional</code> and are
-        immediately available to redeem — they bypass the UGC maturation window.
+        immediately available to redeem.
       </p>
 
       <div>

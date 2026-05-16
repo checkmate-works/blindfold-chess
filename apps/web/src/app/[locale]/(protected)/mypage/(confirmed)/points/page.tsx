@@ -12,10 +12,9 @@
  * 1. User opens /mypage/points.
  * 2. Page reads the balance summary + history rows in one batched fetch.
  * 3. Renders three sections:
- *    - Balance card: confirmed / pending / total.
- *    - Redeem control (only when confirmed ≥ 1): N pt → N days of ad_free.
- *    - History table: most recent ledger rows, with maturation hint on
- *      pending grants.
+ *    - Balance card: the user's total Coin balance.
+ *    - Redeem control (only when balance ≥ 1): N Coin → N days of ad_free.
+ *    - History table: most recent ledger rows.
  */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
@@ -24,7 +23,7 @@ import { Link } from '@/i18n/routing';
 import { CoinIcon } from '@blindfold-chess/icons';
 
 import { getAuthenticatedUser } from '@/lib/auth';
-import { AD_FREE_DAYS_PER_POINT, POST_MATURATION_DAYS } from '@/lib/points';
+import { AD_FREE_DAYS_PER_POINT } from '@/lib/points';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -69,29 +68,10 @@ export default async function PointsPage({ params }: Props) {
             <span className="text-3xl font-bold text-foreground">{balance.total}</span>
             <span className="text-sm text-muted-foreground">{t('balance.unit')}</span>
           </div>
-          <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
-            <div>
-              <dt className="text-muted-foreground">{t('balance.confirmedLabel')}</dt>
-              <dd className="font-semibold text-foreground">
-                {t('balance.amount', { amount: balance.confirmed })}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">{t('balance.pendingLabel')}</dt>
-              <dd className="font-semibold text-foreground">
-                {t('balance.amount', { amount: balance.pending })}
-              </dd>
-            </div>
-          </dl>
-          {balance.pending > 0 && (
-            <p className="mt-3 text-xs text-muted-foreground">
-              {t('balance.pendingNote', { days: POST_MATURATION_DAYS })}
-            </p>
-          )}
         </div>
 
         {/* Redeem control */}
-        <RedeemForm confirmedBalance={balance.confirmed} daysPerPoint={AD_FREE_DAYS_PER_POINT} />
+        <RedeemForm balance={balance.total} daysPerPoint={AD_FREE_DAYS_PER_POINT} />
 
         {/* History */}
         <div>
@@ -127,14 +107,7 @@ export default async function PointsPage({ params }: Props) {
                           {dateFmt(row.createdAt)}
                         </td>
                         <td className="px-4 py-3">
-                          <div className="flex flex-col">
-                            <span className="text-foreground">{t(`history.kind.${row.kind}`)}</span>
-                            {row.maturesAt && (
-                              <span className="text-xs text-muted-foreground">
-                                {t('history.maturesOn', { date: dateFmt(row.maturesAt) })}
-                              </span>
-                            )}
-                          </div>
+                          <span className="text-foreground">{t(`history.kind.${row.kind}`)}</span>
                         </td>
                         <td
                           className={`px-4 py-3 text-right font-mono ${

@@ -9,7 +9,7 @@ import {
   notifyFollowersOfNewPost,
   notifyTopicAuthorOfNewComment,
 } from '@/lib/notifications/notification';
-import { grantPendingPointsForPost, isPointEligibleTopicType } from '@/lib/points';
+import { grantPointsForPost, isPointEligibleTopicType } from '@/lib/points';
 import type { RateLimitConfig } from '@/lib/security/rate-limit';
 import { checkRateLimit } from '@/lib/security/rate-limit';
 import { logActivityEvent } from '@/lib/users/activity-log';
@@ -142,12 +142,11 @@ export async function createPostBase(params: {
       await afterInsert(tx, post.id);
     }
 
-    // Award pending points for text-bearing posts on eligible topic types.
-    // Gate is `isPointEligibleTopicType` (square / opening) plus a non-empty
-    // body — rating-only and empty posts are excluded. See grantPendingPoints
-    // ForPost for lifecycle / clawback semantics.
+    // Award points for text-bearing posts on eligible topic types —
+    // immediately spendable. Gate is `isPointEligibleTopicType` (square /
+    // opening) plus a non-empty body — rating-only and empty posts excluded.
     if (isPointEligibleTopicType(topicType) && contentResult.content.trim() !== '') {
-      pointGrantResult = await grantPendingPointsForPost(tx, user.id, {
+      pointGrantResult = await grantPointsForPost(tx, user.id, {
         type: 'topic_post',
         id: post.id,
       });
@@ -183,7 +182,7 @@ export async function createPostBase(params: {
 
   // When a point grant fires we route through the generic /thanks page
   // (with the original destination preserved as `returnUrl`) so the user sees
-  // how many points were earned and the maturation window. The post-created
+  // how many points were earned. The post-created
   // toast is suppressed in that path — the thanks page is the celebration
   // moment. No-grant posts (chunks, rating-only opening posts, etc.) keep
   // the legacy in-place toast UX.

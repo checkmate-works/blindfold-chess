@@ -2,18 +2,17 @@
  * Admin Points Page
  *
  * @description
- * Lets staff issue confirmed point grants and reviews recent admin grants
- * in one paginated table. Companion to /admin/grants (which handles
- * ad_free user_grants); this page writes `point_events` rows in
+ * Lets staff issue point grants and reviews recent admin grants in one
+ * paginated table. Companion to /admin/grants (which handles ad_free
+ * user_grants); this page writes `point_events` rows in
  * `category='promotional'` so the points land in the user's spendable
- * balance immediately, skipping the 7-day maturation window UGC-derived
- * grants pass through.
+ * balance.
  *
  * @design Scope of the table
  *
  * Only rows whose `source='admin_grant'` are listed — UGC grants /
- * clawbacks / maturation / redemption rows live on the user-facing
- * /mypage/points history and would only add noise here. Each row shows
+ * clawbacks / redemption rows live on the user-facing /mypage/points
+ * history and would only add noise here. Each row shows
  * the recipient (email + username), amount, the moderation reason memo,
  * and the timestamp the grant was issued.
  *

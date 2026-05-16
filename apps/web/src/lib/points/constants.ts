@@ -11,16 +11,17 @@
  * Per-category buckets stored on `point_events.category` and
  * `user_point_balances.category`. The keyed bucket model lets purchased and
  * earned points evolve independently (different refund / redemption / expiry
- * rules) without schema changes.
+ * rules) without schema changes. Every category is immediately spendable —
+ * points are granted live, with no maturation hold.
  */
-export const POINT_CATEGORIES = ['earned_pending', 'earned', 'purchased', 'promotional'] as const;
+export const POINT_CATEGORIES = ['earned', 'purchased', 'promotional'] as const;
 export type PointCategory = (typeof POINT_CATEGORIES)[number];
 
 /**
- * `point_events.source` values. Distinct per UGC trigger so clawback /
- * maturation queries can target a single (source, source_id) pair.
- * Lifecycle stage (created / clawed back / matured) is encoded in the
- * idempotency_key prefix, not in `source` — see `buildIdempotencyKey`.
+ * `point_events.source` values. Distinct per UGC trigger so clawback
+ * queries can target a single (source, source_id) pair. Lifecycle stage
+ * (created / clawed back) is encoded in the idempotency_key prefix, not in
+ * `source` — see `buildIdempotencyKey`.
  */
 export const POINT_SOURCES = [
   'puzzle_created',
@@ -72,12 +73,7 @@ export function entityTypeForSource(source: PointSource): PointPostEntityType {
  * on `point_events.idempotency_key` is the hard backstop against duplicate
  * inserts; these prefixes make the keys human-debuggable.
  */
-export const POINT_LIFECYCLE_STAGES = [
-  'post_grant',
-  'post_clawback',
-  'post_mature_pending',
-  'post_mature_earned',
-] as const;
+export const POINT_LIFECYCLE_STAGES = ['post_grant', 'post_clawback'] as const;
 export type PointLifecycleStage = (typeof POINT_LIFECYCLE_STAGES)[number];
 
 export function buildIdempotencyKey(stage: PointLifecycleStage, entity: PointPostEntity): string {
@@ -93,16 +89,6 @@ export function buildIdempotencyKey(stage: PointLifecycleStage, entity: PointPos
 export const POST_CREATION_POINTS = 3;
 
 /**
- * Days that must elapse before an `earned_pending` row matures into
- * `earned` (spendable). Until matured, the points are visible to the user
- * but cannot be redeemed. Deletions during this window are clawed back.
- * After this window, the points are kept even if the source post is later
- * removed — users retain agency over their own content without sacrificing
- * already-earned rewards.
- */
-export const POST_MATURATION_DAYS = 7;
-
-/**
  * `topic_posts.topicType` values that earn a point grant on creation.
  *
  * Scoped to the **standalone topic surfaces** (`square`, `opening`) only.
@@ -112,7 +98,7 @@ export const POST_MATURATION_DAYS = 7;
  * `createPuzzle`. `chunk` posts have always been excluded.
  *
  * Single source of truth for:
- *   1. `createPostBase` — gates `grantPendingPointsForPost` on `topicType`.
+ *   1. `createPostBase` — gates `grantPointsForPost` on `topicType`.
  *   2. The `/faq` "Ways to earn points" surface.
  *
  * Add a topic type here together with its i18n label in every locale.
@@ -135,11 +121,10 @@ export function isPointEligibleTopicType(v: string): v is PointEligibleTopicType
  * - `purchased`    (real money): spent last. Money-backed points stay in
  *                  the wallet longest so refunds remain straightforward.
  *
- * `earned_pending` is intentionally absent — pending points are not
- * spendable regardless of this list. Shared by every consumption path
- * (`redeemPointsForAdFree`, `consumeMaiaGamePoint`).
+ * Shared by every consumption path (`redeemPointsForAdFree`,
+ * `consumeMaiaGamePoint`).
  */
-export const SPENDABLE_CONSUME_ORDER: readonly Exclude<PointCategory, 'earned_pending'>[] = [
+export const SPENDABLE_CONSUME_ORDER: readonly PointCategory[] = [
   'earned',
   'promotional',
   'purchased',
@@ -156,8 +141,8 @@ export const MAIA_GAME_POINT_COST = 1;
 
 /**
  * `point_events.source` value for a Maia per-game charge. Deliberately NOT
- * a member of `POINT_SOURCES` — that array is the UGC grant/maturation
- * surface (`entityTypeForSource` etc.). `maia_game` is a consumption
+ * a member of `POINT_SOURCES` — that array is the UGC grant surface
+ * (`entityTypeForSource` etc.). `maia_game` is a consumption
  * source, like `'redemption'`: `source_id` holds the client-generated game
  * UUID and the idempotency key is `maia_game:<uuid>`.
  */

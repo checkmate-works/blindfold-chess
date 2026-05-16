@@ -10,16 +10,16 @@ import { Button } from '@/app/_components';
 import { type RedeemAdFreeResult, redeemAdFree } from '../_actions/redeemAdFree';
 
 type Props = {
-  confirmedBalance: number;
+  balance: number;
   daysPerPoint: number;
 };
 
 /**
- * Inline redeem control rendered when the user has ≥1 confirmed point.
+ * Inline redeem control rendered when the user has ≥1 point.
  *
  * @design Client-side input clamp
  *
- * The amount input is clamped to `[1, confirmedBalance]` in `onChange` so
+ * The amount input is clamped to `[1, balance]` in `onChange` so
  * the user cannot send a value the server will just reject — better UX
  * than a round-trip rejection. The Server Action still re-validates so
  * the client clamp is a hint, not a security boundary.
@@ -30,10 +30,10 @@ type Props = {
  * does not fire two requests. The server-side conditional debit would
  * still serialize, but we want the UI to feel intentional too.
  */
-export function RedeemForm({ confirmedBalance, daysPerPoint }: Props) {
+export function RedeemForm({ balance, daysPerPoint }: Props) {
   const t = useTranslations('MypagePoints');
   const router = useRouter();
-  const [amount, setAmount] = useState<number>(Math.min(1, confirmedBalance));
+  const [amount, setAmount] = useState<number>(Math.min(1, balance));
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<{ days: number } | null>(null);
   const [pending, startTransition] = useTransition();
@@ -46,7 +46,7 @@ export function RedeemForm({ confirmedBalance, daysPerPoint }: Props) {
       setAmount(1);
       return;
     }
-    setAmount(Math.min(Math.max(1, parsed), confirmedBalance));
+    setAmount(Math.min(Math.max(1, parsed), balance));
   };
 
   const handleSubmit = () => {
@@ -74,7 +74,7 @@ export function RedeemForm({ confirmedBalance, daysPerPoint }: Props) {
     });
   };
 
-  if (confirmedBalance < 1) {
+  if (balance < 1) {
     return null;
   }
 
@@ -87,7 +87,7 @@ export function RedeemForm({ confirmedBalance, daysPerPoint }: Props) {
         <input
           type="number"
           min={1}
-          max={confirmedBalance}
+          max={balance}
           step={1}
           value={amount}
           onChange={(e) => handleAmountChange(e.target.value)}

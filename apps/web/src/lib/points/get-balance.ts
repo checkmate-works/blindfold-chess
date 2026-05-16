@@ -6,11 +6,7 @@ import { db, userPointBalances } from '@/lib/db';
 import { POINT_CATEGORIES, type PointCategory } from './constants';
 
 export type PointBalanceSummary = {
-  /** Net spendable points (`earned + purchased + promotional`). */
-  confirmed: number;
-  /** Points awaiting maturation; not yet spendable. */
-  pending: number;
-  /** `confirmed + pending` — for the dashboard chip headline. */
+  /** Total spendable balance — the sum across every category. */
   total: number;
   /** Per-category breakdown, useful for future redemption-rule splits. */
   byCategory: Record<PointCategory, number>;
@@ -20,6 +16,9 @@ export type PointBalanceSummary = {
  * Read all `(user_id, category)` balance rows for the user and roll them up
  * into the summary the UI surfaces consume. Missing rows are treated as zero
  * — `user_point_balances` is sparse (rows are written on first nonzero delta).
+ *
+ * Every category is spendable (points are granted live, no maturation hold),
+ * so `total` is simply the sum across categories.
  *
  * Reads only from the materialized cache — never from `point_events`. The
  * cache is kept honest by a future drift-detection job that recomputes from
@@ -35,7 +34,6 @@ export async function getPointBalanceSummary(userId: string): Promise<PointBalan
     .where(eq(userPointBalances.userId, userId));
 
   const byCategory: Record<PointCategory, number> = {
-    earned_pending: 0,
     earned: 0,
     purchased: 0,
     promotional: 0,
@@ -47,13 +45,8 @@ export async function getPointBalanceSummary(userId: string): Promise<PointBalan
     }
   }
 
-  const confirmed = byCategory.earned + byCategory.purchased + byCategory.promotional;
-  const pending = byCategory.earned_pending;
-
   return {
-    confirmed,
-    pending,
-    total: confirmed + pending,
+    total: byCategory.earned + byCategory.purchased + byCategory.promotional,
     byCategory,
   };
 }

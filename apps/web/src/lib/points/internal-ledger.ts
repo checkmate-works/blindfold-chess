@@ -55,7 +55,7 @@ export type RecordPointMovementInput = {
  * Append one `point_events` row and, on success, fold its delta into the
  * materialized `user_point_balances` cache for the same
  * `(userId, category)`. The single unit of work shared by every grant /
- * clawback / maturation / admin-grant primitive in this package — those
+ * clawback / admin-grant primitive in this package — those
  * primitives differ only in which arguments they build, not in how the
  * write hits the ledger.
  *
@@ -65,8 +65,8 @@ export type RecordPointMovementInput = {
  * `idempotency_key` index is swallowed via `onConflictDoNothing` and the
  * function returns `null`. The balance upsert is *skipped* in that case
  * because the existing row already contributed its delta on the original
- * insert. Callers use this for retry-safe operations (UGC post grants,
- * clawbacks, maturation runs).
+ * insert. Callers use this for retry-safe operations (UGC post grants
+ * and clawbacks).
  *
  * When called without that option (the default), a UNIQUE conflict is
  * unexpected and propagates — the caller is asserting that the
@@ -118,16 +118,15 @@ export async function recordPointMovement(
 }
 
 /**
- * Sum the live `earned_pending` balance for one `(user, source, sourceId)`
- * triple. Shared by the clawback path (decide whether to write an
- * offsetting row) and the maturation path (decide how much to vest), both
- * of which need the post-clawback live total rather than the original
- * grant amount.
+ * Sum the net `earned` points one `(user, source, sourceId)` triple has
+ * produced — the original grant minus any clawback already applied (the
+ * clawback row carries the same source/sourceId, so a second read after a
+ * clawback returns 0). Used by `clawbackPointsForPost` to decide how much
+ * to reverse.
  *
- * Returns `0` if the user has no pending rows for that source — never
- * negative, never null.
+ * Returns `0` if the user has no `earned` rows for that source — never null.
  */
-export async function readPendingTotalForEntity(
+export async function readEarnedTotalForEntity(
   tx: DbTx,
   userId: string,
   source: string,
@@ -135,7 +134,7 @@ export async function readPendingTotalForEntity(
 ): Promise<number> {
   const [agg] = await tx
     .select({
-      pendingTotal: sql<number>`COALESCE(SUM(${pointEvents.delta}), 0)::int`,
+      earnedTotal: sql<number>`COALESCE(SUM(${pointEvents.delta}), 0)::int`,
     })
     .from(pointEvents)
     .where(
@@ -143,8 +142,25 @@ export async function readPendingTotalForEntity(
         eq(pointEvents.userId, userId),
         eq(pointEvents.source, source),
         eq(pointEvents.sourceId, sourceId),
-        eq(pointEvents.category, 'earned_pending')
+        eq(pointEvents.category, 'earned')
       )
     );
-  return agg?.pendingTotal ?? 0;
+  return agg?.earnedTotal ?? 0;
+}
+
+/**
+ * Read the user's current `earned` balance under a row lock. The clawback
+ * path uses this to cap a reversal at the coins still available — coins the
+ * user has already spent are unrecoverable and the balance must not go
+ * negative.
+ *
+ * Returns `0` when the user has no `earned` balance row yet.
+ */
+export async function readEarnedBalanceForUpdate(tx: DbTx, userId: string): Promise<number> {
+  const [row] = await tx
+    .select({ balance: userPointBalances.balance })
+    .from(userPointBalances)
+    .where(and(eq(userPointBalances.userId, userId), eq(userPointBalances.category, 'earned')))
+    .for('update');
+  return row?.balance ?? 0;
 }

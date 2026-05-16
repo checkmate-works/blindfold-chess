@@ -107,7 +107,7 @@ vi.mock('next/cache', () => ({
 
 vi.mock('@/lib/points', () => ({
   // Stub point clawback to a no-op; this test does not exercise the ledger.
-  clawbackPendingPointsForPost: vi.fn().mockResolvedValue(undefined),
+  clawbackPointsForPost: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('./getClientIp', () => ({

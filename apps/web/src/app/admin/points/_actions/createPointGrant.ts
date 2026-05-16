@@ -13,12 +13,11 @@ import { getClientIp } from '@/lib/security/client-ip';
 import { validateAmount, validateUuid } from '../_lib/validation';
 
 /**
- * Issue a confirmed point grant from the admin surface.
+ * Issue a point grant from the admin surface.
  *
  * Companion to /admin/grants's `createGrant` (which issues ad_free
  * user_grants directly). This action writes a `point_events` row in
- * `category='promotional'` so the points are immediately spendable —
- * admin-issued points bypass the UGC maturation window.
+ * `category='promotional'` so the points are immediately spendable.
  *
  * The point grant + audit log row commit together in a single transaction.
  * Granted_by provenance lives in `moderation_actions.actor_id` per the

@@ -1,24 +1,12 @@
-import { addDays } from 'date-fns';
 import { desc, eq } from 'drizzle-orm';
 import 'server-only';
 
 import { db, pointEvents } from '@/lib/db';
 
-import {
-  MAIA_GAME_SOURCE,
-  POINT_SOURCES,
-  POST_MATURATION_DAYS,
-  type PointCategory,
-  type PointSource,
-} from './constants';
+import { MAIA_GAME_SOURCE, POINT_SOURCES, type PointCategory, type PointSource } from './constants';
 
 /**
  * One row as rendered on `/mypage/points` — one entry per ledger row.
- *
- * `maturesAt` is computed (not stored) so the UI can show "vests on Y/M/D"
- * for pending grants without an extra column. The value is meaningful only
- * for the original `earned_pending` grant rows (positive delta on a UGC
- * source); clawback / maturation accounting rows leave it `null`.
  */
 export type PointHistoryEntry = {
   id: string;
@@ -27,12 +15,10 @@ export type PointHistoryEntry = {
   source: PointSource | string;
   sourceId: string | null;
   createdAt: Date;
-  maturesAt: Date | null;
   /** Discriminator the UI uses to pick the i18n label key. */
   kind:
     | 'post_grant'
     | 'post_clawback'
-    | 'post_matured'
     | 'redemption'
     | 'purchase'
     | 'admin_grant'
@@ -42,11 +28,6 @@ export type PointHistoryEntry = {
 
 /**
  * Returns the user's point history, newest first, paginated.
- *
- * For original UGC grant rows (positive delta on `puzzle_created` /
- * `position_memory_created` / `topic_post_created` with category
- * `earned_pending`), computes `maturesAt = createdAt + POST_MATURATION_DAYS`
- * so the page can show "vests on Y/M/D" without a separate column.
  */
 export async function getPointHistory(
   userId: string,
@@ -69,34 +50,22 @@ export async function getPointHistory(
     .limit(limit)
     .offset(offset);
 
-  return rows.map((row) => {
-    const kind = classifyKind(row.source, row.delta, row.metadata);
-    const maturesAt =
-      kind === 'post_grant' && row.delta > 0 ? addDays(row.createdAt, POST_MATURATION_DAYS) : null;
-    return {
-      id: row.id,
-      delta: row.delta,
-      category: row.category as PointCategory,
-      source: row.source,
-      sourceId: row.sourceId,
-      createdAt: row.createdAt,
-      maturesAt,
-      kind,
-    };
-  });
+  return rows.map((row) => ({
+    id: row.id,
+    delta: row.delta,
+    category: row.category as PointCategory,
+    source: row.source,
+    sourceId: row.sourceId,
+    createdAt: row.createdAt,
+    kind: classifyKind(row.source, row.delta, row.metadata),
+  }));
 }
 
 function classifyKind(source: string, delta: number, metadata: unknown): PointHistoryEntry['kind'] {
   const meta = (metadata ?? {}) as { reason?: unknown };
-  // `reason` here is the lifecycle-stage tag the clawback / maturation
-  // primitives stamp on the row (`'post_deleted'` / `'maturation'`). Admin
-  // grants also write `reason` but it's free-form text, so only the exact
-  // sentinels above promote a row to the corresponding clawback / matured
-  // kind — anything else falls through to the source-based branches below.
-  if (typeof meta.reason === 'string') {
-    if (meta.reason === 'post_deleted') return 'post_clawback';
-    if (meta.reason === 'maturation') return 'post_matured';
-  }
+  // `reason='post_removed'` is the tag the clawback primitive stamps on its
+  // offsetting row when a moderator removes the source post.
+  if (meta.reason === 'post_removed') return 'post_clawback';
   if ((POINT_SOURCES as readonly string[]).includes(source)) {
     return delta > 0 ? 'post_grant' : 'post_clawback';
   }

@@ -5,7 +5,7 @@ import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
 import { getModuleWeight } from '@blindfold-chess/features/exp';
 
-import { POST_CREATION_POINTS, POST_MATURATION_DAYS } from '@/lib/points';
+import { POST_CREATION_POINTS } from '@/lib/points';
 import { JsonLd, generateFAQPageSchema } from '@/lib/seo/jsonld';
 
 import { PageLayout } from '@/app/[locale]/_components';
@@ -183,11 +183,7 @@ export default async function FAQPage({ params }: Props) {
       question: t('items.adFreeBenefits.question'),
       answer: (
         <div className="space-y-4">
-          <p>
-            {t('items.adFreeBenefits.answer', {
-              maturationDays: POST_MATURATION_DAYS,
-            })}
-          </p>
+          <p>{t('items.adFreeBenefits.answer')}</p>
 
           <h3 className="font-medium text-foreground">{t('items.adFreeBenefits.tableTitle')}</h3>
           <table className="w-full text-sm">

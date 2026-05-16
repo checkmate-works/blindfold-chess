@@ -367,16 +367,16 @@
         "multiplier10": "×1.0"
       },
       "adFreeBenefits": {
-        "question": "ポイントの獲得方法と広告非表示との交換について教えてください",
-        "answer": "対象アクションを行うとポイントが付与されます。獲得直後のポイントは {maturationDays} 日間「確定待ち」状態となり、その間に投稿が削除されるとポイントは取り消されます。確定後は 1 ポイントで広告非表示 1 日と交換できます（交換機能は近日公開予定です）。",
-        "tableTitle": "ポイントを獲得する方法",
+        "question": "コインの獲得方法と広告非表示との交換について教えてください",
+        "answer": "対象アクションを行うとコインが付与され、投稿直後からすぐに利用できます。1 コインで広告非表示 1 日と交換できます（交換機能は近日公開予定です）。",
+        "tableTitle": "コインを獲得する方法",
         "headerAction": "アクション",
-        "headerPoints": "獲得ポイント",
+        "headerPoints": "獲得コイン",
         "actions": {
           "topic_post": "トピック（マス / オープニング）を投稿する",
           "position_creation": "問題（ポジションの記憶 / パズル）を投稿する"
         },
-        "pointsAmount": "{amount} pt"
+        "pointsAmount": "{amount} コイン"
       }
     }
   },
@@ -1851,14 +1851,14 @@
     "engineStockfishDescription": "強さを調整できるオープンソースの強力なエンジン。定番のAI対戦相手です。",
     "engineMaiaLabel": "Maia（人間風）",
     "engineMaiaDescription": "選択した Elo の人間プレイヤーのような指し方をするニューラルネットワーク型エンジン。初回はモデル（約46MB）の読み込みに数秒かかります。",
-    "engineLockedHint": "ポイント不足",
-    "engineMaiaCostBadge": "{cost} pt",
+    "engineLockedHint": "コイン不足",
+    "engineMaiaCostBadge": "{cost} コイン",
     "maiaPointModal": {
-      "title": "Maia の対局にはポイントが必要",
-      "body": "Maia との対局には1局あたり {cost} ポイント必要です。サブスクリプション加入者は無料で対局できます。",
-      "balance": "現在の保有ポイント: {balance} ポイント",
-      "earnHint": "ポイントは、パズルや局面の投稿などコミュニティへの貢献で貯められます。",
-      "viewPoints": "ポイントを確認",
+      "title": "Maia の対局にはコインが必要",
+      "body": "Maia との対局には1局あたり {cost} コイン必要です。サブスクリプション加入者は無料で対局できます。",
+      "balance": "現在の保有コイン: {balance} コイン",
+      "earnHint": "コインは、パズルや局面の投稿などコミュニティへの貢献で貯められます。",
+      "viewPoints": "コインを確認",
       "close": "閉じる"
     },
     "helpLabel": "ヘルプを表示",
@@ -2368,8 +2368,7 @@
       "expProgress": "{current} / {next} Exp",
       "expRemaining": "次のレベルまで あと {remaining} Exp",
       "viewExpLeaderboard": "Exp ランキングを見る",
-      "pointsTotal": "{total} pt",
-      "pointsBreakdown": "確定 {confirmed} / 確定待ち {pending}",
+      "pointsTotal": "{total} コイン",
       "accountTitle": "アカウント",
       "subscriptionTitle": "サブスクリプション",
       "benefitsTitle": "特典",
@@ -2459,27 +2458,23 @@
     }
   },
   "MypagePoints": {
-    "title": "ポイント",
-    "sectionTitle": "ポイント残高",
+    "title": "コイン",
+    "sectionTitle": "コイン残高",
     "breadcrumbMypage": "マイページ",
     "balance": {
-      "unit": "pt",
-      "confirmedLabel": "利用可能",
-      "pendingLabel": "確定待ち",
-      "amount": "{amount} pt",
-      "pendingNote": "確定待ちのポイントは、元の投稿が削除されないまま {days} 日経過すると利用可能になります。"
+      "unit": "コイン"
     },
     "redeem": {
-      "title": "ポイントを広告非表示と交換",
-      "description": "1 ポイントで広告非表示 1 日と交換できます。すでに有効な広告非表示期間があれば、その後ろに加算されます。",
-      "pointSuffix": "pt",
+      "title": "コインを広告非表示と交換",
+      "description": "1 コインで広告非表示 1 日と交換できます。すでに有効な広告非表示期間があれば、その後ろに加算されます。",
+      "pointSuffix": "コイン",
       "daysReceived": "広告非表示 {days} 日分",
-      "submit": "{amount} pt を交換する",
+      "submit": "{amount} コインを交換する",
       "submitting": "交換中…",
       "successMessage": "完了しました — 広告非表示が {days} 日分追加されました。",
       "errors": {
         "invalid_amount": "正の整数を入力してください。",
-        "insufficient_balance": "利用可能なポイントが不足しています。",
+        "insufficient_balance": "利用可能なコインが不足しています。",
         "signInRequired": "サインインしてから交換してください。",
         "banned": "アカウントが利用制限されています。",
         "rateLimited": "短時間に交換しすぎました。しばらく経ってから再度お試しください。"
@@ -2487,19 +2482,17 @@
     },
     "history": {
       "title": "履歴",
-      "empty": "ポイント関連の履歴はありません。",
+      "empty": "コイン関連の履歴はありません。",
       "learnHowToEarn": "獲得方法を確認する",
       "headerDate": "日付",
       "headerEvent": "種別",
       "headerDelta": "増減",
-      "maturesOn": "確定: {date}",
       "truncatedNote": "最新の履歴のみを表示しています。",
       "kind": {
-        "post_grant": "投稿によるポイント獲得",
-        "post_clawback": "投稿削除によるポイント取消",
-        "post_matured": "ポイントの確定",
+        "post_grant": "投稿によるコイン獲得",
+        "post_clawback": "投稿削除によるコイン取消",
         "redemption": "広告非表示との交換",
-        "purchase": "ポイント購入",
+        "purchase": "コイン購入",
         "admin_grant": "運営からの付与",
         "maia_game": "Maia との対局",
         "other": "調整"
@@ -2603,7 +2596,7 @@
       }
     },
     "pointGrantMessage": {
-      "default": "{amount} ポイントが付与されました"
+      "default": "{amount} コインが付与されました"
     }
   },
   "deleteAccount": {
@@ -3862,17 +3855,16 @@
   },
   "thanks": {
     "title": "御礼",
-    "sectionTitle": "獲得したポイント",
+    "sectionTitle": "獲得したコイン",
     "continueButton": "投稿内容を確認する",
-    "viewPointsButton": "獲得したポイントを確認する",
+    "viewPointsButton": "獲得したコインを確認する",
     "genericMessage": "ご投稿ありがとうございます。",
     "pointsAward": {
-      "puzzle_created": "パズルを投稿していただいたお礼として {amount} ポイントを付与します。",
-      "position_memory_created": "ポジション記憶問題を投稿していただいたお礼として {amount} ポイントを付与します。",
-      "topic_post_created": "トピックに投稿していただいたお礼として {amount} ポイントを付与します。",
-      "default": "ご投稿いただいたお礼として {amount} ポイントを付与します。"
-    },
-    "maturationNote": "このポイントは投稿が削除されないまま {days} 日経過後に交換可能となります。"
+      "puzzle_created": "パズルを投稿していただいたお礼として {amount} コインを付与します。",
+      "position_memory_created": "ポジション記憶問題を投稿していただいたお礼として {amount} コインを付与します。",
+      "topic_post_created": "トピックに投稿していただいたお礼として {amount} コインを付与します。",
+      "default": "ご投稿いただいたお礼として {amount} コインを付与します。"
+    }
   },
   "authPrompt": {
     "title": "サインインして続行",

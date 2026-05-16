@@ -18,6 +18,7 @@ import { getTranslations } from 'next-intl/server';
 import { ChallengeCard } from '@/app/_components';
 import { Link } from '@/i18n/routing';
 import { getLevelProgress } from '@blindfold-chess/features/exp';
+import { CoinIcon } from '@blindfold-chess/icons';
 
 import { getAuthenticatedUser } from '@/lib/auth';
 
@@ -152,19 +153,11 @@ export default async function MypagePage({ params }: Props) {
         className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-border bg-card p-3 transition-all hover:border-primary/30"
       >
         <div className="flex items-center gap-2">
-          <span className="text-lg">🪙</span>
+          <CoinIcon size={20} aria-hidden="true" />
           <div className="flex flex-col">
             <span className="text-sm font-semibold text-foreground">
               {t('dashboard.pointsTotal', { total: data.pointBalance.total })}
             </span>
-            {data.pointBalance.pending > 0 && (
-              <span className="text-xs text-muted-foreground">
-                {t('dashboard.pointsBreakdown', {
-                  confirmed: data.pointBalance.confirmed,
-                  pending: data.pointBalance.pending,
-                })}
-              </span>
-            )}
           </div>
         </div>
         <span className="text-sm text-muted-foreground">›</span>
