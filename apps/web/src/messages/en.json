@@ -349,7 +349,8 @@
     "facts": {
       "instant": "Coins you earn are usable right away — no waiting.",
       "keep": "Deleting your own post never removes Coins you have already earned.",
-      "balance": "Your balance and history are always available on My Page."
+      "balance": "Your balance and history are always available on My Page.",
+      "dailyCap": "Creating content earns up to {cap} coins per day (resets at 00:00 UTC)."
     },
     "cta": {
       "viewBalance": "View my Coin balance",
@@ -416,7 +417,8 @@
           "topic_post": "Submit a topic post (square / opening)",
           "position_creation": "Submit a position problem (memory / puzzle)"
         },
-        "pointsAmount": "{amount} coins"
+        "pointsAmount": "{amount} coins",
+        "dailyCapNote": "Coins earned from creating content are capped at {cap} per day. The cap resets at 00:00 UTC; likes and staff grants do not count toward it."
       }
     }
   },
@@ -2512,6 +2514,11 @@
       "unit": "coins",
       "aboutLink": "How Coins work"
     },
+    "dailyCap": {
+      "label": "Earned from creating today",
+      "value": "{earned} / {cap}",
+      "note": "Creating problems and posts earns up to {cap} coins per day. Resets at 00:00 UTC."
+    },
     "redeem": {
       "title": "Redeem coins for ad-free time",
       "description": "Each coin converts to one day of ad-free browsing. Days stack on top of any ad-free time you already have.",
@@ -3912,7 +3919,8 @@
     "viewPointsButton": "View your coins",
     "genericMessage": "Thanks for your contribution.",
     "coinsEarned": "Coins earned!",
-    "aboutCoinsLink": "How Coins work"
+    "aboutCoinsLink": "How Coins work",
+    "dailyCapNote": "You've reached today's creation earning limit, so fewer coins were awarded. The limit resets at 00:00 UTC."
   },
   "authPrompt": {
     "title": "Sign in to continue",

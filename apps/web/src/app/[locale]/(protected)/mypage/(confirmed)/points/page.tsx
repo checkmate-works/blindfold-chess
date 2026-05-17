@@ -48,7 +48,7 @@ export default async function PointsPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'MypagePoints' });
 
   const user = await getAuthenticatedUser();
-  const { balance, history, hasMore } = await getPointsPageData(user.id);
+  const { balance, history, hasMore, dailyCap } = await getPointsPageData(user.id);
 
   const dateFmt = (d: Date) => d.toLocaleDateString(locale);
 
@@ -75,6 +75,19 @@ export default async function PointsPage({ params }: Props) {
           >
             {t('balance.aboutLink')}
           </Link>
+        </div>
+
+        {/* Daily creation-cap status */}
+        <div className="rounded-xl border border-border bg-card p-4">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-sm font-medium text-foreground">{t('dailyCap.label')}</span>
+            <span className="text-sm font-medium text-foreground">
+              {t('dailyCap.value', { earned: dailyCap.earnedToday, cap: dailyCap.cap })}
+            </span>
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {t('dailyCap.note', { cap: dailyCap.cap })}
+          </p>
         </div>
 
         {/* Redeem control */}

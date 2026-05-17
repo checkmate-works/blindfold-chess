@@ -55,15 +55,19 @@ export default async function ThanksPage({ params, searchParams }: Props) {
   } = await supabase.auth.getUser();
 
   let awardedCoins: number | null = null;
+  // True when the grant was trimmed by the daily creation cap — the
+  // ledger row is stamped `metadata.cappedDaily` by `grantPointsForPost`.
+  let cappedDaily = false;
   if (user && pointEventId) {
     const [row] = await db
-      .select({ amount: pointEvents.delta })
+      .select({ amount: pointEvents.delta, metadata: pointEvents.metadata })
       .from(pointEvents)
       .where(and(eq(pointEvents.id, pointEventId), eq(pointEvents.userId, user.id)))
       .limit(1);
 
     if (row && row.amount > 0) {
       awardedCoins = row.amount;
+      cappedDaily = (row.metadata as { cappedDaily?: boolean } | null)?.cappedDaily === true;
     }
   }
 
@@ -86,6 +90,9 @@ export default async function ThanksPage({ params, searchParams }: Props) {
               </p>
             </div>
           </CertificateFrame>
+          {cappedDaily && (
+            <p className="text-center text-sm text-muted-foreground">{t('dailyCapNote')}</p>
+          )}
           <p className="text-center">
             <Link
               href={`/${locale}/coin`}

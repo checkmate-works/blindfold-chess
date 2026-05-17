@@ -19,7 +19,12 @@ import {
   FaRegComments,
 } from 'react-icons/fa';
 
-import { AD_FREE_DAYS_PER_POINT, MAIA_GAME_POINT_COST, POST_CREATION_POINTS } from '@/lib/points';
+import {
+  AD_FREE_DAYS_PER_POINT,
+  DAILY_CREATION_POINT_CAP,
+  MAIA_GAME_POINT_COST,
+  POST_CREATION_POINTS,
+} from '@/lib/points';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -262,6 +267,10 @@ export default async function CoinPage({ params }: Props) {
           <Fact icon={<FaBolt className="h-4 w-4" />} text={t('facts.instant')} />
           <Fact icon={<FaCheck className="h-4 w-4" />} text={t('facts.keep')} />
           <Fact icon={<FaCheck className="h-4 w-4" />} text={t('facts.balance')} />
+          <Fact
+            icon={<FaArrowDown className="h-4 w-4" />}
+            text={t('facts.dailyCap', { cap: DAILY_CREATION_POINT_CAP })}
+          />
         </ul>
 
         {/* CTA */}

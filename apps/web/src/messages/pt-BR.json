@@ -349,7 +349,8 @@
     "facts": {
       "instant": "As Moedas que você ganha podem ser usadas na hora, sem espera.",
       "keep": "Excluir sua própria publicação nunca remove as Moedas que você já ganhou.",
-      "balance": "Seu saldo e histórico estão sempre disponíveis na Minha Página."
+      "balance": "Seu saldo e histórico estão sempre disponíveis na Minha Página.",
+      "dailyCap": "Criar conteúdo concede até {cap} moedas por dia (reinicia às 00:00 UTC)."
     },
     "cta": {
       "viewBalance": "Ver meu saldo de Moedas",
@@ -416,7 +417,8 @@
           "topic_post": "Publicar em um tópico (casa / abertura)",
           "position_creation": "Publicar um problema de posição (memorização / puzzle)"
         },
-        "pointsAmount": "{amount} moedas"
+        "pointsAmount": "{amount} moedas",
+        "dailyCapNote": "As moedas ganhas ao criar conteúdo têm limite de {cap} por dia. O limite reinicia às 00:00 UTC; curtidas e concessões da equipe não contam para ele."
       }
     }
   },
@@ -2512,6 +2514,11 @@
       "unit": "moedas",
       "aboutLink": "Como as Moedas funcionam"
     },
+    "dailyCap": {
+      "label": "Ganho hoje por criar",
+      "value": "{earned} / {cap}",
+      "note": "Criar problemas e publicações concede até {cap} moedas por dia. Reinicia às 00:00 UTC."
+    },
     "redeem": {
       "title": "Resgatar moedas por tempo sem anúncios",
       "description": "Cada moeda vira um dia sem anúncios. Os dias são somados ao tempo sem anúncios que você já possui.",
@@ -3912,7 +3919,8 @@
     "viewPointsButton": "Ver suas moedas",
     "genericMessage": "Obrigado pela sua contribuição.",
     "coinsEarned": "Moedas ganhas!",
-    "aboutCoinsLink": "Como as Moedas funcionam"
+    "aboutCoinsLink": "Como as Moedas funcionam",
+    "dailyCapNote": "Você atingiu o limite de moedas por criação de hoje, então menos moedas foram concedidas. O limite reinicia às 00:00 UTC."
   },
   "authPrompt": {
     "title": "Faça login para continuar",

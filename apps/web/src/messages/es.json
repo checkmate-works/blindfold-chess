@@ -349,7 +349,8 @@
     "facts": {
       "instant": "Las Monedas que ganas se pueden usar de inmediato, sin esperas.",
       "keep": "Eliminar tu propia publicación nunca te quita las Monedas que ya ganaste.",
-      "balance": "Tu saldo y tu historial están siempre disponibles en Mi Página."
+      "balance": "Tu saldo y tu historial están siempre disponibles en Mi Página.",
+      "dailyCap": "Crear contenido otorga hasta {cap} monedas por día (se reinicia a las 00:00 UTC)."
     },
     "cta": {
       "viewBalance": "Ver mi saldo de Monedas",
@@ -416,7 +417,8 @@
           "topic_post": "Publicar en un tema (casilla / apertura)",
           "position_creation": "Publicar un problema de posición (memorización / puzzle)"
         },
-        "pointsAmount": "{amount} monedas"
+        "pointsAmount": "{amount} monedas",
+        "dailyCapNote": "Las monedas obtenidas por crear contenido tienen un límite de {cap} por día. El límite se reinicia a las 00:00 UTC; los Me gusta y las concesiones del personal no cuentan para él."
       }
     }
   },
@@ -2512,6 +2514,11 @@
       "unit": "monedas",
       "aboutLink": "Cómo funcionan las Monedas"
     },
+    "dailyCap": {
+      "label": "Ganado hoy por crear",
+      "value": "{earned} / {cap}",
+      "note": "Crear problemas y publicaciones otorga hasta {cap} monedas por día. Se reinicia a las 00:00 UTC."
+    },
     "redeem": {
       "title": "Canjear monedas por tiempo sin anuncios",
       "description": "Cada moneda se convierte en un día sin anuncios. Los días se suman al tiempo sin anuncios que ya tengas.",
@@ -3912,7 +3919,8 @@
     "viewPointsButton": "Ver tus monedas",
     "genericMessage": "Gracias por tu contribución.",
     "coinsEarned": "¡Monedas obtenidas!",
-    "aboutCoinsLink": "Cómo funcionan las Monedas"
+    "aboutCoinsLink": "Cómo funcionan las Monedas",
+    "dailyCapNote": "Has alcanzado el límite de monedas por creación de hoy, así que se otorgaron menos monedas. El límite se reinicia a las 00:00 UTC."
   },
   "authPrompt": {
     "title": "Inicia sesión para continuar",

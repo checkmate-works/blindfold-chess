@@ -5,7 +5,7 @@ import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
 import { getModuleWeight } from '@blindfold-chess/features/exp';
 
-import { POST_CREATION_POINTS } from '@/lib/points';
+import { DAILY_CREATION_POINT_CAP, POST_CREATION_POINTS } from '@/lib/points';
 import { JsonLd, generateFAQPageSchema } from '@/lib/seo/jsonld';
 
 import { PageLayout } from '@/app/[locale]/_components';
@@ -210,6 +210,9 @@ export default async function FAQPage({ params }: Props) {
               ))}
             </tbody>
           </table>
+          <p className="text-sm text-muted-foreground">
+            {t('items.adFreeBenefits.dailyCapNote', { cap: DAILY_CREATION_POINT_CAP })}
+          </p>
         </div>
       ),
     },
