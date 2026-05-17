@@ -6,6 +6,7 @@ import sharp from 'sharp';
 import { authenticateAndGuardApi } from '@/lib/auth';
 import { isValidOrigin } from '@/lib/csrf';
 import { db, profiles } from '@/lib/db';
+import { validatePostImageBinarySignature } from '@/lib/post-images/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
@@ -57,13 +58,11 @@ export async function POST(request: Request) {
 
   const buffer = await file.arrayBuffer();
 
-  const header = new Uint8Array(buffer.slice(0, 12));
-  const isJPEG = header[0] === 0xff && header[1] === 0xd8 && header[2] === 0xff;
-  const isPNG =
-    header[0] === 0x89 && header[1] === 0x50 && header[2] === 0x4e && header[3] === 0x47;
-  const isWebP =
-    header[8] === 0x57 && header[9] === 0x45 && header[10] === 0x42 && header[11] === 0x50;
-  if (!isJPEG && !isPNG && !isWebP) {
+  // Magic-byte check against the declared MIME — rejects a payload whose
+  // binary signature does not match its Content-Type (MIME spoofing).
+  // Shares the post-image signature validator; the avatar allow-list
+  // (jpeg/png/webp) is a subset of what it recognizes.
+  if (!validatePostImageBinarySignature(buffer, file.type)) {
     return NextResponse.json({ error: 'invalid_file_type' }, { status: 400 });
   }
 

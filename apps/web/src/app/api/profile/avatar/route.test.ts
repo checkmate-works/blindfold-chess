@@ -110,9 +110,13 @@ vi.mock('@/lib/db', () => ({
 
 const testUserId = 'user-id-00000000-0000-0000-0000-000000000001';
 
-// Valid magic bytes for each supported image format
+// Valid magic bytes for each supported image format. PNG carries its full
+// 8-byte signature (89 50 4E 47 0D 0A 1A 0A) — the shared
+// validatePostImageBinarySignature checks all eight, not just the first four.
 const JPEG_MAGIC = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, ...new Array(8).fill(0)]);
-const PNG_MAGIC = new Uint8Array([0x89, 0x50, 0x4e, 0x47, ...new Array(8).fill(0)]);
+const PNG_MAGIC = new Uint8Array([
+  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x00,
+]);
 const WEBP_MAGIC = new Uint8Array([
   0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50,
 ]);
@@ -579,9 +583,12 @@ describe('POST /api/profile/avatar', () => {
       const request = createMockRequestWithFile(file);
       const response = await POST(request);
 
-      // Passes magic bytes check (JPEG is valid), proceeds to upload
-      // The route accepts any valid magic bytes regardless of MIME match
-      expect(response.status).not.toBe(401);
+      // The signature must match the *declared* MIME — a JPEG payload
+      // declared as image/png is a MIME-spoof and is rejected.
+      expect(response.status).toBe(400);
+      const body = await response.json();
+      expect(body).toEqual({ error: 'invalid_file_type' });
+      expect(mockUpload).not.toHaveBeenCalled();
     });
 
     it('should accept file with valid JPEG magic bytes', async () => {
