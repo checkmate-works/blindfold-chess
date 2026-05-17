@@ -317,27 +317,26 @@
     "searchPlaceholder": "オープニングを検索..."
   },
   "coin": {
-    "title": "コインとは",
+    "title": "コイン",
     "unit": "コイン",
     "hero": {
-      "tagline": "コインは、あなたの貢献で貯まり、もっと快適に遊ぶために使えるサイト内通貨です。"
+      "tagline": "トピックの投稿や問題の作成でコインが付与されます。"
     },
     "loop": {
-      "heading": "コインは巡る",
       "step1Title": "貢献する",
       "step1Body": "問題や投稿をつくる",
       "step2Title": "コインを獲得",
       "step2Body": "貢献するたびに貯まる",
       "step3Title": "特典に使う",
-      "step3Body": "広告非表示や Maia 対局に",
-      "closing": "そして、もっと自由に楽しんで、また貢献へ。"
+      "step3Body": "広告非表示や対局に"
     },
     "earn": {
       "heading": "コインの貯め方",
       "puzzleTitle": "パズルを投稿する",
       "positionMemoryTitle": "ポジション記憶問題を投稿する",
       "topicTitle": "トピックに投稿する",
-      "topicNote": "「マス」「オープニング」のトピックが対象です。"
+      "likeNote1": "いいねを獲得するとその分コインを付与。",
+      "likeNote2": "一度トピックや問題を作れば継続的にコインが得られます。"
     },
     "spend": {
       "heading": "コインの使い道",
@@ -347,15 +346,7 @@
       "maiaRate": "{cost} コイン = 1 局",
       "maiaNote": "Maia は人間らしい指し手のニューラルネット AI です。"
     },
-    "example": {
-      "heading": "どれくらい貯まる?",
-      "lead": "週に数問の投稿でも、積み重なれば大きな差になります。",
-      "posts": "週に {posts} 問 投稿",
-      "coins": "1 ヶ月で約 {coins} コイン",
-      "days": "約 {days} 日間 広告なし"
-    },
     "facts": {
-      "heading": "知っておくと安心",
       "instant": "獲得したコインは、待ち時間なくすぐに使えます。",
       "keep": "自分で投稿を削除しても、獲得済みのコインは失われません。",
       "balance": "残高と履歴は、いつでもマイページで確認できます。"

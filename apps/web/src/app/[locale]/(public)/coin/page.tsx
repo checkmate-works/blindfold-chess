@@ -13,6 +13,7 @@ import {
   FaBolt,
   FaCheck,
   FaChessBoard,
+  FaChevronRight,
   FaGift,
   FaPuzzlePiece,
   FaRegComments,
@@ -23,10 +24,10 @@ import { AD_FREE_DAYS_PER_POINT, MAIA_GAME_POINT_COST, POST_CREATION_POINTS } fr
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
-import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
+import type { Locale, LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
 /**
- * Coin guide (コインとは)
+ * Coin guide (コイン)
  *
  * @description
  * Public, fully-static explainer for the Coin economy: how Coins are
@@ -34,16 +35,8 @@ import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
  * games), and the contribution loop that ties the two together. Visual-led
  * — icon cards and a flow diagram rather than walls of text; detailed edge
  * cases stay in the FAQ.
- *
- * @flow
- * Hero → contribution loop → how to earn → what to spend on → a worked
- * "how much can you earn" example → reassurance facts → CTA.
  */
 export const generateStaticParams = generateLocaleStaticParams;
-
-/** Illustrative weekly posting cadence for the "how much can you earn" example. */
-const EXAMPLE_POSTS_PER_WEEK = 3;
-const WEEKS_PER_MONTH = 4;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
@@ -61,8 +54,8 @@ function IconBadge({ children, size }: { children: ReactNode; size: 'sm' | 'lg' 
   return (
     <div
       aria-hidden="true"
-      className={`flex shrink-0 items-center justify-center rounded-lg bg-foreground/5 text-foreground ${
-        size === 'lg' ? 'h-14 w-14 rounded-full' : 'h-12 w-12'
+      className={`flex shrink-0 items-center justify-center bg-foreground/5 text-foreground ${
+        size === 'lg' ? 'h-14 w-14 rounded-full' : 'h-12 w-12 rounded-lg'
       }`}
     >
       {children}
@@ -90,28 +83,41 @@ function LoopStep({ icon, title, body }: { icon: ReactNode; title: string; body:
 }
 
 function EarnCard({
+  href,
+  locale,
   icon,
   title,
-  note,
   amount,
   unit,
 }: {
+  href: string;
+  locale: Locale;
   icon: ReactNode;
   title: string;
-  note?: string;
   amount: number;
   unit: string;
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5">
-      <IconBadge size="sm">{icon}</IconBadge>
-      <p className="font-semibold text-foreground">{title}</p>
-      {note ? <p className="text-xs text-muted-foreground">{note}</p> : null}
+    <Link
+      href={href}
+      locale={locale}
+      className="group flex flex-col gap-3 rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/40 hover:shadow-sm"
+    >
+      <div className="flex items-center justify-between">
+        <IconBadge size="sm">{icon}</IconBadge>
+        <FaChevronRight
+          aria-hidden="true"
+          className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+        />
+      </div>
+      <p className="font-semibold text-foreground underline-offset-2 group-hover:underline">
+        {title}
+      </p>
       <span className="mt-auto inline-flex w-fit items-center gap-1.5 rounded-full bg-foreground/10 px-3 py-1 text-sm font-bold text-foreground">
         <CoinIcon size={18} aria-hidden="true" />+{amount}
         <span className="font-medium text-muted-foreground">{unit}</span>
       </span>
-    </div>
+    </Link>
   );
 }
 
@@ -138,17 +144,6 @@ function SpendCard({
   );
 }
 
-function ExampleStat({ icon, text }: { icon: ReactNode; text: string }) {
-  return (
-    <div className="flex flex-1 flex-col items-center gap-1.5 rounded-lg bg-foreground/5 p-4 text-center">
-      <span aria-hidden="true" className="text-foreground">
-        {icon}
-      </span>
-      <span className="text-sm font-medium text-foreground">{text}</span>
-    </div>
-  );
-}
-
 function Fact({ icon, text }: { icon: ReactNode; text: string }) {
   return (
     <li className="flex items-start gap-2 text-sm text-muted-foreground">
@@ -166,72 +161,77 @@ export default async function CoinPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'coin' });
 
   const unit = t('unit');
-  const exampleCoins = EXAMPLE_POSTS_PER_WEEK * POST_CREATION_POINTS * WEEKS_PER_MONTH;
-  const exampleDays = exampleCoins * AD_FREE_DAYS_PER_POINT;
 
   return (
     <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
-      <div className="space-y-14">
+      <div className="space-y-8">
+        <SectionTitle>{t('earn.heading')}</SectionTitle>
+
         {/* Hero */}
-        <section className="flex flex-col items-center gap-4 text-center">
+        <div className="flex flex-col items-center gap-4 text-center">
           <CoinIcon size={76} aria-hidden="true" />
           <p className="max-w-prose text-base text-muted-foreground sm:text-lg">
             {t('hero.tagline')}
           </p>
-        </section>
+        </div>
 
         {/* Contribution loop */}
-        <section className="space-y-4">
-          <SectionTitle>{t('loop.heading')}</SectionTitle>
-          <div className="flex flex-col items-stretch gap-3 sm:flex-row">
-            <LoopStep
-              icon={<FaPuzzlePiece className="h-6 w-6" />}
-              title={t('loop.step1Title')}
-              body={t('loop.step1Body')}
-            />
-            <FlowArrow />
-            <LoopStep
-              icon={<CoinIcon size={28} aria-hidden="true" />}
-              title={t('loop.step2Title')}
-              body={t('loop.step2Body')}
-            />
-            <FlowArrow />
-            <LoopStep
-              icon={<FaGift className="h-6 w-6" />}
-              title={t('loop.step3Title')}
-              body={t('loop.step3Body')}
-            />
-          </div>
-          <p className="text-center text-sm text-muted-foreground">{t('loop.closing')}</p>
-        </section>
+        <div className="flex flex-col items-stretch gap-3 sm:flex-row">
+          <LoopStep
+            icon={<FaPuzzlePiece className="h-6 w-6" />}
+            title={t('loop.step1Title')}
+            body={t('loop.step1Body')}
+          />
+          <FlowArrow />
+          <LoopStep
+            icon={<CoinIcon size={28} aria-hidden="true" />}
+            title={t('loop.step2Title')}
+            body={t('loop.step2Body')}
+          />
+          <FlowArrow />
+          <LoopStep
+            icon={<FaGift className="h-6 w-6" />}
+            title={t('loop.step3Title')}
+            body={t('loop.step3Body')}
+          />
+        </div>
 
-        {/* How to earn */}
-        <section className="space-y-4">
-          <SectionTitle>{t('earn.heading')}</SectionTitle>
+        {/* Ways to earn */}
+        <div className="space-y-3">
           <div className="grid gap-4 sm:grid-cols-3">
             <EarnCard
+              href="/practice/puzzle/new"
+              locale={locale}
               icon={<FaPuzzlePiece className="h-6 w-6" />}
               title={t('earn.puzzleTitle')}
               amount={POST_CREATION_POINTS}
               unit={unit}
             />
             <EarnCard
+              href="/practice/position-memory/new"
+              locale={locale}
               icon={<FaChessBoard className="h-6 w-6" />}
               title={t('earn.positionMemoryTitle')}
               amount={POST_CREATION_POINTS}
               unit={unit}
             />
             <EarnCard
+              href="/topics"
+              locale={locale}
               icon={<FaRegComments className="h-6 w-6" />}
               title={t('earn.topicTitle')}
-              note={t('earn.topicNote')}
               amount={POST_CREATION_POINTS}
               unit={unit}
             />
           </div>
-        </section>
+          <p className="text-center text-sm text-muted-foreground">
+            <span aria-hidden="true">❤️</span> {t('earn.likeNote1')}
+            <br />
+            {t('earn.likeNote2')}
+          </p>
+        </div>
 
-        {/* What to spend on */}
+        {/* What Coins are for */}
         <section className="space-y-4">
           <SectionTitle>{t('spend.heading')}</SectionTitle>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -257,39 +257,12 @@ export default async function CoinPage({ params }: Props) {
           </div>
         </section>
 
-        {/* Worked example */}
-        <section className="space-y-4">
-          <SectionTitle>{t('example.heading')}</SectionTitle>
-          <div className="rounded-xl border border-border bg-card p-6">
-            <p className="text-sm text-muted-foreground">{t('example.lead')}</p>
-            <div className="mt-4 flex flex-col items-stretch gap-3 sm:flex-row">
-              <ExampleStat
-                icon={<FaPuzzlePiece className="h-5 w-5" />}
-                text={t('example.posts', { posts: EXAMPLE_POSTS_PER_WEEK })}
-              />
-              <FlowArrow />
-              <ExampleStat
-                icon={<CoinIcon size={22} aria-hidden="true" />}
-                text={t('example.coins', { coins: exampleCoins })}
-              />
-              <FlowArrow />
-              <ExampleStat
-                icon={<FaBan className="h-5 w-5" />}
-                text={t('example.days', { days: exampleDays })}
-              />
-            </div>
-          </div>
-        </section>
-
         {/* Reassurance facts */}
-        <section className="space-y-4">
-          <SectionTitle>{t('facts.heading')}</SectionTitle>
-          <ul className="space-y-2">
-            <Fact icon={<FaBolt className="h-4 w-4" />} text={t('facts.instant')} />
-            <Fact icon={<FaCheck className="h-4 w-4" />} text={t('facts.keep')} />
-            <Fact icon={<FaCheck className="h-4 w-4" />} text={t('facts.balance')} />
-          </ul>
-        </section>
+        <ul className="space-y-2">
+          <Fact icon={<FaBolt className="h-4 w-4" />} text={t('facts.instant')} />
+          <Fact icon={<FaCheck className="h-4 w-4" />} text={t('facts.keep')} />
+          <Fact icon={<FaCheck className="h-4 w-4" />} text={t('facts.balance')} />
+        </ul>
 
         {/* CTA */}
         <section className="flex flex-col gap-3 sm:flex-row">

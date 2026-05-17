@@ -317,27 +317,26 @@
     "searchPlaceholder": "Buscar aperturas..."
   },
   "coin": {
-    "title": "Sobre las Monedas",
-    "unit": "Monedas",
+    "title": "Monedas",
+    "unit": "monedas",
     "hero": {
-      "tagline": "Las Monedas son una moneda interna que ganas al contribuir y gastas para disfrutar del sitio con más comodidad."
+      "tagline": "Ganas Monedas al publicar en temas y crear problemas."
     },
     "loop": {
-      "heading": "Las Monedas dan la vuelta",
       "step1Title": "Contribuye",
       "step1Body": "Crea un problema o una publicación",
       "step2Title": "Gana Monedas",
       "step2Body": "Cada contribución suma",
       "step3Title": "Gasta en ventajas",
-      "step3Body": "Tiempo sin anuncios o partidas con Maia",
-      "closing": "Luego disfruta más del juego y vuelve a contribuir."
+      "step3Body": "Tiempo sin anuncios o partidas"
     },
     "earn": {
       "heading": "Cómo ganar Monedas",
       "puzzleTitle": "Envía un puzzle",
       "positionMemoryTitle": "Envía un problema de memoria de posición",
       "topicTitle": "Publica en un tema",
-      "topicNote": "Aplica a los temas de Casilla y Apertura."
+      "likeNote1": "Cada Me gusta que recibe tu contenido te da una Moneda.",
+      "likeNote2": "Publica un tema o crea un problema una vez, y seguirá generando Monedas."
     },
     "spend": {
       "heading": "Para qué sirven las Monedas",
@@ -347,15 +346,7 @@
       "maiaRate": "{cost, plural, one {# Moneda} other {# Monedas}} = 1 partida",
       "maiaNote": "Maia es una IA de red neuronal que juega con un estilo humano."
     },
-    "example": {
-      "heading": "¿Cuánto puedes ganar?",
-      "lead": "Incluso unas pocas publicaciones por semana marcan una diferencia notable.",
-      "posts": "{posts} publicaciones por semana",
-      "coins": "~{coins} Monedas al mes",
-      "days": "~{days} días sin anuncios"
-    },
     "facts": {
-      "heading": "Bueno saberlo",
       "instant": "Las Monedas que ganas se pueden usar de inmediato, sin esperas.",
       "keep": "Eliminar tu propia publicación nunca te quita las Monedas que ya ganaste.",
       "balance": "Tu saldo y tu historial están siempre disponibles en Mi Página."

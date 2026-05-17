@@ -317,27 +317,26 @@
     "searchPlaceholder": "Search openings..."
   },
   "coin": {
-    "title": "About Coins",
-    "unit": "Coins",
+    "title": "Coins",
+    "unit": "coins",
     "hero": {
-      "tagline": "Coins are an in-app currency you earn by contributing — and spend to enjoy the site more comfortably."
+      "tagline": "You earn Coins by posting in topics and creating problems."
     },
     "loop": {
-      "heading": "Coins come full circle",
       "step1Title": "Contribute",
       "step1Body": "Create a problem or a post",
       "step2Title": "Earn Coins",
       "step2Body": "Every contribution adds up",
       "step3Title": "Spend on perks",
-      "step3Body": "Ad-free time or Maia games",
-      "closing": "Then enjoy the game more freely — and contribute again."
+      "step3Body": "Ad-free time or games"
     },
     "earn": {
       "heading": "How to earn Coins",
       "puzzleTitle": "Submit a puzzle",
       "positionMemoryTitle": "Submit a position-memory problem",
       "topicTitle": "Post in a topic",
-      "topicNote": "Applies to Square and Opening topics."
+      "likeNote1": "Every like your content receives earns a Coin.",
+      "likeNote2": "Post a topic or create a problem once, and it keeps earning Coins."
     },
     "spend": {
       "heading": "What Coins are for",
@@ -347,15 +346,7 @@
       "maiaRate": "{cost, plural, one {# Coin} other {# Coins}} = 1 game",
       "maiaNote": "Maia is a neural-network AI that plays human-like moves."
     },
-    "example": {
-      "heading": "How much can you earn?",
-      "lead": "Even a few posts a week add up to a meaningful difference.",
-      "posts": "{posts} posts a week",
-      "coins": "~{coins} Coins a month",
-      "days": "~{days} ad-free days"
-    },
     "facts": {
-      "heading": "Good to know",
       "instant": "Coins you earn are usable right away — no waiting.",
       "keep": "Deleting your own post never removes Coins you have already earned.",
       "balance": "Your balance and history are always available on My Page."
