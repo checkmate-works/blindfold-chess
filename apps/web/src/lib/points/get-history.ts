@@ -3,7 +3,13 @@ import 'server-only';
 
 import { db, pointEvents } from '@/lib/db';
 
-import { MAIA_GAME_SOURCE, POINT_SOURCES, type PointCategory, type PointSource } from './constants';
+import {
+  LIKE_GRANT_SOURCE,
+  MAIA_GAME_SOURCE,
+  POINT_SOURCES,
+  type PointCategory,
+  type PointSource,
+} from './constants';
 
 /**
  * One row as rendered on `/mypage/points` — one entry per ledger row.
@@ -23,6 +29,7 @@ export type PointHistoryEntry = {
     | 'purchase'
     | 'admin_grant'
     | 'maia_game'
+    | 'like_grant'
     | 'other';
 };
 
@@ -73,5 +80,6 @@ function classifyKind(source: string, delta: number, metadata: unknown): PointHi
   if (source === 'redemption') return 'redemption';
   if (source === 'purchase') return 'purchase';
   if (source === MAIA_GAME_SOURCE) return 'maia_game';
+  if (source === LIKE_GRANT_SOURCE) return 'like_grant';
   return 'other';
 }

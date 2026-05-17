@@ -111,3 +111,19 @@ export function isPointGrantMetadata(m: unknown): m is PointGrantMetadata {
     (r.reason === null || typeof r.reason === 'string')
   );
 }
+
+/**
+ * Metadata persisted with a `like_coin_grant` notification — emitted by the
+ * daily like-coin batch (`grantLikeCoins`). `count` is the number of coins
+ * minted for the recipient in that single batch run (direct grants and
+ * fork-propagation grants combined).
+ */
+export type LikeCoinGrantMetadata = {
+  count: number;
+};
+
+export function isLikeCoinGrantMetadata(m: unknown): m is LikeCoinGrantMetadata {
+  if (typeof m !== 'object' || m === null) return false;
+  const r = m as Record<string, unknown>;
+  return typeof r.count === 'number';
+}

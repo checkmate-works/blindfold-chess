@@ -2543,6 +2543,7 @@
         "purchase": "Compradas",
         "admin_grant": "Concedidas pela equipe",
         "maia_game": "Partida contra a Maia",
+        "like_grant": "Ganhas por curtidas",
         "other": "Ajuste"
       }
     }
@@ -2645,6 +2646,9 @@
     },
     "pointGrantMessage": {
       "default": "Você recebeu {amount, plural, one {# moeda} other {# moedas}}"
+    },
+    "likeCoinGrantMessage": {
+      "default": "Seu conteúdo foi curtido — você ganhou {count, plural, one {# moeda} other {# moedas}}"
     }
   },
   "deleteAccount": {

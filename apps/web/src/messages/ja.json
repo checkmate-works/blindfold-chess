@@ -2543,6 +2543,7 @@
         "purchase": "コイン購入",
         "admin_grant": "運営からの付与",
         "maia_game": "Maia との対局",
+        "like_grant": "いいねによるコイン獲得",
         "other": "調整"
       }
     }
@@ -2645,6 +2646,9 @@
     },
     "pointGrantMessage": {
       "default": "{amount} コインが付与されました"
+    },
+    "likeCoinGrantMessage": {
+      "default": "コンテンツが評価され、{count} コインを獲得しました"
     }
   },
   "deleteAccount": {

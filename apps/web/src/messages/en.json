@@ -2543,6 +2543,7 @@
         "purchase": "Purchased",
         "admin_grant": "Granted by staff",
         "maia_game": "Maia game",
+        "like_grant": "Earned from likes",
         "other": "Adjustment"
       }
     }
@@ -2645,6 +2646,9 @@
     },
     "pointGrantMessage": {
       "default": "You received {amount, plural, one {# coin} other {# coins}}"
+    },
+    "likeCoinGrantMessage": {
+      "default": "Your content was liked — you earned {count, plural, one {# coin} other {# coins}}"
     }
   },
   "deleteAccount": {

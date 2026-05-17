@@ -2543,6 +2543,7 @@
         "purchase": "Compradas",
         "admin_grant": "Concedidas por el equipo",
         "maia_game": "Partida contra Maia",
+        "like_grant": "Ganadas por me gusta",
         "other": "Ajuste"
       }
     }
@@ -2645,6 +2646,9 @@
     },
     "pointGrantMessage": {
       "default": "Recibiste {amount, plural, one {# moneda} other {# monedas}}"
+    },
+    "likeCoinGrantMessage": {
+      "default": "Le gustó tu contenido: ganaste {count, plural, one {# moneda} other {# monedas}}"
     }
   },
   "deleteAccount": {

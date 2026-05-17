@@ -148,3 +148,49 @@ export const MAIA_GAME_POINT_COST = 1;
  * UUID and the idempotency key is `maia_game:<uuid>`.
  */
 export const MAIA_GAME_SOURCE = 'maia_game';
+
+/**
+ * `point_events.source` value for a like-derived coin grant. Like
+ * `MAIA_GAME_SOURCE`, deliberately NOT a member of `POINT_SOURCES` — that
+ * array is the UGC *creation* grant surface (`entityTypeForSource` etc.),
+ * whereas `like_grant` rows are minted by the daily like-coin batch
+ * (`grantLikeCoins`).
+ *
+ * Both the direct grant (to the liked content's owner) and the fork-
+ * propagation grant (to the fork parent's owner) carry this same `source`;
+ * the fork rows are set apart by `metadata.via = 'fork'`.
+ */
+export const LIKE_GRANT_SOURCE = 'like_grant';
+
+/**
+ * Coins minted per qualifying like — 1 like = 1 coin. Lives in code, not
+ * the DB: every `point_events` row carries its concrete `delta`, so
+ * changing this only affects future grants.
+ */
+export const LIKE_COIN_AMOUNT = 1;
+
+/**
+ * `point_batch_watermarks.batch_type` key for the daily like-coin batch.
+ */
+export const LIKE_GRANT_BATCH_TYPE = 'like_grant';
+
+/**
+ * `likes.target_type` values eligible for like-coin grants. Scoped to UGC
+ * only — `article` (operator-authored) likes are intentionally absent so
+ * the operator account is never paid.
+ */
+export const LIKE_GRANT_TARGET_TYPES = ['position', 'topic_post'] as const;
+
+/**
+ * `idempotency_key` prefixes for the like-coin batch. The key is keyed on
+ * the *pair* `(targetType, targetId, likerId)` rather than the `likes` row
+ * id: `likes` rows are physically deleted on unlike and recreated on
+ * relike (new id, new `created_at`), so a row-id key would re-pay on every
+ * relike. The pair key grants exactly once per (liker, content).
+ *
+ * - `LIKE_GRANT_KEY_PREFIX` — direct grant to the liked content's owner.
+ * - `LIKE_GRANT_FORK_KEY_PREFIX` — propagation grant to the fork parent's
+ *   owner (only for `position` targets that are themselves forks).
+ */
+export const LIKE_GRANT_KEY_PREFIX = 'like_grant';
+export const LIKE_GRANT_FORK_KEY_PREFIX = 'like_grant_fork';

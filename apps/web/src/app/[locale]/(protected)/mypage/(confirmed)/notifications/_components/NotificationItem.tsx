@@ -23,6 +23,7 @@ import {
   isAchievementGrantedMetadata,
   isAnnouncementMetadata,
   isBenefitGrantMetadata,
+  isLikeCoinGrantMetadata,
   isPointGrantMetadata,
   isPositionMetadata,
   isPostMetadata,
@@ -151,6 +152,11 @@ export function NotificationItem({ notification, currentUsername }: Props) {
           return t('pointGrantMessage.default', { amount: notification.metadata.amount });
         }
         return t('unknownNotification');
+      case 'like_coin_grant':
+        if (isLikeCoinGrantMetadata(notification.metadata)) {
+          return t('likeCoinGrantMessage.default', { count: notification.metadata.count });
+        }
+        return t('unknownNotification');
       case 'achievement_granted':
         if (isAchievementGrantedMetadata(notification.metadata)) {
           const { badges } = notification.metadata;
@@ -263,7 +269,7 @@ export function NotificationItem({ notification, currentUsername }: Props) {
     if (notification.type === 'benefit_grant') {
       return '/mypage/benefits';
     }
-    if (notification.type === 'point_grant') {
+    if (notification.type === 'point_grant' || notification.type === 'like_coin_grant') {
       return '/mypage/points';
     }
     return null;
@@ -296,7 +302,9 @@ export function NotificationItem({ notification, currentUsername }: Props) {
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground flex-shrink-0">
           <HiTrophy className="h-5 w-5" />
         </div>
-      ) : notification.type === 'benefit_grant' || notification.type === 'point_grant' ? (
+      ) : notification.type === 'benefit_grant' ||
+        notification.type === 'point_grant' ||
+        notification.type === 'like_coin_grant' ? (
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground flex-shrink-0">
           <HiGift className="h-5 w-5" />
         </div>
