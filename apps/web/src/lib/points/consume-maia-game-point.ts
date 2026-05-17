@@ -1,10 +1,10 @@
-import { and, eq, inArray } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import 'server-only';
 
-import { db, pointEvents, userPointBalances } from '@/lib/db';
+import { db, pointEvents } from '@/lib/db';
 
 import { MAIA_GAME_POINT_COST, MAIA_GAME_SOURCE, SPENDABLE_CONSUME_ORDER } from './constants';
-import { recordPointMovement } from './internal-ledger';
+import { lockSpendableBalances, recordPointMovement } from './internal-ledger';
 
 export type ConsumeMaiaGamePointResult =
   | { ok: true; alreadyCharged: boolean }
@@ -54,25 +54,7 @@ export async function consumeMaiaGamePoint(
     }
 
     // (2) Lock the spendable balance rows and confirm the user can cover it.
-    const balanceRows = await tx
-      .select({
-        category: userPointBalances.category,
-        balance: userPointBalances.balance,
-      })
-      .from(userPointBalances)
-      .where(
-        and(
-          eq(userPointBalances.userId, userId),
-          inArray(userPointBalances.category, SPENDABLE_CONSUME_ORDER as readonly string[])
-        )
-      )
-      .for('update');
-
-    const byCategory = new Map(balanceRows.map((row) => [row.category, row.balance]));
-    const totalAvailable = SPENDABLE_CONSUME_ORDER.reduce(
-      (sum, cat) => sum + (byCategory.get(cat) ?? 0),
-      0
-    );
+    const { byCategory, totalAvailable } = await lockSpendableBalances(tx, userId);
     if (totalAvailable < MAIA_GAME_POINT_COST) {
       return { ok: false, error: 'insufficient_balance' };
     }

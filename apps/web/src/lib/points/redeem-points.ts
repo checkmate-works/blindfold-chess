@@ -1,11 +1,11 @@
 import { addDays } from 'date-fns';
-import { and, eq, gt, inArray, isNull, sql } from 'drizzle-orm';
+import { and, eq, gt, isNull, sql } from 'drizzle-orm';
 import 'server-only';
 
-import { db, pointRedemptions, userGrants, userPointBalances } from '@/lib/db';
+import { db, pointRedemptions, userGrants } from '@/lib/db';
 
 import { REDEMPTION_SOURCE, SPENDABLE_CONSUME_ORDER } from './constants';
-import { recordPointMovement } from './internal-ledger';
+import { lockSpendableBalances, recordPointMovement } from './internal-ledger';
 
 /**
  * Exchange rate set by product: each spendable point buys one day of
@@ -101,28 +101,7 @@ export async function redeemPointsForAdFree(userId: string, cost: number): Promi
         .returning({ id: pointRedemptions.id });
 
       // (2) Lock and read the spendable balances.
-      const balanceRows = await tx
-        .select({
-          category: userPointBalances.category,
-          balance: userPointBalances.balance,
-        })
-        .from(userPointBalances)
-        .where(
-          and(
-            eq(userPointBalances.userId, userId),
-            inArray(userPointBalances.category, SPENDABLE_CONSUME_ORDER as readonly string[])
-          )
-        )
-        .for('update');
-
-      const byCategory = new Map<string, number>();
-      for (const row of balanceRows) {
-        byCategory.set(row.category, row.balance);
-      }
-      const totalAvailable = SPENDABLE_CONSUME_ORDER.reduce(
-        (sum, cat) => sum + (byCategory.get(cat) ?? 0),
-        0
-      );
+      const { byCategory, totalAvailable } = await lockSpendableBalances(tx, userId);
       if (totalAvailable < cost) {
         throw new InsufficientBalanceError();
       }

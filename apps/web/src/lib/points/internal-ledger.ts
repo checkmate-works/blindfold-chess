@@ -1,10 +1,10 @@
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, inArray, sql } from 'drizzle-orm';
 import 'server-only';
 
 import { pointEvents, userPointBalances } from '@/lib/db';
 import type { DbTx } from '@/lib/db/types';
 
-import type { PointCategory } from './constants';
+import { type PointCategory, SPENDABLE_CONSUME_ORDER } from './constants';
 
 /**
  * Apply a signed delta to `user_point_balances` for `(userId, category)`.
@@ -163,4 +163,44 @@ export async function readEarnedBalanceForUpdate(tx: DbTx, userId: string): Prom
     .where(and(eq(userPointBalances.userId, userId), eq(userPointBalances.category, 'earned')))
     .for('update');
   return row?.balance ?? 0;
+}
+
+/**
+ * Lock the user's spendable balance rows (`SELECT ... FOR UPDATE` over
+ * `SPENDABLE_CONSUME_ORDER`) and return them keyed by category alongside
+ * the total. Shared by every consumption path (`redeemPointsForAdFree`,
+ * `consumeMaiaGamePoint`) so the lock-and-sum lives in one place: the
+ * `FOR UPDATE` serializes concurrent spends against the same user, after
+ * which the caller walks `SPENDABLE_CONSUME_ORDER` to debit each bucket.
+ *
+ * Missing categories are simply absent from the map — `user_point_balances`
+ * is sparse, a row exists only after the first nonzero delta.
+ */
+export async function lockSpendableBalances(
+  tx: DbTx,
+  userId: string
+): Promise<{ byCategory: Map<PointCategory, number>; totalAvailable: number }> {
+  const rows = await tx
+    .select({
+      category: userPointBalances.category,
+      balance: userPointBalances.balance,
+    })
+    .from(userPointBalances)
+    .where(
+      and(
+        eq(userPointBalances.userId, userId),
+        inArray(userPointBalances.category, SPENDABLE_CONSUME_ORDER as readonly string[])
+      )
+    )
+    .for('update');
+
+  const byCategory = new Map<PointCategory, number>();
+  for (const row of rows) {
+    byCategory.set(row.category as PointCategory, row.balance);
+  }
+  const totalAvailable = SPENDABLE_CONSUME_ORDER.reduce(
+    (sum, cat) => sum + (byCategory.get(cat) ?? 0),
+    0
+  );
+  return { byCategory, totalAvailable };
 }
