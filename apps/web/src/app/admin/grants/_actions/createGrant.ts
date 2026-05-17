@@ -3,15 +3,13 @@
 import { revalidateTag } from 'next/cache';
 
 import { requireAdmin } from '@/app/admin/_lib/auth';
-import { addDays } from 'date-fns';
 
 import type { ActionResult } from '@/lib/action-types';
-import { db, moderationActions, userGrants } from '@/lib/db';
+import { db } from '@/lib/db';
 import { isBenefitType } from '@/lib/db/data/grant-types';
-import { createNotification } from '@/lib/notifications/notification';
 import { getClientIp } from '@/lib/security/client-ip';
-import { calcGrantStartsAt } from '@/lib/users/user-grants';
 
+import { insertAdminGrant, notifyAdminGrant } from '../_lib/grant-mutations';
 import { validateDurationDays, validateUuid } from '../_lib/validation';
 
 export async function createGrant(formData: FormData): Promise<ActionResult> {
@@ -49,47 +47,21 @@ export async function createGrant(formData: FormData): Promise<ActionResult> {
   const trimmedReason = reason?.trim() || null;
   const ipAddress = await getClientIp();
 
-  // calcGrantStartsAt + userGrants insert + moderation_actions insert run in a
-  // single transaction so the audit-log row cannot be lost if the grant insert
-  // fails after a partial write — and the user-grants stacking calculation is
-  // serialized against concurrent admin actions on the same user/benefit pair.
-  // Granted_by provenance lives in `moderation_actions` per the design note on
-  // `userGrants` (`schema.ts` @design revokedAt for logical deletion).
+  // The grant + audit rows are written in one transaction so the
+  // moderation_actions row cannot be lost on a partial failure, and the
+  // user-grants stacking calculation is serialized against concurrent
+  // admin actions on the same user/benefit pair. See `insertAdminGrant`.
   try {
-    const result = await db.transaction(async (tx) => {
-      const startsAt = await calcGrantStartsAt(trimmedUserId, trimmedBenefitType, tx);
-      const expiresAt = addDays(startsAt, durationDays);
-
-      const [inserted] = await tx
-        .insert(userGrants)
-        .values({
-          userId: trimmedUserId,
-          benefitType: trimmedBenefitType,
-          grantType: 'admin_manual',
-          reason: trimmedReason,
-          startsAt,
-          expiresAt,
-        })
-        .returning({ id: userGrants.id });
-
-      await tx.insert(moderationActions).values({
-        actorId: auth.userId,
-        action: 'create_grant',
-        targetType: 'user',
-        targetId: trimmedUserId,
+    const grant = await db.transaction((tx) =>
+      insertAdminGrant(tx, {
+        userId: trimmedUserId,
+        benefitType: trimmedBenefitType,
+        durationDays,
         reason: trimmedReason,
-        metadata: {
-          grantId: inserted.id,
-          grantType: 'admin_manual',
-          benefitType: trimmedBenefitType,
-          durationDays,
-          expiresAt: expiresAt.toISOString(),
-        },
+        actorId: auth.userId,
         ipAddress,
-      });
-
-      return { grantId: inserted.id, expiresAt };
-    });
+      })
+    );
 
     revalidateTag('grant-status', { expire: 60 });
 
@@ -100,20 +72,7 @@ export async function createGrant(formData: FormData): Promise<ActionResult> {
     // `apps/web/src/proxy.ts`), or at most after `ADS_HIDDEN_COOKIE_MAX_AGE_SEC`
     // (7 days). `grant-status` tag revalidation above ensures the next
     // render recomputes entitlement freshly from DB.
-    createNotification({
-      userId: trimmedUserId,
-      actorId: auth.userId,
-      type: 'benefit_grant',
-      targetType: 'user_grant',
-      targetId: result.grantId,
-      metadata: {
-        grantType: 'admin_manual',
-        benefitType: trimmedBenefitType,
-        durationDays,
-        expiresAt: result.expiresAt.toISOString(),
-        reason: trimmedReason,
-      },
-    });
+    notifyAdminGrant(auth.userId, grant);
 
     return { success: true };
   } catch (error) {
