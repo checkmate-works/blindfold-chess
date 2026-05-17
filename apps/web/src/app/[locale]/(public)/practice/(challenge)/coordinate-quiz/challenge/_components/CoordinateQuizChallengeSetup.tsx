@@ -4,13 +4,11 @@ import { useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FaPlay } from 'react-icons/fa';
 
 import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
-import { SectionTitle } from '@/app/[locale]/_components';
+import { ChallengeSetupShell } from '@/app/[locale]/(public)/practice/(challenge)/_components/ChallengeSetupShell';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { CoordinateQuizSettings } from '../../_components/CoordinateQuizSettings';
@@ -59,31 +57,22 @@ export function CoordinateQuizChallengeSetup({
   };
 
   return (
-    <>
-      <SectionTitle className="mb-4">{t('challengeSetup.title')}</SectionTitle>
-
-      <ul className="mb-6 space-y-2 text-sm text-muted-foreground list-disc list-inside">
-        <li>{t('challengeSetup.timeLimit', { seconds: CHALLENGE_TIME_LIMIT })}</li>
-        <li>{t('challengeSetup.mistakeLimit', { count: MISTAKE_LIMIT })}</li>
-        <li>{t('challengeSetup.leaderboard')}</li>
-      </ul>
-
+    <ChallengeSetupShell
+      onStart={handleStart}
+      rules={
+        <>
+          <li>{t('challengeSetup.timeLimit', { seconds: CHALLENGE_TIME_LIMIT })}</li>
+          <li>{t('challengeSetup.mistakeLimit', { count: MISTAKE_LIMIT })}</li>
+          <li>{t('challengeSetup.leaderboard')}</li>
+        </>
+      }
+    >
       <CoordinateQuizSettings
         boardOrientation={boardOrientation}
         feedbackSpeed={feedbackSpeed}
         onBoardOrientationChange={setBoardOrientation}
         onFeedbackSpeedChange={setFeedbackSpeed}
       />
-
-      <Button
-        onClick={handleStart}
-        variant="primary"
-        size="lg"
-        icon={<FaPlay />}
-        className="w-full mt-6"
-      >
-        {t('startChallenge')}
-      </Button>
-    </>
+    </ChallengeSetupShell>
   );
 }
