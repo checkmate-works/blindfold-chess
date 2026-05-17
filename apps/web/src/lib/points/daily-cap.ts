@@ -2,6 +2,7 @@ import { and, eq, gte, inArray, sql } from 'drizzle-orm';
 import 'server-only';
 
 import { db, pointEvents } from '@/lib/db';
+import { startOfUtcDay } from '@/lib/db/period-range';
 import type { DbTxOrDb } from '@/lib/db/types';
 
 import { DAILY_CREATION_POINT_CAP, POINT_SOURCES } from './constants';
@@ -11,18 +12,11 @@ import { DAILY_CREATION_POINT_CAP, POINT_SOURCES } from './constants';
  *
  * The cap is enforced in `grantPointsForPost` and surfaced for display on
  * `/mypage/points`; both go through `creationEarnedToday` so there is one
- * definition of "what counts toward today's cap".
+ * definition of "what counts toward today's cap". The cap resets at the
+ * UTC day boundary (`startOfUtcDay`) — deterministic and matching what
+ * the `/coin` guide documents; a locale-relative reset would be
+ * unverifiable from the server.
  */
-
-/**
- * Start of the current UTC day. The daily creation cap resets at this
- * boundary. UTC (not a per-user locale) is used so the cutover is
- * deterministic and matches what the `/coin` guide documents — a
- * locale-relative reset would be unverifiable from the server.
- */
-export function startOfUtcDay(now: Date = new Date()): Date {
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-}
 
 /**
  * Net points the user has earned from UGC creation (`POINT_SOURCES`)

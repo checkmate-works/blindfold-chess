@@ -138,28 +138,30 @@ export async function grantLikeCoins(): Promise<GrantLikeCoinsResult> {
     ...new Set(likeRows.filter((l) => l.targetType === 'topic_post').map((l) => l.targetId)),
   ];
 
-  const positionRows = positionIds.length
-    ? await db
-        .select({
-          id: positions.id,
-          ownerId: positions.userId,
-          forkedFromId: positions.forkedFromId,
-          deletedAt: positions.deletedAt,
-        })
-        .from(positions)
-        .where(inArray(positions.id, positionIds))
-    : [];
-
-  const topicPostRows = topicPostIds.length
-    ? await db
-        .select({
-          id: topicPosts.id,
-          ownerId: topicPosts.userId,
-          deletedAt: topicPosts.deletedAt,
-        })
-        .from(topicPosts)
-        .where(inArray(topicPosts.id, topicPostIds))
-    : [];
+  // Two independent tables — fetch concurrently.
+  const [positionRows, topicPostRows] = await Promise.all([
+    positionIds.length
+      ? db
+          .select({
+            id: positions.id,
+            ownerId: positions.userId,
+            forkedFromId: positions.forkedFromId,
+            deletedAt: positions.deletedAt,
+          })
+          .from(positions)
+          .where(inArray(positions.id, positionIds))
+      : [],
+    topicPostIds.length
+      ? db
+          .select({
+            id: topicPosts.id,
+            ownerId: topicPosts.userId,
+            deletedAt: topicPosts.deletedAt,
+          })
+          .from(topicPosts)
+          .where(inArray(topicPosts.id, topicPostIds))
+      : [],
+  ]);
 
   const positionById = new Map<string, PositionRow>(
     positionRows.map((r) => [

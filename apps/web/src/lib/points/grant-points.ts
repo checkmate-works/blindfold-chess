@@ -55,7 +55,6 @@ export async function grantPointsForPost(
 ): Promise<PointGrantResult | null> {
   const earnedToday = await creationEarnedToday(tx, userId);
   const amount = cappedCreationGrantAmount(earnedToday);
-  // Daily cap already reached — no grant, no ledger row.
   if (amount <= 0) return null;
 
   const result = await recordPointMovement(

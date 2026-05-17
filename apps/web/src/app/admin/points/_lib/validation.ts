@@ -1,4 +1,4 @@
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+import { UUID_RE } from '@/lib/validations/uuid';
 
 /**
  * Upper bound on a single admin grant. 100,000 pt = ~274 years of ad_free
@@ -9,7 +9,7 @@ const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12
 const MAX_AMOUNT = 100_000;
 
 export function validateUuid(id: string): string | null {
-  return UUID_REGEX.test(id) ? null : `Invalid User ID format: ${id}`;
+  return UUID_RE.test(id) ? null : `Invalid User ID format: ${id}`;
 }
 
 export function validateAmount(amount: number): string | null {

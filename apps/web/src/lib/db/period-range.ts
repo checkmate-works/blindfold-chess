@@ -1,12 +1,19 @@
 /**
- * Period boundary helpers shared by leaderboard queries.
+ * UTC period-boundary helpers.
  *
+ * - `startOfUtcDay` returns 00:00:00 UTC of the current day.
  * - `startOfCurrentWeek` returns the UTC Monday 00:00:00 of the current week.
  * - `startOfCurrentMonth` returns the UTC first-of-month 00:00:00 of the current month.
  *
- * Centralized here so challenge-queries and exp leaderboard both use the same
- * boundary definition (previously duplicated in two places).
+ * Centralized here so every UTC boundary uses one definition — previously
+ * the same `Date.UTC(...)` idiom was duplicated across challenge queries,
+ * the exp leaderboard, and the points daily cap.
  */
+
+export function startOfUtcDay(): Date {
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+}
 
 export function startOfCurrentWeek(): Date {
   const now = new Date();
