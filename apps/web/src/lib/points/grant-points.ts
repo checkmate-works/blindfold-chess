@@ -80,19 +80,22 @@ export async function grantPointsForPost(
 }
 
 /**
- * Reverse a post's point grant when a **moderator / admin** removes the
- * post. This is NOT called for user self-deletion — users keep the coins
- * they earned for their own contributions even if they later delete them.
+ * Reverse a post's creation point grant when the post is removed. Called
+ * by **both** the author's own delete flows (`deletePuzzle` /
+ * `deletePosition` / `deletePost`) and moderator / admin removal — a
+ * removed contribution loses its grant either way.
  *
  * @design Capped at the live `earned` balance
  *
  * Coins the user has already spent are unrecoverable, and
  * `user_point_balances` must never go negative. So the reversal is
  * `min(grantedNet, currentEarnedBalance)`: if the user already spent the
- * grant, this is a best-effort no-op.
+ * grant this is a best-effort no-op, and a self-deletion can never land
+ * the author in a negative balance / debt.
  *
  * Idempotent: the offsetting row carries its own `post_clawback`
- * idempotency key, so a retried removal is a safe no-op. Also a no-op when
+ * idempotency key, so a retried removal — or an admin removal of a post
+ * the author already self-deleted — is a safe no-op. Also a no-op when
  * the grant was already clawed back (net `earned` for the source is 0).
  */
 export async function clawbackPointsForPost(

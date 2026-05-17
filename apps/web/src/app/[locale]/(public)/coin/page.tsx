@@ -265,7 +265,7 @@ export default async function CoinPage({ params }: Props) {
         {/* Reassurance facts */}
         <ul className="space-y-2">
           <Fact icon={<FaBolt className="h-4 w-4" />} text={t('facts.instant')} />
-          <Fact icon={<FaCheck className="h-4 w-4" />} text={t('facts.keep')} />
+          <Fact icon={<FaCheck className="h-4 w-4" />} text={t('facts.deleteReversal')} />
           <Fact icon={<FaCheck className="h-4 w-4" />} text={t('facts.balance')} />
           <Fact
             icon={<FaArrowDown className="h-4 w-4" />}

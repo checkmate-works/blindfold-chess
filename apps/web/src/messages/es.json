@@ -348,7 +348,7 @@
     },
     "facts": {
       "instant": "Las Monedas que ganas se pueden usar de inmediato, sin esperas.",
-      "keep": "Eliminar tu propia publicación nunca te quita las Monedas que ya ganaste.",
+      "deleteReversal": "Si eliminas tu propio contenido, las Monedas que generó se revierten, pero las Monedas que ya gastaste nunca se recuperan.",
       "balance": "Tu saldo y tu historial están siempre disponibles en Mi Página.",
       "dailyCap": "Crear contenido otorga hasta {cap} monedas por día (se reinicia a las 00:00 UTC)."
     },

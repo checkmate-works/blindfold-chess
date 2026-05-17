@@ -348,7 +348,7 @@
     },
     "facts": {
       "instant": "As Moedas que você ganha podem ser usadas na hora, sem espera.",
-      "keep": "Excluir sua própria publicação nunca remove as Moedas que você já ganhou.",
+      "deleteReversal": "Se você excluir seu próprio conteúdo, as Moedas que ele gerou são revertidas, mas as Moedas que você já gastou nunca são recuperadas.",
       "balance": "Seu saldo e histórico estão sempre disponíveis na Minha Página.",
       "dailyCap": "Criar conteúdo concede até {cap} moedas por dia (reinicia às 00:00 UTC)."
     },

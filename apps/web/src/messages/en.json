@@ -348,7 +348,7 @@
     },
     "facts": {
       "instant": "Coins you earn are usable right away — no waiting.",
-      "keep": "Deleting your own post never removes Coins you have already earned.",
+      "deleteReversal": "If you delete your own content, the Coins it earned are reversed — but Coins you have already spent are never reclaimed.",
       "balance": "Your balance and history are always available on My Page.",
       "dailyCap": "Creating content earns up to {cap} coins per day (resets at 00:00 UTC)."
     },
