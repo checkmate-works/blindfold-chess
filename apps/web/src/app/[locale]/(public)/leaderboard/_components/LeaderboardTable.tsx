@@ -6,6 +6,7 @@ import type { LeaderboardRow } from '../_lib/types';
 import { CurrentUserRankRow } from './CurrentUserRankRow';
 import { LeaderboardTableHeader } from './LeaderboardTableHeader';
 import { LeaderboardTableRow } from './LeaderboardTableRow';
+import { LeaderboardEmptyState, LeaderboardTableShell } from './LeaderboardTableShell';
 
 type Props = {
   rows: LeaderboardRow[];
@@ -18,32 +19,25 @@ export function LeaderboardTable({ rows, currentUserId, currentUserRank, locale 
   const t = useTranslations('leaderboard');
 
   if (rows.length === 0) {
-    return (
-      <div className="text-center py-12 text-muted-foreground">
-        <p className="text-lg">{t('emptyState')}</p>
-      </div>
-    );
+    return <LeaderboardEmptyState message={t('emptyState')} />;
   }
 
   return (
-    <div className="space-y-0">
-      <div className="rounded-lg border border-border overflow-hidden">
-        <table className="w-full table-fixed" aria-label={t('title')}>
-          <LeaderboardTableHeader />
-          <tbody className="divide-y divide-border">
-            {rows.map((row) => (
-              <LeaderboardTableRow
-                key={row.userId}
-                row={row}
-                isCurrentUser={row.userId === currentUserId}
-                locale={locale}
-              />
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {currentUserRank && <CurrentUserRankRow row={currentUserRank} locale={locale} />}
-    </div>
+    <LeaderboardTableShell
+      ariaLabel={t('title')}
+      footer={currentUserRank && <CurrentUserRankRow row={currentUserRank} locale={locale} />}
+    >
+      <LeaderboardTableHeader />
+      <tbody className="divide-y divide-border">
+        {rows.map((row) => (
+          <LeaderboardTableRow
+            key={row.userId}
+            row={row}
+            isCurrentUser={row.userId === currentUserId}
+            locale={locale}
+          />
+        ))}
+      </tbody>
+    </LeaderboardTableShell>
   );
 }
