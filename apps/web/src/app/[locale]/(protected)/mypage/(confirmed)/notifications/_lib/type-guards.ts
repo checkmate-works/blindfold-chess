@@ -90,3 +90,40 @@ export function isBenefitGrantMetadata(m: unknown): m is BenefitGrantMetadata {
     (r.reason === null || typeof r.reason === 'string')
   );
 }
+
+/**
+ * Metadata persisted with a `point_grant` notification. Issued today only
+ * from the admin /admin/points → createPointGrant flow; future system
+ * grants (campaigns, etc.) can reuse this shape by widening `category`.
+ */
+export type PointGrantMetadata = {
+  amount: number;
+  category: string;
+  reason: string | null;
+};
+
+export function isPointGrantMetadata(m: unknown): m is PointGrantMetadata {
+  if (typeof m !== 'object' || m === null) return false;
+  const r = m as Record<string, unknown>;
+  return (
+    typeof r.amount === 'number' &&
+    typeof r.category === 'string' &&
+    (r.reason === null || typeof r.reason === 'string')
+  );
+}
+
+/**
+ * Metadata persisted with a `like_coin_grant` notification — emitted by the
+ * daily like-coin batch (`grantLikeCoins`). `count` is the number of coins
+ * minted for the recipient in that single batch run (direct grants and
+ * fork-propagation grants combined).
+ */
+export type LikeCoinGrantMetadata = {
+  count: number;
+};
+
+export function isLikeCoinGrantMetadata(m: unknown): m is LikeCoinGrantMetadata {
+  if (typeof m !== 'object' || m === null) return false;
+  const r = m as Record<string, unknown>;
+  return typeof r.count === 'number';
+}

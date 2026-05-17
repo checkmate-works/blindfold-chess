@@ -1,11 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  type AutomatedGrantType,
   BENEFIT_TYPES,
   type BenefitType,
   GRANT_TYPES,
-  GRANT_TYPE_DEFAULTS,
   type GrantType,
   isBenefitType,
   isGrantType,
@@ -24,42 +22,8 @@ describe('GRANT_TYPES', () => {
     expect(GRANT_TYPES).toContain('admin_manual');
   });
 
-  it('includes topic_post', () => {
+  it('includes topic_post (preserved for legacy grant-history display rows)', () => {
     expect(GRANT_TYPES).toContain('topic_post');
-  });
-});
-
-describe('GRANT_TYPE_DEFAULTS', () => {
-  it('has an entry for every AutomatedGrantType (all GrantTypes except admin_manual)', () => {
-    const automatedTypes = GRANT_TYPES.filter((t): t is AutomatedGrantType => t !== 'admin_manual');
-    for (const t of automatedTypes) {
-      expect(GRANT_TYPE_DEFAULTS).toHaveProperty(t);
-    }
-    expect(Object.keys(GRANT_TYPE_DEFAULTS).sort()).toEqual([...automatedTypes].sort());
-  });
-
-  it('does NOT have an entry for admin_manual (intentional — caller must specify)', () => {
-    expect(GRANT_TYPE_DEFAULTS).not.toHaveProperty('admin_manual');
-  });
-
-  it('every entry has a valid benefitType (in BENEFIT_TYPES)', () => {
-    for (const [key, config] of Object.entries(GRANT_TYPE_DEFAULTS)) {
-      expect(isBenefitType(config.benefitType), `${key}.benefitType invalid`).toBe(true);
-    }
-  });
-
-  it('every entry has durationDays > 0', () => {
-    for (const [key, config] of Object.entries(GRANT_TYPE_DEFAULTS)) {
-      expect(config.durationDays, `${key}.durationDays must be > 0`).toBeGreaterThan(0);
-    }
-  });
-
-  it('every entry has an integer durationDays (no fractional days)', () => {
-    for (const [key, config] of Object.entries(GRANT_TYPE_DEFAULTS)) {
-      expect(Number.isInteger(config.durationDays), `${key}.durationDays must be integer`).toBe(
-        true
-      );
-    }
   });
 });
 
@@ -129,11 +93,7 @@ describe('isGrantType', () => {
 
 describe('BENEFIT_TYPES', () => {
   it('contains the documented set of benefit types', () => {
-    expect(BENEFIT_TYPES).toEqual(['ad_free', 'paywall_access', 'maia_access']);
-  });
-
-  it('includes maia_access (Maia engine entitlement)', () => {
-    expect(BENEFIT_TYPES).toContain('maia_access');
+    expect(BENEFIT_TYPES).toEqual(['ad_free', 'paywall_access']);
   });
 });
 
@@ -144,12 +104,12 @@ describe('isBenefitType', () => {
     }
   });
 
-  it('returns true for maia_access', () => {
-    expect(isBenefitType('maia_access')).toBe(true);
-  });
-
   it('returns false for an unknown benefit type', () => {
     expect(isBenefitType('unknown')).toBe(false);
+  });
+
+  it('returns false for a removed benefit type', () => {
+    expect(isBenefitType('maia_access')).toBe(false);
   });
 
   it('returns false for empty string', () => {
@@ -157,17 +117,17 @@ describe('isBenefitType', () => {
   });
 
   it('is case-sensitive', () => {
-    expect(isBenefitType('MAIA_ACCESS')).toBe(false);
+    expect(isBenefitType('PAYWALL_ACCESS')).toBe(false);
     expect(isBenefitType('Ad_Free')).toBe(false);
   });
 
   it('type-narrows correctly when used as a guard', () => {
-    const candidate: string = 'maia_access';
+    const candidate: string = 'paywall_access';
     if (isBenefitType(candidate)) {
       const narrowed: BenefitType = candidate;
-      expect(narrowed).toBe('maia_access');
+      expect(narrowed).toBe('paywall_access');
     } else {
-      throw new Error('isBenefitType should have returned true for "maia_access"');
+      throw new Error('isBenefitType should have returned true for "paywall_access"');
     }
   });
 });

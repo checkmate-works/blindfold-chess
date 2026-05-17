@@ -3,6 +3,7 @@ import type { SVGProps } from "react";
 import { createIconRenderer } from "../_shared/create-icon-renderer";
 import type {
   ChessPieceIconProps,
+  CoinIconProps,
   RatingFaceIconProps,
   SpinnerIconProps,
   StrokeIconProps,
@@ -32,6 +33,10 @@ type WebRatingFaceIconProps = RatingFaceIconProps & {
   className?: string;
 } & Omit<SVGProps<SVGSVGElement>, "viewBox" | "children">;
 
+type WebCoinIconProps = CoinIconProps & {
+  className?: string;
+} & Omit<SVGProps<SVGSVGElement>, "viewBox" | "children">;
+
 export const SpinnerIcon = factory.SpinnerIcon as (
   props: WebSpinnerIconProps,
 ) => ReturnType<typeof factory.SpinnerIcon>;
@@ -41,6 +46,9 @@ export const ChessPieceIcon = factory.ChessPieceIcon as (
 export const RatingFaceIcon = factory.RatingFaceIcon as (
   props: WebRatingFaceIconProps,
 ) => ReturnType<typeof factory.RatingFaceIcon>;
+export const CoinIcon = factory.CoinIcon as (
+  props: WebCoinIconProps,
+) => ReturnType<typeof factory.CoinIcon>;
 export const UndoIcon = factory.UndoIcon as (
   props: WebStrokeIconProps,
 ) => ReturnType<typeof factory.UndoIcon>;
@@ -50,6 +58,7 @@ export const FlagIcon = factory.FlagIcon as (
 
 export type {
   ChessPieceIconProps,
+  CoinIconProps,
   RatingFaceIconProps,
   SpinnerIconProps,
   StrokeIconProps,

@@ -3,9 +3,10 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import Link from 'next/link';
 
 import { Button } from '@/app/_components';
-import { and, eq, isNull } from 'drizzle-orm';
+import { CoinIcon } from '@blindfold-chess/icons';
+import { and, eq } from 'drizzle-orm';
 
-import { db, userGrants } from '@/lib/db';
+import { db, pointEvents } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
 import { CertificateFrame, PageLayout, SectionTitle } from '@/app/[locale]/_components';
@@ -39,89 +40,67 @@ export default async function ThanksPage({ params, searchParams }: Props) {
   setRequestLocale(locale);
 
   const sp = await searchParams;
-  const grantId = typeof sp.grantId === 'string' ? sp.grantId : '';
+  const pointEventId = typeof sp.pointEventId === 'string' ? sp.pointEventId : '';
   const returnUrlRaw = typeof sp.returnUrl === 'string' ? sp.returnUrl : '';
   const returnUrl = isSafeReturnPath(returnUrlRaw) ? returnUrlRaw : `/${locale}`;
 
   const t = await getTranslations({ locale, namespace: 'thanks' });
 
-  // Resolve grant details with auth + ownership filter. Anonymous visitors
+  // Resolve the point grant with auth + ownership filter. Anonymous visitors
   // and mismatched users get the generic message; the page never reveals
-  // another user's grant. durationDays is computed from `expiresAt - startsAt`
-  // rather than looked up in `GRANT_TYPE_DEFAULTS` so this page works for
-  // any grant type (including admin_manual) without a per-type lookup.
+  // another user's grant.
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  let benefit: {
-    type: string;
-    durationDays: number;
-    /**
-     * Pre-resolved i18n key under `thanks` for the explanation paragraph.
-     * Computed at fetch time so the JSX layer does not need to know which
-     * source surfaces map to which copy. Null when the source cannot be
-     * resolved (e.g., admin_manual grants reaching this page); the JSX
-     * then falls back to `explanation.default`.
-     */
-    explanationKey: string | null;
-  } | null = null;
-  if (user && grantId) {
-    const [grant] = await db
-      .select({
-        benefitType: userGrants.benefitType,
-        startsAt: userGrants.startsAt,
-        expiresAt: userGrants.expiresAt,
-        sourceType: userGrants.sourceType,
-        sourceId: userGrants.sourceId,
-      })
-      .from(userGrants)
-      .where(
-        and(
-          eq(userGrants.id, grantId),
-          eq(userGrants.userId, user.id),
-          isNull(userGrants.revokedAt)
-        )
-      )
+  let awardedCoins: number | null = null;
+  // True when the grant was trimmed by the daily creation cap — the
+  // ledger row is stamped `metadata.cappedDaily` by `grantPointsForPost`.
+  let cappedDaily = false;
+  if (user && pointEventId) {
+    const [row] = await db
+      .select({ amount: pointEvents.delta, metadata: pointEvents.metadata })
+      .from(pointEvents)
+      .where(and(eq(pointEvents.id, pointEventId), eq(pointEvents.userId, user.id)))
       .limit(1);
 
-    if (grant) {
-      const durationMs = grant.expiresAt.getTime() - grant.startsAt.getTime();
-      const durationDays = Math.max(1, Math.round(durationMs / (24 * 60 * 60 * 1000)));
-
-      // Map the source surface to one of two unified award messages — the
-      // per-topicType variants (square / opening / position_memory /
-      // position_puzzle) collapsed into a single "topic post" copy because
-      // the duration policy is identical across them and the user-visible
-      // distinction adds no value on the award screen. Position-creation
-      // grants get their own copy because "creating" reads differently from
-      // "commenting" even when the benefit is the same.
-      let explanationKey: string | null = null;
-      if (grant.sourceType === 'topic_post') {
-        explanationKey = 'explanation.topic_post';
-      } else if (grant.sourceType === 'position') {
-        explanationKey = 'explanation.position_creation';
-      }
-
-      benefit = { type: grant.benefitType, durationDays, explanationKey };
+    if (row && row.amount > 0) {
+      awardedCoins = row.amount;
+      cappedDaily = (row.metadata as { cappedDaily?: boolean } | null)?.cappedDaily === true;
     }
   }
-
-  const explanationKey = benefit?.explanationKey ?? 'explanation.default';
 
   return (
     <PageLayout title={t('title')} locale={locale}>
       <SectionTitle>{t('sectionTitle')}</SectionTitle>
 
-      {benefit ? (
-        <div className="space-y-4">
-          <p className="text-foreground">{t(explanationKey)}</p>
+      {awardedCoins !== null ? (
+        <div className="space-y-3">
           <CertificateFrame>
-            <p className="text-base sm:text-2xl font-serif font-bold text-podium-gold-foreground tracking-widest text-center">
-              {t(`benefits.${benefit.type}`, { days: benefit.durationDays })}
-            </p>
+            <div className="flex flex-col items-center gap-3 py-2">
+              <div className="flex items-center gap-2">
+                <CoinIcon size={44} aria-hidden="true" />
+                <span className="text-3xl font-bold text-podium-gold-foreground">
+                  ×{awardedCoins}
+                </span>
+              </div>
+              <p className="text-base sm:text-lg font-serif font-bold text-podium-gold-foreground">
+                {t('coinsEarned')}
+              </p>
+            </div>
           </CertificateFrame>
+          {cappedDaily && (
+            <p className="text-center text-sm text-muted-foreground">{t('dailyCapNote')}</p>
+          )}
+          <p className="text-center">
+            <Link
+              href={`/${locale}/coin`}
+              className="text-sm text-muted-foreground underline hover:opacity-80"
+            >
+              {t('aboutCoinsLink')}
+            </Link>
+          </p>
         </div>
       ) : (
         <p className="text-muted-foreground text-center py-4">{t('genericMessage')}</p>
@@ -133,9 +112,9 @@ export default async function ThanksPage({ params, searchParams }: Props) {
             {t('continueButton')}
           </Button>
         </Link>
-        <Link href={`/${locale}/mypage/benefits`} className="block">
+        <Link href={`/${locale}/mypage/points`} className="block">
           <Button asChild variant="outline" size="lg" fullWidth>
-            {t('viewBenefitsButton')}
+            {t('viewPointsButton')}
           </Button>
         </Link>
       </div>

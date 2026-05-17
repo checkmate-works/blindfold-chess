@@ -5,11 +5,12 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { ChessPieceIcon } from '@blindfold-chess/icons';
 import { FaPlay, FaPlus } from 'react-icons/fa';
 
-import { engineConfigToUrlParams, formatEngineConfigLabel } from '@/lib/engines';
+import { engineConfigToUrlParams } from '@/lib/engines';
 import type { Game } from '@/lib/types';
 
 import { DashboardSection, DashboardSectionHeader } from '@/app/[locale]/_components';
 import { ColorIcon } from '@/app/[locale]/_components/ColorIcon';
+import { EngineConfigBadge } from '@/app/[locale]/_components/EngineConfigBadge';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import { useGameList } from '../_hooks/use-game-list';
@@ -42,14 +43,13 @@ function ResumeGameInfo({
   movesLabel: string;
   levelLabel: string;
 }) {
-  // levelLabel is the localised "Level" string from the parent; the
-  // helper consumes it for Stockfish rows and ignores it for Maia rows
-  // (which render their own "Maia {rating}" form).
-  const difficultyText = formatEngineConfigLabel(game.engineConfig, () => levelLabel);
+  // Same engine logo + difficulty badge as the game-list rows, so the
+  // home "vs AI" card and the /games list read identically. `levelLabel`
+  // is the localised "Lv" prefix, used for Stockfish skill levels.
   return (
     <div className="flex items-center gap-1.5 text-sm text-muted-foreground flex-wrap">
       <ColorIcon color={game.playerColor} />
-      <span className="font-medium">{difficultyText}</span>
+      <EngineConfigBadge config={game.engineConfig} levelLabel={levelLabel} />
       <span aria-hidden="true">&middot;</span>
       <span>
         {game.moves.length} {movesLabel}

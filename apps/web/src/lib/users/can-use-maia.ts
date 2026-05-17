@@ -1,39 +1,48 @@
 import 'server-only';
 
-import { hasActiveSubscription } from '@/lib/billing/subscription';
-import { hasActiveGrant } from '@/lib/users/user-grants';
+import { getPointBalanceSummary, hasMaiaGameCharge } from '@/lib/points';
 
 /**
- * Maia engine entitlement check.
+ * Maia engine access state for the `/games/new/*` engine selectors.
  *
- * Two paths to access:
- *   1. The user has an active paid subscription (any tier; Maia is a
- *      perk of paying, not a separate SKU).
- *   2. The user has an active `maia_access` user-grant — granted either
- *      by an admin from `/admin/grants` or by a future automated trigger
- *      (campaign, redemption code, etc.).
+ * - `spendableBalance` — confirmed (non-pending) point balance. Decides
+ *                        whether the Maia card renders payable or locked.
+ */
+export type MaiaEngineAccess = {
+  spendableBalance: number;
+};
+
+/**
+ * Maia model-download gate.
  *
- * Unauthenticated users always return `false` — Maia is a paid / granted
- * feature.
+ * Returns `true` when the user may fetch the 46 MB ONNX model from
+ * `/api/engines/maia/[file]`: the user has spent a coin on at least one
+ * Maia game. Every Maia game costs one coin — there is no subscription
+ * exemption — so a single `maia_game` ledger row vouches for the caller
+ * and the (immutable-cached) model may be served.
  *
- * Used in two places:
+ * Unauthenticated users always return `false`.
  *
- *   1. **UI product gating** — the engine selector under `/games/new/*`
- *      calls this to lock the Maia card for non-eligible users.
- *   2. **Server-side enforcement** — the `/api/engines/maia/[file]`
- *      route handler calls this before reading the ONNX bytes off
- *      disk, so the 46 MB egress is unreachable for unauthenticated
- *      or unentitled callers. The model file is no longer served
- *      from `public/`; the only way to obtain it is through that
- *      handler.
+ * Used by:
+ *   1. **Server-side enforcement** — `/api/engines/maia/[file]` calls this
+ *      before reading the ONNX bytes off disk, so the 46 MB egress is
+ *      unreachable for anonymous / unentitled callers.
+ *   2. The page-level entitlement check is `getMaiaEngineAccess` — the
+ *      engine selector needs the payable-vs-locked distinction, which a
+ *      single boolean cannot express.
  */
 export async function canUseMaia(userId: string | null): Promise<boolean> {
   if (!userId) return false;
+  return hasMaiaGameCharge(userId);
+}
 
-  const [hasSub, hasGrant] = await Promise.all([
-    hasActiveSubscription(userId),
-    hasActiveGrant(userId, 'maia_access'),
-  ]);
-
-  return hasSub || hasGrant;
+/**
+ * Resolve Maia access state for the `/games/new/*` engine selectors.
+ * Anonymous users get `{ spendableBalance: 0 }` — the Maia card renders
+ * locked and login is required upstream.
+ */
+export async function getMaiaEngineAccess(userId: string | null): Promise<MaiaEngineAccess> {
+  if (!userId) return { spendableBalance: 0 };
+  const balance = await getPointBalanceSummary(userId);
+  return { spendableBalance: balance.total };
 }

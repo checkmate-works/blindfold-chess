@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { clawbackPointsForPost } from '@/lib/points';
+
 const mockAuthenticateAndGuard = vi.fn();
 const mockSelectLimit = vi.fn();
 const mockUpdateWhere = vi.fn();
@@ -14,27 +16,36 @@ vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: vi.fn(),
 }));
 
-vi.mock('@/lib/db', () => ({
-  db: {
-    select: () => ({
-      from: () => ({
-        where: () => ({
-          limit: () => mockSelectLimit(),
+vi.mock('@/lib/db', () => {
+  const updateChain = {
+    set: () => ({
+      where: (...args: unknown[]) => mockUpdateWhere(...args),
+    }),
+  };
+  return {
+    db: {
+      select: () => ({
+        from: () => ({
+          where: () => ({
+            limit: () => mockSelectLimit(),
+          }),
         }),
       }),
-    }),
-    update: () => ({
-      set: () => ({
-        where: (...args: unknown[]) => mockUpdateWhere(...args),
-      }),
-    }),
-  },
-  positions: {
-    id: 'id',
-    userId: 'user_id',
-    type: 'type',
-    deletedAt: 'deleted_at',
-  },
+      update: () => updateChain,
+      transaction: async (fn: (tx: unknown) => Promise<unknown>) =>
+        fn({ update: () => updateChain }),
+    },
+    positions: {
+      id: 'id',
+      userId: 'user_id',
+      type: 'type',
+      deletedAt: 'deleted_at',
+    },
+  };
+});
+
+vi.mock('@/lib/points', () => ({
+  clawbackPointsForPost: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('@/lib/security/rate-limit', () => ({
@@ -109,6 +120,7 @@ describe('deletePuzzle', () => {
 
     expect(result).toEqual({ error: 'unauthorized' });
     expect(mockUpdateWhere).not.toHaveBeenCalled();
+    expect(vi.mocked(clawbackPointsForPost)).not.toHaveBeenCalled();
   });
 
   it('returns alreadyDeleted when puzzle is soft-deleted', async () => {
@@ -143,5 +155,10 @@ describe('deletePuzzle', () => {
 
     expect(result).toEqual({ success: true });
     expect(mockUpdateWhere).toHaveBeenCalledTimes(1);
+    // Self-deletion claws back the creation grant (capped at balance).
+    expect(vi.mocked(clawbackPointsForPost)).toHaveBeenCalledWith(expect.anything(), TEST_USER_ID, {
+      type: 'puzzle',
+      id: TEST_PUZZLE_ID,
+    });
   });
 });

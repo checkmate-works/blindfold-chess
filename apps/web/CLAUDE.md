@@ -537,9 +537,9 @@ selection.
   in `src/lib/engines/maia/models.ts` and `scripts/download-maia.ts`.
   Otherwise returning users keep their stale cached copy forever.
 - **Why `private` (not `public`)**: the response is per-user. A
-  future revocation of a `maia_access` grant must not be served from
-  a shared CDN copy. `immutable` still tells the browser to skip
-  revalidation for honest clients.
+  future loss of Maia access (a lapsed subscription) must not be
+  served from a shared CDN copy. `immutable` still tells the browser
+  to skip revalidation for honest clients.
 - **Large-download consent**: `LargeDownloadConsentDialog` intercepts
   Maia game starts on metered / slow links (driven by
   `shouldWarnBeforeLargeDownload()` in `src/lib/network/connection.ts`).

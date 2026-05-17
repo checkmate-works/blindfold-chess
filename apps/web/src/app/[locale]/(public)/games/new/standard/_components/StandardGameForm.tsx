@@ -15,33 +15,37 @@ import {
   type EngineKind,
   engineConfigToUrlParams,
 } from '@/lib/engines';
-import { shouldWarnBeforeLargeDownload } from '@/lib/network/connection';
+import { MAIA_GAME_POINT_COST } from '@/lib/points/constants';
 import type { SkillLevel } from '@/lib/types';
+import type { MaiaEngineAccess } from '@/lib/users/can-use-maia';
 
 import { CollapsibleGameSettings } from '@/app/[locale]/(public)/games/new/_components/CollapsibleGameSettings';
 import { ColorSelector } from '@/app/[locale]/(public)/games/new/_components/ColorSelector';
 import { EngineSelector } from '@/app/[locale]/(public)/games/new/_components/EngineSelector';
 import { LargeDownloadConsentDialog } from '@/app/[locale]/(public)/games/new/_components/LargeDownloadConsentDialog';
+import { MaiaCoinConfirmModal } from '@/app/[locale]/(public)/games/new/_components/MaiaCoinConfirmModal';
+import { MaiaPointInfoModal } from '@/app/[locale]/(public)/games/new/_components/MaiaPointInfoModal';
 import { SkillLevelSelector } from '@/app/[locale]/(public)/games/new/_components/SkillLevelSelector';
 import { useLocalGameSettings } from '@/app/[locale]/(public)/games/new/_hooks/use-local-game-settings';
+import { useMaiaGameLaunch } from '@/app/[locale]/(public)/games/new/_hooks/use-maia-game-launch';
+import { deriveMaiaCardMode } from '@/app/[locale]/(public)/games/new/_lib/maia-launch';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
   locale: Locale;
   /**
-   * Server-side computed Maia entitlement (active subscription or
-   * `maia_access` grant). Passed through from the page; this component
-   * does not perform its own auth check. Defaults to `false` so any
-   * accidental client-only render is locked-down.
+   * Server-side resolved Maia access (the viewer's spendable coin
+   * balance). Drives the engine selector's Maia card and the per-game
+   * coin charge.
    */
-  maiaUnlocked: boolean;
+  maiaAccess: MaiaEngineAccess;
 };
 
 /** Approximate compressed download size of the Maia 3 ONNX model. */
 const MAIA_MODEL_SIZE_LABEL = '46 MB';
 
-export function StandardGameForm({ locale, maiaUnlocked }: Props) {
+export function StandardGameForm({ locale, maiaAccess }: Props) {
   const t = useTranslations('newGame');
   const router = useRouter();
   const [color, setColor] = useState<Side>('white');
@@ -52,8 +56,6 @@ export function StandardGameForm({ locale, maiaUnlocked }: Props) {
   const [stockfishLevel, setStockfishLevel] = useState<SkillLevel>(5);
   const [maiaRating, setMaiaRating] = useState<MaiaRating>(DEFAULT_MAIA_RATING);
   const [engineKind, setEngineKind] = useState<EngineKind>(DEFAULT_ENGINE);
-  const [isLoading, setIsLoading] = useState(false);
-  const [consentDialogOpen, setConsentDialogOpen] = useState(false);
 
   const { localSettings, handleSettingsChange } = useLocalGameSettings();
 
@@ -63,9 +65,9 @@ export function StandardGameForm({ locale, maiaUnlocked }: Props) {
       : { kind: 'stockfish', skillLevel: stockfishLevel };
 
   /**
-   * Push the user into the play route with the selected settings. Split
-   * out from `handleStartGame` so the consent dialog's "Continue" path
-   * can reuse it after the user has acknowledged the download.
+   * Push the user into the play route with the selected settings. Passed
+   * to `useMaiaGameLaunch`, which calls it only after the large-download
+   * consent and the per-game Maia point charge have both succeeded.
    */
   const navigateToGame = () => {
     const params = new URLSearchParams({
@@ -76,32 +78,18 @@ export function StandardGameForm({ locale, maiaUnlocked }: Props) {
     router.push(`/${locale}/games/play?${params.toString()}`);
   };
 
-  const handleStartGame = () => {
-    setIsLoading(true);
-    // Maia is the only engine that triggers a multi-megabyte download.
-    // Show the consent dialog on metered / slow links; Wi-Fi users go
-    // straight through.
-    if (engineKind === 'maia' && shouldWarnBeforeLargeDownload()) {
-      setConsentDialogOpen(true);
-      return;
-    }
-    navigateToGame();
-  };
-
-  const handleConsentConfirm = () => {
-    setConsentDialogOpen(false);
-    navigateToGame();
-  };
-
-  const handleConsentCancel = () => {
-    setConsentDialogOpen(false);
-    setIsLoading(false);
-  };
+  const launch = useMaiaGameLaunch({ navigateToGame });
 
   return (
     <div className="space-y-6">
       <ColorSelector value={color} onChange={setColor} />
-      <EngineSelector value={engineKind} onChange={setEngineKind} maiaUnlocked={maiaUnlocked} />
+      <EngineSelector
+        value={engineKind}
+        onChange={setEngineKind}
+        maiaCardMode={deriveMaiaCardMode(maiaAccess, MAIA_GAME_POINT_COST)}
+        maiaCost={MAIA_GAME_POINT_COST}
+        onMaiaLockedClick={launch.openPointInfo}
+      />
       <SkillLevelSelector
         engine={engineKind}
         stockfishLevel={stockfishLevel}
@@ -114,8 +102,8 @@ export function StandardGameForm({ locale, maiaUnlocked }: Props) {
       <CollapsibleGameSettings settings={localSettings} onSettingsChange={handleSettingsChange} />
 
       <Button
-        onClick={handleStartGame}
-        loading={isLoading}
+        onClick={() => launch.start(engineKind)}
+        loading={launch.isLoading}
         variant="primary"
         size="lg"
         className="w-full"
@@ -123,11 +111,25 @@ export function StandardGameForm({ locale, maiaUnlocked }: Props) {
         {t('startGame')}
       </Button>
 
+      <MaiaCoinConfirmModal
+        isOpen={launch.coinConfirmDialog.isOpen}
+        onConfirm={launch.coinConfirmDialog.onConfirm}
+        onCancel={launch.coinConfirmDialog.onCancel}
+        cost={MAIA_GAME_POINT_COST}
+        spendableBalance={maiaAccess.spendableBalance}
+      />
       <LargeDownloadConsentDialog
-        isOpen={consentDialogOpen}
-        onConfirm={handleConsentConfirm}
-        onCancel={handleConsentCancel}
+        isOpen={launch.consentDialog.isOpen}
+        onConfirm={launch.consentDialog.onConfirm}
+        onCancel={launch.consentDialog.onCancel}
         sizeLabel={MAIA_MODEL_SIZE_LABEL}
+      />
+      <MaiaPointInfoModal
+        isOpen={launch.pointInfoModal.isOpen}
+        onClose={launch.pointInfoModal.onClose}
+        cost={MAIA_GAME_POINT_COST}
+        spendableBalance={maiaAccess.spendableBalance}
+        locale={locale}
       />
     </div>
   );

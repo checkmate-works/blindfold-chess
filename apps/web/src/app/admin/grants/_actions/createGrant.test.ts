@@ -145,19 +145,19 @@ describe('createGrant', () => {
     expect(result).toEqual({ error: 'Unknown benefit type: free_unicorns' });
   });
 
-  it('should accept the new maia_access benefit type', async () => {
+  it('should reject the removed maia_access benefit type', async () => {
     mockRequireAdmin.mockResolvedValue({ userId: 'admin-id' });
 
+    // Maia engine access is no longer a `user_grants` benefit type — it is
+    // gated by subscription / per-game point charge. The benefit-type guard
+    // must reject it like any other unknown value.
     const fd = makeFormData({
       userId: validUserId,
       benefitType: 'maia_access',
       durationDays: '30',
     });
     const result = await createGrant(fd);
-    // Past validation, the action proceeds into the DB transaction stubbed
-    // by the existing setup — assert it did NOT bail out at the benefit
-    // type guard.
-    expect(result).not.toMatchObject({ error: expect.stringContaining('Unknown benefit type') });
+    expect(result).toEqual({ error: 'Unknown benefit type: maia_access' });
   });
 
   it('should return error when durationDays is 0', async () => {

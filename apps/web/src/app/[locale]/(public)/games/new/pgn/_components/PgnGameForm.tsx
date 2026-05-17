@@ -14,11 +14,16 @@ import {
   type EngineKind,
   engineConfigToUrlParams,
 } from '@/lib/engines';
-import { shouldWarnBeforeLargeDownload } from '@/lib/network/connection';
+import { MAIA_GAME_POINT_COST } from '@/lib/points/constants';
 import type { SkillLevel } from '@/lib/types';
+import type { MaiaEngineAccess } from '@/lib/users/can-use-maia';
 
 import { LargeDownloadConsentDialog } from '@/app/[locale]/(public)/games/new/_components/LargeDownloadConsentDialog';
+import { MaiaCoinConfirmModal } from '@/app/[locale]/(public)/games/new/_components/MaiaCoinConfirmModal';
+import { MaiaPointInfoModal } from '@/app/[locale]/(public)/games/new/_components/MaiaPointInfoModal';
 import { useLocalGameSettings } from '@/app/[locale]/(public)/games/new/_hooks/use-local-game-settings';
+import { useMaiaGameLaunch } from '@/app/[locale]/(public)/games/new/_hooks/use-maia-game-launch';
+import { deriveMaiaCardMode } from '@/app/[locale]/(public)/games/new/_lib/maia-launch';
 import { parsePgnWithFen, validatePgn } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -30,10 +35,10 @@ const MAIA_MODEL_SIZE_LABEL = '46 MB';
 
 type Props = {
   locale: Locale;
-  maiaUnlocked: boolean;
+  maiaAccess: MaiaEngineAccess;
 };
 
-export function PgnGameForm({ locale, maiaUnlocked }: Props) {
+export function PgnGameForm({ locale, maiaAccess }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { localSettings, handleSettingsChange } = useLocalGameSettings();
@@ -58,9 +63,7 @@ export function PgnGameForm({ locale, maiaUnlocked }: Props) {
   );
   const [engine, setEngine] = useState<EngineKind>(initial.engine ?? DEFAULT_ENGINE);
   const [pgn, setPgn] = useState(initial.pgn);
-  const [isLoading, setIsLoading] = useState(false);
   const [colorManuallySet, setColorManuallySet] = useState(initial.color !== null);
-  const [consentDialogOpen, setConsentDialogOpen] = useState(false);
 
   // Parse PGN to get moves array and starting FEN
   const { pgnMoves, startingFen } = useMemo((): {
@@ -142,30 +145,7 @@ export function PgnGameForm({ locale, maiaUnlocked }: Props) {
     router.push(`/${locale}/games/play?${params.toString()}`);
   };
 
-  const handleStartGame = () => {
-    setIsLoading(true);
-
-    if (!pgn.trim() || !validatePgn(pgn)) {
-      setIsLoading(false);
-      return;
-    }
-
-    if (engine === 'maia' && shouldWarnBeforeLargeDownload()) {
-      setConsentDialogOpen(true);
-      return;
-    }
-    navigateToGame();
-  };
-
-  const handleConsentConfirm = () => {
-    setConsentDialogOpen(false);
-    navigateToGame();
-  };
-
-  const handleConsentCancel = () => {
-    setConsentDialogOpen(false);
-    setIsLoading(false);
-  };
+  const launch = useMaiaGameLaunch({ navigateToGame });
 
   const isStartDisabled = !pgn.trim() || !validatePgn(pgn);
   const showDerivedFromPgnHint = pgn.trim() !== '' && validatePgn(pgn) && !colorManuallySet;
@@ -183,20 +163,36 @@ export function PgnGameForm({ locale, maiaUnlocked }: Props) {
         onMaiaRatingChange={setMaiaRating}
         engine={engine}
         onEngineChange={setEngine}
-        maiaUnlocked={maiaUnlocked}
+        maiaCardMode={deriveMaiaCardMode(maiaAccess, MAIA_GAME_POINT_COST)}
+        maiaCost={MAIA_GAME_POINT_COST}
+        onMaiaLockedClick={launch.openPointInfo}
         localSettings={localSettings}
         onSettingsChange={handleSettingsChange}
         showDerivedFromPgnHint={showDerivedFromPgnHint}
         isStartDisabled={isStartDisabled}
-        isLoading={isLoading}
-        onStartGame={handleStartGame}
+        isLoading={launch.isLoading}
+        onStartGame={() => launch.start(engine)}
         previewSlot={<PgnPreview pgnMoves={pgnMoves} startingFen={startingFen} color={color} />}
       />
+      <MaiaCoinConfirmModal
+        isOpen={launch.coinConfirmDialog.isOpen}
+        onConfirm={launch.coinConfirmDialog.onConfirm}
+        onCancel={launch.coinConfirmDialog.onCancel}
+        cost={MAIA_GAME_POINT_COST}
+        spendableBalance={maiaAccess.spendableBalance}
+      />
       <LargeDownloadConsentDialog
-        isOpen={consentDialogOpen}
-        onConfirm={handleConsentConfirm}
-        onCancel={handleConsentCancel}
+        isOpen={launch.consentDialog.isOpen}
+        onConfirm={launch.consentDialog.onConfirm}
+        onCancel={launch.consentDialog.onCancel}
         sizeLabel={MAIA_MODEL_SIZE_LABEL}
+      />
+      <MaiaPointInfoModal
+        isOpen={launch.pointInfoModal.isOpen}
+        onClose={launch.pointInfoModal.onClose}
+        cost={MAIA_GAME_POINT_COST}
+        spendableBalance={maiaAccess.spendableBalance}
+        locale={locale}
       />
     </>
   );

@@ -13,6 +13,7 @@ import { ColorSelector } from '@/app/[locale]/(public)/games/new/_components/Col
 import { EngineSelector } from '@/app/[locale]/(public)/games/new/_components/EngineSelector';
 import { SkillLevelSelector } from '@/app/[locale]/(public)/games/new/_components/SkillLevelSelector';
 import type { useLocalGameSettings } from '@/app/[locale]/(public)/games/new/_hooks/use-local-game-settings';
+import type { MaiaCardMode } from '@/app/[locale]/(public)/games/new/_lib/maia-launch';
 import { PgnInput } from '@/app/[locale]/_components/PgnInput';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 
@@ -29,7 +30,9 @@ type Props = {
   onMaiaRatingChange: (rating: MaiaRating) => void;
   engine: EngineKind;
   onEngineChange: (engine: EngineKind) => void;
-  maiaUnlocked: boolean;
+  maiaCardMode: MaiaCardMode;
+  maiaCost: number;
+  onMaiaLockedClick: () => void;
   localSettings: LocalSettings;
   onSettingsChange: ReturnType<typeof useLocalGameSettings>['handleSettingsChange'];
   showDerivedFromPgnHint: boolean;
@@ -55,7 +58,9 @@ export function PgnSetupForm({
   onMaiaRatingChange,
   engine,
   onEngineChange,
-  maiaUnlocked,
+  maiaCardMode,
+  maiaCost,
+  onMaiaLockedClick,
   localSettings,
   onSettingsChange,
   showDerivedFromPgnHint,
@@ -80,7 +85,13 @@ export function PgnSetupForm({
         <p className="text-sm text-muted-foreground">{t('derivedFromPgn')}</p>
       )}
 
-      <EngineSelector value={engine} onChange={onEngineChange} maiaUnlocked={maiaUnlocked} />
+      <EngineSelector
+        value={engine}
+        onChange={onEngineChange}
+        maiaCardMode={maiaCardMode}
+        maiaCost={maiaCost}
+        onMaiaLockedClick={onMaiaLockedClick}
+      />
       <SkillLevelSelector
         engine={engine}
         stockfishLevel={skillLevel}

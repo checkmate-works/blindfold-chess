@@ -5,7 +5,7 @@ import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
 import { getModuleWeight } from '@blindfold-chess/features/exp';
 
-import { GRANT_TYPE_DEFAULTS } from '@/lib/db/data/grant-types';
+import { DAILY_CREATION_POINT_CAP, POST_CREATION_POINTS } from '@/lib/points';
 import { JsonLd, generateFAQPageSchema } from '@/lib/seo/jsonld';
 
 import { PageLayout } from '@/app/[locale]/_components';
@@ -193,7 +193,7 @@ export default async function FAQPage({ params }: Props) {
                   {t('items.adFreeBenefits.headerAction')}
                 </th>
                 <th className="text-left text-muted-foreground font-medium py-1.5 px-2">
-                  {t('items.adFreeBenefits.headerDuration')}
+                  {t('items.adFreeBenefits.headerPoints')}
                 </th>
               </tr>
             </thead>
@@ -202,14 +202,17 @@ export default async function FAQPage({ params }: Props) {
                 <tr key={action} className="border-b border-border">
                   <td className="py-1.5 px-2">{t(`items.adFreeBenefits.actions.${action}`)}</td>
                   <td className="py-1.5 px-2">
-                    {t('items.adFreeBenefits.durationDays', {
-                      days: GRANT_TYPE_DEFAULTS.topic_post.durationDays,
+                    {t('items.adFreeBenefits.pointsAmount', {
+                      amount: POST_CREATION_POINTS,
                     })}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          <p className="text-sm text-muted-foreground">
+            {t('items.adFreeBenefits.dailyCapNote', { cap: DAILY_CREATION_POINT_CAP })}
+          </p>
         </div>
       ),
     },

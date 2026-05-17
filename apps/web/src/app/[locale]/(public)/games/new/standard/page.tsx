@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { getOptionalUser } from '@/lib/auth';
-import { canUseMaia } from '@/lib/users/can-use-maia';
+import { getMaiaEngineAccess } from '@/lib/users/can-use-maia';
 
 import { PageLayout } from '@/app/[locale]/_components';
 import { type HelpStep, HelpTourButton } from '@/app/[locale]/_components/HelpTourButton';
@@ -49,7 +49,7 @@ export default async function StandardGamePage({ params }: Props) {
   const tGames = await getTranslations({ locale, namespace: 'gamesPage' });
 
   const user = await getOptionalUser();
-  const maiaUnlocked = await canUseMaia(user?.id ?? null);
+  const maiaAccess = await getMaiaEngineAccess(user?.id ?? null);
 
   // Tour steps are computed server-side so translations resolve via
   // `next-intl/server` rather than the client-only `useTranslations`.
@@ -85,7 +85,7 @@ export default async function StandardGamePage({ params }: Props) {
     >
       <GameLimitCheck locale={locale}>
         <Suspense fallback={null}>
-          <StandardGameForm locale={locale} maiaUnlocked={maiaUnlocked} />
+          <StandardGameForm locale={locale} maiaAccess={maiaAccess} />
         </Suspense>
       </GameLimitCheck>
     </PageLayout>

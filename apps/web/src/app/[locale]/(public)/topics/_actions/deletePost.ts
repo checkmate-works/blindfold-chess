@@ -7,6 +7,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, postImageAttachments, topicPosts, userGrants } from '@/lib/db';
+import { clawbackPointsForPost } from '@/lib/points';
 import { POST_IMAGES_BUCKET } from '@/lib/post-images/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { createClient as createSupabaseSessionClient } from '@/lib/supabase/server';
@@ -84,14 +85,11 @@ export async function deletePost(postId: string, locale: string): Promise<Delete
       .set({ deletedAt: new Date() })
       .where(and(eq(topicPosts.id, postId), isNull(topicPosts.deletedAt)));
 
-    // Revoke any benefit grants triggered by this post. The source* columns
-    // on user_grants were added specifically to support this targeted
-    // revocation flow — see schema.ts userGrants @design sourceType.
-    // Note on stacking semantics: if the user had multiple stacked grants
-    // and one is revoked, the others retain their pre-computed startsAt/
-    // expiresAt. This may leave a "gap" in ad_free coverage rather than
-    // shifting subsequent grants forward. Acceptable — revocation is
-    // intentionally narrow to "grants earned from the deleted action".
+    // Revoke any legacy benefit grants triggered by this post. New posts no
+    // longer create user_grants directly (the point system superseded that
+    // path), but rows from before the migration still exist and need
+    // revocation. After all legacy grants expire (~5 days post-cutover),
+    // this can be removed.
     await tx
       .update(userGrants)
       .set({ revokedAt: new Date() })
@@ -102,6 +100,13 @@ export async function deletePost(postId: string, locale: string): Promise<Delete
           isNull(userGrants.revokedAt)
         )
       );
+
+    // Reverse the creation point grant for the removed post. Capped at the
+    // author's current `earned` balance (see `clawbackPointsForPost`), so
+    // coins already spent are not pursued — the balance never goes
+    // negative and self-deletion never lands a user in debt. A no-op for
+    // posts that never earned points (non point-eligible topic types).
+    await clawbackPointsForPost(tx, user.id, { type: 'topic_post', id: postId });
   });
 
   // Invalidate grant cache so the user's ad_free state updates immediately.

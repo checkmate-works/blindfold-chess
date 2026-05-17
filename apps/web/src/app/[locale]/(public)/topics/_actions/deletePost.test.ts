@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { clawbackPointsForPost } from '@/lib/points';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { deletePost } from './deletePost';
@@ -85,6 +86,12 @@ vi.mock('@/lib/moderation/ban', () => ({
   isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
 }));
 
+vi.mock('@/lib/points', () => ({
+  // Stub the clawback to a no-op: the deletePost flow calls it inside the
+  // db.transaction(), but this test does not exercise the ledger writes.
+  clawbackPointsForPost: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock('@/lib/security/rate-limit', () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ success: true }),
   RATE_LIMITS: {
@@ -129,6 +136,7 @@ describe('deletePost', () => {
 
     const result = await deletePost(testPostId, 'en');
     expect(result).toEqual({ error: 'notFound' });
+    expect(vi.mocked(clawbackPointsForPost)).not.toHaveBeenCalled();
   });
 
   it('should return unauthorized when user is not the post owner', async () => {
@@ -182,6 +190,12 @@ describe('deletePost', () => {
     const result = await deletePost(testPostId, 'en');
     expect(result).toEqual({ success: true });
     expect(mockTxUpdateSetWhere).toHaveBeenCalled();
+    // Self-deletion claws back the creation grant (capped at balance;
+    // a no-op for non point-eligible topic types).
+    expect(vi.mocked(clawbackPointsForPost)).toHaveBeenCalledWith(expect.anything(), testUserId, {
+      type: 'topic_post',
+      id: testPostId,
+    });
   });
 
   it('should log activity event on successful deletion', async () => {

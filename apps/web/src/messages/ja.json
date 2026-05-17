@@ -316,6 +316,47 @@
     "selectOpening": "オープニングを選択",
     "searchPlaceholder": "オープニングを検索..."
   },
+  "coin": {
+    "title": "コイン",
+    "unit": "コイン",
+    "hero": {
+      "tagline": "トピックの投稿や問題の作成でコインが付与されます。"
+    },
+    "loop": {
+      "step1Title": "貢献する",
+      "step1Body": "問題や投稿をつくる",
+      "step2Title": "コインを獲得",
+      "step2Body": "貢献するたびに貯まる",
+      "step3Title": "特典に使う",
+      "step3Body": "広告非表示や対局に"
+    },
+    "earn": {
+      "heading": "コインの貯め方",
+      "puzzleTitle": "パズルを投稿する",
+      "positionMemoryTitle": "ポジション記憶問題を投稿する",
+      "topicTitle": "トピックに投稿する",
+      "likeNote1": "いいねを獲得するとその分コインを付与（即時ではなく、1日1回まとめて反映）。",
+      "likeNote2": "一度トピックや問題を作れば継続的にコインが得られます。"
+    },
+    "spend": {
+      "heading": "コインの使い道",
+      "adFreeTitle": "広告を非表示にする",
+      "adFreeRate": "1 コイン = 広告のない {days} 日間",
+      "maiaTitle": "Maia と対局する",
+      "maiaRate": "{cost} コイン = 1 局",
+      "maiaNote": "Maia は人間らしい指し手のニューラルネット AI です。"
+    },
+    "facts": {
+      "instant": "獲得したコインは、待ち時間なくすぐに使えます。",
+      "deleteReversal": "自分で投稿を削除すると、その投稿で獲得したコインは戻されます。ただし、すでに使用したコインは回収されません。",
+      "balance": "残高と履歴は、いつでもマイページで確認できます。",
+      "dailyCap": "コンテンツ作成で獲得できるコインは1日{cap}コインまでです（UTC0時にリセット）。"
+    },
+    "cta": {
+      "viewBalance": "コイン残高を見る",
+      "contribute": "トピックを見る"
+    }
+  },
   "faq": {
     "title": "よくある質問",
     "description": "目隠しチェスに関するよくある質問への回答",
@@ -367,16 +408,17 @@
         "multiplier10": "×1.0"
       },
       "adFreeBenefits": {
-        "question": "広告非表示特典はどうやって獲得できますか？",
-        "answer": "対象アクションを行うと、自動的に広告非表示特典が付与されます。複数回行うことで、広告非表示の期間は加算で延長されます。",
-        "tableTitle": "特典を獲得する方法",
+        "question": "コインの獲得方法と広告非表示との交換について教えてください",
+        "answer": "対象アクションを行うとコインが付与され、投稿直後からすぐに利用できます。1 コインで広告非表示 1 日と交換できます（交換機能は近日公開予定です）。",
+        "tableTitle": "コインを獲得する方法",
         "headerAction": "アクション",
-        "headerDuration": "付与期間",
+        "headerPoints": "獲得コイン",
         "actions": {
           "topic_post": "トピック（マス / オープニング）を投稿する",
           "position_creation": "問題（ポジションの記憶 / パズル）を投稿する"
         },
-        "durationDays": "{days}日間"
+        "pointsAmount": "{amount} コイン",
+        "dailyCapNote": "コンテンツ作成で獲得できるコインは1日{cap}コインが上限です。上限はUTC0時にリセットされ、いいねやスタッフ付与は上限に含まれません。"
       }
     }
   },
@@ -1849,9 +1891,25 @@
     "selectEngine": "AIエンジンを選択",
     "engineStockfishLabel": "Stockfish",
     "engineStockfishDescription": "強さを調整できるオープンソースの強力なエンジン。定番のAI対戦相手です。",
-    "engineMaiaLabel": "Maia（人間風）",
+    "engineMaiaLabel": "Maia",
     "engineMaiaDescription": "選択した Elo の人間プレイヤーのような指し方をするニューラルネットワーク型エンジン。初回はモデル（約46MB）の読み込みに数秒かかります。",
-    "engineLockedHint": "Coming soon",
+    "engineLockedHint": "コイン不足",
+    "engineMaiaCostBadge": "{cost} コイン",
+    "maiaPointModal": {
+      "title": "Maia の対局にはコインが必要",
+      "body": "Maia との対局には1局あたり {cost} コイン必要です。",
+      "balance": "現在の保有コイン: {balance} コイン",
+      "earnLink": "コインの仕組みを見る",
+      "viewPoints": "コインを確認",
+      "close": "閉じる"
+    },
+    "maiaCoinConfirmModal": {
+      "title": "Maia と対局を始めますか？",
+      "body": "この対局を始めると {cost} コインを消費します。",
+      "balance": "現在の保有コイン: {balance} コイン",
+      "confirm": "コインを使って開始",
+      "cancel": "キャンセル"
+    },
     "helpLabel": "ヘルプを表示",
     "helpEngineDescription": "Stockfish: 強さを調整できるオープンソースのチェスエンジン。Maia: 数百万局の人間対局で学習されたニューラルネットワーク。選択したレベルの人間プレイヤーのように、コンピュータらしくない手を指します。",
     "helpSkillLevelDescription": "レベル1（最弱）からレベル20（最強）まで。Stockfish はおよそ800〜3200 ELO、Maia は人間風プレイの1100〜1900 ELO を 20段階のスライダーにマッピングしています。",
@@ -2359,6 +2417,7 @@
       "expProgress": "{current} / {next} Exp",
       "expRemaining": "次のレベルまで あと {remaining} Exp",
       "viewExpLeaderboard": "Exp ランキングを見る",
+      "pointsTotal": "{total} コイン",
       "accountTitle": "アカウント",
       "subscriptionTitle": "サブスクリプション",
       "benefitsTitle": "特典",
@@ -2445,6 +2504,55 @@
       "admin_manual": "運営からの付与",
       "topic_post": "トピック投稿による付与",
       "position_creation": "問題投稿による付与"
+    }
+  },
+  "MypagePoints": {
+    "title": "コイン",
+    "sectionTitle": "コイン残高",
+    "breadcrumbMypage": "マイページ",
+    "balance": {
+      "unit": "コイン",
+      "aboutLink": "コインの仕組みを見る"
+    },
+    "dailyCap": {
+      "label": "本日の作成獲得",
+      "value": "{earned} / {cap}",
+      "note": "問題や投稿の作成で獲得できるコインは1日{cap}コインまでです。毎日UTC0時にリセットされます。"
+    },
+    "redeem": {
+      "title": "コインを広告非表示と交換",
+      "description": "1 コインで広告非表示 1 日と交換できます。すでに有効な広告非表示期間があれば、その後ろに加算されます。",
+      "pointSuffix": "コイン",
+      "daysReceived": "広告非表示 {days} 日分",
+      "submit": "{amount} コインを交換する",
+      "submitting": "交換中…",
+      "successMessage": "完了しました — 広告非表示が {days} 日分追加されました。",
+      "errors": {
+        "invalid_amount": "正の整数を入力してください。",
+        "insufficient_balance": "利用可能なコインが不足しています。",
+        "signInRequired": "サインインしてから交換してください。",
+        "banned": "アカウントが利用制限されています。",
+        "rateLimited": "短時間に交換しすぎました。しばらく経ってから再度お試しください。"
+      }
+    },
+    "history": {
+      "title": "履歴",
+      "empty": "コイン関連の履歴はありません。",
+      "learnHowToEarn": "獲得方法を確認する",
+      "headerDate": "日付",
+      "headerEvent": "種別",
+      "headerDelta": "増減",
+      "truncatedNote": "最新の履歴のみを表示しています。",
+      "kind": {
+        "post_grant": "投稿によるコイン獲得",
+        "post_clawback": "投稿削除によるコイン取消",
+        "redemption": "広告非表示との交換",
+        "purchase": "コイン購入",
+        "admin_grant": "運営からの付与",
+        "maia_game": "Maia との対局",
+        "like_grant": "いいねによるコイン獲得",
+        "other": "調整"
+      }
     }
   },
   "MypageBenefitHistory": {
@@ -2541,10 +2649,13 @@
       "ad_free": {
         "topic_post": "トピックの投稿のお礼として、{days}日間の広告非表示特典が付与されました",
         "default": "{days}日間の広告非表示特典が付与されました"
-      },
-      "maia_access": {
-        "default": "{days}日間のMaiaエンジン利用権が付与されました"
       }
+    },
+    "pointGrantMessage": {
+      "default": "{amount} コインが付与されました"
+    },
+    "likeCoinGrantMessage": {
+      "default": "コンテンツが評価され、{count} コインを獲得しました"
     }
   },
   "deleteAccount": {
@@ -3062,6 +3173,18 @@
       "endAt": "終了日時",
       "create": "作成",
       "creating": "作成中..."
+    },
+    "points": {
+      "title": "ポイント付与",
+      "navLabel": "ポイント付与",
+      "showing": "全 {total} 件中 {from}–{to} 件を表示",
+      "empty": "管理付与の履歴はまだありません。",
+      "columns": {
+        "user": "ユーザー",
+        "amount": "付与額",
+        "reason": "理由",
+        "grantedAt": "付与日時"
+      }
     },
     "grants": {
       "title": "特典付与",
@@ -3791,19 +3914,13 @@
   },
   "thanks": {
     "title": "御礼",
-    "sectionTitle": "獲得した特典",
+    "sectionTitle": "獲得したコイン",
     "continueButton": "投稿内容を確認する",
-    "viewBenefitsButton": "獲得した特典を確認する",
+    "viewPointsButton": "獲得したコインを確認する",
     "genericMessage": "ご投稿ありがとうございます。",
-    "explanation": {
-      "topic_post": "トピックへの投稿に対して以下の特典が付与されました。",
-      "position_creation": "問題の投稿に対して以下の特典が付与されました。",
-      "default": "ご投稿により、以下の特典が付与されました。"
-    },
-    "benefits": {
-      "ad_free": "{days}日間の広告非表示",
-      "paywall_access": "{days}日間のプレミアムアクセス"
-    }
+    "coinsEarned": "コインを獲得しました",
+    "aboutCoinsLink": "コインの仕組みを見る",
+    "dailyCapNote": "本日の作成によるコイン獲得上限に達したため、付与コインが少なくなっています。上限はUTC0時にリセットされます。"
   },
   "authPrompt": {
     "title": "サインインして続行",

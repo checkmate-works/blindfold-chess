@@ -592,3 +592,92 @@ $$;
 -- owner (and DB-enforced is_theme = true on insert).
 GRANT SELECT, INSERT, DELETE ON TABLE public.position_themes TO authenticated;
 GRANT SELECT ON TABLE public.position_themes TO anon;
+
+-- =============================================================================
+-- point_events
+-- =============================================================================
+
+-- FK constraint: point_events.user_id → auth.users(id) ON DELETE CASCADE
+-- Matches the exp_events.user_id pattern: when a user is hard-deleted,
+-- their ledger rows are removed. The materialized cache
+-- (user_point_balances) cascades the same way.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'point_events_user_id_fkey'
+  ) THEN
+    ALTER TABLE public.point_events
+      ADD CONSTRAINT point_events_user_id_fkey
+      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+  END IF;
+END;
+$$;
+
+-- Grant read permissions (authenticated can SELECT own rows via RLS, service role only write)
+GRANT SELECT ON TABLE public.point_events TO authenticated;
+
+-- =============================================================================
+-- user_point_balances
+-- =============================================================================
+
+-- FK constraint: user_point_balances.user_id → auth.users(id) ON DELETE CASCADE
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'user_point_balances_user_id_fkey'
+  ) THEN
+    ALTER TABLE public.user_point_balances
+      ADD CONSTRAINT user_point_balances_user_id_fkey
+      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+  END IF;
+END;
+$$;
+
+-- Grant read permissions (authenticated can SELECT own rows via RLS)
+GRANT SELECT ON TABLE public.user_point_balances TO authenticated;
+
+-- =============================================================================
+-- point_redemptions
+-- =============================================================================
+
+-- FK constraint: point_redemptions.user_id → auth.users(id) ON DELETE CASCADE
+-- The FKs to point_events and user_grants are managed by Drizzle.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'point_redemptions_user_id_fkey'
+  ) THEN
+    ALTER TABLE public.point_redemptions
+      ADD CONSTRAINT point_redemptions_user_id_fkey
+      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+  END IF;
+END;
+$$;
+
+GRANT SELECT ON TABLE public.point_redemptions TO authenticated;
+
+-- =============================================================================
+-- point_purchases
+-- =============================================================================
+
+-- FK constraint: point_purchases.user_id → auth.users(id) ON DELETE CASCADE
+-- The FK to point_events is managed by Drizzle.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'point_purchases_user_id_fkey'
+  ) THEN
+    ALTER TABLE public.point_purchases
+      ADD CONSTRAINT point_purchases_user_id_fkey
+      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+  END IF;
+END;
+$$;
+
+GRANT SELECT ON TABLE public.point_purchases TO authenticated;
+
+-- =============================================================================
+-- point_batch_watermarks
+-- =============================================================================
+-- Internal batch bookkeeping. No FK to auth.users; no GRANT to non-service
+-- roles. RLS is enabled with no policies so authenticated/anon cannot read.

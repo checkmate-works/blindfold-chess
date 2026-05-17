@@ -23,6 +23,8 @@ import {
   isAchievementGrantedMetadata,
   isAnnouncementMetadata,
   isBenefitGrantMetadata,
+  isLikeCoinGrantMetadata,
+  isPointGrantMetadata,
   isPositionMetadata,
   isPostMetadata,
   isReplyMetadata,
@@ -124,9 +126,8 @@ export function NotificationItem({ notification, currentUsername }: Props) {
           // Lookup order: benefitType+grantType (most specific) →
           // benefitType default → unknownNotification. Falling back to a
           // generic "ad-free benefit" string is deliberately avoided so
-          // that adding a new benefitType (e.g. maia_access) forces an
-          // explicit i18n entry instead of silently showing the wrong
-          // benefit name.
+          // that adding a new benefitType forces an explicit i18n entry
+          // instead of silently showing the wrong benefit name.
           const { benefitType, grantType, durationDays } = notification.metadata;
           const specificKey = `benefitGrantMessage.${benefitType}.${grantType}`;
           if (t.has(specificKey)) {
@@ -137,6 +138,23 @@ export function NotificationItem({ notification, currentUsername }: Props) {
             return t(benefitDefaultKey, { days: durationDays });
           }
           return t('unknownNotification');
+        }
+        return t('unknownNotification');
+      case 'point_grant':
+        if (isPointGrantMetadata(notification.metadata)) {
+          // Surface the admin's free-form memo verbatim when it exists —
+          // it is almost always more informative than the generic
+          // "you received N points" fallback (e.g., "Compensation for
+          // outage 2026-05-12").
+          if (notification.metadata.reason) {
+            return notification.metadata.reason;
+          }
+          return t('pointGrantMessage.default', { amount: notification.metadata.amount });
+        }
+        return t('unknownNotification');
+      case 'like_coin_grant':
+        if (isLikeCoinGrantMetadata(notification.metadata)) {
+          return t('likeCoinGrantMessage.default', { count: notification.metadata.count });
         }
         return t('unknownNotification');
       case 'achievement_granted':
@@ -251,6 +269,9 @@ export function NotificationItem({ notification, currentUsername }: Props) {
     if (notification.type === 'benefit_grant') {
       return '/mypage/benefits';
     }
+    if (notification.type === 'point_grant' || notification.type === 'like_coin_grant') {
+      return '/mypage/points';
+    }
     return null;
   }
 
@@ -281,7 +302,9 @@ export function NotificationItem({ notification, currentUsername }: Props) {
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground flex-shrink-0">
           <HiTrophy className="h-5 w-5" />
         </div>
-      ) : notification.type === 'benefit_grant' ? (
+      ) : notification.type === 'benefit_grant' ||
+        notification.type === 'point_grant' ||
+        notification.type === 'like_coin_grant' ? (
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground flex-shrink-0">
           <HiGift className="h-5 w-5" />
         </div>

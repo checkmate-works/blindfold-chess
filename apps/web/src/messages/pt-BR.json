@@ -316,6 +316,47 @@
     "selectOpening": "Selecione uma abertura",
     "searchPlaceholder": "Buscar aberturas..."
   },
+  "coin": {
+    "title": "Moedas",
+    "unit": "moedas",
+    "hero": {
+      "tagline": "Você ganha Moedas ao publicar em tópicos e criar problemas."
+    },
+    "loop": {
+      "step1Title": "Contribua",
+      "step1Body": "Crie um problema ou uma publicação",
+      "step2Title": "Ganhe Moedas",
+      "step2Body": "Cada contribuição soma",
+      "step3Title": "Gaste em vantagens",
+      "step3Body": "Tempo sem anúncios ou partidas"
+    },
+    "earn": {
+      "heading": "Como ganhar Moedas",
+      "puzzleTitle": "Envie um puzzle",
+      "positionMemoryTitle": "Envie um problema de memória de posição",
+      "topicTitle": "Publique em um tópico",
+      "likeNote1": "Cada curtida que seu conteúdo recebe rende uma Moeda (não é imediato: concedido uma vez por dia em lote).",
+      "likeNote2": "Publique um tópico ou crie um problema uma vez, e ele continuará rendendo Moedas."
+    },
+    "spend": {
+      "heading": "Para que servem as Moedas",
+      "adFreeTitle": "Ocultar os anúncios",
+      "adFreeRate": "1 Moeda = {days, plural, one {# dia sem anúncios} other {# dias sem anúncios}}",
+      "maiaTitle": "Jogar contra a Maia",
+      "maiaRate": "{cost, plural, one {# Moeda} other {# Moedas}} = 1 partida",
+      "maiaNote": "A Maia é uma IA de rede neural que joga com estilo humano."
+    },
+    "facts": {
+      "instant": "As Moedas que você ganha podem ser usadas na hora, sem espera.",
+      "deleteReversal": "Se você excluir seu próprio conteúdo, as Moedas que ele gerou são revertidas, mas as Moedas que você já gastou nunca são recuperadas.",
+      "balance": "Seu saldo e histórico estão sempre disponíveis na Minha Página.",
+      "dailyCap": "Criar conteúdo concede até {cap} moedas por dia (reinicia às 00:00 UTC)."
+    },
+    "cta": {
+      "viewBalance": "Ver meu saldo de Moedas",
+      "contribute": "Explorar tópicos"
+    }
+  },
   "faq": {
     "title": "Perguntas Frequentes",
     "description": "Encontre respostas para as perguntas mais comuns sobre Xadrez às Cegas",
@@ -367,16 +408,17 @@
         "multiplier10": "×1.0"
       },
       "adFreeBenefits": {
-        "question": "Como os benefícios sem anúncios são obtidos?",
-        "answer": "Benefícios sem anúncios são concedidos automaticamente quando você realiza uma ação elegível listada abaixo. Os benefícios se acumulam — ações repetidas estendem seu período sem anúncios.",
-        "tableTitle": "Formas de ganhar benefícios sem anúncios",
+        "question": "Como ganho moedas e como elas viram tempo sem anúncios?",
+        "answer": "Cada contribuição elegível concede moedas, utilizáveis imediatamente. 1 moeda resgata 1 dia sem anúncios (o resgate será liberado em breve).",
+        "tableTitle": "Formas de ganhar moedas",
         "headerAction": "Ação",
-        "headerDuration": "Duração",
+        "headerPoints": "Moedas",
         "actions": {
           "topic_post": "Publicar em um tópico (casa / abertura)",
           "position_creation": "Publicar um problema de posição (memorização / puzzle)"
         },
-        "durationDays": "{days} dias"
+        "pointsAmount": "{amount} moedas",
+        "dailyCapNote": "As moedas ganhas ao criar conteúdo têm limite de {cap} por dia. O limite reinicia às 00:00 UTC; curtidas e concessões da equipe não contam para ele."
       }
     }
   },
@@ -1849,9 +1891,25 @@
     "selectEngine": "Selecione o motor de IA",
     "engineStockfishLabel": "Stockfish",
     "engineStockfishDescription": "Um motor de código aberto poderoso com nível de habilidade ajustável — o oponente de IA clássico.",
-    "engineMaiaLabel": "Maia (estilo humano)",
+    "engineMaiaLabel": "Maia",
     "engineMaiaDescription": "Um motor baseado em redes neurais que joga como um humano no Elo selecionado. O primeiro movimento demora alguns segundos enquanto o modelo é carregado (~46 MB).",
-    "engineLockedHint": "Coming soon",
+    "engineLockedHint": "Moedas insuficientes",
+    "engineMaiaCostBadge": "{cost} moeda",
+    "maiaPointModal": {
+      "title": "Maia custa moedas",
+      "body": "Cada partida contra a Maia custa {cost} moeda.",
+      "balance": "Você tem atualmente {balance} moedas.",
+      "earnLink": "Como as Moedas funcionam",
+      "viewPoints": "Ver minhas moedas",
+      "close": "Fechar"
+    },
+    "maiaCoinConfirmModal": {
+      "title": "Iniciar uma partida contra a Maia?",
+      "body": "Iniciar esta partida custa {cost} moeda.",
+      "balance": "Você tem atualmente {balance} moedas.",
+      "confirm": "Gastar moeda e iniciar",
+      "cancel": "Cancelar"
+    },
     "helpLabel": "Mostrar ajuda",
     "helpEngineDescription": "Stockfish: um motor de xadrez de código aberto com força ajustável. Maia: uma rede neural treinada com milhões de partidas humanas — joga no nível selecionado como um jogador real, não como um computador.",
     "helpSkillLevelDescription": "Nível 1 (mais fraco) a Nível 20 (mais forte). Stockfish abrange aproximadamente 800–3200 ELO. Maia cobre 1100–1900 ELO em jogo estilo humano; as 20 posições do controle deslizante são mapeadas nesse intervalo.",
@@ -2359,6 +2417,7 @@
       "expProgress": "{current} / {next} Exp",
       "expRemaining": "{remaining} Exp até o próximo nível",
       "viewExpLeaderboard": "Ver Ranking de Exp",
+      "pointsTotal": "{total} moedas",
       "accountTitle": "Conta",
       "subscriptionTitle": "Assinatura",
       "benefitsTitle": "Benefícios",
@@ -2445,6 +2504,55 @@
       "admin_manual": "Concedido pela equipe",
       "topic_post": "Concedido por postagem em tópico",
       "position_creation": "Concedido por envio de posição"
+    }
+  },
+  "MypagePoints": {
+    "title": "Moedas",
+    "sectionTitle": "Suas moedas",
+    "breadcrumbMypage": "Minha Página",
+    "balance": {
+      "unit": "moedas",
+      "aboutLink": "Como as Moedas funcionam"
+    },
+    "dailyCap": {
+      "label": "Ganho hoje por criar",
+      "value": "{earned} / {cap}",
+      "note": "Criar problemas e publicações concede até {cap} moedas por dia. Reinicia às 00:00 UTC."
+    },
+    "redeem": {
+      "title": "Resgatar moedas por tempo sem anúncios",
+      "description": "Cada moeda vira um dia sem anúncios. Os dias são somados ao tempo sem anúncios que você já possui.",
+      "pointSuffix": "moedas",
+      "daysReceived": "{days, plural, one {# dia} other {# dias}} sem anúncios",
+      "submit": "Resgatar {amount} moedas",
+      "submitting": "Resgatando…",
+      "successMessage": "Pronto — {days, plural, one {# dia} other {# dias}} sem anúncios foram adicionados.",
+      "errors": {
+        "invalid_amount": "Informe um número inteiro positivo.",
+        "insufficient_balance": "Você não tem moedas disponíveis suficientes.",
+        "signInRequired": "Entre na sua conta para resgatar.",
+        "banned": "Sua conta está restrita.",
+        "rateLimited": "Muitos resgates em pouco tempo — tente novamente mais tarde."
+      }
+    },
+    "history": {
+      "title": "Histórico",
+      "empty": "Ainda não há atividade de moedas.",
+      "learnHowToEarn": "Veja como ganhar moedas.",
+      "headerDate": "Data",
+      "headerEvent": "Evento",
+      "headerDelta": "Quantidade",
+      "truncatedNote": "Exibindo as entradas mais recentes.",
+      "kind": {
+        "post_grant": "Ganhas por uma publicação",
+        "post_clawback": "Revertidas por publicação removida",
+        "redemption": "Resgatadas por tempo sem anúncios",
+        "purchase": "Compradas",
+        "admin_grant": "Concedidas pela equipe",
+        "maia_game": "Partida contra a Maia",
+        "like_grant": "Ganhas por curtidas",
+        "other": "Ajuste"
+      }
     }
   },
   "MypageBenefitHistory": {
@@ -2541,10 +2649,13 @@
       "ad_free": {
         "topic_post": "Obrigado pela sua postagem no tópico — você recebeu {days} dias de benefício sem anúncios",
         "default": "Você recebeu {days} dias de benefício sem anúncios"
-      },
-      "maia_access": {
-        "default": "Você recebeu {days} dias de acesso ao motor Maia"
       }
+    },
+    "pointGrantMessage": {
+      "default": "Você recebeu {amount, plural, one {# moeda} other {# moedas}}"
+    },
+    "likeCoinGrantMessage": {
+      "default": "Seu conteúdo foi curtido — você ganhou {count, plural, one {# moeda} other {# moedas}}"
     }
   },
   "deleteAccount": {
@@ -3062,6 +3173,18 @@
       "endAt": "Fim",
       "create": "Criar",
       "creating": "Criando..."
+    },
+    "points": {
+      "title": "Pontos",
+      "navLabel": "Pontos",
+      "showing": "Exibindo {from}–{to} de {total} concessões",
+      "empty": "Ainda não há concessões de pontos pelo staff.",
+      "columns": {
+        "user": "Usuário",
+        "amount": "Quantidade",
+        "reason": "Motivo",
+        "grantedAt": "Data"
+      }
     },
     "grants": {
       "title": "Concessões",
@@ -3791,19 +3914,13 @@
   },
   "thanks": {
     "title": "Obrigado!",
-    "sectionTitle": "Seu benefício",
+    "sectionTitle": "Moedas ganhas",
     "continueButton": "Ver sua publicação",
-    "viewBenefitsButton": "Ver seus benefícios",
+    "viewPointsButton": "Ver suas moedas",
     "genericMessage": "Obrigado pela sua contribuição.",
-    "explanation": {
-      "topic_post": "Sua publicação em um tópico lhe rendeu o seguinte benefício:",
-      "position_creation": "O envio da sua posição lhe rendeu o seguinte benefício:",
-      "default": "Sua publicação lhe rendeu o seguinte benefício:"
-    },
-    "benefits": {
-      "ad_free": "Sem anúncios por {days, plural, one {# dia} other {# dias}}",
-      "paywall_access": "Acesso premium por {days, plural, one {# dia} other {# dias}}"
-    }
+    "coinsEarned": "Moedas ganhas!",
+    "aboutCoinsLink": "Como as Moedas funcionam",
+    "dailyCapNote": "Você atingiu o limite de moedas por criação de hoje, então menos moedas foram concedidas. O limite reinicia às 00:00 UTC."
   },
   "authPrompt": {
     "title": "Faça login para continuar",
