@@ -11,8 +11,8 @@ import type { CoinSvgData } from "./types";
  * reads correctly on both light and dark themes). The same path is
  * stroked to give the disc and the hole a slightly darker golden rim.
  */
-const GOLD_FILL = "#E6B33E";
-const GOLD_RIM = "#9A6F22";
+const GOLD_FILL = "#FFD95C";
+const GOLD_RIM = "#CF9A28";
 
 export const coinData: CoinSvgData = {
   viewBox: "0 0 24 24",
