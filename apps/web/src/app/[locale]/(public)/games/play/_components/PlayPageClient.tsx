@@ -14,6 +14,7 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useGameSession } from '../_hooks';
+import { AiMovePulse } from './AiMovePulse';
 import { PlayClient } from './PlayClient';
 
 type Props = {
@@ -49,7 +50,7 @@ export function PlayPageClient({
   // read move-error / AI-thinking / AI-move-announcement state directly,
   // without a useEffect bridge from PlayClient.
   const gameSession = useGameSession({ locale });
-  const { aiMoveDisplay, isAiThinking } = gameSession;
+  const { aiMoveDisplay, isAiThinking, aiMoveSignal } = gameSession;
   const { error: moveError, lastAttemptedInput } = gameSession.moveInput;
   const { isLoadingFromStorage } = gameSession.gameState;
   const { isHydrated } = useGamePreferences();
@@ -84,22 +85,26 @@ export function PlayPageClient({
   );
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{titleContent}</PageTitle>
-      <PagePanel>
-        <PlayClient
-          locale={locale}
-          gameSession={gameSession}
-          initialMoveInputHint={initialMoveInputHint}
-          initialPeekHint={initialPeekHint}
-          isInitializing={isInitializing}
-        />
-        {/* Mirror `PageLayout`'s trailing block — see PageLayout.tsx. */}
-        <div className="!mt-4 space-y-4">
-          <Divider />
-          {breadcrumb}
-        </div>
-      </PagePanel>
-    </div>
+    <>
+      {/* Fixed / out-of-flow — kept outside `space-y-8` so it adds no margin. */}
+      <AiMovePulse signal={aiMoveSignal} />
+      <div className="space-y-8">
+        <PageTitle>{titleContent}</PageTitle>
+        <PagePanel>
+          <PlayClient
+            locale={locale}
+            gameSession={gameSession}
+            initialMoveInputHint={initialMoveInputHint}
+            initialPeekHint={initialPeekHint}
+            isInitializing={isInitializing}
+          />
+          {/* Mirror `PageLayout`'s trailing block — see PageLayout.tsx. */}
+          <div className="!mt-4 space-y-4">
+            <Divider />
+            {breadcrumb}
+          </div>
+        </PagePanel>
+      </div>
+    </>
   );
 }
