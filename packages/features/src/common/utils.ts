@@ -1,9 +1,23 @@
-import type { Square } from "@blindfold-chess/types";
+import type { BoardOrientation, Square } from "@blindfold-chess/types";
 
 import { FILES, RANKS } from "./constants";
 
 /** A source of randomness. Defaults to Math.random when not supplied. */
 export type RandomSource = () => number;
+
+/**
+ * Resolve a board orientation to a concrete side.
+ * If "random", picks "white" or "black" with equal probability.
+ */
+export function resolveOrientation(
+  orientation: BoardOrientation,
+  rng: RandomSource = Math.random,
+): Exclude<BoardOrientation, "random"> {
+  if (orientation === "random") {
+    return rng() < 0.5 ? "white" : "black";
+  }
+  return orientation;
+}
 
 /** Extract 0-based file index (a=0, h=7) from algebraic square name */
 export function squareToFileIndex(square: string): number {

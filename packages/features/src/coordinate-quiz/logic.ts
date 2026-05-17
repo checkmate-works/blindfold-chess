@@ -4,6 +4,7 @@ import {
   type RandomSource,
   fileRankToSquare,
   mirrorSquare,
+  resolveOrientation,
   squareToFileIndex,
   squareToRankIndex,
 } from "../common";
@@ -32,17 +33,9 @@ export function generateSingleQuestion(
   const randomIndex = Math.floor(rng() * squaresToChooseFrom.length);
   const targetSquare = squaresToChooseFrom[randomIndex];
 
-  // Determine orientation for this question
-  let questionOrientation: "white" | "black";
-  if (orientation === "random") {
-    questionOrientation = rng() < 0.5 ? "white" : "black";
-  } else {
-    questionOrientation = orientation;
-  }
-
   return {
     targetSquare,
-    orientation: questionOrientation,
+    orientation: resolveOrientation(orientation, rng),
   };
 }
 

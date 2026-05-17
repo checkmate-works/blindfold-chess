@@ -1,6 +1,10 @@
 import type { PieceType as AllPieceType } from "@blindfold-chess/types";
 
-import type { BasePracticeResult, BasePracticeSettings } from "../common/types";
+import {
+  type BasePracticeSettings,
+  type PracticeResultWithMistakes,
+  DEFAULT_BASE_PRACTICE_SETTINGS,
+} from "../common/types";
 
 export type PieceType = Extract<AllPieceType, "b" | "n" | "r" | "q" | "k">;
 export const PIECE_TYPES: readonly PieceType[] = [
@@ -22,11 +26,8 @@ export type LegalMovesSettings = BasePracticeSettings & {
 };
 
 export const DEFAULT_LEGAL_MOVES_SETTINGS: LegalMovesSettings = {
-  timeLimit: 60,
+  ...DEFAULT_BASE_PRACTICE_SETTINGS,
   selectedPieces: [...PIECE_TYPES],
-  mode: "timed",
 };
 
-export type LegalMovesResult = BasePracticeResult & {
-  incorrectAnswers: number;
-};
+export type LegalMovesResult = PracticeResultWithMistakes;

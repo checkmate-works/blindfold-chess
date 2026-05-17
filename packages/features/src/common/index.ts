@@ -9,8 +9,10 @@ export {
 export type {
   BasePracticeResult,
   BasePracticeSettings,
+  PracticeResultWithMistakes,
   PracticeMode,
 } from "./types";
+export { DEFAULT_BASE_PRACTICE_SETTINGS } from "./types";
 export {
   type CountdownState,
   COUNTDOWN_STEP_DURATION,
@@ -35,6 +37,7 @@ export {
   isValidSquare,
   computeSquareColor,
   formatTime,
+  resolveOrientation,
   generateRandomSquare,
   generateSquareSequence,
   shuffleArray,
