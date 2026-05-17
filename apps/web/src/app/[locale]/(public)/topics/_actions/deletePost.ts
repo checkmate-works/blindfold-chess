@@ -7,6 +7,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, postImageAttachments, topicPosts, userGrants } from '@/lib/db';
+import { clawbackPointsForPost } from '@/lib/points';
 import { POST_IMAGES_BUCKET } from '@/lib/post-images/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { createClient as createSupabaseSessionClient } from '@/lib/supabase/server';
@@ -100,9 +101,12 @@ export async function deletePost(postId: string, locale: string): Promise<Delete
         )
       );
 
-    // No point clawback on user self-deletion — users keep the coins they
-    // earned for their own contributions. Moderator removal does claw back
-    // (see deletePostAdmin).
+    // Reverse the creation point grant for the removed post. Capped at the
+    // author's current `earned` balance (see `clawbackPointsForPost`), so
+    // coins already spent are not pursued — the balance never goes
+    // negative and self-deletion never lands a user in debt. A no-op for
+    // posts that never earned points (non point-eligible topic types).
+    await clawbackPointsForPost(tx, user.id, { type: 'topic_post', id: postId });
   });
 
   // Invalidate grant cache so the user's ad_free state updates immediately.

@@ -7,6 +7,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, positions } from '@/lib/db';
+import { clawbackPointsForPost } from '@/lib/points';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
@@ -62,8 +63,11 @@ export async function deletePosition(positionId: string, locale: string): Promis
         )
       );
 
-    // No point clawback on user self-deletion — users keep the coins they
-    // earned for their own contributions.
+    // Reverse the creation point grant for the removed position. Capped at
+    // the author's current `earned` balance (see `clawbackPointsForPost`),
+    // so coins already spent are not pursued — the balance never goes
+    // negative and self-deletion never lands a user in debt.
+    await clawbackPointsForPost(tx, user.id, { type: 'position_memory', id: positionId });
   });
 
   logActivityEvent({

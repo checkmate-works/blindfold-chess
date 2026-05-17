@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { clawbackPointsForPost } from '@/lib/points';
+
 const mockAuthenticateAndGuard = vi.fn();
 const mockSelectLimit = vi.fn();
 const mockUpdateWhere = vi.fn();
@@ -118,6 +120,7 @@ describe('deletePuzzle', () => {
 
     expect(result).toEqual({ error: 'unauthorized' });
     expect(mockUpdateWhere).not.toHaveBeenCalled();
+    expect(vi.mocked(clawbackPointsForPost)).not.toHaveBeenCalled();
   });
 
   it('returns alreadyDeleted when puzzle is soft-deleted', async () => {
@@ -152,5 +155,10 @@ describe('deletePuzzle', () => {
 
     expect(result).toEqual({ success: true });
     expect(mockUpdateWhere).toHaveBeenCalledTimes(1);
+    // Self-deletion claws back the creation grant (capped at balance).
+    expect(vi.mocked(clawbackPointsForPost)).toHaveBeenCalledWith(expect.anything(), TEST_USER_ID, {
+      type: 'puzzle',
+      id: TEST_PUZZLE_ID,
+    });
   });
 });
