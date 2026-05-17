@@ -68,6 +68,13 @@ export default async function PointsPage({ params }: Props) {
             <span className="text-3xl font-bold text-foreground">{balance.total}</span>
             <span className="text-sm text-muted-foreground">{t('balance.unit')}</span>
           </div>
+          <Link
+            href="/coin"
+            locale={locale}
+            className="mt-3 inline-block text-sm text-muted-foreground underline hover:opacity-80"
+          >
+            {t('balance.aboutLink')}
+          </Link>
         </div>
 
         {/* Redeem control */}

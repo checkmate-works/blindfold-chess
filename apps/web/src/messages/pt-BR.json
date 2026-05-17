@@ -316,6 +316,55 @@
     "selectOpening": "Selecione uma abertura",
     "searchPlaceholder": "Buscar aberturas..."
   },
+  "coin": {
+    "title": "Sobre as Moedas",
+    "unit": "Moedas",
+    "hero": {
+      "tagline": "As Moedas são uma moeda interna que você ganha ao contribuir e gasta para aproveitar o site com mais conforto."
+    },
+    "loop": {
+      "heading": "As Moedas dão a volta",
+      "step1Title": "Contribua",
+      "step1Body": "Crie um problema ou uma publicação",
+      "step2Title": "Ganhe Moedas",
+      "step2Body": "Cada contribuição soma",
+      "step3Title": "Gaste em vantagens",
+      "step3Body": "Tempo sem anúncios ou partidas com a Maia",
+      "closing": "Depois aproveite mais o jogo e contribua de novo."
+    },
+    "earn": {
+      "heading": "Como ganhar Moedas",
+      "puzzleTitle": "Envie um puzzle",
+      "positionMemoryTitle": "Envie um problema de memória de posição",
+      "topicTitle": "Publique em um tópico",
+      "topicNote": "Vale para os tópicos de Casa e Abertura."
+    },
+    "spend": {
+      "heading": "Para que servem as Moedas",
+      "adFreeTitle": "Ocultar os anúncios",
+      "adFreeRate": "1 Moeda = {days, plural, one {# dia sem anúncios} other {# dias sem anúncios}}",
+      "maiaTitle": "Jogar contra a Maia",
+      "maiaRate": "{cost, plural, one {# Moeda} other {# Moedas}} = 1 partida",
+      "maiaNote": "A Maia é uma IA de rede neural que joga com estilo humano."
+    },
+    "example": {
+      "heading": "Quanto dá para ganhar?",
+      "lead": "Mesmo algumas publicações por semana fazem uma diferença real.",
+      "posts": "{posts} publicações por semana",
+      "coins": "~{coins} Moedas por mês",
+      "days": "~{days} dias sem anúncios"
+    },
+    "facts": {
+      "heading": "Bom saber",
+      "instant": "As Moedas que você ganha podem ser usadas na hora, sem espera.",
+      "keep": "Excluir sua própria publicação nunca remove as Moedas que você já ganhou.",
+      "balance": "Seu saldo e histórico estão sempre disponíveis na Minha Página."
+    },
+    "cta": {
+      "viewBalance": "Ver meu saldo de Moedas",
+      "contribute": "Explorar tópicos"
+    }
+  },
   "faq": {
     "title": "Perguntas Frequentes",
     "description": "Encontre respostas para as perguntas mais comuns sobre Xadrez às Cegas",
@@ -2462,7 +2511,8 @@
     "sectionTitle": "Suas moedas",
     "breadcrumbMypage": "Minha Página",
     "balance": {
-      "unit": "moedas"
+      "unit": "moedas",
+      "aboutLink": "Como as Moedas funcionam"
     },
     "redeem": {
       "title": "Resgatar moedas por tempo sem anúncios",

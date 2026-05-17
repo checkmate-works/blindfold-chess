@@ -25,6 +25,7 @@ export const NAMESPACE_CLASSIFICATION = {
   metadata: 'server',
   Header: 'server',
   faq: 'server',
+  coin: 'server',
   glossary: 'server',
   manual: 'server',
   gettingStarted: 'server',
