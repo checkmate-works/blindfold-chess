@@ -6,8 +6,10 @@ import {
   POST_CREATION_POINTS,
   type PointPostEntity,
   buildIdempotencyKey,
+  cappedCreationGrantAmount,
   sourceForEntity,
 } from './constants';
+import { creationEarnedToday } from './daily-cap';
 import {
   readEarnedBalanceForUpdate,
   readEarnedTotalForEntity,
@@ -26,6 +28,22 @@ export type PointGrantResult = {
  * maturation hold. The caller MUST be inside `db.transaction()` so the
  * entity row and the ledger row commit atomically.
  *
+ * @design Daily creation cap
+ *
+ * The award is clamped to the user's remaining `DAILY_CREATION_POINT_CAP`
+ * headroom for the current UTC day (`cappedCreationGrantAmount`). A
+ * normal contributor earns the full `POST_CREATION_POINTS`; once the cap
+ * is reached the grant shrinks to a partial amount and finally to `0`,
+ * at which point this returns `null` (no ledger row, no `/thanks`
+ * detour). When the award is partial, the ledger row is stamped
+ * `metadata.cappedDaily` so `/thanks` can explain the smaller number.
+ *
+ * The cap read is not locked, so two creates racing at the cap boundary
+ * may together exceed it by at most one `POST_CREATION_POINTS`. That is
+ * acceptable — creation is rate-limited and the cap is an economic
+ * guard, not a hard financial limit; locking the whole ledger per create
+ * would not be worth it.
+ *
  * Idempotency is enforced at the DB layer by the UNIQUE constraint on
  * `point_events.idempotency_key` — a retried call for the same entity is a
  * safe no-op (the conflict is swallowed and `null` is returned).
@@ -35,22 +53,30 @@ export async function grantPointsForPost(
   userId: string,
   entity: PointPostEntity
 ): Promise<PointGrantResult | null> {
+  const earnedToday = await creationEarnedToday(tx, userId);
+  const amount = cappedCreationGrantAmount(earnedToday);
+  // Daily cap already reached — no grant, no ledger row.
+  if (amount <= 0) return null;
+
   const result = await recordPointMovement(
     tx,
     {
       userId,
-      delta: POST_CREATION_POINTS,
+      delta: amount,
       category: 'earned',
       source: sourceForEntity(entity.type),
       sourceId: entity.id,
       idempotencyKey: buildIdempotencyKey('post_grant', entity),
-      metadata: { entityType: entity.type },
+      metadata: {
+        entityType: entity.type,
+        ...(amount < POST_CREATION_POINTS ? { cappedDaily: true } : {}),
+      },
     },
     { idempotent: true }
   );
 
   if (!result) return null;
-  return { pointEventId: result.pointEventId, amount: POST_CREATION_POINTS };
+  return { pointEventId: result.pointEventId, amount };
 }
 
 /**

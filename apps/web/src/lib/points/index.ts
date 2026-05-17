@@ -1,4 +1,5 @@
 export {
+  DAILY_CREATION_POINT_CAP,
   MAIA_GAME_POINT_COST,
   MAIA_GAME_SOURCE,
   POINT_CATEGORIES,
@@ -7,12 +8,15 @@ export {
   POST_CREATION_POINTS,
   SPENDABLE_CONSUME_ORDER,
   buildIdempotencyKey,
+  cappedCreationGrantAmount,
   entityTypeForSource,
   isPointEligibleTopicType,
   sourceForEntity,
 } from './constants';
 export { consumeMaiaGamePoint } from './consume-maia-game-point';
 export type { ConsumeMaiaGamePointResult } from './consume-maia-game-point';
+export { getDailyCreationCapStatus } from './daily-cap';
+export type { DailyCreationCapStatus } from './daily-cap';
 export type {
   PointCategory,
   PointEligibleTopicType,

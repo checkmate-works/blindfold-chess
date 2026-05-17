@@ -89,6 +89,43 @@ export function buildIdempotencyKey(stage: PointLifecycleStage, entity: PointPos
 export const POST_CREATION_POINTS = 3;
 
 /**
+ * Per-day ceiling on points a single user can earn from UGC *creation*
+ * (the `POINT_SOURCES` triggers — puzzle / position-memory / topic post).
+ *
+ * @design Why a daily cap
+ *
+ * UGC creation is rate-limited per action, but the limits are generous
+ * enough that a scripted account could still mint dozens of points an
+ * hour across the three creation surfaces. Since every point converts
+ * 1:1 into an ad-free day, an uncapped create-faucet directly erodes ad
+ * revenue. The cap holds the worst case to a fixed daily figure no
+ * matter how the per-action rate limits are tuned; a genuine
+ * contributor making a handful of problems a day never reaches it.
+ *
+ * The cap is measured as the **net** sum of creation-source deltas since
+ * 00:00 UTC (see `creationEarnedToday`), so a same-day delete+recreate
+ * nets correctly and a moderator clawback frees headroom. Like-coin and
+ * admin grants are deliberately NOT counted against it — they are not
+ * part of the self-serve create-faucet.
+ *
+ * Lives in code, not the DB: every `point_events` row carries its
+ * concrete `delta`, so changing this only affects future grants.
+ */
+export const DAILY_CREATION_POINT_CAP = 30;
+
+/**
+ * Resolve how many points one UGC creation grant should award, given how
+ * much the user has already earned from creation today. Clamps the
+ * standard `POST_CREATION_POINTS` to the remaining daily headroom:
+ * returns a partial amount when the cap is nearly reached and `0` once
+ * it is hit. Pure — the caller supplies `earnedToday`.
+ */
+export function cappedCreationGrantAmount(earnedToday: number): number {
+  const headroom = Math.max(0, DAILY_CREATION_POINT_CAP - earnedToday);
+  return Math.min(POST_CREATION_POINTS, headroom);
+}
+
+/**
  * `topic_posts.topicType` values that earn a point grant on creation.
  *
  * Scoped to the **standalone topic surfaces** (`square`, `opening`) only.
