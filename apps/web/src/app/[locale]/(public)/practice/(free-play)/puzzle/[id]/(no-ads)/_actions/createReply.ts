@@ -1,6 +1,7 @@
 'use server';
 
 import { getPositionById } from '@/lib/positions/queries';
+import { readSpoilerFlag } from '@/lib/spoiler-flag';
 
 import type { CreateReplyState } from '@/app/[locale]/(public)/topics/_actions/createReply';
 import { createReplyBase } from '@/app/[locale]/(public)/topics/_actions/createReply';
@@ -12,11 +13,7 @@ export async function createReply(
   _prevState: CreateReplyState,
   formData: FormData
 ): Promise<CreateReplyState> {
-  // Self-declared spoiler flag. Same `'on'` / `'true'` normalization as
-  // `createPositionPuzzlePostWithAttachment` so a missing or forged value
-  // never silently flags a reply as containing the solution.
-  const rawSpoiler = formData.get('isSpoiler');
-  const isSpoiler = rawSpoiler === 'on' || rawSpoiler === 'true';
+  const isSpoiler = readSpoilerFlag(formData);
 
   return createReplyBase({
     locale,

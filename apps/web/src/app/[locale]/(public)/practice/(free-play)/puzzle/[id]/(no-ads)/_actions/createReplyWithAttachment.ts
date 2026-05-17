@@ -1,6 +1,7 @@
 'use server';
 
 import { getPositionById } from '@/lib/positions/queries';
+import { readSpoilerFlag } from '@/lib/spoiler-flag';
 
 import type { CreateReplyState } from '@/app/[locale]/(public)/topics/_actions/createReply';
 import { createReplyWithAttachmentBase } from '@/app/[locale]/(public)/topics/_actions/createReplyWithAttachmentBase';
@@ -18,11 +19,7 @@ export async function createReplyWithAttachment(
   _prevState: CreateReplyState,
   formData: FormData
 ): Promise<CreateReplyState> {
-  // Same `'on'` / `'true'` normalization as the plain `createReply`
-  // wrapper so a missing or forged value never silently flags a reply
-  // as containing the solution.
-  const rawSpoiler = formData.get('isSpoiler');
-  const isSpoiler = rawSpoiler === 'on' || rawSpoiler === 'true';
+  const isSpoiler = readSpoilerFlag(formData);
 
   return createReplyWithAttachmentBase({
     locale,
