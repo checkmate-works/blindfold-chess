@@ -14,10 +14,10 @@ type Props = {
   value: EngineKind;
   onChange: (value: EngineKind) => void;
   /**
-   * How the Maia card renders. `free` for Maia-exempt viewers, `payable`
-   * when the viewer can afford a per-game charge, `locked` when they
-   * cannot. Computed server-side via `getMaiaEngineAccess()` +
-   * `deriveMaiaCardMode()` and passed in — this component is presentational.
+   * How the Maia card renders. `payable` when the viewer can afford a
+   * per-game charge, `locked` when they cannot. Computed server-side via
+   * `getMaiaEngineAccess()` + `deriveMaiaCardMode()` and passed in — this
+   * component is presentational.
    */
   maiaCardMode: MaiaCardMode;
   /** Per-game Maia point cost; surfaced as a badge when the card is payable. */
@@ -59,8 +59,7 @@ const ENGINE_OPTIONS: ReadonlyArray<EngineOption> = [
  * page-level `?` help tour, so the cards stay compact on narrow viewports.
  *
  * The Maia card adapts to `maiaCardMode`:
- *   - `free`    — selectable, no badge.
- *   - `payable` — selectable, shows a per-game point-cost badge.
+ *   - `payable` — selectable, shows a per-game coin-cost badge.
  *   - `locked`  — greyed out with a lock badge; tapping it is not a no-op,
  *                 it calls `onMaiaLockedClick` so the parent can explain.
  */

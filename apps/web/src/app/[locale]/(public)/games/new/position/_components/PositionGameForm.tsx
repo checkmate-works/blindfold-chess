@@ -24,6 +24,7 @@ import { CollapsibleGameSettings } from '@/app/[locale]/(public)/games/new/_comp
 import { ColorSelector } from '@/app/[locale]/(public)/games/new/_components/ColorSelector';
 import { EngineSelector } from '@/app/[locale]/(public)/games/new/_components/EngineSelector';
 import { LargeDownloadConsentDialog } from '@/app/[locale]/(public)/games/new/_components/LargeDownloadConsentDialog';
+import { MaiaCoinConfirmModal } from '@/app/[locale]/(public)/games/new/_components/MaiaCoinConfirmModal';
 import { MaiaPointInfoModal } from '@/app/[locale]/(public)/games/new/_components/MaiaPointInfoModal';
 import {
   type CastlingRights,
@@ -192,7 +193,7 @@ export function PositionGameForm({ locale, maiaAccess }: Props) {
     router.push(`/${locale}/games/play?${params.toString()}`);
   };
 
-  const launch = useMaiaGameLaunch({ maiaAccess, navigateToGame });
+  const launch = useMaiaGameLaunch({ navigateToGame });
 
   const editableBoardLabels = useMemo(
     () => ({
@@ -308,6 +309,13 @@ export function PositionGameForm({ locale, maiaAccess }: Props) {
         {t('startGame')}
       </Button>
 
+      <MaiaCoinConfirmModal
+        isOpen={launch.coinConfirmDialog.isOpen}
+        onConfirm={launch.coinConfirmDialog.onConfirm}
+        onCancel={launch.coinConfirmDialog.onCancel}
+        cost={MAIA_GAME_POINT_COST}
+        spendableBalance={maiaAccess.spendableBalance}
+      />
       <LargeDownloadConsentDialog
         isOpen={launch.consentDialog.isOpen}
         onConfirm={launch.consentDialog.onConfirm}

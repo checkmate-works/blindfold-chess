@@ -19,8 +19,8 @@ type Props = {
 };
 
 /**
- * Explains the per-game Maia point cost when a non-exempt viewer cannot
- * afford a game. Opened from two places, both meaning "not enough points":
+ * Explains the per-game Maia coin cost when a viewer cannot afford a
+ * game. Opened from two places, both meaning "not enough coins":
  *   1. Tapping the locked Maia card in the engine selector.
  *   2. A start attempt that fails the balance check server-side.
  */

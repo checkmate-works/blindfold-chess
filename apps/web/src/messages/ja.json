@@ -1889,17 +1889,24 @@
     "selectEngine": "AIエンジンを選択",
     "engineStockfishLabel": "Stockfish",
     "engineStockfishDescription": "強さを調整できるオープンソースの強力なエンジン。定番のAI対戦相手です。",
-    "engineMaiaLabel": "Maia（人間風）",
+    "engineMaiaLabel": "Maia",
     "engineMaiaDescription": "選択した Elo の人間プレイヤーのような指し方をするニューラルネットワーク型エンジン。初回はモデル（約46MB）の読み込みに数秒かかります。",
     "engineLockedHint": "コイン不足",
     "engineMaiaCostBadge": "{cost} コイン",
     "maiaPointModal": {
       "title": "Maia の対局にはコインが必要",
-      "body": "Maia との対局には1局あたり {cost} コイン必要です。サブスクリプション加入者は無料で対局できます。",
+      "body": "Maia との対局には1局あたり {cost} コイン必要です。",
       "balance": "現在の保有コイン: {balance} コイン",
       "earnHint": "コインは、パズルや局面の投稿などコミュニティへの貢献で貯められます。",
       "viewPoints": "コインを確認",
       "close": "閉じる"
+    },
+    "maiaCoinConfirmModal": {
+      "title": "Maia と対局を始めますか？",
+      "body": "この対局を始めると {cost} コインを消費します。",
+      "balance": "現在の保有コイン: {balance} コイン",
+      "confirm": "コインを使って開始",
+      "cancel": "キャンセル"
     },
     "helpLabel": "ヘルプを表示",
     "helpEngineDescription": "Stockfish: 強さを調整できるオープンソースのチェスエンジン。Maia: 数百万局の人間対局で学習されたニューラルネットワーク。選択したレベルの人間プレイヤーのように、コンピュータらしくない手を指します。",

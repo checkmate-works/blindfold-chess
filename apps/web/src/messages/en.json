@@ -1889,17 +1889,24 @@
     "selectEngine": "Select AI Engine",
     "engineStockfishLabel": "Stockfish",
     "engineStockfishDescription": "A strong open source engine with adjustable skill level — the classic AI opponent.",
-    "engineMaiaLabel": "Maia (human-like)",
+    "engineMaiaLabel": "Maia",
     "engineMaiaDescription": "A neural-network engine that plays like a human at the chosen Elo. The first move takes a few seconds while the model loads (~46 MB).",
     "engineLockedHint": "Needs coins",
     "engineMaiaCostBadge": "{cost} coin",
     "maiaPointModal": {
       "title": "Maia costs coins",
-      "body": "Each game against Maia costs {cost} coin. Subscribers play Maia for free.",
+      "body": "Each game against Maia costs {cost} coin.",
       "balance": "You currently have {balance} coins.",
       "earnHint": "Earn coins by contributing puzzles, positions, and posts to the community.",
       "viewPoints": "View my coins",
       "close": "Close"
+    },
+    "maiaCoinConfirmModal": {
+      "title": "Start a game against Maia?",
+      "body": "Starting this game spends {cost} coin.",
+      "balance": "You currently have {balance} coins.",
+      "confirm": "Spend coin & start",
+      "cancel": "Cancel"
     },
     "helpLabel": "Show help",
     "helpEngineDescription": "Stockfish: an open-source chess engine with adjustable strength. Maia: a neural network trained on millions of human games — it plays at the chosen level like a real player would, not like a computer.",

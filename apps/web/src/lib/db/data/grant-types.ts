@@ -21,9 +21,8 @@ export type GrantType = (typeof GRANT_TYPES)[number];
  * - `paywall_access` Unlocks a scoped resource (currently article paywall).
  *                    Scoped via `resourceType` + `resourceId` on the row.
  *
- * Maia engine access is intentionally NOT a benefit type: it is gated by an
- * active subscription or a per-game point charge (see `canUseMaia`), not by
- * a `user_grants` row.
+ * Maia engine access is intentionally NOT a benefit type: it is gated by a
+ * per-game coin charge (see `canUseMaia`), not by a `user_grants` row.
  *
  * This array IS the validation source — both the admin grant action and
  * the UI dropdown read it directly. To add a new benefit type, append a

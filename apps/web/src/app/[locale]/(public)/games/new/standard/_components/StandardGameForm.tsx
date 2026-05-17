@@ -23,6 +23,7 @@ import { CollapsibleGameSettings } from '@/app/[locale]/(public)/games/new/_comp
 import { ColorSelector } from '@/app/[locale]/(public)/games/new/_components/ColorSelector';
 import { EngineSelector } from '@/app/[locale]/(public)/games/new/_components/EngineSelector';
 import { LargeDownloadConsentDialog } from '@/app/[locale]/(public)/games/new/_components/LargeDownloadConsentDialog';
+import { MaiaCoinConfirmModal } from '@/app/[locale]/(public)/games/new/_components/MaiaCoinConfirmModal';
 import { MaiaPointInfoModal } from '@/app/[locale]/(public)/games/new/_components/MaiaPointInfoModal';
 import { SkillLevelSelector } from '@/app/[locale]/(public)/games/new/_components/SkillLevelSelector';
 import { useLocalGameSettings } from '@/app/[locale]/(public)/games/new/_hooks/use-local-game-settings';
@@ -34,9 +35,9 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 type Props = {
   locale: Locale;
   /**
-   * Server-side resolved Maia access (subscription / grant exemption plus
-   * the viewer's spendable point balance). Drives the engine selector's
-   * Maia card and the per-game point charge.
+   * Server-side resolved Maia access (the viewer's spendable coin
+   * balance). Drives the engine selector's Maia card and the per-game
+   * coin charge.
    */
   maiaAccess: MaiaEngineAccess;
 };
@@ -77,7 +78,7 @@ export function StandardGameForm({ locale, maiaAccess }: Props) {
     router.push(`/${locale}/games/play?${params.toString()}`);
   };
 
-  const launch = useMaiaGameLaunch({ maiaAccess, navigateToGame });
+  const launch = useMaiaGameLaunch({ navigateToGame });
 
   return (
     <div className="space-y-6">
@@ -110,6 +111,13 @@ export function StandardGameForm({ locale, maiaAccess }: Props) {
         {t('startGame')}
       </Button>
 
+      <MaiaCoinConfirmModal
+        isOpen={launch.coinConfirmDialog.isOpen}
+        onConfirm={launch.coinConfirmDialog.onConfirm}
+        onCancel={launch.coinConfirmDialog.onCancel}
+        cost={MAIA_GAME_POINT_COST}
+        spendableBalance={maiaAccess.spendableBalance}
+      />
       <LargeDownloadConsentDialog
         isOpen={launch.consentDialog.isOpen}
         onConfirm={launch.consentDialog.onConfirm}

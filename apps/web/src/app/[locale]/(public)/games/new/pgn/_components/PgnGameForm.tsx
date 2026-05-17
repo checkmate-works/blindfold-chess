@@ -19,6 +19,7 @@ import type { SkillLevel } from '@/lib/types';
 import type { MaiaEngineAccess } from '@/lib/users/can-use-maia';
 
 import { LargeDownloadConsentDialog } from '@/app/[locale]/(public)/games/new/_components/LargeDownloadConsentDialog';
+import { MaiaCoinConfirmModal } from '@/app/[locale]/(public)/games/new/_components/MaiaCoinConfirmModal';
 import { MaiaPointInfoModal } from '@/app/[locale]/(public)/games/new/_components/MaiaPointInfoModal';
 import { useLocalGameSettings } from '@/app/[locale]/(public)/games/new/_hooks/use-local-game-settings';
 import { useMaiaGameLaunch } from '@/app/[locale]/(public)/games/new/_hooks/use-maia-game-launch';
@@ -144,7 +145,7 @@ export function PgnGameForm({ locale, maiaAccess }: Props) {
     router.push(`/${locale}/games/play?${params.toString()}`);
   };
 
-  const launch = useMaiaGameLaunch({ maiaAccess, navigateToGame });
+  const launch = useMaiaGameLaunch({ navigateToGame });
 
   const isStartDisabled = !pgn.trim() || !validatePgn(pgn);
   const showDerivedFromPgnHint = pgn.trim() !== '' && validatePgn(pgn) && !colorManuallySet;
@@ -172,6 +173,13 @@ export function PgnGameForm({ locale, maiaAccess }: Props) {
         isLoading={launch.isLoading}
         onStartGame={() => launch.start(engine)}
         previewSlot={<PgnPreview pgnMoves={pgnMoves} startingFen={startingFen} color={color} />}
+      />
+      <MaiaCoinConfirmModal
+        isOpen={launch.coinConfirmDialog.isOpen}
+        onConfirm={launch.coinConfirmDialog.onConfirm}
+        onCancel={launch.coinConfirmDialog.onCancel}
+        cost={MAIA_GAME_POINT_COST}
+        spendableBalance={maiaAccess.spendableBalance}
       />
       <LargeDownloadConsentDialog
         isOpen={launch.consentDialog.isOpen}

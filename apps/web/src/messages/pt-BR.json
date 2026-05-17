@@ -1889,17 +1889,24 @@
     "selectEngine": "Selecione o motor de IA",
     "engineStockfishLabel": "Stockfish",
     "engineStockfishDescription": "Um motor de código aberto poderoso com nível de habilidade ajustável — o oponente de IA clássico.",
-    "engineMaiaLabel": "Maia (estilo humano)",
+    "engineMaiaLabel": "Maia",
     "engineMaiaDescription": "Um motor baseado em redes neurais que joga como um humano no Elo selecionado. O primeiro movimento demora alguns segundos enquanto o modelo é carregado (~46 MB).",
     "engineLockedHint": "Moedas insuficientes",
     "engineMaiaCostBadge": "{cost} moeda",
     "maiaPointModal": {
       "title": "Maia custa moedas",
-      "body": "Cada partida contra a Maia custa {cost} moeda. Assinantes jogam com a Maia gratuitamente.",
+      "body": "Cada partida contra a Maia custa {cost} moeda.",
       "balance": "Você tem atualmente {balance} moedas.",
       "earnHint": "Ganhe moedas contribuindo com problemas, posições e publicações para a comunidade.",
       "viewPoints": "Ver minhas moedas",
       "close": "Fechar"
+    },
+    "maiaCoinConfirmModal": {
+      "title": "Iniciar uma partida contra a Maia?",
+      "body": "Iniciar esta partida custa {cost} moeda.",
+      "balance": "Você tem atualmente {balance} moedas.",
+      "confirm": "Gastar moeda e iniciar",
+      "cancel": "Cancelar"
     },
     "helpLabel": "Mostrar ajuda",
     "helpEngineDescription": "Stockfish: um motor de xadrez de código aberto com força ajustável. Maia: uma rede neural treinada com milhões de partidas humanas — joga no nível selecionado como um jogador real, não como um computador.",

@@ -12,8 +12,8 @@ export type ConsumeMaiaGamePointResult =
 
 /**
  * Charge `MAIA_GAME_POINT_COST` confirmed points for one Maia game
- * (per-game billing — model B). Called at game-creation time for users who
- * are not Maia-exempt (no active subscription).
+ * (per-game billing — model B). Called at game-creation time for every
+ * viewer — there is no subscription exemption.
  *
  * @design `clientGameId` anchors idempotency
  *
