@@ -27,11 +27,12 @@
  */
 import { getTranslations } from 'next-intl/server';
 
-import { desc, eq, inArray, sql } from 'drizzle-orm';
+import { inArray } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
-import { db, pointEvents, profiles } from '@/lib/db';
+import { db, profiles } from '@/lib/db';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
+import { countAdminPointGrants, listAdminPointGrants } from '@/lib/points';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 import { AdminDataTable } from '../_components/AdminDataTable';
@@ -50,34 +51,24 @@ export default async function AdminPointsPage({
   const { page } = await searchParamsCache.parse(searchParams);
   const t = await getTranslations({ locale: 'en', namespace: 'Admin' });
 
-  const [countResult] = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(pointEvents)
-    .where(eq(pointEvents.source, 'admin_grant'));
+  const total = await countAdminPointGrants();
 
   const { currentPage, totalPages, limit, offset } = getPaginationParams(
     page,
-    countResult?.count ?? 0,
+    total,
     DEFAULT_PAGE_SIZE
   );
 
-  const grantRows = await db
-    .select({
-      id: pointEvents.id,
-      userId: pointEvents.userId,
-      delta: pointEvents.delta,
-      metadata: pointEvents.metadata,
-      createdAt: pointEvents.createdAt,
-    })
-    .from(pointEvents)
-    .where(eq(pointEvents.source, 'admin_grant'))
-    .orderBy(desc(pointEvents.createdAt))
-    .limit(limit)
-    .offset(offset);
+  const grantRows = await listAdminPointGrants(limit, offset);
 
   const userIds = [...new Set(grantRows.map((g) => g.userId))];
   const userProfiles =
-    userIds.length > 0 ? await db.select().from(profiles).where(inArray(profiles.id, userIds)) : [];
+    userIds.length > 0
+      ? await db
+          .select({ id: profiles.id, username: profiles.username })
+          .from(profiles)
+          .where(inArray(profiles.id, userIds))
+      : [];
   const profileMap = new Map(userProfiles.map((p) => [p.id, p]));
 
   const adminClient = createAdminClient();
@@ -110,7 +101,7 @@ export default async function AdminPointsPage({
           {t('points.showing', {
             from: (currentPage - 1) * DEFAULT_PAGE_SIZE + 1,
             to: (currentPage - 1) * DEFAULT_PAGE_SIZE + grantRows.length,
-            total: countResult?.count ?? 0,
+            total,
           })}
         </p>
       )}
@@ -127,7 +118,6 @@ export default async function AdminPointsPage({
         renderRow={(grant) => {
           const profile = profileMap.get(grant.userId);
           const email = emailMap.get(grant.userId);
-          const reason = (grant.metadata as { reason?: string | null } | null)?.reason ?? null;
           return (
             <tr key={grant.id} className="border-t border-border">
               <td className="px-4 py-3">
@@ -137,7 +127,9 @@ export default async function AdminPointsPage({
                 )}
               </td>
               <td className="px-4 py-3 font-mono">+{grant.delta}</td>
-              <td className="px-4 py-3 text-muted-foreground max-w-64 truncate">{reason ?? '-'}</td>
+              <td className="px-4 py-3 text-muted-foreground max-w-64 truncate">
+                {grant.reason ?? '-'}
+              </td>
               <td className="px-4 py-3 text-muted-foreground text-xs">
                 {new Date(grant.createdAt).toLocaleString()}
               </td>

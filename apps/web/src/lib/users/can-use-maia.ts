@@ -1,8 +1,6 @@
-import { and, eq } from 'drizzle-orm';
 import 'server-only';
 
-import { db, pointEvents } from '@/lib/db';
-import { MAIA_GAME_SOURCE, getPointBalanceSummary } from '@/lib/points';
+import { getPointBalanceSummary, hasMaiaGameCharge } from '@/lib/points';
 
 /**
  * Maia engine access state for the `/games/new/*` engine selectors.
@@ -13,20 +11,6 @@ import { MAIA_GAME_SOURCE, getPointBalanceSummary } from '@/lib/points';
 export type MaiaEngineAccess = {
   spendableBalance: number;
 };
-
-/**
- * Whether the user has ever paid a coin for a Maia game. Used by the
- * model-download gate below — the first per-game charge is the moment a
- * user becomes allowed to fetch the ONNX model.
- */
-async function hasPaidForMaiaGame(userId: string): Promise<boolean> {
-  const rows = await db
-    .select({ id: pointEvents.id })
-    .from(pointEvents)
-    .where(and(eq(pointEvents.userId, userId), eq(pointEvents.source, MAIA_GAME_SOURCE)))
-    .limit(1);
-  return rows.length > 0;
-}
 
 /**
  * Maia model-download gate.
@@ -49,7 +33,7 @@ async function hasPaidForMaiaGame(userId: string): Promise<boolean> {
  */
 export async function canUseMaia(userId: string | null): Promise<boolean> {
   if (!userId) return false;
-  return hasPaidForMaiaGame(userId);
+  return hasMaiaGameCharge(userId);
 }
 
 /**

@@ -13,7 +13,7 @@ export {
   isPointEligibleTopicType,
   sourceForEntity,
 } from './constants';
-export { consumeMaiaGamePoint } from './consume-maia-game-point';
+export { consumeMaiaGamePoint, hasMaiaGameCharge } from './consume-maia-game-point';
 export type { ConsumeMaiaGamePointResult } from './consume-maia-game-point';
 export { getDailyCreationCapStatus } from './daily-cap';
 export type { DailyCreationCapStatus } from './daily-cap';
@@ -29,8 +29,8 @@ export { getPointBalanceSummary } from './get-balance';
 export type { PointBalanceSummary } from './get-balance';
 export { getPointHistory } from './get-history';
 export type { PointHistoryEntry } from './get-history';
-export { grantAdminPoints } from './grant-admin';
-export type { AdminGrantResult } from './grant-admin';
+export { countAdminPointGrants, grantAdminPoints, listAdminPointGrants } from './grant-admin';
+export type { AdminGrantResult, AdminPointGrantRow } from './grant-admin';
 export { clawbackPointsForPost, grantPointsForPost } from './grant-points';
 export type { PointGrantResult } from './grant-points';
 export {

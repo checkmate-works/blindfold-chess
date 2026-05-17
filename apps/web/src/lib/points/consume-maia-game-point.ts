@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import 'server-only';
 
 import { db, pointEvents } from '@/lib/db';
@@ -86,4 +86,19 @@ export async function consumeMaiaGamePoint(
     // race and already charged — treat as an idempotent success.
     return { ok: true, alreadyCharged: result === null };
   });
+}
+
+/**
+ * Whether the user has ever been charged a coin for a Maia game — i.e.
+ * holds at least one `maia_game` ledger row. The Maia model-download
+ * gate (`canUseMaia`) keys off this single fact; keeping the query here
+ * keeps `point_events` access inside `@/lib/points`.
+ */
+export async function hasMaiaGameCharge(userId: string): Promise<boolean> {
+  const rows = await db
+    .select({ id: pointEvents.id })
+    .from(pointEvents)
+    .where(and(eq(pointEvents.userId, userId), eq(pointEvents.source, MAIA_GAME_SOURCE)))
+    .limit(1);
+  return rows.length > 0;
 }
