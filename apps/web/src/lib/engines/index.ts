@@ -11,6 +11,8 @@ export {
 
 export { formatEngineConfigLabel } from './format-label';
 
+export { ENGINE_LOGO_SRC } from './logo';
+
 export type { StockfishOpponentConfig } from './stockfish';
 export { createStockfishOpponent } from './stockfish';
 

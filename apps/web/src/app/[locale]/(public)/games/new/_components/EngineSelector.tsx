@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaLock } from 'react-icons/fa';
 
-import { type EngineKind } from '@/lib/engines';
+import { ENGINE_LOGO_SRC, type EngineKind } from '@/lib/engines';
 
 import type { MaiaCardMode } from '@/app/[locale]/(public)/games/new/_lib/maia-launch';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
@@ -38,17 +38,19 @@ type EngineOption = {
 
 /**
  * Visual order is intentional: Stockfish first (free, default), Maia
- * second (paid / granted). New engines append to this list.
+ * second (paid / granted). New engines append to this list. Logos come
+ * from the shared `ENGINE_LOGO_SRC` map so this picker and the game-list
+ * `EngineConfigBadge` never drift apart.
  */
 const ENGINE_OPTIONS: ReadonlyArray<EngineOption> = [
   {
     kind: 'stockfish',
-    logoSrc: '/images/engines/stockfish.png',
+    logoSrc: ENGINE_LOGO_SRC.stockfish,
     labelKey: 'engineStockfishLabel',
   },
   {
     kind: 'maia',
-    logoSrc: '/images/engines/maia.png',
+    logoSrc: ENGINE_LOGO_SRC.maia,
     labelKey: 'engineMaiaLabel',
   },
 ];
