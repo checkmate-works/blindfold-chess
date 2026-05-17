@@ -3900,7 +3900,8 @@
     "continueButton": "Ver sua publicação",
     "viewPointsButton": "Ver suas moedas",
     "genericMessage": "Obrigado pela sua contribuição.",
-    "coinsEarned": "Moedas ganhas!"
+    "coinsEarned": "Moedas ganhas!",
+    "aboutCoinsLink": "Como as Moedas funcionam"
   },
   "authPrompt": {
     "title": "Faça login para continuar",

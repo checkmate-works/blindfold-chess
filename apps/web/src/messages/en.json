@@ -3900,7 +3900,8 @@
     "continueButton": "View your post",
     "viewPointsButton": "View your coins",
     "genericMessage": "Thanks for your contribution.",
-    "coinsEarned": "Coins earned!"
+    "coinsEarned": "Coins earned!",
+    "aboutCoinsLink": "How Coins work"
   },
   "authPrompt": {
     "title": "Sign in to continue",

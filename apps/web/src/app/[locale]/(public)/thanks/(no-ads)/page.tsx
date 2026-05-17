@@ -72,19 +72,29 @@ export default async function ThanksPage({ params, searchParams }: Props) {
       <SectionTitle>{t('sectionTitle')}</SectionTitle>
 
       {awardedCoins !== null ? (
-        <CertificateFrame>
-          <div className="flex flex-col items-center gap-3 py-2">
-            <div className="flex items-center gap-2">
-              <CoinIcon size={44} aria-hidden="true" />
-              <span className="text-3xl font-bold text-podium-gold-foreground">
-                ×{awardedCoins}
-              </span>
+        <div className="space-y-3">
+          <CertificateFrame>
+            <div className="flex flex-col items-center gap-3 py-2">
+              <div className="flex items-center gap-2">
+                <CoinIcon size={44} aria-hidden="true" />
+                <span className="text-3xl font-bold text-podium-gold-foreground">
+                  ×{awardedCoins}
+                </span>
+              </div>
+              <p className="text-base sm:text-lg font-serif font-bold text-podium-gold-foreground">
+                {t('coinsEarned')}
+              </p>
             </div>
-            <p className="text-base sm:text-lg font-serif font-bold text-podium-gold-foreground">
-              {t('coinsEarned')}
-            </p>
-          </div>
-        </CertificateFrame>
+          </CertificateFrame>
+          <p className="text-center">
+            <Link
+              href={`/${locale}/coin`}
+              className="text-sm text-muted-foreground underline hover:opacity-80"
+            >
+              {t('aboutCoinsLink')}
+            </Link>
+          </p>
+        </div>
       ) : (
         <p className="text-muted-foreground text-center py-4">{t('genericMessage')}</p>
       )}

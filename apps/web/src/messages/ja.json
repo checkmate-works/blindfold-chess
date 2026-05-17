@@ -3900,7 +3900,8 @@
     "continueButton": "投稿内容を確認する",
     "viewPointsButton": "獲得したコインを確認する",
     "genericMessage": "ご投稿ありがとうございます。",
-    "coinsEarned": "コインを獲得しました"
+    "coinsEarned": "コインを獲得しました",
+    "aboutCoinsLink": "コインの仕組みを見る"
   },
   "authPrompt": {
     "title": "サインインして続行",
