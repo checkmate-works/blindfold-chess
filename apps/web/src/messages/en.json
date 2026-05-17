@@ -335,7 +335,7 @@
       "puzzleTitle": "Submit a puzzle",
       "positionMemoryTitle": "Submit a position-memory problem",
       "topicTitle": "Post in a topic",
-      "likeNote1": "Every like your content receives earns a Coin.",
+      "likeNote1": "Every like your content receives earns a Coin (not instant — granted once a day in a batch).",
       "likeNote2": "Post a topic or create a problem once, and it keeps earning Coins."
     },
     "spend": {
