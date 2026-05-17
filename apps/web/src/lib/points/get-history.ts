@@ -4,11 +4,14 @@ import 'server-only';
 import { db, pointEvents } from '@/lib/db';
 
 import {
+  ADMIN_GRANT_SOURCE,
   LIKE_GRANT_SOURCE,
   MAIA_GAME_SOURCE,
   POINT_SOURCES,
+  PURCHASE_SOURCE,
   type PointCategory,
   type PointSource,
+  REDEMPTION_SOURCE,
 } from './constants';
 
 /**
@@ -76,9 +79,9 @@ function classifyKind(source: string, delta: number, metadata: unknown): PointHi
   if ((POINT_SOURCES as readonly string[]).includes(source)) {
     return delta > 0 ? 'post_grant' : 'post_clawback';
   }
-  if (source === 'admin_grant') return 'admin_grant';
-  if (source === 'redemption') return 'redemption';
-  if (source === 'purchase') return 'purchase';
+  if (source === ADMIN_GRANT_SOURCE) return 'admin_grant';
+  if (source === REDEMPTION_SOURCE) return 'redemption';
+  if (source === PURCHASE_SOURCE) return 'purchase';
   if (source === MAIA_GAME_SOURCE) return 'maia_game';
   if (source === LIKE_GRANT_SOURCE) return 'like_grant';
   return 'other';

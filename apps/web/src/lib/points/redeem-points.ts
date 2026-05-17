@@ -4,7 +4,7 @@ import 'server-only';
 
 import { db, pointRedemptions, userGrants, userPointBalances } from '@/lib/db';
 
-import { SPENDABLE_CONSUME_ORDER } from './constants';
+import { REDEMPTION_SOURCE, SPENDABLE_CONSUME_ORDER } from './constants';
 import { recordPointMovement } from './internal-ledger';
 
 /**
@@ -148,9 +148,9 @@ export async function redeemPointsForAdFree(userId: string, cost: number): Promi
           userId,
           delta: -take,
           category,
-          source: 'redemption',
+          source: REDEMPTION_SOURCE,
           sourceId: redemptionRow.id,
-          idempotencyKey: `redemption:${redemptionRow.id}:${category}`,
+          idempotencyKey: `${REDEMPTION_SOURCE}:${redemptionRow.id}:${category}`,
           metadata: { productCode: AD_FREE_PRODUCT_CODE, durationDays },
         });
 

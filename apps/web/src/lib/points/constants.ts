@@ -187,6 +187,21 @@ export const MAIA_GAME_POINT_COST = 1;
 export const MAIA_GAME_SOURCE = 'maia_game';
 
 /**
+ * `point_events.source` values for the non-UGC ledger flows — none are
+ * members of `POINT_SOURCES` (the UGC creation surface). Named constants
+ * so the writers and `classifyKind` in `get-history.ts` cannot drift.
+ *
+ * - `REDEMPTION_SOURCE`  — a point spend on an ad_free redemption.
+ * - `ADMIN_GRANT_SOURCE` — a promotional grant issued from `/admin/points`.
+ * - `PURCHASE_SOURCE`    — a paid point top-up. No purchase flow ships
+ *                          yet; the value is reserved so `get-history`
+ *                          can already classify such rows.
+ */
+export const REDEMPTION_SOURCE = 'redemption';
+export const ADMIN_GRANT_SOURCE = 'admin_grant';
+export const PURCHASE_SOURCE = 'purchase';
+
+/**
  * `point_events.source` value for a like-derived coin grant. Like
  * `MAIA_GAME_SOURCE`, deliberately NOT a member of `POINT_SOURCES` — that
  * array is the UGC *creation* grant surface (`entityTypeForSource` etc.),

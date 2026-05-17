@@ -3,6 +3,7 @@ import 'server-only';
 
 import type { DbTx } from '@/lib/db/types';
 
+import { ADMIN_GRANT_SOURCE } from './constants';
 import { recordPointMovement } from './internal-ledger';
 
 export type AdminGrantResult = {
@@ -52,9 +53,9 @@ export async function grantAdminPoints(
     userId,
     delta: amount,
     category: 'promotional',
-    source: 'admin_grant',
+    source: ADMIN_GRANT_SOURCE,
     sourceId: grantId,
-    idempotencyKey: `admin_grant:${grantId}`,
+    idempotencyKey: `${ADMIN_GRANT_SOURCE}:${grantId}`,
     metadata,
   });
 
