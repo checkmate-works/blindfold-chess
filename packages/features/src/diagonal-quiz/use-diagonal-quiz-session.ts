@@ -2,10 +2,16 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { useTimedSession } from "../practice-session/use-timed-session";
 import { FEEDBACK_FLASH_MS } from "../common/flash-policy";
 import { computePracticeResult } from "../common/practice-result";
 import { generateSquareSequence } from "../common/utils";
+import { usePracticeCompletion } from "../practice-session/use-practice-completion";
+import {
+  type TimedQuizSessionConfig,
+  type TimedSessionFacade,
+  toTimedSessionFacade,
+} from "../practice-session/quiz-session";
+import { useTimedSession } from "../practice-session/use-timed-session";
 import {
   EXCLUDED_QUIZ_SQUARES,
   getDiagonals,
@@ -14,32 +20,18 @@ import {
 } from "./logic";
 import type { DiagonalQuestionResult, DiagonalQuizResult } from "./types";
 
-export type UseDiagonalQuizSessionConfig = {
-  timeLimit: number;
-  onComplete?: (result: DiagonalQuizResult) => void;
-  onAnswerEffect?: (correct: boolean) => void;
-  mistakeAllowance?: number;
-};
+export type UseDiagonalQuizSessionConfig =
+  TimedQuizSessionConfig<DiagonalQuizResult>;
 
-export type UseDiagonalQuizSessionReturn = {
+export type UseDiagonalQuizSessionReturn = TimedSessionFacade & {
   currentSquare: string | null;
-  countdown: number | null;
-  timeElapsed: number;
-  timeRemaining: number;
-  correctCount: number;
-  incorrectCount: number;
-  showFeedback: boolean;
-  lastAnswerCorrect: boolean | null;
   lastAnswer: {
     correct: boolean;
     correctDiagonal: string;
     correctAntiDiagonal: string;
   } | null;
   questionResults: DiagonalQuestionResult[];
-  isFinished: boolean;
-  isPaused: boolean;
   handleAnswer: (diagonalAnswer: string, antiDiagonalAnswer: string) => void;
-  togglePause: () => void;
 };
 
 export function useDiagonalQuizSession({
@@ -52,11 +44,6 @@ export function useDiagonalQuizSession({
     generateSquareSequence(200, Math.random, EXCLUDED_QUIZ_SQUARES),
   );
   const indexRef = useRef(0);
-  const questionTimesRef = useRef<number[]>([]);
-  // per-question timing — useTimedSession tracks session-wide elapsed time only
-  const questionStartRef = useRef<number>(Date.now());
-  const onCompleteRef = useRef(onComplete);
-  onCompleteRef.current = onComplete;
 
   const [questionResults, setQuestionResults] = useState<
     DiagonalQuestionResult[]
@@ -68,12 +55,6 @@ export function useDiagonalQuizSession({
   } | null>(null);
 
   const generateQuestion = useCallback((): string => {
-    questionTimesRef.current.push(
-      // per-question timing — useTimedSession tracks session-wide elapsed time only
-      (Date.now() - questionStartRef.current) / 1000,
-    );
-    questionStartRef.current = Date.now(); // per-question timing — useTimedSession tracks session-wide elapsed time only
-
     indexRef.current += 1;
     if (indexRef.current >= squaresRef.current.length - 10) {
       squaresRef.current = [
@@ -107,19 +88,18 @@ export function useDiagonalQuizSession({
     }
   }, [showFeedback]);
 
-  useEffect(() => {
-    if (!isFinished) return;
-
-    const result: DiagonalQuizResult = computePracticeResult(
-      correctCount,
-      incorrectCount,
-      timeElapsed,
-      timeLimit,
-      questionTimesRef.current,
-    );
-
-    onCompleteRef.current?.(result);
-  }, [isFinished, correctCount, incorrectCount, timeElapsed, timeLimit]);
+  usePracticeCompletion(
+    isFinished,
+    (): DiagonalQuizResult =>
+      computePracticeResult(
+        correctCount,
+        incorrectCount,
+        timeElapsed,
+        timeLimit,
+        session.questionTimes,
+      ),
+    onComplete,
+  );
 
   const { handleAnswer: sessionHandleAnswer, currentQuestion } = session;
 
@@ -167,19 +147,10 @@ export function useDiagonalQuizSession({
   );
 
   return {
+    ...toTimedSessionFacade(session),
     currentSquare: currentQuestion,
-    countdown: session.countdown,
-    timeElapsed,
-    timeRemaining: session.timeRemaining,
-    correctCount,
-    incorrectCount,
-    showFeedback,
-    lastAnswerCorrect: session.lastAnswerCorrect,
     lastAnswer,
     questionResults,
-    isFinished,
-    isPaused: session.isPaused,
     handleAnswer,
-    togglePause: session.togglePause,
   };
 }
