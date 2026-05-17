@@ -1897,7 +1897,7 @@
       "title": "Maia cuesta monedas",
       "body": "Cada partida contra Maia cuesta {cost} moneda.",
       "balance": "Actualmente tienes {balance} monedas.",
-      "earnHint": "Gana monedas contribuyendo con problemas, posiciones y publicaciones a la comunidad.",
+      "earnLink": "Cómo funcionan las Monedas",
       "viewPoints": "Ver mis monedas",
       "close": "Cerrar"
     },

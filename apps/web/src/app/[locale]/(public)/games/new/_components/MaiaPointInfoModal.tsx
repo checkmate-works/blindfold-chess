@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/app/_components';
+import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { Modal } from '@/app/[locale]/_components/Modal';
@@ -35,7 +36,13 @@ export function MaiaPointInfoModal({ isOpen, onClose, cost, spendableBalance, lo
         <p className="text-sm text-muted-foreground">
           {t('balance', { balance: spendableBalance })}
         </p>
-        <p className="text-sm text-muted-foreground">{t('earnHint')}</p>
+        <Link
+          href="/coin"
+          locale={locale}
+          className="inline-block text-sm text-muted-foreground underline hover:opacity-80"
+        >
+          {t('earnLink')}
+        </Link>
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-2">
           <Button variant="secondary" onClick={onClose}>
             {t('close')}

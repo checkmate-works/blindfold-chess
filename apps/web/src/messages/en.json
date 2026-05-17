@@ -1897,7 +1897,7 @@
       "title": "Maia costs coins",
       "body": "Each game against Maia costs {cost} coin.",
       "balance": "You currently have {balance} coins.",
-      "earnHint": "Earn coins by contributing puzzles, positions, and posts to the community.",
+      "earnLink": "How Coins work",
       "viewPoints": "View my coins",
       "close": "Close"
     },
