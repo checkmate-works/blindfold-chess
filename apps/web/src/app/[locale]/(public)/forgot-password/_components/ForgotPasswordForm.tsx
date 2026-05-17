@@ -2,11 +2,7 @@
 
 import { useState } from 'react';
 
-import { TextInput } from '@/app/_components';
-import {
-  AUTH_FORM_LABEL_CLASSES,
-  AUTH_SUBMIT_BUTTON_CLASSES,
-} from '@/app/_components/authFormStyles';
+import { AuthField, AuthSubmitButton } from '@/app/_components/AuthFormFields';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { FormErrorMessage } from '@/app/[locale]/_components/FormErrorMessage';
@@ -63,25 +59,21 @@ export function ForgotPasswordForm() {
 
       <p className="text-sm text-muted-foreground">{t('description')}</p>
 
-      <div>
-        <label htmlFor="email" className={AUTH_FORM_LABEL_CLASSES}>
-          {t('emailLabel')}
-        </label>
-        <TextInput
-          id="email"
-          type="email"
-          inputSize="sm"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          autoComplete="email"
-          placeholder={t('emailPlaceholder')}
-        />
-      </div>
+      <AuthField
+        id="email"
+        type="email"
+        label={t('emailLabel')}
+        value={email}
+        onChange={setEmail}
+        autoComplete="email"
+        placeholder={t('emailPlaceholder')}
+      />
 
-      <button type="submit" disabled={isLoading} className={AUTH_SUBMIT_BUTTON_CLASSES}>
-        {isLoading ? t('submitLoading') : t('submit')}
-      </button>
+      <AuthSubmitButton
+        isLoading={isLoading}
+        idleLabel={t('submit')}
+        loadingLabel={t('submitLoading')}
+      />
     </form>
   );
 }

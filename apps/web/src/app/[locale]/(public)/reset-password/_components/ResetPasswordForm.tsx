@@ -4,14 +4,12 @@ import { useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { TextInput } from '@/app/_components';
-import {
-  AUTH_FORM_LABEL_CLASSES,
-  AUTH_SUBMIT_BUTTON_CLASSES,
-} from '@/app/_components/authFormStyles';
+import { AuthField, AuthSubmitButton } from '@/app/_components/AuthFormFields';
 import { MIN_PASSWORD_LENGTH } from '@/config';
 import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+
+import { parsePasswordServerError } from '@/lib/validations/password';
 
 import { FormErrorMessage } from '@/app/[locale]/_components/FormErrorMessage';
 
@@ -41,11 +39,11 @@ export function ResetPasswordForm() {
     const result = await resetPassword(password);
 
     if ('error' in result) {
-      if (result.error === 'rateLimited') {
+      const passwordErrorKey = parsePasswordServerError(result.error);
+      if (passwordErrorKey) {
+        setError(tPassword(passwordErrorKey, { minLength: MIN_PASSWORD_LENGTH }));
+      } else if (result.error === 'rateLimited') {
         setError(t('rateLimited'));
-      } else if (result.error.startsWith('password:')) {
-        const key = result.error.replace('password:', '');
-        setError(tPassword(key, { minLength: MIN_PASSWORD_LENGTH }));
       } else {
         setError(t('error'));
       }
@@ -60,43 +58,33 @@ export function ResetPasswordForm() {
     <form onSubmit={handleSubmit} className="w-full max-w-sm mx-auto space-y-4">
       {error && <FormErrorMessage message={error} />}
 
-      <div>
-        <label htmlFor="password" className={AUTH_FORM_LABEL_CLASSES}>
-          {t('passwordLabel')}
-        </label>
-        <TextInput
-          id="password"
-          type="password"
-          inputSize="sm"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={MIN_PASSWORD_LENGTH}
-          autoComplete="new-password"
-          placeholder={t('passwordPlaceholder')}
-        />
-      </div>
+      <AuthField
+        id="password"
+        type="password"
+        label={t('passwordLabel')}
+        value={password}
+        onChange={setPassword}
+        autoComplete="new-password"
+        minLength={MIN_PASSWORD_LENGTH}
+        placeholder={t('passwordPlaceholder')}
+      />
 
-      <div>
-        <label htmlFor="confirmPassword" className={AUTH_FORM_LABEL_CLASSES}>
-          {t('confirmPasswordLabel')}
-        </label>
-        <TextInput
-          id="confirmPassword"
-          type="password"
-          inputSize="sm"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          required
-          minLength={MIN_PASSWORD_LENGTH}
-          autoComplete="new-password"
-          placeholder={t('confirmPasswordPlaceholder')}
-        />
-      </div>
+      <AuthField
+        id="confirmPassword"
+        type="password"
+        label={t('confirmPasswordLabel')}
+        value={confirmPassword}
+        onChange={setConfirmPassword}
+        autoComplete="new-password"
+        minLength={MIN_PASSWORD_LENGTH}
+        placeholder={t('confirmPasswordPlaceholder')}
+      />
 
-      <button type="submit" disabled={isLoading} className={AUTH_SUBMIT_BUTTON_CLASSES}>
-        {isLoading ? t('submitLoading') : t('submit')}
-      </button>
+      <AuthSubmitButton
+        isLoading={isLoading}
+        idleLabel={t('submit')}
+        loadingLabel={t('submitLoading')}
+      />
     </form>
   );
 }

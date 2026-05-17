@@ -2,18 +2,11 @@
 
 import { useState } from 'react';
 
-import { TextInput } from '@/app/_components';
-import {
-  AUTH_FORM_LABEL_CLASSES,
-  AUTH_SUBMIT_BUTTON_CLASSES,
-} from '@/app/_components/authFormStyles';
+import { AuthField, AuthSubmitButton } from '@/app/_components/AuthFormFields';
 import { MIN_PASSWORD_LENGTH } from '@/config';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import {
-  getPasswordValidationError,
-  isPasswordValidationErrorKey,
-} from '@/lib/validations/password';
+import { getPasswordValidationError, parsePasswordServerError } from '@/lib/validations/password';
 
 import { FormErrorMessage } from '@/app/[locale]/_components/FormErrorMessage';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
@@ -56,16 +49,11 @@ export function ChangePasswordForm() {
       const changeResult = await changePassword(currentPassword, newPassword);
 
       if ('error' in changeResult) {
-        const serverError = changeResult.error;
-        if (serverError.startsWith('password:')) {
-          const key = serverError.slice('password:'.length);
-          if (isPasswordValidationErrorKey(key)) {
-            setError(tPassword(key, { minLength: MIN_PASSWORD_LENGTH }));
-          } else {
-            setError(t('error'));
-          }
+        const passwordErrorKey = parsePasswordServerError(changeResult.error);
+        if (passwordErrorKey) {
+          setError(tPassword(passwordErrorKey, { minLength: MIN_PASSWORD_LENGTH }));
         } else {
-          switch (serverError) {
+          switch (changeResult.error) {
             case 'currentPasswordIncorrect':
               setError(t('currentPasswordIncorrect'));
               break;
@@ -101,56 +89,40 @@ export function ChangePasswordForm() {
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && <FormErrorMessage message={error} />}
 
-        <div>
-          <label htmlFor="currentPassword" className={AUTH_FORM_LABEL_CLASSES}>
-            {t('currentPasswordLabel')}
-          </label>
-          <TextInput
-            id="currentPassword"
-            type="password"
-            inputSize="sm"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            required
-            autoComplete="current-password"
-          />
-        </div>
+        <AuthField
+          id="currentPassword"
+          type="password"
+          label={t('currentPasswordLabel')}
+          value={currentPassword}
+          onChange={setCurrentPassword}
+          autoComplete="current-password"
+        />
 
-        <div>
-          <label htmlFor="newPassword" className={AUTH_FORM_LABEL_CLASSES}>
-            {t('newPasswordLabel')}
-          </label>
-          <TextInput
-            id="newPassword"
-            type="password"
-            inputSize="sm"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            required
-            minLength={MIN_PASSWORD_LENGTH}
-            autoComplete="new-password"
-          />
-        </div>
+        <AuthField
+          id="newPassword"
+          type="password"
+          label={t('newPasswordLabel')}
+          value={newPassword}
+          onChange={setNewPassword}
+          autoComplete="new-password"
+          minLength={MIN_PASSWORD_LENGTH}
+        />
 
-        <div>
-          <label htmlFor="confirmNewPassword" className={AUTH_FORM_LABEL_CLASSES}>
-            {t('confirmPasswordLabel')}
-          </label>
-          <TextInput
-            id="confirmNewPassword"
-            type="password"
-            inputSize="sm"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            minLength={MIN_PASSWORD_LENGTH}
-            autoComplete="new-password"
-          />
-        </div>
+        <AuthField
+          id="confirmNewPassword"
+          type="password"
+          label={t('confirmPasswordLabel')}
+          value={confirmPassword}
+          onChange={setConfirmPassword}
+          autoComplete="new-password"
+          minLength={MIN_PASSWORD_LENGTH}
+        />
 
-        <button type="submit" disabled={isLoading} className={AUTH_SUBMIT_BUTTON_CLASSES}>
-          {isLoading ? t('submitLoading') : t('submit')}
-        </button>
+        <AuthSubmitButton
+          isLoading={isLoading}
+          idleLabel={t('submit')}
+          loadingLabel={t('submitLoading')}
+        />
       </form>
     </section>
   );
