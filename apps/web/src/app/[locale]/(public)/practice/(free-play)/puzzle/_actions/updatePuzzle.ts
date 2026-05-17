@@ -1,16 +1,11 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { eq } from 'drizzle-orm';
 
-import { and, eq, isNull } from 'drizzle-orm';
-
-import { authenticateAndGuard } from '@/lib/auth';
-import { db, positions, puzzleSolutions } from '@/lib/db';
-import { validateAndDedupeTagIds } from '@/lib/positions/tag-validation';
-import { replacePositionTags } from '@/lib/positions/tag-writes';
+import { puzzleSolutions } from '@/lib/db';
+import { updatePositionEntry } from '@/lib/positions/user-position-mutations';
 import { normalizePuzzleMoves, validatePuzzleMutationData } from '@/lib/positions/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
-import { logActivityEvent } from '@/lib/users/activity-log';
 
 export type UpdatePuzzleResult = { success: true } | { error: string };
 
@@ -46,91 +41,33 @@ export async function updatePuzzle(data: {
    */
   chunkIds?: string[];
 }): Promise<UpdatePuzzleResult> {
-  const guardResult = await authenticateAndGuard(RATE_LIMITS.updatePuzzle);
-
-  if ('error' in guardResult) {
-    return { error: guardResult.error };
-  }
-
-  const { user } = guardResult;
-
   const normalizedMoves = normalizePuzzleMoves(data.solutionMoves);
 
-  const validationError = validatePuzzleMutationData({
-    fen: data.fen,
-    title: data.title,
-    description: data.description,
-    solutionMoves: normalizedMoves,
-    userId: user.id,
+  return updatePositionEntry({
+    kind: 'puzzle',
+    rateLimit: RATE_LIMITS.updatePuzzle,
+    data: {
+      id: data.id,
+      fen: data.fen,
+      title: data.title,
+      description: data.description,
+      themeIds: data.themeIds,
+      chunkIds: data.chunkIds,
+    },
+    validate: (userId) =>
+      validatePuzzleMutationData({
+        fen: data.fen,
+        title: data.title,
+        description: data.description,
+        solutionMoves: normalizedMoves,
+        userId,
+      }),
+    applyExtraWrites: async (tx, positionId) => {
+      await tx.delete(puzzleSolutions).where(eq(puzzleSolutions.positionId, positionId));
+      await tx.insert(puzzleSolutions).values({
+        positionId,
+        solutionMoves: normalizedMoves,
+      });
+    },
   });
-
-  if (validationError) {
-    return { error: validationError };
-  }
-
-  const [position] = await db
-    .select({
-      id: positions.id,
-      userId: positions.userId,
-      type: positions.type,
-      deletedAt: positions.deletedAt,
-    })
-    .from(positions)
-    .where(eq(positions.id, data.id))
-    .limit(1);
-
-  if (!position || position.type !== 'puzzle') {
-    return { error: 'notFound' };
-  }
-
-  if (position.userId !== user.id) {
-    return { error: 'unauthorized' };
-  }
-
-  if (position.deletedAt) {
-    return { error: 'alreadyDeleted' };
-  }
-
-  const tagValidation = await validateAndDedupeTagIds({
-    themeIds: data.themeIds,
-    chunkIds: data.chunkIds,
-  });
-  if (!tagValidation.ok) {
-    return { error: tagValidation.error };
-  }
-  const { themeIds: dedupedThemeIds, chunkIds: dedupedChunkIds } = tagValidation.deduped;
-
-  await db.transaction(async (tx) => {
-    await tx
-      .update(positions)
-      .set({
-        fen: data.fen.trim(),
-        title: data.title.trim(),
-        description: data.description?.trim() || null,
-      })
-      .where(
-        and(eq(positions.id, data.id), eq(positions.userId, user.id), isNull(positions.deletedAt))
-      );
-
-    await tx.delete(puzzleSolutions).where(eq(puzzleSolutions.positionId, data.id));
-    await tx.insert(puzzleSolutions).values({
-      positionId: data.id,
-      solutionMoves: normalizedMoves,
-    });
-
-    await replacePositionTags(tx, data.id, user.id, dedupedThemeIds, dedupedChunkIds);
-  });
-
-  logActivityEvent({
-    userId: user.id,
-    action: 'update_puzzle',
-    targetType: 'position',
-    targetId: data.id,
-    metadata: { type: 'puzzle' },
-  });
-
-  revalidatePath('/practice/puzzle');
-  revalidatePath(`/practice/puzzle/${data.id}`);
-
-  return { success: true };
 }
