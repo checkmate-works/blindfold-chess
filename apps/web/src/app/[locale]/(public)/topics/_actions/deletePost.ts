@@ -11,6 +11,7 @@ import { clawbackPointsForPost } from '@/lib/points';
 import { POST_IMAGES_BUCKET } from '@/lib/post-images/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { createClient as createSupabaseSessionClient } from '@/lib/supabase/server';
+import { loadAuthoredPost } from '@/lib/topic-posts';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { buildTopicDetailPath } from '../_lib/topic-paths';
@@ -24,29 +25,11 @@ export async function deletePost(postId: string, locale: string): Promise<Delete
   }
   const { user } = guardResult;
 
-  const [post] = await db
-    .select({
-      id: topicPosts.id,
-      userId: topicPosts.userId,
-      topicType: topicPosts.topicType,
-      topicKey: topicPosts.topicKey,
-      deletedAt: topicPosts.deletedAt,
-    })
-    .from(topicPosts)
-    .where(eq(topicPosts.id, postId))
-    .limit(1);
-
-  if (!post) {
-    return { error: 'notFound' };
+  const lookup = await loadAuthoredPost(postId, user.id);
+  if ('error' in lookup) {
+    return { error: lookup.error };
   }
-
-  if (post.userId !== user.id) {
-    return { error: 'unauthorized' };
-  }
-
-  if (post.deletedAt) {
-    return { error: 'alreadyDeleted' };
-  }
+  const { post } = lookup;
 
   // Best-effort: remove any image attachment Storage objects BEFORE the
   // soft delete. The post row stays (soft delete) and the attachment rows

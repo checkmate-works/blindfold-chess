@@ -3,15 +3,15 @@
 import { revalidatePath } from 'next/cache';
 
 import { validateFenSemantic } from '@blindfold-chess/features/chess-core';
-import { eq } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
-import { db, postFenAttachments, topicPosts } from '@/lib/db';
+import { db, postFenAttachments } from '@/lib/db';
 import { extractPgErrorCode } from '@/lib/db/extract-pg-error-code';
 import { FEN_MAX_LENGTH } from '@/lib/post-fens/constants';
 import { sanitizeFenCaption } from '@/lib/post-fens/sanitize-fen-caption';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
+import { loadAuthoredPost } from '@/lib/topic-posts';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { buildTopicDetailPath } from '../_lib/topic-paths';
@@ -125,28 +125,18 @@ export async function attachPostFen(input: {
   const { user } = guardResult;
 
   // Parent-post existence + ownership + not soft-deleted. Mirrors the
-  // posture in /api/posts/[id]/images.
-  const [post] = await db
-    .select({
-      id: topicPosts.id,
-      userId: topicPosts.userId,
-      topicType: topicPosts.topicType,
-      topicKey: topicPosts.topicKey,
-      deletedAt: topicPosts.deletedAt,
-    })
-    .from(topicPosts)
-    .where(eq(topicPosts.id, postId))
-    .limit(1);
-
-  if (!post) {
-    return { error: 'postFenAttachment.error.postNotFound' };
+  // posture in /api/posts/[id]/images. A soft-deleted post is reported as
+  // postNotFound — the FEN flow does not distinguish a tombstone.
+  const lookup = await loadAuthoredPost(postId, user.id);
+  if ('error' in lookup) {
+    return {
+      error:
+        lookup.error === 'unauthorized'
+          ? 'postFenAttachment.error.notOwner'
+          : 'postFenAttachment.error.postNotFound',
+    };
   }
-  if (post.userId !== user.id) {
-    return { error: 'postFenAttachment.error.notOwner' };
-  }
-  if (post.deletedAt !== null) {
-    return { error: 'postFenAttachment.error.postNotFound' };
-  }
+  const { post } = lookup;
 
   // 1 + 2: structural + semantic FEN validation in one call.
   const fenResult = validateFenSemantic(rawFen);

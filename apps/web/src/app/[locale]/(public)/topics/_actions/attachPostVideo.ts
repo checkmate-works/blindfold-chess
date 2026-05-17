@@ -1,10 +1,8 @@
 'use server';
 
-import { eq } from 'drizzle-orm';
-
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
-import { db, postVideoAttachments, topicPosts } from '@/lib/db';
+import { db, postVideoAttachments } from '@/lib/db';
 import { parseYouTubeUrl } from '@/lib/games/youtube-validator';
 import {
   SOURCE_URL_MAX_LENGTH,
@@ -12,6 +10,7 @@ import {
   videoAttachmentErrorKeyForPgError,
 } from '@/lib/post-video-attachment';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
+import { loadAuthoredPost } from '@/lib/topic-posts';
 
 /**
  * Server Action: attach a YouTube video to an existing topic post.
@@ -93,26 +92,17 @@ export async function attachPostVideo(input: { postId: string; url: string }): P
   const { user } = guardResult;
 
   // Parent-post existence + ownership + not soft-deleted. Same posture
-  // as `attachPostFen`.
-  const [post] = await db
-    .select({
-      id: topicPosts.id,
-      userId: topicPosts.userId,
-      deletedAt: topicPosts.deletedAt,
-    })
-    .from(topicPosts)
-    .where(eq(topicPosts.id, postId))
-    .limit(1);
-
-  if (!post) {
-    return { error: 'postVideoAttachment.error.postNotFound' };
+  // as `attachPostFen` — a soft-deleted post is reported as postNotFound.
+  const lookup = await loadAuthoredPost(postId, user.id);
+  if ('error' in lookup) {
+    return {
+      error:
+        lookup.error === 'unauthorized'
+          ? 'postVideoAttachment.error.notOwner'
+          : 'postVideoAttachment.error.postNotFound',
+    };
   }
-  if (post.userId !== user.id) {
-    return { error: 'postVideoAttachment.error.notOwner' };
-  }
-  if (post.deletedAt !== null) {
-    return { error: 'postVideoAttachment.error.postNotFound' };
-  }
+  const { post } = lookup;
 
   const parseResult = parseYouTubeUrl(rawUrl);
   if (!parseResult.ok) {

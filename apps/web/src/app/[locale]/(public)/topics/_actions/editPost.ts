@@ -7,6 +7,7 @@ import { eq } from 'drizzle-orm';
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, topicPosts } from '@/lib/db';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
+import { loadAuthoredPost } from '@/lib/topic-posts';
 import { logActivityEvent } from '@/lib/users/activity-log';
 import { validateContent } from '@/lib/validations/content';
 
@@ -49,31 +50,11 @@ export async function editPost(
   }
   const { user } = guardResult;
 
-  const [post] = await db
-    .select({
-      id: topicPosts.id,
-      userId: topicPosts.userId,
-      topicType: topicPosts.topicType,
-      topicKey: topicPosts.topicKey,
-      content: topicPosts.content,
-      isSpoiler: topicPosts.isSpoiler,
-      deletedAt: topicPosts.deletedAt,
-    })
-    .from(topicPosts)
-    .where(eq(topicPosts.id, postId))
-    .limit(1);
-
-  if (!post) {
-    return { error: 'notFound' };
+  const lookup = await loadAuthoredPost(postId, user.id);
+  if ('error' in lookup) {
+    return { error: lookup.error };
   }
-
-  if (post.userId !== user.id) {
-    return { error: 'unauthorized' };
-  }
-
-  if (post.deletedAt) {
-    return { error: 'alreadyDeleted' };
-  }
+  const { post } = lookup;
 
   const contentResult = validateContent(formData);
   if ('error' in contentResult) {
