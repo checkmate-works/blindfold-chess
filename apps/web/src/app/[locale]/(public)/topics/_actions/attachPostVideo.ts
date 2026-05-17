@@ -5,52 +5,13 @@ import { eq } from 'drizzle-orm';
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, postVideoAttachments, topicPosts } from '@/lib/db';
-import { extractPgErrorCode } from '@/lib/db/extract-pg-error-code';
 import { parseYouTubeUrl } from '@/lib/games/youtube-validator';
-import type { YouTubeUrlReason } from '@/lib/games/youtube-validator';
+import {
+  SOURCE_URL_MAX_LENGTH,
+  reasonToErrorKey,
+  videoAttachmentErrorKeyForPgError,
+} from '@/lib/post-video-attachment';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
-
-/**
- * Maximum length of a stored source URL. Mirrors
- * `post_video_attachments.source_url` column width and matches the URL
- * parser's `MAX_INPUT_LENGTH`. The DB-level CHECK is the last line of
- * defense.
- */
-const SOURCE_URL_MAX_LENGTH = 512;
-
-/**
- * Map a YouTube URL parser failure reason to its localized error key
- * under the `postVideoAttachment.error.*` namespace. The mapping is
- * exhaustive and a compile-time guard at the bottom catches any new
- * reason added to `YouTubeUrlReason` without an explicit entry here.
- */
-function reasonToErrorKey(reason: YouTubeUrlReason): string {
-  switch (reason) {
-    case 'input_too_long':
-      return 'postVideoAttachment.error.inputTooLong';
-    case 'invalid_url':
-      return 'postVideoAttachment.error.invalidUrl';
-    case 'protocol_not_https':
-      return 'postVideoAttachment.error.protocolNotHttps';
-    case 'userinfo_present':
-      return 'postVideoAttachment.error.userinfoPresent';
-    case 'fragment_not_allowed':
-      return 'postVideoAttachment.error.fragmentNotAllowed';
-    case 'host_not_allowed':
-      return 'postVideoAttachment.error.hostNotAllowed';
-    case 'pathname_not_supported':
-      return 'postVideoAttachment.error.pathnameNotSupported';
-    case 'param_pollution':
-      return 'postVideoAttachment.error.paramPollution';
-    case 'invalid_id':
-      return 'postVideoAttachment.error.invalidId';
-    default: {
-      const _exhaustive: never = reason;
-      void _exhaustive;
-      return 'postVideoAttachment.error.invalidUrl';
-    }
-  }
-}
 
 /**
  * Server Action: attach a YouTube video to an existing topic post.
@@ -191,33 +152,9 @@ export async function attachPostVideo(input: { postId: string; url: string }): P
       },
     };
   } catch (err) {
-    const code = extractPgErrorCode(err);
-    if (code === '23505') {
-      return { error: 'postVideoAttachment.error.alreadyAttached' };
-    }
-    if (code === '23514') {
-      // CHECK violation — defense-in-depth. The URL parser above
-      // catches every condition the DB CHECK could trip on, so this
-      // branch is practically unreachable from the action layer; it
-      // exists in case the CHECK ever drifts ahead of the app-side
-      // regex. Triage points if this ever fires:
-      //   - JS regex / parser:
-      //       apps/web/src/lib/games/youtube-validator.ts
-      //       apps/web/src/lib/games/youtube-validator.test.ts
-      //   - DB CHECK source (constraints
-      //       `post_video_attachments_chk_provider`,
-      //       `post_video_attachments_chk_provider_video_id`,
-      //       `post_video_attachments_chk_source_url`,
-      //       `post_video_attachments_chk_thumbnail_url`):
-      //       apps/web/drizzle/20260504080000_create_post_video_attachments.sql
-      //       apps/web/src/lib/db/schema/tables.ts (postVideoAttachments)
-      return { error: 'postVideoAttachment.error.invalidVideoStructure' };
-    }
-    if (code === '22001') {
-      // string_data_right_truncation — value exceeded a varchar width.
-      // The app-layer length pre-check on `rawUrl` already guards
-      // against this for the URL field, so this is defense-in-depth.
-      return { error: 'postVideoAttachment.error.tooLong' };
+    const errorKey = videoAttachmentErrorKeyForPgError(err);
+    if (errorKey) {
+      return { error: errorKey };
     }
     throw err;
   }
