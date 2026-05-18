@@ -11,6 +11,7 @@ import type { CommentTreeNode } from '../_lib/comment-tree';
 import { groupReplies } from '../_lib/comment-tree';
 import { canUserReply } from '../_lib/permissions';
 import { CommentNode } from './CommentNode';
+import { CommentTreeProvider } from './CommentTreeContext';
 import type { ReplyAttachmentActions } from './ReplyForm';
 
 type Props = {
@@ -149,29 +150,34 @@ export async function CommentTree({
   return (
     <div className="space-y-6">
       {comments.map((root) => (
-        <CommentNode
+        // One provider per thread root: `rootPostId` and `canReply` differ
+        // between roots, the other values are shared. CommentNode and its
+        // recursive descendants read all of them from context.
+        <CommentTreeProvider
           key={root.id}
-          node={root}
-          rootPostId={threadRootPostId ?? root.id}
-          replyGroups={groupReplies(root)}
-          locale={locale}
-          topicKey={topicKey}
-          currentUserId={currentUserId}
-          canReply={canReplyByRootId.get(root.id) ?? false}
-          enableSpoiler={enableSpoiler}
-          redirectPath={redirectPath}
-          toggleLikeAction={toggleLikeAction}
-          replyAttachmentActions={replyAttachmentActions}
-          deletePostAction={deletePostAction}
-          editPostAction={editPostAction}
-          removeAttachmentAction={removeAttachmentAction}
-          attachPgnAction={attachPgnAction}
-          attachFenAction={attachFenAction}
-          attachmentsByPostId={attachmentsByPostId}
-          attachmentFallbackVideoTitle={attachmentFallbackVideoTitle}
-          i18n={i18n}
-          extraContentByPostId={extraContentByPostId}
-        />
+          value={{
+            rootPostId: threadRootPostId ?? root.id,
+            locale,
+            topicKey,
+            currentUserId,
+            canReply: canReplyByRootId.get(root.id) ?? false,
+            enableSpoiler,
+            redirectPath,
+            toggleLikeAction,
+            replyAttachmentActions,
+            deletePostAction,
+            editPostAction,
+            removeAttachmentAction,
+            attachPgnAction,
+            attachFenAction,
+            attachmentsByPostId,
+            attachmentFallbackVideoTitle,
+            i18n,
+            extraContentByPostId,
+          }}
+        >
+          <CommentNode node={root} replyGroups={groupReplies(root)} />
+        </CommentTreeProvider>
       ))}
     </div>
   );
