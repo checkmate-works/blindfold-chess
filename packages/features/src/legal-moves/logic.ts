@@ -34,11 +34,10 @@ export function generateBalancedMoveQuestions(
 
   while (questions.length < count) {
     const piece = allowedPieces[Math.floor(rng() * allowedPieces.length)];
-    const question = generateMoveQuestionForPiece(
-      piece,
-      legalCount < targetLegalCount,
-      rng,
-    );
+    const question =
+      legalCount < targetLegalCount
+        ? generateLegalMoveQuestion(piece, rng)
+        : generateIllegalMoveQuestion(piece, rng);
 
     if (question) {
       questions.push(question);
@@ -95,11 +94,21 @@ const PieceStrategies: Record<PieceType, PieceMoveStrategy> = {
   },
 };
 
-// Generate a move question for a specific piece type
-export function generateMoveQuestionForPiece(
+/**
+ * Bounded retry loop shared by both move-question generators: on each attempt
+ * pick a random origin square, hand it to `pickTarget`, reject off-board /
+ * self moves, and return the first move whose legality `accept`s.
+ */
+function findMoveQuestion(
   pieceType: PieceType,
-  preferLegal: boolean,
-  rng: RandomSource = Math.random,
+  rng: RandomSource,
+  pickTarget: (
+    strategy: PieceMoveStrategy,
+    fromFile: number,
+    fromRank: number,
+    rng: RandomSource,
+  ) => { toFile: number; toRank: number } | null,
+  accept: (isLegal: boolean) => boolean,
 ): MoveQuestion | null {
   const strategy = PieceStrategies[pieceType];
 
@@ -108,19 +117,11 @@ export function generateMoveQuestionForPiece(
     const fromRank = Math.floor(rng() * BOARD_SIZE);
     const fromSquare = FILES[fromFile] + RANKS[fromRank];
 
-    let toFile: number;
-    let toRank: number;
-    if (preferLegal) {
-      const candidate = strategy.generateCandidateMove(fromFile, fromRank, rng);
-      // No legal target from this origin (e.g., a knight on a corner with the
-      // RNG hitting empty offsets). Re-roll the origin.
-      if (!candidate) continue;
-      toFile = candidate.toFile;
-      toRank = candidate.toRank;
-    } else {
-      toFile = Math.floor(rng() * BOARD_SIZE);
-      toRank = Math.floor(rng() * BOARD_SIZE);
-    }
+    const target = pickTarget(strategy, fromFile, fromRank, rng);
+    // No target produced from this origin (e.g. a knight cornered with the RNG
+    // hitting empty offsets). Re-roll the origin.
+    if (!target) continue;
+    const { toFile, toRank } = target;
 
     if (
       toFile < 0 ||
@@ -133,11 +134,42 @@ export function generateMoveQuestionForPiece(
     const toSquare = FILES[toFile] + RANKS[toRank];
     if (toSquare === fromSquare) continue;
 
-    const isLegal = isLegalMove(fromSquare, toSquare, pieceType);
-    if (preferLegal === isLegal) {
+    if (accept(isLegalMove(fromSquare, toSquare, pieceType))) {
       return { from: fromSquare, to: toSquare, piece: pieceType };
     }
   }
 
   return null;
+}
+
+// Generate a move question whose move IS legal for the piece type. Targets are
+// drawn from the piece's pure mobility so a legal candidate is found quickly.
+export function generateLegalMoveQuestion(
+  pieceType: PieceType,
+  rng: RandomSource = Math.random,
+): MoveQuestion | null {
+  return findMoveQuestion(
+    pieceType,
+    rng,
+    (strategy, fromFile, fromRank, r) =>
+      strategy.generateCandidateMove(fromFile, fromRank, r),
+    (isLegal) => isLegal,
+  );
+}
+
+// Generate a move question whose move is NOT legal for the piece type. Targets
+// are drawn uniformly at random and kept only when they turn out illegal.
+export function generateIllegalMoveQuestion(
+  pieceType: PieceType,
+  rng: RandomSource = Math.random,
+): MoveQuestion | null {
+  return findMoveQuestion(
+    pieceType,
+    rng,
+    (_strategy, _fromFile, _fromRank, r) => ({
+      toFile: Math.floor(r() * BOARD_SIZE),
+      toRank: Math.floor(r() * BOARD_SIZE),
+    }),
+    (isLegal) => !isLegal,
+  );
 }
