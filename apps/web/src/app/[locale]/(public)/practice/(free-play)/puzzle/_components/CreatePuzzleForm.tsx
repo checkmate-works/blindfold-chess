@@ -18,26 +18,13 @@ import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal'
 import { useFenBoardEditor } from '../../_hooks/use-fen-board-editor';
 import { useTagSelection } from '../../_hooks/use-tag-selection';
 import { EMPTY_BOARD_FEN } from '../../_lib/board-editor-constants';
+import { buildDefaultPracticeTitle } from '../../_lib/default-title';
 import { useMoveSubmitLabels } from '../_hooks/use-move-submit-labels';
 import { usePuzzleDraftHydration } from '../_hooks/use-puzzle-draft-hydration';
 import { usePuzzleSolutionMoves } from '../_hooks/use-puzzle-solution-moves';
 import { clearDraft, writeDraft } from '../_lib/draft-storage';
 import { validatePuzzleForm } from '../_lib/validate-puzzle-form';
 import { PuzzleFormFields } from './PuzzleFormFields';
-
-function formatLocalIsoDate(d: Date): string {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-function buildDefaultTitle(displayName: string | undefined): string {
-  if (displayName === undefined) return '';
-  const date = formatLocalIsoDate(new Date());
-  const trimmed = displayName.trim();
-  return trimmed ? `Puzzle ${date} - ${trimmed}` : `Puzzle ${date}`;
-}
 
 /**
  * Seed payload when the form is opened via `?from=<id>` on the new page.
@@ -112,7 +99,9 @@ export function CreatePuzzleForm({
   // When forking, the source's title carries over verbatim; otherwise the
   // date-based default is used. defaultTitleRef anchors the dirty-check
   // baseline so a forked title is "clean" until the user edits it.
-  const defaultTitleRef = useRef(forkSeed ? forkSeed.title : buildDefaultTitle(displayName));
+  const defaultTitleRef = useRef(
+    forkSeed ? forkSeed.title : buildDefaultPracticeTitle('Puzzle', displayName)
+  );
   const [title, setTitle] = useState(defaultTitleRef.current);
   const [description, setDescription] = useState(forkSeed?.description ?? '');
   // forkedFromId lives in React state (not just the prop) so the lineage

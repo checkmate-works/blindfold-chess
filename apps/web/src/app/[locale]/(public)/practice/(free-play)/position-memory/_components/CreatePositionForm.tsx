@@ -17,23 +17,10 @@ import type { ThemeOption } from '@/lib/themes/types';
 import { useFenBoardEditor } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-fen-board-editor';
 import { useTagSelection } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-tag-selection';
 import { EMPTY_BOARD_FEN } from '@/app/[locale]/(public)/practice/(free-play)/_lib/board-editor-constants';
+import { buildDefaultPracticeTitle } from '@/app/[locale]/(public)/practice/(free-play)/_lib/default-title';
 
 import { createPosition } from '../_actions/createPosition';
 import { PositionFormFields } from './PositionFormFields';
-
-function formatLocalIsoDate(d: Date): string {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-function buildDefaultTitle(displayName: string | undefined): string {
-  if (displayName === undefined) return '';
-  const date = formatLocalIsoDate(new Date());
-  const trimmed = displayName.trim();
-  return trimmed ? `Position ${date} - ${trimmed}` : `Position ${date}`;
-}
 
 /**
  * Seed payload when the form is opened via `?from=<id>` on the new page.
@@ -106,7 +93,7 @@ export function CreatePositionForm({
     initialChunks: seededChunks,
   });
   const [title, setTitle] = useState(() =>
-    forkSeed ? forkSeed.title : buildDefaultTitle(displayName)
+    forkSeed ? forkSeed.title : buildDefaultPracticeTitle('Position', displayName)
   );
   const [description, setDescription] = useState(forkSeed?.description ?? '');
   const [error, setError] = useState<string | null>(null);
