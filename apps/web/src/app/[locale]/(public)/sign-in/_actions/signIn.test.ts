@@ -31,10 +31,7 @@ vi.mock('@/lib/locale', () => ({
 }));
 
 vi.mock('@/lib/security/rate-limit-ip', () => ({
-  checkIpRateLimitGuard: vi.fn().mockReturnValue(null),
-  IP_RATE_LIMITS: {
-    signIn: { maxRequests: 10, windowMs: 300_000 },
-  },
+  guardByIpRateLimit: vi.fn().mockResolvedValue(null),
 }));
 
 const testUserId = 'user-id-00000000-0000-0000-0000-000000000001';
@@ -72,8 +69,8 @@ describe('signIn', () => {
   });
 
   it('should not log activity event when rate limited', async () => {
-    const { checkIpRateLimitGuard } = await import('@/lib/security/rate-limit-ip');
-    vi.mocked(checkIpRateLimitGuard).mockReturnValueOnce({ error: 'rateLimited' });
+    const { guardByIpRateLimit } = await import('@/lib/security/rate-limit-ip');
+    vi.mocked(guardByIpRateLimit).mockResolvedValueOnce({ error: 'rateLimited' });
 
     const result = await signIn('test@example.com', 'password123');
 
