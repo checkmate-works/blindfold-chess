@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import * as Sentry from '@sentry/nextjs';
-import { timingSafeEqual } from 'node:crypto';
-
+import { requireCronAuth, runCronJob } from '@/lib/cron';
 import { reapOrphanedPostImages } from '@/lib/post-images/reap-orphaned-images';
 
 /**
@@ -12,17 +10,15 @@ import { reapOrphanedPostImages } from '@/lib/post-images/reap-orphaned-images';
  * Daily sweep that removes Storage objects whose parent topic_post has
  * been soft-deleted longer than 7 days. See
  * `src/lib/post-images/reap-orphaned-images.ts` for the strategy. This
- * route is a thin shim — auth + error funnel.
+ * route is a thin shim — auth + error funnel, both via `@/lib/cron`.
  *
  * @design Auth via `CRON_SECRET` (timing-safe compare)
  *
- * Vercel Cron sends a `Bearer ${CRON_SECRET}` header. The compare uses
- * `crypto.timingSafeEqual` so a remote attacker cannot use timing
- * sidechannels to brute-force the secret one byte at a time. A leading
- * misconfig guard returns 500 if `CRON_SECRET` is unset — without it,
- * the previous `=== ` comparison would compare against the literal
- * string `"Bearer undefined"`, letting a request with that exact
- * header authenticate after a misconfig.
+ * `requireCronAuth` does a `crypto.timingSafeEqual` compare so a remote
+ * attacker cannot use timing sidechannels to brute-force the secret one
+ * byte at a time, and returns 500 (not 401) when `CRON_SECRET` is unset so
+ * a misconfig is loud rather than silently authenticating a request whose
+ * header is the literal string `"Bearer undefined"`.
  *
  * The reaper does not run under any user session — it bypasses RLS via
  * the admin client by design.
@@ -36,42 +32,14 @@ import { reapOrphanedPostImages } from '@/lib/post-images/reap-orphaned-images';
  * the reaper itself does not branch on timezone.
  */
 export async function GET(request: Request): Promise<NextResponse> {
-  const cronSecret = process.env.CRON_SECRET;
-  if (!cronSecret) {
-    // Misconfig: never auto-allow when the env is unset. Returning 500
-    // forces the operator to notice (vs. silently letting "Bearer
-    // undefined" requests through).
-    return NextResponse.json({ error: 'Server misconfigured' }, { status: 500 });
-  }
+  const authError = requireCronAuth(request);
+  if (authError) return authError;
 
-  const authHeader = request.headers.get('authorization') ?? '';
-  const expected = `Bearer ${cronSecret}`;
-  const a = Buffer.from(authHeader);
-  const b = Buffer.from(expected);
-  // timingSafeEqual requires equal-length inputs — short-circuit on
-  // mismatched length BEFORE calling it (the function itself throws on
-  // unequal lengths, which would surface as a 500 to the caller).
-  if (a.length !== b.length || !timingSafeEqual(a, b)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  try {
+  return runCronJob('Post-image reaper', async () => {
     const report = await reapOrphanedPostImages();
     return NextResponse.json({
       message: 'Post-image reaper completed',
       ...report,
     });
-  } catch (error) {
-    console.error(
-      'Post-image reaper failed:',
-      error instanceof Error ? error.message : 'Unknown error'
-    );
-    Sentry.captureException(error);
-    return NextResponse.json(
-      {
-        error: 'Internal server error',
-      },
-      { status: 500 }
-    );
-  }
+  });
 }

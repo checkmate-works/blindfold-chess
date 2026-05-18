@@ -1,6 +1,7 @@
 'use server';
 
 import { getPositionById } from '@/lib/positions/queries';
+import { readSpoilerFlag } from '@/lib/spoiler-flag';
 
 import type { CreateReplyState } from '@/app/[locale]/(public)/topics/_actions/createReply';
 import { createReplyWithFenAttachmentBase } from '@/app/[locale]/(public)/topics/_actions/createReplyWithFenAttachmentBase';
@@ -18,8 +19,7 @@ export async function createReplyWithFenAttachment(
   _prevState: CreateReplyState,
   formData: FormData
 ): Promise<CreateReplyState> {
-  const rawSpoiler = formData.get('isSpoiler');
-  const isSpoiler = rawSpoiler === 'on' || rawSpoiler === 'true';
+  const isSpoiler = readSpoilerFlag(formData);
 
   return createReplyWithFenAttachmentBase({
     locale,

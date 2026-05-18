@@ -1,5 +1,6 @@
 import {
   generateRandomSquare,
+  resolveOrientation,
   squareToFileIndex,
   squareToRankIndex,
 } from "../common";
@@ -27,17 +28,6 @@ export function getCorrectQuadrant(square: string): QuadrantId {
   if (!isKingSide && isUpper) return "q2";
   if (!isKingSide && !isUpper) return "q3";
   return "q4";
-}
-
-/**
- * Resolve the effective board orientation for a single problem.
- * If "random", randomly picks "white" or "black".
- */
-function resolveOrientation(orientation: BoardOrientation): "white" | "black" {
-  if (orientation === "random") {
-    return Math.random() < 0.5 ? "white" : "black";
-  }
-  return orientation;
 }
 
 /**

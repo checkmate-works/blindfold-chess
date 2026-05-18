@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import * as Sentry from '@sentry/nextjs';
-
+import { requireCronAuth, runCronJob } from '@/lib/cron';
 import { grantLikeCoins } from '@/lib/points/grant-like-coins';
 
 /**
@@ -11,12 +10,10 @@ import { grantLikeCoins } from '@/lib/points/grant-like-coins';
  * token, same as the other cron routes.
  */
 export async function GET(request: Request): Promise<NextResponse> {
-  const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const authError = requireCronAuth(request);
+  if (authError) return authError;
 
-  try {
+  return runCronJob('Grant like coins', async () => {
     const result = await grantLikeCoins();
 
     return NextResponse.json({
@@ -25,12 +22,5 @@ export async function GET(request: Request): Promise<NextResponse> {
         : 'Like-coin grants processed',
       ...result,
     });
-  } catch (error) {
-    console.error(
-      'Failed to grant like coins:',
-      error instanceof Error ? error.message : 'Unknown error'
-    );
-    Sentry.captureException(error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-  }
+  });
 }

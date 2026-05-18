@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
 
 import { randomUUID } from 'crypto';
-import { eq } from 'drizzle-orm';
 import 'server-only';
 
 import { authenticateAndGuardApi } from '@/lib/auth';
-import { db, postImageAttachments, topicPosts } from '@/lib/db';
+import { db, postImageAttachments } from '@/lib/db';
 import {
   AnimatedImageNotSupportedError,
   isWithinMegapixelCap,
@@ -23,6 +22,7 @@ import {
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient as createServerClient } from '@/lib/supabase/server';
+import { loadAuthoredPost } from '@/lib/topic-posts';
 
 /**
  * POST /api/posts/[id]/images
@@ -73,24 +73,15 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const { id: postId } = await params;
 
   // Parent-post existence + ownership + not soft-deleted.
-  const [post] = await db
-    .select({
-      id: topicPosts.id,
-      userId: topicPosts.userId,
-      deletedAt: topicPosts.deletedAt,
-    })
-    .from(topicPosts)
-    .where(eq(topicPosts.id, postId))
-    .limit(1);
-
-  if (!post) {
+  const lookup = await loadAuthoredPost(postId, user.id);
+  if ('error' in lookup) {
+    if (lookup.error === 'unauthorized') {
+      return NextResponse.json({ error: 'forbidden' }, { status: 403 });
+    }
+    if (lookup.error === 'alreadyDeleted') {
+      return NextResponse.json({ error: 'post_deleted' }, { status: 410 });
+    }
     return NextResponse.json({ error: 'post_not_found' }, { status: 404 });
-  }
-  if (post.userId !== user.id) {
-    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
-  }
-  if (post.deletedAt) {
-    return NextResponse.json({ error: 'post_deleted' }, { status: 410 });
   }
 
   // FormData parse is bounded by the Content-Length ceiling above.

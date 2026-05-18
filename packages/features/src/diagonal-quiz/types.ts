@@ -1,4 +1,8 @@
-import type { BasePracticeResult, BasePracticeSettings } from "../common/types";
+import {
+  type BasePracticeSettings,
+  type PracticeResultWithMistakes,
+  DEFAULT_BASE_PRACTICE_SETTINGS,
+} from "../common/types";
 
 export type DiagonalPair = {
   diagonal: string; // SW-NE direction (a1-h8 direction), e.g., "b1-h7"
@@ -8,8 +12,7 @@ export type DiagonalPair = {
 export type DiagonalQuizSettings = BasePracticeSettings;
 
 export const DEFAULT_DIAGONAL_QUIZ_SETTINGS: DiagonalQuizSettings = {
-  timeLimit: 60,
-  mode: "timed",
+  ...DEFAULT_BASE_PRACTICE_SETTINGS,
 };
 
 export type DiagonalQuestionResult = {
@@ -23,6 +26,4 @@ export type DiagonalQuestionResult = {
   userAntiDiagonal?: string;
 };
 
-export type DiagonalQuizResult = BasePracticeResult & {
-  incorrectAnswers: number;
-};
+export type DiagonalQuizResult = PracticeResultWithMistakes;

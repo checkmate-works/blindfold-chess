@@ -44,6 +44,12 @@ export type UseTimedSessionReturn<TQuestion> = {
   showFeedback: boolean;
   lastAnswerCorrect: boolean | null;
   isFinished: boolean;
+  /**
+   * Seconds spent on each completed question, in order. The currently shown
+   * question has no entry yet. Quiz hooks pass this straight to
+   * `computePracticeResult` instead of each tracking timing themselves.
+   */
+  questionTimes: number[];
   handleAnswer: (correct: boolean) => void;
   togglePause: () => void;
 };
@@ -92,13 +98,26 @@ export function useTimedSession<TQuestion>(
     undefined,
   );
 
+  // Per-question timing lives here so quiz hooks don't each reimplement it.
+  const questionTimesRef = useRef<number[]>([]);
+  const questionStartRef = useRef<number>(Date.now());
+
+  // Records how long the previous question was shown, then generates the next.
+  const advanceQuestion = useCallback((): TQuestion => {
+    questionTimesRef.current.push(
+      (Date.now() - questionStartRef.current) / 1000,
+    );
+    questionStartRef.current = Date.now();
+    return generateQuestionRef.current();
+  }, []);
+
   const { countdown } = useCountdown();
 
   useEffect(() => {
     if (hasStarted.current) return;
     hasStarted.current = true;
-    setCurrentQuestion(generateQuestionRef.current());
-  }, []);
+    setCurrentQuestion(advanceQuestion());
+  }, [advanceQuestion]);
 
   const isPlaying =
     currentQuestion !== null &&
@@ -171,7 +190,7 @@ export function useTimedSession<TQuestion>(
             error,
           );
         }
-        setCurrentQuestion(generateQuestionRef.current());
+        setCurrentQuestion(advanceQuestion());
         setShowFeedback(false);
         setLastAnswerCorrect(null);
       }, duration);
@@ -183,6 +202,7 @@ export function useTimedSession<TQuestion>(
       isPaused,
       incorrectCount,
       mistakeAllowance,
+      advanceQuestion,
     ],
   );
 
@@ -202,6 +222,7 @@ export function useTimedSession<TQuestion>(
     showFeedback,
     lastAnswerCorrect,
     isFinished,
+    questionTimes: questionTimesRef.current,
     handleAnswer,
     togglePause,
   };

@@ -1,6 +1,10 @@
 import type { Square } from "@blindfold-chess/types";
 
-import type { BasePracticeResult, BasePracticeSettings } from "../common/types";
+import {
+  type BasePracticeSettings,
+  type PracticeResultWithMistakes,
+  DEFAULT_BASE_PRACTICE_SETTINGS,
+} from "../common/types";
 
 export type SymmetryType = "horizontal" | "vertical" | "point";
 export const SYMMETRY_TYPES: SymmetryType[] = [
@@ -17,10 +21,7 @@ export type BoardSymmetryProblem = {
 export type BoardSymmetrySettings = BasePracticeSettings;
 
 export const DEFAULT_BOARD_SYMMETRY_SETTINGS: BoardSymmetrySettings = {
-  timeLimit: 60,
-  mode: "timed",
+  ...DEFAULT_BASE_PRACTICE_SETTINGS,
 };
 
-export type BoardSymmetryResult = BasePracticeResult & {
-  incorrectAnswers: number;
-};
+export type BoardSymmetryResult = PracticeResultWithMistakes;

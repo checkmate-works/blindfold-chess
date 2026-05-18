@@ -2,6 +2,7 @@
 
 import { getPositionById } from '@/lib/positions/queries';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
+import { readSpoilerFlag } from '@/lib/spoiler-flag';
 import { validateContent } from '@/lib/validations/content';
 
 import type { CreatePostState } from '@/app/[locale]/(public)/topics/_actions/createPost';
@@ -13,8 +14,7 @@ export async function createPositionPuzzlePostWithFenAttachment(
   _prevState: CreatePostState,
   formData: FormData
 ): Promise<CreatePostState> {
-  const rawSpoiler = formData.get('isSpoiler');
-  const isSpoiler = rawSpoiler === 'on' || rawSpoiler === 'true';
+  const isSpoiler = readSpoilerFlag(formData);
 
   const position = await getPositionById({ id: positionId, type: 'puzzle' });
 

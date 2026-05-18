@@ -1,10 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useRef } from "react";
 
 import type { Square } from "@blindfold-chess/types";
 
 import { FEEDBACK_FLASH_MS } from "../common/flash-policy";
+import { usePracticeCompletion } from "../practice-session/use-practice-completion";
+import {
+  type TimedQuizSessionConfig,
+  type TimedSessionFacade,
+  toTimedSessionFacade,
+} from "../practice-session/quiz-session";
 import { useTimedSession } from "../practice-session/use-timed-session";
 import { findShortestPath, generateProblem } from "./logic";
 import type {
@@ -14,31 +20,18 @@ import type {
   RoutePlannerResult,
 } from "./types";
 
-export type UseRoutePlannerSessionConfig = {
-  selectedPieces: RoutePlannerPieceType[];
-  timeLimit: number;
-  mistakeAllowance?: number;
-  /** If set, session also ends when total answers reach this count. */
-  problemCount?: number;
-  onComplete?: (result: RoutePlannerResult) => void;
-  onAnswerEffect?: (correct: boolean) => void;
-  onSkipEffect?: () => void;
-};
+export type UseRoutePlannerSessionConfig =
+  TimedQuizSessionConfig<RoutePlannerResult> & {
+    selectedPieces: RoutePlannerPieceType[];
+    /** If set, session also ends when total answers reach this count. */
+    problemCount?: number;
+    onSkipEffect?: () => void;
+  };
 
-export type UseRoutePlannerSessionReturn = {
+export type UseRoutePlannerSessionReturn = TimedSessionFacade & {
   currentProblem: RoutePlannerProblem | null;
-  countdown: number | null;
-  timeElapsed: number;
-  timeRemaining: number;
-  correctCount: number;
-  incorrectCount: number;
-  showFeedback: boolean;
-  lastAnswerCorrect: boolean | null;
-  isFinished: boolean;
-  isPaused: boolean;
   handleAnswer: (success: boolean) => void;
   handleSkip: () => void;
-  togglePause: () => void;
 };
 
 export function useRoutePlannerSession({
@@ -51,18 +44,13 @@ export function useRoutePlannerSession({
   onSkipEffect,
 }: UseRoutePlannerSessionConfig): UseRoutePlannerSessionReturn {
   const problemResultsRef = useRef<RoutePlannerProblemResult[]>([]);
-  // per-question timing — useTimedSession tracks session-wide elapsed time only
-  const questionStartRef = useRef<number>(Date.now());
-  const onCompleteRef = useRef(onComplete);
-  onCompleteRef.current = onComplete;
   const onSkipEffectRef = useRef(onSkipEffect);
   onSkipEffectRef.current = onSkipEffect;
 
-  const generateQuestion = useCallback((): RoutePlannerProblem => {
-    // per-question timing — useTimedSession tracks session-wide elapsed time only
-    questionStartRef.current = Date.now();
-    return generateProblem(selectedPieces);
-  }, [selectedPieces]);
+  const generateQuestion = useCallback(
+    (): RoutePlannerProblem => generateProblem(selectedPieces),
+    [selectedPieces],
+  );
 
   const session = useTimedSession<RoutePlannerProblem>({
     timeLimit,
@@ -73,33 +61,26 @@ export function useRoutePlannerSession({
     onAnswerEffect,
   });
 
-  const {
-    correctCount,
-    incorrectCount,
-    timeElapsed,
-    isFinished: timerFinished,
-  } = session;
+  const { correctCount, incorrectCount, isFinished: timerFinished } = session;
 
   const isCountFinished =
     problemCount !== undefined && correctCount + incorrectCount >= problemCount;
 
   const isFinished = timerFinished || isCountFinished;
 
-  useEffect(() => {
-    if (!isFinished) return;
-
-    const total = correctCount + incorrectCount;
-    const accuracy = total > 0 ? (correctCount / total) * 100 : 0;
-
-    const result: RoutePlannerResult = {
-      problems: problemResultsRef.current,
-      totalProblems: total,
-      correctCount,
-      accuracy,
-    };
-
-    onCompleteRef.current?.(result);
-  }, [isFinished, correctCount, incorrectCount]);
+  usePracticeCompletion(
+    isFinished,
+    (): RoutePlannerResult => {
+      const total = correctCount + incorrectCount;
+      return {
+        problems: problemResultsRef.current,
+        totalProblems: total,
+        correctCount,
+        accuracy: total > 0 ? (correctCount / total) * 100 : 0,
+      };
+    },
+    onComplete,
+  );
 
   const { handleAnswer: sessionHandleAnswer, currentQuestion } = session;
 
@@ -166,18 +147,10 @@ export function useRoutePlannerSession({
   }, [isBlocked, currentQuestion, sessionHandleAnswer]);
 
   return {
-    currentProblem: currentQuestion,
-    countdown: session.countdown,
-    timeElapsed,
-    timeRemaining: session.timeRemaining,
-    correctCount,
-    incorrectCount,
-    showFeedback: session.showFeedback,
-    lastAnswerCorrect: session.lastAnswerCorrect,
+    ...toTimedSessionFacade(session),
     isFinished,
-    isPaused: session.isPaused,
+    currentProblem: currentQuestion,
     handleAnswer,
     handleSkip,
-    togglePause: session.togglePause,
   };
 }

@@ -2,16 +2,15 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { eq } from 'drizzle-orm';
-
 import { authenticateAndGuard } from '@/lib/auth';
-import { db, postGamePgnAttachments, topicPosts } from '@/lib/db';
+import { db, postGamePgnAttachments } from '@/lib/db';
 import { extractPgErrorCode } from '@/lib/db/extract-pg-error-code';
 import {
   buildPgnAttachmentValues,
   pgnAttachmentErrorKey,
 } from '@/lib/games/build-pgn-attachment-values';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
+import { loadAuthoredPost } from '@/lib/topic-posts';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { buildTopicDetailPath } from '../_lib/topic-paths';
@@ -64,21 +63,11 @@ export async function attachPostPgn(
   }
   const { user } = guardResult;
 
-  const [post] = await db
-    .select({
-      id: topicPosts.id,
-      userId: topicPosts.userId,
-      topicType: topicPosts.topicType,
-      topicKey: topicPosts.topicKey,
-      deletedAt: topicPosts.deletedAt,
-    })
-    .from(topicPosts)
-    .where(eq(topicPosts.id, postId))
-    .limit(1);
-
-  if (!post) return { error: 'notFound' };
-  if (post.userId !== user.id) return { error: 'unauthorized' };
-  if (post.deletedAt) return { error: 'alreadyDeleted' };
+  const lookup = await loadAuthoredPost(postId, user.id);
+  if ('error' in lookup) {
+    return { error: lookup.error };
+  }
+  const { post } = lookup;
 
   const rawAttachment = formData.get('attachment');
   const attachmentRaw =
