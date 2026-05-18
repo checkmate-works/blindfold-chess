@@ -54,6 +54,12 @@ function isSingleSquareComplete(chars: string[]): boolean {
   return chars.length === 2;
 }
 
+function isFieldComplete(chars: string[], allowSingleSquare: boolean): boolean {
+  return (
+    isComplete(chars) || (allowSingleSquare && isSingleSquareComplete(chars))
+  );
+}
+
 export type ActiveField = "diagonal" | "antiDiagonal";
 
 type UseDiagonalInputProps = {
@@ -82,13 +88,14 @@ export function useDiagonalInput({
   const antiDiagonalStartText = buildStartText(antiDiagonal.chars);
   const antiDiagonalEndText = buildEndText(antiDiagonal.chars);
 
-  const isDiagonalComplete =
-    isComplete(diagonal.chars) ||
-    (allowSingleSquareDiagonal && isSingleSquareComplete(diagonal.chars));
-  const isAntiDiagonalComplete =
-    isComplete(antiDiagonal.chars) ||
-    (allowSingleSquareAntiDiagonal &&
-      isSingleSquareComplete(antiDiagonal.chars));
+  const isDiagonalComplete = isFieldComplete(
+    diagonal.chars,
+    allowSingleSquareDiagonal,
+  );
+  const isAntiDiagonalComplete = isFieldComplete(
+    antiDiagonal.chars,
+    allowSingleSquareAntiDiagonal,
+  );
   const areBothComplete = isDiagonalComplete && isAntiDiagonalComplete;
 
   const currentState = activeField === "diagonal" ? diagonal : antiDiagonal;
@@ -101,11 +108,11 @@ export function useDiagonalInput({
   const isInputtingStart = currentStep === "file1" || currentStep === "rank1";
   const isInputtingEnd = currentStep === "file2" || currentStep === "rank2";
 
-  const handleFilePress = useCallback(
-    (file: string) => {
-      if (disabled) return;
-      if (!expectingFile) return;
-
+  // Append one keystroke to the active field, then fire onBothComplete if this
+  // keystroke filled the last remaining field. file and rank presses share this
+  // body verbatim — they differ only in the expecting* guard checked upstream.
+  const appendChar = useCallback(
+    (char: string) => {
       const setter = activeField === "diagonal" ? setDiagonal : setAntiDiagonal;
       const currentState = activeField === "diagonal" ? diagonal : antiDiagonal;
       const otherState = activeField === "diagonal" ? antiDiagonal : diagonal;
@@ -118,16 +125,13 @@ export function useDiagonalInput({
           ? allowSingleSquareAntiDiagonal
           : allowSingleSquareDiagonal;
 
-      const newChars = [...currentState.chars, file];
+      const newChars = [...currentState.chars, char];
       setter({ chars: newChars, step: getStep(newChars.length) });
 
-      // Check synchronous completion (possible when single-square mode allows 2-char completion)
-      const currentComplete =
-        isComplete(newChars) ||
-        (allowSingleCurrent && isSingleSquareComplete(newChars));
-      const otherComplete =
-        isComplete(otherState.chars) ||
-        (allowSingleOther && isSingleSquareComplete(otherState.chars));
+      // Check synchronous completion (possible when single-square mode allows
+      // 2-char completion).
+      const currentComplete = isFieldComplete(newChars, allowSingleCurrent);
+      const otherComplete = isFieldComplete(otherState.chars, allowSingleOther);
 
       if (currentComplete && otherComplete) {
         const currentText = buildDisplayText(newChars);
@@ -140,8 +144,6 @@ export function useDiagonalInput({
       }
     },
     [
-      disabled,
-      expectingFile,
       activeField,
       diagonal,
       antiDiagonal,
@@ -151,54 +153,22 @@ export function useDiagonalInput({
     ],
   );
 
+  const handleFilePress = useCallback(
+    (file: string) => {
+      if (disabled) return;
+      if (!expectingFile) return;
+      appendChar(file);
+    },
+    [disabled, expectingFile, appendChar],
+  );
+
   const handleRankPress = useCallback(
     (rank: string) => {
       if (disabled) return;
       if (!expectingRank) return;
-
-      const setter = activeField === "diagonal" ? setDiagonal : setAntiDiagonal;
-      const currentState = activeField === "diagonal" ? diagonal : antiDiagonal;
-      const otherState = activeField === "diagonal" ? antiDiagonal : diagonal;
-      const allowSingleCurrent =
-        activeField === "diagonal"
-          ? allowSingleSquareDiagonal
-          : allowSingleSquareAntiDiagonal;
-      const allowSingleOther =
-        activeField === "diagonal"
-          ? allowSingleSquareAntiDiagonal
-          : allowSingleSquareDiagonal;
-
-      const newChars = [...currentState.chars, rank];
-      setter({ chars: newChars, step: getStep(newChars.length) });
-
-      // Check synchronous completion
-      const currentComplete =
-        isComplete(newChars) ||
-        (allowSingleCurrent && isSingleSquareComplete(newChars));
-      const otherComplete =
-        isComplete(otherState.chars) ||
-        (allowSingleOther && isSingleSquareComplete(otherState.chars));
-
-      if (currentComplete && otherComplete) {
-        const currentText = buildDisplayText(newChars);
-        const otherText = buildDisplayText(otherState.chars);
-        if (activeField === "diagonal") {
-          onBothComplete(currentText, otherText);
-        } else {
-          onBothComplete(otherText, currentText);
-        }
-      }
+      appendChar(rank);
     },
-    [
-      disabled,
-      expectingRank,
-      activeField,
-      diagonal,
-      antiDiagonal,
-      allowSingleSquareDiagonal,
-      allowSingleSquareAntiDiagonal,
-      onBothComplete,
-    ],
+    [disabled, expectingRank, appendChar],
   );
 
   const handleBackspace = useCallback(() => {
