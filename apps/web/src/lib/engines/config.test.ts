@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { SkillLevel } from '@/lib/types';
+import type { SkillLevel } from '@/lib/games/saved-game-types';
 
 import {
   DEFAULT_ENGINE_CONFIG,

@@ -5,7 +5,13 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { type EngineConfig, isEngineConfig } from '@/lib/engines';
 import { GameLimitError } from '@/lib/errors';
-import type { Game, GameSortOption, SkillLevel, SortDirection, StoredGame } from '@/lib/types';
+import type {
+  Game,
+  GameSortOption,
+  SkillLevel,
+  SortDirection,
+  StoredGame,
+} from '@/lib/games/saved-game-types';
 
 type UpdateOptions = {
   updateLastPlayed?: boolean;

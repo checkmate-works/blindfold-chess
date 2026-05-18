@@ -6,7 +6,7 @@ import { ChessPieceIcon } from '@blindfold-chess/icons';
 import { FaPlay, FaPlus } from 'react-icons/fa';
 
 import { engineConfigToUrlParams } from '@/lib/engines';
-import type { Game } from '@/lib/types';
+import type { Game } from '@/lib/games/saved-game-types';
 
 import { DashboardSection, DashboardSectionHeader } from '@/app/[locale]/_components';
 import { ColorIcon } from '@/app/[locale]/_components/ColorIcon';

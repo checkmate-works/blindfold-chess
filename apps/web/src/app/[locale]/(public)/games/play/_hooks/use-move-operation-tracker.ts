@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 
-import type { MoveInputMethod, MoveOperationLog } from '@/lib/types';
+import type { MoveInputMethod, MoveOperationLog } from '@/lib/games/saved-game-types';
 
 type UseMoveOperationTrackerOptions = {
   initialLogs?: MoveOperationLog[];

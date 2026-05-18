@@ -6,7 +6,7 @@ import type { GameStatus } from '@blindfold-chess/features/ai-game';
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
-import type { MoveOperationLog } from '@/lib/types';
+import type { MoveOperationLog } from '@/lib/games/saved-game-types';
 
 type LoadedGameData = {
   startingFen?: string;

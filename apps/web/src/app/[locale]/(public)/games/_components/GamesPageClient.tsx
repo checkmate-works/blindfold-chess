@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import type { GameSortOption, SortDirection } from '@/lib/types';
+import type { GameSortOption, SortDirection } from '@/lib/games/saved-game-types';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';

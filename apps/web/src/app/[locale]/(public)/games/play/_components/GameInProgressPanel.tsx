@@ -8,7 +8,7 @@ import { FlagIcon, UndoIcon } from '@blindfold-chess/icons';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaClipboardList, FaInfoCircle } from 'react-icons/fa';
 
-import type { MoveInputMethod } from '@/lib/types';
+import type { MoveInputMethod } from '@/lib/games/saved-game-types';
 
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 
 import { LocalStorageGameRepository } from '@/lib/games/local-storage-repository';
-import type { Game } from '@/lib/types';
+import type { Game } from '@/lib/games/saved-game-types';
 
 type LoadGameErrorKind = 'missing-id' | 'not-found';
 

@@ -7,7 +7,7 @@ import { getLegalMoves } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaGamepad, FaKeyboard, FaList } from 'react-icons/fa';
 
-import type { MoveInputMethod } from '@/lib/types';
+import type { MoveInputMethod } from '@/lib/games/saved-game-types';
 
 import { ButtonInput } from '@/app/[locale]/(public)/games/play/_components/ButtonInput';
 import { MoveInput } from '@/app/[locale]/(public)/games/play/_components/MoveInput';

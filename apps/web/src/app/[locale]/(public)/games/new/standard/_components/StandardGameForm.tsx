@@ -15,8 +15,8 @@ import {
   type EngineKind,
   engineConfigToUrlParams,
 } from '@/lib/engines';
+import type { SkillLevel } from '@/lib/games/saved-game-types';
 import { MAIA_GAME_POINT_COST } from '@/lib/points/constants';
-import type { SkillLevel } from '@/lib/types';
 import type { MaiaEngineAccess } from '@/lib/users/can-use-maia';
 
 import { CollapsibleGameSettings } from '@/app/[locale]/(public)/games/new/_components/CollapsibleGameSettings';

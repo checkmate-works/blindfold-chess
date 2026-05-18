@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { FaTrash } from 'react-icons/fa';
 
 import { engineConfigToUrlParams } from '@/lib/engines';
-import type { Game } from '@/lib/types';
+import type { Game } from '@/lib/games/saved-game-types';
 
 import { GameListItemBase } from '@/app/[locale]/_components/GameListItemBase';
 import type { Locale } from '@/app/[locale]/_lib/types';

@@ -11,7 +11,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { FaChartLine, FaClipboardList, FaMinus, FaTimes } from 'react-icons/fa';
 
 import { engineConfigToUrlParams } from '@/lib/engines';
-import type { Game, MoveInputMethod, MoveOperationLog } from '@/lib/types';
+import type { Game, MoveInputMethod, MoveOperationLog } from '@/lib/games/saved-game-types';
 
 import { Divider } from '@/app/[locale]/_components/Divider';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';

@@ -1,7 +1,7 @@
 import { ChessEngine } from '@blindfold-chess/features/ai-game/engine';
 import { type ChessOpponent, err, ok } from '@blindfold-chess/features/ai-game/opponent';
 
-import type { SkillLevel } from '@/lib/types';
+import type { SkillLevel } from '@/lib/games/saved-game-types';
 
 import { createWorkerMessageChannel } from './worker-message-channel';
 

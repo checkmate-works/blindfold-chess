@@ -6,7 +6,7 @@ import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 import type { EngineConfig } from '@/lib/engines';
 import { GameLimitError } from '@/lib/errors';
 import { LocalStorageGameRepository } from '@/lib/games/local-storage-repository';
-import type { GameOutcome, MoveOperationLog } from '@/lib/types';
+import type { GameOutcome, MoveOperationLog } from '@/lib/games/saved-game-types';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 

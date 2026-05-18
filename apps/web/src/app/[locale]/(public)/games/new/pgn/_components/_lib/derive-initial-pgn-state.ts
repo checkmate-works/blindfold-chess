@@ -2,7 +2,7 @@ import { type MaiaRating, isMaiaRating } from '@blindfold-chess/features/ai-game
 import type { Side } from '@blindfold-chess/types';
 
 import { type EngineKind, isEngineKind } from '@/lib/engines';
-import type { SkillLevel } from '@/lib/types';
+import type { SkillLevel } from '@/lib/games/saved-game-types';
 
 export type InitialPgnState = {
   pgn: string;

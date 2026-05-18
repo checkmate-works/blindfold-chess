@@ -1,4 +1,4 @@
-import type { GameOutcome } from '@/lib/types';
+import type { GameOutcome } from '@/lib/games/saved-game-types';
 
 export { formatLastMove } from '@blindfold-chess/features/chess-core';
 

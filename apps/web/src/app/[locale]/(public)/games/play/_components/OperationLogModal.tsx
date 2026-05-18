@@ -3,7 +3,7 @@
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
-import type { MoveOperationLog } from '@/lib/types';
+import type { MoveOperationLog } from '@/lib/games/saved-game-types';
 
 import { Modal } from '@/app/[locale]/_components/Modal';
 
