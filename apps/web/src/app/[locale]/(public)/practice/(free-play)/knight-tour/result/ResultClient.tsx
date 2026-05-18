@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { PracticeLayout } from '@/app/[locale]/(public)/practice/_components/PracticeLayout';
-import { createPracticeResultClient } from '@/app/[locale]/(public)/practice/_lib/createPracticeResultClient';
+import { createCustomPracticeResultPage } from '@/app/[locale]/(public)/practice/_lib/createCustomPracticeResultPage';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -122,8 +122,10 @@ function KnightTourContent({ locale, adBanner }: { locale: Locale; adBanner?: Re
   );
 }
 
-export const ResultClient = createPracticeResultClient({
+export const ResultClient = createCustomPracticeResultPage({
   moduleSlug: 'knight-tour',
   i18nKey: 'knightTour',
-  renderContent: (ctx, adBanner) => <KnightTourContent locale={ctx.locale} adBanner={adBanner} />,
+  renderContent: ({ locale, adBanner }) => (
+    <KnightTourContent locale={locale} adBanner={adBanner} />
+  ),
 });
