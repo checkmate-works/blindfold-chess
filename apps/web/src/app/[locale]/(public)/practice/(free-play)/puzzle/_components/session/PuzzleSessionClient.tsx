@@ -6,7 +6,6 @@ import { useTranslations } from 'next-intl';
 
 import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
-import { executeMove } from '@blindfold-chess/features/chess-core';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaTimes } from 'react-icons/fa';
@@ -28,9 +27,10 @@ import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { usePuzzleCompletion } from '../../_hooks/use-puzzle-completion';
+import type { SessionState } from '../../_lib/puzzle-match';
+import { evaluatePuzzleSubmit, parseSolutionLines } from '../../_lib/puzzle-match';
+import { writePuzzleResult } from '../../_lib/puzzle-result-storage';
 import { CircleMarker } from '../CircleMarker';
-
-type Attempt = { move: string; isCorrect: boolean };
 
 type Props = {
   solutions: PuzzleSolutionMove[][];
@@ -67,20 +67,6 @@ type Props = {
  */
 const FEEDBACK_DURATION_MS = 1200;
 
-type SessionState = {
-  currentFen: string;
-  playerMoves: string[];
-  lockedSolutionIndex: number | null;
-  attempts: Attempt[];
-  /**
-   * SAN of the opponent's most recent auto-played reply, or `null` before the
-   * first player move. Surfaced in the UI as a `"White plays Nh2"` status
-   * line so the user isn't left wondering how the position advanced between
-   * their own moves. Mirrors the `aiPlayed` status pattern in `games/play`.
-   */
-  lastOpponentMove: string | null;
-};
-
 export function PuzzleSessionClient({
   solutions,
   positionId,
@@ -107,26 +93,10 @@ export function PuzzleSessionClient({
 
   const playerColor: 'w' | 'b' = isBlackToMoveFromFen(fen) ? 'b' : 'w';
 
-  // Pre-extract each solution's SAN tokens and its player-move slots so per-submit
-  // matching is O(solutions * 1) rather than re-parsing on every keystroke.
-  //
-  // A puzzle's stored solution always starts with the player's move (that's
-  // the whole point of a puzzle), so the player's moves sit at indices 0, 2,
-  // 4, … and the opponent's replies at 1, 3, 5, … — regardless of which side
-  // (white or black) the puzzle is set up for. We can't use
-  // `getPlayerMovesFromSequence(moves, playerColor)` from chess-core here:
-  // that helper is a PGN utility that assumes white always plays index 0, so
-  // feeding it a black-to-move puzzle ("h5 Nh2 Bg3", playerColor='b') would
-  // return `['Nh2']` and reject the correct first move `h5`.
-  const parsedSolutions = useMemo(
-    () =>
-      solutions.map((line) => {
-        const moves = line.map((m) => m.san) as AlgebraicNotation[];
-        const playerSlots = moves.filter((_, i) => i % 2 === 0);
-        return { moves, playerSlots };
-      }),
-    [solutions]
-  );
+  // Pre-parse the solution lines once so per-submit matching does not re-split
+  // SAN tokens on every keystroke. See `parseSolutionLines` for why a puzzle's
+  // player moves are always the even SAN indices.
+  const parsedSolutions = useMemo(() => parseSolutionLines(solutions), [solutions]);
 
   const [session, setSession] = useState<SessionState>({
     currentFen: fen,
@@ -279,100 +249,17 @@ export function PuzzleSessionClient({
     const trimmed = move.trim();
     if (!trimmed || isSolved) return false;
 
-    const nextPlayerIndex = session.playerMoves.length;
+    // All the move-matching logic lives in the pure `evaluatePuzzleSubmit`
+    // engine; this handler only applies the resulting state + feedback.
+    const outcome = evaluatePuzzleSubmit(session, trimmed, parsedSolutions, solutions);
 
-    // Run the user's input through chess.js FIRST. We rely on this for two
-    // things at once:
-    //   (a) legality check — illegal SAN against the current position is
-    //       rejected outright (afterPlayer === null), and
-    //   (b) SAN normalization — chess.js fills in missing capture marks
-    //       (`x`), check marks (`+`), and checkmate marks (`#`) and returns
-    //       the canonical SAN via `moveResult.san`. Matching against that
-    //       canonical form means a user typing `Qe6` for a stored solution
-    //       of `Qxe6+` no longer gets bounced as "incorrect" — the report
-    //       a user filed about being stuck on a puzzle for 10 minutes
-    //       trying to type the exact decorations was caused by the previous
-    //       string-equality check on the raw input.
-    //
-    // The user's original typed input is still preserved in `attempt.move`
-    // so the result page shows what they actually typed; correctness is
-    // judged on the canonical SAN.
-    const afterPlayer = executeMove(session.currentFen, trimmed);
-    if (!afterPlayer) {
-      const attempt: Attempt = { move: trimmed, isCorrect: false };
-      setSession({ ...session, attempts: [...session.attempts, attempt] });
+    if (outcome.kind === 'rejected') {
+      setSession(outcome.nextSession);
       flashIncorrect();
       return false;
     }
 
-    const canonicalSan = afterPlayer.moveResult.san;
-
-    // Which solution lines accept this move at the current player slot? If we
-    // have already locked to a line, restrict to it; otherwise scan all.
-    const candidates =
-      session.lockedSolutionIndex !== null
-        ? [session.lockedSolutionIndex]
-        : parsedSolutions.map((_, i) => i);
-
-    // Both sides need to be canonical for the comparison to be sound.
-    // The user's input is canonicalized above; the stored solution SAN is
-    // canonicalized here by feeding it through chess.js against the same
-    // pre-move FEN. Without this, a solution stored without check decoration
-    // (e.g. `Rxd8`, when chess.js's canonical form for the same move is
-    // `Rxd8+`) would never match — even when the user types the *exact*
-    // string from the DB. Reproduced 2026-05-02 on puzzle
-    // `d4f46cc3-dfbd-4c1b-bb8c-ed7a952f8a46` whose stored solution `Rxd8`
-    // could not be solved by any input. `executeMove` is null only if the
-    // server-stored SAN is itself illegal at this point in the line, which
-    // would indicate corrupted puzzle data — we fail closed (no match) in
-    // that case rather than crashing.
-    const matchIdx = candidates.find((i) => {
-      const expected = parsedSolutions[i]!.playerSlots[nextPlayerIndex];
-      if (expected === undefined) return false;
-      const expectedExec = executeMove(session.currentFen, expected);
-      return expectedExec !== null && expectedExec.moveResult.san === canonicalSan;
-    });
-
-    const attempt: Attempt = { move: trimmed, isCorrect: matchIdx !== undefined };
-    const updatedAttempts = [...session.attempts, attempt];
-
-    if (matchIdx === undefined) {
-      setSession({ ...session, attempts: updatedAttempts });
-      flashIncorrect();
-      return false;
-    }
-
-    const locked = matchIdx;
-    const solution = parsedSolutions[locked]!;
-    const newPlayerMoves = [...session.playerMoves, trimmed];
-    const playerMoveCount = newPlayerMoves.length;
-
-    // Auto-play the opponent reply that follows this player move, if any.
-    // Puzzle solutions always begin with the player's move, so the player's
-    // N-th move (1-indexed) is at SAN index (N-1)*2 and the opponent's reply
-    // at (N-1)*2 + 1. This is independent of `playerColor`.
-    const justPlayedSanIndex = (playerMoveCount - 1) * 2;
-    const opponentSanIndex = justPlayedSanIndex + 1;
-
-    let fenAfter = afterPlayer.fen;
-    let playedOpponentMove: string | null = null;
-    if (opponentSanIndex < solution.moves.length) {
-      const opponentMove = solution.moves[opponentSanIndex]!;
-      const afterOpponent = executeMove(fenAfter, opponentMove);
-      if (afterOpponent) {
-        fenAfter = afterOpponent.fen;
-        playedOpponentMove = opponentMove;
-      }
-    }
-
-    const solved = playerMoveCount >= solution.playerSlots.length;
-    setSession({
-      currentFen: fenAfter,
-      playerMoves: newPlayerMoves,
-      lockedSolutionIndex: locked,
-      attempts: updatedAttempts,
-      lastOpponentMove: playedOpponentMove,
-    });
+    setSession(outcome.nextSession);
     setMoveInput('');
     // Clear any leftover red chip from a prior wrong attempt — there is
     // no green chip on success (the PageTitle update is the success
@@ -380,13 +267,8 @@ export function PuzzleSessionClient({
     // move if we did not reset here.
     setIncorrectFlash(null);
 
-    if (solved) {
-      finishSolve({
-        solutionLine: solutions[locked]!.map((m) => m.san).join(' '),
-        attempts: updatedAttempts,
-        playerMoveCount: solution.playerSlots.length,
-        peekCount,
-      });
+    if (outcome.solve) {
+      finishSolve({ ...outcome.solve, peekCount });
     }
 
     return true;
@@ -548,20 +430,12 @@ export function PuzzleSessionClient({
                 // Save current attempts to sessionStorage even if not yet solved.
                 // First solution line is a safe default here because the user has
                 // not locked onto any specific line yet (or has only guessed wrong).
-                try {
-                  const solutionLine = (solutions[0] ?? []).map((m) => m.san).join(' ');
-                  sessionStorage.setItem(
-                    `puzzle_result_${positionId}`,
-                    JSON.stringify({
-                      attempts: session.attempts,
-                      solutionLine,
-                      fen,
-                      peekCount,
-                    })
-                  );
-                } catch {
-                  // sessionStorage may be unavailable
-                }
+                writePuzzleResult(positionId, {
+                  attempts: session.attempts,
+                  solutionLine: (solutions[0] ?? []).map((m) => m.san).join(' '),
+                  fen,
+                  peekCount,
+                });
               }}
             >
               <Button asChild variant="secondary" fullWidth>
