@@ -5,6 +5,7 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 import type { GameOutcome } from '@/lib/games/saved-game-types';
 
 import { shouldAutoSave, shouldMarkPendingChanges } from '../_lib/auto-save-policy';
+import type { SaveGame } from './use-auto-save';
 
 type UseSaveTriggerOptions = {
   moves: AlgebraicNotation[];
@@ -18,7 +19,7 @@ type UseSaveTriggerOptions = {
   isInitialSyncSave: React.RefObject<boolean>;
   lastSavedMovesLength: React.RefObject<number>;
   lastSavedStatus: React.RefObject<GameOutcome>;
-  saveGame: (showNotification?: boolean) => Promise<string | undefined> | undefined;
+  saveGame: SaveGame;
 };
 
 /**

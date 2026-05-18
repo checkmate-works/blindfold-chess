@@ -31,6 +31,29 @@ export type GameDataRefs = {
   operationLogs: React.RefObject<MoveOperationLog[] | undefined>;
 };
 
+/** Options accepted by the {@link useAutoSave} save function. */
+export type SaveGameOptions = {
+  /**
+   * Persist the game without touching React state (`isSaving` /
+   * `lastSavedAt` / `gameId`).
+   *
+   * The `beforeunload` handler can fire synchronously inside a React render
+   * during a cross-root-layout (hard) navigation — e.g. leaving `/[locale]/…`
+   * for `/`. A normal `setState` there triggers React's "Cannot update a
+   * component while rendering a different component" warning, and the save
+   * status UI is moot anyway because the page is unloading. Silent saves
+   * still persist to storage and run the side effects that matter on the way
+   * out (`notifyGameListUpdated`, the toast flag).
+   */
+  silent?: boolean;
+};
+
+/** Signature of the save function returned/threaded through `useAutoSave`. */
+export type SaveGame = (
+  showNotification?: boolean,
+  options?: SaveGameOptions
+) => Promise<string | undefined>;
+
 type UseAutoSaveOptions = {
   gameId?: string;
   moves: AlgebraicNotation[];
@@ -134,7 +157,10 @@ export function useAutoSave({
 
   // Save game function
   const saveGame = useCallback(
-    async (showNotification = false) => {
+    async (showNotification = false, options?: SaveGameOptions) => {
+      // Silent saves persist without React state updates — see SaveGameOptions.
+      const silent = options?.silent ?? false;
+
       if (!enabledRef.current) return;
 
       // Mutex: skip if another save is already in progress
@@ -152,7 +178,7 @@ export function useAutoSave({
       }
 
       isSavingRef.current = true;
-      setIsSaving(true);
+      if (!silent) setIsSaving(true);
 
       try {
         const currentMoves = gameDataRefs.moves.current;
@@ -178,7 +204,7 @@ export function useAutoSave({
         // and state to the freshly minted id.
         if (savedGameId !== gameIdFromRef) {
           currentGameIdRef.current = savedGameId;
-          setCurrentGameId(savedGameId);
+          if (!silent) setCurrentGameId(savedGameId);
         }
 
         lastSavedMovesLength.current = currentMoves.length;
@@ -191,8 +217,10 @@ export function useAutoSave({
         }
 
         // Update save status
-        setLastSavedAt(new Date());
-        setIsSaving(false);
+        if (!silent) {
+          setLastSavedAt(new Date());
+          setIsSaving(false);
+        }
 
         notifyGameListUpdated();
 
@@ -203,7 +231,7 @@ export function useAutoSave({
 
         return savedGameId;
       } catch (error) {
-        setIsSaving(false);
+        if (!silent) setIsSaving(false);
         if (error instanceof GameLimitError) {
           console.warn('Game limit reached, cannot save game:', error);
         } else {

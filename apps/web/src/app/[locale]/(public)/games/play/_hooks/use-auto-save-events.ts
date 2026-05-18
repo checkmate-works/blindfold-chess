@@ -6,9 +6,10 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { isGameFinished } from '../_lib/game-utils';
 import { SESSION_STORAGE_KEYS } from '../_lib/session-storage-keys';
+import type { SaveGame } from './use-auto-save';
 
 type UseAutoSaveEventsOptions = {
-  saveGame: (showNotification?: boolean) => Promise<string | undefined> | undefined;
+  saveGame: SaveGame;
   currentMovesRef: React.RefObject<AlgebraicNotation[]>;
   currentStatusRef: React.RefObject<string>;
   hasPlayerInteracted: React.RefObject<boolean>;
@@ -80,7 +81,11 @@ export function useAutoSaveEvents({
   useEffect(() => {
     const handleBeforeUnload = () => {
       if (hasPlayerInteracted.current && currentMovesRef.current.length > 0) {
-        saveGame(false);
+        // `silent`: this listener can fire synchronously inside a React render
+        // when leaving for a different root layout (e.g. `/`). A plain save
+        // would `setState` during render and trip React's warning — persist
+        // only, since the save status UI is moot on an unloading page.
+        saveGame(false, { silent: true });
       }
     };
 
