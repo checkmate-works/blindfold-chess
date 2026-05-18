@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { CommentTreeNode } from '../_lib/comment-tree';
 import { CommentTree } from './CommentTree';
+import type { CommentTreeContextValue } from './CommentTreeContext';
 
 afterEach(() => {
   cleanup();
@@ -12,20 +13,27 @@ vi.mock('../_lib/permissions', () => ({
   canUserReply: vi.fn(async () => true),
 }));
 
-const commentNodeProps = vi.fn();
-vi.mock('./CommentNode', () => ({
-  CommentNode: (props: {
-    node: { id: string };
-    extraContentByPostId?: ReadonlyMap<string, React.ReactNode>;
+// Capture every context value CommentTree mounts a provider with — one per
+// thread root. The provider just renders its children so the stub CommentNode
+// below still mounts.
+const providerValues: CommentTreeContextValue[] = [];
+vi.mock('./CommentTreeContext', () => ({
+  CommentTreeProvider: ({
+    value,
+    children,
+  }: {
+    value: CommentTreeContextValue;
+    children: React.ReactNode;
   }) => {
-    commentNodeProps(props);
-    const extra = props.extraContentByPostId?.get(props.node.id);
-    return (
-      <div data-testid={`comment-node-${props.node.id}`}>
-        {extra !== undefined && <div data-testid={`extra-${props.node.id}`}>{extra}</div>}
-      </div>
-    );
+    providerValues.push(value);
+    return <>{children}</>;
   },
+}));
+
+vi.mock('./CommentNode', () => ({
+  CommentNode: ({ node }: { node: { id: string } }) => (
+    <div data-testid={`comment-node-${node.id}`} />
+  ),
 }));
 
 const mockToggleLike = vi.fn();
@@ -71,6 +79,7 @@ async function renderTree(
   comments: CommentTreeNode[],
   extra?: ReadonlyMap<string, React.ReactNode>
 ) {
+  providerValues.length = 0;
   const ui = await CommentTree({
     comments,
     locale: 'en',
@@ -88,65 +97,43 @@ async function renderTree(
 }
 
 describe('CommentTree — extraContentByPostId contract', () => {
-  it('forwards no Map prop to any CommentNode when extraContentByPostId is omitted (back-compat)', async () => {
-    commentNodeProps.mockClear();
-    const r1 = makeRoot('r1');
-    const r2 = makeRoot('r2');
+  it('mounts one provider + CommentNode per thread root', async () => {
+    await renderTree([makeRoot('r1'), makeRoot('r2')]);
 
-    await renderTree([r1, r2]);
-
-    expect(commentNodeProps).toHaveBeenCalledTimes(2);
-    const call1 = commentNodeProps.mock.calls[0][0];
-    const call2 = commentNodeProps.mock.calls[1][0];
-    expect(call1.extraContentByPostId).toBeUndefined();
-    expect(call2.extraContentByPostId).toBeUndefined();
+    expect(providerValues).toHaveLength(2);
+    expect(screen.getByTestId('comment-node-r1')).toBeDefined();
+    expect(screen.getByTestId('comment-node-r2')).toBeDefined();
   });
 
-  it('forwards the same Map to every root CommentNode and the test renderer surfaces only the entries whose key matches the node id', async () => {
-    commentNodeProps.mockClear();
-    const r1 = makeRoot('r1');
-    const r2 = makeRoot('r2');
-    const card1 = <div data-testid="game-card-r1">Game card for r1</div>;
-    const card2 = <div data-testid="image-card-r2">Image card for r2</div>;
+  it('leaves extraContentByPostId undefined in context when the prop is omitted', async () => {
+    await renderTree([makeRoot('r1'), makeRoot('r2')]);
+
+    expect(providerValues[0].extraContentByPostId).toBeUndefined();
+    expect(providerValues[1].extraContentByPostId).toBeUndefined();
+  });
+
+  it('threads the same extraContentByPostId Map into every root context', async () => {
     const map = new Map<string, React.ReactNode>([
-      [r1.id, card1],
-      [r2.id, card2],
+      ['r1', <div key="r1">card r1</div>],
+      ['r2', <div key="r2">card r2</div>],
     ]);
 
-    await renderTree([r1, r2], map);
+    await renderTree([makeRoot('r1'), makeRoot('r2')], map);
 
-    expect(screen.getByTestId('extra-r1')).toBeDefined();
-    expect(screen.getByTestId('extra-r2')).toBeDefined();
-    expect(screen.getByTestId('game-card-r1')).toBeDefined();
-    expect(screen.getByTestId('image-card-r2')).toBeDefined();
-    // Both roots receive the SAME map reference — CommentNode is the
-    // one that does the per-id lookup, not CommentTree.
-    const calls = commentNodeProps.mock.calls.map((c) => c[0]);
-    expect(calls[0].extraContentByPostId).toBe(map);
-    expect(calls[1].extraContentByPostId).toBe(map);
+    // Both roots receive the SAME map reference — CommentNode does the
+    // per-id lookup, not CommentTree.
+    expect(providerValues[0].extraContentByPostId).toBe(map);
+    expect(providerValues[1].extraContentByPostId).toBe(map);
   });
 
-  it('renders no extra payload for roots whose id is missing from the map', async () => {
-    commentNodeProps.mockClear();
-    const r1 = makeRoot('r1');
-    const r2 = makeRoot('r2');
-    const map = new Map<string, React.ReactNode>([
-      [r1.id, <span key="x">attached only to r1</span>],
-    ]);
+  it('threads the per-root rootPostId / canReply alongside the shared values', async () => {
+    await renderTree([makeRoot('r1'), makeRoot('r2')]);
 
-    await renderTree([r1, r2], map);
-
-    expect(screen.getByTestId('extra-r1')).toBeDefined();
-    expect(screen.queryByTestId('extra-r2')).toBeNull();
-  });
-
-  it('does not match unrelated post ids: a map keyed by an absent id renders nothing extra anywhere', async () => {
-    commentNodeProps.mockClear();
-    const r1 = makeRoot('r1');
-    const map = new Map<string, React.ReactNode>([['some-other-id', <span key="x">orphan</span>]]);
-
-    await renderTree([r1], map);
-
-    expect(screen.queryByTestId('extra-r1')).toBeNull();
+    // rootPostId defaults to each root's own id when threadRootPostId is unset.
+    expect(providerValues[0].rootPostId).toBe('r1');
+    expect(providerValues[1].rootPostId).toBe('r2');
+    // Shared values are identical across roots.
+    expect(providerValues[0].locale).toBe('en');
+    expect(providerValues[0].toggleLikeAction).toBe(mockToggleLike);
   });
 });

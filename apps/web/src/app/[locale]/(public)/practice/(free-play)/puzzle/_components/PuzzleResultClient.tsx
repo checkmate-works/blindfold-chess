@@ -15,14 +15,14 @@ import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
 import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
 import { SectionTitle } from '@/app/[locale]/_components';
 
+import type { Attempt } from '../_lib/puzzle-match';
+import { puzzleResultStorageKey } from '../_lib/puzzle-result-storage';
 import {
   AttemptHistoryPanel,
   AttemptStatusBadge,
   computeAttemptStatus,
 } from './AttemptHistoryPanel';
 import { PuzzleSolutionReplay } from './PuzzleSolutionReplay';
-
-type Attempt = { move: string; isCorrect: boolean };
 
 type Props = {
   positionId: string;
@@ -52,7 +52,7 @@ export function PuzzleResultClient({
 
   useEffect(() => {
     try {
-      const stored = sessionStorage.getItem(`puzzle_result_${positionId}`);
+      const stored = sessionStorage.getItem(puzzleResultStorageKey(positionId));
       if (stored) {
         const data = JSON.parse(stored) as {
           attempts: Attempt[];

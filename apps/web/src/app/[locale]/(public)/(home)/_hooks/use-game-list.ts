@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { GAME_UPDATED_EVENT } from '@/config';
 
 import { LocalStorageGameRepository } from '@/lib/games/local-storage-repository';
-import type { Game, GameSortOption, SortDirection } from '@/lib/types';
+import type { Game, GameSortOption, SortDirection } from '@/lib/games/saved-game-types';
 
 type Return = {
   games: Game[];

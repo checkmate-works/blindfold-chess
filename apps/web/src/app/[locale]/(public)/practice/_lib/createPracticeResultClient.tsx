@@ -163,13 +163,6 @@ type ResultClientConfig = {
     ctx: ResultContext,
     adProps: { adBanner?: ReactNode; adBannerWide?: ReactNode }
   ) => Record<string, unknown>;
-  /**
-   * Completely replace the default body (PracticeComplete + leaderboard + ads).
-   * When provided, only PracticeResultPage with breadcrumbs is rendered as the
-   * wrapper, and the returned ReactNode is rendered as children.
-   * Use this for modules that don't use PracticeComplete at all (e.g. knight-tour).
-   */
-  renderContent?: (ctx: ResultContext, adBanner?: ReactNode) => ReactNode;
 };
 
 // ---------------------------------------------------------------------------
@@ -221,7 +214,6 @@ export function createPracticeResultClient(config: ResultClientConfig) {
     renderAfterComplete,
     showSignUpBanner = true,
     extraCompleteProps,
-    renderContent,
   } = config;
 
   function ResultClient({
@@ -271,26 +263,6 @@ export function createPracticeResultClient(config: ResultClientConfig) {
     // Breadcrumb label for "Practice" link
     const practiceBreadcrumbLabel =
       practiceBreadcrumbSource === 'navigation' ? tNavigation('practice') : tPractice('title');
-
-    // Full content override — skip PracticeComplete entirely
-    if (renderContent) {
-      return (
-        <PracticeResultPage
-          locale={locale}
-          title={t(titleKey)}
-          breadcrumbItems={[
-            { label: practiceBreadcrumbLabel, href: '/practice' },
-            { label: t('title'), href: `/practice/${moduleSlug}` },
-            { label: tPractice('result') },
-          ]}
-          containerClassName={containerClassName}
-          dividerClassName={dividerClassName}
-        >
-          {renderContent(ctx, adBanner)}
-          {adBannerStandard && <div className="mt-8">{adBannerStandard}</div>}
-        </PracticeResultPage>
-      );
-    }
 
     // Extract extra params
     const extraParamValues = extraParams ? extraParams(searchParams) : {};

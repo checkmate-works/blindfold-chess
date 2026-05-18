@@ -3,7 +3,7 @@
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaSort } from 'react-icons/fa';
 
-import type { GameSortOption, SortDirection } from '@/lib/types';
+import type { GameSortOption, SortDirection } from '@/lib/games/saved-game-types';
 
 type Props = {
   sortBy: GameSortOption;

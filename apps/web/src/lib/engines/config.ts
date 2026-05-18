@@ -5,7 +5,7 @@ import {
   isMaiaRating,
 } from '@blindfold-chess/features/ai-game/maia';
 
-import type { SkillLevel } from '@/lib/types';
+import type { SkillLevel } from '@/lib/games/saved-game-types';
 
 import { DEFAULT_ENGINE, type EngineKind } from './types';
 

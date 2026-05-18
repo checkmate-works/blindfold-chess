@@ -6,8 +6,7 @@ import { forgotPassword } from './forgotPassword';
 
 const mockResetPasswordForEmail = vi.fn();
 const mockGetUser = vi.fn();
-const mockCheckIpRateLimitGuard = vi.fn();
-const mockGetClientIp = vi.fn();
+const mockGuardByIpRateLimit = vi.fn();
 
 vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: vi.fn(),
@@ -23,13 +22,8 @@ vi.mock('@/lib/supabase/server', () => ({
     }),
 }));
 
-vi.mock('@/lib/security/client-ip', () => ({
-  getClientIp: () => mockGetClientIp(),
-}));
-
 vi.mock('@/lib/security/rate-limit-ip', () => ({
-  IP_RATE_LIMITS: { forgotPassword: { maxRequests: 3, windowMs: 300_000 } },
-  checkIpRateLimitGuard: (...args: unknown[]) => mockCheckIpRateLimitGuard(...args),
+  guardByIpRateLimit: (...args: unknown[]) => mockGuardByIpRateLimit(...args),
 }));
 
 vi.mock('@/config', () => ({
@@ -41,8 +35,7 @@ const mockUserId = 'user-00000000-0000-0000-0000-000000000001';
 describe('forgotPassword', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGetClientIp.mockResolvedValue(null);
-    mockCheckIpRateLimitGuard.mockReturnValue(null);
+    mockGuardByIpRateLimit.mockResolvedValue(null);
     mockGetUser.mockResolvedValue({ data: { user: null } });
   });
 
@@ -66,8 +59,7 @@ describe('forgotPassword', () => {
   });
 
   it('should return rateLimited when IP rate limit is exceeded', async () => {
-    mockGetClientIp.mockResolvedValue('1.2.3.4');
-    mockCheckIpRateLimitGuard.mockReturnValue({ error: 'rateLimited' });
+    mockGuardByIpRateLimit.mockResolvedValue({ error: 'rateLimited' });
 
     const result = await forgotPassword('test@example.com');
 
@@ -76,8 +68,7 @@ describe('forgotPassword', () => {
   });
 
   it('should proceed when IP rate limit is not exceeded', async () => {
-    mockGetClientIp.mockResolvedValue('1.2.3.4');
-    mockCheckIpRateLimitGuard.mockReturnValue(null);
+    mockGuardByIpRateLimit.mockResolvedValue(null);
     mockResetPasswordForEmail.mockResolvedValue({ error: null });
 
     const result = await forgotPassword('test@example.com');
@@ -116,8 +107,7 @@ describe('forgotPassword', () => {
     });
 
     it('should NOT log activity when IP rate limit is exceeded', async () => {
-      mockGetClientIp.mockResolvedValue('1.2.3.4');
-      mockCheckIpRateLimitGuard.mockReturnValue({ error: 'rateLimited' });
+      mockGuardByIpRateLimit.mockResolvedValue({ error: 'rateLimited' });
       mockGetUser.mockResolvedValue({ data: { user: { id: mockUserId } } });
 
       await forgotPassword('test@example.com');

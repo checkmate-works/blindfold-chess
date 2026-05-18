@@ -132,52 +132,60 @@ function squareToIndex(square: string): number | null {
  * // => { ok: false, reason: "en_passant", error: "..." }
  * // (en passant rank for white-to-move must be 6, not 3)
  */
-export function validateFenSemantic(fen: string): FenSemanticResult {
-  const structural = validateFenStructure(fen);
-  if (!structural.ok) {
-    // `FenStructureResult.error` is typed optional, but every `ok: false`
-    // branch in `validateFenStructure` populates it. Coalesce defensively
-    // to satisfy the discriminated-union contract here.
-    return {
-      ok: false,
-      reason: "structure",
-      error: structural.error ?? "FEN structure is invalid",
-    };
-  }
+/** A semantic-check failure. `null` from a check means "this rule passed". */
+type FenSemanticFailure = {
+  ok: false;
+  reason: FenSemanticReason;
+  error: string;
+};
 
-  const trimmed = fen.trim();
-  const fields = trimmed.split(/\s+/);
-  const [placement, sideToMove, castling, enPassant] = fields;
+type Board = (string | null)[];
 
-  const board = expandPlacement(placement);
+/** Per-side piece tallies, computed in a single board pass. */
+type BoardTally = {
+  whiteKings: number;
+  blackKings: number;
+  whitePawns: number;
+  blackPawns: number;
+  whitePieces: number;
+  blackPieces: number;
+};
 
-  // ─── King counts ───────────────────────────────────────────────────────
-  let whiteKings = 0;
-  let blackKings = 0;
-  let whitePawns = 0;
-  let blackPawns = 0;
-  let whitePieces = 0;
-  let blackPieces = 0;
+function tallyBoard(board: Board): BoardTally {
+  const tally: BoardTally = {
+    whiteKings: 0,
+    blackKings: 0,
+    whitePawns: 0,
+    blackPawns: 0,
+    whitePieces: 0,
+    blackPieces: 0,
+  };
   for (const piece of board) {
     if (piece === null) continue;
-    if (piece === piece.toUpperCase()) whitePieces += 1;
-    else blackPieces += 1;
-    if (piece === "K") whiteKings += 1;
-    else if (piece === "k") blackKings += 1;
-    else if (piece === "P") whitePawns += 1;
-    else if (piece === "p") blackPawns += 1;
+    if (piece === piece.toUpperCase()) tally.whitePieces += 1;
+    else tally.blackPieces += 1;
+    if (piece === "K") tally.whiteKings += 1;
+    else if (piece === "k") tally.blackKings += 1;
+    else if (piece === "P") tally.whitePawns += 1;
+    else if (piece === "p") tally.blackPawns += 1;
   }
+  return tally;
+}
 
-  if (whiteKings !== 1 || blackKings !== 1) {
+/** Each side must have exactly one king. */
+function checkKingCount(tally: BoardTally): FenSemanticFailure | null {
+  if (tally.whiteKings !== 1 || tally.blackKings !== 1) {
     return {
       ok: false,
       reason: "kings",
       error: "Each side must have exactly one king",
     };
   }
+  return null;
+}
 
-  // ─── Pawn placement on first/last rank ────────────────────────────────
-  // Ranks 8 (top) and 1 (bottom) must not contain pawns.
+/** Ranks 8 (top) and 1 (bottom) must not contain pawns. */
+function checkPawnPlacement(board: Board): FenSemanticFailure | null {
   for (let i = 0; i < 8; i += 1) {
     const top = board[i];
     if (top === "P" || top === "p") {
@@ -196,9 +204,12 @@ export function validateFenSemantic(fen: string): FenSemanticResult {
       };
     }
   }
+  return null;
+}
 
-  // ─── Pawn / piece counts per side ─────────────────────────────────────
-  if (whitePawns > 8 || blackPawns > 8) {
+/** At most 8 pawns and 16 total pieces per side. */
+function checkPieceCounts(tally: BoardTally): FenSemanticFailure | null {
+  if (tally.whitePawns > 8 || tally.blackPawns > 8) {
     return {
       ok: false,
       reason: "piece_count",
@@ -209,104 +220,165 @@ export function validateFenSemantic(fen: string): FenSemanticResult {
   // original officers). This is a generous upper bound — strictly the unpromoted
   // limit is 8 pawns + 8 officers = 16, but with promotions the original quota
   // can shift between officer types. The hard cap stays at 16 pieces per side.
-  if (whitePieces > 16 || blackPieces > 16) {
+  if (tally.whitePieces > 16 || tally.blackPieces > 16) {
     return {
       ok: false,
       reason: "piece_count",
       error: "A side may not have more than 16 pieces",
     };
   }
+  return null;
+}
 
-  // ─── Castling rights consistency ──────────────────────────────────────
-  if (castling !== "-") {
-    // We already know castling matches /^[KQkq]+$/ from validateFenStructure.
-    const e1 = squareToIndex("e1");
-    const e8 = squareToIndex("e8");
-    const h1 = squareToIndex("h1");
-    const a1 = squareToIndex("a1");
-    const h8 = squareToIndex("h8");
-    const a8 = squareToIndex("a8");
-    // Index lookups above are statically valid (constant inputs); the casts
-    // below are safe.
-    if (castling.includes("K") && (board[e1!] !== "K" || board[h1!] !== "R")) {
-      return {
-        ok: false,
-        reason: "castling_rights",
-        error: "White kingside castling right requires K on e1 and R on h1",
-      };
-    }
-    if (castling.includes("Q") && (board[e1!] !== "K" || board[a1!] !== "R")) {
-      return {
-        ok: false,
-        reason: "castling_rights",
-        error: "White queenside castling right requires K on e1 and R on a1",
-      };
-    }
-    if (castling.includes("k") && (board[e8!] !== "k" || board[h8!] !== "r")) {
-      return {
-        ok: false,
-        reason: "castling_rights",
-        error: "Black kingside castling right requires k on e8 and r on h8",
-      };
-    }
-    if (castling.includes("q") && (board[e8!] !== "k" || board[a8!] !== "r")) {
-      return {
-        ok: false,
-        reason: "castling_rights",
-        error: "Black queenside castling right requires k on e8 and r on a8",
-      };
+/**
+ * One castling right and the king + rook squares it implies. A right is only
+ * legal when both pieces sit on their starting squares.
+ */
+const CASTLING_REQUIREMENTS: ReadonlyArray<{
+  right: string;
+  kingSquare: string;
+  kingPiece: string;
+  rookSquare: string;
+  rookPiece: string;
+  error: string;
+}> = [
+  {
+    right: "K",
+    kingSquare: "e1",
+    kingPiece: "K",
+    rookSquare: "h1",
+    rookPiece: "R",
+    error: "White kingside castling right requires K on e1 and R on h1",
+  },
+  {
+    right: "Q",
+    kingSquare: "e1",
+    kingPiece: "K",
+    rookSquare: "a1",
+    rookPiece: "R",
+    error: "White queenside castling right requires K on e1 and R on a1",
+  },
+  {
+    right: "k",
+    kingSquare: "e8",
+    kingPiece: "k",
+    rookSquare: "h8",
+    rookPiece: "r",
+    error: "Black kingside castling right requires k on e8 and r on h8",
+  },
+  {
+    right: "q",
+    kingSquare: "e8",
+    kingPiece: "k",
+    rookSquare: "a8",
+    rookPiece: "r",
+    error: "Black queenside castling right requires k on e8 and r on a8",
+  },
+];
+
+/** Every declared castling right must have its king + rook on home squares. */
+function checkCastlingRights(
+  board: Board,
+  castling: string,
+): FenSemanticFailure | null {
+  if (castling === "-") return null;
+  // We already know castling matches /^[KQkq]+$/ from validateFenStructure.
+  for (const req of CASTLING_REQUIREMENTS) {
+    if (!castling.includes(req.right)) continue;
+    // Square names are constants → squareToIndex never returns null here.
+    const kingIdx = squareToIndex(req.kingSquare)!;
+    const rookIdx = squareToIndex(req.rookSquare)!;
+    if (board[kingIdx] !== req.kingPiece || board[rookIdx] !== req.rookPiece) {
+      return { ok: false, reason: "castling_rights", error: req.error };
     }
   }
+  return null;
+}
 
-  // ─── En passant target square consistency ─────────────────────────────
-  if (enPassant !== "-") {
-    // Structurally valid en passant is a-h + 1-8. Semantically, the rank
-    // must be 6 (white just moved) when side-to-move is black… wait — FEN
-    // semantics: if side-to-move is `w`, then black moved last, so the ep
-    // target is on rank 6 (the square the black pawn skipped over), and a
-    // black pawn must sit on rank 5 directly south of the ep target.
-    // Conversely if side-to-move is `b`, ep target is on rank 3, and a
-    // white pawn must sit on rank 4.
-    const epRank = enPassant[1];
-    const expectedRank = sideToMove === "w" ? "6" : "3";
-    if (epRank !== expectedRank) {
-      return {
-        ok: false,
-        reason: "en_passant",
-        error: `En passant target rank must be ${expectedRank} when side to move is ${sideToMove}`,
-      };
-    }
-    // Locate the pawn that just double-pushed.
-    const pawnRank = sideToMove === "w" ? "5" : "4";
-    const pawnSquare = enPassant[0] + pawnRank;
-    const pawnIdx = squareToIndex(pawnSquare);
-    if (pawnIdx === null) {
-      return {
-        ok: false,
-        reason: "en_passant",
-        error: "En passant square is malformed",
-      };
-    }
-    const expectedPawn = sideToMove === "w" ? "p" : "P";
-    if (board[pawnIdx] !== expectedPawn) {
-      return {
-        ok: false,
-        reason: "en_passant",
-        error: "En passant target has no pawn behind it",
-      };
-    }
-    // The ep target square itself must be empty.
-    const targetIdx = squareToIndex(enPassant);
-    if (targetIdx === null || board[targetIdx] !== null) {
-      return {
-        ok: false,
-        reason: "en_passant",
-        error: "En passant target square must be empty",
-      };
-    }
+/**
+ * An en passant target must name an empty square on the correct rank, with the
+ * pawn that just double-pushed sitting directly behind it.
+ *
+ * FEN semantics: if side-to-move is `w`, black moved last, so the ep target is
+ * on rank 6 (the square the black pawn skipped over) and a black pawn sits on
+ * rank 5. If side-to-move is `b`, ep target is on rank 3 and a white pawn sits
+ * on rank 4.
+ */
+function checkEnPassant(
+  board: Board,
+  sideToMove: string,
+  enPassant: string,
+): FenSemanticFailure | null {
+  if (enPassant === "-") return null;
+
+  const epRank = enPassant[1];
+  const expectedRank = sideToMove === "w" ? "6" : "3";
+  if (epRank !== expectedRank) {
+    return {
+      ok: false,
+      reason: "en_passant",
+      error: `En passant target rank must be ${expectedRank} when side to move is ${sideToMove}`,
+    };
+  }
+  // Locate the pawn that just double-pushed.
+  const pawnRank = sideToMove === "w" ? "5" : "4";
+  const pawnSquare = enPassant[0] + pawnRank;
+  const pawnIdx = squareToIndex(pawnSquare);
+  if (pawnIdx === null) {
+    return {
+      ok: false,
+      reason: "en_passant",
+      error: "En passant square is malformed",
+    };
+  }
+  const expectedPawn = sideToMove === "w" ? "p" : "P";
+  if (board[pawnIdx] !== expectedPawn) {
+    return {
+      ok: false,
+      reason: "en_passant",
+      error: "En passant target has no pawn behind it",
+    };
+  }
+  // The ep target square itself must be empty.
+  const targetIdx = squareToIndex(enPassant);
+  if (targetIdx === null || board[targetIdx] !== null) {
+    return {
+      ok: false,
+      reason: "en_passant",
+      error: "En passant target square must be empty",
+    };
+  }
+  return null;
+}
+
+export function validateFenSemantic(fen: string): FenSemanticResult {
+  const structural = validateFenStructure(fen);
+  if (!structural.ok) {
+    // `FenStructureResult.error` is typed optional, but every `ok: false`
+    // branch in `validateFenStructure` populates it. Coalesce defensively
+    // to satisfy the discriminated-union contract here.
+    return {
+      ok: false,
+      reason: "structure",
+      error: structural.error ?? "FEN structure is invalid",
+    };
   }
 
-  // ─── chess.js cross-check ─────────────────────────────────────────────
+  const trimmed = fen.trim();
+  const [placement, sideToMove, castling, enPassant] = trimmed.split(/\s+/);
+  const board = expandPlacement(placement);
+  const tally = tallyBoard(board);
+
+  // Run each rule in order; the first failure wins. Ordering is observable
+  // through `reason`, so it matches the original sequential checks.
+  const failure =
+    checkKingCount(tally) ??
+    checkPawnPlacement(board) ??
+    checkPieceCounts(tally) ??
+    checkCastlingRights(board, castling) ??
+    checkEnPassant(board, sideToMove, enPassant);
+  if (failure) return failure;
+
   // Final catch-all: positions that pass everything above but that chess.js
   // still rejects (e.g. side-not-to-move is in check, two-king-in-check,
   // certain bishop / promotion impossibilities). chess.js is permissive in

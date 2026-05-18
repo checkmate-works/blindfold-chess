@@ -9,7 +9,7 @@ import {
 } from '@blindfold-chess/features/ai-game/maia';
 
 import type { EngineKind } from '@/lib/engines';
-import type { SkillLevel } from '@/lib/types';
+import type { SkillLevel } from '@/lib/games/saved-game-types';
 
 type Props = {
   engine: EngineKind;

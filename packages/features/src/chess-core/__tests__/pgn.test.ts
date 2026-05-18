@@ -17,9 +17,9 @@ import {
   flattenPgnMoves,
   validatePgnMoves,
   parsePgnMoveSequence,
-  validateAttachedPgn,
 } from "../pgn";
 import type { FormattedPgn } from "../pgn";
+import { validateAttachedPgn } from "../pgn-attachment";
 
 const SIMPLE_PGN = "1. e4 e5 2. Nf3 Nc6";
 

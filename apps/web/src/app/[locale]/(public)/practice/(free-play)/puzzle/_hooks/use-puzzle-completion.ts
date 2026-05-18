@@ -6,10 +6,10 @@ import { useRouter } from '@/i18n/routing';
 import * as Sentry from '@sentry/nextjs';
 
 import { savePuzzleResult } from '../_actions/savePuzzleResult';
+import type { Attempt } from '../_lib/puzzle-match';
+import { writePuzzleResult } from '../_lib/puzzle-result-storage';
 
 const AUTO_NAVIGATE_DELAY_MS = 1000;
-
-type Attempt = { move: string; isCorrect: boolean };
 
 type FinishSolveArgs = {
   /** Space-separated SAN of the locked solution line, persisted to sessionStorage. */
@@ -65,14 +65,7 @@ export function usePuzzleCompletion({ positionId, fen }: Options): Return {
       savedRef.current = true;
       setIsSolved(true);
 
-      try {
-        sessionStorage.setItem(
-          `puzzle_result_${positionId}`,
-          JSON.stringify({ attempts, solutionLine, fen, peekCount })
-        );
-      } catch {
-        // sessionStorage may be unavailable
-      }
+      writePuzzleResult(positionId, { attempts, solutionLine, fen, peekCount });
       setIsNavigatingToResult(true);
 
       const baseUrl = `/practice/puzzle/${positionId}/result`;

@@ -31,14 +31,23 @@ const TOAST_PARAM_CONFIG: Record<string, { messageKey: string; type: ToastType }
   puzzle_deleted: { messageKey: 'puzzleDeleted', type: 'success' },
 };
 
-export function ToastContainer() {
+type ToastContainerProps = {
+  /**
+   * Locale used for locale-prefixed navigation. Supplied by the landing (`/`)
+   * route, whose URL has no `[locale]` segment for `useParams` to read.
+   * Under `[locale]/`, omit it — the route segment is used instead.
+   */
+  locale?: string;
+};
+
+export function ToastContainer({ locale: localeProp }: ToastContainerProps = {}) {
   const { toasts, hideToast, showToast } = useToast();
   const tToast = useTranslations('toast');
   const params = useParams();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const locale = params.locale as Locale;
+  const locale = localeProp ?? (params.locale as Locale);
   const processingToastRef = useRef(false);
 
   // Handle toast query parameter (from server-side redirects)

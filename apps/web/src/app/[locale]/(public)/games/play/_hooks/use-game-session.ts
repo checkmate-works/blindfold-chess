@@ -6,15 +6,17 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
-import { type EngineConfig, engineConfigToUrlParams } from '@/lib/engines';
+import type { EngineConfig } from '@/lib/engines';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { buildNewGameFromPositionUrl } from '../_lib/build-new-game-from-position-url';
 import { countPlayerMoves } from '../_lib/fen-utils';
 import { mapGameStatusToOutcome } from '../_lib/map-game-status-to-outcome';
 import { useAiMoveAnnouncer } from './use-ai-move-announcer';
 import { useAiMoveOrchestration } from './use-ai-move-orchestration';
+import { useAiMoveRetry } from './use-ai-move-retry';
 import { useAiVersus } from './use-ai-versus';
 import { useAutoSave } from './use-auto-save';
 import { parseUrlSearchParams, useGameInitialization } from './use-game-initialization';
@@ -194,37 +196,18 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     [pushMove, updateLastMove]
   );
 
-  // AI-move failure state, kept separate from the generic `error` slot so
-  // the UI can distinguish "AI move failed" (surface a Retry button) from
-  // the regular "invalid move" path (no Retry — the user just edits their
-  // input). `clearMoveError` nulls both in lockstep because any input edit
-  // is treated as the user moving on from either error.
-  const [aiMoveError, setAiMoveError] = useState<string | null>(null);
-
-  const handleAiMoveError = useCallback(() => {
-    const message = t('aiMoveFailed');
-    setError(message);
-    setAiMoveError(message);
-    setLastAttemptedInput('');
-    setShouldMakeAiMove(false);
-  }, [t, setShouldMakeAiMove]);
-
-  const retryAiMove = useCallback(() => {
-    // Clear the error state synchronously so the Retry button unmounts on
-    // the first click; a fast double-click during the recreate window would
-    // otherwise re-enter this callback (isLoading stays false until the
-    // orchestration effect schedules).
-    setError(null);
-    setAiMoveError(null);
-    setLastAttemptedInput('');
-    // Tear down the current opponent so the next `getAiMove` call spins up
-    // a fresh Worker. `reset` is synchronous: it bumps a counter that
-    // re-runs `useAiVersus`'s effect, which destroys the old opponent and
-    // constructs a new one before the next render-driven orchestration
-    // round can observe it.
-    resetAiOpponent();
-    setShouldMakeAiMove(true);
-  }, [resetAiOpponent, setShouldMakeAiMove]);
+  // AI-move failure + retry state machine, kept separate from the generic
+  // `error` slot so the UI can distinguish "AI move failed" (surface a Retry
+  // button) from the regular "invalid move" path (no Retry — the user just
+  // edits their input). `clearMoveError` clears both in lockstep because any
+  // input edit is treated as the user moving on from either error.
+  const { aiMoveError, handleAiMoveError, retryAiMove, clearAiMoveError } = useAiMoveRetry({
+    t,
+    setError,
+    setLastAttemptedInput,
+    setShouldMakeAiMove,
+    resetAiOpponent,
+  });
 
   const { isLoading } = useAiMoveOrchestration({
     shouldMakeAiMove: shouldMakeAiMove && !gameNotFound,
@@ -303,19 +286,16 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
   // Handle new game from position
   const handleNewGameFromPosition = useCallback(
     (position: number) => {
-      const movesToKeep = moves.slice(0, position + 1);
-      const params = new URLSearchParams();
-      params.set('moves', JSON.stringify(movesToKeep));
-      params.set('color', playerSide);
-      for (const [key, value] of Object.entries(engineConfigToUrlParams(engineConfig))) {
-        params.set(key, value);
-      }
-
-      if (startingFen) {
-        params.set('fen', startingFen);
-      }
-
-      router.push(`/${locale}/games/new/pgn?${params.toString()}`);
+      router.push(
+        buildNewGameFromPositionUrl({
+          locale,
+          moves,
+          position,
+          playerSide,
+          engineConfig,
+          startingFen,
+        })
+      );
     },
     [moves, playerSide, engineConfig, locale, router, startingFen]
   );
@@ -344,9 +324,9 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
   // hanging around after the user had moved on.
   const clearMoveError = useCallback(() => {
     setError(null);
-    setAiMoveError(null);
+    clearAiMoveError();
     setLastAttemptedInput('');
-  }, [setError, setLastAttemptedInput]);
+  }, [setError, clearAiMoveError, setLastAttemptedInput]);
 
   return {
     gameConfig: {

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import type { Game } from '@/lib/types';
+import type { Game } from '@/lib/games/saved-game-types';
 
 import { formatLastMove, getStatusIcon, getStatusStyles } from '../_lib/game-display-utils';
 import { ColorIcon } from './ColorIcon';

@@ -14,6 +14,8 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import { usePostmortemGame } from '../_hooks';
+import { formatMoveNumberPrefix } from '../_lib/postmortem-format';
+import { PostmortemMoveLogTable } from './PostmortemMoveLogTable';
 import { PostmortemMovesPanel } from './PostmortemMovesPanel';
 
 type Props = {
@@ -64,9 +66,7 @@ export function PostmortemClient({
   // Format feedback message from structured data
   const feedback = moveInput.lastFeedback;
   const movePrefix = feedback
-    ? feedback.isWhiteMove
-      ? `${feedback.moveNumber}.`
-      : `${feedback.moveNumber}...`
+    ? formatMoveNumberPrefix(feedback.moveNumber, feedback.isWhiteMove)
     : '';
   const feedbackMessage = feedback
     ? feedback.type === 'incorrect'
@@ -262,47 +262,7 @@ export function PostmortemClient({
         title={t('moveLog')}
         onClose={() => setShowMoveLogModal(false)}
       >
-        {(() => {
-          const relevantEntries = moveLog.entries.filter(
-            (e) => e.status === 'incorrect' || e.status === 'auto'
-          );
-          if (relevantEntries.length === 0) {
-            return <p className="text-center text-muted-foreground py-4">{t('noMistakes')}</p>;
-          }
-          return (
-            <div className="overflow-x-auto rounded-lg border border-border">
-              <table className="w-full text-sm">
-                <thead className="bg-accent">
-                  <tr>
-                    <th className="text-left px-4 py-3 font-medium">{t('logMoveNumber')}</th>
-                    <th className="text-left px-4 py-3 font-medium">{t('logIncorrectMove')}</th>
-                    <th className="text-left px-4 py-3 font-medium">{t('logCorrectMove')}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {relevantEntries.map((entry, index) => (
-                    <tr key={index}>
-                      <td className="px-4 py-3 text-muted-foreground">
-                        {entry.isWhiteMove ? `${entry.moveNumber}.` : `${entry.moveNumber}...`}
-                      </td>
-                      {entry.status === 'incorrect' ? (
-                        <>
-                          <td className="px-4 py-3 text-destructive">{entry.incorrectMove}</td>
-                          <td className="px-4 py-3 text-success">{entry.move}</td>
-                        </>
-                      ) : (
-                        <>
-                          <td className="px-4 py-3 text-muted-foreground">{t('logAutoFilled')}</td>
-                          <td className="px-4 py-3 text-muted-foreground">{entry.move}</td>
-                        </>
-                      )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          );
-        })()}
+        <PostmortemMoveLogTable entries={moveLog.entries} />
       </Modal>
 
       {/* Auto Fill All Confirmation Modal */}

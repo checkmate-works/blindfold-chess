@@ -1,8 +1,9 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import type { CommentTreeNode, ReplyGroup } from '../_lib/comment-tree';
+import type { CommentTreeNode, FlatReply, ReplyGroup } from '../_lib/comment-tree';
 import { CommentNode } from './CommentNode';
+import { type CommentTreeContextValue, CommentTreeProvider } from './CommentTreeContext';
 
 afterEach(() => {
   cleanup();
@@ -80,25 +81,41 @@ function makeNode(overrides: Partial<CommentTreeNode> & { id: string }): Comment
   return { ...defaults, ...overrides };
 }
 
-function renderNode(props: Partial<Parameters<typeof CommentNode>[0]> & { node: CommentTreeNode }) {
+type RenderNodeProps = {
+  node: CommentTreeNode;
+  replyGroups?: ReplyGroup[];
+  flatReplies?: FlatReply[];
+  replyToDisplayName?: string;
+  // Thread-wide context overrides.
+  rootPostId?: string;
+  currentUserId?: string;
+  canReply?: boolean;
+  enableSpoiler?: boolean;
+};
+
+function renderNode(props: RenderNodeProps) {
+  const value: CommentTreeContextValue = {
+    rootPostId: props.rootPostId ?? props.node.id,
+    locale: 'en',
+    topicKey: 'pos-1',
+    currentUserId: 'currentUserId' in props ? props.currentUserId : 'viewer-1',
+    canReply: props.canReply ?? true,
+    enableSpoiler: props.enableSpoiler ?? false,
+    redirectPath: '/en/practice/puzzle/pos-1',
+    toggleLikeAction: mockToggleLike,
+    replyAttachmentActions: { pgn: mockReplyPgn, fen: mockReplyFen },
+    deletePostAction: mockDeletePost,
+    i18n,
+  };
   return render(
-    <CommentNode
-      node={props.node}
-      rootPostId={props.rootPostId ?? props.node.id}
-      locale="en"
-      topicKey="pos-1"
-      currentUserId={'currentUserId' in props ? props.currentUserId : 'viewer-1'}
-      canReply={props.canReply ?? true}
-      enableSpoiler={props.enableSpoiler ?? false}
-      redirectPath="/en/practice/puzzle/pos-1"
-      toggleLikeAction={mockToggleLike}
-      replyAttachmentActions={{ pgn: mockReplyPgn, fen: mockReplyFen }}
-      deletePostAction={mockDeletePost}
-      i18n={i18n}
-      replyGroups={props.replyGroups}
-      flatReplies={props.flatReplies}
-      replyToDisplayName={props.replyToDisplayName}
-    />
+    <CommentTreeProvider value={value}>
+      <CommentNode
+        node={props.node}
+        replyGroups={props.replyGroups}
+        flatReplies={props.flatReplies}
+        replyToDisplayName={props.replyToDisplayName}
+      />
+    </CommentTreeProvider>
   );
 }
 

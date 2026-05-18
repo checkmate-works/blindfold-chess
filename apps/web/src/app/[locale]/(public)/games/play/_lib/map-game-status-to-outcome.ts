@@ -1,6 +1,6 @@
 import type { GameStatus } from '@blindfold-chess/features/ai-game';
 
-import type { GameOutcome } from '@/lib/types';
+import type { GameOutcome } from '@/lib/games/saved-game-types';
 
 /**
  * Map internal game status + player result to the repository's GameOutcome.

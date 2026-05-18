@@ -22,6 +22,28 @@ export type EvaluationResult = {
 };
 
 /**
+ * Stockfish reports `score` / `mate` from the side-to-move's perspective.
+ * Re-express them from white's perspective (negate when black is to move) so
+ * an `EvaluationResult` is orientation-independent.
+ *
+ * Pure — extracted from `getEvaluation` so the perspective math is testable
+ * apart from the Promise / timeout / subscription plumbing.
+ */
+export function toWhitePerspectiveEvaluation(
+  fen: Fen,
+  score: number,
+  mate: number | undefined,
+  bestMove: string | undefined,
+): EvaluationResult {
+  const isWhiteToMove = fen.split(" ")[1] === "w";
+  return {
+    score: isWhiteToMove ? score : -score,
+    mate: mate === undefined ? undefined : isWhiteToMove ? mate : -mate,
+    bestMove,
+  };
+}
+
+/**
  * Number of attempts `ensureInitialized` makes before surfacing the last
  * initialization error to the caller. Engine spin-up can transiently fail
  * (Worker / WASM boot race, tab throttling, `onerror` from Stockfish) — a
@@ -249,24 +271,14 @@ export class ChessEngine {
           this.isProcessing = false;
 
           if (latestScore !== null) {
-            // Stockfish returns score from the perspective of the side to move;
-            // convert to always be from white's perspective.
-            const isWhiteToMove = fen.split(" ")[1] === "w";
-            const scoreFromWhitePerspective = isWhiteToMove
-              ? latestScore
-              : -latestScore;
-            const mateFromWhitePerspective =
-              latestMate !== undefined
-                ? isWhiteToMove
-                  ? latestMate
-                  : -latestMate
-                : undefined;
-
-            resolve({
-              score: scoreFromWhitePerspective,
-              mate: mateFromWhitePerspective,
-              bestMove: bestMoveUci,
-            });
+            resolve(
+              toWhitePerspectiveEvaluation(
+                fen,
+                latestScore,
+                latestMate,
+                bestMoveUci,
+              ),
+            );
           } else {
             reject(new Error("No evaluation score received"));
           }

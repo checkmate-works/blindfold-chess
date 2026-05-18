@@ -5,116 +5,29 @@ import { useState } from 'react';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaEyeSlash } from 'react-icons/fa';
 
-import type { PostAttachment } from '@/lib/games/get-attachments-for-posts';
-
 import { LinkedText } from '@/app/[locale]/_components/LinkedText';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 
 import { formatAbsoluteDateTime } from '../_lib/absolute-time';
-import type {
-  AttachAction,
-  DeletePostAction,
-  EditPostAction,
-  RemoveAttachmentAction,
-  ToggleLikeAction,
-} from '../_lib/action-types';
 import type { CommentTreeNode, FlatReply, ReplyGroup } from '../_lib/comment-tree';
+import { useCommentTreeContext } from './CommentTreeContext';
 import { DeletePostButton } from './DeletePostButton';
 import { EditPostForm } from './EditPostForm';
 import { EditableAttachments } from './EditableAttachments';
 import { EditedIndicator } from './EditedIndicator';
 import { LikeButton } from './LikeButton';
 import { ReplyForm } from './ReplyForm';
-import type { ReplyAttachmentActions } from './ReplyForm';
-
-type I18n = {
-  likeNamespace: string;
-  replyNamespace: string;
-  deleteNamespace: string;
-};
 
 type Props = {
   node: CommentTreeNode;
   /**
-   * The top-level post ID for the thread this node belongs to. Passed to
-   * `ReplyForm` as the `postId` argument so `createReplyBase` can resolve
-   * the reply target via `replyToId` (the immediate parent) versus
-   * `postId` (the thread root).
-   */
-  rootPostId: string;
-  locale: string;
-  topicKey: string;
-  currentUserId?: string;
-  /**
-   * Whether the *current user* can reply within this thread, derived from the
-   * top-level post's `replyPermission`. Computed once per root by the
-   * server parent and passed down — every node in the same thread shares
-   * the same answer (replyPermission lives on the root, not per reply).
-   */
-  canReply: boolean;
-  enableSpoiler: boolean;
-  redirectPath: string;
-  toggleLikeAction: ToggleLikeAction;
-  /**
-   * Attachment-aware reply Server Actions (PGN + FEN). The inline
-   * `ReplyForm` rendered inside this node binds these against the
-   * thread's `(locale, topicKey, rootPostId)` and dispatches between
-   * the two based on the AttachmentModal's selected kind.
-   */
-  replyAttachmentActions: ReplyAttachmentActions;
-  deletePostAction: DeletePostAction;
-  /**
-   * In-place edit Server Action. Optional so a page can roll out the edit
-   * affordance incrementally; when omitted, the Edit button does not render
-   * and the comment is read-only (matching the pre-edit contract). When
-   * provided, the author of a comment sees an "Edit" button next to
-   * "Delete" and can rewrite the body inline.
-   */
-  editPostAction?: EditPostAction;
-  /**
-   * Optional attachment-remove Server Action. When provided alongside an
-   * `attachment` for this node, the in-place edit form surfaces a
-   * "Remove attachment" affordance (per-image for 1:N images, single for
-   * the 1:0..1 kinds). The action is gated on author ownership server-
-   * side; the UI gate here is purely a redundancy.
-   */
-  removeAttachmentAction?: RemoveAttachmentAction;
-  /**
-   * Optional edit-flow attach actions. Forwarded to `EditableAttachments`
-   * so a node whose post currently has NO attachment can surface an
-   * "Add attachment" button (paperclip → AttachmentModal). Omitting both
-   * keeps edit mode as remove-only for that surface.
-   */
-  attachPgnAction?: AttachAction;
-  attachFenAction?: AttachAction;
-  /**
-   * Raw attachment payloads keyed by post id. Threaded all the way down
-   * the recursion (like `extraContentByPostId`) so each `CommentNode`
-   * can look up its own attachment in edit mode. Read-mode rendering
-   * still flows through `extraContentByPostId` — pages already compute
-   * the per-post lookup once via `getAttachmentsForPosts`, so passing
-   * the raw map here is essentially free.
-   */
-  attachmentsByPostId?: ReadonlyMap<string, PostAttachment>;
-  /**
-   * Fallback title for `<AttachedVideoCard>` inside `EditableAttachments`.
-   * Only consulted when the node's attachment kind is `video` and edit
-   * mode is active. Pages already resolve the i18n string for the read-
-   * side renderer (`renderAttachment`); threading it here lets the edit-
-   * side EditableAttachments reuse the same value without a second
-   * `useTranslations` lookup.
-   */
-  attachmentFallbackVideoTitle?: string;
-  i18n: I18n;
-  /**
    * Reply groups for a thread root. Provided ONLY when this node is the
-   * thread root: the server-side parent (`CommentTree`) calls
-   * `groupReplies(root)` and passes the result here. Each group is one
-   * direct reply to the root (the "first-level reply"), rendered with one
-   * indent, plus all of that reply's own descendants flattened DFS-pre-order
-   * to render with two indents — never deeper. This is the structural cap
-   * on nesting: even a reply chain 20 levels deep in the data renders as
-   * at most two visual indents.
+   * thread root: `CommentTree` calls `groupReplies(root)` and passes the
+   * result here. Each group is one direct reply to the root, rendered with
+   * one indent, plus that reply's own descendants flattened DFS-pre-order to
+   * render with two indents — never deeper. This is the structural cap on
+   * nesting: even a reply chain 20 levels deep renders as at most two
+   * visual indents.
    */
   replyGroups?: ReplyGroup[];
   /**
@@ -134,50 +47,33 @@ type Props = {
    * cue).
    */
   replyToDisplayName?: string;
-  /**
-   * Per-post extra payload, looked up by post id and rendered between the
-   * body and the like/reply row. Used to surface attached game / FEN /
-   * embed cards on every node in the tree — both top-level posts (chunks
-   * list page) and replies (every detail page that shows reply
-   * attachments under their author). The Map is threaded all the way down
-   * the recursion so first- and second-level replies render their
-   * attachment too.
-   *
-   * @design Why a Map and not a pre-resolved ReactNode prop
-   *
-   * Pre-resolving at `CommentTree` and passing one ReactNode per CommentNode
-   * would force the parent to walk the full tree to discover descendant
-   * ids; threading a Map keeps the discovery local to each node and lets
-   * the pages compute the attachment payload from a flat
-   * `getAttachmentsForPosts(allPostIds)` call.
-   */
-  extraContentByPostId?: ReadonlyMap<string, React.ReactNode>;
 };
 
-export function CommentNode({
-  node,
-  rootPostId,
-  locale,
-  topicKey,
-  currentUserId,
-  canReply,
-  enableSpoiler,
-  redirectPath,
-  toggleLikeAction,
-  replyAttachmentActions,
-  deletePostAction,
-  editPostAction,
-  removeAttachmentAction,
-  attachPgnAction,
-  attachFenAction,
-  attachmentsByPostId,
-  attachmentFallbackVideoTitle,
-  i18n,
-  replyGroups,
-  flatReplies,
-  replyToDisplayName,
-  extraContentByPostId,
-}: Props) {
+export function CommentNode({ node, replyGroups, flatReplies, replyToDisplayName }: Props) {
+  // Thread-wide values (root id, locale, Server Actions, i18n, attachment
+  // maps) come from context — see CommentTreeContext for why they are not
+  // threaded through props.
+  const {
+    rootPostId,
+    locale,
+    topicKey,
+    currentUserId,
+    canReply,
+    enableSpoiler,
+    redirectPath,
+    toggleLikeAction,
+    replyAttachmentActions,
+    deletePostAction,
+    editPostAction,
+    removeAttachmentAction,
+    attachPgnAction,
+    attachFenAction,
+    attachmentsByPostId,
+    attachmentFallbackVideoTitle,
+    i18n,
+    extraContentByPostId,
+  } = useCommentTreeContext();
+
   const tTopics = useTranslations('topics');
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isReplyOpen, setIsReplyOpen] = useState(false);
@@ -399,25 +295,7 @@ export function CommentNode({
                     <CommentNode
                       key={group.first.id}
                       node={group.first}
-                      rootPostId={rootPostId}
-                      locale={locale}
-                      topicKey={topicKey}
-                      currentUserId={currentUserId}
-                      canReply={canReply}
-                      enableSpoiler={enableSpoiler}
-                      redirectPath={redirectPath}
-                      toggleLikeAction={toggleLikeAction}
-                      replyAttachmentActions={replyAttachmentActions}
-                      deletePostAction={deletePostAction}
-                      editPostAction={editPostAction}
-                      removeAttachmentAction={removeAttachmentAction}
-                      attachPgnAction={attachPgnAction}
-                      attachFenAction={attachFenAction}
-                      attachmentsByPostId={attachmentsByPostId}
-                      attachmentFallbackVideoTitle={attachmentFallbackVideoTitle}
-                      i18n={i18n}
                       flatReplies={group.deeper}
-                      extraContentByPostId={extraContentByPostId}
                     />
                   ))}
                 </div>
@@ -429,25 +307,7 @@ export function CommentNode({
                     <CommentNode
                       key={replyNode.id}
                       node={replyNode}
-                      rootPostId={rootPostId}
-                      locale={locale}
-                      topicKey={topicKey}
-                      currentUserId={currentUserId}
-                      canReply={canReply}
-                      enableSpoiler={enableSpoiler}
-                      redirectPath={redirectPath}
-                      toggleLikeAction={toggleLikeAction}
-                      replyAttachmentActions={replyAttachmentActions}
-                      deletePostAction={deletePostAction}
-                      editPostAction={editPostAction}
-                      removeAttachmentAction={removeAttachmentAction}
-                      attachPgnAction={attachPgnAction}
-                      attachFenAction={attachFenAction}
-                      attachmentsByPostId={attachmentsByPostId}
-                      attachmentFallbackVideoTitle={attachmentFallbackVideoTitle}
-                      i18n={i18n}
                       replyToDisplayName={prefix ?? undefined}
-                      extraContentByPostId={extraContentByPostId}
                     />
                   ))}
                 </div>

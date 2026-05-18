@@ -3,15 +3,14 @@
 import { z } from 'zod';
 
 import { getLocaleFromRequest } from '@/lib/locale';
-import { getClientIp } from '@/lib/security/client-ip';
-import { IP_RATE_LIMITS, checkIpRateLimitGuard } from '@/lib/security/rate-limit-ip';
+import { guardByIpRateLimit } from '@/lib/security/rate-limit-ip';
 import { createClient } from '@/lib/supabase/server';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
 export type SignInResult = { error: string } | { success: true; locale: string };
 
 export async function signIn(email: string, password: string): Promise<SignInResult> {
-  const ipRateLimited = checkIpRateLimitGuard(await getClientIp(), 'signIn', IP_RATE_LIMITS.signIn);
+  const ipRateLimited = await guardByIpRateLimit('signIn');
   if (ipRateLimited) {
     return ipRateLimited;
   }

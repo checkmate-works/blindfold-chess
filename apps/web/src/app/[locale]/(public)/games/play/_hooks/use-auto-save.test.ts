@@ -392,4 +392,36 @@ describe('useAutoSave', () => {
     // Toast SHOULD be set because the user's move set hasSavedInSession
     expect(sessionStorage.getItem('blindfold_chess_show_save_toast')).toBe('true');
   });
+
+  it('still persists the game on beforeunload (silent save)', async () => {
+    // The beforeunload handler runs a silent save — it skips React state
+    // updates but must still persist to storage.
+    const { result, rerender } = renderHook((props) => useAutoSave(props), {
+      initialProps: {
+        ...defaultProps,
+        moves: [] as AlgebraicNotation[],
+        enabled: true,
+        gameId: 'id-1',
+      },
+    });
+
+    // Player makes a move, which auto-saves once.
+    result.current.markPlayerInteraction();
+    rerender({
+      ...defaultProps,
+      moves: ['e4'] as AlgebraicNotation[],
+      enabled: true,
+      gameId: 'id-1',
+    });
+    await waitFor(() => {
+      expect(mockUpdate).toHaveBeenCalled();
+    });
+    mockUpdate.mockClear();
+
+    // Navigating away fires beforeunload — the game must still be persisted.
+    window.dispatchEvent(new Event('beforeunload'));
+    await waitFor(() => {
+      expect(mockUpdate).toHaveBeenCalledTimes(1);
+    });
+  });
 });

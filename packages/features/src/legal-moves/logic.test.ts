@@ -3,7 +3,8 @@ import { describe, expect, it } from "vitest";
 import { pieceDisplayMap } from "./constants";
 import {
   generateBalancedMoveQuestions,
-  generateMoveQuestionForPiece,
+  generateIllegalMoveQuestion,
+  generateLegalMoveQuestion,
   isLegalMove,
 } from "./logic";
 import { PIECE_TYPES, type PieceType } from "./types";
@@ -238,43 +239,50 @@ describe("generateBalancedMoveQuestions", () => {
 });
 
 // ============================================================
-// generateMoveQuestionForPiece
+// generateLegalMoveQuestion / generateIllegalMoveQuestion
 // ============================================================
-describe("generateMoveQuestionForPiece", () => {
+describe("generateLegalMoveQuestion", () => {
   it("returns a question with the requested piece type", () => {
     for (const piece of PIECE_TYPES) {
-      const question = generateMoveQuestionForPiece(piece, true);
+      const question = generateLegalMoveQuestion(piece);
       expect(question).not.toBeNull();
       expect(question!.piece).toBe(piece);
     }
   });
 
-  it("generates a legal move when preferLegal is true", () => {
+  it("generates a legal move", () => {
     // Run multiple times to increase confidence
     for (let i = 0; i < 10; i++) {
-      const q = generateMoveQuestionForPiece("n", true);
+      const q = generateLegalMoveQuestion("n");
       expect(q).not.toBeNull();
       if (q) {
         expect(isLegalMove(q.from, q.to, q.piece)).toBe(true);
       }
     }
   });
+});
 
-  it("generates an illegal move when preferLegal is false", () => {
+describe("generateIllegalMoveQuestion", () => {
+  it("generates an illegal move", () => {
     // Run multiple times to increase confidence
     for (let i = 0; i < 10; i++) {
-      const q = generateMoveQuestionForPiece("b", false);
+      const q = generateIllegalMoveQuestion("b");
       expect(q).not.toBeNull();
       if (q) {
         expect(isLegalMove(q.from, q.to, q.piece)).toBe(false);
       }
     }
   });
+});
 
-  it("always produces from !== to", () => {
+describe("move question generators", () => {
+  it("always produce from !== to", () => {
     for (let i = 0; i < 20; i++) {
       const piece = PIECE_TYPES[i % PIECE_TYPES.length];
-      const q = generateMoveQuestionForPiece(piece, Math.random() < 0.5);
+      const q =
+        Math.random() < 0.5
+          ? generateLegalMoveQuestion(piece)
+          : generateIllegalMoveQuestion(piece);
       expect(q).not.toBeNull();
       if (q) {
         expect(q.from).not.toBe(q.to);
