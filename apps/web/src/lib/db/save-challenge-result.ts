@@ -3,14 +3,12 @@ import * as Sentry from '@sentry/nextjs';
 import { and, eq, sql } from 'drizzle-orm';
 
 import { getUserAllTimeRank } from './challenge-queries';
+import { decideChallengeRankFeedItem } from './challenge-rank-feed';
 import { db } from './index';
 import type { GrantedRank } from './rank-evaluation';
 import { checkAndGrantRanks } from './rank-evaluation';
 import { grantChallengeExp } from './save-exp';
 import { challengeBestScores, challengeResults, feedItems } from './schema';
-
-/** Only insert feed items for ranks at or above this threshold. */
-const FEED_RANK_THRESHOLD = 10;
 
 export type ChallengeResultInput = {
   userId: string;
@@ -138,51 +136,26 @@ export async function saveChallengeResult(
         )`,
       });
 
-    // 4. Insert feed item based on rank conditions
-    if (isNewEntry) {
+    // 4. Insert a rank-update feed item when the new rank warrants one.
+    if (isNewEntry || isImprovement) {
       const newRankResult = await getUserAllTimeRank(userId, menuType, leaderboardKey, tx);
-      const newRank = newRankResult?.rank ?? null;
+      const feedMetadata = decideChallengeRankFeedItem({
+        isNewEntry,
+        oldRank,
+        newRank: newRankResult?.rank ?? null,
+        menuType,
+        leaderboardKey,
+        score,
+        incorrectAnswers,
+        timeTaken,
+      });
 
-      if (newRank != null && newRank <= FEED_RANK_THRESHOLD) {
+      if (feedMetadata) {
         await tx.insert(feedItems).values({
           entityType: 'challenge_rank_update',
           entityId: challengeResult.id,
           actorId: userId,
-          metadata: {
-            menuType,
-            leaderboardKey,
-            score,
-            incorrectAnswers,
-            timeTaken,
-            rank: newRank,
-            isNewEntry,
-          },
-        });
-      }
-    } else if (isImprovement) {
-      const newRankResult = await getUserAllTimeRank(userId, menuType, leaderboardKey, tx);
-      const newRank = newRankResult?.rank ?? null;
-
-      if (
-        newRank != null &&
-        newRank <= FEED_RANK_THRESHOLD &&
-        oldRank != null &&
-        oldRank > newRank
-      ) {
-        await tx.insert(feedItems).values({
-          entityType: 'challenge_rank_update',
-          entityId: challengeResult.id,
-          actorId: userId,
-          metadata: {
-            menuType,
-            leaderboardKey,
-            score,
-            incorrectAnswers,
-            timeTaken,
-            rank: newRank,
-            isNewEntry,
-            previousRank: oldRank,
-          },
+          metadata: feedMetadata,
         });
       }
     }
