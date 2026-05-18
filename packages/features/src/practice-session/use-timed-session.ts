@@ -56,6 +56,16 @@ export type UseTimedSessionReturn<TQuestion> = {
 
 const DEFAULT_FEEDBACK_DURATION = 500;
 
+/** Resolve the feedback-duration config (a constant or an outcome-keyed fn). */
+function resolveFeedbackDuration(
+  feedbackDuration: number | ((correct: boolean) => number),
+  correct: boolean,
+): number {
+  return typeof feedbackDuration === "function"
+    ? feedbackDuration(correct)
+    : feedbackDuration;
+}
+
 export function useTimedSession<TQuestion>(
   config: UseTimedSessionConfig<TQuestion>,
 ): UseTimedSessionReturn<TQuestion> {
@@ -146,39 +156,20 @@ export function useTimedSession<TQuestion>(
     setIsPaused((prev) => !prev);
   }, [isFinished, countdown]);
 
-  const handleAnswer = useCallback(
-    (correct: boolean) => {
-      if (isFinished || countdown !== null || showFeedback || isPaused) return;
+  // End the session after the feedback flash for the answer that hit the
+  // mistake limit. `onAdvance` is intentionally NOT called — there is no next
+  // question.
+  const scheduleFinish = useCallback((duration: number) => {
+    feedbackTimeoutRef.current = setTimeout(() => {
+      isFinishedRef.current = true;
+      setIsFinished(true);
+      setShowFeedback(false);
+    }, duration);
+  }, []);
 
-      onAnswerEffectRef.current?.(correct);
-      setLastAnswerCorrect(correct);
-      setShowFeedback(true);
-
-      const newIncorrectCount = correct ? incorrectCount : incorrectCount + 1;
-
-      if (correct) {
-        setCorrectCount((prev) => prev + 1);
-      } else {
-        setIncorrectCount((prev) => prev + 1);
-      }
-
-      const duration =
-        typeof feedbackDurationRef.current === "function"
-          ? feedbackDurationRef.current(correct)
-          : feedbackDurationRef.current;
-
-      if (
-        mistakeAllowance !== undefined &&
-        newIncorrectCount >= mistakeAllowance
-      ) {
-        feedbackTimeoutRef.current = setTimeout(() => {
-          isFinishedRef.current = true;
-          setIsFinished(true);
-          setShowFeedback(false);
-        }, duration);
-        return;
-      }
-
+  // Advance to the next question after the feedback flash.
+  const scheduleAdvance = useCallback(
+    (duration: number, correct: boolean) => {
       feedbackTimeoutRef.current = setTimeout(() => {
         if (isFinishedRef.current) return;
         // see UseTimedSessionConfig.onAdvance for batching contract
@@ -195,6 +186,38 @@ export function useTimedSession<TQuestion>(
         setLastAnswerCorrect(null);
       }, duration);
     },
+    [advanceQuestion],
+  );
+
+  const handleAnswer = useCallback(
+    (correct: boolean) => {
+      if (isFinished || countdown !== null || showFeedback || isPaused) return;
+
+      onAnswerEffectRef.current?.(correct);
+      setLastAnswerCorrect(correct);
+      setShowFeedback(true);
+
+      const newIncorrectCount = correct ? incorrectCount : incorrectCount + 1;
+
+      if (correct) {
+        setCorrectCount((prev) => prev + 1);
+      } else {
+        setIncorrectCount((prev) => prev + 1);
+      }
+
+      const duration = resolveFeedbackDuration(
+        feedbackDurationRef.current,
+        correct,
+      );
+      const mistakeLimitReached =
+        mistakeAllowance !== undefined && newIncorrectCount >= mistakeAllowance;
+
+      if (mistakeLimitReached) {
+        scheduleFinish(duration);
+      } else {
+        scheduleAdvance(duration, correct);
+      }
+    },
     [
       isFinished,
       countdown,
@@ -202,7 +225,8 @@ export function useTimedSession<TQuestion>(
       isPaused,
       incorrectCount,
       mistakeAllowance,
-      advanceQuestion,
+      scheduleFinish,
+      scheduleAdvance,
     ],
   );
 
