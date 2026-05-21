@@ -3,7 +3,6 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { getAuthenticatedUser } from '@/lib/auth';
-import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
 import { getChunkBySlug } from '@/lib/chunks/queries';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
@@ -77,7 +76,6 @@ export default async function EditChunkPage({ params }: Props) {
             title: chunk.title,
             slug: chunk.slug,
             description: chunk.description,
-            annotations: parseBoardAnnotations(chunk.annotations),
           }}
         />
       </div>

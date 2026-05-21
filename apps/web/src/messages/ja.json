@@ -2327,10 +2327,14 @@
         "saving": "保存中…",
         "delete": "削除",
         "deleting": "削除中…",
-        "generateFromTitle": "タイトルから生成"
+        "generateFromTitle": "タイトルから生成",
+        "continueToPreview": "プレビューへ進む"
       },
       "errors": {
         "invalidFen": "FEN として正しく解釈できません。",
+        "titleRequired": "タイトルを入力してください。",
+        "slugRequired": "スラッグを入力してください。",
+        "draftWriteFailed": "下書きをブラウザに保存できませんでした。ストレージの空き容量や設定をご確認ください。",
         "signInRequired": "サインインしてください。",
         "banned": "アカウントが停止されています。",
         "rateLimited": "投稿が多すぎます。しばらく時間をおいてください。",
@@ -2344,7 +2348,30 @@
         "confirmBody": "カタログから非表示になります。リンク済みのポジションには参照が残りますが、公開ページからは表示されなくなります。",
         "confirm": "削除",
         "cancel": "キャンセル"
-      }
+      },
+      "tabBoard": "盤面",
+      "tabFen": "FEN",
+      "sideToMove": "手番",
+      "sideWhite": "白",
+      "sideBlack": "黒",
+      "flipBoard": "盤を反転",
+      "clearBoard": "盤をクリア",
+      "clearBoardConfirmTitle": "盤面をクリアしますか？",
+      "clearBoardConfirmMessage": "盤上のすべての駒が取り除かれます。このダイアログからは取り消せません。",
+      "clearBoardConfirm": "クリア",
+      "clearBoardCancel": "キャンセル",
+      "draftRestoredBanner": "保存していた下書きを復元しました。",
+      "draftRestoredDiscard": "破棄",
+      "startOverConfirmTitle": "最初からやり直しますか？",
+      "startOverConfirmMessage": "現在の下書きはすべて消去されます。取り消せません。",
+      "startOverConfirm": "やり直す",
+      "startOverCancel": "キャンセル"
+    },
+    "preview": {
+      "title": "チャンクのプレビュー",
+      "createCta": "チャンクを作成",
+      "backToEditCta": "編集に戻る",
+      "createError": "チャンクの作成中にエラーが発生しました。もう一度お試しください。"
     }
   },
   "announcements": {

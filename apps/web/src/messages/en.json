@@ -2327,10 +2327,14 @@
         "saving": "Saving…",
         "delete": "Delete",
         "deleting": "Deleting…",
-        "generateFromTitle": "Generate from title"
+        "generateFromTitle": "Generate from title",
+        "continueToPreview": "Continue to preview"
       },
       "errors": {
         "invalidFen": "FEN is not a valid chess board layout.",
+        "titleRequired": "Title is required.",
+        "slugRequired": "Slug is required.",
+        "draftWriteFailed": "Could not save the draft locally. Browser storage may be full or unavailable.",
         "signInRequired": "Please sign in to continue.",
         "banned": "Your account is suspended.",
         "rateLimited": "Too many submissions. Please try again later.",
@@ -2344,7 +2348,30 @@
         "confirmBody": "The chunk will be hidden from the catalog. Linked positions keep their reference but it no longer surfaces publicly.",
         "confirm": "Delete",
         "cancel": "Cancel"
-      }
+      },
+      "tabBoard": "Board",
+      "tabFen": "FEN",
+      "sideToMove": "Side to move",
+      "sideWhite": "White",
+      "sideBlack": "Black",
+      "flipBoard": "Flip board",
+      "clearBoard": "Clear board",
+      "clearBoardConfirmTitle": "Clear the board?",
+      "clearBoardConfirmMessage": "All pieces will be removed. This cannot be undone from this dialog.",
+      "clearBoardConfirm": "Clear",
+      "clearBoardCancel": "Cancel",
+      "draftRestoredBanner": "Restored your unsaved draft.",
+      "draftRestoredDiscard": "Discard",
+      "startOverConfirmTitle": "Start over?",
+      "startOverConfirmMessage": "Your current draft will be cleared. This cannot be undone.",
+      "startOverConfirm": "Start over",
+      "startOverCancel": "Cancel"
+    },
+    "preview": {
+      "title": "Preview chunk",
+      "createCta": "Create chunk",
+      "backToEditCta": "Back to edit",
+      "createError": "Something went wrong creating the chunk. Please try again."
     }
   },
   "announcements": {

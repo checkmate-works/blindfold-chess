@@ -1,0 +1,269 @@
+'use client';
+
+import { useState } from 'react';
+
+import { useTranslations } from 'next-intl';
+
+import { BoardSkeleton, FlipBoardButton } from '@/app/_components';
+
+import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
+import type { useFenBoardEditor } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-fen-board-editor';
+import { useEditableBoardLabels } from '@/app/[locale]/(public)/practice/(free-play)/puzzle/_hooks/use-editable-board-labels';
+import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
+import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+
+type Props = {
+  board: ReturnType<typeof useFenBoardEditor>;
+  title: string;
+  onTitleChange: (value: string) => void;
+  description: string;
+  onDescriptionChange: (value: string) => void;
+  slug: string;
+  onSlugChange: (value: string) => void;
+  /**
+   * `'create'` shows the slug input as required + editable with the
+   * "Generate from title" helper; `'edit'` locks it (slug is permanent —
+   * see `lib/chunks/validation.ts` for the rationale).
+   */
+  mode: 'create' | 'edit';
+  pending: boolean;
+};
+
+/**
+ * Title-only normalization for the "Generate from title" affordance.
+ * Mirrors the server-side `CHUNK_SLUG_PATTERN` (lowercase ASCII
+ * alphanumerics joined by single hyphens; no leading / trailing hyphen).
+ */
+function deriveSlugFromTitle(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+/**
+ * Shared body of `ChunkForm` — title, description, board / FEN editor,
+ * and the slug field. Mirrors the structure of `PuzzleFormFields` so the
+ * two UGC flows look the same: tab switcher between piece-placement
+ * board (`EditableChessBoard`) and raw FEN textarea, side-to-move
+ * radio, flip + clear board controls. Annotations are intentionally
+ * not editable from the user-facing form (defaulting to the empty
+ * shape) — chunk annotations remain admin-only for now.
+ */
+export function ChunkFormFields({
+  board,
+  title,
+  onTitleChange,
+  description,
+  onDescriptionChange,
+  slug,
+  onSlugChange,
+  mode,
+  pending,
+}: Props) {
+  const t = useTranslations('chunks.form');
+  const editableBoardLabels = useEditableBoardLabels();
+  const { preferences, isLoaded } = useGamePreferences();
+
+  const [clearBoardOpen, setClearBoardOpen] = useState(false);
+
+  return (
+    <>
+      <div>
+        <label htmlFor="chunk-title" className="block text-sm font-medium mb-1">
+          {t('fields.title')} <span className="text-destructive">*</span>
+        </label>
+        <input
+          id="chunk-title"
+          type="text"
+          value={title}
+          onChange={(e) => onTitleChange(e.target.value)}
+          className="w-full px-3 py-2 rounded border border-border bg-card text-foreground"
+          required
+        />
+      </div>
+
+      <div>
+        <label htmlFor="chunk-description" className="block text-sm font-medium mb-1">
+          {t('fields.description')}
+        </label>
+        <textarea
+          id="chunk-description"
+          value={description}
+          onChange={(e) => onDescriptionChange(e.target.value)}
+          rows={4}
+          className="w-full px-3 py-2 rounded border border-border bg-card text-foreground"
+        />
+      </div>
+
+      {/* Tab switcher — mirrors PuzzleFormFields */}
+      <nav className="flex rounded-lg bg-secondary p-1" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={board.activeTab === 'board'}
+          onClick={() => board.setActiveTab('board')}
+          className={`flex-1 rounded-md px-4 py-2 text-center text-sm font-medium transition-colors ${
+            board.activeTab === 'board'
+              ? 'bg-card text-foreground'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          {t('tabBoard')}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={board.activeTab === 'fen'}
+          onClick={() => board.setActiveTab('fen')}
+          className={`flex-1 rounded-md px-4 py-2 text-center text-sm font-medium transition-colors ${
+            board.activeTab === 'fen'
+              ? 'bg-card text-foreground'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          {t('tabFen')}
+        </button>
+      </nav>
+
+      {board.activeTab === 'board' && (
+        <>
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <div
+              role="radiogroup"
+              aria-label={t('sideToMove')}
+              className="inline-flex rounded-md border border-border overflow-hidden text-sm"
+            >
+              <button
+                type="button"
+                role="radio"
+                aria-checked={board.sideToMove === 'w'}
+                onClick={() => board.handleSideToMoveChange('w')}
+                className={`px-3 py-1.5 transition-colors ${
+                  board.sideToMove === 'w'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-muted'
+                }`}
+              >
+                {t('sideWhite')}
+              </button>
+              <button
+                type="button"
+                role="radio"
+                aria-checked={board.sideToMove === 'b'}
+                onClick={() => board.handleSideToMoveChange('b')}
+                className={`px-3 py-1.5 transition-colors ${
+                  board.sideToMove === 'b'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-muted'
+                }`}
+              >
+                {t('sideBlack')}
+              </button>
+            </div>
+            <FlipBoardButton onClick={board.handleFlip} title={t('flipBoard')} />
+          </div>
+          <div className="flex justify-center">
+            <div className="w-full max-w-md">
+              {!isLoaded ? (
+                <BoardSkeleton />
+              ) : (
+                <EditableChessBoard
+                  fen={board.boardFen}
+                  onFenChange={board.handleBoardChange}
+                  labels={editableBoardLabels}
+                  editable={true}
+                  flipped={board.flipped}
+                  showCoordinates={true}
+                  boardTheme={preferences.boardTheme}
+                />
+              )}
+            </div>
+          </div>
+
+          {board.positionError && (
+            <p className="text-sm text-destructive text-center">{t('errors.invalidFen')}</p>
+          )}
+
+          <div className="flex justify-center">
+            <button
+              type="button"
+              onClick={() => setClearBoardOpen(true)}
+              className="px-3 py-1 text-sm rounded border border-border text-muted-foreground hover:bg-muted transition-colors"
+            >
+              {t('clearBoard')}
+            </button>
+          </div>
+        </>
+      )}
+
+      {board.activeTab === 'fen' && (
+        <div>
+          <label htmlFor="chunk-fen" className="block text-sm font-medium mb-1">
+            {t('fields.fen')}
+          </label>
+          <textarea
+            id="chunk-fen"
+            value={board.fenInput}
+            onChange={board.handleFenInputChange}
+            placeholder="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+            rows={2}
+            className="w-full px-3 py-2 rounded border border-border bg-card text-foreground text-sm font-mono"
+          />
+          <p className="text-xs text-muted-foreground mt-1">{t('hints.fen')}</p>
+          {board.fenInput.trim() && !board.isFenValid && (
+            <p className="text-sm text-destructive mt-1">{t('errors.invalidFen')}</p>
+          )}
+        </div>
+      )}
+
+      <div>
+        <label htmlFor="chunk-slug" className="block text-sm font-medium mb-1">
+          {t('fields.slug')} {mode === 'create' && <span className="text-destructive">*</span>}
+        </label>
+        <div className="flex gap-2">
+          <input
+            id="chunk-slug"
+            type="text"
+            value={slug}
+            onChange={(e) => onSlugChange(e.target.value)}
+            placeholder="rook-battery"
+            className="flex-1 px-3 py-2 rounded border border-border bg-card text-foreground font-mono text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+            required={mode === 'create'}
+            readOnly={mode === 'edit'}
+            disabled={mode === 'edit'}
+          />
+          {mode === 'create' && (
+            <button
+              type="button"
+              onClick={() => onSlugChange(deriveSlugFromTitle(title))}
+              disabled={pending || !title.trim()}
+              className="px-3 py-2 text-sm rounded border border-border bg-muted text-foreground hover:opacity-80 disabled:opacity-50 transition-opacity whitespace-nowrap"
+            >
+              {t('actions.generateFromTitle')}
+            </button>
+          )}
+        </div>
+        <p className="text-xs text-muted-foreground mt-1">
+          {mode === 'create' ? t('hints.slugCreate') : t('hints.slugLocked')}
+        </p>
+      </div>
+
+      <ConfirmationModal
+        isOpen={clearBoardOpen}
+        title={t('clearBoardConfirmTitle')}
+        message={t('clearBoardConfirmMessage')}
+        confirmText={t('clearBoardConfirm')}
+        cancelText={t('clearBoardCancel')}
+        confirmVariant="danger"
+        onConfirm={() => {
+          setClearBoardOpen(false);
+          board.handleClearBoard();
+        }}
+        onCancel={() => setClearBoardOpen(false)}
+      />
+    </>
+  );
+}
