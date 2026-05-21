@@ -6,6 +6,8 @@ import { useTranslations } from 'next-intl';
 
 import { BoardSkeleton, FlipBoardButton } from '@/app/_components';
 
+import type { BoardAnnotations } from '@/lib/board-annotations/types';
+
 import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
 import type { useFenBoardEditor } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-fen-board-editor';
 import { useEditableBoardLabels } from '@/app/[locale]/(public)/practice/(free-play)/puzzle/_hooks/use-editable-board-labels';
@@ -20,6 +22,8 @@ type Props = {
   onDescriptionChange: (value: string) => void;
   slug: string;
   onSlugChange: (value: string) => void;
+  annotations: BoardAnnotations;
+  onAnnotationsChange: (next: BoardAnnotations) => void;
   /**
    * `'create'` shows the slug input as required + editable with the
    * "Generate from title" helper; `'edit'` locks it (slug is permanent —
@@ -60,6 +64,8 @@ export function ChunkFormFields({
   onDescriptionChange,
   slug,
   onSlugChange,
+  annotations,
+  onAnnotationsChange,
   mode,
   pending,
 }: Props) {
@@ -178,6 +184,8 @@ export function ChunkFormFields({
                   flipped={board.flipped}
                   showCoordinates={true}
                   boardTheme={preferences.boardTheme}
+                  annotations={annotations}
+                  onAnnotationsChange={onAnnotationsChange}
                 />
               )}
             </div>

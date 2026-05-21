@@ -11,6 +11,8 @@ import { validateFenStructure } from '@blindfold-chess/features/chess-core';
 import { flushSync } from 'react-dom';
 import { FiInfo } from 'react-icons/fi';
 
+import { type BoardAnnotations, EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
+
 import { useFenBoardEditor } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-fen-board-editor';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
@@ -18,7 +20,6 @@ import { deleteChunk } from '../_actions/deleteChunk';
 import { updateChunk } from '../_actions/updateChunk';
 import {
   type ChunkDraftV1,
-  EMPTY_CHUNK_ANNOTATIONS,
   clearChunkDraft,
   readChunkDraft,
   writeChunkDraft,
@@ -31,6 +32,7 @@ export type ChunkFormInitial = {
   title: string;
   slug: string;
   description: string | null;
+  annotations: BoardAnnotations;
 };
 
 type CreateProps = {
@@ -99,6 +101,9 @@ export function ChunkForm(props: Props) {
   const [description, setDescription] = useState(
     mode === 'edit' ? (props.initial.description ?? '') : ''
   );
+  const [annotations, setAnnotations] = useState<BoardAnnotations>(
+    mode === 'edit' ? props.initial.annotations : EMPTY_BOARD_ANNOTATIONS
+  );
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [deletePending, setDeletePending] = useState(false);
@@ -123,6 +128,7 @@ export function ChunkForm(props: Props) {
     setTitle(draft.title);
     setSlug(draft.slug);
     setDescription(draft.description);
+    setAnnotations(draft.annotations);
     setHydratedFromDraft(true);
     // The board hook is stable for the lifetime of this component —
     // omit it from deps so a setter identity change doesn't re-hydrate
@@ -151,6 +157,7 @@ export function ChunkForm(props: Props) {
     setTitle('');
     setSlug('');
     setDescription('');
+    setAnnotations(EMPTY_BOARD_ANNOTATIONS);
     setError(null);
     setHydratedFromDraft(false);
     setStartOverOpen(false);
@@ -180,7 +187,7 @@ export function ChunkForm(props: Props) {
         title,
         slug,
         description,
-        annotations: EMPTY_CHUNK_ANNOTATIONS,
+        annotations,
         activeTab: board.activeTab,
         sideToMove: board.sideToMove,
         flipped: board.flipped,
@@ -205,6 +212,7 @@ export function ChunkForm(props: Props) {
       representativeFen: board.trimmedFen,
       title,
       description: description || null,
+      annotations,
     });
     setPending(false);
 
@@ -279,6 +287,8 @@ export function ChunkForm(props: Props) {
           onDescriptionChange={setDescription}
           slug={slug}
           onSlugChange={setSlug}
+          annotations={annotations}
+          onAnnotationsChange={setAnnotations}
           mode={mode}
           pending={pending || deletePending}
         />
