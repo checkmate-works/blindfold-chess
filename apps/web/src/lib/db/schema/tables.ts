@@ -2834,13 +2834,14 @@ export type NewPositionTag = typeof positionTags.$inferInsert;
  * to serve as the composite FK target. That cost was judged not worth it
  * for this feature, so the invariant is kept in application code.
  *
- * @design admin-authored in the current phase
- * Until the public UGC flow ships, `chunks` is populated by admin users only.
- * The Server Action (`createChunk`) automatically sets `user_id` to the
- * acting admin's UUID rather than accepting it from the form. When chunks
- * becomes open to general users, the author attribution model does not need
- * to change — the Server Action will just pick the authenticated user from
- * any role.
+ * @design author attribution
+ * Each row carries the `user_id` of the chunk's creator. The public UGC
+ * flow (`/chunks/new`) sets this column from the authenticated Supabase
+ * user via `createChunkEntry` (`lib/chunks/user-chunk-mutations.ts`); the
+ * admin tool (`/admin/chunks/new`) accepts an arbitrary `user_id` so
+ * moderators can author-attribute on behalf of another account. Both
+ * paths write to the same column with the same semantics; only the
+ * source of the id differs.
  *
  * @design FKs managed in custom SQL
  * `userId` → `auth.users` is defined in Supabase-side

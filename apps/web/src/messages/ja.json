@@ -2293,6 +2293,60 @@
     "articleNotFound": "記事が見つかりません",
     "notTranslatedNotice": "この記事はまだあなたの言語に翻訳されていません。原文を表示しています。"
   },
+  "chunks": {
+    "listTitle": "チャンク",
+    "listSubtitle": "駒の連携パターン",
+    "editCta": "編集",
+    "list": {
+      "newCta": "新規チャンク",
+      "empty": "まだチャンクはありません。"
+    },
+    "new": {
+      "title": "新規チャンク"
+    },
+    "edit": {
+      "title": "{name} を編集",
+      "breadcrumb": "編集"
+    },
+    "form": {
+      "fields": {
+        "fen": "代表 FEN",
+        "title": "タイトル",
+        "slug": "スラッグ",
+        "description": "説明"
+      },
+      "hints": {
+        "fen": "パターンを示す FEN を入力してください。キングなしの盤面も受け付けます。",
+        "slugCreate": "半角小文字英数字とハイフンのみ（例：「rook-battery」）。作成後は変更できません。",
+        "slugLocked": "スラッグは作成時に確定し、変更できません（カタログ URL として固定）。"
+      },
+      "actions": {
+        "create": "チャンクを作成",
+        "creating": "作成中…",
+        "save": "変更を保存",
+        "saving": "保存中…",
+        "delete": "削除",
+        "deleting": "削除中…",
+        "generateFromTitle": "タイトルから生成"
+      },
+      "errors": {
+        "invalidFen": "FEN として正しく解釈できません。",
+        "signInRequired": "サインインしてください。",
+        "banned": "アカウントが停止されています。",
+        "rateLimited": "投稿が多すぎます。しばらく時間をおいてください。",
+        "slugTaken": "このスラッグは既に使われています。別の名前を選んでください。",
+        "notFound": "このチャンクは存在しません。",
+        "unauthorized": "自分が作成したチャンクのみ編集できます。",
+        "alreadyDeleted": "このチャンクは既に削除されています。"
+      },
+      "delete": {
+        "confirmTitle": "このチャンクを削除しますか？",
+        "confirmBody": "カタログから非表示になります。リンク済みのポジションには参照が残りますが、公開ページからは表示されなくなります。",
+        "confirm": "削除",
+        "cancel": "キャンセル"
+      }
+    }
+  },
   "announcements": {
     "pageTitle": "お知らせ",
     "pageDescription": "Blindfold Chessからのお知らせ",

@@ -2293,6 +2293,60 @@
     "articleNotFound": "Article Not Found",
     "notTranslatedNotice": "This article has not been translated into your language yet. You are viewing the original version."
   },
+  "chunks": {
+    "listTitle": "Chunks",
+    "listSubtitle": "Chess piece-coordination patterns",
+    "editCta": "Edit",
+    "list": {
+      "newCta": "New chunk",
+      "empty": "No chunks yet."
+    },
+    "new": {
+      "title": "New chunk"
+    },
+    "edit": {
+      "title": "Edit {name}",
+      "breadcrumb": "Edit"
+    },
+    "form": {
+      "fields": {
+        "fen": "Representative FEN",
+        "title": "Title",
+        "slug": "Slug",
+        "description": "Description"
+      },
+      "hints": {
+        "fen": "A FEN that illustrates the pattern. Kingless boards are allowed.",
+        "slugCreate": "Lowercase ASCII letters / numbers with hyphens (e.g. \"rook-battery\"). Cannot be changed after creation.",
+        "slugLocked": "Slug is fixed at creation and cannot be edited (used as a permanent catalog URL)."
+      },
+      "actions": {
+        "create": "Create chunk",
+        "creating": "Creating…",
+        "save": "Save changes",
+        "saving": "Saving…",
+        "delete": "Delete",
+        "deleting": "Deleting…",
+        "generateFromTitle": "Generate from title"
+      },
+      "errors": {
+        "invalidFen": "FEN is not a valid chess board layout.",
+        "signInRequired": "Please sign in to continue.",
+        "banned": "Your account is suspended.",
+        "rateLimited": "Too many submissions. Please try again later.",
+        "slugTaken": "That slug is already in use. Please pick another.",
+        "notFound": "This chunk no longer exists.",
+        "unauthorized": "You can only edit chunks you created.",
+        "alreadyDeleted": "This chunk has already been deleted."
+      },
+      "delete": {
+        "confirmTitle": "Delete this chunk?",
+        "confirmBody": "The chunk will be hidden from the catalog. Linked positions keep their reference but it no longer surfaces publicly.",
+        "confirm": "Delete",
+        "cancel": "Cancel"
+      }
+    }
+  },
   "announcements": {
     "pageTitle": "Announcements",
     "pageDescription": "Announcements from Blindfold Chess",
