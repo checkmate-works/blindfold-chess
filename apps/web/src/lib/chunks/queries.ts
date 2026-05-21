@@ -94,6 +94,34 @@ export async function listChunks({ includeDeleted, limit, offset }: ListChunksOp
 }
 
 /**
+ * Fetch a paginated list of chunks joined with author profiles. Used by
+ * the public catalog list page when the cards need an author avatar.
+ *
+ * `userId` is nullable on `chunks` (orphaned-author rows survive hard
+ * account deletes), and the join is `LEFT` so those rows still surface
+ * with a null profile.
+ */
+export async function listChunksWithProfile({ includeDeleted, limit, offset }: ListChunksOptions) {
+  const where = buildListConditions({ includeDeleted });
+  const query = db
+    .select({
+      chunk: chunks,
+      profile: {
+        username: profiles.username,
+        displayName: profiles.displayName,
+        avatarUrl: profiles.avatarUrl,
+      },
+    })
+    .from(chunks)
+    .leftJoin(profiles, eq(chunks.userId, profiles.id));
+  const rows = await (where ? query.where(where) : query)
+    .orderBy(desc(chunks.createdAt))
+    .limit(limit)
+    .offset(offset);
+  return rows;
+}
+
+/**
  * Count chunks matching the given filters.
  */
 export async function countChunks({ includeDeleted }: Pick<ListChunksOptions, 'includeDeleted'>) {
