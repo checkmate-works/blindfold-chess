@@ -54,6 +54,14 @@ export default async function EditChunkPage({ params }: Props) {
   if (!chunk || chunk.userId !== user.id) {
     notFound();
   }
+  // Published chunks are locked at the application layer — the owner
+  // must move them back to draft (via the detail page's Unpublish
+  // action) before further field edits are accepted. Returning 404
+  // here keeps the edit shell from rendering for a stale URL after a
+  // publish, mirroring the server-side guard on `updateChunkEntry`.
+  if (chunk.status === 'published') {
+    notFound();
+  }
 
   const t = await getTranslations({ locale, namespace: 'chunks' });
 

@@ -83,6 +83,7 @@ export function ChunkPreviewClient() {
         slug: draft.slug,
         description: draft.description || null,
         annotations: draft.annotations,
+        status: draft.status,
       });
       if ('error' in result) {
         setError(localizeError(result.error));
@@ -142,6 +143,18 @@ export function ChunkPreviewClient() {
           <dd className="font-mono">{draft.slug}</dd>
           <dt className="text-muted-foreground">{tForm('fields.fen')}</dt>
           <dd className="font-mono break-all">{draft.representativeFen}</dd>
+          <dt className="text-muted-foreground">{t('statusLabel')}</dt>
+          <dd>
+            <span
+              className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${
+                draft.status === 'draft'
+                  ? 'bg-amber-100 text-amber-900 dark:bg-amber-900 dark:text-amber-100'
+                  : 'bg-emerald-100 text-emerald-900 dark:bg-emerald-900 dark:text-emerald-100'
+              }`}
+            >
+              {draft.status === 'draft' ? t('statusDraft') : t('statusPublished')}
+            </span>
+          </dd>
         </dl>
 
         {error && (
@@ -159,7 +172,7 @@ export function ChunkPreviewClient() {
             loading={pending}
             onClick={handleCreate}
           >
-            {t('createCta')}
+            {draft.status === 'draft' ? t('createDraftCta') : t('createPublishedCta')}
           </Button>
           <Button
             type="button"

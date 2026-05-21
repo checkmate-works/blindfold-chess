@@ -2880,6 +2880,36 @@ export const chunks = pgTable(
     description: text('description'),
     representativeFen: varchar('representative_fen', { length: 100 }).notNull(),
     /**
+     * @design draft / published lifecycle
+     *
+     * Chunks describe piece-coordination patterns whose naming is often
+     * collaborative — well-known shapes (fianchetto, rook battery)
+     * resolve quickly, but novel variants need discussion before the
+     * canonical title settles. The `status` column carries that
+     * lifecycle:
+     *
+     * - `draft` — workshop state. Owner can edit freely; other users see
+     *   it on the catalog (with a "Draft" badge) and, in a future phase,
+     *   will be able to submit edit-suggestion requests for title /
+     *   description. New chunks created via the UGC flow default to
+     *   `draft`.
+     * - `published` — canonical state. The author has settled the title /
+     *   description; the row is locked against owner edits at the
+     *   application layer so the slug, title, and description that other
+     *   users may have linked to remain stable. Re-entering draft is
+     *   allowed via a dedicated `unpublish` transition for revisions.
+     *
+     * Stored as varchar (not pgEnum) so future states (`archived`,
+     * `deprecated`, …) can be added without an ALTER TYPE migration —
+     * matches the existing `topicType` / `moderation_actions.action`
+     * pattern.
+     *
+     * The column ships with `DEFAULT 'published'` so the migration that
+     * introduces it leaves every existing row in the same state the
+     * application treated them as before this column existed.
+     */
+    status: varchar('status', { length: 20 }).notNull().default('published'),
+    /**
      * Display-only board markup (arrows + circles) drawn on top of the
      * representative board to make the pattern instantly readable
      * (e.g. arrows showing the bishop's diagonal in a fianchetto, or the

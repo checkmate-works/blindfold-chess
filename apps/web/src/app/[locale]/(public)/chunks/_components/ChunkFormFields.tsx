@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import { BoardSkeleton, FlipBoardButton } from '@/app/_components';
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
+import type { ChunkStatus } from '@/lib/chunks/validation';
 
 import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
 import type { useFenBoardEditor } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-fen-board-editor';
@@ -24,6 +25,14 @@ type Props = {
   onSlugChange: (value: string) => void;
   annotations: BoardAnnotations;
   onAnnotationsChange: (next: BoardAnnotations) => void;
+  /**
+   * Intended status on the next submit. The "Save as draft" toggle only
+   * renders on `mode='create'` — edit reaches into the existing row's
+   * lifecycle via the dedicated Publish / Unpublish actions on the
+   * detail page.
+   */
+  status: ChunkStatus;
+  onStatusChange: (next: ChunkStatus) => void;
   /**
    * `'create'` shows the slug input as required + editable with the
    * "Generate from title" helper; `'edit'` locks it (slug is permanent —
@@ -66,6 +75,8 @@ export function ChunkFormFields({
   onSlugChange,
   annotations,
   onAnnotationsChange,
+  status,
+  onStatusChange,
   mode,
   pending,
 }: Props) {
@@ -258,6 +269,24 @@ export function ChunkFormFields({
           {mode === 'create' ? t('hints.slugCreate') : t('hints.slugLocked')}
         </p>
       </div>
+
+      {mode === 'create' && (
+        <div className="rounded border border-border bg-card p-3">
+          <label className="flex cursor-pointer items-start gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={status === 'draft'}
+              onChange={(e) => onStatusChange(e.target.checked ? 'draft' : 'published')}
+              disabled={pending}
+              className="mt-0.5"
+            />
+            <span className="space-y-1">
+              <span className="block font-medium">{t('draft.toggleLabel')}</span>
+              <span className="block text-xs text-muted-foreground">{t('draft.toggleHint')}</span>
+            </span>
+          </label>
+        </div>
+      )}
 
       <ConfirmationModal
         isOpen={clearBoardOpen}

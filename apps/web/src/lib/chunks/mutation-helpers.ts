@@ -35,11 +35,16 @@ function buildSharedChunkValues(data: ChunkMutationData) {
  * Build the column values for the INSERT path. Requires `slug` — the
  * caller (admin / UGC create) must have validated its presence and shape
  * via `validateChunkMutationData(data, 'create')` first.
+ *
+ * `status` falls back to `'published'` when the caller omits it so the
+ * legacy admin create flow — which has no draft toggle — preserves its
+ * prior behavior. The UGC entry point explicitly sets it from user input.
  */
 export function buildChunkCreateValues(data: ChunkMutationData) {
   return {
     ...buildSharedChunkValues(data),
     slug: (data.slug ?? '').trim(),
+    status: data.status ?? 'published',
   };
 }
 

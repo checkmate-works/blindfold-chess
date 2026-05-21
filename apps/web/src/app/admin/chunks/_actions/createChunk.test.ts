@@ -222,6 +222,8 @@ describe('createChunk', () => {
       slug: validData.slug,
       description: validData.description,
       userId: targetUserId,
+      annotations: undefined,
+      status: 'published',
     });
   });
 

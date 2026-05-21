@@ -1,6 +1,7 @@
 import { validateFenStructure } from '@blindfold-chess/features/chess-core';
 
 import { type BoardAnnotations, EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
+import { type ChunkStatus, isChunkStatus } from '@/lib/chunks/validation';
 
 /**
  * sessionStorage slot for handing the chunk authoring draft between
@@ -29,6 +30,13 @@ export type ChunkDraftV1 = {
   slug: string;
   description: string;
   annotations: BoardAnnotations;
+  /**
+   * Lifecycle state the author intends on the next submit. Carried in
+   * the draft so the preview's CTA can present "Publish chunk" vs
+   * "Save as draft" without re-asking, and the create action gets the
+   * resolved value straight from the preview.
+   */
+  status: ChunkStatus;
   /** Tracks which editor tab was last active so re-entering /new restores it. */
   activeTab: 'board' | 'fen';
   /** White / black to move — encoded redundantly with the FEN for cheap reads. */
@@ -54,6 +62,7 @@ function isChunkDraftV1(value: unknown): value is ChunkDraftV1 {
   if (typeof v.slug !== 'string') return false;
   if (typeof v.description !== 'string') return false;
   if (!isAnnotation(v.annotations)) return false;
+  if (!isChunkStatus(v.status)) return false;
   if (v.activeTab !== 'board' && v.activeTab !== 'fen') return false;
   if (v.sideToMove !== 'w' && v.sideToMove !== 'b') return false;
   if (typeof v.flipped !== 'boolean') return false;

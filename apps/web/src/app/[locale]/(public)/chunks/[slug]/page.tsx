@@ -8,6 +8,7 @@ import { createSearchParamsCache, parseAsString } from 'nuqs/server';
 
 import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
 import { getChunkBySlug, getLinkedPositionsForChunk } from '@/lib/chunks/queries';
+import { isChunkStatus } from '@/lib/chunks/validation';
 import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
@@ -33,6 +34,7 @@ import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { ChunkLifecycleControls } from '../_components/ChunkLifecycleControls';
 import { createChunkReplyWithAttachment } from './_actions/createChunkReplyWithAttachment';
 import { createChunkReplyWithFenAttachment } from './_actions/createChunkReplyWithFenAttachment';
 import { toggleChunkLike } from './_actions/toggleChunkLike';
@@ -152,20 +154,38 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
     tVideo('fallbackTitle')
   );
 
+  const isOwner = !!user && user.id === chunk.userId;
+  // The DB stores `status` as a varchar; an unknown value (e.g. a future
+  // state shipped before this page was redeployed) degrades to
+  // 'published' so the page still renders the safe defaults instead of
+  // crashing.
+  const status = isChunkStatus(chunk.status) ? chunk.status : 'published';
+  const isDraft = status === 'draft';
+
   return (
     <PageLayout
       title={chunk.title}
+      titleAction={
+        isDraft ? (
+          <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-900 dark:text-amber-100">
+            {tChunks('statusDraft')}
+          </span>
+        ) : undefined
+      }
       locale={locale}
       breadcrumb={[{ label: 'Chunks', href: '/chunks' }, { label: chunk.title }]}
     >
-      {user && user.id === chunk.userId && (
-        <div className="flex justify-end">
-          <Link
-            href={`/${locale}/chunks/${slug}/edit`}
-            className="px-3 py-1.5 text-sm rounded border border-border text-foreground hover:bg-muted transition-colors"
-          >
-            {tChunks('editCta')}
-          </Link>
+      {isOwner && (
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          {isDraft && (
+            <Link
+              href={`/${locale}/chunks/${slug}/edit`}
+              className="px-3 py-1.5 text-sm rounded border border-border text-foreground hover:bg-muted transition-colors"
+            >
+              {tChunks('editCta')}
+            </Link>
+          )}
+          <ChunkLifecycleControls chunkId={chunk.id} status={status} />
         </div>
       )}
 

@@ -2297,6 +2297,21 @@
     "listTitle": "チャンク",
     "listSubtitle": "駒の連携パターン",
     "editCta": "編集",
+    "statusDraft": "下書き",
+    "statusPublished": "公開済み",
+    "actions": {
+      "publish": "公開する",
+      "publishPending": "公開中…",
+      "publishConfirmTitle": "このチャンクを公開しますか？",
+      "publishConfirmMessage": "公開すると他のユーザーに正式なカタログ項目として表示され、タイトル・説明・FEN・注釈は下書きに戻すまで編集できなくなります。",
+      "publishConfirmCta": "公開する",
+      "publishConfirmCancel": "キャンセル",
+      "unpublish": "下書きに戻す",
+      "unpublishPending": "戻し中…",
+      "unpublishConfirmTitle": "下書きに戻しますか？",
+      "unpublishConfirmMessage": "このチャンクを再び下書き状態にして編集可能にします。既にリンクしているユーザーは現在の内容を引き続き参照できます。",
+      "unpublishConfirmCta": "下書きに戻す"
+    },
     "list": {
       "newCta": "新規チャンク",
       "empty": "まだチャンクはありません。"
@@ -2341,7 +2356,12 @@
         "slugTaken": "このスラッグは既に使われています。別の名前を選んでください。",
         "notFound": "このチャンクは存在しません。",
         "unauthorized": "自分が作成したチャンクのみ編集できます。",
-        "alreadyDeleted": "このチャンクは既に削除されています。"
+        "alreadyDeleted": "このチャンクは既に削除されています。",
+        "cannotEditPublished": "このチャンクは公開済みのため編集できません。編集するには下書きに戻してください。"
+      },
+      "draft": {
+        "toggleLabel": "下書きとして保存",
+        "toggleHint": "下書きは他のユーザーにも公開されます（名称の提案を受けやすくするため）が、編集可能なままです。タイトルと説明が固まったら詳細ページから公開できます。"
       },
       "delete": {
         "confirmTitle": "このチャンクを削除しますか？",
@@ -2369,9 +2389,13 @@
     },
     "preview": {
       "title": "チャンクのプレビュー",
-      "createCta": "チャンクを作成",
+      "createDraftCta": "下書きとして保存",
+      "createPublishedCta": "チャンクを公開",
       "backToEditCta": "編集に戻る",
-      "createError": "チャンクの作成中にエラーが発生しました。もう一度お試しください。"
+      "createError": "チャンクの作成中にエラーが発生しました。もう一度お試しください。",
+      "statusLabel": "ステータス",
+      "statusDraft": "下書き",
+      "statusPublished": "公開済み"
     }
   },
   "announcements": {

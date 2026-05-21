@@ -12,6 +12,7 @@ import { flushSync } from 'react-dom';
 import { FiInfo } from 'react-icons/fi';
 
 import { type BoardAnnotations, EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
+import type { ChunkStatus } from '@/lib/chunks/validation';
 
 import { useFenBoardEditor } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-fen-board-editor';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
@@ -64,6 +65,7 @@ function localizeError(code: string, t: ReturnType<typeof useTranslations<'chunk
     'notFound',
     'unauthorized',
     'alreadyDeleted',
+    'cannotEditPublished',
   ]);
   return wellKnown.has(code) ? t(`errors.${code}` as 'errors.signInRequired') : code;
 }
@@ -104,6 +106,11 @@ export function ChunkForm(props: Props) {
   const [annotations, setAnnotations] = useState<BoardAnnotations>(
     mode === 'edit' ? props.initial.annotations : EMPTY_BOARD_ANNOTATIONS
   );
+  // The lifecycle toggle is only meaningful in create mode. Edit mode
+  // can only run against an already-draft row (the page guard blocks
+  // published chunks from reaching this form), so we pin it to 'draft'
+  // and never surface the toggle.
+  const [status, setStatus] = useState<ChunkStatus>('draft');
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [deletePending, setDeletePending] = useState(false);
@@ -129,6 +136,7 @@ export function ChunkForm(props: Props) {
     setSlug(draft.slug);
     setDescription(draft.description);
     setAnnotations(draft.annotations);
+    setStatus(draft.status);
     setHydratedFromDraft(true);
     // The board hook is stable for the lifetime of this component —
     // omit it from deps so a setter identity change doesn't re-hydrate
@@ -158,6 +166,7 @@ export function ChunkForm(props: Props) {
     setSlug('');
     setDescription('');
     setAnnotations(EMPTY_BOARD_ANNOTATIONS);
+    setStatus('draft');
     setError(null);
     setHydratedFromDraft(false);
     setStartOverOpen(false);
@@ -188,6 +197,7 @@ export function ChunkForm(props: Props) {
         slug,
         description,
         annotations,
+        status,
         activeTab: board.activeTab,
         sideToMove: board.sideToMove,
         flipped: board.flipped,
@@ -289,6 +299,8 @@ export function ChunkForm(props: Props) {
           onSlugChange={setSlug}
           annotations={annotations}
           onAnnotationsChange={setAnnotations}
+          status={status}
+          onStatusChange={setStatus}
           mode={mode}
           pending={pending || deletePending}
         />

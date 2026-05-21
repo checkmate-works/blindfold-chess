@@ -38,6 +38,22 @@ const CHUNK_DESCRIPTION_MAX_LENGTH = 5000;
 
 export type ChunkMutationMode = 'create' | 'update';
 
+/**
+ * Lifecycle states for a `chunks` row. See the `chunks.status` schema
+ * TSDoc for the design rationale; this file owns the runtime guard
+ * (`isChunkStatus`) and the type used by the mutation layer.
+ *
+ * Kept narrow on purpose — new states (`archived`, `deprecated`, …)
+ * should be added here AND surfaced in the schema column comment so
+ * the application layer and the migration story stay in sync.
+ */
+export const CHUNK_STATUSES = ['draft', 'published'] as const;
+export type ChunkStatus = (typeof CHUNK_STATUSES)[number];
+
+export function isChunkStatus(value: unknown): value is ChunkStatus {
+  return typeof value === 'string' && (CHUNK_STATUSES as readonly string[]).includes(value);
+}
+
 export type ChunkMutationData = {
   representativeFen: string;
   title: string;
@@ -54,6 +70,17 @@ export type ChunkMutationData = {
   slug?: string;
   description?: string | null;
   userId: string;
+  /**
+   * Lifecycle state for the row. Optional in the payload so legacy
+   * callers (e.g. the admin create form, which has no draft concept
+   * yet) keep compiling without changes — `buildChunkCreateValues`
+   * substitutes `'published'` when omitted. Status transitions on an
+   * existing row go through the dedicated `publishChunkEntry` /
+   * `unpublishChunkEntry` Server Actions, not the general update path,
+   * so the column is intentionally NOT emitted by
+   * `buildChunkUpdateValues`.
+   */
+  status?: ChunkStatus;
   /**
    * Optional display-only annotations. Omitted by callers that don't need
    * to set or change them (the DB column has a NOT NULL DEFAULT of the
@@ -127,6 +154,10 @@ export function validateChunkMutationData(
 
   if (!UUID_RE.test(data.userId.trim())) {
     return 'Invalid User ID format (expected UUID)';
+  }
+
+  if (data.status !== undefined && !isChunkStatus(data.status)) {
+    return `Invalid status (expected one of: ${CHUNK_STATUSES.join(', ')})`;
   }
 
   return null;
