@@ -157,7 +157,7 @@ export function ChunkForm({ mode, initial }: ChunkFormProps) {
 
       <div>
         <label htmlFor="slug" className="block text-sm font-medium mb-1">
-          Slug <span className="text-destructive">*</span>
+          Slug {mode === 'create' && <span className="text-destructive">*</span>}
         </label>
         <div className="flex gap-2">
           <input
@@ -166,17 +166,26 @@ export function ChunkForm({ mode, initial }: ChunkFormProps) {
             value={slug}
             onChange={(e) => setSlug(e.target.value)}
             placeholder="rook-battery"
-            className="flex-1 px-3 py-2 rounded border border-border bg-card text-foreground font-mono text-sm"
-            required
+            className="flex-1 px-3 py-2 rounded border border-border bg-card text-foreground font-mono text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+            required={mode === 'create'}
+            readOnly={mode === 'edit'}
+            disabled={mode === 'edit'}
           />
-          <button
-            type="button"
-            onClick={generateSlugFromTitle}
-            className="px-3 py-2 text-sm rounded border border-border bg-muted text-foreground hover:opacity-80 transition-opacity whitespace-nowrap"
-          >
-            Generate from title
-          </button>
+          {mode === 'create' && (
+            <button
+              type="button"
+              onClick={generateSlugFromTitle}
+              className="px-3 py-2 text-sm rounded border border-border bg-muted text-foreground hover:opacity-80 transition-opacity whitespace-nowrap"
+            >
+              Generate from title
+            </button>
+          )}
         </div>
+        {mode === 'edit' && (
+          <p className="text-xs text-muted-foreground mt-1">
+            Slug is fixed at creation and cannot be edited (used as a permanent catalog URL).
+          </p>
+        )}
       </div>
 
       <div>

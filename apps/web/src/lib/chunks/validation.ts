@@ -36,10 +36,22 @@ const CHUNK_SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
  */
 const CHUNK_DESCRIPTION_MAX_LENGTH = 5000;
 
+export type ChunkMutationMode = 'create' | 'update';
+
 export type ChunkMutationData = {
   representativeFen: string;
   title: string;
-  slug: string;
+  /**
+   * Required on create, ignored on update. Chunk slugs become public
+   * catalog URLs (`/chunks/<slug>`) and are also the `topic_posts.topic_key`
+   * for the discussion thread — both contracts make slugs effectively
+   * permanent identifiers, so the application layer treats them as
+   * immutable after creation. `validateChunkMutationData` only checks slug
+   * shape when `mode='create'`; `buildChunkMutationValues` only emits the
+   * `slug` column on create. The admin form keeps the field visible on
+   * edit for context but no longer writes through it.
+   */
+  slug?: string;
   description?: string | null;
   userId: string;
   /**
@@ -58,9 +70,15 @@ export type ChunkMutationData = {
  * Validate chunk mutation data before persisting. Used by both create and
  * update Server Actions.
  *
+ * Slug is validated on `mode='create'` only; on update the slug is locked
+ * (see `ChunkMutationData.slug` for the rationale).
+ *
  * @returns An error message string if validation fails, or `null` if valid.
  */
-export function validateChunkMutationData(data: ChunkMutationData): string | null {
+export function validateChunkMutationData(
+  data: ChunkMutationData,
+  mode: ChunkMutationMode = 'create'
+): string | null {
   if (!data.representativeFen || !data.representativeFen.trim()) {
     return 'Representative FEN is required';
   }
@@ -85,16 +103,18 @@ export function validateChunkMutationData(data: ChunkMutationData): string | nul
     return `Title must be ${CHUNK_TITLE_MAX_LENGTH} characters or fewer`;
   }
 
-  if (!data.slug || !data.slug.trim()) {
-    return 'Slug is required';
-  }
+  if (mode === 'create') {
+    if (!data.slug || !data.slug.trim()) {
+      return 'Slug is required';
+    }
 
-  if (data.slug.trim().length > CHUNK_SLUG_MAX_LENGTH) {
-    return `Slug must be ${CHUNK_SLUG_MAX_LENGTH} characters or fewer`;
-  }
+    if (data.slug.trim().length > CHUNK_SLUG_MAX_LENGTH) {
+      return `Slug must be ${CHUNK_SLUG_MAX_LENGTH} characters or fewer`;
+    }
 
-  if (!CHUNK_SLUG_PATTERN.test(data.slug.trim())) {
-    return 'Slug must contain only lowercase letters, numbers, and hyphens (e.g. "rook-battery")';
+    if (!CHUNK_SLUG_PATTERN.test(data.slug.trim())) {
+      return 'Slug must contain only lowercase letters, numbers, and hyphens (e.g. "rook-battery")';
+    }
   }
 
   if (data.description && data.description.trim().length > CHUNK_DESCRIPTION_MAX_LENGTH) {

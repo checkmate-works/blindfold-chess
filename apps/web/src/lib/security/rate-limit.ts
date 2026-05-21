@@ -118,6 +118,9 @@ export const RATE_LIMITS = {
   createPuzzle: { action: 'create_puzzle', maxAttempts: 10, windowMs: 3_600_000 },
   updatePuzzle: { action: 'update_puzzle', maxAttempts: 20, windowMs: 3_600_000 },
   deletePuzzle: { action: 'delete_puzzle', maxAttempts: 10, windowMs: 3_600_000 },
+  createChunk: { action: 'create_chunk', maxAttempts: 10, windowMs: 3_600_000 },
+  updateChunk: { action: 'update_chunk', maxAttempts: 20, windowMs: 3_600_000 },
+  deleteChunk: { action: 'delete_chunk', maxAttempts: 10, windowMs: 3_600_000 },
   /**
    * Per-user limit for point redemptions. Tight cap (10/hour) because each
    * redemption mutates `user_point_balances` + writes a `user_grants` row

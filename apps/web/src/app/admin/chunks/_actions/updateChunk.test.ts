@@ -214,12 +214,15 @@ describe('updateChunk', () => {
     const result = await updateChunk(testChunkId, validData);
     expect(result).toEqual({ success: true, id: testChunkId });
     expect(mockUpdateSet).toHaveBeenCalledTimes(1);
+    // Slug is intentionally absent from the UPDATE set — chunk slugs are
+    // permanent catalog URLs and the mutation helper drops them on update
+    // regardless of role.
     expect(mockUpdateSet).toHaveBeenCalledWith({
       representativeFen: validData.representativeFen,
       title: validData.title,
-      slug: validData.slug,
       description: validData.description,
       userId: targetUserId,
+      annotations: undefined,
     });
     expect(mockUpdateWhere).toHaveBeenCalledTimes(1);
   });
@@ -237,9 +240,9 @@ describe('updateChunk', () => {
     expect(mockUpdateSet).toHaveBeenCalledWith({
       representativeFen: validData.representativeFen,
       title: 'Trimmed Title',
-      slug: validData.slug,
       description: 'Trimmed Desc',
       userId: targetUserId,
+      annotations: undefined,
     });
   });
 

@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 import type { MutationResult } from '@/app/admin/_lib/action-factories';
 import { requireAdmin } from '@/app/admin/_lib/auth';
 
-import { buildChunkMutationValues, verifyChunkAuthor } from '@/lib/chunks/mutation-helpers';
+import { buildChunkCreateValues, verifyChunkAuthor } from '@/lib/chunks/mutation-helpers';
 import type { ChunkMutationData } from '@/lib/chunks/validation';
 import { validateChunkMutationData } from '@/lib/chunks/validation';
 import { chunks, db } from '@/lib/db';
@@ -34,7 +34,7 @@ export async function createChunk(data: ChunkMutationData): Promise<MutationResu
 
   const [chunk] = await db
     .insert(chunks)
-    .values(buildChunkMutationValues(data))
+    .values(buildChunkCreateValues(data))
     .returning({ id: chunks.id });
 
   revalidatePath('/admin/chunks');

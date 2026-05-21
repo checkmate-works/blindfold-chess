@@ -121,6 +121,35 @@ export const getChunkBySlug = cache(async (slug: string) => {
 });
 
 /**
+ * Slug-collision preflight for the chunk create flow. Returns minimal
+ * metadata for any chunk matching `slug` regardless of `deletedAt` —
+ * the DB-level UNIQUE constraint on `chunks.slug` does NOT exclude
+ * soft-deleted rows, so a slug remains reserved after a logical delete.
+ * Resurrecting via the same slug requires a service-role restore, not a
+ * fresh INSERT.
+ *
+ * The check is a UX preflight only; the canonical guarantee is the unique
+ * constraint, and the mutation layer also catches PG error code 23505 to
+ * cover the race window between preflight and INSERT.
+ */
+export const findChunkBySlug = cache(async (slug: string) => {
+  const trimmed = slug.trim();
+  if (!trimmed) return null;
+
+  const [row] = await db
+    .select({
+      id: chunks.id,
+      slug: chunks.slug,
+      deletedAt: chunks.deletedAt,
+    })
+    .from(chunks)
+    .where(eq(chunks.slug, trimmed))
+    .limit(1);
+
+  return row ?? null;
+});
+
+/**
  * Fetch positions linked to a chunk via the position_chunks junction table.
  * Only returns non-deleted positions, ordered by creation date descending.
  *

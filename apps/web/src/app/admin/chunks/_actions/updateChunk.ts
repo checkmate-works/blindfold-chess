@@ -6,7 +6,7 @@ import type { MutationResult } from '@/app/admin/_lib/action-factories';
 import { requireAdmin } from '@/app/admin/_lib/auth';
 import { and, eq, isNull } from 'drizzle-orm';
 
-import { buildChunkMutationValues, verifyChunkAuthor } from '@/lib/chunks/mutation-helpers';
+import { buildChunkUpdateValues, verifyChunkAuthor } from '@/lib/chunks/mutation-helpers';
 import type { ChunkMutationData } from '@/lib/chunks/validation';
 import { validateChunkMutationData } from '@/lib/chunks/validation';
 import { chunks, db } from '@/lib/db';
@@ -23,7 +23,7 @@ export async function updateChunk(id: string, data: ChunkMutationData): Promise<
     return { error: 'Chunk ID is required' };
   }
 
-  const validationError = validateChunkMutationData(data);
+  const validationError = validateChunkMutationData(data, 'update');
   if (validationError) {
     return { error: validationError };
   }
@@ -47,7 +47,7 @@ export async function updateChunk(id: string, data: ChunkMutationData): Promise<
     return authorError;
   }
 
-  await db.update(chunks).set(buildChunkMutationValues(data)).where(eq(chunks.id, id));
+  await db.update(chunks).set(buildChunkUpdateValues(data)).where(eq(chunks.id, id));
 
   revalidatePath('/admin/chunks');
   revalidatePath(`/admin/chunks/${id}/edit`);
