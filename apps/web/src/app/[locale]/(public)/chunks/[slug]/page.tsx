@@ -91,17 +91,27 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [linkedPositions, commentCount, allComments, t, tTopics, tVideo, tPuzzle, tMemory] =
-    await Promise.all([
-      getLinkedPositionsForChunk(chunk.id),
-      getPostCountByTopicKey('chunk', slug),
-      getCommentTreeForTopic('chunk', slug, user?.id),
-      getTranslations({ locale, namespace: 'topics.chunks' }),
-      getTranslations({ locale, namespace: 'topics' }),
-      getTranslations({ locale, namespace: 'postVideoAttachmentRender' }),
-      getTranslations({ locale, namespace: 'practice.puzzle' }),
-      getTranslations({ locale, namespace: 'practice.positionMemory' }),
-    ]);
+  const [
+    linkedPositions,
+    commentCount,
+    allComments,
+    t,
+    tTopics,
+    tVideo,
+    tPuzzle,
+    tMemory,
+    tChunks,
+  ] = await Promise.all([
+    getLinkedPositionsForChunk(chunk.id),
+    getPostCountByTopicKey('chunk', slug),
+    getCommentTreeForTopic('chunk', slug, user?.id),
+    getTranslations({ locale, namespace: 'topics.chunks' }),
+    getTranslations({ locale, namespace: 'topics' }),
+    getTranslations({ locale, namespace: 'postVideoAttachmentRender' }),
+    getTranslations({ locale, namespace: 'practice.puzzle' }),
+    getTranslations({ locale, namespace: 'practice.positionMemory' }),
+    getTranslations({ locale, namespace: 'chunks' }),
+  ]);
 
   // Linked positions can mix puzzle and memory types. Reply meta is keyed by
   // `(topicType, topicKey)` so the two types are fetched in parallel and merged
@@ -148,6 +158,17 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
       locale={locale}
       breadcrumb={[{ label: 'Chunks', href: '/chunks' }, { label: chunk.title }]}
     >
+      {user && user.id === chunk.userId && (
+        <div className="flex justify-end">
+          <Link
+            href={`/${locale}/chunks/${slug}/edit`}
+            className="px-3 py-1.5 text-sm rounded border border-border text-foreground hover:bg-muted transition-colors"
+          >
+            {tChunks('editCta')}
+          </Link>
+        </div>
+      )}
+
       {chunk.description && (
         <>
           <SectionTitle>Description</SectionTitle>

@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
 import { truncateContent } from '@blindfold-chess/features/utils';
 
+import { getOptionalUser } from '@/lib/auth';
 import { countChunks, listChunks } from '@/lib/chunks/queries';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
 import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
@@ -48,7 +50,11 @@ export default async function ChunksListPage({ params, searchParams }: Props) {
   const sp = await searchParams;
   const page = Number(sp.page) || 1;
 
-  const totalCount = await countChunks({ includeDeleted: false });
+  const [user, totalCount, t] = await Promise.all([
+    getOptionalUser(),
+    countChunks({ includeDeleted: false }),
+    getTranslations({ locale, namespace: 'chunks' }),
+  ]);
   const { currentPage, totalPages, limit, offset } = getPaginationParams(
     page,
     totalCount,
@@ -59,9 +65,20 @@ export default async function ChunksListPage({ params, searchParams }: Props) {
 
   return (
     <PageLayout title="Chunks" locale={locale} breadcrumb={[{ label: 'Chunks' }]}>
-      <SectionTitle>Chess piece-coordination patterns</SectionTitle>
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <SectionTitle>{t('listSubtitle')}</SectionTitle>
+        {user && (
+          <Link
+            href="/chunks/new"
+            locale={locale}
+            className="px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+          >
+            {t('list.newCta')}
+          </Link>
+        )}
+      </div>
 
-      {rows.length === 0 && <p className="text-muted-foreground">No chunks yet.</p>}
+      {rows.length === 0 && <p className="text-muted-foreground">{t('list.empty')}</p>}
 
       {rows.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
