@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { useRouter } from '@/i18n/routing';
+import { FiTrash2 } from 'react-icons/fi';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
@@ -15,15 +16,16 @@ type Props = {
 };
 
 /**
- * Owner-side soft-delete affordance for a chunk, surfaced on the
- * detail page. Lives outside `ChunkLifecycleControls` because that
- * component is hidden on published chunks (its sole action,
- * `publishChunkEntry`, only applies to drafts) — but the owner still
- * needs a way to take down a published chunk if it turns out to be
- * wrong or abusive, and the edit page is also 404 in that state.
+ * Owner-side soft-delete affordance for a chunk, surfaced as a subtle
+ * inline link in the detail page's bottom metadata row — same styling
+ * as the Edit / Fork affordances on `/practice/puzzle/[id]` so chunks
+ * stay visually consistent with the other UGC surfaces.
  *
- * Calls the existing `deleteChunk` Server Action (same one the edit
- * form uses) and redirects to the catalog on success.
+ * Lives outside `ChunkLifecycleControls` because that component is
+ * hidden on published chunks (its sole action only applies to drafts).
+ * The owner still needs a way to take down a published chunk if it
+ * turns out to be wrong or abusive, and the edit page is also 404 in
+ * that state, so this control is always available to the owner.
  */
 export function ChunkDeleteButton({ chunkId }: Props) {
   const t = useTranslations('chunks');
@@ -58,8 +60,9 @@ export function ChunkDeleteButton({ chunkId }: Props) {
         type="button"
         onClick={() => setConfirmOpen(true)}
         disabled={pending}
-        className="px-3 py-1.5 text-sm rounded border border-destructive text-destructive hover:bg-destructive/10 disabled:opacity-50 transition-colors"
+        className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-muted-foreground hover:border-destructive/40 hover:text-destructive disabled:opacity-50 transition-colors"
       >
+        <FiTrash2 className="h-3 w-3" aria-hidden />
         {pending ? t('form.actions.deleting') : t('form.actions.delete')}
       </button>
 

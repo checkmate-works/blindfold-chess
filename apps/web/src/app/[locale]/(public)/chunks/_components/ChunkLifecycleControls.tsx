@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { useRouter } from '@/i18n/routing';
+import { FiSend } from 'react-icons/fi';
 
 import type { ChunkStatus } from '@/lib/chunks/validation';
 
@@ -19,21 +20,24 @@ type Props = {
    * Whether the chunk currently carries a non-empty description.
    * Publishing requires one (the application-level rule mirrors the
    * server-side guard in `publishChunkEntry`), so when this is false
-   * the button renders disabled with an inline hint instead of letting
+   * the button renders disabled with a tooltip hint instead of letting
    * the user submit and bounce off the server.
    */
   hasDescription: boolean;
 };
 
 /**
- * Owner-visible Publish button on the chunk detail page.
+ * Owner-side Publish button on the chunk detail page.
+ *
+ * Styled as a subtle inline link to match the Edit / Fork affordances
+ * on `/practice/puzzle/[id]` and `/practice/position-memory/[id]` —
+ * the chunk detail page's bottom metadata row mirrors those surfaces.
  *
  * Renders only when the chunk is still in draft. Publish is a one-way
- * transition — once published the row is locked at the application
- * layer and there is no "Unpublish" path back. The button is also
- * disabled when the chunk has no description yet (a published chunk
- * must carry both a title and a description; the server enforces this
- * via `descriptionRequired`, and this UI gives the same hint up front).
+ * transition; the only way out of `published` afterwards is soft
+ * delete (`ChunkDeleteButton`). Disabled when the chunk has no
+ * description yet — `descriptionRequired` from the server fires the
+ * same intent if a stale client somehow bypasses the disable.
  */
 export function ChunkLifecycleControls({ chunkId, status, hasDescription }: Props) {
   const t = useTranslations('chunks');
@@ -73,20 +77,16 @@ export function ChunkLifecycleControls({ chunkId, status, hasDescription }: Prop
 
   return (
     <>
-      <div className="flex flex-col items-end gap-1">
-        <button
-          type="button"
-          onClick={() => setConfirmOpen(true)}
-          disabled={disabled}
-          title={!hasDescription ? t('actions.publishDescriptionRequired') : undefined}
-          className="px-3 py-1.5 text-sm rounded border border-primary text-primary hover:bg-primary/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {pending ? t('actions.publishPending') : t('actions.publish')}
-        </button>
-        {!hasDescription && (
-          <p className="text-xs text-muted-foreground">{t('actions.publishDescriptionRequired')}</p>
-        )}
-      </div>
+      <button
+        type="button"
+        onClick={() => setConfirmOpen(true)}
+        disabled={disabled}
+        title={!hasDescription ? t('actions.publishDescriptionRequired') : undefined}
+        className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-muted-foreground hover:border-foreground/20 hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-border disabled:hover:text-muted-foreground transition-colors"
+      >
+        <FiSend className="h-3 w-3" aria-hidden />
+        {pending ? t('actions.publishPending') : t('actions.publish')}
+      </button>
 
       {error && (
         <p className="text-sm text-destructive" role="alert">

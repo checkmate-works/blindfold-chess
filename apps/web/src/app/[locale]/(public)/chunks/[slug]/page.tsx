@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { createSearchParamsCache, parseAsString } from 'nuqs/server';
-import { FiGitPullRequest } from 'react-icons/fi';
+import { FiEdit2, FiGitPullRequest } from 'react-icons/fi';
 
 import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
 import { countPendingEditRequestsForChunk } from '@/lib/chunk-edit-requests/queries';
@@ -213,57 +213,6 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
       locale={locale}
       breadcrumb={[{ label: 'Chunks', href: '/chunks' }, { label: chunk.title }]}
     >
-      {(isOwner || isDraft) && (
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          {/*
-           * Edit-requests link: visible to everyone on draft chunks (the
-           * destination page handles per-role UI — signed-in non-owners
-           * see the form, the owner reviews, guests see a sign-in nudge).
-           * Mirrors the puzzle "Fork" entry-point pattern: a small inline
-           * link rather than a heavy CTA, with the pending count surfaced
-           * as a badge so the owner notices new submissions at a glance.
-           */}
-          {isDraft && (
-            <Link
-              href={`/${locale}/chunks/${slug}/edit-requests`}
-              data-tour-id="chunk-edit-requests-link"
-              className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-sm text-foreground hover:bg-muted transition-colors"
-            >
-              <FiGitPullRequest className="h-3.5 w-3.5" aria-hidden />
-              <span>{tEditRequests('linkLabel')}</span>
-              {pendingEditRequestCount > 0 && (
-                <span className="ml-1 inline-flex items-center justify-center rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-900 dark:bg-amber-900 dark:text-amber-100">
-                  {pendingEditRequestCount}
-                </span>
-              )}
-            </Link>
-          )}
-          {isOwner && isDraft && (
-            <Link
-              href={`/${locale}/chunks/${slug}/edit`}
-              className="px-3 py-1.5 text-sm rounded border border-border text-foreground hover:bg-muted transition-colors"
-            >
-              {tChunks('editCta')}
-            </Link>
-          )}
-          {isOwner && (
-            <ChunkLifecycleControls
-              chunkId={chunk.id}
-              status={status}
-              hasDescription={!!chunk.description && chunk.description.trim().length > 0}
-            />
-          )}
-          {/*
-           * Delete stays available to the owner in both draft and
-           * published states. Publish is one-way and the edit page is
-           * 404 for published chunks, so without this affordance an
-           * owner would have no way to retire a mistakenly-published
-           * chunk.
-           */}
-          {isOwner && <ChunkDeleteButton chunkId={chunk.id} />}
-        </div>
-      )}
-
       {/*
        * Render the Description section unconditionally — drafts can
        * legitimately ship without a description while their title is
@@ -332,6 +281,66 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
           </div>
         </>
       )}
+
+      {/*
+       * Bottom metadata row — mirrors the layout used by
+       * `/practice/puzzle/[id]` and `/practice/position-memory/[id]`.
+       * Inline-link styled affordances (Edit suggestions, Edit,
+       * Publish, Delete) sit on the right with the chunk's created /
+       * edited timestamp; this is the canonical "owner + visitor
+       * actions" surface for the page rather than scattering controls
+       * near the title.
+       */}
+      <div className="flex flex-wrap items-center justify-end gap-4 text-xs text-muted-foreground">
+        {isDraft && (
+          <Link
+            href={`/${locale}/chunks/${slug}/edit-requests`}
+            data-tour-id="chunk-edit-requests-link"
+            className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-muted-foreground hover:border-foreground/20 hover:text-foreground transition-colors"
+          >
+            <FiGitPullRequest className="h-3 w-3" aria-hidden />
+            {tEditRequests('linkLabel')}
+            {pendingEditRequestCount > 0 && (
+              <span className="ml-1 inline-flex items-center justify-center rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-900 dark:bg-amber-900 dark:text-amber-100">
+                {pendingEditRequestCount}
+              </span>
+            )}
+          </Link>
+        )}
+        {isOwner && isDraft && (
+          <Link
+            href={`/${locale}/chunks/${slug}/edit`}
+            className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-muted-foreground hover:border-foreground/20 hover:text-foreground transition-colors"
+          >
+            <FiEdit2 className="h-3 w-3" aria-hidden />
+            {tChunks('editCta')}
+          </Link>
+        )}
+        {isOwner && (
+          <ChunkLifecycleControls
+            chunkId={chunk.id}
+            status={status}
+            hasDescription={!!chunk.description && chunk.description.trim().length > 0}
+          />
+        )}
+        {/*
+         * Delete stays available to the owner in both draft and
+         * published states — publish is one-way and the edit page is
+         * 404 once published, so without this control the owner has
+         * no way to retire a mistakenly-published chunk.
+         */}
+        {isOwner && <ChunkDeleteButton chunkId={chunk.id} />}
+        <time dateTime={chunk.createdAt.toISOString()}>
+          {chunk.createdAt.toLocaleDateString(locale, {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })}
+        </time>
+        {chunk.updatedAt.getTime() - chunk.createdAt.getTime() > 1000 && (
+          <span>{tChunks('detail.edited')}</span>
+        )}
+      </div>
 
       <SectionTitle>{t('commentsTitle')}</SectionTitle>
 

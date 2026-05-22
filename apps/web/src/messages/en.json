@@ -2321,7 +2321,8 @@
     },
     "detail": {
       "descriptionSection": "Description",
-      "noDescription": "No description yet."
+      "noDescription": "No description yet.",
+      "edited": "Edited"
     },
     "form": {
       "fields": {

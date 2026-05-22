@@ -2310,7 +2310,8 @@
     },
     "detail": {
       "descriptionSection": "説明",
-      "noDescription": "説明はまだありません。"
+      "noDescription": "説明はまだありません。",
+      "edited": "編集済み"
     },
     "list": {
       "newCta": "新規チャンク",
