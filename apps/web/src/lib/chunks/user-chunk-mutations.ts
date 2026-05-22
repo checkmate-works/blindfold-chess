@@ -13,7 +13,7 @@ import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { buildChunkCreateValues, buildChunkUpdateValues } from './mutation-helpers';
 import { findChunkBySlug } from './queries';
-import type { ChunkMutationData, ChunkStatus } from './validation';
+import type { ChunkMutationData } from './validation';
 import { validateChunkMutationData } from './validation';
 
 /**
@@ -210,27 +210,30 @@ export async function updateChunkEntry(
 }
 
 /**
- * Status-transition core. Owner-only; rejects when the chunk is
- * already in `target`. Idempotent at the application layer — calling
- * the matching transition twice in a row is a safe no-op (returns
- * success without writing).
+ * Publish a draft chunk. Owner-only; one-way transition (an
+ * `unpublishChunkEntry` used to exist but was removed — once the
+ * canonical title and description are settled the chunk is locked
+ * against owner edits at the application layer, and the only way out
+ * of the published state is soft-delete via `deleteChunkEntry`).
  *
- * Status transitions intentionally do NOT pass through the standard
- * `updateChunkEntry` guard (which blocks edits to published rows) so
- * the path stays usable in both directions.
+ * The transition additionally requires a non-empty description: a
+ * published chunk is a canonical catalog entry and silently shipping a
+ * description-less row would degrade the catalog. The check matches
+ * the application-level invariant; the DB column itself stays nullable
+ * because existing rows (and drafts in flight) legitimately carry no
+ * description yet.
+ *
+ * Idempotent at the application layer: re-publishing an already-
+ * published chunk returns success without writing.
  */
-async function transitionChunkStatus(params: {
-  id: string;
-  target: ChunkStatus;
-  action: 'publish_chunk' | 'unpublish_chunk';
-}): Promise<UpdateChunkResult> {
+export async function publishChunkEntry(id: string): Promise<UpdateChunkResult> {
   const guardResult = await authenticateAndGuard(RATE_LIMITS.updateChunk);
   if ('error' in guardResult) {
     return { error: guardResult.error };
   }
   const { user } = guardResult;
 
-  if (!params.id) {
+  if (!id) {
     return { error: 'notFound' };
   }
 
@@ -239,11 +242,12 @@ async function transitionChunkStatus(params: {
       id: chunks.id,
       userId: chunks.userId,
       slug: chunks.slug,
+      description: chunks.description,
       status: chunks.status,
       deletedAt: chunks.deletedAt,
     })
     .from(chunks)
-    .where(eq(chunks.id, params.id))
+    .where(eq(chunks.id, id))
     .limit(1);
 
   if (!chunk) {
@@ -255,35 +259,30 @@ async function transitionChunkStatus(params: {
   if (chunk.deletedAt) {
     return { error: 'alreadyDeleted' };
   }
-  if (chunk.status === params.target) {
+  if (chunk.status === 'published') {
     return { success: true };
+  }
+  if (!chunk.description || chunk.description.trim().length === 0) {
+    return { error: 'descriptionRequired' };
   }
 
   await db
     .update(chunks)
-    .set({ status: params.target })
-    .where(and(eq(chunks.id, params.id), eq(chunks.userId, user.id), isNull(chunks.deletedAt)));
+    .set({ status: 'published' })
+    .where(and(eq(chunks.id, id), eq(chunks.userId, user.id), isNull(chunks.deletedAt)));
 
   logActivityEvent({
     userId: user.id,
-    action: params.action,
+    action: 'publish_chunk',
     targetType: 'chunk',
-    targetId: params.id,
-    metadata: { slug: chunk.slug, from: chunk.status, to: params.target },
+    targetId: id,
+    metadata: { slug: chunk.slug, from: chunk.status, to: 'published' },
   });
 
   revalidatePath('/chunks');
   revalidatePath(`/chunks/${chunk.slug}`);
 
   return { success: true };
-}
-
-export function publishChunkEntry(id: string): Promise<UpdateChunkResult> {
-  return transitionChunkStatus({ id, target: 'published', action: 'publish_chunk' });
-}
-
-export function unpublishChunkEntry(id: string): Promise<UpdateChunkResult> {
-  return transitionChunkStatus({ id, target: 'draft', action: 'unpublish_chunk' });
 }
 
 export async function deleteChunkEntry(id: string): Promise<DeleteChunkResult> {

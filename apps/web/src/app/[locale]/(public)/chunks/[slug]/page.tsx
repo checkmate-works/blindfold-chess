@@ -31,11 +31,13 @@ import {
   getCommentTreeForTopic,
   getPostCountByTopicKey,
 } from '@/app/[locale]/(public)/topics/_lib/queries';
-import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { HelpTourButton, PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import type { HelpStep } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { ChunkDeleteButton } from '../_components/ChunkDeleteButton';
 import { ChunkLifecycleControls } from '../_components/ChunkLifecycleControls';
 import { createChunkReplyWithAttachment } from './_actions/createChunkReplyWithAttachment';
 import { createChunkReplyWithFenAttachment } from './_actions/createChunkReplyWithFenAttachment';
@@ -168,13 +170,43 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
   const status = isChunkStatus(chunk.status) ? chunk.status : 'published';
   const isDraft = status === 'draft';
 
+  // Help-tour steps for the draft state — mirrors the home / practice
+  // convention (HelpTourButton + data-tour-id on the target elements).
+  // Drafts get a brief walkthrough explaining the "edit suggestions"
+  // workflow that's unique to this lifecycle; published chunks render
+  // no help button since the page is then just a standard catalog entry.
+  const draftHelpSteps: HelpStep[] = isDraft
+    ? [
+        {
+          targetId: 'chunk-draft-badge',
+          title: tEditRequests('help.badge.title'),
+          description: tEditRequests('help.badge.description'),
+          side: 'bottom',
+          align: 'center',
+        },
+        {
+          targetId: 'chunk-edit-requests-link',
+          title: tEditRequests('help.editRequests.title'),
+          description: tEditRequests('help.editRequests.description'),
+          side: 'bottom',
+          align: 'end',
+        },
+      ]
+    : [];
+
   return (
     <PageLayout
       title={chunk.title}
       titleAction={
         isDraft ? (
-          <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-900 dark:text-amber-100">
-            {tChunks('statusDraft')}
+          <span className="inline-flex items-center gap-2">
+            <span
+              data-tour-id="chunk-draft-badge"
+              className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-900 dark:text-amber-100"
+            >
+              {tChunks('statusDraft')}
+            </span>
+            <HelpTourButton steps={draftHelpSteps} label={tEditRequests('help.label')} />
           </span>
         ) : undefined
       }
@@ -194,6 +226,7 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
           {isDraft && (
             <Link
               href={`/${locale}/chunks/${slug}/edit-requests`}
+              data-tour-id="chunk-edit-requests-link"
               className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-sm text-foreground hover:bg-muted transition-colors"
             >
               <FiGitPullRequest className="h-3.5 w-3.5" aria-hidden />
@@ -213,15 +246,36 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
               {tChunks('editCta')}
             </Link>
           )}
-          {isOwner && <ChunkLifecycleControls chunkId={chunk.id} status={status} />}
+          {isOwner && (
+            <ChunkLifecycleControls
+              chunkId={chunk.id}
+              status={status}
+              hasDescription={!!chunk.description && chunk.description.trim().length > 0}
+            />
+          )}
+          {/*
+           * Delete stays available to the owner in both draft and
+           * published states. Publish is one-way and the edit page is
+           * 404 for published chunks, so without this affordance an
+           * owner would have no way to retire a mistakenly-published
+           * chunk.
+           */}
+          {isOwner && <ChunkDeleteButton chunkId={chunk.id} />}
         </div>
       )}
 
-      {chunk.description && (
-        <>
-          <SectionTitle>Description</SectionTitle>
-          <p className="text-muted-foreground">{chunk.description}</p>
-        </>
+      {/*
+       * Render the Description section unconditionally — drafts can
+       * legitimately ship without a description while their title is
+       * still being workshopped, but the section title gives a visible
+       * anchor (and an obvious "missing" placeholder) so the page
+       * structure stays consistent with other detail surfaces.
+       */}
+      <SectionTitle>{tChunks('detail.descriptionSection')}</SectionTitle>
+      {chunk.description ? (
+        <p className="text-foreground whitespace-pre-wrap">{chunk.description}</p>
+      ) : (
+        <p className="text-muted-foreground italic">{tChunks('detail.noDescription')}</p>
       )}
 
       <div className="max-w-xs mx-auto">

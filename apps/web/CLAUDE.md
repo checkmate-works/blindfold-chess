@@ -501,7 +501,7 @@ files when a user refers to a concept in Japanese.
 | 記事                          | article                                  | `src/app/admin/articles/`, `src/app/[locale]/(public)/articles/`, `articles` / `articleImages` tables                             |
 | トピック / 投稿               | topic / post                             | `src/app/[locale]/(public)/topics/`, `topicPosts` table in `src/lib/db/schema/tables.ts`                                          |
 | チャンク                      | chunk (piece-coordination pattern)       | `src/app/[locale]/(public)/chunks/`, `src/lib/chunks/`, `chunks` table in `src/lib/db/schema/tables.ts`                           |
-| 下書き / 公開                 | draft / published (chunk lifecycle)      | `chunks.status` column; `publishChunkEntry` / `unpublishChunkEntry` in `src/lib/chunks/user-chunk-mutations.ts`                   |
+| 下書き / 公開                 | draft / published (chunk lifecycle)      | `chunks.status` column; `publishChunkEntry` in `src/lib/chunks/user-chunk-mutations.ts` (publish is one-way)                      |
 | 編集リクエスト                | chunk edit request (Qiita-style)         | `chunkEditRequests` table; `src/lib/chunk-edit-requests/`; `src/app/[locale]/(public)/chunks/[slug]/_components/EditRequest*.tsx` |
 
 Terms that map one-to-one onto standard chess vocabulary (盤面 = board, マス =

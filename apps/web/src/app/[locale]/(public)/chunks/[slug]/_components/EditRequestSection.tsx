@@ -54,14 +54,23 @@ export async function EditRequestSection({
 
   return (
     <section className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <SectionTitle>{t('sectionTitle')}</SectionTitle>
-        {pendingCount > 0 && (
-          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-900 dark:text-amber-100">
-            {t('pendingCount', { count: pendingCount })}
-          </span>
-        )}
-      </div>
+      {/*
+       * The pending-count badge lives INSIDE the SectionTitle children so
+       * the h2 stays block-level — its `border-b` then spans the panel
+       * width, matching every other section heading in the app. Wrapping
+       * SectionTitle in an outer flex (the previous shape) shrank the h2
+       * to content width and left a stray short underline.
+       */}
+      <SectionTitle>
+        <span className="flex flex-wrap items-center justify-between gap-2">
+          <span>{t('sectionTitle')}</span>
+          {pendingCount > 0 && (
+            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-900 dark:text-amber-100">
+              {t('pendingCount', { count: pendingCount })}
+            </span>
+          )}
+        </span>
+      </SectionTitle>
 
       <p className="text-sm text-muted-foreground">{t('sectionHint')}</p>
 

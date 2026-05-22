@@ -11,47 +11,54 @@ import type { ChunkStatus } from '@/lib/chunks/validation';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
 import { publishChunk } from '../_actions/publishChunk';
-import { unpublishChunk } from '../_actions/unpublishChunk';
 
 type Props = {
   chunkId: string;
   status: ChunkStatus;
+  /**
+   * Whether the chunk currently carries a non-empty description.
+   * Publishing requires one (the application-level rule mirrors the
+   * server-side guard in `publishChunkEntry`), so when this is false
+   * the button renders disabled with an inline hint instead of letting
+   * the user submit and bounce off the server.
+   */
+  hasDescription: boolean;
 };
 
 /**
- * Owner-visible Publish / Unpublish button on the chunk detail page.
+ * Owner-visible Publish button on the chunk detail page.
  *
- * Publishing is gated by a confirmation modal because it changes the
- * row's editability semantics (published chunks are locked against
- * owner edits at the application layer); un-publishing is also gated
- * since the row temporarily disappears from the canonical catalog
- * presentation and re-opens for editing.
- *
- * Both buttons call their dedicated Server Action and refresh the
- * route data via `router.refresh()` so the badge + Edit affordance
- * re-render against the new status without a full reload.
+ * Renders only when the chunk is still in draft. Publish is a one-way
+ * transition — once published the row is locked at the application
+ * layer and there is no "Unpublish" path back. The button is also
+ * disabled when the chunk has no description yet (a published chunk
+ * must carry both a title and a description; the server enforces this
+ * via `descriptionRequired`, and this UI gives the same hint up front).
  */
-export function ChunkLifecycleControls({ chunkId, status }: Props) {
+export function ChunkLifecycleControls({ chunkId, status, hasDescription }: Props) {
   const t = useTranslations('chunks');
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const targetAction = status === 'draft' ? 'publish' : 'unpublish';
+  if (status !== 'draft') return null;
 
   async function handleConfirm() {
     setConfirmOpen(false);
     setPending(true);
     setError(null);
-    const result =
-      targetAction === 'publish' ? await publishChunk(chunkId) : await unpublishChunk(chunkId);
+    const result = await publishChunk(chunkId);
     setPending(false);
 
     if ('error' in result) {
-      // Known error tokens are surfaced through the same i18n shape the
-      // form uses; unknown tokens fall through verbatim to aid debugging.
-      const wellKnown = new Set(['signInRequired', 'unauthorized', 'notFound', 'alreadyDeleted']);
+      const wellKnown = new Set([
+        'signInRequired',
+        'unauthorized',
+        'notFound',
+        'alreadyDeleted',
+        'descriptionRequired',
+      ]);
       setError(
         wellKnown.has(result.error)
           ? t(`form.errors.${result.error}` as 'form.errors.signInRequired')
@@ -62,22 +69,24 @@ export function ChunkLifecycleControls({ chunkId, status }: Props) {
     router.refresh();
   }
 
+  const disabled = pending || !hasDescription;
+
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setConfirmOpen(true)}
-        disabled={pending}
-        className={`px-3 py-1.5 text-sm rounded border transition-colors disabled:opacity-50 ${
-          targetAction === 'publish'
-            ? 'border-primary text-primary hover:bg-primary/10'
-            : 'border-border text-foreground hover:bg-muted'
-        }`}
-      >
-        {pending
-          ? t(`actions.${targetAction}Pending` as 'actions.publishPending')
-          : t(`actions.${targetAction}` as 'actions.publish')}
-      </button>
+      <div className="flex flex-col items-end gap-1">
+        <button
+          type="button"
+          onClick={() => setConfirmOpen(true)}
+          disabled={disabled}
+          title={!hasDescription ? t('actions.publishDescriptionRequired') : undefined}
+          className="px-3 py-1.5 text-sm rounded border border-primary text-primary hover:bg-primary/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {pending ? t('actions.publishPending') : t('actions.publish')}
+        </button>
+        {!hasDescription && (
+          <p className="text-xs text-muted-foreground">{t('actions.publishDescriptionRequired')}</p>
+        )}
+      </div>
 
       {error && (
         <p className="text-sm text-destructive" role="alert">
@@ -87,11 +96,11 @@ export function ChunkLifecycleControls({ chunkId, status }: Props) {
 
       <ConfirmationModal
         isOpen={confirmOpen}
-        title={t(`actions.${targetAction}ConfirmTitle` as 'actions.publishConfirmTitle')}
-        message={t(`actions.${targetAction}ConfirmMessage` as 'actions.publishConfirmMessage')}
-        confirmText={t(`actions.${targetAction}ConfirmCta` as 'actions.publishConfirmCta')}
+        title={t('actions.publishConfirmTitle')}
+        message={t('actions.publishConfirmMessage')}
+        confirmText={t('actions.publishConfirmCta')}
         cancelText={t('actions.publishConfirmCancel')}
-        confirmVariant={targetAction === 'publish' ? 'primary' : 'danger'}
+        confirmVariant="primary"
         onConfirm={handleConfirm}
         onCancel={() => setConfirmOpen(false)}
       />

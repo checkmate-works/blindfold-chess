@@ -27,17 +27,22 @@ const WELL_KNOWN_ERRORS = new Set([
 ]);
 
 /**
- * Submitter-side form for the "Suggest an edit" flow. Rendered inline
- * under the chunk detail when the viewer is a signed-in non-owner of a
- * draft chunk. Fields are prefilled with the chunk's current values so
- * the proposer edits what they want to change; the mutation core
- * rejects no-op submissions (where every field is identical to current).
+ * Submitter-side form for the "Suggest an edit" flow.
+ *
+ * Rendered inline on the dedicated `/chunks/[slug]/edit-requests` page
+ * for any signed-in non-owner. The previous toggle-open CTA was removed
+ * once the form moved to a dedicated page — the user landed here
+ * *because* they wanted to suggest something, so make the form visible
+ * straight away and skip the extra click.
+ *
+ * Fields are prefilled with the chunk's current values so the proposer
+ * edits what they want to change; the mutation core rejects no-op
+ * submissions (every field identical to current).
  */
 export function EditRequestForm({ chunkId, currentTitle, currentDescription }: Props) {
   const t = useTranslations('chunks.editRequests');
   const router = useRouter();
 
-  const [open, setOpen] = useState(false);
   const [proposedTitle, setProposedTitle] = useState(currentTitle);
   const [proposedDescription, setProposedDescription] = useState(currentDescription ?? '');
   const [comment, setComment] = useState('');
@@ -48,7 +53,7 @@ export function EditRequestForm({ chunkId, currentTitle, currentDescription }: P
     return WELL_KNOWN_ERRORS.has(code) ? t(`errors.${code}` as 'errors.signInRequired') : code;
   }
 
-  function reset() {
+  function resetToPrefill() {
     setProposedTitle(currentTitle);
     setProposedDescription(currentDescription ?? '');
     setComment('');
@@ -79,21 +84,11 @@ export function EditRequestForm({ chunkId, currentTitle, currentDescription }: P
       return;
     }
 
-    reset();
-    setOpen(false);
+    // On success the page revalidates and the new request lands in the
+    // list below; reset the form back to the prefilled values so the
+    // proposer can immediately suggest something else if they want to.
+    resetToPrefill();
     router.refresh();
-  }
-
-  if (!open) {
-    return (
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="px-3 py-1.5 text-sm rounded border border-primary text-primary hover:bg-primary/10 transition-colors"
-      >
-        {t('suggestCta')}
-      </button>
-    );
   }
 
   return (
@@ -149,22 +144,9 @@ export function EditRequestForm({ chunkId, currentTitle, currentDescription }: P
         />
       </div>
 
-      <div className="flex gap-3">
-        <Button type="submit" variant="primary" disabled={pending} loading={pending}>
-          {t('actions.submit')}
-        </Button>
-        <Button
-          type="button"
-          variant="secondary"
-          disabled={pending}
-          onClick={() => {
-            reset();
-            setOpen(false);
-          }}
-        >
-          {t('actions.cancel')}
-        </Button>
-      </div>
+      <Button type="submit" variant="primary" disabled={pending} loading={pending}>
+        {t('actions.submit')}
+      </Button>
     </form>
   );
 }

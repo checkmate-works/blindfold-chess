@@ -582,19 +582,20 @@ describe('updateChunkEntry — published lock', () => {
   });
 });
 
-describe('publishChunkEntry / unpublishChunkEntry', () => {
+describe('publishChunkEntry', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: TEST_USER_ID } });
     mockUpdateWhere.mockResolvedValue(undefined);
   });
 
-  it('publishChunkEntry: transitions a draft to published', async () => {
+  it('transitions a draft chunk with a description to published', async () => {
     mockSelectLimit.mockResolvedValue([
       {
         id: TEST_CHUNK_ID,
         userId: TEST_USER_ID,
         slug: TEST_SLUG,
+        description: 'Doubled rooks on an open file',
         status: 'draft',
         deletedAt: null,
       },
@@ -615,12 +616,13 @@ describe('publishChunkEntry / unpublishChunkEntry', () => {
     );
   });
 
-  it('publishChunkEntry: idempotent when already published (no write)', async () => {
+  it('idempotent when already published (no write, no log)', async () => {
     mockSelectLimit.mockResolvedValue([
       {
         id: TEST_CHUNK_ID,
         userId: TEST_USER_ID,
         slug: TEST_SLUG,
+        description: 'Doubled rooks',
         status: 'published',
         deletedAt: null,
       },
@@ -634,38 +636,51 @@ describe('publishChunkEntry / unpublishChunkEntry', () => {
     expect(mockLogActivityEvent).not.toHaveBeenCalled();
   });
 
-  it('unpublishChunkEntry: transitions published back to draft', async () => {
+  it('returns descriptionRequired when the draft has no description', async () => {
     mockSelectLimit.mockResolvedValue([
       {
         id: TEST_CHUNK_ID,
         userId: TEST_USER_ID,
         slug: TEST_SLUG,
-        status: 'published',
+        description: null,
+        status: 'draft',
         deletedAt: null,
       },
     ]);
 
-    const { unpublishChunkEntry } = await import('./user-chunk-mutations');
-    const result = await unpublishChunkEntry(TEST_CHUNK_ID);
+    const { publishChunkEntry } = await import('./user-chunk-mutations');
+    const result = await publishChunkEntry(TEST_CHUNK_ID);
 
-    expect(result).toEqual({ success: true });
-    expect(mockUpdateWhere).toHaveBeenCalledTimes(1);
-    const args = mockUpdateWhere.mock.calls[0][0] as { values: Record<string, unknown> };
-    expect(args.values).toEqual({ status: 'draft' });
-    expect(mockLogActivityEvent).toHaveBeenCalledWith(
-      expect.objectContaining({
-        action: 'unpublish_chunk',
-        metadata: expect.objectContaining({ from: 'published', to: 'draft' }),
-      })
-    );
+    expect(result).toEqual({ error: 'descriptionRequired' });
+    expect(mockUpdateWhere).not.toHaveBeenCalled();
   });
 
-  it('rejects status transitions for non-owners', async () => {
+  it('returns descriptionRequired when the draft description is whitespace-only', async () => {
+    mockSelectLimit.mockResolvedValue([
+      {
+        id: TEST_CHUNK_ID,
+        userId: TEST_USER_ID,
+        slug: TEST_SLUG,
+        description: '   \n  ',
+        status: 'draft',
+        deletedAt: null,
+      },
+    ]);
+
+    const { publishChunkEntry } = await import('./user-chunk-mutations');
+    const result = await publishChunkEntry(TEST_CHUNK_ID);
+
+    expect(result).toEqual({ error: 'descriptionRequired' });
+    expect(mockUpdateWhere).not.toHaveBeenCalled();
+  });
+
+  it('rejects publishing for non-owners', async () => {
     mockSelectLimit.mockResolvedValue([
       {
         id: TEST_CHUNK_ID,
         userId: OTHER_USER_ID,
         slug: TEST_SLUG,
+        description: 'X',
         status: 'draft',
         deletedAt: null,
       },
@@ -678,12 +693,13 @@ describe('publishChunkEntry / unpublishChunkEntry', () => {
     expect(mockUpdateWhere).not.toHaveBeenCalled();
   });
 
-  it('rejects status transitions for soft-deleted chunks', async () => {
+  it('rejects publishing for soft-deleted chunks', async () => {
     mockSelectLimit.mockResolvedValue([
       {
         id: TEST_CHUNK_ID,
         userId: TEST_USER_ID,
         slug: TEST_SLUG,
+        description: 'X',
         status: 'draft',
         deletedAt: new Date('2025-01-01'),
       },
@@ -699,9 +715,8 @@ describe('publishChunkEntry / unpublishChunkEntry', () => {
   it('propagates signInRequired from the guard', async () => {
     mockAuthenticateAndGuard.mockResolvedValue({ error: 'signInRequired' });
 
-    const { publishChunkEntry, unpublishChunkEntry } = await import('./user-chunk-mutations');
+    const { publishChunkEntry } = await import('./user-chunk-mutations');
     expect(await publishChunkEntry(TEST_CHUNK_ID)).toEqual({ error: 'signInRequired' });
-    expect(await unpublishChunkEntry(TEST_CHUNK_ID)).toEqual({ error: 'signInRequired' });
     expect(mockSelectLimit).not.toHaveBeenCalled();
   });
 });

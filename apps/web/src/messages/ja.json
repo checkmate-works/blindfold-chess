@@ -2303,14 +2303,14 @@
       "publish": "公開する",
       "publishPending": "公開中…",
       "publishConfirmTitle": "このチャンクを公開しますか？",
-      "publishConfirmMessage": "公開すると他のユーザーに正式なカタログ項目として表示され、タイトル・説明・FEN・注釈は下書きに戻すまで編集できなくなります。",
+      "publishConfirmMessage": "公開すると他のユーザーに正式なカタログ項目として表示されます。タイトル・説明・FEN・注釈はロックされます。公開は一方通行のため、内容に問題がないことを確認してください。",
       "publishConfirmCta": "公開する",
       "publishConfirmCancel": "キャンセル",
-      "unpublish": "下書きに戻す",
-      "unpublishPending": "戻し中…",
-      "unpublishConfirmTitle": "下書きに戻しますか？",
-      "unpublishConfirmMessage": "このチャンクを再び下書き状態にして編集可能にします。既にリンクしているユーザーは現在の内容を引き続き参照できます。",
-      "unpublishConfirmCta": "下書きに戻す"
+      "publishDescriptionRequired": "公開するには説明を入力してください。"
+    },
+    "detail": {
+      "descriptionSection": "説明",
+      "noDescription": "説明はまだありません。"
     },
     "list": {
       "newCta": "新規チャンク",
@@ -2357,7 +2357,8 @@
         "notFound": "このチャンクは存在しません。",
         "unauthorized": "自分が作成したチャンクのみ編集できます。",
         "alreadyDeleted": "このチャンクは既に削除されています。",
-        "cannotEditPublished": "このチャンクは公開済みのため編集できません。編集するには下書きに戻してください。"
+        "cannotEditPublished": "このチャンクは公開済みのため編集できません。公開は一方通行です。修正したい場合は一度削除して新たに作成してください。",
+        "descriptionRequired": "このチャンクは公開する前に説明を入力する必要があります。"
       },
       "draft": {
         "toggleLabel": "下書きとして保存",
@@ -2403,6 +2404,17 @@
       "breadcrumb": "編集リクエスト",
       "currentValuesTitle": "現在の内容",
       "currentValuesHint": "現時点で暫定的に決まっているタイトルと説明です。下記の提案はこれと比較して表示されます。",
+      "help": {
+        "label": "編集リクエストの仕組み",
+        "badge": {
+          "title": "このチャンクは下書きです",
+          "description": "下書き状態のチャンクは自由に編集でき、タイトルや説明はまだ確定していません。オーナーが公開すると、チャンクは正式なカタログ項目となり編集ロックされます。"
+        },
+        "editRequests": {
+          "title": "より良いタイトルや説明を提案",
+          "description": "下書き中のチャンクには、編集リクエスト画面から新しいタイトル・説明を提案できます。オーナーが各提案を確認し、採用された内容はチャンクに反映されます。"
+        }
+      },
       "sectionTitle": "編集リクエスト",
       "sectionHint": "下書き状態のチャンクには、他のプレイヤーからより適切なタイトルや説明の提案を受け取れます。オーナーが各提案を確認します。",
       "pendingCount": "{count, plural, other {未対応 # 件}}",

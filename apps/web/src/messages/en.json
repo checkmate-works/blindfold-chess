@@ -2303,14 +2303,10 @@
       "publish": "Publish",
       "publishPending": "Publishing…",
       "publishConfirmTitle": "Publish this chunk?",
-      "publishConfirmMessage": "Other users will see this as a canonical catalog entry and you won't be able to edit the title, description, FEN, or annotations until you move it back to draft.",
+      "publishConfirmMessage": "Other users will see this as a canonical catalog entry. The title, description, FEN, and annotations will be locked — publishing is one-way, so make sure you're happy with them.",
       "publishConfirmCta": "Publish",
       "publishConfirmCancel": "Cancel",
-      "unpublish": "Move to draft",
-      "unpublishPending": "Moving…",
-      "unpublishConfirmTitle": "Move back to draft?",
-      "unpublishConfirmMessage": "The chunk will be marked as a draft again so you can edit it. Anyone already linking to it will still see the current content.",
-      "unpublishConfirmCta": "Move to draft"
+      "publishDescriptionRequired": "Add a description before publishing."
     },
     "list": {
       "newCta": "New chunk",
@@ -2322,6 +2318,10 @@
     "edit": {
       "title": "Edit {name}",
       "breadcrumb": "Edit"
+    },
+    "detail": {
+      "descriptionSection": "Description",
+      "noDescription": "No description yet."
     },
     "form": {
       "fields": {
@@ -2357,7 +2357,8 @@
         "notFound": "This chunk no longer exists.",
         "unauthorized": "You can only edit chunks you created.",
         "alreadyDeleted": "This chunk has already been deleted.",
-        "cannotEditPublished": "This chunk is published and is no longer editable. Move it back to draft to make changes."
+        "cannotEditPublished": "This chunk is published and is no longer editable. Publishing is one-way — to revise, delete this chunk and create a new one.",
+        "descriptionRequired": "This chunk needs a description before it can be published."
       },
       "draft": {
         "toggleLabel": "Save as draft",
@@ -2403,6 +2404,17 @@
       "breadcrumb": "Edit suggestions",
       "currentValuesTitle": "Current values",
       "currentValuesHint": "Tentative title and description the chunk currently shows. Submitted suggestions below are compared against these.",
+      "help": {
+        "label": "How edit suggestions work",
+        "badge": {
+          "title": "This chunk is still a draft",
+          "description": "Drafts can be edited freely and the title / description aren't final yet. Once the owner publishes, the chunk becomes a canonical catalog entry and is locked."
+        },
+        "editRequests": {
+          "title": "Suggest a better title or description",
+          "description": "Open the Edit suggestions page to propose a new title or description while the chunk is in draft. The owner reviews each suggestion — accepting one applies your text to the chunk in place."
+        }
+      },
       "sectionTitle": "Edit suggestions",
       "sectionHint": "Other players can suggest a sharper title or description while this chunk is in draft. The owner reviews each suggestion.",
       "pendingCount": "{count, plural, one {# pending} other {# pending}}",
