@@ -309,6 +309,13 @@
       "when": 1779356089294,
       "tag": "20260521093449_add_status_to_chunks",
       "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1779429867581,
+      "tag": "20260522060427_create_chunk_edit_requests",
+      "breakpoints": true
     }
   ]
 }

@@ -2396,6 +2396,62 @@
       "statusLabel": "Status",
       "statusDraft": "Draft",
       "statusPublished": "Published"
+    },
+    "editRequests": {
+      "sectionTitle": "Edit suggestions",
+      "sectionHint": "Other players can suggest a sharper title or description while this chunk is in draft. The owner reviews each suggestion.",
+      "pendingCount": "{count, plural, one {# pending} other {# pending}}",
+      "empty": "No suggestions yet.",
+      "suggestCta": "Suggest an edit",
+      "signInToSuggest": "Sign in to suggest an edit.",
+      "formHint": "Edit only what you'd like to change. Identical-to-current submissions are rejected automatically.",
+      "deletedProposer": "(deleted user)",
+      "proposerComment": "Reason from the proposer",
+      "resolverComment": "Reason from the owner",
+      "justNow": "just now",
+      "status": {
+        "pending": "Pending",
+        "accepted": "Accepted",
+        "rejected": "Rejected",
+        "withdrawn": "Withdrawn"
+      },
+      "diff": {
+        "titleLabel": "Title",
+        "descriptionLabel": "Description",
+        "current": "Current",
+        "proposed": "Proposed"
+      },
+      "fields": {
+        "title": "Proposed title",
+        "description": "Proposed description",
+        "comment": "Why this change? (optional)",
+        "commentPlaceholder": "A short explanation helps the owner decide."
+      },
+      "actions": {
+        "submit": "Submit suggestion",
+        "cancel": "Cancel",
+        "accept": "Accept",
+        "reject": "Reject",
+        "withdraw": "Withdraw",
+        "acceptConfirmTitle": "Accept this suggestion?",
+        "acceptConfirmMessage": "The proposed fields will be applied to this chunk immediately.",
+        "rejectConfirmTitle": "Reject this suggestion?",
+        "rejectConfirmMessage": "The proposer will be notified. You can leave an optional explanation below.",
+        "rejectCommentLabel": "Optional response",
+        "rejectCommentPlaceholder": "Why this doesn't fit, what would (e.g. \"Closer to fianchetto setup, but bishop is missing\")",
+        "withdrawConfirmTitle": "Withdraw your suggestion?",
+        "withdrawConfirmMessage": "The chunk owner will see the suggestion has been withdrawn."
+      },
+      "errors": {
+        "signInRequired": "Please sign in to submit a suggestion.",
+        "banned": "Your account is suspended.",
+        "rateLimited": "Too many suggestions. Please try again later.",
+        "notFound": "This suggestion or chunk no longer exists.",
+        "unauthorized": "You can't perform this action.",
+        "alreadyResolved": "This suggestion has already been resolved.",
+        "ownerCannotPropose": "You can't suggest edits to your own chunk — edit it directly instead.",
+        "chunkNotDraft": "This chunk is published and is not accepting suggestions right now."
+      }
     }
   },
   "announcements": {

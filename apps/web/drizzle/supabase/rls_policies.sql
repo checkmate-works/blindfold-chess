@@ -410,6 +410,55 @@ CREATE POLICY "chunks_update" ON "chunks"
   WITH CHECK (auth.uid() = user_id);
 
 -- =============================================================================
+-- chunk_edit_requests (Qiita-style suggestions on a draft chunk)
+-- =============================================================================
+-- SELECT is open so the discussion is visible to anyone (the owner reviews
+-- on the chunk page, and other users can see what's already been proposed).
+-- INSERT is restricted to the proposer and is additionally gated at the
+-- application layer (rate limit, draft-only check, non-owner check); the
+-- WITH CHECK below is the structural backstop. UPDATE is granted to either
+-- the proposer (so they can withdraw) or the chunk owner (so they can
+-- accept / reject) — the application layer enforces the per-transition
+-- preconditions (pending only, idempotence on terminal states).
+ALTER TABLE "chunk_edit_requests" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "chunk_edit_requests_select" ON "chunk_edit_requests";
+CREATE POLICY "chunk_edit_requests_select" ON "chunk_edit_requests"
+  FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "chunk_edit_requests_insert" ON "chunk_edit_requests";
+CREATE POLICY "chunk_edit_requests_insert" ON "chunk_edit_requests"
+  FOR INSERT WITH CHECK (
+    auth.uid() = proposer_id
+    AND EXISTS (
+      SELECT 1 FROM chunks c
+      WHERE c.id = chunk_id
+        AND c.deleted_at IS NULL
+        AND c.status = 'draft'
+        AND c.user_id IS NOT NULL
+        AND c.user_id != auth.uid()
+    )
+  );
+
+DROP POLICY IF EXISTS "chunk_edit_requests_update" ON "chunk_edit_requests";
+CREATE POLICY "chunk_edit_requests_update" ON "chunk_edit_requests"
+  FOR UPDATE
+  USING (
+    auth.uid() = proposer_id
+    OR EXISTS (
+      SELECT 1 FROM chunks c
+      WHERE c.id = chunk_id AND c.user_id = auth.uid()
+    )
+  )
+  WITH CHECK (
+    auth.uid() = proposer_id
+    OR EXISTS (
+      SELECT 1 FROM chunks c
+      WHERE c.id = chunk_id AND c.user_id = auth.uid()
+    )
+  );
+
+-- =============================================================================
 -- position_chunks (junction — public read, position-owner write)
 -- =============================================================================
 -- INSERT/DELETE are gated on the POSITION owner, not the chunk owner. Chunk

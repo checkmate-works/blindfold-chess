@@ -2396,6 +2396,62 @@
       "statusLabel": "ステータス",
       "statusDraft": "下書き",
       "statusPublished": "公開済み"
+    },
+    "editRequests": {
+      "sectionTitle": "編集リクエスト",
+      "sectionHint": "下書き状態のチャンクには、他のプレイヤーからより適切なタイトルや説明の提案を受け取れます。オーナーが各提案を確認します。",
+      "pendingCount": "{count, plural, other {未対応 # 件}}",
+      "empty": "まだ提案はありません。",
+      "suggestCta": "編集を提案する",
+      "signInToSuggest": "編集を提案するにはサインインしてください。",
+      "formHint": "変更したい箇所のみを編集してください。現在の内容と完全に同じ提案は自動的に拒否されます。",
+      "deletedProposer": "(削除されたユーザー)",
+      "proposerComment": "提案者からの説明",
+      "resolverComment": "オーナーからの返信",
+      "justNow": "たった今",
+      "status": {
+        "pending": "未対応",
+        "accepted": "採用",
+        "rejected": "却下",
+        "withdrawn": "取り下げ"
+      },
+      "diff": {
+        "titleLabel": "タイトル",
+        "descriptionLabel": "説明",
+        "current": "現在",
+        "proposed": "提案"
+      },
+      "fields": {
+        "title": "提案するタイトル",
+        "description": "提案する説明",
+        "comment": "提案の理由（任意）",
+        "commentPlaceholder": "簡単な理由を添えるとオーナーが判断しやすくなります。"
+      },
+      "actions": {
+        "submit": "提案を送信",
+        "cancel": "キャンセル",
+        "accept": "採用",
+        "reject": "却下",
+        "withdraw": "取り下げ",
+        "acceptConfirmTitle": "この提案を採用しますか？",
+        "acceptConfirmMessage": "提案された内容が直ちにチャンクに反映されます。",
+        "rejectConfirmTitle": "この提案を却下しますか？",
+        "rejectConfirmMessage": "提案者に通知されます。必要であれば理由を添えられます。",
+        "rejectCommentLabel": "返信（任意）",
+        "rejectCommentPlaceholder": "なぜ合わないか、どうすればよいかなど（例：「フィアンケットに近いですが、ビショップがありません」）",
+        "withdrawConfirmTitle": "この提案を取り下げますか？",
+        "withdrawConfirmMessage": "オーナーには取り下げられたことが通知されます。"
+      },
+      "errors": {
+        "signInRequired": "提案を送信するにはサインインしてください。",
+        "banned": "アカウントが停止されています。",
+        "rateLimited": "提案が多すぎます。しばらく時間をおいてください。",
+        "notFound": "この提案またはチャンクは存在しません。",
+        "unauthorized": "この操作を実行する権限がありません。",
+        "alreadyResolved": "この提案は既に処理済みです。",
+        "ownerCannotPropose": "自分が作成したチャンクには提案できません。直接編集してください。",
+        "chunkNotDraft": "このチャンクは公開済みのため、現在は提案を受け付けていません。"
+      }
     }
   },
   "announcements": {

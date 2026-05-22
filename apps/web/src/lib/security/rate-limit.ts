@@ -122,6 +122,30 @@ export const RATE_LIMITS = {
   updateChunk: { action: 'update_chunk', maxAttempts: 20, windowMs: 3_600_000 },
   deleteChunk: { action: 'delete_chunk', maxAttempts: 10, windowMs: 3_600_000 },
   /**
+   * Per-user limit for submitting Qiita-style edit requests on a draft
+   * chunk. Aligned with `createPost` (10/hour) — a sustained submitter
+   * hitting this either has 10 genuinely good ideas in the same hour
+   * (rare) or is spamming the chunk owner (the case we care to throttle).
+   * The legitimate "I want to refine my own suggestion" path goes through
+   * Withdraw → re-submit; both consume budget.
+   */
+  submitChunkEditRequest: {
+    action: 'submit_chunk_edit_request',
+    maxAttempts: 10,
+    windowMs: 3_600_000,
+  },
+  /**
+   * Per-user limit for the owner's accept/reject and the proposer's
+   * withdraw. 30/hour matches `editPost` — a moderator-style action by
+   * the chunk owner that may legitimately fire in bursts after a
+   * batch of suggestions lands.
+   */
+  resolveChunkEditRequest: {
+    action: 'resolve_chunk_edit_request',
+    maxAttempts: 30,
+    windowMs: 3_600_000,
+  },
+  /**
    * Per-user limit for point redemptions. Tight cap (10/hour) because each
    * redemption mutates `user_point_balances` + writes a `user_grants` row
    * + writes two ledger rows. A reasonable user never needs to redeem

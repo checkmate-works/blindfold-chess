@@ -2944,6 +2944,128 @@ export type Chunk = typeof chunks.$inferSelect;
 export type NewChunk = typeof chunks.$inferInsert;
 
 /**
+ * Chunk Edit Requests — Qiita-style suggestions for a draft chunk's
+ * title / description from users other than the chunk's owner.
+ *
+ * @description
+ * Chunks describe piece-coordination patterns whose naming is often
+ * collaborative — once a draft is up, other players can suggest a
+ * cleaner title or a sharper description. The owner reviews each
+ * suggestion and either accepts it (the proposed fields are applied
+ * to the chunk in the same transaction) or rejects it. Proposers can
+ * also withdraw their own pending requests.
+ *
+ * @design status lifecycle
+ * `pending` → `accepted` | `rejected` | `withdrawn`. All terminal
+ * states are immutable; idempotent at the application layer. Once a
+ * chunk is published the application layer rejects new submissions
+ * and rejects accept/reject on existing pending rows (they remain
+ * pending and can be acted on if the owner un-publishes later). This
+ * keeps the workshop semantics tight without needing to auto-resolve
+ * everything at publish time.
+ *
+ * @design optional fields
+ * `proposed_title` and `proposed_description` are independently
+ * nullable so a request can target only what the proposer actually
+ * wants to change — but the application layer requires at least one
+ * to be present AND different from the chunk's current value at
+ * submit time. The DB does not enforce this XOR-ish rule because
+ * the comparison against current values can't live in a CHECK
+ * constraint without a JOIN.
+ *
+ * @design proposer_id nullable + ON DELETE SET NULL
+ * Mirrors the `chunks.user_id` semantics — if a proposer's account
+ * is hard-deleted, the request survives with `proposer_id = NULL`
+ * so the chunk owner's audit trail of past suggestions remains
+ * intact. The application layer renders such rows as "(deleted
+ * user)". `resolver_id` follows the same pattern for the owner who
+ * accepted / rejected the request.
+ *
+ * @design chunkId ON DELETE CASCADE
+ * Unlike `position_chunks.chunk_id` which is RESTRICT, edit
+ * requests are tied 1:N to a specific chunk and have no value
+ * without it. If a chunk is physically deleted (service-role only),
+ * the requests go with it.
+ *
+ * @design no point grant on accept
+ * Deliberately omitted in v1. The proposer is doing the chunk
+ * owner a favor and a coin grant would be natural, but tying that
+ * into the daily creation cap + clawback path is its own slice;
+ * defer until the social value of the feature is observed.
+ */
+export const chunkEditRequests = pgTable(
+  'chunk_edit_requests',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    chunkId: uuid('chunk_id')
+      .notNull()
+      .references(() => chunks.id, { onDelete: 'cascade' }),
+    // references auth.users — FK defined in custom SQL (ON DELETE SET NULL),
+    // following the same pattern as `chunks.user_id`.
+    proposerId: uuid('proposer_id'),
+    /**
+     * Proposed new title. Optional — a request may target only the
+     * description. When present, validated against the same length /
+     * non-empty rules `chunks.title` enforces on the create path.
+     */
+    proposedTitle: varchar('proposed_title', { length: 255 }),
+    /**
+     * Proposed new description. Optional — a request may target only
+     * the title. Same length cap (5,000 chars) as the create path.
+     */
+    proposedDescription: text('proposed_description'),
+    /**
+     * Optional rationale from the proposer (why they suggested this
+     * change). Useful for collaborative naming where the *reason* a
+     * pattern should be called X is sometimes more important than the
+     * name itself. Capped at 2,000 chars by the application layer.
+     */
+    comment: text('comment'),
+    /**
+     * Lifecycle: `pending` (default), `accepted`, `rejected`,
+     * `withdrawn`. See @design above for transitions.
+     */
+    status: varchar('status', { length: 20 }).notNull().default('pending'),
+    /** Set when the request leaves `pending`. */
+    resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+    /**
+     * The user who moved the request out of `pending`. For
+     * accept / reject this is the chunk owner; for withdraw this is
+     * the proposer (equal to `proposer_id`). NULL while pending or
+     * after the resolver's account is hard-deleted (FK SET NULL).
+     */
+    resolverId: uuid('resolver_id'),
+    /**
+     * Optional message from the resolver — typically the chunk owner
+     * explaining why a suggestion was rejected. Not surfaced for
+     * accept paths (the acceptance is itself the response) but the
+     * column stays generic so a future "accept with note" UI does not
+     * need a schema change.
+     */
+    resolverComment: text('resolver_comment'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull()
+      .$onUpdateFn(() => new Date()),
+  },
+  (table) => [
+    // "List pending requests for this chunk, newest first" — the
+    // primary read on the owner's review surface.
+    index('idx_chunk_edit_requests_chunk_status_created').on(
+      table.chunkId,
+      table.status,
+      table.createdAt.desc()
+    ),
+    // "My submitted requests" view for the proposer.
+    index('idx_chunk_edit_requests_proposer_created').on(table.proposerId, table.createdAt.desc()),
+  ]
+);
+
+export type ChunkEditRequest = typeof chunkEditRequests.$inferSelect;
+export type NewChunkEditRequest = typeof chunkEditRequests.$inferInsert;
+
+/**
  * Position Chunks — junction between memory-type positions and the chunks
  * (piece-coordination patterns) that appear in them.
  *

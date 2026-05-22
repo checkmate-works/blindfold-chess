@@ -39,6 +39,7 @@ import { createChunkReplyWithAttachment } from './_actions/createChunkReplyWithA
 import { createChunkReplyWithFenAttachment } from './_actions/createChunkReplyWithFenAttachment';
 import { toggleChunkLike } from './_actions/toggleChunkLike';
 import { togglePositionLike } from './_actions/togglePositionLike';
+import { EditRequestSection } from './_components/EditRequestSection';
 import { NewPostForm } from './_components/NewPostForm';
 
 export const dynamic = 'force-dynamic';
@@ -203,6 +204,16 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
           className="w-full"
         />
       </div>
+
+      <EditRequestSection
+        chunkId={chunk.id}
+        chunkStatus={status}
+        currentTitle={chunk.title}
+        currentDescription={chunk.description}
+        viewerId={user?.id ?? null}
+        ownerId={chunk.userId}
+        locale={locale}
+      />
 
       {linkedPositions.length > 0 && (
         <>
