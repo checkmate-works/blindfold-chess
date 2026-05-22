@@ -2398,6 +2398,11 @@
       "statusPublished": "Published"
     },
     "editRequests": {
+      "linkLabel": "Edit suggestions",
+      "pageTitle": "Edit suggestions · {name}",
+      "breadcrumb": "Edit suggestions",
+      "currentValuesTitle": "Current values",
+      "currentValuesHint": "Tentative title and description the chunk currently shows. Submitted suggestions below are compared against these.",
       "sectionTitle": "Edit suggestions",
       "sectionHint": "Other players can suggest a sharper title or description while this chunk is in draft. The owner reviews each suggestion.",
       "pendingCount": "{count, plural, one {# pending} other {# pending}}",

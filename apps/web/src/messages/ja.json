@@ -2398,6 +2398,11 @@
       "statusPublished": "公開済み"
     },
     "editRequests": {
+      "linkLabel": "編集リクエスト",
+      "pageTitle": "編集リクエスト · {name}",
+      "breadcrumb": "編集リクエスト",
+      "currentValuesTitle": "現在の内容",
+      "currentValuesHint": "現時点で暫定的に決まっているタイトルと説明です。下記の提案はこれと比較して表示されます。",
       "sectionTitle": "編集リクエスト",
       "sectionHint": "下書き状態のチャンクには、他のプレイヤーからより適切なタイトルや説明の提案を受け取れます。オーナーが各提案を確認します。",
       "pendingCount": "{count, plural, other {未対応 # 件}}",
