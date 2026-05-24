@@ -2417,6 +2417,8 @@
       "currentValuesHint": "Tentative title and description the chunk currently shows. Submitted suggestions below are compared against these.",
       "callout": {
         "body": "This chunk is still a draft and welcomes suggestions for a sharper title or description.",
+        "ownerBodyWithPending": "{count, plural, one {# pending edit suggestion waiting for your review.} other {# pending edit suggestions waiting for your review.}}",
+        "ownerBodyEmpty": "No edit suggestions yet.",
         "ctaOwner": "View edit suggestions",
         "ctaHasPending": "View / withdraw your suggestion",
         "ctaCanSuggest": "Suggest an edit",

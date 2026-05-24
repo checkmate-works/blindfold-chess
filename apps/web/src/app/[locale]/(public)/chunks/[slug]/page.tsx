@@ -258,6 +258,13 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
           slug={slug}
           pendingCount={pendingEditRequestCount}
           body={tEditRequests('callout.body')}
+          ownerBody={
+            pendingEditRequestCount > 0
+              ? tEditRequests('callout.ownerBodyWithPending', {
+                  count: pendingEditRequestCount,
+                })
+              : tEditRequests('callout.ownerBodyEmpty')
+          }
           ctaByState={{
             owner: tEditRequests('callout.ctaOwner'),
             hasPending: tEditRequests('callout.ctaHasPending'),

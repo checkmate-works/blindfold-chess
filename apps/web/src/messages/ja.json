@@ -2417,6 +2417,8 @@
       "currentValuesHint": "現時点で暫定的に決まっているタイトルと説明です。下記の提案はこれと比較して表示されます。",
       "callout": {
         "body": "このチャンクは下書きです。タイトルや説明の改善提案を受け付けています。",
+        "ownerBodyWithPending": "{count, plural, other {未対応の編集リクエストが # 件届いています。}}",
+        "ownerBodyEmpty": "まだ編集リクエストは届いていません。",
         "ctaOwner": "編集リクエストを見る",
         "ctaHasPending": "自分の編集リクエストを確認・取り下げ",
         "ctaCanSuggest": "編集リクエストを送る",

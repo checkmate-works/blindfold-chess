@@ -31,9 +31,19 @@ type Props = {
   /**
    * Generic body shown when the author has not flagged any specific
    * field for feedback. Hidden once `requestedTopicLabels` is non-empty
-   * because the more specific copy renders instead.
+   * because the more specific copy renders instead. Also hidden for
+   * the owner viewer state — see `ownerBody`.
    */
   body: string;
+  /**
+   * Owner-specific body (e.g. "3 pending suggestions to review" /
+   * "No suggestions yet"). When `viewerState === 'owner'` this
+   * replaces both `body` and the requested-topics list, because the
+   * "the author wants input on X" framing doesn't fit the author
+   * themselves — they want the queue state instead. Required when
+   * `viewerState === 'owner'`; ignored otherwise.
+   */
+  ownerBody?: string;
   /**
    * CTA labels keyed by viewer state. The page resolves the four
    * strings from i18n at the call site so the callout itself stays
@@ -75,17 +85,21 @@ export function EditRequestCallout({
   slug,
   pendingCount,
   body,
+  ownerBody,
   ctaByState,
   viewerState,
   requestedTopicLabels,
   topicLeadIn,
 }: Props) {
-  const hasRequestedTopics = !!requestedTopicLabels && requestedTopicLabels.length > 0;
+  const isOwner = viewerState === 'owner';
+  const hasRequestedTopics = !isOwner && !!requestedTopicLabels && requestedTopicLabels.length > 0;
   const cta = ctaByState[viewerState];
 
   return (
     <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-100">
-      {hasRequestedTopics ? (
+      {isOwner ? (
+        <p>{ownerBody}</p>
+      ) : hasRequestedTopics ? (
         <div className="space-y-1">
           {topicLeadIn && <p>{topicLeadIn}</p>}
           <ul className="flex flex-wrap gap-1.5">
