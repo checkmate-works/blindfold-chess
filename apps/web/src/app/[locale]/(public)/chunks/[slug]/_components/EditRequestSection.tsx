@@ -20,6 +20,14 @@ type Props = {
   viewerId: string | null;
   /** Chunk owner's id; null for orphaned chunks (author hard-deleted). */
   ownerId: string | null;
+  /**
+   * Whether the viewer already has a pending edit request for this
+   * chunk. Drives the "form vs. withdraw-and-resubmit notice" choice
+   * — one pending per (chunk, proposer) is enforced at the mutation
+   * layer, so showing a second submission form here would just lead
+   * to an `alreadyHasPending` round-trip.
+   */
+  viewerHasPending: boolean;
   locale: string;
 };
 
@@ -38,6 +46,7 @@ export async function EditRequestSection({
   currentDescription,
   viewerId,
   ownerId,
+  viewerHasPending,
   locale,
 }: Props) {
   if (chunkStatus !== 'draft') return null;
@@ -77,13 +86,30 @@ export async function EditRequestSection({
       <p className="text-sm text-muted-foreground">{t('sectionHint')}</p>
 
       {viewerCanPropose ? (
-        <EditRequestForm
-          chunkId={chunkId}
-          currentTitle={currentTitle}
-          currentDescription={currentDescription}
-          requestedFeedbackTopics={requestedFeedbackTopics}
-          wantedLabel={t('formWantedLabel')}
-        />
+        viewerHasPending ? (
+          /*
+           * The viewer already has a pending row in the list below;
+           * one-pending-per-(chunk, proposer) is an application-layer
+           * invariant, so the form is hidden and we point them at the
+           * Withdraw button on their existing row instead. This keeps
+           * a fresh proposal one-click away (after withdraw) without
+           * letting the page round-trip to `alreadyHasPending`.
+           */
+          <div
+            className="rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950/30 dark:text-amber-100"
+            role="status"
+          >
+            {t('alreadyHasPendingNotice')}
+          </div>
+        ) : (
+          <EditRequestForm
+            chunkId={chunkId}
+            currentTitle={currentTitle}
+            currentDescription={currentDescription}
+            requestedFeedbackTopics={requestedFeedbackTopics}
+            wantedLabel={t('formWantedLabel')}
+          />
+        )
       ) : (
         !viewerIsOwner && <p className="text-sm text-muted-foreground">{t('signInToSuggest')}</p>
       )}

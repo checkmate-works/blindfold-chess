@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { getOptionalUser } from '@/lib/auth';
+import { getViewerPendingEditRequestForChunk } from '@/lib/chunk-edit-requests/queries';
 import { getChunkBySlug } from '@/lib/chunks/queries';
 import { isChunkStatus } from '@/lib/chunks/validation';
 
@@ -66,6 +67,11 @@ export default async function ChunkEditRequestsPage({ params }: Props) {
     getTranslations({ locale, namespace: 'chunks' }),
   ]);
 
+  const viewerPendingRequestId = await getViewerPendingEditRequestForChunk(
+    chunk.id,
+    user?.id ?? null
+  );
+
   return (
     <PageLayout
       title={t('pageTitle', { name: chunk.title })}
@@ -105,6 +111,7 @@ export default async function ChunkEditRequestsPage({ params }: Props) {
         currentDescription={chunk.description}
         viewerId={user?.id ?? null}
         ownerId={chunk.userId}
+        viewerHasPending={viewerPendingRequestId !== null}
         locale={locale}
       />
     </PageLayout>
