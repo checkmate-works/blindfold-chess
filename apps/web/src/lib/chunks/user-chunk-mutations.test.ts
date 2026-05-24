@@ -6,6 +6,8 @@ const mockInsertReturning = vi.fn();
 const mockInsertValues = vi.fn();
 const mockUpdateWhere = vi.fn();
 const mockTxUpdateWhere = vi.fn();
+const mockTxDeleteWhere = vi.fn();
+const mockTxFeedbackInsertValues = vi.fn();
 const mockFindChunkBySlug = vi.fn();
 const mockGrantPointsForPost = vi.fn();
 const mockClawbackPointsForPost = vi.fn();
@@ -64,8 +66,18 @@ vi.mock('@/lib/db', () => ({
     }),
     transaction: async (fn: (tx: unknown) => Promise<unknown>) => {
       const tx = {
-        insert: () => ({
+        insert: (table: { __tableTag?: string }) => ({
           values: (values: unknown) => {
+            // Discriminate by table tag so the per-table insert can be
+            // asserted independently. The chunks insert returns a
+            // `returning()`-able query while the feedback-topics insert
+            // returns void; without the split, both end up sharing the
+            // same mock and the test for "topics row was written" can't
+            // be distinguished from "the chunk was written".
+            if (table?.__tableTag === 'chunk_feedback_topics') {
+              mockTxFeedbackInsertValues(values);
+              return Promise.resolve();
+            }
             mockInsertValues(values);
             return { returning: () => mockInsertReturning() };
           },
@@ -75,16 +87,26 @@ vi.mock('@/lib/db', () => ({
             where: (...args: unknown[]) => mockTxUpdateWhere({ values, where: args }),
           }),
         }),
+        delete: (table: { __tableTag?: string }) => ({
+          where: (...args: unknown[]) =>
+            mockTxDeleteWhere({ table: table?.__tableTag, where: args }),
+        }),
       };
       return fn(tx);
     },
   },
   chunks: {
+    __tableTag: 'chunks',
     id: 'id',
     userId: 'user_id',
     slug: 'slug',
     title: 'title',
     deletedAt: 'deleted_at',
+  },
+  chunkFeedbackTopics: {
+    __tableTag: 'chunk_feedback_topics',
+    chunkId: 'chunk_id',
+    topic: 'topic',
   },
 }));
 
@@ -250,6 +272,60 @@ describe('createChunkEntry', () => {
 
     expect(result).toEqual({ success: true, id: TEST_CHUNK_ID, slug: TEST_SLUG });
   });
+
+  it('inserts feedback topics when creating a draft with topics set', async () => {
+    mockInsertReturning.mockResolvedValue([{ id: TEST_CHUNK_ID, slug: TEST_SLUG }]);
+    mockFindChunkBySlug.mockResolvedValue(null);
+    mockGrantPointsForPost.mockResolvedValue(null);
+
+    const { createChunkEntry } = await import('./user-chunk-mutations');
+    await createChunkEntry({
+      ...baseCreateInput,
+      status: 'draft',
+      feedbackTopics: ['title', 'description'],
+    });
+
+    expect(mockTxFeedbackInsertValues).toHaveBeenCalledTimes(1);
+    expect(mockTxFeedbackInsertValues).toHaveBeenCalledWith([
+      { chunkId: TEST_CHUNK_ID, topic: 'title' },
+      { chunkId: TEST_CHUNK_ID, topic: 'description' },
+    ]);
+  });
+
+  it('skips the topics insert when the chunk is created as published', async () => {
+    // Topics are draft-only signals — creating directly as `published`
+    // should bypass the insert so the table stays sparse and never has
+    // to be cleared by `publishChunkEntry` for these rows.
+    mockInsertReturning.mockResolvedValue([{ id: TEST_CHUNK_ID, slug: TEST_SLUG }]);
+    mockFindChunkBySlug.mockResolvedValue(null);
+    mockGrantPointsForPost.mockResolvedValue(null);
+
+    const { createChunkEntry } = await import('./user-chunk-mutations');
+    await createChunkEntry({
+      ...baseCreateInput,
+      status: 'published',
+      feedbackTopics: ['title'],
+    });
+
+    expect(mockTxFeedbackInsertValues).not.toHaveBeenCalled();
+  });
+
+  it('skips the topics insert when topics is empty even on draft', async () => {
+    // A draft author can legitimately want feedback on nothing; the
+    // mutation must avoid the no-op multi-VALUES INSERT in that case.
+    mockInsertReturning.mockResolvedValue([{ id: TEST_CHUNK_ID, slug: TEST_SLUG }]);
+    mockFindChunkBySlug.mockResolvedValue(null);
+    mockGrantPointsForPost.mockResolvedValue(null);
+
+    const { createChunkEntry } = await import('./user-chunk-mutations');
+    await createChunkEntry({
+      ...baseCreateInput,
+      status: 'draft',
+      feedbackTopics: [],
+    });
+
+    expect(mockTxFeedbackInsertValues).not.toHaveBeenCalled();
+  });
 });
 
 describe('updateChunkEntry', () => {
@@ -350,8 +426,8 @@ describe('updateChunkEntry', () => {
     });
 
     expect(result).toEqual({ success: true });
-    expect(mockUpdateWhere).toHaveBeenCalledTimes(1);
-    const updateCall = mockUpdateWhere.mock.calls[0][0] as { values: Record<string, unknown> };
+    expect(mockTxUpdateWhere).toHaveBeenCalledTimes(1);
+    const updateCall = mockTxUpdateWhere.mock.calls[0][0] as { values: Record<string, unknown> };
     expect(updateCall.values).not.toHaveProperty('slug');
     // userId is rewritten — but the helper trims, and the UGC layer
     // overwrites the field with `user.id` BEFORE the helper sees it, so
@@ -384,6 +460,89 @@ describe('updateChunkEntry', () => {
     });
     expect(mockRevalidatePath).toHaveBeenCalledWith('/chunks');
     expect(mockRevalidatePath).toHaveBeenCalledWith(`/chunks/${TEST_SLUG}`);
+  });
+
+  it('resets the feedback topics row set in the same transaction as the update', async () => {
+    // The author can both add and remove topics by ticking checkboxes
+    // before saving — the mutation expresses that as "DELETE all + INSERT
+    // new" so the resulting row set always matches the payload exactly,
+    // without the caller needing to compute a diff.
+    mockSelectLimit.mockResolvedValue([
+      {
+        id: TEST_CHUNK_ID,
+        userId: TEST_USER_ID,
+        slug: TEST_SLUG,
+        status: 'draft',
+        deletedAt: null,
+      },
+    ]);
+
+    const { updateChunkEntry } = await import('./user-chunk-mutations');
+    await updateChunkEntry(TEST_CHUNK_ID, {
+      representativeFen: VALID_FEN,
+      title: 'New title',
+      userId: '',
+      feedbackTopics: ['title'],
+    });
+
+    expect(mockTxDeleteWhere).toHaveBeenCalledWith(
+      expect.objectContaining({ table: 'chunk_feedback_topics' })
+    );
+    expect(mockTxFeedbackInsertValues).toHaveBeenCalledWith([
+      { chunkId: TEST_CHUNK_ID, topic: 'title' },
+    ]);
+  });
+
+  it('clears feedback topics when payload omits topics (undefined → preserve, [] → wipe)', async () => {
+    mockSelectLimit.mockResolvedValue([
+      {
+        id: TEST_CHUNK_ID,
+        userId: TEST_USER_ID,
+        slug: TEST_SLUG,
+        status: 'draft',
+        deletedAt: null,
+      },
+    ]);
+
+    const { updateChunkEntry } = await import('./user-chunk-mutations');
+    await updateChunkEntry(TEST_CHUNK_ID, {
+      representativeFen: VALID_FEN,
+      title: 'New title',
+      userId: '',
+      feedbackTopics: [],
+    });
+
+    // Empty array is an explicit "no topics" intent — DELETE fires,
+    // INSERT does not (no rows to write).
+    expect(mockTxDeleteWhere).toHaveBeenCalledWith(
+      expect.objectContaining({ table: 'chunk_feedback_topics' })
+    );
+    expect(mockTxFeedbackInsertValues).not.toHaveBeenCalled();
+  });
+
+  it('leaves feedback topics untouched when payload omits the field entirely', async () => {
+    // `undefined` (field absent) means the caller has nothing to say
+    // about topics — preserve whatever the row currently has. This keeps
+    // the field optional for callers that never opted in.
+    mockSelectLimit.mockResolvedValue([
+      {
+        id: TEST_CHUNK_ID,
+        userId: TEST_USER_ID,
+        slug: TEST_SLUG,
+        status: 'draft',
+        deletedAt: null,
+      },
+    ]);
+
+    const { updateChunkEntry } = await import('./user-chunk-mutations');
+    await updateChunkEntry(TEST_CHUNK_ID, {
+      representativeFen: VALID_FEN,
+      title: 'New title',
+      userId: '',
+    });
+
+    expect(mockTxDeleteWhere).not.toHaveBeenCalled();
+    expect(mockTxFeedbackInsertValues).not.toHaveBeenCalled();
   });
 });
 
@@ -578,7 +737,7 @@ describe('updateChunkEntry — published lock', () => {
     });
 
     expect(result).toEqual({ success: true });
-    expect(mockUpdateWhere).toHaveBeenCalledTimes(1);
+    expect(mockTxUpdateWhere).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -586,7 +745,7 @@ describe('publishChunkEntry', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: TEST_USER_ID } });
-    mockUpdateWhere.mockResolvedValue(undefined);
+    mockTxUpdateWhere.mockResolvedValue(undefined);
   });
 
   it('transitions a draft chunk with a description to published', async () => {
@@ -605,9 +764,14 @@ describe('publishChunkEntry', () => {
     const result = await publishChunkEntry(TEST_CHUNK_ID);
 
     expect(result).toEqual({ success: true });
-    expect(mockUpdateWhere).toHaveBeenCalledTimes(1);
-    const args = mockUpdateWhere.mock.calls[0][0] as { values: Record<string, unknown> };
+    expect(mockTxUpdateWhere).toHaveBeenCalledTimes(1);
+    const args = mockTxUpdateWhere.mock.calls[0][0] as { values: Record<string, unknown> };
     expect(args.values).toEqual({ status: 'published' });
+    // Publishing wipes any previously-set feedback topics — they are
+    // draft-only signals and must not survive into the canonical state.
+    expect(mockTxDeleteWhere).toHaveBeenCalledWith(
+      expect.objectContaining({ table: 'chunk_feedback_topics' })
+    );
     expect(mockLogActivityEvent).toHaveBeenCalledWith(
       expect.objectContaining({
         action: 'publish_chunk',

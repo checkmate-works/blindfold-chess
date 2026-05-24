@@ -2,10 +2,12 @@ import { cache } from 'react';
 
 import { type SQL, and, asc, count, desc, eq, isNull } from 'drizzle-orm';
 
-import { chunks, db, positionChunks, positions, profiles } from '@/lib/db';
+import { chunkFeedbackTopics, chunks, db, positionChunks, positions, profiles } from '@/lib/db';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import type { ChunkOption } from './types';
+import type { ChunkFeedbackTopic } from './validation';
+import { isChunkFeedbackTopic } from './validation';
 
 // Shared select column list for the picker-facing chunk queries.
 // Centralized so the per-position and the global catalog loaders stay
@@ -175,6 +177,29 @@ export const getChunkBySlugWithProfile = cache(async (slug: string) => {
 
   return row ?? null;
 });
+
+/**
+ * Fetch the set of fields the chunk author wants targeted feedback on.
+ * Returns an empty array when no rows exist (either the author opted out
+ * or the chunk is published and has been cleared on transition).
+ *
+ * Filters out unknown topic strings defensively — the DB stores
+ * `varchar(50)` so a future topic added in newer code could appear on a
+ * page rendered by older code; dropping the unknown value is safer than
+ * crashing the page over a forward-compat surprise.
+ */
+export const getFeedbackTopicsForChunk = cache(
+  async (chunkId: string): Promise<ChunkFeedbackTopic[]> => {
+    if (!UUID_RE.test(chunkId)) return [];
+
+    const rows = await db
+      .select({ topic: chunkFeedbackTopics.topic })
+      .from(chunkFeedbackTopics)
+      .where(eq(chunkFeedbackTopics.chunkId, chunkId));
+
+    return rows.map((row) => row.topic).filter(isChunkFeedbackTopic);
+  }
+);
 
 /**
  * Slug-collision preflight for the chunk create flow. Returns minimal

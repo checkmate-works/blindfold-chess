@@ -5,7 +5,7 @@ import 'server-only';
 
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
-import { chunks, db } from '@/lib/db';
+import { chunkFeedbackTopics, chunks, db } from '@/lib/db';
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
 import { clawbackPointsForPost, grantPointsForPost } from '@/lib/points';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
@@ -13,8 +13,34 @@ import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { buildChunkCreateValues, buildChunkUpdateValues } from './mutation-helpers';
 import { findChunkBySlug } from './queries';
-import type { ChunkMutationData } from './validation';
+import type { ChunkFeedbackTopic, ChunkMutationData } from './validation';
 import { validateChunkMutationData } from './validation';
+
+type ChunkFeedbackTopicTx = {
+  delete: typeof db.delete;
+  insert: typeof db.insert;
+};
+
+/**
+ * Reset the `chunk_feedback_topics` rows for a chunk to exactly
+ * `topics`. Idempotent and order-independent: DELETE all current rows
+ * for the chunk, then INSERT the new set (if non-empty). Skipping the
+ * insert when `topics` is empty avoids a no-op multi-VALUES INSERT.
+ *
+ * Lives at the mutation-layer level (rather than as a tx-aware helper
+ * in `queries.ts`) because the reset semantics are write-only and
+ * coupled to the create / update / publish call sites.
+ */
+async function resetChunkFeedbackTopics(
+  tx: ChunkFeedbackTopicTx,
+  chunkId: string,
+  topics: readonly ChunkFeedbackTopic[]
+) {
+  await tx.delete(chunkFeedbackTopics).where(eq(chunkFeedbackTopics.chunkId, chunkId));
+  if (topics.length > 0) {
+    await tx.insert(chunkFeedbackTopics).values(topics.map((topic) => ({ chunkId, topic })));
+  }
+}
 
 /**
  * Shared core for the user-facing `chunks` CRUD Server Actions. Mirrors the
@@ -94,6 +120,14 @@ export async function createChunkEntry(data: ChunkMutationData): Promise<CreateC
         .insert(chunks)
         .values(buildChunkCreateValues(dataWithAuthor))
         .returning({ id: chunks.id, slug: chunks.slug });
+
+      // Feedback topics only make sense in draft. Skipping the write
+      // when status is already published keeps the table sparse —
+      // future-published rows never carry rows that would have to be
+      // cleared by `publishChunkEntry` anyway.
+      if (dataWithAuthor.status === 'draft' && dataWithAuthor.feedbackTopics?.length) {
+        await resetChunkFeedbackTopics(tx, chunk.id, dataWithAuthor.feedbackTopics);
+      }
 
       const pointGrant = await grantPointsForPost(tx, user.id, {
         type: 'chunk',
@@ -190,10 +224,19 @@ export async function updateChunkEntry(
     return { error: 'cannotEditPublished' };
   }
 
-  await db
-    .update(chunks)
-    .set(buildChunkUpdateValues(dataWithAuthor))
-    .where(and(eq(chunks.id, id), eq(chunks.userId, user.id), isNull(chunks.deletedAt)));
+  await db.transaction(async (tx) => {
+    await tx
+      .update(chunks)
+      .set(buildChunkUpdateValues(dataWithAuthor))
+      .where(and(eq(chunks.id, id), eq(chunks.userId, user.id), isNull(chunks.deletedAt)));
+
+    // Update path is guarded above to draft-only, so the topics
+    // payload (or its absence — treated as "no topics requested")
+    // always reflects what the author wants right now.
+    if (dataWithAuthor.feedbackTopics !== undefined) {
+      await resetChunkFeedbackTopics(tx, id, dataWithAuthor.feedbackTopics);
+    }
+  });
 
   logActivityEvent({
     userId: user.id,
@@ -266,10 +309,17 @@ export async function publishChunkEntry(id: string): Promise<UpdateChunkResult> 
     return { error: 'descriptionRequired' };
   }
 
-  await db
-    .update(chunks)
-    .set({ status: 'published' })
-    .where(and(eq(chunks.id, id), eq(chunks.userId, user.id), isNull(chunks.deletedAt)));
+  await db.transaction(async (tx) => {
+    await tx
+      .update(chunks)
+      .set({ status: 'published' })
+      .where(and(eq(chunks.id, id), eq(chunks.userId, user.id), isNull(chunks.deletedAt)));
+
+    // Feedback topics are draft-only signals — wipe them so a future
+    // re-draft via admin tooling doesn't surface stale flags from the
+    // pre-publish workshop session.
+    await tx.delete(chunkFeedbackTopics).where(eq(chunkFeedbackTopics.chunkId, id));
+  });
 
   logActivityEvent({
     userId: user.id,

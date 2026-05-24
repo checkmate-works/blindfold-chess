@@ -54,6 +54,42 @@ export function isChunkStatus(value: unknown): value is ChunkStatus {
   return typeof value === 'string' && (CHUNK_STATUSES as readonly string[]).includes(value);
 }
 
+/**
+ * Known set of fields a chunk author can request feedback on while the
+ * chunk is in draft. Mirrors the `chunk_feedback_topics.topic` column;
+ * the DB stores it as `varchar(50)` so adding a new topic (e.g. `fen`
+ * or `annotations`) is just a code change — no migration.
+ *
+ * The application layer is the single source of truth for the
+ * known-good set: `validateFeedbackTopics` rejects anything outside
+ * this list before it reaches the INSERT.
+ */
+export const CHUNK_FEEDBACK_TOPICS = ['title', 'description'] as const;
+export type ChunkFeedbackTopic = (typeof CHUNK_FEEDBACK_TOPICS)[number];
+
+export function isChunkFeedbackTopic(value: unknown): value is ChunkFeedbackTopic {
+  return typeof value === 'string' && (CHUNK_FEEDBACK_TOPICS as readonly string[]).includes(value);
+}
+
+/**
+ * Normalize an arbitrary input list to a deduplicated, sorted array of
+ * known feedback topics. Returns `null` when the input contains any
+ * unknown value — callers map this to a validation error.
+ *
+ * Sorted output makes downstream comparisons stable (tests, snapshots,
+ * and the "no-op update" path in the mutation layer).
+ */
+export function parseFeedbackTopics(input: unknown): ChunkFeedbackTopic[] | null {
+  if (input === undefined || input === null) return [];
+  if (!Array.isArray(input)) return null;
+  const out = new Set<ChunkFeedbackTopic>();
+  for (const item of input) {
+    if (!isChunkFeedbackTopic(item)) return null;
+    out.add(item);
+  }
+  return [...out].sort();
+}
+
 export type ChunkMutationData = {
   representativeFen: string;
   title: string;
@@ -91,6 +127,16 @@ export type ChunkMutationData = {
    * `toggleArrow`/`toggleCircle`.
    */
   annotations?: BoardAnnotations;
+  /**
+   * Fields the author wants targeted feedback on while the chunk is in
+   * draft. Persisted to `chunk_feedback_topics` as one row per topic.
+   * Ignored when the resulting chunk status is not `'draft'`; clearing
+   * the array on a draft save removes any previously-set rows. Unknown
+   * values are rejected by `validateChunkMutationData` (the contents are
+   * pre-validated via `parseFeedbackTopics`, but the mutation layer
+   * defends against direct construction of `ChunkMutationData`).
+   */
+  feedbackTopics?: readonly ChunkFeedbackTopic[];
 };
 
 /**
@@ -158,6 +204,14 @@ export function validateChunkMutationData(
 
   if (data.status !== undefined && !isChunkStatus(data.status)) {
     return `Invalid status (expected one of: ${CHUNK_STATUSES.join(', ')})`;
+  }
+
+  if (data.feedbackTopics !== undefined) {
+    for (const topic of data.feedbackTopics) {
+      if (!isChunkFeedbackTopic(topic)) {
+        return `Invalid feedback topic (expected one of: ${CHUNK_FEEDBACK_TOPICS.join(', ')})`;
+      }
+    }
   }
 
   return null;
