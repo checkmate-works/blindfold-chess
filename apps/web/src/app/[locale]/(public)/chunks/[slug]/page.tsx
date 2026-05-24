@@ -12,6 +12,7 @@ import { countPendingEditRequestsForChunk } from '@/lib/chunk-edit-requests/quer
 import {
   getChunkBySlug,
   getChunkBySlugWithProfile,
+  getFeedbackTopicsForChunk,
   getLinkedPositionsForChunk,
 } from '@/lib/chunks/queries';
 import { isChunkStatus } from '@/lib/chunks/validation';
@@ -112,6 +113,7 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
     commentCount,
     allComments,
     pendingEditRequestCount,
+    requestedFeedbackTopics,
     t,
     tTopics,
     tVideo,
@@ -124,6 +126,7 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
     getPostCountByTopicKey('chunk', slug),
     getCommentTreeForTopic('chunk', slug, user?.id),
     countPendingEditRequestsForChunk(chunk.id),
+    getFeedbackTopicsForChunk(chunk.id),
     getTranslations({ locale, namespace: 'topics.chunks' }),
     getTranslations({ locale, namespace: 'topics' }),
     getTranslations({ locale, namespace: 'postVideoAttachmentRender' }),
@@ -240,6 +243,10 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
           pendingCount={pendingEditRequestCount}
           body={tEditRequests('callout.body')}
           cta={tEditRequests('callout.cta')}
+          requestedTopicLabels={requestedFeedbackTopics.map((topic) =>
+            tEditRequests(`callout.topicLabels.${topic}` as 'callout.topicLabels.title')
+          )}
+          topicLeadIn={tEditRequests('callout.topicLeadIn')}
         />
       )}
 
