@@ -2322,7 +2322,8 @@
     "detail": {
       "descriptionSection": "Description",
       "noDescription": "No description yet.",
-      "edited": "Edited"
+      "edited": "Edited",
+      "createdBy": "Created by"
     },
     "form": {
       "fields": {

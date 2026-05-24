@@ -149,6 +149,34 @@ export const getChunkBySlug = cache(async (slug: string) => {
 });
 
 /**
+ * Same as {@link getChunkBySlug} but also returns the author profile fields
+ * needed by the detail page's "Created by" attribution row.
+ *
+ * `userId` is nullable on `chunks` (orphaned-author rows survive hard
+ * account deletes), and the join is `LEFT` so those rows still surface
+ * with a null profile — matches `listChunksWithProfile`.
+ */
+export const getChunkBySlugWithProfile = cache(async (slug: string) => {
+  if (!slug) return null;
+
+  const [row] = await db
+    .select({
+      chunk: chunks,
+      profile: {
+        username: profiles.username,
+        displayName: profiles.displayName,
+        avatarUrl: profiles.avatarUrl,
+      },
+    })
+    .from(chunks)
+    .leftJoin(profiles, eq(chunks.userId, profiles.id))
+    .where(and(eq(chunks.slug, slug), isNull(chunks.deletedAt)))
+    .limit(1);
+
+  return row ?? null;
+});
+
+/**
  * Slug-collision preflight for the chunk create flow. Returns minimal
  * metadata for any chunk matching `slug` regardless of `deletedAt` —
  * the DB-level UNIQUE constraint on `chunks.slug` does NOT exclude

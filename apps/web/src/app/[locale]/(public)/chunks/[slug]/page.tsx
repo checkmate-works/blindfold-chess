@@ -9,7 +9,11 @@ import { FiEdit2, FiGitPullRequest } from 'react-icons/fi';
 
 import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
 import { countPendingEditRequestsForChunk } from '@/lib/chunk-edit-requests/queries';
-import { getChunkBySlug, getLinkedPositionsForChunk } from '@/lib/chunks/queries';
+import {
+  getChunkBySlug,
+  getChunkBySlugWithProfile,
+  getLinkedPositionsForChunk,
+} from '@/lib/chunks/queries';
 import { isChunkStatus } from '@/lib/chunks/validation';
 import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
@@ -18,7 +22,9 @@ import { getPositionDetailPath } from '@/lib/positions/routes';
 import { parsePositionType } from '@/lib/positions/types';
 import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 import { createClient } from '@/lib/supabase/server';
+import { resolveDisplayName } from '@/lib/users/display-name';
 
+import { PositionAuthorAttribution } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorAttribution';
 import { PositionListCard } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionListCard';
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
 import { CommentTree } from '@/app/[locale]/(public)/topics/_components/CommentTree';
@@ -83,11 +89,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ChunkDetailPage({ params, searchParams }: Props) {
   const { locale, slug } = await params;
-  const chunk = await getChunkBySlug(slug);
+  const row = await getChunkBySlugWithProfile(slug);
 
-  if (!chunk) {
+  if (!row) {
     notFound();
   }
+
+  const { chunk, profile } = row;
+  const displayName = resolveDisplayName(profile);
 
   const { sort } = await searchParamsCache.parse(searchParams);
   const sortBy = validateSort(sort);
@@ -281,6 +290,13 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
           </div>
         </>
       )}
+
+      <PositionAuthorAttribution
+        profile={profile}
+        displayName={displayName}
+        createdByLabel={tChunks('detail.createdBy')}
+        locale={locale}
+      />
 
       {/*
        * Bottom metadata row — mirrors the layout used by

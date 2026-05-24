@@ -2311,7 +2311,8 @@
     "detail": {
       "descriptionSection": "説明",
       "noDescription": "説明はまだありません。",
-      "edited": "編集済み"
+      "edited": "編集済み",
+      "createdBy": "投稿者"
     },
     "list": {
       "newCta": "新規チャンク",
