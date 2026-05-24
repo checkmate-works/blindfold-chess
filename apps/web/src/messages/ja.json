@@ -2437,6 +2437,7 @@
       },
       "sectionTitle": "編集リクエスト",
       "sectionHint": "下書き状態のチャンクには、他のプレイヤーからより適切なタイトルや説明の提案を受け取れます。オーナーが各提案を確認します。",
+      "formWantedLabel": "意見募集中",
       "pendingCount": "{count, plural, other {未対応 # 件}}",
       "empty": "まだ提案はありません。",
       "suggestCta": "編集を提案する",

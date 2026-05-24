@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { listEditRequestsForChunk } from '@/lib/chunk-edit-requests/queries';
 import { isChunkEditRequestStatus } from '@/lib/chunk-edit-requests/validation';
 import type { ChunkEditRequestStatus } from '@/lib/chunk-edit-requests/validation';
+import { getFeedbackTopicsForChunk } from '@/lib/chunks/queries';
 import type { ChunkStatus } from '@/lib/chunks/validation';
 
 import { SectionTitle } from '@/app/[locale]/_components';
@@ -41,8 +42,9 @@ export async function EditRequestSection({
 }: Props) {
   if (chunkStatus !== 'draft') return null;
 
-  const [rows, t] = await Promise.all([
+  const [rows, requestedFeedbackTopics, t] = await Promise.all([
     listEditRequestsForChunk(chunkId),
+    getFeedbackTopicsForChunk(chunkId),
     getTranslations({ locale, namespace: 'chunks.editRequests' }),
   ]);
 
@@ -79,6 +81,8 @@ export async function EditRequestSection({
           chunkId={chunkId}
           currentTitle={currentTitle}
           currentDescription={currentDescription}
+          requestedFeedbackTopics={requestedFeedbackTopics}
+          wantedLabel={t('formWantedLabel')}
         />
       ) : (
         !viewerIsOwner && <p className="text-sm text-muted-foreground">{t('signInToSuggest')}</p>

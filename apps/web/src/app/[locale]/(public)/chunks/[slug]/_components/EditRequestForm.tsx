@@ -7,6 +7,8 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
 
+import type { ChunkFeedbackTopic } from '@/lib/chunks/validation';
+
 import { submitEditRequest } from '../_actions/submitEditRequest';
 
 type Props = {
@@ -15,7 +17,24 @@ type Props = {
   currentTitle: string;
   /** Current description — same prefill rationale. */
   currentDescription: string | null;
+  /**
+   * Fields the author has flagged via the chunk form as wanting
+   * feedback on. The corresponding form field renders an inline
+   * "wanted" badge so the proposer can default to writing where their
+   * input is most welcome.
+   */
+  requestedFeedbackTopics?: readonly ChunkFeedbackTopic[];
+  /** Localized label for the inline "wanted" badge (e.g. "Wanted"). */
+  wantedLabel?: string;
 };
+
+function WantedBadge({ label }: { label: string }) {
+  return (
+    <span className="ml-2 inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-900 dark:bg-amber-900 dark:text-amber-100">
+      {label}
+    </span>
+  );
+}
 
 const WELL_KNOWN_ERRORS = new Set([
   'signInRequired',
@@ -39,9 +58,19 @@ const WELL_KNOWN_ERRORS = new Set([
  * edits what they want to change; the mutation core rejects no-op
  * submissions (every field identical to current).
  */
-export function EditRequestForm({ chunkId, currentTitle, currentDescription }: Props) {
+export function EditRequestForm({
+  chunkId,
+  currentTitle,
+  currentDescription,
+  requestedFeedbackTopics,
+  wantedLabel,
+}: Props) {
   const t = useTranslations('chunks.editRequests');
   const router = useRouter();
+
+  const titleWanted = !!requestedFeedbackTopics?.includes('title');
+  const descriptionWanted = !!requestedFeedbackTopics?.includes('description');
+  const badgeLabel = wantedLabel ?? '';
 
   const [proposedTitle, setProposedTitle] = useState(currentTitle);
   const [proposedDescription, setProposedDescription] = useState(currentDescription ?? '');
@@ -107,26 +136,32 @@ export function EditRequestForm({ chunkId, currentTitle, currentDescription }: P
       <div>
         <label htmlFor="edit-req-title" className="block text-sm font-medium mb-1">
           {t('fields.title')}
+          {titleWanted && badgeLabel && <WantedBadge label={badgeLabel} />}
         </label>
         <input
           id="edit-req-title"
           type="text"
           value={proposedTitle}
           onChange={(e) => setProposedTitle(e.target.value)}
-          className="w-full px-3 py-2 rounded border border-border bg-card text-foreground"
+          className={`w-full px-3 py-2 rounded border bg-card text-foreground ${
+            titleWanted ? 'border-amber-400 dark:border-amber-600' : 'border-border'
+          }`}
         />
       </div>
 
       <div>
         <label htmlFor="edit-req-description" className="block text-sm font-medium mb-1">
           {t('fields.description')}
+          {descriptionWanted && badgeLabel && <WantedBadge label={badgeLabel} />}
         </label>
         <textarea
           id="edit-req-description"
           value={proposedDescription}
           onChange={(e) => setProposedDescription(e.target.value)}
           rows={4}
-          className="w-full px-3 py-2 rounded border border-border bg-card text-foreground"
+          className={`w-full px-3 py-2 rounded border bg-card text-foreground ${
+            descriptionWanted ? 'border-amber-400 dark:border-amber-600' : 'border-border'
+          }`}
         />
       </div>
 
