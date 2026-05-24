@@ -7,7 +7,11 @@ import { useTranslations } from 'next-intl';
 import { BoardSkeleton, FlipBoardButton } from '@/app/_components';
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
-import type { ChunkStatus } from '@/lib/chunks/validation';
+import {
+  CHUNK_FEEDBACK_TOPICS,
+  type ChunkFeedbackTopic,
+  type ChunkStatus,
+} from '@/lib/chunks/validation';
 
 import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
 import type { useFenBoardEditor } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-fen-board-editor';
@@ -33,6 +37,16 @@ type Props = {
    */
   status: ChunkStatus;
   onStatusChange: (next: ChunkStatus) => void;
+  /**
+   * Fields the author has ticked to request targeted feedback on.
+   * Only meaningful when the resulting chunk is in draft state — the
+   * checkbox group is hidden in create mode when the draft toggle is
+   * off (the rows wouldn't be persisted by the server anyway, see
+   * `createChunkEntry`). Edit mode always shows it because reaching
+   * the edit form already implies the chunk is in draft.
+   */
+  feedbackTopics: readonly ChunkFeedbackTopic[];
+  onFeedbackTopicsChange: (next: ChunkFeedbackTopic[]) => void;
   /**
    * `'create'` shows the slug input as required + editable with the
    * "Generate from title" helper; `'edit'` locks it (slug is permanent —
@@ -77,6 +91,8 @@ export function ChunkFormFields({
   onAnnotationsChange,
   status,
   onStatusChange,
+  feedbackTopics,
+  onFeedbackTopicsChange,
   mode,
   pending,
 }: Props) {
@@ -286,6 +302,47 @@ export function ChunkFormFields({
             </span>
           </label>
         </div>
+      )}
+
+      {/*
+       * Feedback-topic checkboxes are draft-only: in create mode they
+       * appear after the user opts into Save-as-draft (the server-side
+       * mutation also ignores topics when status !== 'draft'); in edit
+       * mode the chunk is already guaranteed to be a draft (the page
+       * guards published from reaching this form) so the panel always
+       * renders.
+       */}
+      {(mode === 'edit' || (mode === 'create' && status === 'draft')) && (
+        <fieldset className="space-y-2 rounded border border-border bg-card p-3">
+          <legend className="px-1 text-sm font-medium">{t('feedbackTopics.legend')}</legend>
+          <p className="text-xs text-muted-foreground">{t('feedbackTopics.hint')}</p>
+          <div className="space-y-1">
+            {CHUNK_FEEDBACK_TOPICS.map((topic) => {
+              const checked = feedbackTopics.includes(topic);
+              return (
+                <label key={topic} className="flex cursor-pointer items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    disabled={pending}
+                    onChange={(e) => {
+                      // Toggle by replacing the array — small fixed size
+                      // (currently 2 topics), so the O(n) splice is fine
+                      // and avoids holding stale references in the parent.
+                      const next = e.target.checked
+                        ? [...feedbackTopics, topic]
+                        : feedbackTopics.filter((t) => t !== topic);
+                      onFeedbackTopicsChange(next as ChunkFeedbackTopic[]);
+                    }}
+                  />
+                  <span>
+                    {t(`feedbackTopics.options.${topic}` as 'feedbackTopics.options.title')}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
       )}
 
       <ConfirmationModal

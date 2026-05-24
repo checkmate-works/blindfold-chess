@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 
 import { getAuthenticatedUser } from '@/lib/auth';
 import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
-import { getChunkBySlug } from '@/lib/chunks/queries';
+import { getChunkBySlug, getFeedbackTopicsForChunk } from '@/lib/chunks/queries';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -63,7 +63,10 @@ export default async function EditChunkPage({ params }: Props) {
     notFound();
   }
 
-  const t = await getTranslations({ locale, namespace: 'chunks' });
+  const [t, feedbackTopics] = await Promise.all([
+    getTranslations({ locale, namespace: 'chunks' }),
+    getFeedbackTopicsForChunk(chunk.id),
+  ]);
 
   return (
     <PageLayout
@@ -86,6 +89,7 @@ export default async function EditChunkPage({ params }: Props) {
             slug: chunk.slug,
             description: chunk.description,
             annotations: parseBoardAnnotations(chunk.annotations),
+            feedbackTopics,
           }}
         />
       </div>

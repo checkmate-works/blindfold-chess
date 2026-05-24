@@ -68,6 +68,7 @@ export function ChunkPreviewClient() {
       'notFound',
       'unauthorized',
       'alreadyDeleted',
+      'invalidFeedbackTopic',
     ]);
     return wellKnown.has(code) ? tForm(`errors.${code}` as 'errors.signInRequired') : code;
   }
@@ -84,6 +85,13 @@ export function ChunkPreviewClient() {
         description: draft.description || null,
         annotations: draft.annotations,
         status: draft.status,
+        // Topics are only persisted when status === 'draft' (see
+        // `createChunkEntry`), but forwarding them unconditionally
+        // keeps this call site agnostic of that rule and means a user
+        // who flips back from "publish" to "draft" on the form before
+        // submitting the preview retains their ticks without a
+        // surprise round-trip clear.
+        feedbackTopics: draft.feedbackTopics,
       });
       if ('error' in result) {
         setError(localizeError(result.error));

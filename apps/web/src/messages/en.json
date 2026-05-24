@@ -2360,11 +2360,20 @@
         "unauthorized": "You can only edit chunks you created.",
         "alreadyDeleted": "This chunk has already been deleted.",
         "cannotEditPublished": "This chunk is published and is no longer editable. Publishing is one-way — to revise, delete this chunk and create a new one.",
-        "descriptionRequired": "This chunk needs a description before it can be published."
+        "descriptionRequired": "This chunk needs a description before it can be published.",
+        "invalidFeedbackTopic": "Unknown feedback topic. Please refresh the page and try again."
       },
       "draft": {
         "toggleLabel": "Save as draft",
         "toggleHint": "Drafts are visible to others (so they can suggest names) but stay editable. You can publish later from the detail page when the title and description feel right."
+      },
+      "feedbackTopics": {
+        "legend": "What do you want feedback on?",
+        "hint": "Ticked fields are highlighted on the detail page so others know where their suggestions would help most.",
+        "options": {
+          "title": "Not sure about the title",
+          "description": "Not sure about the description"
+        }
       },
       "delete": {
         "confirmTitle": "Delete this chunk?",

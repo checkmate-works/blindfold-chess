@@ -3,7 +3,8 @@
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import type { CreateChunkResult } from '@/lib/chunks/user-chunk-mutations';
 import { createChunkEntry } from '@/lib/chunks/user-chunk-mutations';
-import type { ChunkStatus } from '@/lib/chunks/validation';
+import type { ChunkFeedbackTopic, ChunkStatus } from '@/lib/chunks/validation';
+import { parseFeedbackTopics } from '@/lib/chunks/validation';
 
 /**
  * Public-facing wrapper around `createChunkEntry`.
@@ -25,7 +26,21 @@ export async function createChunk(input: {
   description?: string | null;
   annotations?: BoardAnnotations;
   status?: ChunkStatus;
+  /**
+   * Fields the author wants targeted feedback on. The mutation layer
+   * persists rows to `chunk_feedback_topics` only when the resulting
+   * status is `'draft'`, so callers that publish immediately can pass
+   * the field without effect. Untrusted input is re-validated via
+   * `parseFeedbackTopics` here — unknown values surface as a
+   * validation error rather than silently slipping through.
+   */
+  feedbackTopics?: readonly ChunkFeedbackTopic[];
 }): Promise<CreateChunkResult> {
+  const feedbackTopics = parseFeedbackTopics(input.feedbackTopics);
+  if (feedbackTopics === null) {
+    return { error: 'invalidFeedbackTopic' };
+  }
+
   return createChunkEntry({
     representativeFen: input.representativeFen,
     title: input.title,
@@ -33,6 +48,7 @@ export async function createChunk(input: {
     description: input.description,
     annotations: input.annotations,
     status: input.status ?? 'draft',
+    feedbackTopics,
     // userId is overwritten inside `createChunkEntry` from the
     // authenticated Supabase user; the empty string is a placeholder so
     // the shared `ChunkMutationData` shape stays satisfied.

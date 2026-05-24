@@ -12,7 +12,7 @@ import { flushSync } from 'react-dom';
 import { FiInfo } from 'react-icons/fi';
 
 import { type BoardAnnotations, EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
-import type { ChunkStatus } from '@/lib/chunks/validation';
+import type { ChunkFeedbackTopic, ChunkStatus } from '@/lib/chunks/validation';
 
 import { useFenBoardEditor } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-fen-board-editor';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
@@ -34,6 +34,13 @@ export type ChunkFormInitial = {
   slug: string;
   description: string | null;
   annotations: BoardAnnotations;
+  /**
+   * Topics the chunk currently has flagged on the server. Used to
+   * pre-populate the checkbox group on the edit form so the author can
+   * see (and tweak) the same set the detail-page callout is
+   * displaying.
+   */
+  feedbackTopics: readonly ChunkFeedbackTopic[];
 };
 
 type CreateProps = {
@@ -66,6 +73,7 @@ function localizeError(code: string, t: ReturnType<typeof useTranslations<'chunk
     'unauthorized',
     'alreadyDeleted',
     'cannotEditPublished',
+    'invalidFeedbackTopic',
   ]);
   return wellKnown.has(code) ? t(`errors.${code}` as 'errors.signInRequired') : code;
 }
@@ -111,6 +119,9 @@ export function ChunkForm(props: Props) {
   // published chunks from reaching this form), so we pin it to 'draft'
   // and never surface the toggle.
   const [status, setStatus] = useState<ChunkStatus>('draft');
+  const [feedbackTopics, setFeedbackTopics] = useState<ChunkFeedbackTopic[]>(
+    mode === 'edit' ? [...props.initial.feedbackTopics] : []
+  );
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [deletePending, setDeletePending] = useState(false);
@@ -137,6 +148,7 @@ export function ChunkForm(props: Props) {
     setDescription(draft.description);
     setAnnotations(draft.annotations);
     setStatus(draft.status);
+    setFeedbackTopics(draft.feedbackTopics);
     setHydratedFromDraft(true);
     // The board hook is stable for the lifetime of this component —
     // omit it from deps so a setter identity change doesn't re-hydrate
@@ -167,6 +179,7 @@ export function ChunkForm(props: Props) {
     setDescription('');
     setAnnotations(EMPTY_BOARD_ANNOTATIONS);
     setStatus('draft');
+    setFeedbackTopics([]);
     setError(null);
     setHydratedFromDraft(false);
     setStartOverOpen(false);
@@ -198,6 +211,7 @@ export function ChunkForm(props: Props) {
         description,
         annotations,
         status,
+        feedbackTopics,
         activeTab: board.activeTab,
         sideToMove: board.sideToMove,
         flipped: board.flipped,
@@ -223,6 +237,10 @@ export function ChunkForm(props: Props) {
       title,
       description: description || null,
       annotations,
+      // Always send the topics from the form — passing an empty array
+      // explicitly clears any rows the user un-ticked, matching the
+      // contract `updateChunk` exports (undefined preserves; [] wipes).
+      feedbackTopics,
     });
     setPending(false);
 
@@ -301,6 +319,8 @@ export function ChunkForm(props: Props) {
           onAnnotationsChange={setAnnotations}
           status={status}
           onStatusChange={setStatus}
+          feedbackTopics={feedbackTopics}
+          onFeedbackTopicsChange={setFeedbackTopics}
           mode={mode}
           pending={pending || deletePending}
         />

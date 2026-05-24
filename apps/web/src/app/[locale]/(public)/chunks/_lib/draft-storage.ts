@@ -1,7 +1,12 @@
 import { validateFenStructure } from '@blindfold-chess/features/chess-core';
 
 import { type BoardAnnotations, EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
-import { type ChunkStatus, isChunkStatus } from '@/lib/chunks/validation';
+import {
+  type ChunkFeedbackTopic,
+  type ChunkStatus,
+  isChunkFeedbackTopic,
+  isChunkStatus,
+} from '@/lib/chunks/validation';
 
 /**
  * sessionStorage slot for handing the chunk authoring draft between
@@ -37,6 +42,15 @@ export type ChunkDraftV1 = {
    * resolved value straight from the preview.
    */
   status: ChunkStatus;
+  /**
+   * Fields the author wants targeted feedback on if the chunk is saved
+   * as a draft. Persisted so the preview's submit handler can forward
+   * the full payload to `createChunk` without re-asking. Always carried
+   * in the draft (even when `status === 'published'`) so a user who
+   * toggles the draft switch off and back on doesn't lose their ticks;
+   * the mutation layer ignores the field outside the draft path.
+   */
+  feedbackTopics: ChunkFeedbackTopic[];
   /** Tracks which editor tab was last active so re-entering /new restores it. */
   activeTab: 'board' | 'fen';
   /** White / black to move — encoded redundantly with the FEN for cheap reads. */
@@ -63,6 +77,14 @@ function isChunkDraftV1(value: unknown): value is ChunkDraftV1 {
   if (typeof v.description !== 'string') return false;
   if (!isAnnotation(v.annotations)) return false;
   if (!isChunkStatus(v.status)) return false;
+  // `feedbackTopics` was added after the initial v1 schema shipped, so
+  // tolerate its absence on drafts written by older bundles instead of
+  // discarding the whole draft — the author would lose typed-in text
+  // for a feature that gracefully degrades to "no topics requested".
+  if (v.feedbackTopics !== undefined) {
+    if (!Array.isArray(v.feedbackTopics)) return false;
+    if (!v.feedbackTopics.every(isChunkFeedbackTopic)) return false;
+  }
   if (v.activeTab !== 'board' && v.activeTab !== 'fen') return false;
   if (v.sideToMove !== 'w' && v.sideToMove !== 'b') return false;
   if (typeof v.flipped !== 'boolean') return false;
@@ -114,7 +136,10 @@ export function readChunkDraft(): ChunkDraftV1 | null {
     return null;
   }
 
-  return parsed;
+  // Backfill the post-v1.0 field so the rest of the codebase can rely
+  // on `feedbackTopics` always being present without juggling
+  // `undefined` everywhere.
+  return { ...parsed, feedbackTopics: parsed.feedbackTopics ?? [] };
 }
 
 /**
