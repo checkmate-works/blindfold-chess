@@ -2825,6 +2825,8 @@
     "announcementMessage": "新しいお知らせ: {title}",
     "newPostMessage": "{actor} さんが新しい投稿をシェアしました",
     "newCommentOnTopicMessage": "{actor} さんがあなたの問題にコメントしました",
+    "chunkEditRequestSubmittedMessage": "{actor} さんがあなたのチャンクに編集リクエストを送信しました",
+    "chunkEditRequestAcceptedMessage": "{actor} さんがあなたの編集リクエストを採用しました",
     "newPositionMemoryMessage": "{actor} がポジション記憶の問題を作成しました",
     "newPuzzleMessage": "{actor} がパズルを作成しました",
     "achievementSingleMessage": "🏆 {name} を獲得しました",

@@ -6,6 +6,21 @@ export type ReplyMetadata = PostMetadata & { replyId: string };
 export type AnnouncementMetadata = { slug: string; title: string };
 export type PositionMetadata = { positionId: string; positionType?: PositionType };
 
+/**
+ * Metadata persisted with every `chunk_edit_request_*` notification.
+ * `slug` is captured at notification time so the link target survives
+ * even if the chunk is later renamed (the slug is immutable after
+ * creation, but we still snapshot it for parity with the post metadata
+ * shape, and to avoid an extra DB lookup at render time).
+ */
+export type ChunkEditRequestMetadata = { chunkId: string; slug: string };
+
+export function isChunkEditRequestMetadata(m: unknown): m is ChunkEditRequestMetadata {
+  if (typeof m !== 'object' || m === null) return false;
+  const r = m as Record<string, unknown>;
+  return typeof r.chunkId === 'string' && typeof r.slug === 'string';
+}
+
 export function isPositionMetadata(m: unknown): m is PositionMetadata {
   if (typeof m !== 'object' || m === null) return false;
   const r = m as Record<string, unknown>;

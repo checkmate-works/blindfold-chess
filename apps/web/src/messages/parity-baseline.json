@@ -139,7 +139,9 @@
         "chunks.editRequests.status.pending",
         "chunks.editRequests.status.rejected",
         "chunks.editRequests.status.withdrawn",
-        "chunks.editRequests.suggestCta"
+        "chunks.editRequests.suggestCta",
+        "MypageNotifications.chunkEditRequestAcceptedMessage",
+        "MypageNotifications.chunkEditRequestSubmittedMessage"
       ],
       "extra": []
     },
@@ -284,7 +286,9 @@
         "chunks.editRequests.status.pending",
         "chunks.editRequests.status.rejected",
         "chunks.editRequests.status.withdrawn",
-        "chunks.editRequests.suggestCta"
+        "chunks.editRequests.suggestCta",
+        "MypageNotifications.chunkEditRequestAcceptedMessage",
+        "MypageNotifications.chunkEditRequestSubmittedMessage"
       ],
       "extra": []
     }

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   getPositionTypeFromMetadata,
   isAnnouncementMetadata,
+  isChunkEditRequestMetadata,
   isPositionMetadata,
   isPostMetadata,
   isReplyMetadata,
@@ -306,5 +307,30 @@ describe('getPositionTypeFromMetadata', () => {
         positionType: 'unknown-type' as any,
       })
     ).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// isChunkEditRequestMetadata
+// ---------------------------------------------------------------------------
+
+describe('isChunkEditRequestMetadata', () => {
+  it('returns true when both chunkId and slug are strings', () => {
+    expect(isChunkEditRequestMetadata({ chunkId: 'c-1', slug: 'fianchetto' })).toBe(true);
+  });
+
+  it('returns false when chunkId is missing', () => {
+    expect(isChunkEditRequestMetadata({ slug: 'fianchetto' })).toBe(false);
+  });
+
+  it('returns false when slug is missing', () => {
+    expect(isChunkEditRequestMetadata({ chunkId: 'c-1' })).toBe(false);
+  });
+
+  it('returns false for null / undefined / primitives', () => {
+    expect(isChunkEditRequestMetadata(null)).toBe(false);
+    expect(isChunkEditRequestMetadata(undefined)).toBe(false);
+    expect(isChunkEditRequestMetadata('foo')).toBe(false);
+    expect(isChunkEditRequestMetadata(42)).toBe(false);
   });
 });

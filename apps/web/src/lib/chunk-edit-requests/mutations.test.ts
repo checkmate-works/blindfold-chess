@@ -432,6 +432,26 @@ describe('rejectEditRequestEntry', () => {
     expect(result).toMatchObject({ error: expect.stringMatching(/characters or fewer/i) });
     expect(mockTxUpdateChunkEditRequests).not.toHaveBeenCalled();
   });
+
+  it('does not notify the proposer on reject (intentionally silent)', async () => {
+    // Explicit reject is silent for the same reason implicit reject
+    // (someone else's suggestion was accepted first) is silent —
+    // notifying only the explicitly-rejected proposers would create
+    // an asymmetric experience that depends on owner-internal
+    // scheduling rather than the proposer's action.
+    mockGetEditRequestById.mockResolvedValue({
+      id: REQUEST_ID,
+      chunkId: CHUNK_ID,
+      proposerId: PROPOSER_ID,
+      status: 'pending',
+    });
+    mockDraftChunk();
+
+    const { rejectEditRequestEntry } = await import('./mutations');
+    await rejectEditRequestEntry(REQUEST_ID, 'not quite a fianchetto');
+
+    expect(mockCreateNotification).not.toHaveBeenCalled();
+  });
 });
 
 describe('withdrawEditRequestEntry', () => {
@@ -478,7 +498,11 @@ describe('withdrawEditRequestEntry', () => {
     expect(mockTxUpdateChunks).not.toHaveBeenCalled();
   });
 
-  it('notifies the chunk owner on withdraw', async () => {
+  it('does not notify the chunk owner on withdraw (intentionally silent)', async () => {
+    // Withdraw is a quiet operation: the owner has nothing to act on
+    // once the suggestion is gone, so a trailing notification would
+    // chase a dead target. The pending-count badge on the chunk page
+    // already reflects the reduction on the next visit.
     mockGetEditRequestById.mockResolvedValue({
       id: REQUEST_ID,
       chunkId: CHUNK_ID,
@@ -490,12 +514,6 @@ describe('withdrawEditRequestEntry', () => {
     const { withdrawEditRequestEntry } = await import('./mutations');
     await withdrawEditRequestEntry(REQUEST_ID);
 
-    expect(mockCreateNotification).toHaveBeenCalledWith(
-      expect.objectContaining({
-        userId: OWNER_ID,
-        actorId: PROPOSER_ID,
-        type: 'chunk_edit_request_withdrawn',
-      })
-    );
+    expect(mockCreateNotification).not.toHaveBeenCalled();
   });
 });

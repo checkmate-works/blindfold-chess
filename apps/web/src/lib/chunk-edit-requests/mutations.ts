@@ -256,23 +256,24 @@ async function resolveEditRequest(params: ResolveParams): Promise<ResolveEditReq
     },
   });
 
-  // Fire-and-forget notification to the affected party:
-  // - accept / reject → the proposer (their suggestion was resolved)
-  // - withdraw        → the chunk owner (a queued suggestion just vanished)
-  // Skipped when the recipient is missing (proposer hard-deleted, or
-  // chunk orphaned) or equals the actor (no self-notifications).
-  const notificationType = {
-    accept: 'chunk_edit_request_accepted',
-    reject: 'chunk_edit_request_rejected',
-    withdraw: 'chunk_edit_request_withdrawn',
-  }[params.action];
-  const recipient =
-    params.action === 'withdraw' ? (chunk.userId ?? null) : (request.proposerId ?? null);
-  if (recipient && recipient !== user.id) {
+  // Fire-and-forget notification to the proposer on accept only.
+  //
+  // Reject is intentionally silent: when multiple suggestions queue up,
+  // accepting one effectively rejects the others, and notifying only
+  // the explicitly-rejected proposers (not the implicitly-superseded
+  // ones) would create an asymmetric experience that depends on
+  // owner-internal scheduling rather than the proposer's action.
+  //
+  // Withdraw is also silent: the owner has nothing to act on once the
+  // suggestion is gone, and the pending-count badge on the chunk page
+  // already reflects the reduction the next time they visit. A trailing
+  // notification would chase down a dead target — see how reply
+  // notifications behave when the parent post is later deleted.
+  if (params.action === 'accept' && request.proposerId && request.proposerId !== user.id) {
     createNotification({
-      userId: recipient,
+      userId: request.proposerId,
       actorId: user.id,
-      type: notificationType,
+      type: 'chunk_edit_request_accepted',
       targetType: 'chunk_edit_request',
       targetId: request.id,
       metadata: { chunkId: chunk.id, slug: chunk.slug },

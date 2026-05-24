@@ -23,6 +23,7 @@ import {
   isAchievementGrantedMetadata,
   isAnnouncementMetadata,
   isBenefitGrantMetadata,
+  isChunkEditRequestMetadata,
   isLikeCoinGrantMetadata,
   isPointGrantMetadata,
   isPositionMetadata,
@@ -89,6 +90,10 @@ export function NotificationItem({ notification, currentUsername }: Props) {
         return t('newPostMessage', { actor: actorName });
       case 'new_comment_on_topic':
         return t('newCommentOnTopicMessage', { actor: actorName });
+      case 'chunk_edit_request_submitted':
+        return t('chunkEditRequestSubmittedMessage', { actor: actorName });
+      case 'chunk_edit_request_accepted':
+        return t('chunkEditRequestAcceptedMessage', { actor: actorName });
       case 'new_position': {
         // Exhaustive `PositionType` dispatch — the `never` check at the
         // bottom forces this switch to be updated whenever a new
@@ -262,6 +267,17 @@ export function NotificationItem({ notification, currentUsername }: Props) {
     }
     if (notification.type === 'announcement' && isAnnouncementMetadata(notification.metadata)) {
       return `/announcements/${notification.metadata.slug}`;
+    }
+    if (
+      (notification.type === 'chunk_edit_request_submitted' ||
+        notification.type === 'chunk_edit_request_accepted') &&
+      isChunkEditRequestMetadata(notification.metadata)
+    ) {
+      // Route to the chunk's edit-requests page rather than the
+      // individual request — the page already shows the full per-request
+      // list with the current chunk values for comparison, which is the
+      // context both notification types ask for.
+      return `/chunks/${notification.metadata.slug}/edit-requests`;
     }
     if (notification.type === 'achievement_granted' && currentUsername) {
       return `/u/${currentUsername}/achievements`;

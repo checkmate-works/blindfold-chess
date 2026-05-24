@@ -2825,6 +2825,8 @@
     "announcementMessage": "New announcement: {title}",
     "newPostMessage": "{actor} shared a new post",
     "newCommentOnTopicMessage": "{actor} commented on your problem",
+    "chunkEditRequestSubmittedMessage": "{actor} suggested an edit to your chunk",
+    "chunkEditRequestAcceptedMessage": "{actor} accepted your edit suggestion",
     "newPositionMemoryMessage": "{actor} created a new position memory problem",
     "newPuzzleMessage": "{actor} created a new puzzle",
     "achievementSingleMessage": "🏆 You earned {name}",
