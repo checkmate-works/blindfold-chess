@@ -15,13 +15,20 @@ import { publishChunk } from '../_actions/publishChunk';
 
 type Props = {
   chunkId: string;
+  /**
+   * Used to build the "open the edit page" link from the
+   * `needsDescription` guard modal so the owner can fix the gap in
+   * one click instead of hunting for the edit affordance themselves.
+   */
+  chunkSlug: string;
   status: ChunkStatus;
   /**
    * Whether the chunk currently carries a non-empty description.
    * Publishing requires one (the application-level rule mirrors the
-   * server-side guard in `publishChunkEntry`), so when this is false
-   * the button renders disabled with a tooltip hint instead of letting
-   * the user submit and bounce off the server.
+   * server-side guard in `publishChunkEntry`); the button stays
+   * clickable in this state but opens the `needsDescription` guard
+   * modal instead of the publish confirmation so the owner sees
+   * *why* publish is blocked and how to fix it.
    */
   hasDescription: boolean;
 };
@@ -39,17 +46,20 @@ type Props = {
  * description yet — `descriptionRequired` from the server fires the
  * same intent if a stale client somehow bypasses the disable.
  */
-export function ChunkLifecycleControls({ chunkId, status, hasDescription }: Props) {
+export function ChunkLifecycleControls({ chunkId, chunkSlug, status, hasDescription }: Props) {
   const t = useTranslations('chunks');
   const router = useRouter();
   const [pending, setPending] = useState(false);
-  const [confirmOpen, setConfirmOpen] = useState(false);
+  // 'publish'         — owner confirmed the chunk is ready; runs publishChunk
+  // 'needsDescription' — owner clicked while description is empty; the modal
+  //                      explains the gate and offers a one-click jump to edit
+  const [modal, setModal] = useState<null | 'publish' | 'needsDescription'>(null);
   const [error, setError] = useState<string | null>(null);
 
   if (status !== 'draft') return null;
 
   async function handleConfirm() {
-    setConfirmOpen(false);
+    setModal(null);
     setPending(true);
     setError(null);
     const result = await publishChunk(chunkId);
@@ -73,15 +83,17 @@ export function ChunkLifecycleControls({ chunkId, status, hasDescription }: Prop
     router.refresh();
   }
 
-  const disabled = pending || !hasDescription;
+  function handleGoToEdit() {
+    setModal(null);
+    router.push(`/chunks/${chunkSlug}/edit` as '/chunks/[slug]/edit');
+  }
 
   return (
     <>
       <button
         type="button"
-        onClick={() => setConfirmOpen(true)}
-        disabled={disabled}
-        title={!hasDescription ? t('actions.publishDescriptionRequired') : undefined}
+        onClick={() => setModal(hasDescription ? 'publish' : 'needsDescription')}
+        disabled={pending}
         className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-muted-foreground hover:border-foreground/20 hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-border disabled:hover:text-muted-foreground transition-colors"
       >
         <FiSend className="h-3 w-3" aria-hidden />
@@ -95,14 +107,25 @@ export function ChunkLifecycleControls({ chunkId, status, hasDescription }: Prop
       )}
 
       <ConfirmationModal
-        isOpen={confirmOpen}
+        isOpen={modal === 'publish'}
         title={t('actions.publishConfirmTitle')}
         message={t('actions.publishConfirmMessage')}
         confirmText={t('actions.publishConfirmCta')}
         cancelText={t('actions.publishConfirmCancel')}
         confirmVariant="primary"
         onConfirm={handleConfirm}
-        onCancel={() => setConfirmOpen(false)}
+        onCancel={() => setModal(null)}
+      />
+
+      <ConfirmationModal
+        isOpen={modal === 'needsDescription'}
+        title={t('actions.publishNeedsDescriptionTitle')}
+        message={t('actions.publishNeedsDescriptionMessage')}
+        confirmText={t('actions.publishNeedsDescriptionCta')}
+        cancelText={t('actions.publishConfirmCancel')}
+        confirmVariant="primary"
+        onConfirm={handleGoToEdit}
+        onCancel={() => setModal(null)}
       />
     </>
   );

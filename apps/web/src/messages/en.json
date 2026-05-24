@@ -2306,7 +2306,10 @@
       "publishConfirmMessage": "Other users will see this as a canonical catalog entry. The title, description, FEN, and annotations will be locked — publishing is one-way, so make sure you're happy with them.",
       "publishConfirmCta": "Publish",
       "publishConfirmCancel": "Cancel",
-      "publishDescriptionRequired": "Add a description before publishing."
+      "publishDescriptionRequired": "Add a description before publishing.",
+      "publishNeedsDescriptionTitle": "Add a description before publishing",
+      "publishNeedsDescriptionMessage": "A published chunk is a canonical catalog entry, so it needs a description for other players to understand the pattern. Open the edit page to add one — you can come back and publish once it's saved.",
+      "publishNeedsDescriptionCta": "Open edit page"
     },
     "list": {
       "newCta": "New chunk",

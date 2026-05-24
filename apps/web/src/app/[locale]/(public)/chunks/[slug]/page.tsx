@@ -394,6 +394,7 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
         {isOwner && (
           <ChunkLifecycleControls
             chunkId={chunk.id}
+            chunkSlug={chunk.slug}
             status={status}
             hasDescription={!!chunk.description && chunk.description.trim().length > 0}
           />

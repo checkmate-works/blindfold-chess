@@ -2306,7 +2306,10 @@
       "publishConfirmMessage": "公開すると他のユーザーに正式なカタログ項目として表示されます。タイトル・説明・FEN・注釈はロックされます。公開は一方通行のため、内容に問題がないことを確認してください。",
       "publishConfirmCta": "公開する",
       "publishConfirmCancel": "キャンセル",
-      "publishDescriptionRequired": "公開するには説明を入力してください。"
+      "publishDescriptionRequired": "公開するには説明を入力してください。",
+      "publishNeedsDescriptionTitle": "公開には説明文が必要です",
+      "publishNeedsDescriptionMessage": "公開済みのチャンクは正式なカタログ項目として扱われるため、他のプレイヤーがパターンを理解できるよう説明文が必要です。編集ページから説明を追加してから、改めて公開してください。",
+      "publishNeedsDescriptionCta": "編集ページを開く"
     },
     "detail": {
       "descriptionSection": "説明",
