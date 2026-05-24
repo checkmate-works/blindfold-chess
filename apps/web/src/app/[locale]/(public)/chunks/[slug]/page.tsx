@@ -224,6 +224,26 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
       breadcrumb={[{ label: 'Chunks', href: '/chunks' }, { label: chunk.title }]}
     >
       {/*
+       * Edit-suggestion callout — only meaningful while the chunk is in
+       * draft. Hoisted to the very top of the content area so the
+       * "this is a workshop state, suggestions welcome" framing is the
+       * first thing visitors see before they scroll into the catalog
+       * content. The layout-uniformity cost (a non-SectionTitle element
+       * preceding the first SectionTitle) is bounded because the
+       * callout only renders in the draft state; mirrors the
+       * articles `/[slug]` fallback-locale notice pattern.
+       */}
+      {isDraft && (
+        <EditRequestCallout
+          locale={locale}
+          slug={slug}
+          pendingCount={pendingEditRequestCount}
+          body={tEditRequests('callout.body')}
+          cta={tEditRequests('callout.cta')}
+        />
+      )}
+
+      {/*
        * Render the Description section unconditionally — drafts can
        * legitimately ship without a description while their title is
        * still being workshopped, but the section title gives a visible
@@ -235,22 +255,6 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
         <p className="text-foreground whitespace-pre-wrap">{chunk.description}</p>
       ) : (
         <p className="text-muted-foreground italic">{tChunks('detail.noDescription')}</p>
-      )}
-
-      {/*
-       * Edit-suggestion callout — only meaningful while the chunk is in
-       * draft. Surfacing it as a Qiita-style banner right under the
-       * description keeps the collaborative entry point visible without
-       * crowding the owner-only action row at the bottom of the page.
-       */}
-      {isDraft && (
-        <EditRequestCallout
-          locale={locale}
-          slug={slug}
-          pendingCount={pendingEditRequestCount}
-          body={tEditRequests('callout.body')}
-          cta={tEditRequests('callout.cta')}
-        />
       )}
 
       <div className="max-w-xs mx-auto">
