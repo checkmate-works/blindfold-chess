@@ -202,12 +202,22 @@ export function EditRequestItem(props: Props) {
       )}
 
       {props.status === 'pending' && (props.viewerIsOwner || props.viewerIsProposer) && (
-        <div className="flex flex-wrap gap-2">
+        // Stack vertically + full width so the resolution surface
+        // matches the rest of the chunk forms (where primary actions
+        // span the row), and so the Accept / Reject pair on a
+        // narrow screen never wraps mid-button. Accept is primary
+        // (the recommended action — the visitor proposed an
+        // improvement), Reject is secondary, Withdraw uses the
+        // destructive variant since the proposer is removing their
+        // own submitted work and the confirmation modal frames it
+        // as such.
+        <div className="flex flex-col gap-2">
           {props.viewerIsOwner && (
             <>
               <Button
                 type="button"
                 variant="primary"
+                fullWidth
                 disabled={pending !== null}
                 loading={pending === 'accept'}
                 onClick={() => setConfirm('accept')}
@@ -217,6 +227,7 @@ export function EditRequestItem(props: Props) {
               <Button
                 type="button"
                 variant="secondary"
+                fullWidth
                 disabled={pending !== null}
                 loading={pending === 'reject'}
                 onClick={() => setConfirm('reject')}
@@ -228,7 +239,8 @@ export function EditRequestItem(props: Props) {
           {props.viewerIsProposer && (
             <Button
               type="button"
-              variant="secondary"
+              variant="destructive"
+              fullWidth
               disabled={pending !== null}
               loading={pending === 'withdraw'}
               onClick={() => setConfirm('withdraw')}

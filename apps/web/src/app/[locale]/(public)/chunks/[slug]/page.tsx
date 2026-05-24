@@ -199,6 +199,15 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
         ? 'hasPending'
         : 'canSuggest';
 
+  // Owner-side, an empty queue carries no action and no information
+  // the Draft badge isn't already conveying — render nothing rather
+  // than a "No suggestions yet" line that adds visual noise to every
+  // page the author opens on their own drafts. Non-owners still see
+  // the callout regardless of queue state because it carries their
+  // entry point into the suggestion flow.
+  const showEditRequestCallout =
+    isDraft && !(calloutViewerState === 'owner' && pendingEditRequestCount === 0);
+
   // Help-tour steps for the draft state — mirrors the home / practice
   // convention (HelpTourButton + data-tour-id on the target elements).
   // Drafts get a brief walkthrough explaining the "edit suggestions"
@@ -213,13 +222,21 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
           side: 'bottom',
           align: 'center',
         },
-        {
-          targetId: 'chunk-edit-requests-link',
-          title: tEditRequests('help.editRequests.title'),
-          description: tEditRequests('help.editRequests.description'),
-          side: 'bottom',
-          align: 'end',
-        },
+        // The second step highlights the callout's CTA, so it only
+        // makes sense when the callout actually renders. Skip it
+        // when the callout is suppressed (owner viewing an empty
+        // queue) so the tour does not point at a missing element.
+        ...(showEditRequestCallout
+          ? [
+              {
+                targetId: 'chunk-edit-requests-link',
+                title: tEditRequests('help.editRequests.title'),
+                description: tEditRequests('help.editRequests.description'),
+                side: 'bottom' as const,
+                align: 'end' as const,
+              },
+            ]
+          : []),
       ]
     : [];
 
@@ -252,7 +269,7 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
        * callout only renders in the draft state; mirrors the
        * articles `/[slug]` fallback-locale notice pattern.
        */}
-      {isDraft && (
+      {showEditRequestCallout && (
         <EditRequestCallout
           locale={locale}
           slug={slug}
