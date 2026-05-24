@@ -1,10 +1,11 @@
 import { revalidatePath } from 'next/cache';
 
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, eq, isNull, sql } from 'drizzle-orm';
 import 'server-only';
 
 import { authenticateAndGuard } from '@/lib/auth';
 import { chunkEditRequests, chunks, db } from '@/lib/db';
+import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
 import { createNotification } from '@/lib/notifications/notification';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { logActivityEvent } from '@/lib/users/activity-log';
@@ -101,16 +102,32 @@ export async function submitEditRequestEntry(params: {
     return { error: validated };
   }
 
-  const [inserted] = await db
-    .insert(chunkEditRequests)
-    .values({
-      chunkId: chunk.id,
-      proposerId: user.id,
-      proposedTitle: validated.hasTitleProposal ? validated.proposedTitle : null,
-      proposedDescription: validated.hasDescriptionProposal ? validated.proposedDescription : null,
-      comment: validated.comment,
-    })
-    .returning({ id: chunkEditRequests.id });
+  let inserted: { id: string };
+  try {
+    const rows = await db
+      .insert(chunkEditRequests)
+      .values({
+        chunkId: chunk.id,
+        proposerId: user.id,
+        proposedTitle: validated.hasTitleProposal ? validated.proposedTitle : null,
+        proposedDescription: validated.hasDescriptionProposal
+          ? validated.proposedDescription
+          : null,
+        comment: validated.comment,
+      })
+      .returning({ id: chunkEditRequests.id });
+    inserted = rows[0];
+  } catch (err) {
+    // Race-window backstop: the application-layer check above and
+    // the partial unique index `uq_chunk_edit_requests_one_pending`
+    // both guard one-pending-per-(chunk, proposer), but two
+    // simultaneous submits can pass the check before either INSERT
+    // commits. The index then fires 23505 on the second insert.
+    if (isUniqueViolation(err)) {
+      return { error: 'alreadyHasPending' };
+    }
+    throw err;
+  }
 
   logActivityEvent({
     userId: user.id,
@@ -208,6 +225,17 @@ async function resolveEditRequest(params: ResolveParams): Promise<ResolveEditReq
   const terminal = TERMINAL_STATUS[params.action];
 
   await db.transaction(async (tx) => {
+    // Serialize concurrent accepts on the same chunk by locking the
+    // chunk row first. Two browser tabs accepting different pending
+    // suggestions simultaneously would otherwise both succeed at the
+    // request-row UPDATE but race on the chunks UPDATE, leaving one
+    // accepted-but-not-applied. The lock is taken before either UPDATE
+    // so an interleaved second transaction waits here until the first
+    // commits. Reject / withdraw paths technically don't need the
+    // lock, but taking it uniformly keeps the transaction shape
+    // simple and the contention scope is per-chunk (low-frequency).
+    await tx.execute(sql`SELECT 1 FROM chunks WHERE id = ${chunk.id} FOR UPDATE`);
+
     await tx
       .update(chunkEditRequests)
       .set({

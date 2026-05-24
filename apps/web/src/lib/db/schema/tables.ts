@@ -2888,16 +2888,20 @@ export const chunks = pgTable(
      * canonical title settles. The `status` column carries that
      * lifecycle:
      *
-     * - `draft` — workshop state. Owner can edit freely; other users see
-     *   it on the catalog (with a "Draft" badge) and, in a future phase,
-     *   will be able to submit edit-suggestion requests for title /
-     *   description. New chunks created via the UGC flow default to
-     *   `draft`.
+     * - `draft` — workshop state. Owner can edit freely; other users
+     *   see it on the catalog (with a "Draft" badge) and can submit
+     *   Qiita-style edit-suggestion requests against the title /
+     *   description (see `chunk_edit_requests`). New chunks created
+     *   via the UGC flow default to `draft`.
      * - `published` — canonical state. The author has settled the title /
      *   description; the row is locked against owner edits at the
-     *   application layer so the slug, title, and description that other
-     *   users may have linked to remain stable. Re-entering draft is
-     *   allowed via a dedicated `unpublish` transition for revisions.
+     *   application layer so the slug, title, and description that
+     *   other users may have linked to remain stable. Publish is
+     *   one-way; the only way out is soft delete via
+     *   `deleteChunkEntry`. On the publish transition any still-
+     *   pending `chunk_edit_requests` rows are auto-rejected in the
+     *   same transaction so they do not strand behind the now-
+     *   inaccessible review UI.
      *
      * Stored as varchar (not pgEnum) so future states (`archived`,
      * `deprecated`, …) can be added without an ALTER TYPE migration —
@@ -2909,6 +2913,16 @@ export const chunks = pgTable(
      * application treated them as before this column existed.
      */
     status: varchar('status', { length: 20 }).notNull().default('published'),
+    /**
+     * Set when `status` transitions to `'published'`. NULL for chunks
+     * that are still in draft (or that have been re-drafted in
+     * theory; publish is currently one-way so this column is
+     * monotonic in practice). Distinct from `createdAt` so catalog
+     * surfaces can sort by "recently published" instead of "recently
+     * authored as a draft"; the activity log carries the audit-trail
+     * equivalent but is not indexed for catalog queries.
+     */
+    publishedAt: timestamp('published_at', { withTimezone: true }),
     /**
      * Display-only board markup (arrows + circles) drawn on top of the
      * representative board to make the pattern instantly readable
@@ -3051,6 +3065,17 @@ export const chunkEditRequests = pgTable(
     ),
     // "My submitted requests" view for the proposer.
     index('idx_chunk_edit_requests_proposer_created').on(table.proposerId, table.createdAt.desc()),
+    // One pending suggestion per (chunk, proposer). The partial
+    // predicate `WHERE status = 'pending'` lets resolved rows
+    // (accepted / rejected / withdrawn) accumulate freely while the
+    // single-pending invariant the UI assumes is enforced by the DB.
+    // The application layer reads this row via
+    // `getViewerPendingEditRequestForChunk` to hide the form, and
+    // catches the 23505 unique-violation as a backstop against
+    // tab-race double submits.
+    uniqueIndex('uq_chunk_edit_requests_one_pending')
+      .on(table.chunkId, table.proposerId)
+      .where(sql`status = 'pending'`),
   ]
 );
 

@@ -1,6 +1,6 @@
 {
-  "id": "5a67fae7-571d-4fd5-b04a-81ec21193c27",
-  "prevId": "15355a04-93a3-41c1-8e5f-e69f7afce875",
+  "id": "c0aac9b9-9aeb-4067-8b1c-e3cfd9a1bc83",
+  "prevId": "7eb40eb0-6d7e-4312-b892-e5eb9f9e1616",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -1196,12 +1196,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "resolver_comment": {
-          "name": "resolver_comment",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -1265,6 +1259,28 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "uq_chunk_edit_requests_one_pending": {
+          "name": "uq_chunk_edit_requests_one_pending",
+          "columns": [
+            {
+              "expression": "chunk_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "proposer_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "status = 'pending'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -1279,6 +1295,53 @@
         }
       },
       "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.chunk_feedback_topics": {
+      "name": "chunk_feedback_topics",
+      "schema": "",
+      "columns": {
+        "chunk_id": {
+          "name": "chunk_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "topic": {
+          "name": "topic",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "chunk_feedback_topics_chunk_id_chunks_id_fk": {
+          "name": "chunk_feedback_topics_chunk_id_chunks_id_fk",
+          "tableFrom": "chunk_feedback_topics",
+          "tableTo": "chunks",
+          "columnsFrom": ["chunk_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "chunk_feedback_topics_chunk_id_topic_pk": {
+          "name": "chunk_feedback_topics_chunk_id_topic_pk",
+          "columns": ["chunk_id", "topic"]
+        }
+      },
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
@@ -1331,6 +1394,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'published'"
+        },
+        "published_at": {
+          "name": "published_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
         },
         "annotations": {
           "name": "annotations",

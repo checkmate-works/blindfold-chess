@@ -11,6 +11,7 @@ const mockCreateNotification = vi.fn();
 const mockRevalidatePath = vi.fn();
 const mockGetEditRequestById = vi.fn();
 const mockGetViewerPendingEditRequestForChunk = vi.fn();
+const mockIsUniqueViolation = vi.fn();
 
 vi.mock('server-only', () => ({}));
 
@@ -24,6 +25,10 @@ vi.mock('@/lib/users/activity-log', () => ({
 
 vi.mock('@/lib/notifications/notification', () => ({
   createNotification: (...args: unknown[]) => mockCreateNotification(...args),
+}));
+
+vi.mock('@/lib/db/extract-pg-error-code', () => ({
+  isUniqueViolation: (err: unknown) => mockIsUniqueViolation(err),
 }));
 
 vi.mock('./queries', () => ({
@@ -84,6 +89,11 @@ vi.mock('@/lib/db', () => ({
             },
           }),
         }),
+        // `resolveEditRequest` opens the transaction with a
+        // `SELECT ... FOR UPDATE` to serialize concurrent accepts on
+        // the same chunk. The mock returns immediately — the assertion
+        // is that the call happens, not what it locks.
+        execute: vi.fn().mockResolvedValue(undefined),
       };
       return fn(tx);
     },
@@ -122,6 +132,7 @@ describe('submitEditRequestEntry', () => {
     // Default: viewer has no pending suggestion. Tests covering the
     // one-pending guard override this per-case.
     mockGetViewerPendingEditRequestForChunk.mockResolvedValue(null);
+    mockIsUniqueViolation.mockReturnValue(false);
   });
 
   it('propagates signInRequired from the guard', async () => {
@@ -204,6 +215,26 @@ describe('submitEditRequestEntry', () => {
 
     expect(result).toEqual({ error: 'alreadyHasPending' });
     expect(mockInsertValues).not.toHaveBeenCalled();
+  });
+
+  it('translates a 23505 unique violation on INSERT to alreadyHasPending', async () => {
+    // Race-window backstop: two tabs pass the
+    // `getViewerPendingEditRequestForChunk` check simultaneously
+    // and both try to INSERT. The partial unique index
+    // `uq_chunk_edit_requests_one_pending` rejects the second with
+    // 23505, and the mutation translates that to the same error
+    // code the app-layer guard returns.
+    mockDraftChunk();
+    mockInsertReturning.mockRejectedValueOnce(new Error('duplicate key value'));
+    mockIsUniqueViolation.mockReturnValue(true);
+
+    const { submitEditRequestEntry } = await import('./mutations');
+    const result = await submitEditRequestEntry({
+      chunkId: CHUNK_ID,
+      payload: { proposedTitle: 'Kingside fianchetto' },
+    });
+
+    expect(result).toEqual({ error: 'alreadyHasPending' });
   });
 
   it('returns a validation error when neither field changed', async () => {

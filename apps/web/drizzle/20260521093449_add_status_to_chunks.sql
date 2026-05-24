@@ -1,1 +1,0 @@
-ALTER TABLE "chunks" ADD COLUMN "status" varchar(20) DEFAULT 'published' NOT NULL;

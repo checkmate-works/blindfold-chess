@@ -1,1 +1,0 @@
-ALTER TABLE "chunk_edit_requests" DROP COLUMN "resolver_comment";

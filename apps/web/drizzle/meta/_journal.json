@@ -306,29 +306,8 @@
     {
       "idx": 43,
       "version": "7",
-      "when": 1779356089294,
-      "tag": "20260521093449_add_status_to_chunks",
-      "breakpoints": true
-    },
-    {
-      "idx": 44,
-      "version": "7",
-      "when": 1779429867581,
-      "tag": "20260522060427_create_chunk_edit_requests",
-      "breakpoints": true
-    },
-    {
-      "idx": 45,
-      "version": "7",
-      "when": 1779619546819,
-      "tag": "20260524104546_create_chunk_feedback_topics",
-      "breakpoints": true
-    },
-    {
-      "idx": 46,
-      "version": "7",
-      "when": 1779662808495,
-      "tag": "20260524224648_drop_resolver_comment_from_chunk_edit_requests",
+      "when": 1779664105295,
+      "tag": "20260524230825_create_chunks_ugc",
       "breakpoints": true
     }
   ]

@@ -5,7 +5,7 @@ import 'server-only';
 
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
-import { chunkFeedbackTopics, chunks, db } from '@/lib/db';
+import { chunkEditRequests, chunkFeedbackTopics, chunks, db } from '@/lib/db';
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
 import { clawbackPointsForPost, grantPointsForPost } from '@/lib/points';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
@@ -309,16 +309,29 @@ export async function publishChunkEntry(id: string): Promise<UpdateChunkResult> 
     return { error: 'descriptionRequired' };
   }
 
+  const now = new Date();
+
   await db.transaction(async (tx) => {
     await tx
       .update(chunks)
-      .set({ status: 'published' })
+      .set({ status: 'published', publishedAt: now })
       .where(and(eq(chunks.id, id), eq(chunks.userId, user.id), isNull(chunks.deletedAt)));
 
     // Feedback topics are draft-only signals — wipe them so a future
     // re-draft via admin tooling doesn't surface stale flags from the
     // pre-publish workshop session.
     await tx.delete(chunkFeedbackTopics).where(eq(chunkFeedbackTopics.chunkId, id));
+
+    // Auto-reject any still-pending edit requests so they don't
+    // strand behind the now-inaccessible review UI (the
+    // /chunks/[slug]/edit-requests page 404s for non-draft chunks).
+    // Resolution metadata mirrors the owner-driven reject path so
+    // the audit history remains uniform. Intentionally silent —
+    // reject does not notify (see chunk-edit-requests/mutations.ts).
+    await tx
+      .update(chunkEditRequests)
+      .set({ status: 'rejected', resolvedAt: now, resolverId: user.id })
+      .where(and(eq(chunkEditRequests.chunkId, id), eq(chunkEditRequests.status, 'pending')));
   });
 
   logActivityEvent({
@@ -368,16 +381,28 @@ export async function deleteChunkEntry(id: string): Promise<DeleteChunkResult> {
     return { error: 'alreadyDeleted' };
   }
 
+  const deletedAt = new Date();
+
   await db.transaction(async (tx) => {
     await tx
       .update(chunks)
-      .set({ deletedAt: new Date() })
+      .set({ deletedAt })
       .where(and(eq(chunks.id, id), eq(chunks.userId, user.id), isNull(chunks.deletedAt)));
 
     // Reverse the creation point grant. Capped at the live `earned`
     // balance, so coins already spent are not pursued and the balance
     // never goes negative.
     await clawbackPointsForPost(tx, user.id, { type: 'chunk', id });
+
+    // Auto-reject any still-pending edit requests for the same
+    // reason publish does it: the /chunks/[slug]/edit-requests page
+    // 404s for deleted chunks (soft delete doesn't cascade to
+    // chunk_edit_requests at the FK level), so without this sweep
+    // the rows would sit pending forever with no path to resolve.
+    await tx
+      .update(chunkEditRequests)
+      .set({ status: 'rejected', resolvedAt: deletedAt, resolverId: user.id })
+      .where(and(eq(chunkEditRequests.chunkId, id), eq(chunkEditRequests.status, 'pending')));
   });
 
   logActivityEvent({

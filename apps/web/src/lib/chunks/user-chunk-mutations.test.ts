@@ -6,6 +6,7 @@ const mockInsertReturning = vi.fn();
 const mockInsertValues = vi.fn();
 const mockUpdateWhere = vi.fn();
 const mockTxUpdateWhere = vi.fn();
+const mockTxEditRequestsUpdateWhere = vi.fn();
 const mockTxDeleteWhere = vi.fn();
 const mockTxFeedbackInsertValues = vi.fn();
 const mockFindChunkBySlug = vi.fn();
@@ -82,9 +83,15 @@ vi.mock('@/lib/db', () => ({
             return { returning: () => mockInsertReturning() };
           },
         }),
-        update: () => ({
+        update: (table: { __tableTag?: string }) => ({
           set: (values: unknown) => ({
-            where: (...args: unknown[]) => mockTxUpdateWhere({ values, where: args }),
+            where: (...args: unknown[]) => {
+              if (table?.__tableTag === 'chunk_edit_requests') {
+                mockTxEditRequestsUpdateWhere({ values, where: args });
+                return;
+              }
+              mockTxUpdateWhere({ values, where: args });
+            },
           }),
         }),
         delete: (table: { __tableTag?: string }) => ({
@@ -102,6 +109,12 @@ vi.mock('@/lib/db', () => ({
     slug: 'slug',
     title: 'title',
     deletedAt: 'deleted_at',
+  },
+  chunkEditRequests: {
+    __tableTag: 'chunk_edit_requests',
+    id: 'id',
+    chunkId: 'chunk_id',
+    status: 'status',
   },
   chunkFeedbackTopics: {
     __tableTag: 'chunk_feedback_topics',
@@ -661,6 +674,33 @@ describe('deleteChunkEntry', () => {
       metadata: { slug: TEST_SLUG, title: 'Rook Battery' },
     });
   });
+
+  it('auto-rejects any still-pending edit requests on delete', async () => {
+    // Soft delete makes the chunk's /edit-requests page 404, which
+    // would strand pending rows with no path to resolve. The delete
+    // transaction sweeps them to 'rejected' in the same step.
+    mockSelectLimit.mockResolvedValue([
+      {
+        id: TEST_CHUNK_ID,
+        userId: TEST_USER_ID,
+        slug: TEST_SLUG,
+        title: 'Rook Battery',
+        deletedAt: null,
+      },
+    ]);
+
+    const { deleteChunkEntry } = await import('./user-chunk-mutations');
+    await deleteChunkEntry(TEST_CHUNK_ID);
+
+    expect(mockTxEditRequestsUpdateWhere).toHaveBeenCalledTimes(1);
+    const update = mockTxEditRequestsUpdateWhere.mock.calls[0][0] as {
+      values: Record<string, unknown>;
+    };
+    expect(update.values).toMatchObject({
+      status: 'rejected',
+      resolverId: TEST_USER_ID,
+    });
+  });
 });
 
 describe('createChunkEntry — status', () => {
@@ -766,12 +806,26 @@ describe('publishChunkEntry', () => {
     expect(result).toEqual({ success: true });
     expect(mockTxUpdateWhere).toHaveBeenCalledTimes(1);
     const args = mockTxUpdateWhere.mock.calls[0][0] as { values: Record<string, unknown> };
-    expect(args.values).toEqual({ status: 'published' });
+    expect(args.values).toMatchObject({ status: 'published' });
+    // The publish transition stamps `published_at`. The exact value
+    // is a fresh Date so a `Date` instance match is enough — we
+    // don't pin the millisecond.
+    expect(args.values.publishedAt).toBeInstanceOf(Date);
     // Publishing wipes any previously-set feedback topics — they are
     // draft-only signals and must not survive into the canonical state.
     expect(mockTxDeleteWhere).toHaveBeenCalledWith(
       expect.objectContaining({ table: 'chunk_feedback_topics' })
     );
+    // Publishing auto-rejects any still-pending edit requests so
+    // they don't strand behind the now-inaccessible review UI.
+    expect(mockTxEditRequestsUpdateWhere).toHaveBeenCalledTimes(1);
+    const editRequestsUpdate = mockTxEditRequestsUpdateWhere.mock.calls[0][0] as {
+      values: Record<string, unknown>;
+    };
+    expect(editRequestsUpdate.values).toMatchObject({
+      status: 'rejected',
+      resolverId: TEST_USER_ID,
+    });
     expect(mockLogActivityEvent).toHaveBeenCalledWith(
       expect.objectContaining({
         action: 'publish_chunk',
