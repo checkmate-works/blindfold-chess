@@ -2417,7 +2417,10 @@
       "currentValuesHint": "Tentative title and description the chunk currently shows. Submitted suggestions below are compared against these.",
       "callout": {
         "body": "This chunk is still a draft and welcomes suggestions for a sharper title or description.",
-        "cta": "View / submit edit suggestions",
+        "ctaOwner": "View edit suggestions",
+        "ctaHasPending": "View / withdraw your suggestion",
+        "ctaCanSuggest": "Suggest an edit",
+        "ctaSignedOut": "Sign in to suggest an edit",
         "topicLeadIn": "The author is looking for input on:",
         "topicLabels": {
           "title": "Title",

@@ -8,7 +8,10 @@ import { createSearchParamsCache, parseAsString } from 'nuqs/server';
 import { FiEdit2 } from 'react-icons/fi';
 
 import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
-import { countPendingEditRequestsForChunk } from '@/lib/chunk-edit-requests/queries';
+import {
+  countPendingEditRequestsForChunk,
+  getViewerPendingEditRequestForChunk,
+} from '@/lib/chunk-edit-requests/queries';
 import {
   getChunkBySlug,
   getChunkBySlugWithProfile,
@@ -114,6 +117,7 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
     allComments,
     pendingEditRequestCount,
     requestedFeedbackTopics,
+    viewerPendingRequestId,
     t,
     tTopics,
     tVideo,
@@ -127,6 +131,7 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
     getCommentTreeForTopic('chunk', slug, user?.id),
     countPendingEditRequestsForChunk(chunk.id),
     getFeedbackTopicsForChunk(chunk.id),
+    getViewerPendingEditRequestForChunk(chunk.id, user?.id ?? null),
     getTranslations({ locale, namespace: 'topics.chunks' }),
     getTranslations({ locale, namespace: 'topics' }),
     getTranslations({ locale, namespace: 'postVideoAttachmentRender' }),
@@ -182,6 +187,17 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
   // crashing.
   const status = isChunkStatus(chunk.status) ? chunk.status : 'published';
   const isDraft = status === 'draft';
+
+  // Viewer relationship to the edit-suggestion flow — drives the
+  // callout CTA copy. See `EditRequestCalloutViewerState` for the
+  // exact contract.
+  const calloutViewerState: 'owner' | 'hasPending' | 'canSuggest' | 'signedOut' = !user
+    ? 'signedOut'
+    : isOwner
+      ? 'owner'
+      : viewerPendingRequestId
+        ? 'hasPending'
+        : 'canSuggest';
 
   // Help-tour steps for the draft state — mirrors the home / practice
   // convention (HelpTourButton + data-tour-id on the target elements).
@@ -242,7 +258,13 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
           slug={slug}
           pendingCount={pendingEditRequestCount}
           body={tEditRequests('callout.body')}
-          cta={tEditRequests('callout.cta')}
+          ctaByState={{
+            owner: tEditRequests('callout.ctaOwner'),
+            hasPending: tEditRequests('callout.ctaHasPending'),
+            canSuggest: tEditRequests('callout.ctaCanSuggest'),
+            signedOut: tEditRequests('callout.ctaSignedOut'),
+          }}
+          viewerState={calloutViewerState}
           requestedTopicLabels={requestedFeedbackTopics.map((topic) =>
             tEditRequests(`callout.topicLabels.${topic}` as 'callout.topicLabels.title')
           )}
