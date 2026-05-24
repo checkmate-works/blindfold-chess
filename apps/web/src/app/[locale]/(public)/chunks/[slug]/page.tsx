@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { createSearchParamsCache, parseAsString } from 'nuqs/server';
-import { FiEdit2, FiGitPullRequest } from 'react-icons/fi';
+import { FiEdit2 } from 'react-icons/fi';
 
 import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
 import { countPendingEditRequestsForChunk } from '@/lib/chunk-edit-requests/queries';
@@ -49,6 +49,7 @@ import { createChunkReplyWithAttachment } from './_actions/createChunkReplyWithA
 import { createChunkReplyWithFenAttachment } from './_actions/createChunkReplyWithFenAttachment';
 import { toggleChunkLike } from './_actions/toggleChunkLike';
 import { togglePositionLike } from './_actions/togglePositionLike';
+import { EditRequestCallout } from './_components/EditRequestCallout';
 import { NewPostForm } from './_components/NewPostForm';
 
 export const dynamic = 'force-dynamic';
@@ -236,6 +237,22 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
         <p className="text-muted-foreground italic">{tChunks('detail.noDescription')}</p>
       )}
 
+      {/*
+       * Edit-suggestion callout — only meaningful while the chunk is in
+       * draft. Surfacing it as a Qiita-style banner right under the
+       * description keeps the collaborative entry point visible without
+       * crowding the owner-only action row at the bottom of the page.
+       */}
+      {isDraft && (
+        <EditRequestCallout
+          locale={locale}
+          slug={slug}
+          pendingCount={pendingEditRequestCount}
+          body={tEditRequests('callout.body')}
+          cta={tEditRequests('callout.cta')}
+        />
+      )}
+
       <div className="max-w-xs mx-auto">
         <ThemedBoardThumbnail
           fen={chunk.representativeFen}
@@ -308,21 +325,6 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
        * near the title.
        */}
       <div className="flex flex-wrap items-center justify-end gap-4 text-xs text-muted-foreground">
-        {isDraft && (
-          <Link
-            href={`/${locale}/chunks/${slug}/edit-requests`}
-            data-tour-id="chunk-edit-requests-link"
-            className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-muted-foreground hover:border-foreground/20 hover:text-foreground transition-colors"
-          >
-            <FiGitPullRequest className="h-3 w-3" aria-hidden />
-            {tEditRequests('linkLabel')}
-            {pendingEditRequestCount > 0 && (
-              <span className="ml-1 inline-flex items-center justify-center rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-900 dark:bg-amber-900 dark:text-amber-100">
-                {pendingEditRequestCount}
-              </span>
-            )}
-          </Link>
-        )}
         {isOwner && isDraft && (
           <Link
             href={`/${locale}/chunks/${slug}/edit`}

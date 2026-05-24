@@ -2406,6 +2406,10 @@
       "breadcrumb": "Edit suggestions",
       "currentValuesTitle": "Current values",
       "currentValuesHint": "Tentative title and description the chunk currently shows. Submitted suggestions below are compared against these.",
+      "callout": {
+        "body": "This chunk is still a draft and welcomes suggestions for a sharper title or description.",
+        "cta": "View / submit edit suggestions"
+      },
       "help": {
         "label": "How edit suggestions work",
         "badge": {
