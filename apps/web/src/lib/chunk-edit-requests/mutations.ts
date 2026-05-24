@@ -9,7 +9,7 @@ import { createNotification } from '@/lib/notifications/notification';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
-import { getEditRequestById } from './queries';
+import { getEditRequestById, getViewerPendingEditRequestForChunk } from './queries';
 import type { SubmitEditRequestPayload } from './validation';
 import { parseResolverComment, validateSubmitEditRequest } from './validation';
 
@@ -79,6 +79,18 @@ export async function submitEditRequestEntry(params: {
     // The owner has already locked the chunk; suggestions are
     // pointless until they un-publish.
     return { error: 'chunkNotDraft' };
+  }
+
+  // One pending suggestion per (chunk, proposer). The DB schema does
+  // not enforce this — keeping the constraint at the application
+  // layer leaves room for a future "edit your pending suggestion"
+  // flow that would temporarily relax the check during in-place
+  // updates. Until then, the visitor is expected to withdraw and
+  // resubmit, which the UI surfaces on the dedicated edit-requests
+  // page.
+  const existingPendingId = await getViewerPendingEditRequestForChunk(chunk.id, user.id);
+  if (existingPendingId) {
+    return { error: 'alreadyHasPending' };
   }
 
   const validated = validateSubmitEditRequest(params.payload, {

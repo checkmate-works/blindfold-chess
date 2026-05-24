@@ -43,6 +43,7 @@ const WELL_KNOWN_ERRORS = new Set([
   'notFound',
   'ownerCannotPropose',
   'chunkNotDraft',
+  'alreadyHasPending',
 ]);
 
 /**

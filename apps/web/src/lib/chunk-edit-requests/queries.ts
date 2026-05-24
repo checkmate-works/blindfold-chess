@@ -68,3 +68,39 @@ export async function getEditRequestById(id: string) {
     .limit(1);
   return row ?? null;
 }
+
+/**
+ * Find the viewer's own pending edit request for a chunk, if any.
+ * Returns the request id (used by the detail page to switch the
+ * callout CTA between "Suggest" and "View / withdraw" copy) or
+ * `null` when the viewer has none pending. Resolved rows
+ * (`accepted` / `rejected` / `withdrawn`) are not counted — the
+ * viewer can submit a fresh suggestion after a previous one closes.
+ *
+ * Anchors the one-pending-per-(chunk, proposer) invariant the
+ * mutation layer enforces; structurally the DB allows multiple
+ * pending rows from the same proposer, but the UX treats one
+ * pending as the canonical state. Caching is per-request via
+ * `React.cache` so the detail page can read it alongside the chunk
+ * + the count without an extra round-trip.
+ */
+export const getViewerPendingEditRequestForChunk = cache(
+  async (chunkId: string, viewerId: string | null): Promise<string | null> => {
+    if (!viewerId) return null;
+    if (!UUID_RE.test(chunkId) || !UUID_RE.test(viewerId)) return null;
+
+    const [row] = await db
+      .select({ id: chunkEditRequests.id })
+      .from(chunkEditRequests)
+      .where(
+        and(
+          eq(chunkEditRequests.chunkId, chunkId),
+          eq(chunkEditRequests.proposerId, viewerId),
+          eq(chunkEditRequests.status, 'pending')
+        )
+      )
+      .limit(1);
+
+    return row?.id ?? null;
+  }
+);

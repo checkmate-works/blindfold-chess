@@ -10,6 +10,7 @@ const mockLogActivityEvent = vi.fn();
 const mockCreateNotification = vi.fn();
 const mockRevalidatePath = vi.fn();
 const mockGetEditRequestById = vi.fn();
+const mockGetViewerPendingEditRequestForChunk = vi.fn();
 
 vi.mock('server-only', () => ({}));
 
@@ -27,6 +28,8 @@ vi.mock('@/lib/notifications/notification', () => ({
 
 vi.mock('./queries', () => ({
   getEditRequestById: (id: string) => mockGetEditRequestById(id),
+  getViewerPendingEditRequestForChunk: (chunkId: string, viewerId: string | null) =>
+    mockGetViewerPendingEditRequestForChunk(chunkId, viewerId),
 }));
 
 vi.mock('@/lib/security/rate-limit', () => ({
@@ -116,6 +119,9 @@ describe('submitEditRequestEntry', () => {
     vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: PROPOSER_ID } });
     mockInsertReturning.mockResolvedValue([{ id: REQUEST_ID }]);
+    // Default: viewer has no pending suggestion. Tests covering the
+    // one-pending guard override this per-case.
+    mockGetViewerPendingEditRequestForChunk.mockResolvedValue(null);
   });
 
   it('propagates signInRequired from the guard', async () => {
@@ -179,6 +185,24 @@ describe('submitEditRequestEntry', () => {
     });
 
     expect(result).toEqual({ error: 'chunkNotDraft' });
+    expect(mockInsertValues).not.toHaveBeenCalled();
+  });
+
+  it('returns alreadyHasPending when the proposer already has a pending suggestion', async () => {
+    // One pending per (chunk, proposer) is enforced at the application
+    // layer — the visitor is expected to withdraw + resubmit rather than
+    // stack additional pending rows. The dedicated edit-requests page
+    // hides the form in this state.
+    mockDraftChunk();
+    mockGetViewerPendingEditRequestForChunk.mockResolvedValue('existing-pending-req-id');
+
+    const { submitEditRequestEntry } = await import('./mutations');
+    const result = await submitEditRequestEntry({
+      chunkId: CHUNK_ID,
+      payload: { proposedTitle: 'Kingside fianchetto' },
+    });
+
+    expect(result).toEqual({ error: 'alreadyHasPending' });
     expect(mockInsertValues).not.toHaveBeenCalled();
   });
 

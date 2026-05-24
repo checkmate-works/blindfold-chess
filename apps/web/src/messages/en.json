@@ -2488,7 +2488,8 @@
         "unauthorized": "You can't perform this action.",
         "alreadyResolved": "This suggestion has already been resolved.",
         "ownerCannotPropose": "You can't suggest edits to your own chunk — edit it directly instead.",
-        "chunkNotDraft": "This chunk is published and is not accepting suggestions right now."
+        "chunkNotDraft": "This chunk is published and is not accepting suggestions right now.",
+        "alreadyHasPending": "You already have a pending suggestion for this chunk. Withdraw it first if you want to propose something different."
       }
     }
   },
