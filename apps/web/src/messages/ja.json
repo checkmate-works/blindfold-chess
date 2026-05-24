@@ -2891,7 +2891,8 @@
     "positionDeleted": "問題を削除しました",
     "positionUpdated": "変更を保存しました",
     "puzzleUpdated": "変更を保存しました",
-    "puzzleDeleted": "パズルを削除しました"
+    "puzzleDeleted": "パズルを削除しました",
+    "editRequestSubmitted": "編集リクエストを送信しました"
   },
   "setupUsername": {
     "title": "アカウント登録",

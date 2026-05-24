@@ -106,6 +106,7 @@ export default async function ChunkEditRequestsPage({ params }: Props) {
 
       <EditRequestSection
         chunkId={chunk.id}
+        chunkSlug={chunk.slug}
         chunkStatus={status}
         currentTitle={chunk.title}
         currentDescription={chunk.description}

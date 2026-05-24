@@ -154,7 +154,8 @@
         "chunks.editRequests.status.withdrawn",
         "chunks.editRequests.suggestCta",
         "MypageNotifications.chunkEditRequestAcceptedMessage",
-        "MypageNotifications.chunkEditRequestSubmittedMessage"
+        "MypageNotifications.chunkEditRequestSubmittedMessage",
+        "toast.editRequestSubmitted"
       ],
       "extra": []
     },
@@ -314,7 +315,8 @@
         "chunks.editRequests.status.withdrawn",
         "chunks.editRequests.suggestCta",
         "MypageNotifications.chunkEditRequestAcceptedMessage",
-        "MypageNotifications.chunkEditRequestSubmittedMessage"
+        "MypageNotifications.chunkEditRequestSubmittedMessage",
+        "toast.editRequestSubmitted"
       ],
       "extra": []
     }

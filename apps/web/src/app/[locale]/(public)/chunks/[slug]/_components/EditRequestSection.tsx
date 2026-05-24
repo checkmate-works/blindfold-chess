@@ -13,6 +13,8 @@ import { EditRequestItem } from './EditRequestItem';
 
 type Props = {
   chunkId: string;
+  /** Threaded down to EditRequestForm for the post-submit redirect URL. */
+  chunkSlug: string;
   chunkStatus: ChunkStatus;
   currentTitle: string;
   currentDescription: string | null;
@@ -41,6 +43,7 @@ type Props = {
  */
 export async function EditRequestSection({
   chunkId,
+  chunkSlug,
   chunkStatus,
   currentTitle,
   currentDescription,
@@ -104,6 +107,7 @@ export async function EditRequestSection({
         ) : (
           <EditRequestForm
             chunkId={chunkId}
+            chunkSlug={chunkSlug}
             currentTitle={currentTitle}
             currentDescription={currentDescription}
             requestedFeedbackTopics={requestedFeedbackTopics}

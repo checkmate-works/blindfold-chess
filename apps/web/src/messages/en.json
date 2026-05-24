@@ -2891,7 +2891,8 @@
     "positionDeleted": "Problem deleted",
     "positionUpdated": "Changes saved",
     "puzzleUpdated": "Changes saved",
-    "puzzleDeleted": "Puzzle deleted"
+    "puzzleDeleted": "Puzzle deleted",
+    "editRequestSubmitted": "Edit suggestion submitted"
   },
   "setupUsername": {
     "title": "Create Your Account",

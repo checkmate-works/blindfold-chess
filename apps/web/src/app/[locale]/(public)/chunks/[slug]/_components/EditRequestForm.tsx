@@ -13,6 +13,12 @@ import { submitEditRequest } from '../_actions/submitEditRequest';
 
 type Props = {
   chunkId: string;
+  /**
+   * Used to build the post-submit redirect to the chunk detail page.
+   * The slug is fixed at chunk creation so it's safe to pass once at
+   * render time rather than re-deriving on every navigation.
+   */
+  chunkSlug: string;
   /** Current title — prefills the proposal field so the proposer edits a diff. */
   currentTitle: string;
   /** Current description — same prefill rationale. */
@@ -61,6 +67,7 @@ const WELL_KNOWN_ERRORS = new Set([
  */
 export function EditRequestForm({
   chunkId,
+  chunkSlug,
   currentTitle,
   currentDescription,
   requestedFeedbackTopics,
@@ -114,11 +121,13 @@ export function EditRequestForm({
       return;
     }
 
-    // On success the page revalidates and the new request lands in the
-    // list below; reset the form back to the prefilled values so the
-    // proposer can immediately suggest something else if they want to.
+    // On success, navigate back to the chunk detail page — the
+    // suggestion was for the chunk, not for the suggestion-list page,
+    // so the detail page is the more natural landing surface. A
+    // `?toast=` param triggers the global ToastContainer to show a
+    // success confirmation once the new page is hydrated.
     resetToPrefill();
-    router.refresh();
+    router.push(`/chunks/${chunkSlug}?toast=edit_request_submitted` as '/chunks/[slug]');
   }
 
   return (
