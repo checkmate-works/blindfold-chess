@@ -358,7 +358,6 @@ describe('acceptEditRequestEntry', () => {
     expect(reqUpdate.values).toMatchObject({
       status: 'accepted',
       resolverId: OWNER_ID,
-      resolverComment: null,
     });
     expect(mockTxUpdateChunks).toHaveBeenCalledTimes(1);
     const chunkUpdate = mockTxUpdateChunks.mock.calls[0][0] as {
@@ -415,7 +414,7 @@ describe('rejectEditRequestEntry', () => {
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: OWNER_ID } });
   });
 
-  it('marks the request rejected and stores the resolver comment, leaving the chunk untouched', async () => {
+  it('marks the request rejected, leaving the chunk untouched', async () => {
     mockGetEditRequestById.mockResolvedValue({
       id: REQUEST_ID,
       chunkId: CHUNK_ID,
@@ -427,7 +426,7 @@ describe('rejectEditRequestEntry', () => {
     mockDraftChunk();
 
     const { rejectEditRequestEntry } = await import('./mutations');
-    const result = await rejectEditRequestEntry(REQUEST_ID, '  not quite a fianchetto  ');
+    const result = await rejectEditRequestEntry(REQUEST_ID);
 
     expect(result).toEqual({ success: true });
     expect(mockTxUpdateChunkEditRequests).toHaveBeenCalledTimes(1);
@@ -436,25 +435,8 @@ describe('rejectEditRequestEntry', () => {
     };
     expect(reqUpdate.values).toMatchObject({
       status: 'rejected',
-      resolverComment: 'not quite a fianchetto',
     });
     expect(mockTxUpdateChunks).not.toHaveBeenCalled();
-  });
-
-  it('rejects with the validation error when the resolver comment is over-length', async () => {
-    mockGetEditRequestById.mockResolvedValue({
-      id: REQUEST_ID,
-      chunkId: CHUNK_ID,
-      proposerId: PROPOSER_ID,
-      status: 'pending',
-    });
-    mockDraftChunk();
-
-    const { rejectEditRequestEntry } = await import('./mutations');
-    const result = await rejectEditRequestEntry(REQUEST_ID, 'x'.repeat(5000));
-
-    expect(result).toMatchObject({ error: expect.stringMatching(/characters or fewer/i) });
-    expect(mockTxUpdateChunkEditRequests).not.toHaveBeenCalled();
   });
 
   it('does not notify the proposer on reject (intentionally silent)', async () => {
@@ -472,7 +454,7 @@ describe('rejectEditRequestEntry', () => {
     mockDraftChunk();
 
     const { rejectEditRequestEntry } = await import('./mutations');
-    await rejectEditRequestEntry(REQUEST_ID, 'not quite a fianchetto');
+    await rejectEditRequestEntry(REQUEST_ID);
 
     expect(mockCreateNotification).not.toHaveBeenCalled();
   });

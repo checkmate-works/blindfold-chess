@@ -2451,7 +2451,6 @@
       "formHint": "Edit only what you'd like to change. Identical-to-current submissions are rejected automatically.",
       "deletedProposer": "(deleted user)",
       "proposerComment": "Reason from the proposer",
-      "resolverComment": "Reason from the owner",
       "justNow": "just now",
       "status": {
         "pending": "Pending",
@@ -2480,11 +2479,9 @@
         "acceptConfirmTitle": "Accept this suggestion?",
         "acceptConfirmMessage": "The proposed fields will be applied to this chunk immediately.",
         "rejectConfirmTitle": "Reject this suggestion?",
-        "rejectConfirmMessage": "The proposer will be notified. You can leave an optional explanation below.",
-        "rejectCommentLabel": "Optional response",
-        "rejectCommentPlaceholder": "Why this doesn't fit, what would (e.g. \"Closer to fianchetto setup, but bishop is missing\")",
+        "rejectConfirmMessage": "The proposer will not be notified. They will see the rejected status if they revisit this page.",
         "withdrawConfirmTitle": "Withdraw your suggestion?",
-        "withdrawConfirmMessage": "The chunk owner will see the suggestion has been withdrawn."
+        "withdrawConfirmMessage": "The chunk owner will not be notified. They will see the queue count drop on their next visit."
       },
       "errors": {
         "signInRequired": "Please sign in to submit a suggestion.",

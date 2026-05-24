@@ -20,10 +20,10 @@ export function isChunkEditRequestStatus(value: unknown): value is ChunkEditRequ
 }
 
 /**
- * Practical upper bound for the `comment` field on a request and the
- * `resolver_comment` field on a resolved request. The DB column is `text`
- * (unbounded); the cap below keeps the UI honest. 2,000 chars covers a
- * full paragraph or two of rationale without enabling spam-length blobs.
+ * Practical upper bound for the proposer-side `comment` field on a
+ * request. The DB column is `text` (unbounded); the cap below keeps
+ * the UI honest. 2,000 chars covers a full paragraph or two of
+ * rationale without enabling spam-length blobs.
  */
 export const CHUNK_EDIT_REQUEST_COMMENT_MAX_LENGTH = 2000;
 
@@ -146,26 +146,4 @@ export function validateSubmitEditRequest(
     hasDescriptionProposal: descriptionSupplied,
     comment: trimmedComment.length === 0 ? null : trimmedComment,
   };
-}
-
-/**
- * Validate a resolver comment (used when an owner rejects a request).
- * Returns a tagged result rather than overloading a `string` return
- * value with both "the trimmed comment" and "an error message".
- */
-export type ResolverCommentResult =
-  | { ok: true; value: string | null }
-  | { ok: false; error: string };
-
-export function parseResolverComment(comment: string | null | undefined): ResolverCommentResult {
-  if (comment == null) return { ok: true, value: null };
-  const trimmed = comment.trim();
-  if (trimmed.length === 0) return { ok: true, value: null };
-  if (trimmed.length > CHUNK_EDIT_REQUEST_COMMENT_MAX_LENGTH) {
-    return {
-      ok: false,
-      error: `Comment must be ${CHUNK_EDIT_REQUEST_COMMENT_MAX_LENGTH} characters or fewer`,
-    };
-  }
-  return { ok: true, value: trimmed };
 }

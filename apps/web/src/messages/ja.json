@@ -2451,7 +2451,6 @@
       "formHint": "変更したい箇所のみを編集してください。現在の内容と完全に同じ提案は自動的に拒否されます。",
       "deletedProposer": "(削除されたユーザー)",
       "proposerComment": "提案者からの説明",
-      "resolverComment": "オーナーからの返信",
       "justNow": "たった今",
       "status": {
         "pending": "未対応",
@@ -2480,11 +2479,9 @@
         "acceptConfirmTitle": "この提案を採用しますか？",
         "acceptConfirmMessage": "提案された内容が直ちにチャンクに反映されます。",
         "rejectConfirmTitle": "この提案を却下しますか？",
-        "rejectConfirmMessage": "提案者に通知されます。必要であれば理由を添えられます。",
-        "rejectCommentLabel": "返信（任意）",
-        "rejectCommentPlaceholder": "なぜ合わないか、どうすればよいかなど（例：「フィアンケットに近いですが、ビショップがありません」）",
+        "rejectConfirmMessage": "提案者には通知されません。再訪したときに却下されたステータスが見えます。",
         "withdrawConfirmTitle": "この提案を取り下げますか？",
-        "withdrawConfirmMessage": "オーナーには取り下げられたことが通知されます。"
+        "withdrawConfirmMessage": "オーナーには通知されません。再訪したときに件数が減って見えます。"
       },
       "errors": {
         "signInRequired": "提案を送信するにはサインインしてください。",

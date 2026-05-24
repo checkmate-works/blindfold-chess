@@ -11,7 +11,7 @@ import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { getEditRequestById, getViewerPendingEditRequestForChunk } from './queries';
 import type { SubmitEditRequestPayload } from './validation';
-import { parseResolverComment, validateSubmitEditRequest } from './validation';
+import { validateSubmitEditRequest } from './validation';
 
 /**
  * Server-side core for the Qiita-style "suggest an edit" flow on a
@@ -147,7 +147,6 @@ export async function submitEditRequestEntry(params: {
 type ResolveParams = {
   requestId: string;
   action: 'accept' | 'reject' | 'withdraw';
-  resolverComment?: string | null;
 };
 
 const ACTIVITY_ACTION: Record<ResolveParams['action'], string> = {
@@ -205,15 +204,6 @@ async function resolveEditRequest(params: ResolveParams): Promise<ResolveEditReq
     }
   }
 
-  let resolvedComment: string | null = null;
-  if (params.action === 'reject') {
-    const commentResult = parseResolverComment(params.resolverComment);
-    if (!commentResult.ok) {
-      return { error: commentResult.error };
-    }
-    resolvedComment = commentResult.value;
-  }
-
   const now = new Date();
   const terminal = TERMINAL_STATUS[params.action];
 
@@ -224,7 +214,6 @@ async function resolveEditRequest(params: ResolveParams): Promise<ResolveEditReq
         status: terminal,
         resolvedAt: now,
         resolverId: user.id,
-        resolverComment: resolvedComment,
       })
       .where(and(eq(chunkEditRequests.id, request.id), eq(chunkEditRequests.status, 'pending')));
 
@@ -304,11 +293,8 @@ export function acceptEditRequestEntry(requestId: string): Promise<ResolveEditRe
   return resolveEditRequest({ requestId, action: 'accept' });
 }
 
-export function rejectEditRequestEntry(
-  requestId: string,
-  resolverComment?: string | null
-): Promise<ResolveEditRequestResult> {
-  return resolveEditRequest({ requestId, action: 'reject', resolverComment });
+export function rejectEditRequestEntry(requestId: string): Promise<ResolveEditRequestResult> {
+  return resolveEditRequest({ requestId, action: 'reject' });
 }
 
 export function withdrawEditRequestEntry(requestId: string): Promise<ResolveEditRequestResult> {

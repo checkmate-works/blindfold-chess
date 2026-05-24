@@ -138,7 +138,6 @@ export async function EditRequestSection({
                   currentTitle={currentTitle}
                   currentDescription={currentDescription}
                   comment={request.comment}
-                  resolverComment={request.resolverComment}
                   viewerIsOwner={viewerIsOwner}
                   viewerIsProposer={!!viewerId && request.proposerId === viewerId}
                   locale={locale}

@@ -4,7 +4,6 @@ import {
   CHUNK_EDIT_REQUEST_COMMENT_MAX_LENGTH,
   CHUNK_EDIT_REQUEST_DESCRIPTION_MAX_LENGTH,
   isChunkEditRequestStatus,
-  parseResolverComment,
   validateSubmitEditRequest,
 } from './validation';
 
@@ -102,25 +101,5 @@ describe('validateSubmitEditRequest', () => {
       { title: 'X', description: null }
     );
     expect(result).toMatch(/identical to the current description/i);
-  });
-});
-
-describe('parseResolverComment', () => {
-  it('returns null for undefined / empty / whitespace', () => {
-    expect(parseResolverComment(undefined)).toEqual({ ok: true, value: null });
-    expect(parseResolverComment(null)).toEqual({ ok: true, value: null });
-    expect(parseResolverComment('   ')).toEqual({ ok: true, value: null });
-  });
-
-  it('trims a non-empty comment', () => {
-    expect(parseResolverComment('  hello  ')).toEqual({ ok: true, value: 'hello' });
-  });
-
-  it('returns an error for over-length comments', () => {
-    const result = parseResolverComment('x'.repeat(CHUNK_EDIT_REQUEST_COMMENT_MAX_LENGTH + 1));
-    expect(result).toEqual({
-      ok: false,
-      error: expect.stringMatching(/characters or fewer/i),
-    });
   });
 });

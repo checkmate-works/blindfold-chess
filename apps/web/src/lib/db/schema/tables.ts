@@ -3035,14 +3035,6 @@ export const chunkEditRequests = pgTable(
      * after the resolver's account is hard-deleted (FK SET NULL).
      */
     resolverId: uuid('resolver_id'),
-    /**
-     * Optional message from the resolver — typically the chunk owner
-     * explaining why a suggestion was rejected. Not surfaced for
-     * accept paths (the acceptance is itself the response) but the
-     * column stays generic so a future "accept with note" UI does not
-     * need a schema change.
-     */
-    resolverComment: text('resolver_comment'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true })
       .defaultNow()

@@ -37,8 +37,6 @@ type Props = {
   currentDescription: string | null;
   /** Optional proposer rationale. */
   comment: string | null;
-  /** Owner's response when status === 'rejected'. */
-  resolverComment: string | null;
   /** Viewer role flags resolved server-side. */
   viewerIsOwner: boolean;
   viewerIsProposer: boolean;
@@ -103,7 +101,6 @@ export function EditRequestItem(props: Props) {
   const [pending, setPending] = useState<null | 'accept' | 'reject' | 'withdraw'>(null);
   const [error, setError] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<null | 'accept' | 'reject' | 'withdraw'>(null);
-  const [rejectComment, setRejectComment] = useState('');
 
   function localizeError(code: string): string {
     return WELL_KNOWN_ERRORS.has(code) ? t(`errors.${code}` as 'errors.signInRequired') : code;
@@ -114,11 +111,7 @@ export function EditRequestItem(props: Props) {
     setPending(kind);
     let result;
     if (kind === 'accept') result = await acceptEditRequest(props.requestId);
-    else if (kind === 'reject')
-      result = await rejectEditRequest(
-        props.requestId,
-        rejectComment.trim().length === 0 ? null : rejectComment
-      );
+    else if (kind === 'reject') result = await rejectEditRequest(props.requestId);
     else result = await withdrawEditRequest(props.requestId);
     setPending(null);
     setConfirm(null);
@@ -127,7 +120,6 @@ export function EditRequestItem(props: Props) {
       setError(localizeError(result.error));
       return;
     }
-    setRejectComment('');
     router.refresh();
   }
 
@@ -183,15 +175,6 @@ export function EditRequestItem(props: Props) {
         <div className="rounded bg-muted/40 px-3 py-2 text-sm whitespace-pre-wrap break-words">
           <p className="mb-1 text-xs font-medium text-muted-foreground">{t('proposerComment')}</p>
           {props.comment}
-        </div>
-      )}
-
-      {props.status === 'rejected' && props.resolverComment && (
-        <div className="rounded bg-rose-50 px-3 py-2 text-sm whitespace-pre-wrap break-words dark:bg-rose-950/40">
-          <p className="mb-1 text-xs font-medium text-rose-900 dark:text-rose-200">
-            {t('resolverComment')}
-          </p>
-          {props.resolverComment}
         </div>
       )}
 
@@ -271,24 +254,7 @@ export function EditRequestItem(props: Props) {
         confirmVariant="danger"
         onConfirm={() => runResolution('reject')}
         onCancel={() => setConfirm(null)}
-      >
-        <div className="mt-3">
-          <label
-            htmlFor={`reject-comment-${props.requestId}`}
-            className="block text-sm font-medium mb-1"
-          >
-            {t('actions.rejectCommentLabel')}
-          </label>
-          <textarea
-            id={`reject-comment-${props.requestId}`}
-            value={rejectComment}
-            onChange={(e) => setRejectComment(e.target.value)}
-            rows={3}
-            placeholder={t('actions.rejectCommentPlaceholder')}
-            className="w-full px-3 py-2 rounded border border-border bg-card text-foreground text-sm"
-          />
-        </div>
-      </ConfirmationModal>
+      />
 
       <ConfirmationModal
         isOpen={confirm === 'withdraw'}
