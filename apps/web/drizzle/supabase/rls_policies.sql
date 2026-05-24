@@ -459,6 +459,40 @@ CREATE POLICY "chunk_edit_requests_update" ON "chunk_edit_requests"
   );
 
 -- =============================================================================
+-- chunk_feedback_topics (author-flagged "I want feedback on these fields")
+-- =============================================================================
+-- SELECT is open so visitors can see which fields the author is workshopping
+-- (the detail-page callout and the suggestion form both read this). Writes
+-- are restricted to the chunk owner; the application layer additionally
+-- limits writes to drafts and resets the row set on every chunk save. The
+-- WITH CHECK below is the structural backstop against direct API misuse.
+ALTER TABLE "chunk_feedback_topics" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "chunk_feedback_topics_select" ON "chunk_feedback_topics";
+CREATE POLICY "chunk_feedback_topics_select" ON "chunk_feedback_topics"
+  FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "chunk_feedback_topics_insert" ON "chunk_feedback_topics";
+CREATE POLICY "chunk_feedback_topics_insert" ON "chunk_feedback_topics"
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM chunks c
+      WHERE c.id = chunk_id
+        AND c.user_id = auth.uid()
+        AND c.deleted_at IS NULL
+    )
+  );
+
+DROP POLICY IF EXISTS "chunk_feedback_topics_delete" ON "chunk_feedback_topics";
+CREATE POLICY "chunk_feedback_topics_delete" ON "chunk_feedback_topics"
+  FOR DELETE USING (
+    EXISTS (
+      SELECT 1 FROM chunks c
+      WHERE c.id = chunk_id AND c.user_id = auth.uid()
+    )
+  );
+
+-- =============================================================================
 -- position_chunks (junction — public read, position-owner write)
 -- =============================================================================
 -- INSERT/DELETE are gated on the POSITION owner, not the chunk owner. Chunk

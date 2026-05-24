@@ -3066,6 +3066,56 @@ export type ChunkEditRequest = typeof chunkEditRequests.$inferSelect;
 export type NewChunkEditRequest = typeof chunkEditRequests.$inferInsert;
 
 /**
+ * Chunk Feedback Topics — per-chunk flags marking which fields the author
+ * explicitly wants feedback on.
+ *
+ * @design why a separate table (vs. boolean columns / array on `chunks`)
+ * Feedback flags are only meaningful while the chunk is in draft and
+ * are dropped on publish. A normalized table makes that lifecycle a
+ * single `DELETE WHERE chunk_id = ?` (instead of resetting boolean
+ * columns to false, which leaves stale NULL-ish state behind for
+ * every published chunk that never used the feature). Sparse-data
+ * efficiency: most published chunks carry zero rows; horizontal
+ * columns would burn space across every row regardless. The same
+ * normalization idiom is used by `likes`, `position_chunks`,
+ * `topic_posts`, etc.
+ *
+ * @design topic as varchar (not pgEnum)
+ * Matches `chunks.status` / `topic_posts.topicType` / `moderation_actions.action`:
+ * new topics (`fen`, `annotations`, …) can be added without an
+ * ALTER TYPE migration. The known-good set is enforced at the
+ * application layer in `validateFeedbackTopics`.
+ *
+ * @design composite primary key
+ * No surrogate `id` column — rows are never updated (write strategy
+ * is "DELETE all + INSERT new" on every chunk save) and nothing
+ * else FKs into this table, so `(chunk_id, topic)` is a sufficient
+ * key and the UNIQUE constraint comes for free.
+ *
+ * @design ON DELETE CASCADE on chunk_id
+ * The data has no value once the parent chunk is gone, so CASCADE
+ * handles cleanup automatically without a service-role sweep.
+ *
+ * @design no updated_at
+ * Junction-style table convention (see the file-level
+ * `@design updated_at update policy` note on `positions`).
+ */
+export const chunkFeedbackTopics = pgTable(
+  'chunk_feedback_topics',
+  {
+    chunkId: uuid('chunk_id')
+      .notNull()
+      .references(() => chunks.id, { onDelete: 'cascade' }),
+    topic: varchar('topic', { length: 50 }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.chunkId, table.topic] })]
+);
+
+export type ChunkFeedbackTopic = typeof chunkFeedbackTopics.$inferSelect;
+export type NewChunkFeedbackTopic = typeof chunkFeedbackTopics.$inferInsert;
+
+/**
  * Position Chunks — junction between memory-type positions and the chunks
  * (piece-coordination patterns) that appear in them.
  *

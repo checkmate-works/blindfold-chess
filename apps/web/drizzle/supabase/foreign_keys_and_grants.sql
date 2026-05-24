@@ -587,6 +587,20 @@ GRANT SELECT, INSERT, UPDATE ON TABLE public.chunk_edit_requests TO authenticate
 GRANT SELECT ON TABLE public.chunk_edit_requests TO anon;
 
 -- =============================================================================
+-- chunk_feedback_topics
+-- =============================================================================
+
+-- The FK to chunks is managed by Drizzle (ON DELETE CASCADE — physical
+-- chunk deletion takes its feedback flags with it). Grants: open read so
+-- the detail-page callout and the suggestion form can render the flags
+-- to anyone; authenticated INSERT / DELETE for the chunk owner (gated by
+-- the RLS policies). No UPDATE — the write strategy is "DELETE all rows
+-- for this chunk + INSERT new set", so the column-level mutations never
+-- need UPDATE.
+GRANT SELECT, INSERT, DELETE ON TABLE public.chunk_feedback_topics TO authenticated;
+GRANT SELECT ON TABLE public.chunk_feedback_topics TO anon;
+
+-- =============================================================================
 -- position_chunks
 -- =============================================================================
 
