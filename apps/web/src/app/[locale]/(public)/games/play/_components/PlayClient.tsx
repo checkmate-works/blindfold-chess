@@ -184,7 +184,8 @@ export function PlayClient({
 
   // Bumped once per successful player move commit. Drives the inline peek
   // accordion's auto-collapse so each move requires a fresh expand, matching
-  // the modal mode's "1 open action = 1 peek" semantics.
+  // the modal mode's "1 open action = 1 peek" semantics. Also drives the
+  // scroll-to-top effect below for peek+inline users.
   const [playerMoveCommitCount, setPlayerMoveCommitCount] = useState(0);
   const handleMoveCommitted = useCallback(
     (inputMethod: Parameters<typeof commitMoveLog>[0]) => {
@@ -193,6 +194,27 @@ export function PlayClient({
     },
     [commitMoveLog]
   );
+
+  // Scroll back to PageTitle after a player move commit while in peek+inline
+  // mode. The inline board auto-collapses on commit (so the area the user
+  // was looking at disappears) and the "AI is thinking" status lives in the
+  // PageTitle at the top — bringing it into the first view makes that
+  // status immediately visible without the user having to scroll back up.
+  // Modal-peek and always-visible modes don't need this: modal users have
+  // no expand area to obscure the title, and always-visible users have the
+  // board on-screen continuously anyway.
+  //
+  // Read the latest `peek+inline` predicate via a ref so the effect's only
+  // re-trigger is the commit counter — otherwise unrelated preference
+  // changes (piece colors, theme, etc.) would also cause a scroll.
+  const peekInlineModeRef = useRef(shouldShowInlinePeekHeader(preferences));
+  peekInlineModeRef.current = shouldShowInlinePeekHeader(preferences);
+  useEffect(() => {
+    if (playerMoveCommitCount === 0) return; // skip initial mount
+    if (!peekInlineModeRef.current) return;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+  }, [playerMoveCommitCount]);
 
   // Board-driven move handler — only wired through to InlineBoardView when
   // the always-visible board is being rendered AND the player can actually

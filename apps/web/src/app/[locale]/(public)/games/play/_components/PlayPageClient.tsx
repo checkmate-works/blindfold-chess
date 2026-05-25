@@ -53,7 +53,15 @@ export function PlayPageClient({
   const { aiMoveDisplay, isAiThinking, aiMoveSignal } = gameSession;
   const { error: moveError, lastAttemptedInput } = gameSession.moveInput;
   const { isLoadingFromStorage } = gameSession.gameState;
-  const { isHydrated } = useGamePreferences();
+  const { preferences: globalPreferences, isHydrated } = useGamePreferences();
+
+  // Effective boardVisibility = per-game override if present, else global.
+  // Drives whether the full-screen AiMovePulse fires: in always-visible
+  // mode the user can see the AI's piece move directly, so the
+  // peripheral-vision cue is redundant and slightly distracting.
+  const effectiveBoardVisibility =
+    gameSession.gameConfig.perGamePrefs?.boardVisibility ?? globalPreferences.boardVisibility;
+  const aiPulseEnabled = effectiveBoardVisibility !== 'always';
   // Matches the `isInitializing` predicate in `PlayClient` so the title and
   // the input panel both transition out of their "loading" state in lockstep.
   const isInitializing = isLoadingFromStorage || !isHydrated;
@@ -87,7 +95,7 @@ export function PlayPageClient({
   return (
     <>
       {/* Fixed / out-of-flow — kept outside `space-y-8` so it adds no margin. */}
-      <AiMovePulse signal={aiMoveSignal} />
+      <AiMovePulse signal={aiMoveSignal} enabled={aiPulseEnabled} />
       <div className="space-y-8">
         <PageTitle>{titleContent}</PageTitle>
         <PagePanel>
