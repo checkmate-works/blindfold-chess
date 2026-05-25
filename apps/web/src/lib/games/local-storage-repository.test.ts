@@ -559,5 +559,206 @@ describe('LocalStorageGameRepository', () => {
       const games = await fresh.loadAll();
       expect(games).toEqual([]);
     });
+
+    describe('boardVisibility migration', () => {
+      it('migrates legacy `gamePreferences.showBoardButtonInGame: true` → `boardVisibility: "peek"`', async () => {
+        const legacyPayload = [
+          {
+            id: 'pref-legacy-true',
+            date: '2025-06-01T00:00:00.000Z',
+            moves: [],
+            playerColor: 'white',
+            engineConfig: { kind: 'stockfish', skillLevel: 5 },
+            status: 'in_progress',
+            gamePreferences: {
+              showBoardButtonInGame: true,
+              highlightLastMove: true,
+              showOwnPieces: true,
+              showOpponentPieces: true,
+              pieceShapeMode: 'normal',
+              pieceColors: 'normal',
+              peekMode: 'modal',
+            },
+          },
+        ];
+        localStorage.setItem('blindfold_chess_games', JSON.stringify(legacyPayload));
+
+        const fresh = new LocalStorageGameRepository();
+        const game = await fresh.load('pref-legacy-true');
+
+        expect(game?.gamePreferences?.boardVisibility).toBe('peek');
+        // Legacy field is stripped from the in-app shape.
+        expect(
+          (game?.gamePreferences as unknown as { showBoardButtonInGame?: boolean })
+            ?.showBoardButtonInGame
+        ).toBeUndefined();
+      });
+
+      it('migrates legacy `gamePreferences.showBoardButtonInGame: false` → `boardVisibility: "never"`', async () => {
+        const legacyPayload = [
+          {
+            id: 'pref-legacy-false',
+            date: '2025-06-01T00:00:00.000Z',
+            moves: [],
+            playerColor: 'white',
+            engineConfig: { kind: 'stockfish', skillLevel: 5 },
+            status: 'in_progress',
+            gamePreferences: {
+              showBoardButtonInGame: false,
+              highlightLastMove: true,
+              showOwnPieces: true,
+              showOpponentPieces: true,
+              pieceShapeMode: 'normal',
+              pieceColors: 'normal',
+              peekMode: 'modal',
+            },
+          },
+        ];
+        localStorage.setItem('blindfold_chess_games', JSON.stringify(legacyPayload));
+
+        const fresh = new LocalStorageGameRepository();
+        const game = await fresh.load('pref-legacy-false');
+
+        expect(game?.gamePreferences?.boardVisibility).toBe('never');
+      });
+
+      it('keeps a record that already carries `boardVisibility` untouched', async () => {
+        const newPayload = [
+          {
+            id: 'pref-new',
+            date: '2026-05-01T00:00:00.000Z',
+            moves: [],
+            playerColor: 'white',
+            engineConfig: { kind: 'stockfish', skillLevel: 5 },
+            status: 'in_progress',
+            gamePreferences: {
+              boardVisibility: 'always',
+              highlightLastMove: true,
+              showOwnPieces: true,
+              showOpponentPieces: true,
+              pieceShapeMode: 'normal',
+              pieceColors: 'normal',
+              peekMode: 'modal',
+            },
+          },
+        ];
+        localStorage.setItem('blindfold_chess_games', JSON.stringify(newPayload));
+
+        const fresh = new LocalStorageGameRepository();
+        const game = await fresh.load('pref-new');
+
+        expect(game?.gamePreferences?.boardVisibility).toBe('always');
+      });
+
+      it('prefers the new `boardVisibility` field when both are present (idempotent on records written by upgraded code)', async () => {
+        const mixedPayload = [
+          {
+            id: 'pref-mixed',
+            date: '2026-05-15T00:00:00.000Z',
+            moves: [],
+            playerColor: 'white',
+            engineConfig: { kind: 'stockfish', skillLevel: 5 },
+            status: 'in_progress',
+            gamePreferences: {
+              // Both present — would only occur if data was hand-edited.
+              // New field wins for forward-compat reasons.
+              boardVisibility: 'always',
+              showBoardButtonInGame: false,
+              highlightLastMove: true,
+              showOwnPieces: true,
+              showOpponentPieces: true,
+              pieceShapeMode: 'normal',
+              pieceColors: 'normal',
+              peekMode: 'modal',
+            },
+          },
+        ];
+        localStorage.setItem('blindfold_chess_games', JSON.stringify(mixedPayload));
+
+        const fresh = new LocalStorageGameRepository();
+        const game = await fresh.load('pref-mixed');
+
+        expect(game?.gamePreferences?.boardVisibility).toBe('always');
+      });
+    });
+
+    describe('preferenceChangeLog migration', () => {
+      it('migrates a legacy showBoardButtonInGame entry into a boardVisibility entry', async () => {
+        const legacyPayload = [
+          {
+            id: 'log-legacy',
+            date: '2025-08-01T00:00:00.000Z',
+            moves: [],
+            playerColor: 'white',
+            engineConfig: { kind: 'stockfish', skillLevel: 5 },
+            status: 'in_progress',
+            preferenceChangeLog: [
+              { atMoveIndex: 3, key: 'showBoardButtonInGame', from: true, to: false },
+            ],
+          },
+        ];
+        localStorage.setItem('blindfold_chess_games', JSON.stringify(legacyPayload));
+
+        const fresh = new LocalStorageGameRepository();
+        const game = await fresh.load('log-legacy');
+
+        expect(game?.preferenceChangeLog).toEqual([
+          { atMoveIndex: 3, key: 'boardVisibility', from: 'peek', to: 'never' },
+        ]);
+      });
+
+      it('leaves non-showBoardButtonInGame entries untouched', async () => {
+        const payload = [
+          {
+            id: 'log-mixed',
+            date: '2025-08-01T00:00:00.000Z',
+            moves: [],
+            playerColor: 'white',
+            engineConfig: { kind: 'stockfish', skillLevel: 5 },
+            status: 'in_progress',
+            preferenceChangeLog: [
+              { atMoveIndex: 1, key: 'showBoardButtonInGame', from: false, to: true },
+              { atMoveIndex: 5, key: 'pieceColors', from: 'normal', to: 'white-only' },
+              { atMoveIndex: 9, key: 'peekMode', from: 'modal', to: 'inline' },
+            ],
+          },
+        ];
+        localStorage.setItem('blindfold_chess_games', JSON.stringify(payload));
+
+        const fresh = new LocalStorageGameRepository();
+        const game = await fresh.load('log-mixed');
+
+        expect(game?.preferenceChangeLog).toEqual([
+          // First entry migrated; others unchanged.
+          { atMoveIndex: 1, key: 'boardVisibility', from: 'never', to: 'peek' },
+          { atMoveIndex: 5, key: 'pieceColors', from: 'normal', to: 'white-only' },
+          { atMoveIndex: 9, key: 'peekMode', from: 'modal', to: 'inline' },
+        ]);
+      });
+
+      it('accepts a new-shape boardVisibility entry as-is', async () => {
+        const payload = [
+          {
+            id: 'log-new',
+            date: '2026-05-01T00:00:00.000Z',
+            moves: [],
+            playerColor: 'white',
+            engineConfig: { kind: 'stockfish', skillLevel: 5 },
+            status: 'in_progress',
+            preferenceChangeLog: [
+              { atMoveIndex: 4, key: 'boardVisibility', from: 'peek', to: 'always' },
+            ],
+          },
+        ];
+        localStorage.setItem('blindfold_chess_games', JSON.stringify(payload));
+
+        const fresh = new LocalStorageGameRepository();
+        const game = await fresh.load('log-new');
+
+        expect(game?.preferenceChangeLog).toEqual([
+          { atMoveIndex: 4, key: 'boardVisibility', from: 'peek', to: 'always' },
+        ]);
+      });
+    });
   });
 });
