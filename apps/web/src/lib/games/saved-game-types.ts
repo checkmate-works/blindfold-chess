@@ -71,6 +71,12 @@ export type PreferenceChangeLogEntry =
       key: 'boardVisibility';
       from: PerGamePreferences['boardVisibility'];
       to: PerGamePreferences['boardVisibility'];
+    }
+  | {
+      atMoveIndex: number;
+      key: 'moveInputMode';
+      from: PerGamePreferences['moveInputMode'];
+      to: PerGamePreferences['moveInputMode'];
     };
 
 /**

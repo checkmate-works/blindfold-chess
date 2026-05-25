@@ -42,6 +42,9 @@ export function foldPreferences(
       case 'boardVisibility':
         result.boardVisibility = entry.to;
         break;
+      case 'moveInputMode':
+        result.moveInputMode = entry.to;
+        break;
     }
   }
   return result;

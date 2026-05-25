@@ -13,6 +13,7 @@ const initial: PerGamePreferences = {
   pieceShapeMode: 'normal',
   pieceColors: 'normal',
   peekMode: 'modal',
+  moveInputMode: 'text',
 };
 
 describe('foldPreferences', () => {
@@ -83,6 +84,13 @@ describe('foldPreferences', () => {
       { atMoveIndex: 4, key: 'boardVisibility', from: 'never', to: 'always' },
     ];
     expect(foldPreferences(initial, log).boardVisibility).toBe('always');
+  });
+
+  it('applies a moveInputMode change', () => {
+    const log: PreferenceChangeLogEntry[] = [
+      { atMoveIndex: 2, key: 'moveInputMode', from: 'text', to: 'button' },
+    ];
+    expect(foldPreferences(initial, log).moveInputMode).toBe('button');
   });
 
   it('does not mutate the initial snapshot', () => {

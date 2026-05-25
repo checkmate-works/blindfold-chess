@@ -37,6 +37,12 @@ type Props = {
   inlineBoardView?: ReactNode;
   onMoveCommitted?: (inputMethod: MoveInputMethod) => void;
   onMovePeek?: () => void;
+  /**
+   * Routes the MoveInputPanel mode-toggle through the per-game change log
+   * instead of the global `updatePreferences`. Optional so other surfaces
+   * (puzzle, practice) can keep the original global-write behavior.
+   */
+  setMoveInputMode?: (mode: GamePreferences['moveInputMode']) => void;
   onShowOperationLog?: () => void;
   /**
    * Opens the engine info modal — same pattern as `onShowOperationLog`.
@@ -77,6 +83,7 @@ export function GameInProgressPanel({
   inlineBoardView,
   onMoveCommitted,
   onMovePeek,
+  setMoveInputMode,
   onShowOperationLog,
   onShowEngineInfo,
   onShowSettings,
@@ -111,6 +118,7 @@ export function GameInProgressPanel({
         toggleTitle={t('switchInputMode')}
         playerColor={playerColor}
         onMoveCommitted={onMoveCommitted}
+        setMoveInputMode={setMoveInputMode}
         onMovePeek={onMovePeek}
         showInlineError={false}
       />

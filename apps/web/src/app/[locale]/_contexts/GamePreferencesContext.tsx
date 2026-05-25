@@ -38,6 +38,16 @@ export type PerGamePreferences = {
   pieceShapeMode: 'normal' | 'circles-all' | 'circles-own' | 'circles-opponent';
   pieceColors: 'normal' | 'white-only' | 'black-only';
   peekMode: 'modal' | 'inline';
+  /**
+   * Active move-input mode for this game. Per-game so mid-game switches
+   * (text → button → select) accumulate in the preference change log
+   * rather than mutating the user's global default. The user's per-game
+   * value falls back to the global `moveInputMode` when the per-game field
+   * is absent (legacy records). The orthogonal `enabledMoveInputModes`
+   * (which modes are even available to switch between) remains a global
+   * setting — it controls UI affordance availability, not per-game intent.
+   */
+  moveInputMode: 'text' | 'select' | 'button';
 };
 
 // Game preferences

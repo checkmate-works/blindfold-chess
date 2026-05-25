@@ -175,6 +175,10 @@ export function PlayClient({
       // they always did, and a subsequent mid-game edit + save will backfill
       // the per-game record forward-compat.
       peekMode: perGamePrefs.peekMode ?? globalPreferences.peekMode,
+      // moveInputMode was promoted to per-game later still — same fallback
+      // pattern. Legacy records simply track the global until the user
+      // toggles in this game, at which point per-game takes over.
+      moveInputMode: perGamePrefs.moveInputMode ?? globalPreferences.moveInputMode,
     };
   }, [globalPreferences, perGamePrefs]);
 
@@ -371,6 +375,12 @@ export function PlayClient({
                 playerColor={playerSide === 'black' ? 'b' : 'w'}
                 onMoveCommitted={handleMoveCommitted}
                 onMovePeek={recordMovePeek}
+                // Route MoveInputPanel's mode toggle through the per-game
+                // change-log machinery instead of mutating the user's global
+                // moveInputMode default. Same pattern as boardVisibility /
+                // peekMode — mid-game switches are session-scoped, not a
+                // global preference change.
+                setMoveInputMode={(mode) => setPerGamePref('moveInputMode', mode)}
                 onShowOperationLog={() => setShowOperationLogModal(true)}
                 onShowEngineInfo={() => setShowEngineInfoModal(true)}
                 onShowSettings={

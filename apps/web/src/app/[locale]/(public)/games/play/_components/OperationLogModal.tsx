@@ -104,6 +104,8 @@ export function OperationLogModal({
         return t('operationLog.initialSettings.labelPieceColor');
       case 'peekMode':
         return t('operationLog.initialSettings.labelPeekMode');
+      case 'moveInputMode':
+        return t('operationLog.initialSettings.labelMoveInputMode');
     }
   };
 
@@ -126,6 +128,8 @@ export function OperationLogModal({
         return tPrefs(`pieceColors.${value as PerGamePreferences['pieceColors']}`);
       case 'peekMode':
         return tPrefsControls(`peekModes.${value as PerGamePreferences['peekMode']}`);
+      case 'moveInputMode':
+        return tPrefsControls(`moveInputModes.${value as PerGamePreferences['moveInputMode']}`);
     }
   };
 
@@ -204,6 +208,19 @@ export function OperationLogModal({
                         recorded vs not. */}
                     {gamePreferences.peekMode
                       ? tPrefsControls(`peekModes.${gamePreferences.peekMode}`)
+                      : '—'}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-3 px-4 py-2">
+                  <dt className="text-muted-foreground">
+                    {t('operationLog.initialSettings.labelMoveInputMode')}
+                  </dt>
+                  <dd className="text-right">
+                    {/* moveInputMode also entered PerGamePreferences late —
+                        older snapshots default to em-dash for the same
+                        recorded-vs-not reason. */}
+                    {gamePreferences.moveInputMode
+                      ? tPrefsControls(`moveInputModes.${gamePreferences.moveInputMode}`)
                       : '—'}
                   </dd>
                 </div>

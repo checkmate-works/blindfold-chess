@@ -338,6 +338,10 @@ export class LocalStorageGameRepository implements IGameRepository {
       case 'boardVisibility': {
         return isBoardVisibility(e.from) && isBoardVisibility(e.to);
       }
+      case 'moveInputMode': {
+        const modes = ['text', 'select', 'button'];
+        return modes.includes(e.from as string) && modes.includes(e.to as string);
+      }
       default:
         return false;
     }

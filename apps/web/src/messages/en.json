@@ -319,6 +319,11 @@
       "peekModes": {
         "modal": "Modal",
         "inline": "Inline"
+      },
+      "moveInputModes": {
+        "text": "Text",
+        "select": "List",
+        "button": "Button"
       }
     }
   },
@@ -1772,7 +1777,8 @@
         "labelShowOpponentPieces": "Show opponent pieces",
         "labelPieceShape": "Piece shape",
         "labelPieceColor": "Piece color",
-        "labelPeekMode": "Peek mode"
+        "labelPeekMode": "Peek mode",
+        "labelMoveInputMode": "Move input"
       },
       "changeLog": {
         "title": "Change Log",

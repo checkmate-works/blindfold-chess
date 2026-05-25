@@ -315,6 +315,11 @@
       "peekModes": {
         "modal": "Modal",
         "inline": "Inline"
+      },
+      "moveInputModes": {
+        "text": "Texto",
+        "select": "Lista",
+        "button": "Botão"
       }
     }
   },
@@ -1768,7 +1773,8 @@
         "labelShowOpponentPieces": "Mostrar peças do oponente",
         "labelPieceShape": "Forma das peças",
         "labelPieceColor": "Cor das peças",
-        "labelPeekMode": "Modo de espiar"
+        "labelPeekMode": "Modo de espiar",
+        "labelMoveInputMode": "Entrada de movimento"
       },
       "changeLog": {
         "title": "Histórico de alterações",

@@ -49,6 +49,7 @@ const DEFAULT_PREFS: PerGamePreferences = {
   pieceShapeMode: 'normal',
   pieceColors: 'normal',
   peekMode: 'modal',
+  moveInputMode: 'text',
 };
 
 function renderModal(overrides?: {
