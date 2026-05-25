@@ -1763,7 +1763,8 @@
         "labelShowOwnPieces": "自分の駒を表示",
         "labelShowOpponentPieces": "相手の駒を表示",
         "labelPieceShape": "駒の形状",
-        "labelPieceColor": "駒の色"
+        "labelPieceColor": "駒の色",
+        "labelPeekMode": "ピーク表示方式"
       }
     },
     "settings": {

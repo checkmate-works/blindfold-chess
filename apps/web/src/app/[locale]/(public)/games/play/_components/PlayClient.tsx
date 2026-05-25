@@ -141,6 +141,12 @@ export function PlayClient({
       showOpponentPieces: perGamePrefs.showOpponentPieces,
       pieceShapeMode: perGamePrefs.pieceShapeMode,
       pieceColors: perGamePrefs.pieceColors,
+      // peekMode was added to PerGamePreferences after the field set settled,
+      // so legacy `gamePreferences` records on disk may not carry it.
+      // Falling back to the global value keeps those records rendering as
+      // they always did, and a subsequent mid-game edit + save will backfill
+      // the per-game record forward-compat.
+      peekMode: perGamePrefs.peekMode ?? globalPreferences.peekMode,
     };
   }, [globalPreferences, perGamePrefs]);
 

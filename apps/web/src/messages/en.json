@@ -1763,7 +1763,8 @@
         "labelShowOwnPieces": "Show own pieces",
         "labelShowOpponentPieces": "Show opponent pieces",
         "labelPieceShape": "Piece shape",
-        "labelPieceColor": "Piece color"
+        "labelPieceColor": "Piece color",
+        "labelPeekMode": "Peek mode"
       }
     },
     "settings": {

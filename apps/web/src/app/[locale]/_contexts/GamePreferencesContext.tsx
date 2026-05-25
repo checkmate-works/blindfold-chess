@@ -25,7 +25,13 @@ import {
 
 import { validatePreferences } from './game-preferences-validation';
 
-// Per-game preferences (subset of GamePreferences saved with each game)
+// Per-game preferences (subset of GamePreferences saved with each game).
+// `peekMode` is a "Controls"-tier setting in the global Preferences page but
+// is included here too: how the board peek behaves (modal popup vs inline
+// accordion) often changes per-game depending on how the player wants to
+// experience that specific session. Legacy records saved before this field
+// existed are tolerated via a `?? globalPreferences.peekMode` fallback at
+// every consumer site.
 export type PerGamePreferences = {
   showBoardButtonInGame: boolean;
   highlightLastMove: boolean;
@@ -33,6 +39,7 @@ export type PerGamePreferences = {
   showOpponentPieces: boolean;
   pieceShapeMode: 'normal' | 'circles-all' | 'circles-own' | 'circles-opponent';
   pieceColors: 'normal' | 'white-only' | 'black-only';
+  peekMode: 'modal' | 'inline';
 };
 
 // Game preferences

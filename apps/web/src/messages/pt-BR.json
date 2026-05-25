@@ -1759,7 +1759,8 @@
         "labelShowOwnPieces": "Mostrar peças próprias",
         "labelShowOpponentPieces": "Mostrar peças do oponente",
         "labelPieceShape": "Forma das peças",
-        "labelPieceColor": "Cor das peças"
+        "labelPieceColor": "Cor das peças",
+        "labelPeekMode": "Modo de espiar"
       }
     },
     "settings": {

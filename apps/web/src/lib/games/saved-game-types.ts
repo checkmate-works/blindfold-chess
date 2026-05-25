@@ -50,6 +50,12 @@ export type PreferenceChangeLogEntry =
       key: 'pieceColors';
       from: PerGamePreferences['pieceColors'];
       to: PerGamePreferences['pieceColors'];
+    }
+  | {
+      atMoveIndex: number;
+      key: 'peekMode';
+      from: PerGamePreferences['peekMode'];
+      to: PerGamePreferences['peekMode'];
     };
 
 /**

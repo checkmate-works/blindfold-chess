@@ -41,6 +41,7 @@ export function OperationLogModal({
 }: Props) {
   const t = useTranslations('play');
   const tPrefs = useTranslations('Preferences.game');
+  const tPrefsControls = useTranslations('Preferences.controls');
 
   // Initial Settings starts closed: the per-move log table is the modal's
   // primary content, so we don't push it below the fold for users that
@@ -134,6 +135,21 @@ export function OperationLogModal({
                   </dt>
                   <dd className="text-right">
                     {tPrefs(`pieceColors.${gamePreferences.pieceColors}`)}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-3 px-4 py-2">
+                  <dt className="text-muted-foreground">
+                    {t('operationLog.initialSettings.labelPeekMode')}
+                  </dt>
+                  <dd className="text-right">
+                    {/* peekMode was added to PerGamePreferences after this
+                        modal first shipped, so older snapshots may lack the
+                        field. Show an em-dash placeholder rather than
+                        inventing a value — honest about what was actually
+                        recorded vs not. */}
+                    {gamePreferences.peekMode
+                      ? tPrefsControls(`peekModes.${gamePreferences.peekMode}`)
+                      : '—'}
                   </dd>
                 </div>
               </dl>

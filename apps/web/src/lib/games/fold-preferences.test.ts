@@ -12,6 +12,7 @@ const initial: PerGamePreferences = {
   showOpponentPieces: true,
   pieceShapeMode: 'normal',
   pieceColors: 'normal',
+  peekMode: 'modal',
 };
 
 describe('foldPreferences', () => {
@@ -67,6 +68,13 @@ describe('foldPreferences', () => {
       { atMoveIndex: 5, key: 'showOpponentPieces', from: false, to: true },
     ];
     expect(foldPreferences(initial, log).showOpponentPieces).toBe(true);
+  });
+
+  it('applies a peekMode change', () => {
+    const log: PreferenceChangeLogEntry[] = [
+      { atMoveIndex: 3, key: 'peekMode', from: 'modal', to: 'inline' },
+    ];
+    expect(foldPreferences(initial, log).peekMode).toBe('inline');
   });
 
   it('does not mutate the initial snapshot', () => {

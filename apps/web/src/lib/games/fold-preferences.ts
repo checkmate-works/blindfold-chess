@@ -37,6 +37,9 @@ export function foldPreferences(
       case 'pieceColors':
         result.pieceColors = entry.to;
         break;
+      case 'peekMode':
+        result.peekMode = entry.to;
+        break;
     }
   }
   return result;

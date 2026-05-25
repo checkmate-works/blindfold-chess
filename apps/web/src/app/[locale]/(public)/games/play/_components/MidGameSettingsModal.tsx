@@ -16,6 +16,7 @@ const PER_GAME_KEYS = [
   'showOpponentPieces',
   'pieceShapeMode',
   'pieceColors',
+  'peekMode',
 ] as const satisfies ReadonlyArray<keyof PerGamePreferences>;
 
 type Props = {
@@ -55,6 +56,7 @@ type Props = {
  */
 export function MidGameSettingsModal({ isOpen, onClose, preferences, onPerGamePrefChange }: Props) {
   const t = useTranslations('play');
+  const tPrefs = useTranslations('Preferences');
 
   const handleSettingsChange = (updates: Partial<GamePreferences>) => {
     for (const rawKey of Object.keys(updates)) {
@@ -72,14 +74,51 @@ export function MidGameSettingsModal({ isOpen, onClose, preferences, onPerGamePr
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t('settings.title')} maxWidth="max-w-md">
-      <GameSettingsContent
-        settings={preferences}
-        onSettingsChange={handleSettingsChange}
-        showBoardAppearance={false}
-        showBoardButtonOption={true}
-        showPreview={false}
-        compact={true}
-      />
+      <div className="space-y-8">
+        <GameSettingsContent
+          settings={preferences}
+          onSettingsChange={handleSettingsChange}
+          showBoardAppearance={false}
+          showBoardButtonOption={true}
+          showPreview={false}
+          compact={true}
+        />
+
+        {/* Board peek mode picker. Mirrored from ControlSettingsContent so the
+            mid-game modal and the global `/preferences` Controls tab share UI
+            grammar. Gated on `showBoardButtonInGame` for the same reason the
+            other peek-related rows are — modal/inline distinction is moot when
+            the player has no peek button to invoke. */}
+        {preferences.showBoardButtonInGame && (
+          <>
+            <div className="border-t border-border" />
+            <div>
+              <h4 className="text-lg font-semibold text-foreground mb-2">
+                {tPrefs('controls.peekMode')}
+              </h4>
+              <p className="text-sm text-muted-foreground mb-4">
+                {tPrefs('controls.peekModeDescription')}
+              </p>
+              <div className="inline-flex rounded-md border border-border overflow-hidden">
+                {(['modal', 'inline'] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => onPerGamePrefChange('peekMode', mode)}
+                    className={`px-4 py-2 text-sm font-medium transition-colors ${
+                      preferences.peekMode === mode
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-card text-foreground hover:bg-muted'
+                    } ${mode === 'modal' ? 'border-r border-border' : ''}`}
+                  >
+                    {tPrefs(`controls.peekModes.${mode}`)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
     </Modal>
   );
 }

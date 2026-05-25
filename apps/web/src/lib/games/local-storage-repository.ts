@@ -317,6 +317,10 @@ export class LocalStorageGameRepository implements IGameRepository {
         const colors = ['normal', 'white-only', 'black-only'];
         return colors.includes(e.from as string) && colors.includes(e.to as string);
       }
+      case 'peekMode': {
+        const modes = ['modal', 'inline'];
+        return modes.includes(e.from as string) && modes.includes(e.to as string);
+      }
       default:
         return false;
     }

@@ -14,6 +14,11 @@ export function useLocalGameSettings() {
     showOpponentPieces: preferences.showOpponentPieces,
     pieceShapeMode: preferences.pieceShapeMode,
     pieceColors: preferences.pieceColors,
+    // Seed peekMode from the current global so the new-game snapshot inherits
+    // whatever the player picked in /preferences. Editable only mid-game via
+    // the in-game settings modal — there is no peek-mode control on the
+    // new-game form by design.
+    peekMode: preferences.peekMode,
   });
 
   const handleSettingsChange = (updates: Partial<PerGamePreferences>) => {
