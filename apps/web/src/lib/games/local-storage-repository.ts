@@ -284,7 +284,7 @@ export class LocalStorageGameRepository implements IGameRepository {
             (log) =>
               typeof log === 'object' &&
               log !== null &&
-              ['text', 'text-autocomplete', 'select', 'button'].includes(
+              ['text', 'text-autocomplete', 'select', 'button', 'board'].includes(
                 (log as Record<string, unknown>).inputMethod as string
               ) &&
               typeof (log as Record<string, unknown>).peekCount === 'number' &&

@@ -11,7 +11,7 @@ export type SkillLevel = AiGameSkillLevel;
 // Re-export the canonical GameOutcome type from @blindfold-chess/types
 export type { GameOutcome } from '@blindfold-chess/types';
 
-export type MoveInputMethod = 'text' | 'text-autocomplete' | 'select' | 'button';
+export type MoveInputMethod = 'text' | 'text-autocomplete' | 'select' | 'button' | 'board';
 
 export type MoveOperationLog = {
   inputMethod: MoveInputMethod;

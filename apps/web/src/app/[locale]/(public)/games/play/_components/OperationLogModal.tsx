@@ -76,6 +76,8 @@ export function OperationLogModal({
         return t('operationLog.inputMethodTextAutocomplete');
       case 'select':
         return t('operationLog.inputMethodSelect');
+      case 'board':
+        return t('operationLog.inputMethodBoard');
       default:
         return method;
     }

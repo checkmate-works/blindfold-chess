@@ -1758,6 +1758,7 @@
       "inputMethodText": "テキスト",
       "inputMethodTextAutocomplete": "テキスト(補完)",
       "inputMethodSelect": "リスト",
+      "inputMethodBoard": "盤面",
       "columnMovePeek": "ヒント",
       "initialSettings": {
         "title": "初期設定",

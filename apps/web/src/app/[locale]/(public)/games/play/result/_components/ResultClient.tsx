@@ -84,6 +84,7 @@ function OperationLogSummary({
       'text-autocomplete': 0,
       select: 0,
       button: 0,
+      board: 0,
     };
     let totalPeeks = 0;
     let totalUndos = 0;
@@ -104,6 +105,7 @@ function OperationLogSummary({
     'text-autocomplete': t('operationLog.inputMethodTextAutocomplete'),
     select: t('operationLog.inputMethodSelect'),
     button: t('operationLog.inputMethodButton'),
+    board: t('operationLog.inputMethodBoard'),
   };
 
   const activeInputMethods = (

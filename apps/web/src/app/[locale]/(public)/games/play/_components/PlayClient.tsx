@@ -233,11 +233,21 @@ export function PlayClient({
   // The board interaction (click-to-move + DnD) produces an already-legal
   // SAN string, so we pass it straight to `handleSubmitMove` which runs
   // the normal validation + commit pipeline.
+  //
+  // We commit the operation log entry directly here (rather than going
+  // through `handleMoveCommitted` like MoveInputPanel does) because board
+  // moves only happen in always-visible mode — the auto-collapse and
+  // scroll-to-title side effects of `handleMoveCommitted` are not relevant
+  // there. The log tag is `'board'` so the audit table can distinguish
+  // click/drag-driven moves from text/select/button input methods.
   const handleBoardMove = useCallback(
     (san: string) => {
-      handleSubmitMove(san as AlgebraicNotation);
+      const submitted = handleSubmitMove(san as AlgebraicNotation);
+      if (submitted !== false) {
+        commitMoveLog('board');
+      }
     },
-    [handleSubmitMove]
+    [handleSubmitMove, commitMoveLog]
   );
 
   // Board flip state

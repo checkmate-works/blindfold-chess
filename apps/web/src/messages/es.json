@@ -1754,6 +1754,7 @@
       "inputMethodText": "Texto",
       "inputMethodTextAutocomplete": "Texto (autocompletar)",
       "inputMethodSelect": "Lista",
+      "inputMethodBoard": "Tablero",
       "columnMovePeek": "Pistas",
       "initialSettings": {
         "title": "Configuración inicial",

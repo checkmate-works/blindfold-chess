@@ -1758,6 +1758,7 @@
       "inputMethodText": "Text",
       "inputMethodTextAutocomplete": "Text (autocomplete)",
       "inputMethodSelect": "List",
+      "inputMethodBoard": "Board",
       "columnMovePeek": "Hints",
       "initialSettings": {
         "title": "Initial Settings",
