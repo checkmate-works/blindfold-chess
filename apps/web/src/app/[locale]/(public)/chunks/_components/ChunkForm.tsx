@@ -18,6 +18,7 @@ import { useFenBoardEditor } from '@/app/[locale]/(public)/practice/(free-play)/
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
 import { deleteChunk } from '../_actions/deleteChunk';
+import { publishChunk } from '../_actions/publishChunk';
 import { updateChunk } from '../_actions/updateChunk';
 import {
   type ChunkDraftV1,
@@ -74,6 +75,7 @@ function localizeError(code: string, t: ReturnType<typeof useTranslations<'chunk
     'alreadyDeleted',
     'cannotEditPublished',
     'invalidFeedbackTopic',
+    'descriptionRequired',
   ]);
   return wellKnown.has(code) ? t(`errors.${code}` as 'errors.signInRequired') : code;
 }
@@ -98,6 +100,11 @@ export function ChunkForm(props: Props) {
   const { mode, disableUnsavedGuard = false } = props;
   const router = useRouter();
   const t = useTranslations('chunks.form');
+  // The publish-from-edit affordance reaches into the chunk-level
+  // `actions.*` keys (publish CTA, confirmation copy, the same
+  // "needs description" guard wording the detail-page button uses)
+  // so the proof-of-publish UX stays consistent across surfaces.
+  const tChunks = useTranslations('chunks');
 
   const initialFen = mode === 'edit' ? props.initial.representativeFen : undefined;
 
@@ -125,8 +132,13 @@ export function ChunkForm(props: Props) {
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [deletePending, setDeletePending] = useState(false);
+  const [publishPending, setPublishPending] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [publishConfirmOpen, setPublishConfirmOpen] = useState(false);
+  // Captured at handlePublish time so the post-publish redirect lands
+  // on the freshly-renamed URL (matches handleSubmit's `targetSlug`).
+  const [publishTargetSlug, setPublishTargetSlug] = useState<string | null>(null);
   const [startOverOpen, setStartOverOpen] = useState(false);
   const [hydratedFromDraft, setHydratedFromDraft] = useState(false);
 
@@ -263,6 +275,69 @@ export function ChunkForm(props: Props) {
     router.push(`/chunks/${targetSlug}` as '/chunks/[slug]');
   }
 
+  /**
+   * Save (when dirty) then open the publish-confirmation modal. Saves
+   * are routed through the same `updateChunk` Server Action as Save,
+   * so slug rename + topic_posts cascade + validation errors come out
+   * uniformly. The synchronous description-required gate mirrors the
+   * server-side `publishChunkEntry` guard, surfacing the rule before
+   * the user has to bounce off the publish action.
+   */
+  async function handlePublish() {
+    if (mode !== 'edit') return;
+    setError(null);
+
+    let finalSlug = props.initial.slug;
+    if (isDirty) {
+      setPending(true);
+      const slugChanged = slug.trim() !== props.initial.slug;
+      const saveResult = await updateChunk(props.initial.id, {
+        representativeFen: board.trimmedFen,
+        title,
+        ...(slugChanged ? { slug: slug.trim() } : {}),
+        description: description || null,
+        annotations,
+        feedbackTopics,
+      });
+      setPending(false);
+
+      if ('error' in saveResult) {
+        setError(localizeError(saveResult.error, t));
+        return;
+      }
+      if (slugChanged) finalSlug = slug.trim();
+    }
+
+    if (description.trim().length === 0) {
+      // The server enforces the same rule via `descriptionRequired`,
+      // but raising it inline keeps the user on the field they need
+      // to fix instead of bouncing them out to a modal.
+      setError(t('errors.descriptionRequired'));
+      return;
+    }
+
+    setPublishTargetSlug(finalSlug);
+    setPublishConfirmOpen(true);
+  }
+
+  async function handlePublishConfirm() {
+    if (mode !== 'edit') return;
+    setPublishConfirmOpen(false);
+    setPublishPending(true);
+    setError(null);
+
+    const result = await publishChunk(props.initial.id);
+    setPublishPending(false);
+
+    if ('error' in result) {
+      setError(localizeError(result.error, t));
+      return;
+    }
+
+    flushSync(() => setSubmitted(true));
+    router.push(`/chunks/${publishTargetSlug ?? props.initial.slug}` as '/chunks/[slug]');
+  }
+
   async function handleDelete() {
     if (mode !== 'edit') return;
     setDeleteConfirmOpen(false);
@@ -284,6 +359,7 @@ export function ChunkForm(props: Props) {
   const submitDisabled =
     pending ||
     deletePending ||
+    publishPending ||
     !board.isFenValid ||
     title.trim() === '' ||
     (mode === 'create' && slug.trim() === '');
@@ -332,7 +408,7 @@ export function ChunkForm(props: Props) {
           feedbackTopics={feedbackTopics}
           onFeedbackTopicsChange={setFeedbackTopics}
           mode={mode}
-          pending={pending || deletePending}
+          pending={pending || deletePending || publishPending}
         />
 
         <Button
@@ -346,14 +422,34 @@ export function ChunkForm(props: Props) {
         </Button>
 
         {mode === 'edit' && (
-          <button
-            type="button"
-            onClick={() => setDeleteConfirmOpen(true)}
-            disabled={pending || deletePending}
-            className="w-full px-4 py-2 text-sm rounded border border-destructive text-destructive hover:bg-destructive/10 disabled:opacity-50 transition-colors"
-          >
-            {deletePending ? t('actions.deleting') : t('actions.delete')}
-          </button>
+          <>
+            {/*
+             * Publish-from-edit affordance. Saves the form first (when
+             * dirty) so the published content is current, then opens
+             * the same publish-confirmation modal the detail page
+             * uses. Kept below Save so "Save" stays the lowest-
+             * commitment action — readers scan top-down and the
+             * one-way publish step is the deliberate next escalation.
+             */}
+            <Button
+              type="button"
+              variant="primary"
+              fullWidth
+              disabled={submitDisabled}
+              loading={publishPending}
+              onClick={handlePublish}
+            >
+              {publishPending ? tChunks('actions.publishPending') : tChunks('actions.publish')}
+            </Button>
+            <button
+              type="button"
+              onClick={() => setDeleteConfirmOpen(true)}
+              disabled={pending || deletePending || publishPending}
+              className="w-full px-4 py-2 text-sm rounded border border-destructive text-destructive hover:bg-destructive/10 disabled:opacity-50 transition-colors"
+            >
+              {deletePending ? t('actions.deleting') : t('actions.delete')}
+            </button>
+          </>
         )}
       </form>
 
@@ -377,6 +473,17 @@ export function ChunkForm(props: Props) {
         confirmVariant="danger"
         onConfirm={handleStartOver}
         onCancel={() => setStartOverOpen(false)}
+      />
+
+      <ConfirmationModal
+        isOpen={publishConfirmOpen}
+        title={tChunks('actions.publishConfirmTitle')}
+        message={tChunks('actions.publishConfirmMessage')}
+        confirmText={tChunks('actions.publishConfirmCta')}
+        cancelText={tChunks('actions.publishConfirmCancel')}
+        confirmVariant="primary"
+        onConfirm={handlePublishConfirm}
+        onCancel={() => setPublishConfirmOpen(false)}
       />
 
       <UnsavedChangesDialog open={isBlocking} onCancel={cancel} onConfirm={confirm} />
