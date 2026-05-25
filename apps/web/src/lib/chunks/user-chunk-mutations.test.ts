@@ -7,6 +7,7 @@ const mockInsertValues = vi.fn();
 const mockUpdateWhere = vi.fn();
 const mockTxUpdateWhere = vi.fn();
 const mockTxEditRequestsUpdateWhere = vi.fn();
+const mockTxTopicPostsUpdateWhere = vi.fn();
 const mockTxDeleteWhere = vi.fn();
 const mockTxFeedbackInsertValues = vi.fn();
 const mockFindChunkBySlug = vi.fn();
@@ -90,6 +91,10 @@ vi.mock('@/lib/db', () => ({
                 mockTxEditRequestsUpdateWhere({ values, where: args });
                 return;
               }
+              if (table?.__tableTag === 'topic_posts') {
+                mockTxTopicPostsUpdateWhere({ values, where: args });
+                return;
+              }
               mockTxUpdateWhere({ values, where: args });
             },
           }),
@@ -115,6 +120,11 @@ vi.mock('@/lib/db', () => ({
     id: 'id',
     chunkId: 'chunk_id',
     status: 'status',
+  },
+  topicPosts: {
+    __tableTag: 'topic_posts',
+    topicType: 'topic_type',
+    topicKey: 'topic_key',
   },
   chunkFeedbackTopics: {
     __tableTag: 'chunk_feedback_topics',
@@ -346,6 +356,10 @@ describe('updateChunkEntry', () => {
     vi.clearAllMocks();
     mockAuthenticateAndGuard.mockResolvedValue({ user: { id: TEST_USER_ID } });
     mockUpdateWhere.mockResolvedValue(undefined);
+    // Default: no slug collision. Tests covering the rename collision
+    // path override this per-case.
+    mockFindChunkBySlug.mockResolvedValue(null);
+    mockIsUniqueViolation.mockReturnValue(false);
   });
 
   it('propagates signInRequired from the guard', async () => {
@@ -424,7 +438,7 @@ describe('updateChunkEntry', () => {
     expect(mockUpdateWhere).not.toHaveBeenCalled();
   });
 
-  it('omits slug from the UPDATE set and overwrites userId with the authenticated user', async () => {
+  it('preserves slug when the payload omits it and overwrites userId with the authenticated user', async () => {
     mockSelectLimit.mockResolvedValue([
       { id: TEST_CHUNK_ID, userId: TEST_USER_ID, slug: TEST_SLUG, deletedAt: null },
     ]);
@@ -433,7 +447,6 @@ describe('updateChunkEntry', () => {
     const result = await updateChunkEntry(TEST_CHUNK_ID, {
       representativeFen: VALID_FEN,
       title: 'New title',
-      slug: 'attempted-rename', // should be ignored — slug is immutable
       description: 'updated description',
       userId: 'attempted-spoof', // should be overwritten with the authenticated user
     });
@@ -450,6 +463,110 @@ describe('updateChunkEntry', () => {
       description: 'updated description',
       userId: TEST_USER_ID,
     });
+    // No slug change → no topic_posts cascade.
+    expect(mockTxTopicPostsUpdateWhere).not.toHaveBeenCalled();
+  });
+
+  it('preserves slug when the payload echoes the current value (no-op rename)', async () => {
+    // The form always carries the current slug; treating echo as a
+    // rename would force a needless topic_posts cascade and a
+    // slug-collision preflight against the chunk's own slug. The
+    // mutation compares trimmed values before deciding to cascade.
+    mockSelectLimit.mockResolvedValue([
+      { id: TEST_CHUNK_ID, userId: TEST_USER_ID, slug: TEST_SLUG, deletedAt: null },
+    ]);
+
+    const { updateChunkEntry } = await import('./user-chunk-mutations');
+    const result = await updateChunkEntry(TEST_CHUNK_ID, {
+      representativeFen: VALID_FEN,
+      title: 'Title',
+      slug: TEST_SLUG,
+      userId: '',
+    });
+
+    expect(result).toEqual({ success: true });
+    expect(mockFindChunkBySlug).not.toHaveBeenCalled();
+    expect(mockTxTopicPostsUpdateWhere).not.toHaveBeenCalled();
+  });
+
+  it('renames the slug + cascades to topic_posts when the payload supplies a different slug', async () => {
+    mockSelectLimit.mockResolvedValue([
+      { id: TEST_CHUNK_ID, userId: TEST_USER_ID, slug: TEST_SLUG, deletedAt: null },
+    ]);
+
+    const { updateChunkEntry } = await import('./user-chunk-mutations');
+    const result = await updateChunkEntry(TEST_CHUNK_ID, {
+      representativeFen: VALID_FEN,
+      title: 'Title',
+      slug: 'kingside-fianchetto',
+      userId: '',
+    });
+
+    expect(result).toEqual({ success: true });
+    // The chunks UPDATE carries the new slug…
+    const chunksUpdate = mockTxUpdateWhere.mock.calls[0][0] as {
+      values: Record<string, unknown>;
+    };
+    expect(chunksUpdate.values).toMatchObject({ slug: 'kingside-fianchetto' });
+    // …and the discussion-thread cascade rewrites topic_posts.topic_key
+    // in the same transaction so existing replies don't orphan.
+    expect(mockTxTopicPostsUpdateWhere).toHaveBeenCalledTimes(1);
+    const topicPostsUpdate = mockTxTopicPostsUpdateWhere.mock.calls[0][0] as {
+      values: Record<string, unknown>;
+    };
+    expect(topicPostsUpdate.values).toEqual({ topicKey: 'kingside-fianchetto' });
+    // Activity-log metadata records the rename for audit.
+    expect(mockLogActivityEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'update_chunk',
+        metadata: expect.objectContaining({
+          slug: 'kingside-fianchetto',
+          previousSlug: TEST_SLUG,
+        }),
+      })
+    );
+  });
+
+  it('returns slugTaken via preflight when the target slug already exists', async () => {
+    mockSelectLimit.mockResolvedValue([
+      { id: TEST_CHUNK_ID, userId: TEST_USER_ID, slug: TEST_SLUG, deletedAt: null },
+    ]);
+    mockFindChunkBySlug.mockResolvedValue({ id: 'other-chunk-id', slug: 'taken-slug' });
+
+    const { updateChunkEntry } = await import('./user-chunk-mutations');
+    const result = await updateChunkEntry(TEST_CHUNK_ID, {
+      representativeFen: VALID_FEN,
+      title: 'Title',
+      slug: 'taken-slug',
+      userId: '',
+    });
+
+    expect(result).toEqual({ error: 'slugTaken' });
+    expect(mockTxUpdateWhere).not.toHaveBeenCalled();
+    expect(mockTxTopicPostsUpdateWhere).not.toHaveBeenCalled();
+  });
+
+  it('translates a 23505 unique violation during the rename to slugTaken', async () => {
+    // Race-window backstop: a second writer could claim the slug
+    // between the preflight read and the UPDATE.
+    mockSelectLimit.mockResolvedValue([
+      { id: TEST_CHUNK_ID, userId: TEST_USER_ID, slug: TEST_SLUG, deletedAt: null },
+    ]);
+    mockFindChunkBySlug.mockResolvedValue(null);
+    mockTxUpdateWhere.mockImplementationOnce(() => {
+      throw new Error('duplicate key value');
+    });
+    mockIsUniqueViolation.mockReturnValue(true);
+
+    const { updateChunkEntry } = await import('./user-chunk-mutations');
+    const result = await updateChunkEntry(TEST_CHUNK_ID, {
+      representativeFen: VALID_FEN,
+      title: 'Title',
+      slug: 'racey-slug',
+      userId: '',
+    });
+
+    expect(result).toEqual({ error: 'slugTaken' });
   });
 
   it('logs an update_chunk activity event and revalidates paths on success', async () => {

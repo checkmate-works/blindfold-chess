@@ -165,6 +165,7 @@ export function ChunkForm(props: Props) {
         description.trim() !== ''
       : board.trimmedFen !== (props as EditProps).initial.representativeFen ||
         title !== (props as EditProps).initial.title ||
+        slug !== (props as EditProps).initial.slug ||
         description !== ((props as EditProps).initial.description ?? ''));
 
   const { isBlocking, confirm, cancel } = useUnsavedChanges({
@@ -232,9 +233,15 @@ export function ChunkForm(props: Props) {
     }
 
     setPending(true);
+    // Only send a slug when the user actually changed it — keeps the
+    // server-side cascade off the hot path for ordinary
+    // title/description edits, and matches the wrapper's "undefined
+    // preserves" contract.
+    const slugChanged = slug.trim() !== props.initial.slug;
     const result = await updateChunk(props.initial.id, {
       representativeFen: board.trimmedFen,
       title,
+      ...(slugChanged ? { slug: slug.trim() } : {}),
       description: description || null,
       annotations,
       // Always send the topics from the form — passing an empty array
@@ -250,7 +257,10 @@ export function ChunkForm(props: Props) {
     }
 
     flushSync(() => setSubmitted(true));
-    router.push(`/chunks/${props.initial.slug}` as '/chunks/[slug]');
+    // Land on the freshly-renamed URL when the slug changed —
+    // otherwise the old detail URL 404s after revalidation.
+    const targetSlug = slugChanged ? slug.trim() : props.initial.slug;
+    router.push(`/chunks/${targetSlug}` as '/chunks/[slug]');
   }
 
   async function handleDelete() {

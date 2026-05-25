@@ -49,14 +49,22 @@ export function buildChunkCreateValues(data: ChunkMutationData) {
 }
 
 /**
- * Build the column values for the UPDATE path. Slug is intentionally
- * omitted — chunk slugs are public catalog URLs and `topic_posts.topic_key`
- * for the chunk's discussion thread, so the application layer treats them
- * as permanent identifiers. Drizzle's `.set({...})` therefore leaves the
- * slug column untouched on every update.
+ * Build the column values for the UPDATE path. Slug is conditionally
+ * included: omitted when the caller passes no slug (drizzle treats
+ * `undefined` as "skip column", so the existing value is preserved),
+ * trimmed and included when a new slug is supplied — only allowed
+ * while the chunk is in draft, gated by `updateChunkEntry`. The
+ * mutation layer is also responsible for cascading slug renames to
+ * `topic_posts.topic_key` for chunk-typed discussions.
+ *
+ * Slug remains immutable on published chunks because the URL and the
+ * topic_key contract have been exposed to other users; the gate lives
+ * in `updateChunkEntry` so the helper itself stays trivial.
  */
 export function buildChunkUpdateValues(data: ChunkMutationData) {
-  return buildSharedChunkValues(data);
+  const base = buildSharedChunkValues(data);
+  const trimmedSlug = data.slug?.trim();
+  return trimmedSlug ? { ...base, slug: trimmedSlug } : base;
 }
 
 /**

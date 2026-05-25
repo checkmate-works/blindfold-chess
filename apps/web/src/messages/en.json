@@ -2337,8 +2337,9 @@
       },
       "hints": {
         "fen": "A FEN that illustrates the pattern. Kingless boards are allowed.",
-        "slugCreate": "Lowercase ASCII letters / numbers with hyphens (e.g. \"rook-battery\"). Cannot be changed after creation.",
-        "slugLocked": "Slug is fixed at creation and cannot be edited (used as a permanent catalog URL)."
+        "slugCreate": "Lowercase ASCII letters / numbers with hyphens (e.g. \"rook-battery\"). Editable while the chunk is in draft; locked once published.",
+        "slugLocked": "Slug is fixed once the chunk is published (used as a permanent catalog URL).",
+        "slugDraftEditable": "Editable while this chunk is in draft. Renaming updates the URL — any links you've shared will need to be re-shared."
       },
       "actions": {
         "create": "Create chunk",

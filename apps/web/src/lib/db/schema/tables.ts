@@ -2876,6 +2876,20 @@ export const chunks = pgTable(
     // rather than cascading and breaking position_chunks references.
     userId: uuid('user_id'),
     title: varchar('title', { length: 255 }).notNull(),
+    /**
+     * Public catalog URL segment (`/chunks/<slug>`) and the
+     * `topic_posts.topic_key` for the chunk's discussion thread.
+     *
+     * @design draft-editable, published-locked
+     * Editable while the chunk is in `status='draft'` — the workshop
+     * state often involves naming churn so the URL needs to keep up.
+     * Renames go through `updateChunkEntry`, which cascades the new
+     * value to `topic_posts.topic_key` for every chunk-typed reply in
+     * the same transaction so existing discussion threads stay
+     * attached. Locked once `status='published'`: published links and
+     * discussion pointers may have escaped to the wider web, so the
+     * application layer rejects slug edits on the published path.
+     */
     slug: varchar('slug', { length: 255 }).notNull().unique(),
     description: text('description'),
     representativeFen: varchar('representative_fen', { length: 100 }).notNull(),

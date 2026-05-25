@@ -7,10 +7,16 @@ import type { ChunkFeedbackTopic } from '@/lib/chunks/validation';
 import { parseFeedbackTopics } from '@/lib/chunks/validation';
 
 /**
- * Public-facing wrapper around `updateChunkEntry`. Slug is intentionally
- * NOT accepted — chunks are catalog URLs and the slug is fixed at
- * creation. `userId` is filled from the authenticated session inside
- * `updateChunkEntry`, so it is also omitted from the input.
+ * Public-facing wrapper around `updateChunkEntry`. `userId` is filled
+ * from the authenticated session inside `updateChunkEntry`, so it is
+ * omitted from the input.
+ *
+ * `slug` is optional: omitting it preserves the existing slug;
+ * supplying a different one triggers a draft-only rename and
+ * `updateChunkEntry` cascades the change to `topic_posts.topic_key`
+ * for chunk-typed discussions in the same transaction. Published
+ * chunks reject any slug — the entry layer returns
+ * `cannotEditPublished` for that case.
  *
  * `feedbackTopics === undefined` preserves whatever rows the chunk
  * currently has; passing `[]` explicitly wipes them. This mirrors the
@@ -23,6 +29,7 @@ export async function updateChunk(
   input: {
     representativeFen: string;
     title: string;
+    slug?: string;
     description?: string | null;
     annotations?: BoardAnnotations;
     feedbackTopics?: readonly ChunkFeedbackTopic[];
@@ -40,6 +47,7 @@ export async function updateChunk(
   return updateChunkEntry(id, {
     representativeFen: input.representativeFen,
     title: input.title,
+    slug: input.slug,
     description: input.description,
     annotations: input.annotations,
     feedbackTopics,

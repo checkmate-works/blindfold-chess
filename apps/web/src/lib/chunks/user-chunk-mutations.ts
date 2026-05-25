@@ -5,7 +5,7 @@ import 'server-only';
 
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
-import { chunkEditRequests, chunkFeedbackTopics, chunks, db } from '@/lib/db';
+import { chunkEditRequests, chunkFeedbackTopics, chunks, db, topicPosts } from '@/lib/db';
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
 import { clawbackPointsForPost, grantPointsForPost } from '@/lib/points';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
@@ -217,37 +217,82 @@ export async function updateChunkEntry(
   // Field-level edits are only allowed while the chunk is in the
   // workshop state. Once published, content is locked at the
   // application layer so existing links / discussion threads keep
-  // pointing at the same canonical title and description; the author
-  // can move back to draft via `unpublishChunkEntry` to make further
-  // changes.
+  // pointing at the same canonical title and description; the only
+  // way out of published is soft-delete via `deleteChunkEntry`.
   if (chunk.status === 'published') {
     return { error: 'cannotEditPublished' };
   }
 
-  await db.transaction(async (tx) => {
-    await tx
-      .update(chunks)
-      .set(buildChunkUpdateValues(dataWithAuthor))
-      .where(and(eq(chunks.id, id), eq(chunks.userId, user.id), isNull(chunks.deletedAt)));
-
-    // Update path is guarded above to draft-only, so the topics
-    // payload (or its absence — treated as "no topics requested")
-    // always reflects what the author wants right now.
-    if (dataWithAuthor.feedbackTopics !== undefined) {
-      await resetChunkFeedbackTopics(tx, id, dataWithAuthor.feedbackTopics);
+  // Slug rename is a draft-only opt-in. Skipping the cascade when
+  // the payload's slug matches the current one (or is omitted) keeps
+  // the topic_posts UPDATE off the hot path for ordinary
+  // title/description edits.
+  const requestedSlug = dataWithAuthor.slug?.trim();
+  const slugChanging = !!requestedSlug && requestedSlug !== chunk.slug;
+  if (slugChanging) {
+    // UX preflight only; the DB UNIQUE on chunks.slug is the canonical
+    // guarantee. Matches the create-path pattern in `createChunkEntry`.
+    const existing = await findChunkBySlug(requestedSlug);
+    if (existing) {
+      return { error: 'slugTaken' };
     }
-  });
+  }
+
+  try {
+    await db.transaction(async (tx) => {
+      await tx
+        .update(chunks)
+        .set(buildChunkUpdateValues(dataWithAuthor))
+        .where(and(eq(chunks.id, id), eq(chunks.userId, user.id), isNull(chunks.deletedAt)));
+
+      // Discussion threads on a chunk are keyed by
+      // `(topic_type='chunk', topic_key=chunk.slug)`. Renaming the
+      // chunk's slug without rewriting the topic_key would orphan
+      // every reply that's been left on the draft. Doing the rewrite
+      // inside the same transaction keeps the slug + the discussion
+      // pointer atomic for any concurrent reader.
+      if (slugChanging) {
+        await tx
+          .update(topicPosts)
+          .set({ topicKey: requestedSlug! })
+          .where(and(eq(topicPosts.topicType, 'chunk'), eq(topicPosts.topicKey, chunk.slug)));
+      }
+
+      // Update path is guarded above to draft-only, so the topics
+      // payload (or its absence — treated as "no topics requested")
+      // always reflects what the author wants right now.
+      if (dataWithAuthor.feedbackTopics !== undefined) {
+        await resetChunkFeedbackTopics(tx, id, dataWithAuthor.feedbackTopics);
+      }
+    });
+  } catch (err) {
+    // Race-window backstop for the chunks.slug UNIQUE — another
+    // chunk could claim `requestedSlug` between the preflight and
+    // the UPDATE. Same translation as the create path.
+    if (slugChanging && isUniqueViolation(err)) {
+      return { error: 'slugTaken' };
+    }
+    throw err;
+  }
+
+  const finalSlug = slugChanging ? requestedSlug! : chunk.slug;
 
   logActivityEvent({
     userId: user.id,
     action: 'update_chunk',
     targetType: 'chunk',
     targetId: id,
-    metadata: { slug: chunk.slug },
+    metadata: slugChanging ? { slug: finalSlug, previousSlug: chunk.slug } : { slug: finalSlug },
   });
 
   revalidatePath('/chunks');
   revalidatePath(`/chunks/${chunk.slug}`);
+  // Revalidate the new URL too — without this the freshly-renamed
+  // chunk's page would render a stale-cached 404 for the next
+  // viewer who follows the new slug.
+  if (slugChanging) {
+    revalidatePath(`/chunks/${finalSlug}`);
+  }
 
   return { success: true };
 }

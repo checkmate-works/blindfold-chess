@@ -267,22 +267,18 @@ export function ChunkFormFields({
             placeholder="rook-battery"
             className="flex-1 px-3 py-2 rounded border border-border bg-card text-foreground font-mono text-sm disabled:opacity-60 disabled:cursor-not-allowed"
             required={mode === 'create'}
-            readOnly={mode === 'edit'}
-            disabled={mode === 'edit'}
           />
-          {mode === 'create' && (
-            <button
-              type="button"
-              onClick={() => onSlugChange(deriveSlugFromTitle(title))}
-              disabled={pending || !title.trim()}
-              className="px-3 py-2 text-sm rounded border border-border bg-muted text-foreground hover:opacity-80 disabled:opacity-50 transition-opacity whitespace-nowrap"
-            >
-              {t('actions.generateFromTitle')}
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => onSlugChange(deriveSlugFromTitle(title))}
+            disabled={pending || !title.trim()}
+            className="px-3 py-2 text-sm rounded border border-border bg-muted text-foreground hover:opacity-80 disabled:opacity-50 transition-opacity whitespace-nowrap"
+          >
+            {t('actions.generateFromTitle')}
+          </button>
         </div>
         <p className="text-xs text-muted-foreground mt-1">
-          {mode === 'create' ? t('hints.slugCreate') : t('hints.slugLocked')}
+          {mode === 'create' ? t('hints.slugCreate') : t('hints.slugDraftEditable')}
         </p>
       </div>
 

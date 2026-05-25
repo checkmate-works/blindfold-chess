@@ -143,8 +143,11 @@ export type ChunkMutationData = {
  * Validate chunk mutation data before persisting. Used by both create and
  * update Server Actions.
  *
- * Slug is validated on `mode='create'` only; on update the slug is locked
- * (see `ChunkMutationData.slug` for the rationale).
+ * Slug is **required** on `mode='create'`. On `mode='update'` the slug is
+ * **optional**: omitting it preserves the existing value, supplying it
+ * triggers a slug rename (only allowed while the chunk is in draft —
+ * the mutation layer also gates and cascades to `topic_posts.topic_key`).
+ * Either way the shape rules are enforced when a value is present.
  *
  * @returns An error message string if validation fails, or `null` if valid.
  */
@@ -176,16 +179,18 @@ export function validateChunkMutationData(
     return `Title must be ${CHUNK_TITLE_MAX_LENGTH} characters or fewer`;
   }
 
-  if (mode === 'create') {
-    if (!data.slug || !data.slug.trim()) {
-      return 'Slug is required';
-    }
+  const slugSupplied = typeof data.slug === 'string' && data.slug.trim().length > 0;
 
-    if (data.slug.trim().length > CHUNK_SLUG_MAX_LENGTH) {
+  if (mode === 'create' && !slugSupplied) {
+    return 'Slug is required';
+  }
+
+  if (slugSupplied) {
+    const trimmedSlug = data.slug!.trim();
+    if (trimmedSlug.length > CHUNK_SLUG_MAX_LENGTH) {
       return `Slug must be ${CHUNK_SLUG_MAX_LENGTH} characters or fewer`;
     }
-
-    if (!CHUNK_SLUG_PATTERN.test(data.slug.trim())) {
+    if (!CHUNK_SLUG_PATTERN.test(trimmedSlug)) {
       return 'Slug must contain only lowercase letters, numbers, and hyphens (e.g. "rook-battery")';
     }
   }
