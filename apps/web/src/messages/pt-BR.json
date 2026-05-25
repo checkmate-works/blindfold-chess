@@ -1762,6 +1762,9 @@
         "labelPieceColor": "Cor das peças"
       }
     },
+    "settings": {
+      "title": "Configurações da partida"
+    },
     "showLegalMoves": "Mostrar movimentos legais",
     "legalMovesList": "Movimentos legais:",
     "result": {

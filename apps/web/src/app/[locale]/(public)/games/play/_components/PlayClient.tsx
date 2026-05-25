@@ -26,6 +26,7 @@ import { BoardViewModal } from './BoardViewModal';
 import { EngineInfoModal } from './EngineInfoModal';
 import { GameInProgressPanel } from './GameInProgressPanel';
 import { InlineBoardView } from './InlineBoardView';
+import { MidGameSettingsModal } from './MidGameSettingsModal';
 import { MoveInputSkeleton } from './MoveInputSkeleton';
 import { MovesPanel } from './MovesPanel';
 import { MovesPanelSkeleton } from './MovesPanelSkeleton';
@@ -103,6 +104,7 @@ export function PlayClient({
     commitMoveLog,
     recordPeek,
     recordMovePeek,
+    setPerGamePref,
   } = actions;
 
   // Global preferences
@@ -156,6 +158,14 @@ export function PlayClient({
   const [isBoardVisible, setIsBoardVisible] = useState(false);
   const [showOperationLogModal, setShowOperationLogModal] = useState(false);
   const [showEngineInfoModal, setShowEngineInfoModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+
+  // Mid-game settings editing is gated on the presence of an initial
+  // per-game snapshot — without one (legacy games saved before that field
+  // existed) there is no baseline to layer edits against, and
+  // `setPerGamePref` would silently no-op. Hide the gear icon instead of
+  // surfacing an inert affordance.
+  const canEditPerGameSettings = initialPerGamePrefs !== undefined;
 
   // Bumped once per successful player move commit. Drives the inline peek
   // accordion's auto-collapse so each move requires a fresh expand, matching
@@ -273,6 +283,9 @@ export function PlayClient({
                 onMovePeek={recordMovePeek}
                 onShowOperationLog={() => setShowOperationLogModal(true)}
                 onShowEngineInfo={() => setShowEngineInfoModal(true)}
+                onShowSettings={
+                  canEditPerGameSettings ? () => setShowSettingsModal(true) : undefined
+                }
                 aiMoveError={
                   aiMoveError.message
                     ? { message: aiMoveError.message, retry: aiMoveError.retry }
@@ -417,6 +430,20 @@ export function PlayClient({
         onClose={() => setShowEngineInfoModal(false)}
         engineConfig={engineConfig}
       />
+
+      {/* Mid-game Settings Modal. Always rendered when an initial snapshot
+          exists; its open/close state is driven by `showSettingsModal`. The
+          modal mutates the per-game change log directly via `setPerGamePref`
+          — every change is one log entry, which keeps the audit honest
+          (matching the inline-peek auto-collapse + operation-log pattern). */}
+      {canEditPerGameSettings && (
+        <MidGameSettingsModal
+          isOpen={showSettingsModal}
+          onClose={() => setShowSettingsModal(false)}
+          preferences={preferences}
+          onPerGamePrefChange={setPerGamePref}
+        />
+      )}
     </div>
   );
 }

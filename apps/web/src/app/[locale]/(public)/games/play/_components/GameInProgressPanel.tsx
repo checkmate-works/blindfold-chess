@@ -6,7 +6,7 @@ import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FlagIcon, UndoIcon } from '@blindfold-chess/icons';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { FaClipboardList, FaInfoCircle } from 'react-icons/fa';
+import { FaClipboardList, FaCog, FaInfoCircle } from 'react-icons/fa';
 
 import type { MoveInputMethod } from '@/lib/games/saved-game-types';
 
@@ -45,6 +45,12 @@ type Props = {
    */
   onShowEngineInfo: () => void;
   /**
+   * Opens the mid-game settings modal. Omit (undefined) to hide the gear
+   * icon entirely — used for legacy games without a `gamePreferences`
+   * snapshot, where there is no per-game baseline to edit against.
+   */
+  onShowSettings?: () => void;
+  /**
    * When the last AI move failed, carries the i18n'd error message and a
    * `retry` callback that tears down the dead engine and re-requests a move.
    * Null when there is nothing to retry.
@@ -73,6 +79,7 @@ export function GameInProgressPanel({
   onMovePeek,
   onShowOperationLog,
   onShowEngineInfo,
+  onShowSettings,
   aiMoveError,
 }: Props) {
   const t = useTranslations('play');
@@ -178,6 +185,16 @@ export function GameInProgressPanel({
             title={t('operationLog.title')}
           >
             <FaClipboardList className="w-4 h-4" />
+          </button>
+        )}
+        {onShowSettings && (
+          <button
+            type="button"
+            onClick={onShowSettings}
+            className="p-1 leading-none hover:text-foreground"
+            title={t('settings.title')}
+          >
+            <FaCog className="w-4 h-4" />
           </button>
         )}
       </div>
