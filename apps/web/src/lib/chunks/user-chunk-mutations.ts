@@ -56,9 +56,11 @@ async function resetChunkFeedbackTopics(
  * The slug is set at creation and never updated. Slugs become public
  * catalog URLs (`/chunks/<slug>`) and also serve as `topic_posts.topic_key`
  * for the chunk's discussion thread, so they are treated as permanent
- * identifiers. `buildChunkMutationValues(data, 'update')` omits the slug
- * column so a UI that accidentally forwards a slug on UPDATE cannot
- * silently mutate it.
+ * identifiers on published chunks. `buildChunkUpdateValues` omits the
+ * slug column when the caller forwards no value, so a UI that accidentally
+ * drops slug from its payload cannot silently mutate it; the drafts-only
+ * rename path inside `updateChunkEntry` opts back in by explicitly passing
+ * the new slug.
  *
  * @design Slug collisions
  * `chunks.slug` is UNIQUE at the DB level, and the constraint does NOT
@@ -66,12 +68,6 @@ async function resetChunkFeedbackTopics(
  * The create path runs `findChunkBySlug` as a UX preflight and ALSO
  * catches PG error code `23505` from the INSERT to close the preflight →
  * INSERT race window. Both surface as `{ error: 'slugTaken' }`.
- *
- * @design No `verifyChunkAuthor`
- * The admin path uses `verifyChunkAuthor` because admins type the author's
- * UUID into the form; here, `authenticateAndGuard` already returns a live
- * `user.id` that resolved through Supabase auth and the existing FK to
- * `auth.users`, so the extra `profiles` lookup would just be redundant.
  */
 
 export type CreateChunkResult =

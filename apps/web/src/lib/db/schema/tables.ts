@@ -2837,11 +2837,9 @@ export type NewPositionTag = typeof positionTags.$inferInsert;
  * @design author attribution
  * Each row carries the `user_id` of the chunk's creator. The public UGC
  * flow (`/chunks/new`) sets this column from the authenticated Supabase
- * user via `createChunkEntry` (`lib/chunks/user-chunk-mutations.ts`); the
- * admin tool (`/admin/chunks/new`) accepts an arbitrary `user_id` so
- * moderators can author-attribute on behalf of another account. Both
- * paths write to the same column with the same semantics; only the
- * source of the id differs.
+ * user via `createChunkEntry` (`lib/chunks/user-chunk-mutations.ts`).
+ * Admin tooling (`/admin/chunks`) is read-only beyond soft-delete — it
+ * does not author chunks — so the column has a single write path.
  *
  * @design FKs managed in custom SQL
  * `userId` → `auth.users` is defined in Supabase-side

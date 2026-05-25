@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { AdminDataTable } from '@/app/admin/_components/AdminDataTable';
 import { AdminPaginationNav } from '@/app/admin/_components/AdminPaginationNav';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
+import { FaExternalLinkAlt } from 'react-icons/fa';
 
 import { countChunks, listChunks } from '@/lib/chunks/queries';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
@@ -38,12 +39,6 @@ export default async function AdminChunksPage({
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Chunks</h1>
-        <Link
-          href="/admin/chunks/new"
-          className="px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-        >
-          New Chunk
-        </Link>
       </div>
 
       {rows.length > 0 && (
@@ -54,20 +49,22 @@ export default async function AdminChunksPage({
       )}
 
       <AdminDataTable
-        headers={['Title', 'Slug', 'Board', 'Description', 'Created At', 'Actions']}
+        headers={['Title', 'Board', 'Description', 'Created At', 'Actions']}
         items={rows}
         emptyMessage="No chunks found"
         renderRow={(chunk) => (
           <tr key={chunk.id} className="border-t border-border">
             <td className="px-4 py-3">
               <Link
-                href={`/admin/chunks/${chunk.id}/edit`}
-                className="font-medium text-primary hover:underline"
+                href={`/en/chunks/${chunk.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-primary hover:underline"
               >
-                {chunk.title}
+                <span className="font-medium">{chunk.title}</span>
+                <FaExternalLinkAlt className="h-3 w-3" />
               </Link>
             </td>
-            <td className="px-4 py-3 font-mono text-sm text-muted-foreground">{chunk.slug}</td>
             <td className="px-4 py-3">
               <BoardThumbnail fen={chunk.representativeFen} className="w-20 h-20" />
             </td>

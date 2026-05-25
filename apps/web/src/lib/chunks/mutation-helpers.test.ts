@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 
-import { buildChunkMutationValues } from './mutation-helpers';
+import { buildChunkCreateValues } from './mutation-helpers';
 import type { ChunkMutationData } from './validation';
 
 const BASE: ChunkMutationData = {
@@ -18,9 +18,9 @@ const SAMPLE_ANNOTATIONS: BoardAnnotations = {
   circles: [{ square: 'd4', color: 'yellow' }],
 };
 
-describe('buildChunkMutationValues', () => {
+describe('buildChunkCreateValues', () => {
   it('trims string fields', () => {
-    const result = buildChunkMutationValues(BASE);
+    const result = buildChunkCreateValues(BASE);
     expect(result.representativeFen).toBe('8/8/8/8/8/8/R7/Q6K w - - 0 1');
     expect(result.title).toBe('Heavy Battery');
     expect(result.slug).toBe('heavy-battery');
@@ -29,13 +29,13 @@ describe('buildChunkMutationValues', () => {
   });
 
   it('coerces an empty description to null', () => {
-    expect(buildChunkMutationValues({ ...BASE, description: '' }).description).toBeNull();
-    expect(buildChunkMutationValues({ ...BASE, description: '   ' }).description).toBeNull();
-    expect(buildChunkMutationValues({ ...BASE, description: null }).description).toBeNull();
+    expect(buildChunkCreateValues({ ...BASE, description: '' }).description).toBeNull();
+    expect(buildChunkCreateValues({ ...BASE, description: '   ' }).description).toBeNull();
+    expect(buildChunkCreateValues({ ...BASE, description: null }).description).toBeNull();
   });
 
   it('forwards annotations verbatim when provided', () => {
-    const result = buildChunkMutationValues({ ...BASE, annotations: SAMPLE_ANNOTATIONS });
+    const result = buildChunkCreateValues({ ...BASE, annotations: SAMPLE_ANNOTATIONS });
     expect(result.annotations).toEqual(SAMPLE_ANNOTATIONS);
   });
 
@@ -44,7 +44,7 @@ describe('buildChunkMutationValues', () => {
     // column", which on UPDATE preserves the prior value and on INSERT
     // falls back to the DB default `{arrows:[], circles:[]}`. A spurious
     // empty object here would clobber existing annotations on every edit.
-    const result = buildChunkMutationValues(BASE);
+    const result = buildChunkCreateValues(BASE);
     expect(result.annotations).toBeUndefined();
   });
 });

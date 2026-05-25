@@ -58,6 +58,5 @@ export async function deleteChunk(id: string): Promise<DeleteResult> {
   });
 
   revalidatePath('/admin/chunks');
-  revalidatePath(`/admin/chunks/${id}/edit`);
   return { success: true };
 }

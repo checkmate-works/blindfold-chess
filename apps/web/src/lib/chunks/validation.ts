@@ -111,26 +111,25 @@ export type ChunkMutationData = {
   representativeFen: string;
   title: string;
   /**
-   * Required on create, ignored on update. Chunk slugs become public
-   * catalog URLs (`/chunks/<slug>`) and are also the `topic_posts.topic_key`
-   * for the discussion thread — both contracts make slugs effectively
-   * permanent identifiers, so the application layer treats them as
-   * immutable after creation. `validateChunkMutationData` only checks slug
-   * shape when `mode='create'`; `buildChunkMutationValues` only emits the
-   * `slug` column on create. The admin form keeps the field visible on
-   * edit for context but no longer writes through it.
+   * Required on create, ignored on update (except for the in-draft slug
+   * rename path, where `updateChunkEntry` re-enables it). Chunk slugs
+   * become public catalog URLs (`/chunks/<slug>`) and are also the
+   * `topic_posts.topic_key` for the discussion thread — both contracts
+   * make slugs permanent identifiers on published chunks.
+   * `validateChunkMutationData` only checks slug shape when
+   * `mode='create'`; `buildChunkCreateValues` always emits the column,
+   * while `buildChunkUpdateValues` only emits it when the caller forwarded
+   * a non-empty value.
    */
   slug?: string;
   description?: string | null;
   userId: string;
   /**
-   * Lifecycle state for the row. Optional in the payload so legacy
-   * callers (e.g. the admin create form, which has no draft concept
-   * yet) keep compiling without changes — `buildChunkCreateValues`
-   * substitutes `'published'` when omitted. Status transitions on an
-   * existing row go through the dedicated `publishChunkEntry` /
-   * `unpublishChunkEntry` Server Actions, not the general update path,
-   * so the column is intentionally NOT emitted by
+   * Lifecycle state for the row. Optional in the payload —
+   * `buildChunkCreateValues` substitutes `'published'` when omitted.
+   * Status transitions on an existing row go through the dedicated
+   * `publishChunkEntry` / `unpublishChunkEntry` Server Actions, not the
+   * general update path, so the column is intentionally NOT emitted by
    * `buildChunkUpdateValues`.
    */
   status?: ChunkStatus;
