@@ -1710,6 +1710,9 @@
     "resign": "Rendirse",
     "undo": "Deshacer",
     "moves": "Movimientos",
+    "movesPanel": {
+      "viewOps": "Ver las operaciones de este movimiento"
+    },
     "confirmResignTitle": "Confirmar Rendición",
     "confirmResignMessage": "¿Estás seguro de que quieres rendirte? Esto terminará la partida.",
     "cancel": "Cancelar",

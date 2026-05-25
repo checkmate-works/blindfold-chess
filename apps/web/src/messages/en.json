@@ -1714,6 +1714,9 @@
     "resign": "Resign",
     "undo": "Undo",
     "moves": "Moves",
+    "movesPanel": {
+      "viewOps": "View operations for this move"
+    },
     "confirmResignTitle": "Confirm Resignation",
     "confirmResignMessage": "Are you sure you want to resign? This will end the game.",
     "cancel": "Cancel",

@@ -475,6 +475,7 @@ export function PlayClient({
                 onRestartFromPosition: confirmationDialogs.restart.openWithPosition,
                 onNewGameFromPosition: handleNewGameFromPosition,
               }}
+              operations={{ logs: operationLogs, playerSide }}
               showBackground={false}
             />
           )}

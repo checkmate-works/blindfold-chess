@@ -1710,6 +1710,9 @@
     "resign": "Desistir",
     "undo": "Desfazer",
     "moves": "Movimentos",
+    "movesPanel": {
+      "viewOps": "Ver as operações deste movimento"
+    },
     "confirmResignTitle": "Confirmar Desistência",
     "confirmResignMessage": "Tem certeza de que deseja desistir? Isso encerrará a partida.",
     "cancel": "Cancelar",
