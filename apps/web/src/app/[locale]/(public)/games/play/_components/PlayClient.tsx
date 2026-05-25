@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { notFound, useRouter } from 'next/navigation';
 
@@ -156,6 +156,18 @@ export function PlayClient({
   const [showOperationLogModal, setShowOperationLogModal] = useState(false);
   const [showEngineInfoModal, setShowEngineInfoModal] = useState(false);
 
+  // Bumped once per successful player move commit. Drives the inline peek
+  // accordion's auto-collapse so each move requires a fresh expand, matching
+  // the modal mode's "1 open action = 1 peek" semantics.
+  const [playerMoveCommitCount, setPlayerMoveCommitCount] = useState(0);
+  const handleMoveCommitted = useCallback(
+    (inputMethod: Parameters<typeof commitMoveLog>[0]) => {
+      commitMoveLog(inputMethod);
+      setPlayerMoveCommitCount((n) => n + 1);
+    },
+    [commitMoveLog]
+  );
+
   // Board flip state
   const { effectiveFlipped, toggleFlip: handleFlipBoard } = useBoardFlip({ playerSide });
 
@@ -256,7 +268,7 @@ export function PlayClient({
                   setIsBoardVisible(true);
                 }}
                 playerColor={playerSide === 'black' ? 'b' : 'w'}
-                onMoveCommitted={commitMoveLog}
+                onMoveCommitted={handleMoveCommitted}
                 onMovePeek={recordMovePeek}
                 onShowOperationLog={() => setShowOperationLogModal(true)}
                 onShowEngineInfo={() => setShowEngineInfoModal(true)}
@@ -285,6 +297,7 @@ export function PlayClient({
                       onNavigateToPosition={navigateToPosition}
                       onFlipBoard={handleFlipBoard}
                       onPeek={recordPeek}
+                      collapseSignal={playerMoveCommitCount}
                     />
                   ) : undefined
                 }

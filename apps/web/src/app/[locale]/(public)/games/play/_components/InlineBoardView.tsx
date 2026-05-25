@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { ChessBoard, FlipBoardButton } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -29,6 +29,13 @@ type Props = {
   onNavigateToPosition?: (position: number) => void;
   onFlipBoard?: () => void;
   onPeek?: () => void;
+  /**
+   * Monotonic counter bumped by the parent each time the player commits a
+   * move. A change here auto-collapses the inline board so the next peek
+   * requires a fresh expand — which fires `onPeek` again, keeping the
+   * peek-count semantics symmetric with the modal mode (1 expand = 1 peek).
+   */
+  collapseSignal?: number;
 };
 
 export function InlineBoardView({
@@ -47,9 +54,22 @@ export function InlineBoardView({
   onNavigateToPosition,
   onFlipBoard,
   onPeek,
+  collapseSignal,
 }: Props) {
   const t = useTranslations('play');
   const [isOpen, setIsOpen] = useState(false);
+
+  // Auto-collapse when the parent's collapse signal changes (player committed
+  // a move). The initial-mount run is skipped so a freshly opened page does
+  // not redundantly close an already-closed accordion.
+  const lastSeenSignal = useRef(collapseSignal);
+  useEffect(() => {
+    if (collapseSignal === undefined) return;
+    if (lastSeenSignal.current !== collapseSignal) {
+      lastSeenSignal.current = collapseSignal;
+      setIsOpen(false);
+    }
+  }, [collapseSignal]);
 
   return (
     <div className="bg-card rounded-md border border-border overflow-hidden">
