@@ -38,7 +38,14 @@ export function CollapsibleGameSettings({ settings, onSettingsChange }: Props) {
         <div className="text-sm font-medium text-foreground mb-2">
           {tPrefs('game.boardVisibility')}
         </div>
-        <div className="inline-flex rounded-md border border-border overflow-hidden">
+        {/* Full-width segmented button group: the new-game form has plenty
+            of horizontal room on PC widths, and stretching the picker fills
+            that whitespace cleanly. Mobile widths render essentially as
+            before (the buttons were already filling most of the column).
+            The narrower `inline-flex` rendering is preserved in the global
+            Preferences page and the mid-game settings modal, where the
+            picker sits alongside other text in a denser layout. */}
+        <div className="flex rounded-md border border-border overflow-hidden">
           {BOARD_VISIBILITY_VALUES.map((value, idx) => {
             const Icon = BOARD_VISIBILITY_ICON[value];
             return (
@@ -46,7 +53,7 @@ export function CollapsibleGameSettings({ settings, onSettingsChange }: Props) {
                 key={value}
                 type="button"
                 onClick={() => onSettingsChange({ boardVisibility: value })}
-                className={`px-3 py-1.5 text-sm font-medium transition-colors flex items-center gap-1.5 ${
+                className={`flex-1 px-3 py-1.5 text-sm font-medium transition-colors flex items-center justify-center gap-1.5 ${
                   settings.boardVisibility === value
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-card text-foreground hover:bg-muted'
