@@ -407,6 +407,7 @@ export function PlayClient({
         moves={moves}
         playerSide={playerSide}
         startingFen={startingFen}
+        gamePreferences={perGamePrefs}
       />
 
       {/* Engine Info Modal */}

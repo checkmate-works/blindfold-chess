@@ -1748,7 +1748,19 @@
       "inputMethodText": "Texto",
       "inputMethodTextAutocomplete": "Texto (autocompletar)",
       "inputMethodSelect": "Lista",
-      "columnMovePeek": "Pistas"
+      "columnMovePeek": "Pistas",
+      "initialSettings": {
+        "title": "Configuración inicial",
+        "notRecorded": "La configuración inicial no fue registrada para esta partida.",
+        "on": "Activado",
+        "off": "Desactivado",
+        "labelShowBoardButton": "Botón 'Ver Tablero'",
+        "labelHighlightLastMove": "Resaltar último movimiento",
+        "labelShowOwnPieces": "Mostrar piezas propias",
+        "labelShowOpponentPieces": "Mostrar piezas del oponente",
+        "labelPieceShape": "Forma de las piezas",
+        "labelPieceColor": "Color de las piezas"
+      }
     },
     "showLegalMoves": "Mostrar movimientos legales",
     "legalMovesList": "Movimientos legales:",

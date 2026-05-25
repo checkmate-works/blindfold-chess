@@ -307,6 +307,7 @@ function ResultContent({ game, gameId, locale, displayName, breadcrumb }: Result
           moves={game.moves}
           playerSide={game.playerColor}
           startingFen={game.startingFen}
+          gamePreferences={game.gamePreferences}
         />
       )}
 

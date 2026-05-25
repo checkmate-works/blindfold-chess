@@ -1752,7 +1752,19 @@
       "inputMethodText": "Text",
       "inputMethodTextAutocomplete": "Text (autocomplete)",
       "inputMethodSelect": "List",
-      "columnMovePeek": "Hints"
+      "columnMovePeek": "Hints",
+      "initialSettings": {
+        "title": "Initial Settings",
+        "notRecorded": "Initial settings were not recorded for this game.",
+        "on": "On",
+        "off": "Off",
+        "labelShowBoardButton": "'View Board' button",
+        "labelHighlightLastMove": "Highlight last move",
+        "labelShowOwnPieces": "Show own pieces",
+        "labelShowOpponentPieces": "Show opponent pieces",
+        "labelPieceShape": "Piece shape",
+        "labelPieceColor": "Piece color"
+      }
     },
     "showLegalMoves": "Show legal moves",
     "legalMovesList": "Legal moves:",

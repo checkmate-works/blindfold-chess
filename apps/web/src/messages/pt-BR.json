@@ -1748,7 +1748,19 @@
       "inputMethodText": "Texto",
       "inputMethodTextAutocomplete": "Texto (autocompletar)",
       "inputMethodSelect": "Lista",
-      "columnMovePeek": "Dicas"
+      "columnMovePeek": "Dicas",
+      "initialSettings": {
+        "title": "Configurações iniciais",
+        "notRecorded": "As configurações iniciais não foram registradas para esta partida.",
+        "on": "Ativado",
+        "off": "Desativado",
+        "labelShowBoardButton": "Botão 'Ver Tabuleiro'",
+        "labelHighlightLastMove": "Realçar último movimento",
+        "labelShowOwnPieces": "Mostrar peças próprias",
+        "labelShowOpponentPieces": "Mostrar peças do oponente",
+        "labelPieceShape": "Forma das peças",
+        "labelPieceColor": "Cor das peças"
+      }
     },
     "showLegalMoves": "Mostrar movimentos legais",
     "legalMovesList": "Movimentos legais:",
