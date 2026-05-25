@@ -46,6 +46,15 @@ type Props = {
    * obfuscation rather than discrete peek actions).
    */
   alwaysOpen?: boolean;
+  /**
+   * Optional move handler. When provided, the inner ChessBoard switches
+   * into interactive mode (click-to-move + HTML5 drag-and-drop on
+   * own-color pieces). Fires once per completed legal move with the SAN
+   * string. The parent is responsible for gating this on the current
+   * game state (player's turn, not browsing history, etc.) — InlineBoardView
+   * itself only relays the callback.
+   */
+  onMove?: (san: string) => void;
 };
 
 export function InlineBoardView({
@@ -66,6 +75,7 @@ export function InlineBoardView({
   onPeek,
   collapseSignal,
   alwaysOpen,
+  onMove,
 }: Props) {
   const t = useTranslations('play');
   const [isOpen, setIsOpen] = useState(false);
@@ -138,6 +148,7 @@ export function InlineBoardView({
             pieceColors={preferences.pieceColors}
             boardTheme={preferences.boardTheme}
             rounded={false}
+            onMove={onMove}
           />
 
           {/* Navigation Controls & Flip Button */}

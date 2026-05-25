@@ -37,6 +37,7 @@ export {
   replayMoves,
   getPlayerMovesFromSequence,
   isLegalPieceMove,
+  findLegalMoveByCoords,
 } from "./moves";
 
 export type {

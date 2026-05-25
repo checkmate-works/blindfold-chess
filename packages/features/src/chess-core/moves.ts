@@ -174,6 +174,41 @@ export function getPlayerMovesFromSequence(
 }
 
 /**
+ * Find a legal move from a (from, to) coordinate pair in a given position.
+ * Returns the matching {@link MoveResult} or null if no such legal move exists.
+ *
+ * Promotion handling: when the same (from, to) pair has multiple legal moves
+ * (only happens for pawn promotion — the destination accepts Q/R/B/N), the
+ * `preferredPromotion` argument selects which one to return. Defaults to
+ * queen, matching the universal "always promote to queen" UX shortcut. Pass
+ * an explicit value (e.g. `'n'` for underpromotion) to override.
+ *
+ * Intended for board UIs (drag-and-drop, click-to-move) that produce a
+ * (from, to) pair and need to translate it into SAN for the move pipeline.
+ * Always validates against the actual legal move set — never invents an
+ * illegal move from a bad coord pair.
+ */
+export function findLegalMoveByCoords(
+  fen: string,
+  from: string,
+  to: string,
+  preferredPromotion: "q" | "r" | "b" | "n" = "q",
+): MoveResult | null {
+  const chess = new Chess(fen);
+  const candidates = chess
+    .moves({ verbose: true })
+    .filter((m) => m.from === from && m.to === to);
+
+  if (candidates.length === 0) return null;
+  if (candidates.length === 1) return toMoveResult(candidates[0]);
+
+  // Multiple candidates → promotion ambiguity. Pick the preferred type.
+  const chosen =
+    candidates.find((m) => m.promotion === preferredPromotion) ?? candidates[0];
+  return toMoveResult(chosen);
+}
+
+/**
  * Check if a move is legal for a single white piece placed on an otherwise empty board.
  */
 export function isLegalPieceMove(

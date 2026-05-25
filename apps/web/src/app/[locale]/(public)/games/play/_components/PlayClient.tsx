@@ -6,6 +6,7 @@ import { notFound, useRouter } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
+import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import type { MoveInputPreferenceHint } from '@/lib/games/move-input-cookie';
 import type { PeekPreferenceHint } from '@/lib/games/peek-cookie';
@@ -193,6 +194,19 @@ export function PlayClient({
     [commitMoveLog]
   );
 
+  // Board-driven move handler — only wired through to InlineBoardView when
+  // the always-visible board is being rendered AND the player can actually
+  // move right now (their turn, no pending AI move, not browsing history).
+  // The board interaction (click-to-move + DnD) produces an already-legal
+  // SAN string, so we pass it straight to `handleSubmitMove` which runs
+  // the normal validation + commit pipeline.
+  const handleBoardMove = useCallback(
+    (san: string) => {
+      handleSubmitMove(san as AlgebraicNotation);
+    },
+    [handleSubmitMove]
+  );
+
   // Board flip state
   const { effectiveFlipped, toggleFlip: handleFlipBoard } = useBoardFlip({ playerSide });
 
@@ -334,6 +348,20 @@ export function PlayClient({
                       onPeek={shouldShowAlwaysVisibleBoard(preferences) ? undefined : recordPeek}
                       collapseSignal={playerMoveCommitCount}
                       alwaysOpen={shouldShowAlwaysVisibleBoard(preferences)}
+                      // Interactive board moves (click-to-move + DnD) are
+                      // only enabled in always-visible mode AND when the
+                      // player can act right now. Gating on these three
+                      // conditions keeps the cursor / drag affordances
+                      // honest: no draggable handle while the AI is
+                      // thinking, no moves accepted while browsing history.
+                      onMove={
+                        shouldShowAlwaysVisibleBoard(preferences) &&
+                        isPlayerTurn &&
+                        !isLoading &&
+                        currentPosition === -1
+                          ? handleBoardMove
+                          : undefined
+                      }
                     />
                   ) : undefined
                 }
