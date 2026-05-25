@@ -252,7 +252,18 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
             >
               {tChunks('statusDraft')}
             </span>
-            <HelpTourButton steps={draftHelpSteps} label={tEditRequests('help.label')} />
+            {/*
+             * Help tour is for visitors who need to be told what a draft
+             * means and where to suggest changes — content the owner of
+             * the draft does not need (they wrote it and there is
+             * nothing for them to "suggest"). Hiding the trigger for
+             * the owner also avoids the missing-target degradation in
+             * the owner+0-pending case where the callout (step 2's
+             * spotlight) is intentionally not rendered.
+             */}
+            {!isOwner && (
+              <HelpTourButton steps={draftHelpSteps} label={tEditRequests('help.label')} />
+            )}
           </span>
         ) : undefined
       }
