@@ -1,12 +1,12 @@
 import { cache } from 'react';
 
-import { type SQL, and, asc, count, desc, eq, isNull } from 'drizzle-orm';
+import { type SQL, and, asc, count, desc, eq, inArray, isNull } from 'drizzle-orm';
 
 import { chunkFeedbackTopics, chunks, db, positionChunks, positions, profiles } from '@/lib/db';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import type { ChunkOption } from './types';
-import type { ChunkFeedbackTopic } from './validation';
+import type { ChunkFeedbackTopic, ChunkStatus } from './validation';
 import { isChunkFeedbackTopic } from './validation';
 
 // Shared select column list for the picker-facing chunk queries.
@@ -70,23 +70,32 @@ export const getChunkById = cache(async ({ id, includeDeleted }: GetChunkByIdOpt
 
 type ListChunksOptions = {
   includeDeleted?: boolean;
+  /**
+   * Restrict to a single lifecycle status. Omitting it returns
+   * chunks of any status (the default behaviour for the public
+   * catalog "all" tab). The list-page filter chips pass
+   * `'draft'` / `'published'` to materialize the tab-specific views.
+   */
+  status?: ChunkStatus;
   limit: number;
   offset: number;
 };
 
 function buildListConditions({
   includeDeleted,
-}: Pick<ListChunksOptions, 'includeDeleted'>): SQL | undefined {
+  status,
+}: Pick<ListChunksOptions, 'includeDeleted' | 'status'>): SQL | undefined {
   const conditions: SQL[] = [];
   if (!includeDeleted) conditions.push(isNull(chunks.deletedAt));
+  if (status) conditions.push(eq(chunks.status, status));
   return conditions.length > 0 ? and(...conditions) : undefined;
 }
 
 /**
  * Fetch a paginated list of chunks ordered by `createdAt` DESC.
  */
-export async function listChunks({ includeDeleted, limit, offset }: ListChunksOptions) {
-  const where = buildListConditions({ includeDeleted });
+export async function listChunks({ includeDeleted, status, limit, offset }: ListChunksOptions) {
+  const where = buildListConditions({ includeDeleted, status });
   const query = db.select().from(chunks);
   const rows = await (where ? query.where(where) : query)
     .orderBy(desc(chunks.createdAt))
@@ -103,8 +112,13 @@ export async function listChunks({ includeDeleted, limit, offset }: ListChunksOp
  * account deletes), and the join is `LEFT` so those rows still surface
  * with a null profile.
  */
-export async function listChunksWithProfile({ includeDeleted, limit, offset }: ListChunksOptions) {
-  const where = buildListConditions({ includeDeleted });
+export async function listChunksWithProfile({
+  includeDeleted,
+  status,
+  limit,
+  offset,
+}: ListChunksOptions) {
+  const where = buildListConditions({ includeDeleted, status });
   const query = db
     .select({
       chunk: chunks,
@@ -126,8 +140,11 @@ export async function listChunksWithProfile({ includeDeleted, limit, offset }: L
 /**
  * Count chunks matching the given filters.
  */
-export async function countChunks({ includeDeleted }: Pick<ListChunksOptions, 'includeDeleted'>) {
-  const where = buildListConditions({ includeDeleted });
+export async function countChunks({
+  includeDeleted,
+  status,
+}: Pick<ListChunksOptions, 'includeDeleted' | 'status'>) {
+  const where = buildListConditions({ includeDeleted, status });
   const query = db.select({ value: count() }).from(chunks);
   const [row] = await (where ? query.where(where) : query);
   return row?.value ?? 0;
@@ -198,6 +215,40 @@ export const getFeedbackTopicsForChunk = cache(
       .where(eq(chunkFeedbackTopics.chunkId, chunkId));
 
     return rows.map((row) => row.topic).filter(isChunkFeedbackTopic);
+  }
+);
+
+/**
+ * Bulk variant of `getFeedbackTopicsForChunk` for list surfaces.
+ * Returns a Map keyed by chunk id; chunks with no flagged topics
+ * are absent from the map (callers fall back to "no topics").
+ *
+ * The list page uses this to render per-card "topic" chips on draft
+ * cards in one round-trip instead of N parallel single-chunk queries.
+ */
+export const getFeedbackTopicsForChunks = cache(
+  async (chunkIds: readonly string[]): Promise<Map<string, ChunkFeedbackTopic[]>> => {
+    const map = new Map<string, ChunkFeedbackTopic[]>();
+    if (chunkIds.length === 0) return map;
+
+    const validIds = chunkIds.filter((id) => UUID_RE.test(id));
+    if (validIds.length === 0) return map;
+
+    const rows = await db
+      .select({ chunkId: chunkFeedbackTopics.chunkId, topic: chunkFeedbackTopics.topic })
+      .from(chunkFeedbackTopics)
+      .where(inArray(chunkFeedbackTopics.chunkId, validIds as string[]));
+
+    for (const row of rows) {
+      if (!isChunkFeedbackTopic(row.topic)) continue;
+      const existing = map.get(row.chunkId);
+      if (existing) {
+        existing.push(row.topic);
+      } else {
+        map.set(row.chunkId, [row.topic]);
+      }
+    }
+    return map;
   }
 );
 

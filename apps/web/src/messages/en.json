@@ -2313,7 +2313,18 @@
     },
     "list": {
       "newCta": "New chunk",
-      "empty": "No chunks yet."
+      "empty": "No chunks yet.",
+      "emptyDrafts": "No drafts looking for feedback right now.",
+      "filterAriaLabel": "Filter chunks by status",
+      "filter": {
+        "all": "All",
+        "drafts": "Looking for feedback",
+        "published": "Published"
+      },
+      "feedbackChip": {
+        "title": "Wants title input",
+        "description": "Wants description input"
+      }
     },
     "new": {
       "title": "New chunk"

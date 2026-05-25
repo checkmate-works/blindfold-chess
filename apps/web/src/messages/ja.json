@@ -2319,7 +2319,18 @@
     },
     "list": {
       "newCta": "新規チャンク",
-      "empty": "まだチャンクはありません。"
+      "empty": "まだチャンクはありません。",
+      "emptyDrafts": "編集リクエストを募集中の下書きはまだありません。",
+      "filterAriaLabel": "ステータスでチャンクを絞り込む",
+      "filter": {
+        "all": "全て",
+        "drafts": "編集リクエスト募集中",
+        "published": "公開済み"
+      },
+      "feedbackChip": {
+        "title": "タイトル意見募集",
+        "description": "説明意見募集"
+      }
     },
     "new": {
       "title": "新規チャンク"
