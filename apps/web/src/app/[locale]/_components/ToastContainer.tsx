@@ -29,6 +29,7 @@ const TOAST_PARAM_CONFIG: Record<string, { messageKey: string; type: ToastType }
   position_updated: { messageKey: 'positionUpdated', type: 'success' },
   puzzle_updated: { messageKey: 'puzzleUpdated', type: 'success' },
   puzzle_deleted: { messageKey: 'puzzleDeleted', type: 'success' },
+  edit_request_submitted: { messageKey: 'editRequestSubmitted', type: 'success' },
 };
 
 type ToastContainerProps = {

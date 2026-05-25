@@ -2834,13 +2834,12 @@ export type NewPositionTag = typeof positionTags.$inferInsert;
  * to serve as the composite FK target. That cost was judged not worth it
  * for this feature, so the invariant is kept in application code.
  *
- * @design admin-authored in the current phase
- * Until the public UGC flow ships, `chunks` is populated by admin users only.
- * The Server Action (`createChunk`) automatically sets `user_id` to the
- * acting admin's UUID rather than accepting it from the form. When chunks
- * becomes open to general users, the author attribution model does not need
- * to change — the Server Action will just pick the authenticated user from
- * any role.
+ * @design author attribution
+ * Each row carries the `user_id` of the chunk's creator. The public UGC
+ * flow (`/chunks/new`) sets this column from the authenticated Supabase
+ * user via `createChunkEntry` (`lib/chunks/user-chunk-mutations.ts`).
+ * Admin tooling (`/admin/chunks`) is read-only beyond soft-delete — it
+ * does not author chunks — so the column has a single write path.
  *
  * @design FKs managed in custom SQL
  * `userId` → `auth.users` is defined in Supabase-side
@@ -2875,9 +2874,67 @@ export const chunks = pgTable(
     // rather than cascading and breaking position_chunks references.
     userId: uuid('user_id'),
     title: varchar('title', { length: 255 }).notNull(),
+    /**
+     * Public catalog URL segment (`/chunks/<slug>`) and the
+     * `topic_posts.topic_key` for the chunk's discussion thread.
+     *
+     * @design draft-editable, published-locked
+     * Editable while the chunk is in `status='draft'` — the workshop
+     * state often involves naming churn so the URL needs to keep up.
+     * Renames go through `updateChunkEntry`, which cascades the new
+     * value to `topic_posts.topic_key` for every chunk-typed reply in
+     * the same transaction so existing discussion threads stay
+     * attached. Locked once `status='published'`: published links and
+     * discussion pointers may have escaped to the wider web, so the
+     * application layer rejects slug edits on the published path.
+     */
     slug: varchar('slug', { length: 255 }).notNull().unique(),
     description: text('description'),
     representativeFen: varchar('representative_fen', { length: 100 }).notNull(),
+    /**
+     * @design draft / published lifecycle
+     *
+     * Chunks describe piece-coordination patterns whose naming is often
+     * collaborative — well-known shapes (fianchetto, rook battery)
+     * resolve quickly, but novel variants need discussion before the
+     * canonical title settles. The `status` column carries that
+     * lifecycle:
+     *
+     * - `draft` — workshop state. Owner can edit freely; other users
+     *   see it on the catalog (with a "Draft" badge) and can submit
+     *   Qiita-style edit-suggestion requests against the title /
+     *   description (see `chunk_edit_requests`). New chunks created
+     *   via the UGC flow default to `draft`.
+     * - `published` — canonical state. The author has settled the title /
+     *   description; the row is locked against owner edits at the
+     *   application layer so the slug, title, and description that
+     *   other users may have linked to remain stable. Publish is
+     *   one-way; the only way out is soft delete via
+     *   `deleteChunkEntry`. On the publish transition any still-
+     *   pending `chunk_edit_requests` rows are auto-rejected in the
+     *   same transaction so they do not strand behind the now-
+     *   inaccessible review UI.
+     *
+     * Stored as varchar (not pgEnum) so future states (`archived`,
+     * `deprecated`, …) can be added without an ALTER TYPE migration —
+     * matches the existing `topicType` / `moderation_actions.action`
+     * pattern.
+     *
+     * The column ships with `DEFAULT 'published'` so the migration that
+     * introduces it leaves every existing row in the same state the
+     * application treated them as before this column existed.
+     */
+    status: varchar('status', { length: 20 }).notNull().default('published'),
+    /**
+     * Set when `status` transitions to `'published'`. NULL for chunks
+     * that are still in draft (or that have been re-drafted in
+     * theory; publish is currently one-way so this column is
+     * monotonic in practice). Distinct from `createdAt` so catalog
+     * surfaces can sort by "recently published" instead of "recently
+     * authored as a draft"; the activity log carries the audit-trail
+     * equivalent but is not indexed for catalog queries.
+     */
+    publishedAt: timestamp('published_at', { withTimezone: true }),
     /**
      * Display-only board markup (arrows + circles) drawn on top of the
      * representative board to make the pattern instantly readable
@@ -2911,6 +2968,181 @@ export const chunks = pgTable(
 
 export type Chunk = typeof chunks.$inferSelect;
 export type NewChunk = typeof chunks.$inferInsert;
+
+/**
+ * Chunk Edit Requests — Qiita-style suggestions for a draft chunk's
+ * title / description from users other than the chunk's owner.
+ *
+ * @description
+ * Chunks describe piece-coordination patterns whose naming is often
+ * collaborative — once a draft is up, other players can suggest a
+ * cleaner title or a sharper description. The owner reviews each
+ * suggestion and either accepts it (the proposed fields are applied
+ * to the chunk in the same transaction) or rejects it. Proposers can
+ * also withdraw their own pending requests.
+ *
+ * @design status lifecycle
+ * `pending` → `accepted` | `rejected` | `withdrawn`. All terminal
+ * states are immutable; idempotent at the application layer. Once a
+ * chunk is published the application layer rejects new submissions
+ * and rejects accept/reject on existing pending rows (they remain
+ * pending and can be acted on if the owner un-publishes later). This
+ * keeps the workshop semantics tight without needing to auto-resolve
+ * everything at publish time.
+ *
+ * @design optional fields
+ * `proposed_title` and `proposed_description` are independently
+ * nullable so a request can target only what the proposer actually
+ * wants to change — but the application layer requires at least one
+ * to be present AND different from the chunk's current value at
+ * submit time. The DB does not enforce this XOR-ish rule because
+ * the comparison against current values can't live in a CHECK
+ * constraint without a JOIN.
+ *
+ * @design proposer_id nullable + ON DELETE SET NULL
+ * Mirrors the `chunks.user_id` semantics — if a proposer's account
+ * is hard-deleted, the request survives with `proposer_id = NULL`
+ * so the chunk owner's audit trail of past suggestions remains
+ * intact. The application layer renders such rows as "(deleted
+ * user)". `resolver_id` follows the same pattern for the owner who
+ * accepted / rejected the request.
+ *
+ * @design chunkId ON DELETE CASCADE
+ * Unlike `position_chunks.chunk_id` which is RESTRICT, edit
+ * requests are tied 1:N to a specific chunk and have no value
+ * without it. If a chunk is physically deleted (service-role only),
+ * the requests go with it.
+ *
+ * @design no point grant on accept
+ * Deliberately omitted in v1. The proposer is doing the chunk
+ * owner a favor and a coin grant would be natural, but tying that
+ * into the daily creation cap + clawback path is its own slice;
+ * defer until the social value of the feature is observed.
+ */
+export const chunkEditRequests = pgTable(
+  'chunk_edit_requests',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    chunkId: uuid('chunk_id')
+      .notNull()
+      .references(() => chunks.id, { onDelete: 'cascade' }),
+    // references auth.users — FK defined in custom SQL (ON DELETE SET NULL),
+    // following the same pattern as `chunks.user_id`.
+    proposerId: uuid('proposer_id'),
+    /**
+     * Proposed new title. Optional — a request may target only the
+     * description. When present, validated against the same length /
+     * non-empty rules `chunks.title` enforces on the create path.
+     */
+    proposedTitle: varchar('proposed_title', { length: 255 }),
+    /**
+     * Proposed new description. Optional — a request may target only
+     * the title. Same length cap (5,000 chars) as the create path.
+     */
+    proposedDescription: text('proposed_description'),
+    /**
+     * Optional rationale from the proposer (why they suggested this
+     * change). Useful for collaborative naming where the *reason* a
+     * pattern should be called X is sometimes more important than the
+     * name itself. Capped at 2,000 chars by the application layer.
+     */
+    comment: text('comment'),
+    /**
+     * Lifecycle: `pending` (default), `accepted`, `rejected`,
+     * `withdrawn`. See @design above for transitions.
+     */
+    status: varchar('status', { length: 20 }).notNull().default('pending'),
+    /** Set when the request leaves `pending`. */
+    resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+    /**
+     * The user who moved the request out of `pending`. For
+     * accept / reject this is the chunk owner; for withdraw this is
+     * the proposer (equal to `proposer_id`). NULL while pending or
+     * after the resolver's account is hard-deleted (FK SET NULL).
+     */
+    resolverId: uuid('resolver_id'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull()
+      .$onUpdateFn(() => new Date()),
+  },
+  (table) => [
+    // "List pending requests for this chunk, newest first" — the
+    // primary read on the owner's review surface.
+    index('idx_chunk_edit_requests_chunk_status_created').on(
+      table.chunkId,
+      table.status,
+      table.createdAt.desc()
+    ),
+    // "My submitted requests" view for the proposer.
+    index('idx_chunk_edit_requests_proposer_created').on(table.proposerId, table.createdAt.desc()),
+    // One pending suggestion per (chunk, proposer). The partial
+    // predicate `WHERE status = 'pending'` lets resolved rows
+    // (accepted / rejected / withdrawn) accumulate freely while the
+    // single-pending invariant the UI assumes is enforced by the DB.
+    // The application layer reads this row via
+    // `getViewerPendingEditRequestForChunk` to hide the form, and
+    // catches the 23505 unique-violation as a backstop against
+    // tab-race double submits.
+    uniqueIndex('uq_chunk_edit_requests_one_pending')
+      .on(table.chunkId, table.proposerId)
+      .where(sql`status = 'pending'`),
+  ]
+);
+
+export type ChunkEditRequest = typeof chunkEditRequests.$inferSelect;
+export type NewChunkEditRequest = typeof chunkEditRequests.$inferInsert;
+
+/**
+ * Chunk Feedback Topics — per-chunk flags marking which fields the author
+ * explicitly wants feedback on.
+ *
+ * @design why a separate table (vs. boolean columns / array on `chunks`)
+ * Feedback flags are only meaningful while the chunk is in draft and
+ * are dropped on publish. A normalized table makes that lifecycle a
+ * single `DELETE WHERE chunk_id = ?` (instead of resetting boolean
+ * columns to false, which leaves stale NULL-ish state behind for
+ * every published chunk that never used the feature). Sparse-data
+ * efficiency: most published chunks carry zero rows; horizontal
+ * columns would burn space across every row regardless. The same
+ * normalization idiom is used by `likes`, `position_chunks`,
+ * `topic_posts`, etc.
+ *
+ * @design topic as varchar (not pgEnum)
+ * Matches `chunks.status` / `topic_posts.topicType` / `moderation_actions.action`:
+ * new topics (`fen`, `annotations`, …) can be added without an
+ * ALTER TYPE migration. The known-good set is enforced at the
+ * application layer in `validateFeedbackTopics`.
+ *
+ * @design composite primary key
+ * No surrogate `id` column — rows are never updated (write strategy
+ * is "DELETE all + INSERT new" on every chunk save) and nothing
+ * else FKs into this table, so `(chunk_id, topic)` is a sufficient
+ * key and the UNIQUE constraint comes for free.
+ *
+ * @design ON DELETE CASCADE on chunk_id
+ * The data has no value once the parent chunk is gone, so CASCADE
+ * handles cleanup automatically without a service-role sweep.
+ *
+ * @design no updated_at
+ * Junction-style table convention (see the file-level
+ * `@design updated_at update policy` note on `positions`).
+ */
+export const chunkFeedbackTopics = pgTable(
+  'chunk_feedback_topics',
+  {
+    chunkId: uuid('chunk_id')
+      .notNull()
+      .references(() => chunks.id, { onDelete: 'cascade' }),
+    topic: varchar('topic', { length: 50 }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.chunkId, table.topic] })]
+);
+
+export type ChunkFeedbackTopic = typeof chunkFeedbackTopics.$inferSelect;
+export type NewChunkFeedbackTopic = typeof chunkFeedbackTopics.$inferInsert;
 
 /**
  * Position Chunks — junction between memory-type positions and the chunks

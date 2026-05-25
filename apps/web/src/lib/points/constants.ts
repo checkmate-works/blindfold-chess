@@ -27,15 +27,15 @@ export const POINT_SOURCES = [
   'puzzle_created',
   'position_memory_created',
   'topic_post_created',
+  'chunk_created',
 ] as const;
 export type PointSource = (typeof POINT_SOURCES)[number];
 
 /**
  * Post entity types that earn points on creation. Map 1:1 with the
- * trigger `applyAutomatedGrant` was previously wired into. `chunk` is
- * intentionally absent: chunk image attach is not user-facing UGC.
+ * trigger `applyAutomatedGrant` was previously wired into.
  */
-export type PointPostEntityType = 'puzzle' | 'position_memory' | 'topic_post';
+export type PointPostEntityType = 'puzzle' | 'position_memory' | 'topic_post' | 'chunk';
 
 export type PointPostEntity = {
   type: PointPostEntityType;
@@ -46,6 +46,7 @@ const ENTITY_TYPE_TO_SOURCE: Record<PointPostEntityType, PointSource> = {
   puzzle: 'puzzle_created',
   position_memory: 'position_memory_created',
   topic_post: 'topic_post_created',
+  chunk: 'chunk_created',
 };
 
 /**

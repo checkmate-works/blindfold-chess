@@ -302,6 +302,13 @@
       "when": 1778648417282,
       "tag": "20260513050017_create_point_system_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1779664105295,
+      "tag": "20260524230825_create_chunks_ugc",
+      "breakpoints": true
     }
   ]
 }

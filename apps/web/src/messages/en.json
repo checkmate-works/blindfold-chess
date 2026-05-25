@@ -134,6 +134,10 @@
       "title": "Post about {square}",
       "description": "A discussion post about the {square} square in chess"
     },
+    "chunks": {
+      "title": "Chunks",
+      "description": "Piece-coordination pattern catalog for position memory training"
+    },
     "games": {
       "title": "Your Games",
       "description": "View and manage your blindfold chess games"
@@ -2293,6 +2297,230 @@
     "articleNotFound": "Article Not Found",
     "notTranslatedNotice": "This article has not been translated into your language yet. You are viewing the original version."
   },
+  "chunks": {
+    "listTitle": "Chunks",
+    "listSubtitle": "Chess piece-coordination patterns",
+    "editCta": "Edit",
+    "statusDraft": "Draft",
+    "statusPublished": "Published",
+    "actions": {
+      "publish": "Publish",
+      "publishPending": "Publishing…",
+      "publishConfirmTitle": "Publish this chunk?",
+      "publishConfirmMessage": "Other users will see this as a canonical catalog entry. The title, description, FEN, and annotations will be locked — publishing is one-way, so make sure you're happy with them.",
+      "publishConfirmCta": "Publish",
+      "publishConfirmCancel": "Cancel",
+      "publishDescriptionRequired": "Add a description before publishing.",
+      "publishNeedsDescriptionTitle": "Add a description before publishing",
+      "publishNeedsDescriptionMessage": "A published chunk is a canonical catalog entry, so it needs a description for other players to understand the pattern. Open the edit page to add one — you can come back and publish once it's saved.",
+      "publishNeedsDescriptionCta": "Open edit page"
+    },
+    "list": {
+      "newCta": "New chunk",
+      "empty": "No chunks yet.",
+      "emptyDrafts": "No drafts looking for feedback right now.",
+      "filterAriaLabel": "Filter chunks by status",
+      "filter": {
+        "all": "All",
+        "drafts": "Looking for feedback",
+        "published": "Published"
+      },
+      "feedbackChip": {
+        "title": "Wants title input",
+        "description": "Wants description input"
+      }
+    },
+    "new": {
+      "title": "New chunk"
+    },
+    "edit": {
+      "title": "Edit {name}",
+      "breadcrumb": "Edit"
+    },
+    "detail": {
+      "descriptionSection": "Description",
+      "noDescription": "No description yet.",
+      "edited": "Edited",
+      "createdBy": "Created by",
+      "positionsSection": "Positions",
+      "positionsDescription": "Problems where this chunk pattern is effective.",
+      "positionBadge": {
+        "puzzle": "Puzzle",
+        "memory": "Memory"
+      }
+    },
+    "form": {
+      "fields": {
+        "fen": "Representative FEN",
+        "title": "Title",
+        "slug": "Slug",
+        "description": "Description"
+      },
+      "hints": {
+        "fen": "A FEN that illustrates the pattern. Kingless boards are allowed.",
+        "slugCreate": "Lowercase ASCII letters / numbers with hyphens (e.g. \"rook-battery\"). Editable while the chunk is in draft; locked once published.",
+        "slugLocked": "Slug is fixed once the chunk is published (used as a permanent catalog URL).",
+        "slugDraftEditable": "Editable while this chunk is in draft. Renaming updates the URL — any links you've shared will need to be re-shared."
+      },
+      "actions": {
+        "create": "Create chunk",
+        "creating": "Creating…",
+        "save": "Save changes",
+        "saving": "Saving…",
+        "delete": "Delete",
+        "deleting": "Deleting…",
+        "generateFromTitle": "Generate from title",
+        "continueToPreview": "Continue to preview"
+      },
+      "errors": {
+        "invalidFen": "FEN is not a valid chess board layout.",
+        "titleRequired": "Title is required.",
+        "slugRequired": "Slug is required.",
+        "draftWriteFailed": "Could not save the draft locally. Browser storage may be full or unavailable.",
+        "signInRequired": "Please sign in to continue.",
+        "banned": "Your account is suspended.",
+        "rateLimited": "Too many submissions. Please try again later.",
+        "slugTaken": "That slug is already in use. Please pick another.",
+        "notFound": "This chunk no longer exists.",
+        "unauthorized": "You can only edit chunks you created.",
+        "alreadyDeleted": "This chunk has already been deleted.",
+        "cannotEditPublished": "This chunk is published and is no longer editable. Publishing is one-way — to revise, delete this chunk and create a new one.",
+        "descriptionRequired": "This chunk needs a description before it can be published.",
+        "invalidFeedbackTopic": "Unknown feedback topic. Please refresh the page and try again."
+      },
+      "draft": {
+        "toggleLabel": "Save as draft",
+        "toggleHint": "Drafts are visible to others (so they can suggest names) but stay editable. You can publish later from the detail page when the title and description feel right."
+      },
+      "feedbackTopics": {
+        "legend": "What do you want feedback on?",
+        "hint": "Ticked fields are highlighted on the detail page so others know where their suggestions would help most.",
+        "options": {
+          "title": "Not sure about the title",
+          "description": "Not sure about the description"
+        }
+      },
+      "delete": {
+        "confirmTitle": "Delete this chunk?",
+        "confirmBody": "The chunk will be hidden from the catalog. Linked positions keep their reference but it no longer surfaces publicly.",
+        "confirm": "Delete",
+        "cancel": "Cancel"
+      },
+      "tabBoard": "Board",
+      "tabFen": "FEN",
+      "sideToMove": "Side to move",
+      "sideWhite": "White",
+      "sideBlack": "Black",
+      "flipBoard": "Flip board",
+      "clearBoard": "Clear board",
+      "clearBoardConfirmTitle": "Clear the board?",
+      "clearBoardConfirmMessage": "All pieces will be removed. This cannot be undone from this dialog.",
+      "clearBoardConfirm": "Clear",
+      "clearBoardCancel": "Cancel",
+      "draftRestoredBanner": "Restored your unsaved draft.",
+      "draftRestoredDiscard": "Discard",
+      "startOverConfirmTitle": "Start over?",
+      "startOverConfirmMessage": "Your current draft will be cleared. This cannot be undone.",
+      "startOverConfirm": "Start over",
+      "startOverCancel": "Cancel"
+    },
+    "preview": {
+      "title": "Preview chunk",
+      "createDraftCta": "Save as draft",
+      "createPublishedCta": "Publish chunk",
+      "backToEditCta": "Back to edit",
+      "createError": "Something went wrong creating the chunk. Please try again.",
+      "statusLabel": "Status",
+      "statusDraft": "Draft",
+      "statusPublished": "Published"
+    },
+    "editRequests": {
+      "linkLabel": "Edit suggestions",
+      "pageTitle": "Edit suggestions · {name}",
+      "breadcrumb": "Edit suggestions",
+      "currentValuesTitle": "Current values",
+      "currentValuesHint": "Tentative title and description the chunk currently shows. Submitted suggestions below are compared against these.",
+      "callout": {
+        "body": "This chunk is still a draft and welcomes suggestions for a sharper title or description.",
+        "ownerBodyWithPending": "{count, plural, one {# pending edit suggestion waiting for your review.} other {# pending edit suggestions waiting for your review.}}",
+        "ownerBodyEmpty": "No edit suggestions yet.",
+        "ctaOwner": "View edit suggestions",
+        "ctaHasPending": "View / withdraw your suggestion",
+        "ctaCanSuggest": "Suggest an edit",
+        "ctaSignedOut": "Sign in to suggest an edit",
+        "topicLeadIn": "The author is looking for input on:",
+        "topicLabels": {
+          "title": "Title",
+          "description": "Description"
+        }
+      },
+      "help": {
+        "label": "How edit suggestions work",
+        "badge": {
+          "title": "This chunk is in draft",
+          "description": "Suggestions for the title and description are welcome."
+        },
+        "editRequests": {
+          "title": "Suggest a change",
+          "description": "Open this page to propose a new title or description."
+        }
+      },
+      "sectionTitle": "Edit suggestions",
+      "sectionHint": "Other players can suggest a sharper title or description while this chunk is in draft. The owner reviews each suggestion.",
+      "formWantedLabel": "Wanted",
+      "alreadyHasPendingNotice": "Your earlier suggestion is still pending below. Withdraw it first if you want to propose something different.",
+      "pendingCount": "{count, plural, one {# pending} other {# pending}}",
+      "empty": "No suggestions yet.",
+      "suggestCta": "Suggest an edit",
+      "signInToSuggest": "Sign in to suggest an edit.",
+      "formHint": "Edit only what you'd like to change. Identical-to-current submissions are rejected automatically.",
+      "deletedProposer": "(deleted user)",
+      "proposerComment": "Reason from the proposer",
+      "justNow": "just now",
+      "status": {
+        "pending": "Pending",
+        "accepted": "Accepted",
+        "rejected": "Rejected",
+        "withdrawn": "Withdrawn"
+      },
+      "diff": {
+        "titleLabel": "Title",
+        "descriptionLabel": "Description",
+        "current": "Current",
+        "proposed": "Proposed"
+      },
+      "fields": {
+        "title": "Proposed title",
+        "description": "Proposed description",
+        "comment": "Why this change? (optional)",
+        "commentPlaceholder": "A short explanation helps the owner decide."
+      },
+      "actions": {
+        "submit": "Submit suggestion",
+        "cancel": "Cancel",
+        "accept": "Accept",
+        "reject": "Reject",
+        "withdraw": "Withdraw",
+        "acceptConfirmTitle": "Accept this suggestion?",
+        "acceptConfirmMessage": "The proposed fields will be applied to this chunk immediately.",
+        "rejectConfirmTitle": "Reject this suggestion?",
+        "rejectConfirmMessage": "The proposer will not be notified. They will see the rejected status if they revisit this page.",
+        "withdrawConfirmTitle": "Withdraw your suggestion?",
+        "withdrawConfirmMessage": "The chunk owner will not be notified. They will see the queue count drop on their next visit."
+      },
+      "errors": {
+        "signInRequired": "Please sign in to submit a suggestion.",
+        "banned": "Your account is suspended.",
+        "rateLimited": "Too many suggestions. Please try again later.",
+        "notFound": "This suggestion or chunk no longer exists.",
+        "unauthorized": "You can't perform this action.",
+        "alreadyResolved": "This suggestion has already been resolved.",
+        "ownerCannotPropose": "You can't suggest edits to your own chunk — edit it directly instead.",
+        "chunkNotDraft": "This chunk is published and is not accepting suggestions right now.",
+        "alreadyHasPending": "You already have a pending suggestion for this chunk. Withdraw it first if you want to propose something different."
+      }
+    }
+  },
   "announcements": {
     "pageTitle": "Announcements",
     "pageDescription": "Announcements from Blindfold Chess",
@@ -2641,6 +2869,8 @@
     "announcementMessage": "New announcement: {title}",
     "newPostMessage": "{actor} shared a new post",
     "newCommentOnTopicMessage": "{actor} commented on your problem",
+    "chunkEditRequestSubmittedMessage": "{actor} suggested an edit to your chunk",
+    "chunkEditRequestAcceptedMessage": "{actor} accepted your edit suggestion",
     "newPositionMemoryMessage": "{actor} created a new position memory problem",
     "newPuzzleMessage": "{actor} created a new puzzle",
     "achievementSingleMessage": "🏆 You earned {name}",
@@ -2686,7 +2916,8 @@
     "positionDeleted": "Problem deleted",
     "positionUpdated": "Changes saved",
     "puzzleUpdated": "Changes saved",
-    "puzzleDeleted": "Puzzle deleted"
+    "puzzleDeleted": "Puzzle deleted",
+    "editRequestSubmitted": "Edit suggestion submitted"
   },
   "setupUsername": {
     "title": "Create Your Account",
@@ -3362,6 +3593,10 @@
       "openings": {
         "title": "Openings",
         "description": "Explore and learn about chess openings"
+      },
+      "chunks": {
+        "title": "Chunks",
+        "description": "Piece-coordination pattern catalog for position memory training"
       }
     },
     "openings": {

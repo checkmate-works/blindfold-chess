@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   CHUNK_SLUG_MAX_LENGTH,
   CHUNK_TITLE_MAX_LENGTH,
+  parseFeedbackTopics,
   validateChunkMutationData,
 } from './validation';
 
@@ -63,5 +64,54 @@ describe('validateChunkMutationData — title length boundary', () => {
     const title = 'A'.repeat(CHUNK_TITLE_MAX_LENGTH + 1);
     const result = validateChunkMutationData({ ...base(), title });
     expect(result).toMatch(/Title must be 255 characters or fewer/);
+  });
+});
+
+describe('parseFeedbackTopics', () => {
+  it('returns an empty array for null / undefined', () => {
+    expect(parseFeedbackTopics(undefined)).toEqual([]);
+    expect(parseFeedbackTopics(null)).toEqual([]);
+  });
+
+  it('returns null when input is not an array', () => {
+    expect(parseFeedbackTopics('title')).toBeNull();
+    expect(parseFeedbackTopics({ title: true })).toBeNull();
+  });
+
+  it('returns null when any element is outside the known topic set', () => {
+    expect(parseFeedbackTopics(['title', 'totally-not-a-topic'])).toBeNull();
+  });
+
+  it('deduplicates and sorts known topics for stable output', () => {
+    // Stable output makes downstream comparisons (snapshots, no-op
+    // diff checks in the mutation layer) order-independent.
+    expect(parseFeedbackTopics(['description', 'title', 'title'])).toEqual([
+      'description',
+      'title',
+    ]);
+  });
+});
+
+describe('validateChunkMutationData — feedback topics', () => {
+  it('accepts a payload with no feedback topics', () => {
+    const result = validateChunkMutationData({ ...base() });
+    expect(result).toBeNull();
+  });
+
+  it('accepts a payload with the known topics', () => {
+    const result = validateChunkMutationData({
+      ...base(),
+      feedbackTopics: ['title', 'description'],
+    });
+    expect(result).toBeNull();
+  });
+
+  it('rejects unknown topic values', () => {
+    const result = validateChunkMutationData({
+      ...base(),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      feedbackTopics: ['title', 'fen'] as any,
+    });
+    expect(result).toMatch(/Invalid feedback topic/);
   });
 });

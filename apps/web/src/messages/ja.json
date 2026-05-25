@@ -134,6 +134,10 @@
       "title": "{square}についての投稿",
       "description": "チェスの{square}マスに関する議論の投稿"
     },
+    "chunks": {
+      "title": "チャンク",
+      "description": "ポジション記憶トレーニングのための駒の連携パターンカタログ"
+    },
     "games": {
       "title": "ゲーム一覧",
       "description": "目隠しチェスのゲームを管理"
@@ -2293,6 +2297,230 @@
     "articleNotFound": "記事が見つかりません",
     "notTranslatedNotice": "この記事はまだあなたの言語に翻訳されていません。原文を表示しています。"
   },
+  "chunks": {
+    "listTitle": "チャンク",
+    "listSubtitle": "駒の連携パターン",
+    "editCta": "編集",
+    "statusDraft": "下書き",
+    "statusPublished": "公開済み",
+    "actions": {
+      "publish": "公開する",
+      "publishPending": "公開中…",
+      "publishConfirmTitle": "このチャンクを公開しますか？",
+      "publishConfirmMessage": "公開すると他のユーザーに正式なカタログ項目として表示されます。タイトル・説明・FEN・注釈はロックされます。公開は一方通行のため、内容に問題がないことを確認してください。",
+      "publishConfirmCta": "公開する",
+      "publishConfirmCancel": "キャンセル",
+      "publishDescriptionRequired": "公開するには説明を入力してください。",
+      "publishNeedsDescriptionTitle": "公開には説明文が必要です",
+      "publishNeedsDescriptionMessage": "公開済みのチャンクは正式なカタログ項目として扱われるため、他のプレイヤーがパターンを理解できるよう説明文が必要です。編集ページから説明を追加してから、改めて公開してください。",
+      "publishNeedsDescriptionCta": "編集ページを開く"
+    },
+    "detail": {
+      "descriptionSection": "説明",
+      "noDescription": "説明はまだありません。",
+      "edited": "編集済み",
+      "createdBy": "投稿者",
+      "positionsSection": "ポジション",
+      "positionsDescription": "このチャンクパターンが効果的な問題。",
+      "positionBadge": {
+        "puzzle": "パズル",
+        "memory": "記憶"
+      }
+    },
+    "list": {
+      "newCta": "新規チャンク",
+      "empty": "まだチャンクはありません。",
+      "emptyDrafts": "編集リクエストを募集中の下書きはまだありません。",
+      "filterAriaLabel": "ステータスでチャンクを絞り込む",
+      "filter": {
+        "all": "全て",
+        "drafts": "編集リクエスト募集中",
+        "published": "公開済み"
+      },
+      "feedbackChip": {
+        "title": "タイトル意見募集",
+        "description": "説明意見募集"
+      }
+    },
+    "new": {
+      "title": "新規チャンク"
+    },
+    "edit": {
+      "title": "{name} を編集",
+      "breadcrumb": "編集"
+    },
+    "form": {
+      "fields": {
+        "fen": "代表 FEN",
+        "title": "タイトル",
+        "slug": "スラッグ",
+        "description": "説明"
+      },
+      "hints": {
+        "fen": "パターンを示す FEN を入力してください。キングなしの盤面も受け付けます。",
+        "slugCreate": "半角小文字英数字とハイフンのみ（例：「rook-battery」）。下書き中は変更できますが、公開後はロックされます。",
+        "slugLocked": "スラッグは公開後にロックされます（カタログ URL として固定）。",
+        "slugDraftEditable": "下書き中のみ編集できます。スラッグを変更すると URL も変わるため、共有済みのリンクは再共有が必要です。"
+      },
+      "actions": {
+        "create": "チャンクを作成",
+        "creating": "作成中…",
+        "save": "変更を保存",
+        "saving": "保存中…",
+        "delete": "削除",
+        "deleting": "削除中…",
+        "generateFromTitle": "タイトルから生成",
+        "continueToPreview": "プレビューへ進む"
+      },
+      "errors": {
+        "invalidFen": "FEN として正しく解釈できません。",
+        "titleRequired": "タイトルを入力してください。",
+        "slugRequired": "スラッグを入力してください。",
+        "draftWriteFailed": "下書きをブラウザに保存できませんでした。ストレージの空き容量や設定をご確認ください。",
+        "signInRequired": "サインインしてください。",
+        "banned": "アカウントが停止されています。",
+        "rateLimited": "投稿が多すぎます。しばらく時間をおいてください。",
+        "slugTaken": "このスラッグは既に使われています。別の名前を選んでください。",
+        "notFound": "このチャンクは存在しません。",
+        "unauthorized": "自分が作成したチャンクのみ編集できます。",
+        "alreadyDeleted": "このチャンクは既に削除されています。",
+        "cannotEditPublished": "このチャンクは公開済みのため編集できません。公開は一方通行です。修正したい場合は一度削除して新たに作成してください。",
+        "descriptionRequired": "このチャンクは公開する前に説明を入力する必要があります。",
+        "invalidFeedbackTopic": "不明なフィードバック項目です。ページを再読み込みしてもう一度お試しください。"
+      },
+      "draft": {
+        "toggleLabel": "下書きとして保存",
+        "toggleHint": "下書きは他のユーザーにも公開されます（名称の提案を受けやすくするため）が、編集可能なままです。タイトルと説明が固まったら詳細ページから公開できます。"
+      },
+      "feedbackTopics": {
+        "legend": "どの項目について意見が欲しいですか？",
+        "hint": "チェックした項目は詳細ページで強調表示され、提案者にどこへの意見が歓迎されているかが伝わります。",
+        "options": {
+          "title": "タイトルがこれでいいか不安",
+          "description": "説明が適切か不安"
+        }
+      },
+      "delete": {
+        "confirmTitle": "このチャンクを削除しますか？",
+        "confirmBody": "カタログから非表示になります。リンク済みのポジションには参照が残りますが、公開ページからは表示されなくなります。",
+        "confirm": "削除",
+        "cancel": "キャンセル"
+      },
+      "tabBoard": "盤面",
+      "tabFen": "FEN",
+      "sideToMove": "手番",
+      "sideWhite": "白",
+      "sideBlack": "黒",
+      "flipBoard": "盤を反転",
+      "clearBoard": "盤をクリア",
+      "clearBoardConfirmTitle": "盤面をクリアしますか？",
+      "clearBoardConfirmMessage": "盤上のすべての駒が取り除かれます。このダイアログからは取り消せません。",
+      "clearBoardConfirm": "クリア",
+      "clearBoardCancel": "キャンセル",
+      "draftRestoredBanner": "保存していた下書きを復元しました。",
+      "draftRestoredDiscard": "破棄",
+      "startOverConfirmTitle": "最初からやり直しますか？",
+      "startOverConfirmMessage": "現在の下書きはすべて消去されます。取り消せません。",
+      "startOverConfirm": "やり直す",
+      "startOverCancel": "キャンセル"
+    },
+    "preview": {
+      "title": "チャンクのプレビュー",
+      "createDraftCta": "下書きとして保存",
+      "createPublishedCta": "チャンクを公開",
+      "backToEditCta": "編集に戻る",
+      "createError": "チャンクの作成中にエラーが発生しました。もう一度お試しください。",
+      "statusLabel": "ステータス",
+      "statusDraft": "下書き",
+      "statusPublished": "公開済み"
+    },
+    "editRequests": {
+      "linkLabel": "編集リクエスト",
+      "pageTitle": "編集リクエスト · {name}",
+      "breadcrumb": "編集リクエスト",
+      "currentValuesTitle": "現在の内容",
+      "currentValuesHint": "現時点で暫定的に決まっているタイトルと説明です。下記の提案はこれと比較して表示されます。",
+      "callout": {
+        "body": "このチャンクは下書きです。タイトルや説明の改善提案を受け付けています。",
+        "ownerBodyWithPending": "{count, plural, other {未対応の編集リクエストが # 件届いています。}}",
+        "ownerBodyEmpty": "まだ編集リクエストは届いていません。",
+        "ctaOwner": "編集リクエストを見る",
+        "ctaHasPending": "自分の編集リクエストを確認・取り下げ",
+        "ctaCanSuggest": "編集リクエストを送る",
+        "ctaSignedOut": "サインインして編集リクエストを送る",
+        "topicLeadIn": "投稿者は特に以下の項目への意見を歓迎しています：",
+        "topicLabels": {
+          "title": "タイトル",
+          "description": "説明"
+        }
+      },
+      "help": {
+        "label": "編集リクエストの仕組み",
+        "badge": {
+          "title": "このチャンクは下書きです",
+          "description": "編集リクエストを受け付けています。"
+        },
+        "editRequests": {
+          "title": "編集を提案する",
+          "description": "ここからタイトルや説明文の変更を提案できます。"
+        }
+      },
+      "sectionTitle": "編集リクエスト",
+      "sectionHint": "下書き状態のチャンクには、他のプレイヤーからより適切なタイトルや説明の提案を受け取れます。オーナーが各提案を確認します。",
+      "formWantedLabel": "意見募集中",
+      "alreadyHasPendingNotice": "下のリストに、あなたの未対応の編集リクエストがあります。別の内容を提案するには、まずそれを取り下げてください。",
+      "pendingCount": "{count, plural, other {未対応 # 件}}",
+      "empty": "まだ提案はありません。",
+      "suggestCta": "編集を提案する",
+      "signInToSuggest": "編集を提案するにはサインインしてください。",
+      "formHint": "変更したい箇所のみを編集してください。現在の内容と完全に同じ提案は自動的に拒否されます。",
+      "deletedProposer": "(削除されたユーザー)",
+      "proposerComment": "提案者からの説明",
+      "justNow": "たった今",
+      "status": {
+        "pending": "未対応",
+        "accepted": "採用",
+        "rejected": "却下",
+        "withdrawn": "取り下げ"
+      },
+      "diff": {
+        "titleLabel": "タイトル",
+        "descriptionLabel": "説明",
+        "current": "現在",
+        "proposed": "提案"
+      },
+      "fields": {
+        "title": "提案するタイトル",
+        "description": "提案する説明",
+        "comment": "提案の理由（任意）",
+        "commentPlaceholder": "簡単な理由を添えるとオーナーが判断しやすくなります。"
+      },
+      "actions": {
+        "submit": "提案を送信",
+        "cancel": "キャンセル",
+        "accept": "採用",
+        "reject": "却下",
+        "withdraw": "取り下げ",
+        "acceptConfirmTitle": "この提案を採用しますか？",
+        "acceptConfirmMessage": "提案された内容が直ちにチャンクに反映されます。",
+        "rejectConfirmTitle": "この提案を却下しますか？",
+        "rejectConfirmMessage": "提案者には通知されません。再訪したときに却下されたステータスが見えます。",
+        "withdrawConfirmTitle": "この提案を取り下げますか？",
+        "withdrawConfirmMessage": "オーナーには通知されません。再訪したときに件数が減って見えます。"
+      },
+      "errors": {
+        "signInRequired": "提案を送信するにはサインインしてください。",
+        "banned": "アカウントが停止されています。",
+        "rateLimited": "提案が多すぎます。しばらく時間をおいてください。",
+        "notFound": "この提案またはチャンクは存在しません。",
+        "unauthorized": "この操作を実行する権限がありません。",
+        "alreadyResolved": "この提案は既に処理済みです。",
+        "ownerCannotPropose": "自分が作成したチャンクには提案できません。直接編集してください。",
+        "chunkNotDraft": "このチャンクは公開済みのため、現在は提案を受け付けていません。",
+        "alreadyHasPending": "このチャンクには未対応の編集リクエストがすでに登録されています。別の内容を提案するには先に取り下げてください。"
+      }
+    }
+  },
   "announcements": {
     "pageTitle": "お知らせ",
     "pageDescription": "Blindfold Chessからのお知らせ",
@@ -2641,6 +2869,8 @@
     "announcementMessage": "新しいお知らせ: {title}",
     "newPostMessage": "{actor} さんが新しい投稿をシェアしました",
     "newCommentOnTopicMessage": "{actor} さんがあなたの問題にコメントしました",
+    "chunkEditRequestSubmittedMessage": "{actor} さんがあなたのチャンクに編集リクエストを送信しました",
+    "chunkEditRequestAcceptedMessage": "{actor} さんがあなたの編集リクエストを採用しました",
     "newPositionMemoryMessage": "{actor} がポジション記憶の問題を作成しました",
     "newPuzzleMessage": "{actor} がパズルを作成しました",
     "achievementSingleMessage": "🏆 {name} を獲得しました",
@@ -2686,7 +2916,8 @@
     "positionDeleted": "問題を削除しました",
     "positionUpdated": "変更を保存しました",
     "puzzleUpdated": "変更を保存しました",
-    "puzzleDeleted": "パズルを削除しました"
+    "puzzleDeleted": "パズルを削除しました",
+    "editRequestSubmitted": "編集リクエストを送信しました"
   },
   "setupUsername": {
     "title": "アカウント登録",
@@ -3362,6 +3593,10 @@
       "openings": {
         "title": "オープニング",
         "description": "チェスのオープニングを探索・学習しましょう"
+      },
+      "chunks": {
+        "title": "チャンク",
+        "description": "ポジション記憶トレーニングのための駒の連携パターンカタログ"
       }
     },
     "openings": {

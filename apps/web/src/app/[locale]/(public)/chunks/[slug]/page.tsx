@@ -5,9 +5,20 @@ import { notFound } from 'next/navigation';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { createSearchParamsCache, parseAsString } from 'nuqs/server';
+import { FiEdit2 } from 'react-icons/fi';
 
 import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
-import { getChunkBySlug, getLinkedPositionsForChunk } from '@/lib/chunks/queries';
+import {
+  countPendingEditRequestsForChunk,
+  getViewerPendingEditRequestForChunk,
+} from '@/lib/chunk-edit-requests/queries';
+import {
+  getChunkBySlug,
+  getChunkBySlugWithProfile,
+  getFeedbackTopicsForChunk,
+  getLinkedPositionsForChunk,
+} from '@/lib/chunks/queries';
+import { isChunkStatus } from '@/lib/chunks/validation';
 import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
@@ -15,7 +26,9 @@ import { getPositionDetailPath } from '@/lib/positions/routes';
 import { parsePositionType } from '@/lib/positions/types';
 import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
 import { createClient } from '@/lib/supabase/server';
+import { resolveDisplayName } from '@/lib/users/display-name';
 
+import { PositionAuthorAttribution } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorAttribution';
 import { PositionListCard } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionListCard';
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
 import { CommentTree } from '@/app/[locale]/(public)/topics/_components/CommentTree';
@@ -28,15 +41,19 @@ import {
   getCommentTreeForTopic,
   getPostCountByTopicKey,
 } from '@/app/[locale]/(public)/topics/_lib/queries';
-import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { HelpTourButton, PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import type { HelpStep } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { ChunkDeleteButton } from '../_components/ChunkDeleteButton';
+import { ChunkLifecycleControls } from '../_components/ChunkLifecycleControls';
 import { createChunkReplyWithAttachment } from './_actions/createChunkReplyWithAttachment';
 import { createChunkReplyWithFenAttachment } from './_actions/createChunkReplyWithFenAttachment';
 import { toggleChunkLike } from './_actions/toggleChunkLike';
 import { togglePositionLike } from './_actions/togglePositionLike';
+import { EditRequestCallout } from './_components/EditRequestCallout';
 import { NewPostForm } from './_components/NewPostForm';
 
 export const dynamic = 'force-dynamic';
@@ -77,11 +94,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ChunkDetailPage({ params, searchParams }: Props) {
   const { locale, slug } = await params;
-  const chunk = await getChunkBySlug(slug);
+  const row = await getChunkBySlugWithProfile(slug);
 
-  if (!chunk) {
+  if (!row) {
     notFound();
   }
+
+  const { chunk, profile } = row;
+  const displayName = resolveDisplayName(profile);
 
   const { sort } = await searchParamsCache.parse(searchParams);
   const sortBy = validateSort(sort);
@@ -91,17 +111,35 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [linkedPositions, commentCount, allComments, t, tTopics, tVideo, tPuzzle, tMemory] =
-    await Promise.all([
-      getLinkedPositionsForChunk(chunk.id),
-      getPostCountByTopicKey('chunk', slug),
-      getCommentTreeForTopic('chunk', slug, user?.id),
-      getTranslations({ locale, namespace: 'topics.chunks' }),
-      getTranslations({ locale, namespace: 'topics' }),
-      getTranslations({ locale, namespace: 'postVideoAttachmentRender' }),
-      getTranslations({ locale, namespace: 'practice.puzzle' }),
-      getTranslations({ locale, namespace: 'practice.positionMemory' }),
-    ]);
+  const [
+    linkedPositions,
+    commentCount,
+    allComments,
+    pendingEditRequestCount,
+    requestedFeedbackTopics,
+    viewerPendingRequestId,
+    t,
+    tTopics,
+    tVideo,
+    tPuzzle,
+    tMemory,
+    tChunks,
+    tEditRequests,
+  ] = await Promise.all([
+    getLinkedPositionsForChunk(chunk.id),
+    getPostCountByTopicKey('chunk', slug),
+    getCommentTreeForTopic('chunk', slug, user?.id),
+    countPendingEditRequestsForChunk(chunk.id),
+    getFeedbackTopicsForChunk(chunk.id),
+    getViewerPendingEditRequestForChunk(chunk.id, user?.id ?? null),
+    getTranslations({ locale, namespace: 'topics.chunks' }),
+    getTranslations({ locale, namespace: 'topics' }),
+    getTranslations({ locale, namespace: 'postVideoAttachmentRender' }),
+    getTranslations({ locale, namespace: 'practice.puzzle' }),
+    getTranslations({ locale, namespace: 'practice.positionMemory' }),
+    getTranslations({ locale, namespace: 'chunks' }),
+    getTranslations({ locale, namespace: 'chunks.editRequests' }),
+  ]);
 
   // Linked positions can mix puzzle and memory types. Reply meta is keyed by
   // `(topicType, topicKey)` so the two types are fetched in parallel and merged
@@ -142,17 +180,145 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
     tVideo('fallbackTitle')
   );
 
+  const isOwner = !!user && user.id === chunk.userId;
+  // The DB stores `status` as a varchar; an unknown value (e.g. a future
+  // state shipped before this page was redeployed) degrades to
+  // 'published' so the page still renders the safe defaults instead of
+  // crashing.
+  const status = isChunkStatus(chunk.status) ? chunk.status : 'published';
+  const isDraft = status === 'draft';
+
+  // Viewer relationship to the edit-suggestion flow — drives the
+  // callout CTA copy. See `EditRequestCalloutViewerState` for the
+  // exact contract.
+  const calloutViewerState: 'owner' | 'hasPending' | 'canSuggest' | 'signedOut' = !user
+    ? 'signedOut'
+    : isOwner
+      ? 'owner'
+      : viewerPendingRequestId
+        ? 'hasPending'
+        : 'canSuggest';
+
+  // Owner-side, an empty queue carries no action and no information
+  // the Draft badge isn't already conveying — render nothing rather
+  // than a "No suggestions yet" line that adds visual noise to every
+  // page the author opens on their own drafts. Non-owners still see
+  // the callout regardless of queue state because it carries their
+  // entry point into the suggestion flow.
+  const showEditRequestCallout =
+    isDraft && !(calloutViewerState === 'owner' && pendingEditRequestCount === 0);
+
+  // Help-tour steps for the draft state — mirrors the home / practice
+  // convention (HelpTourButton + data-tour-id on the target elements).
+  // Drafts get a brief walkthrough explaining the "edit suggestions"
+  // workflow that's unique to this lifecycle; published chunks render
+  // no help button since the page is then just a standard catalog entry.
+  const draftHelpSteps: HelpStep[] = isDraft
+    ? [
+        {
+          targetId: 'chunk-draft-badge',
+          title: tEditRequests('help.badge.title'),
+          description: tEditRequests('help.badge.description'),
+          side: 'bottom',
+          align: 'center',
+        },
+        // The second step highlights the callout's CTA, so it only
+        // makes sense when the callout actually renders. Skip it
+        // when the callout is suppressed (owner viewing an empty
+        // queue) so the tour does not point at a missing element.
+        ...(showEditRequestCallout
+          ? [
+              {
+                targetId: 'chunk-edit-requests-link',
+                title: tEditRequests('help.editRequests.title'),
+                description: tEditRequests('help.editRequests.description'),
+                side: 'bottom' as const,
+                align: 'end' as const,
+              },
+            ]
+          : []),
+      ]
+    : [];
+
   return (
     <PageLayout
       title={chunk.title}
+      titleAction={
+        isDraft ? (
+          <span className="inline-flex items-center gap-2">
+            <span
+              data-tour-id="chunk-draft-badge"
+              className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-900 dark:text-amber-100"
+            >
+              {tChunks('statusDraft')}
+            </span>
+            {/*
+             * Help tour is for visitors who need to be told what a draft
+             * means and where to suggest changes — content the owner of
+             * the draft does not need (they wrote it and there is
+             * nothing for them to "suggest"). Hiding the trigger for
+             * the owner also avoids the missing-target degradation in
+             * the owner+0-pending case where the callout (step 2's
+             * spotlight) is intentionally not rendered.
+             */}
+            {!isOwner && (
+              <HelpTourButton steps={draftHelpSteps} label={tEditRequests('help.label')} />
+            )}
+          </span>
+        ) : undefined
+      }
       locale={locale}
-      breadcrumb={[{ label: 'Chunks', href: '/chunks' }, { label: chunk.title }]}
+      breadcrumb={[{ label: tChunks('listTitle'), href: '/chunks' }, { label: chunk.title }]}
     >
-      {chunk.description && (
-        <>
-          <SectionTitle>Description</SectionTitle>
-          <p className="text-muted-foreground">{chunk.description}</p>
-        </>
+      {/*
+       * Edit-suggestion callout — only meaningful while the chunk is in
+       * draft. Hoisted to the very top of the content area so the
+       * "this is a workshop state, suggestions welcome" framing is the
+       * first thing visitors see before they scroll into the catalog
+       * content. The layout-uniformity cost (a non-SectionTitle element
+       * preceding the first SectionTitle) is bounded because the
+       * callout only renders in the draft state; mirrors the
+       * articles `/[slug]` fallback-locale notice pattern.
+       */}
+      {showEditRequestCallout && (
+        <EditRequestCallout
+          locale={locale}
+          slug={slug}
+          pendingCount={pendingEditRequestCount}
+          body={tEditRequests('callout.body')}
+          ownerBody={
+            pendingEditRequestCount > 0
+              ? tEditRequests('callout.ownerBodyWithPending', {
+                  count: pendingEditRequestCount,
+                })
+              : tEditRequests('callout.ownerBodyEmpty')
+          }
+          ctaByState={{
+            owner: tEditRequests('callout.ctaOwner'),
+            hasPending: tEditRequests('callout.ctaHasPending'),
+            canSuggest: tEditRequests('callout.ctaCanSuggest'),
+            signedOut: tEditRequests('callout.ctaSignedOut'),
+          }}
+          viewerState={calloutViewerState}
+          requestedTopicLabels={requestedFeedbackTopics.map((topic) =>
+            tEditRequests(`callout.topicLabels.${topic}` as 'callout.topicLabels.title')
+          )}
+          topicLeadIn={tEditRequests('callout.topicLeadIn')}
+        />
+      )}
+
+      {/*
+       * Render the Description section unconditionally — drafts can
+       * legitimately ship without a description while their title is
+       * still being workshopped, but the section title gives a visible
+       * anchor (and an obvious "missing" placeholder) so the page
+       * structure stays consistent with other detail surfaces.
+       */}
+      <SectionTitle>{tChunks('detail.descriptionSection')}</SectionTitle>
+      {chunk.description ? (
+        <p className="text-foreground whitespace-pre-wrap">{chunk.description}</p>
+      ) : (
+        <p className="text-muted-foreground italic">{tChunks('detail.noDescription')}</p>
       )}
 
       <div className="max-w-xs mx-auto">
@@ -165,10 +331,8 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
 
       {linkedPositions.length > 0 && (
         <>
-          <SectionTitle>Positions</SectionTitle>
-          <p className="text-sm text-muted-foreground">
-            Problems where this chunk pattern is effective.
-          </p>
+          <SectionTitle>{tChunks('detail.positionsSection')}</SectionTitle>
+          <p className="text-sm text-muted-foreground">{tChunks('detail.positionsDescription')}</p>
           <div className="space-y-3">
             {linkedPositions.map(({ position, profile }) => {
               const positionType = parsePositionType(position.type);
@@ -200,7 +364,9 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
                           : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
                       }`}
                     >
-                      {isPuzzle ? 'Puzzle' : 'Memory'}
+                      {isPuzzle
+                        ? tChunks('detail.positionBadge.puzzle')
+                        : tChunks('detail.positionBadge.memory')}
                     </span>
                   }
                 />
@@ -209,6 +375,59 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
           </div>
         </>
       )}
+
+      <PositionAuthorAttribution
+        profile={profile}
+        displayName={displayName}
+        createdByLabel={tChunks('detail.createdBy')}
+        locale={locale}
+      />
+
+      {/*
+       * Bottom metadata row — mirrors the layout used by
+       * `/practice/puzzle/[id]` and `/practice/position-memory/[id]`.
+       * Inline-link styled affordances (Edit suggestions, Edit,
+       * Publish, Delete) sit on the right with the chunk's created /
+       * edited timestamp; this is the canonical "owner + visitor
+       * actions" surface for the page rather than scattering controls
+       * near the title.
+       */}
+      <div className="flex flex-wrap items-center justify-end gap-4 text-xs text-muted-foreground">
+        {isOwner && isDraft && (
+          <Link
+            href={`/${locale}/chunks/${slug}/edit`}
+            className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-muted-foreground hover:border-foreground/20 hover:text-foreground transition-colors"
+          >
+            <FiEdit2 className="h-3 w-3" aria-hidden />
+            {tChunks('editCta')}
+          </Link>
+        )}
+        {isOwner && (
+          <ChunkLifecycleControls
+            chunkId={chunk.id}
+            chunkSlug={chunk.slug}
+            status={status}
+            hasDescription={!!chunk.description && chunk.description.trim().length > 0}
+          />
+        )}
+        {/*
+         * Delete stays available to the owner in both draft and
+         * published states — publish is one-way and the edit page is
+         * 404 once published, so without this control the owner has
+         * no way to retire a mistakenly-published chunk.
+         */}
+        {isOwner && <ChunkDeleteButton chunkId={chunk.id} />}
+        <time dateTime={chunk.createdAt.toISOString()}>
+          {chunk.createdAt.toLocaleDateString(locale, {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })}
+        </time>
+        {chunk.updatedAt.getTime() - chunk.createdAt.getTime() > 1000 && (
+          <span>{tChunks('detail.edited')}</span>
+        )}
+      </div>
 
       <SectionTitle>{t('commentsTitle')}</SectionTitle>
 

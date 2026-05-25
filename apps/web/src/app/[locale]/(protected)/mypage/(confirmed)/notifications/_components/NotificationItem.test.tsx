@@ -21,6 +21,10 @@ vi.mock('@/i18n/use-safe-translations', () => ({
     if (key === 'likeMessage' && params) return `${params.actor} liked your post`;
     if (key === 'replyMessage' && params) return `${params.actor} replied to your post`;
     if (key === 'newPostMessage' && params) return `${params.actor} shared a new post`;
+    if (key === 'chunkEditRequestSubmittedMessage' && params)
+      return `${params.actor} suggested an edit to your chunk`;
+    if (key === 'chunkEditRequestAcceptedMessage' && params)
+      return `${params.actor} accepted your edit suggestion`;
     if (key === 'achievementSingleMessage' && params) return `🏆 You earned ${params.name}`;
     if (key === 'achievementMultipleMessage' && params)
       return `🏆 You earned ${params.count} achievements`;
@@ -624,6 +628,56 @@ describe('NotificationItem', () => {
       const link = screen.queryByRole('link');
       expect(link).not.toBeNull();
       expect(link!.getAttribute('href')).toBe('/practice/position-memory/pos-np-no-meta');
+    });
+  });
+
+  describe('chunk_edit_request notifications', () => {
+    // Only two chunk_edit_request_* types reach the UI: submitted
+    // (→ owner) and accepted (→ proposer). Reject and withdraw are
+    // intentionally silent — see mutations.ts comment for the
+    // asymmetry rationale.
+    it('should display the submitted message and link to /chunks/{slug}/edit-requests', () => {
+      const notification = createNotification({
+        type: 'chunk_edit_request_submitted',
+        targetType: 'chunk_edit_request',
+        targetId: 'req-1',
+        metadata: { chunkId: 'chunk-1', slug: 'fianchetto' },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const link = screen.getByText('Alice suggested an edit to your chunk').closest('a');
+      expect(link).not.toBeNull();
+      expect(link!.getAttribute('href')).toBe('/chunks/fianchetto/edit-requests');
+    });
+
+    it('should display the accepted message and link to /chunks/{slug}/edit-requests', () => {
+      const notification = createNotification({
+        type: 'chunk_edit_request_accepted',
+        targetType: 'chunk_edit_request',
+        targetId: 'req-2',
+        metadata: { chunkId: 'chunk-2', slug: 'rook-battery' },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const link = screen.getByText('Alice accepted your edit suggestion').closest('a');
+      expect(link).not.toBeNull();
+      expect(link!.getAttribute('href')).toBe('/chunks/rook-battery/edit-requests');
+    });
+
+    it('should render as button when metadata is missing (no slug to route against)', () => {
+      const notification = createNotification({
+        type: 'chunk_edit_request_submitted',
+        targetType: 'chunk_edit_request',
+        targetId: 'req-no-meta',
+        metadata: {},
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      expect(screen.queryByRole('link')).toBeNull();
+      expect(screen.getByRole('button')).toBeDefined();
     });
   });
 
