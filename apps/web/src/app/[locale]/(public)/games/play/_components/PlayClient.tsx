@@ -207,13 +207,24 @@ export function PlayClient({
   // Read the latest `peek+inline` predicate via a ref so the effect's only
   // re-trigger is the commit counter — otherwise unrelated preference
   // changes (piece colors, theme, etc.) would also cause a scroll.
+  //
+  // The scroll is dispatched via `requestAnimationFrame` so the inline
+  // board's auto-collapse layout shift (which removes the board element
+  // from the DOM and reduces document height) flushes BEFORE the smooth
+  // scroll begins. Without that deferral, some browsers cancel the
+  // in-flight smooth animation when the document height drops underneath
+  // it, leaving the page stuck at its original scroll position — exactly
+  // the symptom users observed.
   const peekInlineModeRef = useRef(shouldShowInlinePeekHeader(preferences));
   peekInlineModeRef.current = shouldShowInlinePeekHeader(preferences);
   useEffect(() => {
     if (playerMoveCommitCount === 0) return; // skip initial mount
     if (!peekInlineModeRef.current) return;
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+    const id = requestAnimationFrame(() => {
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+    });
+    return () => cancelAnimationFrame(id);
   }, [playerMoveCommitCount]);
 
   // Board-driven move handler — only wired through to InlineBoardView when
