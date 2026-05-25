@@ -2447,12 +2447,12 @@
       "help": {
         "label": "How edit suggestions work",
         "badge": {
-          "title": "This chunk is still a draft",
-          "description": "Drafts can be edited freely and the title / description aren't final yet. Once the owner publishes, the chunk becomes a canonical catalog entry and is locked."
+          "title": "This chunk is in draft",
+          "description": "Suggestions for the title and description are welcome."
         },
         "editRequests": {
-          "title": "Suggest a better title or description",
-          "description": "Open the Edit suggestions page to propose a new title or description while the chunk is in draft. The owner reviews each suggestion — accepting one applies your text to the chunk in place."
+          "title": "Suggest a change",
+          "description": "Open this page to propose a new title or description."
         }
       },
       "sectionTitle": "Edit suggestions",
