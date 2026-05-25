@@ -1760,6 +1760,7 @@
       "inputMethodSelect": "リスト",
       "inputMethodBoard": "盤面",
       "columnMovePeek": "ヒント",
+      "columnInvalid": "誤入力",
       "initialSettings": {
         "title": "初期設定",
         "notRecorded": "このゲームでは初期設定が記録されていません。",
@@ -1804,6 +1805,7 @@
         "peekCount": "盤面確認",
         "undoCount": "テイクバック",
         "hintCount": "合法手ヒント",
+        "invalidCount": "誤入力",
         "viewDetails": "ログ",
         "times": "{count, plural, other {#回}}",
         "columnItem": "項目",

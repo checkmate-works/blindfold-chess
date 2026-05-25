@@ -18,6 +18,15 @@ export type MoveOperationLog = {
   peekCount: number;
   undoCount: number;
   movePeekCount: number;
+  /**
+   * Number of invalid-move submission attempts since the previous commit.
+   * Optional for backward compatibility — entries written before this field
+   * existed are treated as 0 by consumers. Counts only failed
+   * MoveInputPanel submissions (text / select / button paths); board moves
+   * (click-to-move / drag-and-drop) never submit illegal moves because the
+   * board only fires `onMove` for legal destinations.
+   */
+  invalidCount?: number;
 };
 
 /**

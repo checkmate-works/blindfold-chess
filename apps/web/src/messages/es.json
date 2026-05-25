@@ -1756,6 +1756,7 @@
       "inputMethodSelect": "Lista",
       "inputMethodBoard": "Tablero",
       "columnMovePeek": "Pistas",
+      "columnInvalid": "Ilegal",
       "initialSettings": {
         "title": "Configuración inicial",
         "notRecorded": "La configuración inicial no fue registrada para esta partida.",
@@ -1800,6 +1801,7 @@
         "peekCount": "Vistazos al Tablero",
         "undoCount": "Deshacer",
         "hintCount": "Pistas de Movimiento",
+        "invalidCount": "Intentos Ilegales",
         "viewDetails": "Registro",
         "times": "{count, plural, one {# vez} other {# veces}}",
         "columnItem": "Elemento",

@@ -295,6 +295,9 @@ export function OperationLogModal({
                     <th className="py-2 px-2 font-medium text-muted-foreground text-center">
                       {t('operationLog.columnMovePeek')}
                     </th>
+                    <th className="py-2 px-2 font-medium text-muted-foreground text-center">
+                      {t('operationLog.columnInvalid')}
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -309,6 +312,7 @@ export function OperationLogModal({
                         <td className="py-2 px-2 text-center">{log.peekCount}</td>
                         <td className="py-2 px-2 text-center">{log.undoCount}</td>
                         <td className="py-2 px-2 text-center">{log.movePeekCount ?? 0}</td>
+                        <td className="py-2 px-2 text-center">{log.invalidCount ?? 0}</td>
                       </tr>
                     );
                   })}

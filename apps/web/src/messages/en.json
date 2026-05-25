@@ -1760,6 +1760,7 @@
       "inputMethodSelect": "List",
       "inputMethodBoard": "Board",
       "columnMovePeek": "Hints",
+      "columnInvalid": "Illegal",
       "initialSettings": {
         "title": "Initial Settings",
         "notRecorded": "Initial settings were not recorded for this game.",
@@ -1804,6 +1805,7 @@
         "peekCount": "Board Peeks",
         "undoCount": "Undos",
         "hintCount": "Move Hints",
+        "invalidCount": "Illegal Attempts",
         "viewDetails": "Log",
         "times": "{count, plural, one {# time} other {# times}}",
         "columnItem": "Item",

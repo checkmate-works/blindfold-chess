@@ -113,8 +113,27 @@ export function PlayClient({
     commitMoveLog,
     recordPeek,
     recordMovePeek,
+    recordInvalid,
     setPerGamePref,
   } = actions;
+
+  // Wraps handleSubmitMove for the MoveInputPanel path: when a text /
+  // select / button submission is rejected (`=== false` return), bump the
+  // invalid-attempt counter so the operation-log entry for the eventual
+  // successful move reflects how many tries it took. Board-driven moves
+  // (handleBoardMove) use the raw handleSubmitMove — ChessBoard only
+  // emits legal moves, so a rejection there is a race / dedup and not a
+  // user mistake worth recording.
+  const handleSubmitMoveTracked = useCallback(
+    (move: AlgebraicNotation): boolean | void | Promise<void> => {
+      const result = handleSubmitMove(move);
+      if (result === false) {
+        recordInvalid();
+      }
+      return result;
+    },
+    [handleSubmitMove, recordInvalid]
+  );
 
   // Global preferences
   const { preferences: globalPreferences, updatePreferences, isHydrated } = useGamePreferences();
@@ -339,7 +358,7 @@ export function PlayClient({
                 setMoveInput={setMoveInput}
                 error={error}
                 onErrorClear={clearMoveError}
-                handleSubmitMove={handleSubmitMove}
+                handleSubmitMove={handleSubmitMoveTracked}
                 moves={moves}
                 confirmationDialogs={confirmationDialogs}
                 // Peek tracking: counts each "open" action, not view duration.

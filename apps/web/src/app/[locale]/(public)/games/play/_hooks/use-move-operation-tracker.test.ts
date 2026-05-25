@@ -12,8 +12,20 @@ describe('useMoveOperationTracker', () => {
 
   it('should initialize with provided initial logs', () => {
     const initialLogs = [
-      { inputMethod: 'text' as const, peekCount: 1, undoCount: 0, movePeekCount: 0 },
-      { inputMethod: 'button' as const, peekCount: 0, undoCount: 1, movePeekCount: 0 },
+      {
+        inputMethod: 'text' as const,
+        peekCount: 1,
+        undoCount: 0,
+        movePeekCount: 0,
+        invalidCount: 0,
+      },
+      {
+        inputMethod: 'button' as const,
+        peekCount: 0,
+        undoCount: 1,
+        movePeekCount: 0,
+        invalidCount: 0,
+      },
     ];
     const { result } = renderHook(() => useMoveOperationTracker({ initialLogs }));
     expect(result.current.logs).toEqual(initialLogs);
@@ -27,7 +39,7 @@ describe('useMoveOperationTracker', () => {
     });
 
     expect(result.current.logs).toEqual([
-      { inputMethod: 'button', peekCount: 0, undoCount: 0, movePeekCount: 0 },
+      { inputMethod: 'button', peekCount: 0, undoCount: 0, movePeekCount: 0, invalidCount: 0 },
     ]);
   });
 
@@ -41,7 +53,7 @@ describe('useMoveOperationTracker', () => {
     });
 
     expect(result.current.logs).toEqual([
-      { inputMethod: 'text', peekCount: 2, undoCount: 0, movePeekCount: 0 },
+      { inputMethod: 'text', peekCount: 2, undoCount: 0, movePeekCount: 0, invalidCount: 0 },
     ]);
   });
 
@@ -54,7 +66,7 @@ describe('useMoveOperationTracker', () => {
     });
 
     expect(result.current.logs).toEqual([
-      { inputMethod: 'select', peekCount: 0, undoCount: 1, movePeekCount: 0 },
+      { inputMethod: 'select', peekCount: 0, undoCount: 1, movePeekCount: 0, invalidCount: 0 },
     ]);
   });
 
@@ -69,7 +81,13 @@ describe('useMoveOperationTracker', () => {
     });
 
     expect(result.current.logs).toEqual([
-      { inputMethod: 'text-autocomplete', peekCount: 2, undoCount: 1, movePeekCount: 0 },
+      {
+        inputMethod: 'text-autocomplete',
+        peekCount: 2,
+        undoCount: 1,
+        movePeekCount: 0,
+        invalidCount: 0,
+      },
     ]);
   });
 
@@ -87,8 +105,8 @@ describe('useMoveOperationTracker', () => {
     });
 
     expect(result.current.logs).toEqual([
-      { inputMethod: 'button', peekCount: 1, undoCount: 1, movePeekCount: 0 },
-      { inputMethod: 'text', peekCount: 0, undoCount: 0, movePeekCount: 0 },
+      { inputMethod: 'button', peekCount: 1, undoCount: 1, movePeekCount: 0, invalidCount: 0 },
+      { inputMethod: 'text', peekCount: 0, undoCount: 0, movePeekCount: 0, invalidCount: 0 },
     ]);
   });
 
@@ -116,18 +134,21 @@ describe('useMoveOperationTracker', () => {
       peekCount: 0,
       undoCount: 0,
       movePeekCount: 0,
+      invalidCount: 0,
     });
     expect(result.current.logs[1]).toEqual({
       inputMethod: 'text',
       peekCount: 1,
       undoCount: 0,
       movePeekCount: 0,
+      invalidCount: 0,
     });
     expect(result.current.logs[2]).toEqual({
       inputMethod: 'select',
       peekCount: 1,
       undoCount: 1,
       movePeekCount: 0,
+      invalidCount: 0,
     });
   });
 
@@ -152,6 +173,7 @@ describe('useMoveOperationTracker', () => {
       peekCount: 0,
       undoCount: 0,
       movePeekCount: 0,
+      invalidCount: 0,
     });
 
     // Counters should be reset after undo, so next commit starts fresh
@@ -165,6 +187,7 @@ describe('useMoveOperationTracker', () => {
       peekCount: 0,
       undoCount: 0,
       movePeekCount: 0,
+      invalidCount: 0,
     });
   });
 
@@ -210,6 +233,7 @@ describe('useMoveOperationTracker', () => {
       peekCount: 0,
       undoCount: 1,
       movePeekCount: 0,
+      invalidCount: 0,
     });
   });
 
@@ -227,6 +251,63 @@ describe('useMoveOperationTracker', () => {
       peekCount: 0,
       undoCount: 0,
       movePeekCount: 2,
+      invalidCount: 0,
+    });
+  });
+
+  it('should track invalidCount for the current move and reset on commit', () => {
+    const { result } = renderHook(() => useMoveOperationTracker());
+
+    act(() => {
+      // Three failed submissions before the successful one.
+      result.current.recordInvalid();
+      result.current.recordInvalid();
+      result.current.recordInvalid();
+      result.current.commitMove('text');
+    });
+
+    expect(result.current.logs[0]).toEqual({
+      inputMethod: 'text',
+      peekCount: 0,
+      undoCount: 0,
+      movePeekCount: 0,
+      invalidCount: 3,
+    });
+
+    // Counters reset after commit — the next move should start at 0.
+    act(() => {
+      result.current.commitMove('button');
+    });
+
+    expect(result.current.logs[1]).toEqual({
+      inputMethod: 'button',
+      peekCount: 0,
+      undoCount: 0,
+      movePeekCount: 0,
+      invalidCount: 0,
+    });
+  });
+
+  it('discards in-flight invalidCount on undo (matches existing peek/undo policy)', () => {
+    const { result } = renderHook(() => useMoveOperationTracker());
+
+    act(() => {
+      result.current.commitMove('text');
+      result.current.recordInvalid();
+      result.current.recordInvalid();
+      result.current.handleUndoLog();
+      // The two invalids belonged to the move being undone — they vanish
+      // along with the move. The next commit starts fresh.
+      result.current.commitMove('button');
+    });
+
+    expect(result.current.logs).toHaveLength(1);
+    expect(result.current.logs[0]).toEqual({
+      inputMethod: 'button',
+      peekCount: 0,
+      undoCount: 0,
+      movePeekCount: 0,
+      invalidCount: 0,
     });
   });
 
@@ -252,6 +333,7 @@ describe('useMoveOperationTracker', () => {
         peekCount: 0,
         undoCount: 0,
         movePeekCount: 0,
+        invalidCount: 0,
       });
     });
 
@@ -276,6 +358,7 @@ describe('useMoveOperationTracker', () => {
         peekCount: 0,
         undoCount: 0,
         movePeekCount: 0,
+        invalidCount: 0,
       });
     });
 
@@ -341,7 +424,7 @@ describe('useMoveOperationTracker', () => {
       });
 
       expect(result.current.logs).toEqual([
-        { inputMethod: 'text', peekCount: 0, undoCount: 0, movePeekCount: 0 },
+        { inputMethod: 'text', peekCount: 0, undoCount: 0, movePeekCount: 0, invalidCount: 0 },
       ]);
     });
 
@@ -349,8 +432,20 @@ describe('useMoveOperationTracker', () => {
       const { result } = renderHook(() => useMoveOperationTracker());
 
       const restoredLogs = [
-        { inputMethod: 'text' as const, peekCount: 1, undoCount: 0, movePeekCount: 0 },
-        { inputMethod: 'button' as const, peekCount: 0, undoCount: 0, movePeekCount: 0 },
+        {
+          inputMethod: 'text' as const,
+          peekCount: 1,
+          undoCount: 0,
+          movePeekCount: 0,
+          invalidCount: 0,
+        },
+        {
+          inputMethod: 'button' as const,
+          peekCount: 0,
+          undoCount: 0,
+          movePeekCount: 0,
+          invalidCount: 0,
+        },
       ];
 
       act(() => {
@@ -371,6 +466,7 @@ describe('useMoveOperationTracker', () => {
         peekCount: 1,
         undoCount: 0,
         movePeekCount: 0,
+        invalidCount: 0,
       });
     });
 
@@ -378,8 +474,20 @@ describe('useMoveOperationTracker', () => {
       const { result } = renderHook(() => useMoveOperationTracker());
 
       const restoredLogs = [
-        { inputMethod: 'text' as const, peekCount: 0, undoCount: 0, movePeekCount: 0 },
-        { inputMethod: 'button' as const, peekCount: 1, undoCount: 0, movePeekCount: 0 },
+        {
+          inputMethod: 'text' as const,
+          peekCount: 0,
+          undoCount: 0,
+          movePeekCount: 0,
+          invalidCount: 0,
+        },
+        {
+          inputMethod: 'button' as const,
+          peekCount: 1,
+          undoCount: 0,
+          movePeekCount: 0,
+          invalidCount: 0,
+        },
       ];
 
       act(() => {
@@ -404,6 +512,7 @@ describe('useMoveOperationTracker', () => {
         peekCount: 0,
         undoCount: 1,
         movePeekCount: 0,
+        invalidCount: 0,
       });
     });
   });

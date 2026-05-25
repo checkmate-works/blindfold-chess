@@ -1756,6 +1756,7 @@
       "inputMethodSelect": "Lista",
       "inputMethodBoard": "Tabuleiro",
       "columnMovePeek": "Dicas",
+      "columnInvalid": "Ilegal",
       "initialSettings": {
         "title": "Configurações iniciais",
         "notRecorded": "As configurações iniciais não foram registradas para esta partida.",
@@ -1800,6 +1801,7 @@
         "peekCount": "Espiadas no Tabuleiro",
         "undoCount": "Desfazer",
         "hintCount": "Dicas de Movimento",
+        "invalidCount": "Tentativas Ilegais",
         "viewDetails": "Registro",
         "times": "{count, plural, one {# vez} other {# vezes}}",
         "columnItem": "Item",

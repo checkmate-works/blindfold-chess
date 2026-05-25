@@ -89,15 +89,17 @@ function OperationLogSummary({
     let totalPeeks = 0;
     let totalUndos = 0;
     let totalHints = 0;
+    let totalInvalids = 0;
 
     for (const log of logs) {
       inputMethods[log.inputMethod]++;
       totalPeeks += log.peekCount;
       totalUndos += log.undoCount;
       totalHints += log.movePeekCount ?? 0;
+      totalInvalids += log.invalidCount ?? 0;
     }
 
-    return { inputMethods, totalPeeks, totalUndos, totalHints };
+    return { inputMethods, totalPeeks, totalUndos, totalHints, totalInvalids };
   }, [logs]);
 
   const inputMethodLabels: Record<MoveInputMethod, string> = {
@@ -116,7 +118,8 @@ function OperationLogSummary({
     activeInputMethods.length > 0 ||
     stats.totalPeeks > 0 ||
     stats.totalUndos > 0 ||
-    stats.totalHints > 0;
+    stats.totalHints > 0 ||
+    stats.totalInvalids > 0;
 
   if (!hasAnyStats) return null;
 
@@ -140,6 +143,13 @@ function OperationLogSummary({
     singleRows.push({
       label: t('result.operationSummary.undoCount'),
       value: t('result.operationSummary.times', { count: stats.totalUndos }),
+    });
+  }
+
+  if (stats.totalInvalids > 0) {
+    singleRows.push({
+      label: t('result.operationSummary.invalidCount'),
+      value: t('result.operationSummary.times', { count: stats.totalInvalids }),
     });
   }
 
