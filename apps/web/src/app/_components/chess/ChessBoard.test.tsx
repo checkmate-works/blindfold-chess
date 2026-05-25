@@ -16,12 +16,22 @@
  * engine via `findLegalMoveByCoords` (no mock); the tests use canonical
  * positions and assert on the SAN string emitted to onMove.
  */
-import { cleanup, fireEvent, render } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ChessBoard } from './ChessBoard';
 
+// Promotion picker renders aria-labels through the safe-translations
+// fallback (which returns the namespaced key path when no provider is
+// mounted). Stub the wrapper so assertions use stable strings.
+vi.mock('@/i18n/use-safe-translations', () => ({
+  useSafeTranslations: () => (key: string) => key,
+}));
+
 const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+
+/** White pawn on e7 ready to promote; both kings out of the way. */
+const PROMO_FEN = '8/4P3/8/8/8/8/8/4K2k w - - 0 1';
 
 function squareEl(container: HTMLElement, square: string): HTMLElement {
   const el = container.querySelector<HTMLElement>(`[data-square="${square}"]`);
@@ -206,6 +216,98 @@ describe('ChessBoard interactive mode — drag-and-drop', () => {
     const { container } = render(<ChessBoard fen={STARTING_FEN} playerSide="white" />);
 
     expect(container.querySelector('[draggable="true"]')).toBeNull();
+  });
+});
+
+describe('ChessBoard interactive mode — promotion picker', () => {
+  it('opens the picker (and does NOT yet fire onMove) on click promotion', () => {
+    const onMove = vi.fn();
+    const { container } = render(<ChessBoard fen={PROMO_FEN} playerSide="white" onMove={onMove} />);
+
+    fireEvent.click(squareEl(container, 'e7'));
+    fireEvent.click(squareEl(container, 'e8'));
+
+    expect(onMove).not.toHaveBeenCalled();
+    // All four promotion buttons are present in the picker.
+    expect(screen.getByLabelText('promotionPicker.promoteTo.queen')).toBeInTheDocument();
+    expect(screen.getByLabelText('promotionPicker.promoteTo.rook')).toBeInTheDocument();
+    expect(screen.getByLabelText('promotionPicker.promoteTo.bishop')).toBeInTheDocument();
+    expect(screen.getByLabelText('promotionPicker.promoteTo.knight')).toBeInTheDocument();
+  });
+
+  it('fires onMove with the queen SAN when the queen button is clicked', () => {
+    const onMove = vi.fn();
+    const { container } = render(<ChessBoard fen={PROMO_FEN} playerSide="white" onMove={onMove} />);
+
+    fireEvent.click(squareEl(container, 'e7'));
+    fireEvent.click(squareEl(container, 'e8'));
+    fireEvent.click(screen.getByLabelText('promotionPicker.promoteTo.queen'));
+
+    expect(onMove).toHaveBeenCalledExactlyOnceWith('e8=Q');
+  });
+
+  it('honors underpromotion: clicking the knight fires the knight SAN', () => {
+    const onMove = vi.fn();
+    const { container } = render(<ChessBoard fen={PROMO_FEN} playerSide="white" onMove={onMove} />);
+
+    fireEvent.click(squareEl(container, 'e7'));
+    fireEvent.click(squareEl(container, 'e8'));
+    fireEvent.click(screen.getByLabelText('promotionPicker.promoteTo.knight'));
+
+    expect(onMove).toHaveBeenCalledExactlyOnceWith('e8=N');
+  });
+
+  it('cancels via the backdrop click — no onMove, picker dismissed', () => {
+    const onMove = vi.fn();
+    const { container } = render(<ChessBoard fen={PROMO_FEN} playerSide="white" onMove={onMove} />);
+
+    fireEvent.click(squareEl(container, 'e7'));
+    fireEvent.click(squareEl(container, 'e8'));
+
+    // The backdrop has its own aria-label for dismiss.
+    fireEvent.click(screen.getByLabelText('promotionPicker.cancel'));
+
+    expect(onMove).not.toHaveBeenCalled();
+    expect(screen.queryByLabelText('promotionPicker.promoteTo.queen')).not.toBeInTheDocument();
+  });
+
+  it('cancels via the Escape key', () => {
+    const onMove = vi.fn();
+    const { container } = render(<ChessBoard fen={PROMO_FEN} playerSide="white" onMove={onMove} />);
+
+    fireEvent.click(squareEl(container, 'e7'));
+    fireEvent.click(squareEl(container, 'e8'));
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+
+    expect(onMove).not.toHaveBeenCalled();
+    expect(screen.queryByLabelText('promotionPicker.promoteTo.queen')).not.toBeInTheDocument();
+  });
+
+  it('opens the picker after a drag-and-drop promotion', () => {
+    const onMove = vi.fn();
+    const { container } = render(<ChessBoard fen={PROMO_FEN} playerSide="white" onMove={onMove} />);
+
+    const transfer = makeDataTransfer();
+    fireEvent.dragStart(pieceInSquare(container, 'e7'), { dataTransfer: transfer });
+    fireEvent.dragOver(squareEl(container, 'e8'), { dataTransfer: transfer });
+    fireEvent.drop(squareEl(container, 'e8'), { dataTransfer: transfer });
+
+    expect(onMove).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('promotionPicker.promoteTo.queen')).toBeInTheDocument();
+  });
+
+  it('does not open the picker for a regular (non-promotion) move', () => {
+    const onMove = vi.fn();
+    const { container } = render(
+      <ChessBoard fen={STARTING_FEN} playerSide="white" onMove={onMove} />
+    );
+
+    fireEvent.click(squareEl(container, 'e2'));
+    fireEvent.click(squareEl(container, 'e4'));
+
+    expect(onMove).toHaveBeenCalledExactlyOnceWith('e4');
+    expect(screen.queryByLabelText('promotionPicker.promoteTo.queen')).not.toBeInTheDocument();
   });
 });
 

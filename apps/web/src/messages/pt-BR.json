@@ -1776,6 +1776,15 @@
         "columnChange": "Alteração"
       }
     },
+    "promotionPicker": {
+      "cancel": "Cancelar promoção",
+      "promoteTo": {
+        "queen": "Promover a dama",
+        "rook": "Promover a torre",
+        "bishop": "Promover a bispo",
+        "knight": "Promover a cavalo"
+      }
+    },
     "settings": {
       "title": "Configurações da partida"
     },

@@ -47,6 +47,12 @@ type Props = {
    * shares the board's coordinate space.
    */
   annotations?: BoardAnnotations | null;
+  /**
+   * Slot for absolute-positioned overlays that need to share the board's
+   * coordinate space — currently the promotion picker. Rendered last so it
+   * stacks on top of the squares.
+   */
+  overlay?: ReactNode;
 };
 
 // Visual rows/cols `0..7`, left→right / top→bottom as rendered. The mapping
@@ -68,6 +74,7 @@ export function BoardLayout({
   rounded = true,
   className = '',
   annotations = null,
+  overlay,
 }: Props) {
   return (
     <div className={`w-full ${className}`}>
@@ -123,6 +130,7 @@ export function BoardLayout({
           );
         })}
         {annotations && <BoardAnnotationOverlay annotations={annotations} flipped={flipped} />}
+        {overlay}
       </div>
     </div>
   );

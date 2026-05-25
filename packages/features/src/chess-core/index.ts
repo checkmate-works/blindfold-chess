@@ -38,6 +38,7 @@ export {
   getPlayerMovesFromSequence,
   isLegalPieceMove,
   findLegalMoveByCoords,
+  findLegalMovesByCoords,
 } from "./moves";
 
 export type {

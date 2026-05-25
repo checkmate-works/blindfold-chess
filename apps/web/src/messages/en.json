@@ -1780,6 +1780,15 @@
         "columnChange": "Change"
       }
     },
+    "promotionPicker": {
+      "cancel": "Cancel promotion",
+      "promoteTo": {
+        "queen": "Promote to queen",
+        "rook": "Promote to rook",
+        "bishop": "Promote to bishop",
+        "knight": "Promote to knight"
+      }
+    },
     "settings": {
       "title": "Game Settings"
     },

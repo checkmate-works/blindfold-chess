@@ -1776,6 +1776,15 @@
         "columnChange": "Cambio"
       }
     },
+    "promotionPicker": {
+      "cancel": "Cancelar coronación",
+      "promoteTo": {
+        "queen": "Coronar a dama",
+        "rook": "Coronar a torre",
+        "bishop": "Coronar a alfil",
+        "knight": "Coronar a caballo"
+      }
+    },
     "settings": {
       "title": "Configuración de la partida"
     },

@@ -3,10 +3,10 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ChessPiece } from '@/app/_components';
-import type { BoardPiece } from '@blindfold-chess/features/chess-core';
+import type { BoardPiece, MoveResult } from '@blindfold-chess/features/chess-core';
 import {
   fenToBoard,
-  findLegalMoveByCoords,
+  findLegalMovesByCoords,
   getLegalMoves,
 } from '@blindfold-chess/features/chess-core';
 import type { Side } from '@blindfold-chess/types';
@@ -19,6 +19,7 @@ import { getEvaluationIcon } from '@/lib/games/evaluation';
 
 import type { SquareRenderInfo } from './BoardLayout';
 import { BoardLayout } from './BoardLayout';
+import { PromotionPicker } from './PromotionPicker';
 
 /**
  * Stable empty-array identity for the `highlightedSquares` default prop.
@@ -117,8 +118,20 @@ export const ChessBoard = memo(function ChessBoard({
   // Cleared whenever the position changes so a freshly applied move (or a
   // navigation jump) does not leave a stale selection ring on the board.
   const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
+
+  // Pending promotion choice. Populated when the player attempts a move
+  // whose (from, to) pair has multiple legal candidates (one per promotion
+  // piece). While set, the promotion picker is overlaid on the board and
+  // the actual onMove emit is deferred until the player picks a piece.
+  const [promotionPending, setPromotionPending] = useState<{
+    from: string;
+    to: string;
+    candidates: MoveResult[];
+  } | null>(null);
+
   useEffect(() => {
     setSelectedSquare(null);
+    setPromotionPending(null);
   }, [fen]);
 
   // Legal destinations for the selected piece. Used to highlight reachable
@@ -221,6 +234,29 @@ export const ChessBoard = memo(function ChessBoard({
     [interactive, ownColorChar, showOwnPieces, showOpponentPieces, pieceShapeMode, pieceColors]
   );
 
+  // Attempt to complete a move from `from` to `to`. Branches by candidate
+  // count: 0 = illegal (no-op + clear selection), 1 = fire onMove
+  // immediately, >1 = promotion ambiguity, defer onMove and surface the
+  // picker.
+  const attemptMove = useCallback(
+    (from: string, to: string) => {
+      if (!onMove) return;
+      const candidates = findLegalMovesByCoords(fen, from, to);
+      if (candidates.length === 0) {
+        setSelectedSquare(null);
+        return;
+      }
+      if (candidates.length === 1) {
+        onMove(candidates[0].san);
+        setSelectedSquare(null);
+        return;
+      }
+      setPromotionPending({ from, to, candidates });
+      setSelectedSquare(null);
+    },
+    [onMove, fen]
+  );
+
   // Click-to-move state machine. Runs only in interactive mode; when the
   // caller wires `onSquareClick` instead, raw clicks are forwarded
   // unchanged below.
@@ -242,9 +278,13 @@ export const ChessBoard = memo(function ChessBoard({
       }
 
       // Try to complete a move from the selected square to here.
-      const move = findLegalMoveByCoords(fen, selectedSquare, square);
-      if (move) {
-        onMove(move.san);
+      const candidates = findLegalMovesByCoords(fen, selectedSquare, square);
+      if (candidates.length > 0) {
+        if (candidates.length === 1) {
+          onMove(candidates[0].san);
+        } else {
+          setPromotionPending({ from: selectedSquare, to: square, candidates });
+        }
         setSelectedSquare(null);
         return;
       }
@@ -311,12 +351,13 @@ export const ChessBoard = memo(function ChessBoard({
       const target = (e.target as HTMLElement).closest<HTMLElement>('[data-square]');
       const targetSquare = target?.dataset.square;
       const sourceSquare = e.dataTransfer.getData('text/plain') || selectedSquare;
-      setSelectedSquare(null);
-      if (!targetSquare || !sourceSquare || sourceSquare === targetSquare) return;
-      const move = findLegalMoveByCoords(fen, sourceSquare, targetSquare);
-      if (move) onMove(move.san);
+      if (!targetSquare || !sourceSquare || sourceSquare === targetSquare) {
+        setSelectedSquare(null);
+        return;
+      }
+      attemptMove(sourceSquare, targetSquare);
     },
-    [onMove, selectedSquare, fen]
+    [onMove, selectedSquare, attemptMove]
   );
 
   const renderSquare = useCallback(
@@ -360,6 +401,30 @@ export const ChessBoard = memo(function ChessBoard({
     ]
   );
 
+  // Resolve the destination square's coords for the promotion picker. The
+  // picker stays inside the board's relative container via BoardLayout's
+  // overlay slot, so it shares the same coordinate space as the squares.
+  const promotionOverlay = (() => {
+    if (!promotionPending || !onMove) return null;
+    const { to } = promotionPending;
+    const fileIndex = to.charCodeAt(0) - 'a'.charCodeAt(0);
+    const rankIndex = 8 - Number.parseInt(to[1], 10);
+    return (
+      <PromotionPicker
+        fileIndex={fileIndex}
+        rankIndex={rankIndex}
+        flipped={flipped}
+        promotingColor={ownColorChar === 'b' ? 'b' : 'w'}
+        onSelect={(type) => {
+          const chosen = promotionPending.candidates.find((m) => m.promotion === type);
+          if (chosen) onMove(chosen.san);
+          setPromotionPending(null);
+        }}
+        onCancel={() => setPromotionPending(null)}
+      />
+    );
+  })();
+
   return (
     <BoardLayout
       flipped={flipped}
@@ -374,6 +439,7 @@ export const ChessBoard = memo(function ChessBoard({
       rounded={rounded}
       className={className}
       annotations={annotations}
+      overlay={promotionOverlay}
     />
   );
 });

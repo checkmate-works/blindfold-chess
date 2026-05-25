@@ -1780,6 +1780,15 @@
         "columnChange": "変更"
       }
     },
+    "promotionPicker": {
+      "cancel": "昇格をキャンセル",
+      "promoteTo": {
+        "queen": "クイーンに昇格",
+        "rook": "ルークに昇格",
+        "bishop": "ビショップに昇格",
+        "knight": "ナイトに昇格"
+      }
+    },
     "settings": {
       "title": "対局設定"
     },

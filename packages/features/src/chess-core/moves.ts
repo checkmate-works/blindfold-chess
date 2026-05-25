@@ -174,6 +174,28 @@ export function getPlayerMovesFromSequence(
 }
 
 /**
+ * Find ALL legal moves matching a (from, to) coordinate pair in a given
+ * position. Returns an array of 0 (illegal), 1 (non-promotion), or 4
+ * (promotion — one entry per Q/R/B/N) {@link MoveResult}s.
+ *
+ * Intended for interactive board UIs that need to distinguish "this is an
+ * unambiguous move, fire it immediately" from "this is a promotion, ask
+ * the player which piece to become". The singular {@link findLegalMoveByCoords}
+ * is the convenience wrapper that picks one automatically.
+ */
+export function findLegalMovesByCoords(
+  fen: string,
+  from: string,
+  to: string,
+): MoveResult[] {
+  const chess = new Chess(fen);
+  return chess
+    .moves({ verbose: true })
+    .filter((m) => m.from === from && m.to === to)
+    .map(toMoveResult);
+}
+
+/**
  * Find a legal move from a (from, to) coordinate pair in a given position.
  * Returns the matching {@link MoveResult} or null if no such legal move exists.
  *
@@ -187,6 +209,10 @@ export function getPlayerMovesFromSequence(
  * (from, to) pair and need to translate it into SAN for the move pipeline.
  * Always validates against the actual legal move set — never invents an
  * illegal move from a bad coord pair.
+ *
+ * Callers that need to *distinguish* a promotion from a regular move (e.g.
+ * to surface a promotion picker) should use {@link findLegalMovesByCoords}
+ * directly and branch on the array length.
  */
 export function findLegalMoveByCoords(
   fen: string,
@@ -194,18 +220,12 @@ export function findLegalMoveByCoords(
   to: string,
   preferredPromotion: "q" | "r" | "b" | "n" = "q",
 ): MoveResult | null {
-  const chess = new Chess(fen);
-  const candidates = chess
-    .moves({ verbose: true })
-    .filter((m) => m.from === from && m.to === to);
-
+  const candidates = findLegalMovesByCoords(fen, from, to);
   if (candidates.length === 0) return null;
-  if (candidates.length === 1) return toMoveResult(candidates[0]);
-
-  // Multiple candidates → promotion ambiguity. Pick the preferred type.
-  const chosen =
-    candidates.find((m) => m.promotion === preferredPromotion) ?? candidates[0];
-  return toMoveResult(chosen);
+  if (candidates.length === 1) return candidates[0];
+  return (
+    candidates.find((m) => m.promotion === preferredPromotion) ?? candidates[0]
+  );
 }
 
 /**
