@@ -6,7 +6,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 import { FaChevronDown } from 'react-icons/fa';
 
-import type { MoveOperationLog } from '@/lib/games/saved-game-types';
+import type { MoveOperationLog, PreferenceChangeLogEntry } from '@/lib/games/saved-game-types';
 
 import { Modal } from '@/app/[locale]/_components/Modal';
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -28,6 +28,14 @@ type Props = {
    * recorded" notice renders in that case.
    */
   gamePreferences?: PerGamePreferences;
+  /**
+   * Append-only timeline of mid-game preference edits. Rendered in the
+   * "Change Log" section. Empty or undefined for games where the player
+   * did not change any settings mid-game (the overwhelmingly common case).
+   * Positioned as a self-review history — not framed as tamper-proof
+   * evidence, since localStorage is client-writable.
+   */
+  preferenceChangeLog?: PreferenceChangeLogEntry[];
 };
 
 export function OperationLogModal({
@@ -38,16 +46,18 @@ export function OperationLogModal({
   playerSide,
   startingFen,
   gamePreferences,
+  preferenceChangeLog,
 }: Props) {
   const t = useTranslations('play');
   const tPrefs = useTranslations('Preferences.game');
   const tPrefsControls = useTranslations('Preferences.controls');
 
-  // Initial Settings starts closed: the per-move log table is the modal's
+  // Both audit sections start closed: the per-move log table is the modal's
   // primary content, so we don't push it below the fold for users that
-  // mostly care about ops review. Users curious about the initial setup
-  // expand on demand.
+  // mostly care about ops review. Users curious about the initial setup or
+  // the in-game edit history expand on demand.
   const [isInitialSettingsOpen, setIsInitialSettingsOpen] = useState(false);
+  const [isChangeLogOpen, setIsChangeLogOpen] = useState(false);
 
   // Extract player moves from the interleaved moves array.
   // Uses getMovingSide to correctly handle custom starting FEN (e.g., black-to-move positions).
@@ -73,6 +83,49 @@ export function OperationLogModal({
 
   const renderBool = (v: boolean): string =>
     v ? t('operationLog.initialSettings.on') : t('operationLog.initialSettings.off');
+
+  // Localized field label for a change-log entry. Reuses the Initial Settings
+  // label keys so the two sections refer to the same fields by the same name.
+  const settingLabel = (key: PreferenceChangeLogEntry['key']): string => {
+    switch (key) {
+      case 'boardVisibility':
+        return t('operationLog.initialSettings.labelBoardVisibility');
+      case 'highlightLastMove':
+        return t('operationLog.initialSettings.labelHighlightLastMove');
+      case 'showOwnPieces':
+        return t('operationLog.initialSettings.labelShowOwnPieces');
+      case 'showOpponentPieces':
+        return t('operationLog.initialSettings.labelShowOpponentPieces');
+      case 'pieceShapeMode':
+        return t('operationLog.initialSettings.labelPieceShape');
+      case 'pieceColors':
+        return t('operationLog.initialSettings.labelPieceColor');
+      case 'peekMode':
+        return t('operationLog.initialSettings.labelPeekMode');
+    }
+  };
+
+  // Localized value rendering for a change-log entry's from/to. Booleans use
+  // the same On/Off vocabulary as Initial Settings; enum values reuse the
+  // canonical Preferences.* labels so the modal stays in lockstep with the
+  // settings page the user already knows.
+  const settingValue = (entry: PreferenceChangeLogEntry, which: 'from' | 'to'): string => {
+    const value = entry[which];
+    switch (entry.key) {
+      case 'boardVisibility':
+        return tPrefs(`boardVisibilities.${value as PerGamePreferences['boardVisibility']}`);
+      case 'highlightLastMove':
+      case 'showOwnPieces':
+      case 'showOpponentPieces':
+        return renderBool(value as boolean);
+      case 'pieceShapeMode':
+        return tPrefs(`pieceShapes.${value as PerGamePreferences['pieceShapeMode']}`);
+      case 'pieceColors':
+        return tPrefs(`pieceColors.${value as PerGamePreferences['pieceColors']}`);
+      case 'peekMode':
+        return tPrefsControls(`peekModes.${value as PerGamePreferences['peekMode']}`);
+    }
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t('operationLog.title')} maxWidth="max-w-lg">
@@ -156,6 +209,62 @@ export function OperationLogModal({
             ) : (
               <p className="text-muted-foreground text-sm px-4 py-3 border-t border-border">
                 {t('operationLog.initialSettings.notRecorded')}
+              </p>
+            ))}
+        </section>
+
+        {/* Change Log — append-only timeline of mid-game preference edits.
+            Self-review history only; not framed as tamper-proof evidence
+            (localStorage is client-writable). Closed by default so the
+            modal's primary content (per-move ops) stays above the fold. */}
+        <section className="bg-card rounded-md border border-border overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setIsChangeLogOpen((o) => !o)}
+            className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-muted transition-colors"
+          >
+            <span className="text-sm font-medium text-foreground">
+              {t('operationLog.changeLog.title')}
+            </span>
+            <FaChevronDown
+              className={`w-3 h-3 text-muted-foreground transition-transform ${
+                isChangeLogOpen ? 'rotate-180' : ''
+              }`}
+            />
+          </button>
+          {isChangeLogOpen &&
+            (preferenceChangeLog && preferenceChangeLog.length > 0 ? (
+              <div className="overflow-x-auto border-t border-border">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border text-left">
+                      <th className="py-2 px-3 font-medium text-muted-foreground">
+                        {t('operationLog.changeLog.columnAtMove')}
+                      </th>
+                      <th className="py-2 px-3 font-medium text-muted-foreground">
+                        {t('operationLog.changeLog.columnSetting')}
+                      </th>
+                      <th className="py-2 px-3 font-medium text-muted-foreground">
+                        {t('operationLog.changeLog.columnChange')}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {preferenceChangeLog.map((entry, i) => (
+                      <tr key={i} className="border-b border-border/50 hover:bg-muted/50">
+                        <td className="py-2 px-3 text-muted-foreground">{entry.atMoveIndex}</td>
+                        <td className="py-2 px-3">{settingLabel(entry.key)}</td>
+                        <td className="py-2 px-3">
+                          {settingValue(entry, 'from')} → {settingValue(entry, 'to')}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-muted-foreground text-sm px-4 py-3 border-t border-border">
+                {t('operationLog.changeLog.noChanges')}
               </p>
             ))}
         </section>

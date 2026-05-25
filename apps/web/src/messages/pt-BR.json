@@ -1767,6 +1767,13 @@
         "labelPieceShape": "Forma das peças",
         "labelPieceColor": "Cor das peças",
         "labelPeekMode": "Modo de espiar"
+      },
+      "changeLog": {
+        "title": "Histórico de alterações",
+        "noChanges": "Nenhuma alteração de configuração foi feita durante a partida.",
+        "columnAtMove": "Após o movimento",
+        "columnSetting": "Configuração",
+        "columnChange": "Alteração"
       }
     },
     "settings": {

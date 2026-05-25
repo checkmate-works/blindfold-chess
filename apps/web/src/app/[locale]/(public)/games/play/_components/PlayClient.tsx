@@ -91,8 +91,15 @@ export function PlayClient({
     isAiThinking,
   } = gameSession;
 
-  const { playerSide, engineConfig, startingFen, perGamePrefs, initialPerGamePrefs, gameId } =
-    gameConfig;
+  const {
+    playerSide,
+    engineConfig,
+    startingFen,
+    perGamePrefs,
+    initialPerGamePrefs,
+    preferenceChangeLog,
+    gameId,
+  } = gameConfig;
   const { gameStatus, playerResult, isPlayerTurn, isLoading, lastMove, gameNotFound } = gameState;
   const { moves, currentFen, formattedPgn } = moveState;
   const { value: moveInputValue, setValue: setMoveInput, error, clearMoveError } = moveInput;
@@ -437,6 +444,7 @@ export function PlayClient({
         playerSide={playerSide}
         startingFen={startingFen}
         gamePreferences={initialPerGamePrefs}
+        preferenceChangeLog={preferenceChangeLog}
       />
 
       {/* Engine Info Modal */}

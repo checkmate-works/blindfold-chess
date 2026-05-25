@@ -1767,6 +1767,13 @@
         "labelPieceShape": "Forma de las piezas",
         "labelPieceColor": "Color de las piezas",
         "labelPeekMode": "Modo de vistazo"
+      },
+      "changeLog": {
+        "title": "Historial de cambios",
+        "noChanges": "No se realizaron cambios de configuración durante la partida.",
+        "columnAtMove": "Tras movimiento",
+        "columnSetting": "Ajuste",
+        "columnChange": "Cambio"
       }
     },
     "settings": {

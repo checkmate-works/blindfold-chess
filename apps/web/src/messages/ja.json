@@ -1771,6 +1771,13 @@
         "labelPieceShape": "駒の形状",
         "labelPieceColor": "駒の色",
         "labelPeekMode": "ピーク表示方式"
+      },
+      "changeLog": {
+        "title": "変更履歴",
+        "noChanges": "このゲームでは設定の途中変更はありませんでした。",
+        "columnAtMove": "何手目以降",
+        "columnSetting": "設定項目",
+        "columnChange": "変更"
       }
     },
     "settings": {

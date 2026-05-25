@@ -308,6 +308,7 @@ function ResultContent({ game, gameId, locale, displayName, breadcrumb }: Result
           playerSide={game.playerColor}
           startingFen={game.startingFen}
           gamePreferences={game.gamePreferences}
+          preferenceChangeLog={game.preferenceChangeLog}
         />
       )}
 
