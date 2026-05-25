@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { useEffect, useMemo } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -29,6 +30,15 @@ type Props = {
    * compatibility with existing callers.
    */
   showBoardButtonOption?: boolean;
+  /**
+   * Slot rendered immediately after the boardVisibility picker (and before
+   * the other display / piece / preview sections). Used by the mid-game
+   * settings modal to surface the Board Peek Mode picker right next to the
+   * choice that gates it, rather than stranding it below all the other
+   * settings. Defaults to `null` — the global Preferences page leaves this
+   * empty because its Controls tab carries the peek picker separately.
+   */
+  afterBoardVisibility?: ReactNode;
   compact?: boolean;
 };
 
@@ -39,6 +49,7 @@ export function GameSettingsContent({
   showPreview = true,
   showBoardAppearance = true,
   showBoardButtonOption = true,
+  afterBoardVisibility = null,
   compact = true,
 }: Props) {
   const t = useTranslations('Preferences');
@@ -100,6 +111,12 @@ export function GameSettingsContent({
             </div>
           </div>
         )}
+
+        {/* Slot for content the caller wants immediately after the
+            board-visibility picker. The mid-game settings modal uses this
+            to show the Board Peek Mode picker next to the choice that
+            actually gates it. */}
+        {afterBoardVisibility}
 
         {/* Board Appearance */}
         {showBoardAppearance && (

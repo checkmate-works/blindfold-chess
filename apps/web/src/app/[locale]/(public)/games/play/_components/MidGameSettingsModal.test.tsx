@@ -42,12 +42,16 @@ vi.mock('@/app/[locale]/_components/Modal', () => ({
 }));
 
 // Stub GameSettingsContent: surface its onSettingsChange via a button so
-// tests can fire arbitrary updates without rendering the real form.
+// tests can fire arbitrary updates without rendering the real form. Also
+// renders the `afterBoardVisibility` slot so the modal's peek-mode picker
+// (which is injected via that slot) shows up in the test DOM.
 vi.mock('@/app/[locale]/(public)/preferences/_components/GameSettingsContent', () => ({
   GameSettingsContent: ({
     onSettingsChange,
+    afterBoardVisibility,
   }: {
     onSettingsChange: (updates: Partial<GamePreferences>) => void;
+    afterBoardVisibility?: React.ReactNode;
   }) => (
     <div data-testid="game-settings-content">
       <button
@@ -86,6 +90,7 @@ vi.mock('@/app/[locale]/(public)/preferences/_components/GameSettingsContent', (
       >
         emit non-per-game key
       </button>
+      {afterBoardVisibility}
     </div>
   ),
 }));

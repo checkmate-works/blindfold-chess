@@ -72,55 +72,51 @@ export function MidGameSettingsModal({ isOpen, onClose, preferences, onPerGamePr
     }
   };
 
+  // Board peek mode picker. Mirrored from ControlSettingsContent so the
+  // mid-game modal and the global `/preferences` Controls tab share UI
+  // grammar. Gated on `boardVisibility === 'peek'` — the modal/inline
+  // distinction is moot when the board is permanently shown ('always') or
+  // permanently hidden ('never'). The user's last peekMode choice is
+  // preserved in state across visibility switches via the existing change
+  // log machinery, so flipping back to 'peek' restores it.
+  //
+  // Rendered into GameSettingsContent's `afterBoardVisibility` slot so it
+  // sits directly under the boardVisibility picker — the choice that
+  // actually gates it — instead of trailing at the bottom of the modal.
+  const peekModePicker = preferences.boardVisibility === 'peek' && (
+    <div>
+      <h4 className="text-lg font-semibold text-foreground mb-2">{tPrefs('controls.peekMode')}</h4>
+      <p className="text-sm text-muted-foreground mb-4">{tPrefs('controls.peekModeDescription')}</p>
+      <div className="inline-flex rounded-md border border-border overflow-hidden">
+        {(['modal', 'inline'] as const).map((mode) => (
+          <button
+            key={mode}
+            type="button"
+            onClick={() => onPerGamePrefChange('peekMode', mode)}
+            className={`px-4 py-2 text-sm font-medium transition-colors ${
+              preferences.peekMode === mode
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-card text-foreground hover:bg-muted'
+            } ${mode === 'modal' ? 'border-r border-border' : ''}`}
+          >
+            {tPrefs(`controls.peekModes.${mode}`)}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t('settings.title')} maxWidth="max-w-md">
-      <div className="space-y-8">
-        <GameSettingsContent
-          settings={preferences}
-          onSettingsChange={handleSettingsChange}
-          showBoardAppearance={false}
-          showBoardButtonOption={true}
-          showPreview={false}
-          compact={true}
-        />
-
-        {/* Board peek mode picker. Mirrored from ControlSettingsContent so the
-            mid-game modal and the global `/preferences` Controls tab share UI
-            grammar. Gated on `boardVisibility === 'peek'` — the modal/inline
-            distinction is moot when the board is permanently shown ('always')
-            or permanently hidden ('never'). The user's last peekMode choice
-            is preserved in state across visibility switches via the existing
-            change log machinery, so flipping back to 'peek' restores it. */}
-        {preferences.boardVisibility === 'peek' && (
-          <>
-            <div className="border-t border-border" />
-            <div>
-              <h4 className="text-lg font-semibold text-foreground mb-2">
-                {tPrefs('controls.peekMode')}
-              </h4>
-              <p className="text-sm text-muted-foreground mb-4">
-                {tPrefs('controls.peekModeDescription')}
-              </p>
-              <div className="inline-flex rounded-md border border-border overflow-hidden">
-                {(['modal', 'inline'] as const).map((mode) => (
-                  <button
-                    key={mode}
-                    type="button"
-                    onClick={() => onPerGamePrefChange('peekMode', mode)}
-                    className={`px-4 py-2 text-sm font-medium transition-colors ${
-                      preferences.peekMode === mode
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-card text-foreground hover:bg-muted'
-                    } ${mode === 'modal' ? 'border-r border-border' : ''}`}
-                  >
-                    {tPrefs(`controls.peekModes.${mode}`)}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </>
-        )}
-      </div>
+      <GameSettingsContent
+        settings={preferences}
+        onSettingsChange={handleSettingsChange}
+        showBoardAppearance={false}
+        showBoardButtonOption={true}
+        showPreview={false}
+        compact={true}
+        afterBoardVisibility={peekModePicker}
+      />
     </Modal>
   );
 }
