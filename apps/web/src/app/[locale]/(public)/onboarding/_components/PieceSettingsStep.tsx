@@ -61,7 +61,7 @@ export function PieceSettingsStep({
     enabledMoveInputModes: ['button'],
     buttonInputPieceLabel: 'icon',
     enableAutoComplete: true,
-    showBoardButtonInGame: true,
+    boardVisibility: 'peek',
     peekMode: 'modal',
   };
 

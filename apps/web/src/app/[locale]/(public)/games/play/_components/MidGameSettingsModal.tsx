@@ -10,7 +10,7 @@ import type {
 } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 const PER_GAME_KEYS = [
-  'showBoardButtonInGame',
+  'boardVisibility',
   'highlightLastMove',
   'showOwnPieces',
   'showOpponentPieces',
@@ -86,10 +86,12 @@ export function MidGameSettingsModal({ isOpen, onClose, preferences, onPerGamePr
 
         {/* Board peek mode picker. Mirrored from ControlSettingsContent so the
             mid-game modal and the global `/preferences` Controls tab share UI
-            grammar. Gated on `showBoardButtonInGame` for the same reason the
-            other peek-related rows are — modal/inline distinction is moot when
-            the player has no peek button to invoke. */}
-        {preferences.showBoardButtonInGame && (
+            grammar. Gated on `boardVisibility === 'peek'` — the modal/inline
+            distinction is moot when the board is permanently shown ('always')
+            or permanently hidden ('never'). The user's last peekMode choice
+            is preserved in state across visibility switches via the existing
+            change log machinery, so flipping back to 'peek' restores it. */}
+        {preferences.boardVisibility === 'peek' && (
           <>
             <div className="border-t border-border" />
             <div>

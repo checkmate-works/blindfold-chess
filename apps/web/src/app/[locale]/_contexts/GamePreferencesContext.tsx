@@ -12,28 +12,26 @@ import React, {
 
 import type { BoardTheme } from '@/lib/games/board-themes';
 import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
+import type { BoardVisibility } from '@/lib/games/board-visibility';
+import { DEFAULT_BOARD_VISIBILITY } from '@/lib/games/board-visibility';
 import {
   DEFAULT_ENABLED_MOVE_INPUT_MODES,
   DEFAULT_MOVE_INPUT_MODE,
   writeMoveInputCookieClient,
 } from '@/lib/games/move-input-cookie';
-import {
-  DEFAULT_PEEK_MODE,
-  DEFAULT_SHOW_BOARD_BUTTON_IN_GAME,
-  writePeekPreferenceCookie,
-} from '@/lib/games/peek-cookie';
+import { DEFAULT_PEEK_MODE, writePeekPreferenceCookie } from '@/lib/games/peek-cookie';
 
 import { validatePreferences } from './game-preferences-validation';
 
 // Per-game preferences (subset of GamePreferences saved with each game).
-// `peekMode` is a "Controls"-tier setting in the global Preferences page but
-// is included here too: how the board peek behaves (modal popup vs inline
-// accordion) often changes per-game depending on how the player wants to
-// experience that specific session. Legacy records saved before this field
-// existed are tolerated via a `?? globalPreferences.peekMode` fallback at
-// every consumer site.
+// `boardVisibility` and `peekMode` are "Controls"-tier settings in the global
+// Preferences page but are included here too: how the board surfaces during
+// gameplay often changes per-game depending on how the player wants to
+// experience that specific session. Legacy records (saved before either
+// field existed in this shape) are tolerated via `??` fallbacks at every
+// consumer site and on-read migration in the validators.
 export type PerGamePreferences = {
-  showBoardButtonInGame: boolean;
+  boardVisibility: BoardVisibility;
   highlightLastMove: boolean;
   showOwnPieces: boolean;
   showOpponentPieces: boolean;
@@ -59,17 +57,17 @@ export type GamePreferences = {
   enabledMoveInputModes: ('text' | 'select' | 'button')[]; // Which move input modes are available
   buttonInputPieceLabel: 'text' | 'icon'; // Button input label style
   enableAutoComplete: boolean; // Enable auto-complete for text input
-  // Board button visibility
-  showBoardButtonInGame: boolean; // Show "View Board" button during AI games
+  // Board visibility during gameplay — see BoardVisibility for semantics.
+  boardVisibility: BoardVisibility;
   // Board peek mode
   peekMode: 'modal' | 'inline'; // How to display the board peek (modal dialog or inline accordion)
 };
 
 // Default preferences. `moveInputMode` / `enabledMoveInputModes` are derived
-// from the shared `DEFAULT_MOVE_INPUT_*` constants in `@/lib/games/move-input-cookie`,
-// and `peekMode` / `showBoardButtonInGame` are derived from the shared
-// `DEFAULT_PEEK_*` constants in `@/lib/games/peek-cookie`, so the SSR cookie
-// hints and the client-side defaults can never drift apart.
+// from the shared `DEFAULT_MOVE_INPUT_*` constants in `@/lib/games/move-input-cookie`;
+// `peekMode` from `DEFAULT_PEEK_MODE` in the same module; and `boardVisibility`
+// from `DEFAULT_BOARD_VISIBILITY` in `@/lib/games/board-visibility`, so the
+// SSR cookie hints and the client-side defaults can never drift apart.
 const defaultPreferences: GamePreferences = {
   showCoordinates: true,
   highlightLastMove: true,
@@ -82,7 +80,7 @@ const defaultPreferences: GamePreferences = {
   enabledMoveInputModes: [...DEFAULT_ENABLED_MOVE_INPUT_MODES],
   buttonInputPieceLabel: 'icon',
   enableAutoComplete: true,
-  showBoardButtonInGame: DEFAULT_SHOW_BOARD_BUTTON_IN_GAME,
+  boardVisibility: DEFAULT_BOARD_VISIBILITY,
   peekMode: DEFAULT_PEEK_MODE,
 };
 
@@ -161,7 +159,7 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
       });
       writePeekPreferenceCookie({
         peekMode: loaded.peekMode,
-        showBoardButtonInGame: loaded.showBoardButtonInGame,
+        boardVisibility: loaded.boardVisibility,
       });
       setIsLoaded(true);
     }
@@ -232,12 +230,11 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
     }
     const peekKeysChanged =
       ('peekMode' in updates && updates.peekMode !== prev.peekMode) ||
-      ('showBoardButtonInGame' in updates &&
-        updates.showBoardButtonInGame !== prev.showBoardButtonInGame);
+      ('boardVisibility' in updates && updates.boardVisibility !== prev.boardVisibility);
     if (peekKeysChanged) {
       writePeekPreferenceCookie({
         peekMode: next.peekMode,
-        showBoardButtonInGame: next.showBoardButtonInGame,
+        boardVisibility: next.boardVisibility,
       });
     }
     setPreferences(next);
@@ -253,7 +250,7 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
     });
     writePeekPreferenceCookie({
       peekMode: defaultPreferences.peekMode,
-      showBoardButtonInGame: defaultPreferences.showBoardButtonInGame,
+      boardVisibility: defaultPreferences.boardVisibility,
     });
     setPreferences(defaultPreferences);
   }, []);

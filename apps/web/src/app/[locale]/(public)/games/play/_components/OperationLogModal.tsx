@@ -97,10 +97,10 @@ export function OperationLogModal({
               <dl className="text-sm divide-y divide-border/50 border-t border-border">
                 <div className="flex justify-between gap-3 px-4 py-2">
                   <dt className="text-muted-foreground">
-                    {t('operationLog.initialSettings.labelShowBoardButton')}
+                    {t('operationLog.initialSettings.labelBoardVisibility')}
                   </dt>
                   <dd className="text-right">
-                    {renderBool(gamePreferences.showBoardButtonInGame)}
+                    {tPrefs(`boardVisibilities.${gamePreferences.boardVisibility}`)}
                   </dd>
                 </div>
                 <div className="flex justify-between gap-3 px-4 py-2">

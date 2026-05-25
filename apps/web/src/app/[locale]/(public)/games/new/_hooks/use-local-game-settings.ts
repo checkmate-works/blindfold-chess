@@ -8,7 +8,7 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 export function useLocalGameSettings() {
   const { preferences } = useGamePreferences();
   const [localSettings, setLocalSettings] = useState<PerGamePreferences>({
-    showBoardButtonInGame: preferences.showBoardButtonInGame,
+    boardVisibility: preferences.boardVisibility,
     highlightLastMove: preferences.highlightLastMove,
     showOwnPieces: preferences.showOwnPieces,
     showOpponentPieces: preferences.showOpponentPieces,

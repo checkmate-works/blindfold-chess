@@ -25,7 +25,6 @@ export function foldPreferences(
 
   for (const entry of log) {
     switch (entry.key) {
-      case 'showBoardButtonInGame':
       case 'highlightLastMove':
       case 'showOwnPieces':
       case 'showOpponentPieces':
@@ -39,6 +38,9 @@ export function foldPreferences(
         break;
       case 'peekMode':
         result.peekMode = entry.to;
+        break;
+      case 'boardVisibility':
+        result.boardVisibility = entry.to;
         break;
     }
   }

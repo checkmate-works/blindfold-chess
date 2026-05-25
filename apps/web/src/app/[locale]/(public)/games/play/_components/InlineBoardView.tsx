@@ -34,8 +34,18 @@ type Props = {
    * move. A change here auto-collapses the inline board so the next peek
    * requires a fresh expand — which fires `onPeek` again, keeping the
    * peek-count semantics symmetric with the modal mode (1 expand = 1 peek).
+   * Ignored when `alwaysOpen` is true.
    */
   collapseSignal?: number;
+  /**
+   * When true, the collapse chrome is removed, the board is permanently
+   * visible, and `collapseSignal` is ignored. Used for `boardVisibility ===
+   * 'always'`: the player has declared they want the board on screen, so
+   * there is no "peek" event to track (`onPeek` is also not invoked in this
+   * mode — the audit story shifts to the visual settings doing the
+   * obfuscation rather than discrete peek actions).
+   */
+  alwaysOpen?: boolean;
 };
 
 export function InlineBoardView({
@@ -55,47 +65,59 @@ export function InlineBoardView({
   onFlipBoard,
   onPeek,
   collapseSignal,
+  alwaysOpen,
 }: Props) {
   const t = useTranslations('play');
   const [isOpen, setIsOpen] = useState(false);
 
   // Auto-collapse when the parent's collapse signal changes (player committed
   // a move). The initial-mount run is skipped so a freshly opened page does
-  // not redundantly close an already-closed accordion.
+  // not redundantly close an already-closed accordion. Also short-circuited
+  // in always-open mode: the board has no collapse to trigger.
   const lastSeenSignal = useRef(collapseSignal);
   useEffect(() => {
+    if (alwaysOpen) return;
     if (collapseSignal === undefined) return;
     if (lastSeenSignal.current !== collapseSignal) {
       lastSeenSignal.current = collapseSignal;
       setIsOpen(false);
     }
-  }, [collapseSignal]);
+  }, [collapseSignal, alwaysOpen]);
+
+  // In always-open mode the board is unconditionally visible. The local
+  // `isOpen` state is left untouched so toggling alwaysOpen on/off restores
+  // the previous peek-collapse state cleanly.
+  const effectivelyOpen = alwaysOpen ? true : isOpen;
 
   return (
     <div className="bg-card rounded-md border border-border overflow-hidden">
-      <button
-        type="button"
-        onClick={() => {
-          if (!isOpen) onPeek?.();
-          setIsOpen(!isOpen);
-        }}
-        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-muted transition-colors"
-      >
-        <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-          <FaEye className="w-4 h-4" />
-          <span>{t('showBoard')}</span>
-        </div>
-        <FaChevronDown
-          className={`w-3 h-3 text-muted-foreground transition-transform ${
-            isOpen ? 'rotate-180' : ''
-          }`}
-        />
-      </button>
-      {isOpen && (
+      {!alwaysOpen && (
+        <button
+          type="button"
+          onClick={() => {
+            if (!isOpen) onPeek?.();
+            setIsOpen(!isOpen);
+          }}
+          className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-muted transition-colors"
+        >
+          <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+            <FaEye className="w-4 h-4" />
+            <span>{t('showBoard')}</span>
+          </div>
+          <FaChevronDown
+            className={`w-3 h-3 text-muted-foreground transition-transform ${
+              isOpen ? 'rotate-180' : ''
+            }`}
+          />
+        </button>
+      )}
+      {effectivelyOpen && (
         <div>
           {/* Horizontal Move List */}
           {formattedPgn.length > 0 && onNavigateToPosition && (
-            <div className="px-2 py-1.5 overflow-x-auto border-t border-border">
+            <div
+              className={`px-2 py-1.5 overflow-x-auto ${alwaysOpen ? '' : 'border-t border-border'}`}
+            >
               <HorizontalMoveList
                 formattedPgn={formattedPgn}
                 currentPosition={currentPosition}

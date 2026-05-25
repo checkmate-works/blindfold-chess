@@ -6,7 +6,7 @@ import { foldPreferences } from './fold-preferences';
 import type { PreferenceChangeLogEntry } from './saved-game-types';
 
 const initial: PerGamePreferences = {
-  showBoardButtonInGame: true,
+  boardVisibility: 'peek',
   highlightLastMove: true,
   showOwnPieces: true,
   showOpponentPieces: true,
@@ -75,6 +75,14 @@ describe('foldPreferences', () => {
       { atMoveIndex: 3, key: 'peekMode', from: 'modal', to: 'inline' },
     ];
     expect(foldPreferences(initial, log).peekMode).toBe('inline');
+  });
+
+  it('applies a boardVisibility change across all 3 states', () => {
+    const log: PreferenceChangeLogEntry[] = [
+      { atMoveIndex: 1, key: 'boardVisibility', from: 'peek', to: 'never' },
+      { atMoveIndex: 4, key: 'boardVisibility', from: 'never', to: 'always' },
+    ];
+    expect(foldPreferences(initial, log).boardVisibility).toBe('always');
   });
 
   it('does not mutate the initial snapshot', () => {

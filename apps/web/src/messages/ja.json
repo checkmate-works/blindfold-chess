@@ -276,7 +276,13 @@
         "whiteView": "白の視点",
         "blackView": "黒の視点"
       },
-      "showBoardButtonInGame": "AI対局中に「ボードを表示」ボタンを表示する",
+      "boardVisibility": "ボード表示",
+      "boardVisibilityDescription": "対局中のチェスボードの表示方法を選びます。下の駒の表示設定は、ボードが表示される場合でも適用されます — 目隠しを実現する主な手段は駒の見え方です。",
+      "boardVisibilities": {
+        "always": "常に表示",
+        "peek": "必要なときにピーク",
+        "never": "非表示"
+      },
       "resetDefaults": "デフォルトに戻す",
       "resetDefaultsConfirm": {
         "title": "ボード設定をリセットしますか？",
@@ -1758,7 +1764,7 @@
         "notRecorded": "このゲームでは初期設定が記録されていません。",
         "on": "オン",
         "off": "オフ",
-        "labelShowBoardButton": "「ボードを表示」ボタン",
+        "labelBoardVisibility": "ボード表示",
         "labelHighlightLastMove": "最終手のハイライト",
         "labelShowOwnPieces": "自分の駒を表示",
         "labelShowOpponentPieces": "相手の駒を表示",
@@ -1938,7 +1944,6 @@
     "helpOpeningIntroDescription": "リストから定跡を選択すると、続けてPGN設定画面に遷移し、そこでエンジン・色・難易度を選んで対局を開始できます。",
     "previewBoard": "ボードをプレビュー",
     "gameSettings": "詳細設定",
-    "showBoardButtonInGame": "AI対局中に「ボードを表示」ボタンを表示する",
     "startGame": "ゲーム開始",
     "cancel": "キャンセル",
     "whiteDescription": "あなたが先手",
@@ -2582,10 +2587,23 @@
       }
     },
     "step2": {
-      "shortLabel": "ピーク",
-      "title": "盤面ピークモード",
-      "description": "視覚補助として盤面を覗き見する機能を有効にすることができます。",
-      "showBoardButton": "AI対局中に「ボードを表示」ボタンを表示する",
+      "shortLabel": "ボード",
+      "title": "ボード表示",
+      "description": "対局中にチェスボードをどのように表示するかを選びます。駒の表示設定(次のステップ)は、ボードが表示される場合でも適用されます。",
+      "boardVisibilities": {
+        "always": {
+          "label": "常に表示",
+          "description": "対局中はずっとボードを表示します。駒の表示設定(次のステップ)で駒の種類/色をお好みで隠せます。"
+        },
+        "peek": {
+          "label": "必要なときにピーク",
+          "description": "通常はボードを隠し、確認したいときにタップしてピーク表示します。"
+        },
+        "never": {
+          "label": "非表示",
+          "description": "純粋な目隠しモード — 対局中にボードは一切表示されません。"
+        }
+      },
       "modes": {
         "modal": {
           "label": "モーダル",

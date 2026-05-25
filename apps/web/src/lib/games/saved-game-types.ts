@@ -35,7 +35,7 @@ export type MoveOperationLog = {
 export type PreferenceChangeLogEntry =
   | {
       atMoveIndex: number;
-      key: 'showBoardButtonInGame' | 'highlightLastMove' | 'showOwnPieces' | 'showOpponentPieces';
+      key: 'highlightLastMove' | 'showOwnPieces' | 'showOpponentPieces';
       from: boolean;
       to: boolean;
     }
@@ -56,6 +56,12 @@ export type PreferenceChangeLogEntry =
       key: 'peekMode';
       from: PerGamePreferences['peekMode'];
       to: PerGamePreferences['peekMode'];
+    }
+  | {
+      atMoveIndex: number;
+      key: 'boardVisibility';
+      from: PerGamePreferences['boardVisibility'];
+      to: PerGamePreferences['boardVisibility'];
     };
 
 /**

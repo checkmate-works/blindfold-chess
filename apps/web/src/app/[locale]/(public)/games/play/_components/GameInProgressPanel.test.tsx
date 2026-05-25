@@ -56,7 +56,7 @@ const preferences: GamePreferences = {
   enabledMoveInputModes: ['button'],
   buttonInputPieceLabel: 'icon',
   enableAutoComplete: true,
-  showBoardButtonInGame: false,
+  boardVisibility: 'never',
   peekMode: 'modal',
 };
 

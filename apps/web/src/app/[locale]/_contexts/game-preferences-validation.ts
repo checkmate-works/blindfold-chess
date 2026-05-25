@@ -1,4 +1,5 @@
 import type { BoardTheme } from '@/lib/games/board-themes';
+import { isBoardVisibility, legacyToBoardVisibility } from '@/lib/games/board-visibility';
 
 import type { GamePreferences } from './GamePreferencesContext';
 
@@ -65,8 +66,16 @@ export function validatePreferences(parsed: unknown): Partial<GamePreferences> {
       p.buttonInputPieceLabel as GamePreferences['buttonInputPieceLabel'];
   }
   if (typeof p.enableAutoComplete === 'boolean') result.enableAutoComplete = p.enableAutoComplete;
-  if (typeof p.showBoardButtonInGame === 'boolean')
-    result.showBoardButtonInGame = p.showBoardButtonInGame;
+  // boardVisibility migration: accept the new 3-state value when present, OR
+  // the legacy boolean `showBoardButtonInGame` and translate it. The legacy
+  // path is purely a read-side concern — the next write emits only the new
+  // key. If both somehow co-exist on disk, the new key wins (records written
+  // by post-migration code).
+  if (isBoardVisibility(p.boardVisibility)) {
+    result.boardVisibility = p.boardVisibility;
+  } else if (typeof p.showBoardButtonInGame === 'boolean') {
+    result.boardVisibility = legacyToBoardVisibility(p.showBoardButtonInGame);
+  }
   if (typeof p.peekMode === 'string' && ['modal', 'inline'].includes(p.peekMode)) {
     result.peekMode = p.peekMode as GamePreferences['peekMode'];
   }

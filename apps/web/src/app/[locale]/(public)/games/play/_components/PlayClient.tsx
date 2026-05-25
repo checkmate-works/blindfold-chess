@@ -19,6 +19,7 @@ import { useBoardFlip, useConfirmationDialogs, useMoveNavigation } from '../_hoo
 import type { GameSession } from '../_hooks/use-game-session';
 import {
   deriveMoveInputSkeletonProps,
+  shouldShowAlwaysVisibleBoard,
   shouldShowInlinePeekHeader,
   shouldShowModalPeekButton,
 } from '../_lib';
@@ -51,7 +52,7 @@ type Props = {
   initialMoveInputHint: MoveInputPreferenceHint;
   /**
    * Server-resolved hint for the user's board-peek preferences
-   * (`peekMode`, `showBoardButtonInGame`). Used to decide whether to
+   * (`peekMode`, `boardVisibility`). Used to decide whether to
    * reserve the `InlineBoardHeaderSkeleton` / `ActionRowSkeleton` board
    * button during the SSR + pre-hydration window, before
    * `GamePreferencesContext` has read localStorage. Once `isHydrated`
@@ -135,7 +136,7 @@ export function PlayClient({
     if (!perGamePrefs) return globalPreferences;
     return {
       ...globalPreferences,
-      showBoardButtonInGame: perGamePrefs.showBoardButtonInGame,
+      boardVisibility: perGamePrefs.boardVisibility ?? globalPreferences.boardVisibility,
       highlightLastMove: perGamePrefs.highlightLastMove,
       showOwnPieces: perGamePrefs.showOwnPieces,
       showOpponentPieces: perGamePrefs.showOpponentPieces,
@@ -247,7 +248,7 @@ export function PlayClient({
                 {/* InlineBoardView header (~46px). Reserved whenever the
                     active hint (cookie pre-hydration, preferences post-
                     hydration) says the user has `peekMode='inline'` with
-                    `showBoardButtonInGame` enabled, so returning inline
+                    `boardVisibility='peek'`, so returning inline
                     users get the correct layout from the very first paint. */}
                 {skeletonShowInlinePeekHeader && <InlineBoardHeaderSkeleton />}
                 <MoveInputSkeleton mode={skeletonMode} hasModeSwitch={skeletonHasModeSwitch} />
@@ -298,7 +299,14 @@ export function PlayClient({
                     : null
                 }
                 inlineBoardView={
-                  shouldShowInlinePeekHeader(preferences) ? (
+                  // Render the InlineBoardView for either the peek-inline
+                  // mode (collapsible header + auto-collapse on commit) or
+                  // the always-visible mode (no chrome, board permanently
+                  // open). `alwaysOpen` switches the component between the
+                  // two; peekCount is intentionally not recorded in always
+                  // mode (`onPeek` is also a no-op there).
+                  shouldShowInlinePeekHeader(preferences) ||
+                  shouldShowAlwaysVisibleBoard(preferences) ? (
                     <InlineBoardView
                       fen={displayFen || currentFen}
                       playerSide={playerSide}
@@ -316,8 +324,9 @@ export function PlayClient({
                       onNavigateToEnd={navigateToEnd}
                       onNavigateToPosition={navigateToPosition}
                       onFlipBoard={handleFlipBoard}
-                      onPeek={recordPeek}
+                      onPeek={shouldShowAlwaysVisibleBoard(preferences) ? undefined : recordPeek}
                       collapseSignal={playerMoveCommitCount}
+                      alwaysOpen={shouldShowAlwaysVisibleBoard(preferences)}
                     />
                   ) : undefined
                 }

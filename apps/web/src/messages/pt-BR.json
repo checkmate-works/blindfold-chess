@@ -272,7 +272,13 @@
         "whiteView": "Perspectiva de Brancas",
         "blackView": "Perspectiva de Pretas"
       },
-      "showBoardButtonInGame": "Mostrar botão 'Ver Tabuleiro' durante partidas contra a IA",
+      "boardVisibility": "Visibilidade do Tabuleiro",
+      "boardVisibilityDescription": "Escolha como o tabuleiro é apresentado durante a partida. As configurações de exibição das peças (abaixo) continuam se aplicando quando o tabuleiro está visível — elas são o principal mecanismo do modo às cegas neste app.",
+      "boardVisibilities": {
+        "always": "Sempre visível",
+        "peek": "Espiar sob demanda",
+        "never": "Oculto"
+      },
       "resetDefaults": "Redefinir valores padrão",
       "resetDefaultsConfirm": {
         "title": "Redefinir configuração do tabuleiro?",
@@ -1754,7 +1760,7 @@
         "notRecorded": "As configurações iniciais não foram registradas para esta partida.",
         "on": "Ativado",
         "off": "Desativado",
-        "labelShowBoardButton": "Botão 'Ver Tabuleiro'",
+        "labelBoardVisibility": "Visibilidade do tabuleiro",
         "labelHighlightLastMove": "Realçar último movimento",
         "labelShowOwnPieces": "Mostrar peças próprias",
         "labelShowOpponentPieces": "Mostrar peças do oponente",
@@ -1934,7 +1940,6 @@
     "helpOpeningIntroDescription": "Escolha uma abertura nomeada da lista — você continuará para a tela de configuração PGN onde poderá escolher motor, cor e dificuldade antes de começar.",
     "previewBoard": "Pré-visualização do Tabuleiro",
     "gameSettings": "Configuração Avançada",
-    "showBoardButtonInGame": "Mostrar botão 'Ver Tabuleiro' durante partidas contra a IA",
     "startGame": "Iniciar Partida",
     "cancel": "Cancelar",
     "whiteDescription": "Você joga primeiro",
@@ -2354,10 +2359,23 @@
       }
     },
     "step2": {
-      "shortLabel": "Vista",
-      "title": "Modo de Vista do Tabuleiro",
-      "description": "Você pode ativar um recurso de espiar para dar uma olhada no tabuleiro como ajuda visual.",
-      "showBoardButton": "Mostrar botão 'Ver Tabuleiro' durante partidas contra a IA",
+      "shortLabel": "Tabuleiro",
+      "title": "Visibilidade do Tabuleiro",
+      "description": "Decida como o tabuleiro é apresentado durante a partida. As configurações de exibição das peças (próximo passo) continuam oferecendo a experiência às cegas quando o tabuleiro está visível.",
+      "boardVisibilities": {
+        "always": {
+          "label": "Sempre visível",
+          "description": "O tabuleiro é mostrado durante toda a partida. As configurações de peças (próximo passo) ocultam tipos/cores conforme sua preferência."
+        },
+        "peek": {
+          "label": "Espiar sob demanda",
+          "description": "O tabuleiro fica oculto por padrão; toque para espiar quando precisar verificar uma posição."
+        },
+        "never": {
+          "label": "Oculto",
+          "description": "Modo às cegas puro — o tabuleiro nunca é mostrado durante a partida."
+        }
+      },
       "modes": {
         "modal": {
           "label": "Modal",

@@ -5,13 +5,21 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { type EngineConfig, isEngineConfig } from '@/lib/engines';
 import { GameLimitError } from '@/lib/errors';
+import {
+  type BoardVisibility,
+  isBoardVisibility,
+  legacyToBoardVisibility,
+} from '@/lib/games/board-visibility';
 import type {
   Game,
   GameSortOption,
+  PreferenceChangeLogEntry,
   SkillLevel,
   SortDirection,
   StoredGame,
 } from '@/lib/games/saved-game-types';
+
+import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 type UpdateOptions = {
   updateLastPlayed?: boolean;
@@ -304,7 +312,11 @@ export class LocalStorageGameRepository implements IGameRepository {
     if (typeof e.atMoveIndex !== 'number' || e.atMoveIndex < 0) return false;
 
     switch (e.key) {
+      // Legacy boolean key — accepted at the validator boundary so the record
+      // loads, then transformed to a 'boardVisibility' entry by
+      // `normaliseStoredGame` so the in-app representation is uniform.
       case 'showBoardButtonInGame':
+        return typeof e.from === 'boolean' && typeof e.to === 'boolean';
       case 'highlightLastMove':
       case 'showOwnPieces':
       case 'showOpponentPieces':
@@ -321,9 +333,58 @@ export class LocalStorageGameRepository implements IGameRepository {
         const modes = ['modal', 'inline'];
         return modes.includes(e.from as string) && modes.includes(e.to as string);
       }
+      case 'boardVisibility': {
+        return isBoardVisibility(e.from) && isBoardVisibility(e.to);
+      }
       default:
         return false;
     }
+  }
+
+  /**
+   * Migrate one preference-change entry from the legacy on-disk shape to the
+   * in-app shape. Currently only `showBoardButtonInGame` boolean entries need
+   * transformation — the other keys round-trip unchanged.
+   *
+   * Pre-condition: `entry` has already passed `isValidPreferenceChangeEntry`,
+   * so the unsafe casts below are sound at the type-check boundary.
+   */
+  private static migrateChangeLogEntry(entry: Record<string, unknown>): PreferenceChangeLogEntry {
+    if (entry.key === 'showBoardButtonInGame') {
+      return {
+        atMoveIndex: entry.atMoveIndex as number,
+        key: 'boardVisibility',
+        from: legacyToBoardVisibility(entry.from as boolean),
+        to: legacyToBoardVisibility(entry.to as boolean),
+      };
+    }
+    return entry as unknown as PreferenceChangeLogEntry;
+  }
+
+  /**
+   * Migrate the per-game preferences object from its legacy shape (with
+   * `showBoardButtonInGame: boolean`) to the in-app shape (with
+   * `boardVisibility: BoardVisibility`). Idempotent: records that already
+   * carry `boardVisibility` are returned unchanged, with the legacy field
+   * stripped if it happens to coexist.
+   */
+  private static migrateGamePreferences(
+    prefs: Record<string, unknown> | undefined
+  ): PerGamePreferences | undefined {
+    if (!prefs) return undefined;
+    const { showBoardButtonInGame: legacy, boardVisibility: existing, ...rest } = prefs;
+    let boardVisibility: BoardVisibility;
+    if (isBoardVisibility(existing)) {
+      boardVisibility = existing;
+    } else if (typeof legacy === 'boolean') {
+      boardVisibility = legacyToBoardVisibility(legacy);
+    } else {
+      // Neither present — should not happen for records with a gamePreferences
+      // object since the validator requires the field to be an object, but
+      // for defensive completeness we fall back to the default behavior.
+      boardVisibility = 'peek';
+    }
+    return { ...rest, boardVisibility } as PerGamePreferences;
   }
 
   /**
@@ -344,9 +405,22 @@ export class LocalStorageGameRepository implements IGameRepository {
         skillLevel: (legacySkillLevel ?? 5) as SkillLevel,
       } as const);
 
+    // Promote any legacy `showBoardButtonInGame` boolean to the new
+    // `boardVisibility` enum on read so the in-memory `Game` shape never
+    // contains the legacy field. The next save then persists the migrated
+    // shape forward-compatibly.
+    const gamePreferences = LocalStorageGameRepository.migrateGamePreferences(
+      rest.gamePreferences as unknown as Record<string, unknown> | undefined
+    );
+    const preferenceChangeLog = rest.preferenceChangeLog?.map((entry) =>
+      LocalStorageGameRepository.migrateChangeLogEntry(entry as unknown as Record<string, unknown>)
+    );
+
     return {
       ...rest,
       engineConfig,
+      gamePreferences,
+      preferenceChangeLog,
       // If lastPlayed doesn't exist, use date as fallback
       lastPlayed: rest.lastPlayed || rest.date,
     };

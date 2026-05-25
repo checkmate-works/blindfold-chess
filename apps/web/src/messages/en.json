@@ -276,7 +276,13 @@
         "whiteView": "White's Perspective",
         "blackView": "Black's Perspective"
       },
-      "showBoardButtonInGame": "Show 'View Board' button during AI games",
+      "boardVisibility": "Board Visibility",
+      "boardVisibilityDescription": "Choose how the chessboard surfaces during gameplay. Piece-display settings (below) still apply when the board is visible — they are the blindfold mechanism in this app.",
+      "boardVisibilities": {
+        "always": "Always visible",
+        "peek": "Peek on demand",
+        "never": "Hidden"
+      },
       "resetDefaults": "Reset to defaults",
       "resetDefaultsConfirm": {
         "title": "Reset Board Settings?",
@@ -1758,7 +1764,7 @@
         "notRecorded": "Initial settings were not recorded for this game.",
         "on": "On",
         "off": "Off",
-        "labelShowBoardButton": "'View Board' button",
+        "labelBoardVisibility": "Board visibility",
         "labelHighlightLastMove": "Highlight last move",
         "labelShowOwnPieces": "Show own pieces",
         "labelShowOpponentPieces": "Show opponent pieces",
@@ -1938,7 +1944,6 @@
     "helpOpeningIntroDescription": "Pick a named opening from the list — you'll continue to the PGN setup screen where you can choose engine, color, and difficulty before starting.",
     "previewBoard": "Preview Board",
     "gameSettings": "Advanced Settings",
-    "showBoardButtonInGame": "Show 'View Board' button during AI games",
     "startGame": "Start Game",
     "cancel": "Cancel",
     "whiteDescription": "You play first",
@@ -2582,10 +2587,23 @@
       }
     },
     "step2": {
-      "shortLabel": "Peek",
-      "title": "Board Peek Mode",
-      "description": "You can enable a peek feature to glance at the board as a visual aid.",
-      "showBoardButton": "Show 'View Board' button during AI games",
+      "shortLabel": "Board",
+      "title": "Board Visibility",
+      "description": "Decide how the chessboard surfaces during play. Piece-display settings (next step) still provide the blindfold experience when the board is shown.",
+      "boardVisibilities": {
+        "always": {
+          "label": "Always visible",
+          "description": "The board is shown throughout the game. Piece settings (next step) still hide the piece types/colors as you prefer."
+        },
+        "peek": {
+          "label": "Peek on demand",
+          "description": "The board is hidden by default; tap to peek when you need to verify a position."
+        },
+        "never": {
+          "label": "Hidden",
+          "description": "Pure blindfold mode — the board is never shown during play."
+        }
+      },
       "modes": {
         "modal": {
           "label": "Modal",

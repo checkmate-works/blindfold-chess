@@ -33,7 +33,7 @@ vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
       enabledMoveInputModes: ['button'],
       buttonInputPieceLabel: 'icon',
       enableAutoComplete: true,
-      showBoardButtonInGame: true,
+      boardVisibility: 'peek',
       peekMode: 'modal',
     },
     isLoaded: true,
