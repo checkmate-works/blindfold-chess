@@ -540,10 +540,6 @@ export function PlayClient({
       <OperationLogModal
         isOpen={showOperationLogModal}
         onClose={() => setShowOperationLogModal(false)}
-        logs={operationLogs}
-        moves={moves}
-        playerSide={playerSide}
-        startingFen={startingFen}
         gamePreferences={initialPerGamePrefs}
         preferenceChangeLog={preferenceChangeLog}
       />

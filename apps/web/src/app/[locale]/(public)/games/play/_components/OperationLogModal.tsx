@@ -3,23 +3,16 @@
 import { useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 import { FaChevronDown } from 'react-icons/fa';
 
-import type { MoveOperationLog, PreferenceChangeLogEntry } from '@/lib/games/saved-game-types';
+import type { PreferenceChangeLogEntry } from '@/lib/games/saved-game-types';
 
 import { Modal } from '@/app/[locale]/_components/Modal';
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
-import { getMovingSide } from '../_lib/fen-utils';
-
 type Props = {
   isOpen: boolean;
   onClose: () => void;
-  logs: MoveOperationLog[];
-  moves: AlgebraicNotation[];
-  playerSide: Side;
-  startingFen?: string;
   /**
    * Snapshot of the per-game preferences captured at game start. Surfaced
    * here as a read-only "Initial Settings" section so the player can review
@@ -41,10 +34,6 @@ type Props = {
 export function OperationLogModal({
   isOpen,
   onClose,
-  logs,
-  moves,
-  playerSide,
-  startingFen,
   gamePreferences,
   preferenceChangeLog,
 }: Props) {
@@ -52,36 +41,13 @@ export function OperationLogModal({
   const tPrefs = useTranslations('Preferences.game');
   const tPrefsControls = useTranslations('Preferences.controls');
 
-  // Both audit sections start closed: the per-move log table is the modal's
-  // primary content, so we don't push it below the fold for users that
-  // mostly care about ops review. Users curious about the initial setup or
-  // the in-game edit history expand on demand.
+  // Both audit sections start closed: the modal is the "what configuration
+  // did this game run under, and what changed" surface — open-by-default
+  // would put too much detail in front of users who just popped it open
+  // for a quick check. Per-move operation counts live next to each move
+  // in the MovesPanel (Phase 5b); the modal no longer carries that table.
   const [isInitialSettingsOpen, setIsInitialSettingsOpen] = useState(false);
   const [isChangeLogOpen, setIsChangeLogOpen] = useState(false);
-
-  // Extract player moves from the interleaved moves array.
-  // Uses getMovingSide to correctly handle custom starting FEN (e.g., black-to-move positions).
-  const playerMoveIndices = moves.reduce<number[]>((acc, _, index) => {
-    if (getMovingSide(index, startingFen) === playerSide) acc.push(index);
-    return acc;
-  }, []);
-
-  const inputMethodLabel = (method: MoveOperationLog['inputMethod']): string => {
-    switch (method) {
-      case 'button':
-        return t('operationLog.inputMethodButton');
-      case 'text':
-        return t('operationLog.inputMethodText');
-      case 'text-autocomplete':
-        return t('operationLog.inputMethodTextAutocomplete');
-      case 'select':
-        return t('operationLog.inputMethodSelect');
-      case 'board':
-        return t('operationLog.inputMethodBoard');
-      default:
-        return method;
-    }
-  };
 
   const renderBool = (v: boolean): string =>
     v ? t('operationLog.initialSettings.on') : t('operationLog.initialSettings.off');
@@ -286,57 +252,6 @@ export function OperationLogModal({
                 {t('operationLog.changeLog.noChanges')}
               </p>
             ))}
-        </section>
-
-        <section>
-          {logs.length === 0 ? (
-            <p className="text-muted-foreground text-sm">{t('operationLog.noLogs')}</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border text-left">
-                    <th className="py-2 px-2 font-medium text-muted-foreground">#</th>
-                    <th className="py-2 px-2 font-medium text-muted-foreground">
-                      {t('operationLog.columnMove')}
-                    </th>
-                    <th className="py-2 px-2 font-medium text-muted-foreground">
-                      {t('operationLog.columnInputMethod')}
-                    </th>
-                    <th className="py-2 px-2 font-medium text-muted-foreground text-center">
-                      {t('operationLog.columnPeek')}
-                    </th>
-                    <th className="py-2 px-2 font-medium text-muted-foreground text-center">
-                      {t('operationLog.columnUndo')}
-                    </th>
-                    <th className="py-2 px-2 font-medium text-muted-foreground text-center">
-                      {t('operationLog.columnMovePeek')}
-                    </th>
-                    <th className="py-2 px-2 font-medium text-muted-foreground text-center">
-                      {t('operationLog.columnInvalid')}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {logs.map((log, i) => {
-                    const moveIndex = playerMoveIndices[i];
-                    const move = moveIndex !== undefined ? moves[moveIndex] : '—';
-                    return (
-                      <tr key={i} className="border-b border-border/50 hover:bg-muted/50">
-                        <td className="py-2 px-2 text-muted-foreground">{i + 1}</td>
-                        <td className="py-2 px-2 font-mono">{move}</td>
-                        <td className="py-2 px-2">{inputMethodLabel(log.inputMethod)}</td>
-                        <td className="py-2 px-2 text-center">{log.peekCount}</td>
-                        <td className="py-2 px-2 text-center">{log.undoCount}</td>
-                        <td className="py-2 px-2 text-center">{log.movePeekCount ?? 0}</td>
-                        <td className="py-2 px-2 text-center">{log.invalidCount ?? 0}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
         </section>
       </div>
     </Modal>

@@ -1,18 +1,21 @@
 /**
- * Focused coverage for `OperationLogModal` — the three audit sections
- * (Initial Settings, Change Log, per-move operations) and the i18n key
- * routing across them.
+ * Focused coverage for `OperationLogModal` — the two audit sections it
+ * carries (Initial Settings, Change Log) and the i18n key routing across
+ * them.
+ *
+ * Per-move operation counts moved into MovesPanel's inline popovers in
+ * Phase 5b; the modal no longer renders that table, so the related tests
+ * live alongside MovesPanel now.
  *
  * The translation mocks pass the key path through verbatim so assertions
  * can match on the literal key (e.g. `labelBoardVisibility`,
  * `boardVisibilities.always`). That is enough to verify the routing logic
  * without coupling tests to copy that may change.
  */
-import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import type { MoveOperationLog, PreferenceChangeLogEntry } from '@/lib/games/saved-game-types';
+import type { PreferenceChangeLogEntry } from '@/lib/games/saved-game-types';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -55,16 +58,11 @@ const DEFAULT_PREFS: PerGamePreferences = {
 function renderModal(overrides?: {
   gamePreferences?: PerGamePreferences;
   preferenceChangeLog?: PreferenceChangeLogEntry[];
-  logs?: MoveOperationLog[];
-  moves?: AlgebraicNotation[];
 }) {
   return render(
     <OperationLogModal
       isOpen
       onClose={() => {}}
-      logs={overrides?.logs ?? []}
-      moves={(overrides?.moves ?? []) as AlgebraicNotation[]}
-      playerSide="white"
       gamePreferences={overrides?.gamePreferences}
       preferenceChangeLog={overrides?.preferenceChangeLog}
     />
@@ -83,7 +81,7 @@ describe('OperationLogModal — Initial Settings section', () => {
     expect(screen.getByText('play.operationLog.initialSettings.notRecorded')).toBeInTheDocument();
   });
 
-  it('renders all 7 setting rows when expanded with a complete snapshot', () => {
+  it('renders all 8 setting rows when expanded with a complete snapshot', () => {
     renderModal({ gamePreferences: DEFAULT_PREFS });
 
     fireEvent.click(screen.getByText('play.operationLog.initialSettings.title'));
@@ -97,6 +95,7 @@ describe('OperationLogModal — Initial Settings section', () => {
       'labelPieceShape',
       'labelPieceColor',
       'labelPeekMode',
+      'labelMoveInputMode',
     ]) {
       expect(screen.getByText(`play.operationLog.initialSettings.${labelKey}`)).toBeInTheDocument();
     }
@@ -117,12 +116,15 @@ describe('OperationLogModal — Initial Settings section', () => {
     expect(screen.getByText('Preferences.game.pieceColors.white-only')).toBeInTheDocument();
   });
 
-  it('routes peekMode through the Preferences.controls.* namespace', () => {
-    renderModal({ gamePreferences: { ...DEFAULT_PREFS, peekMode: 'inline' } });
+  it('routes peekMode + moveInputMode through the Preferences.controls.* namespace', () => {
+    renderModal({
+      gamePreferences: { ...DEFAULT_PREFS, peekMode: 'inline', moveInputMode: 'button' },
+    });
 
     fireEvent.click(screen.getByText('play.operationLog.initialSettings.title'));
 
     expect(screen.getByText('Preferences.controls.peekModes.inline')).toBeInTheDocument();
+    expect(screen.getByText('Preferences.controls.moveInputModes.button')).toBeInTheDocument();
   });
 
   it('renders booleans via the On/Off vocabulary', () => {
@@ -201,6 +203,7 @@ describe('OperationLogModal — Change Log section', () => {
     const log: PreferenceChangeLogEntry[] = [
       { atMoveIndex: 7, key: 'pieceShapeMode', from: 'normal', to: 'circles-own' },
       { atMoveIndex: 9, key: 'peekMode', from: 'modal', to: 'inline' },
+      { atMoveIndex: 14, key: 'moveInputMode', from: 'text', to: 'button' },
     ];
     renderModal({ preferenceChangeLog: log });
 
@@ -213,29 +216,9 @@ describe('OperationLogModal — Change Log section', () => {
     const peekRow = screen.getByText('9').closest('tr')!;
     expect(peekRow.textContent).toMatch(/Preferences\.controls\.peekModes\.modal/);
     expect(peekRow.textContent).toMatch(/Preferences\.controls\.peekModes\.inline/);
-  });
-});
 
-describe('OperationLogModal — per-move operations table', () => {
-  it('renders the "no logs" placeholder when the log array is empty', () => {
-    renderModal({ logs: [] });
-
-    expect(screen.getByText('play.operationLog.noLogs')).toBeInTheDocument();
-  });
-
-  it('renders one row per log entry, lining up the player move with the entry', () => {
-    const logs: MoveOperationLog[] = [
-      { inputMethod: 'text', peekCount: 1, undoCount: 0, movePeekCount: 0 },
-      { inputMethod: 'button', peekCount: 0, undoCount: 1, movePeekCount: 2 },
-    ];
-    // White plays at indices 0 and 2 — log[0] aligns with move 'e4', log[1] with 'd4'.
-    const moves = ['e4', 'e5', 'd4'] as AlgebraicNotation[];
-
-    renderModal({ logs, moves });
-
-    expect(screen.getByText('e4')).toBeInTheDocument();
-    expect(screen.getByText('d4')).toBeInTheDocument();
-    expect(screen.getByText('play.operationLog.inputMethodText')).toBeInTheDocument();
-    expect(screen.getByText('play.operationLog.inputMethodButton')).toBeInTheDocument();
+    const moveInputRow = screen.getByText('14').closest('tr')!;
+    expect(moveInputRow.textContent).toMatch(/Preferences\.controls\.moveInputModes\.text/);
+    expect(moveInputRow.textContent).toMatch(/Preferences\.controls\.moveInputModes\.button/);
   });
 });
