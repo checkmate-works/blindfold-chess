@@ -6,6 +6,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { FaChevronDown } from 'react-icons/fa';
 
 import { BOARD_VISIBILITY_VALUES } from '@/lib/games/board-visibility';
+import { BOARD_VISIBILITY_ICON } from '@/lib/games/board-visibility-icons';
 
 import { GameSettingsContent } from '@/app/[locale]/(public)/preferences/_components/GameSettingsContent';
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -38,20 +39,24 @@ export function CollapsibleGameSettings({ settings, onSettingsChange }: Props) {
           {tPrefs('game.boardVisibility')}
         </div>
         <div className="inline-flex rounded-md border border-border overflow-hidden">
-          {BOARD_VISIBILITY_VALUES.map((value, idx) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => onSettingsChange({ boardVisibility: value })}
-              className={`px-3 py-1.5 text-sm font-medium transition-colors ${
-                settings.boardVisibility === value
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-card text-foreground hover:bg-muted'
-              } ${idx < BOARD_VISIBILITY_VALUES.length - 1 ? 'border-r border-border' : ''}`}
-            >
-              {tPrefs(`game.boardVisibilities.${value}`)}
-            </button>
-          ))}
+          {BOARD_VISIBILITY_VALUES.map((value, idx) => {
+            const Icon = BOARD_VISIBILITY_ICON[value];
+            return (
+              <button
+                key={value}
+                type="button"
+                onClick={() => onSettingsChange({ boardVisibility: value })}
+                className={`px-3 py-1.5 text-sm font-medium transition-colors flex items-center gap-1.5 ${
+                  settings.boardVisibility === value
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-card text-foreground hover:bg-muted'
+                } ${idx < BOARD_VISIBILITY_VALUES.length - 1 ? 'border-r border-border' : ''}`}
+              >
+                <Icon className="w-3 h-3" />
+                {tPrefs(`game.boardVisibilities.${value}`)}
+              </button>
+            );
+          })}
         </div>
       </div>
 

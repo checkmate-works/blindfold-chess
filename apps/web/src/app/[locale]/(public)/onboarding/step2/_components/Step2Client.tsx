@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { BOARD_VISIBILITY_VALUES, type BoardVisibility } from '@/lib/games/board-visibility';
+import { BOARD_VISIBILITY_ICON } from '@/lib/games/board-visibility-icons';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -69,6 +70,7 @@ export function Step2Client({ locale }: Props) {
         <div className="space-y-2">
           {BOARD_VISIBILITY_VALUES.map((value) => {
             const isSelected = preferences.boardVisibility === value;
+            const Icon = BOARD_VISIBILITY_ICON[value];
             return (
               <button
                 key={value}
@@ -80,6 +82,13 @@ export function Step2Client({ locale }: Props) {
                     : 'border-border bg-card hover:bg-accent'
                 }`}
               >
+                <div
+                  className={`flex-shrink-0 text-2xl ${
+                    isSelected ? 'text-primary' : 'text-muted-foreground'
+                  }`}
+                >
+                  <Icon />
+                </div>
                 <div className="flex-1 min-w-0">
                   <p
                     className={`text-sm font-medium ${

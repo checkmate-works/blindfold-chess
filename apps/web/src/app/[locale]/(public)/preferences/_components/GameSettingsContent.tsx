@@ -6,6 +6,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import type { Side } from '@blindfold-chess/types';
 
 import { BOARD_VISIBILITY_VALUES } from '@/lib/games/board-visibility';
+import { BOARD_VISIBILITY_ICON } from '@/lib/games/board-visibility-icons';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -78,20 +79,24 @@ export function GameSettingsContent({
               {t('game.boardVisibilityDescription')}
             </p>
             <div className="inline-flex rounded-md border border-border overflow-hidden">
-              {BOARD_VISIBILITY_VALUES.map((value, idx) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => onSettingsChange({ boardVisibility: value })}
-                  className={`px-4 py-2 text-sm font-medium transition-colors ${
-                    settings.boardVisibility === value
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-card text-foreground hover:bg-muted'
-                  } ${idx < BOARD_VISIBILITY_VALUES.length - 1 ? 'border-r border-border' : ''}`}
-                >
-                  {t(`game.boardVisibilities.${value}`)}
-                </button>
-              ))}
+              {BOARD_VISIBILITY_VALUES.map((value, idx) => {
+                const Icon = BOARD_VISIBILITY_ICON[value];
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => onSettingsChange({ boardVisibility: value })}
+                    className={`px-4 py-2 text-sm font-medium transition-colors flex items-center gap-2 ${
+                      settings.boardVisibility === value
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-card text-foreground hover:bg-muted'
+                    } ${idx < BOARD_VISIBILITY_VALUES.length - 1 ? 'border-r border-border' : ''}`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    {t(`game.boardVisibilities.${value}`)}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
