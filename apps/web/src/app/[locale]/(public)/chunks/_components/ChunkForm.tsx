@@ -26,6 +26,7 @@ import {
   readChunkDraft,
   writeChunkDraft,
 } from '../_lib/draft-storage';
+import { localizeChunkError } from '../_lib/localize-error';
 import { ChunkFormFields } from './ChunkFormFields';
 
 export type ChunkFormInitial = {
@@ -64,21 +65,18 @@ type Props = CreateProps | EditProps;
 
 const validateFenForChunks = (fen: string) => validateFenStructure(fen).ok;
 
-function localizeError(code: string, t: ReturnType<typeof useTranslations<'chunks.form'>>): string {
-  const wellKnown = new Set([
-    'signInRequired',
-    'banned',
-    'rateLimited',
-    'slugTaken',
-    'notFound',
-    'unauthorized',
-    'alreadyDeleted',
-    'cannotEditPublished',
-    'invalidFeedbackTopic',
-    'descriptionRequired',
-  ]);
-  return wellKnown.has(code) ? t(`errors.${code}` as 'errors.signInRequired') : code;
-}
+const FORM_ERROR_CODES = new Set([
+  'signInRequired',
+  'banned',
+  'rateLimited',
+  'slugTaken',
+  'notFound',
+  'unauthorized',
+  'alreadyDeleted',
+  'cannotEditPublished',
+  'invalidFeedbackTopic',
+  'descriptionRequired',
+]);
 
 /**
  * Form shell for chunk authoring.
@@ -198,6 +196,34 @@ export function ChunkForm(props: Props) {
     setStartOverOpen(false);
   }
 
+  // Persist the current edit-form state through `updateChunk`. Shared
+  // by the plain Save flow and the Save-before-Publish flow so the
+  // payload shape — including the "send slug only when changed"
+  // optimisation and the empty-array-wipes contract for feedbackTopics —
+  // stays single-sourced. Returns the slug to navigate to on success
+  // so callers don't have to recompute `slugChanged` themselves.
+  async function saveEdit(
+    initial: ChunkFormInitial
+  ): Promise<{ ok: true; targetSlug: string } | { ok: false }> {
+    setPending(true);
+    const slugChanged = slug.trim() !== initial.slug;
+    const result = await updateChunk(initial.id, {
+      representativeFen: board.trimmedFen,
+      title,
+      ...(slugChanged ? { slug: slug.trim() } : {}),
+      description: description || null,
+      annotations,
+      feedbackTopics,
+    });
+    setPending(false);
+
+    if ('error' in result) {
+      setError(localizeChunkError(result.error, t, FORM_ERROR_CODES));
+      return { ok: false };
+    }
+    return { ok: true, targetSlug: slugChanged ? slug.trim() : initial.slug };
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -244,35 +270,13 @@ export function ChunkForm(props: Props) {
       return;
     }
 
-    setPending(true);
-    // Only send a slug when the user actually changed it — keeps the
-    // server-side cascade off the hot path for ordinary
-    // title/description edits, and matches the wrapper's "undefined
-    // preserves" contract.
-    const slugChanged = slug.trim() !== props.initial.slug;
-    const result = await updateChunk(props.initial.id, {
-      representativeFen: board.trimmedFen,
-      title,
-      ...(slugChanged ? { slug: slug.trim() } : {}),
-      description: description || null,
-      annotations,
-      // Always send the topics from the form — passing an empty array
-      // explicitly clears any rows the user un-ticked, matching the
-      // contract `updateChunk` exports (undefined preserves; [] wipes).
-      feedbackTopics,
-    });
-    setPending(false);
-
-    if ('error' in result) {
-      setError(localizeError(result.error, t));
-      return;
-    }
+    const result = await saveEdit(props.initial);
+    if (!result.ok) return;
 
     flushSync(() => setSubmitted(true));
     // Land on the freshly-renamed URL when the slug changed —
     // otherwise the old detail URL 404s after revalidation.
-    const targetSlug = slugChanged ? slug.trim() : props.initial.slug;
-    router.push(`/chunks/${targetSlug}` as '/chunks/[slug]');
+    router.push(`/chunks/${result.targetSlug}` as '/chunks/[slug]');
   }
 
   /**
@@ -289,23 +293,9 @@ export function ChunkForm(props: Props) {
 
     let finalSlug = props.initial.slug;
     if (isDirty) {
-      setPending(true);
-      const slugChanged = slug.trim() !== props.initial.slug;
-      const saveResult = await updateChunk(props.initial.id, {
-        representativeFen: board.trimmedFen,
-        title,
-        ...(slugChanged ? { slug: slug.trim() } : {}),
-        description: description || null,
-        annotations,
-        feedbackTopics,
-      });
-      setPending(false);
-
-      if ('error' in saveResult) {
-        setError(localizeError(saveResult.error, t));
-        return;
-      }
-      if (slugChanged) finalSlug = slug.trim();
+      const saveResult = await saveEdit(props.initial);
+      if (!saveResult.ok) return;
+      finalSlug = saveResult.targetSlug;
     }
 
     if (description.trim().length === 0) {
@@ -330,7 +320,7 @@ export function ChunkForm(props: Props) {
     setPublishPending(false);
 
     if ('error' in result) {
-      setError(localizeError(result.error, t));
+      setError(localizeChunkError(result.error, t, FORM_ERROR_CODES));
       return;
     }
 
@@ -348,7 +338,7 @@ export function ChunkForm(props: Props) {
     setDeletePending(false);
 
     if ('error' in result) {
-      setError(localizeError(result.error, t));
+      setError(localizeChunkError(result.error, t, FORM_ERROR_CODES));
       return;
     }
 

@@ -10,6 +10,14 @@ import { FiTrash2 } from 'react-icons/fi';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
 import { deleteChunk } from '../_actions/deleteChunk';
+import { localizeChunkError } from '../_lib/localize-error';
+
+const DELETE_ERROR_CODES = new Set([
+  'signInRequired',
+  'unauthorized',
+  'notFound',
+  'alreadyDeleted',
+]);
 
 type Props = {
   chunkId: string;
@@ -43,12 +51,7 @@ export function ChunkDeleteButton({ chunkId }: Props) {
     setPending(false);
 
     if ('error' in result) {
-      const wellKnown = new Set(['signInRequired', 'unauthorized', 'notFound', 'alreadyDeleted']);
-      setError(
-        wellKnown.has(result.error)
-          ? t(`form.errors.${result.error}` as 'form.errors.signInRequired')
-          : result.error
-      );
+      setError(localizeChunkError(result.error, t, DELETE_ERROR_CODES, 'form.errors'));
       return;
     }
     router.push('/chunks');

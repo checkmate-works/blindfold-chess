@@ -12,6 +12,15 @@ import type { ChunkStatus } from '@/lib/chunks/validation';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
 import { publishChunk } from '../_actions/publishChunk';
+import { localizeChunkError } from '../_lib/localize-error';
+
+const PUBLISH_ERROR_CODES = new Set([
+  'signInRequired',
+  'unauthorized',
+  'notFound',
+  'alreadyDeleted',
+  'descriptionRequired',
+]);
 
 type Props = {
   chunkId: string;
@@ -66,18 +75,7 @@ export function ChunkLifecycleControls({ chunkId, chunkSlug, status, hasDescript
     setPending(false);
 
     if ('error' in result) {
-      const wellKnown = new Set([
-        'signInRequired',
-        'unauthorized',
-        'notFound',
-        'alreadyDeleted',
-        'descriptionRequired',
-      ]);
-      setError(
-        wellKnown.has(result.error)
-          ? t(`form.errors.${result.error}` as 'form.errors.signInRequired')
-          : result.error
-      );
+      setError(localizeChunkError(result.error, t, PUBLISH_ERROR_CODES, 'form.errors'));
       return;
     }
     router.refresh();

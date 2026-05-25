@@ -9,6 +9,7 @@ import { useRouter } from '@/i18n/routing';
 
 import type { ChunkFeedbackTopic } from '@/lib/chunks/validation';
 
+import { localizeChunkError } from '../../_lib/localize-error';
 import { submitEditRequest } from '../_actions/submitEditRequest';
 
 type Props = {
@@ -86,10 +87,6 @@ export function EditRequestForm({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  function localizeError(code: string): string {
-    return WELL_KNOWN_ERRORS.has(code) ? t(`errors.${code}` as 'errors.signInRequired') : code;
-  }
-
   function resetToPrefill() {
     setProposedTitle(currentTitle);
     setProposedDescription(currentDescription ?? '');
@@ -117,7 +114,7 @@ export function EditRequestForm({
     setPending(false);
 
     if ('error' in result) {
-      setError(localizeError(result.error));
+      setError(localizeChunkError(result.error, t, WELL_KNOWN_ERRORS));
       return;
     }
 

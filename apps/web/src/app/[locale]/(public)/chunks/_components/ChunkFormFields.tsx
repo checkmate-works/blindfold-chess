@@ -11,6 +11,7 @@ import {
   CHUNK_FEEDBACK_TOPICS,
   type ChunkFeedbackTopic,
   type ChunkStatus,
+  deriveSlugFromTitle,
 } from '@/lib/chunks/validation';
 
 import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
@@ -55,20 +56,6 @@ type Props = {
   mode: 'create' | 'edit';
   pending: boolean;
 };
-
-/**
- * Title-only normalization for the "Generate from title" affordance.
- * Mirrors the server-side `CHUNK_SLUG_PATTERN` (lowercase ASCII
- * alphanumerics joined by single hyphens; no leading / trailing hyphen).
- */
-function deriveSlugFromTitle(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
-}
 
 /**
  * Shared body of `ChunkForm` — title, description, board / FEN editor,

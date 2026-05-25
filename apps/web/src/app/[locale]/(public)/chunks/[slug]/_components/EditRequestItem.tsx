@@ -13,6 +13,7 @@ import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 
+import { localizeChunkError } from '../../_lib/localize-error';
 import { acceptEditRequest } from '../_actions/acceptEditRequest';
 import { rejectEditRequest } from '../_actions/rejectEditRequest';
 import { withdrawEditRequest } from '../_actions/withdrawEditRequest';
@@ -102,10 +103,6 @@ export function EditRequestItem(props: Props) {
   const [error, setError] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<null | 'accept' | 'reject' | 'withdraw'>(null);
 
-  function localizeError(code: string): string {
-    return WELL_KNOWN_ERRORS.has(code) ? t(`errors.${code}` as 'errors.signInRequired') : code;
-  }
-
   async function runResolution(kind: 'accept' | 'reject' | 'withdraw') {
     setError(null);
     setPending(kind);
@@ -117,7 +114,7 @@ export function EditRequestItem(props: Props) {
     setConfirm(null);
 
     if ('error' in result) {
-      setError(localizeError(result.error));
+      setError(localizeChunkError(result.error, t, WELL_KNOWN_ERRORS));
       return;
     }
     router.refresh();

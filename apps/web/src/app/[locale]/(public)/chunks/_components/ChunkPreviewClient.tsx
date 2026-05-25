@@ -15,6 +15,18 @@ import { SectionTitle } from '@/app/[locale]/_components';
 
 import { createChunk } from '../_actions/createChunk';
 import { type ChunkDraftV1, clearChunkDraft, readChunkDraft } from '../_lib/draft-storage';
+import { localizeChunkError } from '../_lib/localize-error';
+
+const PREVIEW_ERROR_CODES = new Set([
+  'signInRequired',
+  'banned',
+  'rateLimited',
+  'slugTaken',
+  'notFound',
+  'unauthorized',
+  'alreadyDeleted',
+  'invalidFeedbackTopic',
+]);
 
 /**
  * Read the chunk draft and present it for confirmation before calling
@@ -59,20 +71,6 @@ export function ChunkPreviewClient() {
   const isDirty = hydrated && !submitted;
   const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
 
-  function localizeError(code: string): string {
-    const wellKnown = new Set([
-      'signInRequired',
-      'banned',
-      'rateLimited',
-      'slugTaken',
-      'notFound',
-      'unauthorized',
-      'alreadyDeleted',
-      'invalidFeedbackTopic',
-    ]);
-    return wellKnown.has(code) ? tForm(`errors.${code}` as 'errors.signInRequired') : code;
-  }
-
   async function handleCreate() {
     if (!draft) return;
     setPending(true);
@@ -94,7 +92,7 @@ export function ChunkPreviewClient() {
         feedbackTopics: draft.feedbackTopics,
       });
       if ('error' in result) {
-        setError(localizeError(result.error));
+        setError(localizeChunkError(result.error, tForm, PREVIEW_ERROR_CODES));
         return;
       }
       clearChunkDraft();
