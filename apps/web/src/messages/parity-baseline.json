@@ -166,7 +166,15 @@
         "chunks.editRequests.suggestCta",
         "MypageNotifications.chunkEditRequestAcceptedMessage",
         "MypageNotifications.chunkEditRequestSubmittedMessage",
-        "toast.editRequestSubmitted"
+        "toast.editRequestSubmitted",
+        "chunks.detail.positionBadge.memory",
+        "chunks.detail.positionBadge.puzzle",
+        "chunks.detail.positionsDescription",
+        "chunks.detail.positionsSection",
+        "metadata.chunks.description",
+        "metadata.chunks.title",
+        "topics.categories.chunks.description",
+        "topics.categories.chunks.title"
       ],
       "extra": []
     },
@@ -338,7 +346,15 @@
         "chunks.editRequests.suggestCta",
         "MypageNotifications.chunkEditRequestAcceptedMessage",
         "MypageNotifications.chunkEditRequestSubmittedMessage",
-        "toast.editRequestSubmitted"
+        "toast.editRequestSubmitted",
+        "chunks.detail.positionBadge.memory",
+        "chunks.detail.positionBadge.puzzle",
+        "chunks.detail.positionsDescription",
+        "chunks.detail.positionsSection",
+        "metadata.chunks.description",
+        "metadata.chunks.title",
+        "topics.categories.chunks.description",
+        "topics.categories.chunks.title"
       ],
       "extra": []
     }

@@ -134,6 +134,10 @@
       "title": "Post about {square}",
       "description": "A discussion post about the {square} square in chess"
     },
+    "chunks": {
+      "title": "Chunks",
+      "description": "Piece-coordination pattern catalog for position memory training"
+    },
     "games": {
       "title": "Your Games",
       "description": "View and manage your blindfold chess games"
@@ -2337,7 +2341,13 @@
       "descriptionSection": "Description",
       "noDescription": "No description yet.",
       "edited": "Edited",
-      "createdBy": "Created by"
+      "createdBy": "Created by",
+      "positionsSection": "Positions",
+      "positionsDescription": "Problems where this chunk pattern is effective.",
+      "positionBadge": {
+        "puzzle": "Puzzle",
+        "memory": "Memory"
+      }
     },
     "form": {
       "fields": {
@@ -3583,6 +3593,10 @@
       "openings": {
         "title": "Openings",
         "description": "Explore and learn about chess openings"
+      },
+      "chunks": {
+        "title": "Chunks",
+        "description": "Piece-coordination pattern catalog for position memory training"
       }
     },
     "openings": {

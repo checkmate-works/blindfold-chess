@@ -134,6 +134,10 @@
       "title": "{square}についての投稿",
       "description": "チェスの{square}マスに関する議論の投稿"
     },
+    "chunks": {
+      "title": "チャンク",
+      "description": "ポジション記憶トレーニングのための駒の連携パターンカタログ"
+    },
     "games": {
       "title": "ゲーム一覧",
       "description": "目隠しチェスのゲームを管理"
@@ -2315,7 +2319,13 @@
       "descriptionSection": "説明",
       "noDescription": "説明はまだありません。",
       "edited": "編集済み",
-      "createdBy": "投稿者"
+      "createdBy": "投稿者",
+      "positionsSection": "ポジション",
+      "positionsDescription": "このチャンクパターンが効果的な問題。",
+      "positionBadge": {
+        "puzzle": "パズル",
+        "memory": "記憶"
+      }
     },
     "list": {
       "newCta": "新規チャンク",
@@ -3583,6 +3593,10 @@
       "openings": {
         "title": "オープニング",
         "description": "チェスのオープニングを探索・学習しましょう"
+      },
+      "chunks": {
+        "title": "チャンク",
+        "description": "ポジション記憶トレーニングのための駒の連携パターンカタログ"
       }
     },
     "openings": {

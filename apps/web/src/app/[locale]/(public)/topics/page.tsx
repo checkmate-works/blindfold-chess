@@ -88,8 +88,8 @@ export default async function TopicsPage({ params, searchParams }: Props) {
             <CardLink
               href="/chunks"
               icon="🧩"
-              title="Chunks"
-              description="Piece-coordination pattern catalog for position memory training"
+              title={t('categories.chunks.title')}
+              description={t('categories.chunks.description')}
               locale={locale}
             />
           </div>

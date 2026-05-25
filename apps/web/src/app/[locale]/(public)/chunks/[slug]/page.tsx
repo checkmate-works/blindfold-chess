@@ -268,7 +268,7 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
         ) : undefined
       }
       locale={locale}
-      breadcrumb={[{ label: 'Chunks', href: '/chunks' }, { label: chunk.title }]}
+      breadcrumb={[{ label: tChunks('listTitle'), href: '/chunks' }, { label: chunk.title }]}
     >
       {/*
        * Edit-suggestion callout — only meaningful while the chunk is in
@@ -331,10 +331,8 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
 
       {linkedPositions.length > 0 && (
         <>
-          <SectionTitle>Positions</SectionTitle>
-          <p className="text-sm text-muted-foreground">
-            Problems where this chunk pattern is effective.
-          </p>
+          <SectionTitle>{tChunks('detail.positionsSection')}</SectionTitle>
+          <p className="text-sm text-muted-foreground">{tChunks('detail.positionsDescription')}</p>
           <div className="space-y-3">
             {linkedPositions.map(({ position, profile }) => {
               const positionType = parsePositionType(position.type);
@@ -366,7 +364,9 @@ export default async function ChunkDetailPage({ params, searchParams }: Props) {
                           : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
                       }`}
                     >
-                      {isPuzzle ? 'Puzzle' : 'Memory'}
+                      {isPuzzle
+                        ? tChunks('detail.positionBadge.puzzle')
+                        : tChunks('detail.positionBadge.memory')}
                     </span>
                   }
                 />

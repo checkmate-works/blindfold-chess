@@ -35,14 +35,14 @@ export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'metadata.chunks' });
+  const title = t('title');
+  const description = t('description');
 
   return {
-    title: resolveTitle('Chunks', locale),
-    ...generateCanonicalMetadata({
-      locale,
-      path: 'chunks',
-      title: 'Chunks',
-    }),
+    ...generateCanonicalMetadata({ locale, path: 'chunks', title, description }),
+    title: resolveTitle(title, locale),
+    description,
   };
 }
 
@@ -129,7 +129,7 @@ export default async function ChunksListPage({ params, searchParams }: Props) {
     next === 'all' ? `/chunks` : (`/chunks?filter=${next}` as '/chunks');
 
   return (
-    <PageLayout title="Chunks" locale={locale} breadcrumb={[{ label: 'Chunks' }]}>
+    <PageLayout title={t('listTitle')} locale={locale} breadcrumb={[{ label: t('listTitle') }]}>
       <SectionTitle>{t('listSubtitle')}</SectionTitle>
 
       {/*
