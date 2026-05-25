@@ -6,7 +6,11 @@ import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 import type { EngineConfig } from '@/lib/engines';
 import { GameLimitError } from '@/lib/errors';
 import { LocalStorageGameRepository } from '@/lib/games/local-storage-repository';
-import type { GameOutcome, MoveOperationLog } from '@/lib/games/saved-game-types';
+import type {
+  GameOutcome,
+  MoveOperationLog,
+  PreferenceChangeLogEntry,
+} from '@/lib/games/saved-game-types';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -27,7 +31,14 @@ export type GameDataRefs = {
   playerColor: React.RefObject<Side>;
   engineConfig: React.RefObject<EngineConfig>;
   startingFen: React.RefObject<string | undefined>;
+  /**
+   * Initial per-game preferences snapshot. Immutable for the life of the
+   * game once captured at game start — see {@link Game.gamePreferences}.
+   * Mid-game edits do NOT mutate this ref; they accumulate in
+   * `preferenceChangeLog` and are folded on top at render time.
+   */
   gamePreferences: React.RefObject<PerGamePreferences | undefined>;
+  preferenceChangeLog: React.RefObject<PreferenceChangeLogEntry[] | undefined>;
   operationLogs: React.RefObject<MoveOperationLog[] | undefined>;
 };
 
@@ -62,6 +73,7 @@ type UseAutoSaveOptions = {
   status: GameOutcome;
   startingFen?: string;
   gamePreferences?: PerGamePreferences;
+  preferenceChangeLog?: PreferenceChangeLogEntry[];
   operationLogs?: MoveOperationLog[];
   enabled?: boolean;
   saveOnInit?: boolean;
@@ -91,6 +103,7 @@ export function useAutoSave({
   status,
   startingFen,
   gamePreferences,
+  preferenceChangeLog,
   operationLogs,
   enabled = true,
   saveOnInit = false,
@@ -112,6 +125,7 @@ export function useAutoSave({
     engineConfig,
     startingFen,
     gamePreferences,
+    preferenceChangeLog,
     operationLogs,
   });
 
@@ -189,6 +203,7 @@ export function useAutoSave({
           status: currentStatus,
           startingFen: gameDataRefs.startingFen.current,
           gamePreferences: gameDataRefs.gamePreferences.current,
+          preferenceChangeLog: gameDataRefs.preferenceChangeLog.current,
           operationLogs: gameDataRefs.operationLogs.current,
         };
 

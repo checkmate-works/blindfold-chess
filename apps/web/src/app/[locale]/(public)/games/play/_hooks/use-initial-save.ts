@@ -51,6 +51,7 @@ export function useInitialSave({
             status: gameDataRefs.status.current,
             startingFen: gameDataRefs.startingFen.current,
             gamePreferences: gameDataRefs.gamePreferences.current,
+            preferenceChangeLog: gameDataRefs.preferenceChangeLog.current,
             operationLogs: gameDataRefs.operationLogs.current,
           };
 

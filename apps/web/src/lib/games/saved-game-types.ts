@@ -21,6 +21,38 @@ export type MoveOperationLog = {
 };
 
 /**
+ * Discriminated entry for the mid-game per-game-preferences change log.
+ * Each entry records one user-initiated edit of one preference field. The
+ * `key` discriminator pairs `from`/`to` types tightly so the storage shape
+ * cannot mix a boolean key with an enum value or vice versa.
+ *
+ * `atMoveIndex` is the value of `moves.length` at the time of the change
+ * (i.e. the number of half-moves already played). It is intentionally NOT
+ * tied to the player's move index — preferences can be changed between AI
+ * thinking and the next player turn, so the half-move count is the only
+ * unambiguous anchor.
+ */
+export type PreferenceChangeLogEntry =
+  | {
+      atMoveIndex: number;
+      key: 'showBoardButtonInGame' | 'highlightLastMove' | 'showOwnPieces' | 'showOpponentPieces';
+      from: boolean;
+      to: boolean;
+    }
+  | {
+      atMoveIndex: number;
+      key: 'pieceShapeMode';
+      from: PerGamePreferences['pieceShapeMode'];
+      to: PerGamePreferences['pieceShapeMode'];
+    }
+  | {
+      atMoveIndex: number;
+      key: 'pieceColors';
+      from: PerGamePreferences['pieceColors'];
+      to: PerGamePreferences['pieceColors'];
+    };
+
+/**
  * In-app domain shape for a saved game. `engineConfig` is always
  * present here — legacy records on disk (which only carry
  * `skillLevel`) are normalised into a `{ kind: 'stockfish', skillLevel }`
@@ -37,8 +69,23 @@ export type Game = {
   status: GameOutcome;
   /** Custom starting position FEN. If undefined, standard starting position is used. */
   startingFen?: string;
-  /** Per-game preferences saved at game start. If undefined, global preferences are used. */
+  /**
+   * Per-game preferences snapshot captured at game start. Immutable for the
+   * life of the game — mid-game edits do NOT overwrite this field; they
+   * accumulate in {@link preferenceChangeLog} instead. The current effective
+   * values are derived by folding the log on top of this snapshot.
+   * Undefined for the brief pre-Phase-1 era; consumers treat undefined as
+   * "no snapshot recorded" and fall back to global preferences for display.
+   */
   gamePreferences?: PerGamePreferences;
+  /**
+   * Append-only timeline of mid-game preference edits. Each entry records
+   * one field change with `atMoveIndex` = `moves.length` at the time of
+   * the edit. Undefined or empty when the player did not change any
+   * settings mid-game (the overwhelmingly common case). Folding this log
+   * over {@link gamePreferences} yields the current effective values.
+   */
+  preferenceChangeLog?: PreferenceChangeLogEntry[];
   /** Per-move operation logs for player moves. Each entry corresponds to one player move. */
   operationLogs?: MoveOperationLog[];
 };

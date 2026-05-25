@@ -214,6 +214,7 @@ export class LocalStorageGameRepository implements IGameRepository {
         status: game.status,
         startingFen: game.startingFen,
         gamePreferences: game.gamePreferences,
+        preferenceChangeLog: game.preferenceChangeLog,
         operationLogs: game.operationLogs,
       });
     } catch (error) {
@@ -282,8 +283,43 @@ export class LocalStorageGameRepository implements IGameRepository {
               typeof (log as Record<string, unknown>).undoCount === 'number' &&
               (typeof (log as Record<string, unknown>).movePeekCount === 'number' ||
                 (log as Record<string, unknown>).movePeekCount === undefined)
+          ))) &&
+      (g.preferenceChangeLog === undefined ||
+        (Array.isArray(g.preferenceChangeLog) &&
+          g.preferenceChangeLog.every((entry) =>
+            LocalStorageGameRepository.isValidPreferenceChangeEntry(entry)
           )))
     );
+  }
+
+  /**
+   * Validate a single {@link PreferenceChangeLogEntry} from disk. Pulled
+   * out of {@link isValidStoredGame} so the discriminated-union check is
+   * readable: a malformed entry must have the right `key` AND a `from`/`to`
+   * pair of the correct shape for that key.
+   */
+  private static isValidPreferenceChangeEntry(entry: unknown): boolean {
+    if (typeof entry !== 'object' || entry === null) return false;
+    const e = entry as Record<string, unknown>;
+    if (typeof e.atMoveIndex !== 'number' || e.atMoveIndex < 0) return false;
+
+    switch (e.key) {
+      case 'showBoardButtonInGame':
+      case 'highlightLastMove':
+      case 'showOwnPieces':
+      case 'showOpponentPieces':
+        return typeof e.from === 'boolean' && typeof e.to === 'boolean';
+      case 'pieceShapeMode': {
+        const shapes = ['normal', 'circles-all', 'circles-own', 'circles-opponent'];
+        return shapes.includes(e.from as string) && shapes.includes(e.to as string);
+      }
+      case 'pieceColors': {
+        const colors = ['normal', 'white-only', 'black-only'];
+        return colors.includes(e.from as string) && colors.includes(e.to as string);
+      }
+      default:
+        return false;
+    }
   }
 
   /**
