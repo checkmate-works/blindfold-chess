@@ -284,16 +284,24 @@ export const getLinkedChunkOptionsForPosition = cache(
 );
 
 /**
- * Load every non-deleted chunk for the picker catalog. Chunks are UGC
- * and may grow large enough to need server-side search — when that
- * happens, swap this for a debounced search action without changing
- * the return type.
+ * Load every published, non-deleted chunk for the picker catalog.
+ * Draft chunks are intentionally excluded — they're still being
+ * workshopped and surfacing them in the puzzle / position-memory
+ * picker would let users pin themselves to an identifier that hasn't
+ * settled yet. Already-linked draft attachments stay visible via
+ * `getLinkedChunkOptionsForPosition`, which doesn't filter on
+ * status — that's the right shape for "what is currently attached"
+ * vs. "what is eligible to attach".
+ *
+ * Chunks are UGC and may grow large enough to need server-side
+ * search — when that happens, swap this for a debounced search
+ * action without changing the return type.
  */
 export const getAllAvailableChunkOptions = cache(async (): Promise<ChunkOption[]> => {
   const rows = await db
     .select(chunkOptionSelectColumns)
     .from(chunks)
-    .where(isNull(chunks.deletedAt))
+    .where(and(isNull(chunks.deletedAt), eq(chunks.status, 'published')))
     .orderBy(asc(chunks.title));
   return rows.map(mapChunkOption);
 });
