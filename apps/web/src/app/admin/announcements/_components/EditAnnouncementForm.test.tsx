@@ -21,6 +21,12 @@ vi.mock('next-navigation-guard', () => ({
   useNavigationGuard: () => ({ active: false, accept: vi.fn(), reject: vi.fn() }),
 }));
 
+const mockShowToast = vi.fn();
+
+vi.mock('@/app/[locale]/_contexts/ToastContext', () => ({
+  useToast: () => ({ showToast: mockShowToast }),
+}));
+
 const testId = 'ann-00000000-0000-0000-0000-000000000001';
 
 const defaultLabels = {
@@ -41,6 +47,13 @@ const defaultLabels = {
   unsavedChangesMessage: 'You have unsaved changes. Are you sure you want to leave?',
   unsavedChangesConfirm: 'Leave',
   unsavedChangesCancel: 'Stay',
+  draftSaved: 'Draft saved',
+  publishedSaved: 'Announcement saved',
+  publishedConfirmTitle: 'Confirm Save',
+  publishedConfirmMessage:
+    'This announcement is published. Your changes will be reflected immediately. Are you sure?',
+  publishedConfirmConfirm: 'Save',
+  publishedConfirmCancel: 'Cancel',
 };
 
 const defaultValues = {
@@ -54,12 +67,23 @@ const defaultValues = {
   publishedAt: '2024-06-15T14:00',
 };
 
+const draftDefaultValues = {
+  slug: 'draft-slug',
+  title: 'Draft Title',
+  content: 'Draft Content',
+  locale: 'en',
+  status: 'draft',
+  visibility: 'public',
+  pinnedAt: null,
+  publishedAt: null,
+};
+
 describe('EditAnnouncementForm', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should call updateAnnouncement with status draft and preserved publish settings on Save Draft', async () => {
+  it('should open the confirm modal on Save Draft for a published announcement and not call updateAnnouncement yet', async () => {
     mockUpdateAnnouncement.mockResolvedValue({ success: true, id: testId });
 
     render(
@@ -70,19 +94,41 @@ describe('EditAnnouncementForm', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Save Draft' }));
     });
 
+    expect(screen.getByText('Confirm Save')).toBeInTheDocument();
+    expect(mockUpdateAnnouncement).not.toHaveBeenCalled();
+  });
+
+  it('should call updateAnnouncement with status=published preserved after confirming the modal', async () => {
+    mockUpdateAnnouncement.mockResolvedValue({ success: true, id: testId });
+
+    render(
+      <EditAnnouncementForm id={testId} defaultValues={defaultValues} labels={defaultLabels} />
+    );
+
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Updated Title' } });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save Draft' }));
+    });
+
+    await act(async () => {
+      // The modal's "Save" confirm button (publishedConfirmConfirm label)
+      fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]);
+    });
+
     expect(mockUpdateAnnouncement).toHaveBeenCalledWith(testId, {
       slug: 'existing-slug',
-      title: 'Existing Title',
+      title: 'Updated Title',
       content: 'Existing Content',
       locale: 'en',
-      status: 'draft',
+      status: 'published',
       visibility: 'members_only',
       pinnedAt: '2024-06-15T12:00',
       publishedAt: '2024-06-15T14:00',
     });
   });
 
-  it('should call updateAnnouncement with status draft on Preview and navigate to preview page', async () => {
+  it('should call updateAnnouncement with status=published on Preview and navigate to preview page', async () => {
     mockUpdateAnnouncement.mockResolvedValue({ success: true, id: testId });
 
     render(
@@ -98,7 +144,7 @@ describe('EditAnnouncementForm', () => {
       title: 'Existing Title',
       content: 'Existing Content',
       locale: 'en',
-      status: 'draft',
+      status: 'published',
       visibility: 'members_only',
       pinnedAt: '2024-06-15T12:00',
       publishedAt: '2024-06-15T14:00',
@@ -106,28 +152,29 @@ describe('EditAnnouncementForm', () => {
     expect(mockPush).toHaveBeenCalledWith(`/admin/announcements/${testId}/preview`);
   });
 
-  it('should pass edited content fields to updateAnnouncement with draft status', async () => {
+  it('should call updateAnnouncement with status=draft directly (no modal) on a draft announcement', async () => {
     mockUpdateAnnouncement.mockResolvedValue({ success: true, id: testId });
 
     render(
-      <EditAnnouncementForm id={testId} defaultValues={defaultValues} labels={defaultLabels} />
+      <EditAnnouncementForm id={testId} defaultValues={draftDefaultValues} labels={defaultLabels} />
     );
 
-    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Updated Title' } });
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Updated Draft' } });
 
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Save Draft' }));
     });
 
+    expect(screen.queryByText('Confirm Save')).not.toBeInTheDocument();
     expect(mockUpdateAnnouncement).toHaveBeenCalledWith(testId, {
-      slug: 'existing-slug',
-      title: 'Updated Title',
-      content: 'Existing Content',
+      slug: 'draft-slug',
+      title: 'Updated Draft',
+      content: 'Draft Content',
       locale: 'en',
       status: 'draft',
-      visibility: 'members_only',
-      pinnedAt: '2024-06-15T12:00',
-      publishedAt: '2024-06-15T14:00',
+      visibility: 'public',
+      pinnedAt: null,
+      publishedAt: null,
     });
   });
 });

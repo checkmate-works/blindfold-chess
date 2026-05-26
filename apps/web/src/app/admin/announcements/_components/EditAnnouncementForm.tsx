@@ -19,8 +19,11 @@ type EditAnnouncementFormProps = {
 };
 
 export function EditAnnouncementForm({ id, defaultValues, labels }: EditAnnouncementFormProps) {
+  const isPublished = defaultValues.status === 'published' && defaultValues.publishedAt != null;
+
   return (
     <AnnouncementForm
+      isPublished={isPublished}
       defaultValues={{
         slug: defaultValues.slug,
         title: defaultValues.title,
@@ -30,7 +33,7 @@ export function EditAnnouncementForm({ id, defaultValues, labels }: EditAnnounce
       onSaveDraft={(data) =>
         updateAnnouncement(id, {
           ...data,
-          status: 'draft',
+          status: isPublished ? 'published' : 'draft',
           visibility: defaultValues.visibility,
           pinnedAt: defaultValues.pinnedAt,
           publishedAt: defaultValues.publishedAt,

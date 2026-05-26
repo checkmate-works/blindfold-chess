@@ -14,19 +14,10 @@ export function NewAnnouncementForm({
   defaultSlug,
   defaultLocale,
 }: NewAnnouncementFormProps) {
-  const defaultValues =
-    defaultSlug != null || defaultLocale != null
-      ? {
-          slug: defaultSlug ?? '',
-          title: '',
-          content: '',
-          locale: defaultLocale ?? 'en',
-        }
-      : undefined;
-
   return (
     <AnnouncementForm
-      defaultValues={defaultValues}
+      defaultSlug={defaultSlug}
+      defaultLocale={defaultLocale}
       lockSlug={defaultSlug != null}
       lockLocale={defaultLocale != null}
       onSaveDraft={(data) =>

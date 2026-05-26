@@ -21,6 +21,22 @@ vi.mock('next-navigation-guard', () => ({
   useNavigationGuard: (...args: unknown[]) => mockUseNavigationGuard(...args),
 }));
 
+const mockShowToast = vi.fn();
+
+vi.mock('@/app/[locale]/_contexts/ToastContext', () => ({
+  useToast: () => ({ showToast: mockShowToast }),
+}));
+
+const mockLocationReplace = vi.fn();
+const originalLocation = window.location;
+
+beforeEach(() => {
+  Object.defineProperty(window, 'location', {
+    configurable: true,
+    value: { ...originalLocation, replace: mockLocationReplace },
+  });
+});
+
 const defaultLabels = {
   formTitle: 'Create Announcement',
   slug: 'Slug',
@@ -39,6 +55,13 @@ const defaultLabels = {
   unsavedChangesMessage: 'You have unsaved changes. Are you sure you want to leave?',
   unsavedChangesConfirm: 'Leave',
   unsavedChangesCancel: 'Stay',
+  draftSaved: 'Draft saved',
+  publishedSaved: 'Announcement saved',
+  publishedConfirmTitle: 'Confirm Save',
+  publishedConfirmMessage:
+    'This announcement is published. Your changes will be reflected immediately. Are you sure?',
+  publishedConfirmConfirm: 'Save',
+  publishedConfirmCancel: 'Cancel',
 };
 
 describe('AnnouncementForm', () => {
@@ -106,7 +129,7 @@ describe('AnnouncementForm', () => {
     expect(screen.getByLabelText('Locale')).toHaveValue('ja');
   });
 
-  it('should call onSaveDraft with form data and navigate to list on Save Draft', async () => {
+  it('should call onSaveDraft with form data and redirect to /edit on first save (new)', async () => {
     const mockOnSaveDraft = vi.fn().mockResolvedValue({ success: true, id: 'test-id' });
 
     render(<AnnouncementForm onSaveDraft={mockOnSaveDraft} labels={defaultLabels} />);
@@ -125,7 +148,8 @@ describe('AnnouncementForm', () => {
       content: 'Test Content',
       locale: 'en',
     });
-    expect(mockPush).toHaveBeenCalledWith('/admin/announcements');
+    expect(mockLocationReplace).toHaveBeenCalledWith('/admin/announcements/test-id/edit');
+    expect(mockPush).not.toHaveBeenCalled();
   });
 
   it('should call onSaveDraft and navigate to preview page on Preview', async () => {
@@ -244,12 +268,8 @@ describe('AnnouncementForm', () => {
 
     render(
       <AnnouncementForm
-        defaultValues={{
-          slug: 'ad-free-reward-for-posting',
-          title: '',
-          content: '',
-          locale: 'pt-BR',
-        }}
+        defaultSlug="ad-free-reward-for-posting"
+        defaultLocale="pt-BR"
         lockSlug
         lockLocale
         onSaveDraft={mockOnSaveDraft}
@@ -352,5 +372,160 @@ describe('AnnouncementForm', () => {
     });
 
     expect(mockUseNavigationGuard).toHaveBeenLastCalledWith({ enabled: false });
+  });
+
+  // --- isPublished + PublishedConfirmModal flow ---
+
+  it('should open the PublishedConfirmModal when saving a published announcement', async () => {
+    const mockOnSaveDraft = vi.fn().mockResolvedValue({ success: true, id: 'pub-id' });
+    const existingDefaults = {
+      slug: 'existing-slug',
+      title: 'Existing Title',
+      content: 'Existing Content',
+      locale: 'en',
+    };
+
+    render(
+      <AnnouncementForm
+        defaultValues={existingDefaults}
+        isPublished
+        onSaveDraft={mockOnSaveDraft}
+        labels={defaultLabels}
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Edited Title' } });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save Draft' }));
+    });
+
+    expect(screen.getByText('Confirm Save')).toBeInTheDocument();
+    expect(mockOnSaveDraft).not.toHaveBeenCalled();
+  });
+
+  it('should save after confirming the PublishedConfirmModal', async () => {
+    const mockOnSaveDraft = vi.fn().mockResolvedValue({ success: true, id: 'pub-id' });
+    const existingDefaults = {
+      slug: 'existing-slug',
+      title: 'Existing Title',
+      content: 'Existing Content',
+      locale: 'en',
+    };
+
+    render(
+      <AnnouncementForm
+        defaultValues={existingDefaults}
+        isPublished
+        onSaveDraft={mockOnSaveDraft}
+        labels={defaultLabels}
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Edited Title' } });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save Draft' }));
+    });
+
+    await act(async () => {
+      // The modal's "Save" confirm button (matches publishedConfirmConfirm label)
+      fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]);
+    });
+
+    expect(mockOnSaveDraft).toHaveBeenCalledWith({
+      slug: 'existing-slug',
+      title: 'Edited Title',
+      content: 'Existing Content',
+      locale: 'en',
+    });
+    expect(mockShowToast).toHaveBeenCalledWith('Announcement saved', 'success');
+  });
+
+  it('should close the PublishedConfirmModal on cancel without saving', async () => {
+    const mockOnSaveDraft = vi.fn();
+    const existingDefaults = {
+      slug: 'existing-slug',
+      title: 'Existing Title',
+      content: 'Existing Content',
+      locale: 'en',
+    };
+
+    render(
+      <AnnouncementForm
+        defaultValues={existingDefaults}
+        isPublished
+        onSaveDraft={mockOnSaveDraft}
+        labels={defaultLabels}
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Edited Title' } });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save Draft' }));
+    });
+
+    // Modal's Cancel button (second "Cancel" — first is the form's footer Cancel)
+    const cancelButtons = screen.getAllByRole('button', { name: 'Cancel' });
+    fireEvent.click(cancelButtons[cancelButtons.length - 1]);
+
+    expect(mockOnSaveDraft).not.toHaveBeenCalled();
+    expect(screen.queryByText('Confirm Save')).not.toBeInTheDocument();
+  });
+
+  it('should save immediately (no modal) on a draft announcement', async () => {
+    const mockOnSaveDraft = vi.fn().mockResolvedValue({ success: true, id: 'draft-id' });
+    const existingDefaults = {
+      slug: 'draft-slug',
+      title: 'Draft Title',
+      content: 'Draft Content',
+      locale: 'en',
+    };
+
+    render(
+      <AnnouncementForm
+        defaultValues={existingDefaults}
+        onSaveDraft={mockOnSaveDraft}
+        labels={defaultLabels}
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Edited Draft' } });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save Draft' }));
+    });
+
+    expect(mockOnSaveDraft).toHaveBeenCalled();
+    expect(screen.queryByText('Confirm Save')).not.toBeInTheDocument();
+    expect(mockShowToast).toHaveBeenCalledWith('Draft saved', 'success');
+  });
+
+  it('should not redirect when saving an existing announcement', async () => {
+    const mockOnSaveDraft = vi.fn().mockResolvedValue({ success: true, id: 'existing-id' });
+    const existingDefaults = {
+      slug: 'existing-slug',
+      title: 'Existing Title',
+      content: 'Existing Content',
+      locale: 'en',
+    };
+
+    render(
+      <AnnouncementForm
+        defaultValues={existingDefaults}
+        onSaveDraft={mockOnSaveDraft}
+        labels={defaultLabels}
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Edited Title' } });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save Draft' }));
+    });
+
+    expect(mockLocationReplace).not.toHaveBeenCalled();
+    expect(mockPush).not.toHaveBeenCalled();
   });
 });

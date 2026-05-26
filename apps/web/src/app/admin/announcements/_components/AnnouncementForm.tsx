@@ -7,6 +7,10 @@ import { useRouter } from 'next/navigation';
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { UnsavedChangesDialog } from '@/app/_components/UnsavedChangesDialog';
 
+import { useToast } from '@/app/[locale]/_contexts/ToastContext';
+
+import { PublishedConfirmModal } from '../../_components/PublishedConfirmModal';
+
 type AnnouncementEditData = {
   slug: string;
   title: string;
@@ -16,6 +20,9 @@ type AnnouncementEditData = {
 
 type AnnouncementFormProps = {
   defaultValues?: AnnouncementEditData;
+  defaultSlug?: string;
+  defaultLocale?: string;
+  isPublished?: boolean;
   lockSlug?: boolean;
   lockLocale?: boolean;
   onSaveDraft: (
@@ -39,24 +46,35 @@ type AnnouncementFormProps = {
     unsavedChangesMessage: string;
     unsavedChangesConfirm: string;
     unsavedChangesCancel: string;
+    draftSaved: string;
+    publishedSaved: string;
+    publishedConfirmTitle: string;
+    publishedConfirmMessage: string;
+    publishedConfirmConfirm: string;
+    publishedConfirmCancel: string;
   };
 };
 
 export function AnnouncementForm({
   defaultValues,
+  defaultSlug,
+  defaultLocale,
+  isPublished = false,
   lockSlug = false,
   lockLocale = false,
   onSaveDraft,
   labels,
 }: AnnouncementFormProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [publishedConfirmOpen, setPublishedConfirmOpen] = useState(false);
 
-  const initialSlug = defaultValues?.slug ?? '';
+  const initialSlug = defaultValues?.slug ?? defaultSlug ?? '';
   const initialTitle = defaultValues?.title ?? '';
   const initialContent = defaultValues?.content ?? '';
-  const initialLocale = defaultValues?.locale ?? 'en';
+  const initialLocale = defaultValues?.locale ?? defaultLocale ?? 'en';
 
   const [slug, setSlug] = useState(initialSlug);
   const [title, setTitle] = useState(initialTitle);
@@ -77,7 +95,7 @@ export function AnnouncementForm({
     cancel: cancelNavigation,
   } = useUnsavedChanges({ isDirty });
 
-  const handleSaveDraft = () => {
+  const executeSave = () => {
     setError(null);
     startTransition(async () => {
       const result = await onSaveDraft({ slug, title, content, locale });
@@ -86,9 +104,27 @@ export function AnnouncementForm({
         setError(result.error);
       } else {
         isSubmittedRef.current = true;
-        router.push('/admin/announcements');
+        showToast(isPublished ? labels.publishedSaved : labels.draftSaved, 'success');
+        // For new announcements, redirect to edit so subsequent saves are updates.
+        // For existing announcements, stay on the page.
+        if (!defaultValues) {
+          window.location.replace(`/admin/announcements/${result.id}/edit`);
+        }
       }
     });
+  };
+
+  const handleSaveDraft = () => {
+    if (isPublished) {
+      setPublishedConfirmOpen(true);
+    } else {
+      executeSave();
+    }
+  };
+
+  const handlePublishedConfirm = () => {
+    setPublishedConfirmOpen(false);
+    executeSave();
   };
 
   const handlePreview = () => {
@@ -224,6 +260,16 @@ export function AnnouncementForm({
         message={labels.unsavedChangesMessage}
         confirmLabel={labels.unsavedChangesConfirm}
         cancelLabel={labels.unsavedChangesCancel}
+      />
+
+      <PublishedConfirmModal
+        isOpen={publishedConfirmOpen}
+        title={labels.publishedConfirmTitle}
+        message={labels.publishedConfirmMessage}
+        confirmLabel={labels.publishedConfirmConfirm}
+        cancelLabel={labels.publishedConfirmCancel}
+        onConfirm={handlePublishedConfirm}
+        onCancel={() => setPublishedConfirmOpen(false)}
       />
     </div>
   );

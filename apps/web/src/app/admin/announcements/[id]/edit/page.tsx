@@ -57,6 +57,12 @@ export default async function EditAnnouncementPage({
         unsavedChangesMessage: t('form.unsavedChangesMessage'),
         unsavedChangesConfirm: t('form.unsavedChangesConfirm'),
         unsavedChangesCancel: t('form.unsavedChangesCancel'),
+        draftSaved: t('form.draftSaved'),
+        publishedSaved: t('form.publishedSaved'),
+        publishedConfirmTitle: t('form.publishedConfirmTitle'),
+        publishedConfirmMessage: t('form.publishedConfirmMessage'),
+        publishedConfirmConfirm: t('form.publishedConfirmConfirm'),
+        publishedConfirmCancel: t('form.publishedConfirmCancel'),
       }}
     />
   );
