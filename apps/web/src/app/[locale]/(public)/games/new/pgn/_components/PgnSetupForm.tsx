@@ -75,7 +75,9 @@ export function PgnSetupForm({
     <div className="space-y-4">
       <div data-tour-id="pgn-input">
         <SectionTitle>{t('pgnTitle')}</SectionTitle>
-        <PgnInput value={pgn} onChange={onPgnChange} />
+        <div className="mt-3">
+          <PgnInput value={pgn} onChange={onPgnChange} />
+        </div>
       </div>
       {previewSlot}
 
