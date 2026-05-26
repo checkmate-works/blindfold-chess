@@ -8,12 +8,21 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 export function useLocalGameSettings() {
   const { preferences } = useGamePreferences();
   const [localSettings, setLocalSettings] = useState<PerGamePreferences>({
-    showBoardButtonInGame: preferences.showBoardButtonInGame,
+    boardVisibility: preferences.boardVisibility,
     highlightLastMove: preferences.highlightLastMove,
     showOwnPieces: preferences.showOwnPieces,
     showOpponentPieces: preferences.showOpponentPieces,
     pieceShapeMode: preferences.pieceShapeMode,
     pieceColors: preferences.pieceColors,
+    // Seed peekMode from the current global so the new-game snapshot inherits
+    // whatever the player picked in /preferences. Editable only mid-game via
+    // the in-game settings modal — there is no peek-mode control on the
+    // new-game form by design.
+    peekMode: preferences.peekMode,
+    // Same pattern for moveInputMode: snapshot the user's global default at
+    // game start. Mid-game switches via the MoveInputPanel toggle accumulate
+    // in the change log instead of mutating the global preference.
+    moveInputMode: preferences.moveInputMode,
   });
 
   const handleSettingsChange = (updates: Partial<PerGamePreferences>) => {

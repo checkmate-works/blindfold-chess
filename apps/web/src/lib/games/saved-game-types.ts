@@ -11,14 +11,73 @@ export type SkillLevel = AiGameSkillLevel;
 // Re-export the canonical GameOutcome type from @blindfold-chess/types
 export type { GameOutcome } from '@blindfold-chess/types';
 
-export type MoveInputMethod = 'text' | 'text-autocomplete' | 'select' | 'button';
+export type MoveInputMethod = 'text' | 'text-autocomplete' | 'select' | 'button' | 'board';
 
 export type MoveOperationLog = {
   inputMethod: MoveInputMethod;
   peekCount: number;
   undoCount: number;
   movePeekCount: number;
+  /**
+   * Number of invalid-move submission attempts since the previous commit.
+   * Optional for backward compatibility — entries written before this field
+   * existed are treated as 0 by consumers. Counts only failed
+   * MoveInputPanel submissions (text / select / button paths); board moves
+   * (click-to-move / drag-and-drop) never submit illegal moves because the
+   * board only fires `onMove` for legal destinations.
+   */
+  invalidCount?: number;
 };
+
+/**
+ * Discriminated entry for the mid-game per-game-preferences change log.
+ * Each entry records one user-initiated edit of one preference field. The
+ * `key` discriminator pairs `from`/`to` types tightly so the storage shape
+ * cannot mix a boolean key with an enum value or vice versa.
+ *
+ * `atMoveIndex` is the value of `moves.length` at the time of the change
+ * (i.e. the number of half-moves already played). It is intentionally NOT
+ * tied to the player's move index — preferences can be changed between AI
+ * thinking and the next player turn, so the half-move count is the only
+ * unambiguous anchor.
+ */
+export type PreferenceChangeLogEntry =
+  | {
+      atMoveIndex: number;
+      key: 'highlightLastMove' | 'showOwnPieces' | 'showOpponentPieces';
+      from: boolean;
+      to: boolean;
+    }
+  | {
+      atMoveIndex: number;
+      key: 'pieceShapeMode';
+      from: PerGamePreferences['pieceShapeMode'];
+      to: PerGamePreferences['pieceShapeMode'];
+    }
+  | {
+      atMoveIndex: number;
+      key: 'pieceColors';
+      from: PerGamePreferences['pieceColors'];
+      to: PerGamePreferences['pieceColors'];
+    }
+  | {
+      atMoveIndex: number;
+      key: 'peekMode';
+      from: PerGamePreferences['peekMode'];
+      to: PerGamePreferences['peekMode'];
+    }
+  | {
+      atMoveIndex: number;
+      key: 'boardVisibility';
+      from: PerGamePreferences['boardVisibility'];
+      to: PerGamePreferences['boardVisibility'];
+    }
+  | {
+      atMoveIndex: number;
+      key: 'moveInputMode';
+      from: PerGamePreferences['moveInputMode'];
+      to: PerGamePreferences['moveInputMode'];
+    };
 
 /**
  * In-app domain shape for a saved game. `engineConfig` is always
@@ -37,8 +96,23 @@ export type Game = {
   status: GameOutcome;
   /** Custom starting position FEN. If undefined, standard starting position is used. */
   startingFen?: string;
-  /** Per-game preferences saved at game start. If undefined, global preferences are used. */
+  /**
+   * Per-game preferences snapshot captured at game start. Immutable for the
+   * life of the game — mid-game edits do NOT overwrite this field; they
+   * accumulate in {@link preferenceChangeLog} instead. The current effective
+   * values are derived by folding the log on top of this snapshot.
+   * Undefined for the brief pre-Phase-1 era; consumers treat undefined as
+   * "no snapshot recorded" and fall back to global preferences for display.
+   */
   gamePreferences?: PerGamePreferences;
+  /**
+   * Append-only timeline of mid-game preference edits. Each entry records
+   * one field change with `atMoveIndex` = `moves.length` at the time of
+   * the edit. Undefined or empty when the player did not change any
+   * settings mid-game (the overwhelmingly common case). Folding this log
+   * over {@link gamePreferences} yields the current effective values.
+   */
+  preferenceChangeLog?: PreferenceChangeLogEntry[];
   /** Per-move operation logs for player moves. Each entry corresponds to one player move. */
   operationLogs?: MoveOperationLog[];
 };

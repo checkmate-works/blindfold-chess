@@ -5,9 +5,12 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { type EngineConfig, isEngineConfig } from '@/lib/engines';
 import { GameLimitError } from '@/lib/errors';
+import { isBoardVisibility, legacyToBoardVisibility } from '@/lib/games/board-visibility';
+import { normalisePerGamePreferences } from '@/lib/games/per-game-preferences';
 import type {
   Game,
   GameSortOption,
+  PreferenceChangeLogEntry,
   SkillLevel,
   SortDirection,
   StoredGame,
@@ -214,6 +217,7 @@ export class LocalStorageGameRepository implements IGameRepository {
         status: game.status,
         startingFen: game.startingFen,
         gamePreferences: game.gamePreferences,
+        preferenceChangeLog: game.preferenceChangeLog,
         operationLogs: game.operationLogs,
       });
     } catch (error) {
@@ -275,15 +279,87 @@ export class LocalStorageGameRepository implements IGameRepository {
             (log) =>
               typeof log === 'object' &&
               log !== null &&
-              ['text', 'text-autocomplete', 'select', 'button'].includes(
+              ['text', 'text-autocomplete', 'select', 'button', 'board'].includes(
                 (log as Record<string, unknown>).inputMethod as string
               ) &&
               typeof (log as Record<string, unknown>).peekCount === 'number' &&
               typeof (log as Record<string, unknown>).undoCount === 'number' &&
               (typeof (log as Record<string, unknown>).movePeekCount === 'number' ||
-                (log as Record<string, unknown>).movePeekCount === undefined)
+                (log as Record<string, unknown>).movePeekCount === undefined) &&
+              (typeof (log as Record<string, unknown>).invalidCount === 'number' ||
+                (log as Record<string, unknown>).invalidCount === undefined)
+          ))) &&
+      (g.preferenceChangeLog === undefined ||
+        (Array.isArray(g.preferenceChangeLog) &&
+          g.preferenceChangeLog.every((entry) =>
+            LocalStorageGameRepository.isValidPreferenceChangeEntry(entry)
           )))
     );
+  }
+
+  /**
+   * Validate a single {@link PreferenceChangeLogEntry} from disk. Pulled
+   * out of {@link isValidStoredGame} so the discriminated-union check is
+   * readable: a malformed entry must have the right `key` AND a `from`/`to`
+   * pair of the correct shape for that key.
+   */
+  private static isValidPreferenceChangeEntry(entry: unknown): boolean {
+    if (typeof entry !== 'object' || entry === null) return false;
+    const e = entry as Record<string, unknown>;
+    if (typeof e.atMoveIndex !== 'number' || e.atMoveIndex < 0) return false;
+
+    switch (e.key) {
+      // Legacy boolean key — accepted at the validator boundary so the record
+      // loads, then transformed to a 'boardVisibility' entry by
+      // `normaliseStoredGame` so the in-app representation is uniform.
+      case 'showBoardButtonInGame':
+        return typeof e.from === 'boolean' && typeof e.to === 'boolean';
+      case 'highlightLastMove':
+      case 'showOwnPieces':
+      case 'showOpponentPieces':
+        return typeof e.from === 'boolean' && typeof e.to === 'boolean';
+      case 'pieceShapeMode': {
+        const shapes = ['normal', 'circles-all', 'circles-own', 'circles-opponent'];
+        return shapes.includes(e.from as string) && shapes.includes(e.to as string);
+      }
+      case 'pieceColors': {
+        const colors = ['normal', 'white-only', 'black-only'];
+        return colors.includes(e.from as string) && colors.includes(e.to as string);
+      }
+      case 'peekMode': {
+        const modes = ['modal', 'inline'];
+        return modes.includes(e.from as string) && modes.includes(e.to as string);
+      }
+      case 'boardVisibility': {
+        return isBoardVisibility(e.from) && isBoardVisibility(e.to);
+      }
+      case 'moveInputMode': {
+        const modes = ['text', 'select', 'button'];
+        return modes.includes(e.from as string) && modes.includes(e.to as string);
+      }
+      default:
+        return false;
+    }
+  }
+
+  /**
+   * Migrate one preference-change entry from the legacy on-disk shape to the
+   * in-app shape. Currently only `showBoardButtonInGame` boolean entries need
+   * transformation — the other keys round-trip unchanged.
+   *
+   * Pre-condition: `entry` has already passed `isValidPreferenceChangeEntry`,
+   * so the unsafe casts below are sound at the type-check boundary.
+   */
+  private static migrateChangeLogEntry(entry: Record<string, unknown>): PreferenceChangeLogEntry {
+    if (entry.key === 'showBoardButtonInGame') {
+      return {
+        atMoveIndex: entry.atMoveIndex as number,
+        key: 'boardVisibility',
+        from: legacyToBoardVisibility(entry.from as boolean),
+        to: legacyToBoardVisibility(entry.to as boolean),
+      };
+    }
+    return entry as unknown as PreferenceChangeLogEntry;
   }
 
   /**
@@ -304,9 +380,26 @@ export class LocalStorageGameRepository implements IGameRepository {
         skillLevel: (legacySkillLevel ?? 5) as SkillLevel,
       } as const);
 
+    // Promote the on-disk preferences blob to a complete, type-safe
+    // `PerGamePreferences`. This:
+    //   - maps legacy `showBoardButtonInGame: boolean` → `boardVisibility`;
+    //   - fills missing fields (`peekMode`, `moveInputMode`, …) with safe
+    //     defaults — necessary so a mid-game settings edit on a pre-Phase-2
+    //     record can produce a well-formed `preferenceChangeLog` entry
+    //     (an entry built from `from: undefined` would fail validation on
+    //     the next read and silently drop the saved game).
+    // Records with no `gamePreferences` field at all stay `undefined` and
+    // continue to fall back to global preferences in the consumer.
+    const gamePreferences = normalisePerGamePreferences(rest.gamePreferences);
+    const preferenceChangeLog = rest.preferenceChangeLog?.map((entry) =>
+      LocalStorageGameRepository.migrateChangeLogEntry(entry as unknown as Record<string, unknown>)
+    );
+
     return {
       ...rest,
       engineConfig,
+      gamePreferences,
+      preferenceChangeLog,
       // If lastPlayed doesn't exist, use date as fallback
       lastPlayed: rest.lastPlayed || rest.date,
     };

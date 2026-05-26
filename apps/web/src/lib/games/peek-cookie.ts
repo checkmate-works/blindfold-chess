@@ -1,5 +1,8 @@
 import { IS_LOCAL_DEV } from '@/config';
 
+import type { BoardVisibility } from './board-visibility';
+import { DEFAULT_BOARD_VISIBILITY, isBoardVisibility } from './board-visibility';
+
 /**
  * Single-writer rule: only `GamePreferencesProvider` writes this cookie (via
  * `writePeekPreferenceCookie`, called synchronously from the initial-load
@@ -13,7 +16,7 @@ import { IS_LOCAL_DEV } from '@/config';
 
 /**
  * Cookie that mirrors the user's board-peek preferences (`peekMode` and
- * `showBoardButtonInGame`) so the Server Component pipeline can render the
+ * `boardVisibility`) so the Server Component pipeline can render the
  * correct skeleton shape on the very first paint of `/games/play`.
  *
  * @design Why a cookie (and not rely on localStorage alone):
@@ -22,8 +25,9 @@ import { IS_LOCAL_DEV } from '@/config';
  * `peekMode` is `'inline'`, that delay means the server + pre-hydration
  * render omits the ~46 px `InlineBoardView` header and the hydrated layout
  * pushes the rest of the column down — a visible CLS. The same applies to
- * users who disabled `showBoardButtonInGame`: the action-row skeleton
- * reserves a button that will not render after hydration.
+ * users whose `boardVisibility` differs from the default: the action-row
+ * skeleton may reserve a button that will not render after hydration, or
+ * vice versa.
  *
  * Mirroring the peek keys into a cookie lets the server read the preference
  * at request time and pick the right skeleton shape. localStorage remains the
@@ -31,10 +35,10 @@ import { IS_LOCAL_DEV } from '@/config';
  * the two peek-related keys needed for the SSR hint.
  *
  * @design Keys mirrored:
- *   - `peekMode`               — whether the inline board header is reserved
- *   - `showBoardButtonInGame`  — whether the modal "Show Board" button is reserved
- * No other preference keys are mirrored — the cookie is a UI hint, not a sync
- * channel.
+ *   - `peekMode`         — whether the inline board header is reserved
+ *   - `boardVisibility`  — whether (and how) the board is surfaced at all
+ * No other preference keys are mirrored — the cookie is a UI hint, not a
+ * sync channel.
  *
  * @design Attributes:
  *   - `Path=/`           — available on every route (the cookie is set and
@@ -48,6 +52,16 @@ import { IS_LOCAL_DEV } from '@/config';
  *   - `Secure`           — set in production, unset over local `http://`.
  *   - No `HttpOnly`      — the client mirror writes the cookie from
  *                          `document.cookie`, so it must be JS-readable.
+ *
+ * @design Wire-format migration:
+ * The encoded value used to be `<peekMode>|<0|1>` where the trailing token
+ * was the legacy boolean `showBoardButtonInGame`. After the
+ * `boardVisibility` rename the encoder emits `<peekMode>|<boardVisibility>`
+ * (e.g. `'inline|always'`). The decoder accepts both shapes — `'0'` and
+ * `'1'` are mapped to `'never'` and `'peek'` respectively, matching
+ * `legacyToBoardVisibility` in `board-visibility.ts`. Cookies written by
+ * the new code overwrite the old format on the next preference update,
+ * so the legacy decode path is purely transitional.
  */
 export const PEEK_COOKIE_NAME = 'bfc_peek_pref';
 
@@ -58,7 +72,7 @@ export type PeekMode = (typeof PEEK_MODES)[number];
 
 export type PeekPreferenceHint = {
   peekMode: PeekMode;
-  showBoardButtonInGame: boolean;
+  boardVisibility: BoardVisibility;
 };
 
 /**
@@ -68,22 +82,20 @@ export type PeekPreferenceHint = {
  * and client-side state can never drift apart. Change here = change both.
  */
 export const DEFAULT_PEEK_MODE: PeekMode = 'modal';
-export const DEFAULT_SHOW_BOARD_BUTTON_IN_GAME = true;
 
 export const DEFAULT_PEEK_HINT: PeekPreferenceHint = {
   peekMode: DEFAULT_PEEK_MODE,
-  showBoardButtonInGame: DEFAULT_SHOW_BOARD_BUTTON_IN_GAME,
+  boardVisibility: DEFAULT_BOARD_VISIBILITY,
 };
 
 /**
- * Encode the hint as a compact cookie value: `<peekMode>|<showBoardButtonInGame>`.
- * e.g. `'inline|1'`. Chosen over JSON so the cookie stays small (no
+ * Encode the hint as a compact cookie value: `<peekMode>|<boardVisibility>`.
+ * e.g. `'inline|always'`. Chosen over JSON so the cookie stays small (no
  * URL-encoding of braces/quotes) and so the parser can't throw on untrusted
- * inputs. The boolean is encoded as `1` / `0` to keep the representation tiny
- * and unambiguous.
+ * inputs.
  */
 export function encodePeekCookie(hint: PeekPreferenceHint): string {
-  return `${hint.peekMode}|${hint.showBoardButtonInGame ? '1' : '0'}`;
+  return `${hint.peekMode}|${hint.boardVisibility}`;
 }
 
 function isPeekMode(value: string): value is PeekMode {
@@ -91,28 +103,33 @@ function isPeekMode(value: string): value is PeekMode {
 }
 
 /**
- * Parse the cookie value defensively. Unknown modes, malformed boolean
- * tokens, or malformed strings fall back to the default hint. Accepts only
- * the exact tokens `1` / `0` for the boolean — any other value is treated
- * as malformed so the SSR hint always reflects a self-consistent state
- * (matching `GamePreferencesContext`'s localStorage reconciliation).
+ * Parse the cookie value defensively. Unknown modes, malformed tokens, or
+ * malformed strings fall back to the default hint. Accepts BOTH the new
+ * `<peekMode>|<boardVisibility>` and the legacy `<peekMode>|<0|1>` shape;
+ * the latter is mapped via {@link legacyToBoardVisibility} so cookies
+ * written by older code keep working until the next preference update
+ * rewrites the cookie in the new format.
  */
 export function parsePeekCookie(raw: string | null | undefined): PeekPreferenceHint {
   if (!raw) return DEFAULT_PEEK_HINT;
 
-  const [peekModeRaw, showBoardButtonRaw] = raw.split('|');
+  const [peekModeRaw, visibilityRaw] = raw.split('|');
   if (!peekModeRaw || !isPeekMode(peekModeRaw)) return DEFAULT_PEEK_HINT;
 
-  let showBoardButtonInGame: boolean;
-  if (showBoardButtonRaw === '1') {
-    showBoardButtonInGame = true;
-  } else if (showBoardButtonRaw === '0') {
-    showBoardButtonInGame = false;
+  let boardVisibility: BoardVisibility;
+  if (visibilityRaw === '1') {
+    // Legacy: showBoardButtonInGame=true → 'peek'
+    boardVisibility = 'peek';
+  } else if (visibilityRaw === '0') {
+    // Legacy: showBoardButtonInGame=false → 'never'
+    boardVisibility = 'never';
+  } else if (isBoardVisibility(visibilityRaw)) {
+    boardVisibility = visibilityRaw;
   } else {
     return DEFAULT_PEEK_HINT;
   }
 
-  return { peekMode: peekModeRaw, showBoardButtonInGame };
+  return { peekMode: peekModeRaw, boardVisibility };
 }
 
 /**

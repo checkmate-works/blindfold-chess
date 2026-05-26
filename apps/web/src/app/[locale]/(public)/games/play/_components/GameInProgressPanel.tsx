@@ -6,7 +6,7 @@ import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FlagIcon, UndoIcon } from '@blindfold-chess/icons';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { FaClipboardList, FaInfoCircle } from 'react-icons/fa';
+import { FaClipboardList, FaCog } from 'react-icons/fa';
 
 import type { MoveInputMethod } from '@/lib/games/saved-game-types';
 
@@ -15,7 +15,7 @@ import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCo
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import type { ConfirmationDialogs } from '../_hooks';
-import { shouldShowModalPeekButton } from '../_lib';
+import { ACTION_ROW_CONTAINER_CLASSES, shouldShowModalPeekButton } from '../_lib';
 import { ShowBoardButton } from './ShowBoardButton';
 
 type Props = {
@@ -37,13 +37,19 @@ type Props = {
   inlineBoardView?: ReactNode;
   onMoveCommitted?: (inputMethod: MoveInputMethod) => void;
   onMovePeek?: () => void;
+  /**
+   * Routes the MoveInputPanel mode-toggle through the per-game change log
+   * instead of the global `updatePreferences`. Optional so other surfaces
+   * (puzzle, practice) can keep the original global-write behavior.
+   */
+  setMoveInputMode?: (mode: GamePreferences['moveInputMode']) => void;
   onShowOperationLog?: () => void;
   /**
-   * Opens the engine info modal — same pattern as `onShowOperationLog`.
-   * The modal itself is owned by the page so its lifecycle is shared
-   * with other modals (focus restoration, scroll lock).
+   * Opens the mid-game settings modal. Omit (undefined) to hide the gear
+   * icon entirely — used for legacy games without a `gamePreferences`
+   * snapshot, where there is no per-game baseline to edit against.
    */
-  onShowEngineInfo: () => void;
+  onShowSettings?: () => void;
   /**
    * When the last AI move failed, carries the i18n'd error message and a
    * `retry` callback that tears down the dead engine and re-requests a move.
@@ -71,8 +77,9 @@ export function GameInProgressPanel({
   inlineBoardView,
   onMoveCommitted,
   onMovePeek,
+  setMoveInputMode,
   onShowOperationLog,
-  onShowEngineInfo,
+  onShowSettings,
   aiMoveError,
 }: Props) {
   const t = useTranslations('play');
@@ -104,6 +111,7 @@ export function GameInProgressPanel({
         toggleTitle={t('switchInputMode')}
         playerColor={playerColor}
         onMoveCommitted={onMoveCommitted}
+        setMoveInputMode={setMoveInputMode}
         onMovePeek={onMovePeek}
         showInlineError={false}
       />
@@ -126,7 +134,7 @@ export function GameInProgressPanel({
       )}
 
       {/* Action Buttons */}
-      <div className="flex gap-4 md:gap-2 justify-center">
+      <div className={ACTION_ROW_CONTAINER_CLASSES}>
         {showModalPeekButton && <ShowBoardButton onClick={onShowBoard} />}
         <button
           onClick={confirmationDialogs.undo.open}
@@ -155,29 +163,28 @@ export function GameInProgressPanel({
         </Link>
       </div>
 
-      {/* Engine info + Operation Log. Both icons share the same hit
-          target (`p-1` on a 1rem icon → 1.5rem square) and the row
-          uses `items-center` so the visual centres line up regardless
-          of the icons' internal glyph metrics — FaInfoCircle's filled
-          circle and FaClipboardList's tall rectangle have different
-          centre-of-mass without explicit padding. */}
+      {/* Game Details + (optional) settings. The Game Details modal folds
+          the opponent / engine info, initial per-game settings, and the
+          mid-game change log into one surface — see OperationLogModal. */}
       <div className="flex justify-end items-center gap-2 text-muted-foreground">
-        <button
-          type="button"
-          onClick={onShowEngineInfo}
-          className="p-1 leading-none hover:text-foreground"
-          title={t('engineInfo.title')}
-        >
-          <FaInfoCircle className="w-4 h-4" />
-        </button>
         {onShowOperationLog && (
           <button
             type="button"
             onClick={onShowOperationLog}
             className="p-1 leading-none hover:text-foreground"
-            title={t('operationLog.title')}
+            title={t('gameDetails.title')}
           >
             <FaClipboardList className="w-4 h-4" />
+          </button>
+        )}
+        {onShowSettings && (
+          <button
+            type="button"
+            onClick={onShowSettings}
+            className="p-1 leading-none hover:text-foreground"
+            title={t('settings.title')}
+          >
+            <FaCog className="w-4 h-4" />
           </button>
         )}
       </div>

@@ -63,7 +63,7 @@ type Preferences = {
   enabledMoveInputModes: string[];
   buttonInputPieceLabel: string;
   enableAutoComplete: boolean;
-  showBoardButtonInGame: boolean;
+  boardVisibility: 'always' | 'peek' | 'never';
   peekMode: 'modal' | 'inline';
 };
 
@@ -79,7 +79,7 @@ const DEFAULT_PREFS: Preferences = {
   enabledMoveInputModes: ['button'],
   buttonInputPieceLabel: 'icon',
   enableAutoComplete: true,
-  showBoardButtonInGame: true,
+  boardVisibility: 'peek',
   peekMode: 'modal',
 };
 
@@ -174,7 +174,7 @@ function toSolutionMoves(line: string) {
 
 function renderSession(initialPeekHint: {
   peekMode: 'modal' | 'inline';
-  showBoardButtonInGame: boolean;
+  boardVisibility: 'always' | 'peek' | 'never';
 }) {
   return render(
     <PuzzleSessionClient
@@ -205,9 +205,9 @@ describe('peekMode switching', () => {
   describe("peekMode === 'modal'", () => {
     it('renders the ShowBoardButton and mounts BoardViewModal (closed by default)', () => {
       currentPreferences.peekMode = 'modal';
-      currentPreferences.showBoardButtonInGame = true;
+      currentPreferences.boardVisibility = 'peek';
 
-      renderSession({ peekMode: 'modal', showBoardButtonInGame: true });
+      renderSession({ peekMode: 'modal', boardVisibility: 'peek' });
 
       expect(screen.getByTestId('show-board-button')).toBeInTheDocument();
       // BoardViewModal mounts (the test-mock pushes its props onto
@@ -220,9 +220,9 @@ describe('peekMode switching', () => {
 
     it('opens the BoardViewModal when ShowBoardButton is clicked', () => {
       currentPreferences.peekMode = 'modal';
-      currentPreferences.showBoardButtonInGame = true;
+      currentPreferences.boardVisibility = 'peek';
 
-      renderSession({ peekMode: 'modal', showBoardButtonInGame: true });
+      renderSession({ peekMode: 'modal', boardVisibility: 'peek' });
 
       expect(screen.queryByTestId('peek-modal')).not.toBeInTheDocument();
       fireEvent.click(screen.getByTestId('show-board-button'));
@@ -233,9 +233,9 @@ describe('peekMode switching', () => {
   describe("peekMode === 'inline'", () => {
     it('renders the InlineBoardView and does NOT render the ShowBoardButton', () => {
       currentPreferences.peekMode = 'inline';
-      currentPreferences.showBoardButtonInGame = true;
+      currentPreferences.boardVisibility = 'peek';
 
-      renderSession({ peekMode: 'inline', showBoardButtonInGame: true });
+      renderSession({ peekMode: 'inline', boardVisibility: 'peek' });
 
       expect(screen.getByTestId('inline-board-view')).toBeInTheDocument();
       expect(screen.queryByTestId('show-board-button')).not.toBeInTheDocument();
@@ -248,9 +248,9 @@ describe('peekMode switching', () => {
       // wasting a render cycle on an unused tree. After the gate, the
       // modal's render fn must not run at all in inline mode.
       currentPreferences.peekMode = 'inline';
-      currentPreferences.showBoardButtonInGame = true;
+      currentPreferences.boardVisibility = 'peek';
 
-      renderSession({ peekMode: 'inline', showBoardButtonInGame: true });
+      renderSession({ peekMode: 'inline', boardVisibility: 'peek' });
 
       // The mock pushes props onto `captured.modal` every time the modal
       // component renders. Length === 0 proves the gate prevented mount.
@@ -270,7 +270,7 @@ describe('peekMode switching', () => {
       // inline → inline wins (mirroring `PlayPageClient`'s skeleton swap).
       currentPreferences.peekMode = 'inline';
 
-      renderSession({ peekMode: 'modal', showBoardButtonInGame: true });
+      renderSession({ peekMode: 'modal', boardVisibility: 'peek' });
 
       expect(screen.getByTestId('inline-board-view')).toBeInTheDocument();
       expect(screen.queryByTestId('show-board-button')).not.toBeInTheDocument();
@@ -291,7 +291,7 @@ describe('pieces-reveal override (Reviewer follow-up A)', () => {
     currentPreferences.showOwnPieces = false;
     currentPreferences.showOpponentPieces = false;
 
-    renderSession({ peekMode: 'modal', showBoardButtonInGame: true });
+    renderSession({ peekMode: 'modal', boardVisibility: 'peek' });
 
     expect(captured.modal.length).toBeGreaterThan(0);
     const lastModalProps = captured.modal[captured.modal.length - 1]!;
@@ -309,7 +309,7 @@ describe('pieces-reveal override (Reviewer follow-up A)', () => {
     currentPreferences.showOwnPieces = false;
     currentPreferences.showOpponentPieces = false;
 
-    renderSession({ peekMode: 'inline', showBoardButtonInGame: true });
+    renderSession({ peekMode: 'inline', boardVisibility: 'peek' });
 
     expect(captured.inline.length).toBeGreaterThan(0);
     const lastInlineProps = captured.inline[captured.inline.length - 1]!;
@@ -325,7 +325,7 @@ describe('pieces-reveal override (Reviewer follow-up A)', () => {
     currentPreferences.showOwnPieces = true;
     currentPreferences.showOpponentPieces = true;
 
-    renderSession({ peekMode: 'modal', showBoardButtonInGame: true });
+    renderSession({ peekMode: 'modal', boardVisibility: 'peek' });
 
     const lastModalProps = captured.modal[captured.modal.length - 1]!;
     const passedPrefs = lastModalProps.preferences as Preferences | undefined;

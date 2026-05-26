@@ -17,6 +17,18 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
   const peekCountRef = useRef(0);
   const undoCountRef = useRef(0);
   const movePeekCountRef = useRef(0);
+  const invalidCountRef = useRef(0);
+
+  // Reset every counter that accumulates during a single move. Called from
+  // commit / undo / truncate / setLogsTo so the ref state stays in sync
+  // with the visible log table. Centralized to avoid forgetting any one
+  // counter when the list grows again.
+  const resetCounters = useCallback(() => {
+    peekCountRef.current = 0;
+    undoCountRef.current = 0;
+    movePeekCountRef.current = 0;
+    invalidCountRef.current = 0;
+  }, []);
 
   /** Increment peek counter for the current move. */
   const recordPeek = useCallback(() => {
@@ -33,67 +45,82 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
     movePeekCountRef.current += 1;
   }, []);
 
+  /** Increment invalid-attempt counter for the current move. */
+  const recordInvalid = useCallback(() => {
+    invalidCountRef.current += 1;
+  }, []);
+
   /**
    * Finalize the current move's log entry and reset counters.
    * Called when the player submits a move.
    */
-  const commitMove = useCallback((inputMethod: MoveInputMethod) => {
-    const entry: MoveOperationLog = {
-      inputMethod,
-      peekCount: peekCountRef.current,
-      undoCount: undoCountRef.current,
-      movePeekCount: movePeekCountRef.current,
-    };
-    setLogs((prev) => [...prev, entry]);
-    peekCountRef.current = 0;
-    undoCountRef.current = 0;
-    movePeekCountRef.current = 0;
-  }, []);
+  const commitMove = useCallback(
+    (inputMethod: MoveInputMethod) => {
+      const entry: MoveOperationLog = {
+        inputMethod,
+        peekCount: peekCountRef.current,
+        undoCount: undoCountRef.current,
+        movePeekCount: movePeekCountRef.current,
+        invalidCount: invalidCountRef.current,
+      };
+      setLogs((prev) => [...prev, entry]);
+      resetCounters();
+    },
+    [resetCounters]
+  );
 
   /**
-   * Handle undo: remove the last player's log entry and reset current counters.
+   * Handle undo: remove the last player's log entry and discard in-flight
+   * peek/movePeek/invalid counters that belonged to the undone turn.
    * Called when the player undoes a move (which removes both the player and AI moves).
    *
-   * Design note: Counters (peekCount, undoCount) accumulated during the current turn
-   * are intentionally discarded on undo. This follows the principle that "undo = the move
-   * never happened," so any operations performed while considering that move are treated
-   * as irrelevant. The caller should call `recordUndo()` after `handleUndoLog()` to track
-   * the undo itself on the next move.
+   * Design note: peekCount/movePeekCount/invalidCount are intentionally
+   * discarded — they describe operations performed while considering the
+   * move being undone, so under the "undo = the move never happened"
+   * principle they go away with it. `undoCountRef` is *deliberately
+   * preserved*: it tracks how many times the player has pressed Undo
+   * before the next move commits, and zeroing it would silently drop the
+   * record of every undo but the most recent when the player Undos twice
+   * in a row. The caller still calls `recordUndo()` after this to
+   * increment the count by one for this undo.
    */
   const handleUndoLog = useCallback(() => {
     setLogs((prev) => prev.slice(0, -1));
     peekCountRef.current = 0;
-    undoCountRef.current = 0;
     movePeekCountRef.current = 0;
+    invalidCountRef.current = 0;
   }, []);
 
   /**
    * Truncate logs to the specified count and reset current counters.
    * Used when restarting from a specific position.
    */
-  const truncateLogs = useCallback((count: number) => {
-    setLogs((prev) => prev.slice(0, count));
-    peekCountRef.current = 0;
-    undoCountRef.current = 0;
-    movePeekCountRef.current = 0;
-  }, []);
+  const truncateLogs = useCallback(
+    (count: number) => {
+      setLogs((prev) => prev.slice(0, count));
+      resetCounters();
+    },
+    [resetCounters]
+  );
 
   /**
    * Replace all logs with the given array and reset counters.
    * Used to restore logs from a loaded game.
    */
-  const setLogsTo = useCallback((newLogs: MoveOperationLog[]) => {
-    setLogs(newLogs);
-    peekCountRef.current = 0;
-    undoCountRef.current = 0;
-    movePeekCountRef.current = 0;
-  }, []);
+  const setLogsTo = useCallback(
+    (newLogs: MoveOperationLog[]) => {
+      setLogs(newLogs);
+      resetCounters();
+    },
+    [resetCounters]
+  );
 
   return {
     logs,
     recordPeek,
     recordUndo,
     recordMovePeek,
+    recordInvalid,
     commitMove,
     handleUndoLog,
     truncateLogs,

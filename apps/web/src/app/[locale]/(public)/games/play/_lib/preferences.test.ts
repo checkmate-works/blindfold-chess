@@ -5,87 +5,155 @@ import type { PeekPreferenceHint } from '@/lib/games/peek-cookie';
 
 import {
   deriveMoveInputSkeletonProps,
+  shouldShowAiPulse,
+  shouldShowAlwaysVisibleBoard,
   shouldShowInlinePeekHeader,
   shouldShowModalPeekButton,
 } from './preferences';
 
 describe('shouldShowModalPeekButton', () => {
-  it('returns false when peekMode is "inline" regardless of showBoardButtonInGame', () => {
-    expect(shouldShowModalPeekButton({ peekMode: 'inline', showBoardButtonInGame: true })).toBe(
-      false
-    );
-    expect(shouldShowModalPeekButton({ peekMode: 'inline', showBoardButtonInGame: false })).toBe(
+  it('returns false when peekMode is "inline" regardless of boardVisibility', () => {
+    expect(shouldShowModalPeekButton({ peekMode: 'inline', boardVisibility: 'peek' })).toBe(false);
+    expect(shouldShowModalPeekButton({ peekMode: 'inline', boardVisibility: 'never' })).toBe(false);
+    expect(shouldShowModalPeekButton({ peekMode: 'inline', boardVisibility: 'always' })).toBe(
       false
     );
   });
 
-  it('returns true when peekMode is "modal" AND showBoardButtonInGame is true', () => {
-    expect(shouldShowModalPeekButton({ peekMode: 'modal', showBoardButtonInGame: true })).toBe(
-      true
-    );
+  it('returns true when peekMode is "modal" AND boardVisibility is "peek"', () => {
+    expect(shouldShowModalPeekButton({ peekMode: 'modal', boardVisibility: 'peek' })).toBe(true);
   });
 
-  it('returns false when peekMode is "modal" but showBoardButtonInGame is false', () => {
-    expect(shouldShowModalPeekButton({ peekMode: 'modal', showBoardButtonInGame: false })).toBe(
-      false
-    );
+  it('returns false when peekMode is "modal" but boardVisibility is "never"', () => {
+    expect(shouldShowModalPeekButton({ peekMode: 'modal', boardVisibility: 'never' })).toBe(false);
+  });
+
+  it('returns false when boardVisibility is "always" (board is on-screen; button irrelevant)', () => {
+    expect(shouldShowModalPeekButton({ peekMode: 'modal', boardVisibility: 'always' })).toBe(false);
   });
 
   it('accepts a PeekPreferenceHint (cookie-sourced) shape', () => {
-    const hint: PeekPreferenceHint = { peekMode: 'modal', showBoardButtonInGame: true };
+    const hint: PeekPreferenceHint = { peekMode: 'modal', boardVisibility: 'peek' };
     expect(shouldShowModalPeekButton(hint)).toBe(true);
   });
 });
 
 describe('shouldShowInlinePeekHeader', () => {
-  it('returns false when peekMode is "modal" regardless of showBoardButtonInGame', () => {
-    expect(shouldShowInlinePeekHeader({ peekMode: 'modal', showBoardButtonInGame: true })).toBe(
-      false
-    );
-    expect(shouldShowInlinePeekHeader({ peekMode: 'modal', showBoardButtonInGame: false })).toBe(
+  it('returns false when peekMode is "modal" regardless of boardVisibility', () => {
+    expect(shouldShowInlinePeekHeader({ peekMode: 'modal', boardVisibility: 'peek' })).toBe(false);
+    expect(shouldShowInlinePeekHeader({ peekMode: 'modal', boardVisibility: 'never' })).toBe(false);
+    expect(shouldShowInlinePeekHeader({ peekMode: 'modal', boardVisibility: 'always' })).toBe(
       false
     );
   });
 
-  it('returns true when peekMode is "inline" AND showBoardButtonInGame is true', () => {
-    expect(shouldShowInlinePeekHeader({ peekMode: 'inline', showBoardButtonInGame: true })).toBe(
-      true
+  it('returns true when peekMode is "inline" AND boardVisibility is "peek"', () => {
+    expect(shouldShowInlinePeekHeader({ peekMode: 'inline', boardVisibility: 'peek' })).toBe(true);
+  });
+
+  it('returns false when peekMode is "inline" but boardVisibility is "never"', () => {
+    expect(shouldShowInlinePeekHeader({ peekMode: 'inline', boardVisibility: 'never' })).toBe(
+      false
     );
   });
 
-  it('returns false when peekMode is "inline" but showBoardButtonInGame is false', () => {
-    expect(shouldShowInlinePeekHeader({ peekMode: 'inline', showBoardButtonInGame: false })).toBe(
+  it('returns false when boardVisibility is "always" (different rendering path)', () => {
+    // 'always' has its own predicate (shouldShowAlwaysVisibleBoard); the
+    // collapsible inline-peek header is not rendered in that mode.
+    expect(shouldShowInlinePeekHeader({ peekMode: 'inline', boardVisibility: 'always' })).toBe(
       false
     );
   });
 
   it('accepts a PeekPreferenceHint (cookie-sourced) shape', () => {
-    const hint: PeekPreferenceHint = { peekMode: 'inline', showBoardButtonInGame: true };
+    const hint: PeekPreferenceHint = { peekMode: 'inline', boardVisibility: 'peek' };
     expect(shouldShowInlinePeekHeader(hint)).toBe(true);
   });
 });
 
-describe('symmetry: exactly one of shouldShow{Inline,Modal}Peek* is true when the button is enabled', () => {
-  // When `showBoardButtonInGame` is true, exactly one peek rendering path is
-  // active (modal button OR inline header — never both, never neither). This
-  // mutually-exclusive contract is what keeps SSR skeleton shapes aligned
-  // with post-hydration rendering.
-  it.each(['modal', 'inline'] as const)(
-    'peekMode=%s with showBoardButtonInGame=true yields exactly one active branch',
-    (peekMode) => {
-      const input = { peekMode, showBoardButtonInGame: true } as const;
-      const modal = shouldShowModalPeekButton(input);
-      const inline = shouldShowInlinePeekHeader(input);
-      expect(modal !== inline).toBe(true);
+describe('shouldShowAlwaysVisibleBoard', () => {
+  it('returns true when boardVisibility is "always" regardless of peekMode', () => {
+    expect(shouldShowAlwaysVisibleBoard({ peekMode: 'modal', boardVisibility: 'always' })).toBe(
+      true
+    );
+    expect(shouldShowAlwaysVisibleBoard({ peekMode: 'inline', boardVisibility: 'always' })).toBe(
+      true
+    );
+  });
+
+  it('returns false for any non-always visibility', () => {
+    expect(shouldShowAlwaysVisibleBoard({ peekMode: 'modal', boardVisibility: 'peek' })).toBe(
+      false
+    );
+    expect(shouldShowAlwaysVisibleBoard({ peekMode: 'inline', boardVisibility: 'never' })).toBe(
+      false
+    );
+  });
+});
+
+describe('symmetry: at most one board-presentation predicate is true at a time', () => {
+  // Across all (peekMode, boardVisibility) combinations the three predicates
+  // partition the space — no two are simultaneously true. This is what keeps
+  // SSR skeleton shapes aligned with post-hydration rendering.
+  it.each([
+    ['modal', 'always'],
+    ['modal', 'peek'],
+    ['modal', 'never'],
+    ['inline', 'always'],
+    ['inline', 'peek'],
+    ['inline', 'never'],
+  ] as const)(
+    '(peekMode=%s, boardVisibility=%s) has ≤1 active branch',
+    (peekMode, boardVisibility) => {
+      const input = { peekMode, boardVisibility } as const;
+      const branches = [
+        shouldShowModalPeekButton(input),
+        shouldShowInlinePeekHeader(input),
+        shouldShowAlwaysVisibleBoard(input),
+      ];
+      const activeCount = branches.filter(Boolean).length;
+      expect(activeCount).toBeLessThanOrEqual(1);
     }
   );
+});
 
-  it.each(['modal', 'inline'] as const)(
-    'peekMode=%s with showBoardButtonInGame=false yields neither branch',
-    (peekMode) => {
-      const input = { peekMode, showBoardButtonInGame: false } as const;
-      expect(shouldShowModalPeekButton(input)).toBe(false);
-      expect(shouldShowInlinePeekHeader(input)).toBe(false);
+describe('shouldShowAiPulse', () => {
+  it('suppresses the pulse when boardVisibility is "always" (board is visible; pulse redundant)', () => {
+    expect(shouldShowAiPulse({ peekMode: 'modal', boardVisibility: 'always' })).toBe(false);
+    expect(shouldShowAiPulse({ peekMode: 'inline', boardVisibility: 'always' })).toBe(false);
+  });
+
+  it('suppresses the pulse for peek+inline (scroll-to-title + inline collapse already signal the AI turn)', () => {
+    expect(shouldShowAiPulse({ peekMode: 'inline', boardVisibility: 'peek' })).toBe(false);
+  });
+
+  it('fires the pulse for peek+modal (board hidden behind a button — pulse is the only signal)', () => {
+    expect(shouldShowAiPulse({ peekMode: 'modal', boardVisibility: 'peek' })).toBe(true);
+  });
+
+  it('fires the pulse when boardVisibility is "never" regardless of peekMode', () => {
+    // peekMode is moot when the board is never shown, but the policy must
+    // still return a deterministic answer.
+    expect(shouldShowAiPulse({ peekMode: 'modal', boardVisibility: 'never' })).toBe(true);
+    expect(shouldShowAiPulse({ peekMode: 'inline', boardVisibility: 'never' })).toBe(true);
+  });
+
+  it('accepts a PeekPreferenceHint (cookie-sourced) shape', () => {
+    const hint: PeekPreferenceHint = { peekMode: 'modal', boardVisibility: 'peek' };
+    expect(shouldShowAiPulse(hint)).toBe(true);
+  });
+
+  it.each([
+    ['modal', 'always', false],
+    ['inline', 'always', false],
+    ['modal', 'peek', true],
+    ['inline', 'peek', false],
+    ['modal', 'never', true],
+    ['inline', 'never', true],
+  ] as const)(
+    '(peekMode=%s, boardVisibility=%s) → pulse=%s — full policy grid',
+    (peekMode, boardVisibility, expected) => {
+      expect(shouldShowAiPulse({ peekMode, boardVisibility })).toBe(expected);
     }
   );
 });
@@ -119,8 +187,6 @@ describe('deriveMoveInputSkeletonProps', () => {
   });
 
   it('mirrors the hint.mode into the skeleton props verbatim', () => {
-    // Mode selection is the hint's concern (coerced at parse time); the
-    // derivation step is a pure pass-through. Verify for each mode value.
     const modes = ['button', 'text', 'select'] as const;
     for (const mode of modes) {
       const props = deriveMoveInputSkeletonProps({ mode, enabledModes: [mode] });
@@ -129,9 +195,6 @@ describe('deriveMoveInputSkeletonProps', () => {
   });
 
   it('treats enabledModes.length === 2 as the inclusive boundary for the switch row', () => {
-    // The skeleton reserves a mode-switch row when 2+ modes are enabled. Pin
-    // the boundary value so a future off-by-one (`> 2` vs `>= 2`) regression
-    // is caught here and not only in visual diffs.
     expect(
       deriveMoveInputSkeletonProps({ mode: 'text', enabledModes: ['text', 'button'] }).hasModeSwitch
     ).toBe(true);

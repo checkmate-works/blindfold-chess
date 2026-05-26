@@ -30,6 +30,15 @@ type Props = {
     dataSquare?: string;
   };
   onBoardClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
+  /**
+   * Board-level drag-and-drop hooks. When `onBoardDragOver` is provided it
+   * must call `e.preventDefault()` for drop to fire — see `ChessBoard`'s
+   * interactive mode. Event delegation reads the source / target square
+   * via the same `[data-square]` ancestor lookup as `onBoardClick`.
+   */
+  onBoardDragStart?: (e: React.DragEvent<HTMLDivElement>) => void;
+  onBoardDragOver?: (e: React.DragEvent<HTMLDivElement>) => void;
+  onBoardDrop?: (e: React.DragEvent<HTMLDivElement>) => void;
   rounded?: boolean;
   className?: string;
   /**
@@ -38,6 +47,12 @@ type Props = {
    * shares the board's coordinate space.
    */
   annotations?: BoardAnnotations | null;
+  /**
+   * Slot for absolute-positioned overlays that need to share the board's
+   * coordinate space — currently the promotion picker. Rendered last so it
+   * stacks on top of the squares.
+   */
+  overlay?: ReactNode;
 };
 
 // Visual rows/cols `0..7`, left→right / top→bottom as rendered. The mapping
@@ -53,15 +68,22 @@ export function BoardLayout({
   renderSquare,
   squareProps,
   onBoardClick,
+  onBoardDragStart,
+  onBoardDragOver,
+  onBoardDrop,
   rounded = true,
   className = '',
   annotations = null,
+  overlay,
 }: Props) {
   return (
     <div className={`w-full ${className}`}>
       <div
         className={`relative w-full aspect-square border border-border overflow-hidden ${rounded ? 'rounded-md' : ''}`}
         onClick={onBoardClick}
+        onDragStart={onBoardDragStart}
+        onDragOver={onBoardDragOver}
+        onDrop={onBoardDrop}
       >
         {VISUAL_INDICES.map((row) => {
           return (
@@ -108,6 +130,7 @@ export function BoardLayout({
           );
         })}
         {annotations && <BoardAnnotationOverlay annotations={annotations} flipped={flipped} />}
+        {overlay}
       </div>
     </div>
   );

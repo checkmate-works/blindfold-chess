@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useSearchParams } from 'next/navigation';
 
@@ -7,6 +7,8 @@ import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import type { EngineConfig } from '@/lib/engines';
+import { foldPreferences } from '@/lib/games/fold-preferences';
+import type { PreferenceChangeLogEntry } from '@/lib/games/saved-game-types';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -54,9 +56,29 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
   // with a Stockfish skill level (or vice versa).
   const [engineConfig] = useState<EngineConfig>(initialEngineConfig);
 
-  // Per-game preferences (from URL params for new games, loaded from saved game for resumed games)
-  const [perGamePrefs, setPerGamePrefs] = useState<PerGamePreferences | undefined>(
+  // Initial per-game preferences snapshot. Captured at game start (from the
+  // new-game form via URL params) or restored from a saved game's snapshot.
+  // Immutable for the life of the session — mid-game edits do NOT mutate this
+  // value; they accumulate in `preferenceChangeLog` and are folded on top
+  // (see `currentPerGamePrefs`).
+  const [initialPerGamePrefs, setInitialPerGamePrefs] = useState<PerGamePreferences | undefined>(
     initialGamePrefs
+  );
+
+  // Append-only timeline of mid-game preference edits. Persisted as
+  // `Game.preferenceChangeLog` alongside the initial snapshot. Each entry
+  // anchors to `moves.length` at the time of the change so the timeline
+  // survives an undo (we keep historical edits even if they pertain to a
+  // half-move that was later undone — a conservative audit choice).
+  const [preferenceChangeLog, setPreferenceChangeLog] = useState<PreferenceChangeLogEntry[]>([]);
+
+  // Live, effective per-game preferences = initial + fold(log). Used by the
+  // board renderer (via PlayClient's `preferences` merge) and the in-game
+  // settings UI's current-value displays.
+  const currentPerGamePrefs = useMemo<PerGamePreferences | undefined>(
+    () =>
+      initialPerGamePrefs ? foldPreferences(initialPerGamePrefs, preferenceChangeLog) : undefined,
+    [initialPerGamePrefs, preferenceChangeLog]
   );
 
   // Track starting FEN - can be from URL or loaded from saved game
@@ -98,6 +120,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     recordPeek,
     recordUndo,
     recordMovePeek,
+    recordInvalid,
     commitMove,
     handleUndoLog,
     truncateLogs,
@@ -129,26 +152,36 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     setOperationLogsTo: setLogsTo,
   });
 
-  // Restore per-game preferences from loaded game data (game resume).
-  // Note: operationLogs restoration is handled in useGameState's effect alongside moves
-  // to prevent a race condition where auto-save could overwrite logs with stale data.
+  // Restore per-game preferences AND change log from loaded game data
+  // (game resume). Both are restored in the same effect so the auto-save
+  // mutex never sees one without the other.
+  // Note: operationLogs restoration is handled in useGameState's effect
+  // alongside moves to prevent a race condition where auto-save could
+  // overwrite logs with stale data.
   useEffect(() => {
     if (loadedGameData?.gamePreferences) {
-      setPerGamePrefs(loadedGameData.gamePreferences);
+      setInitialPerGamePrefs(loadedGameData.gamePreferences);
+    }
+    if (loadedGameData?.preferenceChangeLog) {
+      setPreferenceChangeLog(loadedGameData.preferenceChangeLog);
     }
   }, [loadedGameData]);
 
   // Map board status to game outcome for repository
 
-  // Auto-save hook
-  const { markPlayerInteraction, gameId } = useAutoSave({
+  // Auto-save hook. `gamePreferences` carries the INITIAL snapshot (immutable
+  // for the life of the game); `preferenceChangeLog` carries the timeline of
+  // mid-game edits. Together they reconstruct the current effective values
+  // on the next load via `foldPreferences`.
+  const { markPlayerInteraction, markPendingChange, gameId } = useAutoSave({
     gameId: initialGameId,
     moves,
     playerColor: playerSide,
     engineConfig,
     status: mapGameStatusToOutcome(gameStatus, playerResult),
     startingFen,
-    gamePreferences: perGamePrefs,
+    gamePreferences: initialPerGamePrefs,
+    preferenceChangeLog,
     operationLogs,
     enabled: !isLoadingFromStorage && !shouldRedirectToError && !gameNotFound,
     saveOnInit: !initialGameId && !shouldRedirectToError,
@@ -316,6 +349,46 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
   // vertical layout shift on every AI turn.
   const isAiThinking = !isPlayerTurn && isLoading;
 
+  // Mid-game per-game-preference edit. Appends one entry to
+  // `preferenceChangeLog` if (and only if) the requested value differs from
+  // the current effective value, so toggling a setting back to its existing
+  // value is a no-op. Type-safe via a generic K — `from`/`to` must both be
+  // of the value type for `key`.
+  //
+  // Pre-Phase-1 games that lack an `initialPerGamePrefs` snapshot cannot be
+  // edited (no base to layer on); the call is a no-op in that case and the
+  // Phase 2b UI is expected to gate the entry point accordingly.
+  // Mirror the live change log into a ref so the updater can read the latest
+  // value without taking `preferenceChangeLog` as a dependency (which would
+  // rebuild the callback on every edit, churning child memoization).
+  const preferenceChangeLogRef = useRef(preferenceChangeLog);
+  preferenceChangeLogRef.current = preferenceChangeLog;
+
+  const setPerGamePref = useCallback(
+    <K extends keyof PerGamePreferences>(key: K, value: PerGamePreferences[K]) => {
+      if (!initialPerGamePrefs) return;
+      const currentSnapshot = foldPreferences(initialPerGamePrefs, preferenceChangeLogRef.current);
+      if (currentSnapshot[key] === value) return;
+      // Cast safety: each `key` of PerGamePreferences corresponds to exactly
+      // one discriminated variant of PreferenceChangeLogEntry, and `from`/`to`
+      // here are both typed as PerGamePreferences[K] which matches that
+      // variant's from/to shape by construction.
+      const entry = {
+        atMoveIndex: moves.length,
+        key,
+        from: currentSnapshot[key],
+        to: value,
+      } as PreferenceChangeLogEntry;
+      setPreferenceChangeLog((prev) => [...prev, entry]);
+      // Mark a pending change so a settings-only edit (no move made) is
+      // still persisted on Save&Exit / navigation / page hide.
+      // `useSaveTrigger` only watches moves/status, so without this hook
+      // boundary the change would be lost. See SPEC1 blocker 2.
+      markPendingChange();
+    },
+    [initialPerGamePrefs, moves.length, markPendingChange]
+  );
+
   // Clear both the error and the preserved attempted-input in one call.
   // Wired to every child input component's `onErrorClear` so that any user
   // edit reverts the status slot back to "AI played …" / "Play Chess".
@@ -335,7 +408,17 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
       initialGameId,
       startingFen,
       locale,
-      perGamePrefs,
+      // `perGamePrefs` is the LIVE effective value (initial folded with the
+      // change log). PlayClient merges this into its rendering preferences
+      // so mid-game edits take effect immediately on the board.
+      perGamePrefs: currentPerGamePrefs,
+      // The immutable snapshot taken at game start. Exposed so consumers
+      // (e.g. OperationLogModal's "Initial Settings" section) can show what
+      // the player started with, distinct from where they are now.
+      initialPerGamePrefs,
+      // Append-only timeline of edits. Empty for games that were never
+      // edited mid-game (the overwhelmingly common case).
+      preferenceChangeLog,
       gameId,
     },
     gameState: {
@@ -375,6 +458,8 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
       commitMoveLog: commitMove,
       recordPeek,
       recordMovePeek,
+      recordInvalid,
+      setPerGamePref,
     },
     operationLogs,
   };

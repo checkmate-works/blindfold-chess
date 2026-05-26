@@ -9,6 +9,19 @@ type Props = {
    * the trigger to fire one pulse; the absolute number is irrelevant.
    */
   signal: number;
+  /**
+   * When false, the animation is skipped but `signal` advances are still
+   * tracked. Used to disable the pulse in `boardVisibility === 'always'`
+   * mode — the user can see the AI's piece move directly on the board,
+   * so the peripheral-vision cue is redundant and slightly distracting.
+   * Defaults to true so existing callers (and other game modes) keep the
+   * pulse.
+   *
+   * Toggle semantics: switching from disabled → enabled does NOT replay
+   * skipped pulses — `lastPulsed` is advanced on every signal change,
+   * regardless of `enabled`.
+   */
+  enabled?: boolean;
 };
 
 /**
@@ -27,7 +40,7 @@ type Props = {
  * hard flash would risk the WCAG 2.3.1 photosensitivity threshold. Honors
  * `prefers-reduced-motion` by skipping the animation entirely.
  */
-export function AiMovePulse({ signal }: Props) {
+export function AiMovePulse({ signal, enabled = true }: Props) {
   const overlayRef = useRef<HTMLDivElement>(null);
   // Seed with the initial `signal` so the mount pass — and React
   // StrictMode's re-invoked mount effect — is a no-op. Only a genuine
@@ -37,6 +50,10 @@ export function AiMovePulse({ signal }: Props) {
   useEffect(() => {
     if (signal === lastPulsed.current) return;
     lastPulsed.current = signal;
+
+    // Skip the animation but still advance `lastPulsed` above — so a later
+    // enable does NOT replay the moves that happened while disabled.
+    if (!enabled) return;
 
     const el = overlayRef.current;
     if (!el) return;
@@ -48,7 +65,7 @@ export function AiMovePulse({ signal }: Props) {
     );
     // A faster follow-up move cancels the in-flight pulse and restarts it.
     return () => animation.cancel();
-  }, [signal]);
+  }, [signal, enabled]);
 
   return (
     <div

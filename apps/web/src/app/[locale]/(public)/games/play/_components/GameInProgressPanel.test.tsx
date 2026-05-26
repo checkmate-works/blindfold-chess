@@ -56,7 +56,7 @@ const preferences: GamePreferences = {
   enabledMoveInputModes: ['button'],
   buttonInputPieceLabel: 'icon',
   enableAutoComplete: true,
-  showBoardButtonInGame: false,
+  boardVisibility: 'never',
   peekMode: 'modal',
 };
 
@@ -84,7 +84,6 @@ function renderPanel(overrides: Overrides = {}) {
       moves={overrides.moves ?? []}
       confirmationDialogs={makeConfirmationDialogs()}
       onShowBoard={() => {}}
-      onShowEngineInfo={() => {}}
       aiMoveError={null}
     />
   );

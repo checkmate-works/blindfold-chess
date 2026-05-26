@@ -272,7 +272,13 @@
         "whiteView": "Perspectiva de Brancas",
         "blackView": "Perspectiva de Pretas"
       },
-      "showBoardButtonInGame": "Mostrar botão 'Ver Tabuleiro' durante partidas contra a IA",
+      "boardVisibility": "Visibilidade do Tabuleiro",
+      "boardVisibilityDescription": "Escolha como o tabuleiro é apresentado durante a partida. As configurações de exibição das peças (abaixo) continuam se aplicando quando o tabuleiro está visível — elas são o principal mecanismo do modo às cegas neste app.",
+      "boardVisibilities": {
+        "always": "Sempre visível",
+        "peek": "Espiar sob demanda",
+        "never": "Oculto"
+      },
       "resetDefaults": "Redefinir valores padrão",
       "resetDefaultsConfirm": {
         "title": "Redefinir configuração do tabuleiro?",
@@ -309,6 +315,11 @@
       "peekModes": {
         "modal": "Modal",
         "inline": "Inline"
+      },
+      "moveInputModes": {
+        "text": "Texto",
+        "select": "Lista",
+        "button": "Botão"
       }
     }
   },
@@ -1699,6 +1710,9 @@
     "resign": "Desistir",
     "undo": "Desfazer",
     "moves": "Movimentos",
+    "movesPanel": {
+      "viewOps": "Ver as operações deste movimento"
+    },
     "confirmResignTitle": "Confirmar Desistência",
     "confirmResignMessage": "Tem certeza de que deseja desistir? Isso encerrará a partida.",
     "cancel": "Cancelar",
@@ -1730,6 +1744,9 @@
     "saved": "Salvo",
     "postmortem": "Revisão da Partida",
     "resultTitle": "Resultado da Partida",
+    "gameDetails": {
+      "title": "Detalhes da Partida"
+    },
     "engineInfo": {
       "title": "Oponente",
       "engineLabel": "Motor",
@@ -1738,7 +1755,6 @@
       "maiaDifficulty": "{rating} ELO"
     },
     "operationLog": {
-      "title": "Registro de Operações",
       "noLogs": "Ainda não há registros de operações.",
       "columnMove": "Movimento",
       "columnInputMethod": "Método de Entrada",
@@ -1748,7 +1764,42 @@
       "inputMethodText": "Texto",
       "inputMethodTextAutocomplete": "Texto (autocompletar)",
       "inputMethodSelect": "Lista",
-      "columnMovePeek": "Dicas"
+      "inputMethodBoard": "Tabuleiro",
+      "columnMovePeek": "Dicas",
+      "columnInvalid": "Ilegal",
+      "initialSettings": {
+        "title": "Configurações iniciais",
+        "notRecorded": "As configurações iniciais não foram registradas para esta partida.",
+        "on": "Ativado",
+        "off": "Desativado",
+        "labelBoardVisibility": "Visibilidade do tabuleiro",
+        "labelHighlightLastMove": "Realçar último movimento",
+        "labelShowOwnPieces": "Mostrar peças próprias",
+        "labelShowOpponentPieces": "Mostrar peças do oponente",
+        "labelPieceShape": "Forma das peças",
+        "labelPieceColor": "Cor das peças",
+        "labelPeekMode": "Modo de espiar",
+        "labelMoveInputMode": "Entrada de movimento"
+      },
+      "changeLog": {
+        "title": "Histórico de alterações",
+        "noChanges": "Nenhuma alteração de configuração foi feita durante a partida.",
+        "columnAtMove": "Após o movimento",
+        "columnSetting": "Configuração",
+        "columnChange": "Alteração"
+      }
+    },
+    "promotionPicker": {
+      "cancel": "Cancelar promoção",
+      "promoteTo": {
+        "queen": "Promover a dama",
+        "rook": "Promover a torre",
+        "bishop": "Promover a bispo",
+        "knight": "Promover a cavalo"
+      }
+    },
+    "settings": {
+      "title": "Configurações da partida"
     },
     "showLegalMoves": "Mostrar movimentos legais",
     "legalMovesList": "Movimentos legais:",
@@ -1761,6 +1812,7 @@
         "peekCount": "Espiadas no Tabuleiro",
         "undoCount": "Desfazer",
         "hintCount": "Dicas de Movimento",
+        "invalidCount": "Tentativas Ilegais",
         "viewDetails": "Registro",
         "times": "{count, plural, one {# vez} other {# vezes}}",
         "columnItem": "Item",
@@ -1918,7 +1970,6 @@
     "helpOpeningIntroDescription": "Escolha uma abertura nomeada da lista — você continuará para a tela de configuração PGN onde poderá escolher motor, cor e dificuldade antes de começar.",
     "previewBoard": "Pré-visualização do Tabuleiro",
     "gameSettings": "Configuração Avançada",
-    "showBoardButtonInGame": "Mostrar botão 'Ver Tabuleiro' durante partidas contra a IA",
     "startGame": "Iniciar Partida",
     "cancel": "Cancelar",
     "whiteDescription": "Você joga primeiro",
@@ -2338,10 +2389,23 @@
       }
     },
     "step2": {
-      "shortLabel": "Vista",
-      "title": "Modo de Vista do Tabuleiro",
-      "description": "Você pode ativar um recurso de espiar para dar uma olhada no tabuleiro como ajuda visual.",
-      "showBoardButton": "Mostrar botão 'Ver Tabuleiro' durante partidas contra a IA",
+      "shortLabel": "Tabuleiro",
+      "title": "Visibilidade do Tabuleiro",
+      "description": "Decida como o tabuleiro é apresentado durante a partida. As configurações de exibição das peças (próximo passo) continuam oferecendo a experiência às cegas quando o tabuleiro está visível.",
+      "boardVisibilities": {
+        "always": {
+          "label": "Sempre visível",
+          "description": "O tabuleiro é mostrado durante toda a partida. As configurações de peças (próximo passo) ocultam tipos/cores conforme sua preferência."
+        },
+        "peek": {
+          "label": "Espiar sob demanda",
+          "description": "O tabuleiro fica oculto por padrão; toque para espiar quando precisar verificar uma posição."
+        },
+        "never": {
+          "label": "Oculto",
+          "description": "Modo às cegas puro — o tabuleiro nunca é mostrado durante a partida."
+        }
+      },
       "modes": {
         "modal": {
           "label": "Modal",

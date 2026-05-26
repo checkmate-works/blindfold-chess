@@ -55,7 +55,7 @@ vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
       enabledMoveInputModes: ['button'],
       buttonInputPieceLabel: 'icon',
       enableAutoComplete: true,
-      showBoardButtonInGame: true,
+      boardVisibility: 'peek',
       peekMode: 'modal',
     },
     isLoaded: true,
@@ -180,7 +180,7 @@ function renderSession(solutions: string[] = ['Nf3'], fen: string = STARTING_FEN
       positionTitle={POSITION_TITLE}
       piecesInfo={<div data-testid="stub-pieces-info" />}
       breadcrumb={<nav data-testid="stub-breadcrumb" />}
-      initialPeekHint={{ peekMode: 'modal', showBoardButtonInGame: true }}
+      initialPeekHint={{ peekMode: 'modal', boardVisibility: 'peek' }}
     />
   );
 }

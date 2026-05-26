@@ -52,6 +52,15 @@ type Props = {
    * UI affordance is suppressed.
    */
   showLegalMovesHint?: boolean;
+  /**
+   * Optional override for the move-input mode switch. When provided, the
+   * mode toggle button calls this instead of `updatePreferences` — used by
+   * the games/play surface to route mid-game switches into the per-game
+   * preference change log rather than mutating the user's global default.
+   * Other surfaces (puzzle, practice) leave this unset and fall back to
+   * the global `updatePreferences` path.
+   */
+  setMoveInputMode?: (mode: GamePreferences['moveInputMode']) => void;
 };
 
 const modeIcons: Record<GamePreferences['moveInputMode'], ReactNode> = {
@@ -78,6 +87,7 @@ export function MoveInputPanel({
   onMovePeek,
   showInlineError = true,
   showLegalMovesHint = true,
+  setMoveInputMode,
 }: Props) {
   const t = useTranslations('play');
   const enabledModes = preferences.enabledMoveInputModes;
@@ -256,7 +266,11 @@ export function MoveInputPanel({
           <button
             type="button"
             onClick={() => {
-              updatePreferences({ moveInputMode: nextMode });
+              if (setMoveInputMode) {
+                setMoveInputMode(nextMode);
+              } else {
+                updatePreferences({ moveInputMode: nextMode });
+              }
             }}
             disabled={disabled}
             className="p-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation select-none"

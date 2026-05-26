@@ -276,7 +276,13 @@
         "whiteView": "White's Perspective",
         "blackView": "Black's Perspective"
       },
-      "showBoardButtonInGame": "Show 'View Board' button during AI games",
+      "boardVisibility": "Board Visibility",
+      "boardVisibilityDescription": "Choose how the chessboard surfaces during gameplay. Piece-display settings (below) still apply when the board is visible — they are the blindfold mechanism in this app.",
+      "boardVisibilities": {
+        "always": "Always visible",
+        "peek": "Peek on demand",
+        "never": "Hidden"
+      },
       "resetDefaults": "Reset to defaults",
       "resetDefaultsConfirm": {
         "title": "Reset Board Settings?",
@@ -313,6 +319,11 @@
       "peekModes": {
         "modal": "Modal",
         "inline": "Inline"
+      },
+      "moveInputModes": {
+        "text": "Text",
+        "select": "List",
+        "button": "Button"
       }
     }
   },
@@ -1703,6 +1714,9 @@
     "resign": "Resign",
     "undo": "Undo",
     "moves": "Moves",
+    "movesPanel": {
+      "viewOps": "View operations for this move"
+    },
     "confirmResignTitle": "Confirm Resignation",
     "confirmResignMessage": "Are you sure you want to resign? This will end the game.",
     "cancel": "Cancel",
@@ -1734,6 +1748,9 @@
     "saved": "Saved",
     "postmortem": "Game Review",
     "resultTitle": "Game Result",
+    "gameDetails": {
+      "title": "Game Details"
+    },
     "engineInfo": {
       "title": "Opponent",
       "engineLabel": "Engine",
@@ -1742,7 +1759,6 @@
       "maiaDifficulty": "{rating} ELO"
     },
     "operationLog": {
-      "title": "Operation Log",
       "noLogs": "No operation logs yet.",
       "columnMove": "Move",
       "columnInputMethod": "Input Method",
@@ -1752,7 +1768,42 @@
       "inputMethodText": "Text",
       "inputMethodTextAutocomplete": "Text (autocomplete)",
       "inputMethodSelect": "List",
-      "columnMovePeek": "Hints"
+      "inputMethodBoard": "Board",
+      "columnMovePeek": "Hints",
+      "columnInvalid": "Illegal",
+      "initialSettings": {
+        "title": "Initial Settings",
+        "notRecorded": "Initial settings were not recorded for this game.",
+        "on": "On",
+        "off": "Off",
+        "labelBoardVisibility": "Board visibility",
+        "labelHighlightLastMove": "Highlight last move",
+        "labelShowOwnPieces": "Show own pieces",
+        "labelShowOpponentPieces": "Show opponent pieces",
+        "labelPieceShape": "Piece shape",
+        "labelPieceColor": "Piece color",
+        "labelPeekMode": "Peek mode",
+        "labelMoveInputMode": "Move input"
+      },
+      "changeLog": {
+        "title": "Change Log",
+        "noChanges": "No mid-game changes were made to the settings.",
+        "columnAtMove": "After move",
+        "columnSetting": "Setting",
+        "columnChange": "Change"
+      }
+    },
+    "promotionPicker": {
+      "cancel": "Cancel promotion",
+      "promoteTo": {
+        "queen": "Promote to queen",
+        "rook": "Promote to rook",
+        "bishop": "Promote to bishop",
+        "knight": "Promote to knight"
+      }
+    },
+    "settings": {
+      "title": "Game Settings"
     },
     "showLegalMoves": "Show legal moves",
     "legalMovesList": "Legal moves:",
@@ -1765,6 +1816,7 @@
         "peekCount": "Board Peeks",
         "undoCount": "Undos",
         "hintCount": "Move Hints",
+        "invalidCount": "Illegal Attempts",
         "viewDetails": "Log",
         "times": "{count, plural, one {# time} other {# times}}",
         "columnItem": "Item",
@@ -1922,7 +1974,6 @@
     "helpOpeningIntroDescription": "Pick a named opening from the list — you'll continue to the PGN setup screen where you can choose engine, color, and difficulty before starting.",
     "previewBoard": "Preview Board",
     "gameSettings": "Advanced Settings",
-    "showBoardButtonInGame": "Show 'View Board' button during AI games",
     "startGame": "Start Game",
     "cancel": "Cancel",
     "whiteDescription": "You play first",
@@ -2566,10 +2617,23 @@
       }
     },
     "step2": {
-      "shortLabel": "Peek",
-      "title": "Board Peek Mode",
-      "description": "You can enable a peek feature to glance at the board as a visual aid.",
-      "showBoardButton": "Show 'View Board' button during AI games",
+      "shortLabel": "Board",
+      "title": "Board Visibility",
+      "description": "Decide how the chessboard surfaces during play. Piece-display settings (next step) still provide the blindfold experience when the board is shown.",
+      "boardVisibilities": {
+        "always": {
+          "label": "Always visible",
+          "description": "The board is shown throughout the game. Piece settings (next step) still hide the piece types/colors as you prefer."
+        },
+        "peek": {
+          "label": "Peek on demand",
+          "description": "The board is hidden by default; tap to peek when you need to verify a position."
+        },
+        "never": {
+          "label": "Hidden",
+          "description": "Pure blindfold mode — the board is never shown during play."
+        }
+      },
       "modes": {
         "modal": {
           "label": "Modal",

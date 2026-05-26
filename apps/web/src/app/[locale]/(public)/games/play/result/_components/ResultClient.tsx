@@ -84,19 +84,22 @@ function OperationLogSummary({
       'text-autocomplete': 0,
       select: 0,
       button: 0,
+      board: 0,
     };
     let totalPeeks = 0;
     let totalUndos = 0;
     let totalHints = 0;
+    let totalInvalids = 0;
 
     for (const log of logs) {
       inputMethods[log.inputMethod]++;
       totalPeeks += log.peekCount;
       totalUndos += log.undoCount;
       totalHints += log.movePeekCount ?? 0;
+      totalInvalids += log.invalidCount ?? 0;
     }
 
-    return { inputMethods, totalPeeks, totalUndos, totalHints };
+    return { inputMethods, totalPeeks, totalUndos, totalHints, totalInvalids };
   }, [logs]);
 
   const inputMethodLabels: Record<MoveInputMethod, string> = {
@@ -104,6 +107,7 @@ function OperationLogSummary({
     'text-autocomplete': t('operationLog.inputMethodTextAutocomplete'),
     select: t('operationLog.inputMethodSelect'),
     button: t('operationLog.inputMethodButton'),
+    board: t('operationLog.inputMethodBoard'),
   };
 
   const activeInputMethods = (
@@ -114,7 +118,8 @@ function OperationLogSummary({
     activeInputMethods.length > 0 ||
     stats.totalPeeks > 0 ||
     stats.totalUndos > 0 ||
-    stats.totalHints > 0;
+    stats.totalHints > 0 ||
+    stats.totalInvalids > 0;
 
   if (!hasAnyStats) return null;
 
@@ -138,6 +143,13 @@ function OperationLogSummary({
     singleRows.push({
       label: t('result.operationSummary.undoCount'),
       value: t('result.operationSummary.times', { count: stats.totalUndos }),
+    });
+  }
+
+  if (stats.totalInvalids > 0) {
+    singleRows.push({
+      label: t('result.operationSummary.invalidCount'),
+      value: t('result.operationSummary.times', { count: stats.totalInvalids }),
     });
   }
 
@@ -298,15 +310,17 @@ function ResultContent({ game, gameId, locale, displayName, breadcrumb }: Result
         </div>
       </div>
 
-      {/* Operation Log Detail Modal */}
+      {/* Game Details Modal — Opponent + Initial Settings + Change Log.
+          Per-move counts moved into MovesPanel inline popovers in Phase
+          5b; the result page does not show MovesPanel, so per-move
+          investigation lives in the postmortem flow instead. */}
       {game.operationLogs && (
         <OperationLogModal
           isOpen={isOperationLogVisible}
           onClose={() => setIsOperationLogVisible(false)}
-          logs={game.operationLogs}
-          moves={game.moves}
-          playerSide={game.playerColor}
-          startingFen={game.startingFen}
+          engineConfig={game.engineConfig}
+          gamePreferences={game.gamePreferences}
+          preferenceChangeLog={game.preferenceChangeLog}
         />
       )}
 
