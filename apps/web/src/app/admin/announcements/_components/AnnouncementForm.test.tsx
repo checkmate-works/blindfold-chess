@@ -48,9 +48,10 @@ const defaultLabels = {
   locale: 'Locale',
   saveDraft: 'Save Draft',
   savingDraft: 'Saving...',
+  savePublished: 'Save',
+  savingPublished: 'Saving...',
   preview: 'Preview',
   cancel: 'Cancel',
-  backToList: 'Back to Announcements',
   unsavedChangesTitle: 'Unsaved Changes',
   unsavedChangesMessage: 'You have unsaved changes. Are you sure you want to leave?',
   unsavedChangesConfirm: 'Leave',
@@ -211,31 +212,36 @@ describe('AnnouncementForm', () => {
     expect(mockOnSaveDraft).not.toHaveBeenCalled();
   });
 
-  it('should navigate to announcements list on Back to Announcements', () => {
+  it('should render Slug, Locale, Title, Content in that document order', () => {
     const mockOnSaveDraft = vi.fn();
 
     render(<AnnouncementForm onSaveDraft={mockOnSaveDraft} labels={defaultLabels} />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Back to Announcements' }));
+    const slugEl = screen.getByLabelText('Slug');
+    const localeEl = screen.getByLabelText('Locale');
+    const titleEl = screen.getByLabelText('Title');
+    const contentEl = screen.getByLabelText('Content');
 
-    expect(mockPush).toHaveBeenCalledWith('/admin/announcements');
+    expect(
+      slugEl.compareDocumentPosition(localeEl) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    expect(
+      localeEl.compareDocumentPosition(titleEl) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    expect(
+      titleEl.compareDocumentPosition(contentEl) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
   });
 
-  it('should render Locale field between Slug and Title', () => {
+  it('should render Slug and Locale inside the same horizontal row', () => {
     const mockOnSaveDraft = vi.fn();
 
-    const { container } = render(
-      <AnnouncementForm onSaveDraft={mockOnSaveDraft} labels={defaultLabels} />
-    );
+    render(<AnnouncementForm onSaveDraft={mockOnSaveDraft} labels={defaultLabels} />);
 
-    const fields = Array.from(container.querySelectorAll('label')).map((l) => l.textContent);
-    const slugIdx = fields.indexOf('Slug');
-    const localeIdx = fields.indexOf('Locale');
-    const titleIdx = fields.indexOf('Title');
+    const slugEl = screen.getByLabelText('Slug');
+    const localeEl = screen.getByLabelText('Locale');
 
-    expect(slugIdx).toBeGreaterThanOrEqual(0);
-    expect(localeIdx).toBe(slugIdx + 1);
-    expect(titleIdx).toBe(localeIdx + 1);
+    expect(slugEl.parentElement).toBe(localeEl.parentElement);
   });
 
   it('should mark Slug input readOnly when lockSlug is true', () => {
@@ -396,8 +402,10 @@ describe('AnnouncementForm', () => {
 
     fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Edited Title' } });
 
+    // Top bar's Save button (labels.savePublished === 'Save'). Only one 'Save'
+    // button exists at this point — the modal hasn't opened yet.
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Save Draft' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     });
 
     expect(screen.getByText('Confirm Save')).toBeInTheDocument();
@@ -425,12 +433,14 @@ describe('AnnouncementForm', () => {
     fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Edited Title' } });
 
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Save Draft' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     });
 
     await act(async () => {
-      // The modal's "Save" confirm button (matches publishedConfirmConfirm label)
-      fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]);
+      // After the modal opens, two 'Save' buttons exist (top-bar + modal confirm).
+      // The modal confirm is the second in DOM order.
+      const saveButtons = screen.getAllByRole('button', { name: 'Save' });
+      fireEvent.click(saveButtons[saveButtons.length - 1]);
     });
 
     expect(mockOnSaveDraft).toHaveBeenCalledWith({
@@ -463,10 +473,10 @@ describe('AnnouncementForm', () => {
     fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Edited Title' } });
 
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Save Draft' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     });
 
-    // Modal's Cancel button (second "Cancel" — first is the form's footer Cancel)
+    // Modal's Cancel button (second 'Cancel' — first is the top-bar Cancel)
     const cancelButtons = screen.getAllByRole('button', { name: 'Cancel' });
     fireEvent.click(cancelButtons[cancelButtons.length - 1]);
 

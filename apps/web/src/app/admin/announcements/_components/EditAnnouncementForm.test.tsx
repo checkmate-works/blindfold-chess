@@ -40,9 +40,10 @@ const defaultLabels = {
   locale: 'Locale',
   saveDraft: 'Save Draft',
   savingDraft: 'Saving...',
+  savePublished: 'Save',
+  savingPublished: 'Saving...',
   preview: 'Preview',
   cancel: 'Cancel',
-  backToList: 'Back to Announcements',
   unsavedChangesTitle: 'Unsaved Changes',
   unsavedChangesMessage: 'You have unsaved changes. Are you sure you want to leave?',
   unsavedChangesConfirm: 'Leave',
@@ -83,15 +84,16 @@ describe('EditAnnouncementForm', () => {
     vi.clearAllMocks();
   });
 
-  it('should open the confirm modal on Save Draft for a published announcement and not call updateAnnouncement yet', async () => {
+  it('should open the confirm modal on Save for a published announcement and not call updateAnnouncement yet', async () => {
     mockUpdateAnnouncement.mockResolvedValue({ success: true, id: testId });
 
     render(
       <EditAnnouncementForm id={testId} defaultValues={defaultValues} labels={defaultLabels} />
     );
 
+    // For a published announcement the top-bar button reads 'Save' (savePublished).
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Save Draft' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     });
 
     expect(screen.getByText('Confirm Save')).toBeInTheDocument();
@@ -108,12 +110,13 @@ describe('EditAnnouncementForm', () => {
     fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Updated Title' } });
 
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Save Draft' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     });
 
     await act(async () => {
-      // The modal's "Save" confirm button (publishedConfirmConfirm label)
-      fireEvent.click(screen.getAllByRole('button', { name: 'Save' })[0]);
+      // After modal opens, two 'Save' buttons exist; confirm is the second.
+      const saveButtons = screen.getAllByRole('button', { name: 'Save' });
+      fireEvent.click(saveButtons[saveButtons.length - 1]);
     });
 
     expect(mockUpdateAnnouncement).toHaveBeenCalledWith(testId, {

@@ -3151,6 +3151,8 @@
         "unsavedChangesConfirm": "Salir",
         "unsavedChangesCancel": "Quedarse",
         "draftSaved": "Borrador guardado",
+        "savePublished": "Guardar",
+        "savingPublished": "Guardando...",
         "publishedSaved": "Anuncio guardado",
         "publishedConfirmTitle": "Confirmar Guardado",
         "publishedConfirmMessage": "Este anuncio está publicado. Tus cambios se reflejarán inmediatamente. ¿Estás seguro?",

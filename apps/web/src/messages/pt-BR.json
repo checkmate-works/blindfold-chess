@@ -3151,6 +3151,8 @@
         "unsavedChangesConfirm": "Sair",
         "unsavedChangesCancel": "Ficar",
         "draftSaved": "Rascunho salvo",
+        "savePublished": "Salvar",
+        "savingPublished": "Salvando...",
         "publishedSaved": "Anúncio salvo",
         "publishedConfirmTitle": "Confirmar Salvamento",
         "publishedConfirmMessage": "Este anúncio está publicado. Suas alterações serão refletidas imediatamente. Tem certeza?",

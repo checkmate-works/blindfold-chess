@@ -10,6 +10,7 @@ import { UnsavedChangesDialog } from '@/app/_components/UnsavedChangesDialog';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 
 import { PublishedConfirmModal } from '../../_components/PublishedConfirmModal';
+import { AnnouncementFormTopBar } from './announcement-form/AnnouncementFormTopBar';
 
 type AnnouncementEditData = {
   slug: string;
@@ -39,9 +40,10 @@ type AnnouncementFormProps = {
     locale: string;
     saveDraft: string;
     savingDraft: string;
+    savePublished: string;
+    savingPublished: string;
     preview: string;
     cancel: string;
-    backToList: string;
     unsavedChangesTitle: string;
     unsavedChangesMessage: string;
     unsavedChangesConfirm: string;
@@ -142,113 +144,81 @@ export function AnnouncementForm({
   };
 
   return (
-    <div>
-      <div className="flex items-center gap-4 mb-6">
-        <button
-          type="button"
-          onClick={() => router.push('/admin/announcements')}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          {labels.backToList}
-        </button>
-        <h1 className="text-2xl font-bold">{labels.formTitle}</h1>
-      </div>
+    <div className="flex flex-col h-[calc(100vh-4rem)]">
+      <AnnouncementFormTopBar
+        labels={{
+          saveDraft: labels.saveDraft,
+          savingDraft: labels.savingDraft,
+          savePublished: labels.savePublished,
+          savingPublished: labels.savingPublished,
+          preview: labels.preview,
+          cancel: labels.cancel,
+        }}
+        isPending={isPending}
+        isPublished={isPublished}
+        onSave={handleSaveDraft}
+        onPreview={handlePreview}
+        onCancel={() => router.push('/admin/announcements')}
+      />
 
-      <div className="max-w-2xl space-y-4">
-        <div>
-          <label htmlFor="slug" className="block text-sm font-medium mb-1">
-            {labels.slug}
-          </label>
-          <input
-            id="slug"
-            type="text"
-            value={slug}
-            onChange={(e) => setSlug(e.target.value)}
-            placeholder={labels.slugPlaceholder}
-            readOnly={lockSlug}
-            className={`w-full border border-border rounded px-3 py-2 text-sm text-foreground ${
-              lockSlug ? 'bg-muted cursor-not-allowed' : 'bg-card'
-            }`}
-            maxLength={255}
-          />
+      {error && (
+        <div className="px-4 py-2 shrink-0">
+          <p className="text-destructive text-sm">{error}</p>
         </div>
+      )}
 
-        <div>
-          <label htmlFor="locale" className="block text-sm font-medium mb-1">
-            {labels.locale}
-          </label>
-          <select
-            id="locale"
-            value={locale}
-            onChange={(e) => setLocale(e.target.value)}
-            disabled={lockLocale}
-            className={`w-full border border-border rounded px-3 py-2 text-sm text-foreground ${
-              lockLocale ? 'bg-muted cursor-not-allowed' : 'bg-card'
-            }`}
-          >
-            <option value="en">en</option>
-            <option value="ja">ja</option>
-            <option value="es">es</option>
-            <option value="pt-BR">pt-BR</option>
-          </select>
-        </div>
+      <div className="flex flex-1 min-h-0">
+        <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex items-center gap-3 px-6 pt-4 pb-2">
+            <input
+              type="text"
+              value={slug}
+              onChange={(e) => setSlug(e.target.value)}
+              placeholder={labels.slugPlaceholder}
+              aria-label={labels.slug}
+              readOnly={lockSlug}
+              className={`flex-1 border border-border rounded px-3 py-1.5 text-sm text-foreground ${
+                lockSlug ? 'bg-muted cursor-not-allowed' : 'bg-card'
+              }`}
+              maxLength={255}
+            />
+            <select
+              value={locale}
+              onChange={(e) => setLocale(e.target.value)}
+              aria-label={labels.locale}
+              disabled={lockLocale}
+              className={`border border-border rounded px-3 py-1.5 text-sm text-foreground ${
+                lockLocale ? 'bg-muted cursor-not-allowed' : 'bg-card'
+              }`}
+            >
+              <option value="en">en</option>
+              <option value="ja">ja</option>
+              <option value="es">es</option>
+              <option value="pt-BR">pt-BR</option>
+            </select>
+          </div>
 
-        <div>
-          <label htmlFor="title" className="block text-sm font-medium mb-1">
-            {labels.title}
-          </label>
-          <input
-            id="title"
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder={labels.titlePlaceholder}
-            className="w-full border border-border rounded px-3 py-2 text-sm bg-card text-foreground"
-            maxLength={255}
-          />
-        </div>
+          <div className="px-6 pb-2">
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder={labels.titlePlaceholder}
+              aria-label={labels.title}
+              className="w-full text-2xl font-bold bg-card border-none outline-none placeholder:text-muted-foreground/50 rounded px-3 py-2"
+              maxLength={255}
+            />
+          </div>
 
-        <div>
-          <label htmlFor="content" className="block text-sm font-medium mb-1">
-            {labels.content}
-          </label>
-          <textarea
-            id="content"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder={labels.contentPlaceholder}
-            className="w-full border border-border rounded px-3 py-2 text-sm bg-card text-foreground resize-none"
-            rows={10}
-          />
-        </div>
-
-        {error && <p className="text-destructive text-sm">{error}</p>}
-
-        <div className="flex items-center gap-2 pt-2">
-          <button
-            type="button"
-            onClick={handleSaveDraft}
-            disabled={isPending}
-            className="px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
-          >
-            {isPending ? labels.savingDraft : labels.saveDraft}
-          </button>
-          <button
-            type="button"
-            onClick={handlePreview}
-            disabled={isPending}
-            className="px-4 py-2 text-sm rounded bg-card border border-primary text-primary hover:bg-primary/10 transition-colors disabled:opacity-50"
-          >
-            {labels.preview}
-          </button>
-          <button
-            type="button"
-            onClick={() => router.push('/admin/announcements')}
-            disabled={isPending}
-            className="px-4 py-2 text-sm rounded bg-card border border-border hover:bg-secondary transition-colors"
-          >
-            {labels.cancel}
-          </button>
+          <div className="flex-1 px-6 pb-4 flex flex-col min-h-0">
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder={labels.contentPlaceholder}
+              aria-label={labels.content}
+              className="flex-1 w-full border border-border rounded px-3 py-2 text-sm bg-card text-foreground resize-none"
+            />
+          </div>
         </div>
       </div>
 
