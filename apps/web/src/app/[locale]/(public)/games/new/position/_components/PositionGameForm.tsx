@@ -211,7 +211,7 @@ export function PositionGameForm({ locale, maiaAccess }: Props) {
     <div className="space-y-4">
       <div data-tour-id="position-editor">
         <SectionTitle>{t('customPosition')}</SectionTitle>
-        <div className="flex justify-end mb-2">
+        <div className="flex justify-end mt-3 mb-2">
           <FlipBoardButton onClick={() => setFlipped((prev) => !prev)} title={t('flipBoard')} />
         </div>
         {!isLoaded ? (
