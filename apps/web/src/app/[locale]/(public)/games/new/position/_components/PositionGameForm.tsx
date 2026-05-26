@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -26,24 +26,17 @@ import { EngineSelector } from '@/app/[locale]/(public)/games/new/_components/En
 import { LargeDownloadConsentDialog } from '@/app/[locale]/(public)/games/new/_components/LargeDownloadConsentDialog';
 import { MaiaCoinConfirmModal } from '@/app/[locale]/(public)/games/new/_components/MaiaCoinConfirmModal';
 import { MaiaPointInfoModal } from '@/app/[locale]/(public)/games/new/_components/MaiaPointInfoModal';
-import {
-  type CastlingRights,
-  PositionSettings,
-} from '@/app/[locale]/(public)/games/new/_components/PositionSettings';
+import { PositionSettings } from '@/app/[locale]/(public)/games/new/_components/PositionSettings';
 import { SkillLevelSelector } from '@/app/[locale]/(public)/games/new/_components/SkillLevelSelector';
 import { useLocalGameSettings } from '@/app/[locale]/(public)/games/new/_hooks/use-local-game-settings';
 import { useMaiaGameLaunch } from '@/app/[locale]/(public)/games/new/_hooks/use-maia-game-launch';
-import { buildFenFromParts } from '@/app/[locale]/(public)/games/new/_lib/build-fen-from-parts';
-import { getCastlingAvailability } from '@/app/[locale]/(public)/games/new/_lib/get-castling-availability';
-import { getEnPassantAvailability } from '@/app/[locale]/(public)/games/new/_lib/get-en-passant-availability';
+import { usePositionState } from '@/app/[locale]/(public)/games/new/_hooks/use-position-state';
 import { deriveMaiaCardMode } from '@/app/[locale]/(public)/games/new/_lib/maia-launch';
-import { validatePosition } from '@/app/[locale]/(public)/games/new/_lib/validate-position';
 import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-const EMPTY_BOARD_FEN = '8/8/8/8/8/8/8/8 w - - 0 1';
 const MAIA_MODEL_SIZE_LABEL = '46 MB';
 
 type Props = {
@@ -63,31 +56,20 @@ export function PositionGameForm({ locale, maiaAccess }: Props) {
   const [engine, setEngine] = useState<EngineKind>(DEFAULT_ENGINE);
   const [flipped, setFlipped] = useState(false);
 
-  // Custom position state
-  const [positionFen, setPositionFen] = useState(EMPTY_BOARD_FEN);
-  const [positionCastling, setPositionCastling] = useState<CastlingRights>({
-    K: false,
-    Q: false,
-    k: false,
-    q: false,
-  });
-  const [positionEnPassant, setPositionEnPassant] = useState('-');
-  const skipEnPassantResetRef = useRef(false);
-
-  // Derive turn from color selection
-  const positionTurn = useMemo(() => (color === 'white' ? 'w' : 'b'), [color]);
-
-  // Full FEN built from parts
-  const fullPositionFen = useMemo(
-    () => buildFenFromParts(positionFen, positionTurn, positionCastling, positionEnPassant),
-    [positionFen, positionTurn, positionCastling, positionEnPassant]
-  );
-
-  // Validate custom position FEN (single computation)
-  const positionResult = useMemo(
-    () => validatePosition(positionFen, fullPositionFen),
-    [positionFen, fullPositionFen]
-  );
+  const {
+    positionFen,
+    setPositionFen,
+    positionCastling,
+    setPositionCastling,
+    positionEnPassant,
+    setPositionEnPassant,
+    positionTurn,
+    fullFen: fullPositionFen,
+    validity: positionResult,
+    castlingAvailability,
+    enPassantAvailability,
+    skipNextColorReset,
+  } = usePositionState({ color });
 
   const positionValidation = useMemo((): { valid: boolean; error?: string } => {
     if (!positionResult.valid && positionResult.errorKey) {
@@ -99,16 +81,10 @@ export function PositionGameForm({ locale, maiaAccess }: Props) {
     return { valid: positionResult.valid };
   }, [positionResult, t, color]);
 
-  // Reset en passant when color changes (skip if FEN initialization triggered the color change)
-  useEffect(() => {
-    if (skipEnPassantResetRef.current) {
-      skipEnPassantResetRef.current = false;
-      return;
-    }
-    setPositionEnPassant('-');
-  }, [color]);
-
-  // Initialize from FEN URL parameter
+  // Initialize from FEN URL parameter. Sets color/flipped (owned here, not
+  // by the hook) together with the FEN parts (owned by the hook) and
+  // suppresses the next color-driven en-passant reset so an en-passant
+  // target carried in the URL survives the same-tick color set.
   useEffect(() => {
     const urlFen = searchParams.get('fen');
     if (!urlFen) return;
@@ -116,17 +92,14 @@ export function PositionGameForm({ locale, maiaAccess }: Props) {
     const parts = urlFen.split(' ');
     if (parts.length < 1) return;
 
-    // Board part
     setPositionFen(parts[0]);
 
-    // Turn → color (skip en passant reset triggered by this color change)
     if (parts[1] === 'w' || parts[1] === 'b') {
-      skipEnPassantResetRef.current = true;
+      skipNextColorReset();
       setColor(parts[1] === 'w' ? 'white' : 'black');
       setFlipped(parts[1] === 'b');
     }
 
-    // Castling rights
     if (parts[2]) {
       setPositionCastling({
         K: parts[2].includes('K'),
@@ -136,49 +109,17 @@ export function PositionGameForm({ locale, maiaAccess }: Props) {
       });
     }
 
-    // En passant
     if (parts[3]) {
       setPositionEnPassant(parts[3]);
     }
-  }, [searchParams]);
+  }, [searchParams, setPositionFen, setPositionCastling, setPositionEnPassant, skipNextColorReset]);
 
-  // Compute castling availability based on piece positions
-  const castlingAvailability = useMemo(() => getCastlingAvailability(positionFen), [positionFen]);
-
-  // Compute en passant availability based on pawn positions
-  const enPassantAvailability = useMemo(
-    () => getEnPassantAvailability(positionFen, positionTurn),
-    [positionFen, positionTurn]
+  const handlePositionFenChange = useCallback(
+    (newFen: string) => {
+      setPositionFen(newFen);
+    },
+    [setPositionFen]
   );
-
-  // Auto-reset en passant when current selection becomes unavailable
-  useEffect(() => {
-    if (positionEnPassant !== '-') {
-      const file = positionEnPassant[0];
-      if (!enPassantAvailability[file]) {
-        setPositionEnPassant('-');
-      }
-    }
-  }, [enPassantAvailability, positionEnPassant]);
-
-  // Auto-uncheck castling rights that become unavailable
-  useEffect(() => {
-    const updated = { ...positionCastling };
-    let changed = false;
-    for (const key of ['K', 'Q', 'k', 'q'] as const) {
-      if (updated[key] && !castlingAvailability[key]) {
-        updated[key] = false;
-        changed = true;
-      }
-    }
-    if (changed) {
-      setPositionCastling(updated);
-    }
-  }, [castlingAvailability, positionCastling]);
-
-  const handlePositionFenChange = useCallback((newFen: string) => {
-    setPositionFen(newFen);
-  }, []);
 
   const engineConfig: EngineConfig =
     engine === 'maia' ? { kind: 'maia', rating: maiaRating } : { kind: 'stockfish', skillLevel };
