@@ -237,6 +237,43 @@ describe('useMoveOperationTracker', () => {
     });
   });
 
+  it('accumulates undoCount across consecutive undos (regression: two undos must record 2, not 1)', () => {
+    const { result } = renderHook(() => useMoveOperationTracker());
+
+    // Player commits move 1, then move 2 (two log entries on the stack).
+    act(() => {
+      result.current.commitMove('text');
+      result.current.commitMove('text');
+    });
+    expect(result.current.logs).toHaveLength(2);
+
+    // First Undo: mirror the real `handleUndo` flow — pop the last log, then
+    // record the undo itself for the next move.
+    act(() => {
+      result.current.handleUndoLog();
+      result.current.recordUndo();
+    });
+    expect(result.current.logs).toHaveLength(1);
+
+    // Second Undo, immediately, before the player commits anything new.
+    // The previous undo's increment must survive: handleUndoLog must not
+    // zero undoCountRef.
+    act(() => {
+      result.current.handleUndoLog();
+      result.current.recordUndo();
+    });
+    expect(result.current.logs).toHaveLength(0);
+
+    // When the player finally commits a new move, both undos should be on it.
+    act(() => {
+      result.current.commitMove('text');
+    });
+
+    expect(result.current.logs).toEqual([
+      { inputMethod: 'text', peekCount: 0, undoCount: 2, movePeekCount: 0, invalidCount: 0 },
+    ]);
+  });
+
   it('should track movePeekCount for the current move', () => {
     const { result } = renderHook(() => useMoveOperationTracker());
 

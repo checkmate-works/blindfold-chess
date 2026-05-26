@@ -70,20 +70,26 @@ export function useMoveOperationTracker({ initialLogs }: UseMoveOperationTracker
   );
 
   /**
-   * Handle undo: remove the last player's log entry and reset current counters.
+   * Handle undo: remove the last player's log entry and discard in-flight
+   * peek/movePeek/invalid counters that belonged to the undone turn.
    * Called when the player undoes a move (which removes both the player and AI moves).
    *
-   * Design note: Counters (peekCount, undoCount, invalidCount, movePeekCount)
-   * accumulated during the current turn are intentionally discarded on undo.
-   * This follows the principle that "undo = the move never happened," so any
-   * operations performed while considering that move are treated as irrelevant.
-   * The caller should call `recordUndo()` after `handleUndoLog()` to track the
-   * undo itself on the next move.
+   * Design note: peekCount/movePeekCount/invalidCount are intentionally
+   * discarded — they describe operations performed while considering the
+   * move being undone, so under the "undo = the move never happened"
+   * principle they go away with it. `undoCountRef` is *deliberately
+   * preserved*: it tracks how many times the player has pressed Undo
+   * before the next move commits, and zeroing it would silently drop the
+   * record of every undo but the most recent when the player Undos twice
+   * in a row. The caller still calls `recordUndo()` after this to
+   * increment the count by one for this undo.
    */
   const handleUndoLog = useCallback(() => {
     setLogs((prev) => prev.slice(0, -1));
-    resetCounters();
-  }, [resetCounters]);
+    peekCountRef.current = 0;
+    movePeekCountRef.current = 0;
+    invalidCountRef.current = 0;
+  }, []);
 
   /**
    * Truncate logs to the specified count and reset current counters.
