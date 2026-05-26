@@ -1,25 +1,17 @@
 import * as Sentry from '@sentry/nextjs';
-import { and, eq, gt, inArray, isNull, lte } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import 'server-only';
 
-import {
-  db,
-  likes,
-  notifications,
-  pointBatchWatermarks,
-  positions,
-  profiles,
-  topicPosts,
-} from '@/lib/db';
+import { db, notifications, pointBatchWatermarks } from '@/lib/db';
 
-import {
-  LIKE_COIN_AMOUNT,
-  LIKE_GRANT_BATCH_TYPE,
-  LIKE_GRANT_SOURCE,
-  LIKE_GRANT_TARGET_TYPES,
-} from './constants';
-import type { ContentRow, GrantIntent, LikeRow, PositionRow } from './grant-like-coins-intents';
+import { LIKE_COIN_AMOUNT, LIKE_GRANT_BATCH_TYPE, LIKE_GRANT_SOURCE } from './constants';
 import { buildGrantIntents } from './grant-like-coins-intents';
+import {
+  filterLiveIntents,
+  groupIntentsByRecipient,
+  loadLikesForBatch,
+  resolveGrantTargets,
+} from './grant-like-coins-steps';
 import { recordPointMovement } from './internal-ledger';
 
 /**
@@ -110,112 +102,20 @@ export async function grantLikeCoins(): Promise<GrantLikeCoinsResult> {
 
   const watermark = watermarkRow.watermark;
 
-  // (2) Scan the likes in `(watermark, scanStartedAt]`. Bounding the upper
-  //     edge keeps the next watermark a clean cut — likes that land mid-run
-  //     fall into the next run's window.
-  const likeRowsRaw = await db
-    .select({
-      likerId: likes.userId,
-      targetType: likes.targetType,
-      targetId: likes.targetId,
-    })
-    .from(likes)
-    .where(
-      and(
-        gt(likes.createdAt, watermark),
-        lte(likes.createdAt, scanStartedAt),
-        inArray(likes.targetType, LIKE_GRANT_TARGET_TYPES as readonly string[])
-      )
-    );
+  // (2) Scan likes in `(watermark, scanStartedAt]`.
+  const likeRows = await loadLikesForBatch(watermark, scanStartedAt);
 
-  const likeRows: LikeRow[] = likeRowsRaw;
-
-  // (3) Resolve the liked content — owner + soft-delete state.
-  const positionIds = [
-    ...new Set(likeRows.filter((l) => l.targetType === 'position').map((l) => l.targetId)),
-  ];
-  const topicPostIds = [
-    ...new Set(likeRows.filter((l) => l.targetType === 'topic_post').map((l) => l.targetId)),
-  ];
-
-  // Two independent tables — fetch concurrently.
-  const [positionRows, topicPostRows] = await Promise.all([
-    positionIds.length
-      ? db
-          .select({
-            id: positions.id,
-            ownerId: positions.userId,
-            forkedFromId: positions.forkedFromId,
-            deletedAt: positions.deletedAt,
-          })
-          .from(positions)
-          .where(inArray(positions.id, positionIds))
-      : [],
-    topicPostIds.length
-      ? db
-          .select({
-            id: topicPosts.id,
-            ownerId: topicPosts.userId,
-            deletedAt: topicPosts.deletedAt,
-          })
-          .from(topicPosts)
-          .where(inArray(topicPosts.id, topicPostIds))
-      : [],
-  ]);
-
-  const positionById = new Map<string, PositionRow>(
-    positionRows.map((r) => [
-      r.id,
-      { ownerId: r.ownerId, forkedFromId: r.forkedFromId, deletedAt: r.deletedAt },
-    ])
-  );
-  const topicPostById = new Map<string, ContentRow>(
-    topicPostRows.map((r) => [r.id, { ownerId: r.ownerId, deletedAt: r.deletedAt }])
-  );
-
-  // (4) Resolve fork parents — one level up from each live forked position.
-  const forkParentIds = [
-    ...new Set(
-      positionRows
-        .filter((r) => r.deletedAt === null && r.forkedFromId !== null)
-        .map((r) => r.forkedFromId as string)
-    ),
-  ];
-  const forkParentRows = forkParentIds.length
-    ? await db
-        .select({
-          id: positions.id,
-          ownerId: positions.userId,
-          deletedAt: positions.deletedAt,
-        })
-        .from(positions)
-        .where(inArray(positions.id, forkParentIds))
-    : [];
-  const forkParentById = new Map<string, ContentRow>(
-    forkParentRows.map((r) => [r.id, { ownerId: r.ownerId, deletedAt: r.deletedAt }])
-  );
+  // (3) + (4) Resolve liked content + fork parents.
+  const { positionById, topicPostById, forkParentById } = await resolveGrantTargets(likeRows);
 
   // (5) Derive payout intents (pure — see grant-like-coins-intents.ts).
   const intents = buildGrantIntents({ likeRows, positionById, topicPostById, forkParentById });
 
-  // (6) Drop intents whose recipient has withdrawn (no profile / soft-deleted).
-  const recipientIds = [...new Set(intents.map((i) => i.recipientId))];
-  const activeRows = recipientIds.length
-    ? await db
-        .select({ id: profiles.id })
-        .from(profiles)
-        .where(and(inArray(profiles.id, recipientIds), isNull(profiles.deletedAt)))
-    : [];
-  const activeRecipients = new Set(activeRows.map((r) => r.id));
-  const liveIntents = intents.filter((i) => activeRecipients.has(i.recipientId));
+  // (6) Drop intents whose recipient has withdrawn / been soft-deleted.
+  const liveIntents = await filterLiveIntents(intents);
 
   // (7) Group by recipient — one transaction (coins + notification) each.
-  const byRecipient = new Map<string, GrantIntent[]>();
-  for (const intent of liveIntents) {
-    const list = byRecipient.get(intent.recipientId) ?? [];
-    list.push(intent);
-    byRecipient.set(intent.recipientId, list);
-  }
+  const byRecipient = groupIntentsByRecipient(liveIntents);
 
   let coinsGranted = 0;
   let notificationsSent = 0;
