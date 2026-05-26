@@ -15,7 +15,7 @@ import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCo
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import type { ConfirmationDialogs } from '../_hooks';
-import { shouldShowModalPeekButton } from '../_lib';
+import { ACTION_ROW_CONTAINER_CLASSES, shouldShowModalPeekButton } from '../_lib';
 import { ShowBoardButton } from './ShowBoardButton';
 
 type Props = {
@@ -134,7 +134,7 @@ export function GameInProgressPanel({
       )}
 
       {/* Action Buttons */}
-      <div className="flex gap-4 md:gap-2 justify-center">
+      <div className={ACTION_ROW_CONTAINER_CLASSES}>
         {showModalPeekButton && <ShowBoardButton onClick={onShowBoard} />}
         <button
           onClick={confirmationDialogs.undo.open}

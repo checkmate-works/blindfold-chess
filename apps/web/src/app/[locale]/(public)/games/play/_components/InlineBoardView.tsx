@@ -10,6 +10,10 @@ import { FaChevronDown, FaEye } from 'react-icons/fa';
 import type { FormattedPgnMove } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
+import {
+  INLINE_BOARD_CARD_CHROME,
+  INLINE_BOARD_HEADER_CHROME,
+} from '../_lib/skeleton-layout-classes';
 import { HorizontalMoveList } from './HorizontalMoveList';
 import { MoveNavigationControls } from './MoveNavigationControls';
 
@@ -100,7 +104,7 @@ export function InlineBoardView({
   const effectivelyOpen = alwaysOpen ? true : isOpen;
 
   return (
-    <div className="bg-card rounded-md border border-border overflow-hidden">
+    <div className={INLINE_BOARD_CARD_CHROME}>
       {!alwaysOpen && (
         <button
           type="button"
@@ -108,7 +112,7 @@ export function InlineBoardView({
             if (!isOpen) onPeek?.();
             setIsOpen(!isOpen);
           }}
-          className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-muted transition-colors"
+          className={`${INLINE_BOARD_HEADER_CHROME} text-left hover:bg-muted transition-colors`}
         >
           <div className="flex items-center gap-2 text-sm font-medium text-foreground">
             <FaEye className="w-4 h-4" />
