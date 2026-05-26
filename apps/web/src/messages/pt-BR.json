@@ -3099,6 +3099,14 @@
       "createdAt": "Criado em",
       "actions": "Ações",
       "noAnnouncementsFound": "Nenhum anúncio encontrado.",
+      "variants": "Variantes",
+      "slugDetail": {
+        "title": "Variantes de Idioma do Anúncio",
+        "noAnnouncementsFound": "Nenhum anúncio encontrado para este slug.",
+        "missingLocales": "Adicionar variantes de idioma faltantes",
+        "createForLocale": "Criar variante em {locale}",
+        "viewPublished": "Ver"
+      },
       "edit": "Editar",
       "delete": "Excluir",
       "deleteModalTitle": "Excluir Anúncio",

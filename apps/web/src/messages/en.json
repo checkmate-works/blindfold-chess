@@ -3341,6 +3341,14 @@
       "createdAt": "Created At",
       "actions": "Actions",
       "noAnnouncementsFound": "No announcements found.",
+      "variants": "Variants",
+      "slugDetail": {
+        "title": "Announcement Locale Variants",
+        "noAnnouncementsFound": "No announcements found for this slug.",
+        "missingLocales": "Add missing locale variants",
+        "createForLocale": "Create {locale} variant",
+        "viewPublished": "View"
+      },
       "edit": "Edit",
       "delete": "Delete",
       "deleteModalTitle": "Delete Announcement",
