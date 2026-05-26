@@ -393,6 +393,32 @@ describe('useAutoSave', () => {
     expect(sessionStorage.getItem('blindfold_chess_show_save_toast')).toBe('true');
   });
 
+  it('exposes markPendingChange that causes a save on beforeunload after a settings-only edit', async () => {
+    // Reproduces SPEC1 blocker 2: a mid-game preference edit (no move made)
+    // must still be persisted on Save&Exit / navigation / page hide. With
+    // markPendingChange wired in, hasPlayerInteracted + hasPendingChanges
+    // both flip, and the beforeunload handler in useAutoSaveEvents fires a
+    // silent save.
+    const { result } = renderHook((props) => useAutoSave(props), {
+      initialProps: {
+        ...defaultProps,
+        moves: ['e4', 'e5'] as AlgebraicNotation[],
+        enabled: true,
+        gameId: 'id-settings-only',
+      },
+    });
+
+    // Simulate the mid-game settings edit: setPerGamePref calls
+    // markPendingChange when it appends to the preference change log.
+    result.current.markPendingChange();
+
+    // No move was made — moves array unchanged. Page navigates away.
+    window.dispatchEvent(new Event('beforeunload'));
+    await waitFor(() => {
+      expect(mockUpdate).toHaveBeenCalled();
+    });
+  });
+
   it('still persists the game on beforeunload (silent save)', async () => {
     // The beforeunload handler runs a silent save — it skips React state
     // updates but must still persist to storage.

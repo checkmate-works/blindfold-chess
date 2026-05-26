@@ -295,9 +295,21 @@ export function useAutoSave({
     hasPlayerInteracted.current = true;
   }, []);
 
+  // Mark a non-move state change that must still be persisted on
+  // exit / navigation / page-hide. Used by settings-only mid-game edits
+  // (preference changes that do not advance the move count). Without this,
+  // `useSaveTrigger` would not fire (it only watches moves/status) and the
+  // page-hide / unload listeners in `useAutoSaveEvents` would treat the
+  // session as having nothing to save. See SPEC1 blocker 2.
+  const markPendingChange = useCallback(() => {
+    hasPlayerInteracted.current = true;
+    hasPendingChanges.current = true;
+  }, []);
+
   return {
     saveGame: manualSave,
     markPlayerInteraction,
+    markPendingChange,
     gameId: currentGameId,
     isSaving,
     lastSavedAt,

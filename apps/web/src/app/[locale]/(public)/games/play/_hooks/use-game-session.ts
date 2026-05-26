@@ -173,7 +173,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
   // for the life of the game); `preferenceChangeLog` carries the timeline of
   // mid-game edits. Together they reconstruct the current effective values
   // on the next load via `foldPreferences`.
-  const { markPlayerInteraction, gameId } = useAutoSave({
+  const { markPlayerInteraction, markPendingChange, gameId } = useAutoSave({
     gameId: initialGameId,
     moves,
     playerColor: playerSide,
@@ -358,26 +358,35 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
   // Pre-Phase-1 games that lack an `initialPerGamePrefs` snapshot cannot be
   // edited (no base to layer on); the call is a no-op in that case and the
   // Phase 2b UI is expected to gate the entry point accordingly.
+  // Mirror the live change log into a ref so the updater can read the latest
+  // value without taking `preferenceChangeLog` as a dependency (which would
+  // rebuild the callback on every edit, churning child memoization).
+  const preferenceChangeLogRef = useRef(preferenceChangeLog);
+  preferenceChangeLogRef.current = preferenceChangeLog;
+
   const setPerGamePref = useCallback(
     <K extends keyof PerGamePreferences>(key: K, value: PerGamePreferences[K]) => {
       if (!initialPerGamePrefs) return;
-      setPreferenceChangeLog((prev) => {
-        const currentSnapshot = foldPreferences(initialPerGamePrefs, prev);
-        if (currentSnapshot[key] === value) return prev;
-        // Cast safety: each `key` of PerGamePreferences corresponds to exactly
-        // one discriminated variant of PreferenceChangeLogEntry, and `from`/`to`
-        // here are both typed as PerGamePreferences[K] which matches that
-        // variant's from/to shape by construction.
-        const entry = {
-          atMoveIndex: moves.length,
-          key,
-          from: currentSnapshot[key],
-          to: value,
-        } as PreferenceChangeLogEntry;
-        return [...prev, entry];
-      });
+      const currentSnapshot = foldPreferences(initialPerGamePrefs, preferenceChangeLogRef.current);
+      if (currentSnapshot[key] === value) return;
+      // Cast safety: each `key` of PerGamePreferences corresponds to exactly
+      // one discriminated variant of PreferenceChangeLogEntry, and `from`/`to`
+      // here are both typed as PerGamePreferences[K] which matches that
+      // variant's from/to shape by construction.
+      const entry = {
+        atMoveIndex: moves.length,
+        key,
+        from: currentSnapshot[key],
+        to: value,
+      } as PreferenceChangeLogEntry;
+      setPreferenceChangeLog((prev) => [...prev, entry]);
+      // Mark a pending change so a settings-only edit (no move made) is
+      // still persisted on Save&Exit / navigation / page hide.
+      // `useSaveTrigger` only watches moves/status, so without this hook
+      // boundary the change would be lost. See SPEC1 blocker 2.
+      markPendingChange();
     },
-    [initialPerGamePrefs, moves.length]
+    [initialPerGamePrefs, moves.length, markPendingChange]
   );
 
   // Clear both the error and the preserved attempted-input in one call.
