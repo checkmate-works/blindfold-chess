@@ -24,6 +24,7 @@ import {
   isAnnouncementMetadata,
   isBenefitGrantMetadata,
   isChunkEditRequestMetadata,
+  isChunkLifecycleMetadata,
   isLikeCoinGrantMetadata,
   isPointGrantMetadata,
   isPositionMetadata,
@@ -94,6 +95,10 @@ export function NotificationItem({ notification, currentUsername }: Props) {
         return t('chunkEditRequestSubmittedMessage', { actor: actorName });
       case 'chunk_edit_request_accepted':
         return t('chunkEditRequestAcceptedMessage', { actor: actorName });
+      case 'new_chunk_draft':
+        return t('newChunkDraftMessage', { actor: actorName });
+      case 'chunk_published':
+        return t('chunkPublishedMessage', { actor: actorName });
       case 'new_position': {
         // Exhaustive `PositionType` dispatch — the `never` check at the
         // bottom forces this switch to be updated whenever a new
@@ -278,6 +283,18 @@ export function NotificationItem({ notification, currentUsername }: Props) {
       // list with the current chunk values for comparison, which is the
       // context both notification types ask for.
       return `/chunks/${notification.metadata.slug}/edit-requests`;
+    }
+    if (
+      (notification.type === 'new_chunk_draft' || notification.type === 'chunk_published') &&
+      isChunkLifecycleMetadata(notification.metadata)
+    ) {
+      // Drafts land on the edit-requests page since the call-to-action
+      // is to review the draft and propose changes. Published chunks
+      // route to the chunk's main page — the canonical post.
+      if (notification.type === 'new_chunk_draft') {
+        return `/chunks/${notification.metadata.slug}/edit-requests`;
+      }
+      return `/chunks/${notification.metadata.slug}`;
     }
     if (notification.type === 'achievement_granted' && currentUsername) {
       return `/u/${currentUsername}/achievements`;
