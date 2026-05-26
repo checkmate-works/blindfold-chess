@@ -2,10 +2,9 @@ import type { LikeMeta } from '@/lib/db/like-queries';
 import type { ReplyMeta } from '@/lib/db/reply-meta-queries';
 import type { Position } from '@/lib/db/schema';
 
+import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/_actions/toggleLike';
 import { PositionListCard } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionListCard';
 import { PaginationNav } from '@/app/[locale]/_components';
-
-import { toggleLike } from '../_actions/toggleLike';
 
 type AuthorProfile = {
   username: string;
