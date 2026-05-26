@@ -1,6 +1,6 @@
 import { revalidatePath } from 'next/cache';
 
-import { and, eq, isNull, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import 'server-only';
 
 import { authenticateAndGuard } from '@/lib/auth';
@@ -10,6 +10,7 @@ import { createNotification } from '@/lib/notifications/notification';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
+import { applyAcceptedProposal } from './apply-edit-proposal';
 import { getEditRequestById, getViewerPendingEditRequestForChunk } from './queries';
 import type { SubmitEditRequestPayload } from './validation';
 import { validateSubmitEditRequest } from './validation';
@@ -246,26 +247,10 @@ async function resolveEditRequest(params: ResolveParams): Promise<ResolveEditReq
       .where(and(eq(chunkEditRequests.id, request.id), eq(chunkEditRequests.status, 'pending')));
 
     if (params.action === 'accept') {
-      // Apply the proposed fields to the chunk in the same transaction so
-      // the acceptance and the content change commit together. Fields not
-      // included in the proposal stay untouched — drizzle treats `undefined`
-      // as "skip column".
-      const updates: { title?: string; description?: string | null } = {};
-      if (request.proposedTitle !== null) {
-        updates.title = request.proposedTitle.trim();
-      }
-      // proposedDescription === null means the proposal targeted only the
-      // title; an explicit empty value is allowed too (descriptions are
-      // nullable on `chunks`).
-      if (request.proposedDescription !== null) {
-        updates.description = request.proposedDescription;
-      }
-      if (Object.keys(updates).length > 0) {
-        await tx
-          .update(chunks)
-          .set(updates)
-          .where(and(eq(chunks.id, chunk.id), isNull(chunks.deletedAt)));
-      }
+      // Apply the proposed fields to the chunk in the same transaction
+      // so the acceptance and the content change commit together. See
+      // `applyAcceptedProposal` for the partial-proposal contract.
+      await applyAcceptedProposal(tx, request, chunk.id);
     }
   });
 
