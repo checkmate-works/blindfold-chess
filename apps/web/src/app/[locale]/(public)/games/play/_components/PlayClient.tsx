@@ -1,37 +1,27 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { notFound, useRouter } from 'next/navigation';
 
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import type { MoveInputPreferenceHint } from '@/lib/games/move-input-cookie';
 import type { PeekPreferenceHint } from '@/lib/games/peek-cookie';
 
-import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
-import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
-import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useBoardFlip, useConfirmationDialogs, useMoveNavigation } from '../_hooks';
 import type { GameSession } from '../_hooks/use-game-session';
-import {
-  deriveMoveInputSkeletonProps,
-  shouldShowAlwaysVisibleBoard,
-  shouldShowInlinePeekHeader,
-  shouldShowModalPeekButton,
-} from '../_lib';
-import { BoardViewModal } from './BoardViewModal';
+import { usePlayClientPreferences } from '../_hooks/use-play-client-preferences';
+import { shouldShowAlwaysVisibleBoard, shouldShowInlinePeekHeader } from '../_lib';
 import { GameInProgressPanel } from './GameInProgressPanel';
 import { InlineBoardView } from './InlineBoardView';
-import { MidGameSettingsModal } from './MidGameSettingsModal';
 import { MoveInputSkeleton } from './MoveInputSkeleton';
 import { MovesPanel } from './MovesPanel';
 import { MovesPanelSkeleton } from './MovesPanelSkeleton';
-import { OperationLogModal } from './OperationLogModal';
+import { PlayClientModals } from './PlayClientModals';
 import {
   ActionRowSkeleton,
   IconButtonSkeleton,
@@ -77,7 +67,6 @@ export function PlayClient({
   initialPeekHint,
   isInitializing,
 }: Props) {
-  const t = useTranslations('play');
   const router = useRouter();
 
   const {
@@ -134,62 +123,18 @@ export function PlayClient({
     [handleSubmitMove, recordInvalid]
   );
 
-  // Global preferences
-  const { preferences: globalPreferences, updatePreferences, isHydrated } = useGamePreferences();
-
-  // Pre-hydration skeleton shape: prefer the cookie-sourced hints from the
-  // server over `globalPreferences` (which is still the provider's defaults
-  // until localStorage is read). Once `isHydrated` flips true,
-  // `globalPreferences` becomes the source of truth — matching the
-  // localStorage value, which may or may not agree with the cookie.
-  //
-  // Reconciliation rule: cookie wins on first paint (driven by these
-  // branches); localStorage wins post-hydration (driven by
-  // `globalPreferences`). The `GamePreferencesContext` also mirrors
-  // subsequent preference changes back to the cookie so the two stay in
-  // sync on the next navigation.
-  // Pre-hydration derivation is shared with `loading.tsx` via
-  // `deriveMoveInputSkeletonProps` so the two entry points stay in lockstep.
-  const hintSkeletonProps = deriveMoveInputSkeletonProps(initialMoveInputHint);
-  const skeletonMode = isHydrated ? globalPreferences.moveInputMode : hintSkeletonProps.mode;
-  const skeletonHasModeSwitch = isHydrated
-    ? globalPreferences.enabledMoveInputModes.length >= 2
-    : hintSkeletonProps.hasModeSwitch;
-
-  // Merge per-game preferences with global preferences
-  // Per-game fields override global; other fields come from global
-  const preferences: GamePreferences = useMemo(() => {
-    if (!perGamePrefs) return globalPreferences;
-    return {
-      ...globalPreferences,
-      boardVisibility: perGamePrefs.boardVisibility ?? globalPreferences.boardVisibility,
-      highlightLastMove: perGamePrefs.highlightLastMove,
-      showOwnPieces: perGamePrefs.showOwnPieces,
-      showOpponentPieces: perGamePrefs.showOpponentPieces,
-      pieceShapeMode: perGamePrefs.pieceShapeMode,
-      pieceColors: perGamePrefs.pieceColors,
-      // peekMode was added to PerGamePreferences after the field set settled,
-      // so legacy `gamePreferences` records on disk may not carry it.
-      // Falling back to the global value keeps those records rendering as
-      // they always did, and a subsequent mid-game edit + save will backfill
-      // the per-game record forward-compat.
-      peekMode: perGamePrefs.peekMode ?? globalPreferences.peekMode,
-      // moveInputMode was promoted to per-game later still — same fallback
-      // pattern. Legacy records simply track the global until the user
-      // toggles in this game, at which point per-game takes over.
-      moveInputMode: perGamePrefs.moveInputMode ?? globalPreferences.moveInputMode,
-    };
-  }, [globalPreferences, perGamePrefs]);
-
-  // Pre-hydration peek skeleton decisions: cookie hint wins on first paint,
-  // `preferences` (merged with per-game overrides) wins post-hydration. This
-  // mirrors the `skeletonMode` / `skeletonHasModeSwitch` pattern above.
-  const skeletonShowInlinePeekHeader = isHydrated
-    ? shouldShowInlinePeekHeader(preferences)
-    : shouldShowInlinePeekHeader(initialPeekHint);
-  const skeletonShowModalPeekButton = isHydrated
-    ? shouldShowModalPeekButton(preferences)
-    : shouldShowModalPeekButton(initialPeekHint);
+  const {
+    preferences,
+    updatePreferences,
+    skeletonMode,
+    skeletonHasModeSwitch,
+    skeletonShowInlinePeekHeader,
+    skeletonShowModalPeekButton,
+  } = usePlayClientPreferences({
+    perGamePrefs,
+    initialMoveInputHint,
+    initialPeekHint,
+  });
 
   // UI state
   const [isBoardVisible, setIsBoardVisible] = useState(false);
@@ -479,44 +424,10 @@ export function PlayClient({
         </div>
       </div>
 
-      {/* Resign Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={confirmationDialogs.resign.isOpen}
-        onCancel={confirmationDialogs.resign.close}
-        onConfirm={confirmationDialogs.resign.confirm}
-        title={t('confirmResignTitle')}
-        message={t('confirmResignMessage')}
-        confirmText={t('confirmResign')}
-        cancelText={t('cancel')}
-        confirmVariant="danger"
-      />
-
-      {/* Undo Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={confirmationDialogs.undo.isOpen}
-        onCancel={confirmationDialogs.undo.close}
-        onConfirm={confirmationDialogs.undo.confirm}
-        title={t('confirmUndoTitle')}
-        message={t('confirmUndoMessage')}
-        confirmText={t('confirmUndo')}
-        cancelText={t('cancel')}
-      />
-
-      {/* Restart Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={confirmationDialogs.restart.isOpen}
-        onCancel={confirmationDialogs.restart.close}
-        onConfirm={confirmationDialogs.restart.confirm}
-        title={t('confirmRestartTitle')}
-        message={t('confirmRestartMessage')}
-        confirmText={t('confirmRestart')}
-        cancelText={t('cancel')}
-      />
-
-      {/* Board View Modal */}
-      <BoardViewModal
-        isOpen={isBoardVisible}
-        onClose={() => setIsBoardVisible(false)}
+      <PlayClientModals
+        confirmationDialogs={confirmationDialogs}
+        isBoardVisible={isBoardVisible}
+        onCloseBoardVisible={() => setIsBoardVisible(false)}
         fen={displayFen || currentFen}
         playerSide={playerSide}
         flipped={effectiveFlipped}
@@ -531,30 +442,16 @@ export function PlayClient({
         onNavigateToEnd={navigateToEnd}
         onNavigateToPosition={navigateToPosition}
         onFlipBoard={handleFlipBoard}
-      />
-
-      {/* Game Details Modal — Opponent + Initial Settings + Change Log */}
-      <OperationLogModal
-        isOpen={showOperationLogModal}
-        onClose={() => setShowOperationLogModal(false)}
+        showOperationLogModal={showOperationLogModal}
+        onCloseOperationLog={() => setShowOperationLogModal(false)}
         engineConfig={engineConfig}
-        gamePreferences={initialPerGamePrefs}
+        initialPerGamePrefs={initialPerGamePrefs}
         preferenceChangeLog={preferenceChangeLog}
+        canEditPerGameSettings={canEditPerGameSettings}
+        showSettingsModal={showSettingsModal}
+        onCloseSettingsModal={() => setShowSettingsModal(false)}
+        onPerGamePrefChange={setPerGamePref}
       />
-
-      {/* Mid-game Settings Modal. Always rendered when an initial snapshot
-          exists; its open/close state is driven by `showSettingsModal`. The
-          modal mutates the per-game change log directly via `setPerGamePref`
-          — every change is one log entry, which keeps the audit honest
-          (matching the inline-peek auto-collapse + operation-log pattern). */}
-      {canEditPerGameSettings && (
-        <MidGameSettingsModal
-          isOpen={showSettingsModal}
-          onClose={() => setShowSettingsModal(false)}
-          preferences={preferences}
-          onPerGamePrefChange={setPerGamePref}
-        />
-      )}
     </div>
   );
 }
