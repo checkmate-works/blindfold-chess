@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next';
 
 import * as Sentry from '@sentry/nextjs';
 
-import type { Announcement } from '@/lib/db/schema/tables';
+import type { Announcement } from '@/lib/db/schema';
 
 import { getPublishedAnnouncements } from '@/app/[locale]/(public)/announcements/_lib/queries';
 
