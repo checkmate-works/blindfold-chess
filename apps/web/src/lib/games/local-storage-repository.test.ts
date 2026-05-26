@@ -650,6 +650,136 @@ describe('LocalStorageGameRepository', () => {
         expect(game?.gamePreferences?.boardVisibility).toBe('always');
       });
 
+      it('fills missing peekMode / moveInputMode with defaults when legacy showBoardButtonInGame is migrated', async () => {
+        // Pre-Phase-2 record: only the legacy boolean and the booleans that
+        // existed at the time. `peekMode` / `moveInputMode` did not exist yet.
+        // After migration the loaded game must have valid values for every
+        // current per-game key — otherwise the next mid-game settings edit
+        // would produce `from: undefined` and the saved game would be dropped
+        // from `loadAll()` on the load after that.
+        const legacyPayload = [
+          {
+            id: 'pref-missing-new-fields',
+            date: '2025-05-01T00:00:00.000Z',
+            moves: [],
+            playerColor: 'white',
+            engineConfig: { kind: 'stockfish', skillLevel: 5 },
+            status: 'in_progress',
+            gamePreferences: {
+              showBoardButtonInGame: true,
+              highlightLastMove: true,
+              showOwnPieces: true,
+              showOpponentPieces: true,
+              pieceShapeMode: 'normal',
+              pieceColors: 'normal',
+            },
+          },
+        ];
+        localStorage.setItem('blindfold_chess_games', JSON.stringify(legacyPayload));
+
+        const fresh = new LocalStorageGameRepository();
+        const game = await fresh.load('pref-missing-new-fields');
+
+        expect(game?.gamePreferences).toMatchObject({
+          boardVisibility: 'peek',
+          highlightLastMove: true,
+          showOwnPieces: true,
+          showOpponentPieces: true,
+          pieceShapeMode: 'normal',
+          pieceColors: 'normal',
+          peekMode: 'modal',
+          moveInputMode: 'text',
+        });
+      });
+
+      it('fills missing peekMode / moveInputMode with defaults when the record already carries boardVisibility', async () => {
+        // Hypothetical intermediate-shape record that has the new
+        // boardVisibility but predates peekMode / moveInputMode — defensive
+        // coverage so partial-write paths don't drop a saved game later.
+        const payload = [
+          {
+            id: 'pref-partial',
+            date: '2026-01-01T00:00:00.000Z',
+            moves: [],
+            playerColor: 'white',
+            engineConfig: { kind: 'stockfish', skillLevel: 5 },
+            status: 'in_progress',
+            gamePreferences: {
+              boardVisibility: 'always',
+              highlightLastMove: true,
+              showOwnPieces: true,
+              showOpponentPieces: true,
+              pieceShapeMode: 'normal',
+              pieceColors: 'normal',
+            },
+          },
+        ];
+        localStorage.setItem('blindfold_chess_games', JSON.stringify(payload));
+
+        const fresh = new LocalStorageGameRepository();
+        const game = await fresh.load('pref-partial');
+
+        expect(game?.gamePreferences?.boardVisibility).toBe('always');
+        expect(game?.gamePreferences?.peekMode).toBe('modal');
+        expect(game?.gamePreferences?.moveInputMode).toBe('text');
+      });
+
+      it('round-trips a migrated legacy record after a new preferenceChangeLog entry is appended (no save-loss regression)', async () => {
+        // Reproduces the blocker-1 saved-game-loss scenario end-to-end:
+        // a legacy record loads with normalised (now-complete) preferences,
+        // the user edits a previously-missing field mid-game, the update is
+        // persisted, and the record loads again on the next session. Pre-fix
+        // the update would store `from: undefined` in the change log and the
+        // record would silently disappear from `loadAll()`.
+        const legacyPayload = [
+          {
+            id: 'pref-roundtrip',
+            date: '2025-05-01T00:00:00.000Z',
+            moves: [],
+            playerColor: 'white',
+            engineConfig: { kind: 'stockfish', skillLevel: 5 },
+            status: 'in_progress',
+            gamePreferences: {
+              showBoardButtonInGame: true,
+              highlightLastMove: true,
+              showOwnPieces: true,
+              showOpponentPieces: true,
+              pieceShapeMode: 'normal',
+              pieceColors: 'normal',
+            },
+          },
+        ];
+        localStorage.setItem('blindfold_chess_games', JSON.stringify(legacyPayload));
+
+        const repo = new LocalStorageGameRepository();
+        const game = await repo.load('pref-roundtrip');
+        expect(game).not.toBeNull();
+        // The mid-game edit: change moveInputMode (a field absent from the
+        // legacy snapshot). After normalisation the snapshot has
+        // `moveInputMode: 'text'`, so the entry has a valid `from` value.
+        await repo.update('pref-roundtrip', {
+          moves: game!.moves,
+          playerColor: game!.playerColor,
+          engineConfig: game!.engineConfig,
+          status: game!.status,
+          startingFen: game!.startingFen,
+          gamePreferences: game!.gamePreferences,
+          preferenceChangeLog: [
+            { atMoveIndex: 0, key: 'moveInputMode', from: 'text', to: 'button' },
+          ],
+          operationLogs: game!.operationLogs,
+        });
+
+        const reloaded = new LocalStorageGameRepository();
+        const after = await reloaded.load('pref-roundtrip');
+        // Must still be loadable — pre-fix this returned null because the
+        // entry-validation step would have rejected `from: undefined`.
+        expect(after).not.toBeNull();
+        expect(after?.preferenceChangeLog).toEqual([
+          { atMoveIndex: 0, key: 'moveInputMode', from: 'text', to: 'button' },
+        ]);
+      });
+
       it('prefers the new `boardVisibility` field when both are present (idempotent on records written by upgraded code)', async () => {
         const mixedPayload = [
           {

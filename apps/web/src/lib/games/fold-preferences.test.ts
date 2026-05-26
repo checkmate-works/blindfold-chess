@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { foldPreferences } from './fold-preferences';
+import { normalisePerGamePreferences } from './per-game-preferences';
 import type { PreferenceChangeLogEntry } from './saved-game-types';
 
 const initial: PerGamePreferences = {
@@ -100,5 +101,29 @@ describe('foldPreferences', () => {
     ];
     foldPreferences(initial, log);
     expect(initial).toEqual(snapshot);
+  });
+
+  // Pairs with blocker 1 in SPEC1.md: folding a change log over a normalised
+  // legacy snapshot (one that originally lacked `peekMode` / `moveInputMode`)
+  // must yield a complete object — otherwise a downstream renderer would see
+  // `undefined` for a key that the type system says is always present.
+  it('yields complete preferences when folded over a normalised legacy snapshot', () => {
+    const normalised = normalisePerGamePreferences({
+      // Legacy shape: no peekMode, no moveInputMode, plus the obsolete boolean.
+      showBoardButtonInGame: true,
+      highlightLastMove: true,
+      showOwnPieces: true,
+      showOpponentPieces: true,
+      pieceShapeMode: 'normal',
+      pieceColors: 'normal',
+    })!;
+    const log: PreferenceChangeLogEntry[] = [
+      { atMoveIndex: 0, key: 'moveInputMode', from: 'text', to: 'button' },
+    ];
+
+    const folded = foldPreferences(normalised, log);
+    expect(folded.peekMode).toBeDefined();
+    expect(folded.moveInputMode).toBe('button');
+    expect(folded.boardVisibility).toBe('peek');
   });
 });

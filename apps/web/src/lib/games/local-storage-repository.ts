@@ -5,11 +5,8 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { type EngineConfig, isEngineConfig } from '@/lib/engines';
 import { GameLimitError } from '@/lib/errors';
-import {
-  type BoardVisibility,
-  isBoardVisibility,
-  legacyToBoardVisibility,
-} from '@/lib/games/board-visibility';
+import { isBoardVisibility, legacyToBoardVisibility } from '@/lib/games/board-visibility';
+import { normalisePerGamePreferences } from '@/lib/games/per-game-preferences';
 import type {
   Game,
   GameSortOption,
@@ -18,8 +15,6 @@ import type {
   SortDirection,
   StoredGame,
 } from '@/lib/games/saved-game-types';
-
-import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 type UpdateOptions = {
   updateLastPlayed?: boolean;
@@ -368,32 +363,6 @@ export class LocalStorageGameRepository implements IGameRepository {
   }
 
   /**
-   * Migrate the per-game preferences object from its legacy shape (with
-   * `showBoardButtonInGame: boolean`) to the in-app shape (with
-   * `boardVisibility: BoardVisibility`). Idempotent: records that already
-   * carry `boardVisibility` are returned unchanged, with the legacy field
-   * stripped if it happens to coexist.
-   */
-  private static migrateGamePreferences(
-    prefs: Record<string, unknown> | undefined
-  ): PerGamePreferences | undefined {
-    if (!prefs) return undefined;
-    const { showBoardButtonInGame: legacy, boardVisibility: existing, ...rest } = prefs;
-    let boardVisibility: BoardVisibility;
-    if (isBoardVisibility(existing)) {
-      boardVisibility = existing;
-    } else if (typeof legacy === 'boolean') {
-      boardVisibility = legacyToBoardVisibility(legacy);
-    } else {
-      // Neither present — should not happen for records with a gamePreferences
-      // object since the validator requires the field to be an object, but
-      // for defensive completeness we fall back to the default behavior.
-      boardVisibility = 'peek';
-    }
-    return { ...rest, boardVisibility } as PerGamePreferences;
-  }
-
-  /**
    * Promote a {@link StoredGame} (which may be in either legacy or new
    * format) into the strict in-app {@link Game}. Legacy records whose
    * only difficulty hint is `skillLevel` are assumed Stockfish — there
@@ -411,13 +380,17 @@ export class LocalStorageGameRepository implements IGameRepository {
         skillLevel: (legacySkillLevel ?? 5) as SkillLevel,
       } as const);
 
-    // Promote any legacy `showBoardButtonInGame` boolean to the new
-    // `boardVisibility` enum on read so the in-memory `Game` shape never
-    // contains the legacy field. The next save then persists the migrated
-    // shape forward-compatibly.
-    const gamePreferences = LocalStorageGameRepository.migrateGamePreferences(
-      rest.gamePreferences as unknown as Record<string, unknown> | undefined
-    );
+    // Promote the on-disk preferences blob to a complete, type-safe
+    // `PerGamePreferences`. This:
+    //   - maps legacy `showBoardButtonInGame: boolean` → `boardVisibility`;
+    //   - fills missing fields (`peekMode`, `moveInputMode`, …) with safe
+    //     defaults — necessary so a mid-game settings edit on a pre-Phase-2
+    //     record can produce a well-formed `preferenceChangeLog` entry
+    //     (an entry built from `from: undefined` would fail validation on
+    //     the next read and silently drop the saved game).
+    // Records with no `gamePreferences` field at all stay `undefined` and
+    // continue to fall back to global preferences in the consumer.
+    const gamePreferences = normalisePerGamePreferences(rest.gamePreferences);
     const preferenceChangeLog = rest.preferenceChangeLog?.map((entry) =>
       LocalStorageGameRepository.migrateChangeLogEntry(entry as unknown as Record<string, unknown>)
     );
