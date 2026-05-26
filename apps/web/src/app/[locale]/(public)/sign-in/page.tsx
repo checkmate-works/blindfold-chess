@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/server';
 
 import { Divider, PageLayout } from '@/app/[locale]/_components';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { AuthErrorMessage } from '../_components/AuthErrorMessage';
@@ -21,18 +21,12 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'metadata.signIn' });
-
-  const title = t('title');
-  const description = t('description');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'sign-in', title, description }),
-    title: resolveTitle(title, locale),
-    description,
-    robots: { index: false, follow: false },
-  };
+  return createPageMetadata({
+    params,
+    namespace: 'metadata.signIn',
+    path: 'sign-in',
+    noIndex: true,
+  });
 }
 
 export default async function SignInPage({ params, searchParams }: Props) {

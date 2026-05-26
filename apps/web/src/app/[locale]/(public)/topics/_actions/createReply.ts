@@ -12,7 +12,7 @@ import { createNotification } from '@/lib/notifications/notification';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { logActivityEvent } from '@/lib/users/activity-log';
 import { MAX_CONTENT_LENGTH } from '@/lib/validations/content';
-import { UUID_RE } from '@/lib/validations/uuid';
+import { UUID_RE, validateUUID } from '@/lib/validations/uuid';
 
 import type { TopicType } from '../_lib/constants';
 
@@ -77,9 +77,8 @@ export async function createReplyBase(params: {
     return { error: `Invalid ${topicType}` };
   }
 
-  if (!UUID_RE.test(postId)) {
-    return { error: 'invalidPostId' };
-  }
+  const uuidError = validateUUID(postId, 'postId');
+  if (uuidError) return uuidError;
 
   // replyToId: the specific post/reply being replied to.
   // When replying to a reply, this differs from postId (the top-level post from the URL).

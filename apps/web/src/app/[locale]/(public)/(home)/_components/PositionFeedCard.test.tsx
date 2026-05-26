@@ -54,7 +54,7 @@ vi.mock('@/app/[locale]/_components/UserAvatar', () => ({
   UserAvatar: () => <div data-testid="user-avatar" />,
 }));
 
-vi.mock('@/app/[locale]/(public)/practice/(free-play)/position-memory/_actions/toggleLike', () => ({
+vi.mock('@/app/[locale]/(public)/practice/(free-play)/_actions/toggleLike', () => ({
   toggleLike: vi.fn(),
 }));
 

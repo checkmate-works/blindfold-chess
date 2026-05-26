@@ -31,7 +31,7 @@ import {
   UserAvatar,
 } from '@/app/[locale]/_components';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
 import { ExpActivityHeatmap } from './_components/ExpActivityHeatmap';
@@ -41,18 +41,12 @@ import { getMypageDashboardData } from './_lib/getMypageDashboardData';
 type Props = LocalePageProps;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'metadata.mypage' });
-
-  const title = t('title');
-  const description = t('description');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'mypage', title, description }),
-    title: resolveTitle(title, locale),
-    description,
-    robots: { index: false, follow: false },
-  };
+  return createPageMetadata({
+    params,
+    namespace: 'metadata.mypage',
+    path: 'mypage',
+    noIndex: true,
+  });
 }
 
 export default async function MypagePage({ params }: Props) {

@@ -5,7 +5,7 @@ import { getOptionalUser } from '@/lib/auth';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { GuestCreateGate } from '@/app/[locale]/_components/GuestCreateGate';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
 import { ChunkForm } from '../_components/ChunkForm';
@@ -24,14 +24,12 @@ import { ChunkForm } from '../_components/ChunkForm';
  * 4. On submit → `createChunk` Server Action → redirect to `/chunks/<slug>`.
  */
 export async function generateMetadata({ params }: LocalePageProps): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'chunks.new' });
-  const title = t('title');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'chunks/new', title }),
-    title: resolveTitle(title, locale),
-  };
+  return createPageMetadata({
+    params,
+    namespace: 'chunks.new',
+    path: 'chunks/new',
+    omitDescription: true,
+  });
 }
 
 export default async function NewChunkPage({ params }: LocalePageProps) {

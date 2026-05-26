@@ -9,7 +9,7 @@ import { db, topicPosts } from '@/lib/db';
 import { toggleLikeForTarget } from '@/lib/db/like-actions';
 import { createNotification } from '@/lib/notifications/notification';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
-import { UUID_RE } from '@/lib/validations/uuid';
+import { validateUUID } from '@/lib/validations/uuid';
 
 import type { TopicType } from '../_lib/constants';
 
@@ -32,9 +32,8 @@ export async function toggleLikeBase(params: {
   const { postId, locale, topicIdentifier, topicType, urlSegment, validateTopic, revalidate } =
     params;
 
-  if (!UUID_RE.test(postId)) {
-    return { error: 'invalidPostId' };
-  }
+  const uuidError = validateUUID(postId, 'postId');
+  if (uuidError) return uuidError;
 
   if (!(await validateTopic(topicIdentifier))) {
     return { error: `invalid${topicType.charAt(0).toUpperCase()}${topicType.slice(1)}` };

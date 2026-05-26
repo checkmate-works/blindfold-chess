@@ -5,7 +5,7 @@ import { getAuthenticatedUser } from '@/lib/auth';
 import { getUserSubscription } from '@/lib/billing/subscription';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { SubscriptionStatus } from './_components/SubscriptionStatus';
@@ -13,14 +13,12 @@ import { SubscriptionStatus } from './_components/SubscriptionStatus';
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'MypageSubscription' });
-  const title = t('title');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'mypage/subscription', title }),
-    title: resolveTitle(title, locale),
-  };
+  return createPageMetadata({
+    params,
+    namespace: 'MypageSubscription',
+    path: 'mypage/subscription',
+    omitDescription: true,
+  });
 }
 
 export default async function SubscriptionPage({ params, searchParams }: Props) {

@@ -10,7 +10,7 @@ import { db, profiles } from '@/lib/db';
 
 import { Divider, PageLayout } from '@/app/[locale]/_components';
 import { TEXT_LINK_DESTRUCTIVE_CLASSES } from '@/app/[locale]/_lib/link-classes';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
 import { ChangePasswordForm, ProfileForm } from './_components';
@@ -18,18 +18,12 @@ import { ChangePasswordForm, ProfileForm } from './_components';
 type Props = LocalePageProps;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'metadata.profile' });
-
-  const title = t('title');
-  const description = t('description');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'mypage/profile', title, description }),
-    title: resolveTitle(title, locale),
-    description,
-    robots: { index: false, follow: false },
-  };
+  return createPageMetadata({
+    params,
+    namespace: 'metadata.profile',
+    path: 'mypage/profile',
+    noIndex: true,
+  });
 }
 
 export default async function ProfilePage({ params }: Props) {

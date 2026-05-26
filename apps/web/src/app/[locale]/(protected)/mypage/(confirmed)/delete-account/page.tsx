@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 import { PageLayout } from '@/app/[locale]/_components';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
 import { DeleteAccountButton } from './_components';
@@ -10,18 +10,12 @@ import { DeleteAccountButton } from './_components';
 type Props = LocalePageProps;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'metadata.deleteAccount' });
-
-  const title = t('title');
-  const description = t('description');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'mypage/delete-account', title, description }),
-    title: resolveTitle(title, locale),
-    description,
-    robots: { index: false, follow: false },
-  };
+  return createPageMetadata({
+    params,
+    namespace: 'metadata.deleteAccount',
+    path: 'mypage/delete-account',
+    noIndex: true,
+  });
 }
 
 export default async function DeleteAccountPage({ params }: Props) {

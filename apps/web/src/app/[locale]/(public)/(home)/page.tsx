@@ -9,7 +9,7 @@ import { createClient } from '@/lib/supabase/server';
 
 import { DashboardCard, HelpTourButton, PageTitle } from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { FeedClient } from './_components/FeedClient';
@@ -53,17 +53,7 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'metadata.home' });
-
-  const title = t('title');
-  const description = t('description');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: '', title, description }),
-    title: resolveTitle(title, locale),
-    description,
-  };
+  return createPageMetadata({ params, namespace: 'metadata.home', path: '' });
 }
 
 export default async function HomePage({ params }: Props) {

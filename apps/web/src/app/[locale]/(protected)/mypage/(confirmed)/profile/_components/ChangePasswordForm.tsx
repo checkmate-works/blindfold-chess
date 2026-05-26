@@ -3,12 +3,12 @@
 import { useState } from 'react';
 
 import { AuthField, AuthSubmitButton } from '@/app/_components/AuthFormFields';
+import { FormErrorBanner } from '@/app/_components/FormErrorBanner';
 import { MIN_PASSWORD_LENGTH } from '@/config';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { getPasswordValidationError, parsePasswordServerError } from '@/lib/validations/password';
 
-import { FormErrorMessage } from '@/app/[locale]/_components/FormErrorMessage';
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 
 import { changePassword } from '../_actions/changePassword';
@@ -87,7 +87,7 @@ export function ChangePasswordForm() {
       <h2 className="text-lg font-semibold text-foreground">{t('title')}</h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {error && <FormErrorMessage message={error} />}
+        {error && <FormErrorBanner message={error} variant="bordered" />}
 
         <AuthField
           id="currentPassword"

@@ -2,6 +2,12 @@ import { eq } from 'drizzle-orm';
 
 import { db, topicPosts } from '@/lib/db';
 
+// `delete-core` is intentionally NOT re-exported from this barrel. It
+// pulls in `server-only` modules (`@/lib/points`, `next/cache`), and
+// every caller of `loadAuthoredPost` would otherwise be forced to load
+// that graph — which crashes Vitest test files that only mock the
+// reads. Import `@/lib/topic-posts/delete-core` directly instead.
+
 /** The columns every author-scoped topic_post action / route needs. */
 export type AuthoredPost = {
   id: string;

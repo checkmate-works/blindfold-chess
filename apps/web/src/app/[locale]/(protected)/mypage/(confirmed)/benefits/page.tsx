@@ -54,7 +54,7 @@ import { Link } from '@/i18n/routing';
 import { getAuthenticatedUser } from '@/lib/auth';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
 import {
@@ -64,15 +64,12 @@ import {
 } from './_lib/getBenefitsPageData';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'MypageBenefits' });
-  const title = t('title');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'mypage/benefits', title }),
-    title: resolveTitle(title, locale),
-    robots: { index: false, follow: false },
-  };
+  return createPageMetadata({
+    params,
+    namespace: 'MypageBenefits',
+    path: 'mypage/benefits',
+    omitDescription: true,
+  });
 }
 
 export default async function BenefitsPage({ params }: Props) {

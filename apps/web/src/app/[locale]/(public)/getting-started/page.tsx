@@ -9,7 +9,7 @@ import { RankCard } from '@/app/[locale]/(public)/ranks/_components/RankCard';
 import { buildRankTeaserCards } from '@/app/[locale]/(public)/ranks/_lib/helpers';
 import { PageLayout } from '@/app/[locale]/_components';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -22,18 +22,11 @@ type Props = {
 export const generateStaticParams = generateLocaleStaticParams;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  const t = await getTranslations({ locale, namespace: 'metadata.gettingStarted' });
-
-  const title = t('title');
-  const description = t('description');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'getting-started', title, description }),
-    title: resolveTitle(title, locale),
-    description,
-  };
+  return createPageMetadata({
+    params,
+    namespace: 'metadata.gettingStarted',
+    path: 'getting-started',
+  });
 }
 
 const SIMPLE_FEN = '6k1/8/8/3KQ3/8/8/8/8 w - - 0 1';

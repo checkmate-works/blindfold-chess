@@ -30,8 +30,8 @@ import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
+import { toggleLike } from '../_actions/toggleLike';
 import { PositionListCard } from '../_components/PositionListCard';
-import { toggleLike } from './_actions/toggleLike';
 
 export const dynamic = 'force-dynamic';
 

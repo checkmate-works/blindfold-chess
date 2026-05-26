@@ -12,7 +12,7 @@ import { renderAttachment } from '@/app/[locale]/(public)/topics/_components/ren
 import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { PostCard, SquareBoard } from './_components';
@@ -25,17 +25,11 @@ const searchParamsCache = createSearchParamsCache({
 });
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'metadata.topicsSquares' });
-
-  const title = t('title');
-  const description = t('description');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'topics/squares', title, description }),
-    title: resolveTitle(title, locale),
-    description,
-  };
+  return createPageMetadata({
+    params,
+    namespace: 'metadata.topicsSquares',
+    path: 'topics/squares',
+  });
 }
 
 export default async function SquaresPage({ params, searchParams }: Props) {

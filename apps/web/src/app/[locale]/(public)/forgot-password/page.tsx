@@ -5,7 +5,7 @@ import { Link } from '@/i18n/routing';
 
 import { PageLayout } from '@/app/[locale]/_components';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
@@ -14,16 +14,12 @@ import { ForgotPasswordForm } from './_components';
 export const generateStaticParams = generateLocaleStaticParams;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'forgotPassword' });
-
-  const title = t('title');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'forgot-password', title }),
-    title: resolveTitle(title, locale),
-    robots: { index: false, follow: false },
-  };
+  return createPageMetadata({
+    params,
+    namespace: 'forgotPassword',
+    path: 'forgot-password',
+    omitDescription: true,
+  });
 }
 
 export default async function ForgotPasswordPage({ params }: Props) {

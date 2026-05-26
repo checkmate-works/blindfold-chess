@@ -3,9 +3,8 @@
 import { useState } from 'react';
 
 import { AuthField, AuthSubmitButton } from '@/app/_components/AuthFormFields';
+import { FormErrorBanner } from '@/app/_components/FormErrorBanner';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-
-import { FormErrorMessage } from '@/app/[locale]/_components/FormErrorMessage';
 
 import { forgotPassword } from '../_actions/forgotPassword';
 
@@ -55,7 +54,7 @@ export function ForgotPasswordForm() {
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-sm mx-auto space-y-4">
-      {error && <FormErrorMessage message={error} />}
+      {error && <FormErrorBanner message={error} variant="bordered" />}
 
       <p className="text-sm text-muted-foreground">{t('description')}</p>
 
