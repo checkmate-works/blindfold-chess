@@ -89,6 +89,7 @@
 .tiptap-render-tweet-fallback a {
   color: var(--color-primary, #2563eb);
   text-decoration: underline;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

@@ -17,7 +17,7 @@ type PickerProps = {
 };
 
 const PickerPlaceholder = () => (
-  <div className="h-[435px] w-[352px] rounded-lg border border-border bg-card" />
+  <div className="h-[435px] w-[352px] max-w-full rounded-lg border border-border bg-card" />
 );
 
 const Picker = dynamic<PickerProps>(() => import('@emoji-mart/react').then((mod) => mod.default), {
@@ -94,7 +94,7 @@ export function FlairPicker({ value, onChange, placeholder, clearLabel }: Props)
       </div>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 z-50">
+        <div className="absolute top-full left-0 mt-1 z-50 max-w-[calc(100vw-2rem)] overflow-x-auto">
           {emojiData ? (
             <Picker
               data={emojiData}
