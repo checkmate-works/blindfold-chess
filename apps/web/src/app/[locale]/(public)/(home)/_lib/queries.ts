@@ -1,7 +1,9 @@
 import { and, desc, eq, inArray, isNull, lt } from 'drizzle-orm';
 
+import { getChunkLikeMetaMap } from '@/lib/chunks/like-queries';
 import {
   chessOpenings,
+  chunks,
   db,
   feedItems,
   positions,
@@ -17,7 +19,13 @@ import { attachProfilePostMeta } from '@/app/[locale]/(public)/topics/_lib/post-
 import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
 import { authorSelect, ratingSelect } from '@/app/[locale]/(public)/topics/_lib/shared';
 
-import type { ChallengeRankUpdateData, FeedItem, FeedResponse, PositionFeedData } from './types';
+import type {
+  ChallengeRankUpdateData,
+  ChunkFeedData,
+  FeedItem,
+  FeedResponse,
+  PositionFeedData,
+} from './types';
 
 /** Maximum rank shown in the timeline feed. Items beyond this are filtered out. */
 const FEED_RANK_THRESHOLD = 10;
@@ -56,8 +64,9 @@ export async function getFeedData(
   const rankUpdateRows = rows.filter((r) => r.entityType === 'challenge_rank_update');
   const rankUpdateActorIds = [...new Set(rankUpdateRows.map((r) => r.actorId))];
   const positionIds = rows.filter((r) => r.entityType === 'position').map((r) => r.entityId);
+  const chunkIds = rows.filter((r) => r.entityType === 'chunk').map((r) => r.entityId);
 
-  const [topicPostMap, rankUpdateActorMap, positionMap] = await Promise.all([
+  const [topicPostMap, rankUpdateActorMap, positionMap, chunkMap] = await Promise.all([
     (async () => {
       const map = new Map<string, ProfilePostWithReplyMeta>();
 
@@ -188,6 +197,71 @@ export async function getFeedData(
 
       return map;
     })(),
+    (async () => {
+      const map = new Map<string, ChunkFeedData>();
+
+      if (chunkIds.length === 0) return map;
+
+      const chunkRows = await db
+        .select({
+          id: chunks.id,
+          slug: chunks.slug,
+          title: chunks.title,
+          description: chunks.description,
+          representativeFen: chunks.representativeFen,
+          createdAt: chunks.createdAt,
+          author: {
+            username: profiles.username,
+            displayName: profiles.displayName,
+            avatarUrl: profiles.avatarUrl,
+            country: profiles.country,
+            flair: profiles.flair,
+          },
+        })
+        .from(chunks)
+        .leftJoin(profiles, eq(chunks.userId, profiles.id))
+        .where(and(inArray(chunks.id, chunkIds), isNull(chunks.deletedAt)));
+
+      const foundIds = chunkRows.map((r) => r.id);
+      // Comments on a chunk live in `topic_posts` keyed by
+      // (topicType='chunk', topicKey=chunk.slug) — the same polymorphic
+      // pattern positions use, but keyed by slug instead of id.
+      const foundSlugs = chunkRows.map((r) => r.slug);
+      const [likeMetaMap, replyMetaMap] = await Promise.all([
+        getChunkLikeMetaMap(foundIds, currentUserId),
+        getReplyMetaMap('chunk', foundSlugs),
+      ]);
+
+      for (const row of chunkRows) {
+        const likeMeta = likeMetaMap.get(row.id) ?? { likeCount: 0, likedByMe: false };
+        const replyMeta = replyMetaMap.get(row.slug) ?? EMPTY_REPLY_META;
+        map.set(row.id, {
+          id: row.id,
+          slug: row.slug,
+          title: row.title,
+          description: row.description,
+          representativeFen: row.representativeFen,
+          // `kind` is filled in per-feed-row below from the row's
+          // metadata, since the same chunk row can produce two feed
+          // items (one `created`, one `published`).
+          kind: 'created',
+          createdAt: row.createdAt.toISOString(),
+          author: row.author
+            ? {
+                username: row.author.username,
+                displayName: row.author.displayName,
+                avatarUrl: row.author.avatarUrl,
+                country: row.author.country,
+                flair: row.author.flair,
+              }
+            : null,
+          likeMeta,
+          replyMeta,
+        });
+      }
+
+      return map;
+    })(),
   ]);
 
   // Build FeedItem array, filtering out items whose entity data was not found
@@ -215,6 +289,20 @@ export async function getFeedData(
           actorId: row.actorId,
           createdAt: row.createdAt.toISOString(),
           data,
+        });
+      }
+    } else if (row.entityType === 'chunk') {
+      const data = chunkMap.get(row.entityId);
+      if (data) {
+        const metadata = (row.metadata ?? {}) as Record<string, unknown>;
+        const kind = metadata.kind === 'published' ? 'published' : 'created';
+        items.push({
+          id: row.id,
+          entityType: 'chunk',
+          entityId: row.entityId,
+          actorId: row.actorId,
+          createdAt: row.createdAt.toISOString(),
+          data: { ...data, kind },
         });
       }
     } else if (row.entityType === 'challenge_rank_update') {
