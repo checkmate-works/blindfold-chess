@@ -1,31 +1,12 @@
-import { and, desc, eq, inArray, isNull, lt } from 'drizzle-orm';
+import { desc, lt } from 'drizzle-orm';
 
-import { getChunkLikeMetaMap } from '@/lib/chunks/like-queries';
-import {
-  chessOpenings,
-  chunks,
-  db,
-  feedItems,
-  positions,
-  profiles,
-  topicPostRatings,
-  topicPosts,
-} from '@/lib/db';
-import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
-import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
-import { parsePositionType } from '@/lib/positions/types';
+import { db, feedItems } from '@/lib/db';
 
-import { attachProfilePostMeta } from '@/app/[locale]/(public)/topics/_lib/post-meta';
-import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
-import { authorSelect, ratingSelect } from '@/app/[locale]/(public)/topics/_lib/shared';
-
-import type {
-  ChallengeRankUpdateData,
-  ChunkFeedData,
-  FeedItem,
-  FeedResponse,
-  PositionFeedData,
-} from './types';
+import { loadChunksForFeed } from './feed-queries/load-chunks';
+import { loadPositionsForFeed } from './feed-queries/load-positions';
+import { loadRankUpdateActors } from './feed-queries/load-rank-update-actors';
+import { loadTopicPostsForFeed } from './feed-queries/load-topic-posts';
+import type { ChallengeRankUpdateData, FeedItem, FeedResponse } from './types';
 
 /** Maximum rank shown in the timeline feed. Items beyond this are filtered out. */
 const FEED_RANK_THRESHOLD = 10;
@@ -34,14 +15,19 @@ const FEED_RANK_THRESHOLD = 10;
  * Fetch a page of feed items with their full entity data.
  *
  * @design Cursor-based pagination
- * The cursor is the ISO 8601 `createdAt` timestamp of the last item on the
- * previous page. The query uses `WHERE created_at < cursor ORDER BY
- * created_at DESC LIMIT N+1` (the +1 detects whether a next page exists).
+ * The cursor is the ISO 8601 `createdAt` timestamp of the last item on
+ * the previous page. The query uses
+ * `WHERE created_at < cursor ORDER BY created_at DESC LIMIT N+1` (the
+ * `+1` detects whether a next page exists).
  *
- * @design Batch entity fetching (avoid N+1)
- * After fetching feed_items rows, entity data is loaded in bulk per
- * entityType (e.g. all topic_post IDs in one query). Items whose source
- * entity was deleted are silently dropped from the result.
+ * @design Per-entity-type loaders
+ * After fetching the `feed_items` rows, the four entity loaders run in
+ * parallel — one per `entityType`. Each loader returns a
+ * `Map<entityId, data>` and silently drops rows whose source entity
+ * has been deleted; the orchestrator then walks the original feed rows
+ * and skips any whose entity is missing from the map. Splitting one
+ * loader per type makes each loader read like a focused query helper
+ * instead of a branch inside a 200-line IIFE chain.
  */
 export async function getFeedData(
   cursor: string | undefined,
@@ -59,212 +45,23 @@ export async function getFeedData(
   const rows = hasMore ? feedRows.slice(0, limit) : feedRows;
   const nextCursor = hasMore ? rows[rows.length - 1].createdAt.toISOString() : null;
 
-  // Batch fetch topic_post entities and challenge_rank_update actor profiles in parallel
   const topicPostIds = rows.filter((r) => r.entityType === 'topic_post').map((r) => r.entityId);
-  const rankUpdateRows = rows.filter((r) => r.entityType === 'challenge_rank_update');
-  const rankUpdateActorIds = [...new Set(rankUpdateRows.map((r) => r.actorId))];
   const positionIds = rows.filter((r) => r.entityType === 'position').map((r) => r.entityId);
   const chunkIds = rows.filter((r) => r.entityType === 'chunk').map((r) => r.entityId);
+  const rankUpdateActorIds = [
+    ...new Set(rows.filter((r) => r.entityType === 'challenge_rank_update').map((r) => r.actorId)),
+  ];
 
-  const [topicPostMap, rankUpdateActorMap, positionMap, chunkMap] = await Promise.all([
-    (async () => {
-      const map = new Map<string, ProfilePostWithReplyMeta>();
-
-      if (topicPostIds.length > 0) {
-        const results = await db
-          .select({
-            post: topicPosts,
-            author: authorSelect,
-            rating: ratingSelect,
-            openingName: chessOpenings.name,
-            openingFen: chessOpenings.fen,
-          })
-          .from(topicPosts)
-          .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
-          .leftJoin(topicPostRatings, eq(topicPosts.id, topicPostRatings.postId))
-          .leftJoin(chessOpenings, eq(topicPosts.topicKey, chessOpenings.slug))
-          .where(and(inArray(topicPosts.id, topicPostIds), isNull(topicPosts.deletedAt)));
-
-        const postsWithMeta = await attachProfilePostMeta(results, currentUserId);
-        for (const post of postsWithMeta) {
-          map.set(post.id, post);
-        }
-      }
-
-      return map;
-    })(),
-    (async () => {
-      const map = new Map<
-        string,
-        {
-          username: string;
-          displayName: string | null;
-          avatarUrl: string | null;
-          country: string | null;
-          flair: string | null;
-        }
-      >();
-
-      if (rankUpdateActorIds.length > 0) {
-        const actorRows = await db
-          .select({
-            id: profiles.id,
-            username: profiles.username,
-            displayName: profiles.displayName,
-            avatarUrl: profiles.avatarUrl,
-            country: profiles.country,
-            flair: profiles.flair,
-          })
-          .from(profiles)
-          .where(inArray(profiles.id, rankUpdateActorIds));
-
-        for (const actor of actorRows) {
-          map.set(actor.id, {
-            username: actor.username,
-            displayName: actor.displayName,
-            avatarUrl: actor.avatarUrl,
-            country: actor.country,
-            flair: actor.flair,
-          });
-        }
-      }
-
-      return map;
-    })(),
-    (async () => {
-      const map = new Map<string, PositionFeedData>();
-
-      if (positionIds.length === 0) return map;
-
-      const rows = await db
-        .select({
-          id: positions.id,
-          type: positions.type,
-          fen: positions.fen,
-          createdAt: positions.createdAt,
-          author: {
-            username: profiles.username,
-            displayName: profiles.displayName,
-            avatarUrl: profiles.avatarUrl,
-            country: profiles.country,
-            flair: profiles.flair,
-          },
-        })
-        .from(positions)
-        .leftJoin(profiles, eq(positions.userId, profiles.id))
-        .where(and(inArray(positions.id, positionIds), isNull(positions.deletedAt)));
-
-      const foundIds = rows.map((r) => r.id);
-      // Comments are stored in `topic_posts` keyed by topicType +
-      // positionId. Memory and puzzle positions use different
-      // topicTypes; sequence positions have no thread. Split the IDs
-      // and fetch the two pools in parallel.
-      const memoryIds = rows.filter((r) => parsePositionType(r.type) === 'memory').map((r) => r.id);
-      const puzzleIds = rows.filter((r) => parsePositionType(r.type) === 'puzzle').map((r) => r.id);
-      const [likeMetaMap, memoryReplyMap, puzzleReplyMap] = await Promise.all([
-        getPositionLikeMetaMap(foundIds, currentUserId),
-        getReplyMetaMap('position_memory', memoryIds),
-        getReplyMetaMap('position_puzzle', puzzleIds),
-      ]);
-
-      for (const row of rows) {
-        const positionType = parsePositionType(row.type);
-        // Defensive: drop rows with an unexpected `type` value rather than
-        // crashing. Follows the same "silently drop deleted entities" pattern
-        // used elsewhere in this function.
-        if (positionType === null) continue;
-        const likeMeta = likeMetaMap.get(row.id) ?? { likeCount: 0, likedByMe: false };
-        const replyMeta =
-          memoryReplyMap.get(row.id) ?? puzzleReplyMap.get(row.id) ?? EMPTY_REPLY_META;
-        map.set(row.id, {
-          id: row.id,
-          type: positionType,
-          fen: row.fen,
-          createdAt: row.createdAt.toISOString(),
-          author: row.author
-            ? {
-                username: row.author.username,
-                displayName: row.author.displayName,
-                avatarUrl: row.author.avatarUrl,
-                country: row.author.country,
-                flair: row.author.flair,
-              }
-            : null,
-          likeMeta,
-          replyMeta,
-        });
-      }
-
-      return map;
-    })(),
-    (async () => {
-      const map = new Map<string, ChunkFeedData>();
-
-      if (chunkIds.length === 0) return map;
-
-      const chunkRows = await db
-        .select({
-          id: chunks.id,
-          slug: chunks.slug,
-          title: chunks.title,
-          description: chunks.description,
-          representativeFen: chunks.representativeFen,
-          createdAt: chunks.createdAt,
-          author: {
-            username: profiles.username,
-            displayName: profiles.displayName,
-            avatarUrl: profiles.avatarUrl,
-            country: profiles.country,
-            flair: profiles.flair,
-          },
-        })
-        .from(chunks)
-        .leftJoin(profiles, eq(chunks.userId, profiles.id))
-        .where(and(inArray(chunks.id, chunkIds), isNull(chunks.deletedAt)));
-
-      const foundIds = chunkRows.map((r) => r.id);
-      // Comments on a chunk live in `topic_posts` keyed by
-      // (topicType='chunk', topicKey=chunk.slug) — the same polymorphic
-      // pattern positions use, but keyed by slug instead of id.
-      const foundSlugs = chunkRows.map((r) => r.slug);
-      const [likeMetaMap, replyMetaMap] = await Promise.all([
-        getChunkLikeMetaMap(foundIds, currentUserId),
-        getReplyMetaMap('chunk', foundSlugs),
-      ]);
-
-      for (const row of chunkRows) {
-        const likeMeta = likeMetaMap.get(row.id) ?? { likeCount: 0, likedByMe: false };
-        const replyMeta = replyMetaMap.get(row.slug) ?? EMPTY_REPLY_META;
-        map.set(row.id, {
-          id: row.id,
-          slug: row.slug,
-          title: row.title,
-          description: row.description,
-          representativeFen: row.representativeFen,
-          // `kind` is filled in per-feed-row below from the row's
-          // metadata, since the same chunk row can produce two feed
-          // items (one `created`, one `published`).
-          kind: 'created',
-          createdAt: row.createdAt.toISOString(),
-          author: row.author
-            ? {
-                username: row.author.username,
-                displayName: row.author.displayName,
-                avatarUrl: row.author.avatarUrl,
-                country: row.author.country,
-                flair: row.author.flair,
-              }
-            : null,
-          likeMeta,
-          replyMeta,
-        });
-      }
-
-      return map;
-    })(),
+  const [topicPostMap, positionMap, chunkMap, rankUpdateActorMap] = await Promise.all([
+    loadTopicPostsForFeed(topicPostIds, currentUserId),
+    loadPositionsForFeed(positionIds, currentUserId),
+    loadChunksForFeed(chunkIds, currentUserId),
+    loadRankUpdateActors(rankUpdateActorIds),
   ]);
 
-  // Build FeedItem array, filtering out items whose entity data was not found
+  // Build FeedItem array, filtering out items whose entity data was
+  // not found (the entity has been deleted between feed-item write
+  // and feed read).
   const items: FeedItem[] = [];
   for (const row of rows) {
     if (row.entityType === 'topic_post') {
