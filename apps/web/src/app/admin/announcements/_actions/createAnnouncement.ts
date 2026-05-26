@@ -3,6 +3,7 @@
 import { revalidateTag } from 'next/cache';
 
 import { announcements, db } from '@/lib/db';
+import { extractPgErrorCode } from '@/lib/db/extract-pg-error-code';
 import {
   hasAnnouncementNotification,
   notifyAllUsersOfAnnouncement,
@@ -30,19 +31,27 @@ export async function createAnnouncement(data: CreateData): Promise<MutationResu
     return guard;
   }
 
-  const [inserted] = await db
-    .insert(announcements)
-    .values({
-      slug: data.slug,
-      title: data.title,
-      content: data.content,
-      locale: data.locale,
-      status: data.status || 'draft',
-      visibility: data.visibility || 'public',
-      pinnedAt: data.pinnedAt ? new Date(data.pinnedAt) : null,
-      publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,
-    })
-    .returning({ id: announcements.id });
+  let inserted: { id: string };
+  try {
+    [inserted] = await db
+      .insert(announcements)
+      .values({
+        slug: data.slug,
+        title: data.title,
+        content: data.content,
+        locale: data.locale,
+        status: data.status || 'draft',
+        visibility: data.visibility || 'public',
+        pinnedAt: data.pinnedAt ? new Date(data.pinnedAt) : null,
+        publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,
+      })
+      .returning({ id: announcements.id });
+  } catch (err: unknown) {
+    if (extractPgErrorCode(err) === '23505') {
+      return { error: 'An announcement with this slug and locale already exists' };
+    }
+    throw err;
+  }
 
   if (data.sendNotification && data.status === 'published') {
     const alreadySent = await hasAnnouncementNotification(inserted.id);

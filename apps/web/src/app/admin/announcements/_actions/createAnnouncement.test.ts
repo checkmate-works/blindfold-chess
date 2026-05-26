@@ -39,7 +39,10 @@ vi.mock('@/lib/db', () => ({
       values: (data: unknown) => ({
         returning: () => {
           mockInsertValuesReturning(data);
-          return [{ id: generatedId }];
+          return (
+            mockInsertValuesReturning.mock.results[mockInsertValuesReturning.mock.calls.length - 1]
+              ?.value ?? [{ id: generatedId }]
+          );
         },
       }),
     }),
@@ -558,5 +561,84 @@ describe('createAnnouncement', () => {
     expect(mockHasAnnouncementNotification).toHaveBeenCalledTimes(1);
     expect(mockHasAnnouncementNotification).toHaveBeenCalledWith(generatedId);
     expect(mockNotifyAllUsersOfAnnouncement).toHaveBeenCalledTimes(1);
+  });
+
+  // --- Unique constraint violation handling ---
+
+  it('should return friendly error on unique violation (code on error)', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const pgError = new Error(
+      'duplicate key value violates unique constraint "uq_announcements_slug_locale"'
+    );
+    (pgError as unknown as Record<string, string>).code = '23505';
+    mockInsertValuesReturning.mockImplementation(() => {
+      throw pgError;
+    });
+
+    const result = await createAnnouncement(validData);
+    expect(result).toEqual({ error: 'An announcement with this slug and locale already exists' });
+  });
+
+  it('should return friendly error on unique violation (code on cause)', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const cause = new Error(
+      'duplicate key value violates unique constraint "uq_announcements_slug_locale"'
+    );
+    (cause as unknown as Record<string, string>).code = '23505';
+    const wrappedError = new Error('Failed query: insert into "announcements"...', { cause });
+    mockInsertValuesReturning.mockImplementation(() => {
+      throw wrappedError;
+    });
+
+    const result = await createAnnouncement(validData);
+    expect(result).toEqual({ error: 'An announcement with this slug and locale already exists' });
+  });
+
+  it('should rethrow non-unique-violation errors', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    mockInsertValuesReturning.mockImplementation(() => {
+      throw new Error('Connection failed');
+    });
+
+    await expect(createAnnouncement(validData)).rejects.toThrow('Connection failed');
+  });
+
+  it('should not call revalidateTag on unique violation', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const pgError = new Error('duplicate key value violates unique constraint');
+    (pgError as unknown as Record<string, string>).code = '23505';
+    mockInsertValuesReturning.mockImplementation(() => {
+      throw pgError;
+    });
+
+    await createAnnouncement(validData);
+    expect(mockRevalidateTag).not.toHaveBeenCalled();
+  });
+
+  it('should not trigger notification on unique violation', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const pgError = new Error('duplicate key value violates unique constraint');
+    (pgError as unknown as Record<string, string>).code = '23505';
+    mockInsertValuesReturning.mockImplementation(() => {
+      throw pgError;
+    });
+
+    await createAnnouncement({
+      ...validData,
+      status: 'published',
+      publishedAt: '2024-06-15T12:00:00Z',
+      sendNotification: true,
+    });
+    expect(mockNotifyAllUsersOfAnnouncement).not.toHaveBeenCalled();
   });
 });

@@ -607,4 +607,80 @@ describe('updateAnnouncement', () => {
     expect(mockHasAnnouncementNotification).not.toHaveBeenCalled();
     expect(mockNotifyAllUsersOfAnnouncement).not.toHaveBeenCalled();
   });
+
+  // --- Unique constraint violation handling ---
+
+  it('should return friendly error on unique violation (code on error)', async () => {
+    setupAdminWithAnnouncement('draft');
+
+    const pgError = new Error(
+      'duplicate key value violates unique constraint "uq_announcements_slug_locale"'
+    );
+    (pgError as unknown as Record<string, string>).code = '23505';
+    mockUpdateSetWhere.mockImplementation(() => {
+      throw pgError;
+    });
+
+    const result = await updateAnnouncement(announcementId, validData);
+    expect(result).toEqual({ error: 'An announcement with this slug and locale already exists' });
+  });
+
+  it('should return friendly error on unique violation (code on cause)', async () => {
+    setupAdminWithAnnouncement('draft');
+
+    const cause = new Error(
+      'duplicate key value violates unique constraint "uq_announcements_slug_locale"'
+    );
+    (cause as unknown as Record<string, string>).code = '23505';
+    const wrappedError = new Error('Failed query: update "announcements"...', { cause });
+    mockUpdateSetWhere.mockImplementation(() => {
+      throw wrappedError;
+    });
+
+    const result = await updateAnnouncement(announcementId, validData);
+    expect(result).toEqual({ error: 'An announcement with this slug and locale already exists' });
+  });
+
+  it('should rethrow non-unique-violation errors', async () => {
+    setupAdminWithAnnouncement('draft');
+
+    mockUpdateSetWhere.mockImplementation(() => {
+      throw new Error('Connection failed');
+    });
+
+    await expect(updateAnnouncement(announcementId, validData)).rejects.toThrow(
+      'Connection failed'
+    );
+  });
+
+  it('should not call revalidateTag on unique violation', async () => {
+    setupAdminWithAnnouncement('draft');
+
+    const pgError = new Error('duplicate key value violates unique constraint');
+    (pgError as unknown as Record<string, string>).code = '23505';
+    mockUpdateSetWhere.mockImplementation(() => {
+      throw pgError;
+    });
+
+    await updateAnnouncement(announcementId, validData);
+    expect(mockRevalidateTag).not.toHaveBeenCalled();
+  });
+
+  it('should not trigger notification on unique violation', async () => {
+    setupAdminWithAnnouncement('draft');
+
+    const pgError = new Error('duplicate key value violates unique constraint');
+    (pgError as unknown as Record<string, string>).code = '23505';
+    mockUpdateSetWhere.mockImplementation(() => {
+      throw pgError;
+    });
+
+    await updateAnnouncement(announcementId, {
+      ...validData,
+      status: 'published',
+      publishedAt: '2024-06-15T12:00:00Z',
+      sendNotification: true,
+    });
+    expect(mockNotifyAllUsersOfAnnouncement).not.toHaveBeenCalled();
+  });
 });

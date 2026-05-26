@@ -5,6 +5,7 @@ import { revalidateTag } from 'next/cache';
 import { eq } from 'drizzle-orm';
 
 import { announcements, db } from '@/lib/db';
+import { extractPgErrorCode } from '@/lib/db/extract-pg-error-code';
 import {
   hasAnnouncementNotification,
   notifyAllUsersOfAnnouncement,
@@ -35,20 +36,27 @@ export async function updateAnnouncement(id: string, data: UpdateData): Promise<
   const notFound = await adminFindOrFail(announcements, id);
   if (notFound) return notFound;
 
-  await db
-    .update(announcements)
-    .set({
-      slug: data.slug,
-      title: data.title,
-      content: data.content,
-      locale: data.locale,
-      status: data.status,
-      visibility: data.visibility,
-      pinnedAt: data.pinnedAt ? new Date(data.pinnedAt) : null,
-      publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,
-      updatedAt: new Date(),
-    })
-    .where(eq(announcements.id, id));
+  try {
+    await db
+      .update(announcements)
+      .set({
+        slug: data.slug,
+        title: data.title,
+        content: data.content,
+        locale: data.locale,
+        status: data.status,
+        visibility: data.visibility,
+        pinnedAt: data.pinnedAt ? new Date(data.pinnedAt) : null,
+        publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,
+        updatedAt: new Date(),
+      })
+      .where(eq(announcements.id, id));
+  } catch (err: unknown) {
+    if (extractPgErrorCode(err) === '23505') {
+      return { error: 'An announcement with this slug and locale already exists' };
+    }
+    throw err;
+  }
 
   if (data.sendNotification && data.status === 'published') {
     const alreadySent = await hasAnnouncementNotification(id);
