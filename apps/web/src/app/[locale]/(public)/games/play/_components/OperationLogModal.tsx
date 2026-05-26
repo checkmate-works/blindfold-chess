@@ -79,6 +79,15 @@ export function OperationLogModal({
   // the same On/Off vocabulary as Initial Settings; enum values reuse the
   // canonical Preferences.* labels so the modal stays in lockstep with the
   // settings page the user already knows.
+  //
+  // `peekMode` and `moveInputMode` were promoted to per-game later than the
+  // other fields, so legacy `initialPerGamePrefs` snapshots may lack them.
+  // When such a game's user toggles one of those settings mid-game, the
+  // resulting change-log entry's `from` is genuinely undefined ("not
+  // recorded") — fold-then-write does not invent a default for fields the
+  // snapshot never carried. Render that as the same em-dash the Initial
+  // Settings section uses, instead of letting it leak through as the raw
+  // i18n key `moveInputModes.undefined`.
   const settingValue = (entry: PreferenceChangeLogEntry, which: 'from' | 'to'): string => {
     const value = entry[which];
     switch (entry.key) {
@@ -93,9 +102,11 @@ export function OperationLogModal({
       case 'pieceColors':
         return tPrefs(`pieceColors.${value as PerGamePreferences['pieceColors']}`);
       case 'peekMode':
-        return tPrefsControls(`peekModes.${value as PerGamePreferences['peekMode']}`);
+        return value ? tPrefsControls(`peekModes.${value as PerGamePreferences['peekMode']}`) : '—';
       case 'moveInputMode':
-        return tPrefsControls(`moveInputModes.${value as PerGamePreferences['moveInputMode']}`);
+        return value
+          ? tPrefsControls(`moveInputModes.${value as PerGamePreferences['moveInputMode']}`)
+          : '—';
     }
   };
 

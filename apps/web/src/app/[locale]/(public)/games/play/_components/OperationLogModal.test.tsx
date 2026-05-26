@@ -199,6 +199,33 @@ describe('OperationLogModal — Change Log section', () => {
     expect(row!.textContent).toMatch(/→/);
   });
 
+  it('renders an em-dash when a late-added field has undefined `from` (legacy snapshot)', () => {
+    // `peekMode` / `moveInputMode` were promoted to per-game later than the
+    // other fields, so the first mid-game edit on a legacy save records
+    // `from: undefined`. Without the fallback this would render as the raw
+    // i18n key `moveInputModes.undefined`. The writer in use-game-session
+    // produces this shape via an `as PreferenceChangeLogEntry` cast that
+    // hides the undefined from the type system, so we cast through unknown
+    // here to mirror that reality.
+    const log = [
+      { atMoveIndex: 4, key: 'moveInputMode', from: undefined, to: 'select' },
+      { atMoveIndex: 6, key: 'peekMode', from: undefined, to: 'inline' },
+    ] as unknown as PreferenceChangeLogEntry[];
+    renderModal({ preferenceChangeLog: log });
+
+    fireEvent.click(screen.getByText('play.operationLog.changeLog.title'));
+
+    const moveRow = screen.getByText('4').closest('tr')!;
+    expect(moveRow.textContent).toMatch(/—/);
+    expect(moveRow.textContent).toMatch(/Preferences\.controls\.moveInputModes\.select/);
+    expect(moveRow.textContent).not.toMatch(/moveInputModes\.undefined/);
+
+    const peekRow = screen.getByText('6').closest('tr')!;
+    expect(peekRow.textContent).toMatch(/—/);
+    expect(peekRow.textContent).toMatch(/Preferences\.controls\.peekModes\.inline/);
+    expect(peekRow.textContent).not.toMatch(/peekModes\.undefined/);
+  });
+
   it('renders enum transitions via the Preferences.* vocabulary', () => {
     const log: PreferenceChangeLogEntry[] = [
       { atMoveIndex: 7, key: 'pieceShapeMode', from: 'normal', to: 'circles-own' },
