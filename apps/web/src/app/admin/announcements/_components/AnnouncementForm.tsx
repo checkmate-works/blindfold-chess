@@ -72,6 +72,7 @@ export function AnnouncementForm({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [publishedConfirmOpen, setPublishedConfirmOpen] = useState(false);
+  const [isNavigatingToPreview, setIsNavigatingToPreview] = useState(false);
 
   const initialSlug = defaultValues?.slug ?? defaultSlug ?? '';
   const initialTitle = defaultValues?.title ?? '';
@@ -86,6 +87,7 @@ export function AnnouncementForm({
   const isSubmittedRef = useRef(false);
   const isDirty =
     !isSubmittedRef.current &&
+    !isNavigatingToPreview &&
     (slug !== initialSlug ||
       title !== initialTitle ||
       content !== initialContent ||
@@ -131,11 +133,19 @@ export function AnnouncementForm({
 
   const handlePreview = () => {
     setError(null);
+    // Disable the unsaved-changes guard BEFORE the save fires. Setting state
+    // synchronously here forces a re-render that propagates `enabled: false`
+    // into next-navigation-guard before router.push is called below; otherwise
+    // the guard intercepts the post-save navigation and the user can cancel
+    // out — leaving the just-saved record behind and producing a duplicate
+    // (slug, locale) error on the next attempt.
+    setIsNavigatingToPreview(true);
     startTransition(async () => {
       const result = await onSaveDraft({ slug, title, content, locale });
 
       if ('error' in result) {
         setError(result.error);
+        setIsNavigatingToPreview(false);
       } else {
         isSubmittedRef.current = true;
         router.push(`/admin/announcements/${result.id}/preview`);

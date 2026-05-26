@@ -380,6 +380,53 @@ describe('AnnouncementForm', () => {
     expect(mockUseNavigationGuard).toHaveBeenLastCalledWith({ enabled: false });
   });
 
+  it('should disable the navigation guard before Preview saves so the post-save router.push is not intercepted', async () => {
+    let resolveSave: (value: { success: true; id: string }) => void = () => {};
+    const mockOnSaveDraft = vi.fn(
+      () =>
+        new Promise<{ success: true; id: string }>((resolve) => {
+          resolveSave = resolve;
+        })
+    );
+
+    render(<AnnouncementForm onSaveDraft={mockOnSaveDraft} labels={defaultLabels} />);
+
+    fireEvent.change(screen.getByLabelText('Slug'), { target: { value: 'preview-slug' } });
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Preview Title' } });
+    fireEvent.change(screen.getByLabelText('Content'), { target: { value: 'Preview Content' } });
+
+    expect(mockUseNavigationGuard).toHaveBeenLastCalledWith({ enabled: true });
+
+    // Click Preview but do NOT resolve the save yet. The guard must already
+    // be disabled by the time the save promise settles, so the subsequent
+    // router.push is not intercepted.
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Preview' }));
+    });
+
+    expect(mockUseNavigationGuard).toHaveBeenLastCalledWith({ enabled: false });
+
+    await act(async () => {
+      resolveSave({ success: true, id: 'preview-id' });
+    });
+
+    expect(mockPush).toHaveBeenCalledWith('/admin/announcements/preview-id/preview');
+  });
+
+  it('should re-enable the navigation guard when Preview save fails', async () => {
+    const mockOnSaveDraft = vi.fn().mockResolvedValue({ error: 'invalid slug' });
+
+    render(<AnnouncementForm onSaveDraft={mockOnSaveDraft} labels={defaultLabels} />);
+
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Preview Title' } });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Preview' }));
+    });
+
+    expect(mockUseNavigationGuard).toHaveBeenLastCalledWith({ enabled: true });
+  });
+
   // --- isPublished + PublishedConfirmModal flow ---
 
   it('should open the PublishedConfirmModal when saving a published announcement', async () => {
