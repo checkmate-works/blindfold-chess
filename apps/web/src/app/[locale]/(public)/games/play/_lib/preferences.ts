@@ -53,6 +53,32 @@ export function shouldShowAlwaysVisibleBoard(
 }
 
 /**
+ * Returns true when the full-screen "AI is thinking" pulse overlay should
+ * fire on each AI turn. The pulse is the primary "the game is alive"
+ * signal in modes where the player sees nothing change during the AI's
+ * turn, and is redundant (or actively noisy) in modes where the player
+ * does see the board move:
+ *
+ * - `boardVisibility === 'always'` → the piece literally moves in front
+ *   of the player; the pulse adds nothing.
+ * - `boardVisibility === 'peek' && peekMode === 'inline'` → the page
+ *   scrolls to the title and the inline board auto-collapses on commit,
+ *   so the user reads the "AI is thinking…" status text directly. A
+ *   full-screen tint on top of that text is redundant.
+ * - Everything else (`peek`+`modal`, `never`+anything) → the pulse is
+ *   the only confirmation that something is happening, so it fires.
+ *
+ * Centralised here so the policy can be unit-tested across the full
+ * (boardVisibility × peekMode) grid; PlayPageClient reads from this
+ * helper instead of inlining the boolean.
+ */
+export function shouldShowAiPulse(input: PeekPredicateInput | PeekPreferenceHint): boolean {
+  if (input.boardVisibility === 'always') return false;
+  if (input.boardVisibility === 'peek' && input.peekMode === 'inline') return false;
+  return true;
+}
+
+/**
  * Props consumed by `MoveInputSkeleton` that are derived from a move-input
  * preference source. Kept intentionally narrow so callers pass only these two
  * values through and don't accidentally couple to other skeleton concerns.

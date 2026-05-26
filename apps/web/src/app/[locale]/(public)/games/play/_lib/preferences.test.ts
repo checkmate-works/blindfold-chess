@@ -5,6 +5,7 @@ import type { PeekPreferenceHint } from '@/lib/games/peek-cookie';
 
 import {
   deriveMoveInputSkeletonProps,
+  shouldShowAiPulse,
   shouldShowAlwaysVisibleBoard,
   shouldShowInlinePeekHeader,
   shouldShowModalPeekButton,
@@ -112,6 +113,47 @@ describe('symmetry: at most one board-presentation predicate is true at a time',
       ];
       const activeCount = branches.filter(Boolean).length;
       expect(activeCount).toBeLessThanOrEqual(1);
+    }
+  );
+});
+
+describe('shouldShowAiPulse', () => {
+  it('suppresses the pulse when boardVisibility is "always" (board is visible; pulse redundant)', () => {
+    expect(shouldShowAiPulse({ peekMode: 'modal', boardVisibility: 'always' })).toBe(false);
+    expect(shouldShowAiPulse({ peekMode: 'inline', boardVisibility: 'always' })).toBe(false);
+  });
+
+  it('suppresses the pulse for peek+inline (scroll-to-title + inline collapse already signal the AI turn)', () => {
+    expect(shouldShowAiPulse({ peekMode: 'inline', boardVisibility: 'peek' })).toBe(false);
+  });
+
+  it('fires the pulse for peek+modal (board hidden behind a button — pulse is the only signal)', () => {
+    expect(shouldShowAiPulse({ peekMode: 'modal', boardVisibility: 'peek' })).toBe(true);
+  });
+
+  it('fires the pulse when boardVisibility is "never" regardless of peekMode', () => {
+    // peekMode is moot when the board is never shown, but the policy must
+    // still return a deterministic answer.
+    expect(shouldShowAiPulse({ peekMode: 'modal', boardVisibility: 'never' })).toBe(true);
+    expect(shouldShowAiPulse({ peekMode: 'inline', boardVisibility: 'never' })).toBe(true);
+  });
+
+  it('accepts a PeekPreferenceHint (cookie-sourced) shape', () => {
+    const hint: PeekPreferenceHint = { peekMode: 'modal', boardVisibility: 'peek' };
+    expect(shouldShowAiPulse(hint)).toBe(true);
+  });
+
+  it.each([
+    ['modal', 'always', false],
+    ['inline', 'always', false],
+    ['modal', 'peek', true],
+    ['inline', 'peek', false],
+    ['modal', 'never', true],
+    ['inline', 'never', true],
+  ] as const)(
+    '(peekMode=%s, boardVisibility=%s) → pulse=%s — full policy grid',
+    (peekMode, boardVisibility, expected) => {
+      expect(shouldShowAiPulse({ peekMode, boardVisibility })).toBe(expected);
     }
   );
 });

@@ -14,6 +14,7 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useGameSession } from '../_hooks';
+import { shouldShowAiPulse } from '../_lib';
 import { AiMovePulse } from './AiMovePulse';
 import { PlayClient } from './PlayClient';
 
@@ -71,13 +72,15 @@ export function PlayPageClient({
   //     board surface, and the pulse is the user's main signal that AI moved.
   //   - 'never' mode — same as modal; without the cue the move is easy to
   //     miss (only the title text changes).
+  // Resolve the effective per-game settings (per-game falls back to global)
+  // and delegate the actual pulse-vs-no-pulse policy to `shouldShowAiPulse`
+  // so it can be exercised across the full (boardVisibility × peekMode) grid
+  // in unit tests, instead of being an inline boolean buried in this file.
   const perGamePrefs = gameSession.gameConfig.perGamePrefs;
-  const effectiveBoardVisibility =
-    perGamePrefs?.boardVisibility ?? globalPreferences.boardVisibility;
-  const effectivePeekMode = perGamePrefs?.peekMode ?? globalPreferences.peekMode;
-  const aiPulseEnabled =
-    effectiveBoardVisibility !== 'always' &&
-    !(effectiveBoardVisibility === 'peek' && effectivePeekMode === 'inline');
+  const aiPulseEnabled = shouldShowAiPulse({
+    boardVisibility: perGamePrefs?.boardVisibility ?? globalPreferences.boardVisibility,
+    peekMode: perGamePrefs?.peekMode ?? globalPreferences.peekMode,
+  });
   // Matches the `isInitializing` predicate in `PlayClient` so the title and
   // the input panel both transition out of their "loading" state in lockstep.
   const isInitializing = isLoadingFromStorage || !isHydrated;
