@@ -9,13 +9,13 @@ import { UnsavedChangesDialog } from '@/app/_components';
 
 import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 
+import { PublishedConfirmModal } from '../../_components/PublishedConfirmModal';
 import { useArticleFormState } from '../_hooks/useArticleFormState';
 import { buildArticleFormData } from '../_lib/build-form-data';
 import type { ArticleEditData, ContentFormat } from '../_lib/types';
 import { ArticleContentEditor } from './article-form/ArticleContentEditor';
 import { ArticleFormTopBar } from './article-form/ArticleFormTopBar';
 import { ArticleMetadataPanel } from './article-form/ArticleMetadataPanel';
-import { PublishedConfirmModal } from './article-form/PublishedConfirmModal';
 
 type ArticleFormProps = {
   articleId?: string;
