@@ -84,7 +84,6 @@ function renderPanel(overrides: Overrides = {}) {
       moves={overrides.moves ?? []}
       confirmationDialogs={makeConfirmationDialogs()}
       onShowBoard={() => {}}
-      onShowEngineInfo={() => {}}
       aiMoveError={null}
     />
   );

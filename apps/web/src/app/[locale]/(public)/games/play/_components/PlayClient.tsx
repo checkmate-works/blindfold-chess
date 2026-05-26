@@ -25,7 +25,6 @@ import {
   shouldShowModalPeekButton,
 } from '../_lib';
 import { BoardViewModal } from './BoardViewModal';
-import { EngineInfoModal } from './EngineInfoModal';
 import { GameInProgressPanel } from './GameInProgressPanel';
 import { InlineBoardView } from './InlineBoardView';
 import { MidGameSettingsModal } from './MidGameSettingsModal';
@@ -195,7 +194,6 @@ export function PlayClient({
   // UI state
   const [isBoardVisible, setIsBoardVisible] = useState(false);
   const [showOperationLogModal, setShowOperationLogModal] = useState(false);
-  const [showEngineInfoModal, setShowEngineInfoModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   // Mid-game settings editing is gated on the presence of an initial
@@ -382,7 +380,6 @@ export function PlayClient({
                 // global preference change.
                 setMoveInputMode={(mode) => setPerGamePref('moveInputMode', mode)}
                 onShowOperationLog={() => setShowOperationLogModal(true)}
-                onShowEngineInfo={() => setShowEngineInfoModal(true)}
                 onShowSettings={
                   canEditPerGameSettings ? () => setShowSettingsModal(true) : undefined
                 }
@@ -536,19 +533,13 @@ export function PlayClient({
         onFlipBoard={handleFlipBoard}
       />
 
-      {/* Operation Log Modal */}
+      {/* Game Details Modal — Opponent + Initial Settings + Change Log */}
       <OperationLogModal
         isOpen={showOperationLogModal}
         onClose={() => setShowOperationLogModal(false)}
+        engineConfig={engineConfig}
         gamePreferences={initialPerGamePrefs}
         preferenceChangeLog={preferenceChangeLog}
-      />
-
-      {/* Engine Info Modal */}
-      <EngineInfoModal
-        isOpen={showEngineInfoModal}
-        onClose={() => setShowEngineInfoModal(false)}
-        engineConfig={engineConfig}
       />
 
       {/* Mid-game Settings Modal. Always rendered when an initial snapshot

@@ -310,14 +310,15 @@ function ResultContent({ game, gameId, locale, displayName, breadcrumb }: Result
         </div>
       </div>
 
-      {/* Operation Log Detail Modal — Initial Settings + Change Log only
-          (per-move counts moved into MovesPanel inline popovers in Phase
-          5b). The result page does not show MovesPanel, so per-move
+      {/* Game Details Modal — Opponent + Initial Settings + Change Log.
+          Per-move counts moved into MovesPanel inline popovers in Phase
+          5b; the result page does not show MovesPanel, so per-move
           investigation lives in the postmortem flow instead. */}
       {game.operationLogs && (
         <OperationLogModal
           isOpen={isOperationLogVisible}
           onClose={() => setIsOperationLogVisible(false)}
+          engineConfig={game.engineConfig}
           gamePreferences={game.gamePreferences}
           preferenceChangeLog={game.preferenceChangeLog}
         />

@@ -1748,6 +1748,9 @@
     "saved": "Saved",
     "postmortem": "Game Review",
     "resultTitle": "Game Result",
+    "gameDetails": {
+      "title": "Game Details"
+    },
     "engineInfo": {
       "title": "Opponent",
       "engineLabel": "Engine",
@@ -1756,7 +1759,6 @@
       "maiaDifficulty": "{rating} ELO"
     },
     "operationLog": {
-      "title": "Operation Log",
       "noLogs": "No operation logs yet.",
       "columnMove": "Move",
       "columnInputMethod": "Input Method",

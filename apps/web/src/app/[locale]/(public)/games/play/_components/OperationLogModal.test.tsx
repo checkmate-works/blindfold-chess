@@ -15,6 +15,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import type { EngineConfig } from '@/lib/engines';
 import type { PreferenceChangeLogEntry } from '@/lib/games/saved-game-types';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -55,7 +56,10 @@ const DEFAULT_PREFS: PerGamePreferences = {
   moveInputMode: 'text',
 };
 
+const DEFAULT_ENGINE: EngineConfig = { kind: 'stockfish', skillLevel: 8 };
+
 function renderModal(overrides?: {
+  engineConfig?: EngineConfig;
   gamePreferences?: PerGamePreferences;
   preferenceChangeLog?: PreferenceChangeLogEntry[];
 }) {
@@ -63,6 +67,7 @@ function renderModal(overrides?: {
     <OperationLogModal
       isOpen
       onClose={() => {}}
+      engineConfig={overrides?.engineConfig ?? DEFAULT_ENGINE}
       gamePreferences={overrides?.gamePreferences}
       preferenceChangeLog={overrides?.preferenceChangeLog}
     />
@@ -71,6 +76,34 @@ function renderModal(overrides?: {
 
 afterEach(() => {
   cleanup();
+});
+
+describe('OperationLogModal — Opponent section', () => {
+  it('renders Stockfish + level row for a Stockfish engineConfig', () => {
+    renderModal({ engineConfig: { kind: 'stockfish', skillLevel: 12 } });
+
+    // Section heading + the two rows are always visible (no collapse).
+    expect(screen.getByText('play.engineInfo.title')).toBeInTheDocument();
+    expect(screen.getByText('play.engineInfo.engineLabel')).toBeInTheDocument();
+    expect(screen.getByText('Stockfish')).toBeInTheDocument();
+    expect(screen.getByText('play.engineInfo.difficultyLabel')).toBeInTheDocument();
+    // The mocked translator passes the namespaced key through; the level
+    // value is dropped (no interpolation in the mock), so match the key
+    // path itself.
+    expect(screen.getByText('play.engineInfo.stockfishDifficulty')).toBeInTheDocument();
+  });
+
+  it('renders Maia + rating row for a Maia engineConfig', () => {
+    renderModal({ engineConfig: { kind: 'maia', rating: 1600 } });
+
+    expect(screen.getByText('Maia')).toBeInTheDocument();
+    expect(screen.getByText('play.engineInfo.maiaDifficulty')).toBeInTheDocument();
+  });
+
+  it('uses the gameDetails.title for the modal heading', () => {
+    renderModal();
+    expect(screen.getByLabelText('play.gameDetails.title')).toBeInTheDocument();
+  });
 });
 
 describe('OperationLogModal — Initial Settings section', () => {

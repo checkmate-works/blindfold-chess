@@ -1748,6 +1748,9 @@
     "saved": "保存済み",
     "postmortem": "感想戦",
     "resultTitle": "ゲーム結果",
+    "gameDetails": {
+      "title": "ゲーム詳細"
+    },
     "engineInfo": {
       "title": "対戦相手",
       "engineLabel": "エンジン",
@@ -1756,7 +1759,6 @@
       "maiaDifficulty": "{rating} ELO"
     },
     "operationLog": {
-      "title": "操作ログ",
       "noLogs": "操作ログはまだありません。",
       "columnMove": "手",
       "columnInputMethod": "入力方式",

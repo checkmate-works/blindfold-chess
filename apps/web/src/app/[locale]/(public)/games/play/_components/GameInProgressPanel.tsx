@@ -6,7 +6,7 @@ import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FlagIcon, UndoIcon } from '@blindfold-chess/icons';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { FaClipboardList, FaCog, FaInfoCircle } from 'react-icons/fa';
+import { FaClipboardList, FaCog } from 'react-icons/fa';
 
 import type { MoveInputMethod } from '@/lib/games/saved-game-types';
 
@@ -45,12 +45,6 @@ type Props = {
   setMoveInputMode?: (mode: GamePreferences['moveInputMode']) => void;
   onShowOperationLog?: () => void;
   /**
-   * Opens the engine info modal — same pattern as `onShowOperationLog`.
-   * The modal itself is owned by the page so its lifecycle is shared
-   * with other modals (focus restoration, scroll lock).
-   */
-  onShowEngineInfo: () => void;
-  /**
    * Opens the mid-game settings modal. Omit (undefined) to hide the gear
    * icon entirely — used for legacy games without a `gamePreferences`
    * snapshot, where there is no per-game baseline to edit against.
@@ -85,7 +79,6 @@ export function GameInProgressPanel({
   onMovePeek,
   setMoveInputMode,
   onShowOperationLog,
-  onShowEngineInfo,
   onShowSettings,
   aiMoveError,
 }: Props) {
@@ -170,27 +163,16 @@ export function GameInProgressPanel({
         </Link>
       </div>
 
-      {/* Engine info + Operation Log. Both icons share the same hit
-          target (`p-1` on a 1rem icon → 1.5rem square) and the row
-          uses `items-center` so the visual centres line up regardless
-          of the icons' internal glyph metrics — FaInfoCircle's filled
-          circle and FaClipboardList's tall rectangle have different
-          centre-of-mass without explicit padding. */}
+      {/* Game Details + (optional) settings. The Game Details modal folds
+          the opponent / engine info, initial per-game settings, and the
+          mid-game change log into one surface — see OperationLogModal. */}
       <div className="flex justify-end items-center gap-2 text-muted-foreground">
-        <button
-          type="button"
-          onClick={onShowEngineInfo}
-          className="p-1 leading-none hover:text-foreground"
-          title={t('engineInfo.title')}
-        >
-          <FaInfoCircle className="w-4 h-4" />
-        </button>
         {onShowOperationLog && (
           <button
             type="button"
             onClick={onShowOperationLog}
             className="p-1 leading-none hover:text-foreground"
-            title={t('operationLog.title')}
+            title={t('gameDetails.title')}
           >
             <FaClipboardList className="w-4 h-4" />
           </button>

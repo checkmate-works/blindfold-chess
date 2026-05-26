@@ -2,9 +2,13 @@
 
 import { useState } from 'react';
 
+import Image from 'next/image';
+
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaChevronDown } from 'react-icons/fa';
 
+import type { EngineConfig } from '@/lib/engines';
+import { ENGINE_LOGO_SRC } from '@/lib/engines';
 import type { PreferenceChangeLogEntry } from '@/lib/games/saved-game-types';
 
 import { Modal } from '@/app/[locale]/_components/Modal';
@@ -13,6 +17,14 @@ import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreference
 type Props = {
   isOpen: boolean;
   onClose: () => void;
+  /**
+   * AI opponent + difficulty driving this game. Rendered always-visible at
+   * the top of the modal as the "Opponent" block: the data is tiny (engine
+   * name + one number) and is the first thing players want to see when
+   * opening Game Details, so the collapsed-by-default treatment used for
+   * the deeper audit sections would be needless friction here.
+   */
+  engineConfig: EngineConfig;
   /**
    * Snapshot of the per-game preferences captured at game start. Surfaced
    * here as a read-only "Initial Settings" section so the player can review
@@ -34,6 +46,7 @@ type Props = {
 export function OperationLogModal({
   isOpen,
   onClose,
+  engineConfig,
   gamePreferences,
   preferenceChangeLog,
 }: Props) {
@@ -111,8 +124,45 @@ export function OperationLogModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={t('operationLog.title')} maxWidth="max-w-lg">
+    <Modal isOpen={isOpen} onClose={onClose} title={t('gameDetails.title')} maxWidth="max-w-lg">
       <div className="space-y-6">
+        {/* Opponent — always visible, no collapse. See `engineConfig` prop
+            doc for the design rationale. */}
+        <section className="bg-card rounded-md border border-border overflow-hidden">
+          <div className="px-4 py-3 border-b border-border">
+            <span className="text-sm font-medium text-foreground">{t('engineInfo.title')}</span>
+          </div>
+          <dl className="text-sm divide-y divide-border/50">
+            <div className="flex justify-between gap-3 px-4 py-2">
+              <dt className="text-muted-foreground">{t('engineInfo.engineLabel')}</dt>
+              <dd className="flex items-center gap-1.5 text-right">
+                {/* Reuse the same engine logo asset as EngineConfigBadge /
+                    the games-list rows so the engine identity reads
+                    consistently across the app. 18px matches the badge's
+                    sizing — small enough to sit beside body-sized text
+                    without dominating, large enough that the Stockfish /
+                    Maia silhouettes remain recognisable. */}
+                <Image
+                  src={ENGINE_LOGO_SRC[engineConfig.kind]}
+                  alt=""
+                  width={18}
+                  height={18}
+                  className="object-contain"
+                />
+                <span>{engineConfig.kind === 'maia' ? 'Maia' : 'Stockfish'}</span>
+              </dd>
+            </div>
+            <div className="flex justify-between gap-3 px-4 py-2">
+              <dt className="text-muted-foreground">{t('engineInfo.difficultyLabel')}</dt>
+              <dd className="text-right">
+                {engineConfig.kind === 'maia'
+                  ? t('engineInfo.maiaDifficulty', { rating: engineConfig.rating })
+                  : t('engineInfo.stockfishDifficulty', { level: engineConfig.skillLevel })}
+              </dd>
+            </div>
+          </dl>
+        </section>
+
         <section className="bg-card rounded-md border border-border overflow-hidden">
           <button
             type="button"

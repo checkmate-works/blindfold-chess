@@ -1744,6 +1744,9 @@
     "saved": "Salvo",
     "postmortem": "Revisão da Partida",
     "resultTitle": "Resultado da Partida",
+    "gameDetails": {
+      "title": "Detalhes da Partida"
+    },
     "engineInfo": {
       "title": "Oponente",
       "engineLabel": "Motor",
@@ -1752,7 +1755,6 @@
       "maiaDifficulty": "{rating} ELO"
     },
     "operationLog": {
-      "title": "Registro de Operações",
       "noLogs": "Ainda não há registros de operações.",
       "columnMove": "Movimento",
       "columnInputMethod": "Método de Entrada",
