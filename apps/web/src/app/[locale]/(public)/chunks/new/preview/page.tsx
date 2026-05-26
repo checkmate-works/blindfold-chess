@@ -4,7 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { getAuthenticatedUser } from '@/lib/auth';
 
 import { PageLayout } from '@/app/[locale]/_components';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { ChunkPreviewClient } from '../../_components/ChunkPreviewClient';
@@ -19,14 +19,12 @@ import { ChunkPreviewClient } from '../../_components/ChunkPreviewClient';
  * the sessionStorage handoff cannot be inspected on the server.
  */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'chunks.preview' });
-  const title = t('title');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'chunks/new/preview', title }),
-    title: resolveTitle(title, locale),
-  };
+  return createPageMetadata({
+    params,
+    namespace: 'chunks.preview',
+    path: 'chunks/new/preview',
+    omitDescription: true,
+  });
 }
 
 export default async function ChunkPreviewPage({ params }: Props) {

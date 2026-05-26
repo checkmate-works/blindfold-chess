@@ -42,7 +42,7 @@ import {
 import type { HelpStep } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
 import { BeltStrip } from './_components/BeltStrip';
@@ -51,17 +51,7 @@ import { NextRankRequirements } from './_components/NextRankRequirements';
 export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: LocalePageProps): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'metadata.dojo' });
-
-  const title = t('title');
-  const description = t('description');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'dojo', title, description }),
-    title: resolveTitle(title, locale),
-    description,
-  };
+  return createPageMetadata({ params, namespace: 'metadata.dojo', path: 'dojo' });
 }
 
 export default async function DojoPage({ params }: LocalePageProps) {

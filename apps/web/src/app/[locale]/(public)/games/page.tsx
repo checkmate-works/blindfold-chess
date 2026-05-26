@@ -19,7 +19,7 @@ import { NewGameButton } from '@/app/[locale]/(public)/(home)/_components/NewGam
 import { HelpTourButton, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -34,19 +34,7 @@ type Props = {
 export const generateStaticParams = generateLocaleStaticParams;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  const t = await getTranslations({ locale, namespace: 'metadata.games' });
-
-  const title = t('title');
-  const description = t('description');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'games', title, description }),
-    title: resolveTitle(title, locale),
-    description,
-    robots: { index: false },
-  };
+  return createPageMetadata({ params, namespace: 'metadata.games', path: 'games' });
 }
 
 export default async function GamesPage({ params }: Props) {

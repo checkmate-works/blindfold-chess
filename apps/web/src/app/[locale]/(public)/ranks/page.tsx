@@ -32,7 +32,7 @@ import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { SignUpBanner } from '@/app/[locale]/_components/SignUpBanner';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
 import { RanksGrid } from './_components/RanksGrid';
@@ -41,17 +41,7 @@ import { getAllRanks } from './_lib/queries';
 export const revalidate = 1800; // 30 minutes — ranks are code-seeded; long TTL is fine
 
 export async function generateMetadata({ params }: LocalePageProps): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'metadata.ranks' });
-
-  const title = t('title');
-  const description = t('description');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'ranks', title, description }),
-    title: resolveTitle(title, locale),
-    description,
-  };
+  return createPageMetadata({ params, namespace: 'metadata.ranks', path: 'ranks' });
 }
 
 export default async function RanksPage({ params }: LocalePageProps) {

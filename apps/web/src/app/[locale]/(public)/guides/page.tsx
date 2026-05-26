@@ -21,7 +21,7 @@ import { buildGuidePath, enumerateGuideRoutes } from '@/lib/guides';
 import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
 
 import { PageLayout } from '@/app/[locale]/_components';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
 import { GuidePageFooter } from './_components/GuidePageFooter';
@@ -32,17 +32,7 @@ export function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: LocalePageProps): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'metadata.guides.top' });
-
-  const title = t('title');
-  const description = t('description');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'guides', title, description }),
-    title: resolveTitle(title, locale),
-    description,
-  };
+  return createPageMetadata({ params, namespace: 'metadata.guides.top', path: 'guides' });
 }
 
 const sections = [{ id: 'rankGuides', Component: RankGuidesSection }] as const;

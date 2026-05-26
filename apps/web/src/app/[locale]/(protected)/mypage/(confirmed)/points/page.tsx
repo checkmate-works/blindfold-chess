@@ -26,21 +26,19 @@ import { getAuthenticatedUser } from '@/lib/auth';
 import { AD_FREE_DAYS_PER_POINT } from '@/lib/points';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { RedeemForm } from './_components/RedeemForm';
 import { getPointsPageData } from './_lib/getPointsPageData';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'MypagePoints' });
-  const title = t('title');
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'mypage/points', title }),
-    title: resolveTitle(title, locale),
-    robots: { index: false, follow: false },
-  };
+  return createPageMetadata({
+    params,
+    namespace: 'MypagePoints',
+    path: 'mypage/points',
+    omitDescription: true,
+  });
 }
 
 export default async function PointsPage({ params }: Props) {
