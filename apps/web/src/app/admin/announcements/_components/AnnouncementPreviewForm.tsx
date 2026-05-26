@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import { formatDateTimeLocal } from '../../_lib/format';
 import { updateAnnouncement } from '../_actions/updateAnnouncement';
 
 type AnnouncementPreviewFormProps = {
@@ -58,6 +59,13 @@ export function AnnouncementPreviewForm({
   const isInitialPublish = defaultValues.status !== 'published' && status === 'published';
   const showNotificationCheckbox = isInitialPublish;
 
+  const handleStatusChange = (newStatus: string) => {
+    setStatus(newStatus);
+    if (newStatus === 'published' && !publishedAt) {
+      setPublishedAt(formatDateTimeLocal(new Date()) ?? '');
+    }
+  };
+
   const handleSubmit = () => {
     setError(null);
     startTransition(async () => {
@@ -95,7 +103,7 @@ export function AnnouncementPreviewForm({
               name="status"
               value="draft"
               checked={status === 'draft'}
-              onChange={(e) => setStatus(e.target.value)}
+              onChange={(e) => handleStatusChange(e.target.value)}
               className="sr-only"
             />
             {labels.draft}
@@ -112,7 +120,7 @@ export function AnnouncementPreviewForm({
               name="status"
               value="published"
               checked={status === 'published'}
-              onChange={(e) => setStatus(e.target.value)}
+              onChange={(e) => handleStatusChange(e.target.value)}
               className="sr-only"
             />
             {labels.published}

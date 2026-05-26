@@ -224,7 +224,8 @@ describe('AnnouncementPreviewForm', () => {
       status: 'published',
       visibility: 'members_only',
       pinnedAt: null,
-      publishedAt: null,
+      // Auto-filled with current datetime when status flips to Published.
+      publishedAt: expect.any(String),
       sendNotification: false,
     });
   });
@@ -386,7 +387,7 @@ describe('AnnouncementPreviewForm', () => {
       status: 'published',
       visibility: 'public',
       pinnedAt: null,
-      publishedAt: null,
+      publishedAt: expect.any(String),
       sendNotification: true,
     });
   });
@@ -415,7 +416,7 @@ describe('AnnouncementPreviewForm', () => {
       status: 'published',
       visibility: 'public',
       pinnedAt: null,
-      publishedAt: null,
+      publishedAt: expect.any(String),
       sendNotification: false,
     });
   });
@@ -444,7 +445,7 @@ describe('AnnouncementPreviewForm', () => {
       status: 'published',
       visibility: 'public',
       pinnedAt: null,
-      publishedAt: null,
+      publishedAt: expect.any(String),
       sendNotification: false,
     });
   });
@@ -496,7 +497,7 @@ describe('AnnouncementPreviewForm', () => {
       status: 'published',
       visibility: 'public',
       pinnedAt: null,
-      publishedAt: null,
+      publishedAt: expect.any(String),
       sendNotification: false,
     });
   });
@@ -544,5 +545,84 @@ describe('AnnouncementPreviewForm', () => {
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
     expect(screen.queryByText('Send notification to users')).not.toBeInTheDocument();
     expect(screen.queryByText('Notification already sent')).not.toBeInTheDocument();
+  });
+
+  // --- Auto-fill publishedAt when status flips to Published ---
+
+  it('should auto-fill publishedAt with the current datetime when Published is selected and publishedAt is empty', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-06-15T10:30:00'));
+
+    try {
+      render(
+        <AnnouncementPreviewForm
+          id={testId}
+          announcementData={announcementData}
+          defaultValues={defaultValues}
+          notificationSent={false}
+          labels={defaultLabels}
+        />
+      );
+
+      // publishedAt field is hidden until Published is selected; the underlying
+      // state still starts empty (defaultValues.publishedAt = '').
+      fireEvent.click(screen.getByRole('radio', { name: 'Published' }));
+
+      const publishedAtInput = screen.getByLabelText('Published At') as HTMLInputElement;
+      expect(publishedAtInput.value).toBe('2026-06-15T10:30');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('should NOT overwrite publishedAt when Published is selected and publishedAt is already set', () => {
+    const preFilledDefaults = {
+      ...defaultValues,
+      publishedAt: '2024-01-15T08:00',
+    };
+
+    render(
+      <AnnouncementPreviewForm
+        id={testId}
+        announcementData={announcementData}
+        defaultValues={preFilledDefaults}
+        notificationSent={false}
+        labels={defaultLabels}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Published' }));
+
+    const publishedAtInput = screen.getByLabelText('Published At') as HTMLInputElement;
+    expect(publishedAtInput.value).toBe('2024-01-15T08:00');
+  });
+
+  it('should NOT touch publishedAt when Draft is re-selected', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-06-15T10:30:00'));
+
+    try {
+      render(
+        <AnnouncementPreviewForm
+          id={testId}
+          announcementData={announcementData}
+          defaultValues={defaultValues}
+          notificationSent={false}
+          labels={defaultLabels}
+        />
+      );
+
+      fireEvent.click(screen.getByRole('radio', { name: 'Published' }));
+      fireEvent.click(screen.getByRole('radio', { name: 'Draft' }));
+      fireEvent.click(screen.getByRole('radio', { name: 'Published' }));
+
+      // The first Published selection filled in publishedAt with the current
+      // datetime; flipping back to Draft and then Published again must not
+      // re-stamp the value (it's no longer empty).
+      const publishedAtInput = screen.getByLabelText('Published At') as HTMLInputElement;
+      expect(publishedAtInput.value).toBe('2026-06-15T10:30');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
