@@ -177,4 +177,79 @@ describe('AnnouncementForm', () => {
 
     expect(mockPush).toHaveBeenCalledWith('/admin/announcements');
   });
+
+  it('should render Locale field between Slug and Title', () => {
+    const mockOnSaveDraft = vi.fn();
+
+    const { container } = render(
+      <AnnouncementForm onSaveDraft={mockOnSaveDraft} labels={defaultLabels} />
+    );
+
+    const fields = Array.from(container.querySelectorAll('label')).map((l) => l.textContent);
+    const slugIdx = fields.indexOf('Slug');
+    const localeIdx = fields.indexOf('Locale');
+    const titleIdx = fields.indexOf('Title');
+
+    expect(slugIdx).toBeGreaterThanOrEqual(0);
+    expect(localeIdx).toBe(slugIdx + 1);
+    expect(titleIdx).toBe(localeIdx + 1);
+  });
+
+  it('should mark Slug input readOnly when lockSlug is true', () => {
+    const mockOnSaveDraft = vi.fn();
+
+    render(<AnnouncementForm onSaveDraft={mockOnSaveDraft} labels={defaultLabels} lockSlug />);
+
+    expect(screen.getByLabelText('Slug')).toHaveAttribute('readonly');
+  });
+
+  it('should disable Locale select when lockLocale is true', () => {
+    const mockOnSaveDraft = vi.fn();
+
+    render(<AnnouncementForm onSaveDraft={mockOnSaveDraft} labels={defaultLabels} lockLocale />);
+
+    expect(screen.getByLabelText('Locale')).toBeDisabled();
+  });
+
+  it('should leave Slug editable and Locale enabled by default', () => {
+    const mockOnSaveDraft = vi.fn();
+
+    render(<AnnouncementForm onSaveDraft={mockOnSaveDraft} labels={defaultLabels} />);
+
+    expect(screen.getByLabelText('Slug')).not.toHaveAttribute('readonly');
+    expect(screen.getByLabelText('Locale')).not.toBeDisabled();
+  });
+
+  it('should still submit locked values via onSaveDraft', async () => {
+    const mockOnSaveDraft = vi.fn().mockResolvedValue({ success: true, id: 'variant-id' });
+
+    render(
+      <AnnouncementForm
+        defaultValues={{
+          slug: 'ad-free-reward-for-posting',
+          title: '',
+          content: '',
+          locale: 'pt-BR',
+        }}
+        lockSlug
+        lockLocale
+        onSaveDraft={mockOnSaveDraft}
+        labels={defaultLabels}
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Variant Title' } });
+    fireEvent.change(screen.getByLabelText('Content'), { target: { value: 'Variant Content' } });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save Draft' }));
+    });
+
+    expect(mockOnSaveDraft).toHaveBeenCalledWith({
+      slug: 'ad-free-reward-for-posting',
+      title: 'Variant Title',
+      content: 'Variant Content',
+      locale: 'pt-BR',
+    });
+  });
 });

@@ -27,6 +27,8 @@ export function NewAnnouncementForm({
   return (
     <AnnouncementForm
       defaultValues={defaultValues}
+      lockSlug={defaultSlug != null}
+      lockLocale={defaultLocale != null}
       onSaveDraft={(data) =>
         createAnnouncement({
           ...data,

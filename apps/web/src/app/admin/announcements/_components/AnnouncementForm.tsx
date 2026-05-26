@@ -13,6 +13,8 @@ type AnnouncementEditData = {
 
 type AnnouncementFormProps = {
   defaultValues?: AnnouncementEditData;
+  lockSlug?: boolean;
+  lockLocale?: boolean;
   onSaveDraft: (
     data: AnnouncementEditData
   ) => Promise<{ success: true; id: string } | { error: string }>;
@@ -33,7 +35,13 @@ type AnnouncementFormProps = {
   };
 };
 
-export function AnnouncementForm({ defaultValues, onSaveDraft, labels }: AnnouncementFormProps) {
+export function AnnouncementForm({
+  defaultValues,
+  lockSlug = false,
+  lockLocale = false,
+  onSaveDraft,
+  labels,
+}: AnnouncementFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -93,9 +101,32 @@ export function AnnouncementForm({ defaultValues, onSaveDraft, labels }: Announc
             value={slug}
             onChange={(e) => setSlug(e.target.value)}
             placeholder={labels.slugPlaceholder}
-            className="w-full border border-border rounded px-3 py-2 text-sm bg-card text-foreground"
+            readOnly={lockSlug}
+            className={`w-full border border-border rounded px-3 py-2 text-sm text-foreground ${
+              lockSlug ? 'bg-muted cursor-not-allowed' : 'bg-card'
+            }`}
             maxLength={255}
           />
+        </div>
+
+        <div>
+          <label htmlFor="locale" className="block text-sm font-medium mb-1">
+            {labels.locale}
+          </label>
+          <select
+            id="locale"
+            value={locale}
+            onChange={(e) => setLocale(e.target.value)}
+            disabled={lockLocale}
+            className={`w-full border border-border rounded px-3 py-2 text-sm text-foreground ${
+              lockLocale ? 'bg-muted cursor-not-allowed' : 'bg-card'
+            }`}
+          >
+            <option value="en">en</option>
+            <option value="ja">ja</option>
+            <option value="es">es</option>
+            <option value="pt-BR">pt-BR</option>
+          </select>
         </div>
 
         <div>
@@ -125,21 +156,6 @@ export function AnnouncementForm({ defaultValues, onSaveDraft, labels }: Announc
             className="w-full border border-border rounded px-3 py-2 text-sm bg-card text-foreground resize-none"
             rows={10}
           />
-        </div>
-
-        <div>
-          <label htmlFor="locale" className="block text-sm font-medium mb-1">
-            {labels.locale}
-          </label>
-          <select
-            id="locale"
-            value={locale}
-            onChange={(e) => setLocale(e.target.value)}
-            className="w-full border border-border rounded px-3 py-2 text-sm bg-card text-foreground"
-          >
-            <option value="en">en</option>
-            <option value="ja">ja</option>
-          </select>
         </div>
 
         {error && <p className="text-destructive text-sm">{error}</p>}
