@@ -3391,7 +3391,13 @@
         "unsavedChangesTitle": "Unsaved Changes",
         "unsavedChangesMessage": "You have unsaved changes. Are you sure you want to leave?",
         "unsavedChangesConfirm": "Leave",
-        "unsavedChangesCancel": "Stay"
+        "unsavedChangesCancel": "Stay",
+        "draftSaved": "Draft saved",
+        "publishedSaved": "Announcement saved",
+        "publishedConfirmTitle": "Confirm Save",
+        "publishedConfirmMessage": "This announcement is published. Your changes will be reflected immediately. Are you sure?",
+        "publishedConfirmConfirm": "Save",
+        "publishedConfirmCancel": "Cancel"
       }
     },
     "articles": "Articles",

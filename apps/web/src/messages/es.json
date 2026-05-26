@@ -3149,7 +3149,13 @@
         "unsavedChangesTitle": "Cambios Sin Guardar",
         "unsavedChangesMessage": "Tienes cambios sin guardar. ¿Estás seguro de que deseas salir?",
         "unsavedChangesConfirm": "Salir",
-        "unsavedChangesCancel": "Quedarse"
+        "unsavedChangesCancel": "Quedarse",
+        "draftSaved": "Borrador guardado",
+        "publishedSaved": "Anuncio guardado",
+        "publishedConfirmTitle": "Confirmar Guardado",
+        "publishedConfirmMessage": "Este anuncio está publicado. Tus cambios se reflejarán inmediatamente. ¿Estás seguro?",
+        "publishedConfirmConfirm": "Guardar",
+        "publishedConfirmCancel": "Cancelar"
       }
     },
     "articles": "Artículos",
