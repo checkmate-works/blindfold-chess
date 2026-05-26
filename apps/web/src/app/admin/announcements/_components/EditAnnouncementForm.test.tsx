@@ -17,6 +17,10 @@ vi.mock('../_actions/updateAnnouncement', () => ({
   updateAnnouncement: (...args: unknown[]) => mockUpdateAnnouncement(...args),
 }));
 
+vi.mock('next-navigation-guard', () => ({
+  useNavigationGuard: () => ({ active: false, accept: vi.fn(), reject: vi.fn() }),
+}));
+
 const testId = 'ann-00000000-0000-0000-0000-000000000001';
 
 const defaultLabels = {
@@ -33,6 +37,10 @@ const defaultLabels = {
   preview: 'Preview',
   cancel: 'Cancel',
   backToList: 'Back to Announcements',
+  unsavedChangesTitle: 'Unsaved Changes',
+  unsavedChangesMessage: 'You have unsaved changes. Are you sure you want to leave?',
+  unsavedChangesConfirm: 'Leave',
+  unsavedChangesCancel: 'Stay',
 };
 
 const defaultValues = {

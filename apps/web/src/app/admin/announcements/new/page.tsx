@@ -31,6 +31,10 @@ export default async function NewAnnouncementPage({
         preview: t('form.preview'),
         cancel: t('form.cancel'),
         backToList: t('form.backToList'),
+        unsavedChangesTitle: t('form.unsavedChangesTitle'),
+        unsavedChangesMessage: t('form.unsavedChangesMessage'),
+        unsavedChangesConfirm: t('form.unsavedChangesConfirm'),
+        unsavedChangesCancel: t('form.unsavedChangesCancel'),
       }}
     />
   );

@@ -11,6 +11,16 @@ vi.mock('next/navigation', () => ({
   }),
 }));
 
+const mockUseNavigationGuard = vi.fn().mockReturnValue({
+  active: false,
+  accept: vi.fn(),
+  reject: vi.fn(),
+});
+
+vi.mock('next-navigation-guard', () => ({
+  useNavigationGuard: (...args: unknown[]) => mockUseNavigationGuard(...args),
+}));
+
 const defaultLabels = {
   formTitle: 'Create Announcement',
   slug: 'Slug',
@@ -25,11 +35,20 @@ const defaultLabels = {
   preview: 'Preview',
   cancel: 'Cancel',
   backToList: 'Back to Announcements',
+  unsavedChangesTitle: 'Unsaved Changes',
+  unsavedChangesMessage: 'You have unsaved changes. Are you sure you want to leave?',
+  unsavedChangesConfirm: 'Leave',
+  unsavedChangesCancel: 'Stay',
 };
 
 describe('AnnouncementForm', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUseNavigationGuard.mockReturnValue({
+      active: false,
+      accept: vi.fn(),
+      reject: vi.fn(),
+    });
   });
 
   it('should render all form fields', () => {
@@ -251,5 +270,87 @@ describe('AnnouncementForm', () => {
       content: 'Variant Content',
       locale: 'pt-BR',
     });
+  });
+
+  // --- Unsaved-changes navigation guard ---
+
+  it('should not enable the navigation guard on initial render', () => {
+    const mockOnSaveDraft = vi.fn();
+
+    render(<AnnouncementForm onSaveDraft={mockOnSaveDraft} labels={defaultLabels} />);
+
+    expect(mockUseNavigationGuard).toHaveBeenLastCalledWith({ enabled: false });
+  });
+
+  it('should enable the navigation guard after the user edits the title', () => {
+    const mockOnSaveDraft = vi.fn();
+
+    render(<AnnouncementForm onSaveDraft={mockOnSaveDraft} labels={defaultLabels} />);
+
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Dirty Title' } });
+
+    expect(mockUseNavigationGuard).toHaveBeenLastCalledWith({ enabled: true });
+  });
+
+  it('should not enable the navigation guard when state matches defaults', () => {
+    const mockOnSaveDraft = vi.fn();
+    const defaults = {
+      slug: 'my-slug',
+      title: 'My Title',
+      content: 'My Content',
+      locale: 'ja',
+    };
+
+    render(
+      <AnnouncementForm
+        defaultValues={defaults}
+        onSaveDraft={mockOnSaveDraft}
+        labels={defaultLabels}
+      />
+    );
+
+    expect(mockUseNavigationGuard).toHaveBeenLastCalledWith({ enabled: false });
+  });
+
+  it('should not render the dialog while the guard is inactive', () => {
+    const mockOnSaveDraft = vi.fn();
+
+    render(<AnnouncementForm onSaveDraft={mockOnSaveDraft} labels={defaultLabels} />);
+
+    expect(screen.queryByText('Unsaved Changes')).not.toBeInTheDocument();
+  });
+
+  it('should render the dialog while the guard is active', () => {
+    const mockOnSaveDraft = vi.fn();
+    const accept = vi.fn();
+    const reject = vi.fn();
+    mockUseNavigationGuard.mockReturnValue({ active: true, accept, reject });
+
+    render(<AnnouncementForm onSaveDraft={mockOnSaveDraft} labels={defaultLabels} />);
+
+    expect(screen.getByText('Unsaved Changes')).toBeInTheDocument();
+    expect(
+      screen.getByText('You have unsaved changes. Are you sure you want to leave?')
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Leave' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Stay' })).toBeInTheDocument();
+  });
+
+  it('should disable the navigation guard after a successful Save Draft', async () => {
+    const mockOnSaveDraft = vi.fn().mockResolvedValue({ success: true, id: 'saved-id' });
+
+    render(<AnnouncementForm onSaveDraft={mockOnSaveDraft} labels={defaultLabels} />);
+
+    fireEvent.change(screen.getByLabelText('Slug'), { target: { value: 'new-slug' } });
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'New Title' } });
+    fireEvent.change(screen.getByLabelText('Content'), { target: { value: 'New Content' } });
+
+    expect(mockUseNavigationGuard).toHaveBeenLastCalledWith({ enabled: true });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save Draft' }));
+    });
+
+    expect(mockUseNavigationGuard).toHaveBeenLastCalledWith({ enabled: false });
   });
 });

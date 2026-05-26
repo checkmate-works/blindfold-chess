@@ -3387,7 +3387,11 @@
         "backToEdit": "Back to Edit",
         "contentPreview": "Content Preview",
         "sendNotification": "Send notification to users",
-        "notificationAlreadySent": "Notification already sent"
+        "notificationAlreadySent": "Notification already sent",
+        "unsavedChangesTitle": "Unsaved Changes",
+        "unsavedChangesMessage": "You have unsaved changes. Are you sure you want to leave?",
+        "unsavedChangesConfirm": "Leave",
+        "unsavedChangesCancel": "Stay"
       }
     },
     "articles": "Articles",

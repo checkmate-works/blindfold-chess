@@ -1,8 +1,11 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useRef, useState, useTransition } from 'react';
 
 import { useRouter } from 'next/navigation';
+
+import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
+import { UnsavedChangesDialog } from '@/app/_components/UnsavedChangesDialog';
 
 type AnnouncementEditData = {
   slug: string;
@@ -32,6 +35,10 @@ type AnnouncementFormProps = {
     preview: string;
     cancel: string;
     backToList: string;
+    unsavedChangesTitle: string;
+    unsavedChangesMessage: string;
+    unsavedChangesConfirm: string;
+    unsavedChangesCancel: string;
   };
 };
 
@@ -46,10 +53,29 @@ export function AnnouncementForm({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  const [slug, setSlug] = useState(defaultValues?.slug ?? '');
-  const [title, setTitle] = useState(defaultValues?.title ?? '');
-  const [content, setContent] = useState(defaultValues?.content ?? '');
-  const [locale, setLocale] = useState(defaultValues?.locale ?? 'en');
+  const initialSlug = defaultValues?.slug ?? '';
+  const initialTitle = defaultValues?.title ?? '';
+  const initialContent = defaultValues?.content ?? '';
+  const initialLocale = defaultValues?.locale ?? 'en';
+
+  const [slug, setSlug] = useState(initialSlug);
+  const [title, setTitle] = useState(initialTitle);
+  const [content, setContent] = useState(initialContent);
+  const [locale, setLocale] = useState(initialLocale);
+
+  const isSubmittedRef = useRef(false);
+  const isDirty =
+    !isSubmittedRef.current &&
+    (slug !== initialSlug ||
+      title !== initialTitle ||
+      content !== initialContent ||
+      locale !== initialLocale);
+
+  const {
+    isBlocking,
+    confirm: confirmNavigation,
+    cancel: cancelNavigation,
+  } = useUnsavedChanges({ isDirty });
 
   const handleSaveDraft = () => {
     setError(null);
@@ -59,6 +85,7 @@ export function AnnouncementForm({
       if ('error' in result) {
         setError(result.error);
       } else {
+        isSubmittedRef.current = true;
         router.push('/admin/announcements');
       }
     });
@@ -72,6 +99,7 @@ export function AnnouncementForm({
       if ('error' in result) {
         setError(result.error);
       } else {
+        isSubmittedRef.current = true;
         router.push(`/admin/announcements/${result.id}/preview`);
       }
     });
@@ -187,6 +215,16 @@ export function AnnouncementForm({
           </button>
         </div>
       </div>
+
+      <UnsavedChangesDialog
+        open={isBlocking}
+        onConfirm={confirmNavigation}
+        onCancel={cancelNavigation}
+        title={labels.unsavedChangesTitle}
+        message={labels.unsavedChangesMessage}
+        confirmLabel={labels.unsavedChangesConfirm}
+        cancelLabel={labels.unsavedChangesCancel}
+      />
     </div>
   );
 }

@@ -3145,7 +3145,11 @@
         "backToEdit": "Volver a Editar",
         "contentPreview": "Vista Previa del Contenido",
         "sendNotification": "Enviar notificación a los usuarios",
-        "notificationAlreadySent": "Notificación ya enviada"
+        "notificationAlreadySent": "Notificación ya enviada",
+        "unsavedChangesTitle": "Cambios Sin Guardar",
+        "unsavedChangesMessage": "Tienes cambios sin guardar. ¿Estás seguro de que deseas salir?",
+        "unsavedChangesConfirm": "Salir",
+        "unsavedChangesCancel": "Quedarse"
       }
     },
     "articles": "Artículos",
