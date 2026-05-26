@@ -4,6 +4,7 @@ import { getStartingFen, validateMoveSequence } from '@blindfold-chess/features/
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
 import { type EngineConfig, engineConfigFromUrlParams } from '@/lib/engines';
+import { normalisePerGamePreferences } from '@/lib/games/per-game-preferences';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -110,7 +111,12 @@ export function parseUrlSearchParams(searchParams: URLSearchParams): UrlParams {
   const gamePrefsParam = searchParams.get('gamePrefs');
   if (gamePrefsParam) {
     try {
-      gamePrefs = JSON.parse(gamePrefsParam);
+      // Run the parsed blob through the same normaliser used by the
+      // localStorage repository so legacy `showBoardButtonInGame` and
+      // missing-newer-field URLs behave like equivalent current ones.
+      // Invalid enum values fall back to safe defaults instead of leaking
+      // into a session and later being persisted as malformed data.
+      gamePrefs = normalisePerGamePreferences(JSON.parse(gamePrefsParam));
     } catch {
       // Invalid JSON, ignore
     }
