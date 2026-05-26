@@ -10,6 +10,7 @@ const mockTxEditRequestsUpdateWhere = vi.fn();
 const mockTxTopicPostsUpdateWhere = vi.fn();
 const mockTxDeleteWhere = vi.fn();
 const mockTxFeedbackInsertValues = vi.fn();
+const mockTxFeedInsertValues = vi.fn();
 const mockFindChunkBySlug = vi.fn();
 const mockGrantPointsForPost = vi.fn();
 const mockClawbackPointsForPost = vi.fn();
@@ -80,6 +81,10 @@ vi.mock('@/lib/db', () => ({
               mockTxFeedbackInsertValues(values);
               return Promise.resolve();
             }
+            if (table?.__tableTag === 'feed_items') {
+              mockTxFeedInsertValues(values);
+              return Promise.resolve();
+            }
             mockInsertValues(values);
             return { returning: () => mockInsertReturning() };
           },
@@ -130,6 +135,13 @@ vi.mock('@/lib/db', () => ({
     __tableTag: 'chunk_feedback_topics',
     chunkId: 'chunk_id',
     topic: 'topic',
+  },
+  feedItems: {
+    __tableTag: 'feed_items',
+    entityType: 'entity_type',
+    entityId: 'entity_id',
+    actorId: 'actor_id',
+    metadata: 'metadata',
   },
 }));
 
@@ -331,6 +343,44 @@ describe('createChunkEntry', () => {
     });
 
     expect(mockTxFeedbackInsertValues).not.toHaveBeenCalled();
+  });
+
+  it('emits a feed_items row with kind=created when the chunk is created as draft', async () => {
+    // Draft creation surfaces in the home feed as a "looking for edit
+    // requests" announcement; the publish moment later emits a second
+    // feed_items row with kind=published from `publishChunkEntry`.
+    mockInsertReturning.mockResolvedValue([{ id: TEST_CHUNK_ID, slug: TEST_SLUG }]);
+    mockGrantPointsForPost.mockResolvedValue(null);
+
+    const { createChunkEntry } = await import('./user-chunk-mutations');
+    await createChunkEntry({ ...baseCreateInput, status: 'draft' });
+
+    expect(mockTxFeedInsertValues).toHaveBeenCalledTimes(1);
+    expect(mockTxFeedInsertValues).toHaveBeenCalledWith({
+      entityType: 'chunk',
+      entityId: TEST_CHUNK_ID,
+      actorId: TEST_USER_ID,
+      metadata: { kind: 'created', slug: TEST_SLUG },
+    });
+  });
+
+  it('emits a feed_items row with kind=published when the chunk is created directly as published', async () => {
+    // A chunk that skips the draft phase has no "created" announcement —
+    // the single feed row uses kind=published so the timeline doesn't
+    // double-announce the same chunk.
+    mockInsertReturning.mockResolvedValue([{ id: TEST_CHUNK_ID, slug: TEST_SLUG }]);
+    mockGrantPointsForPost.mockResolvedValue(null);
+
+    const { createChunkEntry } = await import('./user-chunk-mutations');
+    await createChunkEntry({ ...baseCreateInput, status: 'published' });
+
+    expect(mockTxFeedInsertValues).toHaveBeenCalledTimes(1);
+    expect(mockTxFeedInsertValues).toHaveBeenCalledWith({
+      entityType: 'chunk',
+      entityId: TEST_CHUNK_ID,
+      actorId: TEST_USER_ID,
+      metadata: { kind: 'published', slug: TEST_SLUG },
+    });
   });
 
   it('skips the topics insert when topics is empty even on draft', async () => {
@@ -949,6 +999,16 @@ describe('publishChunkEntry', () => {
         metadata: expect.objectContaining({ from: 'draft', to: 'published' }),
       })
     );
+    // Publish emits a kind=published feed row alongside the draft's
+    // earlier kind=created row, giving the home timeline two distinct
+    // surface points for the same chunk.
+    expect(mockTxFeedInsertValues).toHaveBeenCalledTimes(1);
+    expect(mockTxFeedInsertValues).toHaveBeenCalledWith({
+      entityType: 'chunk',
+      entityId: TEST_CHUNK_ID,
+      actorId: TEST_USER_ID,
+      metadata: { kind: 'published', slug: TEST_SLUG },
+    });
   });
 
   it('idempotent when already published (no write, no log)', async () => {
