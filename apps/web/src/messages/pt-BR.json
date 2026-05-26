@@ -1623,6 +1623,12 @@
       },
       "position": {
         "action": "Publicou um novo problema"
+      },
+      "chunk": {
+        "action": {
+          "created": "Publicou um rascunho de chunk",
+          "published": "Publicou um chunk"
+        }
       }
     },
     "vsAi": {
@@ -2705,6 +2711,8 @@
     "announcementMessage": "Novo anúncio: {title}",
     "newPostMessage": "{actor} compartilhou uma nova publicação",
     "newCommentOnTopicMessage": "{actor} comentou no seu problema",
+    "newChunkDraftMessage": "{actor} publicou um rascunho de chunk",
+    "chunkPublishedMessage": "{actor} publicou um chunk",
     "newPositionMemoryMessage": "{actor} criou um novo problema de memória de posição",
     "newPuzzleMessage": "{actor} criou um novo puzzle",
     "achievementSingleMessage": "🏆 Você conquistou {name}",
