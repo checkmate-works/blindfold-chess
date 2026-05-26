@@ -129,6 +129,49 @@ export function notifyFollowersOfNewPosition(params: {
 }
 
 /**
+ * Notify all followers of a user about a new chunk lifecycle event.
+ * `kind` distinguishes the two surface points: `'created'` for a draft
+ * submission (calls for edit-request review) and `'published'` for the
+ * promotion to canonical. A draft that is later published thus emits
+ * two notifications — same chunk, different framing — mirroring the
+ * two feed_items rows the same lifecycle produces.
+ *
+ * Fire-and-forget — failures are logged but do not block the caller.
+ */
+export function notifyFollowersOfNewChunk(params: {
+  actorId: string;
+  chunkId: string;
+  slug: string;
+  kind: 'created' | 'published';
+}): void {
+  (async () => {
+    const followers = await db
+      .select({ followerId: userFollows.followerId })
+      .from(userFollows)
+      .where(eq(userFollows.followingId, params.actorId));
+
+    const notificationType = params.kind === 'published' ? 'chunk_published' : 'new_chunk_draft';
+
+    for (const follower of followers) {
+      createNotification({
+        userId: follower.followerId,
+        actorId: params.actorId,
+        type: notificationType,
+        targetType: 'chunk',
+        targetId: params.chunkId,
+        metadata: {
+          chunkId: params.chunkId,
+          slug: params.slug,
+          kind: params.kind,
+        },
+      });
+    }
+  })().catch((error) => {
+    console.error('[notifyFollowersOfNewChunk] failed:', error);
+  });
+}
+
+/**
  * Notify the author of a topic about a new comment.
  * Fire-and-forget — failures are silently caught.
  */

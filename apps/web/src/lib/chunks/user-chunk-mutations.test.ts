@@ -11,6 +11,7 @@ const mockTxTopicPostsUpdateWhere = vi.fn();
 const mockTxDeleteWhere = vi.fn();
 const mockTxFeedbackInsertValues = vi.fn();
 const mockTxFeedInsertValues = vi.fn();
+const mockNotifyFollowersOfNewChunk = vi.fn();
 const mockFindChunkBySlug = vi.fn();
 const mockGrantPointsForPost = vi.fn();
 const mockClawbackPointsForPost = vi.fn();
@@ -26,6 +27,10 @@ vi.mock('@/lib/auth', () => ({
 
 vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: (...args: unknown[]) => mockLogActivityEvent(...args),
+}));
+
+vi.mock('@/lib/notifications/notification', () => ({
+  notifyFollowersOfNewChunk: (...args: unknown[]) => mockNotifyFollowersOfNewChunk(...args),
 }));
 
 vi.mock('@/lib/points', () => ({
@@ -361,6 +366,22 @@ describe('createChunkEntry', () => {
       entityId: TEST_CHUNK_ID,
       actorId: TEST_USER_ID,
       metadata: { kind: 'created', slug: TEST_SLUG },
+    });
+  });
+
+  it('notifies followers with kind=created when a draft is submitted', async () => {
+    mockInsertReturning.mockResolvedValue([{ id: TEST_CHUNK_ID, slug: TEST_SLUG }]);
+    mockGrantPointsForPost.mockResolvedValue(null);
+
+    const { createChunkEntry } = await import('./user-chunk-mutations');
+    await createChunkEntry({ ...baseCreateInput, status: 'draft' });
+
+    expect(mockNotifyFollowersOfNewChunk).toHaveBeenCalledTimes(1);
+    expect(mockNotifyFollowersOfNewChunk).toHaveBeenCalledWith({
+      actorId: TEST_USER_ID,
+      chunkId: TEST_CHUNK_ID,
+      slug: TEST_SLUG,
+      kind: 'created',
     });
   });
 
@@ -1008,6 +1029,16 @@ describe('publishChunkEntry', () => {
       entityId: TEST_CHUNK_ID,
       actorId: TEST_USER_ID,
       metadata: { kind: 'published', slug: TEST_SLUG },
+    });
+    // Publish also notifies followers — they get a second notification
+    // for the same chunk, framed as a publish event rather than a
+    // draft submission.
+    expect(mockNotifyFollowersOfNewChunk).toHaveBeenCalledTimes(1);
+    expect(mockNotifyFollowersOfNewChunk).toHaveBeenCalledWith({
+      actorId: TEST_USER_ID,
+      chunkId: TEST_CHUNK_ID,
+      slug: TEST_SLUG,
+      kind: 'published',
     });
   });
 

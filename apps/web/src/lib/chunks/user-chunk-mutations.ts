@@ -14,6 +14,7 @@ import {
   topicPosts,
 } from '@/lib/db';
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
+import { notifyFollowersOfNewChunk } from '@/lib/notifications/notification';
 import { clawbackPointsForPost, grantPointsForPost } from '@/lib/points';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { logActivityEvent } from '@/lib/users/activity-log';
@@ -153,6 +154,13 @@ export async function createChunkEntry(data: ChunkMutationData): Promise<CreateC
       });
 
       return { chunk, pointGrant };
+    });
+
+    notifyFollowersOfNewChunk({
+      actorId: user.id,
+      chunkId: txResult.chunk.id,
+      slug: txResult.chunk.slug,
+      kind: initialFeedKind,
     });
 
     logActivityEvent({
@@ -406,6 +414,13 @@ export async function publishChunkEntry(id: string): Promise<UpdateChunkResult> 
       actorId: user.id,
       metadata: { kind: 'published', slug: chunk.slug },
     });
+  });
+
+  notifyFollowersOfNewChunk({
+    actorId: user.id,
+    chunkId: id,
+    slug: chunk.slug,
+    kind: 'published',
   });
 
   logActivityEvent({
