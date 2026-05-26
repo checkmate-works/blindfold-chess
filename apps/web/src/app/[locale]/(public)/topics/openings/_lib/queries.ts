@@ -82,8 +82,17 @@ export type OpeningPostWithReplyMeta = OpeningPostWithAuthor & {
  * Wrapped with `React.cache` so the metadata generator and the page
  * component dedupe to a single lookup per request on the post detail page.
  */
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export const getOpeningPostById = cache(
   async (postId: string, slug: string): Promise<OpeningPostWithAuthor | null> => {
+    // URL-supplied postId — reject non-UUID input before it reaches Postgres,
+    // where `eq(topicPosts.id, "1")` would throw `invalid input syntax for type uuid`
+    // and surface as a 500. Caller treats null as 404.
+    if (!UUID_REGEX.test(postId)) {
+      return null;
+    }
+
     const results = await db
       .select({
         post: topicPosts,

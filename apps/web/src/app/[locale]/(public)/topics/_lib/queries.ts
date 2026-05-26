@@ -9,6 +9,8 @@ import { attachPostMeta } from './post-meta';
 import { authorSelect, sortPosts } from './shared';
 import type { PostWithReplyMeta, SortMode, TopicPostWithAuthor } from './shared';
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /**
  * Get the count of top-level posts for a specific topic type ('square' or 'opening').
  */
@@ -71,6 +73,13 @@ export const getPostByIdAndTopicKey = cache(
     topicType: TopicType,
     topicKey: string
   ): Promise<TopicPostWithAuthor | null> => {
+    // URL-supplied postId — reject non-UUID input before it reaches Postgres,
+    // where `eq(topicPosts.id, "1")` would throw `invalid input syntax for type uuid`
+    // and surface as a 500. Caller treats null as 404.
+    if (!UUID_REGEX.test(postId)) {
+      return null;
+    }
+
     const results = await db
       .select({
         post: topicPosts,

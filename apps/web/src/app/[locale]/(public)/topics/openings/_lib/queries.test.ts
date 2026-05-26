@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 
 import {
   getOpeningBySlug,
+  getOpeningPostById,
   getOpenings,
   getOpeningsByFirstMoveSquare,
   getPostCountByFirstMoveSquare,
@@ -265,6 +266,27 @@ describe('getPostCountByFirstMoveSquare', () => {
     const result = await getPostCountByFirstMoveSquare('d4');
 
     expect(result).toBe(0);
+  });
+});
+
+describe('getOpeningPostById — UUID guard', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('returns null without hitting the DB when postId is not a UUID', async () => {
+    // Defends against a 500 when users hand-craft URLs like /posts/1 — the raw
+    // string would otherwise reach Postgres and throw
+    // `invalid input syntax for type uuid`. Callers treat null as 404.
+    const chain = mockChain([]);
+    mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+
+    for (const bogus of ['1', 'abc', 'not-a-uuid', '', '1111-1111']) {
+      const result = await getOpeningPostById(bogus, 'ruy-lopez');
+      expect(result).toBeNull();
+    }
+
+    expect(mockDb.select).not.toHaveBeenCalled();
   });
 });
 

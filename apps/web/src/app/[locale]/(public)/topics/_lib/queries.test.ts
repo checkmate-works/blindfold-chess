@@ -127,6 +127,21 @@ describe('getPostByIdAndTopicKey — cross-topic isolation', () => {
     expect(result?.topicType).toBe('chunk');
   });
 
+  it('returns null without hitting the DB when postId is not a UUID', async () => {
+    // Defends against a 500 when users hand-craft URLs like /posts/1 — the raw
+    // string would otherwise reach Postgres and throw
+    // `invalid input syntax for type uuid`. Callers treat null as 404.
+    const chain = makeChain([]);
+    mockDb.select.mockReturnValue(chain as unknown as ReturnType<typeof mockDb.select>);
+
+    for (const bogus of ['1', 'abc', 'not-a-uuid', '', '1111-1111']) {
+      const result = await getPostByIdAndTopicKey(bogus, 'square', 'h8');
+      expect(result).toBeNull();
+    }
+
+    expect(mockDb.select).not.toHaveBeenCalled();
+  });
+
   it('filters out soft-deleted rows via isNull(deletedAt)', async () => {
     // The query embeds isNull(topicPosts.deletedAt). If the DB row has
     // deletedAt set, it must not appear in results. We exercise this by
