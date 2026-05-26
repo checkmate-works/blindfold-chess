@@ -7,7 +7,7 @@ import { chunks, db } from '@/lib/db';
 import { toggleLikeForTarget } from '@/lib/db/like-actions';
 import { createNotification } from '@/lib/notifications/notification';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
-import { UUID_RE } from '@/lib/validations/uuid';
+import { validateUUID } from '@/lib/validations/uuid';
 
 export type ToggleChunkLikeResult = { liked: boolean; likeCount: number } | { error: string };
 
@@ -29,9 +29,8 @@ export async function toggleChunkLikeBase(
   chunkId: string,
   locale: string
 ): Promise<ToggleChunkLikeResult> {
-  if (!UUID_RE.test(chunkId)) {
-    return { error: 'invalidChunkId' };
-  }
+  const uuidError = validateUUID(chunkId, 'chunkId');
+  if (uuidError) return uuidError;
 
   const guardResult = await authenticateAndGuard(RATE_LIMITS.toggleLike);
   if ('error' in guardResult) {

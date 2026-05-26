@@ -8,7 +8,7 @@ import { toggleLikeForTarget } from '@/lib/db/like-actions';
 import { createNotification } from '@/lib/notifications/notification';
 import { parsePositionType } from '@/lib/positions/types';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
-import { UUID_RE } from '@/lib/validations/uuid';
+import { validateUUID } from '@/lib/validations/uuid';
 
 export type ToggleLikeResult = { liked: boolean; likeCount: number } | { error: string };
 
@@ -22,9 +22,8 @@ export async function togglePositionLike(
   positionId: string,
   locale: string
 ): Promise<ToggleLikeResult> {
-  if (!UUID_RE.test(positionId)) {
-    return { error: 'invalidPositionId' };
-  }
+  const uuidError = validateUUID(positionId, 'positionId');
+  if (uuidError) return uuidError;
 
   const guardResult = await authenticateAndGuard(RATE_LIMITS.toggleLike);
   if ('error' in guardResult) {
