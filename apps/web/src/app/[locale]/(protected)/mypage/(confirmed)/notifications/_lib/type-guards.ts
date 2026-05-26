@@ -21,6 +21,29 @@ export function isChunkEditRequestMetadata(m: unknown): m is ChunkEditRequestMet
   return typeof r.chunkId === 'string' && typeof r.slug === 'string';
 }
 
+/**
+ * Metadata persisted with `new_chunk_draft` / `chunk_published` notifications.
+ * Mirrors the position-creation metadata shape: `slug` is snapshotted so the
+ * notification's link target survives even if the chunk is later renamed, and
+ * `kind` records whether the event was a draft submission (calls for edit
+ * requests) or a publish promotion (canonical state reached).
+ */
+export type ChunkLifecycleMetadata = {
+  chunkId: string;
+  slug: string;
+  kind: 'created' | 'published';
+};
+
+export function isChunkLifecycleMetadata(m: unknown): m is ChunkLifecycleMetadata {
+  if (typeof m !== 'object' || m === null) return false;
+  const r = m as Record<string, unknown>;
+  return (
+    typeof r.chunkId === 'string' &&
+    typeof r.slug === 'string' &&
+    (r.kind === 'created' || r.kind === 'published')
+  );
+}
+
 export function isPositionMetadata(m: unknown): m is PositionMetadata {
   if (typeof m !== 'object' || m === null) return false;
   const r = m as Record<string, unknown>;

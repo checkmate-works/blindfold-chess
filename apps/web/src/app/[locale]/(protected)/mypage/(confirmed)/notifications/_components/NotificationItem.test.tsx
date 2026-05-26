@@ -25,6 +25,8 @@ vi.mock('@/i18n/use-safe-translations', () => ({
       return `${params.actor} suggested an edit to your chunk`;
     if (key === 'chunkEditRequestAcceptedMessage' && params)
       return `${params.actor} accepted your edit suggestion`;
+    if (key === 'newChunkDraftMessage' && params) return `${params.actor} posted a chunk draft`;
+    if (key === 'chunkPublishedMessage' && params) return `${params.actor} published a chunk`;
     if (key === 'achievementSingleMessage' && params) return `🏆 You earned ${params.name}`;
     if (key === 'achievementMultipleMessage' && params)
       return `🏆 You earned ${params.count} achievements`;
@@ -671,6 +673,58 @@ describe('NotificationItem', () => {
         type: 'chunk_edit_request_submitted',
         targetType: 'chunk_edit_request',
         targetId: 'req-no-meta',
+        metadata: {},
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      expect(screen.queryByRole('link')).toBeNull();
+      expect(screen.getByRole('button')).toBeDefined();
+    });
+  });
+
+  describe('new_chunk_draft / chunk_published notifications', () => {
+    // Draft creations and publish promotions emit different
+    // notification types because the call-to-action differs: a draft
+    // wants the follower to read & propose edits, a publish wants the
+    // follower to read the canonical chunk. The link target follows.
+    it('should display the draft message and link to /chunks/{slug}/edit-requests for new_chunk_draft', () => {
+      const notification = createNotification({
+        type: 'new_chunk_draft',
+        targetType: 'chunk',
+        targetId: 'chunk-draft-1',
+        metadata: { chunkId: 'chunk-draft-1', slug: 'rook-battery', kind: 'created' },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const link = screen.getByText('Alice posted a chunk draft').closest('a');
+      expect(link).not.toBeNull();
+      expect(link!.getAttribute('href')).toBe('/chunks/rook-battery/edit-requests');
+    });
+
+    it('should display the published message and link to /chunks/{slug} for chunk_published', () => {
+      const notification = createNotification({
+        type: 'chunk_published',
+        targetType: 'chunk',
+        targetId: 'chunk-pub-1',
+        metadata: { chunkId: 'chunk-pub-1', slug: 'fianchetto', kind: 'published' },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const link = screen.getByText('Alice published a chunk').closest('a');
+      expect(link).not.toBeNull();
+      expect(link!.getAttribute('href')).toBe('/chunks/fianchetto');
+    });
+
+    it('should render as button when chunk lifecycle metadata is missing', () => {
+      // No slug to route against — degrade gracefully to a non-link
+      // button (the message is still rendered).
+      const notification = createNotification({
+        type: 'new_chunk_draft',
+        targetType: 'chunk',
+        targetId: 'chunk-no-meta',
         metadata: {},
       });
 

@@ -5,8 +5,16 @@ import 'server-only';
 
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
-import { chunkEditRequests, chunkFeedbackTopics, chunks, db, topicPosts } from '@/lib/db';
+import {
+  chunkEditRequests,
+  chunkFeedbackTopics,
+  chunks,
+  db,
+  feedItems,
+  topicPosts,
+} from '@/lib/db';
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
+import { notifyFollowersOfNewChunk } from '@/lib/notifications/notification';
 import { clawbackPointsForPost, grantPointsForPost } from '@/lib/points';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { logActivityEvent } from '@/lib/users/activity-log';
@@ -110,6 +118,14 @@ export async function createChunkEntry(data: ChunkMutationData): Promise<CreateC
     return { error: 'slugTaken' };
   }
 
+  // `kind` reflects the lifecycle moment this row represents: `'created'`
+  // for a draft submission (announcing "looking for edit requests"),
+  // `'published'` for a publish-on-creation. A draft created here that is
+  // later promoted via `publishChunkEntry` emits a second feed_items row
+  // with kind `'published'` — that two-step trail is intentional.
+  const initialFeedKind: 'created' | 'published' =
+    dataWithAuthor.status === 'published' ? 'published' : 'created';
+
   try {
     const txResult = await db.transaction(async (tx) => {
       const [chunk] = await tx
@@ -125,12 +141,26 @@ export async function createChunkEntry(data: ChunkMutationData): Promise<CreateC
         await resetChunkFeedbackTopics(tx, chunk.id, dataWithAuthor.feedbackTopics);
       }
 
+      await tx.insert(feedItems).values({
+        entityType: 'chunk',
+        entityId: chunk.id,
+        actorId: user.id,
+        metadata: { kind: initialFeedKind, slug: chunk.slug },
+      });
+
       const pointGrant = await grantPointsForPost(tx, user.id, {
         type: 'chunk',
         id: chunk.id,
       });
 
       return { chunk, pointGrant };
+    });
+
+    notifyFollowersOfNewChunk({
+      actorId: user.id,
+      chunkId: txResult.chunk.id,
+      slug: txResult.chunk.slug,
+      kind: initialFeedKind,
     });
 
     logActivityEvent({
@@ -373,6 +403,24 @@ export async function publishChunkEntry(id: string): Promise<UpdateChunkResult> 
       .update(chunkEditRequests)
       .set({ status: 'rejected', resolvedAt: now, resolverId: user.id })
       .where(and(eq(chunkEditRequests.chunkId, id), eq(chunkEditRequests.status, 'pending')));
+
+    // Surface the publish in the home timeline. A chunk created as
+    // draft and later promoted thus emits two feed rows (one `created`
+    // from `createChunkEntry`, one `published` here); a chunk created
+    // directly as published emits only the single `published` row.
+    await tx.insert(feedItems).values({
+      entityType: 'chunk',
+      entityId: id,
+      actorId: user.id,
+      metadata: { kind: 'published', slug: chunk.slug },
+    });
+  });
+
+  notifyFollowersOfNewChunk({
+    actorId: user.id,
+    chunkId: id,
+    slug: chunk.slug,
+    kind: 'published',
   });
 
   logActivityEvent({

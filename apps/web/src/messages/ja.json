@@ -1627,6 +1627,12 @@
       },
       "position": {
         "action": "問題を投稿しました"
+      },
+      "chunk": {
+        "action": {
+          "created": "チャンクの下書きを投稿しました",
+          "published": "チャンクを公開しました"
+        }
       }
     },
     "vsAi": {
@@ -2935,6 +2941,8 @@
     "newCommentOnTopicMessage": "{actor} さんがあなたの問題にコメントしました",
     "chunkEditRequestSubmittedMessage": "{actor} さんがあなたのチャンクに編集リクエストを送信しました",
     "chunkEditRequestAcceptedMessage": "{actor} さんがあなたの編集リクエストを採用しました",
+    "newChunkDraftMessage": "{actor} さんがチャンクの下書きを投稿しました",
+    "chunkPublishedMessage": "{actor} さんがチャンクを公開しました",
     "newPositionMemoryMessage": "{actor} がポジション記憶の問題を作成しました",
     "newPuzzleMessage": "{actor} がパズルを作成しました",
     "achievementSingleMessage": "🏆 {name} を獲得しました",

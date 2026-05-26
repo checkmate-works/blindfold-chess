@@ -1627,6 +1627,12 @@
       },
       "position": {
         "action": "Posted a new problem"
+      },
+      "chunk": {
+        "action": {
+          "created": "Posted a chunk draft",
+          "published": "Published a chunk"
+        }
       }
     },
     "vsAi": {
@@ -2935,6 +2941,8 @@
     "newCommentOnTopicMessage": "{actor} commented on your problem",
     "chunkEditRequestSubmittedMessage": "{actor} suggested an edit to your chunk",
     "chunkEditRequestAcceptedMessage": "{actor} accepted your edit suggestion",
+    "newChunkDraftMessage": "{actor} posted a chunk draft",
+    "chunkPublishedMessage": "{actor} published a chunk",
     "newPositionMemoryMessage": "{actor} created a new position memory problem",
     "newPuzzleMessage": "{actor} created a new puzzle",
     "achievementSingleMessage": "🏆 You earned {name}",
