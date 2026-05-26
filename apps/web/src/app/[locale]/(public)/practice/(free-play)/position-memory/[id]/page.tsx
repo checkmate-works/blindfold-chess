@@ -10,15 +10,7 @@ import { FaPlusCircle } from 'react-icons/fa';
 import { FiEdit2, FiGitBranch } from 'react-icons/fi';
 
 import { getOptionalUser } from '@/lib/auth';
-import { getLinkedChunksForPosition } from '@/lib/chunks/queries';
-import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
-import { getPositionLikeMeta } from '@/lib/positions/like-queries';
-import {
-  countPositions,
-  getPositionLineageMetaById,
-  getPositionWithProfileById,
-} from '@/lib/positions/queries';
-import { getLinkedThemesForPosition } from '@/lib/themes/queries';
+import { getPositionWithProfileById } from '@/lib/positions/queries';
 import { resolveDisplayName } from '@/lib/users/display-name';
 
 import { attachPostFenFromForm } from '@/app/[locale]/(public)/topics/_actions/attachPostFen';
@@ -33,10 +25,6 @@ import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelec
 import { buildAttachmentNodeMap } from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import { buildCommentTree } from '@/app/[locale]/(public)/topics/_lib/comment-tree';
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
-import {
-  getCommentTreeForTopic,
-  getPostCountByTopicKey,
-} from '@/app/[locale]/(public)/topics/_lib/queries';
 import { SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { RelatedTags } from '@/app/[locale]/_components/RelatedTags';
@@ -44,8 +32,10 @@ import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/met
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { toggleLike } from '../../_actions/toggleLike';
+import { ForkProvenanceNote } from '../../_components/ForkProvenanceNote';
 import { PositionAuthorAttribution } from '../../_components/PositionAuthorAttribution';
 import { PositionDetailLayout } from '../../_components/PositionDetailLayout';
+import { loadPositionDetail } from '../../_lib/load-position-detail';
 import { PositionDetailBoard } from '../_components/single-position/PositionDetailBoard';
 import { PositionStartForm } from '../_components/single-position/PositionStartForm';
 import { createReplyWithAttachment } from './_actions/createReplyWithAttachment';
@@ -105,31 +95,26 @@ export default async function PositionDetailPage({ params, searchParams }: Props
   const isBlackToMove = isBlackToMoveFromFen(position.fen);
 
   const currentUser = await getOptionalUser();
-  const [likeMeta, relatedChunks, relatedThemes, commentCount, allComments, forkParent, forkCount] =
-    await Promise.all([
-      getPositionLikeMeta(position.id, currentUser?.id),
-      getLinkedChunksForPosition(position.id),
-      getLinkedThemesForPosition(position.id, locale),
-      getPostCountByTopicKey('position_memory', position.id),
-      getCommentTreeForTopic('position_memory', position.id, currentUser?.id),
-      position.forkedFromId
-        ? getPositionLineageMetaById(position.forkedFromId)
-        : Promise.resolve(null),
-      // Only the count is needed at this surface — the dedicated /forks
-      // page handles the listing (with pagination).
-      countPositions({ type: 'memory', forkedFromId: position.id }),
-    ]);
-
-  const canFork =
-    currentUser != null && currentUser.id !== position.userId && position.forksDisabledAt === null;
+  const {
+    likeMeta,
+    relatedChunks,
+    relatedThemes,
+    commentCount,
+    allComments,
+    forkParent,
+    forkCount,
+    canFork,
+    attachments,
+  } = await loadPositionDetail({
+    position,
+    kind: 'memory',
+    currentUserId: currentUser?.id,
+    locale,
+  });
 
   const commentTree = buildCommentTree(allComments, sortBy);
 
-  // Fetch attachments for every post in the topic (root + every reply)
-  // so attached PGN/FEN/embed/image cards render under each author
-  // regardless of depth in the thread.
   const allPostIds = allComments.map((c) => c.id);
-  const attachments = allPostIds.length > 0 ? await getAttachmentsForPosts(allPostIds) : new Map();
   const tVideo = await getTranslations({ locale, namespace: 'postVideoAttachmentRender' });
   const extraContentByPostId = buildAttachmentNodeMap(
     allPostIds,
@@ -137,46 +122,20 @@ export default async function PositionDetailPage({ params, searchParams }: Props
     tVideo('fallbackTitle')
   );
 
-  // Two-segment provenance line: "forked from <parent>" and / or
-  // "<N> forks". Each segment is independently optional, separated by `·`
-  // when both render. When neither is present the headerNote slot stays
-  // null and the layout falls back to the bare title.
-  const forkedFromSegment = position.forkedFromId ? (
-    <span className="inline-flex items-center gap-1">
-      <FiGitBranch className="h-3 w-3" aria-hidden />
-      {forkParent && forkParent.deletedAt === null ? (
-        <>
-          {t('detail.forkedFrom')}{' '}
-          <Link
-            href={`/practice/position-memory/${forkParent.id}`}
-            className="underline hover:text-foreground"
-          >
-            {forkParent.title}
-          </Link>
-        </>
-      ) : (
-        <span>{t('detail.forkedFromDeleted')}</span>
-      )}
-    </span>
-  ) : null;
-  const forksLinkSegment =
-    forkCount > 0 ? (
-      <Link
-        href={`/practice/position-memory/${position.id}/forks`}
-        className="inline-flex items-center gap-1 underline hover:text-foreground"
-      >
-        <FiGitBranch className="h-3 w-3" aria-hidden />
-        {t('detail.forksSection', { count: forkCount })}
-      </Link>
-    ) : null;
-  const forkedFromNote =
-    forkedFromSegment || forksLinkSegment ? (
-      <span className="inline-flex flex-wrap items-center justify-center gap-x-2">
-        {forkedFromSegment}
-        {forkedFromSegment && forksLinkSegment && <span aria-hidden>·</span>}
-        {forksLinkSegment}
-      </span>
-    ) : null;
+  const forkedFromNote = (
+    <ForkProvenanceNote
+      positionId={position.id}
+      forkedFromId={position.forkedFromId}
+      forkParent={forkParent}
+      forkCount={forkCount}
+      pathPrefix="practice/position-memory"
+      labels={{
+        forkedFrom: t('detail.forkedFrom'),
+        forkedFromDeleted: t('detail.forkedFromDeleted'),
+        forksSection: (count) => t('detail.forksSection', { count }),
+      }}
+    />
+  );
 
   return (
     <PositionDetailLayout
