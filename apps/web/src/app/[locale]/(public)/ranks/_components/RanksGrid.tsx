@@ -100,10 +100,16 @@ export function RanksGrid({ locale, dbRanks }: Props) {
         );
 
         const requirementLabels = requirements.map((req) => {
-          const challengeKey = buildChallengeNameKey(req);
-          return t('challengeScore', {
-            minScore: req.minScore,
-            challengeName: t(`challengeNames.${challengeKey}`),
+          if (req.type === 'challenge_score') {
+            const challengeKey = buildChallengeNameKey(req);
+            return t('challengeScore', {
+              minScore: req.minScore,
+              challengeName: t(`challengeNames.${challengeKey}`),
+            });
+          }
+          return t('submissionCount', {
+            minCount: req.minCount,
+            itemName: t(`submissionItemNames.${req.positionType}`),
           });
         });
 

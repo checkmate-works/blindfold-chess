@@ -103,6 +103,30 @@ const GUIDE_LINK_MAP: Partial<Record<GuideLinkKey, GuideLinkEntry>> = {
     labelKey: '5kyuGuideLabel',
     href: 'guides/ranks/5kyu',
   },
+  // 2kyu guide - Position memory tutorial (page 1, paragraph 1)
+  '2kyu:1:1': {
+    inlineLinkKey: '2kyu',
+    labelKey: 'positionMemoryTutorialLabel',
+    href: 'practice/position-memory/tutorial',
+  },
+  // 2kyu guide - Position memory article (page 2, paragraph 2)
+  '2kyu:2:2': {
+    inlineLinkKey: '2kyu',
+    labelKey: 'positionMemoryArticleLabel',
+    href: 'learn/memory/position-memory',
+  },
+  // 2kyu guide - Chunks list (page 4, paragraph 0)
+  '2kyu:4:0': {
+    inlineLinkKey: '2kyu',
+    labelKey: 'chunksLabel',
+    href: 'chunks',
+  },
+  // 2kyu guide - Submit a chunk (page 4, paragraph 2)
+  '2kyu:4:2': {
+    inlineLinkKey: '2kyu',
+    labelKey: 'chunksNewLabel',
+    href: 'chunks/new',
+  },
 };
 
 export type GuideLinkInfo = {

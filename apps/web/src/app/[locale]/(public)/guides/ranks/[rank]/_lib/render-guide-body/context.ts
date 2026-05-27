@@ -1,14 +1,14 @@
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { ALL_RANK_SLUGS, isMukyuSlug } from '@/lib/db/data/ranks';
-import type { ChallengeScoreRequirement, RankSlug } from '@/lib/db/data/ranks';
+import { ALL_RANK_SLUGS, isMukyuSlug, parseRequirements } from '@/lib/db/data/ranks';
+import type { RankRequirement, RankSlug } from '@/lib/db/data/ranks';
 import { getRankGuide } from '@/lib/guides';
 import type { RankGuide } from '@/lib/guides';
 import { resolveCspNonce } from '@/lib/security/nonce';
 
 import { getBeltColorHex } from '@/app/[locale]/(public)/ranks/_lib/helpers';
-import { getValidatedRank } from '@/app/[locale]/(public)/ranks/_lib/queries';
+import { getRankBySlug } from '@/app/[locale]/(public)/ranks/_lib/queries';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 /**
@@ -103,15 +103,22 @@ export async function resolveGuideContext(
 
 /**
  * Load DB-backed rank requirements for the "Try the challenge" CTA that
- * appears on the final page of a flat or chapter body. Mukyu is UI-only and
- * has no DB entry, so we return an empty array for it.
+ * appears on the final page of a flat or chapter body. Returns:
+ *   - `[]` for mukyu (UI-only, no DB entry).
+ *   - `[]` when the rank row exists but its requirements have not been
+ *     defined yet (`requirements: []` in seed). The renderer suppresses the
+ *     CTA in that case so a guide can be published ahead of the rank's
+ *     gating logic — useful while a new rank's content is still in draft.
+ *   - `notFound()` when the rank slug is in `ALL_RANK_SLUGS` but missing
+ *     from the DB, which signals a deployment / migration issue rather
+ *     than an intentional draft state.
  *
  * Only called by the body renderers — the chapter-list layer does NOT need
  * requirements and MUST NOT pay the DB round-trip.
  */
-export async function loadRequirements(rankSlug: RankSlug): Promise<ChallengeScoreRequirement[]> {
+export async function loadRequirements(rankSlug: RankSlug): Promise<RankRequirement[]> {
   if (isMukyuSlug(rankSlug)) return [];
-  const result = await getValidatedRank(rankSlug);
-  if (!result) notFound();
-  return result.requirements;
+  const rank = await getRankBySlug(rankSlug);
+  if (!rank) notFound();
+  return parseRequirements(rank.requirements);
 }

@@ -72,8 +72,8 @@ describe('sitemap — guides block', () => {
     }
   });
 
-  it('does NOT emit guide entries for ranks without content (2kyu, 1kyu, 1dan)', () => {
-    const ranksWithoutGuides = ['2kyu', '1kyu', '1dan'];
+  it('does NOT emit guide entries for ranks without content (1kyu, 1dan)', () => {
+    const ranksWithoutGuides = ['1kyu', '1dan'];
     for (const locale of SUPPORTED_LOCALES) {
       for (const slug of ranksWithoutGuides) {
         expect(urls()).not.toContain(`${SITE_URL}/${locale}/guides/ranks/${slug}`);

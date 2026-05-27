@@ -184,7 +184,7 @@ describe('CurriculumToc', () => {
 
   it('renders a coming-soon placeholder row (non-clickable) for ranks with empty sections', () => {
     const { container } = renderToc();
-    for (const slug of ['2kyu', '1kyu', '1dan'] as const) {
+    for (const slug of ['1kyu', '1dan'] as const) {
       const row = container.querySelector(`[data-rank="${slug}"]`);
       expect(row).not.toBeNull();
       expect(row!.getAttribute('data-disabled')).toBe('true');
@@ -200,6 +200,7 @@ describe('CurriculumToc', () => {
     expect(screen.getByText('section:anchorPoints')).toBeInTheDocument();
     expect(screen.getByText('section:blindfoldLegalMoves')).toBeInTheDocument();
     expect(screen.getByText('section:diagonals')).toBeInTheDocument();
+    expect(screen.getByText('section:chunking')).toBeInTheDocument();
   });
 
   describe('plain mode (achievedSlugs and nextSlug omitted)', () => {

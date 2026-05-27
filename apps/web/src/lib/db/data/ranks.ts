@@ -19,7 +19,19 @@ export type ChallengeScoreRequirement = {
   minScore: number;
 };
 
-export type RankRequirement = ChallengeScoreRequirement;
+/**
+ * Requires the user to have submitted at least `minCount` rows in the
+ * `positions` table with the given `positionType`. Counted directly off
+ * `positions`, NOT off `exp_events` — submissions grant points, not EXP, so
+ * the source of truth is the row count of the user's authored positions.
+ */
+export type PositionSubmissionCountRequirement = {
+  type: 'position_submission_count';
+  positionType: 'memory' | 'puzzle';
+  minCount: number;
+};
+
+export type RankRequirement = ChallengeScoreRequirement | PositionSubmissionCountRequirement;
 
 type RankSeed = {
   slug: string;
@@ -69,9 +81,25 @@ export function isChallengeScoreRequirement(value: unknown): value is ChallengeS
   );
 }
 
+export function isPositionSubmissionCountRequirement(
+  value: unknown
+): value is PositionSubmissionCountRequirement {
+  if (typeof value !== 'object' || value === null) return false;
+  const record = value as Record<string, unknown>;
+  return (
+    record.type === 'position_submission_count' &&
+    (record.positionType === 'memory' || record.positionType === 'puzzle') &&
+    typeof record.minCount === 'number'
+  );
+}
+
+function isRankRequirement(value: unknown): value is RankRequirement {
+  return isChallengeScoreRequirement(value) || isPositionSubmissionCountRequirement(value);
+}
+
 export function parseRequirements(raw: unknown): RankRequirement[] {
   if (!Array.isArray(raw)) return [];
-  return raw.filter(isChallengeScoreRequirement);
+  return raw.filter(isRankRequirement);
 }
 
 // ---------------------------------------------------------------------------
@@ -205,7 +233,18 @@ export const ranksSeedData: RankSeed[] = [
       },
     ],
   },
-  { slug: '2kyu', level: 40, color: RANK_COLORS['2kyu'], requirements: [] },
+  {
+    slug: '2kyu',
+    level: 40,
+    color: RANK_COLORS['2kyu'],
+    requirements: [
+      {
+        type: 'position_submission_count',
+        positionType: 'memory',
+        minCount: 1,
+      },
+    ],
+  },
   { slug: '1kyu', level: 50, color: RANK_COLORS['1kyu'], requirements: [] },
   // Gap between 1kyu (50) and 1dan (110) is intentionally large to reserve
   // space for future intermediate ranks between kyū and dan tiers.

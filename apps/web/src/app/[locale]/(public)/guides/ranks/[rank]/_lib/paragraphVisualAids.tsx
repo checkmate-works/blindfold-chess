@@ -44,11 +44,13 @@ import { DiagonalStartRank1Board } from '@/app/[locale]/(public)/ranks/_componen
 import { HighlightQuadrantBoard } from '@/app/[locale]/(public)/ranks/_components/HighlightQuadrantBoard';
 import { KingFormulaBlock } from '@/app/[locale]/(public)/ranks/_components/KingFormulaBlock';
 import { KingMovementBoard } from '@/app/[locale]/(public)/ranks/_components/KingMovementBoard';
+import { KingsideCastledBoard } from '@/app/[locale]/(public)/ranks/_components/KingsideCastledBoard';
 import { KnightFormulaBlock } from '@/app/[locale]/(public)/ranks/_components/KnightFormulaBlock';
 import { KnightMovementBoard } from '@/app/[locale]/(public)/ranks/_components/KnightMovementBoard';
 import { MiniBoard } from '@/app/[locale]/(public)/ranks/_components/MiniBoard';
 import { QuadrantBoard } from '@/app/[locale]/(public)/ranks/_components/QuadrantBoard';
 import { QueenMovementBoard } from '@/app/[locale]/(public)/ranks/_components/QueenMovementBoard';
+import { RandomTenPiecesBoard } from '@/app/[locale]/(public)/ranks/_components/RandomTenPiecesBoard';
 import { RookMovementBoard } from '@/app/[locale]/(public)/ranks/_components/RookMovementBoard';
 import { Step3Board } from '@/app/[locale]/(public)/ranks/_components/Step3Board';
 import { SymmetryBoard } from '@/app/[locale]/(public)/ranks/_components/SymmetryBoard';
@@ -111,6 +113,9 @@ const VISUAL_AID_MAP: Record<VisualAidKey, ReactNode> = {
   // 4kyu guide - Rook & Queen (page 4)
   '4kyu:4:0': <RookMovementBoard />,
   '4kyu:4:1': <QueenMovementBoard />,
+  // 2kyu guide - 10-piece position-memory experiments (chunks)
+  '2kyu:2:0': <RandomTenPiecesBoard />,
+  '2kyu:3:0': <KingsideCastledBoard />,
 };
 
 export function getVisualAid(

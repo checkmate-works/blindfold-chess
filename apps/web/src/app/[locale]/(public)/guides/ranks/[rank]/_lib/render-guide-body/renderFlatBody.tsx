@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { notFound } from 'next/navigation';
 
 import { isMukyuSlug } from '@/lib/db/data/ranks';
-import type { ChallengeScoreRequirement, RankSlug } from '@/lib/db/data/ranks';
+import type { RankRequirement, RankSlug } from '@/lib/db/data/ranks';
 import { buildFlatHref } from '@/lib/guides';
 import type { FlatGuide } from '@/lib/guides';
 import { JsonLd } from '@/lib/seo/jsonld';
@@ -31,7 +31,7 @@ export async function renderFlatBody(
   ctx: GuideContext,
   guide: FlatGuide,
   props: FlatBodyProps,
-  requirements: ChallengeScoreRequirement[]
+  requirements: RankRequirement[]
 ): Promise<ReactNode> {
   const { locale, rankSlug, rankName, beltColor, tRanks, tGuides, nonce } = ctx;
   const { pageNumber } = props;
@@ -41,7 +41,10 @@ export async function renderFlatBody(
 
   const currentPage = pages[pageNumber - 1];
   const isLastPage = pageNumber === pages.length;
-  const showChallengeCta = isLastPage && !isMukyuSlug(rankSlug);
+  // Suppress the CTA when there are no requirements to surface — happens for
+  // mukyu (UI-only) and for ranks whose gating conditions are still in draft
+  // (`requirements: []` in seed data). The guide itself stays reachable.
+  const showChallengeCta = isLastPage && !isMukyuSlug(rankSlug) && requirements.length > 0;
   const showPagination = pages.length > 1;
 
   const breadcrumbItems = buildFlatBodyBreadcrumbs(

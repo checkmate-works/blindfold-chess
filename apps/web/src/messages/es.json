@@ -4187,6 +4187,11 @@
     "requirements": "Requisitos",
     "comingSoon": "Próximamente",
     "challengeScore": "Puntuación {minScore}+ en {challengeName}",
+    "submissionCount": "{itemName}を{minCount}件以上投稿する",
+    "submissionItemNames": {
+      "memory": "ポジション記憶の問題",
+      "puzzle": "パズル"
+    },
     "challengeNames": {
       "square_colors": "Color de Casillas",
       "coordinate_quiz_white": "Cuestionario de Coordenadas (Blancas)",
@@ -4210,15 +4215,16 @@
     },
     "detail": {
       "criteria": "Criterios",
-      "requirements": "Requisitos de Puntuación",
+      "requirements": "Requisitos",
       "criteriaDescriptions": {
         "mukyu": "Listo para comenzar el entrenamiento básico de ajedrez a ciegas.",
         "5kyu": "Capacidad de identificar correctamente la casilla en el tablero de ajedrez a partir de la notación algebraica (ej., e4, Ag7).",
         "4kyu": "Capacidad de determinar los movimientos legales en una coordenada específica para todas las piezas sin ayudas visuales.",
-        "3kyu": "Capacidad de planificar rutas de maniobra para todas las piezas sin ayudas visuales."
+        "3kyu": "Capacidad de planificar rutas de maniobra para todas las piezas sin ayudas visuales.",
+        "2kyu": "複数の駒を意味のある一つのまとまりとして認識ができること。"
       },
       "tips": "Consejos",
-      "tryChallenge": "Probar el Desafío",
+      "tryChallenge": "Cumple los requisitos",
       "showMore": "Mostrar más",
       "pageOf": "Página {current} de {total}",
       "mukyuRequirements": ["Comprensión de la notación algebraica"],
@@ -4309,7 +4315,8 @@
         "algebraicNotation": "Notación algebraica",
         "anchorPoints": "Percepción del tablero con puntos de anclaje",
         "blindfoldLegalMoves": "Detección de movimientos legales en ajedrez a ciegas",
-        "diagonals": "Cálculo de diagonales y antidiagonales"
+        "diagonals": "Cálculo de diagonales y antidiagonales",
+        "chunking": "チャンクによるパターン認識"
       }
     },
     "help": {
@@ -4490,6 +4497,42 @@
           }
         ]
       },
+      "2kyu": {
+        "format": "flat",
+        "pages": [
+          {
+            "paragraphs": [
+              "このアプリには「ポジション記憶」という練習メニューがあります。これは、与えられたポジションを 30 秒や 1 分などの制限時間内に記憶し、空のボードに再現できるかを試すものです。",
+              "まだ利用したことがなければ、まずはチュートリアルから取り組んでみてください。",
+              "この練習で養いたいのは、目隠しチェスで最も重要となる「パターン認識」の能力です。本ガイドではなぜパターン認識が計算能力に直結するのかを、簡単な実験を通じて確認していきます。"
+            ]
+          },
+          {
+            "paragraphs": [
+              "では実際に試してみましょう。次のポジションを 30 秒ほど眺めて目を閉じ、空のボード上に再現できるか確かめてみてください。駒は 10 個配置されています。",
+              "正解できましたか？ おそらく、ほとんどの方は最後まで再現しきれなかったのではないでしょうか。私自身、全く再現できませんでした。",
+              "人間が一瞬で記憶できる情報の数は、一般的に 4 ± 1 個程度と言われています。詳しくは以下の記事も参考にしてください。",
+              "10 駒というのはこの 4 ± 1 の上限の約 2 倍。しかも今回はランダムに散らばった配置だったため、駒同士に意味のつながりがなく、ワーキングメモリの容量を真正面から超えてしまっています。"
+            ]
+          },
+          {
+            "paragraphs": [
+              "では、こちらのポジションはどうでしょう。同じく駒は 10 個ですが、もう一度 30 秒だけ眺めてから再現してみてください。",
+              "今度は再現できた方が多かったのではないでしょうか。同じ 10 駒なのに難しさが大きく違うのは、キングサイドキャスリング後の典型形をパターン認識として利用できたからです。",
+              "このポジションは「白も黒もそれぞれ O-O を実行し、他の駒は残っていない」と要約できます。覚えるべき情報は実質 2 つのまとまりだけで、ワーキングメモリの 4 ± 1 にきれいに収まります。",
+              "このように、複数の駒を意味のある一つのまとまりとして扱ったものを、このアプリケーションでは「チャンク」と呼んでいます。"
+            ]
+          },
+          {
+            "paragraphs": [
+              "認識できるチャンクが増えるほど、同じ盤面でも処理すべき情報量が減り、結果として計算能力が向上していきます。代表的なチャンクは以下のページで一覧できます。",
+              "チャンクは、自分さえ理解できれば万人共通でわかりやすい必要はありません。例えばあるポーン構造がある言語の文字に似ていれば、その言語の話者にとっては強力なチャンクとして働きますが、そうでない人には機能しません。コンピュータサイエンスに親しんでいる人なら、駒の位置を部分的に 2 進数で覚えるような手も使えるかもしれませんが、2 進数になじみのない人には同じことはできないでしょう。",
+              "一方で、他の人にも役立ちそうなチャンクを思いついたなら、ぜひ投稿してみてください。",
+              "より多くのチャンクを脳内にインストールするには、自分一人で発見していくよりも、他のプレイヤーがどんなパターン認識をしているかを参考にした方が効率的だと考えています。このアプリケーションは、そういった集合知を共有できるように機能を設計しています。"
+            ]
+          }
+        ]
+      },
       "4kyu": {
         "format": "flat",
         "pages": [
@@ -4533,6 +4576,12 @@
       }
     },
     "inlineLinks": {
+      "2kyu": {
+        "positionMemoryTutorialLabel": "ポジション記憶 チュートリアル",
+        "positionMemoryArticleLabel": "ポジション記憶（解説記事）",
+        "chunksLabel": "チャンク一覧",
+        "chunksNewLabel": "チャンクを投稿する"
+      },
       "3kyu": {
         "diagonalQuizTutorialLabel": "Tutorial del Cuestionario de Diagonales",
         "diagonalQuizLabel": "Cuestionario de Diagonales"

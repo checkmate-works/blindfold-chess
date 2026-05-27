@@ -29,7 +29,7 @@ export const CURRICULUM: readonly CurriculumRank[] = [
   { slug: '5kyu', sections: [{ titleKey: 'anchorPoints' }] },
   { slug: '4kyu', sections: [{ titleKey: 'blindfoldLegalMoves' }] },
   { slug: '3kyu', sections: [{ titleKey: 'diagonals' }] },
-  { slug: '2kyu', sections: [] },
+  { slug: '2kyu', sections: [{ titleKey: 'chunking' }] },
   { slug: '1kyu', sections: [] },
   { slug: '1dan', sections: [] },
 ] as const;

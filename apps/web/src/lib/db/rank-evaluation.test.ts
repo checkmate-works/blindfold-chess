@@ -54,6 +54,10 @@ vi.mock('./index', () => {
       leaderboardKey: 'leaderboard_key',
       score: 'score',
     },
+    positions: {
+      userId: 'user_id',
+      type: 'type',
+    },
     ranks: {
       id: 'id',
       slug: 'slug',
@@ -186,6 +190,39 @@ describe('evaluateRankRequirements', () => {
     const result = await evaluateRankRequirements(userId, []);
 
     expect(result).toBe(true);
+  });
+
+  it('should pass position_submission_count when the user owns enough rows', async () => {
+    // count() returns a single row with the value column populated.
+    mockSelectResult.mockReturnValue([{ value: 3 }]);
+
+    const result = await evaluateRankRequirements(userId, [
+      { type: 'position_submission_count', positionType: 'memory', minCount: 1 },
+    ]);
+
+    expect(result).toBe(true);
+  });
+
+  it('should fail position_submission_count when count is below threshold', async () => {
+    mockSelectResult.mockReturnValue([{ value: 0 }]);
+
+    const result = await evaluateRankRequirements(userId, [
+      { type: 'position_submission_count', positionType: 'memory', minCount: 1 },
+    ]);
+
+    expect(result).toBe(false);
+  });
+
+  it('should treat a missing count row as zero submissions', async () => {
+    // No rows returned at all — drizzle's count() should yield [], so the
+    // evaluator must default to zero rather than crashing on `row.value`.
+    mockSelectResult.mockReturnValue([]);
+
+    const result = await evaluateRankRequirements(userId, [
+      { type: 'position_submission_count', positionType: 'memory', minCount: 1 },
+    ]);
+
+    expect(result).toBe(false);
   });
 
   it('should return false for unknown requirement type', async () => {

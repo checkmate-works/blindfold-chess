@@ -106,10 +106,16 @@ export default async function DojoPage({ params }: LocalePageProps) {
         rankName: tRanks(`rankNames.${next.slug}`),
         state: (next.requirements.length === 0 ? 'coming-soon' : 'next') as 'next' | 'coming-soon',
         requirementLabels: next.requirements.map((req) => {
-          const challengeKey = buildChallengeNameKey(req);
-          return tRanks('challengeScore', {
-            minScore: req.minScore,
-            challengeName: tRanks(`challengeNames.${challengeKey}`),
+          if (req.type === 'challenge_score') {
+            const challengeKey = buildChallengeNameKey(req);
+            return tRanks('challengeScore', {
+              minScore: req.minScore,
+              challengeName: tRanks(`challengeNames.${challengeKey}`),
+            });
+          }
+          return tRanks('submissionCount', {
+            minCount: req.minCount,
+            itemName: tRanks(`submissionItemNames.${req.positionType}`),
           });
         }),
         requirementsHeading: tRanks('requirements'),

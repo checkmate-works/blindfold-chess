@@ -226,6 +226,8 @@ describe('ranksSeedData – 4kyu', () => {
 
   it('should have king as the first requirement with minScore 20', () => {
     const firstReq = entry4kyu!.requirements[0];
+    expect(firstReq.type).toBe('challenge_score');
+    if (firstReq.type !== 'challenge_score') return;
     expect(firstReq.menuType).toBe('legal_moves');
     expect(firstReq.leaderboardKey).toBe('king');
     expect(firstReq.minScore).toBe(20);
@@ -233,6 +235,8 @@ describe('ranksSeedData – 4kyu', () => {
 
   it('should have knight as the second requirement with minScore 20', () => {
     const secondReq = entry4kyu!.requirements[1];
+    expect(secondReq.type).toBe('challenge_score');
+    if (secondReq.type !== 'challenge_score') return;
     expect(secondReq.menuType).toBe('legal_moves');
     expect(secondReq.leaderboardKey).toBe('knight');
     expect(secondReq.minScore).toBe(20);
@@ -240,6 +244,8 @@ describe('ranksSeedData – 4kyu', () => {
 
   it('should have bishop as the third requirement with minScore 10', () => {
     const thirdReq = entry4kyu!.requirements[2];
+    expect(thirdReq.type).toBe('challenge_score');
+    if (thirdReq.type !== 'challenge_score') return;
     expect(thirdReq.menuType).toBe('legal_moves');
     expect(thirdReq.leaderboardKey).toBe('bishop');
     expect(thirdReq.minScore).toBe(10);

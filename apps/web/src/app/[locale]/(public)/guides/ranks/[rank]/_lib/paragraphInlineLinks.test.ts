@@ -99,6 +99,10 @@ describe('getGuideInlineLink', () => {
       ['mukyu', 2, 3],
       ['mukyu', 3, 0],
       ['mukyu', 3, 2],
+      ['2kyu', 1, 1],
+      ['2kyu', 2, 2],
+      ['2kyu', 4, 0],
+      ['2kyu', 4, 2],
     ];
 
     // Keep in sync with SUPPORTED_LOCALES in @/config. Every locale shipped

@@ -11,6 +11,8 @@ import type { RankSlug } from '@/lib/db/data/ranks';
  */
 export function getRankSlugForMenuType(menuType: string): RankSlug | null {
   const sorted = [...ranksSeedData].sort((a, b) => a.level - b.level);
-  const found = sorted.find((rank) => rank.requirements.some((req) => req.menuType === menuType));
+  const found = sorted.find((rank) =>
+    rank.requirements.some((req) => req.type === 'challenge_score' && req.menuType === menuType)
+  );
   return (found?.slug as RankSlug | undefined) ?? null;
 }

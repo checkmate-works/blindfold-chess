@@ -87,11 +87,21 @@ describe('RankGuideRootPage', () => {
     expect(renderSpy).not.toHaveBeenCalled();
   });
 
-  it('calls notFound() for a rank without guide content (2kyu)', async () => {
+  it('calls notFound() for a rank without guide content (1kyu)', async () => {
     await expect(
-      RankGuideRootPage({ params: mkParams({ locale: 'en', rank: '2kyu' }) } as never)
+      RankGuideRootPage({ params: mkParams({ locale: 'en', rank: '1kyu' }) } as never)
     ).rejects.toBeInstanceOf(NotFoundError);
     expect(renderSpy).not.toHaveBeenCalled();
+  });
+
+  it('renders flat body page 1 for the 2kyu rank (guide published, requirements draft)', async () => {
+    await RankGuideRootPage({ params: mkParams({ locale: 'ja', rank: '2kyu' }) } as never);
+    expect(renderSpy).toHaveBeenCalledWith({
+      kind: 'flat',
+      locale: 'ja',
+      slug: '2kyu',
+      pageNumber: 1,
+    });
   });
 });
 

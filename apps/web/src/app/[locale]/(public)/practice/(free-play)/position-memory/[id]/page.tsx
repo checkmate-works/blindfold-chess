@@ -13,6 +13,7 @@ import { getOptionalUser } from '@/lib/auth';
 import { getPositionWithProfileById } from '@/lib/positions/queries';
 import { resolveDisplayName } from '@/lib/users/display-name';
 
+import { RankAchievementModal } from '@/app/[locale]/(public)/practice/_components/RankAchievementModal';
 import { attachPostFenFromForm } from '@/app/[locale]/(public)/topics/_actions/attachPostFen';
 import { attachPostPgn } from '@/app/[locale]/(public)/topics/_actions/attachPostPgn';
 import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
@@ -279,6 +280,7 @@ export default async function PositionDetailPage({ params, searchParams }: Props
           />
         </>
       )}
+      <RankAchievementModal locale={locale} />
     </PositionDetailLayout>
   );
 }
