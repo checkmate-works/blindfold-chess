@@ -4436,10 +4436,10 @@
     "requirements": "Requirements",
     "comingSoon": "Coming Soon",
     "challengeScore": "Score {minScore}+ in {challengeName}",
-    "submissionCount": "{itemName}を{minCount}件以上投稿する",
+    "submissionCount": "Submit at least {minCount} {itemName}",
     "submissionItemNames": {
-      "memory": "ポジション記憶の問題",
-      "puzzle": "パズル"
+      "memory": "position-memory problem",
+      "puzzle": "puzzle"
     },
     "challengeNames": {
       "square_colors": "Square Colors",
@@ -4470,7 +4470,7 @@
         "5kyu": "Ability to correctly identify the square on the chess board from algebraic notation (e.g., e4, Bg7).",
         "4kyu": "Ability to determine legal moves at a specified coordinate for all pieces without visual aids.",
         "3kyu": "Ability to plan piece maneuvering routes for all pieces without visual aids.",
-        "2kyu": "複数の駒を意味のある一つのまとまりとして認識ができること。"
+        "2kyu": "Able to recognize multiple pieces as a single meaningful chunk."
       },
       "tips": "Tips",
       "tryChallenge": "Meet the requirements",
@@ -4565,7 +4565,7 @@
         "anchorPoints": "Board awareness with anchor points",
         "blindfoldLegalMoves": "Legal move detection in blindfold chess",
         "diagonals": "Computing diagonals and anti-diagonals",
-        "chunking": "チャンクによるパターン認識"
+        "chunking": "Pattern recognition with chunks"
       }
     },
     "help": {
@@ -4751,33 +4751,35 @@
         "pages": [
           {
             "paragraphs": [
-              "このアプリには「ポジション記憶」という練習メニューがあります。これは、与えられたポジションを 30 秒や 1 分などの制限時間内に記憶し、空のボードに再現できるかを試すものです。",
-              "まだ利用したことがなければ、まずはチュートリアルから取り組んでみてください。",
-              "この練習で養いたいのは、目隠しチェスで最も重要となる「パターン認識」の能力です。本ガイドではなぜパターン認識が計算能力に直結するのかを、簡単な実験を通じて確認していきます。"
+              "This app has a practice mode called Position Memory. You memorize a given position within a time limit — say 30 seconds or a minute — and then try to reproduce it on an empty board.",
+              "If you have not tried it yet, start with the tutorial first.",
+              "It trains the pattern-recognition ability that is so important in blindfold chess.",
+              "To begin, try a board with 10 pieces on it."
             ]
           },
           {
             "paragraphs": [
-              "では実際に試してみましょう。次のポジションを 30 秒ほど眺めて目を閉じ、空のボード上に再現できるか確かめてみてください。駒は 10 個配置されています。",
-              "正解できましたか？ おそらく、ほとんどの方は最後まで再現しきれなかったのではないでしょうか。私自身、全く再現できませんでした。",
-              "人間が一瞬で記憶できる情報の数は、一般的に 4 ± 1 個程度と言われています。詳しくは以下の記事も参考にしてください。",
-              "10 駒というのはこの 4 ± 1 の上限の約 2 倍。しかも今回はランダムに散らばった配置だったため、駒同士に意味のつながりがなく、ワーキングメモリの容量を真正面から超えてしまっています。"
+              "Were you able to get it right?",
+              "As I also mention in the following article, the number of items a person can hold in mind at a glance is generally said to be around 4 ± 1.",
+              "A position with 10 pieces is nearly double that 4 ± 1. Most people probably could not reproduce it correctly — I certainly could not at all.",
+              "Now, try the next position below."
             ]
           },
           {
             "paragraphs": [
-              "では、こちらのポジションはどうでしょう。同じく駒は 10 個ですが、もう一度 30 秒だけ眺めてから再現してみてください。",
-              "今度は再現できた方が多かったのではないでしょうか。同じ 10 駒なのに難しさが大きく違うのは、キングサイドキャスリング後の典型形をパターン認識として利用できたからです。",
-              "このポジションは「白も黒もそれぞれ O-O を実行し、他の駒は残っていない」と要約できます。覚えるべき情報は実質 2 つのまとまりだけで、ワーキングメモリの 4 ± 1 にきれいに収まります。",
-              "このように、複数の駒を意味のある一つのまとまりとして扱ったものを、このアプリケーションでは「チャンク」と呼んでいます。"
+              "How did you do on this one? Even though it has 10 pieces just like the first problem, many of you probably got this one right.",
+              "The reason the second problem is easier than the first is that you could use kingside castling as a pattern. Both White and Black have played O-O and there are no other pieces, so you only need to remember two elements.",
+              "This is a fairly extreme example, but the first problem used a random arrangement that could never occur in a real game, whereas the second used an arrangement that really does come up often. Incidentally, for random arrangements there is no significant difference in memory ability between grandmasters and amateurs; the accepted view is that what matters is pattern-recognition ability.",
+              "This claim is based on the results of de Groot's chess memory experiments. If you are interested, take a look at the following as well."
             ]
           },
           {
             "paragraphs": [
-              "認識できるチャンクが増えるほど、同じ盤面でも処理すべき情報量が減り、結果として計算能力が向上していきます。代表的なチャンクは以下のページで一覧できます。",
-              "チャンクは、自分さえ理解できれば万人共通でわかりやすい必要はありません。例えばあるポーン構造がある言語の文字に似ていれば、その言語の話者にとっては強力なチャンクとして働きますが、そうでない人には機能しません。コンピュータサイエンスに親しんでいる人なら、駒の位置を部分的に 2 進数で覚えるような手も使えるかもしれませんが、2 進数になじみのない人には同じことはできないでしょう。",
-              "一方で、他の人にも役立ちそうなチャンクを思いついたなら、ぜひ投稿してみてください。",
-              "より多くのチャンクを脳内にインストールするには、自分一人で発見していくよりも、他のプレイヤーがどんなパターン認識をしているかを参考にした方が効率的だと考えています。このアプリケーションは、そういった集合知を共有できるように機能を設計しています。"
+              "As in the kingside-castling example, when you treat several pieces as a single meaningful unit, we call that a “chunk” in this app.",
+              "The more chunks you can recognize, the more efficiently you process information, and the more your calculation ability improves. You can browse the list of chunks below.",
+              "A chunk only has to make sense to you, so it does not need to be universally easy to understand. For example, if a pawn structure resembles the characters of a certain language, it will be easy to grasp for speakers of that language — but someone who does not know those characters may find the same pattern recognition difficult. Likewise, someone studying computer science might partly use binary to memorize piece locations, but someone unfamiliar with binary could not do the same.",
+              "If you come up with a chunk that others could use too, please post it below.",
+              "To install more chunks into your own mind, I believe it is more efficient to also see what kinds of pattern recognition other players use — and this app is designed so that you can do exactly that."
             ]
           }
         ]
@@ -4826,10 +4828,12 @@
     },
     "inlineLinks": {
       "2kyu": {
-        "positionMemoryTutorialLabel": "ポジション記憶 チュートリアル",
-        "positionMemoryArticleLabel": "ポジション記憶（解説記事）",
-        "chunksLabel": "チャンク一覧",
-        "chunksNewLabel": "チャンクを投稿する"
+        "positionMemoryTutorialLabel": "Position Memory tutorial",
+        "positionMemoryArticleLabel": "Position memory (article)",
+        "chunksLabel": "Chunk catalog",
+        "chunksNewLabel": "Post a chunk",
+        "solveProblemLabel": "Try this problem",
+        "deGrootExperimentLabel": "The De Groot Experiment"
       },
       "3kyu": {
         "diagonalQuizTutorialLabel": "Diagonal Quiz Tutorial",

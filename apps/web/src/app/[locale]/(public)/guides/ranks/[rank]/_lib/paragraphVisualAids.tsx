@@ -50,8 +50,8 @@ import { KnightMovementBoard } from '@/app/[locale]/(public)/ranks/_components/K
 import { MiniBoard } from '@/app/[locale]/(public)/ranks/_components/MiniBoard';
 import { QuadrantBoard } from '@/app/[locale]/(public)/ranks/_components/QuadrantBoard';
 import { QueenMovementBoard } from '@/app/[locale]/(public)/ranks/_components/QueenMovementBoard';
-import { RandomTenPiecesBoard } from '@/app/[locale]/(public)/ranks/_components/RandomTenPiecesBoard';
 import { RookMovementBoard } from '@/app/[locale]/(public)/ranks/_components/RookMovementBoard';
+import { ScatteredPawnsBoard } from '@/app/[locale]/(public)/ranks/_components/ScatteredPawnsBoard';
 import { Step3Board } from '@/app/[locale]/(public)/ranks/_components/Step3Board';
 import { SymmetryBoard } from '@/app/[locale]/(public)/ranks/_components/SymmetryBoard';
 
@@ -114,8 +114,10 @@ const VISUAL_AID_MAP: Record<VisualAidKey, ReactNode> = {
   '4kyu:4:0': <RookMovementBoard />,
   '4kyu:4:1': <QueenMovementBoard />,
   // 2kyu guide - 10-piece position-memory experiments (chunks)
-  '2kyu:2:0': <RandomTenPiecesBoard />,
-  '2kyu:3:0': <KingsideCastledBoard />,
+  // page 1: the hard, structureless position; page 2: the chunked (both-castled)
+  // counterpart. Both link to an instant "custom" problem of the same FEN.
+  '2kyu:1:3': <ScatteredPawnsBoard />,
+  '2kyu:2:3': <KingsideCastledBoard />,
 };
 
 export function getVisualAid(

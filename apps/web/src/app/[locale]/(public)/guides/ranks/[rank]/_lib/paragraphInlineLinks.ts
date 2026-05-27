@@ -109,20 +109,43 @@ const GUIDE_LINK_MAP: Partial<Record<GuideLinkKey, GuideLinkEntry>> = {
     labelKey: 'positionMemoryTutorialLabel',
     href: 'practice/position-memory/tutorial',
   },
-  // 2kyu guide - Position memory article (page 2, paragraph 2)
-  '2kyu:2:2': {
+  // 2kyu guide - "solve this problem" CTA, rendered under the ScatteredPawnsBoard
+  // visual aid on page 1, paragraph 3. The token is the Base64URL encoding of
+  // SCATTERED_PAWNS_FEN ('8/4PP1p/2p5/P3p3/7P/P7/3Pp3/8 w - - 0 1'); a test in
+  // paragraphInlineLinks.test.ts pins this against the live FEN to catch drift.
+  '2kyu:1:3': {
+    inlineLinkKey: '2kyu',
+    labelKey: 'solveProblemLabel',
+    href: 'practice/position-memory/custom/OC80UFAxcC8ycDUvUDNwMy83UC9QNy8zUHAzLzggdyAtIC0gMCAx',
+  },
+  // 2kyu guide - Position memory article (page 2, paragraph 1)
+  '2kyu:2:1': {
     inlineLinkKey: '2kyu',
     labelKey: 'positionMemoryArticleLabel',
     href: 'learn/memory/position-memory',
   },
-  // 2kyu guide - Chunks list (page 4, paragraph 0)
-  '2kyu:4:0': {
+  // 2kyu guide - "solve this problem" CTA under the both-castled board (page 2,
+  // paragraph 3). Token is the Base64URL of CASTLED_KINGSIDE_FEN
+  // ('5rk1/5ppp/8/8/8/8/5PPP/5RK1 w - - 0 1'); pinned by a drift test.
+  '2kyu:2:3': {
+    inlineLinkKey: '2kyu',
+    labelKey: 'solveProblemLabel',
+    href: 'practice/position-memory/custom/NXJrMS81cHBwLzgvOC84LzgvNVBQUC81UksxIHcgLSAtIDAgMQ',
+  },
+  // 2kyu guide - de Groot chess-memory experiment article (page 3, paragraph 3)
+  '2kyu:3:3': {
+    inlineLinkKey: '2kyu',
+    labelKey: 'deGrootExperimentLabel',
+    href: 'learn/memory/de-groot-experiment',
+  },
+  // 2kyu guide - Chunks list (page 4, paragraph 1)
+  '2kyu:4:1': {
     inlineLinkKey: '2kyu',
     labelKey: 'chunksLabel',
     href: 'chunks',
   },
-  // 2kyu guide - Submit a chunk (page 4, paragraph 2)
-  '2kyu:4:2': {
+  // 2kyu guide - Submit a chunk (page 4, paragraph 3)
+  '2kyu:4:3': {
     inlineLinkKey: '2kyu',
     labelKey: 'chunksNewLabel',
     href: 'chunks/new',

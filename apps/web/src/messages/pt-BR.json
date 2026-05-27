@@ -4190,10 +4190,10 @@
     "requirements": "Requisitos",
     "comingSoon": "Em breve",
     "challengeScore": "Pontuação {minScore}+ em {challengeName}",
-    "submissionCount": "{itemName}を{minCount}件以上投稿する",
+    "submissionCount": "Publique pelo menos {minCount} {itemName}",
     "submissionItemNames": {
-      "memory": "ポジション記憶の問題",
-      "puzzle": "パズル"
+      "memory": "problema de memória de posições",
+      "puzzle": "puzzle"
     },
     "challengeNames": {
       "square_colors": "Cor das Casas",
@@ -4224,7 +4224,7 @@
         "5kyu": "Capacidade de identificar corretamente a casa no tabuleiro de xadrez a partir da notação algébrica (ex., e4, Bg7).",
         "4kyu": "Capacidade de determinar os movimentos legais em uma coordenada específica para todas as peças sem ajudas visuais.",
         "3kyu": "Capacidade de planejar rotas de manobra de peças para todas as peças sem auxílios visuais.",
-        "2kyu": "複数の駒を意味のある一つのまとまりとして認識ができること。"
+        "2kyu": "Ser capaz de reconhecer várias peças como uma única unidade com significado (um “chunk”)."
       },
       "tips": "Dicas",
       "tryChallenge": "Cumprir os requisitos",
@@ -4319,7 +4319,7 @@
         "anchorPoints": "Percepção do tabuleiro com pontos de ancoragem",
         "blindfoldLegalMoves": "Detecção de movimentos legais no xadrez às cegas",
         "diagonals": "Cálculo de diagonais e antidiagonais",
-        "chunking": "チャンクによるパターン認識"
+        "chunking": "Reconhecimento de padrões com chunks"
       }
     },
     "help": {
@@ -4505,33 +4505,35 @@
         "pages": [
           {
             "paragraphs": [
-              "このアプリには「ポジション記憶」という練習メニューがあります。これは、与えられたポジションを 30 秒や 1 分などの制限時間内に記憶し、空のボードに再現できるかを試すものです。",
-              "まだ利用したことがなければ、まずはチュートリアルから取り組んでみてください。",
-              "この練習で養いたいのは、目隠しチェスで最も重要となる「パターン認識」の能力です。本ガイドではなぜパターン認識が計算能力に直結するのかを、簡単な実験を通じて確認していきます。"
+              "Este aplicativo tem um modo de prática chamado Memória de Posições. Você memoriza uma posição dada dentro de um limite de tempo — por exemplo, 30 segundos ou um minuto — e depois tenta reproduzi-la em um tabuleiro vazio.",
+              "Se você ainda não experimentou, comece pelo tutorial.",
+              "Isso treina a capacidade de reconhecimento de padrões, tão importante no xadrez às cegas.",
+              "Para começar, tente um tabuleiro com 10 peças."
             ]
           },
           {
             "paragraphs": [
-              "では実際に試してみましょう。次のポジションを 30 秒ほど眺めて目を閉じ、空のボード上に再現できるか確かめてみてください。駒は 10 個配置されています。",
-              "正解できましたか？ おそらく、ほとんどの方は最後まで再現しきれなかったのではないでしょうか。私自身、全く再現できませんでした。",
-              "人間が一瞬で記憶できる情報の数は、一般的に 4 ± 1 個程度と言われています。詳しくは以下の記事も参考にしてください。",
-              "10 駒というのはこの 4 ± 1 の上限の約 2 倍。しかも今回はランダムに散らばった配置だったため、駒同士に意味のつながりがなく、ワーキングメモリの容量を真正面から超えてしまっています。"
+              "Você conseguiu acertar?",
+              "Como também menciono no artigo a seguir, costuma-se dizer que a quantidade de itens que uma pessoa consegue reter num relance gira em torno de 4 ± 1.",
+              "Uma posição com 10 peças é quase o dobro desse 4 ± 1. Provavelmente a maioria não conseguiu reproduzi-la corretamente; eu, com certeza, não consegui de jeito nenhum.",
+              "Agora, tente a próxima posição abaixo."
             ]
           },
           {
             "paragraphs": [
-              "では、こちらのポジションはどうでしょう。同じく駒は 10 個ですが、もう一度 30 秒だけ眺めてから再現してみてください。",
-              "今度は再現できた方が多かったのではないでしょうか。同じ 10 駒なのに難しさが大きく違うのは、キングサイドキャスリング後の典型形をパターン認識として利用できたからです。",
-              "このポジションは「白も黒もそれぞれ O-O を実行し、他の駒は残っていない」と要約できます。覚えるべき情報は実質 2 つのまとまりだけで、ワーキングメモリの 4 ± 1 にきれいに収まります。",
-              "このように、複数の駒を意味のある一つのまとまりとして扱ったものを、このアプリケーションでは「チャンク」と呼んでいます。"
+              "Como você se saiu neste? Mesmo tendo 10 peças, assim como o primeiro problema, provavelmente muitos acertaram este.",
+              "O segundo problema é mais fácil que o primeiro porque você pôde usar o roque pequeno como padrão. Tanto as brancas quanto as pretas fizeram O-O e não há nenhuma outra peça, então basta memorizar dois elementos.",
+              "Este é um exemplo bastante extremo, mas o primeiro problema usava uma disposição aleatória que jamais ocorreria em uma partida real, enquanto o segundo usava uma disposição que de fato acontece com frequência. A propósito, em disposições aleatórias não há diferença significativa de capacidade de memória entre grandes mestres e amadores; a visão aceita é que o que importa é a capacidade de reconhecimento de padrões.",
+              "Essa afirmação se baseia nos resultados dos experimentos de memória enxadística de De Groot. Se tiver interesse, dê uma olhada também no seguinte."
             ]
           },
           {
             "paragraphs": [
-              "認識できるチャンクが増えるほど、同じ盤面でも処理すべき情報量が減り、結果として計算能力が向上していきます。代表的なチャンクは以下のページで一覧できます。",
-              "チャンクは、自分さえ理解できれば万人共通でわかりやすい必要はありません。例えばあるポーン構造がある言語の文字に似ていれば、その言語の話者にとっては強力なチャンクとして働きますが、そうでない人には機能しません。コンピュータサイエンスに親しんでいる人なら、駒の位置を部分的に 2 進数で覚えるような手も使えるかもしれませんが、2 進数になじみのない人には同じことはできないでしょう。",
-              "一方で、他の人にも役立ちそうなチャンクを思いついたなら、ぜひ投稿してみてください。",
-              "より多くのチャンクを脳内にインストールするには、自分一人で発見していくよりも、他のプレイヤーがどんなパターン認識をしているかを参考にした方が効率的だと考えています。このアプリケーションは、そういった集合知を共有できるように機能を設計しています。"
+              "Como no exemplo do roque pequeno, quando você trata várias peças como uma única unidade com significado, neste aplicativo chamamos isso de “chunk”.",
+              "Quanto mais chunks você conseguir reconhecer, mais eficientemente processará as informações e mais a sua capacidade de cálculo melhorará. Você pode conferir a lista de chunks abaixo.",
+              "Um chunk só precisa fazer sentido para você, então não precisa ser fácil de entender para todo mundo. Por exemplo, se uma estrutura de peões se parece com os caracteres de um idioma, será fácil de captar para quem fala esse idioma; mas quem não conhece esses caracteres pode achar difícil o mesmo reconhecimento de padrões. Da mesma forma, quem estuda ciência da computação talvez use em parte o binário para memorizar a posição das peças, mas quem não tem familiaridade com binário não conseguiria fazer o mesmo.",
+              "Se você pensar em um chunk que também possa ser útil para outras pessoas, publique-o abaixo.",
+              "Para instalar mais chunks na sua mente, acredito que seja mais eficiente observar também que tipo de reconhecimento de padrões os outros jogadores usam; e este aplicativo foi projetado para que você possa fazer exatamente isso."
             ]
           }
         ]
@@ -4580,10 +4582,12 @@
     },
     "inlineLinks": {
       "2kyu": {
-        "positionMemoryTutorialLabel": "ポジション記憶 チュートリアル",
-        "positionMemoryArticleLabel": "ポジション記憶（解説記事）",
-        "chunksLabel": "チャンク一覧",
-        "chunksNewLabel": "チャンクを投稿する"
+        "positionMemoryTutorialLabel": "Tutorial de Memória de Posições",
+        "positionMemoryArticleLabel": "Memória de posições (artigo)",
+        "chunksLabel": "Catálogo de chunks",
+        "chunksNewLabel": "Publicar um chunk",
+        "solveProblemLabel": "Tente este problema",
+        "deGrootExperimentLabel": "O Experimento de De Groot"
       },
       "3kyu": {
         "diagonalQuizTutorialLabel": "Tutorial do Quiz de Diagonais",

@@ -4,6 +4,10 @@ import jaMessages from '@/messages/ja.json';
 import ptBRMessages from '@/messages/pt-BR.json';
 import { describe, expect, it } from 'vitest';
 
+import { encodeFenToBase64Url } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_lib/share-url';
+import { CASTLED_KINGSIDE_FEN } from '@/app/[locale]/(public)/ranks/_components/castled-kingside-fen';
+import { SCATTERED_PAWNS_FEN } from '@/app/[locale]/(public)/ranks/_components/scattered-pawns-fen';
+
 import { getGuideInlineLink } from './paragraphInlineLinks';
 
 /**
@@ -72,6 +76,21 @@ describe('getGuideInlineLink', () => {
     expect(info?.leadIn).toBeUndefined();
   });
 
+  it('points the 2kyu page-1 "solve" CTA at the live ScatteredPawns FEN token', () => {
+    // Drift guard: the hardcoded href token in GUIDE_LINK_MAP must stay in sync
+    // with the FEN the guide board actually renders. If the FEN changes, this
+    // fails until the token is regenerated.
+    const info = getGuideInlineLink('2kyu', 1, 3, 'ja', makeTranslator(jaMessages));
+    const expectedToken = encodeFenToBase64Url(SCATTERED_PAWNS_FEN);
+    expect(info?.href).toBe(`/ja/practice/position-memory/custom/${expectedToken}`);
+  });
+
+  it('points the 2kyu page-2 "solve" CTA at the live CastledKingside FEN token', () => {
+    const info = getGuideInlineLink('2kyu', 2, 3, 'ja', makeTranslator(jaMessages));
+    const expectedToken = encodeFenToBase64Url(CASTLED_KINGSIDE_FEN);
+    expect(info?.href).toBe(`/ja/practice/position-memory/custom/${expectedToken}`);
+  });
+
   it('resolves the mukyu 5kyuGuideLabel bracket-quoted i18n key without a typo', () => {
     // `5kyuGuideLabel` starts with a digit, which means the hardcoded
     // `labelKey: '5kyuGuideLabel'` in GUIDE_LINK_MAP must match the i18n key
@@ -100,9 +119,12 @@ describe('getGuideInlineLink', () => {
       ['mukyu', 3, 0],
       ['mukyu', 3, 2],
       ['2kyu', 1, 1],
-      ['2kyu', 2, 2],
-      ['2kyu', 4, 0],
-      ['2kyu', 4, 2],
+      ['2kyu', 1, 3],
+      ['2kyu', 2, 1],
+      ['2kyu', 2, 3],
+      ['2kyu', 3, 3],
+      ['2kyu', 4, 1],
+      ['2kyu', 4, 3],
     ];
 
     // Keep in sync with SUPPORTED_LOCALES in @/config. Every locale shipped
