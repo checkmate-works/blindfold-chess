@@ -7,6 +7,8 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { TUTORIAL_SKIP_CONFIG, type TutorialSkipModuleId } from '../_lib/tutorial-skip-config';
+
 type RedirectProps = {
   locale: Locale;
   storageKey: string;
@@ -27,7 +29,31 @@ function isRedirectProps(props: Props): props is RedirectProps {
   return 'locale' in props;
 }
 
-export function TutorialSkipLink(props: Props) {
+/**
+ * Module-driven skip link. Pulls storage key, redirect path, and translation
+ * config from `TUTORIAL_SKIP_CONFIG` so call sites only need to pass the
+ * module id and the user's locale. Replaces the per-module wrapper components.
+ */
+export function ModuleTutorialSkipLink({
+  locale,
+  moduleId,
+}: {
+  locale: Locale;
+  moduleId: TutorialSkipModuleId;
+}) {
+  const config = TUTORIAL_SKIP_CONFIG[moduleId];
+  return (
+    <TutorialSkipLink
+      locale={locale}
+      storageKey={config.storageKey}
+      redirectPath={config.redirectPath}
+      translationNamespace={config.translationNamespace}
+      translationKey={config.translationKey}
+    />
+  );
+}
+
+function TutorialSkipLink(props: Props) {
   const t = useTranslations(props.translationNamespace);
   const router = useRouter();
 

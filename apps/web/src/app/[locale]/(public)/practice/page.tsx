@@ -9,12 +9,11 @@
  * @flow
  * - Beginner: Square Colors, Coordinate Quiz, Legal Moves
  * - Intermediate: Diagonal Quiz, Board Symmetry, Route Planner
- * - Advanced: Position Memory, Knight's Tour, Move Sequence
+ * - Advanced: Position Memory, Knight's Tour
  * - Introduction: Algebraic Notation, FEN Reconstruction, Quadrant Anchors
  */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import Link from 'next/link';
 
 import { ChallengeCard } from '@/app/_components';
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV, SITE_URL } from '@/config';
@@ -22,19 +21,12 @@ import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV, SITE_URL } from '@/config';
 import { resolveCspNonce } from '@/lib/security/nonce';
 import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
 
+import { RankBadge } from '@/app/[locale]/(public)/practice/_components/RankBadge';
+import { getRankSlugForMenuType } from '@/app/[locale]/(public)/practice/_lib/module-rank-mapping';
 import { PRACTICE_EMOJIS } from '@/app/[locale]/(public)/practice/_lib/practice-emojis';
-import {
-  DashboardCard,
-  DashboardSection,
-  DashboardSectionHeader,
-  Divider,
-  PagePanel,
-  PageTitle,
-} from '@/app/[locale]/_components';
+import { ListLink, ListLinkContainer, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
-import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -47,42 +39,34 @@ type Props = {
 export const generateStaticParams = generateLocaleStaticParams;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  const t = await getTranslations({ locale, namespace: 'metadata.practice' });
-
-  const title = t('title');
-  const description = t('description');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'practice', title, description }),
-    title: resolveTitle(title, locale),
-    description,
-  };
+  return createPageMetadata({ params, namespace: 'metadata.practice', path: 'practice' });
 }
 
 export default async function PracticePage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale });
+  const tRanks = await getTranslations({ locale, namespace: 'ranks' });
 
   const sections = [
     {
       title: t('practice.levelBeginner'),
-      sectionIcon: '🌱',
       practices: [
         {
           id: 'square-colors',
+          menuType: 'square_colors',
           title: t('practice.squareColors.title'),
           icon: PRACTICE_EMOJIS.square_colors,
         },
         {
           id: 'coordinate-quiz',
+          menuType: 'coordinate_quiz',
           title: t('practice.coordinateQuiz.title'),
           icon: PRACTICE_EMOJIS.coordinate_quiz,
         },
         {
           id: 'legal-moves',
+          menuType: 'legal_moves',
           title: t('practice.legalMoves.title'),
           icon: PRACTICE_EMOJIS.legal_moves,
         },
@@ -90,20 +74,22 @@ export default async function PracticePage({ params }: Props) {
     },
     {
       title: t('practice.levelIntermediate'),
-      sectionIcon: '📚',
       practices: [
         {
           id: 'diagonal-quiz',
+          menuType: 'diagonal_quiz',
           title: t('practice.diagonalQuiz.title'),
           icon: PRACTICE_EMOJIS.diagonal_quiz,
         },
         {
           id: 'board-symmetry',
+          menuType: 'board_symmetry',
           title: t('practice.boardSymmetry.title'),
           icon: PRACTICE_EMOJIS.board_symmetry,
         },
         {
           id: 'route-planner',
+          menuType: 'route_planner',
           title: t('practice.routePlanner.title'),
           icon: PRACTICE_EMOJIS.route_planner,
         },
@@ -111,42 +97,45 @@ export default async function PracticePage({ params }: Props) {
     },
     {
       title: t('practice.levelAdvanced'),
-      sectionIcon: '🎓',
       practices: [
         {
           id: 'position-memory',
+          menuType: 'position_memory',
           title: t('practice.positionMemory.title'),
           icon: PRACTICE_EMOJIS.position_memory,
         },
         {
           id: 'puzzle',
+          menuType: 'puzzle',
           title: t('practice.puzzle.title'),
           icon: PRACTICE_EMOJIS.puzzle,
         },
         {
           id: 'knight-tour',
+          menuType: 'knight_tour',
           title: t('practice.knightTour.title'),
           icon: PRACTICE_EMOJIS.knight_tour,
-        },
-        {
-          id: 'move-sequence',
-          title: t('practice.moveSequence.title'),
-          icon: PRACTICE_EMOJIS.move_sequence,
         },
       ],
     },
     {
       title: t('practice.levelIntroduction'),
-      sectionIcon: '📖',
       practices: [
         {
           id: 'algebraic-notation',
+          menuType: 'algebraic_notation',
           title: t('practice.algebraicNotation.title'),
           icon: PRACTICE_EMOJIS.algebraic_notation,
         },
-        { id: 'fen', title: t('practice.fen.title'), icon: PRACTICE_EMOJIS.fen },
+        {
+          id: 'fen',
+          menuType: 'fen',
+          title: t('practice.fen.title'),
+          icon: PRACTICE_EMOJIS.fen,
+        },
         {
           id: 'quadrants',
+          menuType: 'quadrant_anchors',
           title: t('practice.quadrantAnchors.title'),
           icon: PRACTICE_EMOJIS.quadrant_anchors,
         },
@@ -164,50 +153,55 @@ export default async function PracticePage({ params }: Props) {
   const nonce = await resolveCspNonce();
 
   return (
-    <div className="space-y-8">
+    <>
       <JsonLd data={generateItemListSchema(itemListItems)} nonce={nonce} />
-      <PageTitle>{t('practice.title')}</PageTitle>
+      <PageLayout
+        title={t('practice.title')}
+        locale={locale}
+        breadcrumb={[{ label: t('navigation.practice') }]}
+      >
+        {sections.map((section) => (
+          <section key={section.title} className="space-y-4">
+            <SectionTitle>{section.title}</SectionTitle>
+            <div className="flex flex-wrap justify-center gap-3">
+              {section.practices.map((practice) => {
+                const rankSlug = getRankSlugForMenuType(practice.menuType);
+                const rankLabel = rankSlug ? tRanks(`rankNames.${rankSlug}`) : null;
+                return (
+                  <div key={practice.id} className="flex flex-col items-center gap-5">
+                    <ChallengeCard
+                      locale={locale}
+                      href={`/practice/${practice.id}`}
+                      label={practice.title}
+                      icon={practice.icon}
+                    />
+                    {rankSlug && rankLabel ? (
+                      <RankBadge slug={rankSlug} label={rankLabel} locale={locale} />
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        ))}
 
-      <PagePanel>
-        <DashboardCard>
-          {sections.map((section) => (
-            <DashboardSection key={section.title}>
-              <DashboardSectionHeader
-                icon={<span className="text-lg">{section.sectionIcon}</span>}
-                title={section.title}
-              />
-              <div className="flex flex-wrap gap-3 mt-3">
-                {section.practices.map((practice) => (
-                  <ChallengeCard
-                    key={practice.id}
-                    locale={locale}
-                    href={`/practice/${practice.id}`}
-                    label={practice.title}
-                    icon={practice.icon}
-                  />
-                ))}
-              </div>
-            </DashboardSection>
-          ))}
-        </DashboardCard>
-
-        <div className="text-center pt-4">
-          <Link
-            href={`/${locale}/leaderboard/score/all-time`}
-            className={`text-sm font-medium ${TEXT_LINK_CLASSES}`}
-          >
-            {t('practice.viewLeaderboard')}
-          </Link>
-        </div>
+        <section className="space-y-4">
+          <SectionTitle>{t('practice.related')}</SectionTitle>
+          <ListLinkContainer>
+            <ListLink href="/dojo" icon="🥋" title={t('practice.viewDojo')} locale={locale} />
+            <ListLink
+              href="/leaderboard/score/all-time"
+              icon="🏆"
+              title={t('practice.viewLeaderboard')}
+              locale={locale}
+            />
+          </ListLinkContainer>
+        </section>
 
         {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
           <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
         )}
-
-        <Divider />
-
-        <Breadcrumb items={[{ label: t('navigation.practice') }]} locale={locale} />
-      </PagePanel>
-    </div>
+      </PageLayout>
+    </>
   );
 }

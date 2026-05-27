@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath, revalidateTag } from 'next/cache';
+import { revalidateTag } from 'next/cache';
 
 import { eq } from 'drizzle-orm';
 
@@ -10,7 +10,7 @@ import {
   notifyAllUsersOfAnnouncement,
 } from '@/lib/notifications/announcement-notification';
 
-import { adminMutationGuard, mutationSuccess } from '../../_lib/action-factories';
+import { adminFindOrFail, adminMutationGuard, mutationSuccess } from '../../_lib/action-factories';
 import type { MutationResult } from '../../_lib/action-factories';
 import { validateAnnouncementData } from '../_lib/validation';
 
@@ -32,11 +32,8 @@ export async function updateAnnouncement(id: string, data: UpdateData): Promise<
     return guard;
   }
 
-  const [current] = await db.select().from(announcements).where(eq(announcements.id, id)).limit(1);
-
-  if (!current) {
-    return { error: 'not found' };
-  }
+  const notFound = await adminFindOrFail(announcements, id);
+  if (notFound) return notFound;
 
   await db
     .update(announcements)
@@ -60,11 +57,11 @@ export async function updateAnnouncement(id: string, data: UpdateData): Promise<
     }
   }
 
-  // revalidateTag invalidates the unstable_cache-wrapped banner fetch;
-  // revalidatePath evicts ISR-rendered HTML under [locale]/(public)/ that has
-  // the header/banner markup baked in from [locale]/layout.tsx.
+  // Invalidate the unstable_cache-wrapped banner fetch. Each ISR page picks up
+  // the new banner on its next natural revalidation cycle — a layout-wide
+  // revalidatePath here would evict every ISR entry under [locale]/(public),
+  // which previously caused a 305x ISR Writes spike on Vercel.
   revalidateTag('announcements', { expire: 60 });
-  revalidatePath('/', 'layout');
 
   return mutationSuccess(id, '/admin/announcements');
 }

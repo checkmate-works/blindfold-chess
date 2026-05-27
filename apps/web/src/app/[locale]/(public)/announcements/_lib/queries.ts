@@ -141,28 +141,52 @@ export async function getPublishedAnnouncementCount(): Promise<number> {
  * only emitted for locales that actually have a translation. Mirrors the
  * shape of `getPublishedArticle`.
  */
-export async function getPublishedAnnouncement(
-  slug: string,
-  locale: string
-): Promise<{ announcement: Announcement; availableLocales: string[] } | null> {
-  const results = await db
-    .select()
-    .from(announcements)
-    .where(and(eq(announcements.slug, slug), eq(announcements.status, 'published')));
+export const getPublishedAnnouncement = cache(
+  async (
+    slug: string,
+    locale: string
+  ): Promise<{ announcement: Announcement; availableLocales: string[] } | null> => {
+    const results = await db
+      .select()
+      .from(announcements)
+      .where(and(eq(announcements.slug, slug), eq(announcements.status, 'published')));
 
-  if (results.length === 0) return null;
+    if (results.length === 0) return null;
 
-  const availableLocales = results.map((r) => r.locale);
-  return { announcement: pickByLocale(results, locale), availableLocales };
-}
+    const availableLocales = results.map((r) => r.locale);
+    return { announcement: pickByLocale(results, locale), availableLocales };
+  }
+);
 
 /**
  * Get the latest published public announcement for the top banner.
  * Filters: status='published', visibility='public', publishedAt set, publishedAt within BANNER_DISPLAY_DAYS.
  * Returns null if no matching announcement exists.
  *
- * Wrapped with unstable_cache (cross-request, 300s revalidation) and
- * React.cache (per-request deduplication).
+ * Wrapped with unstable_cache (cross-request, 24h revalidation, tag-driven)
+ * and React.cache (per-request deduplication).
+ *
+ * @design 24h revalidate, not minutes
+ * This function is consumed by `<Header>` inside `[locale]/layout.tsx`, so
+ * every page in the `[locale]/(public)` subtree reads it on render. Under
+ * Next.js 16's segment cache, when this data-cache entry invalidates, the
+ * route cache for every page that read it invalidates too — and PPR splits
+ * each page into ~4 cache segments (`_tree`, `_head`, layout,
+ * `__PAGE__`), so one logical page invalidation is ~4 ISR Writes.
+ *
+ * The previous `revalidate: 300` therefore amplified to: (every page) ×
+ * 4 segments × 288 (5-min slots/day) writes/day, which dominated the
+ * project's ISR Writes spend in production (Vercel Observability → ISR
+ * Cache showed the static info pages — terms, privacy, faq, manual,
+ * preferences, etc. — racking up ~50–70 writes/day each despite no
+ * `export const revalidate` on those routes).
+ *
+ * Admin announcement CRUD calls `revalidateTag('announcements', ...)`,
+ * so newly published banners surface immediately. The 24h timer is only
+ * the upper bound for the "no banner currently set, then one is added by
+ * a service-role / SQL path that doesn't go through the admin action" —
+ * which is not a path we use. Going longer than 24h is fine in principle;
+ * 24h is just the conventional safety net.
  */
 export const getLatestBannerAnnouncement = cache(
   unstable_cache(
@@ -187,6 +211,6 @@ export const getLatestBannerAnnouncement = cache(
       return deduplicateBySlug(rows, locale)[0] ?? null;
     },
     ['latest-banner-announcement'],
-    { tags: ['announcements'], revalidate: 300 }
+    { tags: ['announcements'], revalidate: 86400 }
   )
 );

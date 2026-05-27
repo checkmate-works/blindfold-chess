@@ -10,8 +10,9 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { getFenAfterMoves, getStartingFen, parsePgn } from '@blindfold-chess/features/chess-core';
 import { FaPlusCircle } from 'react-icons/fa';
 
+import { MiniBoard } from '@/lib/positions/ui/MiniBoard';
+
 import { isBlackOpening } from '../_lib/openings';
-import { MiniBoard } from './MiniBoard';
 
 type Props = {
   fen: string;

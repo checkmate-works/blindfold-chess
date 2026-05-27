@@ -33,6 +33,7 @@ export const termsMP: ChessTerm[] = [
       },
     ],
     category: 'tactics',
+    isTheme: true,
   },
   {
     term: 'Miniature Game',
@@ -51,6 +52,7 @@ export const termsMP: ChessTerm[] = [
     definitionEn:
       "A strategy using your minority pawns to attack the opponent's pawn majority, creating weaknesses (especially backward pawns). Commonly appears in structures like the Queen's Gambit Declined or Caro-Kann",
     category: 'strategy',
+    isTheme: true,
   },
   {
     term: 'Novelty',
@@ -71,9 +73,14 @@ export const termsMP: ChessTerm[] = [
         fen: '8/4k3/8/4K3/8/4P3/8/8 w - - 0 1',
         sortOrder: 0,
         caption: 'White has the opposition with a passed pawn on e2',
+        annotations: {
+          arrows: [],
+          circles: [{ square: 'e6', color: 'yellow' }],
+        },
       },
     ],
     category: 'endgame',
+    isTheme: true,
   },
   {
     term: 'Organization',
@@ -92,6 +99,7 @@ export const termsMP: ChessTerm[] = [
     definitionEn:
       'A square where your piece can be stably placed without being attacked by enemy pawns. Particularly when located in the center or enemy territory, it becomes a strategically powerful stronghold. "A knight needs an outpost" (Steinitz)',
     category: 'strategy',
+    isTheme: true,
   },
   {
     term: 'Overloading',
@@ -102,6 +110,7 @@ export const termsMP: ChessTerm[] = [
     definitionEn:
       'A tactic of burdening one piece with multiple defensive duties or roles, ultimately making it unable to defend everything. A technique of overworking a piece to break through its defense. Overload',
     category: 'tactics',
+    isTheme: true,
   },
   {
     term: 'Overlooking',
@@ -121,6 +130,7 @@ export const termsMP: ChessTerm[] = [
       'A colloquial abbreviation for Passed Pawn, commonly used in casual speech, game commentary, and English-speaking chess conversations',
     aliases: ['Passed Pawn'],
     category: 'structure',
+    isTheme: true,
   },
   {
     term: 'Pawn Islands',
@@ -130,6 +140,7 @@ export const termsMP: ChessTerm[] = [
     definitionEn:
       'Groups of pawns that are not connected to each other (isolated). When vertically adjacent pawns are broken, the resulting isolated pawn groups are called islands. The more pawn islands, the more vulnerable the structure tends to be',
     category: 'structure',
+    isTheme: true,
   },
   {
     term: 'Pawn Break',
@@ -139,6 +150,7 @@ export const termsMP: ChessTerm[] = [
     definitionEn:
       'A move where you advance your pawn to challenge an enemy pawn, aiming to change the pawn structure. Used to open files or diagonals for pieces like rooks and bishops, or to contest control of the center',
     category: 'structure',
+    isTheme: true,
   },
   {
     term: 'Pawn Storm',
@@ -148,6 +160,7 @@ export const termsMP: ChessTerm[] = [
     definitionEn:
       "An aggressive technique of advancing pawns continuously to pressure the opponent's king or pieces. The aim is to advance pawns together on either the kingside or queenside to break down the opponent's defense",
     category: 'strategy',
+    isTheme: true,
   },
   {
     term: 'Piece up',
@@ -173,6 +186,7 @@ export const termsMP: ChessTerm[] = [
     definitionEn:
       "A pawn that appears capturable but leads to an opponent's attack or trap when taken",
     category: 'tactics',
+    isTheme: true,
   },
   {
     term: 'Positional Play',
@@ -227,6 +241,7 @@ export const termsMP: ChessTerm[] = [
     definitionEn:
       'Not just defense, but moves that anticipate and prevent what the opponent wants to do. A key element of positional play and one of the advanced techniques frequently used by top players',
     category: 'strategy',
+    isTheme: true,
   },
   {
     term: 'Punish',

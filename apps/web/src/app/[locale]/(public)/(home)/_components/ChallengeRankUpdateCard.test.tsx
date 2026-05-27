@@ -51,7 +51,7 @@ vi.mock('@/app/[locale]/(public)/leaderboard/_lib/types', () => ({
   moduleToSlug: (module: string) => module.replace(/_/g, '-'),
 }));
 
-vi.mock('@/app/[locale]/(public)/topics/_components/UserAvatar', () => ({
+vi.mock('@/app/[locale]/_components/UserAvatar', () => ({
   UserAvatar: ({ displayName }: { displayName: string }) => (
     <span data-testid="user-avatar">{displayName}</span>
   ),
@@ -275,9 +275,13 @@ describe('ChallengeRankUpdateCard', () => {
 
       const relativeContainer = container.querySelector('.relative');
       expect(relativeContainer).not.toBeNull();
-      const absoluteOverlay = container.querySelector('.absolute');
-      expect(absoluteOverlay).not.toBeNull();
-      expect(absoluteOverlay?.textContent).toBe('\u{1F3C6}');
+      // ActivityCard now also renders a card-wide stretched <Link> with
+      // class "absolute inset-0 z-0" to make the whole card clickable.
+      // Filter to the trophy overlay specifically by its own positioning
+      // (`right-0 bottom-0`).
+      const trophyOverlay = container.querySelector('.absolute.right-0.bottom-0');
+      expect(trophyOverlay).not.toBeNull();
+      expect(trophyOverlay?.textContent).toBe('\u{1F3C6}');
     });
   });
 });

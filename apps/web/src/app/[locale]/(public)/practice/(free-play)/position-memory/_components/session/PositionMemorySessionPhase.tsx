@@ -4,6 +4,7 @@ import type { BoardTheme } from '@/lib/games/board-themes';
 
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 
+import type { DisplayMode } from '../../_lib/session-config';
 import type { PositionAccuracy, PositionData } from '../../_lib/types';
 import { PositionMemoryMemorize } from './PositionMemoryMemorize';
 import { PositionMemoryProblemResult } from './PositionMemoryProblemResult';
@@ -27,6 +28,7 @@ type Props = {
   isPaused: boolean;
   showSkipButton: boolean;
   skipProblemResult: boolean;
+  displayMode: DisplayMode;
   onMemorized: () => void;
   onTogglePause: () => void;
   onSkip: () => void;
@@ -60,6 +62,7 @@ export function PositionMemorySessionPhase({
   isPaused,
   showSkipButton,
   skipProblemResult,
+  displayMode,
   onMemorized,
   onTogglePause,
   onSkip,
@@ -73,13 +76,14 @@ export function PositionMemorySessionPhase({
 }: Props) {
   if (phase === 'memorize' && originalPosition) {
     return (
-      <div id="position-memory-session" className="min-h-screen">
+      <div id="position-memory-session">
         <PositionMemoryMemorize
           position={originalPosition}
           memorizeTimeLeft={memorizeTimeLeft}
           currentProblemIndex={currentProblemIndex}
           problemCount={problemCount}
           boardTheme={boardTheme}
+          displayMode={displayMode}
           onMemorized={onMemorized}
           onSkip={onSkip}
           onQuit={onQuit}
@@ -102,6 +106,7 @@ export function PositionMemorySessionPhase({
         problemCount={problemCount}
         boardTheme={boardTheme}
         isTutorial={isTutorial}
+        showSkip={showSkipButton}
         onPositionChange={onPositionChange}
         onSubmit={onSubmit}
         onViewAgain={onViewAgain}

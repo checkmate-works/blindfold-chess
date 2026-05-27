@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type {
   ChallengeRankUpdateFeedItem,
+  ChunkFeedItem,
   FeedItem,
   PositionFeedItem,
   TopicPostFeedItem,
@@ -28,6 +29,12 @@ vi.mock('./ChallengeRankUpdateCard', () => ({
 vi.mock('./PositionFeedCard', () => ({
   PositionFeedCard: ({ data }: { data: unknown }) => (
     <div data-testid="position-feed-card">{JSON.stringify(data)}</div>
+  ),
+}));
+
+vi.mock('./ChunkFeedCard', () => ({
+  ChunkFeedCard: ({ data }: { data: unknown }) => (
+    <div data-testid="chunk-feed-card">{JSON.stringify(data)}</div>
   ),
 }));
 
@@ -81,7 +88,6 @@ const defaultProps = {
   locale: 'en',
   showMoreLabel: 'Show more',
   justNowLabel: 'Just now',
-  newReplyTemplate: 'New reply {time}',
 };
 
 // --- Tests ---
@@ -162,6 +168,12 @@ describe('FeedCard', () => {
           likeCount: 0,
           likedByMe: false,
         },
+        replyMeta: {
+          replyCount: 0,
+          latestReplyAt: null,
+          repliers: [],
+          uniqueReplierCount: 0,
+        },
       },
     };
 
@@ -193,6 +205,12 @@ describe('FeedCard', () => {
           likeCount: 3,
           likedByMe: true,
         },
+        replyMeta: {
+          replyCount: 0,
+          latestReplyAt: null,
+          repliers: [],
+          uniqueReplierCount: 0,
+        },
       },
     };
 
@@ -201,6 +219,41 @@ describe('FeedCard', () => {
     const card = screen.getByTestId('position-feed-card');
     expect(card.textContent).toContain('position-1');
     expect(card.textContent).toContain('rnbqkbnr');
+  });
+
+  it('should render ChunkFeedCard for chunk entityType', () => {
+    const item: ChunkFeedItem = {
+      id: 'feed-4',
+      entityType: 'chunk',
+      entityId: 'chunk-1',
+      actorId: 'user-1',
+      createdAt: '2025-01-15T10:00:00.000Z',
+      data: {
+        id: 'chunk-1',
+        slug: 'rook-battery',
+        title: 'Rook Battery',
+        description: 'Doubled rooks on an open file',
+        representativeFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+        kind: 'created',
+        createdAt: '2025-01-15T10:00:00.000Z',
+        author: {
+          username: 'testuser',
+          displayName: 'Test User',
+          avatarUrl: null,
+          country: null,
+          flair: null,
+        },
+        likeMeta: { likeCount: 0, likedByMe: false },
+        replyMeta: { replyCount: 0, latestReplyAt: null, repliers: [], uniqueReplierCount: 0 },
+      },
+    };
+
+    render(<FeedCard item={item} {...defaultProps} />);
+
+    const card = screen.getByTestId('chunk-feed-card');
+    expect(card).toBeInTheDocument();
+    expect(card.textContent).toContain('rook-battery');
+    expect(card.textContent).toContain('Rook Battery');
   });
 
   it('should return null for unknown entityType', () => {

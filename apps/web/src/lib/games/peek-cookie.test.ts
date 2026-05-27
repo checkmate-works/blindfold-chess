@@ -12,51 +12,36 @@ import {
 } from './peek-cookie';
 
 describe('encodePeekCookie', () => {
-  it('encodes { peekMode: "modal",  showBoardButtonInGame: true  } as "modal|1"', () => {
-    expect(encodePeekCookie({ peekMode: 'modal', showBoardButtonInGame: true })).toBe('modal|1');
+  it('encodes { peekMode: "modal", boardVisibility: "peek" } as "modal|peek"', () => {
+    expect(encodePeekCookie({ peekMode: 'modal', boardVisibility: 'peek' })).toBe('modal|peek');
   });
 
-  it('encodes { peekMode: "modal",  showBoardButtonInGame: false } as "modal|0"', () => {
-    expect(encodePeekCookie({ peekMode: 'modal', showBoardButtonInGame: false })).toBe('modal|0');
+  it('encodes { peekMode: "modal", boardVisibility: "never" } as "modal|never"', () => {
+    expect(encodePeekCookie({ peekMode: 'modal', boardVisibility: 'never' })).toBe('modal|never');
   });
 
-  it('encodes { peekMode: "inline", showBoardButtonInGame: true  } as "inline|1"', () => {
-    expect(encodePeekCookie({ peekMode: 'inline', showBoardButtonInGame: true })).toBe('inline|1');
+  it('encodes { peekMode: "inline", boardVisibility: "always" } as "inline|always"', () => {
+    expect(encodePeekCookie({ peekMode: 'inline', boardVisibility: 'always' })).toBe(
+      'inline|always'
+    );
   });
 
-  it('encodes { peekMode: "inline", showBoardButtonInGame: false } as "inline|0"', () => {
-    expect(encodePeekCookie({ peekMode: 'inline', showBoardButtonInGame: false })).toBe('inline|0');
+  it('encodes { peekMode: "inline", boardVisibility: "peek" } as "inline|peek"', () => {
+    expect(encodePeekCookie({ peekMode: 'inline', boardVisibility: 'peek' })).toBe('inline|peek');
   });
 });
 
-describe('parsePeekCookie', () => {
+describe('parsePeekCookie — new wire format', () => {
   describe('valid inputs', () => {
-    it('parses "modal|1" as { peekMode: "modal",  showBoardButtonInGame: true }', () => {
-      expect(parsePeekCookie('modal|1')).toEqual({
-        peekMode: 'modal',
-        showBoardButtonInGame: true,
-      });
-    });
-
-    it('parses "modal|0" as { peekMode: "modal",  showBoardButtonInGame: false }', () => {
-      expect(parsePeekCookie('modal|0')).toEqual({
-        peekMode: 'modal',
-        showBoardButtonInGame: false,
-      });
-    });
-
-    it('parses "inline|1" as { peekMode: "inline", showBoardButtonInGame: true }', () => {
-      expect(parsePeekCookie('inline|1')).toEqual({
-        peekMode: 'inline',
-        showBoardButtonInGame: true,
-      });
-    });
-
-    it('parses "inline|0" as { peekMode: "inline", showBoardButtonInGame: false }', () => {
-      expect(parsePeekCookie('inline|0')).toEqual({
-        peekMode: 'inline',
-        showBoardButtonInGame: false,
-      });
+    it.each([
+      ['modal|always', { peekMode: 'modal', boardVisibility: 'always' }],
+      ['modal|peek', { peekMode: 'modal', boardVisibility: 'peek' }],
+      ['modal|never', { peekMode: 'modal', boardVisibility: 'never' }],
+      ['inline|always', { peekMode: 'inline', boardVisibility: 'always' }],
+      ['inline|peek', { peekMode: 'inline', boardVisibility: 'peek' }],
+      ['inline|never', { peekMode: 'inline', boardVisibility: 'never' }],
+    ] as const)('parses %s correctly', (raw, expected) => {
+      expect(parsePeekCookie(raw)).toEqual(expected);
     });
   });
 
@@ -75,141 +60,135 @@ describe('parsePeekCookie', () => {
   });
 
   describe('unknown peekMode tokens', () => {
-    it('returns the default hint when the mode token is unknown ("bogus|1")', () => {
-      expect(parsePeekCookie('bogus|1')).toEqual(DEFAULT_PEEK_HINT);
+    it('returns the default hint when the mode token is unknown ("bogus|peek")', () => {
+      expect(parsePeekCookie('bogus|peek')).toEqual(DEFAULT_PEEK_HINT);
     });
 
-    it('is case-sensitive: uppercased "MODAL|1" is rejected as unknown', () => {
-      // Mode names are a closed set of lowercase literals. Accepting uppercased
-      // variants would widen the contract and risks coercing typos silently.
-      expect(parsePeekCookie('MODAL|1')).toEqual(DEFAULT_PEEK_HINT);
+    it('is case-sensitive: uppercased "MODAL|peek" is rejected as unknown', () => {
+      expect(parsePeekCookie('MODAL|peek')).toEqual(DEFAULT_PEEK_HINT);
     });
 
-    it('is case-sensitive: mixed-case "Modal|1" is rejected as unknown', () => {
-      expect(parsePeekCookie('Modal|1')).toEqual(DEFAULT_PEEK_HINT);
-    });
-
-    it('is case-sensitive: uppercased "INLINE|0" is rejected as unknown', () => {
-      expect(parsePeekCookie('INLINE|0')).toEqual(DEFAULT_PEEK_HINT);
+    it('is case-sensitive: mixed-case "Modal|peek" is rejected as unknown', () => {
+      expect(parsePeekCookie('Modal|peek')).toEqual(DEFAULT_PEEK_HINT);
     });
   });
 
-  describe('malformed boolean tokens', () => {
+  describe('malformed visibility tokens', () => {
     it('returns the default hint for "modal|yes"', () => {
       expect(parsePeekCookie('modal|yes')).toEqual(DEFAULT_PEEK_HINT);
     });
 
-    it('returns the default hint for "modal|true" (only "1" / "0" are accepted)', () => {
-      // `true`/`false` would be ambiguous with other truthy tokens; the parser
-      // intentionally accepts only the exact canonical tokens emitted by the
-      // encoder.
+    it('returns the default hint for "modal|true"', () => {
       expect(parsePeekCookie('modal|true')).toEqual(DEFAULT_PEEK_HINT);
     });
 
-    it('returns the default hint for "modal|false"', () => {
-      expect(parsePeekCookie('modal|false')).toEqual(DEFAULT_PEEK_HINT);
-    });
-
-    it('returns the default hint when the boolean token is empty ("modal|")', () => {
-      // Trailing pipe with no tail — the boolean slot is effectively missing,
-      // which is malformed (unlike the move-input cookie where an empty tail
-      // is a valid "no enabled list" signal).
+    it('returns the default hint when the visibility token is empty ("modal|")', () => {
       expect(parsePeekCookie('modal|')).toEqual(DEFAULT_PEEK_HINT);
     });
 
     it('returns the default hint when the pipe is missing entirely ("modal")', () => {
-      // No pipe means no boolean slot at all — malformed.
       expect(parsePeekCookie('modal')).toEqual(DEFAULT_PEEK_HINT);
     });
 
-    it('returns the default hint for numeric-looking but non-canonical tokens ("modal|2")', () => {
-      expect(parsePeekCookie('modal|2')).toEqual(DEFAULT_PEEK_HINT);
+    it('returns the default hint for unknown visibility values ("modal|sometimes")', () => {
+      expect(parsePeekCookie('modal|sometimes')).toEqual(DEFAULT_PEEK_HINT);
+    });
+
+    it('is case-sensitive: uppercased visibility "modal|PEEK" is rejected', () => {
+      expect(parsePeekCookie('modal|PEEK')).toEqual(DEFAULT_PEEK_HINT);
     });
   });
 
   describe('separator anomalies', () => {
-    it('returns the default hint when there are consecutive pipes ("modal||1")', () => {
-      // First split yields ['modal', ''] — the boolean slot is '' which is
-      // neither '1' nor '0', so the parser falls back to the default hint.
-      expect(parsePeekCookie('modal||1')).toEqual(DEFAULT_PEEK_HINT);
+    it('returns the default hint when there are consecutive pipes ("modal||peek")', () => {
+      expect(parsePeekCookie('modal||peek')).toEqual(DEFAULT_PEEK_HINT);
     });
 
     it('returns the default hint for only-pipes input ("||")', () => {
       expect(parsePeekCookie('||')).toEqual(DEFAULT_PEEK_HINT);
     });
 
-    it('returns the default hint when there is extra trailing content ("modal|1|extra")', () => {
-      // `split('|')` yields ['modal', '1', 'extra']; the parser only reads the
-      // first two segments, so the boolean slot is '1' and parsing succeeds.
-      // However, accepting extra trailing content would widen the contract in
-      // a way the encoder never emits — guard this as the current behavior
-      // (the parser happens to accept it because it uses destructuring) and
-      // document the observed output.
-      //
-      // Observed behavior: the current parser permissively keeps the first
-      // two segments, so 'modal|1|extra' parses as { peekMode: 'modal',
-      // showBoardButtonInGame: true }. This test pins that behavior so any
-      // future tightening is an intentional, reviewable change.
-      expect(parsePeekCookie('modal|1|extra')).toEqual({
+    it('keeps the first two segments and ignores trailing extras ("modal|peek|extra")', () => {
+      // Documented behavior: `split('|')` yields ['modal', 'peek', 'extra'];
+      // the parser only consumes the first two segments. Pinning this so any
+      // future tightening is intentional and reviewable.
+      expect(parsePeekCookie('modal|peek|extra')).toEqual({
         peekMode: 'modal',
-        showBoardButtonInGame: true,
+        boardVisibility: 'peek',
       });
     });
   });
 
   describe('whitespace handling', () => {
-    // Note: the move-input cookie parser trims whitespace inside the enabled-mode
-    // list, but peek-cookie has no list — only two scalar slots separated by a
-    // single pipe. The parser does NOT trim either slot, so whitespace-containing
-    // inputs are treated as malformed.
-    //
-    // This is intentional and consistent with move-input: neither parser trims
-    // the peekMode / mode slot itself (it only trims enabled-mode list entries).
-    it('does NOT trim trailing whitespace in the boolean slot ("modal|1 ")', () => {
-      expect(parsePeekCookie('modal|1 ')).toEqual(DEFAULT_PEEK_HINT);
+    it('does NOT trim trailing whitespace in the visibility slot ("modal|peek ")', () => {
+      expect(parsePeekCookie('modal|peek ')).toEqual(DEFAULT_PEEK_HINT);
     });
 
-    it('does NOT trim leading whitespace in the peekMode slot (" modal|1")', () => {
-      expect(parsePeekCookie(' modal|1')).toEqual(DEFAULT_PEEK_HINT);
+    it('does NOT trim leading whitespace in the peekMode slot (" modal|peek")', () => {
+      expect(parsePeekCookie(' modal|peek')).toEqual(DEFAULT_PEEK_HINT);
     });
 
-    it('does NOT accept internal whitespace around the pipe ("modal | 1")', () => {
-      // "modal " is not a known peek mode, so this falls back.
-      expect(parsePeekCookie('modal | 1')).toEqual(DEFAULT_PEEK_HINT);
+    it('does NOT accept internal whitespace around the pipe ("modal | peek")', () => {
+      expect(parsePeekCookie('modal | peek')).toEqual(DEFAULT_PEEK_HINT);
     });
   });
 
   describe('boundary / untrusted input', () => {
     it('tolerates very long untrusted input (>1000 chars) without throwing', () => {
-      // Must not DoS or crash the parser. Output must remain a valid hint.
       const longGarbage = 'x'.repeat(10_000);
       const result = parsePeekCookie(longGarbage);
       expect(result).toEqual(DEFAULT_PEEK_HINT);
     });
 
-    it('tolerates a very long trailing boolean slot without throwing', () => {
-      const longBool = `modal|${'1'.repeat(10_000)}`;
-      const result = parsePeekCookie(longBool);
-      // '11111...' is not the canonical '1', so it's malformed → default.
+    it('tolerates a very long trailing visibility slot without throwing', () => {
+      const longVisibility = `modal|${'p'.repeat(10_000)}`;
+      const result = parsePeekCookie(longVisibility);
+      // 'ppp...' is not a valid BoardVisibility, so it's malformed → default.
       expect(result).toEqual(DEFAULT_PEEK_HINT);
     });
   });
 });
 
+describe('parsePeekCookie — legacy back-compat', () => {
+  // The cookie's wire format used to encode the trailing slot as the legacy
+  // boolean `showBoardButtonInGame` (`'1'` or `'0'`). After the rename,
+  // existing cookies on disk must still decode to a sensible hint until the
+  // next preference update rewrites them in the new format. The mapping
+  // mirrors `legacyToBoardVisibility`:
+  //   '1' (showBoardButton=true)  → boardVisibility: 'peek'
+  //   '0' (showBoardButton=false) → boardVisibility: 'never'
+  it.each([
+    ['modal|1', { peekMode: 'modal', boardVisibility: 'peek' }],
+    ['modal|0', { peekMode: 'modal', boardVisibility: 'never' }],
+    ['inline|1', { peekMode: 'inline', boardVisibility: 'peek' }],
+    ['inline|0', { peekMode: 'inline', boardVisibility: 'never' }],
+  ] as const)('legacy %s decodes to %o', (raw, expected) => {
+    expect(parsePeekCookie(raw)).toEqual(expected);
+  });
+
+  it('rejects out-of-band legacy-looking tokens ("modal|2")', () => {
+    // Only the exact tokens '1' / '0' are recognized as legacy; '2' is neither
+    // a legacy boolean nor a valid BoardVisibility, so the parser falls back.
+    expect(parsePeekCookie('modal|2')).toEqual(DEFAULT_PEEK_HINT);
+  });
+});
+
 describe('parse ↔ encode round-trip', () => {
   const cases: PeekPreferenceHint[] = [
-    { peekMode: 'modal', showBoardButtonInGame: true },
-    { peekMode: 'modal', showBoardButtonInGame: false },
-    { peekMode: 'inline', showBoardButtonInGame: true },
-    { peekMode: 'inline', showBoardButtonInGame: false },
+    { peekMode: 'modal', boardVisibility: 'always' },
+    { peekMode: 'modal', boardVisibility: 'peek' },
+    { peekMode: 'modal', boardVisibility: 'never' },
+    { peekMode: 'inline', boardVisibility: 'always' },
+    { peekMode: 'inline', boardVisibility: 'peek' },
+    { peekMode: 'inline', boardVisibility: 'never' },
   ];
 
-  it.each(cases)('parse(encode($peekMode|$showBoardButtonInGame)) === input', (hint) => {
+  it.each(cases)('parse(encode($peekMode, $boardVisibility)) === input', (hint) => {
     expect(parsePeekCookie(encodePeekCookie(hint))).toEqual(hint);
   });
 
   it('is idempotent when applied twice (parse∘encode∘parse∘encode)', () => {
-    const hint: PeekPreferenceHint = { peekMode: 'inline', showBoardButtonInGame: false };
+    const hint: PeekPreferenceHint = { peekMode: 'inline', boardVisibility: 'always' };
     const once = parsePeekCookie(encodePeekCookie(hint));
     const twice = parsePeekCookie(encodePeekCookie(once));
     expect(twice).toEqual(hint);
@@ -229,8 +208,6 @@ describe('writePeekPreferenceCookie', () => {
   }
 
   function readCookieEntry(): string | null {
-    // jsdom's `document.cookie` returns all cookies joined by `; ` with no
-    // attributes — so matching by prefix is enough.
     const parts = document.cookie.split(';').map((p) => p.trim());
     return parts.find((p) => p.startsWith(`${PEEK_COOKIE_NAME}=`)) ?? null;
   }
@@ -244,42 +221,41 @@ describe('writePeekPreferenceCookie', () => {
   });
 
   it('writes a cookie named "bfc_peek_pref"', () => {
-    writePeekPreferenceCookie({ peekMode: 'modal', showBoardButtonInGame: true });
+    writePeekPreferenceCookie({ peekMode: 'modal', boardVisibility: 'peek' });
     const entry = readCookieEntry();
     expect(entry).not.toBeNull();
     expect(entry!.startsWith(`${PEEK_COOKIE_NAME}=`)).toBe(true);
   });
 
   it('writes the encoded value after the "=" sign', () => {
-    const hint: PeekPreferenceHint = { peekMode: 'inline', showBoardButtonInGame: false };
+    const hint: PeekPreferenceHint = { peekMode: 'inline', boardVisibility: 'always' };
     writePeekPreferenceCookie(hint);
     const entry = readCookieEntry();
     expect(entry).toBe(`${PEEK_COOKIE_NAME}=${encodePeekCookie(hint)}`);
   });
 
   it.each([
-    { peekMode: 'modal', showBoardButtonInGame: true },
-    { peekMode: 'modal', showBoardButtonInGame: false },
-    { peekMode: 'inline', showBoardButtonInGame: true },
-    { peekMode: 'inline', showBoardButtonInGame: false },
-  ] as const)('round-trips all four hint combinations via document.cookie', (hint) => {
+    { peekMode: 'modal', boardVisibility: 'always' },
+    { peekMode: 'modal', boardVisibility: 'peek' },
+    { peekMode: 'modal', boardVisibility: 'never' },
+    { peekMode: 'inline', boardVisibility: 'always' },
+    { peekMode: 'inline', boardVisibility: 'peek' },
+    { peekMode: 'inline', boardVisibility: 'never' },
+  ] as const)('round-trips all six hint combinations via document.cookie', (hint) => {
     writePeekPreferenceCookie(hint);
     const entry = readCookieEntry();
     expect(entry).toBe(`${PEEK_COOKIE_NAME}=${encodePeekCookie(hint)}`);
   });
 
   it('exports PEEK_COOKIE_MAX_AGE_SEC as 1 year (symmetry with move-input cookie)', () => {
-    // The cookie's Max-Age is not visible on jsdom's `document.cookie`
-    // accessor (it strips attributes), so we pin the exported constant used
-    // by the writer. Keep this in sync with MOVE_INPUT_COOKIE_MAX_AGE_SEC.
     expect(PEEK_COOKIE_MAX_AGE_SEC).toBe(60 * 60 * 24 * 365);
   });
 
   it('overwrites a previous cookie value on re-write', () => {
-    writePeekPreferenceCookie({ peekMode: 'modal', showBoardButtonInGame: true });
-    expect(readCookieEntry()).toBe(`${PEEK_COOKIE_NAME}=modal|1`);
+    writePeekPreferenceCookie({ peekMode: 'modal', boardVisibility: 'peek' });
+    expect(readCookieEntry()).toBe(`${PEEK_COOKIE_NAME}=modal|peek`);
 
-    writePeekPreferenceCookie({ peekMode: 'inline', showBoardButtonInGame: false });
-    expect(readCookieEntry()).toBe(`${PEEK_COOKIE_NAME}=inline|0`);
+    writePeekPreferenceCookie({ peekMode: 'inline', boardVisibility: 'never' });
+    expect(readCookieEntry()).toBe(`${PEEK_COOKIE_NAME}=inline|never`);
   });
 });

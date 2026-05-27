@@ -7,7 +7,9 @@ import { useSearchParams } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
+import { FaExternalLinkAlt } from 'react-icons/fa';
 
 import { ChessBoardWithOverlay } from '@/app/[locale]/(public)/practice/(free-play)/_components/ChessBoardWithOverlay';
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
@@ -173,6 +175,17 @@ export function SinglePositionResult({
                 {t('detail.backToList')}
               </Button>
             </Link>
+            {resultItem && (
+              <Button
+                onClick={() => window.open(fenToLichessUrl(resultItem.fen), '_blank')}
+                variant="secondary"
+                size="lg"
+                fullWidth
+                icon={<FaExternalLinkAlt className="w-4 h-4" />}
+              >
+                {t('analyzeOnLichess')}
+              </Button>
+            )}
           </div>
 
           {/* Required Knowledge */}
@@ -200,10 +213,10 @@ export function SinglePositionResult({
         </div>
 
         {breadcrumb && (
-          <>
+          <div className="!mt-4 space-y-4">
             <Divider />
             {breadcrumb}
-          </>
+          </div>
         )}
       </PagePanel>
     </div>

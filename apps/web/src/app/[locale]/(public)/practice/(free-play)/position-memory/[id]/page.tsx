@@ -1,30 +1,47 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
+import { Button } from '@/app/_components';
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
 import { isBlackToMoveFromFen } from '@blindfold-chess/features/chess-core/fen';
+import { FaPlusCircle } from 'react-icons/fa';
+import { FiEdit2, FiGitBranch } from 'react-icons/fi';
 
 import { getOptionalUser } from '@/lib/auth';
-import { getLinkedChunksForPosition } from '@/lib/chunks/queries';
-import { getPositionLikeMeta } from '@/lib/positions/like-queries';
 import { getPositionWithProfileById } from '@/lib/positions/queries';
 import { resolveDisplayName } from '@/lib/users/display-name';
 
+import { attachPostFenFromForm } from '@/app/[locale]/(public)/topics/_actions/attachPostFen';
+import { attachPostPgn } from '@/app/[locale]/(public)/topics/_actions/attachPostPgn';
+import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
+import { editPost } from '@/app/[locale]/(public)/topics/_actions/editPost';
+import { removePostAttachment } from '@/app/[locale]/(public)/topics/_actions/removePostAttachment';
+import { CommentTree } from '@/app/[locale]/(public)/topics/_components/CommentTree';
+import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
-import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
+import { buildAttachmentNodeMap } from '@/app/[locale]/(public)/topics/_components/render-attachment';
+import { buildCommentTree } from '@/app/[locale]/(public)/topics/_lib/comment-tree';
+import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
+import { SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
-import { RelatedChunks } from '@/app/[locale]/_components/RelatedChunks';
+import { RelatedTags } from '@/app/[locale]/_components/RelatedTags';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { toggleLike } from '../_actions/toggleLike';
-import { DeletePositionButton } from '../_components/DeletePositionButton';
+import { toggleLike } from '../../_actions/toggleLike';
+import { ForkProvenanceNote } from '../../_components/ForkProvenanceNote';
+import { PositionAuthorAttribution } from '../../_components/PositionAuthorAttribution';
+import { PositionDetailLayout } from '../../_components/PositionDetailLayout';
+import { loadPositionDetail } from '../../_lib/load-position-detail';
 import { PositionDetailBoard } from '../_components/single-position/PositionDetailBoard';
 import { PositionStartForm } from '../_components/single-position/PositionStartForm';
+import { createReplyWithAttachment } from './_actions/createReplyWithAttachment';
+import { createReplyWithFenAttachment } from './_actions/createReplyWithFenAttachment';
+import { togglePositionMemoryPostLike } from './_actions/togglePositionMemoryPostLike';
+import { NewPostForm } from './_components/NewPostForm';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,6 +50,7 @@ type Props = {
     locale: Locale;
     id: string;
   }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -56,10 +74,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function PositionDetailPage({ params }: Props) {
+export default async function PositionDetailPage({ params, searchParams }: Props) {
   const { locale, id } = await params;
+  const sortBy = validateSort(((await searchParams).sort as string | undefined) ?? 'new');
   const t = await getTranslations({ locale, namespace: 'practice.positionMemory' });
+  const tTags = await getTranslations({ locale, namespace: 'practice.tags' });
+  const tComments = await getTranslations({ locale, namespace: 'topics.positionMemory' });
+  const tTopics = await getTranslations({ locale, namespace: 'topics' });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
+  const tPlay = await getTranslations({ locale, namespace: 'play' });
 
   const row = await getPositionWithProfileById({ id, type: 'memory' });
 
@@ -72,112 +95,190 @@ export default async function PositionDetailPage({ params }: Props) {
   const isBlackToMove = isBlackToMoveFromFen(position.fen);
 
   const currentUser = await getOptionalUser();
-  const [likeMeta, relatedChunks] = await Promise.all([
-    getPositionLikeMeta(position.id, currentUser?.id),
-    getLinkedChunksForPosition(position.id),
-  ]);
+  const {
+    likeMeta,
+    relatedChunks,
+    relatedThemes,
+    commentCount,
+    allComments,
+    forkParent,
+    forkCount,
+    canFork,
+    attachments,
+  } = await loadPositionDetail({
+    position,
+    kind: 'memory',
+    currentUserId: currentUser?.id,
+    locale,
+  });
 
-  const authorBadge = (
-    <>
-      {profile?.avatarUrl ? (
-        <Image
-          src={profile.avatarUrl}
-          alt={displayName}
-          width={24}
-          height={24}
-          className="w-6 h-6 rounded-full object-cover flex-shrink-0"
-          unoptimized
-        />
-      ) : (
-        <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-          <span className="text-xs text-muted-foreground">
-            {displayName.charAt(0).toUpperCase()}
-          </span>
-        </div>
-      )}
-      <span className={`font-medium text-foreground${profile?.username ? ' hover:underline' : ''}`}>
-        {displayName}
-      </span>
-    </>
+  const commentTree = buildCommentTree(allComments, sortBy);
+
+  const allPostIds = allComments.map((c) => c.id);
+  const tVideo = await getTranslations({ locale, namespace: 'postVideoAttachmentRender' });
+  const extraContentByPostId = buildAttachmentNodeMap(
+    allPostIds,
+    attachments,
+    tVideo('fallbackTitle')
+  );
+
+  const forkedFromNote = (
+    <ForkProvenanceNote
+      positionId={position.id}
+      forkedFromId={position.forkedFromId}
+      forkParent={forkParent}
+      forkCount={forkCount}
+      pathPrefix="practice/position-memory"
+      labels={{
+        forkedFrom: t('detail.forkedFrom'),
+        forkedFromDeleted: t('detail.forkedFromDeleted'),
+        forksSection: (count) => t('detail.forksSection', { count }),
+      }}
+    />
   );
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{position.title}</PageTitle>
-
-      <PagePanel>
-        <div className="space-y-6">
-          <SectionTitle>{t('detail.descriptionSection')}</SectionTitle>
-
-          {position.description && (
-            <p className="text-foreground whitespace-pre-wrap">{position.description}</p>
-          )}
-
-          <div className="max-w-md mx-auto">
-            <PositionDetailBoard fen={position.fen} flipped={isBlackToMove} />
-          </div>
-
-          <RelatedChunks chunks={relatedChunks} locale={locale} />
-
-          <div className="flex items-center justify-end gap-2 text-sm text-muted-foreground">
-            <span>{t('detail.createdBy')}</span>
-            {profile?.username ? (
-              <Link
-                href={`/u/${profile.username}`}
-                locale={locale}
-                className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-              >
-                {authorBadge}
-              </Link>
-            ) : (
-              authorBadge
-            )}
-          </div>
-
-          <div className="flex items-center justify-between gap-4 text-xs text-muted-foreground">
-            <LikeButton
-              postId={position.id}
-              locale={locale}
-              topicKey=""
-              initialLikeCount={likeMeta.likeCount}
-              initialLikedByMe={likeMeta.likedByMe}
-              toggleLikeAction={toggleLike}
-              i18nNamespace="practice.positionMemory"
-            />
-            <div className="flex items-center gap-4">
-              {currentUser?.id === position.userId && (
-                <DeletePositionButton positionId={position.id} locale={locale} />
-              )}
-              <time dateTime={position.createdAt.toISOString()}>
-                {position.createdAt.toLocaleDateString(locale, {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
-              </time>
-            </div>
-          </div>
-
-          <SectionTitle>{t('detail.solveSection')}</SectionTitle>
-
-          <PositionStartForm positionId={position.id} locale={locale} />
-        </div>
-
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+    <PositionDetailLayout
+      title={position.title}
+      locale={locale}
+      headerNote={forkedFromNote}
+      bottomAdSense={
+        (IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
           <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-        )}
+        )
+      }
+      breadcrumbItems={[
+        { label: tNav('practice'), href: '/practice' },
+        { label: t('list.title'), href: '/practice/position-memory' },
+        { label: position.title },
+      ]}
+    >
+      <SectionTitle>{t('detail.descriptionSection')}</SectionTitle>
 
-        <Divider />
+      {position.description && (
+        <p className="text-foreground whitespace-pre-wrap">{position.description}</p>
+      )}
 
-        <Breadcrumb
-          items={[
-            { label: tNav('practice'), href: '/practice' },
-            { label: t('list.title'), href: '/practice/position-memory' },
-            { label: position.title },
-          ]}
+      <div className="max-w-md mx-auto">
+        <PositionDetailBoard fen={position.fen} flipped={isBlackToMove} />
+        <div className="flex justify-center mt-4">
+          <Link href={`/games/new/position?fen=${encodeURIComponent(position.fen)}`}>
+            <Button asChild variant="secondary" icon={<FaPlusCircle className="w-3 h-3" />}>
+              {tPlay('newGameFromHere')}
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      <RelatedTags
+        themes={relatedThemes}
+        chunks={relatedChunks}
+        locale={locale}
+        labels={{
+          sectionTitle: (count) => t('detail.usefulSection', { count }),
+          badgeTheme: tTags('badge.theme'),
+          badgeChunk: tTags('badge.chunk'),
+        }}
+      />
+
+      <PositionAuthorAttribution
+        profile={profile}
+        displayName={displayName}
+        createdByLabel={t('detail.createdBy')}
+        locale={locale}
+      />
+
+      <div className="flex items-center justify-between gap-4 text-xs text-muted-foreground">
+        <LikeButton
+          postId={position.id}
           locale={locale}
+          topicKey=""
+          initialLikeCount={likeMeta.likeCount}
+          initialLikedByMe={likeMeta.likedByMe}
+          toggleLikeAction={toggleLike}
+          i18nNamespace="practice.positionMemory"
         />
-      </PagePanel>
-    </div>
+        <div className="flex items-center gap-4">
+          {currentUser?.id === position.userId && (
+            <Link
+              href={`/practice/position-memory/${position.id}/edit`}
+              className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-muted-foreground hover:border-foreground/20 hover:text-foreground transition-colors"
+            >
+              <FiEdit2 className="h-3 w-3" aria-hidden />
+              {t('detail.editAction')}
+            </Link>
+          )}
+          {canFork && (
+            <Link
+              href={`/practice/position-memory/new?from=${position.id}`}
+              className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-muted-foreground hover:border-foreground/20 hover:text-foreground transition-colors"
+            >
+              <FiGitBranch className="h-3 w-3" aria-hidden />
+              {t('detail.forkAction')}
+            </Link>
+          )}
+          <time dateTime={position.createdAt.toISOString()}>
+            {position.createdAt.toLocaleDateString(locale, {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
+          </time>
+          {position.updatedAt.getTime() - position.createdAt.getTime() > 1000 && (
+            <span className="text-muted-foreground">{t('detail.edited')}</span>
+          )}
+        </div>
+      </div>
+
+      <SectionTitle>{t('detail.solveSection')}</SectionTitle>
+
+      <PositionStartForm positionId={position.id} locale={locale} />
+
+      <SectionTitle>{tComments('commentsTitle')}</SectionTitle>
+
+      {currentUser && commentCount === 0 ? (
+        <NewPostForm locale={locale} positionId={position.id} />
+      ) : (
+        <JoinConversationToggle count={commentCount} joinLabel={tTopics('joinConversation')}>
+          <NewPostForm locale={locale} positionId={position.id} />
+        </JoinConversationToggle>
+      )}
+
+      {commentTree.length > 0 && (
+        <>
+          <SortSelect
+            basePath={`/practice/position-memory/${position.id}`}
+            translationKey="topics.positionMemory.sort"
+            currentSort={sortBy}
+          />
+          <CommentTree
+            comments={commentTree}
+            locale={locale}
+            topicKey={position.id}
+            currentUserId={currentUser?.id}
+            enableSpoiler={false}
+            redirectPath={`/${locale}/practice/position-memory/${position.id}`}
+            toggleLikeAction={togglePositionMemoryPostLike}
+            replyAttachmentActions={{
+              pgn: createReplyWithAttachment,
+              fen: createReplyWithFenAttachment,
+            }}
+            deletePostAction={deletePost}
+            editPostAction={editPost}
+            removeAttachmentAction={removePostAttachment}
+            attachPgnAction={attachPostPgn}
+            attachFenAction={attachPostFenFromForm}
+            attachmentsByPostId={attachments}
+            attachmentFallbackVideoTitle={tVideo('fallbackTitle')}
+            extraContentByPostId={extraContentByPostId}
+            i18n={{
+              likeNamespace: 'topics.positionMemory',
+              replyNamespace: 'topics.positionMemory.replies',
+              deleteNamespace: 'topics.positionMemory.deletePost',
+            }}
+          />
+        </>
+      )}
+    </PositionDetailLayout>
   );
 }

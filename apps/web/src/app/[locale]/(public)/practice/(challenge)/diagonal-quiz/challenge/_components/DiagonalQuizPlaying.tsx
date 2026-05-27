@@ -102,7 +102,7 @@ export function DiagonalQuizPlaying({
 
   return (
     <div className="max-w-md mx-auto">
-      <div className="bg-card rounded-xl border border-border p-8 text-center relative overflow-hidden">
+      <div className="p-8 text-center relative overflow-hidden">
         {/* Countdown Overlay */}
         <BoardOverlay
           isVisible={countdown !== null}
@@ -145,7 +145,9 @@ export function DiagonalQuizPlaying({
           />
 
           <div className="mb-6">
-            <div className="text-6xl font-bold text-foreground mb-4">{currentSquare}</div>
+            <div className="text-6xl font-bold text-foreground mb-4 select-none">
+              {currentSquare}
+            </div>
 
             <AnswerFeedback
               isCorrect={lastAnswer?.correct ?? null}
@@ -162,56 +164,58 @@ export function DiagonalQuizPlaying({
             />
           </div>
 
-          {/* Diagonal Input Display Fields */}
-          <div className="space-y-3 mb-6">
-            <DiagonalInputField
-              label={t('diagonalLabel')}
-              isSingleSquare={singleDiagonal}
-              activeField={activeField}
-              fieldType="diagonal"
-              startText={diagonalStartText}
-              endText={diagonalEndText}
-              isComplete={isDiagonalComplete}
-              isDisabled={isDisabled}
-              isInputtingStart={isInputtingStart}
-              isInputtingEnd={isInputtingEnd}
-              onFieldClick={handleFieldClick}
-            />
+          <div className="-mx-8 sm:mx-0">
+            {/* Diagonal Input Display Fields */}
+            <div className="space-y-3 mb-6">
+              <DiagonalInputField
+                label={t('diagonalLabel')}
+                isSingleSquare={singleDiagonal}
+                activeField={activeField}
+                fieldType="diagonal"
+                startText={diagonalStartText}
+                endText={diagonalEndText}
+                isComplete={isDiagonalComplete}
+                isDisabled={isDisabled}
+                isInputtingStart={isInputtingStart}
+                isInputtingEnd={isInputtingEnd}
+                onFieldClick={handleFieldClick}
+              />
 
-            <DiagonalInputField
-              label={t('antiDiagonalLabel')}
-              isSingleSquare={singleAntiDiagonal}
-              activeField={activeField}
-              fieldType="antiDiagonal"
-              startText={antiDiagonalStartText}
-              endText={antiDiagonalEndText}
-              isComplete={isAntiDiagonalComplete}
-              isDisabled={isDisabled}
-              isInputtingStart={isInputtingStart}
-              isInputtingEnd={isInputtingEnd}
-              onFieldClick={handleFieldClick}
-            />
-          </div>
-
-          {/* Step indicator */}
-          {!isDisabled && (
-            <div className="text-sm text-muted-foreground mb-4">
-              {expectingFile ? t('selectFile') : expectingRank ? t('selectRank') : ''}
+              <DiagonalInputField
+                label={t('antiDiagonalLabel')}
+                isSingleSquare={singleAntiDiagonal}
+                activeField={activeField}
+                fieldType="antiDiagonal"
+                startText={antiDiagonalStartText}
+                endText={antiDiagonalEndText}
+                isComplete={isAntiDiagonalComplete}
+                isDisabled={isDisabled}
+                isInputtingStart={isInputtingStart}
+                isInputtingEnd={isInputtingEnd}
+                onFieldClick={handleFieldClick}
+              />
             </div>
-          )}
 
-          {/* Button Input Area */}
-          <ChessCoordinateKeypad
-            expectingFile={expectingFile}
-            expectingRank={expectingRank}
-            isDisabled={isDisabled}
-            onFilePress={handleFilePress}
-            onRankPress={handleRankPress}
-            onBackspace={handleBackspace}
-            onClear={handleClear}
-          />
+            {/* Step indicator */}
+            {!isDisabled && (
+              <div className="text-sm text-muted-foreground mb-4">
+                {expectingFile ? t('selectFile') : expectingRank ? t('selectRank') : ''}
+              </div>
+            )}
 
-          <AlgebraicKeyboardHint disabled={isDisabled} />
+            {/* Button Input Area */}
+            <ChessCoordinateKeypad
+              expectingFile={expectingFile}
+              expectingRank={expectingRank}
+              isDisabled={isDisabled}
+              onFilePress={handleFilePress}
+              onRankPress={handleRankPress}
+              onBackspace={handleBackspace}
+              onClear={handleClear}
+            />
+
+            <AlgebraicKeyboardHint disabled={isDisabled} />
+          </div>
         </div>
       </div>
 

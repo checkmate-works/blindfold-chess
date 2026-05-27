@@ -104,7 +104,7 @@ function SuggestionInput({
             onBlur={handleBlur}
             disabled={disabled}
             placeholder={placeholder}
-            className={`w-full px-4 py-3 border border-border rounded-lg bg-background font-mono text-lg focus:outline-none focus:ring-2 focus:ring-foreground/20 disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+            className={`w-full px-4 py-3 border border-border rounded-lg bg-background font-mono text-lg focus:outline-none focus:ring-2 focus:ring-foreground/20 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation ${className}`}
             autoComplete="off"
             spellCheck="false"
           />
@@ -116,7 +116,7 @@ function SuggestionInput({
                 <button
                   key={`${suggestion}-${index}`}
                   type="button"
-                  className="w-full px-4 py-4 md:py-2 text-left font-mono text-base md:text-sm text-foreground hover:bg-muted transition-colors duration-150 first:rounded-t-lg last:rounded-b-lg focus:outline-none focus:bg-muted"
+                  className="w-full px-4 py-4 md:py-2 text-left font-mono text-base md:text-sm text-foreground hover:bg-muted transition-colors duration-150 first:rounded-t-lg last:rounded-b-lg focus:outline-none focus:bg-muted touch-manipulation select-none"
                   onClick={() => handleSuggestionClick(suggestion)}
                   onMouseDown={(e) => e.preventDefault()} // Prevent input blur
                 >
@@ -132,7 +132,7 @@ function SuggestionInput({
             type="button"
             onClick={handleSubmit}
             disabled={disabled || !value.trim()}
-            className="w-14 h-14 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:text-muted-foreground disabled:cursor-not-allowed text-primary-foreground font-medium rounded-lg transition-all duration-150 flex items-center justify-center text-xl border border-border"
+            className="w-14 h-14 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:text-muted-foreground disabled:cursor-not-allowed text-primary-foreground font-medium rounded-lg transition-all duration-150 flex items-center justify-center text-xl border border-border touch-manipulation select-none"
             aria-label={t('action.submit')}
             title={t('action.submit')}
           >

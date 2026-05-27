@@ -3,6 +3,14 @@
     {
       "path": "/api/cron/grant-monthly-leaderboard-badges",
       "schedule": "0 1 1 * *"
+    },
+    {
+      "path": "/api/cron/reap-post-images",
+      "schedule": "30 3 * * *"
+    },
+    {
+      "path": "/api/cron/like-coin-grants",
+      "schedule": "0 4 * * *"
     }
   ]
 }

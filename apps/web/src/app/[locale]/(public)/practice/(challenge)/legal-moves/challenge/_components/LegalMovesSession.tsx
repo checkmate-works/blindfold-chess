@@ -2,21 +2,20 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { useRouter } from 'next/navigation';
-
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { useLegalMovesSession } from '@blindfold-chess/features/legal-moves/client';
 
 import { CHALLENGE_TIME_LIMIT, MISTAKE_LIMIT } from '@/lib/challenge/constants';
 
 import { useChallengeResultSave } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-challenge-result-save';
+import { useQuitConfirm } from '@/app/[locale]/(public)/practice/(challenge)/_hooks/use-quit-confirm';
 import { saveLegalMovesResult } from '@/app/[locale]/(public)/practice/(challenge)/legal-moves/_actions/save-result';
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { isLegalMove } from '../../_lib/legal-moves-api';
 import type { PieceType } from '../../_lib/types';
-import { isLegalMove } from '../../_lib/utils';
 import { LegalMovesPlaying } from './LegalMovesPlaying';
 
 type Props = {
@@ -26,7 +25,6 @@ type Props = {
 };
 
 export default function LegalMovesSession({ locale, selectedPieces, selectedPiece }: Props) {
-  const router = useRouter();
   const t = useTranslations('practice.legalMoves');
 
   const getQuestion = (from: string, to: string) => t('questionFormat', { from, to });
@@ -58,21 +56,12 @@ export default function LegalMovesSession({ locale, selectedPieces, selectedPiec
 
   useScrollToElement('legal-moves-session');
 
-  const [showQuitModal, setShowQuitModal] = useState(false);
-
-  const handleQuitRequest = useCallback(() => {
-    if (!isPaused) togglePause();
-    setShowQuitModal(true);
-  }, [isPaused, togglePause]);
-
-  const handleQuitConfirm = useCallback(() => {
-    router.push(`/${locale}/practice/legal-moves/challenge`);
-  }, [router, locale]);
-
-  const handleQuitCancel = useCallback(() => {
-    setShowQuitModal(false);
-    if (isPaused) togglePause();
-  }, [isPaused, togglePause]);
+  const { showQuitModal, handleQuitRequest, handleQuitConfirm, handleQuitCancel } = useQuitConfirm({
+    locale,
+    moduleSlug: 'legal-moves',
+    isPaused,
+    togglePause,
+  });
 
   // Clear module-specific feedback state when hook feedback ends
   useEffect(() => {

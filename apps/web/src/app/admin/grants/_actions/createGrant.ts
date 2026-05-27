@@ -3,15 +3,14 @@
 import { revalidateTag } from 'next/cache';
 
 import { requireAdmin } from '@/app/admin/_lib/auth';
-import { addDays } from 'date-fns';
 
-import { db, userGrants } from '@/lib/db';
-import { createNotification } from '@/lib/notifications/notification';
-import { calcGrantStartsAt } from '@/lib/users/user-grants';
+import type { ActionResult } from '@/lib/action-types';
+import { db } from '@/lib/db';
+import { isBenefitType } from '@/lib/db/data/grant-types';
+import { getClientIp } from '@/lib/security/client-ip';
 
+import { insertAdminGrant, notifyAdminGrant } from '../_lib/grant-mutations';
 import { validateDurationDays, validateUuid } from '../_lib/validation';
-
-type ActionResult = { success: true } | { error: string };
 
 export async function createGrant(formData: FormData): Promise<ActionResult> {
   const auth = await requireAdmin();
@@ -32,58 +31,48 @@ export async function createGrant(formData: FormData): Promise<ActionResult> {
   if (!benefitType || !benefitType.trim()) {
     return { error: 'Benefit type is required' };
   }
+  if (!isBenefitType(benefitType.trim())) {
+    // Guard against form tampering — the UI dropdown only renders known
+    // benefit types, but a hand-crafted POST could supply anything.
+    return { error: `Unknown benefit type: ${benefitType}` };
+  }
   const durationDays = Number(durationDaysStr);
   const durationError = validateDurationDays(durationDays);
   if (durationError) {
     return { error: durationError };
   }
 
-  // NOTE: calcGrantStartsAt read + insert are not wrapped in a transaction.
-  // Concurrent calls for the same user+benefitType could produce overlapping
-  // grants instead of stacking. Acceptable here because admin_manual is a
-  // low-frequency single-operator flow. Automated grant types (topic_post,
-  // etc.) use the separate `applyAutomatedGrant` helper in src/lib/user-grants.ts
-  // which performs the read + insert inside a db.transaction with row-level
-  // locking.
-  try {
-    const startsAt = await calcGrantStartsAt(userId.trim(), benefitType.trim());
-    const expiresAt = addDays(startsAt, durationDays);
+  const trimmedUserId = userId.trim();
+  const trimmedBenefitType = benefitType.trim();
+  const trimmedReason = reason?.trim() || null;
+  const ipAddress = await getClientIp();
 
-    const [inserted] = await db
-      .insert(userGrants)
-      .values({
-        userId: userId.trim(),
-        benefitType: benefitType.trim(),
-        grantType: 'admin_manual',
-        reason: reason?.trim() || null,
-        startsAt,
-        expiresAt,
+  // The grant + audit rows are written in one transaction so the
+  // moderation_actions row cannot be lost on a partial failure, and the
+  // user-grants stacking calculation is serialized against concurrent
+  // admin actions on the same user/benefit pair. See `insertAdminGrant`.
+  try {
+    const grant = await db.transaction((tx) =>
+      insertAdminGrant(tx, {
+        userId: trimmedUserId,
+        benefitType: trimmedBenefitType,
+        durationDays,
+        reason: trimmedReason,
+        actorId: auth.userId,
+        ipAddress,
       })
-      .returning({ id: userGrants.id });
+    );
 
     revalidateTag('grant-status', { expire: 60 });
 
     // Note: the target user's `bfc_ads_hidden` cookie cannot be updated from
     // this admin action — it runs in the admin's HTTP session, not the
     // target user's. The cookie refreshes on the target user's next visit
-    // to `/mypage/subscription` (via `refreshAdsHiddenCookie()`), or at
-    // most after `ADS_HIDDEN_COOKIE_MAX_AGE_SEC` (7 days). `grant-status`
-    // tag revalidation above ensures the next render recomputes entitlement
-    // freshly from DB.
-    createNotification({
-      userId: userId.trim(),
-      actorId: auth.userId,
-      type: 'benefit_grant',
-      targetType: 'user_grant',
-      targetId: inserted.id,
-      metadata: {
-        grantType: 'admin_manual',
-        benefitType: benefitType.trim(),
-        durationDays,
-        expiresAt: expiresAt.toISOString(),
-        reason: reason?.trim() || null,
-      },
-    });
+    // to `/mypage/subscription` (via the request proxy in
+    // `apps/web/src/proxy.ts`), or at most after `ADS_HIDDEN_COOKIE_MAX_AGE_SEC`
+    // (7 days). `grant-status` tag revalidation above ensures the next
+    // render recomputes entitlement freshly from DB.
+    notifyAdminGrant(auth.userId, grant);
 
     return { success: true };
   } catch (error) {

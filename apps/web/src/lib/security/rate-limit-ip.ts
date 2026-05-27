@@ -32,6 +32,7 @@ import { createHash } from 'node:crypto';
 import 'server-only';
 
 import { db, rateLimitKeyEvents } from '../db';
+import { getClientIp } from './client-ip';
 
 export type IpRateLimitConfig = { maxRequests: number; windowMs: number };
 
@@ -163,4 +164,23 @@ export async function checkEmailRateLimitGuard(
     return { error: 'rateLimited' };
   }
   return null;
+}
+
+/**
+ * IP-based rate-limit guard for unauthenticated Server Actions, resolving the
+ * client IP and the action's configured limit in one call.
+ *
+ * Returns `{ error: 'rateLimited' }` when the limit is exceeded, or `null`
+ * when the request is allowed. This is the unauthenticated counterpart to
+ * `authenticateAndGuard` (which keys on the user id): the pre-auth flows —
+ * sign-up, sign-in, password reset — all gate on IP instead, and previously
+ * each repeated the `getClientIp()` + `checkIpRateLimitGuard()` pair inline.
+ *
+ * @param action - Key into `IP_RATE_LIMITS`; also the rate-limiter bucket key.
+ */
+export async function guardByIpRateLimit(
+  action: keyof typeof IP_RATE_LIMITS
+): Promise<{ error: 'rateLimited' } | null> {
+  const ip = await getClientIp();
+  return checkIpRateLimitGuard(ip, action, IP_RATE_LIMITS[action]);
 }

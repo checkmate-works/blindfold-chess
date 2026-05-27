@@ -12,25 +12,42 @@ import React, {
 
 import type { BoardTheme } from '@/lib/games/board-themes';
 import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
+import type { BoardVisibility } from '@/lib/games/board-visibility';
+import { DEFAULT_BOARD_VISIBILITY } from '@/lib/games/board-visibility';
 import {
   DEFAULT_ENABLED_MOVE_INPUT_MODES,
   DEFAULT_MOVE_INPUT_MODE,
   writeMoveInputCookieClient,
 } from '@/lib/games/move-input-cookie';
-import {
-  DEFAULT_PEEK_MODE,
-  DEFAULT_SHOW_BOARD_BUTTON_IN_GAME,
-  writePeekPreferenceCookie,
-} from '@/lib/games/peek-cookie';
+import { DEFAULT_PEEK_MODE, writePeekPreferenceCookie } from '@/lib/games/peek-cookie';
 
-// Per-game preferences (subset of GamePreferences saved with each game)
+import { validatePreferences } from './game-preferences-validation';
+
+// Per-game preferences (subset of GamePreferences saved with each game).
+// `boardVisibility` and `peekMode` are "Controls"-tier settings in the global
+// Preferences page but are included here too: how the board surfaces during
+// gameplay often changes per-game depending on how the player wants to
+// experience that specific session. Legacy records (saved before either
+// field existed in this shape) are tolerated via `??` fallbacks at every
+// consumer site and on-read migration in the validators.
 export type PerGamePreferences = {
-  showBoardButtonInGame: boolean;
+  boardVisibility: BoardVisibility;
   highlightLastMove: boolean;
   showOwnPieces: boolean;
   showOpponentPieces: boolean;
   pieceShapeMode: 'normal' | 'circles-all' | 'circles-own' | 'circles-opponent';
   pieceColors: 'normal' | 'white-only' | 'black-only';
+  peekMode: 'modal' | 'inline';
+  /**
+   * Active move-input mode for this game. Per-game so mid-game switches
+   * (text → button → select) accumulate in the preference change log
+   * rather than mutating the user's global default. The user's per-game
+   * value falls back to the global `moveInputMode` when the per-game field
+   * is absent (legacy records). The orthogonal `enabledMoveInputModes`
+   * (which modes are even available to switch between) remains a global
+   * setting — it controls UI affordance availability, not per-game intent.
+   */
+  moveInputMode: 'text' | 'select' | 'button';
 };
 
 // Game preferences
@@ -50,17 +67,17 @@ export type GamePreferences = {
   enabledMoveInputModes: ('text' | 'select' | 'button')[]; // Which move input modes are available
   buttonInputPieceLabel: 'text' | 'icon'; // Button input label style
   enableAutoComplete: boolean; // Enable auto-complete for text input
-  // Board button visibility
-  showBoardButtonInGame: boolean; // Show "View Board" button during AI games
+  // Board visibility during gameplay — see BoardVisibility for semantics.
+  boardVisibility: BoardVisibility;
   // Board peek mode
   peekMode: 'modal' | 'inline'; // How to display the board peek (modal dialog or inline accordion)
 };
 
 // Default preferences. `moveInputMode` / `enabledMoveInputModes` are derived
-// from the shared `DEFAULT_MOVE_INPUT_*` constants in `@/lib/games/move-input-cookie`,
-// and `peekMode` / `showBoardButtonInGame` are derived from the shared
-// `DEFAULT_PEEK_*` constants in `@/lib/games/peek-cookie`, so the SSR cookie
-// hints and the client-side defaults can never drift apart.
+// from the shared `DEFAULT_MOVE_INPUT_*` constants in `@/lib/games/move-input-cookie`;
+// `peekMode` from `DEFAULT_PEEK_MODE` in the same module; and `boardVisibility`
+// from `DEFAULT_BOARD_VISIBILITY` in `@/lib/games/board-visibility`, so the
+// SSR cookie hints and the client-side defaults can never drift apart.
 const defaultPreferences: GamePreferences = {
   showCoordinates: true,
   highlightLastMove: true,
@@ -73,72 +90,9 @@ const defaultPreferences: GamePreferences = {
   enabledMoveInputModes: [...DEFAULT_ENABLED_MOVE_INPUT_MODES],
   buttonInputPieceLabel: 'icon',
   enableAutoComplete: true,
-  showBoardButtonInGame: DEFAULT_SHOW_BOARD_BUTTON_IN_GAME,
+  boardVisibility: DEFAULT_BOARD_VISIBILITY,
   peekMode: DEFAULT_PEEK_MODE,
 };
-
-// Validate and sanitize parsed preferences from localStorage.
-// Only picks known keys with valid types/values; unknown keys are ignored.
-function validatePreferences(parsed: unknown): Partial<GamePreferences> {
-  if (typeof parsed !== 'object' || parsed === null) return {};
-
-  const p = parsed as Record<string, unknown>;
-  const result: Partial<GamePreferences> = {};
-
-  if (typeof p.showCoordinates === 'boolean') result.showCoordinates = p.showCoordinates;
-  if (typeof p.highlightLastMove === 'boolean') result.highlightLastMove = p.highlightLastMove;
-  if (
-    typeof p.boardTheme === 'string' &&
-    ['monotone', 'lichess', 'chesscom'].includes(p.boardTheme)
-  ) {
-    result.boardTheme = p.boardTheme as BoardTheme;
-  }
-  if (typeof p.showOwnPieces === 'boolean') result.showOwnPieces = p.showOwnPieces;
-  if (typeof p.showOpponentPieces === 'boolean') result.showOpponentPieces = p.showOpponentPieces;
-  if (
-    typeof p.pieceShapeMode === 'string' &&
-    ['normal', 'circles-all', 'circles-own', 'circles-opponent'].includes(p.pieceShapeMode)
-  ) {
-    result.pieceShapeMode = p.pieceShapeMode as GamePreferences['pieceShapeMode'];
-  }
-  if (
-    typeof p.pieceColors === 'string' &&
-    ['normal', 'white-only', 'black-only'].includes(p.pieceColors)
-  ) {
-    result.pieceColors = p.pieceColors as GamePreferences['pieceColors'];
-  }
-  if (
-    typeof p.moveInputMode === 'string' &&
-    ['text', 'select', 'button'].includes(p.moveInputMode)
-  ) {
-    result.moveInputMode = p.moveInputMode as GamePreferences['moveInputMode'];
-  }
-  if (Array.isArray(p.enabledMoveInputModes)) {
-    const validModes = ['text', 'select', 'button'] as const;
-    const filtered = p.enabledMoveInputModes.filter(
-      (m: unknown): m is GamePreferences['moveInputMode'] =>
-        typeof m === 'string' && validModes.includes(m as (typeof validModes)[number])
-    );
-    if (filtered.length > 0) {
-      result.enabledMoveInputModes = filtered;
-    }
-  }
-  if (
-    typeof p.buttonInputPieceLabel === 'string' &&
-    ['text', 'icon'].includes(p.buttonInputPieceLabel)
-  ) {
-    result.buttonInputPieceLabel =
-      p.buttonInputPieceLabel as GamePreferences['buttonInputPieceLabel'];
-  }
-  if (typeof p.enableAutoComplete === 'boolean') result.enableAutoComplete = p.enableAutoComplete;
-  if (typeof p.showBoardButtonInGame === 'boolean')
-    result.showBoardButtonInGame = p.showBoardButtonInGame;
-  if (typeof p.peekMode === 'string' && ['modal', 'inline'].includes(p.peekMode)) {
-    result.peekMode = p.peekMode as GamePreferences['peekMode'];
-  }
-
-  return result;
-}
 
 // Local storage key
 const PREFERENCES_STORAGE_KEY = 'blindfold-chess-game-preferences';
@@ -215,7 +169,7 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
       });
       writePeekPreferenceCookie({
         peekMode: loaded.peekMode,
-        showBoardButtonInGame: loaded.showBoardButtonInGame,
+        boardVisibility: loaded.boardVisibility,
       });
       setIsLoaded(true);
     }
@@ -286,12 +240,11 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
     }
     const peekKeysChanged =
       ('peekMode' in updates && updates.peekMode !== prev.peekMode) ||
-      ('showBoardButtonInGame' in updates &&
-        updates.showBoardButtonInGame !== prev.showBoardButtonInGame);
+      ('boardVisibility' in updates && updates.boardVisibility !== prev.boardVisibility);
     if (peekKeysChanged) {
       writePeekPreferenceCookie({
         peekMode: next.peekMode,
-        showBoardButtonInGame: next.showBoardButtonInGame,
+        boardVisibility: next.boardVisibility,
       });
     }
     setPreferences(next);
@@ -307,7 +260,7 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
     });
     writePeekPreferenceCookie({
       peekMode: defaultPreferences.peekMode,
-      showBoardButtonInGame: defaultPreferences.showBoardButtonInGame,
+      boardVisibility: defaultPreferences.boardVisibility,
     });
     setPreferences(defaultPreferences);
   }, []);

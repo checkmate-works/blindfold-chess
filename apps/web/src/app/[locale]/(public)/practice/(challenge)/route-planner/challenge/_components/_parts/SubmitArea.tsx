@@ -7,7 +7,7 @@ import { FaFlagCheckered } from 'react-icons/fa';
 import { AlgebraicKeyboardHint } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
 import { PieceCoordinateInput } from '@/app/[locale]/(public)/practice/_components/PieceCoordinateInput';
 
-import type { PieceType } from '../../../_lib/utils';
+import type { PieceType } from '../../../_lib/pieces';
 
 type Props = {
   piece: PieceType;
@@ -46,8 +46,9 @@ export function SubmitArea({
         selectedRank={selectedRank}
         onFileToggle={onFilePress}
         onRankToggle={onRankPress}
+        expandOnMobile
       >
-        <div className="flex pt-4 border-t border-border mt-2">
+        <div className="flex pt-4 mt-2 -mx-4 sm:mx-0">
           <Button
             onClick={onSubmit}
             disabled={isDisabled || (movesCount === 0 && start === end)}

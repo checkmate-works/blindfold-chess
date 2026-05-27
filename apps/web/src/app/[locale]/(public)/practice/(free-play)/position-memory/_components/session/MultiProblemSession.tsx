@@ -8,7 +8,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { SessionMode } from '../../_lib/machines/types';
 import { buildMultiResultUrl } from '../../_lib/result-url';
-import { TUTORIAL_SKIPPED_KEY } from '../../_lib/session-config';
+import { type DisplayMode, TUTORIAL_SKIPPED_KEY } from '../../_lib/session-config';
 import {
   PositionMemorySessionView,
   type SessionCompletePayload,
@@ -23,6 +23,7 @@ type Props = {
   mode?: SessionMode;
   skipMemorize?: boolean;
   isCustomFen?: boolean;
+  displayMode?: DisplayMode;
   rawProblemsParam?: string;
   sourceParam?: string;
   modeParam?: string;
@@ -46,6 +47,7 @@ export function MultiProblemSession({
   mode = 'custom',
   skipMemorize = false,
   isCustomFen = false,
+  displayMode = 'board',
   rawProblemsParam,
   sourceParam,
   modeParam,
@@ -95,6 +97,7 @@ export function MultiProblemSession({
       problemCount={problemCount}
       mode={mode}
       skipMemorize={skipMemorize}
+      displayMode={displayMode}
       onSessionComplete={handleSessionComplete}
       onFinishTutorial={handleFinishTutorial}
     />

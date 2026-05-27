@@ -200,12 +200,11 @@ describe('deleteChunk', () => {
     (db as unknown as { transaction: unknown }).transaction = originalTransaction;
   });
 
-  it('should revalidate both the list and edit paths after successful deletion', async () => {
+  it('should revalidate the list path after successful deletion', async () => {
     setupAdminWithChunk();
 
     await deleteChunk(testChunkId);
     expect(revalidatePath).toHaveBeenCalledWith('/admin/chunks');
-    expect(revalidatePath).toHaveBeenCalledWith(`/admin/chunks/${testChunkId}/edit`);
   });
 
   it('should not call revalidatePath when chunk is not found', async () => {

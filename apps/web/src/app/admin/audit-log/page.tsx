@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
+import type { User } from '@supabase/supabase-js';
 import { and, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
@@ -9,6 +10,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 
 import { AdminDataTable } from '../_components/AdminDataTable';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
+import { loadUsersEmailMap } from '../_lib/users-email-map';
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -35,6 +37,10 @@ export default async function AdminAuditLogPage({
 
   // If user filter is set, find matching target IDs from profiles
   let filteredTargetIds: string[] | null = null;
+  // Cache the auth user list fetched while resolving the user filter so the
+  // later email-map step can reuse it instead of paying for a second
+  // identical `listUsers` round-trip in the same request.
+  let preloadedAuthUsers: User[] | undefined;
   if (userFilter) {
     const matchingProfiles = await db
       .select({ id: profiles.id })
@@ -47,11 +53,12 @@ export default async function AdminAuditLogPage({
       );
 
     // Also search by email via Supabase admin client
-    const { data: usersData } = await adminClient.auth.admin.listUsers({
+    const listUsersResult = await adminClient.auth.admin.listUsers({
       page: 1,
       perPage: 100,
     });
-    const matchingEmailUserIds = (usersData?.users ?? [])
+    preloadedAuthUsers = listUsersResult.data?.users;
+    const matchingEmailUserIds = (preloadedAuthUsers ?? [])
       .filter((u) => u.email?.toLowerCase().includes(userFilter.toLowerCase()))
       .map((u) => u.id);
 
@@ -104,19 +111,13 @@ export default async function AdminAuditLogPage({
       : [];
   const profileMap = new Map(targetProfiles.map((p) => [p.id, p]));
 
-  // Fetch emails from Supabase Auth for all users
-  const emailMap = new Map<string, string>();
-  if (allUserIds.length > 0) {
-    const { data: usersData } = await adminClient.auth.admin.listUsers({
-      page: 1,
-      perPage: 100,
-    });
-    for (const u of usersData?.users ?? []) {
-      if (u.email) {
-        emailMap.set(u.id, u.email);
-      }
-    }
-  }
+  // Fetch emails from Supabase Auth for all users. Reuses the user list
+  // already fetched above (when a user filter was active) to avoid a second
+  // identical Auth round-trip in the same request.
+  const emailMap = await loadUsersEmailMap(allUserIds, {
+    adminClient,
+    preloadedUsers: preloadedAuthUsers,
+  });
 
   // Build search params for pagination links
   const buildHref = (p: number) => {
@@ -148,6 +149,9 @@ export default async function AdminAuditLogPage({
             <option value="unban">unban</option>
             <option value="delete_post">delete_post</option>
             <option value="delete_position">delete_position</option>
+            <option value="create_grant">create_grant</option>
+            <option value="revoke_grant">revoke_grant</option>
+            <option value="create_point_grant">create_point_grant</option>
           </select>
         </div>
         <div>
@@ -195,9 +199,13 @@ export default async function AdminAuditLogPage({
                   className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
                     log.action === 'ban'
                       ? 'bg-destructive-soft text-destructive-soft-foreground'
-                      : log.action === 'unban'
+                      : log.action === 'unban' ||
+                          log.action === 'create_grant' ||
+                          log.action === 'create_point_grant'
                         ? 'bg-success-soft text-success-soft-foreground'
-                        : log.action === 'delete_post' || log.action === 'delete_position'
+                        : log.action === 'delete_post' ||
+                            log.action === 'delete_position' ||
+                            log.action === 'revoke_grant'
                           ? 'bg-caution-soft text-caution-soft-foreground'
                           : 'bg-secondary text-secondary-foreground'
                   }`}

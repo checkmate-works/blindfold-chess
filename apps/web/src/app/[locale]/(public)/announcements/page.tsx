@@ -3,27 +3,33 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
-import { HiLockClosed } from 'react-icons/hi2';
-
-import { getOptionalUser } from '@/lib/auth';
 
 import {
-  Divider,
   ListLink,
   ListLinkContainer,
-  PagePanel,
-  PageTitle,
+  PageLayout,
   PaginationNav,
   SectionTitle,
 } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { MembersOnlyBadge } from './_components/MembersOnlyBadge';
 import { getPublishedAnnouncementCount, getPublishedAnnouncementsPaginated } from './_lib/queries';
 
-export const dynamic = 'force-dynamic';
+// 24h ISR window. Admin create/update/delete actions also call
+// `revalidateTag('announcements', { expire: 60 })`, which together with
+// the explicit `revalidatePath` in those actions is what guarantees
+// freshness — the timer here is only a safety net for the rare case where
+// the underlying row changes outside the admin action path (service-role
+// SQL etc.). The previous 600s timer added no real freshness over the
+// tag-driven invalidation but did generate a steady drip of ISR Writes;
+// 86400s removes the drip without losing any user-visible behaviour.
+// The members-only lock badge that previously kept this page on
+// `force-dynamic` has moved into `MembersOnlyBadge` (client component,
+// reads `useAuth`).
+export const revalidate = 86400;
 
 const ANNOUNCEMENTS_PER_PAGE = 20;
 
@@ -55,7 +61,6 @@ export default async function AnnouncementsPage({ params, searchParams }: Props)
   const { page } = await searchParams;
   const t = await getTranslations({ locale, namespace: 'announcements' });
 
-  const user = await getOptionalUser();
   const currentPage = Math.max(1, Number(page) || 1);
   const totalCount = await getPublishedAnnouncementCount();
   const totalPages = Math.max(1, Math.ceil(totalCount / ANNOUNCEMENTS_PER_PAGE));
@@ -72,61 +77,49 @@ export default async function AnnouncementsPage({ params, searchParams }: Props)
   );
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('pageTitle')}</PageTitle>
+    <PageLayout title={t('pageTitle')} locale={locale} breadcrumb={[{ label: t('pageTitle') }]}>
+      {announcements.length === 0 ? (
+        <p className="text-muted-foreground">{t('noAnnouncements')}</p>
+      ) : (
+        <>
+          <SectionTitle>{t('announcementsListTitle')}</SectionTitle>
+          <ListLinkContainer>
+            {announcements.map((announcement) => {
+              const publishedDate = announcement.publishedAt
+                ? new Date(announcement.publishedAt).toLocaleDateString(locale, {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                  })
+                : undefined;
 
-      <PagePanel>
-        {announcements.length === 0 ? (
-          <p className="text-muted-foreground">{t('noAnnouncements')}</p>
-        ) : (
-          <>
-            <SectionTitle>{t('announcementsListTitle')}</SectionTitle>
-            <ListLinkContainer>
-              {announcements.map((announcement) => {
-                const publishedDate = announcement.publishedAt
-                  ? new Date(announcement.publishedAt).toLocaleDateString(locale, {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                    })
-                  : undefined;
+              return (
+                <ListLink
+                  key={announcement.id}
+                  href={`/announcements/${announcement.slug}`}
+                  icon="📢"
+                  title={announcement.title}
+                  meta={publishedDate}
+                  locale={locale}
+                  isPinned={announcement.pinnedAt !== null}
+                  badge={
+                    announcement.visibility === 'members_only' ? <MembersOnlyBadge /> : undefined
+                  }
+                />
+              );
+            })}
+          </ListLinkContainer>
+          <PaginationNav
+            currentPage={currentPage}
+            totalPages={totalPages}
+            buildHref={(p) => `/${locale}/announcements${p > 1 ? `?page=${p}` : ''}`}
+          />
+        </>
+      )}
 
-                return (
-                  <ListLink
-                    key={announcement.id}
-                    href={`/announcements/${announcement.slug}`}
-                    icon="📢"
-                    title={announcement.title}
-                    meta={publishedDate}
-                    locale={locale}
-                    isPinned={announcement.pinnedAt !== null}
-                    badge={
-                      announcement.visibility === 'members_only' && !user ? (
-                        <>
-                          <HiLockClosed className="size-3" /> {t('membersOnlyBadge')}
-                        </>
-                      ) : undefined
-                    }
-                  />
-                );
-              })}
-            </ListLinkContainer>
-            <PaginationNav
-              currentPage={currentPage}
-              totalPages={totalPages}
-              buildHref={(p) => `/${locale}/announcements${p > 1 ? `?page=${p}` : ''}`}
-            />
-          </>
-        )}
-
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-        )}
-
-        <Divider />
-
-        <Breadcrumb items={[{ label: t('pageTitle') }]} locale={locale} />
-      </PagePanel>
-    </div>
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+      )}
+    </PageLayout>
   );
 }

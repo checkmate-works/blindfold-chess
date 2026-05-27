@@ -1,3 +1,5 @@
+import { Suspense } from 'react';
+
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
@@ -8,31 +10,36 @@ import { LanguageSwitcher } from './LanguageSwitcher';
 
 type Props = {
   locale: string;
+  hideLanguageSwitcher?: boolean;
 };
 
-export async function Footer({ locale }: Props) {
+export async function Footer({ locale, hideLanguageSwitcher }: Props) {
   const [
     tFooter,
     tManual,
     tGlossary,
     tAnnouncements,
     tFaq,
+    tCoin,
     tContact,
     tPrivacy,
     tTerms,
     tCompany,
     tAffiliate,
+    tLicenses,
   ] = await Promise.all([
     getTranslations({ locale, namespace: 'Footer' }),
     getTranslations({ locale, namespace: 'manual' }),
     getTranslations({ locale, namespace: 'glossary' }),
     getTranslations({ locale, namespace: 'announcements' }),
     getTranslations({ locale, namespace: 'faq' }),
+    getTranslations({ locale, namespace: 'coin' }),
     getTranslations({ locale, namespace: 'contact' }),
     getTranslations({ locale, namespace: 'privacy' }),
     getTranslations({ locale, namespace: 'terms' }),
     getTranslations({ locale, namespace: 'company' }),
     getTranslations({ locale, namespace: 'affiliateDisclosure' }),
+    getTranslations({ locale, namespace: 'licenses' }),
   ]);
 
   const isContactFormEnabled = !!process.env.RESEND_API_KEY;
@@ -82,6 +89,11 @@ export async function Footer({ locale }: Props) {
                   {tFaq('title')}
                 </Link>
               </li>
+              <li>
+                <Link href={`/${locale}/coin`} className="hover:text-foreground transition-colors">
+                  {tCoin('title')}
+                </Link>
+              </li>
               {isContactFormEnabled && (
                 <li>
                   <Link
@@ -128,6 +140,14 @@ export async function Footer({ locale }: Props) {
                   {tAffiliate('title')}
                 </Link>
               </li>
+              <li>
+                <Link
+                  href={`/${locale}/licenses`}
+                  className="hover:text-foreground transition-colors"
+                >
+                  {tLicenses('title')}
+                </Link>
+              </li>
             </ul>
           </div>
         </nav>
@@ -146,7 +166,11 @@ export async function Footer({ locale }: Props) {
               <FaGithub className="h-5 w-5" />
             </a>
 
-            <LanguageSwitcher currentLocale={locale} />
+            {!hideLanguageSwitcher && (
+              <Suspense fallback={null}>
+                <LanguageSwitcher currentLocale={locale} />
+              </Suspense>
+            )}
           </div>
 
           {/* Copyright & Disclaimer */}

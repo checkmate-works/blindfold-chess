@@ -490,7 +490,7 @@ describe('GamePreferencesContext - moveInput cookie mirror', () => {
  * mirror coverage above: pins that `GamePreferencesContext` is the single
  * writer for the `bfc_peek_pref` cookie and that peek-related updates flush
  * synchronously (i.e. before the originating call returns), so a user who
- * toggles `peekMode` / `showBoardButtonInGame` and immediately navigates
+ * toggles `peekMode` / `boardVisibility` and immediately navigates
  * cannot race a post-state-update effect.
  */
 describe('GamePreferencesContext - peek cookie mirror', () => {
@@ -513,8 +513,8 @@ describe('GamePreferencesContext - peek cookie mirror', () => {
 
       await act(async () => {});
 
-      // Defaults are peekMode='modal' and showBoardButtonInGame=true.
-      expect(readPeekCookie()).toBe('modal|1');
+      // Defaults are peekMode='modal' and boardVisibility='peek'.
+      expect(readPeekCookie()).toBe('modal|peek');
     });
 
     it('writes the loaded peek keys to the cookie when preferences are persisted', async () => {
@@ -522,7 +522,7 @@ describe('GamePreferencesContext - peek cookie mirror', () => {
         STORAGE_KEY,
         JSON.stringify({
           peekMode: 'inline',
-          showBoardButtonInGame: true,
+          boardVisibility: 'peek',
         })
       );
 
@@ -530,10 +530,30 @@ describe('GamePreferencesContext - peek cookie mirror', () => {
 
       await act(async () => {});
 
-      expect(readPeekCookie()).toBe('inline|1');
+      expect(readPeekCookie()).toBe('inline|peek');
     });
 
-    it('writes the loaded peek keys with showBoardButtonInGame=false', async () => {
+    it('writes the loaded peek keys with boardVisibility=never', async () => {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          peekMode: 'modal',
+          boardVisibility: 'never',
+        })
+      );
+
+      renderHook(() => useGamePreferences(), { wrapper });
+
+      await act(async () => {});
+
+      expect(readPeekCookie()).toBe('modal|never');
+    });
+
+    it('migrates legacy `showBoardButtonInGame: false` payloads to `boardVisibility: "never"`', async () => {
+      // Backward-compat: localStorage records written before the rename only
+      // carry the boolean. `validatePreferences` maps `false → 'never'` and
+      // `true → 'peek'`, and the cookie write that follows must reflect the
+      // migrated value. This proves the end-to-end legacy → new-format path.
       localStorage.setItem(
         STORAGE_KEY,
         JSON.stringify({
@@ -546,7 +566,23 @@ describe('GamePreferencesContext - peek cookie mirror', () => {
 
       await act(async () => {});
 
-      expect(readPeekCookie()).toBe('modal|0');
+      expect(readPeekCookie()).toBe('modal|never');
+    });
+
+    it('migrates legacy `showBoardButtonInGame: true` payloads to `boardVisibility: "peek"`', async () => {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          peekMode: 'inline',
+          showBoardButtonInGame: true,
+        })
+      );
+
+      renderHook(() => useGamePreferences(), { wrapper });
+
+      await act(async () => {});
+
+      expect(readPeekCookie()).toBe('inline|peek');
     });
   });
 
@@ -556,7 +592,7 @@ describe('GamePreferencesContext - peek cookie mirror', () => {
 
       // Wait for initial load so the "before" cookie state is stable.
       await act(async () => {});
-      expect(readPeekCookie()).toBe('modal|1');
+      expect(readPeekCookie()).toBe('modal|peek');
 
       // Synchronous check: observe `document.cookie` immediately after
       // `updatePreferences` returns, without awaiting any effects. If the
@@ -564,40 +600,53 @@ describe('GamePreferencesContext - peek cookie mirror', () => {
       // cookie would still be the old value here.
       act(() => {
         result.current.updatePreferences({ peekMode: 'inline' });
-        expect(readPeekCookie()).toBe('inline|1');
+        expect(readPeekCookie()).toBe('inline|peek');
       });
 
       // Sanity: still correct after act flushes.
-      expect(readPeekCookie()).toBe('inline|1');
+      expect(readPeekCookie()).toBe('inline|peek');
     });
 
-    it('writes the cookie when only showBoardButtonInGame changes (peekMode stays the same)', async () => {
+    it('writes the cookie when only boardVisibility changes (peekMode stays the same)', async () => {
       const { result } = renderHook(() => useGamePreferences(), { wrapper });
 
       await act(async () => {});
-      expect(readPeekCookie()).toBe('modal|1');
+      expect(readPeekCookie()).toBe('modal|peek');
 
       act(() => {
-        result.current.updatePreferences({ showBoardButtonInGame: false });
+        result.current.updatePreferences({ boardVisibility: 'never' });
       });
 
-      expect(readPeekCookie()).toBe('modal|0');
+      expect(readPeekCookie()).toBe('modal|never');
     });
 
-    it('writes both keys when peekMode and showBoardButtonInGame change together', async () => {
+    it('writes the cookie when boardVisibility changes to the new "always" value', async () => {
       const { result } = renderHook(() => useGamePreferences(), { wrapper });
 
       await act(async () => {});
-      expect(readPeekCookie()).toBe('modal|1');
+      expect(readPeekCookie()).toBe('modal|peek');
+
+      act(() => {
+        result.current.updatePreferences({ boardVisibility: 'always' });
+      });
+
+      expect(readPeekCookie()).toBe('modal|always');
+    });
+
+    it('writes both keys when peekMode and boardVisibility change together', async () => {
+      const { result } = renderHook(() => useGamePreferences(), { wrapper });
+
+      await act(async () => {});
+      expect(readPeekCookie()).toBe('modal|peek');
 
       act(() => {
         result.current.updatePreferences({
           peekMode: 'inline',
-          showBoardButtonInGame: false,
+          boardVisibility: 'never',
         });
       });
 
-      expect(readPeekCookie()).toBe('inline|0');
+      expect(readPeekCookie()).toBe('inline|never');
     });
 
     it('does NOT re-write the cookie when peekMode is set to its current value', async () => {
@@ -606,14 +655,14 @@ describe('GamePreferencesContext - peek cookie mirror', () => {
         STORAGE_KEY,
         JSON.stringify({
           peekMode: 'inline',
-          showBoardButtonInGame: true,
+          boardVisibility: 'peek',
         })
       );
 
       const { result } = renderHook(() => useGamePreferences(), { wrapper });
 
       await act(async () => {});
-      expect(readPeekCookie()).toBe('inline|1');
+      expect(readPeekCookie()).toBe('inline|peek');
 
       // Clear the cookie to detect whether `updatePreferences` rewrites it.
       clearPeekCookie();
@@ -627,18 +676,18 @@ describe('GamePreferencesContext - peek cookie mirror', () => {
       expect(readPeekCookie()).toBeNull();
     });
 
-    it('does NOT re-write the cookie when showBoardButtonInGame is set to its current value', async () => {
+    it('does NOT re-write the cookie when boardVisibility is set to its current value', async () => {
       const { result } = renderHook(() => useGamePreferences(), { wrapper });
 
       await act(async () => {});
-      expect(readPeekCookie()).toBe('modal|1');
+      expect(readPeekCookie()).toBe('modal|peek');
 
       clearPeekCookie();
       expect(readPeekCookie()).toBeNull();
 
       act(() => {
-        // Default is `true`; updating to the same value should skip the write.
-        result.current.updatePreferences({ showBoardButtonInGame: true });
+        // Default is 'peek'; updating to the same value should skip the write.
+        result.current.updatePreferences({ boardVisibility: 'peek' });
       });
 
       expect(readPeekCookie()).toBeNull();
@@ -686,22 +735,22 @@ describe('GamePreferencesContext - peek cookie mirror', () => {
         STORAGE_KEY,
         JSON.stringify({
           peekMode: 'inline',
-          showBoardButtonInGame: false,
+          boardVisibility: 'never',
         })
       );
 
       const { result } = renderHook(() => useGamePreferences(), { wrapper });
 
       await act(async () => {});
-      expect(readPeekCookie()).toBe('inline|0');
+      expect(readPeekCookie()).toBe('inline|never');
 
       act(() => {
         result.current.resetPreferences();
         // Inline write — visible before effects flush.
-        expect(readPeekCookie()).toBe('modal|1');
+        expect(readPeekCookie()).toBe('modal|peek');
       });
 
-      expect(readPeekCookie()).toBe('modal|1');
+      expect(readPeekCookie()).toBe('modal|peek');
     });
   });
 
@@ -723,7 +772,7 @@ describe('GamePreferencesContext - peek cookie mirror', () => {
             key: STORAGE_KEY,
             newValue: JSON.stringify({
               peekMode: 'inline',
-              showBoardButtonInGame: false,
+              boardVisibility: 'never',
             }),
           })
         );
@@ -731,7 +780,7 @@ describe('GamePreferencesContext - peek cookie mirror', () => {
 
       // In-memory state follows the other tab…
       expect(result.current.preferences.peekMode).toBe('inline');
-      expect(result.current.preferences.showBoardButtonInGame).toBe(false);
+      expect(result.current.preferences.boardVisibility).toBe('never');
 
       // …but this tab MUST NOT re-write the cookie.
       expect(readPeekCookie()).toBeNull();

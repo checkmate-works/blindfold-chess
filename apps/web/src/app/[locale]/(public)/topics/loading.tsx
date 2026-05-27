@@ -5,19 +5,23 @@
  * SectionTitle, and TopicPostCard list) to minimise CLS when the real
  * content swaps in.
  */
+import { getTranslations } from 'next-intl/server';
+
 import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 
-export default function TopicsLoading() {
+export default async function TopicsLoading() {
+  const t = await getTranslations('topics');
+
   return (
     <div className="space-y-8">
-      <PageTitle>
-        <span className="invisible">Topics</span>
-      </PageTitle>
+      <PageTitle>{t('title')}</PageTitle>
 
       <PagePanel>
-        {/* CardLink x2 skeleton */}
+        <SectionTitle>Category</SectionTitle>
+
+        {/* CardLink x3 skeleton */}
         <div className="space-y-4">
-          {Array.from({ length: 2 }).map((_, i) => (
+          {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="p-6 bg-card rounded-md border border-border animate-pulse">
               <div className="flex items-start gap-4">
                 <div className="w-8 h-8 bg-muted rounded flex-shrink-0" />
@@ -31,9 +35,7 @@ export default function TopicsLoading() {
           ))}
         </div>
 
-        <SectionTitle>
-          <span className="invisible">Recent posts</span>
-        </SectionTitle>
+        <SectionTitle>{t('recentPosts')}</SectionTitle>
 
         {/* TopicPostCard list skeleton */}
         <div className="space-y-3">

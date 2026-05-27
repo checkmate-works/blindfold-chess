@@ -2,12 +2,11 @@
   "name": "@blindfold-chess/features",
   "version": "0.0.0",
   "private": true,
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts",
     "./ai-game": "./src/ai-game/index.ts",
     "./ai-game/engine": "./src/ai-game/engine/index.ts",
+    "./ai-game/opponent": "./src/ai-game/opponent/index.ts",
+    "./ai-game/maia": "./src/ai-game/maia/index.ts",
     "./ai-game/notation-input": "./src/ai-game/notation-input/index.ts",
     "./ai-game/notation-input/client": "./src/ai-game/notation-input/client.ts",
     "./chess-core": "./src/chess-core/index.ts",
@@ -49,9 +48,12 @@
   },
   "devDependencies": {
     "@blindfold-chess/eslint-config": "workspace:*",
+    "@testing-library/react": "^16.3.2",
     "@types/react": "^19.2.14",
     "eslint": "^9.39.4",
+    "jsdom": "^27.4.0",
     "react": "^19.2.5",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.4"
   }
 }

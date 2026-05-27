@@ -9,15 +9,16 @@ import type { ExpInfo } from '@blindfold-chess/features/exp';
 import { getExpInfoBySource } from '@/lib/db/get-exp-info-by-source';
 import { createClient } from '@/lib/supabase/server';
 
-import { getLeaderboard } from '@/app/[locale]/(public)/leaderboard/_actions/getLeaderboard';
 import type {
   LeaderboardModule,
+  LeaderboardPeriod,
   LeaderboardRow,
 } from '@/app/[locale]/(public)/leaderboard/_lib/types';
-import { buildDetailPath } from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale, LocalePageProps, LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
+
+import { resolveLeaderboardWithFallback } from './resolveLeaderboardWithFallback';
 
 // ---------------------------------------------------------------------------
 // Shared: resolve ExpInfo from ?grant=<challenge_result_id>
@@ -32,8 +33,13 @@ export type ExpSource = 'challenge_result' | 'practice_result';
  * param is missing, or when no matching event is found. The lookup is
  * scoped to the current user, so passing another user's `sourceId` yields
  * `null` (authorization guard enforced at the query level).
+ *
+ * Exported so non-factory result pages (e.g. the puzzle result page, which
+ * has its own custom layout that does not flow through
+ * `createSimplePracticeResultPage`) can reuse the same grant-resolution
+ * logic without duplicating it.
  */
-async function resolveExpInfoFromGrantParam(
+export async function resolveExpInfoFromGrantParam(
   searchParams: Record<string, string | string[] | undefined>,
   expSource: ExpSource
 ): Promise<ExpInfo | null> {
@@ -134,6 +140,7 @@ type LeaderboardResultClientProps = {
   adBannerStandard?: ReactNode;
   leaderboardRows?: LeaderboardRow[];
   leaderboardDetailPath?: string;
+  leaderboardPeriod?: LeaderboardPeriod;
   expInfo?: ExpInfo | null;
 };
 
@@ -166,18 +173,16 @@ export function createLeaderboardPracticeResultPage(
     const searchParams = await props.searchParams;
     const key = leaderboard.resolveKey(searchParams);
 
-    const [leaderboardResult, expInfo] = await Promise.all([
-      getLeaderboard(leaderboard.module, key, 'weekly', 1),
+    const [leaderboardData, expInfo] = await Promise.all([
+      resolveLeaderboardWithFallback(leaderboard.module, key),
       resolveExpInfoFromGrantParam(searchParams, 'challenge_result'),
     ]);
-    const leaderboardRows = leaderboardResult.rows.slice(0, 3);
-    const leaderboardDetailPath = buildDetailPath('weekly', leaderboard.module, key);
 
     // `adBannerWide` (content-middle) is the top half of a sandwich around the
-    // weekly leaderboard. When there are no leaderboard rows, `LeaderboardPreview`
+    // leaderboard. When there are no leaderboard rows, `LeaderboardPreview`
     // renders nothing, so the wide banner would become an orphan "top half". Hide
     // it in that case so the sandwich is all-or-nothing.
-    const hasLeaderboardRows = leaderboardRows.length > 0;
+    const hasLeaderboardRows = leaderboardData !== null;
 
     return (
       <Suspense>
@@ -193,8 +198,9 @@ export function createLeaderboardPracticeResultPage(
               <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
             ) : undefined
           }
-          leaderboardRows={leaderboardRows}
-          leaderboardDetailPath={leaderboardDetailPath}
+          leaderboardRows={leaderboardData?.rows}
+          leaderboardDetailPath={leaderboardData?.detailPath}
+          leaderboardPeriod={leaderboardData?.period}
           expInfo={expInfo}
         />
       </Suspense>

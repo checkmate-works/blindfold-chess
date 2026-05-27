@@ -6,6 +6,7 @@
   "types": "./src/index.ts",
   "scripts": {
     "lint": "eslint",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -14,6 +15,7 @@
   "devDependencies": {
     "@blindfold-chess/eslint-config": "workspace:*",
     "eslint": "^9.39.4",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.4"
   }
 }

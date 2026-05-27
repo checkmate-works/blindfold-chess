@@ -24,6 +24,8 @@ export function UserCard({ username, displayName, avatarUrl, locale, actions }: 
             width={48}
             height={48}
             className="rounded-full object-cover h-12 w-12 flex-shrink-0"
+            // Pre-resized at upload (256×256 WebP); skip Vercel Image
+            // Optimization to avoid duplicate transformations.
             unoptimized
           />
         ) : (

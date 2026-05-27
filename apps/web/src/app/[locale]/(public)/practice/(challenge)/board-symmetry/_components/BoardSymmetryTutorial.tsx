@@ -6,13 +6,14 @@ import { useRouter } from 'next/navigation';
 
 import { BoardSkeleton, Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FaArrowLeft, FaArrowRight, FaPlay } from 'react-icons/fa';
+import { FaArrowLeft, FaArrowRight, FaInfinity, FaPlay } from 'react-icons/fa';
 
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
+import { Divider } from '@/app/[locale]/_components';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { BOARD_SYMMETRY_TUTORIAL_SKIPPED_KEY } from './BoardSymmetryTutorialSkipLink';
+import { TUTORIAL_SKIP_CONFIG } from '../../../_lib/tutorial-skip-config';
 
 type Props = {
   locale: Locale;
@@ -22,17 +23,18 @@ type TutorialStep = 'intro' | 'horizontal' | 'vertical' | 'point' | 'start';
 
 export function BoardSymmetryTutorial({ locale }: Props) {
   const t = useTranslations('practice.boardSymmetry.tutorial');
+  const tp = useTranslations('practice');
   const router = useRouter();
   const { preferences, isLoaded } = useGamePreferences();
   const [step, setStep] = useState<TutorialStep>('intro');
 
   const handleStartChallenge = () => {
-    localStorage.setItem(BOARD_SYMMETRY_TUTORIAL_SKIPPED_KEY, 'true');
+    localStorage.setItem(TUTORIAL_SKIP_CONFIG.boardSymmetry.storageKey, 'true');
     router.push(`/${locale}/practice/board-symmetry/challenge`);
   };
 
   const handleSwitchToTraining = () => {
-    localStorage.setItem(BOARD_SYMMETRY_TUTORIAL_SKIPPED_KEY, 'true');
+    localStorage.setItem(TUTORIAL_SKIP_CONFIG.boardSymmetry.storageKey, 'true');
     router.push(`/${locale}/practice/board-symmetry/training`);
   };
 
@@ -216,19 +218,22 @@ export function BoardSymmetryTutorial({ locale }: Props) {
         </div>
 
         {step === 'start' ? (
-          <div className="space-y-3">
+          <div>
             <Button onClick={handleStartChallenge} variant="primary" className="w-full">
               <FaPlay className="mr-2 h-4 w-4" />
               {t('startChallenge')}
             </Button>
-            <div className="text-center">
-              <button
-                onClick={handleSwitchToTraining}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {t('switchToTraining')}
-              </button>
+
+            <div className="my-6 mx-auto flex w-4/5 items-center gap-4">
+              <Divider className="flex-1" />
+              <span className="text-sm text-muted-foreground">{tp('orDivider')}</span>
+              <Divider className="flex-1" />
             </div>
+
+            <Button onClick={handleSwitchToTraining} variant="outline" className="w-full">
+              <FaInfinity className="mr-2 h-4 w-4" />
+              {tp('startTraining')}
+            </Button>
           </div>
         ) : (
           <div className="flex gap-4">

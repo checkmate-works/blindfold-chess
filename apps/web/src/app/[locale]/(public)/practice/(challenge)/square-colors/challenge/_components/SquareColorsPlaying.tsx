@@ -65,7 +65,7 @@ export function SquareColorsPlaying({
 
   return (
     <div className="max-w-md mx-auto">
-      <div className="bg-card rounded-xl border border-border p-8 text-center relative overflow-hidden">
+      <div className="p-8 text-center relative overflow-hidden">
         {/* Header: Lives and Timer */}
         <div className="mb-6">
           <div className="flex justify-between items-center mt-2">

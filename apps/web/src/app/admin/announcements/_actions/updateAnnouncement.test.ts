@@ -409,13 +409,6 @@ describe('updateAnnouncement', () => {
     expect(mockRevalidatePath).toHaveBeenCalledWith('/admin/announcements');
   });
 
-  it('should call revalidatePath("/", "layout") after successful update to evict ISR HTML', async () => {
-    setupAdminWithAnnouncement();
-
-    await updateAnnouncement(announcementId, validData);
-    expect(mockRevalidatePath).toHaveBeenCalledWith('/', 'layout');
-  });
-
   it('should call revalidateTag("announcements") after successful update', async () => {
     setupAdminWithAnnouncement();
 
@@ -428,7 +421,6 @@ describe('updateAnnouncement', () => {
 
     await updateAnnouncement(announcementId, validData);
     expect(mockRevalidatePath).not.toHaveBeenCalled();
-    expect(mockRevalidatePath).not.toHaveBeenCalledWith('/', 'layout');
   });
 
   it('should not call revalidateTag when unauthorized', async () => {
@@ -444,7 +436,6 @@ describe('updateAnnouncement', () => {
 
     await updateAnnouncement(announcementId, validData);
     expect(mockRevalidatePath).not.toHaveBeenCalled();
-    expect(mockRevalidatePath).not.toHaveBeenCalledWith('/', 'layout');
   });
 
   it('should not call revalidatePath when validation fails', async () => {
@@ -453,7 +444,6 @@ describe('updateAnnouncement', () => {
 
     await updateAnnouncement(announcementId, { ...validData, slug: '' });
     expect(mockRevalidatePath).not.toHaveBeenCalled();
-    expect(mockRevalidatePath).not.toHaveBeenCalledWith('/', 'layout');
   });
 
   // --- Edge case tests added by Tester ---

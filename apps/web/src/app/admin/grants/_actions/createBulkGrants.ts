@@ -3,12 +3,12 @@
 import { revalidateTag } from 'next/cache';
 
 import { requireAdmin } from '@/app/admin/_lib/auth';
-import { addDays } from 'date-fns';
 
-import { db, userGrants } from '@/lib/db';
-import { createNotification } from '@/lib/notifications/notification';
-import { calcGrantStartsAt } from '@/lib/users/user-grants';
+import { db } from '@/lib/db';
+import { getClientIp } from '@/lib/security/client-ip';
 
+import type { CreatedAdminGrant } from '../_lib/grant-mutations';
+import { insertAdminGrant, notifyAdminGrant } from '../_lib/grant-mutations';
 import { validateDurationDays, validateUuid } from '../_lib/validation';
 
 export type BulkGrantParams = {
@@ -45,57 +45,34 @@ export async function createBulkGrants(params: BulkGrantParams): Promise<BulkGra
     return { error: 'Reason is required for bulk grants' };
   }
 
-  const benefitType = 'ad_free';
-  const grantType = 'admin_manual';
+  const trimmedReason = reason.trim();
+  const ipAddress = await getClientIp();
 
   try {
-    type GrantCreatedInfo = { userId: string; grantId: string; expiresAt: Date };
-    const result = await db.transaction(async (tx) => {
-      const created: GrantCreatedInfo[] = [];
-
+    const created = await db.transaction(async (tx) => {
+      const grants: CreatedAdminGrant[] = [];
       for (const userId of userIds) {
-        const startsAt = await calcGrantStartsAt(userId, benefitType, tx);
-        const expiresAt = addDays(startsAt, durationDays);
-
-        const [inserted] = await tx
-          .insert(userGrants)
-          .values({
+        grants.push(
+          await insertAdminGrant(tx, {
             userId,
-            benefitType,
-            grantType,
-            reason: reason.trim(),
-            startsAt,
-            expiresAt,
+            benefitType: 'ad_free',
+            durationDays,
+            reason: trimmedReason,
+            actorId: auth.userId,
+            ipAddress,
           })
-          .returning({ id: userGrants.id });
-
-        created.push({ userId, grantId: inserted.id, expiresAt });
+        );
       }
-
-      return { count: created.length, created };
+      return grants;
     });
 
     revalidateTag('grant-status', { expire: 60 });
 
-    const trimmedReason = reason.trim();
-    for (const grant of result.created) {
-      createNotification({
-        userId: grant.userId,
-        actorId: auth.userId,
-        type: 'benefit_grant',
-        targetType: 'user_grant',
-        targetId: grant.grantId,
-        metadata: {
-          grantType: 'admin_manual',
-          benefitType,
-          durationDays,
-          expiresAt: grant.expiresAt.toISOString(),
-          reason: trimmedReason,
-        },
-      });
+    for (const grant of created) {
+      notifyAdminGrant(auth.userId, grant);
     }
 
-    return { success: true, grantedCount: result.count };
+    return { success: true, grantedCount: created.length };
   } catch (error) {
     console.error('Failed to create bulk grants:', error);
     return { error: 'Failed to create bulk grants' };

@@ -1,14 +1,12 @@
 'use client';
 
-import Link from 'next/link';
-
-import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { BoardTheme } from '@/lib/games/board-themes';
 import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
+import { TrainingChallengeCTA } from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingChallengeCTA';
 import { ArrowKeyAnswer } from '@/app/[locale]/(public)/practice/_components/ArrowKeyAnswer';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -44,7 +42,7 @@ export function SquareColorsTrainingPlaying({
 
   return (
     <div className="max-w-md mx-auto">
-      <div className="bg-card rounded-xl border border-border p-8 text-center relative overflow-hidden">
+      <div className="p-8 text-center relative overflow-hidden">
         <div>
           <SquareColorQuestionDisplay currentSquare={currentSquare} lastAnswer={lastAnswer} />
 
@@ -76,19 +74,7 @@ export function SquareColorsTrainingPlaying({
         </button>
       </div>
 
-      <hr className="border-border mt-8" />
-
-      <div className="mt-6 text-center">
-        <p className="text-sm text-muted-foreground">{tp('trainingModeActive')}</p>
-        <p className="mt-2 text-base font-medium text-foreground">{tp('readyForChallenge')}</p>
-        <div className="mt-4">
-          <Link href={`/${locale}/practice/square-colors/challenge/session`}>
-            <Button asChild variant="primary" size="lg" className="w-full">
-              {tp('goToChallenge')}
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <TrainingChallengeCTA challengeHref={`/${locale}/practice/square-colors/challenge/session`} />
     </div>
   );
 }

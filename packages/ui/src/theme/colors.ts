@@ -117,6 +117,10 @@ export const feedbackColors = {
   success: "#22c55e",
   error: "#ef4444",
   warning: "#f59e0b",
+  /** Translucent tint of `success` — for subtle highlight backgrounds. */
+  successSoft: "rgba(34, 197, 94, 0.1)",
+  /** Translucent tint of `error` — for subtle highlight backgrounds. */
+  errorSoft: "rgba(239, 68, 68, 0.1)",
 } as const;
 
 // Board theme colors (moved from @blindfold-chess/types to keep that package type-only)

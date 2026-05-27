@@ -2,17 +2,14 @@
 
 import { useRouter } from 'next/navigation';
 
-import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { BoardOrientation } from '@blindfold-chess/features/quadrants';
-import { FaPlay } from 'react-icons/fa';
 
 import { MISTAKE_LIMIT } from '@/lib/challenge/constants';
 import { useLocalStorageSettings } from '@/lib/persistent-settings/use-local-storage-settings';
 
 import { BoardOrientationSelector } from '@/app/[locale]/(public)/practice/(challenge)/_components/BoardOrientationSelector';
-import { PracticePanel } from '@/app/[locale]/(public)/practice/_components/PracticePanel';
-import { SectionTitle } from '@/app/[locale]/_components';
+import { ChallengeSetupShell } from '@/app/[locale]/(public)/practice/(challenge)/_components/ChallengeSetupShell';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 type QuadrantChallengeSettings = {
@@ -43,37 +40,26 @@ export function QuadrantsChallengeSetup({ locale }: Props) {
   };
 
   return (
-    <PracticePanel className="p-6">
-      <SectionTitle className="mb-4">{t('challengeSetup.title')}</SectionTitle>
-
-      <ul className="mb-6 space-y-2 text-sm text-muted-foreground list-disc list-inside">
-        <li>{t('challengeSetup.timeLimit', { seconds: 60 })}</li>
-        <li>{t('challengeSetup.mistakeLimit', { count: MISTAKE_LIMIT })}</li>
-        <li className="text-destructive">{tQa('challengeSetupNoLeaderboard')}</li>
-      </ul>
-
-      <div className="mb-6">
-        <BoardOrientationSelector
-          value={settings.orientation}
-          onChange={(orientation) => updateSettings({ orientation })}
-          labels={{
-            title: tQuiz('boardOrientation'),
-            white: tQuiz('white'),
-            black: tQuiz('black'),
-            random: tQuiz('random'),
-          }}
-        />
-      </div>
-
-      <Button
-        onClick={handleStart}
-        variant="primary"
-        size="lg"
-        icon={<FaPlay />}
-        className="w-full"
-      >
-        {t('startChallenge')}
-      </Button>
-    </PracticePanel>
+    <ChallengeSetupShell
+      onStart={handleStart}
+      rules={
+        <>
+          <li>{t('challengeSetup.timeLimit', { seconds: 60 })}</li>
+          <li>{t('challengeSetup.mistakeLimit', { count: MISTAKE_LIMIT })}</li>
+          <li className="text-destructive">{tQa('challengeSetupNoLeaderboard')}</li>
+        </>
+      }
+    >
+      <BoardOrientationSelector
+        value={settings.orientation}
+        onChange={(orientation) => updateSettings({ orientation })}
+        labels={{
+          title: tQuiz('boardOrientation'),
+          white: tQuiz('white'),
+          black: tQuiz('black'),
+          random: tQuiz('random'),
+        }}
+      />
+    </ChallengeSetupShell>
   );
 }

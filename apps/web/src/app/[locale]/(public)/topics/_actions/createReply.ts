@@ -8,11 +8,14 @@ import { and, eq, isNull } from 'drizzle-orm';
 
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, topicPosts, userFollows } from '@/lib/db';
+import type { DbTx } from '@/lib/db/types';
 import { createNotification } from '@/lib/notifications/notification';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 import { logActivityEvent } from '@/lib/users/activity-log';
 import { MAX_CONTENT_LENGTH } from '@/lib/validations/content';
-import { UUID_RE } from '@/lib/validations/uuid';
+import { UUID_RE, validateUUID } from '@/lib/validations/uuid';
+
+import type { TopicType } from '../_lib/constants';
 
 export type CreateReplyState = {
   error?: string;
@@ -22,10 +25,38 @@ export async function createReplyBase(params: {
   locale: string;
   topicIdentifier: string;
   postId: string;
-  topicType: 'square' | 'opening';
+  topicType: TopicType;
   topicKey: string;
   urlSegment: string;
   validateTopic: (identifier: string) => boolean | Promise<boolean>;
+  /**
+   * Override the post-creation redirect URL. Receives `(postId, replyId)` —
+   * `postId` is the top-level post being replied to, `replyId` is the new
+   * reply's id. When omitted, defaults to the legacy
+   * `/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${postId}?toast=post_created` URL.
+   */
+  redirectPath?: (postId: string, replyId: string) => string;
+  /**
+   * Override the path passed to `revalidatePath` after insertion. When omitted,
+   * defaults to the legacy `/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${postId}` path.
+   */
+  revalidate?: (postId: string) => string;
+  /**
+   * Self-declared "this reply contains spoilers" flag, persisted to
+   * `topic_posts.is_spoiler`. Surface today is `topic_type='position_puzzle'`
+   * only — every other call site can omit this and the column defaults to
+   * `false`. Wrappers that accept user input for this field should validate
+   * the FormData value upstream and pass a strict boolean here.
+   */
+  isSpoiler?: boolean;
+  /**
+   * Optional hook fired inside the same transaction as the reply INSERT so
+   * topic-specific extra rows (e.g. `post_game_pgn_attachments`,
+   * `post_fen_attachments`) land atomically with the reply itself. Mirrors
+   * the contract on `createPostBase`. Side effects that don't need atomicity
+   * (notifications, activity log, revalidate) stay outside the transaction.
+   */
+  afterInsert?: (tx: DbTx, replyId: string) => Promise<void>;
   formData: FormData;
 }): Promise<CreateReplyState> {
   const {
@@ -36,6 +67,10 @@ export async function createReplyBase(params: {
     topicKey,
     urlSegment,
     validateTopic,
+    redirectPath,
+    revalidate,
+    isSpoiler,
+    afterInsert,
     formData,
   } = params;
 
@@ -45,9 +80,8 @@ export async function createReplyBase(params: {
     return { error: `Invalid ${topicType}` };
   }
 
-  if (!UUID_RE.test(postId)) {
-    return { error: 'invalidPostId' };
-  }
+  const uuidError = validateUUID(postId, 'postId');
+  if (uuidError) return uuidError;
 
   // replyToId: the specific post/reply being replied to.
   // When replying to a reply, this differs from postId (the top-level post from the URL).
@@ -155,17 +189,26 @@ export async function createReplyBase(params: {
     return { error: 'contentTooLong' };
   }
 
-  const [inserted] = await db
-    .insert(topicPosts)
-    .values({
-      userId: user.id,
-      topicType,
-      topicKey,
-      parentId,
-      rootPostId,
-      content: content.trim(),
-    })
-    .returning({ id: topicPosts.id });
+  const inserted = await db.transaction(async (tx) => {
+    const [reply] = await tx
+      .insert(topicPosts)
+      .values({
+        userId: user.id,
+        topicType,
+        topicKey,
+        parentId,
+        rootPostId,
+        content: content.trim(),
+        ...(isSpoiler !== undefined ? { isSpoiler } : {}),
+      })
+      .returning({ id: topicPosts.id });
+
+    if (afterInsert) {
+      await afterInsert(tx, reply.id);
+    }
+
+    return reply;
+  });
 
   logActivityEvent({
     userId: user.id,
@@ -202,7 +245,15 @@ export async function createReplyBase(params: {
     }
   }
 
-  revalidatePath(`/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${postId}`);
+  revalidatePath(
+    revalidate
+      ? revalidate(postId)
+      : `/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${postId}`
+  );
 
-  redirect(`/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${postId}?toast=post_created`);
+  redirect(
+    redirectPath
+      ? redirectPath(postId, inserted.id)
+      : `/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${postId}?toast=post_created`
+  );
 }

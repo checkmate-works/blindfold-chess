@@ -76,7 +76,7 @@ export function QuadrantsPlaying({
 
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="bg-card rounded-xl border border-border p-6 text-center relative overflow-hidden space-y-4">
+      <div className="p-6 text-center relative overflow-hidden space-y-4">
         {/* Header: Lives and Timer */}
         <div>
           <div className="flex justify-between items-center">
@@ -168,14 +168,16 @@ export function QuadrantsPlaying({
           </div>
 
           {/* Quadrant Board */}
-          <div className="min-h-[120px] flex flex-col justify-center items-center">
-            <QuadrantBoard
-              correctQuadrant={correctQuadrant}
-              wrongQuadrant={wrongQuadrant}
-              onQuadrantClick={handleAnswer}
-              disabled={showFeedback || countdown !== null || isPaused}
-              orientation={currentQuestion.orientation}
-            />
+          <div className="-mx-6 sm:mx-0">
+            <div className="min-h-[120px] flex flex-col justify-center items-center">
+              <QuadrantBoard
+                correctQuadrant={correctQuadrant}
+                wrongQuadrant={wrongQuadrant}
+                onQuadrantClick={handleAnswer}
+                disabled={showFeedback || countdown !== null || isPaused}
+                orientation={currentQuestion.orientation}
+              />
+            </div>
           </div>
         </div>
       </div>

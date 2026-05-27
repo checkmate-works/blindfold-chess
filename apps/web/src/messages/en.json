@@ -134,6 +134,10 @@
       "title": "Post about {square}",
       "description": "A discussion post about the {square} square in chess"
     },
+    "chunks": {
+      "title": "Chunks",
+      "description": "Piece-coordination pattern catalog for position memory training"
+    },
     "games": {
       "title": "Your Games",
       "description": "View and manage your blindfold chess games"
@@ -211,8 +215,8 @@
   },
   "Header": {
     "title": "Shingan Chess",
-    "dashboard": "Dashboard",
-    "home": "Home",
+    "dashboard": "Top",
+    "home": "Feed",
     "gettingStarted": "Getting Started",
     "learn": "Learn",
     "practice": "Practice",
@@ -272,7 +276,13 @@
         "whiteView": "White's Perspective",
         "blackView": "Black's Perspective"
       },
-      "showBoardButtonInGame": "Show 'View Board' button during AI games",
+      "boardVisibility": "Board Visibility",
+      "boardVisibilityDescription": "Choose how the chessboard surfaces during gameplay. Piece-display settings (below) still apply when the board is visible — they are the blindfold mechanism in this app.",
+      "boardVisibilities": {
+        "always": "Always visible",
+        "peek": "Peek on demand",
+        "never": "Hidden"
+      },
       "resetDefaults": "Reset to defaults",
       "resetDefaultsConfirm": {
         "title": "Reset Board Settings?",
@@ -309,18 +319,58 @@
       "peekModes": {
         "modal": "Modal",
         "inline": "Inline"
+      },
+      "moveInputModes": {
+        "text": "Text",
+        "select": "List",
+        "button": "Button"
       }
     }
-  },
-  "Common": {
-    "sponsoredLink": "Sponsored Link",
-    "testAd": "Test Ad",
-    "adLabel": "Ad",
-    "sponsor": "Sponsor"
   },
   "openingSearch": {
     "selectOpening": "Select an opening",
     "searchPlaceholder": "Search openings..."
+  },
+  "coin": {
+    "title": "Coins",
+    "unit": "coins",
+    "hero": {
+      "tagline": "You earn Coins by posting in topics and creating problems."
+    },
+    "loop": {
+      "step1Title": "Contribute",
+      "step1Body": "Create a problem or a post",
+      "step2Title": "Earn Coins",
+      "step2Body": "Every contribution adds up",
+      "step3Title": "Spend on perks",
+      "step3Body": "Ad-free time or games"
+    },
+    "earn": {
+      "heading": "How to earn Coins",
+      "puzzleTitle": "Submit a puzzle",
+      "positionMemoryTitle": "Submit a position-memory problem",
+      "topicTitle": "Post in a topic",
+      "likeNote1": "Every like your content receives earns a Coin (not instant — granted once a day in a batch).",
+      "likeNote2": "Post a topic or create a problem once, and it keeps earning Coins."
+    },
+    "spend": {
+      "heading": "What Coins are for",
+      "adFreeTitle": "Hide ads",
+      "adFreeRate": "1 Coin = {days, plural, one {# ad-free day} other {# ad-free days}}",
+      "maiaTitle": "Play against Maia",
+      "maiaRate": "{cost, plural, one {# Coin} other {# Coins}} = 1 game",
+      "maiaNote": "Maia is a neural-network AI that plays human-like moves."
+    },
+    "facts": {
+      "instant": "Coins you earn are usable right away — no waiting.",
+      "deleteReversal": "If you delete your own content, the Coins it earned are reversed — but Coins you have already spent are never reclaimed.",
+      "balance": "Your balance and history are always available on My Page.",
+      "dailyCap": "Creating content earns up to {cap} coins per day (resets at 00:00 UTC)."
+    },
+    "cta": {
+      "viewBalance": "View my Coin balance",
+      "contribute": "Browse topics"
+    }
   },
   "faq": {
     "title": "Frequently Asked Questions",
@@ -336,7 +386,7 @@
       },
       "chessEngine": {
         "question": "What chess engine does the AI use?",
-        "answer": "The AI uses Stockfish 17.1 (Lite Single-threaded version)."
+        "answer": "Two engines are available depending on the mode. The default is Stockfish 17.1 (Lite Single-threaded version). For more human-like play, you can switch to Maia 3 (maia3_simplified), which runs in your browser via onnxruntime-web and uses the publicly available GPL-3.0 licensed model."
       },
       "expSystem": {
         "question": "How is experience (Exp) calculated?",
@@ -373,16 +423,17 @@
         "multiplier10": "×1.0"
       },
       "adFreeBenefits": {
-        "question": "How are ad-free benefits earned?",
-        "answer": "Ad-free benefits are granted automatically when you contribute text-bearing content on topic pages. The grants stack additively — posting multiple times extends your ad-free period.",
-        "tableTitle": "Ways to earn ad-free benefits",
+        "question": "How do I earn coins, and how do they become ad-free time?",
+        "answer": "Each eligible contribution awards coins, usable immediately. 1 coin redeems 1 day of ad-free browsing (redemption flow coming soon).",
+        "tableTitle": "Ways to earn coins",
         "headerAction": "Action",
-        "headerDuration": "Duration",
+        "headerPoints": "Coins",
         "actions": {
-          "topic_post": "Post a text topic"
+          "topic_post": "Submit a topic post (square / opening)",
+          "position_creation": "Submit a position problem (memory / puzzle)"
         },
-        "durationDays": "{days} days",
-        "note": "Posts containing only ratings without text content do not qualify for the grant."
+        "pointsAmount": "{amount} coins",
+        "dailyCapNote": "Coins earned from creating content are capped at {cap} per day. The cap resets at 00:00 UTC; likes and staff grants do not count toward it."
       }
     }
   },
@@ -480,7 +531,6 @@
     "articlesTitle": "Articles",
     "relatedArticles": "Related Articles",
     "browseByCategory": "Browse by Category",
-    "allCategories": "All",
     "articleCount": "{count, plural, one {# article} other {# articles}}",
     "categories": {
       "piece-movement": "Piece Movement",
@@ -504,7 +554,9 @@
     "levelIntermediate": "Intermediate",
     "levelAdvanced": "Advanced",
     "levelIntroduction": "Introduction",
-    "viewLeaderboard": "🏆 View Leaderboard",
+    "viewLeaderboard": "View Leaderboard",
+    "viewDojo": "View Dojo",
+    "related": "Related",
     "tryAgain": "Try Again",
     "changeSettings": "Change Settings",
     "doOtherPractice": "Do other practice",
@@ -539,7 +591,7 @@
     "challengeDescription": "1-minute time limit. 3 wrong answers and it's over. Your score will be recorded.",
     "startTraining": "Start Training",
     "startChallenge": "Start Challenge",
-    "switchToTraining": "📖 Practice in training mode",
+    "orDivider": "or",
     "challengeSetup": {
       "title": "Challenge Rules",
       "timeLimit": "Answer as many questions as you can within {seconds} seconds.",
@@ -550,9 +602,9 @@
     "skip": "Skip",
     "endTraining": "End",
     "trainingEnded": "Training ended",
-    "trainingModeActive": "📖 Practicing in training mode",
+    "trainingModeActive": "Practicing in training mode",
     "readyForChallenge": "Are you ready?",
-    "goToChallenge": "⚔️ Take the Challenge",
+    "goToChallenge": "Take the Challenge",
     "quitConfirmModal": {
       "title": "Quit Practice?",
       "message": "Your progress will be lost. Are you sure you want to quit?",
@@ -604,6 +656,21 @@
       "accuracy": "Accuracy",
       "timeTaken": "Time Taken",
       "averageTime": "Average Time",
+      "help": {
+        "label": "Help",
+        "tutorial": {
+          "title": "Tutorial",
+          "description": "If this is your first time, we recommend viewing the tutorial."
+        },
+        "challenge": {
+          "title": "Challenge Mode",
+          "description": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
+        },
+        "training": {
+          "title": "Training Mode",
+          "description": "Practice at your own pace with no time limit. Scores are not recorded."
+        }
+      },
       "tutorial": {
         "title": "Tutorial",
         "description": "Learn the three types of symmetry on the chess board: File, Rank, and Point symmetry.",
@@ -612,7 +679,6 @@
         "next": "Next",
         "start": "Start",
         "startChallenge": "Start Challenge",
-        "switchToTraining": "📖 Practice in training mode",
         "steps": {
           "intro": {
             "title": "What is Board Symmetry?",
@@ -668,8 +734,6 @@
       "howToPlayDescription": "Questions like the following will be asked repeatedly. Identify whether the given square is light or dark.",
       "white": "Light",
       "black": "Dark",
-      "correct": "Correct",
-      "incorrect": "Incorrect",
       "settings": "Game Settings",
       "timeLimit": "Time Limit",
       "seconds": "seconds",
@@ -677,12 +741,21 @@
       "timeRemaining": "Time",
       "finished": "Practice Complete!",
       "correctAnswers": "Correct Answers",
-      "accuracy": "Accuracy",
       "timeTaken": "Time Taken",
-      "averageTime": "Average Time",
       "requiredKnowledge": "Required Knowledge",
       "viewArticle": "Learn about square colors",
-      "articleDescription": "Learn how to quickly identify whether a square is light or dark"
+      "articleDescription": "Learn how to quickly identify whether a square is light or dark",
+      "help": {
+        "label": "Help",
+        "challenge": {
+          "title": "Challenge Mode",
+          "description": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
+        },
+        "training": {
+          "title": "Training Mode",
+          "description": "Practice at your own pace with no time limit. Scores are not recorded."
+        }
+      }
     },
     "legalMoves": {
       "title": "Legal Moves",
@@ -706,16 +779,12 @@
       "start": "Start",
       "question": "Can piece move from {from} to {to}?",
       "questionFormat": "Can piece move from {from} to {to}?",
-      "correct": "Correct",
-      "incorrect": "Incorrect",
       "legal": "Yes",
       "illegal": "No",
       "timeRemaining": "Time",
       "finished": "Practice Complete!",
       "correctAnswers": "Correct Answers",
-      "accuracy": "Accuracy",
       "timeTaken": "Time Taken",
-      "averageTime": "Average Time",
       "relatedArticles": "Related Articles",
       "articles": {
         "king": {
@@ -733,6 +802,17 @@
         "bishop": {
           "title": "The Bishop's Movement",
           "description": "Learn diagonal movement patterns"
+        }
+      },
+      "help": {
+        "label": "Help",
+        "challenge": {
+          "title": "Challenge Mode",
+          "description": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
+        },
+        "training": {
+          "title": "Training Mode",
+          "description": "Practice at your own pace with no time limit. Scores are not recorded."
         }
       }
     },
@@ -757,15 +837,12 @@
       "clickSquare": "Click on this square",
       "whiteToMove": "White to move",
       "blackToMove": "Black to move",
-      "correct": "Correct",
       "wrong": "Wrong",
       "timeRemaining": "Time",
       "finished": "Quiz Complete!",
       "points": "points",
       "correctAnswers": "Correct Answers",
-      "accuracy": "Accuracy",
       "timeTaken": "Time Taken",
-      "averageTime": "Average Time",
       "session": "In Progress",
       "relatedArticles": "Related Articles",
       "articles": {
@@ -781,6 +858,21 @@
           "title": "Algebraic Notation",
           "description": "Master the language of chess coordinates"
         }
+      },
+      "help": {
+        "label": "Help",
+        "feedbackSpeed": {
+          "title": "Feedback Speed",
+          "description": "Adjusts how quickly the correct/incorrect feedback effect plays. This setting does not affect timing — the time limit does not tick down while the feedback effect is playing."
+        },
+        "challenge": {
+          "title": "Challenge Mode",
+          "description": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
+        },
+        "training": {
+          "title": "Training Mode",
+          "description": "Practice at your own pace with no time limit. Scores are not recorded."
+        }
       }
     },
     "positionMemory": {
@@ -788,6 +880,8 @@
       "description": "Train your ability to remember and recreate chess positions",
       "like": "Like",
       "unlike": "Unlike",
+      "newReply": "New Reply {time}",
+      "justNow": "just now",
       "session": "In Progress",
       "settings": "Problem Settings",
       "problemSource": "Problem Source",
@@ -930,26 +1024,58 @@
         "tabBoard": "Board",
         "tabFen": "FEN",
         "positionInvalid": "Please set up a valid position",
-        "flipBoard": "Flip board"
+        "flipBoard": "Flip board",
+        "clearBoardConfirmTitle": "Clear the board?",
+        "clearBoardConfirmMessage": "This will remove all placed pieces. This action cannot be undone.",
+        "clearBoardConfirmConfirm": "Clear",
+        "clearBoardConfirmCancel": "Cancel",
+        "forkBanner": "Forking from \"{sourceTitle}\""
+      },
+      "edit": {
+        "title": "Edit Problem",
+        "submit": "Save changes",
+        "submitting": "Saving...",
+        "saveError": "An unexpected error occurred. Please try again.",
+        "notFound": "This problem could not be found.",
+        "unauthorized": "You can only edit your own problems."
       },
       "detail": {
         "title": "Position Detail",
         "descriptionSection": "Position Description",
         "solveSection": "Solve the Problem",
         "start": "Start",
+        "displayMode": "Display Mode",
+        "displayModeBoard": "Board",
+        "displayModeText": "Text",
         "timeLimit": "Time Limit",
         "seconds": "{count, plural, one {# second} other {# seconds}}",
         "createdBy": "Created by",
         "tutorialLink": "View Tutorial",
         "tryAgain": "Try Again",
-        "backToList": "Back to List"
+        "backToList": "Back to List",
+        "edited": "(edited)",
+        "editAction": "Edit",
+        "forkAction": "Fork",
+        "forkedFrom": "Forked from:",
+        "forkedFromDeleted": "Forked from a deleted position",
+        "forksSection": "{count, plural, one {# fork} other {# forks}}",
+        "usefulSection": "Useful patterns for solving ({count})"
+      },
+      "forksList": {
+        "title": "Forks",
+        "titleOf": "Forks of {parentTitle}",
+        "breadcrumb": "Forks",
+        "sectionTitle": "{count, plural, one {# fork} other {# forks}}",
+        "empty": "No forks yet."
       },
       "delete": {
         "button": "Delete Problem",
         "confirmTitle": "Delete Problem",
         "confirmMessage": "Are you sure you want to delete this problem? This action cannot be undone.",
         "confirm": "Delete",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "sectionTitle": "Danger zone",
+        "sectionDescription": "Removing this problem is permanent. Comments and likes attached to it will be removed and cannot be recovered."
       }
     },
     "puzzle": {
@@ -1001,7 +1127,8 @@
         "clearBoardConfirmMessage": "This will remove all placed pieces and entered solution moves. This cannot be undone.",
         "clearBoardConfirmConfirm": "Clear board",
         "clearBoardConfirmCancel": "Cancel",
-        "draftWriteFailed": "Could not save the draft. Check that your browser allows storage and try again."
+        "draftWriteFailed": "Could not save the draft. Check that your browser allows storage and try again.",
+        "forkBanner": "Forking from \"{sourceTitle}\""
       },
       "preview": {
         "title": "Preview Puzzle",
@@ -1014,6 +1141,18 @@
       "blackPieces": "Black Pieces",
       "removePieceMode": "Remove piece mode - Click on a square to remove piece",
       "placingPiece": "Placing",
+      "like": "Like",
+      "unlike": "Unlike",
+      "newReply": "New Reply {time}",
+      "justNow": "just now",
+      "edit": {
+        "title": "Edit Puzzle",
+        "submit": "Save changes",
+        "submitting": "Saving...",
+        "saveError": "An unexpected error occurred. Please try again.",
+        "notFound": "This puzzle could not be found.",
+        "unauthorized": "You can only edit your own puzzles."
+      },
       "detail": {
         "title": "Puzzle Detail",
         "descriptionSection": "About This Puzzle",
@@ -1024,12 +1163,33 @@
         "blackToMove": "Black to move",
         "createdBy": "Created by",
         "noPieces": "None",
-        "like": "Like",
-        "unlike": "Unlike"
+        "edited": "(edited)",
+        "editAction": "Edit",
+        "forkAction": "Fork",
+        "forkedFrom": "Forked from:",
+        "forkedFromDeleted": "Forked from a deleted puzzle",
+        "forksSection": "{count, plural, one {# fork} other {# forks}}",
+        "usefulSection": "Useful patterns for solving ({count})"
+      },
+      "forksList": {
+        "title": "Forks",
+        "titleOf": "Forks of {parentTitle}",
+        "breadcrumb": "Forks",
+        "sectionTitle": "{count, plural, one {# fork} other {# forks}}",
+        "empty": "No forks yet."
+      },
+      "delete": {
+        "button": "Delete Puzzle",
+        "confirmTitle": "Delete Puzzle",
+        "confirmMessage": "Are you sure you want to delete this puzzle? Comments and solution data will be removed along with it. This action cannot be undone.",
+        "confirm": "Delete",
+        "cancel": "Cancel",
+        "sectionTitle": "Danger zone",
+        "sectionDescription": "Removing this puzzle is permanent — comments tied to it will lose their context and cannot be recovered."
       },
       "session": {
         "title": "Solve",
-        "correct": "Correct! \ud83c\udf89",
+        "correct": "Correct! 🎉",
         "incorrect": "Incorrect. Try again.",
         "showBoard": "Show Board",
         "whitePlayed": "White plays {move}",
@@ -1040,13 +1200,17 @@
         "replaySection": "Solution Replay",
         "historySection": "Attempt History",
         "solution": "Solution: {move}",
-        "note": "\u2014 {note}",
+        "note": "— {note}",
         "attemptCorrect": "Correct",
         "attemptIncorrect": "Incorrect",
         "backToList": "Back to Puzzles",
         "tryAgain": "Try Again",
+        "analyzeOnLichess": "Analyze on Lichess",
         "viewResult": "View Result",
-        "peekCount": "Board Peeks: {count}"
+        "peekCount": "Board Peeks: {count}",
+        "statusSolved": "Solved",
+        "statusPartial": "{correct}/{total} solved",
+        "statusRevealed": "Revealed"
       }
     },
     "knightTour": {
@@ -1210,8 +1374,6 @@
       "findPath": "Find path for {piece} from {start} to {target}",
       "yourPath": "Your Path",
       "shortestPath": "Shortest Path",
-      "correct": "Correct",
-      "incorrect": "Incorrect",
       "badEnd": "Path does not reach the goal",
       "badMove": "Incorrect",
       "finalTarget": "(Auto-completed)",
@@ -1241,6 +1403,21 @@
         "title": "Reset settings?",
         "message": "All settings will be reset and you will return to the tutorial screen."
       },
+      "help": {
+        "label": "Help",
+        "tutorial": {
+          "title": "Tutorial",
+          "description": "If this is your first time, we recommend viewing the tutorial."
+        },
+        "challenge": {
+          "title": "Challenge Mode",
+          "description": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
+        },
+        "training": {
+          "title": "Training Mode",
+          "description": "Practice at your own pace with no time limit. Scores are not recorded."
+        }
+      },
       "tutorial": {
         "title": "Tutorial",
         "steps": {
@@ -1266,108 +1443,12 @@
         "skip": "Skip",
         "complete": "That's the basics!\nTry training with different pieces and distances.",
         "restart": "Restart",
-        "startChallenge": "Start Challenge",
-        "switchToTraining": "📖 Practice in training mode"
+        "startChallenge": "Start Challenge"
       }
     },
     "common": {
       "play": "Play",
       "replay": "Replay"
-    },
-    "moveSequence": {
-      "title": "Yakusoku Kumite",
-      "description": "Memorize and visualize a sequence of moves on the board",
-      "betaNotice": "This feature is in beta and may contain unexpected bugs.",
-      "articles": {
-        "algebraicNotation": {
-          "title": "Algebraic Notation",
-          "description": "Learn to read and write chess moves in standard notation"
-        }
-      },
-      "showBoard": "Show Board",
-      "hideBoard": "Hide Board",
-      "fenRequired": "FEN is required",
-      "pgnRequired": "PGN moves are required",
-      "invalidFen": "Invalid FEN format",
-      "invalidPgn": "Invalid PGN format. Moves could not be parsed.",
-      "invalidMoves": "Some moves are invalid in this position",
-      "invalidMove": "Invalid move",
-      "noMovesFound": "No moves found in PGN",
-      "invalidMoveAt": "Move {index} \"{move}\" is invalid",
-      "fenLabel": "Starting Position (FEN)",
-      "fenPlaceholder": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-      "fenHint": "Enter the FEN string for the starting position",
-      "pgnLabel": "Moves (PGN)",
-      "pgnPlaceholder": "1. e4 e5 2. Nf3 Nc6 3. Bb5 (max 50 moves)",
-      "pgnHint": "Enter the moves in PGN format",
-      "pgnTooLong": "PGN is too long. Maximum {max} moves allowed.",
-      "start": "Start",
-      "problemSource": "Problem Source",
-      "presetProblems": "Preset Problems",
-      "enterCustom": "Enter FEN/PGN",
-      "presetDescription": "Select an opening to practice",
-      "preview": "Preview",
-      "memorizeInstructions": "Watch the sequence and memorize the moves",
-      "moves": "moves",
-      "pressPlayToStart": "Press play to start the sequence",
-      "playingMove": "Move {current} of {total}",
-      "startRecall": "Start Recall",
-      "progress": "Progress",
-      "moveProgress": "Move {current} of {total}",
-      "yourMove": "Your Move",
-      "opponentTurn": "Waiting for opponent's move...",
-      "switchToSelect": "Switch to list selection",
-      "switchToText": "Switch to text input",
-      "switchInputMode": "Switch input mode",
-      "wrongMove": "{move} is incorrect",
-      "perfect": "Perfect!",
-      "completed": "Completed",
-      "perfectMessage": "You reproduced all moves correctly!",
-      "completedMessage": "Practice session completed",
-      "accuracy": "Accuracy",
-      "correctMoves": "Correct Moves",
-      "moveDetails": "Move Details",
-      "correct": "Correct",
-      "attempts": "{count, plural, one {# attempt} other {# attempts}}",
-      "backToSetup": "Back to Setup",
-      "includeOpponentMoves": "Include opponent's moves",
-      "moveHistory": "Move History",
-      "whiteTurn": "White's Turn",
-      "blackTurn": "Black's Turn",
-      "copyShareLink": "Copy Share Link",
-      "shareLinkHelp": "Enter the copied URL in your browser's address bar to recreate the practice. Useful for sharing with friends or as a backup.",
-      "linkCopied": "Link copied to clipboard",
-      "copyFailed": "Failed to copy link",
-      "urlTooLong": "URL is too long (must be under 1000 characters)",
-      "url_too_long": "Share URL is too long. Please reduce the PGN length.",
-      "invalid_data": "Invalid share URL",
-      "invalid_fen": "Contains invalid FEN format",
-      "session": "Session",
-      "endPractice": "End Practice",
-      "clickMoveToJump": "Click a move to jump to that position",
-      "wrongAttempts": "Wrong attempts",
-      "tutorial": {
-        "title": "Tutorial",
-        "description": "Watch a sequence of moves play out, then reproduce them from memory.\nLet's try with a simple opening.",
-        "start": "Start Practice",
-        "skip": "Skip",
-        "watchFirst": "Watch the moves first by pressing play"
-      },
-      "aboutFeature": {
-        "title": "About This Feature",
-        "description1": "Yakusoku Kumite is a form of pre-arranged sparring practiced in martial arts like Karate and Taekwondo, where the sequence of attacks and defenses is predetermined.",
-        "description2": "In this practice, we assume the opponent's moves like in Yakusoku Kumite, and train to respond with the correct sequence of moves.",
-        "description3": "This training will help improve your ability to memorize chess openings."
-      },
-      "tutorialComplete": "That's the basics!\nTry other openings or challenge yourself with sequences from your own games.",
-      "finishTutorial": "Finish Tutorial",
-      "resetSettings": "Reset settings",
-      "resetSettingsConfirm": {
-        "title": "Reset settings?",
-        "message": "All settings will be reset and you will return to the tutorial screen."
-      },
-      "cancel": "Cancel",
-      "relatedArticles": "Related Articles"
     },
     "quadrantAnchors": {
       "title": "Quadrant Anchors",
@@ -1407,6 +1488,10 @@
       "question": "What are the diagonals of {square}?",
       "diagonalLabel": "Diagonal (a1-h8 direction)",
       "antiDiagonalLabel": "Anti-diagonal (h1-a8 direction)",
+      "diagonalShortLabel": "Diagonal",
+      "antiDiagonalShortLabel": "Anti-diagonal",
+      "diagonalDirectionNote": "(a1-h8 direction)",
+      "antiDiagonalDirectionNote": "(h1-a8 direction)",
       "inputPlaceholder": "e.g., b1-h7",
       "squarePlaceholder": "??",
       "singleSquarePlaceholder": "e.g., a1",
@@ -1435,6 +1520,21 @@
       "yourAnswer": "Your answer",
       "correctAnswerLabel": "Correct answer",
       "nextProblem": "Next Problem",
+      "help": {
+        "label": "Help",
+        "tutorial": {
+          "title": "Tutorial",
+          "description": "If this is your first time, we recommend viewing the tutorial."
+        },
+        "challenge": {
+          "title": "Challenge Mode",
+          "description": "Compete to see how many you can answer correctly within the time limit. Your score is recorded and listed on the leaderboard."
+        },
+        "training": {
+          "title": "Training Mode",
+          "description": "Practice at your own pace with no time limit. Scores are not recorded."
+        }
+      },
       "tutorial": {
         "title": "Tutorial",
         "skip": "Skip",
@@ -1456,10 +1556,30 @@
         "next": "Next",
         "previous": "Back",
         "startChallenge": "Start Challenge",
-        "switchToTraining": "📖 Practice in training mode",
         "diagonalLegend": "Diagonal (a1-h8)",
         "antiDiagonalLegend": "Anti-diagonal (h1-a8)",
         "trialCorrectAnswer": "Answer: {diagonal}, {antiDiagonal}"
+      }
+    },
+    "tags": {
+      "section": "Themes & chunks",
+      "help": "Themes are curated vocabulary (pin, passed pawn, …). Chunks are personal piece patterns shared by other solvers.",
+      "placeholder": "Search to add a theme or chunk…",
+      "badge": {
+        "theme": "Theme",
+        "chunk": "Chunk"
+      },
+      "noResults": "No matches",
+      "remove": "Remove {label}",
+      "openDetail": "Show details for {label}",
+      "moreItemsHint": "+{count} more — type to filter",
+      "detail": {
+        "readingPrefix": "Reading: ",
+        "noDescription": "No description available.",
+        "viewInGlossary": "View in glossary",
+        "viewChunkPage": "View chunk page",
+        "detach": "Detach",
+        "close": "Close"
       }
     }
   },
@@ -1494,7 +1614,6 @@
     },
     "yourRankings": {
       "title": "Your Rankings",
-      "noRanks": "You haven't ranked in any leaderboard yet. Try some practice modules!",
       "viewAll": "View all leaderboards"
     },
     "feed": {
@@ -1508,6 +1627,12 @@
       },
       "position": {
         "action": "Posted a new problem"
+      },
+      "chunk": {
+        "action": {
+          "created": "Posted a chunk draft",
+          "published": "Published a chunk"
+        }
       }
     },
     "vsAi": {
@@ -1519,10 +1644,36 @@
       "level": "Lv",
       "moves": "moves",
       "recent": "Recent"
+    },
+    "help": {
+      "label": "Help",
+      "vsAi": {
+        "title": "Play vs AI",
+        "description": "Start a new AI game or resume an in-progress one."
+      },
+      "feed": {
+        "title": "Timeline",
+        "description": "Topics like openings and new puzzles show up in the feed. Leaderboard top-rank changes appear too, but feed entries of this kind are kept for one month — older ones are removed."
+      }
     }
   },
   "gamesPage": {
-    "pageTitle": "Games"
+    "pageTitle": "Games",
+    "help": {
+      "label": "Help",
+      "newGame": {
+        "title": "Start a new game",
+        "description": "Press this button to start a game against the AI."
+      },
+      "autoSave": {
+        "title": "Auto-saved games",
+        "description": "Games are auto-saved on your device, and the most recent 20 are kept. See <link>data handling</link> for details."
+      },
+      "bulkDelete": {
+        "title": "Bulk delete",
+        "description": "Use \"Bulk Delete\" to clear out multiple games at once."
+      }
+    }
   },
   "bulkDelete": {
     "title": "Bulk Delete Games",
@@ -1530,11 +1681,8 @@
     "noGames": "No games to delete",
     "selectedCount": "{count, plural, one {# game selected} other {# games selected}}",
     "selectAll": "Select All",
-    "unselectAll": "Unselect All",
     "delete": "Delete",
     "cancel": "Cancel",
-    "processing": "Processing...",
-    "errorDeleting": "Failed to delete. Please try again.",
     "confirmTitle": "Delete Selected Games?",
     "confirmMessage": "Are you sure you want to delete {count} games? This action cannot be undone.",
     "deletedToast": "{count, plural, one {# game deleted successfully} other {# games deleted successfully}}",
@@ -1554,7 +1702,8 @@
       "title": "Certificate",
       "honorific": "{name}",
       "guestName": "Guest",
-      "body": "You have defeated Stockfish Level {level}. In recognition of your exceptional blindfold chess ability, this certificate is hereby awarded."
+      "body": "You have defeated Stockfish Level {level}. In recognition of your exceptional blindfold chess ability, this certificate is hereby awarded.",
+      "bodyMaia": "You have defeated Maia at {rating} ELO. In recognition of your exceptional blindfold chess ability, this certificate is hereby awarded."
     },
     "youLose": "You Lose",
     "check": "Check",
@@ -1571,6 +1720,9 @@
     "resign": "Resign",
     "undo": "Undo",
     "moves": "Moves",
+    "movesPanel": {
+      "viewOps": "View operations for this move"
+    },
     "confirmResignTitle": "Confirm Resignation",
     "confirmResignMessage": "Are you sure you want to resign? This will end the game.",
     "cancel": "Cancel",
@@ -1602,8 +1754,17 @@
     "saved": "Saved",
     "postmortem": "Game Review",
     "resultTitle": "Game Result",
+    "gameDetails": {
+      "title": "Game Details"
+    },
+    "engineInfo": {
+      "title": "Opponent",
+      "engineLabel": "Engine",
+      "difficultyLabel": "Difficulty",
+      "stockfishDifficulty": "Level {level}",
+      "maiaDifficulty": "{rating} ELO"
+    },
     "operationLog": {
-      "title": "Operation Log",
       "noLogs": "No operation logs yet.",
       "columnMove": "Move",
       "columnInputMethod": "Input Method",
@@ -1613,7 +1774,42 @@
       "inputMethodText": "Text",
       "inputMethodTextAutocomplete": "Text (autocomplete)",
       "inputMethodSelect": "List",
-      "columnMovePeek": "Hints"
+      "inputMethodBoard": "Board",
+      "columnMovePeek": "Hints",
+      "columnInvalid": "Illegal",
+      "initialSettings": {
+        "title": "Initial Settings",
+        "notRecorded": "Initial settings were not recorded for this game.",
+        "on": "On",
+        "off": "Off",
+        "labelBoardVisibility": "Board visibility",
+        "labelHighlightLastMove": "Highlight last move",
+        "labelShowOwnPieces": "Show own pieces",
+        "labelShowOpponentPieces": "Show opponent pieces",
+        "labelPieceShape": "Piece shape",
+        "labelPieceColor": "Piece color",
+        "labelPeekMode": "Peek mode",
+        "labelMoveInputMode": "Move input"
+      },
+      "changeLog": {
+        "title": "Change Log",
+        "noChanges": "No mid-game changes were made to the settings.",
+        "columnAtMove": "After move",
+        "columnSetting": "Setting",
+        "columnChange": "Change"
+      }
+    },
+    "promotionPicker": {
+      "cancel": "Cancel promotion",
+      "promoteTo": {
+        "queen": "Promote to queen",
+        "rook": "Promote to rook",
+        "bishop": "Promote to bishop",
+        "knight": "Promote to knight"
+      }
+    },
+    "settings": {
+      "title": "Game Settings"
     },
     "showLegalMoves": "Show legal moves",
     "legalMovesList": "Legal moves:",
@@ -1626,6 +1822,7 @@
         "peekCount": "Board Peeks",
         "undoCount": "Undos",
         "hintCount": "Move Hints",
+        "invalidCount": "Illegal Attempts",
         "viewDetails": "Log",
         "times": "{count, plural, one {# time} other {# times}}",
         "columnItem": "Item",
@@ -1638,11 +1835,8 @@
     "infoModalTitle": "About Game Review",
     "description": "Try to recall and replay the moves from your finished game. You can also run engine evaluation here.",
     "autoOpponentMoves": "Auto-fill opponent's moves",
-    "autoOpponentMovesDescription": "Only enter your own moves; opponent's moves will be filled automatically",
     "inputMove": "Enter move",
     "selectMove": "Select a move",
-    "switchToSelect": "Switch to list selection",
-    "switchToText": "Switch to text input",
     "switchInputMode": "Switch input mode",
     "dontKnow": "I don't know",
     "autoFillAll": "Auto-fill All",
@@ -1650,16 +1844,11 @@
     "confirmAutoFillAllMessage": "This will auto-fill all remaining moves.",
     "correctMove": "Correct!",
     "incorrectMove": "Incorrect move. Try again.",
-    "logIncorrect": "is incorrect",
     "moveNumber": "Move {number}",
-    "yourTurn": "Your turn",
-    "opponentTurn": "Opponent's turn",
     "completed": "Game Review Completed!",
     "completedMessage": "You successfully replayed all moves from the game!",
-    "backToGame": "Back to Game",
     "progress": "Progress: {current} / {total} moves",
     "showBoard": "Show Board",
-    "hideBoard": "Hide Board",
     "moves": "Moves",
     "noMovesYet": "Moves will appear here as you enter them",
     "copyPgn": "Copy PGN",
@@ -1668,7 +1857,6 @@
     "analyzeOnLichess": "Analyze on Lichess",
     "moveLog": "Move Log",
     "backToCurrentPosition": "Back to current position",
-    "configureBoardAppearance": "Configure board appearance",
     "cancel": "Cancel",
     "save": "Save",
     "guidanceStep1": "Enter each move from memory",
@@ -1698,6 +1886,13 @@
     "recoverDescription": "Continue playing from move {count}. All invalid moves will be discarded.",
     "deleteGame": "Delete Game",
     "deleteDescription": "Remove this corrupted game from your history and start fresh."
+  },
+  "largeDownloadConsent": {
+    "title": "Large download required",
+    "body": "Maia AI uses a {size} neural-network model that will be downloaded the first time you play with it. This may use cellular data or take a while on slow connections.",
+    "cachedNote": "After the first download, your browser caches the model and subsequent games start instantly.",
+    "continue": "Continue",
+    "cancel": "Cancel"
   },
   "newGame": {
     "title": "New Game",
@@ -1753,10 +1948,38 @@
     "playAsBlack": "Play as Black",
     "selectLevel": "Select AI Skill Level",
     "levelWithNumber": "Level {level}",
+    "maiaRatingOption": "{rating} ELO",
     "skillLevelDescription": "Level 1 (800 ELO, easiest) to Level 20 (3200+ ELO, strongest). Higher levels take longer to think.",
+    "selectEngine": "Select AI Engine",
+    "engineStockfishLabel": "Stockfish",
+    "engineStockfishDescription": "A strong open source engine with adjustable skill level — the classic AI opponent.",
+    "engineMaiaLabel": "Maia",
+    "engineMaiaDescription": "A neural-network engine that plays like a human at the chosen Elo. The first move takes a few seconds while the model loads (~46 MB).",
+    "engineLockedHint": "Needs coins",
+    "engineMaiaCostBadge": "{cost} coin",
+    "maiaPointModal": {
+      "title": "Maia costs coins",
+      "body": "Each game against Maia costs {cost} coin.",
+      "balance": "You currently have {balance} coins.",
+      "earnLink": "How Coins work",
+      "viewPoints": "View my coins",
+      "close": "Close"
+    },
+    "maiaCoinConfirmModal": {
+      "title": "Start a game against Maia?",
+      "body": "Starting this game spends {cost} coin.",
+      "balance": "You currently have {balance} coins.",
+      "confirm": "Spend coin & start",
+      "cancel": "Cancel"
+    },
+    "helpLabel": "Show help",
+    "helpEngineDescription": "Stockfish: an open-source chess engine with adjustable strength. Maia: a neural network trained on millions of human games — it plays at the chosen level like a real player would, not like a computer.",
+    "helpSkillLevelDescription": "Level 1 (weakest) to Level 20 (strongest). Stockfish spans roughly 800–3200 ELO. Maia covers 1100–1900 ELO at human-like play; the 20 slider positions are mapped onto that range.",
+    "helpPositionIntroDescription": "Set up any starting position by placing pieces on the editable board. The engine will start thinking from the position you build.",
+    "helpPgnIntroDescription": "Paste a PGN (Portable Game Notation) and play out the variation from any point. Great for studying a specific continuation or recreating a game you saw elsewhere.",
+    "helpOpeningIntroDescription": "Pick a named opening from the list — you'll continue to the PGN setup screen where you can choose engine, color, and difficulty before starting.",
     "previewBoard": "Preview Board",
     "gameSettings": "Advanced Settings",
-    "showBoardButtonInGame": "Show 'View Board' button during AI games",
     "startGame": "Start Game",
     "cancel": "Cancel",
     "whiteDescription": "You play first",
@@ -1892,9 +2115,29 @@
     "changesTitle": "Changes to Terms",
     "changesDescription": "The operator may change these Terms of Service as necessary. Changed Terms will take effect from the time they are posted on this page."
   },
+  "licenses": {
+    "title": "Open Source Licenses",
+    "description": "Open source software acknowledgements and license information",
+    "lastUpdated": "Last Updated: May 13, 2026",
+    "introduction": "Blindfold Chess uses open source chess engines to provide its AI opponent functionality. We are grateful to the authors and communities behind these projects, and we provide attribution and license information below.",
+    "componentsTitle": "Bundled Open Source Components",
+    "componentsIntro": "The following components are bundled with this application and delivered to your browser when you use related features. Each engine runs as a separate Web Worker process and communicates with the application only through the standard text-based UCI protocol.",
+    "stockfishName": "Stockfish",
+    "stockfishDescription": "A strong open source UCI chess engine, used here as the default AI opponent.",
+    "lc0Name": "Lc0 (Leela Chess Zero)",
+    "lc0Description": "A neural network chess engine, used here to run Maia weights for human-like AI opponents.",
+    "maiaName": "Maia Chess (neural network weights)",
+    "maiaDescription": "Neural network weights that model human chess play at specific rating levels, developed by the Computational Social Science Lab at the University of Toronto.",
+    "sourceCodeLabel": "Source code:",
+    "licenseLabel": "License:",
+    "licenseValue": "GNU General Public License v3.0",
+    "complianceTitle": "GPL v3 Compliance",
+    "complianceIntro": "The components above are licensed under the GNU General Public License version 3 (GPL v3) and are bundled here without modification. The corresponding source code is publicly available at the upstream repositories linked above.",
+    "viewFullLicense": "View the full GPL v3 license text",
+    "viewFullLicenseGnu": "Also available at the GNU Project website"
+  },
   "company": {
     "title": "Company Information",
-    "companyInfo": "Operator Information",
     "companyName": "Company Name",
     "companyNameValue": "Fuji Enterprise",
     "location": "Location",
@@ -1913,7 +2156,6 @@
     "description": "If you have any questions or feedback, please feel free to contact us.",
     "form": {
       "name": "Name",
-      "namePlaceholder": "John Doe",
       "nameRequired": "Please enter your name",
       "nameMaxLength": "Name must be 100 characters or fewer",
       "nameInvalid": "Name must not contain line breaks",
@@ -1922,13 +2164,10 @@
       "emailRequired": "Please enter your email address",
       "emailInvalid": "Please enter a valid email address",
       "subject": "Subject",
-      "subjectPlaceholder": "Subject of your inquiry",
       "subjectRequired": "Please enter a subject",
       "subjectMaxLength": "Subject must be 200 characters or fewer",
       "subjectInvalid": "Subject must not contain line breaks",
       "message": "Message",
-      "messagePlaceholder": "Please describe your inquiry in detail",
-      "messageRequired": "Please enter your message",
       "messageMinLength": "Message must be at least 10 characters",
       "messageMaxLength": "Message must be 5000 characters or fewer",
       "submit": "Proceed to Confirmation",
@@ -1983,9 +2222,7 @@
       "title": "Dashboard",
       "comingSoon": "Coming soon...",
       "vsAi": "🤖 VS AI",
-      "myGames": "My Games",
       "newGame": "New Game",
-      "gameCount": "{count, plural, =0 {No games yet} one {# game} other {# games}}",
       "challenge": "🏆 Challenge",
       "squareColors": "Square Colors",
       "coordinateQuiz": "Coordinate Quiz",
@@ -1994,12 +2231,15 @@
       "boardSymmetry": "Board Symmetry",
       "viewLeaderboard": "View Leaderboard →",
       "topics": "💬 Topics",
-      "topicSquares": "Squares",
-      "topicOpenings": "Openings",
       "welcomeGreeting": "Hello, {name}!",
       "welcomeDefaultName": "Player",
       "viewMypage": "My Page",
-      "viewHome": "Home"
+      "viewHome": "Home",
+      "dailyPuzzleTitle": "Daily Puzzle",
+      "dailyPuzzleAction": "Challenge",
+      "announcements": "Announcements",
+      "articles": "Articles & Guides",
+      "viewAll": "View All"
     }
   },
   "AuthStatusDisplay": {
@@ -2116,9 +2356,232 @@
     "pageTitle": "Articles",
     "noArticles": "No articles yet.",
     "articlesListTitle": "All Articles",
-    "moreArticles": "More articles",
     "articleNotFound": "Article Not Found",
     "notTranslatedNotice": "This article has not been translated into your language yet. You are viewing the original version."
+  },
+  "chunks": {
+    "listTitle": "Chunks",
+    "listSubtitle": "Chess piece-coordination patterns",
+    "editCta": "Edit",
+    "statusDraft": "Draft",
+    "statusPublished": "Published",
+    "actions": {
+      "publish": "Publish",
+      "publishPending": "Publishing…",
+      "publishConfirmTitle": "Publish this chunk?",
+      "publishConfirmMessage": "Other users will see this as a canonical catalog entry. The title, description, FEN, and annotations will be locked — publishing is one-way, so make sure you're happy with them.",
+      "publishConfirmCta": "Publish",
+      "publishConfirmCancel": "Cancel",
+      "publishDescriptionRequired": "Add a description before publishing.",
+      "publishNeedsDescriptionTitle": "Add a description before publishing",
+      "publishNeedsDescriptionMessage": "A published chunk is a canonical catalog entry, so it needs a description for other players to understand the pattern. Open the edit page to add one — you can come back and publish once it's saved.",
+      "publishNeedsDescriptionCta": "Open edit page"
+    },
+    "list": {
+      "newCta": "New chunk",
+      "empty": "No chunks yet.",
+      "emptyDrafts": "No drafts looking for feedback right now.",
+      "filterAriaLabel": "Filter chunks by status",
+      "filter": {
+        "all": "All",
+        "drafts": "Looking for feedback",
+        "published": "Published"
+      },
+      "feedbackChip": {
+        "title": "Wants title input",
+        "description": "Wants description input"
+      }
+    },
+    "new": {
+      "title": "New chunk"
+    },
+    "edit": {
+      "title": "Edit {name}",
+      "breadcrumb": "Edit"
+    },
+    "detail": {
+      "descriptionSection": "Description",
+      "noDescription": "No description yet.",
+      "edited": "Edited",
+      "createdBy": "Created by",
+      "positionsSection": "Positions",
+      "positionsDescription": "Problems where this chunk pattern is effective.",
+      "positionBadge": {
+        "puzzle": "Puzzle",
+        "memory": "Memory"
+      }
+    },
+    "form": {
+      "fields": {
+        "fen": "Representative FEN",
+        "title": "Title",
+        "slug": "Slug",
+        "description": "Description"
+      },
+      "hints": {
+        "fen": "A FEN that illustrates the pattern. Kingless boards are allowed.",
+        "slugCreate": "Lowercase ASCII letters / numbers with hyphens (e.g. \"rook-battery\"). Editable while the chunk is in draft; locked once published.",
+        "slugLocked": "Slug is fixed once the chunk is published (used as a permanent catalog URL).",
+        "slugDraftEditable": "Editable while this chunk is in draft. Renaming updates the URL — any links you've shared will need to be re-shared."
+      },
+      "actions": {
+        "create": "Create chunk",
+        "creating": "Creating…",
+        "save": "Save changes",
+        "saving": "Saving…",
+        "delete": "Delete",
+        "deleting": "Deleting…",
+        "generateFromTitle": "Generate from title",
+        "continueToPreview": "Continue to preview"
+      },
+      "errors": {
+        "invalidFen": "FEN is not a valid chess board layout.",
+        "titleRequired": "Title is required.",
+        "slugRequired": "Slug is required.",
+        "draftWriteFailed": "Could not save the draft locally. Browser storage may be full or unavailable.",
+        "signInRequired": "Please sign in to continue.",
+        "banned": "Your account is suspended.",
+        "rateLimited": "Too many submissions. Please try again later.",
+        "slugTaken": "That slug is already in use. Please pick another.",
+        "notFound": "This chunk no longer exists.",
+        "unauthorized": "You can only edit chunks you created.",
+        "alreadyDeleted": "This chunk has already been deleted.",
+        "cannotEditPublished": "This chunk is published and is no longer editable. Publishing is one-way — to revise, delete this chunk and create a new one.",
+        "descriptionRequired": "This chunk needs a description before it can be published.",
+        "invalidFeedbackTopic": "Unknown feedback topic. Please refresh the page and try again."
+      },
+      "draft": {
+        "toggleLabel": "Save as draft",
+        "toggleHint": "Drafts are visible to others (so they can suggest names) but stay editable. You can publish later from the detail page when the title and description feel right."
+      },
+      "feedbackTopics": {
+        "legend": "What do you want feedback on?",
+        "hint": "Ticked fields are highlighted on the detail page so others know where their suggestions would help most.",
+        "options": {
+          "title": "Not sure about the title",
+          "description": "Not sure about the description"
+        }
+      },
+      "delete": {
+        "confirmTitle": "Delete this chunk?",
+        "confirmBody": "The chunk will be hidden from the catalog. Linked positions keep their reference but it no longer surfaces publicly.",
+        "confirm": "Delete",
+        "cancel": "Cancel"
+      },
+      "tabBoard": "Board",
+      "tabFen": "FEN",
+      "sideToMove": "Side to move",
+      "sideWhite": "White",
+      "sideBlack": "Black",
+      "flipBoard": "Flip board",
+      "clearBoard": "Clear board",
+      "clearBoardConfirmTitle": "Clear the board?",
+      "clearBoardConfirmMessage": "All pieces will be removed. This cannot be undone from this dialog.",
+      "clearBoardConfirm": "Clear",
+      "clearBoardCancel": "Cancel",
+      "draftRestoredBanner": "Restored your unsaved draft.",
+      "draftRestoredDiscard": "Discard",
+      "startOverConfirmTitle": "Start over?",
+      "startOverConfirmMessage": "Your current draft will be cleared. This cannot be undone.",
+      "startOverConfirm": "Start over",
+      "startOverCancel": "Cancel"
+    },
+    "preview": {
+      "title": "Preview chunk",
+      "createDraftCta": "Save as draft",
+      "createPublishedCta": "Publish chunk",
+      "backToEditCta": "Back to edit",
+      "createError": "Something went wrong creating the chunk. Please try again.",
+      "statusLabel": "Status",
+      "statusDraft": "Draft",
+      "statusPublished": "Published"
+    },
+    "editRequests": {
+      "linkLabel": "Edit suggestions",
+      "pageTitle": "Edit suggestions · {name}",
+      "breadcrumb": "Edit suggestions",
+      "currentValuesTitle": "Current values",
+      "currentValuesHint": "Tentative title and description the chunk currently shows. Submitted suggestions below are compared against these.",
+      "callout": {
+        "body": "This chunk is still a draft and welcomes suggestions for a sharper title or description.",
+        "ownerBodyWithPending": "{count, plural, one {# pending edit suggestion waiting for your review.} other {# pending edit suggestions waiting for your review.}}",
+        "ownerBodyEmpty": "No edit suggestions yet.",
+        "ctaOwner": "View edit suggestions",
+        "ctaHasPending": "View / withdraw your suggestion",
+        "ctaCanSuggest": "Suggest an edit",
+        "ctaSignedOut": "Sign in to suggest an edit",
+        "topicLeadIn": "The author is looking for input on:",
+        "topicLabels": {
+          "title": "Title",
+          "description": "Description"
+        }
+      },
+      "help": {
+        "label": "How edit suggestions work",
+        "badge": {
+          "title": "This chunk is in draft",
+          "description": "Suggestions for the title and description are welcome."
+        },
+        "editRequests": {
+          "title": "Suggest a change",
+          "description": "Open this page to propose a new title or description."
+        }
+      },
+      "sectionTitle": "Edit suggestions",
+      "sectionHint": "Other players can suggest a sharper title or description while this chunk is in draft. The owner reviews each suggestion.",
+      "formWantedLabel": "Wanted",
+      "alreadyHasPendingNotice": "Your earlier suggestion is still pending below. Withdraw it first if you want to propose something different.",
+      "pendingCount": "{count, plural, one {# pending} other {# pending}}",
+      "empty": "No suggestions yet.",
+      "suggestCta": "Suggest an edit",
+      "signInToSuggest": "Sign in to suggest an edit.",
+      "formHint": "Edit only what you'd like to change. Identical-to-current submissions are rejected automatically.",
+      "deletedProposer": "(deleted user)",
+      "proposerComment": "Reason from the proposer",
+      "justNow": "just now",
+      "status": {
+        "pending": "Pending",
+        "accepted": "Accepted",
+        "rejected": "Rejected",
+        "withdrawn": "Withdrawn"
+      },
+      "diff": {
+        "titleLabel": "Title",
+        "descriptionLabel": "Description",
+        "current": "Current",
+        "proposed": "Proposed"
+      },
+      "fields": {
+        "title": "Proposed title",
+        "description": "Proposed description",
+        "comment": "Why this change? (optional)",
+        "commentPlaceholder": "A short explanation helps the owner decide."
+      },
+      "actions": {
+        "submit": "Submit suggestion",
+        "cancel": "Cancel",
+        "accept": "Accept",
+        "reject": "Reject",
+        "withdraw": "Withdraw",
+        "acceptConfirmTitle": "Accept this suggestion?",
+        "acceptConfirmMessage": "The proposed fields will be applied to this chunk immediately.",
+        "rejectConfirmTitle": "Reject this suggestion?",
+        "rejectConfirmMessage": "The proposer will not be notified. They will see the rejected status if they revisit this page.",
+        "withdrawConfirmTitle": "Withdraw your suggestion?",
+        "withdrawConfirmMessage": "The chunk owner will not be notified. They will see the queue count drop on their next visit."
+      },
+      "errors": {
+        "signInRequired": "Please sign in to submit a suggestion.",
+        "banned": "Your account is suspended.",
+        "rateLimited": "Too many suggestions. Please try again later.",
+        "notFound": "This suggestion or chunk no longer exists.",
+        "unauthorized": "You can't perform this action.",
+        "alreadyResolved": "This suggestion has already been resolved.",
+        "ownerCannotPropose": "You can't suggest edits to your own chunk — edit it directly instead.",
+        "chunkNotDraft": "This chunk is published and is not accepting suggestions right now.",
+        "alreadyHasPending": "You already have a pending suggestion for this chunk. Withdraw it first if you want to propose something different."
+      }
+    }
   },
   "announcements": {
     "pageTitle": "Announcements",
@@ -2165,10 +2628,23 @@
       }
     },
     "step2": {
-      "shortLabel": "Peek",
-      "title": "Board Peek Mode",
-      "description": "You can enable a peek feature to glance at the board as a visual aid.",
-      "showBoardButton": "Show 'View Board' button during AI games",
+      "shortLabel": "Board",
+      "title": "Board Visibility",
+      "description": "Decide how the chessboard surfaces during play. Piece-display settings (next step) still provide the blindfold experience when the board is shown.",
+      "boardVisibilities": {
+        "always": {
+          "label": "Always visible",
+          "description": "The board is shown throughout the game. Piece settings (next step) still hide the piece types/colors as you prefer."
+        },
+        "peek": {
+          "label": "Peek on demand",
+          "description": "The board is hidden by default; tap to peek when you need to verify a position."
+        },
+        "never": {
+          "label": "Hidden",
+          "description": "Pure blindfold mode — the board is never shown during play."
+        }
+      },
       "modes": {
         "modal": {
           "label": "Modal",
@@ -2225,15 +2701,12 @@
   },
   "Mypage": {
     "title": "My Page",
-    "challengeLink": "Challenge Records",
     "dashboard": {
       "viewProfile": "Public profile",
       "challengeTitle": "Challenge Records",
       "likesTitle": "Liked Posts",
       "postsTitle": "My Posts",
       "editProfile": "Edit",
-      "interviewTitle": "Interview",
-      "beltSystem": "Belt System",
       "myRecords": "My Records",
       "socialTitle": "Social",
       "interviewBanner": "Answer interview questions and tell us about yourself",
@@ -2247,11 +2720,11 @@
       "expProgress": "{current} / {next} Exp",
       "expRemaining": "{remaining} Exp to next level",
       "viewExpLeaderboard": "View Exp Leaderboard",
+      "pointsTotal": "{total} coins",
       "accountTitle": "Account",
       "subscriptionTitle": "Subscription",
       "benefitsTitle": "Benefits",
       "practiceTitle": "Practice",
-      "myProblems": "My Problems",
       "myPositionMemory": "Position Memory",
       "myPuzzles": "Puzzles"
     },
@@ -2319,19 +2792,70 @@
       "statusActive": "Ad-free is active",
       "statusInactive": "Ad-free is not currently active",
       "activeUntil": "until {date}",
-      "sourceSubscription": "From your plan subscription",
-      "sourceGrants": "From benefit grants",
-      "pastBenefits": "Past benefits",
+      "sourceSubscription": "Subscription",
       "learnHowToEarn": "Learn how to earn ad-free benefits",
       "viewFullHistory": "View full history",
       "grantPeriod": "{startDate} – {endDate}",
       "grantStatusActive": "Active",
       "grantStatusUpcoming": "Upcoming",
-      "grantStatusExpired": "Expired"
+      "grantStatusExpired": "Expired",
+      "tableSourceHeader": "Source",
+      "tablePeriodHeader": "Period",
+      "tableStatusHeader": "Status"
     },
     "grantTypeLabel": {
       "admin_manual": "Granted by staff",
-      "topic_post": "Granted for topic post"
+      "topic_post": "Granted for topic post",
+      "position_creation": "Granted for position submission"
+    }
+  },
+  "MypagePoints": {
+    "title": "Coins",
+    "sectionTitle": "Your coins",
+    "breadcrumbMypage": "My Page",
+    "balance": {
+      "unit": "coins",
+      "aboutLink": "How Coins work"
+    },
+    "dailyCap": {
+      "label": "Earned from creating today",
+      "value": "{earned} / {cap}",
+      "note": "Creating problems and posts earns up to {cap} coins per day. Resets at 00:00 UTC."
+    },
+    "redeem": {
+      "title": "Redeem coins for ad-free time",
+      "description": "Each coin converts to one day of ad-free browsing. Days stack on top of any ad-free time you already have.",
+      "pointSuffix": "coins",
+      "daysReceived": "{days, plural, one {# day} other {# days}} of ad-free",
+      "submit": "Redeem {amount} coins",
+      "submitting": "Redeeming…",
+      "successMessage": "Done — {days, plural, one {# day} other {# days}} of ad-free time has been added.",
+      "errors": {
+        "invalid_amount": "Please enter a positive whole number.",
+        "insufficient_balance": "You do not have enough confirmed coins.",
+        "signInRequired": "Please sign in to redeem.",
+        "banned": "Your account is restricted.",
+        "rateLimited": "Too many redemptions in a short period — try again later."
+      }
+    },
+    "history": {
+      "title": "History",
+      "empty": "No coin activity yet.",
+      "learnHowToEarn": "See how to earn coins.",
+      "headerDate": "Date",
+      "headerEvent": "Event",
+      "headerDelta": "Amount",
+      "truncatedNote": "Showing the most recent entries.",
+      "kind": {
+        "post_grant": "Earned from a post",
+        "post_clawback": "Reversed for deleted post",
+        "redemption": "Redeemed for ad-free",
+        "purchase": "Purchased",
+        "admin_grant": "Granted by staff",
+        "maia_game": "Maia game",
+        "like_grant": "Earned from likes",
+        "other": "Adjustment"
+      }
     }
   },
   "MypageBenefitHistory": {
@@ -2364,14 +2888,16 @@
     "sectionTitle": "Problems You Created",
     "empty": "You haven't created any problems yet.",
     "breadcrumbMypage": "My Page",
-    "breadcrumbProblems": "My Problems"
+    "breadcrumbProblems": "My Problems",
+    "editAction": "Edit"
   },
   "MypagePuzzles": {
     "title": "My Puzzles",
     "sectionTitle": "Puzzles You Created",
     "empty": "You haven't created any puzzles yet.",
     "breadcrumbMypage": "My Page",
-    "breadcrumbProblems": "My Problems"
+    "breadcrumbProblems": "My Problems",
+    "editAction": "Edit"
   },
   "MypageProblemsIndex": {
     "title": "My Problems",
@@ -2417,13 +2943,26 @@
     "unknownNotification": "You have a new notification",
     "announcementMessage": "New announcement: {title}",
     "newPostMessage": "{actor} shared a new post",
+    "newCommentOnTopicMessage": "{actor} commented on your problem",
+    "chunkEditRequestSubmittedMessage": "{actor} suggested an edit to your chunk",
+    "chunkEditRequestAcceptedMessage": "{actor} accepted your edit suggestion",
+    "newChunkDraftMessage": "{actor} posted a chunk draft",
+    "chunkPublishedMessage": "{actor} published a chunk",
     "newPositionMemoryMessage": "{actor} created a new position memory problem",
     "newPuzzleMessage": "{actor} created a new puzzle",
     "achievementSingleMessage": "🏆 You earned {name}",
     "achievementMultipleMessage": "🏆 You earned {count} achievements",
     "benefitGrantMessage": {
-      "topic_post": "Thank you for your topic post — you've received {days} days of ad-free benefit",
-      "default": "You received {days} days of ad-free benefit"
+      "ad_free": {
+        "topic_post": "Thank you for your topic post — you've received {days} days of ad-free benefit",
+        "default": "You received {days} days of ad-free benefit"
+      }
+    },
+    "pointGrantMessage": {
+      "default": "You received {amount, plural, one {# coin} other {# coins}}"
+    },
+    "likeCoinGrantMessage": {
+      "default": "Your content was liked — you earned {count, plural, one {# coin} other {# coins}}"
     }
   },
   "deleteAccount": {
@@ -2451,7 +2990,11 @@
     "accountDeleted": "Your account has been deleted",
     "practiceResultSaveFailed": "Failed to save your result. Please try again.",
     "positionCreated": "Position created successfully",
-    "positionDeleted": "Problem deleted"
+    "positionDeleted": "Problem deleted",
+    "positionUpdated": "Changes saved",
+    "puzzleUpdated": "Changes saved",
+    "puzzleDeleted": "Puzzle deleted",
+    "editRequestSubmitted": "Edit suggestion submitted"
   },
   "setupUsername": {
     "title": "Create Your Account",
@@ -2561,8 +3104,6 @@
     "dashboard": "Dashboard",
     "users": "Users",
     "auditLog": "Audit Log",
-    "totalUsers": "Total Users",
-    "roleAssignments": "Role Assignments",
     "dashboardKpi": {
       "from": "From",
       "to": "To",
@@ -2697,8 +3238,6 @@
       "title": "Posts by {username}",
       "email": "Email",
       "username": "Username",
-      "backToUsers": "Back to Users",
-      "topic": "Topic",
       "content": "Content",
       "createdAt": "Created At",
       "status": "Status",
@@ -2714,8 +3253,6 @@
       "deleteModalConfirm": "Confirm Delete",
       "deleteModalDeleting": "Deleting...",
       "deleteModalReasonRequired": "Reason is required",
-      "previousPage": "Previous",
-      "nextPage": "Next",
       "userNotFound": "User not found"
     },
     "auditLogTable": {
@@ -2728,9 +3265,7 @@
       "noLogsFound": "No audit logs found",
       "filterByAction": "Filter by action",
       "filterByUser": "Filter by user",
-      "allActions": "All Actions",
-      "previousPage": "Previous",
-      "nextPage": "Next"
+      "allActions": "All Actions"
     },
     "activityLog": "Activity Log",
     "activityLogTable": {
@@ -2742,12 +3277,11 @@
       "noLogsFound": "No activity logs found",
       "filterByAction": "Filter by action",
       "filterByUser": "Filter by user",
-      "allActions": "All Actions",
-      "previousPage": "Previous",
-      "nextPage": "Next"
+      "allActions": "All Actions"
     },
     "positionMemory": "Position Memory",
     "chunks": "Chunks",
+    "glossary": "Glossary",
     "puzzle": "Puzzle",
     "topicPosts": {
       "navLabel": "Topic Posts",
@@ -2775,9 +3309,7 @@
       "deleteModalCancel": "Cancel",
       "deleteModalConfirm": "Confirm Delete",
       "deleteModalDeleting": "Deleting...",
-      "deleteModalReasonRequired": "Reason is required",
-      "previousPage": "Previous",
-      "nextPage": "Next"
+      "deleteModalReasonRequired": "Reason is required"
     },
     "announcements": "Announcements",
     "announcementsTable": {
@@ -2921,10 +3453,6 @@
     "ads": "Ads",
     "adsManagement": {
       "title": "Ads Management",
-      "globalToggle": "Ads Enabled",
-      "globalToggleDescription": "Enable or disable all ads site-wide",
-      "enabled": "Enabled",
-      "disabled": "Disabled",
       "banners": "Ad Banners",
       "slot": "Slot",
       "href": "Link URL",
@@ -2954,11 +3482,23 @@
       "create": "Create",
       "creating": "Creating..."
     },
+    "points": {
+      "title": "Points",
+      "navLabel": "Points",
+      "showing": "Showing {from}–{to} of {total} grants",
+      "empty": "No admin point grants yet.",
+      "columns": {
+        "user": "User",
+        "amount": "Amount",
+        "reason": "Reason",
+        "grantedAt": "Granted at"
+      }
+    },
     "grants": {
       "title": "Grants",
       "navLabel": "Grants",
       "noGrantsFound": "No grants found",
-      "showing": "Showing {from}\u2013{to} of {total} grants",
+      "showing": "Showing {from}–{to} of {total} grants",
       "columns": {
         "user": "User",
         "benefit": "Benefit",
@@ -2979,7 +3519,7 @@
       "navLabel": "Achievements",
       "description": "Manage achievement definitions and view holders.",
       "noAchievementsFound": "No achievements found",
-      "showing": "Showing {from}\u2013{to} of {total} achievements",
+      "showing": "Showing {from}–{to} of {total} achievements",
       "viewHolders": "View holders",
       "columns": {
         "displayName": "Name",
@@ -3005,7 +3545,7 @@
         "holderCount": "Holders",
         "createdAt": "Created at",
         "holdersTitle": "Holders",
-        "showingHolders": "Showing {from}\u2013{to} of {total} holders",
+        "showingHolders": "Showing {from}–{to} of {total} holders",
         "noHoldersFound": "No holders yet",
         "columns": {
           "username": "Username",
@@ -3019,10 +3559,10 @@
   },
   "publicProfile": {
     "title": "{displayName}'s Profile",
+    "pageTitle": "Profile",
     "defaultDescription": "{displayName}'s profile on Blindfold Chess",
     "chessAccounts": "Chess Accounts",
     "bio": "About",
-    "emptyProfile": "This user hasn't added any profile information yet.",
     "followers": "Followers",
     "followingCount": "Following",
     "follow": "Follow",
@@ -3111,13 +3651,17 @@
     "moreTopicPosts": "More topics",
     "showMore": "Show more",
     "showLess": "Show less",
-    "grantInfoModal": {
-      "title": "Ad-Free Benefit Notice",
-      "body": "Posting a topic with text content automatically grants you {days} days of ad-free access.",
-      "note": "Posts containing only ratings without text content do not qualify.",
-      "confirm": "Continue posting",
-      "cancel": "Cancel"
-    },
+    "permalinkAriaLabel": "View this post",
+    "replyAriaLabel": "View replies and reply",
+    "hiddenReplies": "{count, plural, one {# reply hidden} other {# replies hidden}}",
+    "deletedComment": "[Comment deleted by user]",
+    "collapseAriaLabel": "Collapse thread",
+    "expandAriaLabel": "Expand thread",
+    "replyButton": "Reply",
+    "sortByLabel": "Sort by",
+    "joinConversation": "Join the conversation",
+    "communityThoughts": "Community thoughts",
+    "signInToJoin": "Sign in to join the conversation",
     "categories": {
       "squares": {
         "title": "Squares",
@@ -3126,6 +3670,10 @@
       "openings": {
         "title": "Openings",
         "description": "Explore and learn about chess openings"
+      },
+      "chunks": {
+        "title": "Chunks",
+        "description": "Piece-coordination pattern catalog for position memory training"
       }
     },
     "openings": {
@@ -3288,7 +3836,7 @@
         "submit": "Post",
         "submitting": "Posting...",
         "contentOrRatingRequired": "Please enter some content or provide at least one rating",
-        "contentTooLong": "Content must be 5000 characters or less",
+        "contentTooLong": "Content must be 2000 characters or less",
         "invalidOpening": "Invalid opening",
         "error": "An error occurred. Please try again.",
         "signInRequired": "Please sign in to create a post",
@@ -3323,7 +3871,7 @@
         "submit": "Reply",
         "submitting": "Replying...",
         "contentRequired": "Please enter some content",
-        "contentTooLong": "Content must be 5000 characters or less",
+        "contentTooLong": "Content must be 2000 characters or less",
         "error": "An error occurred. Please try again.",
         "signInRequired": "Please sign in to reply",
         "loginToReply": "Sign in to reply",
@@ -3348,6 +3896,7 @@
       "title": "Squares",
       "description": "Select a square to view and share discussions",
       "pageTitle": "Squares",
+      "sectionTitle": "Choose Square",
       "postCount": "{count, plural, one {# post} other {# posts}}",
       "noPosts": "No posts yet.",
       "newPost": "Share your thoughts",
@@ -3379,7 +3928,7 @@
         "submit": "Post",
         "submitting": "Posting...",
         "contentRequired": "Please enter some content",
-        "contentTooLong": "Content must be 5000 characters or less",
+        "contentTooLong": "Content must be 2000 characters or less",
         "error": "An error occurred. Please try again.",
         "signInRequired": "Please sign in to create a post",
         "rateLimited": "Too many posts. Please try again later."
@@ -3401,7 +3950,7 @@
         "submit": "Reply",
         "submitting": "Replying...",
         "contentRequired": "Please enter some content",
-        "contentTooLong": "Content must be 5000 characters or less",
+        "contentTooLong": "Content must be 2000 characters or less",
         "error": "An error occurred. Please try again.",
         "signInRequired": "Please sign in to reply",
         "loginToReply": "Sign in to reply",
@@ -3420,6 +3969,245 @@
         "cancel": "Cancel",
         "deleting": "Deleting..."
       }
+    },
+    "chunks": {
+      "commentsTitle": "Comments",
+      "postCount": "{count, plural, one {# comment} other {# comments}}",
+      "noPosts": "No comments yet. Be the first to share your thoughts!",
+      "signInToComment": "Sign in to comment",
+      "readMore": "Read more",
+      "detail": {
+        "pageTitle": "Chunk Comment"
+      },
+      "postDetail": {
+        "authorView": "{author}'s thoughts on {name}",
+        "backToChunk": "Back to {name}"
+      },
+      "sort": {
+        "new": "New",
+        "popular": "Popular",
+        "active": "Active"
+      },
+      "newPostForm": {
+        "contentLabel": "Comment",
+        "contentPlaceholder": "Share your thoughts about this chunk...",
+        "replyPermissionLabel": "Who can reply",
+        "replyPermission_everyone": "Everyone",
+        "replyPermission_followers": "Followers only",
+        "replyPermission_nobody": "No one",
+        "invalidReplyPermission": "Invalid reply permission setting",
+        "submit": "Comment",
+        "submitting": "Posting...",
+        "contentRequired": "Please enter some content",
+        "contentTooLong": "Content must be 2000 characters or less",
+        "error": "An error occurred. Please try again.",
+        "signInRequired": "Please sign in to comment",
+        "rateLimited": "Too many comments. Please try again later."
+      },
+      "like": "Like",
+      "unlike": "Unlike",
+      "newReply": "New Reply {time}",
+      "justNow": "just now",
+      "replies": {
+        "title": "Replies",
+        "count": "{count, plural, one {# reply} other {# replies}}",
+        "noReplies": "No replies yet. Be the first to reply!",
+        "contentLabel": "Your reply",
+        "contentPlaceholder": "Share your thoughts...",
+        "submit": "Reply",
+        "submitting": "Replying...",
+        "contentRequired": "Please enter some content",
+        "contentTooLong": "Content must be 2000 characters or less",
+        "error": "An error occurred. Please try again.",
+        "signInRequired": "Please sign in to reply",
+        "loginToReply": "Sign in to reply",
+        "rateLimited": "Too many replies. Please try again later.",
+        "repliesDisabled": "The author has disabled replies on this comment.",
+        "followRequired": "Only followers of the author can reply to this comment.",
+        "replyButton": "Reply",
+        "replyingTo": "Replying to @{username}",
+        "cancelReply": "Cancel"
+      },
+      "deletePost": {
+        "button": "Delete",
+        "confirmTitle": "Delete Comment",
+        "confirmMessage": "Are you sure you want to delete this comment? This action cannot be undone.",
+        "confirm": "Delete",
+        "cancel": "Cancel",
+        "deleting": "Deleting..."
+      }
+    },
+    "positionMemory": {
+      "commentsTitle": "Comments",
+      "postCount": "{count, plural, one {# comment} other {# comments}}",
+      "noPosts": "No comments yet. Be the first to share your thoughts!",
+      "signInToComment": "Sign in to comment",
+      "readMore": "Read more",
+      "sort": {
+        "new": "New",
+        "popular": "Popular",
+        "active": "Active"
+      },
+      "detail": {
+        "pageTitle": "Position Memory Comment"
+      },
+      "postDetail": {
+        "authorView": "{author}'s thoughts on {name}",
+        "backToPosition": "Back to {name}"
+      },
+      "newPostForm": {
+        "contentLabel": "Comment",
+        "contentPlaceholder": "Share your thoughts about this position...",
+        "submit": "Comment",
+        "submitting": "Posting...",
+        "contentRequired": "Please enter some content",
+        "contentTooLong": "Content must be 2000 characters or less",
+        "error": "An error occurred. Please try again.",
+        "signInRequired": "Please sign in to comment",
+        "invalidReplyPermission": "Invalid reply permission setting",
+        "rateLimited": "Too many comments. Please try again later."
+      },
+      "like": "Like",
+      "unlike": "Unlike",
+      "newReply": "New Reply {time}",
+      "justNow": "just now",
+      "replies": {
+        "title": "Replies",
+        "count": "{count, plural, one {# reply} other {# replies}}",
+        "noReplies": "No replies yet. Be the first to reply!",
+        "contentLabel": "Your reply",
+        "contentPlaceholder": "Share your thoughts...",
+        "submit": "Reply",
+        "submitting": "Replying...",
+        "contentRequired": "Please enter some content",
+        "contentTooLong": "Content must be 2000 characters or less",
+        "error": "An error occurred. Please try again.",
+        "signInRequired": "Please sign in to reply",
+        "loginToReply": "Sign in to reply",
+        "rateLimited": "Too many replies. Please try again later.",
+        "repliesDisabled": "The author has disabled replies on this comment.",
+        "followRequired": "Only followers of the author can reply to this comment.",
+        "replyButton": "Reply",
+        "replyingTo": "Replying to @{username}",
+        "cancelReply": "Cancel"
+      },
+      "deletePost": {
+        "button": "Delete",
+        "confirmTitle": "Delete Comment",
+        "confirmMessage": "Are you sure you want to delete this comment? This action cannot be undone.",
+        "confirm": "Delete",
+        "cancel": "Cancel",
+        "deleting": "Deleting..."
+      }
+    },
+    "positionPuzzle": {
+      "commentsTitle": "Comments",
+      "postCount": "{count, plural, one {# comment} other {# comments}}",
+      "noPosts": "No comments yet. Be the first to share your thoughts!",
+      "signInToComment": "Sign in to comment",
+      "readMore": "Read more",
+      "sort": {
+        "new": "New",
+        "popular": "Popular",
+        "active": "Active"
+      },
+      "detail": {
+        "pageTitle": "Puzzle Comment"
+      },
+      "postDetail": {
+        "authorView": "{author}'s thoughts on {name}",
+        "backToPuzzle": "Back to {name}"
+      },
+      "newPostForm": {
+        "contentLabel": "Comment",
+        "contentPlaceholder": "Share your thoughts about this puzzle...",
+        "submit": "Comment",
+        "submitting": "Posting...",
+        "contentRequired": "Please enter some content",
+        "contentTooLong": "Content must be 2000 characters or less",
+        "error": "An error occurred. Please try again.",
+        "signInRequired": "Please sign in to comment",
+        "invalidReplyPermission": "Invalid reply permission setting",
+        "rateLimited": "Too many comments. Please try again later."
+      },
+      "like": "Like",
+      "unlike": "Unlike",
+      "newReply": "New Reply {time}",
+      "justNow": "just now",
+      "replies": {
+        "title": "Replies",
+        "count": "{count, plural, one {# reply} other {# replies}}",
+        "noReplies": "No replies yet. Be the first to reply!",
+        "contentLabel": "Your reply",
+        "contentPlaceholder": "Share your thoughts...",
+        "submit": "Reply",
+        "submitting": "Replying...",
+        "contentRequired": "Please enter some content",
+        "contentTooLong": "Content must be 2000 characters or less",
+        "error": "An error occurred. Please try again.",
+        "signInRequired": "Please sign in to reply",
+        "loginToReply": "Sign in to reply",
+        "rateLimited": "Too many replies. Please try again later.",
+        "repliesDisabled": "The author has disabled replies on this comment.",
+        "followRequired": "Only followers of the author can reply to this comment.",
+        "replyButton": "Reply",
+        "replyingTo": "Replying to @{username}",
+        "cancelReply": "Cancel"
+      },
+      "deletePost": {
+        "button": "Delete",
+        "confirmTitle": "Delete Comment",
+        "confirmMessage": "Are you sure you want to delete this comment? This action cannot be undone.",
+        "confirm": "Delete",
+        "cancel": "Cancel",
+        "deleting": "Deleting..."
+      }
+    },
+    "spoiler": {
+      "toggleLabel": "Contains solution",
+      "overlayTitle": "Contains solution",
+      "overlayHint": "Tap to reveal",
+      "overlayAriaLabel": "Reveal comment that may contain the puzzle solution"
+    },
+    "edit": {
+      "button": "Edit",
+      "save": "Save",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "editedLabel": "(edited)",
+      "editedTitle": "Last edited {date}",
+      "contentRequired": "Please enter some content",
+      "contentTooLong": "Content must be 2000 characters or less",
+      "error": "An error occurred. Please try again.",
+      "signInRequired": "Please sign in to edit",
+      "rateLimited": "Too many edits. Please try again later.",
+      "notFound": "This post no longer exists.",
+      "unauthorized": "You can only edit your own posts.",
+      "alreadyDeleted": "This post has been deleted."
+    },
+    "removeAttachment": {
+      "button": "Remove attachment",
+      "removeImageAriaLabel": "Remove image {index}",
+      "removing": "Removing...",
+      "confirmTitle": "Remove attachment?",
+      "confirmMessage": "This will detach it from your post. The post itself stays.",
+      "confirm": "Remove",
+      "cancel": "Cancel",
+      "error": "Could not remove the attachment. Please try again.",
+      "attachmentNotFound": "This attachment no longer exists.",
+      "rateLimited": "Too many attachment changes. Please try again later."
+    },
+    "addAttachment": {
+      "button": "Add attachment",
+      "attaching": "Attaching...",
+      "invalidFen": "Please enter a valid FEN before attaching.",
+      "error": "Could not attach. Please try again.",
+      "signInRequired": "Please sign in to attach.",
+      "rateLimited": "Too many attach attempts. Please try again later.",
+      "alreadyAttached": "This post already has an attachment. Remove the existing one first.",
+      "alreadyDeleted": "This post has been deleted.",
+      "notFound": "This post no longer exists.",
+      "unauthorized": "You can only attach to your own posts."
     }
   },
   "unsavedChanges": {
@@ -3436,9 +4224,20 @@
     "goBack": "Go Back",
     "invalidUrl": "The provided URL is invalid."
   },
+  "thanks": {
+    "title": "Thanks!",
+    "sectionTitle": "Coins earned",
+    "continueButton": "View your post",
+    "viewPointsButton": "View your coins",
+    "genericMessage": "Thanks for your contribution.",
+    "coinsEarned": "Coins earned!",
+    "aboutCoinsLink": "How Coins work",
+    "dailyCapNote": "You've reached today's creation earning limit, so fewer coins were awarded. The limit resets at 00:00 UTC."
+  },
   "authPrompt": {
     "title": "Sign in to continue",
     "description": "Sign in to like posts, join discussions, and get the most out of Blindfold Chess.",
+    "createDescription": "Sign up free to save and publish what you create.",
     "signUpButton": "Create Free Account",
     "signInButton": "Already have an account? Sign in"
   },
@@ -3545,6 +4344,7 @@
     "backToList": "Back to Leaderboard",
     "viewMore": "View Full Leaderboard",
     "weeklyRanking": "Weekly Ranking",
+    "allTimeRanking": "All-Time Ranking",
     "signUpBanner": {
       "message": "Join the leaderboard!",
       "description": "Create a free account to track your scores and compete with other players.",
@@ -3564,8 +4364,7 @@
       "exp": "Exp",
       "level": "Level"
     },
-    "emptyState": "No Exp records yet. Start practicing to earn Exp!",
-    "backToScoreLeaderboard": "Back to Score Leaderboard"
+    "emptyState": "No Exp records yet. Start practicing to earn Exp!"
   },
   "validation": {
     "password": {
@@ -3649,11 +4448,8 @@
         "3kyu": "Ability to plan piece maneuvering routes for all pieces without visual aids."
       },
       "tips": "Tips",
-      "guide": "Guide",
       "tryChallenge": "Try the Challenge",
       "showMore": "Show more",
-      "prevPage": "Previous",
-      "nextPage": "Next",
       "pageOf": "Page {current} of {total}",
       "mukyuRequirements": ["Understanding of algebraic notation"],
       "mukyuRelatedLinks": {
@@ -3744,6 +4540,17 @@
         "anchorPoints": "Board awareness with anchor points",
         "blindfoldLegalMoves": "Legal move detection in blindfold chess",
         "diagonals": "Computing diagonals and anti-diagonals"
+      }
+    },
+    "help": {
+      "label": "Help",
+      "overview": {
+        "title": "Dojo",
+        "description": "The curriculum is structured so that, by climbing the ranks to black belt, you build the skill to beat low-rated AI at blindfold chess."
+      },
+      "viewAllRanks": {
+        "title": "All ranks",
+        "description": "Check each rank's requirements and guides from here."
       }
     }
   },
@@ -3993,6 +4800,115 @@
       "prevRank": "Previous rank: {rankName} guide",
       "nextRank": "Next rank: {rankName} guide"
     }
+  },
+  "attachment": {
+    "input": {
+      "show": "Attach a game",
+      "hide": "Hide attachment",
+      "label": "Game (PGN or Lichess URL)",
+      "placeholder": "Paste a Lichess game URL or full PGN…",
+      "modeHint": "Accepts a Lichess game URL (lichess.org/…), a chess.com emboard URL, a Lichess embed URL, or a PGN. chess.com PGNs with a [Link] header are auto-attributed."
+    },
+    "label": {
+      "anonymize": "Anonymize player names",
+      "anonymizeHint": "Replaces White / Black headers with \"Player 1\" and \"Player 2\" before saving."
+    },
+    "preview": {
+      "loading": "Generating preview…"
+    },
+    "card": {
+      "replayButton": "Open replay",
+      "collapseButton": "Hide replay",
+      "movesCount": "{count, plural, one {# move} other {# moves}}",
+      "headerWhite": "White",
+      "headerBlack": "Black",
+      "headerEvent": "Event",
+      "headerDate": "Date",
+      "headerSite": "Site",
+      "sourceLabel": "Source",
+      "viewOnChesscom": "View on Chess.com",
+      "anonymizedNote": "Player names anonymized by the poster."
+    },
+    "delete": {
+      "confirm": "Remove the attached game from this comment?",
+      "success": "Attachment removed."
+    },
+    "error": {
+      "empty": "Paste a Lichess URL or PGN, or hide the attachment field.",
+      "tooLarge": "PGN is too large. The maximum size is 100 KB.",
+      "invalidPgn": "Could not parse that as a PGN. Check the moves and headers.",
+      "noMoves": "PGN has no moves. Add at least one move before attaching.",
+      "lichessFetchFailed": "Could not fetch the Lichess game. Try again, or paste the PGN directly.",
+      "lichessNotFound": "Lichess game not found. Check the URL.",
+      "lichessRateLimited": "Lichess is busy right now. Wait a moment, or paste the PGN directly.",
+      "chesscomPgnRequired": "Please paste the PGN. chess.com games cannot be auto-fetched.",
+      "chesscomInvalidUrl": "That doesn't look like a valid chess.com URL. Use https://www.chess.com/...",
+      "chesscomInvalidPgn": "The text below the chess.com URL doesn't look like a PGN. Paste the exported game body.",
+      "lichessStudyUnsupported": "Lichess Study URLs are not supported. Please paste a game URL or PGN.",
+      "rateLimitedPostWithAttachment": "You can attach at most 5 games per hour."
+    },
+    "embed": {
+      "chesscomDetected": "Chess.com diagram detected.",
+      "lichessDetected": "Lichess embed detected.",
+      "viewOnLichess": "View on Lichess",
+      "invalidUrl": "That doesn't look like a valid embed URL.",
+      "chesscomCardTitle": "Chess.com diagram",
+      "lichessCardTitle": "Lichess game"
+    },
+    "image": {
+      "label": "Images (optional)",
+      "uploadButton": "Add image",
+      "altLabel": "Image description (alt text)",
+      "altPlaceholder": "Describe the image for screen readers",
+      "limitHint": "JPEG, PNG, or WebP. Up to {max} per post, 2 MB each.",
+      "removeButton": "Remove image",
+      "uploading": "Uploading…",
+      "deletionDisclosure": "Images attached to a deleted post may remain accessible on storage for up to 7 days.",
+      "error": {
+        "fileRequired": "Choose an image file to upload.",
+        "fileTooLarge": "Image is too large. The maximum size is 2 MB.",
+        "invalidFileType": "Only JPEG, PNG, and WebP images are accepted.",
+        "imageTooLarge": "Image dimensions are too large (50 megapixel cap).",
+        "animatedImageNotSupported": "Animated images are not supported. Please upload a still image.",
+        "tooManyImages": "You have reached the {max}-image limit for this post.",
+        "uploadFailed": "Upload failed. Please try again.",
+        "rateLimited": "Too many uploads. Please wait a few minutes and try again."
+      }
+    }
+  },
+  "postFenAttachment": {
+    "error": {
+      "fenRequired": "Enter a FEN string to attach a position.",
+      "fenTooLong": "FEN is too long. The maximum length is 100 characters.",
+      "invalidFenStructure": "FEN format is invalid. Check the position, side to move, castling, and en passant fields.",
+      "invalidFenSemantic": "FEN is not a legal chess position. Check kings, pawn placement, castling rights, and the en passant square.",
+      "captionTooLong": "Caption is too long. The maximum length is 200 characters.",
+      "alreadyAttached": "This post already has a FEN attachment.",
+      "postNotFound": "Post not found.",
+      "notOwner": "You can only attach a FEN to your own posts."
+    }
+  },
+  "postVideoAttachment": {
+    "error": {
+      "urlRequired": "Enter a YouTube URL to attach a video.",
+      "inputTooLong": "URL is too long. The maximum length is 512 characters.",
+      "invalidUrl": "URL could not be parsed. Paste a YouTube link.",
+      "protocolNotHttps": "URL must use https.",
+      "userinfoPresent": "URL must not contain a username or password.",
+      "fragmentNotAllowed": "URL must not contain a fragment (#…).",
+      "hostNotAllowed": "URL host is not a YouTube host.",
+      "pathnameNotSupported": "URL is not a supported YouTube watch / shorts / live / embed link.",
+      "paramPollution": "URL contains repeated query parameters.",
+      "invalidId": "YouTube video id is invalid.",
+      "invalidVideoStructure": "Video link could not be saved. Please try a different YouTube URL.",
+      "tooLong": "Video link is too long. The maximum length is 512 characters.",
+      "alreadyAttached": "This post already has a video attachment.",
+      "postNotFound": "Post not found.",
+      "notOwner": "You can only attach a video to your own posts."
+    }
+  },
+  "postVideoAttachmentRender": {
+    "fallbackTitle": "YouTube video"
   },
   "Footer": {
     "resources": "Resources",

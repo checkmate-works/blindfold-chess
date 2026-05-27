@@ -17,7 +17,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
  */
 export type Translator = (key: string, values?: Record<string, string | number | Date>) => string;
 
-export type RankNavigationNeighbour = {
+type RankNavigationNeighbour = {
   slug: RankSlug;
   rankName: string;
 };

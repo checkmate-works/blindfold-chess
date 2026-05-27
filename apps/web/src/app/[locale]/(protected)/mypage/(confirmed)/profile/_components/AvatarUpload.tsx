@@ -101,7 +101,15 @@ export function AvatarUpload({ currentAvatarUrl, onUploaded }: Props) {
         className="relative h-24 w-24 rounded-full overflow-hidden border-2 border-border hover:border-accent transition-colors focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {previewUrl ? (
-          <Image src={previewUrl} alt={t('avatarAlt')} fill className="object-cover" unoptimized />
+          <Image
+            src={previewUrl}
+            alt={t('avatarAlt')}
+            fill
+            className="object-cover"
+            // Pre-resized 256×256 WebP at upload (and the live preview is a
+            // local blob: URL anyway); bypass Vercel optimization.
+            unoptimized
+          />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-muted text-muted-foreground text-3xl">
             <svg

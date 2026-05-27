@@ -1,4 +1,4 @@
-import type { Game } from '@/lib/types';
+import type { Game } from '@/lib/games/saved-game-types';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 

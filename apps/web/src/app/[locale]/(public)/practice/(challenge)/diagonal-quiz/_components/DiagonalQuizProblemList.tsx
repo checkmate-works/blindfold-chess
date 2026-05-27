@@ -12,6 +12,8 @@ import { FaCheck, FaChevronDown, FaChevronRight, FaTimes } from 'react-icons/fa'
 
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/games/board-themes';
 
+import { DiagonalAnswerComparison } from './DiagonalAnswerComparison';
+
 export type { QuestionResult };
 
 const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
@@ -77,15 +79,15 @@ export function DiagonalBoard({ targetSquare }: { targetSquare: string }) {
 
       {/* Legend */}
       <div className="flex justify-center gap-4 mt-3 text-xs">
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-3 bg-emerald-500/40 rounded border border-border" />
-          <span className="text-muted-foreground">
+        <div className="flex items-start gap-1.5">
+          <div className="w-3 h-3 mt-0.5 bg-emerald-500/40 rounded border border-border flex-shrink-0" />
+          <span className="text-muted-foreground leading-tight">
             <DiagonalLabel type="diagonal" />
           </span>
         </div>
-        <div className="flex items-center gap-1">
-          <div className="w-3 h-3 bg-sky-500/40 rounded border border-border" />
-          <span className="text-muted-foreground">
+        <div className="flex items-start gap-1.5">
+          <div className="w-3 h-3 mt-0.5 bg-sky-500/40 rounded border border-border flex-shrink-0" />
+          <span className="text-muted-foreground leading-tight">
             <DiagonalLabel type="antiDiagonal" />
           </span>
         </div>
@@ -96,7 +98,16 @@ export function DiagonalBoard({ targetSquare }: { targetSquare: string }) {
 
 function DiagonalLabel({ type }: { type: 'diagonal' | 'antiDiagonal' }) {
   const t = useTranslations('practice.diagonalQuiz');
-  return <>{type === 'diagonal' ? t('diagonalLabel') : t('antiDiagonalLabel')}</>;
+  const isDiagonal = type === 'diagonal';
+  return (
+    <>
+      {t(isDiagonal ? 'diagonalShortLabel' : 'antiDiagonalShortLabel')}
+      <br />
+      <span className="opacity-75">
+        {t(isDiagonal ? 'diagonalDirectionNote' : 'antiDiagonalDirectionNote')}
+      </span>
+    </>
+  );
 }
 
 export function DiagonalQuizProblemList({ results }: { results: QuestionResult[] }) {
@@ -158,42 +169,15 @@ export function DiagonalQuizProblemList({ results }: { results: QuestionResult[]
               {isExpanded && (
                 <div className="px-3 pb-3 pt-4 border-t border-border bg-muted/30">
                   <DiagonalBoard targetSquare={result.square} />
-
-                  <div className="mt-3 space-y-3 text-sm">
-                    <div>
-                      <p className="font-bold text-muted-foreground mb-1">{t('diagonalLabel')}</p>
-                      <p className="text-muted-foreground">
-                        <span className="font-medium">{t('correctAnswerLabel')}:</span>{' '}
-                        {result.correctDiagonal}
-                      </p>
-                      {result.userDiagonal && (
-                        <p
-                          className={result.isDiagonalCorrect ? 'text-success' : 'text-destructive'}
-                        >
-                          <span className="font-medium">{t('yourAnswer')}:</span>{' '}
-                          {result.userDiagonal}
-                        </p>
-                      )}
-                    </div>
-                    <div>
-                      <p className="font-bold text-muted-foreground mb-1">
-                        {t('antiDiagonalLabel')}
-                      </p>
-                      <p className="text-muted-foreground">
-                        <span className="font-medium">{t('correctAnswerLabel')}:</span>{' '}
-                        {result.correctAntiDiagonal}
-                      </p>
-                      {result.userAntiDiagonal && (
-                        <p
-                          className={
-                            result.isAntiDiagonalCorrect ? 'text-success' : 'text-destructive'
-                          }
-                        >
-                          <span className="font-medium">{t('yourAnswer')}:</span>{' '}
-                          {result.userAntiDiagonal}
-                        </p>
-                      )}
-                    </div>
+                  <div className="mt-4">
+                    <DiagonalAnswerComparison
+                      correctDiagonal={result.correctDiagonal}
+                      correctAntiDiagonal={result.correctAntiDiagonal}
+                      userDiagonal={result.userDiagonal}
+                      userAntiDiagonal={result.userAntiDiagonal}
+                      isDiagonalCorrect={result.isDiagonalCorrect}
+                      isAntiDiagonalCorrect={result.isAntiDiagonalCorrect}
+                    />
                   </div>
                 </div>
               )}

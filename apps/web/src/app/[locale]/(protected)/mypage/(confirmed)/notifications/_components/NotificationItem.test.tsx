@@ -21,6 +21,12 @@ vi.mock('@/i18n/use-safe-translations', () => ({
     if (key === 'likeMessage' && params) return `${params.actor} liked your post`;
     if (key === 'replyMessage' && params) return `${params.actor} replied to your post`;
     if (key === 'newPostMessage' && params) return `${params.actor} shared a new post`;
+    if (key === 'chunkEditRequestSubmittedMessage' && params)
+      return `${params.actor} suggested an edit to your chunk`;
+    if (key === 'chunkEditRequestAcceptedMessage' && params)
+      return `${params.actor} accepted your edit suggestion`;
+    if (key === 'newChunkDraftMessage' && params) return `${params.actor} posted a chunk draft`;
+    if (key === 'chunkPublishedMessage' && params) return `${params.actor} published a chunk`;
     if (key === 'achievementSingleMessage' && params) return `🏆 You earned ${params.name}`;
     if (key === 'achievementMultipleMessage' && params)
       return `🏆 You earned ${params.count} achievements`;
@@ -53,10 +59,21 @@ vi.mock('@/i18n/routing', () => ({
     href: string;
     locale?: string;
     children: React.ReactNode;
-    onClick?: () => void;
+    onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
     className?: string;
   }) => (
-    <a href={href} onClick={onClick} className={className}>
+    // Real Next.js <Link> intercepts the click and routes via the App Router,
+    // so a full document navigation never reaches jsdom. Without preventDefault
+    // here, jsdom queues a `setTimeout(0)` navigation that fires after the
+    // test ends as "Not implemented: navigation to another Document".
+    <a
+      href={href}
+      onClick={(e) => {
+        e.preventDefault();
+        onClick?.(e);
+      }}
+      className={className}
+    >
       {children}
     </a>
   ),
@@ -243,7 +260,7 @@ describe('NotificationItem', () => {
       expect(link!.getAttribute('href')).toBe('/topics/squares/e4/posts/post-42');
     });
 
-    it('should link to post with #reply-{replyId} fragment when metadata includes replyId', () => {
+    it('should link to post with #post-{replyId} fragment when metadata includes replyId', () => {
       const notification = createNotification({
         type: 'reply',
         metadata: {
@@ -259,11 +276,11 @@ describe('NotificationItem', () => {
       const link = screen.getByText('Alice replied to your post').closest('a');
       expect(link).not.toBeNull();
       expect(link!.getAttribute('href')).toBe(
-        '/topics/openings/sicilian-defense/posts/post-1#reply-reply-99'
+        '/topics/openings/sicilian-defense/posts/post-1#post-reply-99'
       );
     });
 
-    it('should link to square post with #reply-{replyId} fragment when metadata includes replyId', () => {
+    it('should link to square post with #post-{replyId} fragment when metadata includes replyId', () => {
       const notification = createNotification({
         type: 'reply',
         metadata: { topicType: 'square', topicKey: 'e4', postId: 'post-42', replyId: 'reply-7' },
@@ -273,7 +290,7 @@ describe('NotificationItem', () => {
 
       const link = screen.getByText('Alice replied to your post').closest('a');
       expect(link).not.toBeNull();
-      expect(link!.getAttribute('href')).toBe('/topics/squares/e4/posts/post-42#reply-reply-7');
+      expect(link!.getAttribute('href')).toBe('/topics/squares/e4/posts/post-42#post-reply-7');
     });
 
     it('should render as button when metadata is missing', () => {
@@ -613,6 +630,108 @@ describe('NotificationItem', () => {
       const link = screen.queryByRole('link');
       expect(link).not.toBeNull();
       expect(link!.getAttribute('href')).toBe('/practice/position-memory/pos-np-no-meta');
+    });
+  });
+
+  describe('chunk_edit_request notifications', () => {
+    // Only two chunk_edit_request_* types reach the UI: submitted
+    // (→ owner) and accepted (→ proposer). Reject and withdraw are
+    // intentionally silent — see mutations.ts comment for the
+    // asymmetry rationale.
+    it('should display the submitted message and link to /chunks/{slug}/edit-requests', () => {
+      const notification = createNotification({
+        type: 'chunk_edit_request_submitted',
+        targetType: 'chunk_edit_request',
+        targetId: 'req-1',
+        metadata: { chunkId: 'chunk-1', slug: 'fianchetto' },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const link = screen.getByText('Alice suggested an edit to your chunk').closest('a');
+      expect(link).not.toBeNull();
+      expect(link!.getAttribute('href')).toBe('/chunks/fianchetto/edit-requests');
+    });
+
+    it('should display the accepted message and link to /chunks/{slug}/edit-requests', () => {
+      const notification = createNotification({
+        type: 'chunk_edit_request_accepted',
+        targetType: 'chunk_edit_request',
+        targetId: 'req-2',
+        metadata: { chunkId: 'chunk-2', slug: 'rook-battery' },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const link = screen.getByText('Alice accepted your edit suggestion').closest('a');
+      expect(link).not.toBeNull();
+      expect(link!.getAttribute('href')).toBe('/chunks/rook-battery/edit-requests');
+    });
+
+    it('should render as button when metadata is missing (no slug to route against)', () => {
+      const notification = createNotification({
+        type: 'chunk_edit_request_submitted',
+        targetType: 'chunk_edit_request',
+        targetId: 'req-no-meta',
+        metadata: {},
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      expect(screen.queryByRole('link')).toBeNull();
+      expect(screen.getByRole('button')).toBeDefined();
+    });
+  });
+
+  describe('new_chunk_draft / chunk_published notifications', () => {
+    // Draft creations and publish promotions emit different
+    // notification types because the call-to-action differs: a draft
+    // wants the follower to read & propose edits, a publish wants the
+    // follower to read the canonical chunk. The link target follows.
+    it('should display the draft message and link to /chunks/{slug}/edit-requests for new_chunk_draft', () => {
+      const notification = createNotification({
+        type: 'new_chunk_draft',
+        targetType: 'chunk',
+        targetId: 'chunk-draft-1',
+        metadata: { chunkId: 'chunk-draft-1', slug: 'rook-battery', kind: 'created' },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const link = screen.getByText('Alice posted a chunk draft').closest('a');
+      expect(link).not.toBeNull();
+      expect(link!.getAttribute('href')).toBe('/chunks/rook-battery/edit-requests');
+    });
+
+    it('should display the published message and link to /chunks/{slug} for chunk_published', () => {
+      const notification = createNotification({
+        type: 'chunk_published',
+        targetType: 'chunk',
+        targetId: 'chunk-pub-1',
+        metadata: { chunkId: 'chunk-pub-1', slug: 'fianchetto', kind: 'published' },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const link = screen.getByText('Alice published a chunk').closest('a');
+      expect(link).not.toBeNull();
+      expect(link!.getAttribute('href')).toBe('/chunks/fianchetto');
+    });
+
+    it('should render as button when chunk lifecycle metadata is missing', () => {
+      // No slug to route against — degrade gracefully to a non-link
+      // button (the message is still rendered).
+      const notification = createNotification({
+        type: 'new_chunk_draft',
+        targetType: 'chunk',
+        targetId: 'chunk-no-meta',
+        metadata: {},
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      expect(screen.queryByRole('link')).toBeNull();
+      expect(screen.getByRole('button')).toBeDefined();
     });
   });
 

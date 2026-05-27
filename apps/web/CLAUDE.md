@@ -342,21 +342,14 @@ A martial arts-inspired progression system (5級 → 初段). Users earn ranks b
 
 When a practice module has challenge mode and should record scores on the leaderboard, follow these steps:
 
-1. **Register as challenge module** — Add module name to `CHALLENGE_MENU_TYPES` in `src/lib/db/practice-menu-types.ts`
-2. **Add leaderboard key derivation** — Add a case in `deriveLeaderboardKey()` in `src/lib/db/leaderboard-key.ts`. Return `'default'` for modules with no settings-based segmentation, or derive from settings (e.g., `boardOrientation` for coordinate_quiz)
-3. **Register in leaderboard types** — In `src/app/[locale]/(public)/leaderboard/_lib/types.ts`:
-   - Add to `LeaderboardModule` type
-   - Add to `LeaderboardModuleSlug` type (kebab-case)
-   - Add to `MODULES` array
-   - Add to `MODULE_KEYS` (e.g., `diagonal_quiz: ['default']`)
-   - Add to `VALID_MODULE_FILTERS`
-   - Add to `MODULE_TO_SLUG` and `SLUG_TO_MODULE` mappings
-   - Add to `buildChallengePath()` switch
-4. **Add module emoji** — Add entry in `src/app/[locale]/(public)/leaderboard/_lib/icons.tsx` (`MODULE_EMOJIS`)
-5. **Create save-result action** — Create `src/app/[locale]/(public)/practice/{module}/_actions/save-result.ts` as a thin wrapper calling `savePracticeResult(menuType, settings, challengeFields)`
-6. **Call save on challenge finish** — In the challenge session component, call the save action before redirecting to results. Use `savedRef` to prevent double saves. Handle `grantedRanks` (sessionStorage) and errors (toast flag)
-7. **Switch result page to leaderboard version** — Change from `createSimplePracticeResultPage(ResultClient)` to `createLeaderboardPracticeResultPage(ResultClient, { module, resolveKey })`. Update `ResultClient` to accept and render `leaderboardRows` and `leaderboardDetailPath` via `LeaderboardPreview`
-8. **Update tests** — Update hardcoded entry counts in `leaderboard/_lib/__tests__/types.test.ts`, `leaderboard/_actions/__tests__/getUserRanks.test.ts`, and `src/lib/db/leaderboard-key.test.ts`
+1. **Register the module in `PRACTICE_MODULE_REGISTRY`** — Add (or update) an entry in `src/lib/practice/registry.ts` with `slugSnake`, `slugKebab`, and `hasChallenge: true`. The registry is the single source of truth: `PRACTICE_MENU_TYPES`, `CHALLENGE_MENU_TYPES`, `MODULE_TO_SLUG`, `SLUG_TO_MODULE`, and the leaderboard's `MODULES` / `VALID_MODULE_SLUGS` / `VALID_MODULE_FILTERS` are all derived from it. Also add the matching kebab/snake literals to the `PracticeMenuType`, `ChallengeMenuType`, `PracticeModuleSlugKebab`, and `LeaderboardModuleSlug` union types in the same file.
+2. **Add leaderboard key derivation** — Add a case in `deriveLeaderboardKey()` in `src/lib/db/leaderboard-key.ts`. Return `'default'` for modules with no settings-based segmentation, or derive from settings (e.g., `boardOrientation` for coordinate_quiz). Then add the keys to `LEADERBOARD_KEYS` in `src/lib/games/leaderboard-keys.ts`.
+3. **Wire up the build-challenge-path switch** — Add a case in `buildChallengePath()` in `src/app/[locale]/(public)/leaderboard/_lib/types.ts`.
+4. **Add module emoji** — Add entry in `src/app/[locale]/(public)/practice/_lib/practice-emojis.ts` (`PRACTICE_EMOJIS`).
+5. **Create save-result action** — Create `src/app/[locale]/(public)/practice/{module}/_actions/save-result.ts` as a thin wrapper calling `savePracticeResult(menuType, settings, challengeFields)`.
+6. **Call save on challenge finish** — In the challenge session component, call the save action before redirecting to results. Use `savedRef` to prevent double saves. Handle `grantedRanks` (sessionStorage) and errors (toast flag).
+7. **Switch result page to leaderboard version** — Change from `createSimplePracticeResultPage(ResultClient)` to `createLeaderboardPracticeResultPage(ResultClient, { module, resolveKey })`. Update `ResultClient` to accept and render `leaderboardRows` and `leaderboardDetailPath` via `LeaderboardPreview`.
+8. **Update tests** — Update hardcoded entry counts in `leaderboard/_lib/__tests__/types.test.ts`, `leaderboard/_actions/__tests__/getUserRanks.test.ts`, and `src/lib/db/leaderboard-key.test.ts`.
 
 ## Article Management (記事管理)
 
@@ -507,10 +500,79 @@ files when a user refers to a concept in Japanese.
 | モデレーション / 通報         | moderation / reporting                   | `moderationActions` table in `src/lib/db/schema/tables.ts`, `src/app/admin/`, `src/lib/ban.ts`                                    |
 | 記事                          | article                                  | `src/app/admin/articles/`, `src/app/[locale]/(public)/articles/`, `articles` / `articleImages` tables                             |
 | トピック / 投稿               | topic / post                             | `src/app/[locale]/(public)/topics/`, `topicPosts` table in `src/lib/db/schema/tables.ts`                                          |
+| チャンク                      | chunk (piece-coordination pattern)       | `src/app/[locale]/(public)/chunks/`, `src/lib/chunks/`, `chunks` table in `src/lib/db/schema/tables.ts`                           |
+| 下書き / 公開                 | draft / published (chunk lifecycle)      | `chunks.status` column; `publishChunkEntry` in `src/lib/chunks/user-chunk-mutations.ts` (publish is one-way)                      |
+| 編集リクエスト                | chunk edit request (Qiita-style)         | `chunkEditRequests` table; `src/lib/chunk-edit-requests/`; `src/app/[locale]/(public)/chunks/[slug]/_components/EditRequest*.tsx` |
 
 Terms that map one-to-one onto standard chess vocabulary (盤面 = board, マス =
 square, 駒 = piece, 手 = move, etc.) are intentionally omitted; they can be
 looked up in any chess reference.
+
+## AI Engines (Stockfish / Maia)
+
+AI opponents are wired through the `ChessOpponent` port from
+`@blindfold-chess/features/ai-game/opponent`. Each engine has its own
+factory in `apps/web/src/lib/engines/`; the consumer hook
+(`useAiVersus`) picks one based on the `EngineKind` URL param /
+selection.
+
+### Maia 3 operational notes
+
+- **Model file**: `apps/web/engines/maia/maia3_simplified.onnx`
+  (~46 MB). **Gitignored** — fetched by `scripts/download-maia.ts`
+  during `prebuild` and `pnpm download-maia` locally. The file is
+  intentionally **outside `public/`** so it cannot be served as a
+  static asset; the only access path is the auth-gated route handler
+  below.
+- **Auth-gated delivery**: `/api/engines/maia/[file]` (see
+  `src/app/api/engines/maia/[file]/route.ts`) is the sole egress
+  path for the model. It calls `canUseMaia(userId)` and returns 403
+  for anonymous / unentitled callers, so the 46 MB never leaves the
+  function on an unauthorised request. `outputFileTracingIncludes`
+  in `next.config.ts` bundles `engines/maia/**/*` into the function
+  artifact at deploy time.
+- **Long-cached as immutable**: the route handler sets
+  `Cache-Control: private, max-age=31536000, immutable`. The
+  filename therefore acts as the cache key — **if you ever update
+  the model, you MUST also rename the file** (e.g.
+  `maia3_simplified-v2.onnx`), add the new filename to
+  `ALLOWED_FILES` in the route handler, and adjust the constants
+  in `src/lib/engines/maia/models.ts` and `scripts/download-maia.ts`.
+  Otherwise returning users keep their stale cached copy forever.
+- **Why `private` (not `public`)**: the response is per-user. A
+  future loss of Maia access (a lapsed subscription) must not be
+  served from a shared CDN copy. `immutable` still tells the browser
+  to skip revalidation for honest clients.
+- **Large-download consent**: `LargeDownloadConsentDialog` intercepts
+  Maia game starts on metered / slow links (driven by
+  `shouldWarnBeforeLargeDownload()` in `src/lib/network/connection.ts`).
+- **Licence**: Maia weights and the preprocessing code in
+  `packages/features/src/ai-game/maia/` are GPL-3.0 (derivative of
+  CSSLab/maia-chess and CSSLab/maia-platform-frontend). The
+  `/licenses` page lists the attribution; do **not** modify the model
+  file in-place — replace it with a fresh upstream download instead so
+  the "no local modifications" claim on the licences page remains
+  accurate.
+
+### Vercel spend management (MUST be configured)
+
+The Maia model is the largest asset shipped to browsers, so runaway
+egress costs would be a real risk if the auth gate were ever bypassed
+or misconfigured. **A Vercel spending cap remains the last-line
+defence against an open-ended bill** even with the gate in place.
+
+- Set via Vercel dashboard → Team Settings → Billing → **Spend
+  Management** (recently rebranded "Cost Controls" in some views).
+- Enable **Pause Project at Spend Limit** so the project is taken
+  offline (504s) before the bill explodes.
+- Set notifications at 50% / 75% / 90% of the cap.
+- The cap is account-wide, not per-project; pick a number that covers
+  every project under the team.
+
+The auth gate at `/api/engines/maia/[file]` closes the "anonymous
+attacker loops the model" hole; per-user / per-IP throttling against
+_authenticated_ abusers is intentionally NOT layered yet — add it
+only after observing such abuse.
 
 ## Important Notes
 

@@ -12,13 +12,7 @@ import { GuidePageFooter } from '@/app/[locale]/(public)/guides/_components/Guid
 import { RankHeader } from '@/app/[locale]/(public)/ranks/_components/RankHeader';
 import { RequirementsList } from '@/app/[locale]/(public)/ranks/_components/RequirementsList';
 import { buildRequirementItems } from '@/app/[locale]/(public)/ranks/_lib/helpers';
-import {
-  Divider,
-  PagePanel,
-  PageTitle,
-  PaginationNav,
-  SectionTitle,
-} from '@/app/[locale]/_components';
+import { Divider, PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { buildFlatBodyBreadcrumbs, buildFlatBodyLearningResourceSchema } from '../guide-metadata';
@@ -68,12 +62,9 @@ export async function renderFlatBody(
   });
 
   return (
-    <div className="space-y-8">
+    <>
       <JsonLd data={learningResourceSchema} nonce={nonce} />
-
-      <PageTitle>{rankName}</PageTitle>
-
-      <PagePanel>
+      <PageLayout title={rankName} locale={locale}>
         <RankHeader beltColor={beltColor}>{tGuides('ranks.indexTitle')}</RankHeader>
 
         {renderPageParagraphs({ rankSlug, pageNumber, page: currentPage, tGuides, locale })}
@@ -105,8 +96,8 @@ export async function renderFlatBody(
         {isLastPage && <RankNavigation ctx={ctx} />}
 
         <GuidePageFooter locale={locale} items={breadcrumbItems} />
-      </PagePanel>
-    </div>
+      </PageLayout>
+    </>
   );
 }
 

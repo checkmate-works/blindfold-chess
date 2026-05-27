@@ -15,25 +15,22 @@ import { getTranslations } from 'next-intl/server';
 
 import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
+import { FiEdit2 } from 'react-icons/fi';
 
 import { getAuthenticatedUser } from '@/lib/auth';
+import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
 import { getPaginationParams } from '@/lib/pagination';
+import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
 import { countPositions, listPositionsWithProfile } from '@/lib/positions/queries';
-import { ThemedBoardThumbnail } from '@/lib/positions/ui/ThemedBoardThumbnail';
-import { truncate } from '@/lib/text';
 
-import {
-  Divider,
-  PagePanel,
-  PageTitle,
-  PaginationNav,
-  SectionTitle,
-} from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/_actions/toggleLike';
+import { PositionListCard } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionListCard';
+import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
 const PAGE_SIZE = 12;
+const FOOTER_NAMESPACE = 'practice.puzzle';
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -55,6 +52,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function PuzzleProblemsPage({ params, searchParams }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'MypagePuzzles' });
+  const tFooter = await getTranslations({ locale, namespace: FOOTER_NAMESPACE });
 
   const user = await getAuthenticatedUser();
 
@@ -68,69 +66,65 @@ export default async function PuzzleProblemsPage({ params, searchParams }: Props
   );
   const rows = await listPositionsWithProfile({ type: 'puzzle', userId: user.id, limit, offset });
 
+  const positionIds = rows.map((r) => r.position.id);
+  const [likeMetaMap, replyMetaMap] = await Promise.all([
+    getPositionLikeMetaMap(positionIds, user.id),
+    getReplyMetaMap('position_puzzle', positionIds),
+  ]);
+
+  const justNowLabel = tFooter('justNow');
+
   const buildHref = (p: number) => {
     const qs = p > 1 ? `?page=${p}` : '';
     return `/${locale}/mypage/problems/puzzles${qs}`;
   };
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
-      <PagePanel>
-        <SectionTitle>{t('sectionTitle')}</SectionTitle>
-        {rows.length === 0 ? (
-          <p className="text-muted-foreground text-center py-8">{t('empty')}</p>
-        ) : (
-          <div className="space-y-3">
-            {rows.map(({ position }) => {
-              const descriptionExcerpt = truncate(position.description);
+    <PageLayout
+      title={t('title')}
+      locale={locale}
+      breadcrumb={[
+        { label: t('breadcrumbMypage'), href: '/mypage' },
+        { label: t('breadcrumbProblems'), href: '/mypage/problems' },
+        { label: t('title') },
+      ]}
+    >
+      <SectionTitle>{t('sectionTitle')}</SectionTitle>
+      {rows.length === 0 ? (
+        <p className="text-muted-foreground text-center py-8">{t('empty')}</p>
+      ) : (
+        <div className="space-y-3">
+          {rows.map(({ position, profile }) => {
+            const detailHref = `/practice/puzzle/${position.id}`;
+            return (
+              <PositionListCard
+                key={position.id}
+                position={position}
+                profile={profile}
+                likeMeta={likeMetaMap.get(position.id) ?? { likeCount: 0, likedByMe: false }}
+                replyMeta={replyMetaMap.get(position.id) ?? EMPTY_REPLY_META}
+                detailHref={detailHref}
+                i18nNamespace={FOOTER_NAMESPACE}
+                toggleLikeAction={toggleLike}
+                justNowLabel={justNowLabel}
+                locale={locale}
+                actions={
+                  <Link
+                    href={`${detailHref}/edit`}
+                    locale={locale}
+                    className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:border-foreground/20 hover:text-foreground transition-colors"
+                  >
+                    <FiEdit2 className="h-3 w-3" aria-hidden />
+                    {t('editAction')}
+                  </Link>
+                }
+              />
+            );
+          })}
+        </div>
+      )}
 
-              return (
-                <Link
-                  key={position.id}
-                  href={`/practice/puzzle/${position.id}`}
-                  locale={locale}
-                  className="block p-4 rounded-md border border-border bg-card hover:border-foreground/20 transition-colors"
-                >
-                  <div className="flex gap-4">
-                    <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
-                      <ThemedBoardThumbnail fen={position.fen} className="w-full h-full" />
-                    </div>
-                    <div className="flex-1 min-w-0 flex flex-col gap-1">
-                      <h3 className="font-medium text-foreground truncate">{position.title}</h3>
-                      {descriptionExcerpt && (
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {descriptionExcerpt}
-                        </p>
-                      )}
-                      <p className="text-xs text-muted-foreground mt-auto">
-                        {new Date(position.createdAt).toLocaleDateString(locale, {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                        })}
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        )}
-
-        <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
-
-        <Divider />
-
-        <Breadcrumb
-          locale={locale}
-          items={[
-            { label: t('breadcrumbMypage'), href: '/mypage' },
-            { label: t('breadcrumbProblems'), href: '/mypage/problems' },
-            { label: t('title') },
-          ]}
-        />
-      </PagePanel>
-    </div>
+      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+    </PageLayout>
   );
 }

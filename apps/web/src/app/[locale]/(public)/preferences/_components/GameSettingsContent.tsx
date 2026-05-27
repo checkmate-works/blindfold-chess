@@ -1,9 +1,13 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { useEffect, useMemo } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Side } from '@blindfold-chess/types';
+
+import { BOARD_VISIBILITY_VALUES } from '@/lib/games/board-visibility';
+import { BOARD_VISIBILITY_ICON } from '@/lib/games/board-visibility-icons';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -19,7 +23,22 @@ type Props = {
   playerSide?: Side;
   showPreview?: boolean;
   showBoardAppearance?: boolean;
+  /**
+   * Controls whether the top-level board-visibility picker is shown. Renamed
+   * conceptually from the previous boolean `showBoardButtonInGame` toggle to
+   * the 3-state `boardVisibility` picker; the prop name is kept for API
+   * compatibility with existing callers.
+   */
   showBoardButtonOption?: boolean;
+  /**
+   * Slot rendered immediately after the boardVisibility picker (and before
+   * the other display / piece / preview sections). Used by the mid-game
+   * settings modal to surface the Board Peek Mode picker right next to the
+   * choice that gates it, rather than stranding it below all the other
+   * settings. Defaults to `null` — the global Preferences page leaves this
+   * empty because its Controls tab carries the peek picker separately.
+   */
+  afterBoardVisibility?: ReactNode;
   compact?: boolean;
 };
 
@@ -30,6 +49,7 @@ export function GameSettingsContent({
   showPreview = true,
   showBoardAppearance = true,
   showBoardButtonOption = true,
+  afterBoardVisibility = null,
   compact = true,
 }: Props) {
   const t = useTranslations('Preferences');
@@ -55,21 +75,48 @@ export function GameSettingsContent({
   return (
     <div className={containerClass}>
       <div className="space-y-8">
-        {/* Show Board Button Option */}
+        {/* Board Visibility — 3-way picker (always / peek / never).
+            Replaces the legacy `showBoardButtonInGame` boolean. The
+            piece-visibility / appearance sub-sections below are gated on
+            `boardVisibility !== 'never'` so they appear for both 'always'
+            (board permanently shown) and 'peek' (board shown on demand)
+            modes — the visual settings matter equally in both. */}
         {showBoardButtonOption && (
-          <>
-            <div>
-              <div className="space-y-3">
-                <PreferenceOption
-                  type="checkbox"
-                  checked={settings.showBoardButtonInGame}
-                  onChange={(e) => onSettingsChange({ showBoardButtonInGame: e.target.checked })}
-                  label={t('game.showBoardButtonInGame')}
-                />
-              </div>
+          <div>
+            <h4 className="text-lg font-semibold text-foreground mb-2">
+              {t('game.boardVisibility')}
+            </h4>
+            <p className="text-sm text-muted-foreground mb-4">
+              {t('game.boardVisibilityDescription')}
+            </p>
+            <div className="inline-flex rounded-md border border-border overflow-hidden">
+              {BOARD_VISIBILITY_VALUES.map((value, idx) => {
+                const Icon = BOARD_VISIBILITY_ICON[value];
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => onSettingsChange({ boardVisibility: value })}
+                    className={`px-4 py-2 text-sm font-medium transition-colors flex items-center gap-2 ${
+                      settings.boardVisibility === value
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-card text-foreground hover:bg-muted'
+                    } ${idx < BOARD_VISIBILITY_VALUES.length - 1 ? 'border-r border-border' : ''}`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    {t(`game.boardVisibilities.${value}`)}
+                  </button>
+                );
+              })}
             </div>
-          </>
+          </div>
         )}
+
+        {/* Slot for content the caller wants immediately after the
+            board-visibility picker. The mid-game settings modal uses this
+            to show the Board Peek Mode picker next to the choice that
+            actually gates it. */}
+        {afterBoardVisibility}
 
         {/* Board Appearance */}
         {showBoardAppearance && (
@@ -81,8 +128,10 @@ export function GameSettingsContent({
           </>
         )}
 
-        {/* Display Options & Piece Visibility & Appearance (hidden when showBoardButtonInGame is off) */}
-        {settings.showBoardButtonInGame && (
+        {/* Display Options & Piece Visibility & Appearance — shown whenever
+            the board IS surfaced (peek OR always); hidden only when
+            boardVisibility is 'never' (pure blindfold, nothing to see). */}
+        {settings.boardVisibility !== 'never' && (
           <>
             {/* Display Options */}
             <div>

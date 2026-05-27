@@ -23,6 +23,7 @@ export function WelcomeCard({ t, locale, displayName, avatarUrl }: Props) {
           width={48}
           height={48}
           className="w-12 h-12 rounded-full object-cover shrink-0"
+          // Pre-resized 256×256 WebP at upload; bypass Vercel optimization.
           unoptimized
         />
       ) : (

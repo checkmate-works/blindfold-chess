@@ -1,12 +1,10 @@
 'use client';
 
-import Link from 'next/link';
-
-import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { BoardSymmetryProblem } from '@blindfold-chess/features/board-symmetry';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
+import { TrainingChallengeCTA } from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingChallengeCTA';
 import { AlgebraicKeyboardHint } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
 import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
 import { SectionTitle } from '@/app/[locale]/_components';
@@ -61,7 +59,7 @@ export function BoardSymmetryTrainingPlaying({
 
   return (
     <div className="max-w-md mx-auto">
-      <div className="bg-card rounded-xl border border-border p-8 text-center relative overflow-hidden">
+      <div className="p-8 text-center relative overflow-hidden">
         <div>
           <SectionTitle className="mb-8">
             {t('question', {
@@ -71,7 +69,7 @@ export function BoardSymmetryTrainingPlaying({
           </SectionTitle>
 
           <div className="mb-8">
-            <div className="flex items-center justify-center gap-4 text-6xl font-bold text-foreground mb-4 font-mono">
+            <div className="flex items-center justify-center gap-4 text-6xl font-bold text-foreground mb-4 font-mono select-none">
               {problem.square}
               <span className="text-muted-foreground">→</span>
               <span className={`min-w-[2ch] ${getFeedbackColor()}`}>
@@ -80,7 +78,7 @@ export function BoardSymmetryTrainingPlaying({
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-4 -mx-8 sm:mx-0">
             <CoordinateInput
               selectedFiles={selectedFile ? new Set([selectedFile]) : new Set()}
               selectedRanks={selectedRank ? new Set([selectedRank]) : new Set()}
@@ -104,19 +102,9 @@ export function BoardSymmetryTrainingPlaying({
         </button>
       </div>
 
-      <hr className="border-border mt-8" />
-
-      <div className="mt-6 text-center">
-        <p className="text-sm text-muted-foreground">{tp('trainingModeActive')}</p>
-        <p className="mt-2 text-base font-medium text-foreground">{tp('readyForChallenge')}</p>
-        <div className="mt-4">
-          <Link href={`/${locale}/practice/board-symmetry/challenge/session`}>
-            <Button asChild variant="primary" size="lg" className="w-full">
-              {tp('goToChallenge')}
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <TrainingChallengeCTA
+        challengeHref={`/${locale}/practice/board-symmetry/challenge/session`}
+      />
     </div>
   );
 }

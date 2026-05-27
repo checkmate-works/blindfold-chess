@@ -1,5 +1,8 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
+import * as Sentry from '@sentry/nextjs';
+
+import { refreshAdsHiddenCookieOnResponse } from '@/lib/ads/ads-hidden-cookie-writer';
 import {
   buildCspHeader,
   buildReportToHeader,
@@ -25,6 +28,15 @@ const BLOCKED_PATHS = [
 const AUTH_REQUIRED_PATHS = ['/mypage'];
 const SIGN_IN_PATH = '/sign-in';
 const ADMIN_PATH = '/admin';
+// Path (after the locale segment) for which the proxy refreshes the
+// `bfc_ads_hidden` cookie on the outgoing response. Kept narrow on purpose:
+// ordinary authenticated page loads are already covered by `getSessionUser()`
+// (called from `AuthProvider`), so we only need to handle the few entry
+// points that DON'T go through the auth provider mount — chiefly the Stripe
+// checkout `success_url` landing on `/mypage/subscription?status=success`,
+// where the user's entitlement just changed and the cookie must reflect that
+// before the page renders.
+const ADS_COOKIE_REFRESH_PATH = '/mypage/subscription';
 
 function isBlockedPath(pathname: string): boolean {
   return BLOCKED_PATHS.some(
@@ -46,6 +58,11 @@ function isAdminPath(pathname: string): boolean {
 
 function isSignInPath(pathname: string): boolean {
   const pattern = new RegExp(`^/[^/]+${SIGN_IN_PATH}(/.*)?$`);
+  return pattern.test(pathname);
+}
+
+function isAdsCookieRefreshPath(pathname: string): boolean {
+  const pattern = new RegExp(`^/[^/]+${ADS_COOKIE_REFRESH_PATH}(/.*)?$`);
   return pattern.test(pathname);
 }
 
@@ -84,7 +101,7 @@ export async function proxy(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-nonce', nonce);
 
-  const { response, authenticated } = await updateSession(request, { requestHeaders });
+  const { response, authenticated, userId } = await updateSession(request, { requestHeaders });
 
   // Return 404 for unauthenticated admin access to hide admin panel existence
   if (isAdminPath(pathname) && !authenticated) {
@@ -105,6 +122,25 @@ export async function proxy(request: NextRequest) {
     return applyCspHeaders(NextResponse.redirect(mypageUrl), nonce);
   }
 
+  // Refresh the `bfc_ads_hidden` cookie on the response when the user is
+  // navigating to `/mypage/subscription` (and its Stripe-success landing).
+  // Server Components cannot mutate cookies during render under Next.js 16,
+  // so the previous in-page `refreshAdsHiddenCookie()` Server Action call
+  // has been moved here. See `@/lib/ads/ads-hidden-cookie-writer.ts` for the
+  // overall design rationale.
+  //
+  // A transient failure (DB blip, Supabase outage) is isolated so the page
+  // still renders: the cookie is left at its previous value, which
+  // self-corrects on the next visit. The error is reported to Sentry so the
+  // regression is observable.
+  if (isAdsCookieRefreshPath(pathname)) {
+    try {
+      await refreshAdsHiddenCookieOnResponse(response, userId);
+    } catch (error) {
+      Sentry.captureException(error);
+    }
+  }
+
   return applyCspHeaders(response, nonce);
 }
 
@@ -114,10 +150,17 @@ export const config = {
      * Match all request paths except:
      * - _next/static (static files)
      * - _next/image (image optimization files)
+     * - api/ (route handlers manage their own auth via @supabase/ssr,
+     *   which refreshes tokens on demand; running the proxy for every
+     *   /api/* call doubles up auth.getUser() and adds an Edge Middleware
+     *   invocation per request)
      * - favicon.ico, sitemap.xml, robots.txt (metadata files)
      * - icon.png, apple-icon.png (icon files)
      * - manifest.webmanifest (PWA manifest)
+     * - common static asset extensions served from `/public/` (e.g.
+     *   /stockfish.wasm, og-image, svg). These bypass /_next/static so
+     *   they need an explicit extension allowlist.
      */
-    '/((?!_next/static|_next/image|favicon\\.ico|sitemap\\.xml|robots\\.txt|icon\\.png|apple-icon\\.png|manifest\\.webmanifest).*)',
+    '/((?!_next/static|_next/image|api/|favicon\\.ico|sitemap\\.xml|robots\\.txt|icon\\.png|apple-icon\\.png|manifest\\.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|woff|woff2|wasm|map|txt|onnx)).*)',
   ],
 };

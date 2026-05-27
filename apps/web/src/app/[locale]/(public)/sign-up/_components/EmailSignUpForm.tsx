@@ -4,21 +4,13 @@ import { useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { TextInput } from '@/app/_components';
-import {
-  AUTH_FORM_LABEL_CLASSES,
-  AUTH_SUBMIT_BUTTON_CLASSES,
-} from '@/app/_components/authFormStyles';
+import { AuthField, AuthSubmitButton } from '@/app/_components/AuthFormFields';
+import { FormErrorBanner } from '@/app/_components/FormErrorBanner';
 import { MIN_PASSWORD_LENGTH } from '@/config';
 import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import {
-  getPasswordValidationError,
-  isPasswordValidationErrorKey,
-} from '@/lib/validations/password';
-
-import { FormErrorMessage } from '@/app/[locale]/_components/FormErrorMessage';
+import { getPasswordValidationError, parsePasswordServerError } from '@/lib/validations/password';
 
 import { signUp } from '../_actions/signUp';
 
@@ -54,22 +46,13 @@ export function EmailSignUpForm() {
       const result = await signUp(email, password);
 
       if ('error' in result) {
-        const serverError = result.error;
-        if (serverError.startsWith('password:')) {
-          const key = serverError.slice('password:'.length);
-          if (isPasswordValidationErrorKey(key)) {
-            setError(tPassword(key, { minLength: MIN_PASSWORD_LENGTH }));
-          } else {
-            setError(t('emailSignUpError'));
-          }
+        const passwordErrorKey = parsePasswordServerError(result.error);
+        if (passwordErrorKey) {
+          setError(tPassword(passwordErrorKey, { minLength: MIN_PASSWORD_LENGTH }));
+        } else if (result.error === 'rateLimited') {
+          setError(t('rateLimited'));
         } else {
-          switch (serverError) {
-            case 'rateLimited':
-              setError(t('rateLimited'));
-              break;
-            default:
-              setError(t('emailSignUpError'));
-          }
+          setError(t('emailSignUpError'));
         }
         setIsLoading(false);
         return;
@@ -84,61 +67,45 @@ export function EmailSignUpForm() {
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-sm mx-auto space-y-4">
-      {error && <FormErrorMessage message={error} />}
+      {error && <FormErrorBanner message={error} variant="bordered" />}
 
-      <div>
-        <label htmlFor="email" className={AUTH_FORM_LABEL_CLASSES}>
-          {t('emailLabel')}
-        </label>
-        <TextInput
-          id="email"
-          type="email"
-          inputSize="sm"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          autoComplete="email"
-          placeholder={t('emailPlaceholder')}
-        />
-      </div>
+      <AuthField
+        id="email"
+        type="email"
+        label={t('emailLabel')}
+        value={email}
+        onChange={setEmail}
+        autoComplete="email"
+        placeholder={t('emailPlaceholder')}
+      />
 
-      <div>
-        <label htmlFor="password" className={AUTH_FORM_LABEL_CLASSES}>
-          {t('passwordLabel')}
-        </label>
-        <TextInput
-          id="password"
-          type="password"
-          inputSize="sm"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={MIN_PASSWORD_LENGTH}
-          autoComplete="new-password"
-          placeholder={t('passwordPlaceholder')}
-        />
-      </div>
+      <AuthField
+        id="password"
+        type="password"
+        label={t('passwordLabel')}
+        value={password}
+        onChange={setPassword}
+        autoComplete="new-password"
+        minLength={MIN_PASSWORD_LENGTH}
+        placeholder={t('passwordPlaceholder')}
+      />
 
-      <div>
-        <label htmlFor="confirmPassword" className={AUTH_FORM_LABEL_CLASSES}>
-          {t('confirmPasswordLabel')}
-        </label>
-        <TextInput
-          id="confirmPassword"
-          type="password"
-          inputSize="sm"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          required
-          minLength={MIN_PASSWORD_LENGTH}
-          autoComplete="new-password"
-          placeholder={t('confirmPasswordPlaceholder')}
-        />
-      </div>
+      <AuthField
+        id="confirmPassword"
+        type="password"
+        label={t('confirmPasswordLabel')}
+        value={confirmPassword}
+        onChange={setConfirmPassword}
+        autoComplete="new-password"
+        minLength={MIN_PASSWORD_LENGTH}
+        placeholder={t('confirmPasswordPlaceholder')}
+      />
 
-      <button type="submit" disabled={isLoading} className={AUTH_SUBMIT_BUTTON_CLASSES}>
-        {isLoading ? t('emailSignUpLoading') : t('emailSignUp')}
-      </button>
+      <AuthSubmitButton
+        isLoading={isLoading}
+        idleLabel={t('emailSignUp')}
+        loadingLabel={t('emailSignUpLoading')}
+      />
     </form>
   );
 }

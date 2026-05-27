@@ -3,9 +3,8 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { PageLayout } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -46,26 +45,19 @@ export default async function AlgebraicNotationPage({ params }: Props) {
   const t = await getTranslations({ locale });
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('practice.algebraicNotation.pageTitle')}</PageTitle>
+    <PageLayout
+      title={t('practice.algebraicNotation.pageTitle')}
+      locale={locale}
+      breadcrumb={[
+        { label: t('navigation.practice'), href: '/practice' },
+        { label: t('practice.algebraicNotation.title') },
+      ]}
+    >
+      <AlgebraicNotationSetup />
 
-      <PagePanel>
-        <AlgebraicNotationSetup />
-
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-        )}
-
-        <Divider />
-
-        <Breadcrumb
-          items={[
-            { label: t('navigation.practice'), href: '/practice' },
-            { label: t('practice.algebraicNotation.title') },
-          ]}
-          locale={locale}
-        />
-      </PagePanel>
-    </div>
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+      )}
+    </PageLayout>
   );
 }

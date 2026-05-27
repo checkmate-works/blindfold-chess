@@ -10,7 +10,10 @@ type Props = {
   disabledFile?: (file: string) => boolean;
   disabledRank?: (rank: string) => boolean;
   className?: string;
+  buttonClassName?: string;
 };
+
+const DEFAULT_BUTTON_CLASS = 'h-9';
 
 export function CoordinateInput({
   selectedFiles = new Set(),
@@ -22,6 +25,7 @@ export function CoordinateInput({
   disabledFile,
   disabledRank,
   className = '',
+  buttonClassName = DEFAULT_BUTTON_CLASS,
 }: Props) {
   return (
     <div className={`flex flex-col gap-2 ${className}`}>
@@ -34,7 +38,7 @@ export function CoordinateInput({
               type="button"
               onClick={() => onFileToggle?.(file)}
               disabled={disabledFile?.(file)}
-              className={`flex-1 min-w-0 h-9 rounded-md font-mono text-lg transition-colors border ${
+              className={`flex-1 min-w-0 ${buttonClassName} rounded-md font-mono text-lg transition-colors border touch-manipulation select-none ${
                 selectedFiles.has(file)
                   ? 'bg-primary text-primary-foreground border-primary'
                   : 'bg-background hover:bg-muted border-border disabled:opacity-20 disabled:cursor-not-allowed'
@@ -56,7 +60,7 @@ export function CoordinateInput({
                 type="button"
                 onClick={() => onRankToggle?.(rank)}
                 disabled={disabledRank?.(rank)}
-                className={`flex-1 min-w-0 h-9 rounded-md font-mono text-lg transition-colors border ${
+                className={`flex-1 min-w-0 ${buttonClassName} rounded-md font-mono text-lg transition-colors border touch-manipulation select-none ${
                   selectedRanks.has(rank)
                     ? 'bg-primary text-primary-foreground border-primary'
                     : 'bg-background hover:bg-muted border-border disabled:opacity-20 disabled:cursor-not-allowed'

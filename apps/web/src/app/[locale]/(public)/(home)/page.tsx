@@ -1,17 +1,16 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import Link from 'next/link';
 
 import { IS_LOCAL_DEV } from '@/config';
-import { FaTachometerAlt } from 'react-icons/fa';
 
 import { shouldShowAdsForUser } from '@/lib/ads/ad';
 import { resolveCspNonce } from '@/lib/security/nonce';
 import { JsonLd, generateWebApplicationSchema } from '@/lib/seo/jsonld';
 import { createClient } from '@/lib/supabase/server';
 
-import { DashboardCard, PageTitle } from '@/app/[locale]/_components';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { DashboardCard, HelpTourButton, PageTitle } from '@/app/[locale]/_components';
+import type { HelpStep } from '@/app/[locale]/_components';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { FeedClient } from './_components/FeedClient';
@@ -55,27 +54,16 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'metadata.home' });
-
-  const title = t('title');
-  const description = t('description');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: '', title, description }),
-    title: resolveTitle(title, locale),
-    description,
-  };
+  return createPageMetadata({ params, namespace: 'metadata.home', path: '' });
 }
 
 export default async function HomePage({ params }: Props) {
   const { locale } = await params;
-  const [tMetadata, tHome, tTopics, tSquares, tHeader, supabase, nonce] = await Promise.all([
+  const [tMetadata, tHome, tTopics, tSquares, supabase, nonce] = await Promise.all([
     getTranslations({ locale, namespace: 'metadata' }),
     getTranslations({ locale, namespace: 'home' }),
     getTranslations({ locale, namespace: 'topics' }),
     getTranslations({ locale, namespace: 'topics.squares' }),
-    getTranslations({ locale, namespace: 'Header' }),
     createClient(),
     resolveCspNonce(),
   ]);
@@ -89,19 +77,28 @@ export default async function HomePage({ params }: Props) {
   ]);
   const showAds = IS_LOCAL_DEV || showAdsResult;
 
+  const helpSteps: HelpStep[] = [
+    {
+      targetId: 'vs-ai-card',
+      title: tHome('help.vsAi.title'),
+      description: tHome('help.vsAi.description'),
+      side: 'bottom',
+      align: 'start',
+    },
+    {
+      targetId: 'home-feed',
+      title: tHome('help.feed.title'),
+      description: tHome('help.feed.description'),
+      side: 'top',
+      align: 'start',
+    },
+  ];
+
   return (
     <>
       <div className="mb-8 flex items-center justify-center gap-2">
         <PageTitle>{tHome('pageTitle')}</PageTitle>
-        {user && (
-          <Link
-            href="/"
-            className="text-muted-foreground hover:text-foreground transition-colors"
-            aria-label={tHeader('dashboard')}
-          >
-            <FaTachometerAlt className="h-5 w-5" />
-          </Link>
-        )}
+        <HelpTourButton steps={helpSteps} label={tHome('help.label')} />
       </div>
 
       <div className="space-y-6">
@@ -114,7 +111,7 @@ export default async function HomePage({ params }: Props) {
         />
 
         <DashboardCard>
-          <VsAiCard locale={locale} />
+          <VsAiCard locale={locale} data-tour-id="vs-ai-card" />
           {/* initialItems: SSR'd into FeedClient — see FeedClient prop TSDoc for the SSR invariant. */}
           <FeedClient
             initialItems={initialFeed.items}
@@ -122,8 +119,8 @@ export default async function HomePage({ params }: Props) {
             locale={locale}
             showMoreLabel={tTopics('showMore')}
             justNowLabel={tSquares('justNow')}
-            newReplyTemplate={tSquares('newReply', { time: '{time}' })}
             showAds={showAds}
+            data-tour-id="home-feed"
           />
         </DashboardCard>
       </div>

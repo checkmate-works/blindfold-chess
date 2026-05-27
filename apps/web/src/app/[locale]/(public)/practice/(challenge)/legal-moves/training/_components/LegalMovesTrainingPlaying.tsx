@@ -1,11 +1,9 @@
 'use client';
 
-import Link from 'next/link';
-
-import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
+import { TrainingChallengeCTA } from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingChallengeCTA';
 import { ArrowKeyAnswer } from '@/app/[locale]/(public)/practice/_components/ArrowKeyAnswer';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -45,7 +43,7 @@ export function LegalMovesTrainingPlaying({
 
   return (
     <div>
-      <div className="relative bg-card rounded-2xl border border-border p-8 text-center overflow-hidden">
+      <div className="relative p-8 text-center overflow-hidden">
         <div>
           <div className="mb-8 min-h-[160px] flex flex-col items-center justify-center">
             <div
@@ -61,7 +59,7 @@ export function LegalMovesTrainingPlaying({
                 .replace('{from}', currentQuestion.from)
                 .replace('{to}', currentQuestion.to)}
             </div>
-            <div className="text-7xl">{pieceDisplayMap[currentQuestion.piece]}</div>
+            <div className="text-7xl select-none">{pieceDisplayMap[currentQuestion.piece]}</div>
           </div>
 
           <ArrowKeyAnswer
@@ -75,7 +73,7 @@ export function LegalMovesTrainingPlaying({
               <button
                 onClick={() => onAnswer(true)}
                 disabled={inputDisabled}
-                className="px-6 py-4 bg-success/10 hover:bg-success/20 disabled:opacity-50 disabled:cursor-not-allowed text-success border border-success/30 rounded-md font-medium text-lg transition-colors flex items-center justify-center gap-2"
+                className="px-6 py-4 bg-success/10 hover:bg-success/20 disabled:opacity-50 disabled:cursor-not-allowed text-success border border-success/30 rounded-md font-medium text-lg transition-colors flex items-center justify-center gap-2 touch-manipulation select-none"
               >
                 <span className="text-2xl">○</span>
                 <span>{t('legal')}</span>
@@ -83,7 +81,7 @@ export function LegalMovesTrainingPlaying({
               <button
                 onClick={() => onAnswer(false)}
                 disabled={inputDisabled}
-                className="px-6 py-4 bg-destructive/10 hover:bg-destructive/20 disabled:opacity-50 disabled:cursor-not-allowed text-destructive border border-destructive/30 rounded-md font-medium text-lg transition-colors flex items-center justify-center gap-2"
+                className="px-6 py-4 bg-destructive/10 hover:bg-destructive/20 disabled:opacity-50 disabled:cursor-not-allowed text-destructive border border-destructive/30 rounded-md font-medium text-lg transition-colors flex items-center justify-center gap-2 touch-manipulation select-none"
               >
                 <span className="text-2xl">×</span>
                 <span>{t('illegal')}</span>
@@ -104,18 +102,7 @@ export function LegalMovesTrainingPlaying({
         </button>
       </div>
 
-      <hr className="border-border mt-8" />
-      <div className="mt-6 text-center">
-        <p className="text-sm text-muted-foreground">{tp('trainingModeActive')}</p>
-        <p className="mt-2 text-base font-medium text-foreground">{tp('readyForChallenge')}</p>
-        <div className="mt-4">
-          <Link href={`/${locale}/practice/legal-moves/challenge/session`}>
-            <Button asChild variant="primary" size="lg" className="w-full">
-              {tp('goToChallenge')}
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <TrainingChallengeCTA challengeHref={`/${locale}/practice/legal-moves/challenge/session`} />
     </div>
   );
 }

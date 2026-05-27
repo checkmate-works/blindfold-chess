@@ -24,7 +24,7 @@ export function isValidKey(module: LeaderboardModule, key: string): boolean {
   return (MODULE_KEYS[module] as readonly string[]).includes(key);
 }
 
-export function isValidModuleFilter(value: string): value is ModuleFilterValue {
+function isValidModuleFilter(value: string): value is ModuleFilterValue {
   return (VALID_MODULE_FILTERS as readonly string[]).includes(value);
 }
 

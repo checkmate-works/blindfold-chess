@@ -8,7 +8,10 @@ import { SUPPORTED_LOCALES } from '@/config';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
 
-import type { LeaderboardRow } from '@/app/[locale]/(public)/leaderboard/_lib/types';
+import type {
+  LeaderboardPeriod,
+  LeaderboardRow,
+} from '@/app/[locale]/(public)/leaderboard/_lib/types';
 import { LeaderboardPreview } from '@/app/[locale]/(public)/practice/_components/LeaderboardPreview';
 import { PracticeComplete } from '@/app/[locale]/(public)/practice/_components/PracticeComplete';
 import { PracticeResultPage } from '@/app/[locale]/(public)/practice/_components/PracticeResultPage';
@@ -31,6 +34,11 @@ export type ResultClientProps = {
   adBannerStandard?: ReactNode;
   leaderboardRows?: LeaderboardRow[];
   leaderboardDetailPath?: string;
+  /**
+   * Period the leaderboard rows came from. Used by `LeaderboardPreview`
+   * to label the heading correctly when weekly falls back to all-time.
+   */
+  leaderboardPeriod?: LeaderboardPeriod;
   /**
    * EXP info fetched server-side via `getExpInfoBySource` from the
    * `?grant=<challenge_result_id>` query param. `null` when unauthenticated,
@@ -155,13 +163,6 @@ type ResultClientConfig = {
     ctx: ResultContext,
     adProps: { adBanner?: ReactNode; adBannerWide?: ReactNode }
   ) => Record<string, unknown>;
-  /**
-   * Completely replace the default body (PracticeComplete + leaderboard + ads).
-   * When provided, only PracticeResultPage with breadcrumbs is rendered as the
-   * wrapper, and the returned ReactNode is rendered as children.
-   * Use this for modules that don't use PracticeComplete at all (e.g. knight-tour).
-   */
-  renderContent?: (ctx: ResultContext, adBanner?: ReactNode) => ReactNode;
 };
 
 // ---------------------------------------------------------------------------
@@ -213,7 +214,6 @@ export function createPracticeResultClient(config: ResultClientConfig) {
     renderAfterComplete,
     showSignUpBanner = true,
     extraCompleteProps,
-    renderContent,
   } = config;
 
   function ResultClient({
@@ -223,6 +223,7 @@ export function createPracticeResultClient(config: ResultClientConfig) {
     adBannerStandard,
     leaderboardRows,
     leaderboardDetailPath,
+    leaderboardPeriod,
     expInfo = null,
   }: ResultClientProps) {
     const t = useTranslations(`practice.${i18nKey}`);
@@ -262,26 +263,6 @@ export function createPracticeResultClient(config: ResultClientConfig) {
     // Breadcrumb label for "Practice" link
     const practiceBreadcrumbLabel =
       practiceBreadcrumbSource === 'navigation' ? tNavigation('practice') : tPractice('title');
-
-    // Full content override — skip PracticeComplete entirely
-    if (renderContent) {
-      return (
-        <PracticeResultPage
-          locale={locale}
-          title={t(titleKey)}
-          breadcrumbItems={[
-            { label: practiceBreadcrumbLabel, href: '/practice' },
-            { label: t('title'), href: `/practice/${moduleSlug}` },
-            { label: tPractice('result') },
-          ]}
-          containerClassName={containerClassName}
-          dividerClassName={dividerClassName}
-        >
-          {renderContent(ctx, adBanner)}
-          {adBannerStandard && <div className="mt-8">{adBannerStandard}</div>}
-        </PracticeResultPage>
-      );
-    }
 
     // Extract extra params
     const extraParamValues = extraParams ? extraParams(searchParams) : {};
@@ -371,6 +352,7 @@ export function createPracticeResultClient(config: ResultClientConfig) {
           <LeaderboardPreview
             rows={leaderboardRows}
             detailPath={leaderboardDetailPath}
+            period={leaderboardPeriod}
             locale={locale}
           />
         )}

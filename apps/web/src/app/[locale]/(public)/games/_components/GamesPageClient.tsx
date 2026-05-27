@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import type { GameSortOption, SortDirection } from '@/lib/types';
+import type { GameSortOption, SortDirection } from '@/lib/games/saved-game-types';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
@@ -69,12 +69,15 @@ export function GamesPageClient({ locale }: Props) {
         <EmptyGameList locale={locale} />
       ) : (
         <>
-          <GameList games={displayGames} locale={locale} onDeleteGame={handleDeleteGame} />
+          <div data-tour-id="games-list">
+            <GameList games={displayGames} locale={locale} onDeleteGame={handleDeleteGame} />
+          </div>
           <div className="mt-4 text-right">
             <Link
               href="/games/bulk-delete"
               locale={locale}
               className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}
+              data-tour-id="games-bulk-delete"
             >
               {t('bulkDelete')}
             </Link>

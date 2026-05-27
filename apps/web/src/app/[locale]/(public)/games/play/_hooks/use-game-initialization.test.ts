@@ -29,29 +29,23 @@ describe('parseUrlSearchParams', () => {
     });
   });
 
-  describe('skillLevel parameter', () => {
-    it('should default to 5 when no skillLevel is specified', () => {
+  describe('engineConfig parameter', () => {
+    it('defaults to Stockfish level 5 when no params are specified', () => {
       const params = new URLSearchParams();
       const result = parseUrlSearchParams(params);
-      expect(result.skillLevel).toBe(5);
+      expect(result.engineConfig).toEqual({ kind: 'stockfish', skillLevel: 5 });
     });
 
-    it('should parse valid skill levels', () => {
+    it('parses ?skillLevel=10 as Stockfish at that level', () => {
       const params = new URLSearchParams({ skillLevel: '10' });
       const result = parseUrlSearchParams(params);
-      expect(result.skillLevel).toBe(10);
+      expect(result.engineConfig).toEqual({ kind: 'stockfish', skillLevel: 10 });
     });
 
-    it('should parse skillLevel=1', () => {
-      const params = new URLSearchParams({ skillLevel: '1' });
+    it('parses ?engine=maia&elo=1800 as Maia at that rating', () => {
+      const params = new URLSearchParams({ engine: 'maia', elo: '1800' });
       const result = parseUrlSearchParams(params);
-      expect(result.skillLevel).toBe(1);
-    });
-
-    it('should parse skillLevel=20', () => {
-      const params = new URLSearchParams({ skillLevel: '20' });
-      const result = parseUrlSearchParams(params);
-      expect(result.skillLevel).toBe(20);
+      expect(result.engineConfig).toEqual({ kind: 'maia', rating: 1800 });
     });
   });
 
@@ -142,7 +136,7 @@ describe('parseUrlSearchParams', () => {
       });
       const result = parseUrlSearchParams(params);
       expect(result.playerSide).toBe('black');
-      expect(result.skillLevel).toBe(15);
+      expect(result.engineConfig).toEqual({ kind: 'stockfish', skillLevel: 15 });
       expect(result.urlMoves).toBe(JSON.stringify(['e4', 'e5', 'Nf3', 'Nc6']));
     });
   });
@@ -154,8 +148,20 @@ describe('parseUrlSearchParams', () => {
       expect(result.gamePrefs).toBeUndefined();
     });
 
-    it('should parse valid JSON gamePrefs', () => {
-      const prefs = { showBoard: true };
+    it('should parse and normalize valid JSON gamePrefs into a complete PerGamePreferences', () => {
+      // The URL may carry a partial blob (e.g., the new-game form only sets a
+      // subset of fields). The parser must round-trip these into a complete
+      // object so downstream consumers can rely on every key being present.
+      const prefs = {
+        boardVisibility: 'always',
+        highlightLastMove: false,
+        showOwnPieces: true,
+        showOpponentPieces: true,
+        pieceShapeMode: 'normal',
+        pieceColors: 'normal',
+        peekMode: 'inline',
+        moveInputMode: 'button',
+      };
       const params = new URLSearchParams({ gamePrefs: JSON.stringify(prefs) });
       const result = parseUrlSearchParams(params);
       expect(result.gamePrefs).toEqual(prefs);
@@ -165,6 +171,82 @@ describe('parseUrlSearchParams', () => {
       const params = new URLSearchParams({ gamePrefs: 'not-json' });
       const result = parseUrlSearchParams(params);
       expect(result.gamePrefs).toBeUndefined();
+    });
+
+    it('migrates legacy showBoardButtonInGame: true to boardVisibility: "peek"', () => {
+      // Old / stale generated URLs may still carry the pre-Phase-1 boolean.
+      // The parser must apply the same mapping as the localStorage repository
+      // so a new session started from such a URL behaves like an equivalent
+      // current URL.
+      const params = new URLSearchParams({
+        gamePrefs: JSON.stringify({ showBoardButtonInGame: true }),
+      });
+      const result = parseUrlSearchParams(params);
+      expect(result.gamePrefs?.boardVisibility).toBe('peek');
+    });
+
+    it('migrates legacy showBoardButtonInGame: false to boardVisibility: "never"', () => {
+      const params = new URLSearchParams({
+        gamePrefs: JSON.stringify({ showBoardButtonInGame: false }),
+      });
+      const result = parseUrlSearchParams(params);
+      expect(result.gamePrefs?.boardVisibility).toBe('never');
+    });
+
+    it('strips the legacy showBoardButtonInGame key from the parsed object', () => {
+      const params = new URLSearchParams({
+        gamePrefs: JSON.stringify({ showBoardButtonInGame: true }),
+      });
+      const result = parseUrlSearchParams(params);
+      expect(result.gamePrefs).toBeDefined();
+      expect(Object.keys(result.gamePrefs!)).not.toContain('showBoardButtonInGame');
+    });
+
+    it('fills missing peekMode and moveInputMode with defaults', () => {
+      const params = new URLSearchParams({
+        gamePrefs: JSON.stringify({
+          boardVisibility: 'always',
+          highlightLastMove: true,
+        }),
+      });
+      const result = parseUrlSearchParams(params);
+      expect(result.gamePrefs?.peekMode).toBe('modal');
+      expect(result.gamePrefs?.moveInputMode).toBe('text');
+    });
+
+    it('rejects invalid enum values and falls back to defaults', () => {
+      const params = new URLSearchParams({
+        gamePrefs: JSON.stringify({
+          boardVisibility: 'sometimes',
+          peekMode: 'bogus',
+          moveInputMode: 'voice',
+          pieceColors: 'rainbow',
+          pieceShapeMode: 'squares',
+        }),
+      });
+      const result = parseUrlSearchParams(params);
+      expect(result.gamePrefs?.boardVisibility).toBe('peek');
+      expect(result.gamePrefs?.peekMode).toBe('modal');
+      expect(result.gamePrefs?.moveInputMode).toBe('text');
+      expect(result.gamePrefs?.pieceColors).toBe('normal');
+      expect(result.gamePrefs?.pieceShapeMode).toBe('normal');
+    });
+
+    it('does not affect parsing of other URL params (color, engine, fen, moves)', () => {
+      const params = new URLSearchParams({
+        color: 'black',
+        engine: 'maia',
+        elo: '1800',
+        fen: 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1',
+        moves: JSON.stringify(['e4', 'e5']),
+        gamePrefs: JSON.stringify({ showBoardButtonInGame: false }),
+      });
+      const result = parseUrlSearchParams(params);
+      expect(result.playerSide).toBe('black');
+      expect(result.engineConfig).toEqual({ kind: 'maia', rating: 1800 });
+      expect(result.startingFen).toBe('rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1');
+      expect(result.urlMoves).toBe(JSON.stringify(['e4', 'e5']));
+      expect(result.gamePrefs?.boardVisibility).toBe('never');
     });
   });
 });

@@ -4,7 +4,8 @@ import { useRouter } from 'next/navigation';
 
 import { FaTrash } from 'react-icons/fa';
 
-import type { Game } from '@/lib/types';
+import { engineConfigToUrlParams } from '@/lib/engines';
+import type { Game } from '@/lib/games/saved-game-types';
 
 import { GameListItemBase } from '@/app/[locale]/_components/GameListItemBase';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -19,10 +20,13 @@ export function GameListItem({ game, locale, onDelete }: Props) {
   const router = useRouter();
 
   const handleGameClick = () => {
-    // Build URL parameters for resuming the game
+    // Build URL parameters for resuming the game. The engine + difficulty
+    // travel via `engineConfigToUrlParams`, so a Maia game resumes against
+    // Maia and a Stockfish game against Stockfish — without that, the play
+    // route would default to Stockfish for any resumed Maia session.
     const params = new URLSearchParams({
       color: game.playerColor,
-      skillLevel: game.skillLevel.toString(),
+      ...engineConfigToUrlParams(game.engineConfig),
       moves: JSON.stringify(game.moves),
       gameId: game.id, // Include game ID for proper resumption
     });

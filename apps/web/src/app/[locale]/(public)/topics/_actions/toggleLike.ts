@@ -10,7 +10,9 @@ import { db, topicPosts } from '@/lib/db';
 import { toggleLikeForTarget } from '@/lib/db/like-actions';
 import { createNotification } from '@/lib/notifications/notification';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
-import { UUID_RE } from '@/lib/validations/uuid';
+import { validateUUID } from '@/lib/validations/uuid';
+
+import type { TopicType } from '../_lib/constants';
 
 type ToggleLikeResult = { liked: boolean; likeCount: number } | { error: string };
 
@@ -18,17 +20,23 @@ export async function toggleLikeBase(params: {
   postId: string;
   locale: string;
   topicIdentifier: string;
-  topicType: 'square' | 'opening';
+  topicType: TopicType;
   urlSegment: string;
   validateTopic: (identifier: string) => boolean | Promise<boolean>;
+  /**
+   * Override the paths passed to `revalidatePath`. When omitted, defaults to
+   * the legacy `/${locale}/topics/${urlSegment}/${topicIdentifier}` and
+   * `/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${postId}` pair.
+   */
+  revalidate?: (postId: string) => string[];
 }): Promise<ToggleLikeResult> {
-  const { postId, locale, topicIdentifier, topicType, urlSegment, validateTopic } = params;
+  const { postId, locale, topicIdentifier, topicType, urlSegment, validateTopic, revalidate } =
+    params;
 
   assertSupportedLocale(locale);
 
-  if (!UUID_RE.test(postId)) {
-    return { error: 'invalidPostId' };
-  }
+  const uuidError = validateUUID(postId, 'postId');
+  if (uuidError) return uuidError;
 
   if (!(await validateTopic(topicIdentifier))) {
     return { error: `invalid${topicType.charAt(0).toUpperCase()}${topicType.slice(1)}` };
@@ -65,8 +73,15 @@ export async function toggleLikeBase(params: {
     }
   }
 
-  revalidatePath(`/${locale}/topics/${urlSegment}/${topicIdentifier}`);
-  revalidatePath(`/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${postId}`);
+  const pathsToRevalidate = revalidate
+    ? revalidate(postId)
+    : [
+        `/${locale}/topics/${urlSegment}/${topicIdentifier}`,
+        `/${locale}/topics/${urlSegment}/${topicIdentifier}/posts/${postId}`,
+      ];
+  for (const path of pathsToRevalidate) {
+    revalidatePath(path);
+  }
 
   return {
     liked,

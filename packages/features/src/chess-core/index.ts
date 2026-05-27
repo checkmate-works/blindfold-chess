@@ -37,6 +37,8 @@ export {
   replayMoves,
   getPlayerMovesFromSequence,
   isLegalPieceMove,
+  findLegalMoveByCoords,
+  findLegalMovesByCoords,
 } from "./moves";
 
 export type {
@@ -62,20 +64,13 @@ export {
   parsePgnMoveSequence,
 } from "./pgn";
 
-export type { PositionQuery } from "./position";
+export type {
+  AttachedPgnError,
+  ValidateAttachedPgnResult,
+} from "./pgn-attachment";
+export { validateAttachedPgn } from "./pgn-attachment";
 
-export {
-  queryPosition,
-  isCheckmate,
-  isStalemate,
-  isCheck,
-  isDraw,
-  isInsufficientMaterial,
-  isGameOver,
-  isSquareAttacked,
-  findKingSquare,
-  validatePosition,
-} from "./position";
+export { validatePosition } from "./position";
 
 export { formatLastMove } from "./format";
 
@@ -83,3 +78,9 @@ export { ChessGameManager } from "./game-manager";
 
 export type { FenStructureResult } from "./validate-fen-structure";
 export { validateFenStructure } from "./validate-fen-structure";
+
+export type {
+  FenSemanticReason,
+  FenSemanticResult,
+} from "./validate-fen-semantic";
+export { validateFenSemantic } from "./validate-fen-semantic";

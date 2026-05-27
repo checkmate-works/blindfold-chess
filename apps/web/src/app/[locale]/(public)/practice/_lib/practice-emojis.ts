@@ -15,7 +15,6 @@ export const PRACTICE_EMOJIS: Record<PracticeMenuType, string> = {
   route_planner: '📍',
   position_memory: '🧠',
   knight_tour: '♞',
-  move_sequence: '🥋',
   algebraic_notation: '🔤',
   fen: '📝',
   quadrant_anchors: '⚃',

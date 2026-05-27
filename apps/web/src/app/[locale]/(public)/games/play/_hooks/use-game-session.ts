@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import { useSearchParams } from 'next/navigation';
 
@@ -6,16 +6,17 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
-import type { SkillLevel } from '@/lib/types';
+import type { EngineConfig } from '@/lib/engines';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { resetChessEngine } from '../_lib/chess-engine';
+import { buildNewGameFromPositionUrl } from '../_lib/build-new-game-from-position-url';
 import { countPlayerMoves } from '../_lib/fen-utils';
 import { mapGameStatusToOutcome } from '../_lib/map-game-status-to-outcome';
 import { useAiMoveAnnouncer } from './use-ai-move-announcer';
 import { useAiMoveOrchestration } from './use-ai-move-orchestration';
+import { useAiMoveRetry } from './use-ai-move-retry';
 import { useAiVersus } from './use-ai-versus';
 import { useAutoSave } from './use-auto-save';
 import { parseUrlSearchParams, useGameInitialization } from './use-game-initialization';
@@ -24,6 +25,7 @@ import { useGameState } from './use-game-state';
 import { useMoveOperationTracker } from './use-move-operation-tracker';
 import { useNotation } from './use-notation';
 import { usePlayerMove } from './use-player-move';
+import { usePreferenceState } from './use-preference-state';
 import { useUrlSync } from './use-url-sync';
 
 type UseGameSessionOptions = {
@@ -38,7 +40,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
   const urlParams = parseUrlSearchParams(searchParamsFromHook);
   const {
     playerSide,
-    initialSkillLevel,
+    initialEngineConfig,
     initialGameId,
     initialStartingFen,
     initialMovesFromUrl,
@@ -47,13 +49,11 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     errorDetails,
   } = useGameInitialization(urlParams);
 
-  // Skill level is immutable during gameplay — set at game start, never changed mid-game.
-  const [skillLevel] = useState<SkillLevel>(initialSkillLevel);
-
-  // Per-game preferences (from URL params for new games, loaded from saved game for resumed games)
-  const [perGamePrefs, setPerGamePrefs] = useState<PerGamePreferences | undefined>(
-    initialGamePrefs
-  );
+  // Engine + difficulty are immutable during gameplay — captured at game
+  // start and never changed mid-game. The discriminated union encodes
+  // both pieces together so we can't end up with a Maia engine paired
+  // with a Stockfish skill level (or vice versa).
+  const [engineConfig] = useState<EngineConfig>(initialEngineConfig);
 
   // Track starting FEN - can be from URL or loaded from saved game
   const [startingFen, setStartingFen] = useState<string | undefined>(initialStartingFen);
@@ -78,7 +78,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     initialMoves: initialMovesFromUrl,
     startingFen,
   });
-  const { getAiMove } = useAiVersus(skillLevel);
+  const { getAiMove, reset: resetAiOpponent } = useAiVersus(engineConfig);
 
   // Game persistence hook
   const { isLoadingFromStorage, savedGameStatus, loadedGameData, gameNotFound } =
@@ -87,6 +87,13 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
       initialStartingFen,
     });
 
+  // Per-game preference state — initial snapshot, append-only change log,
+  // and the derived "effective right now" view, plus the restoration
+  // effect that seeds them from a resumed game. See the hook's TSDoc for
+  // why these three move together.
+  const { initialPerGamePrefs, preferenceChangeLog, currentPerGamePrefs, appendPreferenceChange } =
+    usePreferenceState({ initialGamePrefs, loadedGameData });
+
   // Operation tracker hook — declared before useGameState so setLogsTo can be
   // passed to useGameState for synchronized restoration alongside moves.
   const {
@@ -94,6 +101,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     recordPeek,
     recordUndo,
     recordMovePeek,
+    recordInvalid,
     commitMove,
     handleUndoLog,
     truncateLogs,
@@ -125,26 +133,21 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     setOperationLogsTo: setLogsTo,
   });
 
-  // Restore per-game preferences from loaded game data (game resume).
-  // Note: operationLogs restoration is handled in useGameState's effect alongside moves
-  // to prevent a race condition where auto-save could overwrite logs with stale data.
-  useEffect(() => {
-    if (loadedGameData?.gamePreferences) {
-      setPerGamePrefs(loadedGameData.gamePreferences);
-    }
-  }, [loadedGameData]);
-
   // Map board status to game outcome for repository
 
-  // Auto-save hook
-  const { markPlayerInteraction, gameId } = useAutoSave({
+  // Auto-save hook. `gamePreferences` carries the INITIAL snapshot (immutable
+  // for the life of the game); `preferenceChangeLog` carries the timeline of
+  // mid-game edits. Together they reconstruct the current effective values
+  // on the next load via `foldPreferences`.
+  const { markPlayerInteraction, markPendingChange, gameId } = useAutoSave({
     gameId: initialGameId,
     moves,
     playerColor: playerSide,
-    skillLevel,
+    engineConfig,
     status: mapGameStatusToOutcome(gameStatus, playerResult),
     startingFen,
-    gamePreferences: perGamePrefs,
+    gamePreferences: initialPerGamePrefs,
+    preferenceChangeLog,
     operationLogs,
     enabled: !isLoadingFromStorage && !shouldRedirectToError && !gameNotFound,
     saveOnInit: !initialGameId && !shouldRedirectToError,
@@ -156,7 +159,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     gameId,
     initialGameId,
     playerSide,
-    skillLevel,
+    engineConfig,
     initialStartingFen,
     shouldRedirectToError,
     errorDetails,
@@ -174,51 +177,36 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     [startingFen, setLastMove]
   );
 
+  // Move-landed signal — bumped once per completed AI move. Drives the
+  // full-screen `AiMovePulse`. A counter (not a boolean) so each move is a
+  // distinct change even when two land back-to-back.
+  const [aiMoveSignal, setAiMoveSignal] = useState(0);
+
   // AI move orchestration
   const handleAiMoveSuccess = useCallback(
     (move: AlgebraicNotation) => {
       pushMove(move);
       const newMoves = [...movesRef.current, move];
       updateLastMove(newMoves);
+      // Bump here — not in an effect on `moves` — so the pulse fires only
+      // for AI moves, never for player moves, undo, or game restore.
+      setAiMoveSignal((n) => n + 1);
     },
     [pushMove, updateLastMove]
   );
 
-  // AI-move failure state, kept separate from the generic `error` slot so
-  // the UI can distinguish "AI move failed" (surface a Retry button) from
-  // the regular "invalid move" path (no Retry — the user just edits their
-  // input). `clearMoveError` nulls both in lockstep because any input edit
-  // is treated as the user moving on from either error.
-  const [aiMoveError, setAiMoveError] = useState<string | null>(null);
-
-  const handleAiMoveError = useCallback(() => {
-    const message = t('aiMoveFailed');
-    setError(message);
-    setAiMoveError(message);
-    setLastAttemptedInput('');
-    setShouldMakeAiMove(false);
-  }, [t, setShouldMakeAiMove]);
-
-  const retryAiMove = useCallback(async () => {
-    // Clear the error state synchronously *before* the async engine teardown
-    // so the Retry button unmounts on the first click. Without this, a fast
-    // double-click during the `await resetChessEngine()` gap would re-enter
-    // this callback (isLoading is still false until the orchestration effect
-    // schedules). `useAiVersus` re-acquires `getChessEngine()` on every
-    // invocation, so the next `getAiMove` call observes the fresh singleton.
-    setError(null);
-    setAiMoveError(null);
-    setLastAttemptedInput('');
-    // Tear down the singleton so the next `getAiMove` call spins up a fresh
-    // Worker; leaving the dead singleton in place would make the retry fail
-    // with the same error the user just saw.
-    try {
-      await resetChessEngine();
-    } catch (resetError) {
-      console.error('Failed to reset chess engine before retry:', resetError);
-    }
-    setShouldMakeAiMove(true);
-  }, [setShouldMakeAiMove]);
+  // AI-move failure + retry state machine, kept separate from the generic
+  // `error` slot so the UI can distinguish "AI move failed" (surface a Retry
+  // button) from the regular "invalid move" path (no Retry — the user just
+  // edits their input). `clearMoveError` clears both in lockstep because any
+  // input edit is treated as the user moving on from either error.
+  const { aiMoveError, handleAiMoveError, retryAiMove, clearAiMoveError } = useAiMoveRetry({
+    t,
+    setError,
+    setLastAttemptedInput,
+    setShouldMakeAiMove,
+    resetAiOpponent,
+  });
 
   const { isLoading } = useAiMoveOrchestration({
     shouldMakeAiMove: shouldMakeAiMove && !gameNotFound,
@@ -297,19 +285,18 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
   // Handle new game from position
   const handleNewGameFromPosition = useCallback(
     (position: number) => {
-      const movesToKeep = moves.slice(0, position + 1);
-      const params = new URLSearchParams();
-      params.set('moves', JSON.stringify(movesToKeep));
-      params.set('color', playerSide);
-      params.set('skillLevel', skillLevel.toString());
-
-      if (startingFen) {
-        params.set('fen', startingFen);
-      }
-
-      router.push(`/${locale}/games/new/pgn?${params.toString()}`);
+      router.push(
+        buildNewGameFromPositionUrl({
+          locale,
+          moves,
+          position,
+          playerSide,
+          engineConfig,
+          startingFen,
+        })
+      );
     },
-    [moves, playerSide, skillLevel, locale, router, startingFen]
+    [moves, playerSide, engineConfig, locale, router, startingFen]
   );
 
   // Current FEN and formatted PGN are memoized values from useNotation
@@ -328,6 +315,21 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
   // vertical layout shift on every AI turn.
   const isAiThinking = !isPlayerTurn && isLoading;
 
+  // Mid-game per-game-preference edit. Delegates the append-or-noop
+  // decision to `usePreferenceState`; only when an entry was actually
+  // appended do we mark a pending change for auto-save. Settings-only
+  // edits (no move made) need this hook boundary because
+  // `useSaveTrigger` only watches moves/status — without it the change
+  // would be lost on Save&Exit / navigation / page hide.
+  // See SPEC1 blocker 2.
+  const setPerGamePref = useCallback(
+    <K extends keyof PerGamePreferences>(key: K, value: PerGamePreferences[K]) => {
+      const appended = appendPreferenceChange(key, value, moves.length);
+      if (appended) markPendingChange();
+    },
+    [appendPreferenceChange, moves.length, markPendingChange]
+  );
+
   // Clear both the error and the preserved attempted-input in one call.
   // Wired to every child input component's `onErrorClear` so that any user
   // edit reverts the status slot back to "AI played …" / "Play Chess".
@@ -336,18 +338,28 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
   // hanging around after the user had moved on.
   const clearMoveError = useCallback(() => {
     setError(null);
-    setAiMoveError(null);
+    clearAiMoveError();
     setLastAttemptedInput('');
-  }, [setError, setLastAttemptedInput]);
+  }, [setError, clearAiMoveError, setLastAttemptedInput]);
 
   return {
     gameConfig: {
       playerSide,
-      skillLevel,
+      engineConfig,
       initialGameId,
       startingFen,
       locale,
-      perGamePrefs,
+      // `perGamePrefs` is the LIVE effective value (initial folded with the
+      // change log). PlayClient merges this into its rendering preferences
+      // so mid-game edits take effect immediately on the board.
+      perGamePrefs: currentPerGamePrefs,
+      // The immutable snapshot taken at game start. Exposed so consumers
+      // (e.g. OperationLogModal's "Initial Settings" section) can show what
+      // the player started with, distinct from where they are now.
+      initialPerGamePrefs,
+      // Append-only timeline of edits. Empty for games that were never
+      // edited mid-game (the overwhelmingly common case).
+      preferenceChangeLog,
       gameId,
     },
     gameState: {
@@ -377,6 +389,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     },
     aiMoveDisplay,
     isAiThinking,
+    aiMoveSignal,
     actions: {
       handleSubmitMove,
       handleResign,
@@ -386,6 +399,8 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
       commitMoveLog: commitMove,
       recordPeek,
       recordMovePeek,
+      recordInvalid,
+      setPerGamePref,
     },
     operationLogs,
   };

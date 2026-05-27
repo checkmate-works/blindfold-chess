@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 import { HiArrowRight } from 'react-icons/hi2';
 
-export type GuideLinkItem = {
+type GuideLinkItem = {
   label: string;
   href: string;
   description?: string;

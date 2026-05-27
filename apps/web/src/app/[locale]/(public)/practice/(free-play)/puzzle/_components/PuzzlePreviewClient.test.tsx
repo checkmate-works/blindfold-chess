@@ -27,6 +27,7 @@ vi.mock('@/i18n/routing', () => ({
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string, params?: Record<string, unknown>) =>
     params ? `${key}:${JSON.stringify(params)}` : key,
+  useLocale: () => 'en',
 }));
 
 // createPuzzle server action — default is success; individual tests override.
@@ -200,6 +201,9 @@ describe('PuzzlePreviewClient', () => {
         title: 'Preview Title',
         description: 'Preview description',
         solutionMoves: [{ san: 'Nf3', note: 'only move' }],
+        themeIds: undefined,
+        chunkIds: undefined,
+        forkedFromId: null,
       });
 
       expect(sessionStorage.getItem(DRAFT_STORAGE_KEY)).toBeNull();

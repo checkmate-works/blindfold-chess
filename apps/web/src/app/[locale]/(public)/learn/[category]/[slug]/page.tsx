@@ -15,9 +15,8 @@ import {
 import { resolveCspNonce } from '@/lib/security/nonce';
 import { JsonLd, generateArticleSchema } from '@/lib/seo/jsonld';
 
-import { CardLink, Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { CardLink, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import {
   getPracticeModuleIcon,
@@ -136,11 +135,17 @@ export default async function LearnArticlePage({ params }: Props) {
   const nonce = await resolveCspNonce();
 
   return (
-    <div className="space-y-8">
+    <>
       <JsonLd data={generateArticleSchema(articleSchemaData)} nonce={nonce} />
-      <PageTitle>{article.metadata.title}</PageTitle>
-
-      <PagePanel>
+      <PageLayout
+        title={article.metadata.title}
+        locale={locale}
+        breadcrumb={[
+          { label: t('navigation.learn'), href: '/learn' },
+          { label: t(`learn.categories.${category}`), href: `/learn/${category}` },
+          { label: article.metadata.title },
+        ]}
+      >
         {/* Article content with narrower width for readability */}
         <article className="prose prose-slate dark:prose-invert max-w-none">
           <MarkdownRenderer content={article.content} skipFirstH1={true} />
@@ -218,18 +223,7 @@ export default async function LearnArticlePage({ params }: Props) {
         {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
           <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
         )}
-
-        <Divider />
-
-        <Breadcrumb
-          items={[
-            { label: t('navigation.learn'), href: '/learn' },
-            { label: t(`learn.categories.${category}`), href: `/learn/${category}` },
-            { label: article.metadata.title },
-          ]}
-          locale={locale}
-        />
-      </PagePanel>
-    </div>
+      </PageLayout>
+    </>
   );
 }

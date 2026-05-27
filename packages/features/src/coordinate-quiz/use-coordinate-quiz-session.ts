@@ -1,39 +1,32 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useRef } from "react";
 
 import type { BoardOrientation, Square } from "@blindfold-chess/types";
 
-import { useTimedSession } from "../practice-session/use-timed-session";
 import {
   FEEDBACK_SPEED_MS,
   type FeedbackSpeed,
 } from "../common/feedback-speed";
+import { usePracticeCompletion } from "../practice-session/use-practice-completion";
+import {
+  type TimedQuizSessionConfig,
+  type TimedSessionFacade,
+  toTimedSessionFacade,
+} from "../practice-session/quiz-session";
+import { useTimedSession } from "../practice-session/use-timed-session";
 import { generateSingleQuestion, checkAnswer, calculateScore } from "./logic";
 import type { CoordinateQuestion, QuizResult } from "./types";
 
-export type UseCoordinateQuizSessionConfig = {
-  timeLimit: number;
-  orientation: BoardOrientation;
-  feedbackSpeed: FeedbackSpeed;
-  onComplete?: (result: QuizResult) => void;
-  onAnswerEffect?: (correct: boolean) => void;
-  mistakeAllowance?: number;
-};
+export type UseCoordinateQuizSessionConfig =
+  TimedQuizSessionConfig<QuizResult> & {
+    orientation: BoardOrientation;
+    feedbackSpeed: FeedbackSpeed;
+  };
 
-export type UseCoordinateQuizSessionReturn = {
+export type UseCoordinateQuizSessionReturn = TimedSessionFacade & {
   currentQuestion: CoordinateQuestion | null;
-  countdown: number | null;
-  timeElapsed: number;
-  timeRemaining: number;
-  correctCount: number;
-  incorrectCount: number;
-  showFeedback: boolean;
-  lastAnswerCorrect: boolean | null;
-  isFinished: boolean;
-  isPaused: boolean;
   handleAnswer: (square: Square) => void;
-  togglePause: () => void;
 };
 
 export function useCoordinateQuizSession({
@@ -45,8 +38,6 @@ export function useCoordinateQuizSession({
   mistakeAllowance,
 }: UseCoordinateQuizSessionConfig): UseCoordinateQuizSessionReturn {
   const recentSquaresRef = useRef<Square[]>([]);
-  const onCompleteRef = useRef(onComplete);
-  onCompleteRef.current = onComplete;
 
   const generateQuestion = useCallback((): CoordinateQuestion => {
     const question = generateSingleQuestion(
@@ -70,29 +61,28 @@ export function useCoordinateQuizSession({
 
   const { correctCount, incorrectCount, timeElapsed, isFinished } = session;
 
-  useEffect(() => {
-    if (!isFinished) return;
-
-    const total = correctCount + incorrectCount;
-    const timeTaken = Math.min(timeElapsed, timeLimit);
-    const { points, accuracy, averageTime } = calculateScore(
-      correctCount,
-      total,
-      timeTaken,
-      timeLimit,
-    );
-
-    const result: QuizResult = {
-      correctAnswers: correctCount,
-      totalQuestions: total,
-      accuracy,
-      timeTaken,
-      averageTime,
-      points,
-    };
-
-    onCompleteRef.current?.(result);
-  }, [isFinished, correctCount, incorrectCount, timeElapsed, timeLimit]);
+  usePracticeCompletion(
+    isFinished,
+    (): QuizResult => {
+      const total = correctCount + incorrectCount;
+      const timeTaken = Math.min(timeElapsed, timeLimit);
+      const { points, accuracy, averageTime } = calculateScore(
+        correctCount,
+        total,
+        timeTaken,
+        timeLimit,
+      );
+      return {
+        correctAnswers: correctCount,
+        totalQuestions: total,
+        accuracy,
+        timeTaken,
+        averageTime,
+        points,
+      };
+    },
+    onComplete,
+  );
 
   const { handleAnswer: sessionHandleAnswer, currentQuestion } = session;
 
@@ -106,17 +96,8 @@ export function useCoordinateQuizSession({
   );
 
   return {
+    ...toTimedSessionFacade(session),
     currentQuestion,
-    countdown: session.countdown,
-    timeElapsed,
-    timeRemaining: session.timeRemaining,
-    correctCount,
-    incorrectCount,
-    showFeedback: session.showFeedback,
-    lastAnswerCorrect: session.lastAnswerCorrect,
-    isFinished,
-    isPaused: session.isPaused,
     handleAnswer,
-    togglePause: session.togglePause,
   };
 }

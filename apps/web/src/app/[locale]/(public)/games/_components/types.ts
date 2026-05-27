@@ -1,4 +1,4 @@
-import type { Game } from '@/lib/types';
+import type { Game } from '@/lib/games/saved-game-types';
 
 export type GameItemDisplayProps = {
   game: Game;

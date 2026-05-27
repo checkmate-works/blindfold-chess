@@ -7,10 +7,9 @@ import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV, SITE_URL } from '@/config';
 import { resolveCspNonce } from '@/lib/security/nonce';
 import { JsonLd, generateDefinedTermSetSchema } from '@/lib/seo/jsonld';
 
-import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
@@ -20,21 +19,10 @@ import { getGlossaryTerms } from './_lib/queries';
 
 export const generateStaticParams = generateLocaleStaticParams;
 
-export const revalidate = 300;
+export const revalidate = 3600;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  const t = await getTranslations({ locale, namespace: 'metadata.glossary' });
-
-  const title = t('title');
-  const description = t('description');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'glossary', title, description }),
-    title: resolveTitle(title, locale),
-    description,
-  };
+  return createPageMetadata({ params, namespace: 'metadata.glossary', path: 'glossary' });
 }
 
 export default async function GlossaryIndexPage({ params }: Props) {
@@ -62,11 +50,9 @@ export default async function GlossaryIndexPage({ params }: Props) {
   const nonce = await resolveCspNonce();
 
   return (
-    <div className="space-y-8">
+    <>
       <JsonLd data={definedTermSetSchema} nonce={nonce} />
-      <PageTitle>{t('title')}</PageTitle>
-
-      <PagePanel>
+      <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
         <div className="space-y-6">
           <SectionTitle>{t('index.alphabetical')}</SectionTitle>
           <AlphabeticalIndex locale={locale} />
@@ -80,11 +66,7 @@ export default async function GlossaryIndexPage({ params }: Props) {
         {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
           <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
         )}
-
-        <Divider />
-
-        <Breadcrumb items={[{ label: t('title') }]} locale={locale} />
-      </PagePanel>
-    </div>
+      </PageLayout>
+    </>
   );
 }

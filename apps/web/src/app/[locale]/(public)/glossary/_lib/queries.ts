@@ -2,6 +2,9 @@ import { unstable_cache } from 'next/cache';
 
 import { eq, sql } from 'drizzle-orm';
 
+import { parseBoardAnnotations } from '@/lib/board-annotations/parse';
+import type { BoardAnnotations } from '@/lib/board-annotations/types';
+import { EMPTY_BOARD_ANNOTATIONS } from '@/lib/board-annotations/types';
 import {
   db,
   glossaryTermAliases,
@@ -32,6 +35,14 @@ export type TermWithPositionRow = {
   positionFen: string | null;
   positionSortOrder: number | null;
   positionCaption: string | null;
+  /**
+   * Raw JSONB payload from `glossary_term_positions.annotations`, narrowed
+   * to `unknown` because the type can only be trusted after passing through
+   * {@link parseBoardAnnotations}. `null` when there is no joined position
+   * row for the term (left-join miss). Optional in the type so existing
+   * fixtures don't need updating row-by-row.
+   */
+  positionAnnotations?: unknown;
 };
 
 const termBaseFields = {
@@ -64,6 +75,7 @@ function buildPositionQuery(locale: string) {
       positionFen: glossaryTermPositions.fen,
       positionSortOrder: glossaryTermPositions.sortOrder,
       positionCaption: glossaryTermPositions.caption,
+      positionAnnotations: glossaryTermPositions.annotations,
     })
     .from(glossaryTerms)
     .leftJoin(
@@ -91,7 +103,10 @@ export function mergeTermRows(
       definition: string | null;
       reading: string | null;
       aliases: Set<string>;
-      positions: Map<string, { fen: string; sortOrder: number; caption?: string }>;
+      positions: Map<
+        string,
+        { fen: string; sortOrder: number; caption?: string; annotations: BoardAnnotations }
+      >;
     }
   >();
 
@@ -135,6 +150,10 @@ export function mergeTermRows(
         fen: row.positionFen,
         sortOrder: row.positionSortOrder ?? 0,
         caption: row.positionCaption ?? undefined,
+        annotations:
+          row.positionAnnotations === undefined
+            ? EMPTY_BOARD_ANNOTATIONS
+            : parseBoardAnnotations(row.positionAnnotations),
       });
     }
   }

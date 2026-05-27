@@ -21,6 +21,7 @@ type Props = {
   problemCount: number;
   boardTheme?: BoardTheme;
   isTutorial?: boolean;
+  showSkip?: boolean;
   onPositionChange: (fen: string) => void;
   onSubmit: () => void;
   onViewAgain: () => void;
@@ -35,6 +36,7 @@ export function PositionMemoryRecreate({
   problemCount,
   boardTheme = DEFAULT_BOARD_THEME,
   isTutorial = false,
+  showSkip = true,
   onPositionChange,
   onSubmit,
   onViewAgain,
@@ -55,7 +57,7 @@ export function PositionMemoryRecreate({
 
   return (
     <div className="space-y-4">
-      <div className="bg-card rounded-md border border-border p-4">
+      <div className="p-4">
         <div className="flex flex-col gap-6">
           {/* Progress */}
           {problemCount > 1 && (
@@ -94,9 +96,11 @@ export function PositionMemoryRecreate({
           <button onClick={onViewAgain} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
             {t('viewAgain')}
           </button>
-          <button onClick={onSkip} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
-            {t('skip')}
-          </button>
+          {showSkip && (
+            <button onClick={onSkip} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
+              {t('skip')}
+            </button>
+          )}
           <button onClick={onQuit} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
             {t('quit')}
           </button>

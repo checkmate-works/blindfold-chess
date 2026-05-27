@@ -20,6 +20,8 @@ function makePost(
     rootPostId: null,
     content: 'test',
     replyPermission: 'everyone',
+    isSpoiler: false,
+    imageAttachmentCount: 0,
     createdAt: overrides.createdAt ?? new Date('2025-01-01'),
     updatedAt: new Date('2025-01-01'),
     deletedAt: null,

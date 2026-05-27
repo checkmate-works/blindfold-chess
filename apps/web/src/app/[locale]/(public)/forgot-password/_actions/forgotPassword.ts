@@ -4,12 +4,10 @@ import { SITE_URL } from '@/config';
 import { z } from 'zod';
 
 import type { ActionResult } from '@/lib/action-types';
-import { getClientIp } from '@/lib/security/client-ip';
 import {
   EMAIL_RATE_LIMITS,
-  IP_RATE_LIMITS,
   checkEmailRateLimitGuard,
-  checkIpRateLimitGuard,
+  guardByIpRateLimit,
 } from '@/lib/security/rate-limit-ip';
 import { createClient } from '@/lib/supabase/server';
 import { logActivityEvent } from '@/lib/users/activity-log';
@@ -17,11 +15,7 @@ import { logActivityEvent } from '@/lib/users/activity-log';
 export type ForgotPasswordResult = ActionResult;
 
 export async function forgotPassword(email: string): Promise<ForgotPasswordResult> {
-  const ipRateLimited = await checkIpRateLimitGuard(
-    await getClientIp(),
-    'forgotPassword',
-    IP_RATE_LIMITS.forgotPassword
-  );
+  const ipRateLimited = await guardByIpRateLimit('forgotPassword');
   if (ipRateLimited) {
     return ipRateLimited;
   }

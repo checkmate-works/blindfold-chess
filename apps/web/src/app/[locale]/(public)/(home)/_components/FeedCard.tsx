@@ -1,5 +1,6 @@
 import type { FeedItem } from '../_lib/types';
 import { ChallengeRankUpdateCard } from './ChallengeRankUpdateCard';
+import { ChunkFeedCard } from './ChunkFeedCard';
 import { PositionFeedCard } from './PositionFeedCard';
 import { TopicPostCard } from './TopicPostCard';
 
@@ -8,10 +9,9 @@ type Props = {
   locale: string;
   showMoreLabel: string;
   justNowLabel: string;
-  newReplyTemplate: string;
 };
 
-export function FeedCard({ item, locale, showMoreLabel, justNowLabel, newReplyTemplate }: Props) {
+export function FeedCard({ item, locale, showMoreLabel, justNowLabel }: Props) {
   switch (item.entityType) {
     case 'topic_post':
       return (
@@ -20,11 +20,19 @@ export function FeedCard({ item, locale, showMoreLabel, justNowLabel, newReplyTe
           locale={locale}
           showMoreLabel={showMoreLabel}
           justNowLabel={justNowLabel}
-          newReplyTemplate={newReplyTemplate}
         />
       );
     case 'position':
       return <PositionFeedCard data={item.data} locale={locale} justNowLabel={justNowLabel} />;
+    case 'chunk':
+      return (
+        <ChunkFeedCard
+          data={item.data}
+          createdAt={item.createdAt}
+          locale={locale}
+          justNowLabel={justNowLabel}
+        />
+      );
     case 'challenge_rank_update':
       return (
         <ChallengeRankUpdateCard

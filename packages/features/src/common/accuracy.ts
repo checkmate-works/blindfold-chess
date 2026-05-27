@@ -7,6 +7,8 @@
  * per-square status list for board overlay rendering.
  */
 import { fenToBoardFlat } from "../chess-core/fen-pure";
+import { BOARD_LAST_INDEX, BOARD_SIZE, TOTAL_SQUARES } from "./constants";
+import { fileRankToSquare } from "./utils";
 
 export type ScoreDetail = {
   square: string;
@@ -38,9 +40,11 @@ export type SquareDiff = {
 };
 
 function indexToSquare(index: number): string {
-  const file = String.fromCharCode(97 + (index % 8)); // a-h
-  const rank = 8 - Math.floor(index / 8); // 8-1
-  return file + rank;
+  // index 0 = a8, index 63 = h1 (rank-major, top-down ordering used by FEN board flat)
+  return fileRankToSquare(
+    index % BOARD_SIZE,
+    BOARD_LAST_INDEX - Math.floor(index / BOARD_SIZE),
+  );
 }
 
 function getPieceDescription(
@@ -48,6 +52,56 @@ function getPieceDescription(
   pieceNames: Record<string, string>,
 ): string {
   return pieceNames[piece] || piece;
+}
+
+/** How a single square compares between the original and recreated boards. */
+export type SquareClassification =
+  | "correct"
+  | "wrongPiece"
+  | "missing"
+  | "extra";
+
+export type ClassifiedSquare = {
+  square: string;
+  /** Piece on the original board, or "" if that square was empty. */
+  expected: string;
+  /** Piece on the recreated board, or "" if that square was empty. */
+  actual: string;
+  kind: SquareClassification;
+};
+
+/**
+ * Compare two FENs square-by-square and classify every square that holds a
+ * piece on at least one of the two boards (squares empty on both are skipped).
+ *
+ * This is the shared core of `calculateAccuracy` (which adds scoring + i18n
+ * descriptions) and `calculateSquareDifferences` (which projects to overlay
+ * statuses) — neither re-walks the board itself.
+ */
+export function classifySquares(
+  originalFen: string,
+  recreatedFen: string,
+): ClassifiedSquare[] {
+  const originalBoard = fenToBoardFlat(originalFen);
+  const recreatedBoard = fenToBoardFlat(recreatedFen);
+
+  const result: ClassifiedSquare[] = [];
+  for (let i = 0; i < TOTAL_SQUARES; i++) {
+    const expected = originalBoard[i] ?? "";
+    const actual = recreatedBoard[i] ?? "";
+    if (expected === "" && actual === "") continue;
+
+    let kind: SquareClassification;
+    if (expected !== "" && actual !== "") {
+      kind = expected === actual ? "correct" : "wrongPiece";
+    } else if (expected !== "") {
+      kind = "missing";
+    } else {
+      kind = "extra";
+    }
+    result.push({ square: indexToSquare(i), expected, actual, kind });
+  }
+  return result;
 }
 
 /**
@@ -64,9 +118,6 @@ export function calculateAccuracy(
     extra: (piece: string, square: string) => string;
   },
 ): PositionAccuracy {
-  const originalBoard = fenToBoardFlat(originalFen);
-  const recreatedBoard = fenToBoardFlat(recreatedFen);
-
   let correctPieces = 0;
   let totalPieces = 0;
   let incorrectPieces = 0;
@@ -74,64 +125,67 @@ export function calculateAccuracy(
   let extraPieces = 0;
   const details: ScoreDetail[] = [];
 
-  for (let i = 0; i < 64; i++) {
-    const originalPiece = originalBoard[i];
-    const recreatedPiece = recreatedBoard[i];
-    const square = indexToSquare(i);
-
-    if (originalPiece !== "" && recreatedPiece !== "") {
-      totalPieces++;
-      if (originalPiece === recreatedPiece) {
+  for (const { square, expected, actual, kind } of classifySquares(
+    originalFen,
+    recreatedFen,
+  )) {
+    switch (kind) {
+      case "correct":
+        totalPieces++;
         correctPieces++;
         details.push({
           square,
-          expected: originalPiece,
-          actual: recreatedPiece,
+          expected,
+          actual,
           score: 1,
           description: descriptions.correct(
-            getPieceDescription(originalPiece, pieceNames),
+            getPieceDescription(expected, pieceNames),
             square,
           ),
         });
-      } else {
+        break;
+      case "wrongPiece":
+        totalPieces++;
         incorrectPieces++;
         details.push({
           square,
-          expected: originalPiece,
-          actual: recreatedPiece,
+          expected,
+          actual,
           score: -0.5,
           description: descriptions.wrongPiece(
             square,
-            getPieceDescription(originalPiece, pieceNames),
-            getPieceDescription(recreatedPiece, pieceNames),
+            getPieceDescription(expected, pieceNames),
+            getPieceDescription(actual, pieceNames),
           ),
         });
-      }
-    } else if (originalPiece !== "" && recreatedPiece === "") {
-      totalPieces++;
-      missingPieces++;
-      details.push({
-        square,
-        expected: originalPiece,
-        actual: "",
-        score: 0,
-        description: descriptions.missing(
-          getPieceDescription(originalPiece, pieceNames),
+        break;
+      case "missing":
+        totalPieces++;
+        missingPieces++;
+        details.push({
           square,
-        ),
-      });
-    } else if (originalPiece === "" && recreatedPiece !== "") {
-      extraPieces++;
-      details.push({
-        square,
-        expected: "",
-        actual: recreatedPiece,
-        score: -0.5,
-        description: descriptions.extra(
-          getPieceDescription(recreatedPiece, pieceNames),
+          expected,
+          actual: "",
+          score: 0,
+          description: descriptions.missing(
+            getPieceDescription(expected, pieceNames),
+            square,
+          ),
+        });
+        break;
+      case "extra":
+        extraPieces++;
+        details.push({
           square,
-        ),
-      });
+          expected: "",
+          actual,
+          score: -0.5,
+          description: descriptions.extra(
+            getPieceDescription(actual, pieceNames),
+            square,
+          ),
+        });
+        break;
     }
   }
 
@@ -158,28 +212,15 @@ export function calculateSquareDifferences(
   originalFen: string,
   recreatedFen: string,
 ): SquareDiff[] {
-  const originalBoard = fenToBoardFlat(originalFen);
-  const recreatedBoard = fenToBoardFlat(recreatedFen);
-
-  const differences: SquareDiff[] = [];
-
-  for (let i = 0; i < 64; i++) {
-    const originalPiece = originalBoard[i];
-    const recreatedPiece = recreatedBoard[i];
-    const square = indexToSquare(i);
-
-    if (originalPiece !== "" && recreatedPiece !== "") {
-      if (originalPiece === recreatedPiece) {
-        differences.push({ square, status: "correct" });
-      } else {
-        differences.push({ square, status: "incorrect" });
-      }
-    } else if (originalPiece !== "" && recreatedPiece === "") {
-      differences.push({ square, status: "missing" });
-    } else if (originalPiece === "" && recreatedPiece !== "") {
-      differences.push({ square, status: "incorrect" });
-    }
-  }
-
-  return differences;
+  return classifySquares(originalFen, recreatedFen).map(({ square, kind }) => ({
+    square,
+    // The overlay only distinguishes correct / missing / everything-else;
+    // both wrongPiece and extra render as "incorrect".
+    status:
+      kind === "correct"
+        ? "correct"
+        : kind === "missing"
+          ? "missing"
+          : "incorrect",
+  }));
 }

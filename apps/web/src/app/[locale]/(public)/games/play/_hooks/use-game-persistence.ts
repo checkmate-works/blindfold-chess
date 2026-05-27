@@ -5,7 +5,7 @@ import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { LocalStorageGameRepository } from '@/lib/games/local-storage-repository';
-import type { MoveOperationLog } from '@/lib/types';
+import type { MoveOperationLog, PreferenceChangeLogEntry } from '@/lib/games/saved-game-types';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
@@ -19,6 +19,7 @@ type SavedGameData = {
   playerResult: 'win' | 'loss' | 'draw' | null;
   shouldMakeAiMove: boolean;
   gamePreferences?: PerGamePreferences;
+  preferenceChangeLog?: PreferenceChangeLogEntry[];
   operationLogs?: MoveOperationLog[];
 };
 
@@ -119,6 +120,7 @@ export function useGamePersistence({
             playerResult,
             shouldMakeAiMove,
             gamePreferences: savedGame.gamePreferences,
+            preferenceChangeLog: savedGame.preferenceChangeLog,
             operationLogs: savedGame.operationLogs,
           });
         } else {

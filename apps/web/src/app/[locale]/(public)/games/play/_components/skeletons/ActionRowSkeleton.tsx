@@ -1,3 +1,4 @@
+import { ACTION_ROW_CONTAINER_CLASSES } from '../../_lib/skeleton-layout-classes';
 import { ActionButtonSkeleton } from './ActionButtonSkeleton';
 
 type Props = {
@@ -7,12 +8,13 @@ type Props = {
 
 /**
  * Skeleton for the action button row rendered by `GameInProgressPanel`:
- * optional Show Board + Undo + Resign. Outer layout mirrors the real row
- * (`flex gap-4 md:gap-2 justify-center`) so the swap introduces no CLS.
+ * optional Show Board + Undo + Resign. Outer layout is shared with the
+ * real panel via `ACTION_ROW_CONTAINER_CLASSES` so the swap introduces no
+ * CLS even if the row's flex/gap classes are tweaked later.
  */
 export function ActionRowSkeleton({ showBoardButton }: Props) {
   return (
-    <div aria-hidden className="flex justify-center gap-4 md:gap-2">
+    <div aria-hidden className={ACTION_ROW_CONTAINER_CLASSES}>
       {showBoardButton && <ActionButtonSkeleton />}
       <ActionButtonSkeleton />
       <ActionButtonSkeleton />

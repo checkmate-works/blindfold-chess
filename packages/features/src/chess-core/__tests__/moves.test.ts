@@ -8,6 +8,8 @@ import {
   uciToAlgebraic,
   getLastMoveDetails,
   replayMoves,
+  findLegalMoveByCoords,
+  findLegalMovesByCoords,
 } from "../moves";
 import { getStartingFen } from "../fen";
 
@@ -268,5 +270,87 @@ describe("replayMoves", () => {
     expect(positions).toHaveLength(2);
     expect(positions[0].fen).toBe(customFen);
     expect(positions[1].lastMove).toEqual({ from: "e7", to: "e5" });
+  });
+});
+
+// ============================================================
+// findLegalMoveByCoords
+// ============================================================
+describe("findLegalMoveByCoords", () => {
+  it("returns the matching legal move for a plain non-promotion pair", () => {
+    const result = findLegalMoveByCoords(STARTING_FEN, "e2", "e4");
+    expect(result).not.toBeNull();
+    expect(result?.san).toBe("e4");
+    expect(result?.from).toBe("e2");
+    expect(result?.to).toBe("e4");
+  });
+
+  it("returns null for an illegal coordinate pair", () => {
+    // e2 → e5 is two squares too far for a pawn on the starting square.
+    expect(findLegalMoveByCoords(STARTING_FEN, "e2", "e5")).toBeNull();
+  });
+
+  it("returns null when the source square is empty", () => {
+    // e3 is empty in the starting position.
+    expect(findLegalMoveByCoords(STARTING_FEN, "e3", "e4")).toBeNull();
+  });
+
+  it("returns the queen promotion by default when (from,to) is ambiguous", () => {
+    // White pawn on e7, black king out of the way → e7-e8 has 4 candidate
+    // promotions. Default `preferredPromotion: 'q'` picks the queen.
+    const promoFen = "8/4P3/8/8/8/8/8/4K2k w - - 0 1";
+    const result = findLegalMoveByCoords(promoFen, "e7", "e8");
+    expect(result).not.toBeNull();
+    expect(result?.promotion).toBe("q");
+    expect(result?.san).toBe("e8=Q");
+  });
+
+  it("honors an explicit underpromotion request", () => {
+    const promoFen = "8/4P3/8/8/8/8/8/4K2k w - - 0 1";
+    const result = findLegalMoveByCoords(promoFen, "e7", "e8", "n");
+    expect(result).not.toBeNull();
+    expect(result?.promotion).toBe("n");
+    expect(result?.san).toBe("e8=N");
+  });
+
+  it("returns the single legal capture for a from/to pair", () => {
+    // After 1.e4 d5 — white can capture exd5.
+    const afterMoves =
+      "rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2";
+    const result = findLegalMoveByCoords(afterMoves, "e4", "d5");
+    expect(result?.san).toBe("exd5");
+  });
+});
+
+// ============================================================
+// findLegalMovesByCoords (plural)
+// ============================================================
+describe("findLegalMovesByCoords", () => {
+  it("returns an empty array for an illegal pair", () => {
+    expect(findLegalMovesByCoords(STARTING_FEN, "e2", "e5")).toEqual([]);
+  });
+
+  it("returns a single entry for an unambiguous (non-promotion) legal move", () => {
+    const moves = findLegalMovesByCoords(STARTING_FEN, "e2", "e4");
+    expect(moves).toHaveLength(1);
+    expect(moves[0].san).toBe("e4");
+  });
+
+  it("returns four candidates for a pawn-promotion (from,to) pair", () => {
+    const promoFen = "8/4P3/8/8/8/8/8/4K2k w - - 0 1";
+    const moves = findLegalMovesByCoords(promoFen, "e7", "e8");
+    expect(moves).toHaveLength(4);
+    const promotions = moves.map((m) => m.promotion).sort();
+    expect(promotions).toEqual(["b", "n", "q", "r"]);
+  });
+
+  it("returns four candidates for a capturing pawn promotion", () => {
+    // White pawn on e7 captures on f8 (a rook sits there).
+    const captureFen = "5r1k/4P3/8/8/8/8/8/4K3 w - - 0 1";
+    const moves = findLegalMovesByCoords(captureFen, "e7", "f8");
+    expect(moves).toHaveLength(4);
+    for (const m of moves) {
+      expect(m.captured).toBe("r");
+    }
   });
 });

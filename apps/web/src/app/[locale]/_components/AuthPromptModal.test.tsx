@@ -23,14 +23,28 @@ vi.mock('@/i18n/routing', () => ({
     href,
     locale,
     children,
+    onClick,
     ...props
   }: {
     href: string;
     locale: string;
     children: React.ReactNode;
+    onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
     [key: string]: unknown;
   }) => (
-    <a href={`/${locale}${href}`} {...props}>
+    // Real Next.js <Link> intercepts the click and routes via the App Router,
+    // so it never lets the browser perform a full document navigation.
+    // jsdom does not implement that navigation, so without preventDefault the
+    // click queues a `setTimeout(0)` navigation that fires after the test
+    // ends as "Not implemented: navigation to another Document".
+    <a
+      href={`/${locale}${href}`}
+      onClick={(e) => {
+        e.preventDefault();
+        onClick?.(e);
+      }}
+      {...props}
+    >
       {children}
     </a>
   ),

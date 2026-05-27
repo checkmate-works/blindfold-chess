@@ -1,15 +1,13 @@
 import { getTranslations } from 'next-intl/server';
 
-import { and, desc, eq, ilike, inArray, isNotNull, isNull, or, sql } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
-import { db, profiles, topicPosts } from '@/lib/db';
-import { getPaginationParams } from '@/lib/pagination';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 import { AdminDataTable } from '../_components/AdminDataTable';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
 import { DeletePostAdminButton } from '../users/_components/DeletePostAdminButton';
+import { getAdminTopicPostsPageData } from './_lib/getAdminTopicPostsPageData';
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -29,108 +27,18 @@ export default async function AdminTopicPostsPage({
     topicType: topicTypeFilter,
     status: statusFilter,
   } = await searchParamsCache.parse(searchParams);
-  const t = await getTranslations({ locale: 'en', namespace: 'Admin' });
-  const adminClient = createAdminClient();
-
   const userFilter = rawUser.trim();
+  const adminClient = createAdminClient();
+  const t = await getTranslations({ locale: 'en', namespace: 'Admin' });
 
-  // Build where conditions
-  const conditions = [];
-
-  if (topicTypeFilter) {
-    conditions.push(eq(topicPosts.topicType, topicTypeFilter));
-  }
-
-  if (statusFilter === 'active') {
-    conditions.push(isNull(topicPosts.deletedAt));
-  } else if (statusFilter === 'deleted') {
-    conditions.push(isNotNull(topicPosts.deletedAt));
-  }
-
-  // If user filter is set, find matching user IDs from profiles and email
-  let filteredUserIds: string[] | null = null;
-  if (userFilter) {
-    const matchingProfiles = await db
-      .select({ id: profiles.id })
-      .from(profiles)
-      .where(
-        or(
-          ilike(profiles.username, `%${userFilter}%`),
-          ilike(profiles.displayName, `%${userFilter}%`)
-        )
-      );
-
-    // Also search by email via Supabase admin client
-    const { data: usersData } = await adminClient.auth.admin.listUsers({
-      page: 1,
-      perPage: 100,
+  const { posts, profileMap, emailMap, topicTypes, currentPage, totalPages } =
+    await getAdminTopicPostsPageData({
+      adminClient,
+      page,
+      userFilter,
+      topicTypeFilter,
+      statusFilter,
     });
-    const matchingEmailUserIds = (usersData?.users ?? [])
-      .filter((u) => u.email?.toLowerCase().includes(userFilter.toLowerCase()))
-      .map((u) => u.id);
-
-    const allMatchingIds = [
-      ...new Set([...matchingProfiles.map((p) => p.id), ...matchingEmailUserIds]),
-    ];
-
-    if (allMatchingIds.length === 0) {
-      filteredUserIds = [];
-    } else {
-      filteredUserIds = allMatchingIds;
-      conditions.push(inArray(topicPosts.userId, allMatchingIds));
-    }
-  }
-
-  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-
-  // Get total count for pagination
-  const [countResult] = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(topicPosts)
-    .where(whereClause);
-  const { currentPage, totalPages, limit, offset } = getPaginationParams(
-    page,
-    Number(countResult.count)
-  );
-
-  // Fetch posts for current page
-  const posts =
-    filteredUserIds?.length === 0
-      ? []
-      : await db
-          .select()
-          .from(topicPosts)
-          .where(whereClause)
-          .orderBy(desc(topicPosts.createdAt))
-          .limit(limit)
-          .offset(offset);
-
-  // Collect unique user IDs for author lookups
-  const authorIds = [...new Set(posts.map((p) => p.userId))];
-
-  // Fetch profiles for authors
-  const authorProfiles =
-    authorIds.length > 0
-      ? await db.select().from(profiles).where(inArray(profiles.id, authorIds))
-      : [];
-  const profileMap = new Map(authorProfiles.map((p) => [p.id, p]));
-
-  // Fetch emails from Supabase Auth
-  const emailMap = new Map<string, string>();
-  if (authorIds.length > 0) {
-    const { data: usersData } = await adminClient.auth.admin.listUsers({
-      page: 1,
-      perPage: 100,
-    });
-    for (const u of usersData?.users ?? []) {
-      if (u.email) {
-        emailMap.set(u.id, u.email);
-      }
-    }
-  }
-
-  // Fetch distinct topic types for filter dropdown
-  const topicTypes = await db.selectDistinct({ topicType: topicPosts.topicType }).from(topicPosts);
 
   const deleteLabels = {
     deleteButton: t('topicPosts.deleteButton'),
@@ -143,7 +51,6 @@ export default async function AdminTopicPostsPage({
     deleteModalReasonRequired: t('topicPosts.deleteModalReasonRequired'),
   };
 
-  // Build search params for pagination links
   const buildHref = (p: number) => {
     const params = new URLSearchParams();
     params.set('page', String(p));

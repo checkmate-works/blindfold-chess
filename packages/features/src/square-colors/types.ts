@@ -1,14 +1,15 @@
-import type { BasePracticeResult, BasePracticeSettings } from "../common/types";
+import {
+  type BasePracticeSettings,
+  type PracticeResultWithMistakes,
+  DEFAULT_BASE_PRACTICE_SETTINGS,
+} from "../common/types";
 
 export type SquareColor = "light" | "dark";
 
 export type SquareColorsSettings = BasePracticeSettings;
 
 export const DEFAULT_SQUARE_COLORS_SETTINGS: SquareColorsSettings = {
-  timeLimit: 60,
-  mode: "timed",
+  ...DEFAULT_BASE_PRACTICE_SETTINGS,
 };
 
-export type SquareColorsResult = BasePracticeResult & {
-  incorrectAnswers: number;
-};
+export type SquareColorsResult = PracticeResultWithMistakes;

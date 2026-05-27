@@ -4,7 +4,20 @@ import { useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import { BENEFIT_TYPES, type BenefitType } from '@/lib/db/data/grant-types';
+
 import { createGrant } from '../_actions/createGrant';
+
+/**
+ * Admin-facing labels for each benefit type. The admin surface is
+ * English-only by convention, so we keep these out of i18n message files
+ * and let TypeScript's `Record<BenefitType, string>` enforce that every
+ * benefit type listed in `BENEFIT_TYPES` has a label.
+ */
+const BENEFIT_TYPE_LABELS: Record<BenefitType, string> = {
+  ad_free: 'Ad Free',
+  paywall_access: 'Paywall Access',
+};
 
 export function GrantForm() {
   const router = useRouter();
@@ -58,9 +71,14 @@ export function GrantForm() {
           id="benefitType"
           name="benefitType"
           required
+          defaultValue="ad_free"
           className="w-full px-3 py-2 border border-border rounded bg-background text-foreground text-sm"
         >
-          <option value="ad_free">Ad Free</option>
+          {BENEFIT_TYPES.map((bt) => (
+            <option key={bt} value={bt}>
+              {BENEFIT_TYPE_LABELS[bt]}
+            </option>
+          ))}
         </select>
       </div>
 

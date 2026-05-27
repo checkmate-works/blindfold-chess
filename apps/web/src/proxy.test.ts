@@ -31,9 +31,21 @@ vi.mock('@/lib/supabase/proxy', () => ({
       const init = options.requestHeaders
         ? { request: { headers: options.requestHeaders } }
         : undefined;
-      return { response: NextResponse.next(init), authenticated: false };
+      return { response: NextResponse.next(init), authenticated: false, userId: null };
     }
   ),
+}));
+
+// `computeAdsHiddenValueForUser` is `server-only`; vitest will choke on the
+// import unless we either silence `server-only` or mock the module entirely.
+// We mock the compute step so the ads-hidden-cookie writer pulled in by
+// proxy.ts does not transitively pull `server-only` into the test runtime.
+vi.mock('@/lib/ads/ads-hidden-cookie-compute', () => ({
+  computeAdsHiddenValueForUser: vi.fn(async () => null),
+}));
+
+vi.mock('@sentry/nextjs', () => ({
+  captureException: vi.fn(),
 }));
 
 // Import AFTER the mock above so the module picks up the mocked dependency.

@@ -49,9 +49,9 @@ import { IS_LOCAL_DEV } from '@/config';
  */
 export const MOVE_INPUT_COOKIE_NAME = 'bfc_move_input_pref';
 
-export const MOVE_INPUT_COOKIE_MAX_AGE_SEC = 60 * 60 * 24 * 365; // 1 year
+const MOVE_INPUT_COOKIE_MAX_AGE_SEC = 60 * 60 * 24 * 365; // 1 year
 
-export const MOVE_INPUT_MODES = ['button', 'text', 'select'] as const;
+const MOVE_INPUT_MODES = ['button', 'text', 'select'] as const;
 export type MoveInputMode = (typeof MOVE_INPUT_MODES)[number];
 
 export type MoveInputPreferenceHint = {

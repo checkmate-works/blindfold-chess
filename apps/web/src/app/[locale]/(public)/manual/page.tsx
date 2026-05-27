@@ -3,10 +3,9 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 
-import { CardLink, Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { CardLink, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -21,18 +20,7 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  const t = await getTranslations({ locale, namespace: 'manual' });
-
-  const title = t('title');
-  const description = t('description');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'manual', title, description }),
-    title: resolveTitle(title, locale),
-    description,
-  };
+  return createPageMetadata({ params, namespace: 'manual', path: 'manual' });
 }
 
 export default async function ManualPage({ params }: Props) {
@@ -42,33 +30,25 @@ export default async function ManualPage({ params }: Props) {
   const articles = await getAllManualArticles(locale);
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
+    <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
+      <SectionTitle>{t('articlesTitle')}</SectionTitle>
 
-      <PagePanel>
-        <SectionTitle>{t('articlesTitle')}</SectionTitle>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {articles.map((article) => (
+          <CardLink
+            key={article.slug}
+            href={`/manual/${article.slug}`}
+            icon="📖"
+            title={article.title}
+            description={article.excerpt}
+            locale={locale}
+          />
+        ))}
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {articles.map((article) => (
-            <CardLink
-              key={article.slug}
-              href={`/manual/${article.slug}`}
-              icon="📖"
-              title={article.title}
-              description={article.excerpt}
-              locale={locale}
-            />
-          ))}
-        </div>
-
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-        )}
-
-        <Divider />
-
-        <Breadcrumb items={[{ label: t('title') }]} locale={locale} />
-      </PagePanel>
-    </div>
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+      )}
+    </PageLayout>
   );
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { DEFAULT_LOCALE, SITE_URL, SUPPORTED_LOCALES } from '@/config';
 
@@ -147,5 +148,71 @@ export function generateCanonicalMetadata({
       ...(title && { title: buildPageTitle(title, effectiveLocale) }),
       ...(description && { description }),
     },
+  };
+}
+
+/**
+ * Build `Metadata` for a static page whose title and description come from
+ * an `i18n` namespace's `title` / `description` keys.
+ *
+ * Replaces the recurring 8-line boilerplate that every static page used to
+ * inline inside its own `generateMetadata`:
+ *
+ *   const { locale } = await params;
+ *   const t = await getTranslations({ locale, namespace });
+ *   const title = t('title');
+ *   const description = t('description');
+ *   return {
+ *     ...generateCanonicalMetadata({ locale, path, title, description }),
+ *     title: resolveTitle(title, locale),
+ *     description,
+ *   };
+ *
+ * For dynamic-route pages whose title comes from a DB record, or for pages
+ * that need to short-circuit on `notFound()` before metadata is computed,
+ * keep using `generateCanonicalMetadata` + `resolveTitle` directly — those
+ * cases don't fit a single-namespace shape.
+ *
+ * @param params - The `params` promise from the Next.js page props
+ * @param namespace - `next-intl` namespace exposing `title` and `description`
+ * @param path - Path without locale prefix (e.g. `'topics'`, `'pricing'`)
+ * @param availableLocales - Pass when the page is translated for a subset of locales
+ */
+export async function createPageMetadata({
+  params,
+  namespace,
+  path,
+  availableLocales,
+  noIndex = false,
+  omitDescription = false,
+}: {
+  params: Promise<{ locale: Locale }>;
+  namespace: string;
+  path: string;
+  availableLocales?: Locale[];
+  /**
+   * Emit `robots: { index: false, follow: false }`. Use for pages that should
+   * not appear in search engines (auth flows, account screens, members-only
+   * surfaces).
+   */
+  noIndex?: boolean;
+  /**
+   * Skip reading and emitting `description`. Use for pages whose i18n
+   * namespace defines `title` only.
+   */
+  omitDescription?: boolean;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  // Idempotent; safe to call even when the page component also calls it.
+  // Centralising it here lets per-page `generateMetadata` shed the line.
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace });
+  const title = t('title');
+  const description = omitDescription ? undefined : t('description');
+  return {
+    ...generateCanonicalMetadata({ locale, path, title, description, availableLocales }),
+    title: resolveTitle(title, locale),
+    ...(description !== undefined && { description }),
+    ...(noIndex && { robots: { index: false, follow: false } }),
   };
 }

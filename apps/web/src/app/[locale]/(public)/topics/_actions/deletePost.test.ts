@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { clawbackPointsForPost } from '@/lib/points';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
 import { deletePost } from './deletePost';
@@ -20,6 +21,11 @@ vi.mock('@/lib/supabase/server', () => ({
       auth: {
         getUser: mockGetUser,
       },
+      storage: {
+        from: () => ({
+          remove: vi.fn().mockResolvedValue({ error: null }),
+        }),
+      },
     }),
 }));
 
@@ -27,9 +33,19 @@ vi.mock('@/lib/db', () => ({
   db: {
     select: () => ({
       from: () => ({
-        where: () => ({
-          limit: () => mockSelectFromWhereLimit(),
-        }),
+        // The post-fetch chain is `select().from().where().limit(1)` and the
+        // image-attachment-fetch chain is `select().from().where()` (no
+        // limit). Both share the same mock here; we hand them distinct
+        // call paths via the `where()` thenable + limit branch.
+        where: (..._args: unknown[]) => {
+          const result: PromiseLike<unknown[]> & {
+            limit: (n?: number) => Promise<unknown[]>;
+          } = {
+            then: (resolve, reject) => Promise.resolve([]).then(resolve, reject),
+            limit: () => mockSelectFromWhereLimit(),
+          };
+          return result;
+        },
       }),
     }),
     update: () => ({
@@ -55,6 +71,10 @@ vi.mock('@/lib/db', () => ({
     topicKey: 'topic_key',
     deletedAt: 'deleted_at',
   },
+  postImageAttachments: {
+    postId: 'post_id',
+    storagePath: 'storage_path',
+  },
   userGrants: {
     sourceType: 'source_type',
     sourceId: 'source_id',
@@ -64,6 +84,12 @@ vi.mock('@/lib/db', () => ({
 
 vi.mock('@/lib/moderation/ban', () => ({
   isUserBanned: (...args: unknown[]) => mockIsUserBanned(...args),
+}));
+
+vi.mock('@/lib/points', () => ({
+  // Stub the clawback to a no-op: the deletePost flow calls it inside the
+  // db.transaction(), but this test does not exercise the ledger writes.
+  clawbackPointsForPost: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('@/lib/security/rate-limit', () => ({
@@ -110,6 +136,7 @@ describe('deletePost', () => {
 
     const result = await deletePost(testPostId, 'en');
     expect(result).toEqual({ error: 'notFound' });
+    expect(vi.mocked(clawbackPointsForPost)).not.toHaveBeenCalled();
   });
 
   it('should return unauthorized when user is not the post owner', async () => {
@@ -163,6 +190,12 @@ describe('deletePost', () => {
     const result = await deletePost(testPostId, 'en');
     expect(result).toEqual({ success: true });
     expect(mockTxUpdateSetWhere).toHaveBeenCalled();
+    // Self-deletion claws back the creation grant (capped at balance;
+    // a no-op for non point-eligible topic types).
+    expect(vi.mocked(clawbackPointsForPost)).toHaveBeenCalledWith(expect.anything(), testUserId, {
+      type: 'topic_post',
+      id: testPostId,
+    });
   });
 
   it('should log activity event on successful deletion', async () => {

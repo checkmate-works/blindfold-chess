@@ -38,7 +38,7 @@ describe('useAutoSave', () => {
   const defaultProps = {
     moves: [] as AlgebraicNotation[],
     playerColor: 'white' as const,
-    skillLevel: 1 as const,
+    engineConfig: { kind: 'stockfish' as const, skillLevel: 1 as const },
     status: 'in_progress' as const,
     enabled: true,
     saveOnInit: false,
@@ -225,7 +225,7 @@ describe('useAutoSave', () => {
     mockLoad.mockResolvedValue({
       moves: ['e4', 'e5'],
       playerColor: 'white',
-      skillLevel: 1,
+      engineConfig: { kind: 'stockfish', skillLevel: 1 },
       status: 'in_progress',
     });
 
@@ -307,7 +307,7 @@ describe('useAutoSave', () => {
     mockLoad.mockResolvedValue({
       moves: ['e4', 'e5'],
       playerColor: 'white',
-      skillLevel: 1,
+      engineConfig: { kind: 'stockfish', skillLevel: 1 },
       status: 'in_progress',
     });
 
@@ -359,7 +359,7 @@ describe('useAutoSave', () => {
     mockLoad.mockResolvedValue({
       moves: ['e4', 'e5'],
       playerColor: 'white',
-      skillLevel: 1,
+      engineConfig: { kind: 'stockfish', skillLevel: 1 },
       status: 'in_progress',
     });
 
@@ -391,5 +391,104 @@ describe('useAutoSave', () => {
 
     // Toast SHOULD be set because the user's move set hasSavedInSession
     expect(sessionStorage.getItem('blindfold_chess_show_save_toast')).toBe('true');
+  });
+
+  it('exposes markPendingChange that causes a save on beforeunload after a settings-only edit', async () => {
+    // Reproduces SPEC1 blocker 2: a mid-game preference edit (no move made)
+    // must still be persisted on Save&Exit / navigation / page hide. With
+    // markPendingChange wired in, hasPlayerInteracted + hasPendingChanges
+    // both flip, and the beforeunload handler in useAutoSaveEvents fires a
+    // silent save.
+    const { result } = renderHook((props) => useAutoSave(props), {
+      initialProps: {
+        ...defaultProps,
+        moves: ['e4', 'e5'] as AlgebraicNotation[],
+        enabled: true,
+        gameId: 'id-settings-only',
+      },
+    });
+
+    // Simulate the mid-game settings edit: setPerGamePref calls
+    // markPendingChange when it appends to the preference change log.
+    result.current.markPendingChange();
+
+    // No move was made — moves array unchanged. Page navigates away.
+    window.dispatchEvent(new Event('beforeunload'));
+    await waitFor(() => {
+      expect(mockUpdate).toHaveBeenCalled();
+    });
+  });
+
+  it('saves a settings-only edit on beforeunload even when the game has zero moves', async () => {
+    // New games are initially saved before any move is made. If the player
+    // changes a mid-game setting at that point, the pending change must still
+    // persist even though moves.length is 0.
+    const { result } = renderHook((props) => useAutoSave(props), {
+      initialProps: {
+        ...defaultProps,
+        moves: [] as AlgebraicNotation[],
+        enabled: true,
+        gameId: 'id-zero-move-settings',
+      },
+    });
+
+    result.current.markPendingChange();
+    window.dispatchEvent(new Event('beforeunload'));
+
+    await waitFor(() => {
+      expect(mockUpdate).toHaveBeenCalled();
+    });
+  });
+
+  it('saves a settings-only edit on unmount even when the game has zero moves', async () => {
+    // Save & Exit is an in-app route transition, so the unmount cleanup path
+    // must also save pending settings-only edits for a 0-move game.
+    const { result, unmount } = renderHook((props) => useAutoSave(props), {
+      initialProps: {
+        ...defaultProps,
+        moves: [] as AlgebraicNotation[],
+        enabled: true,
+        gameId: 'id-zero-move-settings',
+      },
+    });
+
+    result.current.markPendingChange();
+    unmount();
+
+    await waitFor(() => {
+      expect(mockUpdate).toHaveBeenCalled();
+    });
+  });
+
+  it('still persists the game on beforeunload (silent save)', async () => {
+    // The beforeunload handler runs a silent save — it skips React state
+    // updates but must still persist to storage.
+    const { result, rerender } = renderHook((props) => useAutoSave(props), {
+      initialProps: {
+        ...defaultProps,
+        moves: [] as AlgebraicNotation[],
+        enabled: true,
+        gameId: 'id-1',
+      },
+    });
+
+    // Player makes a move, which auto-saves once.
+    result.current.markPlayerInteraction();
+    rerender({
+      ...defaultProps,
+      moves: ['e4'] as AlgebraicNotation[],
+      enabled: true,
+      gameId: 'id-1',
+    });
+    await waitFor(() => {
+      expect(mockUpdate).toHaveBeenCalled();
+    });
+    mockUpdate.mockClear();
+
+    // Navigating away fires beforeunload — the game must still be persisted.
+    window.dispatchEvent(new Event('beforeunload'));
+    await waitFor(() => {
+      expect(mockUpdate).toHaveBeenCalledTimes(1);
+    });
   });
 });

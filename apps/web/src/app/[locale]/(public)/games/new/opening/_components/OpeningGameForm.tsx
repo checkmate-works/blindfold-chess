@@ -37,7 +37,7 @@ export function OpeningGameForm({ openings }: Props) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-tour-id="opening-search">
       <OpeningSearch openings={openings} selectedSlug={selectedSlug} onSelect={setSelectedSlug} />
 
       {selectedOpening && (

@@ -2,28 +2,33 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE, IS_LOCAL_DEV } from '@/config';
+import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
+import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { paginateItems } from '@/lib/pagination';
 import { createOpeningPostRateLimit, isRateLimited } from '@/lib/security/rate-limit';
 import { createClient } from '@/lib/supabase/server';
 
+import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
+import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
 import { TopicListPageLayout } from '@/app/[locale]/(public)/topics/_components/TopicListPageLayout';
+import { renderAttachment } from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import {
   TOPIC_PAGE_SIZE,
   buildPaginationHref,
   validateSort,
 } from '@/app/[locale]/(public)/topics/_lib/pagination';
+import { SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { OpeningSortTabs } from '../_components';
 import { OpeningBoardWithMoves } from '../_components/OpeningBoardWithMoves';
 import { getOpeningDisplayName } from '../_lib/get-opening-display-name';
 import { getOpeningBySlug, getOpeningPostsWithReplyMeta } from '../_lib/queries';
 import { OpeningPostCard } from './_components';
+import { NewOpeningPostForm } from './new/_components';
 
 export const dynamic = 'force-dynamic';
 
@@ -96,22 +101,57 @@ export default async function OpeningDetailPage({ params, searchParams }: Props)
     paginatedItems: posts,
   } = paginateItems(allPosts, TOPIC_PAGE_SIZE, page);
 
+  // Pre-resolve each visible post's attachment slot upstream because
+  // OpeningPostCard is a client component and `getAttachmentsForPosts`
+  // is server-only. The OpeningPostCard composes this with the
+  // optional rating display in its `extraContent` slot.
+  const postIds = posts.map((p) => p.id);
+  const attachments = postIds.length > 0 ? await getAttachmentsForPosts(postIds) : new Map();
+  const tVideo = await getTranslations({ locale, namespace: 'postVideoAttachmentRender' });
+  const fallbackVideoTitle = tVideo('fallbackTitle');
+
   const buildHref = (p: number) =>
     buildPaginationHref(locale, `/topics/openings/${slug}`, p, sortBy);
 
-  const showNewPostButton =
-    !user || !(await isRateLimited(user.id, createOpeningPostRateLimit(slug)));
+  const canPost = !!user && !(await isRateLimited(user.id, createOpeningPostRateLimit(slug)));
+
+  const newPostForm = <NewOpeningPostForm locale={locale} slug={slug} />;
+
+  const communitySection = (
+    <section className="space-y-4">
+      <SectionTitle>{t('communityThoughts')}</SectionTitle>
+
+      {user ? (
+        canPost ? (
+          totalCount === 0 ? (
+            newPostForm
+          ) : (
+            <JoinConversationToggle count={totalCount} joinLabel={t('joinConversation')}>
+              {newPostForm}
+            </JoinConversationToggle>
+          )
+        ) : null
+      ) : (
+        <JoinConversationToggle count={totalCount} joinLabel={t('joinConversation')}>
+          {newPostForm}
+        </JoinConversationToggle>
+      )}
+
+      {totalCount > 0 && (
+        <SortSelect
+          basePath={`/topics/openings/${slug}`}
+          translationKey="topics.openings.sort"
+          currentSort={sortBy}
+        />
+      )}
+    </section>
+  );
 
   return (
     <TopicListPageLayout
       locale={locale}
       pageTitle={dt('pageTitle')}
       sectionTitle={displayName}
-      adMiddle={
-        (IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE) && (
-          <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
-        )
-      }
       adBottom={
         (IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
           <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
@@ -122,18 +162,20 @@ export default async function OpeningDetailPage({ params, searchParams }: Props)
           <OpeningBoardWithMoves fen={opening.fen} pgn={opening.pgn} />
         ) : undefined
       }
-      postCountText={dt('postCount', { count: totalCount })}
-      newPostButton={
-        showNewPostButton
-          ? { href: `/topics/openings/${slug}/new`, label: dt('newPost') }
-          : undefined
-      }
-      sortTabs={<OpeningSortTabs slug={slug} locale={locale} />}
+      communitySection={communitySection}
       hasPosts={posts.length > 0}
-      noPostsText={dt('noPosts')}
-      postCards={posts.map((post) => (
-        <OpeningPostCard key={post.id} post={post} locale={locale} slug={slug} />
-      ))}
+      postCards={posts.map((post) => {
+        const att = attachments.get(post.id);
+        return (
+          <OpeningPostCard
+            key={post.id}
+            post={post}
+            locale={locale}
+            slug={slug}
+            attachment={att ? renderAttachment(att, fallbackVideoTitle) : undefined}
+          />
+        );
+      })}
       pagination={{ currentPage, totalPages, buildHref }}
       breadcrumbItems={[
         { label: t('title'), href: '/topics' },

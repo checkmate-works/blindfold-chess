@@ -2,9 +2,8 @@
 
 import { useMemo, useState } from 'react';
 
-import { Button } from '@/app/_components';
+import { Button, FlipBoardButton } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FaSyncAlt } from 'react-icons/fa';
 
 import type { BoardTheme } from '@/lib/games/board-themes';
 import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
@@ -56,7 +55,7 @@ export function FenRecreate({
 
   return (
     <div className="space-y-4">
-      <div className="bg-card rounded-md border border-border p-4">
+      <div className="p-4">
         <div className="flex flex-col gap-6">
           {/* Progress */}
           {problemCount > 1 && (
@@ -85,13 +84,7 @@ export function FenRecreate({
           <div className="flex justify-center">
             <div className="w-full max-w-md">
               <div className="flex justify-end mb-2">
-                <button
-                  onClick={() => setIsFlipped(!isFlipped)}
-                  className="p-2 border border-border rounded-md hover:bg-muted"
-                  title={t('flipBoard')}
-                >
-                  <FaSyncAlt className="w-4 h-4" />
-                </button>
+                <FlipBoardButton onClick={() => setIsFlipped(!isFlipped)} title={t('flipBoard')} />
               </div>
               <EditableChessBoard
                 fen={recreatedPosition}

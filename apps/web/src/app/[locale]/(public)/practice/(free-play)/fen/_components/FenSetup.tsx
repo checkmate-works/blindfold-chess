@@ -14,12 +14,12 @@ import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal'
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { TUTORIAL_SKIP_CONFIG } from '../../../_lib/tutorial-skip-config';
 import type { PresetPosition } from '../_data/positions';
 import presetPositions from '../_data/presetPositions.json';
 import { useFenSettings } from '../_hooks/use-fen-settings';
 import { CustomFenSection } from './CustomFenSection';
 import { PresetProblemSection } from './PresetProblemSection';
-import { TUTORIAL_SKIPPED_KEY } from './TutorialSkipLink';
 
 type Props = {
   locale: Locale;
@@ -78,7 +78,7 @@ export function FenSetup({ locale }: Props) {
 
   const handleResetConfirm = () => {
     localStorage.removeItem('fenPracticeSettings');
-    localStorage.removeItem(TUTORIAL_SKIPPED_KEY);
+    localStorage.removeItem(TUTORIAL_SKIP_CONFIG.fen.storageKey);
     setIsResetConfirmOpen(false);
     router.push(`/${locale}/practice/fen/tutorial`);
   };

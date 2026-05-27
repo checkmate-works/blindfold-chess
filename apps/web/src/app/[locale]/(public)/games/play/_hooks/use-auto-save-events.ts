@@ -6,9 +6,10 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { isGameFinished } from '../_lib/game-utils';
 import { SESSION_STORAGE_KEYS } from '../_lib/session-storage-keys';
+import type { SaveGame } from './use-auto-save';
 
 type UseAutoSaveEventsOptions = {
-  saveGame: (showNotification?: boolean) => Promise<string | undefined> | undefined;
+  saveGame: SaveGame;
   currentMovesRef: React.RefObject<AlgebraicNotation[]>;
   currentStatusRef: React.RefObject<string>;
   hasPlayerInteracted: React.RefObject<boolean>;
@@ -40,12 +41,16 @@ export function useAutoSaveEvents({
     return hasSavedInSession.current || hasPendingChanges.current;
   };
 
+  const hasSaveableState = () => {
+    return currentMovesRef.current.length > 0 || hasPendingChanges.current;
+  };
+
   // Auto-save on page visibility change and show notification when navigating away
   useEffect(() => {
     const gameFinished = isGameFinished(currentStatusRef.current);
 
     const handleVisibilityChange = async () => {
-      if (document.hidden && currentMovesRef.current.length > 0 && !gameFinished) {
+      if (document.hidden && hasSaveableState() && !gameFinished) {
         if (hasPendingChanges.current) {
           await saveGame(false);
         }
@@ -62,8 +67,7 @@ export function useAutoSaveEvents({
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
 
-      // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: read latest ref at unmount
-      if (currentMovesRef.current.length > 0 && !gameFinished) {
+      if (hasSaveableState() && !gameFinished) {
         // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: read latest ref at unmount
         if (hasPendingChanges.current) {
           saveGame(false);
@@ -79,8 +83,12 @@ export function useAutoSaveEvents({
   // Auto-save on page unload
   useEffect(() => {
     const handleBeforeUnload = () => {
-      if (hasPlayerInteracted.current && currentMovesRef.current.length > 0) {
-        saveGame(false);
+      if (hasPlayerInteracted.current && hasSaveableState()) {
+        // `silent`: this listener can fire synchronously inside a React render
+        // when leaving for a different root layout (e.g. `/`). A plain save
+        // would `setState` during render and trip React's warning — persist
+        // only, since the save status UI is moot on an unloading page.
+        saveGame(false, { silent: true });
       }
     };
 
@@ -94,7 +102,7 @@ export function useAutoSaveEvents({
 
     if (pathname !== previousPathname.current && previousPathname.current) {
       if (
-        currentMovesRef.current.length > 0 &&
+        hasSaveableState() &&
         (hasSavedInSession.current || hasPendingChanges.current) &&
         !gameFinished
       ) {

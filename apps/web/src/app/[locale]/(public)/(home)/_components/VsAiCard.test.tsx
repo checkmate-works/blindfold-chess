@@ -1,7 +1,7 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { Game } from '@/lib/types';
+import type { Game } from '@/lib/games/saved-game-types';
 
 import { VsAiCard } from './VsAiCard';
 
@@ -63,7 +63,7 @@ function createMockGame(overrides: Partial<Game> & { id: string }): Game {
     lastPlayed: new Date('2024-01-02').toISOString(),
     moves: [],
     playerColor: 'white',
-    skillLevel: 1,
+    engineConfig: { kind: 'stockfish', skillLevel: 1 },
     status: 'in_progress',
     ...overrides,
   };
@@ -139,7 +139,7 @@ describe('VsAiCard', () => {
       const game = createMockGame({
         id: 'game-1',
         playerColor: 'white',
-        skillLevel: 5,
+        engineConfig: { kind: 'stockfish', skillLevel: 5 },
         moves: ['e4', 'e5', 'Nf3'],
         status: 'in_progress',
       });
@@ -182,7 +182,31 @@ describe('VsAiCard', () => {
       render(<VsAiCard locale="en" />);
 
       const resumeLink = screen.getByText('resume').closest('a');
-      expect(resumeLink).toHaveAttribute('href', '/games/play?gameId=game-1');
+      expect(resumeLink).toHaveAttribute('href', '/games/play?gameId=game-1&skillLevel=1');
+    });
+
+    it('carries the engine + Elo through the resume link for a Maia game', () => {
+      // Regression: previously the Resume link only emitted `gameId=` and the
+      // play route fell back to Stockfish at the default skill level — a
+      // Maia 1600 game would silently reboot as Stockfish Level 5 after
+      // navigating home and clicking Resume.
+      const game = createMockGame({
+        id: 'game-maia',
+        status: 'in_progress',
+        engineConfig: { kind: 'maia', rating: 1600 },
+      });
+      mockUseGameList.mockReturnValue({
+        games: [game],
+        isLoading: false,
+      });
+
+      render(<VsAiCard locale="en" />);
+
+      const resumeLink = screen.getByText('resume').closest('a');
+      expect(resumeLink).toHaveAttribute(
+        'href',
+        '/games/play?gameId=game-maia&engine=maia&elo=1600'
+      );
     });
 
     it('should link new game button to /games/new', () => {
@@ -226,14 +250,14 @@ describe('VsAiCard', () => {
     it('should use the latest (first) in-progress game from the list', () => {
       const olderGame = createMockGame({
         id: 'game-old',
-        skillLevel: 3,
+        engineConfig: { kind: 'stockfish', skillLevel: 3 },
         moves: ['d4'],
         status: 'in_progress',
         playerColor: 'black',
       });
       const newerGame = createMockGame({
         id: 'game-new',
-        skillLevel: 10,
+        engineConfig: { kind: 'stockfish', skillLevel: 10 },
         moves: ['e4', 'e5'],
         status: 'in_progress',
         playerColor: 'white',
@@ -252,7 +276,7 @@ describe('VsAiCard', () => {
 
       // Resume link should point to the latest in-progress game's id
       const resumeLink = screen.getByText('resume').closest('a');
-      expect(resumeLink).toHaveAttribute('href', '/games/play?gameId=game-new');
+      expect(resumeLink).toHaveAttribute('href', '/games/play?gameId=game-new&skillLevel=10');
     });
   });
 
@@ -308,12 +332,12 @@ describe('VsAiCard', () => {
       const completedGame = createMockGame({
         id: 'game-done',
         status: 'win',
-        skillLevel: 1,
+        engineConfig: { kind: 'stockfish', skillLevel: 1 },
       });
       const inProgressGame = createMockGame({
         id: 'game-active',
         status: 'in_progress',
-        skillLevel: 8,
+        engineConfig: { kind: 'stockfish', skillLevel: 8 },
         moves: ['e4', 'e5', 'Nf3', 'Nc6'],
       });
       mockUseGameList.mockReturnValue({
@@ -329,7 +353,7 @@ describe('VsAiCard', () => {
 
       // Resume link should use the in-progress game's id, not the completed one
       const resumeLink = screen.getByText('resume').closest('a');
-      expect(resumeLink).toHaveAttribute('href', '/games/play?gameId=game-active');
+      expect(resumeLink).toHaveAttribute('href', '/games/play?gameId=game-active&skillLevel=8');
     });
   });
 

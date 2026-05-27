@@ -2,9 +2,6 @@
 
 import { useCallback, useEffect, useRef } from 'react';
 
-import Link from 'next/link';
-
-import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { getCornerInfo } from '@blindfold-chess/features/diagonal-quiz';
 import type { ActiveField } from '@blindfold-chess/features/diagonal-quiz';
@@ -12,6 +9,7 @@ import { useDiagonalInput } from '@blindfold-chess/features/diagonal-quiz/client
 
 import { AnswerFeedback } from '@/app/[locale]/(public)/practice/(challenge)/_components/AnswerFeedback';
 import { ScoreCounter } from '@/app/[locale]/(public)/practice/(challenge)/_components/ScoreCounter';
+import { TrainingChallengeCTA } from '@/app/[locale]/(public)/practice/(challenge)/_components/TrainingChallengeCTA';
 import { AlgebraicKeyboardHint } from '@/app/[locale]/(public)/practice/_components/KeyboardHint';
 import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
 import { SectionTitle } from '@/app/[locale]/_components';
@@ -165,12 +163,14 @@ export function DiagonalQuizTrainingPlaying({
 
   return (
     <div className="max-w-md mx-auto">
-      <div className="bg-card rounded-xl border border-border p-8 text-center relative overflow-hidden">
+      <div className="p-8 text-center relative overflow-hidden">
         <div>
           <SectionTitle className="mb-4">{t('question', { square: currentSquare })}</SectionTitle>
 
           <div className="mb-6">
-            <div className="text-6xl font-bold text-foreground mb-4">{currentSquare}</div>
+            <div className="text-6xl font-bold text-foreground mb-4 select-none">
+              {currentSquare}
+            </div>
 
             <AnswerFeedback
               isCorrect={lastAnswer?.correct ?? null}
@@ -187,56 +187,58 @@ export function DiagonalQuizTrainingPlaying({
             />
           </div>
 
-          {/* Diagonal Input Display Fields */}
-          <div className="space-y-3 mb-6">
-            <DiagonalInputField
-              label={t('diagonalLabel')}
-              isSingleSquare={singleDiagonal}
-              activeField={activeField}
-              fieldType="diagonal"
-              startText={diagonalStartText}
-              endText={diagonalEndText}
-              isComplete={isDiagonalComplete}
-              isDisabled={isDisabled}
-              isInputtingStart={isInputtingStart}
-              isInputtingEnd={isInputtingEnd}
-              onFieldClick={handleFieldClick}
-            />
+          <div className="-mx-8 sm:mx-0">
+            {/* Diagonal Input Display Fields */}
+            <div className="space-y-3 mb-6">
+              <DiagonalInputField
+                label={t('diagonalLabel')}
+                isSingleSquare={singleDiagonal}
+                activeField={activeField}
+                fieldType="diagonal"
+                startText={diagonalStartText}
+                endText={diagonalEndText}
+                isComplete={isDiagonalComplete}
+                isDisabled={isDisabled}
+                isInputtingStart={isInputtingStart}
+                isInputtingEnd={isInputtingEnd}
+                onFieldClick={handleFieldClick}
+              />
 
-            <DiagonalInputField
-              label={t('antiDiagonalLabel')}
-              isSingleSquare={singleAntiDiagonal}
-              activeField={activeField}
-              fieldType="antiDiagonal"
-              startText={antiDiagonalStartText}
-              endText={antiDiagonalEndText}
-              isComplete={isAntiDiagonalComplete}
-              isDisabled={isDisabled}
-              isInputtingStart={isInputtingStart}
-              isInputtingEnd={isInputtingEnd}
-              onFieldClick={handleFieldClick}
-            />
-          </div>
-
-          {/* Step indicator */}
-          {!isDisabled && (
-            <div className="text-sm text-muted-foreground mb-4">
-              {expectingFile ? t('selectFile') : expectingRank ? t('selectRank') : ''}
+              <DiagonalInputField
+                label={t('antiDiagonalLabel')}
+                isSingleSquare={singleAntiDiagonal}
+                activeField={activeField}
+                fieldType="antiDiagonal"
+                startText={antiDiagonalStartText}
+                endText={antiDiagonalEndText}
+                isComplete={isAntiDiagonalComplete}
+                isDisabled={isDisabled}
+                isInputtingStart={isInputtingStart}
+                isInputtingEnd={isInputtingEnd}
+                onFieldClick={handleFieldClick}
+              />
             </div>
-          )}
 
-          {/* Button Input Area */}
-          <ChessCoordinateKeypad
-            expectingFile={expectingFile}
-            expectingRank={expectingRank}
-            isDisabled={isDisabled}
-            onFilePress={handleFilePress}
-            onRankPress={handleRankPress}
-            onBackspace={handleBackspace}
-            onClear={handleClear}
-          />
+            {/* Step indicator */}
+            {!isDisabled && (
+              <div className="text-sm text-muted-foreground mb-4">
+                {expectingFile ? t('selectFile') : expectingRank ? t('selectRank') : ''}
+              </div>
+            )}
 
-          <AlgebraicKeyboardHint disabled={isDisabled} />
+            {/* Button Input Area */}
+            <ChessCoordinateKeypad
+              expectingFile={expectingFile}
+              expectingRank={expectingRank}
+              isDisabled={isDisabled}
+              onFilePress={handleFilePress}
+              onRankPress={handleRankPress}
+              onBackspace={handleBackspace}
+              onClear={handleClear}
+            />
+
+            <AlgebraicKeyboardHint disabled={isDisabled} />
+          </div>
         </div>
       </div>
 
@@ -263,18 +265,7 @@ export function DiagonalQuizTrainingPlaying({
         </div>
       </div>
 
-      <hr className="border-border mt-8" />
-      <div className="mt-6 text-center">
-        <p className="text-sm text-muted-foreground">{tp('trainingModeActive')}</p>
-        <p className="mt-2 text-base font-medium text-foreground">{tp('readyForChallenge')}</p>
-        <div className="mt-4">
-          <Link href={`/${locale}/practice/diagonal-quiz/challenge`}>
-            <Button asChild variant="primary" size="lg" className="w-full">
-              {tp('goToChallenge')}
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <TrainingChallengeCTA challengeHref={`/${locale}/practice/diagonal-quiz/challenge`} />
     </div>
   );
 }

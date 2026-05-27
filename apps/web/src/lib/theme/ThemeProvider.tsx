@@ -1,14 +1,6 @@
 'use client';
 
-import {
-  type ReactNode,
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { type ReactNode, createContext, useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
   type ResolvedTheme,
@@ -158,16 +150,4 @@ export function ThemeProvider({ children, disableTransitionOnChange = false }: P
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
-}
-
-export function useTheme(): ThemeContextValue {
-  const ctx = useContext(ThemeContext);
-  if (ctx) return ctx;
-  // Mirror next-themes' lenient behavior: return a no-op object if used
-  // outside a provider (e.g., isolated tests).
-  return {
-    theme: 'system',
-    resolvedTheme: THEME_LIGHT_CLASS,
-    setTheme: () => {},
-  };
 }

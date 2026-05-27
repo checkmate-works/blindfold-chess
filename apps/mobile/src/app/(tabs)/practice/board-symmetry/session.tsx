@@ -127,7 +127,12 @@ export default function BoardSymmetrySession() {
           {/* Score */}
           <View style={styles.footer}>
             <View style={styles.scoreItem}>
-              <View style={[styles.iconContainer, styles.correctIconBg]}>
+              <View
+                style={[
+                  styles.iconContainer,
+                  { backgroundColor: feedbackColors.successSoft },
+                ]}
+              >
                 <Check size={16} color={feedbackColors.success} />
               </View>
               <Text style={[styles.scoreValue, { color: colors.foreground }]}>
@@ -136,7 +141,12 @@ export default function BoardSymmetrySession() {
             </View>
 
             <View style={styles.scoreItem}>
-              <View style={[styles.iconContainer, styles.wrongIconBg]}>
+              <View
+                style={[
+                  styles.iconContainer,
+                  { backgroundColor: feedbackColors.errorSoft },
+                ]}
+              >
                 <X size={16} color={feedbackColors.error} />
               </View>
               <Text style={[styles.scoreValue, { color: colors.foreground }]}>
@@ -196,12 +206,6 @@ const styles = StyleSheet.create({
   iconContainer: {
     padding: spacing.xs,
     borderRadius: 999,
-  },
-  correctIconBg: {
-    backgroundColor: "rgba(34, 197, 94, 0.1)",
-  },
-  wrongIconBg: {
-    backgroundColor: "rgba(239, 68, 68, 0.1)",
   },
   scoreValue: {
     fontSize: fontSize.xl,

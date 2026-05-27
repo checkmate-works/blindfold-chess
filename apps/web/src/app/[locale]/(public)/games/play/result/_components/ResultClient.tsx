@@ -10,7 +10,8 @@ import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaChartLine, FaClipboardList, FaMinus, FaTimes } from 'react-icons/fa';
 
-import type { Game, MoveInputMethod, MoveOperationLog } from '@/lib/types';
+import { engineConfigToUrlParams } from '@/lib/engines';
+import type { Game, MoveInputMethod, MoveOperationLog } from '@/lib/games/saved-game-types';
 
 import { Divider } from '@/app/[locale]/_components/Divider';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
@@ -83,19 +84,22 @@ function OperationLogSummary({
       'text-autocomplete': 0,
       select: 0,
       button: 0,
+      board: 0,
     };
     let totalPeeks = 0;
     let totalUndos = 0;
     let totalHints = 0;
+    let totalInvalids = 0;
 
     for (const log of logs) {
       inputMethods[log.inputMethod]++;
       totalPeeks += log.peekCount;
       totalUndos += log.undoCount;
       totalHints += log.movePeekCount ?? 0;
+      totalInvalids += log.invalidCount ?? 0;
     }
 
-    return { inputMethods, totalPeeks, totalUndos, totalHints };
+    return { inputMethods, totalPeeks, totalUndos, totalHints, totalInvalids };
   }, [logs]);
 
   const inputMethodLabels: Record<MoveInputMethod, string> = {
@@ -103,6 +107,7 @@ function OperationLogSummary({
     'text-autocomplete': t('operationLog.inputMethodTextAutocomplete'),
     select: t('operationLog.inputMethodSelect'),
     button: t('operationLog.inputMethodButton'),
+    board: t('operationLog.inputMethodBoard'),
   };
 
   const activeInputMethods = (
@@ -113,7 +118,8 @@ function OperationLogSummary({
     activeInputMethods.length > 0 ||
     stats.totalPeeks > 0 ||
     stats.totalUndos > 0 ||
-    stats.totalHints > 0;
+    stats.totalHints > 0 ||
+    stats.totalInvalids > 0;
 
   if (!hasAnyStats) return null;
 
@@ -137,6 +143,13 @@ function OperationLogSummary({
     singleRows.push({
       label: t('result.operationSummary.undoCount'),
       value: t('result.operationSummary.times', { count: stats.totalUndos }),
+    });
+  }
+
+  if (stats.totalInvalids > 0) {
+    singleRows.push({
+      label: t('result.operationSummary.invalidCount'),
+      value: t('result.operationSummary.times', { count: stats.totalInvalids }),
     });
   }
 
@@ -233,7 +246,9 @@ function ResultContent({ game, gameId, locale, displayName, breadcrumb }: Result
     params.set('autoOpponent', 'true');
     if (game.startingFen) params.set('fen', game.startingFen);
     params.set('gameId', gameId);
-    params.set('skillLevel', game.skillLevel.toString());
+    for (const [key, value] of Object.entries(engineConfigToUrlParams(game.engineConfig))) {
+      params.set(key, value);
+    }
     params.set('moves', JSON.stringify(game.moves));
 
     router.push(`/${locale}/games/play/postmortem?${params.toString()}`);
@@ -244,7 +259,7 @@ function ResultContent({ game, gameId, locale, displayName, breadcrumb }: Result
       <div className="flex flex-col gap-4">
         {/* Game Result */}
         {playerResult === 'win' && (
-          <VictoryCertificate displayName={displayName} skillLevel={game.skillLevel} />
+          <VictoryCertificate displayName={displayName} engineConfig={game.engineConfig} />
         )}
         {playerResult !== 'win' && (
           <div className="py-6 text-center flex flex-col items-center gap-3">
@@ -295,15 +310,17 @@ function ResultContent({ game, gameId, locale, displayName, breadcrumb }: Result
         </div>
       </div>
 
-      {/* Operation Log Detail Modal */}
+      {/* Game Details Modal — Opponent + Initial Settings + Change Log.
+          Per-move counts moved into MovesPanel inline popovers in Phase
+          5b; the result page does not show MovesPanel, so per-move
+          investigation lives in the postmortem flow instead. */}
       {game.operationLogs && (
         <OperationLogModal
           isOpen={isOperationLogVisible}
           onClose={() => setIsOperationLogVisible(false)}
-          logs={game.operationLogs}
-          moves={game.moves}
-          playerSide={game.playerColor}
-          startingFen={game.startingFen}
+          engineConfig={game.engineConfig}
+          gamePreferences={game.gamePreferences}
+          preferenceChangeLog={game.preferenceChangeLog}
         />
       )}
 

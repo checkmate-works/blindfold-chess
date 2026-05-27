@@ -32,14 +32,70 @@ export type RateLimitConfig = {
 
 export const RATE_LIMITS = {
   createPost: { action: 'create_post', maxAttempts: 10, windowMs: 3_600_000 },
+  /**
+   * Per-user limit for posts that include a chess game attachment. Stricter
+   * than `createPost` because the attachment path can trigger an outbound
+   * Lichess fetch and writes additional rows. Apply IN ADDITION to the
+   * standard `createPost` limit so the user's overall create-post budget
+   * is not bypassed.
+   */
+  createPostWithAttachment: {
+    action: 'create_post_with_attachment',
+    maxAttempts: 5,
+    windowMs: 3_600_000,
+  },
   createReply: { action: 'create_reply', maxAttempts: 20, windowMs: 3_600_000 },
   toggleLike: { action: 'toggle_like', maxAttempts: 50, windowMs: 86_400_000 },
   toggleFollow: { action: 'toggle_follow', maxAttempts: 100, windowMs: 86_400_000 },
   deletePost: { action: 'delete_post', maxAttempts: 10, windowMs: 3_600_000 },
+  editPost: { action: 'edit_post', maxAttempts: 30, windowMs: 3_600_000 },
+  /**
+   * Per-user limit for removing an attachment from one of the author's own
+   * topic_posts (PGN / FEN / image / video / embed). 30 / hour matches
+   * `editPost`: removing the wrong attachment is the kind of correction a
+   * legitimate author may iterate on, so the budget is intentionally
+   * looser than `deletePost`. Storage-touching kinds (image) still consume
+   * the same budget — overwriting that limit per kind would let a sustained
+   * abuser burn out the cap on a cheap kind (embed) and fall back on
+   * image-removal as a side channel.
+   */
+  removePostAttachment: { action: 'remove_post_attachment', maxAttempts: 30, windowMs: 3_600_000 },
+  /**
+   * Per-user limit for attaching a PGN to an existing topic_post via the
+   * edit flow. Aligned with `attachPostFen` (1:0..1 invariant already caps
+   * successful inserts at one per post, so this guards against spam
+   * attempts that hit the validator / Lichess fetcher). The legacy
+   * create-flow `createPostWithAttachment` budget stays separate so a
+   * stuck edit loop cannot starve a user out of creating new posts.
+   */
+  attachPostPgn: { action: 'attach_post_pgn', maxAttempts: 10, windowMs: 3_600_000 },
   setupUsername: { action: 'setup_username', maxAttempts: 5, windowMs: 600_000 },
   updateProfile: { action: 'update_profile', maxAttempts: 5, windowMs: 600_000 },
   uploadAvatar: { action: 'upload_avatar', maxAttempts: 5, windowMs: 600_000 },
   uploadArticleImage: { action: 'upload_article_image', maxAttempts: 20, windowMs: 600_000 },
+  /**
+   * Per-user limit for post image uploads. Same window as
+   * `uploadArticleImage` (10 minutes) but lower max because post images
+   * are user-generated content (vs admin-only articles) and the per-post
+   * cap is 3 — a user creating a fresh post needs at most 3 uploads, so
+   * 15 / 10 min covers ~5 fresh posts before the limit kicks in.
+   */
+  uploadPostImage: { action: 'upload_post_image', maxAttempts: 15, windowMs: 600_000 },
+  /**
+   * Per-user limit for attaching a FEN to a post. The 1:0..1 invariant
+   * already caps successful inserts at one per post; this limit guards
+   * against spam attempts that hit the validator. 10 / hour matches
+   * `createPost` so a user who creates a post and immediately attaches a
+   * FEN does not run into a tighter ceiling for the second action.
+   */
+  attachPostFen: { action: 'attach_post_fen', maxAttempts: 10, windowMs: 3_600_000 },
+  /**
+   * Per-user limit for attaching a video (YouTube) to a post. Mirrors
+   * `attachPostFen`'s shape: the 1:0..1 invariant caps successful
+   * inserts at one per post, so this limit guards against spam attempts
+   * that hit the URL validator. 10 / hour aligns with `createPost`.
+   */
+  attachPostVideo: { action: 'attach_post_video', maxAttempts: 10, windowMs: 3_600_000 },
   changePassword: { action: 'change_password', maxAttempts: 5, windowMs: 3_600_000 },
   deleteAccount: { action: 'delete_account', maxAttempts: 3, windowMs: 3_600_000 },
   savePracticeResult: { action: 'save_practice_result', maxAttempts: 60, windowMs: 3_600_000 },
@@ -58,7 +114,52 @@ export const RATE_LIMITS = {
   },
   createPosition: { action: 'create_position', maxAttempts: 10, windowMs: 3_600_000 },
   deletePosition: { action: 'delete_position', maxAttempts: 10, windowMs: 3_600_000 },
+  updatePosition: { action: 'update_position', maxAttempts: 20, windowMs: 3_600_000 },
   createPuzzle: { action: 'create_puzzle', maxAttempts: 10, windowMs: 3_600_000 },
+  updatePuzzle: { action: 'update_puzzle', maxAttempts: 20, windowMs: 3_600_000 },
+  deletePuzzle: { action: 'delete_puzzle', maxAttempts: 10, windowMs: 3_600_000 },
+  createChunk: { action: 'create_chunk', maxAttempts: 10, windowMs: 3_600_000 },
+  updateChunk: { action: 'update_chunk', maxAttempts: 20, windowMs: 3_600_000 },
+  deleteChunk: { action: 'delete_chunk', maxAttempts: 10, windowMs: 3_600_000 },
+  /**
+   * Per-user limit for submitting Qiita-style edit requests on a draft
+   * chunk. Aligned with `createPost` (10/hour) — a sustained submitter
+   * hitting this either has 10 genuinely good ideas in the same hour
+   * (rare) or is spamming the chunk owner (the case we care to throttle).
+   * The legitimate "I want to refine my own suggestion" path goes through
+   * Withdraw → re-submit; both consume budget.
+   */
+  submitChunkEditRequest: {
+    action: 'submit_chunk_edit_request',
+    maxAttempts: 10,
+    windowMs: 3_600_000,
+  },
+  /**
+   * Per-user limit for the owner's accept/reject and the proposer's
+   * withdraw. 30/hour matches `editPost` — a moderator-style action by
+   * the chunk owner that may legitimately fire in bursts after a
+   * batch of suggestions lands.
+   */
+  resolveChunkEditRequest: {
+    action: 'resolve_chunk_edit_request',
+    maxAttempts: 30,
+    windowMs: 3_600_000,
+  },
+  /**
+   * Per-user limit for point redemptions. Tight cap (10/hour) because each
+   * redemption mutates `user_point_balances` + writes a `user_grants` row
+   * + writes two ledger rows. A reasonable user never needs to redeem
+   * faster than this; the limit is mostly defense against runaway client
+   * loops or scripted abuse, not a UX budget.
+   */
+  redeemPoints: { action: 'redeem_points', maxAttempts: 10, windowMs: 3_600_000 },
+  /**
+   * Per-user limit for starting a Maia game (the per-game point charge).
+   * Generous (30/hour) — a normal user starts far fewer games than this;
+   * the cap is purely a backstop against scripted loops hammering the
+   * `consumeMaiaGamePoint` transaction.
+   */
+  startMaiaGame: { action: 'start_maia_game', maxAttempts: 30, windowMs: 3_600_000 },
 } as const;
 
 /**

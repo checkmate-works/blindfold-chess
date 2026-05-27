@@ -1,4 +1,4 @@
-import type { BasePracticeResult } from "./types";
+import type { BasePracticeResult, PracticeResultWithMistakes } from "./types";
 
 export type StatItem = {
   label: string;
@@ -30,7 +30,7 @@ export function computePracticeResult(
   elapsedSeconds: number,
   timeLimit: number,
   questionTimes: number[],
-): BasePracticeResult & { incorrectAnswers: number } {
+): PracticeResultWithMistakes {
   const totalQuestions = correctCount + incorrectCount;
   const accuracy =
     totalQuestions > 0 ? (correctCount / totalQuestions) * 100 : 0;

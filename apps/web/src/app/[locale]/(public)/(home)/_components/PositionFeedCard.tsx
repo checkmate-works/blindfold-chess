@@ -2,20 +2,21 @@
 
 import { memo } from 'react';
 
+import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { getPositionDetailPath } from '@/lib/positions/routes';
 import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
 import { resolveDisplayName } from '@/lib/users/display-name';
 
-import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/position-memory/_actions/toggleLike';
-import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
-import { UserAvatar } from '@/app/[locale]/(public)/topics/_components/UserAvatar';
+import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/_actions/toggleLike';
+import { PostFooter } from '@/app/[locale]/(public)/topics/_components/PostFooter';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
+import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
+import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import type { PositionFeedData } from '../_lib/types';
-import { FeedItemCard } from './FeedItemCard';
 
 type Props = {
   data: PositionFeedData;
@@ -33,11 +34,17 @@ export const PositionFeedCard = memo(function PositionFeedCard({
   const displayName = resolveDisplayName(data.author);
   // Resolve the correct detail-page path based on the position's `type`.
   // Returns `null` for types without a detail page (e.g. `sequence`), in
-  // which case `FeedItemCard` renders the card as a non-interactive element.
+  // which case the permalink slot renders a non-link <time>.
   const href = getPositionDetailPath(data.type, data.id);
 
+  const time = (
+    <time dateTime={data.createdAt}>
+      {formatRelativeTime(new Date(data.createdAt), locale, justNowLabel)}
+    </time>
+  );
+
   return (
-    <FeedItemCard
+    <ActivityCard
       href={href}
       locale={locale}
       thumbnail={
@@ -47,34 +54,46 @@ export const PositionFeedCard = memo(function PositionFeedCard({
           boardTheme={preferences.boardTheme}
         />
       }
-    >
-      <UserAvatar
-        profileHref={null}
-        avatarUrl={data.author?.avatarUrl}
-        displayName={displayName}
-        locale={locale}
-        size="sm"
-        flair={data.author?.flair}
-        country={data.author?.country}
-      />
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <time dateTime={data.createdAt}>
-          {formatRelativeTime(new Date(data.createdAt), locale, justNowLabel)}
-        </time>
-      </div>
-      <p className="text-sm text-foreground mt-1">{tFeed('action')}</p>
-
-      <div className="flex items-center gap-4 mt-1 pt-2 border-t border-border">
-        <LikeButton
-          postId={data.id}
+      author={
+        <UserAvatar
+          profileHref={data.author?.username ? `/u/${data.author.username}` : null}
+          avatarUrl={data.author?.avatarUrl}
+          displayName={displayName}
           locale={locale}
-          topicKey=""
-          initialLikeCount={data.likeMeta.likeCount}
-          initialLikedByMe={data.likeMeta.likedByMe}
-          toggleLikeAction={toggleLike}
-          i18nNamespace="practice.positionMemory"
+          size="sm"
+          flair={data.author?.flair}
+          country={data.author?.country}
         />
-      </div>
-    </FeedItemCard>
+      }
+      permalink={
+        href ? (
+          <Link
+            href={href}
+            locale={locale}
+            className="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+          >
+            {time}
+          </Link>
+        ) : (
+          time
+        )
+      }
+      footer={
+        href ? (
+          <PostFooter
+            postId={data.id}
+            locale={locale}
+            topicKey={data.id}
+            likeMeta={data.likeMeta}
+            replyMeta={data.replyMeta}
+            toggleLikeAction={toggleLike}
+            i18nNamespace={data.type === 'puzzle' ? 'practice.puzzle' : 'practice.positionMemory'}
+            postHref={href}
+          />
+        ) : undefined
+      }
+    >
+      <p className="text-sm text-foreground mt-1">{tFeed('action')}</p>
+    </ActivityCard>
   );
 });

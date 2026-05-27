@@ -5,7 +5,7 @@ import { PracticeSessionPage } from '@/app/[locale]/(public)/practice/_component
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { clampTimeLimit } from '../_lib/session-config';
+import { clampTimeLimit, parseDisplayMode } from '../_lib/session-config';
 import { decodeFensFromBase64, validateFEN } from '../_lib/share-url';
 
 const MultiProblemSession = dynamic(() =>
@@ -49,6 +49,7 @@ export default async function PositionMemorySessionPage({ params, searchParams }
   const problemCountParam = search.count;
   const modeParam = search.mode;
   const sourceParam = search.source;
+  const displayModeParam = search.displayMode;
 
   // Parse FENs if provided
   let fens: string[] | undefined;
@@ -87,6 +88,8 @@ export default async function PositionMemorySessionPage({ params, searchParams }
   const skipMemorizeParam = search.skipMemorize;
   const skipMemorize = skipMemorizeParam === '1';
 
+  const displayMode = parseDisplayMode(displayModeParam);
+
   return (
     <PracticeSessionPage
       locale={locale}
@@ -106,6 +109,7 @@ export default async function PositionMemorySessionPage({ params, searchParams }
         mode={mode}
         skipMemorize={skipMemorize}
         isCustomFen={isCustomFen}
+        displayMode={displayMode}
         rawProblemsParam={typeof problemsParam === 'string' ? problemsParam : undefined}
         sourceParam={typeof sourceParam === 'string' ? sourceParam : undefined}
         modeParam={typeof modeParam === 'string' ? modeParam : undefined}

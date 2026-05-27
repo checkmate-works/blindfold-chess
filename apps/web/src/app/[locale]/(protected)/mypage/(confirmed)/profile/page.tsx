@@ -8,10 +8,9 @@ import { eq } from 'drizzle-orm';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { db, profiles } from '@/lib/db';
 
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { Divider, PageLayout } from '@/app/[locale]/_components';
 import { TEXT_LINK_DESTRUCTIVE_CLASSES } from '@/app/[locale]/_lib/link-classes';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
 import { ChangePasswordForm, ProfileForm } from './_components';
@@ -19,18 +18,12 @@ import { ChangePasswordForm, ProfileForm } from './_components';
 type Props = LocalePageProps;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'metadata.profile' });
-
-  const title = t('title');
-  const description = t('description');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'mypage/profile', title, description }),
-    title: resolveTitle(title, locale),
-    description,
-    robots: { index: false, follow: false },
-  };
+  return createPageMetadata({
+    params,
+    namespace: 'metadata.profile',
+    path: 'mypage/profile',
+    noIndex: true,
+  });
 }
 
 export default async function ProfilePage({ params }: Props) {
@@ -46,45 +39,39 @@ export default async function ProfilePage({ params }: Props) {
   }
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
-      <PagePanel>
-        <div className="mb-4">
-          <Link
-            href={`/u/${profile.username}`}
-            locale={locale}
-            className="rounded-full border border-border px-4 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
-          >
-            {t('viewPublicProfile', { username: profile.username })}
-          </Link>
-        </div>
-
-        <ProfileForm locale={locale} profile={profile} />
-
-        {user.app_metadata.providers?.includes('email') && (
-          <>
-            <Divider />
-            <ChangePasswordForm />
-          </>
-        )}
-
-        <Divider />
-
+    <PageLayout
+      title={t('title')}
+      locale={locale}
+      breadcrumb={[{ label: t('breadcrumbMypage'), href: '/mypage' }, { label: t('title') }]}
+    >
+      <div className="mb-4">
         <Link
-          href="/mypage/delete-account"
+          href={`/u/${profile.username}`}
           locale={locale}
-          className={`inline-block text-sm ${TEXT_LINK_DESTRUCTIVE_CLASSES}`}
+          className="rounded-full border border-border px-4 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
         >
-          {t('deleteAccountLink')}
+          {t('viewPublicProfile', { username: profile.username })}
         </Link>
+      </div>
 
-        <Divider />
+      <ProfileForm locale={locale} profile={profile} />
 
-        <Breadcrumb
-          locale={locale}
-          items={[{ label: t('breadcrumbMypage'), href: '/mypage' }, { label: t('title') }]}
-        />
-      </PagePanel>
-    </div>
+      {user.app_metadata.providers?.includes('email') && (
+        <>
+          <Divider />
+          <ChangePasswordForm />
+        </>
+      )}
+
+      <Divider />
+
+      <Link
+        href="/mypage/delete-account"
+        locale={locale}
+        className={`inline-block text-sm ${TEXT_LINK_DESTRUCTIVE_CLASSES}`}
+      >
+        {t('deleteAccountLink')}
+      </Link>
+    </PageLayout>
   );
 }

@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 import { Button } from '@/app/_components';
 
-import { PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { PageLayout } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
@@ -33,24 +33,24 @@ export default async function ContactSuccessPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'contact' });
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('success.title')}</PageTitle>
-
-      <PagePanel className="space-y-8 flex justify-center">
-        <div className="w-full max-w-2xl mt-4 sm:mt-8">
-          <Link href={`/${locale}`} className="block">
-            <Button
-              asChild
-              variant="secondary"
-              size="lg"
-              fullWidth
-              className="border-0 hover:bg-secondary/80"
-            >
-              {t('success.backToHome')}
-            </Button>
-          </Link>
-        </div>
-      </PagePanel>
-    </div>
+    <PageLayout
+      title={t('success.title')}
+      locale={locale}
+      panelClassName="space-y-8 flex justify-center"
+    >
+      <div className="w-full max-w-2xl mt-4 sm:mt-8">
+        <Link href={`/${locale}`} className="block">
+          <Button
+            asChild
+            variant="secondary"
+            size="lg"
+            fullWidth
+            className="border-0 hover:bg-secondary/80"
+          >
+            {t('success.backToHome')}
+          </Button>
+        </Link>
+      </div>
+    </PageLayout>
   );
 }

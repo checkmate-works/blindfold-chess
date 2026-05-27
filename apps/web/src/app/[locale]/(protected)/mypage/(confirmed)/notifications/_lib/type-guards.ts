@@ -6,6 +6,44 @@ export type ReplyMetadata = PostMetadata & { replyId: string };
 export type AnnouncementMetadata = { slug: string; title: string };
 export type PositionMetadata = { positionId: string; positionType?: PositionType };
 
+/**
+ * Metadata persisted with every `chunk_edit_request_*` notification.
+ * `slug` is captured at notification time so the link target survives
+ * even if the chunk is later renamed (the slug is immutable after
+ * creation, but we still snapshot it for parity with the post metadata
+ * shape, and to avoid an extra DB lookup at render time).
+ */
+export type ChunkEditRequestMetadata = { chunkId: string; slug: string };
+
+export function isChunkEditRequestMetadata(m: unknown): m is ChunkEditRequestMetadata {
+  if (typeof m !== 'object' || m === null) return false;
+  const r = m as Record<string, unknown>;
+  return typeof r.chunkId === 'string' && typeof r.slug === 'string';
+}
+
+/**
+ * Metadata persisted with `new_chunk_draft` / `chunk_published` notifications.
+ * Mirrors the position-creation metadata shape: `slug` is snapshotted so the
+ * notification's link target survives even if the chunk is later renamed, and
+ * `kind` records whether the event was a draft submission (calls for edit
+ * requests) or a publish promotion (canonical state reached).
+ */
+export type ChunkLifecycleMetadata = {
+  chunkId: string;
+  slug: string;
+  kind: 'created' | 'published';
+};
+
+export function isChunkLifecycleMetadata(m: unknown): m is ChunkLifecycleMetadata {
+  if (typeof m !== 'object' || m === null) return false;
+  const r = m as Record<string, unknown>;
+  return (
+    typeof r.chunkId === 'string' &&
+    typeof r.slug === 'string' &&
+    (r.kind === 'created' || r.kind === 'published')
+  );
+}
+
 export function isPositionMetadata(m: unknown): m is PositionMetadata {
   if (typeof m !== 'object' || m === null) return false;
   const r = m as Record<string, unknown>;
@@ -47,7 +85,7 @@ export function isAnnouncementMetadata(m: unknown): m is AnnouncementMetadata {
   return typeof r.slug === 'string' && typeof r.title === 'string';
 }
 
-export type AchievementBadge = {
+type AchievementBadge = {
   slug: string;
   menuType: string;
   leaderboardKey: string;
@@ -89,4 +127,41 @@ export function isBenefitGrantMetadata(m: unknown): m is BenefitGrantMetadata {
     typeof r.expiresAt === 'string' &&
     (r.reason === null || typeof r.reason === 'string')
   );
+}
+
+/**
+ * Metadata persisted with a `point_grant` notification. Issued today only
+ * from the admin /admin/points → createPointGrant flow; future system
+ * grants (campaigns, etc.) can reuse this shape by widening `category`.
+ */
+export type PointGrantMetadata = {
+  amount: number;
+  category: string;
+  reason: string | null;
+};
+
+export function isPointGrantMetadata(m: unknown): m is PointGrantMetadata {
+  if (typeof m !== 'object' || m === null) return false;
+  const r = m as Record<string, unknown>;
+  return (
+    typeof r.amount === 'number' &&
+    typeof r.category === 'string' &&
+    (r.reason === null || typeof r.reason === 'string')
+  );
+}
+
+/**
+ * Metadata persisted with a `like_coin_grant` notification — emitted by the
+ * daily like-coin batch (`grantLikeCoins`). `count` is the number of coins
+ * minted for the recipient in that single batch run (direct grants and
+ * fork-propagation grants combined).
+ */
+export type LikeCoinGrantMetadata = {
+  count: number;
+};
+
+export function isLikeCoinGrantMetadata(m: unknown): m is LikeCoinGrantMetadata {
+  if (typeof m !== 'object' || m === null) return false;
+  const r = m as Record<string, unknown>;
+  return typeof r.count === 'number';
 }

@@ -8,14 +8,7 @@ import { getMissColorClass } from '@/lib/challenge/ui';
 import type { ChallengeMenuType } from '@/lib/db/practice-menu-types';
 import { CHALLENGE_MENU_TYPES } from '@/lib/db/practice-menu-types';
 
-import {
-  Divider,
-  PagePanel,
-  PageTitle,
-  PaginationNav,
-  SectionTitle,
-} from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
@@ -74,74 +67,68 @@ export default async function ChallengeResultsPage({ params, searchParams }: Pro
   };
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
-      <PagePanel>
-        <SectionTitle>{t('sectionTitle')}</SectionTitle>
+    <PageLayout
+      title={t('title')}
+      locale={locale}
+      breadcrumb={[
+        { label: t('breadcrumbMypage'), href: '/mypage' },
+        { label: t('breadcrumbChallenges'), href: '/mypage/challenges' },
+        { label: t('title') },
+      ]}
+    >
+      <SectionTitle>{t('sectionTitle')}</SectionTitle>
 
-        <ResultsFilters
-          locale={locale}
-          availableMenuTypes={availableMenuTypes}
-          currentMenu={menuType}
-          currentKey={leaderboardKey}
-        />
+      <ResultsFilters
+        locale={locale}
+        availableMenuTypes={availableMenuTypes}
+        currentMenu={menuType}
+        currentKey={leaderboardKey}
+      />
 
-        {items.length === 0 ? (
-          <p className="text-muted-foreground text-center py-8">{t('empty')}</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left py-2 px-2 sm:px-3 text-muted-foreground font-medium">
-                    {t('tableDate')}
-                  </th>
-                  <th className="text-left py-2 px-2 sm:px-3 text-muted-foreground font-medium whitespace-nowrap">
-                    {t('tableMenu')}
-                  </th>
-                  <th className="text-right py-2 px-2 sm:px-3 text-muted-foreground font-medium whitespace-nowrap">
-                    {t('tableCorrectAnswers')}
-                  </th>
-                  <th className="text-right py-2 px-2 sm:px-3 text-muted-foreground font-medium whitespace-nowrap">
-                    {t('tableIncorrectAnswers')}
-                  </th>
+      {items.length === 0 ? (
+        <p className="text-muted-foreground text-center py-8">{t('empty')}</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left py-2 px-2 sm:px-3 text-muted-foreground font-medium">
+                  {t('tableDate')}
+                </th>
+                <th className="text-left py-2 px-2 sm:px-3 text-muted-foreground font-medium whitespace-nowrap">
+                  {t('tableMenu')}
+                </th>
+                <th className="text-right py-2 px-2 sm:px-3 text-muted-foreground font-medium whitespace-nowrap">
+                  {t('tableCorrectAnswers')}
+                </th>
+                <th className="text-right py-2 px-2 sm:px-3 text-muted-foreground font-medium whitespace-nowrap">
+                  {t('tableIncorrectAnswers')}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item) => (
+                <tr key={item.id} className="border-b border-border/50">
+                  <td className="py-2 px-2 sm:px-3 text-foreground">
+                    {formatDate(item.createdAt, locale)}
+                  </td>
+                  <td className="py-2 px-2 sm:px-3 text-foreground">
+                    {tMypage(`menuTypes.${item.menuType}`)}
+                  </td>
+                  <td className="py-2 px-2 sm:px-3 text-right text-foreground">{item.score}</td>
+                  <td
+                    className={`py-2 px-2 sm:px-3 text-right ${getMissColorClass(item.incorrectAnswers)}`}
+                  >
+                    {item.incorrectAnswers}
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {items.map((item) => (
-                  <tr key={item.id} className="border-b border-border/50">
-                    <td className="py-2 px-2 sm:px-3 text-foreground">
-                      {formatDate(item.createdAt, locale)}
-                    </td>
-                    <td className="py-2 px-2 sm:px-3 text-foreground">
-                      {tMypage(`menuTypes.${item.menuType}`)}
-                    </td>
-                    <td className="py-2 px-2 sm:px-3 text-right text-foreground">{item.score}</td>
-                    <td
-                      className={`py-2 px-2 sm:px-3 text-right ${getMissColorClass(item.incorrectAnswers)}`}
-                    >
-                      {item.incorrectAnswers}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-        <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
-
-        <Divider />
-
-        <Breadcrumb
-          locale={locale}
-          items={[
-            { label: t('breadcrumbMypage'), href: '/mypage' },
-            { label: t('breadcrumbChallenges'), href: '/mypage/challenges' },
-            { label: t('title') },
-          ]}
-        />
-      </PagePanel>
-    </div>
+      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+    </PageLayout>
   );
 }

@@ -7,7 +7,7 @@ import { getLegalMoves } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaGamepad, FaKeyboard, FaList } from 'react-icons/fa';
 
-import type { MoveInputMethod } from '@/lib/types';
+import type { MoveInputMethod } from '@/lib/games/saved-game-types';
 
 import { ButtonInput } from '@/app/[locale]/(public)/games/play/_components/ButtonInput';
 import { MoveInput } from '@/app/[locale]/(public)/games/play/_components/MoveInput';
@@ -52,6 +52,15 @@ type Props = {
    * UI affordance is suppressed.
    */
   showLegalMovesHint?: boolean;
+  /**
+   * Optional override for the move-input mode switch. When provided, the
+   * mode toggle button calls this instead of `updatePreferences` — used by
+   * the games/play surface to route mid-game switches into the per-game
+   * preference change log rather than mutating the user's global default.
+   * Other surfaces (puzzle, practice) leave this unset and fall back to
+   * the global `updatePreferences` path.
+   */
+  setMoveInputMode?: (mode: GamePreferences['moveInputMode']) => void;
 };
 
 const modeIcons: Record<GamePreferences['moveInputMode'], ReactNode> = {
@@ -78,6 +87,7 @@ export function MoveInputPanel({
   onMovePeek,
   showInlineError = true,
   showLegalMovesHint = true,
+  setMoveInputMode,
 }: Props) {
   const t = useTranslations('play');
   const enabledModes = preferences.enabledMoveInputModes;
@@ -87,6 +97,13 @@ export function MoveInputPanel({
   // so it reliably increments even when the same invalid move is submitted repeatedly.
   const [invalidAttemptCount, setInvalidAttemptCount] = useState(0);
   const [showLegalMoves, setShowLegalMoves] = useState(false);
+
+  // Bumped on every rejected submit — drives the one-shot "shake" of the
+  // input area. Makes an invalid move noticeable at the point of action,
+  // even when the textual error sits in an off-screen status slot (e.g.
+  // the PageTitle on /games/play, scrolled away while peeking the board).
+  const [invalidShakeKey, setInvalidShakeKey] = useState(0);
+  const inputAreaRef = useRef<HTMLDivElement>(null);
 
   const handleShowLegalMoves = () => {
     setShowLegalMoves(true);
@@ -103,6 +120,7 @@ export function MoveInputPanel({
     const result = onSubmit(move);
     if (result === false) {
       setInvalidAttemptCount((prev) => prev + 1);
+      setInvalidShakeKey((k) => k + 1);
     } else {
       setInvalidAttemptCount(0);
       setShowLegalMoves(false);
@@ -137,6 +155,31 @@ export function MoveInputPanel({
     onErrorClearRef.current();
   }, [currentMode]);
 
+  // One-shot horizontal shake of the input area on each rejected submit.
+  // Transform-only — the persistent red ring is the static signal — and
+  // skipped entirely under `prefers-reduced-motion`, where the ring alone
+  // carries the feedback.
+  useEffect(() => {
+    if (invalidShakeKey === 0) return;
+    const el = inputAreaRef.current;
+    if (!el) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const animation = el.animate(
+      [
+        { transform: 'translateX(0)' },
+        { transform: 'translateX(-6px)' },
+        { transform: 'translateX(6px)' },
+        { transform: 'translateX(-5px)' },
+        { transform: 'translateX(4px)' },
+        { transform: 'translateX(-2px)' },
+        { transform: 'translateX(0)' },
+      ],
+      { duration: 360, easing: 'ease-in-out' }
+    );
+    return () => animation.cancel();
+  }, [invalidShakeKey]);
+
   const legalMoves = useMemo(
     () => (showLegalMoves ? getLegalMoves(currentFen).sort() : null),
     [showLegalMoves, currentFen]
@@ -149,38 +192,46 @@ export function MoveInputPanel({
   return (
     <>
       <div>
-        {currentMode === 'select' ? (
-          <MoveSelect
-            fen={currentFen}
-            onSubmit={(move) => handleSubmitWithTracking(move, 'select')}
-            onChange={onErrorClear}
-            disabled={disabled}
-            placeholder={selectPlaceholder}
-          />
-        ) : currentMode === 'button' ? (
-          <ButtonInput
-            fen={currentFen}
-            onSubmit={(move) => handleSubmitWithTracking(move, 'button')}
-            disabled={disabled}
-            playerColor={playerColor}
-            onClearError={onErrorClear}
-          />
-        ) : (
-          <MoveInput
-            value={moveInput}
-            onChange={(value) => {
-              onMoveInputChange(value);
-              onErrorClear();
-            }}
-            onSubmit={(move, usedAutocomplete) =>
-              handleSubmitWithTracking(move, usedAutocomplete ? 'text-autocomplete' : 'text')
-            }
-            disabled={disabled}
-            placeholder={inputPlaceholder}
-            showSuggestions={preferences.enableAutoComplete}
-            showSubmitButton={true}
-          />
-        )}
+        {/* Shake + red-ring target. `rounded-lg` matches the inputs so the
+            ring hugs their corners; the ring persists while `error` is set
+            and rides along with the one-shot shake. */}
+        <div
+          ref={inputAreaRef}
+          className={`rounded-lg transition-shadow ${error ? 'ring-2 ring-destructive' : ''}`}
+        >
+          {currentMode === 'select' ? (
+            <MoveSelect
+              fen={currentFen}
+              onSubmit={(move) => handleSubmitWithTracking(move, 'select')}
+              onChange={onErrorClear}
+              disabled={disabled}
+              placeholder={selectPlaceholder}
+            />
+          ) : currentMode === 'button' ? (
+            <ButtonInput
+              fen={currentFen}
+              onSubmit={(move) => handleSubmitWithTracking(move, 'button')}
+              disabled={disabled}
+              playerColor={playerColor}
+              onClearError={onErrorClear}
+            />
+          ) : (
+            <MoveInput
+              value={moveInput}
+              onChange={(value) => {
+                onMoveInputChange(value);
+                onErrorClear();
+              }}
+              onSubmit={(move, usedAutocomplete) =>
+                handleSubmitWithTracking(move, usedAutocomplete ? 'text-autocomplete' : 'text')
+              }
+              disabled={disabled}
+              placeholder={inputPlaceholder}
+              showSuggestions={preferences.enableAutoComplete}
+              showSubmitButton={true}
+            />
+          )}
+        </div>
         {showInlineError && error && <p className="text-destructive text-sm mt-2">{error}</p>}
         {showLegalMovesHint &&
           error &&
@@ -189,7 +240,7 @@ export function MoveInputPanel({
             <button
               type="button"
               onClick={handleShowLegalMoves}
-              className="text-sm text-primary hover:text-primary/80 underline mt-1"
+              className="text-sm text-primary hover:text-primary/80 underline mt-1 touch-manipulation select-none"
             >
               {t('showLegalMoves')}
             </button>
@@ -215,10 +266,14 @@ export function MoveInputPanel({
           <button
             type="button"
             onClick={() => {
-              updatePreferences({ moveInputMode: nextMode });
+              if (setMoveInputMode) {
+                setMoveInputMode(nextMode);
+              } else {
+                updatePreferences({ moveInputMode: nextMode });
+              }
             }}
             disabled={disabled}
-            className="p-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation select-none"
             title={toggleTitle}
           >
             {modeIcons[nextMode]}

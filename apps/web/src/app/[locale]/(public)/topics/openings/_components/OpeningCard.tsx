@@ -3,11 +3,11 @@
 import { Link } from '@/i18n/routing';
 
 import type { ChessOpening } from '@/lib/db';
+import { MiniBoard } from '@/lib/positions/ui/MiniBoard';
 
 import { useInView } from '@/app/[locale]/_hooks/use-in-view';
 
 import { isBlackOpening } from '../_lib/openings';
-import { MiniBoard } from './MiniBoard';
 
 type OpeningData = Pick<ChessOpening, 'slug' | 'fen' | 'ecoCode' | 'pgn'>;
 

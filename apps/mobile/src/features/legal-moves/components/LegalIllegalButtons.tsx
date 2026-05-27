@@ -27,7 +27,12 @@ export function LegalIllegalButtons({
         onPress={() => onAnswer(true)}
         disabled={disabled}
         activeOpacity={0.7}
-        style={[styles.button, styles.legalButton, disabled && styles.disabled]}
+        style={[
+          styles.button,
+          styles.legalButton,
+          { backgroundColor: feedbackColors.successSoft },
+          disabled && styles.disabled,
+        ]}
       >
         <Text style={[styles.icon, { color: feedbackColors.success }]}>○</Text>
         <Text style={[styles.label, { color: feedbackColors.success }]}>
@@ -42,6 +47,7 @@ export function LegalIllegalButtons({
         style={[
           styles.button,
           styles.illegalButton,
+          { backgroundColor: feedbackColors.errorSoft },
           disabled && styles.disabled,
         ]}
       >
@@ -71,11 +77,9 @@ const styles = StyleSheet.create({
     minHeight: touchTarget.minSize,
   },
   legalButton: {
-    backgroundColor: "rgba(34, 197, 94, 0.1)",
     borderColor: "rgba(34, 197, 94, 0.3)",
   },
   illegalButton: {
-    backgroundColor: "rgba(239, 68, 68, 0.1)",
     borderColor: "rgba(239, 68, 68, 0.3)",
   },
   disabled: {

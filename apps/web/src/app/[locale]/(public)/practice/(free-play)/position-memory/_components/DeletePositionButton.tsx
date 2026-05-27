@@ -47,7 +47,7 @@ export function DeletePositionButton({ positionId, locale }: Props) {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="text-xs text-muted-foreground hover:text-destructive transition-colors"
+        className="inline-flex items-center gap-1 rounded-md border border-destructive/40 px-3 py-1.5 text-sm text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors"
       >
         {t('button')}
       </button>

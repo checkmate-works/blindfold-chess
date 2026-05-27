@@ -37,8 +37,10 @@ export function ControlSettingsContent({ settings, onSettingsChange }: Props) {
 
   return (
     <div className="space-y-8">
-      {/* Board Peek Mode */}
-      {settings.showBoardButtonInGame && (
+      {/* Board Peek Mode — only relevant when boardVisibility === 'peek'.
+          For 'always' the board is permanently shown (no peek to configure);
+          for 'never' there is nothing to peek at. */}
+      {settings.boardVisibility === 'peek' && (
         <div>
           <h4 className="text-lg font-semibold text-foreground mb-2">{t('controls.peekMode')}</h4>
           <p className="text-sm text-muted-foreground mb-4">{t('controls.peekModeDescription')}</p>
@@ -62,7 +64,7 @@ export function ControlSettingsContent({ settings, onSettingsChange }: Props) {
       )}
 
       {/* Divider */}
-      {settings.showBoardButtonInGame && <div className="border-t border-border"></div>}
+      {settings.boardVisibility === 'peek' && <div className="border-t border-border"></div>}
 
       <div>
         <h4 className="text-lg font-semibold text-foreground mb-4">{t('controls.moveInput')}</h4>

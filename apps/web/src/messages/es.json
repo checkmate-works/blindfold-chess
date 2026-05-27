@@ -272,7 +272,13 @@
         "whiteView": "Perspectiva de Blancas",
         "blackView": "Perspectiva de Negras"
       },
-      "showBoardButtonInGame": "Mostrar botón 'Ver Tablero' durante partidas contra la IA",
+      "boardVisibility": "Visibilidad del Tablero",
+      "boardVisibilityDescription": "Elige cómo se muestra el tablero durante el juego. Los ajustes de visualización de piezas (debajo) siguen aplicándose cuando el tablero es visible — son el mecanismo principal del modo a ciegas en esta aplicación.",
+      "boardVisibilities": {
+        "always": "Siempre visible",
+        "peek": "Vistazo bajo demanda",
+        "never": "Oculto"
+      },
       "resetDefaults": "Restablecer valores predeterminados",
       "resetDefaultsConfirm": {
         "title": "¿Restablecer configuración del tablero?",
@@ -309,18 +315,58 @@
       "peekModes": {
         "modal": "Modal",
         "inline": "En línea"
+      },
+      "moveInputModes": {
+        "text": "Texto",
+        "select": "Lista",
+        "button": "Botón"
       }
     }
-  },
-  "Common": {
-    "sponsoredLink": "Enlace Patrocinado",
-    "testAd": "Anuncio de Prueba",
-    "adLabel": "Publicidad",
-    "sponsor": "Patrocinador"
   },
   "openingSearch": {
     "selectOpening": "Selecciona una apertura",
     "searchPlaceholder": "Buscar aperturas..."
+  },
+  "coin": {
+    "title": "Monedas",
+    "unit": "monedas",
+    "hero": {
+      "tagline": "Ganas Monedas al publicar en temas y crear problemas."
+    },
+    "loop": {
+      "step1Title": "Contribuye",
+      "step1Body": "Crea un problema o una publicación",
+      "step2Title": "Gana Monedas",
+      "step2Body": "Cada contribución suma",
+      "step3Title": "Gasta en ventajas",
+      "step3Body": "Tiempo sin anuncios o partidas"
+    },
+    "earn": {
+      "heading": "Cómo ganar Monedas",
+      "puzzleTitle": "Envía un puzzle",
+      "positionMemoryTitle": "Envía un problema de memoria de posición",
+      "topicTitle": "Publica en un tema",
+      "likeNote1": "Cada Me gusta que recibe tu contenido te da una Moneda (no es inmediato: se otorga una vez al día en lote).",
+      "likeNote2": "Publica un tema o crea un problema una vez, y seguirá generando Monedas."
+    },
+    "spend": {
+      "heading": "Para qué sirven las Monedas",
+      "adFreeTitle": "Ocultar los anuncios",
+      "adFreeRate": "1 Moneda = {days, plural, one {# día sin anuncios} other {# días sin anuncios}}",
+      "maiaTitle": "Jugar contra Maia",
+      "maiaRate": "{cost, plural, one {# Moneda} other {# Monedas}} = 1 partida",
+      "maiaNote": "Maia es una IA de red neuronal que juega con un estilo humano."
+    },
+    "facts": {
+      "instant": "Las Monedas que ganas se pueden usar de inmediato, sin esperas.",
+      "deleteReversal": "Si eliminas tu propio contenido, las Monedas que generó se revierten, pero las Monedas que ya gastaste nunca se recuperan.",
+      "balance": "Tu saldo y tu historial están siempre disponibles en Mi Página.",
+      "dailyCap": "Crear contenido otorga hasta {cap} monedas por día (se reinicia a las 00:00 UTC)."
+    },
+    "cta": {
+      "viewBalance": "Ver mi saldo de Monedas",
+      "contribute": "Explorar temas"
+    }
   },
   "faq": {
     "title": "Preguntas Frecuentes",
@@ -336,7 +382,7 @@
       },
       "chessEngine": {
         "question": "¿Qué motor de ajedrez usa la IA?",
-        "answer": "La IA utiliza Stockfish 17.1 (versión Lite de un solo hilo)."
+        "answer": "Hay dos motores disponibles según el modo. Por defecto se usa Stockfish 17.1 (versión Lite de un solo hilo). Para un juego más humano, puedes cambiar a Maia 3 (maia3_simplified), que se ejecuta en el navegador mediante onnxruntime-web y utiliza el modelo público bajo licencia GPL-3.0."
       },
       "expSystem": {
         "question": "¿Cómo se calcula la experiencia (Exp)?",
@@ -371,6 +417,19 @@
         "multiplier12": "×1.2",
         "multiplier11": "×1.1",
         "multiplier10": "×1.0"
+      },
+      "adFreeBenefits": {
+        "question": "¿Cómo se obtienen las monedas y cómo se convierten en tiempo sin anuncios?",
+        "answer": "Cada contribución elegible otorga monedas, utilizables de inmediato. 1 moneda canjea 1 día sin anuncios (el canje estará disponible próximamente).",
+        "tableTitle": "Formas de obtener monedas",
+        "headerAction": "Acción",
+        "headerPoints": "Monedas",
+        "actions": {
+          "topic_post": "Publicar en un tema (casilla / apertura)",
+          "position_creation": "Publicar un problema de posición (memorización / puzzle)"
+        },
+        "pointsAmount": "{amount} monedas",
+        "dailyCapNote": "Las monedas obtenidas por crear contenido tienen un límite de {cap} por día. El límite se reinicia a las 00:00 UTC; los Me gusta y las concesiones del personal no cuentan para él."
       }
     }
   },
@@ -468,7 +527,6 @@
     "articlesTitle": "Artículos",
     "relatedArticles": "Artículos Relacionados",
     "browseByCategory": "Explorar por Categoría",
-    "allCategories": "Todas",
     "articleCount": "{count, plural, one {# artículo} other {# artículos}}",
     "categories": {
       "piece-movement": "Movimiento de Piezas",
@@ -492,7 +550,9 @@
     "levelIntermediate": "Intermedio",
     "levelAdvanced": "Avanzado",
     "levelIntroduction": "Introducción",
-    "viewLeaderboard": "🏆 Ver Clasificación",
+    "viewLeaderboard": "Ver Clasificación",
+    "viewDojo": "Ver Dojo",
+    "related": "Relacionado",
     "tryAgain": "Intentar de Nuevo",
     "changeSettings": "Cambiar Configuración",
     "doOtherPractice": "Hacer otra práctica",
@@ -527,7 +587,7 @@
     "challengeDescription": "Límite de tiempo de 1 minuto. 3 respuestas incorrectas y se acaba. Tu puntuación será registrada.",
     "startTraining": "Iniciar Entrenamiento",
     "startChallenge": "Iniciar Desafío",
-    "switchToTraining": "📖 Practicar en modo entrenamiento",
+    "orDivider": "o",
     "challengeSetup": {
       "title": "Reglas del Desafío",
       "timeLimit": "Responde tantas preguntas como puedas en {seconds} segundos.",
@@ -538,9 +598,9 @@
     "skip": "Saltar",
     "endTraining": "Finalizar",
     "trainingEnded": "Entrenamiento finalizado",
-    "trainingModeActive": "📖 Practicando en modo entrenamiento",
+    "trainingModeActive": "Practicando en modo entrenamiento",
     "readyForChallenge": "¿Estás listo?",
-    "goToChallenge": "⚔️ Aceptar el Desafío",
+    "goToChallenge": "Aceptar el Desafío",
     "quitConfirmModal": {
       "title": "¿Abandonar la Práctica?",
       "message": "Tu progreso se perderá. ¿Estás seguro de que quieres salir?",
@@ -592,6 +652,21 @@
       "accuracy": "Precisión",
       "timeTaken": "Tiempo Empleado",
       "averageTime": "Tiempo Promedio",
+      "help": {
+        "label": "Ayuda",
+        "tutorial": {
+          "title": "Tutorial",
+          "description": "Si es tu primera vez, te recomendamos ver el tutorial."
+        },
+        "challenge": {
+          "title": "Modo Desafío",
+          "description": "Compite para ver cuántas respuestas correctas puedes dar dentro del límite de tiempo. Tu puntuación se registra y aparece en la tabla de clasificación."
+        },
+        "training": {
+          "title": "Modo Entrenamiento",
+          "description": "Practica a tu propio ritmo sin límite de tiempo. Las puntuaciones no se registran."
+        }
+      },
       "tutorial": {
         "title": "Tutorial",
         "description": "Aprende los tres tipos de simetría en el tablero de ajedrez: Columna, Fila y Simetría central.",
@@ -600,7 +675,6 @@
         "next": "Siguiente",
         "start": "Iniciar",
         "startChallenge": "Iniciar Desafío",
-        "switchToTraining": "📖 Practicar en modo entrenamiento",
         "steps": {
           "intro": {
             "title": "¿Qué es la Simetría del Tablero?",
@@ -656,8 +730,6 @@
       "howToPlayDescription": "Se harán preguntas como la siguiente repetidamente. Identifica si la casilla dada es clara u oscura.",
       "white": "Clara",
       "black": "Oscura",
-      "correct": "Correcto",
-      "incorrect": "Incorrecto",
       "settings": "Configuración del Juego",
       "timeLimit": "Límite de Tiempo",
       "seconds": "segundos",
@@ -665,12 +737,21 @@
       "timeRemaining": "Tiempo",
       "finished": "¡Práctica Completada!",
       "correctAnswers": "Respuestas Correctas",
-      "accuracy": "Precisión",
       "timeTaken": "Tiempo Empleado",
-      "averageTime": "Tiempo Promedio",
       "requiredKnowledge": "Conocimiento Necesario",
       "viewArticle": "Aprende sobre el color de las casillas",
-      "articleDescription": "Aprende a identificar rápidamente si una casilla es clara u oscura"
+      "articleDescription": "Aprende a identificar rápidamente si una casilla es clara u oscura",
+      "help": {
+        "label": "Ayuda",
+        "challenge": {
+          "title": "Modo Desafío",
+          "description": "Compite para ver cuántas respuestas correctas puedes dar dentro del límite de tiempo. Tu puntuación se registra y aparece en la tabla de clasificación."
+        },
+        "training": {
+          "title": "Modo Entrenamiento",
+          "description": "Practica a tu propio ritmo sin límite de tiempo. Las puntuaciones no se registran."
+        }
+      }
     },
     "legalMoves": {
       "title": "Movimientos Legales",
@@ -694,16 +775,12 @@
       "start": "Iniciar",
       "question": "¿Puede la pieza moverse de {from} a {to}?",
       "questionFormat": "¿Puede la pieza moverse de {from} a {to}?",
-      "correct": "Correcto",
-      "incorrect": "Incorrecto",
       "legal": "Sí",
       "illegal": "No",
       "timeRemaining": "Tiempo",
       "finished": "¡Práctica Completada!",
       "correctAnswers": "Respuestas Correctas",
-      "accuracy": "Precisión",
       "timeTaken": "Tiempo Empleado",
-      "averageTime": "Tiempo Promedio",
       "relatedArticles": "Artículos Relacionados",
       "articles": {
         "king": {
@@ -721,6 +798,17 @@
         "bishop": {
           "title": "El Movimiento del Alfil",
           "description": "Aprende los patrones de movimiento diagonal"
+        }
+      },
+      "help": {
+        "label": "Ayuda",
+        "challenge": {
+          "title": "Modo Desafío",
+          "description": "Compite para ver cuántas respuestas correctas puedes dar dentro del límite de tiempo. Tu puntuación se registra y aparece en la tabla de clasificación."
+        },
+        "training": {
+          "title": "Modo Entrenamiento",
+          "description": "Practica a tu propio ritmo sin límite de tiempo. Las puntuaciones no se registran."
         }
       }
     },
@@ -745,15 +833,12 @@
       "clickSquare": "Haz clic en esta casilla",
       "whiteToMove": "Mueven las blancas",
       "blackToMove": "Mueven las negras",
-      "correct": "Correcto",
       "wrong": "Incorrecto",
       "timeRemaining": "Tiempo",
       "finished": "¡Cuestionario Completado!",
       "points": "puntos",
       "correctAnswers": "Respuestas Correctas",
-      "accuracy": "Precisión",
       "timeTaken": "Tiempo Empleado",
-      "averageTime": "Tiempo Promedio",
       "session": "En Progreso",
       "relatedArticles": "Artículos Relacionados",
       "articles": {
@@ -769,6 +854,21 @@
           "title": "Notación Algebraica",
           "description": "Domina el lenguaje de las coordenadas de ajedrez"
         }
+      },
+      "help": {
+        "label": "Ayuda",
+        "feedbackSpeed": {
+          "title": "Velocidad de Respuesta",
+          "description": "Ajusta la rapidez con la que se reproduce el efecto de acierto/error. Este ajuste no afecta al cronómetro: el tiempo no avanza mientras se muestra el efecto de respuesta."
+        },
+        "challenge": {
+          "title": "Modo Desafío",
+          "description": "Compite para ver cuántas respuestas correctas puedes dar dentro del límite de tiempo. Tu puntuación se registra y aparece en la tabla de clasificación."
+        },
+        "training": {
+          "title": "Modo Entrenamiento",
+          "description": "Practica a tu propio ritmo sin límite de tiempo. Las puntuaciones no se registran."
+        }
       }
     },
     "positionMemory": {
@@ -776,6 +876,8 @@
       "description": "Entrena tu capacidad para recordar y recrear posiciones de ajedrez",
       "like": "Me gusta",
       "unlike": "Quitar me gusta",
+      "newReply": "Nueva Respuesta {time}",
+      "justNow": "ahora mismo",
       "session": "En Progreso",
       "settings": "Configuración del Problema",
       "problemSource": "Origen del Problema",
@@ -918,26 +1020,58 @@
         "tabBoard": "Tablero",
         "tabFen": "FEN",
         "positionInvalid": "Por favor configura una posición válida",
-        "flipBoard": "Voltear tablero"
+        "flipBoard": "Voltear tablero",
+        "clearBoardConfirmTitle": "¿Limpiar el tablero?",
+        "clearBoardConfirmMessage": "Esto eliminará todas las piezas colocadas. Esta acción no se puede deshacer.",
+        "clearBoardConfirmConfirm": "Limpiar",
+        "clearBoardConfirmCancel": "Cancelar",
+        "forkBanner": "Bifurcando desde «{sourceTitle}»"
+      },
+      "edit": {
+        "title": "Editar Problema",
+        "submit": "Guardar cambios",
+        "submitting": "Guardando...",
+        "saveError": "Ocurrió un error inesperado. Inténtalo de nuevo.",
+        "notFound": "No se pudo encontrar este problema.",
+        "unauthorized": "Solo puedes editar tus propios problemas."
       },
       "detail": {
         "title": "Detalle de Posición",
         "descriptionSection": "Descripción de la Posición",
         "solveSection": "Resolver el Problema",
         "start": "Iniciar",
+        "displayMode": "Modo de Visualización",
+        "displayModeBoard": "Tablero",
+        "displayModeText": "Texto",
         "timeLimit": "Límite de Tiempo",
         "seconds": "{count, plural, one {# segundo} other {# segundos}}",
         "createdBy": "Creado por",
         "tutorialLink": "Ver Tutorial",
         "tryAgain": "Intentar de nuevo",
-        "backToList": "Volver a la lista"
+        "backToList": "Volver a la lista",
+        "edited": "(editado)",
+        "editAction": "Editar",
+        "forkAction": "Bifurcar",
+        "forkedFrom": "Bifurcado de:",
+        "forkedFromDeleted": "Bifurcado de una posición eliminada",
+        "forksSection": "{count, plural, one {# bifurcación} other {# bifurcaciones}}",
+        "usefulSection": "Patrones útiles para resolver ({count})"
+      },
+      "forksList": {
+        "title": "Bifurcaciones",
+        "titleOf": "Bifurcaciones de {parentTitle}",
+        "breadcrumb": "Bifurcaciones",
+        "sectionTitle": "{count, plural, one {# bifurcación} other {# bifurcaciones}}",
+        "empty": "Aún no hay bifurcaciones."
       },
       "delete": {
         "button": "Eliminar Problema",
         "confirmTitle": "Eliminar Problema",
         "confirmMessage": "¿Estás seguro de que deseas eliminar este problema? Esta acción no se puede deshacer.",
         "confirm": "Eliminar",
-        "cancel": "Cancelar"
+        "cancel": "Cancelar",
+        "sectionTitle": "Zona de peligro",
+        "sectionDescription": "Eliminar este problema es permanente. Los comentarios y los me gusta asociados se eliminarán y no se podrán recuperar."
       }
     },
     "puzzle": {
@@ -989,7 +1123,8 @@
         "clearBoardConfirmMessage": "Esto eliminará todas las piezas colocadas y los movimientos de la solución ingresados. Esta acción no se puede deshacer.",
         "clearBoardConfirmConfirm": "Limpiar",
         "clearBoardConfirmCancel": "Cancelar",
-        "draftWriteFailed": "No se pudo guardar el borrador. Verifica que tu navegador permita el almacenamiento e inténtalo de nuevo."
+        "draftWriteFailed": "No se pudo guardar el borrador. Verifica que tu navegador permita el almacenamiento e inténtalo de nuevo.",
+        "forkBanner": "Bifurcando desde «{sourceTitle}»"
       },
       "preview": {
         "title": "Previsualizar Puzzle",
@@ -1002,6 +1137,18 @@
       "blackPieces": "Piezas Negras",
       "removePieceMode": "Modo de eliminar pieza - Haz clic en una casilla para eliminar la pieza",
       "placingPiece": "Colocando",
+      "like": "Me gusta",
+      "unlike": "Quitar me gusta",
+      "newReply": "Nueva Respuesta {time}",
+      "justNow": "ahora mismo",
+      "edit": {
+        "title": "Editar Puzzle",
+        "submit": "Guardar cambios",
+        "submitting": "Guardando...",
+        "saveError": "Ocurrió un error inesperado. Inténtalo de nuevo.",
+        "notFound": "No se pudo encontrar este puzzle.",
+        "unauthorized": "Solo puedes editar tus propios puzzles."
+      },
       "detail": {
         "title": "Detalle del Puzzle",
         "descriptionSection": "Sobre Este Puzzle",
@@ -1012,8 +1159,29 @@
         "blackToMove": "Mueven negras",
         "createdBy": "Creado por",
         "noPieces": "Ninguna",
-        "like": "Me gusta",
-        "unlike": "Quitar me gusta"
+        "edited": "(editado)",
+        "editAction": "Editar",
+        "forkAction": "Bifurcar",
+        "forkedFrom": "Bifurcado de:",
+        "forkedFromDeleted": "Bifurcado de un puzzle eliminado",
+        "forksSection": "{count, plural, one {# bifurcación} other {# bifurcaciones}}",
+        "usefulSection": "Patrones útiles para resolver ({count})"
+      },
+      "forksList": {
+        "title": "Bifurcaciones",
+        "titleOf": "Bifurcaciones de {parentTitle}",
+        "breadcrumb": "Bifurcaciones",
+        "sectionTitle": "{count, plural, one {# bifurcación} other {# bifurcaciones}}",
+        "empty": "Aún no hay bifurcaciones."
+      },
+      "delete": {
+        "button": "Eliminar Puzzle",
+        "confirmTitle": "Eliminar Puzzle",
+        "confirmMessage": "¿Estás seguro de que deseas eliminar este puzzle? Los comentarios y los datos de la solución se eliminarán también. Esta acción no se puede deshacer.",
+        "confirm": "Eliminar",
+        "cancel": "Cancelar",
+        "sectionTitle": "Zona de peligro",
+        "sectionDescription": "Eliminar este puzzle es permanente — los comentarios vinculados perderán su contexto y no podrán recuperarse."
       },
       "result": {
         "title": "Resultado del Puzzle",
@@ -1025,8 +1193,12 @@
         "attemptIncorrect": "Incorrecto",
         "backToList": "Volver a Puzzles",
         "tryAgain": "Intentar de Nuevo",
+        "analyzeOnLichess": "Analizar en Lichess",
         "viewResult": "Ver Resultado",
-        "peekCount": "Vistas del Tablero: {count}"
+        "peekCount": "Vistas del Tablero: {count}",
+        "statusSolved": "Resuelto",
+        "statusPartial": "{correct}/{total} resueltos",
+        "statusRevealed": "Solución revelada"
       },
       "session": {
         "title": "Resolver",
@@ -1198,8 +1370,6 @@
       "findPath": "Encuentra el camino para {piece} de {start} a {target}",
       "yourPath": "Tu Camino",
       "shortestPath": "Camino Más Corto",
-      "correct": "Correcto",
-      "incorrect": "Incorrecto",
       "badEnd": "El camino no llega al objetivo",
       "badMove": "Incorrecto",
       "finalTarget": "(Auto-completado)",
@@ -1229,6 +1399,21 @@
         "title": "¿Restablecer configuración?",
         "message": "Todos los ajustes se restablecerán y volverás a la pantalla del tutorial."
       },
+      "help": {
+        "label": "Ayuda",
+        "tutorial": {
+          "title": "Tutorial",
+          "description": "Si es tu primera vez, te recomendamos ver el tutorial."
+        },
+        "challenge": {
+          "title": "Modo Desafío",
+          "description": "Compite para ver cuántas respuestas correctas puedes dar dentro del límite de tiempo. Tu puntuación se registra y aparece en la tabla de clasificación."
+        },
+        "training": {
+          "title": "Modo Entrenamiento",
+          "description": "Practica a tu propio ritmo sin límite de tiempo. Las puntuaciones no se registran."
+        }
+      },
       "tutorial": {
         "title": "Tutorial",
         "steps": {
@@ -1254,108 +1439,12 @@
         "skip": "Saltar",
         "complete": "¡Esos son los fundamentos!\nPrueba entrenar con diferentes piezas y distancias.",
         "restart": "Reiniciar",
-        "startChallenge": "Iniciar Desafío",
-        "switchToTraining": "📖 Practicar en modo entrenamiento"
+        "startChallenge": "Iniciar Desafío"
       }
     },
     "common": {
       "play": "Reproducir",
       "replay": "Repetir"
-    },
-    "moveSequence": {
-      "title": "Yakusoku Kumite",
-      "description": "Memoriza y visualiza una secuencia de movimientos en el tablero",
-      "betaNotice": "Esta función está en beta y puede contener errores inesperados.",
-      "articles": {
-        "algebraicNotation": {
-          "title": "Notación Algebraica",
-          "description": "Aprende a leer y escribir movimientos de ajedrez en notación estándar"
-        }
-      },
-      "showBoard": "Mostrar Tablero",
-      "hideBoard": "Ocultar Tablero",
-      "fenRequired": "El FEN es obligatorio",
-      "pgnRequired": "Los movimientos PGN son obligatorios",
-      "invalidFen": "Formato FEN inválido",
-      "invalidPgn": "Formato PGN inválido. No se pudieron analizar los movimientos.",
-      "invalidMoves": "Algunos movimientos son inválidos en esta posición",
-      "invalidMove": "Movimiento inválido",
-      "noMovesFound": "No se encontraron movimientos en el PGN",
-      "invalidMoveAt": "El movimiento {index} \"{move}\" es inválido",
-      "fenLabel": "Posición Inicial (FEN)",
-      "fenPlaceholder": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-      "fenHint": "Introduce la cadena FEN para la posición inicial",
-      "pgnLabel": "Movimientos (PGN)",
-      "pgnPlaceholder": "1. e4 e5 2. Nf3 Nc6 3. Bb5 (máx. 50 movimientos)",
-      "pgnHint": "Introduce los movimientos en formato PGN",
-      "pgnTooLong": "El PGN es demasiado largo. Máximo {max} movimientos permitidos.",
-      "start": "Iniciar",
-      "problemSource": "Origen del Problema",
-      "presetProblems": "Problemas Predefinidos",
-      "enterCustom": "Introducir FEN/PGN",
-      "presetDescription": "Selecciona una apertura para practicar",
-      "preview": "Vista Previa",
-      "memorizeInstructions": "Observa la secuencia y memoriza los movimientos",
-      "moves": "movimientos",
-      "pressPlayToStart": "Presiona reproducir para iniciar la secuencia",
-      "playingMove": "Movimiento {current} de {total}",
-      "startRecall": "Iniciar Recuerdo",
-      "progress": "Progreso",
-      "moveProgress": "Movimiento {current} de {total}",
-      "yourMove": "Tu Movimiento",
-      "opponentTurn": "Esperando el movimiento del rival...",
-      "switchToSelect": "Cambiar a selección por lista",
-      "switchToText": "Cambiar a entrada de texto",
-      "switchInputMode": "Cambiar modo de entrada",
-      "wrongMove": "{move} es incorrecto",
-      "perfect": "¡Perfecto!",
-      "completed": "Completado",
-      "perfectMessage": "¡Reprodujiste todos los movimientos correctamente!",
-      "completedMessage": "Sesión de práctica completada",
-      "accuracy": "Precisión",
-      "correctMoves": "Movimientos Correctos",
-      "moveDetails": "Detalles del Movimiento",
-      "correct": "Correcto",
-      "attempts": "{count, plural, one {# intento} other {# intentos}}",
-      "backToSetup": "Volver a Configuración",
-      "includeOpponentMoves": "Incluir movimientos del rival",
-      "moveHistory": "Historial de Movimientos",
-      "whiteTurn": "Turno de Blancas",
-      "blackTurn": "Turno de Negras",
-      "copyShareLink": "Copiar Enlace para Compartir",
-      "shareLinkHelp": "Introduce la URL copiada en la barra de direcciones de tu navegador para recrear la práctica. Útil para compartir con amigos o como respaldo.",
-      "linkCopied": "Enlace copiado al portapapeles",
-      "copyFailed": "Error al copiar el enlace",
-      "urlTooLong": "La URL es demasiado larga (debe tener menos de 1000 caracteres)",
-      "url_too_long": "La URL para compartir es demasiado larga. Reduce la longitud del PGN.",
-      "invalid_data": "URL para compartir inválida",
-      "invalid_fen": "Contiene formato FEN inválido",
-      "session": "Sesión",
-      "endPractice": "Finalizar Práctica",
-      "clickMoveToJump": "Haz clic en un movimiento para saltar a esa posición",
-      "wrongAttempts": "Intentos incorrectos",
-      "tutorial": {
-        "title": "Tutorial",
-        "description": "Observa una secuencia de movimientos desarrollarse, luego reprodúcelos de memoria.\nProbemos con una apertura sencilla.",
-        "start": "Iniciar Práctica",
-        "skip": "Saltar",
-        "watchFirst": "Observa los movimientos primero presionando reproducir"
-      },
-      "aboutFeature": {
-        "title": "Acerca de Esta Función",
-        "description1": "Yakusoku Kumite es una forma de combate prearreglado practicado en artes marciales como Karate y Taekwondo, donde la secuencia de ataques y defensas está predeterminada.",
-        "description2": "En esta práctica, asumimos los movimientos del rival como en Yakusoku Kumite, y entrenamos para responder con la secuencia correcta de movimientos.",
-        "description3": "Este entrenamiento te ayudará a mejorar tu capacidad para memorizar aperturas de ajedrez."
-      },
-      "tutorialComplete": "¡Esos son los fundamentos!\nPrueba otras aperturas o desafíate con secuencias de tus propias partidas.",
-      "finishTutorial": "Finalizar Tutorial",
-      "resetSettings": "Restablecer configuración",
-      "resetSettingsConfirm": {
-        "title": "¿Restablecer configuración?",
-        "message": "Todos los ajustes se restablecerán y volverás a la pantalla del tutorial."
-      },
-      "cancel": "Cancelar",
-      "relatedArticles": "Artículos Relacionados"
     },
     "quadrantAnchors": {
       "title": "Anclas de Cuadrante",
@@ -1395,6 +1484,10 @@
       "question": "¿Cuáles son las diagonales de {square}?",
       "diagonalLabel": "Diagonal (dirección a1-h8)",
       "antiDiagonalLabel": "Anti-diagonal (dirección h1-a8)",
+      "diagonalShortLabel": "Diagonal",
+      "antiDiagonalShortLabel": "Anti-diagonal",
+      "diagonalDirectionNote": "(dirección a1-h8)",
+      "antiDiagonalDirectionNote": "(dirección h1-a8)",
       "inputPlaceholder": "ej., b1-h7",
       "squarePlaceholder": "??",
       "singleSquarePlaceholder": "ej., a1",
@@ -1423,6 +1516,21 @@
       "yourAnswer": "Tu respuesta",
       "correctAnswerLabel": "Respuesta correcta",
       "nextProblem": "Siguiente Problema",
+      "help": {
+        "label": "Ayuda",
+        "tutorial": {
+          "title": "Tutorial",
+          "description": "Si es tu primera vez, te recomendamos ver el tutorial."
+        },
+        "challenge": {
+          "title": "Modo Desafío",
+          "description": "Compite para ver cuántas respuestas correctas puedes dar dentro del límite de tiempo. Tu puntuación se registra y aparece en la tabla de clasificación."
+        },
+        "training": {
+          "title": "Modo Entrenamiento",
+          "description": "Practica a tu propio ritmo sin límite de tiempo. Las puntuaciones no se registran."
+        }
+      },
       "tutorial": {
         "title": "Tutorial",
         "skip": "Saltar",
@@ -1444,10 +1552,30 @@
         "next": "Siguiente",
         "previous": "Atrás",
         "startChallenge": "Iniciar Desafío",
-        "switchToTraining": "📖 Practicar en modo entrenamiento",
         "diagonalLegend": "Diagonal (a1-h8)",
         "antiDiagonalLegend": "Anti-diagonal (h1-a8)",
         "trialCorrectAnswer": "Respuesta: {diagonal}, {antiDiagonal}"
+      }
+    },
+    "tags": {
+      "section": "Temas y chunks",
+      "help": "Los temas son vocabulario curado (clavada, peón pasado, …). Los chunks son patrones de piezas personales compartidos por otros solucionadores.",
+      "placeholder": "Buscar para añadir un tema o chunk…",
+      "badge": {
+        "theme": "Tema",
+        "chunk": "Chunk"
+      },
+      "noResults": "Sin resultados",
+      "remove": "Quitar {label}",
+      "openDetail": "Mostrar detalles de {label}",
+      "moreItemsHint": "+{count} más — escribe para filtrar",
+      "detail": {
+        "readingPrefix": "Lectura: ",
+        "noDescription": "No hay descripción disponible.",
+        "viewInGlossary": "Ver en el glosario",
+        "viewChunkPage": "Ver página del chunk",
+        "detach": "Quitar",
+        "close": "Cerrar"
       }
     }
   },
@@ -1482,7 +1610,6 @@
     },
     "yourRankings": {
       "title": "Tus Clasificaciones",
-      "noRanks": "Aún no estás en ninguna clasificación. ¡Prueba algunos módulos de práctica!",
       "viewAll": "Ver todas las clasificaciones"
     },
     "feed": {
@@ -1496,6 +1623,12 @@
       },
       "position": {
         "action": "Publicó un nuevo problema"
+      },
+      "chunk": {
+        "action": {
+          "created": "Publicó un borrador de chunk",
+          "published": "Publicó un chunk"
+        }
       }
     },
     "vsAi": {
@@ -1507,10 +1640,36 @@
       "level": "Nv",
       "moves": "movimientos",
       "recent": "Recientes"
+    },
+    "help": {
+      "label": "Ayuda",
+      "vsAi": {
+        "title": "Jugar contra la IA",
+        "description": "Empieza una nueva partida contra la IA o retoma una en curso."
+      },
+      "feed": {
+        "title": "Cronología",
+        "description": "En la cronología aparecen temas como aperturas y nuevos puzles. También se muestran los cambios en lo más alto de la clasificación, pero las entradas de este tipo se conservan un mes — las más antiguas se eliminan."
+      }
     }
   },
   "gamesPage": {
-    "pageTitle": "Partidas"
+    "pageTitle": "Partidas",
+    "help": {
+      "label": "Ayuda",
+      "newGame": {
+        "title": "Empezar una nueva partida",
+        "description": "Pulsa este botón para empezar una partida contra la IA."
+      },
+      "autoSave": {
+        "title": "Guardado automático",
+        "description": "Las partidas se guardan automáticamente en tu dispositivo y se conservan las 20 más recientes. Consulta <link>manejo de datos</link> para más detalles."
+      },
+      "bulkDelete": {
+        "title": "Eliminación masiva",
+        "description": "Usa «Eliminación Masiva» para borrar varias partidas a la vez."
+      }
+    }
   },
   "bulkDelete": {
     "title": "Eliminación Masiva de Partidas",
@@ -1518,11 +1677,8 @@
     "noGames": "No hay partidas para eliminar",
     "selectedCount": "{count, plural, one {# partida seleccionada} other {# partidas seleccionadas}}",
     "selectAll": "Seleccionar Todas",
-    "unselectAll": "Deseleccionar Todas",
     "delete": "Eliminar",
     "cancel": "Cancelar",
-    "processing": "Procesando...",
-    "errorDeleting": "Error al eliminar. Por favor, inténtalo de nuevo.",
     "confirmTitle": "¿Eliminar Partidas Seleccionadas?",
     "confirmMessage": "¿Estás seguro de que deseas eliminar {count} partidas? Esta acción no se puede deshacer.",
     "deletedToast": "{count, plural, one {# partida eliminada correctamente} other {# partidas eliminadas correctamente}}",
@@ -1542,7 +1698,8 @@
       "title": "Certificado",
       "honorific": "{name}",
       "guestName": "Invitado",
-      "body": "Ha derrotado a Stockfish Nivel {level}. En reconocimiento de su excepcional habilidad en ajedrez a ciegas, se otorga este certificado."
+      "body": "Ha derrotado a Stockfish Nivel {level}. En reconocimiento de su excepcional habilidad en ajedrez a ciegas, se otorga este certificado.",
+      "bodyMaia": "Ha derrotado a Maia con {rating} ELO. En reconocimiento de su excepcional habilidad en ajedrez a ciegas, se otorga este certificado."
     },
     "youLose": "Has Perdido",
     "check": "Jaque",
@@ -1559,6 +1716,9 @@
     "resign": "Rendirse",
     "undo": "Deshacer",
     "moves": "Movimientos",
+    "movesPanel": {
+      "viewOps": "Ver las operaciones de este movimiento"
+    },
     "confirmResignTitle": "Confirmar Rendición",
     "confirmResignMessage": "¿Estás seguro de que quieres rendirte? Esto terminará la partida.",
     "cancel": "Cancelar",
@@ -1590,8 +1750,17 @@
     "saved": "Guardado",
     "postmortem": "Revisión de Partida",
     "resultTitle": "Resultado de la Partida",
+    "gameDetails": {
+      "title": "Detalles de la Partida"
+    },
+    "engineInfo": {
+      "title": "Oponente",
+      "engineLabel": "Motor",
+      "difficultyLabel": "Dificultad",
+      "stockfishDifficulty": "Nivel {level}",
+      "maiaDifficulty": "{rating} ELO"
+    },
     "operationLog": {
-      "title": "Registro de Operaciones",
       "noLogs": "Aún no hay registros de operaciones.",
       "columnMove": "Movimiento",
       "columnInputMethod": "Método de Entrada",
@@ -1601,7 +1770,42 @@
       "inputMethodText": "Texto",
       "inputMethodTextAutocomplete": "Texto (autocompletar)",
       "inputMethodSelect": "Lista",
-      "columnMovePeek": "Pistas"
+      "inputMethodBoard": "Tablero",
+      "columnMovePeek": "Pistas",
+      "columnInvalid": "Ilegal",
+      "initialSettings": {
+        "title": "Configuración inicial",
+        "notRecorded": "La configuración inicial no fue registrada para esta partida.",
+        "on": "Activado",
+        "off": "Desactivado",
+        "labelBoardVisibility": "Visibilidad del tablero",
+        "labelHighlightLastMove": "Resaltar último movimiento",
+        "labelShowOwnPieces": "Mostrar piezas propias",
+        "labelShowOpponentPieces": "Mostrar piezas del oponente",
+        "labelPieceShape": "Forma de las piezas",
+        "labelPieceColor": "Color de las piezas",
+        "labelPeekMode": "Modo de vistazo",
+        "labelMoveInputMode": "Entrada de movimiento"
+      },
+      "changeLog": {
+        "title": "Historial de cambios",
+        "noChanges": "No se realizaron cambios de configuración durante la partida.",
+        "columnAtMove": "Tras movimiento",
+        "columnSetting": "Ajuste",
+        "columnChange": "Cambio"
+      }
+    },
+    "promotionPicker": {
+      "cancel": "Cancelar coronación",
+      "promoteTo": {
+        "queen": "Coronar a dama",
+        "rook": "Coronar a torre",
+        "bishop": "Coronar a alfil",
+        "knight": "Coronar a caballo"
+      }
+    },
+    "settings": {
+      "title": "Configuración de la partida"
     },
     "showLegalMoves": "Mostrar movimientos legales",
     "legalMovesList": "Movimientos legales:",
@@ -1614,6 +1818,7 @@
         "peekCount": "Vistazos al Tablero",
         "undoCount": "Deshacer",
         "hintCount": "Pistas de Movimiento",
+        "invalidCount": "Intentos Ilegales",
         "viewDetails": "Registro",
         "times": "{count, plural, one {# vez} other {# veces}}",
         "columnItem": "Elemento",
@@ -1626,11 +1831,8 @@
     "infoModalTitle": "Acerca de la Revisión de Partida",
     "description": "Intenta recordar y reproducir los movimientos de tu partida terminada. También puedes ejecutar la evaluación del motor aquí.",
     "autoOpponentMoves": "Auto-rellenar movimientos del rival",
-    "autoOpponentMovesDescription": "Solo introduce tus propios movimientos; los movimientos del rival se rellenarán automáticamente",
     "inputMove": "Introduce un movimiento",
     "selectMove": "Selecciona un movimiento",
-    "switchToSelect": "Cambiar a selección por lista",
-    "switchToText": "Cambiar a entrada de texto",
     "switchInputMode": "Cambiar modo de entrada",
     "dontKnow": "No lo sé",
     "autoFillAll": "Auto-rellenar Todo",
@@ -1638,16 +1840,11 @@
     "confirmAutoFillAllMessage": "Esto auto-rellenará todos los movimientos restantes.",
     "correctMove": "¡Correcto!",
     "incorrectMove": "Movimiento incorrecto. Inténtalo de nuevo.",
-    "logIncorrect": "es incorrecto",
     "moveNumber": "Movimiento {number}",
-    "yourTurn": "Tu turno",
-    "opponentTurn": "Turno del rival",
     "completed": "¡Revisión de Partida Completada!",
     "completedMessage": "¡Reprodujiste correctamente todos los movimientos de la partida!",
-    "backToGame": "Volver a la Partida",
     "progress": "Progreso: {current} / {total} movimientos",
     "showBoard": "Mostrar Tablero",
-    "hideBoard": "Ocultar Tablero",
     "moves": "Movimientos",
     "noMovesYet": "Aún no hay movimientos",
     "copyPgn": "Copiar PGN",
@@ -1656,7 +1853,6 @@
     "analyzeOnLichess": "Analizar en Lichess",
     "moveLog": "Registro de Movimientos",
     "backToCurrentPosition": "Volver a la posición actual",
-    "configureBoardAppearance": "Configurar apariencia del tablero",
     "cancel": "Cancelar",
     "save": "Guardar",
     "guidanceStep1": "Introduce cada movimiento de memoria",
@@ -1686,6 +1882,13 @@
     "recoverDescription": "Continuar jugando desde el movimiento {count}. Todos los movimientos inválidos serán descartados.",
     "deleteGame": "Eliminar Partida",
     "deleteDescription": "Eliminar esta partida dañada de tu historial y empezar de nuevo."
+  },
+  "largeDownloadConsent": {
+    "title": "Se requiere una descarga grande",
+    "body": "La IA Maia utiliza un modelo de red neuronal de {size} que se descargará la primera vez que juegues con ella. Esto puede consumir datos móviles o tardar bastante en conexiones lentas.",
+    "cachedNote": "Después de la primera descarga, tu navegador almacena el modelo en caché y las partidas siguientes comienzan al instante.",
+    "continue": "Continuar",
+    "cancel": "Cancelar"
   },
   "newGame": {
     "title": "Nueva Partida",
@@ -1741,10 +1944,38 @@
     "playAsBlack": "Jugar con Negras",
     "selectLevel": "Selecciona el Nivel de Habilidad de la IA",
     "levelWithNumber": "Nivel {level}",
+    "maiaRatingOption": "{rating} ELO",
     "skillLevelDescription": "Nivel 1 (800 ELO, más fácil) a Nivel 20 (3200+ ELO, más fuerte). Los niveles más altos tardan más en pensar.",
+    "selectEngine": "Selecciona el motor de IA",
+    "engineStockfishLabel": "Stockfish",
+    "engineStockfishDescription": "Un motor de código abierto potente con nivel de habilidad ajustable — el oponente de IA clásico.",
+    "engineMaiaLabel": "Maia",
+    "engineMaiaDescription": "Un motor basado en redes neuronales que juega como un humano del Elo seleccionado. El primer movimiento tarda unos segundos mientras se carga el modelo (~46 MB).",
+    "engineLockedHint": "Faltan monedas",
+    "engineMaiaCostBadge": "{cost} moneda",
+    "maiaPointModal": {
+      "title": "Maia cuesta monedas",
+      "body": "Cada partida contra Maia cuesta {cost} moneda.",
+      "balance": "Actualmente tienes {balance} monedas.",
+      "earnLink": "Cómo funcionan las Monedas",
+      "viewPoints": "Ver mis monedas",
+      "close": "Cerrar"
+    },
+    "maiaCoinConfirmModal": {
+      "title": "¿Iniciar una partida contra Maia?",
+      "body": "Iniciar esta partida cuesta {cost} moneda.",
+      "balance": "Actualmente tienes {balance} monedas.",
+      "confirm": "Gastar moneda e iniciar",
+      "cancel": "Cancelar"
+    },
+    "helpLabel": "Mostrar ayuda",
+    "helpEngineDescription": "Stockfish: un motor de ajedrez de código abierto con fuerza ajustable. Maia: una red neuronal entrenada con millones de partidas humanas, juega al nivel elegido como un humano real, no como una computadora.",
+    "helpSkillLevelDescription": "Nivel 1 (más débil) a Nivel 20 (más fuerte). Stockfish abarca aproximadamente 800–3200 ELO. Maia cubre 1100–1900 ELO con juego estilo humano; las 20 posiciones del deslizador se asignan a ese rango.",
+    "helpPositionIntroDescription": "Configura cualquier posición inicial colocando piezas en el tablero editable. El motor comenzará a pensar desde la posición que crees.",
+    "helpPgnIntroDescription": "Pega un PGN (notación portátil de juego) y juega la variante desde cualquier punto. Ideal para estudiar una continuación específica o recrear una partida que viste en otro lugar.",
+    "helpOpeningIntroDescription": "Elige una apertura con nombre de la lista — continuarás a la pantalla de configuración PGN donde podrás elegir motor, color y dificultad antes de empezar.",
     "previewBoard": "Vista Previa del Tablero",
     "gameSettings": "Configuración Avanzada",
-    "showBoardButtonInGame": "Mostrar botón 'Ver Tablero' durante partidas contra la IA",
     "startGame": "Iniciar Partida",
     "cancel": "Cancelar",
     "whiteDescription": "Tú juegas primero",
@@ -1880,9 +2111,29 @@
     "changesTitle": "Cambios en los Términos",
     "changesDescription": "El operador puede cambiar estos Términos de Servicio según sea necesario. Los Términos modificados entrarán en vigor desde el momento en que se publiquen en esta página."
   },
+  "licenses": {
+    "title": "Licencias de código abierto",
+    "description": "Reconocimientos e información de licencias del software de código abierto utilizado",
+    "lastUpdated": "Última actualización: 13 de mayo de 2026",
+    "introduction": "Blindfold Chess utiliza motores de ajedrez de código abierto para proporcionar su funcionalidad de oponente de IA. Agradecemos a los autores y comunidades detrás de estos proyectos, y proporcionamos información de atribución y licencias a continuación.",
+    "componentsTitle": "Componentes de código abierto incluidos",
+    "componentsIntro": "Los siguientes componentes están incluidos con esta aplicación y se entregan a su navegador cuando utiliza las funciones relacionadas. Cada motor se ejecuta como un proceso Web Worker separado y se comunica con la aplicación únicamente a través del protocolo estándar de texto UCI.",
+    "stockfishName": "Stockfish",
+    "stockfishDescription": "Un potente motor de ajedrez UCI de código abierto, utilizado aquí como oponente de IA predeterminado.",
+    "lc0Name": "Lc0 (Leela Chess Zero)",
+    "lc0Description": "Un motor de ajedrez basado en redes neuronales, utilizado aquí para ejecutar los pesos de Maia para oponentes de IA con estilo humano.",
+    "maiaName": "Maia Chess (pesos de red neuronal)",
+    "maiaDescription": "Pesos de red neuronal que modelan el juego humano de ajedrez en niveles específicos de puntuación, desarrollados por el Computational Social Science Lab de la Universidad de Toronto.",
+    "sourceCodeLabel": "Código fuente:",
+    "licenseLabel": "Licencia:",
+    "licenseValue": "GNU General Public License v3.0",
+    "complianceTitle": "Cumplimiento de GPL v3",
+    "complianceIntro": "Los componentes anteriores tienen licencia GNU General Public License versión 3 (GPL v3) y se incluyen aquí sin modificaciones. El código fuente correspondiente está disponible públicamente en los repositorios upstream enlazados arriba.",
+    "viewFullLicense": "Ver el texto completo de la licencia GPL v3",
+    "viewFullLicenseGnu": "También disponible en el sitio web del Proyecto GNU"
+  },
   "company": {
     "title": "Información de la Empresa",
-    "companyInfo": "Información del Operador",
     "companyName": "Nombre de la Empresa",
     "companyNameValue": "Fuji Enterprise",
     "location": "Ubicación",
@@ -1901,7 +2152,6 @@
     "description": "Si tienes alguna pregunta o comentario, no dudes en contactarnos.",
     "form": {
       "name": "Nombre",
-      "namePlaceholder": "Juan Pérez",
       "nameRequired": "Por favor, introduce tu nombre",
       "nameMaxLength": "El nombre debe tener 100 caracteres o menos",
       "nameInvalid": "El nombre no puede contener saltos de línea",
@@ -1910,13 +2160,10 @@
       "emailRequired": "Por favor, introduce tu correo electrónico",
       "emailInvalid": "Por favor, introduce un correo electrónico válido",
       "subject": "Asunto",
-      "subjectPlaceholder": "Asunto de tu consulta",
       "subjectRequired": "Por favor, introduce un asunto",
       "subjectMaxLength": "El asunto debe tener 200 caracteres o menos",
       "subjectInvalid": "El asunto no puede contener saltos de línea",
       "message": "Mensaje",
-      "messagePlaceholder": "Describe tu consulta en detalle",
-      "messageRequired": "Por favor, introduce tu mensaje",
       "messageMinLength": "El mensaje debe tener al menos 10 caracteres",
       "messageMaxLength": "El mensaje debe tener 5000 caracteres o menos",
       "submit": "Ir a Confirmación",
@@ -1971,9 +2218,7 @@
       "title": "Panel",
       "comingSoon": "Próximamente...",
       "vsAi": "🤖 VS IA",
-      "myGames": "Mis Partidas",
       "newGame": "Nueva Partida",
-      "gameCount": "{count, plural, =0 {Sin partidas aún} one {# partida} other {# partidas}}",
       "challenge": "🏆 Desafío",
       "squareColors": "Color de Casillas",
       "coordinateQuiz": "Cuestionario de Coordenadas",
@@ -1982,12 +2227,15 @@
       "boardSymmetry": "Simetría del Tablero",
       "viewLeaderboard": "Ver Clasificación →",
       "topics": "💬 Temas",
-      "topicSquares": "Casillas",
-      "topicOpenings": "Aperturas",
       "welcomeGreeting": "¡Hola, {name}!",
       "welcomeDefaultName": "Jugador",
       "viewMypage": "Mi Página",
-      "viewHome": "Inicio"
+      "viewHome": "Inicio",
+      "dailyPuzzleTitle": "Puzzle del Día",
+      "dailyPuzzleAction": "Resolver",
+      "announcements": "Anuncios",
+      "articles": "Artículos y Guías",
+      "viewAll": "Ver todo"
     }
   },
   "AuthStatusDisplay": {
@@ -2104,7 +2352,6 @@
     "pageTitle": "Artículos",
     "noArticles": "Aún no hay artículos.",
     "articlesListTitle": "Todos los Artículos",
-    "moreArticles": "Más artículos",
     "articleNotFound": "Artículo No Encontrado",
     "notTranslatedNotice": "Este artículo aún no ha sido traducido a tu idioma. Estás viendo la versión original."
   },
@@ -2153,10 +2400,23 @@
       }
     },
     "step2": {
-      "shortLabel": "Vista",
-      "title": "Modo de Vista del Tablero",
-      "description": "Puedes activar una función de vistazo para echar un vistazo al tablero como ayuda visual.",
-      "showBoardButton": "Mostrar botón 'Ver Tablero' durante partidas contra la IA",
+      "shortLabel": "Tablero",
+      "title": "Visibilidad del Tablero",
+      "description": "Decide cómo se presenta el tablero durante la partida. Los ajustes de visualización de piezas (siguiente paso) siguen brindando la experiencia a ciegas cuando el tablero está visible.",
+      "boardVisibilities": {
+        "always": {
+          "label": "Siempre visible",
+          "description": "El tablero se muestra durante toda la partida. Los ajustes de piezas (siguiente paso) ocultan los tipos/colores como prefieras."
+        },
+        "peek": {
+          "label": "Vistazo bajo demanda",
+          "description": "El tablero está oculto por defecto; toca para echar un vistazo cuando necesites verificar una posición."
+        },
+        "never": {
+          "label": "Oculto",
+          "description": "Modo a ciegas puro — el tablero nunca se muestra durante la partida."
+        }
+      },
       "modes": {
         "modal": {
           "label": "Modal",
@@ -2213,15 +2473,12 @@
   },
   "Mypage": {
     "title": "Mi Página",
-    "challengeLink": "Historial de Desafíos",
     "dashboard": {
       "viewProfile": "Perfil público",
       "challengeTitle": "Historial de Desafíos",
       "likesTitle": "Publicaciones que te Gustan",
       "postsTitle": "Mis Publicaciones",
       "editProfile": "Editar",
-      "interviewTitle": "Entrevista",
-      "beltSystem": "Sistema de Cinturones",
       "myRecords": "Mis Registros",
       "socialTitle": "Social",
       "interviewBanner": "Responde preguntas de entrevista y cuéntanos sobre ti",
@@ -2235,11 +2492,11 @@
       "expProgress": "{current} / {next} Exp",
       "expRemaining": "{remaining} Exp para el siguiente nivel",
       "viewExpLeaderboard": "Ver Clasificación de Exp",
+      "pointsTotal": "{total} monedas",
       "accountTitle": "Cuenta",
       "subscriptionTitle": "Suscripción",
       "benefitsTitle": "Beneficios",
       "practiceTitle": "Práctica",
-      "myProblems": "Mis Problemas",
       "myPositionMemory": "Memoria de Posición",
       "myPuzzles": "Puzzles"
     },
@@ -2294,9 +2551,97 @@
       "move_sequence": "Yakusoku Kumite",
       "algebraic_notation": "Notación Algebraica",
       "fen": "Reconstrucción FEN",
-      "quadrant_anchors": "Anclas de Cuadrante"
+      "quadrant_anchors": "Anclas de Cuadrante",
+      "unknown": "Otro"
     },
     "practiceThisChallenge": "Practicar Este Desafío"
+  },
+  "MypageBenefits": {
+    "title": "Beneficios",
+    "sectionTitle": "Beneficios sin anuncios",
+    "breadcrumbMypage": "Mi Página",
+    "adFree": {
+      "statusActive": "Modo sin anuncios activo",
+      "statusInactive": "El modo sin anuncios no está activo actualmente",
+      "activeUntil": "hasta {date}",
+      "sourceSubscription": "Suscripción",
+      "learnHowToEarn": "Aprende cómo obtener beneficios sin anuncios",
+      "viewFullHistory": "Ver historial completo",
+      "grantPeriod": "{startDate} – {endDate}",
+      "grantStatusActive": "Activa",
+      "grantStatusUpcoming": "Próxima",
+      "grantStatusExpired": "Expirada",
+      "tableSourceHeader": "Fuente",
+      "tablePeriodHeader": "Período",
+      "tableStatusHeader": "Estado"
+    },
+    "grantTypeLabel": {
+      "admin_manual": "Concedido por el equipo",
+      "topic_post": "Concedido por publicación de tema",
+      "position_creation": "Concedido por envío de posición"
+    }
+  },
+  "MypagePoints": {
+    "title": "Monedas",
+    "sectionTitle": "Tus monedas",
+    "breadcrumbMypage": "Mi Página",
+    "balance": {
+      "unit": "monedas",
+      "aboutLink": "Cómo funcionan las Monedas"
+    },
+    "dailyCap": {
+      "label": "Ganado hoy por crear",
+      "value": "{earned} / {cap}",
+      "note": "Crear problemas y publicaciones otorga hasta {cap} monedas por día. Se reinicia a las 00:00 UTC."
+    },
+    "redeem": {
+      "title": "Canjear monedas por tiempo sin anuncios",
+      "description": "Cada moneda se convierte en un día sin anuncios. Los días se suman al tiempo sin anuncios que ya tengas.",
+      "pointSuffix": "monedas",
+      "daysReceived": "{days, plural, one {# día} other {# días}} sin anuncios",
+      "submit": "Canjear {amount} monedas",
+      "submitting": "Canjeando…",
+      "successMessage": "Listo — se han añadido {days, plural, one {# día} other {# días}} sin anuncios.",
+      "errors": {
+        "invalid_amount": "Introduce un número entero positivo.",
+        "insufficient_balance": "No tienes suficientes monedas disponibles.",
+        "signInRequired": "Inicia sesión para canjear.",
+        "banned": "Tu cuenta está restringida.",
+        "rateLimited": "Demasiados canjes en poco tiempo — inténtalo más tarde."
+      }
+    },
+    "history": {
+      "title": "Historial",
+      "empty": "Todavía no tienes actividad de monedas.",
+      "learnHowToEarn": "Ver cómo se obtienen monedas.",
+      "headerDate": "Fecha",
+      "headerEvent": "Evento",
+      "headerDelta": "Cantidad",
+      "truncatedNote": "Mostrando las entradas más recientes.",
+      "kind": {
+        "post_grant": "Ganadas por una publicación",
+        "post_clawback": "Revertidas por publicación eliminada",
+        "redemption": "Canjeadas por tiempo sin anuncios",
+        "purchase": "Compradas",
+        "admin_grant": "Concedidas por el equipo",
+        "maia_game": "Partida contra Maia",
+        "like_grant": "Ganadas por me gusta",
+        "other": "Ajuste"
+      }
+    }
+  },
+  "MypageBenefitHistory": {
+    "title": "Historial de beneficios",
+    "sectionTitle": "Tus concesiones de beneficios",
+    "breadcrumbMypage": "Mi Página",
+    "breadcrumbBenefits": "Beneficios",
+    "showing": "Mostrando {from}-{to} de {total}",
+    "empty": "No se encontraron concesiones de beneficios.",
+    "grantPeriod": "{startDate} – {endDate}",
+    "statusActive": "Activa",
+    "statusUpcoming": "Próxima",
+    "statusExpired": "Expirada",
+    "statusRevoked": "Revocada"
   },
   "MypageLikes": {
     "title": "Publicaciones que te Gustan",
@@ -2315,14 +2660,16 @@
     "sectionTitle": "Problemas que Has Creado",
     "empty": "Aún no has creado ningún problema.",
     "breadcrumbMypage": "Mi Página",
-    "breadcrumbProblems": "Mis Problemas"
+    "breadcrumbProblems": "Mis Problemas",
+    "editAction": "Editar"
   },
   "MypagePuzzles": {
     "title": "Mis Puzzles",
     "sectionTitle": "Puzzles que Has Creado",
     "empty": "Aún no has creado ningún puzzle.",
     "breadcrumbMypage": "Mi Página",
-    "breadcrumbProblems": "Mis Problemas"
+    "breadcrumbProblems": "Mis Problemas",
+    "editAction": "Editar"
   },
   "MypageProblemsIndex": {
     "title": "Mis Problemas",
@@ -2368,10 +2715,25 @@
     "unknownNotification": "Tienes una nueva notificación",
     "announcementMessage": "Nuevo anuncio: {title}",
     "newPostMessage": "{actor} compartió una nueva publicación",
+    "newCommentOnTopicMessage": "{actor} comentó en tu problema",
+    "newChunkDraftMessage": "{actor} publicó un borrador de chunk",
+    "chunkPublishedMessage": "{actor} publicó un chunk",
     "newPositionMemoryMessage": "{actor} creó un nuevo problema de memoria de posición",
     "newPuzzleMessage": "{actor} creó un nuevo puzzle",
     "achievementSingleMessage": "🏆 Obtuviste {name}",
-    "achievementMultipleMessage": "🏆 Obtuviste {count} logros"
+    "achievementMultipleMessage": "🏆 Obtuviste {count} logros",
+    "benefitGrantMessage": {
+      "ad_free": {
+        "topic_post": "Gracias por tu publicación de tema — recibiste {days} días de beneficio sin anuncios",
+        "default": "Recibiste {days} días de beneficio sin anuncios"
+      }
+    },
+    "pointGrantMessage": {
+      "default": "Recibiste {amount, plural, one {# moneda} other {# monedas}}"
+    },
+    "likeCoinGrantMessage": {
+      "default": "Le gustó tu contenido: ganaste {count, plural, one {# moneda} other {# monedas}}"
+    }
   },
   "deleteAccount": {
     "title": "Eliminar Cuenta",
@@ -2396,7 +2758,12 @@
     "gameSaved": "Partida guardada correctamente",
     "gamesDeleted": "{count, plural, one {# partida eliminada correctamente} other {# partidas eliminadas correctamente}}",
     "accountDeleted": "Tu cuenta ha sido eliminada",
-    "practiceResultSaveFailed": "Error al guardar tu resultado. Por favor, inténtalo de nuevo."
+    "practiceResultSaveFailed": "Error al guardar tu resultado. Por favor, inténtalo de nuevo.",
+    "positionCreated": "Posición creada con éxito",
+    "positionDeleted": "Problema eliminado",
+    "positionUpdated": "Cambios guardados",
+    "puzzleUpdated": "Cambios guardados",
+    "puzzleDeleted": "Puzzle eliminado"
   },
   "setupUsername": {
     "title": "Crea tu Cuenta",
@@ -2506,8 +2873,6 @@
     "dashboard": "Panel",
     "users": "Usuarios",
     "auditLog": "Registro de Auditoría",
-    "totalUsers": "Total de Usuarios",
-    "roleAssignments": "Asignaciones de Roles",
     "dashboardKpi": {
       "from": "Desde",
       "to": "Hasta",
@@ -2543,6 +2908,13 @@
           "positions": {
             "memory": "memoria"
           }
+        },
+        "help": {
+          "avgPerActivePoster": {
+            "title": "Promedio por publicador activo",
+            "ariaLabel": "Mostrar explicación de Promedio por publicador activo",
+            "description": "Total de publicaciones UGC en el periodo seleccionado dividido entre el número de usuarios distintos que publicaron al menos un elemento UGC en ese periodo.\n\nUn usuario que contribuyó con varios tipos de UGC (por ejemplo, una publicación de tema y una posición guardada) se cuenta como un único publicador activo, no como dos.\n\nLas publicaciones eliminadas lógicamente se excluyen tanto del numerador como del recuento de publicadores activos."
+          }
         }
       }
     },
@@ -2567,6 +2939,12 @@
       "free": "Gratuito",
       "viewSubscriptions": "Suscripciones",
       "deleted": "Eliminado",
+      "signupMethod": "Método de registro",
+      "filterByProvider": "Método de registro",
+      "allProviders": "Todos",
+      "providerGoogle": "Google",
+      "providerEmail": "Correo electrónico",
+      "providerUnknown": "Desconocido",
       "copyUserId": "Copiar ID de usuario",
       "copyUserIdSuccess": "Copiado",
       "columnId": "ID",
@@ -2580,8 +2958,24 @@
     },
     "stats": {
       "usersByCountry": "Usuarios por País",
+      "usersByRank": "Usuarios por rango",
+      "usersBySignupMethod": "Usuarios por método de registro",
       "noData": "Sin datos disponibles",
-      "users": "usuarios"
+      "users": "usuarios",
+      "rankNames": {
+        "1dan": "1 Dan",
+        "1kyu": "1 Kyu",
+        "2kyu": "2 Kyu",
+        "3kyu": "3 Kyu",
+        "4kyu": "4 Kyu",
+        "5kyu": "5 Kyu",
+        "mukyu": "Sin rango"
+      }
+    },
+    "filters": {
+      "clearAll": "Borrar todo",
+      "country": "País",
+      "rank": "Rango"
     },
     "subscriptions": "Suscripciones",
     "subscriptionsTable": {
@@ -2613,8 +3007,6 @@
       "title": "Publicaciones de {username}",
       "email": "Correo",
       "username": "Nombre de usuario",
-      "backToUsers": "Volver a Usuarios",
-      "topic": "Tema",
       "content": "Contenido",
       "createdAt": "Fecha de Creación",
       "status": "Estado",
@@ -2630,8 +3022,6 @@
       "deleteModalConfirm": "Confirmar Eliminación",
       "deleteModalDeleting": "Eliminando...",
       "deleteModalReasonRequired": "El motivo es obligatorio",
-      "previousPage": "Anterior",
-      "nextPage": "Siguiente",
       "userNotFound": "Usuario no encontrado"
     },
     "auditLogTable": {
@@ -2644,9 +3034,7 @@
       "noLogsFound": "No se encontraron registros de auditoría",
       "filterByAction": "Filtrar por acción",
       "filterByUser": "Filtrar por usuario",
-      "allActions": "Todas las Acciones",
-      "previousPage": "Anterior",
-      "nextPage": "Siguiente"
+      "allActions": "Todas las Acciones"
     },
     "activityLog": "Registro de Actividad",
     "activityLogTable": {
@@ -2658,12 +3046,11 @@
       "noLogsFound": "No se encontraron registros de actividad",
       "filterByAction": "Filtrar por acción",
       "filterByUser": "Filtrar por usuario",
-      "allActions": "Todas las Acciones",
-      "previousPage": "Anterior",
-      "nextPage": "Siguiente"
+      "allActions": "Todas las Acciones"
     },
     "positionMemory": "Position Memory",
     "chunks": "Chunks",
+    "glossary": "Glosario",
     "puzzle": "Puzzle",
     "topicPosts": {
       "navLabel": "Publicaciones de Temas",
@@ -2691,9 +3078,7 @@
       "deleteModalCancel": "Cancelar",
       "deleteModalConfirm": "Confirmar Eliminación",
       "deleteModalDeleting": "Eliminando...",
-      "deleteModalReasonRequired": "El motivo es obligatorio",
-      "previousPage": "Anterior",
-      "nextPage": "Siguiente"
+      "deleteModalReasonRequired": "El motivo es obligatorio"
     },
     "announcements": "Anuncios",
     "announcementsTable": {
@@ -2837,10 +3222,6 @@
     "ads": "Anuncios",
     "adsManagement": {
       "title": "Gestión de Anuncios",
-      "globalToggle": "Anuncios Activados",
-      "globalToggleDescription": "Activar o desactivar todos los anuncios en todo el sitio",
-      "enabled": "Activado",
-      "disabled": "Desactivado",
       "banners": "Banners Publicitarios",
       "slot": "Espacio",
       "href": "URL del Enlace",
@@ -2869,14 +3250,88 @@
       "endAt": "Fin",
       "create": "Crear",
       "creating": "Creando..."
+    },
+    "points": {
+      "title": "Puntos",
+      "navLabel": "Puntos",
+      "showing": "Mostrando {from}–{to} de {total} concesiones",
+      "empty": "Todavía no hay concesiones de puntos por staff.",
+      "columns": {
+        "user": "Usuario",
+        "amount": "Cantidad",
+        "reason": "Motivo",
+        "grantedAt": "Fecha"
+      }
+    },
+    "grants": {
+      "title": "Concesiones",
+      "navLabel": "Concesiones",
+      "noGrantsFound": "No se encontraron concesiones",
+      "showing": "Mostrando {from}–{to} de {total} concesiones",
+      "columns": {
+        "user": "Usuario",
+        "benefit": "Beneficio",
+        "grantType": "Tipo de concesión",
+        "reason": "Motivo",
+        "period": "Periodo",
+        "status": "Estado",
+        "actions": "Acciones"
+      },
+      "status": {
+        "revoked": "Revocada",
+        "expired": "Expirada",
+        "active": "Activa"
+      }
+    },
+    "achievements": {
+      "title": "Logros",
+      "navLabel": "Logros",
+      "description": "Gestiona definiciones de logros y consulta titulares.",
+      "noAchievementsFound": "No se encontraron logros",
+      "showing": "Mostrando {from}–{to} de {total} logros",
+      "viewHolders": "Ver titulares",
+      "columns": {
+        "displayName": "Nombre",
+        "iconKey": "Clave de icono",
+        "slug": "Slug",
+        "category": "Categoría",
+        "repeatable": "Repetible",
+        "displayOrder": "Orden",
+        "holderCount": "Titulares",
+        "actions": "Acciones"
+      },
+      "yes": "Sí",
+      "no": "No",
+      "detail": {
+        "backToList": "Volver a Logros",
+        "notFound": "Logro no encontrado",
+        "headerTitle": "Detalles del Logro",
+        "slug": "Slug",
+        "category": "Categoría",
+        "iconKey": "Clave de icono",
+        "repeatable": "Repetible",
+        "displayOrder": "Orden",
+        "holderCount": "Titulares",
+        "createdAt": "Creado el",
+        "holdersTitle": "Titulares",
+        "showingHolders": "Mostrando {from}–{to} de {total} titulares",
+        "noHoldersFound": "Aún sin titulares",
+        "columns": {
+          "username": "Usuario",
+          "userId": "ID de usuario",
+          "achievedAt": "Conseguido el",
+          "metadata": "Metadatos"
+        },
+        "anonymous": "(sin perfil)"
+      }
     }
   },
   "publicProfile": {
     "title": "Perfil de {displayName}",
+    "pageTitle": "Perfil",
     "defaultDescription": "Perfil de {displayName} en Ajedrez a Ciegas",
     "chessAccounts": "Cuentas de Ajedrez",
     "bio": "Acerca de",
-    "emptyProfile": "Este usuario aún no ha añadido información a su perfil.",
     "followers": "Seguidores",
     "followingCount": "Siguiendo",
     "follow": "Seguir",
@@ -2965,6 +3420,17 @@
     "moreTopicPosts": "Más temas",
     "showMore": "Mostrar más",
     "showLess": "Mostrar menos",
+    "permalinkAriaLabel": "Ver esta publicación",
+    "replyAriaLabel": "Ver respuestas y responder",
+    "hiddenReplies": "{count, plural, one {# respuesta oculta} other {# respuestas ocultas}}",
+    "deletedComment": "[Comentario eliminado por el usuario]",
+    "collapseAriaLabel": "Contraer hilo",
+    "expandAriaLabel": "Expandir hilo",
+    "replyButton": "Responder",
+    "sortByLabel": "Ordenar por",
+    "joinConversation": "Únete a la conversación",
+    "communityThoughts": "Pensamientos de la comunidad",
+    "signInToJoin": "Inicia sesión para unirte a la conversación",
     "categories": {
       "squares": {
         "title": "Casillas",
@@ -3135,7 +3601,7 @@
         "submit": "Publicar",
         "submitting": "Publicando...",
         "contentOrRatingRequired": "Introduce algún contenido o proporciona al menos una valoración",
-        "contentTooLong": "El contenido debe tener 5000 caracteres o menos",
+        "contentTooLong": "El contenido debe tener 2000 caracteres o menos",
         "invalidOpening": "Apertura inválida",
         "error": "Ocurrió un error. Por favor, inténtalo de nuevo.",
         "signInRequired": "Inicia sesión para crear una publicación",
@@ -3170,7 +3636,7 @@
         "submit": "Responder",
         "submitting": "Respondiendo...",
         "contentRequired": "Introduce algún contenido",
-        "contentTooLong": "El contenido debe tener 5000 caracteres o menos",
+        "contentTooLong": "El contenido debe tener 2000 caracteres o menos",
         "error": "Ocurrió un error. Por favor, inténtalo de nuevo.",
         "signInRequired": "Inicia sesión para responder",
         "loginToReply": "Inicia sesión para responder",
@@ -3195,6 +3661,7 @@
       "title": "Casillas",
       "description": "Selecciona una casilla para ver y compartir discusiones",
       "pageTitle": "Casillas",
+      "sectionTitle": "Elegir Casilla",
       "postCount": "{count, plural, one {# publicación} other {# publicaciones}}",
       "noPosts": "Aún no hay publicaciones.",
       "newPost": "Comparte tu opinión",
@@ -3226,7 +3693,7 @@
         "submit": "Publicar",
         "submitting": "Publicando...",
         "contentRequired": "Introduce algún contenido",
-        "contentTooLong": "El contenido debe tener 5000 caracteres o menos",
+        "contentTooLong": "El contenido debe tener 2000 caracteres o menos",
         "error": "Ocurrió un error. Por favor, inténtalo de nuevo.",
         "signInRequired": "Inicia sesión para crear una publicación",
         "rateLimited": "Demasiadas publicaciones. Por favor, inténtalo más tarde."
@@ -3248,7 +3715,7 @@
         "submit": "Responder",
         "submitting": "Respondiendo...",
         "contentRequired": "Introduce algún contenido",
-        "contentTooLong": "El contenido debe tener 5000 caracteres o menos",
+        "contentTooLong": "El contenido debe tener 2000 caracteres o menos",
         "error": "Ocurrió un error. Por favor, inténtalo de nuevo.",
         "signInRequired": "Inicia sesión para responder",
         "loginToReply": "Inicia sesión para responder",
@@ -3267,6 +3734,245 @@
         "cancel": "Cancelar",
         "deleting": "Eliminando..."
       }
+    },
+    "chunks": {
+      "commentsTitle": "Comentarios",
+      "postCount": "{count, plural, one {# comentario} other {# comentarios}}",
+      "noPosts": "Aún no hay comentarios. ¡Sé el primero en compartir tu opinión!",
+      "signInToComment": "Inicia sesión para comentar",
+      "readMore": "Leer más",
+      "detail": {
+        "pageTitle": "Comentario del Chunk"
+      },
+      "postDetail": {
+        "authorView": "Opinión de {author} sobre {name}",
+        "backToChunk": "Volver a {name}"
+      },
+      "sort": {
+        "new": "Nuevo",
+        "popular": "Popular",
+        "active": "Activo"
+      },
+      "newPostForm": {
+        "contentLabel": "Comentario",
+        "contentPlaceholder": "Comparte tu opinión sobre este chunk...",
+        "replyPermissionLabel": "Quién puede responder",
+        "replyPermission_everyone": "Todos",
+        "replyPermission_followers": "Solo seguidores",
+        "replyPermission_nobody": "Nadie",
+        "invalidReplyPermission": "Configuración de permiso de respuesta inválida",
+        "submit": "Comentar",
+        "submitting": "Publicando...",
+        "contentRequired": "Introduce algún contenido",
+        "contentTooLong": "El contenido debe tener 2000 caracteres o menos",
+        "error": "Ocurrió un error. Por favor, inténtalo de nuevo.",
+        "signInRequired": "Inicia sesión para comentar",
+        "rateLimited": "Demasiados comentarios. Por favor, inténtalo más tarde."
+      },
+      "like": "Me gusta",
+      "unlike": "Ya no me gusta",
+      "newReply": "Nueva Respuesta {time}",
+      "justNow": "ahora mismo",
+      "replies": {
+        "title": "Respuestas",
+        "count": "{count, plural, one {# respuesta} other {# respuestas}}",
+        "noReplies": "Aún no hay respuestas. ¡Sé el primero en responder!",
+        "contentLabel": "Tu respuesta",
+        "contentPlaceholder": "Comparte tu opinión...",
+        "submit": "Responder",
+        "submitting": "Respondiendo...",
+        "contentRequired": "Introduce algún contenido",
+        "contentTooLong": "El contenido debe tener 2000 caracteres o menos",
+        "error": "Ocurrió un error. Por favor, inténtalo de nuevo.",
+        "signInRequired": "Inicia sesión para responder",
+        "loginToReply": "Inicia sesión para responder",
+        "rateLimited": "Demasiadas respuestas. Por favor, inténtalo más tarde.",
+        "repliesDisabled": "El autor ha desactivado las respuestas en este comentario.",
+        "followRequired": "Solo los seguidores del autor pueden responder a este comentario.",
+        "replyButton": "Responder",
+        "replyingTo": "Respondiendo a @{username}",
+        "cancelReply": "Cancelar"
+      },
+      "deletePost": {
+        "button": "Eliminar",
+        "confirmTitle": "Eliminar Comentario",
+        "confirmMessage": "¿Estás seguro de que deseas eliminar este comentario? Esta acción no se puede deshacer.",
+        "confirm": "Eliminar",
+        "cancel": "Cancelar",
+        "deleting": "Eliminando..."
+      }
+    },
+    "positionMemory": {
+      "commentsTitle": "Comentarios",
+      "postCount": "{count, plural, one {# comentario} other {# comentarios}}",
+      "noPosts": "Aún no hay comentarios. ¡Sé el primero en compartir tus ideas!",
+      "signInToComment": "Inicia sesión para comentar",
+      "readMore": "Leer más",
+      "sort": {
+        "new": "Nuevos",
+        "popular": "Populares",
+        "active": "Activos"
+      },
+      "detail": {
+        "pageTitle": "Comentario sobre Memoria de Posición"
+      },
+      "postDetail": {
+        "authorView": "Comentarios de {author} sobre {name}",
+        "backToPosition": "Volver a {name}"
+      },
+      "newPostForm": {
+        "contentLabel": "Comentario",
+        "contentPlaceholder": "Comparte tus ideas sobre esta posición...",
+        "submit": "Comentar",
+        "submitting": "Publicando...",
+        "contentRequired": "Por favor escribe algún contenido",
+        "contentTooLong": "El contenido debe tener 2000 caracteres o menos",
+        "error": "Ocurrió un error. Inténtalo de nuevo.",
+        "signInRequired": "Inicia sesión para comentar",
+        "invalidReplyPermission": "Configuración de permiso de respuesta inválida",
+        "rateLimited": "Demasiados comentarios. Inténtalo de nuevo más tarde."
+      },
+      "like": "Me gusta",
+      "unlike": "Quitar me gusta",
+      "newReply": "Nueva respuesta {time}",
+      "justNow": "ahora mismo",
+      "replies": {
+        "title": "Respuestas",
+        "count": "{count, plural, one {# respuesta} other {# respuestas}}",
+        "noReplies": "Aún no hay respuestas. ¡Sé el primero en responder!",
+        "contentLabel": "Tu respuesta",
+        "contentPlaceholder": "Comparte tus ideas...",
+        "submit": "Responder",
+        "submitting": "Respondiendo...",
+        "contentRequired": "Por favor escribe algún contenido",
+        "contentTooLong": "El contenido debe tener 2000 caracteres o menos",
+        "error": "Ocurrió un error. Inténtalo de nuevo.",
+        "signInRequired": "Inicia sesión para responder",
+        "loginToReply": "Inicia sesión para responder",
+        "rateLimited": "Demasiadas respuestas. Inténtalo de nuevo más tarde.",
+        "repliesDisabled": "El autor ha desactivado las respuestas a este comentario.",
+        "followRequired": "Solo los seguidores del autor pueden responder a este comentario.",
+        "replyButton": "Responder",
+        "replyingTo": "Respondiendo a @{username}",
+        "cancelReply": "Cancelar"
+      },
+      "deletePost": {
+        "button": "Eliminar",
+        "confirmTitle": "Eliminar comentario",
+        "confirmMessage": "¿Seguro que deseas eliminar este comentario? Esta acción no se puede deshacer.",
+        "confirm": "Eliminar",
+        "cancel": "Cancelar",
+        "deleting": "Eliminando..."
+      }
+    },
+    "positionPuzzle": {
+      "commentsTitle": "Comentarios",
+      "postCount": "{count, plural, one {# comentario} other {# comentarios}}",
+      "noPosts": "Aún no hay comentarios. ¡Sé el primero en compartir tus ideas!",
+      "signInToComment": "Inicia sesión para comentar",
+      "readMore": "Leer más",
+      "sort": {
+        "new": "Nuevos",
+        "popular": "Populares",
+        "active": "Activos"
+      },
+      "detail": {
+        "pageTitle": "Comentario sobre Puzzle"
+      },
+      "postDetail": {
+        "authorView": "Comentarios de {author} sobre {name}",
+        "backToPuzzle": "Volver a {name}"
+      },
+      "newPostForm": {
+        "contentLabel": "Comentario",
+        "contentPlaceholder": "Comparte tus ideas sobre este puzzle...",
+        "submit": "Comentar",
+        "submitting": "Publicando...",
+        "contentRequired": "Por favor escribe algún contenido",
+        "contentTooLong": "El contenido debe tener 2000 caracteres o menos",
+        "error": "Ocurrió un error. Inténtalo de nuevo.",
+        "signInRequired": "Inicia sesión para comentar",
+        "invalidReplyPermission": "Configuración de permiso de respuesta inválida",
+        "rateLimited": "Demasiados comentarios. Inténtalo de nuevo más tarde."
+      },
+      "like": "Me gusta",
+      "unlike": "Quitar me gusta",
+      "newReply": "Nueva respuesta {time}",
+      "justNow": "ahora mismo",
+      "replies": {
+        "title": "Respuestas",
+        "count": "{count, plural, one {# respuesta} other {# respuestas}}",
+        "noReplies": "Aún no hay respuestas. ¡Sé el primero en responder!",
+        "contentLabel": "Tu respuesta",
+        "contentPlaceholder": "Comparte tus ideas...",
+        "submit": "Responder",
+        "submitting": "Respondiendo...",
+        "contentRequired": "Por favor escribe algún contenido",
+        "contentTooLong": "El contenido debe tener 2000 caracteres o menos",
+        "error": "Ocurrió un error. Inténtalo de nuevo.",
+        "signInRequired": "Inicia sesión para responder",
+        "loginToReply": "Inicia sesión para responder",
+        "rateLimited": "Demasiadas respuestas. Inténtalo de nuevo más tarde.",
+        "repliesDisabled": "El autor ha desactivado las respuestas a este comentario.",
+        "followRequired": "Solo los seguidores del autor pueden responder a este comentario.",
+        "replyButton": "Responder",
+        "replyingTo": "Respondiendo a @{username}",
+        "cancelReply": "Cancelar"
+      },
+      "deletePost": {
+        "button": "Eliminar",
+        "confirmTitle": "Eliminar comentario",
+        "confirmMessage": "¿Seguro que deseas eliminar este comentario? Esta acción no se puede deshacer.",
+        "confirm": "Eliminar",
+        "cancel": "Cancelar",
+        "deleting": "Eliminando..."
+      }
+    },
+    "spoiler": {
+      "toggleLabel": "Contiene la solución",
+      "overlayTitle": "Contiene la solución",
+      "overlayHint": "Pulsa para mostrar",
+      "overlayAriaLabel": "Mostrar comentario que puede contener la solución del puzzle"
+    },
+    "edit": {
+      "button": "Editar",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "saving": "Guardando...",
+      "editedLabel": "(editado)",
+      "editedTitle": "Última edición {date}",
+      "contentRequired": "Por favor, introduce algún contenido",
+      "contentTooLong": "El contenido debe tener 2000 caracteres o menos",
+      "error": "Ocurrió un error. Por favor, inténtalo de nuevo.",
+      "signInRequired": "Inicia sesión para editar",
+      "rateLimited": "Demasiadas ediciones. Por favor, inténtalo más tarde.",
+      "notFound": "Esta publicación ya no existe.",
+      "unauthorized": "Solo puedes editar tus propias publicaciones.",
+      "alreadyDeleted": "Esta publicación ha sido eliminada."
+    },
+    "removeAttachment": {
+      "button": "Quitar adjunto",
+      "removeImageAriaLabel": "Quitar imagen {index}",
+      "removing": "Quitando...",
+      "confirmTitle": "¿Quitar adjunto?",
+      "confirmMessage": "Solo se desvinculará del post. La publicación permanece.",
+      "confirm": "Quitar",
+      "cancel": "Cancelar",
+      "error": "No se pudo quitar el adjunto. Inténtalo de nuevo.",
+      "attachmentNotFound": "Este adjunto ya no existe.",
+      "rateLimited": "Demasiados cambios de adjunto. Inténtalo más tarde."
+    },
+    "addAttachment": {
+      "button": "Añadir adjunto",
+      "attaching": "Adjuntando...",
+      "invalidFen": "Introduce un FEN válido antes de adjuntar.",
+      "error": "No se pudo adjuntar. Inténtalo de nuevo.",
+      "signInRequired": "Inicia sesión para adjuntar.",
+      "rateLimited": "Demasiados intentos de adjuntar. Inténtalo más tarde.",
+      "alreadyAttached": "Esta publicación ya tiene un adjunto. Quita el existente primero.",
+      "alreadyDeleted": "Esta publicación ha sido eliminada.",
+      "notFound": "Esta publicación ya no existe.",
+      "unauthorized": "Solo puedes adjuntar a tus propias publicaciones."
     }
   },
   "unsavedChanges": {
@@ -3283,9 +3989,20 @@
     "goBack": "Volver",
     "invalidUrl": "La URL proporcionada es inválida."
   },
+  "thanks": {
+    "title": "¡Gracias!",
+    "sectionTitle": "Monedas obtenidas",
+    "continueButton": "Ver tu publicación",
+    "viewPointsButton": "Ver tus monedas",
+    "genericMessage": "Gracias por tu contribución.",
+    "coinsEarned": "¡Monedas obtenidas!",
+    "aboutCoinsLink": "Cómo funcionan las Monedas",
+    "dailyCapNote": "Has alcanzado el límite de monedas por creación de hoy, así que se otorgaron menos monedas. El límite se reinicia a las 00:00 UTC."
+  },
   "authPrompt": {
     "title": "Inicia sesión para continuar",
     "description": "Inicia sesión para dar me gusta a publicaciones, unirte a discusiones y sacar el máximo provecho de Ajedrez a Ciegas.",
+    "createDescription": "Regístrate gratis para guardar y publicar lo que creas.",
     "signUpButton": "Crear Cuenta Gratuita",
     "signInButton": "¿Ya tienes una cuenta? Iniciar sesión"
   },
@@ -3392,6 +4109,7 @@
     "backToList": "Volver a la Clasificación",
     "viewMore": "Ver Clasificación Completa",
     "weeklyRanking": "Clasificación Semanal",
+    "allTimeRanking": "Clasificación General",
     "signUpBanner": {
       "message": "¡Únete a la clasificación!",
       "description": "Crea una cuenta gratuita para seguir tus puntuaciones y competir con otros jugadores.",
@@ -3411,8 +4129,7 @@
       "exp": "Exp",
       "level": "Nivel"
     },
-    "emptyState": "Aún no hay registros de Exp. ¡Empieza a practicar para ganar Exp!",
-    "backToScoreLeaderboard": "Volver a Clasificación de Puntuación"
+    "emptyState": "Aún no hay registros de Exp. ¡Empieza a practicar para ganar Exp!"
   },
   "validation": {
     "password": {
@@ -3444,6 +4161,7 @@
   },
   "MypageSubscription": {
     "title": "Suscripción",
+    "sectionTitle": "Plan actual",
     "breadcrumbMypage": "Mi Página",
     "successMessage": "¡Tu suscripción está activa! Los anuncios han sido eliminados.",
     "noSubscription": "Sin suscripción activa",
@@ -3495,11 +4213,8 @@
         "3kyu": "Capacidad de planificar rutas de maniobra para todas las piezas sin ayudas visuales."
       },
       "tips": "Consejos",
-      "guide": "Guía",
       "tryChallenge": "Probar el Desafío",
       "showMore": "Mostrar más",
-      "prevPage": "Anterior",
-      "nextPage": "Siguiente",
       "pageOf": "Página {current} de {total}",
       "mukyuRequirements": ["Comprensión de la notación algebraica"],
       "mukyuRelatedLinks": {
@@ -3590,6 +4305,17 @@
         "anchorPoints": "Percepción del tablero con puntos de anclaje",
         "blindfoldLegalMoves": "Detección de movimientos legales en ajedrez a ciegas",
         "diagonals": "Cálculo de diagonales y antidiagonales"
+      }
+    },
+    "help": {
+      "label": "Ayuda",
+      "overview": {
+        "title": "Dojo",
+        "description": "El programa está diseñado para que, al subir de rango hasta el cinturón negro, adquieras el nivel necesario para vencer a la IA de baja puntuación al ajedrez a ciegas."
+      },
+      "viewAllRanks": {
+        "title": "Todos los rangos",
+        "description": "Aquí puedes consultar los requisitos y las guías de cada rango."
       }
     }
   },
@@ -3839,6 +4565,115 @@
       "prevRank": "Rango anterior: guía de {rankName}",
       "nextRank": "Siguiente rango: guía de {rankName}"
     }
+  },
+  "attachment": {
+    "input": {
+      "show": "Adjuntar una partida",
+      "hide": "Ocultar adjunto",
+      "label": "Partida (PGN o URL de Lichess)",
+      "placeholder": "Pega una URL de partida de Lichess o un PGN completo…",
+      "modeHint": "Acepta una URL de partida de Lichess (lichess.org/…), una URL de emboard de chess.com, una URL de inserción de Lichess o un PGN. Los PGNs de chess.com con encabezado [Link] se atribuyen automáticamente."
+    },
+    "label": {
+      "anonymize": "Anonimizar nombres de jugadores",
+      "anonymizeHint": "Sustituye las cabeceras White / Black por «Player 1» y «Player 2» antes de guardar."
+    },
+    "preview": {
+      "loading": "Generando vista previa…"
+    },
+    "card": {
+      "replayButton": "Abrir reproducción",
+      "collapseButton": "Ocultar reproducción",
+      "movesCount": "{count, plural, one {# jugada} other {# jugadas}}",
+      "headerWhite": "Blancas",
+      "headerBlack": "Negras",
+      "headerEvent": "Evento",
+      "headerDate": "Fecha",
+      "headerSite": "Sitio",
+      "sourceLabel": "Fuente",
+      "viewOnChesscom": "Ver en Chess.com",
+      "anonymizedNote": "Nombres de los jugadores anonimizados por el autor."
+    },
+    "delete": {
+      "confirm": "¿Eliminar la partida adjunta de este comentario?",
+      "success": "Adjunto eliminado."
+    },
+    "error": {
+      "empty": "Pega una URL de Lichess o un PGN, u oculta el campo de adjunto.",
+      "tooLarge": "El PGN es demasiado grande. El tamaño máximo es 100 KB.",
+      "invalidPgn": "No se pudo interpretar como PGN. Revisa las jugadas y las cabeceras.",
+      "noMoves": "El PGN no contiene jugadas. Añade al menos una jugada antes de adjuntarlo.",
+      "lichessFetchFailed": "No se pudo obtener la partida de Lichess. Inténtalo de nuevo o pega el PGN directamente.",
+      "lichessNotFound": "Partida de Lichess no encontrada. Revisa la URL.",
+      "lichessRateLimited": "Lichess está saturado en este momento. Espera un poco o pega el PGN directamente.",
+      "chesscomPgnRequired": "Por favor, pega el PGN. Las partidas de chess.com no se pueden obtener automáticamente.",
+      "chesscomInvalidUrl": "Eso no parece una URL válida de chess.com. Usa https://www.chess.com/...",
+      "chesscomInvalidPgn": "El texto debajo de la URL de chess.com no parece un PGN. Pega el cuerpo de la partida exportada.",
+      "lichessStudyUnsupported": "Las URLs de Lichess Study no son compatibles. Pega una URL de partida o un PGN.",
+      "rateLimitedPostWithAttachment": "Puedes adjuntar como máximo 5 partidas por hora."
+    },
+    "embed": {
+      "chesscomDetected": "Diagrama de Chess.com detectado.",
+      "lichessDetected": "Inserción de Lichess detectada.",
+      "viewOnLichess": "Ver en Lichess",
+      "invalidUrl": "Eso no parece ser una URL de inserción válida.",
+      "chesscomCardTitle": "Diagrama de Chess.com",
+      "lichessCardTitle": "Partida de Lichess"
+    },
+    "image": {
+      "label": "Imágenes (opcional)",
+      "uploadButton": "Añadir imagen",
+      "altLabel": "Descripción de la imagen (texto alternativo)",
+      "altPlaceholder": "Describe la imagen para lectores de pantalla",
+      "limitHint": "JPEG, PNG o WebP. Hasta {max} por publicación, 2 MB cada una.",
+      "removeButton": "Eliminar imagen",
+      "uploading": "Subiendo…",
+      "deletionDisclosure": "Las imágenes adjuntas a una publicación eliminada pueden seguir siendo accesibles en el almacenamiento hasta 7 días.",
+      "error": {
+        "fileRequired": "Selecciona un archivo de imagen para subir.",
+        "fileTooLarge": "La imagen es demasiado grande. El tamaño máximo es 2 MB.",
+        "invalidFileType": "Solo se aceptan imágenes JPEG, PNG y WebP.",
+        "imageTooLarge": "Las dimensiones de la imagen son demasiado grandes (límite de 50 megapíxeles).",
+        "animatedImageNotSupported": "Las imágenes animadas no son compatibles. Sube una imagen estática.",
+        "tooManyImages": "Has alcanzado el límite de {max} imágenes para esta publicación.",
+        "uploadFailed": "Error al subir. Inténtalo de nuevo.",
+        "rateLimited": "Demasiadas subidas. Espera unos minutos e inténtalo de nuevo."
+      }
+    }
+  },
+  "postFenAttachment": {
+    "error": {
+      "fenRequired": "Introduce una cadena FEN para adjuntar una posición.",
+      "fenTooLong": "El FEN es demasiado largo. La longitud máxima es 100 caracteres.",
+      "invalidFenStructure": "El formato FEN no es válido. Revisa la posición, el turno, el enroque y el campo de al paso.",
+      "invalidFenSemantic": "El FEN no representa una posición legal. Revisa los reyes, la colocación de peones, los derechos de enroque y la casilla de al paso.",
+      "captionTooLong": "El pie de foto es demasiado largo. La longitud máxima es 200 caracteres.",
+      "alreadyAttached": "Esta publicación ya tiene un FEN adjunto.",
+      "postNotFound": "Publicación no encontrada.",
+      "notOwner": "Solo puedes adjuntar un FEN a tus propias publicaciones."
+    }
+  },
+  "postVideoAttachment": {
+    "error": {
+      "urlRequired": "Introduce una URL de YouTube para adjuntar un vídeo.",
+      "inputTooLong": "La URL es demasiado larga. La longitud máxima es 512 caracteres.",
+      "invalidUrl": "No se pudo analizar la URL. Pega un enlace de YouTube.",
+      "protocolNotHttps": "La URL debe usar https.",
+      "userinfoPresent": "La URL no debe contener nombre de usuario ni contraseña.",
+      "fragmentNotAllowed": "La URL no debe contener un fragmento (#…).",
+      "hostNotAllowed": "El host de la URL no es de YouTube.",
+      "pathnameNotSupported": "Formato de enlace de YouTube no admitido (solo watch / shorts / live / embed).",
+      "paramPollution": "La URL contiene parámetros repetidos.",
+      "invalidId": "El ID de vídeo de YouTube no es válido.",
+      "invalidVideoStructure": "No se pudo guardar el enlace del vídeo. Prueba con otra URL de YouTube.",
+      "tooLong": "El enlace del vídeo es demasiado largo. La longitud máxima es 512 caracteres.",
+      "alreadyAttached": "Esta publicación ya tiene un vídeo adjunto.",
+      "postNotFound": "Publicación no encontrada.",
+      "notOwner": "Solo puedes adjuntar un vídeo a tus propias publicaciones."
+    }
+  },
+  "postVideoAttachmentRender": {
+    "fallbackTitle": "Vídeo de YouTube"
   },
   "Footer": {
     "resources": "Recursos",

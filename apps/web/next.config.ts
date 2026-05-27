@@ -23,9 +23,29 @@ const nextConfig: NextConfig = {
   // Increase timeout for SSG pages with heavy DB queries (e.g., glossary category pages)
   staticPageGenerationTimeout: 120,
 
-  // Optimize images from external sources (Supabase Storage avatars, etc.)
+  // Optimize images from external sources (Supabase Storage avatars, etc.).
+  //
+  // `formats`, `deviceSizes`, and `imageSizes` are the three knobs that
+  // multiply Vercel "Image Optimization Transformation" usage — every
+  // (URL × format × size) tuple is billed once.
+  //
+  // - `formats: ['image/webp']`: drop AVIF. AVIF compresses ~20–30% better
+  //   than WebP, but every served image becomes a separate transformation,
+  //   so the variant cost outweighs the bandwidth win at our scale. WebP is
+  //   universally supported by every browser this app cares about.
+  // - `deviceSizes`: keep just the breakpoints we actually use. The default
+  //   array has 8 entries (640–3840); 4K/QHD displays will accept the 1920
+  //   variant with only a marginal blur on huge desktops, which is an
+  //   acceptable trade for halving variants on responsive images.
+  // - `imageSizes`: covers fixed-width thumbnails / logos / small icons.
+  //   User avatars are pre-resized to 256×256 WebP at upload time and
+  //   served `unoptimized`, so the avatar size buckets (24/32/48/64) are no
+  //   longer needed in this list — only the remaining fixed-size images
+  //   (Header 40px logo, hero 120px icons, etc.) drive this.
   images: {
-    formats: ['image/avif', 'image/webp'],
+    formats: ['image/webp'],
+    deviceSizes: [640, 1024, 1920],
+    imageSizes: [16, 32, 64, 128, 256],
     remotePatterns: (() => {
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
       if (!supabaseUrl) return [];
@@ -171,7 +191,22 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      // NOTE: Cache headers for the Maia ONNX model are set inside the
+      // /api/engines/maia/[file] handler itself, not here. The model is
+      // no longer a public static asset — it's served from a server-only
+      // directory through an auth-gated route, and the response is marked
+      // `Cache-Control: private, immutable` so the browser caches per-user
+      // without polluting any shared CDN tier.
     ];
+  },
+  // The Maia ONNX model lives outside `public/` (in `engines/maia/`) so
+  // that the only access path is the auth-gated route handler. Next.js
+  // does not auto-trace files outside the source tree, so we have to tell
+  // it explicitly to bundle the directory into the Vercel Function
+  // artifact for the route handler. Without this, `readFile` would 404
+  // at runtime even though the file exists at build time.
+  outputFileTracingIncludes: {
+    '/api/engines/maia/[file]': ['./engines/maia/**/*'],
   },
 };
 

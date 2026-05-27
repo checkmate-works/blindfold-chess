@@ -3,8 +3,11 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { getOptionalUser } from '@/lib/auth';
+import { getMaiaEngineAccess } from '@/lib/users/can-use-maia';
+
+import { PageLayout } from '@/app/[locale]/_components';
+import { type HelpStep, HelpTourButton } from '@/app/[locale]/_components/HelpTourButton';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -19,6 +22,7 @@ type Props = {
 };
 
 export const generateStaticParams = generateLocaleStaticParams;
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
@@ -37,27 +41,52 @@ export default async function PositionGamePage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale });
+  const tNewGame = await getTranslations({ locale, namespace: 'newGame' });
   const tGames = await getTranslations({ locale, namespace: 'gamesPage' });
 
+  const user = await getOptionalUser();
+  const maiaAccess = await getMaiaEngineAccess(user?.id ?? null);
+
+  const helpSteps: HelpStep[] = [
+    {
+      targetId: 'position-editor',
+      title: tNewGame('positionPageTitle'),
+      description: tNewGame('helpPositionIntroDescription'),
+      side: 'bottom',
+      align: 'center',
+    },
+    {
+      targetId: 'engine-selector',
+      title: tNewGame('selectEngine'),
+      description: tNewGame('helpEngineDescription'),
+      side: 'bottom',
+      align: 'center',
+    },
+    {
+      targetId: 'skill-level-selector',
+      title: tNewGame('selectLevel'),
+      description: tNewGame('helpSkillLevelDescription'),
+      side: 'top',
+      align: 'center',
+    },
+  ];
+
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('newGame.positionPageTitle')}</PageTitle>
-      <PagePanel>
-        <GameLimitCheck locale={locale}>
-          <Suspense fallback={null}>
-            <PositionGameForm locale={locale} />
-          </Suspense>
-          <Divider />
-          <Breadcrumb
-            locale={locale}
-            items={[
-              { label: tGames('pageTitle'), href: '/games' },
-              { label: t('newGame.title'), href: '/games/new' },
-              { label: t('newGame.positionPageTitle') },
-            ]}
-          />
-        </GameLimitCheck>
-      </PagePanel>
-    </div>
+    <PageLayout
+      title={t('newGame.positionPageTitle')}
+      titleAction={<HelpTourButton steps={helpSteps} label={tNewGame('helpLabel')} />}
+      locale={locale}
+      breadcrumb={[
+        { label: tGames('pageTitle'), href: '/games' },
+        { label: t('newGame.title'), href: '/games/new' },
+        { label: t('newGame.positionPageTitle') },
+      ]}
+    >
+      <GameLimitCheck locale={locale}>
+        <Suspense fallback={null}>
+          <PositionGameForm locale={locale} maiaAccess={maiaAccess} />
+        </Suspense>
+      </GameLimitCheck>
+    </PageLayout>
   );
 }

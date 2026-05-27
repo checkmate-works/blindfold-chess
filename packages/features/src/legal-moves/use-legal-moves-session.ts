@@ -1,32 +1,26 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useRef } from "react";
 
+import { computePracticeResult } from "../common/practice-result";
+import { usePracticeCompletion } from "../practice-session/use-practice-completion";
+import {
+  type TimedQuizSessionConfig,
+  type TimedSessionFacade,
+  toTimedSessionFacade,
+} from "../practice-session/quiz-session";
 import { useTimedSession } from "../practice-session/use-timed-session";
 import { generateBalancedMoveQuestions, isLegalMove } from "./logic";
 import type { LegalMovesResult, MoveQuestion, PieceType } from "./types";
 
-export type UseLegalMovesSessionConfig = {
-  timeLimit: number;
-  selectedPieces: PieceType[];
-  onComplete?: (result: LegalMovesResult) => void;
-  onAnswerEffect?: (correct: boolean) => void;
-  mistakeAllowance?: number;
-};
+export type UseLegalMovesSessionConfig =
+  TimedQuizSessionConfig<LegalMovesResult> & {
+    selectedPieces: PieceType[];
+  };
 
-export type UseLegalMovesSessionReturn = {
+export type UseLegalMovesSessionReturn = TimedSessionFacade & {
   currentQuestion: MoveQuestion | null;
-  countdown: number | null;
-  timeElapsed: number;
-  timeRemaining: number;
-  correctCount: number;
-  incorrectCount: number;
-  showFeedback: boolean;
-  lastAnswerCorrect: boolean | null;
-  isFinished: boolean;
-  isPaused: boolean;
   handleAnswer: (userAnswer: boolean) => void;
-  togglePause: () => void;
 };
 
 export function useLegalMovesSession({
@@ -40,19 +34,8 @@ export function useLegalMovesSession({
     generateBalancedMoveQuestions(100, selectedPieces),
   );
   const indexRef = useRef(0);
-  const questionTimesRef = useRef<number[]>([]);
-  // per-question timing — useTimedSession tracks session-wide elapsed time only
-  const questionStartRef = useRef<number>(Date.now());
-  const onCompleteRef = useRef(onComplete);
-  onCompleteRef.current = onComplete;
 
   const generateQuestion = useCallback((): MoveQuestion => {
-    questionTimesRef.current.push(
-      // per-question timing — useTimedSession tracks session-wide elapsed time only
-      (Date.now() - questionStartRef.current) / 1000,
-    );
-    questionStartRef.current = Date.now(); // per-question timing — useTimedSession tracks session-wide elapsed time only
-
     if (indexRef.current >= questionsRef.current.length - 10) {
       questionsRef.current = [
         ...questionsRef.current,
@@ -73,26 +56,18 @@ export function useLegalMovesSession({
 
   const { correctCount, incorrectCount, timeElapsed, isFinished } = session;
 
-  useEffect(() => {
-    if (!isFinished) return;
-
-    const total = correctCount + incorrectCount;
-    const accuracy = total > 0 ? (correctCount / total) * 100 : 0;
-    const times = questionTimesRef.current;
-    const averageTime =
-      times.length > 0 ? times.reduce((a, b) => a + b, 0) / times.length : 0;
-
-    const result: LegalMovesResult = {
-      correctAnswers: correctCount,
-      incorrectAnswers: incorrectCount,
-      totalQuestions: total,
-      accuracy,
-      timeTaken: Math.min(timeElapsed, timeLimit),
-      averageTime,
-    };
-
-    onCompleteRef.current?.(result);
-  }, [isFinished, correctCount, incorrectCount, timeElapsed, timeLimit]);
+  usePracticeCompletion(
+    isFinished,
+    (): LegalMovesResult =>
+      computePracticeResult(
+        correctCount,
+        incorrectCount,
+        timeElapsed,
+        timeLimit,
+        session.questionTimes,
+      ),
+    onComplete,
+  );
 
   const { handleAnswer: sessionHandleAnswer, currentQuestion } = session;
 
@@ -110,17 +85,8 @@ export function useLegalMovesSession({
   );
 
   return {
+    ...toTimedSessionFacade(session),
     currentQuestion,
-    countdown: session.countdown,
-    timeElapsed,
-    timeRemaining: session.timeRemaining,
-    correctCount,
-    incorrectCount,
-    showFeedback: session.showFeedback,
-    lastAnswerCorrect: session.lastAnswerCorrect,
-    isFinished,
-    isPaused: session.isPaused,
     handleAnswer,
-    togglePause: session.togglePause,
   };
 }

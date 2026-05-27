@@ -19,11 +19,8 @@ import type { ExpInfo } from '@blindfold-chess/features/exp';
 import { and, eq, sql } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 
-import type { db } from './index';
 import { expEvents, userExp } from './schema';
-
-/** Transaction client type — matches the callback parameter of `db.transaction()`. */
-type TransactionClient = Parameters<Parameters<typeof db.transaction>[0]>[0];
+import type { DbTx } from './types';
 
 /**
  * Result of a {@link grantExp} call.
@@ -52,8 +49,8 @@ type GrantExpResult =
  * amount/metadata and the user's current totalExp WITHOUT incrementing
  * `user_exp` a second time.
  */
-export async function grantExp(
-  tx: TransactionClient,
+async function grantExp(
+  tx: DbTx,
   params: {
     userId: string;
     source: string;
@@ -140,7 +137,7 @@ export async function grantExp(
  * (no state transition is happening on this call).
  */
 export async function grantChallengeExp(
-  tx: TransactionClient,
+  tx: DbTx,
   params: {
     userId: string;
     challengeResultId: string;
@@ -228,7 +225,7 @@ export async function grantChallengeExp(
  * - Custom-FEN runs MUST NOT reach this function (gated by the action).
  */
 export async function grantPracticeExp(
-  tx: TransactionClient,
+  tx: DbTx,
   params: {
     userId: string;
     menuType: string;

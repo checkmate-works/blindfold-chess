@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
 import { createPortal } from 'react-dom';
-import { FaHome } from 'react-icons/fa';
 
 import { useScrollLock } from '../_hooks/use-scroll-lock';
 import { getIcon } from '../_lib/icon-mapping';
@@ -81,12 +80,7 @@ export function MobileMenu({ title, items }: Props) {
 
               <nav className="px-4 py-6 space-y-2">
                 {items.map((item) => {
-                  const icon =
-                    item.iconName === 'home' ? (
-                      <FaHome className="h-5 w-5" />
-                    ) : (
-                      getIcon(item.iconName)
-                    );
+                  const icon = getIcon(item.iconName);
                   return (
                     <Link
                       key={item.id}

@@ -75,4 +75,61 @@
   --color-ring: var(--color-ring);
   --color-link-primary: var(--color-link-primary);
   --color-link-secondary: var(--color-link-secondary);
+
+  /*
+   * One-shot success-tinted highlight used to draw the eye to a piece of
+   * UI that just changed without any preceding user-perceived latency.
+   * Currently powers the puzzle session's PageTitle: the opponent reply
+   * appears instantly (no Stockfish lag like in games/play), so the
+   * "Black plays Nh2" line gets a brief background flash to signal that
+   * the position has advanced. The animation is opt-in via the
+   * `motion-safe:` Tailwind variant — users who set
+   * `prefers-reduced-motion: reduce` see no animation at all.
+   */
+  --animate-title-highlight: title-highlight 1s ease-out;
+
+  /*
+   * Transient feedback chip used by the puzzle session to acknowledge a
+   * player submit (correct OR incorrect). Pops in with a small overshoot,
+   * holds for ~70% of the duration, then fades out. The component is
+   * unmounted by a setTimeout matching the animation length so a fresh
+   * chip can play through cleanly on the next submit.
+   *
+   * The total duration (1.2s) is tuned to be long enough to read at a
+   * glance ("✓ Correct") but short enough that the user can fire several
+   * attempts in succession without the previous chip lingering. Gated on
+   * `motion-safe:` so users with `prefers-reduced-motion: reduce` get a
+   * plain opacity transition without the scale overshoot.
+   */
+  --animate-feedback-pop: feedback-pop 1.2s ease-out forwards;
+}
+
+@keyframes title-highlight {
+  from {
+    background-color: var(--color-success-soft);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+@keyframes feedback-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  15% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  25% {
+    transform: scale(1);
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
 }

@@ -57,7 +57,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const nonce = (await headers()).get('x-nonce') ?? undefined;
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <ThemeScript />
         <style
@@ -113,6 +113,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                   {t('chunks')}
                 </Link>
                 <Link
+                  href="/admin/glossary"
+                  className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
+                >
+                  {t('glossary')}
+                </Link>
+                <Link
                   href="/admin/positions/puzzle"
                   className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
                 >
@@ -153,6 +159,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                   className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
                 >
                   {t('grants.navLabel')}
+                </Link>
+                <Link
+                  href="/admin/points"
+                  className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
+                >
+                  {t('points.navLabel')}
                 </Link>
                 <Link
                   href="/admin/achievements"

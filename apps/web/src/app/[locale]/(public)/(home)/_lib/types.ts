@@ -40,10 +40,20 @@ export type PositionFeedData = {
     likeCount: number;
     likedByMe: boolean;
   };
+  /**
+   * Aggregate comment-thread meta for the position. Comments live in
+   * `topic_posts` keyed by `(topicType, topicKey)` where `topicKey` is
+   * the position's id and `topicType` is `'position_memory'` or
+   * `'position_puzzle'`. `sequence`-type positions have no comment
+   * thread and receive an empty meta block.
+   */
+  replyMeta: {
+    replyCount: number;
+    latestReplyAt: Date | null;
+    repliers: { avatarUrl: string | null; displayName: string }[];
+    uniqueReplierCount: number;
+  };
 };
-
-/** Re-exported for convenience. */
-export type { PositionType };
 
 type FeedItemBase = {
   id: string;
@@ -88,8 +98,53 @@ export type PositionFeedItem = FeedItemBase & {
   data: PositionFeedData;
 };
 
+/**
+ * A chunk surfaces in the feed twice during its lifecycle: once when first
+ * created (typically as a draft soliciting edit requests) and once when
+ * promoted to published. `kind` distinguishes the two events so the card can
+ * render the right action message; the chunk itself is the same row in
+ * `chunks`. Comments live in `topic_posts` keyed by
+ * `(topicType='chunk', topicKey=chunk.slug)` — same pattern as positions.
+ */
+export type ChunkFeedData = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  representativeFen: string;
+  /** Snapshot of the lifecycle event that produced this feed item. */
+  kind: 'created' | 'published';
+  createdAt: string; // ISO 8601
+  author: {
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    country: string | null;
+    flair: string | null;
+  } | null;
+  likeMeta: {
+    likeCount: number;
+    likedByMe: boolean;
+  };
+  replyMeta: {
+    replyCount: number;
+    latestReplyAt: Date | null;
+    repliers: { avatarUrl: string | null; displayName: string }[];
+    uniqueReplierCount: number;
+  };
+};
+
+export type ChunkFeedItem = FeedItemBase & {
+  entityType: 'chunk';
+  data: ChunkFeedData;
+};
+
 // Discriminated union — extend with new entity types here
-export type FeedItem = TopicPostFeedItem | ChallengeRankUpdateFeedItem | PositionFeedItem;
+export type FeedItem =
+  | TopicPostFeedItem
+  | ChallengeRankUpdateFeedItem
+  | PositionFeedItem
+  | ChunkFeedItem;
 
 export type FeedResponse = {
   items: FeedItem[];

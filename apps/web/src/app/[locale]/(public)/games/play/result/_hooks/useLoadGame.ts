@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 
 import { LocalStorageGameRepository } from '@/lib/games/local-storage-repository';
-import type { Game } from '@/lib/types';
+import type { Game } from '@/lib/games/saved-game-types';
 
-export type LoadGameErrorKind = 'missing-id' | 'not-found';
+type LoadGameErrorKind = 'missing-id' | 'not-found';
 
 export type LoadGameState =
   | { status: 'idle' }

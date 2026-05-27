@@ -1,5 +1,5 @@
-import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
+import { PracticeResultLoadingSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultLoadingSkeleton';
 
 export default function Loading() {
-  return <PracticeResultSkeleton />;
+  return <PracticeResultLoadingSkeleton />;
 }

@@ -10,8 +10,6 @@ import {
 import { db, subscriptions } from '@/lib/db';
 import { withTimeout } from '@/lib/db-timeout';
 
-export { BENEFIT_ACTIVE_STATUSES, DISPLAYABLE_STATUSES };
-
 export const hasActiveSubscription = unstable_cache(
   async (userId: string): Promise<boolean> => {
     try {

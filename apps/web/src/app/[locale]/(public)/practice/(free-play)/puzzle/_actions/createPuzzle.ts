@@ -1,77 +1,61 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
-import { authenticateAndGuard } from '@/lib/auth';
-import { db, feedItems, positions, puzzleSolutions } from '@/lib/db';
-import { notifyFollowersOfNewPosition } from '@/lib/notifications/notification';
+import { puzzleSolutions } from '@/lib/db';
+import type { CreatePositionEntryResult } from '@/lib/positions/user-position-mutations';
+import { createPositionEntry } from '@/lib/positions/user-position-mutations';
 import { normalizePuzzleMoves, validatePuzzleMutationData } from '@/lib/positions/validation';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
-export type CreatePuzzleResult = { success: true; id: string } | { error: string };
+export type CreatePuzzleResult = CreatePositionEntryResult;
 
 export async function createPuzzle(data: {
   fen: string;
   title: string;
   description?: string | null;
   solutionMoves: Array<{ san: string; note?: string | null }>;
+  /**
+   * Optional theme tags (glossary terms with `is_theme = true`) to
+   * attach to the new position. Validated against the database before
+   * the insert transaction begins so a bad ID rejects the whole create
+   * up-front rather than failing partway in.
+   */
+  themeIds?: string[];
+  /** Optional chunk tags (non-soft-deleted) to attach. */
+  chunkIds?: string[];
+  /**
+   * When forking from an existing puzzle, the id of the source row.
+   * Validated against the database (must exist, share `type='puzzle'`,
+   * not be soft-deleted, not be owned by the current user, and not have
+   * `forks_disabled_at` set) before the insert begins.
+   */
+  forkedFromId?: string | null;
 }): Promise<CreatePuzzleResult> {
-  const guardResult = await authenticateAndGuard(RATE_LIMITS.createPuzzle);
-
-  if ('error' in guardResult) {
-    return { error: guardResult.error };
-  }
-
-  const { user } = guardResult;
-
   const normalizedMoves = normalizePuzzleMoves(data.solutionMoves);
 
-  const validationError = validatePuzzleMutationData({
-    fen: data.fen,
-    title: data.title,
-    description: data.description,
-    solutionMoves: normalizedMoves,
-    userId: user.id,
+  return createPositionEntry({
+    kind: 'puzzle',
+    rateLimit: RATE_LIMITS.createPuzzle,
+    data: {
+      fen: data.fen,
+      title: data.title,
+      description: data.description,
+      themeIds: data.themeIds,
+      chunkIds: data.chunkIds,
+      forkedFromId: data.forkedFromId,
+    },
+    validate: (userId) =>
+      validatePuzzleMutationData({
+        fen: data.fen,
+        title: data.title,
+        description: data.description,
+        solutionMoves: normalizedMoves,
+        userId,
+      }),
+    applyExtraWrites: async (tx, positionId) => {
+      await tx.insert(puzzleSolutions).values({
+        positionId,
+        solutionMoves: normalizedMoves,
+      });
+    },
   });
-
-  if (validationError) {
-    return { error: validationError };
-  }
-
-  const inserted = await db.transaction(async (tx) => {
-    const [position] = await tx
-      .insert(positions)
-      .values({
-        fen: data.fen.trim(),
-        title: data.title.trim(),
-        description: data.description?.trim() || null,
-        userId: user.id,
-        type: 'puzzle',
-      })
-      .returning({ id: positions.id });
-
-    await tx.insert(puzzleSolutions).values({
-      positionId: position.id,
-      solutionMoves: normalizedMoves,
-    });
-
-    await tx.insert(feedItems).values({
-      entityType: 'position',
-      entityId: position.id,
-      actorId: user.id,
-      metadata: { type: 'puzzle' },
-    });
-
-    return position;
-  });
-
-  notifyFollowersOfNewPosition({
-    actorId: user.id,
-    positionId: inserted.id,
-    positionType: 'puzzle',
-  });
-
-  revalidatePath('/practice/puzzle');
-
-  return { success: true, id: inserted.id };
 }

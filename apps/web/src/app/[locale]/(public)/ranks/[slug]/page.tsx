@@ -24,9 +24,8 @@ import { ALL_RANK_SLUGS, isMukyuSlug } from '@/lib/db/data/ranks';
 import type { RankSlug } from '@/lib/db/data/ranks';
 import { buildGuidePath, getRankGuide } from '@/lib/guides';
 
-import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -110,81 +109,74 @@ export default async function RankDetailPage({ params }: Props) {
     const firstFlatParagraph = getTeaserParagraph(slug);
 
     return (
-      <div className="space-y-8">
-        <PageTitle>{rankName}</PageTitle>
+      <PageLayout
+        title={rankName}
+        locale={locale}
+        breadcrumb={[{ label: t('pageTitle'), href: '/ranks' }, { label: rankName }]}
+      >
+        <RankHeader beltColor={beltColor}>{t('requirements')}</RankHeader>
 
-        <PagePanel>
-          <RankHeader beltColor={beltColor}>{t('requirements')}</RankHeader>
+        {/* Criteria description */}
+        <SectionTitle>{t('detail.criteria')}</SectionTitle>
+        <p className="mt-2 text-foreground/80">{t(`detail.criteriaDescriptions.${slug}`)}</p>
 
-          {/* Criteria description */}
-          <SectionTitle>{t('detail.criteria')}</SectionTitle>
-          <p className="mt-2 text-foreground/80">{t(`detail.criteriaDescriptions.${slug}`)}</p>
-
-          {/* Tips callout card with CoordinateBoard visual aid */}
-          {hasGuide && (
-            <div className="rounded-lg bg-amber-50 p-4 dark:bg-amber-950/20">
-              <p className="font-semibold text-foreground">💡 {t('detail.tips')}</p>
-              <p className="mt-2 text-foreground/80">
-                {firstFlatParagraph.length > 100
-                  ? `${firstFlatParagraph.slice(0, 100)}…`
-                  : firstFlatParagraph}
-              </p>
-              <Link
-                href={buildGuidePath(locale, slug, { kind: 'root' })}
-                className="mt-3 block"
-                aria-label={t('detail.readFullGuide', { rankName })}
-              >
-                <CoordinateBoard className="mx-auto max-w-[10rem]" />
-                <span className="mt-2 block text-sm text-amber-600 hover:underline dark:text-amber-400">
-                  {t('detail.readFullGuide', { rankName })}
-                </span>
-              </Link>
-            </div>
-          )}
-
-          {/* Requirements */}
-          <SectionTitle>{t('detail.requirements')}</SectionTitle>
-          <RequirementsList
-            className="mt-4 space-y-3"
-            iconSize="size-5"
-            textSize="text-base"
-            items={mukyuRequirements}
-          />
-
-          {/* Related links */}
-          <div className="mt-6 space-y-3">
-            <p className="text-foreground/80">{mukyuRelatedLinks.learnArticle}</p>
-            <GuideLinkCard
-              items={[
-                {
-                  label: mukyuRelatedLinks.learnArticleLabel,
-                  href: `/${locale}/learn/notation/algebraic-notation`,
-                },
-              ]}
-            />
-            <p className="text-foreground/80">{mukyuRelatedLinks.practiceLink}</p>
-            <GuideLinkCard
-              items={[
-                {
-                  label: mukyuRelatedLinks.practiceLabel,
-                  href: `/${locale}/practice/algebraic-notation`,
-                },
-              ]}
-            />
+        {/* Tips callout card with CoordinateBoard visual aid */}
+        {hasGuide && (
+          <div className="rounded-lg bg-amber-50 p-4 dark:bg-amber-950/20">
+            <p className="font-semibold text-foreground">💡 {t('detail.tips')}</p>
+            <p className="mt-2 text-foreground/80">
+              {firstFlatParagraph.length > 100
+                ? `${firstFlatParagraph.slice(0, 100)}…`
+                : firstFlatParagraph}
+            </p>
+            <Link
+              href={buildGuidePath(locale, slug, { kind: 'root' })}
+              className="mt-3 block"
+              aria-label={t('detail.readFullGuide', { rankName })}
+            >
+              <CoordinateBoard className="mx-auto max-w-[10rem]" />
+              <span className="mt-2 block text-sm text-amber-600 hover:underline dark:text-amber-400">
+                {t('detail.readFullGuide', { rankName })}
+              </span>
+            </Link>
           </div>
+        )}
 
-          {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-            <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-          )}
+        {/* Requirements */}
+        <SectionTitle>{t('detail.requirements')}</SectionTitle>
+        <RequirementsList
+          className="mt-4 space-y-3"
+          iconSize="size-5"
+          textSize="text-base"
+          items={mukyuRequirements}
+        />
 
-          <Divider />
-
-          <Breadcrumb
-            items={[{ label: t('pageTitle'), href: '/ranks' }, { label: rankName }]}
-            locale={locale}
+        {/* Related links */}
+        <div className="mt-6 space-y-3">
+          <p className="text-foreground/80">{mukyuRelatedLinks.learnArticle}</p>
+          <GuideLinkCard
+            items={[
+              {
+                label: mukyuRelatedLinks.learnArticleLabel,
+                href: `/${locale}/learn/notation/algebraic-notation`,
+              },
+            ]}
           />
-        </PagePanel>
-      </div>
+          <p className="text-foreground/80">{mukyuRelatedLinks.practiceLink}</p>
+          <GuideLinkCard
+            items={[
+              {
+                label: mukyuRelatedLinks.practiceLabel,
+                href: `/${locale}/practice/algebraic-notation`,
+              },
+            ]}
+          />
+        </div>
+
+        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+        )}
+      </PageLayout>
     );
   }
 
@@ -207,70 +199,61 @@ export default async function RankDetailPage({ params }: Props) {
   const firstDbGuideParagraph = getTeaserParagraph(rankSlug);
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{rankName}</PageTitle>
+    <PageLayout
+      title={rankName}
+      locale={locale}
+      breadcrumb={[{ label: t('pageTitle'), href: '/ranks' }, { label: rankName }]}
+    >
+      <RankHeader beltColor={beltColor}>{t('requirements')}</RankHeader>
 
-      <PagePanel>
-        <RankHeader beltColor={beltColor}>{t('requirements')}</RankHeader>
+      {/* Criteria description (only if available for this slug) */}
+      {hasCriteriaDescription && (
+        <>
+          <SectionTitle>{t('detail.criteria')}</SectionTitle>
+          <p className="mt-2 text-foreground/80">{t(`detail.criteriaDescriptions.${rankSlug}`)}</p>
+        </>
+      )}
 
-        {/* Criteria description (only if available for this slug) */}
-        {hasCriteriaDescription && (
-          <>
-            <SectionTitle>{t('detail.criteria')}</SectionTitle>
-            <p className="mt-2 text-foreground/80">
-              {t(`detail.criteriaDescriptions.${rankSlug}`)}
-            </p>
-          </>
-        )}
+      {/* Tips callout card (only if available for this slug) */}
+      {hasGuide && (
+        <div className="rounded-lg bg-amber-50 p-4 dark:bg-amber-950/20">
+          <p className="font-semibold text-foreground">💡 {t('detail.tips')}</p>
+          <p className="mt-2 text-foreground/80">
+            {firstDbGuideParagraph.length > 100
+              ? `${firstDbGuideParagraph.slice(0, 100)}…`
+              : firstDbGuideParagraph}
+          </p>
+          <Link
+            href={buildGuidePath(locale, rankSlug, { kind: 'root' })}
+            className="mt-3 block"
+            aria-label={t('detail.readFullGuide', { rankName })}
+          >
+            {rankSlug === '4kyu' ? (
+              <KingMovementBoard className="mx-auto max-w-[10rem]" />
+            ) : rankSlug === '3kyu' ? (
+              <DiagonalBoard className="mx-auto max-w-[10rem]" />
+            ) : (
+              <AnchorPointsBoard className="mx-auto max-w-[10rem]" />
+            )}
+            <span className="mt-2 block text-sm text-amber-600 hover:underline dark:text-amber-400">
+              {t('detail.readFullGuide', { rankName })}
+            </span>
+          </Link>
+        </div>
+      )}
 
-        {/* Tips callout card (only if available for this slug) */}
-        {hasGuide && (
-          <div className="rounded-lg bg-amber-50 p-4 dark:bg-amber-950/20">
-            <p className="font-semibold text-foreground">💡 {t('detail.tips')}</p>
-            <p className="mt-2 text-foreground/80">
-              {firstDbGuideParagraph.length > 100
-                ? `${firstDbGuideParagraph.slice(0, 100)}…`
-                : firstDbGuideParagraph}
-            </p>
-            <Link
-              href={buildGuidePath(locale, rankSlug, { kind: 'root' })}
-              className="mt-3 block"
-              aria-label={t('detail.readFullGuide', { rankName })}
-            >
-              {rankSlug === '4kyu' ? (
-                <KingMovementBoard className="mx-auto max-w-[10rem]" />
-              ) : rankSlug === '3kyu' ? (
-                <DiagonalBoard className="mx-auto max-w-[10rem]" />
-              ) : (
-                <AnchorPointsBoard className="mx-auto max-w-[10rem]" />
-              )}
-              <span className="mt-2 block text-sm text-amber-600 hover:underline dark:text-amber-400">
-                {t('detail.readFullGuide', { rankName })}
-              </span>
-            </Link>
-          </div>
-        )}
+      {/* Score requirements */}
+      <SectionTitle>{t('detail.requirements')}</SectionTitle>
+      <RequirementsList
+        className="mt-4 space-y-3"
+        iconSize="size-5"
+        textSize="text-base"
+        items={buildRequirementItems(requirements, locale, t)}
+      />
 
-        {/* Score requirements */}
-        <SectionTitle>{t('detail.requirements')}</SectionTitle>
-        <RequirementsList
-          className="mt-4 space-y-3"
-          iconSize="size-5"
-          textSize="text-base"
-          items={buildRequirementItems(requirements, locale, t)}
-        />
-
-        {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-          <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-        )}
-
-        <Divider />
-
-        <Breadcrumb
-          items={[{ label: t('pageTitle'), href: '/ranks' }, { label: rankName }]}
-          locale={locale}
-        />
-      </PagePanel>
-    </div>
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
+        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
+      )}
+    </PageLayout>
   );
 }

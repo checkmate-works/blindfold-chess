@@ -8,10 +8,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
-type DeletePostAction = (
-  postId: string,
-  locale: string
-) => Promise<{ success: true } | { error: string }>;
+import type { DeletePostAction } from '../_lib/action-types';
 
 type Props = {
   postId: string;

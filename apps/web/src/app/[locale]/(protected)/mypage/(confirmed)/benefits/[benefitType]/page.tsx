@@ -32,23 +32,19 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { and, desc, eq, sql } from 'drizzle-orm';
+import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 
 import { getAuthenticatedUser } from '@/lib/auth';
-import { db, userGrants } from '@/lib/db';
-import { getPaginationParams } from '@/lib/pagination';
 
-import {
-  Divider,
-  PagePanel,
-  PageTitle,
-  PaginationNav,
-  SectionTitle,
-} from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
+
+import {
+  type GrantHistoryRowStatus,
+  getBenefitHistoryPageData,
+} from './_lib/getBenefitHistoryPageData';
 
 const PAGE_SIZE = 20;
 
@@ -60,20 +56,6 @@ type Props = {
   params: Promise<{ locale: Locale; benefitType: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
-
-type GrantRowStatus = 'active' | 'upcoming' | 'expired' | 'revoked';
-
-function classifyGrantForHistory(
-  now: Date,
-  startsAt: Date,
-  expiresAt: Date,
-  revokedAt: Date | null
-): GrantRowStatus {
-  if (revokedAt) return 'revoked';
-  if (expiresAt <= now) return 'expired';
-  if (startsAt > now) return 'upcoming';
-  return 'active';
-}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, benefitType } = await params;
@@ -95,38 +77,27 @@ export default async function BenefitHistoryPage({ params, searchParams }: Props
     notFound();
   }
 
-  const t = await getTranslations({ locale, namespace: 'MypageBenefitHistory' });
+  // Two namespaces: history page strings live under MypageBenefitHistory,
+  // but the source-column label keys (grantTypeLabel.*) and table headers
+  // are shared with /mypage/benefits and stay under MypageBenefits — both
+  // pages render the same vocabulary so users see consistent terminology.
+  const [t, tBenefits, parsedParams, user] = await Promise.all([
+    getTranslations({ locale, namespace: 'MypageBenefitHistory' }),
+    getTranslations({ locale, namespace: 'MypageBenefits' }),
+    searchParamsCache.parse(searchParams),
+    getAuthenticatedUser(),
+  ]);
 
-  const user = await getAuthenticatedUser();
+  const { rows, totalCount, currentPage, totalPages } = await getBenefitHistoryPageData({
+    userId: user.id,
+    benefitType,
+    page: parsedParams.page,
+    pageSize: PAGE_SIZE,
+  });
 
-  const { page } = await searchParamsCache.parse(searchParams);
-
-  // Include revoked grants — this is the audit/history view.
-  const [countResult] = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(userGrants)
-    .where(and(eq(userGrants.userId, user.id), eq(userGrants.benefitType, benefitType)));
-
-  const totalCount = Number(countResult?.count ?? 0);
-
-  const { currentPage, totalPages, limit, offset } = getPaginationParams(
-    page,
-    totalCount,
-    PAGE_SIZE
-  );
-
-  const rows = await db
-    .select()
-    .from(userGrants)
-    .where(and(eq(userGrants.userId, user.id), eq(userGrants.benefitType, benefitType)))
-    .orderBy(desc(userGrants.startsAt))
-    .limit(limit)
-    .offset(offset);
-
-  const now = new Date();
   const dateFmt = (d: Date) => d.toLocaleDateString(locale);
 
-  const statusLabel = (status: GrantRowStatus) => {
+  const statusLabel = (status: GrantHistoryRowStatus) => {
     switch (status) {
       case 'active':
         return t('statusActive');
@@ -139,7 +110,7 @@ export default async function BenefitHistoryPage({ params, searchParams }: Props
     }
   };
 
-  const statusClass = (status: GrantRowStatus) => {
+  const statusClass = (status: GrantHistoryRowStatus) => {
     switch (status) {
       case 'active':
         return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200';
@@ -158,68 +129,88 @@ export default async function BenefitHistoryPage({ params, searchParams }: Props
   };
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
-      <PagePanel>
-        <SectionTitle>{t('sectionTitle')}</SectionTitle>
+    <PageLayout
+      title={t('title')}
+      locale={locale}
+      breadcrumb={[
+        { label: t('breadcrumbMypage'), href: '/mypage' },
+        { label: t('breadcrumbBenefits'), href: '/mypage/benefits' },
+        { label: t('title') },
+      ]}
+    >
+      <SectionTitle>{t('sectionTitle')}</SectionTitle>
 
-        {rows.length === 0 ? (
-          <p className="text-muted-foreground">{t('empty')}</p>
-        ) : (
-          <>
-            <p className="text-sm text-muted-foreground mb-2">
-              {t('showing', {
-                from: (currentPage - 1) * PAGE_SIZE + 1,
-                to: (currentPage - 1) * PAGE_SIZE + rows.length,
-                total: totalCount,
-              })}
-            </p>
-            <ul className="space-y-3">
-              {rows.map((g) => {
-                const startsAt = new Date(g.startsAt);
-                const expiresAt = new Date(g.expiresAt);
-                const revokedAt = g.revokedAt ? new Date(g.revokedAt) : null;
-                const status = classifyGrantForHistory(now, startsAt, expiresAt, revokedAt);
-                return (
-                  <li
-                    key={g.id}
-                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-background p-3"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-xs text-muted-foreground">
-                        {t('grantPeriod', {
-                          startDate: dateFmt(startsAt),
-                          endDate: dateFmt(expiresAt),
-                        })}
-                      </p>
-                    </div>
-                    <span
-                      className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusClass(
-                        status
-                      )}`}
-                    >
-                      {statusLabel(status)}
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-          </>
-        )}
+      {rows.length === 0 ? (
+        <p className="text-muted-foreground">{t('empty')}</p>
+      ) : (
+        <>
+          <p className="text-sm text-muted-foreground mb-2">
+            {t('showing', {
+              from: (currentPage - 1) * PAGE_SIZE + 1,
+              to: (currentPage - 1) * PAGE_SIZE + rows.length,
+              total: totalCount,
+            })}
+          </p>
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-muted/30 text-left text-xs font-medium text-muted-foreground whitespace-nowrap">
+                    <th className="px-4 py-2 font-medium">
+                      {tBenefits('adFree.tableSourceHeader')}
+                    </th>
+                    <th className="px-4 py-2 font-medium">
+                      {tBenefits('adFree.tablePeriodHeader')}
+                    </th>
+                    <th className="px-4 py-2 font-medium text-right">
+                      {tBenefits('adFree.tableStatusHeader')}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {rows.map((row) => {
+                    const sourceLabel = tBenefits(`grantTypeLabel.${row.sourceLabelKey}`);
+                    return (
+                      <tr key={row.id}>
+                        <td className="px-4 py-3 font-medium text-foreground">
+                          {row.sourceHref ? (
+                            <Link
+                              href={row.sourceHref}
+                              locale={locale}
+                              className="text-link-primary hover:underline"
+                            >
+                              {sourceLabel}
+                            </Link>
+                          ) : (
+                            sourceLabel
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">
+                          {t('grantPeriod', {
+                            startDate: dateFmt(row.startsAt),
+                            endDate: dateFmt(row.expiresAt),
+                          })}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <span
+                            className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${statusClass(
+                              row.status
+                            )}`}
+                          >
+                            {statusLabel(row.status)}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
 
-        <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
-
-        <Divider />
-
-        <Breadcrumb
-          locale={locale}
-          items={[
-            { label: t('breadcrumbMypage'), href: '/mypage' },
-            { label: t('breadcrumbBenefits'), href: '/mypage/benefits' },
-            { label: t('title') },
-          ]}
-        />
-      </PagePanel>
-    </div>
+      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+    </PageLayout>
   );
 }

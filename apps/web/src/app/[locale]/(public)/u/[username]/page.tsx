@@ -21,27 +21,24 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
-import { and, count, eq, isNull } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { getAchievementCategoryNames } from '@/lib/achievements/display';
-import { countryCodeToFlag } from '@/lib/countries';
-import { db, profiles, userFollows } from '@/lib/db';
-import { getUserAchievements } from '@/lib/db/achievement-queries';
-import { countPositions, listPositions } from '@/lib/positions/queries';
+import { EMPTY_REPLY_META } from '@/lib/db/reply-meta-queries';
 import { createClient } from '@/lib/supabase/server';
 
-import { getPostsByUserId } from '@/app/[locale]/(public)/topics/_lib/user-post-queries';
-import { LinkedText, PagePanel, UserAvatar } from '@/app/[locale]/_components';
+import { LinkedText, PageLayout } from '@/app/[locale]/_components';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { FollowButton } from './_components/FollowButton';
 import { ProfileAchievements } from './_components/ProfileAchievements';
+import { ProfileHeader } from './_components/ProfileHeader';
 import { ProfilePosts } from './_components/ProfilePosts';
 import { ProfileProblems } from './_components/ProfileProblems';
 import { SocialLinks } from './_components/SocialLinks';
+import { loadPublicProfilePageData } from './_lib/load-page-data';
 import { getProfileByUsername } from './_lib/queries';
 
 export const dynamic = 'force-dynamic';
@@ -82,107 +79,54 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function PublicProfilePage({ params, searchParams }: Props) {
   const { locale, username } = await params;
 
-  const profile = await getProfileByUsername(username);
+  const supabase = await createClient();
+  const [profile, parsedParams, authResult] = await Promise.all([
+    getProfileByUsername(username),
+    searchParamsCache.parse(searchParams),
+    supabase.auth.getUser(),
+  ]);
 
   if (!profile) {
     notFound();
   }
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const user = authResult.data.user;
   const isOwnProfile = user?.id === profile.id;
 
-  // Build all independent follow queries and run them in parallel
-  const followCheckPromise =
-    user && !isOwnProfile
-      ? db
-          .select({ id: userFollows.id })
-          .from(userFollows)
-          .where(and(eq(userFollows.followerId, user.id), eq(userFollows.followingId, profile.id)))
-          .limit(1)
-      : Promise.resolve([]);
-
-  const reverseFollowCheckPromise =
-    user && !isOwnProfile
-      ? db
-          .select({ id: userFollows.id })
-          .from(userFollows)
-          .where(and(eq(userFollows.followerId, profile.id), eq(userFollows.followingId, user.id)))
-          .limit(1)
-      : Promise.resolve([]);
-
-  const followerCountPromise = db
-    .select({ count: count() })
-    .from(userFollows)
-    .innerJoin(profiles, eq(userFollows.followerId, profiles.id))
-    .where(and(eq(userFollows.followingId, profile.id), isNull(profiles.deletedAt)));
-
-  const followingCountPromise = isOwnProfile
-    ? db
-        .select({ count: count() })
-        .from(userFollows)
-        .innerJoin(profiles, eq(userFollows.followingId, profiles.id))
-        .where(and(eq(userFollows.followerId, profile.id), isNull(profiles.deletedAt)))
-    : Promise.resolve([{ count: 0 }]);
-
-  const [
-    existingFollowRows,
-    reverseFollowRows,
-    [followerResult],
-    [followingResult],
-    t,
-    tTopics,
-    tSquares,
-    tOpenings,
-    allPosts,
-    userAchievementRows,
-  ] = await Promise.all([
-    followCheckPromise,
-    reverseFollowCheckPromise,
-    followerCountPromise,
-    followingCountPromise,
+  const [pageData, t, tTopics, tSquares, tOpenings, tPuzzle, tMemory] = await Promise.all([
+    loadPublicProfilePageData({
+      profileId: profile.id,
+      currentUserId: user?.id,
+      isOwnProfile,
+      parsedParams,
+      pageSize: PAGE_SIZE,
+    }),
     getTranslations({ locale, namespace: 'publicProfile' }),
     getTranslations({ locale, namespace: 'topics' }),
     getTranslations({ locale, namespace: 'topics.squares' }),
     getTranslations({ locale, namespace: 'topics.openings' }),
-    getPostsByUserId(profile.id, user?.id),
-    getUserAchievements(profile.id),
+    getTranslations({ locale, namespace: 'practice.puzzle' }),
+    getTranslations({ locale, namespace: 'practice.positionMemory' }),
   ]);
 
-  const initialFollowing = !!existingFollowRows[0];
-  const followedByProfile = !!reverseFollowRows[0];
-  const followerCount = followerResult.count;
-  const followingCount = followingResult.count;
-
-  const { page, tab } = await searchParamsCache.parse(searchParams);
-  const activeTab = tab === 'problems' ? 'problems' : 'topics';
-
-  const topicsCount = allPosts.length;
-
-  // Problems tab data
-  const problemsCount = await countPositions({ userId: profile.id });
-
-  // Topics pagination
-  const topicsTotalPages = Math.ceil(topicsCount / PAGE_SIZE);
-  const topicsCurrentPage =
-    activeTab === 'topics' ? Math.max(1, Math.min(page, topicsTotalPages || 1)) : 1;
-  const posts = allPosts.slice((topicsCurrentPage - 1) * PAGE_SIZE, topicsCurrentPage * PAGE_SIZE);
-
-  // Problems pagination
-  const problemsTotalPages = Math.ceil(problemsCount / PAGE_SIZE);
-  const problemsCurrentPage =
-    activeTab === 'problems' ? Math.max(1, Math.min(page, problemsTotalPages || 1)) : 1;
-  const problemPositions =
-    activeTab === 'problems'
-      ? await listPositions({
-          userId: profile.id,
-          limit: PAGE_SIZE,
-          offset: (problemsCurrentPage - 1) * PAGE_SIZE,
-        })
-      : [];
+  const {
+    activeTab,
+    initialFollowing,
+    followedByProfile,
+    followerCount,
+    followingCount,
+    posts,
+    topicsCount,
+    topicsCurrentPage,
+    topicsTotalPages,
+    problemPositions,
+    problemsCount,
+    problemsCurrentPage,
+    problemsTotalPages,
+    problemLikeMetaMap,
+    problemReplyMetaMap,
+    userAchievementRows,
+  } = pageData;
 
   const buildHref = (p: number) => {
     const params = new URLSearchParams();
@@ -198,29 +142,17 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
   };
 
   return (
-    <PagePanel>
+    <PageLayout title={t('pageTitle')} locale={locale}>
       <div className="space-y-6">
-        {/* Avatar */}
-        <UserAvatar
-          src={profile.avatarUrl}
-          alt={profile.displayName ?? profile.username}
-          size={96}
-        />
-
-        {/* Display Name + Action Button Row */}
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              {profile.displayName}
-              {profile.flair && <span className="ml-2">{profile.flair}</span>}
-              {profile.country && (
-                <span className="ml-2">{countryCodeToFlag(profile.country)}</span>
-              )}
-            </h1>
-            <p className="text-muted-foreground mt-1">@{profile.username}</p>
-          </div>
-          <div className="flex flex-col items-end gap-1 sm:flex-row sm:items-center sm:gap-2">
-            {isOwnProfile ? (
+        <ProfileHeader
+          avatarUrl={profile.avatarUrl}
+          username={profile.username}
+          displayName={profile.displayName}
+          flair={profile.flair}
+          country={profile.country}
+          locale={locale}
+          action={
+            isOwnProfile ? (
               <Link
                 href="/mypage/profile"
                 locale={locale}
@@ -242,9 +174,9 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
                   isAuthenticated={!!user}
                 />
               </>
-            )}
-          </div>
-        </div>
+            )
+          }
+        />
 
         {/* Stats Row */}
         <p className="text-sm text-muted-foreground">
@@ -302,18 +234,26 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
             showMore: tTopics('showMore'),
             justNow: (topicType) =>
               topicType === 'opening' ? tOpenings('justNow') : tSquares('justNow'),
-            newReply: (topicType) =>
-              topicType === 'opening'
-                ? tOpenings('newReply', { time: '{time}' })
-                : tSquares('newReply', { time: '{time}' }),
           }}
         >
           <ProfileProblems
             positions={problemPositions}
+            authorProfile={{
+              username: profile.username,
+              displayName: profile.displayName,
+              avatarUrl: profile.avatarUrl,
+            }}
+            likeMetaMap={problemLikeMetaMap}
+            replyMetaMap={problemReplyMetaMap}
+            emptyReplyMeta={EMPTY_REPLY_META}
             currentPage={problemsCurrentPage}
             totalPages={problemsTotalPages}
             locale={locale}
             buildHref={buildHref}
+            justNowLabels={{
+              puzzle: tPuzzle('justNow'),
+              memory: tMemory('justNow'),
+            }}
             labels={{
               noProblems: t('noProblems'),
               problemTypeMemory: t('problemTypeMemory'),
@@ -339,6 +279,6 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
           />
         )}
       </div>
-    </PagePanel>
+    </PageLayout>
   );
 }

@@ -79,5 +79,3 @@ export function ArticleFormTopBar({
     </div>
   );
 }
-
-export type { ArticleFormTopBarLabels };

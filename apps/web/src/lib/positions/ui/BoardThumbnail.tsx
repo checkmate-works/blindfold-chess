@@ -1,6 +1,8 @@
 import { ChessPieceIcon } from '@blindfold-chess/icons';
 import type { PieceType } from '@blindfold-chess/types';
 
+import { BoardAnnotationOverlay } from '@/lib/board-annotations/BoardAnnotationOverlay';
+import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import type { BoardTheme } from '@/lib/games/board-themes';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/games/board-themes';
 
@@ -8,6 +10,13 @@ type Props = {
   fen: string;
   className?: string;
   boardTheme?: BoardTheme;
+  /**
+   * Optional display-only annotations (arrows + circles) drawn on top of
+   * the board. Skipped when `null` / omitted. Already-parsed shape — the
+   * caller is responsible for routing the JSONB through
+   * `parseBoardAnnotations`.
+   */
+  annotations?: BoardAnnotations | null;
 };
 
 type Color = 'w' | 'b';
@@ -66,6 +75,7 @@ export function BoardThumbnail({
   fen,
   className = 'w-20 h-20 sm:w-24 sm:h-24',
   boardTheme = DEFAULT_BOARD_THEME,
+  annotations = null,
 }: Props) {
   const themeColors = getBoardThemeColors(boardTheme);
   const flipped = isBlackToMove(fen);
@@ -75,7 +85,7 @@ export function BoardThumbnail({
 
   return (
     <div className={className}>
-      <div className="grid grid-cols-8 border border-border rounded-sm overflow-hidden aspect-square w-full h-full">
+      <div className="relative grid grid-cols-8 border border-border rounded-sm overflow-hidden aspect-square w-full h-full">
         {board.map((rank, rankIdx) =>
           rank.map((fenChar, fileIdx) => {
             const isLight = (rankIdx + fileIdx) % 2 === 0;
@@ -96,6 +106,7 @@ export function BoardThumbnail({
             );
           })
         )}
+        {annotations && <BoardAnnotationOverlay annotations={annotations} flipped={flipped} />}
       </div>
     </div>
   );

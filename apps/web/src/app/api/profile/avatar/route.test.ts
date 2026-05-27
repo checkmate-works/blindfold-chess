@@ -76,6 +76,21 @@ vi.mock('@/lib/security/rate-limit', () => ({
   },
 }));
 
+// Sharp is exercised end-to-end in production; here we stub the pipeline to
+// avoid invoking libvips on test fixtures (the magic-byte arrays in this file
+// aren't decodable). The route's `try/catch` around the Sharp pipeline is
+// covered separately via `mockSharpToBuffer.mockRejectedValueOnce(...)`.
+const mockSharpToBuffer = vi.fn();
+vi.mock('sharp', () => {
+  const factory = vi.fn(() => ({
+    rotate: vi.fn().mockReturnThis(),
+    resize: vi.fn().mockReturnThis(),
+    webp: vi.fn().mockReturnThis(),
+    toBuffer: mockSharpToBuffer,
+  }));
+  return { default: factory };
+});
+
 const mockWhere = vi.fn().mockResolvedValue(undefined);
 
 vi.mock('@/lib/db', () => ({
@@ -95,9 +110,13 @@ vi.mock('@/lib/db', () => ({
 
 const testUserId = 'user-id-00000000-0000-0000-0000-000000000001';
 
-// Valid magic bytes for each supported image format
+// Valid magic bytes for each supported image format. PNG carries its full
+// 8-byte signature (89 50 4E 47 0D 0A 1A 0A) — the shared
+// validatePostImageBinarySignature checks all eight, not just the first four.
 const JPEG_MAGIC = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, ...new Array(8).fill(0)]);
-const PNG_MAGIC = new Uint8Array([0x89, 0x50, 0x4e, 0x47, ...new Array(8).fill(0)]);
+const PNG_MAGIC = new Uint8Array([
+  0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x00,
+]);
 const WEBP_MAGIC = new Uint8Array([
   0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50,
 ]);
@@ -166,11 +185,12 @@ function setupSuccessfulUpload() {
   mockUpload.mockResolvedValue({ error: null });
   mockGetPublicUrl.mockReturnValue({
     data: {
-      publicUrl: `https://storage.example.com/avatars/${testUserId}/avatar.jpg`,
+      publicUrl: `https://storage.example.com/avatars/${testUserId}/avatar.webp`,
     },
   });
   mockList.mockResolvedValue({ data: [] });
   mockRemove.mockResolvedValue({ data: [] });
+  mockSharpToBuffer.mockResolvedValue(Buffer.from('mocked-webp-bytes'));
 }
 
 describe('POST /api/profile/avatar', () => {
@@ -223,41 +243,30 @@ describe('POST /api/profile/avatar', () => {
       setupSuccessfulUpload();
     });
 
-    it('should upload JPEG file and return avatar URL', async () => {
+    it('should upload JPEG file and return WebP avatar URL', async () => {
       const file = createMockFile(JPEG_MAGIC, 'photo.jpg', 'image/jpeg');
       const request = createMockRequestWithFile(file);
       const response = await POST(request);
 
       expect(response.status).toBe(200);
       const body = await response.json();
+      // Input format is normalized to WebP via Sharp before storage.
       expect(body.avatarUrl).toBe(
-        `https://storage.example.com/avatars/${testUserId}/avatar.jpg?t=1709700000000`
+        `https://storage.example.com/avatars/${testUserId}/avatar.webp?t=1709700000000`
       );
     });
 
-    it('should upload PNG file with correct extension', async () => {
-      mockGetPublicUrl.mockReturnValue({
-        data: {
-          publicUrl: `https://storage.example.com/avatars/${testUserId}/avatar.png`,
-        },
-      });
-
+    it('should upload PNG file as WebP', async () => {
       const file = createMockFile(PNG_MAGIC, 'photo.png', 'image/png');
       const request = createMockRequestWithFile(file);
       const response = await POST(request);
 
       expect(response.status).toBe(200);
       const body = await response.json();
-      expect(body.avatarUrl).toContain('avatar.png');
+      expect(body.avatarUrl).toContain('avatar.webp');
     });
 
-    it('should upload WebP file with correct extension', async () => {
-      mockGetPublicUrl.mockReturnValue({
-        data: {
-          publicUrl: `https://storage.example.com/avatars/${testUserId}/avatar.webp`,
-        },
-      });
-
+    it('should upload WebP file as WebP', async () => {
       const file = createMockFile(WEBP_MAGIC, 'photo.webp', 'image/webp');
       const request = createMockRequestWithFile(file);
       const response = await POST(request);
@@ -267,17 +276,19 @@ describe('POST /api/profile/avatar', () => {
       expect(body.avatarUrl).toContain('avatar.webp');
     });
 
-    it('should upload to correct storage path using user ID', async () => {
+    it('should upload to a fixed user-scoped WebP path with image/webp content type', async () => {
       const file = createMockFile(JPEG_MAGIC, 'photo.jpg', 'image/jpeg');
       const request = createMockRequestWithFile(file);
       await POST(request);
 
-      expect(mockUpload).toHaveBeenCalledWith(`${testUserId}/avatar.jpg`, expect.anything(), {
-        contentType: 'image/jpeg',
+      expect(mockUpload).toHaveBeenCalledWith(`${testUserId}/avatar.webp`, expect.anything(), {
+        contentType: 'image/webp',
         upsert: true,
       });
+      // Sharp pipeline returns a Node Buffer; verify the upload payload is
+      // the Sharp-processed buffer rather than the raw ArrayBuffer.
       const uploadedBuffer = mockUpload.mock.calls[0][1];
-      expect(uploadedBuffer.constructor.name).toBe('ArrayBuffer');
+      expect(Buffer.isBuffer(uploadedBuffer)).toBe(true);
     });
 
     it('should use upsert to replace existing avatar', async () => {
@@ -503,10 +514,10 @@ describe('POST /api/profile/avatar', () => {
       const request = createMockRequestWithFile(file);
       const response = await POST(request);
 
-      // File name is ignored; storage path uses user ID and extension
+      // File name is ignored; storage path is always `${userId}/avatar.webp`.
       expect(response.status).toBe(200);
       expect(mockUpload).toHaveBeenCalledWith(
-        `${testUserId}/avatar.jpg`,
+        `${testUserId}/avatar.webp`,
         expect.anything(),
         expect.any(Object)
       );
@@ -532,17 +543,18 @@ describe('POST /api/profile/avatar', () => {
       expect(body).toEqual({ error: 'invalid_file_type' });
     });
 
-    it('should use extension from MIME type, not from filename', async () => {
-      // File claims to be JPEG via MIME type but has .png extension
+    it('should always use .webp extension regardless of input MIME', async () => {
+      // File claims to be JPEG via MIME type but has .png extension —
+      // every supported input is normalized to WebP at the Sharp pipeline.
       const file = createMockFile(JPEG_MAGIC, 'photo.png', 'image/jpeg');
       const request = createMockRequestWithFile(file);
       const response = await POST(request);
 
       expect(response.status).toBe(200);
       expect(mockUpload).toHaveBeenCalledWith(
-        `${testUserId}/avatar.jpg`,
+        `${testUserId}/avatar.webp`,
         expect.anything(),
-        expect.objectContaining({ contentType: 'image/jpeg' })
+        expect.objectContaining({ contentType: 'image/webp' })
       );
     });
   });
@@ -571,9 +583,12 @@ describe('POST /api/profile/avatar', () => {
       const request = createMockRequestWithFile(file);
       const response = await POST(request);
 
-      // Passes magic bytes check (JPEG is valid), proceeds to upload
-      // The route accepts any valid magic bytes regardless of MIME match
-      expect(response.status).not.toBe(401);
+      // The signature must match the *declared* MIME — a JPEG payload
+      // declared as image/png is a MIME-spoof and is rejected.
+      expect(response.status).toBe(400);
+      const body = await response.json();
+      expect(body).toEqual({ error: 'invalid_file_type' });
+      expect(mockUpload).not.toHaveBeenCalled();
     });
 
     it('should accept file with valid JPEG magic bytes', async () => {
@@ -598,17 +613,26 @@ describe('POST /api/profile/avatar', () => {
 
     it('should accept file with valid WebP magic bytes', async () => {
       setupSuccessfulUpload();
-      mockGetPublicUrl.mockReturnValue({
-        data: {
-          publicUrl: `https://storage.example.com/avatars/${testUserId}/avatar.webp`,
-        },
-      });
 
       const file = createMockFile(WEBP_MAGIC, 'photo.webp', 'image/webp');
       const request = createMockRequestWithFile(file);
       const response = await POST(request);
 
       expect(response.status).toBe(200);
+    });
+
+    it('should return 400 when Sharp rejects the input as malformed', async () => {
+      setupSuccessfulUpload();
+      mockSharpToBuffer.mockRejectedValueOnce(new Error('VipsJpeg: Premature end of input file'));
+
+      const file = createMockFile(JPEG_MAGIC, 'photo.jpg', 'image/jpeg');
+      const request = createMockRequestWithFile(file);
+      const response = await POST(request);
+
+      expect(response.status).toBe(400);
+      const body = await response.json();
+      expect(body).toEqual({ error: 'invalid_file_type' });
+      expect(mockUpload).not.toHaveBeenCalled();
     });
   });
 
@@ -638,11 +662,6 @@ describe('POST /api/profile/avatar', () => {
       });
 
       const file = createMockFile(WEBP_MAGIC, 'photo.webp', 'image/webp');
-      mockGetPublicUrl.mockReturnValue({
-        data: {
-          publicUrl: `https://storage.example.com/avatars/${testUserId}/avatar.webp`,
-        },
-      });
       const request = createMockRequestWithFile(file);
       await POST(request);
 

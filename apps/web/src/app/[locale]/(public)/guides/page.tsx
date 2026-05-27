@@ -21,8 +21,8 @@ import { buildGuidePath, enumerateGuideRoutes } from '@/lib/guides';
 import { resolveCspNonce } from '@/lib/security/nonce';
 import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
 
-import { PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { PageLayout } from '@/app/[locale]/_components';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
 import { GuidePageFooter } from './_components/GuidePageFooter';
@@ -33,17 +33,7 @@ export function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: LocalePageProps): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'metadata.guides.top' });
-
-  const title = t('title');
-  const description = t('description');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'guides', title, description }),
-    title: resolveTitle(title, locale),
-    description,
-  };
+  return createPageMetadata({ params, namespace: 'metadata.guides.top', path: 'guides' });
 }
 
 const sections = [{ id: 'rankGuides', Component: RankGuidesSection }] as const;
@@ -67,12 +57,9 @@ export default async function GuidesTopPage({ params }: LocalePageProps) {
   const nonce = await resolveCspNonce();
 
   return (
-    <div className="space-y-8">
+    <>
       <JsonLd data={generateItemListSchema(itemListItems)} nonce={nonce} />
-
-      <PageTitle>{t('top.title')}</PageTitle>
-
-      <PagePanel>
+      <PageLayout title={t('top.title')} locale={locale}>
         <div className="space-y-10">
           {sections.map(({ id, Component }) => (
             <Component key={id} locale={locale} />
@@ -80,7 +67,7 @@ export default async function GuidesTopPage({ params }: LocalePageProps) {
         </div>
 
         <GuidePageFooter items={[{ label: t('breadcrumb.guides') }]} locale={locale} />
-      </PagePanel>
-    </div>
+      </PageLayout>
+    </>
   );
 }

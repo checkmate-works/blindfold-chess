@@ -24,6 +24,7 @@ export function PlayerCell({ row, locale }: Props) {
           width={36}
           height={36}
           className="rounded-full object-cover h-9 w-9 flex-shrink-0 ring-1 ring-border"
+          // Pre-resized to 256×256 WebP at upload; bypass Vercel optimization.
           unoptimized
         />
       ) : (

@@ -2,6 +2,7 @@
 
 import { memo } from 'react';
 
+import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { getMedalEmoji } from '@/lib/users/rank-emoji';
@@ -11,11 +12,11 @@ import {
   type LeaderboardModule,
   moduleToSlug,
 } from '@/app/[locale]/(public)/leaderboard/_lib/types';
-import { UserAvatar } from '@/app/[locale]/(public)/topics/_components/UserAvatar';
 import { formatRelativeTime } from '@/app/[locale]/(public)/topics/_lib/relative-time';
+import { ActivityCard } from '@/app/[locale]/_components/ActivityCard';
+import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 
 import type { ChallengeRankUpdateData } from '../_lib/types';
-import { FeedItemCard } from './FeedItemCard';
 
 // ---------------------------------------------------------------------------
 // Rank → Emoji mapping (ranks 4–10 are local to this card)
@@ -78,26 +79,34 @@ export const ChallengeRankUpdateCard = memo(function ChallengeRankUpdateCard({
   );
 
   return (
-    <FeedItemCard
+    <ActivityCard
       href={href}
       locale={locale}
       thumbnail={thumbnail}
       thumbnailClassName="flex items-center justify-center"
+      author={
+        <UserAvatar
+          profileHref={data.actor.username ? `/u/${data.actor.username}` : null}
+          avatarUrl={data.actor.avatarUrl}
+          displayName={displayName}
+          locale={locale}
+          size="sm"
+          flair={data.actor.flair}
+          country={data.actor.country}
+        />
+      }
+      permalink={
+        <Link
+          href={href}
+          locale={locale}
+          className="hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+        >
+          <time dateTime={createdAt}>
+            {formatRelativeTime(new Date(createdAt), locale, justNowLabel)}
+          </time>
+        </Link>
+      }
     >
-      <UserAvatar
-        profileHref={null}
-        avatarUrl={data.actor.avatarUrl}
-        displayName={displayName}
-        locale={locale}
-        size="sm"
-        flair={data.actor.flair}
-        country={data.actor.country}
-      />
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <time dateTime={createdAt}>
-          {formatRelativeTime(new Date(createdAt), locale, justNowLabel)}
-        </time>
-      </div>
       <span className="inline-flex items-center self-start px-1.5 py-0.5 rounded text-xs font-semibold bg-muted text-muted-foreground">
         {label}
       </span>
@@ -105,6 +114,6 @@ export const ChallengeRankUpdateCard = memo(function ChallengeRankUpdateCard({
         {data.isNewEntry ? tFeed('newEntry') : tFeed('improved')}
         {rankEmoji && <span className="ml-1">{rankEmoji}</span>}
       </p>
-    </FeedItemCard>
+    </ActivityCard>
   );
 });

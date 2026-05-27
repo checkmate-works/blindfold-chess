@@ -6,8 +6,9 @@ import { useRouter } from 'next/navigation';
 
 import { BoardSkeleton } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { generateSquareSequence } from '@blindfold-chess/features/common';
 import { useBatchTrainingSession } from '@blindfold-chess/features/practice-session';
-import { generateSquareSequence, getSquareColor } from '@blindfold-chess/features/square-colors';
+import { getSquareColor } from '@blindfold-chess/features/square-colors';
 
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useScrollToElement } from '@/app/[locale]/(public)/practice/_hooks/use-scroll-to-element';

@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
  * Returns whether the given CSS media query currently matches.
  * During SSR and before hydration, returns `false`.
  */
-export function useMediaQuery(query: string): boolean {
+function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(false);
 
   useEffect(() => {
@@ -22,7 +22,7 @@ export function useMediaQuery(query: string): boolean {
 }
 
 /** Tailwind `md` breakpoint (768px). */
-export const MD_BREAKPOINT = '(min-width: 768px)';
+const MD_BREAKPOINT = '(min-width: 768px)';
 
 /**
  * Returns `true` when the viewport is at or above Tailwind's `md` breakpoint.

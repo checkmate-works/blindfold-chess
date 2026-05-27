@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { Button, UnsavedChangesDialog } from '@/app/_components';
@@ -30,6 +30,7 @@ export function PuzzlePreviewClient() {
   const t = useTranslations('practice.puzzle.preview');
   const tUnsaved = useTranslations('unsavedChanges');
   const router = useRouter();
+  const locale = useLocale();
 
   const [draft, setDraft] = useState<PuzzleDraftV1 | null>(null);
   const [hydrated, setHydrated] = useState(false);
@@ -72,6 +73,9 @@ export function PuzzlePreviewClient() {
         title: draft.title,
         description: draft.description || null,
         solutionMoves,
+        themeIds: draft.themeIds,
+        chunkIds: draft.chunkIds,
+        forkedFromId: draft.forkedFromId ?? null,
       });
       if ('error' in result) {
         setError(result.error);
@@ -79,7 +83,18 @@ export function PuzzlePreviewClient() {
       }
       clearDraft();
       flushSync(() => setSubmitted(true));
-      router.push(`/practice/puzzle/${result.id}?toast=position_created`);
+      // Point grant fired → route via /thanks so the user lands on the
+      // award screen, then continues to the puzzle detail (toast suppressed
+      // because the /thanks page already celebrates the create). No-grant
+      // flows keep the legacy in-place toast UX.
+      if (result.pointGrant) {
+        const returnUrl = `/${locale}/practice/puzzle/${result.id}`;
+        router.push(
+          `/thanks?pointEventId=${result.pointGrant.pointEventId}&returnUrl=${encodeURIComponent(returnUrl)}`
+        );
+      } else {
+        router.push(`/practice/puzzle/${result.id}?toast=position_created`);
+      }
     } catch {
       setError(t('createError'));
     } finally {

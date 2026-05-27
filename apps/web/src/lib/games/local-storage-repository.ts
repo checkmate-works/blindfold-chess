@@ -3,7 +3,9 @@ import { getStartingFen, validateMoveSequence } from '@blindfold-chess/features/
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { GameLimitError } from '@/lib/errors';
-import type { Game, GameSortOption, SortDirection } from '@/lib/types';
+import type { Game, GameSortOption, SortDirection } from '@/lib/games/saved-game-types';
+import { normaliseStoredGame } from '@/lib/games/stored-game-migration';
+import { isValidStoredGame } from '@/lib/games/stored-game-validator';
 
 type UpdateOptions = {
   updateLastPlayed?: boolean;
@@ -129,12 +131,13 @@ export class LocalStorageGameRepository implements IGameRepository {
         return this.cachedGames;
       }
 
-      // Validate and filter valid games, and ensure lastPlayed field exists
-      this.cachedGames = parsed.filter(this.isValidGame).map((game) => ({
-        ...game,
-        // If lastPlayed doesn't exist, use date as fallback
-        lastPlayed: game.lastPlayed || game.date,
-      }));
+      // Validate, normalise legacy `skillLevel`-only records into the
+      // new `engineConfig` shape, and ensure `lastPlayed` exists. The
+      // validator + migrator live in their own modules so this class
+      // stays focused on the storage I/O.
+      this.cachedGames = parsed
+        .filter(isValidStoredGame)
+        .map((stored) => normaliseStoredGame(stored));
 
       return this.cachedGames;
     } catch (error) {
@@ -203,10 +206,11 @@ export class LocalStorageGameRepository implements IGameRepository {
       await this.update(gameId, {
         moves: updatedMoves,
         playerColor: game.playerColor,
-        skillLevel: game.skillLevel,
+        engineConfig: game.engineConfig,
         status: game.status,
         startingFen: game.startingFen,
         gamePreferences: game.gamePreferences,
+        preferenceChangeLog: game.preferenceChangeLog,
         operationLogs: game.operationLogs,
       });
     } catch (error) {
@@ -230,41 +234,5 @@ export class LocalStorageGameRepository implements IGameRepository {
     if (!result.valid) {
       throw new Error(`Invalid move detected during validation: ${result.error}`);
     }
-  }
-
-  private isValidGame(game: unknown): game is Game {
-    if (typeof game !== 'object' || game === null) {
-      return false;
-    }
-
-    const g = game as Record<string, unknown>;
-
-    return (
-      typeof g.id === 'string' &&
-      typeof g.date === 'string' &&
-      Array.isArray(g.moves) &&
-      g.moves.every((m) => typeof m === 'string') &&
-      (g.playerColor === 'white' || g.playerColor === 'black') &&
-      typeof g.skillLevel === 'number' &&
-      ['in_progress', 'win', 'loss', 'draw'].includes(g.status as string) &&
-      (g.lastPlayed === undefined || typeof g.lastPlayed === 'string') &&
-      (g.startingFen === undefined || typeof g.startingFen === 'string') &&
-      (g.gamePreferences === undefined ||
-        (typeof g.gamePreferences === 'object' && g.gamePreferences !== null)) &&
-      (g.operationLogs === undefined ||
-        (Array.isArray(g.operationLogs) &&
-          g.operationLogs.every(
-            (log) =>
-              typeof log === 'object' &&
-              log !== null &&
-              ['text', 'text-autocomplete', 'select', 'button'].includes(
-                (log as Record<string, unknown>).inputMethod as string
-              ) &&
-              typeof (log as Record<string, unknown>).peekCount === 'number' &&
-              typeof (log as Record<string, unknown>).undoCount === 'number' &&
-              (typeof (log as Record<string, unknown>).movePeekCount === 'number' ||
-                (log as Record<string, unknown>).movePeekCount === undefined)
-          )))
-    );
   }
 }

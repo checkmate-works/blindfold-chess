@@ -1,7 +1,5 @@
 'use server';
 
-import { revalidatePath, updateTag } from 'next/cache';
-
 import { eq } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
@@ -49,11 +47,6 @@ export async function updateAdBanner(id: string, data: UpdateData): Promise<Acti
       updatedAt: new Date(),
     })
     .where(eq(adBanners.id, id));
-
-  // updateTag invalidates the unstable_cache-wrapped data; revalidatePath
-  // evicts ISR-rendered HTML that has the ad markup baked in.
-  updateTag('ads-config');
-  revalidatePath('/', 'layout');
 
   return { success: true };
 }

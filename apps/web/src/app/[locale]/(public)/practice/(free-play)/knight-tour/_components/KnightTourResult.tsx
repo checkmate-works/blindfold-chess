@@ -44,7 +44,7 @@ export function KnightTourResult({
 
   return (
     <PracticeLayout>
-      <div className="bg-card rounded-2xl p-6 border border-border mb-8">
+      <div className="mb-8">
         {/* ... (Header and Board sections unchanged) ... */}
         {/* Result Header */}
         <SectionTitle className="text-2xl font-bold text-center mb-6">

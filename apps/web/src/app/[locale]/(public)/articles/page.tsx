@@ -8,22 +8,19 @@ import { resolveCspNonce } from '@/lib/security/nonce';
 import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
 
 import {
-  Divider,
   ListLink,
   ListLinkContainer,
-  PagePanel,
-  PageTitle,
+  PageLayout,
   PaginationNav,
   SectionTitle,
 } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { getPublishedArticleCount, getPublishedArticlesPaginated } from './_lib/queries';
 
-export const revalidate = 300;
+export const revalidate = 1800;
 
 const ARTICLES_PER_PAGE = 20;
 
@@ -37,17 +34,7 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'metadata.articles' });
-
-  const title = t('title');
-  const description = t('description');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'articles', title, description }),
-    title: resolveTitle(title, locale),
-    description,
-  };
+  return createPageMetadata({ params, namespace: 'metadata.articles', path: 'articles' });
 }
 
 export default async function ArticlesPage({ params, searchParams }: Props) {
@@ -74,11 +61,9 @@ export default async function ArticlesPage({ params, searchParams }: Props) {
   const nonce = await resolveCspNonce();
 
   return (
-    <div className="space-y-8">
+    <>
       <JsonLd data={generateItemListSchema(itemListItems)} nonce={nonce} />
-      <PageTitle>{t('pageTitle')}</PageTitle>
-
-      <PagePanel>
+      <PageLayout title={t('pageTitle')} locale={locale} breadcrumb={[{ label: t('pageTitle') }]}>
         {articles.length === 0 ? (
           <p className="text-muted-foreground">{t('noArticles')}</p>
         ) : (
@@ -118,11 +103,7 @@ export default async function ArticlesPage({ params, searchParams }: Props) {
         {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
           <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
         )}
-
-        <Divider />
-
-        <Breadcrumb items={[{ label: t('pageTitle') }]} locale={locale} />
-      </PagePanel>
-    </div>
+      </PageLayout>
+    </>
   );
 }

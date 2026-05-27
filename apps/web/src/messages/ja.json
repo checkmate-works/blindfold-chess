@@ -134,6 +134,10 @@
       "title": "{square}についての投稿",
       "description": "チェスの{square}マスに関する議論の投稿"
     },
+    "chunks": {
+      "title": "チャンク",
+      "description": "ポジション記憶トレーニングのための駒の連携パターンカタログ"
+    },
     "games": {
       "title": "ゲーム一覧",
       "description": "目隠しチェスのゲームを管理"
@@ -211,8 +215,8 @@
   },
   "Header": {
     "title": "心眼チェス",
-    "dashboard": "ダッシュボード",
-    "home": "ホーム",
+    "dashboard": "トップ",
+    "home": "フィード",
     "gettingStarted": "はじめに",
     "learn": "学ぶ",
     "practice": "練習",
@@ -272,7 +276,13 @@
         "whiteView": "白の視点",
         "blackView": "黒の視点"
       },
-      "showBoardButtonInGame": "AI対局中に「ボードを表示」ボタンを表示する",
+      "boardVisibility": "ボード表示",
+      "boardVisibilityDescription": "対局中のチェスボードの表示方法を選びます。下の駒の表示設定は、ボードが表示される場合でも適用されます — 目隠しを実現する主な手段は駒の見え方です。",
+      "boardVisibilities": {
+        "always": "常に表示",
+        "peek": "必要なときにピーク",
+        "never": "非表示"
+      },
       "resetDefaults": "デフォルトに戻す",
       "resetDefaultsConfirm": {
         "title": "ボード設定をリセットしますか？",
@@ -304,24 +314,63 @@
       "text": "テキスト",
       "icon": "アイコン",
       "enableAutoComplete": "補完を有効にする",
-      "switchInputMode": "入力モードを切り替え",
       "peekMode": "盤面ピークモード",
       "peekModeDescription": "対局中の盤面表示方式",
       "peekModes": {
         "modal": "モーダル",
         "inline": "インライン"
+      },
+      "moveInputModes": {
+        "text": "テキスト",
+        "select": "リスト",
+        "button": "ボタン"
       }
     }
-  },
-  "Common": {
-    "sponsoredLink": "スポンサーリンク",
-    "testAd": "テスト広告",
-    "adLabel": "広告",
-    "sponsor": "スポンサー"
   },
   "openingSearch": {
     "selectOpening": "オープニングを選択",
     "searchPlaceholder": "オープニングを検索..."
+  },
+  "coin": {
+    "title": "コイン",
+    "unit": "コイン",
+    "hero": {
+      "tagline": "トピックの投稿や問題の作成でコインが付与されます。"
+    },
+    "loop": {
+      "step1Title": "貢献する",
+      "step1Body": "問題や投稿をつくる",
+      "step2Title": "コインを獲得",
+      "step2Body": "貢献するたびに貯まる",
+      "step3Title": "特典に使う",
+      "step3Body": "広告非表示や対局に"
+    },
+    "earn": {
+      "heading": "コインの貯め方",
+      "puzzleTitle": "パズルを投稿する",
+      "positionMemoryTitle": "ポジション記憶問題を投稿する",
+      "topicTitle": "トピックに投稿する",
+      "likeNote1": "いいねを獲得するとその分コインを付与（即時ではなく、1日1回まとめて反映）。",
+      "likeNote2": "一度トピックや問題を作れば継続的にコインが得られます。"
+    },
+    "spend": {
+      "heading": "コインの使い道",
+      "adFreeTitle": "広告を非表示にする",
+      "adFreeRate": "1 コイン = 広告のない {days} 日間",
+      "maiaTitle": "Maia と対局する",
+      "maiaRate": "{cost} コイン = 1 局",
+      "maiaNote": "Maia は人間らしい指し手のニューラルネット AI です。"
+    },
+    "facts": {
+      "instant": "獲得したコインは、待ち時間なくすぐに使えます。",
+      "deleteReversal": "自分で投稿を削除すると、その投稿で獲得したコインは戻されます。ただし、すでに使用したコインは回収されません。",
+      "balance": "残高と履歴は、いつでもマイページで確認できます。",
+      "dailyCap": "コンテンツ作成で獲得できるコインは1日{cap}コインまでです（UTC0時にリセット）。"
+    },
+    "cta": {
+      "viewBalance": "コイン残高を見る",
+      "contribute": "トピックを見る"
+    }
   },
   "faq": {
     "title": "よくある質問",
@@ -337,7 +386,7 @@
       },
       "chessEngine": {
         "question": "AIは具体的に何のチェスエンジンを利用しているのですか？",
-        "answer": "AIはStockfish 17.1（Lite Single-threaded版）を使用しています。"
+        "answer": "用途に応じて2種類のエンジンを切り替えられます。標準はStockfish 17.1（Lite Single-threaded版）です。よりヒューマンライクな指し手を体験したい場合はMaia 3（maia3_simplified）を選択できます — onnxruntime-web経由でブラウザ上で推論し、GPL-3.0ライセンスで公開されているモデルを使用しています。"
       },
       "expSystem": {
         "question": "経験値（Exp）はどのように計算されますか？",
@@ -374,16 +423,17 @@
         "multiplier10": "×1.0"
       },
       "adFreeBenefits": {
-        "question": "広告非表示特典はどうやって獲得できますか？",
-        "answer": "テキスト付きのトピック投稿を行うと、自動的に広告非表示特典が付与されます。複数回投稿することで、広告非表示の期間は加算で延長されます。",
-        "tableTitle": "特典を獲得する方法",
+        "question": "コインの獲得方法と広告非表示との交換について教えてください",
+        "answer": "対象アクションを行うとコインが付与され、投稿直後からすぐに利用できます。1 コインで広告非表示 1 日と交換できます（交換機能は近日公開予定です）。",
+        "tableTitle": "コインを獲得する方法",
         "headerAction": "アクション",
-        "headerDuration": "付与期間",
+        "headerPoints": "獲得コイン",
         "actions": {
-          "topic_post": "テキスト付きでトピックに投稿する"
+          "topic_post": "トピック（マス / オープニング）を投稿する",
+          "position_creation": "問題（ポジションの記憶 / パズル）を投稿する"
         },
-        "durationDays": "{days}日間",
-        "note": "選択式の評価(rating)のみでテキストがない投稿は特典の対象外です。"
+        "pointsAmount": "{amount} コイン",
+        "dailyCapNote": "コンテンツ作成で獲得できるコインは1日{cap}コインが上限です。上限はUTC0時にリセットされ、いいねやスタッフ付与は上限に含まれません。"
       }
     }
   },
@@ -481,7 +531,6 @@
     "articlesTitle": "記事一覧",
     "relatedArticles": "関連記事",
     "browseByCategory": "カテゴリーから探す",
-    "allCategories": "すべて",
     "articleCount": "{count}件の記事",
     "categories": {
       "piece-movement": "駒の動き",
@@ -505,7 +554,9 @@
     "levelIntermediate": "中級",
     "levelAdvanced": "上級",
     "levelIntroduction": "入門",
-    "viewLeaderboard": "🏆 ランキングを見る",
+    "viewLeaderboard": "ランキングを見る",
+    "viewDojo": "道場を見る",
+    "related": "関連",
     "tryAgain": "もう一度行う",
     "changeSettings": "設定を変更する",
     "doOtherPractice": "他の練習を行う",
@@ -540,7 +591,7 @@
     "challengeDescription": "制限時間1分。3回間違えたら終了のラッシュ形式。スコアが記録されます。",
     "startTraining": "トレーニング開始",
     "startChallenge": "チャレンジ開始",
-    "switchToTraining": "📖 トレーニングモードで練習する",
+    "orDivider": "または",
     "challengeSetup": {
       "title": "チャレンジルール",
       "timeLimit": "制限時間{seconds}秒以内にできるだけ多くの問題に正解してください。",
@@ -551,9 +602,9 @@
     "skip": "スキップ",
     "endTraining": "終了",
     "trainingEnded": "訓練を終了しました",
-    "trainingModeActive": "📖 トレーニングモードで練習中",
+    "trainingModeActive": "トレーニングモードで練習中",
     "readyForChallenge": "準備はできましたか？",
-    "goToChallenge": "⚔️ チャレンジに挑戦",
+    "goToChallenge": "チャレンジに挑戦",
     "quitConfirmModal": {
       "title": "練習を終了しますか？",
       "message": "進捗は失われます。本当に終了しますか？",
@@ -605,6 +656,21 @@
       "accuracy": "正答率",
       "timeTaken": "かかった時間",
       "averageTime": "平均時間",
+      "help": {
+        "label": "ヘルプ",
+        "tutorial": {
+          "title": "チュートリアル",
+          "description": "初めて利用する方はチュートリアルを閲覧することをおすすめします。"
+        },
+        "challenge": {
+          "title": "チャレンジモード",
+          "description": "制限時間内にどれほど多く正答できるかを競うモードです。スコアが記録され、リーダーボードに掲載されます。"
+        },
+        "training": {
+          "title": "トレーニングモード",
+          "description": "時間制限なしで、自分のペースで取り組めるモードです。スコアは記録されません。"
+        }
+      },
       "tutorial": {
         "title": "チュートリアル",
         "description": "チェス盤の3種類の対称性（ファイル、ランク、点対称）について学びます。",
@@ -613,7 +679,6 @@
         "next": "次へ",
         "start": "始める",
         "startChallenge": "チャレンジ開始",
-        "switchToTraining": "📖 トレーニングモードで練習する",
         "steps": {
           "intro": {
             "title": "ボードの対称性とは",
@@ -669,8 +734,6 @@
       "howToPlayDescription": "以下のような問題が繰り返し出題されます。表示されたマスが白か黒かを答えましょう。",
       "white": "白",
       "black": "黒",
-      "correct": "正解",
-      "incorrect": "不正解",
       "settings": "ゲーム設定",
       "timeLimit": "制限時間",
       "seconds": "秒",
@@ -678,12 +741,21 @@
       "timeRemaining": "残り時間",
       "finished": "練習完了！",
       "correctAnswers": "正解数",
-      "accuracy": "正解率",
       "timeTaken": "所要時間",
-      "averageTime": "平均時間",
       "requiredKnowledge": "関連記事",
       "viewArticle": "マスの色について学ぶ",
-      "articleDescription": "マスが明るいか暗いかを素早く識別する方法を学ぶ"
+      "articleDescription": "マスが明るいか暗いかを素早く識別する方法を学ぶ",
+      "help": {
+        "label": "ヘルプ",
+        "challenge": {
+          "title": "チャレンジモード",
+          "description": "制限時間内にどれほど多く正答できるかを競うモードです。スコアが記録され、リーダーボードに掲載されます。"
+        },
+        "training": {
+          "title": "トレーニングモード",
+          "description": "時間制限なしで、自分のペースで取り組めるモードです。スコアは記録されません。"
+        }
+      }
     },
     "legalMoves": {
       "title": "合法手",
@@ -707,16 +779,12 @@
       "start": "開始",
       "question": "{from}から{to}へ移動できますか？",
       "questionFormat": "{from}から{to}へ移動できますか？",
-      "correct": "正解",
-      "incorrect": "不正解",
       "legal": "できる",
       "illegal": "できない",
       "timeRemaining": "残り時間",
       "finished": "練習完了！",
       "correctAnswers": "正解数",
-      "accuracy": "正解率",
       "timeTaken": "所要時間",
-      "averageTime": "平均時間",
       "relatedArticles": "関連記事",
       "articles": {
         "king": {
@@ -734,6 +802,17 @@
         "bishop": {
           "title": "ビショップの動き",
           "description": "斜め移動のパターンを学ぶ"
+        }
+      },
+      "help": {
+        "label": "ヘルプ",
+        "challenge": {
+          "title": "チャレンジモード",
+          "description": "制限時間内にどれほど多く正答できるかを競うモードです。スコアが記録され、リーダーボードに掲載されます。"
+        },
+        "training": {
+          "title": "トレーニングモード",
+          "description": "時間制限なしで、自分のペースで取り組めるモードです。スコアは記録されません。"
         }
       }
     },
@@ -758,15 +837,12 @@
       "clickSquare": "このマスをクリック",
       "whiteToMove": "白番",
       "blackToMove": "黒番",
-      "correct": "正解",
       "wrong": "不正解",
       "timeRemaining": "残り時間",
       "finished": "クイズ完了！",
       "points": "ポイント",
       "correctAnswers": "正解数",
-      "accuracy": "正解率",
       "timeTaken": "所要時間",
-      "averageTime": "平均時間",
       "session": "練習中",
       "relatedArticles": "関連記事",
       "articles": {
@@ -782,6 +858,21 @@
           "title": "代数表記法",
           "description": "チェスの座標言語をマスターする"
         }
+      },
+      "help": {
+        "label": "ヘルプ",
+        "feedbackSpeed": {
+          "title": "フィードバック速度の設定",
+          "description": "正解・不正解時のエフェクトの再生速度を切り替えられます。この設定はタイム計測には影響せず、フィードバックエフェクトの実行中に制限時間が減ることはありません。"
+        },
+        "challenge": {
+          "title": "チャレンジモード",
+          "description": "制限時間内にどれほど多く正答できるかを競うモードです。スコアが記録され、リーダーボードに掲載されます。"
+        },
+        "training": {
+          "title": "トレーニングモード",
+          "description": "時間制限なしで、自分のペースで取り組めるモードです。スコアは記録されません。"
+        }
       }
     },
     "positionMemory": {
@@ -789,6 +880,8 @@
       "description": "チェスの位置を記憶して再現する能力を訓練",
       "like": "いいね",
       "unlike": "いいね解除",
+      "newReply": "新しい返信 {time}",
+      "justNow": "たった今",
       "session": "練習中",
       "settings": "出題の設定",
       "problemSource": "出題方式",
@@ -931,26 +1024,58 @@
         "tabBoard": "ボード",
         "tabFen": "FEN",
         "positionInvalid": "有効なポジションを設定してください",
-        "flipBoard": "ボードを反転"
+        "flipBoard": "ボードを反転",
+        "clearBoardConfirmTitle": "ボードをクリアしますか？",
+        "clearBoardConfirmMessage": "配置されたすべての駒が削除されます。この操作は取り消せません。",
+        "clearBoardConfirmConfirm": "クリア",
+        "clearBoardConfirmCancel": "キャンセル",
+        "forkBanner": "「{sourceTitle}」からフォーク中"
+      },
+      "edit": {
+        "title": "問題を編集",
+        "submit": "変更を保存",
+        "submitting": "保存中...",
+        "saveError": "予期しないエラーが発生しました。もう一度お試しください。",
+        "notFound": "この問題は見つかりませんでした。",
+        "unauthorized": "自分の問題のみ編集できます。"
       },
       "detail": {
         "title": "ポジション詳細",
         "descriptionSection": "ポジションの説明",
         "solveSection": "問題を解く",
         "start": "開始",
+        "displayMode": "表示形式",
+        "displayModeBoard": "盤面",
+        "displayModeText": "文字",
         "timeLimit": "制限時間",
         "seconds": "{count, plural, other {# 秒}}",
         "createdBy": "作成者",
         "tutorialLink": "チュートリアルを見る",
         "tryAgain": "もう一度挑戦",
-        "backToList": "一覧に戻る"
+        "backToList": "一覧に戻る",
+        "edited": "（編集済み）",
+        "editAction": "編集",
+        "forkAction": "フォーク",
+        "forkedFrom": "フォーク元:",
+        "forkedFromDeleted": "フォーク元は削除されています",
+        "forksSection": "フォーク {count} 件",
+        "usefulSection": "解答に役立つパターン ({count})"
+      },
+      "forksList": {
+        "title": "フォーク一覧",
+        "titleOf": "「{parentTitle}」のフォーク一覧",
+        "breadcrumb": "フォーク一覧",
+        "sectionTitle": "フォーク {count} 件",
+        "empty": "まだフォークはありません。"
       },
       "delete": {
-        "button": "削除",
+        "button": "問題を削除",
         "confirmTitle": "問題を削除",
         "confirmMessage": "この問題を削除しますか？この操作は元に戻せません。",
         "confirm": "削除",
-        "cancel": "キャンセル"
+        "cancel": "キャンセル",
+        "sectionTitle": "危険な操作",
+        "sectionDescription": "問題を削除すると元に戻せません。紐付いているコメントやいいねも一緒に失われ、復旧はできません。"
       }
     },
     "puzzle": {
@@ -1002,7 +1127,8 @@
         "clearBoardConfirmMessage": "配置した駒と入力した解手がすべて削除されます。この操作は取り消せません。",
         "clearBoardConfirmConfirm": "クリア",
         "clearBoardConfirmCancel": "キャンセル",
-        "draftWriteFailed": "下書きを保存できませんでした。ブラウザのストレージが有効か確認してもう一度お試しください。"
+        "draftWriteFailed": "下書きを保存できませんでした。ブラウザのストレージが有効か確認してもう一度お試しください。",
+        "forkBanner": "「{sourceTitle}」からフォーク中"
       },
       "preview": {
         "title": "パズルをプレビュー",
@@ -1015,6 +1141,18 @@
       "blackPieces": "黒の駒",
       "removePieceMode": "駒を削除 - マスをクリックして駒を削除",
       "placingPiece": "配置中:",
+      "like": "いいね",
+      "unlike": "いいね解除",
+      "newReply": "新しい返信 {time}",
+      "justNow": "たった今",
+      "edit": {
+        "title": "パズルを編集",
+        "submit": "変更を保存",
+        "submitting": "保存中...",
+        "saveError": "予期しないエラーが発生しました。もう一度お試しください。",
+        "notFound": "このパズルは見つかりませんでした。",
+        "unauthorized": "自分のパズルのみ編集できます。"
+      },
       "detail": {
         "title": "パズル詳細",
         "descriptionSection": "このパズルについて",
@@ -1025,12 +1163,33 @@
         "blackToMove": "黒の手番",
         "createdBy": "作成者",
         "noPieces": "なし",
-        "like": "いいね",
-        "unlike": "いいね解除"
+        "edited": "（編集済み）",
+        "editAction": "編集",
+        "forkAction": "フォーク",
+        "forkedFrom": "フォーク元:",
+        "forkedFromDeleted": "フォーク元は削除されています",
+        "forksSection": "フォーク {count} 件",
+        "usefulSection": "解答に役立つパターン ({count})"
+      },
+      "forksList": {
+        "title": "フォーク一覧",
+        "titleOf": "「{parentTitle}」のフォーク一覧",
+        "breadcrumb": "フォーク一覧",
+        "sectionTitle": "フォーク {count} 件",
+        "empty": "まだフォークはありません。"
+      },
+      "delete": {
+        "button": "パズルを削除",
+        "confirmTitle": "パズルを削除",
+        "confirmMessage": "このパズルを削除しますか？コメントや解答データも一緒に失われ、復旧はできません。この操作は取り消せません。",
+        "confirm": "削除",
+        "cancel": "キャンセル",
+        "sectionTitle": "危険な操作",
+        "sectionDescription": "パズルを削除すると元に戻せません。紐付いているコメントは文脈を失い、復旧できなくなります。"
       },
       "session": {
         "title": "挑戦",
-        "correct": "正解！\ud83c\udf89",
+        "correct": "正解！🎉",
         "incorrect": "不正解です。もう一度挑戦してください。",
         "showBoard": "ボードを表示",
         "whitePlayed": "白が {move} を指しました",
@@ -1046,8 +1205,12 @@
         "attemptIncorrect": "不正解",
         "backToList": "パズル一覧に戻る",
         "tryAgain": "もう一度",
+        "analyzeOnLichess": "Lichessで解析",
         "viewResult": "結果を見る",
-        "peekCount": "盤面確認: {count}回"
+        "peekCount": "盤面確認: {count}回",
+        "statusSolved": "全問正解",
+        "statusPartial": "{correct}/{total} 正解",
+        "statusRevealed": "解答表示"
       }
     },
     "knightTour": {
@@ -1211,8 +1374,6 @@
       "findPath": "{piece}を{start}から{target}へ移動させる経路を見つけてください",
       "yourPath": "あなたの回答",
       "shortestPath": "最短経路",
-      "correct": "正解",
-      "incorrect": "不正解",
       "badEnd": "ゴールに到達していません",
       "badMove": "不正解",
       "finalTarget": "（自動補完）",
@@ -1242,6 +1403,21 @@
         "title": "設定をリセットしますか？",
         "message": "すべての設定がリセットされ、チュートリアル画面に戻ります。"
       },
+      "help": {
+        "label": "ヘルプ",
+        "tutorial": {
+          "title": "チュートリアル",
+          "description": "初めて利用する方はチュートリアルを閲覧することをおすすめします。"
+        },
+        "challenge": {
+          "title": "チャレンジモード",
+          "description": "制限時間内にどれほど多く正答できるかを競うモードです。スコアが記録され、リーダーボードに掲載されます。"
+        },
+        "training": {
+          "title": "トレーニングモード",
+          "description": "時間制限なしで、自分のペースで取り組めるモードです。スコアは記録されません。"
+        }
+      },
       "tutorial": {
         "title": "チュートリアル",
         "steps": {
@@ -1267,108 +1443,12 @@
         "skip": "スキップ",
         "complete": "基本的な使い方は以上です。\n様々な駒や距離でトレーニングしてみましょう。",
         "restart": "もう一度",
-        "startChallenge": "チャレンジを開始",
-        "switchToTraining": "📖 トレーニングモードで練習する"
+        "startChallenge": "チャレンジを開始"
       }
     },
     "common": {
       "play": "再生",
       "replay": "再生"
-    },
-    "moveSequence": {
-      "title": "約束組手",
-      "description": "一連の指し手を記憶し、脳内でビジュアライズする練習",
-      "betaNotice": "この機能はベータ版であり、予期せぬ不具合が含まれている可能性があります。",
-      "articles": {
-        "algebraicNotation": {
-          "title": "代数表記法",
-          "description": "チェスの標準的な棋譜の読み書きを学ぶ"
-        }
-      },
-      "showBoard": "ボードを表示",
-      "hideBoard": "ボードを隠す",
-      "fenRequired": "FENを入力してください",
-      "pgnRequired": "PGN手順を入力してください",
-      "invalidFen": "無効なFEN形式です",
-      "invalidPgn": "無効なPGN形式です。手順を解析できませんでした。",
-      "invalidMoves": "この局面では無効な手が含まれています",
-      "invalidMove": "無効な手です",
-      "noMovesFound": "手順が見つかりません",
-      "invalidMoveAt": "{index}手目の「{move}」が無効です",
-      "fenLabel": "開始局面（FEN）",
-      "fenPlaceholder": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-      "fenHint": "開始局面のFEN文字列を入力してください",
-      "pgnLabel": "手順（PGN）",
-      "pgnPlaceholder": "1. e4 e5 2. Nf3 Nc6 3. Bb5（最大50手）",
-      "pgnHint": "PGN形式で手順を入力してください",
-      "pgnTooLong": "手順が長すぎます。最大{max}手までです。",
-      "start": "開始",
-      "problemSource": "問題の種類",
-      "presetProblems": "プリセット問題",
-      "enterCustom": "FEN/PGNを入力",
-      "presetDescription": "練習するオープニングを選択",
-      "preview": "プレビュー",
-      "memorizeInstructions": "手順を見て記憶してください",
-      "moves": "手",
-      "pressPlayToStart": "再生ボタンを押して開始",
-      "playingMove": "{total}手中{current}手目",
-      "startRecall": "回答を開始",
-      "progress": "進捗",
-      "moveProgress": "{total}手中{current}手目",
-      "yourMove": "あなたの番",
-      "opponentTurn": "相手の手を待っています...",
-      "switchToSelect": "リスト選択に切り替え",
-      "switchToText": "テキスト入力に切り替え",
-      "switchInputMode": "入力モードを切り替え",
-      "wrongMove": "{move}は間違いです",
-      "perfect": "完璧！",
-      "completed": "完了",
-      "perfectMessage": "全ての手を正しく再現できました！",
-      "completedMessage": "練習セッション完了",
-      "accuracy": "正解率",
-      "correctMoves": "正解数",
-      "moveDetails": "手順の詳細",
-      "correct": "正解",
-      "attempts": "{count, plural, other {#回試行}}",
-      "backToSetup": "設定に戻る",
-      "includeOpponentMoves": "相手の手も入力する",
-      "moveHistory": "入力した手順",
-      "whiteTurn": "白の手番",
-      "blackTurn": "黒の手番",
-      "copyShareLink": "共有リンクをコピー",
-      "shareLinkHelp": "コピーしたURLをブラウザのアドレスバーに入力すると、練習内容を再現できます。友人との共有やバックアップに便利です。",
-      "linkCopied": "リンクをクリップボードにコピーしました",
-      "copyFailed": "コピーに失敗しました",
-      "urlTooLong": "URLが長すぎます（1000文字以内に収めてください）",
-      "url_too_long": "共有URLが長すぎます。PGNを短くしてください。",
-      "invalid_data": "無効な共有URLです",
-      "invalid_fen": "無効なFEN形式が含まれています",
-      "session": "練習中",
-      "endPractice": "練習を終了する",
-      "clickMoveToJump": "クリックで局面を表示",
-      "wrongAttempts": "間違い入力",
-      "tutorial": {
-        "title": "チュートリアル",
-        "description": "手順を見て記憶し、再現するトレーニングです。\n簡単なオープニングで試してみましょう。",
-        "start": "練習を開始",
-        "skip": "スキップ",
-        "watchFirst": "まず再生ボタンを押して手順を見てください"
-      },
-      "aboutFeature": {
-        "title": "この機能について",
-        "description1": "約束組手とは空手やテコンドーなどの武道で行われる、あらかじめ攻防の手順を決めて行う模擬的な組手です。",
-        "description2": "ここでは約束組手のように相手の手を仮定し、正しい手順で応手を打てるように訓練を行います。",
-        "description3": "この練習メニューにより、オープニングを記憶する能力を向上させることができます。"
-      },
-      "tutorialComplete": "基本的な使い方は以上です。\n他のオープニングや、自分がプレイしたゲームの手順にも挑戦してみましょう。",
-      "finishTutorial": "チュートリアルを終了する",
-      "resetSettings": "設定をリセット",
-      "resetSettingsConfirm": {
-        "title": "設定をリセットしますか？",
-        "message": "すべての設定がリセットされ、チュートリアル画面に戻ります。"
-      },
-      "cancel": "キャンセル",
-      "relatedArticles": "関連記事"
     },
     "quadrantAnchors": {
       "title": "4分割アンカー",
@@ -1408,6 +1488,10 @@
       "question": "{square}の対角線は？",
       "diagonalLabel": "対角線 (a1-h8方向)",
       "antiDiagonalLabel": "逆対角線 (h1-a8方向)",
+      "diagonalShortLabel": "対角線",
+      "antiDiagonalShortLabel": "逆対角線",
+      "diagonalDirectionNote": "(a1-h8方向)",
+      "antiDiagonalDirectionNote": "(h1-a8方向)",
       "inputPlaceholder": "例: b1-h7",
       "squarePlaceholder": "??",
       "singleSquarePlaceholder": "例: a1",
@@ -1436,6 +1520,21 @@
       "yourAnswer": "あなたの回答",
       "correctAnswerLabel": "正解",
       "nextProblem": "次の問題",
+      "help": {
+        "label": "ヘルプ",
+        "tutorial": {
+          "title": "チュートリアル",
+          "description": "初めて利用する方はチュートリアルを閲覧することをおすすめします。"
+        },
+        "challenge": {
+          "title": "チャレンジモード",
+          "description": "制限時間内にどれほど多く正答できるかを競うモードです。スコアが記録され、リーダーボードに掲載されます。"
+        },
+        "training": {
+          "title": "トレーニングモード",
+          "description": "時間制限なしで、自分のペースで取り組めるモードです。スコアは記録されません。"
+        }
+      },
       "tutorial": {
         "title": "チュートリアル",
         "skip": "スキップ",
@@ -1457,10 +1556,30 @@
         "next": "次へ",
         "previous": "戻る",
         "startChallenge": "チャレンジ開始",
-        "switchToTraining": "📖 トレーニングモードで練習する",
         "diagonalLegend": "対角線 (a1-h8)",
         "antiDiagonalLegend": "逆対角線 (h1-a8)",
         "trialCorrectAnswer": "正解: {diagonal}, {antiDiagonal}"
+      }
+    },
+    "tags": {
+      "section": "テーマ・チャンク",
+      "help": "テーマは標準語彙(ピン、パスポーンなど)、チャンクは作成者が共有する駒のパターンです。",
+      "placeholder": "テーマやチャンクを検索して追加…",
+      "badge": {
+        "theme": "テーマ",
+        "chunk": "チャンク"
+      },
+      "noResults": "該当なし",
+      "remove": "{label} を外す",
+      "openDetail": "{label} の詳細を表示",
+      "moreItemsHint": "他 {count} 件 — 入力して絞り込み",
+      "detail": {
+        "readingPrefix": "読み: ",
+        "noDescription": "説明はありません。",
+        "viewInGlossary": "用語集で詳しく見る",
+        "viewChunkPage": "チャンクページを見る",
+        "detach": "外す",
+        "close": "閉じる"
       }
     }
   },
@@ -1495,7 +1614,6 @@
     },
     "yourRankings": {
       "title": "あなたのランキング",
-      "noRanks": "まだランキングに参加していません。練習モジュールに挑戦してみましょう！",
       "viewAll": "すべてのランキングを見る"
     },
     "feed": {
@@ -1509,6 +1627,12 @@
       },
       "position": {
         "action": "問題を投稿しました"
+      },
+      "chunk": {
+        "action": {
+          "created": "チャンクの下書きを投稿しました",
+          "published": "チャンクを公開しました"
+        }
       }
     },
     "vsAi": {
@@ -1520,10 +1644,36 @@
       "level": "Lv",
       "moves": "手",
       "recent": "直近"
+    },
+    "help": {
+      "label": "ヘルプ",
+      "vsAi": {
+        "title": "AI と対局",
+        "description": "新規対局を開始するか、進行中の対局を再開できます。"
+      },
+      "feed": {
+        "title": "タイムライン",
+        "description": "オープニングなどのトピックや新しいパズルの問題がフィードとして表示されます。リーダーボード上位の入れ替わりも表示されますが、この種のフィードの表示期間は1ヶ月で、それ以前のものは消えます。"
+      }
     }
   },
   "gamesPage": {
-    "pageTitle": "ゲーム"
+    "pageTitle": "ゲーム",
+    "help": {
+      "label": "ヘルプ",
+      "newGame": {
+        "title": "新しいゲームを始める",
+        "description": "このボタンを押すと AI との対局を開始できます。"
+      },
+      "autoSave": {
+        "title": "対局の自動保存",
+        "description": "対局はお使いの端末に自動保存され、最新の20件まで残ります。詳しくは<link>データの取り扱い</link>をご確認ください。"
+      },
+      "bulkDelete": {
+        "title": "まとめて削除",
+        "description": "「一括削除」から複数のゲームを一度に整理できます。"
+      }
+    }
   },
   "bulkDelete": {
     "title": "ゲームの一括削除",
@@ -1531,11 +1681,8 @@
     "noGames": "削除できるゲームがありません",
     "selectedCount": "{count, plural, other {#個のゲームを選択中}}",
     "selectAll": "すべて選択",
-    "unselectAll": "選択を解除",
     "delete": "削除",
     "cancel": "キャンセル",
-    "processing": "処理中...",
-    "errorDeleting": "削除に失敗しました。もう一度お試しください。",
     "confirmTitle": "選択したゲームを削除しますか？",
     "confirmMessage": "{count}個のゲームを削除してもよろしいですか？この操作は取り消せません。",
     "deletedToast": "{count, plural, other {#個のゲームを削除しました}}",
@@ -1555,7 +1702,8 @@
       "title": "賞状",
       "honorific": "{name} 殿",
       "guestName": "ゲスト",
-      "body": "あなたは Stockfish Level {level} に勝利しました。あなたの高い目隠しチェスの能力を讃え、ここに賞します。"
+      "body": "あなたは Stockfish Level {level} に勝利しました。あなたの高い目隠しチェスの能力を讃え、ここに賞します。",
+      "bodyMaia": "あなたは Maia {rating} ELO に勝利しました。あなたの高い目隠しチェスの能力を讃え、ここに賞します。"
     },
     "youLose": "あなたの負け",
     "check": "チェック",
@@ -1572,6 +1720,9 @@
     "resign": "投了",
     "undo": "待った",
     "moves": "棋譜",
+    "movesPanel": {
+      "viewOps": "この手の操作内訳を表示"
+    },
     "confirmResignTitle": "投了の確認",
     "confirmResignMessage": "本当に投了しますか？ゲームが終了します。",
     "cancel": "キャンセル",
@@ -1603,8 +1754,17 @@
     "saved": "保存済み",
     "postmortem": "感想戦",
     "resultTitle": "ゲーム結果",
+    "gameDetails": {
+      "title": "ゲーム詳細"
+    },
+    "engineInfo": {
+      "title": "対戦相手",
+      "engineLabel": "エンジン",
+      "difficultyLabel": "難易度",
+      "stockfishDifficulty": "レベル {level}",
+      "maiaDifficulty": "{rating} ELO"
+    },
     "operationLog": {
-      "title": "操作ログ",
       "noLogs": "操作ログはまだありません。",
       "columnMove": "手",
       "columnInputMethod": "入力方式",
@@ -1614,7 +1774,42 @@
       "inputMethodText": "テキスト",
       "inputMethodTextAutocomplete": "テキスト(補完)",
       "inputMethodSelect": "リスト",
-      "columnMovePeek": "ヒント"
+      "inputMethodBoard": "盤面",
+      "columnMovePeek": "ヒント",
+      "columnInvalid": "誤入力",
+      "initialSettings": {
+        "title": "初期設定",
+        "notRecorded": "このゲームでは初期設定が記録されていません。",
+        "on": "オン",
+        "off": "オフ",
+        "labelBoardVisibility": "ボード表示",
+        "labelHighlightLastMove": "最終手のハイライト",
+        "labelShowOwnPieces": "自分の駒を表示",
+        "labelShowOpponentPieces": "相手の駒を表示",
+        "labelPieceShape": "駒の形状",
+        "labelPieceColor": "駒の色",
+        "labelPeekMode": "ピーク表示方式",
+        "labelMoveInputMode": "手入力方式"
+      },
+      "changeLog": {
+        "title": "変更履歴",
+        "noChanges": "このゲームでは設定の途中変更はありませんでした。",
+        "columnAtMove": "何手目以降",
+        "columnSetting": "設定項目",
+        "columnChange": "変更"
+      }
+    },
+    "promotionPicker": {
+      "cancel": "昇格をキャンセル",
+      "promoteTo": {
+        "queen": "クイーンに昇格",
+        "rook": "ルークに昇格",
+        "bishop": "ビショップに昇格",
+        "knight": "ナイトに昇格"
+      }
+    },
+    "settings": {
+      "title": "対局設定"
     },
     "showLegalMoves": "合法手を表示",
     "legalMovesList": "合法手一覧：",
@@ -1627,6 +1822,7 @@
         "peekCount": "盤面確認",
         "undoCount": "テイクバック",
         "hintCount": "合法手ヒント",
+        "invalidCount": "誤入力",
         "viewDetails": "ログ",
         "times": "{count, plural, other {#回}}",
         "columnItem": "項目",
@@ -1639,11 +1835,8 @@
     "infoModalTitle": "感想戦について",
     "description": "終了したゲームの棋譜を思い出して再現してみましょう。ここでエンジン評価も行えます。",
     "autoOpponentMoves": "相手の手を自動入力",
-    "autoOpponentMovesDescription": "自分の手だけを入力し、相手の手は自動的に入力されます",
     "inputMove": "手を入力",
     "selectMove": "手を選択",
-    "switchToSelect": "リスト選択に切り替え",
-    "switchToText": "テキスト入力に切り替え",
     "switchInputMode": "入力モードを切り替え",
     "dontKnow": "わからない",
     "autoFillAll": "全て自動入力",
@@ -1651,16 +1844,11 @@
     "confirmAutoFillAllMessage": "残りの全ての手を自動入力します。",
     "correctMove": "正解！",
     "incorrectMove": "違う手です。もう一度試してください。",
-    "logIncorrect": "は間違い",
     "moveNumber": "{number}手目",
-    "yourTurn": "あなたの番",
-    "opponentTurn": "相手の番",
     "completed": "感想戦完了！",
     "completedMessage": "全ての手を正しく再現できました！",
-    "backToGame": "対局に戻る",
     "progress": "進捗: {current} / {total} 手",
     "showBoard": "ボードを表示",
-    "hideBoard": "ボードを隠す",
     "moves": "棋譜",
     "noMovesYet": "手を入力すると、ここに棋譜が表示されます",
     "copyPgn": "PGNをコピー",
@@ -1669,7 +1857,6 @@
     "analyzeOnLichess": "Lichessで解析",
     "moveLog": "手のログ",
     "backToCurrentPosition": "現在の局面に戻る",
-    "configureBoardAppearance": "ボードの外観を設定する",
     "cancel": "キャンセル",
     "save": "保存",
     "guidanceStep1": "対局の手を記憶から入力してください",
@@ -1699,6 +1886,13 @@
     "recoverDescription": "{count}手目から続行します。無効な手はすべて破棄されます。",
     "deleteGame": "ゲームを削除",
     "deleteDescription": "破損したゲームを履歴から削除して、新しく始めます。"
+  },
+  "largeDownloadConsent": {
+    "title": "大きなファイルのダウンロード",
+    "body": "Maia AI を初めて使用する際、{size} のニューラルネットワークモデルをダウンロードします。モバイル回線では通信量にご注意ください。低速な回線では時間がかかる場合があります。",
+    "cachedNote": "初回ダウンロード後はブラウザがモデルをキャッシュするため、以降の対局は即座に開始できます。",
+    "continue": "続ける",
+    "cancel": "キャンセル"
   },
   "newGame": {
     "title": "新規ゲーム",
@@ -1754,10 +1948,38 @@
     "playAsBlack": "黒でプレイ",
     "selectLevel": "AIの強さを選択",
     "levelWithNumber": "レベル {level}",
+    "maiaRatingOption": "{rating} ELO",
     "skillLevelDescription": "レベル1（800 ELO、最も簡単）からレベル20（3200+ ELO、最強）まで。レベルが高いほど思考時間が長くなります。",
+    "selectEngine": "AIエンジンを選択",
+    "engineStockfishLabel": "Stockfish",
+    "engineStockfishDescription": "強さを調整できるオープンソースの強力なエンジン。定番のAI対戦相手です。",
+    "engineMaiaLabel": "Maia",
+    "engineMaiaDescription": "選択した Elo の人間プレイヤーのような指し方をするニューラルネットワーク型エンジン。初回はモデル（約46MB）の読み込みに数秒かかります。",
+    "engineLockedHint": "コイン不足",
+    "engineMaiaCostBadge": "{cost} コイン",
+    "maiaPointModal": {
+      "title": "Maia の対局にはコインが必要",
+      "body": "Maia との対局には1局あたり {cost} コイン必要です。",
+      "balance": "現在の保有コイン: {balance} コイン",
+      "earnLink": "コインの仕組みを見る",
+      "viewPoints": "コインを確認",
+      "close": "閉じる"
+    },
+    "maiaCoinConfirmModal": {
+      "title": "Maia と対局を始めますか？",
+      "body": "この対局を始めると {cost} コインを消費します。",
+      "balance": "現在の保有コイン: {balance} コイン",
+      "confirm": "コインを使って開始",
+      "cancel": "キャンセル"
+    },
+    "helpLabel": "ヘルプを表示",
+    "helpEngineDescription": "Stockfish: 強さを調整できるオープンソースのチェスエンジン。Maia: 数百万局の人間対局で学習されたニューラルネットワーク。選択したレベルの人間プレイヤーのように、コンピュータらしくない手を指します。",
+    "helpSkillLevelDescription": "レベル1（最弱）からレベル20（最強）まで。Stockfish はおよそ800〜3200 ELO、Maia は人間風プレイの1100〜1900 ELO を 20段階のスライダーにマッピングしています。",
+    "helpPositionIntroDescription": "盤上に駒を配置して任意の開始局面を作成できます。AIは、組み立てた局面から思考を開始します。",
+    "helpPgnIntroDescription": "PGN（Portable Game Notation）を貼り付けて、任意の局面から対局できます。特定の変化を研究したり、他で見た棋譜を再現したりするのに便利です。",
+    "helpOpeningIntroDescription": "リストから定跡を選択すると、続けてPGN設定画面に遷移し、そこでエンジン・色・難易度を選んで対局を開始できます。",
     "previewBoard": "ボードをプレビュー",
     "gameSettings": "詳細設定",
-    "showBoardButtonInGame": "AI対局中に「ボードを表示」ボタンを表示する",
     "startGame": "ゲーム開始",
     "cancel": "キャンセル",
     "whiteDescription": "あなたが先手",
@@ -1893,9 +2115,29 @@
     "changesTitle": "規約の変更",
     "changesDescription": "運営者は、必要に応じて本利用規約を変更することがあります。変更後の利用規約は、本ページに掲載した時点で効力を生じるものとします。"
   },
+  "licenses": {
+    "title": "オープンソースライセンス",
+    "description": "本サービスで利用しているオープンソースソフトウェアのライセンス情報",
+    "lastUpdated": "最終更新日: 2026年5月13日",
+    "introduction": "Blindfold Chess は AI 対局機能の提供にあたり、複数のオープンソースのチェスエンジンを利用しています。これらのプロジェクトの作者およびコミュニティに感謝するとともに、本ページで帰属表示およびライセンス情報を明示いたします。",
+    "componentsTitle": "同梱しているオープンソースコンポーネント",
+    "componentsIntro": "以下のコンポーネントは本アプリケーションに同梱されており、関連機能のご利用時にブラウザに配信されます。各エンジンは独立した Web Worker プロセスとして実行され、アプリケーション本体とは UCI と呼ばれるテキストベースの標準プロトコルを介してのみ通信を行います。",
+    "stockfishName": "Stockfish",
+    "stockfishDescription": "オープンソースの強力な UCI チェスエンジン。本サービスでは既定の AI 対局相手として使用しています。",
+    "lc0Name": "Lc0 (Leela Chess Zero)",
+    "lc0Description": "ニューラルネットワークベースのチェスエンジン。本サービスでは Maia の重みファイルを実行するエンジンとして使用しています。",
+    "maiaName": "Maia Chess (ニューラルネットワーク重みファイル)",
+    "maiaDescription": "特定のレーティング帯における人間の指し手を模倣するように学習されたニューラルネットワーク重みファイル。トロント大学 Computational Social Science Lab により開発されています。",
+    "sourceCodeLabel": "ソースコード:",
+    "licenseLabel": "ライセンス:",
+    "licenseValue": "GNU General Public License v3.0",
+    "complianceTitle": "GPL v3 コンプライアンスについて",
+    "complianceIntro": "上記コンポーネントはいずれも GNU General Public License version 3 (GPL v3) のもとで提供されており、本サービスでは改変を加えずにそのまま同梱しています。対応するソースコードは上記の各上流リポジトリで公開されています。",
+    "viewFullLicense": "GPL v3 ライセンス本文を表示",
+    "viewFullLicenseGnu": "GNU Project の公式サイトでも閲覧できます"
+  },
   "company": {
     "title": "運営者情報",
-    "companyInfo": "運営会社情報",
     "companyName": "事業者名",
     "companyNameValue": "富士エンタープライズ",
     "location": "所在地",
@@ -1914,7 +2156,6 @@
     "description": "ご質問やご意見がありましたら、お気軽にお問い合わせください。",
     "form": {
       "name": "お名前",
-      "namePlaceholder": "山田 太郎",
       "nameRequired": "お名前を入力してください",
       "nameMaxLength": "お名前は100文字以内で入力してください",
       "nameInvalid": "お名前に改行を含めることはできません",
@@ -1923,13 +2164,10 @@
       "emailRequired": "メールアドレスを入力してください",
       "emailInvalid": "有効なメールアドレスを入力してください",
       "subject": "件名",
-      "subjectPlaceholder": "お問い合わせの件名",
       "subjectRequired": "件名を入力してください",
       "subjectMaxLength": "件名は200文字以内で入力してください",
       "subjectInvalid": "件名に改行を含めることはできません",
       "message": "お問い合わせ内容",
-      "messagePlaceholder": "お問い合わせ内容を詳しくご記入ください",
-      "messageRequired": "お問い合わせ内容を入力してください",
       "messageMinLength": "お問い合わせ内容は10文字以上で入力してください",
       "messageMaxLength": "お問い合わせ内容は5000文字以内で入力してください",
       "submit": "確認画面へ",
@@ -1984,9 +2222,7 @@
       "title": "ダッシュボード",
       "comingSoon": "準備中...",
       "vsAi": "🤖 AI と対局",
-      "myGames": "ゲーム一覧",
       "newGame": "新規ゲーム",
-      "gameCount": "{count, plural, =0 {ゲームなし} other {#件のゲーム}}",
       "challenge": "🏆 チャレンジ",
       "squareColors": "マスの色",
       "coordinateQuiz": "座標クイズ",
@@ -1995,12 +2231,15 @@
       "boardSymmetry": "ボードの対称性",
       "viewLeaderboard": "リーダーボードを見る →",
       "topics": "💬 トピック",
-      "topicSquares": "マス目",
-      "topicOpenings": "オープニング",
       "welcomeGreeting": "こんにちは、{name} さん",
       "welcomeDefaultName": "プレイヤー",
       "viewMypage": "マイページ",
-      "viewHome": "ホーム"
+      "viewHome": "ホーム",
+      "dailyPuzzleTitle": "今日の問題",
+      "dailyPuzzleAction": "挑戦する",
+      "announcements": "お知らせ",
+      "articles": "記事・ガイド",
+      "viewAll": "すべて見る"
     }
   },
   "AuthStatusDisplay": {
@@ -2117,9 +2356,232 @@
     "pageTitle": "記事",
     "noArticles": "記事はまだありません。",
     "articlesListTitle": "すべての記事",
-    "moreArticles": "その他の記事",
     "articleNotFound": "記事が見つかりません",
     "notTranslatedNotice": "この記事はまだあなたの言語に翻訳されていません。原文を表示しています。"
+  },
+  "chunks": {
+    "listTitle": "チャンク",
+    "listSubtitle": "駒の連携パターン",
+    "editCta": "編集",
+    "statusDraft": "下書き",
+    "statusPublished": "公開済み",
+    "actions": {
+      "publish": "公開する",
+      "publishPending": "公開中…",
+      "publishConfirmTitle": "このチャンクを公開しますか？",
+      "publishConfirmMessage": "公開すると他のユーザーに正式なカタログ項目として表示されます。タイトル・説明・FEN・注釈はロックされます。公開は一方通行のため、内容に問題がないことを確認してください。",
+      "publishConfirmCta": "公開する",
+      "publishConfirmCancel": "キャンセル",
+      "publishDescriptionRequired": "公開するには説明を入力してください。",
+      "publishNeedsDescriptionTitle": "公開には説明文が必要です",
+      "publishNeedsDescriptionMessage": "公開済みのチャンクは正式なカタログ項目として扱われるため、他のプレイヤーがパターンを理解できるよう説明文が必要です。編集ページから説明を追加してから、改めて公開してください。",
+      "publishNeedsDescriptionCta": "編集ページを開く"
+    },
+    "detail": {
+      "descriptionSection": "説明",
+      "noDescription": "説明はまだありません。",
+      "edited": "編集済み",
+      "createdBy": "投稿者",
+      "positionsSection": "ポジション",
+      "positionsDescription": "このチャンクパターンが効果的な問題。",
+      "positionBadge": {
+        "puzzle": "パズル",
+        "memory": "記憶"
+      }
+    },
+    "list": {
+      "newCta": "新規チャンク",
+      "empty": "まだチャンクはありません。",
+      "emptyDrafts": "編集リクエストを募集中の下書きはまだありません。",
+      "filterAriaLabel": "ステータスでチャンクを絞り込む",
+      "filter": {
+        "all": "全て",
+        "drafts": "編集リクエスト募集中",
+        "published": "公開済み"
+      },
+      "feedbackChip": {
+        "title": "タイトル意見募集",
+        "description": "説明意見募集"
+      }
+    },
+    "new": {
+      "title": "新規チャンク"
+    },
+    "edit": {
+      "title": "{name} を編集",
+      "breadcrumb": "編集"
+    },
+    "form": {
+      "fields": {
+        "fen": "代表 FEN",
+        "title": "タイトル",
+        "slug": "スラッグ",
+        "description": "説明"
+      },
+      "hints": {
+        "fen": "パターンを示す FEN を入力してください。キングなしの盤面も受け付けます。",
+        "slugCreate": "半角小文字英数字とハイフンのみ（例：「rook-battery」）。下書き中は変更できますが、公開後はロックされます。",
+        "slugLocked": "スラッグは公開後にロックされます（カタログ URL として固定）。",
+        "slugDraftEditable": "下書き中のみ編集できます。スラッグを変更すると URL も変わるため、共有済みのリンクは再共有が必要です。"
+      },
+      "actions": {
+        "create": "チャンクを作成",
+        "creating": "作成中…",
+        "save": "変更を保存",
+        "saving": "保存中…",
+        "delete": "削除",
+        "deleting": "削除中…",
+        "generateFromTitle": "タイトルから生成",
+        "continueToPreview": "プレビューへ進む"
+      },
+      "errors": {
+        "invalidFen": "FEN として正しく解釈できません。",
+        "titleRequired": "タイトルを入力してください。",
+        "slugRequired": "スラッグを入力してください。",
+        "draftWriteFailed": "下書きをブラウザに保存できませんでした。ストレージの空き容量や設定をご確認ください。",
+        "signInRequired": "サインインしてください。",
+        "banned": "アカウントが停止されています。",
+        "rateLimited": "投稿が多すぎます。しばらく時間をおいてください。",
+        "slugTaken": "このスラッグは既に使われています。別の名前を選んでください。",
+        "notFound": "このチャンクは存在しません。",
+        "unauthorized": "自分が作成したチャンクのみ編集できます。",
+        "alreadyDeleted": "このチャンクは既に削除されています。",
+        "cannotEditPublished": "このチャンクは公開済みのため編集できません。公開は一方通行です。修正したい場合は一度削除して新たに作成してください。",
+        "descriptionRequired": "このチャンクは公開する前に説明を入力する必要があります。",
+        "invalidFeedbackTopic": "不明なフィードバック項目です。ページを再読み込みしてもう一度お試しください。"
+      },
+      "draft": {
+        "toggleLabel": "下書きとして保存",
+        "toggleHint": "下書きは他のユーザーにも公開されます（名称の提案を受けやすくするため）が、編集可能なままです。タイトルと説明が固まったら詳細ページから公開できます。"
+      },
+      "feedbackTopics": {
+        "legend": "どの項目について意見が欲しいですか？",
+        "hint": "チェックした項目は詳細ページで強調表示され、提案者にどこへの意見が歓迎されているかが伝わります。",
+        "options": {
+          "title": "タイトルがこれでいいか不安",
+          "description": "説明が適切か不安"
+        }
+      },
+      "delete": {
+        "confirmTitle": "このチャンクを削除しますか？",
+        "confirmBody": "カタログから非表示になります。リンク済みのポジションには参照が残りますが、公開ページからは表示されなくなります。",
+        "confirm": "削除",
+        "cancel": "キャンセル"
+      },
+      "tabBoard": "盤面",
+      "tabFen": "FEN",
+      "sideToMove": "手番",
+      "sideWhite": "白",
+      "sideBlack": "黒",
+      "flipBoard": "盤を反転",
+      "clearBoard": "盤をクリア",
+      "clearBoardConfirmTitle": "盤面をクリアしますか？",
+      "clearBoardConfirmMessage": "盤上のすべての駒が取り除かれます。このダイアログからは取り消せません。",
+      "clearBoardConfirm": "クリア",
+      "clearBoardCancel": "キャンセル",
+      "draftRestoredBanner": "保存していた下書きを復元しました。",
+      "draftRestoredDiscard": "破棄",
+      "startOverConfirmTitle": "最初からやり直しますか？",
+      "startOverConfirmMessage": "現在の下書きはすべて消去されます。取り消せません。",
+      "startOverConfirm": "やり直す",
+      "startOverCancel": "キャンセル"
+    },
+    "preview": {
+      "title": "チャンクのプレビュー",
+      "createDraftCta": "下書きとして保存",
+      "createPublishedCta": "チャンクを公開",
+      "backToEditCta": "編集に戻る",
+      "createError": "チャンクの作成中にエラーが発生しました。もう一度お試しください。",
+      "statusLabel": "ステータス",
+      "statusDraft": "下書き",
+      "statusPublished": "公開済み"
+    },
+    "editRequests": {
+      "linkLabel": "編集リクエスト",
+      "pageTitle": "編集リクエスト · {name}",
+      "breadcrumb": "編集リクエスト",
+      "currentValuesTitle": "現在の内容",
+      "currentValuesHint": "現時点で暫定的に決まっているタイトルと説明です。下記の提案はこれと比較して表示されます。",
+      "callout": {
+        "body": "このチャンクは下書きです。タイトルや説明の改善提案を受け付けています。",
+        "ownerBodyWithPending": "{count, plural, other {未対応の編集リクエストが # 件届いています。}}",
+        "ownerBodyEmpty": "まだ編集リクエストは届いていません。",
+        "ctaOwner": "編集リクエストを見る",
+        "ctaHasPending": "自分の編集リクエストを確認・取り下げ",
+        "ctaCanSuggest": "編集リクエストを送る",
+        "ctaSignedOut": "サインインして編集リクエストを送る",
+        "topicLeadIn": "投稿者は特に以下の項目への意見を歓迎しています：",
+        "topicLabels": {
+          "title": "タイトル",
+          "description": "説明"
+        }
+      },
+      "help": {
+        "label": "編集リクエストの仕組み",
+        "badge": {
+          "title": "このチャンクは下書きです",
+          "description": "編集リクエストを受け付けています。"
+        },
+        "editRequests": {
+          "title": "編集を提案する",
+          "description": "ここからタイトルや説明文の変更を提案できます。"
+        }
+      },
+      "sectionTitle": "編集リクエスト",
+      "sectionHint": "下書き状態のチャンクには、他のプレイヤーからより適切なタイトルや説明の提案を受け取れます。オーナーが各提案を確認します。",
+      "formWantedLabel": "意見募集中",
+      "alreadyHasPendingNotice": "下のリストに、あなたの未対応の編集リクエストがあります。別の内容を提案するには、まずそれを取り下げてください。",
+      "pendingCount": "{count, plural, other {未対応 # 件}}",
+      "empty": "まだ提案はありません。",
+      "suggestCta": "編集を提案する",
+      "signInToSuggest": "編集を提案するにはサインインしてください。",
+      "formHint": "変更したい箇所のみを編集してください。現在の内容と完全に同じ提案は自動的に拒否されます。",
+      "deletedProposer": "(削除されたユーザー)",
+      "proposerComment": "提案者からの説明",
+      "justNow": "たった今",
+      "status": {
+        "pending": "未対応",
+        "accepted": "採用",
+        "rejected": "却下",
+        "withdrawn": "取り下げ"
+      },
+      "diff": {
+        "titleLabel": "タイトル",
+        "descriptionLabel": "説明",
+        "current": "現在",
+        "proposed": "提案"
+      },
+      "fields": {
+        "title": "提案するタイトル",
+        "description": "提案する説明",
+        "comment": "提案の理由（任意）",
+        "commentPlaceholder": "簡単な理由を添えるとオーナーが判断しやすくなります。"
+      },
+      "actions": {
+        "submit": "提案を送信",
+        "cancel": "キャンセル",
+        "accept": "採用",
+        "reject": "却下",
+        "withdraw": "取り下げ",
+        "acceptConfirmTitle": "この提案を採用しますか？",
+        "acceptConfirmMessage": "提案された内容が直ちにチャンクに反映されます。",
+        "rejectConfirmTitle": "この提案を却下しますか？",
+        "rejectConfirmMessage": "提案者には通知されません。再訪したときに却下されたステータスが見えます。",
+        "withdrawConfirmTitle": "この提案を取り下げますか？",
+        "withdrawConfirmMessage": "オーナーには通知されません。再訪したときに件数が減って見えます。"
+      },
+      "errors": {
+        "signInRequired": "提案を送信するにはサインインしてください。",
+        "banned": "アカウントが停止されています。",
+        "rateLimited": "提案が多すぎます。しばらく時間をおいてください。",
+        "notFound": "この提案またはチャンクは存在しません。",
+        "unauthorized": "この操作を実行する権限がありません。",
+        "alreadyResolved": "この提案は既に処理済みです。",
+        "ownerCannotPropose": "自分が作成したチャンクには提案できません。直接編集してください。",
+        "chunkNotDraft": "このチャンクは公開済みのため、現在は提案を受け付けていません。",
+        "alreadyHasPending": "このチャンクには未対応の編集リクエストがすでに登録されています。別の内容を提案するには先に取り下げてください。"
+      }
+    }
   },
   "announcements": {
     "pageTitle": "お知らせ",
@@ -2166,10 +2628,23 @@
       }
     },
     "step2": {
-      "shortLabel": "ピーク",
-      "title": "盤面ピークモード",
-      "description": "視覚補助として盤面を覗き見する機能を有効にすることができます。",
-      "showBoardButton": "AI対局中に「ボードを表示」ボタンを表示する",
+      "shortLabel": "ボード",
+      "title": "ボード表示",
+      "description": "対局中にチェスボードをどのように表示するかを選びます。駒の表示設定(次のステップ)は、ボードが表示される場合でも適用されます。",
+      "boardVisibilities": {
+        "always": {
+          "label": "常に表示",
+          "description": "対局中はずっとボードを表示します。駒の表示設定(次のステップ)で駒の種類/色をお好みで隠せます。"
+        },
+        "peek": {
+          "label": "必要なときにピーク",
+          "description": "通常はボードを隠し、確認したいときにタップしてピーク表示します。"
+        },
+        "never": {
+          "label": "非表示",
+          "description": "純粋な目隠しモード — 対局中にボードは一切表示されません。"
+        }
+      },
       "modes": {
         "modal": {
           "label": "モーダル",
@@ -2226,15 +2701,12 @@
   },
   "Mypage": {
     "title": "マイページ",
-    "challengeLink": "チャレンジ記録",
     "dashboard": {
       "viewProfile": "公開プロフィール",
       "challengeTitle": "チャレンジ記録",
       "likesTitle": "いいねした投稿",
       "postsTitle": "自分の投稿",
       "editProfile": "編集",
-      "interviewTitle": "インタビュー",
-      "beltSystem": "段級位",
       "myRecords": "マイレコード",
       "socialTitle": "ソーシャル",
       "interviewBanner": "インタビューに答えてあなたのことを教えてください",
@@ -2248,11 +2720,11 @@
       "expProgress": "{current} / {next} Exp",
       "expRemaining": "次のレベルまで あと {remaining} Exp",
       "viewExpLeaderboard": "Exp ランキングを見る",
+      "pointsTotal": "{total} コイン",
       "accountTitle": "アカウント",
       "subscriptionTitle": "サブスクリプション",
       "benefitsTitle": "特典",
       "practiceTitle": "練習",
-      "myProblems": "マイ問題",
       "myPositionMemory": "ポジションの記憶",
       "myPuzzles": "パズル"
     },
@@ -2320,19 +2792,70 @@
       "statusActive": "広告非表示が有効です",
       "statusInactive": "現在広告非表示は有効ではありません",
       "activeUntil": "{date}まで",
-      "sourceSubscription": "プラン契約による",
-      "sourceGrants": "特典付与による",
-      "pastBenefits": "過去の特典",
+      "sourceSubscription": "サブスクリプション",
       "learnHowToEarn": "広告非表示特典の獲得方法を見る",
       "viewFullHistory": "すべての履歴を見る",
       "grantPeriod": "{startDate} 〜 {endDate}",
       "grantStatusActive": "有効",
-      "grantStatusUpcoming": "開始予定",
-      "grantStatusExpired": "終了"
+      "grantStatusUpcoming": "開始前",
+      "grantStatusExpired": "終了",
+      "tableSourceHeader": "ソース",
+      "tablePeriodHeader": "期間",
+      "tableStatusHeader": "ステータス"
     },
     "grantTypeLabel": {
       "admin_manual": "運営からの付与",
-      "topic_post": "トピック投稿による付与"
+      "topic_post": "トピック投稿による付与",
+      "position_creation": "問題投稿による付与"
+    }
+  },
+  "MypagePoints": {
+    "title": "コイン",
+    "sectionTitle": "コイン残高",
+    "breadcrumbMypage": "マイページ",
+    "balance": {
+      "unit": "コイン",
+      "aboutLink": "コインの仕組みを見る"
+    },
+    "dailyCap": {
+      "label": "本日の作成獲得",
+      "value": "{earned} / {cap}",
+      "note": "問題や投稿の作成で獲得できるコインは1日{cap}コインまでです。毎日UTC0時にリセットされます。"
+    },
+    "redeem": {
+      "title": "コインを広告非表示と交換",
+      "description": "1 コインで広告非表示 1 日と交換できます。すでに有効な広告非表示期間があれば、その後ろに加算されます。",
+      "pointSuffix": "コイン",
+      "daysReceived": "広告非表示 {days} 日分",
+      "submit": "{amount} コインを交換する",
+      "submitting": "交換中…",
+      "successMessage": "完了しました — 広告非表示が {days} 日分追加されました。",
+      "errors": {
+        "invalid_amount": "正の整数を入力してください。",
+        "insufficient_balance": "利用可能なコインが不足しています。",
+        "signInRequired": "サインインしてから交換してください。",
+        "banned": "アカウントが利用制限されています。",
+        "rateLimited": "短時間に交換しすぎました。しばらく経ってから再度お試しください。"
+      }
+    },
+    "history": {
+      "title": "履歴",
+      "empty": "コイン関連の履歴はありません。",
+      "learnHowToEarn": "獲得方法を確認する",
+      "headerDate": "日付",
+      "headerEvent": "種別",
+      "headerDelta": "増減",
+      "truncatedNote": "最新の履歴のみを表示しています。",
+      "kind": {
+        "post_grant": "投稿によるコイン獲得",
+        "post_clawback": "投稿削除によるコイン取消",
+        "redemption": "広告非表示との交換",
+        "purchase": "コイン購入",
+        "admin_grant": "運営からの付与",
+        "maia_game": "Maia との対局",
+        "like_grant": "いいねによるコイン獲得",
+        "other": "調整"
+      }
     }
   },
   "MypageBenefitHistory": {
@@ -2344,7 +2867,7 @@
     "empty": "付与された特典はありません。",
     "grantPeriod": "{startDate} 〜 {endDate}",
     "statusActive": "有効",
-    "statusUpcoming": "開始予定",
+    "statusUpcoming": "開始前",
     "statusExpired": "終了",
     "statusRevoked": "取り消し"
   },
@@ -2365,14 +2888,16 @@
     "sectionTitle": "作成した問題",
     "empty": "まだ問題を作成していません。",
     "breadcrumbMypage": "マイページ",
-    "breadcrumbProblems": "マイ問題"
+    "breadcrumbProblems": "マイ問題",
+    "editAction": "編集"
   },
   "MypagePuzzles": {
     "title": "マイパズル",
     "sectionTitle": "作成したパズル",
     "empty": "まだパズルを作成していません。",
     "breadcrumbMypage": "マイページ",
-    "breadcrumbProblems": "マイ問題"
+    "breadcrumbProblems": "マイ問題",
+    "editAction": "編集"
   },
   "MypageProblemsIndex": {
     "title": "マイ問題",
@@ -2417,14 +2942,27 @@
     "replyMessage": "{actor} があなたの投稿に返信しました",
     "unknownNotification": "新しい通知があります",
     "announcementMessage": "新しいお知らせ: {title}",
-    "newPostMessage": "{actor} が新しい投稿をしました",
+    "newPostMessage": "{actor} さんが新しい投稿をシェアしました",
+    "newCommentOnTopicMessage": "{actor} さんがあなたの問題にコメントしました",
+    "chunkEditRequestSubmittedMessage": "{actor} さんがあなたのチャンクに編集リクエストを送信しました",
+    "chunkEditRequestAcceptedMessage": "{actor} さんがあなたの編集リクエストを採用しました",
+    "newChunkDraftMessage": "{actor} さんがチャンクの下書きを投稿しました",
+    "chunkPublishedMessage": "{actor} さんがチャンクを公開しました",
     "newPositionMemoryMessage": "{actor} がポジション記憶の問題を作成しました",
     "newPuzzleMessage": "{actor} がパズルを作成しました",
     "achievementSingleMessage": "🏆 {name} を獲得しました",
     "achievementMultipleMessage": "🏆 {count}件のアチーブメントを獲得しました",
     "benefitGrantMessage": {
-      "topic_post": "トピックの投稿のお礼として、{days}日間の広告非表示特典が付与されました",
-      "default": "{days}日間の広告非表示特典が付与されました"
+      "ad_free": {
+        "topic_post": "トピックの投稿のお礼として、{days}日間の広告非表示特典が付与されました",
+        "default": "{days}日間の広告非表示特典が付与されました"
+      }
+    },
+    "pointGrantMessage": {
+      "default": "{amount} コインが付与されました"
+    },
+    "likeCoinGrantMessage": {
+      "default": "コンテンツが評価され、{count} コインを獲得しました"
     }
   },
   "deleteAccount": {
@@ -2452,7 +2990,11 @@
     "accountDeleted": "退会が完了しました",
     "practiceResultSaveFailed": "結果の保存に失敗しました。もう一度お試しください。",
     "positionCreated": "問題を作成しました",
-    "positionDeleted": "問題を削除しました"
+    "positionDeleted": "問題を削除しました",
+    "positionUpdated": "変更を保存しました",
+    "puzzleUpdated": "変更を保存しました",
+    "puzzleDeleted": "パズルを削除しました",
+    "editRequestSubmitted": "編集リクエストを送信しました"
   },
   "setupUsername": {
     "title": "アカウント登録",
@@ -2562,8 +3104,6 @@
     "dashboard": "Dashboard",
     "users": "Users",
     "auditLog": "Audit Log",
-    "totalUsers": "Total Users",
-    "roleAssignments": "Role Assignments",
     "dashboardKpi": {
       "from": "開始日",
       "to": "終了日",
@@ -2598,6 +3138,13 @@
           },
           "positions": {
             "memory": "メモリー"
+          }
+        },
+        "help": {
+          "avgPerActivePoster": {
+            "title": "投稿者あたりの平均",
+            "ariaLabel": "投稿者あたりの平均の説明を表示",
+            "description": "選択期間内の UGC 投稿の総数を、その期間内に少なくとも 1 件の UGC を投稿した個別ユーザー数で割った値です。\n\n複数種類の UGC（例: トピック投稿と保存ポジションの両方）に貢献したユーザーは、2 人ではなく 1 人のアクティブ投稿者として数えます。\n\n論理削除された投稿は分子からもアクティブ投稿者数からも除外されます。"
           }
         }
       }
@@ -2691,8 +3238,6 @@
       "title": "{username} の投稿",
       "email": "メール",
       "username": "ユーザー名",
-      "backToUsers": "ユーザー一覧に戻る",
-      "topic": "トピック",
       "content": "内容",
       "createdAt": "作成日時",
       "status": "ステータス",
@@ -2708,8 +3253,6 @@
       "deleteModalConfirm": "削除を確認",
       "deleteModalDeleting": "削除中...",
       "deleteModalReasonRequired": "理由は必須です",
-      "previousPage": "前へ",
-      "nextPage": "次へ",
       "userNotFound": "ユーザーが見つかりません"
     },
     "auditLogTable": {
@@ -2722,9 +3265,7 @@
       "noLogsFound": "No audit logs found",
       "filterByAction": "Filter by action",
       "filterByUser": "Filter by user",
-      "allActions": "All Actions",
-      "previousPage": "Previous",
-      "nextPage": "Next"
+      "allActions": "All Actions"
     },
     "activityLog": "Activity Log",
     "activityLogTable": {
@@ -2736,9 +3277,39 @@
       "noLogsFound": "No activity logs found",
       "filterByAction": "Filter by action",
       "filterByUser": "Filter by user",
-      "allActions": "All Actions",
-      "previousPage": "Previous",
-      "nextPage": "Next"
+      "allActions": "All Actions"
+    },
+    "positionMemory": "Position Memory",
+    "chunks": "チャンク",
+    "glossary": "用語集",
+    "puzzle": "Puzzle",
+    "topicPosts": {
+      "navLabel": "トピック投稿",
+      "title": "トピック投稿",
+      "filterByUser": "ユーザーで絞り込み",
+      "filterByTopicType": "トピックタイプで絞り込み",
+      "filterByStatus": "ステータスで絞り込み",
+      "allTopicTypes": "すべてのタイプ",
+      "allStatuses": "すべてのステータス",
+      "filterButton": "絞り込み",
+      "content": "内容",
+      "topicType": "トピックタイプ",
+      "topicKey": "トピックキー",
+      "author": "投稿者",
+      "status": "ステータス",
+      "createdAt": "作成日時",
+      "actions": "操作",
+      "active": "公開中",
+      "deleted": "削除済み",
+      "noPostsFound": "投稿が見つかりません。",
+      "deleteButton": "削除",
+      "deleteModalTitle": "投稿を削除",
+      "deleteModalReasonLabel": "削除理由",
+      "deleteModalReasonPlaceholder": "この投稿を削除する理由を入力してください...",
+      "deleteModalCancel": "キャンセル",
+      "deleteModalConfirm": "削除を確認",
+      "deleteModalDeleting": "削除中...",
+      "deleteModalReasonRequired": "理由は必須です"
     },
     "announcements": "Announcements",
     "announcementsTable": {
@@ -2879,46 +3450,119 @@
         "publishedConfirmCancel": "キャンセル"
       }
     },
-    "positionMemory": "Position Memory",
-    "chunks": "チャンク",
-    "puzzle": "Puzzle",
-    "topicPosts": {
-      "navLabel": "トピック投稿",
-      "title": "トピック投稿",
-      "filterByUser": "ユーザーで絞り込み",
-      "filterByTopicType": "トピックタイプで絞り込み",
-      "filterByStatus": "ステータスで絞り込み",
-      "allTopicTypes": "すべてのタイプ",
-      "allStatuses": "すべてのステータス",
-      "filterButton": "絞り込み",
-      "content": "内容",
-      "topicType": "トピックタイプ",
-      "topicKey": "トピックキー",
-      "author": "投稿者",
-      "status": "ステータス",
-      "createdAt": "作成日時",
+    "ads": "広告",
+    "adsManagement": {
+      "title": "広告管理",
+      "banners": "広告バナー",
+      "slot": "スロット",
+      "href": "リンク URL",
+      "imagePath": "画像パス",
+      "imagePreview": "プレビュー",
+      "alt": "代替テキスト",
+      "isActive": "有効",
       "actions": "操作",
-      "active": "公開中",
-      "deleted": "削除済み",
-      "noPostsFound": "投稿が見つかりません。",
-      "deleteButton": "削除",
-      "deleteModalTitle": "投稿を削除",
-      "deleteModalReasonLabel": "削除理由",
-      "deleteModalReasonPlaceholder": "この投稿を削除する理由を入力してください...",
-      "deleteModalCancel": "キャンセル",
-      "deleteModalConfirm": "削除を確認",
-      "deleteModalDeleting": "削除中...",
-      "deleteModalReasonRequired": "理由は必須です",
-      "previousPage": "前へ",
-      "nextPage": "次へ"
+      "edit": "編集",
+      "save": "保存",
+      "cancel": "キャンセル",
+      "saving": "保存中...",
+      "active": "有効",
+      "inactive": "無効",
+      "noBanners": "広告バナーがありません。",
+      "newBanner": "新規バナー",
+      "createTitle": "広告バナーの作成",
+      "slotPlaceholder": "例: native-ad",
+      "hrefPlaceholder": "https://example.com",
+      "imagePathPlaceholder": "/images/ads/banner.png",
+      "altPlaceholder": "広告",
+      "width": "幅",
+      "height": "高さ",
+      "sortOrder": "表示順",
+      "startAt": "開始日時",
+      "endAt": "終了日時",
+      "create": "作成",
+      "creating": "作成中..."
+    },
+    "points": {
+      "title": "ポイント付与",
+      "navLabel": "ポイント付与",
+      "showing": "全 {total} 件中 {from}–{to} 件を表示",
+      "empty": "管理付与の履歴はまだありません。",
+      "columns": {
+        "user": "ユーザー",
+        "amount": "付与額",
+        "reason": "理由",
+        "grantedAt": "付与日時"
+      }
+    },
+    "grants": {
+      "title": "特典付与",
+      "navLabel": "特典付与",
+      "noGrantsFound": "特典が見つかりません",
+      "showing": "全 {total} 件中 {from}–{to} 件を表示",
+      "columns": {
+        "user": "ユーザー",
+        "benefit": "特典",
+        "grantType": "付与種別",
+        "reason": "理由",
+        "period": "期間",
+        "status": "状態",
+        "actions": "操作"
+      },
+      "status": {
+        "revoked": "取消済み",
+        "expired": "期限切れ",
+        "active": "有効"
+      }
+    },
+    "achievements": {
+      "title": "実績",
+      "navLabel": "実績",
+      "description": "実績の定義の管理と達成者の確認を行います。",
+      "noAchievementsFound": "実績が見つかりません",
+      "showing": "全 {total} 件中 {from}–{to} 件を表示",
+      "viewHolders": "達成者を見る",
+      "columns": {
+        "displayName": "名前",
+        "iconKey": "アイコンキー",
+        "slug": "スラグ",
+        "category": "カテゴリ",
+        "repeatable": "繰り返し可能",
+        "displayOrder": "表示順",
+        "holderCount": "達成者数",
+        "actions": "操作"
+      },
+      "yes": "はい",
+      "no": "いいえ",
+      "detail": {
+        "backToList": "実績一覧に戻る",
+        "notFound": "実績が見つかりません",
+        "headerTitle": "実績の詳細",
+        "slug": "スラグ",
+        "category": "カテゴリ",
+        "iconKey": "アイコンキー",
+        "repeatable": "繰り返し可能",
+        "displayOrder": "表示順",
+        "holderCount": "達成者数",
+        "createdAt": "作成日時",
+        "holdersTitle": "達成者",
+        "showingHolders": "全 {total} 名中 {from}–{to} 名を表示",
+        "noHoldersFound": "まだ達成者はいません",
+        "columns": {
+          "username": "ユーザー名",
+          "userId": "ユーザー ID",
+          "achievedAt": "達成日時",
+          "metadata": "メタデータ"
+        },
+        "anonymous": "(プロフィールなし)"
+      }
     }
   },
   "publicProfile": {
     "title": "{displayName}のプロフィール",
+    "pageTitle": "プロフィール",
     "defaultDescription": "{displayName}のBlindfold Chessプロフィール",
     "chessAccounts": "チェスアカウント",
     "bio": "自己紹介",
-    "emptyProfile": "このユーザーはまだプロフィール情報を追加していません。",
     "followers": "フォロワー",
     "followingCount": "フォロー中",
     "follow": "フォローする",
@@ -3007,13 +3651,17 @@
     "moreTopicPosts": "トピックをもっと見る",
     "showMore": "さらに表示",
     "showLess": "閉じる",
-    "grantInfoModal": {
-      "title": "広告非表示特典のご案内",
-      "body": "テキスト付きでトピックを投稿すると、{days}日間の広告非表示特典が自動で付与されます。",
-      "note": "選択式の評価のみの投稿は対象外です。",
-      "confirm": "投稿する",
-      "cancel": "キャンセル"
-    },
+    "permalinkAriaLabel": "この投稿を表示",
+    "replyAriaLabel": "返信を表示・投稿",
+    "hiddenReplies": "返信 {count} 件を非表示",
+    "deletedComment": "[投稿者により削除されました]",
+    "collapseAriaLabel": "スレッドを折りたたむ",
+    "expandAriaLabel": "スレッドを展開",
+    "replyButton": "返信",
+    "sortByLabel": "並び替え",
+    "joinConversation": "コメントする",
+    "communityThoughts": "みんなの考え",
+    "signInToJoin": "サインインしてコメントする",
     "categories": {
       "squares": {
         "title": "マス目",
@@ -3022,6 +3670,10 @@
       "openings": {
         "title": "オープニング",
         "description": "チェスのオープニングを探索・学習しましょう"
+      },
+      "chunks": {
+        "title": "チャンク",
+        "description": "ポジション記憶トレーニングのための駒の連携パターンカタログ"
       }
     },
     "openings": {
@@ -3184,7 +3836,7 @@
         "submit": "投稿する",
         "submitting": "投稿中...",
         "contentOrRatingRequired": "内容を入力するか、少なくとも1つの評価を選択してください",
-        "contentTooLong": "内容は5000文字以内にしてください",
+        "contentTooLong": "内容は2000文字以内にしてください",
         "invalidOpening": "無効なオープニングです",
         "error": "エラーが発生しました。もう一度お試しください。",
         "signInRequired": "投稿するにはサインインが必要です",
@@ -3219,7 +3871,7 @@
         "submit": "返信する",
         "submitting": "返信中...",
         "contentRequired": "内容を入力してください",
-        "contentTooLong": "内容は5000文字以内にしてください",
+        "contentTooLong": "内容は2000文字以内にしてください",
         "error": "エラーが発生しました。もう一度お試しください。",
         "signInRequired": "返信するにはサインインが必要です",
         "loginToReply": "サインインして返信する",
@@ -3244,6 +3896,7 @@
       "title": "マス目",
       "description": "マス目を選んで議論を閲覧・共有しましょう",
       "pageTitle": "Squares",
+      "sectionTitle": "マスを選択",
       "postCount": "{count}件の投稿",
       "noPosts": "まだ投稿がありません。",
       "newPost": "あなたの考えを投稿",
@@ -3275,7 +3928,7 @@
         "submit": "投稿する",
         "submitting": "投稿中...",
         "contentRequired": "内容を入力してください",
-        "contentTooLong": "内容は5000文字以内にしてください",
+        "contentTooLong": "内容は2000文字以内にしてください",
         "error": "エラーが発生しました。もう一度お試しください。",
         "signInRequired": "投稿するにはサインインが必要です",
         "rateLimited": "投稿が多すぎます。しばらくしてからもう一度お試しください。"
@@ -3297,7 +3950,7 @@
         "submit": "返信する",
         "submitting": "返信中...",
         "contentRequired": "内容を入力してください",
-        "contentTooLong": "内容は5000文字以内にしてください",
+        "contentTooLong": "内容は2000文字以内にしてください",
         "error": "エラーが発生しました。もう一度お試しください。",
         "signInRequired": "返信するにはサインインが必要です",
         "loginToReply": "サインインして返信する",
@@ -3316,6 +3969,245 @@
         "cancel": "キャンセル",
         "deleting": "削除中..."
       }
+    },
+    "chunks": {
+      "commentsTitle": "コメント",
+      "postCount": "{count}件のコメント",
+      "noPosts": "まだコメントがありません。最初のコメントを投稿してみましょう！",
+      "signInToComment": "サインインしてコメントする",
+      "readMore": "続きを読む",
+      "detail": {
+        "pageTitle": "チャンクコメント"
+      },
+      "postDetail": {
+        "authorView": "{author}さんの「{name}」についてのコメント",
+        "backToChunk": "「{name}」に戻る"
+      },
+      "sort": {
+        "new": "新着",
+        "popular": "人気",
+        "active": "活発"
+      },
+      "newPostForm": {
+        "contentLabel": "コメント",
+        "contentPlaceholder": "このチャンクについて思うことを共有しましょう...",
+        "replyPermissionLabel": "返信できるユーザー",
+        "replyPermission_everyone": "全員",
+        "replyPermission_followers": "フォロワーのみ",
+        "replyPermission_nobody": "返信不可",
+        "invalidReplyPermission": "無効な返信許可設定です",
+        "submit": "コメントする",
+        "submitting": "投稿中...",
+        "contentRequired": "内容を入力してください",
+        "contentTooLong": "内容は2000文字以内にしてください",
+        "error": "エラーが発生しました。もう一度お試しください。",
+        "signInRequired": "コメントするにはサインインが必要です",
+        "rateLimited": "コメントが多すぎます。しばらくしてからもう一度お試しください。"
+      },
+      "like": "いいね",
+      "unlike": "いいね解除",
+      "newReply": "新しい返信 {time}",
+      "justNow": "たった今",
+      "replies": {
+        "title": "返信",
+        "count": "{count}件の返信",
+        "noReplies": "まだ返信はありません。最初の返信をしてみましょう！",
+        "contentLabel": "返信内容",
+        "contentPlaceholder": "意見を共有しましょう...",
+        "submit": "返信する",
+        "submitting": "返信中...",
+        "contentRequired": "内容を入力してください",
+        "contentTooLong": "内容は2000文字以内にしてください",
+        "error": "エラーが発生しました。もう一度お試しください。",
+        "signInRequired": "返信するにはサインインが必要です",
+        "loginToReply": "サインインして返信する",
+        "rateLimited": "返信が多すぎます。しばらくしてからもう一度お試しください。",
+        "repliesDisabled": "投稿者がこのコメントへの返信を無効化しています。",
+        "followRequired": "投稿者をフォローしているユーザーのみ返信できます。",
+        "replyButton": "返信",
+        "replyingTo": "@{username} に返信",
+        "cancelReply": "キャンセル"
+      },
+      "deletePost": {
+        "button": "削除",
+        "confirmTitle": "コメントを削除",
+        "confirmMessage": "このコメントを削除してもよろしいですか？この操作は取り消せません。",
+        "confirm": "削除する",
+        "cancel": "キャンセル",
+        "deleting": "削除中..."
+      }
+    },
+    "positionMemory": {
+      "commentsTitle": "コメント",
+      "postCount": "{count}件のコメント",
+      "noPosts": "まだコメントがありません。最初のコメントを投稿してみましょう！",
+      "signInToComment": "サインインしてコメントする",
+      "readMore": "続きを読む",
+      "sort": {
+        "new": "新着",
+        "popular": "人気",
+        "active": "活発"
+      },
+      "detail": {
+        "pageTitle": "ポジション記憶コメント"
+      },
+      "postDetail": {
+        "authorView": "{author}さんの「{name}」についてのコメント",
+        "backToPosition": "「{name}」に戻る"
+      },
+      "newPostForm": {
+        "contentLabel": "コメント",
+        "contentPlaceholder": "このポジションについて思うことを共有しましょう...",
+        "submit": "コメントする",
+        "submitting": "投稿中...",
+        "contentRequired": "内容を入力してください",
+        "contentTooLong": "内容は2000文字以内にしてください",
+        "error": "エラーが発生しました。もう一度お試しください。",
+        "signInRequired": "コメントするにはサインインが必要です",
+        "invalidReplyPermission": "無効な返信許可設定です",
+        "rateLimited": "コメントが多すぎます。しばらくしてからもう一度お試しください。"
+      },
+      "like": "いいね",
+      "unlike": "いいね解除",
+      "newReply": "新しい返信 {time}",
+      "justNow": "たった今",
+      "replies": {
+        "title": "返信",
+        "count": "{count}件の返信",
+        "noReplies": "まだ返信はありません。最初の返信をしてみましょう！",
+        "contentLabel": "返信内容",
+        "contentPlaceholder": "意見を共有しましょう...",
+        "submit": "返信する",
+        "submitting": "返信中...",
+        "contentRequired": "内容を入力してください",
+        "contentTooLong": "内容は2000文字以内にしてください",
+        "error": "エラーが発生しました。もう一度お試しください。",
+        "signInRequired": "返信するにはサインインが必要です",
+        "loginToReply": "サインインして返信する",
+        "rateLimited": "返信が多すぎます。しばらくしてからもう一度お試しください。",
+        "repliesDisabled": "投稿者がこのコメントへの返信を無効化しています。",
+        "followRequired": "投稿者をフォローしているユーザーのみ返信できます。",
+        "replyButton": "返信",
+        "replyingTo": "@{username} に返信",
+        "cancelReply": "キャンセル"
+      },
+      "deletePost": {
+        "button": "削除",
+        "confirmTitle": "コメントを削除",
+        "confirmMessage": "このコメントを削除してもよろしいですか？この操作は取り消せません。",
+        "confirm": "削除する",
+        "cancel": "キャンセル",
+        "deleting": "削除中..."
+      }
+    },
+    "positionPuzzle": {
+      "commentsTitle": "コメント",
+      "postCount": "{count}件のコメント",
+      "noPosts": "まだコメントがありません。最初のコメントを投稿してみましょう！",
+      "signInToComment": "サインインしてコメントする",
+      "readMore": "続きを読む",
+      "sort": {
+        "new": "新着",
+        "popular": "人気",
+        "active": "活発"
+      },
+      "detail": {
+        "pageTitle": "パズルコメント"
+      },
+      "postDetail": {
+        "authorView": "{author}さんの「{name}」についてのコメント",
+        "backToPuzzle": "「{name}」に戻る"
+      },
+      "newPostForm": {
+        "contentLabel": "コメント",
+        "contentPlaceholder": "このパズルについて思うことを共有しましょう...",
+        "submit": "コメントする",
+        "submitting": "投稿中...",
+        "contentRequired": "内容を入力してください",
+        "contentTooLong": "内容は2000文字以内にしてください",
+        "error": "エラーが発生しました。もう一度お試しください。",
+        "signInRequired": "コメントするにはサインインが必要です",
+        "invalidReplyPermission": "無効な返信許可設定です",
+        "rateLimited": "コメントが多すぎます。しばらくしてからもう一度お試しください。"
+      },
+      "like": "いいね",
+      "unlike": "いいね解除",
+      "newReply": "新しい返信 {time}",
+      "justNow": "たった今",
+      "replies": {
+        "title": "返信",
+        "count": "{count}件の返信",
+        "noReplies": "まだ返信はありません。最初の返信をしてみましょう！",
+        "contentLabel": "返信内容",
+        "contentPlaceholder": "意見を共有しましょう...",
+        "submit": "返信する",
+        "submitting": "返信中...",
+        "contentRequired": "内容を入力してください",
+        "contentTooLong": "内容は2000文字以内にしてください",
+        "error": "エラーが発生しました。もう一度お試しください。",
+        "signInRequired": "返信するにはサインインが必要です",
+        "loginToReply": "サインインして返信する",
+        "rateLimited": "返信が多すぎます。しばらくしてからもう一度お試しください。",
+        "repliesDisabled": "投稿者がこのコメントへの返信を無効化しています。",
+        "followRequired": "投稿者をフォローしているユーザーのみ返信できます。",
+        "replyButton": "返信",
+        "replyingTo": "@{username} に返信",
+        "cancelReply": "キャンセル"
+      },
+      "deletePost": {
+        "button": "削除",
+        "confirmTitle": "コメントを削除",
+        "confirmMessage": "このコメントを削除してもよろしいですか？この操作は取り消せません。",
+        "confirm": "削除する",
+        "cancel": "キャンセル",
+        "deleting": "削除中..."
+      }
+    },
+    "spoiler": {
+      "toggleLabel": "解法を含む",
+      "overlayTitle": "ネタバレを含みます",
+      "overlayHint": "タップで表示",
+      "overlayAriaLabel": "パズルの解法を含む可能性のあるコメントを表示"
+    },
+    "edit": {
+      "button": "編集",
+      "save": "保存",
+      "cancel": "キャンセル",
+      "saving": "保存中...",
+      "editedLabel": "(編集済み)",
+      "editedTitle": "最終編集 {date}",
+      "contentRequired": "本文を入力してください",
+      "contentTooLong": "本文は2000文字以内にしてください",
+      "error": "エラーが発生しました。もう一度お試しください。",
+      "signInRequired": "編集するにはサインインしてください",
+      "rateLimited": "編集回数の上限に達しました。しばらくしてからお試しください。",
+      "notFound": "この投稿は存在しません。",
+      "unauthorized": "自分の投稿のみ編集できます。",
+      "alreadyDeleted": "この投稿は削除されています。"
+    },
+    "removeAttachment": {
+      "button": "添付を削除",
+      "removeImageAriaLabel": "画像{index}を削除",
+      "removing": "削除中...",
+      "confirmTitle": "添付を削除しますか？",
+      "confirmMessage": "添付ファイルだけが投稿から外れます。投稿本体は残ります。",
+      "confirm": "削除",
+      "cancel": "キャンセル",
+      "error": "添付を削除できませんでした。もう一度お試しください。",
+      "attachmentNotFound": "この添付はすでに存在しません。",
+      "rateLimited": "添付変更の上限に達しました。しばらくしてからお試しください。"
+    },
+    "addAttachment": {
+      "button": "添付を追加",
+      "attaching": "追加中...",
+      "invalidFen": "有効な FEN を入力してください。",
+      "error": "添付を追加できませんでした。もう一度お試しください。",
+      "signInRequired": "添付するにはサインインしてください。",
+      "rateLimited": "添付試行の上限に達しました。しばらくしてからお試しください。",
+      "alreadyAttached": "この投稿にはすでに添付があります。先に既存の添付を削除してください。",
+      "alreadyDeleted": "この投稿は削除されています。",
+      "notFound": "この投稿は存在しません。",
+      "unauthorized": "自分の投稿にのみ添付できます。"
     }
   },
   "unsavedChanges": {
@@ -3332,9 +4224,20 @@
     "goBack": "戻る",
     "invalidUrl": "指定されたURLは無効です。"
   },
+  "thanks": {
+    "title": "御礼",
+    "sectionTitle": "獲得したコイン",
+    "continueButton": "投稿内容を確認する",
+    "viewPointsButton": "獲得したコインを確認する",
+    "genericMessage": "ご投稿ありがとうございます。",
+    "coinsEarned": "コインを獲得しました",
+    "aboutCoinsLink": "コインの仕組みを見る",
+    "dailyCapNote": "本日の作成によるコイン獲得上限に達したため、付与コインが少なくなっています。上限はUTC0時にリセットされます。"
+  },
   "authPrompt": {
     "title": "サインインして続行",
     "description": "サインインすると、いいねやディスカッションへの参加など、Blindfold Chessをより楽しめます。",
+    "createDescription": "無料ユーザー登録で、作成した内容を保存・公開できます。",
     "signUpButton": "無料ユーザー登録",
     "signInButton": "アカウントをお持ちの方はログイン"
   },
@@ -3398,7 +4301,7 @@
     },
     "moduleFilterLabel": "モジュールフィルター",
     "moduleFilter": {
-      "all": "すべて",
+      "all": "全",
       "coordinate_quiz": "座標クイズ",
       "legal_moves": "合法手",
       "square_colors": "マスの色",
@@ -3441,6 +4344,7 @@
     "backToList": "ランキング一覧へ戻る",
     "viewMore": "ランキングをもっと見る",
     "weeklyRanking": "週間ランキング",
+    "allTimeRanking": "総合ランキング",
     "signUpBanner": {
       "message": "ランキングに参加しよう！",
       "description": "無料アカウントを作成して、スコアを記録し他のプレイヤーと競い合いましょう。",
@@ -3460,8 +4364,7 @@
       "exp": "Exp",
       "level": "レベル"
     },
-    "emptyState": "まだExpの記録がありません。練習を始めてExpを獲得しましょう！",
-    "backToScoreLeaderboard": "スコアランキングへ戻る"
+    "emptyState": "まだExpの記録がありません。練習を始めてExpを獲得しましょう！"
   },
   "validation": {
     "password": {
@@ -3545,11 +4448,8 @@
         "3kyu": "視覚的な補助がなくても、全ての駒でマヌーバリングができること。"
       },
       "tips": "解説",
-      "guide": "解説",
       "tryChallenge": "チャレンジしてみよう",
       "showMore": "もっと見る",
-      "prevPage": "前へ",
-      "nextPage": "次へ",
       "pageOf": "{total}ページ中{current}ページ目",
       "mukyuRequirements": ["代数記法を理解していること"],
       "mukyuRelatedLinks": {
@@ -3640,6 +4540,17 @@
         "anchorPoints": "アンカーポイントによる盤面の把握",
         "blindfoldLegalMoves": "目隠しチェスでのリーガルムーブ判定",
         "diagonals": "ダイアゴナルと逆ダイアゴナルの算出"
+      }
+    },
+    "help": {
+      "label": "ヘルプ",
+      "overview": {
+        "title": "道場(Dojo)",
+        "description": "ランクアップを繰り返し、黒帯まで到達すると低いレートの AI に目隠しチェスで勝てる実力がつくようカリキュラムが組まれています。"
+      },
+      "viewAllRanks": {
+        "title": "段級位一覧",
+        "description": "各ランクの合格条件やガイドなどはここから確認できます。"
       }
     }
   },
@@ -3889,6 +4800,115 @@
       "prevRank": "前の段級位: {rankName} ガイド",
       "nextRank": "次の段級位: {rankName} ガイド"
     }
+  },
+  "attachment": {
+    "input": {
+      "show": "ゲームを添付",
+      "hide": "添付を閉じる",
+      "label": "ゲーム（PGN または Lichess の URL）",
+      "placeholder": "Lichess の対局 URL または PGN を貼り付け…",
+      "modeHint": "Lichess の対局 URL（lichess.org/…）、chess.com の emboard URL、Lichess の埋め込み URL、または PGN を貼り付けてください。[Link] ヘッダ付きの chess.com PGN は自動で帰属情報が付与されます。"
+    },
+    "label": {
+      "anonymize": "対局者名を匿名化",
+      "anonymizeHint": "保存時に White / Black ヘッダを「Player 1」「Player 2」に置き換えます。"
+    },
+    "preview": {
+      "loading": "プレビュー生成中…"
+    },
+    "card": {
+      "replayButton": "リプレイを開く",
+      "collapseButton": "リプレイを閉じる",
+      "movesCount": "{count} 手",
+      "headerWhite": "白",
+      "headerBlack": "黒",
+      "headerEvent": "イベント",
+      "headerDate": "日付",
+      "headerSite": "サイト",
+      "sourceLabel": "出典",
+      "viewOnChesscom": "Chess.com で開く",
+      "anonymizedNote": "投稿者により対局者名が匿名化されています。"
+    },
+    "delete": {
+      "confirm": "このコメントから添付ゲームを削除しますか？",
+      "success": "添付を削除しました。"
+    },
+    "error": {
+      "empty": "Lichess URL または PGN を入力するか、添付欄を閉じてください。",
+      "tooLarge": "PGN が大きすぎます。最大サイズは 100 KB です。",
+      "invalidPgn": "PGN として解釈できませんでした。指し手とヘッダを確認してください。",
+      "noMoves": "PGN に指し手がありません。少なくとも 1 手追加してください。",
+      "lichessFetchFailed": "Lichess の対局を取得できませんでした。少し待つか、PGN を直接貼り付けてください。",
+      "lichessNotFound": "Lichess に対局が見つかりませんでした。URL を確認してください。",
+      "lichessRateLimited": "Lichess が混雑しています。少し待つか、PGN を直接貼り付けてください。",
+      "chesscomPgnRequired": "PGN を貼り付けてください。chess.com の対局は自動取得できません。",
+      "chesscomInvalidUrl": "chess.com の URL が不正です。https://www.chess.com/... の形式で貼り付けてください。",
+      "chesscomInvalidPgn": "chess.com の URL の下のテキストが PGN として認識できません。エクスポートした対局本文を貼り付けてください。",
+      "lichessStudyUnsupported": "Lichess の Study URL には対応していません。対局 URL または PGN を貼り付けてください。",
+      "rateLimitedPostWithAttachment": "添付付きの投稿は 1 時間に 5 件までです。"
+    },
+    "embed": {
+      "chesscomDetected": "Chess.com の図を検出しました。",
+      "lichessDetected": "Lichess の埋め込みを検出しました。",
+      "viewOnLichess": "Lichess で開く",
+      "invalidUrl": "埋め込み URL の形式が正しくありません。",
+      "chesscomCardTitle": "Chess.com の図",
+      "lichessCardTitle": "Lichess の対局"
+    },
+    "image": {
+      "label": "画像（任意）",
+      "uploadButton": "画像を追加",
+      "altLabel": "画像の説明（alt テキスト）",
+      "altPlaceholder": "スクリーンリーダー向けに画像を説明してください",
+      "limitHint": "JPEG・PNG・WebP に対応。1 投稿あたり最大 {max} 枚、各 2 MB まで。",
+      "removeButton": "画像を削除",
+      "uploading": "アップロード中…",
+      "deletionDisclosure": "投稿削除後、Storage 上の画像は最大 7 日間アクセス可能な場合があります。",
+      "error": {
+        "fileRequired": "アップロードする画像を選択してください。",
+        "fileTooLarge": "画像が大きすぎます。最大サイズは 2 MB です。",
+        "invalidFileType": "JPEG・PNG・WebP のみ対応しています。",
+        "imageTooLarge": "画像の解像度が大きすぎます（最大 50 メガピクセル）。",
+        "animatedImageNotSupported": "アニメーション画像は対応していません。静止画をアップロードしてください。",
+        "tooManyImages": "1 投稿あたりの画像枚数の上限（{max} 枚）に達しました。",
+        "uploadFailed": "アップロードに失敗しました。再度お試しください。",
+        "rateLimited": "アップロードが多すぎます。しばらく待ってから再度お試しください。"
+      }
+    }
+  },
+  "postFenAttachment": {
+    "error": {
+      "fenRequired": "FEN を入力してください。",
+      "fenTooLong": "FEN が長すぎます。最大 100 文字です。",
+      "invalidFenStructure": "FEN の形式が不正です。盤面・手番・キャスリング・アンパッサンを確認してください。",
+      "invalidFenSemantic": "FEN が合法な局面を表していません。キング・ポーン配置・キャスリング権・アンパッサンを確認してください。",
+      "captionTooLong": "キャプションが長すぎます。最大 200 文字です。",
+      "alreadyAttached": "この投稿には既に FEN が添付されています。",
+      "postNotFound": "投稿が見つかりませんでした。",
+      "notOwner": "FEN は自分の投稿にのみ添付できます。"
+    }
+  },
+  "postVideoAttachment": {
+    "error": {
+      "urlRequired": "YouTube の URL を入力してください。",
+      "inputTooLong": "URL が長すぎます。最大 512 文字です。",
+      "invalidUrl": "URL を解析できませんでした。YouTube のリンクを貼り付けてください。",
+      "protocolNotHttps": "URL は https である必要があります。",
+      "userinfoPresent": "URL にユーザー名・パスワードを含めることはできません。",
+      "fragmentNotAllowed": "URL にフラグメント (#…) を含めることはできません。",
+      "hostNotAllowed": "URL のホストは YouTube ではありません。",
+      "pathnameNotSupported": "対応していない YouTube リンク形式です(watch / shorts / live / embed のみ)。",
+      "paramPollution": "URL に同じクエリパラメータが重複しています。",
+      "invalidId": "YouTube の動画 ID が不正です。",
+      "invalidVideoStructure": "動画リンクを保存できませんでした。別の YouTube URL を試してください。",
+      "tooLong": "動画リンクが長すぎます。最大 512 文字です。",
+      "alreadyAttached": "この投稿には既に動画が添付されています。",
+      "postNotFound": "投稿が見つかりませんでした。",
+      "notOwner": "動画は自分の投稿にのみ添付できます。"
+    }
+  },
+  "postVideoAttachmentRender": {
+    "fallbackTitle": "YouTube 動画"
   },
   "Footer": {
     "resources": "リソース",

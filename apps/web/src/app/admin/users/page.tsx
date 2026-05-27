@@ -29,31 +29,16 @@ import {
   parseAsStringLiteral,
 } from 'nuqs/server';
 
-import { ALL_RANK_SLUGS } from '@/lib/db/data/ranks';
-import { DEFAULT_PAGE_SIZE } from '@/lib/pagination';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 
-import { AdminDataTable } from '../_components/AdminDataTable';
-import { AdminPaginationNav } from '../_components/AdminPaginationNav';
-import { ActiveFilters } from './_components/ActiveFilters';
-import { CountryBarChart } from './_components/CountryBarChart';
 import { ProviderFilter } from './_components/ProviderFilter';
-import { RankBarChart } from './_components/RankBarChart';
-import { SignupMethodChart } from './_components/SignupMethodChart';
-import { StatsChartNav } from './_components/StatsChartNav';
+import { StatsTab } from './_components/StatsTab';
 import { StatusFilter } from './_components/StatusFilter';
-import { UserRow } from './_components/UserRow';
 import { UsernameFilter } from './_components/UsernameFilter';
+import { UsersListTab } from './_components/UsersListTab';
 import { UsersTabNav } from './_components/UsersTabNav';
-import { type AdminUserFilters, buildAdminUsersHref } from './_lib/filters';
-import {
-  fetchCountryStats,
-  fetchRankStats,
-  fetchSignupMethodStats,
-  fetchUsersPageData,
-  getSignupMethod,
-} from './_lib/queries';
+import type { AdminUserFilters } from './_lib/filters';
 import { SIGNUP_METHOD_ORDER } from './_lib/signup-method';
 
 // Whitelist for the `provider` URL param. Includes '' (= no filter / default).
@@ -161,7 +146,7 @@ export default async function AdminUsersPage({
       </div>
 
       {tab === 'list' ? (
-        <UsersListContent
+        <UsersListTab
           adminClient={adminClient}
           page={page}
           filters={filters}
@@ -170,222 +155,8 @@ export default async function AdminUsersPage({
           t={t}
         />
       ) : (
-        <StatsContent
-          adminClient={adminClient}
-          filters={filters}
-          providerNames={providerNames}
-          t={t}
-        />
+        <StatsTab adminClient={adminClient} filters={filters} providerNames={providerNames} t={t} />
       )}
-    </div>
-  );
-}
-
-async function UsersListContent({
-  adminClient,
-  page,
-  filters,
-  providerNames,
-  currentUser,
-  t,
-}: {
-  adminClient: ReturnType<typeof createAdminClient>;
-  page: number;
-  filters: AdminUserFilters;
-  providerNames: Record<(typeof SIGNUP_METHOD_ORDER)[number], string>;
-  currentUser: { id: string } | null | undefined;
-  t: Awaited<ReturnType<typeof getTranslations>>;
-}) {
-  const { statusFilter, countryFilter, rankFilter, providerFilter, usernameFilter } = filters;
-  const {
-    users,
-    currentPage,
-    totalPages,
-    totalCount,
-    profileMap,
-    roleMap,
-    subscriptionMap,
-    banReasonMap,
-  } = await fetchUsersPageData(
-    adminClient,
-    page,
-    statusFilter,
-    countryFilter,
-    rankFilter,
-    providerFilter,
-    usernameFilter
-  );
-
-  const buildHref = (p: number) => buildAdminUsersHref(filters, p);
-
-  const rankNames: Record<string, string> = {};
-  for (const slug of ALL_RANK_SLUGS) {
-    rankNames[slug] = t(`stats.rankNames.${slug}`);
-  }
-
-  const rowLabels = {
-    defaultRole: t('usersTable.defaultRole'),
-    premium: t('usersTable.premium'),
-    free: t('usersTable.free'),
-    anonymous: t('usersTable.anonymous'),
-    deleted: t('usersTable.deleted'),
-    banned: t('usersTable.banned'),
-    active: t('usersTable.active'),
-    viewPosts: t('usersTable.viewPosts'),
-    viewActivity: t('usersTable.viewActivity'),
-    viewSubscriptions: t('usersTable.viewSubscriptions'),
-    copyUserId: t('usersTable.copyUserId'),
-    copyUserIdSuccess: t('usersTable.copyUserIdSuccess'),
-    ...providerNames,
-  };
-
-  return (
-    <>
-      <ActiveFilters
-        statusFilter={statusFilter}
-        countryFilter={countryFilter}
-        rankFilter={rankFilter}
-        providerFilter={providerFilter}
-        usernameFilter={usernameFilter}
-        rankNames={rankNames}
-        providerNames={providerNames}
-        labels={{
-          clearAll: t('filters.clearAll'),
-          active: t('usersTable.active'),
-          banned: t('usersTable.banned'),
-          anonymous: t('usersTable.anonymous'),
-          deleted: t('usersTable.deleted'),
-          usernameLabel: t('usersTable.usernameLabel'),
-        }}
-      />
-
-      {totalCount > 0 && (
-        <p className="text-sm text-muted-foreground mb-2">
-          Showing {(currentPage - 1) * DEFAULT_PAGE_SIZE + 1}&ndash;
-          {(currentPage - 1) * DEFAULT_PAGE_SIZE + users.length} of {totalCount} users
-        </p>
-      )}
-
-      <AdminDataTable
-        headers={[
-          t('usersTable.columnId'),
-          t('usersTable.email'),
-          t('usersTable.username'),
-          t('usersTable.role'),
-          t('usersTable.plan'),
-          t('usersTable.status'),
-          t('usersTable.signupMethod'),
-          t('usersTable.createdAt'),
-          t('usersTable.actions'),
-        ]}
-        items={users}
-        emptyMessage={t('usersTable.noUsersFound')}
-        renderRow={(user) => (
-          <UserRow
-            key={user.id}
-            user={user}
-            profile={profileMap.get(user.id)}
-            role={roleMap.get(user.id)}
-            hasSubscription={subscriptionMap.has(user.id)}
-            banReason={banReasonMap.get(user.id) ?? null}
-            isCurrentUser={currentUser?.id === user.id}
-            signupMethod={getSignupMethod(user)}
-            labels={rowLabels}
-          />
-        )}
-      />
-
-      <AdminPaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
-    </>
-  );
-}
-
-async function StatsContent({
-  adminClient,
-  filters,
-  providerNames,
-  t,
-}: {
-  adminClient: ReturnType<typeof createAdminClient>;
-  filters: AdminUserFilters;
-  providerNames: Record<(typeof SIGNUP_METHOD_ORDER)[number], string>;
-  t: Awaited<ReturnType<typeof getTranslations>>;
-}) {
-  const { statusFilter, countryFilter, rankFilter, providerFilter, usernameFilter } = filters;
-  const [countryStats, rankStats, signupMethodStats] = await Promise.all([
-    fetchCountryStats(
-      adminClient,
-      statusFilter,
-      countryFilter,
-      rankFilter,
-      providerFilter,
-      usernameFilter
-    ),
-    fetchRankStats(
-      adminClient,
-      statusFilter,
-      countryFilter,
-      rankFilter,
-      providerFilter,
-      usernameFilter
-    ),
-    fetchSignupMethodStats(
-      adminClient,
-      statusFilter,
-      countryFilter,
-      rankFilter,
-      providerFilter,
-      usernameFilter
-    ),
-  ]);
-
-  const rankNames: Record<string, string> = {};
-  for (const slug of ALL_RANK_SLUGS) {
-    rankNames[slug] = t(`stats.rankNames.${slug}`);
-  }
-
-  return (
-    <div className="space-y-6">
-      <div className="bg-card border border-border rounded-lg p-6">
-        <h2 className="text-lg font-semibold mb-4">{t('stats.usersByCountry')}</h2>
-        <StatsChartNav type="country">
-          <CountryBarChart
-            data={countryStats}
-            labels={{
-              noData: t('stats.noData'),
-              users: t('stats.users'),
-            }}
-          />
-        </StatsChartNav>
-      </div>
-
-      <div className="bg-card border border-border rounded-lg p-6">
-        <h2 className="text-lg font-semibold mb-4">{t('stats.usersByRank')}</h2>
-        <StatsChartNav type="rank">
-          <RankBarChart
-            data={rankStats}
-            labels={{
-              noData: t('stats.noData'),
-              users: t('stats.users'),
-            }}
-            rankNames={rankNames}
-          />
-        </StatsChartNav>
-      </div>
-
-      <div className="bg-card border border-border rounded-lg p-6">
-        <h2 className="text-lg font-semibold mb-4">{t('stats.usersBySignupMethod')}</h2>
-        <StatsChartNav type="provider">
-          <SignupMethodChart
-            data={signupMethodStats}
-            labels={{
-              noData: t('stats.noData'),
-              users: t('stats.users'),
-            }}
-            methodNames={providerNames}
-          />
-        </StatsChartNav>
-      </div>
     </div>
   );
 }

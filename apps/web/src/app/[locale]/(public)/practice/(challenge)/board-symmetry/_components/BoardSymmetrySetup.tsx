@@ -1,17 +1,15 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 
-import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FaArrowRight, FaPlay } from 'react-icons/fa';
+import { FaArrowRight } from 'react-icons/fa';
 
 import { SectionTitle } from '@/app/[locale]/_components';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { BOARD_SYMMETRY_TUTORIAL_SKIPPED_KEY } from './BoardSymmetryTutorialSkipLink';
+import { PracticeSetupActions } from '../../_components/PracticeSetupActions';
 
 type Props = {
   locale: Locale;
@@ -19,13 +17,6 @@ type Props = {
 
 export function BoardSymmetrySetup({ locale }: Props) {
   const t = useTranslations('practice.boardSymmetry');
-  const tp = useTranslations('practice');
-  const router = useRouter();
-
-  const handleViewTutorial = () => {
-    localStorage.removeItem(BOARD_SYMMETRY_TUTORIAL_SKIPPED_KEY);
-    router.push(`/${locale}/practice/board-symmetry/tutorial`);
-  };
 
   return (
     <div>
@@ -40,25 +31,21 @@ export function BoardSymmetrySetup({ locale }: Props) {
             <span className="text-lg font-bold">?</span>
           </div>
         </div>
-        <div className="mb-6 text-center">
-          <button onClick={handleViewTutorial} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
-            {t('viewTutorial')}
-          </button>
-        </div>
-
-        <Link href={`/${locale}/practice/board-symmetry/challenge/session`}>
-          <Button asChild variant="primary" size="lg" icon={<FaPlay />} className="w-full">
-            {tp('startChallenge')}
-          </Button>
-        </Link>
-        <div className="mt-4 text-center">
+        <div className="mb-6 text-center" data-tour-id="board-symmetry-tutorial">
           <Link
-            href={`/${locale}/practice/board-symmetry/training#board-symmetry-training-session`}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            href={`/${locale}/practice/board-symmetry/tutorial`}
+            className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}
           >
-            {tp('switchToTraining')}
+            {t('viewTutorial')}
           </Link>
         </div>
+
+        <PracticeSetupActions
+          locale={locale}
+          moduleSlug="board-symmetry"
+          challengeTourId="board-symmetry-challenge"
+          trainingTourId="board-symmetry-training"
+        />
       </div>
     </div>
   );

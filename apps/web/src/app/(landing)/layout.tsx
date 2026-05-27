@@ -78,7 +78,7 @@ export default async function LandingLayout({ children }: { children: React.Reac
   const showBanner = bannerAnnouncement && bannerAnnouncement.id !== dismissedId;
 
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={locale} data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <ThemeScript />
         <JsonLd data={generateWebSiteSchema(locale, t('siteName'))} nonce={nonce} />

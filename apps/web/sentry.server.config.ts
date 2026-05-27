@@ -8,8 +8,12 @@ import { scrubInPlace } from '@/lib/sentry/scrub';
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
 
-  // Adjust this value in production, or use tracesSampler for greater control
-  tracesSampleRate: 1.0,
+  // 10% trace sampling in production to bound Sentry's per-request overhead
+  // (instrumentation CPU on every Function invocation, plus egress to the
+  // Sentry SaaS for each emitted transaction). Mirrors `sentry.edge.config.ts`.
+  // `captureException` runs on a separate path and is unaffected — error
+  // events are still delivered at 100%.
+  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
 
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
   debug: false,

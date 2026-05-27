@@ -2,25 +2,14 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
-import { PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { PageLayout } from '@/app/[locale]/_components';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { ContactConfirm } from '../_components/ContactConfirm';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'contact.confirm' });
-
-  const title = t('title');
-  const description = t('description');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'contact/confirm', title, description }),
-    title: resolveTitle(title, locale),
-    description,
-    robots: 'noindex',
-  };
+  return createPageMetadata({ params, namespace: 'contact.confirm', path: 'contact/confirm' });
 }
 
 export default async function ContactConfirmPage({ params, searchParams }: Props) {
@@ -41,12 +30,8 @@ export default async function ContactConfirmPage({ params, searchParams }: Props
   };
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('confirm.title')}</PageTitle>
-
-      <PagePanel>
-        <ContactConfirm formData={formData} locale={locale} />
-      </PagePanel>
-    </div>
+    <PageLayout title={t('confirm.title')} locale={locale}>
+      <ContactConfirm formData={formData} locale={locale} />
+    </PageLayout>
   );
 }

@@ -59,6 +59,7 @@ export const termsRZ: ChessTerm[] = [
       },
     ],
     category: 'structure',
+    isTheme: true,
   },
   {
     term: 'Setup',
@@ -77,6 +78,7 @@ export const termsRZ: ChessTerm[] = [
     definitionEn:
       "Connected passed pawns. When passed pawns advance in coordination, it's very difficult for the defender to blockade them, often giving the attacker an advantage",
     category: 'endgame',
+    isTheme: true,
   },
   {
     term: 'Strategy',
@@ -111,6 +113,7 @@ export const termsRZ: ChessTerm[] = [
     definitionEn:
       "One of the endgame principles in chess. The rule states that both sides should place their rooks behind a passed pawn. The attacking side supports the pawn's advance from behind, while the defending side maximizes the distance from the pawn to maintain attacking freedom",
     category: 'endgame',
+    isTheme: true,
   },
   {
     term: 'Tempo',
@@ -148,6 +151,7 @@ export const termsRZ: ChessTerm[] = [
     definitionEn:
       "The principle that to break through the opponent's defense, one weakness is not enough; creating a second weakness splits the defense and leads to victory. The opponent must divide defensive resources, resulting in one weakness being exploited",
     category: 'endgame',
+    isTheme: true,
   },
   {
     term: 'Ugly',
@@ -184,6 +188,7 @@ export const termsRZ: ChessTerm[] = [
     definitionEn:
       'Refers to a state where a piece attacks or defends through another piece. Named for the positional relationship where pieces work as if seeing through with X-rays',
     category: 'tactics',
+    isTheme: true,
   },
   {
     term: 'Zugzwang',
@@ -193,6 +198,7 @@ export const termsRZ: ChessTerm[] = [
     definitionEn:
       'Compulsion to move. A position where one must make a move but any move worsens the situation',
     category: 'endgame',
+    isTheme: true,
   },
   {
     term: 'Zwischenzug',
@@ -204,5 +210,6 @@ export const termsRZ: ChessTerm[] = [
       'A German tactical term meaning "in-between move." An unexpected move that temporarily interrupts the normal flow of moves to disrupt the opponent\'s plans. A technique that creates favorable developments by deliberately inserting a different move',
     aliases: ['Intermezzo'],
     category: 'tactics',
+    isTheme: true,
   },
 ];

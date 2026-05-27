@@ -1,7 +1,7 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { Game } from '@/lib/types';
+import type { Game } from '@/lib/games/saved-game-types';
 
 import { GameListClient } from './GameListClient';
 
@@ -74,7 +74,7 @@ function createMockGame(overrides: Partial<Game> & { id: string }): Game {
     lastPlayed: new Date('2024-01-02').toISOString(),
     moves: [],
     playerColor: 'white',
-    skillLevel: 1,
+    engineConfig: { kind: 'stockfish', skillLevel: 1 },
     status: 'in_progress',
     ...overrides,
   };

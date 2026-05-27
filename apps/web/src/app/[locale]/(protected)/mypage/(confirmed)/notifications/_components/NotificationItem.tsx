@@ -23,6 +23,10 @@ import {
   isAchievementGrantedMetadata,
   isAnnouncementMetadata,
   isBenefitGrantMetadata,
+  isChunkEditRequestMetadata,
+  isChunkLifecycleMetadata,
+  isLikeCoinGrantMetadata,
+  isPointGrantMetadata,
   isPositionMetadata,
   isPostMetadata,
   isReplyMetadata,
@@ -85,6 +89,16 @@ export function NotificationItem({ notification, currentUsername }: Props) {
         return t('replyMessage', { actor: actorName });
       case 'new_post':
         return t('newPostMessage', { actor: actorName });
+      case 'new_comment_on_topic':
+        return t('newCommentOnTopicMessage', { actor: actorName });
+      case 'chunk_edit_request_submitted':
+        return t('chunkEditRequestSubmittedMessage', { actor: actorName });
+      case 'chunk_edit_request_accepted':
+        return t('chunkEditRequestAcceptedMessage', { actor: actorName });
+      case 'new_chunk_draft':
+        return t('newChunkDraftMessage', { actor: actorName });
+      case 'chunk_published':
+        return t('chunkPublishedMessage', { actor: actorName });
       case 'new_position': {
         // Exhaustive `PositionType` dispatch — the `never` check at the
         // bottom forces this switch to be updated whenever a new
@@ -119,11 +133,38 @@ export function NotificationItem({ notification, currentUsername }: Props) {
           if (notification.metadata.reason) {
             return notification.metadata.reason;
           }
-          const specificKey = `benefitGrantMessage.${notification.metadata.grantType}`;
+          // Lookup order: benefitType+grantType (most specific) →
+          // benefitType default → unknownNotification. Falling back to a
+          // generic "ad-free benefit" string is deliberately avoided so
+          // that adding a new benefitType forces an explicit i18n entry
+          // instead of silently showing the wrong benefit name.
+          const { benefitType, grantType, durationDays } = notification.metadata;
+          const specificKey = `benefitGrantMessage.${benefitType}.${grantType}`;
           if (t.has(specificKey)) {
-            return t(specificKey, { days: notification.metadata.durationDays });
+            return t(specificKey, { days: durationDays });
           }
-          return t('benefitGrantMessage.default', { days: notification.metadata.durationDays });
+          const benefitDefaultKey = `benefitGrantMessage.${benefitType}.default`;
+          if (t.has(benefitDefaultKey)) {
+            return t(benefitDefaultKey, { days: durationDays });
+          }
+          return t('unknownNotification');
+        }
+        return t('unknownNotification');
+      case 'point_grant':
+        if (isPointGrantMetadata(notification.metadata)) {
+          // Surface the admin's free-form memo verbatim when it exists —
+          // it is almost always more informative than the generic
+          // "you received N points" fallback (e.g., "Compensation for
+          // outage 2026-05-12").
+          if (notification.metadata.reason) {
+            return notification.metadata.reason;
+          }
+          return t('pointGrantMessage.default', { amount: notification.metadata.amount });
+        }
+        return t('unknownNotification');
+      case 'like_coin_grant':
+        if (isLikeCoinGrantMetadata(notification.metadata)) {
+          return t('likeCoinGrantMessage.default', { count: notification.metadata.count });
         }
         return t('unknownNotification');
       case 'achievement_granted':
@@ -148,6 +189,40 @@ export function NotificationItem({ notification, currentUsername }: Props) {
   function getTopicSegment(topicType: string): string {
     if (topicType === 'opening') return 'openings';
     return `${topicType}s`;
+  }
+
+  /**
+   * Build the post-detail URL for a notification keyed off `topicType`.
+   *
+   * `topic_posts` is polymorphic, but the routes that render those posts
+   * are not:
+   *   - `square` / `opening` / `chunk` → `/topics/{segment}/{key}/posts/{postId}`
+   *     (chunks use `/chunks/{slug}/...`) detail page. The page renders the
+   *     OP and every reply as a single-root `CommentNode` tree, where every
+   *     node has `id="post-{id}"` — same anchor scheme as the position
+   *     pages, so reply deep-links use `#post-{replyId}`.
+   *   - `position_memory` / `position_puzzle` → no detail page; the parent
+   *     puzzle / position page renders the same inline tree. Both top-level
+   *     and reply notifications point at `parent#post-{targetId}` (replyId
+   *     for replies, postId for top-level).
+   */
+  function buildPostDetailUrl(
+    topicType: string,
+    topicKey: string,
+    postId: string,
+    replyId?: string
+  ): string {
+    if (topicType === 'position_memory') {
+      const targetId = replyId ?? postId;
+      return `/practice/position-memory/${topicKey}#post-${targetId}`;
+    }
+    if (topicType === 'position_puzzle') {
+      const targetId = replyId ?? postId;
+      return `/practice/puzzle/${topicKey}#post-${targetId}`;
+    }
+    const segment = getTopicSegment(topicType);
+    const baseUrl = `/topics/${segment}/${topicKey}/posts/${postId}`;
+    return replyId ? `${baseUrl}#post-${replyId}` : baseUrl;
   }
 
   function getLink(): string | null {
@@ -180,24 +255,55 @@ export function NotificationItem({ notification, currentUsername }: Props) {
     if (
       (notification.type === 'like' ||
         notification.type === 'reply' ||
-        notification.type === 'new_post') &&
+        notification.type === 'new_post' ||
+        notification.type === 'new_comment_on_topic') &&
       isPostMetadata(notification.metadata)
     ) {
-      const segment = getTopicSegment(notification.metadata.topicType);
-      const base = `/topics/${segment}/${notification.metadata.topicKey}/posts/${notification.metadata.postId}`;
-      if (notification.type === 'reply' && isReplyMetadata(notification.metadata)) {
-        return `${base}#reply-${notification.metadata.replyId}`;
-      }
-      return base;
+      const replyId =
+        notification.type === 'reply' && isReplyMetadata(notification.metadata)
+          ? notification.metadata.replyId
+          : undefined;
+      return buildPostDetailUrl(
+        notification.metadata.topicType,
+        notification.metadata.topicKey,
+        notification.metadata.postId,
+        replyId
+      );
     }
     if (notification.type === 'announcement' && isAnnouncementMetadata(notification.metadata)) {
       return `/announcements/${notification.metadata.slug}`;
+    }
+    if (
+      (notification.type === 'chunk_edit_request_submitted' ||
+        notification.type === 'chunk_edit_request_accepted') &&
+      isChunkEditRequestMetadata(notification.metadata)
+    ) {
+      // Route to the chunk's edit-requests page rather than the
+      // individual request — the page already shows the full per-request
+      // list with the current chunk values for comparison, which is the
+      // context both notification types ask for.
+      return `/chunks/${notification.metadata.slug}/edit-requests`;
+    }
+    if (
+      (notification.type === 'new_chunk_draft' || notification.type === 'chunk_published') &&
+      isChunkLifecycleMetadata(notification.metadata)
+    ) {
+      // Drafts land on the edit-requests page since the call-to-action
+      // is to review the draft and propose changes. Published chunks
+      // route to the chunk's main page — the canonical post.
+      if (notification.type === 'new_chunk_draft') {
+        return `/chunks/${notification.metadata.slug}/edit-requests`;
+      }
+      return `/chunks/${notification.metadata.slug}`;
     }
     if (notification.type === 'achievement_granted' && currentUsername) {
       return `/u/${currentUsername}/achievements`;
     }
     if (notification.type === 'benefit_grant') {
       return '/mypage/benefits';
+    }
+    if (notification.type === 'point_grant' || notification.type === 'like_coin_grant') {
+      return '/mypage/points';
     }
     return null;
   }
@@ -229,7 +335,9 @@ export function NotificationItem({ notification, currentUsername }: Props) {
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground flex-shrink-0">
           <HiTrophy className="h-5 w-5" />
         </div>
-      ) : notification.type === 'benefit_grant' ? (
+      ) : notification.type === 'benefit_grant' ||
+        notification.type === 'point_grant' ||
+        notification.type === 'like_coin_grant' ? (
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground flex-shrink-0">
           <HiGift className="h-5 w-5" />
         </div>
@@ -244,6 +352,7 @@ export function NotificationItem({ notification, currentUsername }: Props) {
           width={40}
           height={40}
           className="rounded-full object-cover h-10 w-10 flex-shrink-0"
+          // Pre-resized 256×256 WebP at upload; bypass Vercel optimization.
           unoptimized
         />
       ) : (

@@ -1,5 +1,5 @@
 import type { LocalStorageGameRepository } from '@/lib/games/local-storage-repository';
-import type { Game } from '@/lib/types';
+import type { Game } from '@/lib/games/saved-game-types';
 
 /**
  * Snapshot of the "saveable" part of a game — everything you'd need to create

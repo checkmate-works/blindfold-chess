@@ -1,9 +1,5 @@
 'use client';
 
-import { useCallback } from 'react';
-
-import Link from 'next/link';
-
 import { Button } from '@/app/_components';
 import { ChessPiece } from '@/app/_components/chess/ChessPiece';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -15,11 +11,11 @@ import { PieceCoordinateInput } from '@/app/[locale]/(public)/practice/_componen
 import { PracticeResultSkeleton } from '@/app/[locale]/(public)/practice/_components/PracticeResultSkeleton';
 import { useAlgebraicKeyboardInput } from '@/app/[locale]/(public)/practice/_hooks/use-algebraic-keyboard-input';
 
-import { useResultPathHover } from '../_hooks/use-result-path-hover';
+import { TrainingChallengeCTA } from '../../_components/TrainingChallengeCTA';
 import { useRoutePlannerGame } from '../_hooks/use-route-planner-game';
 import { useStagedCoordinate } from '../_hooks/use-staged-coordinate';
-import { PIECES } from '../_lib/utils';
-import type { PieceType } from '../_lib/utils';
+import { PIECES } from '../_lib/pieces';
+import type { PieceType } from '../_lib/pieces';
 import { RoutePlannerResultView } from './RoutePlannerResultView';
 
 type Props = {
@@ -37,7 +33,6 @@ export function RoutePlannerSession({
   const tPractice = useTranslations('practice');
 
   const staged = useStagedCoordinate();
-  const resultHover = useResultPathHover();
 
   const {
     gameState,
@@ -51,7 +46,7 @@ export function RoutePlannerSession({
     handleUndo,
     handleSubmitAnswer,
     handleSkip,
-    handleNextProblem: handleNextProblemRaw,
+    handleNextProblem,
     handleEndTraining,
   } = useRoutePlannerGame({
     locale,
@@ -59,12 +54,6 @@ export function RoutePlannerSession({
     mode,
     stagedCoordinate: staged,
   });
-
-  const { resetHover } = resultHover;
-  const handleNextProblem = useCallback(() => {
-    resetHover();
-    handleNextProblemRaw();
-  }, [resetHover, handleNextProblemRaw]);
 
   const isInputActive = gameState === 'playing';
 
@@ -79,12 +68,9 @@ export function RoutePlannerSession({
 
   return (
     <div className="min-h-screen max-w-md mx-auto">
-      <div
-        id="route-planner-session"
-        className="bg-card border border-border rounded-xl p-8 text-center relative overflow-hidden"
-      >
+      <div id="route-planner-session" className="text-center relative overflow-hidden">
         {/* Problem Header */}
-        <div className="flex justify-center items-center gap-6 border-b border-border pb-4 mb-4">
+        <div className="flex justify-center items-center gap-6 pb-4 mb-4">
           <div className="bg-primary/10 p-2 rounded-lg text-primary w-14 h-14 flex items-center justify-center border border-primary/20">
             <ChessPiece type={problem.piece} color="w" size={32} />
           </div>
@@ -143,9 +129,10 @@ export function RoutePlannerSession({
                 selectedRank={staged.selectedRank}
                 onFileToggle={handleFilePress}
                 onRankToggle={handleRankPress}
+                expandOnMobile
               >
                 {/* Answer Action */}
-                <div className="flex pt-4 border-t border-border mt-2">
+                <div className="flex pt-4 mt-2 -mx-4 sm:mx-0">
                   <Button
                     onClick={handleSubmitAnswer}
                     disabled={moves.length === 0 && problem.start === problem.end}
@@ -167,9 +154,6 @@ export function RoutePlannerSession({
             problem={problem}
             result={result}
             moves={moves}
-            highlightedPathIndex={resultHover.highlightedPathIndex}
-            onHoverPathIndex={resultHover.setHoveredPathIndex}
-            onLockPathIndex={resultHover.setLockedPathIndex}
             onNextProblem={handleNextProblem}
             isTraining={true}
             isLastProblem={false}
@@ -205,21 +189,7 @@ export function RoutePlannerSession({
         </div>
       </div>
 
-      {/* Challenge link */}
-      <hr className="border-border mt-8" />
-      <div className="mt-6 text-center">
-        <p className="text-sm text-muted-foreground">{tPractice('trainingModeActive')}</p>
-        <p className="mt-2 text-base font-medium text-foreground">
-          {tPractice('readyForChallenge')}
-        </p>
-        <div className="mt-4">
-          <Link href={`/${locale}/practice/route-planner/challenge`}>
-            <Button asChild variant="primary" size="lg" className="w-full">
-              {tPractice('goToChallenge')}
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <TrainingChallengeCTA challengeHref={`/${locale}/practice/route-planner/challenge`} />
     </div>
   );
 }

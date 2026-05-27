@@ -42,10 +42,12 @@ const inter = Inter({
  * prevents stray URLs (e.g. bare `/pt/...` or `/fr/...`) from throwing
  * 500-level errors inside metadata generation.
  *
- * Nested dynamic segments (e.g. `[locale]/articles/[slug]`,
- * `[locale]/glossary/letter/[letter]`) are unaffected — `dynamicParams` is
- * scoped to the segment it is declared on, so their DB- / on-demand-driven
- * params continue to resolve per their own declarations.
+ * Nested dynamic segments (e.g. `[locale]/articles/[slug]`) are unaffected —
+ * `dynamicParams` is scoped to the segment it is declared on, so their DB-
+ * / on-demand-driven params continue to resolve per their own declarations.
+ * Note: `[locale]/glossary/letter/[letter]` declares its own
+ * `dynamicParams = false` to stop bots from filling the on-demand ISR cache
+ * with non-Latin letter URLs that always resolve to empty results.
  */
 export const generateStaticParams = generateLocaleStaticParams;
 
@@ -193,7 +195,7 @@ export default async function Layout({
   );
 
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={locale} data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <ThemeScript />
         <JsonLd data={generateWebSiteSchema(locale, t('siteName'))} nonce={nonce} />
@@ -234,7 +236,10 @@ export default async function Layout({
             <div className="flex flex-col min-h-screen">
               <Header locale={locale} />
               <main className="flex-1 bg-secondary">
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">{children}</div>
+                {/* pb-0 at <sm: footer sits flush against page content on mobile; py-8 (= pt-8 + sm:pb-8) preserved at ≥sm. */}
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-0 sm:pb-8">
+                  {children}
+                </div>
               </main>
               <Footer locale={locale} />
               {/* Spacer to prevent the fixed MobileTabBar from covering the footer */}

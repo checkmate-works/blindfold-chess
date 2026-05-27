@@ -37,7 +37,7 @@ export function CoordinateQuizSettings({
       />
 
       {/* Feedback Speed */}
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2" data-tour-id="coordinate-quiz-feedback-speed">
         <label className="block text-sm font-medium text-foreground">{t('feedbackSpeed')}</label>
         <div className="flex justify-center gap-4">
           {FEEDBACK_SPEEDS.map((speed) => (

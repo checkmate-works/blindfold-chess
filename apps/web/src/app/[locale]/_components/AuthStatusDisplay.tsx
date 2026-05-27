@@ -57,6 +57,7 @@ export function AuthStatusDisplay({ isAuthenticated, avatarUrl, displayName }: P
               width={32}
               height={32}
               className="w-8 h-8 rounded-full object-cover"
+              // Pre-resized 256×256 WebP at upload; bypass Vercel optimization.
               unoptimized
             />
           ) : (

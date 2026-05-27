@@ -22,8 +22,8 @@ type Props = {
   locale: string;
   showMoreLabel: string;
   justNowLabel: string;
-  newReplyTemplate: string;
   showAds?: boolean;
+  'data-tour-id'?: string;
 };
 
 export function FeedClient({
@@ -32,8 +32,8 @@ export function FeedClient({
   locale,
   showMoreLabel,
   justNowLabel,
-  newReplyTemplate,
   showAds = false,
+  ...rest
 }: Props) {
   const [items, setItems] = useState<FeedItem[]>(initialItems);
   const [cursor, setCursor] = useState<string | null>(initialCursor);
@@ -59,12 +59,11 @@ export function FeedClient({
             locale={locale}
             showMoreLabel={showMoreLabel}
             justNowLabel={justNowLabel}
-            newReplyTemplate={newReplyTemplate}
           />
         </div>
       );
     },
-    [locale, showMoreLabel, justNowLabel, newReplyTemplate]
+    [locale, showMoreLabel, justNowLabel]
   );
 
   const loadMore = useCallback(async () => {
@@ -99,7 +98,7 @@ export function FeedClient({
   }, [cursor, loadMore]);
 
   return (
-    <div>
+    <div {...rest}>
       {displayItems.map((displayItem, index) => renderDisplayItem(index, displayItem))}
       {isLoading && <FeedSkeleton />}
       {cursor && !isLoading && <div ref={sentinelRef} />}

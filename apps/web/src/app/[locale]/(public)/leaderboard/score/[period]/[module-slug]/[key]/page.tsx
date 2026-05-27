@@ -192,9 +192,11 @@ export default async function ScoreLeaderboardDetailPage({ params, searchParams 
         <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
       )}
 
-      <Divider />
-
-      <Breadcrumb items={breadcrumbItems} locale={locale} />
+      {/* Mirror `PageLayout`'s trailing block — see PageLayout.tsx. */}
+      <div className="!mt-4 space-y-4">
+        <Divider />
+        <Breadcrumb items={breadcrumbItems} locale={locale} density="compact" />
+      </div>
     </PagePanel>
   );
 }

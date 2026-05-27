@@ -2,14 +2,9 @@
 
 import { useState } from 'react';
 
-import { TextInput } from '@/app/_components';
-import {
-  AUTH_FORM_LABEL_CLASSES,
-  AUTH_SUBMIT_BUTTON_CLASSES,
-} from '@/app/_components/authFormStyles';
+import { AuthField, AuthSubmitButton } from '@/app/_components/AuthFormFields';
+import { FormErrorBanner } from '@/app/_components/FormErrorBanner';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-
-import { FormErrorMessage } from '@/app/[locale]/_components/FormErrorMessage';
 
 import { forgotPassword } from '../_actions/forgotPassword';
 
@@ -59,29 +54,25 @@ export function ForgotPasswordForm() {
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-sm mx-auto space-y-4">
-      {error && <FormErrorMessage message={error} />}
+      {error && <FormErrorBanner message={error} variant="bordered" />}
 
       <p className="text-sm text-muted-foreground">{t('description')}</p>
 
-      <div>
-        <label htmlFor="email" className={AUTH_FORM_LABEL_CLASSES}>
-          {t('emailLabel')}
-        </label>
-        <TextInput
-          id="email"
-          type="email"
-          inputSize="sm"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          autoComplete="email"
-          placeholder={t('emailPlaceholder')}
-        />
-      </div>
+      <AuthField
+        id="email"
+        type="email"
+        label={t('emailLabel')}
+        value={email}
+        onChange={setEmail}
+        autoComplete="email"
+        placeholder={t('emailPlaceholder')}
+      />
 
-      <button type="submit" disabled={isLoading} className={AUTH_SUBMIT_BUTTON_CLASSES}>
-        {isLoading ? t('submitLoading') : t('submit')}
-      </button>
+      <AuthSubmitButton
+        isLoading={isLoading}
+        idleLabel={t('submit')}
+        loadingLabel={t('submitLoading')}
+      />
     </form>
   );
 }

@@ -4,12 +4,26 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useRouter, useSearchParams } from 'next/navigation';
 
+import { DEFAULT_MAIA_RATING, type MaiaRating } from '@blindfold-chess/features/ai-game/maia';
 import { getPgnHeaders, getPgnHistory } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
-import type { SkillLevel } from '@/lib/types';
+import {
+  DEFAULT_ENGINE,
+  type EngineConfig,
+  type EngineKind,
+  engineConfigToUrlParams,
+} from '@/lib/engines';
+import type { SkillLevel } from '@/lib/games/saved-game-types';
+import { MAIA_GAME_POINT_COST } from '@/lib/points/constants';
+import type { MaiaEngineAccess } from '@/lib/users/can-use-maia';
 
+import { LargeDownloadConsentDialog } from '@/app/[locale]/(public)/games/new/_components/LargeDownloadConsentDialog';
+import { MaiaCoinConfirmModal } from '@/app/[locale]/(public)/games/new/_components/MaiaCoinConfirmModal';
+import { MaiaPointInfoModal } from '@/app/[locale]/(public)/games/new/_components/MaiaPointInfoModal';
 import { useLocalGameSettings } from '@/app/[locale]/(public)/games/new/_hooks/use-local-game-settings';
+import { useMaiaGameLaunch } from '@/app/[locale]/(public)/games/new/_hooks/use-maia-game-launch';
+import { deriveMaiaCardMode } from '@/app/[locale]/(public)/games/new/_lib/maia-launch';
 import { parsePgnWithFen, validatePgn } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -17,11 +31,14 @@ import { PgnPreview } from './PgnPreview';
 import { PgnSetupForm } from './PgnSetupForm';
 import { deriveInitialPgnState } from './_lib/derive-initial-pgn-state';
 
+const MAIA_MODEL_SIZE_LABEL = '46 MB';
+
 type Props = {
   locale: Locale;
+  maiaAccess: MaiaEngineAccess;
 };
 
-export function PgnGameForm({ locale }: Props) {
+export function PgnGameForm({ locale, maiaAccess }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { localSettings, handleSettingsChange } = useLocalGameSettings();
@@ -41,8 +58,11 @@ export function PgnGameForm({ locale }: Props) {
 
   const [color, setColor] = useState<Side>(initial.color ?? 'white');
   const [skillLevel, setSkillLevel] = useState<SkillLevel>(initial.skillLevel ?? 5);
+  const [maiaRating, setMaiaRating] = useState<MaiaRating>(
+    initial.maiaRating ?? DEFAULT_MAIA_RATING
+  );
+  const [engine, setEngine] = useState<EngineKind>(initial.engine ?? DEFAULT_ENGINE);
   const [pgn, setPgn] = useState(initial.pgn);
-  const [isLoading, setIsLoading] = useState(false);
   const [colorManuallySet, setColorManuallySet] = useState(initial.color !== null);
 
   // Parse PGN to get moves array and starting FEN
@@ -101,28 +121,23 @@ export function PgnGameForm({ locale }: Props) {
     setColorManuallySet(true);
   }, []);
 
-  const handleStartGame = () => {
-    setIsLoading(true);
+  const engineConfig: EngineConfig =
+    engine === 'maia' ? { kind: 'maia', rating: maiaRating } : { kind: 'stockfish', skillLevel };
 
-    if (!pgn.trim() || !validatePgn(pgn)) {
-      setIsLoading(false);
-      return;
-    }
-
+  const navigateToGame = () => {
     const parsed = parsePgnWithFen(pgn);
     const moves = parsed.moves;
     const fenToPass = parsed.startingFen;
 
     const params = new URLSearchParams({
       color,
-      skillLevel: skillLevel.toString(),
       gamePrefs: JSON.stringify(localSettings),
+      ...engineConfigToUrlParams(engineConfig),
     });
 
     if (moves && moves.length > 0) {
       params.set('moves', JSON.stringify(moves));
     }
-
     if (fenToPass) {
       params.set('fen', fenToPass);
     }
@@ -130,24 +145,55 @@ export function PgnGameForm({ locale }: Props) {
     router.push(`/${locale}/games/play?${params.toString()}`);
   };
 
+  const launch = useMaiaGameLaunch({ navigateToGame });
+
   const isStartDisabled = !pgn.trim() || !validatePgn(pgn);
   const showDerivedFromPgnHint = pgn.trim() !== '' && validatePgn(pgn) && !colorManuallySet;
 
   return (
-    <PgnSetupForm
-      pgn={pgn}
-      onPgnChange={handlePgnChange}
-      color={color}
-      onColorChange={handleColorChange}
-      skillLevel={skillLevel}
-      onSkillLevelChange={setSkillLevel}
-      localSettings={localSettings}
-      onSettingsChange={handleSettingsChange}
-      showDerivedFromPgnHint={showDerivedFromPgnHint}
-      isStartDisabled={isStartDisabled}
-      isLoading={isLoading}
-      onStartGame={handleStartGame}
-      previewSlot={<PgnPreview pgnMoves={pgnMoves} startingFen={startingFen} color={color} />}
-    />
+    <>
+      <PgnSetupForm
+        pgn={pgn}
+        onPgnChange={handlePgnChange}
+        color={color}
+        onColorChange={handleColorChange}
+        skillLevel={skillLevel}
+        onSkillLevelChange={setSkillLevel}
+        maiaRating={maiaRating}
+        onMaiaRatingChange={setMaiaRating}
+        engine={engine}
+        onEngineChange={setEngine}
+        maiaCardMode={deriveMaiaCardMode(maiaAccess, MAIA_GAME_POINT_COST)}
+        maiaCost={MAIA_GAME_POINT_COST}
+        onMaiaLockedClick={launch.openPointInfo}
+        localSettings={localSettings}
+        onSettingsChange={handleSettingsChange}
+        showDerivedFromPgnHint={showDerivedFromPgnHint}
+        isStartDisabled={isStartDisabled}
+        isLoading={launch.isLoading}
+        onStartGame={() => launch.start(engine)}
+        previewSlot={<PgnPreview pgnMoves={pgnMoves} startingFen={startingFen} color={color} />}
+      />
+      <MaiaCoinConfirmModal
+        isOpen={launch.coinConfirmDialog.isOpen}
+        onConfirm={launch.coinConfirmDialog.onConfirm}
+        onCancel={launch.coinConfirmDialog.onCancel}
+        cost={MAIA_GAME_POINT_COST}
+        spendableBalance={maiaAccess.spendableBalance}
+      />
+      <LargeDownloadConsentDialog
+        isOpen={launch.consentDialog.isOpen}
+        onConfirm={launch.consentDialog.onConfirm}
+        onCancel={launch.consentDialog.onCancel}
+        sizeLabel={MAIA_MODEL_SIZE_LABEL}
+      />
+      <MaiaPointInfoModal
+        isOpen={launch.pointInfoModal.isOpen}
+        onClose={launch.pointInfoModal.onClose}
+        cost={MAIA_GAME_POINT_COST}
+        spendableBalance={maiaAccess.spendableBalance}
+        locale={locale}
+      />
+    </>
   );
 }

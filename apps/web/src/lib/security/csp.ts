@@ -157,7 +157,7 @@ export function buildCspHeader(nonce: string, options: { isDevelopment?: boolean
       (supabaseOrigin ? ` ${supabaseOrigin}` : '') +
       (supabaseWsOrigin ? ` ${supabaseWsOrigin}` : '') +
       ' pagead2.googlesyndication.com adservice.google.com',
-    'frame-src googleads.g.doubleclick.net tpc.googlesyndication.com ep2.adtrafficquality.google www.google.com',
+    'frame-src googleads.g.doubleclick.net tpc.googlesyndication.com ep2.adtrafficquality.google www.google.com www.chess.com www.youtube-nocookie.com',
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",

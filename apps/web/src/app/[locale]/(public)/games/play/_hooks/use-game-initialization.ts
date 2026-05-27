@@ -1,16 +1,16 @@
 import { useMemo } from 'react';
 
-import { isValidSkillLevel } from '@blindfold-chess/features/ai-game';
 import { getStartingFen, validateMoveSequence } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
-import type { SkillLevel } from '@/lib/types';
+import { type EngineConfig, engineConfigFromUrlParams } from '@/lib/engines';
+import { normalisePerGamePreferences } from '@/lib/games/per-game-preferences';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 type UrlParams = {
   playerSide: Side;
-  skillLevel: SkillLevel;
+  engineConfig: EngineConfig;
   gameId: string | undefined;
   startingFen: string | undefined;
   urlMoves: string | null;
@@ -26,7 +26,7 @@ type ValidationErrorDetails = {
 
 type GameInitializationResult = {
   playerSide: Side;
-  initialSkillLevel: SkillLevel;
+  initialEngineConfig: EngineConfig;
   initialGameId: string | undefined;
   initialStartingFen: string | undefined;
   initialMovesFromUrl: AlgebraicNotation[];
@@ -39,13 +39,13 @@ type GameInitializationResult = {
  * Hook to parse and validate URL parameters for game initialization.
  *
  * Handles:
- * - URL parameter parsing (color, skillLevel, gameId, fen, moves)
+ * - URL parameter parsing (color, engine + difficulty, gameId, fen, moves)
  * - Move validation against chess rules
  * - Error detection for invalid moves (triggers redirect)
  */
 export function useGameInitialization(urlParams: UrlParams): GameInitializationResult {
   return useMemo(() => {
-    const { playerSide, skillLevel, gameId, startingFen, urlMoves, gamePrefs } = urlParams;
+    const { playerSide, engineConfig, gameId, startingFen, urlMoves, gamePrefs } = urlParams;
 
     // Get initial moves from URL and validate them
     let parsedMoves: AlgebraicNotation[] = [];
@@ -91,7 +91,7 @@ export function useGameInitialization(urlParams: UrlParams): GameInitializationR
 
     return {
       playerSide,
-      initialSkillLevel: skillLevel,
+      initialEngineConfig: engineConfig,
       initialGameId: gameId,
       initialStartingFen: startingFen,
       initialMovesFromUrl,
@@ -111,7 +111,12 @@ export function parseUrlSearchParams(searchParams: URLSearchParams): UrlParams {
   const gamePrefsParam = searchParams.get('gamePrefs');
   if (gamePrefsParam) {
     try {
-      gamePrefs = JSON.parse(gamePrefsParam);
+      // Run the parsed blob through the same normaliser used by the
+      // localStorage repository so legacy `showBoardButtonInGame` and
+      // missing-newer-field URLs behave like equivalent current ones.
+      // Invalid enum values fall back to safe defaults instead of leaking
+      // into a session and later being persisted as malformed data.
+      gamePrefs = normalisePerGamePreferences(JSON.parse(gamePrefsParam));
     } catch {
       // Invalid JSON, ignore
     }
@@ -120,12 +125,9 @@ export function parseUrlSearchParams(searchParams: URLSearchParams): UrlParams {
   const colorParam = searchParams.get('color');
   const playerSide: Side = colorParam === 'white' || colorParam === 'black' ? colorParam : 'white';
 
-  const parsedSkillLevel = parseInt(searchParams.get('skillLevel') || '5');
-  const skillLevel: SkillLevel = isValidSkillLevel(parsedSkillLevel) ? parsedSkillLevel : 5;
-
   return {
     playerSide,
-    skillLevel,
+    engineConfig: engineConfigFromUrlParams(searchParams),
     gameId: searchParams.get('gameId') || undefined,
     startingFen: searchParams.get('fen') || undefined,
     urlMoves: searchParams.get('moves'),

@@ -3,12 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "main": "index.js",
   "exports": {
     "./base": "./base.js",
     "./next": "./next.js",
-    "./react": "./react.js",
-    ".": "./index.js"
+    "./react": "./react.js"
   },
   "dependencies": {
     "@eslint/js": "^9.39.4",

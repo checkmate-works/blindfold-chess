@@ -9,11 +9,14 @@ import { ADS_HIDDEN_COOKIE_NAME } from './ads-hidden-cookie';
 // <script> must be in the SSR'd HTML so it executes synchronously while the
 // browser parses <head>, before first paint.
 //
-// See `@/lib/theme/ThemeScript.tsx` for the React-DOM source citation
-// explaining why script-as-direct-child-of-<head> does NOT trigger the
-// React 19 warning, and why the `'use client'` + `typeof window` null-on-
-// client pattern is forbidden (it causes a positional hydration mismatch on
-// <head> siblings).
+// React 19 / Next.js 16 dev-mode emits an "Encountered a script tag while
+// rendering React component" warning for inline <script>s in <head>. The
+// warning is silenced once at the page level by a console.error filter
+// installed inline at the top of `ThemeScript`, which is rendered first in
+// <head>. See `@/lib/theme/ThemeScript.tsx` for the full React-DOM source
+// citation, and for why the `'use client'` + `typeof window` null-on-
+// client pattern is forbidden (it causes a positional hydration mismatch
+// on <head> siblings — git history `0f1d2dd8`).
 const SCRIPT = `(function(){try{if(/(?:^|; )${ADS_HIDDEN_COOKIE_NAME}=1(?:;|$)/.test(document.cookie)){document.documentElement.setAttribute('data-ads-hidden','true');}}catch(e){}})();`;
 
 export function AdHideBootstrapScript({ nonce }: { nonce?: string }) {

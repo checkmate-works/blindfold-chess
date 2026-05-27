@@ -159,6 +159,7 @@ describe("calculatePracticeExp", () => {
       expect(getModuleWeight("board_symmetry")).toBe(2.5);
       expect(getModuleWeight("diagonal_quiz")).toBe(15);
       expect(getModuleWeight("route_planner")).toBe(15);
+      expect(getModuleWeight("puzzle")).toBe(12);
     });
   });
 });

@@ -9,7 +9,7 @@ import { JsonLd } from '@/lib/seo/jsonld';
 
 import { GuidePageFooter } from '@/app/[locale]/(public)/guides/_components/GuidePageFooter';
 import { RankHeader } from '@/app/[locale]/(public)/ranks/_components/RankHeader';
-import { Divider, PagePanel, PageTitle, PaginationNav } from '@/app/[locale]/_components';
+import { Divider, PageLayout, PaginationNav } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import {
@@ -75,12 +75,9 @@ export async function renderChapterBody(
   });
 
   return (
-    <div className="space-y-8">
+    <>
       <JsonLd data={learningResourceSchema} nonce={nonce} />
-
-      <PageTitle>{rankName}</PageTitle>
-
-      <PagePanel>
+      <PageLayout title={rankName} locale={locale}>
         <RankHeader beltColor={beltColor}>{chapter.title}</RankHeader>
 
         {renderPageParagraphs({ rankSlug, pageNumber, page: currentPage, tGuides, locale })}
@@ -99,8 +96,8 @@ export async function renderChapterBody(
         {isLastPageOfRank && <RankNavigation ctx={ctx} />}
 
         <GuidePageFooter locale={locale} items={breadcrumbItems} />
-      </PagePanel>
-    </div>
+      </PageLayout>
+    </>
   );
 }
 

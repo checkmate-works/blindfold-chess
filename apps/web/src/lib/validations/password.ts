@@ -9,7 +9,7 @@ export const passwordSchema = z
   .regex(/[a-zA-Z]/, 'missingLetter') // letters_digits: requires at least one letter
   .regex(/\d/, 'missingDigit'); // letters_digits: requires at least one digit
 
-export const PASSWORD_VALIDATION_ERROR_KEYS = [
+const PASSWORD_VALIDATION_ERROR_KEYS = [
   'tooShort',
   'missingLetter',
   'missingDigit',
@@ -27,4 +27,19 @@ export function getPasswordValidationError(password: string): PasswordValidation
   if (result.success) return null;
   const message = result.error.issues[0].message;
   return isPasswordValidationErrorKey(message) ? message : 'weak';
+}
+
+/**
+ * Extract the password-policy error key from a server-action error.
+ *
+ * Server actions report password-policy failures as `password:<key>`.
+ * Returns the `<key>` when `serverError` carries that prefix and the key is
+ * a known validation key; returns `null` otherwise (not a password error,
+ * or an unrecognized key) so the caller can fall back to a generic message.
+ */
+export function parsePasswordServerError(serverError: string): PasswordValidationErrorKey | null {
+  const prefix = 'password:';
+  if (!serverError.startsWith(prefix)) return null;
+  const key = serverError.slice(prefix.length);
+  return isPasswordValidationErrorKey(key) ? key : null;
 }

@@ -4,11 +4,11 @@ import { notFound } from 'next/navigation';
 
 import { readPeekPreferenceFromCookies } from '@/lib/games/peek-cookie.server';
 
+import { PiecesInfo } from '@/app/[locale]/(public)/practice/_components/PiecesInfo';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { PuzzlePiecesInfo } from '../../../_components/PuzzlePiecesInfo';
 import { PuzzleSessionClient } from '../../../_components/session/PuzzleSessionClient';
 import { loadPuzzleWithSolutions } from '../../../_lib/load-puzzle';
 
@@ -73,10 +73,11 @@ export default async function PuzzleSessionPage({ params }: Props) {
         { label: t('session.title') },
       ]}
       locale={locale}
+      density="compact"
     />
   );
 
-  const piecesInfo = <PuzzlePiecesInfo fen={position.fen} locale={locale} />;
+  const piecesInfo = <PiecesInfo fen={position.fen} />;
 
   return (
     <PuzzleSessionClient

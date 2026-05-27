@@ -16,6 +16,8 @@ vi.mock('next/headers', () => ({
   headers: async () => new Headers(),
 }));
 
+const FILTER_FRAGMENT = 'Encountered a script tag while rendering';
+
 /**
  * Regression guard for the SPEC1 saga (commit `0f1d2dd8`, reverted).
  *
@@ -37,9 +39,11 @@ vi.mock('next/headers', () => ({
  * returning null from a Client Component while the server emits a script.
  *
  * See `./ThemeScript.tsx` for the React-DOM source citation
- * (react-dom@19.2.5) proving that script-as-direct-child-of-<head> does
- * not trigger the "Cannot render a <script>" warning, so a Server
- * Component shape is safe.
+ * (Next.js 16.2.x bundled react-dom) explaining the "Encountered a script
+ * tag while rendering" warning that DOES fire for inline <script>s in
+ * <head>, and the dev-only console.error filter that suppresses it at the
+ * source while preserving the Server Component shape (= same React tree on
+ * server and client, no hydration sibling shift).
  */
 describe('inline bootstrap scripts: structural invariant', () => {
   afterEach(() => {
@@ -77,5 +81,47 @@ describe('inline bootstrap scripts: structural invariant', () => {
     const body = script.innerHTML;
     expect(body).toContain(ADS_HIDDEN_COOKIE_NAME);
     expect(body).toContain('document.cookie');
+  });
+});
+
+/**
+ * Branch coverage for the dev-only console.error filter prefix.
+ *
+ * The filter is computed at module-load time from `process.env.NODE_ENV`, so
+ * each branch must load the module under a freshly stubbed env. `vi.stubEnv`
+ * + `vi.resetModules()` + dynamic `await import()` is the standard Vitest
+ * pattern for module-level env-derived constants.
+ */
+describe('ThemeScript dev/prod filter branch', () => {
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllEnvs();
+    vi.resetModules();
+  });
+
+  it('includes the console.error filter prefix when NODE_ENV !== "production"', async () => {
+    vi.stubEnv('NODE_ENV', 'development');
+    vi.resetModules();
+    const { ThemeScript: DevThemeScript } = await import('./ThemeScript');
+
+    const element = await DevThemeScript();
+    const { container } = render(element);
+    const body = container.querySelector('script')!.innerHTML;
+    expect(body).toContain(FILTER_FRAGMENT);
+    expect(body).toContain('console.error');
+    expect(body).toContain(THEME_STORAGE_KEY);
+  });
+
+  it('omits the console.error filter prefix when NODE_ENV === "production"', async () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.resetModules();
+    const { ThemeScript: ProdThemeScript } = await import('./ThemeScript');
+
+    const element = await ProdThemeScript();
+    const { container } = render(element);
+    const body = container.querySelector('script')!.innerHTML;
+    expect(body).not.toContain(FILTER_FRAGMENT);
+    expect(body).not.toContain('console.error');
+    expect(body).toContain(THEME_STORAGE_KEY);
   });
 });

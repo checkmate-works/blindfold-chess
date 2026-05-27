@@ -6,10 +6,14 @@ import { ADSENSE_SLOT_CONTENT_BOTTOM, ADSENSE_SLOT_CONTENT_MIDDLE, IS_LOCAL_DEV 
 import { Link } from '@/i18n/routing';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
+import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { getPaginationParams } from '@/lib/pagination';
 import { createClient } from '@/lib/supabase/server';
 
+import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
+import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
 import { TopicListPageLayout } from '@/app/[locale]/(public)/topics/_components/TopicListPageLayout';
+import { renderAttachment } from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import {
   TOPIC_PAGE_SIZE,
   buildPaginationHref,
@@ -24,10 +28,10 @@ import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { SortTabs } from '../_components';
 import { getPostCountForSquare, getPostsWithReplyMetaPaginated } from '../_lib/queries';
 import { isValidSquare } from '../_lib/squares';
 import { PostCard, SquareHighlightBoard } from './_components';
+import { NewPostForm } from './new/_components';
 
 export const dynamic = 'force-dynamic';
 
@@ -89,6 +93,15 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
 
   const posts = await getPostsWithReplyMetaPaginated(square, limit, offset, user?.id, sortBy);
 
+  // Fetch attachments for the visible page of posts and pre-resolve each
+  // to a ReactNode upstream — PostCard is a client component and cannot
+  // call the server-only `getAttachmentsForPosts` itself. Posts with no
+  // attachment row drop out of the map.
+  const postIds = posts.map((p) => p.id);
+  const attachments = postIds.length > 0 ? await getAttachmentsForPosts(postIds) : new Map();
+  const tVideo = await getTranslations({ locale, namespace: 'postVideoAttachmentRender' });
+  const fallbackVideoTitle = tVideo('fallbackTitle');
+
   const MAX_OPENING_CARDS = 3;
   const visibleOpenings = openingsForSquare.slice(0, MAX_OPENING_CARDS);
   const hasMoreOpenings = openingsForSquare.length > MAX_OPENING_CARDS;
@@ -129,6 +142,30 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
     </>
   );
 
+  const newPostForm = <NewPostForm locale={locale} square={square} />;
+
+  const communitySection = (
+    <section className="space-y-4">
+      <SectionTitle>{t('communityThoughts')}</SectionTitle>
+
+      {user && totalCount === 0 ? (
+        newPostForm
+      ) : (
+        <JoinConversationToggle count={totalCount} joinLabel={t('joinConversation')}>
+          {newPostForm}
+        </JoinConversationToggle>
+      )}
+
+      {totalCount > 0 && (
+        <SortSelect
+          basePath={`/topics/squares/${square}`}
+          translationKey="topics.squares.sort"
+          currentSort={sortBy}
+        />
+      )}
+    </section>
+  );
+
   return (
     <TopicListPageLayout
       locale={locale}
@@ -145,14 +182,20 @@ export default async function SquarePostsPage({ params, searchParams }: Props) {
           <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
         )
       }
-      postCountText={t('squares.postCount', { count: totalCount })}
-      newPostButton={{ href: `/topics/squares/${square}/new`, label: t('squares.newPost') }}
-      sortTabs={<SortTabs square={square} locale={locale} />}
+      communitySection={communitySection}
       hasPosts={posts.length > 0}
-      noPostsText={t('squares.noPosts')}
-      postCards={posts.map((post) => (
-        <PostCard key={post.id} post={post} locale={locale} square={square} />
-      ))}
+      postCards={posts.map((post) => {
+        const att = attachments.get(post.id);
+        return (
+          <PostCard
+            key={post.id}
+            post={post}
+            locale={locale}
+            square={square}
+            attachment={att ? renderAttachment(att, fallbackVideoTitle) : undefined}
+          />
+        );
+      })}
       pagination={{ currentPage, totalPages, buildHref }}
       breadcrumbItems={[
         { label: t('title'), href: '/topics' },

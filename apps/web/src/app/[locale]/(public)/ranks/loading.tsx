@@ -1,28 +1,27 @@
-import { PagePanel, PageTitle } from '@/app/[locale]/_components';
+import { getTranslations } from 'next-intl/server';
+
+import { Divider, PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 
 /**
  * Ranks page loading skeleton.
  *
  * Shown while the server fetches rank definitions and the current user's
  * achievements. Mirrors the page.tsx structure (space-y-8 > PageTitle >
- * PagePanel > SectionTitle + subtitle + SignUpBanner + card grid gap-6)
- * to minimise CLS.
+ * PagePanel > SectionTitle + subtitle + SignUpBanner + card grid gap-6) to
+ * minimise CLS. PageTitle / SectionTitle / subtitle are all static and
+ * resolve from the `ranks` namespace; rank cards (DB-driven) stay as bar
+ * placeholders.
  */
-export default function RanksLoading() {
+export default async function RanksLoading() {
+  const t = await getTranslations('ranks');
+
   return (
     <div className="space-y-8">
-      <PageTitle>
-        <span className="invisible">Loading</span>
-      </PageTitle>
+      <PageTitle>{t('pageTitle')}</PageTitle>
 
       <PagePanel>
-        {/* SectionTitle skeleton */}
-        <div className="border-b border-border pb-2">
-          <div className="h-5 md:h-6 bg-muted rounded w-48 animate-pulse" />
-        </div>
-
-        {/* Subtitle skeleton */}
-        <div className="h-4 bg-muted rounded w-64 animate-pulse" />
+        <SectionTitle>{t('pageTitle')}</SectionTitle>
+        <p className="text-muted-foreground">{t('pageSubtitle')}</p>
 
         {/* SignUpBanner skeleton */}
         <div className="bg-card border border-border rounded-lg p-4 animate-pulse">
@@ -58,6 +57,22 @@ export default function RanksLoading() {
             </div>
           ))}
         </div>
+
+        <Divider />
+
+        {/* Breadcrumb: [Home logo] / Ranks. Single static crumb mirrors
+            `ranks/page.tsx`'s `<Breadcrumb items={[{ label: t('pageTitle') }]} />`. */}
+        <nav aria-label="Breadcrumb" className="mb-4 flex min-h-10 items-end">
+          <ol className="flex flex-wrap items-center gap-x-1 text-sm">
+            <li>
+              <div className="w-6 h-6 rounded-sm bg-muted animate-pulse" />
+            </li>
+            <li className="flex items-center">
+              <span className="mx-1 text-muted-foreground">/</span>
+              <span className="text-foreground font-medium">{t('pageTitle')}</span>
+            </li>
+          </ol>
+        </nav>
       </PagePanel>
     </div>
   );

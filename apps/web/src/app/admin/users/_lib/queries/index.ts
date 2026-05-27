@@ -11,5 +11,4 @@ export {
   fetchRankStats,
   fetchSignupMethodStats,
   fetchUsersPageData,
-  type UsersPageData,
 } from './users-list';

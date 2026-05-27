@@ -12,7 +12,7 @@ export function SquareColorQuestionDisplay({
   return (
     <div className={className}>
       <div
-        className={`text-6xl font-bold mb-4 transition-colors duration-200 ${
+        className={`text-6xl font-bold mb-4 transition-colors duration-200 select-none ${
           lastAnswer
             ? lastAnswer.correct
               ? 'text-success'

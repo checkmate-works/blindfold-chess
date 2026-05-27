@@ -1,47 +1,50 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
 import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
 import { Button, UnsavedChangesDialog } from '@/app/_components';
 import { useRouter } from '@/i18n/routing';
-import { executeMove, getTurnFromFen, validateFen } from '@blindfold-chess/features/chess-core';
-import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { flushSync } from 'react-dom';
-import { FaSyncAlt } from 'react-icons/fa';
 import { FiInfo } from 'react-icons/fi';
 
-import { PUZZLE_NOTE_MAX_LENGTH } from '@/lib/positions/validation';
+import type { ChunkOption } from '@/lib/chunks/types';
+import type { ThemeOption } from '@/lib/themes/types';
 
-import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
-import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
-import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
-import { clearDraft, readDraft, writeDraft } from '../_lib/draft-storage';
-import { SolutionMoveList } from './SolutionMoveList';
+import { useFenBoardEditor } from '../../_hooks/use-fen-board-editor';
+import { useTagSelection } from '../../_hooks/use-tag-selection';
+import { EMPTY_BOARD_FEN } from '../../_lib/board-editor-constants';
+import { buildDefaultPracticeTitle } from '../../_lib/default-title';
+import { useMoveSubmitLabels } from '../_hooks/use-move-submit-labels';
+import { usePuzzleDraftHydration } from '../_hooks/use-puzzle-draft-hydration';
+import { usePuzzleSolutionMoves } from '../_hooks/use-puzzle-solution-moves';
+import { clearDraft, writeDraft } from '../_lib/draft-storage';
+import { validatePuzzleForm } from '../_lib/validate-puzzle-form';
+import { PuzzleFormFields } from './PuzzleFormFields';
 
-const EMPTY_BOARD_FEN = '8/8/8/8/8/8/8/8 w - - 0 1';
-const MAX_SOLUTION_MOVES = 20;
-
-type EditorTab = 'board' | 'fen';
-type SideToMove = 'w' | 'b';
-
-function formatLocalIsoDate(d: Date): string {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-function buildDefaultTitle(displayName: string | undefined): string {
-  if (displayName === undefined) return '';
-  const date = formatLocalIsoDate(new Date());
-  const trimmed = displayName.trim();
-  return trimmed ? `Puzzle ${date} - ${trimmed}` : `Puzzle ${date}`;
-}
+/**
+ * Seed payload when the form is opened via `?from=<id>` on the new page.
+ * The author's display name is intentionally ignored when this is present:
+ * forks copy the source's title verbatim (GitHub-style — repo name carries
+ * over) and the user can edit before submitting. `themeIds` / `chunkIds`
+ * are resolved against `availableThemes` / `availableChunks` the same way
+ * draft hydration does.
+ */
+export type PuzzleForkSeed = {
+  sourceId: string;
+  sourceTitle: string;
+  fen: string;
+  title: string;
+  description: string;
+  moves: string[];
+  notes: string[];
+  themeIds: string[];
+  chunkIds: string[];
+};
 
 type Props = {
   /**
@@ -52,253 +55,166 @@ type Props = {
    * is used.
    */
   displayName?: string;
+  /**
+   * Skip the unsaved-changes navigation guard. Used when the form is
+   * rendered behind a guest sign-up overlay: the guest cannot submit, so
+   * any "dirty" state (e.g. a draft hydrated from a previous logged-in
+   * session) is not theirs to lose, and the guard would otherwise block
+   * the sign-up CTA click with a modal that makes no sense in context.
+   */
+  disableUnsavedGuard?: boolean;
+  /**
+   * Theme + chunk catalog for the tag picker. Loaded server-side so the
+   * picker can render immediately without an extra round-trip and so
+   * draft hydration can resolve persisted IDs to display labels.
+   * Optional with empty defaults so the form stays renderable in tests
+   * and on routes that don't supply this data (e.g. the legacy guest
+   * gate path before sign-in completes).
+   */
+  availableThemes?: ThemeOption[];
+  availableChunks?: ChunkOption[];
+  /**
+   * Fork-source data when the form is opened via `?from=<id>`. When
+   * present, every field is seeded from the source row, the default-title
+   * generator is bypassed, and draft hydration is skipped (an unrelated
+   * leftover draft would silently overwrite the fork's initial state
+   * otherwise). `sourceId` rides through `writeDraft` as `forkedFromId`
+   * and is re-validated server-side at create time.
+   */
+  forkSeed?: PuzzleForkSeed;
 };
 
-function replaceSideToMove(fen: string, side: SideToMove): string {
-  const parts = fen.trim().split(/\s+/);
-  if (parts.length < 2) return fen;
-  parts[1] = side;
-  return parts.join(' ');
-}
-
-function readSideToMove(fen: string): SideToMove {
-  const parts = fen.trim().split(/\s+/);
-  return parts[1] === 'b' ? 'b' : 'w';
-}
-
-export function CreatePuzzleForm({ displayName }: Props = {}) {
+export function CreatePuzzleForm({
+  displayName,
+  disableUnsavedGuard = false,
+  availableThemes = [],
+  availableChunks = [],
+  forkSeed,
+}: Props = {}) {
   const router = useRouter();
   const t = useTranslations('practice.puzzle.create');
-  const tBoard = useTranslations('practice.puzzle');
-  const tPlay = useTranslations('play');
   const tUnsaved = useTranslations('unsavedChanges');
-  const { preferences, updatePreferences } = useGamePreferences();
+  const moveSubmitLabels = useMoveSubmitLabels();
 
-  const defaultTitleRef = useRef(buildDefaultTitle(displayName));
-  const [fenInput, setFenInput] = useState('');
-  const [boardFen, setBoardFen] = useState(EMPTY_BOARD_FEN);
-  const [sideToMove, setSideToMove] = useState<SideToMove>('w');
+  // When forking, the source's title carries over verbatim; otherwise the
+  // date-based default is used. defaultTitleRef anchors the dirty-check
+  // baseline so a forked title is "clean" until the user edits it.
+  const defaultTitleRef = useRef(
+    forkSeed ? forkSeed.title : buildDefaultPracticeTitle('Puzzle', displayName)
+  );
   const [title, setTitle] = useState(defaultTitleRef.current);
-  const [description, setDescription] = useState('');
-  const [moves, setMoves] = useState<string[]>([]);
-  const [notes, setNotes] = useState<string[]>([]);
-  const [moveInput, setMoveInput] = useState('');
-  const [moveError, setMoveError] = useState<string | null>(null);
+  const [description, setDescription] = useState(forkSeed?.description ?? '');
+  // forkedFromId lives in React state (not just the prop) so the lineage
+  // survives a `/new?from=X` → preview → "Back to edit" round-trip: that
+  // second `/new` arrives WITHOUT the `?from=` query, so `forkSeed` is
+  // undefined and only the draft remembers the source. Draft hydration
+  // restores this state below, and writeDraft reads it on submit.
+  const [forkedFromId, setForkedFromId] = useState<string | undefined>(forkSeed?.sourceId);
   const [error, setError] = useState<string | null>(null);
-  const [positionError, setPositionError] = useState(false);
-  const [solutionError, setSolutionError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-  const [activeTab, setActiveTab] = useState<EditorTab>('board');
-  const [flipped, setFlipped] = useState(false);
-  const [userFlipped, setUserFlipped] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [hydratedFromDraft, setHydratedFromDraft] = useState(false);
   const [startOverOpen, setStartOverOpen] = useState(false);
-  const [clearBoardOpen, setClearBoardOpen] = useState(false);
 
-  // Hydrate once on mount. `didHydrate` guards against remounts (e.g., Fast
-  // Refresh during dev) clobbering user edits mid-authoring. The draft is
-  // intentionally NOT cleared here — it survives `/new ↔ /new/preview`
-  // round-trips and is only cleared by explicit "Start over", successful
-  // create, or readDraft rejecting the blob as corrupt.
-  const didHydrate = useRef(false);
-  useEffect(() => {
-    if (didHydrate.current) return;
-    didHydrate.current = true;
-    const draft = readDraft();
-    if (!draft) return;
-    setFenInput(draft.fen);
-    setBoardFen(draft.fen);
-    setSideToMove(draft.sideToMove);
-    setTitle(draft.title);
-    setDescription(draft.description);
-    setMoves(draft.moves);
-    setNotes(draft.notes);
-    setActiveTab(draft.activeTab);
-    setFlipped(draft.flipped);
-    setUserFlipped(draft.userFlipped);
-    setHydratedFromDraft(true);
-  }, []);
+  // Resolve fork seed tag IDs into option objects using the loaded catalog,
+  // mirroring the draft-hydration resolution. Computed once via lazy useRef
+  // initializer so it survives subsequent renders without re-running the
+  // .find() lookups.
+  const seededThemes = useRef<ThemeOption[]>(
+    forkSeed
+      ? forkSeed.themeIds
+          .map((id) => availableThemes.find((t) => t.id === id))
+          .filter((t): t is ThemeOption => t !== undefined)
+      : []
+  ).current;
+  const seededChunks = useRef<ChunkOption[]>(
+    forkSeed
+      ? forkSeed.chunkIds
+          .map((id) => availableChunks.find((c) => c.id === id))
+          .filter((c): c is ChunkOption => c !== undefined)
+      : []
+  ).current;
 
-  const trimmedFen = fenInput.trim();
-  const isFenValid = trimmedFen !== '' && validateFen(trimmedFen);
+  // `solution` reads `board.baseFen`, and `board` resets `solution`
+  // on position change — break the cycle with a ref the board's
+  // onBoardChange dereferences lazily.
+  const solutionResetRef = useRef<() => void>(() => {});
+  const board = useFenBoardEditor({
+    initialFen: forkSeed?.fen,
+    onBoardChange: () => solutionResetRef.current(),
+  });
+  const solution = usePuzzleSolutionMoves({
+    baseFen: board.baseFen,
+    initialMoves: forkSeed?.moves,
+    initialNotes: forkSeed?.notes,
+    moveSubmitLabels,
+  });
+  solutionResetRef.current = solution.reset;
+  const tags = useTagSelection({
+    initialThemes: seededThemes,
+    initialChunks: seededChunks,
+  });
 
-  const baseFen = isFenValid ? trimmedFen : '';
-
-  // Derive currentFen by replaying the entered moves on top of baseFen.
-  // On any replay failure we stop, returning the last good FEN — handleSubmit
-  // already guarantees moves were accepted by executeMove, so this is defensive.
-  const currentFen = useMemo(() => {
-    if (!baseFen) return '';
-    let fen = baseFen;
-    for (const move of moves) {
-      const r = executeMove(fen, move);
-      if (!r) return fen;
-      fen = r.fen;
-    }
-    return fen;
-  }, [baseFen, moves]);
-
-  const firstTurn: SideToMove = useMemo(() => {
-    if (!baseFen) return 'w';
-    try {
-      return getTurnFromFen(baseFen) as SideToMove;
-    } catch {
-      return 'w';
-    }
-  }, [baseFen]);
-
-  // Side to move at the *current* position along the line. This is what
-  // drives ButtonInput's piece-icon color: the pieces displayed should
-  // belong to whichever side is about to play next, which alternates as
-  // moves are appended. `firstTurn` only reflects the puzzle's starting
-  // side and would leave the icons stale after the first move.
-  const currentTurn: SideToMove = useMemo(() => {
-    if (!currentFen) return firstTurn;
-    try {
-      return getTurnFromFen(currentFen) as SideToMove;
-    } catch {
-      return firstTurn;
-    }
-  }, [currentFen, firstTurn]);
+  // Resolve draft IDs against the loaded catalog so the picker has full
+  // option objects (label + slug + category) to render. IDs not present
+  // in the catalog (e.g. a chunk soft-deleted between draft write and
+  // hydration) silently drop, since attaching them would fail validation
+  // anyway and we'd rather hydrate cleanly than block the author.
+  // Skipped entirely when forking — the fork seed owns initial state and
+  // an unrelated leftover draft would silently overwrite it.
+  const { hydratedFromDraft, resetHydrated } = usePuzzleDraftHydration({
+    enabled: !forkSeed,
+    apply: (draft) => {
+      board.setFenInput(draft.fen);
+      board.setBoardFen(draft.fen);
+      board.setSideToMove(draft.sideToMove);
+      setTitle(draft.title);
+      setDescription(draft.description);
+      solution.setMoves(draft.moves);
+      solution.setNotes(draft.notes);
+      board.setActiveTab(draft.activeTab);
+      board.setFlipped(draft.flipped);
+      board.setUserFlipped(draft.userFlipped);
+      if (draft.themeIds && draft.themeIds.length > 0) {
+        const resolved = draft.themeIds
+          .map((id) => availableThemes.find((t) => t.id === id))
+          .filter((t): t is ThemeOption => t !== undefined);
+        tags.setSelectedThemes(resolved);
+      }
+      if (draft.chunkIds && draft.chunkIds.length > 0) {
+        const resolved = draft.chunkIds
+          .map((id) => availableChunks.find((c) => c.id === id))
+          .filter((c): c is ChunkOption => c !== undefined);
+        tags.setSelectedChunks(resolved);
+      }
+      // Restore the fork lineage that writeDraft persisted on the previous
+      // /new visit. Without this, the "Back to edit" round-trip (which
+      // pushes to `/practice/puzzle/new` without preserving `?from=<id>`)
+      // would silently drop forkedFromId on the next submit.
+      if (draft.forkedFromId) {
+        setForkedFromId(draft.forkedFromId);
+      }
+    },
+  });
 
   const isDirty =
     !submitted &&
     (title.trim() !== defaultTitleRef.current.trim() ||
       description.trim() !== '' ||
-      moves.length > 0 ||
-      notes.some((n) => n.trim() !== '') ||
-      (fenInput.trim() !== '' && fenInput !== EMPTY_BOARD_FEN));
+      solution.moves.length > 0 ||
+      solution.notes.some((n) => n.trim() !== '') ||
+      (board.fenInput.trim() !== '' && board.fenInput !== EMPTY_BOARD_FEN) ||
+      tags.selectedThemes.length > 0 ||
+      tags.selectedChunks.length > 0);
 
-  const { isBlocking, confirm, cancel } = useUnsavedChanges({ isDirty });
-
-  const handleFlip = useCallback(() => {
-    setFlipped((prev) => !prev);
-    setUserFlipped(true);
-  }, []);
-
-  const turnIndicator = useMemo(() => {
-    if (!isFenValid) return null;
-    try {
-      return getTurnFromFen(trimmedFen);
-    } catch {
-      return null;
-    }
-  }, [trimmedFen, isFenValid]);
-
-  const editableBoardLabels = useMemo(
-    () => ({
-      whitePieces: tBoard('whitePieces'),
-      blackPieces: tBoard('blackPieces'),
-      removePieceMode: tBoard('removePieceMode'),
-      placingPiece: tBoard('placingPiece'),
-    }),
-    [tBoard]
-  );
-
-  function resetSolutionState() {
-    setMoves([]);
-    setNotes([]);
-    setMoveInput('');
-    setMoveError(null);
-    setSolutionError(null);
-  }
-
-  function handleFenInputChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
-    const value = e.target.value;
-    setFenInput(value);
-    if (value.trim() !== '' && validateFen(value.trim())) {
-      setBoardFen(value.trim());
-      setSideToMove(readSideToMove(value.trim()));
-    }
-    resetSolutionState();
-  }
-
-  function handleBoardChange(newFen: string) {
-    const withSide = replaceSideToMove(newFen, sideToMove);
-    setFenInput(withSide);
-    setBoardFen(withSide);
-    setPositionError(false);
-    resetSolutionState();
-  }
-
-  // Reset board state directly: EMPTY_BOARD_FEN fails validateFen's
-  // king-count check, so the usual FEN-validation path would skip
-  // setBoardFen. For this known-good reset we bypass validation.
-  function handleClearBoard() {
-    setFenInput(EMPTY_BOARD_FEN);
-    setBoardFen(EMPTY_BOARD_FEN);
-    setSideToMove('w');
-    setPositionError(false);
-    setError(null);
-    resetSolutionState();
-  }
-
-  function handleSideToMoveChange(next: SideToMove) {
-    if (next === sideToMove) return;
-    setSideToMove(next);
-    const sourceFen = boardFen && validateFen(boardFen) ? boardFen : EMPTY_BOARD_FEN;
-    const updated = replaceSideToMove(sourceFen, next);
-    setBoardFen(updated);
-    setFenInput(updated);
-    if (next === 'b' && !userFlipped) {
-      setFlipped(true);
-    }
-    resetSolutionState();
-  }
-
-  function handleMoveSubmit(move: AlgebraicNotation): boolean {
-    const trimmed = move.trim();
-    if (!trimmed) return false;
-    if (!baseFen) {
-      setMoveError(t('positionInvalid'));
-      return false;
-    }
-    if (moves.length >= MAX_SOLUTION_MOVES) {
-      setMoveError(t('maxMovesReached'));
-      return false;
-    }
-    const r = executeMove(currentFen, trimmed);
-    if (!r) {
-      setMoveError(tPlay('invalidMove'));
-      return false;
-    }
-    setMoves((prev) => [...prev, trimmed]);
-    setNotes((prev) => [...prev, '']);
-    setMoveInput('');
-    setMoveError(null);
-    setSolutionError(null);
-    return true;
-  }
-
-  function handleRemoveLast() {
-    setMoves((prev) => prev.slice(0, -1));
-    setNotes((prev) => prev.slice(0, -1));
-    setMoveError(null);
-    setSolutionError(null);
-  }
-
-  function handleNoteChange(index: number, value: string) {
-    setNotes((prev) => {
-      const next = [...prev];
-      next[index] = value;
-      return next;
-    });
-  }
+  const { isBlocking, confirm, cancel } = useUnsavedChanges({
+    isDirty: disableUnsavedGuard ? false : isDirty,
+  });
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    setPositionError(false);
-    setSolutionError(null);
 
-    if (!trimmedFen || !isFenValid) {
-      setPositionError(true);
-      return;
-    }
-
-    if (moves.length === 0) {
-      setSolutionError(t('solutionRequired'));
+    if (!validatePuzzleForm(board, solution, t('solutionRequired'))) {
       return;
     }
 
@@ -311,15 +227,18 @@ export function CreatePuzzleForm({ displayName }: Props = {}) {
     // that would immediately bounce back is worse UX.
     const ok = writeDraft({
       version: 1,
-      fen: trimmedFen,
+      fen: board.trimmedFen,
       title,
       description,
-      moves,
-      notes,
-      activeTab,
-      sideToMove,
-      flipped,
-      userFlipped,
+      moves: solution.moves,
+      notes: solution.notes,
+      activeTab: board.activeTab,
+      sideToMove: board.sideToMove,
+      flipped: board.flipped,
+      userFlipped: board.userFlipped,
+      themeIds: tags.selectedThemes.map((t) => t.id),
+      chunkIds: tags.selectedChunks.map((c) => c.id),
+      ...(forkedFromId ? { forkedFromId } : {}),
     });
     if (!ok) {
       setError(t('draftWriteFailed'));
@@ -336,26 +255,19 @@ export function CreatePuzzleForm({ displayName }: Props = {}) {
 
   function handleStartOver() {
     clearDraft();
-    setFenInput('');
-    setBoardFen(EMPTY_BOARD_FEN);
-    setSideToMove('w');
+    board.resetBoard();
+    solution.reset();
+    tags.reset();
     setTitle(defaultTitleRef.current);
     setDescription('');
-    setMoves([]);
-    setNotes([]);
-    setMoveInput('');
-    setMoveError(null);
+    // Start-over also clears the fork lineage held in component state —
+    // otherwise the next submit would still pin to the old parent even
+    // though the user has explicitly asked for a clean slate.
+    setForkedFromId(undefined);
     setError(null);
-    setPositionError(false);
-    setSolutionError(null);
-    setActiveTab('board');
-    setFlipped(false);
-    setUserFlipped(false);
-    setHydratedFromDraft(false);
+    resetHydrated();
     setStartOverOpen(false);
   }
-
-  const reachedMaxMoves = moves.length >= MAX_SOLUTION_MOVES;
 
   return (
     <>
@@ -386,229 +298,37 @@ export function CreatePuzzleForm({ displayName }: Props = {}) {
           </div>
         )}
 
-        <div>
-          <label htmlFor="title" className="block text-sm font-medium mb-1">
-            {t('titleLabel')} <span className="text-destructive">*</span>
-          </label>
-          <input
-            id="title"
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-3 py-2 rounded border border-border bg-card text-foreground"
-            required
-          />
-        </div>
-
-        <div>
-          <label htmlFor="description" className="block text-sm font-medium mb-1">
-            {t('descriptionLabel')}
-          </label>
-          <textarea
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={4}
-            className="w-full px-3 py-2 rounded border border-border bg-card text-foreground"
-          />
-        </div>
-
-        {/* Tab switcher — matches LeaderboardTabs style */}
-        <nav className="flex rounded-lg bg-secondary p-1" role="tablist">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'board'}
-            onClick={() => setActiveTab('board')}
-            className={`flex-1 rounded-md px-4 py-2 text-center text-sm font-medium transition-colors ${
-              activeTab === 'board'
-                ? 'bg-card text-foreground'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
+        {forkSeed && (
+          <div
+            role="status"
+            aria-live="polite"
+            className="flex items-center gap-2 rounded-md border border-border bg-secondary px-3 py-2 text-sm text-muted-foreground"
           >
-            {t('tabBoard')}
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'fen'}
-            onClick={() => setActiveTab('fen')}
-            className={`flex-1 rounded-md px-4 py-2 text-center text-sm font-medium transition-colors ${
-              activeTab === 'fen'
-                ? 'bg-card text-foreground'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            {t('tabFen')}
-          </button>
-        </nav>
-
-        {/* Board editor tab */}
-        {activeTab === 'board' && (
-          <>
-            <div className="flex items-center justify-between gap-2 mb-2">
-              <div
-                role="radiogroup"
-                aria-label={t('sideToMove')}
-                className="inline-flex rounded-md border border-border overflow-hidden text-sm"
-              >
-                <button
-                  type="button"
-                  role="radio"
-                  aria-checked={sideToMove === 'w'}
-                  onClick={() => handleSideToMoveChange('w')}
-                  className={`px-3 py-1.5 transition-colors ${
-                    sideToMove === 'w'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:bg-muted'
-                  }`}
-                >
-                  {t('sideWhite')}
-                </button>
-                <button
-                  type="button"
-                  role="radio"
-                  aria-checked={sideToMove === 'b'}
-                  onClick={() => handleSideToMoveChange('b')}
-                  className={`px-3 py-1.5 transition-colors ${
-                    sideToMove === 'b'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:bg-muted'
-                  }`}
-                >
-                  {t('sideBlack')}
-                </button>
-              </div>
-              <button
-                type="button"
-                onClick={handleFlip}
-                className="p-2 border border-border rounded-md hover:bg-muted"
-                title={t('flipBoard')}
-              >
-                <FaSyncAlt className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="flex justify-center">
-              <div className="w-full max-w-md">
-                <EditableChessBoard
-                  fen={boardFen}
-                  onFenChange={handleBoardChange}
-                  labels={editableBoardLabels}
-                  editable={true}
-                  flipped={flipped}
-                  showCoordinates={true}
-                />
-              </div>
-            </div>
-
-            {positionError && (
-              <p className="text-sm text-destructive text-center">{t('positionInvalid')}</p>
-            )}
-
-            <div className="flex justify-center">
-              <button
-                type="button"
-                onClick={() => setClearBoardOpen(true)}
-                className="px-3 py-1 text-sm rounded border border-border text-muted-foreground hover:bg-muted transition-colors"
-              >
-                {t('clearBoard')}
-              </button>
-            </div>
-          </>
-        )}
-
-        {/* FEN input tab */}
-        {activeTab === 'fen' && (
-          <div>
-            <label htmlFor="fen" className="block text-sm font-medium mb-1">
-              {t('fenLabel')}
-            </label>
-            <textarea
-              id="fen"
-              value={fenInput}
-              onChange={handleFenInputChange}
-              placeholder="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-              rows={2}
-              className="w-full px-3 py-2 rounded border border-border bg-card text-foreground text-sm font-mono"
-            />
-            {fenInput.trim() && !isFenValid && (
-              <p className="text-sm text-destructive mt-1">{t('fenInvalid')}</p>
-            )}
+            <FiInfo className="h-4 w-4 flex-shrink-0" aria-hidden />
+            <span>{t('forkBanner', { sourceTitle: forkSeed.sourceTitle })}</span>
           </div>
         )}
 
-        {/* Turn indicator */}
-        {turnIndicator && (
-          <p className="text-sm text-muted-foreground text-center">
-            <span aria-hidden className="mr-1">
-              {turnIndicator === 'w' ? '⚪' : '⚫'}
-            </span>
-            {turnIndicator === 'w' ? t('whiteToMove') : t('blackToMove')}
-          </p>
-        )}
-
-        {isFenValid && (
-          <div className="space-y-3">
-            <div className="flex items-baseline justify-between">
-              <label className="text-sm font-medium">
-                {t('solutionSection')} <span className="text-destructive">*</span>
-              </label>
-              <span className="text-xs text-muted-foreground">
-                {moves.length} / {MAX_SOLUTION_MOVES}
-              </span>
-            </div>
-
-            {moves.length > 0 && (
-              <SolutionMoveList
-                moves={moves}
-                firstTurn={firstTurn}
-                onRemoveLast={handleRemoveLast}
-                removeAriaLabel={t('removeLastMove', { move: moves[moves.length - 1]! })}
-                disabled={pending}
-                renderAfter={(index) => (
-                  <input
-                    type="text"
-                    value={notes[index] ?? ''}
-                    onChange={(e) => handleNoteChange(index, e.target.value)}
-                    maxLength={PUZZLE_NOTE_MAX_LENGTH}
-                    placeholder={t('addMoveNote')}
-                    aria-label={t('noteAriaLabel', { move: moves[index]! })}
-                    className="w-full px-2 py-1 rounded border border-border bg-card text-foreground text-sm"
-                  />
-                )}
-              />
-            )}
-
-            {reachedMaxMoves ? (
-              <p className="text-sm text-muted-foreground">{t('maxMovesReached')}</p>
-            ) : (
-              <MoveInputPanel
-                preferences={preferences}
-                updatePreferences={updatePreferences}
-                currentFen={currentFen}
-                moveInput={moveInput}
-                onMoveInputChange={setMoveInput}
-                error={moveError}
-                onErrorClear={() => setMoveError(null)}
-                onSubmit={handleMoveSubmit}
-                disabled={pending}
-                inputPlaceholder={t('movePlaceholder')}
-                selectPlaceholder={tPlay('selectMove')}
-                toggleTitle={tPlay('switchInputMode')}
-                playerColor={currentTurn}
-                showLegalMovesHint={false}
-              />
-            )}
-
-            {solutionError && <p className="text-sm text-destructive">{solutionError}</p>}
-          </div>
-        )}
+        <PuzzleFormFields
+          board={board}
+          solution={solution}
+          tags={tags}
+          title={title}
+          onTitleChange={setTitle}
+          description={description}
+          onDescriptionChange={setDescription}
+          pending={pending}
+          availableThemes={availableThemes}
+          availableChunks={availableChunks}
+        />
 
         <Button
           type="submit"
           variant="primary"
           fullWidth
-          disabled={pending || !isFenValid || moves.length === 0 || title.trim() === ''}
+          disabled={
+            pending || !board.isFenValid || solution.moves.length === 0 || title.trim() === ''
+          }
         >
           {t('continueToPreview')}
         </Button>
@@ -633,20 +353,6 @@ export function CreatePuzzleForm({ displayName }: Props = {}) {
         confirmVariant="danger"
         onConfirm={handleStartOver}
         onCancel={() => setStartOverOpen(false)}
-      />
-
-      <ConfirmationModal
-        isOpen={clearBoardOpen}
-        title={t('clearBoardConfirmTitle')}
-        message={t('clearBoardConfirmMessage')}
-        confirmText={t('clearBoardConfirmConfirm')}
-        cancelText={t('clearBoardConfirmCancel')}
-        confirmVariant="danger"
-        onConfirm={() => {
-          setClearBoardOpen(false);
-          handleClearBoard();
-        }}
-        onCancel={() => setClearBoardOpen(false)}
       />
     </>
   );

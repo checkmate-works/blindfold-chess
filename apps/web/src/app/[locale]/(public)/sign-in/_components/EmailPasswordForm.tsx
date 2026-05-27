@@ -2,16 +2,12 @@
 
 import { useState } from 'react';
 
-import { TextInput } from '@/app/_components';
-import {
-  AUTH_FORM_LABEL_CLASSES,
-  AUTH_SUBMIT_BUTTON_CLASSES,
-} from '@/app/_components/authFormStyles';
+import { AuthField, AuthSubmitButton } from '@/app/_components/AuthFormFields';
+import { FormErrorBanner } from '@/app/_components/FormErrorBanner';
 import { Link } from '@/i18n/routing';
 import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import { FormErrorMessage } from '@/app/[locale]/_components/FormErrorMessage';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import { signIn } from '../_actions/signIn';
@@ -58,43 +54,33 @@ export function EmailPasswordForm() {
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-sm mx-auto space-y-4">
-      {error && <FormErrorMessage message={error} />}
+      {error && <FormErrorBanner message={error} variant="bordered" />}
 
-      <div>
-        <label htmlFor="email" className={AUTH_FORM_LABEL_CLASSES}>
-          {t('emailLabel')}
-        </label>
-        <TextInput
-          id="email"
-          type="email"
-          inputSize="sm"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          autoComplete="email"
-          placeholder={t('emailPlaceholder')}
-        />
-      </div>
+      <AuthField
+        id="email"
+        type="email"
+        label={t('emailLabel')}
+        value={email}
+        onChange={setEmail}
+        autoComplete="email"
+        placeholder={t('emailPlaceholder')}
+      />
 
-      <div>
-        <label htmlFor="password" className={AUTH_FORM_LABEL_CLASSES}>
-          {t('passwordLabel')}
-        </label>
-        <TextInput
-          id="password"
-          type="password"
-          inputSize="sm"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          autoComplete="current-password"
-          placeholder={t('passwordPlaceholder')}
-        />
-      </div>
+      <AuthField
+        id="password"
+        type="password"
+        label={t('passwordLabel')}
+        value={password}
+        onChange={setPassword}
+        autoComplete="current-password"
+        placeholder={t('passwordPlaceholder')}
+      />
 
-      <button type="submit" disabled={isLoading} className={AUTH_SUBMIT_BUTTON_CLASSES}>
-        {isLoading ? t('emailSignInLoading') : t('emailSignIn')}
-      </button>
+      <AuthSubmitButton
+        isLoading={isLoading}
+        idleLabel={t('emailSignIn')}
+        loadingLabel={t('emailSignInLoading')}
+      />
 
       <p className="text-center text-sm">
         <Link href="/forgot-password" locale={locale} className={TEXT_LINK_CLASSES}>

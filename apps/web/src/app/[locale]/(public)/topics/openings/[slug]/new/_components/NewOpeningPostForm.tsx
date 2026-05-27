@@ -6,7 +6,8 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 
 import { BasePostForm } from '@/app/[locale]/(public)/topics/_components/BasePostForm';
 
-import { createOpeningPost } from '../_actions/createOpeningPost';
+import { createOpeningPostWithAttachment } from '../_actions/createOpeningPostWithAttachment';
+import { createOpeningPostWithFenAttachment } from '../_actions/createOpeningPostWithFenAttachment';
 import { RatingInput } from './RatingInput';
 
 type Props = {
@@ -16,7 +17,8 @@ type Props = {
 
 export function NewOpeningPostForm({ locale, slug }: Props) {
   const t = useTranslations('topics.openings.newPostForm');
-  const boundCreatePost = createOpeningPost.bind(null, locale, slug);
+  const pgn = createOpeningPostWithAttachment.bind(null, locale, slug);
+  const fen = createOpeningPostWithFenAttachment.bind(null, locale, slug);
 
   const [hasContent, setHasContent] = useState(false);
   const [hasPreference, setHasPreference] = useState(false);
@@ -42,11 +44,10 @@ export function NewOpeningPostForm({ locale, slug }: Props) {
 
   return (
     <BasePostForm
-      action={boundCreatePost}
+      attachmentActions={{ pgn, fen }}
       translationNamespace="topics.openings.newPostForm"
       contentRequired={false}
       submitDisabled={!hasAnyInput}
-      showGrantInfoModal
       onContentChange={(hasValue) => setHasContent(hasValue)}
       beforeContent={(markDirty) => (
         <>

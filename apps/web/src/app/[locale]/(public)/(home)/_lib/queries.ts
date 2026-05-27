@@ -1,22 +1,12 @@
-import { and, desc, eq, inArray, isNull, lt } from 'drizzle-orm';
+import { desc, lt } from 'drizzle-orm';
 
-import {
-  chessOpenings,
-  db,
-  feedItems,
-  positions,
-  profiles,
-  topicPostRatings,
-  topicPosts,
-} from '@/lib/db';
-import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
-import { parsePositionType } from '@/lib/positions/types';
+import { db, feedItems } from '@/lib/db';
 
-import { attachProfilePostMeta } from '@/app/[locale]/(public)/topics/_lib/post-meta';
-import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
-import { authorSelect, ratingSelect } from '@/app/[locale]/(public)/topics/_lib/shared';
-
-import type { ChallengeRankUpdateData, FeedItem, FeedResponse, PositionFeedData } from './types';
+import { loadChunksForFeed } from './feed-queries/load-chunks';
+import { loadPositionsForFeed } from './feed-queries/load-positions';
+import { loadRankUpdateActors } from './feed-queries/load-rank-update-actors';
+import { loadTopicPostsForFeed } from './feed-queries/load-topic-posts';
+import type { ChallengeRankUpdateData, FeedItem, FeedResponse } from './types';
 
 /** Maximum rank shown in the timeline feed. Items beyond this are filtered out. */
 const FEED_RANK_THRESHOLD = 10;
@@ -25,14 +15,19 @@ const FEED_RANK_THRESHOLD = 10;
  * Fetch a page of feed items with their full entity data.
  *
  * @design Cursor-based pagination
- * The cursor is the ISO 8601 `createdAt` timestamp of the last item on the
- * previous page. The query uses `WHERE created_at < cursor ORDER BY
- * created_at DESC LIMIT N+1` (the +1 detects whether a next page exists).
+ * The cursor is the ISO 8601 `createdAt` timestamp of the last item on
+ * the previous page. The query uses
+ * `WHERE created_at < cursor ORDER BY created_at DESC LIMIT N+1` (the
+ * `+1` detects whether a next page exists).
  *
- * @design Batch entity fetching (avoid N+1)
- * After fetching feed_items rows, entity data is loaded in bulk per
- * entityType (e.g. all topic_post IDs in one query). Items whose source
- * entity was deleted are silently dropped from the result.
+ * @design Per-entity-type loaders
+ * After fetching the `feed_items` rows, the four entity loaders run in
+ * parallel — one per `entityType`. Each loader returns a
+ * `Map<entityId, data>` and silently drops rows whose source entity
+ * has been deleted; the orchestrator then walks the original feed rows
+ * and skips any whose entity is missing from the map. Splitting one
+ * loader per type makes each loader read like a focused query helper
+ * instead of a branch inside a 200-line IIFE chain.
  */
 export async function getFeedData(
   cursor: string | undefined,
@@ -50,133 +45,23 @@ export async function getFeedData(
   const rows = hasMore ? feedRows.slice(0, limit) : feedRows;
   const nextCursor = hasMore ? rows[rows.length - 1].createdAt.toISOString() : null;
 
-  // Batch fetch topic_post entities and challenge_rank_update actor profiles in parallel
   const topicPostIds = rows.filter((r) => r.entityType === 'topic_post').map((r) => r.entityId);
-  const rankUpdateRows = rows.filter((r) => r.entityType === 'challenge_rank_update');
-  const rankUpdateActorIds = [...new Set(rankUpdateRows.map((r) => r.actorId))];
   const positionIds = rows.filter((r) => r.entityType === 'position').map((r) => r.entityId);
+  const chunkIds = rows.filter((r) => r.entityType === 'chunk').map((r) => r.entityId);
+  const rankUpdateActorIds = [
+    ...new Set(rows.filter((r) => r.entityType === 'challenge_rank_update').map((r) => r.actorId)),
+  ];
 
-  const [topicPostMap, rankUpdateActorMap, positionMap] = await Promise.all([
-    (async () => {
-      const map = new Map<string, ProfilePostWithReplyMeta>();
-
-      if (topicPostIds.length > 0) {
-        const results = await db
-          .select({
-            post: topicPosts,
-            author: authorSelect,
-            rating: ratingSelect,
-            openingName: chessOpenings.name,
-            openingFen: chessOpenings.fen,
-          })
-          .from(topicPosts)
-          .leftJoin(profiles, eq(topicPosts.userId, profiles.id))
-          .leftJoin(topicPostRatings, eq(topicPosts.id, topicPostRatings.postId))
-          .leftJoin(chessOpenings, eq(topicPosts.topicKey, chessOpenings.slug))
-          .where(and(inArray(topicPosts.id, topicPostIds), isNull(topicPosts.deletedAt)));
-
-        const postsWithMeta = await attachProfilePostMeta(results, currentUserId);
-        for (const post of postsWithMeta) {
-          map.set(post.id, post);
-        }
-      }
-
-      return map;
-    })(),
-    (async () => {
-      const map = new Map<
-        string,
-        {
-          username: string;
-          displayName: string | null;
-          avatarUrl: string | null;
-          country: string | null;
-          flair: string | null;
-        }
-      >();
-
-      if (rankUpdateActorIds.length > 0) {
-        const actorRows = await db
-          .select({
-            id: profiles.id,
-            username: profiles.username,
-            displayName: profiles.displayName,
-            avatarUrl: profiles.avatarUrl,
-            country: profiles.country,
-            flair: profiles.flair,
-          })
-          .from(profiles)
-          .where(inArray(profiles.id, rankUpdateActorIds));
-
-        for (const actor of actorRows) {
-          map.set(actor.id, {
-            username: actor.username,
-            displayName: actor.displayName,
-            avatarUrl: actor.avatarUrl,
-            country: actor.country,
-            flair: actor.flair,
-          });
-        }
-      }
-
-      return map;
-    })(),
-    (async () => {
-      const map = new Map<string, PositionFeedData>();
-
-      if (positionIds.length === 0) return map;
-
-      const rows = await db
-        .select({
-          id: positions.id,
-          type: positions.type,
-          fen: positions.fen,
-          createdAt: positions.createdAt,
-          author: {
-            username: profiles.username,
-            displayName: profiles.displayName,
-            avatarUrl: profiles.avatarUrl,
-            country: profiles.country,
-            flair: profiles.flair,
-          },
-        })
-        .from(positions)
-        .leftJoin(profiles, eq(positions.userId, profiles.id))
-        .where(and(inArray(positions.id, positionIds), isNull(positions.deletedAt)));
-
-      const foundIds = rows.map((r) => r.id);
-      const likeMetaMap = await getPositionLikeMetaMap(foundIds, currentUserId);
-
-      for (const row of rows) {
-        const positionType = parsePositionType(row.type);
-        // Defensive: drop rows with an unexpected `type` value rather than
-        // crashing. Follows the same "silently drop deleted entities" pattern
-        // used elsewhere in this function.
-        if (positionType === null) continue;
-        const likeMeta = likeMetaMap.get(row.id) ?? { likeCount: 0, likedByMe: false };
-        map.set(row.id, {
-          id: row.id,
-          type: positionType,
-          fen: row.fen,
-          createdAt: row.createdAt.toISOString(),
-          author: row.author
-            ? {
-                username: row.author.username,
-                displayName: row.author.displayName,
-                avatarUrl: row.author.avatarUrl,
-                country: row.author.country,
-                flair: row.author.flair,
-              }
-            : null,
-          likeMeta,
-        });
-      }
-
-      return map;
-    })(),
+  const [topicPostMap, positionMap, chunkMap, rankUpdateActorMap] = await Promise.all([
+    loadTopicPostsForFeed(topicPostIds, currentUserId),
+    loadPositionsForFeed(positionIds, currentUserId),
+    loadChunksForFeed(chunkIds, currentUserId),
+    loadRankUpdateActors(rankUpdateActorIds),
   ]);
 
-  // Build FeedItem array, filtering out items whose entity data was not found
+  // Build FeedItem array, filtering out items whose entity data was
+  // not found (the entity has been deleted between feed-item write
+  // and feed read).
   const items: FeedItem[] = [];
   for (const row of rows) {
     if (row.entityType === 'topic_post') {
@@ -201,6 +86,20 @@ export async function getFeedData(
           actorId: row.actorId,
           createdAt: row.createdAt.toISOString(),
           data,
+        });
+      }
+    } else if (row.entityType === 'chunk') {
+      const data = chunkMap.get(row.entityId);
+      if (data) {
+        const metadata = (row.metadata ?? {}) as Record<string, unknown>;
+        const kind = metadata.kind === 'published' ? 'published' : 'created';
+        items.push({
+          id: row.id,
+          entityType: 'chunk',
+          entityId: row.entityId,
+          actorId: row.actorId,
+          createdAt: row.createdAt.toISOString(),
+          data: { ...data, kind },
         });
       }
     } else if (row.entityType === 'challenge_rank_update') {

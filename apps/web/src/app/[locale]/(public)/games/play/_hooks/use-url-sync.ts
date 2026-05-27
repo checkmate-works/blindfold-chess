@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 
-import type { SkillLevel } from '@/lib/types';
+import { type EngineConfig, engineConfigToUrlParams } from '@/lib/engines';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -20,7 +20,7 @@ type UseUrlSyncOptions = {
   gameId: string | undefined;
   initialGameId: string | undefined;
   playerSide: Side;
-  skillLevel: SkillLevel;
+  engineConfig: EngineConfig;
   initialStartingFen: string | undefined;
   shouldRedirectToError: boolean;
   errorDetails: ErrorDetails | null;
@@ -31,7 +31,7 @@ export function useUrlSync({
   gameId,
   initialGameId,
   playerSide,
-  skillLevel,
+  engineConfig,
   initialStartingFen,
   shouldRedirectToError,
   errorDetails,
@@ -48,7 +48,9 @@ export function useUrlSync({
       params.set('validMoves', JSON.stringify(errorDetails.validMoves));
       params.set('allMoves', JSON.stringify(errorDetails.allMoves));
       params.set('color', playerSide);
-      params.set('skillLevel', skillLevel.toString());
+      for (const [key, value] of Object.entries(engineConfigToUrlParams(engineConfig))) {
+        params.set(key, value);
+      }
 
       if (initialStartingFen) {
         params.set('fen', initialStartingFen);
@@ -67,7 +69,7 @@ export function useUrlSync({
     router,
     locale,
     playerSide,
-    skillLevel,
+    engineConfig,
     initialGameId,
     gameId,
     initialStartingFen,

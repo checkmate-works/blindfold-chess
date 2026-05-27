@@ -1,12 +1,17 @@
 'use client';
 
-import { memo, useCallback, useMemo } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ChessPiece } from '@/app/_components';
-import type { BoardPiece } from '@blindfold-chess/features/chess-core';
-import { fenToBoard } from '@blindfold-chess/features/chess-core';
+import type { BoardPiece, MoveResult } from '@blindfold-chess/features/chess-core';
+import {
+  fenToBoard,
+  findLegalMovesByCoords,
+  getLegalMoves,
+} from '@blindfold-chess/features/chess-core';
 import type { Side } from '@blindfold-chess/types';
 
+import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import type { BoardTheme } from '@/lib/games/board-themes';
 import { DEFAULT_BOARD_THEME, getBoardThemeColors } from '@/lib/games/board-themes';
 import type { EvaluationMark } from '@/lib/games/evaluation';
@@ -14,6 +19,7 @@ import { getEvaluationIcon } from '@/lib/games/evaluation';
 
 import type { SquareRenderInfo } from './BoardLayout';
 import { BoardLayout } from './BoardLayout';
+import { PromotionPicker } from './PromotionPicker';
 
 /**
  * Stable empty-array identity for the `highlightedSquares` default prop.
@@ -22,9 +28,7 @@ import { BoardLayout } from './BoardLayout';
  * avoiding unnecessary re-renders on hot paths (play, move navigation,
  * feed/thumbnail lists). Frozen to prevent accidental mutation.
  */
-export const EMPTY_HIGHLIGHTED_SQUARES: string[] = Object.freeze(
-  [] as string[]
-) as unknown as string[];
+const EMPTY_HIGHLIGHTED_SQUARES: string[] = Object.freeze([] as string[]) as unknown as string[];
 
 type Props = {
   fen: string;
@@ -42,6 +46,37 @@ type Props = {
   rounded?: boolean;
   evaluationMark?: EvaluationMark | null;
   className?: string;
+  /**
+   * Optional pre-parsed display annotations. Passed straight through to
+   * {@link BoardLayout}; callers feed JSONB through `parseBoardAnnotations`
+   * on the server side first.
+   */
+  annotations?: BoardAnnotations | null;
+  /**
+   * Enables interactive move input — click-to-move + HTML5 drag-and-drop.
+   * When provided:
+   * - Clicking an own-color piece selects it; clicking a legal destination
+   *   executes the move. Clicking an empty / opponent / illegal square
+   *   deselects (or reselects if it's another own piece).
+   * - Own-color pieces become `draggable`; drop on a legal destination
+   *   executes the move.
+   * - Legal destinations for the selected piece are highlighted via the
+   *   same `selectable` chrome as `highlightedSquares`.
+   * - The move is pre-validated against the current FEN; `san` is the
+   *   canonical algebraic notation. Promotions default to queen — pass
+   *   an underpromotion explicitly via `findLegalMoveByCoords` from the
+   *   chess-core if you need that escape hatch.
+   *
+   * Touch users fall through to click-to-move naturally: HTML5 native
+   * drag rarely fires on touch, but click events do, so the same callback
+   * still works.
+   *
+   * Mutually exclusive with `onSquareClick` in spirit — callers wanting
+   * raw click capture (e.g. coordinate-quiz) keep using `onSquareClick`;
+   * game-play boards use `onMove`. If both are supplied, `onMove` wins
+   * for click handling.
+   */
+  onMove?: (san: string) => void;
 };
 
 export const ChessBoard = memo(function ChessBoard({
@@ -60,8 +95,12 @@ export const ChessBoard = memo(function ChessBoard({
   rounded = true,
   evaluationMark = null,
   className = '',
+  annotations = null,
+  onMove,
 }: Props) {
   const themeColors = getBoardThemeColors(boardTheme);
+  const interactive = onMove !== undefined;
+  const ownColorChar = playerSide.charAt(0);
 
   const board = useMemo(() => {
     try {
@@ -75,12 +114,58 @@ export const ChessBoard = memo(function ChessBoard({
     }
   }, [fen]);
 
+  // Selected square for click-to-move (and for the in-flight drag source).
+  // Cleared whenever the position changes so a freshly applied move (or a
+  // navigation jump) does not leave a stale selection ring on the board.
+  const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
+
+  // Pending promotion choice. Populated when the player attempts a move
+  // whose (from, to) pair has multiple legal candidates (one per promotion
+  // piece). While set, the promotion picker is overlaid on the board and
+  // the actual onMove emit is deferred until the player picks a piece.
+  const [promotionPending, setPromotionPending] = useState<{
+    from: string;
+    to: string;
+    candidates: MoveResult[];
+  } | null>(null);
+
+  useEffect(() => {
+    setSelectedSquare(null);
+    setPromotionPending(null);
+  }, [fen]);
+
+  // Legal destinations for the selected piece. Used to highlight reachable
+  // squares AND to validate clicks/drops before firing onMove. Empty when
+  // no square is selected or when interactive mode is off.
+  const legalDestinations = useMemo<string[]>(() => {
+    if (!interactive || !selectedSquare) return [];
+    try {
+      const moves = getLegalMoves(fen, { verbose: true });
+      return moves.filter((m) => m.from === selectedSquare).map((m) => m.to);
+    } catch {
+      return [];
+    }
+  }, [fen, selectedSquare, interactive]);
+
+  const pieceAt = useCallback(
+    (square: string): BoardPiece | null => {
+      if (square.length !== 2) return null;
+      const fileIndex = square.charCodeAt(0) - 'a'.charCodeAt(0);
+      const rankNum = Number.parseInt(square[1], 10);
+      if (Number.isNaN(rankNum) || rankNum < 1 || rankNum > 8) return null;
+      if (fileIndex < 0 || fileIndex > 7) return null;
+      const rankIndex = 8 - rankNum;
+      return board[rankIndex]?.[fileIndex] ?? null;
+    },
+    [board]
+  );
+
   const renderPiece = useCallback(
     (piece: BoardPiece) => {
       if (!piece) return null;
 
       // Check if piece should be shown based on settings
-      const isOwnPiece = piece.color === playerSide.charAt(0);
+      const isOwnPiece = piece.color === ownColorChar;
       if (isOwnPiece && !showOwnPieces) return null;
       if (!isOwnPiece && !showOpponentPieces) return null;
 
@@ -98,12 +183,21 @@ export const ChessBoard = memo(function ChessBoard({
         displayColor = 'b';
       }
 
+      // Own pieces become draggable in interactive mode. Drag events fire
+      // from this wrapper and bubble up to the board container, where the
+      // `[data-square]` ancestor lookup recovers the source square. Touch
+      // input falls through to click-to-move (HTML5 native DnD does not
+      // start on tap in most browsers).
+      const isDraggable = interactive && isOwnPiece;
+      const grabClass = isDraggable ? 'cursor-grab active:cursor-grabbing' : '';
+
       if (shouldShowAsCircle) {
         // Show as Go stone-like circle with subtle gradient and shadow
         if (displayColor === 'w') {
           return (
             <div
-              className="w-[60%] h-[60%] rounded-full"
+              draggable={isDraggable || undefined}
+              className={`w-[60%] h-[60%] rounded-full ${grabClass}`}
               style={{
                 background:
                   'radial-gradient(ellipse at 30% 30%, #ffffff 0%, #e8e8e8 50%, #d0d0d0 100%)',
@@ -114,7 +208,8 @@ export const ChessBoard = memo(function ChessBoard({
         } else {
           return (
             <div
-              className="w-[60%] h-[60%] rounded-full"
+              draggable={isDraggable || undefined}
+              className={`w-[60%] h-[60%] rounded-full ${grabClass}`}
               style={{
                 background:
                   'radial-gradient(ellipse at 30% 30%, #4a4a4a 0%, #2a2a2a 50%, #1a1a1a 100%)',
@@ -128,23 +223,141 @@ export const ChessBoard = memo(function ChessBoard({
 
       // Show normal piece
       return (
-        <div className="w-[80%] h-[80%] flex items-center justify-center">
+        <div
+          draggable={isDraggable || undefined}
+          className={`w-[80%] h-[80%] flex items-center justify-center ${grabClass}`}
+        >
           <ChessPiece type={piece.type} color={displayColor} size={45} />
         </div>
       );
     },
-    [playerSide, showOwnPieces, showOpponentPieces, pieceShapeMode, pieceColors]
+    [interactive, ownColorChar, showOwnPieces, showOpponentPieces, pieceShapeMode, pieceColors]
+  );
+
+  // Attempt to complete a move from `from` to `to`. Branches by candidate
+  // count: 0 = illegal (no-op + clear selection), 1 = fire onMove
+  // immediately, >1 = promotion ambiguity, defer onMove and surface the
+  // picker.
+  const attemptMove = useCallback(
+    (from: string, to: string) => {
+      if (!onMove) return;
+      const candidates = findLegalMovesByCoords(fen, from, to);
+      if (candidates.length === 0) {
+        setSelectedSquare(null);
+        return;
+      }
+      if (candidates.length === 1) {
+        onMove(candidates[0].san);
+        setSelectedSquare(null);
+        return;
+      }
+      setPromotionPending({ from, to, candidates });
+      setSelectedSquare(null);
+    },
+    [onMove, fen]
+  );
+
+  // Click-to-move state machine. Runs only in interactive mode; when the
+  // caller wires `onSquareClick` instead, raw clicks are forwarded
+  // unchanged below.
+  const handleInteractiveClick = useCallback(
+    (square: string) => {
+      if (!onMove) return;
+      const piece = pieceAt(square);
+      const clickedOwn = piece !== null && piece.color === ownColorChar;
+
+      if (selectedSquare === null) {
+        if (clickedOwn) setSelectedSquare(square);
+        return;
+      }
+
+      if (selectedSquare === square) {
+        // Toggle off — click on the currently-selected square deselects.
+        setSelectedSquare(null);
+        return;
+      }
+
+      // Try to complete a move from the selected square to here.
+      const candidates = findLegalMovesByCoords(fen, selectedSquare, square);
+      if (candidates.length > 0) {
+        if (candidates.length === 1) {
+          onMove(candidates[0].san);
+        } else {
+          setPromotionPending({ from: selectedSquare, to: square, candidates });
+        }
+        setSelectedSquare(null);
+        return;
+      }
+
+      // Not a legal destination. Reselect if clicked another own piece,
+      // otherwise deselect entirely — matches lichess / chess.com idiom.
+      setSelectedSquare(clickedOwn ? square : null);
+    },
+    [onMove, fen, ownColorChar, pieceAt, selectedSquare]
   );
 
   const handleBoardClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
-      if (!onSquareClick) return;
       const target = (e.target as HTMLElement).closest<HTMLElement>('[data-square]');
-      if (target?.dataset.square) {
-        onSquareClick(target.dataset.square);
+      const square = target?.dataset.square;
+      if (!square) return;
+      if (onMove) {
+        handleInteractiveClick(square);
+      } else if (onSquareClick) {
+        onSquareClick(square);
       }
     },
-    [onSquareClick]
+    [onSquareClick, onMove, handleInteractiveClick]
+  );
+
+  const handleBoardDragStart = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      if (!onMove) return;
+      const target = (e.target as HTMLElement).closest<HTMLElement>('[data-square]');
+      const square = target?.dataset.square;
+      if (!square) {
+        e.preventDefault();
+        return;
+      }
+      const piece = pieceAt(square);
+      if (!piece || piece.color !== ownColorChar) {
+        // Only own-color pieces can drag. The `draggable` flag on
+        // renderPiece already guards this, but the preventDefault here
+        // is defensive against any future change that loosens it.
+        e.preventDefault();
+        return;
+      }
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', square);
+      setSelectedSquare(square);
+    },
+    [onMove, ownColorChar, pieceAt]
+  );
+
+  const handleBoardDragOver = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      if (!onMove) return;
+      // preventDefault is REQUIRED on every drag-over for drop to fire.
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+    },
+    [onMove]
+  );
+
+  const handleBoardDrop = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      if (!onMove) return;
+      e.preventDefault();
+      const target = (e.target as HTMLElement).closest<HTMLElement>('[data-square]');
+      const targetSquare = target?.dataset.square;
+      const sourceSquare = e.dataTransfer.getData('text/plain') || selectedSquare;
+      if (!targetSquare || !sourceSquare || sourceSquare === targetSquare) {
+        setSelectedSquare(null);
+        return;
+      }
+      attemptMove(sourceSquare, targetSquare);
+    },
+    [onMove, selectedSquare, attemptMove]
   );
 
   const renderSquare = useCallback(
@@ -158,7 +371,10 @@ export const ChessBoard = memo(function ChessBoard({
   const squareProps = useCallback(
     ({ square }: SquareRenderInfo) => {
       const isLastMove = lastMove && (lastMove.from === square || lastMove.to === square);
-      const isHighlight = highlightedSquares.includes(square);
+      const isExternalHighlight = highlightedSquares.includes(square);
+      const isSelected = selectedSquare === square;
+      const isLegalDestination = legalDestinations.includes(square);
+      const isHighlight = isExternalHighlight || isSelected || isLegalDestination;
 
       const showEvalMark = evaluationMark && evaluationMark.square === square;
       const evalBadge = showEvalMark
@@ -166,7 +382,7 @@ export const ChessBoard = memo(function ChessBoard({
         : undefined;
 
       return {
-        dataSquare: onSquareClick ? square : undefined,
+        dataSquare: onSquareClick || interactive ? square : undefined,
         highlightType: (isLastMove ? 'last-move' : isHighlight ? 'selectable' : 'none') as
           | 'none'
           | 'last-move'
@@ -174,8 +390,40 @@ export const ChessBoard = memo(function ChessBoard({
         badge: evalBadge,
       };
     },
-    [lastMove, highlightedSquares, evaluationMark, onSquareClick]
+    [
+      lastMove,
+      highlightedSquares,
+      evaluationMark,
+      onSquareClick,
+      interactive,
+      selectedSquare,
+      legalDestinations,
+    ]
   );
+
+  // Resolve the destination square's coords for the promotion picker. The
+  // picker stays inside the board's relative container via BoardLayout's
+  // overlay slot, so it shares the same coordinate space as the squares.
+  const promotionOverlay = (() => {
+    if (!promotionPending || !onMove) return null;
+    const { to } = promotionPending;
+    const fileIndex = to.charCodeAt(0) - 'a'.charCodeAt(0);
+    const rankIndex = 8 - Number.parseInt(to[1], 10);
+    return (
+      <PromotionPicker
+        fileIndex={fileIndex}
+        rankIndex={rankIndex}
+        flipped={flipped}
+        promotingColor={ownColorChar === 'b' ? 'b' : 'w'}
+        onSelect={(type) => {
+          const chosen = promotionPending.candidates.find((m) => m.promotion === type);
+          if (chosen) onMove(chosen.san);
+          setPromotionPending(null);
+        }}
+        onCancel={() => setPromotionPending(null)}
+      />
+    );
+  })();
 
   return (
     <BoardLayout
@@ -184,9 +432,14 @@ export const ChessBoard = memo(function ChessBoard({
       themeColors={themeColors}
       renderSquare={renderSquare}
       squareProps={squareProps}
-      onBoardClick={onSquareClick ? handleBoardClick : undefined}
+      onBoardClick={onSquareClick || interactive ? handleBoardClick : undefined}
+      onBoardDragStart={interactive ? handleBoardDragStart : undefined}
+      onBoardDragOver={interactive ? handleBoardDragOver : undefined}
+      onBoardDrop={interactive ? handleBoardDrop : undefined}
       rounded={rounded}
       className={className}
+      annotations={annotations}
+      overlay={promotionOverlay}
     />
   );
 });

@@ -3,10 +3,9 @@ import { getTranslations } from 'next-intl/server';
 
 import { Link } from '@/i18n/routing';
 
-import { Divider, PagePanel, PageTitle } from '@/app/[locale]/_components';
-import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
+import { PageLayout } from '@/app/[locale]/_components';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
@@ -15,16 +14,12 @@ import { ForgotPasswordForm } from './_components';
 export const generateStaticParams = generateLocaleStaticParams;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'forgotPassword' });
-
-  const title = t('title');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'forgot-password', title }),
-    title: resolveTitle(title, locale),
-    robots: { index: false, follow: false },
-  };
+  return createPageMetadata({
+    params,
+    namespace: 'forgotPassword',
+    path: 'forgot-password',
+    omitDescription: true,
+  });
 }
 
 export default async function ForgotPasswordPage({ params }: Props) {
@@ -32,22 +27,14 @@ export default async function ForgotPasswordPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'forgotPassword' });
 
   return (
-    <div className="space-y-8">
-      <PageTitle>{t('title')}</PageTitle>
+    <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
+      <ForgotPasswordForm />
 
-      <PagePanel>
-        <ForgotPasswordForm />
-
-        <p className="mt-6 text-center text-sm text-muted-foreground">
-          <Link href="/sign-in" locale={locale} className={TEXT_LINK_CLASSES}>
-            {t('backToSignIn')}
-          </Link>
-        </p>
-
-        <Divider />
-
-        <Breadcrumb items={[{ label: t('title') }]} locale={locale} />
-      </PagePanel>
-    </div>
+      <p className="mt-6 text-center text-sm text-muted-foreground">
+        <Link href="/sign-in" locale={locale} className={TEXT_LINK_CLASSES}>
+          {t('backToSignIn')}
+        </Link>
+      </p>
+    </PageLayout>
   );
 }

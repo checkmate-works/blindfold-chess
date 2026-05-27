@@ -16,7 +16,33 @@ import { useRouter } from 'next/navigation';
 import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import type { Session, SupabaseClient, User } from '@supabase/supabase-js';
 
+import { ADS_HIDDEN_COOKIE_NAME } from '@/lib/ads/ads-hidden-cookie';
+
 import { getSessionUser } from '@/app/[locale]/_actions/getSessionUser';
+
+const ADS_HIDDEN_COOKIE_MATCH = new RegExp(`(?:^|; )${ADS_HIDDEN_COOKIE_NAME}=1(?:;|$)`);
+
+/**
+ * Re-assert `<html data-ads-hidden>` from the `bfc_ads_hidden` cookie that
+ * `getSessionUser()` just (re)wrote on the server. The inline bootstrap
+ * script in `<head>` (see `AdHideBootstrapScript`) runs only at initial
+ * document parse, so cookies written after that — chiefly the very first
+ * sign-in within a session — would never be reflected on the attribute.
+ * `AdSenseDisplay` / `AdSenseInFeed` gate `push()` solely on this attribute,
+ * so without this re-assertion the user would see ads on subsequent
+ * client-side navigations (e.g., language switch) despite being entitled
+ * to hide them. A reload masks the symptom because the bootstrap then runs
+ * with the cookie already present.
+ */
+function syncAdsHiddenAttribute(): void {
+  if (typeof document === 'undefined') return;
+  const root = document.documentElement;
+  if (ADS_HIDDEN_COOKIE_MATCH.test(document.cookie)) {
+    root.setAttribute('data-ads-hidden', 'true');
+  } else {
+    root.removeAttribute('data-ads-hidden');
+  }
+}
 
 type AuthContextValue = {
   user: User | null;
@@ -118,6 +144,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       if (cancelled) return;
+
+      syncAdsHiddenAttribute();
 
       // Anonymous visit: resolve to loaded-not-authenticated without touching
       // the Supabase SDK. This preserves F-001's bundle-size win for crawlers

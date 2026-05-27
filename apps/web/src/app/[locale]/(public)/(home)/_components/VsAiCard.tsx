@@ -5,17 +5,34 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { ChessPieceIcon } from '@blindfold-chess/icons';
 import { FaPlay, FaPlus } from 'react-icons/fa';
 
-import type { Game } from '@/lib/types';
+import { engineConfigToUrlParams } from '@/lib/engines';
+import type { Game } from '@/lib/games/saved-game-types';
 
 import { DashboardSection, DashboardSectionHeader } from '@/app/[locale]/_components';
 import { ColorIcon } from '@/app/[locale]/_components/ColorIcon';
+import { EngineConfigBadge } from '@/app/[locale]/_components/EngineConfigBadge';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import { useGameList } from '../_hooks/use-game-list';
 
 type Props = {
   locale: string;
+  'data-tour-id'?: string;
 };
+
+/**
+ * Build the Resume URL for a saved game. Must include the engine + difficulty
+ * params alongside `gameId`, because the play route reads engineConfig from
+ * the URL (not from the saved Game record) — without these, every resumed
+ * Maia game would silently boot up as Stockfish at the default skill level.
+ */
+function buildResumeHref(game: Game): string {
+  const params = new URLSearchParams({
+    gameId: game.id,
+    ...engineConfigToUrlParams(game.engineConfig),
+  });
+  return `/games/play?${params.toString()}`;
+}
 
 function ResumeGameInfo({
   game,
@@ -26,12 +43,13 @@ function ResumeGameInfo({
   movesLabel: string;
   levelLabel: string;
 }) {
+  // Same engine logo + difficulty badge as the game-list rows, so the
+  // home "vs AI" card and the /games list read identically. `levelLabel`
+  // is the localised "Lv" prefix, used for Stockfish skill levels.
   return (
     <div className="flex items-center gap-1.5 text-sm text-muted-foreground flex-wrap">
       <ColorIcon color={game.playerColor} />
-      <span className="font-medium">
-        {levelLabel} {game.skillLevel}
-      </span>
+      <EngineConfigBadge config={game.engineConfig} levelLabel={levelLabel} />
       <span aria-hidden="true">&middot;</span>
       <span>
         {game.moves.length} {movesLabel}
@@ -40,13 +58,13 @@ function ResumeGameInfo({
   );
 }
 
-export function VsAiCard({ locale }: Props) {
+export function VsAiCard({ locale, ...rest }: Props) {
   const t = useTranslations('home.vsAi');
   const { games, isLoading } = useGameList('lastPlayed', 'desc');
 
   if (isLoading) {
     return (
-      <DashboardSection>
+      <DashboardSection {...rest}>
         <div className="animate-pulse">
           {/* Top row: icon + title on left, link placeholder on right */}
           <div className="flex items-center justify-between gap-3">
@@ -82,7 +100,7 @@ export function VsAiCard({ locale }: Props) {
   const latestGame = inProgressGames[0] ?? null;
 
   return (
-    <DashboardSection>
+    <DashboardSection {...rest}>
       <DashboardSectionHeader
         icon={<ChessPieceIcon type="p" color="w" size={20} />}
         title={t('title')}
@@ -117,7 +135,7 @@ export function VsAiCard({ locale }: Props) {
 
             <div className="flex items-center gap-2 ml-auto">
               <Link
-                href={`/games/play?gameId=${latestGame.id}`}
+                href={buildResumeHref(latestGame)}
                 locale={locale}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
               >

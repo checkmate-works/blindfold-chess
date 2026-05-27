@@ -1,3 +1,5 @@
+import { getTranslations } from 'next-intl/server';
+
 import { readMoveInputPreferenceFromCookies } from '@/lib/games/move-input-cookie.server';
 import { readPeekPreferenceFromCookies } from '@/lib/games/peek-cookie.server';
 
@@ -7,12 +9,14 @@ import { MoveInputSkeleton } from './_components/MoveInputSkeleton';
 import { MovesPanelSkeleton } from './_components/MovesPanelSkeleton';
 import {
   ActionRowSkeleton,
+  AlwaysVisibleBoardSkeleton,
   IconButtonSkeleton,
   InlineBoardHeaderSkeleton,
   TextLinkSkeleton,
 } from './_components/skeletons';
 import {
   deriveMoveInputSkeletonProps,
+  shouldShowAlwaysVisibleBoard,
   shouldShowInlinePeekHeader,
   shouldShowModalPeekButton,
 } from './_lib';
@@ -37,25 +41,31 @@ export const dynamic = 'force-dynamic';
  * cookie) fall back to the `DEFAULT_MOVE_INPUT_HINT` (button, single
  * enabled mode) via the cookie reader.
  *
- * Peek-related reservations (`InlineBoardHeaderSkeleton` and the
- * `ActionRowSkeleton showBoardButton` slot) are driven by
- * `bfc_peek_pref` so inline-peek users and users who disabled the board
- * button get the correct layout during this transitional paint too.
+ * Board-presentation reservations (`AlwaysVisibleBoardSkeleton`,
+ * `InlineBoardHeaderSkeleton`, and the `ActionRowSkeleton showBoardButton`
+ * slot) are driven by `bfc_peek_pref` so each variant of
+ * boardVisibility × peekMode gets the correct layout from this
+ * transitional paint onward — without this, returning always-mode users
+ * would see ~600 px of CLS as the always-board card paints in.
  */
 export default async function GamesPlayLoading() {
-  const [moveInputHint, peekHint] = await Promise.all([
+  const [moveInputHint, peekHint, tPlay] = await Promise.all([
     readMoveInputPreferenceFromCookies(),
     readPeekPreferenceFromCookies(),
+    getTranslations('play'),
   ]);
   const moveInputSkeletonProps = deriveMoveInputSkeletonProps(moveInputHint);
   const showInlinePeekHeader = shouldShowInlinePeekHeader(peekHint);
+  const showAlwaysVisibleBoard = shouldShowAlwaysVisibleBoard(peekHint);
   const showModalPeekButton = shouldShowModalPeekButton(peekHint);
 
   return (
     <div className="space-y-8">
-      <PageTitle>
-        <span className="invisible">Loading</span>
-      </PageTitle>
+      {/* Match the initial PlayPageClient render (`isInitializing` branch),
+          which shows `t('loading')` rather than `t('title')`. Using
+          `t('title')` here causes a visible double-flash:
+          "Play Chess" → "Loading..." → "Play Chess". */}
+      <PageTitle>{tPlay('loading')}</PageTitle>
 
       <PagePanel>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -66,6 +76,13 @@ export default async function GamesPlayLoading() {
               onward. */}
           <div className="lg:col-span-2">
             <div className="flex flex-col gap-6">
+              {/* At most one of these three board-reservations fires (the
+                  `shouldShow*` helpers partition the peek-hint space, see
+                  preferences.test.ts). 'always' renders a full-size board
+                  placeholder; 'peek+inline' renders just the accordion
+                  header chrome; 'peek+modal' reserves a slot inside the
+                  action row; 'never' renders nothing extra. */}
+              {showAlwaysVisibleBoard && <AlwaysVisibleBoardSkeleton />}
               {showInlinePeekHeader && <InlineBoardHeaderSkeleton />}
               <MoveInputSkeleton
                 mode={moveInputSkeletonProps.mode}

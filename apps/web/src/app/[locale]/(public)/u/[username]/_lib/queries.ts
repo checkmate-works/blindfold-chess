@@ -1,8 +1,15 @@
+import { cache } from 'react';
+
 import { and, eq, isNull } from 'drizzle-orm';
 
 import { db, profiles } from '@/lib/db';
 
-export async function getProfileByUsername(username: string) {
+/**
+ * Wrapped with `React.cache` so the metadata generator and the page
+ * component can both call `getProfileByUsername(username)` without
+ * issuing a duplicate `profiles` lookup per request.
+ */
+export const getProfileByUsername = cache(async (username: string) => {
   const [profile] = await db
     .select({
       id: profiles.id,
@@ -24,4 +31,4 @@ export async function getProfileByUsername(username: string) {
     .limit(1);
 
   return profile ?? null;
-}
+});

@@ -1,34 +1,27 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { notFound, useRouter } from 'next/navigation';
 
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
+import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import type { MoveInputPreferenceHint } from '@/lib/games/move-input-cookie';
 import type { PeekPreferenceHint } from '@/lib/games/peek-cookie';
 
-import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
-import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
-import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useBoardFlip, useConfirmationDialogs, useMoveNavigation } from '../_hooks';
 import type { GameSession } from '../_hooks/use-game-session';
-import {
-  deriveMoveInputSkeletonProps,
-  shouldShowInlinePeekHeader,
-  shouldShowModalPeekButton,
-} from '../_lib';
-import { BoardViewModal } from './BoardViewModal';
+import { usePlayClientPreferences } from '../_hooks/use-play-client-preferences';
+import { shouldShowAlwaysVisibleBoard, shouldShowInlinePeekHeader } from '../_lib';
 import { GameInProgressPanel } from './GameInProgressPanel';
 import { InlineBoardView } from './InlineBoardView';
 import { MoveInputSkeleton } from './MoveInputSkeleton';
 import { MovesPanel } from './MovesPanel';
 import { MovesPanelSkeleton } from './MovesPanelSkeleton';
-import { OperationLogModal } from './OperationLogModal';
+import { PlayClientModals } from './PlayClientModals';
 import {
   ActionRowSkeleton,
   IconButtonSkeleton,
@@ -49,7 +42,7 @@ type Props = {
   initialMoveInputHint: MoveInputPreferenceHint;
   /**
    * Server-resolved hint for the user's board-peek preferences
-   * (`peekMode`, `showBoardButtonInGame`). Used to decide whether to
+   * (`peekMode`, `boardVisibility`). Used to decide whether to
    * reserve the `InlineBoardHeaderSkeleton` / `ActionRowSkeleton` board
    * button during the SSR + pre-hydration window, before
    * `GamePreferencesContext` has read localStorage. Once `isHydrated`
@@ -74,7 +67,6 @@ export function PlayClient({
   initialPeekHint,
   isInitializing,
 }: Props) {
-  const t = useTranslations('play');
   const router = useRouter();
 
   const {
@@ -88,7 +80,15 @@ export function PlayClient({
     isAiThinking,
   } = gameSession;
 
-  const { playerSide, startingFen, perGamePrefs, gameId } = gameConfig;
+  const {
+    playerSide,
+    engineConfig,
+    startingFen,
+    perGamePrefs,
+    initialPerGamePrefs,
+    preferenceChangeLog,
+    gameId,
+  } = gameConfig;
   const { gameStatus, playerResult, isPlayerTurn, isLoading, lastMove, gameNotFound } = gameState;
   const { moves, currentFen, formattedPgn } = moveState;
   const { value: moveInputValue, setValue: setMoveInput, error, clearMoveError } = moveInput;
@@ -101,58 +101,120 @@ export function PlayClient({
     commitMoveLog,
     recordPeek,
     recordMovePeek,
+    recordInvalid,
+    setPerGamePref,
   } = actions;
 
-  // Global preferences
-  const { preferences: globalPreferences, updatePreferences, isHydrated } = useGamePreferences();
+  // Wraps handleSubmitMove for the MoveInputPanel path: when a text /
+  // select / button submission is rejected (`=== false` return), bump the
+  // invalid-attempt counter so the operation-log entry for the eventual
+  // successful move reflects how many tries it took. Board-driven moves
+  // (handleBoardMove) use the raw handleSubmitMove — ChessBoard only
+  // emits legal moves, so a rejection there is a race / dedup and not a
+  // user mistake worth recording.
+  const handleSubmitMoveTracked = useCallback(
+    (move: AlgebraicNotation): boolean | void | Promise<void> => {
+      const result = handleSubmitMove(move);
+      if (result === false) {
+        recordInvalid();
+      }
+      return result;
+    },
+    [handleSubmitMove, recordInvalid]
+  );
 
-  // Pre-hydration skeleton shape: prefer the cookie-sourced hints from the
-  // server over `globalPreferences` (which is still the provider's defaults
-  // until localStorage is read). Once `isHydrated` flips true,
-  // `globalPreferences` becomes the source of truth — matching the
-  // localStorage value, which may or may not agree with the cookie.
-  //
-  // Reconciliation rule: cookie wins on first paint (driven by these
-  // branches); localStorage wins post-hydration (driven by
-  // `globalPreferences`). The `GamePreferencesContext` also mirrors
-  // subsequent preference changes back to the cookie so the two stay in
-  // sync on the next navigation.
-  // Pre-hydration derivation is shared with `loading.tsx` via
-  // `deriveMoveInputSkeletonProps` so the two entry points stay in lockstep.
-  const hintSkeletonProps = deriveMoveInputSkeletonProps(initialMoveInputHint);
-  const skeletonMode = isHydrated ? globalPreferences.moveInputMode : hintSkeletonProps.mode;
-  const skeletonHasModeSwitch = isHydrated
-    ? globalPreferences.enabledMoveInputModes.length >= 2
-    : hintSkeletonProps.hasModeSwitch;
-
-  // Merge per-game preferences with global preferences
-  // Per-game fields override global; other fields come from global
-  const preferences: GamePreferences = useMemo(() => {
-    if (!perGamePrefs) return globalPreferences;
-    return {
-      ...globalPreferences,
-      showBoardButtonInGame: perGamePrefs.showBoardButtonInGame,
-      highlightLastMove: perGamePrefs.highlightLastMove,
-      showOwnPieces: perGamePrefs.showOwnPieces,
-      showOpponentPieces: perGamePrefs.showOpponentPieces,
-      pieceShapeMode: perGamePrefs.pieceShapeMode,
-      pieceColors: perGamePrefs.pieceColors,
-    };
-  }, [globalPreferences, perGamePrefs]);
-
-  // Pre-hydration peek skeleton decisions: cookie hint wins on first paint,
-  // `preferences` (merged with per-game overrides) wins post-hydration. This
-  // mirrors the `skeletonMode` / `skeletonHasModeSwitch` pattern above.
-  const skeletonShowInlinePeekHeader = isHydrated
-    ? shouldShowInlinePeekHeader(preferences)
-    : shouldShowInlinePeekHeader(initialPeekHint);
-  const skeletonShowModalPeekButton = isHydrated
-    ? shouldShowModalPeekButton(preferences)
-    : shouldShowModalPeekButton(initialPeekHint);
+  const {
+    preferences,
+    updatePreferences,
+    skeletonMode,
+    skeletonHasModeSwitch,
+    skeletonShowInlinePeekHeader,
+    skeletonShowModalPeekButton,
+  } = usePlayClientPreferences({
+    perGamePrefs,
+    initialMoveInputHint,
+    initialPeekHint,
+  });
 
   // UI state
   const [isBoardVisible, setIsBoardVisible] = useState(false);
   const [showOperationLogModal, setShowOperationLogModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+
+  // Mid-game settings editing is gated on the presence of an initial
+  // per-game snapshot — without one (legacy games saved before that field
+  // existed) there is no baseline to layer edits against, and
+  // `setPerGamePref` would silently no-op. Hide the gear icon instead of
+  // surfacing an inert affordance.
+  const canEditPerGameSettings = initialPerGamePrefs !== undefined;
+
+  // Bumped once per successful player move commit. Drives the inline peek
+  // accordion's auto-collapse so each move requires a fresh expand, matching
+  // the modal mode's "1 open action = 1 peek" semantics. Also drives the
+  // scroll-to-top effect below for peek+inline users.
+  const [playerMoveCommitCount, setPlayerMoveCommitCount] = useState(0);
+  const handleMoveCommitted = useCallback(
+    (inputMethod: Parameters<typeof commitMoveLog>[0]) => {
+      commitMoveLog(inputMethod);
+      setPlayerMoveCommitCount((n) => n + 1);
+    },
+    [commitMoveLog]
+  );
+
+  // Scroll back to PageTitle after a player move commit while in peek+inline
+  // mode. The inline board auto-collapses on commit (so the area the user
+  // was looking at disappears) and the "AI is thinking" status lives in the
+  // PageTitle at the top — bringing it into the first view makes that
+  // status immediately visible without the user having to scroll back up.
+  // Modal-peek and always-visible modes don't need this: modal users have
+  // no expand area to obscure the title, and always-visible users have the
+  // board on-screen continuously anyway.
+  //
+  // Read the latest `peek+inline` predicate via a ref so the effect's only
+  // re-trigger is the commit counter — otherwise unrelated preference
+  // changes (piece colors, theme, etc.) would also cause a scroll.
+  //
+  // The scroll is dispatched via `requestAnimationFrame` so the inline
+  // board's auto-collapse layout shift (which removes the board element
+  // from the DOM and reduces document height) flushes BEFORE the smooth
+  // scroll begins. Without that deferral, some browsers cancel the
+  // in-flight smooth animation when the document height drops underneath
+  // it, leaving the page stuck at its original scroll position — exactly
+  // the symptom users observed.
+  const peekInlineModeRef = useRef(shouldShowInlinePeekHeader(preferences));
+  peekInlineModeRef.current = shouldShowInlinePeekHeader(preferences);
+  useEffect(() => {
+    if (playerMoveCommitCount === 0) return; // skip initial mount
+    if (!peekInlineModeRef.current) return;
+    const id = requestAnimationFrame(() => {
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+    });
+    return () => cancelAnimationFrame(id);
+  }, [playerMoveCommitCount]);
+
+  // Board-driven move handler — only wired through to InlineBoardView when
+  // the always-visible board is being rendered AND the player can actually
+  // move right now (their turn, no pending AI move, not browsing history).
+  // The board interaction (click-to-move + DnD) produces an already-legal
+  // SAN string, so we pass it straight to `handleSubmitMove` which runs
+  // the normal validation + commit pipeline.
+  //
+  // We commit the operation log entry directly here (rather than going
+  // through `handleMoveCommitted` like MoveInputPanel does) because board
+  // moves only happen in always-visible mode — the auto-collapse and
+  // scroll-to-title side effects of `handleMoveCommitted` are not relevant
+  // there. The log tag is `'board'` so the audit table can distinguish
+  // click/drag-driven moves from text/select/button input methods.
+  const handleBoardMove = useCallback(
+    (san: string) => {
+      const submitted = handleSubmitMove(san as AlgebraicNotation);
+      if (submitted !== false) {
+        commitMoveLog('board');
+      }
+    },
+    [handleSubmitMove, commitMoveLog]
+  );
 
   // Board flip state
   const { effectiveFlipped, toggleFlip: handleFlipBoard } = useBoardFlip({ playerSide });
@@ -216,7 +278,7 @@ export function PlayClient({
                 {/* InlineBoardView header (~46px). Reserved whenever the
                     active hint (cookie pre-hydration, preferences post-
                     hydration) says the user has `peekMode='inline'` with
-                    `showBoardButtonInGame` enabled, so returning inline
+                    `boardVisibility='peek'`, so returning inline
                     users get the correct layout from the very first paint. */}
                 {skeletonShowInlinePeekHeader && <InlineBoardHeaderSkeleton />}
                 <MoveInputSkeleton mode={skeletonMode} hasModeSwitch={skeletonHasModeSwitch} />
@@ -243,7 +305,7 @@ export function PlayClient({
                 setMoveInput={setMoveInput}
                 error={error}
                 onErrorClear={clearMoveError}
-                handleSubmitMove={handleSubmitMove}
+                handleSubmitMove={handleSubmitMoveTracked}
                 moves={moves}
                 confirmationDialogs={confirmationDialogs}
                 // Peek tracking: counts each "open" action, not view duration.
@@ -254,16 +316,32 @@ export function PlayClient({
                   setIsBoardVisible(true);
                 }}
                 playerColor={playerSide === 'black' ? 'b' : 'w'}
-                onMoveCommitted={commitMoveLog}
+                onMoveCommitted={handleMoveCommitted}
                 onMovePeek={recordMovePeek}
+                // Route MoveInputPanel's mode toggle through the per-game
+                // change-log machinery instead of mutating the user's global
+                // moveInputMode default. Same pattern as boardVisibility /
+                // peekMode — mid-game switches are session-scoped, not a
+                // global preference change.
+                setMoveInputMode={(mode) => setPerGamePref('moveInputMode', mode)}
                 onShowOperationLog={() => setShowOperationLogModal(true)}
+                onShowSettings={
+                  canEditPerGameSettings ? () => setShowSettingsModal(true) : undefined
+                }
                 aiMoveError={
                   aiMoveError.message
                     ? { message: aiMoveError.message, retry: aiMoveError.retry }
                     : null
                 }
                 inlineBoardView={
-                  shouldShowInlinePeekHeader(preferences) ? (
+                  // Render the InlineBoardView for either the peek-inline
+                  // mode (collapsible header + auto-collapse on commit) or
+                  // the always-visible mode (no chrome, board permanently
+                  // open). `alwaysOpen` switches the component between the
+                  // two; peekCount is intentionally not recorded in always
+                  // mode (`onPeek` is also a no-op there).
+                  shouldShowInlinePeekHeader(preferences) ||
+                  shouldShowAlwaysVisibleBoard(preferences) ? (
                     <InlineBoardView
                       fen={displayFen || currentFen}
                       playerSide={playerSide}
@@ -281,7 +359,23 @@ export function PlayClient({
                       onNavigateToEnd={navigateToEnd}
                       onNavigateToPosition={navigateToPosition}
                       onFlipBoard={handleFlipBoard}
-                      onPeek={recordPeek}
+                      onPeek={shouldShowAlwaysVisibleBoard(preferences) ? undefined : recordPeek}
+                      collapseSignal={playerMoveCommitCount}
+                      alwaysOpen={shouldShowAlwaysVisibleBoard(preferences)}
+                      // Interactive board moves (click-to-move + DnD) are
+                      // only enabled in always-visible mode AND when the
+                      // player can act right now. Gating on these three
+                      // conditions keeps the cursor / drag affordances
+                      // honest: no draggable handle while the AI is
+                      // thinking, no moves accepted while browsing history.
+                      onMove={
+                        shouldShowAlwaysVisibleBoard(preferences) &&
+                        isPlayerTurn &&
+                        !isLoading &&
+                        currentPosition === -1
+                          ? handleBoardMove
+                          : undefined
+                      }
                     />
                   ) : undefined
                 }
@@ -323,50 +417,17 @@ export function PlayClient({
                 onRestartFromPosition: confirmationDialogs.restart.openWithPosition,
                 onNewGameFromPosition: handleNewGameFromPosition,
               }}
+              operations={{ logs: operationLogs, playerSide }}
               showBackground={false}
             />
           )}
         </div>
       </div>
 
-      {/* Resign Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={confirmationDialogs.resign.isOpen}
-        onCancel={confirmationDialogs.resign.close}
-        onConfirm={confirmationDialogs.resign.confirm}
-        title={t('confirmResignTitle')}
-        message={t('confirmResignMessage')}
-        confirmText={t('confirmResign')}
-        cancelText={t('cancel')}
-        confirmVariant="danger"
-      />
-
-      {/* Undo Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={confirmationDialogs.undo.isOpen}
-        onCancel={confirmationDialogs.undo.close}
-        onConfirm={confirmationDialogs.undo.confirm}
-        title={t('confirmUndoTitle')}
-        message={t('confirmUndoMessage')}
-        confirmText={t('confirmUndo')}
-        cancelText={t('cancel')}
-      />
-
-      {/* Restart Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={confirmationDialogs.restart.isOpen}
-        onCancel={confirmationDialogs.restart.close}
-        onConfirm={confirmationDialogs.restart.confirm}
-        title={t('confirmRestartTitle')}
-        message={t('confirmRestartMessage')}
-        confirmText={t('confirmRestart')}
-        cancelText={t('cancel')}
-      />
-
-      {/* Board View Modal */}
-      <BoardViewModal
-        isOpen={isBoardVisible}
-        onClose={() => setIsBoardVisible(false)}
+      <PlayClientModals
+        confirmationDialogs={confirmationDialogs}
+        isBoardVisible={isBoardVisible}
+        onCloseBoardVisible={() => setIsBoardVisible(false)}
         fen={displayFen || currentFen}
         playerSide={playerSide}
         flipped={effectiveFlipped}
@@ -381,16 +442,15 @@ export function PlayClient({
         onNavigateToEnd={navigateToEnd}
         onNavigateToPosition={navigateToPosition}
         onFlipBoard={handleFlipBoard}
-      />
-
-      {/* Operation Log Modal */}
-      <OperationLogModal
-        isOpen={showOperationLogModal}
-        onClose={() => setShowOperationLogModal(false)}
-        logs={operationLogs}
-        moves={moves}
-        playerSide={playerSide}
-        startingFen={startingFen}
+        showOperationLogModal={showOperationLogModal}
+        onCloseOperationLog={() => setShowOperationLogModal(false)}
+        engineConfig={engineConfig}
+        initialPerGamePrefs={initialPerGamePrefs}
+        preferenceChangeLog={preferenceChangeLog}
+        canEditPerGameSettings={canEditPerGameSettings}
+        showSettingsModal={showSettingsModal}
+        onCloseSettingsModal={() => setShowSettingsModal(false)}
+        onPerGamePrefChange={setPerGamePref}
       />
     </div>
   );

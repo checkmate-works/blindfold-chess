@@ -2,10 +2,11 @@ import type { ReactNode } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import type { Game } from '@/lib/types';
+import type { Game } from '@/lib/games/saved-game-types';
 
 import { formatLastMove, getStatusIcon, getStatusStyles } from '../_lib/game-display-utils';
 import { ColorIcon } from './ColorIcon';
+import { EngineConfigBadge } from './EngineConfigBadge';
 
 type Props = {
   game: Game;
@@ -50,12 +51,16 @@ export function GameListItemBase({ game, before, after, statusIconClassName = ''
               <ColorIcon color={game.playerColor} />
             </div>
 
+            {/*
+             * Engine badge before the move text: the color icon and this
+             * badge are both fixed-position, so the engine logos line up
+             * in a tidy column down the list. The variable-width move text
+             * trails last, where a ragged right edge reads naturally.
+             */}
+            <EngineConfigBadge config={game.engineConfig} levelLabel={t('level')} />
+
             <span className="font-medium font-mono">
               {formatLastMove(game.moves, game.playerColor)}
-            </span>
-
-            <span className="font-medium">
-              {t('level')} {game.skillLevel}
             </span>
           </div>
         </div>
