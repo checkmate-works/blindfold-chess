@@ -2378,7 +2378,7 @@
       "publishNeedsDescriptionCta": "Open edit page"
     },
     "list": {
-      "newCta": "New chunk",
+      "newCta": "Create chunk",
       "empty": "No chunks yet.",
       "emptyDrafts": "No drafts looking for feedback right now.",
       "filterAriaLabel": "Filter chunks by status",
@@ -2390,6 +2390,17 @@
       "feedbackChip": {
         "title": "Wants title input",
         "description": "Wants description input"
+      },
+      "help": {
+        "label": "What are chunks?",
+        "catalog": {
+          "title": "A catalog of chunks",
+          "description": "Chunks are recurring piece-coordination patterns — small shapes (a rook battery, a fianchetto, a knight outpost) that strong players recognize at a glance. This page lists every chunk shared by the community so you can browse them as a pattern-recognition vocabulary."
+        },
+        "create": {
+          "title": "Create your own chunk",
+          "description": "Spotted a pattern you keep seeing in your games? Anyone signed in can publish one from this button. Save it as a draft first to collect title/description suggestions from other players, then publish when it feels right."
+        }
       }
     },
     "new": {

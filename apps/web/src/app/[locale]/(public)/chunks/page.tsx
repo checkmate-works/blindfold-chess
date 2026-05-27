@@ -17,7 +17,8 @@ import type { ChunkFeedbackTopic, ChunkStatus } from '@/lib/chunks/validation';
 import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
 
-import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { HelpTourButton, PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import type { HelpStep } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { CatalogListCard } from '@/app/[locale]/_components/CatalogListCard';
 import { PaginationNav } from '@/app/[locale]/_components/PaginationNav';
@@ -119,9 +120,41 @@ export default async function ChunksListPage({ params, searchParams }: Props) {
   const buildFilterHref = (next: FilterKey) =>
     next === 'all' ? `/chunks` : (`/chunks?filter=${next}` as '/chunks');
 
+  // Help-tour steps: explain what this catalog is and (if signed in)
+  // point at the create CTA. The CTA is only rendered for signed-in
+  // users, so the second step is suppressed otherwise to avoid the
+  // tour pointing at a missing element.
+  const helpSteps: HelpStep[] = [
+    {
+      targetId: 'chunks-list-intro',
+      title: t('list.help.catalog.title'),
+      description: t('list.help.catalog.description'),
+      side: 'bottom',
+      align: 'start',
+    },
+    ...(user
+      ? [
+          {
+            targetId: 'chunks-list-create',
+            title: t('list.help.create.title'),
+            description: t('list.help.create.description'),
+            side: 'top' as const,
+            align: 'center' as const,
+          },
+        ]
+      : []),
+  ];
+
   return (
-    <PageLayout title={t('listTitle')} locale={locale} breadcrumb={[{ label: t('listTitle') }]}>
-      <SectionTitle>{t('listSubtitle')}</SectionTitle>
+    <PageLayout
+      title={t('listTitle')}
+      titleAction={<HelpTourButton steps={helpSteps} label={t('list.help.label')} />}
+      locale={locale}
+      breadcrumb={[{ label: t('listTitle') }]}
+    >
+      <div data-tour-id="chunks-list-intro">
+        <SectionTitle>{t('listSubtitle')}</SectionTitle>
+      </div>
 
       {/*
        * Filter chips. "All" is the default landing tab; "Drafts"
@@ -211,7 +244,7 @@ export default async function ChunksListPage({ params, searchParams }: Props) {
       )}
 
       {user && (
-        <div className="py-4">
+        <div className="py-4" data-tour-id="chunks-list-create">
           <Link href="/chunks/new" locale={locale}>
             <Button asChild variant="primary" size="lg" icon={<FaPlus />} fullWidth>
               {t('list.newCta')}
