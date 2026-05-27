@@ -7,7 +7,6 @@ import { forgotPassword } from './forgotPassword';
 const mockResetPasswordForEmail = vi.fn();
 const mockGetUser = vi.fn();
 const mockGuardByIpRateLimit = vi.fn();
-const mockCheckEmailRateLimitGuard = vi.fn();
 
 vi.mock('@/lib/users/activity-log', () => ({
   logActivityEvent: vi.fn(),
@@ -24,9 +23,7 @@ vi.mock('@/lib/supabase/server', () => ({
 }));
 
 vi.mock('@/lib/security/rate-limit-ip', () => ({
-  EMAIL_RATE_LIMITS: { forgotPassword: { maxRequests: 3, windowMs: 3_600_000 } },
   guardByIpRateLimit: (...args: unknown[]) => mockGuardByIpRateLimit(...args),
-  checkEmailRateLimitGuard: (...args: unknown[]) => mockCheckEmailRateLimitGuard(...args),
 }));
 
 vi.mock('@/config', () => ({
@@ -39,7 +36,6 @@ describe('forgotPassword', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGuardByIpRateLimit.mockResolvedValue(null);
-    mockCheckEmailRateLimitGuard.mockResolvedValue(null);
     mockGetUser.mockResolvedValue({ data: { user: null } });
   });
 
@@ -80,20 +76,10 @@ describe('forgotPassword', () => {
     expect(result).toEqual({ success: true });
   });
 
-  it('should return rateLimited when email rate limit is exceeded', async () => {
-    mockCheckEmailRateLimitGuard.mockResolvedValue({ error: 'rateLimited' });
-
-    const result = await forgotPassword('test@example.com');
-
-    expect(result).toEqual({ error: 'rateLimited' });
-    expect(mockResetPasswordForEmail).not.toHaveBeenCalled();
-  });
-
-  it('should NOT run email rate limit check when email is invalid', async () => {
+  it('should return resetFailed when email is invalid', async () => {
     const result = await forgotPassword('not-an-email');
 
     expect(result).toEqual({ error: 'resetFailed' });
-    expect(mockCheckEmailRateLimitGuard).not.toHaveBeenCalled();
     expect(mockResetPasswordForEmail).not.toHaveBeenCalled();
   });
 

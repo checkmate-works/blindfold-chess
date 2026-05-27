@@ -4,11 +4,7 @@ import { SITE_URL } from '@/config';
 import { z } from 'zod';
 
 import type { ActionResult } from '@/lib/action-types';
-import {
-  EMAIL_RATE_LIMITS,
-  checkEmailRateLimitGuard,
-  guardByIpRateLimit,
-} from '@/lib/security/rate-limit-ip';
+import { guardByIpRateLimit } from '@/lib/security/rate-limit-ip';
 import { createClient } from '@/lib/supabase/server';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
@@ -25,15 +21,10 @@ export async function forgotPassword(email: string): Promise<ForgotPasswordResul
     return { error: 'resetFailed' };
   }
 
-  // Secondary per-account cap: an attacker rotating IPs still hits this.
-  const emailRateLimited = await checkEmailRateLimitGuard(
-    email,
-    'forgotPassword',
-    EMAIL_RATE_LIMITS.forgotPassword
-  );
-  if (emailRateLimited) {
-    return emailRateLimited;
-  }
+  // No per-email rate-limit guard here on purpose: it would let an attacker
+  // lock a specific account out of password recovery. The redesign
+  // (always-success response + internal suppression) is tracked in the
+  // security-hardening follow-up issue.
 
   const supabase = await createClient();
   await supabase.auth.resetPasswordForEmail(email, {

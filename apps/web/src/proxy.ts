@@ -71,16 +71,21 @@ function isAdsCookieRefreshPath(pathname: string): boolean {
  * nonce.
  *
  * Extracted into a helper so every `return` branch below can stamp the
- * headers consistently. The CSP is enforcing (not Report-Only) — violations
- * block the offending resource AND are POSTed to `/api/csp-report` via the
- * `report-to` / `report-uri` directives for observability.
+ * headers consistently. The CSP is currently emitted as `Report-Only` — the
+ * browser does NOT block violations, but POSTs them to `/api/csp-report` via
+ * the `report-to` / `report-uri` directives for observability. The plan is to
+ * flip to enforcing (`Content-Security-Policy`) once we have a preview/staging
+ * environment where the real-browser surface (Stockfish / Maia web workers,
+ * CookieYes CMP, Google Analytics, AdSense dynamic loads) can be verified.
+ * Tracking: see the GitHub issue linked from the security-hardening rollout
+ * notes.
  *
  * Both `Reporting-Endpoints` (the modern Structured-Fields header) and
  * `Report-To` (its deprecated JSON predecessor) are emitted concurrently so
  * supporting browsers use the former while older ones keep working.
  */
 function applyCspHeaders(response: NextResponse, nonce: string): NextResponse {
-  response.headers.set('Content-Security-Policy', buildCspHeader(nonce));
+  response.headers.set('Content-Security-Policy-Report-Only', buildCspHeader(nonce));
   response.headers.set('Reporting-Endpoints', buildReportingEndpointsHeader());
   response.headers.set('Report-To', buildReportToHeader());
   return response;

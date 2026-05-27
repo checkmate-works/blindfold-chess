@@ -3,11 +3,7 @@
 import { z } from 'zod';
 
 import { getLocaleFromRequest } from '@/lib/locale';
-import {
-  EMAIL_RATE_LIMITS,
-  checkEmailRateLimitGuard,
-  guardByIpRateLimit,
-} from '@/lib/security/rate-limit-ip';
+import { guardByIpRateLimit } from '@/lib/security/rate-limit-ip';
 import { createClient } from '@/lib/supabase/server';
 import { logActivityEvent } from '@/lib/users/activity-log';
 
@@ -24,15 +20,9 @@ export async function signIn(email: string, password: string): Promise<SignInRes
     return { error: 'invalidCredentials' };
   }
 
-  // Secondary per-account cap: an attacker rotating IPs still hits this.
-  const emailRateLimited = await checkEmailRateLimitGuard(
-    email,
-    'signIn',
-    EMAIL_RATE_LIMITS.signIn
-  );
-  if (emailRateLimited) {
-    return emailRateLimited;
-  }
+  // No per-email rate-limit guard here on purpose: the obvious shape lets an
+  // attacker DoS a specific account by burning the bucket. Redesign tracked
+  // in the security-hardening follow-up issue.
 
   const supabase = await createClient();
   const { error, data } = await supabase.auth.signInWithPassword({ email, password });

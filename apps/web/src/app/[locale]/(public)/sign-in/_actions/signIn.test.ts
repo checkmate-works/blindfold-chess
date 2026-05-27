@@ -32,10 +32,6 @@ vi.mock('@/lib/locale', () => ({
 
 vi.mock('@/lib/security/rate-limit-ip', () => ({
   guardByIpRateLimit: vi.fn().mockResolvedValue(null),
-  checkEmailRateLimitGuard: vi.fn().mockResolvedValue(null),
-  EMAIL_RATE_LIMITS: {
-    signIn: { maxRequests: 5, windowMs: 900_000 },
-  },
 }));
 
 const testUserId = 'user-id-00000000-0000-0000-0000-000000000001';
@@ -81,26 +77,6 @@ describe('signIn', () => {
     expect(result).toEqual({ error: 'rateLimited' });
     expect(mockLogActivityEvent).not.toHaveBeenCalled();
     expect(mockSignInWithPassword).not.toHaveBeenCalled();
-  });
-
-  it('should short-circuit when email rate limit is exceeded (after IP check)', async () => {
-    const { checkEmailRateLimitGuard } = await import('@/lib/security/rate-limit-ip');
-    vi.mocked(checkEmailRateLimitGuard).mockResolvedValueOnce({ error: 'rateLimited' });
-
-    const result = await signIn('test@example.com', 'password123');
-
-    expect(result).toEqual({ error: 'rateLimited' });
-    expect(mockSignInWithPassword).not.toHaveBeenCalled();
-    expect(mockLogActivityEvent).not.toHaveBeenCalled();
-  });
-
-  it('should NOT run email rate limit check when email is invalid (avoids enumeration oracle bleed)', async () => {
-    const { checkEmailRateLimitGuard } = await import('@/lib/security/rate-limit-ip');
-
-    const result = await signIn('not-an-email', 'password123');
-
-    expect(result).toEqual({ error: 'invalidCredentials' });
-    expect(checkEmailRateLimitGuard).not.toHaveBeenCalled();
   });
 
   it('should not log activity event when authentication fails', async () => {

@@ -70,14 +70,19 @@ describe('proxy', () => {
     expect(nonce).toMatch(/^[A-Za-z0-9+/]{22,24}={0,2}$/);
   });
 
-  it('sets an enforcing CSP header whose script-src contains the forwarded nonce', async () => {
+  it('sets a Report-Only CSP header whose script-src contains the forwarded nonce', async () => {
     const response = await proxy(makeRequest('/en'));
 
-    const csp = response.headers.get('Content-Security-Policy');
+    // CSP is currently Report-Only on purpose — see the comment on
+    // `applyCspHeaders` in proxy.ts. Flipping to enforcing requires a
+    // preview/staging surface to verify worker-src + 3rd-party loaders
+    // (Stockfish, Maia, CookieYes, GA, AdSense) in a real browser.
+    const csp = response.headers.get('Content-Security-Policy-Report-Only');
     expect(csp).toBeTruthy();
 
-    // Must be enforcing (not Report-Only).
-    expect(response.headers.get('Content-Security-Policy-Report-Only')).toBeNull();
+    // Must NOT also be enforcing — sending both would force the browser to
+    // honour the enforcing one, defeating the rollout strategy.
+    expect(response.headers.get('Content-Security-Policy')).toBeNull();
 
     const nonce = capturedRequestHeaders?.get('x-nonce');
     expect(csp).toContain(`'nonce-${nonce}'`);
