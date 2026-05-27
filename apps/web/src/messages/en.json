@@ -3179,9 +3179,9 @@
       "copyUserId": "Copy user ID",
       "copyUserIdSuccess": "Copied",
       "columnId": "ID",
-      "searchByUsername": "Search by username",
+      "searchByUsernameOrEmail": "Search by username or email",
       "searchButton": "Search",
-      "usernameLabel": "Username"
+      "usernameOrEmailLabel": "Username or email"
     },
     "tabs": {
       "users": "Users",

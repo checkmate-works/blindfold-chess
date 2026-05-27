@@ -2950,9 +2950,9 @@
       "copyUserId": "Copiar ID do usuário",
       "copyUserIdSuccess": "Copiado",
       "columnId": "ID",
-      "searchByUsername": "Buscar por nome de usuário",
+      "searchByUsernameOrEmail": "Buscar por nome de usuário ou e-mail",
       "searchButton": "Buscar",
-      "usernameLabel": "Nome de usuário"
+      "usernameOrEmailLabel": "Nome de usuário ou e-mail"
     },
     "tabs": {
       "users": "Usuários",

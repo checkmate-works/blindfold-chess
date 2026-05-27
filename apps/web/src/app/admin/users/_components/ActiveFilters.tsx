@@ -18,7 +18,7 @@ type Props = {
     banned: string;
     anonymous: string;
     deleted: string;
-    usernameLabel: string;
+    usernameOrEmailLabel: string;
   };
 };
 
@@ -95,7 +95,7 @@ export function ActiveFilters({
 
       {usernameFilter && (
         <FilterBadge
-          label={`${labels.usernameLabel}: "${usernameFilter}"`}
+          label={`${labels.usernameOrEmailLabel}: "${usernameFilter}"`}
           onRemove={() => clearOne('username')}
         />
       )}

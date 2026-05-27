@@ -88,7 +88,7 @@ export async function UsersListTab({
           banned: t('usersTable.banned'),
           anonymous: t('usersTable.anonymous'),
           deleted: t('usersTable.deleted'),
-          usernameLabel: t('usersTable.usernameLabel'),
+          usernameOrEmailLabel: t('usersTable.usernameOrEmailLabel'),
         }}
       />
 

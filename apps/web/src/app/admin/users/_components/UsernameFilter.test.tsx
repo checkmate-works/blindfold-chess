@@ -9,7 +9,7 @@ afterEach(() => {
 });
 
 const defaultLabels = {
-  searchByUsername: 'Search by username',
+  searchByUsernameOrEmail: 'Search by username or email',
   searchButton: 'Search',
 };
 
@@ -33,14 +33,14 @@ describe('UsernameFilter', () => {
     it('renders the labeled input and submit button', () => {
       renderWithNuqs();
 
-      expect(screen.getByLabelText('Search by username')).toBeInTheDocument();
+      expect(screen.getByLabelText('Search by username or email')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Search' })).toHaveAttribute('type', 'submit');
     });
 
     it('pre-fills the input from the current URL param', () => {
       renderWithNuqs({ username: 'alice' });
 
-      const input = screen.getByLabelText('Search by username') as HTMLInputElement;
+      const input = screen.getByLabelText('Search by username or email') as HTMLInputElement;
       expect(input.value).toBe('alice');
     });
   });
@@ -50,7 +50,7 @@ describe('UsernameFilter', () => {
       const onUrlUpdate = vi.fn();
       renderWithNuqs(undefined, onUrlUpdate);
 
-      const input = screen.getByLabelText('Search by username') as HTMLInputElement;
+      const input = screen.getByLabelText('Search by username or email') as HTMLInputElement;
 
       act(() => {
         fireEvent.change(input, { target: { value: '  alice  ' } });
@@ -76,7 +76,7 @@ describe('UsernameFilter', () => {
       const onUrlUpdate = vi.fn();
       renderWithNuqs({ username: 'alice', page: '3', status: 'active' }, onUrlUpdate);
 
-      const input = screen.getByLabelText('Search by username') as HTMLInputElement;
+      const input = screen.getByLabelText('Search by username or email') as HTMLInputElement;
 
       act(() => {
         fireEvent.change(input, { target: { value: '' } });
@@ -98,7 +98,7 @@ describe('UsernameFilter', () => {
       const onUrlUpdate = vi.fn();
       renderWithNuqs({ page: '5' }, onUrlUpdate);
 
-      const input = screen.getByLabelText('Search by username') as HTMLInputElement;
+      const input = screen.getByLabelText('Search by username or email') as HTMLInputElement;
 
       act(() => {
         fireEvent.change(input, { target: { value: 'bob' } });
@@ -119,7 +119,7 @@ describe('UsernameFilter', () => {
       const onUrlUpdate = vi.fn();
       renderWithNuqs({ status: 'active', provider: 'google' }, onUrlUpdate);
 
-      const input = screen.getByLabelText('Search by username') as HTMLInputElement;
+      const input = screen.getByLabelText('Search by username or email') as HTMLInputElement;
 
       act(() => {
         fireEvent.change(input, { target: { value: 'carol' } });
@@ -141,7 +141,7 @@ describe('UsernameFilter', () => {
       const onUrlUpdate = vi.fn();
       renderWithNuqs({ username: 'alice', page: '2' }, onUrlUpdate);
 
-      const input = screen.getByLabelText('Search by username') as HTMLInputElement;
+      const input = screen.getByLabelText('Search by username or email') as HTMLInputElement;
 
       act(() => {
         fireEvent.change(input, { target: { value: '   ' } });
@@ -162,7 +162,7 @@ describe('UsernameFilter', () => {
       const onUrlUpdate = vi.fn();
       renderWithNuqs(undefined, onUrlUpdate);
 
-      const input = screen.getByLabelText('Search by username') as HTMLInputElement;
+      const input = screen.getByLabelText('Search by username or email') as HTMLInputElement;
       const form = input.closest('form')!;
       // Simulate the real Enter-key submission path: listen for the native
       // `submit` event that the browser fires when Enter is pressed inside a
@@ -197,7 +197,7 @@ describe('UsernameFilter', () => {
       const onUrlUpdate = vi.fn();
       renderWithNuqs(undefined, onUrlUpdate);
 
-      const input = screen.getByLabelText('Search by username') as HTMLInputElement;
+      const input = screen.getByLabelText('Search by username or email') as HTMLInputElement;
 
       act(() => {
         fireEvent.change(input, { target: { value: 'dave' } });
