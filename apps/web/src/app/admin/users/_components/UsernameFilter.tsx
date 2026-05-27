@@ -4,7 +4,7 @@ import { parseAsInteger, parseAsString, useQueryStates } from 'nuqs';
 
 type UsernameFilterProps = {
   labels: {
-    searchByUsername: string;
+    searchByUsernameOrEmail: string;
     searchButton: string;
   };
 };
@@ -36,7 +36,7 @@ export function UsernameFilter({ labels }: UsernameFilterProps) {
     <form onSubmit={handleSubmit} className="mb-4 flex items-end gap-2" role="search">
       <div className="flex-1 max-w-sm">
         <label htmlFor="username-filter" className="block text-sm font-medium mb-1">
-          {labels.searchByUsername}
+          {labels.searchByUsernameOrEmail}
         </label>
         <input
           key={username}
@@ -44,7 +44,7 @@ export function UsernameFilter({ labels }: UsernameFilterProps) {
           name="username"
           type="search"
           defaultValue={username}
-          placeholder={labels.searchByUsername}
+          placeholder={labels.searchByUsernameOrEmail}
           className="w-full border border-border rounded px-3 py-2 text-sm bg-card"
         />
       </div>

@@ -116,7 +116,7 @@ export default async function AdminUsersPage({
 
       <UsernameFilter
         labels={{
-          searchByUsername: t('usersTable.searchByUsername'),
+          searchByUsernameOrEmail: t('usersTable.searchByUsernameOrEmail'),
           searchButton: t('usersTable.searchButton'),
         }}
       />

@@ -1188,6 +1188,136 @@ describe('fetchFilteredUsers — rank filter', () => {
   });
 });
 
+describe('fetchFilteredUsers — username/email filter', () => {
+  it('should match users by partial username (case-insensitive)', async () => {
+    const mockUsers = [
+      { id: 'user-1', email: 'a@example.com' },
+      { id: 'user-2', email: 'b@example.com' },
+      { id: 'user-3', email: 'c@example.com' },
+    ];
+    const mockAdminClient = createMockAdminClient(mockUsers);
+
+    await setupFilterMock({
+      profileRows: [
+        { id: 'user-1', username: 'Alice', country: 'JP', bannedAt: null, deletedAt: null },
+        { id: 'user-2', username: 'bob', country: 'JP', bannedAt: null, deletedAt: null },
+        { id: 'user-3', username: 'carol', country: 'JP', bannedAt: null, deletedAt: null },
+      ] as never,
+      rankRows: STANDARD_RANK_ROWS,
+      userRankRows: [],
+    });
+
+    const { fetchUsersPageData } = await import('./queries');
+    const result = await fetchUsersPageData(mockAdminClient as never, 1, {
+      ...EMPTY_ADMIN_USER_FILTERS,
+      usernameFilter: 'ALI',
+    });
+
+    expect(result.totalCount).toBe(1);
+    expect(result.users.map((u) => u.id)).toEqual(['user-1']);
+  });
+
+  it('should match users by partial email when username does not match', async () => {
+    const mockUsers = [
+      { id: 'user-1', email: 'alice@example.com' },
+      { id: 'user-2', email: 'bob@other.org' },
+      { id: 'user-3', email: 'carol@example.com' },
+    ];
+    const mockAdminClient = createMockAdminClient(mockUsers);
+
+    await setupFilterMock({
+      profileRows: [
+        { id: 'user-1', username: 'a1', country: 'JP', bannedAt: null, deletedAt: null },
+        { id: 'user-2', username: 'b2', country: 'JP', bannedAt: null, deletedAt: null },
+        { id: 'user-3', username: 'c3', country: 'JP', bannedAt: null, deletedAt: null },
+      ] as never,
+      rankRows: STANDARD_RANK_ROWS,
+      userRankRows: [],
+    });
+
+    const { fetchUsersPageData } = await import('./queries');
+    const result = await fetchUsersPageData(mockAdminClient as never, 1, {
+      ...EMPTY_ADMIN_USER_FILTERS,
+      usernameFilter: 'example.com',
+    });
+
+    expect(result.totalCount).toBe(2);
+    expect(result.users.map((u) => u.id).sort()).toEqual(['user-1', 'user-3']);
+  });
+
+  it('should match email case-insensitively', async () => {
+    const mockUsers = [
+      { id: 'user-1', email: 'Alice@Example.Com' },
+      { id: 'user-2', email: 'bob@other.org' },
+    ];
+    const mockAdminClient = createMockAdminClient(mockUsers);
+
+    await setupFilterMock({
+      profileRows: [
+        { id: 'user-1', username: 'a1', country: 'JP', bannedAt: null, deletedAt: null },
+        { id: 'user-2', username: 'b2', country: 'JP', bannedAt: null, deletedAt: null },
+      ] as never,
+      rankRows: STANDARD_RANK_ROWS,
+      userRankRows: [],
+    });
+
+    const { fetchUsersPageData } = await import('./queries');
+    const result = await fetchUsersPageData(mockAdminClient as never, 1, {
+      ...EMPTY_ADMIN_USER_FILTERS,
+      usernameFilter: 'ALICE@example',
+    });
+
+    expect(result.totalCount).toBe(1);
+    expect(result.users[0]!.id).toBe('user-1');
+  });
+
+  it('should match anonymous users (no profile) by email', async () => {
+    const mockUsers = [
+      { id: 'user-1', email: 'anon@example.com' },
+      { id: 'user-2', email: 'other@elsewhere.io' },
+    ];
+    const mockAdminClient = createMockAdminClient(mockUsers);
+
+    await setupFilterMock({
+      // No profile rows → both users are anonymous
+      profileRows: [],
+      rankRows: STANDARD_RANK_ROWS,
+      userRankRows: [],
+    });
+
+    const { fetchUsersPageData } = await import('./queries');
+    const result = await fetchUsersPageData(mockAdminClient as never, 1, {
+      ...EMPTY_ADMIN_USER_FILTERS,
+      usernameFilter: 'anon@',
+    });
+
+    expect(result.totalCount).toBe(1);
+    expect(result.users[0]!.id).toBe('user-1');
+  });
+
+  it('should return no users when neither username nor email match', async () => {
+    const mockUsers = [{ id: 'user-1', email: 'alice@example.com' }];
+    const mockAdminClient = createMockAdminClient(mockUsers);
+
+    await setupFilterMock({
+      profileRows: [
+        { id: 'user-1', username: 'alice', country: 'JP', bannedAt: null, deletedAt: null },
+      ] as never,
+      rankRows: STANDARD_RANK_ROWS,
+      userRankRows: [],
+    });
+
+    const { fetchUsersPageData } = await import('./queries');
+    const result = await fetchUsersPageData(mockAdminClient as never, 1, {
+      ...EMPTY_ADMIN_USER_FILTERS,
+      usernameFilter: 'zzz',
+    });
+
+    expect(result.totalCount).toBe(0);
+    expect(result.users).toEqual([]);
+  });
+});
+
 describe('fetchFilteredUsers — combined filters (AND)', () => {
   it('should apply status AND country AND rank filters together', async () => {
     const mockUsers = [

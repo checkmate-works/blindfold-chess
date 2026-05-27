@@ -44,7 +44,7 @@ export const getAllRanks = cache(async (): Promise<Map<string, Rank>> => {
 export const getFilteredPopulation = cache(
   async (adminClient: SupabaseClient, filters: AdminUserFilters): Promise<FilteredPopulation> => {
     const { statusFilter, countryFilter, rankFilter, providerFilter, usernameFilter } = filters;
-    const normalizedUsernameQuery = usernameFilter.trim().toLowerCase();
+    const normalizedSearchQuery = usernameFilter.trim().toLowerCase();
     const allUsers = await listAllAuthUsers(adminClient);
     const allUserIds = allUsers.map((u) => u.id);
 
@@ -119,14 +119,16 @@ export const getFilteredPopulation = cache(
         if (getSignupMethod(user) !== providerFilter) return false;
       }
 
-      // Username filter — case-insensitive partial match on profiles.username.
-      // Users without a profile (anonymous) never match; `username` is
-      // non-null on the profiles table, so a present profile always has a
-      // comparable string.
-      if (normalizedUsernameQuery) {
-        const username = profile?.username;
-        if (!username) return false;
-        if (!username.toLowerCase().includes(normalizedUsernameQuery)) return false;
+      // Search filter — case-insensitive partial match on either
+      // `profiles.username` or `auth.users.email`. Anonymous users (no
+      // profile) can still match by email; unverified/missing emails fall
+      // through to the username comparison.
+      if (normalizedSearchQuery) {
+        const username = profile?.username?.toLowerCase();
+        const email = user.email?.toLowerCase();
+        const usernameMatches = username?.includes(normalizedSearchQuery) ?? false;
+        const emailMatches = email?.includes(normalizedSearchQuery) ?? false;
+        if (!usernameMatches && !emailMatches) return false;
       }
 
       return true;

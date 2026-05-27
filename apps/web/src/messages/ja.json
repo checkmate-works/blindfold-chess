@@ -3179,9 +3179,9 @@
       "copyUserId": "ユーザーIDをコピー",
       "copyUserIdSuccess": "コピーしました",
       "columnId": "ID",
-      "searchByUsername": "ユーザー名で検索",
+      "searchByUsernameOrEmail": "ユーザー名またはメールアドレスで検索",
       "searchButton": "検索",
-      "usernameLabel": "ユーザー名"
+      "usernameOrEmailLabel": "ユーザー名/メール"
     },
     "tabs": {
       "users": "ユーザー",
