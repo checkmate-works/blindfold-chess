@@ -874,6 +874,9 @@
     "positionMemory": {
       "title": "Memoria de Posiciones",
       "description": "Entrena tu capacidad para recordar y recrear posiciones de ajedrez",
+      "custom": {
+        "title": "Problema Personalizado"
+      },
       "like": "Me gusta",
       "unlike": "Quitar me gusta",
       "newReply": "Nueva Respuesta {time}",

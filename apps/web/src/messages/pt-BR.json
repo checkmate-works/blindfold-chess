@@ -874,6 +874,9 @@
     "positionMemory": {
       "title": "Memória de Posições",
       "description": "Treine sua capacidade de lembrar e recriar posições de xadrez",
+      "custom": {
+        "title": "Problema Personalizado"
+      },
       "like": "Curtir",
       "unlike": "Descurtir",
       "newReply": "Nova Resposta {time}",

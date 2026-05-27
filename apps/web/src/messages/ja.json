@@ -878,6 +878,9 @@
     "positionMemory": {
       "title": "ポジションの記憶",
       "description": "チェスの位置を記憶して再現する能力を訓練",
+      "custom": {
+        "title": "カスタム問題"
+      },
       "like": "いいね",
       "unlike": "いいね解除",
       "newReply": "新しい返信 {time}",

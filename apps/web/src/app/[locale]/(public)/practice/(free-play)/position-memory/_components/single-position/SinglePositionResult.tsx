@@ -25,7 +25,13 @@ import type { PositionAccuracy } from '../../_lib/types';
 
 type Props = {
   locale: Locale;
-  positionId: string;
+  /**
+   * Locale-relative session route the "try again" button restarts (without
+   * query), e.g. `/practice/position-memory/<id>/session` or
+   * `/practice/position-memory/custom/<token>/session`. Decouples this view
+   * from whether the run came from a saved position or an instant one.
+   */
+  sessionPath: string;
   adBannerStandard?: ReactNode;
   breadcrumb?: ReactNode;
   expInfo?: ExpInfo | null;
@@ -33,7 +39,7 @@ type Props = {
 
 export function SinglePositionResult({
   locale,
-  positionId,
+  sessionPath,
   adBannerStandard,
   breadcrumb,
   expInfo,
@@ -162,10 +168,7 @@ export function SinglePositionResult({
 
           {/* Action Buttons */}
           <div className="space-y-3">
-            <Link
-              href={`/${locale}/practice/position-memory/${positionId}/session?timeLimit=${timeLimit}`}
-              className="block"
-            >
+            <Link href={`/${locale}${sessionPath}?timeLimit=${timeLimit}`} className="block">
               <Button variant="primary" size="lg" fullWidth>
                 {t('detail.tryAgain')}
               </Button>

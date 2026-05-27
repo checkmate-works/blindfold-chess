@@ -66,6 +66,40 @@ export function buildMultiResultUrl({
   return `/${locale}/practice/position-memory/result?${params.toString()}`;
 }
 
+export type BuildCustomResultUrlArgs = {
+  locale: Locale;
+  /** Base64URL FEN token identifying the instant problem (for "try again"). */
+  token: string;
+  timeLimit: number;
+  results: SerializedResultItem[];
+  stats: SerializedStats;
+};
+
+/**
+ * Build the result-page URL for an instant ("custom") single-position run.
+ *
+ * Identical payload to {@link buildSingleResultUrl}, but the run is keyed by
+ * the Base64URL FEN `token` instead of a DB position id, and there is never an
+ * EXP grant to thread through (no `?grant=`).
+ */
+export function buildCustomResultUrl({
+  locale,
+  token,
+  timeLimit,
+  results,
+  stats,
+}: BuildCustomResultUrlArgs): string {
+  const first = results[0];
+  const params = new URLSearchParams();
+  params.set('score', (first?.a ?? 0).toFixed(1));
+  params.set('total', '100');
+  params.set('data', serializeResults(results));
+  params.set('stats', serializeStats(stats));
+  params.set('timeLimit', timeLimit.toString());
+
+  return `/${locale}/practice/position-memory/custom/${token}/result?${params.toString()}`;
+}
+
 export type BuildSingleResultUrlArgs = {
   locale: Locale;
   positionId: string;

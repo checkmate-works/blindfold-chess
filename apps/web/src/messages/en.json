@@ -878,6 +878,9 @@
     "positionMemory": {
       "title": "Position Memory",
       "description": "Train your ability to remember and recreate chess positions",
+      "custom": {
+        "title": "Custom Problem"
+      },
       "like": "Like",
       "unlike": "Unlike",
       "newReply": "New Reply {time}",

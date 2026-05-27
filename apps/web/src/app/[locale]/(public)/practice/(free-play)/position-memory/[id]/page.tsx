@@ -233,7 +233,10 @@ export default async function PositionDetailPage({ params, searchParams }: Props
 
       <SectionTitle>{t('detail.solveSection')}</SectionTitle>
 
-      <PositionStartForm positionId={position.id} locale={locale} />
+      <PositionStartForm
+        sessionPath={`/practice/position-memory/${position.id}/session`}
+        locale={locale}
+      />
 
       <SectionTitle>{tComments('commentsTitle')}</SectionTitle>
 
