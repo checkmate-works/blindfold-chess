@@ -23,8 +23,8 @@ export async function forgotPassword(email: string): Promise<ForgotPasswordResul
 
   // No per-email rate-limit guard here on purpose: it would let an attacker
   // lock a specific account out of password recovery. The redesign
-  // (always-success response + internal suppression) is tracked in the
-  // security-hardening follow-up issue.
+  // (always-success response + internal suppression) is tracked in GitHub
+  // issue #89.
 
   const supabase = await createClient();
   await supabase.auth.resetPasswordForEmail(email, {

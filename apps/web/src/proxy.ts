@@ -77,8 +77,7 @@ function isAdsCookieRefreshPath(pathname: string): boolean {
  * flip to enforcing (`Content-Security-Policy`) once we have a preview/staging
  * environment where the real-browser surface (Stockfish / Maia web workers,
  * CookieYes CMP, Google Analytics, AdSense dynamic loads) can be verified.
- * Tracking: see the GitHub issue linked from the security-hardening rollout
- * notes.
+ * Tracking: GitHub issue #89.
  *
  * Both `Reporting-Endpoints` (the modern Structured-Fields header) and
  * `Report-To` (its deprecated JSON predecessor) are emitted concurrently so
