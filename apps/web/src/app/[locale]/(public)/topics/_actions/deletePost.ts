@@ -2,6 +2,8 @@
 
 import { revalidatePath } from 'next/cache';
 
+import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';
+
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
@@ -18,6 +20,8 @@ import { buildTopicDetailPath } from '../_lib/topic-paths';
 export type DeletePostResult = ActionResult;
 
 export async function deletePost(postId: string, locale: string): Promise<DeletePostResult> {
+  assertSupportedLocale(locale);
+
   const guardResult = await authenticateAndGuard(RATE_LIMITS.deletePost);
   if ('error' in guardResult) {
     return { error: guardResult.error };

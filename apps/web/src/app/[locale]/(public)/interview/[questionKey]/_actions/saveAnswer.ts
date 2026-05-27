@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 
+import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';
 import { eq } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
@@ -22,6 +23,8 @@ export async function saveAnswerAction(
   _prevState: SaveAnswerResult | null,
   formData: FormData
 ): Promise<SaveAnswerResult> {
+  assertSupportedLocale(locale);
+
   const answerValue = formData.get('answerValue') as string | null;
 
   const guardResult = await authenticateAndGuard(RATE_LIMITS.saveInterviewAnswer);

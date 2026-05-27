@@ -63,6 +63,7 @@ vi.mock('@/lib/security/rate-limit', () => ({
 // regardless of `process.env.NEXT_PUBLIC_SITE_URL` in the test runner.
 vi.mock('@/config', () => ({
   SITE_URL: 'https://test.example.com',
+  SUPPORTED_LOCALES: ['en', 'es', 'pt-BR', 'ja'] as const,
 }));
 
 const { createCheckoutSession } = await import('./createCheckoutSession');

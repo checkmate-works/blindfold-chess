@@ -18,6 +18,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { ChallengeCard } from '@/app/_components';
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV, SITE_URL } from '@/config';
 
+import { resolveCspNonce } from '@/lib/security/nonce';
 import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
 
 import { RankBadge } from '@/app/[locale]/(public)/practice/_components/RankBadge';
@@ -149,9 +150,11 @@ export default async function PracticePage({ params }: Props) {
     }))
   );
 
+  const nonce = await resolveCspNonce();
+
   return (
     <>
-      <JsonLd data={generateItemListSchema(itemListItems)} />
+      <JsonLd data={generateItemListSchema(itemListItems)} nonce={nonce} />
       <PageLayout
         title={t('practice.title')}
         locale={locale}

@@ -2,6 +2,8 @@
 
 import { redirect } from 'next/navigation';
 
+import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';
+
 import { authenticateAndCheckBan } from '@/lib/auth';
 import { db, feedItems, topicPosts } from '@/lib/db';
 import type { DbTx } from '@/lib/db/types';
@@ -81,6 +83,8 @@ export async function createPostBase(params: {
     topicAuthorId,
     formData,
   } = params;
+
+  assertSupportedLocale(locale);
 
   const shouldEmitFeedItem = emitFeedItem ?? true;
 

@@ -88,4 +88,45 @@ describe('createAdBanner', () => {
     expect(result).toEqual({ success: true, id: generatedId });
     expect(mockInsertValuesReturning).toHaveBeenCalled();
   });
+
+  it('should reject javascript: href', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createAdBanner({ ...validData, href: 'javascript:alert(1)' });
+    expect(result).toEqual({ error: 'invalid href' });
+    expect(mockInsertValuesReturning).not.toHaveBeenCalled();
+  });
+
+  it('should reject data: href', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createAdBanner({
+      ...validData,
+      href: 'data:text/html,<script>alert(1)</script>',
+    });
+    expect(result).toEqual({ error: 'invalid href' });
+    expect(mockInsertValuesReturning).not.toHaveBeenCalled();
+  });
+
+  it('should reject unparseable href', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createAdBanner({ ...validData, href: 'not a url' });
+    expect(result).toEqual({ error: 'invalid href' });
+    expect(mockInsertValuesReturning).not.toHaveBeenCalled();
+  });
+
+  it('should accept https URLs with query strings', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: adminUserId } } });
+    mockSelectFromWhere.mockReturnValue([{ role: 'admin' }]);
+
+    const result = await createAdBanner({
+      ...validData,
+      href: 'https://example.com/path?x=1',
+    });
+    expect(result).toEqual({ success: true, id: generatedId });
+  });
 });

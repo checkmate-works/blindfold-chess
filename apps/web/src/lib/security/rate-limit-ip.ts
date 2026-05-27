@@ -1,68 +1,40 @@
+/**
+ * Key-based rate limiting — PostgreSQL fixed-window counter.
+ *
+ * @description
+ * Provides a database-backed rate limiter for unauthenticated endpoints that
+ * cannot key on a user UUID (sign-in, sign-up, password reset, email resend,
+ * contact form). Events are recorded in `rate_limit_key_events` and counted
+ * per (subjectKey, action) pair within the configured time window.
+ *
+ * Two key namespaces are used:
+ *   - `ip:<ip>`       — keyed on the client IP (see `getClientIp`).
+ *   - `email:<sha256>` — keyed on `SHA-256(email.toLowerCase().trim())`, used
+ *                        as a secondary per-account ceiling so an attacker
+ *                        distributing across many IPs still hits a limit.
+ *
+ * @design Shared storage, cross-instance
+ *
+ * The previous implementation used a module-scope `Map`, which was per-Vercel-
+ * instance and cleared on cold start — effectively ornamental. Persisting
+ * events in Postgres gives cross-instance, cold-start-durable accounting that
+ * matches the `rate_limit_events` (user-keyed) limiter.
+ *
+ * @design Parallel table to rate_limit_events
+ *
+ * `rate_limit_events.user_id` is `uuid NOT NULL` with a FK to `auth.users`,
+ * so it cannot hold free-form keys like `ip:1.2.3.4`. A separate table
+ * (`rate_limit_key_events`) avoids widening the existing schema and keeps
+ * the user-keyed limiter untouched.
+ */
+import { and, count, eq, gt, sql } from 'drizzle-orm';
+import { createHash } from 'node:crypto';
+import 'server-only';
+
+import { db, rateLimitKeyEvents } from '../db';
 import { getClientIp } from './client-ip';
 
 export type IpRateLimitConfig = { maxRequests: number; windowMs: number };
-
-type Entry = {
-  count: number;
-  resetAt: number;
-};
-
-const store = new Map<string, Entry>();
-
-function cleanup() {
-  const now = Date.now();
-  for (const [key, entry] of store) {
-    if (now >= entry.resetAt) {
-      store.delete(key);
-    }
-  }
-}
-
-/** Visible for testing only. */
-export function _resetStore() {
-  store.clear();
-}
-
-/**
- * Check whether a request from the given IP for the given action is allowed
- * under the specified rate limit configuration.
- *
- * Uses an in-memory fixed-window approach keyed by `${ip}:${action}`.
- *
- * Limitations:
- * - Because the store is an in-memory `Map`, rate-limit state is not shared
- *   across instances in a multi-instance deployment.
- * - In serverless environments (Vercel Functions, etc.) the store is reset on
- *   every cold start, which reduces the accuracy of the limit.
- * - These limitations are mitigated by a second layer of DB-based rate
- *   limiting (rate-limit.ts) running alongside this one.
- *
- * TODO: As traffic grows, migrate to a Redis-backed implementation (e.g.,
- * Upstash) so that rate-limit state can be shared across instances.
- */
-export function checkIpRateLimit(
-  ip: string,
-  action: string,
-  config: IpRateLimitConfig
-): { allowed: boolean } {
-  cleanup();
-
-  const now = Date.now();
-  const key = `${ip}:${action}`;
-  const entry = store.get(key);
-
-  if (!entry || now >= entry.resetAt) {
-    store.set(key, { count: 1, resetAt: now + config.windowMs });
-    return { allowed: true };
-  }
-
-  if (entry.count < config.maxRequests) {
-    entry.count++;
-    return { allowed: true };
-  }
-
-  return { allowed: false };
-}
 
 export const IP_RATE_LIMITS = {
   signIn: { maxRequests: 10, windowMs: 300_000 }, // 5 min, 10 requests
@@ -70,26 +42,124 @@ export const IP_RATE_LIMITS = {
   forgotPassword: { maxRequests: 3, windowMs: 300_000 }, // 5 min, 3 requests
   resendEmail: { maxRequests: 3, windowMs: 300_000 }, // 5 min, 3 requests
   resetPassword: { maxRequests: 5, windowMs: 300_000 }, // 5 min, 5 requests
+  contact: { maxRequests: 3, windowMs: 60_000 }, // 1 min, 3 requests
 } as const;
+
+/**
+ * Secondary per-account rate limits keyed by `SHA-256(email)`.
+ *
+ * Applied in addition to the IP limit for flows where the submitted email is
+ * the attacker's effective target (sign-in, password reset). Tighter than the
+ * IP limits on purpose: an attacker rotating IPs still hits these.
+ *
+ * NOT applied to sign-up (would create an email-enumeration oracle: the
+ * attacker could learn whether an email has already been used by whether it
+ * trips the limit faster than expected).
+ */
+export const EMAIL_RATE_LIMITS = {
+  signIn: { maxRequests: 5, windowMs: 900_000 }, // 15 min, 5 attempts per email
+  forgotPassword: { maxRequests: 3, windowMs: 3_600_000 }, // 1 hour, 3 per email
+} as const;
+
+function windowStartSql(windowMs: number) {
+  return sql`now() - ${windowMs / 1000.0}::double precision * interval '1 second'`;
+}
+
+async function countEventsInWindow(
+  subjectKey: string,
+  action: string,
+  windowMs: number
+): Promise<number> {
+  const [result] = await db
+    .select({ count: count() })
+    .from(rateLimitKeyEvents)
+    .where(
+      and(
+        eq(rateLimitKeyEvents.subjectKey, subjectKey),
+        eq(rateLimitKeyEvents.action, action),
+        gt(rateLimitKeyEvents.createdAt, windowStartSql(windowMs))
+      )
+    );
+
+  return result.count;
+}
+
+/**
+ * Check whether a given subject key for the given action is under the limit.
+ *
+ * If under the limit, a new event is inserted and `{ allowed: true }` returned.
+ * If at or over the limit, NO event is inserted and `{ allowed: false }` is
+ * returned.
+ */
+async function checkKeyRateLimit(
+  subjectKey: string,
+  action: string,
+  config: IpRateLimitConfig
+): Promise<{ allowed: boolean }> {
+  const current = await countEventsInWindow(subjectKey, action, config.windowMs);
+  if (current >= config.maxRequests) {
+    return { allowed: false };
+  }
+
+  await db.insert(rateLimitKeyEvents).values({ subjectKey, action });
+  return { allowed: true };
+}
 
 /**
  * IP-based rate limit guard for Server Actions (unauthenticated endpoints).
  *
- * Resolves the client IP and checks the in-memory rate limiter.
- * Returns `{ error: 'rateLimited' }` if the limit is exceeded, or `null` if allowed.
+ * Returns `{ error: 'rateLimited' }` if the limit is exceeded, or `null` if
+ * the request is allowed (and an event has been recorded).
  *
- * @param ip - The client IP address (from `getClientIp()`), or `null` if unavailable.
- * @param key - The action key for the rate limiter (e.g., `'signIn'`).
+ * @param ip - The client IP address (from `getClientIp()`), or `null` if
+ *   unavailable. A `null` IP is mapped to a shared `unknown` bucket so that
+ *   rate limiting cannot be bypassed by spoofing malformed headers that make
+ *   IP extraction fail.
+ * @param action - The action key for the rate limiter (e.g. `'signIn'`).
  * @param config - The IP rate limit configuration.
  */
-export function checkIpRateLimitGuard(
+export async function checkIpRateLimitGuard(
   ip: string | null,
-  key: string,
+  action: string,
   config: IpRateLimitConfig
-): { error: 'rateLimited' } | null {
-  // Use a shared bucket for null IPs so they cannot bypass rate limiting.
+): Promise<{ error: 'rateLimited' } | null> {
   const effectiveIp = ip ?? 'unknown';
-  const { allowed } = checkIpRateLimit(effectiveIp, key, config);
+  const { allowed } = await checkKeyRateLimit(`ip:${effectiveIp}`, action, config);
+  if (!allowed) {
+    return { error: 'rateLimited' };
+  }
+  return null;
+}
+
+/**
+ * Hash an email for use as a rate-limit key. Lowercased + trimmed first to
+ * normalise trivial casing / whitespace differences; SHA-256 to avoid storing
+ * the raw email as the limiter key (the limiter table is server-side only,
+ * but hashing also prevents accidental leakage via logs / backups).
+ */
+function hashEmail(email: string): string {
+  return createHash('sha256').update(email.toLowerCase().trim()).digest('hex');
+}
+
+/**
+ * Email-based rate limit guard for Server Actions (unauthenticated endpoints).
+ *
+ * Secondary cap that applies *in addition to* the IP guard. An attacker
+ * distributing a password-spray attack across thousands of IPs would still
+ * hit this per-account ceiling.
+ *
+ * @param email - The submitted email address. Callers should pass the raw
+ *   input; normalisation (lowercase + trim + hash) happens here.
+ * @param action - The action key for the rate limiter (e.g. `'signIn'`).
+ * @param config - The email rate limit configuration.
+ */
+export async function checkEmailRateLimitGuard(
+  email: string,
+  action: string,
+  config: IpRateLimitConfig
+): Promise<{ error: 'rateLimited' } | null> {
+  const hashed = hashEmail(email);
+  const { allowed } = await checkKeyRateLimit(`email:${hashed}`, action, config);
   if (!allowed) {
     return { error: 'rateLimited' };
   }

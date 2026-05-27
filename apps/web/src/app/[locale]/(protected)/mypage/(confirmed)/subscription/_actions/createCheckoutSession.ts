@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation';
 
 import { SITE_URL } from '@/config';
+import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';
 import type Stripe from 'stripe';
 
 import { getAuthenticatedUser } from '@/lib/auth';
@@ -13,6 +14,8 @@ import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
 type CheckoutError = { error: 'rateLimited' | 'sessionCreationFailed' };
 
 export async function createCheckoutSession(locale: string): Promise<CheckoutError> {
+  assertSupportedLocale(locale);
+
   const user = await getAuthenticatedUser();
 
   // Rate limit

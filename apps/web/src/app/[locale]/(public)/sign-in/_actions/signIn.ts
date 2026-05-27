@@ -20,6 +20,10 @@ export async function signIn(email: string, password: string): Promise<SignInRes
     return { error: 'invalidCredentials' };
   }
 
+  // No per-email rate-limit guard here on purpose: the obvious shape lets an
+  // attacker DoS a specific account by burning the bucket. Redesign tracked
+  // in GitHub issue #89.
+
   const supabase = await createClient();
   const { error, data } = await supabase.auth.signInWithPassword({ email, password });
 

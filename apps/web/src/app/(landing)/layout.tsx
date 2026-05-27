@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getMessages, getTranslations } from 'next-intl/server';
 import { Inter } from 'next/font/google';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 
 import { EnvironmentRibbon } from '@/app/_components/EnvironmentRibbon';
 import { GoogleScripts } from '@/app/_components/GoogleScripts';
@@ -43,11 +43,16 @@ export function generateMetadata(): Metadata {
 
 export default async function LandingLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocaleFromRequest();
-  const [t, cookieStore, bannerAnnouncement] = await Promise.all([
+  const [t, cookieStore, bannerAnnouncement, requestHeaders] = await Promise.all([
     getTranslations({ locale, namespace: 'metadata' }),
     cookies(),
     getLatestBannerAnnouncement(locale),
+    headers(),
   ]);
+  // Per-request CSP nonce (set by src/proxy.ts). Forwarded to every inline
+  // <script> / <style> this layout emits so the enforcing `script-src` policy
+  // lets them execute.
+  const nonce = requestHeaders.get('x-nonce') ?? undefined;
 
   // Load the full client-side message dictionary so that Client Components
   // rendered below (e.g. `LockedRankIndicator` via `RanksSection` →
@@ -76,9 +81,13 @@ export default async function LandingLayout({ children }: { children: React.Reac
     <html lang={locale} data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <ThemeScript />
-        <JsonLd data={generateWebSiteSchema(locale, t('siteName'))} />
-        <JsonLd data={generateOrganizationSchema()} />
-        <style dangerouslySetInnerHTML={{ __html: generateThemeCSS() }} />
+        <JsonLd data={generateWebSiteSchema(locale, t('siteName'))} nonce={nonce} />
+        <JsonLd data={generateOrganizationSchema()} nonce={nonce} />
+        <style
+          nonce={nonce}
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: generateThemeCSS() }}
+        />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
         <EnvironmentRibbon />

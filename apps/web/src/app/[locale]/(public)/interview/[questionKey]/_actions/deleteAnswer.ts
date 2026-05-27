@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 
+import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';
 import { and, eq, isNull } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
@@ -16,6 +17,8 @@ export async function deleteAnswerAction(
   answerId: string,
   locale: string
 ): Promise<DeleteAnswerResult> {
+  assertSupportedLocale(locale);
+
   const guardResult = await authenticateAndGuard(RATE_LIMITS.deleteInterviewAnswer);
   if ('error' in guardResult) {
     return { error: guardResult.error };

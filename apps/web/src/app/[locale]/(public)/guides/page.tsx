@@ -18,6 +18,7 @@ import { SITE_URL, SUPPORTED_LOCALES } from '@/config';
 import enMessages from '@/messages/en.json';
 
 import { buildGuidePath, enumerateGuideRoutes } from '@/lib/guides';
+import { resolveCspNonce } from '@/lib/security/nonce';
 import { JsonLd, generateItemListSchema } from '@/lib/seo/jsonld';
 
 import { PageLayout } from '@/app/[locale]/_components';
@@ -53,9 +54,11 @@ export default async function GuidesTopPage({ params }: LocalePageProps) {
     url: `${SITE_URL}${buildGuidePath(locale, route.slug, { kind: 'root' })}`,
   }));
 
+  const nonce = await resolveCspNonce();
+
   return (
     <>
-      <JsonLd data={generateItemListSchema(itemListItems)} />
+      <JsonLd data={generateItemListSchema(itemListItems)} nonce={nonce} />
       <PageLayout title={t('top.title')} locale={locale}>
         <div className="space-y-10">
           {sections.map(({ id, Component }) => (

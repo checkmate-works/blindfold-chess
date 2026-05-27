@@ -1,3 +1,4 @@
+import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';
 import { eq } from 'drizzle-orm';
 
 import { db, positions } from '@/lib/db';
@@ -24,6 +25,8 @@ export async function togglePositionLike(
   positionId: string,
   locale: string
 ): Promise<ToggleLikeResult> {
+  assertSupportedLocale(locale);
+
   return performEntityToggleLike<{ positionType: PositionType | null }>({
     id: positionId,
     locale,

@@ -3,22 +3,18 @@ import createNextIntlPlugin from 'next-intl/plugin';
 
 import { withSentryConfig } from '@sentry/nextjs';
 
-const cspDirectives = [
-  "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' www.googletagmanager.com www.google-analytics.com cdn-cookieyes.com *.sentry.io pagead2.googlesyndication.com adservice.google.com adservice.google.co.jp *.doubleclick.net",
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: *.supabase.co pagead2.googlesyndication.com *.doubleclick.net",
-  "font-src 'self'",
-  "connect-src 'self' www.google-analytics.com *.sentry.io *.ingest.sentry.io *.supabase.co pagead2.googlesyndication.com adservice.google.com",
-  // Phase 13 (#83): `lichess.org` removed from frame-src — Lichess
-  // /embed/{id} URLs are now rendered by the self-hosted PGN replay UI
-  // (AttachedGameCard), not a Lichess iframe. Lichess game-export PGN
-  // fetches happen server-side and do not require frame-src; the
-  // server-side `fetch('https://lichess.org/...')` is unaffected by
-  // the page-CSP frame-src directive.
-  'frame-src googleads.g.doubleclick.net tpc.googlesyndication.com ep2.adtrafficquality.google www.google.com www.chess.com www.youtube-nocookie.com',
-  "frame-ancestors 'none'",
-];
+// NOTE: Content-Security-Policy is intentionally NOT defined here.
+//
+// Static headers declared via `next.config.ts#headers()` cannot carry a
+// per-request value, but the enforcing CSP needs a `'nonce-<random>'`
+// entry in `script-src` that is unique to each response. The CSP — together
+// with its matching `Report-To` header — is built in `src/lib/security/csp.ts`
+// and stamped onto every response by `src/proxy.ts`.
+//
+// All other security headers below (X-Frame-Options, X-Content-Type-Options,
+// Permissions-Policy, Referrer-Policy, HSTS) are request-invariant and stay
+// here so they also cover routes that bypass the proxy matcher (static
+// assets, `_next/static/*`, etc.).
 
 const nextConfig: NextConfig = {
   // Enable React strict mode for better development experience
@@ -180,10 +176,6 @@ const nextConfig: NextConfig = {
           {
             key: 'Strict-Transport-Security',
             value: 'max-age=63072000; includeSubDomains; preload',
-          },
-          {
-            key: 'Content-Security-Policy-Report-Only',
-            value: cspDirectives.join('; '),
           },
         ],
       },

@@ -9,9 +9,18 @@
 -- the expected definitions, correcting any configuration drift.
 
 -- Create the avatars bucket (public so avatar URLs are accessible without auth)
-INSERT INTO storage.buckets (id, name, public)
-VALUES ('avatars', 'avatars', true)
-ON CONFLICT (id) DO UPDATE SET public = EXCLUDED.public;
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'avatars',
+  'avatars',
+  true,
+  5242880,
+  ARRAY['image/jpeg', 'image/png', 'image/webp']
+)
+ON CONFLICT (id) DO UPDATE SET
+  public = EXCLUDED.public,
+  file_size_limit = EXCLUDED.file_size_limit,
+  allowed_mime_types = EXCLUDED.allowed_mime_types;
 
 -- Allow authenticated users to upload to their own folder
 DROP POLICY IF EXISTS "avatars_insert_own" ON storage.objects;
@@ -23,10 +32,15 @@ CREATE POLICY "avatars_insert_own" ON storage.objects
   );
 
 -- Allow authenticated users to update their own files
+-- WITH CHECK mirrors USING so a user cannot rename/move a file into another user's folder.
 DROP POLICY IF EXISTS "avatars_update_own" ON storage.objects;
 CREATE POLICY "avatars_update_own" ON storage.objects
   FOR UPDATE TO authenticated
   USING (
+    bucket_id = 'avatars'
+    AND (storage.foldername(name))[1] = auth.uid()::text
+  )
+  WITH CHECK (
     bucket_id = 'avatars'
     AND (storage.foldername(name))[1] = auth.uid()::text
   );
@@ -51,9 +65,13 @@ CREATE POLICY "avatars_select_public" ON storage.objects
 -- =============================================================================
 
 -- Create the article-images bucket (public so image URLs are accessible without auth)
--- file_size_limit: 5MB, allowed_mime_types: JPEG, PNG, WebP, SVG
+-- file_size_limit: 5MB, allowed_mime_types: JPEG, PNG, WebP
+-- SVG is intentionally excluded: SVG can embed <script> and event handlers, and when served
+-- directly from the *.supabase.co origin, navigation to the URL executes scripts. Combined with
+-- an admin CSRF vector, this would enable stored XSS on the Storage origin. TipTap only uses
+-- raster formats, so SVG is not needed. See also apps/web/.../images/image-validation.ts.
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-VALUES ('article-images', 'article-images', true, 5242880, ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'])
+VALUES ('article-images', 'article-images', true, 5242880, ARRAY['image/jpeg', 'image/png', 'image/webp'])
 ON CONFLICT (id) DO UPDATE SET
   public = EXCLUDED.public,
   file_size_limit = EXCLUDED.file_size_limit,
@@ -75,10 +93,16 @@ CREATE POLICY "article_images_insert_admin" ON storage.objects
   );
 
 -- Allow admin users to update article images
+-- WITH CHECK mirrors USING so the post-update row must still satisfy the admin gate
+-- (prevents e.g. moving/renaming the row out of 'article-images' or under a non-admin context).
 DROP POLICY IF EXISTS "article_images_update_admin" ON storage.objects;
 CREATE POLICY "article_images_update_admin" ON storage.objects
   FOR UPDATE TO authenticated
   USING (
+    bucket_id = 'article-images'
+    AND (auth.jwt() ->> 'user_role') = 'admin'
+  )
+  WITH CHECK (
     bucket_id = 'article-images'
     AND (auth.jwt() ->> 'user_role') = 'admin'
   );

@@ -197,8 +197,17 @@ BEGIN
 END;
 $$;
 
--- Grant necessary permissions
-GRANT INSERT ON TABLE public.rate_limit_events TO authenticated;
+-- Server-side only writes; revoke any client-role grants (RLS deny-by-default).
+REVOKE ALL ON TABLE public.rate_limit_events FROM authenticated, anon;
+
+-- =============================================================================
+-- rate_limit_key_events
+-- =============================================================================
+
+-- No FK: subject_key is a free-form namespaced string (e.g. "ip:1.2.3.4",
+-- "email:<sha256>"). Writes are server-side only via Drizzle (pooler role,
+-- BYPASSRLS). Clients must never touch this table.
+REVOKE ALL ON TABLE public.rate_limit_key_events FROM authenticated, anon;
 
 -- =============================================================================
 -- user_activity_log
@@ -237,8 +246,9 @@ BEGIN
 END;
 $$;
 
--- Grant necessary permissions
-GRANT SELECT ON TABLE public.user_roles TO authenticated;
+-- Server-side only access; custom_access_token_hook reads via supabase_auth_admin
+-- (granted in custom_access_token_hook.sql). Revoke any client-role grants.
+REVOKE ALL ON TABLE public.user_roles FROM authenticated, anon;
 
 -- =============================================================================
 -- chess_openings (master data — no FK to auth.users, public read)

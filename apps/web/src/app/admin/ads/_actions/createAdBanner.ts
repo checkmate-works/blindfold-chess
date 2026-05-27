@@ -33,6 +33,15 @@ export async function createAdBanner(data: CreateData): Promise<CreateResult> {
     return { error: 'invalid href' };
   }
 
+  try {
+    const url = new URL(data.href);
+    if (!['https:', 'http:'].includes(url.protocol)) {
+      return { error: 'invalid href' };
+    }
+  } catch {
+    return { error: 'invalid href' };
+  }
+
   if (!data.imagePath || data.imagePath.length > 1024) {
     return { error: 'invalid imagePath' };
   }

@@ -6,7 +6,7 @@ import type { Editor } from '@tiptap/core';
 
 import { IMAGE_CLASS } from '../_lib/constants';
 
-const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'];
+const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 type UseImageUploadOptions = {
@@ -27,7 +27,7 @@ type UseImageUploadOptions = {
  * @remarks
  * - Upload is disabled until the article has been saved (no `articleId` yet),
  *   because images are stored under `article-images/{articleId}/` in Supabase Storage.
- * - Max file size: 5 MB. Accepted types: JPEG, PNG, WebP, SVG.
+ * - Max file size: 5 MB. Accepted types: JPEG, PNG, WebP.
  * - Only one image is uploaded at a time (first file from the input/drop).
  * - Supports drag-and-drop and paste via editor `handleDrop` / `handlePaste` props.
  */

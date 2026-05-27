@@ -68,7 +68,7 @@ describe('signIn', () => {
     });
   });
 
-  it('should not log activity event when rate limited', async () => {
+  it('should not log activity event when IP rate limited', async () => {
     const { guardByIpRateLimit } = await import('@/lib/security/rate-limit-ip');
     vi.mocked(guardByIpRateLimit).mockResolvedValueOnce({ error: 'rateLimited' });
 

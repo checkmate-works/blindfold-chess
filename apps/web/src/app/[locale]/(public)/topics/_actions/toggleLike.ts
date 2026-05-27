@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 
+import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';
 import { eq } from 'drizzle-orm';
 
 import { authenticateAndGuard } from '@/lib/auth';
@@ -31,6 +32,8 @@ export async function toggleLikeBase(params: {
 }): Promise<ToggleLikeResult> {
   const { postId, locale, topicIdentifier, topicType, urlSegment, validateTopic, revalidate } =
     params;
+
+  assertSupportedLocale(locale);
 
   const uuidError = validateUUID(postId, 'postId');
   if (uuidError) return uuidError;

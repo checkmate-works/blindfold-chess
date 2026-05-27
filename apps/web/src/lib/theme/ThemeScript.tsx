@@ -1,7 +1,17 @@
+import { headers } from 'next/headers';
+
 import { THEME_DARK_CLASS, THEME_LIGHT_CLASS, THEME_STORAGE_KEY } from './constants';
 
 // Inline bootstrap script that applies the saved (or system) theme class on
 // <html> before first paint, preventing a flash of incorrect theme.
+//
+// Using `application/ld+json`-style non-JS type is NOT an option because the
+// script must actually execute. Keeping the element strictly in the server
+// tree is what makes this safe.
+//
+// The script carries the per-request CSP nonce (set on the request by
+// `src/proxy.ts`) so it passes the `'strict-dynamic'` + nonce script-src
+// directive without needing `'unsafe-inline'`.
 //
 // This is intentionally a Server Component. The <script> must be present in
 // the SSR'd HTML so the browser executes it synchronously while parsing
@@ -78,6 +88,9 @@ const THEME_SCRIPT = `(function(){try{var d=document.documentElement;var s=local
 
 const SCRIPT = FILTER_SCRIPT + THEME_SCRIPT;
 
-export function ThemeScript() {
-  return <script dangerouslySetInnerHTML={{ __html: SCRIPT }} />;
+export async function ThemeScript() {
+  const nonce = (await headers()).get('x-nonce') ?? undefined;
+  return (
+    <script nonce={nonce} suppressHydrationWarning dangerouslySetInnerHTML={{ __html: SCRIPT }} />
+  );
 }

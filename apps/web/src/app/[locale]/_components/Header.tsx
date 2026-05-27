@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import { headers } from 'next/headers';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -29,10 +30,12 @@ function buildDismissScript(bannerId: string): string {
 }
 
 export async function Header({ locale }: Props) {
-  const [t, bannerAnnouncement] = await Promise.all([
+  const [t, bannerAnnouncement, requestHeaders] = await Promise.all([
     getTranslations({ locale, namespace: 'Header' }),
     getLatestBannerAnnouncement(locale),
+    headers(),
   ]);
+  const nonce = requestHeaders.get('x-nonce') ?? undefined;
 
   const commonItems: NavigationItem[] = [
     { id: 'home', href: `/${locale}`, label: t('home'), iconName: 'home' },
@@ -64,7 +67,11 @@ export async function Header({ locale }: Props) {
     <>
       {bannerAnnouncement && (
         <>
-          <script dangerouslySetInnerHTML={{ __html: buildDismissScript(bannerAnnouncement.id) }} />
+          <script
+            nonce={nonce}
+            suppressHydrationWarning
+            dangerouslySetInnerHTML={{ __html: buildDismissScript(bannerAnnouncement.id) }}
+          />
           <AnnouncementBanner
             id={bannerAnnouncement.id}
             title={bannerAnnouncement.title}

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { ADS_HIDDEN_COOKIE_NAME } from '@/lib/ads/ads-hidden-cookie';
+import { isValidOrigin } from '@/lib/csrf';
 import { db, userActivityLog } from '@/lib/db';
 import { createClient } from '@/lib/supabase/server';
 
@@ -20,7 +21,11 @@ import { createClient } from '@/lib/supabase/server';
  * In a Route Handler, returning a Response ends the request lifecycle
  * and any pending Promises may be discarded by the runtime.
  */
-export async function POST() {
+export async function POST(request: Request) {
+  if (!isValidOrigin(request)) {
+    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
+  }
+
   const supabase = await createClient();
   const {
     data: { user },

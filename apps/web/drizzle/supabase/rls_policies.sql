@@ -14,6 +14,7 @@
 -- user_roles
 -- =============================================================================
 ALTER TABLE "user_roles" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "user_roles" FORCE ROW LEVEL SECURITY;
 
 -- =============================================================================
 -- profiles
@@ -576,6 +577,74 @@ ALTER TABLE "puzzle_solutions" ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "puzzle_solutions_select_policy" ON "puzzle_solutions";
 CREATE POLICY "puzzle_solutions_select_policy" ON "puzzle_solutions"
   FOR SELECT USING (true);
+
+-- =============================================================================
+-- user_grants (admin-only write, server-side only read; deny-by-default)
+-- =============================================================================
+ALTER TABLE "user_grants" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "user_grants" FORCE ROW LEVEL SECURITY;
+
+-- =============================================================================
+-- announcements (admin-only write; deny-by-default)
+-- =============================================================================
+ALTER TABLE "announcements" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "announcements" FORCE ROW LEVEL SECURITY;
+
+-- =============================================================================
+-- ad_banners (admin-only write; deny-by-default)
+-- =============================================================================
+ALTER TABLE "ad_banners" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "ad_banners" FORCE ROW LEVEL SECURITY;
+
+-- =============================================================================
+-- articles (admin-only write; deny-by-default)
+-- =============================================================================
+ALTER TABLE "articles" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "articles" FORCE ROW LEVEL SECURITY;
+
+-- =============================================================================
+-- positions (admin-only write; deny-by-default)
+-- =============================================================================
+ALTER TABLE "positions" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "positions" FORCE ROW LEVEL SECURITY;
+
+-- =============================================================================
+-- chunks (UGC public catalog — open read, owner write; FORCE RLS)
+-- =============================================================================
+-- Belt-and-suspenders pair on top of the per-action policies defined above
+-- (chunks_select / chunks_insert / chunks_update). FORCE makes owners and
+-- superusers also obey RLS when they connect via the standard pooler — only
+-- BYPASSRLS roles (service_role, supabase_admin) can write outside the
+-- per-action policies. Mirrors the `positions` deny-by-default entry.
+ALTER TABLE "chunks" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "chunks" FORCE ROW LEVEL SECURITY;
+
+-- =============================================================================
+-- position_chunks (UGC junction — open read, position-owner write; FORCE RLS)
+-- =============================================================================
+-- Mirrors the chunks entry. The per-action policies
+-- (position_chunks_select / position_chunks_insert / position_chunks_delete)
+-- are defined above; this block adds FORCE so even table owners obey them.
+ALTER TABLE "position_chunks" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "position_chunks" FORCE ROW LEVEL SECURITY;
+
+-- =============================================================================
+-- topic_post_ratings (server-side only writes; deny-by-default)
+-- =============================================================================
+ALTER TABLE "topic_post_ratings" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "topic_post_ratings" FORCE ROW LEVEL SECURITY;
+
+-- =============================================================================
+-- rate_limit_events (server-side only writes; deny-by-default)
+-- =============================================================================
+ALTER TABLE "rate_limit_events" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "rate_limit_events" FORCE ROW LEVEL SECURITY;
+
+-- =============================================================================
+-- rate_limit_key_events (server-side only writes; deny-by-default)
+-- =============================================================================
+ALTER TABLE "rate_limit_key_events" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "rate_limit_key_events" FORCE ROW LEVEL SECURITY;
 
 -- =============================================================================
 -- post_game_pgn_attachments (1:0..1 extension of topic_posts)

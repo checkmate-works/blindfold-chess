@@ -1,5 +1,7 @@
 'use server';
 
+import { assertSupportedLocale } from '@/i18n/assertSupportedLocale';
+
 import type { ActionResult } from '@/lib/action-types';
 import { deletePositionEntry } from '@/lib/positions/user-position-mutations';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
@@ -14,6 +16,8 @@ import { RATE_LIMITS } from '@/lib/security/rate-limit';
  * `apps/web/src/app/admin/positions/memory/_actions/deletePosition.ts`.
  */
 export async function deletePosition(positionId: string, locale: string): Promise<ActionResult> {
+  assertSupportedLocale(locale);
+
   return deletePositionEntry({
     positionId,
     locale,

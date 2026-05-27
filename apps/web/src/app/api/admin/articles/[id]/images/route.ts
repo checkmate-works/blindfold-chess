@@ -4,6 +4,7 @@ import { requireAdmin } from '@/app/admin/_lib/auth';
 import { eq } from 'drizzle-orm';
 import sharp from 'sharp';
 
+import { isValidOrigin } from '@/lib/csrf';
 import { articleImages, articles, db } from '@/lib/db';
 import { RATE_LIMITS, checkRateLimit } from '@/lib/security/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -81,6 +82,10 @@ async function parseAndValidateFile(request: Request) {
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  if (!isValidOrigin(request)) {
+    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
+  }
+
   const auth = await authenticateAdmin();
   if (auth instanceof NextResponse) return auth;
 
@@ -166,6 +171,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 }
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  if (!isValidOrigin(request)) {
+    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
+  }
+
   const auth = await authenticateAdmin();
   if (auth instanceof NextResponse) return auth;
 

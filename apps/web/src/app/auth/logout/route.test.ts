@@ -4,6 +4,10 @@ const mockGetUser = vi.fn();
 const mockValues = vi.fn().mockReturnValue(Promise.resolve());
 const mockInsert = vi.fn().mockReturnValue({ values: mockValues });
 
+vi.mock('@/lib/csrf', () => ({
+  isValidOrigin: () => true,
+}));
+
 vi.mock('@/lib/db', () => ({
   db: {
     insert: (...args: unknown[]) => mockInsert(...args),
@@ -27,6 +31,13 @@ const { POST } = await import('./route');
 
 const mockUserId = 'user-00000000-0000-0000-0000-000000000001';
 
+function createLogoutRequest(): Request {
+  return new Request('https://example.com/auth/logout', {
+    method: 'POST',
+    headers: { origin: 'https://example.com' },
+  });
+}
+
 describe('POST /auth/logout', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -37,7 +48,7 @@ describe('POST /auth/logout', () => {
   it('should await db insert and return ok when user is authenticated', async () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: mockUserId } } });
 
-    const response = await POST();
+    const response = await POST(createLogoutRequest());
     const body = await response.json();
 
     expect(response.status).toBe(200);
@@ -55,7 +66,7 @@ describe('POST /auth/logout', () => {
   it('should return 401 and not insert when user is not authenticated', async () => {
     mockGetUser.mockResolvedValue({ data: { user: null } });
 
-    const response = await POST();
+    const response = await POST(createLogoutRequest());
     const body = await response.json();
 
     expect(response.status).toBe(401);
@@ -67,7 +78,7 @@ describe('POST /auth/logout', () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: mockUserId } } });
     mockValues.mockRejectedValue(new Error('DB error'));
 
-    const response = await POST();
+    const response = await POST(createLogoutRequest());
     const body = await response.json();
 
     expect(response.status).toBe(200);

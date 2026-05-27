@@ -76,6 +76,13 @@ describe('forgotPassword', () => {
     expect(result).toEqual({ success: true });
   });
 
+  it('should return resetFailed when email is invalid', async () => {
+    const result = await forgotPassword('not-an-email');
+
+    expect(result).toEqual({ error: 'resetFailed' });
+    expect(mockResetPasswordForEmail).not.toHaveBeenCalled();
+  });
+
   describe('activity logging', () => {
     it('should log request_password_reset when user is authenticated', async () => {
       mockResetPasswordForEmail.mockResolvedValue({ error: null });

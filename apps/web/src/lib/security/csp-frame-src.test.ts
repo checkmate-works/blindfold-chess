@@ -15,21 +15,18 @@ import { describe, expect, it } from 'vitest';
  *   - NOT use `*` or `https:` schema-only tokens (regression guard
  *     against accidental over-broadening)
  *
- * The CSP today is configured statically in `next.config.ts` via the
- * `cspDirectives` array, so a static-text assertion against that file
- * is the cheapest and most reliable check. A runtime header inspection
+ * The CSP is now built per-request in `src/lib/security/csp.ts` (moved
+ * out of `next.config.ts` so each response can carry a per-request
+ * `'nonce-<random>'`). A static-text assertion against that file is
+ * the cheapest and most reliable check. A runtime header inspection
  * would require booting Next, which is out of proportion for what is
  * effectively a literal in source.
- *
- * If `next.config.ts` ever moves the CSP into a dynamic loader / env
- * lookup, the static-text approach must be replaced with a header
- * integration test — flag this with a comment update at that time.
  */
 
 async function readNextConfigSource(): Promise<string> {
   const here = path.dirname(fileURLToPath(import.meta.url));
-  // apps/web/src/lib/security → apps/web (3 levels up).
-  const configPath = path.resolve(here, '..', '..', '..', 'next.config.ts');
+  // apps/web/src/lib/security/<this file> → apps/web/src/lib/security/csp.ts
+  const configPath = path.resolve(here, 'csp.ts');
   return readFile(configPath, 'utf8');
 }
 
@@ -91,13 +88,13 @@ describe('CSP frame-src — Phase B Tester #43 / #44', () => {
     expect(tokens).not.toContain('youtube.com');
   });
 
-  // #43b — directive is wired into the Content-Security-Policy-Report-Only
+  // #43b — directive is wired into an enforcing Content-Security-Policy
   //        header (not just defined-but-unused). Cheap regression guard.
   it('#43b the CSP directives array is consumed by the response header', async () => {
     const source = await readNextConfigSource();
-    // The header definition references the joined array.
-    expect(source).toMatch(/Content-Security-Policy-Report-Only/);
-    expect(source).toMatch(/cspDirectives\.join/);
+    // csp.ts exports buildCspHeader which is stamped onto the response by proxy.ts.
+    expect(source).toMatch(/buildCspHeader/);
+    expect(source).toMatch(/directives\.join/);
   });
 
   // #44 — frame-src does NOT contain `*` (wildcard) or `https:` (scheme-only)

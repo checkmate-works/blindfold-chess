@@ -36,32 +36,20 @@ describe('validateBinarySignature', () => {
     expect(validateBinarySignature(jpegBuffer, 'image/webp')).toBe(false);
   });
 
-  it('should validate SVG binary signature with <svg tag', () => {
+  // SVG is intentionally not supported — can embed <script>/event handlers and execute
+  // when the *.supabase.co URL is opened directly. See image-validation.ts TSDoc.
+  it('should reject SVG with <svg tag even when declared as image/svg+xml', () => {
     const svgContent = '<svg xmlns="http://www.w3.org/2000/svg"></svg>';
     const encoder = new TextEncoder();
     const svgBuffer = encoder.encode(svgContent).buffer;
-    expect(validateBinarySignature(svgBuffer, 'image/svg+xml')).toBe(true);
+    expect(validateBinarySignature(svgBuffer, 'image/svg+xml')).toBe(false);
   });
 
-  it('should validate SVG binary signature with <?xml declaration', () => {
+  it('should reject SVG with <?xml declaration when declared as image/svg+xml', () => {
     const svgContent = '<?xml version="1.0"?><svg></svg>';
     const encoder = new TextEncoder();
     const svgBuffer = encoder.encode(svgContent).buffer;
-    expect(validateBinarySignature(svgBuffer, 'image/svg+xml')).toBe(true);
-  });
-
-  it('should validate SVG with leading whitespace', () => {
-    const svgContent = '   <svg xmlns="http://www.w3.org/2000/svg"></svg>';
-    const encoder = new TextEncoder();
-    const svgBuffer = encoder.encode(svgContent).buffer;
-    expect(validateBinarySignature(svgBuffer, 'image/svg+xml')).toBe(true);
-  });
-
-  it('should reject non-SVG text with image/svg+xml type', () => {
-    const htmlContent = '<html><body></body></html>';
-    const encoder = new TextEncoder();
-    const htmlBuffer = encoder.encode(htmlContent).buffer;
-    expect(validateBinarySignature(htmlBuffer, 'image/svg+xml')).toBe(false);
+    expect(validateBinarySignature(svgBuffer, 'image/svg+xml')).toBe(false);
   });
 
   it('should reject binary data with image/svg+xml type', () => {
@@ -132,7 +120,7 @@ describe('validateBinarySignature', () => {
     expect(validateBinarySignature(buffer, 'image/webp')).toBe(false);
   });
 
-  it('should reject empty buffer for SVG', () => {
+  it('should reject empty buffer declared as image/svg+xml', () => {
     const buffer = new ArrayBuffer(0);
     expect(validateBinarySignature(buffer, 'image/svg+xml')).toBe(false);
   });
@@ -148,54 +136,24 @@ describe('validateBinarySignature', () => {
     expect(validateBinarySignature(buffer, 'image/webp')).toBe(false);
   });
 
-  // SVG with <script> tag - binary signature check passes (admin-only upload, documented XSS note)
-  it('should accept SVG containing <script> tag (signature check only, XSS mitigation is separate)', () => {
+  // SVG is rejected regardless of content — the MIME type itself is no longer accepted.
+  it('should reject SVG containing <script> tag (MIME type is not allowed at all)', () => {
     const svgContent =
       '<svg xmlns="http://www.w3.org/2000/svg"><script>alert("xss")</script></svg>';
-    const encoder = new TextEncoder();
-    const svgBuffer = encoder.encode(svgContent).buffer;
-    expect(validateBinarySignature(svgBuffer, 'image/svg+xml')).toBe(true);
-  });
-
-  // SVG detection limit: 256-byte window
-  it('should reject SVG when <svg tag appears after 256 bytes of whitespace', () => {
-    // The implementation only reads the first 256 bytes. With 256+ chars of whitespace,
-    // the <svg tag is outside the detection window.
-    const whitespace = ' '.repeat(256);
-    const svgContent = whitespace + '<svg xmlns="http://www.w3.org/2000/svg"></svg>';
     const encoder = new TextEncoder();
     const svgBuffer = encoder.encode(svgContent).buffer;
     expect(validateBinarySignature(svgBuffer, 'image/svg+xml')).toBe(false);
   });
 
-  it('should accept SVG when <svg tag is within the 256-byte window', () => {
-    // With ~240 chars of whitespace, <svg fits within the 256-byte window
-    const whitespace = ' '.repeat(240);
-    const svgContent = whitespace + '<svg></svg>';
-    const encoder = new TextEncoder();
-    const svgBuffer = encoder.encode(svgContent).buffer;
-    expect(validateBinarySignature(svgBuffer, 'image/svg+xml')).toBe(true);
-  });
-
-  // SVG edge cases: DOCTYPE and comments
-  it('should accept SVG with <!DOCTYPE declaration before <svg', () => {
+  it('should reject SVG with <!DOCTYPE declaration (MIME type is not allowed at all)', () => {
     const svgContent =
       '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg></svg>';
     const encoder = new TextEncoder();
     const svgBuffer = encoder.encode(svgContent).buffer;
-    // startsWith('<') is true, and the 256-byte window includes <svg
-    expect(validateBinarySignature(svgBuffer, 'image/svg+xml')).toBe(true);
+    expect(validateBinarySignature(svgBuffer, 'image/svg+xml')).toBe(false);
   });
 
-  it('should accept SVG with XML comment before <svg tag', () => {
-    const svgContent = '<!-- comment --><svg xmlns="http://www.w3.org/2000/svg"></svg>';
-    const encoder = new TextEncoder();
-    const svgBuffer = encoder.encode(svgContent).buffer;
-    expect(validateBinarySignature(svgBuffer, 'image/svg+xml')).toBe(true);
-  });
-
-  // SVG: text that starts with '<' but has no svg/xml content in 256 bytes
-  it('should reject HTML-like content starting with < but without svg or xml', () => {
+  it('should reject HTML-like content declared as image/svg+xml', () => {
     const content = '<div>this is not an SVG</div>';
     const encoder = new TextEncoder();
     const buffer = encoder.encode(content).buffer;

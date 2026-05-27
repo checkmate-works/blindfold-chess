@@ -13,14 +13,14 @@ import { buildChapterListBreadcrumbs, buildChapterListItemListSchema } from '../
 import type { GuideContext } from './context';
 
 export function renderChapterList(ctx: GuideContext, guide: ChapteredGuide): ReactNode {
-  const { locale, rankSlug, rankName, beltColor, tGuides } = ctx;
+  const { locale, rankSlug, rankName, beltColor, tGuides, nonce } = ctx;
 
   const breadcrumbItems = buildChapterListBreadcrumbs(tGuides, rankName);
   const itemListSchema = buildChapterListItemListSchema(locale, rankSlug, guide);
 
   return (
     <>
-      <JsonLd data={itemListSchema} />
+      <JsonLd data={itemListSchema} nonce={nonce} />
       <PageLayout title={rankName} locale={locale}>
         <RankHeader beltColor={beltColor}>{tGuides('ranks.indexTitle')}</RankHeader>
 

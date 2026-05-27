@@ -19,6 +19,8 @@ import { ADS_HIDDEN_COOKIE_NAME } from './ads-hidden-cookie';
 // on <head> siblings — git history `0f1d2dd8`).
 const SCRIPT = `(function(){try{if(/(?:^|; )${ADS_HIDDEN_COOKIE_NAME}=1(?:;|$)/.test(document.cookie)){document.documentElement.setAttribute('data-ads-hidden','true');}}catch(e){}})();`;
 
-export function AdHideBootstrapScript() {
-  return <script dangerouslySetInnerHTML={{ __html: SCRIPT }} />;
+export function AdHideBootstrapScript({ nonce }: { nonce?: string }) {
+  return (
+    <script nonce={nonce} suppressHydrationWarning dangerouslySetInnerHTML={{ __html: SCRIPT }} />
+  );
 }

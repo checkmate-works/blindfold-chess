@@ -3,6 +3,12 @@ import { type NextRequest, NextResponse } from 'next/server';
 import * as Sentry from '@sentry/nextjs';
 
 import { refreshAdsHiddenCookieOnResponse } from '@/lib/ads/ads-hidden-cookie-writer';
+import {
+  buildCspHeader,
+  buildReportToHeader,
+  buildReportingEndpointsHeader,
+  generateCspNonce,
+} from '@/lib/security/csp';
 import { updateSession } from '@/lib/supabase/proxy';
 
 const BLOCKED_PATHS = [
@@ -60,6 +66,30 @@ function isAdsCookieRefreshPath(pathname: string): boolean {
   return pattern.test(pathname);
 }
 
+/**
+ * Apply CSP + reporting endpoint headers to a response, given the request
+ * nonce.
+ *
+ * Extracted into a helper so every `return` branch below can stamp the
+ * headers consistently. The CSP is currently emitted as `Report-Only` — the
+ * browser does NOT block violations, but POSTs them to `/api/csp-report` via
+ * the `report-to` / `report-uri` directives for observability. The plan is to
+ * flip to enforcing (`Content-Security-Policy`) once we have a preview/staging
+ * environment where the real-browser surface (Stockfish / Maia web workers,
+ * CookieYes CMP, Google Analytics, AdSense dynamic loads) can be verified.
+ * Tracking: GitHub issue #89.
+ *
+ * Both `Reporting-Endpoints` (the modern Structured-Fields header) and
+ * `Report-To` (its deprecated JSON predecessor) are emitted concurrently so
+ * supporting browsers use the former while older ones keep working.
+ */
+function applyCspHeaders(response: NextResponse, nonce: string): NextResponse {
+  response.headers.set('Content-Security-Policy-Report-Only', buildCspHeader(nonce));
+  response.headers.set('Reporting-Endpoints', buildReportingEndpointsHeader());
+  response.headers.set('Report-To', buildReportToHeader());
+  return response;
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -67,25 +97,33 @@ export async function proxy(request: NextRequest) {
     return NextResponse.json(null, { status: 404 });
   }
 
-  const { response, authenticated, userId } = await updateSession(request);
+  // Generate a per-request nonce and expose it to downstream Server
+  // Components via an `x-nonce` request header. React Server Components read
+  // it through `headers()` and attach it to their inline `<script>` tags.
+  // Next.js itself also picks this up to nonce its own hydration chunks.
+  const nonce = generateCspNonce();
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-nonce', nonce);
+
+  const { response, authenticated, userId } = await updateSession(request, { requestHeaders });
 
   // Return 404 for unauthenticated admin access to hide admin panel existence
   if (isAdminPath(pathname) && !authenticated) {
-    return new NextResponse(null, { status: 404 });
+    return applyCspHeaders(new NextResponse(null, { status: 404 }), nonce);
   }
 
   // Redirect unauthenticated users away from auth-required pages
   if (isAuthRequiredPath(pathname) && !authenticated) {
     const locale = pathname.split('/')[1] || 'en';
     const signInUrl = new URL(`/${locale}/sign-in`, request.url);
-    return NextResponse.redirect(signInUrl);
+    return applyCspHeaders(NextResponse.redirect(signInUrl), nonce);
   }
 
   // Redirect authenticated users away from the sign-in page
   if (isSignInPath(pathname) && authenticated) {
     const locale = pathname.split('/')[1] || 'en';
     const mypageUrl = new URL(`/${locale}/mypage?toast=already_logged_in`, request.url);
-    return NextResponse.redirect(mypageUrl);
+    return applyCspHeaders(NextResponse.redirect(mypageUrl), nonce);
   }
 
   // Refresh the `bfc_ads_hidden` cookie on the response when the user is
@@ -107,7 +145,7 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  return response;
+  return applyCspHeaders(response, nonce);
 }
 
 export const config = {
