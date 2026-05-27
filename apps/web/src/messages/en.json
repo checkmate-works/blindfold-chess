@@ -3129,7 +3129,8 @@
         "total": "Total",
         "sources": {
           "topic_posts": "topic_posts",
-          "positions": "positions"
+          "positions": "positions",
+          "chunks": "chunks"
         },
         "breakdowns": {
           "topic_posts": {
@@ -3138,6 +3139,10 @@
           },
           "positions": {
             "memory": "memory"
+          },
+          "chunks": {
+            "draft": "draft",
+            "published": "published"
           }
         },
         "help": {

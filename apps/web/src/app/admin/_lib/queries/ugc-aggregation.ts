@@ -1,7 +1,7 @@
 import { and, count, gte, isNull, lte, sql } from 'drizzle-orm';
 import { type PgColumn, type PgTable } from 'drizzle-orm/pg-core';
 
-import { db, positions, topicPosts } from '@/lib/db';
+import { chunks, db, positions, topicPosts } from '@/lib/db';
 
 import { type DailyCount, fillDateRange } from './aggregate-by-day';
 
@@ -24,7 +24,7 @@ import { type DailyCount, fillDateRange } from './aggregate-by-day';
  */
 export type UgcSource = {
   /** Stable identifier used as a key in summary responses and i18n lookups. */
-  name: 'topic_posts' | 'positions';
+  name: 'topic_posts' | 'positions' | 'chunks';
   table: PgTable;
   createdAtColumn: PgColumn;
   deletedAtColumn: PgColumn | null;
@@ -49,6 +49,14 @@ export const UGC_SOURCES: readonly UgcSource[] = [
     deletedAtColumn: positions.deletedAt,
     userIdColumn: positions.userId,
     breakdownColumn: positions.type,
+  },
+  {
+    name: 'chunks',
+    table: chunks,
+    createdAtColumn: chunks.createdAt,
+    deletedAtColumn: chunks.deletedAt,
+    userIdColumn: chunks.userId,
+    breakdownColumn: chunks.status,
   },
 ];
 

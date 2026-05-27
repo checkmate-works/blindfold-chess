@@ -3129,7 +3129,8 @@
         "total": "合計",
         "sources": {
           "topic_posts": "topic_posts",
-          "positions": "positions"
+          "positions": "positions",
+          "chunks": "chunks"
         },
         "breakdowns": {
           "topic_posts": {
@@ -3138,6 +3139,10 @@
           },
           "positions": {
             "memory": "メモリー"
+          },
+          "chunks": {
+            "draft": "下書き",
+            "published": "公開済み"
           }
         },
         "help": {
