@@ -11,9 +11,8 @@ import { useToast } from '@/app/[locale]/_contexts/ToastContext';
 
 import { useArticleFormState } from '../_hooks/useArticleFormState';
 import { buildArticleFormData } from '../_lib/build-form-data';
-import type { ArticleEditData, ContentFormat, TiptapJsonContent } from '../_lib/types';
-import { MarkdownEditor } from './MarkdownEditor';
-import { TiptapEditor } from './TiptapEditor';
+import type { ArticleEditData, ContentFormat } from '../_lib/types';
+import { ArticleContentEditor } from './article-form/ArticleContentEditor';
 import { ArticleFormTopBar } from './article-form/ArticleFormTopBar';
 import { ArticleMetadataPanel } from './article-form/ArticleMetadataPanel';
 import { PublishedConfirmModal } from './article-form/PublishedConfirmModal';
@@ -170,13 +169,6 @@ export function ArticleForm({
     ]
   );
 
-  const handleContentChange = useCallback(
-    (json: TiptapJsonContent) => {
-      setContentJson(json);
-    },
-    [setContentJson]
-  );
-
   const redirectAfterSave = (id: string) => {
     window.location.replace(`/admin/articles/${id}/edit`);
   };
@@ -293,25 +285,21 @@ export function ArticleForm({
           {/* Editor */}
           <div className="flex-1 px-6 pb-4 flex flex-col">
             <div className="flex-1 flex flex-col rounded bg-card">
-              {contentFormat === 'markdown' ? (
-                <MarkdownEditor
-                  defaultContent={markdownContent}
-                  onChange={setMarkdownContent}
-                  placeholder={labels.contentPlaceholder}
-                  ariaLabel={labels.content}
-                  tabEditLabel={labels.tabEdit}
-                  tabPreviewLabel={labels.tabPreview}
-                />
-              ) : (
-                <TiptapEditor
-                  initialContent={contentJson}
-                  onChange={handleContentChange}
-                  placeholder={labels.contentPlaceholder}
-                  ariaLabel={labels.content}
-                  articleId={articleId}
-                  onImageUploadError={(message) => showToast(message, 'error')}
-                />
-              )}
+              <ArticleContentEditor
+                contentFormat={contentFormat}
+                markdownContent={markdownContent}
+                contentJson={contentJson}
+                articleId={articleId}
+                labels={{
+                  content: labels.content,
+                  contentPlaceholder: labels.contentPlaceholder,
+                  tabEdit: labels.tabEdit,
+                  tabPreview: labels.tabPreview,
+                }}
+                onMarkdownChange={setMarkdownContent}
+                onTiptapChange={setContentJson}
+                onTiptapImageError={(message) => showToast(message, 'error')}
+              />
             </div>
           </div>
         </div>

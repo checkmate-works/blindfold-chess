@@ -1,0 +1,288 @@
+// Auto-split from schema/tables.ts on 2026-05-27. Per-domain
+// schema slice — rankings.
+//
+// Score-based ranking and feed surfaces: the static `chess_openings` reference
+// data, per-attempt `challenge_results`, per-module best scores, and the
+// materialised home-feed `feed_items` queue.
+import {
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+  uuid,
+  varchar,
+} from 'drizzle-orm/pg-core';
+
+/**
+ * @design updated_at update policy
+ *
+ * For every table with an `updated_at` column, the timestamp is refreshed
+ * automatically by Drizzle via `.$onUpdateFn(() => new Date())`. When adding a
+ * new table that has an `updated_at` column, always attach this callback.
+ *
+ * Exceptions:
+ * - `profiles`: updated by a Supabase BEFORE UPDATE trigger
+ *   (`profiles_updated_at`). Because `profiles` can be written through
+ *   internal Supabase paths that go via `auth.users` (e.g. auth hooks), the
+ *   timestamp update is centralized at the DB trigger layer instead of
+ *   `$onUpdateFn`. See the `@design` note on the `profiles` table
+ *   definition for details.
+ *
+ * Existing call sites still contain several explicit
+ * `set({ updatedAt: new Date() })` statements. They are redundant but
+ * harmless and act as a fail-safe if an UPDATE path that bypasses Drizzle
+ * is introduced in the future.
+ */
+/**
+ * Chess Openings — master data for chess opening families.
+ *
+ * @description
+ * Stores chess opening families (e.g., French Defense, Sicilian Defense) with their
+ * representative PGN move sequences and resulting FEN positions. Used as topicKey
+ * source for topic_posts with topicType='opening'.
+ *
+ * @design Master data, not user-generated content
+ *
+ * This table is seeded via migration/script and managed by admins only.
+ * Users cannot create, modify, or delete openings. RLS allows public reads
+ * but restricts writes to the service role.
+ *
+ * @design FEN derived from PGN at seed time
+ *
+ * The `fen` column stores the board state after executing the `pgn` moves.
+ * This is computed at seed time using chess.js (via @blindfold-chess/features/chess-core)
+ * to avoid runtime computation.
+ *
+ * @design slug as topicKey
+ *
+ * The `slug` column serves as the `topicKey` value when `topicType='opening'`,
+ * following the same pattern as other topic types. It appears in URLs
+ * (e.g., /topics/openings/french-defense).
+ *
+ * @design Flat URL slugs — no hierarchical paths
+ *
+ * Although parentSlug models a tree, URLs remain flat (/openings/kings-gambit-declined,
+ * not /openings/kings-gambit/declined). The slug is used as topicKey in topicPosts and
+ * as answerValue in userInterviewAnswers; hierarchical paths would require reverse-mapping
+ * logic with no SEO or UX benefit. Hierarchy is expressed in the UI (breadcrumbs) instead.
+ */
+export const chessOpenings = pgTable(
+  'chess_openings',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    slug: varchar('slug', { length: 100 }).unique().notNull(),
+    name: varchar('name', { length: 255 }).notNull(),
+    ecoCode: varchar('eco_code', { length: 3 }).notNull(),
+    pgn: text('pgn').notNull(),
+    fen: varchar('fen', { length: 100 }).notNull(),
+    firstMoveSquare: varchar('first_move_square', { length: 2 }).notNull(),
+    parentSlug: varchar('parent_slug', { length: 100 }),
+    sortOrder: integer('sort_order').notNull().default(0),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull()
+      .$onUpdateFn(() => new Date()),
+  },
+  (table) => [
+    index('idx_chess_openings_first_move_square').on(table.firstMoveSquare),
+    index('idx_chess_openings_eco_code').on(table.ecoCode),
+    index('idx_chess_openings_parent_slug').on(table.parentSlug),
+  ]
+);
+
+export type ChessOpening = typeof chessOpenings.$inferSelect;
+export type NewChessOpening = typeof chessOpenings.$inferInsert;
+
+/**
+ * Challenge Results — stores all challenge results for period-based rankings.
+ *
+ * @description
+ * Every completed challenge session inserts a row here. This table serves as
+ * the source of truth for weekly/monthly rankings (queried with `created_at`
+ * filters using `DISTINCT ON` to extract each user's best score per period).
+ * All-time rankings are served from `challenge_best_scores` instead.
+ *
+ * This table also replaces the former `practice_sessions` table — challenge
+ * results are now stored directly here instead of in a separate sessions table.
+ *
+ * @design Two-table architecture (Monkeytype-inspired)
+ *
+ * Challenge data is split into two tables with different responsibilities:
+ * - `challenge_results`: append-only log of all challenge results (INSERT only).
+ *   Used for weekly/monthly rankings via `created_at` filtering, and also
+ *   serves as the source for per-user history (mypage dashboard).
+ * - `challenge_best_scores`: materialized all-time best per user/menu/key,
+ *   maintained via UPSERT on each new best score.
+ *
+ * This avoids expensive full-table scans for all-time rankings while keeping
+ * period-based rankings simple (the period's data volume is naturally bounded).
+ *
+ * @design leaderboardKey — segment key (Monkeytype's `mode2` pattern)
+ *
+ * A finite, enum-like varchar that segments rankings within a menuType.
+ * Each module defines its own key values:
+ * - coordinate_quiz: 'white' | 'black' | 'random' (boardOrientation)
+ * - legal_moves: 'king' | 'queen' | 'rook' | 'bishop' | 'knight' | 'random' (selectedPiece)
+ * - square_colors: 'default'
+ *
+ * timeLimit is NOT included because it is fixed per module. New modules can
+ * define their own key values without schema changes.
+ *
+ * @design Ranking criteria: score DESC, incorrect_answers ASC, time_taken ASC
+ *
+ * Three-tier tiebreaker: highest score wins; on tie, fewer mistakes wins;
+ * on further tie, faster time wins. The UPSERT comparison in
+ * `challenge_best_scores` uses the same ordering via tuple comparison.
+ *
+ * @design Index sort order — manual DESC/ASC in migration SQL
+ *
+ * Drizzle ORM's `index().on()` does not support DESC/ASC modifiers, so the
+ * snapshot JSON records all columns as ASC. The actual migration SQL has been
+ * manually edited to specify the correct sort directions. When modifying these
+ * indexes in the future, the migration SQL must be manually adjusted again.
+ */
+export const challengeResults = pgTable(
+  'challenge_results',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').notNull(), // references auth.users — FK defined in custom SQL
+    menuType: varchar('menu_type', { length: 30 }).notNull(),
+    leaderboardKey: varchar('leaderboard_key', { length: 20 }).notNull(),
+    score: integer('score').notNull(),
+    incorrectAnswers: integer('incorrect_answers').notNull().default(0),
+    timeTaken: integer('time_taken').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('idx_cr_period_ranking').on(
+      table.menuType,
+      table.leaderboardKey,
+      table.createdAt,
+      table.score,
+      table.incorrectAnswers,
+      table.timeTaken
+    ),
+    index('idx_cr_user').on(table.userId, table.menuType),
+  ]
+);
+
+export type ChallengeResult = typeof challengeResults.$inferSelect;
+export type NewChallengeResult = typeof challengeResults.$inferInsert;
+
+/**
+ * Challenge Best Scores — all-time best score per user/menu/key combination.
+ *
+ * @description
+ * Maintains exactly one row per (userId, menuType, leaderboardKey) combination,
+ * representing the user's all-time best score. Updated via UPSERT: on each
+ * challenge completion, the new score is compared with the stored best using
+ * tuple comparison `(score, -incorrect_answers, -time_taken)`, and the row is
+ * updated only if the new result is strictly better.
+ *
+ * @design UPSERT with tuple comparison for atomicity
+ *
+ * ```sql
+ * INSERT INTO challenge_best_scores (...) VALUES (...)
+ * ON CONFLICT (user_id, menu_type, leaderboard_key)
+ * DO UPDATE SET ...
+ * WHERE (EXCLUDED.score, -EXCLUDED.incorrect_answers, -EXCLUDED.time_taken)
+ *     > (challenge_best_scores.score, -challenge_best_scores.incorrect_answers,
+ *        -challenge_best_scores.time_taken);
+ * ```
+ *
+ * PostgreSQL's row-level locking on `ON CONFLICT DO UPDATE` guarantees atomicity
+ * even under concurrent UPSERTs for the same user/menu/key combination.
+ *
+ * @design Rebuildable from challenge_results
+ *
+ * This table is a materialized cache. If data correction is needed (e.g.,
+ * cheater removal), the best score can be recalculated from `challenge_results`
+ * using `DISTINCT ON (user_id, menu_type, leaderboard_key)`.
+ */
+export const challengeBestScores = pgTable(
+  'challenge_best_scores',
+  {
+    userId: uuid('user_id').notNull(), // references auth.users — FK defined in custom SQL
+    menuType: varchar('menu_type', { length: 30 }).notNull(),
+    leaderboardKey: varchar('leaderboard_key', { length: 20 }).notNull(),
+    score: integer('score').notNull(),
+    incorrectAnswers: integer('incorrect_answers').notNull().default(0),
+    timeTaken: integer('time_taken').notNull(),
+    achievedAt: timestamp('achieved_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull()
+      .$onUpdateFn(() => new Date()),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.menuType, table.leaderboardKey] }),
+    index('idx_cbs_ranking').on(
+      table.menuType,
+      table.leaderboardKey,
+      table.score,
+      table.incorrectAnswers,
+      table.timeTaken
+    ),
+  ]
+);
+
+export type ChallengeBestScore = typeof challengeBestScores.$inferSelect;
+export type NewChallengeBestScore = typeof challengeBestScores.$inferInsert;
+
+/**
+ * Feed Items — materialized timeline feed for the home page.
+ *
+ * @description
+ * Stores feed entries for the timeline. Each user action that should appear
+ * in the feed (e.g., creating a topic post) inserts a row here. The home page
+ * queries this single table with cursor-based pagination for efficient,
+ * chronological feed display.
+ *
+ * @design Materialized feed (not UNION query)
+ *
+ * A dedicated table optimizes reads (the dominant operation for a timeline).
+ * `ORDER BY created_at DESC LIMIT N` on a single indexed table is far more
+ * efficient than merging multiple source tables via UNION. It also enables
+ * simple cursor-based pagination and future personalization (filtering by
+ * followed users via `actor_id`).
+ *
+ * @design entityType is varchar, not pgEnum
+ *
+ * New feed item types (likes, follows, achievements, etc.) will be added
+ * incrementally. Using varchar avoids requiring an ALTER TYPE migration
+ * for each new type.
+ *
+ * @design metadata (JSONB) for entity-type-specific data
+ *
+ * Stores supplementary data needed for list display without JOINs
+ * (e.g., `{ topicType: 'square', topicKey: 'e4' }` for topic_post items).
+ * Detailed data is fetched via JOIN when constructing the full feed response.
+ *
+ * @design FKs managed in custom SQL
+ *
+ * `actorId` -> `auth.users` is defined in Supabase-side SQL (not Drizzle
+ * references), following the same pattern as `profiles.id`.
+ */
+export const feedItems = pgTable(
+  'feed_items',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    entityType: varchar('entity_type', { length: 50 }).notNull(),
+    entityId: uuid('entity_id').notNull(),
+    actorId: uuid('actor_id').notNull(), // references auth.users — FK defined in custom SQL
+    metadata: jsonb('metadata').default({}),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('idx_feed_items_created').on(table.createdAt),
+    index('idx_feed_items_actor').on(table.actorId),
+    index('idx_feed_items_entity').on(table.entityType, table.entityId),
+  ]
+);
+
+export type FeedItem = typeof feedItems.$inferSelect;
+export type NewFeedItem = typeof feedItems.$inferInsert;

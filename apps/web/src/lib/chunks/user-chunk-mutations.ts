@@ -1,5 +1,3 @@
-import { revalidatePath } from 'next/cache';
-
 import { and, eq, isNull } from 'drizzle-orm';
 import 'server-only';
 
@@ -14,11 +12,10 @@ import {
   topicPosts,
 } from '@/lib/db';
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
-import { notifyFollowersOfNewChunk } from '@/lib/notifications/notification';
 import { clawbackPointsForPost, grantPointsForPost } from '@/lib/points';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
-import { logActivityEvent } from '@/lib/users/activity-log';
 
+import { dispatchChunkEvent } from './chunk-event-handlers';
 import { buildChunkCreateValues, buildChunkUpdateValues } from './mutation-helpers';
 import { findChunkBySlug } from './queries';
 import type { ChunkFeedbackTopic, ChunkMutationData } from './validation';
@@ -156,23 +153,13 @@ export async function createChunkEntry(data: ChunkMutationData): Promise<CreateC
       return { chunk, pointGrant };
     });
 
-    notifyFollowersOfNewChunk({
+    dispatchChunkEvent({
+      kind: 'created',
       actorId: user.id,
       chunkId: txResult.chunk.id,
       slug: txResult.chunk.slug,
-      kind: initialFeedKind,
+      initialStatus: initialFeedKind === 'published' ? 'published' : 'draft',
     });
-
-    logActivityEvent({
-      userId: user.id,
-      action: 'create_chunk',
-      targetType: 'chunk',
-      targetId: txResult.chunk.id,
-      metadata: { slug: txResult.chunk.slug },
-    });
-
-    revalidatePath('/chunks');
-    revalidatePath(`/chunks/${txResult.chunk.slug}`);
 
     return {
       success: true,
@@ -303,22 +290,13 @@ export async function updateChunkEntry(
 
   const finalSlug = slugChanging ? requestedSlug! : chunk.slug;
 
-  logActivityEvent({
-    userId: user.id,
-    action: 'update_chunk',
-    targetType: 'chunk',
-    targetId: id,
-    metadata: slugChanging ? { slug: finalSlug, previousSlug: chunk.slug } : { slug: finalSlug },
+  dispatchChunkEvent({
+    kind: 'updated',
+    actorId: user.id,
+    chunkId: id,
+    slug: finalSlug,
+    ...(slugChanging ? { previousSlug: chunk.slug } : {}),
   });
-
-  revalidatePath('/chunks');
-  revalidatePath(`/chunks/${chunk.slug}`);
-  // Revalidate the new URL too — without this the freshly-renamed
-  // chunk's page would render a stale-cached 404 for the next
-  // viewer who follows the new slug.
-  if (slugChanging) {
-    revalidatePath(`/chunks/${finalSlug}`);
-  }
 
   return { success: true };
 }
@@ -416,23 +394,13 @@ export async function publishChunkEntry(id: string): Promise<UpdateChunkResult> 
     });
   });
 
-  notifyFollowersOfNewChunk({
+  dispatchChunkEvent({
+    kind: 'published',
     actorId: user.id,
     chunkId: id,
     slug: chunk.slug,
-    kind: 'published',
+    from: chunk.status,
   });
-
-  logActivityEvent({
-    userId: user.id,
-    action: 'publish_chunk',
-    targetType: 'chunk',
-    targetId: id,
-    metadata: { slug: chunk.slug, from: chunk.status, to: 'published' },
-  });
-
-  revalidatePath('/chunks');
-  revalidatePath(`/chunks/${chunk.slug}`);
 
   return { success: true };
 }
@@ -494,16 +462,13 @@ export async function deleteChunkEntry(id: string): Promise<DeleteChunkResult> {
       .where(and(eq(chunkEditRequests.chunkId, id), eq(chunkEditRequests.status, 'pending')));
   });
 
-  logActivityEvent({
-    userId: user.id,
-    action: 'delete_chunk',
-    targetType: 'chunk',
-    targetId: id,
-    metadata: { slug: chunk.slug, title: chunk.title },
+  dispatchChunkEvent({
+    kind: 'deleted',
+    actorId: user.id,
+    chunkId: id,
+    slug: chunk.slug,
+    title: chunk.title,
   });
-
-  revalidatePath('/chunks');
-  revalidatePath(`/chunks/${chunk.slug}`);
 
   return { success: true };
 }

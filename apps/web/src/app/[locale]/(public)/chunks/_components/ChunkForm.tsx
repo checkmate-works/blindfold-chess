@@ -17,16 +17,13 @@ import type { ChunkFeedbackTopic, ChunkStatus } from '@/lib/chunks/validation';
 import { useFenBoardEditor } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-fen-board-editor';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
-import { deleteChunk } from '../_actions/deleteChunk';
-import { publishChunk } from '../_actions/publishChunk';
-import { updateChunk } from '../_actions/updateChunk';
+import { saveChunkEdit, submitChunkDelete, submitChunkPublish } from '../_lib/chunk-form-actions';
 import {
   type ChunkDraftV1,
   clearChunkDraft,
   readChunkDraft,
   writeChunkDraft,
 } from '../_lib/draft-storage';
-import { localizeChunkError } from '../_lib/localize-error';
 import { ChunkFormFields } from './ChunkFormFields';
 
 export type ChunkFormInitial = {
@@ -64,19 +61,6 @@ type EditProps = {
 type Props = CreateProps | EditProps;
 
 const validateFenForChunks = (fen: string) => validateFenStructure(fen).ok;
-
-const FORM_ERROR_CODES = new Set([
-  'signInRequired',
-  'banned',
-  'rateLimited',
-  'slugTaken',
-  'notFound',
-  'unauthorized',
-  'alreadyDeleted',
-  'cannotEditPublished',
-  'invalidFeedbackTopic',
-  'descriptionRequired',
-]);
 
 /**
  * Form shell for chunk authoring.
@@ -196,32 +180,36 @@ export function ChunkForm(props: Props) {
     setStartOverOpen(false);
   }
 
-  // Persist the current edit-form state through `updateChunk`. Shared
-  // by the plain Save flow and the Save-before-Publish flow so the
+  // Wraps `saveChunkEdit` with the form's pending lifecycle and error
+  // display. The pure action lives in `_lib/chunk-form-actions` so the
   // payload shape — including the "send slug only when changed"
   // optimisation and the empty-array-wipes contract for feedbackTopics —
   // stays single-sourced. Returns the slug to navigate to on success
   // so callers don't have to recompute `slugChanged` themselves.
-  async function saveEdit(
+  async function runSaveEdit(
     initial: ChunkFormInitial
   ): Promise<{ ok: true; targetSlug: string } | { ok: false }> {
     setPending(true);
-    const slugChanged = slug.trim() !== initial.slug;
-    const result = await updateChunk(initial.id, {
-      representativeFen: board.trimmedFen,
-      title,
-      ...(slugChanged ? { slug: slug.trim() } : {}),
-      description: description || null,
-      annotations,
-      feedbackTopics,
+    const result = await saveChunkEdit({
+      initialId: initial.id,
+      initialSlug: initial.slug,
+      payload: {
+        representativeFen: board.trimmedFen,
+        title,
+        slug,
+        description,
+        annotations,
+        feedbackTopics,
+      },
+      t,
     });
     setPending(false);
 
-    if ('error' in result) {
-      setError(localizeChunkError(result.error, t, FORM_ERROR_CODES));
+    if (!result.ok) {
+      setError(result.error);
       return { ok: false };
     }
-    return { ok: true, targetSlug: slugChanged ? slug.trim() : initial.slug };
+    return { ok: true, targetSlug: result.targetSlug };
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -270,7 +258,7 @@ export function ChunkForm(props: Props) {
       return;
     }
 
-    const result = await saveEdit(props.initial);
+    const result = await runSaveEdit(props.initial);
     if (!result.ok) return;
 
     flushSync(() => setSubmitted(true));
@@ -293,7 +281,7 @@ export function ChunkForm(props: Props) {
 
     let finalSlug = props.initial.slug;
     if (isDirty) {
-      const saveResult = await saveEdit(props.initial);
+      const saveResult = await runSaveEdit(props.initial);
       if (!saveResult.ok) return;
       finalSlug = saveResult.targetSlug;
     }
@@ -316,11 +304,11 @@ export function ChunkForm(props: Props) {
     setPublishPending(true);
     setError(null);
 
-    const result = await publishChunk(props.initial.id);
+    const result = await submitChunkPublish({ chunkId: props.initial.id, t });
     setPublishPending(false);
 
-    if ('error' in result) {
-      setError(localizeChunkError(result.error, t, FORM_ERROR_CODES));
+    if (!result.ok) {
+      setError(result.error);
       return;
     }
 
@@ -334,11 +322,11 @@ export function ChunkForm(props: Props) {
     setDeletePending(true);
     setError(null);
 
-    const result = await deleteChunk(props.initial.id);
+    const result = await submitChunkDelete({ chunkId: props.initial.id, t });
     setDeletePending(false);
 
-    if ('error' in result) {
-      setError(localizeChunkError(result.error, t, FORM_ERROR_CODES));
+    if (!result.ok) {
+      setError(result.error);
       return;
     }
 

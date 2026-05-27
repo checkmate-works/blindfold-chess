@@ -1,20 +1,11 @@
 import { MAX_GAMES } from '@/config';
-import { isValidSkillLevel } from '@blindfold-chess/features/ai-game';
 import { getStartingFen, validateMoveSequence } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
-import { type EngineConfig, isEngineConfig } from '@/lib/engines';
 import { GameLimitError } from '@/lib/errors';
-import { isBoardVisibility, legacyToBoardVisibility } from '@/lib/games/board-visibility';
-import { normalisePerGamePreferences } from '@/lib/games/per-game-preferences';
-import type {
-  Game,
-  GameSortOption,
-  PreferenceChangeLogEntry,
-  SkillLevel,
-  SortDirection,
-  StoredGame,
-} from '@/lib/games/saved-game-types';
+import type { Game, GameSortOption, SortDirection } from '@/lib/games/saved-game-types';
+import { normaliseStoredGame } from '@/lib/games/stored-game-migration';
+import { isValidStoredGame } from '@/lib/games/stored-game-validator';
 
 type UpdateOptions = {
   updateLastPlayed?: boolean;
@@ -140,11 +131,13 @@ export class LocalStorageGameRepository implements IGameRepository {
         return this.cachedGames;
       }
 
-      // Validate, normalise legacy `skillLevel`-only records into the new
-      // `engineConfig` shape, and ensure `lastPlayed` exists.
+      // Validate, normalise legacy `skillLevel`-only records into the
+      // new `engineConfig` shape, and ensure `lastPlayed` exists. The
+      // validator + migrator live in their own modules so this class
+      // stays focused on the storage I/O.
       this.cachedGames = parsed
-        .filter(this.isValidStoredGame)
-        .map((stored: StoredGame) => this.normaliseStoredGame(stored));
+        .filter(isValidStoredGame)
+        .map((stored) => normaliseStoredGame(stored));
 
       return this.cachedGames;
     } catch (error) {
@@ -241,167 +234,5 @@ export class LocalStorageGameRepository implements IGameRepository {
     if (!result.valid) {
       throw new Error(`Invalid move detected during validation: ${result.error}`);
     }
-  }
-
-  /**
-   * Accept either the legacy `skillLevel`-only shape or the new
-   * `engineConfig` shape — at least one must be present and valid.
-   * Records older than the EngineConfig migration only carry
-   * `skillLevel`; everything written after the migration carries
-   * `engineConfig`. {@link normaliseStoredGame} folds both into the
-   * single in-app {@link Game} representation.
-   */
-  private isValidStoredGame(stored: unknown): stored is StoredGame {
-    if (typeof stored !== 'object' || stored === null) {
-      return false;
-    }
-
-    const g = stored as Record<string, unknown>;
-
-    const hasLegacySkillLevel = typeof g.skillLevel === 'number' && isValidSkillLevel(g.skillLevel);
-    const hasNewEngineConfig = isEngineConfig(g.engineConfig);
-
-    return (
-      typeof g.id === 'string' &&
-      typeof g.date === 'string' &&
-      Array.isArray(g.moves) &&
-      g.moves.every((m) => typeof m === 'string') &&
-      (g.playerColor === 'white' || g.playerColor === 'black') &&
-      (hasLegacySkillLevel || hasNewEngineConfig) &&
-      ['in_progress', 'win', 'loss', 'draw'].includes(g.status as string) &&
-      (g.lastPlayed === undefined || typeof g.lastPlayed === 'string') &&
-      (g.startingFen === undefined || typeof g.startingFen === 'string') &&
-      (g.gamePreferences === undefined ||
-        (typeof g.gamePreferences === 'object' && g.gamePreferences !== null)) &&
-      (g.operationLogs === undefined ||
-        (Array.isArray(g.operationLogs) &&
-          g.operationLogs.every(
-            (log) =>
-              typeof log === 'object' &&
-              log !== null &&
-              ['text', 'text-autocomplete', 'select', 'button', 'board'].includes(
-                (log as Record<string, unknown>).inputMethod as string
-              ) &&
-              typeof (log as Record<string, unknown>).peekCount === 'number' &&
-              typeof (log as Record<string, unknown>).undoCount === 'number' &&
-              (typeof (log as Record<string, unknown>).movePeekCount === 'number' ||
-                (log as Record<string, unknown>).movePeekCount === undefined) &&
-              (typeof (log as Record<string, unknown>).invalidCount === 'number' ||
-                (log as Record<string, unknown>).invalidCount === undefined)
-          ))) &&
-      (g.preferenceChangeLog === undefined ||
-        (Array.isArray(g.preferenceChangeLog) &&
-          g.preferenceChangeLog.every((entry) =>
-            LocalStorageGameRepository.isValidPreferenceChangeEntry(entry)
-          )))
-    );
-  }
-
-  /**
-   * Validate a single {@link PreferenceChangeLogEntry} from disk. Pulled
-   * out of {@link isValidStoredGame} so the discriminated-union check is
-   * readable: a malformed entry must have the right `key` AND a `from`/`to`
-   * pair of the correct shape for that key.
-   */
-  private static isValidPreferenceChangeEntry(entry: unknown): boolean {
-    if (typeof entry !== 'object' || entry === null) return false;
-    const e = entry as Record<string, unknown>;
-    if (typeof e.atMoveIndex !== 'number' || e.atMoveIndex < 0) return false;
-
-    switch (e.key) {
-      // Legacy boolean key — accepted at the validator boundary so the record
-      // loads, then transformed to a 'boardVisibility' entry by
-      // `normaliseStoredGame` so the in-app representation is uniform.
-      case 'showBoardButtonInGame':
-        return typeof e.from === 'boolean' && typeof e.to === 'boolean';
-      case 'highlightLastMove':
-      case 'showOwnPieces':
-      case 'showOpponentPieces':
-        return typeof e.from === 'boolean' && typeof e.to === 'boolean';
-      case 'pieceShapeMode': {
-        const shapes = ['normal', 'circles-all', 'circles-own', 'circles-opponent'];
-        return shapes.includes(e.from as string) && shapes.includes(e.to as string);
-      }
-      case 'pieceColors': {
-        const colors = ['normal', 'white-only', 'black-only'];
-        return colors.includes(e.from as string) && colors.includes(e.to as string);
-      }
-      case 'peekMode': {
-        const modes = ['modal', 'inline'];
-        return modes.includes(e.from as string) && modes.includes(e.to as string);
-      }
-      case 'boardVisibility': {
-        return isBoardVisibility(e.from) && isBoardVisibility(e.to);
-      }
-      case 'moveInputMode': {
-        const modes = ['text', 'select', 'button'];
-        return modes.includes(e.from as string) && modes.includes(e.to as string);
-      }
-      default:
-        return false;
-    }
-  }
-
-  /**
-   * Migrate one preference-change entry from the legacy on-disk shape to the
-   * in-app shape. Currently only `showBoardButtonInGame` boolean entries need
-   * transformation — the other keys round-trip unchanged.
-   *
-   * Pre-condition: `entry` has already passed `isValidPreferenceChangeEntry`,
-   * so the unsafe casts below are sound at the type-check boundary.
-   */
-  private static migrateChangeLogEntry(entry: Record<string, unknown>): PreferenceChangeLogEntry {
-    if (entry.key === 'showBoardButtonInGame') {
-      return {
-        atMoveIndex: entry.atMoveIndex as number,
-        key: 'boardVisibility',
-        from: legacyToBoardVisibility(entry.from as boolean),
-        to: legacyToBoardVisibility(entry.to as boolean),
-      };
-    }
-    return entry as unknown as PreferenceChangeLogEntry;
-  }
-
-  /**
-   * Promote a {@link StoredGame} (which may be in either legacy or new
-   * format) into the strict in-app {@link Game}. Legacy records whose
-   * only difficulty hint is `skillLevel` are assumed Stockfish — there
-   * was no other engine before the migration, so the assumption is
-   * exact, not heuristic. The legacy `skillLevel` field is dropped from
-   * the returned object so downstream code only ever pattern-matches
-   * on `engineConfig`.
-   */
-  private normaliseStoredGame(stored: StoredGame): Game {
-    const { skillLevel: legacySkillLevel, engineConfig: storedConfig, ...rest } = stored;
-    const engineConfig: EngineConfig =
-      storedConfig ??
-      ({
-        kind: 'stockfish',
-        skillLevel: (legacySkillLevel ?? 5) as SkillLevel,
-      } as const);
-
-    // Promote the on-disk preferences blob to a complete, type-safe
-    // `PerGamePreferences`. This:
-    //   - maps legacy `showBoardButtonInGame: boolean` → `boardVisibility`;
-    //   - fills missing fields (`peekMode`, `moveInputMode`, …) with safe
-    //     defaults — necessary so a mid-game settings edit on a pre-Phase-2
-    //     record can produce a well-formed `preferenceChangeLog` entry
-    //     (an entry built from `from: undefined` would fail validation on
-    //     the next read and silently drop the saved game).
-    // Records with no `gamePreferences` field at all stay `undefined` and
-    // continue to fall back to global preferences in the consumer.
-    const gamePreferences = normalisePerGamePreferences(rest.gamePreferences);
-    const preferenceChangeLog = rest.preferenceChangeLog?.map((entry) =>
-      LocalStorageGameRepository.migrateChangeLogEntry(entry as unknown as Record<string, unknown>)
-    );
-
-    return {
-      ...rest,
-      engineConfig,
-      gamePreferences,
-      preferenceChangeLog,
-      // If lastPlayed doesn't exist, use date as fallback
-      lastPlayed: rest.lastPlayed || rest.date,
-    };
   }
 }

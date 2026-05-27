@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import { useSearchParams } from 'next/navigation';
 
@@ -7,8 +7,6 @@ import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import type { EngineConfig } from '@/lib/engines';
-import { foldPreferences } from '@/lib/games/fold-preferences';
-import type { PreferenceChangeLogEntry } from '@/lib/games/saved-game-types';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -27,6 +25,7 @@ import { useGameState } from './use-game-state';
 import { useMoveOperationTracker } from './use-move-operation-tracker';
 import { useNotation } from './use-notation';
 import { usePlayerMove } from './use-player-move';
+import { usePreferenceState } from './use-preference-state';
 import { useUrlSync } from './use-url-sync';
 
 type UseGameSessionOptions = {
@@ -55,31 +54,6 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
   // both pieces together so we can't end up with a Maia engine paired
   // with a Stockfish skill level (or vice versa).
   const [engineConfig] = useState<EngineConfig>(initialEngineConfig);
-
-  // Initial per-game preferences snapshot. Captured at game start (from the
-  // new-game form via URL params) or restored from a saved game's snapshot.
-  // Immutable for the life of the session — mid-game edits do NOT mutate this
-  // value; they accumulate in `preferenceChangeLog` and are folded on top
-  // (see `currentPerGamePrefs`).
-  const [initialPerGamePrefs, setInitialPerGamePrefs] = useState<PerGamePreferences | undefined>(
-    initialGamePrefs
-  );
-
-  // Append-only timeline of mid-game preference edits. Persisted as
-  // `Game.preferenceChangeLog` alongside the initial snapshot. Each entry
-  // anchors to `moves.length` at the time of the change so the timeline
-  // survives an undo (we keep historical edits even if they pertain to a
-  // half-move that was later undone — a conservative audit choice).
-  const [preferenceChangeLog, setPreferenceChangeLog] = useState<PreferenceChangeLogEntry[]>([]);
-
-  // Live, effective per-game preferences = initial + fold(log). Used by the
-  // board renderer (via PlayClient's `preferences` merge) and the in-game
-  // settings UI's current-value displays.
-  const currentPerGamePrefs = useMemo<PerGamePreferences | undefined>(
-    () =>
-      initialPerGamePrefs ? foldPreferences(initialPerGamePrefs, preferenceChangeLog) : undefined,
-    [initialPerGamePrefs, preferenceChangeLog]
-  );
 
   // Track starting FEN - can be from URL or loaded from saved game
   const [startingFen, setStartingFen] = useState<string | undefined>(initialStartingFen);
@@ -112,6 +86,13 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
       initialGameId,
       initialStartingFen,
     });
+
+  // Per-game preference state — initial snapshot, append-only change log,
+  // and the derived "effective right now" view, plus the restoration
+  // effect that seeds them from a resumed game. See the hook's TSDoc for
+  // why these three move together.
+  const { initialPerGamePrefs, preferenceChangeLog, currentPerGamePrefs, appendPreferenceChange } =
+    usePreferenceState({ initialGamePrefs, loadedGameData });
 
   // Operation tracker hook — declared before useGameState so setLogsTo can be
   // passed to useGameState for synchronized restoration alongside moves.
@@ -151,21 +132,6 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     setStartingFen,
     setOperationLogsTo: setLogsTo,
   });
-
-  // Restore per-game preferences AND change log from loaded game data
-  // (game resume). Both are restored in the same effect so the auto-save
-  // mutex never sees one without the other.
-  // Note: operationLogs restoration is handled in useGameState's effect
-  // alongside moves to prevent a race condition where auto-save could
-  // overwrite logs with stale data.
-  useEffect(() => {
-    if (loadedGameData?.gamePreferences) {
-      setInitialPerGamePrefs(loadedGameData.gamePreferences);
-    }
-    if (loadedGameData?.preferenceChangeLog) {
-      setPreferenceChangeLog(loadedGameData.preferenceChangeLog);
-    }
-  }, [loadedGameData]);
 
   // Map board status to game outcome for repository
 
@@ -349,44 +315,19 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
   // vertical layout shift on every AI turn.
   const isAiThinking = !isPlayerTurn && isLoading;
 
-  // Mid-game per-game-preference edit. Appends one entry to
-  // `preferenceChangeLog` if (and only if) the requested value differs from
-  // the current effective value, so toggling a setting back to its existing
-  // value is a no-op. Type-safe via a generic K — `from`/`to` must both be
-  // of the value type for `key`.
-  //
-  // Pre-Phase-1 games that lack an `initialPerGamePrefs` snapshot cannot be
-  // edited (no base to layer on); the call is a no-op in that case and the
-  // Phase 2b UI is expected to gate the entry point accordingly.
-  // Mirror the live change log into a ref so the updater can read the latest
-  // value without taking `preferenceChangeLog` as a dependency (which would
-  // rebuild the callback on every edit, churning child memoization).
-  const preferenceChangeLogRef = useRef(preferenceChangeLog);
-  preferenceChangeLogRef.current = preferenceChangeLog;
-
+  // Mid-game per-game-preference edit. Delegates the append-or-noop
+  // decision to `usePreferenceState`; only when an entry was actually
+  // appended do we mark a pending change for auto-save. Settings-only
+  // edits (no move made) need this hook boundary because
+  // `useSaveTrigger` only watches moves/status — without it the change
+  // would be lost on Save&Exit / navigation / page hide.
+  // See SPEC1 blocker 2.
   const setPerGamePref = useCallback(
     <K extends keyof PerGamePreferences>(key: K, value: PerGamePreferences[K]) => {
-      if (!initialPerGamePrefs) return;
-      const currentSnapshot = foldPreferences(initialPerGamePrefs, preferenceChangeLogRef.current);
-      if (currentSnapshot[key] === value) return;
-      // Cast safety: each `key` of PerGamePreferences corresponds to exactly
-      // one discriminated variant of PreferenceChangeLogEntry, and `from`/`to`
-      // here are both typed as PerGamePreferences[K] which matches that
-      // variant's from/to shape by construction.
-      const entry = {
-        atMoveIndex: moves.length,
-        key,
-        from: currentSnapshot[key],
-        to: value,
-      } as PreferenceChangeLogEntry;
-      setPreferenceChangeLog((prev) => [...prev, entry]);
-      // Mark a pending change so a settings-only edit (no move made) is
-      // still persisted on Save&Exit / navigation / page hide.
-      // `useSaveTrigger` only watches moves/status, so without this hook
-      // boundary the change would be lost. See SPEC1 blocker 2.
-      markPendingChange();
+      const appended = appendPreferenceChange(key, value, moves.length);
+      if (appended) markPendingChange();
     },
-    [initialPerGamePrefs, moves.length, markPendingChange]
+    [appendPreferenceChange, moves.length, markPendingChange]
   );
 
   // Clear both the error and the preserved attempted-input in one call.
