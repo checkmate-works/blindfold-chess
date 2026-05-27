@@ -2900,7 +2900,8 @@
         "total": "Total",
         "sources": {
           "topic_posts": "topic_posts",
-          "positions": "positions"
+          "positions": "positions",
+          "chunks": "chunks"
         },
         "breakdowns": {
           "topic_posts": {
@@ -2909,6 +2910,10 @@
           },
           "positions": {
             "memory": "memória"
+          },
+          "chunks": {
+            "draft": "rascunho",
+            "published": "publicado"
           }
         },
         "help": {

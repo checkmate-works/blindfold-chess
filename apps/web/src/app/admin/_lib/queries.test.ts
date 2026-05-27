@@ -129,6 +129,12 @@ vi.mock('@/lib/db', () => {
       userId: { __col: 'positions.user_id' },
       type: { __col: 'positions.type' },
     },
+    chunks: {
+      createdAt: { __col: 'chunks.created_at' },
+      deletedAt: { __col: 'chunks.deleted_at' },
+      userId: { __col: 'chunks.user_id' },
+      status: { __col: 'chunks.status' },
+    },
     likes: {
       createdAt: { __col: 'likes.created_at' },
     },
@@ -482,7 +488,7 @@ describe('getPostsPerDay', () => {
     whereCalls.length = 0;
   });
 
-  /** Enqueue per-source results in `UGC_SOURCES` order (topicPosts, positions). */
+  /** Enqueue per-source results in `UGC_SOURCES` order (topicPosts, positions, chunks). */
   function enqueueSourceResults(...perSource: Array<Array<{ date: string; count: number }>>): void {
     for (const rows of perSource) dbResultsQueue.push(rows);
   }
@@ -493,7 +499,8 @@ describe('getPostsPerDay', () => {
         { date: '2026-03-14', count: 5 },
         { date: '2026-03-16', count: 3 },
       ],
-      [] // positions: no rows
+      [], // positions: no rows
+      [] // chunks: no rows
     );
 
     const result = await getPostsPerDay('2026-03-14', '2026-03-16');
@@ -507,7 +514,7 @@ describe('getPostsPerDay', () => {
   });
 
   it('should return all zeros when no posts exist in any source', async () => {
-    enqueueSourceResults([], []);
+    enqueueSourceResults([], [], []);
 
     const result = await getPostsPerDay('2026-03-14', '2026-03-16');
 
@@ -520,15 +527,19 @@ describe('getPostsPerDay', () => {
   });
 
   it('should handle single-day range summing across sources', async () => {
-    enqueueSourceResults([{ date: '2026-03-14', count: 7 }], [{ date: '2026-03-14', count: 2 }]);
+    enqueueSourceResults(
+      [{ date: '2026-03-14', count: 7 }],
+      [{ date: '2026-03-14', count: 2 }],
+      [{ date: '2026-03-14', count: 4 }]
+    );
 
     const result = await getPostsPerDay('2026-03-14', '2026-03-14');
 
-    expect(result.total).toBe(9);
-    expect(result.daily).toEqual([{ date: '2026-03-14', count: 9 }]);
+    expect(result.total).toBe(13);
+    expect(result.daily).toEqual([{ date: '2026-03-14', count: 13 }]);
   });
 
-  it('should sum counts per day across topicPosts and positions', async () => {
+  it('should sum counts per day across topicPosts, positions, and chunks', async () => {
     enqueueSourceResults(
       [
         { date: '2026-03-14', count: 10 },
@@ -539,31 +550,37 @@ describe('getPostsPerDay', () => {
         { date: '2026-03-14', count: 1 },
         { date: '2026-03-15', count: 2 },
         { date: '2026-03-16', count: 3 },
+      ],
+      [
+        { date: '2026-03-14', count: 5 },
+        { date: '2026-03-15', count: 5 },
+        { date: '2026-03-16', count: 5 },
       ]
     );
 
     const result = await getPostsPerDay('2026-03-14', '2026-03-16');
 
-    expect(result.total).toBe(66);
+    expect(result.total).toBe(81);
     expect(result.daily).toEqual([
-      { date: '2026-03-14', count: 11 },
-      { date: '2026-03-15', count: 22 },
-      { date: '2026-03-16', count: 33 },
+      { date: '2026-03-14', count: 16 },
+      { date: '2026-03-15', count: 27 },
+      { date: '2026-03-16', count: 38 },
     ]);
   });
 
   it('should merge distinct dates from each source without collisions', async () => {
     enqueueSourceResults(
       [{ date: '2026-03-14', count: 4 }], // topicPosts
-      [{ date: '2026-03-16', count: 6 }] // positions
+      [{ date: '2026-03-16', count: 6 }], // positions
+      [{ date: '2026-03-15', count: 2 }] // chunks
     );
 
     const result = await getPostsPerDay('2026-03-14', '2026-03-16');
 
-    expect(result.total).toBe(10);
+    expect(result.total).toBe(12);
     expect(result.daily).toEqual([
       { date: '2026-03-14', count: 4 },
-      { date: '2026-03-15', count: 0 },
+      { date: '2026-03-15', count: 2 },
       { date: '2026-03-16', count: 6 },
     ]);
   });
@@ -574,7 +591,8 @@ describe('getPostsPerDay', () => {
         { date: '2026-03-10', count: 1 },
         { date: '2026-03-14', count: 2 },
       ],
-      [] // positions empty
+      [], // positions empty
+      [] // chunks empty
     );
 
     const result = await getPostsPerDay('2026-03-10', '2026-03-14');
@@ -591,17 +609,18 @@ describe('getPostsPerDay', () => {
   it('should handle large count values summed across sources', async () => {
     enqueueSourceResults(
       [{ date: '2026-03-14', count: 100000 }],
-      [{ date: '2026-03-14', count: 50000 }]
+      [{ date: '2026-03-14', count: 50000 }],
+      [{ date: '2026-03-14', count: 25000 }]
     );
 
     const result = await getPostsPerDay('2026-03-14', '2026-03-14');
 
-    expect(result.total).toBe(150000);
-    expect(result.daily).toEqual([{ date: '2026-03-14', count: 150000 }]);
+    expect(result.total).toBe(175000);
+    expect(result.daily).toEqual([{ date: '2026-03-14', count: 175000 }]);
   });
 
   it('should return correct daily length for long range with sparse data', async () => {
-    enqueueSourceResults([{ date: '2026-01-15', count: 3 }], []);
+    enqueueSourceResults([{ date: '2026-01-15', count: 3 }], [], []);
 
     const result = await getPostsPerDay('2026-01-01', '2026-03-31');
 
@@ -613,24 +632,24 @@ describe('getPostsPerDay', () => {
   });
 
   it('should issue one db.select() per UGC source in parallel', async () => {
-    enqueueSourceResults([], []);
+    enqueueSourceResults([], [], []);
 
     await getPostsPerDay('2026-03-14', '2026-03-16');
 
-    // One query for topicPosts, one for positions.
-    expect(selectSpy).toHaveBeenCalledTimes(2);
+    // One query each for topicPosts, positions, and chunks.
+    expect(selectSpy).toHaveBeenCalledTimes(3);
   });
 
   it('should apply an isNull(deletedAt) filter to every UGC source', async () => {
-    enqueueSourceResults([], []);
+    enqueueSourceResults([], [], []);
 
     await getPostsPerDay('2026-03-14', '2026-03-16');
 
-    // Two `where` calls — one per source — each with an `and(...)` predicate
+    // Three `where` calls — one per source — each with an `and(...)` predicate
     // that must include an `isNull` conjunct.
-    expect(whereCalls).toHaveLength(2);
+    expect(whereCalls).toHaveLength(3);
 
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < 3; i++) {
       const predicate = getWherePredicateAt(i);
       expect(predicate.__kind).toBe('and');
       const hasIsNull = predicate.conds.some((c) => c.__kind === 'isNull');
@@ -647,13 +666,17 @@ describe('getPostsPerDay', () => {
       [
         { date: '2026-03-14', count: 1 },
         { date: '2026-03-16', count: 7 },
+      ],
+      [
+        { date: '2026-03-15', count: 3 },
+        { date: '2026-03-16', count: 5 },
       ]
     );
 
     const result = await getPostsPerDay('2026-03-14', '2026-03-16');
     const sum = result.daily.reduce((acc, d) => acc + d.count, 0);
     expect(result.total).toBe(sum);
-    expect(result.total).toBe(14);
+    expect(result.total).toBe(22);
   });
 });
 
@@ -670,21 +693,27 @@ describe('getKpiSummary', () => {
    *
    *   1. countActivePosters → selectDistinct on topicPosts
    *   2. countActivePosters → selectDistinct on positions
-   *   3. getUgcSourceBreakdown → select on topicPosts
-   *   4. getUgcSourceBreakdown → select on positions
-   *   5. countLikesInPeriod → select on likes
+   *   3. countActivePosters → selectDistinct on chunks
+   *   4. getUgcSourceBreakdown → select on topicPosts
+   *   5. getUgcSourceBreakdown → select on positions
+   *   6. getUgcSourceBreakdown → select on chunks
+   *   7. countLikesInPeriod → select on likes
    */
   function enqueueKpiResults(opts: {
     activePostersTopic?: Array<{ userId: string }>;
     activePostersPosition?: Array<{ userId: string }>;
+    activePostersChunk?: Array<{ userId: string }>;
     breakdownTopic?: Array<{ key: string; count: number }>;
     breakdownPosition?: Array<{ key: string; count: number }>;
+    breakdownChunk?: Array<{ key: string; count: number }>;
     likes?: Array<{ total: number }>;
   }): void {
     dbResultsQueue.push(opts.activePostersTopic ?? []);
     dbResultsQueue.push(opts.activePostersPosition ?? []);
+    dbResultsQueue.push(opts.activePostersChunk ?? []);
     dbResultsQueue.push(opts.breakdownTopic ?? []);
     dbResultsQueue.push(opts.breakdownPosition ?? []);
+    dbResultsQueue.push(opts.breakdownChunk ?? []);
     dbResultsQueue.push(opts.likes ?? [{ total: 0 }]);
   }
 
@@ -978,10 +1007,12 @@ describe('getKpiSummary', () => {
     // Query order:
     //   0: activePosters topicPosts (has isNull)
     //   1: activePosters positions  (has isNull)
-    //   2: breakdown topicPosts     (has isNull)
-    //   3: breakdown positions      (has isNull)
-    //   4: likes                    (NO isNull)
-    const likesPredicate = getWherePredicateAt(4);
+    //   2: activePosters chunks     (has isNull)
+    //   3: breakdown topicPosts     (has isNull)
+    //   4: breakdown positions      (has isNull)
+    //   5: breakdown chunks         (has isNull)
+    //   6: likes                    (NO isNull)
+    const likesPredicate = getWherePredicateAt(6);
     expect(likesPredicate.__kind).toBe('and');
     const hasIsNull = likesPredicate.conds.some((c) => c.__kind === 'isNull');
     expect(hasIsNull).toBe(false);
@@ -997,9 +1028,9 @@ describe('getKpiSummary', () => {
       ugcTotalInPeriod: 0,
     });
 
-    // First four queries (2 active-posters + 2 breakdowns) must each include
+    // First six queries (3 active-posters + 3 breakdowns) must each include
     // an `isNull(deletedAt)` conjunct in their `and(...)` predicate.
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 6; i++) {
       const predicate = getWherePredicateAt(i);
       expect(predicate.__kind).toBe('and');
       const hasIsNull = predicate.conds.some((c) => c.__kind === 'isNull');
@@ -1017,10 +1048,10 @@ describe('getKpiSummary', () => {
       ugcTotalInPeriod: 0,
     });
 
-    // 2 selectDistinct calls (one per UGC source for active posters).
-    expect(selectDistinctSpy).toHaveBeenCalledTimes(2);
-    // 2 breakdown selects + 1 likes select = 3 select calls.
-    expect(selectSpy).toHaveBeenCalledTimes(3);
+    // 3 selectDistinct calls (one per UGC source for active posters).
+    expect(selectDistinctSpy).toHaveBeenCalledTimes(3);
+    // 3 breakdown selects + 1 likes select = 4 select calls.
+    expect(selectSpy).toHaveBeenCalledTimes(4);
   });
 
   it('should return all zeros (and empty breakdown) for a fully empty period', async () => {
@@ -1065,10 +1096,10 @@ describe('getKpiSummary', () => {
     // (breakdown), `where` (likes), and `selectDistinct` (active posters).
     // We already asserted the exact call counts above. As a stronger
     // regression guard, assert that the TOTAL number of drizzle queries is
-    // exactly 5 (2 selectDistinct + 3 select), i.e. no duplicate per-day
+    // exactly 7 (3 selectDistinct + 4 select), i.e. no duplicate per-day
     // aggregation queries leaked in.
-    expect(selectDistinctSpy).toHaveBeenCalledTimes(2);
-    expect(selectSpy).toHaveBeenCalledTimes(3);
+    expect(selectDistinctSpy).toHaveBeenCalledTimes(3);
+    expect(selectSpy).toHaveBeenCalledTimes(4);
   });
 
   it('should handle a single-day period (days = 1)', async () => {
