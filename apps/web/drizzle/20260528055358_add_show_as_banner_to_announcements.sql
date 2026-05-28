@@ -1,0 +1,1 @@
+ALTER TABLE "announcements" ADD COLUMN "show_as_banner" boolean DEFAULT false NOT NULL;
