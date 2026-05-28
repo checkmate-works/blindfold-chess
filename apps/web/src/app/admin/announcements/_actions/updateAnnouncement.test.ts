@@ -74,6 +74,7 @@ const validData = {
   locale: 'en',
   status: 'draft',
   visibility: 'public',
+  showAsBanner: false,
   pinnedAt: null,
   publishedAt: null,
 };

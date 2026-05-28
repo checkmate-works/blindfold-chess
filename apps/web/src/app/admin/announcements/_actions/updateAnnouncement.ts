@@ -22,6 +22,7 @@ type UpdateData = {
   locale: string;
   status: string;
   visibility: string;
+  showAsBanner: boolean;
   pinnedAt: string | null;
   publishedAt: string | null;
   sendNotification?: boolean;
@@ -46,6 +47,7 @@ export async function updateAnnouncement(id: string, data: UpdateData): Promise<
         locale: data.locale,
         status: data.status,
         visibility: data.visibility,
+        showAsBanner: data.showAsBanner,
         pinnedAt: data.pinnedAt ? new Date(data.pinnedAt) : null,
         publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,
         updatedAt: new Date(),

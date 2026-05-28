@@ -31,6 +31,9 @@ const defaultLabels = {
   published: 'Published',
   public: 'Public',
   members: 'Members',
+  showAsBanner: 'Show as top banner',
+  showAsBannerHint:
+    'Displays this announcement in the site-wide top banner for a few days after publishing.',
   sendNotification: 'Send notification to users',
   notificationAlreadySent: 'Notification already sent',
 };
@@ -38,6 +41,7 @@ const defaultLabels = {
 const defaultValues = {
   status: 'draft',
   visibility: 'public',
+  showAsBanner: false,
   pinnedAt: '',
   publishedAt: '',
 };
@@ -151,6 +155,7 @@ describe('AnnouncementPreviewForm', () => {
     const values = {
       status: 'published',
       visibility: 'members_only',
+      showAsBanner: false,
       pinnedAt: '2024-06-15T12:00',
       publishedAt: '2024-06-15T14:00',
     };
@@ -192,6 +197,7 @@ describe('AnnouncementPreviewForm', () => {
       ...announcementData,
       status: 'draft',
       visibility: 'public',
+      showAsBanner: false,
       pinnedAt: null,
       publishedAt: null,
       sendNotification: false,
@@ -223,6 +229,8 @@ describe('AnnouncementPreviewForm', () => {
       ...announcementData,
       status: 'published',
       visibility: 'members_only',
+      // members_only can never show a banner, so the flag is forced off.
+      showAsBanner: false,
       pinnedAt: null,
       // Auto-filled with current datetime when status flips to Published.
       publishedAt: expect.any(String),
@@ -342,7 +350,7 @@ describe('AnnouncementPreviewForm', () => {
     fireEvent.click(screen.getByRole('radio', { name: 'Published' }));
 
     expect(screen.getByText('Send notification to users')).toBeInTheDocument();
-    expect(screen.getByRole('checkbox')).not.toBeChecked();
+    expect(screen.getByLabelText('Send notification to users')).not.toBeChecked();
   });
 
   it('should show "Notification already sent" when notification was already sent', () => {
@@ -359,7 +367,7 @@ describe('AnnouncementPreviewForm', () => {
     fireEvent.click(screen.getByRole('radio', { name: 'Published' }));
 
     expect(screen.getByText('Notification already sent')).toBeInTheDocument();
-    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Send notification to users')).not.toBeInTheDocument();
   });
 
   it('should send sendNotification=true when checkbox is checked', async () => {
@@ -376,7 +384,7 @@ describe('AnnouncementPreviewForm', () => {
     );
 
     fireEvent.click(screen.getByRole('radio', { name: 'Published' }));
-    fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.click(screen.getByLabelText('Send notification to users'));
 
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Save' }));
@@ -386,6 +394,7 @@ describe('AnnouncementPreviewForm', () => {
       ...announcementData,
       status: 'published',
       visibility: 'public',
+      showAsBanner: false,
       pinnedAt: null,
       publishedAt: expect.any(String),
       sendNotification: true,
@@ -415,6 +424,7 @@ describe('AnnouncementPreviewForm', () => {
       ...announcementData,
       status: 'published',
       visibility: 'public',
+      showAsBanner: false,
       pinnedAt: null,
       publishedAt: expect.any(String),
       sendNotification: false,
@@ -444,6 +454,7 @@ describe('AnnouncementPreviewForm', () => {
       ...announcementData,
       status: 'published',
       visibility: 'public',
+      showAsBanner: false,
       pinnedAt: null,
       publishedAt: expect.any(String),
       sendNotification: false,
@@ -482,11 +493,11 @@ describe('AnnouncementPreviewForm', () => {
     );
 
     fireEvent.click(screen.getByRole('radio', { name: 'Published' }));
-    fireEvent.click(screen.getByRole('checkbox'));
-    expect(screen.getByRole('checkbox')).toBeChecked();
+    fireEvent.click(screen.getByLabelText('Send notification to users'));
+    expect(screen.getByLabelText('Send notification to users')).toBeChecked();
 
-    fireEvent.click(screen.getByRole('checkbox'));
-    expect(screen.getByRole('checkbox')).not.toBeChecked();
+    fireEvent.click(screen.getByLabelText('Send notification to users'));
+    expect(screen.getByLabelText('Send notification to users')).not.toBeChecked();
 
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Save' }));
@@ -496,6 +507,7 @@ describe('AnnouncementPreviewForm', () => {
       ...announcementData,
       status: 'published',
       visibility: 'public',
+      showAsBanner: false,
       pinnedAt: null,
       publishedAt: expect.any(String),
       sendNotification: false,
@@ -517,17 +529,17 @@ describe('AnnouncementPreviewForm', () => {
 
     // Switch to published and check the notification checkbox
     fireEvent.click(screen.getByRole('radio', { name: 'Published' }));
-    fireEvent.click(screen.getByRole('checkbox'));
-    expect(screen.getByRole('checkbox')).toBeChecked();
+    fireEvent.click(screen.getByLabelText('Send notification to users'));
+    expect(screen.getByLabelText('Send notification to users')).toBeChecked();
 
     // Switch back to draft (checkbox disappears)
     fireEvent.click(screen.getByRole('radio', { name: 'Draft' }));
-    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Send notification to users')).not.toBeInTheDocument();
 
     // Switch back to published - checkbox should be unchecked (state preserved but UI hidden/shown)
     fireEvent.click(screen.getByRole('radio', { name: 'Published' }));
     // The checkbox reappears; sendNotification state is preserved
-    expect(screen.getByRole('checkbox')).toBeInTheDocument();
+    expect(screen.getByLabelText('Send notification to users')).toBeInTheDocument();
   });
 
   it('should not show notification checkbox when defaultValues.status is published (already published)', () => {
@@ -542,7 +554,7 @@ describe('AnnouncementPreviewForm', () => {
     );
 
     // Already published -> published is not an initial publish, no checkbox
-    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Send notification to users')).not.toBeInTheDocument();
     expect(screen.queryByText('Send notification to users')).not.toBeInTheDocument();
     expect(screen.queryByText('Notification already sent')).not.toBeInTheDocument();
   });
@@ -624,5 +636,121 @@ describe('AnnouncementPreviewForm', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  // --- show-as-banner opt-in toggle ---
+
+  it('should not show the banner toggle while status is draft', () => {
+    render(
+      <AnnouncementPreviewForm
+        id={testId}
+        announcementData={announcementData}
+        defaultValues={defaultValues}
+        notificationSent={false}
+        labels={defaultLabels}
+      />
+    );
+
+    expect(screen.queryByText('Show as top banner')).not.toBeInTheDocument();
+  });
+
+  it('should show the banner toggle when status is published and visibility is public', () => {
+    render(
+      <AnnouncementPreviewForm
+        id={testId}
+        announcementData={announcementData}
+        defaultValues={defaultValues}
+        notificationSent={false}
+        labels={defaultLabels}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Published' }));
+
+    expect(screen.getByText('Show as top banner')).toBeInTheDocument();
+  });
+
+  it('should hide the banner toggle when visibility is members_only even if published', () => {
+    render(
+      <AnnouncementPreviewForm
+        id={testId}
+        announcementData={announcementData}
+        defaultValues={defaultValues}
+        notificationSent={false}
+        labels={defaultLabels}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Published' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Members' }));
+
+    expect(screen.queryByText('Show as top banner')).not.toBeInTheDocument();
+  });
+
+  it('should submit showAsBanner=true when the toggle is checked', async () => {
+    mockUpdateAnnouncement.mockResolvedValue({ success: true, id: testId });
+
+    render(
+      <AnnouncementPreviewForm
+        id={testId}
+        announcementData={announcementData}
+        defaultValues={defaultValues}
+        notificationSent={false}
+        labels={defaultLabels}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Published' }));
+    fireEvent.click(screen.getByLabelText('Show as top banner'));
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    });
+
+    expect(mockUpdateAnnouncement).toHaveBeenCalledWith(
+      testId,
+      expect.objectContaining({ showAsBanner: true })
+    );
+  });
+
+  it('should force showAsBanner=false when switching to members_only after checking it', async () => {
+    mockUpdateAnnouncement.mockResolvedValue({ success: true, id: testId });
+
+    render(
+      <AnnouncementPreviewForm
+        id={testId}
+        announcementData={announcementData}
+        defaultValues={defaultValues}
+        notificationSent={false}
+        labels={defaultLabels}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Published' }));
+    fireEvent.click(screen.getByLabelText('Show as top banner'));
+    fireEvent.click(screen.getByRole('radio', { name: 'Members' }));
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    });
+
+    expect(mockUpdateAnnouncement).toHaveBeenCalledWith(
+      testId,
+      expect.objectContaining({ showAsBanner: false })
+    );
+  });
+
+  it('should reflect an existing showAsBanner=true default as checked', () => {
+    render(
+      <AnnouncementPreviewForm
+        id={testId}
+        announcementData={announcementData}
+        defaultValues={{ ...defaultValues, status: 'published', showAsBanner: true }}
+        notificationSent={false}
+        labels={defaultLabels}
+      />
+    );
+
+    expect(screen.getByLabelText('Show as top banner')).toBeChecked();
   });
 });

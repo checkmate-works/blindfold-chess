@@ -3388,6 +3388,8 @@
         "contentPreview": "Content Preview",
         "sendNotification": "Send notification to users",
         "notificationAlreadySent": "Notification already sent",
+        "showAsBanner": "Show as top banner",
+        "showAsBannerHint": "Displays this announcement in the site-wide top banner for a few days after publishing.",
         "unsavedChangesTitle": "Unsaved Changes",
         "unsavedChangesMessage": "You have unsaved changes. Are you sure you want to leave?",
         "unsavedChangesConfirm": "Leave",

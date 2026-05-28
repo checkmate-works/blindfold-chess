@@ -12,6 +12,7 @@ type EditAnnouncementFormProps = {
     locale: string;
     status: string;
     visibility: string;
+    showAsBanner: boolean;
     pinnedAt: string | null;
     publishedAt: string | null;
   };
@@ -35,6 +36,7 @@ export function EditAnnouncementForm({ id, defaultValues, labels }: EditAnnounce
           ...data,
           status: isPublished ? 'published' : 'draft',
           visibility: defaultValues.visibility,
+          showAsBanner: defaultValues.showAsBanner,
           pinnedAt: defaultValues.pinnedAt,
           publishedAt: defaultValues.publishedAt,
         })

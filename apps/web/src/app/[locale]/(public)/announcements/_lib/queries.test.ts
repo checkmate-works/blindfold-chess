@@ -26,6 +26,7 @@ vi.mock('@/lib/db', () => {
       locale: 'announcements.locale',
       status: 'announcements.status',
       visibility: 'announcements.visibility',
+      showAsBanner: 'announcements.show_as_banner',
       pinnedAt: 'announcements.pinned_at',
       publishedAt: 'announcements.published_at',
       createdAt: 'announcements.created_at',

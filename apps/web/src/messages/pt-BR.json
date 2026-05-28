@@ -3146,6 +3146,8 @@
         "contentPreview": "Pré-visualização do Conteúdo",
         "sendNotification": "Enviar notificação aos usuários",
         "notificationAlreadySent": "Notificação já enviada",
+        "showAsBanner": "Exibir como banner no topo",
+        "showAsBannerHint": "Exibe este anúncio no banner superior de todo o site por alguns dias após a publicação.",
         "unsavedChangesTitle": "Alterações Não Salvas",
         "unsavedChangesMessage": "Você tem alterações não salvas. Tem certeza de que deseja sair?",
         "unsavedChangesConfirm": "Sair",

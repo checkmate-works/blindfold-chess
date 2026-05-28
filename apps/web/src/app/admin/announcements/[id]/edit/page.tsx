@@ -36,6 +36,7 @@ export default async function EditAnnouncementPage({
         locale: announcement.locale,
         status: announcement.status ?? 'draft',
         visibility: announcement.visibility ?? 'public',
+        showAsBanner: announcement.showAsBanner,
         pinnedAt: formatDateTimeLocal(announcement.pinnedAt),
         publishedAt: formatDateTimeLocal(announcement.publishedAt),
       }}

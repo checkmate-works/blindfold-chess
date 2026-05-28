@@ -3388,6 +3388,8 @@
         "contentPreview": "コンテンツプレビュー",
         "sendNotification": "ユーザーに通知を送信する",
         "notificationAlreadySent": "通知送信済み",
+        "showAsBanner": "トップバナーに表示する",
+        "showAsBannerHint": "公開後の数日間、サイト全体のトップバナーにこのお知らせを表示します。",
         "unsavedChangesTitle": "未保存の変更",
         "unsavedChangesMessage": "未保存の変更があります。このページを離れてもよろしいですか？",
         "unsavedChangesConfirm": "離れる",

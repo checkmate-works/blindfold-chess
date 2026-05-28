@@ -160,8 +160,13 @@ export const getPublishedAnnouncement = cache(
 
 /**
  * Get the latest published public announcement for the top banner.
- * Filters: status='published', visibility='public', publishedAt set, publishedAt within BANNER_DISPLAY_DAYS.
+ * Filters: status='published', visibility='public', showAsBanner=true,
+ * publishedAt set, publishedAt within BANNER_DISPLAY_DAYS.
  * Returns null if no matching announcement exists.
+ *
+ * `showAsBanner` is an explicit per-announcement opt-in: publishing alone does
+ * not surface a banner. The BANNER_DISPLAY_DAYS window still applies on top, so
+ * an opted-in banner auto-expires after a few days even if left checked.
  *
  * Wrapped with unstable_cache (cross-request, 24h revalidation, tag-driven)
  * and React.cache (per-request deduplication).
@@ -200,6 +205,7 @@ export const getLatestBannerAnnouncement = cache(
           and(
             eq(announcements.status, 'published'),
             eq(announcements.visibility, 'public'),
+            eq(announcements.showAsBanner, true),
             isNotNull(announcements.publishedAt),
             gte(announcements.publishedAt, cutoff)
           )

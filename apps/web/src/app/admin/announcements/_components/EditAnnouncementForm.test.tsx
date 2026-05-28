@@ -64,6 +64,7 @@ const defaultValues = {
   locale: 'en',
   status: 'published',
   visibility: 'members_only',
+  showAsBanner: true,
   pinnedAt: '2024-06-15T12:00',
   publishedAt: '2024-06-15T14:00',
 };
@@ -75,6 +76,7 @@ const draftDefaultValues = {
   locale: 'en',
   status: 'draft',
   visibility: 'public',
+  showAsBanner: false,
   pinnedAt: null,
   publishedAt: null,
 };
@@ -126,6 +128,7 @@ describe('EditAnnouncementForm', () => {
       locale: 'en',
       status: 'published',
       visibility: 'members_only',
+      showAsBanner: true,
       pinnedAt: '2024-06-15T12:00',
       publishedAt: '2024-06-15T14:00',
     });
@@ -149,6 +152,7 @@ describe('EditAnnouncementForm', () => {
       locale: 'en',
       status: 'published',
       visibility: 'members_only',
+      showAsBanner: true,
       pinnedAt: '2024-06-15T12:00',
       publishedAt: '2024-06-15T14:00',
     });
@@ -176,6 +180,7 @@ describe('EditAnnouncementForm', () => {
       locale: 'en',
       status: 'draft',
       visibility: 'public',
+      showAsBanner: false,
       pinnedAt: null,
       publishedAt: null,
     });
