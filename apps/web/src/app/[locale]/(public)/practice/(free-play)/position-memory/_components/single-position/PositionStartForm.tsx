@@ -21,11 +21,17 @@ import {
 } from '../../_lib/session-config';
 
 type Props = {
-  positionId: string;
+  /**
+   * Locale-relative session route this form starts (without query string),
+   * e.g. `/practice/position-memory/<id>/session` for a saved position or
+   * `/practice/position-memory/custom/<token>/session` for an instant one.
+   * The i18n router prepends the locale.
+   */
+  sessionPath: string;
   locale: string;
 };
 
-export function PositionStartForm({ positionId, locale }: Props) {
+export function PositionStartForm({ sessionPath, locale }: Props) {
   const [timeLimit, setTimeLimit] = useState(DEFAULT_TIME_LIMIT);
   const [displayMode, setDisplayMode] = useState<DisplayMode>(DEFAULT_DISPLAY_MODE);
   const router = useRouter();
@@ -36,7 +42,7 @@ export function PositionStartForm({ positionId, locale }: Props) {
       timeLimit: String(timeLimit),
       displayMode,
     });
-    router.push(`/practice/position-memory/${positionId}/session?${params.toString()}`);
+    router.push(`${sessionPath}?${params.toString()}`);
   };
 
   return (

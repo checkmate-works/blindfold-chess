@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 import { notFound } from 'next/navigation';
 
-import type { ChallengeScoreRequirement, RankSlug } from '@/lib/db/data/ranks';
+import type { RankRequirement, RankSlug } from '@/lib/db/data/ranks';
 import { buildChapterHref, findChapter } from '@/lib/guides';
 import type { ChapteredGuide } from '@/lib/guides';
 import { JsonLd } from '@/lib/seo/jsonld';
@@ -32,7 +32,7 @@ export async function renderChapterBody(
   ctx: GuideContext,
   guide: ChapteredGuide,
   props: ChapterBodyProps,
-  _requirements: ChallengeScoreRequirement[]
+  _requirements: RankRequirement[]
 ): Promise<ReactNode> {
   // `_requirements` is accepted for symmetry with `renderFlatBody` and to
   // leave the door open for a chapter-last-page CTA later. Currently unused.

@@ -24,14 +24,19 @@
  * @see {@link checkAndGrantRanks} — entry point, called from `saveChallengeResult`
  * @see {@link evaluators} — registry of requirement type evaluators
  */
-import { and, asc, eq } from 'drizzle-orm';
+import { and, asc, count, eq } from 'drizzle-orm';
 import 'server-only';
 
 import { logActivityEvent } from '../users/activity-log';
-import type { ChallengeScoreRequirement, GrantedRank, RankRequirement } from './data/ranks';
+import type {
+  ChallengeScoreRequirement,
+  GrantedRank,
+  PositionSubmissionCountRequirement,
+  RankRequirement,
+} from './data/ranks';
 import { parseRequirements } from './data/ranks';
 import { db } from './index';
-import { challengeBestScores, ranks, userRanks } from './schema';
+import { challengeBestScores, positions, ranks, userRanks } from './schema';
 
 // ---------------------------------------------------------------------------
 // Pre-fetched scores cache type
@@ -78,6 +83,15 @@ const evaluators: Record<string, RequirementEvaluator> = {
         )
       );
     return best !== undefined && best.score >= requirement.minScore;
+  },
+  position_submission_count: async (userId, req, executor) => {
+    const requirement = req as PositionSubmissionCountRequirement;
+    const dbInstance = executor ?? db;
+    const [row] = await dbInstance
+      .select({ value: count() })
+      .from(positions)
+      .where(and(eq(positions.userId, userId), eq(positions.type, requirement.positionType)));
+    return (row?.value ?? 0) >= requirement.minCount;
   },
 };
 

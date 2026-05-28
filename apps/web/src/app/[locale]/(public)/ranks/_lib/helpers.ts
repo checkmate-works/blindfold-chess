@@ -6,7 +6,12 @@ import {
   parseRequirements,
   ranksSeedData,
 } from '@/lib/db/data/ranks';
-import type { ChallengeScoreRequirement, RankSlug } from '@/lib/db/data/ranks';
+import type {
+  ChallengeScoreRequirement,
+  PositionSubmissionCountRequirement,
+  RankRequirement,
+  RankSlug,
+} from '@/lib/db/data/ranks';
 import type { Rank } from '@/lib/db/schema';
 
 import type { RequirementItem } from '../_components/RequirementsList';
@@ -30,35 +35,67 @@ function menuTypeToPracticeSlug(menuType: string): string {
   return menuType.replace(/_/g, '-');
 }
 
+type Translator = (key: string, values?: Record<string, string | number | Date>) => string;
+
+function buildChallengeScoreItem(
+  req: ChallengeScoreRequirement,
+  locale: string,
+  t: Translator
+): RequirementItem {
+  const challengeKey = buildChallengeNameKey(req);
+  const practiceSlug = menuTypeToPracticeSlug(req.menuType);
+
+  // For legal_moves and route_planner, link directly to the challenge page
+  // with a piece parameter; other modules route to the practice landing.
+  const href =
+    (req.menuType === 'legal_moves' || req.menuType === 'route_planner') &&
+    req.leaderboardKey !== 'default'
+      ? `/${locale}/practice/${practiceSlug}/challenge?piece=${req.leaderboardKey}`
+      : `/${locale}/practice/${practiceSlug}`;
+
+  return {
+    label: t('challengeScore', {
+      minScore: req.minScore,
+      challengeName: t(`challengeNames.${challengeKey}`),
+    }),
+    href,
+  };
+}
+
+function buildPositionSubmissionItem(
+  req: PositionSubmissionCountRequirement,
+  locale: string,
+  t: Translator
+): RequirementItem {
+  // Only `memory` is wired today (2kyu). When `puzzle` is added we route to
+  // /practice/puzzle/new instead — the slug is statically derived from the
+  // positionType discriminator, no extra mapping table needed.
+  const routeSegment = req.positionType === 'memory' ? 'position-memory' : 'puzzle';
+  return {
+    label: t('submissionCount', {
+      minCount: req.minCount,
+      itemName: t(`submissionItemNames.${req.positionType}`),
+    }),
+    href: `/${locale}/practice/${routeSegment}/new`,
+  };
+}
+
 /**
  * Build RequirementItem[] from rank requirements for use with RequirementsList.
  *
  * Shared by rank detail page and guide last page to avoid duplicating the
- * label formatting and href construction logic.
+ * label formatting and href construction logic. Dispatches on `req.type` —
+ * adding a new requirement type means adding one branch here and one new
+ * i18n template, with no per-call-site changes.
  */
 export function buildRequirementItems(
-  requirements: ChallengeScoreRequirement[],
+  requirements: RankRequirement[],
   locale: string,
-  t: (key: string, values?: Record<string, string | number | Date>) => string
+  t: Translator
 ): RequirementItem[] {
   return requirements.map((req) => {
-    const challengeKey = buildChallengeNameKey(req);
-    const practiceSlug = menuTypeToPracticeSlug(req.menuType);
-
-    // For legal_moves and route_planner, link directly to challenge page with piece parameter
-    const href =
-      (req.menuType === 'legal_moves' || req.menuType === 'route_planner') &&
-      req.leaderboardKey !== 'default'
-        ? `/${locale}/practice/${practiceSlug}/challenge?piece=${req.leaderboardKey}`
-        : `/${locale}/practice/${practiceSlug}`;
-
-    return {
-      label: t('challengeScore', {
-        minScore: req.minScore,
-        challengeName: t(`challengeNames.${challengeKey}`),
-      }),
-      href,
-    };
+    if (req.type === 'challenge_score') return buildChallengeScoreItem(req, locale, t);
+    return buildPositionSubmissionItem(req, locale, t);
   });
 }
 
@@ -80,7 +117,7 @@ export function isWhiteBelt(beltColor: string): boolean {
 
 export function getRankCardState(
   inDb: boolean,
-  requirements: ChallengeScoreRequirement[],
+  requirements: RankRequirement[],
   isAchieved: boolean,
   previousAchieved: boolean,
   isLoggedIn: boolean,
@@ -134,10 +171,16 @@ export function buildRankTeaserCards(
     const requirements = seed ? parseRequirements(seed.requirements) : [];
     const beltColor = getBeltColorHex(slug);
     const requirementLabels = requirements.map((req) => {
-      const challengeKey = buildChallengeNameKey(req);
-      return tRanks('challengeScore', {
-        minScore: req.minScore,
-        challengeName: tRanks(`challengeNames.${challengeKey}`),
+      if (req.type === 'challenge_score') {
+        const challengeKey = buildChallengeNameKey(req);
+        return tRanks('challengeScore', {
+          minScore: req.minScore,
+          challengeName: tRanks(`challengeNames.${challengeKey}`),
+        });
+      }
+      return tRanks('submissionCount', {
+        minCount: req.minCount,
+        itemName: tRanks(`submissionItemNames.${req.positionType}`),
       });
     });
     const previousSlug = index > 0 ? TEASER_SLUGS[index - 1] : undefined;
@@ -167,7 +210,7 @@ export function buildRankTeaserCards(
 type ResolvedRankView = {
   slug: RankSlug;
   dbRank: Rank | null;
-  requirements: ChallengeScoreRequirement[];
+  requirements: RankRequirement[];
 };
 
 export type ResolveNextRankResult = {

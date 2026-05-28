@@ -1,11 +1,14 @@
 import { revalidatePath } from 'next/cache';
 
+import * as Sentry from '@sentry/nextjs';
 import { and, eq, isNull } from 'drizzle-orm';
 import 'server-only';
 
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
 import { db, feedItems, positions } from '@/lib/db';
+import type { GrantedRank } from '@/lib/db/data/ranks';
+import { checkAndGrantRanks } from '@/lib/db/rank-evaluation';
 import type { DbTx } from '@/lib/db/types';
 import { notifyFollowersOfNewPosition } from '@/lib/notifications/notification';
 import { clawbackPointsForPost, grantPointsForPost } from '@/lib/points';
@@ -74,6 +77,12 @@ export type CreatePositionEntryResult =
        * page can show how many points were earned.
        */
       pointGrant?: { pointEventId: string; amount: number };
+      /**
+       * Belt ranks unlocked by this submission. Surfaced via sessionStorage
+       * by the caller so {@link RankAchievementModal} can pick them up on
+       * the next navigation. Mirrors the challenge-completion flow.
+       */
+      grantedRanks?: GrantedRank[];
     }
   | { error: string };
 
@@ -184,6 +193,18 @@ export async function createPositionEntry(params: {
     metadata: { type: config.type },
   });
 
+  // Evaluate belt ranks AFTER the transaction commits, so that the freshly
+  // inserted `positions` row counts toward `position_submission_count`
+  // requirements (e.g. 2kyu). Wrapped in try-catch — rank evaluation is
+  // supplementary and must not fail the create.
+  let grantedRanks: GrantedRank[] = [];
+  try {
+    grantedRanks = await checkAndGrantRanks(user.id);
+  } catch (error) {
+    console.error('Failed to check/grant ranks after position create:', error);
+    Sentry.captureException(error);
+  }
+
   revalidatePath(`/practice/${config.urlSegment}`);
 
   return {
@@ -197,6 +218,7 @@ export async function createPositionEntry(params: {
           },
         }
       : {}),
+    ...(grantedRanks.length > 0 ? { grantedRanks } : {}),
   };
 }
 

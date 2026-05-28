@@ -874,6 +874,9 @@
     "positionMemory": {
       "title": "Memoria de Posiciones",
       "description": "Entrena tu capacidad para recordar y recrear posiciones de ajedrez",
+      "custom": {
+        "title": "Problema Personalizado"
+      },
       "like": "Me gusta",
       "unlike": "Quitar me gusta",
       "newReply": "Nueva Respuesta {time}",
@@ -4209,6 +4212,11 @@
     "requirements": "Requisitos",
     "comingSoon": "Próximamente",
     "challengeScore": "Puntuación {minScore}+ en {challengeName}",
+    "submissionCount": "Publica al menos {minCount} {itemName}",
+    "submissionItemNames": {
+      "memory": "problema de memoria de posiciones",
+      "puzzle": "puzzle"
+    },
     "challengeNames": {
       "square_colors": "Color de Casillas",
       "coordinate_quiz_white": "Cuestionario de Coordenadas (Blancas)",
@@ -4232,15 +4240,16 @@
     },
     "detail": {
       "criteria": "Criterios",
-      "requirements": "Requisitos de Puntuación",
+      "requirements": "Requisitos",
       "criteriaDescriptions": {
         "mukyu": "Listo para comenzar el entrenamiento básico de ajedrez a ciegas.",
         "5kyu": "Capacidad de identificar correctamente la casilla en el tablero de ajedrez a partir de la notación algebraica (ej., e4, Ag7).",
         "4kyu": "Capacidad de determinar los movimientos legales en una coordenada específica para todas las piezas sin ayudas visuales.",
-        "3kyu": "Capacidad de planificar rutas de maniobra para todas las piezas sin ayudas visuales."
+        "3kyu": "Capacidad de planificar rutas de maniobra para todas las piezas sin ayudas visuales.",
+        "2kyu": "Ser capaz de reconocer varias piezas como una sola unidad con significado (un «chunk»)."
       },
       "tips": "Consejos",
-      "tryChallenge": "Probar el Desafío",
+      "tryChallenge": "Cumple los requisitos",
       "showMore": "Mostrar más",
       "pageOf": "Página {current} de {total}",
       "mukyuRequirements": ["Comprensión de la notación algebraica"],
@@ -4331,7 +4340,8 @@
         "algebraicNotation": "Notación algebraica",
         "anchorPoints": "Percepción del tablero con puntos de anclaje",
         "blindfoldLegalMoves": "Detección de movimientos legales en ajedrez a ciegas",
-        "diagonals": "Cálculo de diagonales y antidiagonales"
+        "diagonals": "Cálculo de diagonales y antidiagonales",
+        "chunking": "Reconocimiento de patrones con chunks"
       }
     },
     "help": {
@@ -4512,6 +4522,44 @@
           }
         ]
       },
+      "2kyu": {
+        "format": "flat",
+        "pages": [
+          {
+            "paragraphs": [
+              "Esta aplicación tiene un modo de práctica llamado Memoria de Posiciones. Memorizas una posición dada dentro de un límite de tiempo —por ejemplo, 30 segundos o un minuto— y luego intentas reproducirla en un tablero vacío.",
+              "Si aún no lo has probado, empieza primero por el tutorial.",
+              "Esto entrena la capacidad de reconocimiento de patrones, tan importante en el ajedrez a ciegas.",
+              "Para empezar, prueba con un tablero que tenga 10 piezas."
+            ]
+          },
+          {
+            "paragraphs": [
+              "¿Pudiste acertar?",
+              "Como también menciono en el siguiente artículo, se suele decir que la cantidad de elementos que una persona puede retener de un vistazo ronda los 4 ± 1.",
+              "Una posición con 10 piezas es casi el doble de ese 4 ± 1. Probablemente la mayoría no pudo reproducirla correctamente; yo, desde luego, no pude en absoluto.",
+              "Ahora, prueba con la siguiente posición."
+            ]
+          },
+          {
+            "paragraphs": [
+              "¿Cómo te fue con este? Aunque tiene 10 piezas igual que el primer problema, seguramente muchos lo resolvieron bien.",
+              "El segundo problema es más fácil que el primero porque pudiste usar el enroque corto como patrón. Tanto las blancas como las negras han hecho O-O y no hay ninguna otra pieza, así que solo necesitas recordar dos elementos.",
+              "Este es un ejemplo bastante extremo, pero el primer problema usaba una disposición aleatoria que nunca ocurriría en una partida real, mientras que el segundo usaba una disposición que sí aparece a menudo. Por cierto, en disposiciones aleatorias no hay una diferencia significativa de capacidad de memoria entre grandes maestros y aficionados; la idea aceptada es que lo importante es la capacidad de reconocimiento de patrones.",
+              "Esta afirmación se basa en los resultados de los experimentos de memoria ajedrecística de De Groot. Si te interesa, echa un vistazo también a lo siguiente."
+            ]
+          },
+          {
+            "paragraphs": [
+              "Como en el ejemplo del enroque corto, cuando tratas varias piezas como una sola unidad con significado, en esta aplicación lo llamamos «chunk».",
+              "Cuantos más chunks seas capaz de reconocer, más eficientemente procesarás la información y más mejorará tu capacidad de cálculo. Puedes consultar la lista de chunks a continuación.",
+              "Un chunk solo tiene que tener sentido para ti, así que no necesita ser fácil de entender para todo el mundo. Por ejemplo, si una estructura de peones se parece a los caracteres de un idioma, será fácil de captar para quienes hablan ese idioma; pero a quien no conozca esos caracteres puede resultarle difícil el mismo reconocimiento de patrones. Del mismo modo, alguien que estudia informática podría usar en parte el binario para memorizar la posición de las piezas, pero quien no esté familiarizado con el binario no podría hacer lo mismo.",
+              "Si se te ocurre un chunk que también podría servir a otras personas, publicálo a continuación.",
+              "Para instalar más chunks en tu mente, creo que es más eficiente fijarse también en qué tipo de reconocimiento de patrones usan otros jugadores; y esta aplicación está diseñada para que puedas hacer justamente eso."
+            ]
+          }
+        ]
+      },
       "4kyu": {
         "format": "flat",
         "pages": [
@@ -4555,6 +4603,14 @@
       }
     },
     "inlineLinks": {
+      "2kyu": {
+        "positionMemoryTutorialLabel": "Tutorial de Memoria de Posiciones",
+        "positionMemoryArticleLabel": "Memoria de posiciones (artículo)",
+        "chunksLabel": "Catálogo de chunks",
+        "chunksNewLabel": "Publicar un chunk",
+        "solveProblemLabel": "Prueba este problema",
+        "deGrootExperimentLabel": "El experimento de De Groot"
+      },
       "3kyu": {
         "diagonalQuizTutorialLabel": "Tutorial del Cuestionario de Diagonales",
         "diagonalQuizLabel": "Cuestionario de Diagonales"

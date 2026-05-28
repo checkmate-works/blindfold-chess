@@ -12,7 +12,7 @@
  *
  * We use a synthetic `mukyu` slug so `isMukyuSlug` short-circuits the DB
  * call inside `loadRequirements`. For the DB-backed CTA test we use `5kyu`
- * and mock `getValidatedRank`.
+ * and mock `getRankBySlug`.
  */
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -126,9 +126,9 @@ vi.mock('@/app/[locale]/(public)/ranks/_lib/helpers', () => ({
   getBeltColorHex: () => '#abcdef',
 }));
 
-const getValidatedRankMock = vi.fn();
+const getRankBySlugMock = vi.fn();
 vi.mock('@/app/[locale]/(public)/ranks/_lib/queries', () => ({
-  getValidatedRank: (...args: unknown[]) => getValidatedRankMock(...args),
+  getRankBySlug: (...args: unknown[]) => getRankBySlugMock(...args),
 }));
 
 // Footer: stub out the AdSense/Divider/Breadcrumb stack to keep the DOM lean.
@@ -169,7 +169,7 @@ vi.mock('./paragraphVisualAids', () => ({
 
 afterEach(() => {
   cleanup();
-  getValidatedRankMock.mockReset();
+  getRankBySlugMock.mockReset();
   syntheticGuide = null;
 });
 
@@ -228,16 +228,39 @@ describe('renderGuideBody — flat layer', () => {
   });
 
   it('renders the tryChallenge CTA on the last page for a DB-backed rank', async () => {
-    getValidatedRankMock.mockResolvedValue({
-      rank: { id: 'r1' },
-      rankSlug: '5kyu',
-      requirements: [{ type: 'challenge_score', menuType: 'coordinate_quiz', minScore: 800 }],
+    getRankBySlugMock.mockResolvedValue({
+      id: 'r1',
+      slug: '5kyu',
+      requirements: [
+        {
+          type: 'challenge_score',
+          menuType: 'coordinate_quiz',
+          leaderboardKey: 'default',
+          minScore: 800,
+        },
+      ],
     });
     await renderAsync(renderGuideBody({ kind: 'flat', locale: 'en', slug: '5kyu', pageNumber: 3 }));
     expect(screen.getByText('Try the Challenge')).toBeTruthy();
     const list = screen.getByTestId('requirements-list');
     expect(list.textContent).toContain('800');
-    expect(getValidatedRankMock).toHaveBeenCalledWith('5kyu');
+    expect(getRankBySlugMock).toHaveBeenCalledWith('5kyu');
+  });
+
+  it('suppresses the CTA on the last page when the rank is seeded with no requirements', async () => {
+    // Mirrors a draft rank like 2kyu that exists in the DB but whose gating
+    // conditions have not been defined yet — guide stays reachable, no CTA.
+    getRankBySlugMock.mockResolvedValue({ id: 'r2', slug: '5kyu', requirements: [] });
+    await renderAsync(renderGuideBody({ kind: 'flat', locale: 'en', slug: '5kyu', pageNumber: 3 }));
+    expect(screen.queryByText('Try the Challenge')).toBeNull();
+    expect(screen.queryByTestId('requirements-list')).toBeNull();
+  });
+
+  it('calls notFound when the rank slug is missing from the DB entirely', async () => {
+    getRankBySlugMock.mockResolvedValue(null);
+    await expect(
+      renderGuideBody({ kind: 'flat', locale: 'en', slug: '5kyu', pageNumber: 1 })
+    ).rejects.toThrow('NEXT_NOT_FOUND');
   });
 
   it('calls notFound when the requested page exceeds the guide length', async () => {
@@ -270,7 +293,7 @@ describe('renderGuideBody — chapter-list layer', () => {
 
   it('does NOT fetch requirements from the DB (no unnecessary round-trip)', async () => {
     await renderAsync(renderGuideBody({ kind: 'chapter-list', locale: 'en', slug: '5kyu' }));
-    expect(getValidatedRankMock).not.toHaveBeenCalled();
+    expect(getRankBySlugMock).not.toHaveBeenCalled();
   });
 
   it('throws a loud Error (not a 404) when asked to render a chapter list for a flat guide', async () => {

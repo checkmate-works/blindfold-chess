@@ -18,6 +18,7 @@ import { useFenBoardEditor } from '@/app/[locale]/(public)/practice/(free-play)/
 import { useTagSelection } from '@/app/[locale]/(public)/practice/(free-play)/_hooks/use-tag-selection';
 import { EMPTY_BOARD_FEN } from '@/app/[locale]/(public)/practice/(free-play)/_lib/board-editor-constants';
 import { buildDefaultPracticeTitle } from '@/app/[locale]/(public)/practice/(free-play)/_lib/default-title';
+import { SESSION_STORAGE_KEYS } from '@/app/[locale]/(public)/practice/_lib/session-storage-keys';
 
 import { createPosition } from '../_actions/createPosition';
 import { PositionFormFields } from './PositionFormFields';
@@ -37,6 +38,24 @@ export type PositionForkSeed = {
   themeIds: string[];
   chunkIds: string[];
 };
+
+/** Stable key for an unordered list of tag options, for dirty comparison. */
+function toSortedIdKey(items: ReadonlyArray<{ id: string }>): string {
+  return items
+    .map((item) => item.id)
+    .sort()
+    .join(',');
+}
+
+/**
+ * Treat the empty-board FEN and a blank input as the same "no position yet"
+ * baseline, so clearing the board on a fresh `/new` does not count as an edit.
+ * Fork mode seeds a real FEN, so a change there is still detected.
+ */
+function normalizeFen(fen: string): string {
+  const trimmed = fen.trim();
+  return trimmed === EMPTY_BOARD_FEN ? '' : trimmed;
+}
 
 type Props = {
   displayName?: string;
@@ -92,21 +111,33 @@ export function CreatePositionForm({
     initialThemes: seededThemes,
     initialChunks: seededChunks,
   });
-  const [title, setTitle] = useState(() =>
+
+  // Baselines for the dirty-check, captured once on mount. The form starts
+  // pre-populated — a default title is always present, and fork mode seeds
+  // every field — so the guard must compare against these initial values
+  // rather than against "empty". Without this, an untouched `/new` visit is
+  // immediately `isDirty: true` (the auto-generated title is non-empty) and
+  // the unsaved-changes guard prompts on the first navigation away.
+  const defaultTitleRef = useRef(
     forkSeed ? forkSeed.title : buildDefaultPracticeTitle('Position', displayName)
   );
-  const [description, setDescription] = useState(forkSeed?.description ?? '');
+  const defaultDescriptionRef = useRef(forkSeed?.description ?? '');
+  const initialThemeIdsRef = useRef(toSortedIdKey(seededThemes));
+  const initialChunkIdsRef = useRef(toSortedIdKey(seededChunks));
+
+  const [title, setTitle] = useState(defaultTitleRef.current);
+  const [description, setDescription] = useState(defaultDescriptionRef.current);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   const isDirty =
     !submitted &&
-    (title.trim() !== '' ||
-      description.trim() !== '' ||
-      (board.fenInput.trim() !== '' && board.fenInput !== EMPTY_BOARD_FEN) ||
-      tags.selectedThemes.length > 0 ||
-      tags.selectedChunks.length > 0);
+    (title.trim() !== defaultTitleRef.current.trim() ||
+      description.trim() !== defaultDescriptionRef.current.trim() ||
+      normalizeFen(board.fenInput) !== normalizeFen(forkSeed?.fen ?? '') ||
+      toSortedIdKey(tags.selectedThemes) !== initialThemeIdsRef.current ||
+      toSortedIdKey(tags.selectedChunks) !== initialChunkIdsRef.current);
 
   const { isBlocking, confirm, cancel } = useUnsavedChanges({
     isDirty: disableUnsavedGuard ? false : isDirty,
@@ -137,6 +168,16 @@ export function CreatePositionForm({
       if ('error' in result) {
         setError(result.error);
         return;
+      }
+
+      // Stash any belt-rank grants triggered by this submission so the
+      // RankAchievementModal mounted on the destination page can pick them
+      // up. Mirrors the challenge-completion flow.
+      if (result.grantedRanks && result.grantedRanks.length > 0) {
+        sessionStorage.setItem(
+          SESSION_STORAGE_KEYS.GRANTED_RANKS,
+          JSON.stringify(result.grantedRanks)
+        );
       }
 
       // flushSync ensures the re-render (isDirty → false) completes
