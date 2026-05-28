@@ -73,4 +73,56 @@ describe('POST /api/csp-report', () => {
 
     expect(captureMessage).not.toHaveBeenCalled();
   });
+
+  it('drops directive-less reports without forwarding (empty Safari / bot junk)', async () => {
+    const noDirective = JSON.stringify({ 'csp-report': { 'blocked-uri': '' } });
+    const junk = JSON.stringify({ foo: 'bar' });
+
+    const a = await POST(makeRequest(noDirective, 'application/csp-report'));
+    const b = await POST(makeRequest(junk, 'application/csp-report'));
+
+    expect(a.status).toBe(204);
+    expect(b.status).toBe(204);
+    expect(captureMessage).not.toHaveBeenCalled();
+  });
+
+  it('tags blocked_host with the host of the blocked URI', async () => {
+    const body = JSON.stringify({
+      'csp-report': {
+        'violated-directive': 'font-src',
+        'effective-directive': 'font-src',
+        'blocked-uri': 'https://fonts.gstatic.com/s/x.woff2',
+      },
+    });
+
+    await POST(makeRequest(body, 'application/csp-report'));
+
+    expect(captureMessage).toHaveBeenCalledTimes(1);
+    const [, context] = captureMessage.mock.calls[0];
+    expect(context).toMatchObject({
+      tags: expect.objectContaining({
+        csp_directive: 'font-src',
+        blocked_host: 'fonts.gstatic.com',
+      }),
+    });
+  });
+
+  it('forwards nothing when CSP_REPORT_SAMPLE_RATE is 0', async () => {
+    vi.stubEnv('CSP_REPORT_SAMPLE_RATE', '0');
+    try {
+      const body = JSON.stringify({
+        'csp-report': {
+          'effective-directive': 'script-src',
+          'blocked-uri': 'https://evil.example/x.js',
+        },
+      });
+
+      const res = await POST(makeRequest(body, 'application/csp-report'));
+
+      expect(res.status).toBe(204);
+      expect(captureMessage).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
 });

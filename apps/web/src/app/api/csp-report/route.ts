@@ -15,13 +15,36 @@ import * as Sentry from '@sentry/nextjs';
  *
  * The endpoint is intentionally unauthenticated — browsers do not attach
  * cookies / CSRF tokens to these beacon requests, and requiring them would
- * silently drop every report. Abuse is mitigated by:
- *   - `Sentry.captureMessage` being rate-limited by Sentry itself.
- *   - The handler not touching any database or user session.
+ * silently drop every report. Because it is therefore an open, unbounded
+ * firehose, two guards keep it from exhausting the Sentry quota (which it
+ * previously did, taking the whole project's error reporting offline):
+ *   - Reports with no directive are dropped. A well-formed CSP report always
+ *     names a directive; payloads without one are empty Safari reports or junk
+ *     POSTed by bots, carry no actionable data, and were ~half the volume.
+ *   - The remainder is probabilistically sampled (see `cspReportSampleRate`)
+ *     so the forwarded volume is bounded regardless of report content or abuse.
  *
  * Always responds 204 (no body) regardless of parse success so the browser
  * does not retry or log failures.
  */
+
+/**
+ * Fraction (0..1) of CSP reports forwarded to Sentry.
+ *
+ * Defaults to full fidelity in dev/test and a hard 10% cap in production so a
+ * deploy stops the bleeding without any extra configuration step. Override
+ * with the `CSP_REPORT_SAMPLE_RATE` env var (e.g. raise it back toward 1 once
+ * the noisy sources are fixed, or lower it further during an incident).
+ */
+function cspReportSampleRate(): number {
+  const raw = process.env.CSP_REPORT_SAMPLE_RATE;
+  if (raw !== undefined) {
+    const n = Number(raw);
+    if (Number.isFinite(n) && n >= 0 && n <= 1) return n;
+  }
+  return process.env.NODE_ENV === 'production' ? 0.1 : 1;
+}
+
 export async function POST(request: Request): Promise<NextResponse> {
   const contentType = request.headers.get('content-type') ?? '';
 
@@ -40,20 +63,37 @@ export async function POST(request: Request): Promise<NextResponse> {
       return new NextResponse(null, { status: 204 });
     }
 
+    const sampleRate = cspReportSampleRate();
     const violations = extractViolations(parsed, contentType);
 
     for (const violation of violations) {
+      const directive = toStringOrUndefined(
+        violation['effective-directive'] ??
+          violation['violated-directive'] ??
+          violation.effectiveDirective
+      );
+
+      // Drop directive-less reports (empty Safari reports / bot junk). They
+      // are unactionable and were roughly half the flood.
+      if (!directive) continue;
+
+      // Bound the forwarded volume so this open endpoint can never exhaust the
+      // Sentry quota again, independent of report content or abuse.
+      if (Math.random() >= sampleRate) continue;
+
+      const blockedUri = toStringOrUndefined(violation['blocked-uri'] ?? violation.blockedURL);
+
       Sentry.captureMessage('CSP violation', {
         level: 'warning',
+        // Group by directive so a single noisy directive no longer escalates
+        // one project-wide mega-issue.
+        fingerprint: ['csp-violation', directive],
         tags: {
-          csp_directive: toStringOrUndefined(
-            violation['effective-directive'] ??
-              violation['violated-directive'] ??
-              violation.effectiveDirective
-          ),
-          blocked_scheme: schemeOf(
-            toStringOrUndefined(violation['blocked-uri'] ?? violation.blockedURL)
-          ),
+          csp_directive: directive,
+          blocked_scheme: schemeOf(blockedUri),
+          // Host of the blocked URI — lets Sentry's tag breakdown enumerate
+          // exactly which third-party domains need allow-listing.
+          blocked_host: hostOf(blockedUri),
         },
         extra: {
           blockedUri: violation['blocked-uri'] ?? violation.blockedURL,
@@ -114,4 +154,14 @@ function schemeOf(uri: string | undefined): string | undefined {
   if (!uri) return undefined;
   const idx = uri.indexOf(':');
   return idx > 0 ? uri.slice(0, idx) : undefined;
+}
+
+function hostOf(uri: string | undefined): string | undefined {
+  if (!uri) return undefined;
+  try {
+    return new URL(uri).host || undefined;
+  } catch {
+    // Non-URL blocked-uri values ("inline", "eval", "self") have no host.
+    return undefined;
+  }
 }

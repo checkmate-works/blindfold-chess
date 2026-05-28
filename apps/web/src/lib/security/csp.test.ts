@@ -68,6 +68,19 @@ describe('buildCspHeader', () => {
     expect(header).toContain("form-action 'self'");
   });
 
+  it('allow-lists the confirmed third-party hosts (Google Fonts, CookieYes)', () => {
+    const header = buildCspHeader('n', { isDevelopment: false });
+
+    const fontSrc = header.split('; ').find((d) => d.startsWith('font-src '));
+    expect(fontSrc).toContain('fonts.gstatic.com');
+
+    const styleSrc = header.split('; ').find((d) => d.startsWith('style-src '));
+    expect(styleSrc).toContain('fonts.googleapis.com');
+
+    const connectSrc = header.split('; ').find((d) => d.startsWith('connect-src '));
+    expect(connectSrc).toContain('*.cookieyes.com');
+  });
+
   it('points both report-to and report-uri at the collector', () => {
     const header = buildCspHeader('n', { isDevelopment: false });
     expect(header).toContain('report-uri /api/csp-report');
