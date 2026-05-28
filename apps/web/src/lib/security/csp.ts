@@ -148,15 +148,22 @@ export function buildCspHeader(nonce: string, options: { isDevelopment?: boolean
     "default-src 'self'",
     `script-src ${scriptSrc.join(' ')}`,
     // `'unsafe-inline'` on styles is out of scope to remove (CSS-in-JS).
-    "style-src 'self' 'unsafe-inline'",
+    // `fonts.googleapis.com` serves the @font-face stylesheet for the Google
+    // Sans fonts that Google's AdSense / consent UI injects.
+    "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
     "img-src 'self' data: blob: *.supabase.co" +
       (supabaseOrigin ? ` ${supabaseOrigin}` : '') +
       ' pagead2.googlesyndication.com *.doubleclick.net',
-    "font-src 'self' data:",
+    // `fonts.gstatic.com`: woff2 files for the Google Sans font that AdSense's
+    // in-page UI pulls in (the app's own Inter is self-hosted via next/font).
+    "font-src 'self' data: fonts.gstatic.com",
+    // `*.cookieyes.com`: the CookieYes consent banner POSTs consent logs to
+    // `log.cookieyes.com` (its CDN script host `cdn-cookieyes.com` is already
+    // in `script-src`).
     "connect-src 'self' www.google-analytics.com *.sentry.io *.ingest.sentry.io *.supabase.co" +
       (supabaseOrigin ? ` ${supabaseOrigin}` : '') +
       (supabaseWsOrigin ? ` ${supabaseWsOrigin}` : '') +
-      ' pagead2.googlesyndication.com adservice.google.com',
+      ' pagead2.googlesyndication.com adservice.google.com *.cookieyes.com',
     'frame-src googleads.g.doubleclick.net tpc.googlesyndication.com ep2.adtrafficquality.google www.google.com www.chess.com www.youtube-nocookie.com',
     "frame-ancestors 'none'",
     "base-uri 'self'",
