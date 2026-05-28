@@ -81,6 +81,7 @@ export default async function PreviewAnnouncementPage({
           defaultValues={{
             status: announcement.status ?? 'draft',
             visibility: announcement.visibility ?? 'public',
+            showAsBanner: announcement.showAsBanner,
             pinnedAt: formatDateTimeLocal(announcement.pinnedAt) ?? '',
             publishedAt: formatDateTimeLocal(announcement.publishedAt) ?? '',
           }}
@@ -97,6 +98,8 @@ export default async function PreviewAnnouncementPage({
             published: t('published'),
             public: t('public'),
             members: t('members'),
+            showAsBanner: t('form.showAsBanner'),
+            showAsBannerHint: t('form.showAsBannerHint'),
             sendNotification: t('form.sendNotification'),
             notificationAlreadySent: t('form.notificationAlreadySent'),
           }}

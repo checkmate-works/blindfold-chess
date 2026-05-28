@@ -316,6 +316,13 @@
       "when": 1779856892100,
       "tag": "20260527044132_create_rate_limit_key_events",
       "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1779947638438,
+      "tag": "20260528055358_add_show_as_banner_to_announcements",
+      "breakpoints": true
     }
   ]
 }

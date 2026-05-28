@@ -1,8 +1,16 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useRef, useState, useTransition } from 'react';
 
 import { useRouter } from 'next/navigation';
+
+import { useUnsavedChanges } from '@/_hooks/useUnsavedChanges';
+import { UnsavedChangesDialog } from '@/app/_components/UnsavedChangesDialog';
+
+import { useToast } from '@/app/[locale]/_contexts/ToastContext';
+
+import { PublishedConfirmModal } from '../../_components/PublishedConfirmModal';
+import { AnnouncementFormTopBar } from './announcement-form/AnnouncementFormTopBar';
 
 type AnnouncementEditData = {
   slug: string;
@@ -13,6 +21,11 @@ type AnnouncementEditData = {
 
 type AnnouncementFormProps = {
   defaultValues?: AnnouncementEditData;
+  defaultSlug?: string;
+  defaultLocale?: string;
+  isPublished?: boolean;
+  lockSlug?: boolean;
+  lockLocale?: boolean;
   onSaveDraft: (
     data: AnnouncementEditData
   ) => Promise<{ success: true; id: string } | { error: string }>;
@@ -27,23 +40,66 @@ type AnnouncementFormProps = {
     locale: string;
     saveDraft: string;
     savingDraft: string;
+    savePublished: string;
+    savingPublished: string;
     preview: string;
     cancel: string;
-    backToList: string;
+    unsavedChangesTitle: string;
+    unsavedChangesMessage: string;
+    unsavedChangesConfirm: string;
+    unsavedChangesCancel: string;
+    draftSaved: string;
+    publishedSaved: string;
+    publishedConfirmTitle: string;
+    publishedConfirmMessage: string;
+    publishedConfirmConfirm: string;
+    publishedConfirmCancel: string;
   };
 };
 
-export function AnnouncementForm({ defaultValues, onSaveDraft, labels }: AnnouncementFormProps) {
+export function AnnouncementForm({
+  defaultValues,
+  defaultSlug,
+  defaultLocale,
+  isPublished = false,
+  lockSlug = false,
+  lockLocale = false,
+  onSaveDraft,
+  labels,
+}: AnnouncementFormProps) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [publishedConfirmOpen, setPublishedConfirmOpen] = useState(false);
+  const [isNavigatingToPreview, setIsNavigatingToPreview] = useState(false);
 
-  const [slug, setSlug] = useState(defaultValues?.slug ?? '');
-  const [title, setTitle] = useState(defaultValues?.title ?? '');
-  const [content, setContent] = useState(defaultValues?.content ?? '');
-  const [locale, setLocale] = useState(defaultValues?.locale ?? 'en');
+  const initialSlug = defaultValues?.slug ?? defaultSlug ?? '';
+  const initialTitle = defaultValues?.title ?? '';
+  const initialContent = defaultValues?.content ?? '';
+  const initialLocale = defaultValues?.locale ?? defaultLocale ?? 'en';
 
-  const handleSaveDraft = () => {
+  const [slug, setSlug] = useState(initialSlug);
+  const [title, setTitle] = useState(initialTitle);
+  const [content, setContent] = useState(initialContent);
+  const [locale, setLocale] = useState(initialLocale);
+
+  const isSubmittedRef = useRef(false);
+  const isDirty =
+    !isSubmittedRef.current &&
+    !isNavigatingToPreview &&
+    (slug !== initialSlug ||
+      title !== initialTitle ||
+      content !== initialContent ||
+      locale !== initialLocale);
+
+  const {
+    isBlocking,
+    confirm: confirmNavigation,
+    cancel: cancelNavigation,
+  } = useUnsavedChanges({ isDirty });
+
+  const executeSave = () => {
     setError(null);
     startTransition(async () => {
       const result = await onSaveDraft({ slug, title, content, locale });
@@ -51,126 +107,150 @@ export function AnnouncementForm({ defaultValues, onSaveDraft, labels }: Announc
       if ('error' in result) {
         setError(result.error);
       } else {
-        router.push('/admin/announcements');
+        isSubmittedRef.current = true;
+        showToast(isPublished ? labels.publishedSaved : labels.draftSaved, 'success');
+        // For new announcements, redirect to edit so subsequent saves are updates.
+        // For existing announcements, stay on the page.
+        if (!defaultValues) {
+          window.location.replace(`/admin/announcements/${result.id}/edit`);
+        }
       }
     });
   };
 
+  const handleSaveDraft = () => {
+    if (isPublished) {
+      setPublishedConfirmOpen(true);
+    } else {
+      executeSave();
+    }
+  };
+
+  const handlePublishedConfirm = () => {
+    setPublishedConfirmOpen(false);
+    executeSave();
+  };
+
   const handlePreview = () => {
     setError(null);
+    // Disable the unsaved-changes guard BEFORE the save fires. Setting state
+    // synchronously here forces a re-render that propagates `enabled: false`
+    // into next-navigation-guard before router.push is called below; otherwise
+    // the guard intercepts the post-save navigation and the user can cancel
+    // out — leaving the just-saved record behind and producing a duplicate
+    // (slug, locale) error on the next attempt.
+    setIsNavigatingToPreview(true);
     startTransition(async () => {
       const result = await onSaveDraft({ slug, title, content, locale });
 
       if ('error' in result) {
         setError(result.error);
+        setIsNavigatingToPreview(false);
       } else {
+        isSubmittedRef.current = true;
         router.push(`/admin/announcements/${result.id}/preview`);
       }
     });
   };
 
   return (
-    <div>
-      <div className="flex items-center gap-4 mb-6">
-        <button
-          type="button"
-          onClick={() => router.push('/admin/announcements')}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          {labels.backToList}
-        </button>
-        <h1 className="text-2xl font-bold">{labels.formTitle}</h1>
-      </div>
+    <div className="flex flex-col h-[calc(100vh-4rem)]">
+      <AnnouncementFormTopBar
+        labels={{
+          saveDraft: labels.saveDraft,
+          savingDraft: labels.savingDraft,
+          savePublished: labels.savePublished,
+          savingPublished: labels.savingPublished,
+          preview: labels.preview,
+          cancel: labels.cancel,
+        }}
+        isPending={isPending}
+        isPublished={isPublished}
+        onSave={handleSaveDraft}
+        onPreview={handlePreview}
+        onCancel={() => router.push('/admin/announcements')}
+      />
 
-      <div className="max-w-2xl space-y-4">
-        <div>
-          <label htmlFor="slug" className="block text-sm font-medium mb-1">
-            {labels.slug}
-          </label>
-          <input
-            id="slug"
-            type="text"
-            value={slug}
-            onChange={(e) => setSlug(e.target.value)}
-            placeholder={labels.slugPlaceholder}
-            className="w-full border border-border rounded px-3 py-2 text-sm bg-card text-foreground"
-            maxLength={255}
-          />
+      {error && (
+        <div className="px-4 py-2 shrink-0">
+          <p className="text-destructive text-sm">{error}</p>
         </div>
+      )}
 
-        <div>
-          <label htmlFor="title" className="block text-sm font-medium mb-1">
-            {labels.title}
-          </label>
-          <input
-            id="title"
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder={labels.titlePlaceholder}
-            className="w-full border border-border rounded px-3 py-2 text-sm bg-card text-foreground"
-            maxLength={255}
-          />
-        </div>
+      <div className="flex flex-1 min-h-0">
+        <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex items-center gap-3 px-6 pt-4 pb-2">
+            <input
+              type="text"
+              value={slug}
+              onChange={(e) => setSlug(e.target.value)}
+              placeholder={labels.slugPlaceholder}
+              aria-label={labels.slug}
+              readOnly={lockSlug}
+              className={`flex-1 border border-border rounded px-3 py-1.5 text-sm text-foreground ${
+                lockSlug ? 'bg-muted cursor-not-allowed' : 'bg-card'
+              }`}
+              maxLength={255}
+            />
+            <select
+              value={locale}
+              onChange={(e) => setLocale(e.target.value)}
+              aria-label={labels.locale}
+              disabled={lockLocale}
+              className={`border border-border rounded px-3 py-1.5 text-sm text-foreground ${
+                lockLocale ? 'bg-muted cursor-not-allowed' : 'bg-card'
+              }`}
+            >
+              <option value="en">en</option>
+              <option value="ja">ja</option>
+              <option value="es">es</option>
+              <option value="pt-BR">pt-BR</option>
+            </select>
+          </div>
 
-        <div>
-          <label htmlFor="content" className="block text-sm font-medium mb-1">
-            {labels.content}
-          </label>
-          <textarea
-            id="content"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder={labels.contentPlaceholder}
-            className="w-full border border-border rounded px-3 py-2 text-sm bg-card text-foreground resize-none"
-            rows={10}
-          />
-        </div>
+          <div className="px-6 pb-2">
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder={labels.titlePlaceholder}
+              aria-label={labels.title}
+              className="w-full text-2xl font-bold bg-card border-none outline-none placeholder:text-muted-foreground/50 rounded px-3 py-2"
+              maxLength={255}
+            />
+          </div>
 
-        <div>
-          <label htmlFor="locale" className="block text-sm font-medium mb-1">
-            {labels.locale}
-          </label>
-          <select
-            id="locale"
-            value={locale}
-            onChange={(e) => setLocale(e.target.value)}
-            className="w-full border border-border rounded px-3 py-2 text-sm bg-card text-foreground"
-          >
-            <option value="en">en</option>
-            <option value="ja">ja</option>
-          </select>
-        </div>
-
-        {error && <p className="text-destructive text-sm">{error}</p>}
-
-        <div className="flex items-center gap-2 pt-2">
-          <button
-            type="button"
-            onClick={handleSaveDraft}
-            disabled={isPending}
-            className="px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
-          >
-            {isPending ? labels.savingDraft : labels.saveDraft}
-          </button>
-          <button
-            type="button"
-            onClick={handlePreview}
-            disabled={isPending}
-            className="px-4 py-2 text-sm rounded bg-card border border-primary text-primary hover:bg-primary/10 transition-colors disabled:opacity-50"
-          >
-            {labels.preview}
-          </button>
-          <button
-            type="button"
-            onClick={() => router.push('/admin/announcements')}
-            disabled={isPending}
-            className="px-4 py-2 text-sm rounded bg-card border border-border hover:bg-secondary transition-colors"
-          >
-            {labels.cancel}
-          </button>
+          <div className="flex-1 px-6 pb-4 flex flex-col min-h-0">
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder={labels.contentPlaceholder}
+              aria-label={labels.content}
+              className="flex-1 w-full border border-border rounded px-3 py-2 text-sm bg-card text-foreground resize-none"
+            />
+          </div>
         </div>
       </div>
+
+      <UnsavedChangesDialog
+        open={isBlocking}
+        onConfirm={confirmNavigation}
+        onCancel={cancelNavigation}
+        title={labels.unsavedChangesTitle}
+        message={labels.unsavedChangesMessage}
+        confirmLabel={labels.unsavedChangesConfirm}
+        cancelLabel={labels.unsavedChangesCancel}
+      />
+
+      <PublishedConfirmModal
+        isOpen={publishedConfirmOpen}
+        title={labels.publishedConfirmTitle}
+        message={labels.publishedConfirmMessage}
+        confirmLabel={labels.publishedConfirmConfirm}
+        cancelLabel={labels.publishedConfirmCancel}
+        onConfirm={handlePublishedConfirm}
+        onCancel={() => setPublishedConfirmOpen(false)}
+      />
     </div>
   );
 }

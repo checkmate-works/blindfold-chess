@@ -5,6 +5,7 @@
 // join, article-embedded practice modules, and announcements (the long-form
 // announcement system shown in the public 'Announcements' page).
 import {
+  boolean,
   index,
   integer,
   jsonb,
@@ -178,6 +179,10 @@ export const announcements = pgTable(
     locale: varchar('locale', { length: 10 }).notNull(), // BCP 47
     status: varchar('status', { length: 20 }).default('draft'),
     visibility: varchar('visibility', { length: 20 }).default('public'),
+    // Opt-in gate for the public top banner. When false the announcement is
+    // published normally but never surfaces in the banner slot, so publishing
+    // does not unconditionally push a banner to every page.
+    showAsBanner: boolean('show_as_banner').default(false).notNull(),
     pinnedAt: timestamp('pinned_at', { withTimezone: true }),
     publishedAt: timestamp('published_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),

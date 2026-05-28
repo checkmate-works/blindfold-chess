@@ -5,11 +5,21 @@ import { AnnouncementForm } from './AnnouncementForm';
 
 type NewAnnouncementFormProps = {
   labels: React.ComponentProps<typeof AnnouncementForm>['labels'];
+  defaultSlug?: string;
+  defaultLocale?: string;
 };
 
-export function NewAnnouncementForm({ labels }: NewAnnouncementFormProps) {
+export function NewAnnouncementForm({
+  labels,
+  defaultSlug,
+  defaultLocale,
+}: NewAnnouncementFormProps) {
   return (
     <AnnouncementForm
+      defaultSlug={defaultSlug}
+      defaultLocale={defaultLocale}
+      lockSlug={defaultSlug != null}
+      lockLocale={defaultLocale != null}
       onSaveDraft={(data) =>
         createAnnouncement({
           ...data,

@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import { formatDateTimeLocal } from '../../_lib/format';
 import { updateAnnouncement } from '../_actions/updateAnnouncement';
 
 type AnnouncementPreviewFormProps = {
@@ -17,6 +18,7 @@ type AnnouncementPreviewFormProps = {
   defaultValues: {
     status: string;
     visibility: string;
+    showAsBanner: boolean;
     pinnedAt: string;
     publishedAt: string;
   };
@@ -33,6 +35,8 @@ type AnnouncementPreviewFormProps = {
     published: string;
     public: string;
     members: string;
+    showAsBanner: string;
+    showAsBannerHint: string;
     sendNotification: string;
     notificationAlreadySent: string;
   };
@@ -51,12 +55,23 @@ export function AnnouncementPreviewForm({
 
   const [status, setStatus] = useState(defaultValues.status);
   const [visibility, setVisibility] = useState(defaultValues.visibility);
+  const [showAsBanner, setShowAsBanner] = useState(defaultValues.showAsBanner);
   const [pinnedAt, setPinnedAt] = useState(defaultValues.pinnedAt);
   const [publishedAt, setPublishedAt] = useState(defaultValues.publishedAt);
   const [sendNotification, setSendNotification] = useState(false);
 
   const isInitialPublish = defaultValues.status !== 'published' && status === 'published';
   const showNotificationCheckbox = isInitialPublish;
+  // The banner only ever renders for published + public announcements, so only
+  // surface the opt-in where it can actually take effect.
+  const showBannerToggle = status === 'published' && visibility === 'public';
+
+  const handleStatusChange = (newStatus: string) => {
+    setStatus(newStatus);
+    if (newStatus === 'published' && !publishedAt) {
+      setPublishedAt(formatDateTimeLocal(new Date()) ?? '');
+    }
+  };
 
   const handleSubmit = () => {
     setError(null);
@@ -65,6 +80,10 @@ export function AnnouncementPreviewForm({
         ...announcementData,
         status,
         visibility,
+        // Only public published announcements can ever show a banner; force the
+        // flag off otherwise so a stale opt-in can't linger on a draft/members
+        // announcement that later flips back to public+published.
+        showAsBanner: showBannerToggle ? showAsBanner : false,
         pinnedAt: pinnedAt || null,
         publishedAt: publishedAt || null,
         sendNotification: showNotificationCheckbox && !notificationSent && sendNotification,
@@ -95,7 +114,7 @@ export function AnnouncementPreviewForm({
               name="status"
               value="draft"
               checked={status === 'draft'}
-              onChange={(e) => setStatus(e.target.value)}
+              onChange={(e) => handleStatusChange(e.target.value)}
               className="sr-only"
             />
             {labels.draft}
@@ -112,7 +131,7 @@ export function AnnouncementPreviewForm({
               name="status"
               value="published"
               checked={status === 'published'}
-              onChange={(e) => setStatus(e.target.value)}
+              onChange={(e) => handleStatusChange(e.target.value)}
               className="sr-only"
             />
             {labels.published}
@@ -185,6 +204,21 @@ export function AnnouncementPreviewForm({
             onChange={(e) => setPublishedAt(e.target.value)}
             className="w-full border border-border rounded px-3 py-2 text-sm bg-card text-foreground"
           />
+        </div>
+      )}
+
+      {showBannerToggle && (
+        <div>
+          <label className="flex items-center gap-2 text-sm cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showAsBanner}
+              onChange={(e) => setShowAsBanner(e.target.checked)}
+              className="rounded border-border"
+            />
+            {labels.showAsBanner}
+          </label>
+          <p className="mt-1 text-xs text-muted-foreground">{labels.showAsBannerHint}</p>
         </div>
       )}
 
