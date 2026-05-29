@@ -2,8 +2,8 @@
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { PracticeHowToPlayCard } from '@/app/[locale]/(public)/practice/(challenge)/_components/PracticeHowToPlayCard';
 import { PracticeSetupActions } from '@/app/[locale]/(public)/practice/(challenge)/_components/PracticeSetupActions';
-import { SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
@@ -15,13 +15,10 @@ export function QuadrantsSetup({ locale }: Props) {
 
   return (
     <div>
-      <SectionTitle className="mb-4">{t('howToPlayTitle')}</SectionTitle>
-
-      <div className="mb-6 rounded-xl border border-border bg-card p-6 text-center">
-        <p className="text-sm text-muted-foreground mb-4">{t('howToPlayDescription')}</p>
+      <PracticeHowToPlayCard title={t('howToPlayTitle')} description={t('howToPlayDescription')}>
         <div className="text-4xl font-bold text-foreground mb-3">e4</div>
         <p className="text-sm text-muted-foreground">{t('question', { square: 'e4' })}</p>
-      </div>
+      </PracticeHowToPlayCard>
 
       <PracticeSetupActions
         locale={locale}
