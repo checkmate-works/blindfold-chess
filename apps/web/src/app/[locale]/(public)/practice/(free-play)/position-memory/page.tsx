@@ -16,7 +16,7 @@ import { getTranslations } from 'next-intl/server';
 import { Button } from '@/app/_components';
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 import { Link } from '@/i18n/routing';
-import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
+import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 import { FaPlus } from 'react-icons/fa';
 
 import { getOptionalUser } from '@/lib/auth';
@@ -25,6 +25,8 @@ import { getPaginationParams } from '@/lib/pagination';
 import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
 import { countPositions, listPositionsWithProfile } from '@/lib/positions/queries';
 
+import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
+import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
@@ -41,6 +43,7 @@ const FOOTER_NAMESPACE = 'practice.positionMemory';
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
+  sort: parseAsString.withDefault('new'),
 });
 
 export async function generateMetadata({ params }: Props) {
@@ -58,7 +61,8 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function PositionMemoryListPage({ params, searchParams }: Props) {
   const { locale } = await params;
-  const { page } = await searchParamsCache.parse(searchParams);
+  const { page, sort } = await searchParamsCache.parse(searchParams);
+  const sortBy = validateSort(sort);
   const t = await getTranslations({ locale, namespace: 'practice.positionMemory' });
   const tNav = await getTranslations({ locale, namespace: 'navigation' });
 
@@ -72,7 +76,7 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
     PAGE_SIZE
   );
 
-  const rows = await listPositionsWithProfile({ type: 'memory', limit, offset });
+  const rows = await listPositionsWithProfile({ type: 'memory', sort: sortBy, limit, offset });
 
   const currentUser = await getOptionalUser();
   const positionIds = rows.map((r) => r.position.id);
@@ -83,6 +87,7 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
 
   const buildHref = (p: number) => {
     const params = new URLSearchParams();
+    if (sortBy !== 'new') params.set('sort', sortBy);
     if (p > 1) params.set('page', String(p));
     const qs = params.toString();
     return `/${locale}/practice/position-memory${qs ? `?${qs}` : ''}`;
@@ -107,6 +112,16 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
           {t('list.tutorialLink')}
         </Link>
       </div>
+
+      {totalCount > 0 && (
+        <div className="flex justify-end">
+          <SortSelect
+            basePath="/practice/position-memory"
+            translationKey="topics.positionMemory.sort"
+            currentSort={sortBy}
+          />
+        </div>
+      )}
 
       {rows.length === 0 ? (
         <p className="text-muted-foreground text-center py-8">{t('list.empty')}</p>

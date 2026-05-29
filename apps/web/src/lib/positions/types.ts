@@ -8,6 +8,16 @@
 /** Known values of `positions.type`. */
 export type PositionType = 'memory' | 'puzzle' | 'sequence';
 
+/**
+ * Ordering modes for paginated position lists. Mirrors the topic-thread
+ * `SortMode` union (new / popular / active) so list pages can reuse the
+ * shared `SortSelect` UI and `validateSort` helper:
+ * - `new`: `createdAt` DESC (default).
+ * - `popular`: like count DESC, then `createdAt` DESC.
+ * - `active`: latest comment timestamp DESC (NULLs last), then `createdAt` DESC.
+ */
+export type PositionSortMode = 'new' | 'popular' | 'active';
+
 const POSITION_TYPES = ['memory', 'puzzle', 'sequence'] as const satisfies readonly PositionType[];
 
 /**
