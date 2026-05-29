@@ -17,8 +17,7 @@
  *   to the next problem.
  */
 import { createPracticeTopPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeTopPage';
-import { HelpTourButton } from '@/app/[locale]/_components';
-import type { HelpStep } from '@/app/[locale]/_components';
+import { buildPracticeHelpTour } from '@/app/[locale]/(public)/practice/_lib/practice-help-tour';
 
 import RoutePlanner from './_components/RoutePlanner';
 
@@ -28,32 +27,12 @@ const { generateMetadata, Page } = createPracticeTopPage({
   i18nKey: 'routePlanner',
   canonicalPath: 'practice/route-planner',
   renderSetup: (locale) => <RoutePlanner locale={locale} />,
-  renderTitleAction: (t) => {
-    const steps: HelpStep[] = [
-      {
-        targetId: 'route-planner-tutorial',
-        title: t('practice.routePlanner.help.tutorial.title'),
-        description: t('practice.routePlanner.help.tutorial.description'),
-        side: 'top',
-        align: 'center',
-      },
-      {
-        targetId: 'route-planner-challenge',
-        title: t('practice.routePlanner.help.challenge.title'),
-        description: t('practice.routePlanner.help.challenge.description'),
-        side: 'top',
-        align: 'center',
-      },
-      {
-        targetId: 'route-planner-training',
-        title: t('practice.routePlanner.help.training.title'),
-        description: t('practice.routePlanner.help.training.description'),
-        side: 'top',
-        align: 'center',
-      },
-    ];
-    return <HelpTourButton steps={steps} label={t('practice.routePlanner.help.label')} />;
-  },
+  renderTitleAction: (t) =>
+    buildPracticeHelpTour(t, 'routePlanner', 'route-planner', [
+      'tutorial',
+      'challenge',
+      'training',
+    ]),
   renderArticles: () => null,
   leaderboard: {
     module: 'route_planner',
