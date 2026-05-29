@@ -14,179 +14,21 @@
  * A help tour (the `?` next to the page title) introduces the module: the
  * first step explains what a puzzle is; the second points at the Create Puzzle
  * CTA and is shown only to signed-in users.
+ *
+ * The page body is shared with the position-memory list via
+ * `createPositionListPage` — see that factory for the rendering logic.
  */
-import { getTranslations } from 'next-intl/server';
-
-import { Button } from '@/app/_components';
-import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
-import { Link } from '@/i18n/routing';
-import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
-import { FaPlus } from 'react-icons/fa';
-
-import { getOptionalUser } from '@/lib/auth';
-import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
-import { getPaginationParams } from '@/lib/pagination';
-import { getPositionLikeMetaMap } from '@/lib/positions/like-queries';
-import { countPositions, listPositionsWithProfile } from '@/lib/positions/queries';
-
-import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
-import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
-import {
-  HelpTourButton,
-  PageLayout,
-  PaginationNav,
-  SectionTitle,
-} from '@/app/[locale]/_components';
-import type { HelpStep } from '@/app/[locale]/_components';
-import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
-import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
-
-import { toggleLike } from '../_actions/toggleLike';
-import { PositionListCard } from '../_components/PositionListCard';
+import { createPositionListPage } from '../_lib/create-position-list-page';
 
 export const dynamic = 'force-dynamic';
 
-const PAGE_SIZE = 12;
-const FOOTER_NAMESPACE = 'practice.puzzle';
-
-const searchParamsCache = createSearchParamsCache({
-  page: parseAsInteger.withDefault(1),
-  sort: parseAsString.withDefault('new'),
+const { generateMetadata, Page } = createPositionListPage({
+  slug: 'puzzle',
+  namespace: 'practice.puzzle',
+  positionType: 'puzzle',
+  replyMetaType: 'position_puzzle',
+  sortTranslationKey: 'topics.positionPuzzle.sort',
 });
 
-export async function generateMetadata({ params }: Props) {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'practice.puzzle' });
-  const title = t('list.title');
-  const description = t('description');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/puzzle', title, description }),
-    title: resolveTitle(title, locale),
-    description,
-  };
-}
-
-export default async function PuzzleListPage({ params, searchParams }: Props) {
-  const { locale } = await params;
-  const { page, sort } = await searchParamsCache.parse(searchParams);
-  const sortBy = validateSort(sort);
-  const t = await getTranslations({ locale, namespace: 'practice.puzzle' });
-  const tNav = await getTranslations({ locale, namespace: 'navigation' });
-
-  // TODO: Consider a composite index on (type, deleted_at, created_at DESC)
-  // if this query becomes slow with large data volumes.
-  const totalCount = await countPositions({ type: 'puzzle' });
-
-  const { currentPage, totalPages, limit, offset } = getPaginationParams(
-    page,
-    totalCount,
-    PAGE_SIZE
-  );
-
-  const rows = await listPositionsWithProfile({ type: 'puzzle', sort: sortBy, limit, offset });
-
-  const currentUser = await getOptionalUser();
-  const positionIds = rows.map((r) => r.position.id);
-  const [likeMetaMap, replyMetaMap] = await Promise.all([
-    getPositionLikeMetaMap(positionIds, currentUser?.id),
-    getReplyMetaMap('position_puzzle', positionIds),
-  ]);
-
-  const buildHref = (p: number) => {
-    const params = new URLSearchParams();
-    if (sortBy !== 'new') params.set('sort', sortBy);
-    if (p > 1) params.set('page', String(p));
-    const qs = params.toString();
-    return `/${locale}/practice/puzzle${qs ? `?${qs}` : ''}`;
-  };
-
-  const justNowLabel = t('justNow');
-
-  // Help-tour steps: explain what a puzzle is and — only when the Create Puzzle
-  // CTA is rendered (signed-in users) — point at it. Unlike position memory,
-  // puzzle has no tutorial route, so the overview step carries no link.
-  // Authored line breaks (`\n`) in the messages become `<br />` because
-  // driver.js renders `description` as innerHTML.
-  const nl2br = (text: string) => text.replace(/\n/g, '<br />');
-  const helpSteps: HelpStep[] = [
-    {
-      targetId: 'puzzle-list-intro',
-      title: t('help.overview.title'),
-      description: nl2br(t('help.overview.description')),
-      side: 'bottom',
-      align: 'start',
-    },
-    ...(currentUser
-      ? [
-          {
-            targetId: 'puzzle-list-create',
-            title: t('help.create.title'),
-            description: nl2br(t('help.create.description')),
-            side: 'top' as const,
-            align: 'center' as const,
-          },
-        ]
-      : []),
-  ];
-
-  return (
-    <PageLayout
-      title={t('list.title')}
-      titleAction={<HelpTourButton steps={helpSteps} label={t('help.label')} />}
-      locale={locale}
-      breadcrumb={[{ label: tNav('practice'), href: '/practice' }, { label: t('list.title') }]}
-    >
-      <div data-tour-id="puzzle-list-intro">
-        <SectionTitle>{t('list.sectionTitle')}</SectionTitle>
-      </div>
-      {totalCount > 0 && (
-        <div className="flex justify-end">
-          <SortSelect
-            basePath="/practice/puzzle"
-            translationKey="topics.positionPuzzle.sort"
-            currentSort={sortBy}
-          />
-        </div>
-      )}
-
-      {rows.length === 0 ? (
-        <p className="text-muted-foreground text-center py-8">{t('list.empty')}</p>
-      ) : (
-        <div className="space-y-3">
-          {rows.map(({ position, profile }) => (
-            <PositionListCard
-              key={position.id}
-              position={position}
-              profile={profile}
-              likeMeta={likeMetaMap.get(position.id) ?? { likeCount: 0, likedByMe: false }}
-              replyMeta={replyMetaMap.get(position.id) ?? EMPTY_REPLY_META}
-              detailHref={`/practice/puzzle/${position.id}`}
-              i18nNamespace={FOOTER_NAMESPACE}
-              toggleLikeAction={toggleLike}
-              justNowLabel={justNowLabel}
-              locale={locale}
-            />
-          ))}
-        </div>
-      )}
-
-      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
-
-      {currentUser && (
-        <div className="py-4" data-tour-id="puzzle-list-create">
-          <Link href="/practice/puzzle/new" locale={locale}>
-            <Button asChild variant="primary" size="lg" icon={<FaPlus />} fullWidth>
-              {t('list.createButton')}
-            </Button>
-          </Link>
-        </div>
-      )}
-
-      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
-        <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
-      )}
-    </PageLayout>
-  );
-}
+export { generateMetadata };
+export default Page;
