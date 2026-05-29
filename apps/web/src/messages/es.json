@@ -311,7 +311,6 @@
       "icon": "Icono",
       "enableAutoComplete": "Activar autocompletado",
       "peekMode": "Modo de Vista del Tablero",
-      "peekModeDescription": "Cómo se muestra el tablero al echar un vistazo durante una partida",
       "peekModes": {
         "modal": "Modal",
         "inline": "En línea"

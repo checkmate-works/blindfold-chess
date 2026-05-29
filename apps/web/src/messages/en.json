@@ -315,7 +315,6 @@
       "icon": "Icon",
       "enableAutoComplete": "Enable auto-complete",
       "peekMode": "Board Peek Mode",
-      "peekModeDescription": "How the board is displayed when peeking during a game",
       "peekModes": {
         "modal": "Modal",
         "inline": "Inline"

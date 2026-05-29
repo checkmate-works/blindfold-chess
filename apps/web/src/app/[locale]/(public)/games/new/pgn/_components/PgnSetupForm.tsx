@@ -8,12 +8,12 @@ import type { Side } from '@blindfold-chess/types';
 import type { EngineKind } from '@/lib/engines';
 import type { SkillLevel } from '@/lib/games/saved-game-types';
 
-import { CollapsibleGameSettings } from '@/app/[locale]/(public)/games/new/_components/CollapsibleGameSettings';
 import { ColorSelector } from '@/app/[locale]/(public)/games/new/_components/ColorSelector';
 import { EngineSelector } from '@/app/[locale]/(public)/games/new/_components/EngineSelector';
 import { SkillLevelSelector } from '@/app/[locale]/(public)/games/new/_components/SkillLevelSelector';
 import type { useLocalGameSettings } from '@/app/[locale]/(public)/games/new/_hooks/use-local-game-settings';
 import type { MaiaCardMode } from '@/app/[locale]/(public)/games/new/_lib/maia-launch';
+import { CollapsibleGameSettings } from '@/app/[locale]/(public)/preferences/_components/CollapsibleGameSettings';
 import { PgnInput } from '@/app/[locale]/_components/PgnInput';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 

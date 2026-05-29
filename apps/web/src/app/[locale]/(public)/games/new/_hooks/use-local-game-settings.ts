@@ -15,9 +15,9 @@ export function useLocalGameSettings() {
     pieceShapeMode: preferences.pieceShapeMode,
     pieceColors: preferences.pieceColors,
     // Seed peekMode from the current global so the new-game snapshot inherits
-    // whatever the player picked in /preferences. Editable only mid-game via
-    // the in-game settings modal — there is no peek-mode control on the
-    // new-game form by design.
+    // whatever the player picked in /preferences. Editable on the new-game form
+    // (CollapsibleGameSettings, when boardVisibility === 'peek') and mid-game via
+    // the in-game settings modal.
     peekMode: preferences.peekMode,
     // Same pattern for moveInputMode: snapshot the user's global default at
     // game start. Mid-game switches via the MoveInputPanel toggle accumulate

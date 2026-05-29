@@ -315,7 +315,6 @@
       "icon": "アイコン",
       "enableAutoComplete": "補完を有効にする",
       "peekMode": "盤面ピークモード",
-      "peekModeDescription": "対局中の盤面表示方式",
       "peekModes": {
         "modal": "モーダル",
         "inline": "インライン"

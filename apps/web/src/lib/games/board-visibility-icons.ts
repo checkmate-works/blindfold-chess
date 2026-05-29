@@ -6,9 +6,9 @@ import type { BoardVisibility } from './board-visibility';
 /**
  * Shared icon mapping for the `boardVisibility` 3-state setting. Used by
  * every surface that renders a board-visibility picker (the onboarding
- * step 2 cards, the new-game form's `CollapsibleGameSettings`, and the
- * global Preferences page's `GameSettingsContent`) so the icon vocabulary
- * stays consistent across the app.
+ * step 2 cards, and the shared `BoardVisibilityPicker` behind the new-game
+ * form, the Preferences "Game" tab, and the mid-game settings modal) so the
+ * icon vocabulary stays consistent across the app.
  *
  * Icon choices:
  *  - `always` → {@link FaEye}            (eye open: board is always in view)
