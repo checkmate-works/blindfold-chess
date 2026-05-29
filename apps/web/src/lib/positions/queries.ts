@@ -2,10 +2,10 @@ import { cache } from 'react';
 
 import { type SQL, and, count, desc, eq, isNull, sql } from 'drizzle-orm';
 
-import { db, positions, profiles } from '@/lib/db';
+import { db, likes, positions, profiles, topicPosts } from '@/lib/db';
 import { UUID_RE } from '@/lib/validations/uuid';
 
-import type { PositionType } from './types';
+import type { PositionSortMode, PositionType } from './types';
 
 type GetPositionByIdOptions = {
   id: string;
@@ -53,9 +53,50 @@ type ListPositionsOptions = {
    * `eq` parameterization, so callers can pass a uuid string directly.
    */
   forkedFromId?: string;
+  /**
+   * List ordering. Defaults to `'new'` (`createdAt` DESC). `'popular'` and
+   * `'active'` push the ordering down to the DB via correlated subqueries so
+   * it is applied across the whole result set before `limit`/`offset` — they
+   * cannot be done by sorting a single fetched page in memory.
+   */
+  sort?: PositionSortMode;
   limit: number;
   offset: number;
 };
+
+/**
+ * Build the `ORDER BY` expressions for a position list.
+ *
+ * `popular` / `active` use correlated subqueries against the polymorphic
+ * `likes` / `topic_posts` tables (the like count and latest-comment timestamp
+ * are not columns on `positions`). `createdAt` DESC is always the final tie
+ * breaker so ordering is deterministic.
+ *
+ * `active` ordering requires `topicType` (derived from the position `type`,
+ * e.g. `puzzle` → `position_puzzle`); without it there is no thread to rank
+ * by, so it falls back to `new`.
+ */
+function buildPositionOrderBy(sort: PositionSortMode, topicType: string | undefined): SQL[] {
+  if (sort === 'popular') {
+    const likeCount = sql<number>`(
+      select count(*) from ${likes}
+      where ${likes.targetType} = 'position' and ${likes.targetId} = ${positions.id}
+    )`;
+    return [desc(likeCount), desc(positions.createdAt)];
+  }
+
+  if (sort === 'active' && topicType) {
+    const latestReplyAt = sql`(
+      select max(${topicPosts.createdAt}) from ${topicPosts}
+      where ${topicPosts.topicType} = ${topicType}
+        and ${topicPosts.topicKey} = ${positions.id}::text
+        and ${topicPosts.deletedAt} is null
+    )`;
+    return [sql`${latestReplyAt} desc nulls last`, desc(positions.createdAt)];
+  }
+
+  return [desc(positions.createdAt)];
+}
 
 function buildListConditions({
   type,
@@ -101,10 +142,12 @@ export async function listPositionsWithProfile({
   includeDeleted,
   userId,
   forkedFromId,
+  sort = 'new',
   limit,
   offset,
 }: ListPositionsOptions) {
   const where = buildListConditions({ type, includeDeleted, userId, forkedFromId });
+  const topicType = type ? `position_${type}` : undefined;
   const query = db
     .select({
       position: positions,
@@ -117,7 +160,7 @@ export async function listPositionsWithProfile({
     .from(positions)
     .leftJoin(profiles, eq(positions.userId, profiles.id));
   const rows = await (where ? query.where(where) : query)
-    .orderBy(desc(positions.createdAt))
+    .orderBy(...buildPositionOrderBy(sort, topicType))
     .limit(limit)
     .offset(offset);
   return rows;
