@@ -1099,6 +1099,17 @@
         "submittedBy": "enviado",
         "createButton": "Crear Puzzle"
       },
+      "help": {
+        "label": "Ayuda",
+        "overview": {
+          "title": "¿Qué es un Puzzle?",
+          "description": "Este modo de entrenamiento es básicamente igual a los puzzles y las tácticas de una app de ajedrez típica.\nLa diferencia aquí es que practicas sin ninguna ayuda visual, deduciendo la mejor jugada solo a partir de la notación."
+        },
+        "create": {
+          "title": "Crear un Puzzle",
+          "description": "Usa el botón \"Crear Puzzle\" para registrar tus propias posiciones y soluciones y crear puzzles originales.\nLos puzzles que creas se publican en la lista, para que otros usuarios también puedan resolverlos."
+        }
+      },
       "create": {
         "title": "Crear Puzzle",
         "fenLabel": "FEN",
