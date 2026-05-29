@@ -43,9 +43,7 @@ export function CollapsibleGameSettings({ settings, onSettingsChange }: Props) {
           collapse) because it is the primary choice that controls whether
           the rest of the visual settings are even relevant. */}
       <div>
-        <h4 className="text-lg font-semibold text-foreground mb-2">
-          {tPrefs('game.boardVisibility')}
-        </h4>
+        <h4 className="text-sm text-foreground mb-2">{tPrefs('game.boardVisibility')}</h4>
         <BoardVisibilityPicker
           value={settings.boardVisibility}
           onChange={(boardVisibility) => onSettingsChange({ boardVisibility })}
@@ -70,7 +68,7 @@ export function CollapsibleGameSettings({ settings, onSettingsChange }: Props) {
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
-            className="flex items-center gap-2 text-lg font-semibold text-foreground"
+            className="flex items-center gap-2 text-sm text-foreground"
           >
             <span>{t('gameSettings')}</span>
             <FaChevronDown

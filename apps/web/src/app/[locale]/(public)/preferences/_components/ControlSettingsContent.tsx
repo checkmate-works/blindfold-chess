@@ -42,7 +42,7 @@ export function ControlSettingsContent({ settings, onSettingsChange }: Props) {
           now sits next to the board-visibility picker in the "Game" tab /
           new-game form / mid-game modal. This tab is move-input only. */}
       <div>
-        <h4 className="text-lg font-semibold text-foreground mb-4">{t('controls.moveInput')}</h4>
+        <h4 className="text-sm text-foreground mb-4">{t('controls.moveInput')}</h4>
         <div className="space-y-2">
           <PreferenceOption
             type="checkbox"

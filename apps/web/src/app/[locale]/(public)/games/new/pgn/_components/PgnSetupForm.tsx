@@ -102,7 +102,7 @@ export function PgnSetupForm({
         onMaiaRatingChange={onMaiaRatingChange}
       />
 
-      <SectionTitle>{t('gameSettings')}</SectionTitle>
+      <SectionTitle>{t('settings')}</SectionTitle>
       <CollapsibleGameSettings settings={localSettings} onSettingsChange={onSettingsChange} />
 
       <Button

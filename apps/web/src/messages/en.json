@@ -2004,6 +2004,7 @@
     "helpOpeningIntroDescription": "Pick a named opening from the list — you'll continue to the PGN setup screen where you can choose engine, color, and difficulty before starting.",
     "previewBoard": "Preview Board",
     "gameSettings": "Advanced Settings",
+    "settings": "Settings",
     "startGame": "Start Game",
     "cancel": "Cancel",
     "whiteDescription": "You play first",

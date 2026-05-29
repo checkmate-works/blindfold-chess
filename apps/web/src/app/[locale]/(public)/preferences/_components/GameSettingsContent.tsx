@@ -81,9 +81,7 @@ export function GameSettingsContent({
             modes — the visual settings matter equally in both. */}
         {showBoardButtonOption && (
           <div>
-            <h4 className="text-lg font-semibold text-foreground mb-2">
-              {t('game.boardVisibility')}
-            </h4>
+            <h4 className="text-sm text-foreground mb-2">{t('game.boardVisibility')}</h4>
             <p className="text-sm text-muted-foreground mb-4">
               {t('game.boardVisibilityDescription')}
             </p>
@@ -117,9 +115,7 @@ export function GameSettingsContent({
           <>
             {/* Display Options */}
             <div>
-              <h4 className="text-lg font-semibold text-foreground mb-4">
-                {t('game.displayOptions')}
-              </h4>
+              <h4 className="text-sm text-foreground mb-4">{t('game.displayOptions')}</h4>
               <div className="space-y-3">
                 <PreferenceOption
                   type="checkbox"
@@ -134,9 +130,7 @@ export function GameSettingsContent({
             <div className="border-t border-border"></div>
 
             <div>
-              <h4 className="text-lg font-semibold text-foreground mb-4">
-                {t('game.pieceVisibility')}
-              </h4>
+              <h4 className="text-sm text-foreground mb-4">{t('game.pieceVisibility')}</h4>
               <div className="space-y-3">
                 <PreferenceOption
                   type="checkbox"
@@ -160,9 +154,7 @@ export function GameSettingsContent({
 
                 {/* Piece Appearance */}
                 <div>
-                  <h4 className="text-lg font-semibold text-foreground mb-4">
-                    {t('game.pieceAppearance')}
-                  </h4>
+                  <h4 className="text-sm text-foreground mb-4">{t('game.pieceAppearance')}</h4>
 
                   {/* Piece Shape */}
                   <div className="mb-6">

@@ -27,7 +27,7 @@ export function PeekModePicker({ value, onChange }: Props) {
 
   return (
     <div>
-      <h4 className="text-lg font-semibold text-foreground mb-4">{t('controls.peekMode')}</h4>
+      <h4 className="text-sm text-foreground mb-4">{t('controls.peekMode')}</h4>
       <div className="inline-flex rounded-md border border-border overflow-hidden">
         {(['modal', 'inline'] as const).map((mode) => (
           <button

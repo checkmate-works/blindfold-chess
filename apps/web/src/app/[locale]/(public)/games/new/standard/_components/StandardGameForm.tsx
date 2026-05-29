@@ -98,7 +98,7 @@ export function StandardGameForm({ locale, maiaAccess }: Props) {
         onMaiaRatingChange={setMaiaRating}
       />
 
-      <SectionTitle>{t('gameSettings')}</SectionTitle>
+      <SectionTitle>{t('settings')}</SectionTitle>
       <CollapsibleGameSettings settings={localSettings} onSettingsChange={handleSettingsChange} />
 
       <Button
