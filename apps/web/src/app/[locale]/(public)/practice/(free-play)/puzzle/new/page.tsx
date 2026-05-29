@@ -12,20 +12,19 @@ import { UUID_RE } from '@/lib/validations/uuid';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { GuestCreateGate } from '@/app/[locale]/_components/GuestCreateGate';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { CreatePuzzleForm } from '../_components/CreatePuzzleForm';
 
-export async function generateMetadata({ params }: Props) {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'practice.puzzle' });
-  const title = t('create.title');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/puzzle/new', title }),
-    title: resolveTitle(title, locale),
-  };
+export function generateMetadata({ params }: Props) {
+  return createPageMetadata({
+    params,
+    namespace: 'practice.puzzle',
+    path: 'practice/puzzle/new',
+    titleKey: 'create.title',
+    omitDescription: true,
+  });
 }
 
 export default async function NewPuzzlePage({ params, searchParams }: Props) {

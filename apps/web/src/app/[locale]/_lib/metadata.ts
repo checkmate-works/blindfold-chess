@@ -174,14 +174,23 @@ export function generateCanonicalMetadata({
  * cases don't fit a single-namespace shape.
  *
  * @param params - The `params` promise from the Next.js page props
- * @param namespace - `next-intl` namespace exposing `title` and `description`
+ * @param namespace - `next-intl` namespace exposing the title / description keys
  * @param path - Path without locale prefix (e.g. `'topics'`, `'pricing'`)
+ * @param titleKey - Translation key for the title within `namespace` (default `'title'`)
+ * @param descriptionKey - Translation key for the description within `namespace` (default `'description'`)
  * @param availableLocales - Pass when the page is translated for a subset of locales
+ *
+ * The title/description keys must be plain keys with no interpolation values —
+ * pages whose title needs `t('title', { ... })`, whose copy comes from a DB
+ * record, or that short-circuit on `notFound()` before metadata is computed
+ * should keep using `generateCanonicalMetadata` + `resolveTitle` directly.
  */
 export async function createPageMetadata({
   params,
   namespace,
   path,
+  titleKey = 'title',
+  descriptionKey = 'description',
   availableLocales,
   noIndex = false,
   omitDescription = false,
@@ -189,6 +198,10 @@ export async function createPageMetadata({
   params: Promise<{ locale: Locale }>;
   namespace: string;
   path: string;
+  /** Translation key for the title (default `'title'`). */
+  titleKey?: string;
+  /** Translation key for the description (default `'description'`). */
+  descriptionKey?: string;
   availableLocales?: Locale[];
   /**
    * Emit `robots: { index: false, follow: false }`. Use for pages that should
@@ -207,8 +220,8 @@ export async function createPageMetadata({
   // Centralising it here lets per-page `generateMetadata` shed the line.
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace });
-  const title = t('title');
-  const description = omitDescription ? undefined : t('description');
+  const title = t(titleKey);
+  const description = omitDescription ? undefined : t(descriptionKey);
   return {
     ...generateCanonicalMetadata({ locale, path, title, description, availableLocales }),
     title: resolveTitle(title, locale),
