@@ -315,7 +315,6 @@
       "icon": "アイコン",
       "enableAutoComplete": "補完を有効にする",
       "peekMode": "盤面ピークモード",
-      "peekModeDescription": "対局中の盤面表示方式",
       "peekModes": {
         "modal": "モーダル",
         "inline": "インライン"
@@ -2005,6 +2004,7 @@
     "helpOpeningIntroDescription": "リストから定跡を選択すると、続けてPGN設定画面に遷移し、そこでエンジン・色・難易度を選んで対局を開始できます。",
     "previewBoard": "ボードをプレビュー",
     "gameSettings": "詳細設定",
+    "settings": "設定",
     "startGame": "ゲーム開始",
     "cancel": "キャンセル",
     "whiteDescription": "あなたが先手",

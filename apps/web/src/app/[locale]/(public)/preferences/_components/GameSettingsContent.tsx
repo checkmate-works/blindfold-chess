@@ -6,13 +6,11 @@ import { useEffect, useMemo } from 'react';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Side } from '@blindfold-chess/types';
 
-import { BOARD_VISIBILITY_VALUES } from '@/lib/games/board-visibility';
-import { BOARD_VISIBILITY_ICON } from '@/lib/games/board-visibility-icons';
-
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { BoardAppearanceContent } from './BoardAppearanceContent';
 import { BoardPreview } from './BoardPreview';
+import { BoardVisibilityPicker } from './BoardVisibilityPicker';
 import { PreferenceOption } from './PreferenceOption';
 
 const allShapeOptions = ['normal', 'circles-all', 'circles-own', 'circles-opponent'] as const;
@@ -34,9 +32,9 @@ type Props = {
    * Slot rendered immediately after the boardVisibility picker (and before
    * the other display / piece / preview sections). Used by the mid-game
    * settings modal to surface the Board Peek Mode picker right next to the
-   * choice that gates it, rather than stranding it below all the other
-   * settings. Defaults to `null` — the global Preferences page leaves this
-   * empty because its Controls tab carries the peek picker separately.
+   * choice that gates it. The new-game form and the global Preferences "Game"
+   * tab achieve the same placement via `CollapsibleGameSettings`, which renders
+   * its own picker outside this component, so they leave this slot empty.
    */
   afterBoardVisibility?: ReactNode;
   compact?: boolean;
@@ -83,32 +81,14 @@ export function GameSettingsContent({
             modes — the visual settings matter equally in both. */}
         {showBoardButtonOption && (
           <div>
-            <h4 className="text-lg font-semibold text-foreground mb-2">
-              {t('game.boardVisibility')}
-            </h4>
+            <h4 className="text-sm text-foreground mb-2">{t('game.boardVisibility')}</h4>
             <p className="text-sm text-muted-foreground mb-4">
               {t('game.boardVisibilityDescription')}
             </p>
-            <div className="inline-flex rounded-md border border-border overflow-hidden">
-              {BOARD_VISIBILITY_VALUES.map((value, idx) => {
-                const Icon = BOARD_VISIBILITY_ICON[value];
-                return (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => onSettingsChange({ boardVisibility: value })}
-                    className={`px-4 py-2 text-sm font-medium transition-colors flex items-center gap-2 ${
-                      settings.boardVisibility === value
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-card text-foreground hover:bg-muted'
-                    } ${idx < BOARD_VISIBILITY_VALUES.length - 1 ? 'border-r border-border' : ''}`}
-                  >
-                    <Icon className="w-3.5 h-3.5" />
-                    {t(`game.boardVisibilities.${value}`)}
-                  </button>
-                );
-              })}
-            </div>
+            <BoardVisibilityPicker
+              value={settings.boardVisibility}
+              onChange={(value) => onSettingsChange({ boardVisibility: value })}
+            />
           </div>
         )}
 
@@ -135,9 +115,7 @@ export function GameSettingsContent({
           <>
             {/* Display Options */}
             <div>
-              <h4 className="text-lg font-semibold text-foreground mb-4">
-                {t('game.displayOptions')}
-              </h4>
+              <h4 className="text-sm text-foreground mb-4">{t('game.displayOptions')}</h4>
               <div className="space-y-3">
                 <PreferenceOption
                   type="checkbox"
@@ -152,9 +130,7 @@ export function GameSettingsContent({
             <div className="border-t border-border"></div>
 
             <div>
-              <h4 className="text-lg font-semibold text-foreground mb-4">
-                {t('game.pieceVisibility')}
-              </h4>
+              <h4 className="text-sm text-foreground mb-4">{t('game.pieceVisibility')}</h4>
               <div className="space-y-3">
                 <PreferenceOption
                   type="checkbox"
@@ -178,9 +154,7 @@ export function GameSettingsContent({
 
                 {/* Piece Appearance */}
                 <div>
-                  <h4 className="text-lg font-semibold text-foreground mb-4">
-                    {t('game.pieceAppearance')}
-                  </h4>
+                  <h4 className="text-sm text-foreground mb-4">{t('game.pieceAppearance')}</h4>
 
                   {/* Piece Shape */}
                   <div className="mb-6">

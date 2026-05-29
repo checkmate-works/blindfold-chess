@@ -3,6 +3,7 @@
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { GameSettingsContent } from '@/app/[locale]/(public)/preferences/_components/GameSettingsContent';
+import { PeekModePicker } from '@/app/[locale]/(public)/preferences/_components/PeekModePicker';
 import { Modal } from '@/app/[locale]/_components/Modal';
 import type {
   GamePreferences,
@@ -56,7 +57,6 @@ type Props = {
  */
 export function MidGameSettingsModal({ isOpen, onClose, preferences, onPerGamePrefChange }: Props) {
   const t = useTranslations('play');
-  const tPrefs = useTranslations('Preferences');
 
   const handleSettingsChange = (updates: Partial<GamePreferences>) => {
     for (const rawKey of Object.keys(updates)) {
@@ -84,26 +84,10 @@ export function MidGameSettingsModal({ isOpen, onClose, preferences, onPerGamePr
   // sits directly under the boardVisibility picker — the choice that
   // actually gates it — instead of trailing at the bottom of the modal.
   const peekModePicker = preferences.boardVisibility === 'peek' && (
-    <div>
-      <h4 className="text-lg font-semibold text-foreground mb-2">{tPrefs('controls.peekMode')}</h4>
-      <p className="text-sm text-muted-foreground mb-4">{tPrefs('controls.peekModeDescription')}</p>
-      <div className="inline-flex rounded-md border border-border overflow-hidden">
-        {(['modal', 'inline'] as const).map((mode) => (
-          <button
-            key={mode}
-            type="button"
-            onClick={() => onPerGamePrefChange('peekMode', mode)}
-            className={`px-4 py-2 text-sm font-medium transition-colors ${
-              preferences.peekMode === mode
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-card text-foreground hover:bg-muted'
-            } ${mode === 'modal' ? 'border-r border-border' : ''}`}
-          >
-            {tPrefs(`controls.peekModes.${mode}`)}
-          </button>
-        ))}
-      </div>
-    </div>
+    <PeekModePicker
+      value={preferences.peekMode}
+      onChange={(mode) => onPerGamePrefChange('peekMode', mode)}
+    />
   );
 
   return (

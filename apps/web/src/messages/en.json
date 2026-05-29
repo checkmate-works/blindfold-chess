@@ -315,7 +315,6 @@
       "icon": "Icon",
       "enableAutoComplete": "Enable auto-complete",
       "peekMode": "Board Peek Mode",
-      "peekModeDescription": "How the board is displayed when peeking during a game",
       "peekModes": {
         "modal": "Modal",
         "inline": "Inline"
@@ -2005,6 +2004,7 @@
     "helpOpeningIntroDescription": "Pick a named opening from the list — you'll continue to the PGN setup screen where you can choose engine, color, and difficulty before starting.",
     "previewBoard": "Preview Board",
     "gameSettings": "Advanced Settings",
+    "settings": "Settings",
     "startGame": "Start Game",
     "cancel": "Cancel",
     "whiteDescription": "You play first",

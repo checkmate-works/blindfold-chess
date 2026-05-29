@@ -16,7 +16,7 @@ export function BoardAppearanceContent({ settings, onSettingsChange }: Props) {
 
   return (
     <div>
-      <h4 className="text-lg font-semibold text-foreground mb-4">{t('game.boardAppearance')}</h4>
+      <h4 className="text-sm text-foreground mb-4">{t('game.boardAppearance')}</h4>
 
       {/* Board Theme */}
       <div className="mb-6">

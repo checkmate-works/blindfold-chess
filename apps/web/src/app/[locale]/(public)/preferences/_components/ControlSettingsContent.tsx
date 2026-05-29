@@ -37,37 +37,12 @@ export function ControlSettingsContent({ settings, onSettingsChange }: Props) {
 
   return (
     <div className="space-y-8">
-      {/* Board Peek Mode — only relevant when boardVisibility === 'peek'.
-          For 'always' the board is permanently shown (no peek to configure);
-          for 'never' there is nothing to peek at. */}
-      {settings.boardVisibility === 'peek' && (
-        <div>
-          <h4 className="text-lg font-semibold text-foreground mb-2">{t('controls.peekMode')}</h4>
-          <p className="text-sm text-muted-foreground mb-4">{t('controls.peekModeDescription')}</p>
-          <div className="inline-flex rounded-md border border-border overflow-hidden">
-            {(['modal', 'inline'] as const).map((mode) => (
-              <button
-                key={mode}
-                type="button"
-                onClick={() => onSettingsChange({ peekMode: mode })}
-                className={`px-4 py-2 text-sm font-medium transition-colors ${
-                  settings.peekMode === mode
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-card text-foreground hover:bg-muted'
-                } ${mode === 'modal' ? 'border-r border-border' : ''}`}
-              >
-                {t(`controls.peekModes.${mode}`)}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Divider */}
-      {settings.boardVisibility === 'peek' && <div className="border-t border-border"></div>}
-
+      {/* The Board Peek Mode picker used to live here, but it configures how the
+          board surfaces during play (gated on boardVisibility === 'peek'), so it
+          now sits next to the board-visibility picker in the "Game" tab /
+          new-game form / mid-game modal. This tab is move-input only. */}
       <div>
-        <h4 className="text-lg font-semibold text-foreground mb-4">{t('controls.moveInput')}</h4>
+        <h4 className="text-sm text-foreground mb-4">{t('controls.moveInput')}</h4>
         <div className="space-y-2">
           <PreferenceOption
             type="checkbox"

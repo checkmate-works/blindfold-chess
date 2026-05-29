@@ -16,7 +16,7 @@ export function AppearanceSettings() {
     <div className="space-y-8">
       {/* Theme Selector */}
       <div>
-        <h4 className="text-lg font-semibold text-foreground mb-4">{t('appearance.theme')}</h4>
+        <h4 className="text-sm text-foreground mb-4">{t('appearance.theme')}</h4>
         <ThemeSelector />
       </div>
 

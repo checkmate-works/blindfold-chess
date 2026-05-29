@@ -20,7 +20,6 @@ import type { SkillLevel } from '@/lib/games/saved-game-types';
 import { MAIA_GAME_POINT_COST } from '@/lib/points/constants';
 import type { MaiaEngineAccess } from '@/lib/users/can-use-maia';
 
-import { CollapsibleGameSettings } from '@/app/[locale]/(public)/games/new/_components/CollapsibleGameSettings';
 import { ColorSelector } from '@/app/[locale]/(public)/games/new/_components/ColorSelector';
 import { EngineSelector } from '@/app/[locale]/(public)/games/new/_components/EngineSelector';
 import { LargeDownloadConsentDialog } from '@/app/[locale]/(public)/games/new/_components/LargeDownloadConsentDialog';
@@ -33,6 +32,7 @@ import { useMaiaGameLaunch } from '@/app/[locale]/(public)/games/new/_hooks/use-
 import { usePositionState } from '@/app/[locale]/(public)/games/new/_hooks/use-position-state';
 import { deriveMaiaCardMode } from '@/app/[locale]/(public)/games/new/_lib/maia-launch';
 import { EditableChessBoard } from '@/app/[locale]/(public)/practice/(free-play)/_components/EditableChessBoard';
+import { CollapsibleGameSettings } from '@/app/[locale]/(public)/preferences/_components/CollapsibleGameSettings';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -236,7 +236,7 @@ export function PositionGameForm({ locale, maiaAccess }: Props) {
         onMaiaRatingChange={setMaiaRating}
       />
 
-      <SectionTitle>{t('gameSettings')}</SectionTitle>
+      <SectionTitle>{t('settings')}</SectionTitle>
       <CollapsibleGameSettings settings={localSettings} onSettingsChange={handleSettingsChange} />
 
       <Button
