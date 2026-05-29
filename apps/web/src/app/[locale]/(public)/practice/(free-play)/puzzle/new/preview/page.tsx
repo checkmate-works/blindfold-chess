@@ -3,20 +3,19 @@ import { getTranslations } from 'next-intl/server';
 import { getAuthenticatedUser } from '@/lib/auth';
 
 import { PageLayout } from '@/app/[locale]/_components';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
 import { PuzzlePreviewClient } from '../../_components/PuzzlePreviewClient';
 
-export async function generateMetadata({ params }: Props) {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'practice.puzzle' });
-  const title = t('preview.title');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'practice/puzzle/new/preview', title }),
-    title: resolveTitle(title, locale),
-  };
+export function generateMetadata({ params }: Props) {
+  return createPageMetadata({
+    params,
+    namespace: 'practice.puzzle',
+    path: 'practice/puzzle/new/preview',
+    titleKey: 'preview.title',
+    omitDescription: true,
+  });
 }
 
 export default async function PuzzlePreviewPage({ params }: Props) {

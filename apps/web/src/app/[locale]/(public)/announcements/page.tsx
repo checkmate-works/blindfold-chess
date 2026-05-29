@@ -1,4 +1,3 @@
-import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
@@ -12,7 +11,7 @@ import {
   SectionTitle,
 } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { MembersOnlyBadge } from './_components/MembersOnlyBadge';
@@ -42,18 +41,14 @@ type Props = {
   }>;
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'announcements' });
-
-  const title = t('pageTitle');
-  const description = t('pageDescription');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'announcements', title, description }),
-    title: resolveTitle(title, locale),
-    description,
-  };
+export function generateMetadata({ params }: Props) {
+  return createPageMetadata({
+    params,
+    namespace: 'announcements',
+    path: 'announcements',
+    titleKey: 'pageTitle',
+    descriptionKey: 'pageDescription',
+  });
 }
 
 export default async function AnnouncementsPage({ params, searchParams }: Props) {
