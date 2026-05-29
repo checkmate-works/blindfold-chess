@@ -1,11 +1,9 @@
 'use server';
 
 import { createSaveResultAction } from '../../_lib/create-save-result-action';
+import type { StandardChallengeInput } from '../../_lib/create-save-result-action';
 
-export type SaveRoutePlannerResultInput = {
-  correctAnswers: number;
-  incorrectAnswers: number;
-  timeTaken: number;
+export type SaveRoutePlannerResultInput = StandardChallengeInput & {
   piece: string;
 };
 

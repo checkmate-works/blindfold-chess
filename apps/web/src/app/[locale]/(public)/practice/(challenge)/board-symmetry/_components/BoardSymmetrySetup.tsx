@@ -5,10 +5,10 @@ import Link from 'next/link';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaArrowRight } from 'react-icons/fa';
 
-import { SectionTitle } from '@/app/[locale]/_components';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { PracticeHowToPlayCard } from '../../_components/PracticeHowToPlayCard';
 import { PracticeSetupActions } from '../../_components/PracticeSetupActions';
 
 type Props = {
@@ -21,16 +21,17 @@ export function BoardSymmetrySetup({ locale }: Props) {
   return (
     <div>
       <div className="mb-8">
-        <SectionTitle className="mb-4">{t('howToPlayTitle')}</SectionTitle>
-
-        <div className="mb-2 rounded-xl border border-border bg-card p-6 text-center">
-          <p className="text-sm text-muted-foreground mb-4">{t('howToPlayDescription')}</p>
+        <PracticeHowToPlayCard
+          title={t('howToPlayTitle')}
+          description={t('howToPlayDescription')}
+          marginClassName="mb-2"
+        >
           <div className="flex items-center justify-center gap-3 text-foreground">
             <span className="text-lg font-bold">e4</span>
             <FaArrowRight className="text-muted-foreground" />
             <span className="text-lg font-bold">?</span>
           </div>
-        </div>
+        </PracticeHowToPlayCard>
         <div className="mb-6 text-center" data-tour-id="board-symmetry-tutorial">
           <Link
             href={`/${locale}/practice/board-symmetry/tutorial`}

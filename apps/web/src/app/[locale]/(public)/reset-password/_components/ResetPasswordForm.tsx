@@ -10,7 +10,9 @@ import { MIN_PASSWORD_LENGTH } from '@/config';
 import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import { parsePasswordServerError } from '@/lib/validations/password';
+import { resolvePasswordSubmitError } from '@/lib/validations/password';
+
+import { useAuthSubmit } from '@/app/[locale]/(public)/_hooks/use-auth-submit';
 
 import { resetPassword } from '../_actions/resetPassword';
 
@@ -21,37 +23,20 @@ export function ResetPasswordForm() {
   const router = useRouter();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    if (password !== confirmPassword) {
-      setError(t('passwordMismatch'));
-      return;
-    }
-
-    setIsLoading(true);
-
-    const result = await resetPassword(password);
-
-    if ('error' in result) {
-      const passwordErrorKey = parsePasswordServerError(result.error);
-      if (passwordErrorKey) {
-        setError(tPassword(passwordErrorKey, { minLength: MIN_PASSWORD_LENGTH }));
-      } else if (result.error === 'rateLimited') {
-        setError(t('rateLimited'));
-      } else {
-        setError(t('error'));
-      }
-      setIsLoading(false);
-      return;
-    }
-
-    router.push(`/${locale}/mypage?toast=password_reset_success`);
-  };
+  const { error, isLoading, handleSubmit } = useAuthSubmit({
+    action: () => resetPassword(password),
+    validate: () => (password !== confirmPassword ? t('passwordMismatch') : null),
+    resolveError: (e) =>
+      resolvePasswordSubmitError(e, {
+        onPasswordError: (key) => tPassword(key, { minLength: MIN_PASSWORD_LENGTH }),
+        onRateLimited: () => t('rateLimited'),
+        onOther: () => t('error'),
+      }),
+    onSuccess: () => {
+      router.push(`/${locale}/mypage?toast=password_reset_success`);
+    },
+  });
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-sm mx-auto space-y-4">

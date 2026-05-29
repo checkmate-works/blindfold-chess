@@ -43,3 +43,24 @@ export function parsePasswordServerError(serverError: string): PasswordValidatio
   const key = serverError.slice(prefix.length);
   return isPasswordValidationErrorKey(key) ? key : null;
 }
+
+/**
+ * Resolve a localized message for a server-action error that may be a
+ * password-policy failure. Centralizes the parse-then-branch order shared by
+ * the sign-up and reset-password forms: a `password:<key>` error maps via
+ * `onPasswordError`, a `rateLimited` error via `onRateLimited`, and anything
+ * else (including the thrown/unknown case) via `onOther`.
+ */
+export function resolvePasswordSubmitError(
+  serverError: string,
+  resolvers: {
+    onPasswordError: (key: PasswordValidationErrorKey) => string;
+    onRateLimited: () => string;
+    onOther: () => string;
+  }
+): string {
+  const key = parsePasswordServerError(serverError);
+  if (key) return resolvers.onPasswordError(key);
+  if (serverError === 'rateLimited') return resolvers.onRateLimited();
+  return resolvers.onOther();
+}

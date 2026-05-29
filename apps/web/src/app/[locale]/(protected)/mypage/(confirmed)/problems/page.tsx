@@ -5,26 +5,23 @@
  * Index page for user-created problems. Links to Position Memory and Puzzle
  * sub-sections.
  */
-import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 import { ChallengeCard } from '@/app/_components';
 
 import { PageLayout } from '@/app/[locale]/_components';
-import { resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
 type Props = LocalePageProps;
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'MypageProblemsIndex' });
-
-  return {
-    title: resolveTitle(t('title'), locale),
-    description: t('description'),
-    robots: { index: false, follow: false },
-  };
+export function generateMetadata({ params }: Props) {
+  return createPageMetadata({
+    params,
+    namespace: 'MypageProblemsIndex',
+    path: 'mypage/problems',
+    noIndex: true,
+  });
 }
 
 export default async function ProblemsIndexPage({ params }: Props) {

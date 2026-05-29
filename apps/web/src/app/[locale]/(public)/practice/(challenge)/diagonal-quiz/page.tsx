@@ -18,8 +18,7 @@
  *   mode).
  */
 import { createPracticeTopPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeTopPage';
-import { HelpTourButton } from '@/app/[locale]/_components';
-import type { HelpStep } from '@/app/[locale]/_components';
+import { buildPracticeHelpTour } from '@/app/[locale]/(public)/practice/_lib/practice-help-tour';
 
 import { DiagonalQuizSetup } from './_components/DiagonalQuizSetup';
 
@@ -29,32 +28,12 @@ const { generateMetadata, Page } = createPracticeTopPage({
   i18nKey: 'diagonalQuiz',
   canonicalPath: 'practice/diagonal-quiz',
   renderSetup: (locale) => <DiagonalQuizSetup locale={locale} />,
-  renderTitleAction: (t) => {
-    const steps: HelpStep[] = [
-      {
-        targetId: 'diagonal-quiz-tutorial',
-        title: t('practice.diagonalQuiz.help.tutorial.title'),
-        description: t('practice.diagonalQuiz.help.tutorial.description'),
-        side: 'top',
-        align: 'center',
-      },
-      {
-        targetId: 'diagonal-quiz-challenge',
-        title: t('practice.diagonalQuiz.help.challenge.title'),
-        description: t('practice.diagonalQuiz.help.challenge.description'),
-        side: 'top',
-        align: 'center',
-      },
-      {
-        targetId: 'diagonal-quiz-training',
-        title: t('practice.diagonalQuiz.help.training.title'),
-        description: t('practice.diagonalQuiz.help.training.description'),
-        side: 'top',
-        align: 'center',
-      },
-    ];
-    return <HelpTourButton steps={steps} label={t('practice.diagonalQuiz.help.label')} />;
-  },
+  renderTitleAction: (t) =>
+    buildPracticeHelpTour(t, 'diagonalQuiz', 'diagonal-quiz', [
+      'tutorial',
+      'challenge',
+      'training',
+    ]),
   renderArticles: () => null,
   leaderboard: {
     module: 'diagonal_quiz',

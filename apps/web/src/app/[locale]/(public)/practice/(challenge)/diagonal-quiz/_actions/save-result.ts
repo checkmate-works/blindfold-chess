@@ -1,12 +1,9 @@
 'use server';
 
 import { createSaveResultAction } from '../../_lib/create-save-result-action';
+import type { StandardChallengeInput } from '../../_lib/create-save-result-action';
 
-export type SaveDiagonalQuizResultInput = {
-  correctAnswers: number;
-  incorrectAnswers: number;
-  timeTaken: number;
-};
+export type SaveDiagonalQuizResultInput = StandardChallengeInput;
 
 const saveAction = createSaveResultAction<SaveDiagonalQuizResultInput>('diagonal_quiz');
 

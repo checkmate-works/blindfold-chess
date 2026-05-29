@@ -1,6 +1,6 @@
 import { createPracticeTopPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeTopPage';
-import { CardLink, HelpTourButton, SectionTitle } from '@/app/[locale]/_components';
-import type { HelpStep } from '@/app/[locale]/_components';
+import { buildPracticeHelpTour } from '@/app/[locale]/(public)/practice/_lib/practice-help-tour';
+import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 
 import { LegalMoves } from './_components/LegalMoves';
 
@@ -10,25 +10,8 @@ const { generateMetadata, Page } = createPracticeTopPage({
   i18nKey: 'legalMoves',
   canonicalPath: 'practice/legal-moves',
   renderSetup: (locale) => <LegalMoves locale={locale} />,
-  renderTitleAction: (t) => {
-    const steps: HelpStep[] = [
-      {
-        targetId: 'legal-moves-challenge',
-        title: t('practice.legalMoves.help.challenge.title'),
-        description: t('practice.legalMoves.help.challenge.description'),
-        side: 'top',
-        align: 'center',
-      },
-      {
-        targetId: 'legal-moves-training',
-        title: t('practice.legalMoves.help.training.title'),
-        description: t('practice.legalMoves.help.training.description'),
-        side: 'top',
-        align: 'center',
-      },
-    ];
-    return <HelpTourButton steps={steps} label={t('practice.legalMoves.help.label')} />;
-  },
+  renderTitleAction: (t) =>
+    buildPracticeHelpTour(t, 'legalMoves', 'legal-moves', ['challenge', 'training']),
   renderArticles: (t, locale) => (
     <div className="mt-8 space-y-4">
       <SectionTitle>{t('practice.legalMoves.relatedArticles')}</SectionTitle>

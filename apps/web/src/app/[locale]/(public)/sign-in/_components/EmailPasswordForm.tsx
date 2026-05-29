@@ -8,6 +8,7 @@ import { Link } from '@/i18n/routing';
 import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { useAuthSubmit } from '@/app/[locale]/(public)/_hooks/use-auth-submit';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import { signIn } from '../_actions/signIn';
@@ -17,40 +18,19 @@ export function EmailPasswordForm() {
   const locale = useLocale();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setIsLoading(true);
-
-    try {
-      const result = await signIn(email, password);
-
-      if ('error' in result) {
-        switch (result.error) {
-          case 'rateLimited':
-            setError(t('rateLimited'));
-            break;
-          default:
-            setError(t('emailSignInError'));
-        }
-        setIsLoading(false);
-        return;
-      }
-
+  const { error, isLoading, handleSubmit } = useAuthSubmit<{ locale: string }>({
+    action: () => signIn(email, password),
+    resolveError: (e) => (e === 'rateLimited' ? t('rateLimited') : t('emailSignInError')),
+    onSuccess: (result) => {
       // Use hard navigation to ensure the server-side auth state is fully
       // synchronised. A soft navigation (router.push) can render the
       // destination's Server Components before the browser has committed the
       // session cookies set by the signIn Server Action, resulting in an
       // unauthenticated request and blank page content.
       window.location.href = `/${result.locale}/mypage?toast=login_success`;
-    } catch {
-      setError(t('emailSignInError'));
-      setIsLoading(false);
-    }
-  };
+    },
+  });
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-sm mx-auto space-y-4">

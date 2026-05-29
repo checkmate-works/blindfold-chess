@@ -1,4 +1,3 @@
-import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
@@ -13,7 +12,7 @@ import {
 } from '@/app/[locale]/(public)/topics/_lib/like-queries';
 import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
-import { resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
 const searchParamsCache = createSearchParamsCache({
@@ -22,15 +21,13 @@ const searchParamsCache = createSearchParamsCache({
 
 type Props = LocaleSearchPageProps;
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'metadata.mypageLikes' });
-
-  return {
-    title: resolveTitle(t('title'), locale),
-    description: t('description'),
-    robots: { index: false, follow: false },
-  };
+export function generateMetadata({ params }: Props) {
+  return createPageMetadata({
+    params,
+    namespace: 'metadata.mypageLikes',
+    path: 'mypage/likes',
+    noIndex: true,
+  });
 }
 
 export default async function LikesPage({ params, searchParams }: Props) {

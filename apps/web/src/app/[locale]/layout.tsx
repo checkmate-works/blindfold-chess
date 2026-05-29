@@ -58,6 +58,28 @@ export const generateStaticParams = generateLocaleStaticParams;
  */
 export const dynamicParams = false;
 
+/**
+ * Load the `metadata`-namespace translator, falling back to an identity
+ * function (dev-warned) if next-intl fails to resolve messages. Shared by
+ * `generateMetadata` and the default `Layout` export below, which both need it.
+ *
+ * The fallback only supports the `t(key)` call form used in this file —
+ * `t.rich()`, `t.markup()`, etc. are NOT available on it.
+ */
+async function getMetadataTranslator(
+  locale: string,
+  context: string
+): Promise<Awaited<ReturnType<typeof getTranslations<'metadata'>>>> {
+  try {
+    return await getTranslations({ locale, namespace: 'metadata' });
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(`[${context}] getTranslations failed, using fallback:`, error);
+    }
+    return ((key: string) => key) as Awaited<ReturnType<typeof getTranslations<'metadata'>>>;
+  }
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -69,21 +91,14 @@ export async function generateMetadata({
   // indexed without a fallback. Unknown locales fall back to the default.
   const locale = hasLocale(routing.locales, rawLocale) ? rawLocale : routing.defaultLocale;
 
-  let t: Awaited<ReturnType<typeof getTranslations<'metadata'>>>;
-  try {
-    t = await getTranslations({ locale, namespace: 'metadata' });
-  } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('[generateMetadata] getTranslations failed, using fallback:', error);
-    }
-    t = ((key: string) => key) as typeof t;
-  }
+  const t = await getMetadataTranslator(locale, 'generateMetadata');
 
   const siteName = t('siteName');
   const seoSiteName = t('seoSiteName');
   const description = t('siteDescription');
   const currentLocale = OG_LOCALE_MAP[locale];
   const alternateLocales = Object.values(OG_LOCALE_MAP).filter((l) => l !== currentLocale);
+  const ogTitle = buildPageTitle(seoSiteName, locale);
 
   return {
     title: {
@@ -102,7 +117,7 @@ export async function generateMetadata({
       apple: [{ url: '/icon-192x192.png', sizes: '192x192', type: 'image/png' }],
     },
     openGraph: {
-      title: buildPageTitle(seoSiteName, locale),
+      title: ogTitle,
       description,
       siteName: siteName,
       type: 'website',
@@ -119,7 +134,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: 'summary_large_image',
-      title: buildPageTitle(seoSiteName, locale),
+      title: ogTitle,
       description,
       images: ['/logo.png'],
     },
@@ -155,20 +170,9 @@ export default async function Layout({
   }
   const locale = rawLocale;
 
-  let t: Awaited<ReturnType<typeof getTranslations<'metadata'>>>;
+  const t = await getMetadataTranslator(locale, 'layout');
+
   let allMessages: Awaited<ReturnType<typeof getMessages>>;
-
-  try {
-    t = await getTranslations({ locale, namespace: 'metadata' });
-  } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('[layout] getTranslations failed, using fallback:', error);
-    }
-    // Minimal fallback that supports only the t(key) call form used in this file.
-    // Methods like t.rich(), t.markup() etc. are NOT available on this fallback.
-    t = ((key: string) => key) as typeof t;
-  }
-
   try {
     allMessages = await getMessages({ locale });
   } catch (error) {
