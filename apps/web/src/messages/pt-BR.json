@@ -1009,6 +1009,17 @@
         "submittedBy": "enviado",
         "createButton": "Criar Problema"
       },
+      "help": {
+        "label": "Ajuda",
+        "overview": {
+          "title": "O que é Memória de Posições?",
+          "description": "Um exercício de treino no qual você recria uma posição no tabuleiro.\nEle treina sua capacidade de reconhecimento de padrões e sua memória de trabalho, então praticar com regularidade melhora suas habilidades de visualização."
+        },
+        "create": {
+          "title": "Criar um Problema",
+          "description": "Use o botão \"Criar Problema\" para registrar suas próprias posições e criar problemas originais.\nOs problemas que você cria são publicados na lista, para que outros usuários também possam tentar resolvê-los."
+        }
+      },
       "create": {
         "title": "Criar Problema",
         "fenLabel": "FEN",

@@ -1013,6 +1013,17 @@
         "submittedBy": "submitted",
         "createButton": "Create Problem"
       },
+      "help": {
+        "label": "Help",
+        "overview": {
+          "title": "What is Position Memory?",
+          "description": "A training exercise where you recreate a position on the board.\nIt trains your pattern-recognition ability and working memory, so keeping at it improves your visualization skills."
+        },
+        "create": {
+          "title": "Create a Problem",
+          "description": "Use the \"Create Problem\" button to register your own positions and build original problems.\nThe problems you create are published in the list, so other users can try them too."
+        }
+      },
       "create": {
         "title": "Create Problem",
         "fenLabel": "FEN",
