@@ -10,6 +10,10 @@
  * 1. Browse the list of available puzzles
  * 2. Click a card to navigate to the puzzle detail page (not yet implemented)
  * 3. On the detail page, attempt to find the best move(s)
+ *
+ * A help tour (the `?` next to the page title) introduces the module: the
+ * first step explains what a puzzle is; the second points at the Create Puzzle
+ * CTA and is shown only to signed-in users.
  */
 import { getTranslations } from 'next-intl/server';
 
@@ -27,7 +31,13 @@ import { countPositions, listPositionsWithProfile } from '@/lib/positions/querie
 
 import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
-import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
+import {
+  HelpTourButton,
+  PageLayout,
+  PaginationNav,
+  SectionTitle,
+} from '@/app/[locale]/_components';
+import type { HelpStep } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps as Props } from '@/app/[locale]/_lib/types';
@@ -94,13 +104,43 @@ export default async function PuzzleListPage({ params, searchParams }: Props) {
 
   const justNowLabel = t('justNow');
 
+  // Help-tour steps: explain what a puzzle is and — only when the Create Puzzle
+  // CTA is rendered (signed-in users) — point at it. Unlike position memory,
+  // puzzle has no tutorial route, so the overview step carries no link.
+  // Authored line breaks (`\n`) in the messages become `<br />` because
+  // driver.js renders `description` as innerHTML.
+  const nl2br = (text: string) => text.replace(/\n/g, '<br />');
+  const helpSteps: HelpStep[] = [
+    {
+      targetId: 'puzzle-list-intro',
+      title: t('help.overview.title'),
+      description: nl2br(t('help.overview.description')),
+      side: 'bottom',
+      align: 'start',
+    },
+    ...(currentUser
+      ? [
+          {
+            targetId: 'puzzle-list-create',
+            title: t('help.create.title'),
+            description: nl2br(t('help.create.description')),
+            side: 'top' as const,
+            align: 'center' as const,
+          },
+        ]
+      : []),
+  ];
+
   return (
     <PageLayout
       title={t('list.title')}
+      titleAction={<HelpTourButton steps={helpSteps} label={t('help.label')} />}
       locale={locale}
       breadcrumb={[{ label: tNav('practice'), href: '/practice' }, { label: t('list.title') }]}
     >
-      <SectionTitle>{t('list.sectionTitle')}</SectionTitle>
+      <div data-tour-id="puzzle-list-intro">
+        <SectionTitle>{t('list.sectionTitle')}</SectionTitle>
+      </div>
       {totalCount > 0 && (
         <div className="flex justify-end">
           <SortSelect
@@ -135,7 +175,7 @@ export default async function PuzzleListPage({ params, searchParams }: Props) {
       <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
 
       {currentUser && (
-        <div className="py-4">
+        <div className="py-4" data-tour-id="puzzle-list-create">
           <Link href="/practice/puzzle/new" locale={locale}>
             <Button asChild variant="primary" size="lg" icon={<FaPlus />} fullWidth>
               {t('list.createButton')}

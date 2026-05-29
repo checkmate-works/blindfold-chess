@@ -1009,6 +1009,17 @@
         "submittedBy": "enviado",
         "createButton": "Crear Problema"
       },
+      "help": {
+        "label": "Ayuda",
+        "overview": {
+          "title": "¿Qué es la Memoria de Posiciones?",
+          "description": "Un ejercicio de entrenamiento en el que recreas una posición en el tablero.\nEntrena tu capacidad de reconocimiento de patrones y tu memoria de trabajo, por lo que practicar con constancia mejora tus habilidades de visualización."
+        },
+        "create": {
+          "title": "Crear un Problema",
+          "description": "Usa el botón \"Crear Problema\" para registrar tus propias posiciones y crear problemas originales.\nLos problemas que creas se publican en la lista, para que otros usuarios también puedan resolverlos."
+        }
+      },
       "create": {
         "title": "Crear Problema",
         "fenLabel": "FEN",
@@ -1087,6 +1098,17 @@
         "empty": "Aun no hay puzzles disponibles",
         "submittedBy": "enviado",
         "createButton": "Crear Puzzle"
+      },
+      "help": {
+        "label": "Ayuda",
+        "overview": {
+          "title": "¿Qué es un Puzzle?",
+          "description": "Este modo de entrenamiento es básicamente igual a los puzzles y las tácticas de una app de ajedrez típica.\nLa diferencia aquí es que practicas sin ninguna ayuda visual, deduciendo la mejor jugada solo a partir de la notación."
+        },
+        "create": {
+          "title": "Crear un Puzzle",
+          "description": "Usa el botón \"Crear Puzzle\" para registrar tus propias posiciones y soluciones y crear puzzles originales.\nLos puzzles que creas se publican en la lista, para que otros usuarios también puedan resolverlos."
+        }
       },
       "create": {
         "title": "Crear Puzzle",

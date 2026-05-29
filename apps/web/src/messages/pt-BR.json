@@ -1009,6 +1009,17 @@
         "submittedBy": "enviado",
         "createButton": "Criar Problema"
       },
+      "help": {
+        "label": "Ajuda",
+        "overview": {
+          "title": "O que é Memória de Posições?",
+          "description": "Um exercício de treino no qual você recria uma posição no tabuleiro.\nEle treina sua capacidade de reconhecimento de padrões e sua memória de trabalho, então praticar com regularidade melhora suas habilidades de visualização."
+        },
+        "create": {
+          "title": "Criar um Problema",
+          "description": "Use o botão \"Criar Problema\" para registrar suas próprias posições e criar problemas originais.\nOs problemas que você cria são publicados na lista, para que outros usuários também possam tentar resolvê-los."
+        }
+      },
       "create": {
         "title": "Criar Problema",
         "fenLabel": "FEN",
@@ -1087,6 +1098,17 @@
         "empty": "Nenhum puzzle disponível ainda",
         "submittedBy": "enviado",
         "createButton": "Criar Puzzle"
+      },
+      "help": {
+        "label": "Ajuda",
+        "overview": {
+          "title": "O que é um Puzzle?",
+          "description": "Este modo de treino é basicamente igual aos puzzles e às táticas de um app de xadrez comum.\nA diferença aqui é que você pratica sem nenhum auxílio visual, deduzindo o melhor lance apenas a partir da notação."
+        },
+        "create": {
+          "title": "Criar um Puzzle",
+          "description": "Use o botão \"Criar Puzzle\" para registrar suas próprias posições e soluções e criar puzzles originais.\nOs puzzles que você cria são publicados na lista, para que outros usuários também possam tentar resolvê-los."
+        }
       },
       "create": {
         "title": "Criar Puzzle",

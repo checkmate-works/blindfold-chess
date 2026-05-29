@@ -1013,6 +1013,17 @@
         "submittedBy": "submitted",
         "createButton": "Create Problem"
       },
+      "help": {
+        "label": "Help",
+        "overview": {
+          "title": "What is Position Memory?",
+          "description": "A training exercise where you recreate a position on the board.\nIt trains your pattern-recognition ability and working memory, so keeping at it improves your visualization skills."
+        },
+        "create": {
+          "title": "Create a Problem",
+          "description": "Use the \"Create Problem\" button to register your own positions and build original problems.\nThe problems you create are published in the list, so other users can try them too."
+        }
+      },
       "create": {
         "title": "Create Problem",
         "fenLabel": "FEN",
@@ -1091,6 +1102,17 @@
         "empty": "No puzzles available yet",
         "submittedBy": "submitted",
         "createButton": "Create Puzzle"
+      },
+      "help": {
+        "label": "Help",
+        "overview": {
+          "title": "What is a Puzzle?",
+          "description": "This training mode is basically the same as the puzzles and tactics in a typical chess app.\nThe difference here is that you practice without any visual aid, working out the best move from notation alone."
+        },
+        "create": {
+          "title": "Create a Puzzle",
+          "description": "Use the \"Create Puzzle\" button to register your own positions and solutions and build original puzzles.\nThe puzzles you create are published in the list, so other users can try them too."
+        }
       },
       "create": {
         "title": "Create Puzzle",

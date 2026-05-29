@@ -10,6 +10,11 @@
  * 1. Browse the list of available positions
  * 2. Click a card to navigate to the position detail page
  * 3. On the detail page, configure time limit and start a session
+ *
+ * A help tour (the `?` next to the page title) introduces the module: the
+ * first step explains what position memory is and carries the tutorial link
+ * (the standalone link above the sort control was folded into it); the second
+ * step points at the Create Problem CTA and is shown only to signed-in users.
  */
 import { getTranslations } from 'next-intl/server';
 
@@ -27,7 +32,13 @@ import { countPositions, listPositionsWithProfile } from '@/lib/positions/querie
 
 import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
 import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
-import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
+import {
+  HelpTourButton,
+  PageLayout,
+  PaginationNav,
+  SectionTitle,
+} from '@/app/[locale]/_components';
+import type { HelpStep } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -95,22 +106,45 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
 
   const justNowLabel = t('justNow');
 
+  // Help-tour steps: explain what position memory is (with the tutorial link
+  // folded into the popover) and — only when the Create Problem CTA is rendered
+  // (signed-in users) — point at it. The tutorial link lives in the popover HTML
+  // because driver.js renders `description` as innerHTML; it replaces the
+  // standalone link that previously floated above the sort control. Authored
+  // line breaks (`\n`) in the messages become `<br />` so the popover keeps the
+  // intended paragraphing.
+  const nl2br = (text: string) => text.replace(/\n/g, '<br />');
+  const tutorialLink = `<a href="/${locale}/practice/position-memory/tutorial" class="${TEXT_LINK_CLASSES}">${t('list.tutorialLink')}</a>`;
+  const helpSteps: HelpStep[] = [
+    {
+      targetId: 'position-memory-list-intro',
+      title: t('help.overview.title'),
+      description: `${nl2br(t('help.overview.description'))}<br /><br />${tutorialLink}`,
+      side: 'bottom',
+      align: 'start',
+    },
+    ...(currentUser
+      ? [
+          {
+            targetId: 'position-memory-list-create',
+            title: t('help.create.title'),
+            description: nl2br(t('help.create.description')),
+            side: 'top' as const,
+            align: 'center' as const,
+          },
+        ]
+      : []),
+  ];
+
   return (
     <PageLayout
       title={t('list.title')}
+      titleAction={<HelpTourButton steps={helpSteps} label={t('help.label')} />}
       locale={locale}
       breadcrumb={[{ label: tNav('practice'), href: '/practice' }, { label: t('list.title') }]}
     >
-      <SectionTitle>{t('list.sectionTitle')}</SectionTitle>
-
-      <div className="flex justify-end mb-4">
-        <Link
-          href="/practice/position-memory/tutorial"
-          locale={locale}
-          className={`text-sm ${TEXT_LINK_CLASSES}`}
-        >
-          {t('list.tutorialLink')}
-        </Link>
+      <div data-tour-id="position-memory-list-intro">
+        <SectionTitle>{t('list.sectionTitle')}</SectionTitle>
       </div>
 
       {totalCount > 0 && (
@@ -147,7 +181,7 @@ export default async function PositionMemoryListPage({ params, searchParams }: P
       <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
 
       {currentUser && (
-        <div className="py-4">
+        <div className="py-4" data-tour-id="position-memory-list-create">
           <Link href="/practice/position-memory/new" locale={locale}>
             <Button asChild variant="primary" size="lg" icon={<FaPlus />} fullWidth>
               {t('list.createButton')}
