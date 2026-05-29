@@ -3,7 +3,12 @@ import type { PracticeMenuType } from '@/lib/db/practice-menu-types';
 import type { SaveResultResponse } from '../_actions/save-practice-result';
 import { savePracticeResult } from '../_actions/save-practice-result';
 
-type StandardInput = {
+/**
+ * The fields every challenge module reports on completion. Module-specific
+ * `save-result.ts` input types intersect this with their own settings fields
+ * (e.g. `& { boardOrientation }`), or use it directly when they have none.
+ */
+export type StandardChallengeInput = {
   correctAnswers: number;
   incorrectAnswers: number;
   timeTaken: number;
@@ -18,7 +23,7 @@ type StandardInput = {
  * @param moduleKey - The practice menu type key (e.g. 'coordinate_quiz')
  * @param extractSettings - Optional function to extract module-specific settings from the input
  */
-export function createSaveResultAction<T extends StandardInput>(
+export function createSaveResultAction<T extends StandardChallengeInput>(
   moduleKey: PracticeMenuType,
   extractSettings?: (input: T) => Record<string, unknown>
 ): (input: T) => Promise<SaveResultResponse> {

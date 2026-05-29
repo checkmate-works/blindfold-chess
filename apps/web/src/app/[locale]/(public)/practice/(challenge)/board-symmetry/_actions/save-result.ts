@@ -1,12 +1,9 @@
 'use server';
 
 import { createSaveResultAction } from '../../_lib/create-save-result-action';
+import type { StandardChallengeInput } from '../../_lib/create-save-result-action';
 
-export type SaveBoardSymmetryResultInput = {
-  correctAnswers: number;
-  incorrectAnswers: number;
-  timeTaken: number;
-};
+export type SaveBoardSymmetryResultInput = StandardChallengeInput;
 
 const saveAction = createSaveResultAction<SaveBoardSymmetryResultInput>('board_symmetry');
 

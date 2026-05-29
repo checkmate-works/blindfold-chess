@@ -1,11 +1,9 @@
 'use server';
 
 import { createSaveResultAction } from '../../_lib/create-save-result-action';
+import type { StandardChallengeInput } from '../../_lib/create-save-result-action';
 
-export type SaveLegalMovesResultInput = {
-  correctAnswers: number;
-  incorrectAnswers: number;
-  timeTaken: number;
+export type SaveLegalMovesResultInput = StandardChallengeInput & {
   selectedPiece: string;
 };
 
