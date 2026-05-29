@@ -2958,7 +2958,31 @@
       "columnId": "ID",
       "searchByUsernameOrEmail": "Buscar por nombre de usuario o correo",
       "searchButton": "Buscar",
-      "usernameOrEmailLabel": "Nombre de usuario o correo"
+      "usernameOrEmailLabel": "Nombre de usuario o correo",
+      "viewDetail": "Detalles",
+      "detail": {
+        "backToList": "Volver a usuarios",
+        "basicInfo": "Información básica",
+        "accountId": "ID de cuenta",
+        "country": "País",
+        "role": "Rol",
+        "rankSection": "Rango",
+        "currentRank": "Rango actual",
+        "noRank": "Sin rango aún",
+        "subscriptionsSection": "Suscripciones",
+        "noSubscriptions": "Sin suscripciones",
+        "subStatus": "Estado",
+        "subPriceId": "ID de precio",
+        "subPeriod": "Periodo actual",
+        "subCancelAt": "Cancela el",
+        "moderationSection": "Historial de moderación",
+        "noModerationActions": "Sin acciones de moderación",
+        "modAction": "Acción",
+        "modReason": "Motivo",
+        "modActor": "Autor",
+        "modDate": "Fecha",
+        "adminActions": "Acciones de administrador"
+      }
     },
     "tabs": {
       "users": "Usuarios",

@@ -3,10 +3,8 @@ import Link from 'next/link';
 import type { User } from '@supabase/supabase-js';
 import { FaExternalLinkAlt } from 'react-icons/fa';
 
-import { BanButton } from './BanButton';
 import { CopyUserIdButton } from './CopyUserIdButton';
 import { StatusBadge } from './StatusBadge';
-import { UnbanButton } from './UnbanButton';
 
 type Profile = {
   id: string;
@@ -18,22 +16,17 @@ type Profile = {
 type UserRowProps = {
   user: User;
   profile: Profile | undefined;
-  role: string | undefined;
   hasSubscription: boolean;
   banReason: string | null;
-  isCurrentUser: boolean;
   signupMethod: 'google' | 'email' | 'unknown';
   labels: {
-    defaultRole: string;
     premium: string;
     free: string;
     anonymous: string;
     deleted: string;
     banned: string;
     active: string;
-    viewPosts: string;
-    viewActivity: string;
-    viewSubscriptions: string;
+    viewDetail: string;
     google: string;
     email: string;
     unknown: string;
@@ -45,16 +38,11 @@ type UserRowProps = {
 export function UserRow({
   user,
   profile,
-  role,
   hasSubscription,
   banReason,
-  isCurrentUser,
   signupMethod,
   labels,
 }: UserRowProps) {
-  const isDeleted = profile?.deletedAt != null;
-  const isBanned = profile?.bannedAt != null;
-
   return (
     <tr key={user.id} className="border-t border-border">
       <td className="px-4 py-3">
@@ -81,15 +69,6 @@ export function UserRow({
             <FaExternalLinkAlt className="h-3 w-3" />
           </Link>
         ) : null}
-      </td>
-      <td className="px-4 py-3">
-        <span
-          className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
-            role === 'admin' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-foreground'
-          }`}
-        >
-          {role ?? labels.defaultRole}
-        </span>
       </td>
       <td className="px-4 py-3">
         <span
@@ -123,37 +102,9 @@ export function UserRow({
         {user.created_at ? new Date(user.created_at).toLocaleDateString() : '-'}
       </td>
       <td className="px-4 py-3">
-        {isDeleted ? (
-          <span className="text-muted-foreground">—</span>
-        ) : (
-          <div className="flex items-center gap-2">
-            {profile && (
-              <>
-                <Link
-                  href={`/admin/topic_posts?user=${encodeURIComponent(profile?.username ?? user.email ?? user.id)}`}
-                  className="px-3 py-1 text-xs font-medium rounded bg-card text-foreground hover:bg-secondary border border-border transition-colors"
-                >
-                  {labels.viewPosts}
-                </Link>
-                <Link
-                  href={`/admin/activity-log?user=${encodeURIComponent(profile.username ?? '')}`}
-                  className="px-3 py-1 text-xs font-medium rounded bg-card text-foreground hover:bg-secondary border border-border transition-colors"
-                >
-                  {labels.viewActivity}
-                </Link>
-                <Link
-                  href={`/admin/subscriptions?user=${user.id}`}
-                  className="px-3 py-1 text-xs font-medium rounded bg-card text-foreground hover:bg-secondary border border-border transition-colors"
-                >
-                  {labels.viewSubscriptions}
-                </Link>
-              </>
-            )}
-            {!isCurrentUser && profile && (
-              <>{isBanned ? <UnbanButton userId={user.id} /> : <BanButton userId={user.id} />}</>
-            )}
-          </div>
-        )}
+        <Link href={`/admin/users/${user.id}`} className="text-primary hover:underline">
+          {labels.viewDetail}
+        </Link>
       </td>
     </tr>
   );
