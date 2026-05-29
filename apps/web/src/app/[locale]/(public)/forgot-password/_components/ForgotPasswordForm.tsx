@@ -6,42 +6,20 @@ import { AuthField, AuthSubmitButton } from '@/app/_components/AuthFormFields';
 import { FormErrorBanner } from '@/app/_components/FormErrorBanner';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { useAuthSubmit } from '@/app/[locale]/(public)/_hooks/use-auth-submit';
+
 import { forgotPassword } from '../_actions/forgotPassword';
 
 export function ForgotPasswordForm() {
   const t = useTranslations('forgotPassword');
   const [email, setEmail] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [isSent, setIsSent] = useState(false);
-  const [error, setError] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setIsLoading(true);
-
-    try {
-      const result = await forgotPassword(email);
-
-      if ('error' in result) {
-        switch (result.error) {
-          case 'rateLimited':
-            setError(t('rateLimited'));
-            break;
-          default:
-            setError(t('error'));
-        }
-        setIsLoading(false);
-        return;
-      }
-
-      setIsSent(true);
-      setIsLoading(false);
-    } catch {
-      setError(t('error'));
-      setIsLoading(false);
-    }
-  };
+  const { error, isLoading, handleSubmit } = useAuthSubmit({
+    action: () => forgotPassword(email),
+    resolveError: (e) => (e === 'rateLimited' ? t('rateLimited') : t('error')),
+    onSuccess: () => setIsSent(true),
+  });
 
   if (isSent) {
     return (
