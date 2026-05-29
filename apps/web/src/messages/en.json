@@ -3200,7 +3200,31 @@
       "columnId": "ID",
       "searchByUsernameOrEmail": "Search by username or email",
       "searchButton": "Search",
-      "usernameOrEmailLabel": "Username or email"
+      "usernameOrEmailLabel": "Username or email",
+      "viewDetail": "Details",
+      "detail": {
+        "backToList": "Back to users",
+        "basicInfo": "Basic Info",
+        "accountId": "Account ID",
+        "country": "Country",
+        "role": "Role",
+        "rankSection": "Rank",
+        "currentRank": "Current Rank",
+        "noRank": "No rank yet",
+        "subscriptionsSection": "Subscriptions",
+        "noSubscriptions": "No subscriptions",
+        "subStatus": "Status",
+        "subPriceId": "Price ID",
+        "subPeriod": "Current Period",
+        "subCancelAt": "Cancels At",
+        "moderationSection": "Moderation History",
+        "noModerationActions": "No moderation actions",
+        "modAction": "Action",
+        "modReason": "Reason",
+        "modActor": "Actor",
+        "modDate": "Date",
+        "adminActions": "Admin Actions"
+      }
     },
     "tabs": {
       "users": "Users",

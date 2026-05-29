@@ -30,7 +30,6 @@ import {
 } from 'nuqs/server';
 
 import { createAdminClient } from '@/lib/supabase/admin';
-import { createClient } from '@/lib/supabase/server';
 
 import { ProviderFilter } from './_components/ProviderFilter';
 import { StatsTab } from './_components/StatsTab';
@@ -100,11 +99,6 @@ export default async function AdminUsersPage({
   const validTabs = ['list', 'stats'] as const;
   const tab = validTabs.includes(rawTab as (typeof validTabs)[number]) ? rawTab : 'list';
 
-  const supabase = await createClient();
-  const {
-    data: { user: currentUser },
-  } = await supabase.auth.getUser();
-
   const tabs = [
     { id: 'list', label: t('tabs.users') },
     { id: 'stats', label: t('tabs.statistics') },
@@ -151,7 +145,6 @@ export default async function AdminUsersPage({
           page={page}
           filters={filters}
           providerNames={providerNames}
-          currentUser={currentUser}
           t={t}
         />
       ) : (

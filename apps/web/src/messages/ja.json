@@ -3200,7 +3200,31 @@
       "columnId": "ID",
       "searchByUsernameOrEmail": "ユーザー名またはメールアドレスで検索",
       "searchButton": "検索",
-      "usernameOrEmailLabel": "ユーザー名/メール"
+      "usernameOrEmailLabel": "ユーザー名/メール",
+      "viewDetail": "詳細",
+      "detail": {
+        "backToList": "ユーザー一覧へ戻る",
+        "basicInfo": "基本情報",
+        "accountId": "アカウントID",
+        "country": "国",
+        "role": "ロール",
+        "rankSection": "段級位",
+        "currentRank": "現在の段級位",
+        "noRank": "段級位なし",
+        "subscriptionsSection": "サブスクリプション",
+        "noSubscriptions": "サブスクリプションなし",
+        "subStatus": "ステータス",
+        "subPriceId": "価格ID",
+        "subPeriod": "現在の期間",
+        "subCancelAt": "解約予定日",
+        "moderationSection": "モデレーション履歴",
+        "noModerationActions": "モデレーション履歴なし",
+        "modAction": "操作",
+        "modReason": "理由",
+        "modActor": "実行者",
+        "modDate": "日時",
+        "adminActions": "管理操作"
+      }
     },
     "tabs": {
       "users": "ユーザー",

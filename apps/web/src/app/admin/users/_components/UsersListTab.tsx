@@ -27,27 +27,17 @@ export async function UsersListTab({
   page,
   filters,
   providerNames,
-  currentUser,
   t,
 }: {
   adminClient: AdminClient;
   page: number;
   filters: AdminUserFilters;
   providerNames: ProviderNames;
-  currentUser: { id: string } | null | undefined;
   t: Translator;
 }) {
   const { statusFilter, countryFilter, rankFilter, providerFilter, usernameFilter } = filters;
-  const {
-    users,
-    currentPage,
-    totalPages,
-    totalCount,
-    profileMap,
-    roleMap,
-    subscriptionMap,
-    banReasonMap,
-  } = await fetchUsersPageData(adminClient, page, filters);
+  const { users, currentPage, totalPages, totalCount, profileMap, subscriptionMap, banReasonMap } =
+    await fetchUsersPageData(adminClient, page, filters);
 
   const buildHref = (p: number) => buildAdminUsersHref(filters, p);
 
@@ -57,16 +47,13 @@ export async function UsersListTab({
   }
 
   const rowLabels = {
-    defaultRole: t('usersTable.defaultRole'),
     premium: t('usersTable.premium'),
     free: t('usersTable.free'),
     anonymous: t('usersTable.anonymous'),
     deleted: t('usersTable.deleted'),
     banned: t('usersTable.banned'),
     active: t('usersTable.active'),
-    viewPosts: t('usersTable.viewPosts'),
-    viewActivity: t('usersTable.viewActivity'),
-    viewSubscriptions: t('usersTable.viewSubscriptions'),
+    viewDetail: t('usersTable.viewDetail'),
     copyUserId: t('usersTable.copyUserId'),
     copyUserIdSuccess: t('usersTable.copyUserIdSuccess'),
     ...providerNames,
@@ -104,12 +91,11 @@ export async function UsersListTab({
           t('usersTable.columnId'),
           t('usersTable.email'),
           t('usersTable.username'),
-          t('usersTable.role'),
           t('usersTable.plan'),
           t('usersTable.status'),
           t('usersTable.signupMethod'),
           t('usersTable.createdAt'),
-          t('usersTable.actions'),
+          t('usersTable.viewDetail'),
         ]}
         items={users}
         emptyMessage={t('usersTable.noUsersFound')}
@@ -118,10 +104,8 @@ export async function UsersListTab({
             key={user.id}
             user={user}
             profile={profileMap.get(user.id)}
-            role={roleMap.get(user.id)}
             hasSubscription={subscriptionMap.has(user.id)}
             banReason={banReasonMap.get(user.id) ?? null}
-            isCurrentUser={currentUser?.id === user.id}
             signupMethod={getSignupMethod(user)}
             labels={rowLabels}
           />
