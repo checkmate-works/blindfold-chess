@@ -10,7 +10,6 @@
  * 1. View paginated list of own positions (type: memory)
  * 2. Click a card to navigate to the public position detail page
  */
-import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 import { Link } from '@/i18n/routing';
@@ -26,7 +25,7 @@ import { countPositions, listPositionsWithProfile } from '@/lib/positions/querie
 import { toggleLike } from '@/app/[locale]/(public)/practice/(free-play)/_actions/toggleLike';
 import { PositionListCard } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionListCard';
 import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
-import { resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
 const PAGE_SIZE = 12;
@@ -38,15 +37,13 @@ const searchParamsCache = createSearchParamsCache({
 
 type Props = LocaleSearchPageProps;
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'metadata.mypageProblems' });
-
-  return {
-    title: resolveTitle(t('title'), locale),
-    description: t('description'),
-    robots: { index: false, follow: false },
-  };
+export function generateMetadata({ params }: Props) {
+  return createPageMetadata({
+    params,
+    namespace: 'metadata.mypageProblems',
+    path: 'mypage/problems/memory',
+    noIndex: true,
+  });
 }
 
 export default async function PositionMemoryProblemsPage({ params, searchParams }: Props) {

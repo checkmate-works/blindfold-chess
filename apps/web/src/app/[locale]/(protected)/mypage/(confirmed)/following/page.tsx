@@ -1,4 +1,3 @@
-import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 import { and, count, desc, eq, isNull } from 'drizzle-orm';
@@ -8,7 +7,7 @@ import { getAuthenticatedUser } from '@/lib/auth';
 import { db, profiles, userFollows } from '@/lib/db';
 
 import { PageLayout, PaginationNav } from '@/app/[locale]/_components';
-import { resolveTitle } from '@/app/[locale]/_lib/metadata';
+import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocaleSearchPageProps } from '@/app/[locale]/_lib/types';
 
 import { FollowingList } from './_components/FollowingList';
@@ -21,15 +20,13 @@ const searchParamsCache = createSearchParamsCache({
 
 type Props = LocaleSearchPageProps;
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'metadata.mypageFollowing' });
-
-  return {
-    title: resolveTitle(t('title'), locale),
-    description: t('description'),
-    robots: { index: false, follow: false },
-  };
+export function generateMetadata({ params }: Props) {
+  return createPageMetadata({
+    params,
+    namespace: 'metadata.mypageFollowing',
+    path: 'mypage/following',
+    noIndex: true,
+  });
 }
 
 export default async function FollowingPage({ params, searchParams }: Props) {
