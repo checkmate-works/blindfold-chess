@@ -7,9 +7,11 @@ import { useRouter } from 'next/navigation';
 import { createPointGrant } from '../_actions/createPointGrant';
 
 /**
- * Admin form for issuing a confirmed point grant. Mirrors GrantForm's
+ * Admin form for issuing a confirmed coin grant. Mirrors GrantForm's
  * layout (UUID + amount + reason + submit) so admin muscle memory
- * transfers between the ad_free grants page and this one.
+ * transfers between the ad_free grants page and this one. "Coin" is the
+ * facing name for the points ledger this writes to — see the
+ * "Points / Coin Economy" note in apps/web/CLAUDE.md.
  */
 export function PointGrantForm() {
   const router = useRouter();
@@ -32,16 +34,16 @@ export function PointGrantForm() {
       return;
     }
 
-    setMessage({ type: 'success', text: 'Points granted successfully' });
+    // Return to the ledger view, where the just-issued grant now appears at
+    // the top (createPointGrant revalidates /admin/coins).
     form.reset();
-    router.refresh();
+    router.push('/admin/coins');
   }
 
   return (
     <form onSubmit={handleSubmit} className="bg-card border border-border rounded-lg p-6 space-y-4">
-      <h2 className="text-lg font-semibold">Grant points</h2>
       <p className="text-sm text-muted-foreground">
-        Admin-issued points are written as <code className="font-mono">promotional</code> and are
+        Admin-issued coins are written as <code className="font-mono">promotional</code> and are
         immediately available to redeem.
       </p>
 
@@ -61,7 +63,7 @@ export function PointGrantForm() {
 
       <div>
         <label htmlFor="amount" className="block text-sm font-medium mb-1">
-          Amount (pt)
+          Amount (coins)
         </label>
         <input
           type="number"
@@ -103,7 +105,7 @@ export function PointGrantForm() {
         disabled={pending}
         className="px-4 py-2 rounded bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
       >
-        {pending ? 'Granting…' : 'Grant points'}
+        {pending ? 'Granting…' : 'Grant coins'}
       </button>
     </form>
   );

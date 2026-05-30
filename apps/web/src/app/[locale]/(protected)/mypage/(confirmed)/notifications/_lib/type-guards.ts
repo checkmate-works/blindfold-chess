@@ -131,7 +131,7 @@ export function isBenefitGrantMetadata(m: unknown): m is BenefitGrantMetadata {
 
 /**
  * Metadata persisted with a `point_grant` notification. Issued today only
- * from the admin /admin/points → createPointGrant flow; future system
+ * from the admin /admin/coins → createPointGrant flow; future system
  * grants (campaigns, etc.) can reuse this shape by widening `category`.
  */
 export type PointGrantMetadata = {

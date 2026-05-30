@@ -64,7 +64,7 @@ export async function redeemAdFree(cost: number): Promise<RedeemAdFreeResult> {
 
   revalidateTag('grant-status', { expire: 60 });
   await writeAdsHiddenCookieForUser(auth.user);
-  revalidatePath('/mypage/points');
+  revalidatePath('/mypage/coins');
   revalidatePath('/mypage/benefits');
 
   return {

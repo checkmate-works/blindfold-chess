@@ -1,15 +1,16 @@
 /**
- * Points Page (`/mypage/points`)
+ * Coins Page (コイン, `/mypage/coins`)
  *
  * @description
- * End-user view of point balance + history + ad_free redemption. The
- * companion to /mypage/benefits: benefits shows "what entitlements are
- * active right now" (driven by `user_grants`), while points shows "how
- * many points I have, where they came from, and how to spend them"
- * (driven by `point_events` / `user_point_balances`).
+ * End-user view of coin balance + history + ad_free redemption. "Coin" is
+ * the facing name for the points ledger — see the "Points / Coin Economy"
+ * note in apps/web/CLAUDE.md. The companion to /mypage/benefits: benefits
+ * shows "what entitlements are active right now" (driven by `user_grants`),
+ * while this shows "how many coins I have, where they came from, and how to
+ * spend them" (driven by `point_events` / `user_point_balances`).
  *
  * @flow
- * 1. User opens /mypage/points.
+ * 1. User opens /mypage/coins.
  * 2. Page reads the balance summary + history rows in one batched fetch.
  * 3. Renders three sections:
  *    - Balance card: the user's total Coin balance.
@@ -36,12 +37,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return createPageMetadata({
     params,
     namespace: 'MypagePoints',
-    path: 'mypage/points',
+    path: 'mypage/coins',
     omitDescription: true,
   });
 }
 
-export default async function PointsPage({ params }: Props) {
+export default async function CoinsPage({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'MypagePoints' });
 

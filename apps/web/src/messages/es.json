@@ -3003,7 +3003,20 @@
         "modReason": "Motivo",
         "modActor": "Autor",
         "modDate": "Fecha",
-        "adminActions": "Acciones de administrador"
+        "adminActions": "Acciones de administrador",
+        "coinSection": "Monedas",
+        "coinBalanceLabel": "Saldo",
+        "coinUnit": "monedas",
+        "coinCatEarned": "Ganadas",
+        "coinCatPromotional": "Promocional",
+        "coinCatPurchased": "Compradas",
+        "coinHistoryTitle": "Transacciones recientes",
+        "coinEvent": "Evento",
+        "coinAmount": "Cantidad",
+        "coinCategory": "Categoría",
+        "coinDate": "Fecha",
+        "noCoinActivity": "Aún no hay actividad de monedas.",
+        "viewAllCoins": "Ver todas las transacciones"
       }
     },
     "tabs": {
@@ -3327,16 +3340,38 @@
       "create": "Crear",
       "creating": "Creando..."
     },
-    "points": {
-      "title": "Puntos",
-      "navLabel": "Puntos",
-      "showing": "Mostrando {from}–{to} de {total} concesiones",
-      "empty": "Todavía no hay concesiones de puntos por staff.",
+    "coins": {
+      "title": "Monedas",
+      "navLabel": "Monedas",
+      "grant": "Conceder monedas",
+      "backToTransactions": "Volver a Monedas",
+      "showing": "Mostrando {from}–{to} de {total} transacciones",
+      "empty": "Ninguna transacción coincide con los filtros actuales.",
       "columns": {
         "user": "Usuario",
+        "event": "Evento",
         "amount": "Cantidad",
+        "category": "Categoría",
+        "source": "Origen",
         "reason": "Motivo",
-        "grantedAt": "Fecha"
+        "date": "Fecha"
+      },
+      "categoryLabels": {
+        "earned": "Ganadas",
+        "promotional": "Promocional",
+        "purchased": "Compradas"
+      },
+      "filters": {
+        "source": "Origen",
+        "category": "Categoría",
+        "direction": "Tipo",
+        "user": "ID de usuario",
+        "userPlaceholder": "Filtrar por UUID de usuario",
+        "all": "Todos",
+        "grantsOnly": "Concesiones (+)",
+        "spendsOnly": "Gastos (−)",
+        "apply": "Aplicar",
+        "clear": "Limpiar"
       }
     },
     "grants": {

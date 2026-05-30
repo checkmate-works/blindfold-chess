@@ -193,7 +193,7 @@ export const MAIA_GAME_SOURCE = 'maia_game';
  * so the writers and `classifyKind` in `get-history.ts` cannot drift.
  *
  * - `REDEMPTION_SOURCE`  — a point spend on an ad_free redemption.
- * - `ADMIN_GRANT_SOURCE` — a promotional grant issued from `/admin/points`.
+ * - `ADMIN_GRANT_SOURCE` — a promotional grant issued from `/admin/coins`.
  * - `PURCHASE_SOURCE`    — a paid point top-up. No purchase flow ships
  *                          yet; the value is reserved so `get-history`
  *                          can already classify such rows.

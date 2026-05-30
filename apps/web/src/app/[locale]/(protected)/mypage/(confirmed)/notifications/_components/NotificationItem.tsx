@@ -303,7 +303,7 @@ export function NotificationItem({ notification, currentUsername }: Props) {
       return '/mypage/benefits';
     }
     if (notification.type === 'point_grant' || notification.type === 'like_coin_grant') {
-      return '/mypage/points';
+      return '/mypage/coins';
     }
     return null;
   }

@@ -142,7 +142,7 @@ export default async function MypagePage({ params }: Props) {
 
       {/* Point balance chip — links to the detailed history + redemption page */}
       <Link
-        href="/mypage/points"
+        href="/mypage/coins"
         locale={locale}
         className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-border bg-card p-3 transition-all hover:border-primary/30"
       >

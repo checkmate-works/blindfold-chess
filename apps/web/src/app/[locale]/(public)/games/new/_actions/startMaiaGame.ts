@@ -51,7 +51,7 @@ export async function startMaiaGame(clientGameId: string): Promise<StartMaiaGame
   }
 
   // Balance moved — refresh the points page so the user sees it on return.
-  revalidatePath('/mypage/points');
+  revalidatePath('/mypage/coins');
 
   return { ok: true, charged: !result.alreadyCharged };
 }

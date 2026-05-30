@@ -161,10 +161,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                   {t('grants.navLabel')}
                 </Link>
                 <Link
-                  href="/admin/points"
+                  href="/admin/coins"
                   className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
                 >
-                  {t('points.navLabel')}
+                  {t('coins.navLabel')}
                 </Link>
                 <Link
                   href="/admin/achievements"

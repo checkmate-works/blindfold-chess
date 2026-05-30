@@ -47,7 +47,7 @@ export function MaiaPointInfoModal({ isOpen, onClose, cost, spendableBalance, lo
           <Button variant="secondary" onClick={onClose}>
             {t('close')}
           </Button>
-          <Button variant="primary" onClick={() => router.push(`/${locale}/mypage/points`)}>
+          <Button variant="primary" onClick={() => router.push(`/${locale}/mypage/coins`)}>
             {t('viewPoints')}
           </Button>
         </div>

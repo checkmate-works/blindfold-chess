@@ -17,7 +17,7 @@ export type PointsPageData = {
 };
 
 /**
- * Single batched fetch for the /mypage/points view. Reads the balance
+ * Single batched fetch for the /mypage/coins view. Reads the balance
  * summary, the daily creation-cap status, and the most recent history
  * rows in parallel; the +1 trick (fetch HISTORY_PAGE_SIZE+1 and slice)
  * lets the UI know whether more history exists without an extra count

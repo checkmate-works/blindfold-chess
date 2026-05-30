@@ -112,7 +112,7 @@ export default async function ThanksPage({ params, searchParams }: Props) {
             {t('continueButton')}
           </Button>
         </Link>
-        <Link href={`/${locale}/mypage/points`} className="block">
+        <Link href={`/${locale}/mypage/coins`} className="block">
           <Button asChild variant="outline" size="lg" fullWidth>
             {t('viewPointsButton')}
           </Button>

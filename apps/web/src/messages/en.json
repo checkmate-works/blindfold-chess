@@ -3245,7 +3245,20 @@
         "modReason": "Reason",
         "modActor": "Actor",
         "modDate": "Date",
-        "adminActions": "Admin Actions"
+        "adminActions": "Admin Actions",
+        "coinSection": "Coins",
+        "coinBalanceLabel": "Balance",
+        "coinUnit": "coins",
+        "coinCatEarned": "Earned",
+        "coinCatPromotional": "Promotional",
+        "coinCatPurchased": "Purchased",
+        "coinHistoryTitle": "Recent transactions",
+        "coinEvent": "Event",
+        "coinAmount": "Amount",
+        "coinCategory": "Category",
+        "coinDate": "Date",
+        "noCoinActivity": "No coin activity yet.",
+        "viewAllCoins": "View all transactions"
       }
     },
     "tabs": {
@@ -3569,16 +3582,38 @@
       "create": "Create",
       "creating": "Creating..."
     },
-    "points": {
-      "title": "Points",
-      "navLabel": "Points",
-      "showing": "Showing {from}–{to} of {total} grants",
-      "empty": "No admin point grants yet.",
+    "coins": {
+      "title": "Coins",
+      "navLabel": "Coins",
+      "grant": "Grant coins",
+      "backToTransactions": "Back to Coins",
+      "showing": "Showing {from}–{to} of {total} transactions",
+      "empty": "No transactions match the current filters.",
       "columns": {
         "user": "User",
+        "event": "Event",
         "amount": "Amount",
+        "category": "Category",
+        "source": "Source",
         "reason": "Reason",
-        "grantedAt": "Granted at"
+        "date": "Date"
+      },
+      "categoryLabels": {
+        "earned": "Earned",
+        "promotional": "Promotional",
+        "purchased": "Purchased"
+      },
+      "filters": {
+        "source": "Source",
+        "category": "Category",
+        "direction": "Direction",
+        "user": "User ID",
+        "userPlaceholder": "Filter by user UUID",
+        "all": "All",
+        "grantsOnly": "Grants (+)",
+        "spendsOnly": "Spends (−)",
+        "apply": "Apply",
+        "clear": "Clear"
       }
     },
     "grants": {

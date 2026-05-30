@@ -37,6 +37,10 @@ const SIGNUP_METHOD_LABEL_KEY = {
 export default async function AdminUserDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const t = await getTranslations({ locale: 'en', namespace: 'Admin' });
+  // The coin (points-ledger) entry kind labels are owned by the user-facing
+  // MypagePoints namespace; reuse them here so admin and user surfaces never
+  // drift on what e.g. `like_grant` is called.
+  const tKind = await getTranslations({ locale: 'en', namespace: 'MypagePoints.history.kind' });
 
   const adminClient = createAdminClient();
   const detail = await fetchUserDetail(adminClient, id);
@@ -53,7 +57,22 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
     ranks,
     currentRank,
     banReason,
+    coinBalance,
+    coinHistory,
   } = detail;
+
+  const coinCategoryLabel = (category: string) => {
+    switch (category) {
+      case 'earned':
+        return t('usersTable.detail.coinCatEarned');
+      case 'promotional':
+        return t('usersTable.detail.coinCatPromotional');
+      case 'purchased':
+        return t('usersTable.detail.coinCatPurchased');
+      default:
+        return category;
+    }
+  };
 
   const supabase = await createClient();
   const {
@@ -221,6 +240,76 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
           />
         </DetailSection>
       </div>
+
+      <DetailSection title={t('usersTable.detail.coinSection')}>
+        <div className="mb-4 flex flex-wrap items-end gap-x-8 gap-y-3">
+          <div>
+            <span className="text-xs text-muted-foreground">
+              {t('usersTable.detail.coinBalanceLabel')}
+            </span>
+            <div className="text-2xl font-semibold">
+              {coinBalance.total}{' '}
+              <span className="text-sm font-normal text-muted-foreground">
+                {t('usersTable.detail.coinUnit')}
+              </span>
+            </div>
+          </div>
+          <dl className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+            <div className="flex gap-1">
+              <dt>{t('usersTable.detail.coinCatEarned')}:</dt>
+              <dd className="font-mono text-foreground">{coinBalance.byCategory.earned}</dd>
+            </div>
+            <div className="flex gap-1">
+              <dt>{t('usersTable.detail.coinCatPromotional')}:</dt>
+              <dd className="font-mono text-foreground">{coinBalance.byCategory.promotional}</dd>
+            </div>
+            <div className="flex gap-1">
+              <dt>{t('usersTable.detail.coinCatPurchased')}:</dt>
+              <dd className="font-mono text-foreground">{coinBalance.byCategory.purchased}</dd>
+            </div>
+          </dl>
+        </div>
+
+        <p className="mb-2 text-sm font-medium">{t('usersTable.detail.coinHistoryTitle')}</p>
+        <AdminDataTable
+          headers={[
+            t('usersTable.detail.coinDate'),
+            t('usersTable.detail.coinEvent'),
+            t('usersTable.detail.coinAmount'),
+            t('usersTable.detail.coinCategory'),
+          ]}
+          items={coinHistory}
+          emptyMessage={t('usersTable.detail.noCoinActivity')}
+          renderRow={(entry) => (
+            <tr key={entry.id} className="border-t border-border">
+              <td className="px-4 py-3 text-xs text-muted-foreground">
+                {formatDateTime(entry.createdAt)}
+              </td>
+              <td className="px-4 py-3">{tKind(entry.kind)}</td>
+              <td
+                className={`px-4 py-3 font-mono ${
+                  entry.delta >= 0 ? 'text-success-soft-foreground' : 'text-destructive'
+                }`}
+              >
+                {entry.delta > 0 ? `+${entry.delta}` : entry.delta}
+              </td>
+              <td className="px-4 py-3 text-muted-foreground">
+                {coinCategoryLabel(entry.category)}
+              </td>
+            </tr>
+          )}
+        />
+
+        <div className="mt-3">
+          <Link
+            href={`/admin/coins?user=${authUser.id}`}
+            className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+          >
+            {t('usersTable.detail.viewAllCoins')}
+            <FaExternalLinkAlt className="h-3 w-3" />
+          </Link>
+        </div>
+      </DetailSection>
 
       <DetailSection title={t('usersTable.detail.adminActions')}>
         <div className="flex flex-wrap items-center gap-2">

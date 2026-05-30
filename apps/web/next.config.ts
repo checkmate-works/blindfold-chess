@@ -139,6 +139,17 @@ const nextConfig: NextConfig = {
         destination: '/:locale/guides/ranks/:slug/:page',
         permanent: true,
       },
+      // Coin page URL migration (added 2026-05-30).
+      // The in-app currency is "Coin" everywhere user-facing, so the personal
+      // wallet route moved from /mypage/points to /mypage/coins to match. The
+      // page is auth-gated (low external-link risk), but keep this redirect so
+      // bookmarks and previously-sent notification links still resolve.
+      // Safe to remove after 6 months if Search Console shows no traffic.
+      {
+        source: '/:locale/mypage/points',
+        destination: '/:locale/mypage/coins',
+        permanent: true,
+      },
     ];
   },
 

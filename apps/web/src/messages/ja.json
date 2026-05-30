@@ -3245,7 +3245,20 @@
         "modReason": "理由",
         "modActor": "実行者",
         "modDate": "日時",
-        "adminActions": "管理操作"
+        "adminActions": "管理操作",
+        "coinSection": "コイン",
+        "coinBalanceLabel": "残高",
+        "coinUnit": "コイン",
+        "coinCatEarned": "獲得",
+        "coinCatPromotional": "プロモーション",
+        "coinCatPurchased": "購入",
+        "coinHistoryTitle": "最近のトランザクション",
+        "coinEvent": "イベント",
+        "coinAmount": "増減",
+        "coinCategory": "カテゴリ",
+        "coinDate": "日時",
+        "noCoinActivity": "コインの履歴はまだありません。",
+        "viewAllCoins": "すべてのトランザクションを表示"
       }
     },
     "tabs": {
@@ -3569,16 +3582,38 @@
       "create": "作成",
       "creating": "作成中..."
     },
-    "points": {
-      "title": "ポイント付与",
-      "navLabel": "ポイント付与",
+    "coins": {
+      "title": "コイン",
+      "navLabel": "コイン",
+      "grant": "コインを付与",
+      "backToTransactions": "コインに戻る",
       "showing": "全 {total} 件中 {from}–{to} 件を表示",
-      "empty": "管理付与の履歴はまだありません。",
+      "empty": "条件に一致するトランザクションはありません。",
       "columns": {
         "user": "ユーザー",
-        "amount": "付与額",
+        "event": "イベント",
+        "amount": "増減",
+        "category": "カテゴリ",
+        "source": "ソース",
         "reason": "理由",
-        "grantedAt": "付与日時"
+        "date": "日時"
+      },
+      "categoryLabels": {
+        "earned": "獲得",
+        "promotional": "プロモーション",
+        "purchased": "購入"
+      },
+      "filters": {
+        "source": "ソース",
+        "category": "カテゴリ",
+        "direction": "種別",
+        "user": "ユーザーID",
+        "userPlaceholder": "ユーザーUUIDで絞り込み",
+        "all": "すべて",
+        "grantsOnly": "付与 (+)",
+        "spendsOnly": "消費 (−)",
+        "apply": "適用",
+        "clear": "クリア"
       }
     },
     "grants": {

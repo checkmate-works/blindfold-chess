@@ -466,6 +466,51 @@ A generic system for granting time-limited benefits to users. Supports ad-free a
 3. For automated (high-frequency) triggers, wrap the read + insert in a `db.transaction()` to prevent race conditions. The current admin_manual flow intentionally omits the transaction as it is low-frequency.
 4. Call `revalidateTag('grant-status')` after insert.
 
+## Points / Coin Economy (コイン)
+
+The in-app currency has **two names for one thing**, by deliberate design:
+
+- **"Coin"** — the product/brand name. This is the ONLY term users and staff
+  ever see (web UI, admin UI, FAQ, notifications, i18n copy).
+- **"points"** — the internal ledger primitive. Used only in the DB schema and
+  the `@/lib/points` service layer. Never surfaced to a human.
+
+They are the same unit, 1:1. There is no conversion between them.
+
+### Why two names
+
+1. **Disambiguation from EXP (経験値).** The app already has experience points
+   (`exp_events` / `user_exp`), which a user could also call "points." Naming
+   the spendable currency "Coin" keeps the two economies verbally distinct.
+2. **Brand vs. implementation.** `point_events` is a generic signed-delta
+   ledger (mirrors `exp_events`); "Coin" is the concrete thing that ledger
+   happens to back. Keeping the ledger name generic costs nothing and avoids a
+   large, risky rename of schema / RLS / FKs.
+
+### Layer map
+
+| Layer         | Term       | Concrete names                                                                  |
+| ------------- | ---------- | ------------------------------------------------------------------------------- |
+| DB schema     | **points** | `point_events`, `user_point_balances`, `point_redemptions`, `point_purchases`   |
+| Service layer | **points** | `@/lib/points`, `grantAdminPoints`, `getPointBalanceSummary`, `getPointHistory` |
+| Admin UI      | **Coin**   | route `/admin/coins`, nav "Coins", i18n `Admin.coins`                           |
+| User UI       | **Coin**   | `/mypage/coins`, FAQ `/coin`, i18n `coin` / `MypagePoints` (title "Coins")      |
+
+### Rules when extending
+
+- A new **facing surface** (page, label, copy) is always "Coin." Do NOT add a
+  user- or admin-visible string that says "Points."
+- New **ledger / service** code stays "points" (`point_events`, `@/lib/points`).
+- The `point_events.source` / `category` string values (`'admin_grant'`,
+  `'like_grant'`, `'maia_game'`, `'redemption'`, `'earned'`, …) and the
+  `MypagePoints.history.kind` i18n keys are **stored data values** — never
+  rename them; a rename would orphan existing rows. Map them to display labels
+  at the read layer instead (see `classifyKind` in `get-history.ts`).
+- Admin transaction visibility is a **read surface over `point_events`**, not a
+  new log: see `listPointEvents` (`@/lib/points`) and the per-user Coins card on
+  `/admin/users/[id]`. Do not duplicate coin movements into
+  `moderation_actions` / `user_activity_log` (that splits the source of truth).
+
 ## Glossary (Japanese ↔ English)
 
 The app was originally designed in Japanese, and the team still thinks about
@@ -474,35 +519,36 @@ domain terms to their English counterparts and points at the code that owns
 each concept, so that AI agents (and human readers) can locate the relevant
 files when a user refers to a concept in Japanese.
 
-| Japanese                      | English                                  | Where                                                                                                                             |
-| ----------------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| 実績 / 実績バッジ             | achievement / achievement badge          | `src/lib/achievements/`, `src/lib/db/data/achievements.ts`, `src/app/admin/achievements/`, `src/messages/*.json` (`achievements`) |
-| 感想戦                        | postmortem                               | `src/app/[locale]/(public)/games/play/postmortem/`                                                                                |
-| 目隠しチェス / 心眼チェス     | blindfold chess / Shingan Chess (brand)  | See "Title Suffix Rule" in this file; strings in `src/messages/*.json`                                                            |
-| 段級位                        | kyu/dan ranking (belt system)            | `src/lib/db/schema/tables.ts` (`ranks`, `userRanks`), `src/lib/db/data/ranks.ts`, `src/app/[locale]/(public)/ranks/`              |
-| 無級                          | Mukyu — "no rank" (default)              | `MUKYU_SLUG` in `src/lib/db/data/ranks.ts`                                                                                        |
-| 道場                          | Dojo — training hall                     | `src/app/[locale]/(public)/dojo/`                                                                                                 |
-| 約束組手                      | Yakusoku Kumite — move-sequence practice | `src/app/[locale]/(public)/practice/(free-play)/move-sequence/`                                                                   |
-| 合法手                        | legal move                               | `src/app/[locale]/(public)/practice/(challenge)/legal-moves/`                                                                     |
-| 正解手 / 代替正解             | solution move / alternative solution     | `puzzleSolutions` table in `src/lib/db/schema/tables.ts`; `src/app/[locale]/(public)/practice/(free-play)/puzzle/`                |
-| パズル                        | puzzle                                   | `src/app/[locale]/(public)/practice/(free-play)/puzzle/`, `src/app/admin/positions/puzzle/`                                       |
-| ポジション記憶                | position memory                          | `src/app/[locale]/(public)/practice/(free-play)/position-memory/`                                                                 |
-| ルートプランナー              | route planner                            | `src/app/[locale]/(public)/practice/(challenge)/route-planner/`                                                                   |
-| ダイアゴナルクイズ            | diagonal quiz                            | `src/app/[locale]/(public)/practice/(challenge)/diagonal-quiz/`                                                                   |
-| 座標クイズ                    | coordinate quiz                          | `src/app/[locale]/(public)/practice/(challenge)/coordinate-quiz/`                                                                 |
-| マスの色                      | square colors                            | `src/app/[locale]/(public)/practice/(challenge)/square-colors/`                                                                   |
-| ナイトツアー                  | knight tour                              | `src/app/[locale]/(public)/practice/(free-play)/knight-tour/`                                                                     |
-| 経験値 / 経験値イベント       | experience points (Exp) / exp events     | `src/lib/db/save-exp.ts`, `src/lib/db/get-exp-info-by-source.ts`, `expEvents` / `userExp` tables in `src/lib/db/schema/tables.ts` |
-| リーダーボード                | leaderboard                              | `src/app/[locale]/(public)/leaderboard/`, `src/lib/db/leaderboard-key.ts`                                                         |
-| チャレンジモード / フリー対局 | challenge mode / free-play mode          | `src/app/[locale]/(public)/practice/(challenge)/`, `src/app/[locale]/(public)/practice/(free-play)/`                              |
-| ミス上限 / 完走               | mistake limit / completion               | `MISTAKE_LIMIT` in `src/lib/challenge/constants.ts`                                                                               |
-| 特典 / 権限付与               | benefit / user grant                     | `src/lib/user-grants.ts`, `src/app/admin/grants/`, `src/app/[locale]/(protected)/mypage/(confirmed)/benefits/`                    |
-| モデレーション / 通報         | moderation / reporting                   | `moderationActions` table in `src/lib/db/schema/tables.ts`, `src/app/admin/`, `src/lib/ban.ts`                                    |
-| 記事                          | article                                  | `src/app/admin/articles/`, `src/app/[locale]/(public)/articles/`, `articles` / `articleImages` tables                             |
-| トピック / 投稿               | topic / post                             | `src/app/[locale]/(public)/topics/`, `topicPosts` table in `src/lib/db/schema/tables.ts`                                          |
-| チャンク                      | chunk (piece-coordination pattern)       | `src/app/[locale]/(public)/chunks/`, `src/lib/chunks/`, `chunks` table in `src/lib/db/schema/tables.ts`                           |
-| 下書き / 公開                 | draft / published (chunk lifecycle)      | `chunks.status` column; `publishChunkEntry` in `src/lib/chunks/user-chunk-mutations.ts` (publish is one-way)                      |
-| 編集リクエスト                | chunk edit request (Qiita-style)         | `chunkEditRequests` table; `src/lib/chunk-edit-requests/`; `src/app/[locale]/(public)/chunks/[slug]/_components/EditRequest*.tsx` |
+| Japanese                      | English                                  | Where                                                                                                                                |
+| ----------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| 実績 / 実績バッジ             | achievement / achievement badge          | `src/lib/achievements/`, `src/lib/db/data/achievements.ts`, `src/app/admin/achievements/`, `src/messages/*.json` (`achievements`)    |
+| 感想戦                        | postmortem                               | `src/app/[locale]/(public)/games/play/postmortem/`                                                                                   |
+| 目隠しチェス / 心眼チェス     | blindfold chess / Shingan Chess (brand)  | See "Title Suffix Rule" in this file; strings in `src/messages/*.json`                                                               |
+| 段級位                        | kyu/dan ranking (belt system)            | `src/lib/db/schema/tables.ts` (`ranks`, `userRanks`), `src/lib/db/data/ranks.ts`, `src/app/[locale]/(public)/ranks/`                 |
+| 無級                          | Mukyu — "no rank" (default)              | `MUKYU_SLUG` in `src/lib/db/data/ranks.ts`                                                                                           |
+| 道場                          | Dojo — training hall                     | `src/app/[locale]/(public)/dojo/`                                                                                                    |
+| 約束組手                      | Yakusoku Kumite — move-sequence practice | `src/app/[locale]/(public)/practice/(free-play)/move-sequence/`                                                                      |
+| 合法手                        | legal move                               | `src/app/[locale]/(public)/practice/(challenge)/legal-moves/`                                                                        |
+| 正解手 / 代替正解             | solution move / alternative solution     | `puzzleSolutions` table in `src/lib/db/schema/tables.ts`; `src/app/[locale]/(public)/practice/(free-play)/puzzle/`                   |
+| パズル                        | puzzle                                   | `src/app/[locale]/(public)/practice/(free-play)/puzzle/`, `src/app/admin/positions/puzzle/`                                          |
+| ポジション記憶                | position memory                          | `src/app/[locale]/(public)/practice/(free-play)/position-memory/`                                                                    |
+| ルートプランナー              | route planner                            | `src/app/[locale]/(public)/practice/(challenge)/route-planner/`                                                                      |
+| ダイアゴナルクイズ            | diagonal quiz                            | `src/app/[locale]/(public)/practice/(challenge)/diagonal-quiz/`                                                                      |
+| 座標クイズ                    | coordinate quiz                          | `src/app/[locale]/(public)/practice/(challenge)/coordinate-quiz/`                                                                    |
+| マスの色                      | square colors                            | `src/app/[locale]/(public)/practice/(challenge)/square-colors/`                                                                      |
+| ナイトツアー                  | knight tour                              | `src/app/[locale]/(public)/practice/(free-play)/knight-tour/`                                                                        |
+| 経験値 / 経験値イベント       | experience points (Exp) / exp events     | `src/lib/db/save-exp.ts`, `src/lib/db/get-exp-info-by-source.ts`, `expEvents` / `userExp` tables in `src/lib/db/schema/tables.ts`    |
+| リーダーボード                | leaderboard                              | `src/app/[locale]/(public)/leaderboard/`, `src/lib/db/leaderboard-key.ts`                                                            |
+| チャレンジモード / フリー対局 | challenge mode / free-play mode          | `src/app/[locale]/(public)/practice/(challenge)/`, `src/app/[locale]/(public)/practice/(free-play)/`                                 |
+| ミス上限 / 完走               | mistake limit / completion               | `MISTAKE_LIMIT` in `src/lib/challenge/constants.ts`                                                                                  |
+| 特典 / 権限付与               | benefit / user grant                     | `src/lib/user-grants.ts`, `src/app/admin/grants/`, `src/app/[locale]/(protected)/mypage/(confirmed)/benefits/`                       |
+| コイン / ポイント             | coin (facing) / points (ledger)          | See "Points / Coin Economy" above: `src/lib/points/`, `src/app/admin/coins/`, `src/app/[locale]/(public)/coin/`, `MypagePoints` i18n |
+| モデレーション / 通報         | moderation / reporting                   | `moderationActions` table in `src/lib/db/schema/tables.ts`, `src/app/admin/`, `src/lib/ban.ts`                                       |
+| 記事                          | article                                  | `src/app/admin/articles/`, `src/app/[locale]/(public)/articles/`, `articles` / `articleImages` tables                                |
+| トピック / 投稿               | topic / post                             | `src/app/[locale]/(public)/topics/`, `topicPosts` table in `src/lib/db/schema/tables.ts`                                             |
+| チャンク                      | chunk (piece-coordination pattern)       | `src/app/[locale]/(public)/chunks/`, `src/lib/chunks/`, `chunks` table in `src/lib/db/schema/tables.ts`                              |
+| 下書き / 公開                 | draft / published (chunk lifecycle)      | `chunks.status` column; `publishChunkEntry` in `src/lib/chunks/user-chunk-mutations.ts` (publish is one-way)                         |
+| 編集リクエスト                | chunk edit request (Qiita-style)         | `chunkEditRequests` table; `src/lib/chunk-edit-requests/`; `src/app/[locale]/(public)/chunks/[slug]/_components/EditRequest*.tsx`    |
 
 Terms that map one-to-one onto standard chess vocabulary (盤面 = board, マス =
 square, 駒 = piece, 手 = move, etc.) are intentionally omitted; they can be
