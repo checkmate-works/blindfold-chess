@@ -51,7 +51,7 @@ export default async function PreviewAnnouncementPage({
         <h1 className="text-2xl font-bold">{t('form.previewTitle')}</h1>
       </div>
 
-      <div className="max-w-2xl space-y-6">
+      <div className="space-y-6">
         <div>
           <h2 className="text-sm font-medium text-muted-foreground mb-2">
             {t('form.contentPreview')}

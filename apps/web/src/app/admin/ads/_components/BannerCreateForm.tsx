@@ -84,7 +84,10 @@ export function BannerCreateForm({ labels }: BannerCreateFormProps) {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4 max-w-xl">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-card border border-border rounded-lg p-6 space-y-4"
+      >
         <Field label={labels.slot} htmlFor="slot">
           <Input
             id="slot"

@@ -100,7 +100,7 @@ export function AnnouncementPreviewForm({
   };
 
   return (
-    <div className="max-w-2xl space-y-4">
+    <div className="space-y-4">
       <fieldset>
         <legend className="text-sm font-medium mb-2">{labels.status}</legend>
         <div className="flex items-center gap-3">

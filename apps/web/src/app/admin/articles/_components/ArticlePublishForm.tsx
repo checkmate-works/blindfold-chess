@@ -75,7 +75,7 @@ export function ArticlePublishForm({
   };
 
   return (
-    <div className="max-w-2xl space-y-4">
+    <div className="space-y-4">
       <Field label={labels.publishedAt} htmlFor="publishedAt">
         <Input
           id="publishedAt"
