@@ -311,6 +311,277 @@ describe('ChessBoard interactive mode — promotion picker', () => {
   });
 });
 
+describe('ChessBoard interactive mode — illegal-move reporting (onIllegalMove)', () => {
+  it('fires onIllegalMove on a destination click to an illegal empty square', () => {
+    const onMove = vi.fn();
+    const onIllegalMove = vi.fn();
+    const { container } = render(
+      <ChessBoard
+        fen={STARTING_FEN}
+        playerSide="white"
+        onMove={onMove}
+        onIllegalMove={onIllegalMove}
+      />
+    );
+
+    fireEvent.click(squareEl(container, 'e2')); // select
+    fireEvent.click(squareEl(container, 'e5')); // illegal (two squares too far)
+
+    expect(onMove).not.toHaveBeenCalled();
+    expect(onIllegalMove).toHaveBeenCalledOnce();
+  });
+
+  it('does not fire onIllegalMove when reselecting another own piece', () => {
+    const onMove = vi.fn();
+    const onIllegalMove = vi.fn();
+    const { container } = render(
+      <ChessBoard
+        fen={STARTING_FEN}
+        playerSide="white"
+        onMove={onMove}
+        onIllegalMove={onIllegalMove}
+      />
+    );
+
+    fireEvent.click(squareEl(container, 'e2')); // select e-pawn
+    fireEvent.click(squareEl(container, 'd2')); // switch to own d-pawn — a reselect, not a mistake
+
+    expect(onIllegalMove).not.toHaveBeenCalled();
+  });
+
+  it('does not fire onIllegalMove on a legal move', () => {
+    const onMove = vi.fn();
+    const onIllegalMove = vi.fn();
+    const { container } = render(
+      <ChessBoard
+        fen={STARTING_FEN}
+        playerSide="white"
+        onMove={onMove}
+        onIllegalMove={onIllegalMove}
+      />
+    );
+
+    fireEvent.click(squareEl(container, 'e2'));
+    fireEvent.click(squareEl(container, 'e4'));
+
+    expect(onMove).toHaveBeenCalledExactlyOnceWith('e4');
+    expect(onIllegalMove).not.toHaveBeenCalled();
+  });
+
+  it('does not fire onIllegalMove on the toggle-off (same-square) click', () => {
+    const onMove = vi.fn();
+    const onIllegalMove = vi.fn();
+    const { container } = render(
+      <ChessBoard
+        fen={STARTING_FEN}
+        playerSide="white"
+        onMove={onMove}
+        onIllegalMove={onIllegalMove}
+      />
+    );
+
+    fireEvent.click(squareEl(container, 'e2')); // select
+    fireEvent.click(squareEl(container, 'e2')); // deselect
+
+    expect(onIllegalMove).not.toHaveBeenCalled();
+  });
+
+  it('fires onIllegalMove on a drag-and-drop onto an illegal square', () => {
+    const onMove = vi.fn();
+    const onIllegalMove = vi.fn();
+    const { container } = render(
+      <ChessBoard
+        fen={STARTING_FEN}
+        playerSide="white"
+        onMove={onMove}
+        onIllegalMove={onIllegalMove}
+      />
+    );
+
+    const transfer = makeDataTransfer();
+    fireEvent.dragStart(pieceInSquare(container, 'e2'), { dataTransfer: transfer });
+    fireEvent.dragOver(squareEl(container, 'e5'), { dataTransfer: transfer });
+    fireEvent.drop(squareEl(container, 'e5'), { dataTransfer: transfer });
+
+    expect(onMove).not.toHaveBeenCalled();
+    expect(onIllegalMove).toHaveBeenCalledOnce();
+  });
+
+  it('does not fire onIllegalMove when a drag is dropped back on its origin', () => {
+    const onMove = vi.fn();
+    const onIllegalMove = vi.fn();
+    const { container } = render(
+      <ChessBoard
+        fen={STARTING_FEN}
+        playerSide="white"
+        onMove={onMove}
+        onIllegalMove={onIllegalMove}
+      />
+    );
+
+    const transfer = makeDataTransfer();
+    fireEvent.dragStart(pieceInSquare(container, 'e2'), { dataTransfer: transfer });
+    fireEvent.dragOver(squareEl(container, 'e2'), { dataTransfer: transfer });
+    fireEvent.drop(squareEl(container, 'e2'), { dataTransfer: transfer });
+
+    expect(onIllegalMove).not.toHaveBeenCalled();
+  });
+});
+
+describe('ChessBoard interactive mode — obfuscated counting (single-color / discs)', () => {
+  // A position where White's d-bishop on e2 is absolutely pinned to the king
+  // on e1 by the black rook on e8 — moving it sideways is illegal.
+  const PIN_FEN = '4r2k/8/8/8/8/8/4B3/4K3 w - - 0 1';
+
+  it('counts a first click onto the opponent piece (believed to be own)', () => {
+    const onMove = vi.fn();
+    const onIllegalMove = vi.fn();
+    const { container } = render(
+      <ChessBoard
+        fen={STARTING_FEN}
+        playerSide="white"
+        pieceColors="white-only"
+        onMove={onMove}
+        onIllegalMove={onIllegalMove}
+      />
+    );
+
+    fireEvent.click(squareEl(container, 'e7')); // opponent pawn, nothing selected yet
+
+    expect(onIllegalMove).toHaveBeenCalledOnce();
+    expect(onMove).not.toHaveBeenCalled();
+  });
+
+  it('does NOT count a first click onto an empty square', () => {
+    const onIllegalMove = vi.fn();
+    const { container } = render(
+      <ChessBoard
+        fen={STARTING_FEN}
+        playerSide="white"
+        pieceColors="white-only"
+        onMove={() => {}}
+        onIllegalMove={onIllegalMove}
+      />
+    );
+
+    fireEvent.click(squareEl(container, 'e4')); // empty, nothing selected
+
+    expect(onIllegalMove).not.toHaveBeenCalled();
+  });
+
+  it('counts trying to capture one own piece after a selection (no reselect in blindfold)', () => {
+    const onMove = vi.fn();
+    const onIllegalMove = vi.fn();
+    const { container } = render(
+      <ChessBoard
+        fen={STARTING_FEN}
+        playerSide="white"
+        pieceColors="white-only"
+        onMove={onMove}
+        onIllegalMove={onIllegalMove}
+      />
+    );
+
+    fireEvent.click(squareEl(container, 'e2')); // select own pawn
+    fireEvent.click(squareEl(container, 'd2')); // another own piece — illegal "capture"
+
+    expect(onIllegalMove).toHaveBeenCalledOnce();
+    expect(onMove).not.toHaveBeenCalled();
+  });
+
+  it('counts trying to move an absolutely-pinned piece', () => {
+    const onMove = vi.fn();
+    const onIllegalMove = vi.fn();
+    const { container } = render(
+      <ChessBoard
+        fen={PIN_FEN}
+        playerSide="white"
+        pieceColors="white-only"
+        onMove={onMove}
+        onIllegalMove={onIllegalMove}
+      />
+    );
+
+    fireEvent.click(squareEl(container, 'e2')); // select the pinned bishop
+    fireEvent.click(squareEl(container, 'd3')); // would be legal if not pinned
+
+    expect(onIllegalMove).toHaveBeenCalledOnce();
+    expect(onMove).not.toHaveBeenCalled();
+  });
+
+  it('still plays a legal move and does not count it', () => {
+    const onMove = vi.fn();
+    const onIllegalMove = vi.fn();
+    const { container } = render(
+      <ChessBoard
+        fen={STARTING_FEN}
+        playerSide="white"
+        pieceColors="white-only"
+        onMove={onMove}
+        onIllegalMove={onIllegalMove}
+      />
+    );
+
+    fireEvent.click(squareEl(container, 'e2'));
+    fireEvent.click(squareEl(container, 'e4'));
+
+    expect(onMove).toHaveBeenCalledExactlyOnceWith('e4');
+    expect(onIllegalMove).not.toHaveBeenCalled();
+  });
+});
+
+describe('ChessBoard interactive mode — obfuscation suppresses the legal-destination highlight', () => {
+  // The 'selectable' highlight applied to legal destinations (and the
+  // selected square) — see `Square`'s highlightClass.
+  const SELECTABLE_RING = 'ring-foreground/50';
+
+  it('highlights legal destinations on normal display', () => {
+    const { container } = render(
+      <ChessBoard fen={STARTING_FEN} playerSide="white" onMove={() => {}} />
+    );
+
+    fireEvent.click(squareEl(container, 'e2')); // select own pawn
+    expect(squareEl(container, 'e4').className).toContain(SELECTABLE_RING);
+  });
+
+  it('suppresses the highlight when pieces are shown as discs (pieceShapeMode)', () => {
+    const { container } = render(
+      <ChessBoard
+        fen={STARTING_FEN}
+        playerSide="white"
+        pieceShapeMode="circles-all"
+        onMove={() => {}}
+      />
+    );
+
+    fireEvent.click(squareEl(container, 'e2'));
+    expect(squareEl(container, 'e4').className).not.toContain(SELECTABLE_RING);
+  });
+
+  it('suppresses the highlight in single-color mode (pieceColors)', () => {
+    const { container } = render(
+      <ChessBoard
+        fen={STARTING_FEN}
+        playerSide="white"
+        pieceColors="white-only"
+        onMove={() => {}}
+      />
+    );
+
+    fireEvent.click(squareEl(container, 'e2'));
+    expect(squareEl(container, 'e4').className).not.toContain(SELECTABLE_RING);
+  });
+
+  it('suppresses the highlight when own pieces are hidden (showOwnPieces=false)', () => {
+    const { container } = render(
+      <ChessBoard fen={STARTING_FEN} playerSide="white" showOwnPieces={false} onMove={() => {}} />
+    );
+
+    fireEvent.click(squareEl(container, 'e2'));
+    expect(squareEl(container, 'e4').className).not.toContain(SELECTABLE_RING);
+  });
+});
+
 describe('ChessBoard interactive mode — onSquareClick backward compat', () => {
   it('forwards raw clicks to onSquareClick when onMove is not provided', () => {
     const onSquareClick = vi.fn();

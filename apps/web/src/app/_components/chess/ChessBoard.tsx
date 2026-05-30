@@ -77,6 +77,28 @@ type Props = {
    * for click handling.
    */
   onMove?: (san: string) => void;
+  /**
+   * Fired once per illegal move *attempt* in interactive mode. Without it
+   * the board only ever emits *legal* moves (via `onMove`), so illegal board
+   * attempts go entirely unrecorded; wiring it lets always-visible games
+   * count blindfold mistakes the same way the text / select / button input
+   * paths do. What counts depends on whether obfuscation is active (discs /
+   * single-color / hidden pieces) — see {@link obfuscated}:
+   *
+   * - Obfuscated: the player can't tell pieces apart, so counting is
+   *   aggressive. A first click / drag onto the *opponent's* piece (believed
+   *   to be one's own) counts; once a piece is selected, ANY non-legal target
+   *   counts — illegal square, capturing one's own piece, an uncapturable
+   *   opponent, or an (absolutely-pinned) piece the engine rejects. There is
+   *   no reselect idiom. An empty-square *first* click is NOT counted (it is
+   *   indistinguishable from a misclick / deselect).
+   * - Normal display: the lichess / chess.com idiom holds — clicking another
+   *   own piece reselects (not counted); only an illegal empty / opponent
+   *   destination after a selection counts.
+   *
+   * Drag-and-drop always counts a drop onto a non-legal square in either mode.
+   */
+  onIllegalMove?: () => void;
 };
 
 export const ChessBoard = memo(function ChessBoard({
@@ -97,10 +119,24 @@ export const ChessBoard = memo(function ChessBoard({
   className = '',
   annotations = null,
   onMove,
+  onIllegalMove,
 }: Props) {
   const themeColors = getBoardThemeColors(boardTheme);
   const interactive = onMove !== undefined;
   const ownColorChar = playerSide.charAt(0);
+
+  // True when any blindfold obfuscation is active: pieces shown as discs,
+  // forced to a single color, or hidden. In these modes the player cannot
+  // tell pieces apart, so (a) the legal-destination highlight is suppressed
+  // — showing where a selected piece can go would leak its identity — and
+  // (b) illegal-move attempts become possible and worth recording via
+  // `onIllegalMove`. With normal display the highlight stays (a sighted
+  // QoL aid, where illegal attempts are essentially impossible anyway).
+  const obfuscated =
+    pieceShapeMode !== 'normal' ||
+    pieceColors !== 'normal' ||
+    !showOwnPieces ||
+    !showOpponentPieces;
 
   const board = useMemo(() => {
     try {
@@ -138,14 +174,14 @@ export const ChessBoard = memo(function ChessBoard({
   // squares AND to validate clicks/drops before firing onMove. Empty when
   // no square is selected or when interactive mode is off.
   const legalDestinations = useMemo<string[]>(() => {
-    if (!interactive || !selectedSquare) return [];
+    if (!interactive || !selectedSquare || obfuscated) return [];
     try {
       const moves = getLegalMoves(fen, { verbose: true });
       return moves.filter((m) => m.from === selectedSquare).map((m) => m.to);
     } catch {
       return [];
     }
-  }, [fen, selectedSquare, interactive]);
+  }, [fen, selectedSquare, interactive, obfuscated]);
 
   const pieceAt = useCallback(
     (square: string): BoardPiece | null => {
@@ -243,6 +279,10 @@ export const ChessBoard = memo(function ChessBoard({
       if (!onMove) return;
       const candidates = findLegalMovesByCoords(fen, from, to);
       if (candidates.length === 0) {
+        // A drag-and-drop onto a non-legal square (including a drop onto an
+        // own piece — you cannot capture your own) is an explicit, deliberate
+        // attempt, so it always counts as one illegal move.
+        onIllegalMove?.();
         setSelectedSquare(null);
         return;
       }
@@ -254,7 +294,7 @@ export const ChessBoard = memo(function ChessBoard({
       setPromotionPending({ from, to, candidates });
       setSelectedSquare(null);
     },
-    [onMove, fen]
+    [onMove, fen, onIllegalMove]
   );
 
   // Click-to-move state machine. Runs only in interactive mode; when the
@@ -265,9 +305,19 @@ export const ChessBoard = memo(function ChessBoard({
       if (!onMove) return;
       const piece = pieceAt(square);
       const clickedOwn = piece !== null && piece.color === ownColorChar;
+      const clickedOpponent = piece !== null && piece.color !== ownColorChar;
 
       if (selectedSquare === null) {
-        if (clickedOwn) setSelectedSquare(square);
+        if (clickedOwn) {
+          setSelectedSquare(square);
+        } else if (obfuscated && clickedOpponent) {
+          // Blindfold modes: the player cannot tell the pieces apart, so
+          // trying to pick up the opponent's piece (believing it to be their
+          // own) is a genuine illegal-move attempt — count it. An empty-square
+          // first click is deliberately NOT counted: it is indistinguishable
+          // from a misclick or a deselect tap.
+          onIllegalMove?.();
+        }
         return;
       }
 
@@ -289,11 +339,27 @@ export const ChessBoard = memo(function ChessBoard({
         return;
       }
 
-      // Not a legal destination. Reselect if clicked another own piece,
-      // otherwise deselect entirely — matches lichess / chess.com idiom.
+      // Not a legal destination.
+      if (obfuscated) {
+        // Blindfold modes: a piece is already selected, so ANY click that is
+        // not its legal destination is a deliberate illegal-move attempt —
+        // an illegal square, capturing one's own piece, an uncapturable
+        // opponent piece, or moving an (absolutely-pinned) piece the engine
+        // rejects. There is no reselect idiom here — the player can't pick
+        // pieces apart visually — so the mistake is counted and the
+        // selection cleared; the next click starts a fresh selection.
+        onIllegalMove?.();
+        setSelectedSquare(null);
+        return;
+      }
+
+      // Normal display: keep the lichess / chess.com idiom. Clicking another
+      // own piece reselects (not a mistake); a click onto an empty / opponent
+      // square is a genuine illegal attempt, so count it and deselect.
+      if (!clickedOwn) onIllegalMove?.();
       setSelectedSquare(clickedOwn ? square : null);
     },
-    [onMove, fen, ownColorChar, pieceAt, selectedSquare]
+    [onMove, fen, ownColorChar, pieceAt, selectedSquare, onIllegalMove, obfuscated]
   );
 
   const handleBoardClick = useCallback(
