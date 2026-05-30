@@ -13,8 +13,6 @@ import { Divider } from '@/app/[locale]/_components';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { TUTORIAL_SKIP_CONFIG } from '../../../_lib/tutorial-skip-config';
-
 type Props = {
   locale: Locale;
 };
@@ -29,12 +27,10 @@ export function BoardSymmetryTutorial({ locale }: Props) {
   const [step, setStep] = useState<TutorialStep>('intro');
 
   const handleStartChallenge = () => {
-    localStorage.setItem(TUTORIAL_SKIP_CONFIG.boardSymmetry.storageKey, 'true');
     router.push(`/${locale}/practice/board-symmetry/challenge`);
   };
 
   const handleSwitchToTraining = () => {
-    localStorage.setItem(TUTORIAL_SKIP_CONFIG.boardSymmetry.storageKey, 'true');
     router.push(`/${locale}/practice/board-symmetry/training`);
   };
 

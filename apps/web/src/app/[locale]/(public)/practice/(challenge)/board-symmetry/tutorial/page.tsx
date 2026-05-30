@@ -1,6 +1,5 @@
 import dynamic from 'next/dynamic';
 
-import { ModuleTutorialSkipLink } from '@/app/[locale]/(public)/practice/_components/TutorialSkipLink';
 import { createPracticeTutorialPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeSessionPages';
 
 const BoardSymmetryTutorial = dynamic(() =>
@@ -15,7 +14,6 @@ const { generateMetadata, generateStaticParams, Page } = createPracticeTutorialP
     { labelKey: 'boardSymmetry.title', href: '/practice/board-symmetry' },
     { labelKey: 'boardSymmetry.tutorial.title' },
   ],
-  renderSkipLink: (locale) => <ModuleTutorialSkipLink locale={locale} moduleId="boardSymmetry" />,
   renderTutorial: (locale) => <BoardSymmetryTutorial locale={locale} />,
 });
 

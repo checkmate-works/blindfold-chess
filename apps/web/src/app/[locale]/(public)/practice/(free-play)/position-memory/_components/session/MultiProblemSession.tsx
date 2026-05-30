@@ -8,7 +8,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { SessionMode } from '../../_lib/machines/types';
 import { buildMultiResultUrl } from '../../_lib/result-url';
-import { type DisplayMode, TUTORIAL_SKIPPED_KEY } from '../../_lib/session-config';
+import { type DisplayMode } from '../../_lib/session-config';
 import {
   PositionMemorySessionView,
   type SessionCompletePayload,
@@ -85,7 +85,6 @@ export function MultiProblemSession({
   );
 
   const handleFinishTutorial = useCallback(() => {
-    localStorage.setItem(TUTORIAL_SKIPPED_KEY, 'true');
     window.location.href = `/${locale}/practice/position-memory`;
   }, [locale]);
 

@@ -669,7 +669,6 @@
       "tutorial": {
         "title": "Tutorial",
         "description": "Aprende los tres tipos de simetría en el tablero de ajedrez: Columna, Fila y Simetría central.",
-        "skip": "Saltar",
         "previous": "Anterior",
         "next": "Siguiente",
         "start": "Iniciar",
@@ -978,8 +977,7 @@
         "selectToPreview": "Selecciona una posición para previsualizar",
         "settings": "Configuración del Tutorial",
         "settingsDescription": "{timeLimit} segundos para memorizar, {problemCount} problema",
-        "start": "¡Ya la memoricé!",
-        "skip": "Saltar"
+        "start": "¡Ya la memoricé!"
       },
       "tutorialComplete": "¡Esos son los fundamentos!\nPrueba otros problemas o desafíate con posiciones de tus propias partidas.",
       "finishTutorial": "Finalizar Tutorial",
@@ -1276,12 +1274,18 @@
         "description": "El Recorrido del Caballo es un rompecabezas clásico de ajedrez.\n\nUsando un caballo, intenta visitar las 64 casillas del tablero exactamente una vez.",
         "exampleTitle": "Aquí hay un ejemplo de solución",
         "startHint": "Para el entrenamiento de ajedrez a ciegas, es efectivo responder usando solo coordenadas mientras visualizas el tablero en tu mente, pero empecemos jugando con el tablero visible.",
-        "start": "Intentar",
-        "skip": "Saltar"
+        "start": "Intentar"
       },
       "tutorialComplete": "¡Esos son los fundamentos!\nCuando te sientas cómodo, intenta aleatorizar la casilla inicial o desafíate con el modo a ciegas.",
       "finishTutorial": "Finalizar Tutorial",
       "viewTutorial": "Ver Tutorial",
+      "help": {
+        "label": "Ayuda",
+        "overview": {
+          "title": "¿Qué es el Recorrido del Caballo?",
+          "description": "Un ejercicio de entrenamiento en el que mueves un caballo para visitar las 64 casillas exactamente una vez.\nEntrena tu sentido del movimiento del caballo y la geometría del tablero, por lo que practicar con constancia mejora tus habilidades de visualización."
+        }
+      },
       "relatedArticles": "Artículos Relacionados",
       "articles": {
         "knightTour": {
@@ -1368,15 +1372,17 @@
       "tutorial": {
         "title": "Tutorial",
         "description": "Practica la lectura de notación FEN y la recreación de posiciones en el tablero.",
-        "start": "Colocar Piezas",
-        "skip": "Saltar"
+        "start": "Colocar Piezas"
       },
       "tutorialComplete": "¡Esos son los fundamentos!\nPractica la lectura de notación FEN con diversas posiciones.",
       "finishTutorial": "Finalizar Tutorial",
-      "resetSettings": "Restablecer Configuración",
-      "resetSettingsConfirm": {
-        "title": "¿Restablecer Configuración?",
-        "message": "Todos los ajustes se restablecerán y serás redirigido al tutorial."
+      "viewTutorial": "Ver Tutorial",
+      "help": {
+        "label": "Ayuda",
+        "overview": {
+          "title": "¿Qué es la Reconstrucción FEN?",
+          "description": "Un ejercicio de entrenamiento en el que lees una notación FEN y recreas la posición en el tablero.\nEntrena tu capacidad de convertir la notación en una imagen mental del tablero, por lo que practicar con constancia mejora tus habilidades de visualización."
+        }
       },
       "cancel": "Cancelar"
     },
@@ -1460,7 +1466,6 @@
         "start": "Intentar",
         "next": "Siguiente",
         "previous": "Atrás",
-        "skip": "Saltar",
         "complete": "¡Esos son los fundamentos!\nPrueba entrenar con diferentes piezas y distancias.",
         "restart": "Reiniciar",
         "startChallenge": "Iniciar Desafío"
@@ -1557,7 +1562,6 @@
       },
       "tutorial": {
         "title": "Tutorial",
-        "skip": "Saltar",
         "steps": {
           "diagonal": {
             "title": "¿Qué es una Diagonal?",

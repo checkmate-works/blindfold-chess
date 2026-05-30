@@ -25,13 +25,16 @@
  * - Warnsdorff's Rule: Heuristic that prioritizes squares with fewer unvisited neighbors
  */
 import { createPracticeTopPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeTopPage';
+import { buildPracticeIntroHelpTour } from '@/app/[locale]/(public)/practice/_lib/practice-help-tour';
 
 import { KnightTourPageContent } from './_components/KnightTourPageContent';
 
 const { generateMetadata, Page } = createPracticeTopPage({
   i18nKey: 'knightTour',
   canonicalPath: 'practice/knight-tour',
-  renderSetup: (locale) => <KnightTourPageContent locale={locale} />,
+  renderSetup: () => <KnightTourPageContent />,
+  renderTitleAction: (t, locale) =>
+    buildPracticeIntroHelpTour(t, 'knightTour', 'knight-tour', locale),
   renderArticles: () => null,
 });
 

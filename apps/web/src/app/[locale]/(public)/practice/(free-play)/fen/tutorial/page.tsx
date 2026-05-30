@@ -1,6 +1,5 @@
 import dynamic from 'next/dynamic';
 
-import { ModuleTutorialSkipLink } from '@/app/[locale]/(public)/practice/_components/TutorialSkipLink';
 import { createPracticeTutorialPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeSessionPages';
 
 const FenTutorial = dynamic(() =>
@@ -15,7 +14,6 @@ const { generateMetadata, generateStaticParams, Page } = createPracticeTutorialP
     { labelKey: 'fen.title', href: '/practice/fen' },
     { labelKey: 'fen.tutorial.title' },
   ],
-  renderSkipLink: (locale) => <ModuleTutorialSkipLink locale={locale} moduleId="fen" />,
   renderTutorial: (locale) => <FenTutorial locale={locale} />,
 });
 

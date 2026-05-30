@@ -1,20 +1,18 @@
 'use client';
 
-import { useState } from 'react';
-
 import { useRouter } from 'next/navigation';
 
 import { BoardSkeleton, Button } from '@/app/_components';
+import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { validateFenFormat as validateFEN } from '@blindfold-chess/features/chess-core/fen';
 import { FaPlay } from 'react-icons/fa';
 
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
-import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { TUTORIAL_SKIP_CONFIG } from '../../../_lib/tutorial-skip-config';
 import type { PresetPosition } from '../_data/positions';
 import presetPositions from '../_data/presetPositions.json';
 import { useFenSettings } from '../_hooks/use-fen-settings';
@@ -29,7 +27,6 @@ export function FenSetup({ locale }: Props) {
   const t = useTranslations('practice.fen');
   const router = useRouter();
   const { preferences, isLoaded } = useGamePreferences();
-  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
   const {
     problemCount,
@@ -76,16 +73,9 @@ export function FenSetup({ locale }: Props) {
     router.push(`/${locale}/practice/fen/session?${params.toString()}#fen-session`);
   };
 
-  const handleResetConfirm = () => {
-    localStorage.removeItem('fenPracticeSettings');
-    localStorage.removeItem(TUTORIAL_SKIP_CONFIG.fen.storageKey);
-    setIsResetConfirmOpen(false);
-    router.push(`/${locale}/practice/fen/tutorial`);
-  };
-
   return (
     <>
-      <div className="mb-8">
+      <div className="mb-8" data-tour-id="fen-intro">
         <div className="space-y-6">
           {/* Problem Source */}
           <div>
@@ -160,12 +150,16 @@ export function FenSetup({ locale }: Props) {
         >
           {t('start')}
         </Button>
-      </div>
 
-      <div className="mt-8 flex justify-end">
-        <Button variant="destructive" onClick={() => setIsResetConfirmOpen(true)}>
-          {t('resetSettings')}
-        </Button>
+        <div className="mt-4 text-center">
+          <Link
+            href="/practice/fen/tutorial"
+            locale={locale}
+            className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}
+          >
+            {t('viewTutorial')}
+          </Link>
+        </div>
       </div>
 
       <div className="mt-8 space-y-3">
@@ -178,17 +172,6 @@ export function FenSetup({ locale }: Props) {
           locale={locale}
         />
       </div>
-
-      <ConfirmationModal
-        isOpen={isResetConfirmOpen}
-        title={t('resetSettingsConfirm.title')}
-        message={t('resetSettingsConfirm.message')}
-        confirmText={t('resetSettings')}
-        cancelText={t('cancel')}
-        confirmVariant="danger"
-        onConfirm={handleResetConfirm}
-        onCancel={() => setIsResetConfirmOpen(false)}
-      />
     </>
   );
 }

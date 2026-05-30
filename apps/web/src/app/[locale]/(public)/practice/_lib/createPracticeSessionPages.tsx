@@ -227,8 +227,6 @@ type TutorialPageConfig = {
   usePagePanel?: boolean;
   /** Render the section title. Receives translation function. Defaults to SectionTitle with tutorial.title. */
   renderSectionTitle?: (t: Awaited<ReturnType<typeof getTranslations>>) => ReactNode;
-  /** Render the tutorial skip link. Receives locale. */
-  renderSkipLink: (locale: Locale) => ReactNode;
   /** Render the tutorial content. Receives locale. */
   renderTutorial: (locale: Locale) => ReactNode;
 };
@@ -279,7 +277,6 @@ export function createPracticeTutorialPage(config: TutorialPageConfig) {
           {sectionTitle ?? (
             <SectionTitle>{t(`practice.${config.i18nKey}.tutorial.title`)}</SectionTitle>
           )}
-          <div className="text-right">{config.renderSkipLink(locale)}</div>
           {config.renderTutorial(locale)}
         </PageLayout>
       );
@@ -291,7 +288,6 @@ export function createPracticeTutorialPage(config: TutorialPageConfig) {
         {sectionTitle ?? (
           <SectionTitle>{t(`practice.${config.i18nKey}.tutorial.title`)}</SectionTitle>
         )}
-        <div className="text-right">{config.renderSkipLink(locale)}</div>
         {config.renderTutorial(locale)}
         <Divider />
         <Breadcrumb items={breadcrumbItems} locale={locale} />

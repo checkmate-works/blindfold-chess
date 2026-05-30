@@ -673,7 +673,6 @@
       "tutorial": {
         "title": "チュートリアル",
         "description": "チェス盤の3種類の対称性（ファイル、ランク、点対称）について学びます。",
-        "skip": "スキップ",
         "previous": "戻る",
         "next": "次へ",
         "start": "始める",
@@ -982,8 +981,7 @@
         "selectToPreview": "プレビューする局面を選択してください",
         "settings": "チュートリアル設定",
         "settingsDescription": "記憶時間{timeLimit}秒、{problemCount}問",
-        "start": "覚えた！",
-        "skip": "スキップ"
+        "start": "覚えた！"
       },
       "tutorialComplete": "基本的な使い方は以上です。\n他の問題や、自分がプレイしたゲームのポジションの記憶にも挑戦してみましょう。",
       "finishTutorial": "チュートリアルを終了する",
@@ -1280,12 +1278,18 @@
         "description": "ナイトツアーはチェスの古典的なパズルです。\n\nナイトを使って、盤上の64マス全てをちょうど1回ずつ訪問することを目指します。",
         "exampleTitle": "以下は回答例です",
         "startHint": "目隠しチェスのトレーニングとしては座標の指定だけで回答を行い、盤面は脳内でイメージする方式が有効ですが、まずは盤面を見ながらやってみましょう。",
-        "start": "試してみる",
-        "skip": "スキップ"
+        "start": "試してみる"
       },
       "tutorialComplete": "基本的な使い方は以上です。\n慣れてきたら開始マスをランダムにしたり、ブラインドモードへ挑戦したりしてみましょう。",
       "finishTutorial": "チュートリアルを終了",
       "viewTutorial": "チュートリアルを見る",
+      "help": {
+        "label": "ヘルプ",
+        "overview": {
+          "title": "ナイトツアーとは",
+          "description": "ナイトを動かして64マス全てを1回ずつ訪問するトレーニングです。\nナイトの動きや盤面の幾何感覚を鍛えることができるため、継続するとビジュアライゼーションスキルの向上が図れます。"
+        }
+      },
       "relatedArticles": "関連記事",
       "articles": {
         "knightTour": {
@@ -1372,15 +1376,17 @@
       "tutorial": {
         "title": "チュートリアル",
         "description": "FEN記法を読んで盤面を再現するトレーニングです。",
-        "start": "駒を配置する",
-        "skip": "スキップ"
+        "start": "駒を配置する"
       },
       "tutorialComplete": "基本的な使い方は以上です。\n様々な局面でFEN記法の読み取りを練習しましょう。",
       "finishTutorial": "チュートリアルを終了する",
-      "resetSettings": "設定をリセット",
-      "resetSettingsConfirm": {
-        "title": "設定をリセットしますか？",
-        "message": "すべての設定がリセットされ、チュートリアル画面に戻ります。"
+      "viewTutorial": "チュートリアルを見る",
+      "help": {
+        "label": "ヘルプ",
+        "overview": {
+          "title": "FEN再構築とは",
+          "description": "FEN記法を読んでポジションを盤上に再現するトレーニングです。\n記法を盤面のイメージへ変換する力を鍛えることができるため、継続するとビジュアライゼーションスキルの向上が図れます。"
+        }
       },
       "cancel": "キャンセル"
     },
@@ -1464,7 +1470,6 @@
         "start": "試してみる",
         "next": "次へ",
         "previous": "戻る",
-        "skip": "スキップ",
         "complete": "基本的な使い方は以上です。\n様々な駒や距離でトレーニングしてみましょう。",
         "restart": "もう一度",
         "startChallenge": "チャレンジを開始"
@@ -1561,7 +1566,6 @@
       },
       "tutorial": {
         "title": "チュートリアル",
-        "skip": "スキップ",
         "steps": {
           "diagonal": {
             "title": "対角線とは？",

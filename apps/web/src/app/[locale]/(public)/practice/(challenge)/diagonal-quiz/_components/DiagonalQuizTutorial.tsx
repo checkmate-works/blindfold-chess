@@ -15,7 +15,6 @@ import { Divider } from '@/app/[locale]/_components';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { TUTORIAL_SKIP_CONFIG } from '../../../_lib/tutorial-skip-config';
 import { DiagonalQuizPlaying } from '../challenge/_components/DiagonalQuizPlaying';
 
 type Props = {
@@ -103,12 +102,10 @@ export function DiagonalQuizTutorial({ locale }: Props) {
   }, []);
 
   const handleStartChallenge = () => {
-    localStorage.setItem(TUTORIAL_SKIP_CONFIG.diagonalQuiz.storageKey, 'true');
     router.push(`/${locale}/practice/diagonal-quiz/challenge`);
   };
 
   const handleSwitchToTraining = () => {
-    localStorage.setItem(TUTORIAL_SKIP_CONFIG.diagonalQuiz.storageKey, 'true');
     router.push(`/${locale}/practice/diagonal-quiz/training`);
   };
 

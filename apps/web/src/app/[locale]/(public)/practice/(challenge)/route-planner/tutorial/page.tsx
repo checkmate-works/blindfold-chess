@@ -1,6 +1,5 @@
 import dynamic from 'next/dynamic';
 
-import { ModuleTutorialSkipLink } from '@/app/[locale]/(public)/practice/_components/TutorialSkipLink';
 import { createPracticeTutorialPage } from '@/app/[locale]/(public)/practice/_lib/createPracticeSessionPages';
 
 const RoutePlannerTutorial = dynamic(() =>
@@ -14,7 +13,6 @@ const { generateMetadata, generateStaticParams, Page } = createPracticeTutorialP
     { labelKey: 'routePlanner.title', href: '/practice/route-planner' },
     { labelKey: 'routePlanner.tutorial.title' },
   ],
-  renderSkipLink: (locale) => <ModuleTutorialSkipLink locale={locale} moduleId="routePlanner" />,
   renderTutorial: (locale) => <RoutePlannerTutorial locale={locale} />,
 });
 

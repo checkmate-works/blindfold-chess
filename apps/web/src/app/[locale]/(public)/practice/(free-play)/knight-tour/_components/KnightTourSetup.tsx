@@ -48,7 +48,7 @@ export function KnightTourSetup({
 
   return (
     <div>
-      <div className="mb-8">
+      <div className="mb-8" data-tour-id="knight-tour-intro">
         <SectionTitle className="mb-4">{t('settings')}</SectionTitle>
 
         <div className="mb-6">
