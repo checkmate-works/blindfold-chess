@@ -1,5 +1,6 @@
 'use client';
 
+import { Field, Input, Select, Textarea } from '@/app/admin/_components/forms';
 import { LuX } from 'react-icons/lu';
 
 type ArticleMetadataPanelLabels = {
@@ -56,15 +57,11 @@ export function ArticleMetadataPanel({
           </button>
         </div>
 
-        <div>
-          <label htmlFor="categoryId" className="block text-sm font-medium mb-1">
-            {labels.category}
-          </label>
-          <select
+        <Field label={labels.category} htmlFor="categoryId">
+          <Select
             id="categoryId"
             value={categoryId}
             onChange={(e) => onCategoryIdChange(e.target.value)}
-            className="w-full border border-border rounded px-3 py-2 text-sm bg-card text-foreground"
           >
             <option value="">{labels.categoryNone}</option>
             {categories.map((cat) => (
@@ -72,51 +69,41 @@ export function ArticleMetadataPanel({
                 {cat.name}
               </option>
             ))}
-          </select>
-        </div>
+          </Select>
+        </Field>
 
-        <div>
-          <label htmlFor="excerpt" className="block text-sm font-medium mb-1">
-            {labels.excerpt}
-          </label>
-          <textarea
+        <Field label={labels.excerpt} htmlFor="excerpt">
+          <Textarea
             id="excerpt"
             value={excerpt}
             onChange={(e) => onExcerptChange(e.target.value)}
             placeholder={labels.excerptPlaceholder}
-            className="w-full border border-border rounded px-3 py-2 text-sm bg-card text-foreground resize-none"
+            className="resize-none"
             rows={3}
           />
-        </div>
+        </Field>
 
-        <div>
-          <label htmlFor="description" className="block text-sm font-medium mb-1">
-            {labels.description}
-          </label>
-          <textarea
+        <Field label={labels.description} htmlFor="description">
+          <Textarea
             id="description"
             value={description}
             onChange={(e) => onDescriptionChange(e.target.value)}
             placeholder={labels.descriptionPlaceholder}
-            className="w-full border border-border rounded px-3 py-2 text-sm bg-card text-foreground resize-none"
+            className="resize-none"
             rows={3}
           />
-        </div>
+        </Field>
 
-        <div>
-          <label htmlFor="icon" className="block text-sm font-medium mb-1">
-            {labels.icon}
-          </label>
-          <input
+        <Field label={labels.icon} htmlFor="icon">
+          <Input
             id="icon"
             type="text"
             value={icon}
             onChange={(e) => onIconChange(e.target.value)}
             placeholder={labels.iconPlaceholder}
-            className="w-full border border-border rounded px-3 py-2 text-sm bg-card text-foreground"
             maxLength={10}
           />
-        </div>
+        </Field>
       </div>
     </div>
   );

@@ -31,6 +31,7 @@ import {
 
 import { createAdminClient } from '@/lib/supabase/admin';
 
+import { AdminPageHeader } from '../_components/AdminPageHeader';
 import { ProviderFilter } from './_components/ProviderFilter';
 import { StatsTab } from './_components/StatsTab';
 import { StatusFilter } from './_components/StatusFilter';
@@ -106,7 +107,7 @@ export default async function AdminUsersPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">{t('users')}</h1>
+      <AdminPageHeader breadcrumbs={[{ label: t('users') }]} />
 
       <UsernameFilter
         labels={{

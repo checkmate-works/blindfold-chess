@@ -1,5 +1,6 @@
 'use client';
 
+import { Field, Select } from '@/app/admin/_components/forms';
 import { parseAsInteger, parseAsString, useQueryStates } from 'nuqs';
 
 type StatusFilterProps = {
@@ -20,11 +21,10 @@ export function StatusFilter({ labels }: StatusFilterProps) {
   });
 
   return (
-    <div>
-      <label htmlFor="status-filter" className="block text-sm font-medium mb-1">
-        {labels.filterByStatus}
-      </label>
-      <select
+    <Field label={labels.filterByStatus} htmlFor="status-filter">
+      <Select
+        surface="card"
+        fullWidth={false}
         id="status-filter"
         value={status}
         onChange={(e) => {
@@ -33,14 +33,13 @@ export function StatusFilter({ labels }: StatusFilterProps) {
             { history: 'push', shallow: false }
           );
         }}
-        className="border border-border rounded px-3 py-2 text-sm bg-card"
       >
         <option value="">{labels.allStatuses}</option>
         <option value="active">{labels.active}</option>
         <option value="banned">{labels.banned}</option>
         <option value="anonymous">{labels.anonymous}</option>
         <option value="deleted">{labels.deleted}</option>
-      </select>
-    </div>
+      </Select>
+    </Field>
   );
 }

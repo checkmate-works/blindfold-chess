@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
+import { Button, Field, Input, Select } from '@/app/admin/_components/forms';
 import type { User } from '@supabase/supabase-js';
 import { and, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
@@ -9,6 +10,7 @@ import { getPaginationParams } from '@/lib/pagination';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 import { AdminDataTable } from '../_components/AdminDataTable';
+import { AdminPageHeader } from '../_components/AdminPageHeader';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
 import { loadUsersEmailMap } from '../_lib/users-email-map';
 
@@ -130,19 +132,17 @@ export default async function AdminAuditLogPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">{t('auditLog')}</h1>
+      <AdminPageHeader breadcrumbs={[{ label: t('auditLog') }]} />
 
       {/* Filters */}
       <form className="flex gap-4 mb-6 items-end">
-        <div>
-          <label htmlFor="action-filter" className="block text-sm font-medium mb-1">
-            {t('auditLogTable.filterByAction')}
-          </label>
-          <select
+        <Field label={t('auditLogTable.filterByAction')} htmlFor="action-filter">
+          <Select
+            surface="card"
+            fullWidth={false}
             id="action-filter"
             name="action"
             defaultValue={actionFilter}
-            className="border border-border rounded px-3 py-2 text-sm bg-card"
           >
             <option value="">{t('auditLogTable.allActions')}</option>
             <option value="ban">ban</option>
@@ -152,27 +152,22 @@ export default async function AdminAuditLogPage({
             <option value="create_grant">create_grant</option>
             <option value="revoke_grant">revoke_grant</option>
             <option value="create_point_grant">create_point_grant</option>
-          </select>
-        </div>
-        <div>
-          <label htmlFor="user-filter" className="block text-sm font-medium mb-1">
-            {t('auditLogTable.filterByUser')}
-          </label>
-          <input
+          </Select>
+        </Field>
+        <Field label={t('auditLogTable.filterByUser')} htmlFor="user-filter">
+          <Input
+            surface="card"
+            fullWidth={false}
             id="user-filter"
             name="user"
             type="text"
             defaultValue={userFilter}
             placeholder="email or username"
-            className="border border-border rounded px-3 py-2 text-sm bg-card"
           />
-        </div>
-        <button
-          type="submit"
-          className="px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-        >
+        </Field>
+        <Button type="submit" variant="primary">
           Filter
-        </button>
+        </Button>
       </form>
 
       <AdminDataTable

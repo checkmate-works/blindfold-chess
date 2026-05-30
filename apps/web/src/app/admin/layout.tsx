@@ -4,7 +4,6 @@ import { NavigationGuardProvider } from 'next-navigation-guard';
 import { Inter } from 'next/font/google';
 import { headers } from 'next/headers';
 import Image from 'next/image';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { EnvironmentRibbon } from '@/app/_components/EnvironmentRibbon';
@@ -19,6 +18,7 @@ import { ThemeProvider, ThemeScript } from '@/lib/theme';
 import { ToastProvider } from '@/app/[locale]/_contexts/ToastContext';
 
 import '../globals.css';
+import { type AdminNavGroup, AdminSidebarNav } from './_components/AdminSidebarNav';
 import { AdminToastContainer } from './_components/AdminToastContainer';
 import { ThemeToggle } from './_components/ThemeToggle';
 
@@ -56,6 +56,52 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const t = await getTranslations({ locale: 'en', namespace: 'Admin' });
   const nonce = (await headers()).get('x-nonce') ?? undefined;
 
+  // Sidebar nav: grouped for scannability. Item labels come from i18n (resolved
+  // here on the server); group headings are plain English by the admin
+  // English-only convention. Active-state highlighting is handled client-side
+  // in AdminSidebarNav via usePathname.
+  const navGroups: AdminNavGroup[] = [
+    { links: [{ href: '/admin', label: t('dashboard') }] },
+    {
+      heading: 'Users & Moderation',
+      links: [
+        { href: '/admin/users', label: t('users') },
+        { href: '/admin/audit-log', label: t('auditLog') },
+        { href: '/admin/activity-log', label: t('activityLog') },
+      ],
+    },
+    {
+      // Developer-curated reference data (defined/edited by the team).
+      heading: 'Master Data',
+      links: [
+        { href: '/admin/articles', label: t('articles') },
+        { href: '/admin/announcements', label: t('announcements') },
+        { href: '/admin/glossary', label: t('glossary') },
+      ],
+    },
+    {
+      // User-generated content.
+      heading: 'UGC',
+      links: [
+        { href: '/admin/topic_posts', label: t('topicPosts.navLabel') },
+        { href: '/admin/positions/memory', label: t('positionMemory') },
+        { href: '/admin/positions/puzzle', label: t('puzzle') },
+        { href: '/admin/chunks', label: t('chunks') },
+      ],
+    },
+    {
+      heading: 'Economy',
+      links: [
+        { href: '/admin/coins', label: t('coins.navLabel') },
+        { href: '/admin/grants', label: t('grants.navLabel') },
+        { href: '/admin/subscriptions', label: t('subscriptions') },
+        { href: '/admin/ads', label: t('ads') },
+      ],
+    },
+    // Achievements has no natural group yet — keep it standalone at the bottom.
+    { links: [{ href: '/admin/achievements', label: t('achievements.navLabel') }] },
+  ];
+
   return (
     <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
@@ -75,104 +121,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 <Image src="/logo.png" alt="Blindfold Chess Logo" width={32} height={32} />
                 {t('title')}
               </div>
-              <nav className="space-y-2">
-                <Link
-                  href="/admin"
-                  className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
-                >
-                  {t('dashboard')}
-                </Link>
-                <Link
-                  href="/admin/users"
-                  className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
-                >
-                  {t('users')}
-                </Link>
-                <Link
-                  href="/admin/subscriptions"
-                  className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
-                >
-                  {t('subscriptions')}
-                </Link>
-                <Link
-                  href="/admin/topic_posts"
-                  className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
-                >
-                  {t('topicPosts.navLabel')}
-                </Link>
-                <Link
-                  href="/admin/positions/memory"
-                  className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
-                >
-                  {t('positionMemory')}
-                </Link>
-                <Link
-                  href="/admin/chunks"
-                  className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
-                >
-                  {t('chunks')}
-                </Link>
-                <Link
-                  href="/admin/glossary"
-                  className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
-                >
-                  {t('glossary')}
-                </Link>
-                <Link
-                  href="/admin/positions/puzzle"
-                  className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
-                >
-                  {t('puzzle')}
-                </Link>
-                <Link
-                  href="/admin/audit-log"
-                  className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
-                >
-                  {t('auditLog')}
-                </Link>
-                <Link
-                  href="/admin/activity-log"
-                  className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
-                >
-                  {t('activityLog')}
-                </Link>
-                <Link
-                  href="/admin/announcements"
-                  className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
-                >
-                  {t('announcements')}
-                </Link>
-                <Link
-                  href="/admin/articles"
-                  className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
-                >
-                  {t('articles')}
-                </Link>
-                <Link
-                  href="/admin/ads"
-                  className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
-                >
-                  {t('ads')}
-                </Link>
-                <Link
-                  href="/admin/grants"
-                  className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
-                >
-                  {t('grants.navLabel')}
-                </Link>
-                <Link
-                  href="/admin/coins"
-                  className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
-                >
-                  {t('coins.navLabel')}
-                </Link>
-                <Link
-                  href="/admin/achievements"
-                  className="block px-3 py-2 rounded text-sm hover:bg-background transition-colors"
-                >
-                  {t('achievements.navLabel')}
-                </Link>
-              </nav>
+              <AdminSidebarNav groups={navGroups} />
             </aside>
             <div className="flex-1 flex flex-col">
               <header className="flex justify-end p-4 border-b border-border">

@@ -8,6 +8,7 @@ import { getPaginationParams } from '@/lib/pagination';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 import { AdminDataTable } from '../_components/AdminDataTable';
+import { AdminPageHeader } from '../_components/AdminPageHeader';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
 import { SubscriptionStatusFilter } from './_components/SubscriptionStatusFilter';
 import { UserCombobox } from './_components/UserCombobox';
@@ -127,7 +128,7 @@ export default async function AdminSubscriptionsPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">{t('subscriptionsTable.title')}</h1>
+      <AdminPageHeader breadcrumbs={[{ label: t('subscriptionsTable.title') }]} />
 
       <div className="mb-6 flex gap-4">
         <UserCombobox

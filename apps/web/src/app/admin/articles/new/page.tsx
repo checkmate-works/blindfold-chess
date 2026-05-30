@@ -1,5 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 
+import { AdminBreadcrumb } from '@/app/admin/_components/AdminBreadcrumb';
+
 import { NewArticleForm } from '../_components/NewArticleForm';
 import { getArticleFormLabels } from '../_lib/labels';
 import { getArticleCategories } from '../_lib/queries';
@@ -27,12 +29,18 @@ export default async function NewArticlePage({
       : undefined;
 
   return (
-    <NewArticleForm
-      categories={categories}
-      labels={getArticleFormLabels(t, t('form.createTitle'))}
-      defaultSlug={slug}
-      defaultLocale={locale}
-      contentFormat={contentFormat}
-    />
+    <>
+      <AdminBreadcrumb
+        items={[{ label: t('title'), href: '/admin/articles' }, { label: t('form.createTitle') }]}
+        className="mb-3"
+      />
+      <NewArticleForm
+        categories={categories}
+        labels={getArticleFormLabels(t, t('form.createTitle'))}
+        defaultSlug={slug}
+        defaultLocale={locale}
+        contentFormat={contentFormat}
+      />
+    </>
   );
 }

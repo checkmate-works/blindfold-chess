@@ -47,6 +47,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import { AdminDataTable } from '../_components/AdminDataTable';
+import { AdminPageHeader } from '../_components/AdminPageHeader';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
 import { CoinTransactionFilters } from './_components/CoinTransactionFilters';
 
@@ -142,15 +143,17 @@ export default async function AdminCoinsPage({
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold">{t('coins.title')}</h1>
-        <Link
-          href="/admin/coins/grant"
-          className="px-4 py-2 rounded bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
-        >
-          {t('coins.grant')}
-        </Link>
-      </div>
+      <AdminPageHeader
+        breadcrumbs={[{ label: t('coins.title') }]}
+        actions={
+          <Link
+            href="/admin/coins/grant"
+            className="px-4 py-2 rounded bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
+          >
+            {t('coins.grant')}
+          </Link>
+        }
+      />
 
       <div className="mb-4">
         <CoinTransactionFilters

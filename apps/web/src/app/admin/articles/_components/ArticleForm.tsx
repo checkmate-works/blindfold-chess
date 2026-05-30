@@ -219,7 +219,7 @@ export function ArticleForm({
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)]">
+    <div className="flex flex-col h-[calc(100vh-7rem)]">
       <ArticleFormTopBar
         labels={{
           metadata: labels.metadata,

@@ -27,6 +27,7 @@ import { getAchievementDisplayName, getAchievementIconEmoji } from '@/lib/achiev
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
 
 import { AdminDataTable } from '../../_components/AdminDataTable';
+import { AdminPageHeader } from '../../_components/AdminPageHeader';
 import { AdminPaginationNav } from '../../_components/AdminPaginationNav';
 import {
   countAchievementHolders,
@@ -77,18 +78,20 @@ export default async function AdminAchievementDetailPage({
 
   return (
     <div>
-      <div className="mb-6">
-        <Link href="/admin/achievements" className="text-sm text-muted-foreground hover:underline">
-          &larr; {t('achievements.detail.backToList')}
-        </Link>
-      </div>
-
-      <h1 className="text-2xl font-bold mb-2">
-        <span aria-hidden="true" className="mr-1">
-          {iconEmoji}
-        </span>
-        <span>{displayName}</span>
-      </h1>
+      <AdminPageHeader
+        breadcrumbs={[
+          { label: t('achievements.navLabel'), href: '/admin/achievements' },
+          { label: displayName },
+        ]}
+        title={
+          <>
+            <span aria-hidden="true" className="mr-1">
+              {iconEmoji}
+            </span>
+            <span>{displayName}</span>
+          </>
+        }
+      />
       <p className="text-sm font-mono text-muted-foreground mb-6">{achievement.slug}</p>
 
       <div className="mb-8 rounded-lg border border-border bg-card p-4">

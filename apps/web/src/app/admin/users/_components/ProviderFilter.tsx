@@ -1,5 +1,6 @@
 'use client';
 
+import { Field, Select } from '@/app/admin/_components/forms';
 import { parseAsInteger, parseAsStringLiteral, useQueryStates } from 'nuqs';
 
 import { SIGNUP_METHOD_ORDER } from '../_lib/signup-method';
@@ -22,11 +23,10 @@ export function ProviderFilter({ labels, providerNames }: ProviderFilterProps) {
   });
 
   return (
-    <div>
-      <label htmlFor="provider-filter" className="block text-sm font-medium mb-1">
-        {labels.filterByProvider}
-      </label>
-      <select
+    <Field label={labels.filterByProvider} htmlFor="provider-filter">
+      <Select
+        surface="card"
+        fullWidth={false}
         id="provider-filter"
         value={provider}
         onChange={(e) => {
@@ -38,7 +38,6 @@ export function ProviderFilter({ labels, providerNames }: ProviderFilterProps) {
             { history: 'push', shallow: false }
           );
         }}
-        className="border border-border rounded px-3 py-2 text-sm bg-card"
       >
         <option value="">{labels.allProviders}</option>
         {SIGNUP_METHOD_ORDER.map((method) => (
@@ -46,7 +45,7 @@ export function ProviderFilter({ labels, providerNames }: ProviderFilterProps) {
             {providerNames[method]}
           </option>
         ))}
-      </select>
-    </div>
+      </Select>
+    </Field>
   );
 }

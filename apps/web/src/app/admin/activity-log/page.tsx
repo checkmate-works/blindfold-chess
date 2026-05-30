@@ -1,9 +1,11 @@
 import { getTranslations } from 'next-intl/server';
 
+import { Button, Field, Input, Select } from '@/app/admin/_components/forms';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { createAdminClient } from '@/lib/supabase/admin';
 
+import { AdminPageHeader } from '../_components/AdminPageHeader';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
 import { ActivityLogRow } from './_components/ActivityLogRow';
 import { fetchActivityLogPageData } from './_lib/queries';
@@ -37,19 +39,17 @@ export default async function AdminActivityLogPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">{t('activityLog')}</h1>
+      <AdminPageHeader breadcrumbs={[{ label: t('activityLog') }]} />
 
       {/* Filters */}
       <form className="flex gap-4 mb-6 items-end">
-        <div>
-          <label htmlFor="action-filter" className="block text-sm font-medium mb-1">
-            {t('activityLogTable.filterByAction')}
-          </label>
-          <select
+        <Field label={t('activityLogTable.filterByAction')} htmlFor="action-filter">
+          <Select
+            surface="card"
+            fullWidth={false}
             id="action-filter"
             name="action"
             defaultValue={actionFilter}
-            className="border border-border rounded px-3 py-2 text-sm bg-card"
           >
             <option value="">{t('activityLogTable.allActions')}</option>
             {actionTypes.map((at) => (
@@ -57,27 +57,22 @@ export default async function AdminActivityLogPage({
                 {at.action}
               </option>
             ))}
-          </select>
-        </div>
-        <div>
-          <label htmlFor="user-filter" className="block text-sm font-medium mb-1">
-            {t('activityLogTable.filterByUser')}
-          </label>
-          <input
+          </Select>
+        </Field>
+        <Field label={t('activityLogTable.filterByUser')} htmlFor="user-filter">
+          <Input
+            surface="card"
+            fullWidth={false}
             id="user-filter"
             name="user"
             type="text"
             defaultValue={userFilter}
             placeholder="email or username"
-            className="border border-border rounded px-3 py-2 text-sm bg-card"
           />
-        </div>
-        <button
-          type="submit"
-          className="px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-        >
+        </Field>
+        <Button type="submit" variant="primary">
           Filter
-        </button>
+        </Button>
       </form>
 
       {/* Table */}

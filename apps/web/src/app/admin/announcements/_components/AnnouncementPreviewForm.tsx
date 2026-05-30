@@ -4,6 +4,8 @@ import { useState, useTransition } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import { Button, Field, Input } from '@/app/admin/_components/forms';
+
 import { formatDateTimeLocal } from '../../_lib/format';
 import { updateAnnouncement } from '../_actions/updateAnnouncement';
 
@@ -98,7 +100,7 @@ export function AnnouncementPreviewForm({
   };
 
   return (
-    <div className="max-w-2xl space-y-4">
+    <div className="space-y-4">
       <fieldset>
         <legend className="text-sm font-medium mb-2">{labels.status}</legend>
         <div className="flex items-center gap-3">
@@ -179,32 +181,24 @@ export function AnnouncementPreviewForm({
         </div>
       </fieldset>
 
-      <div>
-        <label htmlFor="pinnedAt" className="block text-sm font-medium mb-1">
-          {labels.pinnedAt}
-        </label>
-        <input
+      <Field label={labels.pinnedAt} htmlFor="pinnedAt">
+        <Input
           id="pinnedAt"
           type="datetime-local"
           value={pinnedAt}
           onChange={(e) => setPinnedAt(e.target.value)}
-          className="w-full border border-border rounded px-3 py-2 text-sm bg-card text-foreground"
         />
-      </div>
+      </Field>
 
       {status === 'published' && (
-        <div>
-          <label htmlFor="publishedAt" className="block text-sm font-medium mb-1">
-            {labels.publishedAt}
-          </label>
-          <input
+        <Field label={labels.publishedAt} htmlFor="publishedAt">
+          <Input
             id="publishedAt"
             type="datetime-local"
             value={publishedAt}
             onChange={(e) => setPublishedAt(e.target.value)}
-            className="w-full border border-border rounded px-3 py-2 text-sm bg-card text-foreground"
           />
-        </div>
+        </Field>
       )}
 
       {showBannerToggle && (
@@ -243,22 +237,16 @@ export function AnnouncementPreviewForm({
       {error && <p className="text-destructive text-sm">{error}</p>}
 
       <div className="flex items-center gap-2 pt-2">
-        <button
-          type="button"
-          onClick={handleSubmit}
-          disabled={isPending}
-          className="px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
-        >
+        <Button variant="primary" onClick={handleSubmit} disabled={isPending}>
           {isPending ? labels.saving : labels.save}
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
+          variant="outline"
           onClick={() => router.push(`/admin/announcements/${id}/edit`)}
           disabled={isPending}
-          className="px-4 py-2 text-sm rounded bg-card border border-border hover:bg-secondary transition-colors"
         >
           {labels.backToEdit}
-        </button>
+        </Button>
       </div>
     </div>
   );

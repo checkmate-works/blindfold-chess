@@ -25,6 +25,7 @@ import { getAchievementDisplayName, getAchievementIconEmoji } from '@/lib/achiev
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
 
 import { AdminDataTable } from '../_components/AdminDataTable';
+import { AdminPageHeader } from '../_components/AdminPageHeader';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
 import { countAchievements, listAchievementsWithHolderCount } from './_lib/queries';
 
@@ -60,7 +61,7 @@ export default async function AdminAchievementsPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-2">{t('achievements.title')}</h1>
+      <AdminPageHeader breadcrumbs={[{ label: t('achievements.title') }]} />
       <p className="text-sm text-muted-foreground mb-6">{t('achievements.description')}</p>
 
       {rows.length > 0 && (

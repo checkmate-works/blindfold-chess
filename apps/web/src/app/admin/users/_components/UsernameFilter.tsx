@@ -1,5 +1,6 @@
 'use client';
 
+import { Field, Input } from '@/app/admin/_components/forms';
 import { parseAsInteger, parseAsString, useQueryStates } from 'nuqs';
 
 type UsernameFilterProps = {
@@ -35,18 +36,17 @@ export function UsernameFilter({ labels }: UsernameFilterProps) {
   return (
     <form onSubmit={handleSubmit} className="mb-4 flex items-end gap-2" role="search">
       <div className="flex-1 max-w-sm">
-        <label htmlFor="username-filter" className="block text-sm font-medium mb-1">
-          {labels.searchByUsernameOrEmail}
-        </label>
-        <input
-          key={username}
-          id="username-filter"
-          name="username"
-          type="search"
-          defaultValue={username}
-          placeholder={labels.searchByUsernameOrEmail}
-          className="w-full border border-border rounded px-3 py-2 text-sm bg-card"
-        />
+        <Field label={labels.searchByUsernameOrEmail} htmlFor="username-filter">
+          <Input
+            surface="card"
+            key={username}
+            id="username-filter"
+            name="username"
+            type="search"
+            defaultValue={username}
+            placeholder={labels.searchByUsernameOrEmail}
+          />
+        </Field>
       </div>
       <button
         type="submit"

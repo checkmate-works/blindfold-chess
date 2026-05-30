@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
+import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader';
 import { createSearchParamsCache, parseAsString } from 'nuqs/server';
 
 import { DailyTrendChart } from './_components/DailyTrendChart';
@@ -35,7 +36,7 @@ export default async function AdminDashboardPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">{t('dashboard')}</h1>
+      <AdminPageHeader breadcrumbs={[{ label: t('dashboard') }]} />
 
       {/* Date range picker */}
       <div className="mb-6">

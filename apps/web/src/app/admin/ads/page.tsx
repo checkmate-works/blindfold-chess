@@ -3,6 +3,7 @@ import Link from 'next/link';
 
 import { getAllAdBanners } from '@/lib/ads/ad';
 
+import { AdminPageHeader } from '../_components/AdminPageHeader';
 import { BannerEditRow } from './_components/BannerEditRow';
 
 export default async function AdminAdsPage() {
@@ -11,16 +12,20 @@ export default async function AdminAdsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">{t('title')}</h1>
+      <AdminPageHeader
+        breadcrumbs={[{ label: t('title') }]}
+        actions={
+          <Link
+            href="/admin/ads/new"
+            className="px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+          >
+            {t('newBanner')}
+          </Link>
+        }
+      />
 
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4">
         <h2 className="text-lg font-semibold">{t('banners')}</h2>
-        <Link
-          href="/admin/ads/new"
-          className="px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-        >
-          {t('newBanner')}
-        </Link>
       </div>
       <div className="overflow-x-auto rounded-lg border border-border">
         <table className="w-full text-sm">

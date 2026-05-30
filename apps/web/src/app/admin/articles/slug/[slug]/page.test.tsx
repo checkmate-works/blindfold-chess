@@ -96,6 +96,7 @@ vi.mock('../../_components/DeleteArticleButton', () => ({
 function createTranslationFn() {
   const translations: Record<string, string> = {
     'form.backToList': 'Back to list',
+    title: 'Articles',
     'slugDetail.title': 'Article Languages',
     slug: 'Slug',
     locale: 'Locale',
@@ -183,18 +184,18 @@ describe('AdminArticleSlugPage (locale variant detail page)', () => {
       const jsx = await AdminArticleSlugPage({ params: createParams('test-article') });
       render(jsx);
 
-      expect(screen.getByText('Article Languages')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Article Languages' })).toBeInTheDocument();
       expect(screen.getByText('test-article')).toBeInTheDocument();
     });
 
-    it('displays back to list link', async () => {
+    it('links back to the articles list via the breadcrumb', async () => {
       mockDbSelectFromWhereOrderBy.mockResolvedValue([createArticle()]);
 
       const jsx = await AdminArticleSlugPage({ params: createParams('test-article') });
       render(jsx);
 
-      const backLink = screen.getByText('Back to list');
-      expect(backLink.closest('a')).toHaveAttribute('href', '/admin/articles');
+      const articlesCrumb = screen.getByText('Articles');
+      expect(articlesCrumb.closest('a')).toHaveAttribute('href', '/admin/articles');
     });
 
     it('displays edit link for each article', async () => {
