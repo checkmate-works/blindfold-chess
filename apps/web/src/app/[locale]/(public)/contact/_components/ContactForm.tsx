@@ -7,6 +7,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { buildContactParams } from '../_lib/contact-params';
+
 type Props = {
   locale: string;
 };
@@ -30,13 +32,14 @@ export function ContactForm({ locale }: Props) {
     const formElement = e.currentTarget;
     const data = new FormData(formElement);
 
-    const params = new URLSearchParams();
-    params.set('name', data.get('name') as string);
-    params.set('email', data.get('email') as string);
-    params.set('subject', data.get('subject') as string);
-    params.set('message', data.get('message') as string);
+    const params = buildContactParams({
+      name: data.get('name') as string,
+      email: data.get('email') as string,
+      subject: data.get('subject') as string,
+      message: data.get('message') as string,
+    });
 
-    router.push(`/${locale}/contact/confirm?${params.toString()}`);
+    router.push(`/${locale}/contact/confirm?${params}`);
   };
 
   return (

@@ -8,6 +8,7 @@ import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { submitContactForm } from '../_lib/contact-action';
+import { buildContactParams } from '../_lib/contact-params';
 import type { ContactFormData } from '../_lib/contact-schema';
 
 type Props = {
@@ -22,12 +23,7 @@ export function ContactConfirm({ formData, locale }: Props) {
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   const handleBack = () => {
-    const params = new URLSearchParams();
-    params.set('name', formData.name);
-    params.set('email', formData.email);
-    params.set('subject', formData.subject);
-    params.set('message', formData.message);
-    router.push(`/${locale}/contact?${params.toString()}`);
+    router.push(`/${locale}/contact?${buildContactParams(formData)}`);
   };
 
   const handleSubmit = async () => {
