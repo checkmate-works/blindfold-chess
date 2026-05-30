@@ -1282,6 +1282,13 @@
       "tutorialComplete": "¡Esos son los fundamentos!\nCuando te sientas cómodo, intenta aleatorizar la casilla inicial o desafíate con el modo a ciegas.",
       "finishTutorial": "Finalizar Tutorial",
       "viewTutorial": "Ver Tutorial",
+      "help": {
+        "label": "Ayuda",
+        "overview": {
+          "title": "¿Qué es el Recorrido del Caballo?",
+          "description": "Un ejercicio de entrenamiento en el que mueves un caballo para visitar las 64 casillas exactamente una vez.\nEntrena tu sentido del movimiento del caballo y la geometría del tablero, por lo que practicar con constancia mejora tus habilidades de visualización."
+        }
+      },
       "relatedArticles": "Artículos Relacionados",
       "articles": {
         "knightTour": {
@@ -1373,10 +1380,13 @@
       },
       "tutorialComplete": "¡Esos son los fundamentos!\nPractica la lectura de notación FEN con diversas posiciones.",
       "finishTutorial": "Finalizar Tutorial",
-      "resetSettings": "Restablecer Configuración",
-      "resetSettingsConfirm": {
-        "title": "¿Restablecer Configuración?",
-        "message": "Todos los ajustes se restablecerán y serás redirigido al tutorial."
+      "viewTutorial": "Ver Tutorial",
+      "help": {
+        "label": "Ayuda",
+        "overview": {
+          "title": "¿Qué es la Reconstrucción FEN?",
+          "description": "Un ejercicio de entrenamiento en el que lees una notación FEN y recreas la posición en el tablero.\nEntrena tu capacidad de convertir la notación en una imagen mental del tablero, por lo que practicar con constancia mejora tus habilidades de visualización."
+        }
       },
       "cancel": "Cancelar"
     },

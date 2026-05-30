@@ -1286,6 +1286,13 @@
       "tutorialComplete": "That's the basics!\nOnce you're comfortable, try randomizing the starting square or challenging yourself with blindfold mode.",
       "finishTutorial": "Finish Tutorial",
       "viewTutorial": "View Tutorial",
+      "help": {
+        "label": "Help",
+        "overview": {
+          "title": "What is the Knight's Tour?",
+          "description": "A training exercise where you move a knight to visit all 64 squares exactly once.\nIt trains your sense of knight movement and board geometry, so keeping at it improves your visualization skills."
+        }
+      },
       "relatedArticles": "Related Articles",
       "articles": {
         "knightTour": {
@@ -1377,10 +1384,13 @@
       },
       "tutorialComplete": "That's the basics!\nPractice reading FEN notation with various positions.",
       "finishTutorial": "Finish Tutorial",
-      "resetSettings": "Reset Settings",
-      "resetSettingsConfirm": {
-        "title": "Reset Settings?",
-        "message": "All settings will be reset and you will be redirected to the tutorial."
+      "viewTutorial": "View Tutorial",
+      "help": {
+        "label": "Help",
+        "overview": {
+          "title": "What is FEN Reconstruction?",
+          "description": "A training exercise where you read a FEN string and recreate the position on the board.\nIt trains your ability to turn notation into a mental image of the board, so keeping at it improves your visualization skills."
+        }
       },
       "cancel": "Cancel"
     },

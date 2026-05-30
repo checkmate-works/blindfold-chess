@@ -15,6 +15,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
 
+import { buildPracticeIntroHelpTour } from '@/app/[locale]/(public)/practice/_lib/practice-help-tour';
 import { PageLayout } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -51,7 +52,12 @@ export default async function FenPracticePage({ params }: Props) {
   ];
 
   return (
-    <PageLayout title={t('practice.fen.pageTitle')} locale={locale} breadcrumb={breadcrumbItems}>
+    <PageLayout
+      title={t('practice.fen.pageTitle')}
+      titleAction={buildPracticeIntroHelpTour(t, 'fen', 'fen', locale)}
+      locale={locale}
+      breadcrumb={breadcrumbItems}
+    >
       <FenPageContent locale={locale} />
 
       {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
