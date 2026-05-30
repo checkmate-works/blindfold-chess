@@ -65,17 +65,19 @@ export function DashboardFilters({
         ))}
       </select>
 
-      <select
-        value={selectedMenu ?? ''}
-        onChange={(e) => setSelectedMenu(e.target.value as ChallengeMenuType)}
-        className={`block w-full sm:w-64 ${selectClassName}`}
-      >
-        {menuOptions.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
+      {menuOptions.length > 0 && (
+        <select
+          value={selectedMenu ?? ''}
+          onChange={(e) => setSelectedMenu(e.target.value as ChallengeMenuType)}
+          className={`block w-full sm:w-64 ${selectClassName}`}
+        >
+          {menuOptions.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      )}
 
       {selectedMenu && ORIENTATION_FILTER_MENUS.has(selectedMenu) && (
         <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">

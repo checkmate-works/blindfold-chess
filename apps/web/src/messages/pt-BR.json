@@ -2532,12 +2532,12 @@
     "records": "Registros",
     "bestScore": "Melhor Pontuação",
     "avgScore": "Pontuação Méd.",
-    "avgScoreTooltip": "Pontuação média das sessões que duraram os 60 segundos completos.",
     "scoreUnit": "Pontuação Méd.",
     "scoreTrend": "Tendência de Pontuação",
     "sessionHistory": "Histórico de Sessões",
     "viewAllResults": "Mais resultados",
     "noData": "Ainda não há registros.",
+    "goToPractice": "Praticar",
     "tableDate": "Data",
     "tableCorrectAnswers": "Corretas",
     "tableIncorrectAnswers": "Erros",
@@ -2718,7 +2718,26 @@
   },
   "MypageChallenges": {
     "title": "Histórico de Desafios",
-    "breadcrumbMypage": "Minha Página"
+    "breadcrumbMypage": "Minha Página",
+    "help": {
+      "label": "Ajuda",
+      "filters": {
+        "title": "Filtre seus registros",
+        "description": "Escolha um período e um desafio para ver os registros correspondentes. Apenas os desafios que você praticou no período selecionado aparecem na lista."
+      },
+      "stats": {
+        "title": "Melhor pontuação e média",
+        "description": "«Melhor Pontuação» é o seu melhor resultado e «Pontuação Méd.» é a média das sessões que usaram todo o tempo limite. O número abaixo de cada uma compara com o período anterior."
+      },
+      "chart": {
+        "title": "Evolução da pontuação",
+        "description": "Suas pontuações no período selecionado, sobrepostas ao período anterior para comparação. Toque no rótulo do período anterior para ir até esse período."
+      },
+      "history": {
+        "title": "Sessões recentes",
+        "description": "Suas sessões mais recentes do desafio selecionado. Toque em «Ver todos os resultados» para ver o histórico completo."
+      }
+    }
   },
   "MypageChallengeResults": {
     "title": "Histórico de Desafios",

@@ -55,16 +55,13 @@ export function Dashboard({ locale }: { locale: string }) {
   const comparisonLabel = getComparisonLabel(selectedPeriod, t);
   const navigablePrevPeriod = getNavigablePreviousPeriod(selectedPeriod);
 
-  if (availableMenuTypes === null || (isLoading && availableMenuTypes.length === 0)) {
+  // Only the very first load (before we know anything) shows the full-page
+  // skeleton. Once `availableMenuTypes` is an array we always render the
+  // period selector so the user can switch periods — even a period with no
+  // records must remain escapable (otherwise selecting an empty period would
+  // hide the period select and trap the user).
+  if (availableMenuTypes === null) {
     return <DashboardSkeleton />;
-  }
-
-  if (availableMenuTypes.length === 0) {
-    return (
-      <div className="text-center py-12 text-muted-foreground">
-        <p>{t('noData')}</p>
-      </div>
-    );
   }
 
   const menuOptions = availableMenuTypes.map((type) => ({
@@ -76,31 +73,46 @@ export function Dashboard({ locale }: { locale: string }) {
     <div className="space-y-6 overflow-x-hidden">
       <SectionTitle>{t('records')}</SectionTitle>
 
-      <DashboardFilters
-        selectedPeriod={selectedPeriod}
-        setSelectedPeriod={setSelectedPeriod}
-        selectedMenu={selectedMenu}
-        setSelectedMenu={setSelectedMenu}
-        menuOptions={menuOptions}
-        boardOrientationFilter={boardOrientationFilter}
-        setBoardOrientationFilter={setBoardOrientationFilter}
-        pieceFilter={pieceFilter}
-        handlePieceSelect={handlePieceSelect}
-      />
+      <div data-tour-id="challenges-filters" className="space-y-6">
+        <DashboardFilters
+          selectedPeriod={selectedPeriod}
+          setSelectedPeriod={setSelectedPeriod}
+          selectedMenu={selectedMenu}
+          setSelectedMenu={setSelectedMenu}
+          menuOptions={menuOptions}
+          boardOrientationFilter={boardOrientationFilter}
+          setBoardOrientationFilter={setBoardOrientationFilter}
+          pieceFilter={pieceFilter}
+          handlePieceSelect={handlePieceSelect}
+        />
+      </div>
 
       {isLoading ? (
         <DashboardContentSkeleton />
+      ) : availableMenuTypes.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground">
+          <p>{t('noData')}</p>
+          <Link
+            href="/practice"
+            locale={locale}
+            className="mt-4 inline-flex items-center justify-center whitespace-nowrap rounded-md bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            {t('goToPractice')}
+          </Link>
+        </div>
       ) : (
         <>
-          <DashboardStatsSection
-            bestScore={currentStats.bestScore}
-            avgCompletionScore={currentStats.avgCompletionScore}
-            bestScoreComparison={bestScoreComparison}
-            avgScoreComparison={avgScoreComparison}
-            comparisonLabel={comparisonLabel}
-          />
+          <div data-tour-id="challenges-stats">
+            <DashboardStatsSection
+              bestScore={currentStats.bestScore}
+              avgCompletionScore={currentStats.avgCompletionScore}
+              bestScoreComparison={bestScoreComparison}
+              avgScoreComparison={avgScoreComparison}
+              comparisonLabel={comparisonLabel}
+            />
+          </div>
 
-          <div className="min-w-0 overflow-hidden">
+          <div data-tour-id="challenges-chart" className="min-w-0 overflow-hidden">
             <h3 className="text-sm md:text-base font-medium text-muted-foreground">
               {t('scoreTrend')}
             </h3>
@@ -118,7 +130,7 @@ export function Dashboard({ locale }: { locale: string }) {
             </div>
           </div>
 
-          <div>
+          <div data-tour-id="challenges-history">
             <h3 className="text-sm md:text-base font-medium text-muted-foreground">
               {t('sessionHistory')}
             </h3>
