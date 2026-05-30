@@ -85,7 +85,7 @@ export function BoardThumbnail({
 
   return (
     <div className={className}>
-      <div className="relative grid grid-cols-8 border border-border rounded-sm overflow-hidden aspect-square w-full h-full">
+      <div className="relative grid grid-cols-8 rounded-sm overflow-hidden aspect-square w-full h-full">
         {board.map((rank, rankIdx) =>
           rank.map((fenChar, fileIdx) => {
             const isLight = (rankIdx + fileIdx) % 2 === 0;

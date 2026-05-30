@@ -79,7 +79,7 @@ export function BoardLayout({
   return (
     <div className={`w-full ${className}`}>
       <div
-        className={`relative w-full aspect-square border border-border overflow-hidden ${rounded ? 'rounded-md' : ''}`}
+        className={`relative w-full aspect-square overflow-hidden ${rounded ? 'rounded-md' : ''}`}
         onClick={onBoardClick}
         onDragStart={onBoardDragStart}
         onDragOver={onBoardDragOver}

@@ -267,7 +267,7 @@ export function EditableChessBoard({
       <div className="w-full max-w-md">
         <div
           ref={boardContainerRef}
-          className={`relative w-full aspect-square border border-border rounded-md overflow-hidden${
+          className={`relative w-full aspect-square rounded-md overflow-hidden${
             annotationsInteractive ? ' select-none touch-none' : ''
           }`}
           onContextMenu={annotationsInteractive ? handleContextMenu : undefined}

@@ -35,7 +35,7 @@ export function QuadrantGridBoard({
 
   return (
     <div className="mx-auto max-w-xs sm:max-w-sm">
-      <div className="relative w-full aspect-square border border-border overflow-hidden rounded-md">
+      <div className="relative w-full aspect-square overflow-hidden rounded-md">
         {ranks.map((rank, rankDisplayIndex) => {
           const actualRankIndex = rankDisplayIndex + rankOffset;
           return (
