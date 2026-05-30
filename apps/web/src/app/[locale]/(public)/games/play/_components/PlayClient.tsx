@@ -24,6 +24,7 @@ import { MovesPanelSkeleton } from './MovesPanelSkeleton';
 import { PlayClientModals } from './PlayClientModals';
 import {
   ActionRowSkeleton,
+  AlwaysVisibleBoardSkeleton,
   IconButtonSkeleton,
   InlineBoardHeaderSkeleton,
   TextLinkSkeleton,
@@ -128,6 +129,7 @@ export function PlayClient({
     updatePreferences,
     skeletonMode,
     skeletonHasModeSwitch,
+    skeletonShowAlwaysVisibleBoard,
     skeletonShowInlinePeekHeader,
     skeletonShowModalPeekButton,
   } = usePlayClientPreferences({
@@ -275,11 +277,16 @@ export function PlayClient({
             {/* In Progress Content */}
             {gameStatus === 'in_progress' && isInitializing && (
               <div className="flex flex-col gap-6">
-                {/* InlineBoardView header (~46px). Reserved whenever the
-                    active hint (cookie pre-hydration, preferences post-
-                    hydration) says the user has `peekMode='inline'` with
-                    `boardVisibility='peek'`, so returning inline
-                    users get the correct layout from the very first paint. */}
+                {/* Board reservation. At most one of these fires — the
+                    `shouldShow*` predicates partition the peek-hint space (see
+                    preferences.test.ts), and the order mirrors `loading.tsx`.
+                    'always' reserves the full-size board card; 'peek+inline'
+                    reserves just the ~46px accordion header. Both are driven by
+                    the active hint (cookie pre-hydration, preferences post-
+                    hydration) so returning users get the correct layout from
+                    the very first paint. ('peek+modal' reserves a slot inside
+                    the action row below instead; 'never' reserves nothing.) */}
+                {skeletonShowAlwaysVisibleBoard && <AlwaysVisibleBoardSkeleton />}
                 {skeletonShowInlinePeekHeader && <InlineBoardHeaderSkeleton />}
                 <MoveInputSkeleton mode={skeletonMode} hasModeSwitch={skeletonHasModeSwitch} />
                 {/* Action row (Show Board + Undo + Resign). Whether the
