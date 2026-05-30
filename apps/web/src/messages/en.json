@@ -3585,13 +3585,34 @@
     "coins": {
       "title": "Coins",
       "navLabel": "Coins",
-      "showing": "Showing {from}–{to} of {total} grants",
-      "empty": "No admin coin grants yet.",
+      "transactionsHeading": "Transactions",
+      "showing": "Showing {from}–{to} of {total} transactions",
+      "empty": "No transactions match the current filters.",
       "columns": {
         "user": "User",
+        "event": "Event",
         "amount": "Amount",
+        "category": "Category",
+        "source": "Source",
         "reason": "Reason",
-        "grantedAt": "Granted at"
+        "date": "Date"
+      },
+      "categoryLabels": {
+        "earned": "Earned",
+        "promotional": "Promotional",
+        "purchased": "Purchased"
+      },
+      "filters": {
+        "source": "Source",
+        "category": "Category",
+        "direction": "Direction",
+        "user": "User ID",
+        "userPlaceholder": "Filter by user UUID",
+        "all": "All",
+        "grantsOnly": "Grants (+)",
+        "spendsOnly": "Spends (−)",
+        "apply": "Apply",
+        "clear": "Clear"
       }
     },
     "grants": {

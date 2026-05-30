@@ -3585,13 +3585,34 @@
     "coins": {
       "title": "コイン",
       "navLabel": "コイン",
+      "transactionsHeading": "トランザクション",
       "showing": "全 {total} 件中 {from}–{to} 件を表示",
-      "empty": "管理付与の履歴はまだありません。",
+      "empty": "条件に一致するトランザクションはありません。",
       "columns": {
         "user": "ユーザー",
-        "amount": "付与額",
+        "event": "イベント",
+        "amount": "増減",
+        "category": "カテゴリ",
+        "source": "ソース",
         "reason": "理由",
-        "grantedAt": "付与日時"
+        "date": "日時"
+      },
+      "categoryLabels": {
+        "earned": "獲得",
+        "promotional": "プロモーション",
+        "purchased": "購入"
+      },
+      "filters": {
+        "source": "ソース",
+        "category": "カテゴリ",
+        "direction": "種別",
+        "user": "ユーザーID",
+        "userPlaceholder": "ユーザーUUIDで絞り込み",
+        "all": "すべて",
+        "grantsOnly": "付与 (+)",
+        "spendsOnly": "消費 (−)",
+        "apply": "適用",
+        "clear": "クリア"
       }
     },
     "grants": {

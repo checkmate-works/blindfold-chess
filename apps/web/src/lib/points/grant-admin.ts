@@ -1,8 +1,6 @@
-import { desc, eq, sql } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import 'server-only';
 
-import { db, pointEvents } from '@/lib/db';
 import type { DbTx } from '@/lib/db/types';
 
 import { ADMIN_GRANT_SOURCE } from './constants';
@@ -62,55 +60,4 @@ export async function grantAdminPoints(
   });
 
   return { pointEventId, grantId };
-}
-
-/** One admin-issued point grant as listed on `/admin/coins`. */
-export type AdminPointGrantRow = {
-  id: string;
-  userId: string;
-  delta: number;
-  /** Moderator memo from `metadata.reason`, or `null` when none was given. */
-  reason: string | null;
-  createdAt: Date;
-};
-
-/** Count of admin-issued point grants — drives `/admin/coins` pagination. */
-export async function countAdminPointGrants(): Promise<number> {
-  const [row] = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(pointEvents)
-    .where(eq(pointEvents.source, ADMIN_GRANT_SOURCE));
-  return row?.count ?? 0;
-}
-
-/**
- * List admin-issued point grants, newest first. Keeps the `point_events`
- * schema encapsulated within `@/lib/points` — `/admin/coins` renders the
- * returned rows without reaching into the ledger table itself.
- */
-export async function listAdminPointGrants(
-  limit: number,
-  offset: number
-): Promise<AdminPointGrantRow[]> {
-  const rows = await db
-    .select({
-      id: pointEvents.id,
-      userId: pointEvents.userId,
-      delta: pointEvents.delta,
-      metadata: pointEvents.metadata,
-      createdAt: pointEvents.createdAt,
-    })
-    .from(pointEvents)
-    .where(eq(pointEvents.source, ADMIN_GRANT_SOURCE))
-    .orderBy(desc(pointEvents.createdAt))
-    .limit(limit)
-    .offset(offset);
-
-  return rows.map((r) => ({
-    id: r.id,
-    userId: r.userId,
-    delta: r.delta,
-    reason: (r.metadata as { reason?: string | null } | null)?.reason ?? null,
-    createdAt: r.createdAt,
-  }));
 }

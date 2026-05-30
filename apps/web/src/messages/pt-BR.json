@@ -3343,13 +3343,34 @@
     "coins": {
       "title": "Moedas",
       "navLabel": "Moedas",
-      "showing": "Exibindo {from}–{to} de {total} concessões",
-      "empty": "Ainda não há concessões de moedas pelo staff.",
+      "transactionsHeading": "Transações",
+      "showing": "Exibindo {from}–{to} de {total} transações",
+      "empty": "Nenhuma transação corresponde aos filtros atuais.",
       "columns": {
         "user": "Usuário",
+        "event": "Evento",
         "amount": "Quantidade",
+        "category": "Categoria",
+        "source": "Origem",
         "reason": "Motivo",
-        "grantedAt": "Data"
+        "date": "Data"
+      },
+      "categoryLabels": {
+        "earned": "Ganhas",
+        "promotional": "Promocional",
+        "purchased": "Compradas"
+      },
+      "filters": {
+        "source": "Origem",
+        "category": "Categoria",
+        "direction": "Tipo",
+        "user": "ID do usuário",
+        "userPlaceholder": "Filtrar por UUID do usuário",
+        "all": "Todos",
+        "grantsOnly": "Concessões (+)",
+        "spendsOnly": "Gastos (−)",
+        "apply": "Aplicar",
+        "clear": "Limpar"
       }
     },
     "grants": {

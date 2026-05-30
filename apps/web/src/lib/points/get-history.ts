@@ -71,7 +71,11 @@ export async function getPointHistory(
   }));
 }
 
-function classifyKind(source: string, delta: number, metadata: unknown): PointHistoryEntry['kind'] {
+export function classifyKind(
+  source: string,
+  delta: number,
+  metadata: unknown
+): PointHistoryEntry['kind'] {
   const meta = (metadata ?? {}) as { reason?: unknown };
   // `reason='post_removed'` is the tag the clawback primitive stamps on its
   // offsetting row when a moderator removes the source post.

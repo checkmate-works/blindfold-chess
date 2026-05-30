@@ -1,11 +1,15 @@
 export {
+  ADMIN_GRANT_SOURCE,
   DAILY_CREATION_POINT_CAP,
+  LIKE_GRANT_SOURCE,
   MAIA_GAME_POINT_COST,
   MAIA_GAME_SOURCE,
   POINT_CATEGORIES,
   POINT_ELIGIBLE_TOPIC_TYPES,
   POINT_SOURCES,
   POST_CREATION_POINTS,
+  PURCHASE_SOURCE,
+  REDEMPTION_SOURCE,
   SPENDABLE_CONSUME_ORDER,
   buildIdempotencyKey,
   cappedCreationGrantAmount,
@@ -27,10 +31,12 @@ export type {
 } from './constants';
 export { getPointBalanceSummary } from './get-balance';
 export type { PointBalanceSummary } from './get-balance';
-export { getPointHistory } from './get-history';
+export { classifyKind, getPointHistory } from './get-history';
 export type { PointHistoryEntry } from './get-history';
-export { countAdminPointGrants, grantAdminPoints, listAdminPointGrants } from './grant-admin';
-export type { AdminGrantResult, AdminPointGrantRow } from './grant-admin';
+export { grantAdminPoints } from './grant-admin';
+export type { AdminGrantResult } from './grant-admin';
+export { countPointEvents, listPointEvents, POINT_EVENT_SOURCE_OPTIONS } from './list-events';
+export type { PointEventFilters, PointEventRow } from './list-events';
 export { clawbackPointsForPost, grantPointsForPost } from './grant-points';
 export type { PointGrantResult } from './grant-points';
 export {

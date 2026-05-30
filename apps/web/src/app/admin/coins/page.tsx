@@ -2,46 +2,65 @@
  * Admin Coins Page (コイン)
  *
  * @description
- * Lets staff issue coin grants and reviews recent admin grants in one
- * paginated table. Companion to /admin/grants (which handles ad_free
- * user_grants); this page writes `point_events` rows in
- * `category='promotional'` so the coins land in the user's spendable
- * balance. "Coin" is the facing name for the points ledger — see the
- * "Points / Coin Economy" note in apps/web/CLAUDE.md.
+ * Two surfaces over the coin economy in one page:
+ *   1. A grant form (writes `point_events` rows in `category='promotional'`,
+ *      immediately spendable) — companion to /admin/grants's ad_free
+ *      `user_grants` form.
+ *   2. A cross-user transactions table over the whole `point_events` ledger,
+ *      filterable by source, category, direction (grant vs spend), and user.
+ *      This is the "who was granted / who spent what" view — batch grants
+ *      (like_grant), redemptions, and Maia spends all surface here, not just
+ *      admin grants.
  *
- * @design Scope of the table
+ * "Coin" is the facing name for the points ledger — see the
+ * "Points / Coin Economy" note in apps/web/CLAUDE.md. The ledger stays
+ * "points" at the schema/service layer.
  *
- * Only rows whose `source='admin_grant'` are listed — UGC grants /
- * clawbacks / redemption rows live on the user-facing /mypage/coins
- * history and would only add noise here. Each row shows
- * the recipient (email + username), amount, the moderation reason memo,
- * and the timestamp the grant was issued.
+ * @design Read surface, not a new log
+ *
+ * `point_events` is already the immutable, idempotent source of truth for
+ * every coin movement. This page only reads it; coin movements are NOT
+ * duplicated into `moderation_actions` / `user_activity_log` (which would
+ * split the source of truth). Admin grant provenance still lands in
+ * `moderation_actions` via createPointGrant for the audit log.
  *
  * @flow
  * 1. Admin opens /admin/coins.
- * 2. Pastes a user UUID, enters amount, optional reason → submits.
- * 3. createPointGrant Server Action writes the ledger row, upserts the
- *    materialized balance, and appends a moderation_actions audit row in
- *    one transaction.
- * 4. The page re-fetches via revalidatePath and the row appears at the
- *    top of the history table below the form.
+ * 2. Grant: paste a user UUID, enter amount, optional reason → submit.
+ *    createPointGrant writes the ledger row, upserts the materialized
+ *    balance, and appends a moderation_actions audit row in one transaction.
+ * 3. Inspect: pick filters → the table below reloads with matching ledger
+ *    rows, newest first.
  */
 import { getTranslations } from 'next-intl/server';
 
 import { inArray } from 'drizzle-orm';
-import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
+import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { db, profiles } from '@/lib/db';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
-import { countAdminPointGrants, listAdminPointGrants } from '@/lib/points';
+import {
+  POINT_CATEGORIES,
+  POINT_EVENT_SOURCE_OPTIONS,
+  type PointCategory,
+  type PointEventFilters,
+  countPointEvents,
+  listPointEvents,
+} from '@/lib/points';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { UUID_RE } from '@/lib/validations/uuid';
 
 import { AdminDataTable } from '../_components/AdminDataTable';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
+import { CoinTransactionFilters } from './_components/CoinTransactionFilters';
 import { PointGrantForm } from './_components/PointGrantForm';
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
+  source: parseAsString.withDefault(''),
+  category: parseAsString.withDefault(''),
+  direction: parseAsString.withDefault(''),
+  user: parseAsString.withDefault(''),
 });
 
 export default async function AdminCoinsPage({
@@ -49,10 +68,30 @@ export default async function AdminCoinsPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const { page } = await searchParamsCache.parse(searchParams);
+  const { page, source, category, direction, user } = await searchParamsCache.parse(searchParams);
   const t = await getTranslations({ locale: 'en', namespace: 'Admin' });
+  // Coin entry kind labels are owned by the user-facing MypagePoints namespace;
+  // reuse them so the admin and user surfaces never drift on naming.
+  const tKind = await getTranslations({ locale: 'en', namespace: 'MypagePoints.history.kind' });
 
-  const total = await countAdminPointGrants();
+  // Validate each query param against its known domain. An unknown value is
+  // dropped (treated as "no filter") rather than producing an empty table.
+  const sourceOptions = new Set<string>(POINT_EVENT_SOURCE_OPTIONS);
+  const appliedSource = sourceOptions.has(source) ? source : '';
+  const appliedCategory = (POINT_CATEGORIES as readonly string[]).includes(category)
+    ? category
+    : '';
+  const appliedDirection = direction === 'grant' || direction === 'spend' ? direction : '';
+  const appliedUser = UUID_RE.test(user) ? user : '';
+
+  const filters: PointEventFilters = {
+    source: appliedSource || undefined,
+    category: (appliedCategory || undefined) as PointCategory | undefined,
+    direction: (appliedDirection || undefined) as 'grant' | 'spend' | undefined,
+    userId: appliedUser || undefined,
+  };
+
+  const total = await countPointEvents(filters);
 
   const { currentPage, totalPages, limit, offset } = getPaginationParams(
     page,
@@ -60,9 +99,9 @@ export default async function AdminCoinsPage({
     DEFAULT_PAGE_SIZE
   );
 
-  const grantRows = await listAdminPointGrants(limit, offset);
+  const rows = await listPointEvents(filters, limit, offset);
 
-  const userIds = [...new Set(grantRows.map((g) => g.userId))];
+  const userIds = [...new Set(rows.map((r) => r.userId))];
   const userProfiles =
     userIds.length > 0
       ? await db
@@ -83,9 +122,26 @@ export default async function AdminCoinsPage({
     })
   );
 
+  const categoryLabel = (cat: string) => {
+    switch (cat) {
+      case 'earned':
+        return t('coins.categoryLabels.earned');
+      case 'promotional':
+        return t('coins.categoryLabels.promotional');
+      case 'purchased':
+        return t('coins.categoryLabels.purchased');
+      default:
+        return cat;
+    }
+  };
+
   const buildHref = (p: number) => {
     const params = new URLSearchParams();
     params.set('page', String(p));
+    if (appliedSource) params.set('source', appliedSource);
+    if (appliedCategory) params.set('category', appliedCategory);
+    if (appliedDirection) params.set('direction', appliedDirection);
+    if (appliedUser) params.set('user', appliedUser);
     return `/admin/coins?${params.toString()}`;
   };
 
@@ -97,11 +153,24 @@ export default async function AdminCoinsPage({
         <PointGrantForm />
       </div>
 
-      {grantRows.length > 0 && (
+      <h2 className="text-lg font-semibold mb-3">{t('coins.transactionsHeading')}</h2>
+
+      <div className="mb-4">
+        <CoinTransactionFilters
+          values={{
+            source: appliedSource,
+            category: appliedCategory,
+            direction: appliedDirection,
+            user: appliedUser,
+          }}
+        />
+      </div>
+
+      {rows.length > 0 && (
         <p className="text-sm text-muted-foreground mb-2">
           {t('coins.showing', {
             from: (currentPage - 1) * DEFAULT_PAGE_SIZE + 1,
-            to: (currentPage - 1) * DEFAULT_PAGE_SIZE + grantRows.length,
+            to: (currentPage - 1) * DEFAULT_PAGE_SIZE + rows.length,
             total,
           })}
         </p>
@@ -110,29 +179,43 @@ export default async function AdminCoinsPage({
       <AdminDataTable
         headers={[
           t('coins.columns.user'),
+          t('coins.columns.event'),
           t('coins.columns.amount'),
+          t('coins.columns.category'),
+          t('coins.columns.source'),
           t('coins.columns.reason'),
-          t('coins.columns.grantedAt'),
+          t('coins.columns.date'),
         ]}
-        items={grantRows}
+        items={rows}
         emptyMessage={t('coins.empty')}
-        renderRow={(grant) => {
-          const profile = profileMap.get(grant.userId);
-          const email = emailMap.get(grant.userId);
+        renderRow={(row) => {
+          const profile = profileMap.get(row.userId);
+          const email = emailMap.get(row.userId);
           return (
-            <tr key={grant.id} className="border-t border-border">
+            <tr key={row.id} className="border-t border-border align-top">
               <td className="px-4 py-3">
-                <div className="text-sm">{email ?? grant.userId}</div>
+                <div className="text-sm">{email ?? row.userId}</div>
                 {profile?.username && (
                   <div className="text-xs text-muted-foreground">@{profile.username}</div>
                 )}
               </td>
-              <td className="px-4 py-3 font-mono">+{grant.delta}</td>
+              <td className="px-4 py-3">{tKind(row.kind)}</td>
+              <td
+                className={`px-4 py-3 font-mono ${
+                  row.delta >= 0 ? 'text-success-soft-foreground' : 'text-destructive'
+                }`}
+              >
+                {row.delta > 0 ? `+${row.delta}` : row.delta}
+              </td>
+              <td className="px-4 py-3 text-muted-foreground">{categoryLabel(row.category)}</td>
+              <td className="px-4 py-3">
+                <code className="text-xs">{row.source}</code>
+              </td>
               <td className="px-4 py-3 text-muted-foreground max-w-64 truncate">
-                {grant.reason ?? '-'}
+                {row.reason ?? '-'}
               </td>
               <td className="px-4 py-3 text-muted-foreground text-xs">
-                {new Date(grant.createdAt).toLocaleString()}
+                {new Date(row.createdAt).toLocaleString()}
               </td>
             </tr>
           );
