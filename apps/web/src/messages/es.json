@@ -669,7 +669,6 @@
       "tutorial": {
         "title": "Tutorial",
         "description": "Aprende los tres tipos de simetría en el tablero de ajedrez: Columna, Fila y Simetría central.",
-        "skip": "Saltar",
         "previous": "Anterior",
         "next": "Siguiente",
         "start": "Iniciar",
@@ -978,8 +977,7 @@
         "selectToPreview": "Selecciona una posición para previsualizar",
         "settings": "Configuración del Tutorial",
         "settingsDescription": "{timeLimit} segundos para memorizar, {problemCount} problema",
-        "start": "¡Ya la memoricé!",
-        "skip": "Saltar"
+        "start": "¡Ya la memoricé!"
       },
       "tutorialComplete": "¡Esos son los fundamentos!\nPrueba otros problemas o desafíate con posiciones de tus propias partidas.",
       "finishTutorial": "Finalizar Tutorial",
@@ -1276,8 +1274,7 @@
         "description": "El Recorrido del Caballo es un rompecabezas clásico de ajedrez.\n\nUsando un caballo, intenta visitar las 64 casillas del tablero exactamente una vez.",
         "exampleTitle": "Aquí hay un ejemplo de solución",
         "startHint": "Para el entrenamiento de ajedrez a ciegas, es efectivo responder usando solo coordenadas mientras visualizas el tablero en tu mente, pero empecemos jugando con el tablero visible.",
-        "start": "Intentar",
-        "skip": "Saltar"
+        "start": "Intentar"
       },
       "tutorialComplete": "¡Esos son los fundamentos!\nCuando te sientas cómodo, intenta aleatorizar la casilla inicial o desafíate con el modo a ciegas.",
       "finishTutorial": "Finalizar Tutorial",
@@ -1375,8 +1372,7 @@
       "tutorial": {
         "title": "Tutorial",
         "description": "Practica la lectura de notación FEN y la recreación de posiciones en el tablero.",
-        "start": "Colocar Piezas",
-        "skip": "Saltar"
+        "start": "Colocar Piezas"
       },
       "tutorialComplete": "¡Esos son los fundamentos!\nPractica la lectura de notación FEN con diversas posiciones.",
       "finishTutorial": "Finalizar Tutorial",
@@ -1470,7 +1466,6 @@
         "start": "Intentar",
         "next": "Siguiente",
         "previous": "Atrás",
-        "skip": "Saltar",
         "complete": "¡Esos son los fundamentos!\nPrueba entrenar con diferentes piezas y distancias.",
         "restart": "Reiniciar",
         "startChallenge": "Iniciar Desafío"
@@ -1567,7 +1562,6 @@
       },
       "tutorial": {
         "title": "Tutorial",
-        "skip": "Saltar",
         "steps": {
           "diagonal": {
             "title": "¿Qué es una Diagonal?",

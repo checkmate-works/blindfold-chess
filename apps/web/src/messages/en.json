@@ -673,7 +673,6 @@
       "tutorial": {
         "title": "Tutorial",
         "description": "Learn the three types of symmetry on the chess board: File, Rank, and Point symmetry.",
-        "skip": "Skip",
         "previous": "Previous",
         "next": "Next",
         "start": "Start",
@@ -982,8 +981,7 @@
         "selectToPreview": "Select a position to preview",
         "settings": "Tutorial Settings",
         "settingsDescription": "{timeLimit} seconds to memorize, {problemCount} problem",
-        "start": "I've memorized it!",
-        "skip": "Skip"
+        "start": "I've memorized it!"
       },
       "tutorialComplete": "That's the basics!\nTry other problems or challenge yourself with positions from your own games.",
       "finishTutorial": "Finish Tutorial",
@@ -1280,8 +1278,7 @@
         "description": "The Knight's Tour is a classic chess puzzle.\n\nUsing a knight, try to visit all 64 squares of the board exactly once.",
         "exampleTitle": "Here is an example solution",
         "startHint": "For blindfold chess training, it's effective to answer using only coordinates while visualizing the board in your mind, but let's start by playing with the board visible.",
-        "start": "Try It",
-        "skip": "Skip"
+        "start": "Try It"
       },
       "tutorialComplete": "That's the basics!\nOnce you're comfortable, try randomizing the starting square or challenging yourself with blindfold mode.",
       "finishTutorial": "Finish Tutorial",
@@ -1379,8 +1376,7 @@
       "tutorial": {
         "title": "Tutorial",
         "description": "Practice reading FEN notation and recreating board positions.",
-        "start": "Place Pieces",
-        "skip": "Skip"
+        "start": "Place Pieces"
       },
       "tutorialComplete": "That's the basics!\nPractice reading FEN notation with various positions.",
       "finishTutorial": "Finish Tutorial",
@@ -1474,7 +1470,6 @@
         "start": "Try It",
         "next": "Next",
         "previous": "Back",
-        "skip": "Skip",
         "complete": "That's the basics!\nTry training with different pieces and distances.",
         "restart": "Restart",
         "startChallenge": "Start Challenge"
@@ -1571,7 +1566,6 @@
       },
       "tutorial": {
         "title": "Tutorial",
-        "skip": "Skip",
         "steps": {
           "diagonal": {
             "title": "What is a Diagonal?",

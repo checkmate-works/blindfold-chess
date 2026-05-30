@@ -669,7 +669,6 @@
       "tutorial": {
         "title": "Tutorial",
         "description": "Aprenda os três tipos de simetria no tabuleiro de xadrez: Coluna, Fila e Simetria central.",
-        "skip": "Pular",
         "previous": "Anterior",
         "next": "Próximo",
         "start": "Iniciar",
@@ -978,8 +977,7 @@
         "selectToPreview": "Selecione uma posição para pré-visualizar",
         "settings": "Configuração do Tutorial",
         "settingsDescription": "{timeLimit} segundos para memorizar, {problemCount} problema",
-        "start": "Já memorizei!",
-        "skip": "Pular"
+        "start": "Já memorizei!"
       },
       "tutorialComplete": "Esses são os fundamentos!\nExperimente outros problemas ou desafie-se com posições de suas próprias partidas.",
       "finishTutorial": "Finalizar Tutorial",
@@ -1276,8 +1274,7 @@
         "description": "O Percurso do Cavalo é um quebra-cabeça clássico de xadrez.\n\nUsando um cavalo, tente visitar as 64 casas do tabuleiro exatamente uma vez.",
         "exampleTitle": "Aqui está um exemplo de solução",
         "startHint": "Para o treinamento de xadrez às cegas, é eficaz responder usando apenas coordenadas enquanto visualiza o tabuleiro em sua mente, mas vamos começar jogando com o tabuleiro visível.",
-        "start": "Experimentar",
-        "skip": "Pular"
+        "start": "Experimentar"
       },
       "tutorialComplete": "Esses são os fundamentos!\nQuando se sentir confortável, tente aleatorizar a casa inicial ou se desafiar com o modo às cegas.",
       "finishTutorial": "Finalizar Tutorial",
@@ -1375,8 +1372,7 @@
       "tutorial": {
         "title": "Tutorial",
         "description": "Pratique a leitura de notação FEN e a recriação de posições no tabuleiro.",
-        "start": "Colocar Peças",
-        "skip": "Pular"
+        "start": "Colocar Peças"
       },
       "tutorialComplete": "Esses são os fundamentos!\nPratique a leitura de notação FEN com diversas posições.",
       "finishTutorial": "Finalizar Tutorial",
@@ -1470,7 +1466,6 @@
         "start": "Experimentar",
         "next": "Próximo",
         "previous": "Voltar",
-        "skip": "Pular",
         "complete": "Esses são os fundamentos!\nExperimente treinar com diferentes peças e distâncias.",
         "restart": "Reiniciar",
         "startChallenge": "Iniciar Desafio"
@@ -1567,7 +1562,6 @@
       },
       "tutorial": {
         "title": "Tutorial",
-        "skip": "Pular",
         "steps": {
           "diagonal": {
             "title": "O que é uma Diagonal?",
