@@ -34,14 +34,14 @@ export function PointGrantForm() {
       return;
     }
 
-    setMessage({ type: 'success', text: 'Coins granted successfully' });
+    // Return to the ledger view, where the just-issued grant now appears at
+    // the top (createPointGrant revalidates /admin/coins).
     form.reset();
-    router.refresh();
+    router.push('/admin/coins');
   }
 
   return (
     <form onSubmit={handleSubmit} className="bg-card border border-border rounded-lg p-6 space-y-4">
-      <h2 className="text-lg font-semibold">Grant coins</h2>
       <p className="text-sm text-muted-foreground">
         Admin-issued coins are written as <code className="font-mono">promotional</code> and are
         immediately available to redeem.

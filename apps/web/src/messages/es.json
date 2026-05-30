@@ -3343,7 +3343,8 @@
     "coins": {
       "title": "Monedas",
       "navLabel": "Monedas",
-      "transactionsHeading": "Transacciones",
+      "grant": "Conceder monedas",
+      "backToTransactions": "Volver a Monedas",
       "showing": "Mostrando {from}–{to} de {total} transacciones",
       "empty": "Ninguna transacción coincide con los filtros actuales.",
       "columns": {

@@ -2,15 +2,13 @@
  * Admin Coins Page (コイン)
  *
  * @description
- * Two surfaces over the coin economy in one page:
- *   1. A grant form (writes `point_events` rows in `category='promotional'`,
- *      immediately spendable) — companion to /admin/grants's ad_free
- *      `user_grants` form.
- *   2. A cross-user transactions table over the whole `point_events` ledger,
- *      filterable by source, category, direction (grant vs spend), and user.
- *      This is the "who was granted / who spent what" view — batch grants
- *      (like_grant), redemptions, and Maia spends all surface here, not just
- *      admin grants.
+ * A cross-user transactions table over the whole `point_events` ledger,
+ * filterable by source, category, direction (grant vs spend), and user. This
+ * is the "who was granted / who spent what" view — batch grants (like_grant),
+ * redemptions, and Maia spends all surface here, not just admin grants.
+ *
+ * Issuing coins lives on its own focused page (/admin/coins/grant), reached
+ * via the "Grant coins" button; this page is read-only over the ledger.
  *
  * "Coin" is the facing name for the points ledger — see the
  * "Points / Coin Economy" note in apps/web/CLAUDE.md. The ledger stays
@@ -25,14 +23,12 @@
  * `moderation_actions` via createPointGrant for the audit log.
  *
  * @flow
- * 1. Admin opens /admin/coins.
- * 2. Grant: paste a user UUID, enter amount, optional reason → submit.
- *    createPointGrant writes the ledger row, upserts the materialized
- *    balance, and appends a moderation_actions audit row in one transaction.
- * 3. Inspect: pick filters → the table below reloads with matching ledger
- *    rows, newest first.
+ * 1. Admin opens /admin/coins → sees recent ledger rows.
+ * 2. Pick filters → the table reloads with matching rows, newest first.
+ * 3. "Grant coins" → /admin/coins/grant; on success the new row appears here.
  */
 import { getTranslations } from 'next-intl/server';
+import Link from 'next/link';
 
 import { inArray } from 'drizzle-orm';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
@@ -53,7 +49,6 @@ import { UUID_RE } from '@/lib/validations/uuid';
 import { AdminDataTable } from '../_components/AdminDataTable';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
 import { CoinTransactionFilters } from './_components/CoinTransactionFilters';
-import { PointGrantForm } from './_components/PointGrantForm';
 
 const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
@@ -147,13 +142,15 @@ export default async function AdminCoinsPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">{t('coins.title')}</h1>
-
-      <div className="mb-8">
-        <PointGrantForm />
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <h1 className="text-2xl font-bold">{t('coins.title')}</h1>
+        <Link
+          href="/admin/coins/grant"
+          className="px-4 py-2 rounded bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
+        >
+          {t('coins.grant')}
+        </Link>
       </div>
-
-      <h2 className="text-lg font-semibold mb-3">{t('coins.transactionsHeading')}</h2>
 
       <div className="mb-4">
         <CoinTransactionFilters

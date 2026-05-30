@@ -3585,7 +3585,8 @@
     "coins": {
       "title": "Coins",
       "navLabel": "Coins",
-      "transactionsHeading": "Transactions",
+      "grant": "Grant coins",
+      "backToTransactions": "Back to Coins",
       "showing": "Showing {from}–{to} of {total} transactions",
       "empty": "No transactions match the current filters.",
       "columns": {
