@@ -31,14 +31,12 @@ type Props = {
   };
   onBoardClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
   /**
-   * Board-level drag-and-drop hooks. When `onBoardDragOver` is provided it
-   * must call `e.preventDefault()` for drop to fire — see `ChessBoard`'s
-   * interactive mode. Event delegation reads the source / target square
-   * via the same `[data-square]` ancestor lookup as `onBoardClick`.
+   * Board-level pointer-down hook driving `ChessBoard`'s interactive drag.
+   * Event delegation reads the source square via the same `[data-square]`
+   * ancestor lookup as `onBoardClick`; the move/up phases are tracked on
+   * `window` by the handler so a drag survives the pointer leaving the board.
    */
-  onBoardDragStart?: (e: React.DragEvent<HTMLDivElement>) => void;
-  onBoardDragOver?: (e: React.DragEvent<HTMLDivElement>) => void;
-  onBoardDrop?: (e: React.DragEvent<HTMLDivElement>) => void;
+  onBoardPointerDown?: (e: React.PointerEvent<HTMLDivElement>) => void;
   rounded?: boolean;
   className?: string;
   /**
@@ -68,9 +66,7 @@ export function BoardLayout({
   renderSquare,
   squareProps,
   onBoardClick,
-  onBoardDragStart,
-  onBoardDragOver,
-  onBoardDrop,
+  onBoardPointerDown,
   rounded = true,
   className = '',
   annotations = null,
@@ -81,9 +77,7 @@ export function BoardLayout({
       <div
         className={`relative w-full aspect-square overflow-hidden ${rounded ? 'rounded-md' : ''}`}
         onClick={onBoardClick}
-        onDragStart={onBoardDragStart}
-        onDragOver={onBoardDragOver}
-        onDrop={onBoardDrop}
+        onPointerDown={onBoardPointerDown}
       >
         {VISUAL_INDICES.map((row) => {
           return (
