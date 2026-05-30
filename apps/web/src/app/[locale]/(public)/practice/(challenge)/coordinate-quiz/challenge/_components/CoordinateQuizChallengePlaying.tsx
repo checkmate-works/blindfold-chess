@@ -103,20 +103,6 @@ export function CoordinateQuizChallengePlaying({
           </div>
 
           <div className="relative -mx-8 sm:mx-0">
-            {/* Pause Overlay with Play Button */}
-            <BoardOverlay
-              isVisible={isPaused}
-              className="backdrop-blur-sm bg-black/40 z-50 rounded-lg"
-            >
-              <button
-                onClick={onTogglePause}
-                className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 transition-all hover:scale-110 active:scale-95 pointer-events-auto"
-                aria-label={tPractice('resume')}
-              >
-                <LuPlay size={48} className="fill-current ml-1" />
-              </button>
-            </BoardOverlay>
-
             <CoordinateQuizGameBoard
               currentQuestion={currentQuestion}
               onSquareClick={onSquareClick}
@@ -125,6 +111,23 @@ export function CoordinateQuizChallengePlaying({
               isCorrect={isCorrect}
               countdown={countdown}
               isObscured={isPaused}
+              boardOverlay={
+                /* Pause overlay — rendered inside the board-scoped container so
+                   it covers only the board, not the orientation indicator. */
+                <BoardOverlay
+                  isVisible={isPaused}
+                  rounded="rounded-none sm:rounded-lg"
+                  className="backdrop-blur-sm bg-black/40 z-50"
+                >
+                  <button
+                    onClick={onTogglePause}
+                    className="bg-white/90 hover:bg-white text-foreground rounded-full p-6 transition-all hover:scale-110 active:scale-95 pointer-events-auto"
+                    aria-label={tPractice('resume')}
+                  >
+                    <LuPlay size={48} className="fill-current ml-1" />
+                  </button>
+                </BoardOverlay>
+              }
             />
           </div>
         </div>

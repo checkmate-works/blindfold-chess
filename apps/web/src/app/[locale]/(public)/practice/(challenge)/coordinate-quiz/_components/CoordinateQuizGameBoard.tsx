@@ -1,5 +1,7 @@
 'use client';
 
+import type { ReactNode } from 'react';
+
 import { BoardOverlay } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Square } from '@blindfold-chess/types';
@@ -15,6 +17,13 @@ type Props = {
   isCorrect: boolean;
   countdown: number | null;
   isObscured?: boolean;
+  /**
+   * Optional overlay (e.g. the challenge pause screen) rendered inside the
+   * board-scoped container so it aligns to the board rectangle only — not the
+   * orientation indicator above it. Should self-position (typically a
+   * `BoardOverlay`, which is `absolute inset-0`).
+   */
+  boardOverlay?: ReactNode;
 };
 
 /**
@@ -30,6 +39,7 @@ export function CoordinateQuizGameBoard({
   isCorrect,
   countdown,
   isObscured = false,
+  boardOverlay,
 }: Props) {
   const t = useTranslations('practice.coordinateQuiz');
 
@@ -53,10 +63,11 @@ export function CoordinateQuizGameBoard({
         </span>
       </div>
 
-      <div className="relative overflow-hidden rounded-lg">
+      <div className="relative overflow-hidden rounded-none sm:rounded-lg">
         {/* Countdown Overlay */}
         <BoardOverlay
           isVisible={countdown !== null}
+          rounded="rounded-none sm:rounded-lg"
           className="backdrop-blur-md z-50"
           data-testid="countdown-overlay"
         >
@@ -64,6 +75,9 @@ export function CoordinateQuizGameBoard({
             {countdown !== null && (countdown > 0 ? countdown : 'START!')}
           </span>
         </BoardOverlay>
+
+        {/* Board-scoped overlay slot (e.g. challenge pause screen) */}
+        {boardOverlay}
 
         <div className={`transition-all duration-300 ${shouldBlur ? 'blur-sm' : ''}`}>
           <CoordinateQuizBoard
