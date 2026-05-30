@@ -1,23 +1,24 @@
 /**
- * Admin Points Page
+ * Admin Coins Page (コイン)
  *
  * @description
- * Lets staff issue point grants and reviews recent admin grants in one
+ * Lets staff issue coin grants and reviews recent admin grants in one
  * paginated table. Companion to /admin/grants (which handles ad_free
  * user_grants); this page writes `point_events` rows in
- * `category='promotional'` so the points land in the user's spendable
- * balance.
+ * `category='promotional'` so the coins land in the user's spendable
+ * balance. "Coin" is the facing name for the points ledger — see the
+ * "Points / Coin Economy" note in apps/web/CLAUDE.md.
  *
  * @design Scope of the table
  *
  * Only rows whose `source='admin_grant'` are listed — UGC grants /
- * clawbacks / redemption rows live on the user-facing /mypage/points
+ * clawbacks / redemption rows live on the user-facing /mypage/coins
  * history and would only add noise here. Each row shows
  * the recipient (email + username), amount, the moderation reason memo,
  * and the timestamp the grant was issued.
  *
  * @flow
- * 1. Admin opens /admin/points.
+ * 1. Admin opens /admin/coins.
  * 2. Pastes a user UUID, enters amount, optional reason → submits.
  * 3. createPointGrant Server Action writes the ledger row, upserts the
  *    materialized balance, and appends a moderation_actions audit row in
@@ -43,7 +44,7 @@ const searchParamsCache = createSearchParamsCache({
   page: parseAsInteger.withDefault(1),
 });
 
-export default async function AdminPointsPage({
+export default async function AdminCoinsPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -85,12 +86,12 @@ export default async function AdminPointsPage({
   const buildHref = (p: number) => {
     const params = new URLSearchParams();
     params.set('page', String(p));
-    return `/admin/points?${params.toString()}`;
+    return `/admin/coins?${params.toString()}`;
   };
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">{t('points.title')}</h1>
+      <h1 className="text-2xl font-bold mb-6">{t('coins.title')}</h1>
 
       <div className="mb-8">
         <PointGrantForm />
@@ -98,7 +99,7 @@ export default async function AdminPointsPage({
 
       {grantRows.length > 0 && (
         <p className="text-sm text-muted-foreground mb-2">
-          {t('points.showing', {
+          {t('coins.showing', {
             from: (currentPage - 1) * DEFAULT_PAGE_SIZE + 1,
             to: (currentPage - 1) * DEFAULT_PAGE_SIZE + grantRows.length,
             total,
@@ -108,13 +109,13 @@ export default async function AdminPointsPage({
 
       <AdminDataTable
         headers={[
-          t('points.columns.user'),
-          t('points.columns.amount'),
-          t('points.columns.reason'),
-          t('points.columns.grantedAt'),
+          t('coins.columns.user'),
+          t('coins.columns.amount'),
+          t('coins.columns.reason'),
+          t('coins.columns.grantedAt'),
         ]}
         items={grantRows}
-        emptyMessage={t('points.empty')}
+        emptyMessage={t('coins.empty')}
         renderRow={(grant) => {
           const profile = profileMap.get(grant.userId);
           const email = emailMap.get(grant.userId);

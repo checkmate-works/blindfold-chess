@@ -3569,9 +3569,9 @@
       "create": "作成",
       "creating": "作成中..."
     },
-    "points": {
-      "title": "ポイント付与",
-      "navLabel": "ポイント付与",
+    "coins": {
+      "title": "コイン",
+      "navLabel": "コイン",
       "showing": "全 {total} 件中 {from}–{to} 件を表示",
       "empty": "管理付与の履歴はまだありません。",
       "columns": {

@@ -83,7 +83,7 @@ export async function createPointGrant(formData: FormData): Promise<ActionResult
       },
     });
 
-    revalidatePath('/admin/points');
+    revalidatePath('/admin/coins');
     return { success: true };
   } catch (error) {
     console.error('Failed to create point grant:', error);

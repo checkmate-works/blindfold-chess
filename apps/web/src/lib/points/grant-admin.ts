@@ -64,7 +64,7 @@ export async function grantAdminPoints(
   return { pointEventId, grantId };
 }
 
-/** One admin-issued point grant as listed on `/admin/points`. */
+/** One admin-issued point grant as listed on `/admin/coins`. */
 export type AdminPointGrantRow = {
   id: string;
   userId: string;
@@ -74,7 +74,7 @@ export type AdminPointGrantRow = {
   createdAt: Date;
 };
 
-/** Count of admin-issued point grants — drives `/admin/points` pagination. */
+/** Count of admin-issued point grants — drives `/admin/coins` pagination. */
 export async function countAdminPointGrants(): Promise<number> {
   const [row] = await db
     .select({ count: sql<number>`count(*)::int` })
@@ -85,7 +85,7 @@ export async function countAdminPointGrants(): Promise<number> {
 
 /**
  * List admin-issued point grants, newest first. Keeps the `point_events`
- * schema encapsulated within `@/lib/points` — `/admin/points` renders the
+ * schema encapsulated within `@/lib/points` — `/admin/coins` renders the
  * returned rows without reaching into the ledger table itself.
  */
 export async function listAdminPointGrants(

@@ -3569,11 +3569,11 @@
       "create": "Create",
       "creating": "Creating..."
     },
-    "points": {
-      "title": "Points",
-      "navLabel": "Points",
+    "coins": {
+      "title": "Coins",
+      "navLabel": "Coins",
       "showing": "Showing {from}–{to} of {total} grants",
-      "empty": "No admin point grants yet.",
+      "empty": "No admin coin grants yet.",
       "columns": {
         "user": "User",
         "amount": "Amount",

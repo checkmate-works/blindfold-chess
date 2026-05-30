@@ -3327,11 +3327,11 @@
       "create": "Crear",
       "creating": "Creando..."
     },
-    "points": {
-      "title": "Puntos",
-      "navLabel": "Puntos",
+    "coins": {
+      "title": "Monedas",
+      "navLabel": "Monedas",
       "showing": "Mostrando {from}–{to} de {total} concesiones",
-      "empty": "Todavía no hay concesiones de puntos por staff.",
+      "empty": "Todavía no hay concesiones de monedas por staff.",
       "columns": {
         "user": "Usuario",
         "amount": "Cantidad",
