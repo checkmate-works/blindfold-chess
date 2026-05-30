@@ -3003,7 +3003,20 @@
         "modReason": "Motivo",
         "modActor": "Autor",
         "modDate": "Fecha",
-        "adminActions": "Acciones de administrador"
+        "adminActions": "Acciones de administrador",
+        "coinSection": "Monedas",
+        "coinBalanceLabel": "Saldo",
+        "coinUnit": "monedas",
+        "coinCatEarned": "Ganadas",
+        "coinCatPromotional": "Promocional",
+        "coinCatPurchased": "Compradas",
+        "coinHistoryTitle": "Transacciones recientes",
+        "coinEvent": "Evento",
+        "coinAmount": "Cantidad",
+        "coinCategory": "Categoría",
+        "coinDate": "Fecha",
+        "noCoinActivity": "Aún no hay actividad de monedas.",
+        "viewAllCoins": "Ver todas las transacciones"
       }
     },
     "tabs": {

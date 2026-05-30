@@ -3245,7 +3245,20 @@
         "modReason": "理由",
         "modActor": "実行者",
         "modDate": "日時",
-        "adminActions": "管理操作"
+        "adminActions": "管理操作",
+        "coinSection": "コイン",
+        "coinBalanceLabel": "残高",
+        "coinUnit": "コイン",
+        "coinCatEarned": "獲得",
+        "coinCatPromotional": "プロモーション",
+        "coinCatPurchased": "購入",
+        "coinHistoryTitle": "最近のトランザクション",
+        "coinEvent": "イベント",
+        "coinAmount": "増減",
+        "coinCategory": "カテゴリ",
+        "coinDate": "日時",
+        "noCoinActivity": "コインの履歴はまだありません。",
+        "viewAllCoins": "すべてのトランザクションを表示"
       }
     },
     "tabs": {

@@ -3245,7 +3245,20 @@
         "modReason": "Reason",
         "modActor": "Actor",
         "modDate": "Date",
-        "adminActions": "Admin Actions"
+        "adminActions": "Admin Actions",
+        "coinSection": "Coins",
+        "coinBalanceLabel": "Balance",
+        "coinUnit": "coins",
+        "coinCatEarned": "Earned",
+        "coinCatPromotional": "Promotional",
+        "coinCatPurchased": "Purchased",
+        "coinHistoryTitle": "Recent transactions",
+        "coinEvent": "Event",
+        "coinAmount": "Amount",
+        "coinCategory": "Category",
+        "coinDate": "Date",
+        "noCoinActivity": "No coin activity yet.",
+        "viewAllCoins": "View all transactions"
       }
     },
     "tabs": {
