@@ -89,19 +89,37 @@ export async function getChallengeSessions(
   }
 }
 
-export async function getAvailableMenuTypes(): Promise<ChallengeMenuType[]> {
+/**
+ * Returns the challenge menu types the current user has records for.
+ *
+ * When a date range is supplied, only menu types with at least one record
+ * inside `[rangeStart, rangeEnd)` are returned (used by the dashboard so the
+ * category select hides categories with no records in the selected period).
+ * Omitting the range yields the all-time set (used by the "view all results"
+ * page). In both cases the result is ordered to match the `/practice` page
+ * (i.e. the `PRACTICE_MODULE_REGISTRY` order), not the arbitrary DB order.
+ */
+export async function getAvailableMenuTypes(
+  rangeStart?: string,
+  rangeEnd?: string
+): Promise<ChallengeMenuType[]> {
   try {
     const userId = await getSessionUserId();
     if (!userId) return [];
 
+    const conditions = [eq(challengeResults.userId, userId)];
+    if (rangeStart && rangeEnd) {
+      conditions.push(gte(challengeResults.createdAt, new Date(rangeStart)));
+      conditions.push(lt(challengeResults.createdAt, new Date(rangeEnd)));
+    }
+
     const rows = await db
       .selectDistinct({ menuType: challengeResults.menuType })
       .from(challengeResults)
-      .where(eq(challengeResults.userId, userId));
+      .where(and(...conditions));
 
-    return rows
-      .map((r) => r.menuType)
-      .filter((m): m is ChallengeMenuType => CHALLENGE_MENU_TYPES.includes(m as ChallengeMenuType));
+    const present = new Set(rows.map((r) => r.menuType));
+    return CHALLENGE_MENU_TYPES.filter((m) => present.has(m));
   } catch (error) {
     Sentry.captureException(error);
     return [];

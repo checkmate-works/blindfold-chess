@@ -19,7 +19,10 @@ export type ChallengeSessionsQueryResult = {
 /**
  * Owns the data-fetching lifecycle for the mypage challenges dashboard:
  *
- *   1. On mount, fetch `getAvailableMenuTypes()` and auto-select the first.
+ *   1. Whenever `selectedPeriod` changes (including on mount), fetch the menu
+ *      types that have records in that period to populate the dropdown, then
+ *      reconcile `selectedMenu`: keep it if still available, otherwise select
+ *      the first (or clear it when the period has no records at all).
  *   2. Whenever `selectedMenu` or `selectedPeriod` changes, fetch the current
  *      and previous period's sessions.
  *   3. Callers are notified via `onSessionsLoaded` when a successful fetch
@@ -36,24 +39,28 @@ export function useChallengeSessionsQuery(
   const [availableMenuTypes, setAvailableMenuTypes] = useState<ChallengeMenuType[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch all menu types once on mount to populate dropdown
+  // Refetch the available menu types whenever the period changes so the
+  // dropdown only lists categories that have records in the selected period.
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const types = await getAvailableMenuTypes();
-      if (!cancelled) {
-        setAvailableMenuTypes(types);
-        if (types.length > 0) {
-          setSelectedMenu(types[0]);
-        } else {
-          setIsLoading(false);
-        }
+      const range = getPeriodRange(selectedPeriod);
+      const types = await getAvailableMenuTypes(range.start.toISOString(), range.end.toISOString());
+      if (cancelled) return;
+      setAvailableMenuTypes(types);
+      // Keep the current selection if it still has records in this period;
+      // otherwise fall back to the first available (or clear when empty).
+      setSelectedMenu((prev) => (prev && types.includes(prev) ? prev : (types[0] ?? null)));
+      if (types.length === 0) {
+        setAllSessions([]);
+        setPreviousSessions([]);
+        setIsLoading(false);
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [selectedPeriod]);
 
   // Fetch sessions when menu or period changes
   useEffect(() => {

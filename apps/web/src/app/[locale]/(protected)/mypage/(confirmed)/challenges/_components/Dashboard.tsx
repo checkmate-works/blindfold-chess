@@ -55,16 +55,13 @@ export function Dashboard({ locale }: { locale: string }) {
   const comparisonLabel = getComparisonLabel(selectedPeriod, t);
   const navigablePrevPeriod = getNavigablePreviousPeriod(selectedPeriod);
 
-  if (availableMenuTypes === null || (isLoading && availableMenuTypes.length === 0)) {
+  // Only the very first load (before we know anything) shows the full-page
+  // skeleton. Once `availableMenuTypes` is an array we always render the
+  // period selector so the user can switch periods — even a period with no
+  // records must remain escapable (otherwise selecting an empty period would
+  // hide the period select and trap the user).
+  if (availableMenuTypes === null) {
     return <DashboardSkeleton />;
-  }
-
-  if (availableMenuTypes.length === 0) {
-    return (
-      <div className="text-center py-12 text-muted-foreground">
-        <p>{t('noData')}</p>
-      </div>
-    );
   }
 
   const menuOptions = availableMenuTypes.map((type) => ({
@@ -90,6 +87,10 @@ export function Dashboard({ locale }: { locale: string }) {
 
       {isLoading ? (
         <DashboardContentSkeleton />
+      ) : availableMenuTypes.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground">
+          <p>{t('noData')}</p>
+        </div>
       ) : (
         <>
           <DashboardStatsSection
