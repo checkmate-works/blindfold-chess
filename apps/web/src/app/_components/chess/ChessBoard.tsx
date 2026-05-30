@@ -60,8 +60,10 @@ type Props = {
    *   deselects (or reselects if it's another own piece).
    * - Own-color pieces become `draggable`; drop on a legal destination
    *   executes the move.
-   * - Legal destinations for the selected piece are highlighted via the
-   *   same `selectable` chrome as `highlightedSquares`.
+   * - The selected square and the legal destinations for the selected piece
+   *   are highlighted in the lichess/chessground style (green tint on the
+   *   selected square, centered dots on empty targets, corner rings on
+   *   captures).
    * - The move is pre-validated against the current FEN; `san` is the
    *   canonical algebraic notation. Promotions default to queen — pass
    *   an underpromotion explicitly via `findLegalMoveByCoords` from the
@@ -440,7 +442,32 @@ export const ChessBoard = memo(function ChessBoard({
       const isExternalHighlight = highlightedSquares.includes(square);
       const isSelected = selectedSquare === square;
       const isLegalDestination = legalDestinations.includes(square);
-      const isHighlight = isExternalHighlight || isSelected || isLegalDestination;
+      // A legal destination is a capture when the target square is occupied
+      // (chessground's `.oc` modifier). En-passant lands on an empty square,
+      // so it correctly renders as a plain move-dest dot — matching lichess.
+      const isCaptureDest = isLegalDestination && pieceAt(square) !== null;
+
+      // Move affordances mirror lichess/chessground: the selected square and
+      // legal-destination dots / capture rings take precedence over the
+      // last-move and external-highlight chrome. `last-move` and `selectable`
+      // keep their existing ring styling (shared with non-interactive boards).
+      const highlightType:
+        | 'none'
+        | 'last-move'
+        | 'selectable'
+        | 'selected'
+        | 'move-dest'
+        | 'capture-dest' = isSelected
+        ? 'selected'
+        : isCaptureDest
+          ? 'capture-dest'
+          : isLegalDestination
+            ? 'move-dest'
+            : isLastMove
+              ? 'last-move'
+              : isExternalHighlight
+                ? 'selectable'
+                : 'none';
 
       const showEvalMark = evaluationMark && evaluationMark.square === square;
       const evalBadge = showEvalMark
@@ -449,10 +476,7 @@ export const ChessBoard = memo(function ChessBoard({
 
       return {
         dataSquare: onSquareClick || interactive ? square : undefined,
-        highlightType: (isLastMove ? 'last-move' : isHighlight ? 'selectable' : 'none') as
-          | 'none'
-          | 'last-move'
-          | 'selectable',
+        highlightType,
         badge: evalBadge,
       };
     },
@@ -464,6 +488,7 @@ export const ChessBoard = memo(function ChessBoard({
       interactive,
       selectedSquare,
       legalDestinations,
+      pieceAt,
     ]
   );
 

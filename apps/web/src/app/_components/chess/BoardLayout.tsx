@@ -25,7 +25,7 @@ type Props = {
   renderSquare: (info: SquareRenderInfo) => ReactNode;
   squareProps?: (info: SquareRenderInfo) => {
     onClick?: () => void;
-    highlightType?: 'none' | 'last-move' | 'selectable';
+    highlightType?: 'none' | 'last-move' | 'selectable' | 'selected' | 'move-dest' | 'capture-dest';
     badge?: ReactNode;
     dataSquare?: string;
   };

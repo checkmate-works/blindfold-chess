@@ -530,35 +530,60 @@ describe('ChessBoard interactive mode — obfuscated counting (single-color / di
   });
 });
 
-describe('ChessBoard interactive mode — obfuscation suppresses the legal-destination highlight', () => {
-  // The 'selectable' highlight applied to legal destinations (and the
-  // selected square) — see `Square`'s highlightClass.
-  const SELECTABLE_RING = 'ring-foreground/50';
+describe('ChessBoard interactive mode — lichess-style move highlights (normal display)', () => {
+  // White pawn on e4, black pawn on d5: e4 can advance to e5 (empty → dot)
+  // or capture on d5 (occupied → ring). Kings kept clear of the action.
+  const CAPTURE_FEN = '4k3/8/8/3p4/4P3/8/8/4K3 w - - 0 1';
 
-  it('highlights legal destinations on normal display', () => {
+  /** The `data-highlight` value on the overlay inside a square, or null. */
+  function highlightOf(container: HTMLElement, square: string): string | null {
+    return (
+      squareEl(container, square)
+        .querySelector('[data-highlight]')
+        ?.getAttribute('data-highlight') ?? null
+    );
+  }
+
+  it('marks the selected square with the lichess "selected" overlay', () => {
     const { container } = render(
       <ChessBoard fen={STARTING_FEN} playerSide="white" onMove={() => {}} />
     );
 
     fireEvent.click(squareEl(container, 'e2')); // select own pawn
-    expect(squareEl(container, 'e4').className).toContain(SELECTABLE_RING);
+    expect(highlightOf(container, 'e2')).toBe('selected');
   });
 
-  it('suppresses the highlight when pieces are shown as discs (pieceShapeMode)', () => {
+  it('marks a legal empty destination with a move-dest dot', () => {
     const { container } = render(
-      <ChessBoard
-        fen={STARTING_FEN}
-        playerSide="white"
-        pieceShapeMode="circles-all"
-        onMove={() => {}}
-      />
+      <ChessBoard fen={STARTING_FEN} playerSide="white" onMove={() => {}} />
     );
 
     fireEvent.click(squareEl(container, 'e2'));
-    expect(squareEl(container, 'e4').className).not.toContain(SELECTABLE_RING);
+    expect(highlightOf(container, 'e4')).toBe('move-dest');
   });
 
-  it('suppresses the highlight in single-color mode (pieceColors)', () => {
+  it('marks a legal capture destination with a capture-dest ring', () => {
+    const { container } = render(
+      <ChessBoard fen={CAPTURE_FEN} playerSide="white" onMove={() => {}} />
+    );
+
+    fireEvent.click(squareEl(container, 'e4')); // select the pawn
+    expect(highlightOf(container, 'd5')).toBe('capture-dest'); // occupied target
+    expect(highlightOf(container, 'e5')).toBe('move-dest'); // empty advance
+  });
+});
+
+describe('ChessBoard interactive mode — obfuscation suppresses the legal-destination highlight', () => {
+  /** The `data-highlight` value on the overlay inside a square, or null. */
+  function highlightOf(container: HTMLElement, square: string): string | null {
+    return (
+      squareEl(container, square)
+        .querySelector('[data-highlight]')
+        ?.getAttribute('data-highlight') ?? null
+    );
+  }
+
+  it('still marks the selected square (selection feedback is not a leak)', () => {
     const { container } = render(
       <ChessBoard
         fen={STARTING_FEN}
@@ -569,16 +594,44 @@ describe('ChessBoard interactive mode — obfuscation suppresses the legal-desti
     );
 
     fireEvent.click(squareEl(container, 'e2'));
-    expect(squareEl(container, 'e4').className).not.toContain(SELECTABLE_RING);
+    expect(highlightOf(container, 'e2')).toBe('selected');
   });
 
-  it('suppresses the highlight when own pieces are hidden (showOwnPieces=false)', () => {
+  it('suppresses the legal-destination dots when pieces are shown as discs (pieceShapeMode)', () => {
+    const { container } = render(
+      <ChessBoard
+        fen={STARTING_FEN}
+        playerSide="white"
+        pieceShapeMode="circles-all"
+        onMove={() => {}}
+      />
+    );
+
+    fireEvent.click(squareEl(container, 'e2'));
+    expect(highlightOf(container, 'e4')).toBeNull();
+  });
+
+  it('suppresses the legal-destination dots in single-color mode (pieceColors)', () => {
+    const { container } = render(
+      <ChessBoard
+        fen={STARTING_FEN}
+        playerSide="white"
+        pieceColors="white-only"
+        onMove={() => {}}
+      />
+    );
+
+    fireEvent.click(squareEl(container, 'e2'));
+    expect(highlightOf(container, 'e4')).toBeNull();
+  });
+
+  it('suppresses the legal-destination dots when own pieces are hidden (showOwnPieces=false)', () => {
     const { container } = render(
       <ChessBoard fen={STARTING_FEN} playerSide="white" showOwnPieces={false} onMove={() => {}} />
     );
 
     fireEvent.click(squareEl(container, 'e2'));
-    expect(squareEl(container, 'e4').className).not.toContain(SELECTABLE_RING);
+    expect(highlightOf(container, 'e4')).toBeNull();
   });
 });
 
