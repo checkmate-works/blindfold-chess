@@ -15,7 +15,7 @@ import {
 } from './constants';
 
 /**
- * One row as rendered on `/mypage/points` — one entry per ledger row.
+ * One row as rendered on `/mypage/coins` — one entry per ledger row.
  */
 export type PointHistoryEntry = {
   id: string;

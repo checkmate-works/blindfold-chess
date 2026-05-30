@@ -275,7 +275,7 @@ export default async function CoinPage({ params }: Props) {
 
         {/* CTA */}
         <section className="flex flex-col gap-3 sm:flex-row">
-          <Link href="/mypage/points" locale={locale} className="flex-1">
+          <Link href="/mypage/coins" locale={locale} className="flex-1">
             <Button asChild variant="primary" size="lg" fullWidth>
               {t('cta.viewBalance')}
             </Button>

@@ -11,7 +11,7 @@ import { DAILY_CREATION_POINT_CAP, POINT_SOURCES } from './constants';
  * Daily creation-cap helpers — the read side of `DAILY_CREATION_POINT_CAP`.
  *
  * The cap is enforced in `grantPointsForPost` and surfaced for display on
- * `/mypage/points`; both go through `creationEarnedToday` so there is one
+ * `/mypage/coins`; both go through `creationEarnedToday` so there is one
  * definition of "what counts toward today's cap". The cap resets at the
  * UTC day boundary (`startOfUtcDay`) — deterministic and matching what
  * the `/coin` guide documents; a locale-relative reset would be
@@ -46,7 +46,7 @@ export async function creationEarnedToday(executor: DbTxOrDb, userId: string): P
   return row?.total ?? 0;
 }
 
-/** Daily creation-cap status as rendered on `/mypage/points`. */
+/** Daily creation-cap status as rendered on `/mypage/coins`. */
 export type DailyCreationCapStatus = {
   /** Net creation points earned since 00:00 UTC, floored at 0. */
   earnedToday: number;
