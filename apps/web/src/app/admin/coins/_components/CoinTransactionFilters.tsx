@@ -21,8 +21,10 @@ type CoinTransactionFiltersProps = {
   };
 };
 
-const FIELD_CLASS = 'px-3 py-2 border border-border rounded bg-background text-foreground text-sm';
-const LABEL_CLASS = 'block text-xs font-medium text-muted-foreground mb-1';
+// Match the /admin/users filter controls: opaque `bg-card` surface so the
+// selects/inputs don't blend into the page's `bg-background` main area.
+const FIELD_CLASS = 'border border-border rounded px-3 py-2 text-sm bg-card';
+const LABEL_CLASS = 'block text-sm font-medium mb-1';
 
 export async function CoinTransactionFilters({ values }: CoinTransactionFiltersProps) {
   const t = await getTranslations({ locale: 'en', namespace: 'Admin.coins' });
@@ -105,7 +107,7 @@ export async function CoinTransactionFilters({ values }: CoinTransactionFiltersP
       </button>
       <Link
         href="/admin/coins"
-        className="px-4 py-2 rounded border border-border bg-card text-sm font-medium hover:bg-secondary transition-colors"
+        className="px-4 py-2 rounded border border-border bg-card text-sm font-medium hover:bg-muted transition-colors"
       >
         {t('filters.clear')}
       </Link>
