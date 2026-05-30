@@ -4,25 +4,7 @@ import { FiGitPullRequest } from 'react-icons/fi';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-/**
- * Viewer relationship to the edit-suggestion flow, used to switch the
- * callout CTA copy. Decoupled from the actual permission checks
- * (which live on the server actions) — the prop only drives copy and
- * visual emphasis.
- *
- * - `owner`: chunk author. CTA reads "View suggestions" — they review
- *   the queue rather than submit to it.
- * - `hasPending`: signed-in non-owner with an existing pending row.
- *   CTA reads "View / manage your suggestion" — the dedicated page
- *   surfaces their existing row + Withdraw button.
- * - `canSuggest`: signed-in non-owner without a pending row. CTA
- *   reads "Suggest an edit". Past resolved rows do not change this
- *   state (the visitor is free to suggest again).
- * - `signedOut`: anonymous viewer. CTA reads "Sign in to suggest" —
- *   following the link still lands on the edit-requests page, which
- *   itself surfaces the sign-in prompt.
- */
-export type EditRequestCalloutViewerState = 'owner' | 'hasPending' | 'canSuggest' | 'signedOut';
+import type { EditRequestCalloutViewerState } from '../_lib/resolve-chunk-display-state';
 
 type Props = {
   locale: Locale;
