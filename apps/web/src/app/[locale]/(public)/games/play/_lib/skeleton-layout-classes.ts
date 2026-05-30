@@ -19,12 +19,20 @@ export const ACTION_ROW_CONTAINER_CLASSES = 'flex justify-center gap-4 md:gap-2'
 
 /**
  * Outer card chrome for `InlineBoardView` (and the matching
- * `InlineBoardHeaderSkeleton` / `AlwaysVisibleBoardSkeleton`). A bordered
- * card with rounded corners that clips its descendants — used identically
- * by both the peek-inline accordion and the always-visible board so they
- * share a unified visual identity.
+ * `InlineBoardHeaderSkeleton` / `AlwaysVisibleBoardSkeleton`). A card that
+ * clips its descendants — used identically by both the peek-inline accordion
+ * and the always-visible board so they share a unified visual identity.
+ *
+ * Responsive shape mirrors `PagePanel`: on mobile (`<sm`) the card goes
+ * full-bleed (`-mx-4` cancels the parent locale layout's `px-4`, and PagePanel's
+ * own `p-4` is cancelled too) with square corners and no border, so the board
+ * reaches the screen edges — same lichess-style full-width treatment as the
+ * coordinate-quiz board. At `>=sm` it becomes a bordered, rounded card again.
+ * The `-mx-4` assumes the board card sits inside `PagePanel` (`p-4` at `<sm`)
+ * within the `px-4` locale layout wrapper.
  */
-export const INLINE_BOARD_CARD_CHROME = 'bg-card rounded-md border border-border overflow-hidden';
+export const INLINE_BOARD_CARD_CHROME =
+  'bg-card -mx-4 sm:mx-0 rounded-none sm:rounded-md border-0 sm:border sm:border-border overflow-hidden';
 
 /**
  * The accordion-trigger row inside `InlineBoardView` (peek+inline mode).
