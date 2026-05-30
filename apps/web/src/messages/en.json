@@ -2771,7 +2771,6 @@
     "records": "Records",
     "bestScore": "Best Score",
     "avgScore": "Avg. Score",
-    "avgScoreTooltip": "Average score of sessions that lasted the full 60 seconds.",
     "scoreUnit": "Avg. Score",
     "scoreTrend": "Score Trend",
     "sessionHistory": "Session History",
@@ -2957,7 +2956,26 @@
   },
   "MypageChallenges": {
     "title": "Challenge Records",
-    "breadcrumbMypage": "My Page"
+    "breadcrumbMypage": "My Page",
+    "help": {
+      "label": "Help",
+      "filters": {
+        "title": "Filter your records",
+        "description": "Pick a period and a challenge to see the matching records. Only challenges you practiced in the selected period are listed."
+      },
+      "stats": {
+        "title": "Best & average score",
+        "description": "Best Score is your top result. Avg. Score is the average of sessions that used up the full time limit. The figure below each one compares it with the previous period."
+      },
+      "chart": {
+        "title": "Score trend",
+        "description": "Your scores over the selected period, overlaid with the previous period for comparison. Tap the previous-period label to jump to that period."
+      },
+      "history": {
+        "title": "Recent sessions",
+        "description": "Your latest sessions for the selected challenge. Tap \"View all results\" to see the full history."
+      }
+    }
   },
   "MypageChallengeResults": {
     "title": "Challenge Records",

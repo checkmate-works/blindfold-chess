@@ -2532,7 +2532,6 @@
     "records": "Registros",
     "bestScore": "Mejor Puntuación",
     "avgScore": "Puntuación Prom.",
-    "avgScoreTooltip": "Puntuación promedio de las sesiones que duraron los 60 segundos completos.",
     "scoreUnit": "Puntuación Prom.",
     "scoreTrend": "Tendencia de Puntuación",
     "sessionHistory": "Historial de Sesiones",
@@ -2718,7 +2717,26 @@
   },
   "MypageChallenges": {
     "title": "Historial de Desafíos",
-    "breadcrumbMypage": "Mi Página"
+    "breadcrumbMypage": "Mi Página",
+    "help": {
+      "label": "Ayuda",
+      "filters": {
+        "title": "Filtra tus registros",
+        "description": "Elige un período y un desafío para ver los registros correspondientes. Solo se listan los desafíos que practicaste en el período seleccionado."
+      },
+      "stats": {
+        "title": "Mejor puntuación y promedio",
+        "description": "«Mejor Puntuación» es tu mejor resultado y «Puntuación Prom.» es el promedio de las sesiones que agotaron todo el tiempo límite. La cifra debajo de cada una la compara con el período anterior."
+      },
+      "chart": {
+        "title": "Evolución de la puntuación",
+        "description": "Tus puntuaciones durante el período seleccionado, superpuestas con el período anterior para comparar. Toca la etiqueta del período anterior para ir a ese período."
+      },
+      "history": {
+        "title": "Sesiones recientes",
+        "description": "Tus sesiones más recientes del desafío seleccionado. Toca «Ver todos los resultados» para ver el historial completo."
+      }
+    }
   },
   "MypageChallengeResults": {
     "title": "Historial de Desafíos",

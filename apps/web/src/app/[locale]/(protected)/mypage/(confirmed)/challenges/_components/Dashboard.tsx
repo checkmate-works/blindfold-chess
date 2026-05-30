@@ -73,17 +73,19 @@ export function Dashboard({ locale }: { locale: string }) {
     <div className="space-y-6 overflow-x-hidden">
       <SectionTitle>{t('records')}</SectionTitle>
 
-      <DashboardFilters
-        selectedPeriod={selectedPeriod}
-        setSelectedPeriod={setSelectedPeriod}
-        selectedMenu={selectedMenu}
-        setSelectedMenu={setSelectedMenu}
-        menuOptions={menuOptions}
-        boardOrientationFilter={boardOrientationFilter}
-        setBoardOrientationFilter={setBoardOrientationFilter}
-        pieceFilter={pieceFilter}
-        handlePieceSelect={handlePieceSelect}
-      />
+      <div data-tour-id="challenges-filters" className="space-y-6">
+        <DashboardFilters
+          selectedPeriod={selectedPeriod}
+          setSelectedPeriod={setSelectedPeriod}
+          selectedMenu={selectedMenu}
+          setSelectedMenu={setSelectedMenu}
+          menuOptions={menuOptions}
+          boardOrientationFilter={boardOrientationFilter}
+          setBoardOrientationFilter={setBoardOrientationFilter}
+          pieceFilter={pieceFilter}
+          handlePieceSelect={handlePieceSelect}
+        />
+      </div>
 
       {isLoading ? (
         <DashboardContentSkeleton />
@@ -93,15 +95,17 @@ export function Dashboard({ locale }: { locale: string }) {
         </div>
       ) : (
         <>
-          <DashboardStatsSection
-            bestScore={currentStats.bestScore}
-            avgCompletionScore={currentStats.avgCompletionScore}
-            bestScoreComparison={bestScoreComparison}
-            avgScoreComparison={avgScoreComparison}
-            comparisonLabel={comparisonLabel}
-          />
+          <div data-tour-id="challenges-stats">
+            <DashboardStatsSection
+              bestScore={currentStats.bestScore}
+              avgCompletionScore={currentStats.avgCompletionScore}
+              bestScoreComparison={bestScoreComparison}
+              avgScoreComparison={avgScoreComparison}
+              comparisonLabel={comparisonLabel}
+            />
+          </div>
 
-          <div className="min-w-0 overflow-hidden">
+          <div data-tour-id="challenges-chart" className="min-w-0 overflow-hidden">
             <h3 className="text-sm md:text-base font-medium text-muted-foreground">
               {t('scoreTrend')}
             </h3>
@@ -119,7 +123,7 @@ export function Dashboard({ locale }: { locale: string }) {
             </div>
           </div>
 
-          <div>
+          <div data-tour-id="challenges-history">
             <h3 className="text-sm md:text-base font-medium text-muted-foreground">
               {t('sessionHistory')}
             </h3>

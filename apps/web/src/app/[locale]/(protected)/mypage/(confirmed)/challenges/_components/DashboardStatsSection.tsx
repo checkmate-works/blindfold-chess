@@ -35,7 +35,6 @@ export function DashboardStatsSection({
       <StatsCard
         label={t('avgScore')}
         value={avgCompletionScore !== null ? avgCompletionScore.toFixed(1) : '-'}
-        tooltip={t('avgScoreTooltip')}
         comparison={{
           percentChange: avgScoreComparison,
           absoluteChange: null,

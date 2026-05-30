@@ -2771,7 +2771,6 @@
     "records": "レコード",
     "bestScore": "最高スコア",
     "avgScore": "平均スコア",
-    "avgScoreTooltip": "制限時間を最後まで使い切ったセッションの平均スコアです。",
     "scoreUnit": "平均スコア",
     "scoreTrend": "スコア推移",
     "sessionHistory": "セッション履歴",
@@ -2957,7 +2956,26 @@
   },
   "MypageChallenges": {
     "title": "チャレンジ記録",
-    "breadcrumbMypage": "マイページ"
+    "breadcrumbMypage": "マイページ",
+    "help": {
+      "label": "ヘルプ",
+      "filters": {
+        "title": "記録を絞り込む",
+        "description": "期間とチャレンジを選ぶと、その条件に合う記録が表示されます。選択した期間に挑戦したチャレンジだけが一覧に並びます。"
+      },
+      "stats": {
+        "title": "ベスト・平均スコア",
+        "description": "「ベストスコア」は最高記録、「平均スコア」は制限時間を最後まで使い切ったセッションの平均です。各スコアの下の数値は前の期間との比較を表します。"
+      },
+      "chart": {
+        "title": "スコアの推移",
+        "description": "選択した期間のスコアの推移です。比較のため前の期間も重ねて表示されます。前期間のラベルをタップすると、その期間に移動できます。"
+      },
+      "history": {
+        "title": "最近のセッション",
+        "description": "選択したチャレンジの直近のセッションです。「すべての結果を見る」から全履歴を確認できます。"
+      }
+    }
   },
   "MypageChallengeResults": {
     "title": "チャレンジ記録",
