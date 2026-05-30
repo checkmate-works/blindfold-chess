@@ -6,7 +6,10 @@ import { useSearchParams } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
-import { createPracticeResultClient } from '@/app/[locale]/(public)/practice/_lib/createPracticeResultClient';
+import {
+  createPracticeResultClient,
+  formatAverageTimePerAnswer,
+} from '@/app/[locale]/(public)/practice/_lib/createPracticeResultClient';
 import { CardLink, SectionTitle } from '@/app/[locale]/_components';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -114,10 +117,7 @@ export const ResultClient = createPracticeResultClient({
     return `/${ctx.locale}/practice/route-planner/challenge/session?${params.toString()}`;
   },
   buildSettingsUrl: (ctx) => `/${ctx.locale}/practice/route-planner`,
-  buildAverageTimeText: (ctx) => {
-    const avg = ctx.total > 0 ? (ctx.timeElapsed / ctx.total).toFixed(1) : '0.0';
-    return ctx.tPractice('secondsFormat', { seconds: avg });
-  },
+  buildAverageTimeText: formatAverageTimePerAnswer,
   renderChildren: () => <RoutePlannerChildren />,
   renderAfterComplete: (ctx) => <RelatedLinks locale={ctx.locale} />,
 });

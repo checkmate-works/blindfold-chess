@@ -1,6 +1,9 @@
 'use client';
 
-import { createPracticeResultClient } from '@/app/[locale]/(public)/practice/_lib/createPracticeResultClient';
+import {
+  createPracticeResultClient,
+  formatAverageTimePerAnswer,
+} from '@/app/[locale]/(public)/practice/_lib/createPracticeResultClient';
 
 export const ResultClient = createPracticeResultClient({
   moduleSlug: 'legal-moves',
@@ -22,8 +25,5 @@ export const ResultClient = createPracticeResultClient({
     if (extra.piece) params.set('piece', extra.piece);
     return `/${ctx.locale}/practice/legal-moves/challenge?${params.toString()}`;
   },
-  buildAverageTimeText: (ctx) => {
-    const avg = ctx.total > 0 ? (ctx.timeElapsed / ctx.total).toFixed(1) : '0.0';
-    return ctx.tPractice('secondsFormat', { seconds: avg });
-  },
+  buildAverageTimeText: formatAverageTimePerAnswer,
 });

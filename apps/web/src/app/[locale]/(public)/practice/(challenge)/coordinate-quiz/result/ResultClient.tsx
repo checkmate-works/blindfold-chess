@@ -1,6 +1,9 @@
 'use client';
 
-import { createPracticeResultClient } from '@/app/[locale]/(public)/practice/_lib/createPracticeResultClient';
+import {
+  createPracticeResultClient,
+  formatAverageTimePerAnswer,
+} from '@/app/[locale]/(public)/practice/_lib/createPracticeResultClient';
 
 export const ResultClient = createPracticeResultClient({
   moduleSlug: 'coordinate-quiz',
@@ -21,10 +24,7 @@ export const ResultClient = createPracticeResultClient({
     if (extra.feedbackSpeed) params.set('feedbackSpeed', extra.feedbackSpeed);
     return `/${ctx.locale}/practice/coordinate-quiz/challenge?${params.toString()}`;
   },
-  buildAverageTimeText: (ctx) => {
-    const avg = ctx.total > 0 ? (ctx.timeElapsed / ctx.total).toFixed(1) : '0.0';
-    return ctx.tPractice('secondsFormat', { seconds: avg });
-  },
+  buildAverageTimeText: formatAverageTimePerAnswer,
   extraCompleteProps: (_ctx, { adBannerWide }) => ({
     beforeRelatedContent: adBannerWide,
   }),

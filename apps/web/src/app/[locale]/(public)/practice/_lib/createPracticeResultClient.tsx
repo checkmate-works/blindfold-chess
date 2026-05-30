@@ -179,6 +179,20 @@ function buildParamString(values: Record<string, string | null>): string {
   return params.toString();
 }
 
+/**
+ * Average seconds-per-answer text used by most challenge result clients as
+ * their `buildAverageTimeText`. Unlike the factory's internal
+ * `defaultAverageTimeText` (which returns `undefined` at `total === 0` to hide
+ * the row), this always renders a value — `0.0` when there are no answers —
+ * matching the per-module behaviour those clients shipped. Modules with a
+ * different denominator (e.g. diagonal-quiz's count-based average) keep their
+ * own callback.
+ */
+export function formatAverageTimePerAnswer(ctx: ResultContext): string {
+  const avg = ctx.total > 0 ? (ctx.timeElapsed / ctx.total).toFixed(1) : '0.0';
+  return ctx.tPractice('secondsFormat', { seconds: avg });
+}
+
 // ---------------------------------------------------------------------------
 // Factory
 // ---------------------------------------------------------------------------
