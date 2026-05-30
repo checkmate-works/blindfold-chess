@@ -80,9 +80,10 @@ export function BoardViewModal({
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/70" />
 
-      {/* Content */}
-      <div className="relative z-10 w-full max-w-lg px-4">
-        <div className="rounded-md overflow-hidden">
+      {/* Content. Full-bleed + square corners on mobile (matches the inline
+          board and coordinate-quiz); bounded + rounded card at >=sm. */}
+      <div className="relative z-10 w-full max-w-lg px-0 sm:px-4">
+        <div className="rounded-none sm:rounded-md overflow-hidden">
           {/* Horizontal Move List */}
           {formattedPgn.length > 0 && onNavigateToPosition && (
             <div

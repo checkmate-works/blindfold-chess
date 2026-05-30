@@ -22,6 +22,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { readMoveInputPreferenceFromCookies } from '@/lib/games/move-input-cookie.server';
 import { readPeekPreferenceFromCookies } from '@/lib/games/peek-cookie.server';
+import { peekHintFromGamePrefsParam } from '@/lib/games/per-game-preferences';
 
 import { BreadcrumbContent } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -33,6 +34,7 @@ type Props = {
   params: Promise<{
     locale: Locale;
   }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 /**
@@ -60,7 +62,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function PlayPage({ params }: Props) {
+export default async function PlayPage({ params, searchParams }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
@@ -74,7 +76,20 @@ export default async function PlayPage({ params }: Props) {
   //   - `peekHint`:      whether to reserve the inline board header and
   //                      whether the modal "Show Board" button is shown.
   const moveInputHint = await readMoveInputPreferenceFromCookies();
-  const peekHint = await readPeekPreferenceFromCookies();
+  const cookiePeekHint = await readPeekPreferenceFromCookies();
+
+  // New games carry their per-game settings in the `gamePrefs` URL param, so
+  // for that path the server can pick the board skeleton from the GAME's own
+  // boardVisibility / peekMode instead of the user's global cookie hint —
+  // reserving the right board layout (always-visible card / inline header /
+  // modal button) from the very first paint. Resumed games (settings in
+  // client-only localStorage) have no `gamePrefs` param, so they fall back to
+  // the cookie hint and the client corrects after loading from storage.
+  const gamePrefsParam = (await searchParams).gamePrefs;
+  const peekHint = peekHintFromGamePrefsParam(
+    typeof gamePrefsParam === 'string' ? gamePrefsParam : undefined,
+    cookiePeekHint
+  );
 
   const breadcrumb = (
     <BreadcrumbContent
