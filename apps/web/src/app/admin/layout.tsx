@@ -63,21 +63,30 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const navGroups: AdminNavGroup[] = [
     { links: [{ href: '/admin', label: t('dashboard') }] },
     {
-      heading: 'Content',
+      heading: 'Users & Moderation',
+      links: [
+        { href: '/admin/users', label: t('users') },
+        { href: '/admin/audit-log', label: t('auditLog') },
+        { href: '/admin/activity-log', label: t('activityLog') },
+      ],
+    },
+    {
+      // Developer-curated reference data (defined/edited by the team).
+      heading: 'Master Data',
       links: [
         { href: '/admin/articles', label: t('articles') },
         { href: '/admin/announcements', label: t('announcements') },
-        { href: '/admin/chunks', label: t('chunks') },
         { href: '/admin/glossary', label: t('glossary') },
       ],
     },
     {
-      heading: 'Users & Moderation',
+      // User-generated content.
+      heading: 'UGC',
       links: [
-        { href: '/admin/users', label: t('users') },
         { href: '/admin/topic_posts', label: t('topicPosts.navLabel') },
-        { href: '/admin/audit-log', label: t('auditLog') },
-        { href: '/admin/activity-log', label: t('activityLog') },
+        { href: '/admin/positions/memory', label: t('positionMemory') },
+        { href: '/admin/positions/puzzle', label: t('puzzle') },
+        { href: '/admin/chunks', label: t('chunks') },
       ],
     },
     {
@@ -89,14 +98,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         { href: '/admin/ads', label: t('ads') },
       ],
     },
-    {
-      heading: 'Game Data',
-      links: [
-        { href: '/admin/positions/memory', label: t('positionMemory') },
-        { href: '/admin/positions/puzzle', label: t('puzzle') },
-        { href: '/admin/achievements', label: t('achievements.navLabel') },
-      ],
-    },
+    // Achievements has no natural group yet — keep it standalone at the bottom.
+    { links: [{ href: '/admin/achievements', label: t('achievements.navLabel') }] },
   ];
 
   return (
