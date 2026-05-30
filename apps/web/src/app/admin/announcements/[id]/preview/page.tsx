@@ -6,6 +6,7 @@ import { and, eq } from 'drizzle-orm';
 
 import { announcements, db, notifications } from '@/lib/db';
 
+import { AdminPageHeader } from '../../../_components/AdminPageHeader';
 import { formatDateTimeLocal } from '../../../_lib/format';
 import { AnnouncementPreviewForm } from '../../_components/AnnouncementPreviewForm';
 
@@ -47,9 +48,12 @@ export default async function PreviewAnnouncementPage({
 
   return (
     <div>
-      <div className="flex items-center gap-4 mb-6">
-        <h1 className="text-2xl font-bold">{t('form.previewTitle')}</h1>
-      </div>
+      <AdminPageHeader
+        breadcrumbs={[
+          { label: t('title'), href: '/admin/announcements' },
+          { label: t('form.previewTitle') },
+        ]}
+      />
 
       <div className="space-y-6">
         <div>

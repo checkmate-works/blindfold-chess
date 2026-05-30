@@ -9,6 +9,7 @@ import { db } from '@/lib/db';
 import { getPaginationParams } from '@/lib/pagination';
 
 import { AdminDataTable } from './AdminDataTable';
+import { AdminPageHeader } from './AdminPageHeader';
 import { AdminPaginationNav } from './AdminPaginationNav';
 
 const searchParamsCache = createSearchParamsCache({
@@ -70,15 +71,17 @@ export function createAdminSlugGroupListPage(config: AdminSlugGroupListPageConfi
 
     return (
       <div>
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">{t('title')}</h1>
-          <Link
-            href={`${config.basePath}/new`}
-            className="px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-          >
-            {t(config.newButtonTranslationKey)}
-          </Link>
-        </div>
+        <AdminPageHeader
+          breadcrumbs={[{ label: t('title') }]}
+          actions={
+            <Link
+              href={`${config.basePath}/new`}
+              className="px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+            >
+              {t(config.newButtonTranslationKey)}
+            </Link>
+          }
+        />
 
         <AdminDataTable
           headers={[t('titleColumn'), t('slug'), t('actions')]}

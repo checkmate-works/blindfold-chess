@@ -6,6 +6,7 @@ import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/ser
 import { createAdminClient } from '@/lib/supabase/admin';
 
 import { AdminDataTable } from '../_components/AdminDataTable';
+import { AdminPageHeader } from '../_components/AdminPageHeader';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
 import { DeletePostAdminButton } from '../users/_components/DeletePostAdminButton';
 import { getAdminTopicPostsPageData } from './_lib/getAdminTopicPostsPageData';
@@ -63,7 +64,7 @@ export default async function AdminTopicPostsPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">{t('topicPosts.title')}</h1>
+      <AdminPageHeader breadcrumbs={[{ label: t('topicPosts.title') }]} />
 
       {/* Filters */}
       <form className="flex gap-4 mb-6 items-end flex-wrap">

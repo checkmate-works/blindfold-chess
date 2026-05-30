@@ -10,6 +10,7 @@ import { getPaginationParams } from '@/lib/pagination';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 import { AdminDataTable } from '../_components/AdminDataTable';
+import { AdminPageHeader } from '../_components/AdminPageHeader';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
 import { loadUsersEmailMap } from '../_lib/users-email-map';
 
@@ -131,7 +132,7 @@ export default async function AdminAuditLogPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">{t('auditLog')}</h1>
+      <AdminPageHeader breadcrumbs={[{ label: t('auditLog') }]} />
 
       {/* Filters */}
       <form className="flex gap-4 mb-6 items-end">

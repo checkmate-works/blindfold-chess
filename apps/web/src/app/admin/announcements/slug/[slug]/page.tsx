@@ -9,6 +9,7 @@ import { FaExternalLinkAlt } from 'react-icons/fa';
 import { type Announcement, announcements, db } from '@/lib/db';
 
 import { AdminDataTable } from '../../../_components/AdminDataTable';
+import { AdminPageHeader } from '../../../_components/AdminPageHeader';
 import { DeleteAnnouncementButton } from '../../_components/DeleteAnnouncementButton';
 
 async function getAnnouncementsBySlug(slug: string): Promise<Announcement[]> {
@@ -37,22 +38,17 @@ export default async function AdminAnnouncementSlugPage({
 
   return (
     <div>
-      <div className="mb-4">
-        <Link
-          href="/admin/announcements"
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          {t('form.backToList')}
-        </Link>
-      </div>
+      <AdminPageHeader
+        breadcrumbs={[
+          { label: t('title'), href: '/admin/announcements' },
+          { label: t('slugDetail.title') },
+        ]}
+      />
 
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">{t('slugDetail.title')}</h1>
-          <p className="text-muted-foreground mt-1">
-            {t('slug')}: <code className="bg-accent px-2 py-0.5 rounded text-sm">{slug}</code>
-          </p>
-        </div>
+      <div className="mb-6">
+        <p className="text-muted-foreground">
+          {t('slug')}: <code className="bg-accent px-2 py-0.5 rounded text-sm">{slug}</code>
+        </p>
       </div>
 
       <AdminDataTable

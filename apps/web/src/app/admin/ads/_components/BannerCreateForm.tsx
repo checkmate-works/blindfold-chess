@@ -76,8 +76,6 @@ export function BannerCreateForm({ labels }: BannerCreateFormProps) {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">{labels.formTitle}</h1>
-
       {error && (
         <div className="mb-4 p-3 rounded bg-destructive-soft text-destructive-soft-foreground text-sm">
           {error}

@@ -49,6 +49,7 @@ import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 import { AdminDataTable } from '../_components/AdminDataTable';
+import { AdminPageHeader } from '../_components/AdminPageHeader';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
 import { BulkGrantForm } from './_components/BulkGrantForm';
 import { GrantForm } from './_components/GrantForm';
@@ -133,7 +134,7 @@ export default async function AdminGrantsPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">{t('grants.title')}</h1>
+      <AdminPageHeader breadcrumbs={[{ label: t('grants.title') }]} />
 
       <div className="mb-8">
         <GrantForm />

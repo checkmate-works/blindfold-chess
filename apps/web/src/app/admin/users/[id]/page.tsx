@@ -12,13 +12,14 @@ import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { FaArrowLeft, FaExternalLinkAlt } from 'react-icons/fa';
+import { FaExternalLinkAlt } from 'react-icons/fa';
 
 import { BENEFIT_ACTIVE_STATUSES } from '@/lib/billing/subscription-constants';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 
 import { AdminDataTable } from '../../_components/AdminDataTable';
+import { AdminPageHeader } from '../../_components/AdminPageHeader';
 import { BanButton } from '../_components/BanButton';
 import { CopyUserIdButton } from '../_components/CopyUserIdButton';
 import { StatusBadge } from '../_components/StatusBadge';
@@ -96,36 +97,35 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
 
   return (
     <div className="space-y-6">
-      <Link
-        href="/admin/users"
-        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <FaArrowLeft className="h-3 w-3" />
-        {t('usersTable.detail.backToList')}
-      </Link>
-
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl font-bold">{profile?.username ?? authUser.email ?? authUser.id}</h1>
-        <StatusBadge
-          profile={profile}
-          banReason={banReason}
-          labels={{
-            anonymous: t('usersTable.anonymous'),
-            deleted: t('usersTable.deleted'),
-            banned: t('usersTable.banned'),
-            active: t('usersTable.active'),
-          }}
-        />
-        <span
-          className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${
-            isPremium
-              ? 'bg-success-soft text-success-soft-foreground'
-              : 'bg-secondary text-foreground'
-          }`}
-        >
-          {isPremium ? t('usersTable.premium') : t('usersTable.free')}
-        </span>
-      </div>
+      <AdminPageHeader
+        breadcrumbs={[
+          { label: t('users'), href: '/admin/users' },
+          { label: profile?.username ?? authUser.email ?? authUser.id },
+        ]}
+        actions={
+          <>
+            <StatusBadge
+              profile={profile}
+              banReason={banReason}
+              labels={{
+                anonymous: t('usersTable.anonymous'),
+                deleted: t('usersTable.deleted'),
+                banned: t('usersTable.banned'),
+                active: t('usersTable.active'),
+              }}
+            />
+            <span
+              className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${
+                isPremium
+                  ? 'bg-success-soft text-success-soft-foreground'
+                  : 'bg-secondary text-foreground'
+              }`}
+            >
+              {isPremium ? t('usersTable.premium') : t('usersTable.free')}
+            </span>
+          </>
+        }
+      />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <DetailSection title={t('usersTable.detail.basicInfo')}>

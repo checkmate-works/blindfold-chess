@@ -1,5 +1,6 @@
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
+
+import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader';
 
 import { getGlossaryTermForAdmin } from '@/lib/glossary-admin/queries';
 
@@ -19,17 +20,11 @@ export default async function AdminGlossaryTermPage({
 
   return (
     <div className="space-y-8">
-      <div>
-        <Link
-          href="/admin/glossary"
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          &larr; Back to glossary
-        </Link>
-      </div>
+      <AdminPageHeader
+        breadcrumbs={[{ label: 'Glossary', href: '/admin/glossary' }, { label: term.termEn }]}
+      />
 
       <header className="space-y-1">
-        <h1 className="text-2xl font-bold">{term.termEn}</h1>
         <p className="text-sm text-muted-foreground">
           <span className="font-mono">{term.slug}</span> &middot; {term.category}
           {term.isTheme && <span className="ml-2 text-primary">theme</span>}

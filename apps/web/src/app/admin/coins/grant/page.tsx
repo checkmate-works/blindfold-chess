@@ -13,10 +13,8 @@
  * "Points / Coin Economy" note in apps/web/CLAUDE.md.
  */
 import { getTranslations } from 'next-intl/server';
-import Link from 'next/link';
 
-import { FaArrowLeft } from 'react-icons/fa';
-
+import { AdminPageHeader } from '../../_components/AdminPageHeader';
 import { PointGrantForm } from '../_components/PointGrantForm';
 
 export default async function AdminCoinGrantPage() {
@@ -24,19 +22,14 @@ export default async function AdminCoinGrantPage() {
 
   return (
     <div>
-      <Link
-        href="/admin/coins"
-        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6"
-      >
-        <FaArrowLeft className="h-3 w-3" />
-        {t('coins.backToTransactions')}
-      </Link>
+      <AdminPageHeader
+        breadcrumbs={[
+          { label: t('coins.navLabel'), href: '/admin/coins' },
+          { label: t('coins.grant') },
+        ]}
+      />
 
-      <h1 className="text-2xl font-bold mb-6">{t('coins.grant')}</h1>
-
-      <div className="max-w-xl">
-        <PointGrantForm />
-      </div>
+      <PointGrantForm />
     </div>
   );
 }

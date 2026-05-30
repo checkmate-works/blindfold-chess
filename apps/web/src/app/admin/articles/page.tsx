@@ -8,6 +8,7 @@ import { articles, db } from '@/lib/db';
 import { getPaginationParams } from '@/lib/pagination';
 
 import { AdminDataTable } from '../_components/AdminDataTable';
+import { AdminPageHeader } from '../_components/AdminPageHeader';
 import { AdminPaginationNav } from '../_components/AdminPaginationNav';
 
 const searchParamsCache = createSearchParamsCache({
@@ -65,15 +66,17 @@ export default async function AdminArticlesPage({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">{t('title')}</h1>
-        <Link
-          href="/admin/articles/new"
-          className="px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-        >
-          {t('newArticle')}
-        </Link>
-      </div>
+      <AdminPageHeader
+        breadcrumbs={[{ label: t('title') }]}
+        actions={
+          <Link
+            href="/admin/articles/new"
+            className="px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+          >
+            {t('newArticle')}
+          </Link>
+        }
+      />
 
       <AdminDataTable
         headers={[t('titleColumn'), t('slug'), t('actions')]}

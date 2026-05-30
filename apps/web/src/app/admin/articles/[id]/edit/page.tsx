@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { AdminBreadcrumb } from '@/app/admin/_components/AdminBreadcrumb';
 import { eq } from 'drizzle-orm';
 
 import { articles, db } from '@/lib/db';
@@ -24,25 +25,31 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
   const categories = await getArticleCategories();
 
   return (
-    <EditArticleForm
-      id={article.id}
-      defaultValues={{
-        slug: article.slug,
-        title: article.title,
-        content: article.content,
-        contentJson: (article.contentJson as TiptapJsonContent) ?? null,
-        contentFormat: (article.contentFormat as ContentFormat) ?? 'markdown',
-        locale: article.locale,
-        status: article.status ?? 'draft',
-        pinnedAt: formatDateTimeLocal(article.pinnedAt),
-        publishedAt: formatDateTimeLocal(article.publishedAt),
-        excerpt: article.excerpt ?? '',
-        description: article.description ?? '',
-        categoryId: article.categoryId ?? '',
-        icon: article.icon ?? '',
-      }}
-      categories={categories}
-      labels={getArticleFormLabels(t, t('form.editTitle'))}
-    />
+    <>
+      <AdminBreadcrumb
+        items={[{ label: t('title'), href: '/admin/articles' }, { label: article.title }]}
+        className="mb-3"
+      />
+      <EditArticleForm
+        id={article.id}
+        defaultValues={{
+          slug: article.slug,
+          title: article.title,
+          content: article.content,
+          contentJson: (article.contentJson as TiptapJsonContent) ?? null,
+          contentFormat: (article.contentFormat as ContentFormat) ?? 'markdown',
+          locale: article.locale,
+          status: article.status ?? 'draft',
+          pinnedAt: formatDateTimeLocal(article.pinnedAt),
+          publishedAt: formatDateTimeLocal(article.publishedAt),
+          excerpt: article.excerpt ?? '',
+          description: article.description ?? '',
+          categoryId: article.categoryId ?? '',
+          icon: article.icon ?? '',
+        }}
+        categories={categories}
+        labels={getArticleFormLabels(t, t('form.editTitle'))}
+      />
+    </>
   );
 }

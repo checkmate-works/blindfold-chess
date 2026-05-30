@@ -1,5 +1,7 @@
 import Link from 'next/link';
 
+import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader';
+
 import { listGlossaryTermsForAdmin } from '@/lib/glossary-admin/queries';
 
 export default async function AdminGlossaryListPage() {
@@ -7,7 +9,7 @@ export default async function AdminGlossaryListPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-2">Glossary</h1>
+      <AdminPageHeader breadcrumbs={[{ label: 'Glossary' }]} />
       <p className="text-sm text-muted-foreground mb-6">
         Term definitions and translations are managed in code (
         <code className="text-xs">src/lib/db/data/terms/*.ts</code>). The admin UI only edits the

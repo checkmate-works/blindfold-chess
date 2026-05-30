@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { AdminDataTable } from '@/app/admin/_components/AdminDataTable';
+import { AdminPageHeader } from '@/app/admin/_components/AdminPageHeader';
 import { AdminPaginationNav } from '@/app/admin/_components/AdminPaginationNav';
 import { createSearchParamsCache, parseAsInteger } from 'nuqs/server';
 import { FaExternalLinkAlt } from 'react-icons/fa';
@@ -37,9 +38,7 @@ export default async function AdminChunksPage({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Chunks</h1>
-      </div>
+      <AdminPageHeader breadcrumbs={[{ label: 'Chunks' }]} />
 
       {rows.length > 0 && (
         <p className="text-sm text-muted-foreground mb-2">

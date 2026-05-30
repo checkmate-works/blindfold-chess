@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm';
 
 import { articles, db } from '@/lib/db';
 
+import { AdminPageHeader } from '../../../_components/AdminPageHeader';
 import { formatDateTimeLocal } from '../../../_lib/format';
 import { ArticlePublishForm } from '../../_components/ArticlePublishForm';
 import type { ContentFormat, TiptapJsonContent } from '../../_lib/types';
@@ -21,9 +22,13 @@ export default async function PublishArticlePage({ params }: { params: Promise<{
 
   return (
     <div>
-      <div className="flex items-center gap-4 mb-6">
-        <h1 className="text-2xl font-bold">{t('form.publishTitle')}</h1>
-      </div>
+      <AdminPageHeader
+        breadcrumbs={[
+          { label: t('title'), href: '/admin/articles' },
+          { label: article.title, href: `/admin/articles/${article.id}/edit` },
+          { label: t('form.publishTitle') },
+        ]}
+      />
 
       <ArticlePublishForm
         id={article.id}
