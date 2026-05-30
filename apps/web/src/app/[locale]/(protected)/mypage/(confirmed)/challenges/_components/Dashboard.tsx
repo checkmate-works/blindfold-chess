@@ -92,6 +92,13 @@ export function Dashboard({ locale }: { locale: string }) {
       ) : availableMenuTypes.length === 0 ? (
         <div className="text-center py-12 text-muted-foreground">
           <p>{t('noData')}</p>
+          <Link
+            href="/practice"
+            locale={locale}
+            className="mt-4 inline-flex items-center justify-center whitespace-nowrap rounded-md bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            {t('goToPractice')}
+          </Link>
         </div>
       ) : (
         <>
