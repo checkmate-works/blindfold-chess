@@ -51,7 +51,7 @@ export function MiniBoard({ fen, size = 120, responsive = false, flipped = false
 
   if (responsive) {
     return (
-      <div className="grid grid-cols-8 border border-border rounded-sm overflow-hidden aspect-square w-full">
+      <div className="grid grid-cols-8 rounded-sm overflow-hidden aspect-square w-full">
         {board.map((rank, rankIdx) =>
           rank.map((fenChar, fileIdx) => {
             const isLight = (rankIdx + fileIdx) % 2 === 0;
@@ -81,7 +81,7 @@ export function MiniBoard({ fen, size = 120, responsive = false, flipped = false
 
   return (
     <div
-      className="grid grid-cols-8 border border-border rounded-sm overflow-hidden shrink-0"
+      className="grid grid-cols-8 rounded-sm overflow-hidden shrink-0"
       style={{ width: size, height: size }}
     >
       {board.map((rank, rankIdx) =>

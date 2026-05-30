@@ -42,7 +42,7 @@ export function DiagonalBoard({ targetSquare }: { targetSquare: string }) {
 
   return (
     <div className="w-full max-w-xs mx-auto">
-      <div className="relative w-full aspect-square border border-border rounded-md overflow-hidden">
+      <div className="relative w-full aspect-square rounded-md overflow-hidden">
         <div className="grid grid-cols-8 gap-0 w-full h-full">
           {RANKS.map((rank, rankIndex) =>
             FILES.map((file, fileIndex) => {

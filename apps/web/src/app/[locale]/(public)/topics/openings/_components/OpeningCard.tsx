@@ -25,7 +25,7 @@ const SQUARE_SIZE = BOARD_SIZE / 8;
 function BoardSkeleton() {
   return (
     <div
-      className="grid grid-cols-8 border border-border rounded-sm overflow-hidden shrink-0 animate-pulse"
+      className="grid grid-cols-8 rounded-sm overflow-hidden shrink-0 animate-pulse"
       style={{ width: BOARD_SIZE, height: BOARD_SIZE }}
     >
       {Array.from({ length: 64 }, (_, i) => {
