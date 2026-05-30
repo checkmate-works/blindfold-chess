@@ -59,6 +59,12 @@ type Props = {
    * itself only relays the callback.
    */
   onMove?: (san: string) => void;
+  /**
+   * Relayed straight to the inner ChessBoard. Fires once per illegal move
+   * attempt (illegal drop / destination click) so always-visible games can
+   * count board-driven blindfold mistakes. See `ChessBoard`'s prop doc.
+   */
+  onIllegalMove?: () => void;
 };
 
 export function InlineBoardView({
@@ -80,6 +86,7 @@ export function InlineBoardView({
   collapseSignal,
   alwaysOpen,
   onMove,
+  onIllegalMove,
 }: Props) {
   const t = useTranslations('play');
   const [isOpen, setIsOpen] = useState(false);
@@ -153,6 +160,7 @@ export function InlineBoardView({
             boardTheme={preferences.boardTheme}
             rounded={false}
             onMove={onMove}
+            onIllegalMove={onIllegalMove}
           />
 
           {/* Navigation Controls & Flip Button */}

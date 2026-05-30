@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 import type { TailwindThemeClasses } from '@/lib/games/board-themes';
 
@@ -21,7 +21,7 @@ type Props = {
   onClick?: () => void;
 
   // Highlight
-  highlightType?: 'none' | 'last-move' | 'selectable';
+  highlightType?: 'none' | 'last-move' | 'selectable' | 'selected' | 'move-dest' | 'capture-dest';
 
   // Badge (e.g., evaluation mark)
   badge?: ReactNode;
@@ -62,12 +62,36 @@ export const Square = memo(function Square({
 
   const squareColorClass = isLight ? colors.light : colors.dark;
 
+  // `last-move` and `selectable` keep their inset ring (also used by the
+  // non-interactive boards that reuse these types as generic square
+  // highlighters). The interactive move affordances — selected square, legal
+  // destinations, captures — are rendered as an inset overlay (below) using
+  // the exact lichess/chessground values, so the simple ring would be wrong
+  // for them.
   const highlightClass =
     highlightType === 'last-move'
       ? 'ring-2 ring-yellow-400 ring-inset'
       : highlightType === 'selectable'
         ? 'ring-2 ring-foreground/50 ring-inset'
         : '';
+
+  // Lichess/chessground move-affordance overlays, copied verbatim from lila
+  // `ui/lib/css/theme/board/_chessground.scss`. Rendered as an absolutely
+  // positioned, pointer-events-none layer behind the piece and coordinates.
+  const highlightOverlayStyle: CSSProperties | null =
+    highlightType === 'selected'
+      ? { backgroundColor: 'rgba(20, 85, 30, 0.5)' }
+      : highlightType === 'move-dest'
+        ? {
+            background:
+              'radial-gradient(rgba(20, 85, 30, 0.5) 19%, rgba(0, 0, 0, 0) calc(20% + 1px))',
+          }
+        : highlightType === 'capture-dest'
+          ? {
+              background:
+                'radial-gradient(transparent 0%, transparent 79%, rgba(20, 85, 0, 0.3) calc(80% + 1px))',
+            }
+          : null;
 
   const coordinateColorClass = isLight ? colors.lightCoordinates : colors.darkCoordinates;
 
@@ -85,6 +109,16 @@ export const Square = memo(function Square({
       onClick={onClick}
       data-square={dataSquare}
     >
+      {/* Lichess-style move-affordance overlay, painted under the piece. */}
+      {highlightOverlayStyle && (
+        <div
+          aria-hidden
+          data-highlight={highlightType}
+          className="absolute inset-0 pointer-events-none"
+          style={highlightOverlayStyle}
+        />
+      )}
+
       <div className="flex items-center justify-center w-full h-full">{children}</div>
 
       {/* Coordinates */}

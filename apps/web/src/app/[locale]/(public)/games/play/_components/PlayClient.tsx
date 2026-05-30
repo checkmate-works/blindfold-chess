@@ -383,6 +383,20 @@ export function PlayClient({
                           ? handleBoardMove
                           : undefined
                       }
+                      // Count illegal board attempts into the same
+                      // invalid-attempt counter the text/select/button paths
+                      // use, so the result page's "Invalid Count" reflects
+                      // blindfold mistakes regardless of input method. Gated
+                      // identically to `onMove`: only while the player can
+                      // actually act on the always-visible board.
+                      onIllegalMove={
+                        shouldShowAlwaysVisibleBoard(preferences) &&
+                        isPlayerTurn &&
+                        !isLoading &&
+                        currentPosition === -1
+                          ? recordInvalid
+                          : undefined
+                      }
                     />
                   ) : undefined
                 }

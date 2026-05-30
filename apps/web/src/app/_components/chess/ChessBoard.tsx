@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { ChessPiece } from '@/app/_components';
 import type { BoardPiece, MoveResult } from '@blindfold-chess/features/chess-core';
@@ -10,6 +10,7 @@ import {
   getLegalMoves,
 } from '@blindfold-chess/features/chess-core';
 import type { Side } from '@blindfold-chess/types';
+import { createPortal } from 'react-dom';
 
 import type { BoardAnnotations } from '@/lib/board-annotations/types';
 import type { BoardTheme } from '@/lib/games/board-themes';
@@ -53,23 +54,25 @@ type Props = {
    */
   annotations?: BoardAnnotations | null;
   /**
-   * Enables interactive move input — click-to-move + HTML5 drag-and-drop.
+   * Enables interactive move input — click-to-move + pointer-based drag.
    * When provided:
    * - Clicking an own-color piece selects it; clicking a legal destination
    *   executes the move. Clicking an empty / opponent / illegal square
    *   deselects (or reselects if it's another own piece).
-   * - Own-color pieces become `draggable`; drop on a legal destination
-   *   executes the move.
-   * - Legal destinations for the selected piece are highlighted via the
-   *   same `selectable` chrome as `highlightedSquares`.
+   * - Pressing on an own-color piece and dragging lifts it (as a DOM element
+   *   following the cursor — see {@link handleBoardPointerDown}); releasing on
+   *   a legal destination executes the move.
+   * - The selected square and the legal destinations for the selected piece
+   *   are highlighted in the lichess/chessground style (green tint on the
+   *   selected square, centered dots on empty targets, corner rings on
+   *   captures).
    * - The move is pre-validated against the current FEN; `san` is the
    *   canonical algebraic notation. Promotions default to queen — pass
    *   an underpromotion explicitly via `findLegalMoveByCoords` from the
    *   chess-core if you need that escape hatch.
    *
-   * Touch users fall through to click-to-move naturally: HTML5 native
-   * drag rarely fires on touch, but click events do, so the same callback
-   * still works.
+   * Pointer events cover touch natively, so touch users get the same drag;
+   * a tap that doesn't move falls through to click-to-move.
    *
    * Mutually exclusive with `onSquareClick` in spirit — callers wanting
    * raw click capture (e.g. coordinate-quiz) keep using `onSquareClick`;
@@ -77,6 +80,28 @@ type Props = {
    * for click handling.
    */
   onMove?: (san: string) => void;
+  /**
+   * Fired once per illegal move *attempt* in interactive mode. Without it
+   * the board only ever emits *legal* moves (via `onMove`), so illegal board
+   * attempts go entirely unrecorded; wiring it lets always-visible games
+   * count blindfold mistakes the same way the text / select / button input
+   * paths do. What counts depends on whether obfuscation is active (discs /
+   * single-color / hidden pieces) — see {@link obfuscated}:
+   *
+   * - Obfuscated: the player can't tell pieces apart, so counting is
+   *   aggressive. A first click / drag onto the *opponent's* piece (believed
+   *   to be one's own) counts; once a piece is selected, ANY non-legal target
+   *   counts — illegal square, capturing one's own piece, an uncapturable
+   *   opponent, or an (absolutely-pinned) piece the engine rejects. There is
+   *   no reselect idiom. An empty-square *first* click is NOT counted (it is
+   *   indistinguishable from a misclick / deselect).
+   * - Normal display: the lichess / chess.com idiom holds — clicking another
+   *   own piece reselects (not counted); only an illegal empty / opponent
+   *   destination after a selection counts.
+   *
+   * Drag-and-drop always counts a drop onto a non-legal square in either mode.
+   */
+  onIllegalMove?: () => void;
 };
 
 export const ChessBoard = memo(function ChessBoard({
@@ -97,10 +122,24 @@ export const ChessBoard = memo(function ChessBoard({
   className = '',
   annotations = null,
   onMove,
+  onIllegalMove,
 }: Props) {
   const themeColors = getBoardThemeColors(boardTheme);
   const interactive = onMove !== undefined;
   const ownColorChar = playerSide.charAt(0);
+
+  // True when any blindfold obfuscation is active: pieces shown as discs,
+  // forced to a single color, or hidden. In these modes the player cannot
+  // tell pieces apart, so (a) the legal-destination highlight is suppressed
+  // — showing where a selected piece can go would leak its identity — and
+  // (b) illegal-move attempts become possible and worth recording via
+  // `onIllegalMove`. With normal display the highlight stays (a sighted
+  // QoL aid, where illegal attempts are essentially impossible anyway).
+  const obfuscated =
+    pieceShapeMode !== 'normal' ||
+    pieceColors !== 'normal' ||
+    !showOwnPieces ||
+    !showOpponentPieces;
 
   const board = useMemo(() => {
     try {
@@ -129,23 +168,62 @@ export const ChessBoard = memo(function ChessBoard({
     candidates: MoveResult[];
   } | null>(null);
 
+  // Active pointer drag. `null` until a press on an own piece crosses the
+  // movement threshold; `from` is the source square and `size` the side
+  // length (px) of one square, used to size the floating piece. The piece
+  // follows the cursor as a DOM element (see the portal in the render) rather
+  // than the browser's translucent HTML5 drag image, so only the piece lifts
+  // — matching lichess/chessground. Cleared on drop / cancel / position change.
+  const [dragging, setDragging] = useState<{ from: string; size: number } | null>(null);
+  const dragFrom = dragging?.from ?? null;
+  // The square whose legal moves should be shown / whose piece is "active":
+  // the drag source while dragging, otherwise the click-selected square.
+  const moveSource = dragFrom ?? selectedSquare;
+
+  // Drag bookkeeping kept in refs so the window pointer listeners never go
+  // stale and never force a re-render on every pointermove.
+  const pendingDragRef = useRef<{
+    from: string;
+    startX: number;
+    startY: number;
+    size: number;
+  } | null>(null);
+  // Latest pointer position, used to seed the floating piece on mount.
+  const dragPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  // The floating piece element; its left/top are updated imperatively per
+  // pointermove to avoid re-rendering the 64-square board on every frame.
+  const dragLayerRef = useRef<HTMLDivElement | null>(null);
+  // True once a press has become a real drag — drives both the floating piece
+  // and the suppression of the synthetic click that follows a drag.
+  const didDragRef = useRef(false);
+  // Detaches the active window pointer listeners; set while a press is live.
+  const dragCleanupRef = useRef<(() => void) | null>(null);
+
   useEffect(() => {
     setSelectedSquare(null);
     setPromotionPending(null);
+    // Cancel any in-flight drag when the position changes underneath it.
+    pendingDragRef.current = null;
+    didDragRef.current = false;
+    dragCleanupRef.current?.();
+    setDragging(null);
   }, [fen]);
 
-  // Legal destinations for the selected piece. Used to highlight reachable
-  // squares AND to validate clicks/drops before firing onMove. Empty when
-  // no square is selected or when interactive mode is off.
+  // Detach lingering window listeners if the board unmounts mid-drag.
+  useEffect(() => () => dragCleanupRef.current?.(), []);
+
+  // Legal destinations for the active source (drag source or click selection).
+  // Used to highlight reachable squares. Empty when nothing is active, when
+  // interactive mode is off, or when obfuscation hides piece identity.
   const legalDestinations = useMemo<string[]>(() => {
-    if (!interactive || !selectedSquare) return [];
+    if (!interactive || !moveSource || obfuscated) return [];
     try {
       const moves = getLegalMoves(fen, { verbose: true });
-      return moves.filter((m) => m.from === selectedSquare).map((m) => m.to);
+      return moves.filter((m) => m.from === moveSource).map((m) => m.to);
     } catch {
       return [];
     }
-  }, [fen, selectedSquare, interactive]);
+  }, [fen, moveSource, interactive, obfuscated]);
 
   const pieceAt = useCallback(
     (square: string): BoardPiece | null => {
@@ -161,7 +239,7 @@ export const ChessBoard = memo(function ChessBoard({
   );
 
   const renderPiece = useCallback(
-    (piece: BoardPiece) => {
+    (piece: BoardPiece, square: string, floating = false) => {
       if (!piece) return null;
 
       // Check if piece should be shown based on settings
@@ -183,21 +261,22 @@ export const ChessBoard = memo(function ChessBoard({
         displayColor = 'b';
       }
 
-      // Own pieces become draggable in interactive mode. Drag events fire
-      // from this wrapper and bubble up to the board container, where the
-      // `[data-square]` ancestor lookup recovers the source square. Touch
-      // input falls through to click-to-move (HTML5 native DnD does not
-      // start on tap in most browsers).
-      const isDraggable = interactive && isOwnPiece;
-      const grabClass = isDraggable ? 'cursor-grab active:cursor-grabbing' : '';
+      // Own pieces are draggable in interactive mode via pointer events (see
+      // handleBoardPointerDown). `touch-none` lets a touch drag start on a
+      // piece without the page scrolling; empty squares keep normal
+      // touch-action so the page still scrolls when touched there. The source
+      // square's piece fades while its copy is being dragged (chessground
+      // does the same); the floating copy itself (`floating`) never fades.
+      const isInteractivePiece = interactive && isOwnPiece;
+      const grabClass = isInteractivePiece ? 'cursor-grab active:cursor-grabbing touch-none' : '';
+      const fadeClass = !floating && square === dragFrom ? 'opacity-30' : '';
 
       if (shouldShowAsCircle) {
         // Show as Go stone-like circle with subtle gradient and shadow
         if (displayColor === 'w') {
           return (
             <div
-              draggable={isDraggable || undefined}
-              className={`w-[60%] h-[60%] rounded-full ${grabClass}`}
+              className={`w-[60%] h-[60%] rounded-full ${grabClass} ${fadeClass}`}
               style={{
                 background:
                   'radial-gradient(ellipse at 30% 30%, #ffffff 0%, #e8e8e8 50%, #d0d0d0 100%)',
@@ -208,8 +287,7 @@ export const ChessBoard = memo(function ChessBoard({
         } else {
           return (
             <div
-              draggable={isDraggable || undefined}
-              className={`w-[60%] h-[60%] rounded-full ${grabClass}`}
+              className={`w-[60%] h-[60%] rounded-full ${grabClass} ${fadeClass}`}
               style={{
                 background:
                   'radial-gradient(ellipse at 30% 30%, #4a4a4a 0%, #2a2a2a 50%, #1a1a1a 100%)',
@@ -224,14 +302,21 @@ export const ChessBoard = memo(function ChessBoard({
       // Show normal piece
       return (
         <div
-          draggable={isDraggable || undefined}
-          className={`w-[80%] h-[80%] flex items-center justify-center ${grabClass}`}
+          className={`w-[80%] h-[80%] flex items-center justify-center ${grabClass} ${fadeClass}`}
         >
           <ChessPiece type={piece.type} color={displayColor} size={45} />
         </div>
       );
     },
-    [interactive, ownColorChar, showOwnPieces, showOpponentPieces, pieceShapeMode, pieceColors]
+    [
+      interactive,
+      ownColorChar,
+      showOwnPieces,
+      showOpponentPieces,
+      pieceShapeMode,
+      pieceColors,
+      dragFrom,
+    ]
   );
 
   // Attempt to complete a move from `from` to `to`. Branches by candidate
@@ -243,6 +328,10 @@ export const ChessBoard = memo(function ChessBoard({
       if (!onMove) return;
       const candidates = findLegalMovesByCoords(fen, from, to);
       if (candidates.length === 0) {
+        // A drag-and-drop onto a non-legal square (including a drop onto an
+        // own piece — you cannot capture your own) is an explicit, deliberate
+        // attempt, so it always counts as one illegal move.
+        onIllegalMove?.();
         setSelectedSquare(null);
         return;
       }
@@ -254,7 +343,7 @@ export const ChessBoard = memo(function ChessBoard({
       setPromotionPending({ from, to, candidates });
       setSelectedSquare(null);
     },
-    [onMove, fen]
+    [onMove, fen, onIllegalMove]
   );
 
   // Click-to-move state machine. Runs only in interactive mode; when the
@@ -265,9 +354,19 @@ export const ChessBoard = memo(function ChessBoard({
       if (!onMove) return;
       const piece = pieceAt(square);
       const clickedOwn = piece !== null && piece.color === ownColorChar;
+      const clickedOpponent = piece !== null && piece.color !== ownColorChar;
 
       if (selectedSquare === null) {
-        if (clickedOwn) setSelectedSquare(square);
+        if (clickedOwn) {
+          setSelectedSquare(square);
+        } else if (obfuscated && clickedOpponent) {
+          // Blindfold modes: the player cannot tell the pieces apart, so
+          // trying to pick up the opponent's piece (believing it to be their
+          // own) is a genuine illegal-move attempt — count it. An empty-square
+          // first click is deliberately NOT counted: it is indistinguishable
+          // from a misclick or a deselect tap.
+          onIllegalMove?.();
+        }
         return;
       }
 
@@ -289,15 +388,37 @@ export const ChessBoard = memo(function ChessBoard({
         return;
       }
 
-      // Not a legal destination. Reselect if clicked another own piece,
-      // otherwise deselect entirely — matches lichess / chess.com idiom.
+      // Not a legal destination.
+      if (obfuscated) {
+        // Blindfold modes: a piece is already selected, so ANY click that is
+        // not its legal destination is a deliberate illegal-move attempt —
+        // an illegal square, capturing one's own piece, an uncapturable
+        // opponent piece, or moving an (absolutely-pinned) piece the engine
+        // rejects. There is no reselect idiom here — the player can't pick
+        // pieces apart visually — so the mistake is counted and the
+        // selection cleared; the next click starts a fresh selection.
+        onIllegalMove?.();
+        setSelectedSquare(null);
+        return;
+      }
+
+      // Normal display: keep the lichess / chess.com idiom. Clicking another
+      // own piece reselects (not a mistake); a click onto an empty / opponent
+      // square is a genuine illegal attempt, so count it and deselect.
+      if (!clickedOwn) onIllegalMove?.();
       setSelectedSquare(clickedOwn ? square : null);
     },
-    [onMove, fen, ownColorChar, pieceAt, selectedSquare]
+    [onMove, fen, ownColorChar, pieceAt, selectedSquare, onIllegalMove, obfuscated]
   );
 
   const handleBoardClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
+      // A drag emits a trailing synthetic click on pointerup — swallow it so
+      // it doesn't double as a click-to-move action.
+      if (didDragRef.current) {
+        didDragRef.current = false;
+        return;
+      }
       const target = (e.target as HTMLElement).closest<HTMLElement>('[data-square]');
       const square = target?.dataset.square;
       if (!square) return;
@@ -310,60 +431,93 @@ export const ChessBoard = memo(function ChessBoard({
     [onSquareClick, onMove, handleInteractiveClick]
   );
 
-  const handleBoardDragStart = useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
-      if (!onMove) return;
-      const target = (e.target as HTMLElement).closest<HTMLElement>('[data-square]');
-      const square = target?.dataset.square;
-      if (!square) {
-        e.preventDefault();
-        return;
-      }
+  // Pointer-based dragging (replaces HTML5 native DnD). A press on an own
+  // piece arms a pending drag; once the pointer moves past a small threshold
+  // the piece is lifted as a DOM element that follows the cursor (rendered in
+  // a body portal), and the source square's piece fades. Window listeners
+  // track the move/up so the gesture survives the pointer leaving the board;
+  // hit-testing on release uses the element under the pointer (the floating
+  // piece is `pointer-events: none`), which also makes it unit-testable in
+  // jsdom. Touch is handled natively by pointer events, so taps still fall
+  // through to click-to-move (handleBoardClick) when no drag occurs.
+  const DRAG_THRESHOLD_PX = 4;
+  const handleBoardPointerDown = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!onMove || e.button !== 0) return;
+      const square = (e.target as HTMLElement).closest<HTMLElement>('[data-square]')?.dataset
+        .square;
+      if (!square) return;
       const piece = pieceAt(square);
-      if (!piece || piece.color !== ownColorChar) {
-        // Only own-color pieces can drag. The `draggable` flag on
-        // renderPiece already guards this, but the preventDefault here
-        // is defensive against any future change that loosens it.
-        e.preventDefault();
-        return;
-      }
-      e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', square);
-      setSelectedSquare(square);
-    },
-    [onMove, ownColorChar, pieceAt]
-  );
+      // Only own pieces drag. Other presses (empty square, opponent piece)
+      // fall through to the click handler, preserving click-to-move and the
+      // obfuscated "tried to grab the opponent's piece" counting.
+      if (!piece || piece.color !== ownColorChar) return;
 
-  const handleBoardDragOver = useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
-      if (!onMove) return;
-      // preventDefault is REQUIRED on every drag-over for drop to fire.
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
-    },
-    [onMove]
-  );
+      const size = e.currentTarget.getBoundingClientRect().width / 8;
+      pendingDragRef.current = { from: square, startX: e.clientX, startY: e.clientY, size };
+      dragPosRef.current = { x: e.clientX, y: e.clientY };
+      didDragRef.current = false;
 
-  const handleBoardDrop = useCallback(
-    (e: React.DragEvent<HTMLDivElement>) => {
-      if (!onMove) return;
-      e.preventDefault();
-      const target = (e.target as HTMLElement).closest<HTMLElement>('[data-square]');
-      const targetSquare = target?.dataset.square;
-      const sourceSquare = e.dataTransfer.getData('text/plain') || selectedSquare;
-      if (!targetSquare || !sourceSquare || sourceSquare === targetSquare) {
+      const onPointerMove = (ev: PointerEvent) => {
+        const pending = pendingDragRef.current;
+        if (!pending) return;
+        dragPosRef.current = { x: ev.clientX, y: ev.clientY };
+        if (!didDragRef.current) {
+          const dx = ev.clientX - pending.startX;
+          const dy = ev.clientY - pending.startY;
+          if (Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return;
+          // Threshold crossed → start lifting. Drop any click-selection so the
+          // drag source is the only highlighted origin.
+          didDragRef.current = true;
+          setSelectedSquare(null);
+          setDragging({ from: pending.from, size: pending.size });
+        } else if (dragLayerRef.current) {
+          dragLayerRef.current.style.left = `${ev.clientX}px`;
+          dragLayerRef.current.style.top = `${ev.clientY}px`;
+        }
+      };
+      const onPointerUp = (ev: PointerEvent) => {
+        cleanup();
+        const pending = pendingDragRef.current;
+        pendingDragRef.current = null;
+        setDragging(null);
+        if (!pending || !didDragRef.current) return; // a plain tap → click handles it
+        const to = (ev.target as HTMLElement | null)?.closest<HTMLElement>('[data-square]')?.dataset
+          .square;
+        if (to && to !== pending.from) {
+          attemptMove(pending.from, to);
+        } else {
+          setSelectedSquare(null);
+        }
+        // didDragRef stays true so the trailing synthetic click is suppressed.
+      };
+      // The OS / browser can abort a gesture (e.g. it decides a touch is a
+      // scroll, or a system UI takes over). Tear down without applying a move.
+      const onPointerCancel = () => {
+        cleanup();
+        pendingDragRef.current = null;
+        didDragRef.current = false;
+        setDragging(null);
         setSelectedSquare(null);
-        return;
-      }
-      attemptMove(sourceSquare, targetSquare);
+      };
+      const cleanup = () => {
+        window.removeEventListener('pointermove', onPointerMove);
+        window.removeEventListener('pointerup', onPointerUp);
+        window.removeEventListener('pointercancel', onPointerCancel);
+        dragCleanupRef.current = null;
+      };
+      window.addEventListener('pointermove', onPointerMove);
+      window.addEventListener('pointerup', onPointerUp);
+      window.addEventListener('pointercancel', onPointerCancel);
+      dragCleanupRef.current = cleanup;
     },
-    [onMove, selectedSquare, attemptMove]
+    [onMove, ownColorChar, pieceAt, attemptMove]
   );
 
   const renderSquare = useCallback(
-    ({ fileIndex, rankIndex }: SquareRenderInfo) => {
+    ({ square, fileIndex, rankIndex }: SquareRenderInfo) => {
       const piece = board[rankIndex][fileIndex];
-      return renderPiece(piece);
+      return renderPiece(piece, square);
     },
     [board, renderPiece]
   );
@@ -372,9 +526,36 @@ export const ChessBoard = memo(function ChessBoard({
     ({ square }: SquareRenderInfo) => {
       const isLastMove = lastMove && (lastMove.from === square || lastMove.to === square);
       const isExternalHighlight = highlightedSquares.includes(square);
-      const isSelected = selectedSquare === square;
+      // The active source is the drag source while dragging, else the
+      // click-selected square — both get the "selected" tint.
+      const isSelected = moveSource === square;
       const isLegalDestination = legalDestinations.includes(square);
-      const isHighlight = isExternalHighlight || isSelected || isLegalDestination;
+      // A legal destination is a capture when the target square is occupied
+      // (chessground's `.oc` modifier). En-passant lands on an empty square,
+      // so it correctly renders as a plain move-dest dot — matching lichess.
+      const isCaptureDest = isLegalDestination && pieceAt(square) !== null;
+
+      // Move affordances mirror lichess/chessground: the selected square and
+      // legal-destination dots / capture rings take precedence over the
+      // last-move and external-highlight chrome. `last-move` and `selectable`
+      // keep their existing ring styling (shared with non-interactive boards).
+      const highlightType:
+        | 'none'
+        | 'last-move'
+        | 'selectable'
+        | 'selected'
+        | 'move-dest'
+        | 'capture-dest' = isSelected
+        ? 'selected'
+        : isCaptureDest
+          ? 'capture-dest'
+          : isLegalDestination
+            ? 'move-dest'
+            : isLastMove
+              ? 'last-move'
+              : isExternalHighlight
+                ? 'selectable'
+                : 'none';
 
       const showEvalMark = evaluationMark && evaluationMark.square === square;
       const evalBadge = showEvalMark
@@ -383,10 +564,7 @@ export const ChessBoard = memo(function ChessBoard({
 
       return {
         dataSquare: onSquareClick || interactive ? square : undefined,
-        highlightType: (isLastMove ? 'last-move' : isHighlight ? 'selectable' : 'none') as
-          | 'none'
-          | 'last-move'
-          | 'selectable',
+        highlightType,
         badge: evalBadge,
       };
     },
@@ -396,8 +574,9 @@ export const ChessBoard = memo(function ChessBoard({
       evaluationMark,
       onSquareClick,
       interactive,
-      selectedSquare,
+      moveSource,
       legalDestinations,
+      pieceAt,
     ]
   );
 
@@ -425,21 +604,52 @@ export const ChessBoard = memo(function ChessBoard({
     );
   })();
 
+  // Floating piece that follows the cursor during a drag. Rendered into a
+  // body portal so it is never clipped by the board's `overflow-hidden` and
+  // sits above page chrome. `pointer-events: none` keeps the element under
+  // the cursor hit-testable on drop. Position is seeded on mount from the
+  // latest pointer coords and then updated imperatively per pointermove.
+  const dragPiece = (() => {
+    if (!dragging || typeof document === 'undefined') return null;
+    const fileIndex = dragging.from.charCodeAt(0) - 'a'.charCodeAt(0);
+    const rankIndex = 8 - Number.parseInt(dragging.from[1], 10);
+    const piece = board[rankIndex]?.[fileIndex] ?? null;
+    if (!piece) return null;
+    return createPortal(
+      <div
+        aria-hidden
+        ref={(el) => {
+          dragLayerRef.current = el;
+          if (el) {
+            el.style.left = `${dragPosRef.current.x}px`;
+            el.style.top = `${dragPosRef.current.y}px`;
+          }
+        }}
+        className="pointer-events-none fixed z-[1000] flex -translate-x-1/2 -translate-y-1/2 items-center justify-center"
+        style={{ width: dragging.size, height: dragging.size }}
+      >
+        {renderPiece(piece, dragging.from, true)}
+      </div>,
+      document.body
+    );
+  })();
+
   return (
-    <BoardLayout
-      flipped={flipped}
-      showCoordinates={showCoordinates}
-      themeColors={themeColors}
-      renderSquare={renderSquare}
-      squareProps={squareProps}
-      onBoardClick={onSquareClick || interactive ? handleBoardClick : undefined}
-      onBoardDragStart={interactive ? handleBoardDragStart : undefined}
-      onBoardDragOver={interactive ? handleBoardDragOver : undefined}
-      onBoardDrop={interactive ? handleBoardDrop : undefined}
-      rounded={rounded}
-      className={className}
-      annotations={annotations}
-      overlay={promotionOverlay}
-    />
+    <>
+      <BoardLayout
+        flipped={flipped}
+        showCoordinates={showCoordinates}
+        themeColors={themeColors}
+        renderSquare={renderSquare}
+        squareProps={squareProps}
+        onBoardClick={onSquareClick || interactive ? handleBoardClick : undefined}
+        onBoardPointerDown={interactive ? handleBoardPointerDown : undefined}
+        rounded={rounded}
+        className={className}
+        annotations={annotations}
+        overlay={promotionOverlay}
+      />
+      {dragPiece}
+    </>
   );
 });
