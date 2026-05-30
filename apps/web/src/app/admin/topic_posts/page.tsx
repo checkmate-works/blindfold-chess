@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
+import { Button, Field, Input, Select } from '@/app/admin/_components/forms';
 import { createSearchParamsCache, parseAsInteger, parseAsString } from 'nuqs/server';
 
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -66,28 +67,24 @@ export default async function AdminTopicPostsPage({
 
       {/* Filters */}
       <form className="flex gap-4 mb-6 items-end flex-wrap">
-        <div>
-          <label htmlFor="user-filter" className="block text-sm font-medium mb-1">
-            {t('topicPosts.filterByUser')}
-          </label>
-          <input
+        <Field label={t('topicPosts.filterByUser')} htmlFor="user-filter">
+          <Input
+            surface="card"
+            fullWidth={false}
             id="user-filter"
             name="user"
             type="text"
             defaultValue={userFilter}
             placeholder="email or username"
-            className="border border-border rounded px-3 py-2 text-sm bg-card"
           />
-        </div>
-        <div>
-          <label htmlFor="topic-type-filter" className="block text-sm font-medium mb-1">
-            {t('topicPosts.filterByTopicType')}
-          </label>
-          <select
+        </Field>
+        <Field label={t('topicPosts.filterByTopicType')} htmlFor="topic-type-filter">
+          <Select
+            surface="card"
+            fullWidth={false}
             id="topic-type-filter"
             name="topicType"
             defaultValue={topicTypeFilter}
-            className="border border-border rounded px-3 py-2 text-sm bg-card"
           >
             <option value="">{t('topicPosts.allTopicTypes')}</option>
             {topicTypes.map((tt) => (
@@ -95,29 +92,24 @@ export default async function AdminTopicPostsPage({
                 {tt.topicType}
               </option>
             ))}
-          </select>
-        </div>
-        <div>
-          <label htmlFor="status-filter" className="block text-sm font-medium mb-1">
-            {t('topicPosts.filterByStatus')}
-          </label>
-          <select
+          </Select>
+        </Field>
+        <Field label={t('topicPosts.filterByStatus')} htmlFor="status-filter">
+          <Select
+            surface="card"
+            fullWidth={false}
             id="status-filter"
             name="status"
             defaultValue={statusFilter}
-            className="border border-border rounded px-3 py-2 text-sm bg-card"
           >
             <option value="">{t('topicPosts.allStatuses')}</option>
             <option value="active">{t('topicPosts.active')}</option>
             <option value="deleted">{t('topicPosts.deleted')}</option>
-          </select>
-        </div>
-        <button
-          type="submit"
-          className="px-4 py-2 text-sm rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-        >
+          </Select>
+        </Field>
+        <Button type="submit" variant="primary">
           {t('topicPosts.filterButton')}
-        </button>
+        </Button>
       </form>
 
       <AdminDataTable

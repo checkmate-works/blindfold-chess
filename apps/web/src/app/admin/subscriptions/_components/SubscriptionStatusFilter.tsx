@@ -1,5 +1,6 @@
 'use client';
 
+import { Field, Select } from '@/app/admin/_components/forms';
 import { parseAsInteger, parseAsString, useQueryStates } from 'nuqs';
 
 type SubscriptionStatusFilterProps = {
@@ -21,11 +22,10 @@ export function SubscriptionStatusFilter({ labels }: SubscriptionStatusFilterPro
   });
 
   return (
-    <div>
-      <label htmlFor="subscription-status-filter" className="block text-sm font-medium mb-1">
-        {labels.filterByStatus}
-      </label>
-      <select
+    <Field label={labels.filterByStatus} htmlFor="subscription-status-filter">
+      <Select
+        surface="card"
+        fullWidth={false}
         id="subscription-status-filter"
         value={status}
         onChange={(e) => {
@@ -34,7 +34,6 @@ export function SubscriptionStatusFilter({ labels }: SubscriptionStatusFilterPro
             { history: 'push', shallow: false }
           );
         }}
-        className="border border-border rounded px-3 py-2 text-sm bg-card"
       >
         <option value="">{labels.allStatuses}</option>
         <option value="active">{labels.active}</option>
@@ -42,7 +41,7 @@ export function SubscriptionStatusFilter({ labels }: SubscriptionStatusFilterPro
         <option value="past_due">{labels.pastDue}</option>
         <option value="canceled">{labels.canceled}</option>
         <option value="unpaid">{labels.unpaid}</option>
-      </select>
-    </div>
+      </Select>
+    </Field>
   );
 }

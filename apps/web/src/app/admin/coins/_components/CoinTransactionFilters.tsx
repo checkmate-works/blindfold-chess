@@ -1,6 +1,8 @@
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
+import { Button, Field, Input, Select } from '@/app/admin/_components/forms';
+
 import { POINT_CATEGORIES, POINT_EVENT_SOURCE_OPTIONS } from '@/lib/points';
 
 /**
@@ -21,25 +23,18 @@ type CoinTransactionFiltersProps = {
   };
 };
 
-// Match the /admin/users filter controls: opaque `bg-card` surface so the
-// selects/inputs don't blend into the page's `bg-background` main area.
-const FIELD_CLASS = 'border border-border rounded px-3 py-2 text-sm bg-card';
-const LABEL_CLASS = 'block text-sm font-medium mb-1';
-
 export async function CoinTransactionFilters({ values }: CoinTransactionFiltersProps) {
   const t = await getTranslations({ locale: 'en', namespace: 'Admin.coins' });
 
   return (
     <form method="get" action="/admin/coins" className="flex flex-wrap items-end gap-3">
-      <div>
-        <label htmlFor="filter-source" className={LABEL_CLASS}>
-          {t('filters.source')}
-        </label>
-        <select
+      <Field label={t('filters.source')} htmlFor="filter-source">
+        <Select
+          surface="card"
+          fullWidth={false}
           id="filter-source"
           name="source"
           defaultValue={values.source}
-          className={FIELD_CLASS}
         >
           <option value="">{t('filters.all')}</option>
           {POINT_EVENT_SOURCE_OPTIONS.map((source) => (
@@ -47,18 +42,16 @@ export async function CoinTransactionFilters({ values }: CoinTransactionFiltersP
               {source}
             </option>
           ))}
-        </select>
-      </div>
+        </Select>
+      </Field>
 
-      <div>
-        <label htmlFor="filter-category" className={LABEL_CLASS}>
-          {t('filters.category')}
-        </label>
-        <select
+      <Field label={t('filters.category')} htmlFor="filter-category">
+        <Select
+          surface="card"
+          fullWidth={false}
           id="filter-category"
           name="category"
           defaultValue={values.category}
-          className={FIELD_CLASS}
         >
           <option value="">{t('filters.all')}</option>
           {POINT_CATEGORIES.map((category) => (
@@ -66,45 +59,39 @@ export async function CoinTransactionFilters({ values }: CoinTransactionFiltersP
               {t(`categoryLabels.${category}`)}
             </option>
           ))}
-        </select>
-      </div>
+        </Select>
+      </Field>
 
-      <div>
-        <label htmlFor="filter-direction" className={LABEL_CLASS}>
-          {t('filters.direction')}
-        </label>
-        <select
+      <Field label={t('filters.direction')} htmlFor="filter-direction">
+        <Select
+          surface="card"
+          fullWidth={false}
           id="filter-direction"
           name="direction"
           defaultValue={values.direction}
-          className={FIELD_CLASS}
         >
           <option value="">{t('filters.all')}</option>
           <option value="grant">{t('filters.grantsOnly')}</option>
           <option value="spend">{t('filters.spendsOnly')}</option>
-        </select>
-      </div>
+        </Select>
+      </Field>
 
-      <div>
-        <label htmlFor="filter-user" className={LABEL_CLASS}>
-          {t('filters.user')}
-        </label>
-        <input
+      <Field label={t('filters.user')} htmlFor="filter-user">
+        <Input
+          surface="card"
+          fullWidth={false}
           id="filter-user"
           type="text"
           name="user"
           defaultValue={values.user}
           placeholder={t('filters.userPlaceholder')}
-          className={`${FIELD_CLASS} w-72`}
+          className="w-72"
         />
-      </div>
+      </Field>
 
-      <button
-        type="submit"
-        className="px-4 py-2 rounded bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
-      >
+      <Button type="submit" variant="primary">
         {t('filters.apply')}
-      </button>
+      </Button>
       <Link
         href="/admin/coins"
         className="px-4 py-2 rounded border border-border bg-card text-sm font-medium hover:bg-muted transition-colors"

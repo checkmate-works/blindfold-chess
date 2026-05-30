@@ -4,6 +4,9 @@ import { useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import { Button, Field, FormMessage, Input, Select, Textarea } from '@/app/admin/_components/forms';
+import type { FormMessageState } from '@/app/admin/_components/forms';
+
 import { BENEFIT_TYPES, type BenefitType } from '@/lib/db/data/grant-types';
 
 import { createGrant } from '../_actions/createGrant';
@@ -22,7 +25,7 @@ const BENEFIT_TYPE_LABELS: Record<BenefitType, string> = {
 export function GrantForm() {
   const router = useRouter();
   const [pending, setPending] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [message, setMessage] = useState<FormMessageState>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -49,84 +52,45 @@ export function GrantForm() {
     <form onSubmit={handleSubmit} className="bg-card border border-border rounded-lg p-6 space-y-4">
       <h2 className="text-lg font-semibold">Grant Benefit</h2>
 
-      <div>
-        <label htmlFor="userId" className="block text-sm font-medium mb-1">
-          User ID
-        </label>
-        <input
-          type="text"
-          id="userId"
-          name="userId"
-          required
-          className="w-full px-3 py-2 border border-border rounded bg-background text-foreground text-sm"
-          placeholder="Paste user UUID"
-        />
-      </div>
+      <Field label="User ID" htmlFor="userId">
+        <Input type="text" id="userId" name="userId" required placeholder="Paste user UUID" />
+      </Field>
 
-      <div>
-        <label htmlFor="benefitType" className="block text-sm font-medium mb-1">
-          Benefit Type
-        </label>
-        <select
-          id="benefitType"
-          name="benefitType"
-          required
-          defaultValue="ad_free"
-          className="w-full px-3 py-2 border border-border rounded bg-background text-foreground text-sm"
-        >
+      <Field label="Benefit Type" htmlFor="benefitType">
+        <Select id="benefitType" name="benefitType" required defaultValue="ad_free">
           {BENEFIT_TYPES.map((bt) => (
             <option key={bt} value={bt}>
               {BENEFIT_TYPE_LABELS[bt]}
             </option>
           ))}
-        </select>
-      </div>
+        </Select>
+      </Field>
 
-      <div>
-        <label htmlFor="durationDays" className="block text-sm font-medium mb-1">
-          Duration (days)
-        </label>
-        <input
+      <Field label="Duration (days)" htmlFor="durationDays">
+        <Input
           type="number"
           id="durationDays"
           name="durationDays"
           required
           min={1}
           defaultValue={30}
-          className="w-full px-3 py-2 border border-border rounded bg-background text-foreground text-sm"
         />
-      </div>
+      </Field>
 
-      <div>
-        <label htmlFor="reason" className="block text-sm font-medium mb-1">
-          Reason / notification message (optional)
-        </label>
-        <textarea
+      <Field label="Reason / notification message (optional)" htmlFor="reason">
+        <Textarea
           id="reason"
           name="reason"
           rows={3}
-          className="w-full px-3 py-2 border border-border rounded bg-background text-foreground text-sm"
           placeholder="Shown to the user as the notification message (e.g., 'Compensation for outage')"
         />
-      </div>
+      </Field>
 
-      {message && (
-        <p
-          className={`text-sm ${
-            message.type === 'success' ? 'text-success-soft-foreground' : 'text-destructive'
-          }`}
-        >
-          {message.text}
-        </p>
-      )}
+      <FormMessage message={message} />
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="px-4 py-2 rounded bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
-      >
+      <Button type="submit" disabled={pending}>
         {pending ? 'Creating...' : 'Create Grant'}
-      </button>
+      </Button>
     </form>
   );
 }

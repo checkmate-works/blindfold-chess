@@ -4,6 +4,9 @@ import { useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import { Button, Field, FormMessage, Input, Textarea } from '@/app/admin/_components/forms';
+import type { FormMessageState } from '@/app/admin/_components/forms';
+
 import { createPointGrant } from '../_actions/createPointGrant';
 
 /**
@@ -16,7 +19,7 @@ import { createPointGrant } from '../_actions/createPointGrant';
 export function PointGrantForm() {
   const router = useRouter();
   const [pending, setPending] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [message, setMessage] = useState<FormMessageState>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -47,25 +50,12 @@ export function PointGrantForm() {
         immediately available to redeem.
       </p>
 
-      <div>
-        <label htmlFor="userId" className="block text-sm font-medium mb-1">
-          User ID
-        </label>
-        <input
-          type="text"
-          id="userId"
-          name="userId"
-          required
-          className="w-full px-3 py-2 border border-border rounded bg-background text-foreground text-sm"
-          placeholder="Paste user UUID"
-        />
-      </div>
+      <Field label="User ID" htmlFor="userId">
+        <Input type="text" id="userId" name="userId" required placeholder="Paste user UUID" />
+      </Field>
 
-      <div>
-        <label htmlFor="amount" className="block text-sm font-medium mb-1">
-          Amount (coins)
-        </label>
-        <input
+      <Field label="Amount (coins)" htmlFor="amount">
+        <Input
           type="number"
           id="amount"
           name="amount"
@@ -73,40 +63,23 @@ export function PointGrantForm() {
           min={1}
           step={1}
           defaultValue={10}
-          className="w-full px-3 py-2 border border-border rounded bg-background text-foreground text-sm"
         />
-      </div>
+      </Field>
 
-      <div>
-        <label htmlFor="reason" className="block text-sm font-medium mb-1">
-          Reason (optional, recorded in moderation log)
-        </label>
-        <textarea
+      <Field label="Reason (optional, recorded in moderation log)" htmlFor="reason">
+        <Textarea
           id="reason"
           name="reason"
           rows={3}
-          className="w-full px-3 py-2 border border-border rounded bg-background text-foreground text-sm"
           placeholder="e.g., Compensation for service interruption"
         />
-      </div>
+      </Field>
 
-      {message && (
-        <p
-          className={`text-sm ${
-            message.type === 'success' ? 'text-success-soft-foreground' : 'text-destructive'
-          }`}
-        >
-          {message.text}
-        </p>
-      )}
+      <FormMessage message={message} />
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="px-4 py-2 rounded bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
-      >
+      <Button type="submit" disabled={pending}>
         {pending ? 'Granting…' : 'Grant coins'}
-      </button>
+      </Button>
     </form>
   );
 }

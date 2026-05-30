@@ -5,6 +5,8 @@ import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { Button, Field, Input } from '@/app/admin/_components/forms';
+
 import { createAdBanner } from '../_actions/createAdBanner';
 
 type BannerCreateFormProps = {
@@ -72,9 +74,6 @@ export function BannerCreateForm({ labels }: BannerCreateFormProps) {
     });
   };
 
-  const inputClassName =
-    'w-full px-3 py-2 text-sm border border-border rounded bg-card text-foreground';
-
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">{labels.formTitle}</h1>
@@ -86,111 +85,102 @@ export function BannerCreateForm({ labels }: BannerCreateFormProps) {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4 max-w-xl">
-        <div>
-          <label className="block text-sm font-medium mb-1">{labels.slot}</label>
-          <input
+        <Field label={labels.slot} htmlFor="slot">
+          <Input
+            id="slot"
             type="text"
             value={slot}
             onChange={(e) => setSlot(e.target.value)}
             placeholder={labels.slotPlaceholder}
             required
             maxLength={50}
-            className={inputClassName}
           />
-        </div>
+        </Field>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">{labels.href}</label>
-          <input
+        <Field label={labels.href} htmlFor="href">
+          <Input
+            id="href"
             type="text"
             value={href}
             onChange={(e) => setHref(e.target.value)}
             placeholder={labels.hrefPlaceholder}
             required
             maxLength={2048}
-            className={inputClassName}
           />
-        </div>
+        </Field>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">{labels.imagePath}</label>
-          <input
+        <Field label={labels.imagePath} htmlFor="imagePath">
+          <Input
+            id="imagePath"
             type="text"
             value={imagePath}
             onChange={(e) => setImagePath(e.target.value)}
             placeholder={labels.imagePathPlaceholder}
             required
             maxLength={1024}
-            className={inputClassName}
           />
-        </div>
+        </Field>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">{labels.alt}</label>
-          <input
+        <Field label={labels.alt} htmlFor="alt">
+          <Input
+            id="alt"
             type="text"
             value={alt}
             onChange={(e) => setAlt(e.target.value)}
             placeholder={labels.altPlaceholder}
             maxLength={255}
-            className={inputClassName}
           />
-        </div>
+        </Field>
 
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">{labels.width}</label>
-            <input
+          <Field label={labels.width} htmlFor="width">
+            <Input
+              id="width"
               type="number"
               value={width}
               onChange={(e) => setWidth(Number(e.target.value))}
               required
               min={1}
-              className={inputClassName}
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">{labels.height}</label>
-            <input
+          </Field>
+          <Field label={labels.height} htmlFor="height">
+            <Input
+              id="height"
               type="number"
               value={height}
               onChange={(e) => setHeight(Number(e.target.value))}
               required
               min={1}
-              className={inputClassName}
             />
-          </div>
+          </Field>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">{labels.sortOrder}</label>
-          <input
+        <Field label={labels.sortOrder} htmlFor="sortOrder">
+          <Input
+            id="sortOrder"
             type="number"
             value={sortOrder}
             onChange={(e) => setSortOrder(Number(e.target.value))}
-            className={inputClassName}
           />
-        </div>
+        </Field>
 
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">{labels.startAt}</label>
-            <input
+          <Field label={labels.startAt} htmlFor="startAt">
+            <Input
+              id="startAt"
               type="datetime-local"
               value={startAt}
               onChange={(e) => setStartAt(e.target.value)}
-              className={inputClassName}
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">{labels.endAt}</label>
-            <input
+          </Field>
+          <Field label={labels.endAt} htmlFor="endAt">
+            <Input
+              id="endAt"
               type="datetime-local"
               value={endAt}
               onChange={(e) => setEndAt(e.target.value)}
-              className={inputClassName}
             />
-          </div>
+          </Field>
         </div>
 
         <div className="flex items-center gap-2">
@@ -207,13 +197,9 @@ export function BannerCreateForm({ labels }: BannerCreateFormProps) {
         </div>
 
         <div className="flex items-center gap-3 pt-2">
-          <button
-            type="submit"
-            disabled={isPending}
-            className="px-4 py-2 text-sm font-medium rounded bg-primary text-primary-foreground hover:opacity-80 transition-opacity disabled:opacity-50"
-          >
+          <Button type="submit" variant="primary" disabled={isPending}>
             {isPending ? labels.creating : labels.create}
-          </button>
+          </Button>
           <Link
             href="/admin/ads"
             className="px-4 py-2 text-sm font-medium rounded bg-card text-foreground hover:bg-secondary border border-border transition-colors"
