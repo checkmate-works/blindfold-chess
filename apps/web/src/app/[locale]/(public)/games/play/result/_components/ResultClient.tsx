@@ -29,6 +29,7 @@ import { useLoadGame } from '../_hooks/useLoadGame';
 import { computeGameStats } from '../_lib/compute-game-stats';
 import { GameStatsOverview } from './GameStatsOverview';
 import { ResultSkeleton } from './ResultSkeleton';
+import { StatsAuthGate } from './StatsAuthGate';
 import { VictoryCertificate } from './VictoryCertificate';
 
 /**
@@ -56,10 +57,12 @@ const REVEALED_BOARD_PREFS: GamePreferences = {
 type Props = {
   locale: Locale;
   displayName: string;
+  /** Whether the viewer is signed in. Anonymous viewers get the stats gated behind a sign-up CTA. */
+  isAuthenticated: boolean;
   breadcrumb: ReactNode;
 };
 
-export function ResultClient({ locale, displayName, breadcrumb }: Props) {
+export function ResultClient({ locale, displayName, isAuthenticated, breadcrumb }: Props) {
   const t = useTranslations('play');
   const searchParams = useSearchParams();
   const gameId = searchParams.get('gameId');
@@ -86,6 +89,7 @@ export function ResultClient({ locale, displayName, breadcrumb }: Props) {
       gameId={gameId as string}
       locale={locale}
       displayName={displayName}
+      isAuthenticated={isAuthenticated}
       breadcrumb={breadcrumb}
     />
   );
@@ -96,10 +100,18 @@ type ResultContentProps = {
   gameId: string;
   locale: Locale;
   displayName: string;
+  isAuthenticated: boolean;
   breadcrumb: ReactNode;
 };
 
-function ResultContent({ game, gameId, locale, displayName, breadcrumb }: ResultContentProps) {
+function ResultContent({
+  game,
+  gameId,
+  locale,
+  displayName,
+  isAuthenticated,
+  breadcrumb,
+}: ResultContentProps) {
   const t = useTranslations('play');
   const tGames = useTranslations('gamesPage');
   const router = useRouter();
@@ -213,17 +225,31 @@ function ResultContent({ game, gameId, locale, displayName, breadcrumb }: Result
           </div>
         )}
 
-        {/* Game statistics overview — metric cards + per-move effort strip. */}
+        {/* Game statistics overview — metric cards + per-move effort strip.
+            Anonymous viewers see it blurred behind a sign-up CTA; the
+            statistics are a registration nudge for game-only users. */}
         {stats.totalMoves > 0 && (
           <>
             <div className="border-t border-border" />
-            <GameStatsOverview
-              stats={stats}
-              playerMoveIndices={playerMoveIndices}
-              moves={moves}
-              onSelectMove={handleViewMove}
-              onViewDetails={() => setIsOperationLogVisible(true)}
-            />
+            {isAuthenticated ? (
+              <GameStatsOverview
+                stats={stats}
+                playerMoveIndices={playerMoveIndices}
+                moves={moves}
+                onSelectMove={handleViewMove}
+                onViewDetails={() => setIsOperationLogVisible(true)}
+              />
+            ) : (
+              <StatsAuthGate>
+                <GameStatsOverview
+                  stats={stats}
+                  playerMoveIndices={playerMoveIndices}
+                  moves={moves}
+                  onSelectMove={handleViewMove}
+                  onViewDetails={() => setIsOperationLogVisible(true)}
+                />
+              </StatsAuthGate>
+            )}
           </>
         )}
 

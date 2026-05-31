@@ -1870,7 +1870,13 @@
         "legendHint": "Pista",
         "moveCell": "Jugada {number}"
       },
-      "viewDetails": "Detalles de la partida"
+      "viewDetails": "Detalles de la partida",
+      "statsGate": {
+        "title": "Regístrate para ver tus estadísticas",
+        "description": "Crea una cuenta gratuita para desbloquear todas tus estadísticas de la partida y el análisis jugada a jugada.",
+        "signUpButton": "Crear Cuenta Gratuita",
+        "signInButton": "¿Ya tienes una cuenta? Iniciar sesión"
+      }
     },
     "finishedGame": {
       "heading": "Esta partida ha terminado",

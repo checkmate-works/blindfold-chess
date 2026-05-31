@@ -1870,7 +1870,13 @@
         "legendHint": "Dica",
         "moveCell": "Lance {number}"
       },
-      "viewDetails": "Detalhes da partida"
+      "viewDetails": "Detalhes da partida",
+      "statsGate": {
+        "title": "Cadastre-se para ver suas estatísticas",
+        "description": "Crie uma conta gratuita para desbloquear todas as estatísticas da partida e a análise jogada a jogada.",
+        "signUpButton": "Criar Conta Gratuita",
+        "signInButton": "Já tem uma conta? Entrar"
+      }
     },
     "finishedGame": {
       "heading": "Esta partida terminou",
