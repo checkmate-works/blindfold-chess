@@ -1855,7 +1855,30 @@
         "times": "{count, plural, other {#回}}",
         "columnItem": "項目",
         "columnDetail": "詳細"
-      }
+      },
+      "openFinishedGame": "終了したゲームを開く",
+      "stats": {
+        "title": "対局統計",
+        "moves": "手数",
+        "cleanRate": "クリーン手率",
+        "illegal": "イリーガル試行",
+        "takebacks": "待った",
+        "peeks": "盤面確認",
+        "hints": "合法手ヒント",
+        "timelineTitle": "手ごとの内容",
+        "timelineHint": "タップでその局面を表示",
+        "legendClean": "クリーン",
+        "legendPeek": "盤面確認",
+        "legendIllegal": "イリーガル",
+        "legendTakeback": "待った",
+        "legendHint": "ヒント",
+        "moveCell": "{number}手目"
+      },
+      "viewDetails": "対局の詳細"
+    },
+    "finishedGame": {
+      "heading": "このゲームは終了しています",
+      "viewResult": "結果を見る"
     }
   },
   "postmortem": {

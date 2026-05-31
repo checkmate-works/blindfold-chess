@@ -1,3 +1,4 @@
+export { buildPostmortemPath } from './build-postmortem-path';
 export { sortMoves } from './move-sorter';
 export { formatPgnToText } from './pgn-parser';
 export type { FormattedPgn, FormattedPgnMove } from './pgn-parser';

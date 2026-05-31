@@ -1855,7 +1855,30 @@
         "times": "{count, plural, one {# time} other {# times}}",
         "columnItem": "Item",
         "columnDetail": "Detail"
-      }
+      },
+      "openFinishedGame": "Open finished game",
+      "stats": {
+        "title": "Game Stats",
+        "moves": "Moves",
+        "cleanRate": "Clean Moves",
+        "illegal": "Illegal Attempts",
+        "takebacks": "Undos",
+        "peeks": "Board Peeks",
+        "hints": "Move Hints",
+        "timelineTitle": "By Move",
+        "timelineHint": "Tap to view that position",
+        "legendClean": "Clean",
+        "legendPeek": "Peek",
+        "legendIllegal": "Illegal",
+        "legendTakeback": "Undo",
+        "legendHint": "Hint",
+        "moveCell": "Move {number}"
+      },
+      "viewDetails": "Game details"
+    },
+    "finishedGame": {
+      "heading": "This game has ended",
+      "viewResult": "View result"
     }
   },
   "postmortem": {

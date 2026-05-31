@@ -1851,7 +1851,30 @@
         "times": "{count, plural, one {# vez} other {# veces}}",
         "columnItem": "Elemento",
         "columnDetail": "Detalle"
-      }
+      },
+      "openFinishedGame": "Abrir partida terminada",
+      "stats": {
+        "title": "Estadísticas de la Partida",
+        "moves": "Jugadas",
+        "cleanRate": "Jugadas Limpias",
+        "illegal": "Intentos Ilegales",
+        "takebacks": "Deshacer",
+        "peeks": "Vistazos al Tablero",
+        "hints": "Pistas de Movimiento",
+        "timelineTitle": "Por Jugada",
+        "timelineHint": "Toca para ver esa posición",
+        "legendClean": "Limpia",
+        "legendPeek": "Vistazo",
+        "legendIllegal": "Ilegal",
+        "legendTakeback": "Deshacer",
+        "legendHint": "Pista",
+        "moveCell": "Jugada {number}"
+      },
+      "viewDetails": "Detalles de la partida"
+    },
+    "finishedGame": {
+      "heading": "Esta partida ha terminado",
+      "viewResult": "Ver resultado"
     }
   },
   "postmortem": {

@@ -1851,7 +1851,30 @@
         "times": "{count, plural, one {# vez} other {# vezes}}",
         "columnItem": "Item",
         "columnDetail": "Detalhe"
-      }
+      },
+      "openFinishedGame": "Abrir partida finalizada",
+      "stats": {
+        "title": "Estatísticas da Partida",
+        "moves": "Lances",
+        "cleanRate": "Lances Limpos",
+        "illegal": "Tentativas Ilegais",
+        "takebacks": "Desfazer",
+        "peeks": "Espiadas no Tabuleiro",
+        "hints": "Dicas de Movimento",
+        "timelineTitle": "Por Lance",
+        "timelineHint": "Toque para ver essa posição",
+        "legendClean": "Limpo",
+        "legendPeek": "Espiada",
+        "legendIllegal": "Ilegal",
+        "legendTakeback": "Desfazer",
+        "legendHint": "Dica",
+        "moveCell": "Lance {number}"
+      },
+      "viewDetails": "Detalhes da partida"
+    },
+    "finishedGame": {
+      "heading": "Esta partida terminou",
+      "viewResult": "Ver resultado"
     }
   },
   "postmortem": {

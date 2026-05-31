@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { notFound, useRouter } from 'next/navigation';
+import { notFound, useRouter, useSearchParams } from 'next/navigation';
 
 import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
@@ -15,7 +15,12 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { useBoardFlip, useConfirmationDialogs, useMoveNavigation } from '../_hooks';
 import type { GameSession } from '../_hooks/use-game-session';
 import { usePlayClientPreferences } from '../_hooks/use-play-client-preferences';
-import { shouldShowAlwaysVisibleBoard, shouldShowInlinePeekHeader } from '../_lib';
+import {
+  buildPostmortemPath,
+  shouldShowAlwaysVisibleBoard,
+  shouldShowInlinePeekHeader,
+} from '../_lib';
+import { FinishedGamePanel } from './FinishedGamePanel';
 import { GameInProgressPanel } from './GameInProgressPanel';
 import { InlineBoardView } from './InlineBoardView';
 import { MoveInputSkeleton } from './MoveInputSkeleton';
@@ -69,6 +74,11 @@ export function PlayClient({
   isInitializing,
 }: Props) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  // Opened from the result / games list with `finished=1` to review a
+  // finished game in the familiar game UI (read-only). Suppresses the
+  // redirect-to-result below and switches the render to FinishedGamePanel.
+  const isFinishedView = searchParams.get('finished') === '1';
 
   const {
     gameConfig,
@@ -257,12 +267,89 @@ export function PlayClient({
     },
   });
 
-  // Redirect to result page when game is over
+  // Whether the loaded game has reached a terminal result.
+  const isFinished = gameStatus !== 'in_progress' && !!playerResult;
+
+  // Redirect to result page when the game ends — UNLESS we are intentionally
+  // reviewing a finished game (`finished=1`), in which case we stay here and
+  // render the read-only FinishedGamePanel.
   useEffect(() => {
-    if (gameStatus !== 'in_progress' && playerResult && gameId) {
+    if (isFinishedView) return;
+    if (isFinished && gameId) {
       router.replace(`/${locale}/games/play/result?gameId=${gameId}`);
     }
-  }, [gameStatus, playerResult, gameId, locale, router]);
+  }, [isFinishedView, isFinished, gameId, locale, router]);
+
+  // Cross-links out of the finished-game view → result and postmortem,
+  // completing the result ⇄ game ⇄ postmortem navigation hub.
+  const handleViewResult = useCallback(() => {
+    if (gameId) router.push(`/${locale}/games/play/result?gameId=${gameId}`);
+  }, [router, locale, gameId]);
+
+  const handleOpenPostmortem = useCallback(() => {
+    if (!gameId) return;
+    router.push(
+      buildPostmortemPath({
+        locale,
+        formattedPgn,
+        playerColor: playerSide,
+        moves,
+        engineConfig,
+        gameId,
+        startingFen,
+      })
+    );
+  }, [router, locale, formattedPgn, playerSide, moves, engineConfig, gameId, startingFen]);
+
+  // Build the InlineBoardView shared by the in-progress and finished panels.
+  // `interactive` enables click/drag move input (gated further on the player's
+  // turn); the finished view passes false so the board is review-only.
+  const renderInlineBoardView = (interactive: boolean) =>
+    shouldShowInlinePeekHeader(preferences) || shouldShowAlwaysVisibleBoard(preferences) ? (
+      <InlineBoardView
+        fen={displayFen || currentFen}
+        playerSide={playerSide}
+        flipped={effectiveFlipped}
+        lastMove={preferences.highlightLastMove && currentPosition === -1 ? lastMove : null}
+        preferences={preferences}
+        movesLength={moves.length}
+        currentPosition={currentPosition}
+        formattedPgn={formattedPgn}
+        onNavigateToStart={navigateToStart}
+        onNavigatePrevious={navigatePrevious}
+        onNavigateNext={navigateNext}
+        onNavigateToEnd={navigateToEnd}
+        onNavigateToPosition={navigateToPosition}
+        onFlipBoard={handleFlipBoard}
+        onPeek={shouldShowAlwaysVisibleBoard(preferences) ? undefined : recordPeek}
+        collapseSignal={playerMoveCommitCount}
+        alwaysOpen={shouldShowAlwaysVisibleBoard(preferences)}
+        // Interactive board moves (click-to-move + drag) only in always-visible
+        // mode AND when the player can act right now. The finished view passes
+        // interactive=false, so the board is non-interactive there.
+        onMove={
+          interactive &&
+          shouldShowAlwaysVisibleBoard(preferences) &&
+          isPlayerTurn &&
+          !isLoading &&
+          currentPosition === -1
+            ? handleBoardMove
+            : undefined
+        }
+        // Count illegal board attempts into the same invalid-attempt counter
+        // the text/select/button paths use, so the result page's "Invalid
+        // Count" reflects blindfold mistakes regardless of input method.
+        onIllegalMove={
+          interactive &&
+          shouldShowAlwaysVisibleBoard(preferences) &&
+          isPlayerTurn &&
+          !isLoading &&
+          currentPosition === -1
+            ? recordInvalid
+            : undefined
+        }
+      />
+    ) : undefined;
 
   if (gameNotFound) {
     notFound();
@@ -340,66 +427,18 @@ export function PlayClient({
                     ? { message: aiMoveError.message, retry: aiMoveError.retry }
                     : null
                 }
-                inlineBoardView={
-                  // Render the InlineBoardView for either the peek-inline
-                  // mode (collapsible header + auto-collapse on commit) or
-                  // the always-visible mode (no chrome, board permanently
-                  // open). `alwaysOpen` switches the component between the
-                  // two; peekCount is intentionally not recorded in always
-                  // mode (`onPeek` is also a no-op there).
-                  shouldShowInlinePeekHeader(preferences) ||
-                  shouldShowAlwaysVisibleBoard(preferences) ? (
-                    <InlineBoardView
-                      fen={displayFen || currentFen}
-                      playerSide={playerSide}
-                      flipped={effectiveFlipped}
-                      lastMove={
-                        preferences.highlightLastMove && currentPosition === -1 ? lastMove : null
-                      }
-                      preferences={preferences}
-                      movesLength={moves.length}
-                      currentPosition={currentPosition}
-                      formattedPgn={formattedPgn}
-                      onNavigateToStart={navigateToStart}
-                      onNavigatePrevious={navigatePrevious}
-                      onNavigateNext={navigateNext}
-                      onNavigateToEnd={navigateToEnd}
-                      onNavigateToPosition={navigateToPosition}
-                      onFlipBoard={handleFlipBoard}
-                      onPeek={shouldShowAlwaysVisibleBoard(preferences) ? undefined : recordPeek}
-                      collapseSignal={playerMoveCommitCount}
-                      alwaysOpen={shouldShowAlwaysVisibleBoard(preferences)}
-                      // Interactive board moves (click-to-move + DnD) are
-                      // only enabled in always-visible mode AND when the
-                      // player can act right now. Gating on these three
-                      // conditions keeps the cursor / drag affordances
-                      // honest: no draggable handle while the AI is
-                      // thinking, no moves accepted while browsing history.
-                      onMove={
-                        shouldShowAlwaysVisibleBoard(preferences) &&
-                        isPlayerTurn &&
-                        !isLoading &&
-                        currentPosition === -1
-                          ? handleBoardMove
-                          : undefined
-                      }
-                      // Count illegal board attempts into the same
-                      // invalid-attempt counter the text/select/button paths
-                      // use, so the result page's "Invalid Count" reflects
-                      // blindfold mistakes regardless of input method. Gated
-                      // identically to `onMove`: only while the player can
-                      // actually act on the always-visible board.
-                      onIllegalMove={
-                        shouldShowAlwaysVisibleBoard(preferences) &&
-                        isPlayerTurn &&
-                        !isLoading &&
-                        currentPosition === -1
-                          ? recordInvalid
-                          : undefined
-                      }
-                    />
-                  ) : undefined
-                }
+                inlineBoardView={renderInlineBoardView(true)}
+              />
+            )}
+            {!isInitializing && isFinishedView && isFinished && (
+              <FinishedGamePanel
+                inlineBoardView={renderInlineBoardView(false)}
+                preferences={preferences}
+                onViewResult={handleViewResult}
+                onPostmortem={handleOpenPostmortem}
+                showPostmortem={moves.length > 0}
+                onShowBoard={() => setIsBoardVisible(true)}
+                onShowOperationLog={() => setShowOperationLogModal(true)}
               />
             )}
           </div>
