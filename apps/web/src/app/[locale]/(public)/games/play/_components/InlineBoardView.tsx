@@ -65,6 +65,12 @@ type Props = {
    * count board-driven blindfold mistakes. See `ChessBoard`'s prop doc.
    */
   onIllegalMove?: () => void;
+  /**
+   * Relayed to the inner ChessBoard. Defaults to `'own'` (real-game rule:
+   * only the player's pieces respond). Postmortem passes `'side-to-move'` so
+   * the reviewer can also move the opponent's pieces on the opponent's turn.
+   */
+  movablePieces?: 'own' | 'side-to-move';
 };
 
 export function InlineBoardView({
@@ -87,6 +93,7 @@ export function InlineBoardView({
   alwaysOpen,
   onMove,
   onIllegalMove,
+  movablePieces,
 }: Props) {
   const t = useTranslations('play');
   const [isOpen, setIsOpen] = useState(false);
@@ -161,6 +168,7 @@ export function InlineBoardView({
             rounded={false}
             onMove={onMove}
             onIllegalMove={onIllegalMove}
+            movablePieces={movablePieces}
           />
 
           {/* Navigation Controls & Flip Button */}

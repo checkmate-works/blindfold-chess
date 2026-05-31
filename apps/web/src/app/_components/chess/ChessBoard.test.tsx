@@ -663,3 +663,97 @@ describe('ChessBoard interactive mode — onSquareClick backward compat', () => 
     expect(onSquareClick).not.toHaveBeenCalled();
   });
 });
+
+/**
+ * `movablePieces` gates which color the user can pick up. The default ('own')
+ * is the real-game rule — only `playerSide` responds, even on the opponent's
+ * turn. 'side-to-move' (postmortem) lets whichever color is to move respond,
+ * so the reviewer can enter the opponent's moves too. These tests lock BOTH
+ * so a future change can't silently make the opponent's pieces grabbable in a
+ * normal game.
+ */
+describe('ChessBoard interactive mode — movablePieces gating', () => {
+  // Black to move (after 1.e4). Black's e7-e5 is a legal reply.
+  const BLACK_TO_MOVE_FEN = 'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1';
+
+  it("default ('own'): the opponent's piece stays inert even on the opponent's turn", () => {
+    const onMove = vi.fn();
+    const { container } = render(
+      <ChessBoard fen={BLACK_TO_MOVE_FEN} playerSide="white" onMove={onMove} />
+    );
+
+    // Click selection and drag both must do nothing for black (the opponent).
+    fireEvent.click(squareEl(container, 'e7'));
+    fireEvent.click(squareEl(container, 'e5'));
+    dragPiece(container, 'e7', 'e5');
+
+    expect(onMove).not.toHaveBeenCalled();
+  });
+
+  it("'side-to-move': the opponent's piece moves on the opponent's turn (click)", () => {
+    const onMove = vi.fn();
+    const { container } = render(
+      <ChessBoard
+        fen={BLACK_TO_MOVE_FEN}
+        playerSide="white"
+        onMove={onMove}
+        movablePieces="side-to-move"
+      />
+    );
+
+    fireEvent.click(squareEl(container, 'e7')); // black pawn — now selectable
+    fireEvent.click(squareEl(container, 'e5')); // its legal advance
+
+    expect(onMove).toHaveBeenCalledExactlyOnceWith('e5');
+  });
+
+  it("'side-to-move': the opponent's piece moves on the opponent's turn (drag)", () => {
+    const onMove = vi.fn();
+    const { container } = render(
+      <ChessBoard
+        fen={BLACK_TO_MOVE_FEN}
+        playerSide="white"
+        onMove={onMove}
+        movablePieces="side-to-move"
+      />
+    );
+
+    dragPiece(container, 'e7', 'e5');
+
+    expect(onMove).toHaveBeenCalledExactlyOnceWith('e5');
+  });
+
+  it("'side-to-move': the side NOT to move is inert (white can't move on black's turn)", () => {
+    const onMove = vi.fn();
+    const { container } = render(
+      <ChessBoard
+        fen={BLACK_TO_MOVE_FEN}
+        playerSide="white"
+        onMove={onMove}
+        movablePieces="side-to-move"
+      />
+    );
+
+    fireEvent.click(squareEl(container, 'e4')); // white pawn — not the side to move
+    fireEvent.click(squareEl(container, 'e5'));
+
+    expect(onMove).not.toHaveBeenCalled();
+  });
+
+  it("'side-to-move': own pieces still move on the player's own turn", () => {
+    const onMove = vi.fn();
+    const { container } = render(
+      <ChessBoard
+        fen={STARTING_FEN}
+        playerSide="white"
+        onMove={onMove}
+        movablePieces="side-to-move"
+      />
+    );
+
+    fireEvent.click(squareEl(container, 'e2'));
+    fireEvent.click(squareEl(container, 'e4'));
+
+    expect(onMove).toHaveBeenCalledExactlyOnceWith('e4');
+  });
+});

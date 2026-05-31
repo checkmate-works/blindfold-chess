@@ -162,16 +162,18 @@ export function PostmortemClient({
 
   const boardFen = displayFen || currentFen;
   const sideToMove = boardFen.split(' ')[1] === 'b' ? 'black' : 'white';
-  // Board-driven input is available only in always-visible mode and only when
-  // the side to move is the move the user is expected to enter — mirroring the
-  // play screen (ChessBoard makes only own-color pieces draggable).
+  // Board-driven input is available in always-visible mode at the live
+  // position whenever it's a move the reviewer is expected to enter
+  // (`isPlayerTurn` already encodes the auto-opponent rule). Unlike a real
+  // game, the reviewer enters BOTH sides' moves, so the board is set to
+  // `movablePieces="side-to-move"` below — letting them grab the opponent's
+  // pieces on the opponent's turn.
   const canBoardInput =
     showAlwaysBoard &&
     !isCompleted &&
     !moveInput.isAnalyzingAll &&
     navigation.currentPosition === -1 &&
-    settings.isPlayerTurn &&
-    sideToMove === playerColor;
+    settings.isPlayerTurn;
 
   const inlineBoardView = showInlineBoard ? (
     <InlineBoardView
@@ -191,6 +193,7 @@ export function PostmortemClient({
       onNavigateToPosition={navigation.navigateToPosition}
       collapseSignal={progress}
       alwaysOpen={showAlwaysBoard}
+      movablePieces="side-to-move"
       onMove={
         canBoardInput ? (san) => actions.handleSubmitMove(san as AlgebraicNotation) : undefined
       }
