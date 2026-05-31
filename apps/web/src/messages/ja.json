@@ -1861,7 +1861,6 @@
         "title": "対局統計",
         "moves": "手数",
         "cleanRate": "クリーン手率",
-        "cleanRateHelp": "盤面確認・ヒント・待った・イリーガルなしで指せた手の割合",
         "illegal": "イリーガル試行",
         "takebacks": "待った",
         "peeks": "盤面確認",
