@@ -4,9 +4,12 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { ADSENSE_SLOT_CONTENT_BOTTOM, IS_LOCAL_DEV } from '@/config';
+import type { ExpInfo } from '@blindfold-chess/features/exp';
 import { eq } from 'drizzle-orm';
 
 import { db, profiles } from '@/lib/db';
+import { getExpInfoBySource } from '@/lib/db/get-exp-info-by-source';
+import { AI_GAME_RESULT_SOURCE } from '@/lib/db/save-exp';
 import { createClient } from '@/lib/supabase/server';
 
 import { PageLayout } from '@/app/[locale]/_components';
@@ -24,6 +27,7 @@ type Props = {
   params: Promise<{
     locale: Locale;
   }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export const generateStaticParams = generateLocaleStaticParams;
@@ -41,7 +45,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function ResultPage({ params }: Props) {
+export default async function ResultPage({ params, searchParams }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const tMetadata = await getTranslations({ locale, namespace: 'metadata' });
@@ -65,6 +69,19 @@ export default async function ResultPage({ params }: Props) {
     }
   }
 
+  // Resolve any already-granted AI-game Exp server-side from ?gameId=<id> (the
+  // grant's source_id), so the "Exp gained" display survives reloads and direct
+  // URL access. On the first visit after finishing, the grant has not happened
+  // yet, so this is null and the client triggers the grant; on a revisit it is
+  // populated and the client shows it without re-granting.
+  const sp = await searchParams;
+  const gameIdRaw = sp.gameId;
+  const gameId = typeof gameIdRaw === 'string' ? gameIdRaw : undefined;
+  let initialExp: ExpInfo | null = null;
+  if (user && gameId) {
+    initialExp = await getExpInfoBySource(user.id, AI_GAME_RESULT_SOURCE, gameId);
+  }
+
   const breadcrumb = (
     <BreadcrumbContent
       items={[{ label: tGames('pageTitle'), href: '/games' }, { label: tPlay('gameOver') }]}
@@ -77,7 +94,12 @@ export default async function ResultPage({ params }: Props) {
   return (
     <PageLayout title={tPlay('resultTitle')} locale={locale}>
       <Suspense fallback={<ResultSkeleton />}>
-        <ResultClient locale={locale} displayName={displayName} isAuthenticated={Boolean(user)} />
+        <ResultClient
+          locale={locale}
+          displayName={displayName}
+          isAuthenticated={Boolean(user)}
+          initialExp={initialExp}
+        />
       </Suspense>
 
       {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (

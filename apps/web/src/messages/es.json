@@ -1876,6 +1876,10 @@
         "description": "Crea una cuenta gratuita para desbloquear todas tus estadísticas de la partida y el análisis jugada a jugada.",
         "signUpButton": "Crear Cuenta Gratuita",
         "signInButton": "¿Ya tienes una cuenta? Iniciar sesión"
+      },
+      "exp": {
+        "signInToEarn": "Inicia sesión para ganar EXP por tus partidas.",
+        "signInButton": "Iniciar sesión"
       }
     },
     "finishedGame": {

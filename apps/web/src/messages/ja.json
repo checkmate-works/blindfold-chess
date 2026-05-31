@@ -1880,6 +1880,10 @@
         "description": "無料ユーザー登録で、対局統計や手ごとの振り返りをすべて確認できます。",
         "signUpButton": "無料ユーザー登録",
         "signInButton": "アカウントをお持ちの方はログイン"
+      },
+      "exp": {
+        "signInToEarn": "ログインすると、この対局で経験値（EXP）が貯まります。",
+        "signInButton": "ログイン"
       }
     },
     "finishedGame": {
