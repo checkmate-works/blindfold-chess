@@ -252,24 +252,6 @@ function ResultContent({
           </div>
         )}
 
-        {/* Exp earned for this game. Authenticated players see the grant
-            (ExpGainDisplay renders nothing until it resolves); guests get a
-            sign-in nudge so the reward doubles as a registration incentive. */}
-        {stats.totalMoves > 0 &&
-          (isAuthenticated ? (
-            <ExpGainDisplay expInfo={exp} />
-          ) : (
-            <div className="mt-4 rounded-lg border border-border bg-card p-4 text-center">
-              <p className="text-sm text-muted-foreground">{t('result.exp.signInToEarn')}</p>
-              <Link
-                href={`/${locale}/sign-in`}
-                className="mt-3 inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                {t('result.exp.signInButton')}
-              </Link>
-            </div>
-          ))}
-
         {/* Game statistics overview — metric cards + per-move effort strip.
             Anonymous viewers see it blurred behind a sign-up CTA; the
             statistics are a registration nudge for game-only users. */}
@@ -297,6 +279,25 @@ function ResultContent({
             )}
           </>
         )}
+
+        {/* Exp earned for this game, shown below the statistics. Authenticated
+            players see the grant (ExpGainDisplay renders nothing until it
+            resolves); guests get a sign-in nudge so the reward doubles as a
+            registration incentive. */}
+        {stats.totalMoves > 0 &&
+          (isAuthenticated ? (
+            <ExpGainDisplay expInfo={exp} />
+          ) : (
+            <div className="mt-4 rounded-lg border border-border bg-card p-4 text-center">
+              <p className="text-sm text-muted-foreground">{t('result.exp.signInToEarn')}</p>
+              <Link
+                href={`/${locale}/sign-in`}
+                className="mt-3 inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                {t('result.exp.signInButton')}
+              </Link>
+            </div>
+          ))}
 
         <div className="border-t border-border" />
 
