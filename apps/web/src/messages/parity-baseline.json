@@ -185,22 +185,7 @@
     },
     "ja": {
       "missing": [],
-      "extra": [
-        "postmortem.logSkipped",
-        "postmortem.summary.backToResult",
-        "postmortem.summary.headline.allRecalled",
-        "postmortem.summary.headline.good",
-        "postmortem.summary.headline.keepGoing",
-        "postmortem.summary.headline.perfect",
-        "postmortem.summary.missed",
-        "postmortem.summary.mistakes",
-        "postmortem.summary.nailed",
-        "postmortem.summary.restart",
-        "postmortem.summary.reviewHint",
-        "postmortem.summary.reviewTitle",
-        "postmortem.summary.scoreLine",
-        "postmortem.summary.struggled"
-      ]
+      "extra": []
     },
     "pt-BR": {
       "missing": [

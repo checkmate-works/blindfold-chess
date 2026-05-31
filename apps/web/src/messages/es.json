@@ -1929,11 +1929,29 @@
     "logIncorrectMove": "Tu entrada",
     "logCorrectMove": "Correcto",
     "logAutoFilled": "Auto-rellenado",
+    "logSkipped": "No recordado",
     "noMistakes": "¡Sin errores!",
     "incorrectMoveError": "{movePrefix} no es {move}",
     "analyzing": "Analizando",
     "correctMoveMessage": "{movePrefix} {move} es correcto",
-    "skippedMoveMessage": "La respuesta era {movePrefix} {move}"
+    "skippedMoveMessage": "La respuesta era {movePrefix} {move}",
+    "summary": {
+      "headline": {
+        "perfect": "¡Reproducción perfecta!",
+        "allRecalled": "¡Recordaste todos los movimientos!",
+        "good": "¡Buena memoria!",
+        "keepGoing": "La próxima vez recordarás más"
+      },
+      "scoreLine": "{recalled} / {total} movimientos recordados",
+      "nailed": "A la primera",
+      "struggled": "Con dudas",
+      "missed": "No recordado",
+      "mistakes": "Errores: {count}",
+      "reviewTitle": "Dónde dudaste",
+      "reviewHint": "Toca para ver la posición",
+      "restart": "Jugar de nuevo",
+      "backToResult": "Volver al resultado"
+    }
   },
   "playError": {
     "title": "Recuperación de Partida",

@@ -1933,11 +1933,29 @@
     "logIncorrectMove": "Your input",
     "logCorrectMove": "Correct",
     "logAutoFilled": "Auto-filled",
+    "logSkipped": "Couldn't recall",
     "noMistakes": "No mistakes!",
     "incorrectMoveError": "{movePrefix} is not {move}",
     "analyzing": "Analyzing",
     "correctMoveMessage": "{movePrefix} {move} is correct",
-    "skippedMoveMessage": "The answer was {movePrefix} {move}"
+    "skippedMoveMessage": "The answer was {movePrefix} {move}",
+    "summary": {
+      "headline": {
+        "perfect": "Perfect recall!",
+        "allRecalled": "You recalled every move!",
+        "good": "Good recall!",
+        "keepGoing": "You'll recall more next time"
+      },
+      "scoreLine": "{recalled} / {total} moves recalled",
+      "nailed": "First try",
+      "struggled": "Stumbled",
+      "missed": "Couldn't recall",
+      "mistakes": "Mistakes: {count}",
+      "reviewTitle": "Where you stumbled",
+      "reviewHint": "Tap to view the position",
+      "restart": "Play again",
+      "backToResult": "Back to result"
+    }
   },
   "playError": {
     "title": "Game Recovery",
