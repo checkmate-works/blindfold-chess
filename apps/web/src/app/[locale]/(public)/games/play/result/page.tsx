@@ -17,6 +17,7 @@ import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { ResultClient } from './_components/ResultClient';
+import { ResultSkeleton } from './_components/ResultSkeleton';
 
 type Props = {
   params: Promise<{
@@ -73,7 +74,7 @@ export default async function ResultPage({ params }: Props) {
 
   return (
     <PageLayout title={tPlay('resultTitle')} locale={locale}>
-      <Suspense>
+      <Suspense fallback={<ResultSkeleton />}>
         <ResultClient locale={locale} displayName={displayName} breadcrumb={breadcrumb} />
       </Suspense>
 

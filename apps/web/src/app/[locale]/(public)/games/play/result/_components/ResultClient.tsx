@@ -28,6 +28,7 @@ import { getMovingSide } from '../../_lib/fen-utils';
 import { useLoadGame } from '../_hooks/useLoadGame';
 import { computeGameStats } from '../_lib/compute-game-stats';
 import { GameStatsOverview } from './GameStatsOverview';
+import { ResultSkeleton } from './ResultSkeleton';
 import { VictoryCertificate } from './VictoryCertificate';
 
 /**
@@ -65,7 +66,7 @@ export function ResultClient({ locale, displayName, breadcrumb }: Props) {
   const loadState = useLoadGame(gameId);
 
   if (loadState.status === 'idle' || loadState.status === 'loading') {
-    return null;
+    return <ResultSkeleton />;
   }
 
   if (loadState.status === 'error') {
