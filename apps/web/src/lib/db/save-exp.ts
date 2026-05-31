@@ -9,18 +9,28 @@
  * @see {@link ./save-challenge-result.ts} for the caller that invokes grantChallengeExp
  */
 import {
+  applyDailyCap,
   calculateExp,
+  calculateGameExp,
   calculatePracticeExp,
   getLevel,
   getLevelProgress,
   getModuleWeight,
 } from '@blindfold-chess/features/exp';
-import type { ExpInfo } from '@blindfold-chess/features/exp';
-import { and, eq, sql } from 'drizzle-orm';
+import type { ExpInfo, GameExpEngine, GameExpOutcome } from '@blindfold-chess/features/exp';
+import { and, eq, gte, sql } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 
+import { startOfUtcDay } from './period-range';
 import { expEvents, userExp } from './schema';
 import type { DbTx } from './types';
+
+/**
+ * `exp_events.source` value for Exp granted from completing an AI game
+ * (Stockfish / Maia). Paired with the localStorage game id as `source_id`,
+ * which gives one-grant-per-game idempotency via `uq_exp_events_source_pair`.
+ */
+export const AI_GAME_RESULT_SOURCE = 'ai_game_result';
 
 /**
  * Result of a {@link grantExp} call.
@@ -289,5 +299,113 @@ export async function grantPracticeExp(
       levelUp: levelAfter > levelBefore,
       progressPercent,
     },
+  };
+}
+
+/**
+ * Net Exp the user has already earned from AI games since 00:00 UTC today.
+ * Read just before granting (inside the same transaction), so the row this
+ * call is about to insert is not yet counted. Mirrors the UTC-day convention
+ * used by the Coin creation cap (`creationEarnedToday`).
+ */
+async function gameExpEarnedToday(tx: DbTx, userId: string): Promise<number> {
+  const [row] = await tx
+    .select({ total: sql<number>`COALESCE(SUM(${expEvents.amount}), 0)::int` })
+    .from(expEvents)
+    .where(
+      and(
+        eq(expEvents.userId, userId),
+        eq(expEvents.source, AI_GAME_RESULT_SOURCE),
+        gte(expEvents.createdAt, startOfUtcDay())
+      )
+    );
+  return row?.total ?? 0;
+}
+
+/**
+ * Calculates and grants Exp for a completed AI game within a transaction.
+ *
+ * Anti-tamper posture (best-effort, matching the project's stance): the client
+ * self-reports the game inputs, but the Exp *amount* is recomputed here from
+ * those inputs via {@link calculateGameExp} — the client never supplies the
+ * number. A soft daily cap ({@link applyDailyCap}) clamps the grant to the
+ * remaining UTC-day budget, the primary guard against farming many quick games.
+ *
+ * Idempotent on `(source='ai_game_result', sourceId=gameId)`: revisiting the
+ * result screen re-runs this with the same `gameId` and the partial unique
+ * index makes the second insert a no-op (the original amount is returned and
+ * `levelUp` is forced to `false`).
+ *
+ * Caller contract: a game with no player moves earns zero Exp and MUST NOT
+ * reach this function (gated by the action).
+ */
+export async function grantGameExp(
+  tx: DbTx,
+  params: {
+    userId: string;
+    gameId: string;
+    result: GameExpOutcome;
+    engine: GameExpEngine;
+    playerMoveCount: number;
+    aidedMoveCount: number;
+  }
+): Promise<ExpInfo> {
+  const { userId, gameId, result, engine, playerMoveCount, aidedMoveCount } = params;
+
+  const expResult = calculateGameExp({
+    result,
+    engine,
+    playerMoveCount,
+    aidedMoveCount,
+  });
+
+  // Clamp the fresh grant to today's remaining budget. On an idempotent replay
+  // this read also sees this game's own earlier row, but grantExp short-circuits
+  // before the clamped amount is used, so the recomputed cap is harmless there.
+  const earnedToday = await gameExpEarnedToday(tx, userId);
+  const grantedAmount = applyDailyCap(expResult.totalExp, earnedToday);
+
+  const grantResult = await grantExp(tx, {
+    userId,
+    source: AI_GAME_RESULT_SOURCE,
+    sourceId: gameId,
+    menuType: engine.kind,
+    amount: grantedAmount,
+    metadata: {
+      result,
+      engine,
+      playerMoveCount,
+      aidedMoveCount,
+      difficultyBase: expResult.difficultyBase,
+      resultMultiplier: expResult.resultMultiplier,
+      purityMultiplier: expResult.purityMultiplier,
+      earnedExp: expResult.totalExp,
+      dailyCapped: grantedAmount < expResult.totalExp,
+    },
+  });
+
+  const { totalExp } = grantResult;
+  const levelAfter = getLevel(totalExp);
+  const levelProgress = getLevelProgress(totalExp);
+  const progressPercent = Math.round(levelProgress.progress * 100);
+
+  if (grantResult.alreadyGranted) {
+    return {
+      earnedExp: grantResult.existingAmount,
+      totalExp,
+      level: levelAfter,
+      levelUp: false,
+      progressPercent,
+    };
+  }
+
+  const levelBefore = getLevel(totalExp - grantedAmount);
+
+  return {
+    earnedExp: grantedAmount,
+    totalExp,
+    level: levelAfter,
+    levelUp: levelAfter > levelBefore,
+    progressPercent,
   };
 }
