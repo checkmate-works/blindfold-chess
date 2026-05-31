@@ -4,10 +4,19 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Button, ProgressBar } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FaCheck, FaCog, FaEye, FaQuestionCircle, FaSpinner } from 'react-icons/fa';
+import type { AlgebraicNotation } from '@blindfold-chess/types';
+import { FaCheck, FaCog, FaQuestionCircle, FaSpinner } from 'react-icons/fa';
 
 import { BoardViewModal } from '@/app/[locale]/(public)/games/play/_components/BoardViewModal';
+import { InlineBoardView } from '@/app/[locale]/(public)/games/play/_components/InlineBoardView';
 import { MidGameSettingsModal } from '@/app/[locale]/(public)/games/play/_components/MidGameSettingsModal';
+import { ShowBoardButton } from '@/app/[locale]/(public)/games/play/_components/ShowBoardButton';
+import {
+  ACTION_ROW_CONTAINER_CLASSES,
+  shouldShowAlwaysVisibleBoard,
+  shouldShowInlinePeekHeader,
+  shouldShowModalPeekButton,
+} from '@/app/[locale]/(public)/games/play/_lib';
 import { useLoadGame } from '@/app/[locale]/(public)/games/play/result/_hooks/useLoadGame';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { Modal } from '@/app/[locale]/_components/Modal';
@@ -127,6 +136,51 @@ export function PostmortemClient({
   const { currentFen, displayFen, currentLastMove } = boardState;
   const { isCompleted, totalMoves, progress, originalMoves } = gameProgress;
 
+  // Board display follows the (seeded) preferences, exactly like the in-game
+  // screen: always-visible inline board, collapsible peek-inline board, or a
+  // modal opened from a "Show Board" button.
+  const showAlwaysBoard = shouldShowAlwaysVisibleBoard(preferences);
+  const showInlinePeek = shouldShowInlinePeekHeader(preferences);
+  const showModalPeekButton = shouldShowModalPeekButton(preferences);
+  const showInlineBoard = showAlwaysBoard || showInlinePeek;
+
+  const boardFen = displayFen || currentFen;
+  const sideToMove = boardFen.split(' ')[1] === 'b' ? 'black' : 'white';
+  // Board-driven input is available only in always-visible mode and only when
+  // the side to move is the move the user is expected to enter — mirroring the
+  // play screen (ChessBoard makes only own-color pieces draggable).
+  const canBoardInput =
+    showAlwaysBoard &&
+    !isCompleted &&
+    !moveInput.isAnalyzingAll &&
+    navigation.currentPosition === -1 &&
+    settings.isPlayerTurn &&
+    sideToMove === playerColor;
+
+  const inlineBoardView = showInlineBoard ? (
+    <InlineBoardView
+      fen={boardFen}
+      playerSide={playerColor}
+      lastMove={
+        preferences.highlightLastMove && navigation.currentPosition === -1 ? currentLastMove : null
+      }
+      preferences={preferences}
+      movesLength={originalMoves.length}
+      currentPosition={navigation.currentPosition}
+      formattedPgn={formattedPgn}
+      onNavigateToStart={navigation.navigateToStart}
+      onNavigatePrevious={navigation.navigatePrevious}
+      onNavigateNext={navigation.navigateNext}
+      onNavigateToEnd={navigation.navigateToEnd}
+      onNavigateToPosition={navigation.navigateToPosition}
+      collapseSignal={progress}
+      alwaysOpen={showAlwaysBoard}
+      onMove={
+        canBoardInput ? (san) => actions.handleSubmitMove(san as AlgebraicNotation) : undefined
+      }
+    />
+  ) : null;
+
   // Format feedback message from structured data
   const feedback = moveInput.lastFeedback;
   const movePrefix = feedback
@@ -141,15 +195,35 @@ export function PostmortemClient({
     : null;
   const feedbackIsError = feedback?.type === 'incorrect';
 
+  // Settings gear — placed in the same bottom-right icon row as the in-game
+  // `GameInProgressPanel`, so the two screens feel identical.
+  const settingsRow = (
+    <div className="flex justify-end items-center gap-2 text-muted-foreground">
+      <button
+        type="button"
+        data-tour-id="postmortem-settings"
+        onClick={() => setShowSettings(true)}
+        className="p-1 leading-none hover:text-foreground"
+        title={t('settings')}
+        aria-label={t('settings')}
+      >
+        <FaCog className="w-4 h-4" />
+      </button>
+    </div>
+  );
+
   return (
     <div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Progress Bar, Input, Actions */}
+        {/* Progress Bar, Board, Input, Actions */}
         <div className="lg:col-span-2">
           <div className="border border-border rounded-lg p-4">
             <div className="flex flex-col gap-6">
               {/* Progress Bar */}
               <ProgressBar current={progress} total={totalMoves} />
+
+              {/* Board (inline, follows boardVisibility/peekMode) */}
+              {inlineBoardView}
 
               {!isCompleted ? (
                 <>
@@ -168,7 +242,7 @@ export function PostmortemClient({
                         <MoveInputPanel
                           preferences={preferences}
                           updatePreferences={updatePreferences}
-                          currentFen={displayFen || currentFen}
+                          currentFen={boardFen}
                           moveInput={moveInput.value}
                           onMoveInputChange={moveInput.setValue}
                           error={feedbackIsError ? feedbackMessage : null}
@@ -177,7 +251,7 @@ export function PostmortemClient({
                           inputPlaceholder={t('inputMove')}
                           selectPlaceholder={t('selectMove')}
                           toggleTitle={t('switchInputMode')}
-                          playerColor={currentFen.split(' ')[1] === 'b' ? 'b' : 'w'}
+                          playerColor={sideToMove === 'black' ? 'b' : 'w'}
                         />
                       </div>
 
@@ -191,7 +265,7 @@ export function PostmortemClient({
                         </p>
                       )}
 
-                      {/* Settings checkboxes */}
+                      {/* Auto-opponent toggle (postmortem-specific) */}
                       <div className="flex flex-col gap-2">
                         <label className="inline-flex items-center gap-2 cursor-pointer">
                           <input
@@ -207,15 +281,10 @@ export function PostmortemClient({
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="flex gap-2 justify-center">
-                        <button
-                          onClick={() => setIsBoardVisible(true)}
-                          className="px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center justify-center gap-2"
-                          title={t('showBoard')}
-                        >
-                          <FaEye className="w-4 h-4" />
-                          <span className="hidden md:inline">{t('showBoard')}</span>
-                        </button>
+                      <div className={ACTION_ROW_CONTAINER_CLASSES}>
+                        {showModalPeekButton && (
+                          <ShowBoardButton onClick={() => setIsBoardVisible(true)} />
+                        )}
                         <span data-tour-id="postmortem-dont-know" className="inline-flex">
                           <Button
                             variant="secondary"
@@ -237,17 +306,9 @@ export function PostmortemClient({
                             {t('autoFillAll')}
                           </button>
                         )}
-                        <button
-                          type="button"
-                          data-tour-id="postmortem-settings"
-                          onClick={() => setShowSettings(true)}
-                          className="px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center justify-center"
-                          title={t('settings')}
-                          aria-label={t('settings')}
-                        >
-                          <FaCog className="w-4 h-4" />
-                        </button>
                       </div>
+
+                      {settingsRow}
                     </>
                   )}
                 </>
@@ -273,17 +334,13 @@ export function PostmortemClient({
                     </div>
                   </div>
 
-                  {/* Action Buttons */}
-                  <div className="flex gap-2 justify-center">
-                    <button
-                      onClick={() => setIsBoardVisible(true)}
-                      className="px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center justify-center gap-2"
-                      title={t('showBoard')}
-                    >
-                      <FaEye className="w-4 h-4" />
-                      <span>{t('showBoard')}</span>
-                    </button>
-                  </div>
+                  {/* Show Board (modal peek mode only — inline modes already
+                      render the board above) */}
+                  {showModalPeekButton && (
+                    <div className={ACTION_ROW_CONTAINER_CLASSES}>
+                      <ShowBoardButton onClick={() => setIsBoardVisible(true)} />
+                    </div>
+                  )}
 
                   {/* Move log link */}
                   <div className="text-center">
@@ -294,6 +351,8 @@ export function PostmortemClient({
                       {t('log')}
                     </button>
                   </div>
+
+                  {settingsRow}
                 </>
               )}
             </div>
@@ -348,11 +407,11 @@ export function PostmortemClient({
         cancelText={t('cancel')}
       />
 
-      {/* Board View Modal */}
+      {/* Board View Modal — used for peek + modal mode. */}
       <BoardViewModal
         isOpen={isBoardVisible}
         onClose={() => setIsBoardVisible(false)}
-        fen={displayFen || currentFen}
+        fen={boardFen}
         playerSide={playerColor}
         lastMove={preferences.highlightLastMove ? currentLastMove : null}
         preferences={preferences}
