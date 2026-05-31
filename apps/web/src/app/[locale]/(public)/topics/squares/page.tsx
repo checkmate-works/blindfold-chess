@@ -77,17 +77,6 @@ export default async function SquaresPage({ params, searchParams }: Props) {
         <TopicTabs active="squares" locale={locale} />
       </div>
 
-      {currentPage === 1 && (
-        <>
-          <SectionTitle>{t('squares.sectionTitle')}</SectionTitle>
-          <SquareBoard locale={locale} />
-        </>
-      )}
-
-      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE) && (
-        <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
-      )}
-
       <SectionTitle>{t('squares.recentPosts')}</SectionTitle>
 
       {recentPosts.length === 0 ? (
@@ -110,11 +99,22 @@ export default async function SquaresPage({ params, searchParams }: Props) {
         </div>
       )}
 
+      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE) && (
+        <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
+      )}
+
+      {currentPage === 1 && (
+        <>
+          <SectionTitle>{t('squares.sectionTitle')}</SectionTitle>
+          <SquareBoard locale={locale} />
+        </>
+      )}
+
       {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
         <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
       )}
-
-      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
     </PageLayout>
   );
 }
