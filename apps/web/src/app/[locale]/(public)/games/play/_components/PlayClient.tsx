@@ -10,6 +10,8 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 import type { MoveInputPreferenceHint } from '@/lib/games/move-input-cookie';
 import type { PeekPreferenceHint } from '@/lib/games/peek-cookie';
 
+import { AuthPromptModal } from '@/app/[locale]/_components/AuthPromptModal';
+import { useAuthGuard } from '@/app/[locale]/_hooks/use-auth-guard';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useBoardFlip, useConfirmationDialogs, useMoveNavigation } from '../_hooks';
@@ -286,6 +288,10 @@ export function PlayClient({
     if (gameId) router.push(`/${locale}/games/play/result?gameId=${gameId}`);
   }, [router, locale, gameId]);
 
+  // Postmortem is a members-only feature; anonymous viewers get a sign-up
+  // prompt instead of the review screen. Mirrors the result page's guard.
+  const { guardAction, isModalOpen: isAuthModalOpen, closeModal: closeAuthModal } = useAuthGuard();
+
   const handleOpenPostmortem = useCallback(() => {
     if (!gameId) return;
     router.push(
@@ -435,7 +441,7 @@ export function PlayClient({
                 inlineBoardView={renderInlineBoardView(false)}
                 preferences={preferences}
                 onViewResult={handleViewResult}
-                onPostmortem={handleOpenPostmortem}
+                onPostmortem={() => guardAction(handleOpenPostmortem)}
                 showPostmortem={moves.length > 0}
                 onShowBoard={() => setIsBoardVisible(true)}
                 onShowOperationLog={() => setShowOperationLogModal(true)}
@@ -512,6 +518,10 @@ export function PlayClient({
         onCloseSettingsModal={() => setShowSettingsModal(false)}
         onPerGamePrefChange={setPerGamePref}
       />
+
+      {/* Sign-up prompt shown when an anonymous viewer taps the postmortem
+          button in the finished-game panel (members-only feature). */}
+      {isAuthModalOpen && <AuthPromptModal isOpen={isAuthModalOpen} onClose={closeAuthModal} />}
     </div>
   );
 }
