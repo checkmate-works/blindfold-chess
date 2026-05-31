@@ -3610,6 +3610,9 @@
     "description": "Discute y comparte ideas sobre casillas, posiciones y estrategias de ajedrez",
     "recentTopicPosts": "Temas Recientes",
     "recentPosts": "Publicaciones Recientes",
+    "tabs": {
+      "recent": "Recientes"
+    },
     "noRecentPosts": "Aún no hay publicaciones.",
     "moreTopicPosts": "Más temas",
     "showMore": "Mostrar más",

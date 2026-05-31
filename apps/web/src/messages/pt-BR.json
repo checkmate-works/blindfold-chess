@@ -3610,6 +3610,9 @@
     "description": "Discuta e compartilhe ideias sobre casas, posições e estratégias de xadrez",
     "recentTopicPosts": "Tópicos Recentes",
     "recentPosts": "Publicações Recentes",
+    "tabs": {
+      "recent": "Recentes"
+    },
     "noRecentPosts": "Ainda não há publicações.",
     "moreTopicPosts": "Mais tópicos",
     "showMore": "Mostrar mais",

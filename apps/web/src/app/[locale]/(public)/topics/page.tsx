@@ -8,7 +8,8 @@ import { createClient } from '@/lib/supabase/server';
 
 import { FeedClient } from '@/app/[locale]/(public)/(home)/_components/FeedClient';
 import { TOPICS_FEED_ENTITY_TYPES, getFeedData } from '@/app/[locale]/(public)/(home)/_lib/queries';
-import { CardLink, PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import { LinkTabs, PageLayout, SectionTitle } from '@/app/[locale]/_components';
+import type { LinkTabItem } from '@/app/[locale]/_components';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
@@ -16,15 +17,16 @@ import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
  * Topics List (トピック一覧)
  *
  * @description
- * Landing page for discussion topics. Surfaces a "Category" navigation block
- * (squares / openings / chunks) plus a chronological feed of recent topic
- * activity. The feed reuses the home timeline machinery scoped to
- * `TOPICS_FEED_ENTITY_TYPES` — square/opening top-level posts and chunk
- * entities — so a freshly created/published chunk appears alongside discussion
- * posts. Practice-scoped entities (positions, rank updates) are excluded.
+ * Landing page for discussion topics. A compact tab row navigates between the
+ * recent feed (this page) and the per-category catalogs (squares / openings /
+ * chunks); below it is a chronological feed of recent topic activity. The feed
+ * reuses the home timeline machinery scoped to `TOPICS_FEED_ENTITY_TYPES` —
+ * square/opening top-level posts and chunk entities — so a freshly
+ * created/published chunk appears alongside discussion posts. Practice-scoped
+ * entities (positions, rank updates) are excluded.
  *
  * @flow
- * - Category: links to the squares / openings / chunks catalogs
+ * - Tabs: Recent (active, this page) | Squares | Openings | Chunks (navigate away)
  * - Recent feed: SSR'd initial items + cursor-based infinite scroll (FeedClient)
  */
 export const dynamic = 'force-dynamic';
@@ -50,34 +52,20 @@ export default async function TopicsPage({ params }: Props) {
   ]);
   const showAds = IS_LOCAL_DEV || showAdsResult;
 
+  const tabs: LinkTabItem[] = [
+    { value: 'recent', label: `🆕 ${t('tabs.recent')}`, href: '/topics' },
+    { value: 'chunks', label: `🧠 ${t('categories.chunks.title')}`, href: '/chunks' },
+    { value: 'openings', label: `📖 ${t('categories.openings.title')}`, href: '/topics/openings' },
+    { value: 'squares', label: `🔳 ${t('categories.squares.title')}`, href: '/topics/squares' },
+  ];
+
   return (
     <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
-      <SectionTitle>Category</SectionTitle>
-      <div className="space-y-4">
-        <CardLink
-          href="/topics/squares"
-          icon="♟"
-          title={t('categories.squares.title')}
-          description={t('categories.squares.description')}
-          locale={locale}
-        />
-        <CardLink
-          href="/topics/openings"
-          icon="♞"
-          title={t('categories.openings.title')}
-          description={t('categories.openings.description')}
-          locale={locale}
-        />
-        <CardLink
-          href="/chunks"
-          icon="🧩"
-          title={t('categories.chunks.title')}
-          description={t('categories.chunks.description')}
-          locale={locale}
-        />
-      </div>
-
       <SectionTitle>{t('recentPosts')}</SectionTitle>
+
+      <div className="mb-6">
+        <LinkTabs items={tabs} activeValue="recent" locale={locale} aria-label={t('title')} />
+      </div>
 
       {initialFeed.items.length === 0 ? (
         <p className="text-muted-foreground text-center py-8">{t('noRecentPosts')}</p>

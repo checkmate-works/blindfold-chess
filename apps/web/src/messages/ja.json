@@ -3852,6 +3852,9 @@
     "description": "チェスのマス目やポジション、戦略について議論・共有しましょう",
     "recentTopicPosts": "最近のトピック",
     "recentPosts": "最近の投稿",
+    "tabs": {
+      "recent": "最近"
+    },
     "noRecentPosts": "まだ投稿がありません。",
     "moreTopicPosts": "トピックをもっと見る",
     "showMore": "さらに表示",
