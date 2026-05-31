@@ -31,6 +31,8 @@ export function PostmortemSummary({ stats, entries, onEntryClick, onRestart, gam
   const hasStats = stats.total > 0;
   const ratePercent = Math.round(stats.recallRate * 100);
 
+  // Headline tier. Low-recall runs get no encouraging headline (the bare score
+  // speaks for itself) — `null` renders no heading rather than a platitude.
   const tier =
     stats.recalled === stats.total && stats.struggled === 0 && stats.mistakes === 0
       ? 'perfect'
@@ -38,15 +40,15 @@ export function PostmortemSummary({ stats, entries, onEntryClick, onRestart, gam
         ? 'allRecalled'
         : stats.recallRate >= 0.8
           ? 'good'
-          : 'keepGoing';
+          : null;
+
+  const headline = hasStats ? (tier ? t(`summary.headline.${tier}`) : null) : t('completed');
 
   return (
     <div className="flex flex-col gap-6">
       {/* Recall report */}
       <div className="flex flex-col items-center gap-3 text-center">
-        <h3 className="text-xl font-bold">
-          {hasStats ? t(`summary.headline.${tier}`) : t('completed')}
-        </h3>
+        {headline && <h3 className="text-xl font-bold">{headline}</h3>}
 
         {hasStats && (
           <>

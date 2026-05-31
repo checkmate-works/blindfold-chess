@@ -1931,7 +1931,6 @@
     "copied": "Copied!",
     "analyzeOnLichess": "Analyze on Lichess",
     "moveLog": "Move Log",
-    "backToCurrentPosition": "Back to current position",
     "cancel": "Cancel",
     "save": "Save",
     "log": "Log",
@@ -1949,8 +1948,7 @@
       "headline": {
         "perfect": "Perfect recall!",
         "allRecalled": "You recalled every move!",
-        "good": "Good recall!",
-        "keepGoing": "You'll recall more next time"
+        "good": "Good recall!"
       },
       "scoreLine": "{recalled} / {total} moves recalled",
       "nailed": "First try",
