@@ -23,7 +23,11 @@ const MESSAGES_DIR = join(WEB_ROOT, 'src', 'messages');
 
 function loadLocaleNamespaces(): { locale: string; namespaces: Set<string> }[] {
   const entries = readdirSync(MESSAGES_DIR)
-    .filter((f) => f.endsWith('.json'))
+    // `parity-baseline.json` is not a locale — it's the key-parity drift
+    // baseline (meta keys `_doc` / `reference_locale` / `locales`) consumed by
+    // `src/messages/parity.test.ts`. Excluding it mirrors that test's
+    // `discoverLocales()` and keeps its meta keys out of the namespace union.
+    .filter((f) => f.endsWith('.json') && f !== 'parity-baseline.json')
     .sort();
 
   return entries.map((file) => {
@@ -41,28 +45,16 @@ function main(): void {
     process.exit(1);
   }
 
-  // Union of namespaces across all locale files.
+  // Union of namespaces across all locale files. This script's job is the
+  // namespace *classification* guard (server vs client). Cross-locale key
+  // parity — including whole-namespace gaps and the accepted pre-existing
+  // drift baseline — is owned by `src/messages/parity.test.ts`, so it is
+  // intentionally not re-checked here (that earlier duplicate check could not
+  // see the baseline and flagged known drift such as the untranslated
+  // `chunks` namespace in es/pt-BR).
   const unionNamespaces = new Set<string>();
   for (const { namespaces } of locales) {
     for (const n of namespaces) unionNamespaces.add(n);
-  }
-
-  // Cross-check: each locale file must agree on the namespace set.
-  const [first, ...rest] = locales;
-  const mismatches: string[] = [];
-  for (const other of rest) {
-    const missingInOther = [...first.namespaces].filter((n) => !other.namespaces.has(n));
-    const extraInOther = [...other.namespaces].filter((n) => !first.namespaces.has(n));
-    if (missingInOther.length > 0) {
-      mismatches.push(
-        `  ${other.locale}.json is missing namespaces present in ${first.locale}.json: ${missingInOther.join(', ')}`
-      );
-    }
-    if (extraInOther.length > 0) {
-      mismatches.push(
-        `  ${other.locale}.json has extra namespaces not in ${first.locale}.json: ${extraInOther.join(', ')}`
-      );
-    }
   }
 
   const classifiedNames = new Set(Object.keys(NAMESPACE_CLASSIFICATION));
@@ -86,10 +78,6 @@ function main(): void {
         stale.map((n) => `  - ${n}`).join('\n') +
         `\n\nFix: remove these entries from \`src/app/[locale]/_lib/i18n-namespaces.ts\`.`
     );
-  }
-
-  if (mismatches.length > 0) {
-    errors.push(`Locale files disagree on namespace set:\n${mismatches.join('\n')}`);
   }
 
   if (errors.length > 0) {
