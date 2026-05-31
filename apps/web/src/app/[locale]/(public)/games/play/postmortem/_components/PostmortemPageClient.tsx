@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import type { ReactNode } from 'react';
 
 import { useSearchParams } from 'next/navigation';
@@ -13,6 +14,7 @@ import { PagePanel } from '@/app/[locale]/_components/PagePanel';
 import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 
 import { PostmortemClient } from './PostmortemClient';
+import type { PostmortemFeedback } from './PostmortemClient';
 
 type Props = {
   breadcrumb: ReactNode;
@@ -21,6 +23,7 @@ type Props = {
 export function PostmortemPageClient({ breadcrumb }: Props) {
   const searchParams = useSearchParams();
   const t = useTranslations('postmortem');
+  const [feedback, setFeedback] = useState<PostmortemFeedback | null>(null);
 
   // Get PGN from URL parameters
   const pgn = searchParams.get('pgn');
@@ -69,10 +72,25 @@ export function PostmortemPageClient({ breadcrumb }: Props) {
     );
   }
 
+  // Title color follows the latest feedback tone, mirroring the play screen's
+  // live status title.
+  const titleToneClass =
+    feedback?.tone === 'incorrect'
+      ? 'text-destructive'
+      : feedback?.tone === 'correct'
+        ? 'text-success'
+        : feedback?.tone === 'skipped'
+          ? 'text-muted-foreground'
+          : '';
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-center gap-2">
-        <PageTitle>{t('title')}</PageTitle>
+        <PageTitle>
+          <span className={`truncate block ${titleToneClass}`}>
+            {feedback ? feedback.text : t('title')}
+          </span>
+        </PageTitle>
         <HelpTourButton steps={helpSteps} label={t('help.label')} />
       </div>
       <PagePanel>
@@ -83,6 +101,7 @@ export function PostmortemPageClient({ breadcrumb }: Props) {
           initialOffset={offset}
           startingFen={startingFen}
           gameId={gameId}
+          onFeedbackChange={setFeedback}
         />
         {/* Mirror `PageLayout`'s trailing block — see PageLayout.tsx. */}
         <div className="!mt-4 space-y-4">

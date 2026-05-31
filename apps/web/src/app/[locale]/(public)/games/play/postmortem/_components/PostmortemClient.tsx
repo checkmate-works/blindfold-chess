@@ -33,6 +33,15 @@ import { formatMoveNumberPrefix } from '../_lib/postmortem-format';
 import { PostmortemMoveLogTable } from './PostmortemMoveLogTable';
 import { PostmortemMovesPanel } from './PostmortemMovesPanel';
 
+/**
+ * Move-feedback surfaced in the page title (mirrors the in-game play screen,
+ * which shows live status as the H1). `tone` drives the title color.
+ */
+export type PostmortemFeedback = {
+  tone: 'correct' | 'incorrect' | 'skipped';
+  text: string;
+};
+
 type Props = {
   pgn: string;
   playerColor: 'white' | 'black';
@@ -44,6 +53,12 @@ type Props = {
    * board/input settings from the game's `gamePreferences` snapshot.
    */
   gameId?: string;
+  /**
+   * Reports the latest move feedback up to the page title owner so it can be
+   * rendered in the `PageTitle` slot (like the play screen surfaces its move
+   * status there). Null clears the title back to the page name.
+   */
+  onFeedbackChange?: (feedback: PostmortemFeedback | null) => void;
 };
 
 /**
@@ -76,6 +91,7 @@ export function PostmortemClient({
   initialOffset = 0,
   startingFen,
   gameId,
+  onFeedbackChange,
 }: Props) {
   const t = useTranslations('postmortem');
 
@@ -195,6 +211,21 @@ export function PostmortemClient({
     : null;
   const feedbackIsError = feedback?.type === 'incorrect';
 
+  // Surface the feedback in the page title (the play screen does the same with
+  // its move status). Incorrect moves get a ⚠ prefix, matching the in-game
+  // "invalid move" title. The message persists until the next input clears it.
+  useEffect(() => {
+    if (!onFeedbackChange) return;
+    if (!feedback || !feedbackMessage) {
+      onFeedbackChange(null);
+      return;
+    }
+    onFeedbackChange({
+      tone: feedback.type,
+      text: feedback.type === 'incorrect' ? `⚠ ${feedbackMessage}` : feedbackMessage,
+    });
+  }, [onFeedbackChange, feedback, feedbackMessage]);
+
   // Settings gear — placed in the same bottom-right icon row as the in-game
   // `GameInProgressPanel`, so the two screens feel identical.
   const settingsRow = (
@@ -252,18 +283,10 @@ export function PostmortemClient({
                           selectPlaceholder={t('selectMove')}
                           toggleTitle={t('switchInputMode')}
                           playerColor={sideToMove === 'black' ? 'b' : 'w'}
+                          showInlineError={false}
+                          success={feedback?.type === 'correct'}
                         />
                       </div>
-
-                      {/* Correct move feedback */}
-                      {feedback?.type === 'correct' && feedbackMessage && (
-                        <p className="text-success text-sm mt-[-16px]">{feedbackMessage}</p>
-                      )}
-                      {feedback?.type === 'skipped' && feedbackMessage && (
-                        <p className="text-muted-foreground text-sm mt-[-16px]">
-                          {feedbackMessage}
-                        </p>
-                      )}
 
                       {/* Auto-opponent toggle (postmortem-specific) */}
                       <div className="flex flex-col gap-2">
