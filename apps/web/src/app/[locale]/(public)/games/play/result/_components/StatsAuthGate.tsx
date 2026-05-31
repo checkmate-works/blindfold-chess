@@ -1,0 +1,58 @@
+'use client';
+
+import type { ReactNode } from 'react';
+
+import { Link } from '@/i18n/routing';
+import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { FaLock } from 'react-icons/fa';
+
+type Props = {
+  children: ReactNode;
+};
+
+/**
+ * Auth gate for the result-page game-statistics section. Renders the stats
+ * blurred and non-interactive behind a registration CTA, nudging anonymous
+ * players to create an account. Logged-in users never see this — the caller
+ * renders the stats directly instead.
+ */
+export function StatsAuthGate({ children }: Props) {
+  const t = useTranslations('play');
+  const locale = useLocale();
+
+  return (
+    <div className="relative min-h-[22rem] py-6">
+      <div className="pointer-events-none select-none blur-sm" aria-hidden>
+        {children}
+      </div>
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-8 text-center">
+        <div className="flex justify-center">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <FaLock className="h-5 w-5" />
+          </span>
+        </div>
+        <h3 className="text-lg font-bold text-foreground">{t('result.statsGate.title')}</h3>
+        <p className="max-w-sm text-sm text-muted-foreground">
+          {t('result.statsGate.description')}
+        </p>
+        <div className="flex w-full max-w-xs flex-col gap-3 pt-1">
+          <Link
+            href="/sign-up"
+            locale={locale}
+            className="block w-full rounded-md bg-primary px-4 py-2 text-center font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            {t('result.statsGate.signUpButton')}
+          </Link>
+          <Link
+            href="/sign-in"
+            locale={locale}
+            className="block w-full rounded-md border border-border bg-card px-4 py-2 text-center font-medium text-foreground transition-colors hover:bg-muted"
+          >
+            {t('result.statsGate.signInButton')}
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}

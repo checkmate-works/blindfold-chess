@@ -1874,7 +1874,13 @@
         "legendHint": "ヒント",
         "moveCell": "{number}手目"
       },
-      "viewDetails": "対局の詳細"
+      "viewDetails": "対局の詳細",
+      "statsGate": {
+        "title": "対局統計を見るには登録を",
+        "description": "無料ユーザー登録で、対局統計や手ごとの振り返りをすべて確認できます。",
+        "signUpButton": "無料ユーザー登録",
+        "signInButton": "アカウントをお持ちの方はログイン"
+      }
     },
     "finishedGame": {
       "heading": "このゲームは終了しています",

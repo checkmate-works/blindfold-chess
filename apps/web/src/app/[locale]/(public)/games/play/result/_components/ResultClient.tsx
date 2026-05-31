@@ -15,8 +15,10 @@ import { engineConfigToUrlParams } from '@/lib/engines';
 import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 import type { Game } from '@/lib/games/saved-game-types';
 
+import { AuthPromptModal } from '@/app/[locale]/_components/AuthPromptModal';
 import { Divider } from '@/app/[locale]/_components/Divider';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { useAuthGuard } from '@/app/[locale]/_hooks/use-auth-guard';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -29,6 +31,7 @@ import { useLoadGame } from '../_hooks/useLoadGame';
 import { computeGameStats } from '../_lib/compute-game-stats';
 import { GameStatsOverview } from './GameStatsOverview';
 import { ResultSkeleton } from './ResultSkeleton';
+import { StatsAuthGate } from './StatsAuthGate';
 import { VictoryCertificate } from './VictoryCertificate';
 
 /**
@@ -56,10 +59,12 @@ const REVEALED_BOARD_PREFS: GamePreferences = {
 type Props = {
   locale: Locale;
   displayName: string;
+  /** Whether the viewer is signed in. Anonymous viewers get the stats gated behind a sign-up CTA. */
+  isAuthenticated: boolean;
   breadcrumb: ReactNode;
 };
 
-export function ResultClient({ locale, displayName, breadcrumb }: Props) {
+export function ResultClient({ locale, displayName, isAuthenticated, breadcrumb }: Props) {
   const t = useTranslations('play');
   const searchParams = useSearchParams();
   const gameId = searchParams.get('gameId');
@@ -86,6 +91,7 @@ export function ResultClient({ locale, displayName, breadcrumb }: Props) {
       gameId={gameId as string}
       locale={locale}
       displayName={displayName}
+      isAuthenticated={isAuthenticated}
       breadcrumb={breadcrumb}
     />
   );
@@ -96,15 +102,26 @@ type ResultContentProps = {
   gameId: string;
   locale: Locale;
   displayName: string;
+  isAuthenticated: boolean;
   breadcrumb: ReactNode;
 };
 
-function ResultContent({ game, gameId, locale, displayName, breadcrumb }: ResultContentProps) {
+function ResultContent({
+  game,
+  gameId,
+  locale,
+  displayName,
+  isAuthenticated,
+  breadcrumb,
+}: ResultContentProps) {
   const t = useTranslations('play');
   const tGames = useTranslations('gamesPage');
   const router = useRouter();
   const [isOperationLogVisible, setIsOperationLogVisible] = useState(false);
   const [isBoardModalOpen, setIsBoardModalOpen] = useState(false);
+  // Postmortem is a members-only feature; anonymous viewers get a sign-up
+  // prompt instead of the review screen.
+  const { guardAction, isModalOpen: isAuthModalOpen, closeModal: closeAuthModal } = useAuthGuard();
 
   // Derive player result from game status
   const playerResult = game.status === 'win' ? 'win' : game.status === 'loss' ? 'loss' : 'draw';
@@ -213,17 +230,31 @@ function ResultContent({ game, gameId, locale, displayName, breadcrumb }: Result
           </div>
         )}
 
-        {/* Game statistics overview — metric cards + per-move effort strip. */}
+        {/* Game statistics overview — metric cards + per-move effort strip.
+            Anonymous viewers see it blurred behind a sign-up CTA; the
+            statistics are a registration nudge for game-only users. */}
         {stats.totalMoves > 0 && (
           <>
             <div className="border-t border-border" />
-            <GameStatsOverview
-              stats={stats}
-              playerMoveIndices={playerMoveIndices}
-              moves={moves}
-              onSelectMove={handleViewMove}
-              onViewDetails={() => setIsOperationLogVisible(true)}
-            />
+            {isAuthenticated ? (
+              <GameStatsOverview
+                stats={stats}
+                playerMoveIndices={playerMoveIndices}
+                moves={moves}
+                onSelectMove={handleViewMove}
+                onViewDetails={() => setIsOperationLogVisible(true)}
+              />
+            ) : (
+              <StatsAuthGate>
+                <GameStatsOverview
+                  stats={stats}
+                  playerMoveIndices={playerMoveIndices}
+                  moves={moves}
+                  onSelectMove={handleViewMove}
+                  onViewDetails={() => setIsOperationLogVisible(true)}
+                />
+              </StatsAuthGate>
+            )}
           </>
         )}
 
@@ -236,7 +267,7 @@ function ResultContent({ game, gameId, locale, displayName, breadcrumb }: Result
               variant="primary"
               size="lg"
               icon={<FaChartLine className="w-5 h-5" />}
-              onClick={handlePostmortem}
+              onClick={() => guardAction(handlePostmortem)}
               className="w-full rounded-xl font-medium"
             >
               {t('postmortem')}
@@ -295,6 +326,10 @@ function ResultContent({ game, gameId, locale, displayName, breadcrumb }: Result
           preferenceChangeLog={game.preferenceChangeLog}
         />
       )}
+
+      {/* Sign-up prompt shown when an anonymous viewer taps the postmortem
+          button (members-only feature). */}
+      {isAuthModalOpen && <AuthPromptModal isOpen={isAuthModalOpen} onClose={closeAuthModal} />}
 
       <Divider />
       {breadcrumb}

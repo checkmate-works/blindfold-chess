@@ -1874,7 +1874,13 @@
         "legendHint": "Hint",
         "moveCell": "Move {number}"
       },
-      "viewDetails": "Game details"
+      "viewDetails": "Game details",
+      "statsGate": {
+        "title": "Sign up to see your game stats",
+        "description": "Create a free account to unlock your full game statistics and per-move review.",
+        "signUpButton": "Create Free Account",
+        "signInButton": "Already have an account? Sign in"
+      }
     },
     "finishedGame": {
       "heading": "This game has ended",

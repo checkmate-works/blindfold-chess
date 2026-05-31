@@ -75,7 +75,12 @@ export default async function ResultPage({ params }: Props) {
   return (
     <PageLayout title={tPlay('resultTitle')} locale={locale}>
       <Suspense fallback={<ResultSkeleton />}>
-        <ResultClient locale={locale} displayName={displayName} breadcrumb={breadcrumb} />
+        <ResultClient
+          locale={locale}
+          displayName={displayName}
+          isAuthenticated={Boolean(user)}
+          breadcrumb={breadcrumb}
+        />
       </Suspense>
 
       {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
