@@ -8,7 +8,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FaChartLine, FaClipboardList, FaMinus, FaTimes } from 'react-icons/fa';
+import { FaChartLine, FaChessBoard, FaClipboardList, FaMinus, FaTimes } from 'react-icons/fa';
 
 import { engineConfigToUrlParams } from '@/lib/engines';
 import type { Game, MoveInputMethod, MoveOperationLog } from '@/lib/games/saved-game-types';
@@ -19,7 +19,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { OperationLogModal } from '../../_components/OperationLogModal';
 import { useNotation } from '../../_hooks';
-import type { FormattedPgnMove } from '../../_lib';
+import { buildPostmortemPath } from '../../_lib';
 import { useLoadGame } from '../_hooks/useLoadGame';
 import { VictoryCertificate } from './VictoryCertificate';
 
@@ -227,32 +227,32 @@ function ResultContent({ game, gameId, locale, displayName, breadcrumb }: Result
 
   // Handlers
   const handlePostmortem = useCallback(() => {
-    const pgnMoves = formattedPgn
-      .map((move: FormattedPgnMove) => {
-        const moveNumber = `${move.moveNumber}.`;
-        if (!move.whiteMove && move.blackMove) {
-          return `${moveNumber}.. ${move.blackMove}`;
-        }
-        const movePair = move.blackMove
-          ? `${moveNumber} ${move.whiteMove} ${move.blackMove}`
-          : `${moveNumber} ${move.whiteMove}`;
-        return movePair;
+    router.push(
+      buildPostmortemPath({
+        locale,
+        formattedPgn,
+        playerColor: game.playerColor,
+        moves: game.moves,
+        engineConfig: game.engineConfig,
+        gameId,
+        startingFen: game.startingFen,
       })
-      .join(' ');
-
-    const params = new URLSearchParams();
-    params.set('pgn', pgnMoves);
-    params.set('color', game.playerColor);
-    params.set('autoOpponent', 'true');
-    if (game.startingFen) params.set('fen', game.startingFen);
-    params.set('gameId', gameId);
-    for (const [key, value] of Object.entries(engineConfigToUrlParams(game.engineConfig))) {
-      params.set(key, value);
-    }
-    params.set('moves', JSON.stringify(game.moves));
-
-    router.push(`/${locale}/games/play/postmortem?${params.toString()}`);
+    );
   }, [game, formattedPgn, gameId, locale, router]);
+
+  // Reopen the finished game in the familiar game UI (read-only). Mirrors the
+  // games-list params and adds `finished=1` so PlayClient renders the
+  // finished-game view instead of bouncing back here. See PlayClient.
+  const handleOpenFinishedGame = useCallback(() => {
+    const params = new URLSearchParams({
+      color: game.playerColor,
+      ...engineConfigToUrlParams(game.engineConfig),
+      moves: JSON.stringify(game.moves),
+      gameId,
+      finished: '1',
+    });
+    router.push(`/${locale}/games/play?${params.toString()}`);
+  }, [game, gameId, locale, router]);
 
   return (
     <div className="space-y-8">
@@ -302,6 +302,17 @@ function ResultContent({ game, gameId, locale, displayName, breadcrumb }: Result
               className="w-full rounded-xl font-medium"
             >
               {t('postmortem')}
+            </Button>
+          )}
+          {moves.length > 0 && (
+            <Button
+              variant="secondary"
+              size="lg"
+              icon={<FaChessBoard className="w-5 h-5" />}
+              onClick={handleOpenFinishedGame}
+              className="w-full rounded-xl font-medium"
+            >
+              {t('result.openFinishedGame')}
             </Button>
           )}
           <Link href={`/${locale}/games`} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>

@@ -1855,7 +1855,12 @@
         "times": "{count, plural, other {#回}}",
         "columnItem": "項目",
         "columnDetail": "詳細"
-      }
+      },
+      "openFinishedGame": "終了したゲームを開く"
+    },
+    "finishedGame": {
+      "heading": "このゲームは終了しています",
+      "viewResult": "結果を見る"
     }
   },
   "postmortem": {
