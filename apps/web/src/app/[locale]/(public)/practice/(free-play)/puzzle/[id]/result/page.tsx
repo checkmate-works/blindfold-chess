@@ -95,6 +95,7 @@ export default async function PuzzleResultPage({ params, searchParams }: Props) 
       ]}
     >
       <PuzzleResultClient
+        locale={locale}
         positionId={position.id}
         fen={position.fen}
         solutionLines={solutionLines}

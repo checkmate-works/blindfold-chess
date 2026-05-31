@@ -152,7 +152,8 @@ type ResultClientConfig = {
    */
   renderAfterComplete?: (ctx: ResultContext, adBanner?: ReactNode) => ReactNode;
   /**
-   * Whether to render the SignUpBanner as afterActions. Defaults to true.
+   * Whether to render the SignUpBanner directly above the action buttons (via
+   * PracticeComplete's `beforeActions` slot). Defaults to true.
    */
   showSignUpBanner?: boolean;
   /**
@@ -354,7 +355,7 @@ export function createPracticeResultClient(config: ResultClientConfig) {
             href: `/${locale}/practice`,
             label: tPractice('doOtherPractice'),
           }}
-          afterActions={showSignUpBanner ? <SignUpBanner locale={locale} /> : undefined}
+          beforeActions={showSignUpBanner ? <SignUpBanner locale={locale} /> : undefined}
           {...extraProps}
         >
           {renderChildren ? renderChildren(ctx) : undefined}

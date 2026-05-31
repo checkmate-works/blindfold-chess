@@ -43,7 +43,13 @@ type Props = {
     href: string;
     label: string;
   };
-  afterActions?: React.ReactNode;
+  /**
+   * Slot rendered directly above the action buttons (try-again / more-practice).
+   * Used for the anonymous sign-up banner so the prompt lands before the
+   * buttons can carry the guest away — mirroring the EXP card's position for
+   * signed-in users (the two are mutually exclusive).
+   */
+  beforeActions?: React.ReactNode;
   beforeRelatedContent?: React.ReactNode;
   /** EXP gained info for the current result, fetched server-side and passed down. */
   expInfo?: ExpInfo | null;
@@ -62,7 +68,7 @@ export function PracticeComplete({
   onExit,
   children,
   otherPracticeLink,
-  afterActions,
+  beforeActions,
   beforeRelatedContent,
   expInfo = null,
 }: Props) {
@@ -84,6 +90,9 @@ export function PracticeComplete({
 
       {/* Custom children (e.g. Route Planner results) */}
       {children}
+
+      {/* Rendered directly above the action buttons (see `beforeActions` prop). */}
+      {beforeActions}
 
       <div className="space-y-4 mt-6">
         <Button
@@ -117,8 +126,6 @@ export function PracticeComplete({
             </Link>
           </div>
         )}
-
-        {afterActions}
       </div>
 
       {/* Ad banner before related content */}

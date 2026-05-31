@@ -13,7 +13,9 @@ import { FaExternalLinkAlt, FaEye } from 'react-icons/fa';
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
 
 import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
+import { SignUpBanner } from '@/app/[locale]/(public)/practice/_components/SignUpBanner';
 import { SectionTitle } from '@/app/[locale]/_components';
+import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { Attempt } from '../_lib/puzzle-match';
 import { puzzleResultStorageKey } from '../_lib/puzzle-result-storage';
@@ -25,6 +27,7 @@ import {
 import { PuzzleSolutionReplay } from './PuzzleSolutionReplay';
 
 type Props = {
+  locale: Locale;
   positionId: string;
   fen: string;
   solutionLines: string[];
@@ -39,6 +42,7 @@ type Props = {
 };
 
 export function PuzzleResultClient({
+  locale,
   positionId,
   fen,
   solutionLines,
@@ -128,6 +132,14 @@ export function PuzzleResultClient({
        *  Again button so the EXP card sits directly over the primary CTA,
        *  matching position-memory's layout. */}
       <ExpGainDisplay expInfo={expInfo} />
+
+      {/* Sign-up nudge for anonymous solvers (renders nothing when signed in).
+          Sits in the same slot as the EXP card — directly above the action
+          buttons — so guests who just solved a community puzzle see the prompt
+          to create an account before the retry / back-to-list buttons can carry
+          them away. (EXP and this banner are mutually exclusive: expInfo is
+          null for guests.) */}
+      <SignUpBanner locale={locale} />
 
       {/* (D) Action buttons */}
       <div className="flex flex-col gap-3 pt-4">
