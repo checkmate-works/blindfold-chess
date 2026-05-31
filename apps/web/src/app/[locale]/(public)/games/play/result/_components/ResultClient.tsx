@@ -15,8 +15,10 @@ import { engineConfigToUrlParams } from '@/lib/engines';
 import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 import type { Game } from '@/lib/games/saved-game-types';
 
+import { AuthPromptModal } from '@/app/[locale]/_components/AuthPromptModal';
 import { Divider } from '@/app/[locale]/_components/Divider';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { useAuthGuard } from '@/app/[locale]/_hooks/use-auth-guard';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -117,6 +119,9 @@ function ResultContent({
   const router = useRouter();
   const [isOperationLogVisible, setIsOperationLogVisible] = useState(false);
   const [isBoardModalOpen, setIsBoardModalOpen] = useState(false);
+  // Postmortem is a members-only feature; anonymous viewers get a sign-up
+  // prompt instead of the review screen.
+  const { guardAction, isModalOpen: isAuthModalOpen, closeModal: closeAuthModal } = useAuthGuard();
 
   // Derive player result from game status
   const playerResult = game.status === 'win' ? 'win' : game.status === 'loss' ? 'loss' : 'draw';
@@ -262,7 +267,7 @@ function ResultContent({
               variant="primary"
               size="lg"
               icon={<FaChartLine className="w-5 h-5" />}
-              onClick={handlePostmortem}
+              onClick={() => guardAction(handlePostmortem)}
               className="w-full rounded-xl font-medium"
             >
               {t('postmortem')}
@@ -321,6 +326,10 @@ function ResultContent({
           preferenceChangeLog={game.preferenceChangeLog}
         />
       )}
+
+      {/* Sign-up prompt shown when an anonymous viewer taps the postmortem
+          button (members-only feature). */}
+      {isAuthModalOpen && <AuthPromptModal isOpen={isAuthModalOpen} onClose={closeAuthModal} />}
 
       <Divider />
       {breadcrumb}
