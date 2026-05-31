@@ -40,6 +40,14 @@ type Props = {
    */
   showInlineError?: boolean;
   /**
+   * When `true`, draws a success-colored ring around the input area (mirroring
+   * the destructive ring shown while `error` is set). Used to give positive
+   * "move accepted" feedback at the point of action — e.g. the postmortem
+   * screen rings the input green on a correct recall. Ignored while `error`
+   * is set (the destructive ring takes precedence).
+   */
+  success?: boolean;
+  /**
    * When `true` (default), shows a "show legal moves" affordance after the
    * user submits invalid moves `INVALID_ATTEMPTS_THRESHOLD` times in a row
    * (and renders the full legal-move list once the user opts in).
@@ -86,6 +94,7 @@ export function MoveInputPanel({
   onMoveCommitted,
   onMovePeek,
   showInlineError = true,
+  success = false,
   showLegalMovesHint = true,
   setMoveInputMode,
 }: Props) {
@@ -197,7 +206,9 @@ export function MoveInputPanel({
             and rides along with the one-shot shake. */}
         <div
           ref={inputAreaRef}
-          className={`rounded-lg transition-shadow ${error ? 'ring-2 ring-destructive' : ''}`}
+          className={`rounded-lg transition-shadow ${
+            error ? 'ring-2 ring-destructive' : success ? 'ring-2 ring-success' : ''
+          }`}
         >
           {currentMode === 'select' ? (
             <MoveSelect

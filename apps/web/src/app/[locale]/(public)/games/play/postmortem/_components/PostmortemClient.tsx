@@ -1,22 +1,45 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Button, ProgressBar } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FaCheck, FaEye, FaQuestionCircle, FaSpinner } from 'react-icons/fa';
+import type { AlgebraicNotation } from '@blindfold-chess/types';
+import { FaCheck, FaCog, FaQuestionCircle, FaSpinner } from 'react-icons/fa';
 
 import { BoardViewModal } from '@/app/[locale]/(public)/games/play/_components/BoardViewModal';
+import { InlineBoardView } from '@/app/[locale]/(public)/games/play/_components/InlineBoardView';
+import { MidGameSettingsModal } from '@/app/[locale]/(public)/games/play/_components/MidGameSettingsModal';
+import { ShowBoardButton } from '@/app/[locale]/(public)/games/play/_components/ShowBoardButton';
+import {
+  ACTION_ROW_CONTAINER_CLASSES,
+  shouldShowAlwaysVisibleBoard,
+  shouldShowInlinePeekHeader,
+  shouldShowModalPeekButton,
+} from '@/app/[locale]/(public)/games/play/_lib';
+import { useLoadGame } from '@/app/[locale]/(public)/games/play/result/_hooks/useLoadGame';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
-import { Modal } from '@/app/[locale]/_components/Modal';
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
-import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
+import type {
+  GamePreferences,
+  PerGamePreferences,
+} from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { usePostmortemGame } from '../_hooks';
+import { computeRecallStats } from '../_lib';
 import { formatMoveNumberPrefix } from '../_lib/postmortem-format';
-import { PostmortemMoveLogTable } from './PostmortemMoveLogTable';
 import { PostmortemMovesPanel } from './PostmortemMovesPanel';
+import { PostmortemSummary } from './PostmortemSummary';
+
+/**
+ * Move-feedback surfaced in the page title (mirrors the in-game play screen,
+ * which shows live status as the H1). `tone` drives the title color.
+ */
+export type PostmortemFeedback = {
+  tone: 'correct' | 'incorrect' | 'skipped';
+  text: string;
+};
 
 type Props = {
   pgn: string;
@@ -24,8 +47,43 @@ type Props = {
   autoOpponent: boolean;
   initialOffset?: number;
   startingFen?: string;
-  onStart?: () => void;
+  /**
+   * Saved-game id (from the postmortem deep-link). Used to seed the initial
+   * board/input settings from the game's `gamePreferences` snapshot.
+   */
+  gameId?: string;
+  /**
+   * Reports the latest move feedback up to the page title owner so it can be
+   * rendered in the `PageTitle` slot (like the play screen surfaces its move
+   * status there). Null clears the title back to the page name.
+   */
+  onFeedbackChange?: (feedback: PostmortemFeedback | null) => void;
+  /** Restart the review from the beginning (parent remounts the game). */
+  onRestart?: () => void;
 };
+
+/**
+ * Merge the saved game's per-game preference snapshot over the user's global
+ * preferences, mirroring the play screen's merge (`usePlayClientPreferences`).
+ * Legacy records may omit later-added fields, so those fall back to global.
+ */
+function mergePerGamePreferences(
+  global: GamePreferences,
+  perGame: PerGamePreferences | undefined
+): GamePreferences {
+  if (!perGame) return global;
+  return {
+    ...global,
+    boardVisibility: perGame.boardVisibility ?? global.boardVisibility,
+    highlightLastMove: perGame.highlightLastMove,
+    showOwnPieces: perGame.showOwnPieces,
+    showOpponentPieces: perGame.showOpponentPieces,
+    pieceShapeMode: perGame.pieceShapeMode,
+    pieceColors: perGame.pieceColors,
+    peekMode: perGame.peekMode ?? global.peekMode,
+    moveInputMode: perGame.moveInputMode ?? global.moveInputMode,
+  };
+}
 
 export function PostmortemClient({
   pgn,
@@ -33,10 +91,42 @@ export function PostmortemClient({
   autoOpponent: initialAutoOpponent,
   initialOffset = 0,
   startingFen,
-  onStart,
+  gameId,
+  onFeedbackChange,
+  onRestart,
 }: Props) {
   const t = useTranslations('postmortem');
-  const { preferences, updatePreferences } = useGamePreferences();
+
+  // Postmortem keeps its own *local* copy of the game preferences. It is
+  // seeded from the saved game's snapshot (below) and mutated only in-memory:
+  // edits are never written back to global preferences nor recorded in a
+  // preferenceChangeLog — the review session is intentionally ephemeral.
+  const { preferences: globalPreferences, isHydrated } = useGamePreferences();
+  const loadState = useLoadGame(gameId ?? null);
+
+  const [preferences, setPreferences] = useState<GamePreferences>(globalPreferences);
+  const updatePreferences = useCallback((updates: Partial<GamePreferences>) => {
+    setPreferences((prev) => ({ ...prev, ...updates }));
+  }, []);
+
+  // Seed once, after both the global preferences (localStorage) and the
+  // saved-game lookup have settled. After seeding, the user owns this state.
+  const seededRef = useRef(false);
+  useEffect(() => {
+    if (seededRef.current) return;
+    if (!isHydrated) return;
+    if (gameId && loadState.status === 'loading') return;
+    seededRef.current = true;
+    const perGame = loadState.status === 'loaded' ? loadState.game.gamePreferences : undefined;
+    setPreferences(mergePerGamePreferences(globalPreferences, perGame));
+  }, [isHydrated, gameId, loadState, globalPreferences]);
+
+  const handlePerGamePrefChange = useCallback(
+    <K extends keyof PerGamePreferences>(key: K, value: PerGamePreferences[K]) => {
+      updatePreferences({ [key]: value } as Partial<GamePreferences>);
+    },
+    [updatePreferences]
+  );
 
   const {
     gameProgress,
@@ -57,11 +147,72 @@ export function PostmortemClient({
 
   // UI-only state (modal visibility)
   const [isBoardVisible, setIsBoardVisible] = useState(false);
-  const [showMoveLogModal, setShowMoveLogModal] = useState(false);
   const [showAnalyzeAllConfirm, setShowAnalyzeAllConfirm] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
-  const { currentFen, displayFen, currentLastMove, currentEvaluationMark } = boardState;
+  const { currentFen, displayFen, currentLastMove } = boardState;
   const { isCompleted, totalMoves, progress, originalMoves } = gameProgress;
+
+  // Board display follows the (seeded) preferences, exactly like the in-game
+  // screen: always-visible inline board, collapsible peek-inline board, or a
+  // modal opened from a "Show Board" button.
+  const showAlwaysBoard = shouldShowAlwaysVisibleBoard(preferences);
+  const showInlinePeek = shouldShowInlinePeekHeader(preferences);
+  const showModalPeekButton = shouldShowModalPeekButton(preferences);
+  const showInlineBoard = showAlwaysBoard || showInlinePeek;
+
+  const recallStats = computeRecallStats(moveLog.entries);
+
+  // Revisit a stumbled move from the completion summary: jump to its position
+  // and open the board preview modal (same UX as the result screen's
+  // position preview), regardless of the board display mode.
+  const handleMistakeClick = useCallback(
+    (entry: Parameters<typeof actions.handleMoveClick>[0]) => {
+      actions.handleMoveClick(entry);
+      setIsBoardVisible(true);
+    },
+    [actions]
+  );
+
+  const boardFen = displayFen || currentFen;
+  const sideToMove = boardFen.split(' ')[1] === 'b' ? 'black' : 'white';
+  // Board-driven input is available in always-visible mode at the live
+  // position whenever it's a move the reviewer is expected to enter
+  // (`isPlayerTurn` already encodes the auto-opponent rule). Unlike a real
+  // game, the reviewer enters BOTH sides' moves, so the board is set to
+  // `movablePieces="side-to-move"` below — letting them grab the opponent's
+  // pieces on the opponent's turn.
+  const canBoardInput =
+    showAlwaysBoard &&
+    !isCompleted &&
+    !moveInput.isAnalyzingAll &&
+    navigation.currentPosition === -1 &&
+    settings.isPlayerTurn;
+
+  const inlineBoardView = showInlineBoard ? (
+    <InlineBoardView
+      fen={boardFen}
+      playerSide={playerColor}
+      lastMove={
+        preferences.highlightLastMove && navigation.currentPosition === -1 ? currentLastMove : null
+      }
+      preferences={preferences}
+      movesLength={originalMoves.length}
+      currentPosition={navigation.currentPosition}
+      formattedPgn={formattedPgn}
+      onNavigateToStart={navigation.navigateToStart}
+      onNavigatePrevious={navigation.navigatePrevious}
+      onNavigateNext={navigation.navigateNext}
+      onNavigateToEnd={navigation.navigateToEnd}
+      onNavigateToPosition={navigation.navigateToPosition}
+      collapseSignal={progress}
+      alwaysOpen={showAlwaysBoard}
+      movablePieces="side-to-move"
+      onMove={
+        canBoardInput ? (san) => actions.handleSubmitMove(san as AlgebraicNotation) : undefined
+      }
+    />
+  ) : null;
 
   // Format feedback message from structured data
   const feedback = moveInput.lastFeedback;
@@ -77,33 +228,50 @@ export function PostmortemClient({
     : null;
   const feedbackIsError = feedback?.type === 'incorrect';
 
+  // Surface the feedback in the page title (the play screen does the same with
+  // its move status). Incorrect moves get a ⚠ prefix, matching the in-game
+  // "invalid move" title. The message persists until the next input clears it.
   useEffect(() => {
-    if (progress > 0) {
-      onStart?.();
+    if (!onFeedbackChange) return;
+    if (!feedback || !feedbackMessage) {
+      onFeedbackChange(null);
+      return;
     }
-  }, [progress, onStart]);
+    onFeedbackChange({
+      tone: feedback.type,
+      text: feedback.type === 'incorrect' ? `⚠ ${feedbackMessage}` : feedbackMessage,
+    });
+  }, [onFeedbackChange, feedback, feedbackMessage]);
+
+  // Settings gear — placed in the same bottom-right icon row as the in-game
+  // `GameInProgressPanel`, so the two screens feel identical.
+  const settingsRow = (
+    <div className="flex justify-end items-center gap-2 text-muted-foreground">
+      <button
+        type="button"
+        data-tour-id="postmortem-settings"
+        onClick={() => setShowSettings(true)}
+        className="p-1 leading-none hover:text-foreground"
+        title={t('settings')}
+        aria-label={t('settings')}
+      >
+        <FaCog className="w-4 h-4" />
+      </button>
+    </div>
+  );
 
   return (
     <div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Progress Bar, Input, Actions */}
+        {/* Progress Bar, Board, Input, Actions */}
         <div className="lg:col-span-2">
           <div className="border border-border rounded-lg p-4">
             <div className="flex flex-col gap-6">
-              {/* Description & Guidance (shown only before first move) */}
-              {progress === 0 && (
-                <div className="rounded-lg bg-amber-50 p-4 dark:bg-amber-950/20">
-                  <p className="text-sm text-muted-foreground">{t('description')}</p>
-                  <ol className="list-decimal list-inside text-sm text-muted-foreground space-y-1 mt-3">
-                    <li>{t('guidanceStep1')}</li>
-                    <li>{t('guidanceStep2')}</li>
-                    <li>{t('guidanceStep3')}</li>
-                  </ol>
-                </div>
-              )}
-
               {/* Progress Bar */}
               <ProgressBar current={progress} total={totalMoves} />
+
+              {/* Board (inline, follows boardVisibility/peekMode) */}
+              {inlineBoardView}
 
               {!isCompleted ? (
                 <>
@@ -118,32 +286,26 @@ export function PostmortemClient({
                   ) : (
                     <>
                       {/* Move Input */}
-                      <MoveInputPanel
-                        preferences={preferences}
-                        updatePreferences={updatePreferences}
-                        currentFen={displayFen || currentFen}
-                        moveInput={moveInput.value}
-                        onMoveInputChange={moveInput.setValue}
-                        error={feedbackIsError ? feedbackMessage : null}
-                        onErrorClear={moveInput.clearFeedback}
-                        onSubmit={actions.handleSubmitMove}
-                        inputPlaceholder={t('inputMove')}
-                        selectPlaceholder={t('selectMove')}
-                        toggleTitle={t('switchInputMode')}
-                        playerColor={currentFen.split(' ')[1] === 'b' ? 'b' : 'w'}
-                      />
+                      <div data-tour-id="postmortem-input">
+                        <MoveInputPanel
+                          preferences={preferences}
+                          updatePreferences={updatePreferences}
+                          currentFen={boardFen}
+                          moveInput={moveInput.value}
+                          onMoveInputChange={moveInput.setValue}
+                          error={feedbackIsError ? feedbackMessage : null}
+                          onErrorClear={moveInput.clearFeedback}
+                          onSubmit={actions.handleSubmitMove}
+                          inputPlaceholder={t('inputMove')}
+                          selectPlaceholder={t('selectMove')}
+                          toggleTitle={t('switchInputMode')}
+                          playerColor={sideToMove === 'black' ? 'b' : 'w'}
+                          showInlineError={false}
+                          success={feedback?.type === 'correct'}
+                        />
+                      </div>
 
-                      {/* Correct move feedback */}
-                      {feedback?.type === 'correct' && feedbackMessage && (
-                        <p className="text-success text-sm mt-[-16px]">{feedbackMessage}</p>
-                      )}
-                      {feedback?.type === 'skipped' && feedbackMessage && (
-                        <p className="text-muted-foreground text-sm mt-[-16px]">
-                          {feedbackMessage}
-                        </p>
-                      )}
-
-                      {/* Settings checkboxes */}
+                      {/* Auto-opponent toggle (postmortem-specific) */}
                       <div className="flex flex-col gap-2">
                         <label className="inline-flex items-center gap-2 cursor-pointer">
                           <input
@@ -159,25 +321,22 @@ export function PostmortemClient({
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="flex gap-2 justify-center">
-                        <button
-                          onClick={() => setIsBoardVisible(true)}
-                          className="px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center justify-center gap-2"
-                          title={t('showBoard')}
-                        >
-                          <FaEye className="w-4 h-4" />
-                          <span className="hidden md:inline">{t('showBoard')}</span>
-                        </button>
-                        <Button
-                          variant="secondary"
-                          onClick={actions.handleDontKnow}
-                          icon={<FaQuestionCircle className="w-4 h-4" />}
-                          className="px-4 py-2"
-                        >
-                          <span className={settings.dontKnowCount >= 2 ? 'hidden md:inline' : ''}>
-                            {t('dontKnow')}
-                          </span>
-                        </Button>
+                      <div className={ACTION_ROW_CONTAINER_CLASSES}>
+                        {showModalPeekButton && (
+                          <ShowBoardButton onClick={() => setIsBoardVisible(true)} />
+                        )}
+                        <span data-tour-id="postmortem-dont-know" className="inline-flex">
+                          <Button
+                            variant="secondary"
+                            onClick={actions.handleDontKnow}
+                            icon={<FaQuestionCircle className="w-4 h-4" />}
+                            className="px-4 py-2"
+                          >
+                            <span className={settings.dontKnowCount >= 2 ? 'hidden md:inline' : ''}>
+                              {t('dontKnow')}
+                            </span>
+                          </Button>
+                        </span>
                         {settings.dontKnowCount >= 2 && (
                           <button
                             onClick={() => setShowAnalyzeAllConfirm(true)}
@@ -188,52 +347,44 @@ export function PostmortemClient({
                           </button>
                         )}
                       </div>
+
+                      {settingsRow}
                     </>
                   )}
                 </>
               ) : (
-                /* Completion Message */
+                /* Completion: recall report + stumble review + next actions */
                 <>
-                  <div className="py-8 text-center flex flex-col items-center gap-4">
-                    <FaCheck className="w-12 h-12 text-success" />
-                    <div className="flex flex-col gap-2">
-                      <h3 className="text-xl font-bold">{t('completed')}</h3>
-                      <p className="text-muted-foreground">
-                        {navigation.selectedMoveIndex !== null ? (
-                          <button
-                            onClick={() => navigation.setSelectedMoveIndex(null)}
-                            className="text-sm underline hover:text-foreground"
-                          >
-                            {t('backToCurrentPosition')}
-                          </button>
-                        ) : (
-                          t('completedMessage')
-                        )}
-                      </p>
+                  <PostmortemSummary
+                    stats={recallStats}
+                    entries={moveLog.entries}
+                    onEntryClick={handleMistakeClick}
+                    onRestart={onRestart ?? (() => {})}
+                    gameId={gameId}
+                  />
+
+                  {/* When the user has jumped to a past position (via the
+                      review or the board nav), offer a way back to the end. */}
+                  {navigation.selectedMoveIndex !== null && (
+                    <div className="text-center">
+                      <button
+                        onClick={() => navigation.setSelectedMoveIndex(null)}
+                        className="text-sm underline hover:text-foreground"
+                      >
+                        {t('backToCurrentPosition')}
+                      </button>
                     </div>
-                  </div>
+                  )}
 
-                  {/* Action Buttons */}
-                  <div className="flex gap-2 justify-center">
-                    <button
-                      onClick={() => setIsBoardVisible(true)}
-                      className="px-4 py-2 border border-border rounded-md hover:bg-muted flex items-center justify-center gap-2"
-                      title={t('showBoard')}
-                    >
-                      <FaEye className="w-4 h-4" />
-                      <span>{t('showBoard')}</span>
-                    </button>
-                  </div>
+                  {/* Show Board (modal peek mode only — inline modes already
+                      render the board above) */}
+                  {showModalPeekButton && (
+                    <div className={ACTION_ROW_CONTAINER_CLASSES}>
+                      <ShowBoardButton onClick={() => setIsBoardVisible(true)} />
+                    </div>
+                  )}
 
-                  {/* Move log link */}
-                  <div className="text-center">
-                    <button
-                      onClick={() => setShowMoveLogModal(true)}
-                      className={`text-xs ${TEXT_LINK_MUTED_CLASSES}`}
-                    >
-                      {t('log')}
-                    </button>
-                  </div>
+                  {settingsRow}
                 </>
               )}
             </div>
@@ -256,14 +407,14 @@ export function PostmortemClient({
         />
       </div>
 
-      {/* Move Log Modal */}
-      <Modal
-        isOpen={showMoveLogModal}
-        title={t('moveLog')}
-        onClose={() => setShowMoveLogModal(false)}
-      >
-        <PostmortemMoveLogTable entries={moveLog.entries} />
-      </Modal>
+      {/* Settings Modal — reuses the in-game settings form. Edits update the
+          local preferences only (no persistence, no preferenceChangeLog). */}
+      <MidGameSettingsModal
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        preferences={preferences}
+        onPerGamePrefChange={handlePerGamePrefChange}
+      />
 
       {/* Auto Fill All Confirmation Modal */}
       <ConfirmationModal
@@ -279,18 +430,17 @@ export function PostmortemClient({
         cancelText={t('cancel')}
       />
 
-      {/* Board View Modal */}
+      {/* Board View Modal — used for peek + modal mode. */}
       <BoardViewModal
         isOpen={isBoardVisible}
         onClose={() => setIsBoardVisible(false)}
-        fen={displayFen || currentFen}
+        fen={boardFen}
         playerSide={playerColor}
         lastMove={preferences.highlightLastMove ? currentLastMove : null}
         preferences={preferences}
         movesLength={originalMoves.length}
         currentPosition={navigation.currentPosition}
         formattedPgn={formattedPgn}
-        evaluationMark={currentEvaluationMark}
         onNavigateToStart={navigation.navigateToStart}
         onNavigatePrevious={navigation.navigatePrevious}
         onNavigateNext={navigation.navigateNext}

@@ -54,7 +54,7 @@ export function usePostmortemActions({
    * state update + log entry + completion check.
    */
   const processCorrectMove = useCallback(
-    (move: AlgebraicNotation, index: number, status: 'correct' | 'auto') => {
+    (move: AlgebraicNotation, index: number, status: 'correct' | 'auto' | 'skipped') => {
       const { moveNumber, isWhiteMove } = computeMoveNumber(index, startsAsBlack, startMoveNumber);
       const newIndex = index + 1;
 
@@ -157,7 +157,7 @@ export function usePostmortemActions({
         startMoveNumber
       );
       setLastFeedback({ type: 'skipped', moveNumber, isWhiteMove, move: correctMove });
-      processCorrectMove(correctMove, currentMoveIndex, 'auto');
+      processCorrectMove(correctMove, currentMoveIndex, 'skipped');
     },
     [currentMoveIndex, originalMoves, startsAsBlack, startMoveNumber, processCorrectMove]
   );
@@ -180,7 +180,7 @@ export function usePostmortemActions({
         moveNumber,
         isWhiteMove,
         move,
-        status: 'auto',
+        status: 'skipped',
       });
     }
 

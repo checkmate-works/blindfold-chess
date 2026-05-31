@@ -1879,8 +1879,26 @@
   },
   "postmortem": {
     "title": "Revisión de Partida",
-    "infoModalTitle": "Acerca de la Revisión de Partida",
-    "description": "Intenta recordar y reproducir los movimientos de tu partida terminada. También puedes ejecutar la evaluación del motor aquí.",
+    "settings": "Ajustes",
+    "help": {
+      "label": "Cómo usar la Revisión de Partida",
+      "input": {
+        "title": "Introduce un movimiento",
+        "description": "Recuerda los movimientos de tu partida terminada e introdúcelos en orden. Un movimiento correcto avanza al siguiente."
+      },
+      "dontKnow": {
+        "title": "Cuando no lo recuerdas",
+        "description": "Pulsa \"No lo sé\" para revelar el movimiento correcto y avanzar automáticamente al siguiente."
+      },
+      "settings": {
+        "title": "Método de entrada y ajustes del tablero",
+        "description": "Cambia el método de entrada (texto / selección / botones) y la visualización del tablero aquí, igual que durante una partida."
+      },
+      "moves": {
+        "title": "Movimientos",
+        "description": "Los movimientos reproducidos aparecen aquí como una lista. Toca uno para ver el tablero en esa posición."
+      }
+    },
     "autoOpponentMoves": "Auto-rellenar movimientos del rival",
     "inputMove": "Introduce un movimiento",
     "selectMove": "Selecciona un movimiento",
@@ -1906,19 +1924,34 @@
     "backToCurrentPosition": "Volver a la posición actual",
     "cancel": "Cancelar",
     "save": "Guardar",
-    "guidanceStep1": "Introduce cada movimiento de memoria",
-    "guidanceStep2": "Los movimientos correctos avanzan al siguiente",
-    "guidanceStep3": "Presiona \"No lo sé\" si no puedes recordar",
     "log": "Registro",
     "logMoveNumber": "Movimiento",
     "logIncorrectMove": "Tu entrada",
     "logCorrectMove": "Correcto",
     "logAutoFilled": "Auto-rellenado",
+    "logSkipped": "No recordado",
     "noMistakes": "¡Sin errores!",
     "incorrectMoveError": "{movePrefix} no es {move}",
     "analyzing": "Analizando",
     "correctMoveMessage": "{movePrefix} {move} es correcto",
-    "skippedMoveMessage": "La respuesta era {movePrefix} {move}"
+    "skippedMoveMessage": "La respuesta era {movePrefix} {move}",
+    "summary": {
+      "headline": {
+        "perfect": "¡Reproducción perfecta!",
+        "allRecalled": "¡Recordaste todos los movimientos!",
+        "good": "¡Buena memoria!",
+        "keepGoing": "La próxima vez recordarás más"
+      },
+      "scoreLine": "{recalled} / {total} movimientos recordados",
+      "nailed": "A la primera",
+      "struggled": "Con dudas",
+      "missed": "No recordado",
+      "mistakes": "Errores: {count}",
+      "reviewTitle": "Dónde dudaste",
+      "reviewHint": "Toca para ver la posición",
+      "restart": "Jugar de nuevo",
+      "backToResult": "Volver al resultado"
+    }
   },
   "playError": {
     "title": "Recuperación de Partida",

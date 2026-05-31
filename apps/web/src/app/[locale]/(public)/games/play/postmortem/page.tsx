@@ -4,12 +4,14 @@
  * @description
  * A game review feature where users replay all moves from a completed game
  * from memory. This strengthens move recall and reinforces the mental model
- * of the game. Optionally provides Stockfish evaluation for each move.
+ * of the game. Board display and move-input method can be adjusted mid-review
+ * (seeded from the saved game's preferences); those edits are local to the
+ * review session and are not persisted.
  *
  * @flow
  * 1. Entry: Navigate from completed game with PGN passed via URL params
  * 2. Replay Phase: Enter each move from memory in order
- *    - Correct move: Advance to next move (with optional evaluation)
+ *    - Correct move: Advance to next move
  *    - Incorrect move: Shown as error, retry until correct
  *    - "I don't know" button: Reveals the correct move and advances
  *    - Auto-opponent mode: Only enter your own moves

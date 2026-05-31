@@ -102,6 +102,23 @@ type Props = {
    * Drag-and-drop always counts a drop onto a non-legal square in either mode.
    */
   onIllegalMove?: () => void;
+  /**
+   * Which pieces the user may pick up in interactive mode (drag / tap / click
+   * selection):
+   * - `'own'` (default): only the `playerSide` color responds. This is the
+   *   correct rule for a real game — tapping or lifting the opponent's pieces
+   *   does nothing.
+   * - `'side-to-move'`: whichever color is to move in the current FEN responds.
+   *   Used by the postmortem screen, where the reviewer enters BOTH sides'
+   *   moves and therefore must be able to grab the opponent's pieces on the
+   *   opponent's turn.
+   *
+   * This ONLY changes the interactivity gate. Piece *visibility* and
+   * appearance (`showOwnPieces` / `showOpponentPieces`, circle / single-color
+   * obfuscation) stay tied to `playerSide` — the blindfold perspective is
+   * unchanged regardless of this setting.
+   */
+  movablePieces?: 'own' | 'side-to-move';
 };
 
 export const ChessBoard = memo(function ChessBoard({
@@ -123,10 +140,18 @@ export const ChessBoard = memo(function ChessBoard({
   annotations = null,
   onMove,
   onIllegalMove,
+  movablePieces = 'own',
 }: Props) {
   const themeColors = getBoardThemeColors(boardTheme);
   const interactive = onMove !== undefined;
+  // `ownColorChar` drives piece *visibility / appearance* (the blindfold
+  // perspective) and never changes. `movableColorChar` drives the
+  // *interactivity* gate: own color by default, or the side to move when the
+  // caller opts into 'side-to-move' (postmortem). They are identical in the
+  // default 'own' mode, so real games are entirely unaffected.
   const ownColorChar = playerSide.charAt(0);
+  const movableColorChar =
+    movablePieces === 'side-to-move' ? (fen.split(' ')[1] === 'b' ? 'b' : 'w') : ownColorChar;
 
   // True when any blindfold obfuscation is active: pieces shown as discs,
   // forced to a single color, or hidden. In these modes the player cannot
@@ -267,7 +292,10 @@ export const ChessBoard = memo(function ChessBoard({
       // touch-action so the page still scrolls when touched there. The source
       // square's piece fades while its copy is being dragged (chessground
       // does the same); the floating copy itself (`floating`) never fades.
-      const isInteractivePiece = interactive && isOwnPiece;
+      // Draggability follows `movableColorChar` (own color by default), NOT
+      // `isOwnPiece` — so postmortem can lift the opponent's pieces on the
+      // opponent's turn while visibility stays tied to the player's side.
+      const isInteractivePiece = interactive && piece.color === movableColorChar;
       const grabClass = isInteractivePiece ? 'cursor-grab active:cursor-grabbing touch-none' : '';
       const fadeClass = !floating && square === dragFrom ? 'opacity-30' : '';
 
@@ -311,6 +339,7 @@ export const ChessBoard = memo(function ChessBoard({
     [
       interactive,
       ownColorChar,
+      movableColorChar,
       showOwnPieces,
       showOpponentPieces,
       pieceShapeMode,
@@ -353,13 +382,16 @@ export const ChessBoard = memo(function ChessBoard({
     (square: string) => {
       if (!onMove) return;
       const piece = pieceAt(square);
-      const clickedOwn = piece !== null && piece.color === ownColorChar;
-      const clickedOpponent = piece !== null && piece.color !== ownColorChar;
+      // "Movable" = a piece the user is allowed to pick up here: own color in
+      // a real game, or the side to move in postmortem. Selection/reselection
+      // and the obfuscated mis-grab counting all key off this, not visibility.
+      const clickedMovable = piece !== null && piece.color === movableColorChar;
+      const clickedNonMovable = piece !== null && piece.color !== movableColorChar;
 
       if (selectedSquare === null) {
-        if (clickedOwn) {
+        if (clickedMovable) {
           setSelectedSquare(square);
-        } else if (obfuscated && clickedOpponent) {
+        } else if (obfuscated && clickedNonMovable) {
           // Blindfold modes: the player cannot tell the pieces apart, so
           // trying to pick up the opponent's piece (believing it to be their
           // own) is a genuine illegal-move attempt — count it. An empty-square
@@ -403,12 +435,12 @@ export const ChessBoard = memo(function ChessBoard({
       }
 
       // Normal display: keep the lichess / chess.com idiom. Clicking another
-      // own piece reselects (not a mistake); a click onto an empty / opponent
+      // movable piece reselects (not a mistake); a click onto an empty / other
       // square is a genuine illegal attempt, so count it and deselect.
-      if (!clickedOwn) onIllegalMove?.();
-      setSelectedSquare(clickedOwn ? square : null);
+      if (!clickedMovable) onIllegalMove?.();
+      setSelectedSquare(clickedMovable ? square : null);
     },
-    [onMove, fen, ownColorChar, pieceAt, selectedSquare, onIllegalMove, obfuscated]
+    [onMove, fen, movableColorChar, pieceAt, selectedSquare, onIllegalMove, obfuscated]
   );
 
   const handleBoardClick = useCallback(
@@ -448,10 +480,11 @@ export const ChessBoard = memo(function ChessBoard({
         .square;
       if (!square) return;
       const piece = pieceAt(square);
-      // Only own pieces drag. Other presses (empty square, opponent piece)
-      // fall through to the click handler, preserving click-to-move and the
-      // obfuscated "tried to grab the opponent's piece" counting.
-      if (!piece || piece.color !== ownColorChar) return;
+      // Only movable pieces drag (own color by default; the side to move in
+      // postmortem). Other presses (empty square, non-movable piece) fall
+      // through to the click handler, preserving click-to-move and the
+      // obfuscated "tried to grab the wrong piece" counting.
+      if (!piece || piece.color !== movableColorChar) return;
 
       const size = e.currentTarget.getBoundingClientRect().width / 8;
       pendingDragRef.current = { from: square, startX: e.clientX, startY: e.clientY, size };
@@ -511,7 +544,7 @@ export const ChessBoard = memo(function ChessBoard({
       window.addEventListener('pointercancel', onPointerCancel);
       dragCleanupRef.current = cleanup;
     },
-    [onMove, ownColorChar, pieceAt, attemptMove]
+    [onMove, movableColorChar, pieceAt, attemptMove]
   );
 
   const renderSquare = useCallback(
@@ -593,7 +626,7 @@ export const ChessBoard = memo(function ChessBoard({
         fileIndex={fileIndex}
         rankIndex={rankIndex}
         flipped={flipped}
-        promotingColor={ownColorChar === 'b' ? 'b' : 'w'}
+        promotingColor={movableColorChar === 'b' ? 'b' : 'w'}
         onSelect={(type) => {
           const chosen = promotionPending.candidates.find((m) => m.promotion === type);
           if (chosen) onMove(chosen.san);

@@ -1883,8 +1883,26 @@
   },
   "postmortem": {
     "title": "感想戦",
-    "infoModalTitle": "感想戦について",
-    "description": "終了したゲームの棋譜を思い出して再現してみましょう。ここでエンジン評価も行えます。",
+    "settings": "設定",
+    "help": {
+      "label": "感想戦の使い方",
+      "input": {
+        "title": "手を入力",
+        "description": "終了した対局の手を、記憶を頼りに順番に入力してください。正解するとひとつ先の手へ進みます。"
+      },
+      "dontKnow": {
+        "title": "思い出せないとき",
+        "description": "「わからない」を押すと正解の手が表示され、自動で次の手へ進みます。"
+      },
+      "settings": {
+        "title": "入力方式・盤面の設定",
+        "description": "入力方式（テキスト／選択／ボタン）や盤面の表示は、ここから対局時と同じように切り替えられます。"
+      },
+      "moves": {
+        "title": "棋譜",
+        "description": "再現した手はここに棋譜として表示されます。クリックでその局面の盤面を確認できます。"
+      }
+    },
     "autoOpponentMoves": "相手の手を自動入力",
     "inputMove": "手を入力",
     "selectMove": "手を選択",
@@ -1910,19 +1928,34 @@
     "backToCurrentPosition": "現在の局面に戻る",
     "cancel": "キャンセル",
     "save": "保存",
-    "guidanceStep1": "対局の手を記憶から入力してください",
-    "guidanceStep2": "正解ならば次の手に進みます",
-    "guidanceStep3": "思い出せない場合は「わからない」ボタンを押してください",
     "log": "ログ",
     "logMoveNumber": "手",
     "logIncorrectMove": "入力した手",
     "logCorrectMove": "正解",
     "logAutoFilled": "自動入力",
+    "logSkipped": "思い出せず",
     "noMistakes": "間違いなし！",
     "incorrectMoveError": "{movePrefix} {move} ではありません",
     "analyzing": "解析中",
     "correctMoveMessage": "{movePrefix} {move} は正解です",
-    "skippedMoveMessage": "正解は {movePrefix} {move} でした"
+    "skippedMoveMessage": "正解は {movePrefix} {move} でした",
+    "summary": {
+      "headline": {
+        "perfect": "完全再現！",
+        "allRecalled": "全手を再現できました！",
+        "good": "good recall！",
+        "keepGoing": "次はもっと思い出せます"
+      },
+      "scoreLine": "{recalled} / {total} 手を再現",
+      "nailed": "一発正解",
+      "struggled": "つまずき",
+      "missed": "思い出せず",
+      "mistakes": "誤入力 {count} 回",
+      "reviewTitle": "つまずいた局面",
+      "reviewHint": "タップでその局面を確認",
+      "restart": "もう一度",
+      "backToResult": "結果へ戻る"
+    }
   },
   "playError": {
     "title": "ゲームの復旧",

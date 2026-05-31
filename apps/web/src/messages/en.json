@@ -1883,8 +1883,26 @@
   },
   "postmortem": {
     "title": "Game Review",
-    "infoModalTitle": "About Game Review",
-    "description": "Try to recall and replay the moves from your finished game. You can also run engine evaluation here.",
+    "settings": "Settings",
+    "help": {
+      "label": "How to use Game Review",
+      "input": {
+        "title": "Enter a move",
+        "description": "Recall the moves from your finished game and enter them in order. A correct move advances to the next one."
+      },
+      "dontKnow": {
+        "title": "When you can't recall",
+        "description": "Press \"I don't know\" to reveal the correct move and automatically advance to the next one."
+      },
+      "settings": {
+        "title": "Input method & board settings",
+        "description": "Switch the input method (text / select / buttons) and board display here, just like during a game."
+      },
+      "moves": {
+        "title": "Moves",
+        "description": "Replayed moves appear here as a move list. Tap one to view the board at that position."
+      }
+    },
     "autoOpponentMoves": "Auto-fill opponent's moves",
     "inputMove": "Enter move",
     "selectMove": "Select a move",
@@ -1910,19 +1928,34 @@
     "backToCurrentPosition": "Back to current position",
     "cancel": "Cancel",
     "save": "Save",
-    "guidanceStep1": "Enter each move from memory",
-    "guidanceStep2": "Correct moves advance to the next",
-    "guidanceStep3": "Press \"I don't know\" if you can't recall",
     "log": "Log",
     "logMoveNumber": "Move",
     "logIncorrectMove": "Your input",
     "logCorrectMove": "Correct",
     "logAutoFilled": "Auto-filled",
+    "logSkipped": "Couldn't recall",
     "noMistakes": "No mistakes!",
     "incorrectMoveError": "{movePrefix} is not {move}",
     "analyzing": "Analyzing",
     "correctMoveMessage": "{movePrefix} {move} is correct",
-    "skippedMoveMessage": "The answer was {movePrefix} {move}"
+    "skippedMoveMessage": "The answer was {movePrefix} {move}",
+    "summary": {
+      "headline": {
+        "perfect": "Perfect recall!",
+        "allRecalled": "You recalled every move!",
+        "good": "Good recall!",
+        "keepGoing": "You'll recall more next time"
+      },
+      "scoreLine": "{recalled} / {total} moves recalled",
+      "nailed": "First try",
+      "struggled": "Stumbled",
+      "missed": "Couldn't recall",
+      "mistakes": "Mistakes: {count}",
+      "reviewTitle": "Where you stumbled",
+      "reviewHint": "Tap to view the position",
+      "restart": "Play again",
+      "backToResult": "Back to result"
+    }
   },
   "playError": {
     "title": "Game Recovery",
