@@ -19,19 +19,18 @@ import {
 } from '@/app/[locale]/(public)/games/play/_lib';
 import { useLoadGame } from '@/app/[locale]/(public)/games/play/result/_hooks/useLoadGame';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
-import { Modal } from '@/app/[locale]/_components/Modal';
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type {
   GamePreferences,
   PerGamePreferences,
 } from '@/app/[locale]/_contexts/GamePreferencesContext';
-import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import { usePostmortemGame } from '../_hooks';
+import { computeRecallStats } from '../_lib';
 import { formatMoveNumberPrefix } from '../_lib/postmortem-format';
-import { PostmortemMoveLogTable } from './PostmortemMoveLogTable';
 import { PostmortemMovesPanel } from './PostmortemMovesPanel';
+import { PostmortemSummary } from './PostmortemSummary';
 
 /**
  * Move-feedback surfaced in the page title (mirrors the in-game play screen,
@@ -59,6 +58,8 @@ type Props = {
    * status there). Null clears the title back to the page name.
    */
   onFeedbackChange?: (feedback: PostmortemFeedback | null) => void;
+  /** Restart the review from the beginning (parent remounts the game). */
+  onRestart?: () => void;
 };
 
 /**
@@ -92,6 +93,7 @@ export function PostmortemClient({
   startingFen,
   gameId,
   onFeedbackChange,
+  onRestart,
 }: Props) {
   const t = useTranslations('postmortem');
 
@@ -145,7 +147,6 @@ export function PostmortemClient({
 
   // UI-only state (modal visibility)
   const [isBoardVisible, setIsBoardVisible] = useState(false);
-  const [showMoveLogModal, setShowMoveLogModal] = useState(false);
   const [showAnalyzeAllConfirm, setShowAnalyzeAllConfirm] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
@@ -159,6 +160,19 @@ export function PostmortemClient({
   const showInlinePeek = shouldShowInlinePeekHeader(preferences);
   const showModalPeekButton = shouldShowModalPeekButton(preferences);
   const showInlineBoard = showAlwaysBoard || showInlinePeek;
+
+  const recallStats = computeRecallStats(moveLog.entries);
+
+  // Revisit a stumbled move from the completion summary: jump to its position
+  // and open the board preview modal (same UX as the result screen's
+  // position preview), regardless of the board display mode.
+  const handleMistakeClick = useCallback(
+    (entry: Parameters<typeof actions.handleMoveClick>[0]) => {
+      actions.handleMoveClick(entry);
+      setIsBoardVisible(true);
+    },
+    [actions]
+  );
 
   const boardFen = displayFen || currentFen;
   const sideToMove = boardFen.split(' ')[1] === 'b' ? 'black' : 'white';
@@ -339,26 +353,28 @@ export function PostmortemClient({
                   )}
                 </>
               ) : (
-                /* Completion Message */
+                /* Completion: recall report + stumble review + next actions */
                 <>
-                  <div className="py-8 text-center flex flex-col items-center gap-4">
-                    <FaCheck className="w-12 h-12 text-success" />
-                    <div className="flex flex-col gap-2">
-                      <h3 className="text-xl font-bold">{t('completed')}</h3>
-                      <p className="text-muted-foreground">
-                        {navigation.selectedMoveIndex !== null ? (
-                          <button
-                            onClick={() => navigation.setSelectedMoveIndex(null)}
-                            className="text-sm underline hover:text-foreground"
-                          >
-                            {t('backToCurrentPosition')}
-                          </button>
-                        ) : (
-                          t('completedMessage')
-                        )}
-                      </p>
+                  <PostmortemSummary
+                    stats={recallStats}
+                    entries={moveLog.entries}
+                    onEntryClick={handleMistakeClick}
+                    onRestart={onRestart ?? (() => {})}
+                    gameId={gameId}
+                  />
+
+                  {/* When the user has jumped to a past position (via the
+                      review or the board nav), offer a way back to the end. */}
+                  {navigation.selectedMoveIndex !== null && (
+                    <div className="text-center">
+                      <button
+                        onClick={() => navigation.setSelectedMoveIndex(null)}
+                        className="text-sm underline hover:text-foreground"
+                      >
+                        {t('backToCurrentPosition')}
+                      </button>
                     </div>
-                  </div>
+                  )}
 
                   {/* Show Board (modal peek mode only — inline modes already
                       render the board above) */}
@@ -367,16 +383,6 @@ export function PostmortemClient({
                       <ShowBoardButton onClick={() => setIsBoardVisible(true)} />
                     </div>
                   )}
-
-                  {/* Move log link */}
-                  <div className="text-center">
-                    <button
-                      onClick={() => setShowMoveLogModal(true)}
-                      className={`text-xs ${TEXT_LINK_MUTED_CLASSES}`}
-                    >
-                      {t('log')}
-                    </button>
-                  </div>
 
                   {settingsRow}
                 </>
@@ -400,15 +406,6 @@ export function PostmortemClient({
           onNavigateToEnd={navigation.navigateToEnd}
         />
       </div>
-
-      {/* Move Log Modal */}
-      <Modal
-        isOpen={showMoveLogModal}
-        title={t('moveLog')}
-        onClose={() => setShowMoveLogModal(false)}
-      >
-        <PostmortemMoveLogTable entries={moveLog.entries} />
-      </Modal>
 
       {/* Settings Modal — reuses the in-game settings form. Edits update the
           local preferences only (no persistence, no preferenceChangeLog). */}

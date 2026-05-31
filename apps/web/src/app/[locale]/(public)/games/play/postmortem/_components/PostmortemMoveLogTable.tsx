@@ -6,23 +6,30 @@ import type { MoveLogEntry } from '../_lib';
 import { formatMoveNumberPrefix } from '../_lib/postmortem-format';
 
 type Props = {
-  /** Full move-log history; only incorrect / auto-filled rows are shown. */
+  /** Full move-log history; only incorrect / skipped (gave-up) rows are shown. */
   entries: MoveLogEntry[];
+  /**
+   * When provided, each row becomes a button that jumps the board to the
+   * move's position. Used by the completion summary's "stumbled here" review.
+   */
+  onEntryClick?: (entry: MoveLogEntry) => void;
 };
 
 /**
- * The mistakes table inside the postmortem "move log" modal. Lists every
- * move the user got wrong or auto-filled, with the incorrect vs. correct
- * SAN side by side. Extracted from `PostmortemClient`, where it had been
- * defined as an inline IIFE in the modal body.
+ * The mistakes table: every move the user got wrong or gave up on, with the
+ * incorrect vs. correct SAN side by side. Opponent auto-fills (`auto`) are not
+ * mistakes, so they are excluded. Rows are clickable when `onEntryClick` is
+ * wired (the completion summary uses this to revisit each stumble).
  */
-export function PostmortemMoveLogTable({ entries }: Props) {
+export function PostmortemMoveLogTable({ entries, onEntryClick }: Props) {
   const t = useTranslations('postmortem');
 
-  const relevantEntries = entries.filter((e) => e.status === 'incorrect' || e.status === 'auto');
+  const relevantEntries = entries.filter((e) => e.status === 'incorrect' || e.status === 'skipped');
   if (relevantEntries.length === 0) {
     return <p className="text-center text-muted-foreground py-4">{t('noMistakes')}</p>;
   }
+
+  const interactive = onEntryClick !== undefined;
 
   return (
     <div className="overflow-x-auto rounded-lg border border-border">
@@ -36,7 +43,11 @@ export function PostmortemMoveLogTable({ entries }: Props) {
         </thead>
         <tbody className="divide-y divide-border">
           {relevantEntries.map((entry, index) => (
-            <tr key={index}>
+            <tr
+              key={index}
+              onClick={interactive ? () => onEntryClick?.(entry) : undefined}
+              className={interactive ? 'cursor-pointer hover:bg-muted transition-colors' : ''}
+            >
               <td className="px-4 py-3 text-muted-foreground">
                 {formatMoveNumberPrefix(entry.moveNumber, entry.isWhiteMove)}
               </td>
@@ -47,7 +58,7 @@ export function PostmortemMoveLogTable({ entries }: Props) {
                 </>
               ) : (
                 <>
-                  <td className="px-4 py-3 text-muted-foreground">{t('logAutoFilled')}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{t('logSkipped')}</td>
                   <td className="px-4 py-3 text-muted-foreground">{entry.move}</td>
                 </>
               )}

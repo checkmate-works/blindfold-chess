@@ -24,11 +24,19 @@ export function PostmortemPageClient({ breadcrumb }: Props) {
   const searchParams = useSearchParams();
   const t = useTranslations('postmortem');
   const [feedback, setFeedback] = useState<PostmortemFeedback | null>(null);
+  // Bumping this remounts PostmortemClient, resetting the whole review (moves,
+  // log, completion) to a clean run — the "play again" action.
+  const [runId, setRunId] = useState(0);
+  // "Play again" must start from move 1. The review writes its progress into
+  // the URL's `offset` as you play (see use-postmortem-init), so by completion
+  // the URL points at the end — reusing it on remount would re-complete
+  // instantly. Once the user restarts, force offset 0 and ignore the URL.
+  const [forceStartOver, setForceStartOver] = useState(false);
 
   // Get PGN from URL parameters
   const pgn = searchParams.get('pgn');
   const playerColor = (searchParams.get('color') as 'white' | 'black') || 'white';
-  const offset = parseInt(searchParams.get('offset') || '0', 10);
+  const offset = forceStartOver ? 0 : parseInt(searchParams.get('offset') || '0', 10);
   const startingFen = searchParams.get('fen') || undefined;
   const gameId = searchParams.get('gameId') || undefined;
 
@@ -95,6 +103,7 @@ export function PostmortemPageClient({ breadcrumb }: Props) {
       </div>
       <PagePanel>
         <PostmortemClient
+          key={runId}
           pgn={pgn}
           playerColor={playerColor}
           autoOpponent={false}
@@ -102,6 +111,10 @@ export function PostmortemPageClient({ breadcrumb }: Props) {
           startingFen={startingFen}
           gameId={gameId}
           onFeedbackChange={setFeedback}
+          onRestart={() => {
+            setForceStartOver(true);
+            setRunId((n) => n + 1);
+          }}
         />
         {/* Mirror `PageLayout`'s trailing block — see PageLayout.tsx. */}
         <div className="!mt-4 space-y-4">

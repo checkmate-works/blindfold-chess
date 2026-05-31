@@ -1933,11 +1933,29 @@
     "logIncorrectMove": "入力した手",
     "logCorrectMove": "正解",
     "logAutoFilled": "自動入力",
+    "logSkipped": "思い出せず",
     "noMistakes": "間違いなし！",
     "incorrectMoveError": "{movePrefix} {move} ではありません",
     "analyzing": "解析中",
     "correctMoveMessage": "{movePrefix} {move} は正解です",
-    "skippedMoveMessage": "正解は {movePrefix} {move} でした"
+    "skippedMoveMessage": "正解は {movePrefix} {move} でした",
+    "summary": {
+      "headline": {
+        "perfect": "完全再現！",
+        "allRecalled": "全手を再現できました！",
+        "good": "good recall！",
+        "keepGoing": "次はもっと思い出せます"
+      },
+      "scoreLine": "{recalled} / {total} 手を再現",
+      "nailed": "一発正解",
+      "struggled": "つまずき",
+      "missed": "思い出せず",
+      "mistakes": "誤入力 {count} 回",
+      "reviewTitle": "つまずいた局面",
+      "reviewHint": "タップでその局面を確認",
+      "restart": "もう一度",
+      "backToResult": "結果へ戻る"
+    }
   },
   "playError": {
     "title": "ゲームの復旧",
