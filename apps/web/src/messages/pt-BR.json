@@ -1879,8 +1879,26 @@
   },
   "postmortem": {
     "title": "Revisão da Partida",
-    "infoModalTitle": "Sobre a Revisão da Partida",
-    "description": "Tente lembrar e reproduzir os movimentos da sua partida finalizada. Você também pode executar a avaliação do motor aqui.",
+    "settings": "Configurações",
+    "help": {
+      "label": "Como usar a Revisão da Partida",
+      "input": {
+        "title": "Insira um movimento",
+        "description": "Lembre os movimentos da sua partida finalizada e insira-os em ordem. Um movimento correto avança para o próximo."
+      },
+      "dontKnow": {
+        "title": "Quando não conseguir lembrar",
+        "description": "Pressione \"Não sei\" para revelar o movimento correto e avançar automaticamente para o próximo."
+      },
+      "settings": {
+        "title": "Método de entrada e configurações do tabuleiro",
+        "description": "Altere o método de entrada (texto / seleção / botões) e a exibição do tabuleiro aqui, assim como durante uma partida."
+      },
+      "moves": {
+        "title": "Movimentos",
+        "description": "Os movimentos reproduzidos aparecem aqui como uma lista. Toque em um para ver o tabuleiro naquela posição."
+      }
+    },
     "autoOpponentMoves": "Preencher automaticamente movimentos do adversário",
     "inputMove": "Insira um movimento",
     "selectMove": "Selecione um movimento",
@@ -1906,9 +1924,6 @@
     "backToCurrentPosition": "Voltar à posição atual",
     "cancel": "Cancelar",
     "save": "Salvar",
-    "guidanceStep1": "Insira cada movimento de memória",
-    "guidanceStep2": "Movimentos corretos avançam para o próximo",
-    "guidanceStep3": "Pressione \"Não sei\" se não conseguir lembrar",
     "log": "Registro",
     "logMoveNumber": "Movimento",
     "logIncorrectMove": "Sua entrada",

@@ -1,15 +1,14 @@
 'use client';
 
-import { useState } from 'react';
 import type { ReactNode } from 'react';
 
 import { useSearchParams } from 'next/navigation';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FaQuestionCircle } from 'react-icons/fa';
 
 import { Divider } from '@/app/[locale]/_components/Divider';
-import { Modal } from '@/app/[locale]/_components/Modal';
+import { HelpTourButton } from '@/app/[locale]/_components/HelpTourButton';
+import type { HelpStep } from '@/app/[locale]/_components/HelpTourButton';
 import { PagePanel } from '@/app/[locale]/_components/PagePanel';
 import { PageTitle } from '@/app/[locale]/_components/PageTitle';
 
@@ -22,14 +21,44 @@ type Props = {
 export function PostmortemPageClient({ breadcrumb }: Props) {
   const searchParams = useSearchParams();
   const t = useTranslations('postmortem');
-  const [showHelp, setShowHelp] = useState(false);
-  const [hasStarted, setHasStarted] = useState(false);
 
   // Get PGN from URL parameters
   const pgn = searchParams.get('pgn');
   const playerColor = (searchParams.get('color') as 'white' | 'black') || 'white';
   const offset = parseInt(searchParams.get('offset') || '0', 10);
   const startingFen = searchParams.get('fen') || undefined;
+  const gameId = searchParams.get('gameId') || undefined;
+
+  const helpSteps: HelpStep[] = [
+    {
+      targetId: 'postmortem-input',
+      title: t('help.input.title'),
+      description: t('help.input.description'),
+      side: 'bottom',
+      align: 'start',
+    },
+    {
+      targetId: 'postmortem-dont-know',
+      title: t('help.dontKnow.title'),
+      description: t('help.dontKnow.description'),
+      side: 'top',
+      align: 'center',
+    },
+    {
+      targetId: 'postmortem-settings',
+      title: t('help.settings.title'),
+      description: t('help.settings.description'),
+      side: 'top',
+      align: 'center',
+    },
+    {
+      targetId: 'postmortem-moves',
+      title: t('help.moves.title'),
+      description: t('help.moves.description'),
+      side: 'left',
+      align: 'start',
+    },
+  ];
 
   if (!pgn) {
     return (
@@ -44,15 +73,7 @@ export function PostmortemPageClient({ breadcrumb }: Props) {
     <div className="space-y-8">
       <div className="flex items-center justify-center gap-2">
         <PageTitle>{t('title')}</PageTitle>
-        {hasStarted && (
-          <button
-            onClick={() => setShowHelp(true)}
-            className="text-muted-foreground hover:text-foreground transition-colors p-1"
-            aria-label={t('infoModalTitle')}
-          >
-            <FaQuestionCircle className="w-5 h-5" />
-          </button>
-        )}
+        <HelpTourButton steps={helpSteps} label={t('help.label')} />
       </div>
       <PagePanel>
         <PostmortemClient
@@ -61,7 +82,7 @@ export function PostmortemPageClient({ breadcrumb }: Props) {
           autoOpponent={false}
           initialOffset={offset}
           startingFen={startingFen}
-          onStart={() => setHasStarted(true)}
+          gameId={gameId}
         />
         {/* Mirror `PageLayout`'s trailing block — see PageLayout.tsx. */}
         <div className="!mt-4 space-y-4">
@@ -69,18 +90,6 @@ export function PostmortemPageClient({ breadcrumb }: Props) {
           {breadcrumb}
         </div>
       </PagePanel>
-
-      {/* Help Modal */}
-      <Modal isOpen={showHelp} title={t('infoModalTitle')} onClose={() => setShowHelp(false)}>
-        <div className="flex flex-col gap-4">
-          <p className="text-sm text-muted-foreground">{t('description')}</p>
-          <ol className="list-decimal list-inside text-sm text-muted-foreground space-y-1">
-            <li>{t('guidanceStep1')}</li>
-            <li>{t('guidanceStep2')}</li>
-            <li>{t('guidanceStep3')}</li>
-          </ol>
-        </div>
-      </Modal>
     </div>
   );
 }

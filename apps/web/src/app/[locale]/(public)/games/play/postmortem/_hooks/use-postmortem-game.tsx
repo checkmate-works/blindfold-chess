@@ -4,8 +4,6 @@ import type { replayMoves } from '@blindfold-chess/features/chess-core';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
-import type { EvaluationMark } from '@/lib/games/evaluation';
-
 import { getMovingSide } from '../../_lib/fen-utils';
 import type { MoveLogEntry } from '../_lib';
 import { isPlayerTurn as computeIsPlayerTurn, formatMovesToPgn } from '../_lib';
@@ -35,7 +33,6 @@ type PostmortemGameReturn = {
     currentFen: string;
     displayFen: string | null;
     currentLastMove: { from: string; to: string } | null;
-    currentEvaluationMark: EvaluationMark | null;
     gamePositions: ReturnType<typeof replayMoves>;
   };
   moveInput: {
@@ -210,8 +207,6 @@ export function usePostmortemGame({
     return gamePositions[posIndex].lastMove ?? null;
   }, [currentPosition, userMoves.length, gamePositions]);
 
-  const currentEvaluationMark: EvaluationMark | null = null;
-
   return {
     gameProgress: {
       originalMoves,
@@ -225,7 +220,6 @@ export function usePostmortemGame({
       currentFen,
       displayFen,
       currentLastMove,
-      currentEvaluationMark,
       gamePositions,
     },
     moveInput: {

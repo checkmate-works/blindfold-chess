@@ -44,7 +44,7 @@ export function PostmortemMovesPanel({
   const [isFenCopied, setIsFenCopied] = useState(false);
 
   return (
-    <div className="lg:col-span-1">
+    <div className="lg:col-span-1" data-tour-id="postmortem-moves">
       <div className="border border-border rounded-lg">
         {/* Moves Header */}
         <div className="px-4 py-3 bg-muted/30 rounded-t-lg">
