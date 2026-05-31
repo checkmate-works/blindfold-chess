@@ -7,6 +7,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { FaRedo } from 'react-icons/fa';
 
 import { PracticeLayout } from '@/app/[locale]/(public)/practice/_components/PracticeLayout';
+import { SignUpBanner } from '@/app/[locale]/(public)/practice/_components/SignUpBanner';
 import { SectionTitle } from '@/app/[locale]/_components';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
@@ -96,6 +97,12 @@ export function KnightTourResult({
             </>
           ) : (
             <>
+              {/* Sign-up nudge for anonymous players who finished a real tour
+                  (renders nothing when signed in). Placed directly above the
+                  retry / more-practice buttons so the prompt to create an
+                  account lands before those buttons can carry the guest away. */}
+              <SignUpBanner locale={locale} />
+
               <Button
                 onClick={onPlayAgain}
                 variant="primary"

@@ -4,10 +4,14 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 
 import { SignUpBannerUI } from '@/app/[locale]/_components/SignUpBannerUI';
 import { useAuth } from '@/app/[locale]/_contexts/AuthContext';
-import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
-  locale: Locale;
+  // `string`, not `Locale`, to match the underlying `SignUpBannerUI` (and the
+  // broader convention, e.g. `CardLink`). This lets client components that
+  // derive the locale via `useSafeLocale()` (which returns `string`) pass it
+  // straight through without a cast. Existing callers pass a `Locale`, which is
+  // assignable to `string`, so this is a safe widening.
+  locale: string;
 };
 
 export function SignUpBanner({ locale }: Props) {

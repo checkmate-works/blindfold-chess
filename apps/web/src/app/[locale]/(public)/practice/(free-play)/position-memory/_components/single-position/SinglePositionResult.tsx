@@ -15,6 +15,7 @@ import { ChessBoardWithOverlay } from '@/app/[locale]/(public)/practice/(free-pl
 import { AnimatedChessBoard } from '@/app/[locale]/(public)/practice/_components/AnimatedChessBoard';
 import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
 import { SegmentedProgressBar } from '@/app/[locale]/(public)/practice/_components/SegmentedProgressBar';
+import { SignUpBanner } from '@/app/[locale]/(public)/practice/_components/SignUpBanner';
 import { CardLink, Divider, PagePanel, SectionTitle } from '@/app/[locale]/_components';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -165,6 +166,14 @@ export function SinglePositionResult({
               content) and immediately before the action buttons, per user
               preference for the position-memory single-position layout. */}
           {expInfo && <ExpGainDisplay expInfo={expInfo} />}
+
+          {/* Sign-up nudge for anonymous solvers (renders nothing when signed
+              in). Sits in the same slot as the EXP card — directly above the
+              action buttons — so guests who just finished a community puzzle /
+              position see the prompt to create an account before the retry /
+              back-to-list buttons can carry them away. (EXP and this banner are
+              mutually exclusive: expInfo is null for guests.) */}
+          <SignUpBanner locale={locale} />
 
           {/* Action Buttons */}
           <div className="space-y-3">
