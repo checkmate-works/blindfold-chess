@@ -16,7 +16,10 @@ vi.mock('@/lib/supabase/server', () => ({
 
 vi.mock('../_lib/queries', () => ({
   getFeedData: (...args: unknown[]) => mockGetFeedData(...args),
+  TOPICS_FEED_ENTITY_TYPES: ['topic_post', 'chunk'],
 }));
+
+const TOPICS_FEED_ENTITY_TYPES = ['topic_post', 'chunk'];
 
 describe('getFeed', () => {
   beforeEach(() => {
@@ -45,7 +48,7 @@ describe('getFeed', () => {
 
       await getFeed(validCursor);
 
-      expect(mockGetFeedData).toHaveBeenCalledWith(validCursor, 10, undefined);
+      expect(mockGetFeedData).toHaveBeenCalledWith(validCursor, 10, undefined, undefined);
     });
 
     it('should call getFeedData when cursor is undefined (first page)', async () => {
@@ -53,7 +56,7 @@ describe('getFeed', () => {
 
       await getFeed(undefined);
 
-      expect(mockGetFeedData).toHaveBeenCalledWith(undefined, 10, undefined);
+      expect(mockGetFeedData).toHaveBeenCalledWith(undefined, 10, undefined, undefined);
     });
   });
 
@@ -63,7 +66,7 @@ describe('getFeed', () => {
 
       await getFeed(undefined, undefined);
 
-      expect(mockGetFeedData).toHaveBeenCalledWith(undefined, 10, undefined);
+      expect(mockGetFeedData).toHaveBeenCalledWith(undefined, 10, undefined, undefined);
     });
 
     it('should pass limit as-is when it is within range', async () => {
@@ -71,7 +74,7 @@ describe('getFeed', () => {
 
       await getFeed(undefined, 25);
 
-      expect(mockGetFeedData).toHaveBeenCalledWith(undefined, 25, undefined);
+      expect(mockGetFeedData).toHaveBeenCalledWith(undefined, 25, undefined, undefined);
     });
 
     it('should clamp limit to 50 when limit exceeds MAX_FEED_LIMIT', async () => {
@@ -79,7 +82,7 @@ describe('getFeed', () => {
 
       await getFeed(undefined, 100);
 
-      expect(mockGetFeedData).toHaveBeenCalledWith(undefined, 50, undefined);
+      expect(mockGetFeedData).toHaveBeenCalledWith(undefined, 50, undefined, undefined);
     });
 
     it('should clamp limit to 50 when limit is exactly 51', async () => {
@@ -87,7 +90,7 @@ describe('getFeed', () => {
 
       await getFeed(undefined, 51);
 
-      expect(mockGetFeedData).toHaveBeenCalledWith(undefined, 50, undefined);
+      expect(mockGetFeedData).toHaveBeenCalledWith(undefined, 50, undefined, undefined);
     });
 
     it('should use 50 when limit is exactly 50', async () => {
@@ -95,7 +98,7 @@ describe('getFeed', () => {
 
       await getFeed(undefined, 50);
 
-      expect(mockGetFeedData).toHaveBeenCalledWith(undefined, 50, undefined);
+      expect(mockGetFeedData).toHaveBeenCalledWith(undefined, 50, undefined, undefined);
     });
   });
 
@@ -107,7 +110,7 @@ describe('getFeed', () => {
 
       await getFeed(undefined);
 
-      expect(mockGetFeedData).toHaveBeenCalledWith(undefined, 10, userId);
+      expect(mockGetFeedData).toHaveBeenCalledWith(undefined, 10, userId, undefined);
     });
 
     it('should pass undefined user id when user is not authenticated', async () => {
@@ -116,7 +119,30 @@ describe('getFeed', () => {
 
       await getFeed(undefined);
 
-      expect(mockGetFeedData).toHaveBeenCalledWith(undefined, 10, undefined);
+      expect(mockGetFeedData).toHaveBeenCalledWith(undefined, 10, undefined, undefined);
+    });
+  });
+
+  describe('scope', () => {
+    it('should pass no entity-type filter for the default (home) scope', async () => {
+      mockGetFeedData.mockResolvedValue({ items: [], nextCursor: null });
+
+      await getFeed(undefined, undefined, 'home');
+
+      expect(mockGetFeedData).toHaveBeenCalledWith(undefined, 10, undefined, undefined);
+    });
+
+    it('should scope to topic feed entity types for the topics scope', async () => {
+      mockGetFeedData.mockResolvedValue({ items: [], nextCursor: null });
+
+      await getFeed(undefined, undefined, 'topics');
+
+      expect(mockGetFeedData).toHaveBeenCalledWith(
+        undefined,
+        10,
+        undefined,
+        TOPICS_FEED_ENTITY_TYPES
+      );
     });
   });
 

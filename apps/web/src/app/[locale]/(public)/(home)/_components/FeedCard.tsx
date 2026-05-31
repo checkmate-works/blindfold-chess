@@ -9,9 +9,16 @@ type Props = {
   locale: string;
   showMoreLabel: string;
   justNowLabel: string;
+  /**
+   * ActivityCard layout forwarded to the underlying card: `'feed'` (divider
+   * list, default — home feed) or `'card'` (stand-alone bordered card — topics
+   * list). Only the entity types surfaced outside the home feed (`topic_post`,
+   * `chunk`) honor it today.
+   */
+  variant?: 'feed' | 'card';
 };
 
-export function FeedCard({ item, locale, showMoreLabel, justNowLabel }: Props) {
+export function FeedCard({ item, locale, showMoreLabel, justNowLabel, variant }: Props) {
   switch (item.entityType) {
     case 'topic_post':
       return (
@@ -20,6 +27,7 @@ export function FeedCard({ item, locale, showMoreLabel, justNowLabel }: Props) {
           locale={locale}
           showMoreLabel={showMoreLabel}
           justNowLabel={justNowLabel}
+          variant={variant}
         />
       );
     case 'position':
@@ -31,6 +39,7 @@ export function FeedCard({ item, locale, showMoreLabel, justNowLabel }: Props) {
           createdAt={item.createdAt}
           locale={locale}
           justNowLabel={justNowLabel}
+          variant={variant}
         />
       );
     case 'challenge_rank_update':

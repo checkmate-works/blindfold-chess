@@ -22,6 +22,8 @@ type Props = {
   createdAt: string;
   locale: string;
   justNowLabel: string;
+  /** ActivityCard layout: `'feed'` (divider list, default) or `'card'` (stand-alone card). */
+  variant?: 'feed' | 'card';
 };
 
 export const ChunkFeedCard = memo(function ChunkFeedCard({
@@ -29,6 +31,7 @@ export const ChunkFeedCard = memo(function ChunkFeedCard({
   createdAt,
   locale,
   justNowLabel,
+  variant,
 }: Props) {
   const tFeed = useTranslations('home.feed.chunk');
   const { preferences } = useGamePreferences();
@@ -43,6 +46,7 @@ export const ChunkFeedCard = memo(function ChunkFeedCard({
 
   return (
     <ActivityCard
+      variant={variant}
       href={href}
       locale={locale}
       thumbnail={
