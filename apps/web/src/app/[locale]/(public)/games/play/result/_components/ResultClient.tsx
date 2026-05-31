@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
-import type { ReactNode } from 'react';
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -16,8 +15,8 @@ import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 import type { Game } from '@/lib/games/saved-game-types';
 
 import { AuthPromptModal } from '@/app/[locale]/_components/AuthPromptModal';
-import { Divider } from '@/app/[locale]/_components/Divider';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useAuthGuard } from '@/app/[locale]/_hooks/use-auth-guard';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -39,6 +38,11 @@ import { VictoryCertificate } from './VictoryCertificate';
  * game is over, so blindfold obfuscation no longer serves a purpose). Only
  * the board-appearance fields are read by {@link BoardViewModal}; the rest
  * satisfy the GamePreferences shape.
+ *
+ * `boardTheme` here is only a fallback: the preview board overrides it with
+ * the user's live global theme (a global setting absent from the per-game
+ * snapshot) at the call site, so the modal matches the rest of the app — see
+ * `boardPreferences` in {@link ResultContent}.
  */
 const REVEALED_BOARD_PREFS: GamePreferences = {
   showCoordinates: true,
@@ -61,10 +65,9 @@ type Props = {
   displayName: string;
   /** Whether the viewer is signed in. Anonymous viewers get the stats gated behind a sign-up CTA. */
   isAuthenticated: boolean;
-  breadcrumb: ReactNode;
 };
 
-export function ResultClient({ locale, displayName, isAuthenticated, breadcrumb }: Props) {
+export function ResultClient({ locale, displayName, isAuthenticated }: Props) {
   const t = useTranslations('play');
   const searchParams = useSearchParams();
   const gameId = searchParams.get('gameId');
@@ -92,7 +95,6 @@ export function ResultClient({ locale, displayName, isAuthenticated, breadcrumb 
       locale={locale}
       displayName={displayName}
       isAuthenticated={isAuthenticated}
-      breadcrumb={breadcrumb}
     />
   );
 }
@@ -103,17 +105,9 @@ type ResultContentProps = {
   locale: Locale;
   displayName: string;
   isAuthenticated: boolean;
-  breadcrumb: ReactNode;
 };
 
-function ResultContent({
-  game,
-  gameId,
-  locale,
-  displayName,
-  isAuthenticated,
-  breadcrumb,
-}: ResultContentProps) {
+function ResultContent({ game, gameId, locale, displayName, isAuthenticated }: ResultContentProps) {
   const t = useTranslations('play');
   const tGames = useTranslations('gamesPage');
   const router = useRouter();
@@ -122,6 +116,16 @@ function ResultContent({
   // Postmortem is a members-only feature; anonymous viewers get a sign-up
   // prompt instead of the review screen.
   const { guardAction, isModalOpen: isAuthModalOpen, closeModal: closeAuthModal } = useAuthGuard();
+
+  // The position-preview board should match the user's configured board theme
+  // for visual consistency with the rest of the app. The theme is a global
+  // setting (not captured in the per-game snapshot), so read it live from
+  // GamePreferencesContext and override the revealed-board defaults.
+  const { preferences: globalPreferences } = useGamePreferences();
+  const boardPreferences = useMemo<GamePreferences>(
+    () => ({ ...REVEALED_BOARD_PREFS, boardTheme: globalPreferences.boardTheme }),
+    [globalPreferences.boardTheme]
+  );
 
   // Derive player result from game status
   const playerResult = game.status === 'win' ? 'win' : game.status === 'loss' ? 'loss' : 'draw';
@@ -301,7 +305,7 @@ function ResultContent({
         playerSide={game.playerColor}
         flipped={effectiveFlipped}
         lastMove={previewLastMove}
-        preferences={REVEALED_BOARD_PREFS}
+        preferences={boardPreferences}
         movesLength={moves.length}
         currentPosition={currentPosition}
         formattedPgn={formattedPgn}
@@ -330,9 +334,6 @@ function ResultContent({
       {/* Sign-up prompt shown when an anonymous viewer taps the postmortem
           button (members-only feature). */}
       {isAuthModalOpen && <AuthPromptModal isOpen={isAuthModalOpen} onClose={closeAuthModal} />}
-
-      <Divider />
-      {breadcrumb}
     </div>
   );
 }
