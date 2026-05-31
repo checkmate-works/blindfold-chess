@@ -1880,10 +1880,6 @@
         "description": "Create a free account to unlock your full game statistics and per-move review.",
         "signUpButton": "Create Free Account",
         "signInButton": "Already have an account? Sign in"
-      },
-      "exp": {
-        "signInToEarn": "Sign in to earn EXP for your games.",
-        "signInButton": "Sign in"
       }
     },
     "finishedGame": {

@@ -281,23 +281,10 @@ function ResultContent({
         )}
 
         {/* Exp earned for this game, shown below the statistics. Authenticated
-            players see the grant (ExpGainDisplay renders nothing until it
-            resolves); guests get a sign-in nudge so the reward doubles as a
-            registration incentive. */}
-        {stats.totalMoves > 0 &&
-          (isAuthenticated ? (
-            <ExpGainDisplay expInfo={exp} />
-          ) : (
-            <div className="mt-4 rounded-lg border border-border bg-card p-4 text-center">
-              <p className="text-sm text-muted-foreground">{t('result.exp.signInToEarn')}</p>
-              <Link
-                href={`/${locale}/sign-in`}
-                className="mt-3 inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                {t('result.exp.signInButton')}
-              </Link>
-            </div>
-          ))}
+            players only — ExpGainDisplay renders nothing until the grant
+            resolves. Guests are already nudged to sign up by the StatsAuthGate
+            above, so no separate Exp CTA is shown here. */}
+        {isAuthenticated && <ExpGainDisplay expInfo={exp} />}
 
         <div className="border-t border-border" />
 
