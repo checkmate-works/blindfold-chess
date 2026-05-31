@@ -8,6 +8,7 @@ import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { getPaginationParams } from '@/lib/pagination';
 import { createClient } from '@/lib/supabase/server';
 
+import { TopicTabs } from '@/app/[locale]/(public)/topics/_components/TopicTabs';
 import { renderAttachment } from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
@@ -70,6 +71,12 @@ export default async function SquaresPage({ params, searchParams }: Props) {
       locale={locale}
       breadcrumb={[{ label: t('title'), href: '/topics' }, { label: t('squares.title') }]}
     >
+      <SectionTitle>{t('squares.subtitle')}</SectionTitle>
+
+      <div className="mb-6">
+        <TopicTabs active="squares" locale={locale} />
+      </div>
+
       {currentPage === 1 && (
         <>
           <SectionTitle>{t('squares.sectionTitle')}</SectionTitle>

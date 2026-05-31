@@ -3887,6 +3887,7 @@
     "openings": {
       "title": "オープニング",
       "description": "チェスのオープニングとその主要なポジションを探索・学習しましょう。",
+      "subtitle": "チェスのオープニング理論とディスカッション",
       "recentPosts": "新着の投稿",
       "noRecentPosts": "まだ投稿がありません。",
       "sectionTitle": "{move} のオープニング",
@@ -4103,6 +4104,7 @@
     "squares": {
       "title": "マス目",
       "description": "マス目を選んで議論を閲覧・共有しましょう",
+      "subtitle": "盤面のマス目に関するディスカッション",
       "pageTitle": "Squares",
       "sectionTitle": "マスを選択",
       "postCount": "{count}件の投稿",

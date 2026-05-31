@@ -8,10 +8,11 @@ import { createClient } from '@/lib/supabase/server';
 
 import { FeedClient } from '@/app/[locale]/(public)/(home)/_components/FeedClient';
 import { TOPICS_FEED_ENTITY_TYPES, getFeedData } from '@/app/[locale]/(public)/(home)/_lib/queries';
-import { LinkTabs, PageLayout, SectionTitle } from '@/app/[locale]/_components';
-import type { LinkTabItem } from '@/app/[locale]/_components';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
+
+import { TopicTabs } from './_components/TopicTabs';
 
 /**
  * Topics List (トピック一覧)
@@ -52,19 +53,12 @@ export default async function TopicsPage({ params }: Props) {
   ]);
   const showAds = IS_LOCAL_DEV || showAdsResult;
 
-  const tabs: LinkTabItem[] = [
-    { value: 'recent', label: `🆕 ${t('tabs.recent')}`, href: '/topics' },
-    { value: 'chunks', label: `🧠 ${t('categories.chunks.title')}`, href: '/chunks' },
-    { value: 'openings', label: `📖 ${t('categories.openings.title')}`, href: '/topics/openings' },
-    { value: 'squares', label: `🔳 ${t('categories.squares.title')}`, href: '/topics/squares' },
-  ];
-
   return (
     <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
       <SectionTitle>{t('recentPosts')}</SectionTitle>
 
       <div className="mb-6">
-        <LinkTabs items={tabs} activeValue="recent" locale={locale} aria-label={t('title')} />
+        <TopicTabs active="recent" locale={locale} />
       </div>
 
       {initialFeed.items.length === 0 ? (

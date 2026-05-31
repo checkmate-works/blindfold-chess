@@ -3641,6 +3641,7 @@
     "openings": {
       "title": "Aberturas",
       "description": "Explore e aprenda sobre aberturas de xadrez e suas posições-chave.",
+      "subtitle": "Teoria e discussão de aberturas de xadrez",
       "recentPosts": "Publicações Recentes",
       "noRecentPosts": "Ainda não há publicações.",
       "sectionTitle": "Aberturas {move}",
@@ -3857,6 +3858,7 @@
     "squares": {
       "title": "Casas",
       "description": "Selecione uma casa para ver e compartilhar discussões",
+      "subtitle": "Discussão sobre as casas do tabuleiro",
       "pageTitle": "Casas",
       "sectionTitle": "Escolher Casa",
       "postCount": "{count, plural, one {# publicação} other {# publicações}}",

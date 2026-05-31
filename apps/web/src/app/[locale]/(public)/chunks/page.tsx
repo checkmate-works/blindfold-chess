@@ -17,6 +17,7 @@ import type { ChunkFeedbackTopic, ChunkStatus } from '@/lib/chunks/validation';
 import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
 import { DEFAULT_PAGE_SIZE, getPaginationParams } from '@/lib/pagination';
 
+import { TopicTabs } from '@/app/[locale]/(public)/topics/_components/TopicTabs';
 import { HelpTourButton, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import type { HelpStep } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
@@ -154,6 +155,10 @@ export default async function ChunksListPage({ params, searchParams }: Props) {
     >
       <div data-tour-id="chunks-list-intro">
         <SectionTitle>{t('listSubtitle')}</SectionTitle>
+      </div>
+
+      <div className="mb-6">
+        <TopicTabs active="chunks" locale={locale} />
       </div>
 
       {/*
