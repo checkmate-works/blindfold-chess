@@ -9,6 +9,7 @@ export { PagePanel } from './PagePanel';
 export { Divider } from './Divider';
 export { HelpTourButton, type HelpStep } from './HelpTourButton';
 export { LinkedText } from './LinkedText';
+export { LinkTabs, type LinkTabItem } from './LinkTabs';
 export { ListLink, ListLinkContainer } from './ListLink';
 export { PageTitle } from './PageTitle';
 export { PaginationNav } from './PaginationNav';
