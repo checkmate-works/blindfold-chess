@@ -2,6 +2,9 @@ import { getTranslations } from 'next-intl/server';
 
 import { PagePanel, PageTitle, SectionTitle } from '@/app/[locale]/_components';
 
+import { TopicCardSkeleton } from '../_components/TopicCardSkeleton';
+import { TopicTabsSkeleton } from '../_components/TopicTabsSkeleton';
+
 export default async function OpeningsLoading() {
   const t = await getTranslations('topics');
 
@@ -10,20 +13,14 @@ export default async function OpeningsLoading() {
       <PageTitle>{t('openings.title')}</PageTitle>
 
       <PagePanel>
-        <SectionTitle>{t('openings.recentPosts')}</SectionTitle>
-        <div className="space-y-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="bg-card border border-border rounded-lg p-4 animate-pulse">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-6 h-6 bg-muted rounded-full" />
-                <div className="h-4 bg-muted rounded w-24" />
-              </div>
-              <div className="h-3 bg-muted rounded w-20 mb-2" />
-              <div className="h-4 bg-muted rounded w-full mb-1" />
-              <div className="h-4 bg-muted rounded w-4/5" />
-            </div>
-          ))}
+        <SectionTitle>{t('openings.subtitle')}</SectionTitle>
+
+        <div className="mb-6">
+          <TopicTabsSkeleton />
         </div>
+
+        <SectionTitle>{t('openings.recentPosts')}</SectionTitle>
+        <TopicCardSkeleton count={3} />
 
         <div className="mt-8 mb-6">
           <SectionTitle>
