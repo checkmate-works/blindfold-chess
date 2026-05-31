@@ -12,6 +12,7 @@ import { createClient } from '@/lib/supabase/server';
 import { PageLayout } from '@/app/[locale]/_components';
 import { AdSenseGuard } from '@/app/[locale]/_components/AdSense/AdSenseGuard';
 import { BreadcrumbContent } from '@/app/[locale]/_components/Breadcrumb';
+import { Divider } from '@/app/[locale]/_components/Divider';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -69,23 +70,29 @@ export default async function ResultPage({ params }: Props) {
       items={[{ label: tGames('pageTitle'), href: '/games' }, { label: tPlay('gameOver') }]}
       locale={locale}
       brandName={tMetadata('siteName')}
+      density="compact"
     />
   );
 
   return (
     <PageLayout title={tPlay('resultTitle')} locale={locale}>
       <Suspense fallback={<ResultSkeleton />}>
-        <ResultClient
-          locale={locale}
-          displayName={displayName}
-          isAuthenticated={Boolean(user)}
-          breadcrumb={breadcrumb}
-        />
+        <ResultClient locale={locale} displayName={displayName} isAuthenticated={Boolean(user)} />
       </Suspense>
 
       {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
         <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
       )}
+
+      {/* Breadcrumb sits below the content-bottom ad, matching the standard
+          PageLayout trailing block (content → ad → divider+breadcrumb). It is
+          rendered here rather than inside ResultClient so the ad stays above
+          it. `!mt-4` halves the panel's `space-y-8` gap; the inner `space-y-4`
+          groups the divider with the breadcrumb. */}
+      <div className="!mt-4 space-y-4">
+        <Divider />
+        {breadcrumb}
+      </div>
     </PageLayout>
   );
 }

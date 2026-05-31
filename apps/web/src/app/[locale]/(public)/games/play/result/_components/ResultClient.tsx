@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
-import type { ReactNode } from 'react';
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -16,7 +15,6 @@ import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 import type { Game } from '@/lib/games/saved-game-types';
 
 import { AuthPromptModal } from '@/app/[locale]/_components/AuthPromptModal';
-import { Divider } from '@/app/[locale]/_components/Divider';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useAuthGuard } from '@/app/[locale]/_hooks/use-auth-guard';
@@ -67,10 +65,9 @@ type Props = {
   displayName: string;
   /** Whether the viewer is signed in. Anonymous viewers get the stats gated behind a sign-up CTA. */
   isAuthenticated: boolean;
-  breadcrumb: ReactNode;
 };
 
-export function ResultClient({ locale, displayName, isAuthenticated, breadcrumb }: Props) {
+export function ResultClient({ locale, displayName, isAuthenticated }: Props) {
   const t = useTranslations('play');
   const searchParams = useSearchParams();
   const gameId = searchParams.get('gameId');
@@ -98,7 +95,6 @@ export function ResultClient({ locale, displayName, isAuthenticated, breadcrumb 
       locale={locale}
       displayName={displayName}
       isAuthenticated={isAuthenticated}
-      breadcrumb={breadcrumb}
     />
   );
 }
@@ -109,17 +105,9 @@ type ResultContentProps = {
   locale: Locale;
   displayName: string;
   isAuthenticated: boolean;
-  breadcrumb: ReactNode;
 };
 
-function ResultContent({
-  game,
-  gameId,
-  locale,
-  displayName,
-  isAuthenticated,
-  breadcrumb,
-}: ResultContentProps) {
+function ResultContent({ game, gameId, locale, displayName, isAuthenticated }: ResultContentProps) {
   const t = useTranslations('play');
   const tGames = useTranslations('gamesPage');
   const router = useRouter();
@@ -346,9 +334,6 @@ function ResultContent({
       {/* Sign-up prompt shown when an anonymous viewer taps the postmortem
           button (members-only feature). */}
       {isAuthModalOpen && <AuthPromptModal isOpen={isAuthModalOpen} onClose={closeAuthModal} />}
-
-      <Divider />
-      {breadcrumb}
     </div>
   );
 }
