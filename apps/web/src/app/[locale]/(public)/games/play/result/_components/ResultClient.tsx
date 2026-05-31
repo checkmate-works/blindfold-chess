@@ -8,23 +8,49 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import { FaChartLine, FaChessBoard, FaMinus, FaTimes } from 'react-icons/fa';
 
 import { engineConfigToUrlParams } from '@/lib/engines';
+import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 import type { Game } from '@/lib/games/saved-game-types';
 
 import { Divider } from '@/app/[locale]/_components/Divider';
+import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { BoardViewModal } from '../../_components/BoardViewModal';
 import { OperationLogModal } from '../../_components/OperationLogModal';
-import { useNotation } from '../../_hooks';
+import { useBoardFlip, useMoveNavigation, useNotation } from '../../_hooks';
 import { buildPostmortemPath } from '../../_lib';
 import { getMovingSide } from '../../_lib/fen-utils';
 import { useLoadGame } from '../_hooks/useLoadGame';
 import { computeGameStats } from '../_lib/compute-game-stats';
 import { GameStatsOverview } from './GameStatsOverview';
 import { VictoryCertificate } from './VictoryCertificate';
+
+/**
+ * Board display for the result-page position preview: fully revealed (the
+ * game is over, so blindfold obfuscation no longer serves a purpose). Only
+ * the board-appearance fields are read by {@link BoardViewModal}; the rest
+ * satisfy the GamePreferences shape.
+ */
+const REVEALED_BOARD_PREFS: GamePreferences = {
+  showCoordinates: true,
+  highlightLastMove: true,
+  boardTheme: DEFAULT_BOARD_THEME,
+  showOwnPieces: true,
+  showOpponentPieces: true,
+  pieceShapeMode: 'normal',
+  pieceColors: 'normal',
+  moveInputMode: 'text',
+  enabledMoveInputModes: ['text'],
+  buttonInputPieceLabel: 'icon',
+  enableAutoComplete: true,
+  boardVisibility: 'always',
+  peekMode: 'modal',
+};
 
 type Props = {
   locale: Locale;
@@ -77,6 +103,7 @@ function ResultContent({ game, gameId, locale, displayName, breadcrumb }: Result
   const tGames = useTranslations('gamesPage');
   const router = useRouter();
   const [isOperationLogVisible, setIsOperationLogVisible] = useState(false);
+  const [isBoardModalOpen, setIsBoardModalOpen] = useState(false);
 
   // Derive player result from game status
   const playerResult = game.status === 'win' ? 'win' : game.status === 'loss' ? 'loss' : 'draw';
@@ -86,6 +113,38 @@ function ResultContent({ game, gameId, locale, displayName, breadcrumb }: Result
     initialMoves: game.moves,
     startingFen: game.startingFen,
   });
+
+  // Board navigation for the position-preview modal (tapping an effort-strip
+  // cell opens this modal at that move; the user can then step through the
+  // whole game without leaving the result page).
+  const {
+    currentPosition,
+    displayFen,
+    latestFen,
+    navigateToPosition,
+    navigateToStart,
+    navigatePrevious,
+    navigateNext,
+    navigateToEnd,
+  } = useMoveNavigation({ moves, startingFen: game.startingFen });
+  const { effectiveFlipped, toggleFlip } = useBoardFlip({ playerSide: game.playerColor });
+
+  // Highlight the move that produced the displayed position.
+  const previewLastMove = useMemo(() => {
+    if (currentPosition === -2) return null;
+    const upto = currentPosition === -1 ? moves : moves.slice(0, currentPosition + 1);
+    if (upto.length === 0) return null;
+    return getLastMoveDetails(upto as string[], game.startingFen);
+  }, [currentPosition, moves, game.startingFen]);
+
+  // Effort-strip tap → preview that position in a modal (no page transition).
+  const handleViewMove = useCallback(
+    (movesIndex: number) => {
+      navigateToPosition(movesIndex);
+      setIsBoardModalOpen(true);
+    },
+    [navigateToPosition]
+  );
 
   // Overview stats, derived purely from the persisted per-move operation logs.
   const stats = useMemo(() => computeGameStats(game.operationLogs ?? []), [game.operationLogs]);
@@ -117,23 +176,17 @@ function ResultContent({ game, gameId, locale, displayName, breadcrumb }: Result
 
   // Reopen the finished game in the familiar game UI (read-only). Mirrors the
   // games-list params and adds `finished=1` so PlayClient renders the
-  // finished-game view instead of bouncing back here. An optional moves[]
-  // index (`pos`) deep-links to a specific position — used by the effort
-  // strip to jump straight to the move the user tapped. See PlayClient.
-  const openFinishedGame = useCallback(
-    (posMovesIndex?: number) => {
-      const params = new URLSearchParams({
-        color: game.playerColor,
-        ...engineConfigToUrlParams(game.engineConfig),
-        moves: JSON.stringify(game.moves),
-        gameId,
-        finished: '1',
-      });
-      if (posMovesIndex !== undefined) params.set('pos', String(posMovesIndex));
-      router.push(`/${locale}/games/play?${params.toString()}`);
-    },
-    [game, gameId, locale, router]
-  );
+  // finished-game view instead of bouncing back here. See PlayClient.
+  const openFinishedGame = useCallback(() => {
+    const params = new URLSearchParams({
+      color: game.playerColor,
+      ...engineConfigToUrlParams(game.engineConfig),
+      moves: JSON.stringify(game.moves),
+      gameId,
+      finished: '1',
+    });
+    router.push(`/${locale}/games/play?${params.toString()}`);
+  }, [game, gameId, locale, router]);
 
   return (
     <div className="space-y-8">
@@ -167,7 +220,7 @@ function ResultContent({ game, gameId, locale, displayName, breadcrumb }: Result
               stats={stats}
               playerMoveIndices={playerMoveIndices}
               moves={moves}
-              onSelectMove={openFinishedGame}
+              onSelectMove={handleViewMove}
               onViewDetails={() => setIsOperationLogVisible(true)}
             />
           </>
@@ -204,6 +257,29 @@ function ResultContent({ game, gameId, locale, displayName, breadcrumb }: Result
           </Link>
         </div>
       </div>
+
+      {/* Position-preview modal — opened by tapping an effort-strip cell.
+          Reuses the in-game BoardViewModal (board + move navigation) so the
+          user can inspect any position, and step through the game, without
+          leaving the result page. The board is fully revealed here. */}
+      <BoardViewModal
+        isOpen={isBoardModalOpen}
+        onClose={() => setIsBoardModalOpen(false)}
+        fen={displayFen ?? latestFen}
+        playerSide={game.playerColor}
+        flipped={effectiveFlipped}
+        lastMove={previewLastMove}
+        preferences={REVEALED_BOARD_PREFS}
+        movesLength={moves.length}
+        currentPosition={currentPosition}
+        formattedPgn={formattedPgn}
+        onNavigateToStart={navigateToStart}
+        onNavigatePrevious={navigatePrevious}
+        onNavigateNext={navigateNext}
+        onNavigateToEnd={navigateToEnd}
+        onNavigateToPosition={navigateToPosition}
+        onFlipBoard={toggleFlip}
+      />
 
       {/* Game Details Modal — Opponent + Initial Settings + Change Log.
           Per-move counts moved into MovesPanel inline popovers in Phase

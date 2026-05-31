@@ -79,9 +79,6 @@ export function PlayClient({
   // finished game in the familiar game UI (read-only). Suppresses the
   // redirect-to-result below and switches the render to FinishedGamePanel.
   const isFinishedView = searchParams.get('finished') === '1';
-  // Optional deep-link to a specific position (moves[] index) — set by the
-  // result page's effort strip so a tapped move opens at that board state.
-  const initialPosParam = searchParams.get('pos');
 
   const {
     gameConfig,
@@ -257,18 +254,6 @@ export function PlayClient({
     }
     previousMovesLength.current = moves.length;
   }, [moves.length, resetNavigation]);
-
-  // Finished-view deep-link: once the game's moves have loaded, jump to the
-  // `pos` position the result page's effort strip linked to. Runs once (after
-  // the reset-on-load effect above, so it wins) and only in the finished view.
-  const appliedInitialPosRef = useRef(false);
-  useEffect(() => {
-    if (!isFinishedView || appliedInitialPosRef.current || initialPosParam === null) return;
-    if (moves.length === 0) return; // wait for the saved game to load
-    appliedInitialPosRef.current = true;
-    const pos = Number.parseInt(initialPosParam, 10);
-    if (!Number.isNaN(pos)) navigateToPosition(pos);
-  }, [isFinishedView, initialPosParam, moves.length, navigateToPosition]);
 
   const displayFen = hookDisplayFen;
 
