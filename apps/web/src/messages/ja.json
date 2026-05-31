@@ -1931,7 +1931,6 @@
     "copied": "コピー済み！",
     "analyzeOnLichess": "Lichessで解析",
     "moveLog": "手のログ",
-    "backToCurrentPosition": "現在の局面に戻る",
     "cancel": "キャンセル",
     "save": "保存",
     "log": "ログ",
@@ -1949,8 +1948,7 @@
       "headline": {
         "perfect": "完全再現！",
         "allRecalled": "全手を再現できました！",
-        "good": "good recall！",
-        "keepGoing": "次はもっと思い出せます"
+        "good": "good recall！"
       },
       "scoreLine": "{recalled} / {total} 手を再現",
       "nailed": "一発正解",

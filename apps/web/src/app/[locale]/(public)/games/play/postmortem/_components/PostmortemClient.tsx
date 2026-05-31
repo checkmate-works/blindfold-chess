@@ -58,6 +58,12 @@ type Props = {
    * status there). Null clears the title back to the page name.
    */
   onFeedbackChange?: (feedback: PostmortemFeedback | null) => void;
+  /**
+   * Reports whether the review has been completed, so the page owner can hide
+   * chrome that only makes sense mid-review (e.g. the help tour, whose targets
+   * are gone once the summary replaces the input/settings/moves panels).
+   */
+  onCompletedChange?: (completed: boolean) => void;
   /** Restart the review from the beginning (parent remounts the game). */
   onRestart?: () => void;
 };
@@ -93,6 +99,7 @@ export function PostmortemClient({
   startingFen,
   gameId,
   onFeedbackChange,
+  onCompletedChange,
   onRestart,
 }: Props) {
   const t = useTranslations('postmortem');
@@ -243,6 +250,12 @@ export function PostmortemClient({
     });
   }, [onFeedbackChange, feedback, feedbackMessage]);
 
+  // Let the page owner react to completion (used to hide the help tour, whose
+  // targets disappear once the summary replaces the live review panels).
+  useEffect(() => {
+    onCompletedChange?.(isCompleted);
+  }, [onCompletedChange, isCompleted]);
+
   // Settings gear — placed in the same bottom-right icon row as the in-game
   // `GameInProgressPanel`, so the two screens feel identical.
   const settingsRow = (
@@ -362,19 +375,6 @@ export function PostmortemClient({
                     onRestart={onRestart ?? (() => {})}
                     gameId={gameId}
                   />
-
-                  {/* When the user has jumped to a past position (via the
-                      review or the board nav), offer a way back to the end. */}
-                  {navigation.selectedMoveIndex !== null && (
-                    <div className="text-center">
-                      <button
-                        onClick={() => navigation.setSelectedMoveIndex(null)}
-                        className="text-sm underline hover:text-foreground"
-                      >
-                        {t('backToCurrentPosition')}
-                      </button>
-                    </div>
-                  )}
 
                   {/* Show Board (modal peek mode only — inline modes already
                       render the board above) */}

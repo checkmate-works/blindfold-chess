@@ -32,6 +32,10 @@ export function PostmortemPageClient({ breadcrumb }: Props) {
   // the URL points at the end — reusing it on remount would re-complete
   // instantly. Once the user restarts, force offset 0 and ignore the URL.
   const [forceStartOver, setForceStartOver] = useState(false);
+  // The help tour explains the live review controls (input, "don't know",
+  // settings, moves). Once the review is completed those panels are replaced by
+  // the summary, so the tour has nothing left to point at — hide it.
+  const [isCompleted, setIsCompleted] = useState(false);
 
   // Get PGN from URL parameters
   const pgn = searchParams.get('pgn');
@@ -99,7 +103,7 @@ export function PostmortemPageClient({ breadcrumb }: Props) {
             {feedback ? feedback.text : t('title')}
           </span>
         </PageTitle>
-        <HelpTourButton steps={helpSteps} label={t('help.label')} />
+        {!isCompleted && <HelpTourButton steps={helpSteps} label={t('help.label')} />}
       </div>
       <PagePanel>
         <PostmortemClient
@@ -111,6 +115,7 @@ export function PostmortemPageClient({ breadcrumb }: Props) {
           startingFen={startingFen}
           gameId={gameId}
           onFeedbackChange={setFeedback}
+          onCompletedChange={setIsCompleted}
           onRestart={() => {
             setForceStartOver(true);
             setRunId((n) => n + 1);

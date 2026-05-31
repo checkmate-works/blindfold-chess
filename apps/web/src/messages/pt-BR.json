@@ -1927,7 +1927,6 @@
     "copied": "Copiado!",
     "analyzeOnLichess": "Analisar no Lichess",
     "moveLog": "Registro de Movimentos",
-    "backToCurrentPosition": "Voltar à posição atual",
     "cancel": "Cancelar",
     "save": "Salvar",
     "log": "Registro",
@@ -1945,8 +1944,7 @@
       "headline": {
         "perfect": "Reprodução perfeita!",
         "allRecalled": "Você lembrou todos os movimentos!",
-        "good": "Boa memória!",
-        "keepGoing": "Da próxima vez você lembrará mais"
+        "good": "Boa memória!"
       },
       "scoreLine": "{recalled} / {total} movimentos lembrados",
       "nailed": "De primeira",
