@@ -1857,7 +1857,7 @@
         "columnDetail": "詳細"
       },
       "openFinishedGame": "終了したゲームを開く",
-      "publish": "公開してアドバイスをもらう",
+      "publish": "この対局を共有する",
       "stats": {
         "title": "対局統計",
         "moves": "手数",

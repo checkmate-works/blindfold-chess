@@ -9,7 +9,7 @@ import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
-import { FaChartLine, FaChessBoard, FaMinus, FaShareAlt, FaTimes } from 'react-icons/fa';
+import { FaChartLine, FaChessBoard, FaMinus, FaTimes } from 'react-icons/fa';
 
 import { engineConfigToUrlParams } from '@/lib/engines';
 import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
@@ -123,7 +123,6 @@ function ResultContent({
   initialExp,
 }: ResultContentProps) {
   const t = useTranslations('play');
-  const tGames = useTranslations('gamesPage');
   const router = useRouter();
   const [isOperationLogVisible, setIsOperationLogVisible] = useState(false);
   const [isBoardModalOpen, setIsBoardModalOpen] = useState(false);
@@ -233,10 +232,17 @@ function ResultContent({
       <div className="flex flex-col gap-4">
         {/* Game Result */}
         {playerResult === 'win' && (
-          <VictoryCertificate displayName={displayName} engineConfig={game.engineConfig} />
+          // The certificate-frame webp has a large transparent bottom margin
+          // (~10.5% of its 3:2 height ≈ 7% of the box width) that pushed the
+          // share link far below the visible frame. A width-relative negative
+          // margin (-mb-[7%]) trims exactly that band at every screen size, so
+          // the gap above the link matches the gap to the divider below.
+          <div className="-mb-[7%]">
+            <VictoryCertificate displayName={displayName} engineConfig={game.engineConfig} />
+          </div>
         )}
         {playerResult !== 'win' && (
-          <div className="py-6 text-center flex flex-col items-center gap-3">
+          <div className="pt-6 text-center flex flex-col items-center gap-3">
             {playerResult === 'loss' && (
               <>
                 <FaTimes className="w-12 h-12 text-destructive" />
@@ -249,6 +255,23 @@ function ResultContent({
                 <h3 className="text-xl font-bold">{t('draw')}</h3>
               </>
             )}
+          </div>
+        )}
+
+        {/* Share entry point — a subtle emoji link under the result banner
+            rather than another full-width button, to avoid button clutter.
+            Spacing comes from the parent gap-4 (equal above/below); the win
+            certificate's wrapper trims its transparent bottom margin so the
+            gap to it visually matches the gap to the divider below. */}
+        {moves.length > 0 && (
+          <div className="text-center">
+            <Link
+              href={`/${locale}/games/shared/new?gameId=${gameId}`}
+              className={`inline-flex items-center gap-1.5 text-sm ${TEXT_LINK_MUTED_CLASSES}`}
+            >
+              <span aria-hidden>🔗</span>
+              {t('result.publish')}
+            </Link>
           </div>
         )}
 
@@ -312,20 +335,6 @@ function ResultContent({
               {t('result.openFinishedGame')}
             </Button>
           )}
-          {moves.length > 0 && (
-            <Button
-              variant="secondary"
-              size="lg"
-              icon={<FaShareAlt className="w-5 h-5" />}
-              onClick={() => router.push(`/${locale}/games/shared/new?gameId=${gameId}`)}
-              className="w-full rounded-xl font-medium"
-            >
-              {t('result.publish')}
-            </Button>
-          )}
-          <Link href={`/${locale}/games`} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
-            {tGames('pageTitle')}
-          </Link>
         </div>
       </div>
 
