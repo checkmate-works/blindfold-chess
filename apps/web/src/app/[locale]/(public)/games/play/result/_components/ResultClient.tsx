@@ -271,9 +271,13 @@ function ResultContent({
             rather than another full-width button, to avoid button clutter.
             Spacing comes from the parent gap-4 (equal above/below); the win
             certificate's wrapper trims its transparent bottom margin so the
-            gap to it visually matches the gap to the divider below. */}
+            gap to it visually matches the gap to the divider below.
+            `relative z-10`: the certificate's absolute-positioned frame content
+            overlaps this region after the negative-margin trim and, being
+            positioned, would paint on top and swallow the click — lifting the
+            link into its own stacking layer keeps it clickable. */}
         {moves.length > 0 && (
-          <div className="text-center">
+          <div className="relative z-10 text-center">
             <Link
               href={
                 sharedPublishedId
