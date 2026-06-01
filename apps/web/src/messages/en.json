@@ -1893,12 +1893,9 @@
     "detail": {
       "fallbackTitle": "Shared game",
       "by": "Posted by {name}",
+      "sharedBy": "Posted by",
       "guest": "Guest",
-      "cleanRate": "Clean",
-      "first": "First move",
-      "prev": "Previous move",
-      "next": "Next move",
-      "last": "Last move"
+      "cleanRate": "Clean"
     },
     "result": { "win": "Win", "loss": "Loss", "draw": "Draw" },
     "list": {

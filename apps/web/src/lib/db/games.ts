@@ -25,21 +25,34 @@ import { gameTokens, games, profiles } from './schema';
 /** Statuses a published game is publicly viewable in. */
 const VISIBLE_STATUSES = ['public', 'unlisted'] as const;
 
+/** Public author profile for attribution (avatar + name + profile link). */
+export type SharedGameAuthor = {
+  username: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+};
+
 export type SharedGameDetail = {
   game: GameRecord;
-  /** Author's display name, or null for account-less / deleted authors. */
-  authorName: string | null;
+  /** Author profile, or null for account-less / hard-deleted authors. */
+  author: SharedGameAuthor | null;
 };
 
 /**
- * Fetch a publicly-visible shared game by id with its author's display name.
- * Returns null when the id does not exist or the game is hidden / removed /
- * soft-deleted (the privileged `db` connection bypasses RLS, so visibility is
- * filtered here). Admin / owner views of non-public games are a separate path.
+ * Fetch a publicly-visible shared game by id with its author's public profile
+ * (for avatar + name + profile-link attribution). Returns null when the id
+ * does not exist or the game is hidden / removed / soft-deleted (the privileged
+ * `db` connection bypasses RLS, so visibility is filtered here). Admin / owner
+ * views of non-public games are a separate path.
  */
 export const getGameById = cache(async (id: string): Promise<SharedGameDetail | null> => {
   const [row] = await db
-    .select({ game: games, authorName: profiles.displayName })
+    .select({
+      game: games,
+      authorUsername: profiles.username,
+      authorDisplayName: profiles.displayName,
+      authorAvatarUrl: profiles.avatarUrl,
+    })
     .from(games)
     .leftJoin(profiles, eq(profiles.id, games.authorId))
     .where(
@@ -47,7 +60,19 @@ export const getGameById = cache(async (id: string): Promise<SharedGameDetail | 
     )
     .limit(1);
 
-  return row ? { game: row.game, authorName: row.authorName } : null;
+  if (!row) return null;
+
+  // username is NOT NULL on profiles, so its presence means the join matched a
+  // real author; null means an account-less (anonymous) game.
+  const author: SharedGameAuthor | null = row.authorUsername
+    ? {
+        username: row.authorUsername,
+        displayName: row.authorDisplayName,
+        avatarUrl: row.authorAvatarUrl,
+      }
+    : null;
+
+  return { game: row.game, author };
 });
 
 /** Compact projection for gallery cards (no JSONB move/log payloads). */

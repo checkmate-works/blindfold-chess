@@ -1889,12 +1889,9 @@
     "detail": {
       "fallbackTitle": "Partida compartilhada",
       "by": "Publicado por {name}",
+      "sharedBy": "Publicado por",
       "guest": "Convidado",
-      "cleanRate": "Limpos",
-      "first": "Primeiro lance",
-      "prev": "Lance anterior",
-      "next": "Próximo lance",
-      "last": "Último lance"
+      "cleanRate": "Limpos"
     },
     "result": { "win": "Vitória", "loss": "Derrota", "draw": "Empate" },
     "list": {

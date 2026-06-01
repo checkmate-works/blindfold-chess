@@ -1,88 +1,162 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
-import { ChessBoard } from '@/app/_components/chess/ChessBoard';
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { replayMoves } from '@blindfold-chess/features/chess-core';
-import { FaAngleDoubleLeft, FaAngleDoubleRight, FaAngleLeft, FaAngleRight } from 'react-icons/fa';
+import { useRouter } from 'next/navigation';
+
+import { fenToLichessUrl, getLastMoveDetails } from '@blindfold-chess/features/chess-core';
+import type { AlgebraicNotation } from '@blindfold-chess/types';
+
+import type { EngineConfig } from '@/lib/engines';
+import type { MoveOperationLog } from '@/lib/games/saved-game-types';
+
+import { InlineBoardView } from '@/app/[locale]/(public)/games/play/_components/InlineBoardView';
+import { MovesPanel } from '@/app/[locale]/(public)/games/play/_components/MovesPanel';
+import {
+  useBoardFlip,
+  useMoveNavigation,
+  useNotation,
+} from '@/app/[locale]/(public)/games/play/_hooks';
+import { buildNewGameFromPositionUrl } from '@/app/[locale]/(public)/games/play/_lib/build-new-game-from-position-url';
+import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 type Props = {
   moves: string[];
   startingFen: string | null;
   playerColor: 'white' | 'black';
+  engineConfig: EngineConfig;
+  operationLogs: MoveOperationLog[] | null;
+  locale: string;
 };
 
 /**
- * Inline, self-contained replay of a published game: a fully-revealed board the
- * viewer can step through move by move. Positions are derived once from the
- * immutable move list via `replayMoves`; no server round-trips.
+ * Replay of a published game, laid out exactly like games/play: the in-play
+ * always-visible board (`InlineBoardView`) in a 2/3 column and the move list
+ * (`MovesPanel`) in a 1/3 column, driven by the same notation / navigation
+ * hooks. The two-column layout keeps the board at the same comfortable size as
+ * the play screen on desktop, and clicking a move in the list reflects on the
+ * board.
+ *
+ * Read-only adaptation: `gameInProgress` is false (no "restart from here"), and
+ * "new game from here" starts a fresh game from that position so a viewer can
+ * try it themselves. Preferences are the viewer's own but forced fully revealed
+ * — this is a finished public game, not a live blindfold one.
  */
-export function GameReplay({ moves, startingFen, playerColor }: Props) {
-  const t = useTranslations('sharedGames');
-  const positions = useMemo(
-    () => replayMoves(moves, startingFen ?? undefined),
-    [moves, startingFen]
+export function GameReplay({
+  moves,
+  startingFen,
+  playerColor,
+  engineConfig,
+  operationLogs,
+  locale,
+}: Props) {
+  const router = useRouter();
+  const { preferences } = useGamePreferences();
+
+  const revealedPreferences = useMemo<GamePreferences>(
+    () => ({
+      ...preferences,
+      showOwnPieces: true,
+      showOpponentPieces: true,
+      pieceShapeMode: 'normal',
+      pieceColors: 'normal',
+      boardVisibility: 'always',
+    }),
+    [preferences]
   );
-  const lastIndex = positions.length - 1;
-  const [index, setIndex] = useState(0);
 
-  const pos = positions[index];
-  const currentMove = index > 0 ? moves[index - 1] : null;
+  const { moves: notationMoves, formattedPgn } = useNotation({
+    // The DB stores moves as string[]; they are SAN (AlgebraicNotation) at runtime.
+    initialMoves: moves as AlgebraicNotation[],
+    startingFen: startingFen ?? undefined,
+  });
+  const {
+    currentPosition,
+    displayFen,
+    latestFen,
+    navigateToPosition,
+    navigateToStart,
+    navigatePrevious,
+    navigateNext,
+    navigateToEnd,
+  } = useMoveNavigation({ moves: notationMoves, startingFen: startingFen ?? undefined });
+  const { effectiveFlipped, toggleFlip } = useBoardFlip({ playerSide: playerColor });
 
-  const nav = [
-    { key: 'first', icon: FaAngleDoubleLeft, to: 0, disabled: index === 0 },
-    { key: 'prev', icon: FaAngleLeft, to: Math.max(0, index - 1), disabled: index === 0 },
-    {
-      key: 'next',
-      icon: FaAngleRight,
-      to: Math.min(lastIndex, index + 1),
-      disabled: index === lastIndex,
-    },
-    { key: 'last', icon: FaAngleDoubleRight, to: lastIndex, disabled: index === lastIndex },
-  ] as const;
+  // Highlight the move that produced the displayed position.
+  const lastMove = useMemo(() => {
+    if (currentPosition === -2) return null;
+    const upto =
+      currentPosition === -1 ? notationMoves : notationMoves.slice(0, currentPosition + 1);
+    if (upto.length === 0) return null;
+    return getLastMoveDetails(upto as string[], startingFen ?? undefined);
+  }, [currentPosition, notationMoves, startingFen]);
+
+  const lichessAnalysisUrl = fenToLichessUrl(
+    currentPosition === -1 || displayFen === null ? latestFen : displayFen
+  );
 
   return (
-    <div className="space-y-3">
-      <ChessBoard
-        fen={pos.fen}
-        flipped={playerColor === 'black'}
-        playerSide={playerColor}
-        lastMove={pos.lastMove ?? null}
-        showCoordinates
-        rounded
-      />
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+      <div className="lg:col-span-2">
+        <InlineBoardView
+          fen={displayFen ?? latestFen}
+          playerSide={playerColor}
+          flipped={effectiveFlipped}
+          lastMove={lastMove}
+          preferences={revealedPreferences}
+          movesLength={notationMoves.length}
+          currentPosition={currentPosition}
+          formattedPgn={formattedPgn}
+          onNavigateToStart={navigateToStart}
+          onNavigatePrevious={navigatePrevious}
+          onNavigateNext={navigateNext}
+          onNavigateToEnd={navigateToEnd}
+          onNavigateToPosition={navigateToPosition}
+          onFlipBoard={toggleFlip}
+          alwaysOpen
+        />
+      </div>
 
-      <div className="flex items-center justify-center gap-2">
-        {nav.slice(0, 2).map(({ key, icon: Icon, to, disabled }) => (
-          <button
-            key={key}
-            type="button"
-            aria-label={t(`detail.${key}`)}
-            disabled={disabled}
-            onClick={() => setIndex(to)}
-            className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-card text-foreground transition-colors hover:bg-muted disabled:opacity-40"
-          >
-            <Icon className="h-4 w-4" />
-          </button>
-        ))}
-
-        <span className="min-w-[5rem] text-center text-sm tabular-nums text-muted-foreground">
-          {currentMove ? `${index}. ${currentMove}` : `${index} / ${lastIndex}`}
-        </span>
-
-        {nav.slice(2).map(({ key, icon: Icon, to, disabled }) => (
-          <button
-            key={key}
-            type="button"
-            aria-label={t(`detail.${key}`)}
-            disabled={disabled}
-            onClick={() => setIndex(to)}
-            className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-card text-foreground transition-colors hover:bg-muted disabled:opacity-40"
-          >
-            <Icon className="h-4 w-4" />
-          </button>
-        ))}
+      <div className="lg:col-span-1">
+        <MovesPanel
+          moveList={{
+            formattedPgn,
+            currentPosition,
+            movesLength: notationMoves.length,
+            currentFen: latestFen,
+            displayFen,
+            startingFen: startingFen ?? undefined,
+          }}
+          navigation={{
+            onNavigateToPosition: navigateToPosition,
+            onNavigateToStart: navigateToStart,
+            onNavigatePrevious: navigatePrevious,
+            onNavigateNext: navigateNext,
+            onNavigateToEnd: navigateToEnd,
+          }}
+          actions={{
+            // Read-only view: the game is finished and not the viewer's, so
+            // "restart from here" is hidden; "new game from here" lets a viewer
+            // play the position themselves.
+            gameInProgress: false,
+            lichessAnalysisUrl,
+            onRestartFromPosition: () => {},
+            onNewGameFromPosition: (position) =>
+              router.push(
+                buildNewGameFromPositionUrl({
+                  locale,
+                  moves: notationMoves,
+                  position,
+                  playerSide: playerColor,
+                  engineConfig,
+                  startingFen: startingFen ?? undefined,
+                })
+              ),
+          }}
+          operations={{ logs: operationLogs ?? [], playerSide: playerColor }}
+          showBackground={false}
+        />
       </div>
     </div>
   );

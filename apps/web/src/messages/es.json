@@ -1889,12 +1889,9 @@
     "detail": {
       "fallbackTitle": "Partida compartida",
       "by": "Publicado por {name}",
+      "sharedBy": "Publicado por",
       "guest": "Invitado",
-      "cleanRate": "Limpias",
-      "first": "Primera jugada",
-      "prev": "Jugada anterior",
-      "next": "Jugada siguiente",
-      "last": "Última jugada"
+      "cleanRate": "Limpias"
     },
     "result": { "win": "Victoria", "loss": "Derrota", "draw": "Tablas" },
     "list": {

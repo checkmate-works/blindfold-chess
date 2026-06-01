@@ -12,8 +12,10 @@ import { notFound } from 'next/navigation';
 
 import { getGameById } from '@/lib/db/games';
 import type { GameRecord } from '@/lib/db/schema';
+import { resolveDisplayName } from '@/lib/users/display-name';
 import { UUID_RE } from '@/lib/validations/uuid';
 
+import { PositionAuthorAttribution } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorAttribution';
 import { PageLayout } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -56,7 +58,8 @@ export default async function SharedGamePage({ params }: Props) {
   if (!detail) notFound();
 
   const t = await getTranslations({ locale, namespace: 'sharedGames' });
-  const { game, authorName } = detail;
+  const { game, author } = detail;
+  const authorDisplayName = author ? resolveDisplayName(author) : t('detail.guest');
 
   const summary: { label: string; value: string }[] = [
     { label: t('new.summary.engine'), value: engineLabel(game) },
@@ -68,18 +71,20 @@ export default async function SharedGamePage({ params }: Props) {
   }
 
   return (
-    <PageLayout title={game.title} locale={locale}>
+    <PageLayout
+      title={game.title}
+      locale={locale}
+      breadcrumb={[{ label: t('list.title'), href: '/games/shared' }, { label: game.title }]}
+    >
       <div className="space-y-6">
-        {/* Byline */}
-        <p className="text-sm text-muted-foreground">
-          {t('detail.by', { name: authorName ?? t('detail.guest') })}
-        </p>
-
-        {/* Replay */}
+        {/* Board + move list, laid out like games/play. */}
         <GameReplay
           moves={game.moves}
           startingFen={game.startingFen}
           playerColor={game.playerColor}
+          engineConfig={game.engineConfig}
+          operationLogs={game.operationLogs}
+          locale={locale}
         />
 
         {/* Metadata */}
@@ -100,6 +105,16 @@ export default async function SharedGamePage({ params }: Props) {
             <p className="whitespace-pre-wrap text-sm text-foreground">{game.description}</p>
           </div>
         )}
+
+        {/* Author attribution at the bottom — avatar + name + profile link,
+            matching the chunk / position UGC pages. Anonymous authors get a
+            fallback name and no profile link. */}
+        <PositionAuthorAttribution
+          profile={author ? { username: author.username, avatarUrl: author.avatarUrl } : null}
+          displayName={authorDisplayName}
+          createdByLabel={t('detail.sharedBy')}
+          locale={locale}
+        />
       </div>
     </PageLayout>
   );
