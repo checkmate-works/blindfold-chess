@@ -1858,6 +1858,7 @@
       },
       "openFinishedGame": "Open finished game",
       "publish": "Share this game",
+      "viewShared": "View shared game",
       "stats": {
         "title": "Game Stats",
         "moves": "Moves",

@@ -1854,6 +1854,7 @@
       },
       "openFinishedGame": "Abrir partida finalizada",
       "publish": "Compartilhar esta partida",
+      "viewShared": "Ver partida compartilhada",
       "stats": {
         "title": "Estatísticas da Partida",
         "moves": "Lances",

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -15,6 +15,7 @@ import { engineConfigToUrlParams } from '@/lib/engines';
 import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 import { computeGameStats } from '@/lib/games/compute-game-stats';
 import type { Game } from '@/lib/games/saved-game-types';
+import { getSharedGame } from '@/lib/games/shared-game-store';
 
 import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
 import { AuthPromptModal } from '@/app/[locale]/_components/AuthPromptModal';
@@ -188,6 +189,14 @@ function ResultContent({
   // (no grant) and a sign-in nudge instead; see the JSX below.
   const exp = useGameExpGrant({ gameId, game, stats, isAuthenticated, initialExp });
 
+  // Has this game already been shared from this browser? Read client-side after
+  // mount (localStorage) so the share link can point at the published game
+  // instead of offering to publish it again. Null on the server / first render.
+  const [sharedPublishedId, setSharedPublishedId] = useState<string | null>(null);
+  useEffect(() => {
+    setSharedPublishedId(getSharedGame(gameId)?.publishedId ?? null);
+  }, [gameId]);
+
   // moves[] index of each player move, so an effort-strip cell (one per player
   // move) can deep-link to that exact position in the finished-game view.
   const playerMoveIndices = useMemo(() => {
@@ -266,11 +275,15 @@ function ResultContent({
         {moves.length > 0 && (
           <div className="text-center">
             <Link
-              href={`/${locale}/games/shared/new?gameId=${gameId}`}
+              href={
+                sharedPublishedId
+                  ? `/${locale}/games/shared/${sharedPublishedId}`
+                  : `/${locale}/games/shared/new?gameId=${gameId}`
+              }
               className={`inline-flex items-center gap-1.5 text-sm ${TEXT_LINK_MUTED_CLASSES}`}
             >
-              <span aria-hidden>🔗</span>
-              {t('result.publish')}
+              <span aria-hidden>{sharedPublishedId ? '✅' : '🔗'}</span>
+              {sharedPublishedId ? t('result.viewShared') : t('result.publish')}
             </Link>
           </div>
         )}

@@ -9,8 +9,8 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 
 import { LocalStorageGameRepository } from '@/lib/games/local-storage-repository';
 import { MAX_DESCRIPTION_LENGTH, MAX_TITLE_LENGTH } from '@/lib/games/publish-constants';
-import { storePublishedToken } from '@/lib/games/published-token-store';
 import type { Game } from '@/lib/games/saved-game-types';
+import { recordSharedGame } from '@/lib/games/shared-game-store';
 
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -76,7 +76,7 @@ export function PublishGameClient({ locale }: Props) {
     return <p className="text-muted-foreground py-8 text-center">{msg}</p>;
   }
 
-  const { game } = load;
+  const { game, gameId: sourceGameId } = load;
   if (game.status === 'in_progress') {
     return <p className="text-muted-foreground py-8 text-center">{t('new.notFinished')}</p>;
   }
@@ -109,10 +109,10 @@ export function PublishGameClient({ locale }: Props) {
         return;
       }
 
-      // Account-less authors: persist the manage token so they keep control.
-      if (res.manageToken) {
-        storePublishedToken(res.id, res.manageToken);
-      }
+      // Remember this localStorage game's published copy (and, for account-less
+      // authors, its manage token) so the result screen links to it instead of
+      // offering to publish again.
+      recordSharedGame(sourceGameId, res.id, res.manageToken);
       router.push(`/${locale}/games/shared/${res.id}`);
     } catch {
       setError(t('new.errors.generic'));
