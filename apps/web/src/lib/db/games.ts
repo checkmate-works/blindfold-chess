@@ -10,13 +10,45 @@
  * @see {@link @/lib/games/publish-game} for the validation + column derivation
  *      that produces the inputs here.
  */
+import { cache } from 'react';
+
+import { and, eq, inArray, isNull } from 'drizzle-orm';
 import 'server-only';
 
 import { generateManageToken } from '@/lib/games/manage-token';
 import type { GameColumns, ValidatedGame } from '@/lib/games/publish-game';
 
 import { db } from './index';
-import { gameTokens, games } from './schema';
+import type { GameRecord } from './schema';
+import { gameTokens, games, profiles } from './schema';
+
+/** Statuses a published game is publicly viewable in. */
+const VISIBLE_STATUSES = ['public', 'unlisted'] as const;
+
+export type SharedGameDetail = {
+  game: GameRecord;
+  /** Author's display name, or null for account-less / deleted authors. */
+  authorName: string | null;
+};
+
+/**
+ * Fetch a publicly-visible shared game by id with its author's display name.
+ * Returns null when the id does not exist or the game is hidden / removed /
+ * soft-deleted (the privileged `db` connection bypasses RLS, so visibility is
+ * filtered here). Admin / owner views of non-public games are a separate path.
+ */
+export const getGameById = cache(async (id: string): Promise<SharedGameDetail | null> => {
+  const [row] = await db
+    .select({ game: games, authorName: profiles.displayName })
+    .from(games)
+    .leftJoin(profiles, eq(profiles.id, games.authorId))
+    .where(
+      and(eq(games.id, id), isNull(games.deletedAt), inArray(games.status, [...VISIBLE_STATUSES]))
+    )
+    .limit(1);
+
+  return row ? { game: row.game, authorName: row.authorName } : null;
+});
 
 export type PublishGameResult = {
   id: string;

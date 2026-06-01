@@ -1885,6 +1885,16 @@
     }
   },
   "sharedGames": {
+    "detail": {
+      "fallbackTitle": "Partida compartida",
+      "by": "Publicado por {name}",
+      "guest": "Invitado",
+      "cleanRate": "Limpias",
+      "first": "Primera jugada",
+      "prev": "Jugada anterior",
+      "next": "Jugada siguiente",
+      "last": "Última jugada"
+    },
     "result": { "win": "Victoria", "loss": "Derrota", "draw": "Tablas" },
     "new": {
       "title": "Publicar para recibir consejos",

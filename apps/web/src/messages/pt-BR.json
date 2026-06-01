@@ -1885,6 +1885,16 @@
     }
   },
   "sharedGames": {
+    "detail": {
+      "fallbackTitle": "Partida compartilhada",
+      "by": "Publicado por {name}",
+      "guest": "Convidado",
+      "cleanRate": "Limpos",
+      "first": "Primeiro lance",
+      "prev": "Lance anterior",
+      "next": "Próximo lance",
+      "last": "Último lance"
+    },
     "result": { "win": "Vitória", "loss": "Derrota", "draw": "Empate" },
     "new": {
       "title": "Publicar para receber conselhos",
