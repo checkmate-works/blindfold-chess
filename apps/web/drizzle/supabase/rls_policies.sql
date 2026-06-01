@@ -937,3 +937,45 @@ ALTER TABLE "point_purchases" ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "point_purchases_select_policy" ON "point_purchases";
 CREATE POLICY "point_purchases_select_policy" ON "point_purchases"
   FOR SELECT USING (auth.uid() = user_id);
+
+-- =============================================================================
+-- games (shared blindfold games — public catalog, service-role write)
+-- =============================================================================
+-- Anyone may read only VISIBLE rows: public or unlisted, not soft-deleted.
+-- `hidden` / `removed` / soft-deleted rows are excluded from anon/authenticated
+-- access (stricter than chunks, which has no hide state). The privileged
+-- application connection (Drizzle) and the service role bypass RLS, so admin
+-- tooling and the publish/mutation actions still see everything. No write
+-- policies: all mutations go through service-role server actions.
+ALTER TABLE "games" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "games_select" ON "games";
+CREATE POLICY "games_select" ON "games"
+  FOR SELECT USING (deleted_at IS NULL AND status IN ('public', 'unlisted'));
+
+-- =============================================================================
+-- game_tokens (capability secret — service-role only)
+-- =============================================================================
+-- RLS enabled with NO policies: authenticated/anon cannot read the token hash
+-- at all. Only the service role (which bypasses RLS) touches this table.
+ALTER TABLE "game_tokens" ENABLE ROW LEVEL SECURITY;
+
+-- =============================================================================
+-- game_annotations (author inline notes — public read, service-role write)
+-- =============================================================================
+ALTER TABLE "game_annotations" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "game_annotations_select" ON "game_annotations";
+CREATE POLICY "game_annotations_select" ON "game_annotations"
+  FOR SELECT USING (true);
+
+-- =============================================================================
+-- game_comments (third-party advice — public read, service-role write)
+-- =============================================================================
+-- Soft-deleted comments are filtered for anon/authenticated; the service role
+-- still sees them for moderation tooling.
+ALTER TABLE "game_comments" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "game_comments_select" ON "game_comments";
+CREATE POLICY "game_comments_select" ON "game_comments"
+  FOR SELECT USING (deleted_at IS NULL);
