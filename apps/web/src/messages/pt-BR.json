@@ -1853,6 +1853,7 @@
         "columnDetail": "Detalhe"
       },
       "openFinishedGame": "Abrir partida finalizada",
+      "publish": "Publicar para receber conselhos",
       "stats": {
         "title": "Estatísticas da Partida",
         "moves": "Lances",
@@ -1881,6 +1882,28 @@
     "finishedGame": {
       "heading": "Esta partida terminou",
       "viewResult": "Ver resultado"
+    }
+  },
+  "sharedGames": {
+    "result": { "win": "Vitória", "loss": "Derrota", "draw": "Empate" },
+    "new": {
+      "title": "Publicar para receber conselhos",
+      "intro": "Compartilhe esta partida para que outros membros possam te aconselhar. Você pode publicar sem uma conta.",
+      "loading": "Carregando a partida…",
+      "gameIdMissing": "Nenhuma partida especificada.",
+      "gameNotFound": "Partida não encontrada.",
+      "notFinished": "Esta partida ainda não terminou.",
+      "titleLabel": "Título",
+      "titlePlaceholder": "ex. Vitória às cegas vs Maia 1600",
+      "descriptionLabel": "Sobre o que você gostaria de conselhos? (opcional)",
+      "descriptionPlaceholder": "Descreva onde teve dificuldade ou o que revisar…",
+      "summary": { "engine": "Adversário", "result": "Resultado", "moves": "Lances" },
+      "submit": "Publicar",
+      "submitting": "Publicando…",
+      "errors": {
+        "rateLimited": "Muitas publicações. Tente novamente mais tarde.",
+        "generic": "Não foi possível publicar esta partida. Tente novamente."
+      }
     }
   },
   "postmortem": {

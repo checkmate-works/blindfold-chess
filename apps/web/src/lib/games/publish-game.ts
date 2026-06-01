@@ -8,6 +8,7 @@ import { engineApproxElo, isEngineConfig } from '@/lib/engines';
 import type { EngineConfig } from '@/lib/engines';
 
 import { computeGameStats } from './compute-game-stats';
+import { MAX_DESCRIPTION_LENGTH, MAX_MOVES, MAX_TITLE_LENGTH } from './publish-constants';
 import type { MoveOperationLog } from './saved-game-types';
 
 /**
@@ -22,10 +23,7 @@ import type { MoveOperationLog } from './saved-game-types';
  * so legality is the integrity gate, not outcome.
  */
 
-export const MAX_TITLE_LENGTH = 120;
-export const MAX_DESCRIPTION_LENGTH = 2000;
-/** A real game never approaches this; the cap bounds abusive payloads. */
-export const MAX_MOVES = 600;
+export { MAX_DESCRIPTION_LENGTH, MAX_MOVES, MAX_TITLE_LENGTH } from './publish-constants';
 
 export type GameOutcome = 'win' | 'loss' | 'draw';
 export type PlayerColor = 'white' | 'black';

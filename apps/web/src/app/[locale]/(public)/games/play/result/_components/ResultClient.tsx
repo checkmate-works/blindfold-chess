@@ -9,7 +9,7 @@ import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
-import { FaChartLine, FaChessBoard, FaMinus, FaTimes } from 'react-icons/fa';
+import { FaChartLine, FaChessBoard, FaMinus, FaShareAlt, FaTimes } from 'react-icons/fa';
 
 import { engineConfigToUrlParams } from '@/lib/engines';
 import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
@@ -310,6 +310,17 @@ function ResultContent({
               className="w-full rounded-xl font-medium"
             >
               {t('result.openFinishedGame')}
+            </Button>
+          )}
+          {moves.length > 0 && (
+            <Button
+              variant="secondary"
+              size="lg"
+              icon={<FaShareAlt className="w-5 h-5" />}
+              onClick={() => router.push(`/${locale}/games/shared/new?gameId=${gameId}`)}
+              className="w-full rounded-xl font-medium"
+            >
+              {t('result.publish')}
             </Button>
           )}
           <Link href={`/${locale}/games`} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>

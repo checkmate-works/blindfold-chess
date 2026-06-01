@@ -1853,6 +1853,7 @@
         "columnDetail": "Detalle"
       },
       "openFinishedGame": "Abrir partida terminada",
+      "publish": "Publicar para recibir consejos",
       "stats": {
         "title": "Estadísticas de la Partida",
         "moves": "Jugadas",
@@ -1881,6 +1882,28 @@
     "finishedGame": {
       "heading": "Esta partida ha terminado",
       "viewResult": "Ver resultado"
+    }
+  },
+  "sharedGames": {
+    "result": { "win": "Victoria", "loss": "Derrota", "draw": "Tablas" },
+    "new": {
+      "title": "Publicar para recibir consejos",
+      "intro": "Comparte esta partida para que otros miembros te aconsejen. Puedes publicar sin una cuenta.",
+      "loading": "Cargando la partida…",
+      "gameIdMissing": "No se especificó ninguna partida.",
+      "gameNotFound": "Partida no encontrada.",
+      "notFinished": "Esta partida aún no ha terminado.",
+      "titleLabel": "Título",
+      "titlePlaceholder": "ej. Victoria a ciegas vs Maia 1600",
+      "descriptionLabel": "¿Sobre qué te gustaría recibir consejos? (opcional)",
+      "descriptionPlaceholder": "Describe dónde tuviste dificultades o qué revisar…",
+      "summary": { "engine": "Rival", "result": "Resultado", "moves": "Jugadas" },
+      "submit": "Publicar",
+      "submitting": "Publicando…",
+      "errors": {
+        "rateLimited": "Demasiadas publicaciones. Inténtalo de nuevo más tarde.",
+        "generic": "No se pudo publicar esta partida. Inténtalo de nuevo."
+      }
     }
   },
   "postmortem": {

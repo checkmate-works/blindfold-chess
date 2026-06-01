@@ -1857,6 +1857,7 @@
         "columnDetail": "Detail"
       },
       "openFinishedGame": "Open finished game",
+      "publish": "Publish for advice",
       "stats": {
         "title": "Game Stats",
         "moves": "Moves",
@@ -1885,6 +1886,28 @@
     "finishedGame": {
       "heading": "This game has ended",
       "viewResult": "View result"
+    }
+  },
+  "sharedGames": {
+    "result": { "win": "Win", "loss": "Loss", "draw": "Draw" },
+    "new": {
+      "title": "Publish for advice",
+      "intro": "Share this game so other members can give you advice. You can publish without an account.",
+      "loading": "Loading game…",
+      "gameIdMissing": "No game specified.",
+      "gameNotFound": "Game not found.",
+      "notFinished": "This game isn't finished yet.",
+      "titleLabel": "Title",
+      "titlePlaceholder": "e.g. Blindfold win vs Maia 1600",
+      "descriptionLabel": "What would you like advice on? (optional)",
+      "descriptionPlaceholder": "Describe where you struggled or what to review…",
+      "summary": { "engine": "Opponent", "result": "Result", "moves": "Moves" },
+      "submit": "Publish",
+      "submitting": "Publishing…",
+      "errors": {
+        "rateLimited": "Too many publishes. Please try again later.",
+        "generic": "Could not publish this game. Please try again."
+      }
     }
   },
   "postmortem": {
