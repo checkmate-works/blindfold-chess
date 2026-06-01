@@ -1906,7 +1906,9 @@
     "edit": {
       "title": "Editar partida",
       "submit": "Salvar",
-      "submitting": "Salvando…"
+      "submitting": "Salvando…",
+      "notAuthorized": "Você não tem permissão para editar esta partida.",
+      "backToGame": "Voltar à partida"
     },
     "result": { "win": "Vitória", "loss": "Derrota", "draw": "Empate" },
     "list": {

@@ -118,13 +118,7 @@ export default async function SharedGamePage({ params }: Props) {
 
         {/* Owner-only edit / delete controls (registered via session, or
             account-less via the manage token held by OwnerActions). */}
-        <OwnerActions
-          gameId={game.id}
-          isRegisteredOwner={isRegisteredOwner}
-          initialTitle={game.title}
-          initialDescription={game.description ?? ''}
-          locale={locale}
-        />
+        <OwnerActions gameId={game.id} isRegisteredOwner={isRegisteredOwner} locale={locale} />
 
         {/* Author attribution at the bottom — avatar + name + profile link,
             matching the chunk / position UGC pages. Anonymous authors get a

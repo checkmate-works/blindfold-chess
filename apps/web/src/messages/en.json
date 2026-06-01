@@ -1910,7 +1910,9 @@
     "edit": {
       "title": "Edit game",
       "submit": "Save",
-      "submitting": "Saving…"
+      "submitting": "Saving…",
+      "notAuthorized": "You don't have permission to edit this game.",
+      "backToGame": "Back to the game"
     },
     "result": { "win": "Win", "loss": "Loss", "draw": "Draw" },
     "list": {
