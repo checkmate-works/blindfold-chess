@@ -54,13 +54,17 @@ export function OwnerActions({
   const [description, setDescription] = useState(initialDescription);
 
   useEffect(() => {
-    if (isRegisteredOwner) return;
+    // Resolve this browser's local record regardless of registered/anonymous
+    // ownership: the token (if any) authorizes account-less mutations, and the
+    // localGameId is needed to clean up the shared-game store on delete — so the
+    // result screen stops linking to the now-deleted game. Registered authors
+    // who published from this browser have a record too (without a token).
     const found = getSharedGameByPublishedId(gameId);
-    if (found?.record.manageToken) {
+    if (found) {
       setLocalGameId(found.localGameId);
-      setToken(found.record.manageToken);
+      setToken(found.record.manageToken ?? null);
     }
-  }, [gameId, isRegisteredOwner]);
+  }, [gameId]);
 
   const isOwner = isRegisteredOwner || token != null;
   if (!isOwner) return null;
