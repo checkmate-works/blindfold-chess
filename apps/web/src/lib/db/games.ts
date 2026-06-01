@@ -12,7 +12,7 @@
  */
 import { cache } from 'react';
 
-import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import 'server-only';
 
 import { generateManageToken, manageTokenMatches } from '@/lib/games/manage-token';
@@ -87,14 +87,29 @@ export type SharedGameListItem = {
   authorName: string | null;
 };
 
+/** Gallery sort modes (kept in sync with the page's sort control). */
+export type SharedGamesSort = 'new' | 'clean' | 'strong';
+
 /**
- * Latest publicly-listed games for the gallery, newest first. Only `public`
- * games appear here — `unlisted` games are reachable by direct link
- * ({@link getGameById}) but excluded from the catalog. Ordered by the UUIDv7
- * id, which is time-ordered, so this doubles as chronological without a
- * separate `created_at` index.
+ * Publicly-listed games for the gallery. Only `public` games appear here —
+ * `unlisted` games are reachable by direct link ({@link getGameById}) but
+ * excluded from the catalog. Sort:
+ * - 'new' (default): newest first via the time-ordered UUIDv7 id.
+ * - 'clean': highest blindfold clean-rate first (nulls last).
+ * - 'strong': strongest opponent first (unified Elo).
+ * Every mode tie-breaks on id desc so paging stays stable.
  */
-export async function listSharedGames(limit = 30): Promise<SharedGameListItem[]> {
+export async function listSharedGames(
+  sort: SharedGamesSort = 'new',
+  limit = 30
+): Promise<SharedGameListItem[]> {
+  const orderBy =
+    sort === 'clean'
+      ? [sql`${games.cleanRate} DESC NULLS LAST`, desc(games.id)]
+      : sort === 'strong'
+        ? [desc(games.engineElo), desc(games.id)]
+        : [desc(games.id)];
+
   return db
     .select({
       id: games.id,
@@ -109,7 +124,7 @@ export async function listSharedGames(limit = 30): Promise<SharedGameListItem[]>
     .from(games)
     .leftJoin(profiles, eq(profiles.id, games.authorId))
     .where(and(isNull(games.deletedAt), eq(games.status, 'public')))
-    .orderBy(desc(games.id))
+    .orderBy(...orderBy)
     .limit(limit);
 }
 

@@ -1912,9 +1912,11 @@
     },
     "result": { "win": "Victoria", "loss": "Derrota", "draw": "Tablas" },
     "list": {
-      "title": "Partidas compartidas",
-      "subtitle": "Partidas a ciegas compartidas por la comunidad para recibir consejos.",
-      "empty": "Aún no se ha compartido ninguna partida."
+      "title": "Partidas publicadas",
+      "empty": "Aún no se ha compartido ninguna partida.",
+      "sectionTitle": "Partidas",
+      "sortBy": "Ordenar por",
+      "sort": { "new": "Más recientes", "clean": "Más limpias", "strong": "Fuerza del rival" }
     },
     "new": {
       "title": "Publicar partida",

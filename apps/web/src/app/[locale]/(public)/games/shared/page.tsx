@@ -12,14 +12,18 @@ import Link from 'next/link';
 
 import { listSharedGames } from '@/lib/db/games';
 
-import { PageLayout } from '@/app/[locale]/_components';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
+
+import { SharedGamesSort } from './_components/SharedGamesSort';
+import { parseSharedGamesSort } from './_lib/sort';
 
 export const dynamic = 'force-dynamic';
 
 type Props = {
   params: Promise<{ locale: Locale }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 const RESULT_BADGE: Record<'win' | 'loss' | 'draw', string> = {
@@ -44,16 +48,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function SharedGamesPage({ params }: Props) {
+export default async function SharedGamesPage({ params, searchParams }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'sharedGames' });
 
-  const items = await listSharedGames();
+  const sort = parseSharedGamesSort((await searchParams).sort);
+  const items = await listSharedGames(sort);
 
   return (
     <PageLayout title={t('list.title')} locale={locale}>
-      <p className="mb-6 text-sm text-muted-foreground">{t('list.subtitle')}</p>
+      <SectionTitle>{t('list.sectionTitle')}</SectionTitle>
+      <div className="mt-3 mb-4 flex justify-end">
+        <SharedGamesSort currentSort={sort} />
+      </div>
 
       {items.length === 0 ? (
         <p className="py-8 text-center text-muted-foreground">{t('list.empty')}</p>

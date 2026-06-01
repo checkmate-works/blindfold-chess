@@ -1916,9 +1916,11 @@
     },
     "result": { "win": "Win", "loss": "Loss", "draw": "Draw" },
     "list": {
-      "title": "Shared games",
-      "subtitle": "Blindfold games shared by the community for advice.",
-      "empty": "No games have been shared yet."
+      "title": "Published games",
+      "empty": "No games have been shared yet.",
+      "sectionTitle": "Games",
+      "sortBy": "Sort by",
+      "sort": { "new": "Newest", "clean": "Cleanest", "strong": "Opponent strength" }
     },
     "new": {
       "title": "Publish game",
