@@ -3,9 +3,9 @@
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaClipboardList } from 'react-icons/fa';
 
-import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
+import type { GameStats, MoveMarker } from '@/lib/games/compute-game-stats';
 
-import type { GameStats, MoveMarker } from '../_lib/compute-game-stats';
+import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 type Props = {
   stats: GameStats;

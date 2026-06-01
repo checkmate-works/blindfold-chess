@@ -13,6 +13,7 @@ import { FaChartLine, FaChessBoard, FaMinus, FaTimes } from 'react-icons/fa';
 
 import { engineConfigToUrlParams } from '@/lib/engines';
 import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
+import { computeGameStats } from '@/lib/games/compute-game-stats';
 import type { Game } from '@/lib/games/saved-game-types';
 
 import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
@@ -30,7 +31,6 @@ import { buildPostmortemPath } from '../../_lib';
 import { getMovingSide } from '../../_lib/fen-utils';
 import { useGameExpGrant } from '../_hooks/use-game-exp-grant';
 import { useLoadGame } from '../_hooks/useLoadGame';
-import { computeGameStats } from '../_lib/compute-game-stats';
 import { GameStatsOverview } from './GameStatsOverview';
 import { ResultSkeleton } from './ResultSkeleton';
 import { StatsAuthGate } from './StatsAuthGate';
