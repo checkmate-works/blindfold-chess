@@ -1896,6 +1896,11 @@
       "last": "Última jugada"
     },
     "result": { "win": "Victoria", "loss": "Derrota", "draw": "Tablas" },
+    "list": {
+      "title": "Partidas compartidas",
+      "subtitle": "Partidas a ciegas compartidas por la comunidad para recibir consejos.",
+      "empty": "Aún no se ha compartido ninguna partida."
+    },
     "new": {
       "title": "Publicar para recibir consejos",
       "intro": "Comparte esta partida para que otros miembros te aconsejen. Puedes publicar sin una cuenta.",

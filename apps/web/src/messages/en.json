@@ -1900,6 +1900,11 @@
       "last": "Last move"
     },
     "result": { "win": "Win", "loss": "Loss", "draw": "Draw" },
+    "list": {
+      "title": "Shared games",
+      "subtitle": "Blindfold games shared by the community for advice.",
+      "empty": "No games have been shared yet."
+    },
     "new": {
       "title": "Publish for advice",
       "intro": "Share this game so other members can give you advice. You can publish without an account.",

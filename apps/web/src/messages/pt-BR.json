@@ -1896,6 +1896,11 @@
       "last": "Último lance"
     },
     "result": { "win": "Vitória", "loss": "Derrota", "draw": "Empate" },
+    "list": {
+      "title": "Partidas compartilhadas",
+      "subtitle": "Partidas às cegas compartilhadas pela comunidade para receber conselhos.",
+      "empty": "Nenhuma partida foi compartilhada ainda."
+    },
     "new": {
       "title": "Publicar para receber conselhos",
       "intro": "Compartilhe esta partida para que outros membros possam te aconselhar. Você pode publicar sem uma conta.",

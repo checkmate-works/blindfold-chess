@@ -12,7 +12,7 @@
  */
 import { cache } from 'react';
 
-import { and, eq, inArray, isNull } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
 import 'server-only';
 
 import { generateManageToken } from '@/lib/games/manage-token';
@@ -49,6 +49,44 @@ export const getGameById = cache(async (id: string): Promise<SharedGameDetail | 
 
   return row ? { game: row.game, authorName: row.authorName } : null;
 });
+
+/** Compact projection for gallery cards (no JSONB move/log payloads). */
+export type SharedGameListItem = {
+  id: string;
+  title: string;
+  engineKind: 'stockfish' | 'maia';
+  engineElo: number;
+  result: 'win' | 'loss' | 'draw';
+  moveCount: number;
+  cleanRate: number | null;
+  authorName: string | null;
+};
+
+/**
+ * Latest publicly-listed games for the gallery, newest first. Only `public`
+ * games appear here — `unlisted` games are reachable by direct link
+ * ({@link getGameById}) but excluded from the catalog. Ordered by the UUIDv7
+ * id, which is time-ordered, so this doubles as chronological without a
+ * separate `created_at` index.
+ */
+export async function listSharedGames(limit = 30): Promise<SharedGameListItem[]> {
+  return db
+    .select({
+      id: games.id,
+      title: games.title,
+      engineKind: games.engineKind,
+      engineElo: games.engineElo,
+      result: games.result,
+      moveCount: games.moveCount,
+      cleanRate: games.cleanRate,
+      authorName: profiles.displayName,
+    })
+    .from(games)
+    .leftJoin(profiles, eq(profiles.id, games.authorId))
+    .where(and(isNull(games.deletedAt), eq(games.status, 'public')))
+    .orderBy(desc(games.id))
+    .limit(limit);
+}
 
 export type PublishGameResult = {
   id: string;
