@@ -1891,7 +1891,22 @@
       "by": "Publicado por {name}",
       "sharedBy": "Publicado por",
       "guest": "Invitado",
-      "cleanRate": "Limpias"
+      "cleanRate": "Limpias",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "deleting": "Eliminando…",
+      "cancel": "Cancelar",
+      "deleteConfirmTitle": "¿Eliminar esta partida compartida?",
+      "deleteConfirmBody": "Se quitará del catálogo público y no se puede deshacer.",
+      "errors": {
+        "forbidden": "No tienes permiso para hacer eso.",
+        "generic": "Algo salió mal. Inténtalo de nuevo."
+      }
+    },
+    "edit": {
+      "title": "Editar partida",
+      "submit": "Guardar",
+      "submitting": "Guardando…"
     },
     "result": { "win": "Victoria", "loss": "Derrota", "draw": "Tablas" },
     "list": {

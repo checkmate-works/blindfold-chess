@@ -15,7 +15,7 @@ import { cache } from 'react';
 import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
 import 'server-only';
 
-import { generateManageToken } from '@/lib/games/manage-token';
+import { generateManageToken, manageTokenMatches } from '@/lib/games/manage-token';
 import type { GameColumns, ValidatedGame } from '@/lib/games/publish-game';
 
 import { db } from './index';
@@ -161,4 +161,52 @@ export async function publishGame(params: {
 
     return { id: row.id, manageToken };
   });
+}
+
+export type GameMutationAuth = 'ok' | 'not_found' | 'forbidden';
+
+/**
+ * Authorize an owner mutation (edit / delete) on a shared game. Ownership is
+ * dual: a registered author owns via `author_id` (session `userId`), while an
+ * account-less author proves ownership with the raw manage `token` (compared
+ * against the stored hash in constant time). Returns 'not_found' for a missing
+ * or already-deleted game, 'forbidden' when neither path matches.
+ */
+export async function authorizeGameMutation(params: {
+  gameId: string;
+  userId: string | null;
+  token: string | null;
+}): Promise<GameMutationAuth> {
+  const { gameId, userId, token } = params;
+
+  const [row] = await db
+    .select({ authorId: games.authorId, tokenHash: gameTokens.tokenHash })
+    .from(games)
+    .leftJoin(gameTokens, eq(gameTokens.gameId, games.id))
+    .where(and(eq(games.id, gameId), isNull(games.deletedAt)))
+    .limit(1);
+
+  if (!row) return 'not_found';
+  if (userId && row.authorId === userId) return 'ok';
+  if (token && row.tokenHash && manageTokenMatches(token, row.tokenHash)) return 'ok';
+  return 'forbidden';
+}
+
+/** Soft-delete a shared game (owner or moderation). RLS / reads filter it out. */
+export async function softDeleteSharedGame(gameId: string): Promise<void> {
+  await db
+    .update(games)
+    .set({ deletedAt: new Date(), status: 'removed' })
+    .where(eq(games.id, gameId));
+}
+
+/** Update an owner-editable field set (title / description). */
+export async function updateSharedGameFields(
+  gameId: string,
+  fields: { title: string; description: string | null }
+): Promise<void> {
+  await db
+    .update(games)
+    .set({ title: fields.title, description: fields.description })
+    .where(eq(games.id, gameId));
 }

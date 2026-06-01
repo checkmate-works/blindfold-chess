@@ -65,6 +65,20 @@ export function getSharedGameIds(): string[] {
   return Object.keys(read());
 }
 
+/**
+ * Reverse lookup: find this browser's record for a published game id (the id
+ * used in the public URL). Lets the detail page tell whether the viewer is the
+ * account-less owner and recover the manage token for edit / delete.
+ */
+export function getSharedGameByPublishedId(
+  publishedId: string
+): { localGameId: string; record: SharedGameRecord } | null {
+  for (const [localGameId, record] of Object.entries(read())) {
+    if (record.publishedId === publishedId) return { localGameId, record };
+  }
+  return null;
+}
+
 /** Forget a mapping (e.g. after the game is claimed by an account or deleted). */
 export function removeSharedGame(localGameId: string): void {
   if (typeof window === 'undefined') return;

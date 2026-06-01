@@ -1895,7 +1895,22 @@
       "by": "Posted by {name}",
       "sharedBy": "Posted by",
       "guest": "Guest",
-      "cleanRate": "Clean"
+      "cleanRate": "Clean",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleting": "Deleting…",
+      "cancel": "Cancel",
+      "deleteConfirmTitle": "Delete this shared game?",
+      "deleteConfirmBody": "This removes it from the public catalog and can't be undone.",
+      "errors": {
+        "forbidden": "You don't have permission to do that.",
+        "generic": "Something went wrong. Please try again."
+      }
+    },
+    "edit": {
+      "title": "Edit game",
+      "submit": "Save",
+      "submitting": "Saving…"
     },
     "result": { "win": "Win", "loss": "Loss", "draw": "Draw" },
     "list": {

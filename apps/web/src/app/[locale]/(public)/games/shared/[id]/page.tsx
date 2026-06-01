@@ -12,6 +12,7 @@ import { notFound } from 'next/navigation';
 
 import { getGameById } from '@/lib/db/games';
 import type { GameRecord } from '@/lib/db/schema';
+import { createClient } from '@/lib/supabase/server';
 import { resolveDisplayName } from '@/lib/users/display-name';
 import { UUID_RE } from '@/lib/validations/uuid';
 
@@ -21,6 +22,7 @@ import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/met
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { GameReplay } from './_components/GameReplay';
+import { OwnerActions } from './_components/OwnerActions';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,6 +62,14 @@ export default async function SharedGamePage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: 'sharedGames' });
   const { game, author } = detail;
   const authorDisplayName = author ? resolveDisplayName(author) : t('detail.guest');
+
+  // Registered ownership is known server-side; account-less ownership (manage
+  // token) is resolved client-side inside OwnerActions.
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const isRegisteredOwner = game.authorId != null && user?.id === game.authorId;
 
   const summary: { label: string; value: string }[] = [
     { label: t('new.summary.engine'), value: engineLabel(game) },
@@ -105,6 +115,16 @@ export default async function SharedGamePage({ params }: Props) {
             <p className="whitespace-pre-wrap text-sm text-foreground">{game.description}</p>
           </div>
         )}
+
+        {/* Owner-only edit / delete controls (registered via session, or
+            account-less via the manage token held by OwnerActions). */}
+        <OwnerActions
+          gameId={game.id}
+          isRegisteredOwner={isRegisteredOwner}
+          initialTitle={game.title}
+          initialDescription={game.description ?? ''}
+          locale={locale}
+        />
 
         {/* Author attribution at the bottom — avatar + name + profile link,
             matching the chunk / position UGC pages. Anonymous authors get a
