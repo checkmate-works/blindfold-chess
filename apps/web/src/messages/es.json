@@ -3610,6 +3610,9 @@
     "description": "Discute y comparte ideas sobre casillas, posiciones y estrategias de ajedrez",
     "recentTopicPosts": "Temas Recientes",
     "recentPosts": "Publicaciones Recientes",
+    "tabs": {
+      "recent": "Recientes"
+    },
     "noRecentPosts": "Aún no hay publicaciones.",
     "moreTopicPosts": "Más temas",
     "showMore": "Mostrar más",
@@ -3638,6 +3641,7 @@
     "openings": {
       "title": "Aperturas",
       "description": "Explora y aprende sobre aperturas de ajedrez y sus posiciones clave.",
+      "subtitle": "Teoría y discusión de aperturas de ajedrez",
       "recentPosts": "Publicaciones Recientes",
       "noRecentPosts": "Aún no hay publicaciones.",
       "sectionTitle": "Aperturas {move}",
@@ -3854,6 +3858,7 @@
     "squares": {
       "title": "Casillas",
       "description": "Selecciona una casilla para ver y compartir discusiones",
+      "subtitle": "Discusión sobre las casillas del tablero",
       "pageTitle": "Casillas",
       "sectionTitle": "Elegir Casilla",
       "postCount": "{count, plural, one {# publicación} other {# publicaciones}}",

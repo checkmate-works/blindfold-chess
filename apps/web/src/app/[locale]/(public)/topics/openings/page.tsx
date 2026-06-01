@@ -11,6 +11,7 @@ import { getPaginationParams } from '@/lib/pagination';
 import { createClient } from '@/lib/supabase/server';
 
 import { TopicPostCard } from '@/app/[locale]/(public)/(home)/_components/TopicPostCard';
+import { TopicTabs } from '@/app/[locale]/(public)/topics/_components/TopicTabs';
 import { renderAttachment } from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { isValidSquare } from '@/app/[locale]/(public)/topics/squares/_lib/squares';
@@ -103,6 +104,12 @@ export default async function OpeningsPage({ params, searchParams }: Props) {
       locale={locale}
       breadcrumb={[{ label: t('title'), href: '/topics' }, { label: t('openings.title') }]}
     >
+      <SectionTitle>{t('openings.subtitle')}</SectionTitle>
+
+      <div className="mb-6">
+        <TopicTabs active="openings" locale={locale} />
+      </div>
+
       {recentPosts.length > 0 && (
         <>
           <SectionTitle>{t('openings.recentPosts')}</SectionTitle>

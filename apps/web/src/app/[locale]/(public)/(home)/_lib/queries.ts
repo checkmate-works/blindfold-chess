@@ -1,4 +1,4 @@
-import { desc, lt } from 'drizzle-orm';
+import { and, desc, inArray, lt } from 'drizzle-orm';
 
 import { db, feedItems } from '@/lib/db';
 
@@ -10,6 +10,16 @@ import type { ChallengeRankUpdateData, FeedItem, FeedResponse } from './types';
 
 /** Maximum rank shown in the timeline feed. Items beyond this are filtered out. */
 const FEED_RANK_THRESHOLD = 10;
+
+/**
+ * Entity types surfaced by the `/topics` list feed. The topics list reuses the
+ * home feed machinery but scopes it to discussion topics: square/opening
+ * top-level posts (`topic_post` — chunk/position *comments* never emit a feed
+ * item, so these rows are always square/opening) plus chunk entities
+ * (`chunk`). Practice-scoped entities (`position`, `challenge_rank_update`)
+ * are deliberately excluded — they are not "topics".
+ */
+export const TOPICS_FEED_ENTITY_TYPES = ['topic_post', 'chunk'] as const;
 
 /**
  * Fetch a page of feed items with their full entity data.
@@ -28,16 +38,27 @@ const FEED_RANK_THRESHOLD = 10;
  * and skips any whose entity is missing from the map. Splitting one
  * loader per type makes each loader read like a focused query helper
  * instead of a branch inside a 200-line IIFE chain.
+ *
+ * @param entityTypes Optional whitelist of `feed_items.entityType` values to
+ * include. Omit (the home feed) to fetch every entity type; pass a subset
+ * (e.g. `TOPICS_FEED_ENTITY_TYPES`) to scope the feed. The filter is applied
+ * in SQL so pagination/cursor math stays correct.
  */
 export async function getFeedData(
   cursor: string | undefined,
   limit: number,
-  currentUserId?: string
+  currentUserId?: string,
+  entityTypes?: readonly string[]
 ): Promise<FeedResponse> {
   const feedRows = await db
     .select()
     .from(feedItems)
-    .where(cursor ? lt(feedItems.createdAt, new Date(cursor)) : undefined)
+    .where(
+      and(
+        cursor ? lt(feedItems.createdAt, new Date(cursor)) : undefined,
+        entityTypes ? inArray(feedItems.entityType, [...entityTypes]) : undefined
+      )
+    )
     .orderBy(desc(feedItems.createdAt))
     .limit(limit + 1);
 

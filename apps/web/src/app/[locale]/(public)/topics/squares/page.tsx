@@ -8,6 +8,7 @@ import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { getPaginationParams } from '@/lib/pagination';
 import { createClient } from '@/lib/supabase/server';
 
+import { TopicTabs } from '@/app/[locale]/(public)/topics/_components/TopicTabs';
 import { renderAttachment } from '@/app/[locale]/(public)/topics/_components/render-attachment';
 import { TOPIC_PAGE_SIZE } from '@/app/[locale]/(public)/topics/_lib/pagination';
 import { PageLayout, PaginationNav, SectionTitle } from '@/app/[locale]/_components';
@@ -70,16 +71,11 @@ export default async function SquaresPage({ params, searchParams }: Props) {
       locale={locale}
       breadcrumb={[{ label: t('title'), href: '/topics' }, { label: t('squares.title') }]}
     >
-      {currentPage === 1 && (
-        <>
-          <SectionTitle>{t('squares.sectionTitle')}</SectionTitle>
-          <SquareBoard locale={locale} />
-        </>
-      )}
+      <SectionTitle>{t('squares.subtitle')}</SectionTitle>
 
-      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE) && (
-        <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
-      )}
+      <div className="mb-6">
+        <TopicTabs active="squares" locale={locale} />
+      </div>
 
       <SectionTitle>{t('squares.recentPosts')}</SectionTitle>
 
@@ -103,11 +99,22 @@ export default async function SquaresPage({ params, searchParams }: Props) {
         </div>
       )}
 
+      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
+
+      {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_MIDDLE) && (
+        <AdSenseGuard slot="content-middle" slotId={ADSENSE_SLOT_CONTENT_MIDDLE ?? ''} />
+      )}
+
+      {currentPage === 1 && (
+        <>
+          <SectionTitle>{t('squares.sectionTitle')}</SectionTitle>
+          <SquareBoard locale={locale} />
+        </>
+      )}
+
       {(IS_LOCAL_DEV || ADSENSE_SLOT_CONTENT_BOTTOM) && (
         <AdSenseGuard slot="content-bottom" slotId={ADSENSE_SLOT_CONTENT_BOTTOM ?? ''} />
       )}
-
-      <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
     </PageLayout>
   );
 }

@@ -3852,6 +3852,9 @@
     "description": "Discuss and share insights about chess squares, positions, and strategies",
     "recentTopicPosts": "Recent Topics",
     "recentPosts": "Recent Posts",
+    "tabs": {
+      "recent": "Recent"
+    },
     "noRecentPosts": "No posts yet.",
     "moreTopicPosts": "More topics",
     "showMore": "Show more",
@@ -3884,6 +3887,7 @@
     "openings": {
       "title": "Openings",
       "description": "Explore and learn about chess openings and their key positions.",
+      "subtitle": "Chess opening theory & discussion",
       "recentPosts": "Recent Posts",
       "noRecentPosts": "No posts yet.",
       "sectionTitle": "{move} Openings",
@@ -4100,6 +4104,7 @@
     "squares": {
       "title": "Squares",
       "description": "Select a square to view and share discussions",
+      "subtitle": "Board square discussion",
       "pageTitle": "Squares",
       "sectionTitle": "Choose Square",
       "postCount": "{count, plural, one {# post} other {# posts}}",
