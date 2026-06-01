@@ -19,6 +19,7 @@ import { PublishGameClient } from './_components/PublishGameClient';
 
 type Props = {
   params: Promise<{ locale: Locale }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export const generateStaticParams = generateLocaleStaticParams;
@@ -35,13 +36,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function PublishGamePage({ params }: Props) {
+export default async function PublishGamePage({ params, searchParams }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'sharedGames' });
 
+  // Hierarchically the parent is the game being published — its result screen —
+  // not the public catalog (the game isn't published yet).
+  const gameIdRaw = (await searchParams).gameId;
+  const gameId = typeof gameIdRaw === 'string' ? gameIdRaw : null;
+  const tPlay = await getTranslations({ locale, namespace: 'play' });
+  const breadcrumb = gameId
+    ? [
+        { label: tPlay('resultTitle'), href: `/games/play/result?gameId=${gameId}` },
+        { label: t('new.title') },
+      ]
+    : [{ label: t('new.title') }];
+
   return (
-    <PageLayout title={t('new.title')} locale={locale}>
+    <PageLayout title={t('new.title')} locale={locale} breadcrumb={breadcrumb}>
       <PublishGameClient locale={locale} />
     </PageLayout>
   );
