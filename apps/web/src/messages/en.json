@@ -1907,8 +1907,8 @@
       "empty": "No games have been shared yet."
     },
     "new": {
-      "title": "Publish for advice",
-      "intro": "Share this game so other members can give you advice. You can publish without an account.",
+      "title": "Publish game",
+      "sectionTitle": "Share settings",
       "loading": "Loading game…",
       "gameIdMissing": "No game specified.",
       "gameNotFound": "Game not found.",

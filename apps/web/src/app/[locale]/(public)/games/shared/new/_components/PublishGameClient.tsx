@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -12,6 +12,7 @@ import { MAX_DESCRIPTION_LENGTH, MAX_TITLE_LENGTH } from '@/lib/games/publish-co
 import type { Game } from '@/lib/games/saved-game-types';
 import { recordSharedGame } from '@/lib/games/shared-game-store';
 
+import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { publishGameAction } from '../../_actions/publish-game';
@@ -62,11 +63,6 @@ export function PublishGameClient({ locale }: Props) {
       active = false;
     };
   }, [gameId, t]);
-
-  const resultWord = useMemo(() => {
-    if (load.status !== 'loaded' || load.game.status === 'in_progress') return '';
-    return t(`result.${load.game.status}`);
-  }, [load, t]);
 
   if (load.status === 'loading') {
     return <p className="text-muted-foreground py-8 text-center">{t('new.loading')}</p>;
@@ -122,25 +118,7 @@ export function PublishGameClient({ locale }: Props) {
 
   return (
     <div className="space-y-6">
-      <p className="text-sm text-muted-foreground">{t('new.intro')}</p>
-
-      {/* What gets published */}
-      <div className="rounded-lg border border-border bg-card p-4 text-sm">
-        <div className="flex flex-wrap gap-x-6 gap-y-1">
-          <span>
-            <span className="text-muted-foreground">{t('new.summary.engine')}: </span>
-            <span className="font-medium">{engineLabel(game)}</span>
-          </span>
-          <span>
-            <span className="text-muted-foreground">{t('new.summary.result')}: </span>
-            <span className="font-medium">{resultWord}</span>
-          </span>
-          <span>
-            <span className="text-muted-foreground">{t('new.summary.moves')}: </span>
-            <span className="font-medium tabular-nums">{game.moves.length}</span>
-          </span>
-        </div>
-      </div>
+      <SectionTitle>{t('new.sectionTitle')}</SectionTitle>
 
       {/* Title */}
       <div className="space-y-1.5">

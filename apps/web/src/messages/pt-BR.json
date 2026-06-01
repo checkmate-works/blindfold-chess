@@ -1903,8 +1903,8 @@
       "empty": "Nenhuma partida foi compartilhada ainda."
     },
     "new": {
-      "title": "Publicar para receber conselhos",
-      "intro": "Compartilhe esta partida para que outros membros possam te aconselhar. Você pode publicar sem uma conta.",
+      "title": "Publicar partida",
+      "sectionTitle": "Opções de compartilhamento",
       "loading": "Carregando a partida…",
       "gameIdMissing": "Nenhuma partida especificada.",
       "gameNotFound": "Partida não encontrada.",
