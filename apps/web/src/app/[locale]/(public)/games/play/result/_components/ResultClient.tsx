@@ -8,12 +8,14 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
+import type { ExpInfo } from '@blindfold-chess/features/exp';
 import { FaChartLine, FaChessBoard, FaMinus, FaTimes } from 'react-icons/fa';
 
 import { engineConfigToUrlParams } from '@/lib/engines';
 import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 import type { Game } from '@/lib/games/saved-game-types';
 
+import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
 import { AuthPromptModal } from '@/app/[locale]/_components/AuthPromptModal';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -26,6 +28,7 @@ import { OperationLogModal } from '../../_components/OperationLogModal';
 import { useBoardFlip, useMoveNavigation, useNotation } from '../../_hooks';
 import { buildPostmortemPath } from '../../_lib';
 import { getMovingSide } from '../../_lib/fen-utils';
+import { useGameExpGrant } from '../_hooks/use-game-exp-grant';
 import { useLoadGame } from '../_hooks/useLoadGame';
 import { computeGameStats } from '../_lib/compute-game-stats';
 import { GameStatsOverview } from './GameStatsOverview';
@@ -65,9 +68,11 @@ type Props = {
   displayName: string;
   /** Whether the viewer is signed in. Anonymous viewers get the stats gated behind a sign-up CTA. */
   isAuthenticated: boolean;
+  /** Exp already granted for this game (resolved server-side on revisit), or null. */
+  initialExp: ExpInfo | null;
 };
 
-export function ResultClient({ locale, displayName, isAuthenticated }: Props) {
+export function ResultClient({ locale, displayName, isAuthenticated, initialExp }: Props) {
   const t = useTranslations('play');
   const searchParams = useSearchParams();
   const gameId = searchParams.get('gameId');
@@ -95,6 +100,7 @@ export function ResultClient({ locale, displayName, isAuthenticated }: Props) {
       locale={locale}
       displayName={displayName}
       isAuthenticated={isAuthenticated}
+      initialExp={initialExp}
     />
   );
 }
@@ -105,9 +111,17 @@ type ResultContentProps = {
   locale: Locale;
   displayName: string;
   isAuthenticated: boolean;
+  initialExp: ExpInfo | null;
 };
 
-function ResultContent({ game, gameId, locale, displayName, isAuthenticated }: ResultContentProps) {
+function ResultContent({
+  game,
+  gameId,
+  locale,
+  displayName,
+  isAuthenticated,
+  initialExp,
+}: ResultContentProps) {
   const t = useTranslations('play');
   const tGames = useTranslations('gamesPage');
   const router = useRouter();
@@ -170,6 +184,10 @@ function ResultContent({ game, gameId, locale, displayName, isAuthenticated }: R
 
   // Overview stats, derived purely from the persisted per-move operation logs.
   const stats = useMemo(() => computeGameStats(game.operationLogs ?? []), [game.operationLogs]);
+
+  // Grant (once) and display the Exp earned for this game. Guests get null
+  // (no grant) and a sign-in nudge instead; see the JSX below.
+  const exp = useGameExpGrant({ gameId, game, stats, isAuthenticated, initialExp });
 
   // moves[] index of each player move, so an effort-strip cell (one per player
   // move) can deep-link to that exact position in the finished-game view.
@@ -261,6 +279,12 @@ function ResultContent({ game, gameId, locale, displayName, isAuthenticated }: R
             )}
           </>
         )}
+
+        {/* Exp earned for this game, shown below the statistics. Authenticated
+            players only — ExpGainDisplay renders nothing until the grant
+            resolves. Guests are already nudged to sign up by the StatsAuthGate
+            above, so no separate Exp CTA is shown here. */}
+        {isAuthenticated && <ExpGainDisplay expInfo={exp} />}
 
         <div className="border-t border-border" />
 

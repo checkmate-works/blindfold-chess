@@ -58,6 +58,7 @@ describe('computeGameStats', () => {
       takebacks: 0,
       hints: 0,
       cleanMoves: 0,
+      aidedMoves: 0,
       perMove: [],
     });
   });
@@ -79,5 +80,18 @@ describe('computeGameStats', () => {
     expect(stats.hints).toBe(1);
     expect(stats.cleanMoves).toBe(2);
     expect(stats.perMove).toEqual(['clean', 'peek', 'illegal', 'takeback', 'hint', 'clean']);
+  });
+
+  it('counts aided moves (peek/hint/takeback) but not illegal-only moves', () => {
+    const stats = computeGameStats([
+      log(), // clean — not aided
+      log({ peekCount: 2 }), // aided (peek)
+      log({ invalidCount: 3, peekCount: 1 }), // aided (peek, despite illegal)
+      log({ undoCount: 1 }), // aided (takeback)
+      log({ movePeekCount: 1 }), // aided (hint)
+      log({ invalidCount: 2 }), // illegal only — NOT aided
+    ]);
+
+    expect(stats.aidedMoves).toBe(4);
   });
 });

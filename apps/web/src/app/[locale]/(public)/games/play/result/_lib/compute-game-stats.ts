@@ -25,6 +25,15 @@ export type GameStats = {
    * across every board-visibility mode.
    */
   cleanMoves: number;
+  /**
+   * Moves that used a blindfold-defeating aid: a board peek, a legal-move
+   * hint, or a takeback. Illegal-move attempts are deliberately NOT counted —
+   * a failed input is a mistake, not an aid. Feeds the Exp purity multiplier
+   * (see `calculateGameExp`), so it is the precise per-aid count rather than
+   * the strip's most-severe-marker view (a move can be both illegal and
+   * peeked; that still counts as aided here).
+   */
+  aidedMoves: number;
   /** Dominant marker per player move, index-aligned to the operation logs. */
   perMove: MoveMarker[];
 };
@@ -49,6 +58,7 @@ export function computeGameStats(logs: MoveOperationLog[]): GameStats {
   let takebacks = 0;
   let hints = 0;
   let cleanMoves = 0;
+  let aidedMoves = 0;
   const perMove: MoveMarker[] = [];
 
   for (const log of logs) {
@@ -58,6 +68,9 @@ export function computeGameStats(logs: MoveOperationLog[]): GameStats {
     hints += log.movePeekCount ?? 0;
     const marker = markerForLog(log);
     if (marker === 'clean') cleanMoves += 1;
+    if (log.peekCount > 0 || (log.movePeekCount ?? 0) > 0 || log.undoCount > 0) {
+      aidedMoves += 1;
+    }
     perMove.push(marker);
   }
 
@@ -68,6 +81,7 @@ export function computeGameStats(logs: MoveOperationLog[]): GameStats {
     takebacks,
     hints,
     cleanMoves,
+    aidedMoves,
     perMove,
   };
 }

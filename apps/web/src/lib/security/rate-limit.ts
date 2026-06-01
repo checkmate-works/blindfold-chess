@@ -100,6 +100,13 @@ export const RATE_LIMITS = {
   deleteAccount: { action: 'delete_account', maxAttempts: 3, windowMs: 3_600_000 },
   savePracticeResult: { action: 'save_practice_result', maxAttempts: 60, windowMs: 3_600_000 },
   /**
+   * Per-user limit for granting Exp on a completed AI game. Generous (60/hour)
+   * — a normal player finishes far fewer games than this; the cap is a backstop
+   * against scripted loops hammering the grant transaction. The real
+   * farming guard is the per-day Exp cap inside `grantGameExp`, not this.
+   */
+  saveGameResult: { action: 'save_game_result', maxAttempts: 60, windowMs: 3_600_000 },
+  /**
    * Opening post limit is keyed per topicKey — use `createOpeningPostAction(slug)` to
    * build the action string (e.g., 'create_opening_post:french-defense').
    */
