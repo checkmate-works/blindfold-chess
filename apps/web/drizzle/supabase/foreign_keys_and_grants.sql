@@ -785,14 +785,6 @@ GRANT SELECT ON TABLE public.games TO anon;
 -- Drizzle (ON DELETE CASCADE).
 
 -- =============================================================================
--- game_annotations (author's inline move notes — public read)
--- =============================================================================
--- The FK to games is managed by Drizzle (ON DELETE CASCADE). Writes go through
--- an ownership-checked server action (token / author_id), so service-role only.
-GRANT SELECT ON TABLE public.game_annotations TO authenticated;
-GRANT SELECT ON TABLE public.game_annotations TO anon;
-
--- =============================================================================
 -- game_comments (third-party advice — public read)
 -- =============================================================================
 

@@ -1,6 +1,6 @@
 {
-  "id": "1be63ea9-e295-48d2-a43d-c2538237d993",
-  "prevId": "602882ae-3035-4359-93ea-6b3bad8d9ff8",
+  "id": "2c3fbf45-48a9-4963-88cf-c81a56eb61be",
+  "prevId": "595a1533-751d-4e54-9187-f73090fcac21",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -5702,10 +5702,16 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.game_annotations": {
-      "name": "game_annotations",
+    "public.game_chunks": {
+      "name": "game_chunks",
       "schema": "",
       "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
         "game_id": {
           "name": "game_id",
           "type": "uuid",
@@ -5718,15 +5724,15 @@
           "primaryKey": false,
           "notNull": true
         },
-        "note": {
-          "name": "note",
-          "type": "text",
+        "chunk_id": {
+          "name": "chunk_id",
+          "type": "uuid",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
-        "glyph": {
-          "name": "glyph",
-          "type": "smallint",
+        "suggested_by_id": {
+          "name": "suggested_by_id",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         },
@@ -5736,34 +5742,74 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_game_chunks_game_ply": {
+          "name": "idx_game_chunks_game_ply",
+          "columns": [
+            {
+              "expression": "game_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "ply",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_game_chunks_chunk": {
+          "name": "idx_game_chunks_chunk",
+          "columns": [
+            {
+              "expression": "chunk_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
-        "game_annotations_game_id_games_id_fk": {
-          "name": "game_annotations_game_id_games_id_fk",
-          "tableFrom": "game_annotations",
+        "game_chunks_game_id_games_id_fk": {
+          "name": "game_chunks_game_id_games_id_fk",
+          "tableFrom": "game_chunks",
           "tableTo": "games",
           "columnsFrom": ["game_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
+        },
+        "game_chunks_chunk_id_chunks_id_fk": {
+          "name": "game_chunks_chunk_id_chunks_id_fk",
+          "tableFrom": "game_chunks",
+          "tableTo": "chunks",
+          "columnsFrom": ["chunk_id"],
+          "columnsTo": ["id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {
-        "game_annotations_game_id_ply_pk": {
-          "name": "game_annotations_game_id_ply_pk",
-          "columns": ["game_id", "ply"]
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "uq_game_chunks": {
+          "name": "uq_game_chunks",
+          "nullsNotDistinct": false,
+          "columns": ["game_id", "ply", "chunk_id"]
         }
       },
-      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -5989,6 +6035,12 @@
         },
         "operation_logs": {
           "name": "operation_logs",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "play_settings": {
+          "name": "play_settings",
           "type": "jsonb",
           "primaryKey": false,
           "notNull": false

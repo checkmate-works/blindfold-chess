@@ -961,15 +961,6 @@ CREATE POLICY "games_select" ON "games"
 ALTER TABLE "game_tokens" ENABLE ROW LEVEL SECURITY;
 
 -- =============================================================================
--- game_annotations (author inline notes — public read, service-role write)
--- =============================================================================
-ALTER TABLE "game_annotations" ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS "game_annotations_select" ON "game_annotations";
-CREATE POLICY "game_annotations_select" ON "game_annotations"
-  FOR SELECT USING (true);
-
--- =============================================================================
 -- game_comments (third-party advice — public read, service-role write)
 -- =============================================================================
 -- Soft-deleted comments are filtered for anon/authenticated; the service role

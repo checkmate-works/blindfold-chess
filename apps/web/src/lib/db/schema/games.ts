@@ -17,8 +17,6 @@ import {
   integer,
   jsonb,
   pgTable,
-  primaryKey,
-  smallint,
   text,
   timestamp,
   unique,
@@ -29,6 +27,8 @@ import {
 import type { EngineConfig } from '@/lib/engines';
 import type { MoveOperationLog } from '@/lib/games/saved-game-types';
 import { uuidv7 } from '@/lib/uuidv7';
+
+import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { chunks } from './positions';
 
@@ -89,6 +89,14 @@ export const games = pgTable(
     engineConfig: jsonb('engine_config').$type<EngineConfig>().notNull(),
     /** Per-move aid counts (self-reported, client-only). Null for legacy/absent. */
     operationLogs: jsonb('operation_logs').$type<MoveOperationLog[]>(),
+    /**
+     * Blindfold difficulty snapshot captured at game start (piece color / shape,
+     * which side was hidden, board visibility, input mode). The full
+     * `PerGamePreferences` blob is stored so display can pick whatever it needs
+     * and the shape can evolve without a migration. Null for legacy games and
+     * games published before this column existed.
+     */
+    playSettings: jsonb('play_settings').$type<PerGamePreferences>(),
     result: varchar('result', { length: 4 }).$type<'win' | 'loss' | 'draw'>().notNull(),
 
     // --- Denormalized for gallery filter / sort ---
@@ -145,44 +153,6 @@ export const gameTokens = pgTable('game_tokens', {
 
 export type GameToken = typeof gameTokens.$inferSelect;
 export type NewGameToken = typeof gameTokens.$inferInsert;
-
-/**
- * Game Annotations — the author's own inline notes on their game's moves.
- *
- * @description
- * The artifact layer (Lichess study / Chessable-style): the game's owner
- * attaches a note and/or a glyph to specific plies, turning the game into study
- * material. Distinct from `game_comments` (third-party advice) because the
- * author may be account-less (writes authorized via `game_tokens`, not a
- * member session) and there is at most one editable annotation per move.
- *
- * @design Anchor by ply
- * `ply` is the 0-based index into `games.moves[]`. The game is immutable so ply
- * indices are stable forever; the display label ("12. Nf6") is derived from
- * `ply` + `starting_fen` at render time, never stored. `(game_id, ply)` is the
- * primary key — one annotation per move, upserted on edit.
- */
-export const gameAnnotations = pgTable(
-  'game_annotations',
-  {
-    gameId: uuid('game_id')
-      .notNull()
-      .references(() => games.id, { onDelete: 'cascade' }),
-    ply: integer('ply').notNull(),
-    note: text('note'),
-    /** NAG glyph code (e.g. 1 = !, 2 = ?, 3 = !!, 4 = ??, 5 = !?, 6 = ?!). */
-    glyph: smallint('glyph'),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .defaultNow()
-      .notNull()
-      .$onUpdateFn(() => new Date()),
-  },
-  (table) => [primaryKey({ columns: [table.gameId, table.ply] })]
-);
-
-export type GameAnnotation = typeof gameAnnotations.$inferSelect;
-export type NewGameAnnotation = typeof gameAnnotations.$inferInsert;
 
 /**
  * Game Comments — third-party advice on a shared game.
@@ -280,6 +250,9 @@ export const gameChunks = pgTable(
     // chunk is a no-op rather than a duplicate.
     unique('uq_game_chunks').on(table.gameId, table.ply, table.chunkId),
     index('idx_game_chunks_game_ply').on(table.gameId, table.ply),
+    // chunk_id is not covered by the game_id-leading unique; index it for the
+    // ON DELETE RESTRICT reference check and the future chunk→games backlink.
+    index('idx_game_chunks_chunk').on(table.chunkId),
   ]
 );
 
