@@ -3,7 +3,6 @@
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { GameSettingsContent } from '@/app/[locale]/(public)/preferences/_components/GameSettingsContent';
-import { PeekModePicker } from '@/app/[locale]/(public)/preferences/_components/PeekModePicker';
 import { Modal } from '@/app/[locale]/_components/Modal';
 import type {
   GamePreferences,
@@ -17,7 +16,6 @@ const PER_GAME_KEYS = [
   'showOpponentPieces',
   'pieceShapeMode',
   'pieceColors',
-  'peekMode',
 ] as const satisfies ReadonlyArray<keyof PerGamePreferences>;
 
 type Props = {
@@ -72,24 +70,6 @@ export function MidGameSettingsModal({ isOpen, onClose, preferences, onPerGamePr
     }
   };
 
-  // Board peek mode picker. Mirrored from ControlSettingsContent so the
-  // mid-game modal and the global `/preferences` Controls tab share UI
-  // grammar. Gated on `boardVisibility === 'peek'` — the modal/inline
-  // distinction is moot when the board is permanently shown ('always') or
-  // permanently hidden ('never'). The user's last peekMode choice is
-  // preserved in state across visibility switches via the existing change
-  // log machinery, so flipping back to 'peek' restores it.
-  //
-  // Rendered into GameSettingsContent's `afterBoardVisibility` slot so it
-  // sits directly under the boardVisibility picker — the choice that
-  // actually gates it — instead of trailing at the bottom of the modal.
-  const peekModePicker = preferences.boardVisibility === 'peek' && (
-    <PeekModePicker
-      value={preferences.peekMode}
-      onChange={(mode) => onPerGamePrefChange('peekMode', mode)}
-    />
-  );
-
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t('settings.title')} maxWidth="max-w-md">
       <GameSettingsContent
@@ -99,7 +79,6 @@ export function MidGameSettingsModal({ isOpen, onClose, preferences, onPerGamePr
         showBoardButtonOption={true}
         showPreview={false}
         compact={true}
-        afterBoardVisibility={peekModePicker}
       />
     </Modal>
   );

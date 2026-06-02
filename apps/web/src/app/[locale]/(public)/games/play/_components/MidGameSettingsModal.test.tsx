@@ -170,39 +170,3 @@ describe('MidGameSettingsModal — onSettingsChange → onPerGamePrefChange rout
     expect(onPerGamePrefChange).not.toHaveBeenCalled();
   });
 });
-
-describe('MidGameSettingsModal — peek-mode picker visibility', () => {
-  it('shows the peek-mode picker when boardVisibility is "peek"', () => {
-    renderModal({ preferences: { boardVisibility: 'peek' } });
-
-    // The picker uses the Preferences.controls namespace; with the
-    // namespace-stripping mock, button labels resolve to bare keys.
-    expect(screen.getByText('controls.peekModes.modal')).toBeInTheDocument();
-    expect(screen.getByText('controls.peekModes.inline')).toBeInTheDocument();
-  });
-
-  it('hides the peek-mode picker when boardVisibility is "always"', () => {
-    renderModal({ preferences: { boardVisibility: 'always' } });
-
-    expect(screen.queryByText('controls.peekModes.modal')).not.toBeInTheDocument();
-    expect(screen.queryByText('controls.peekModes.inline')).not.toBeInTheDocument();
-  });
-
-  it('hides the peek-mode picker when boardVisibility is "never"', () => {
-    renderModal({ preferences: { boardVisibility: 'never' } });
-
-    expect(screen.queryByText('controls.peekModes.modal')).not.toBeInTheDocument();
-    expect(screen.queryByText('controls.peekModes.inline')).not.toBeInTheDocument();
-  });
-
-  it('clicking a peek-mode button routes through onPerGamePrefChange', () => {
-    const onPerGamePrefChange = vi.fn();
-    renderModal({
-      preferences: { boardVisibility: 'peek', peekMode: 'modal' },
-      onPerGamePrefChange,
-    });
-
-    fireEvent.click(screen.getByText('controls.peekModes.inline'));
-    expect(onPerGamePrefChange).toHaveBeenCalledWith('peekMode', 'inline');
-  });
-});

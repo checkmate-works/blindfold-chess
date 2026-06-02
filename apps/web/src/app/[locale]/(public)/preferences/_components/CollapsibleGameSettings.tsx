@@ -10,7 +10,6 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 
 import { BoardVisibilityPicker } from './BoardVisibilityPicker';
 import { GameSettingsContent } from './GameSettingsContent';
-import { PeekModePicker } from './PeekModePicker';
 
 type Props = {
   settings: PerGamePreferences;
@@ -49,18 +48,6 @@ export function CollapsibleGameSettings({ settings, onSettingsChange }: Props) {
           onChange={(boardVisibility) => onSettingsChange({ boardVisibility })}
         />
       </div>
-
-      {/* Board peek mode — sits directly under the visibility picker that gates
-          it. Only meaningful for 'peek'; for 'always' the board is permanently
-          shown and for 'never' there is nothing to peek at. Editable here so
-          the new-game form, the Preferences page, and the mid-game modal all
-          expose it consistently. */}
-      {settings.boardVisibility === 'peek' && (
-        <PeekModePicker
-          value={settings.peekMode}
-          onChange={(peekMode) => onSettingsChange({ peekMode })}
-        />
-      )}
 
       {settings.boardVisibility !== 'never' && (
         <div>
