@@ -108,6 +108,13 @@ type Props = {
    * behavior are unaffected — only the label is suppressed.
    */
   badgeActive?: boolean;
+  /**
+   * Optional control pinned to the board's top-right corner, above the mask
+   * (so it stays operable while blindfolded) and within the no-piece move-list
+   * strip zone (so it never overlaps pieces). Used by the play surface for the
+   * per-game settings gear. Unlike `boardBadge`, this slot IS interactive.
+   */
+  topRightControl?: ReactNode;
 };
 
 export function InlineBoardView({
@@ -136,6 +143,7 @@ export function InlineBoardView({
   maskDismissable,
   boardBadge,
   badgeActive,
+  topRightControl,
 }: Props) {
   const t = useTranslations('play');
   const [isOpen, setIsOpen] = useState(false);
@@ -187,10 +195,11 @@ export function InlineBoardView({
               blindfold modes the move list would otherwise reveal the game, so
               the frosted overlay covers both and a peek reveals both together. */}
           <div className="relative">
-            {/* Horizontal Move List */}
+            {/* Horizontal Move List. Reserve right padding for the top-right
+                control (settings gear) so the latest moves don't slide under it. */}
             {formattedPgn.length > 0 && onNavigateToPosition && (
               <div
-                className={`px-2 py-1.5 overflow-x-auto ${alwaysOpen ? '' : 'border-t border-border'}`}
+                className={`overflow-x-auto px-2 py-1.5 ${topRightControl ? 'pr-10' : ''} ${alwaysOpen ? '' : 'border-t border-border'}`}
               >
                 <HorizontalMoveList
                   formattedPgn={formattedPgn}
@@ -297,6 +306,13 @@ export function InlineBoardView({
               <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center px-2">
                 {boardBadge}
               </div>
+            )}
+
+            {/* Top-right board control (settings gear), above the mask so it
+                stays operable while blindfolded. Occupies only its own corner
+                box, so it never blocks board interaction / a peek tap. */}
+            {topRightControl && (
+              <div className="absolute right-2 top-2 z-30">{topRightControl}</div>
             )}
           </div>
         </div>

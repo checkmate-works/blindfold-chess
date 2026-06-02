@@ -22,6 +22,7 @@ import {
   shouldShowInlinePeekHeader,
 } from '../_lib';
 import { AiReplyChip, useAiReplyChip } from './AiReplyChip';
+import { BoardSettingsButton } from './BoardSettingsButton';
 import { FinishedGamePanel } from './FinishedGamePanel';
 import { GameInProgressPanel } from './GameInProgressPanel';
 import { InlineBoardView } from './InlineBoardView';
@@ -311,6 +312,14 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
         />
       }
       badgeActive={aiReply.active}
+      // Per-game settings gear, pinned to the board's top-right (move-list strip
+      // end when shown, mask top-right when masked). Hidden for legacy games
+      // with no per-game snapshot to edit. Game details stays in the panel.
+      topRightControl={
+        canEditPerGameSettings ? (
+          <BoardSettingsButton onClick={() => setShowSettingsModal(true)} />
+        ) : undefined
+      }
     />
   );
 
@@ -396,9 +405,6 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
                 // global preference change.
                 setMoveInputMode={(mode) => setPerGamePref('moveInputMode', mode)}
                 onShowOperationLog={() => setShowOperationLogModal(true)}
-                onShowSettings={
-                  canEditPerGameSettings ? () => setShowSettingsModal(true) : undefined
-                }
                 aiMoveError={
                   aiMoveError.message
                     ? { message: aiMoveError.message, retry: aiMoveError.retry }

@@ -6,7 +6,7 @@ import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FlagIcon, UndoIcon } from '@blindfold-chess/icons';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { FaClipboardList, FaCog } from 'react-icons/fa';
+import { FaClipboardList } from 'react-icons/fa';
 
 import type { MoveInputMethod } from '@/lib/games/saved-game-types';
 
@@ -43,12 +43,6 @@ type Props = {
   setMoveInputMode?: (mode: GamePreferences['moveInputMode']) => void;
   onShowOperationLog?: () => void;
   /**
-   * Opens the mid-game settings modal. Omit (undefined) to hide the gear
-   * icon entirely — used for legacy games without a `gamePreferences`
-   * snapshot, where there is no per-game baseline to edit against.
-   */
-  onShowSettings?: () => void;
-  /**
    * When the last AI move failed, carries the i18n'd error message and a
    * `retry` callback that tears down the dead engine and re-requests a move.
    * Null when there is nothing to retry.
@@ -76,48 +70,13 @@ export function GameInProgressPanel({
   onMovePeek,
   setMoveInputMode,
   onShowOperationLog,
-  onShowSettings,
   aiMoveError,
 }: Props) {
   const t = useTranslations('play');
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Board, with a thin control toolbar pinned directly beneath it. The
-          board-related controls (per-game settings + game details) live here,
-          next to the board they act on, instead of in the panel's bottom row.
-          The toolbar sits OUTSIDE the board's blindfold mask (so it stays
-          operable while the board is masked) and below the board squares (so it
-          never overlaps pieces). */}
-      <div className="space-y-2">
-        {inlineBoardView}
-        {(onShowSettings || onShowOperationLog) && (
-          <div className="flex items-center justify-end gap-4 text-sm text-muted-foreground">
-            {onShowSettings && (
-              <button
-                type="button"
-                onClick={onShowSettings}
-                className="inline-flex items-center gap-1.5 hover:text-foreground"
-                title={t('settings.title')}
-              >
-                <FaCog className="h-4 w-4" />
-                <span>{t('settings.title')}</span>
-              </button>
-            )}
-            {onShowOperationLog && (
-              <button
-                type="button"
-                onClick={onShowOperationLog}
-                className="inline-flex items-center gap-1.5 hover:text-foreground"
-                title={t('gameDetails.title')}
-              >
-                <FaClipboardList className="h-4 w-4" />
-                <span>{t('gameDetails.title')}</span>
-              </button>
-            )}
-          </div>
-        )}
-      </div>
+      {inlineBoardView}
 
       {/* Move Input */}
       {/* AI thinking or retry → disabled real UI, not skeleton */}
@@ -186,6 +145,22 @@ export function GameInProgressPanel({
           💾 {t('saveAndExit')}
         </Link>
       </div>
+
+      {/* Game Details (opponent / engine info, initial per-game settings, and
+          the mid-game change log — see OperationLogModal). Per-game settings
+          has its own gear on the board itself. */}
+      {onShowOperationLog && (
+        <div className="flex justify-end items-center gap-2 text-muted-foreground">
+          <button
+            type="button"
+            onClick={onShowOperationLog}
+            className="p-1 leading-none hover:text-foreground"
+            title={t('gameDetails.title')}
+          >
+            <FaClipboardList className="w-4 h-4" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
