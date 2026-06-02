@@ -21,6 +21,7 @@ import {
   shouldShowAlwaysVisibleBoard,
   shouldShowInlinePeekHeader,
 } from '../_lib';
+import { AiReplyChip } from './AiReplyChip';
 import { FinishedGamePanel } from './FinishedGamePanel';
 import { GameInProgressPanel } from './GameInProgressPanel';
 import { InlineBoardView } from './InlineBoardView';
@@ -72,6 +73,8 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
     actions,
     operationLogs,
     isAiThinking,
+    aiMoveDisplay,
+    aiMoveSignal,
   } = gameSession;
 
   const {
@@ -292,6 +295,15 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
       onReveal={handleRevealBoard}
       onMove={canBoardMove ? handleBoardMove : undefined}
       onIllegalMove={canBoardMove ? recordInvalid : undefined}
+      // AI reply surfaced on the board itself (visible without scrolling to the
+      // page title): "thinking…" while computing, then the move, which fades.
+      boardBadge={
+        <AiReplyChip
+          isAiThinking={isAiThinking}
+          aiMoveDisplay={aiMoveDisplay}
+          aiMoveSignal={aiMoveSignal}
+        />
+      }
     />
   );
 

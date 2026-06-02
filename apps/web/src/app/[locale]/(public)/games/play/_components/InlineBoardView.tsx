@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 
 import { ChessBoard, FlipBoardButton } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -95,6 +95,12 @@ type Props = {
    * stays put and is non-interactive). Ignored unless `masked` is true.
    */
   maskDismissable?: boolean;
+  /**
+   * Optional node floated at the top-center of the board, above the mask (so it
+   * stays visible in blindfold modes). Used by the play surface for the AI-reply
+   * chip. The slot is `pointer-events-none`, so it never blocks a peek tap.
+   */
+  boardBadge?: ReactNode;
 };
 
 export function InlineBoardView({
@@ -121,6 +127,7 @@ export function InlineBoardView({
   masked,
   onReveal,
   maskDismissable,
+  boardBadge,
 }: Props) {
   const t = useTranslations('play');
   const [isOpen, setIsOpen] = useState(false);
@@ -269,6 +276,15 @@ export function InlineBoardView({
                   </span>
                 </div>
               ))}
+
+            {/* Floating badge (AI-reply chip), above the mask so it stays
+                visible while blindfolded. Non-interactive so a peek tap on the
+                masked board still registers. */}
+            {boardBadge && (
+              <div className="pointer-events-none absolute inset-x-0 top-2 z-20 flex justify-center px-2">
+                {boardBadge}
+              </div>
+            )}
           </div>
         </div>
       )}

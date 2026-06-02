@@ -36,7 +36,7 @@ export function PlayPageClient({ locale, breadcrumb, initialMoveInputHint }: Pro
   // read move-error / AI-thinking / AI-move-announcement state directly,
   // without a useEffect bridge from PlayClient.
   const gameSession = useGameSession({ locale });
-  const { aiMoveDisplay, isAiThinking, aiMoveSignal } = gameSession;
+  const { aiMoveSignal } = gameSession;
   const { error: moveError, lastAttemptedInput } = gameSession.moveInput;
   const { isLoadingFromStorage } = gameSession.gameState;
   const { preferences: globalPreferences, isHydrated } = useGamePreferences();
@@ -70,29 +70,25 @@ export function PlayPageClient({ locale, breadcrumb, initialMoveInputHint }: Pro
   // the input panel both transition out of their "loading" state in lockstep.
   const isInitializing = isLoadingFromStorage || !isHydrated;
 
-  // Resolve the content of the single status slot (PageTitle).
-  // Priority: active move error → AI-thinking state → AI's last move
-  // announcement → initial-load "Loading..." → "Play Chess" title. Both
-  // branches render a `truncate block` span so the swap between states is
-  // always single-line and does not reflow / cause CLS on narrow viewports
-  // (longer "AI played ..." strings would otherwise wrap to 2 lines).
+  // Resolve the content of the page-title slot.
+  // Priority: active move error → initial-load "Loading..." → "Play Chess"
+  // title. The AI-thinking state and the AI's last-move announcement now live
+  // on the board itself (AiReplyChip), visible without scrolling up, so they
+  // are intentionally NOT mirrored here. The span stays `truncate block` so an
+  // error string never wraps to 2 lines / causes CLS on narrow viewports.
   const titleContent = (
     <span
       className={`truncate block ${
-        moveError
-          ? 'text-destructive'
-          : isAiThinking || isInitializing
-            ? 'text-muted-foreground'
-            : ''
+        moveError ? 'text-destructive' : isInitializing ? 'text-muted-foreground' : ''
       }`}
     >
       {moveError
         ? lastAttemptedInput
           ? `\u26A0 ${t('invalidMove')}: ${lastAttemptedInput}`
           : `\u26A0 ${moveError}`
-        : isAiThinking
-          ? t('aiThinking')
-          : aiMoveDisplay || (isInitializing ? t('loading') : t('title'))}
+        : isInitializing
+          ? t('loading')
+          : t('title')}
     </span>
   );
 
