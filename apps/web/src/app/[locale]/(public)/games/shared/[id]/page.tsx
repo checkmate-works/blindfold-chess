@@ -11,16 +11,19 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { getCommentUserProfile, listGameComments } from '@/lib/db/game-comments';
-import { getGameById } from '@/lib/db/games';
+import { GAME_LIKE_TARGET, getGameById } from '@/lib/db/games';
+import { getLikeMeta } from '@/lib/db/like-queries';
 import { createClient } from '@/lib/supabase/server';
 import { resolveDisplayName } from '@/lib/users/display-name';
 import { UUID_RE } from '@/lib/validations/uuid';
 
 import { PositionAuthorAttribution } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorAttribution';
+import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { toggleGameLikeAction } from './_actions/game-like';
 import { GameReplay } from './_components/GameReplay';
 import { OwnerActions } from './_components/OwnerActions';
 
@@ -71,9 +74,10 @@ export default async function SharedGamePage({ params, searchParams }: Props) {
 
   // Advice comments (per-move) plus the viewer's profile, which enables posting
   // and rendering their own comment optimistically.
-  const [comments, currentUser] = await Promise.all([
+  const [comments, currentUser, likeMeta] = await Promise.all([
     listGameComments(game.id, user?.id),
     user ? getCommentUserProfile(user.id) : Promise.resolve(null),
+    getLikeMeta(GAME_LIKE_TARGET, game.id, user?.id),
   ]);
 
   return (
@@ -105,19 +109,40 @@ export default async function SharedGamePage({ params, searchParams }: Props) {
           )}
         </GameReplay>
 
-        {/* Owner-only edit / delete controls (registered via session, or
-            account-less via the manage token held by OwnerActions). */}
-        <OwnerActions gameId={game.id} isRegisteredOwner={isRegisteredOwner} locale={locale} />
-
-        {/* Author attribution at the bottom — avatar + name + profile link,
-            matching the chunk / position UGC pages. Anonymous authors get a
-            fallback name and no profile link. */}
+        {/* Author attribution — avatar + name + profile link, matching the
+            chunk / position UGC pages. Anonymous authors get a fallback name
+            and no profile link. */}
         <PositionAuthorAttribution
           profile={author ? { username: author.username, avatarUrl: author.avatarUrl } : null}
           displayName={authorDisplayName}
           createdByLabel={t('detail.sharedBy')}
           locale={locale}
         />
+
+        {/* Like (left) + owner edit/delete and the shared date (right) — same
+            row convention as the puzzle / position detail pages. OwnerActions
+            renders nothing for non-owners, leaving just the date on the right. */}
+        <div className="flex items-center justify-between gap-4 text-xs text-muted-foreground">
+          <LikeButton
+            postId={game.id}
+            locale={locale}
+            topicKey=""
+            initialLikeCount={likeMeta.likeCount}
+            initialLikedByMe={likeMeta.likedByMe}
+            toggleLikeAction={toggleGameLikeAction}
+            i18nNamespace="sharedGames.detail"
+          />
+          <div className="flex items-center gap-4">
+            <OwnerActions gameId={game.id} isRegisteredOwner={isRegisteredOwner} locale={locale} />
+            <time dateTime={game.createdAt.toISOString()}>
+              {game.createdAt.toLocaleDateString(locale, {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </time>
+          </div>
+        </div>
       </div>
     </PageLayout>
   );

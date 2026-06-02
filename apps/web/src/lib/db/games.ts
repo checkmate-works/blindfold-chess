@@ -225,3 +225,20 @@ export async function updateSharedGameFields(
     .set({ title: fields.title, description: fields.description })
     .where(eq(games.id, gameId));
 }
+
+/** Polymorphic `likes` target type for a shared game itself (vs `game_comment`). */
+export const GAME_LIKE_TARGET = 'game';
+
+/**
+ * Author id of a live game — used for the like notification. `null` for an
+ * account-less (anonymous) game; `undefined` if the game is missing or deleted.
+ */
+export async function getGameLikeOwner(gameId: string): Promise<string | null | undefined> {
+  const [row] = await db
+    .select({ authorId: games.authorId, deletedAt: games.deletedAt })
+    .from(games)
+    .where(eq(games.id, gameId))
+    .limit(1);
+  if (!row || row.deletedAt !== null) return undefined;
+  return row.authorId;
+}

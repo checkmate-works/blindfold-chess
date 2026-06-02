@@ -20,6 +20,7 @@ vi.mock('@/i18n/use-safe-translations', () => ({
     if (key === 'followMessage' && params) return `${params.actor} followed you`;
     if (key === 'likeMessage' && params) return `${params.actor} liked your post`;
     if (key === 'likeCommentMessage' && params) return `${params.actor} liked your comment`;
+    if (key === 'likeGameMessage' && params) return `${params.actor} liked your game`;
     if (key === 'replyMessage' && params) return `${params.actor} replied to your comment`;
     if (key === 'newPostMessage' && params) return `${params.actor} shared a new post`;
     if (key === 'chunkEditRequestSubmittedMessage' && params)
@@ -334,6 +335,21 @@ describe('NotificationItem', () => {
       const link = screen.getByText('Alice liked your comment').closest('a');
       expect(link).not.toBeNull();
       expect(link!.getAttribute('href')).toBe('/games/shared/game-42?comment=comment-7');
+    });
+
+    it('should read "liked your game" and link a game like to the game detail page', () => {
+      const notification = createNotification({
+        type: 'like',
+        targetType: 'game',
+        targetId: 'game-77',
+        metadata: {},
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const link = screen.getByText('Alice liked your game').closest('a');
+      expect(link).not.toBeNull();
+      expect(link!.getAttribute('href')).toBe('/games/shared/game-77');
     });
 
     it('should link a chunk-comment like to /chunks/{slug}/posts/{postId} (not /topics/chunks/...)', () => {

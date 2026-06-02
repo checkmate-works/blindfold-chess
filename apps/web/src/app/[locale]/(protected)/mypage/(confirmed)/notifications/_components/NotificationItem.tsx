@@ -85,9 +85,13 @@ export function NotificationItem({ notification, currentUsername }: Props) {
       case 'follow':
         return t('followMessage', { actor: actorName });
       case 'like':
-        // Topic posts and game comments are both rendered as comments in the
-        // UGC UI, so the like reads "liked your comment". Other likeable
-        // targets (positions) keep the generic wording.
+        // A shared game liked as a whole reads "liked your game". Topic posts
+        // and game comments are both rendered as comments in the UGC UI, so
+        // those read "liked your comment". Other likeable targets (positions)
+        // keep the generic wording.
+        if (notification.targetType === 'game') {
+          return t('likeGameMessage', { actor: actorName });
+        }
         if (
           notification.targetType === 'game_comment' ||
           notification.targetType === 'topic_post'
@@ -285,6 +289,14 @@ export function NotificationItem({ notification, currentUsername }: Props) {
         notification.metadata.postId,
         replyId
       );
+    }
+    if (
+      notification.type === 'like' &&
+      notification.targetType === 'game' &&
+      notification.targetId
+    ) {
+      // The game id is the like target itself.
+      return `/games/shared/${notification.targetId}`;
     }
     if (
       notification.type === 'like' &&
