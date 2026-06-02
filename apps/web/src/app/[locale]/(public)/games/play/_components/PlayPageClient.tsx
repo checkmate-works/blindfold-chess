@@ -41,30 +41,12 @@ export function PlayPageClient({ locale, breadcrumb, initialMoveInputHint }: Pro
   const { isLoadingFromStorage } = gameSession.gameState;
   const { preferences: globalPreferences, isHydrated } = useGamePreferences();
 
-  // Effective boardVisibility / peekMode = per-game override if present,
-  // else global. Drives whether the full-screen AiMovePulse fires.
-  //
-  // The pulse is suppressed in:
-  //   - 'always' mode — the board is on screen continuously, so the user
-  //     sees the AI's piece move directly. The peripheral cue is redundant.
-  //   - 'peek' + 'inline' mode — after a player commit the inline board
-  //     auto-collapses (Phase 0) and the page scrolls back to the title
-  //     so "AI is thinking" is the first thing the user sees. A pulse on
-  //     top of that scroll feels chaotic; the title text alone is enough.
-  //
-  // Kept in:
-  //   - 'peek' + 'modal' mode — the modal "View Board" button is the only
-  //     board surface, and the pulse is the user's main signal that AI moved.
-  //   - 'never' mode — same as modal; without the cue the move is easy to
-  //     miss (only the title text changes).
-  // Resolve the effective per-game settings (per-game falls back to global)
-  // and delegate the actual pulse-vs-no-pulse policy to `shouldShowAiPulse`
-  // so it can be exercised across the full (boardVisibility × peekMode) grid
-  // in unit tests, instead of being an inline boolean buried in this file.
+  // Resolve the effective board visibility (per-game falls back to global) and
+  // delegate the pulse-vs-no-pulse policy to `shouldShowAiPulse` (fires in the
+  // blindfold modes, suppressed when the board is always visible).
   const perGamePrefs = gameSession.gameConfig.perGamePrefs;
   const aiPulseEnabled = shouldShowAiPulse({
     boardVisibility: perGamePrefs?.boardVisibility ?? globalPreferences.boardVisibility,
-    peekMode: perGamePrefs?.peekMode ?? globalPreferences.peekMode,
   });
   // Matches the `isInitializing` predicate in `PlayClient` so the title and
   // the input panel both transition out of their "loading" state in lockstep.

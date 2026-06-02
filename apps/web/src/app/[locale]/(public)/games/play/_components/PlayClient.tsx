@@ -16,11 +16,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { useBoardFlip, useConfirmationDialogs, useMoveNavigation } from '../_hooks';
 import type { GameSession } from '../_hooks/use-game-session';
 import { usePlayClientPreferences } from '../_hooks/use-play-client-preferences';
-import {
-  buildPostmortemPath,
-  shouldShowAlwaysVisibleBoard,
-  shouldShowInlinePeekHeader,
-} from '../_lib';
+import { buildPostmortemPath } from '../_lib';
 import { AiReplyChip, useAiReplyChip } from './AiReplyChip';
 import { BoardSettingsButton } from './BoardSettingsButton';
 import { FinishedGamePanel } from './FinishedGamePanel';
@@ -128,7 +124,6 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
     });
 
   // UI state
-  const [isBoardVisible, setIsBoardVisible] = useState(false);
   const [showOperationLogModal, setShowOperationLogModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
 
@@ -329,30 +324,28 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
     />
   );
 
-  // Finished-game review board (read-only) keeps the existing peek/always
-  // rendering for now — the always-present-board model is being rolled out to
-  // the live in-progress surface first.
-  const finishedBoardView =
-    shouldShowInlinePeekHeader(preferences) || shouldShowAlwaysVisibleBoard(preferences) ? (
-      <InlineBoardView
-        fen={displayFen || currentFen}
-        playerSide={playerSide}
-        flipped={effectiveFlipped}
-        lastMove={preferences.highlightLastMove && currentPosition === -1 ? lastMove : null}
-        preferences={preferences}
-        movesLength={moves.length}
-        currentPosition={currentPosition}
-        formattedPgn={formattedPgn}
-        onNavigateToStart={navigateToStart}
-        onNavigatePrevious={navigatePrevious}
-        onNavigateNext={navigateNext}
-        onNavigateToEnd={navigateToEnd}
-        onNavigateToPosition={navigateToPosition}
-        onFlipBoard={handleFlipBoard}
-        onPeek={shouldShowAlwaysVisibleBoard(preferences) ? undefined : recordPeek}
-        alwaysOpen={shouldShowAlwaysVisibleBoard(preferences)}
-      />
-    ) : undefined;
+  // Finished-game review board (read-only): always show the board. A finished
+  // game is being reviewed, not played, so there is no blindfold mask or peek
+  // here — the board is simply visible.
+  const finishedBoardView = (
+    <InlineBoardView
+      fen={displayFen || currentFen}
+      playerSide={playerSide}
+      flipped={effectiveFlipped}
+      lastMove={preferences.highlightLastMove && currentPosition === -1 ? lastMove : null}
+      preferences={preferences}
+      movesLength={moves.length}
+      currentPosition={currentPosition}
+      formattedPgn={formattedPgn}
+      onNavigateToStart={navigateToStart}
+      onNavigatePrevious={navigatePrevious}
+      onNavigateNext={navigateNext}
+      onNavigateToEnd={navigateToEnd}
+      onNavigateToPosition={navigateToPosition}
+      onFlipBoard={handleFlipBoard}
+      alwaysOpen
+    />
+  );
 
   if (gameNotFound) {
     notFound();
@@ -422,11 +415,9 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
             {!isInitializing && isFinishedView && isFinished && (
               <FinishedGamePanel
                 inlineBoardView={finishedBoardView}
-                preferences={preferences}
                 onViewResult={handleViewResult}
                 onPostmortem={() => guardAction(handleOpenPostmortem)}
                 showPostmortem={moves.length > 0}
-                onShowBoard={() => setIsBoardVisible(true)}
                 onShowOperationLog={() => setShowOperationLogModal(true)}
               />
             )}
@@ -475,22 +466,7 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
 
       <PlayClientModals
         confirmationDialogs={confirmationDialogs}
-        isBoardVisible={isBoardVisible}
-        onCloseBoardVisible={() => setIsBoardVisible(false)}
-        fen={displayFen || currentFen}
-        playerSide={playerSide}
-        flipped={effectiveFlipped}
-        lastMove={preferences.highlightLastMove && currentPosition === -1 ? lastMove : null}
         preferences={preferences}
-        movesLength={moves.length}
-        currentPosition={currentPosition}
-        formattedPgn={formattedPgn}
-        onNavigateToStart={navigateToStart}
-        onNavigatePrevious={navigatePrevious}
-        onNavigateNext={navigateNext}
-        onNavigateToEnd={navigateToEnd}
-        onNavigateToPosition={navigateToPosition}
-        onFlipBoard={handleFlipBoard}
         showOperationLogModal={showOperationLogModal}
         onCloseOperationLog={() => setShowOperationLogModal(false)}
         engineConfig={engineConfig}

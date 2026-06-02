@@ -6,27 +6,18 @@ import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaChartLine, FaClipboardList, FaFlagCheckered } from 'react-icons/fa';
 
-import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
-
-import { ACTION_ROW_CONTAINER_CLASSES, shouldShowModalPeekButton } from '../_lib';
-import { ShowBoardButton } from './ShowBoardButton';
-
 type Props = {
   /**
-   * The same board element the in-progress panel renders (peek-inline or
-   * always-visible), but wired non-interactive by the parent — see PlayClient.
-   * Lets a finished game be reviewed in the familiar board UI.
+   * The always-visible board element the parent renders, wired non-interactive
+   * (see PlayClient). Lets a finished game be reviewed in the familiar board UI.
    */
   inlineBoardView?: ReactNode;
-  preferences: GamePreferences;
   /** Navigate to this finished game's result screen. */
   onViewResult: () => void;
   /** Launch the postmortem (memory replay) for this game. */
   onPostmortem: () => void;
   /** Whether to offer the postmortem action (only when the game has moves). */
   showPostmortem: boolean;
-  /** Open the board peek modal (modal-peek mode only). */
-  onShowBoard: () => void;
   /** Open the Game Details modal (engine / settings / change log). */
   onShowOperationLog?: () => void;
 };
@@ -41,15 +32,12 @@ type Props = {
  */
 export function FinishedGamePanel({
   inlineBoardView,
-  preferences,
   onViewResult,
   onPostmortem,
   showPostmortem,
-  onShowBoard,
   onShowOperationLog,
 }: Props) {
   const t = useTranslations('play');
-  const showModalPeekButton = shouldShowModalPeekButton(preferences);
 
   return (
     <div className="flex flex-col gap-6">
@@ -82,14 +70,6 @@ export function FinishedGamePanel({
           )}
         </div>
       </div>
-
-      {/* Peek button (modal-peek mode) — lets the player reveal the board even
-          though no moves can be made. */}
-      {showModalPeekButton && (
-        <div className={ACTION_ROW_CONTAINER_CLASSES}>
-          <ShowBoardButton onClick={onShowBoard} />
-        </div>
-      )}
 
       {/* Game Details (engine / initial settings / change log). */}
       {onShowOperationLog && (
