@@ -1,0 +1,1 @@
+ALTER TABLE "games" ADD COLUMN "play_settings_log" jsonb;

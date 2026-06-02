@@ -25,7 +25,11 @@ import {
 } from 'drizzle-orm/pg-core';
 
 import type { EngineConfig } from '@/lib/engines';
-import type { GamePlaySettings, MoveOperationLog } from '@/lib/games/saved-game-types';
+import type {
+  GamePlaySettings,
+  MoveOperationLog,
+  PlaySettingsChangeEntry,
+} from '@/lib/games/saved-game-types';
 import { uuidv7 } from '@/lib/uuidv7';
 
 import { chunks } from './positions';
@@ -99,6 +103,15 @@ export const games = pgTable(
      * migration. Null for legacy games and games published before this column.
      */
     playSettings: jsonb('play_settings').$type<GamePlaySettings>(),
+    /**
+     * Timeline of mid-game edits to the display-relevant blindfold settings
+     * (the validated {@link PlaySettingsChangeEntry} subset). Folded over
+     * `play_settings` per position so the replay shows what the player saw at
+     * each move, not only at game start. JSONB so the shape can evolve without
+     * a migration. Null when the player never changed settings mid-game (the
+     * common case) and for games published before this column.
+     */
+    playSettingsLog: jsonb('play_settings_log').$type<PlaySettingsChangeEntry[]>(),
     result: varchar('result', { length: 4 }).$type<'win' | 'loss' | 'draw'>().notNull(),
 
     // --- Denormalized for gallery filter / sort ---

@@ -3,7 +3,7 @@
 import { publishGame } from '@/lib/db/games';
 import type { EngineConfig } from '@/lib/engines';
 import { deriveGameColumns, validatePublishSnapshot } from '@/lib/games/publish-game';
-import type { MoveOperationLog } from '@/lib/games/saved-game-types';
+import type { MoveOperationLog, PreferenceChangeLogEntry } from '@/lib/games/saved-game-types';
 import { isUserBanned } from '@/lib/moderation/ban';
 import { notifyFollowersOfNewGame } from '@/lib/notifications/notification';
 import { guardByIpRateLimit } from '@/lib/security/rate-limit-ip';
@@ -23,6 +23,13 @@ export type PublishGameActionInput = {
   operationLogs?: MoveOperationLog[] | null;
   /** Per-game blindfold settings snapshot; validated + subset on the server. */
   playSettings?: PerGamePreferences | null;
+  /**
+   * Mid-game per-game-preference edits (the full change log). The server
+   * validates this down to the display-relevant subset (board visibility +
+   * piece visibility/shape/color) so the replay can show what the player saw at
+   * each position, not just at game start.
+   */
+  playSettingsLog?: PreferenceChangeLogEntry[] | null;
 };
 
 export type PublishGameResponse =

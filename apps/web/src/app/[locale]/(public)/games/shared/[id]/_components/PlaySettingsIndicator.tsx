@@ -1,38 +1,41 @@
-import { getTranslations } from 'next-intl/server';
+'use client';
 
 import { DiscPiece } from '@/app/_components/chess/DiscPiece';
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { ChessPieceIcon } from '@blindfold-chess/icons';
 
 import { BOARD_VISIBILITY_ICON } from '@/lib/games/board-visibility-icons';
 import type { GamePlaySettings } from '@/lib/games/saved-game-types';
 
-import type { Locale } from '@/app/[locale]/_lib/types';
-
 type Props = {
   settings: GamePlaySettings;
   playerColor: 'white' | 'black';
-  locale: Locale;
 };
 
 /**
- * "How this game was played" — the blindfold difficulty as compact icons,
- * since text would be cluttered. Shows the board-visibility icon plus, when the
- * board was visible at all, a two-cell sample of how the player saw their own
- * vs. the opponent's pieces (shape + color, slashed when that side was hidden).
- * Renders nothing for a plain, fully-sighted standard game.
+ * "How the player saw this position" — the blindfold difficulty as compact
+ * icons. Shows the board-visibility icon plus, when the board was visible at all
+ * and the pieces deviate from normal, a two-cell sample of how the player saw
+ * their own vs. the opponent's pieces (shape + color, slashed when that side
+ * was hidden).
+ *
+ * Client component (unlike the rest of the detail view, which is server-side)
+ * because it lives inside the replay and re-renders as the viewer steps through
+ * the moves: `settings` is the effective state at the *currently displayed*
+ * position, folded from the start-of-game snapshot plus the change log. The
+ * caller decides whether to render this at all (a game that was fully sighted
+ * throughout has nothing to surface); this component always renders its content
+ * for the position it is handed.
  */
-export async function SharedGamePlaySettings({ settings, playerColor, locale }: Props) {
+export function PlaySettingsIndicator({ settings, playerColor }: Props) {
+  const t = useTranslations('sharedGames.playSettings');
+  const VisibilityIcon = BOARD_VISIBILITY_ICON[settings.boardVisibility];
+
   const piecesDeviate =
     !settings.showOwnPieces ||
     !settings.showOpponentPieces ||
     settings.pieceShapeMode !== 'normal' ||
     settings.pieceColors !== 'normal';
-
-  // Nothing notable for a standard sighted game.
-  if (settings.boardVisibility === 'always' && !piecesDeviate) return null;
-
-  const t = await getTranslations({ locale, namespace: 'sharedGames.playSettings' });
-  const VisibilityIcon = BOARD_VISIBILITY_ICON[settings.boardVisibility];
 
   const colorFor = (side: 'own' | 'opponent'): 'w' | 'b' => {
     if (settings.pieceColors === 'white-only') return 'w';
