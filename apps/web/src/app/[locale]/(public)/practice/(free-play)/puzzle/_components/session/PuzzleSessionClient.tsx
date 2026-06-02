@@ -264,6 +264,11 @@ export function PuzzleSessionClient({
               currentPosition={-1}
               formattedPgn={[]}
               onPeek={() => setPeekCount((c) => c + 1)}
+              // Once the board is peeked open, let the player answer directly on
+              // it: a click/drag of an own piece submits that move just like the
+              // text/select/button input. ChessBoard only emits legal moves, so
+              // this runs the same correct/incorrect evaluation as handleSubmit.
+              onMove={isSolved ? undefined : (san) => handleSubmit(san as AlgebraicNotation)}
             />
           </div>
 
