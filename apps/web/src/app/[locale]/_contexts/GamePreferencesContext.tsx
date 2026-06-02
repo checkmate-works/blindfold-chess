@@ -23,8 +23,8 @@ import {
 import { validatePreferences } from './game-preferences-validation';
 
 // Per-game preferences (subset of GamePreferences saved with each game).
-// `boardVisibility` and `peekMode` are "Controls"-tier settings in the global
-// Preferences page but are included here too: how the board surfaces during
+// `boardVisibility` is a "Controls"-tier setting in the global Preferences
+// page but is included here too: how the board surfaces during
 // gameplay often changes per-game depending on how the player wants to
 // experience that specific session. Legacy records (saved before either
 // field existed in this shape) are tolerated via `??` fallbacks at every
@@ -129,11 +129,11 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
   // Load preferences from localStorage on mount.
   //
   // Cookie-write responsibility: this effect writes the `bfc_move_input_pref`
-  // and `bfc_peek_pref` cookies directly with the loaded (or default) keys.
-  // Updates made later go through `updatePreferences` / `resetPreferences`,
-  // which write the cookies synchronously before returning — see the comment
-  // on `updatePreferences` below for the rationale (race with immediate
-  // navigation / prefetch). We deliberately do NOT keep a secondary
+  // cookie directly with the loaded (or default) keys. Updates made later go
+  // through `updatePreferences` / `resetPreferences`, which write the cookie
+  // synchronously before returning — see the comment on `updatePreferences`
+  // below for the rationale (race with immediate navigation / prefetch). We
+  // deliberately do NOT keep a secondary
   // `useEffect` keyed on mode changes: that effect fires asynchronously
   // after `setState`, which is exactly the race we're closing.
   useEffect(() => {
@@ -198,21 +198,20 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
     }
   }, [preferences, isLoaded]);
 
-  // Mirror the move-input mode keys to the `bfc_move_input_pref` cookie, and
-  // the board-peek keys to the `bfc_peek_pref` cookie, so the SSR pipeline
-  // can emit the right skeleton shape on the next navigation. The cookie
-  // writes are performed **synchronously** here, before `setPreferences`
-  // schedules a re-render and before the user can navigate / trigger a
-  // Next.js prefetch of `/games/play`. If we relied on a post-state-update
-  // `useEffect` (as a previous version did), a user toggling a preference
-  // and immediately reloading could race the effect and hit the server with
-  // a stale cookie, yielding the wrong skeleton.
+  // Mirror the move-input mode keys to the `bfc_move_input_pref` cookie so the
+  // SSR pipeline can emit the right move-input skeleton shape on the next
+  // navigation. The cookie write is performed **synchronously** here, before
+  // `setPreferences` schedules a re-render and before the user can navigate /
+  // trigger a Next.js prefetch of `/games/play`. If we relied on a
+  // post-state-update `useEffect` (as a previous version did), a user toggling
+  // a preference and immediately reloading could race the effect and hit the
+  // server with a stale cookie, yielding the wrong skeleton.
   //
-  // The cookies are server-facing hints only — localStorage remains the
-  // source of truth for the full preferences object.
+  // The cookie is a server-facing hint only — localStorage remains the source
+  // of truth for the full preferences object.
   //
   // Single-writer rule: this provider is the ONLY place that writes the
-  // cookies. Any other writer will cause drift with localStorage. If a
+  // cookie. Any other writer will cause drift with localStorage. If the
   // cookie is cleared externally (privacy extensions, incognito, etc.),
   // SSR falls back to the default hint until the user next changes a
   // related preference — an acceptable degradation to today's baseline.

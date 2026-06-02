@@ -36,11 +36,10 @@ type Props = {
 };
 
 /**
- * `/games/play` reads per-user cookies (`bfc_move_input_pref` and
- * `bfc_peek_pref`) so the SSR pipeline can emit the correctly shaped
- * `MoveInputSkeleton` / `InlineBoardHeaderSkeleton` / `ActionRowSkeleton` for
- * users whose preferences differ from the defaults. Those cookie reads make
- * the page dynamic, so `generateStaticParams` is intentionally not exported
+ * `/games/play` reads the per-user `bfc_move_input_pref` cookie so the SSR
+ * pipeline can emit the correctly shaped `MoveInputSkeleton` for users whose
+ * move-input preference differs from the default. That cookie read makes the
+ * page dynamic, so `generateStaticParams` is intentionally not exported
  * and `dynamic = 'force-dynamic'` is declared below to make the opt-out
  * explicit (it also satisfies the repo-wide ISR / user-scope guard — see
  * `apps/web/src/lib/isr-user-scope-guard.test.ts`).
