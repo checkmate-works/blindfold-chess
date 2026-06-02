@@ -2,8 +2,6 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { readPeekPreferenceFromCookies } from '@/lib/games/peek-cookie.server';
-
 import { PiecesInfo } from '@/app/[locale]/(public)/practice/_components/PiecesInfo';
 import { Breadcrumb } from '@/app/[locale]/_components/Breadcrumb';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -11,14 +9,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { PuzzleSessionClient } from '../../../_components/session/PuzzleSessionClient';
 import { loadPuzzleWithSolutions } from '../../../_lib/load-puzzle';
-
-/**
- * Reading the `bfc_peek_pref` cookie via `readPeekPreferenceFromCookies`
- * makes this page dynamic. Mirrors the rationale on `/games/play/page.tsx` —
- * the cookie is a per-user UI hint so the page must opt out of static
- * prerendering. Other puzzle pages remain ISR-eligible.
- */
-export const dynamic = 'force-dynamic';
 
 type Props = {
   params: Promise<{
@@ -62,8 +52,6 @@ export default async function PuzzleSessionPage({ params }: Props) {
 
   const { position, solutions } = row;
 
-  const peekHint = await readPeekPreferenceFromCookies();
-
   const breadcrumb = (
     <Breadcrumb
       items={[
@@ -87,7 +75,6 @@ export default async function PuzzleSessionPage({ params }: Props) {
       positionTitle={position.title}
       piecesInfo={piecesInfo}
       breadcrumb={breadcrumb}
-      initialPeekHint={peekHint}
     />
   );
 }

@@ -11,15 +11,8 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaTimes } from 'react-icons/fa';
 
 import type { PuzzleSolutionMove } from '@/lib/db/schema/positions';
-import type { PeekPreferenceHint } from '@/lib/games/peek-cookie';
 
-import { BoardViewModal } from '@/app/[locale]/(public)/games/play/_components/BoardViewModal';
 import { InlineBoardView } from '@/app/[locale]/(public)/games/play/_components/InlineBoardView';
-import { ShowBoardButton } from '@/app/[locale]/(public)/games/play/_components/ShowBoardButton';
-import {
-  shouldShowInlinePeekHeader,
-  shouldShowModalPeekButton,
-} from '@/app/[locale]/(public)/games/play/_lib';
 import { Divider } from '@/app/[locale]/_components/Divider';
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
 import { PagePanel } from '@/app/[locale]/_components/PagePanel';
@@ -51,12 +44,6 @@ type Props = {
    * `PlayPageClient` shape where `breadcrumb` is injected the same way.
    */
   breadcrumb: ReactNode;
-  /**
-   * Server-resolved board-peek hint from the `bfc_peek_pref` cookie. Used
-   * to pick the correct peek-mode rendering path on first paint, mirroring
-   * the `initialPeekHint` flow in `games/play/_components/PlayPageClient`.
-   */
-  initialPeekHint: PeekPreferenceHint;
 };
 
 /**
@@ -75,22 +62,11 @@ export function PuzzleSessionClient({
   positionTitle,
   piecesInfo,
   breadcrumb,
-  initialPeekHint,
 }: Props) {
   const t = useTranslations('practice.puzzle.session');
   const tPlay = useTranslations('play');
   const tResult = useTranslations('practice.puzzle.result');
-  const { preferences, updatePreferences, isHydrated } = useGamePreferences();
-
-  // Pre-hydration: trust the cookie hint (server-resolved). Post-hydration:
-  // trust the localStorage-backed `preferences`. Mirrors `PlayClient`'s
-  // `skeletonShowInlinePeekHeader` / `skeletonShowModalPeekButton` pattern.
-  const showModalPeekButton = isHydrated
-    ? shouldShowModalPeekButton(preferences)
-    : shouldShowModalPeekButton(initialPeekHint);
-  const showInlinePeek = isHydrated
-    ? shouldShowInlinePeekHeader(preferences)
-    : shouldShowInlinePeekHeader(initialPeekHint);
+  const { preferences, updatePreferences } = useGamePreferences();
 
   const playerColor: 'w' | 'b' = isBlackToMoveFromFen(fen) ? 'b' : 'w';
 
@@ -129,7 +105,6 @@ export function PuzzleSessionClient({
   const [incorrectFlash, setIncorrectFlash] = useState<{ count: number } | null>(null);
   const incorrectCountRef = useRef(0);
   const [peekCount, setPeekCount] = useState(0);
-  const [isBoardVisible, setIsBoardVisible] = useState(false);
 
   // Owns isSolved + isNavigatingToResult + the post-solve handshake
   // (sessionStorage write, EXP grant Server Action, router.push to /result).
@@ -267,34 +242,30 @@ export function PuzzleSessionClient({
         <div className="space-y-4">
           {piecesInfo}
 
-          {showInlinePeek && (
-            // Puzzle peek always reveals all pieces — overrides blindfold prefs from games/play.
-            //
-            // The inline-peek board is constrained to the same width as
-            // `games/play`'s `lg:col-span-2` of `lg:grid-cols-3 lg:gap-8`,
-            // i.e. `(2W - 32px) / 3` where W is the PagePanel's inner
-            // width — so the ChessBoard renders at the same size on both
-            // pages on desktop. Only the board itself is constrained:
-            // the surrounding pieces info, move input, status messages,
-            // and peek button keep the original full-width layout. The
-            // `mx-auto` centers the constrained board within the panel
-            // (since there is no analog of the games/play moves panel to
-            // fill the right side, left-aligning would leave a visually
-            // unbalanced empty band).
-            <div className="lg:mx-auto lg:max-w-[calc((200%_-_2rem)/3)]">
-              <InlineBoardView
-                fen={session.currentFen}
-                playerSide={playerColor === 'b' ? 'black' : 'white'}
-                flipped={playerColor === 'b'}
-                lastMove={null}
-                preferences={{ ...preferences, showOwnPieces: true, showOpponentPieces: true }}
-                movesLength={0}
-                currentPosition={-1}
-                formattedPgn={[]}
-                onPeek={() => setPeekCount((c) => c + 1)}
-              />
-            </div>
-          )}
+          {/* Puzzle board uses a single peek style: a collapsible "show board"
+              accordion that always reveals all pieces (it overrides the
+              blindfold piece prefs from games/play). Each expand counts as one
+              peek. There is no modal / always / never variant here.
+
+              The board is constrained to the same width as `games/play`'s
+              `lg:col-span-2` of `lg:grid-cols-3 lg:gap-8`, i.e. `(2W - 32px)/3`
+              where W is the PagePanel's inner width — so the ChessBoard renders
+              at the same size on both pages on desktop. Only the board itself
+              is constrained; the surrounding pieces info, move input, and status
+              keep the full-width layout. `mx-auto` centers it within the panel. */}
+          <div className="lg:mx-auto lg:max-w-[calc((200%_-_2rem)/3)]">
+            <InlineBoardView
+              fen={session.currentFen}
+              playerSide={playerColor === 'b' ? 'black' : 'white'}
+              flipped={playerColor === 'b'}
+              lastMove={null}
+              preferences={{ ...preferences, showOwnPieces: true, showOpponentPieces: true }}
+              movesLength={0}
+              currentPosition={-1}
+              formattedPgn={[]}
+              onPeek={() => setPeekCount((c) => c + 1)}
+            />
+          </div>
 
           {/*
             Wrap the panel in a `relative` container so the transient
@@ -363,38 +334,6 @@ export function PuzzleSessionClient({
                 {tResult('viewResult')}
               </Button>
             </Link>
-          )}
-
-          {/* Action row matches the `games/play` `GameInProgressPanel`
-              structure — same `ShowBoardButton` component, same flex layout —
-              so the puzzle session and games/play look identical when the
-              user has `peekMode='modal'`. Hidden under `peekMode='inline'`,
-              where the inline accordion above already exposes the board. */}
-          {showModalPeekButton && (
-            <div className="flex gap-4 md:gap-2 justify-center">
-              <ShowBoardButton
-                onClick={() => {
-                  setPeekCount((c) => c + 1);
-                  setIsBoardVisible(true);
-                }}
-                disabled={isSolved}
-              />
-            </div>
-          )}
-
-          {showModalPeekButton && (
-            <BoardViewModal
-              isOpen={isBoardVisible}
-              onClose={() => setIsBoardVisible(false)}
-              fen={session.currentFen}
-              playerSide={playerColor === 'b' ? 'black' : 'white'}
-              flipped={playerColor === 'b'}
-              lastMove={null}
-              preferences={{ ...preferences, showOwnPieces: true, showOpponentPieces: true }}
-              movesLength={0}
-              currentPosition={-1}
-              formattedPgn={[]}
-            />
           )}
         </div>
 
