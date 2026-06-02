@@ -83,12 +83,41 @@ export function GameInProgressPanel({
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Inline Board View (peek mode === 'inline').
-          NOTE: Header height (~46px) + parent gap-6 (24px) is reserved in
-          PlayClient's initializing skeleton when preferences indicate inline
-          peek. Changes to the header padding / text size here must be kept
-          in sync with that reservation. */}
-      {inlineBoardView}
+      {/* Board, with a thin control toolbar pinned directly beneath it. The
+          board-related controls (per-game settings + game details) live here,
+          next to the board they act on, instead of in the panel's bottom row.
+          The toolbar sits OUTSIDE the board's blindfold mask (so it stays
+          operable while the board is masked) and below the board squares (so it
+          never overlaps pieces). */}
+      <div className="space-y-2">
+        {inlineBoardView}
+        {(onShowSettings || onShowOperationLog) && (
+          <div className="flex items-center justify-end gap-4 text-sm text-muted-foreground">
+            {onShowSettings && (
+              <button
+                type="button"
+                onClick={onShowSettings}
+                className="inline-flex items-center gap-1.5 hover:text-foreground"
+                title={t('settings.title')}
+              >
+                <FaCog className="h-4 w-4" />
+                <span>{t('settings.title')}</span>
+              </button>
+            )}
+            {onShowOperationLog && (
+              <button
+                type="button"
+                onClick={onShowOperationLog}
+                className="inline-flex items-center gap-1.5 hover:text-foreground"
+                title={t('gameDetails.title')}
+              >
+                <FaClipboardList className="h-4 w-4" />
+                <span>{t('gameDetails.title')}</span>
+              </button>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Move Input */}
       {/* AI thinking or retry → disabled real UI, not skeleton */}
@@ -156,32 +185,6 @@ export function GameInProgressPanel({
         <Link href="/games" className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
           💾 {t('saveAndExit')}
         </Link>
-      </div>
-
-      {/* Game Details + (optional) settings. The Game Details modal folds
-          the opponent / engine info, initial per-game settings, and the
-          mid-game change log into one surface — see OperationLogModal. */}
-      <div className="flex justify-end items-center gap-2 text-muted-foreground">
-        {onShowOperationLog && (
-          <button
-            type="button"
-            onClick={onShowOperationLog}
-            className="p-1 leading-none hover:text-foreground"
-            title={t('gameDetails.title')}
-          >
-            <FaClipboardList className="w-4 h-4" />
-          </button>
-        )}
-        {onShowSettings && (
-          <button
-            type="button"
-            onClick={onShowSettings}
-            className="p-1 leading-none hover:text-foreground"
-            title={t('settings.title')}
-          >
-            <FaCog className="w-4 h-4" />
-          </button>
-        )}
       </div>
     </div>
   );
