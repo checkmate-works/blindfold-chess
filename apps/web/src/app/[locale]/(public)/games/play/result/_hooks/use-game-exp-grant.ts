@@ -4,10 +4,10 @@ import { useEffect, useRef, useState } from 'react';
 
 import type { ExpInfo } from '@blindfold-chess/features/exp';
 
+import type { GameStats } from '@/lib/games/compute-game-stats';
 import type { Game } from '@/lib/games/saved-game-types';
 
 import { saveGameResult } from '../_actions/save-game-result';
-import type { GameStats } from '../_lib/compute-game-stats';
 
 type Options = {
   gameId: string;

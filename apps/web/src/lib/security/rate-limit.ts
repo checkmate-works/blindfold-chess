@@ -106,6 +106,12 @@ export const RATE_LIMITS = {
    * farming guard is the per-day Exp cap inside `grantGameExp`, not this.
    */
   saveGameResult: { action: 'save_game_result', maxAttempts: 60, windowMs: 3_600_000 },
+  /** Per-user limit for posting advice comments on a shared game. Matches createReply. */
+  createGameComment: { action: 'create_game_comment', maxAttempts: 20, windowMs: 3_600_000 },
+  /** Per-user limit for editing one's own shared-game comment. Matches editPost. */
+  editGameComment: { action: 'edit_game_comment', maxAttempts: 30, windowMs: 3_600_000 },
+  /** Per-user limit for linking a chunk to a shared game's move. */
+  linkGameChunk: { action: 'link_game_chunk', maxAttempts: 30, windowMs: 3_600_000 },
   /**
    * Opening post limit is keyed per topicKey — use `createOpeningPostAction(slug)` to
    * build the action string (e.g., 'create_opening_post:french-defense').

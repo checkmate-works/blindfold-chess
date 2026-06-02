@@ -1,6 +1,7 @@
 import type { FeedItem } from '../_lib/types';
 import { ChallengeRankUpdateCard } from './ChallengeRankUpdateCard';
 import { ChunkFeedCard } from './ChunkFeedCard';
+import { GameFeedCard } from './GameFeedCard';
 import { PositionFeedCard } from './PositionFeedCard';
 import { TopicPostCard } from './TopicPostCard';
 
@@ -32,6 +33,8 @@ export function FeedCard({ item, locale, showMoreLabel, justNowLabel, variant }:
       );
     case 'position':
       return <PositionFeedCard data={item.data} locale={locale} justNowLabel={justNowLabel} />;
+    case 'game':
+      return <GameFeedCard data={item.data} locale={locale} justNowLabel={justNowLabel} />;
     case 'chunk':
       return (
         <ChunkFeedCard

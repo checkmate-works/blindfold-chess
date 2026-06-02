@@ -277,7 +277,6 @@
         "blackView": "Black's Perspective"
       },
       "boardVisibility": "Board Visibility",
-      "boardVisibilityDescription": "Choose how the chessboard surfaces during gameplay. Piece-display settings (below) still apply when the board is visible — they are the blindfold mechanism in this app.",
       "boardVisibilities": {
         "always": "Always visible",
         "peek": "Peek on demand",
@@ -1656,6 +1655,9 @@
       "position": {
         "action": "Posted a new problem"
       },
+      "game": {
+        "action": "Shared a game"
+      },
       "chunk": {
         "action": {
           "created": "Posted a chunk draft",
@@ -1686,6 +1688,11 @@
     }
   },
   "gamesPage": {
+    "tabs": {
+      "label": "Games",
+      "mine": "My Games",
+      "shared": "Shared Games"
+    },
     "pageTitle": "Games",
     "help": {
       "label": "Help",
@@ -1857,6 +1864,8 @@
         "columnDetail": "Detail"
       },
       "openFinishedGame": "Open finished game",
+      "publish": "Share this game",
+      "viewShared": "View shared game",
       "stats": {
         "title": "Game Stats",
         "moves": "Moves",
@@ -1885,6 +1894,133 @@
     "finishedGame": {
       "heading": "This game has ended",
       "viewResult": "View result"
+    }
+  },
+  "sharedGames": {
+    "detail": {
+      "fallbackTitle": "Shared game",
+      "by": "Posted by {name}",
+      "sharedBy": "Posted by",
+      "guest": "Guest",
+      "cleanRate": "Clean",
+      "like": "Like",
+      "unlike": "Unlike",
+      "newReply": "New Reply {time}",
+      "justNow": "just now",
+      "descriptionSection": "Description",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleting": "Deleting…",
+      "cancel": "Cancel",
+      "deleteConfirmTitle": "Delete this shared game?",
+      "deleteConfirmBody": "This removes it from the public catalog and can't be undone.",
+      "errors": {
+        "forbidden": "You don't have permission to do that.",
+        "generic": "Something went wrong. Please try again."
+      }
+    },
+    "edit": {
+      "title": "Edit game",
+      "submit": "Save",
+      "submitting": "Saving…",
+      "notAuthorized": "You don't have permission to edit this game.",
+      "backToGame": "Back to the game"
+    },
+    "result": { "win": "Win", "loss": "Loss", "draw": "Draw" },
+    "list": {
+      "title": "Published games",
+      "empty": "No games have been shared yet.",
+      "sectionTitle": "Games",
+      "sortBy": "Sort by",
+      "sort": { "new": "Newest", "clean": "Cleanest", "strong": "Opponent strength" }
+    },
+    "new": {
+      "title": "Publish game",
+      "sectionTitle": "Share settings",
+      "loading": "Loading game…",
+      "gameIdMissing": "No game specified.",
+      "gameNotFound": "Game not found.",
+      "notFinished": "This game isn't finished yet.",
+      "titleLabel": "Title",
+      "titlePlaceholder": "e.g. Blindfold win vs Maia 1600",
+      "descriptionLabel": "Description (optional)",
+      "descriptionPlaceholder": "Notes about this game…",
+      "summary": { "engine": "Opponent", "result": "Result", "moves": "Moves" },
+      "submit": "Publish",
+      "submitting": "Publishing…",
+      "errors": {
+        "rateLimited": "Too many publishes. Please try again later.",
+        "generic": "Could not publish this game. Please try again."
+      }
+    },
+    "comments": {
+      "title": "Comments",
+      "titleForMove": "Comments on {move}",
+      "empty": "No comments on this move yet.",
+      "placeholder": "Comment on this move…",
+      "submit": "Post",
+      "submitting": "Posting…",
+      "joinConversation": "Join the conversation",
+      "reply": "Reply",
+      "replyPlaceholder": "Write a reply…",
+      "replySubmit": "Reply",
+      "replyingTo": "Replying to {name}",
+      "cancelReply": "Cancel reply",
+      "edit": "Edit",
+      "save": "Save",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "editedLabel": "(edited)",
+      "editedTitle": "Last edited {date}",
+      "like": "Like",
+      "unlike": "Unlike",
+      "hiddenReplies": "{count, plural, one {# reply hidden} other {# replies hidden}}",
+      "collapseAriaLabel": "Collapse replies",
+      "expandAriaLabel": "Expand replies",
+      "deletedComment": "This comment was deleted",
+      "confirmDeleteTitle": "Delete this comment?",
+      "confirmDeleteBody": "This can't be undone.",
+      "confirmDelete": "Delete",
+      "confirmCancel": "Cancel",
+      "signInToComment": "Sign in to comment.",
+      "signIn": "Sign in",
+      "errors": {
+        "rateLimited": "Too many comments. Please try again later.",
+        "forbidden": "You don't have permission to do that.",
+        "notFound": "This comment no longer exists.",
+        "generic": "Could not post your comment. Please try again."
+      }
+    },
+    "chunks": {
+      "title": "Applicable chunks",
+      "empty": "No chunks linked to this move yet.",
+      "placeholder": "Search chunks to add…",
+      "noResults": "No matching chunks",
+      "moreItemsHint": "+{count} more",
+      "signInToLink": "Sign in to link a chunk.",
+      "signIn": "Sign in",
+      "remove": "Remove {title}",
+      "badge": "Chunk",
+      "submit": "Link {count}",
+      "submitting": "Linking…",
+      "errors": {
+        "alreadyLinked": "That chunk is already linked to this move.",
+        "chunkNotAvailable": "That chunk isn't available.",
+        "rateLimited": "Too many actions. Please try again later.",
+        "generic": "Something went wrong. Please try again."
+      }
+    },
+    "playSettings": {
+      "title": "Setup",
+      "visibility": {
+        "always": "Board shown",
+        "peek": "Peek only",
+        "never": "No board"
+      },
+      "own": "Your pieces",
+      "opponent": "Opponent pieces",
+      "hidden": "hidden"
     }
   },
   "postmortem": {
@@ -3058,7 +3194,9 @@
     "markAllAsRead": "Mark all as read",
     "followMessage": "{actor} started following you",
     "likeMessage": "{actor} liked your post",
-    "replyMessage": "{actor} replied to your post",
+    "likeCommentMessage": "{actor} liked your comment",
+    "likeGameMessage": "{actor} liked your game",
+    "replyMessage": "{actor} replied to your comment",
     "unknownNotification": "You have a new notification",
     "announcementMessage": "New announcement: {title}",
     "newPostMessage": "{actor} shared a new post",
@@ -3067,6 +3205,7 @@
     "chunkEditRequestAcceptedMessage": "{actor} accepted your edit suggestion",
     "newChunkDraftMessage": "{actor} posted a chunk draft",
     "chunkPublishedMessage": "{actor} published a chunk",
+    "newGameMessage": "{actor} shared a game",
     "newPositionMemoryMessage": "{actor} created a new position memory problem",
     "newPuzzleMessage": "{actor} created a new puzzle",
     "achievementSingleMessage": "🏆 You earned {name}",
@@ -3103,6 +3242,7 @@
     "signInRequired": "Please sign in to continue",
     "profileUpdated": "Profile updated",
     "postCreated": "Posted successfully",
+    "gamePublished": "Game published",
     "rateLimited": "You can only post once per day for each opening. Please try again later.",
     "gameSaved": "Game saved successfully",
     "gamesDeleted": "{count, plural, one {# game deleted successfully} other {# games deleted successfully}}",

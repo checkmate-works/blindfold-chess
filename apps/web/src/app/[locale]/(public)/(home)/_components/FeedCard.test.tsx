@@ -5,6 +5,7 @@ import type {
   ChallengeRankUpdateFeedItem,
   ChunkFeedItem,
   FeedItem,
+  GameFeedItem,
   PositionFeedItem,
   TopicPostFeedItem,
 } from '../_lib/types';
@@ -35,6 +36,12 @@ vi.mock('./PositionFeedCard', () => ({
 vi.mock('./ChunkFeedCard', () => ({
   ChunkFeedCard: ({ data }: { data: unknown }) => (
     <div data-testid="chunk-feed-card">{JSON.stringify(data)}</div>
+  ),
+}));
+
+vi.mock('./GameFeedCard', () => ({
+  GameFeedCard: ({ data }: { data: unknown }) => (
+    <div data-testid="game-feed-card">{JSON.stringify(data)}</div>
   ),
 }));
 
@@ -254,6 +261,39 @@ describe('FeedCard', () => {
     expect(card).toBeInTheDocument();
     expect(card.textContent).toContain('rook-battery');
     expect(card.textContent).toContain('Rook Battery');
+  });
+
+  it('should render GameFeedCard for game entityType', () => {
+    const item: GameFeedItem = {
+      id: 'feed-5',
+      entityType: 'game',
+      entityId: 'game-1',
+      actorId: 'user-1',
+      createdAt: '2025-01-15T10:00:00.000Z',
+      data: {
+        id: 'game-1',
+        title: 'Stockfish Lv 5 — Win',
+        fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+        result: 'win',
+        createdAt: '2025-01-15T10:00:00.000Z',
+        author: {
+          username: 'testuser',
+          displayName: 'Test User',
+          avatarUrl: null,
+          country: null,
+          flair: null,
+        },
+        likeMeta: { likeCount: 0, likedByMe: false },
+        replyMeta: { replyCount: 0, latestReplyAt: null, repliers: [], uniqueReplierCount: 0 },
+      },
+    };
+
+    render(<FeedCard item={item} {...defaultProps} />);
+
+    const card = screen.getByTestId('game-feed-card');
+    expect(card).toBeInTheDocument();
+    expect(card.textContent).toContain('game-1');
+    expect(card.textContent).toContain('Stockfish Lv 5');
   });
 
   it('should return null for unknown entityType', () => {

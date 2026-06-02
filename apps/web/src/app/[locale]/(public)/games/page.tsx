@@ -24,6 +24,7 @@ import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { GamesPageClient } from './_components';
+import { GamesTabs } from './_components/GamesTabs';
 
 type Props = {
   params: Promise<{
@@ -79,6 +80,9 @@ export default async function GamesPage({ params }: Props) {
       breadcrumb={[{ label: t('pageTitle'), href: undefined }]}
     >
       <SectionTitle>{tGameList('title')}</SectionTitle>
+      <div className="mb-6">
+        <GamesTabs active="mine" locale={locale} />
+      </div>
       <div data-tour-id="games-new-button">
         <NewGameButton locale={locale} />
       </div>

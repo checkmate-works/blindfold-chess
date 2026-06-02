@@ -43,6 +43,10 @@ export const IP_RATE_LIMITS = {
   resendEmail: { maxRequests: 3, windowMs: 300_000 }, // 5 min, 3 requests
   resetPassword: { maxRequests: 5, windowMs: 300_000 }, // 5 min, 5 requests
   contact: { maxRequests: 3, windowMs: 60_000 }, // 1 min, 3 requests
+  // Publishing a shared game is open to account-less authors, so it gates on
+  // IP rather than user id. 5 / 10 min is generous for a human sharing a game
+  // but caps scripted spam from a single source.
+  publishGame: { maxRequests: 5, windowMs: 600_000 }, // 10 min, 5 requests
 } as const;
 
 /**

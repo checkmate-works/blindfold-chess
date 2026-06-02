@@ -4,6 +4,13 @@ import type { Side } from '@blindfold-chess/types';
 
 type UseBoardFlipParams = {
   playerSide: Side;
+  /**
+   * Initial value of the manual flip toggle (default `false`). Lets a caller
+   * seed the board orientation from outside (e.g. a shareable `?color=` URL on
+   * the shared-game page) so the first render is already correctly oriented,
+   * with no post-mount flip.
+   */
+  initialFlipped?: boolean;
 };
 
 type UseBoardFlipReturn = {
@@ -22,8 +29,11 @@ type UseBoardFlipReturn = {
  * (white at bottom for white, black at bottom for black). The flip toggle
  * reverses the orientation.
  */
-export function useBoardFlip({ playerSide }: UseBoardFlipParams): UseBoardFlipReturn {
-  const [isBoardFlipped, setIsBoardFlipped] = useState(false);
+export function useBoardFlip({
+  playerSide,
+  initialFlipped = false,
+}: UseBoardFlipParams): UseBoardFlipReturn {
+  const [isBoardFlipped, setIsBoardFlipped] = useState(initialFlipped);
 
   const effectiveFlipped = playerSide === 'black' ? !isBoardFlipped : isBoardFlipped;
 

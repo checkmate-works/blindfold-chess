@@ -172,6 +172,33 @@ export function notifyFollowersOfNewChunk(params: {
 }
 
 /**
+ * Notify all followers of a user about a newly published blindfold game.
+ * Only registered authors reach this path (account-less games have no actor /
+ * followers). Fire-and-forget — failures are logged but do not block publish.
+ */
+export function notifyFollowersOfNewGame(params: { actorId: string; gameId: string }): void {
+  (async () => {
+    const followers = await db
+      .select({ followerId: userFollows.followerId })
+      .from(userFollows)
+      .where(eq(userFollows.followingId, params.actorId));
+
+    for (const follower of followers) {
+      createNotification({
+        userId: follower.followerId,
+        actorId: params.actorId,
+        type: 'new_game',
+        targetType: 'game',
+        targetId: params.gameId,
+        metadata: { gameId: params.gameId },
+      });
+    }
+  })().catch((error) => {
+    console.error('[notifyFollowersOfNewGame] failed:', error);
+  });
+}
+
+/**
  * Notify the author of a topic about a new comment.
  * Fire-and-forget — failures are silently caught.
  */

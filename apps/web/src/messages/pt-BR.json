@@ -273,7 +273,6 @@
         "blackView": "Perspectiva de Pretas"
       },
       "boardVisibility": "Visibilidade do Tabuleiro",
-      "boardVisibilityDescription": "Escolha como o tabuleiro é apresentado durante a partida. As configurações de exibição das peças (abaixo) continuam se aplicando quando o tabuleiro está visível — elas são o principal mecanismo do modo às cegas neste app.",
       "boardVisibilities": {
         "always": "Sempre visível",
         "peek": "Espiar sob demanda",
@@ -1652,6 +1651,9 @@
       "position": {
         "action": "Publicou um novo problema"
       },
+      "game": {
+        "action": "Compartilhou uma partida"
+      },
       "chunk": {
         "action": {
           "created": "Publicou um rascunho de chunk",
@@ -1682,6 +1684,11 @@
     }
   },
   "gamesPage": {
+    "tabs": {
+      "label": "Partidas",
+      "mine": "Minhas partidas",
+      "shared": "Partidas públicas"
+    },
     "pageTitle": "Partidas",
     "help": {
       "label": "Ajuda",
@@ -1853,6 +1860,8 @@
         "columnDetail": "Detalhe"
       },
       "openFinishedGame": "Abrir partida finalizada",
+      "publish": "Compartilhar esta partida",
+      "viewShared": "Ver partida compartilhada",
       "stats": {
         "title": "Estatísticas da Partida",
         "moves": "Lances",
@@ -1881,6 +1890,133 @@
     "finishedGame": {
       "heading": "Esta partida terminou",
       "viewResult": "Ver resultado"
+    }
+  },
+  "sharedGames": {
+    "detail": {
+      "fallbackTitle": "Partida compartilhada",
+      "by": "Publicado por {name}",
+      "sharedBy": "Publicado por",
+      "guest": "Convidado",
+      "cleanRate": "Limpos",
+      "like": "Curtir",
+      "unlike": "Remover curtida",
+      "newReply": "Nova resposta {time}",
+      "justNow": "agora mesmo",
+      "descriptionSection": "Descrição",
+      "edit": "Editar",
+      "delete": "Excluir",
+      "deleting": "Excluindo…",
+      "cancel": "Cancelar",
+      "deleteConfirmTitle": "Excluir esta partida compartilhada?",
+      "deleteConfirmBody": "Ela será removida do catálogo público e não pode ser desfeita.",
+      "errors": {
+        "forbidden": "Você não tem permissão para fazer isso.",
+        "generic": "Algo deu errado. Tente novamente."
+      }
+    },
+    "edit": {
+      "title": "Editar partida",
+      "submit": "Salvar",
+      "submitting": "Salvando…",
+      "notAuthorized": "Você não tem permissão para editar esta partida.",
+      "backToGame": "Voltar à partida"
+    },
+    "result": { "win": "Vitória", "loss": "Derrota", "draw": "Empate" },
+    "list": {
+      "title": "Partidas publicadas",
+      "empty": "Nenhuma partida foi compartilhada ainda.",
+      "sectionTitle": "Partidas",
+      "sortBy": "Ordenar por",
+      "sort": { "new": "Mais recentes", "clean": "Mais limpas", "strong": "Força do adversário" }
+    },
+    "new": {
+      "title": "Publicar partida",
+      "sectionTitle": "Opções de compartilhamento",
+      "loading": "Carregando a partida…",
+      "gameIdMissing": "Nenhuma partida especificada.",
+      "gameNotFound": "Partida não encontrada.",
+      "notFinished": "Esta partida ainda não terminou.",
+      "titleLabel": "Título",
+      "titlePlaceholder": "ex. Vitória às cegas vs Maia 1600",
+      "descriptionLabel": "Descrição (opcional)",
+      "descriptionPlaceholder": "Notas sobre esta partida…",
+      "summary": { "engine": "Adversário", "result": "Resultado", "moves": "Lances" },
+      "submit": "Publicar",
+      "submitting": "Publicando…",
+      "errors": {
+        "rateLimited": "Muitas publicações. Tente novamente mais tarde.",
+        "generic": "Não foi possível publicar esta partida. Tente novamente."
+      }
+    },
+    "comments": {
+      "title": "Comentários",
+      "titleForMove": "Comentários sobre {move}",
+      "empty": "Ainda não há comentários sobre este lance.",
+      "placeholder": "Comente sobre este lance…",
+      "submit": "Publicar",
+      "submitting": "Publicando…",
+      "joinConversation": "Participe da conversa",
+      "reply": "Responder",
+      "replyPlaceholder": "Escreva uma resposta…",
+      "replySubmit": "Responder",
+      "replyingTo": "Respondendo a {name}",
+      "cancelReply": "Cancelar resposta",
+      "edit": "Editar",
+      "save": "Salvar",
+      "saving": "Salvando…",
+      "cancel": "Cancelar",
+      "delete": "Excluir",
+      "editedLabel": "(editado)",
+      "editedTitle": "Editado pela última vez {date}",
+      "like": "Curtir",
+      "unlike": "Remover curtida",
+      "hiddenReplies": "{count, plural, one {# resposta oculta} other {# respostas ocultas}}",
+      "collapseAriaLabel": "Recolher respostas",
+      "expandAriaLabel": "Expandir respostas",
+      "deletedComment": "Este comentário foi excluído",
+      "confirmDeleteTitle": "Excluir este comentário?",
+      "confirmDeleteBody": "Esta ação não pode ser desfeita.",
+      "confirmDelete": "Excluir",
+      "confirmCancel": "Cancelar",
+      "signInToComment": "Entre para comentar.",
+      "signIn": "Entrar",
+      "errors": {
+        "rateLimited": "Muitos comentários. Tente novamente mais tarde.",
+        "forbidden": "Você não tem permissão para fazer isso.",
+        "notFound": "Este comentário não existe mais.",
+        "generic": "Não foi possível publicar seu comentário. Tente novamente."
+      }
+    },
+    "chunks": {
+      "title": "Chunks aplicáveis",
+      "empty": "Ainda não há chunks vinculados a este lance.",
+      "placeholder": "Busque chunks para adicionar…",
+      "noResults": "Nenhum chunk correspondente",
+      "moreItemsHint": "+{count} mais",
+      "signInToLink": "Entre para vincular um chunk.",
+      "signIn": "Entrar",
+      "remove": "Remover {title}",
+      "badge": "Chunk",
+      "submit": "Vincular {count}",
+      "submitting": "Vinculando…",
+      "errors": {
+        "alreadyLinked": "Esse chunk já está vinculado a este lance.",
+        "chunkNotAvailable": "Esse chunk não está disponível.",
+        "rateLimited": "Muitas ações. Tente novamente mais tarde.",
+        "generic": "Algo deu errado. Tente novamente."
+      }
+    },
+    "playSettings": {
+      "title": "Configuração",
+      "visibility": {
+        "always": "Tabuleiro visível",
+        "peek": "Apenas espiar",
+        "never": "Sem tabuleiro"
+      },
+      "own": "Suas peças",
+      "opponent": "Peças do oponente",
+      "hidden": "oculto"
     }
   },
   "postmortem": {
@@ -2819,13 +2955,16 @@
     "markAllAsRead": "Marcar todas como lidas",
     "followMessage": "{actor} começou a seguir você",
     "likeMessage": "{actor} curtiu sua publicação",
-    "replyMessage": "{actor} respondeu à sua publicação",
+    "likeCommentMessage": "{actor} curtiu seu comentário",
+    "likeGameMessage": "{actor} curtiu sua partida",
+    "replyMessage": "{actor} respondeu ao seu comentário",
     "unknownNotification": "Você tem uma nova notificação",
     "announcementMessage": "Novo anúncio: {title}",
     "newPostMessage": "{actor} compartilhou uma nova publicação",
     "newCommentOnTopicMessage": "{actor} comentou no seu problema",
     "newChunkDraftMessage": "{actor} publicou um rascunho de chunk",
     "chunkPublishedMessage": "{actor} publicou um chunk",
+    "newGameMessage": "{actor} compartilhou uma partida",
     "newPositionMemoryMessage": "{actor} criou um novo problema de memória de posição",
     "newPuzzleMessage": "{actor} criou um novo puzzle",
     "achievementSingleMessage": "🏆 Você conquistou {name}",
@@ -2862,6 +3001,7 @@
     "signInRequired": "Por favor, faça login para continuar",
     "profileUpdated": "Perfil atualizado",
     "postCreated": "Publicado com sucesso",
+    "gamePublished": "Partida publicada",
     "rateLimited": "Você só pode publicar uma vez por dia para cada abertura. Por favor, tente mais tarde.",
     "gameSaved": "Partida salva com sucesso",
     "gamesDeleted": "{count, plural, one {# partida excluída com sucesso} other {# partidas excluídas com sucesso}}",

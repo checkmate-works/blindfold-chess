@@ -323,6 +323,13 @@
       "when": 1779947638438,
       "tag": "20260528055358_add_show_as_banner_to_announcements",
       "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "7",
+      "when": 1780400205992,
+      "tag": "20260602113645_create_shared_games",
+      "breakpoints": true
     }
   ]
 }

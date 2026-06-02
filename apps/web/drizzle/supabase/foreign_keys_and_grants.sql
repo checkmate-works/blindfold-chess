@@ -749,3 +749,85 @@ GRANT SELECT ON TABLE public.point_purchases TO authenticated;
 -- =============================================================================
 -- Internal batch bookkeeping. No FK to auth.users; no GRANT to non-service
 -- roles. RLS is enabled with no policies so authenticated/anon cannot read.
+
+-- =============================================================================
+-- games (shared blindfold games — public catalog)
+-- =============================================================================
+
+-- FK constraint: games.author_id → auth.users(id) ON DELETE SET NULL
+-- Shared games function as a public catalog, so author deletion should NOT
+-- cascade the row away. Account-less games have author_id = NULL from the
+-- start (owned via game_tokens). Mirrors the chunks.user_id rationale.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'games_author_id_fkey'
+  ) THEN
+    ALTER TABLE public.games
+      ADD CONSTRAINT games_author_id_fkey
+      FOREIGN KEY (author_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+  END IF;
+END;
+$$;
+
+-- Public catalog read. All writes go through service-role server actions
+-- (publish verifies move legality + grants coins; mutations check token /
+-- author ownership), so no INSERT/UPDATE grant to non-service roles.
+GRANT SELECT ON TABLE public.games TO authenticated;
+GRANT SELECT ON TABLE public.games TO anon;
+
+-- =============================================================================
+-- game_tokens (capability secret — service-role only)
+-- =============================================================================
+-- The hashed ownership token. No FK to auth.users; no GRANT to authenticated /
+-- anon so the secret is never readable off the service role. RLS is enabled
+-- with no policies (see rls_policies.sql). The FK to games is managed by
+-- Drizzle (ON DELETE CASCADE).
+
+-- =============================================================================
+-- game_comments (third-party advice — public read)
+-- =============================================================================
+
+-- FK constraint: game_comments.author_id → auth.users(id) ON DELETE SET NULL
+-- Members-only writes (enforced in the action); nullable only so a hard-deleted
+-- commenter's advice survives, rendered "(deleted user)". Mirrors
+-- chunk_edit_requests.proposer_id.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'game_comments_author_id_fkey'
+  ) THEN
+    ALTER TABLE public.game_comments
+      ADD CONSTRAINT game_comments_author_id_fkey
+      FOREIGN KEY (author_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+  END IF;
+END;
+$$;
+
+-- The FK to games is managed by Drizzle (ON DELETE CASCADE). Writes go through
+-- a members-only, rate-limited server action, so service-role only.
+GRANT SELECT ON TABLE public.game_comments TO authenticated;
+GRANT SELECT ON TABLE public.game_comments TO anon;
+
+-- =============================================================================
+-- game_chunks (community chunk links on a move — public read)
+-- =============================================================================
+-- FK constraint: game_chunks.suggested_by_id → auth.users(id) ON DELETE SET NULL
+-- Nullable only so a hard-deleted member's link survives (attribution drops to
+-- anonymous). FKs to games (cascade) / chunks (restrict) are managed by Drizzle.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'game_chunks_suggested_by_id_fkey'
+  ) THEN
+    ALTER TABLE public.game_chunks
+      ADD CONSTRAINT game_chunks_suggested_by_id_fkey
+      FOREIGN KEY (suggested_by_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+  END IF;
+END;
+$$;
+
+-- Writes go through a members-only, rate-limited server action, so service-role
+-- only; reads are public.
+GRANT SELECT ON TABLE public.game_chunks TO authenticated;
+GRANT SELECT ON TABLE public.game_chunks TO anon;

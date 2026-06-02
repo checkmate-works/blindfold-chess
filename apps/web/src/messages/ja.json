@@ -277,7 +277,6 @@
         "blackView": "黒の視点"
       },
       "boardVisibility": "ボード表示",
-      "boardVisibilityDescription": "対局中のチェスボードの表示方法を選びます。下の駒の表示設定は、ボードが表示される場合でも適用されます — 目隠しを実現する主な手段は駒の見え方です。",
       "boardVisibilities": {
         "always": "常に表示",
         "peek": "必要なときにピーク",
@@ -1656,6 +1655,9 @@
       "position": {
         "action": "問題を投稿しました"
       },
+      "game": {
+        "action": "対局を公開しました"
+      },
       "chunk": {
         "action": {
           "created": "チャンクの下書きを投稿しました",
@@ -1686,6 +1688,11 @@
     }
   },
   "gamesPage": {
+    "tabs": {
+      "label": "ゲーム",
+      "mine": "マイ対局",
+      "shared": "公開対局"
+    },
     "pageTitle": "ゲーム",
     "help": {
       "label": "ヘルプ",
@@ -1857,6 +1864,8 @@
         "columnDetail": "詳細"
       },
       "openFinishedGame": "終了したゲームを開く",
+      "publish": "この対局を共有する",
+      "viewShared": "共有した対局を見る",
       "stats": {
         "title": "対局統計",
         "moves": "手数",
@@ -1885,6 +1894,133 @@
     "finishedGame": {
       "heading": "このゲームは終了しています",
       "viewResult": "結果を見る"
+    }
+  },
+  "sharedGames": {
+    "detail": {
+      "fallbackTitle": "公開対局",
+      "by": "{name} さんの対局",
+      "sharedBy": "投稿者",
+      "guest": "ゲスト",
+      "cleanRate": "クリーン率",
+      "like": "いいね",
+      "unlike": "いいねを取り消す",
+      "newReply": "新しい返信 {time}",
+      "justNow": "たった今",
+      "descriptionSection": "説明",
+      "edit": "編集",
+      "delete": "削除",
+      "deleting": "削除中…",
+      "cancel": "キャンセル",
+      "deleteConfirmTitle": "この公開対局を削除しますか？",
+      "deleteConfirmBody": "公開一覧から削除されます。この操作は取り消せません。",
+      "errors": {
+        "forbidden": "この操作を行う権限がありません。",
+        "generic": "問題が発生しました。もう一度お試しください。"
+      }
+    },
+    "edit": {
+      "title": "ゲームの編集",
+      "submit": "保存する",
+      "submitting": "保存中…",
+      "notAuthorized": "この対局を編集する権限がありません。",
+      "backToGame": "対局に戻る"
+    },
+    "result": { "win": "勝ち", "loss": "負け", "draw": "引き分け" },
+    "list": {
+      "title": "公開されたゲーム",
+      "empty": "まだ公開された対局はありません。",
+      "sectionTitle": "対局一覧",
+      "sortBy": "並び替え",
+      "sort": { "new": "新着", "clean": "クリーン率", "strong": "相手の強さ" }
+    },
+    "new": {
+      "title": "ゲームの公開",
+      "sectionTitle": "共有設定",
+      "loading": "対局を読み込み中…",
+      "gameIdMissing": "対局が指定されていません。",
+      "gameNotFound": "対局が見つかりません。",
+      "notFinished": "この対局はまだ終了していません。",
+      "titleLabel": "タイトル",
+      "titlePlaceholder": "例：Maia 1600 に目隠しで勝利",
+      "descriptionLabel": "説明（任意）",
+      "descriptionPlaceholder": "この対局についての説明…",
+      "summary": { "engine": "相手", "result": "結果", "moves": "手数" },
+      "submit": "公開する",
+      "submitting": "公開中…",
+      "errors": {
+        "rateLimited": "公開の回数が多すぎます。しばらくしてから再度お試しください。",
+        "generic": "公開できませんでした。もう一度お試しください。"
+      }
+    },
+    "comments": {
+      "title": "コメント",
+      "titleForMove": "{move} へのコメント",
+      "empty": "この手にはまだコメントがありません。",
+      "placeholder": "この手についてコメント…",
+      "submit": "コメントする",
+      "submitting": "送信中…",
+      "joinConversation": "コメントする",
+      "reply": "返信",
+      "replyPlaceholder": "返信を書く…",
+      "replySubmit": "返信する",
+      "replyingTo": "{name} さんへの返信",
+      "cancelReply": "返信をキャンセル",
+      "edit": "編集",
+      "save": "保存",
+      "saving": "保存中…",
+      "cancel": "キャンセル",
+      "delete": "削除",
+      "editedLabel": "(編集済み)",
+      "editedTitle": "{date} に編集",
+      "like": "いいね",
+      "unlike": "いいねを取り消す",
+      "hiddenReplies": "{count, plural, other {#件の返信を非表示中}}",
+      "collapseAriaLabel": "返信を折りたたむ",
+      "expandAriaLabel": "返信を展開する",
+      "deletedComment": "このコメントは削除されました",
+      "confirmDeleteTitle": "このコメントを削除しますか？",
+      "confirmDeleteBody": "この操作は取り消せません。",
+      "confirmDelete": "削除する",
+      "confirmCancel": "キャンセル",
+      "signInToComment": "コメントするにはログインしてください。",
+      "signIn": "ログイン",
+      "errors": {
+        "rateLimited": "コメントの回数が多すぎます。しばらくしてから再度お試しください。",
+        "forbidden": "この操作を行う権限がありません。",
+        "notFound": "このコメントは存在しません。",
+        "generic": "コメントを投稿できませんでした。もう一度お試しください。"
+      }
+    },
+    "chunks": {
+      "title": "適用できるチャンク",
+      "empty": "この手にはまだチャンクが紐付けられていません。",
+      "placeholder": "チャンクを検索して追加…",
+      "noResults": "該当するチャンクがありません",
+      "moreItemsHint": "他 {count} 件",
+      "signInToLink": "チャンクを紐付けるにはログインしてください。",
+      "signIn": "ログイン",
+      "remove": "{title} の紐付けを解除",
+      "badge": "チャンク",
+      "submit": "{count}件を紐付ける",
+      "submitting": "保存中…",
+      "errors": {
+        "alreadyLinked": "このチャンクはすでにこの手に紐付けられています。",
+        "chunkNotAvailable": "このチャンクは利用できません。",
+        "rateLimited": "操作が多すぎます。しばらくしてからお試しください。",
+        "generic": "エラーが発生しました。もう一度お試しください。"
+      }
+    },
+    "playSettings": {
+      "title": "プレイ設定",
+      "visibility": {
+        "always": "盤面常時表示",
+        "peek": "のぞき見のみ",
+        "never": "盤面なし"
+      },
+      "own": "自分の駒",
+      "opponent": "相手の駒",
+      "hidden": "非表示"
     }
   },
   "postmortem": {
@@ -3058,7 +3194,9 @@
     "markAllAsRead": "すべて既読にする",
     "followMessage": "{actor} があなたをフォローしました",
     "likeMessage": "{actor} があなたの投稿にいいねしました",
-    "replyMessage": "{actor} があなたの投稿に返信しました",
+    "likeCommentMessage": "{actor} があなたのコメントにいいねしました",
+    "likeGameMessage": "{actor} があなたの対局にいいねしました",
+    "replyMessage": "{actor} があなたのコメントに返信しました",
     "unknownNotification": "新しい通知があります",
     "announcementMessage": "新しいお知らせ: {title}",
     "newPostMessage": "{actor} さんが新しい投稿をシェアしました",
@@ -3067,6 +3205,7 @@
     "chunkEditRequestAcceptedMessage": "{actor} さんがあなたの編集リクエストを採用しました",
     "newChunkDraftMessage": "{actor} さんがチャンクの下書きを投稿しました",
     "chunkPublishedMessage": "{actor} さんがチャンクを公開しました",
+    "newGameMessage": "{actor} さんが対局を公開しました",
     "newPositionMemoryMessage": "{actor} がポジション記憶の問題を作成しました",
     "newPuzzleMessage": "{actor} がパズルを作成しました",
     "achievementSingleMessage": "🏆 {name} を獲得しました",
@@ -3103,6 +3242,7 @@
     "signInRequired": "ログインしてください",
     "profileUpdated": "プロフィールを更新しました",
     "postCreated": "投稿しました",
+    "gamePublished": "公開しました",
     "rateLimited": "各オープニングへの投稿は1日1回までです。時間をおいて再度お試しください。",
     "gameSaved": "ゲームが保存されました",
     "gamesDeleted": "{count, plural, other {#個のゲームを削除しました}}",

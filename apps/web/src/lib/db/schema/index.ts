@@ -32,3 +32,4 @@ export * from './achievements';
 export * from './gamification';
 export * from './positions';
 export * from './puzzles';
+export * from './games';

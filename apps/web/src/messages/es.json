@@ -273,7 +273,6 @@
         "blackView": "Perspectiva de Negras"
       },
       "boardVisibility": "Visibilidad del Tablero",
-      "boardVisibilityDescription": "Elige cómo se muestra el tablero durante el juego. Los ajustes de visualización de piezas (debajo) siguen aplicándose cuando el tablero es visible — son el mecanismo principal del modo a ciegas en esta aplicación.",
       "boardVisibilities": {
         "always": "Siempre visible",
         "peek": "Vistazo bajo demanda",
@@ -1652,6 +1651,9 @@
       "position": {
         "action": "Publicó un nuevo problema"
       },
+      "game": {
+        "action": "Compartió una partida"
+      },
       "chunk": {
         "action": {
           "created": "Publicó un borrador de chunk",
@@ -1682,6 +1684,11 @@
     }
   },
   "gamesPage": {
+    "tabs": {
+      "label": "Partidas",
+      "mine": "Mis partidas",
+      "shared": "Partidas públicas"
+    },
     "pageTitle": "Partidas",
     "help": {
       "label": "Ayuda",
@@ -1853,6 +1860,8 @@
         "columnDetail": "Detalle"
       },
       "openFinishedGame": "Abrir partida terminada",
+      "publish": "Compartir esta partida",
+      "viewShared": "Ver partida compartida",
       "stats": {
         "title": "Estadísticas de la Partida",
         "moves": "Jugadas",
@@ -1881,6 +1890,133 @@
     "finishedGame": {
       "heading": "Esta partida ha terminado",
       "viewResult": "Ver resultado"
+    }
+  },
+  "sharedGames": {
+    "detail": {
+      "fallbackTitle": "Partida compartida",
+      "by": "Publicado por {name}",
+      "sharedBy": "Publicado por",
+      "guest": "Invitado",
+      "cleanRate": "Limpias",
+      "like": "Me gusta",
+      "unlike": "Quitar me gusta",
+      "newReply": "Nueva respuesta {time}",
+      "justNow": "ahora mismo",
+      "descriptionSection": "Descripción",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "deleting": "Eliminando…",
+      "cancel": "Cancelar",
+      "deleteConfirmTitle": "¿Eliminar esta partida compartida?",
+      "deleteConfirmBody": "Se quitará del catálogo público y no se puede deshacer.",
+      "errors": {
+        "forbidden": "No tienes permiso para hacer eso.",
+        "generic": "Algo salió mal. Inténtalo de nuevo."
+      }
+    },
+    "edit": {
+      "title": "Editar partida",
+      "submit": "Guardar",
+      "submitting": "Guardando…",
+      "notAuthorized": "No tienes permiso para editar esta partida.",
+      "backToGame": "Volver a la partida"
+    },
+    "result": { "win": "Victoria", "loss": "Derrota", "draw": "Tablas" },
+    "list": {
+      "title": "Partidas publicadas",
+      "empty": "Aún no se ha compartido ninguna partida.",
+      "sectionTitle": "Partidas",
+      "sortBy": "Ordenar por",
+      "sort": { "new": "Más recientes", "clean": "Más limpias", "strong": "Fuerza del rival" }
+    },
+    "new": {
+      "title": "Publicar partida",
+      "sectionTitle": "Opciones de compartir",
+      "loading": "Cargando la partida…",
+      "gameIdMissing": "No se especificó ninguna partida.",
+      "gameNotFound": "Partida no encontrada.",
+      "notFinished": "Esta partida aún no ha terminado.",
+      "titleLabel": "Título",
+      "titlePlaceholder": "ej. Victoria a ciegas vs Maia 1600",
+      "descriptionLabel": "Descripción (opcional)",
+      "descriptionPlaceholder": "Notas sobre esta partida…",
+      "summary": { "engine": "Rival", "result": "Resultado", "moves": "Jugadas" },
+      "submit": "Publicar",
+      "submitting": "Publicando…",
+      "errors": {
+        "rateLimited": "Demasiadas publicaciones. Inténtalo de nuevo más tarde.",
+        "generic": "No se pudo publicar esta partida. Inténtalo de nuevo."
+      }
+    },
+    "comments": {
+      "title": "Comentarios",
+      "titleForMove": "Comentarios sobre {move}",
+      "empty": "Aún no hay comentarios sobre esta jugada.",
+      "placeholder": "Comenta sobre esta jugada…",
+      "submit": "Publicar",
+      "submitting": "Publicando…",
+      "joinConversation": "Únete a la conversación",
+      "reply": "Responder",
+      "replyPlaceholder": "Escribe una respuesta…",
+      "replySubmit": "Responder",
+      "replyingTo": "Respondiendo a {name}",
+      "cancelReply": "Cancelar respuesta",
+      "edit": "Editar",
+      "save": "Guardar",
+      "saving": "Guardando…",
+      "cancel": "Cancelar",
+      "delete": "Eliminar",
+      "editedLabel": "(editado)",
+      "editedTitle": "Editado por última vez {date}",
+      "like": "Me gusta",
+      "unlike": "Quitar me gusta",
+      "hiddenReplies": "{count, plural, one {# respuesta oculta} other {# respuestas ocultas}}",
+      "collapseAriaLabel": "Contraer respuestas",
+      "expandAriaLabel": "Expandir respuestas",
+      "deletedComment": "Este comentario fue eliminado",
+      "confirmDeleteTitle": "¿Eliminar este comentario?",
+      "confirmDeleteBody": "Esta acción no se puede deshacer.",
+      "confirmDelete": "Eliminar",
+      "confirmCancel": "Cancelar",
+      "signInToComment": "Inicia sesión para comentar.",
+      "signIn": "Iniciar sesión",
+      "errors": {
+        "rateLimited": "Demasiados comentarios. Inténtalo de nuevo más tarde.",
+        "forbidden": "No tienes permiso para hacer eso.",
+        "notFound": "Este comentario ya no existe.",
+        "generic": "No se pudo publicar tu comentario. Inténtalo de nuevo."
+      }
+    },
+    "chunks": {
+      "title": "Chunks aplicables",
+      "empty": "Aún no hay chunks vinculados a esta jugada.",
+      "placeholder": "Busca chunks para añadir…",
+      "noResults": "No hay chunks coincidentes",
+      "moreItemsHint": "+{count} más",
+      "signInToLink": "Inicia sesión para vincular un chunk.",
+      "signIn": "Iniciar sesión",
+      "remove": "Quitar {title}",
+      "badge": "Chunk",
+      "submit": "Vincular {count}",
+      "submitting": "Vinculando…",
+      "errors": {
+        "alreadyLinked": "Ese chunk ya está vinculado a esta jugada.",
+        "chunkNotAvailable": "Ese chunk no está disponible.",
+        "rateLimited": "Demasiadas acciones. Inténtalo de nuevo más tarde.",
+        "generic": "Algo salió mal. Inténtalo de nuevo."
+      }
+    },
+    "playSettings": {
+      "title": "Configuración",
+      "visibility": {
+        "always": "Tablero visible",
+        "peek": "Solo vistazo",
+        "never": "Sin tablero"
+      },
+      "own": "Tus piezas",
+      "opponent": "Piezas del rival",
+      "hidden": "oculto"
     }
   },
   "postmortem": {
@@ -2819,13 +2955,16 @@
     "markAllAsRead": "Marcar todas como leídas",
     "followMessage": "{actor} comenzó a seguirte",
     "likeMessage": "{actor} le gustó tu publicación",
-    "replyMessage": "{actor} respondió a tu publicación",
+    "likeCommentMessage": "{actor} le gustó tu comentario",
+    "likeGameMessage": "{actor} le gustó tu partida",
+    "replyMessage": "{actor} respondió a tu comentario",
     "unknownNotification": "Tienes una nueva notificación",
     "announcementMessage": "Nuevo anuncio: {title}",
     "newPostMessage": "{actor} compartió una nueva publicación",
     "newCommentOnTopicMessage": "{actor} comentó en tu problema",
     "newChunkDraftMessage": "{actor} publicó un borrador de chunk",
     "chunkPublishedMessage": "{actor} publicó un chunk",
+    "newGameMessage": "{actor} compartió una partida",
     "newPositionMemoryMessage": "{actor} creó un nuevo problema de memoria de posición",
     "newPuzzleMessage": "{actor} creó un nuevo puzzle",
     "achievementSingleMessage": "🏆 Obtuviste {name}",
@@ -2862,6 +3001,7 @@
     "signInRequired": "Por favor, inicia sesión para continuar",
     "profileUpdated": "Perfil actualizado",
     "postCreated": "Publicado correctamente",
+    "gamePublished": "Partida publicada",
     "rateLimited": "Solo puedes publicar una vez al día para cada apertura. Por favor, inténtalo más tarde.",
     "gameSaved": "Partida guardada correctamente",
     "gamesDeleted": "{count, plural, one {# partida eliminada correctamente} other {# partidas eliminadas correctamente}}",

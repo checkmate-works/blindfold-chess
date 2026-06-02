@@ -5,6 +5,23 @@ import type { EngineConfig } from '@/lib/engines';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
+import type { BoardVisibility } from './board-visibility';
+
+/**
+ * The blindfold difficulty settings shown on a published game — the
+ * display-relevant subset of {@link PerGamePreferences}, validated and stored
+ * in `games.play_settings`. Kept as its own type (not the full preferences
+ * blob) so only known, validated fields are persisted; new fields can be added
+ * later without a migration since the column is JSONB.
+ */
+export type GamePlaySettings = {
+  boardVisibility: BoardVisibility;
+  showOwnPieces: boolean;
+  showOpponentPieces: boolean;
+  pieceShapeMode: 'normal' | 'circles-all' | 'circles-own' | 'circles-opponent';
+  pieceColors: 'normal' | 'white-only' | 'black-only';
+};
+
 // Re-export the canonical SkillLevel type from @blindfold-chess/features
 export type SkillLevel = AiGameSkillLevel;
 

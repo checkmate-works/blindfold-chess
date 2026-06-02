@@ -937,3 +937,64 @@ ALTER TABLE "point_purchases" ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "point_purchases_select_policy" ON "point_purchases";
 CREATE POLICY "point_purchases_select_policy" ON "point_purchases"
   FOR SELECT USING (auth.uid() = user_id);
+
+-- =============================================================================
+-- games (shared blindfold games — public catalog, service-role write)
+-- =============================================================================
+-- Anyone may read only VISIBLE rows: status = 'public' and not soft-deleted.
+-- The planned owner-only `private` tier and soft-deleted rows are excluded from
+-- anon/authenticated access (a future owner-scoped path will serve `private` to
+-- its owner). The privileged application connection (Drizzle) and the service
+-- role bypass RLS, so admin tooling and the publish/mutation actions still see
+-- everything. No write policies: all mutations go through service-role actions.
+ALTER TABLE "games" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "games_select" ON "games";
+CREATE POLICY "games_select" ON "games"
+  FOR SELECT USING (deleted_at IS NULL AND status = 'public');
+
+-- =============================================================================
+-- game_tokens (capability secret — service-role only)
+-- =============================================================================
+-- RLS enabled with NO policies: authenticated/anon cannot read the token hash
+-- at all. Only the service role (which bypasses RLS) touches this table.
+ALTER TABLE "game_tokens" ENABLE ROW LEVEL SECURITY;
+
+-- =============================================================================
+-- game_comments (third-party advice — public read, service-role write)
+-- =============================================================================
+-- A comment is anon-visible only when it is not soft-deleted AND its parent
+-- game is itself visible (public, not soft-deleted) — so a comment never leaks
+-- the content of a hidden/private/deleted game. The app reads via Drizzle
+-- (service role, bypasses RLS); this is defense-in-depth for the anon API.
+ALTER TABLE "game_comments" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "game_comments_select" ON "game_comments";
+CREATE POLICY "game_comments_select" ON "game_comments"
+  FOR SELECT USING (
+    deleted_at IS NULL
+    AND EXISTS (
+      SELECT 1 FROM public.games g
+      WHERE g.id = game_comments.game_id
+        AND g.deleted_at IS NULL
+        AND g.status = 'public'
+    )
+  );
+
+-- =============================================================================
+-- game_chunks (community chunk links — public read, service-role write)
+-- =============================================================================
+-- Same parent-visibility gate as comments: a chunk link is only exposed while
+-- its parent game is publicly visible.
+ALTER TABLE "game_chunks" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "game_chunks_select" ON "game_chunks";
+CREATE POLICY "game_chunks_select" ON "game_chunks"
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM public.games g
+      WHERE g.id = game_chunks.game_id
+        AND g.deleted_at IS NULL
+        AND g.status = 'public'
+    )
+  );

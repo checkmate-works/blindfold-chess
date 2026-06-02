@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -13,7 +13,9 @@ import { FaChartLine, FaChessBoard, FaMinus, FaTimes } from 'react-icons/fa';
 
 import { engineConfigToUrlParams } from '@/lib/engines';
 import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
+import { computeGameStats } from '@/lib/games/compute-game-stats';
 import type { Game } from '@/lib/games/saved-game-types';
+import { getSharedGame } from '@/lib/games/shared-game-store';
 
 import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
 import { AuthPromptModal } from '@/app/[locale]/_components/AuthPromptModal';
@@ -30,7 +32,6 @@ import { buildPostmortemPath } from '../../_lib';
 import { getMovingSide } from '../../_lib/fen-utils';
 import { useGameExpGrant } from '../_hooks/use-game-exp-grant';
 import { useLoadGame } from '../_hooks/useLoadGame';
-import { computeGameStats } from '../_lib/compute-game-stats';
 import { GameStatsOverview } from './GameStatsOverview';
 import { ResultSkeleton } from './ResultSkeleton';
 import { StatsAuthGate } from './StatsAuthGate';
@@ -123,7 +124,6 @@ function ResultContent({
   initialExp,
 }: ResultContentProps) {
   const t = useTranslations('play');
-  const tGames = useTranslations('gamesPage');
   const router = useRouter();
   const [isOperationLogVisible, setIsOperationLogVisible] = useState(false);
   const [isBoardModalOpen, setIsBoardModalOpen] = useState(false);
@@ -189,6 +189,14 @@ function ResultContent({
   // (no grant) and a sign-in nudge instead; see the JSX below.
   const exp = useGameExpGrant({ gameId, game, stats, isAuthenticated, initialExp });
 
+  // Has this game already been shared from this browser? Read client-side after
+  // mount (localStorage) so the share link can point at the published game
+  // instead of offering to publish it again. Null on the server / first render.
+  const [sharedPublishedId, setSharedPublishedId] = useState<string | null>(null);
+  useEffect(() => {
+    setSharedPublishedId(getSharedGame(gameId)?.publishedId ?? null);
+  }, [gameId]);
+
   // moves[] index of each player move, so an effort-strip cell (one per player
   // move) can deep-link to that exact position in the finished-game view.
   const playerMoveIndices = useMemo(() => {
@@ -233,10 +241,17 @@ function ResultContent({
       <div className="flex flex-col gap-4">
         {/* Game Result */}
         {playerResult === 'win' && (
-          <VictoryCertificate displayName={displayName} engineConfig={game.engineConfig} />
+          // The certificate-frame webp has a large transparent bottom margin
+          // (~10.5% of its 3:2 height ≈ 7% of the box width) that pushed the
+          // share link far below the visible frame. A width-relative negative
+          // margin (-mb-[7%]) trims exactly that band at every screen size, so
+          // the gap above the link matches the gap to the divider below.
+          <div className="-mb-[7%]">
+            <VictoryCertificate displayName={displayName} engineConfig={game.engineConfig} />
+          </div>
         )}
         {playerResult !== 'win' && (
-          <div className="py-6 text-center flex flex-col items-center gap-3">
+          <div className="pt-6 text-center flex flex-col items-center gap-3">
             {playerResult === 'loss' && (
               <>
                 <FaTimes className="w-12 h-12 text-destructive" />
@@ -249,6 +264,31 @@ function ResultContent({
                 <h3 className="text-xl font-bold">{t('draw')}</h3>
               </>
             )}
+          </div>
+        )}
+
+        {/* Share entry point — a subtle emoji link under the result banner
+            rather than another full-width button, to avoid button clutter.
+            Spacing comes from the parent gap-4 (equal above/below); the win
+            certificate's wrapper trims its transparent bottom margin so the
+            gap to it visually matches the gap to the divider below.
+            `relative z-10`: the certificate's absolute-positioned frame content
+            overlaps this region after the negative-margin trim and, being
+            positioned, would paint on top and swallow the click — lifting the
+            link into its own stacking layer keeps it clickable. */}
+        {moves.length > 0 && (
+          <div className="relative z-10 text-center">
+            <Link
+              href={
+                sharedPublishedId
+                  ? `/${locale}/games/shared/${sharedPublishedId}`
+                  : `/${locale}/games/shared/new?gameId=${gameId}`
+              }
+              className={`inline-flex items-center gap-1.5 text-sm ${TEXT_LINK_MUTED_CLASSES}`}
+            >
+              <span aria-hidden>{sharedPublishedId ? '✅' : '🔗'}</span>
+              {sharedPublishedId ? t('result.viewShared') : t('result.publish')}
+            </Link>
           </div>
         )}
 
@@ -312,9 +352,6 @@ function ResultContent({
               {t('result.openFinishedGame')}
             </Button>
           )}
-          <Link href={`/${locale}/games`} className={`text-sm ${TEXT_LINK_MUTED_CLASSES}`}>
-            {tGames('pageTitle')}
-          </Link>
         </div>
       </div>
 

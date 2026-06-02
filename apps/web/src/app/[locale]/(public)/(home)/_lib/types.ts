@@ -139,12 +139,51 @@ export type ChunkFeedItem = FeedItemBase & {
   data: ChunkFeedData;
 };
 
+/**
+ * A published blindfold game shared to the public catalog. Emitted only for
+ * registered authors (the feed is actor-keyed); account-less games still list
+ * under `/games/shared` but never surface a feed item. The board thumbnail is
+ * the game's opening position (`startingFen`, or the standard start), matching
+ * both the gallery card and the detail page's opening-board landing. Comments
+ * live in `game_comments` keyed by `game_id` (see `getGameCommentMetaMap`).
+ */
+export type GameFeedData = {
+  id: string;
+  title: string;
+  fen: string;
+  result: 'win' | 'loss' | 'draw';
+  createdAt: string; // ISO 8601
+  author: {
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+    country: string | null;
+    flair: string | null;
+  } | null;
+  likeMeta: {
+    likeCount: number;
+    likedByMe: boolean;
+  };
+  replyMeta: {
+    replyCount: number;
+    latestReplyAt: Date | null;
+    repliers: { avatarUrl: string | null; displayName: string }[];
+    uniqueReplierCount: number;
+  };
+};
+
+export type GameFeedItem = FeedItemBase & {
+  entityType: 'game';
+  data: GameFeedData;
+};
+
 // Discriminated union — extend with new entity types here
 export type FeedItem =
   | TopicPostFeedItem
   | ChallengeRankUpdateFeedItem
   | PositionFeedItem
-  | ChunkFeedItem;
+  | ChunkFeedItem
+  | GameFeedItem;
 
 export type FeedResponse = {
   items: FeedItem[];
