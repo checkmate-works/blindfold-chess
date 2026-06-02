@@ -2020,7 +2020,8 @@
       },
       "own": "自分の駒",
       "opponent": "相手の駒",
-      "hidden": "非表示"
+      "hidden": "非表示",
+      "reproduceView": "プレイ時の見え方"
     }
   },
   "postmortem": {

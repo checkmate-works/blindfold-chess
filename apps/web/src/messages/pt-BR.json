@@ -2016,7 +2016,8 @@
       },
       "own": "Suas peças",
       "opponent": "Peças do oponente",
-      "hidden": "oculto"
+      "hidden": "oculto",
+      "reproduceView": "Como foi jogado"
     }
   },
   "postmortem": {

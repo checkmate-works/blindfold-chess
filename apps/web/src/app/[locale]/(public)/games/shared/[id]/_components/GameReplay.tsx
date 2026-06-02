@@ -120,6 +120,11 @@ export function GameReplay({
   const router = useRouter();
   const { preferences } = useGamePreferences();
   const [detailsOpen, setDetailsOpen] = useState(false);
+  // When on, the board reproduces how the player actually saw this position
+  // (piece obfuscation) instead of the default fully-revealed view. The board
+  // panel itself stays visible (this is a replay), so only the piece-level
+  // settings are reflected — see `reflectedPreferences`.
+  const [reproduceView, setReproduceView] = useState(false);
 
   const revealedPreferences = useMemo<GamePreferences>(
     () => ({
@@ -283,6 +288,25 @@ export function GameReplay({
     return playSettingsAtHalfMove(playSettings, playSettingsLog, halfMovesShown);
   }, [playSettings, playSettingsLog, currentPosition, notationMoves.length]);
 
+  // Board preferences that reproduce the player's view at this position: the
+  // viewer's own base preferences with the game's piece obfuscation applied.
+  // `boardVisibility` is intentionally left untouched (the replay board is
+  // `alwaysOpen`), so 'peek' / 'never' games still show the board here — only
+  // the piece-level settings (which side was shown, shape, color) are mirrored.
+  const reflectedPreferences = useMemo<GamePreferences | null>(() => {
+    if (!effectivePlaySettings) return null;
+    return {
+      ...preferences,
+      showOwnPieces: effectivePlaySettings.showOwnPieces,
+      showOpponentPieces: effectivePlaySettings.showOpponentPieces,
+      pieceShapeMode: effectivePlaySettings.pieceShapeMode,
+      pieceColors: effectivePlaySettings.pieceColors,
+    };
+  }, [preferences, effectivePlaySettings]);
+
+  const boardPreferences =
+    reproduceView && reflectedPreferences ? reflectedPreferences : revealedPreferences;
+
   // Label the move with its PGN-style number prefix: white → "1. d4",
   // black → "1...d5" (derived from the starting FEN's side + fullmove).
   const moveLabel = useMemo(() => {
@@ -334,12 +358,6 @@ export function GameReplay({
 
   return (
     <div className="space-y-6">
-      {/* How this game was played, at the position currently on the board.
-          Updates as the viewer steps through the moves. */}
-      {showPlaySettings && effectivePlaySettings && (
-        <PlaySettingsIndicator settings={effectivePlaySettings} playerColor={playerColor} />
-      )}
-
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <InlineBoardView
@@ -347,7 +365,7 @@ export function GameReplay({
             playerSide={playerColor}
             flipped={effectiveFlipped}
             lastMove={lastMove}
-            preferences={revealedPreferences}
+            preferences={boardPreferences}
             movesLength={notationMoves.length}
             currentPosition={currentPosition}
             formattedPgn={formattedPgn}
@@ -359,6 +377,37 @@ export function GameReplay({
             onFlipBoard={toggleFlip}
             alwaysOpen
           />
+
+          {/* How this game was played, at the position currently on the board.
+              Sits directly under the board and updates as the viewer steps
+              through the moves. The switch on the right reproduces the player's
+              view (piece obfuscation) on the board itself. */}
+          {showPlaySettings && effectivePlaySettings && (
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+              <PlaySettingsIndicator settings={effectivePlaySettings} playerColor={playerColor} />
+              <button
+                type="button"
+                role="switch"
+                aria-checked={reproduceView}
+                onClick={() => setReproduceView((v) => !v)}
+                className="inline-flex shrink-0 items-center gap-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <span>{t('playSettings.reproduceView')}</span>
+                <span
+                  aria-hidden
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    reproduceView ? 'bg-foreground' : 'bg-secondary'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${
+                      reproduceView ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </span>
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="lg:col-span-1">

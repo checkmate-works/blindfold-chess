@@ -2020,7 +2020,8 @@
       },
       "own": "Your pieces",
       "opponent": "Opponent pieces",
-      "hidden": "hidden"
+      "hidden": "hidden",
+      "reproduceView": "As played"
     }
   },
   "postmortem": {
