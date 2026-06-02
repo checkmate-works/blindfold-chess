@@ -1897,6 +1897,8 @@
       "cleanRate": "クリーン率",
       "like": "いいね",
       "unlike": "いいねを取り消す",
+      "newReply": "新しい返信 {time}",
+      "justNow": "たった今",
       "descriptionSection": "説明",
       "edit": "編集",
       "delete": "削除",

@@ -79,12 +79,22 @@ export const getGameById = cache(async (id: string): Promise<SharedGameDetail | 
 export type SharedGameListItem = {
   id: string;
   title: string;
+  /** Body excerpt for the card; null when the author left it blank. */
+  description: string | null;
+  /** Opening position rendered as the card thumbnail; null = standard start. */
+  startingFen: string | null;
+  createdAt: Date;
   engineKind: 'stockfish' | 'maia';
   engineElo: number;
   result: 'win' | 'loss' | 'draw';
   moveCount: number;
   cleanRate: number | null;
-  authorName: string | null;
+  /** Author profile for the card avatar; null for an account-less author. */
+  author: {
+    username: string;
+    displayName: string | null;
+    avatarUrl: string | null;
+  } | null;
 };
 
 /** Gallery sort modes (kept in sync with the page's sort control). */
@@ -110,22 +120,47 @@ export async function listSharedGames(
         ? [desc(games.engineElo), desc(games.id)]
         : [desc(games.id)];
 
-  return db
+  const rows = await db
     .select({
       id: games.id,
       title: games.title,
+      description: games.description,
+      startingFen: games.startingFen,
+      createdAt: games.createdAt,
       engineKind: games.engineKind,
       engineElo: games.engineElo,
       result: games.result,
       moveCount: games.moveCount,
       cleanRate: games.cleanRate,
-      authorName: profiles.displayName,
+      authorUsername: profiles.username,
+      authorDisplayName: profiles.displayName,
+      authorAvatarUrl: profiles.avatarUrl,
     })
     .from(games)
     .leftJoin(profiles, eq(profiles.id, games.authorId))
     .where(and(isNull(games.deletedAt), eq(games.status, 'public')))
     .orderBy(...orderBy)
     .limit(limit);
+
+  return rows.map((r) => ({
+    id: r.id,
+    title: r.title,
+    description: r.description,
+    startingFen: r.startingFen,
+    createdAt: r.createdAt,
+    engineKind: r.engineKind,
+    engineElo: r.engineElo,
+    result: r.result,
+    moveCount: r.moveCount,
+    cleanRate: r.cleanRate,
+    author: r.authorUsername
+      ? {
+          username: r.authorUsername,
+          displayName: r.authorDisplayName,
+          avatarUrl: r.authorAvatarUrl,
+        }
+      : null,
+  }));
 }
 
 export type PublishGameResult = {

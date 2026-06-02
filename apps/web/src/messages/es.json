@@ -1893,6 +1893,8 @@
       "cleanRate": "Limpias",
       "like": "Me gusta",
       "unlike": "Quitar me gusta",
+      "newReply": "Nueva respuesta {time}",
+      "justNow": "ahora mismo",
       "descriptionSection": "Descripción",
       "edit": "Editar",
       "delete": "Eliminar",

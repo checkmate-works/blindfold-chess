@@ -1893,6 +1893,8 @@
       "cleanRate": "Limpos",
       "like": "Curtir",
       "unlike": "Remover curtida",
+      "newReply": "Nova resposta {time}",
+      "justNow": "agora mesmo",
       "descriptionSection": "Descrição",
       "edit": "Editar",
       "delete": "Excluir",
