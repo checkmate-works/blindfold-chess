@@ -40,6 +40,34 @@ describe('useBoardFlip', () => {
     });
   });
 
+  describe('initialFlipped seed', () => {
+    it('should start flipped when initialFlipped is true (white side)', () => {
+      const { result } = renderHook(() =>
+        useBoardFlip({ playerSide: 'white', initialFlipped: true })
+      );
+
+      expect(result.current.isBoardFlipped).toBe(true);
+      expect(result.current.effectiveFlipped).toBe(true);
+    });
+
+    it('should let initialFlipped invert the black-side default (white at bottom)', () => {
+      const { result } = renderHook(() =>
+        useBoardFlip({ playerSide: 'black', initialFlipped: true })
+      );
+
+      // Black defaults to effectiveFlipped=true; seeding isBoardFlipped=true
+      // inverts it to false (white at the bottom).
+      expect(result.current.isBoardFlipped).toBe(true);
+      expect(result.current.effectiveFlipped).toBe(false);
+    });
+
+    it('should default to false when initialFlipped is omitted', () => {
+      const { result } = renderHook(() => useBoardFlip({ playerSide: 'white' }));
+
+      expect(result.current.isBoardFlipped).toBe(false);
+    });
+  });
+
   describe('toggleFlip reference stability', () => {
     it('should return the same toggleFlip function reference across renders', () => {
       const { result, rerender } = renderHook(() => useBoardFlip({ playerSide: 'white' }));

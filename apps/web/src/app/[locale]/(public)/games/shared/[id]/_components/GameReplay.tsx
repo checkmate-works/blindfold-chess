@@ -30,6 +30,18 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { type CommentUser, GameCommentThread } from './GameCommentThread';
 
+/**
+ * Parse the URL hash (`#14`) into a 0-based move index, or null when it is
+ * absent / not a valid half-move number for this game.
+ */
+function parseHashPly(hash: string, moveCount: number): number | null {
+  const raw = hash.replace(/^#/, '');
+  if (!/^\d+$/.test(raw)) return null;
+  const n = Number(raw);
+  if (n < 1 || n > moveCount) return null;
+  return n - 1;
+}
+
 type Props = {
   /** Published game id, used to anchor the per-move comment threads. */
   gameId: string;
@@ -45,6 +57,8 @@ type Props = {
   currentUser: CommentUser | null;
   /** When set (from a like notification), open at this comment's move and scroll to it. */
   highlightCommentId?: string;
+  /** Side at the bottom of the board, from the `/white` | `/black` path segment. */
+  orientation?: 'white' | 'black';
   /** Rendered between the board/move-list and the stats overview (e.g. the description). */
   children?: ReactNode;
 };
@@ -73,6 +87,7 @@ export function GameReplay({
   comments,
   currentUser,
   highlightCommentId,
+  orientation,
   children,
 }: Props) {
   const router = useRouter();
@@ -106,7 +121,20 @@ export function GameReplay({
     navigateNext,
     navigateToEnd,
   } = useMoveNavigation({ moves: notationMoves, startingFen: startingFen ?? undefined });
-  const { effectiveFlipped, toggleFlip } = useBoardFlip({ playerSide: playerColor });
+  // Seed the board orientation from the `/white` | `/black` path segment:
+  // `effectiveFlipped` means "black is at the bottom", and the default (no
+  // segment) is the player's own side. Convert the requested orientation into
+  // the manual-toggle seed `useBoardFlip` expects (which it inverts again for a
+  // black player).
+  const initialFlipped = useMemo(() => {
+    if (!orientation) return false;
+    const wantBlackAtBottom = orientation === 'black';
+    return playerColor === 'black' ? !wantBlackAtBottom : wantBlackAtBottom;
+  }, [orientation, playerColor]);
+  const { effectiveFlipped, toggleFlip } = useBoardFlip({
+    playerSide: playerColor,
+    initialFlipped,
+  });
 
   // Open at the first move (not the final position) so the viewer reviews and
   // comments move by move from the start — unless deep-linked to a comment
@@ -116,13 +144,50 @@ export function GameReplay({
   useEffect(() => {
     if (startedRef.current || notationMoves.length === 0) return;
     startedRef.current = true;
+    // Priority: a deep-linked comment's move, then the `#<half-move>` URL hash
+    // (read client-side — the fragment never reaches the server), then move 1.
     const target = highlightCommentId
       ? comments.find((c) => c.id === highlightCommentId)
       : undefined;
-    const initialPly =
-      target && target.ply != null && target.ply < notationMoves.length ? target.ply : 0;
-    navigateToPosition(initialPly);
+    const commentPly =
+      target && target.ply != null && target.ply < notationMoves.length ? target.ply : null;
+    const hashPly = parseHashPly(window.location.hash, notationMoves.length);
+    navigateToPosition(commentPly ?? hashPly ?? 0);
   }, [notationMoves.length, navigateToPosition, highlightCommentId, comments]);
+
+  // Reflect the move on the board in the URL hash (`#<half-move>`), Lichess-
+  // style (e.g. `/games/shared/<id>#14`), so the address bar tracks navigation
+  // and the link can be shared to open at a specific move. Uses replaceState
+  // (no server round-trip / history spam); only runs after the initial position.
+  useEffect(() => {
+    if (!startedRef.current) return;
+    const moveNumber =
+      currentPosition >= 0
+        ? currentPosition + 1
+        : currentPosition === -1
+          ? notationMoves.length
+          : 0;
+    const url = new URL(window.location.href);
+    url.searchParams.delete('comment');
+    url.hash = moveNumber > 0 ? String(moveNumber) : '';
+    window.history.replaceState(window.history.state, '', url);
+  }, [currentPosition, notationMoves.length]);
+
+  // Reflect the board orientation in the path (`…/games/shared/<id>/white|black`),
+  // Lichess-style. The colour is ALWAYS present (for symmetry: white-at-bottom →
+  // `/white`, black-at-bottom → `/black`), so a bare permalink rewrites to the
+  // current side on load. The `#move` hash is preserved across the change.
+  useEffect(() => {
+    if (!startedRef.current) return;
+    const orientationColor = effectiveFlipped ? 'black' : 'white';
+    const url = new URL(window.location.href);
+    const segments = url.pathname.split('/');
+    const last = segments[segments.length - 1];
+    if (last === 'white' || last === 'black') segments.pop();
+    segments.push(orientationColor);
+    url.pathname = segments.join('/');
+    window.history.replaceState(window.history.state, '', url);
+  }, [effectiveFlipped]);
 
   // Highlight the move that produced the displayed position.
   const lastMove = useMemo(() => {
