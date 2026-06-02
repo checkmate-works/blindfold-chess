@@ -55,7 +55,9 @@ export default async function GamesPlayLoading() {
       <PageTitle>{tPlay('loading')}</PageTitle>
 
       <PagePanel>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* `-mt-4 sm:mt-0` matches PlayClient: cancel the mobile top padding so
+            the full-bleed board skeleton reaches the top edge (no odd gap). */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 -mt-4 sm:mt-0">
           {/* Game area skeleton (2 cols). The move-input slot is driven by
               `bfc_move_input_pref` so returning users get the correct input
               shape from this transitional paint onward; the board is always a

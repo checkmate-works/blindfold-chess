@@ -326,7 +326,12 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
 
   return (
     <div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* `-mt-4 sm:mt-0` cancels PagePanel's mobile top padding (`p-4`) so the
+          full-bleed board (it already cancels the side padding via `-mx-4`)
+          also reaches the top edge — otherwise the leftover ~16px reads as an
+          odd gap above an edge-to-edge board. Desktop keeps the intentional
+          panel margin (`sm:p-6 md:p-8`). Mirrored in `loading.tsx`. */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 -mt-4 sm:mt-0">
         {/* Game Area */}
         <div className="lg:col-span-2">
           <div>
