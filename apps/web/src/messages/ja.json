@@ -277,7 +277,6 @@
         "blackView": "黒の視点"
       },
       "boardVisibility": "ボード表示",
-      "boardVisibilityDescription": "対局中のチェスボードの表示方法を選びます。下の駒の表示設定は、ボードが表示される場合でも適用されます — 目隠しを実現する主な手段は駒の見え方です。",
       "boardVisibilities": {
         "always": "常に表示",
         "peek": "必要なときにピーク",

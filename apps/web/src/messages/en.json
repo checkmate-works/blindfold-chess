@@ -277,7 +277,6 @@
         "blackView": "Black's Perspective"
       },
       "boardVisibility": "Board Visibility",
-      "boardVisibilityDescription": "Choose how the chessboard surfaces during gameplay. Piece-display settings (below) still apply when the board is visible — they are the blindfold mechanism in this app.",
       "boardVisibilities": {
         "always": "Always visible",
         "peek": "Peek on demand",

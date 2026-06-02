@@ -273,7 +273,6 @@
         "blackView": "Perspectiva de Pretas"
       },
       "boardVisibility": "Visibilidade do Tabuleiro",
-      "boardVisibilityDescription": "Escolha como o tabuleiro é apresentado durante a partida. As configurações de exibição das peças (abaixo) continuam se aplicando quando o tabuleiro está visível — elas são o principal mecanismo do modo às cegas neste app.",
       "boardVisibilities": {
         "always": "Sempre visível",
         "peek": "Espiar sob demanda",

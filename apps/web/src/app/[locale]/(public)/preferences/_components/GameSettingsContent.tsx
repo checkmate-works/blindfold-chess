@@ -82,9 +82,6 @@ export function GameSettingsContent({
         {showBoardButtonOption && (
           <div>
             <h4 className="text-sm text-foreground mb-2">{t('game.boardVisibility')}</h4>
-            <p className="text-sm text-muted-foreground mb-4">
-              {t('game.boardVisibilityDescription')}
-            </p>
             <BoardVisibilityPicker
               value={settings.boardVisibility}
               onChange={(value) => onSettingsChange({ boardVisibility: value })}

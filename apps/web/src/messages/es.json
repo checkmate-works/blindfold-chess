@@ -273,7 +273,6 @@
         "blackView": "Perspectiva de Negras"
       },
       "boardVisibility": "Visibilidad del Tablero",
-      "boardVisibilityDescription": "Elige cómo se muestra el tablero durante el juego. Los ajustes de visualización de piezas (debajo) siguen aplicándose cuando el tablero es visible — son el mecanismo principal del modo a ciegas en esta aplicación.",
       "boardVisibilities": {
         "always": "Siempre visible",
         "peek": "Vistazo bajo demanda",
