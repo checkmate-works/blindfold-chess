@@ -1774,6 +1774,8 @@
     "save": "Save",
     "showBoard": "Show Board",
     "hideBoard": "Hide Board",
+    "revealBoard": "Tap to reveal",
+    "boardHidden": "Board hidden",
     "flipBoard": "Flip Board",
     "copyPgn": "Copy PGN",
     "copyFen": "Copy FEN",

@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ChessBoard, FlipBoardButton } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Side } from '@blindfold-chess/types';
-import { FaChevronDown, FaEye } from 'react-icons/fa';
+import { FaChevronDown, FaEye, FaEyeSlash } from 'react-icons/fa';
 
 import type { FormattedPgnMove } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -71,6 +71,29 @@ type Props = {
    * the reviewer can also move the opponent's pieces on the opponent's turn.
    */
   movablePieces?: 'own' | 'side-to-move';
+  /**
+   * When true, the board frame stays in place but its pieces are NOT painted
+   * and an opaque overlay covers it — the blindfold mask. This is the
+   * always-present-board model for `boardVisibility` 'peek' / 'never': the
+   * board never changes position or size, only its mask toggles.
+   *
+   * Pieces are suppressed (not merely hidden under the cover) so their
+   * positions never reach the DOM while masked. Independent of `alwaysOpen` —
+   * the board is still rendered; it is just masked.
+   */
+  masked?: boolean;
+  /**
+   * Invoked when the viewer taps a dismissable mask to reveal the board. Only
+   * wired when `maskDismissable` is true (peek). The parent owns the reveal /
+   * re-mask lifecycle and the peek-count accounting.
+   */
+  onReveal?: () => void;
+  /**
+   * Whether tapping the mask reveals the board. True for `boardVisibility ===
+   * 'peek'` (tap to peek); false for `'never'` (pure blindfold — the cover
+   * stays put and is non-interactive). Ignored unless `masked` is true.
+   */
+  maskDismissable?: boolean;
 };
 
 export function InlineBoardView({
@@ -94,6 +117,9 @@ export function InlineBoardView({
   onMove,
   onIllegalMove,
   movablePieces,
+  masked,
+  onReveal,
+  maskDismissable,
 }: Props) {
   const t = useTranslations('play');
   const [isOpen, setIsOpen] = useState(false);
@@ -154,22 +180,49 @@ export function InlineBoardView({
             </div>
           )}
 
-          <ChessBoard
-            fen={fen}
-            flipped={flipped ?? playerSide === 'black'}
-            playerSide={playerSide}
-            lastMove={lastMove}
-            showCoordinates={preferences.showCoordinates}
-            showOwnPieces={preferences.showOwnPieces}
-            showOpponentPieces={preferences.showOpponentPieces}
-            pieceShapeMode={preferences.pieceShapeMode}
-            pieceColors={preferences.pieceColors}
-            boardTheme={preferences.boardTheme}
-            rounded={false}
-            onMove={onMove}
-            onIllegalMove={onIllegalMove}
-            movablePieces={movablePieces}
-          />
+          <div className="relative">
+            <ChessBoard
+              fen={fen}
+              flipped={flipped ?? playerSide === 'black'}
+              playerSide={playerSide}
+              lastMove={lastMove}
+              showCoordinates={preferences.showCoordinates}
+              // While masked, suppress pieces entirely so their positions never
+              // reach the DOM behind the cover (the blindfold must not leak).
+              showOwnPieces={masked ? false : preferences.showOwnPieces}
+              showOpponentPieces={masked ? false : preferences.showOpponentPieces}
+              pieceShapeMode={preferences.pieceShapeMode}
+              pieceColors={preferences.pieceColors}
+              boardTheme={preferences.boardTheme}
+              rounded={false}
+              // A masked board is never interactive (no peeking the legal-move
+              // dots, no dragging covered pieces).
+              onMove={masked ? undefined : onMove}
+              onIllegalMove={masked ? undefined : onIllegalMove}
+              movablePieces={movablePieces}
+            />
+            {masked &&
+              (maskDismissable ? (
+                <button
+                  type="button"
+                  onClick={onReveal}
+                  aria-label={t('revealBoard')}
+                  className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-muted text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <FaEye className="h-7 w-7" aria-hidden />
+                  <span className="text-sm font-medium">{t('revealBoard')}</span>
+                </button>
+              ) : (
+                <div
+                  className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-muted text-muted-foreground"
+                  aria-label={t('boardHidden')}
+                  role="img"
+                >
+                  <FaEyeSlash className="h-7 w-7" aria-hidden />
+                  <span className="text-sm font-medium">{t('boardHidden')}</span>
+                </div>
+              ))}
+          </div>
 
           {/* Navigation Controls & Flip Button */}
           {(movesLength > 0 || onFlipBoard) && (

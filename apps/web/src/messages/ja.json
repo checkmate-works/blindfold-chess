@@ -1774,6 +1774,8 @@
     "save": "保存",
     "showBoard": "ボードを表示",
     "hideBoard": "ボードを隠す",
+    "revealBoard": "タップで表示",
+    "boardHidden": "盤面非表示",
     "flipBoard": "ボードを反転",
     "copyPgn": "PGNをコピー",
     "copyFen": "FENをコピー",

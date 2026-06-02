@@ -1770,6 +1770,8 @@
     "save": "Salvar",
     "showBoard": "Mostrar Tabuleiro",
     "hideBoard": "Ocultar Tabuleiro",
+    "revealBoard": "Toque para ver",
+    "boardHidden": "Tabuleiro oculto",
     "flipBoard": "Inverter Tabuleiro",
     "copyPgn": "Copiar PGN",
     "copyFen": "Copiar FEN",
