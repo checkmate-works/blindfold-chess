@@ -15,8 +15,12 @@ type Props = {
   moves: string[];
   /** Jump to a finished-game position (moves[] index). */
   onSelectMove: (movesIndex: number) => void;
-  /** Open the Game Details modal (engine / settings / change log). */
-  onViewDetails: () => void;
+  /**
+   * Open the Game Details modal (engine / settings / change log). Optional —
+   * surfaces a "view details" button only when provided. Omitted on the shared
+   * game detail page, which has no local preferences / change-log to show.
+   */
+  onViewDetails?: () => void;
 };
 
 /** Fill color for each effort marker (translucent so the board theme shows through). */
@@ -86,9 +90,11 @@ export function GameStatsOverview({
           <FaClipboardList className="w-3.5 h-3.5" />
           <span>{t('result.stats.title')}</span>
         </div>
-        <button onClick={onViewDetails} className={`text-xs ${TEXT_LINK_MUTED_CLASSES}`}>
-          {t('result.viewDetails')}
-        </button>
+        {onViewDetails && (
+          <button onClick={onViewDetails} className={`text-xs ${TEXT_LINK_MUTED_CLASSES}`}>
+            {t('result.viewDetails')}
+          </button>
+        )}
       </div>
 
       {/* Metric cards */}
