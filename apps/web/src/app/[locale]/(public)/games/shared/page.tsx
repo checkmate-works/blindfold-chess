@@ -24,6 +24,7 @@ import { CatalogListCard } from '@/app/[locale]/_components/CatalogListCard';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { GamesTabs } from '../_components/GamesTabs';
 import { toggleGameLikeAction } from './[id]/_actions/game-like';
 import { SharedGamesSort } from './_components/SharedGamesSort';
 import { parseSharedGamesSort } from './_lib/sort';
@@ -66,6 +67,9 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
   return (
     <PageLayout title={t('list.title')} locale={locale}>
       <SectionTitle>{t('list.sectionTitle')}</SectionTitle>
+      <div className="mb-6">
+        <GamesTabs active="shared" locale={locale} />
+      </div>
       <div className="mt-3 mb-4 flex justify-end">
         <SharedGamesSort currentSort={sort} />
       </div>

@@ -1684,6 +1684,11 @@
     }
   },
   "gamesPage": {
+    "tabs": {
+      "label": "Partidas",
+      "mine": "Minhas partidas",
+      "shared": "Partidas públicas"
+    },
     "pageTitle": "Partidas",
     "help": {
       "label": "Ajuda",

@@ -1688,6 +1688,11 @@
     }
   },
   "gamesPage": {
+    "tabs": {
+      "label": "Games",
+      "mine": "My Games",
+      "shared": "Shared Games"
+    },
     "pageTitle": "Games",
     "help": {
       "label": "Help",

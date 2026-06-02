@@ -1688,6 +1688,11 @@
     }
   },
   "gamesPage": {
+    "tabs": {
+      "label": "ゲーム",
+      "mine": "マイ対局",
+      "shared": "公開対局"
+    },
     "pageTitle": "ゲーム",
     "help": {
       "label": "ヘルプ",
