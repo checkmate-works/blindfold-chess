@@ -276,7 +276,7 @@
         "whiteView": "White's Perspective",
         "blackView": "Black's Perspective"
       },
-      "boardVisibility": "Board Visibility",
+      "boardVisibility": "Blindfold",
       "boardVisibilities": {
         "always": "Always visible",
         "peek": "Peek on demand",

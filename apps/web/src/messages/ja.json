@@ -276,13 +276,13 @@
         "whiteView": "白の視点",
         "blackView": "黒の視点"
       },
-      "boardVisibility": "ボード表示",
+      "boardVisibility": "目隠しの設定",
       "boardVisibilities": {
         "always": "常に表示",
         "peek": "必要なときにピーク",
         "never": "非表示"
       },
-      "hideBoard": "盤面を隠す",
+      "hideBoard": "ボードを隠す",
       "allowPeek": "ピークを許可",
       "resetDefaults": "デフォルトに戻す",
       "resetDefaultsConfirm": {
@@ -1777,7 +1777,7 @@
     "showBoard": "ボードを表示",
     "hideBoard": "ボードを隠す",
     "revealBoard": "タップで表示",
-    "boardHidden": "盤面非表示",
+    "boardHidden": "ボード非表示",
     "flipBoard": "ボードを反転",
     "copyPgn": "PGNをコピー",
     "copyFen": "FENをコピー",

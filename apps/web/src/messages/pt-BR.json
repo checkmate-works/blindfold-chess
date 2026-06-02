@@ -272,7 +272,7 @@
         "whiteView": "Perspectiva de Brancas",
         "blackView": "Perspectiva de Pretas"
       },
-      "boardVisibility": "Visibilidade do Tabuleiro",
+      "boardVisibility": "Modo às cegas",
       "boardVisibilities": {
         "always": "Sempre visível",
         "peek": "Espiar sob demanda",
