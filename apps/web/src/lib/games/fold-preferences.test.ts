@@ -13,7 +13,6 @@ const initial: PerGamePreferences = {
   showOpponentPieces: true,
   pieceShapeMode: 'normal',
   pieceColors: 'normal',
-  peekMode: 'modal',
   moveInputMode: 'text',
 };
 
@@ -72,13 +71,6 @@ describe('foldPreferences', () => {
     expect(foldPreferences(initial, log).showOpponentPieces).toBe(true);
   });
 
-  it('applies a peekMode change', () => {
-    const log: PreferenceChangeLogEntry[] = [
-      { atMoveIndex: 3, key: 'peekMode', from: 'modal', to: 'inline' },
-    ];
-    expect(foldPreferences(initial, log).peekMode).toBe('inline');
-  });
-
   it('applies a boardVisibility change across all 3 states', () => {
     const log: PreferenceChangeLogEntry[] = [
       { atMoveIndex: 1, key: 'boardVisibility', from: 'peek', to: 'never' },
@@ -104,12 +96,12 @@ describe('foldPreferences', () => {
   });
 
   // Pairs with blocker 1 in SPEC1.md: folding a change log over a normalised
-  // legacy snapshot (one that originally lacked `peekMode` / `moveInputMode`)
-  // must yield a complete object — otherwise a downstream renderer would see
-  // `undefined` for a key that the type system says is always present.
+  // legacy snapshot (one that originally lacked `moveInputMode`) must yield a
+  // complete object — otherwise a downstream renderer would see `undefined` for
+  // a key that the type system says is always present.
   it('yields complete preferences when folded over a normalised legacy snapshot', () => {
     const normalised = normalisePerGamePreferences({
-      // Legacy shape: no peekMode, no moveInputMode, plus the obsolete boolean.
+      // Legacy shape: no moveInputMode, plus the obsolete boolean.
       showBoardButtonInGame: true,
       highlightLastMove: true,
       showOwnPieces: true,
@@ -122,7 +114,6 @@ describe('foldPreferences', () => {
     ];
 
     const folded = foldPreferences(normalised, log);
-    expect(folded.peekMode).toBeDefined();
     expect(folded.moveInputMode).toBe('button');
     expect(folded.boardVisibility).toBe('peek');
   });

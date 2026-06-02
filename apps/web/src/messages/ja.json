@@ -315,11 +315,6 @@
       "text": "テキスト",
       "icon": "アイコン",
       "enableAutoComplete": "補完を有効にする",
-      "peekMode": "盤面ピークモード",
-      "peekModes": {
-        "modal": "モーダル",
-        "inline": "インライン"
-      },
       "moveInputModes": {
         "text": "テキスト",
         "select": "リスト",
@@ -1827,7 +1822,6 @@
         "labelShowOpponentPieces": "相手の駒を表示",
         "labelPieceShape": "駒の形状",
         "labelPieceColor": "駒の色",
-        "labelPeekMode": "ピーク表示方式",
         "labelMoveInputMode": "手入力方式"
       },
       "changeLog": {

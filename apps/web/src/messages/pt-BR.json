@@ -311,11 +311,6 @@
       "text": "Texto",
       "icon": "Ícone",
       "enableAutoComplete": "Ativar autocompletar",
-      "peekMode": "Modo de Vista do Tabuleiro",
-      "peekModes": {
-        "modal": "Modal",
-        "inline": "Inline"
-      },
       "moveInputModes": {
         "text": "Texto",
         "select": "Lista",
@@ -1823,7 +1818,6 @@
         "labelShowOpponentPieces": "Mostrar peças do oponente",
         "labelPieceShape": "Forma das peças",
         "labelPieceColor": "Cor das peças",
-        "labelPeekMode": "Modo de espiar",
         "labelMoveInputMode": "Entrada de movimento"
       },
       "changeLog": {

@@ -81,8 +81,6 @@ export function OperationLogModal({
         return t('operationLog.initialSettings.labelPieceShape');
       case 'pieceColors':
         return t('operationLog.initialSettings.labelPieceColor');
-      case 'peekMode':
-        return t('operationLog.initialSettings.labelPeekMode');
       case 'moveInputMode':
         return t('operationLog.initialSettings.labelMoveInputMode');
     }
@@ -114,8 +112,6 @@ export function OperationLogModal({
         return tPrefs(`pieceShapes.${value as PerGamePreferences['pieceShapeMode']}`);
       case 'pieceColors':
         return tPrefs(`pieceColors.${value as PerGamePreferences['pieceColors']}`);
-      case 'peekMode':
-        return value ? tPrefsControls(`peekModes.${value as PerGamePreferences['peekMode']}`) : '—';
       case 'moveInputMode':
         return value
           ? tPrefsControls(`moveInputModes.${value as PerGamePreferences['moveInputMode']}`)
@@ -221,21 +217,6 @@ export function OperationLogModal({
                   </dt>
                   <dd className="text-right">
                     {tPrefs(`pieceColors.${gamePreferences.pieceColors}`)}
-                  </dd>
-                </div>
-                <div className="flex justify-between gap-3 px-4 py-2">
-                  <dt className="text-muted-foreground">
-                    {t('operationLog.initialSettings.labelPeekMode')}
-                  </dt>
-                  <dd className="text-right">
-                    {/* peekMode was added to PerGamePreferences after this
-                        modal first shipped, so older snapshots may lack the
-                        field. Show an em-dash placeholder rather than
-                        inventing a value — honest about what was actually
-                        recorded vs not. */}
-                    {gamePreferences.peekMode
-                      ? tPrefsControls(`peekModes.${gamePreferences.peekMode}`)
-                      : '—'}
                   </dd>
                 </div>
                 <div className="flex justify-between gap-3 px-4 py-2">

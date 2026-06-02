@@ -62,7 +62,6 @@ export function PieceSettingsStep({
     buttonInputPieceLabel: 'icon',
     enableAutoComplete: true,
     boardVisibility: 'peek',
-    peekMode: 'modal',
   };
 
   const hasPiecesVisible = showOwnPieces || showOpponentPieces;

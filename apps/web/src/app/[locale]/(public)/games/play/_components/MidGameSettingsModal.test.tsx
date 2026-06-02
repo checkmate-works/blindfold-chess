@@ -108,7 +108,6 @@ const PREFS: GamePreferences = {
   buttonInputPieceLabel: 'icon',
   enableAutoComplete: true,
   boardVisibility: 'peek',
-  peekMode: 'modal',
 };
 
 function renderModal(overrides?: {

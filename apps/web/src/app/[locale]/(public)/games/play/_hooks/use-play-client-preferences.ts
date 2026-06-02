@@ -81,15 +81,9 @@ export function usePlayClientPreferences({
       showOpponentPieces: perGamePrefs.showOpponentPieces,
       pieceShapeMode: perGamePrefs.pieceShapeMode,
       pieceColors: perGamePrefs.pieceColors,
-      // peekMode was added to PerGamePreferences after the field set settled,
-      // so legacy `gamePreferences` records on disk may not carry it.
-      // Falling back to the global value keeps those records rendering as
-      // they always did, and a subsequent mid-game edit + save will backfill
-      // the per-game record forward-compat.
-      peekMode: perGamePrefs.peekMode ?? globalPreferences.peekMode,
-      // moveInputMode was promoted to per-game later still — same fallback
-      // pattern. Legacy records simply track the global until the user
-      // toggles in this game, at which point per-game takes over.
+      // moveInputMode was promoted to per-game after the field set settled, so
+      // legacy `gamePreferences` records may not carry it; fall back to the
+      // global until the user toggles in this game.
       moveInputMode: perGamePrefs.moveInputMode ?? globalPreferences.moveInputMode,
     };
   }, [globalPreferences, perGamePrefs]);

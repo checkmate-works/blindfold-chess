@@ -79,7 +79,6 @@ function mergePerGamePreferences(
     showOpponentPieces: perGame.showOpponentPieces,
     pieceShapeMode: perGame.pieceShapeMode,
     pieceColors: perGame.pieceColors,
-    peekMode: perGame.peekMode ?? global.peekMode,
     moveInputMode: perGame.moveInputMode ?? global.moveInputMode,
   };
 }

@@ -577,7 +577,6 @@ describe('LocalStorageGameRepository', () => {
               showOpponentPieces: true,
               pieceShapeMode: 'normal',
               pieceColors: 'normal',
-              peekMode: 'modal',
             },
           },
         ];
@@ -610,7 +609,6 @@ describe('LocalStorageGameRepository', () => {
               showOpponentPieces: true,
               pieceShapeMode: 'normal',
               pieceColors: 'normal',
-              peekMode: 'modal',
             },
           },
         ];
@@ -638,7 +636,6 @@ describe('LocalStorageGameRepository', () => {
               showOpponentPieces: true,
               pieceShapeMode: 'normal',
               pieceColors: 'normal',
-              peekMode: 'modal',
             },
           },
         ];
@@ -687,7 +684,6 @@ describe('LocalStorageGameRepository', () => {
           showOpponentPieces: true,
           pieceShapeMode: 'normal',
           pieceColors: 'normal',
-          peekMode: 'modal',
           moveInputMode: 'text',
         });
       });
@@ -720,7 +716,6 @@ describe('LocalStorageGameRepository', () => {
         const game = await fresh.load('pref-partial');
 
         expect(game?.gamePreferences?.boardVisibility).toBe('always');
-        expect(game?.gamePreferences?.peekMode).toBe('modal');
         expect(game?.gamePreferences?.moveInputMode).toBe('text');
       });
 
@@ -799,7 +794,6 @@ describe('LocalStorageGameRepository', () => {
               showOpponentPieces: true,
               pieceShapeMode: 'normal',
               pieceColors: 'normal',
-              peekMode: 'modal',
             },
           },
         ];

@@ -52,7 +52,6 @@ const DEFAULT_PREFS: PerGamePreferences = {
   showOpponentPieces: true,
   pieceShapeMode: 'normal',
   pieceColors: 'normal',
-  peekMode: 'modal',
   moveInputMode: 'text',
 };
 
@@ -114,7 +113,7 @@ describe('OperationLogModal — Initial Settings section', () => {
     expect(screen.getByText('play.operationLog.initialSettings.notRecorded')).toBeInTheDocument();
   });
 
-  it('renders all 8 setting rows when expanded with a complete snapshot', () => {
+  it('renders all 7 setting rows when expanded with a complete snapshot', () => {
     renderModal({ gamePreferences: DEFAULT_PREFS });
 
     fireEvent.click(screen.getByText('play.operationLog.initialSettings.title'));
@@ -127,7 +126,6 @@ describe('OperationLogModal — Initial Settings section', () => {
       'labelShowOpponentPieces',
       'labelPieceShape',
       'labelPieceColor',
-      'labelPeekMode',
       'labelMoveInputMode',
     ]) {
       expect(screen.getByText(`play.operationLog.initialSettings.${labelKey}`)).toBeInTheDocument();
@@ -149,14 +147,13 @@ describe('OperationLogModal — Initial Settings section', () => {
     expect(screen.getByText('Preferences.game.pieceColors.white-only')).toBeInTheDocument();
   });
 
-  it('routes peekMode + moveInputMode through the Preferences.controls.* namespace', () => {
+  it('routes moveInputMode through the Preferences.controls.* namespace', () => {
     renderModal({
-      gamePreferences: { ...DEFAULT_PREFS, peekMode: 'inline', moveInputMode: 'button' },
+      gamePreferences: { ...DEFAULT_PREFS, moveInputMode: 'button' },
     });
 
     fireEvent.click(screen.getByText('play.operationLog.initialSettings.title'));
 
-    expect(screen.getByText('Preferences.controls.peekModes.inline')).toBeInTheDocument();
     expect(screen.getByText('Preferences.controls.moveInputModes.button')).toBeInTheDocument();
   });
 
@@ -233,16 +230,14 @@ describe('OperationLogModal — Change Log section', () => {
   });
 
   it('renders an em-dash when a late-added field has undefined `from` (legacy snapshot)', () => {
-    // `peekMode` / `moveInputMode` were promoted to per-game later than the
-    // other fields, so the first mid-game edit on a legacy save records
-    // `from: undefined`. Without the fallback this would render as the raw
-    // i18n key `moveInputModes.undefined`. The writer in use-game-session
-    // produces this shape via an `as PreferenceChangeLogEntry` cast that
-    // hides the undefined from the type system, so we cast through unknown
-    // here to mirror that reality.
+    // `moveInputMode` was promoted to per-game later than the other fields, so
+    // the first mid-game edit on a legacy save records `from: undefined`.
+    // Without the fallback this would render as the raw i18n key
+    // `moveInputModes.undefined`. The writer in use-game-session produces this
+    // shape via an `as PreferenceChangeLogEntry` cast that hides the undefined
+    // from the type system, so we cast through unknown here to mirror that.
     const log = [
       { atMoveIndex: 4, key: 'moveInputMode', from: undefined, to: 'select' },
-      { atMoveIndex: 6, key: 'peekMode', from: undefined, to: 'inline' },
     ] as unknown as PreferenceChangeLogEntry[];
     renderModal({ preferenceChangeLog: log });
 
@@ -252,17 +247,11 @@ describe('OperationLogModal — Change Log section', () => {
     expect(moveRow.textContent).toMatch(/—/);
     expect(moveRow.textContent).toMatch(/Preferences\.controls\.moveInputModes\.select/);
     expect(moveRow.textContent).not.toMatch(/moveInputModes\.undefined/);
-
-    const peekRow = screen.getByText('6').closest('tr')!;
-    expect(peekRow.textContent).toMatch(/—/);
-    expect(peekRow.textContent).toMatch(/Preferences\.controls\.peekModes\.inline/);
-    expect(peekRow.textContent).not.toMatch(/peekModes\.undefined/);
   });
 
   it('renders enum transitions via the Preferences.* vocabulary', () => {
     const log: PreferenceChangeLogEntry[] = [
       { atMoveIndex: 7, key: 'pieceShapeMode', from: 'normal', to: 'circles-own' },
-      { atMoveIndex: 9, key: 'peekMode', from: 'modal', to: 'inline' },
       { atMoveIndex: 14, key: 'moveInputMode', from: 'text', to: 'button' },
     ];
     renderModal({ preferenceChangeLog: log });
@@ -272,10 +261,6 @@ describe('OperationLogModal — Change Log section', () => {
     const shapeRow = screen.getByText('7').closest('tr')!;
     expect(shapeRow.textContent).toMatch(/Preferences\.game\.pieceShapes\.normal/);
     expect(shapeRow.textContent).toMatch(/Preferences\.game\.pieceShapes\.circles-own/);
-
-    const peekRow = screen.getByText('9').closest('tr')!;
-    expect(peekRow.textContent).toMatch(/Preferences\.controls\.peekModes\.modal/);
-    expect(peekRow.textContent).toMatch(/Preferences\.controls\.peekModes\.inline/);
 
     const moveInputRow = screen.getByText('14').closest('tr')!;
     expect(moveInputRow.textContent).toMatch(/Preferences\.controls\.moveInputModes\.text/);

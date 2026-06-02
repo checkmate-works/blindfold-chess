@@ -76,9 +76,5 @@ export function validatePreferences(parsed: unknown): Partial<GamePreferences> {
   } else if (typeof p.showBoardButtonInGame === 'boolean') {
     result.boardVisibility = legacyToBoardVisibility(p.showBoardButtonInGame);
   }
-  if (typeof p.peekMode === 'string' && ['modal', 'inline'].includes(p.peekMode)) {
-    result.peekMode = p.peekMode as GamePreferences['peekMode'];
-  }
-
   return result;
 }

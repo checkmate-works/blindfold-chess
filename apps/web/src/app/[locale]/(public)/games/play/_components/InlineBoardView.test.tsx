@@ -57,7 +57,6 @@ const PREFS: GamePreferences = {
   buttonInputPieceLabel: 'icon',
   enableAutoComplete: true,
   boardVisibility: 'peek',
-  peekMode: 'inline',
 };
 
 const BASE_PROPS = {

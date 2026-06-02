@@ -19,7 +19,6 @@ import {
   DEFAULT_MOVE_INPUT_MODE,
   writeMoveInputCookieClient,
 } from '@/lib/games/move-input-cookie';
-import { DEFAULT_PEEK_MODE, writePeekPreferenceCookie } from '@/lib/games/peek-cookie';
 
 import { validatePreferences } from './game-preferences-validation';
 
@@ -37,7 +36,6 @@ export type PerGamePreferences = {
   showOpponentPieces: boolean;
   pieceShapeMode: 'normal' | 'circles-all' | 'circles-own' | 'circles-opponent';
   pieceColors: 'normal' | 'white-only' | 'black-only';
-  peekMode: 'modal' | 'inline';
   /**
    * Active move-input mode for this game. Per-game so mid-game switches
    * (text → button → select) accumulate in the preference change log
@@ -69,15 +67,13 @@ export type GamePreferences = {
   enableAutoComplete: boolean; // Enable auto-complete for text input
   // Board visibility during gameplay — see BoardVisibility for semantics.
   boardVisibility: BoardVisibility;
-  // Board peek mode
-  peekMode: 'modal' | 'inline'; // How to display the board peek (modal dialog or inline accordion)
 };
 
 // Default preferences. `moveInputMode` / `enabledMoveInputModes` are derived
 // from the shared `DEFAULT_MOVE_INPUT_*` constants in `@/lib/games/move-input-cookie`;
-// `peekMode` from `DEFAULT_PEEK_MODE` in the same module; and `boardVisibility`
-// from `DEFAULT_BOARD_VISIBILITY` in `@/lib/games/board-visibility`, so the
-// SSR cookie hints and the client-side defaults can never drift apart.
+// and `boardVisibility` from `DEFAULT_BOARD_VISIBILITY` in
+// `@/lib/games/board-visibility`, so the SSR cookie hint and the client-side
+// defaults can never drift apart.
 const defaultPreferences: GamePreferences = {
   showCoordinates: true,
   highlightLastMove: true,
@@ -91,7 +87,6 @@ const defaultPreferences: GamePreferences = {
   buttonInputPieceLabel: 'icon',
   enableAutoComplete: true,
   boardVisibility: DEFAULT_BOARD_VISIBILITY,
-  peekMode: DEFAULT_PEEK_MODE,
 };
 
 // Local storage key
@@ -167,10 +162,6 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
         mode: loaded.moveInputMode,
         enabledModes: loaded.enabledMoveInputModes,
       });
-      writePeekPreferenceCookie({
-        peekMode: loaded.peekMode,
-        boardVisibility: loaded.boardVisibility,
-      });
       setIsLoaded(true);
     }
   }, []);
@@ -238,29 +229,16 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
         enabledModes: next.enabledMoveInputModes,
       });
     }
-    const peekKeysChanged =
-      ('peekMode' in updates && updates.peekMode !== prev.peekMode) ||
-      ('boardVisibility' in updates && updates.boardVisibility !== prev.boardVisibility);
-    if (peekKeysChanged) {
-      writePeekPreferenceCookie({
-        peekMode: next.peekMode,
-        boardVisibility: next.boardVisibility,
-      });
-    }
     setPreferences(next);
   }, []);
 
   const resetPreferences = useCallback(() => {
-    // Write the cookies synchronously so a reset user's next navigation
-    // sees the default SSR hints (matching the reset state), not whatever
-    // was last persisted.
+    // Write the cookie synchronously so a reset user's next navigation sees the
+    // default SSR hint (matching the reset state), not whatever was last
+    // persisted.
     writeMoveInputCookieClient({
       mode: defaultPreferences.moveInputMode,
       enabledModes: defaultPreferences.enabledMoveInputModes,
-    });
-    writePeekPreferenceCookie({
-      peekMode: defaultPreferences.peekMode,
-      boardVisibility: defaultPreferences.boardVisibility,
     });
     setPreferences(defaultPreferences);
   }, []);

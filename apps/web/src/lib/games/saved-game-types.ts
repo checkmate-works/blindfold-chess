@@ -99,12 +99,6 @@ export type PreferenceChangeLogEntry =
     }
   | {
       atMoveIndex: number;
-      key: 'peekMode';
-      from: PerGamePreferences['peekMode'];
-      to: PerGamePreferences['peekMode'];
-    }
-  | {
-      atMoveIndex: number;
       key: 'boardVisibility';
       from: PerGamePreferences['boardVisibility'];
       to: PerGamePreferences['boardVisibility'];

@@ -1,7 +1,6 @@
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { isBoardVisibility, legacyToBoardVisibility } from './board-visibility';
-import type { PeekPreferenceHint } from './peek-cookie';
 
 /**
  * Safe defaults applied when a per-game preferences object is missing a field
@@ -11,10 +10,10 @@ import type { PeekPreferenceHint } from './peek-cookie';
  * that field had always been on.
  *
  * `boardVisibility: 'peek'` matches `DEFAULT_BOARD_VISIBILITY` and preserves
- * the pre-three-state behaviour of "the board can be peeked at". `peekMode`
- * and `moveInputMode` defaults are intentionally the lowest-affordance choice
- * (`modal`, `text`) so a partially-migrated record never silently enables a
- * UI affordance the player did not opt into.
+ * the pre-three-state behaviour of "the board can be peeked at". The
+ * `moveInputMode` default is intentionally the lowest-affordance choice
+ * (`text`) so a partially-migrated record never silently enables a UI
+ * affordance the player did not opt into.
  */
 export const DEFAULT_PER_GAME_PREFERENCES: PerGamePreferences = {
   boardVisibility: 'peek',
@@ -23,7 +22,6 @@ export const DEFAULT_PER_GAME_PREFERENCES: PerGamePreferences = {
   showOpponentPieces: true,
   pieceShapeMode: 'normal',
   pieceColors: 'normal',
-  peekMode: 'modal',
   moveInputMode: 'text',
 };
 
@@ -38,7 +36,6 @@ const PIECE_COLORS = [
   'white-only',
   'black-only',
 ] as const satisfies readonly PerGamePreferences['pieceColors'][];
-const PEEK_MODES = ['modal', 'inline'] as const satisfies readonly PerGamePreferences['peekMode'][];
 const MOVE_INPUT_MODES = [
   'text',
   'select',
@@ -99,47 +96,8 @@ export function normalisePerGamePreferences(
       ? p.pieceShapeMode
       : defaults.pieceShapeMode,
     pieceColors: isOneOf(p.pieceColors, PIECE_COLORS) ? p.pieceColors : defaults.pieceColors,
-    peekMode: isOneOf(p.peekMode, PEEK_MODES) ? p.peekMode : defaults.peekMode,
     moveInputMode: isOneOf(p.moveInputMode, MOVE_INPUT_MODES)
       ? p.moveInputMode
       : defaults.moveInputMode,
   };
-}
-
-/**
- * Derive the SSR board-peek skeleton hint from the URL `gamePrefs` param,
- * falling back to `fallback` (the cookie-sourced global hint) when the param
- * is absent or malformed.
- *
- * New games are launched from `/games/new` with their per-game settings encoded
- * in the `gamePrefs` query param, so — unlike resumed games whose settings live
- * in client-only localStorage — the server CAN read the exact `boardVisibility`
- * / `peekMode` for a new game and reserve the matching skeleton from the first
- * paint (no hydration mismatch, since the same URL is read on both sides).
- *
- * Fields missing from the param fall back to the cookie hint (not the hard
- * `DEFAULT_PER_GAME_PREFERENCES`) so a partial blob still reflects the user's
- * usual mode rather than snapping to the conservative defaults.
- */
-export function peekHintFromGamePrefsParam(
-  gamePrefsParam: string | null | undefined,
-  fallback: PeekPreferenceHint
-): PeekPreferenceHint {
-  if (!gamePrefsParam) return fallback;
-
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(gamePrefsParam);
-  } catch {
-    return fallback;
-  }
-
-  const normalised = normalisePerGamePreferences(parsed, {
-    ...DEFAULT_PER_GAME_PREFERENCES,
-    boardVisibility: fallback.boardVisibility,
-    peekMode: fallback.peekMode,
-  });
-  if (!normalised) return fallback;
-
-  return { peekMode: normalised.peekMode, boardVisibility: normalised.boardVisibility };
 }

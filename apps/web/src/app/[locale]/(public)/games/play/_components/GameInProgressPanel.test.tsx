@@ -57,7 +57,6 @@ const preferences: GamePreferences = {
   buttonInputPieceLabel: 'icon',
   enableAutoComplete: true,
   boardVisibility: 'never',
-  peekMode: 'modal',
 };
 
 type Overrides = {
