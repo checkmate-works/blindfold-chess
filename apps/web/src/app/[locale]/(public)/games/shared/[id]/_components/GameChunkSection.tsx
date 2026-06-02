@@ -10,7 +10,6 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { GameChunkItem } from '@/lib/db/game-chunks';
 
-import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -130,11 +129,7 @@ export function GameChunkSection({
 
   return (
     <div className="space-y-3">
-      <SectionTitle>{t('title')}</SectionTitle>
-
-      {forPly.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{t('empty')}</p>
-      ) : (
+      {forPly.length > 0 && (
         <ul className="space-y-2">
           {forPly.map((c) => (
             <GameChunkCard

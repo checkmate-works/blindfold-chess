@@ -2,14 +2,11 @@
 
 import { useMemo, useState } from 'react';
 
-import Link from 'next/link';
-
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { GameCommentItem } from '@/lib/db/game-comments';
 
-import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
-import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
+import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import {
@@ -33,8 +30,6 @@ type Props = {
   gameId: string;
   /** Move the thread is anchored to (0-based ply). */
   currentPly: number;
-  /** SAN of the current move, for the heading; null falls back to a generic title. */
-  moveLabel: string | null;
   /** All comments for the game (every ply); filtered to `currentPly` here. */
   comments: GameCommentItem[];
   currentUser: CommentUser | null;
@@ -51,7 +46,6 @@ type Props = {
 export function GameCommentThread({
   gameId,
   currentPly,
-  moveLabel,
   comments: initialComments,
   currentUser,
   locale,
@@ -68,6 +62,10 @@ export function GameCommentThread({
 
   const roots = useMemo(
     () => buildGameCommentTree(comments.filter((c) => c.ply === currentPly)),
+    [comments, currentPly]
+  );
+  const commentCount = useMemo(
+    () => comments.filter((c) => c.ply === currentPly && c.deletedAt === null).length,
     [comments, currentPly]
   );
 
@@ -132,11 +130,7 @@ export function GameCommentThread({
 
   return (
     <div className="space-y-4">
-      <SectionTitle>{moveLabel ? t('titleForMove', { move: moveLabel }) : t('title')}</SectionTitle>
-
-      {roots.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{t('empty')}</p>
-      ) : (
+      {roots.length > 0 && (
         <GameCommentProvider
           value={{ locale, currentUserId: currentUser?.id, reply, edit, remove }}
         >
@@ -148,22 +142,18 @@ export function GameCommentThread({
         </GameCommentProvider>
       )}
 
-      {currentUser ? (
+      {/* Reddit-style collapsed CTA (shared with topics): the form mounts only
+          after the reader opts in; guests get the shared sign-up prompt. */}
+      <JoinConversationToggle count={commentCount} joinLabel={t('joinConversation')}>
         <GameCommentForm
           placeholder={t('placeholder')}
           submitLabel={t('submit')}
           submittingLabel={t('submitting')}
+          autoFocus
           resetOnSuccess
           onSubmit={(body) => postComment(null, body)}
         />
-      ) : (
-        <p className="text-sm text-muted-foreground">
-          {t('signInToComment')}{' '}
-          <Link href={`/${locale}/sign-in`} className={TEXT_LINK_MUTED_CLASSES}>
-            {t('signIn')}
-          </Link>
-        </p>
-      )}
+      </JoinConversationToggle>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { fenToLichessUrl, getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
@@ -26,6 +27,7 @@ import { buildNewGameFromPositionUrl } from '@/app/[locale]/(public)/games/play/
 import { getMovingSide, parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
 import { computeMoveNumber } from '@/app/[locale]/(public)/games/play/postmortem/_lib/compute-move-number';
 import { GameStatsOverview } from '@/app/[locale]/(public)/games/play/result/_components/GameStatsOverview';
+import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -102,6 +104,7 @@ export function GameReplay({
   orientation,
   children,
 }: Props) {
+  const t = useTranslations('sharedGames');
   const router = useRouter();
   const { preferences } = useGamePreferences();
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -256,6 +259,24 @@ export function GameReplay({
   // thread takes their place, directly under the move list.
   const isInitialPosition = currentPosition === -2;
 
+  // The move panel is tabbed: discussion (comments) vs applicable chunks. Both
+  // datasets are already loaded, so the counts and the smart default are pure
+  // client-side filtering — no extra queries.
+  const commentCount = useMemo(
+    () => comments.filter((c) => c.ply === currentPly && c.deletedAt === null).length,
+    [comments, currentPly]
+  );
+  const chunkCount = useMemo(
+    () => gameChunks.filter((c) => c.ply === currentPly).length,
+    [gameChunks, currentPly]
+  );
+  const [activeMoveTab, setActiveMoveTab] = useState<'comments' | 'chunks'>('comments');
+  // Default to comments, but open straight to chunks on a move that has chunks
+  // and no comments. Re-evaluated per move (manual switches persist within a move).
+  useEffect(() => {
+    setActiveMoveTab(commentCount === 0 && chunkCount > 0 ? 'chunks' : 'comments');
+  }, [currentPly, commentCount, chunkCount]);
+
   // Once the deep-linked comment's move is on the board (its thread mounted),
   // scroll it into view. Runs once.
   const scrolledRef = useRef(false);
@@ -350,26 +371,63 @@ export function GameReplay({
         </>
       ) : (
         currentPly != null && (
-          <>
-            {/* Applicable chunks — a separate axis above the discussion. */}
-            <GameChunkSection
-              gameId={gameId}
-              currentPly={currentPly}
-              chunks={gameChunks}
-              availableChunks={availableChunks}
-              currentUserId={currentUser?.id}
-              isGameOwner={isGameOwner}
-              locale={locale}
-            />
-            <GameCommentThread
-              gameId={gameId}
-              currentPly={currentPly}
-              moveLabel={moveLabel}
-              comments={comments}
-              currentUser={currentUser}
-              locale={locale}
-            />
-          </>
+          <div className="space-y-4">
+            <SectionTitle>{moveLabel ?? t('comments.title')}</SectionTitle>
+
+            {/* Discussion vs applicable chunks, tabbed to save vertical space.
+                Both panels stay mounted (toggled via `hidden`) so their
+                optimistic state survives a tab switch. */}
+            <div
+              role="tablist"
+              aria-label={moveLabel ?? undefined}
+              className="flex rounded-lg bg-secondary p-1"
+            >
+              {(['comments', 'chunks'] as const).map((tab) => {
+                const count = tab === 'comments' ? commentCount : chunkCount;
+                const emoji = tab === 'comments' ? '💬' : '🧠';
+                const name = tab === 'comments' ? t('comments.title') : t('chunks.badge');
+                const label = `${emoji} ${name}${count > 0 ? ` (${count})` : ''}`;
+                const isActive = activeMoveTab === tab;
+                return (
+                  <button
+                    key={tab}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    onClick={() => setActiveMoveTab(tab)}
+                    className={`flex-1 truncate rounded-md px-2 py-2 text-center text-sm font-medium transition-colors md:px-4 ${
+                      isActive
+                        ? 'bg-card text-foreground'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className={activeMoveTab === 'comments' ? '' : 'hidden'}>
+              <GameCommentThread
+                gameId={gameId}
+                currentPly={currentPly}
+                comments={comments}
+                currentUser={currentUser}
+                locale={locale}
+              />
+            </div>
+            <div className={activeMoveTab === 'chunks' ? '' : 'hidden'}>
+              <GameChunkSection
+                gameId={gameId}
+                currentPly={currentPly}
+                chunks={gameChunks}
+                availableChunks={availableChunks}
+                currentUserId={currentUser?.id}
+                isGameOwner={isGameOwner}
+                locale={locale}
+              />
+            </div>
+          </div>
         )
       )}
 
