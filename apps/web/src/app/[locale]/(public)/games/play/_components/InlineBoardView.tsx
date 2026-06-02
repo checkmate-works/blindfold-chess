@@ -168,20 +168,22 @@ export function InlineBoardView({
       )}
       {effectivelyOpen && (
         <div>
-          {/* Horizontal Move List */}
-          {formattedPgn.length > 0 && onNavigateToPosition && (
-            <div
-              className={`px-2 py-1.5 overflow-x-auto ${alwaysOpen ? '' : 'border-t border-border'}`}
-            >
-              <HorizontalMoveList
-                formattedPgn={formattedPgn}
-                currentPosition={currentPosition}
-                onNavigateToPosition={onNavigateToPosition}
-              />
-            </div>
-          )}
-
+          {/* The board and the move-list strip above it share one mask: in
+              blindfold modes the move list would otherwise reveal the game, so
+              the frosted overlay covers both and a peek reveals both together. */}
           <div className="relative">
+            {/* Horizontal Move List */}
+            {formattedPgn.length > 0 && onNavigateToPosition && (
+              <div
+                className={`px-2 py-1.5 overflow-x-auto ${alwaysOpen ? '' : 'border-t border-border'}`}
+              >
+                <HorizontalMoveList
+                  formattedPgn={formattedPgn}
+                  currentPosition={currentPosition}
+                  onNavigateToPosition={onNavigateToPosition}
+                />
+              </div>
+            )}
             <ChessBoard
               fen={fen}
               flipped={flipped ?? playerSide === 'black'}
