@@ -3,7 +3,6 @@
 import { useMemo } from 'react';
 
 import type { MoveInputPreferenceHint } from '@/lib/games/move-input-cookie';
-import type { PeekPreferenceHint } from '@/lib/games/peek-cookie';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type {
@@ -11,12 +10,7 @@ import type {
   PerGamePreferences,
 } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
-import {
-  deriveMoveInputSkeletonProps,
-  shouldShowAlwaysVisibleBoard,
-  shouldShowInlinePeekHeader,
-  shouldShowModalPeekButton,
-} from '../_lib';
+import { deriveMoveInputSkeletonProps } from '../_lib';
 
 /**
  * The `play` page has two interlocking preference layers: a *global*
@@ -29,11 +23,11 @@ import {
  * This hook consolidates the three derivations PlayClient used to inline:
  *
  *  - The merged `preferences` (per-game overrides over global).
- *  - The pre-hydration "skeleton" derivations: which input-mode shape to
- *    reserve, whether to reserve the inline-peek header strip, and
- *    whether to reserve the modal-peek action button. Each prefers the
- *    cookie hint while `isHydrated === false`, then flips to the merged
- *    `preferences` once localStorage has been read.
+ *  - The pre-hydration move-input "skeleton" derivation: which input-mode
+ *    shape to reserve. Prefers the cookie hint while `isHydrated === false`,
+ *    then flips to the merged `preferences` once localStorage has been read.
+ *    (The board skeleton no longer needs a peek hint — the board is always
+ *    rendered at a fixed size, with the blindfold expressed as a mask overlay.)
  *  - The `globalPreferences` + `updatePreferences` passthrough so the
  *    page doesn't have to call `useGamePreferences()` *and* this hook.
  *
@@ -49,11 +43,9 @@ import {
 export function usePlayClientPreferences({
   perGamePrefs,
   initialMoveInputHint,
-  initialPeekHint,
 }: {
   perGamePrefs: PerGamePreferences | undefined;
   initialMoveInputHint: MoveInputPreferenceHint;
-  initialPeekHint: PeekPreferenceHint;
 }) {
   const { preferences: globalPreferences, updatePreferences, isHydrated } = useGamePreferences();
 
@@ -102,30 +94,11 @@ export function usePlayClientPreferences({
     };
   }, [globalPreferences, perGamePrefs]);
 
-  // Pre-hydration peek skeleton decisions: cookie hint wins on first paint,
-  // `preferences` (merged with per-game overrides) wins post-hydration. These
-  // three predicates partition the peek-hint space (see `preferences.test.ts`),
-  // so at most one board reservation fires — always-visible board, inline-peek
-  // header, or modal-peek action button. Kept in lockstep with `loading.tsx`,
-  // which derives the same three from the cookie hint server-side.
-  const skeletonShowAlwaysVisibleBoard = isHydrated
-    ? shouldShowAlwaysVisibleBoard(preferences)
-    : shouldShowAlwaysVisibleBoard(initialPeekHint);
-  const skeletonShowInlinePeekHeader = isHydrated
-    ? shouldShowInlinePeekHeader(preferences)
-    : shouldShowInlinePeekHeader(initialPeekHint);
-  const skeletonShowModalPeekButton = isHydrated
-    ? shouldShowModalPeekButton(preferences)
-    : shouldShowModalPeekButton(initialPeekHint);
-
   return {
     preferences,
     globalPreferences,
     updatePreferences,
     skeletonMode,
     skeletonHasModeSwitch,
-    skeletonShowAlwaysVisibleBoard,
-    skeletonShowInlinePeekHeader,
-    skeletonShowModalPeekButton,
   };
 }

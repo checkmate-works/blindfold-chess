@@ -8,7 +8,6 @@ import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import type { MoveInputPreferenceHint } from '@/lib/games/move-input-cookie';
-import type { PeekPreferenceHint } from '@/lib/games/peek-cookie';
 
 import { AuthPromptModal } from '@/app/[locale]/_components/AuthPromptModal';
 import { useAuthGuard } from '@/app/[locale]/_hooks/use-auth-guard';
@@ -33,7 +32,6 @@ import {
   ActionRowSkeleton,
   AlwaysVisibleBoardSkeleton,
   IconButtonSkeleton,
-  InlineBoardHeaderSkeleton,
   TextLinkSkeleton,
 } from './skeletons';
 
@@ -49,17 +47,6 @@ type Props = {
    */
   initialMoveInputHint: MoveInputPreferenceHint;
   /**
-   * Server-resolved hint for the user's board-peek preferences
-   * (`peekMode`, `boardVisibility`). Used to decide whether to
-   * reserve the `InlineBoardHeaderSkeleton` / `ActionRowSkeleton` board
-   * button during the SSR + pre-hydration window, before
-   * `GamePreferencesContext` has read localStorage. Once `isHydrated`
-   * flips true, the real preferences from localStorage take over —
-   * see `skeletonShowInlinePeekHeader` / `skeletonShowModalPeekButton`
-   * below.
-   */
-  initialPeekHint: PeekPreferenceHint;
-  /**
    * Page-level "waiting for persisted state" flag, computed once in
    * `PlayPageClient` from `gameState.isLoadingFromStorage` and the
    * preferences hydration state. Passed down so the title slot and the
@@ -68,13 +55,7 @@ type Props = {
   isInitializing: boolean;
 };
 
-export function PlayClient({
-  locale,
-  gameSession,
-  initialMoveInputHint,
-  initialPeekHint,
-  isInitializing,
-}: Props) {
+export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitializing }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   // Opened from the result / games list with `finished=1` to review a
@@ -136,19 +117,11 @@ export function PlayClient({
     [handleSubmitMove, recordInvalid]
   );
 
-  const {
-    preferences,
-    updatePreferences,
-    skeletonMode,
-    skeletonHasModeSwitch,
-    skeletonShowAlwaysVisibleBoard,
-    skeletonShowInlinePeekHeader,
-    skeletonShowModalPeekButton,
-  } = usePlayClientPreferences({
-    perGamePrefs,
-    initialMoveInputHint,
-    initialPeekHint,
-  });
+  const { preferences, updatePreferences, skeletonMode, skeletonHasModeSwitch } =
+    usePlayClientPreferences({
+      perGamePrefs,
+      initialMoveInputHint,
+    });
 
   // UI state
   const [isBoardVisible, setIsBoardVisible] = useState(false);
@@ -366,23 +339,14 @@ export function PlayClient({
             {/* In Progress Content */}
             {gameStatus === 'in_progress' && isInitializing && (
               <div className="flex flex-col gap-6">
-                {/* Board reservation. At most one of these fires — the
-                    `shouldShow*` predicates partition the peek-hint space (see
-                    preferences.test.ts), and the order mirrors `loading.tsx`.
-                    'always' reserves the full-size board card; 'peek+inline'
-                    reserves just the ~46px accordion header. Both are driven by
-                    the active hint (cookie pre-hydration, preferences post-
-                    hydration) so returning users get the correct layout from
-                    the very first paint. ('peek+modal' reserves a slot inside
-                    the action row below instead; 'never' reserves nothing.) */}
-                {skeletonShowAlwaysVisibleBoard && <AlwaysVisibleBoardSkeleton />}
-                {skeletonShowInlinePeekHeader && <InlineBoardHeaderSkeleton />}
+                {/* The board is always rendered at a fixed size now (the
+                    blindfold is a mask overlay, not a different layout), so the
+                    skeleton always reserves the full-size board card — no
+                    peek-hint branching, no modal "Show Board" button slot. */}
+                <AlwaysVisibleBoardSkeleton />
                 <MoveInputSkeleton mode={skeletonMode} hasModeSwitch={skeletonHasModeSwitch} />
-                {/* Action row (Show Board + Undo + Resign). Whether the
-                    "Show Board" button is reserved is driven by the active
-                    hint so users who disabled the button — or use inline
-                    peek — don't get a phantom slot reserved during SSR. */}
-                <ActionRowSkeleton showBoardButton={skeletonShowModalPeekButton} />
+                {/* Action row (Undo + Resign). */}
+                <ActionRowSkeleton />
                 {/* Save and Exit link: text-sm ≈ 20px */}
                 <TextLinkSkeleton />
                 {/* Operation Log trigger: w-4 h-4 icon + padding ≈ 24px */}
