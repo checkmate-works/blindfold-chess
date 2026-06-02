@@ -31,8 +31,7 @@ type Props = {
 
 /**
  * The shared-game detail body — an inline, steppable replay plus metadata, the
- * entry point for receiving advice. Only public / unlisted, non-deleted games
- * are visible.
+ * entry point for receiving advice. Only public, non-deleted games are visible.
  */
 export async function SharedGameDetailView({ locale, id, highlightCommentId, orientation }: Props) {
   if (!UUID_RE.test(id)) notFound();

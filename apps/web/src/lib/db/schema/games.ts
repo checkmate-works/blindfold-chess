@@ -38,14 +38,15 @@ import { chunks } from './positions';
  * `operation_logs`, …) never change — they record what was played. The only
  * mutable parts are the lifecycle (`status` / `deleted_at`) and the
  * author-supplied `title` / `description`. Editable commentary lives in the
- * separate `game_annotations` / `game_comments` tables, never in this row.
+ * separate `game_comments` table, never in this row.
  *
  * @design UUIDv7 primary key
  * `id` is a UUIDv7 (time-ordered, generated app-side via the `uuid` package),
  * used directly as the public URL identifier — there is no slug. Time-ordering
  * gives index-only keyset pagination for the gallery (`WHERE id < :cursor ORDER
- * BY id DESC`); the 74 random bits keep it unguessable enough for `unlisted`
- * link-only games despite the embedded timestamp.
+ * BY id DESC`); the 74 random bits keep ids unguessable (not enumerable from
+ * the embedded timestamp), which matters for the planned owner-only `private`
+ * tier and for link safety generally.
  *
  * @design author_id nullable + ON DELETE SET NULL
  * Mirrors `chunks.user_id`: a registered author owns the row via `author_id`;
@@ -61,12 +62,16 @@ import { chunks } from './positions';
  * approximate Elo (Maia rating passed through; Stockfish skill level mapped)
  * so games against both engines sort on one comparable strength axis.
  *
- * @design status / deleted_at lifecycle
+ * @design status / deleted_at lifecycle (two orthogonal axes)
  * `status` (varchar, not pgEnum, for additive extensibility like
- * `chunks.status`): `public` (default) | `unlisted` (link-only) | `hidden`
- * (author unpublished, reversible) | `removed`. `deleted_at` records a delete /
- * moderation removal (soft, audit-friendly); the public catalog excludes
- * `deleted_at IS NOT NULL` and non-`public/unlisted` rows.
+ * `chunks.status`) is the author/visibility tier: `public` (default) |
+ * `private` (非公開 — owner-only). `private` is a planned paid-member feature,
+ * so nothing transitions a game into it yet; the column exists now only so the
+ * value set never needs a later migration.
+ * `deleted_at` is the orthogonal deletion / moderation tombstone (soft,
+ * audit-friendly). The public catalog requires `deleted_at IS NULL AND status =
+ * 'public'`. Deletion stamps `deleted_at` ONLY (status is left as-is), so the
+ * two axes never overlap and "why is this row hidden?" has one answer each.
  */
 export const games = pgTable(
   'games',
@@ -115,7 +120,7 @@ export const games = pgTable(
     // chronological order, so pagination keys on id rather than a created_at index.
     index('idx_games_public')
       .on(table.id.desc())
-      .where(sql`deleted_at IS NULL AND status IN ('public', 'unlisted')`),
+      .where(sql`deleted_at IS NULL AND status = 'public'`),
     index('idx_games_engine_elo').on(table.engineElo),
     index('idx_games_clean_rate').on(table.cleanRate),
   ]
@@ -244,9 +249,10 @@ export const gameChunks = pgTable(
   },
   (table) => [
     // One link per (game, move, chunk); a second member "linking" the same
-    // chunk is a no-op rather than a duplicate.
+    // chunk is a no-op rather than a duplicate. Its leading (game_id, ply)
+    // prefix also serves the per-game / per-move lookups, so no separate
+    // (game_id, ply) index is needed.
     unique('uq_game_chunks').on(table.gameId, table.ply, table.chunkId),
-    index('idx_game_chunks_game_ply').on(table.gameId, table.ply),
     // chunk_id is not covered by the game_id-leading unique; index it for the
     // ON DELETE RESTRICT reference check and the future chunk→games backlink.
     index('idx_game_chunks_chunk').on(table.chunkId),

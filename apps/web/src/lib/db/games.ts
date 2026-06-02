@@ -22,8 +22,13 @@ import { db } from './index';
 import type { GameRecord } from './schema';
 import { feedItems, gameTokens, games, profiles } from './schema';
 
-/** Statuses a published game is publicly viewable in. */
-const VISIBLE_STATUSES = ['public', 'unlisted'] as const;
+/**
+ * Statuses a published game is publicly viewable in. Currently just `public`;
+ * the planned owner-only `private` tier is deliberately excluded here (a future
+ * owner-scoped read path will handle it). Kept as a list so adding such a path
+ * is a one-line change, not a query rewrite.
+ */
+const VISIBLE_STATUSES = ['public'] as const;
 
 /** Public author profile for attribution (avatar + name + profile link). */
 export type SharedGameAuthor = {
@@ -101,9 +106,9 @@ export type SharedGameListItem = {
 export type SharedGamesSort = 'new' | 'clean' | 'strong';
 
 /**
- * Publicly-listed games for the gallery. Only `public` games appear here —
- * `unlisted` games are reachable by direct link ({@link getGameById}) but
- * excluded from the catalog. Sort:
+ * Publicly-listed games for the gallery. Only `public`, non-deleted games
+ * appear here (the planned `private` tier and soft-deleted rows are excluded).
+ * Sort:
  * - 'new' (default): newest first via the time-ordered UUIDv7 id.
  * - 'clean': highest blindfold clean-rate first (nulls last).
  * - 'strong': strongest opponent first (unified Elo).
@@ -253,12 +258,13 @@ export async function authorizeGameMutation(params: {
   return 'forbidden';
 }
 
-/** Soft-delete a shared game (owner or moderation). RLS / reads filter it out. */
+/**
+ * Soft-delete a shared game (owner or moderation). Stamps `deleted_at` only —
+ * `status` (the visibility tier) is intentionally left untouched so the two
+ * lifecycle axes stay orthogonal. RLS / reads filter on `deleted_at IS NULL`.
+ */
 export async function softDeleteSharedGame(gameId: string): Promise<void> {
-  await db
-    .update(games)
-    .set({ deletedAt: new Date(), status: 'removed' })
-    .where(eq(games.id, gameId));
+  await db.update(games).set({ deletedAt: new Date() }).where(eq(games.id, gameId));
 }
 
 /** Update an owner-editable field set (title / description). */

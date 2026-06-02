@@ -52,11 +52,10 @@ ALTER TABLE "game_chunks" ADD CONSTRAINT "game_chunks_chunk_id_chunks_id_fk" FOR
 ALTER TABLE "game_comments" ADD CONSTRAINT "game_comments_game_id_games_id_fk" FOREIGN KEY ("game_id") REFERENCES "public"."games"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "game_comments" ADD CONSTRAINT "game_comments_parent_id_game_comments_id_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."game_comments"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "game_tokens" ADD CONSTRAINT "game_tokens_game_id_games_id_fk" FOREIGN KEY ("game_id") REFERENCES "public"."games"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-CREATE INDEX "idx_game_chunks_game_ply" ON "game_chunks" USING btree ("game_id","ply");--> statement-breakpoint
 CREATE INDEX "idx_game_chunks_chunk" ON "game_chunks" USING btree ("chunk_id");--> statement-breakpoint
 CREATE INDEX "idx_game_comments_game_ply" ON "game_comments" USING btree ("game_id","ply");--> statement-breakpoint
 CREATE INDEX "idx_game_comments_parent" ON "game_comments" USING btree ("parent_id");--> statement-breakpoint
 CREATE INDEX "idx_games_author" ON "games" USING btree ("author_id");--> statement-breakpoint
-CREATE INDEX "idx_games_public" ON "games" USING btree ("id" DESC NULLS LAST) WHERE deleted_at IS NULL AND status IN ('public', 'unlisted');--> statement-breakpoint
+CREATE INDEX "idx_games_public" ON "games" USING btree ("id" DESC NULLS LAST) WHERE deleted_at IS NULL AND status = 'public';--> statement-breakpoint
 CREATE INDEX "idx_games_engine_elo" ON "games" USING btree ("engine_elo");--> statement-breakpoint
 CREATE INDEX "idx_games_clean_rate" ON "games" USING btree ("clean_rate");

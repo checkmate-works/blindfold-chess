@@ -1,5 +1,5 @@
 {
-  "id": "2c3fbf45-48a9-4963-88cf-c81a56eb61be",
+  "id": "af7445e3-4cfa-4b55-92c5-d3b1cb85a4eb",
   "prevId": "595a1533-751d-4e54-9187-f73090fcac21",
   "version": "7",
   "dialect": "postgresql",
@@ -5745,27 +5745,6 @@
         }
       },
       "indexes": {
-        "idx_game_chunks_game_ply": {
-          "name": "idx_game_chunks_game_ply",
-          "columns": [
-            {
-              "expression": "game_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "ply",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "idx_game_chunks_chunk": {
           "name": "idx_game_chunks_chunk",
           "columns": [
@@ -6123,7 +6102,7 @@
             }
           ],
           "isUnique": false,
-          "where": "deleted_at IS NULL AND status IN ('public', 'unlisted')",
+          "where": "deleted_at IS NULL AND status = 'public'",
           "concurrently": false,
           "method": "btree",
           "with": {}

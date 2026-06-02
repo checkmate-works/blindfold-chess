@@ -6,8 +6,7 @@
  * uses the shared {@link CatalogListCard} — the same thumbnail-led card the
  * puzzle / position-memory lists use — with the game's opening position as the
  * board thumbnail. Clicking a card opens the detail at that same opening board.
- * Only `public` games are listed; `unlisted` games are reachable by direct link
- * only.
+ * Only `public`, non-deleted games are listed.
  */
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';

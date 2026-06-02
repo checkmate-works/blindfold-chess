@@ -12,8 +12,8 @@ import type { GameFeedData } from '../types';
  * per-viewer like meta (`target_type = 'game'`) and comment meta (`game_comments`
  * keyed by `game_id`). The thumbnail FEN is the opening position (`startingFen`,
  * or the standard start). Only `public`, non-deleted games are returned — a game
- * the author later unlisted or removed silently drops out of the feed, matching
- * the deleted-entity handling the other loaders use.
+ * the author later set private (planned) or soft-deleted silently drops out of
+ * the feed, matching the deleted-entity handling the other loaders use.
  */
 export async function loadGamesForFeed(
   gameIds: string[],
