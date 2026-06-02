@@ -165,24 +165,21 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
     preferences.boardVisibility === 'never' ||
     (preferences.boardVisibility === 'peek' && !peekRevealed);
 
-  // Board-driven move handler — only wired through to InlineBoardView when
-  // the always-visible board is being rendered AND the player can actually
-  // move right now (their turn, no pending AI move, not browsing history).
-  // The board interaction (click-to-move + DnD) produces an already-legal
-  // SAN string, so we pass it straight to `handleSubmitMove` which runs
-  // the normal validation + commit pipeline.
-  //
-  // We commit the operation log entry directly here (rather than going
-  // through `handleMoveCommitted` like MoveInputPanel does) because board
-  // moves only happen in always-visible mode — the auto-collapse and
-  // scroll-to-title side effects of `handleMoveCommitted` are not relevant
-  // there. The log tag is `'board'` so the audit table can distinguish
-  // click/drag-driven moves from text/select/button input methods.
+  // Board-driven move handler — wired to InlineBoardView whenever the board is
+  // currently visible (always mode, or a revealed peek) AND the player can act
+  // right now (their turn, no pending AI move, not browsing history). The board
+  // interaction (click-to-move + DnD) produces an already-legal SAN string, so
+  // we pass it straight to `handleSubmitMove` which runs the normal validation
+  // + commit pipeline. The log tag is `'board'` so the audit table can
+  // distinguish click/drag-driven moves from text/select/button input methods.
+  // Re-mask afterwards (a no-op in 'always' mode) so a peeked move hides the
+  // board again for the opponent's reply, same as a panel-submitted move.
   const handleBoardMove = useCallback(
     (san: string) => {
       const submitted = handleSubmitMove(san as AlgebraicNotation);
       if (submitted !== false) {
         commitMoveLog('board');
+        setPeekRevealed(false);
       }
     },
     [handleSubmitMove, commitMoveLog]
@@ -268,14 +265,11 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
   // In-progress board: always rendered at a fixed position/size, with the
   // blindfold expressed as a mask overlay rather than as a different layout.
   // 'always' → unmasked; 'peek' → masked until tapped (re-masks on the next
-  // move); 'never' → permanently masked. Click/drag move input stays limited
-  // to 'always' mode and the player's turn (a masked board is non-interactive,
-  // and a revealed peek stays review-only — same as before).
-  const canBoardMove =
-    shouldShowAlwaysVisibleBoard(preferences) &&
-    isPlayerTurn &&
-    !isLoading &&
-    currentPosition === -1;
+  // move); 'never' → permanently masked. Click/drag move input is enabled
+  // whenever the board is actually visible — 'always' mode OR a revealed peek
+  // (`!boardMasked`) — on the player's turn, so a peeked board is as
+  // operable as an always-visible one.
+  const canBoardMove = !boardMasked && isPlayerTurn && !isLoading && currentPosition === -1;
   const inProgressBoardView = (
     <InlineBoardView
       fen={displayFen || currentFen}

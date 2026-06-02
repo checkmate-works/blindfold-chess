@@ -72,14 +72,15 @@ type Props = {
    */
   movablePieces?: 'own' | 'side-to-move';
   /**
-   * When true, the board frame stays in place but its pieces are NOT painted
-   * and an opaque overlay covers it — the blindfold mask. This is the
-   * always-present-board model for `boardVisibility` 'peek' / 'never': the
-   * board never changes position or size, only its mask toggles.
+   * When true, the board stays in place (same position/size) but a frosted
+   * overlay blurs it — the blindfold mask. This is the always-present-board
+   * model for `boardVisibility` 'peek' / 'never': the board never changes
+   * layout, only its mask toggles. The blur + tint is dense enough that piece
+   * types can't be read; the masked board is also non-interactive (the overlay
+   * intercepts pointer events).
    *
-   * Pieces are suppressed (not merely hidden under the cover) so their
-   * positions never reach the DOM while masked. Independent of `alwaysOpen` —
-   * the board is still rendered; it is just masked.
+   * Note: the pieces ARE rendered (behind the blur) so a peek reveal is a plain
+   * overlay removal — a client-side blindfold, not a hard secret.
    */
   masked?: boolean;
   /**
@@ -187,39 +188,46 @@ export function InlineBoardView({
               playerSide={playerSide}
               lastMove={lastMove}
               showCoordinates={preferences.showCoordinates}
-              // While masked, suppress pieces entirely so their positions never
-              // reach the DOM behind the cover (the blindfold must not leak).
-              showOwnPieces={masked ? false : preferences.showOwnPieces}
-              showOpponentPieces={masked ? false : preferences.showOpponentPieces}
+              showOwnPieces={preferences.showOwnPieces}
+              showOpponentPieces={preferences.showOpponentPieces}
               pieceShapeMode={preferences.pieceShapeMode}
               pieceColors={preferences.pieceColors}
               boardTheme={preferences.boardTheme}
               rounded={false}
-              // A masked board is never interactive (no peeking the legal-move
-              // dots, no dragging covered pieces).
+              // A masked board is non-interactive: the overlay sits on top and
+              // intercepts pointer events, but null these defensively too so a
+              // covered board never commits a move.
               onMove={masked ? undefined : onMove}
               onIllegalMove={masked ? undefined : onIllegalMove}
               movablePieces={movablePieces}
             />
+            {/* Blindfold mask: a frosted overlay that blurs the real board
+                underneath rather than a flat panel (which read as page chrome).
+                The blur + tint is dense enough that piece types can't be made
+                out; tapping a dismissable mask reveals the board for a peek. */}
             {masked &&
               (maskDismissable ? (
                 <button
                   type="button"
                   onClick={onReveal}
                   aria-label={t('revealBoard')}
-                  className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-muted text-muted-foreground transition-colors hover:text-foreground"
+                  className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-xl transition-colors"
                 >
-                  <FaEye className="h-7 w-7" aria-hidden />
-                  <span className="text-sm font-medium">{t('revealBoard')}</span>
+                  <span className="inline-flex items-center gap-2 rounded-full bg-background/80 px-3 py-1.5 text-sm font-medium text-foreground shadow-sm">
+                    <FaEye className="h-4 w-4" aria-hidden />
+                    {t('revealBoard')}
+                  </span>
                 </button>
               ) : (
                 <div
-                  className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-muted text-muted-foreground"
+                  className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-xl"
                   aria-label={t('boardHidden')}
                   role="img"
                 >
-                  <FaEyeSlash className="h-7 w-7" aria-hidden />
-                  <span className="text-sm font-medium">{t('boardHidden')}</span>
+                  <span className="inline-flex items-center gap-2 rounded-full bg-background/80 px-3 py-1.5 text-sm font-medium text-foreground shadow-sm">
+                    <FaEyeSlash className="h-4 w-4" aria-hidden />
+                    {t('boardHidden')}
+                  </span>
                 </div>
               ))}
           </div>
