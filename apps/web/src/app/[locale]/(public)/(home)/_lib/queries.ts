@@ -3,6 +3,7 @@ import { and, desc, inArray, lt } from 'drizzle-orm';
 import { db, feedItems } from '@/lib/db';
 
 import { loadChunksForFeed } from './feed-queries/load-chunks';
+import { loadGamesForFeed } from './feed-queries/load-games';
 import { loadPositionsForFeed } from './feed-queries/load-positions';
 import { loadRankUpdateActors } from './feed-queries/load-rank-update-actors';
 import { loadTopicPostsForFeed } from './feed-queries/load-topic-posts';
@@ -69,14 +70,16 @@ export async function getFeedData(
   const topicPostIds = rows.filter((r) => r.entityType === 'topic_post').map((r) => r.entityId);
   const positionIds = rows.filter((r) => r.entityType === 'position').map((r) => r.entityId);
   const chunkIds = rows.filter((r) => r.entityType === 'chunk').map((r) => r.entityId);
+  const gameIds = rows.filter((r) => r.entityType === 'game').map((r) => r.entityId);
   const rankUpdateActorIds = [
     ...new Set(rows.filter((r) => r.entityType === 'challenge_rank_update').map((r) => r.actorId)),
   ];
 
-  const [topicPostMap, positionMap, chunkMap, rankUpdateActorMap] = await Promise.all([
+  const [topicPostMap, positionMap, chunkMap, gameMap, rankUpdateActorMap] = await Promise.all([
     loadTopicPostsForFeed(topicPostIds, currentUserId),
     loadPositionsForFeed(positionIds, currentUserId),
     loadChunksForFeed(chunkIds, currentUserId),
+    loadGamesForFeed(gameIds, currentUserId),
     loadRankUpdateActors(rankUpdateActorIds),
   ]);
 
@@ -121,6 +124,18 @@ export async function getFeedData(
           actorId: row.actorId,
           createdAt: row.createdAt.toISOString(),
           data: { ...data, kind },
+        });
+      }
+    } else if (row.entityType === 'game') {
+      const data = gameMap.get(row.entityId);
+      if (data) {
+        items.push({
+          id: row.id,
+          entityType: 'game',
+          entityId: row.entityId,
+          actorId: row.actorId,
+          createdAt: row.createdAt.toISOString(),
+          data,
         });
       }
     } else if (row.entityType === 'challenge_rank_update') {

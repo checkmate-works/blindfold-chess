@@ -1655,6 +1655,9 @@
       "position": {
         "action": "問題を投稿しました"
       },
+      "game": {
+        "action": "対局を公開しました"
+      },
       "chunk": {
         "action": {
           "created": "チャンクの下書きを投稿しました",
@@ -3197,6 +3200,7 @@
     "chunkEditRequestAcceptedMessage": "{actor} さんがあなたの編集リクエストを採用しました",
     "newChunkDraftMessage": "{actor} さんがチャンクの下書きを投稿しました",
     "chunkPublishedMessage": "{actor} さんがチャンクを公開しました",
+    "newGameMessage": "{actor} さんが対局を公開しました",
     "newPositionMemoryMessage": "{actor} がポジション記憶の問題を作成しました",
     "newPuzzleMessage": "{actor} がパズルを作成しました",
     "achievementSingleMessage": "🏆 {name} を獲得しました",

@@ -15,10 +15,9 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { getStartingFen } from '@blindfold-chess/features/chess-core';
 
 import { getOptionalUser } from '@/lib/auth';
-import { getGameCommentMetaMap } from '@/lib/db/game-comments';
-import { GAME_LIKE_TARGET, listSharedGames } from '@/lib/db/games';
-import { getLikeMetaMap } from '@/lib/db/like-queries';
-import { EMPTY_REPLY_META } from '@/lib/db/reply-meta-queries';
+import { listSharedGames } from '@/lib/db/games';
+import { GAME_LIKE_TARGET, getLikeMetaMap } from '@/lib/db/like-queries';
+import { EMPTY_REPLY_META, getGameCommentMetaMap } from '@/lib/db/reply-meta-queries';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { CatalogListCard } from '@/app/[locale]/_components/CatalogListCard';

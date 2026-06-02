@@ -1655,6 +1655,9 @@
       "position": {
         "action": "Posted a new problem"
       },
+      "game": {
+        "action": "Shared a game"
+      },
       "chunk": {
         "action": {
           "created": "Posted a chunk draft",
@@ -3197,6 +3200,7 @@
     "chunkEditRequestAcceptedMessage": "{actor} accepted your edit suggestion",
     "newChunkDraftMessage": "{actor} posted a chunk draft",
     "chunkPublishedMessage": "{actor} published a chunk",
+    "newGameMessage": "{actor} shared a game",
     "newPositionMemoryMessage": "{actor} created a new position memory problem",
     "newPuzzleMessage": "{actor} created a new puzzle",
     "achievementSingleMessage": "🏆 You earned {name}",

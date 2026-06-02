@@ -8,6 +8,14 @@ export type LikeMeta = {
 };
 
 /**
+ * Polymorphic `likes` target type for a shared game itself (vs `game_comment`).
+ * Lives here (next to the generic like helpers, not in the `server-only`
+ * `games` module) so non-server callers — e.g. the home-feed loader — can
+ * reference it without dragging `server-only` into their module graph.
+ */
+export const GAME_LIKE_TARGET = 'game';
+
+/**
  * Polymorphic like-meta lookup — returns count + liked-by-me for a
  * single `(targetType, targetId)` pair.
  *

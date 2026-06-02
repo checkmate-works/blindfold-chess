@@ -113,6 +113,8 @@ export function NotificationItem({ notification, currentUsername }: Props) {
         return t('newChunkDraftMessage', { actor: actorName });
       case 'chunk_published':
         return t('chunkPublishedMessage', { actor: actorName });
+      case 'new_game':
+        return t('newGameMessage', { actor: actorName });
       case 'new_position': {
         // Exhaustive `PositionType` dispatch — the `never` check at the
         // bottom forces this switch to be updated whenever a new
@@ -296,6 +298,10 @@ export function NotificationItem({ notification, currentUsername }: Props) {
       notification.targetId
     ) {
       // The game id is the like target itself.
+      return `/games/shared/${notification.targetId}`;
+    }
+    if (notification.type === 'new_game' && notification.targetId) {
+      // A followed author published a game; the target is the game id.
       return `/games/shared/${notification.targetId}`;
     }
     if (

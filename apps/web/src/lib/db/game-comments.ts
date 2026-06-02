@@ -8,103 +8,14 @@
  * `likes` table under `target_type = 'game_comment'`. Members-only writes
  * (enforced in the action); reads expose the author's public profile.
  */
-import {
-  and,
-  asc,
-  count,
-  countDistinct,
-  desc,
-  eq,
-  inArray,
-  isNotNull,
-  isNull,
-  max,
-} from 'drizzle-orm';
+import { asc, eq } from 'drizzle-orm';
 import 'server-only';
 
 import { db } from './index';
 import { getLikeMetaMap } from './like-queries';
-import type { ReplyMeta } from './reply-meta-queries';
 import { gameComments, profiles } from './schema';
 
 export const GAME_COMMENT_LIKE_TARGET = 'game_comment';
-
-const MAX_REPLIERS_DISPLAY = 3;
-
-/**
- * Comment meta for a list of games — total live-comment count, latest comment
- * time, and up to 3 commenter avatars per game — shaped as the generic
- * {@link ReplyMeta} so the gallery's {@link CatalogListCard} footer renders the
- * same way as the puzzle / position lists. Mirrors `getReplyMetaMap`, but over
- * `game_comments` keyed by `game_id` (not the `topic_posts` polymorphic key).
- * Soft-deleted rows are excluded so a retracted comment stops counting.
- */
-export async function getGameCommentMetaMap(gameIds: string[]): Promise<Map<string, ReplyMeta>> {
-  const map = new Map<string, ReplyMeta>();
-  if (gameIds.length === 0) return map;
-
-  const filter = and(inArray(gameComments.gameId, gameIds), isNull(gameComments.deletedAt));
-
-  const [stats, dedupedRepliers] = await Promise.all([
-    db
-      .select({
-        gameId: gameComments.gameId,
-        replyCount: count(),
-        latestReplyAt: max(gameComments.createdAt),
-        uniqueReplierCount: countDistinct(gameComments.authorId),
-      })
-      .from(gameComments)
-      .where(filter)
-      .groupBy(gameComments.gameId),
-    // Latest comment per (game, author), newest first — bounds transfer to
-    // unique commenters × games. Null authors (deleted users) are excluded so
-    // the avatar stack lines up with `uniqueReplierCount` (COUNT DISTINCT skips
-    // NULLs).
-    db
-      .selectDistinctOn([gameComments.gameId, gameComments.authorId], {
-        gameId: gameComments.gameId,
-        authorId: gameComments.authorId,
-        createdAt: gameComments.createdAt,
-        avatarUrl: profiles.avatarUrl,
-        displayName: profiles.displayName,
-        username: profiles.username,
-      })
-      .from(gameComments)
-      .leftJoin(profiles, eq(gameComments.authorId, profiles.id))
-      .where(and(filter, isNotNull(gameComments.authorId)))
-      .orderBy(asc(gameComments.gameId), asc(gameComments.authorId), desc(gameComments.createdAt)),
-  ]);
-
-  const statsMap = new Map(stats.map((s) => [s.gameId, s]));
-
-  const repliersByGame = new Map<string, typeof dedupedRepliers>();
-  for (const row of dedupedRepliers) {
-    const arr = repliersByGame.get(row.gameId) ?? [];
-    arr.push(row);
-    repliersByGame.set(row.gameId, arr);
-  }
-
-  for (const gameId of gameIds) {
-    const s = statsMap.get(gameId);
-    const dedupedForGame = repliersByGame.get(gameId) ?? [];
-    const repliers = dedupedForGame
-      .slice()
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-      .slice(0, MAX_REPLIERS_DISPLAY)
-      .map((r) => ({
-        avatarUrl: r.avatarUrl,
-        displayName: r.displayName || r.username || 'Anonymous',
-      }));
-    map.set(gameId, {
-      replyCount: s?.replyCount ?? 0,
-      latestReplyAt: s?.latestReplyAt ?? null,
-      repliers,
-      uniqueReplierCount: s?.uniqueReplierCount ?? 0,
-    });
-  }
-
-  return map;
-}
 
 export type GameCommentItem = {
   id: string;

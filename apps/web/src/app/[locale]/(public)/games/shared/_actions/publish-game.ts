@@ -5,6 +5,7 @@ import type { EngineConfig } from '@/lib/engines';
 import { deriveGameColumns, validatePublishSnapshot } from '@/lib/games/publish-game';
 import type { MoveOperationLog } from '@/lib/games/saved-game-types';
 import { isUserBanned } from '@/lib/moderation/ban';
+import { notifyFollowersOfNewGame } from '@/lib/notifications/notification';
 import { guardByIpRateLimit } from '@/lib/security/rate-limit-ip';
 import { handleServerActionError } from '@/lib/server-action-error';
 import { createClient } from '@/lib/supabase/server';
@@ -69,6 +70,12 @@ export async function publishGameAction(
       game: validated.game,
       columns,
     });
+
+    // Notify followers (registered authors only — the feed item + followers
+    // are actor-keyed). Fire-and-forget inside the helper.
+    if (user?.id) {
+      notifyFollowersOfNewGame({ actorId: user.id, gameId: id });
+    }
 
     return { success: true, id, manageToken };
   } catch (error) {

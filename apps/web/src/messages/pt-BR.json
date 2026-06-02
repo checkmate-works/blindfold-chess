@@ -1651,6 +1651,9 @@
       "position": {
         "action": "Publicou um novo problema"
       },
+      "game": {
+        "action": "Compartilhou uma partida"
+      },
       "chunk": {
         "action": {
           "created": "Publicou um rascunho de chunk",
@@ -2956,6 +2959,7 @@
     "newCommentOnTopicMessage": "{actor} comentou no seu problema",
     "newChunkDraftMessage": "{actor} publicou um rascunho de chunk",
     "chunkPublishedMessage": "{actor} publicou um chunk",
+    "newGameMessage": "{actor} compartilhou uma partida",
     "newPositionMemoryMessage": "{actor} criou um novo problema de memória de posição",
     "newPuzzleMessage": "{actor} criou um novo puzzle",
     "achievementSingleMessage": "🏆 Você conquistou {name}",

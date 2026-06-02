@@ -20,7 +20,7 @@ import type { GameColumns, ValidatedGame } from '@/lib/games/publish-game';
 
 import { db } from './index';
 import type { GameRecord } from './schema';
-import { gameTokens, games, profiles } from './schema';
+import { feedItems, gameTokens, games, profiles } from './schema';
 
 /** Statuses a published game is publicly viewable in. */
 const VISIBLE_STATUSES = ['public', 'unlisted'] as const;
@@ -208,6 +208,16 @@ export async function publishGame(params: {
       const { token, tokenHash } = generateManageToken();
       await tx.insert(gameTokens).values({ gameId: row.id, tokenHash });
       manageToken = token;
+    } else {
+      // Surface the publish on the home timeline. Account-less games have no
+      // actor (feed_items.actor_id is NOT NULL), so they list under
+      // /games/shared but never emit a feed item.
+      await tx.insert(feedItems).values({
+        entityType: 'game',
+        entityId: row.id,
+        actorId: authorId,
+        metadata: { result: game.result },
+      });
     }
 
     return { id: row.id, manageToken };
@@ -261,9 +271,6 @@ export async function updateSharedGameFields(
     .set({ title: fields.title, description: fields.description })
     .where(eq(games.id, gameId));
 }
-
-/** Polymorphic `likes` target type for a shared game itself (vs `game_comment`). */
-export const GAME_LIKE_TARGET = 'game';
 
 /**
  * Author id of a live game — used for the like notification. `null` for an
