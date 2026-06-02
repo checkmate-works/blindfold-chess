@@ -83,7 +83,6 @@ function renderPanel(overrides: Overrides = {}) {
       handleSubmitMove={() => undefined}
       moves={overrides.moves ?? []}
       confirmationDialogs={makeConfirmationDialogs()}
-      onShowBoard={() => {}}
       aiMoveError={null}
     />
   );

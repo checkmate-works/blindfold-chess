@@ -162,50 +162,35 @@ export function PlayClient({
   // surfacing an inert affordance.
   const canEditPerGameSettings = initialPerGamePrefs !== undefined;
 
-  // Bumped once per successful player move commit. Drives the inline peek
-  // accordion's auto-collapse so each move requires a fresh expand, matching
-  // the modal mode's "1 open action = 1 peek" semantics. Also drives the
-  // scroll-to-top effect below for peek+inline users.
-  const [playerMoveCommitCount, setPlayerMoveCommitCount] = useState(0);
+  // Whether the always-present board is currently revealed in 'peek' mode.
+  // The board frame is always on screen (same position/size); in 'peek' it is
+  // masked until the player taps to reveal, then re-masked on their next move
+  // so each look is a discrete, counted peek. Irrelevant in 'always' (never
+  // masked) and 'never' (always masked) — see `boardMasked` below.
+  const [peekRevealed, setPeekRevealed] = useState(false);
   const handleMoveCommitted = useCallback(
     (inputMethod: Parameters<typeof commitMoveLog>[0]) => {
       commitMoveLog(inputMethod);
-      setPlayerMoveCommitCount((n) => n + 1);
+      // Re-mask after each player move so the opponent's reply stays unseen
+      // until the next deliberate peek (blindfold semantics).
+      setPeekRevealed(false);
     },
     [commitMoveLog]
   );
 
-  // Scroll back to PageTitle after a player move commit while in peek+inline
-  // mode. The inline board auto-collapses on commit (so the area the user
-  // was looking at disappears) and the "AI is thinking" status lives in the
-  // PageTitle at the top — bringing it into the first view makes that
-  // status immediately visible without the user having to scroll back up.
-  // Modal-peek and always-visible modes don't need this: modal users have
-  // no expand area to obscure the title, and always-visible users have the
-  // board on-screen continuously anyway.
-  //
-  // Read the latest `peek+inline` predicate via a ref so the effect's only
-  // re-trigger is the commit counter — otherwise unrelated preference
-  // changes (piece colors, theme, etc.) would also cause a scroll.
-  //
-  // The scroll is dispatched via `requestAnimationFrame` so the inline
-  // board's auto-collapse layout shift (which removes the board element
-  // from the DOM and reduces document height) flushes BEFORE the smooth
-  // scroll begins. Without that deferral, some browsers cancel the
-  // in-flight smooth animation when the document height drops underneath
-  // it, leaving the page stuck at its original scroll position — exactly
-  // the symptom users observed.
-  const peekInlineModeRef = useRef(shouldShowInlinePeekHeader(preferences));
-  peekInlineModeRef.current = shouldShowInlinePeekHeader(preferences);
-  useEffect(() => {
-    if (playerMoveCommitCount === 0) return; // skip initial mount
-    if (!peekInlineModeRef.current) return;
-    const id = requestAnimationFrame(() => {
-      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
-    });
-    return () => cancelAnimationFrame(id);
-  }, [playerMoveCommitCount]);
+  // Reveal the masked board for a peek: count it (audit / clean-rate) and lift
+  // the mask. The mask returns on the next committed move.
+  const handleRevealBoard = useCallback(() => {
+    recordPeek();
+    setPeekRevealed(true);
+  }, [recordPeek]);
+
+  // The board frame is always rendered; this decides whether it is covered.
+  // 'always' → never masked; 'never' → always masked; 'peek' → masked until
+  // the current peek reveal.
+  const boardMasked =
+    preferences.boardVisibility === 'never' ||
+    (preferences.boardVisibility === 'peek' && !peekRevealed);
 
   // Board-driven move handler — only wired through to InlineBoardView when
   // the always-visible board is being rendered AND the player can actually
@@ -307,10 +292,46 @@ export function PlayClient({
     );
   }, [router, locale, formattedPgn, playerSide, moves, engineConfig, gameId, startingFen]);
 
-  // Build the InlineBoardView shared by the in-progress and finished panels.
-  // `interactive` enables click/drag move input (gated further on the player's
-  // turn); the finished view passes false so the board is review-only.
-  const renderInlineBoardView = (interactive: boolean) =>
+  // In-progress board: always rendered at a fixed position/size, with the
+  // blindfold expressed as a mask overlay rather than as a different layout.
+  // 'always' → unmasked; 'peek' → masked until tapped (re-masks on the next
+  // move); 'never' → permanently masked. Click/drag move input stays limited
+  // to 'always' mode and the player's turn (a masked board is non-interactive,
+  // and a revealed peek stays review-only — same as before).
+  const canBoardMove =
+    shouldShowAlwaysVisibleBoard(preferences) &&
+    isPlayerTurn &&
+    !isLoading &&
+    currentPosition === -1;
+  const inProgressBoardView = (
+    <InlineBoardView
+      fen={displayFen || currentFen}
+      playerSide={playerSide}
+      flipped={effectiveFlipped}
+      lastMove={preferences.highlightLastMove && currentPosition === -1 ? lastMove : null}
+      preferences={preferences}
+      movesLength={moves.length}
+      currentPosition={currentPosition}
+      formattedPgn={formattedPgn}
+      onNavigateToStart={navigateToStart}
+      onNavigatePrevious={navigatePrevious}
+      onNavigateNext={navigateNext}
+      onNavigateToEnd={navigateToEnd}
+      onNavigateToPosition={navigateToPosition}
+      onFlipBoard={handleFlipBoard}
+      alwaysOpen
+      masked={boardMasked}
+      maskDismissable={preferences.boardVisibility === 'peek'}
+      onReveal={handleRevealBoard}
+      onMove={canBoardMove ? handleBoardMove : undefined}
+      onIllegalMove={canBoardMove ? recordInvalid : undefined}
+    />
+  );
+
+  // Finished-game review board (read-only) keeps the existing peek/always
+  // rendering for now — the always-present-board model is being rolled out to
+  // the live in-progress surface first.
+  const finishedBoardView =
     shouldShowInlinePeekHeader(preferences) || shouldShowAlwaysVisibleBoard(preferences) ? (
       <InlineBoardView
         fen={displayFen || currentFen}
@@ -328,32 +349,7 @@ export function PlayClient({
         onNavigateToPosition={navigateToPosition}
         onFlipBoard={handleFlipBoard}
         onPeek={shouldShowAlwaysVisibleBoard(preferences) ? undefined : recordPeek}
-        collapseSignal={playerMoveCommitCount}
         alwaysOpen={shouldShowAlwaysVisibleBoard(preferences)}
-        // Interactive board moves (click-to-move + drag) only in always-visible
-        // mode AND when the player can act right now. The finished view passes
-        // interactive=false, so the board is non-interactive there.
-        onMove={
-          interactive &&
-          shouldShowAlwaysVisibleBoard(preferences) &&
-          isPlayerTurn &&
-          !isLoading &&
-          currentPosition === -1
-            ? handleBoardMove
-            : undefined
-        }
-        // Count illegal board attempts into the same invalid-attempt counter
-        // the text/select/button paths use, so the result page's "Invalid
-        // Count" reflects blindfold mistakes regardless of input method.
-        onIllegalMove={
-          interactive &&
-          shouldShowAlwaysVisibleBoard(preferences) &&
-          isPlayerTurn &&
-          !isLoading &&
-          currentPosition === -1
-            ? recordInvalid
-            : undefined
-        }
       />
     ) : undefined;
 
@@ -408,13 +404,6 @@ export function PlayClient({
                 handleSubmitMove={handleSubmitMoveTracked}
                 moves={moves}
                 confirmationDialogs={confirmationDialogs}
-                // Peek tracking: counts each "open" action, not view duration.
-                // Modal: counted when opened; closing and reopening counts again.
-                // Inline: counted when accordion expands; collapsing and re-expanding counts again.
-                onShowBoard={() => {
-                  recordPeek();
-                  setIsBoardVisible(true);
-                }}
                 playerColor={playerSide === 'black' ? 'b' : 'w'}
                 onMoveCommitted={handleMoveCommitted}
                 onMovePeek={recordMovePeek}
@@ -433,12 +422,12 @@ export function PlayClient({
                     ? { message: aiMoveError.message, retry: aiMoveError.retry }
                     : null
                 }
-                inlineBoardView={renderInlineBoardView(true)}
+                inlineBoardView={inProgressBoardView}
               />
             )}
             {!isInitializing && isFinishedView && isFinished && (
               <FinishedGamePanel
-                inlineBoardView={renderInlineBoardView(false)}
+                inlineBoardView={finishedBoardView}
                 preferences={preferences}
                 onViewResult={handleViewResult}
                 onPostmortem={() => guardAction(handleOpenPostmortem)}

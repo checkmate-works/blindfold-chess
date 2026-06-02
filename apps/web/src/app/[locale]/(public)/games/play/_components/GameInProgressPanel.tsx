@@ -15,8 +15,7 @@ import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCo
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import type { ConfirmationDialogs } from '../_hooks';
-import { ACTION_ROW_CONTAINER_CLASSES, shouldShowModalPeekButton } from '../_lib';
-import { ShowBoardButton } from './ShowBoardButton';
+import { ACTION_ROW_CONTAINER_CLASSES } from '../_lib';
 
 type Props = {
   isPlayerTurn: boolean;
@@ -32,7 +31,6 @@ type Props = {
   handleSubmitMove: (move: AlgebraicNotation) => boolean | void | Promise<void>;
   moves: AlgebraicNotation[];
   confirmationDialogs: ConfirmationDialogs;
-  onShowBoard: () => void;
   playerColor?: 'w' | 'b';
   inlineBoardView?: ReactNode;
   onMoveCommitted?: (inputMethod: MoveInputMethod) => void;
@@ -72,7 +70,6 @@ export function GameInProgressPanel({
   handleSubmitMove,
   moves,
   confirmationDialogs,
-  onShowBoard,
   playerColor,
   inlineBoardView,
   onMoveCommitted,
@@ -83,7 +80,6 @@ export function GameInProgressPanel({
   aiMoveError,
 }: Props) {
   const t = useTranslations('play');
-  const showModalPeekButton = shouldShowModalPeekButton(preferences);
 
   return (
     <div className="flex flex-col gap-6">
@@ -135,7 +131,6 @@ export function GameInProgressPanel({
 
       {/* Action Buttons */}
       <div className={ACTION_ROW_CONTAINER_CLASSES}>
-        {showModalPeekButton && <ShowBoardButton onClick={onShowBoard} />}
         <button
           onClick={confirmationDialogs.undo.open}
           disabled={moves.length < 2 || isAiThinking}
