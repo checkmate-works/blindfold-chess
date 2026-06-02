@@ -1941,6 +1941,44 @@
         "rateLimited": "Too many publishes. Please try again later.",
         "generic": "Could not publish this game. Please try again."
       }
+    },
+    "comments": {
+      "title": "Comments",
+      "titleForMove": "Comments on {move}",
+      "empty": "No comments on this move yet.",
+      "placeholder": "Comment on this move…",
+      "submit": "Post",
+      "submitting": "Posting…",
+      "reply": "Reply",
+      "replyPlaceholder": "Write a reply…",
+      "replySubmit": "Reply",
+      "replyingTo": "Replying to {name}",
+      "cancelReply": "Cancel reply",
+      "edit": "Edit",
+      "save": "Save",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "editedLabel": "(edited)",
+      "editedTitle": "Last edited {date}",
+      "like": "Like",
+      "unlike": "Unlike",
+      "hiddenReplies": "{count, plural, one {# reply hidden} other {# replies hidden}}",
+      "collapseAriaLabel": "Collapse replies",
+      "expandAriaLabel": "Expand replies",
+      "deletedComment": "This comment was deleted",
+      "confirmDeleteTitle": "Delete this comment?",
+      "confirmDeleteBody": "This can't be undone.",
+      "confirmDelete": "Delete",
+      "confirmCancel": "Cancel",
+      "signInToComment": "Sign in to comment.",
+      "signIn": "Sign in",
+      "errors": {
+        "rateLimited": "Too many comments. Please try again later.",
+        "forbidden": "You don't have permission to do that.",
+        "notFound": "This comment no longer exists.",
+        "generic": "Could not post your comment. Please try again."
+      }
     }
   },
   "postmortem": {

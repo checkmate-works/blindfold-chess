@@ -1941,6 +1941,44 @@
         "rateLimited": "公開の回数が多すぎます。しばらくしてから再度お試しください。",
         "generic": "公開できませんでした。もう一度お試しください。"
       }
+    },
+    "comments": {
+      "title": "コメント",
+      "titleForMove": "{move} へのコメント",
+      "empty": "この手にはまだコメントがありません。",
+      "placeholder": "この手についてコメント…",
+      "submit": "コメントする",
+      "submitting": "送信中…",
+      "reply": "返信",
+      "replyPlaceholder": "返信を書く…",
+      "replySubmit": "返信する",
+      "replyingTo": "{name} さんへの返信",
+      "cancelReply": "返信をキャンセル",
+      "edit": "編集",
+      "save": "保存",
+      "saving": "保存中…",
+      "cancel": "キャンセル",
+      "delete": "削除",
+      "editedLabel": "(編集済み)",
+      "editedTitle": "{date} に編集",
+      "like": "いいね",
+      "unlike": "いいねを取り消す",
+      "hiddenReplies": "{count, plural, other {#件の返信を非表示中}}",
+      "collapseAriaLabel": "返信を折りたたむ",
+      "expandAriaLabel": "返信を展開する",
+      "deletedComment": "このコメントは削除されました",
+      "confirmDeleteTitle": "このコメントを削除しますか？",
+      "confirmDeleteBody": "この操作は取り消せません。",
+      "confirmDelete": "削除する",
+      "confirmCancel": "キャンセル",
+      "signInToComment": "コメントするにはログインしてください。",
+      "signIn": "ログイン",
+      "errors": {
+        "rateLimited": "コメントの回数が多すぎます。しばらくしてから再度お試しください。",
+        "forbidden": "この操作を行う権限がありません。",
+        "notFound": "このコメントは存在しません。",
+        "generic": "コメントを投稿できませんでした。もう一度お試しください。"
+      }
     }
   },
   "postmortem": {

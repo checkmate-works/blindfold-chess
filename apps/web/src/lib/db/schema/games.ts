@@ -11,6 +11,7 @@
 //    without an account, and claim the game on later sign-up. Losing the secret
 //    leaves an orphan (admin-moderatable only) — accepted by design.
 import { sql } from 'drizzle-orm';
+import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 import {
   index,
   integer,
@@ -190,8 +191,17 @@ export type NewGameAnnotation = typeof gameAnnotations.$inferInsert;
  * advice survives the FK `ON DELETE SET NULL` (rendered "deleted user"),
  * matching `chunk_edit_requests.proposer_id`.
  *
+ * @design Reddit-style threading (`parent_id`)
+ * Replies self-reference via `parent_id` (`ON DELETE CASCADE`: hard-deleting a
+ * comment drops its subtree). A reply inherits its parent's `ply` (enforced in
+ * the action), so a whole move's thread shares one `ply` and the tree is built
+ * per-ply on the client — the same shape `topic_posts` uses. `updated_at`
+ * advances past `created_at` on an in-place edit, driving the "(edited)" label.
+ * Likes reuse the generic polymorphic `likes` table (`target_type =
+ * 'game_comment'`), so there is no per-comment likes table.
+ *
  * Forward-compatible (additive, deferred): `glyph`, a `line` JSONB suggested
- * continuation, `parent_id` threading, edit/like support.
+ * continuation.
  */
 export const gameComments = pgTable(
   'game_comments',
@@ -204,13 +214,24 @@ export const gameComments = pgTable(
       .references(() => games.id, { onDelete: 'cascade' }),
     /** 0-based index into `games.moves[]`; NULL = whole-game comment. */
     ply: integer('ply'),
+    /** Parent comment for replies; NULL for a top-level comment on the move. */
+    parentId: uuid('parent_id').references((): AnyPgColumn => gameComments.id, {
+      onDelete: 'cascade',
+    }),
     // references auth.users — FK defined in custom SQL (ON DELETE SET NULL).
     authorId: uuid('author_id'),
     body: text('body').notNull(),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull()
+      .$onUpdateFn(() => new Date()),
   },
-  (table) => [index('idx_game_comments_game_ply').on(table.gameId, table.ply)]
+  (table) => [
+    index('idx_game_comments_game_ply').on(table.gameId, table.ply),
+    index('idx_game_comments_parent').on(table.parentId),
+  ]
 );
 
 export type GameComment = typeof gameComments.$inferSelect;

@@ -1,15 +1,13 @@
 'use client';
 
-import { type ReactNode, useMemo, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { Button } from '@/app/_components';
-import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { fenToLichessUrl, getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { FaChartLine } from 'react-icons/fa';
 
+import type { GameCommentItem } from '@/lib/db/game-comments';
 import type { EngineConfig } from '@/lib/engines';
 import { computeGameStats } from '@/lib/games/compute-game-stats';
 import type { MoveOperationLog } from '@/lib/games/saved-game-types';
@@ -23,23 +21,28 @@ import {
   useNotation,
 } from '@/app/[locale]/(public)/games/play/_hooks';
 import { buildNewGameFromPositionUrl } from '@/app/[locale]/(public)/games/play/_lib/build-new-game-from-position-url';
-import { buildPostmortemPath } from '@/app/[locale]/(public)/games/play/_lib/build-postmortem-path';
-import { getMovingSide } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
+import { getMovingSide, parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
+import { computeMoveNumber } from '@/app/[locale]/(public)/games/play/postmortem/_lib/compute-move-number';
 import { GameStatsOverview } from '@/app/[locale]/(public)/games/play/result/_components/GameStatsOverview';
-import { AuthPromptModal } from '@/app/[locale]/_components/AuthPromptModal';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
-import { useAuthGuard } from '@/app/[locale]/_hooks/use-auth-guard';
+import type { Locale } from '@/app/[locale]/_lib/types';
+
+import { type CommentUser, GameCommentThread } from './GameCommentThread';
 
 type Props = {
-  /** Published game id, used as the postmortem's gameId param. */
+  /** Published game id, used to anchor the per-move comment threads. */
   gameId: string;
   moves: string[];
   startingFen: string | null;
   playerColor: 'white' | 'black';
   engineConfig: EngineConfig;
   operationLogs: MoveOperationLog[] | null;
-  locale: string;
+  locale: Locale;
+  /** Advice comments on this game, anchored per move (ply). */
+  comments: GameCommentItem[];
+  /** The viewer, if signed in — enables posting and delete-own. */
+  currentUser: CommentUser | null;
   /** Rendered between the board/move-list and the stats overview (e.g. the description). */
   children?: ReactNode;
 };
@@ -65,15 +68,13 @@ export function GameReplay({
   engineConfig,
   operationLogs,
   locale,
+  comments,
+  currentUser,
   children,
 }: Props) {
-  const t = useTranslations('play');
   const router = useRouter();
   const { preferences } = useGamePreferences();
   const [detailsOpen, setDetailsOpen] = useState(false);
-  // Postmortem is members-only (same as the result screen); guests get a
-  // sign-up prompt instead of the review screen.
-  const { guardAction, isModalOpen: isAuthModalOpen, closeModal: closeAuthModal } = useAuthGuard();
 
   const revealedPreferences = useMemo<GamePreferences>(
     () => ({
@@ -104,6 +105,15 @@ export function GameReplay({
   } = useMoveNavigation({ moves: notationMoves, startingFen: startingFen ?? undefined });
   const { effectiveFlipped, toggleFlip } = useBoardFlip({ playerSide: playerColor });
 
+  // Open at the first move (not the final position) so the viewer reviews and
+  // comments move by move from the start. Runs once after the moves load.
+  const startedRef = useRef(false);
+  useEffect(() => {
+    if (startedRef.current || notationMoves.length === 0) return;
+    startedRef.current = true;
+    navigateToPosition(0);
+  }, [notationMoves.length, navigateToPosition]);
+
   // Highlight the move that produced the displayed position.
   const lastMove = useMemo(() => {
     if (currentPosition === -2) return null;
@@ -117,19 +127,6 @@ export function GameReplay({
     currentPosition === -1 || displayFen === null ? latestFen : displayFen
   );
 
-  const handlePostmortem = () =>
-    router.push(
-      buildPostmortemPath({
-        locale,
-        formattedPgn,
-        playerColor,
-        moves: notationMoves,
-        engineConfig,
-        gameId,
-        startingFen: startingFen ?? undefined,
-      })
-    );
-
   // Same game-statistics overview as the result screen, derived from the
   // per-move operation logs. The effort strip jumps the inline board.
   const stats = useMemo(() => computeGameStats(operationLogs ?? []), [operationLogs]);
@@ -140,6 +137,37 @@ export function GameReplay({
     }
     return indices;
   }, [notationMoves, startingFen, playerColor]);
+
+  // Map the board's navigation position to the ply the comment thread anchors
+  // to: a concrete move (0-based), the last move when viewing the latest
+  // position, or the whole game (null) at the start.
+  const currentPly =
+    currentPosition >= 0
+      ? currentPosition
+      : currentPosition === -1
+        ? notationMoves.length > 0
+          ? notationMoves.length - 1
+          : null
+        : null;
+  // Label the move with its PGN-style number prefix: white → "1. d4",
+  // black → "1...d5" (derived from the starting FEN's side + fullmove).
+  const moveLabel = useMemo(() => {
+    if (currentPly == null) return null;
+    const san = notationMoves[currentPly];
+    if (!san) return null;
+    const { startsAsBlack, startMoveNumber } = parseFenMeta(startingFen);
+    const { moveNumber, isWhiteMove } = computeMoveNumber(
+      currentPly,
+      startsAsBlack,
+      startMoveNumber
+    );
+    return isWhiteMove ? `${moveNumber}. ${san}` : `${moveNumber}...${san}`;
+  }, [currentPly, notationMoves, startingFen]);
+
+  // The opening (pre-move) board is the game's overview: show the description
+  // and statistics there. Once a move is on the board, that move's comment
+  // thread takes their place, directly under the move list.
+  const isInitialPosition = currentPosition === -2;
 
   return (
     <div className="space-y-6">
@@ -206,30 +234,33 @@ export function GameReplay({
         </div>
       </div>
 
-      {children}
+      {/* On a move position: that move's comment thread, directly under the
+          move list. On the opening board: the description + statistics. */}
+      {isInitialPosition ? (
+        <>
+          {children}
 
-      {stats.totalMoves > 0 && (
-        <GameStatsOverview
-          stats={stats}
-          playerMoveIndices={playerMoveIndices}
-          moves={notationMoves}
-          onSelectMove={navigateToPosition}
-          onViewDetails={() => setDetailsOpen(true)}
-        />
-      )}
-
-      {/* Primary CTA — review this game (postmortem), mirroring the result
-          screen. Members-only: guests get the sign-up prompt below. */}
-      {notationMoves.length > 0 && (
-        <Button
-          variant="primary"
-          size="lg"
-          icon={<FaChartLine className="h-5 w-5" />}
-          onClick={() => guardAction(handlePostmortem)}
-          className="w-full rounded-xl font-medium"
-        >
-          {t('postmortem')}
-        </Button>
+          {stats.totalMoves > 0 && (
+            <GameStatsOverview
+              stats={stats}
+              playerMoveIndices={playerMoveIndices}
+              moves={notationMoves}
+              onSelectMove={navigateToPosition}
+              onViewDetails={() => setDetailsOpen(true)}
+            />
+          )}
+        </>
+      ) : (
+        currentPly != null && (
+          <GameCommentThread
+            gameId={gameId}
+            currentPly={currentPly}
+            moveLabel={moveLabel}
+            comments={comments}
+            currentUser={currentUser}
+            locale={locale}
+          />
+        )
       )}
 
       {/* Game details — same modal as the result screen (opponent shown;
@@ -240,8 +271,6 @@ export function GameReplay({
         onClose={() => setDetailsOpen(false)}
         engineConfig={engineConfig}
       />
-
-      {isAuthModalOpen && <AuthPromptModal isOpen={isAuthModalOpen} onClose={closeAuthModal} />}
     </div>
   );
 }

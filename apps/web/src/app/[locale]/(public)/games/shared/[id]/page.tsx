@@ -10,6 +10,7 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { getCommentUserProfile, listGameComments } from '@/lib/db/game-comments';
 import { getGameById } from '@/lib/db/games';
 import { createClient } from '@/lib/supabase/server';
 import { resolveDisplayName } from '@/lib/users/display-name';
@@ -65,6 +66,13 @@ export default async function SharedGamePage({ params }: Props) {
   } = await supabase.auth.getUser();
   const isRegisteredOwner = game.authorId != null && user?.id === game.authorId;
 
+  // Advice comments (per-move) plus the viewer's profile, which enables posting
+  // and rendering their own comment optimistically.
+  const [comments, currentUser] = await Promise.all([
+    listGameComments(game.id, user?.id),
+    user ? getCommentUserProfile(user.id) : Promise.resolve(null),
+  ]);
+
   return (
     <PageLayout
       title={game.title}
@@ -82,6 +90,8 @@ export default async function SharedGamePage({ params }: Props) {
           engineConfig={game.engineConfig}
           operationLogs={game.operationLogs}
           locale={locale}
+          comments={comments}
+          currentUser={currentUser}
         >
           {game.description && (
             <div className="space-y-2">

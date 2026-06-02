@@ -1937,6 +1937,44 @@
         "rateLimited": "Muitas publicações. Tente novamente mais tarde.",
         "generic": "Não foi possível publicar esta partida. Tente novamente."
       }
+    },
+    "comments": {
+      "title": "Comentários",
+      "titleForMove": "Comentários sobre {move}",
+      "empty": "Ainda não há comentários sobre este lance.",
+      "placeholder": "Comente sobre este lance…",
+      "submit": "Publicar",
+      "submitting": "Publicando…",
+      "reply": "Responder",
+      "replyPlaceholder": "Escreva uma resposta…",
+      "replySubmit": "Responder",
+      "replyingTo": "Respondendo a {name}",
+      "cancelReply": "Cancelar resposta",
+      "edit": "Editar",
+      "save": "Salvar",
+      "saving": "Salvando…",
+      "cancel": "Cancelar",
+      "delete": "Excluir",
+      "editedLabel": "(editado)",
+      "editedTitle": "Editado pela última vez {date}",
+      "like": "Curtir",
+      "unlike": "Remover curtida",
+      "hiddenReplies": "{count, plural, one {# resposta oculta} other {# respostas ocultas}}",
+      "collapseAriaLabel": "Recolher respostas",
+      "expandAriaLabel": "Expandir respostas",
+      "deletedComment": "Este comentário foi excluído",
+      "confirmDeleteTitle": "Excluir este comentário?",
+      "confirmDeleteBody": "Esta ação não pode ser desfeita.",
+      "confirmDelete": "Excluir",
+      "confirmCancel": "Cancelar",
+      "signInToComment": "Entre para comentar.",
+      "signIn": "Entrar",
+      "errors": {
+        "rateLimited": "Muitos comentários. Tente novamente mais tarde.",
+        "forbidden": "Você não tem permissão para fazer isso.",
+        "notFound": "Este comentário não existe mais.",
+        "generic": "Não foi possível publicar seu comentário. Tente novamente."
+      }
     }
   },
   "postmortem": {
