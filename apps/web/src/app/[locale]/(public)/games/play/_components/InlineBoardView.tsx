@@ -96,11 +96,18 @@ type Props = {
    */
   maskDismissable?: boolean;
   /**
-   * Optional node floated at the top-center of the board, above the mask (so it
-   * stays visible in blindfold modes). Used by the play surface for the AI-reply
-   * chip. The slot is `pointer-events-none`, so it never blocks a peek tap.
+   * Optional node centered over the board, above the mask (so it stays visible
+   * in blindfold modes). Used by the play surface for the AI-reply chip. The
+   * slot is `pointer-events-none`, so it never blocks a peek tap.
    */
   boardBadge?: ReactNode;
+  /**
+   * When true, the `boardBadge` currently occupies the board center, so the
+   * mask's own center label ("tap to reveal" / "board hidden") steps aside to
+   * avoid stacking two centered labels. The frosted cover and its tap-to-reveal
+   * behavior are unaffected — only the label is suppressed.
+   */
+  badgeActive?: boolean;
 };
 
 export function InlineBoardView({
@@ -128,6 +135,7 @@ export function InlineBoardView({
   onReveal,
   maskDismissable,
   boardBadge,
+  badgeActive,
 }: Props) {
   const t = useTranslations('play');
   const [isOpen, setIsOpen] = useState(false);
@@ -259,10 +267,12 @@ export function InlineBoardView({
                   aria-label={t('revealBoard')}
                   className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-xl transition-colors"
                 >
-                  <span className="inline-flex items-center gap-2 rounded-full bg-background/80 px-3 py-1.5 text-sm font-medium text-foreground shadow-sm">
-                    <FaEye className="h-4 w-4" aria-hidden />
-                    {t('revealBoard')}
-                  </span>
+                  {!badgeActive && (
+                    <span className="inline-flex items-center gap-2 rounded-full bg-background/80 px-3 py-1.5 text-sm font-medium text-foreground shadow-sm">
+                      <FaEye className="h-4 w-4" aria-hidden />
+                      {t('revealBoard')}
+                    </span>
+                  )}
                 </button>
               ) : (
                 <div
@@ -270,18 +280,21 @@ export function InlineBoardView({
                   aria-label={t('boardHidden')}
                   role="img"
                 >
-                  <span className="inline-flex items-center gap-2 rounded-full bg-background/80 px-3 py-1.5 text-sm font-medium text-foreground shadow-sm">
-                    <FaEyeSlash className="h-4 w-4" aria-hidden />
-                    {t('boardHidden')}
-                  </span>
+                  {!badgeActive && (
+                    <span className="inline-flex items-center gap-2 rounded-full bg-background/80 px-3 py-1.5 text-sm font-medium text-foreground shadow-sm">
+                      <FaEyeSlash className="h-4 w-4" aria-hidden />
+                      {t('boardHidden')}
+                    </span>
+                  )}
                 </div>
               ))}
 
-            {/* Floating badge (AI-reply chip), above the mask so it stays
-                visible while blindfolded. Non-interactive so a peek tap on the
-                masked board still registers. */}
+            {/* Floating badge (AI-reply chip), centered over the board and
+                layered above the mask so it stays visible while blindfolded.
+                Non-interactive so a peek tap on the masked board still
+                registers; the mask's own label steps aside via `badgeActive`. */}
             {boardBadge && (
-              <div className="pointer-events-none absolute inset-x-0 top-2 z-20 flex justify-center px-2">
+              <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center px-2">
                 {boardBadge}
               </div>
             )}

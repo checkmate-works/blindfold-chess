@@ -21,7 +21,7 @@ import {
   shouldShowAlwaysVisibleBoard,
   shouldShowInlinePeekHeader,
 } from '../_lib';
-import { AiReplyChip } from './AiReplyChip';
+import { AiReplyChip, useAiReplyChip } from './AiReplyChip';
 import { FinishedGamePanel } from './FinishedGamePanel';
 import { GameInProgressPanel } from './GameInProgressPanel';
 import { InlineBoardView } from './InlineBoardView';
@@ -265,6 +265,10 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
     );
   }, [router, locale, formattedPgn, playerSide, moves, engineConfig, gameId, startingFen]);
 
+  // AI-reply chip visibility (thinking + transient post-move window). Lifted
+  // here so `badgeActive` can also tell the board to drop the mask's own label.
+  const aiReply = useAiReplyChip({ isAiThinking, aiMoveSignal });
+
   // In-progress board: always rendered at a fixed position/size, with the
   // blindfold expressed as a mask overlay rather than as a different layout.
   // 'always' → unmasked; 'peek' → masked until tapped (re-masks on the next
@@ -297,13 +301,16 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
       onIllegalMove={canBoardMove ? recordInvalid : undefined}
       // AI reply surfaced on the board itself (visible without scrolling to the
       // page title): "thinking…" while computing, then the move, which fades.
+      // While the chip is active it owns the board center; `badgeActive` tells
+      // the mask to drop its own label so the two don't stack.
       boardBadge={
         <AiReplyChip
-          isAiThinking={isAiThinking}
+          active={aiReply.active}
+          thinking={aiReply.thinking}
           aiMoveDisplay={aiMoveDisplay}
-          aiMoveSignal={aiMoveSignal}
         />
       }
+      badgeActive={aiReply.active}
     />
   );
 
