@@ -8,10 +8,9 @@ import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/met
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 /**
- * Metadata for the shared-game detail, shared by both the bare `[id]` route and
- * the orientation-suffixed `[id]/[orientation]` route. The canonical always
- * points at the bare permalink so the `/white`, `/black`, and `#move` variants
- * de-duplicate to one URL.
+ * Metadata for the shared-game detail. The canonical points at the bare
+ * permalink so the `?color=` orientation and `#move` URL variants de-duplicate
+ * to one URL.
  */
 export async function buildSharedGameMetadata({
   locale,

@@ -25,16 +25,14 @@ type Props = {
   id: string;
   /** `?comment=<id>` deep-link from a like notification. */
   highlightCommentId?: string;
-  /** Side at the bottom of the board, from the `/white` | `/black` path segment. */
+  /** Side at the bottom of the board, from the `?color=white|black` URL param. */
   orientation?: 'white' | 'black';
 };
 
 /**
  * The shared-game detail body — an inline, steppable replay plus metadata, the
- * entry point for receiving advice. Rendered by both the bare permalink
- * (`/games/shared/[id]`) and the orientation-suffixed route
- * (`/games/shared/[id]/[orientation]`), which only differ by the initial board
- * orientation. Only public / unlisted, non-deleted games are visible.
+ * entry point for receiving advice. Only public / unlisted, non-deleted games
+ * are visible.
  */
 export async function SharedGameDetailView({ locale, id, highlightCommentId, orientation }: Props) {
   if (!UUID_RE.test(id)) notFound();

@@ -3231,6 +3231,7 @@
     "signInRequired": "ログインしてください",
     "profileUpdated": "プロフィールを更新しました",
     "postCreated": "投稿しました",
+    "gamePublished": "公開しました",
     "rateLimited": "各オープニングへの投稿は1日1回までです。時間をおいて再度お試しください。",
     "gameSaved": "ゲームが保存されました",
     "gamesDeleted": "{count, plural, other {#個のゲームを削除しました}}",

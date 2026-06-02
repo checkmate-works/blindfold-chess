@@ -68,7 +68,7 @@ type Props = {
   isGameOwner: boolean;
   /** When set (from a like notification), open at this comment's move and scroll to it. */
   highlightCommentId?: string;
-  /** Side at the bottom of the board, from the `/white` | `/black` path segment. */
+  /** Side at the bottom of the board, from the `?color=white|black` URL param. */
   orientation?: 'white' | 'black';
   /** Rendered between the board/move-list and the stats overview (e.g. the description). */
   children?: ReactNode;
@@ -136,9 +136,9 @@ export function GameReplay({
     navigateNext,
     navigateToEnd,
   } = useMoveNavigation({ moves: notationMoves, startingFen: startingFen ?? undefined });
-  // Seed the board orientation from the `/white` | `/black` path segment:
+  // Seed the board orientation from the `?color=white|black` param:
   // `effectiveFlipped` means "black is at the bottom", and the default (no
-  // segment) is the player's own side. Convert the requested orientation into
+  // param) is the player's own side. Convert the requested orientation into
   // the manual-toggle seed `useBoardFlip` expects (which it inverts again for a
   // black player).
   const initialFlipped = useMemo(() => {
@@ -151,9 +151,10 @@ export function GameReplay({
     initialFlipped,
   });
 
-  // Open at the first move (not the final position) so the viewer reviews and
-  // comments move by move from the start — unless deep-linked to a comment
-  // (from a like notification), in which case open at that comment's move.
+  // Open at the opening board (the game's starting position, which shows the
+  // description + stats) so every visitor lands on the same overview and steps
+  // forward into the moves from there — unless deep-linked to a comment (from a
+  // like notification) or the `#<half-move>` hash, which open at that move.
   // Runs once after the moves load.
   const startedRef = useRef(false);
   useEffect(() => {
@@ -167,15 +168,30 @@ export function GameReplay({
     const commentPly =
       target && target.ply != null && target.ply < notationMoves.length ? target.ply : null;
     const hashPly = parseHashPly(window.location.hash, notationMoves.length);
-    navigateToPosition(commentPly ?? hashPly ?? 0);
+    // -2 is the opening board (the starting position, with description + stats).
+    navigateToPosition(commentPly ?? hashPly ?? -2);
   }, [notationMoves.length, navigateToPosition, highlightCommentId, comments]);
+
+  // Gate the URL-sync effects below so they only fire on genuine post-load
+  // changes (user navigation / flip). Next's App Router resets the URL to the
+  // navigation target once the initial render settles, so any URL write during
+  // load is reverted anyway — and writing the initial move/orientation would
+  // just be a visible flicker. Shared links keep their state because it is in
+  // the loaded URL itself, not written client-side.
+  const syncReadyRef = useRef(false);
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      syncReadyRef.current = true;
+    }, 0);
+    return () => window.clearTimeout(id);
+  }, []);
 
   // Reflect the move on the board in the URL hash (`#<half-move>`), Lichess-
   // style (e.g. `/games/shared/<id>#14`), so the address bar tracks navigation
   // and the link can be shared to open at a specific move. Uses replaceState
-  // (no server round-trip / history spam); only runs after the initial position.
+  // (no server round-trip / history spam).
   useEffect(() => {
-    if (!startedRef.current) return;
+    if (!syncReadyRef.current) return;
     const moveNumber =
       currentPosition >= 0
         ? currentPosition + 1
@@ -188,19 +204,16 @@ export function GameReplay({
     window.history.replaceState(window.history.state, '', url);
   }, [currentPosition, notationMoves.length]);
 
-  // Reflect the board orientation in the path (`…/games/shared/<id>/white|black`),
-  // Lichess-style. The colour is ALWAYS present (for symmetry: white-at-bottom →
-  // `/white`, black-at-bottom → `/black`), so a bare permalink rewrites to the
-  // current side on load. The `#move` hash is preserved across the change.
+  // Reflect the board orientation in the URL as `?color=white|black` once the
+  // viewer flips. A query param (not a path segment) is used because Next's App
+  // Router reverts a client-side pathname change to a different route; updating
+  // searchParams via replaceState is supported and leaves the `#move` hash
+  // intact. Like the move hash, only written post-load (see syncReadyRef).
   useEffect(() => {
-    if (!startedRef.current) return;
+    if (!syncReadyRef.current) return;
     const orientationColor = effectiveFlipped ? 'black' : 'white';
     const url = new URL(window.location.href);
-    const segments = url.pathname.split('/');
-    const last = segments[segments.length - 1];
-    if (last === 'white' || last === 'black') segments.pop();
-    segments.push(orientationColor);
-    url.pathname = segments.join('/');
+    url.searchParams.set('color', orientationColor);
     window.history.replaceState(window.history.state, '', url);
   }, [effectiveFlipped]);
 

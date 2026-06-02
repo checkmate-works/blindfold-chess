@@ -110,7 +110,9 @@ export function PublishGameClient({ locale }: Props) {
       // authors, its manage token) so the result screen links to it instead of
       // offering to publish again.
       recordSharedGame(sourceGameId, res.id, res.manageToken);
-      router.push(`/${locale}/games/shared/${res.id}`);
+      // `?toast=game_published` both shows the success toast and opens the
+      // detail at the opening board (description + stats), not move 1.
+      router.push(`/${locale}/games/shared/${res.id}?toast=game_published`);
     } catch {
       setError(t('new.errors.generic'));
       setSubmitting(false);

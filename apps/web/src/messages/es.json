@@ -2990,6 +2990,7 @@
     "signInRequired": "Por favor, inicia sesión para continuar",
     "profileUpdated": "Perfil actualizado",
     "postCreated": "Publicado correctamente",
+    "gamePublished": "Partida publicada",
     "rateLimited": "Solo puedes publicar una vez al día para cada apertura. Por favor, inténtalo más tarde.",
     "gameSaved": "Partida guardada correctamente",
     "gamesDeleted": "{count, plural, one {# partida eliminada correctamente} other {# partidas eliminadas correctamente}}",

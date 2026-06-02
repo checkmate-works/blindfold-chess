@@ -3231,6 +3231,7 @@
     "signInRequired": "Please sign in to continue",
     "profileUpdated": "Profile updated",
     "postCreated": "Posted successfully",
+    "gamePublished": "Game published",
     "rateLimited": "You can only post once per day for each opening. Please try again later.",
     "gameSaved": "Game saved successfully",
     "gamesDeleted": "{count, plural, one {# game deleted successfully} other {# games deleted successfully}}",
