@@ -19,7 +19,8 @@ vi.mock('@/i18n/use-safe-translations', () => ({
   useSafeTranslations: () => (key: string, params?: Record<string, string>) => {
     if (key === 'followMessage' && params) return `${params.actor} followed you`;
     if (key === 'likeMessage' && params) return `${params.actor} liked your post`;
-    if (key === 'replyMessage' && params) return `${params.actor} replied to your post`;
+    if (key === 'likeCommentMessage' && params) return `${params.actor} liked your comment`;
+    if (key === 'replyMessage' && params) return `${params.actor} replied to your comment`;
     if (key === 'newPostMessage' && params) return `${params.actor} shared a new post`;
     if (key === 'chunkEditRequestSubmittedMessage' && params)
       return `${params.actor} suggested an edit to your chunk`;
@@ -231,7 +232,7 @@ describe('NotificationItem', () => {
 
       render(<NotificationItem notification={notification} />);
 
-      expect(screen.getByText('Alice replied to your post')).toBeDefined();
+      expect(screen.getByText('Alice replied to your comment')).toBeDefined();
     });
 
     it('should link to /topics/openings/{topicKey}/posts/{postId} for opening metadata', () => {
@@ -242,7 +243,7 @@ describe('NotificationItem', () => {
 
       render(<NotificationItem notification={notification} />);
 
-      const link = screen.getByText('Alice replied to your post').closest('a');
+      const link = screen.getByText('Alice replied to your comment').closest('a');
       expect(link).not.toBeNull();
       expect(link!.getAttribute('href')).toBe('/topics/openings/sicilian-defense/posts/post-1');
     });
@@ -255,7 +256,7 @@ describe('NotificationItem', () => {
 
       render(<NotificationItem notification={notification} />);
 
-      const link = screen.getByText('Alice replied to your post').closest('a');
+      const link = screen.getByText('Alice replied to your comment').closest('a');
       expect(link).not.toBeNull();
       expect(link!.getAttribute('href')).toBe('/topics/squares/e4/posts/post-42');
     });
@@ -273,7 +274,7 @@ describe('NotificationItem', () => {
 
       render(<NotificationItem notification={notification} />);
 
-      const link = screen.getByText('Alice replied to your post').closest('a');
+      const link = screen.getByText('Alice replied to your comment').closest('a');
       expect(link).not.toBeNull();
       expect(link!.getAttribute('href')).toBe(
         '/topics/openings/sicilian-defense/posts/post-1#post-reply-99'
@@ -288,7 +289,7 @@ describe('NotificationItem', () => {
 
       render(<NotificationItem notification={notification} />);
 
-      const link = screen.getByText('Alice replied to your post').closest('a');
+      const link = screen.getByText('Alice replied to your comment').closest('a');
       expect(link).not.toBeNull();
       expect(link!.getAttribute('href')).toBe('/topics/squares/e4/posts/post-42#post-reply-7');
     });
@@ -303,6 +304,51 @@ describe('NotificationItem', () => {
 
       const button = screen.getByRole('button');
       expect(button).toBeDefined();
+    });
+  });
+
+  describe('comment-aware like notifications', () => {
+    it('should read "liked your comment" for a topic_post like (rendered as a comment)', () => {
+      const notification = createNotification({
+        type: 'like',
+        targetType: 'topic_post',
+        targetId: 'post-1',
+        metadata: { topicType: 'square', topicKey: 'e4', postId: 'post-1' },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      expect(screen.getByText('Alice liked your comment')).toBeDefined();
+    });
+
+    it('should read "liked your comment" and deep-link a game_comment like to the comment', () => {
+      const notification = createNotification({
+        type: 'like',
+        targetType: 'game_comment',
+        targetId: 'comment-7',
+        metadata: { gameId: 'game-42' },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const link = screen.getByText('Alice liked your comment').closest('a');
+      expect(link).not.toBeNull();
+      expect(link!.getAttribute('href')).toBe('/games/shared/game-42?comment=comment-7');
+    });
+
+    it('should link a chunk-comment like to /chunks/{slug}/posts/{postId} (not /topics/chunks/...)', () => {
+      const notification = createNotification({
+        type: 'like',
+        targetType: 'topic_post',
+        targetId: 'post-9',
+        metadata: { topicType: 'chunk', topicKey: 'knight-fork', postId: 'post-9' },
+      });
+
+      render(<NotificationItem notification={notification} />);
+
+      const link = screen.getByText('Alice liked your comment').closest('a');
+      expect(link).not.toBeNull();
+      expect(link!.getAttribute('href')).toBe('/chunks/knight-fork/posts/post-9');
     });
   });
 

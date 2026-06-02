@@ -28,6 +28,8 @@ export const dynamic = 'force-dynamic';
 
 type Props = {
   params: Promise<{ locale: Locale; id: string }>;
+  /** `?comment=<id>` deep-links to a specific comment (from a like notification). */
+  searchParams: Promise<{ comment?: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -45,8 +47,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function SharedGamePage({ params }: Props) {
+export default async function SharedGamePage({ params, searchParams }: Props) {
   const { locale, id } = await params;
+  const { comment: highlightCommentId } = await searchParams;
   setRequestLocale(locale);
 
   if (!UUID_RE.test(id)) notFound();
@@ -92,6 +95,7 @@ export default async function SharedGamePage({ params }: Props) {
           locale={locale}
           comments={comments}
           currentUser={currentUser}
+          highlightCommentId={highlightCommentId}
         >
           {game.description && (
             <div className="space-y-2">

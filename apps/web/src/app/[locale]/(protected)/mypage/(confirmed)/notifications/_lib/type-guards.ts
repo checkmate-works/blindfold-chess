@@ -79,6 +79,20 @@ export function isReplyMetadata(m: unknown): m is ReplyMetadata {
   );
 }
 
+/**
+ * Metadata persisted with a `like` notification whose target is a shared-game
+ * comment (`targetType = 'game_comment'`). `gameId` is the game the comment
+ * belongs to; the comment id itself is the notification's `targetId`. Together
+ * they build the deep link `/games/shared/{gameId}?comment={commentId}`.
+ */
+export type GameCommentLikeMetadata = { gameId: string };
+
+export function isGameCommentLikeMetadata(m: unknown): m is GameCommentLikeMetadata {
+  if (typeof m !== 'object' || m === null) return false;
+  const r = m as Record<string, unknown>;
+  return typeof r.gameId === 'string';
+}
+
 export function isAnnouncementMetadata(m: unknown): m is AnnouncementMetadata {
   if (typeof m !== 'object' || m === null) return false;
   const r = m as Record<string, unknown>;

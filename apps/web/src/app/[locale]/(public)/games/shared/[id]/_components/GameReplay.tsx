@@ -43,6 +43,8 @@ type Props = {
   comments: GameCommentItem[];
   /** The viewer, if signed in — enables posting and delete-own. */
   currentUser: CommentUser | null;
+  /** When set (from a like notification), open at this comment's move and scroll to it. */
+  highlightCommentId?: string;
   /** Rendered between the board/move-list and the stats overview (e.g. the description). */
   children?: ReactNode;
 };
@@ -70,6 +72,7 @@ export function GameReplay({
   locale,
   comments,
   currentUser,
+  highlightCommentId,
   children,
 }: Props) {
   const router = useRouter();
@@ -106,13 +109,20 @@ export function GameReplay({
   const { effectiveFlipped, toggleFlip } = useBoardFlip({ playerSide: playerColor });
 
   // Open at the first move (not the final position) so the viewer reviews and
-  // comments move by move from the start. Runs once after the moves load.
+  // comments move by move from the start — unless deep-linked to a comment
+  // (from a like notification), in which case open at that comment's move.
+  // Runs once after the moves load.
   const startedRef = useRef(false);
   useEffect(() => {
     if (startedRef.current || notationMoves.length === 0) return;
     startedRef.current = true;
-    navigateToPosition(0);
-  }, [notationMoves.length, navigateToPosition]);
+    const target = highlightCommentId
+      ? comments.find((c) => c.id === highlightCommentId)
+      : undefined;
+    const initialPly =
+      target && target.ply != null && target.ply < notationMoves.length ? target.ply : 0;
+    navigateToPosition(initialPly);
+  }, [notationMoves.length, navigateToPosition, highlightCommentId, comments]);
 
   // Highlight the move that produced the displayed position.
   const lastMove = useMemo(() => {
@@ -168,6 +178,17 @@ export function GameReplay({
   // and statistics there. Once a move is on the board, that move's comment
   // thread takes their place, directly under the move list.
   const isInitialPosition = currentPosition === -2;
+
+  // Once the deep-linked comment's move is on the board (its thread mounted),
+  // scroll it into view. Runs once.
+  const scrolledRef = useRef(false);
+  useEffect(() => {
+    if (!highlightCommentId || scrolledRef.current || isInitialPosition) return;
+    const el = document.getElementById(`game-comment-${highlightCommentId}`);
+    if (!el) return;
+    scrolledRef.current = true;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [highlightCommentId, isInitialPosition, currentPosition]);
 
   return (
     <div className="space-y-6">

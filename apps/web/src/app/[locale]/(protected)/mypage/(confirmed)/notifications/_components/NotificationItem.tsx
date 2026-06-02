@@ -25,6 +25,7 @@ import {
   isBenefitGrantMetadata,
   isChunkEditRequestMetadata,
   isChunkLifecycleMetadata,
+  isGameCommentLikeMetadata,
   isLikeCoinGrantMetadata,
   isPointGrantMetadata,
   isPositionMetadata,
@@ -84,6 +85,15 @@ export function NotificationItem({ notification, currentUsername }: Props) {
       case 'follow':
         return t('followMessage', { actor: actorName });
       case 'like':
+        // Topic posts and game comments are both rendered as comments in the
+        // UGC UI, so the like reads "liked your comment". Other likeable
+        // targets (positions) keep the generic wording.
+        if (
+          notification.targetType === 'game_comment' ||
+          notification.targetType === 'topic_post'
+        ) {
+          return t('likeCommentMessage', { actor: actorName });
+        }
         return t('likeMessage', { actor: actorName });
       case 'reply':
         return t('replyMessage', { actor: actorName });
@@ -220,6 +230,12 @@ export function NotificationItem({ notification, currentUsername }: Props) {
       const targetId = replyId ?? postId;
       return `/practice/puzzle/${topicKey}#post-${targetId}`;
     }
+    if (topicType === 'chunk') {
+      // Chunk comments live at /chunks/{slug}/... — NOT under /topics/. Without
+      // this branch the URL resolves to a non-existent /topics/chunks/... path.
+      const baseUrl = `/chunks/${topicKey}/posts/${postId}`;
+      return replyId ? `${baseUrl}#post-${replyId}` : baseUrl;
+    }
     const segment = getTopicSegment(topicType);
     const baseUrl = `/topics/${segment}/${topicKey}/posts/${postId}`;
     return replyId ? `${baseUrl}#post-${replyId}` : baseUrl;
@@ -269,6 +285,16 @@ export function NotificationItem({ notification, currentUsername }: Props) {
         notification.metadata.postId,
         replyId
       );
+    }
+    if (
+      notification.type === 'like' &&
+      notification.targetType === 'game_comment' &&
+      notification.targetId &&
+      isGameCommentLikeMetadata(notification.metadata)
+    ) {
+      // Deep-link to the liked comment: the detail page opens that comment's
+      // move and scrolls to it (the threads are per-move).
+      return `/games/shared/${notification.metadata.gameId}?comment=${notification.targetId}`;
     }
     if (notification.type === 'announcement' && isAnnouncementMetadata(notification.metadata)) {
       return `/announcements/${notification.metadata.slug}`;

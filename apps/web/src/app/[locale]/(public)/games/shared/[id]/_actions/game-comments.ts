@@ -180,7 +180,10 @@ export async function toggleGameCommentLikeAction(
         const target = await getGameCommentTarget(id);
         return target ? { userId: target.authorId, extra: target.gameId } : null;
       },
-      notificationMeta: () => ({}),
+      // Stash the game id so the notification can deep-link to the comment
+      // (`/games/shared/{gameId}?comment={commentId}`); the comment id is the
+      // notification's targetId.
+      notificationMeta: (_id, gameId) => ({ gameId }),
       revalidatePaths: (loc, _id, gameId) => (gameId ? [`/${loc}/games/shared/${gameId}`] : []),
     });
   } catch (error) {
