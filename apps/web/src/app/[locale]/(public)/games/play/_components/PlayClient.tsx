@@ -269,6 +269,10 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
   // AI-reply chip visibility (thinking + transient post-move window). Lifted
   // here so `badgeActive` can also tell the board to drop the mask's own label.
   const aiReply = useAiReplyChip({ isAiThinking, aiMoveSignal });
+  // Only surface the on-board AI chip in blindfold modes. When the board is
+  // always visible ('always'), the AI's move is right there on the board — an
+  // "AI played …" badge would just be redundant clutter.
+  const showAiReplyChip = preferences.boardVisibility !== 'always';
 
   // In-progress board: always rendered at a fixed position/size, with the
   // blindfold expressed as a mask overlay rather than as a different layout.
@@ -305,13 +309,15 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
       // While the chip is active it owns the board center; `badgeActive` tells
       // the mask to drop its own label so the two don't stack.
       boardBadge={
-        <AiReplyChip
-          active={aiReply.active}
-          thinking={aiReply.thinking}
-          aiMoveDisplay={aiMoveDisplay}
-        />
+        showAiReplyChip ? (
+          <AiReplyChip
+            active={aiReply.active}
+            thinking={aiReply.thinking}
+            aiMoveDisplay={aiMoveDisplay}
+          />
+        ) : undefined
       }
-      badgeActive={aiReply.active}
+      badgeActive={showAiReplyChip && aiReply.active}
       // Per-game settings gear, pinned to the board's top-right (move-list strip
       // end when shown, mask top-right when masked). Hidden for legacy games
       // with no per-game snapshot to edit. Game details stays in the panel.
