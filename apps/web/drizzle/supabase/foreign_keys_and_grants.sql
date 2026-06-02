@@ -816,3 +816,26 @@ $$;
 -- a members-only, rate-limited server action, so service-role only.
 GRANT SELECT ON TABLE public.game_comments TO authenticated;
 GRANT SELECT ON TABLE public.game_comments TO anon;
+
+-- =============================================================================
+-- game_chunks (community chunk links on a move — public read)
+-- =============================================================================
+-- FK constraint: game_chunks.suggested_by_id → auth.users(id) ON DELETE SET NULL
+-- Nullable only so a hard-deleted member's link survives (attribution drops to
+-- anonymous). FKs to games (cascade) / chunks (restrict) are managed by Drizzle.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'game_chunks_suggested_by_id_fkey'
+  ) THEN
+    ALTER TABLE public.game_chunks
+      ADD CONSTRAINT game_chunks_suggested_by_id_fkey
+      FOREIGN KEY (suggested_by_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+  END IF;
+END;
+$$;
+
+-- Writes go through a members-only, rate-limited server action, so service-role
+-- only; reads are public.
+GRANT SELECT ON TABLE public.game_chunks TO authenticated;
+GRANT SELECT ON TABLE public.game_chunks TO anon;

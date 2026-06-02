@@ -337,6 +337,13 @@
       "when": 1780360859319,
       "tag": "20260602004059_add_game_comment_threading",
       "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "7",
+      "when": 1780383323552,
+      "tag": "20260602065523_create_game_chunks",
+      "breakpoints": true
     }
   ]
 }

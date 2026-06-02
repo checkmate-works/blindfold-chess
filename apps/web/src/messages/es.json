@@ -1977,6 +1977,25 @@
         "notFound": "Este comentario ya no existe.",
         "generic": "No se pudo publicar tu comentario. Inténtalo de nuevo."
       }
+    },
+    "chunks": {
+      "title": "Chunks aplicables",
+      "empty": "Aún no hay chunks vinculados a esta jugada.",
+      "placeholder": "Busca chunks para añadir…",
+      "noResults": "No hay chunks coincidentes",
+      "moreItemsHint": "+{count} más",
+      "signInToLink": "Inicia sesión para vincular un chunk.",
+      "signIn": "Iniciar sesión",
+      "remove": "Quitar {title}",
+      "badge": "Chunk",
+      "submit": "Vincular {count}",
+      "submitting": "Vinculando…",
+      "errors": {
+        "alreadyLinked": "Ese chunk ya está vinculado a esta jugada.",
+        "chunkNotAvailable": "Ese chunk no está disponible.",
+        "rateLimited": "Demasiadas acciones. Inténtalo de nuevo más tarde.",
+        "generic": "Algo salió mal. Inténtalo de nuevo."
+      }
     }
   },
   "postmortem": {

@@ -1,6 +1,8 @@
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { getAllAvailableChunkOptions } from '@/lib/chunks/queries';
+import { listGameChunks } from '@/lib/db/game-chunks';
 import { getCommentUserProfile, listGameComments } from '@/lib/db/game-comments';
 import { GAME_LIKE_TARGET, getGameById } from '@/lib/db/games';
 import { getLikeMeta } from '@/lib/db/like-queries';
@@ -53,10 +55,12 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
 
   // Advice comments (per-move) plus the viewer's profile, which enables posting
   // and rendering their own comment optimistically.
-  const [comments, currentUser, likeMeta] = await Promise.all([
+  const [comments, currentUser, likeMeta, gameChunks, availableChunks] = await Promise.all([
     listGameComments(game.id, user?.id),
     user ? getCommentUserProfile(user.id) : Promise.resolve(null),
     getLikeMeta(GAME_LIKE_TARGET, game.id, user?.id),
+    listGameChunks(game.id),
+    getAllAvailableChunkOptions(),
   ]);
 
   return (
@@ -77,7 +81,10 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
           operationLogs={game.operationLogs}
           locale={locale}
           comments={comments}
+          gameChunks={gameChunks}
+          availableChunks={availableChunks}
           currentUser={currentUser}
+          isGameOwner={isRegisteredOwner}
           highlightCommentId={highlightCommentId}
           orientation={orientation}
         >

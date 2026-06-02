@@ -7,6 +7,8 @@ import { useRouter } from 'next/navigation';
 import { fenToLichessUrl, getLastMoveDetails } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
+import type { ChunkOption } from '@/lib/chunks/types';
+import type { GameChunkItem } from '@/lib/db/game-chunks';
 import type { GameCommentItem } from '@/lib/db/game-comments';
 import type { EngineConfig } from '@/lib/engines';
 import { computeGameStats } from '@/lib/games/compute-game-stats';
@@ -28,6 +30,7 @@ import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCo
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { GameChunkSection } from './GameChunkSection';
 import { type CommentUser, GameCommentThread } from './GameCommentThread';
 
 /**
@@ -53,8 +56,14 @@ type Props = {
   locale: Locale;
   /** Advice comments on this game, anchored per move (ply). */
   comments: GameCommentItem[];
+  /** Community chunk links on this game, anchored per move (ply). */
+  gameChunks: GameChunkItem[];
+  /** Published chunks selectable in the per-move chunk picker. */
+  availableChunks: ChunkOption[];
   /** The viewer, if signed in — enables posting and delete-own. */
   currentUser: CommentUser | null;
+  /** Whether the viewer is the game's registered owner (may remove any chunk link). */
+  isGameOwner: boolean;
   /** When set (from a like notification), open at this comment's move and scroll to it. */
   highlightCommentId?: string;
   /** Side at the bottom of the board, from the `/white` | `/black` path segment. */
@@ -85,7 +94,10 @@ export function GameReplay({
   operationLogs,
   locale,
   comments,
+  gameChunks,
+  availableChunks,
   currentUser,
+  isGameOwner,
   highlightCommentId,
   orientation,
   children,
@@ -338,14 +350,26 @@ export function GameReplay({
         </>
       ) : (
         currentPly != null && (
-          <GameCommentThread
-            gameId={gameId}
-            currentPly={currentPly}
-            moveLabel={moveLabel}
-            comments={comments}
-            currentUser={currentUser}
-            locale={locale}
-          />
+          <>
+            {/* Applicable chunks — a separate axis above the discussion. */}
+            <GameChunkSection
+              gameId={gameId}
+              currentPly={currentPly}
+              chunks={gameChunks}
+              availableChunks={availableChunks}
+              currentUserId={currentUser?.id}
+              isGameOwner={isGameOwner}
+              locale={locale}
+            />
+            <GameCommentThread
+              gameId={gameId}
+              currentPly={currentPly}
+              moveLabel={moveLabel}
+              comments={comments}
+              currentUser={currentUser}
+              locale={locale}
+            />
+          </>
         )
       )}
 

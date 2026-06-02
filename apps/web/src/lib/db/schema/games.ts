@@ -21,6 +21,7 @@ import {
   smallint,
   text,
   timestamp,
+  unique,
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
@@ -28,6 +29,8 @@ import {
 import type { EngineConfig } from '@/lib/engines';
 import type { MoveOperationLog } from '@/lib/games/saved-game-types';
 import { uuidv7 } from '@/lib/uuidv7';
+
+import { chunks } from './positions';
 
 /**
  * Games — server-persisted snapshot of a blindfold game shared by a user.
@@ -236,3 +239,49 @@ export const gameComments = pgTable(
 
 export type GameComment = typeof gameComments.$inferSelect;
 export type NewGameComment = typeof gameComments.$inferInsert;
+
+/**
+ * Game Chunks — community-suggested chunk (piece-coordination pattern) links
+ * on a specific move of a shared game.
+ *
+ * @description
+ * The "this position applies this chunk" layer: any signed-in member can link a
+ * published `chunks` row to a move (`ply`), tagging the game with known
+ * patterns. Mirrors `position_chunks` (the position↔chunk junction) but adds
+ * `ply` (the move it applies to) and `suggested_by_id` (who linked it, for
+ * attribution + own-removal). Unlike an overlay, the chunk's own board is the
+ * reference — the link is an assertion, not a coordinate mapping.
+ *
+ * @design ON DELETE RESTRICT on chunk_id
+ * Mirrors `position_chunks`: a chunk that is still referenced by a game cannot
+ * be hard-deleted, protecting the link's target. `game_id` cascades (deleting a
+ * game drops its links). `suggested_by_id` → auth.users SET NULL (custom SQL).
+ */
+export const gameChunks = pgTable(
+  'game_chunks',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .$defaultFn(() => uuidv7()),
+    gameId: uuid('game_id')
+      .notNull()
+      .references(() => games.id, { onDelete: 'cascade' }),
+    /** 0-based index into `games.moves[]` the chunk is asserted to apply to. */
+    ply: integer('ply').notNull(),
+    chunkId: uuid('chunk_id')
+      .notNull()
+      .references(() => chunks.id, { onDelete: 'restrict' }),
+    // references auth.users — FK defined in custom SQL (ON DELETE SET NULL).
+    suggestedById: uuid('suggested_by_id'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    // One link per (game, move, chunk); a second member "linking" the same
+    // chunk is a no-op rather than a duplicate.
+    unique('uq_game_chunks').on(table.gameId, table.ply, table.chunkId),
+    index('idx_game_chunks_game_ply').on(table.gameId, table.ply),
+  ]
+);
+
+export type GameChunk = typeof gameChunks.$inferSelect;
+export type NewGameChunk = typeof gameChunks.$inferInsert;

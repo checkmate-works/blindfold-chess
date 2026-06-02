@@ -1977,6 +1977,25 @@
         "notFound": "Este comentário não existe mais.",
         "generic": "Não foi possível publicar seu comentário. Tente novamente."
       }
+    },
+    "chunks": {
+      "title": "Chunks aplicáveis",
+      "empty": "Ainda não há chunks vinculados a este lance.",
+      "placeholder": "Busque chunks para adicionar…",
+      "noResults": "Nenhum chunk correspondente",
+      "moreItemsHint": "+{count} mais",
+      "signInToLink": "Entre para vincular um chunk.",
+      "signIn": "Entrar",
+      "remove": "Remover {title}",
+      "badge": "Chunk",
+      "submit": "Vincular {count}",
+      "submitting": "Vinculando…",
+      "errors": {
+        "alreadyLinked": "Esse chunk já está vinculado a este lance.",
+        "chunkNotAvailable": "Esse chunk não está disponível.",
+        "rateLimited": "Muitas ações. Tente novamente mais tarde.",
+        "generic": "Algo deu errado. Tente novamente."
+      }
     }
   },
   "postmortem": {

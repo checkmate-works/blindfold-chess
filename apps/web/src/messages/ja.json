@@ -1981,6 +1981,25 @@
         "notFound": "このコメントは存在しません。",
         "generic": "コメントを投稿できませんでした。もう一度お試しください。"
       }
+    },
+    "chunks": {
+      "title": "適用できるチャンク",
+      "empty": "この手にはまだチャンクが紐付けられていません。",
+      "placeholder": "チャンクを検索して追加…",
+      "noResults": "該当するチャンクがありません",
+      "moreItemsHint": "他 {count} 件",
+      "signInToLink": "チャンクを紐付けるにはログインしてください。",
+      "signIn": "ログイン",
+      "remove": "{title} の紐付けを解除",
+      "badge": "チャンク",
+      "submit": "{count}件を紐付ける",
+      "submitting": "保存中…",
+      "errors": {
+        "alreadyLinked": "このチャンクはすでにこの手に紐付けられています。",
+        "chunkNotAvailable": "このチャンクは利用できません。",
+        "rateLimited": "操作が多すぎます。しばらくしてからお試しください。",
+        "generic": "エラーが発生しました。もう一度お試しください。"
+      }
     }
   },
   "postmortem": {

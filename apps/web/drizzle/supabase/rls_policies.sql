@@ -979,3 +979,12 @@ ALTER TABLE "game_comments" ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "game_comments_select" ON "game_comments";
 CREATE POLICY "game_comments_select" ON "game_comments"
   FOR SELECT USING (deleted_at IS NULL);
+
+-- =============================================================================
+-- game_chunks (community chunk links — public read, service-role write)
+-- =============================================================================
+ALTER TABLE "game_chunks" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "game_chunks_select" ON "game_chunks";
+CREATE POLICY "game_chunks_select" ON "game_chunks"
+  FOR SELECT USING (true);
