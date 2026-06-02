@@ -159,6 +159,7 @@ export async function publishGame(params: {
         playerColor: game.playerColor,
         engineConfig: game.engineConfig,
         operationLogs: game.operationLogs,
+        playSettings: game.playSettings,
         result: game.result,
         engineKind: columns.engineKind,
         engineElo: columns.engineElo,

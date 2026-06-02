@@ -18,6 +18,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { toggleGameLikeAction } from '../_actions/game-like';
 import { GameReplay } from './GameReplay';
 import { OwnerActions } from './OwnerActions';
+import { SharedGamePlaySettings } from './SharedGamePlaySettings';
 
 type Props = {
   locale: Locale;
@@ -70,6 +71,17 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
       breadcrumb={[{ label: t('list.title'), href: '/games/shared' }, { label: game.title }]}
     >
       <div className="space-y-6">
+        {/* How this game was played (blindfold difficulty), shown as icons.
+            Renders nothing for a plain sighted game or when no settings were
+            captured (legacy games). */}
+        {game.playSettings && (
+          <SharedGamePlaySettings
+            settings={game.playSettings}
+            playerColor={game.playerColor}
+            locale={locale}
+          />
+        )}
+
         {/* Board + move list (games/play layout); the description sits below
             the board, above the stats, via GameReplay's slot. */}
         <GameReplay

@@ -141,3 +141,55 @@ describe('deriveGameColumns', () => {
     expect(cols.cleanRate).toBe(50);
   });
 });
+
+describe('validatePublishSnapshot play settings', () => {
+  it('normalizes a valid play-settings object to the stored subset', () => {
+    const res = validatePublishSnapshot(
+      validInput({
+        playSettings: {
+          boardVisibility: 'peek',
+          showOwnPieces: true,
+          showOpponentPieces: false,
+          pieceShapeMode: 'circles-all',
+          pieceColors: 'black-only',
+          // Extra preference fields are dropped — only the display subset is kept.
+          peekMode: 'modal',
+          moveInputMode: 'text',
+        },
+      })
+    );
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.game.playSettings).toEqual({
+      boardVisibility: 'peek',
+      showOwnPieces: true,
+      showOpponentPieces: false,
+      pieceShapeMode: 'circles-all',
+      pieceColors: 'black-only',
+    });
+  });
+
+  it('leaves play settings null when absent', () => {
+    const res = validatePublishSnapshot(validInput());
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.game.playSettings).toBeNull();
+  });
+
+  it('drops play settings to null on an invalid field (without rejecting the publish)', () => {
+    const res = validatePublishSnapshot(
+      validInput({
+        playSettings: {
+          boardVisibility: 'sideways',
+          showOwnPieces: true,
+          showOpponentPieces: true,
+          pieceShapeMode: 'normal',
+          pieceColors: 'normal',
+        },
+      })
+    );
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.game.playSettings).toBeNull();
+  });
+});

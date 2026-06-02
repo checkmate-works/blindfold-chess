@@ -2001,6 +2001,17 @@
         "rateLimited": "Too many actions. Please try again later.",
         "generic": "Something went wrong. Please try again."
       }
+    },
+    "playSettings": {
+      "title": "Setup",
+      "visibility": {
+        "always": "Board shown",
+        "peek": "Peek only",
+        "never": "No board"
+      },
+      "own": "Your pieces",
+      "opponent": "Opponent pieces",
+      "hidden": "hidden"
     }
   },
   "postmortem": {

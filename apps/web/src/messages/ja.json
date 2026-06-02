@@ -2001,6 +2001,17 @@
         "rateLimited": "操作が多すぎます。しばらくしてからお試しください。",
         "generic": "エラーが発生しました。もう一度お試しください。"
       }
+    },
+    "playSettings": {
+      "title": "プレイ設定",
+      "visibility": {
+        "always": "盤面常時表示",
+        "peek": "のぞき見のみ",
+        "never": "盤面なし"
+      },
+      "own": "自分の駒",
+      "opponent": "相手の駒",
+      "hidden": "非表示"
     }
   },
   "postmortem": {

@@ -25,10 +25,8 @@ import {
 } from 'drizzle-orm/pg-core';
 
 import type { EngineConfig } from '@/lib/engines';
-import type { MoveOperationLog } from '@/lib/games/saved-game-types';
+import type { GamePlaySettings, MoveOperationLog } from '@/lib/games/saved-game-types';
 import { uuidv7 } from '@/lib/uuidv7';
-
-import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import { chunks } from './positions';
 
@@ -90,13 +88,12 @@ export const games = pgTable(
     /** Per-move aid counts (self-reported, client-only). Null for legacy/absent. */
     operationLogs: jsonb('operation_logs').$type<MoveOperationLog[]>(),
     /**
-     * Blindfold difficulty snapshot captured at game start (piece color / shape,
-     * which side was hidden, board visibility, input mode). The full
-     * `PerGamePreferences` blob is stored so display can pick whatever it needs
-     * and the shape can evolve without a migration. Null for legacy games and
-     * games published before this column existed.
+     * Blindfold difficulty snapshot captured at game start (board visibility,
+     * which side was hidden, piece shape / color) — the validated
+     * `GamePlaySettings` subset. JSONB so the shape can evolve without a
+     * migration. Null for legacy games and games published before this column.
      */
-    playSettings: jsonb('play_settings').$type<PerGamePreferences>(),
+    playSettings: jsonb('play_settings').$type<GamePlaySettings>(),
     result: varchar('result', { length: 4 }).$type<'win' | 'loss' | 'draw'>().notNull(),
 
     // --- Denormalized for gallery filter / sort ---

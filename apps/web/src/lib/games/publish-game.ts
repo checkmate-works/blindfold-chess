@@ -7,9 +7,10 @@ import {
 import { engineApproxElo, isEngineConfig } from '@/lib/engines';
 import type { EngineConfig } from '@/lib/engines';
 
+import { isBoardVisibility } from './board-visibility';
 import { computeGameStats } from './compute-game-stats';
 import { MAX_DESCRIPTION_LENGTH, MAX_MOVES, MAX_TITLE_LENGTH } from './publish-constants';
-import type { MoveOperationLog } from './saved-game-types';
+import type { GamePlaySettings, MoveOperationLog } from './saved-game-types';
 
 /**
  * Validation + denormalization for publishing a shared game.
@@ -38,6 +39,7 @@ export type ValidatedGame = {
   engineConfig: EngineConfig;
   result: GameOutcome;
   operationLogs: MoveOperationLog[] | null;
+  playSettings: GamePlaySettings | null;
 };
 
 /** Denormalized columns derived from a validated snapshot. */
@@ -54,6 +56,34 @@ export type ValidatePublishResult =
 
 const OUTCOMES: readonly GameOutcome[] = ['win', 'loss', 'draw'];
 const COLORS: readonly PlayerColor[] = ['white', 'black'];
+
+const PIECE_SHAPE_MODES = ['normal', 'circles-all', 'circles-own', 'circles-opponent'] as const;
+const PIECE_COLORS = ['normal', 'white-only', 'black-only'] as const;
+
+/**
+ * Normalize the self-reported play settings into the validated display subset,
+ * or null if absent / malformed. Display-only metadata, so a bad value is
+ * dropped (settings simply won't render) rather than rejecting the publish.
+ */
+function normalizePlaySettings(raw: unknown): GamePlaySettings | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const r = raw as Record<string, unknown>;
+  if (!isBoardVisibility(r.boardVisibility)) return null;
+  if (typeof r.showOwnPieces !== 'boolean' || typeof r.showOpponentPieces !== 'boolean') {
+    return null;
+  }
+  if (!PIECE_SHAPE_MODES.includes(r.pieceShapeMode as (typeof PIECE_SHAPE_MODES)[number])) {
+    return null;
+  }
+  if (!PIECE_COLORS.includes(r.pieceColors as (typeof PIECE_COLORS)[number])) return null;
+  return {
+    boardVisibility: r.boardVisibility,
+    showOwnPieces: r.showOwnPieces,
+    showOpponentPieces: r.showOpponentPieces,
+    pieceShapeMode: r.pieceShapeMode as GamePlaySettings['pieceShapeMode'],
+    pieceColors: r.pieceColors as GamePlaySettings['pieceColors'],
+  };
+}
 
 /**
  * Validate an untrusted publish payload. Returns a normalized snapshot or a
@@ -127,6 +157,7 @@ export function validatePublishSnapshot(input: unknown): ValidatePublishResult {
       engineConfig: v.engineConfig,
       result: v.result as GameOutcome,
       operationLogs,
+      playSettings: normalizePlaySettings(v.playSettings),
     },
   };
 }

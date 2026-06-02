@@ -1997,6 +1997,17 @@
         "rateLimited": "Demasiadas acciones. Inténtalo de nuevo más tarde.",
         "generic": "Algo salió mal. Inténtalo de nuevo."
       }
+    },
+    "playSettings": {
+      "title": "Configuración",
+      "visibility": {
+        "always": "Tablero visible",
+        "peek": "Solo vistazo",
+        "never": "Sin tablero"
+      },
+      "own": "Tus piezas",
+      "opponent": "Piezas del rival",
+      "hidden": "oculto"
     }
   },
   "postmortem": {

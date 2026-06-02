@@ -9,6 +9,8 @@ import { guardByIpRateLimit } from '@/lib/security/rate-limit-ip';
 import { handleServerActionError } from '@/lib/server-action-error';
 import { createClient } from '@/lib/supabase/server';
 
+import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+
 export type PublishGameActionInput = {
   title: string;
   description?: string | null;
@@ -18,6 +20,8 @@ export type PublishGameActionInput = {
   engineConfig: EngineConfig;
   result: 'win' | 'loss' | 'draw';
   operationLogs?: MoveOperationLog[] | null;
+  /** Per-game blindfold settings snapshot; validated + subset on the server. */
+  playSettings?: PerGamePreferences | null;
 };
 
 export type PublishGameResponse =
