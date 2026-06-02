@@ -278,6 +278,8 @@
         "peek": "Vistazo bajo demanda",
         "never": "Oculto"
       },
+      "hideBoard": "Ocultar el tablero",
+      "allowPeek": "Permitir vistazos",
       "resetDefaults": "Restablecer valores predeterminados",
       "resetDefaultsConfirm": {
         "title": "¿Restablecer configuración del tablero?",

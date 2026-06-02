@@ -47,7 +47,6 @@ export function CollapsibleGameSettings({ settings, onSettingsChange }: Props) {
         <BoardVisibilityPicker
           value={settings.boardVisibility}
           onChange={(boardVisibility) => onSettingsChange({ boardVisibility })}
-          fullWidth
         />
       </div>
 

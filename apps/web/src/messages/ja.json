@@ -282,6 +282,8 @@
         "peek": "必要なときにピーク",
         "never": "非表示"
       },
+      "hideBoard": "盤面を隠す",
+      "allowPeek": "ピークを許可",
       "resetDefaults": "デフォルトに戻す",
       "resetDefaultsConfirm": {
         "title": "ボード設定をリセットしますか？",

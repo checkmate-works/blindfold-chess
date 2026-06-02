@@ -282,6 +282,8 @@
         "peek": "Peek on demand",
         "never": "Hidden"
       },
+      "hideBoard": "Hide the board",
+      "allowPeek": "Allow peeking",
       "resetDefaults": "Reset to defaults",
       "resetDefaultsConfirm": {
         "title": "Reset Board Settings?",

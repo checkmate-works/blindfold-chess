@@ -278,6 +278,8 @@
         "peek": "Espiar sob demanda",
         "never": "Oculto"
       },
+      "hideBoard": "Ocultar o tabuleiro",
+      "allowPeek": "Permitir espiar",
       "resetDefaults": "Redefinir valores padrão",
       "resetDefaultsConfirm": {
         "title": "Redefinir configuração do tabuleiro?",
