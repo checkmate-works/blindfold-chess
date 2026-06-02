@@ -203,10 +203,47 @@ export function InlineBoardView({
               onIllegalMove={masked ? undefined : onIllegalMove}
               movablePieces={movablePieces}
             />
-            {/* Blindfold mask: a frosted overlay that blurs the real board
-                underneath rather than a flat panel (which read as page chrome).
-                The blur + tint is dense enough that piece types can't be made
-                out; tapping a dismissable mask reveals the board for a peek. */}
+            {/* Navigation Controls & Flip Button */}
+            {(movesLength > 0 || onFlipBoard) && (
+              <div
+                className="flex items-center justify-center relative"
+                style={{ aspectRatio: '8/1' }}
+              >
+                {movesLength > 0 &&
+                  onNavigateToStart &&
+                  onNavigatePrevious &&
+                  onNavigateNext &&
+                  onNavigateToEnd && (
+                    <MoveNavigationControls
+                      onNavigateToStart={onNavigateToStart}
+                      onNavigatePrevious={onNavigatePrevious}
+                      onNavigateNext={onNavigateNext}
+                      onNavigateToEnd={onNavigateToEnd}
+                      isPreviousDisabled={
+                        currentPosition === -2 || (currentPosition === -1 && movesLength === 0)
+                      }
+                      isNextDisabled={
+                        currentPosition === -1 ||
+                        (movesLength > 0 && currentPosition === movesLength - 1)
+                      }
+                    />
+                  )}
+                {onFlipBoard && (
+                  <FlipBoardButton
+                    onClick={onFlipBoard}
+                    title={t('flipBoard')}
+                    className="absolute right-3 p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                  />
+                )}
+              </div>
+            )}
+
+            {/* Blindfold mask: a frosted overlay over the whole board block —
+                the move-list strip above, the board, and the navigation / flip
+                controls below — so nothing board-related (incl. history
+                stepping) shows or is operable while masked. The blur + tint
+                hides piece types; tapping a dismissable mask reveals it all for
+                a peek. */}
             {masked &&
               (maskDismissable ? (
                 <button
@@ -233,41 +270,6 @@ export function InlineBoardView({
                 </div>
               ))}
           </div>
-
-          {/* Navigation Controls & Flip Button */}
-          {(movesLength > 0 || onFlipBoard) && (
-            <div
-              className="flex items-center justify-center relative"
-              style={{ aspectRatio: '8/1' }}
-            >
-              {movesLength > 0 &&
-                onNavigateToStart &&
-                onNavigatePrevious &&
-                onNavigateNext &&
-                onNavigateToEnd && (
-                  <MoveNavigationControls
-                    onNavigateToStart={onNavigateToStart}
-                    onNavigatePrevious={onNavigatePrevious}
-                    onNavigateNext={onNavigateNext}
-                    onNavigateToEnd={onNavigateToEnd}
-                    isPreviousDisabled={
-                      currentPosition === -2 || (currentPosition === -1 && movesLength === 0)
-                    }
-                    isNextDisabled={
-                      currentPosition === -1 ||
-                      (movesLength > 0 && currentPosition === movesLength - 1)
-                    }
-                  />
-                )}
-              {onFlipBoard && (
-                <FlipBoardButton
-                  onClick={onFlipBoard}
-                  title={t('flipBoard')}
-                  className="absolute right-3 p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                />
-              )}
-            </div>
-          )}
         </div>
       )}
     </div>
