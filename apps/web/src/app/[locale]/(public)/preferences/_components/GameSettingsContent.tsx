@@ -241,26 +241,29 @@ export function GameSettingsContent({
                     )}
                   </div>
 
-                  {/* Piece Colors */}
-                  <div>
-                    <h5 className="text-sm font-medium text-muted-foreground mb-3">
+                  {/* Piece Colors — one-line radio, mirroring Piece Visibility. */}
+                  <div className="flex items-center justify-between gap-3">
+                    <h5 className="text-sm font-medium text-muted-foreground">
                       {t('game.pieceColor')}
                     </h5>
-                    <div className="space-y-2">
+                    <div className="flex items-center gap-4">
                       {(['normal', 'white-only', 'black-only'] as const).map((colors) => (
-                        <PreferenceOption
+                        <label
                           key={colors}
-                          type="radio"
-                          name="pieceColors"
-                          value={colors}
-                          checked={settings.pieceColors === colors}
-                          onChange={(e) =>
-                            onSettingsChange({
-                              pieceColors: e.target.value as typeof colors,
-                            })
-                          }
-                          label={t(`game.pieceColors.${colors}`)}
-                        />
+                          className="flex cursor-pointer items-center gap-1.5 text-sm text-foreground"
+                        >
+                          <input
+                            type="radio"
+                            name="pieceColors"
+                            value={colors}
+                            checked={settings.pieceColors === colors}
+                            onChange={(e) =>
+                              onSettingsChange({ pieceColors: e.target.value as typeof colors })
+                            }
+                            className="h-4 w-4 text-primary focus:ring-primary border-border"
+                          />
+                          <span>{t(`game.pieceColorModes.${colors}`)}</span>
+                        </label>
                       ))}
                     </div>
                   </div>

@@ -267,6 +267,11 @@
         "circles-opponent": "Mostrar peças do adversário como pedras"
       },
       "pieceColor": "Cor das Peças",
+      "pieceColorModes": {
+        "normal": "Normal",
+        "white-only": "Todas brancas",
+        "black-only": "Todas pretas"
+      },
       "pieceColors": {
         "normal": "Cores normais (Brancas e Pretas)",
         "white-only": "Mostrar todas as peças como brancas",

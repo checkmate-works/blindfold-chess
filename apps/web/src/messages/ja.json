@@ -271,6 +271,11 @@
         "circles-opponent": "相手の駒を石で表示"
       },
       "pieceColor": "駒の色",
+      "pieceColorModes": {
+        "normal": "通常",
+        "white-only": "すべて白",
+        "black-only": "すべて黒"
+      },
       "pieceColors": {
         "normal": "通常の色（白＆黒）",
         "white-only": "全ての駒を白で表示",

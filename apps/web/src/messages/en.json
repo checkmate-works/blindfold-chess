@@ -271,6 +271,11 @@
         "circles-opponent": "Show opponent pieces as stones"
       },
       "pieceColor": "Piece Color",
+      "pieceColorModes": {
+        "normal": "Normal",
+        "white-only": "All White",
+        "black-only": "All Black"
+      },
       "pieceColors": {
         "normal": "Normal colors (White & Black)",
         "white-only": "Show all pieces as white",
