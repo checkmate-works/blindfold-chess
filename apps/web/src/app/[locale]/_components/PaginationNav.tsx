@@ -53,14 +53,17 @@ function buildPageItems(currentPage: number, totalPages: number): (number | null
   return items;
 }
 
-const linkClass =
-  'inline-flex items-center gap-1 px-3 py-2 text-sm rounded border border-border hover:bg-secondary transition-colors';
-const disabledClass =
-  'inline-flex items-center gap-1 px-3 py-2 text-sm rounded border border-border opacity-50 cursor-not-allowed';
-const pageClass =
-  'px-3 py-2 text-sm rounded border border-border hover:bg-secondary transition-colors min-w-[2.5rem] text-center';
-const currentPageClass =
-  'px-3 py-2 text-sm rounded border border-border bg-foreground text-background font-semibold min-w-[2.5rem] text-center';
+// Shared box metrics so every item (Previous/Next, numbers, current, ellipsis)
+// renders at the same height. A fixed `h-9` is used instead of vertical padding
+// because the Previous/Next buttons collapse to an icon-only line on mobile,
+// whose intrinsic height is shorter than the numbers' text line — `h-9` pins
+// them all to the same height regardless of content.
+const itemClass =
+  'inline-flex items-center justify-center h-9 px-3 text-sm rounded border border-border transition-colors';
+const linkClass = `${itemClass} gap-1 hover:bg-secondary`;
+const disabledClass = `${itemClass} gap-1 opacity-50 cursor-not-allowed`;
+const pageClass = `${itemClass} min-w-[2.5rem] hover:bg-secondary`;
+const currentPageClass = `${itemClass} min-w-[2.5rem] bg-foreground text-background font-semibold`;
 
 export function PaginationNav({ currentPage, totalPages, buildHref }: PaginationNavProps) {
   if (totalPages <= 1) {
@@ -94,7 +97,7 @@ export function PaginationNav({ currentPage, totalPages, buildHref }: Pagination
         item === null ? (
           <span
             key={`ellipsis-${index}`}
-            className="px-2 py-2 text-sm text-muted-foreground"
+            className="inline-flex items-center justify-center h-9 px-2 text-sm text-muted-foreground"
             data-pagination-item="ellipsis"
           >
             ...
