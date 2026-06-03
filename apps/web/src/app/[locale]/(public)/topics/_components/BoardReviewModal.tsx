@@ -106,7 +106,7 @@ export function BoardReviewModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center"
       role="dialog"
       aria-modal="true"
       // TODO(i18n): attachment.boardReview.dialogLabel
@@ -115,8 +115,14 @@ export function BoardReviewModal({
     >
       <div className="absolute inset-0 bg-black/70" />
 
-      <div className="relative z-10 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-        <div className="rounded-md overflow-hidden bg-card">
+      {/* Full-bleed + square corners on mobile (small screens need the whole
+          width to read the board); bounded + rounded card at >=sm. Mirrors
+          games/play's BoardViewModal. */}
+      <div
+        className="relative z-10 w-full max-w-md px-0 sm:px-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="rounded-none sm:rounded-md overflow-hidden bg-card">
           {showNavigation && movePairs.length > 0 && (
             <div className="px-2 py-2 overflow-x-auto border-b border-border">
               <div className="flex items-center gap-1 text-xs whitespace-nowrap flex-wrap justify-center">
