@@ -256,8 +256,11 @@
       "highlightLastMove": "Highlight last move",
       "pieceDestinations": "Piece destinations",
       "pieceVisibility": "Piece Visibility",
-      "showOwnPieces": "Show own pieces",
-      "showOpponentPieces": "Show opponent pieces",
+      "pieceVisibilityModes": {
+        "all": "Both",
+        "own": "Own",
+        "opponent": "Opponent"
+      },
       "pieceAppearance": "Piece Appearance",
       "pieceShape": "Piece Shape",
       "pieceShapes": {

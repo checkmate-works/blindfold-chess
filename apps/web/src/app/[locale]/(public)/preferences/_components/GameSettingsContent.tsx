@@ -15,6 +15,21 @@ import { PreferenceOption } from './PreferenceOption';
 
 const allShapeOptions = ['normal', 'circles-all', 'circles-own', 'circles-opponent'] as const;
 
+// Piece visibility is exposed as a single-choice radio rather than two
+// independent checkboxes: the would-be fourth combination (neither side shown)
+// is just a piece-less board, indistinguishable from "Hide the board", so the
+// three meaningful modes below cover the space without the redundant state — and
+// fit on one row.
+const PIECE_VISIBILITY_MODES = ['all', 'own', 'opponent'] as const;
+const PIECE_VISIBILITY_PRESETS: Record<
+  (typeof PIECE_VISIBILITY_MODES)[number],
+  { showOwnPieces: boolean; showOpponentPieces: boolean }
+> = {
+  all: { showOwnPieces: true, showOpponentPieces: true },
+  own: { showOwnPieces: true, showOpponentPieces: false },
+  opponent: { showOwnPieces: false, showOpponentPieces: true },
+};
+
 type Props = {
   settings: GamePreferences;
   onSettingsChange: (updates: Partial<GamePreferences>) => void;
@@ -70,6 +85,15 @@ export function GameSettingsContent({
 
   const containerClass = compact ? '' : 'bg-card rounded-md p-6 border border-border';
 
+  // Map the two underlying booleans to the radio's single choice. The
+  // neither-shown legacy combination (unreachable from the radio) falls back to
+  // 'own' and self-heals on the next selection.
+  const pieceVisibilityMode = settings.showOwnPieces
+    ? settings.showOpponentPieces
+      ? 'all'
+      : 'own'
+    : 'opponent';
+
   return (
     <div className={containerClass}>
       <div className="space-y-8">
@@ -105,21 +129,25 @@ export function GameSettingsContent({
             boardVisibility is 'never' (pure blindfold, nothing to see). */}
         {settings.boardVisibility !== 'never' && (
           <>
-            <div>
-              <h4 className="text-sm text-foreground mb-4">{t('game.pieceVisibility')}</h4>
-              <div className="space-y-3">
-                <PreferenceOption
-                  type="checkbox"
-                  checked={settings.showOwnPieces}
-                  onChange={(e) => onSettingsChange({ showOwnPieces: e.target.checked })}
-                  label={t('game.showOwnPieces')}
-                />
-                <PreferenceOption
-                  type="checkbox"
-                  checked={settings.showOpponentPieces}
-                  onChange={(e) => onSettingsChange({ showOpponentPieces: e.target.checked })}
-                  label={t('game.showOpponentPieces')}
-                />
+            <div className="flex items-center justify-between gap-3">
+              <h4 className="text-sm text-foreground">{t('game.pieceVisibility')}</h4>
+              <div className="flex items-center gap-4">
+                {PIECE_VISIBILITY_MODES.map((mode) => (
+                  <label
+                    key={mode}
+                    className="flex cursor-pointer items-center gap-1.5 text-sm text-foreground"
+                  >
+                    <input
+                      type="radio"
+                      name="pieceVisibility"
+                      value={mode}
+                      checked={pieceVisibilityMode === mode}
+                      onChange={() => onSettingsChange(PIECE_VISIBILITY_PRESETS[mode])}
+                      className="h-4 w-4 text-primary focus:ring-primary border-border"
+                    />
+                    <span>{t(`game.pieceVisibilityModes.${mode}`)}</span>
+                  </label>
+                ))}
               </div>
             </div>
 

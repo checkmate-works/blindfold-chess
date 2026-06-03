@@ -252,8 +252,11 @@
       "highlightLastMove": "Resaltar último movimiento",
       "pieceDestinations": "Destinos de las piezas",
       "pieceVisibility": "Visibilidad de Piezas",
-      "showOwnPieces": "Mostrar piezas propias",
-      "showOpponentPieces": "Mostrar piezas del rival",
+      "pieceVisibilityModes": {
+        "all": "Ambas",
+        "own": "Propias",
+        "opponent": "Rival"
+      },
       "pieceAppearance": "Apariencia de las Piezas",
       "pieceShape": "Forma de las Piezas",
       "pieceShapes": {

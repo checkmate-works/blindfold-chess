@@ -256,8 +256,11 @@
       "highlightLastMove": "最終手をハイライト",
       "pieceDestinations": "駒の移動先を表示",
       "pieceVisibility": "駒の表示",
-      "showOwnPieces": "自分の駒を表示",
-      "showOpponentPieces": "相手の駒を表示",
+      "pieceVisibilityModes": {
+        "all": "両方",
+        "own": "自分",
+        "opponent": "相手"
+      },
       "pieceAppearance": "駒の外観",
       "pieceShape": "駒の形状",
       "pieceShapes": {
