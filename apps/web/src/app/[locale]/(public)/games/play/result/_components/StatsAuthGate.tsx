@@ -9,15 +9,23 @@ import { FaLock } from 'react-icons/fa';
 
 type Props = {
   children: ReactNode;
+  /**
+   * Headline + sub-copy for the CTA. Default to the result-page "see your game
+   * stats" wording; the shared game detail page overrides them to frame the
+   * stats as a members-only feature for anonymous viewers.
+   */
+  title?: string;
+  description?: string;
 };
 
 /**
- * Auth gate for the result-page game-statistics section. Renders the stats
- * blurred and non-interactive behind a registration CTA, nudging anonymous
- * players to create an account. Logged-in users never see this — the caller
- * renders the stats directly instead.
+ * Auth gate for a game-statistics section. Renders the stats blurred and
+ * non-interactive behind a registration CTA, nudging anonymous viewers to
+ * create an account. Logged-in users never see this — the caller renders the
+ * stats directly instead. Reused by the result page (own game) and the shared
+ * game detail page (someone else's game), which pass their own copy.
  */
-export function StatsAuthGate({ children }: Props) {
+export function StatsAuthGate({ children, title, description }: Props) {
   const t = useTranslations('play');
   const locale = useLocale();
 
@@ -32,9 +40,11 @@ export function StatsAuthGate({ children }: Props) {
             <FaLock className="h-5 w-5" />
           </span>
         </div>
-        <h3 className="text-lg font-bold text-foreground">{t('result.statsGate.title')}</h3>
+        <h3 className="text-lg font-bold text-foreground">
+          {title ?? t('result.statsGate.title')}
+        </h3>
         <p className="max-w-sm text-sm text-muted-foreground">
-          {t('result.statsGate.description')}
+          {description ?? t('result.statsGate.description')}
         </p>
         <div className="flex w-full max-w-xs flex-col gap-3 pt-1">
           <Link

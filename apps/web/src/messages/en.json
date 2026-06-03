@@ -2020,6 +2020,10 @@
       "opponent": "Opponent pieces",
       "hidden": "hidden",
       "reproduceView": "As played"
+    },
+    "statsGate": {
+      "title": "Members-only feature",
+      "description": "Create a free account to view this game's stats and per-move breakdown."
     }
   },
   "postmortem": {

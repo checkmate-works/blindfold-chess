@@ -22,7 +22,6 @@ import type {
 
 import { InlineBoardView } from '@/app/[locale]/(public)/games/play/_components/InlineBoardView';
 import { MovesPanel } from '@/app/[locale]/(public)/games/play/_components/MovesPanel';
-import { OperationLogModal } from '@/app/[locale]/(public)/games/play/_components/OperationLogModal';
 import {
   useBoardFlip,
   useMoveNavigation,
@@ -32,6 +31,7 @@ import { buildNewGameFromPositionUrl } from '@/app/[locale]/(public)/games/play/
 import { getMovingSide, parseFenMeta } from '@/app/[locale]/(public)/games/play/_lib/fen-utils';
 import { computeMoveNumber } from '@/app/[locale]/(public)/games/play/postmortem/_lib/compute-move-number';
 import { GameStatsOverview } from '@/app/[locale]/(public)/games/play/result/_components/GameStatsOverview';
+import { StatsAuthGate } from '@/app/[locale]/(public)/games/play/result/_components/StatsAuthGate';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -119,7 +119,6 @@ export function GameReplay({
   const t = useTranslations('sharedGames');
   const router = useRouter();
   const { preferences } = useGamePreferences();
-  const [detailsOpen, setDetailsOpen] = useState(false);
   // When on, the board reproduces how the player actually saw this position
   // (piece obfuscation) instead of the default fully-revealed view. The board
   // panel itself stays visible (this is a replay), so only the piece-level
@@ -356,6 +355,25 @@ export function GameReplay({
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, [highlightCommentId, isInitialPosition, currentPosition]);
 
+  // The opening-board stats overview (engine + By Move + change log). Anonymous
+  // viewers get it gated behind a members-only sign-up CTA, matching the result
+  // page; signed-in viewers see it directly.
+  const statsOverview =
+    stats.totalMoves > 0 ? (
+      <GameStatsOverview
+        stats={stats}
+        playerMoveIndices={playerMoveIndices}
+        moves={notationMoves}
+        onSelectMove={navigateToPosition}
+        engineConfig={engineConfig}
+        playSettings={playSettings ?? undefined}
+        playerColor={playerColor}
+        playSettingsLog={playSettingsLog ?? undefined}
+        headingAsSection
+        showInitialSettings={false}
+      />
+    ) : null;
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
@@ -458,15 +476,14 @@ export function GameReplay({
         <>
           {children}
 
-          {stats.totalMoves > 0 && (
-            <GameStatsOverview
-              stats={stats}
-              playerMoveIndices={playerMoveIndices}
-              moves={notationMoves}
-              onSelectMove={navigateToPosition}
-              onViewDetails={() => setDetailsOpen(true)}
-            />
-          )}
+          {statsOverview &&
+            (currentUser ? (
+              statsOverview
+            ) : (
+              <StatsAuthGate title={t('statsGate.title')} description={t('statsGate.description')}>
+                {statsOverview}
+              </StatsAuthGate>
+            ))}
         </>
       ) : (
         currentPly != null && (
@@ -529,16 +546,6 @@ export function GameReplay({
           </div>
         )
       )}
-
-      {/* Game details — same modal as the result screen (opponent shown). The
-          per-position blindfold settings are surfaced inline above the board
-          (PlaySettingsIndicator), so the modal's per-game settings panel stays
-          unwired here. */}
-      <OperationLogModal
-        isOpen={detailsOpen}
-        onClose={() => setDetailsOpen(false)}
-        engineConfig={engineConfig}
-      />
     </div>
   );
 }

@@ -14,6 +14,8 @@ import type { PreferenceChangeLogEntry } from '@/lib/games/saved-game-types';
 import { Modal } from '@/app/[locale]/_components/Modal';
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
+import { useChangeLogFormat } from '../_hooks/use-change-log-format';
+
 type Props = {
   isOpen: boolean;
   onClose: () => void;
@@ -65,59 +67,9 @@ export function OperationLogModal({
   const renderBool = (v: boolean): string =>
     v ? t('operationLog.initialSettings.on') : t('operationLog.initialSettings.off');
 
-  // Localized field label for a change-log entry. Reuses the Initial Settings
-  // label keys so the two sections refer to the same fields by the same name.
-  const settingLabel = (key: PreferenceChangeLogEntry['key']): string => {
-    switch (key) {
-      case 'boardVisibility':
-        return t('operationLog.initialSettings.labelBoardVisibility');
-      case 'highlightLastMove':
-        return t('operationLog.initialSettings.labelHighlightLastMove');
-      case 'showOwnPieces':
-        return t('operationLog.initialSettings.labelShowOwnPieces');
-      case 'showOpponentPieces':
-        return t('operationLog.initialSettings.labelShowOpponentPieces');
-      case 'pieceShapeMode':
-        return t('operationLog.initialSettings.labelPieceShape');
-      case 'pieceColors':
-        return t('operationLog.initialSettings.labelPieceColor');
-      case 'moveInputMode':
-        return t('operationLog.initialSettings.labelMoveInputMode');
-    }
-  };
-
-  // Localized value rendering for a change-log entry's from/to. Booleans use
-  // the same On/Off vocabulary as Initial Settings; enum values reuse the
-  // canonical Preferences.* labels so the modal stays in lockstep with the
-  // settings page the user already knows.
-  //
-  // `peekMode` and `moveInputMode` were promoted to per-game later than the
-  // other fields, so legacy `initialPerGamePrefs` snapshots may lack them.
-  // When such a game's user toggles one of those settings mid-game, the
-  // resulting change-log entry's `from` is genuinely undefined ("not
-  // recorded") — fold-then-write does not invent a default for fields the
-  // snapshot never carried. Render that as the same em-dash the Initial
-  // Settings section uses, instead of letting it leak through as the raw
-  // i18n key `moveInputModes.undefined`.
-  const settingValue = (entry: PreferenceChangeLogEntry, which: 'from' | 'to'): string => {
-    const value = entry[which];
-    switch (entry.key) {
-      case 'boardVisibility':
-        return tPrefs(`boardVisibilities.${value as PerGamePreferences['boardVisibility']}`);
-      case 'highlightLastMove':
-      case 'showOwnPieces':
-      case 'showOpponentPieces':
-        return renderBool(value as boolean);
-      case 'pieceShapeMode':
-        return tPrefs(`pieceShapes.${value as PerGamePreferences['pieceShapeMode']}`);
-      case 'pieceColors':
-        return tPrefs(`pieceColors.${value as PerGamePreferences['pieceColors']}`);
-      case 'moveInputMode':
-        return value
-          ? tPrefsControls(`moveInputModes.${value as PerGamePreferences['moveInputMode']}`)
-          : '—';
-    }
-  };
+  // Localised label + from/to value formatting for change-log entries, shared
+  // with the result-page inline change list so both read identically.
+  const { settingLabel, settingValue } = useChangeLogFormat();
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t('gameDetails.title')} maxWidth="max-w-lg">

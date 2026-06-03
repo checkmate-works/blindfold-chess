@@ -10,6 +10,13 @@ import type { GamePlaySettings } from '@/lib/games/saved-game-types';
 type Props = {
   settings: GamePlaySettings;
   playerColor: 'white' | 'black';
+  /**
+   * Heading shown before the icons. `undefined` → the shared-page "Setup"
+   * default; a string overrides it (the result page uses "Initial Settings");
+   * `null` suppresses the heading entirely (the result page's change-log rows
+   * render the icons alone, prefixed by a move-number badge instead).
+   */
+  label?: string | null;
 };
 
 /**
@@ -27,7 +34,7 @@ type Props = {
  * throughout has nothing to surface); this component always renders its content
  * for the position it is handed.
  */
-export function PlaySettingsIndicator({ settings, playerColor }: Props) {
+export function PlaySettingsIndicator({ settings, playerColor, label }: Props) {
   const t = useTranslations('sharedGames.playSettings');
   const VisibilityIcon = BOARD_VISIBILITY_ICON[settings.boardVisibility];
 
@@ -52,7 +59,7 @@ export function PlaySettingsIndicator({ settings, playerColor }: Props) {
 
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
-      <span className="font-medium text-foreground">{t('title')}</span>
+      {label !== null && <span className="font-medium text-foreground">{label ?? t('title')}</span>}
 
       <span
         className="inline-flex items-center gap-1.5"

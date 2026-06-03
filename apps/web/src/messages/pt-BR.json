@@ -2016,6 +2016,10 @@
       "opponent": "Peças do oponente",
       "hidden": "oculto",
       "reproduceView": "Como foi jogado"
+    },
+    "statsGate": {
+      "title": "Recurso exclusivo para membros",
+      "description": "Crie uma conta gratuita para ver as estatísticas desta partida e a análise lance a lance."
     }
   },
   "postmortem": {
