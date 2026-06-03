@@ -51,6 +51,41 @@ type GrantExpResult =
     };
 
 /**
+ * Build the `ExpInfo` view returned to callers from a {@link grantExp} result
+ * and the amount granted on THIS call.
+ *
+ * Shared by the three grant flows (challenge / practice / game), which differ
+ * only in how `grantedAmount` is computed. On the idempotent replay path the
+ * originally-granted amount is surfaced and `levelUp` is forced to `false` (the
+ * transition, if any, happened on the first call); on a fresh grant the
+ * before/after level comparison decides `levelUp`.
+ */
+function buildExpInfo(grantResult: GrantExpResult, grantedAmount: number): ExpInfo {
+  const { totalExp } = grantResult;
+  const levelAfter = getLevel(totalExp);
+  const progressPercent = Math.round(getLevelProgress(totalExp).progress * 100);
+
+  if (grantResult.alreadyGranted) {
+    return {
+      earnedExp: grantResult.existingAmount,
+      totalExp,
+      level: levelAfter,
+      levelUp: false,
+      progressPercent,
+    };
+  }
+
+  const levelBefore = getLevel(totalExp - grantedAmount);
+  return {
+    earnedExp: grantedAmount,
+    totalExp,
+    level: levelAfter,
+    levelUp: levelAfter > levelBefore,
+    progressPercent,
+  };
+}
+
+/**
  * Inserts an exp_event and upserts user_exp within the given transaction.
  *
  * Idempotent with respect to `(source, source_id)`: a partial unique index
@@ -190,32 +225,7 @@ export async function grantChallengeExp(
     },
   });
 
-  const { totalExp } = grantResult;
-  const levelAfter = getLevel(totalExp);
-  const levelProgress = getLevelProgress(totalExp);
-  const progressPercent = Math.round(levelProgress.progress * 100);
-
-  if (grantResult.alreadyGranted) {
-    // Idempotent branch: use the originally-granted amount and do not
-    // signal a level-up (the transition, if any, happened on the first call).
-    return {
-      earnedExp: grantResult.existingAmount,
-      totalExp,
-      level: levelAfter,
-      levelUp: false,
-      progressPercent,
-    };
-  }
-
-  const levelBefore = getLevel(totalExp - expResult.totalExp);
-
-  return {
-    earnedExp: expResult.totalExp,
-    totalExp,
-    level: levelAfter,
-    levelUp: levelAfter > levelBefore,
-    progressPercent,
-  };
+  return buildExpInfo(grantResult, expResult.totalExp);
 }
 
 /**
@@ -268,38 +278,8 @@ export async function grantPracticeExp(
     },
   });
 
-  const { totalExp } = grantResult;
-  const levelAfter = getLevel(totalExp);
-  const levelProgress = getLevelProgress(totalExp);
-  const progressPercent = Math.round(levelProgress.progress * 100);
-
-  if (grantResult.alreadyGranted) {
-    return {
-      expEventId,
-      grantedExp: grantResult.existingAmount,
-      expInfo: {
-        earnedExp: grantResult.existingAmount,
-        totalExp,
-        level: levelAfter,
-        levelUp: false,
-        progressPercent,
-      },
-    };
-  }
-
-  const levelBefore = getLevel(totalExp - expResult.totalExp);
-
-  return {
-    expEventId,
-    grantedExp: expResult.totalExp,
-    expInfo: {
-      earnedExp: expResult.totalExp,
-      totalExp,
-      level: levelAfter,
-      levelUp: levelAfter > levelBefore,
-      progressPercent,
-    },
-  };
+  const expInfo = buildExpInfo(grantResult, expResult.totalExp);
+  return { expEventId, grantedExp: expInfo.earnedExp, expInfo };
 }
 
 /**
@@ -384,28 +364,5 @@ export async function grantGameExp(
     },
   });
 
-  const { totalExp } = grantResult;
-  const levelAfter = getLevel(totalExp);
-  const levelProgress = getLevelProgress(totalExp);
-  const progressPercent = Math.round(levelProgress.progress * 100);
-
-  if (grantResult.alreadyGranted) {
-    return {
-      earnedExp: grantResult.existingAmount,
-      totalExp,
-      level: levelAfter,
-      levelUp: false,
-      progressPercent,
-    };
-  }
-
-  const levelBefore = getLevel(totalExp - grantedAmount);
-
-  return {
-    earnedExp: grantedAmount,
-    totalExp,
-    level: levelAfter,
-    levelUp: levelAfter > levelBefore,
-    progressPercent,
-  };
+  return buildExpInfo(grantResult, grantedAmount);
 }
