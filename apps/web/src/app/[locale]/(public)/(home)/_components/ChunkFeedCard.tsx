@@ -84,7 +84,7 @@ export const ChunkFeedCard = memo(function ChunkFeedCard({
           likeMeta={data.likeMeta}
           replyMeta={data.replyMeta}
           toggleLikeAction={toggleLike}
-          i18nNamespace="chunks"
+          i18nNamespace="topics.chunks"
           postHref={href}
         />
       }
