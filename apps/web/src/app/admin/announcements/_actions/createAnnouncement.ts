@@ -3,13 +3,16 @@
 import { revalidateTag } from 'next/cache';
 
 import { announcements, db } from '@/lib/db';
-import { extractPgErrorCode } from '@/lib/db/extract-pg-error-code';
 import {
   hasAnnouncementNotification,
   notifyAllUsersOfAnnouncement,
 } from '@/lib/notifications/announcement-notification';
 
-import { adminMutationGuard, mutationSuccess } from '../../_lib/action-factories';
+import {
+  adminMutationGuard,
+  mapAdminUniqueViolation,
+  mutationSuccess,
+} from '../../_lib/action-factories';
 import type { MutationResult } from '../../_lib/action-factories';
 import { validateAnnouncementData } from '../_lib/validation';
 
@@ -47,10 +50,7 @@ export async function createAnnouncement(data: CreateData): Promise<MutationResu
       })
       .returning({ id: announcements.id });
   } catch (err: unknown) {
-    if (extractPgErrorCode(err) === '23505') {
-      return { error: 'An announcement with this slug and locale already exists' };
-    }
-    throw err;
+    return mapAdminUniqueViolation(err, 'An announcement with this slug and locale already exists');
   }
 
   if (data.sendNotification && data.status === 'published') {
