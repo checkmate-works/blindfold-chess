@@ -6,6 +6,8 @@ import { Textarea } from '@/app/_components';
 
 import { detectAttachmentInput } from '@/lib/games/validation';
 
+import { pgnSubModeError, urlSubModeError } from '../_lib/attachment-sub-mode-error';
+
 /**
  * Discriminated mode reported to the parent form.
  *
@@ -86,70 +88,18 @@ export function AttachmentInput({ onChange, onModeChange, onValidationStatusChan
     return detectAttachmentInput(activeValue);
   }, [activeValue]);
 
-  // PGN sub-mode preview error. PGN body is the only accepted shape
-  // here; every other detection routes the user toward the URL tab
-  // or out of the chess.com flow entirely.
-  const pgnPreviewError = useMemo<string | null>(() => {
-    if (subKind !== 'pgn' || !detected) return null;
-    switch (detected.kind) {
-      case 'pgn':
-      case 'empty':
-        return null;
-      case 'lichess':
-      case 'lichess_embed':
-        // TODO(i18n): attachment.game.pgn.error.lichessUrl
-        return 'Lichess URL detected. Switch to the Lichess URL tab to attach.';
-      case 'lichess_unsupported':
-        // TODO(i18n): attachment.game.pgn.error.lichessStudy
-        return 'Lichess study URLs are not supported.';
-      case 'lichess_embed_invalid_url':
-        // TODO(i18n): attachment.game.pgn.error.lichessEmbedInvalid
-        return 'Invalid Lichess embed URL.';
-      case 'chesscom_attribution':
-      case 'chesscom_invalid_url':
-      case 'chesscom_invalid_pgn':
-      case 'chesscom_embed':
-      case 'chesscom_embed_invalid_url':
-        // TODO(i18n): attachment.game.pgn.error.chesscomNotAccepted
-        return 'chess.com URLs are not accepted. Paste the PGN body exported from chess.com instead.';
-      case 'unknown':
-      default:
-        // TODO(i18n): attachment.game.pgn.error.unknown
-        return 'This does not look like a PGN body. Paste a complete PGN, or use the Lichess URL tab for a URL.';
-    }
-  }, [subKind, detected]);
+  // Per-shape preview errors for the active sub-mode (gates the Apply button +
+  // surfaces a friendly hint). The shape→message dispatch lives in
+  // `attachment-sub-mode-error`; here it is only applied to the active tab.
+  const pgnPreviewError = useMemo<string | null>(
+    () => (subKind === 'pgn' ? pgnSubModeError(detected) : null),
+    [subKind, detected]
+  );
 
-  // URL sub-mode preview error. Lichess game / embed URLs are the
-  // only accepted shapes here.
-  const urlPreviewError = useMemo<string | null>(() => {
-    if (subKind !== 'url' || !detected) return null;
-    switch (detected.kind) {
-      case 'lichess':
-      case 'lichess_embed':
-      case 'empty':
-        return null;
-      case 'lichess_unsupported':
-        // TODO(i18n): attachment.game.url.error.lichessStudy
-        return 'Lichess study URLs are not supported.';
-      case 'lichess_embed_invalid_url':
-        // TODO(i18n): attachment.game.url.error.lichessEmbedInvalid
-        return 'Invalid Lichess embed URL.';
-      case 'chesscom_attribution':
-      case 'chesscom_invalid_url':
-      case 'chesscom_invalid_pgn':
-      case 'chesscom_embed':
-      case 'chesscom_embed_invalid_url':
-        // TODO(i18n): attachment.game.url.error.chesscomNotAccepted
-        return 'chess.com URLs are not accepted. Paste the PGN body exported from chess.com instead.';
-      case 'pgn':
-        // TODO(i18n): attachment.game.url.error.pgnDetected
-        return 'PGN body detected. Switch to the PGN tab to attach.';
-      case 'unknown':
-      default:
-        // TODO(i18n): attachment.game.url.error.notLichess
-        return 'Please paste a Lichess game URL or embed URL.';
-    }
-  }, [subKind, detected]);
+  const urlPreviewError = useMemo<string | null>(
+    () => (subKind === 'url' ? urlSubModeError(detected) : null),
+    [subKind, detected]
+  );
 
   const mode: AttachmentInputMode = useMemo(() => {
     if (!detected || detected.kind === 'empty') return { kind: 'empty' };
