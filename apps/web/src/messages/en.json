@@ -4642,12 +4642,6 @@
     },
     "emptyState": "No scores recorded yet. Be the first to set a record!",
     "yourRank": "You",
-    "pagination": {
-      "label": "Leaderboard pagination",
-      "previous": "Previous",
-      "next": "Next",
-      "total": "{count, plural, one {# player} other {# players}} total"
-    },
     "moduleFilterLabel": "Module filter",
     "moduleFilter": {
       "all": "All",

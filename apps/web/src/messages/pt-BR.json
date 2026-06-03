@@ -4396,12 +4396,6 @@
     },
     "emptyState": "Ainda não há pontuações registradas. Seja o primeiro a estabelecer um recorde!",
     "yourRank": "Você",
-    "pagination": {
-      "label": "Paginação do ranking",
-      "previous": "Anterior",
-      "next": "Próximo",
-      "total": "{count, plural, one {# jogador} other {# jogadores}} no total"
-    },
     "moduleFilterLabel": "Filtro de módulo",
     "moduleFilter": {
       "all": "Todos",

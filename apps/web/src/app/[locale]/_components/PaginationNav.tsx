@@ -1,5 +1,7 @@
 import Link from 'next/link';
 
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+
 type PaginationNavProps = {
   currentPage: number;
   totalPages: number;
@@ -52,9 +54,9 @@ function buildPageItems(currentPage: number, totalPages: number): (number | null
 }
 
 const linkClass =
-  'px-3 py-2 text-sm rounded border border-border hover:bg-secondary transition-colors';
+  'inline-flex items-center gap-1 px-3 py-2 text-sm rounded border border-border hover:bg-secondary transition-colors';
 const disabledClass =
-  'px-3 py-2 text-sm rounded border border-border opacity-50 cursor-not-allowed';
+  'inline-flex items-center gap-1 px-3 py-2 text-sm rounded border border-border opacity-50 cursor-not-allowed';
 const pageClass =
   'px-3 py-2 text-sm rounded border border-border hover:bg-secondary transition-colors min-w-[2.5rem] text-center';
 const currentPageClass =
@@ -77,12 +79,12 @@ export function PaginationNav({ currentPage, totalPages, buildHref }: Pagination
           aria-label="Previous page"
           data-pagination-item="link"
         >
-          <span className="sm:hidden">←</span>
+          <FaChevronLeft aria-hidden="true" className="size-3" />
           <span className="hidden sm:inline">Previous</span>
         </Link>
       ) : (
         <span className={disabledClass} aria-label="Previous page" data-pagination-item="disabled">
-          <span className="sm:hidden">←</span>
+          <FaChevronLeft aria-hidden="true" className="size-3" />
           <span className="hidden sm:inline">Previous</span>
         </span>
       )}
@@ -121,13 +123,13 @@ export function PaginationNav({ currentPage, totalPages, buildHref }: Pagination
           aria-label="Next page"
           data-pagination-item="link"
         >
-          <span className="sm:hidden">→</span>
           <span className="hidden sm:inline">Next</span>
+          <FaChevronRight aria-hidden="true" className="size-3" />
         </Link>
       ) : (
         <span className={disabledClass} aria-label="Next page" data-pagination-item="disabled">
-          <span className="sm:hidden">→</span>
           <span className="hidden sm:inline">Next</span>
+          <FaChevronRight aria-hidden="true" className="size-3" />
         </span>
       )}
     </nav>
