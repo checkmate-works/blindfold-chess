@@ -5,7 +5,7 @@ import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { ChessBoard, FlipBoardButton } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Side } from '@blindfold-chess/types';
-import { FaChevronDown, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaChevronDown, FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
 
 import type { FormattedPgnMove } from '@/app/[locale]/(public)/games/play/_lib/pgn-parser';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -115,6 +115,18 @@ type Props = {
    * per-game settings gear. Unlike `boardBadge`, this slot IS interactive.
    */
   topRightControl?: ReactNode;
+  /**
+   * When true, a non-blocking "AI is thinking" overlay (a light scrim + a
+   * centered spinner chip) is shown over the board. Used for `boardVisibility
+   * === 'always'`, where the board is visible — so the blindfold mask and the
+   * AI-reply chip are both absent — but the player still needs a clear "the
+   * engine is working, not frozen" signal while a slow AI move is computed. In
+   * blindfold modes the masked board + AiReplyChip already convey this, so this
+   * is left off there. The overlay is `pointer-events-none` (the board is not
+   * the player's to move during the AI's turn anyway), so navigation controls
+   * underneath stay operable.
+   */
+  aiThinking?: boolean;
 };
 
 export function InlineBoardView({
@@ -144,6 +156,7 @@ export function InlineBoardView({
   boardBadge,
   badgeActive,
   topRightControl,
+  aiThinking,
 }: Props) {
   const t = useTranslations('play');
   const [isOpen, setIsOpen] = useState(false);
@@ -298,6 +311,26 @@ export function InlineBoardView({
                   )}
                 </div>
               ))}
+
+            {/* "AI is thinking" overlay for always-visible boards. A light
+                scrim keeps the position readable while clearly reading as
+                "busy", and a spinning chip distinguishes a slow-but-working
+                engine from a frozen one. Non-interactive (z-20,
+                pointer-events-none) so the move-list / navigation controls
+                underneath stay clickable; the top-right gear (z-30) also stays
+                above it. Only wired in 'always' mode — blindfold modes already
+                show this via the masked board + AiReplyChip. */}
+            {aiThinking && (
+              <div
+                className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-background/40"
+                aria-live="polite"
+              >
+                <span className="inline-flex max-w-full items-center gap-2 truncate rounded-full border border-border bg-background/90 px-4 py-2 text-sm font-medium text-foreground shadow-md backdrop-blur-sm">
+                  <FaSpinner className="h-4 w-4 shrink-0 animate-spin" aria-hidden />
+                  <span className="truncate">{t('aiThinking')}</span>
+                </span>
+              </div>
+            )}
 
             {/* Floating badge (AI-reply chip), centered over the board and
                 layered above the mask so it stays visible while blindfolded.
