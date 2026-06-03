@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ChessPiece } from '@/app/_components';
 import type { BoardPiece, MoveResult } from '@blindfold-chess/features/chess-core';
@@ -21,6 +21,7 @@ import { getEvaluationIcon } from '@/lib/games/evaluation';
 import type { SquareRenderInfo } from './BoardLayout';
 import { BoardLayout } from './BoardLayout';
 import { PromotionPicker } from './PromotionPicker';
+import { useBoardDragDrop } from './use-board-drag-drop';
 
 /**
  * Stable empty-array identity for the `highlightedSquares` default prop.
@@ -70,7 +71,7 @@ type Props = {
    *   executes the move. Clicking an empty / opponent / illegal square
    *   deselects (or reselects if it's another own piece).
    * - Pressing on an own-color piece and dragging lifts it (as a DOM element
-   *   following the cursor — see {@link handleBoardPointerDown}); releasing on
+   *   following the cursor — see {@link useBoardDragDrop}); releasing on
    *   a legal destination executes the move.
    * - The selected square and the legal destinations for the selected piece
    *   are highlighted in the lichess/chessground style (green tint on the
@@ -219,14 +220,67 @@ export const ChessBoard = memo(function ChessBoard({
     candidates: MoveResult[];
   } | null>(null);
 
-  // Active pointer drag. `null` until a press on an own piece crosses the
-  // movement threshold; `from` is the source square and `size` the side
-  // length (px) of one square, used to size the floating piece. The piece
-  // follows the cursor as a DOM element (see the portal in the render) rather
-  // than the browser's translucent HTML5 drag image, so only the piece lifts
-  // — matching lichess/chessground. Cleared on drop / cancel / position change.
-  const [dragging, setDragging] = useState<{ from: string; size: number } | null>(null);
-  const dragFrom = dragging?.from ?? null;
+  const clearSelection = useCallback(() => setSelectedSquare(null), []);
+
+  // Clear the click-selection / promotion when the position changes underneath
+  // it. The in-flight drag is reset by `useBoardDragDrop`, which is also keyed
+  // on `fen`.
+  useEffect(() => {
+    setSelectedSquare(null);
+    setPromotionPending(null);
+  }, [fen]);
+
+  const pieceAt = useCallback(
+    (square: string): BoardPiece | null => {
+      if (square.length !== 2) return null;
+      const fileIndex = square.charCodeAt(0) - 'a'.charCodeAt(0);
+      const rankNum = Number.parseInt(square[1], 10);
+      if (Number.isNaN(rankNum) || rankNum < 1 || rankNum > 8) return null;
+      if (fileIndex < 0 || fileIndex > 7) return null;
+      const rankIndex = 8 - rankNum;
+      return board[rankIndex]?.[fileIndex] ?? null;
+    },
+    [board]
+  );
+
+  // Attempt to complete a move from `from` to `to`. Branches by candidate
+  // count: 0 = illegal (no-op + clear selection), 1 = fire onMove
+  // immediately, >1 = promotion ambiguity, defer onMove and surface the
+  // picker.
+  const attemptMove = useCallback(
+    (from: string, to: string) => {
+      if (!onMove) return;
+      const candidates = findLegalMovesByCoords(fen, from, to);
+      if (candidates.length === 0) {
+        // A drag-and-drop onto a non-legal square (including a drop onto an
+        // own piece — you cannot capture your own) is an explicit, deliberate
+        // attempt, so it always counts as one illegal move.
+        onIllegalMove?.();
+        setSelectedSquare(null);
+        return;
+      }
+      if (candidates.length === 1) {
+        onMove(candidates[0].san);
+        setSelectedSquare(null);
+        return;
+      }
+      setPromotionPending({ from, to, candidates });
+      setSelectedSquare(null);
+    },
+    [onMove, fen, onIllegalMove]
+  );
+
+  // Pointer-based dragging (replaces HTML5 native DnD). See useBoardDragDrop.
+  const { dragFrom, dragSize, handleBoardPointerDown, floatingRef, consumeTrailingClick } =
+    useBoardDragDrop({
+      enabled: interactive,
+      fen,
+      movableColorChar,
+      pieceAt,
+      attemptMove,
+      clearSelection,
+    });
+
   // The square whose legal moves should be shown / whose piece is "active":
   // the drag source while dragging, otherwise the click-selected square. Falls
   // back to `previewSelection` so a non-interactive preview board can render
@@ -234,38 +288,6 @@ export const ChessBoard = memo(function ChessBoard({
   // only ever set when `onMove` is wired, so this never collides with a real
   // selection).
   const moveSource = dragFrom ?? selectedSquare ?? previewSelection;
-
-  // Drag bookkeeping kept in refs so the window pointer listeners never go
-  // stale and never force a re-render on every pointermove.
-  const pendingDragRef = useRef<{
-    from: string;
-    startX: number;
-    startY: number;
-    size: number;
-  } | null>(null);
-  // Latest pointer position, used to seed the floating piece on mount.
-  const dragPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  // The floating piece element; its left/top are updated imperatively per
-  // pointermove to avoid re-rendering the 64-square board on every frame.
-  const dragLayerRef = useRef<HTMLDivElement | null>(null);
-  // True once a press has become a real drag — drives both the floating piece
-  // and the suppression of the synthetic click that follows a drag.
-  const didDragRef = useRef(false);
-  // Detaches the active window pointer listeners; set while a press is live.
-  const dragCleanupRef = useRef<(() => void) | null>(null);
-
-  useEffect(() => {
-    setSelectedSquare(null);
-    setPromotionPending(null);
-    // Cancel any in-flight drag when the position changes underneath it.
-    pendingDragRef.current = null;
-    didDragRef.current = false;
-    dragCleanupRef.current?.();
-    setDragging(null);
-  }, [fen]);
-
-  // Detach lingering window listeners if the board unmounts mid-drag.
-  useEffect(() => () => dragCleanupRef.current?.(), []);
 
   // Legal destinations for the active source (drag source or click selection).
   // Used to highlight reachable squares. Empty when nothing is active, when
@@ -289,19 +311,6 @@ export const ChessBoard = memo(function ChessBoard({
       return [];
     }
   }, [fen, moveSource, interactive, previewSelection, destinationsObscured, showPieceDestinations]);
-
-  const pieceAt = useCallback(
-    (square: string): BoardPiece | null => {
-      if (square.length !== 2) return null;
-      const fileIndex = square.charCodeAt(0) - 'a'.charCodeAt(0);
-      const rankNum = Number.parseInt(square[1], 10);
-      if (Number.isNaN(rankNum) || rankNum < 1 || rankNum > 8) return null;
-      if (fileIndex < 0 || fileIndex > 7) return null;
-      const rankIndex = 8 - rankNum;
-      return board[rankIndex]?.[fileIndex] ?? null;
-    },
-    [board]
-  );
 
   const renderPiece = useCallback(
     (piece: BoardPiece, square: string, floating = false) => {
@@ -388,33 +397,6 @@ export const ChessBoard = memo(function ChessBoard({
     ]
   );
 
-  // Attempt to complete a move from `from` to `to`. Branches by candidate
-  // count: 0 = illegal (no-op + clear selection), 1 = fire onMove
-  // immediately, >1 = promotion ambiguity, defer onMove and surface the
-  // picker.
-  const attemptMove = useCallback(
-    (from: string, to: string) => {
-      if (!onMove) return;
-      const candidates = findLegalMovesByCoords(fen, from, to);
-      if (candidates.length === 0) {
-        // A drag-and-drop onto a non-legal square (including a drop onto an
-        // own piece — you cannot capture your own) is an explicit, deliberate
-        // attempt, so it always counts as one illegal move.
-        onIllegalMove?.();
-        setSelectedSquare(null);
-        return;
-      }
-      if (candidates.length === 1) {
-        onMove(candidates[0].san);
-        setSelectedSquare(null);
-        return;
-      }
-      setPromotionPending({ from, to, candidates });
-      setSelectedSquare(null);
-    },
-    [onMove, fen, onIllegalMove]
-  );
-
   // Click-to-move state machine. Runs only in interactive mode; when the
   // caller wires `onSquareClick` instead, raw clicks are forwarded
   // unchanged below.
@@ -487,10 +469,7 @@ export const ChessBoard = memo(function ChessBoard({
     (e: React.MouseEvent<HTMLDivElement>) => {
       // A drag emits a trailing synthetic click on pointerup — swallow it so
       // it doesn't double as a click-to-move action.
-      if (didDragRef.current) {
-        didDragRef.current = false;
-        return;
-      }
+      if (consumeTrailingClick()) return;
       const target = (e.target as HTMLElement).closest<HTMLElement>('[data-square]');
       const square = target?.dataset.square;
       if (!square) return;
@@ -500,91 +479,7 @@ export const ChessBoard = memo(function ChessBoard({
         onSquareClick(square);
       }
     },
-    [onSquareClick, onMove, handleInteractiveClick]
-  );
-
-  // Pointer-based dragging (replaces HTML5 native DnD). A press on an own
-  // piece arms a pending drag; once the pointer moves past a small threshold
-  // the piece is lifted as a DOM element that follows the cursor (rendered in
-  // a body portal), and the source square's piece fades. Window listeners
-  // track the move/up so the gesture survives the pointer leaving the board;
-  // hit-testing on release uses the element under the pointer (the floating
-  // piece is `pointer-events: none`), which also makes it unit-testable in
-  // jsdom. Touch is handled natively by pointer events, so taps still fall
-  // through to click-to-move (handleBoardClick) when no drag occurs.
-  const DRAG_THRESHOLD_PX = 4;
-  const handleBoardPointerDown = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>) => {
-      if (!onMove || e.button !== 0) return;
-      const square = (e.target as HTMLElement).closest<HTMLElement>('[data-square]')?.dataset
-        .square;
-      if (!square) return;
-      const piece = pieceAt(square);
-      // Only movable pieces drag (own color by default; the side to move in
-      // postmortem). Other presses (empty square, non-movable piece) fall
-      // through to the click handler, preserving click-to-move and the
-      // obfuscated "tried to grab the wrong piece" counting.
-      if (!piece || piece.color !== movableColorChar) return;
-
-      const size = e.currentTarget.getBoundingClientRect().width / 8;
-      pendingDragRef.current = { from: square, startX: e.clientX, startY: e.clientY, size };
-      dragPosRef.current = { x: e.clientX, y: e.clientY };
-      didDragRef.current = false;
-
-      const onPointerMove = (ev: PointerEvent) => {
-        const pending = pendingDragRef.current;
-        if (!pending) return;
-        dragPosRef.current = { x: ev.clientX, y: ev.clientY };
-        if (!didDragRef.current) {
-          const dx = ev.clientX - pending.startX;
-          const dy = ev.clientY - pending.startY;
-          if (Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return;
-          // Threshold crossed → start lifting. Drop any click-selection so the
-          // drag source is the only highlighted origin.
-          didDragRef.current = true;
-          setSelectedSquare(null);
-          setDragging({ from: pending.from, size: pending.size });
-        } else if (dragLayerRef.current) {
-          dragLayerRef.current.style.left = `${ev.clientX}px`;
-          dragLayerRef.current.style.top = `${ev.clientY}px`;
-        }
-      };
-      const onPointerUp = (ev: PointerEvent) => {
-        cleanup();
-        const pending = pendingDragRef.current;
-        pendingDragRef.current = null;
-        setDragging(null);
-        if (!pending || !didDragRef.current) return; // a plain tap → click handles it
-        const to = (ev.target as HTMLElement | null)?.closest<HTMLElement>('[data-square]')?.dataset
-          .square;
-        if (to && to !== pending.from) {
-          attemptMove(pending.from, to);
-        } else {
-          setSelectedSquare(null);
-        }
-        // didDragRef stays true so the trailing synthetic click is suppressed.
-      };
-      // The OS / browser can abort a gesture (e.g. it decides a touch is a
-      // scroll, or a system UI takes over). Tear down without applying a move.
-      const onPointerCancel = () => {
-        cleanup();
-        pendingDragRef.current = null;
-        didDragRef.current = false;
-        setDragging(null);
-        setSelectedSquare(null);
-      };
-      const cleanup = () => {
-        window.removeEventListener('pointermove', onPointerMove);
-        window.removeEventListener('pointerup', onPointerUp);
-        window.removeEventListener('pointercancel', onPointerCancel);
-        dragCleanupRef.current = null;
-      };
-      window.addEventListener('pointermove', onPointerMove);
-      window.addEventListener('pointerup', onPointerUp);
-      window.addEventListener('pointercancel', onPointerCancel);
-      dragCleanupRef.current = cleanup;
-    },
-    [onMove, movableColorChar, pieceAt, attemptMove]
+    [onSquareClick, onMove, handleInteractiveClick, consumeTrailingClick]
   );
 
   const renderSquare = useCallback(
@@ -681,27 +576,22 @@ export const ChessBoard = memo(function ChessBoard({
   // body portal so it is never clipped by the board's `overflow-hidden` and
   // sits above page chrome. `pointer-events: none` keeps the element under
   // the cursor hit-testable on drop. Position is seeded on mount from the
-  // latest pointer coords and then updated imperatively per pointermove.
+  // latest pointer coords (via `floatingRef`) and then updated imperatively
+  // per pointermove inside the drag hook.
   const dragPiece = (() => {
-    if (!dragging || typeof document === 'undefined') return null;
-    const fileIndex = dragging.from.charCodeAt(0) - 'a'.charCodeAt(0);
-    const rankIndex = 8 - Number.parseInt(dragging.from[1], 10);
+    if (dragFrom === null || dragSize === null || typeof document === 'undefined') return null;
+    const fileIndex = dragFrom.charCodeAt(0) - 'a'.charCodeAt(0);
+    const rankIndex = 8 - Number.parseInt(dragFrom[1], 10);
     const piece = board[rankIndex]?.[fileIndex] ?? null;
     if (!piece) return null;
     return createPortal(
       <div
         aria-hidden
-        ref={(el) => {
-          dragLayerRef.current = el;
-          if (el) {
-            el.style.left = `${dragPosRef.current.x}px`;
-            el.style.top = `${dragPosRef.current.y}px`;
-          }
-        }}
+        ref={floatingRef}
         className="pointer-events-none fixed z-[1000] flex -translate-x-1/2 -translate-y-1/2 items-center justify-center"
-        style={{ width: dragging.size, height: dragging.size }}
+        style={{ width: dragSize, height: dragSize }}
       >
-        {renderPiece(piece, dragging.from, true)}
+        {renderPiece(piece, dragFrom, true)}
       </div>,
       document.body
     );
