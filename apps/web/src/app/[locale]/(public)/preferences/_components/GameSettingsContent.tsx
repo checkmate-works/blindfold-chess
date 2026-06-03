@@ -3,7 +3,9 @@
 import type { ReactNode } from 'react';
 import { useEffect, useMemo } from 'react';
 
+import { DiscPiece } from '@/app/_components/chess/DiscPiece';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
+import { ChessPieceIcon } from '@blindfold-chess/icons';
 import type { Side } from '@blindfold-chess/types';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -41,6 +43,41 @@ const STONE_SIDE_TO_SHAPE: Record<
   own: 'circles-own',
   opponent: 'circles-opponent',
 };
+
+// Which colours to sample for each Piece Color option.
+const PIECE_COLOR_SAMPLES: Record<
+  'normal' | 'white-only' | 'black-only',
+  ReadonlyArray<'w' | 'b'>
+> = {
+  normal: ['w', 'b'],
+  'white-only': ['w'],
+  'black-only': ['b'],
+};
+
+/**
+ * Compact "what this option looks like" glyph(s) shown next to each radio /
+ * toggle, reusing the same vocabulary as the shared-game PlaySettingsIndicator:
+ * a pawn (normal pieces) or a Go-stone disc, in the relevant colour(s).
+ */
+function PieceGlyphs({
+  colors,
+  disc = false,
+}: {
+  colors: ReadonlyArray<'w' | 'b'>;
+  disc?: boolean;
+}) {
+  return (
+    <span className="flex items-center gap-0.5" aria-hidden>
+      {colors.map((c, i) =>
+        disc ? (
+          <DiscPiece key={i} color={c} size={14} />
+        ) : (
+          <ChessPieceIcon key={i} type="p" color={c} size={16} />
+        )
+      )}
+    </span>
+  );
+}
 
 type Props = {
   settings: GamePreferences;
@@ -116,6 +153,15 @@ export function GameSettingsContent({
         ? 'opponent'
         : 'all';
 
+  // Colour samples for the per-option glyphs: "own" follows the player's side.
+  const ownColor: 'w' | 'b' = playerSide === 'white' ? 'w' : 'b';
+  const oppColor: 'w' | 'b' = ownColor === 'w' ? 'b' : 'w';
+  const sideSamples: Record<(typeof PIECE_VISIBILITY_MODES)[number], ReadonlyArray<'w' | 'b'>> = {
+    all: [ownColor, oppColor],
+    own: [ownColor],
+    opponent: [oppColor],
+  };
+
   useEffect(() => {
     // When a visibility change makes the current stones mode invalid (e.g.
     // 'circles-all' after hiding a side), realign it to the stones mode for
@@ -176,9 +222,9 @@ export function GameSettingsContent({
               </h4>
               <div className="space-y-3">
                 {/* Piece Visibility */}
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                   <span className="text-sm text-foreground">{t('game.pieceVisibility')}</span>
-                  <div className="flex items-center gap-4">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
                     {PIECE_VISIBILITY_MODES.map((mode) => (
                       <label
                         key={mode}
@@ -192,6 +238,7 @@ export function GameSettingsContent({
                           onChange={() => onSettingsChange(PIECE_VISIBILITY_PRESETS[mode])}
                           className="h-4 w-4 text-primary focus:ring-primary border-border"
                         />
+                        <PieceGlyphs colors={sideSamples[mode]} />
                         <span>{t(`game.pieceVisibilityModes.${mode}`)}</span>
                       </label>
                     ))}
@@ -202,7 +249,10 @@ export function GameSettingsContent({
                     sides are visible (the only case where stoning a single side
                     is meaningful). */}
                 <label className="flex cursor-pointer items-center justify-between gap-3">
-                  <span className="text-sm text-foreground">{t('game.showAsStones')}</span>
+                  <span className="flex items-center gap-1.5 text-sm text-foreground">
+                    <DiscPiece color={ownColor} size={16} />
+                    {t('game.showAsStones')}
+                  </span>
                   <input
                     type="checkbox"
                     checked={stonesOn}
@@ -215,9 +265,9 @@ export function GameSettingsContent({
                   />
                 </label>
                 {stonesOn && bothVisible && (
-                  <div className="flex items-center justify-between gap-3 border-l border-border pl-4">
+                  <div className="flex flex-col gap-2 border-l border-border pl-4 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                     <span className="text-sm text-muted-foreground">{t('game.stonesSide')}</span>
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
                       {STONE_SIDE_MODES.map((side) => (
                         <label
                           key={side}
@@ -233,6 +283,7 @@ export function GameSettingsContent({
                             }
                             className="h-4 w-4 text-primary focus:ring-primary border-border"
                           />
+                          <PieceGlyphs colors={sideSamples[side]} disc />
                           <span>{t(`game.pieceVisibilityModes.${side}`)}</span>
                         </label>
                       ))}
@@ -241,9 +292,9 @@ export function GameSettingsContent({
                 )}
 
                 {/* Piece Color */}
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                   <span className="text-sm text-foreground">{t('game.pieceColor')}</span>
-                  <div className="flex items-center gap-4">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
                     {(['normal', 'white-only', 'black-only'] as const).map((colors) => (
                       <label
                         key={colors}
@@ -259,6 +310,7 @@ export function GameSettingsContent({
                           }
                           className="h-4 w-4 text-primary focus:ring-primary border-border"
                         />
+                        <PieceGlyphs colors={PIECE_COLOR_SAMPLES[colors]} />
                         <span>{t(`game.pieceColorModes.${colors}`)}</span>
                       </label>
                     ))}
