@@ -8,6 +8,7 @@ import { announcements, db } from '@/lib/db';
 
 import { formatDateTimeLocal } from '../../../_lib/format';
 import { EditAnnouncementForm } from '../../_components/EditAnnouncementForm';
+import { getAnnouncementFormLabels } from '../../_lib/labels';
 
 export default async function EditAnnouncementPage({
   params,
@@ -46,32 +47,7 @@ export default async function EditAnnouncementPage({
           pinnedAt: formatDateTimeLocal(announcement.pinnedAt),
           publishedAt: formatDateTimeLocal(announcement.publishedAt),
         }}
-        labels={{
-          formTitle: t('form.editTitle'),
-          slug: t('form.slug'),
-          slugPlaceholder: t('form.slugPlaceholder'),
-          title: t('form.title'),
-          titlePlaceholder: t('form.titlePlaceholder'),
-          content: t('form.content'),
-          contentPlaceholder: t('form.contentPlaceholder'),
-          locale: t('form.locale'),
-          saveDraft: t('form.saveDraft'),
-          savingDraft: t('form.savingDraft'),
-          savePublished: t('form.savePublished'),
-          savingPublished: t('form.savingPublished'),
-          preview: t('form.preview'),
-          cancel: t('form.cancel'),
-          unsavedChangesTitle: t('form.unsavedChangesTitle'),
-          unsavedChangesMessage: t('form.unsavedChangesMessage'),
-          unsavedChangesConfirm: t('form.unsavedChangesConfirm'),
-          unsavedChangesCancel: t('form.unsavedChangesCancel'),
-          draftSaved: t('form.draftSaved'),
-          publishedSaved: t('form.publishedSaved'),
-          publishedConfirmTitle: t('form.publishedConfirmTitle'),
-          publishedConfirmMessage: t('form.publishedConfirmMessage'),
-          publishedConfirmConfirm: t('form.publishedConfirmConfirm'),
-          publishedConfirmCancel: t('form.publishedConfirmCancel'),
-        }}
+        labels={getAnnouncementFormLabels(t, t('form.editTitle'))}
       />
     </>
   );
