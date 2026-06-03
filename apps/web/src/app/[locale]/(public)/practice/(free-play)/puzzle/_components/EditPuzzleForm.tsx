@@ -12,11 +12,8 @@ import { flushSync } from 'react-dom';
 import type { ChunkOption } from '@/lib/chunks/types';
 import type { ThemeOption } from '@/lib/themes/types';
 
-import { useFenBoardEditor } from '../../_hooks/use-fen-board-editor';
-import { useTagSelection } from '../../_hooks/use-tag-selection';
 import { updatePuzzle } from '../_actions/updatePuzzle';
-import { useMoveSubmitLabels } from '../_hooks/use-move-submit-labels';
-import { usePuzzleSolutionMoves } from '../_hooks/use-puzzle-solution-moves';
+import { usePuzzleFormComposition } from '../_hooks/use-puzzle-form-composition';
 import { validatePuzzleForm } from '../_lib/validate-puzzle-form';
 import { PuzzleFormFields } from './PuzzleFormFields';
 
@@ -41,7 +38,6 @@ export function EditPuzzleForm({ positionId, initial, available }: Props) {
   const t = useTranslations('practice.puzzle.edit');
   const tCreate = useTranslations('practice.puzzle.create');
   const tUnsaved = useTranslations('unsavedChanges');
-  const moveSubmitLabels = useMoveSubmitLabels();
 
   const initialMovesRef = useRef(initial.solutionMoves.map((m) => m.san));
   const initialNotesRef = useRef(initial.solutionMoves.map((m) => m.note ?? ''));
@@ -55,23 +51,10 @@ export function EditPuzzleForm({ positionId, initial, available }: Props) {
   const [pending, setPending] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  // Compose the three authoring hooks. `solution` needs `board.baseFen`
-  // to validate new moves, and `board` needs to reset `solution` when
-  // the position changes — break the cycle with a ref that the board's
-  // onBoardChange dereferences lazily.
-  const solutionResetRef = useRef<() => void>(() => {});
-  const board = useFenBoardEditor({
+  const { board, solution, tags } = usePuzzleFormComposition({
     initialFen: initial.fen,
-    onBoardChange: () => solutionResetRef.current(),
-  });
-  const solution = usePuzzleSolutionMoves({
-    baseFen: board.baseFen,
     initialMoves: initialMovesRef.current,
     initialNotes: initialNotesRef.current,
-    moveSubmitLabels,
-  });
-  solutionResetRef.current = solution.reset;
-  const tags = useTagSelection({
     initialThemes: initial.themes,
     initialChunks: initial.chunks,
   });

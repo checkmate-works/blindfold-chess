@@ -15,13 +15,10 @@ import type { ThemeOption } from '@/lib/themes/types';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
-import { useFenBoardEditor } from '../../_hooks/use-fen-board-editor';
-import { useTagSelection } from '../../_hooks/use-tag-selection';
 import { EMPTY_BOARD_FEN } from '../../_lib/board-editor-constants';
 import { buildDefaultPracticeTitle } from '../../_lib/default-title';
-import { useMoveSubmitLabels } from '../_hooks/use-move-submit-labels';
 import { usePuzzleDraftHydration } from '../_hooks/use-puzzle-draft-hydration';
-import { usePuzzleSolutionMoves } from '../_hooks/use-puzzle-solution-moves';
+import { usePuzzleFormComposition } from '../_hooks/use-puzzle-form-composition';
 import { clearDraft, writeDraft } from '../_lib/draft-storage';
 import { validatePuzzleForm } from '../_lib/validate-puzzle-form';
 import { PuzzleFormFields } from './PuzzleFormFields';
@@ -94,7 +91,6 @@ export function CreatePuzzleForm({
   const router = useRouter();
   const t = useTranslations('practice.puzzle.create');
   const tUnsaved = useTranslations('unsavedChanges');
-  const moveSubmitLabels = useMoveSubmitLabels();
 
   // When forking, the source's title carries over verbatim; otherwise the
   // date-based default is used. defaultTitleRef anchors the dirty-check
@@ -134,22 +130,10 @@ export function CreatePuzzleForm({
       : []
   ).current;
 
-  // `solution` reads `board.baseFen`, and `board` resets `solution`
-  // on position change — break the cycle with a ref the board's
-  // onBoardChange dereferences lazily.
-  const solutionResetRef = useRef<() => void>(() => {});
-  const board = useFenBoardEditor({
+  const { board, solution, tags } = usePuzzleFormComposition({
     initialFen: forkSeed?.fen,
-    onBoardChange: () => solutionResetRef.current(),
-  });
-  const solution = usePuzzleSolutionMoves({
-    baseFen: board.baseFen,
     initialMoves: forkSeed?.moves,
     initialNotes: forkSeed?.notes,
-    moveSubmitLabels,
-  });
-  solutionResetRef.current = solution.reset;
-  const tags = useTagSelection({
     initialThemes: seededThemes,
     initialChunks: seededChunks,
   });
