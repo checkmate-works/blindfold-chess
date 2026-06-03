@@ -97,12 +97,7 @@ export function GameSettingsContent({
 
         {/* Board Appearance */}
         {showBoardAppearance && (
-          <>
-            <BoardAppearanceContent settings={settings} onSettingsChange={onSettingsChange} />
-
-            {/* Divider */}
-            <div className="border-t border-border"></div>
-          </>
+          <BoardAppearanceContent settings={settings} onSettingsChange={onSettingsChange} />
         )}
 
         {/* Display Options & Piece Visibility & Appearance — shown whenever
@@ -123,9 +118,6 @@ export function GameSettingsContent({
               </div>
             </div>
 
-            {/* Divider */}
-            <div className="border-t border-border"></div>
-
             <div>
               <h4 className="text-sm text-foreground mb-4">{t('game.pieceVisibility')}</h4>
               <div className="space-y-3">
@@ -144,11 +136,9 @@ export function GameSettingsContent({
               </div>
             </div>
 
-            {/* Divider + Piece Appearance - only when at least one piece type is visible */}
+            {/* Piece Appearance - only when at least one piece type is visible */}
             {(settings.showOwnPieces || settings.showOpponentPieces) && (
               <>
-                <div className="border-t border-border"></div>
-
                 {/* Piece Appearance */}
                 <div>
                   <h4 className="text-sm text-foreground mb-4">{t('game.pieceAppearance')}</h4>
@@ -205,14 +195,7 @@ export function GameSettingsContent({
             )}
 
             {/* Preview */}
-            {showPreview && (
-              <>
-                {/* Divider */}
-                <div className="border-t border-border"></div>
-
-                <BoardPreview settings={settings} playerSide={playerSide} />
-              </>
-            )}
+            {showPreview && <BoardPreview settings={settings} playerSide={playerSide} />}
           </>
         )}
       </div>
