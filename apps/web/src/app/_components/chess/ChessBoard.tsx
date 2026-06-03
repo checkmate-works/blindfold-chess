@@ -127,6 +127,15 @@ type Props = {
    * unchanged regardless of this setting.
    */
   movablePieces?: 'own' | 'side-to-move';
+  /**
+   * Render a non-interactive "as if this square were selected" preview: the
+   * square gets the selected tint and — when `showPieceDestinations` is on and
+   * the board isn't obfuscated — its legal destinations render as move dots,
+   * exactly what tapping the piece would show, but without wiring `onMove`.
+   * Used by the settings BoardPreview to demonstrate the Piece destinations
+   * toggle. Ignored in interactive mode (a real selection takes over).
+   */
+  previewSelection?: string | null;
 };
 
 export const ChessBoard = memo(function ChessBoard({
@@ -150,6 +159,7 @@ export const ChessBoard = memo(function ChessBoard({
   onMove,
   onIllegalMove,
   movablePieces = 'own',
+  previewSelection = null,
 }: Props) {
   const themeColors = getBoardThemeColors(boardTheme);
   const interactive = onMove !== undefined;
@@ -211,8 +221,12 @@ export const ChessBoard = memo(function ChessBoard({
   const [dragging, setDragging] = useState<{ from: string; size: number } | null>(null);
   const dragFrom = dragging?.from ?? null;
   // The square whose legal moves should be shown / whose piece is "active":
-  // the drag source while dragging, otherwise the click-selected square.
-  const moveSource = dragFrom ?? selectedSquare;
+  // the drag source while dragging, otherwise the click-selected square. Falls
+  // back to `previewSelection` so a non-interactive preview board can render
+  // an "as if tapped" selection + destinations (the interactive sources are
+  // only ever set when `onMove` is wired, so this never collides with a real
+  // selection).
+  const moveSource = dragFrom ?? selectedSquare ?? previewSelection;
 
   // Drag bookkeeping kept in refs so the window pointer listeners never go
   // stale and never force a re-render on every pointermove.
@@ -250,14 +264,18 @@ export const ChessBoard = memo(function ChessBoard({
   // Used to highlight reachable squares. Empty when nothing is active, when
   // interactive mode is off, or when obfuscation hides piece identity.
   const legalDestinations = useMemo<string[]>(() => {
-    if (!interactive || !moveSource || obfuscated || !showPieceDestinations) return [];
+    // Computed for interactive boards (real selection / drag) and for the
+    // static `previewSelection` case; suppressed when obfuscated (would leak
+    // piece identity) or when the user turned destinations off.
+    if ((!interactive && !previewSelection) || !moveSource || obfuscated || !showPieceDestinations)
+      return [];
     try {
       const moves = getLegalMoves(fen, { verbose: true });
       return moves.filter((m) => m.from === moveSource).map((m) => m.to);
     } catch {
       return [];
     }
-  }, [fen, moveSource, interactive, obfuscated, showPieceDestinations]);
+  }, [fen, moveSource, interactive, previewSelection, obfuscated, showPieceDestinations]);
 
   const pieceAt = useCallback(
     (square: string): BoardPiece | null => {

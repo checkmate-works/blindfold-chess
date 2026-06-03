@@ -757,3 +757,52 @@ describe('ChessBoard interactive mode — movablePieces gating', () => {
     expect(onMove).toHaveBeenCalledExactlyOnceWith('e4');
   });
 });
+
+/**
+ * Count move-affordance overlays of a given kind on the board. Used by the
+ * preview-selection tests, which run on a non-interactive board where squares
+ * carry no `data-square` hook (that is only emitted for clickable boards) — the
+ * `data-highlight` overlays are still painted, so we assert on those directly.
+ */
+function countHighlights(container: HTMLElement, type: string): number {
+  return container.querySelectorAll(`[data-highlight="${type}"]`).length;
+}
+
+describe('ChessBoard preview selection (non-interactive)', () => {
+  it('marks the previewed square selected and shows its legal destinations as dots without onMove', () => {
+    // No onMove → non-interactive board (e.g. the settings BoardPreview). The
+    // d2 pawn from the start position has exactly two destinations: d3 and d4.
+    const { container } = render(
+      <ChessBoard fen={STARTING_FEN} playerSide="white" previewSelection="d2" />
+    );
+
+    expect(countHighlights(container, 'selected')).toBe(1);
+    expect(countHighlights(container, 'move-dest')).toBe(2);
+  });
+
+  it('suppresses the destination dots when showPieceDestinations is off', () => {
+    const { container } = render(
+      <ChessBoard
+        fen={STARTING_FEN}
+        playerSide="white"
+        previewSelection="d2"
+        showPieceDestinations={false}
+      />
+    );
+
+    expect(countHighlights(container, 'move-dest')).toBe(0);
+  });
+
+  it('suppresses the destination dots when the board is obfuscated (hidden pieces)', () => {
+    const { container } = render(
+      <ChessBoard
+        fen={STARTING_FEN}
+        playerSide="white"
+        previewSelection="d2"
+        showOwnPieces={false}
+      />
+    );
+
+    expect(countHighlights(container, 'move-dest')).toBe(0);
+  });
+});
