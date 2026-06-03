@@ -4,8 +4,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import AdminArticlesPage from './page';
 
 const mockDbExecute = vi.fn();
-const mockDbSelectFrom = vi.fn();
 const mockGetTranslations = vi.fn();
+
+/**
+ * The page delegates to `createAdminSlugGroupListPage`, which issues two
+ * `db.execute` calls per render: first the `COUNT(DISTINCT slug)` query, then
+ * the paginated slug-group rows. Queue both in order.
+ */
+function mockSlugGroupQueries(count: number, rows: Array<Record<string, unknown>>) {
+  mockDbExecute.mockResolvedValueOnce([{ count }]).mockResolvedValueOnce(rows);
+}
 
 vi.mock('next-intl/server', () => ({
   getTranslations: (...args: unknown[]) => mockGetTranslations(...args),
@@ -27,9 +35,6 @@ vi.mock('nuqs/server', () => ({
 vi.mock('@/lib/db', () => ({
   db: {
     execute: (...args: unknown[]) => mockDbExecute(...args),
-    select: () => ({
-      from: (...args: unknown[]) => mockDbSelectFrom(...args),
-    }),
   },
   articles: {
     slug: 'slug',
@@ -87,7 +92,7 @@ describe('AdminArticlesPage (slug-grouped list)', () => {
 
   describe('data fetching and display', () => {
     it('displays articles grouped by slug', async () => {
-      mockDbExecute.mockResolvedValue([
+      mockSlugGroupQueries(2, [
         {
           slug: 'getting-started',
           representative_title: 'Getting Started',
@@ -97,7 +102,6 @@ describe('AdminArticlesPage (slug-grouped list)', () => {
           representative_title: 'Advanced Tips',
         },
       ]);
-      mockDbSelectFrom.mockResolvedValue([{ count: 2 }]);
 
       const jsx = await AdminArticlesPage({ searchParams: createSearchParams() });
       render(jsx);
@@ -110,8 +114,7 @@ describe('AdminArticlesPage (slug-grouped list)', () => {
     });
 
     it('displays page title and new article link', async () => {
-      mockDbExecute.mockResolvedValue([]);
-      mockDbSelectFrom.mockResolvedValue([{ count: 0 }]);
+      mockSlugGroupQueries(0, []);
 
       const jsx = await AdminArticlesPage({ searchParams: createSearchParams() });
       render(jsx);
@@ -121,13 +124,12 @@ describe('AdminArticlesPage (slug-grouped list)', () => {
     });
 
     it('displays link to slug detail page for each row', async () => {
-      mockDbExecute.mockResolvedValue([
+      mockSlugGroupQueries(1, [
         {
           slug: 'my-article',
           representative_title: 'My Article',
         },
       ]);
-      mockDbSelectFrom.mockResolvedValue([{ count: 1 }]);
 
       const jsx = await AdminArticlesPage({ searchParams: createSearchParams() });
       render(jsx);
@@ -139,8 +141,7 @@ describe('AdminArticlesPage (slug-grouped list)', () => {
 
   describe('no articles', () => {
     it('displays empty message when no articles exist', async () => {
-      mockDbExecute.mockResolvedValue([]);
-      mockDbSelectFrom.mockResolvedValue([{ count: 0 }]);
+      mockSlugGroupQueries(0, []);
 
       const jsx = await AdminArticlesPage({ searchParams: createSearchParams() });
       render(jsx);
@@ -151,8 +152,7 @@ describe('AdminArticlesPage (slug-grouped list)', () => {
 
   describe('pagination', () => {
     it('passes currentPage and totalPages to PaginationNav', async () => {
-      mockDbExecute.mockResolvedValue([]);
-      mockDbSelectFrom.mockResolvedValue([{ count: 50 }]);
+      mockSlugGroupQueries(50, []);
 
       const jsx = await AdminArticlesPage({
         searchParams: createSearchParams({ page: '2' }),
@@ -164,8 +164,7 @@ describe('AdminArticlesPage (slug-grouped list)', () => {
     });
 
     it('displays pagination for page=1', async () => {
-      mockDbExecute.mockResolvedValue([]);
-      mockDbSelectFrom.mockResolvedValue([{ count: 25 }]);
+      mockSlugGroupQueries(25, []);
 
       const jsx = await AdminArticlesPage({ searchParams: createSearchParams() });
       render(jsx);
@@ -175,8 +174,7 @@ describe('AdminArticlesPage (slug-grouped list)', () => {
     });
 
     it('sets totalPages to 1 when totalCount is 0', async () => {
-      mockDbExecute.mockResolvedValue([]);
-      mockDbSelectFrom.mockResolvedValue([{ count: 0 }]);
+      mockSlugGroupQueries(0, []);
 
       const jsx = await AdminArticlesPage({ searchParams: createSearchParams() });
       render(jsx);
