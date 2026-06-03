@@ -254,11 +254,16 @@
       "displayOptions": "表示オプション",
       "showCoordinates": "座標を表示",
       "highlightLastMove": "最終手をハイライト",
+      "pieceDestinations": "駒の移動先を表示",
       "pieceVisibility": "駒の表示",
-      "showOwnPieces": "自分の駒を表示",
-      "showOpponentPieces": "相手の駒を表示",
+      "pieceVisibilityModes": {
+        "all": "両方",
+        "own": "自分",
+        "opponent": "相手"
+      },
       "pieceAppearance": "駒の外観",
-      "pieceShape": "駒の形状",
+      "showAsStones": "石で表示",
+      "stonesSide": "対象",
       "pieceShapes": {
         "normal": "通常の駒",
         "circles-all": "全ての駒を石で表示",
@@ -266,6 +271,11 @@
         "circles-opponent": "相手の駒を石で表示"
       },
       "pieceColor": "駒の色",
+      "pieceColorModes": {
+        "normal": "通常",
+        "white-only": "すべて白",
+        "black-only": "すべて黒"
+      },
       "pieceColors": {
         "normal": "通常の色（白＆黒）",
         "white-only": "全ての駒を白で表示",
@@ -1818,6 +1828,7 @@
         "off": "オフ",
         "labelBoardVisibility": "ボード表示",
         "labelHighlightLastMove": "最終手のハイライト",
+        "labelPieceDestinations": "駒の移動先",
         "labelShowOwnPieces": "自分の駒を表示",
         "labelShowOpponentPieces": "相手の駒を表示",
         "labelPieceShape": "駒の形状",
@@ -2206,7 +2217,6 @@
     "helpPgnIntroDescription": "PGN（Portable Game Notation）を貼り付けて、任意の局面から対局できます。特定の変化を研究したり、他で見た棋譜を再現したりするのに便利です。",
     "helpOpeningIntroDescription": "リストから定跡を選択すると、続けてPGN設定画面に遷移し、そこでエンジン・色・難易度を選んで対局を開始できます。",
     "previewBoard": "ボードをプレビュー",
-    "gameSettings": "詳細設定",
     "settings": "設定",
     "startGame": "ゲーム開始",
     "cancel": "キャンセル",

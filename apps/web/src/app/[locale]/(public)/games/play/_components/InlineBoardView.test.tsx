@@ -47,6 +47,7 @@ vi.mock('./MoveNavigationControls', () => ({
 const PREFS: GamePreferences = {
   showCoordinates: true,
   highlightLastMove: true,
+  showPieceDestinations: true,
   boardTheme: 'monotone',
   showOwnPieces: true,
   showOpponentPieces: true,

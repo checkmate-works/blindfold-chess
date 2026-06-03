@@ -81,7 +81,7 @@ export type MoveOperationLog = {
 export type PreferenceChangeLogEntry =
   | {
       atMoveIndex: number;
-      key: 'highlightLastMove' | 'showOwnPieces' | 'showOpponentPieces';
+      key: 'highlightLastMove' | 'showPieceDestinations' | 'showOwnPieces' | 'showOpponentPieces';
       from: boolean;
       to: boolean;
     }

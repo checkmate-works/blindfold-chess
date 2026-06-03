@@ -32,6 +32,13 @@ import { validatePreferences } from './game-preferences-validation';
 export type PerGamePreferences = {
   boardVisibility: BoardVisibility;
   highlightLastMove: boolean;
+  /**
+   * Whether selecting / tapping a piece reveals its legal destination squares
+   * (the lichess-style move dots). Off makes the visible board a harder,
+   * hint-free surface. Per-game (mirroring `highlightLastMove`) because it is a
+   * display assist players often dial per session.
+   */
+  showPieceDestinations: boolean;
   showOwnPieces: boolean;
   showOpponentPieces: boolean;
   pieceShapeMode: 'normal' | 'circles-all' | 'circles-own' | 'circles-opponent';
@@ -53,6 +60,7 @@ export type GamePreferences = {
   // Board appearance
   showCoordinates: boolean; // Show rank and file labels on the board
   highlightLastMove: boolean; // Highlight the last move on the board
+  showPieceDestinations: boolean; // Show legal destination squares when a piece is selected
   boardTheme: BoardTheme; // Board color theme
   // Piece visibility
   showOwnPieces: boolean; // Show player's own pieces
@@ -77,6 +85,7 @@ export type GamePreferences = {
 const defaultPreferences: GamePreferences = {
   showCoordinates: true,
   highlightLastMove: true,
+  showPieceDestinations: true,
   boardTheme: DEFAULT_BOARD_THEME,
   showOwnPieces: true,
   showOpponentPieces: true,

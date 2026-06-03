@@ -50,6 +50,7 @@ import { VictoryCertificate } from './VictoryCertificate';
 const REVEALED_BOARD_PREFS: GamePreferences = {
   showCoordinates: true,
   highlightLastMove: true,
+  showPieceDestinations: true,
   boardTheme: DEFAULT_BOARD_THEME,
   showOwnPieces: true,
   showOpponentPieces: true,
@@ -219,7 +220,8 @@ function ResultContent({
         case 'pieceColors':
           out.push({ atMoveIndex: e.atMoveIndex, key: e.key, to: e.to });
           break;
-        // highlightLastMove / moveInputMode: non-display, intentionally skipped.
+        // highlightLastMove / showPieceDestinations / moveInputMode: non-display
+        // (input assists / UI), intentionally skipped from the replay projection.
       }
     }
     return out;

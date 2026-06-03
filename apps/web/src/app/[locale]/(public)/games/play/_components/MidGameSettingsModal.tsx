@@ -12,6 +12,7 @@ import type {
 const PER_GAME_KEYS = [
   'boardVisibility',
   'highlightLastMove',
+  'showPieceDestinations',
   'showOwnPieces',
   'showOpponentPieces',
   'pieceShapeMode',

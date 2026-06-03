@@ -98,6 +98,7 @@ vi.mock('@/app/[locale]/(public)/preferences/_components/GameSettingsContent', (
 const PREFS: GamePreferences = {
   showCoordinates: true,
   highlightLastMove: true,
+  showPieceDestinations: true,
   boardTheme: 'monotone',
   showOwnPieces: true,
   showOpponentPieces: true,

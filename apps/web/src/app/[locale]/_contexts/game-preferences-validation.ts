@@ -22,6 +22,8 @@ export function validatePreferences(parsed: unknown): Partial<GamePreferences> {
 
   if (typeof p.showCoordinates === 'boolean') result.showCoordinates = p.showCoordinates;
   if (typeof p.highlightLastMove === 'boolean') result.highlightLastMove = p.highlightLastMove;
+  if (typeof p.showPieceDestinations === 'boolean')
+    result.showPieceDestinations = p.showPieceDestinations;
   if (
     typeof p.boardTheme === 'string' &&
     ['monotone', 'lichess', 'chesscom'].includes(p.boardTheme)

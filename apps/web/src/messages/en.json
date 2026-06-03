@@ -254,11 +254,16 @@
       "displayOptions": "Display Options",
       "showCoordinates": "Show coordinates",
       "highlightLastMove": "Highlight last move",
+      "pieceDestinations": "Piece destinations",
       "pieceVisibility": "Piece Visibility",
-      "showOwnPieces": "Show own pieces",
-      "showOpponentPieces": "Show opponent pieces",
+      "pieceVisibilityModes": {
+        "all": "Both",
+        "own": "Own",
+        "opponent": "Opponent"
+      },
       "pieceAppearance": "Piece Appearance",
-      "pieceShape": "Piece Shape",
+      "showAsStones": "Show as stones",
+      "stonesSide": "Apply to",
       "pieceShapes": {
         "normal": "Normal pieces",
         "circles-all": "Show all pieces as stones",
@@ -266,6 +271,11 @@
         "circles-opponent": "Show opponent pieces as stones"
       },
       "pieceColor": "Piece Color",
+      "pieceColorModes": {
+        "normal": "Normal",
+        "white-only": "All White",
+        "black-only": "All Black"
+      },
       "pieceColors": {
         "normal": "Normal colors (White & Black)",
         "white-only": "Show all pieces as white",
@@ -1818,6 +1828,7 @@
         "off": "Off",
         "labelBoardVisibility": "Board visibility",
         "labelHighlightLastMove": "Highlight last move",
+        "labelPieceDestinations": "Piece destinations",
         "labelShowOwnPieces": "Show own pieces",
         "labelShowOpponentPieces": "Show opponent pieces",
         "labelPieceShape": "Piece shape",
@@ -2206,7 +2217,6 @@
     "helpPgnIntroDescription": "Paste a PGN (Portable Game Notation) and play out the variation from any point. Great for studying a specific continuation or recreating a game you saw elsewhere.",
     "helpOpeningIntroDescription": "Pick a named opening from the list — you'll continue to the PGN setup screen where you can choose engine, color, and difficulty before starting.",
     "previewBoard": "Preview Board",
-    "gameSettings": "Advanced Settings",
     "settings": "Settings",
     "startGame": "Start Game",
     "cancel": "Cancel",

@@ -26,6 +26,7 @@ export function foldPreferences(
   for (const entry of log) {
     switch (entry.key) {
       case 'highlightLastMove':
+      case 'showPieceDestinations':
       case 'showOwnPieces':
       case 'showOpponentPieces':
         result[entry.key] = entry.to;

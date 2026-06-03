@@ -250,11 +250,16 @@
       "displayOptions": "Opciones de Visualización",
       "showCoordinates": "Mostrar coordenadas",
       "highlightLastMove": "Resaltar último movimiento",
+      "pieceDestinations": "Destinos de las piezas",
       "pieceVisibility": "Visibilidad de Piezas",
-      "showOwnPieces": "Mostrar piezas propias",
-      "showOpponentPieces": "Mostrar piezas del rival",
+      "pieceVisibilityModes": {
+        "all": "Ambas",
+        "own": "Propias",
+        "opponent": "Rival"
+      },
       "pieceAppearance": "Apariencia de las Piezas",
-      "pieceShape": "Forma de las Piezas",
+      "showAsStones": "Mostrar como piedras",
+      "stonesSide": "Aplicar a",
       "pieceShapes": {
         "normal": "Piezas normales",
         "circles-all": "Mostrar todas las piezas como piedras",
@@ -262,6 +267,11 @@
         "circles-opponent": "Mostrar piezas del rival como piedras"
       },
       "pieceColor": "Color de las Piezas",
+      "pieceColorModes": {
+        "normal": "Normal",
+        "white-only": "Todas blancas",
+        "black-only": "Todas negras"
+      },
       "pieceColors": {
         "normal": "Colores normales (Blancas y Negras)",
         "white-only": "Mostrar todas las piezas como blancas",
@@ -1814,6 +1824,7 @@
         "off": "Desactivado",
         "labelBoardVisibility": "Visibilidad del tablero",
         "labelHighlightLastMove": "Resaltar último movimiento",
+        "labelPieceDestinations": "Destinos de las piezas",
         "labelShowOwnPieces": "Mostrar piezas propias",
         "labelShowOpponentPieces": "Mostrar piezas del oponente",
         "labelPieceShape": "Forma de las piezas",
@@ -2202,7 +2213,6 @@
     "helpPgnIntroDescription": "Pega un PGN (notación portátil de juego) y juega la variante desde cualquier punto. Ideal para estudiar una continuación específica o recrear una partida que viste en otro lugar.",
     "helpOpeningIntroDescription": "Elige una apertura con nombre de la lista — continuarás a la pantalla de configuración PGN donde podrás elegir motor, color y dificultad antes de empezar.",
     "previewBoard": "Vista Previa del Tablero",
-    "gameSettings": "Configuración Avanzada",
     "settings": "Configuración",
     "startGame": "Iniciar Partida",
     "cancel": "Cancelar",

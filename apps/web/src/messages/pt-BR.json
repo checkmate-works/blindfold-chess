@@ -250,11 +250,16 @@
       "displayOptions": "Opções de Exibição",
       "showCoordinates": "Mostrar coordenadas",
       "highlightLastMove": "Destacar último movimento",
+      "pieceDestinations": "Destinos das peças",
       "pieceVisibility": "Visibilidade das Peças",
-      "showOwnPieces": "Mostrar peças próprias",
-      "showOpponentPieces": "Mostrar peças do adversário",
+      "pieceVisibilityModes": {
+        "all": "Ambas",
+        "own": "Próprias",
+        "opponent": "Oponente"
+      },
       "pieceAppearance": "Aparência das Peças",
-      "pieceShape": "Forma das Peças",
+      "showAsStones": "Mostrar como pedras",
+      "stonesSide": "Aplicar a",
       "pieceShapes": {
         "normal": "Peças normais",
         "circles-all": "Mostrar todas as peças como pedras",
@@ -262,6 +267,11 @@
         "circles-opponent": "Mostrar peças do adversário como pedras"
       },
       "pieceColor": "Cor das Peças",
+      "pieceColorModes": {
+        "normal": "Normal",
+        "white-only": "Todas brancas",
+        "black-only": "Todas pretas"
+      },
       "pieceColors": {
         "normal": "Cores normais (Brancas e Pretas)",
         "white-only": "Mostrar todas as peças como brancas",
@@ -1814,6 +1824,7 @@
         "off": "Desativado",
         "labelBoardVisibility": "Visibilidade do tabuleiro",
         "labelHighlightLastMove": "Realçar último movimento",
+        "labelPieceDestinations": "Destinos das peças",
         "labelShowOwnPieces": "Mostrar peças próprias",
         "labelShowOpponentPieces": "Mostrar peças do oponente",
         "labelPieceShape": "Forma das peças",
@@ -2202,7 +2213,6 @@
     "helpPgnIntroDescription": "Cole um PGN (Portable Game Notation) e jogue a variante a partir de qualquer ponto. Ótimo para estudar uma continuação específica ou recriar uma partida vista em outro lugar.",
     "helpOpeningIntroDescription": "Escolha uma abertura nomeada da lista — você continuará para a tela de configuração PGN onde poderá escolher motor, cor e dificuldade antes de começar.",
     "previewBoard": "Pré-visualização do Tabuleiro",
-    "gameSettings": "Configuração Avançada",
     "settings": "Configurações",
     "startGame": "Iniciar Partida",
     "cancel": "Cancelar",

@@ -1,9 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FaChevronDown } from 'react-icons/fa';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -21,14 +18,14 @@ type Props = {
  * and the global Preferences "Game" tab, so the two surfaces stay in lockstep.
  * Rendered flat (no card chrome / dividers) to match the surrounding flat
  * selectors (ColorSelector etc.). The board-visibility picker (and the peek-mode
- * picker it gates) sit above the fold; the detailed visual settings collapse
- * below it.
+ * picker it gates) sit on top; the detailed visual settings render inline below
+ * it whenever there is a board to configure (`boardVisibility !== 'never'`, i.e.
+ * "Hide the board" off OR "Allow peeking" on). They are hidden only for the pure
+ * blindfold ('never') mode, where there is nothing visual to tweak.
  */
 export function CollapsibleGameSettings({ settings, onSettingsChange }: Props) {
-  const t = useTranslations('newGame');
   const tPrefs = useTranslations('Preferences');
   const { preferences } = useGamePreferences();
-  const [isOpen, setIsOpen] = useState(false);
 
   // Bridge PerGamePreferences to full GamePreferences for GameSettingsContent
   const settingsForContent = {
@@ -38,11 +35,12 @@ export function CollapsibleGameSettings({ settings, onSettingsChange }: Props) {
 
   return (
     <div className="space-y-6">
-      {/* Board visibility — 3-way picker. Always visible (not inside the
-          collapse) because it is the primary choice that controls whether
-          the rest of the visual settings are even relevant. */}
+      {/* Board visibility — 3-way picker. The primary choice that controls
+          whether the rest of the visual settings are even relevant. */}
       <div>
-        <h4 className="text-sm text-foreground mb-2">{tPrefs('game.boardVisibility')}</h4>
+        <h4 className="text-sm font-semibold text-foreground mb-2">
+          {tPrefs('game.boardVisibility')}
+        </h4>
         <BoardVisibilityPicker
           value={settings.boardVisibility}
           onChange={(boardVisibility) => onSettingsChange({ boardVisibility })}
@@ -50,32 +48,14 @@ export function CollapsibleGameSettings({ settings, onSettingsChange }: Props) {
       </div>
 
       {settings.boardVisibility !== 'never' && (
-        <div>
-          <button
-            type="button"
-            onClick={() => setIsOpen(!isOpen)}
-            className="flex items-center gap-2 text-sm text-foreground"
-          >
-            <span>{t('gameSettings')}</span>
-            <FaChevronDown
-              className={`w-3 h-3 text-muted-foreground transition-transform ${
-                isOpen ? 'rotate-180' : ''
-              }`}
-            />
-          </button>
-          {isOpen && (
-            <div className="mt-4">
-              <GameSettingsContent
-                settings={settingsForContent}
-                onSettingsChange={onSettingsChange}
-                showBoardButtonOption={false}
-                showBoardAppearance={false}
-                showPreview={true}
-                compact={true}
-              />
-            </div>
-          )}
-        </div>
+        <GameSettingsContent
+          settings={settingsForContent}
+          onSettingsChange={onSettingsChange}
+          showBoardButtonOption={false}
+          showBoardAppearance={false}
+          showPreview={true}
+          compact={true}
+        />
       )}
     </div>
   );

@@ -13,8 +13,14 @@ type Props = {
   playerSide?: Side;
 };
 
-// Demo position for preview
+// Demo position for preview — the position after 1.e4 e6, so the most recent
+// move is Black's e7-e6. We highlight it when the "highlight last move" option
+// is on, so the preview reflects that setting.
 const DEMO_FEN = 'rnbqkbnr/pppp1ppp/4p3/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2';
+const DEMO_LAST_MOVE = { from: 'e7', to: 'e6' };
+// Demo "tapped" square for the Piece destinations preview: the d2 pawn, whose
+// legal destinations (d3 / d4) render as move dots when the option is on.
+const DEMO_SELECTED_SQUARE = 'd2';
 
 export function BoardPreview({ settings, playerSide = 'white' }: Props) {
   const t = useTranslations('Preferences');
@@ -63,6 +69,9 @@ export function BoardPreview({ settings, playerSide = 'white' }: Props) {
             fen={DEMO_FEN}
             flipped={previewPerspective === 'black'}
             playerSide={previewPerspective}
+            lastMove={settings.highlightLastMove ? DEMO_LAST_MOVE : null}
+            showPieceDestinations={settings.showPieceDestinations}
+            previewSelection={settings.showPieceDestinations ? DEMO_SELECTED_SQUARE : null}
             showCoordinates={settings.showCoordinates}
             showOwnPieces={settings.showOwnPieces}
             showOpponentPieces={settings.showOpponentPieces}

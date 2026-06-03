@@ -41,6 +41,16 @@ type Props = {
   showCoordinates?: boolean;
   showOwnPieces?: boolean;
   showOpponentPieces?: boolean;
+  /**
+   * Whether selecting a piece in interactive mode reveals its legal
+   * destinations (the centered move dots / capture rings). Defaults to `true`.
+   * When `false`, click-to-move and drag still work and are still validated —
+   * only the visual hint is suppressed (a harder, hint-free board). Already
+   * implicitly off when the dots would leak hidden information — pieces shown as
+   * stones or hidden (see {@link destinationsObscured}); single-colour mode
+   * keeps the shapes, so dots still show there.
+   */
+  showPieceDestinations?: boolean;
   pieceShapeMode?: 'normal' | 'circles-all' | 'circles-own' | 'circles-opponent';
   pieceColors?: 'normal' | 'white-only' | 'black-only';
   boardTheme?: BoardTheme;
@@ -119,6 +129,15 @@ type Props = {
    * unchanged regardless of this setting.
    */
   movablePieces?: 'own' | 'side-to-move';
+  /**
+   * Render a non-interactive "as if this square were selected" preview: the
+   * square gets the selected tint and — when `showPieceDestinations` is on and
+   * piece identity isn't hidden — its legal destinations render as move dots,
+   * exactly what tapping the piece would show, but without wiring `onMove`.
+   * Used by the settings BoardPreview to demonstrate the Piece destinations
+   * toggle. Ignored in interactive mode (a real selection takes over).
+   */
+  previewSelection?: string | null;
 };
 
 export const ChessBoard = memo(function ChessBoard({
@@ -131,6 +150,7 @@ export const ChessBoard = memo(function ChessBoard({
   showCoordinates = true,
   showOwnPieces = true,
   showOpponentPieces = true,
+  showPieceDestinations = true,
   pieceShapeMode = 'normal',
   pieceColors = 'normal',
   boardTheme = DEFAULT_BOARD_THEME,
@@ -141,6 +161,7 @@ export const ChessBoard = memo(function ChessBoard({
   onMove,
   onIllegalMove,
   movablePieces = 'own',
+  previewSelection = null,
 }: Props) {
   const themeColors = getBoardThemeColors(boardTheme);
   const interactive = onMove !== undefined;
@@ -154,17 +175,22 @@ export const ChessBoard = memo(function ChessBoard({
     movablePieces === 'side-to-move' ? (fen.split(' ')[1] === 'b' ? 'b' : 'w') : ownColorChar;
 
   // True when any blindfold obfuscation is active: pieces shown as discs,
-  // forced to a single color, or hidden. In these modes the player cannot
-  // tell pieces apart, so (a) the legal-destination highlight is suppressed
-  // — showing where a selected piece can go would leak its identity — and
-  // (b) illegal-move attempts become possible and worth recording via
-  // `onIllegalMove`. With normal display the highlight stays (a sighted
-  // QoL aid, where illegal attempts are essentially impossible anyway).
+  // forced to a single color, or hidden. Used to decide when illegal-move
+  // attempts become possible and worth recording via `onIllegalMove`. With
+  // normal display, illegal attempts are essentially impossible anyway.
   const obfuscated =
     pieceShapeMode !== 'normal' ||
     pieceColors !== 'normal' ||
     !showOwnPieces ||
     !showOpponentPieces;
+
+  // Whether showing legal destinations would leak information the player is
+  // meant not to have. This is a strict subset of `obfuscated`: the
+  // destination dots reveal a piece's identity only when its *shape* is hidden
+  // (stones) or pieces are hidden (a capture ring would expose a hidden
+  // opponent). Single-color recolouring keeps every shape intact, so
+  // destinations are safe to show there — hence `pieceColors` is excluded.
+  const destinationsObscured = pieceShapeMode !== 'normal' || !showOwnPieces || !showOpponentPieces;
 
   const board = useMemo(() => {
     try {
@@ -202,8 +228,12 @@ export const ChessBoard = memo(function ChessBoard({
   const [dragging, setDragging] = useState<{ from: string; size: number } | null>(null);
   const dragFrom = dragging?.from ?? null;
   // The square whose legal moves should be shown / whose piece is "active":
-  // the drag source while dragging, otherwise the click-selected square.
-  const moveSource = dragFrom ?? selectedSquare;
+  // the drag source while dragging, otherwise the click-selected square. Falls
+  // back to `previewSelection` so a non-interactive preview board can render
+  // an "as if tapped" selection + destinations (the interactive sources are
+  // only ever set when `onMove` is wired, so this never collides with a real
+  // selection).
+  const moveSource = dragFrom ?? selectedSquare ?? previewSelection;
 
   // Drag bookkeeping kept in refs so the window pointer listeners never go
   // stale and never force a re-render on every pointermove.
@@ -241,14 +271,24 @@ export const ChessBoard = memo(function ChessBoard({
   // Used to highlight reachable squares. Empty when nothing is active, when
   // interactive mode is off, or when obfuscation hides piece identity.
   const legalDestinations = useMemo<string[]>(() => {
-    if (!interactive || !moveSource || obfuscated) return [];
+    // Computed for interactive boards (real selection / drag) and for the
+    // static `previewSelection` case; suppressed when the dots would leak
+    // piece identity (see `destinationsObscured`) or when the user turned
+    // destinations off.
+    if (
+      (!interactive && !previewSelection) ||
+      !moveSource ||
+      destinationsObscured ||
+      !showPieceDestinations
+    )
+      return [];
     try {
       const moves = getLegalMoves(fen, { verbose: true });
       return moves.filter((m) => m.from === moveSource).map((m) => m.to);
     } catch {
       return [];
     }
-  }, [fen, moveSource, interactive, obfuscated]);
+  }, [fen, moveSource, interactive, previewSelection, destinationsObscured, showPieceDestinations]);
 
   const pieceAt = useCallback(
     (square: string): BoardPiece | null => {

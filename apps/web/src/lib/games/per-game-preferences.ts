@@ -18,6 +18,7 @@ import { isBoardVisibility, legacyToBoardVisibility } from './board-visibility';
 export const DEFAULT_PER_GAME_PREFERENCES: PerGamePreferences = {
   boardVisibility: 'peek',
   highlightLastMove: true,
+  showPieceDestinations: true,
   showOwnPieces: true,
   showOpponentPieces: true,
   pieceShapeMode: 'normal',
@@ -87,6 +88,10 @@ export function normalisePerGamePreferences(
     boardVisibility,
     highlightLastMove:
       typeof p.highlightLastMove === 'boolean' ? p.highlightLastMove : defaults.highlightLastMove,
+    showPieceDestinations:
+      typeof p.showPieceDestinations === 'boolean'
+        ? p.showPieceDestinations
+        : defaults.showPieceDestinations,
     showOwnPieces: typeof p.showOwnPieces === 'boolean' ? p.showOwnPieces : defaults.showOwnPieces,
     showOpponentPieces:
       typeof p.showOpponentPieces === 'boolean'

@@ -9,6 +9,7 @@ import type { PreferenceChangeLogEntry } from './saved-game-types';
 const initial: PerGamePreferences = {
   boardVisibility: 'peek',
   highlightLastMove: true,
+  showPieceDestinations: true,
   showOwnPieces: true,
   showOpponentPieces: true,
   pieceShapeMode: 'normal',
