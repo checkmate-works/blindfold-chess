@@ -1,53 +1,10 @@
-import { Suspense } from 'react';
-
-import type { Metadata } from 'next';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
-
-import { getOptionalUser } from '@/lib/auth';
-import { getMaiaEngineAccess } from '@/lib/users/can-use-maia';
-
-import { PageLayout } from '@/app/[locale]/_components';
-import { type HelpStep, HelpTourButton } from '@/app/[locale]/_components/HelpTourButton';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
-import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
-import type { Locale } from '@/app/[locale]/_lib/types';
-
-import { GameLimitCheck } from '../_components/GameLimitCheck';
+import { createNewGamePage } from '../_lib/create-new-game-page';
 import { PositionGameForm } from './_components/PositionGameForm';
 
-type Props = {
-  params: Promise<{
-    locale: Locale;
-  }>;
-};
-
-export const generateStaticParams = generateLocaleStaticParams;
-export const dynamic = 'force-dynamic';
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  const t = await getTranslations({ locale });
-
-  const title = t('newGame.positionPageTitle');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'games/new/position', title }),
-    title: resolveTitle(title, locale),
-  };
-}
-
-export default async function PositionGamePage({ params }: Props) {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  const t = await getTranslations({ locale });
-  const tNewGame = await getTranslations({ locale, namespace: 'newGame' });
-  const tGames = await getTranslations({ locale, namespace: 'gamesPage' });
-
-  const user = await getOptionalUser();
-  const maiaAccess = await getMaiaEngineAccess(user?.id ?? null);
-
-  const helpSteps: HelpStep[] = [
+const { generateStaticParams, dynamic, generateMetadata, Page } = createNewGamePage({
+  titleKey: 'newGame.positionPageTitle',
+  path: 'games/new/position',
+  buildHelpSteps: (tNewGame) => [
     {
       targetId: 'position-editor',
       title: tNewGame('positionPageTitle'),
@@ -69,24 +26,11 @@ export default async function PositionGamePage({ params }: Props) {
       side: 'top',
       align: 'center',
     },
-  ];
+  ],
+  renderForm: ({ locale, maiaAccess }) => (
+    <PositionGameForm locale={locale} maiaAccess={maiaAccess} />
+  ),
+});
 
-  return (
-    <PageLayout
-      title={t('newGame.positionPageTitle')}
-      titleAction={<HelpTourButton steps={helpSteps} label={tNewGame('helpLabel')} />}
-      locale={locale}
-      breadcrumb={[
-        { label: tGames('pageTitle'), href: '/games' },
-        { label: t('newGame.title'), href: '/games/new' },
-        { label: t('newGame.positionPageTitle') },
-      ]}
-    >
-      <GameLimitCheck locale={locale}>
-        <Suspense fallback={null}>
-          <PositionGameForm locale={locale} maiaAccess={maiaAccess} />
-        </Suspense>
-      </GameLimitCheck>
-    </PageLayout>
-  );
-}
+export { generateStaticParams, dynamic, generateMetadata };
+export default Page;
