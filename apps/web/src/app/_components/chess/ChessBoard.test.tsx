@@ -604,7 +604,9 @@ describe('ChessBoard interactive mode — obfuscation suppresses the legal-desti
     expect(highlightOf(container, 'e4')).toBeNull();
   });
 
-  it('suppresses the legal-destination dots in single-color mode (pieceColors)', () => {
+  it('still shows the legal-destination dots in single-color mode (shapes stay intact)', () => {
+    // Single-colour only recolours the pieces; their shapes (and thus
+    // identities) are fully visible, so the destination dots leak nothing.
     const { container } = render(
       <ChessBoard
         fen={STARTING_FEN}
@@ -615,7 +617,7 @@ describe('ChessBoard interactive mode — obfuscation suppresses the legal-desti
     );
 
     fireEvent.click(squareEl(container, 'e2'));
-    expect(highlightOf(container, 'e4')).toBeNull();
+    expect(highlightOf(container, 'e4')).toBe('move-dest');
   });
 
   it('suppresses the legal-destination dots when own pieces are hidden (showOwnPieces=false)', () => {
@@ -800,6 +802,32 @@ describe('ChessBoard preview selection (non-interactive)', () => {
         playerSide="white"
         previewSelection="d2"
         showOwnPieces={false}
+      />
+    );
+
+    expect(countHighlights(container, 'move-dest')).toBe(0);
+  });
+
+  it('still shows destinations in single-colour mode (shapes stay visible)', () => {
+    const { container } = render(
+      <ChessBoard
+        fen={STARTING_FEN}
+        playerSide="white"
+        previewSelection="d2"
+        pieceColors="white-only"
+      />
+    );
+
+    expect(countHighlights(container, 'move-dest')).toBe(2);
+  });
+
+  it('suppresses the destination dots when pieces are shown as stones', () => {
+    const { container } = render(
+      <ChessBoard
+        fen={STARTING_FEN}
+        playerSide="white"
+        previewSelection="d2"
+        pieceShapeMode="circles-all"
       />
     );
 

@@ -46,7 +46,9 @@ type Props = {
    * destinations (the centered move dots / capture rings). Defaults to `true`.
    * When `false`, click-to-move and drag still work and are still validated —
    * only the visual hint is suppressed (a harder, hint-free board). Already
-   * implicitly off when the board is obfuscated (see {@link obfuscated}).
+   * implicitly off when the dots would leak hidden information — pieces shown as
+   * stones or hidden (see {@link destinationsObscured}); single-colour mode
+   * keeps the shapes, so dots still show there.
    */
   showPieceDestinations?: boolean;
   pieceShapeMode?: 'normal' | 'circles-all' | 'circles-own' | 'circles-opponent';
@@ -130,7 +132,7 @@ type Props = {
   /**
    * Render a non-interactive "as if this square were selected" preview: the
    * square gets the selected tint and — when `showPieceDestinations` is on and
-   * the board isn't obfuscated — its legal destinations render as move dots,
+   * piece identity isn't hidden — its legal destinations render as move dots,
    * exactly what tapping the piece would show, but without wiring `onMove`.
    * Used by the settings BoardPreview to demonstrate the Piece destinations
    * toggle. Ignored in interactive mode (a real selection takes over).
@@ -173,17 +175,22 @@ export const ChessBoard = memo(function ChessBoard({
     movablePieces === 'side-to-move' ? (fen.split(' ')[1] === 'b' ? 'b' : 'w') : ownColorChar;
 
   // True when any blindfold obfuscation is active: pieces shown as discs,
-  // forced to a single color, or hidden. In these modes the player cannot
-  // tell pieces apart, so (a) the legal-destination highlight is suppressed
-  // — showing where a selected piece can go would leak its identity — and
-  // (b) illegal-move attempts become possible and worth recording via
-  // `onIllegalMove`. With normal display the highlight stays (a sighted
-  // QoL aid, where illegal attempts are essentially impossible anyway).
+  // forced to a single color, or hidden. Used to decide when illegal-move
+  // attempts become possible and worth recording via `onIllegalMove`. With
+  // normal display, illegal attempts are essentially impossible anyway.
   const obfuscated =
     pieceShapeMode !== 'normal' ||
     pieceColors !== 'normal' ||
     !showOwnPieces ||
     !showOpponentPieces;
+
+  // Whether showing legal destinations would leak information the player is
+  // meant not to have. This is a strict subset of `obfuscated`: the
+  // destination dots reveal a piece's identity only when its *shape* is hidden
+  // (stones) or pieces are hidden (a capture ring would expose a hidden
+  // opponent). Single-color recolouring keeps every shape intact, so
+  // destinations are safe to show there — hence `pieceColors` is excluded.
+  const destinationsObscured = pieceShapeMode !== 'normal' || !showOwnPieces || !showOpponentPieces;
 
   const board = useMemo(() => {
     try {
@@ -265,9 +272,15 @@ export const ChessBoard = memo(function ChessBoard({
   // interactive mode is off, or when obfuscation hides piece identity.
   const legalDestinations = useMemo<string[]>(() => {
     // Computed for interactive boards (real selection / drag) and for the
-    // static `previewSelection` case; suppressed when obfuscated (would leak
-    // piece identity) or when the user turned destinations off.
-    if ((!interactive && !previewSelection) || !moveSource || obfuscated || !showPieceDestinations)
+    // static `previewSelection` case; suppressed when the dots would leak
+    // piece identity (see `destinationsObscured`) or when the user turned
+    // destinations off.
+    if (
+      (!interactive && !previewSelection) ||
+      !moveSource ||
+      destinationsObscured ||
+      !showPieceDestinations
+    )
       return [];
     try {
       const moves = getLegalMoves(fen, { verbose: true });
@@ -275,7 +288,7 @@ export const ChessBoard = memo(function ChessBoard({
     } catch {
       return [];
     }
-  }, [fen, moveSource, interactive, previewSelection, obfuscated, showPieceDestinations]);
+  }, [fen, moveSource, interactive, previewSelection, destinationsObscured, showPieceDestinations]);
 
   const pieceAt = useCallback(
     (square: string): BoardPiece | null => {
