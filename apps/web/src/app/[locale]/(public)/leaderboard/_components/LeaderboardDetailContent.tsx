@@ -19,13 +19,13 @@ type Props = {
   period: LeaderboardPeriod;
   module: LeaderboardModule;
   settingKey: string;
+  // Kebab module slug used to build pagination hrefs. Passed as a string (not a
+  // pre-built `buildHref` function) because the host is a Server Component and
+  // functions cannot cross the server/client boundary.
+  moduleSlug: string;
   currentUserId: string | null;
   data: LeaderboardResult;
   currentPage: number;
-  // Builds the href for a given page number. Owned by the host page because it
-  // holds the URL pieces (locale, module slug, key); navigation is link-based
-  // and SSR, matching every other paginated list in the app (PaginationNav).
-  buildHref: (page: number) => string;
   // Optional slot rendered immediately below the SectionTitle. Accepts a
   // pre-constructed React element (e.g., <PeriodSelector ... />) so the host
   // page owns the href data and the nested component stays presentational.
@@ -37,10 +37,10 @@ export function LeaderboardDetailContent({
   period,
   module,
   settingKey,
+  moduleSlug,
   currentUserId,
   data,
   currentPage,
-  buildHref,
   periodSelector,
 }: Props) {
   const t = useTranslations('leaderboard');
@@ -48,6 +48,11 @@ export function LeaderboardDetailContent({
   const title = t(`cardTitle.${module}.${settingKey}`);
   const periodLabel = t(`period.${period}`);
   const totalPages = Math.ceil(data.totalCount / PAGE_SIZE);
+
+  const buildHref = (page: number) =>
+    `/${locale}/leaderboard/score/${period}/${moduleSlug}/${settingKey}${
+      page > 1 ? `?page=${page}` : ''
+    }`;
 
   return (
     <div className="space-y-8">

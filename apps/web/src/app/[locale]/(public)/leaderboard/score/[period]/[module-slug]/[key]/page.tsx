@@ -155,14 +155,10 @@ export default async function ScoreLeaderboardDetailPage({ params, searchParams 
         period={validated.period}
         module={validated.module}
         settingKey={validated.key}
+        moduleSlug={validated.moduleSlug}
         currentUserId={currentUserId}
         data={data}
         currentPage={page}
-        buildHref={(p) =>
-          `/${locale}/leaderboard/score/${validated.period}/${validated.moduleSlug}/${validated.key}${
-            p > 1 ? `?page=${p}` : ''
-          }`
-        }
         periodSelector={
           <PeriodSelector
             currentPeriod={validated.period}
