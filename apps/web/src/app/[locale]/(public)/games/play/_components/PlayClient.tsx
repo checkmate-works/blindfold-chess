@@ -313,6 +313,11 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
         ) : undefined
       }
       badgeActive={showAiReplyChip && aiReply.active}
+      // In 'always' mode the board is visible (no mask, no AI-reply chip), so a
+      // slow engine looks indistinguishable from a freeze. Surface a "thinking"
+      // overlay while the AI computes. In blindfold modes the masked board +
+      // AiReplyChip already cover this, so this stays off there.
+      aiThinking={preferences.boardVisibility === 'always' && isAiThinking}
       // Per-game settings gear, pinned to the board's top-right (move-list strip
       // end when shown, mask top-right when masked). Hidden for legacy games
       // with no per-game snapshot to edit. Game details stays in the panel.
