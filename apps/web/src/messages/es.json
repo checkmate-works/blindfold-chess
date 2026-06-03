@@ -2202,7 +2202,6 @@
     "helpPgnIntroDescription": "Pega un PGN (notación portátil de juego) y juega la variante desde cualquier punto. Ideal para estudiar una continuación específica o recrear una partida que viste en otro lugar.",
     "helpOpeningIntroDescription": "Elige una apertura con nombre de la lista — continuarás a la pantalla de configuración PGN donde podrás elegir motor, color y dificultad antes de empezar.",
     "previewBoard": "Vista Previa del Tablero",
-    "gameSettings": "Configuración Avanzada",
     "settings": "Configuración",
     "startGame": "Iniciar Partida",
     "cancel": "Cancelar",

@@ -2206,7 +2206,6 @@
     "helpPgnIntroDescription": "Paste a PGN (Portable Game Notation) and play out the variation from any point. Great for studying a specific continuation or recreating a game you saw elsewhere.",
     "helpOpeningIntroDescription": "Pick a named opening from the list — you'll continue to the PGN setup screen where you can choose engine, color, and difficulty before starting.",
     "previewBoard": "Preview Board",
-    "gameSettings": "Advanced Settings",
     "settings": "Settings",
     "startGame": "Start Game",
     "cancel": "Cancel",
