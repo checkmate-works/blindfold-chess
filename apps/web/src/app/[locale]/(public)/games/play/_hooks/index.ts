@@ -1,4 +1,5 @@
 export { useBoardFlip } from './use-board-flip';
+export { useChangeLogFormat } from './use-change-log-format';
 export { useConfirmationDialogs } from './use-confirmation-dialogs';
 export type { ConfirmationDialogs } from './use-confirmation-dialogs';
 export { useGameSession } from './use-game-session';

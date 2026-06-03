@@ -2016,6 +2016,10 @@
       "opponent": "Piezas del rival",
       "hidden": "oculto",
       "reproduceView": "Como se jugó"
+    },
+    "statsGate": {
+      "title": "Función exclusiva para miembros",
+      "description": "Crea una cuenta gratuita para ver las estadísticas de esta partida y el desglose por jugada."
     }
   },
   "postmortem": {

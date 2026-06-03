@@ -14,7 +14,7 @@ import { FaChartLine, FaChessBoard, FaMinus, FaTimes } from 'react-icons/fa';
 import { engineConfigToUrlParams } from '@/lib/engines';
 import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 import { computeGameStats } from '@/lib/games/compute-game-stats';
-import type { Game } from '@/lib/games/saved-game-types';
+import type { Game, GamePlaySettings, PlaySettingsChangeEntry } from '@/lib/games/saved-game-types';
 import { getSharedGame } from '@/lib/games/shared-game-store';
 
 import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
@@ -26,7 +26,6 @@ import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { BoardViewModal } from '../../_components/BoardViewModal';
-import { OperationLogModal } from '../../_components/OperationLogModal';
 import { useBoardFlip, useMoveNavigation, useNotation } from '../../_hooks';
 import { buildPostmortemPath } from '../../_lib';
 import { getMovingSide } from '../../_lib/fen-utils';
@@ -124,7 +123,6 @@ function ResultContent({
 }: ResultContentProps) {
   const t = useTranslations('play');
   const router = useRouter();
-  const [isOperationLogVisible, setIsOperationLogVisible] = useState(false);
   const [isBoardModalOpen, setIsBoardModalOpen] = useState(false);
   // Postmortem is a members-only feature; anonymous viewers get a sign-up
   // prompt instead of the review screen.
@@ -183,6 +181,49 @@ function ResultContent({
 
   // Overview stats, derived purely from the persisted per-move operation logs.
   const stats = useMemo(() => computeGameStats(game.operationLogs ?? []), [game.operationLogs]);
+
+  // Start-of-game blindfold settings, projected onto the display subset the
+  // icon-based PlaySettingsIndicator renders. Undefined for legacy games saved
+  // before per-game preferences were persisted (the icons are then omitted).
+  const playSettings = useMemo<GamePlaySettings | undefined>(() => {
+    const gp = game.gamePreferences;
+    if (!gp) return undefined;
+    return {
+      boardVisibility: gp.boardVisibility,
+      showOwnPieces: gp.showOwnPieces,
+      showOpponentPieces: gp.showOpponentPieces,
+      pieceShapeMode: gp.pieceShapeMode,
+      pieceColors: gp.pieceColors,
+    };
+  }, [game.gamePreferences]);
+
+  // Mid-game edits, narrowed to the display subset the icon indicator renders.
+  // Non-display keys (highlightLastMove / moveInputMode) are dropped — same rule
+  // the published-game play-settings log applies (see normalizePlaySettingsLog).
+  const playSettingsLog = useMemo<PlaySettingsChangeEntry[]>(() => {
+    const log = game.preferenceChangeLog;
+    if (!log) return [];
+    const out: PlaySettingsChangeEntry[] = [];
+    for (const e of log) {
+      switch (e.key) {
+        case 'showOwnPieces':
+        case 'showOpponentPieces':
+          out.push({ atMoveIndex: e.atMoveIndex, key: e.key, to: e.to });
+          break;
+        case 'boardVisibility':
+          out.push({ atMoveIndex: e.atMoveIndex, key: e.key, to: e.to });
+          break;
+        case 'pieceShapeMode':
+          out.push({ atMoveIndex: e.atMoveIndex, key: e.key, to: e.to });
+          break;
+        case 'pieceColors':
+          out.push({ atMoveIndex: e.atMoveIndex, key: e.key, to: e.to });
+          break;
+        // highlightLastMove / moveInputMode: non-display, intentionally skipped.
+      }
+    }
+    return out;
+  }, [game.preferenceChangeLog]);
 
   // Grant (once) and display the Exp earned for this game. Guests get null
   // (no grant) and a sign-in nudge instead; see the JSX below.
@@ -294,38 +335,40 @@ function ResultContent({
         {/* Game statistics overview — metric cards + per-move effort strip.
             Anonymous viewers see it blurred behind a sign-up CTA; the
             statistics are a registration nudge for game-only users. */}
-        {stats.totalMoves > 0 && (
-          <>
-            <div className="border-t border-border" />
-            {isAuthenticated ? (
+        {stats.totalMoves > 0 &&
+          (isAuthenticated ? (
+            <GameStatsOverview
+              stats={stats}
+              playerMoveIndices={playerMoveIndices}
+              moves={moves}
+              onSelectMove={handleViewMove}
+              engineConfig={game.engineConfig}
+              playSettings={playSettings}
+              playerColor={game.playerColor}
+              playSettingsLog={playSettingsLog}
+              headingAsSection
+            />
+          ) : (
+            <StatsAuthGate>
               <GameStatsOverview
                 stats={stats}
                 playerMoveIndices={playerMoveIndices}
                 moves={moves}
                 onSelectMove={handleViewMove}
-                onViewDetails={() => setIsOperationLogVisible(true)}
+                engineConfig={game.engineConfig}
+                playSettings={playSettings}
+                playerColor={game.playerColor}
+                playSettingsLog={playSettingsLog}
+                headingAsSection
               />
-            ) : (
-              <StatsAuthGate>
-                <GameStatsOverview
-                  stats={stats}
-                  playerMoveIndices={playerMoveIndices}
-                  moves={moves}
-                  onSelectMove={handleViewMove}
-                  onViewDetails={() => setIsOperationLogVisible(true)}
-                />
-              </StatsAuthGate>
-            )}
-          </>
-        )}
+            </StatsAuthGate>
+          ))}
 
         {/* Exp earned for this game, shown below the statistics. Authenticated
             players only — ExpGainDisplay renders nothing until the grant
             resolves. Guests are already nudged to sign up by the StatsAuthGate
             above, so no separate Exp CTA is shown here. */}
         {isAuthenticated && <ExpGainDisplay expInfo={exp} />}
-
-        <div className="border-t border-border" />
 
         {/* Action Buttons */}
         <div className="flex flex-col items-center gap-3 pt-2">
@@ -376,20 +419,6 @@ function ResultContent({
         onNavigateToPosition={navigateToPosition}
         onFlipBoard={toggleFlip}
       />
-
-      {/* Game Details Modal — Opponent + Initial Settings + Change Log.
-          Per-move counts moved into MovesPanel inline popovers in Phase
-          5b; the result page does not show MovesPanel, so per-move
-          investigation lives in the postmortem flow instead. */}
-      {game.operationLogs && (
-        <OperationLogModal
-          isOpen={isOperationLogVisible}
-          onClose={() => setIsOperationLogVisible(false)}
-          engineConfig={game.engineConfig}
-          gamePreferences={game.gamePreferences}
-          preferenceChangeLog={game.preferenceChangeLog}
-        />
-      )}
 
       {/* Sign-up prompt shown when an anonymous viewer taps the postmortem
           button (members-only feature). */}
