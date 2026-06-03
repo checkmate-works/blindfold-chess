@@ -15,6 +15,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useBoardFlip, useConfirmationDialogs, useMoveNavigation } from '../_hooks';
 import type { GameSession } from '../_hooks/use-game-session';
+import { usePeekState } from '../_hooks/use-peek-state';
 import { usePlayClientPreferences } from '../_hooks/use-play-client-preferences';
 import { buildPostmortemPath } from '../_lib';
 import { AiReplyChip, useAiReplyChip } from './AiReplyChip';
@@ -134,35 +135,21 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
   // surfacing an inert affordance.
   const canEditPerGameSettings = initialPerGamePrefs !== undefined;
 
-  // Whether the always-present board is currently revealed in 'peek' mode.
-  // The board frame is always on screen (same position/size); in 'peek' it is
-  // masked until the player taps to reveal, then re-masked on their next move
-  // so each look is a discrete, counted peek. Irrelevant in 'always' (never
-  // masked) and 'never' (always masked) — see `boardMasked` below.
-  const [peekRevealed, setPeekRevealed] = useState(false);
+  // Blindfold peek/mask state for the always-present board (reveal counts a
+  // peek; `remask` re-covers it on the next move).
+  const { boardMasked, handleRevealBoard, remask } = usePeekState({
+    boardVisibility: preferences.boardVisibility,
+    recordPeek,
+  });
   const handleMoveCommitted = useCallback(
     (inputMethod: Parameters<typeof commitMoveLog>[0]) => {
       commitMoveLog(inputMethod);
       // Re-mask after each player move so the opponent's reply stays unseen
       // until the next deliberate peek (blindfold semantics).
-      setPeekRevealed(false);
+      remask();
     },
-    [commitMoveLog]
+    [commitMoveLog, remask]
   );
-
-  // Reveal the masked board for a peek: count it (audit / clean-rate) and lift
-  // the mask. The mask returns on the next committed move.
-  const handleRevealBoard = useCallback(() => {
-    recordPeek();
-    setPeekRevealed(true);
-  }, [recordPeek]);
-
-  // The board frame is always rendered; this decides whether it is covered.
-  // 'always' → never masked; 'never' → always masked; 'peek' → masked until
-  // the current peek reveal.
-  const boardMasked =
-    preferences.boardVisibility === 'never' ||
-    (preferences.boardVisibility === 'peek' && !peekRevealed);
 
   // Board-driven move handler — wired to InlineBoardView whenever the board is
   // currently visible (always mode, or a revealed peek) AND the player can act
@@ -178,10 +165,10 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
       const submitted = handleSubmitMove(san as AlgebraicNotation);
       if (submitted !== false) {
         commitMoveLog('board');
-        setPeekRevealed(false);
+        remask();
       }
     },
-    [handleSubmitMove, commitMoveLog]
+    [handleSubmitMove, commitMoveLog, remask]
   );
 
   // Board flip state
