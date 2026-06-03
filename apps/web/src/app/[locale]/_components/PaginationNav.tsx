@@ -61,7 +61,10 @@ function buildPageItems(currentPage: number, totalPages: number): (number | null
 const itemClass =
   'inline-flex items-center justify-center h-9 px-3 text-sm rounded border border-border transition-colors';
 const linkClass = `${itemClass} gap-1 hover:bg-secondary`;
-const disabledClass = `${itemClass} gap-1 opacity-50 cursor-not-allowed`;
+// Disabled state fades only the content (icon + label via currentColor), not
+// the whole element — keeping the border at full strength so the box reads at
+// the same size/crispness as the active controls next to it.
+const disabledClass = `${itemClass} gap-1 text-muted-foreground/50 cursor-not-allowed`;
 const pageClass = `${itemClass} min-w-[2.5rem] hover:bg-secondary`;
 const currentPageClass = `${itemClass} min-w-[2.5rem] bg-foreground text-background font-semibold`;
 
