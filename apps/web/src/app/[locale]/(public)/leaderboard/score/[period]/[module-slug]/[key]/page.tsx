@@ -155,6 +155,7 @@ export default async function ScoreLeaderboardDetailPage({ params, searchParams 
         period={validated.period}
         module={validated.module}
         settingKey={validated.key}
+        moduleSlug={validated.moduleSlug}
         currentUserId={currentUserId}
         data={data}
         currentPage={page}

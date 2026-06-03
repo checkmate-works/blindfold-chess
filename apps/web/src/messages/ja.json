@@ -4642,12 +4642,6 @@
     },
     "emptyState": "まだスコアが記録されていません。最初の記録を作りましょう！",
     "yourRank": "あなた",
-    "pagination": {
-      "label": "ランキングページ送り",
-      "previous": "前へ",
-      "next": "次へ",
-      "total": "全 {count} 人"
-    },
     "moduleFilterLabel": "モジュールフィルター",
     "moduleFilter": {
       "all": "全",
