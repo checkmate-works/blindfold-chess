@@ -13,10 +13,13 @@ function ToggleRow({
   label,
   checked,
   onToggle,
+  muted = false,
 }: {
   label: string;
   checked: boolean;
   onToggle: (next: boolean) => void;
+  /** Render the label in the muted/secondary colour, for nested sub-toggles. */
+  muted?: boolean;
 }) {
   return (
     <button
@@ -26,7 +29,7 @@ function ToggleRow({
       onClick={() => onToggle(!checked)}
       className="flex w-full items-center justify-between gap-3 text-sm text-foreground"
     >
-      <span>{label}</span>
+      <span className={muted ? 'text-muted-foreground' : undefined}>{label}</span>
       <span
         aria-hidden
         className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
@@ -76,6 +79,7 @@ export function BoardVisibilityPicker({ value, onChange }: Props) {
             label={t('game.allowPeek')}
             checked={peekAllowed}
             onToggle={(on) => onChange(on ? 'peek' : 'never')}
+            muted
           />
         </div>
       )}

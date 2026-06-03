@@ -38,7 +38,9 @@ export function CollapsibleGameSettings({ settings, onSettingsChange }: Props) {
       {/* Board visibility — 3-way picker. The primary choice that controls
           whether the rest of the visual settings are even relevant. */}
       <div>
-        <h4 className="text-sm text-foreground mb-2">{tPrefs('game.boardVisibility')}</h4>
+        <h4 className="text-sm font-semibold text-foreground mb-2">
+          {tPrefs('game.boardVisibility')}
+        </h4>
         <BoardVisibilityPicker
           value={settings.boardVisibility}
           onChange={(boardVisibility) => onSettingsChange({ boardVisibility })}

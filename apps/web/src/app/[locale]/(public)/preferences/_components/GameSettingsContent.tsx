@@ -11,7 +11,6 @@ import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCo
 import { BoardAppearanceContent } from './BoardAppearanceContent';
 import { BoardPreview } from './BoardPreview';
 import { BoardVisibilityPicker } from './BoardVisibilityPicker';
-import { PreferenceOption } from './PreferenceOption';
 
 const allShapeOptions = ['normal', 'circles-all', 'circles-own', 'circles-opponent'] as const;
 
@@ -141,7 +140,9 @@ export function GameSettingsContent({
             modes — the visual settings matter equally in both. */}
         {showBoardButtonOption && (
           <div>
-            <h4 className="text-sm text-foreground mb-2">{t('game.boardVisibility')}</h4>
+            <h4 className="text-sm font-semibold text-foreground mb-2">
+              {t('game.boardVisibility')}
+            </h4>
             <BoardVisibilityPicker
               value={settings.boardVisibility}
               onChange={(value) => onSettingsChange({ boardVisibility: value })}
@@ -165,129 +166,132 @@ export function GameSettingsContent({
             boardVisibility is 'never' (pure blindfold, nothing to see). */}
         {settings.boardVisibility !== 'never' && (
           <>
-            <div className="flex items-center justify-between gap-3">
-              <h4 className="text-sm text-foreground">{t('game.pieceVisibility')}</h4>
-              <div className="flex items-center gap-4">
-                {PIECE_VISIBILITY_MODES.map((mode) => (
-                  <label
-                    key={mode}
-                    className="flex cursor-pointer items-center gap-1.5 text-sm text-foreground"
-                  >
-                    <input
-                      type="radio"
-                      name="pieceVisibility"
-                      value={mode}
-                      checked={pieceVisibilityMode === mode}
-                      onChange={() => onSettingsChange(PIECE_VISIBILITY_PRESETS[mode])}
-                      className="h-4 w-4 text-primary focus:ring-primary border-border"
-                    />
-                    <span>{t(`game.pieceVisibilityModes.${mode}`)}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Piece Appearance - only when at least one piece type is visible */}
-            {(settings.showOwnPieces || settings.showOpponentPieces) && (
-              <>
-                {/* Piece Appearance */}
-                <div>
-                  <h4 className="text-sm text-foreground mb-4">{t('game.pieceAppearance')}</h4>
-
-                  {/* Piece Shape — "show as stones" toggle; the side selector
-                      only appears when both sides are visible (the only case
-                      where stoning a single side is meaningful). */}
-                  <div className="mb-6 space-y-3">
-                    <label className="flex cursor-pointer items-center justify-between gap-3">
-                      <span className="text-sm text-foreground">{t('game.showAsStones')}</span>
-                      <input
-                        type="checkbox"
-                        checked={stonesOn}
-                        onChange={(e) =>
-                          onSettingsChange({
-                            pieceShapeMode: e.target.checked ? stonesDefaultShape : 'normal',
-                          })
-                        }
-                        className="h-4 w-4 text-primary focus:ring-primary border-border"
-                      />
-                    </label>
-
-                    {stonesOn && bothVisible && (
-                      <div className="flex items-center justify-between gap-3 border-l border-border pl-4">
-                        <span className="text-sm text-muted-foreground">
-                          {t('game.stonesSide')}
-                        </span>
-                        <div className="flex items-center gap-4">
-                          {STONE_SIDE_MODES.map((side) => (
-                            <label
-                              key={side}
-                              className="flex cursor-pointer items-center gap-1.5 text-sm text-foreground"
-                            >
-                              <input
-                                type="radio"
-                                name="stonesSide"
-                                value={side}
-                                checked={stonesSide === side}
-                                onChange={() =>
-                                  onSettingsChange({ pieceShapeMode: STONE_SIDE_TO_SHAPE[side] })
-                                }
-                                className="h-4 w-4 text-primary focus:ring-primary border-border"
-                              />
-                              <span>{t(`game.pieceVisibilityModes.${side}`)}</span>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+            {/* Piece Appearance — piece visibility, stone obfuscation and
+                colour grouped together, since they all govern how the pieces
+                look. (Piece visibility always leaves at least one side shown, so
+                the appearance controls below are always relevant.) */}
+            <div>
+              <h4 className="text-sm font-semibold text-foreground mb-4">
+                {t('game.pieceAppearance')}
+              </h4>
+              <div className="space-y-3">
+                {/* Piece Visibility */}
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm text-foreground">{t('game.pieceVisibility')}</span>
+                  <div className="flex items-center gap-4">
+                    {PIECE_VISIBILITY_MODES.map((mode) => (
+                      <label
+                        key={mode}
+                        className="flex cursor-pointer items-center gap-1.5 text-sm text-foreground"
+                      >
+                        <input
+                          type="radio"
+                          name="pieceVisibility"
+                          value={mode}
+                          checked={pieceVisibilityMode === mode}
+                          onChange={() => onSettingsChange(PIECE_VISIBILITY_PRESETS[mode])}
+                          className="h-4 w-4 text-primary focus:ring-primary border-border"
+                        />
+                        <span>{t(`game.pieceVisibilityModes.${mode}`)}</span>
+                      </label>
+                    ))}
                   </div>
+                </div>
 
-                  {/* Piece Colors — one-line radio, mirroring Piece Visibility. */}
-                  <div className="flex items-center justify-between gap-3">
-                    <h5 className="text-sm font-medium text-muted-foreground">
-                      {t('game.pieceColor')}
-                    </h5>
+                {/* Show as stones — the side selector only appears when both
+                    sides are visible (the only case where stoning a single side
+                    is meaningful). */}
+                <label className="flex cursor-pointer items-center justify-between gap-3">
+                  <span className="text-sm text-foreground">{t('game.showAsStones')}</span>
+                  <input
+                    type="checkbox"
+                    checked={stonesOn}
+                    onChange={(e) =>
+                      onSettingsChange({
+                        pieceShapeMode: e.target.checked ? stonesDefaultShape : 'normal',
+                      })
+                    }
+                    className="h-4 w-4 text-primary focus:ring-primary border-border"
+                  />
+                </label>
+                {stonesOn && bothVisible && (
+                  <div className="flex items-center justify-between gap-3 border-l border-border pl-4">
+                    <span className="text-sm text-muted-foreground">{t('game.stonesSide')}</span>
                     <div className="flex items-center gap-4">
-                      {(['normal', 'white-only', 'black-only'] as const).map((colors) => (
+                      {STONE_SIDE_MODES.map((side) => (
                         <label
-                          key={colors}
+                          key={side}
                           className="flex cursor-pointer items-center gap-1.5 text-sm text-foreground"
                         >
                           <input
                             type="radio"
-                            name="pieceColors"
-                            value={colors}
-                            checked={settings.pieceColors === colors}
-                            onChange={(e) =>
-                              onSettingsChange({ pieceColors: e.target.value as typeof colors })
+                            name="stonesSide"
+                            value={side}
+                            checked={stonesSide === side}
+                            onChange={() =>
+                              onSettingsChange({ pieceShapeMode: STONE_SIDE_TO_SHAPE[side] })
                             }
                             className="h-4 w-4 text-primary focus:ring-primary border-border"
                           />
-                          <span>{t(`game.pieceColorModes.${colors}`)}</span>
+                          <span>{t(`game.pieceVisibilityModes.${side}`)}</span>
                         </label>
                       ))}
                     </div>
                   </div>
+                )}
+
+                {/* Piece Color */}
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm text-foreground">{t('game.pieceColor')}</span>
+                  <div className="flex items-center gap-4">
+                    {(['normal', 'white-only', 'black-only'] as const).map((colors) => (
+                      <label
+                        key={colors}
+                        className="flex cursor-pointer items-center gap-1.5 text-sm text-foreground"
+                      >
+                        <input
+                          type="radio"
+                          name="pieceColors"
+                          value={colors}
+                          checked={settings.pieceColors === colors}
+                          onChange={(e) =>
+                            onSettingsChange({ pieceColors: e.target.value as typeof colors })
+                          }
+                          className="h-4 w-4 text-primary focus:ring-primary border-border"
+                        />
+                        <span>{t(`game.pieceColorModes.${colors}`)}</span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
-              </>
-            )}
+              </div>
+            </div>
 
             {/* Display Options — lower priority, so kept near the bottom (just
                 above the preview, which reflects these settings). */}
             <div>
-              <h4 className="text-sm text-foreground mb-4">{t('game.displayOptions')}</h4>
+              <h4 className="text-sm font-semibold text-foreground mb-4">
+                {t('game.displayOptions')}
+              </h4>
               <div className="space-y-3">
-                <PreferenceOption
-                  type="checkbox"
-                  checked={settings.highlightLastMove}
-                  onChange={(e) => onSettingsChange({ highlightLastMove: e.target.checked })}
-                  label={t('game.highlightLastMove')}
-                />
-                <PreferenceOption
-                  type="checkbox"
-                  checked={settings.showPieceDestinations}
-                  onChange={(e) => onSettingsChange({ showPieceDestinations: e.target.checked })}
-                  label={t('game.pieceDestinations')}
-                />
+                <label className="flex cursor-pointer items-center justify-between gap-3">
+                  <span className="text-sm text-foreground">{t('game.highlightLastMove')}</span>
+                  <input
+                    type="checkbox"
+                    checked={settings.highlightLastMove}
+                    onChange={(e) => onSettingsChange({ highlightLastMove: e.target.checked })}
+                    className="h-4 w-4 text-primary focus:ring-primary border-border"
+                  />
+                </label>
+                <label className="flex cursor-pointer items-center justify-between gap-3">
+                  <span className="text-sm text-foreground">{t('game.pieceDestinations')}</span>
+                  <input
+                    type="checkbox"
+                    checked={settings.showPieceDestinations}
+                    onChange={(e) => onSettingsChange({ showPieceDestinations: e.target.checked })}
+                    className="h-4 w-4 text-primary focus:ring-primary border-border"
+                  />
+                </label>
               </div>
             </div>
 
