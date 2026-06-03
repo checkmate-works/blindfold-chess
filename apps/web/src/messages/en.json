@@ -262,7 +262,8 @@
         "opponent": "Opponent"
       },
       "pieceAppearance": "Piece Appearance",
-      "pieceShape": "Piece Shape",
+      "showAsStones": "Show as stones",
+      "stonesSide": "Apply to",
       "pieceShapes": {
         "normal": "Normal pieces",
         "circles-all": "Show all pieces as stones",

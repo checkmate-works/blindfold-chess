@@ -30,6 +30,19 @@ const PIECE_VISIBILITY_PRESETS: Record<
   opponent: { showOwnPieces: false, showOpponentPieces: true },
 };
 
+// Piece shape is exposed as a "show as stones" toggle plus a side selector that
+// only appears when both sides are visible (the only case where stoning just one
+// side is meaningful). The three sides reuse the Both / Own / Opponent labels.
+const STONE_SIDE_MODES = ['all', 'own', 'opponent'] as const;
+const STONE_SIDE_TO_SHAPE: Record<
+  (typeof STONE_SIDE_MODES)[number],
+  GamePreferences['pieceShapeMode']
+> = {
+  all: 'circles-all',
+  own: 'circles-own',
+  opponent: 'circles-opponent',
+};
+
 type Props = {
   settings: GamePreferences;
   onSettingsChange: (updates: Partial<GamePreferences>) => void;
@@ -77,14 +90,6 @@ export function GameSettingsContent({
     });
   }, [settings.showOwnPieces, settings.showOpponentPieces]);
 
-  useEffect(() => {
-    if (!availableShapeOptions.includes(settings.pieceShapeMode)) {
-      onSettingsChange({ pieceShapeMode: 'normal' });
-    }
-  }, [availableShapeOptions, settings.pieceShapeMode, onSettingsChange]);
-
-  const containerClass = compact ? '' : 'bg-card rounded-md p-6 border border-border';
-
   // Map the two underlying booleans to the radio's single choice. The
   // neither-shown legacy combination (unreachable from the radio) falls back to
   // 'own' and self-heals on the next selection.
@@ -93,6 +98,37 @@ export function GameSettingsContent({
       ? 'all'
       : 'own'
     : 'opponent';
+
+  // Piece shape derived state. `stonesOn` = any non-normal shape; the side
+  // selector only matters when both sides are visible. `stonesDefaultShape` is
+  // the stones mode for whatever is visible right now — used when turning stones
+  // on and when realigning an out-of-range shape after a visibility change.
+  const stonesOn = settings.pieceShapeMode !== 'normal';
+  const bothVisible = settings.showOwnPieces && settings.showOpponentPieces;
+  const stonesDefaultShape: GamePreferences['pieceShapeMode'] = bothVisible
+    ? 'circles-all'
+    : settings.showOwnPieces
+      ? 'circles-own'
+      : 'circles-opponent';
+  const stonesSide =
+    settings.pieceShapeMode === 'circles-own'
+      ? 'own'
+      : settings.pieceShapeMode === 'circles-opponent'
+        ? 'opponent'
+        : 'all';
+
+  useEffect(() => {
+    // When a visibility change makes the current stones mode invalid (e.g.
+    // 'circles-all' after hiding a side), realign it to the stones mode for
+    // what is visible now instead of dropping to 'normal' — this keeps the
+    // "show as stones" toggle on across visibility changes. 'normal' is always
+    // valid, so a stones-off board is never disturbed.
+    if (!availableShapeOptions.includes(settings.pieceShapeMode)) {
+      onSettingsChange({ pieceShapeMode: stonesDefaultShape });
+    }
+  }, [availableShapeOptions, settings.pieceShapeMode, stonesDefaultShape, onSettingsChange]);
+
+  const containerClass = compact ? '' : 'bg-card rounded-md p-6 border border-border';
 
   return (
     <div className={containerClass}>
@@ -158,28 +194,51 @@ export function GameSettingsContent({
                 <div>
                   <h4 className="text-sm text-foreground mb-4">{t('game.pieceAppearance')}</h4>
 
-                  {/* Piece Shape */}
-                  <div className="mb-6">
-                    <h5 className="text-sm font-medium text-muted-foreground mb-3">
-                      {t('game.pieceShape')}
-                    </h5>
-                    <div className="space-y-2">
-                      {availableShapeOptions.map((mode) => (
-                        <PreferenceOption
-                          key={mode}
-                          type="radio"
-                          name="pieceShapeMode"
-                          value={mode}
-                          checked={settings.pieceShapeMode === mode}
-                          onChange={(e) =>
-                            onSettingsChange({
-                              pieceShapeMode: e.target.value as typeof mode,
-                            })
-                          }
-                          label={t(`game.pieceShapes.${mode}`)}
-                        />
-                      ))}
-                    </div>
+                  {/* Piece Shape — "show as stones" toggle; the side selector
+                      only appears when both sides are visible (the only case
+                      where stoning a single side is meaningful). */}
+                  <div className="mb-6 space-y-3">
+                    <label className="flex cursor-pointer items-center justify-between gap-3">
+                      <span className="text-sm text-foreground">{t('game.showAsStones')}</span>
+                      <input
+                        type="checkbox"
+                        checked={stonesOn}
+                        onChange={(e) =>
+                          onSettingsChange({
+                            pieceShapeMode: e.target.checked ? stonesDefaultShape : 'normal',
+                          })
+                        }
+                        className="h-4 w-4 text-primary focus:ring-primary border-border"
+                      />
+                    </label>
+
+                    {stonesOn && bothVisible && (
+                      <div className="flex items-center justify-between gap-3 border-l border-border pl-4">
+                        <span className="text-sm text-muted-foreground">
+                          {t('game.stonesSide')}
+                        </span>
+                        <div className="flex items-center gap-4">
+                          {STONE_SIDE_MODES.map((side) => (
+                            <label
+                              key={side}
+                              className="flex cursor-pointer items-center gap-1.5 text-sm text-foreground"
+                            >
+                              <input
+                                type="radio"
+                                name="stonesSide"
+                                value={side}
+                                checked={stonesSide === side}
+                                onChange={() =>
+                                  onSettingsChange({ pieceShapeMode: STONE_SIDE_TO_SHAPE[side] })
+                                }
+                                className="h-4 w-4 text-primary focus:ring-primary border-border"
+                              />
+                              <span>{t(`game.pieceVisibilityModes.${side}`)}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Piece Colors */}

@@ -258,7 +258,8 @@
         "opponent": "Rival"
       },
       "pieceAppearance": "Apariencia de las Piezas",
-      "pieceShape": "Forma de las Piezas",
+      "showAsStones": "Mostrar como piedras",
+      "stonesSide": "Aplicar a",
       "pieceShapes": {
         "normal": "Piezas normales",
         "circles-all": "Mostrar todas las piezas como piedras",

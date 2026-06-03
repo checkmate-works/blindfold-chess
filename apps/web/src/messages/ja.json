@@ -262,7 +262,8 @@
         "opponent": "相手"
       },
       "pieceAppearance": "駒の外観",
-      "pieceShape": "駒の形状",
+      "showAsStones": "石で表示",
+      "stonesSide": "対象",
       "pieceShapes": {
         "normal": "通常の駒",
         "circles-all": "全ての駒を石で表示",
