@@ -159,7 +159,6 @@ describe('parseUrlSearchParams', () => {
         showOpponentPieces: true,
         pieceShapeMode: 'normal',
         pieceColors: 'normal',
-        peekMode: 'inline',
         moveInputMode: 'button',
       };
       const params = new URLSearchParams({ gamePrefs: JSON.stringify(prefs) });
@@ -202,7 +201,7 @@ describe('parseUrlSearchParams', () => {
       expect(Object.keys(result.gamePrefs!)).not.toContain('showBoardButtonInGame');
     });
 
-    it('fills missing peekMode and moveInputMode with defaults', () => {
+    it('fills missing moveInputMode with defaults', () => {
       const params = new URLSearchParams({
         gamePrefs: JSON.stringify({
           boardVisibility: 'always',
@@ -210,7 +209,6 @@ describe('parseUrlSearchParams', () => {
         }),
       });
       const result = parseUrlSearchParams(params);
-      expect(result.gamePrefs?.peekMode).toBe('modal');
       expect(result.gamePrefs?.moveInputMode).toBe('text');
     });
 
@@ -218,7 +216,6 @@ describe('parseUrlSearchParams', () => {
       const params = new URLSearchParams({
         gamePrefs: JSON.stringify({
           boardVisibility: 'sometimes',
-          peekMode: 'bogus',
           moveInputMode: 'voice',
           pieceColors: 'rainbow',
           pieceShapeMode: 'squares',
@@ -226,7 +223,6 @@ describe('parseUrlSearchParams', () => {
       });
       const result = parseUrlSearchParams(params);
       expect(result.gamePrefs?.boardVisibility).toBe('peek');
-      expect(result.gamePrefs?.peekMode).toBe('modal');
       expect(result.gamePrefs?.moveInputMode).toBe('text');
       expect(result.gamePrefs?.pieceColors).toBe('normal');
       expect(result.gamePrefs?.pieceShapeMode).toBe('normal');

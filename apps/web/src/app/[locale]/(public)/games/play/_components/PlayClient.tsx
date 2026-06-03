@@ -8,7 +8,6 @@ import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import type { MoveInputPreferenceHint } from '@/lib/games/move-input-cookie';
-import type { PeekPreferenceHint } from '@/lib/games/peek-cookie';
 
 import { AuthPromptModal } from '@/app/[locale]/_components/AuthPromptModal';
 import { useAuthGuard } from '@/app/[locale]/_hooks/use-auth-guard';
@@ -17,11 +16,9 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { useBoardFlip, useConfirmationDialogs, useMoveNavigation } from '../_hooks';
 import type { GameSession } from '../_hooks/use-game-session';
 import { usePlayClientPreferences } from '../_hooks/use-play-client-preferences';
-import {
-  buildPostmortemPath,
-  shouldShowAlwaysVisibleBoard,
-  shouldShowInlinePeekHeader,
-} from '../_lib';
+import { buildPostmortemPath } from '../_lib';
+import { AiReplyChip, useAiReplyChip } from './AiReplyChip';
+import { BoardSettingsButton } from './BoardSettingsButton';
 import { FinishedGamePanel } from './FinishedGamePanel';
 import { GameInProgressPanel } from './GameInProgressPanel';
 import { InlineBoardView } from './InlineBoardView';
@@ -33,7 +30,6 @@ import {
   ActionRowSkeleton,
   AlwaysVisibleBoardSkeleton,
   IconButtonSkeleton,
-  InlineBoardHeaderSkeleton,
   TextLinkSkeleton,
 } from './skeletons';
 
@@ -49,17 +45,6 @@ type Props = {
    */
   initialMoveInputHint: MoveInputPreferenceHint;
   /**
-   * Server-resolved hint for the user's board-peek preferences
-   * (`peekMode`, `boardVisibility`). Used to decide whether to
-   * reserve the `InlineBoardHeaderSkeleton` / `ActionRowSkeleton` board
-   * button during the SSR + pre-hydration window, before
-   * `GamePreferencesContext` has read localStorage. Once `isHydrated`
-   * flips true, the real preferences from localStorage take over —
-   * see `skeletonShowInlinePeekHeader` / `skeletonShowModalPeekButton`
-   * below.
-   */
-  initialPeekHint: PeekPreferenceHint;
-  /**
    * Page-level "waiting for persisted state" flag, computed once in
    * `PlayPageClient` from `gameState.isLoadingFromStorage` and the
    * preferences hydration state. Passed down so the title slot and the
@@ -68,13 +53,7 @@ type Props = {
   isInitializing: boolean;
 };
 
-export function PlayClient({
-  locale,
-  gameSession,
-  initialMoveInputHint,
-  initialPeekHint,
-  isInitializing,
-}: Props) {
+export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitializing }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   // Opened from the result / games list with `finished=1` to review a
@@ -91,6 +70,8 @@ export function PlayClient({
     actions,
     operationLogs,
     isAiThinking,
+    aiMoveDisplay,
+    aiMoveSignal,
   } = gameSession;
 
   const {
@@ -136,22 +117,13 @@ export function PlayClient({
     [handleSubmitMove, recordInvalid]
   );
 
-  const {
-    preferences,
-    updatePreferences,
-    skeletonMode,
-    skeletonHasModeSwitch,
-    skeletonShowAlwaysVisibleBoard,
-    skeletonShowInlinePeekHeader,
-    skeletonShowModalPeekButton,
-  } = usePlayClientPreferences({
-    perGamePrefs,
-    initialMoveInputHint,
-    initialPeekHint,
-  });
+  const { preferences, updatePreferences, skeletonMode, skeletonHasModeSwitch } =
+    usePlayClientPreferences({
+      perGamePrefs,
+      initialMoveInputHint,
+    });
 
   // UI state
-  const [isBoardVisible, setIsBoardVisible] = useState(false);
   const [showOperationLogModal, setShowOperationLogModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
 
@@ -162,69 +134,51 @@ export function PlayClient({
   // surfacing an inert affordance.
   const canEditPerGameSettings = initialPerGamePrefs !== undefined;
 
-  // Bumped once per successful player move commit. Drives the inline peek
-  // accordion's auto-collapse so each move requires a fresh expand, matching
-  // the modal mode's "1 open action = 1 peek" semantics. Also drives the
-  // scroll-to-top effect below for peek+inline users.
-  const [playerMoveCommitCount, setPlayerMoveCommitCount] = useState(0);
+  // Whether the always-present board is currently revealed in 'peek' mode.
+  // The board frame is always on screen (same position/size); in 'peek' it is
+  // masked until the player taps to reveal, then re-masked on their next move
+  // so each look is a discrete, counted peek. Irrelevant in 'always' (never
+  // masked) and 'never' (always masked) — see `boardMasked` below.
+  const [peekRevealed, setPeekRevealed] = useState(false);
   const handleMoveCommitted = useCallback(
     (inputMethod: Parameters<typeof commitMoveLog>[0]) => {
       commitMoveLog(inputMethod);
-      setPlayerMoveCommitCount((n) => n + 1);
+      // Re-mask after each player move so the opponent's reply stays unseen
+      // until the next deliberate peek (blindfold semantics).
+      setPeekRevealed(false);
     },
     [commitMoveLog]
   );
 
-  // Scroll back to PageTitle after a player move commit while in peek+inline
-  // mode. The inline board auto-collapses on commit (so the area the user
-  // was looking at disappears) and the "AI is thinking" status lives in the
-  // PageTitle at the top — bringing it into the first view makes that
-  // status immediately visible without the user having to scroll back up.
-  // Modal-peek and always-visible modes don't need this: modal users have
-  // no expand area to obscure the title, and always-visible users have the
-  // board on-screen continuously anyway.
-  //
-  // Read the latest `peek+inline` predicate via a ref so the effect's only
-  // re-trigger is the commit counter — otherwise unrelated preference
-  // changes (piece colors, theme, etc.) would also cause a scroll.
-  //
-  // The scroll is dispatched via `requestAnimationFrame` so the inline
-  // board's auto-collapse layout shift (which removes the board element
-  // from the DOM and reduces document height) flushes BEFORE the smooth
-  // scroll begins. Without that deferral, some browsers cancel the
-  // in-flight smooth animation when the document height drops underneath
-  // it, leaving the page stuck at its original scroll position — exactly
-  // the symptom users observed.
-  const peekInlineModeRef = useRef(shouldShowInlinePeekHeader(preferences));
-  peekInlineModeRef.current = shouldShowInlinePeekHeader(preferences);
-  useEffect(() => {
-    if (playerMoveCommitCount === 0) return; // skip initial mount
-    if (!peekInlineModeRef.current) return;
-    const id = requestAnimationFrame(() => {
-      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
-    });
-    return () => cancelAnimationFrame(id);
-  }, [playerMoveCommitCount]);
+  // Reveal the masked board for a peek: count it (audit / clean-rate) and lift
+  // the mask. The mask returns on the next committed move.
+  const handleRevealBoard = useCallback(() => {
+    recordPeek();
+    setPeekRevealed(true);
+  }, [recordPeek]);
 
-  // Board-driven move handler — only wired through to InlineBoardView when
-  // the always-visible board is being rendered AND the player can actually
-  // move right now (their turn, no pending AI move, not browsing history).
-  // The board interaction (click-to-move + DnD) produces an already-legal
-  // SAN string, so we pass it straight to `handleSubmitMove` which runs
-  // the normal validation + commit pipeline.
-  //
-  // We commit the operation log entry directly here (rather than going
-  // through `handleMoveCommitted` like MoveInputPanel does) because board
-  // moves only happen in always-visible mode — the auto-collapse and
-  // scroll-to-title side effects of `handleMoveCommitted` are not relevant
-  // there. The log tag is `'board'` so the audit table can distinguish
-  // click/drag-driven moves from text/select/button input methods.
+  // The board frame is always rendered; this decides whether it is covered.
+  // 'always' → never masked; 'never' → always masked; 'peek' → masked until
+  // the current peek reveal.
+  const boardMasked =
+    preferences.boardVisibility === 'never' ||
+    (preferences.boardVisibility === 'peek' && !peekRevealed);
+
+  // Board-driven move handler — wired to InlineBoardView whenever the board is
+  // currently visible (always mode, or a revealed peek) AND the player can act
+  // right now (their turn, no pending AI move, not browsing history). The board
+  // interaction (click-to-move + DnD) produces an already-legal SAN string, so
+  // we pass it straight to `handleSubmitMove` which runs the normal validation
+  // + commit pipeline. The log tag is `'board'` so the audit table can
+  // distinguish click/drag-driven moves from text/select/button input methods.
+  // Re-mask afterwards (a no-op in 'always' mode) so a peeked move hides the
+  // board again for the opponent's reply, same as a panel-submitted move.
   const handleBoardMove = useCallback(
     (san: string) => {
       const submitted = handleSubmitMove(san as AlgebraicNotation);
       if (submitted !== false) {
         commitMoveLog('board');
+        setPeekRevealed(false);
       }
     },
     [handleSubmitMove, commitMoveLog]
@@ -307,55 +261,91 @@ export function PlayClient({
     );
   }, [router, locale, formattedPgn, playerSide, moves, engineConfig, gameId, startingFen]);
 
-  // Build the InlineBoardView shared by the in-progress and finished panels.
-  // `interactive` enables click/drag move input (gated further on the player's
-  // turn); the finished view passes false so the board is review-only.
-  const renderInlineBoardView = (interactive: boolean) =>
-    shouldShowInlinePeekHeader(preferences) || shouldShowAlwaysVisibleBoard(preferences) ? (
-      <InlineBoardView
-        fen={displayFen || currentFen}
-        playerSide={playerSide}
-        flipped={effectiveFlipped}
-        lastMove={preferences.highlightLastMove && currentPosition === -1 ? lastMove : null}
-        preferences={preferences}
-        movesLength={moves.length}
-        currentPosition={currentPosition}
-        formattedPgn={formattedPgn}
-        onNavigateToStart={navigateToStart}
-        onNavigatePrevious={navigatePrevious}
-        onNavigateNext={navigateNext}
-        onNavigateToEnd={navigateToEnd}
-        onNavigateToPosition={navigateToPosition}
-        onFlipBoard={handleFlipBoard}
-        onPeek={shouldShowAlwaysVisibleBoard(preferences) ? undefined : recordPeek}
-        collapseSignal={playerMoveCommitCount}
-        alwaysOpen={shouldShowAlwaysVisibleBoard(preferences)}
-        // Interactive board moves (click-to-move + drag) only in always-visible
-        // mode AND when the player can act right now. The finished view passes
-        // interactive=false, so the board is non-interactive there.
-        onMove={
-          interactive &&
-          shouldShowAlwaysVisibleBoard(preferences) &&
-          isPlayerTurn &&
-          !isLoading &&
-          currentPosition === -1
-            ? handleBoardMove
-            : undefined
-        }
-        // Count illegal board attempts into the same invalid-attempt counter
-        // the text/select/button paths use, so the result page's "Invalid
-        // Count" reflects blindfold mistakes regardless of input method.
-        onIllegalMove={
-          interactive &&
-          shouldShowAlwaysVisibleBoard(preferences) &&
-          isPlayerTurn &&
-          !isLoading &&
-          currentPosition === -1
-            ? recordInvalid
-            : undefined
-        }
-      />
-    ) : undefined;
+  // AI-reply chip visibility (thinking + transient post-move window). Lifted
+  // here so `badgeActive` can also tell the board to drop the mask's own label.
+  const aiReply = useAiReplyChip({ isAiThinking, aiMoveSignal });
+  // Only surface the on-board AI chip in blindfold modes. When the board is
+  // always visible ('always'), the AI's move is right there on the board — an
+  // "AI played …" badge would just be redundant clutter.
+  const showAiReplyChip = preferences.boardVisibility !== 'always';
+
+  // In-progress board: always rendered at a fixed position/size, with the
+  // blindfold expressed as a mask overlay rather than as a different layout.
+  // 'always' → unmasked; 'peek' → masked until tapped (re-masks on the next
+  // move); 'never' → permanently masked. Click/drag move input is enabled
+  // whenever the board is actually visible — 'always' mode OR a revealed peek
+  // (`!boardMasked`) — on the player's turn, so a peeked board is as
+  // operable as an always-visible one.
+  const canBoardMove = !boardMasked && isPlayerTurn && !isLoading && currentPosition === -1;
+  const inProgressBoardView = (
+    <InlineBoardView
+      fen={displayFen || currentFen}
+      playerSide={playerSide}
+      flipped={effectiveFlipped}
+      lastMove={preferences.highlightLastMove && currentPosition === -1 ? lastMove : null}
+      preferences={preferences}
+      movesLength={moves.length}
+      currentPosition={currentPosition}
+      formattedPgn={formattedPgn}
+      onNavigateToStart={navigateToStart}
+      onNavigatePrevious={navigatePrevious}
+      onNavigateNext={navigateNext}
+      onNavigateToEnd={navigateToEnd}
+      onNavigateToPosition={navigateToPosition}
+      onFlipBoard={handleFlipBoard}
+      alwaysOpen
+      masked={boardMasked}
+      maskDismissable={preferences.boardVisibility === 'peek'}
+      onReveal={handleRevealBoard}
+      onMove={canBoardMove ? handleBoardMove : undefined}
+      onIllegalMove={canBoardMove ? recordInvalid : undefined}
+      // AI reply surfaced on the board itself (visible without scrolling to the
+      // page title): "thinking…" while computing, then the move, which fades.
+      // While the chip is active it owns the board center; `badgeActive` tells
+      // the mask to drop its own label so the two don't stack.
+      boardBadge={
+        showAiReplyChip ? (
+          <AiReplyChip
+            active={aiReply.active}
+            thinking={aiReply.thinking}
+            aiMoveDisplay={aiMoveDisplay}
+          />
+        ) : undefined
+      }
+      badgeActive={showAiReplyChip && aiReply.active}
+      // Per-game settings gear, pinned to the board's top-right (move-list strip
+      // end when shown, mask top-right when masked). Hidden for legacy games
+      // with no per-game snapshot to edit. Game details stays in the panel.
+      topRightControl={
+        canEditPerGameSettings ? (
+          <BoardSettingsButton onClick={() => setShowSettingsModal(true)} />
+        ) : undefined
+      }
+    />
+  );
+
+  // Finished-game review board (read-only): always show the board. A finished
+  // game is being reviewed, not played, so there is no blindfold mask or peek
+  // here — the board is simply visible.
+  const finishedBoardView = (
+    <InlineBoardView
+      fen={displayFen || currentFen}
+      playerSide={playerSide}
+      flipped={effectiveFlipped}
+      lastMove={preferences.highlightLastMove && currentPosition === -1 ? lastMove : null}
+      preferences={preferences}
+      movesLength={moves.length}
+      currentPosition={currentPosition}
+      formattedPgn={formattedPgn}
+      onNavigateToStart={navigateToStart}
+      onNavigatePrevious={navigatePrevious}
+      onNavigateNext={navigateNext}
+      onNavigateToEnd={navigateToEnd}
+      onNavigateToPosition={navigateToPosition}
+      onFlipBoard={handleFlipBoard}
+      alwaysOpen
+    />
+  );
 
   if (gameNotFound) {
     notFound();
@@ -363,30 +353,26 @@ export function PlayClient({
 
   return (
     <div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* `-mt-4 sm:mt-0` cancels PagePanel's mobile top padding (`p-4`) so the
+          full-bleed board (it already cancels the side padding via `-mx-4`)
+          also reaches the top edge — otherwise the leftover ~16px reads as an
+          odd gap above an edge-to-edge board. Desktop keeps the intentional
+          panel margin (`sm:p-6 md:p-8`). Mirrored in `loading.tsx`. */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 -mt-4 sm:mt-0">
         {/* Game Area */}
         <div className="lg:col-span-2">
           <div>
             {/* In Progress Content */}
             {gameStatus === 'in_progress' && isInitializing && (
               <div className="flex flex-col gap-6">
-                {/* Board reservation. At most one of these fires — the
-                    `shouldShow*` predicates partition the peek-hint space (see
-                    preferences.test.ts), and the order mirrors `loading.tsx`.
-                    'always' reserves the full-size board card; 'peek+inline'
-                    reserves just the ~46px accordion header. Both are driven by
-                    the active hint (cookie pre-hydration, preferences post-
-                    hydration) so returning users get the correct layout from
-                    the very first paint. ('peek+modal' reserves a slot inside
-                    the action row below instead; 'never' reserves nothing.) */}
-                {skeletonShowAlwaysVisibleBoard && <AlwaysVisibleBoardSkeleton />}
-                {skeletonShowInlinePeekHeader && <InlineBoardHeaderSkeleton />}
+                {/* The board is always rendered at a fixed size now (the
+                    blindfold is a mask overlay, not a different layout), so the
+                    skeleton always reserves the full-size board card — no
+                    peek-hint branching, no modal "Show Board" button slot. */}
+                <AlwaysVisibleBoardSkeleton />
                 <MoveInputSkeleton mode={skeletonMode} hasModeSwitch={skeletonHasModeSwitch} />
-                {/* Action row (Show Board + Undo + Resign). Whether the
-                    "Show Board" button is reserved is driven by the active
-                    hint so users who disabled the button — or use inline
-                    peek — don't get a phantom slot reserved during SSR. */}
-                <ActionRowSkeleton showBoardButton={skeletonShowModalPeekButton} />
+                {/* Action row (Undo + Resign). */}
+                <ActionRowSkeleton />
                 {/* Save and Exit link: text-sm ≈ 20px */}
                 <TextLinkSkeleton />
                 {/* Operation Log trigger: w-4 h-4 icon + padding ≈ 24px */}
@@ -408,13 +394,6 @@ export function PlayClient({
                 handleSubmitMove={handleSubmitMoveTracked}
                 moves={moves}
                 confirmationDialogs={confirmationDialogs}
-                // Peek tracking: counts each "open" action, not view duration.
-                // Modal: counted when opened; closing and reopening counts again.
-                // Inline: counted when accordion expands; collapsing and re-expanding counts again.
-                onShowBoard={() => {
-                  recordPeek();
-                  setIsBoardVisible(true);
-                }}
                 playerColor={playerSide === 'black' ? 'b' : 'w'}
                 onMoveCommitted={handleMoveCommitted}
                 onMovePeek={recordMovePeek}
@@ -425,25 +404,20 @@ export function PlayClient({
                 // global preference change.
                 setMoveInputMode={(mode) => setPerGamePref('moveInputMode', mode)}
                 onShowOperationLog={() => setShowOperationLogModal(true)}
-                onShowSettings={
-                  canEditPerGameSettings ? () => setShowSettingsModal(true) : undefined
-                }
                 aiMoveError={
                   aiMoveError.message
                     ? { message: aiMoveError.message, retry: aiMoveError.retry }
                     : null
                 }
-                inlineBoardView={renderInlineBoardView(true)}
+                inlineBoardView={inProgressBoardView}
               />
             )}
             {!isInitializing && isFinishedView && isFinished && (
               <FinishedGamePanel
-                inlineBoardView={renderInlineBoardView(false)}
-                preferences={preferences}
+                inlineBoardView={finishedBoardView}
                 onViewResult={handleViewResult}
                 onPostmortem={() => guardAction(handleOpenPostmortem)}
                 showPostmortem={moves.length > 0}
-                onShowBoard={() => setIsBoardVisible(true)}
                 onShowOperationLog={() => setShowOperationLogModal(true)}
               />
             )}
@@ -492,22 +466,7 @@ export function PlayClient({
 
       <PlayClientModals
         confirmationDialogs={confirmationDialogs}
-        isBoardVisible={isBoardVisible}
-        onCloseBoardVisible={() => setIsBoardVisible(false)}
-        fen={displayFen || currentFen}
-        playerSide={playerSide}
-        flipped={effectiveFlipped}
-        lastMove={preferences.highlightLastMove && currentPosition === -1 ? lastMove : null}
         preferences={preferences}
-        movesLength={moves.length}
-        currentPosition={currentPosition}
-        formattedPgn={formattedPgn}
-        onNavigateToStart={navigateToStart}
-        onNavigatePrevious={navigatePrevious}
-        onNavigateNext={navigateNext}
-        onNavigateToEnd={navigateToEnd}
-        onNavigateToPosition={navigateToPosition}
-        onFlipBoard={handleFlipBoard}
         showOperationLogModal={showOperationLogModal}
         onCloseOperationLog={() => setShowOperationLogModal(false)}
         engineConfig={engineConfig}

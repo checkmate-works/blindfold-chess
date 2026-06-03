@@ -10,10 +10,9 @@ import { BOARD_VISIBILITY_VALUES, type BoardVisibility } from '@/lib/games/board
 import { BOARD_VISIBILITY_ICON } from '@/lib/games/board-visibility-icons';
 
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
-import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import { OnboardingStepLayout, PeekModeStep } from '../../_components';
+import { OnboardingStepLayout } from '../../_components';
 
 type Props = {
   locale: Locale;
@@ -27,13 +26,6 @@ export function Step2Client({ locale }: Props) {
   const handleSelectVisibility = useCallback(
     (value: BoardVisibility) => {
       updatePreferences({ boardVisibility: value });
-    },
-    [updatePreferences]
-  );
-
-  const handleSelectPeekMode = useCallback(
-    (mode: GamePreferences['peekMode']) => {
-      updatePreferences({ peekMode: mode });
     },
     [updatePreferences]
   );
@@ -116,16 +108,6 @@ export function Step2Client({ locale }: Props) {
             );
           })}
         </div>
-
-        {/* Secondary picker — only relevant when the player chose 'peek'.
-            The modal/inline distinction has no effect under 'always' (board
-            is permanently shown) or 'never' (no board surfaced). */}
-        {preferences.boardVisibility === 'peek' && (
-          <>
-            <div className="border-t border-border" />
-            <PeekModeStep selectedMode={preferences.peekMode} onSelectMode={handleSelectPeekMode} />
-          </>
-        )}
       </div>
     </OnboardingStepLayout>
   );

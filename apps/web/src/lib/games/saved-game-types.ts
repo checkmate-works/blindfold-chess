@@ -22,6 +22,26 @@ export type GamePlaySettings = {
   pieceColors: 'normal' | 'white-only' | 'black-only';
 };
 
+/**
+ * One mid-game edit of a display-relevant blindfold setting, persisted on a
+ * published game so the replay can show "what the player saw at this position"
+ * as it steps through the moves.
+ *
+ * The display-only projection of {@link PreferenceChangeLogEntry}: it keeps just
+ * the keys {@link GamePlaySettings} renders (board visibility + which side was
+ * shown + piece shape/color) and only the `to` value (the new value the change
+ * established) — folding forward never needs `from`. `atMoveIndex` is
+ * `moves.length` at the time of the change (half-moves already played), so the
+ * effective settings at a given position are {@link GamePlaySettings} (the
+ * start-of-game snapshot) with every entry whose `atMoveIndex <= half-moves
+ * shown` applied in order. Stored in `games.play_settings_log`.
+ */
+export type PlaySettingsChangeEntry =
+  | { atMoveIndex: number; key: 'showOwnPieces' | 'showOpponentPieces'; to: boolean }
+  | { atMoveIndex: number; key: 'pieceShapeMode'; to: GamePlaySettings['pieceShapeMode'] }
+  | { atMoveIndex: number; key: 'pieceColors'; to: GamePlaySettings['pieceColors'] }
+  | { atMoveIndex: number; key: 'boardVisibility'; to: BoardVisibility };
+
 // Re-export the canonical SkillLevel type from @blindfold-chess/features
 export type SkillLevel = AiGameSkillLevel;
 
@@ -76,12 +96,6 @@ export type PreferenceChangeLogEntry =
       key: 'pieceColors';
       from: PerGamePreferences['pieceColors'];
       to: PerGamePreferences['pieceColors'];
-    }
-  | {
-      atMoveIndex: number;
-      key: 'peekMode';
-      from: PerGamePreferences['peekMode'];
-      to: PerGamePreferences['peekMode'];
     }
   | {
       atMoveIndex: number;

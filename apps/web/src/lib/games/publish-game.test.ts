@@ -193,3 +193,57 @@ describe('validatePublishSnapshot play settings', () => {
     expect(res.game.playSettings).toBeNull();
   });
 });
+
+describe('validatePublishSnapshot play settings log', () => {
+  it('keeps display-relevant change-log entries and drops non-display / unknown keys', () => {
+    const res = validatePublishSnapshot(
+      validInput({
+        // moves length is 4 → atMoveIndex must be within [0, 4].
+        playSettingsLog: [
+          { atMoveIndex: 0, key: 'boardVisibility', from: 'always', to: 'never' },
+          { atMoveIndex: 2, key: 'showOpponentPieces', from: true, to: false },
+          { atMoveIndex: 3, key: 'pieceShapeMode', from: 'normal', to: 'circles-own' },
+          // Non-display keys are discarded.
+          { atMoveIndex: 1, key: 'moveInputMode', from: 'text', to: 'button' },
+          { atMoveIndex: 1, key: 'peekMode', from: 'modal', to: 'inline' },
+          { atMoveIndex: 1, key: 'highlightLastMove', from: true, to: false },
+        ],
+      })
+    );
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.game.playSettingsLog).toEqual([
+      { atMoveIndex: 0, key: 'boardVisibility', to: 'never' },
+      { atMoveIndex: 2, key: 'showOpponentPieces', to: false },
+      { atMoveIndex: 3, key: 'pieceShapeMode', to: 'circles-own' },
+    ]);
+  });
+
+  it('drops entries with an out-of-range or invalid atMoveIndex / value', () => {
+    const res = validatePublishSnapshot(
+      validInput({
+        playSettingsLog: [
+          { atMoveIndex: 99, key: 'boardVisibility', to: 'never' }, // > moveCount
+          { atMoveIndex: -1, key: 'boardVisibility', to: 'peek' }, // < 0
+          { atMoveIndex: 1.5, key: 'boardVisibility', to: 'peek' }, // non-integer
+          { atMoveIndex: 2, key: 'pieceColors', to: 'rainbow' }, // invalid value
+          { atMoveIndex: 2, key: 'showOwnPieces', to: false }, // the one good entry
+        ],
+      })
+    );
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.game.playSettingsLog).toEqual([{ atMoveIndex: 2, key: 'showOwnPieces', to: false }]);
+  });
+
+  it('leaves the log null when absent or empty after filtering', () => {
+    expect(validatePublishSnapshot(validInput()).ok).toBe(true);
+    const absent = validatePublishSnapshot(validInput());
+    expect(absent.ok && absent.game.playSettingsLog).toBeNull();
+
+    const allDropped = validatePublishSnapshot(
+      validInput({ playSettingsLog: [{ atMoveIndex: 1, key: 'moveInputMode', to: 'button' }] })
+    );
+    expect(allDropped.ok && allDropped.game.playSettingsLog).toBeNull();
+  });
+});

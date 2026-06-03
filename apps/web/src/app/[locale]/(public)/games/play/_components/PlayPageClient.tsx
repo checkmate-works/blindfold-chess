@@ -5,7 +5,6 @@ import type { ReactNode } from 'react';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { MoveInputPreferenceHint } from '@/lib/games/move-input-cookie';
-import type { PeekPreferenceHint } from '@/lib/games/peek-cookie';
 
 import { Divider } from '@/app/[locale]/_components/Divider';
 import { PagePanel } from '@/app/[locale]/_components/PagePanel';
@@ -28,86 +27,50 @@ type Props = {
    * CLS that returning `text` / `select` users otherwise saw on first paint.
    */
   initialMoveInputHint: MoveInputPreferenceHint;
-  /**
-   * Server-resolved board-peek hint from the `bfc_peek_pref` cookie. Used
-   * by `PlayClient` to decide whether to reserve the inline board header
-   * (~46 px) and whether the modal "Show Board" button slot is rendered
-   * during SSR + pre-hydration, eliminating the layout jump that returning
-   * `inline` users (or users who disabled the board button) otherwise saw
-   * on first paint.
-   */
-  initialPeekHint: PeekPreferenceHint;
 };
 
-export function PlayPageClient({
-  locale,
-  breadcrumb,
-  initialMoveInputHint,
-  initialPeekHint,
-}: Props) {
+export function PlayPageClient({ locale, breadcrumb, initialMoveInputHint }: Props) {
   const t = useTranslations('play');
 
   // Own the game session here so the page-level status slot (PageTitle) can
   // read move-error / AI-thinking / AI-move-announcement state directly,
   // without a useEffect bridge from PlayClient.
   const gameSession = useGameSession({ locale });
-  const { aiMoveDisplay, isAiThinking, aiMoveSignal } = gameSession;
+  const { aiMoveSignal } = gameSession;
   const { error: moveError, lastAttemptedInput } = gameSession.moveInput;
   const { isLoadingFromStorage } = gameSession.gameState;
   const { preferences: globalPreferences, isHydrated } = useGamePreferences();
 
-  // Effective boardVisibility / peekMode = per-game override if present,
-  // else global. Drives whether the full-screen AiMovePulse fires.
-  //
-  // The pulse is suppressed in:
-  //   - 'always' mode — the board is on screen continuously, so the user
-  //     sees the AI's piece move directly. The peripheral cue is redundant.
-  //   - 'peek' + 'inline' mode — after a player commit the inline board
-  //     auto-collapses (Phase 0) and the page scrolls back to the title
-  //     so "AI is thinking" is the first thing the user sees. A pulse on
-  //     top of that scroll feels chaotic; the title text alone is enough.
-  //
-  // Kept in:
-  //   - 'peek' + 'modal' mode — the modal "View Board" button is the only
-  //     board surface, and the pulse is the user's main signal that AI moved.
-  //   - 'never' mode — same as modal; without the cue the move is easy to
-  //     miss (only the title text changes).
-  // Resolve the effective per-game settings (per-game falls back to global)
-  // and delegate the actual pulse-vs-no-pulse policy to `shouldShowAiPulse`
-  // so it can be exercised across the full (boardVisibility × peekMode) grid
-  // in unit tests, instead of being an inline boolean buried in this file.
+  // Resolve the effective board visibility (per-game falls back to global) and
+  // delegate the pulse-vs-no-pulse policy to `shouldShowAiPulse` (fires in the
+  // blindfold modes, suppressed when the board is always visible).
   const perGamePrefs = gameSession.gameConfig.perGamePrefs;
   const aiPulseEnabled = shouldShowAiPulse({
     boardVisibility: perGamePrefs?.boardVisibility ?? globalPreferences.boardVisibility,
-    peekMode: perGamePrefs?.peekMode ?? globalPreferences.peekMode,
   });
   // Matches the `isInitializing` predicate in `PlayClient` so the title and
   // the input panel both transition out of their "loading" state in lockstep.
   const isInitializing = isLoadingFromStorage || !isHydrated;
 
-  // Resolve the content of the single status slot (PageTitle).
-  // Priority: active move error → AI-thinking state → AI's last move
-  // announcement → initial-load "Loading..." → "Play Chess" title. Both
-  // branches render a `truncate block` span so the swap between states is
-  // always single-line and does not reflow / cause CLS on narrow viewports
-  // (longer "AI played ..." strings would otherwise wrap to 2 lines).
+  // Resolve the content of the page-title slot.
+  // Priority: active move error → initial-load "Loading..." → "Play Chess"
+  // title. The AI-thinking state and the AI's last-move announcement now live
+  // on the board itself (AiReplyChip), visible without scrolling up, so they
+  // are intentionally NOT mirrored here. The span stays `truncate block` so an
+  // error string never wraps to 2 lines / causes CLS on narrow viewports.
   const titleContent = (
     <span
       className={`truncate block ${
-        moveError
-          ? 'text-destructive'
-          : isAiThinking || isInitializing
-            ? 'text-muted-foreground'
-            : ''
+        moveError ? 'text-destructive' : isInitializing ? 'text-muted-foreground' : ''
       }`}
     >
       {moveError
         ? lastAttemptedInput
           ? `\u26A0 ${t('invalidMove')}: ${lastAttemptedInput}`
           : `\u26A0 ${moveError}`
-        : isAiThinking
-          ? t('aiThinking')
-          : aiMoveDisplay || (isInitializing ? t('loading') : t('title'))}
+        : isInitializing
+          ? t('loading')
+          : t('title')}
     </span>
   );
 
@@ -122,7 +85,6 @@ export function PlayPageClient({
             locale={locale}
             gameSession={gameSession}
             initialMoveInputHint={initialMoveInputHint}
-            initialPeekHint={initialPeekHint}
             isInitializing={isInitializing}
           />
           {/* Mirror `PageLayout`'s trailing block — see PageLayout.tsx. */}

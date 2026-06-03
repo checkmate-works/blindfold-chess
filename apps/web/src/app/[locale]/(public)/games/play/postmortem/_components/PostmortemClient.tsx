@@ -7,16 +7,9 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { FaCheck, FaCog, FaQuestionCircle, FaSpinner } from 'react-icons/fa';
 
-import { BoardViewModal } from '@/app/[locale]/(public)/games/play/_components/BoardViewModal';
 import { InlineBoardView } from '@/app/[locale]/(public)/games/play/_components/InlineBoardView';
 import { MidGameSettingsModal } from '@/app/[locale]/(public)/games/play/_components/MidGameSettingsModal';
-import { ShowBoardButton } from '@/app/[locale]/(public)/games/play/_components/ShowBoardButton';
-import {
-  ACTION_ROW_CONTAINER_CLASSES,
-  shouldShowAlwaysVisibleBoard,
-  shouldShowInlinePeekHeader,
-  shouldShowModalPeekButton,
-} from '@/app/[locale]/(public)/games/play/_lib';
+import { ACTION_ROW_CONTAINER_CLASSES } from '@/app/[locale]/(public)/games/play/_lib';
 import { useLoadGame } from '@/app/[locale]/(public)/games/play/result/_hooks/useLoadGame';
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { MoveInputPanel } from '@/app/[locale]/_components/MoveInputPanel';
@@ -86,7 +79,6 @@ function mergePerGamePreferences(
     showOpponentPieces: perGame.showOpponentPieces,
     pieceShapeMode: perGame.pieceShapeMode,
     pieceColors: perGame.pieceColors,
-    peekMode: perGame.peekMode ?? global.peekMode,
     moveInputMode: perGame.moveInputMode ?? global.moveInputMode,
   };
 }
@@ -153,30 +145,19 @@ export function PostmortemClient({
   });
 
   // UI-only state (modal visibility)
-  const [isBoardVisible, setIsBoardVisible] = useState(false);
   const [showAnalyzeAllConfirm, setShowAnalyzeAllConfirm] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
   const { currentFen, displayFen, currentLastMove } = boardState;
   const { isCompleted, totalMoves, progress, originalMoves } = gameProgress;
 
-  // Board display follows the (seeded) preferences, exactly like the in-game
-  // screen: always-visible inline board, collapsible peek-inline board, or a
-  // modal opened from a "Show Board" button.
-  const showAlwaysBoard = shouldShowAlwaysVisibleBoard(preferences);
-  const showInlinePeek = shouldShowInlinePeekHeader(preferences);
-  const showModalPeekButton = shouldShowModalPeekButton(preferences);
-  const showInlineBoard = showAlwaysBoard || showInlinePeek;
-
   const recallStats = computeRecallStats(moveLog.entries);
 
-  // Revisit a stumbled move from the completion summary: jump to its position
-  // and open the board preview modal (same UX as the result screen's
-  // position preview), regardless of the board display mode.
+  // Revisit a stumbled move from the completion summary: jump to its position.
+  // The board is always visible here, so it simply updates to that position.
   const handleMistakeClick = useCallback(
     (entry: Parameters<typeof actions.handleMoveClick>[0]) => {
       actions.handleMoveClick(entry);
-      setIsBoardVisible(true);
     },
     [actions]
   );
@@ -189,14 +170,18 @@ export function PostmortemClient({
   // game, the reviewer enters BOTH sides' moves, so the board is set to
   // `movablePieces="side-to-move"` below — letting them grab the opponent's
   // pieces on the opponent's turn.
+  // Postmortem is a review surface: the board is always visible (no blindfold
+  // mask / peek). Board-driven input is available at the live position whenever
+  // it's a move the reviewer is expected to enter (`isPlayerTurn` encodes the
+  // auto-opponent rule). The reviewer enters BOTH sides' moves, so the board is
+  // `movablePieces="side-to-move"`.
   const canBoardInput =
-    showAlwaysBoard &&
     !isCompleted &&
     !moveInput.isAnalyzingAll &&
     navigation.currentPosition === -1 &&
     settings.isPlayerTurn;
 
-  const inlineBoardView = showInlineBoard ? (
+  const inlineBoardView = (
     <InlineBoardView
       fen={boardFen}
       playerSide={playerColor}
@@ -211,15 +196,13 @@ export function PostmortemClient({
       onNavigatePrevious={navigation.navigatePrevious}
       onNavigateNext={navigation.navigateNext}
       onNavigateToEnd={navigation.navigateToEnd}
-      onNavigateToPosition={navigation.navigateToPosition}
-      collapseSignal={progress}
-      alwaysOpen={showAlwaysBoard}
+      alwaysOpen
       movablePieces="side-to-move"
       onMove={
         canBoardInput ? (san) => actions.handleSubmitMove(san as AlgebraicNotation) : undefined
       }
     />
-  ) : null;
+  );
 
   // Format feedback message from structured data
   const feedback = moveInput.lastFeedback;
@@ -283,7 +266,7 @@ export function PostmortemClient({
               {/* Progress Bar */}
               <ProgressBar current={progress} total={totalMoves} />
 
-              {/* Board (inline, follows boardVisibility/peekMode) */}
+              {/* Board (always visible — postmortem is a review surface) */}
               {inlineBoardView}
 
               {!isCompleted ? (
@@ -335,9 +318,6 @@ export function PostmortemClient({
 
                       {/* Action Buttons */}
                       <div className={ACTION_ROW_CONTAINER_CLASSES}>
-                        {showModalPeekButton && (
-                          <ShowBoardButton onClick={() => setIsBoardVisible(true)} />
-                        )}
                         <span data-tour-id="postmortem-dont-know" className="inline-flex">
                           <Button
                             variant="secondary"
@@ -375,14 +355,6 @@ export function PostmortemClient({
                     onRestart={onRestart ?? (() => {})}
                     gameId={gameId}
                   />
-
-                  {/* Show Board (modal peek mode only — inline modes already
-                      render the board above) */}
-                  {showModalPeekButton && (
-                    <div className={ACTION_ROW_CONTAINER_CLASSES}>
-                      <ShowBoardButton onClick={() => setIsBoardVisible(true)} />
-                    </div>
-                  )}
 
                   {settingsRow}
                 </>
@@ -428,24 +400,6 @@ export function PostmortemClient({
         message={t('confirmAutoFillAllMessage')}
         confirmText={t('autoFillAll')}
         cancelText={t('cancel')}
-      />
-
-      {/* Board View Modal — used for peek + modal mode. */}
-      <BoardViewModal
-        isOpen={isBoardVisible}
-        onClose={() => setIsBoardVisible(false)}
-        fen={boardFen}
-        playerSide={playerColor}
-        lastMove={preferences.highlightLastMove ? currentLastMove : null}
-        preferences={preferences}
-        movesLength={originalMoves.length}
-        currentPosition={navigation.currentPosition}
-        formattedPgn={formattedPgn}
-        onNavigateToStart={navigation.navigateToStart}
-        onNavigatePrevious={navigation.navigatePrevious}
-        onNavigateNext={navigation.navigateNext}
-        onNavigateToEnd={navigation.navigateToEnd}
-        onNavigateToPosition={navigation.navigateToPosition}
       />
     </div>
   );

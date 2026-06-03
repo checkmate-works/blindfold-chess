@@ -272,12 +272,14 @@
         "whiteView": "Perspectiva de Brancas",
         "blackView": "Perspectiva de Pretas"
       },
-      "boardVisibility": "Visibilidade do Tabuleiro",
+      "boardVisibility": "Modo às cegas",
       "boardVisibilities": {
         "always": "Sempre visível",
         "peek": "Espiar sob demanda",
         "never": "Oculto"
       },
+      "hideBoard": "Ocultar o tabuleiro",
+      "allowPeek": "Permitir espiar",
       "resetDefaults": "Redefinir valores padrão",
       "resetDefaultsConfirm": {
         "title": "Redefinir configuração do tabuleiro?",
@@ -309,11 +311,6 @@
       "text": "Texto",
       "icon": "Ícone",
       "enableAutoComplete": "Ativar autocompletar",
-      "peekMode": "Modo de Vista do Tabuleiro",
-      "peekModes": {
-        "modal": "Modal",
-        "inline": "Inline"
-      },
       "moveInputModes": {
         "text": "Texto",
         "select": "Lista",
@@ -1770,6 +1767,8 @@
     "save": "Salvar",
     "showBoard": "Mostrar Tabuleiro",
     "hideBoard": "Ocultar Tabuleiro",
+    "revealBoard": "Toque para ver",
+    "boardHidden": "Tabuleiro oculto",
     "flipBoard": "Inverter Tabuleiro",
     "copyPgn": "Copiar PGN",
     "copyFen": "Copiar FEN",
@@ -1819,7 +1818,6 @@
         "labelShowOpponentPieces": "Mostrar peças do oponente",
         "labelPieceShape": "Forma das peças",
         "labelPieceColor": "Cor das peças",
-        "labelPeekMode": "Modo de espiar",
         "labelMoveInputMode": "Entrada de movimento"
       },
       "changeLog": {
@@ -2016,7 +2014,8 @@
       },
       "own": "Suas peças",
       "opponent": "Peças do oponente",
-      "hidden": "oculto"
+      "hidden": "oculto",
+      "reproduceView": "Como foi jogado"
     }
   },
   "postmortem": {

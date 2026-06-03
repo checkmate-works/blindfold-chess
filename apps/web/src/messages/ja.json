@@ -276,12 +276,14 @@
         "whiteView": "白の視点",
         "blackView": "黒の視点"
       },
-      "boardVisibility": "ボード表示",
+      "boardVisibility": "目隠しの設定",
       "boardVisibilities": {
         "always": "常に表示",
         "peek": "必要なときにピーク",
         "never": "非表示"
       },
+      "hideBoard": "ボードを隠す",
+      "allowPeek": "ピークを許可",
       "resetDefaults": "デフォルトに戻す",
       "resetDefaultsConfirm": {
         "title": "ボード設定をリセットしますか？",
@@ -313,11 +315,6 @@
       "text": "テキスト",
       "icon": "アイコン",
       "enableAutoComplete": "補完を有効にする",
-      "peekMode": "盤面ピークモード",
-      "peekModes": {
-        "modal": "モーダル",
-        "inline": "インライン"
-      },
       "moveInputModes": {
         "text": "テキスト",
         "select": "リスト",
@@ -1774,6 +1771,8 @@
     "save": "保存",
     "showBoard": "ボードを表示",
     "hideBoard": "ボードを隠す",
+    "revealBoard": "タップで表示",
+    "boardHidden": "ボード非表示",
     "flipBoard": "ボードを反転",
     "copyPgn": "PGNをコピー",
     "copyFen": "FENをコピー",
@@ -1823,7 +1822,6 @@
         "labelShowOpponentPieces": "相手の駒を表示",
         "labelPieceShape": "駒の形状",
         "labelPieceColor": "駒の色",
-        "labelPeekMode": "ピーク表示方式",
         "labelMoveInputMode": "手入力方式"
       },
       "changeLog": {
@@ -2020,7 +2018,8 @@
       },
       "own": "自分の駒",
       "opponent": "相手の駒",
-      "hidden": "非表示"
+      "hidden": "非表示",
+      "reproduceView": "プレイ時の見え方"
     }
   },
   "postmortem": {

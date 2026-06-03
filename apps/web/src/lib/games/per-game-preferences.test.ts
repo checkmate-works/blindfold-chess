@@ -2,12 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
-import type { PeekPreferenceHint } from './peek-cookie';
-import {
-  DEFAULT_PER_GAME_PREFERENCES,
-  normalisePerGamePreferences,
-  peekHintFromGamePrefsParam,
-} from './per-game-preferences';
+import { DEFAULT_PER_GAME_PREFERENCES, normalisePerGamePreferences } from './per-game-preferences';
 
 describe('normalisePerGamePreferences', () => {
   describe('null / undefined / non-object input', () => {
@@ -69,20 +64,10 @@ describe('normalisePerGamePreferences', () => {
     });
   });
 
-  describe('peekMode and moveInputMode defaults', () => {
-    it('defaults missing peekMode to "modal"', () => {
-      const result = normalisePerGamePreferences({});
-      expect(result?.peekMode).toBe('modal');
-    });
-
+  describe('moveInputMode defaults', () => {
     it('defaults missing moveInputMode to "text"', () => {
       const result = normalisePerGamePreferences({});
       expect(result?.moveInputMode).toBe('text');
-    });
-
-    it('defaults invalid peekMode to "modal"', () => {
-      const result = normalisePerGamePreferences({ peekMode: 'bogus' });
-      expect(result?.peekMode).toBe('modal');
     });
 
     it('defaults invalid moveInputMode to "text"', () => {
@@ -90,10 +75,10 @@ describe('normalisePerGamePreferences', () => {
       expect(result?.moveInputMode).toBe('text');
     });
 
-    it('keeps valid peekMode and moveInputMode values', () => {
-      expect(
-        normalisePerGamePreferences({ peekMode: 'inline', moveInputMode: 'button' })
-      ).toMatchObject({ peekMode: 'inline', moveInputMode: 'button' });
+    it('keeps a valid moveInputMode value', () => {
+      expect(normalisePerGamePreferences({ moveInputMode: 'button' })).toMatchObject({
+        moveInputMode: 'button',
+      });
     });
   });
 
@@ -159,7 +144,6 @@ describe('normalisePerGamePreferences', () => {
         'showOpponentPieces',
         'pieceShapeMode',
         'pieceColors',
-        'peekMode',
         'moveInputMode',
       ];
       for (const k of expectedKeys) {
@@ -177,7 +161,6 @@ describe('normalisePerGamePreferences', () => {
           'boardVisibility',
           'highlightLastMove',
           'moveInputMode',
-          'peekMode',
           'pieceColors',
           'pieceShapeMode',
           'showOpponentPieces',
@@ -196,63 +179,10 @@ describe('normalisePerGamePreferences', () => {
         showOpponentPieces: false,
         pieceShapeMode: 'circles-all',
         pieceColors: 'white-only',
-        peekMode: 'inline',
         moveInputMode: 'button',
       };
       const result = normalisePerGamePreferences({}, customDefaults);
       expect(result).toEqual(customDefaults);
     });
-  });
-});
-
-describe('peekHintFromGamePrefsParam', () => {
-  // Cookie-sourced fallback used across the cases — deliberately differs from
-  // the values encoded in the `gamePrefs` params below so a passthrough vs.
-  // override is unambiguous.
-  const COOKIE_FALLBACK: PeekPreferenceHint = { peekMode: 'modal', boardVisibility: 'never' };
-
-  it('returns the fallback when the param is absent', () => {
-    expect(peekHintFromGamePrefsParam(undefined, COOKIE_FALLBACK)).toEqual(COOKIE_FALLBACK);
-    expect(peekHintFromGamePrefsParam(null, COOKIE_FALLBACK)).toEqual(COOKIE_FALLBACK);
-    expect(peekHintFromGamePrefsParam('', COOKIE_FALLBACK)).toEqual(COOKIE_FALLBACK);
-  });
-
-  it('returns the fallback when the param is not valid JSON', () => {
-    expect(peekHintFromGamePrefsParam('{not json', COOKIE_FALLBACK)).toEqual(COOKIE_FALLBACK);
-  });
-
-  it("derives the hint from the game's own boardVisibility / peekMode", () => {
-    const param = JSON.stringify({ boardVisibility: 'always', peekMode: 'inline' });
-    expect(peekHintFromGamePrefsParam(param, COOKIE_FALLBACK)).toEqual({
-      peekMode: 'inline',
-      boardVisibility: 'always',
-    });
-  });
-
-  it('overrides the fallback even when the game opts into a less-visible mode', () => {
-    // A game saved as peek+inline must NOT be masked by a cookie that says
-    // always — the param is authoritative for the fields it carries.
-    const param = JSON.stringify({ boardVisibility: 'peek', peekMode: 'inline' });
-    const fallback: PeekPreferenceHint = { peekMode: 'modal', boardVisibility: 'always' };
-    expect(peekHintFromGamePrefsParam(param, fallback)).toEqual({
-      peekMode: 'inline',
-      boardVisibility: 'peek',
-    });
-  });
-
-  it('falls back per-field for keys missing from the param', () => {
-    // Only boardVisibility present → peekMode falls back to the cookie value,
-    // not the hard DEFAULT_PER_GAME_PREFERENCES.
-    const param = JSON.stringify({ boardVisibility: 'always' });
-    const fallback: PeekPreferenceHint = { peekMode: 'inline', boardVisibility: 'never' };
-    expect(peekHintFromGamePrefsParam(param, fallback)).toEqual({
-      peekMode: 'inline',
-      boardVisibility: 'always',
-    });
-  });
-
-  it('falls back for invalid enum values in the param', () => {
-    const param = JSON.stringify({ boardVisibility: 'bogus', peekMode: 'nope' });
-    expect(peekHintFromGamePrefsParam(param, COOKIE_FALLBACK)).toEqual(COOKIE_FALLBACK);
   });
 });

@@ -1,7 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
 import { readMoveInputPreferenceFromCookies } from '@/lib/games/move-input-cookie.server';
-import { readPeekPreferenceFromCookies } from '@/lib/games/peek-cookie.server';
 
 import { PagePanel, PageTitle } from '@/app/[locale]/_components';
 
@@ -11,15 +10,9 @@ import {
   ActionRowSkeleton,
   AlwaysVisibleBoardSkeleton,
   IconButtonSkeleton,
-  InlineBoardHeaderSkeleton,
   TextLinkSkeleton,
 } from './_components/skeletons';
-import {
-  deriveMoveInputSkeletonProps,
-  shouldShowAlwaysVisibleBoard,
-  shouldShowInlinePeekHeader,
-  shouldShowModalPeekButton,
-} from './_lib';
+import { deriveMoveInputSkeletonProps } from './_lib';
 
 // `page.tsx` already declares `dynamic = 'force-dynamic'` which would be
 // inherited, but this file also reads `cookies()` directly so we opt out of
@@ -41,23 +34,17 @@ export const dynamic = 'force-dynamic';
  * cookie) fall back to the `DEFAULT_MOVE_INPUT_HINT` (button, single
  * enabled mode) via the cookie reader.
  *
- * Board-presentation reservations (`AlwaysVisibleBoardSkeleton`,
- * `InlineBoardHeaderSkeleton`, and the `ActionRowSkeleton showBoardButton`
- * slot) are driven by `bfc_peek_pref` so each variant of
- * boardVisibility × peekMode gets the correct layout from this
- * transitional paint onward — without this, returning always-mode users
- * would see ~600 px of CLS as the always-board card paints in.
+ * The board is always rendered at a fixed size now (the blindfold is a mask
+ * overlay, not a different layout), so the skeleton always reserves the
+ * full-size board card (`AlwaysVisibleBoardSkeleton`) — no `bfc_peek_pref`
+ * branching and no modal "Show Board" button slot.
  */
 export default async function GamesPlayLoading() {
-  const [moveInputHint, peekHint, tPlay] = await Promise.all([
+  const [moveInputHint, tPlay] = await Promise.all([
     readMoveInputPreferenceFromCookies(),
-    readPeekPreferenceFromCookies(),
     getTranslations('play'),
   ]);
   const moveInputSkeletonProps = deriveMoveInputSkeletonProps(moveInputHint);
-  const showInlinePeekHeader = shouldShowInlinePeekHeader(peekHint);
-  const showAlwaysVisibleBoard = shouldShowAlwaysVisibleBoard(peekHint);
-  const showModalPeekButton = shouldShowModalPeekButton(peekHint);
 
   return (
     <div className="space-y-8">
@@ -68,27 +55,21 @@ export default async function GamesPlayLoading() {
       <PageTitle>{tPlay('loading')}</PageTitle>
 
       <PagePanel>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Game area skeleton (2 cols).
-              Move-input and peek-related slots are driven by the
-              `bfc_move_input_pref` / `bfc_peek_pref` cookies so returning
-              users get the correct layout from this transitional paint
-              onward. */}
+        {/* `-mt-4 sm:mt-0` matches PlayClient: cancel the mobile top padding so
+            the full-bleed board skeleton reaches the top edge (no odd gap). */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 -mt-4 sm:mt-0">
+          {/* Game area skeleton (2 cols). The move-input slot is driven by
+              `bfc_move_input_pref` so returning users get the correct input
+              shape from this transitional paint onward; the board is always a
+              full-size card. */}
           <div className="lg:col-span-2">
             <div className="flex flex-col gap-6">
-              {/* At most one of these three board-reservations fires (the
-                  `shouldShow*` helpers partition the peek-hint space, see
-                  preferences.test.ts). 'always' renders a full-size board
-                  placeholder; 'peek+inline' renders just the accordion
-                  header chrome; 'peek+modal' reserves a slot inside the
-                  action row; 'never' renders nothing extra. */}
-              {showAlwaysVisibleBoard && <AlwaysVisibleBoardSkeleton />}
-              {showInlinePeekHeader && <InlineBoardHeaderSkeleton />}
+              <AlwaysVisibleBoardSkeleton />
               <MoveInputSkeleton
                 mode={moveInputSkeletonProps.mode}
                 hasModeSwitch={moveInputSkeletonProps.hasModeSwitch}
               />
-              <ActionRowSkeleton showBoardButton={showModalPeekButton} />
+              <ActionRowSkeleton />
               <TextLinkSkeleton />
               <IconButtonSkeleton />
             </div>

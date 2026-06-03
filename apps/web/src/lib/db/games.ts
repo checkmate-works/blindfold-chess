@@ -200,6 +200,7 @@ export async function publishGame(params: {
         engineConfig: game.engineConfig,
         operationLogs: game.operationLogs,
         playSettings: game.playSettings,
+        playSettingsLog: game.playSettingsLog,
         result: game.result,
         engineKind: columns.engineKind,
         engineElo: columns.engineElo,

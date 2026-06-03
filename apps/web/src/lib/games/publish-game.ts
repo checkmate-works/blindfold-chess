@@ -9,8 +9,13 @@ import type { EngineConfig } from '@/lib/engines';
 
 import { isBoardVisibility } from './board-visibility';
 import { computeGameStats } from './compute-game-stats';
+import { normalizePlaySettingsLog } from './play-settings-log';
 import { MAX_DESCRIPTION_LENGTH, MAX_MOVES, MAX_TITLE_LENGTH } from './publish-constants';
-import type { GamePlaySettings, MoveOperationLog } from './saved-game-types';
+import type {
+  GamePlaySettings,
+  MoveOperationLog,
+  PlaySettingsChangeEntry,
+} from './saved-game-types';
 
 /**
  * Validation + denormalization for publishing a shared game.
@@ -40,6 +45,8 @@ export type ValidatedGame = {
   result: GameOutcome;
   operationLogs: MoveOperationLog[] | null;
   playSettings: GamePlaySettings | null;
+  /** Display-relevant mid-game settings edits, enabling per-position display. */
+  playSettingsLog: PlaySettingsChangeEntry[] | null;
 };
 
 /** Denormalized columns derived from a validated snapshot. */
@@ -158,6 +165,10 @@ export function validatePublishSnapshot(input: unknown): ValidatePublishResult {
       result: v.result as GameOutcome,
       operationLogs,
       playSettings: normalizePlaySettings(v.playSettings),
+      // Self-reported mid-game settings timeline; validated to the display
+      // subset and anchored within [0, moves.length]. Folded over playSettings
+      // per position by the replay indicator. Dropped to null when absent.
+      playSettingsLog: normalizePlaySettingsLog(v.playSettingsLog, moves.length),
     },
   };
 }

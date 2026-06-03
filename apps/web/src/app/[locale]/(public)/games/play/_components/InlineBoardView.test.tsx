@@ -57,7 +57,6 @@ const PREFS: GamePreferences = {
   buttonInputPieceLabel: 'icon',
   enableAutoComplete: true,
   boardVisibility: 'peek',
-  peekMode: 'inline',
 };
 
 const BASE_PROPS = {
@@ -161,6 +160,34 @@ describe('InlineBoardView — alwaysOpen mode', () => {
 
     rerender(<InlineBoardView {...BASE_PROPS} alwaysOpen collapseSignal={6} />);
     expect(screen.getByTestId('chess-board')).toBeInTheDocument();
+  });
+
+  it('renders a dismissable mask (peek) over the board and reveals on tap', () => {
+    const onReveal = vi.fn();
+    render(
+      <InlineBoardView {...BASE_PROPS} alwaysOpen masked maskDismissable onReveal={onReveal} />
+    );
+
+    // The board frame is still mounted (layout stable); the mask covers it.
+    expect(screen.getByTestId('chess-board')).toBeInTheDocument();
+    fireEvent.click(screen.getByText('revealBoard'));
+    expect(onReveal).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders a non-dismissable mask (never) with no reveal affordance', () => {
+    const onReveal = vi.fn();
+    render(<InlineBoardView {...BASE_PROPS} alwaysOpen masked onReveal={onReveal} />);
+
+    expect(screen.getByText('boardHidden')).toBeInTheDocument();
+    expect(screen.queryByText('revealBoard')).not.toBeInTheDocument();
+    expect(onReveal).not.toHaveBeenCalled();
+  });
+
+  it('renders no mask when not masked', () => {
+    render(<InlineBoardView {...BASE_PROPS} alwaysOpen />);
+
+    expect(screen.queryByText('revealBoard')).not.toBeInTheDocument();
+    expect(screen.queryByText('boardHidden')).not.toBeInTheDocument();
   });
 
   it('preserves the local isOpen state when alwaysOpen flips off (returns to whatever it was)', () => {

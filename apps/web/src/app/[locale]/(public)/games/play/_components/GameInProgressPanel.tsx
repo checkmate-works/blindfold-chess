@@ -6,7 +6,7 @@ import { Link } from '@/i18n/routing';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FlagIcon, UndoIcon } from '@blindfold-chess/icons';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
-import { FaClipboardList, FaCog } from 'react-icons/fa';
+import { FaClipboardList } from 'react-icons/fa';
 
 import type { MoveInputMethod } from '@/lib/games/saved-game-types';
 
@@ -15,8 +15,7 @@ import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCo
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
 
 import type { ConfirmationDialogs } from '../_hooks';
-import { ACTION_ROW_CONTAINER_CLASSES, shouldShowModalPeekButton } from '../_lib';
-import { ShowBoardButton } from './ShowBoardButton';
+import { ACTION_ROW_CONTAINER_CLASSES } from '../_lib';
 
 type Props = {
   isPlayerTurn: boolean;
@@ -32,7 +31,6 @@ type Props = {
   handleSubmitMove: (move: AlgebraicNotation) => boolean | void | Promise<void>;
   moves: AlgebraicNotation[];
   confirmationDialogs: ConfirmationDialogs;
-  onShowBoard: () => void;
   playerColor?: 'w' | 'b';
   inlineBoardView?: ReactNode;
   onMoveCommitted?: (inputMethod: MoveInputMethod) => void;
@@ -44,12 +42,6 @@ type Props = {
    */
   setMoveInputMode?: (mode: GamePreferences['moveInputMode']) => void;
   onShowOperationLog?: () => void;
-  /**
-   * Opens the mid-game settings modal. Omit (undefined) to hide the gear
-   * icon entirely — used for legacy games without a `gamePreferences`
-   * snapshot, where there is no per-game baseline to edit against.
-   */
-  onShowSettings?: () => void;
   /**
    * When the last AI move failed, carries the i18n'd error message and a
    * `retry` callback that tears down the dead engine and re-requests a move.
@@ -72,26 +64,18 @@ export function GameInProgressPanel({
   handleSubmitMove,
   moves,
   confirmationDialogs,
-  onShowBoard,
   playerColor,
   inlineBoardView,
   onMoveCommitted,
   onMovePeek,
   setMoveInputMode,
   onShowOperationLog,
-  onShowSettings,
   aiMoveError,
 }: Props) {
   const t = useTranslations('play');
-  const showModalPeekButton = shouldShowModalPeekButton(preferences);
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Inline Board View (peek mode === 'inline').
-          NOTE: Header height (~46px) + parent gap-6 (24px) is reserved in
-          PlayClient's initializing skeleton when preferences indicate inline
-          peek. Changes to the header padding / text size here must be kept
-          in sync with that reservation. */}
       {inlineBoardView}
 
       {/* Move Input */}
@@ -135,7 +119,6 @@ export function GameInProgressPanel({
 
       {/* Action Buttons */}
       <div className={ACTION_ROW_CONTAINER_CLASSES}>
-        {showModalPeekButton && <ShowBoardButton onClick={onShowBoard} />}
         <button
           onClick={confirmationDialogs.undo.open}
           disabled={moves.length < 2 || isAiThinking}
@@ -163,11 +146,11 @@ export function GameInProgressPanel({
         </Link>
       </div>
 
-      {/* Game Details + (optional) settings. The Game Details modal folds
-          the opponent / engine info, initial per-game settings, and the
-          mid-game change log into one surface — see OperationLogModal. */}
-      <div className="flex justify-end items-center gap-2 text-muted-foreground">
-        {onShowOperationLog && (
+      {/* Game Details (opponent / engine info, initial per-game settings, and
+          the mid-game change log — see OperationLogModal). Per-game settings
+          has its own gear on the board itself. */}
+      {onShowOperationLog && (
+        <div className="flex justify-end items-center gap-2 text-muted-foreground">
           <button
             type="button"
             onClick={onShowOperationLog}
@@ -176,18 +159,8 @@ export function GameInProgressPanel({
           >
             <FaClipboardList className="w-4 h-4" />
           </button>
-        )}
-        {onShowSettings && (
-          <button
-            type="button"
-            onClick={onShowSettings}
-            className="p-1 leading-none hover:text-foreground"
-            title={t('settings.title')}
-          >
-            <FaCog className="w-4 h-4" />
-          </button>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

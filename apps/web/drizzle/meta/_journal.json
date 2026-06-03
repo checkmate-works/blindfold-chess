@@ -330,6 +330,13 @@
       "when": 1780400205992,
       "tag": "20260602113645_create_shared_games",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1780401982874,
+      "tag": "20260602120622_add_play_settings_log_to_games",
+      "breakpoints": true
     }
   ]
 }

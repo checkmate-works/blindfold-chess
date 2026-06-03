@@ -276,12 +276,14 @@
         "whiteView": "White's Perspective",
         "blackView": "Black's Perspective"
       },
-      "boardVisibility": "Board Visibility",
+      "boardVisibility": "Blindfold",
       "boardVisibilities": {
         "always": "Always visible",
         "peek": "Peek on demand",
         "never": "Hidden"
       },
+      "hideBoard": "Hide the board",
+      "allowPeek": "Allow peeking",
       "resetDefaults": "Reset to defaults",
       "resetDefaultsConfirm": {
         "title": "Reset Board Settings?",
@@ -313,11 +315,6 @@
       "text": "Text",
       "icon": "Icon",
       "enableAutoComplete": "Enable auto-complete",
-      "peekMode": "Board Peek Mode",
-      "peekModes": {
-        "modal": "Modal",
-        "inline": "Inline"
-      },
       "moveInputModes": {
         "text": "Text",
         "select": "List",
@@ -1774,6 +1771,8 @@
     "save": "Save",
     "showBoard": "Show Board",
     "hideBoard": "Hide Board",
+    "revealBoard": "Tap to reveal",
+    "boardHidden": "Board hidden",
     "flipBoard": "Flip Board",
     "copyPgn": "Copy PGN",
     "copyFen": "Copy FEN",
@@ -1823,7 +1822,6 @@
         "labelShowOpponentPieces": "Show opponent pieces",
         "labelPieceShape": "Piece shape",
         "labelPieceColor": "Piece color",
-        "labelPeekMode": "Peek mode",
         "labelMoveInputMode": "Move input"
       },
       "changeLog": {
@@ -2020,7 +2018,8 @@
       },
       "own": "Your pieces",
       "opponent": "Opponent pieces",
-      "hidden": "hidden"
+      "hidden": "hidden",
+      "reproduceView": "As played"
     }
   },
   "postmortem": {

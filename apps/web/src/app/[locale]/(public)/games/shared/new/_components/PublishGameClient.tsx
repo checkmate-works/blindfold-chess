@@ -96,6 +96,7 @@ export function PublishGameClient({ locale }: Props) {
         result,
         operationLogs: game.operationLogs ?? null,
         playSettings: game.gamePreferences ?? null,
+        playSettingsLog: game.preferenceChangeLog ?? null,
       });
 
       if (!res.success) {

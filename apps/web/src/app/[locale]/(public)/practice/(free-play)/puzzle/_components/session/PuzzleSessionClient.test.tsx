@@ -56,7 +56,6 @@ vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
       buttonInputPieceLabel: 'icon',
       enableAutoComplete: true,
       boardVisibility: 'peek',
-      peekMode: 'modal',
     },
     isLoaded: true,
     isHydrated: true,
@@ -65,24 +64,11 @@ vi.mock('@/app/[locale]/_contexts/GamePreferencesContext', () => ({
   }),
 }));
 
-vi.mock('@/app/[locale]/(public)/games/play/_components/BoardViewModal', () => ({
-  BoardViewModal: ({ isOpen }: { isOpen: boolean }) =>
-    isOpen ? <div data-testid="peek-modal" /> : null,
-}));
-
 vi.mock('@/app/[locale]/(public)/games/play/_components/InlineBoardView', () => ({
-  InlineBoardView: () => <div data-testid="inline-board-view" />,
-}));
-
-vi.mock('@/app/[locale]/(public)/games/play/_components/ShowBoardButton', () => ({
-  ShowBoardButton: ({ onClick, disabled }: { onClick: () => void; disabled?: boolean }) => (
-    <button
-      type="button"
-      aria-label="showBoard"
-      onClick={onClick}
-      disabled={disabled}
-      data-testid="show-board-button"
-    >
+  // The puzzle's single peek style is the inline accordion. Expose its `onPeek`
+  // as a clickable "showBoard" button so the peek-count tests can trigger a peek.
+  InlineBoardView: ({ onPeek }: { onPeek?: () => void }) => (
+    <button type="button" aria-label="showBoard" data-testid="inline-board-view" onClick={onPeek}>
       showBoard
     </button>
   ),
@@ -180,7 +166,6 @@ function renderSession(solutions: string[] = ['Nf3'], fen: string = STARTING_FEN
       positionTitle={POSITION_TITLE}
       piecesInfo={<div data-testid="stub-pieces-info" />}
       breadcrumb={<nav data-testid="stub-breadcrumb" />}
-      initialPeekHint={{ peekMode: 'modal', boardVisibility: 'peek' }}
     />
   );
 }

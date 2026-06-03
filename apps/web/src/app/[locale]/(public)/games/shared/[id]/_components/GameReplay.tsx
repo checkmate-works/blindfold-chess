@@ -13,7 +13,12 @@ import type { GameChunkItem } from '@/lib/db/game-chunks';
 import type { GameCommentItem } from '@/lib/db/game-comments';
 import type { EngineConfig } from '@/lib/engines';
 import { computeGameStats } from '@/lib/games/compute-game-stats';
-import type { MoveOperationLog } from '@/lib/games/saved-game-types';
+import { gameUsedNotablePlaySettings, playSettingsAtHalfMove } from '@/lib/games/play-settings-log';
+import type {
+  GamePlaySettings,
+  MoveOperationLog,
+  PlaySettingsChangeEntry,
+} from '@/lib/games/saved-game-types';
 
 import { InlineBoardView } from '@/app/[locale]/(public)/games/play/_components/InlineBoardView';
 import { MovesPanel } from '@/app/[locale]/(public)/games/play/_components/MovesPanel';
@@ -34,6 +39,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { GameChunkSection } from './GameChunkSection';
 import { type CommentUser, GameCommentThread } from './GameCommentThread';
+import { PlaySettingsIndicator } from './PlaySettingsIndicator';
 
 /**
  * Parse the URL hash (`#14`) into a 0-based move index, or null when it is
@@ -55,6 +61,10 @@ type Props = {
   playerColor: 'white' | 'black';
   engineConfig: EngineConfig;
   operationLogs: MoveOperationLog[] | null;
+  /** Start-of-game blindfold settings snapshot; null for legacy/plain games. */
+  playSettings: GamePlaySettings | null;
+  /** Mid-game settings edits, folded over `playSettings` per displayed position. */
+  playSettingsLog: PlaySettingsChangeEntry[] | null;
   locale: Locale;
   /** Advice comments on this game, anchored per move (ply). */
   comments: GameCommentItem[];
@@ -94,6 +104,8 @@ export function GameReplay({
   playerColor,
   engineConfig,
   operationLogs,
+  playSettings,
+  playSettingsLog,
   locale,
   comments,
   gameChunks,
@@ -108,6 +120,11 @@ export function GameReplay({
   const router = useRouter();
   const { preferences } = useGamePreferences();
   const [detailsOpen, setDetailsOpen] = useState(false);
+  // When on, the board reproduces how the player actually saw this position
+  // (piece obfuscation) instead of the default fully-revealed view. The board
+  // panel itself stays visible (this is a replay), so only the piece-level
+  // settings are reflected — see `reflectedPreferences`.
+  const [reproduceView, setReproduceView] = useState(false);
 
   const revealedPreferences = useMemo<GamePreferences>(
     () => ({
@@ -252,6 +269,44 @@ export function GameReplay({
           ? notationMoves.length - 1
           : null
         : null;
+  // "How the player saw this position": the effective blindfold settings at the
+  // displayed half-move, folded from the start-of-game snapshot plus the
+  // mid-game change log. Position-aware — it updates as the viewer steps,
+  // because settings could change mid-game (e.g. start sighted, then hide the
+  // opponent's pieces). Shown only when the game ever used non-default settings;
+  // a game that was fully sighted throughout has nothing to surface.
+  const showPlaySettings =
+    playSettings != null && gameUsedNotablePlaySettings(playSettings, playSettingsLog);
+  const effectivePlaySettings = useMemo<GamePlaySettings | null>(() => {
+    if (!playSettings) return null;
+    const halfMovesShown =
+      currentPosition >= 0
+        ? currentPosition + 1
+        : currentPosition === -1
+          ? notationMoves.length
+          : 0;
+    return playSettingsAtHalfMove(playSettings, playSettingsLog, halfMovesShown);
+  }, [playSettings, playSettingsLog, currentPosition, notationMoves.length]);
+
+  // Board preferences that reproduce the player's view at this position: the
+  // viewer's own base preferences with the game's piece obfuscation applied.
+  // `boardVisibility` is intentionally left untouched (the replay board is
+  // `alwaysOpen`), so 'peek' / 'never' games still show the board here — only
+  // the piece-level settings (which side was shown, shape, color) are mirrored.
+  const reflectedPreferences = useMemo<GamePreferences | null>(() => {
+    if (!effectivePlaySettings) return null;
+    return {
+      ...preferences,
+      showOwnPieces: effectivePlaySettings.showOwnPieces,
+      showOpponentPieces: effectivePlaySettings.showOpponentPieces,
+      pieceShapeMode: effectivePlaySettings.pieceShapeMode,
+      pieceColors: effectivePlaySettings.pieceColors,
+    };
+  }, [preferences, effectivePlaySettings]);
+
+  const boardPreferences =
+    reproduceView && reflectedPreferences ? reflectedPreferences : revealedPreferences;
+
   // Label the move with its PGN-style number prefix: white → "1. d4",
   // black → "1...d5" (derived from the starting FEN's side + fullmove).
   const moveLabel = useMemo(() => {
@@ -310,7 +365,7 @@ export function GameReplay({
             playerSide={playerColor}
             flipped={effectiveFlipped}
             lastMove={lastMove}
-            preferences={revealedPreferences}
+            preferences={boardPreferences}
             movesLength={notationMoves.length}
             currentPosition={currentPosition}
             formattedPgn={formattedPgn}
@@ -322,6 +377,37 @@ export function GameReplay({
             onFlipBoard={toggleFlip}
             alwaysOpen
           />
+
+          {/* How this game was played, at the position currently on the board.
+              Sits directly under the board and updates as the viewer steps
+              through the moves. The switch on the right reproduces the player's
+              view (piece obfuscation) on the board itself. */}
+          {showPlaySettings && effectivePlaySettings && (
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+              <PlaySettingsIndicator settings={effectivePlaySettings} playerColor={playerColor} />
+              <button
+                type="button"
+                role="switch"
+                aria-checked={reproduceView}
+                onClick={() => setReproduceView((v) => !v)}
+                className="inline-flex shrink-0 items-center gap-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <span>{t('playSettings.reproduceView')}</span>
+                <span
+                  aria-hidden
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    reproduceView ? 'bg-foreground' : 'bg-secondary'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${
+                      reproduceView ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </span>
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="lg:col-span-1">
@@ -444,9 +530,10 @@ export function GameReplay({
         )
       )}
 
-      {/* Game details — same modal as the result screen (opponent shown;
-          per-game settings / change log aren't persisted for shared games,
-          which the modal notes as unavailable). */}
+      {/* Game details — same modal as the result screen (opponent shown). The
+          per-position blindfold settings are surfaced inline above the board
+          (PlaySettingsIndicator), so the modal's per-game settings panel stays
+          unwired here. */}
       <OperationLogModal
         isOpen={detailsOpen}
         onClose={() => setDetailsOpen(false)}

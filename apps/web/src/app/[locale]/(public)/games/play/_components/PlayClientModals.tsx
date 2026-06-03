@@ -12,18 +12,15 @@ import type {
 } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
 import type { useConfirmationDialogs } from '../_hooks';
-import type { FormattedPgnMove } from '../_lib/pgn-parser';
-import { BoardViewModal } from './BoardViewModal';
 import { MidGameSettingsModal } from './MidGameSettingsModal';
 import { OperationLogModal } from './OperationLogModal';
 
 type ConfirmationDialogs = ReturnType<typeof useConfirmationDialogs>;
 
 /**
- * The five overlays the play page renders alongside the main board +
- * panel grid: resign / undo / restart confirmations, the modal-peek
- * BoardView, the game-details (`OperationLogModal`), and the mid-game
- * `MidGameSettingsModal`.
+ * The overlays the play page renders alongside the main board + panel grid:
+ * resign / undo / restart confirmations, the game-details (`OperationLogModal`),
+ * and the mid-game `MidGameSettingsModal`.
  *
  * Extracted out of `PlayClient.tsx` because the page composition was
  * dominated by ~80 lines of repeated `<ConfirmationModal isOpen={...} />`
@@ -40,23 +37,6 @@ type ConfirmationDialogs = ReturnType<typeof useConfirmationDialogs>;
  */
 type Props = {
   confirmationDialogs: ConfirmationDialogs;
-  // Board view modal
-  isBoardVisible: boolean;
-  onCloseBoardVisible: () => void;
-  fen: string;
-  playerSide: 'white' | 'black';
-  flipped: boolean;
-  lastMove: { from: string; to: string } | null;
-  preferences: GamePreferences;
-  movesLength: number;
-  currentPosition: number;
-  formattedPgn: FormattedPgnMove[];
-  onNavigateToStart: () => void;
-  onNavigatePrevious: () => void;
-  onNavigateNext: () => void;
-  onNavigateToEnd: () => void;
-  onNavigateToPosition: (index: number) => void;
-  onFlipBoard: () => void;
   // Operation log modal
   showOperationLogModal: boolean;
   onCloseOperationLog: () => void;
@@ -67,6 +47,7 @@ type Props = {
   canEditPerGameSettings: boolean;
   showSettingsModal: boolean;
   onCloseSettingsModal: () => void;
+  preferences: GamePreferences;
   onPerGamePrefChange: <K extends keyof PerGamePreferences>(
     key: K,
     value: PerGamePreferences[K]
@@ -75,22 +56,6 @@ type Props = {
 
 export function PlayClientModals({
   confirmationDialogs,
-  isBoardVisible,
-  onCloseBoardVisible,
-  fen,
-  playerSide,
-  flipped,
-  lastMove,
-  preferences,
-  movesLength,
-  currentPosition,
-  formattedPgn,
-  onNavigateToStart,
-  onNavigatePrevious,
-  onNavigateNext,
-  onNavigateToEnd,
-  onNavigateToPosition,
-  onFlipBoard,
   showOperationLogModal,
   onCloseOperationLog,
   engineConfig,
@@ -99,6 +64,7 @@ export function PlayClientModals({
   canEditPerGameSettings,
   showSettingsModal,
   onCloseSettingsModal,
+  preferences,
   onPerGamePrefChange,
 }: Props) {
   const t = useTranslations('play');
@@ -137,26 +103,6 @@ export function PlayClientModals({
         message={t('confirmRestartMessage')}
         confirmText={t('confirmRestart')}
         cancelText={t('cancel')}
-      />
-
-      {/* Board View Modal */}
-      <BoardViewModal
-        isOpen={isBoardVisible}
-        onClose={onCloseBoardVisible}
-        fen={fen}
-        playerSide={playerSide}
-        flipped={flipped}
-        lastMove={lastMove}
-        preferences={preferences}
-        movesLength={movesLength}
-        currentPosition={currentPosition}
-        formattedPgn={formattedPgn}
-        onNavigateToStart={onNavigateToStart}
-        onNavigatePrevious={onNavigatePrevious}
-        onNavigateNext={onNavigateNext}
-        onNavigateToEnd={onNavigateToEnd}
-        onNavigateToPosition={onNavigateToPosition}
-        onFlipBoard={onFlipBoard}
       />
 
       {/* Game Details Modal — Opponent + Initial Settings + Change Log */}

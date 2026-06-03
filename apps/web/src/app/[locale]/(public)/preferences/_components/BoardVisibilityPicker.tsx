@@ -3,55 +3,82 @@
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { BoardVisibility } from '@/lib/games/board-visibility';
-import { BOARD_VISIBILITY_VALUES } from '@/lib/games/board-visibility';
-import { BOARD_VISIBILITY_ICON } from '@/lib/games/board-visibility-icons';
 
 type Props = {
   value: BoardVisibility;
   onChange: (value: BoardVisibility) => void;
-  /**
-   * Stretch the segmented buttons to fill the available width (`flex` with
-   * `flex-1` buttons). Used by the new-game form and the global Preferences
-   * "Game" tab, which have a full-width column to fill. When `false` the
-   * picker renders as a compact `inline-flex` group — used by the mid-game
-   * settings modal, where it sits in a denser layout. Defaults to `false`.
-   */
-  fullWidth?: boolean;
 };
 
+function ToggleRow({
+  label,
+  checked,
+  onToggle,
+}: {
+  label: string;
+  checked: boolean;
+  onToggle: (next: boolean) => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      onClick={() => onToggle(!checked)}
+      className="flex w-full items-center justify-between gap-3 text-sm text-foreground"
+    >
+      <span>{label}</span>
+      <span
+        aria-hidden
+        className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
+          checked ? 'bg-foreground' : 'bg-secondary'
+        }`}
+      >
+        <span
+          className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${
+            checked ? 'translate-x-6' : 'translate-x-1'
+          }`}
+        />
+      </span>
+    </button>
+  );
+}
+
 /**
- * Board-visibility segmented picker (always / peek / never) — the button group
- * only. Callers supply their own heading/description so the surrounding copy
- * can differ per surface. Shared so the two width variants stay in lockstep.
+ * Board-visibility control. The underlying value is still the 3-state
+ * {@link BoardVisibility} (`always` | `peek` | `never`) that the rest of the app
+ * consumes, but it is presented as two nested yes/no toggles, which read more
+ * simply than a 3-way picker:
+ *
+ *  - "Hide the board" (blindfold) — off ⇒ `always` (board always shown, never
+ *    re-masks); on ⇒ blindfolded.
+ *  - "Allow peeking" (only when blindfolded) — on ⇒ `peek` (tap to reveal,
+ *    re-masks each move); off ⇒ `never` (stays hidden).
+ *
+ * Callers supply their own heading; this renders just the toggle group.
  */
-export function BoardVisibilityPicker({ value, onChange, fullWidth = false }: Props) {
+export function BoardVisibilityPicker({ value, onChange }: Props) {
   const t = useTranslations('Preferences');
+  const blindfold = value !== 'always';
+  const peekAllowed = value === 'peek';
 
   return (
-    <div
-      className={`${fullWidth ? 'flex' : 'inline-flex'} rounded-md border border-border overflow-hidden`}
-    >
-      {BOARD_VISIBILITY_VALUES.map((option, idx) => {
-        const Icon = BOARD_VISIBILITY_ICON[option];
-        const isLast = idx === BOARD_VISIBILITY_VALUES.length - 1;
-        return (
-          <button
-            key={option}
-            type="button"
-            onClick={() => onChange(option)}
-            className={`text-sm font-medium transition-colors flex items-center justify-center gap-1.5 ${
-              fullWidth ? 'flex-1 px-3 py-1.5' : 'px-4 py-2'
-            } ${
-              value === option
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-card text-foreground hover:bg-muted'
-            } ${isLast ? '' : 'border-r border-border'}`}
-          >
-            <Icon className="w-3.5 h-3.5" />
-            {t(`game.boardVisibilities.${option}`)}
-          </button>
-        );
-      })}
+    <div className="space-y-3">
+      <ToggleRow
+        label={t('game.hideBoard')}
+        checked={blindfold}
+        // Enabling the blindfold defaults to the peekable mode (the practical
+        // middle); disabling it returns to the always-shown board.
+        onToggle={(on) => onChange(on ? 'peek' : 'always')}
+      />
+      {blindfold && (
+        <div className="border-l border-border pl-4">
+          <ToggleRow
+            label={t('game.allowPeek')}
+            checked={peekAllowed}
+            onToggle={(on) => onChange(on ? 'peek' : 'never')}
+          />
+        </div>
+      )}
     </div>
   );
 }

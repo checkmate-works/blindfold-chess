@@ -61,7 +61,6 @@ const REVEALED_BOARD_PREFS: GamePreferences = {
   buttonInputPieceLabel: 'icon',
   enableAutoComplete: true,
   boardVisibility: 'always',
-  peekMode: 'modal',
 };
 
 type Props = {
