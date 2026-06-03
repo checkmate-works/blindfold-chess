@@ -8,23 +8,9 @@ import type { ChunkOption } from '@/lib/chunks/types';
 import { BoardThumbnail } from '@/lib/positions/ui/BoardThumbnail';
 import type { ThemeOption } from '@/lib/themes/types';
 
+import { type TagItem, computeTagSuggestions } from '../_lib/tag-suggestions';
 import { SelectedTagCard } from './SelectedTagCard';
 import { type TagDetailItem, TagDetailModal } from './TagDetailModal';
-
-type ThemeItem = ThemeOption & { kind: 'theme' };
-type ChunkItem = ChunkOption & { kind: 'chunk' };
-type TagItem = ThemeItem | ChunkItem;
-
-/**
- * Idle dropdown caps. When the user has not typed anything we render
- * at most this many of each kind so the initial open is responsive
- * even as the chunk catalog grows. Each row holds a 48px mini-board
- * (≈64 divs of layout work each), so capping keeps DOM cost bounded.
- * The full filtered set is shown the moment the user types, since
- * filtering naturally narrows the result and intent is now known.
- */
-const IDLE_MAX_THEMES = 10;
-const IDLE_MAX_CHUNKS = 10;
 
 type Props = {
   /**
@@ -60,9 +46,6 @@ type Props = {
   };
 };
 
-const toThemeItem = (t: ThemeOption): ThemeItem => ({ ...t, kind: 'theme' });
-const toChunkItem = (c: ChunkOption): ChunkItem => ({ ...c, kind: 'chunk' });
-
 export function TagPicker({
   selectedThemes,
   selectedChunks,
@@ -84,43 +67,17 @@ export function TagPicker({
     [selectedChunks]
   );
 
-  const isIdle = inputValue.trim().length === 0;
-
-  const matchedThemes = useMemo<ThemeItem[]>(() => {
-    const q = inputValue.toLowerCase().trim();
-    const matches = (label: string) => !q || label.toLowerCase().includes(q);
-    return availableThemes
-      .filter((t) => !selectedThemeIdSet.has(t.id) && matches(t.label))
-      .map(toThemeItem);
-  }, [availableThemes, selectedThemeIdSet, inputValue]);
-
-  const matchedChunks = useMemo<ChunkItem[]>(() => {
-    const q = inputValue.toLowerCase().trim();
-    const matches = (label: string) => !q || label.toLowerCase().includes(q);
-    return availableChunks
-      .filter((c) => !selectedChunkIdSet.has(c.id) && matches(c.label))
-      .map(toChunkItem);
-  }, [availableChunks, selectedChunkIdSet, inputValue]);
-
-  // Themes (curated master vocabulary) lead the suggestions; chunks
-  // (UGC) follow. This biases new users toward standard terminology
-  // while still surfacing personal patterns. At idle, cap each kind
-  // independently so both groups remain visible regardless of how
-  // many themes outrank chunks alphabetically.
-  const displayItems = useMemo<TagItem[]>(() => {
-    if (isIdle) {
-      return [
-        ...matchedThemes.slice(0, IDLE_MAX_THEMES),
-        ...matchedChunks.slice(0, IDLE_MAX_CHUNKS),
-      ];
-    }
-    return [...matchedThemes, ...matchedChunks];
-  }, [matchedThemes, matchedChunks, isIdle]);
-
-  const hiddenCount = isIdle
-    ? Math.max(0, matchedThemes.length - IDLE_MAX_THEMES) +
-      Math.max(0, matchedChunks.length - IDLE_MAX_CHUNKS)
-    : 0;
+  const { displayItems, hiddenCount } = useMemo(
+    () =>
+      computeTagSuggestions({
+        inputValue,
+        availableThemes,
+        availableChunks,
+        selectedThemeIds: selectedThemeIdSet,
+        selectedChunkIds: selectedChunkIdSet,
+      }),
+    [inputValue, availableThemes, availableChunks, selectedThemeIdSet, selectedChunkIdSet]
+  );
 
   function addItem(item: TagItem) {
     if (item.kind === 'theme') {
