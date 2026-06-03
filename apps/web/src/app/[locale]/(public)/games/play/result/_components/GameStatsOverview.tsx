@@ -32,21 +32,13 @@ const MARKER_CLASS: Record<MoveMarker, string> = {
   hint: 'bg-violet-400/60',
 };
 
-function StatCard({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="rounded-lg border border-border bg-card px-3 py-3 text-center">
-      <div className="text-2xl font-bold text-foreground tabular-nums">{value}</div>
-      <div className="mt-1 text-xs text-muted-foreground leading-tight">{label}</div>
-    </div>
-  );
-}
-
 /**
  * Result-page overview of how the (finished) game was played — derived
- * entirely from the persisted per-move operation logs. Replaces the old flat
- * totals table with glanceable metric cards plus a per-move "effort strip"
- * that shows where peeks / mistakes clustered and links back into the
- * finished-game view at that exact position.
+ * entirely from the persisted per-move operation logs. A per-move "effort
+ * strip" shows where peeks / mistakes clustered and links back into the
+ * finished-game view at that exact position. (The earlier aggregate metric
+ * cards — Moves / Clean Moves / Illegal Attempts / Undos — were removed as
+ * redundant: the totals are self-evident from the effort strip and notation.)
  */
 export function GameStatsOverview({
   stats,
@@ -56,20 +48,6 @@ export function GameStatsOverview({
   onViewDetails,
 }: Props) {
   const t = useTranslations('play');
-
-  const cleanRate =
-    stats.totalMoves > 0 ? Math.round((stats.cleanMoves / stats.totalMoves) * 100) : 0;
-
-  // Core cards always shown (a 0 is itself meaningful for a blindfold game);
-  // peeks / hints only when they actually occurred.
-  const cards: { value: string; label: string }[] = [
-    { value: String(stats.totalMoves), label: t('result.stats.moves') },
-    { value: `${cleanRate}%`, label: t('result.stats.cleanRate') },
-    { value: String(stats.illegal), label: t('result.stats.illegal') },
-    { value: String(stats.takebacks), label: t('result.stats.takebacks') },
-  ];
-  if (stats.peeks > 0) cards.push({ value: String(stats.peeks), label: t('result.stats.peeks') });
-  if (stats.hints > 0) cards.push({ value: String(stats.hints), label: t('result.stats.hints') });
 
   // Legend entries for only the markers that appear in this game.
   const presentMarkers = (['illegal', 'takeback', 'peek', 'hint', 'clean'] as MoveMarker[]).filter(
@@ -95,13 +73,6 @@ export function GameStatsOverview({
             {t('result.viewDetails')}
           </button>
         )}
-      </div>
-
-      {/* Metric cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        {cards.map((card) => (
-          <StatCard key={card.label} value={card.value} label={card.label} />
-        ))}
       </div>
 
       {/* Per-move effort strip */}
