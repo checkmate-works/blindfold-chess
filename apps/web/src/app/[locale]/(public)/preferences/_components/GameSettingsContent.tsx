@@ -192,6 +192,12 @@ export function GameSettingsContent({
                   onChange={(e) => onSettingsChange({ highlightLastMove: e.target.checked })}
                   label={t('game.highlightLastMove')}
                 />
+                <PreferenceOption
+                  type="checkbox"
+                  checked={settings.showPieceDestinations}
+                  onChange={(e) => onSettingsChange({ showPieceDestinations: e.target.checked })}
+                  label={t('game.pieceDestinations')}
+                />
               </div>
             </div>
 

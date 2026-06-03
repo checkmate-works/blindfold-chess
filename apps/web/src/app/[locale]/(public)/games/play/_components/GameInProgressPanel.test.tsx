@@ -47,6 +47,7 @@ function makeConfirmationDialogs(): ConfirmationDialogs {
 const preferences: GamePreferences = {
   showCoordinates: true,
   highlightLastMove: true,
+  showPieceDestinations: true,
   boardTheme: 'monotone',
   showOwnPieces: true,
   showOpponentPieces: true,

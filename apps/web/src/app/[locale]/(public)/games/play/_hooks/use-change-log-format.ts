@@ -31,6 +31,8 @@ export function useChangeLogFormat() {
         return t('operationLog.initialSettings.labelBoardVisibility');
       case 'highlightLastMove':
         return t('operationLog.initialSettings.labelHighlightLastMove');
+      case 'showPieceDestinations':
+        return t('operationLog.initialSettings.labelPieceDestinations');
       case 'showOwnPieces':
         return t('operationLog.initialSettings.labelShowOwnPieces');
       case 'showOpponentPieces':
@@ -55,6 +57,7 @@ export function useChangeLogFormat() {
       case 'boardVisibility':
         return tPrefs(`boardVisibilities.${value as PerGamePreferences['boardVisibility']}`);
       case 'highlightLastMove':
+      case 'showPieceDestinations':
       case 'showOwnPieces':
       case 'showOpponentPieces':
         return renderBool(value as boolean);

@@ -145,6 +145,16 @@ export function OperationLogModal({
                 </div>
                 <div className="flex justify-between gap-3 px-4 py-2">
                   <dt className="text-muted-foreground">
+                    {t('operationLog.initialSettings.labelPieceDestinations')}
+                  </dt>
+                  {/* `?? true` covers legacy snapshots saved before this field
+                      existed — its historical (and default) state was "on". */}
+                  <dd className="text-right">
+                    {renderBool(gamePreferences.showPieceDestinations ?? true)}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-3 px-4 py-2">
+                  <dt className="text-muted-foreground">
                     {t('operationLog.initialSettings.labelShowOwnPieces')}
                   </dt>
                   <dd className="text-right">{renderBool(gamePreferences.showOwnPieces)}</dd>

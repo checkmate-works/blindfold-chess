@@ -140,6 +140,7 @@ describe('normalisePerGamePreferences', () => {
       const expectedKeys: ReadonlyArray<keyof PerGamePreferences> = [
         'boardVisibility',
         'highlightLastMove',
+        'showPieceDestinations',
         'showOwnPieces',
         'showOpponentPieces',
         'pieceShapeMode',
@@ -165,6 +166,7 @@ describe('normalisePerGamePreferences', () => {
           'pieceShapeMode',
           'showOpponentPieces',
           'showOwnPieces',
+          'showPieceDestinations',
         ].sort()
       );
     });
@@ -175,6 +177,7 @@ describe('normalisePerGamePreferences', () => {
       const customDefaults: PerGamePreferences = {
         boardVisibility: 'always',
         highlightLastMove: false,
+        showPieceDestinations: false,
         showOwnPieces: false,
         showOpponentPieces: false,
         pieceShapeMode: 'circles-all',

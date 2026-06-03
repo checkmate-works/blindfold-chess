@@ -28,6 +28,7 @@ export function isValidPreferenceChangeEntry(entry: unknown): boolean {
     case 'showBoardButtonInGame':
       return typeof e.from === 'boolean' && typeof e.to === 'boolean';
     case 'highlightLastMove':
+    case 'showPieceDestinations':
     case 'showOwnPieces':
     case 'showOpponentPieces':
       return typeof e.from === 'boolean' && typeof e.to === 'boolean';

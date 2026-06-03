@@ -77,6 +77,11 @@ export function usePlayClientPreferences({
       ...globalPreferences,
       boardVisibility: perGamePrefs.boardVisibility ?? globalPreferences.boardVisibility,
       highlightLastMove: perGamePrefs.highlightLastMove,
+      // showPieceDestinations entered PerGamePreferences after the field set
+      // settled, so legacy `gamePreferences` records may not carry it; fall
+      // back to the global until the user toggles it in this game.
+      showPieceDestinations:
+        perGamePrefs.showPieceDestinations ?? globalPreferences.showPieceDestinations,
       showOwnPieces: perGamePrefs.showOwnPieces,
       showOpponentPieces: perGamePrefs.showOpponentPieces,
       pieceShapeMode: perGamePrefs.pieceShapeMode,

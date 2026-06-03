@@ -216,6 +216,7 @@ export function InlineBoardView({
               showCoordinates={preferences.showCoordinates}
               showOwnPieces={preferences.showOwnPieces}
               showOpponentPieces={preferences.showOpponentPieces}
+              showPieceDestinations={preferences.showPieceDestinations}
               pieceShapeMode={preferences.pieceShapeMode}
               pieceColors={preferences.pieceColors}
               boardTheme={preferences.boardTheme}

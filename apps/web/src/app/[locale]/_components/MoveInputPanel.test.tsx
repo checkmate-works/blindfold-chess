@@ -57,6 +57,7 @@ const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 const preferences: GamePreferences = {
   showCoordinates: true,
   highlightLastMove: true,
+  showPieceDestinations: true,
   boardTheme: 'monotone',
   showOwnPieces: true,
   showOpponentPieces: true,

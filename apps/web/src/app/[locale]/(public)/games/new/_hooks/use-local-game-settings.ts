@@ -10,6 +10,7 @@ export function useLocalGameSettings() {
   const [localSettings, setLocalSettings] = useState<PerGamePreferences>({
     boardVisibility: preferences.boardVisibility,
     highlightLastMove: preferences.highlightLastMove,
+    showPieceDestinations: preferences.showPieceDestinations,
     showOwnPieces: preferences.showOwnPieces,
     showOpponentPieces: preferences.showOpponentPieces,
     pieceShapeMode: preferences.pieceShapeMode,

@@ -41,6 +41,14 @@ type Props = {
   showCoordinates?: boolean;
   showOwnPieces?: boolean;
   showOpponentPieces?: boolean;
+  /**
+   * Whether selecting a piece in interactive mode reveals its legal
+   * destinations (the centered move dots / capture rings). Defaults to `true`.
+   * When `false`, click-to-move and drag still work and are still validated —
+   * only the visual hint is suppressed (a harder, hint-free board). Already
+   * implicitly off when the board is obfuscated (see {@link obfuscated}).
+   */
+  showPieceDestinations?: boolean;
   pieceShapeMode?: 'normal' | 'circles-all' | 'circles-own' | 'circles-opponent';
   pieceColors?: 'normal' | 'white-only' | 'black-only';
   boardTheme?: BoardTheme;
@@ -131,6 +139,7 @@ export const ChessBoard = memo(function ChessBoard({
   showCoordinates = true,
   showOwnPieces = true,
   showOpponentPieces = true,
+  showPieceDestinations = true,
   pieceShapeMode = 'normal',
   pieceColors = 'normal',
   boardTheme = DEFAULT_BOARD_THEME,
@@ -241,14 +250,14 @@ export const ChessBoard = memo(function ChessBoard({
   // Used to highlight reachable squares. Empty when nothing is active, when
   // interactive mode is off, or when obfuscation hides piece identity.
   const legalDestinations = useMemo<string[]>(() => {
-    if (!interactive || !moveSource || obfuscated) return [];
+    if (!interactive || !moveSource || obfuscated || !showPieceDestinations) return [];
     try {
       const moves = getLegalMoves(fen, { verbose: true });
       return moves.filter((m) => m.from === moveSource).map((m) => m.to);
     } catch {
       return [];
     }
-  }, [fen, moveSource, interactive, obfuscated]);
+  }, [fen, moveSource, interactive, obfuscated, showPieceDestinations]);
 
   const pieceAt = useCallback(
     (square: string): BoardPiece | null => {

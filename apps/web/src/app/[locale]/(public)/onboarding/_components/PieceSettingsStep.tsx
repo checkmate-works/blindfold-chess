@@ -52,6 +52,7 @@ export function PieceSettingsStep({
   const previewSettings: GamePreferences = {
     showCoordinates: true,
     highlightLastMove: true,
+    showPieceDestinations: true,
     boardTheme: 'lichess',
     showOwnPieces,
     showOpponentPieces,

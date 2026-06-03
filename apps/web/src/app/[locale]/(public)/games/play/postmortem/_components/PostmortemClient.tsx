@@ -75,6 +75,7 @@ function mergePerGamePreferences(
     ...global,
     boardVisibility: perGame.boardVisibility ?? global.boardVisibility,
     highlightLastMove: perGame.highlightLastMove,
+    showPieceDestinations: perGame.showPieceDestinations ?? global.showPieceDestinations,
     showOwnPieces: perGame.showOwnPieces,
     showOpponentPieces: perGame.showOpponentPieces,
     pieceShapeMode: perGame.pieceShapeMode,

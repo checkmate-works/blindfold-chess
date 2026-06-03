@@ -48,6 +48,7 @@ vi.mock('@/app/[locale]/_components/Modal', () => ({
 const DEFAULT_PREFS: PerGamePreferences = {
   boardVisibility: 'peek',
   highlightLastMove: true,
+  showPieceDestinations: true,
   showOwnPieces: true,
   showOpponentPieces: true,
   pieceShapeMode: 'normal',

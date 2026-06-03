@@ -155,6 +155,7 @@ describe('parseUrlSearchParams', () => {
       const prefs = {
         boardVisibility: 'always',
         highlightLastMove: false,
+        showPieceDestinations: true,
         showOwnPieces: true,
         showOpponentPieces: true,
         pieceShapeMode: 'normal',
