@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { AuthField, AuthSubmitButton } from '@/app/_components/AuthFormFields';
-import { FormErrorBanner } from '@/app/_components/FormErrorBanner';
+import { AuthFormLayout } from '@/app/_components/AuthFormLayout';
 import { MIN_PASSWORD_LENGTH } from '@/config';
 import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -39,9 +39,7 @@ export function ResetPasswordForm() {
   });
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-sm mx-auto space-y-4">
-      {error && <FormErrorBanner message={error} variant="bordered" />}
-
+    <AuthFormLayout onSubmit={handleSubmit} error={error}>
       <AuthField
         id="password"
         type="password"
@@ -69,6 +67,6 @@ export function ResetPasswordForm() {
         idleLabel={t('submit')}
         loadingLabel={t('submitLoading')}
       />
-    </form>
+    </AuthFormLayout>
   );
 }

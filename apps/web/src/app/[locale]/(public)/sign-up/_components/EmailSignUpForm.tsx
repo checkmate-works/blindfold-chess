@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { AuthField, AuthSubmitButton } from '@/app/_components/AuthFormFields';
-import { FormErrorBanner } from '@/app/_components/FormErrorBanner';
+import { AuthFormLayout } from '@/app/_components/AuthFormLayout';
 import { MIN_PASSWORD_LENGTH } from '@/config';
 import { useSafeLocale as useLocale } from '@/i18n/use-safe-locale';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
@@ -45,9 +45,7 @@ export function EmailSignUpForm() {
   });
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-sm mx-auto space-y-4">
-      {error && <FormErrorBanner message={error} variant="bordered" />}
-
+    <AuthFormLayout onSubmit={handleSubmit} error={error}>
       <AuthField
         id="email"
         type="email"
@@ -85,6 +83,6 @@ export function EmailSignUpForm() {
         idleLabel={t('emailSignUp')}
         loadingLabel={t('emailSignUpLoading')}
       />
-    </form>
+    </AuthFormLayout>
   );
 }
