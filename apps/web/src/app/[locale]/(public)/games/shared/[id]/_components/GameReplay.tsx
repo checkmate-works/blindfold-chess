@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useMemo } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -13,7 +13,6 @@ import type { GameChunkItem } from '@/lib/db/game-chunks';
 import type { GameCommentItem } from '@/lib/db/game-comments';
 import type { EngineConfig } from '@/lib/engines';
 import { computeGameStats } from '@/lib/games/compute-game-stats';
-import { gameUsedNotablePlaySettings, playSettingsAtHalfMove } from '@/lib/games/play-settings-log';
 import type {
   GamePlaySettings,
   MoveOperationLog,
@@ -33,25 +32,16 @@ import { computeMoveNumber } from '@/app/[locale]/(public)/games/play/postmortem
 import { GameStatsOverview } from '@/app/[locale]/(public)/games/play/result/_components/GameStatsOverview';
 import { StatsAuthGate } from '@/app/[locale]/(public)/games/play/result/_components/StatsAuthGate';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
-import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
+import { useReplayCommentTabs } from '../_hooks/use-replay-comment-tabs';
+import { useReplayDeepLink } from '../_hooks/use-replay-deep-link';
+import { useReplayPreferences } from '../_hooks/use-replay-preferences';
+import { useReplayUrlSync } from '../_hooks/use-replay-url-sync';
 import { GameChunkSection } from './GameChunkSection';
 import { type CommentUser, GameCommentThread } from './GameCommentThread';
 import { PlaySettingsIndicator } from './PlaySettingsIndicator';
-
-/**
- * Parse the URL hash (`#14`) into a 0-based move index, or null when it is
- * absent / not a valid half-move number for this game.
- */
-function parseHashPly(hash: string, moveCount: number): number | null {
-  const raw = hash.replace(/^#/, '');
-  if (!/^\d+$/.test(raw)) return null;
-  const n = Number(raw);
-  if (n < 1 || n > moveCount) return null;
-  return n - 1;
-}
 
 type Props = {
   /** Published game id, used to anchor the per-move comment threads. */
@@ -95,7 +85,10 @@ type Props = {
  * Read-only adaptation: `gameInProgress` is false (no "restart from here"), and
  * "new game from here" starts a fresh game from that position so a viewer can
  * try it themselves. Preferences are the viewer's own but forced fully revealed
- * — this is a finished public game, not a live blindfold one.
+ * — this is a finished public game, not a live blindfold one (see
+ * `useReplayPreferences`). The replay's cross-cutting concerns (preferences,
+ * URL sync, comment/chunk tabs, deep-link) live in `../_hooks`; this component
+ * wires them to the shared notation/navigation hooks and lays out the result.
  */
 export function GameReplay({
   gameId,
@@ -119,23 +112,6 @@ export function GameReplay({
   const t = useTranslations('sharedGames');
   const router = useRouter();
   const { preferences } = useGamePreferences();
-  // When on, the board reproduces how the player actually saw this position
-  // (piece obfuscation) instead of the default fully-revealed view. The board
-  // panel itself stays visible (this is a replay), so only the piece-level
-  // settings are reflected — see `reflectedPreferences`.
-  const [reproduceView, setReproduceView] = useState(false);
-
-  const revealedPreferences = useMemo<GamePreferences>(
-    () => ({
-      ...preferences,
-      showOwnPieces: true,
-      showOpponentPieces: true,
-      pieceShapeMode: 'normal',
-      pieceColors: 'normal',
-      boardVisibility: 'always',
-    }),
-    [preferences]
-  );
 
   const { moves: notationMoves, formattedPgn } = useNotation({
     // The DB stores moves as string[]; they are SAN (AlgebraicNotation) at runtime.
@@ -152,6 +128,7 @@ export function GameReplay({
     navigateNext,
     navigateToEnd,
   } = useMoveNavigation({ moves: notationMoves, startingFen: startingFen ?? undefined });
+
   // Seed the board orientation from the `?color=white|black` param:
   // `effectiveFlipped` means "black is at the bottom", and the default (no
   // param) is the player's own side. Convert the requested orientation into
@@ -167,71 +144,25 @@ export function GameReplay({
     initialFlipped,
   });
 
-  // Open at the opening board (the game's starting position, which shows the
-  // description + stats) so every visitor lands on the same overview and steps
-  // forward into the moves from there — unless deep-linked to a comment (from a
-  // like notification) or the `#<half-move>` hash, which open at that move.
-  // Runs once after the moves load.
-  const startedRef = useRef(false);
-  useEffect(() => {
-    if (startedRef.current || notationMoves.length === 0) return;
-    startedRef.current = true;
-    // Priority: a deep-linked comment's move, then the `#<half-move>` URL hash
-    // (read client-side — the fragment never reaches the server), then move 1.
-    const target = highlightCommentId
-      ? comments.find((c) => c.id === highlightCommentId)
-      : undefined;
-    const commentPly =
-      target && target.ply != null && target.ply < notationMoves.length ? target.ply : null;
-    const hashPly = parseHashPly(window.location.hash, notationMoves.length);
-    // -2 is the opening board (the starting position, with description + stats).
-    navigateToPosition(commentPly ?? hashPly ?? -2);
-  }, [notationMoves.length, navigateToPosition, highlightCommentId, comments]);
+  const {
+    reproduceView,
+    setReproduceView,
+    showPlaySettings,
+    effectivePlaySettings,
+    boardPreferences,
+  } = useReplayPreferences({
+    preferences,
+    playSettings,
+    playSettingsLog,
+    currentPosition,
+    notationMovesLength: notationMoves.length,
+  });
 
-  // Gate the URL-sync effects below so they only fire on genuine post-load
-  // changes (user navigation / flip). Next's App Router resets the URL to the
-  // navigation target once the initial render settles, so any URL write during
-  // load is reverted anyway — and writing the initial move/orientation would
-  // just be a visible flicker. Shared links keep their state because it is in
-  // the loaded URL itself, not written client-side.
-  const syncReadyRef = useRef(false);
-  useEffect(() => {
-    const id = window.setTimeout(() => {
-      syncReadyRef.current = true;
-    }, 0);
-    return () => window.clearTimeout(id);
-  }, []);
-
-  // Reflect the move on the board in the URL hash (`#<half-move>`), Lichess-
-  // style (e.g. `/games/shared/<id>#14`), so the address bar tracks navigation
-  // and the link can be shared to open at a specific move. Uses replaceState
-  // (no server round-trip / history spam).
-  useEffect(() => {
-    if (!syncReadyRef.current) return;
-    const moveNumber =
-      currentPosition >= 0
-        ? currentPosition + 1
-        : currentPosition === -1
-          ? notationMoves.length
-          : 0;
-    const url = new URL(window.location.href);
-    url.searchParams.delete('comment');
-    url.hash = moveNumber > 0 ? String(moveNumber) : '';
-    window.history.replaceState(window.history.state, '', url);
-  }, [currentPosition, notationMoves.length]);
-
-  // Reflect the board orientation in the URL as `?color=white|black` once the
-  // viewer flips. A query param (not a path segment) is used because Next's App
-  // Router reverts a client-side pathname change to a different route; updating
-  // searchParams via replaceState is supported and leaves the `#move` hash
-  // intact. Like the move hash, only written post-load (see syncReadyRef).
-  useEffect(() => {
-    if (!syncReadyRef.current) return;
-    const orientationColor = effectiveFlipped ? 'black' : 'white';
-    const url = new URL(window.location.href);
-    url.searchParams.set('color', orientationColor);
-    window.history.replaceState(window.history.state, '', url);
-  }, [effectiveFlipped]);
+  useReplayUrlSync({
+    currentPosition,
+    notationMovesLength: notationMoves.length,
+    effectiveFlipped,
+  });
 
   // Highlight the move that produced the displayed position.
   const lastMove = useMemo(() => {
@@ -268,43 +199,6 @@ export function GameReplay({
           ? notationMoves.length - 1
           : null
         : null;
-  // "How the player saw this position": the effective blindfold settings at the
-  // displayed half-move, folded from the start-of-game snapshot plus the
-  // mid-game change log. Position-aware — it updates as the viewer steps,
-  // because settings could change mid-game (e.g. start sighted, then hide the
-  // opponent's pieces). Shown only when the game ever used non-default settings;
-  // a game that was fully sighted throughout has nothing to surface.
-  const showPlaySettings =
-    playSettings != null && gameUsedNotablePlaySettings(playSettings, playSettingsLog);
-  const effectivePlaySettings = useMemo<GamePlaySettings | null>(() => {
-    if (!playSettings) return null;
-    const halfMovesShown =
-      currentPosition >= 0
-        ? currentPosition + 1
-        : currentPosition === -1
-          ? notationMoves.length
-          : 0;
-    return playSettingsAtHalfMove(playSettings, playSettingsLog, halfMovesShown);
-  }, [playSettings, playSettingsLog, currentPosition, notationMoves.length]);
-
-  // Board preferences that reproduce the player's view at this position: the
-  // viewer's own base preferences with the game's piece obfuscation applied.
-  // `boardVisibility` is intentionally left untouched (the replay board is
-  // `alwaysOpen`), so 'peek' / 'never' games still show the board here — only
-  // the piece-level settings (which side was shown, shape, color) are mirrored.
-  const reflectedPreferences = useMemo<GamePreferences | null>(() => {
-    if (!effectivePlaySettings) return null;
-    return {
-      ...preferences,
-      showOwnPieces: effectivePlaySettings.showOwnPieces,
-      showOpponentPieces: effectivePlaySettings.showOpponentPieces,
-      pieceShapeMode: effectivePlaySettings.pieceShapeMode,
-      pieceColors: effectivePlaySettings.pieceColors,
-    };
-  }, [preferences, effectivePlaySettings]);
-
-  const boardPreferences =
-    reproduceView && reflectedPreferences ? reflectedPreferences : revealedPreferences;
 
   // Label the move with its PGN-style number prefix: white → "1. d4",
   // black → "1...d5" (derived from the starting FEN's side + fullmove).
@@ -326,34 +220,20 @@ export function GameReplay({
   // thread takes their place, directly under the move list.
   const isInitialPosition = currentPosition === -2;
 
-  // The move panel is tabbed: discussion (comments) vs applicable chunks. Both
-  // datasets are already loaded, so the counts and the smart default are pure
-  // client-side filtering — no extra queries.
-  const commentCount = useMemo(
-    () => comments.filter((c) => c.ply === currentPly && c.deletedAt === null).length,
-    [comments, currentPly]
-  );
-  const chunkCount = useMemo(
-    () => gameChunks.filter((c) => c.ply === currentPly).length,
-    [gameChunks, currentPly]
-  );
-  const [activeMoveTab, setActiveMoveTab] = useState<'comments' | 'chunks'>('comments');
-  // Default to comments, but open straight to chunks on a move that has chunks
-  // and no comments. Re-evaluated per move (manual switches persist within a move).
-  useEffect(() => {
-    setActiveMoveTab(commentCount === 0 && chunkCount > 0 ? 'chunks' : 'comments');
-  }, [currentPly, commentCount, chunkCount]);
+  const { commentCount, chunkCount, activeMoveTab, setActiveMoveTab } = useReplayCommentTabs({
+    comments,
+    gameChunks,
+    currentPly,
+  });
 
-  // Once the deep-linked comment's move is on the board (its thread mounted),
-  // scroll it into view. Runs once.
-  const scrolledRef = useRef(false);
-  useEffect(() => {
-    if (!highlightCommentId || scrolledRef.current || isInitialPosition) return;
-    const el = document.getElementById(`game-comment-${highlightCommentId}`);
-    if (!el) return;
-    scrolledRef.current = true;
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, [highlightCommentId, isInitialPosition, currentPosition]);
+  useReplayDeepLink({
+    notationMovesLength: notationMoves.length,
+    navigateToPosition,
+    highlightCommentId,
+    comments,
+    isInitialPosition,
+    currentPosition,
+  });
 
   // The opening-board stats overview (engine + By Move + change log). Anonymous
   // viewers get it gated behind a members-only sign-up CTA, matching the result
