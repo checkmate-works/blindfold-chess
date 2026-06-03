@@ -105,19 +105,6 @@ export function GameSettingsContent({
             boardVisibility is 'never' (pure blindfold, nothing to see). */}
         {settings.boardVisibility !== 'never' && (
           <>
-            {/* Display Options */}
-            <div>
-              <h4 className="text-sm text-foreground mb-4">{t('game.displayOptions')}</h4>
-              <div className="space-y-3">
-                <PreferenceOption
-                  type="checkbox"
-                  checked={settings.highlightLastMove}
-                  onChange={(e) => onSettingsChange({ highlightLastMove: e.target.checked })}
-                  label={t('game.highlightLastMove')}
-                />
-              </div>
-            </div>
-
             <div>
               <h4 className="text-sm text-foreground mb-4">{t('game.pieceVisibility')}</h4>
               <div className="space-y-3">
@@ -193,6 +180,20 @@ export function GameSettingsContent({
                 </div>
               </>
             )}
+
+            {/* Display Options — lower priority, so kept near the bottom (just
+                above the preview, which reflects these settings). */}
+            <div>
+              <h4 className="text-sm text-foreground mb-4">{t('game.displayOptions')}</h4>
+              <div className="space-y-3">
+                <PreferenceOption
+                  type="checkbox"
+                  checked={settings.highlightLastMove}
+                  onChange={(e) => onSettingsChange({ highlightLastMove: e.target.checked })}
+                  label={t('game.highlightLastMove')}
+                />
+              </div>
+            </div>
 
             {/* Preview */}
             {showPreview && <BoardPreview settings={settings} playerSide={playerSide} />}
