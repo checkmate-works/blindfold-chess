@@ -1,0 +1,203 @@
+import { getPositionDetailPath } from '@/lib/positions/routes';
+
+import type { NotificationWithActor } from './queries';
+import type { PositionMetadata } from './type-guards';
+import {
+  getPositionTypeFromMetadata,
+  isAnnouncementMetadata,
+  isChunkEditRequestMetadata,
+  isChunkLifecycleMetadata,
+  isGameCommentLikeMetadata,
+  isPositionMetadata,
+  isPostMetadata,
+  isReplyMetadata,
+} from './type-guards';
+
+/**
+ * Resolve a notification link for a position-targeted notification.
+ *
+ * Uses the stored `positionType` in `metadata` to route to the correct
+ * detail page (`/practice/puzzle/:id` for puzzles,
+ * `/practice/position-memory/:id` for memory).
+ *
+ * Return values:
+ *   - A path string — route to the correct detail page when `positionType`
+ *     is known and a detail page exists.
+ *   - `null` — `positionType` is a known value that has no detail page
+ *     (currently `'sequence'`). Callers should degrade to a non-link
+ *     button rather than producing an inevitable 404.
+ *   - `/practice/position-memory/:id` fallback — `positionType` is missing
+ *     (legacy notifications persisted before the field was introduced) or
+ *     outside the known set. Legacy rows are overwhelmingly memory-typed,
+ *     so the memory URL preserves pre-fix behavior.
+ */
+function resolvePositionLinkFromMetadata(id: string, metadata: PositionMetadata): string | null {
+  const positionType = getPositionTypeFromMetadata(metadata);
+  if (positionType !== null) {
+    // Known type: trust `getPositionDetailPath`, including its `null` for
+    // `sequence`. Do NOT fall back to the memory URL here — that would
+    // just 404 for sequence positions.
+    return getPositionDetailPath(positionType, id);
+  }
+  // Unknown / missing positionType — preserve legacy behavior.
+  return `/practice/position-memory/${id}`;
+}
+
+function getTopicSegment(topicType: string): string {
+  if (topicType === 'opening') return 'openings';
+  return `${topicType}s`;
+}
+
+/**
+ * Build the post-detail URL for a notification keyed off `topicType`.
+ *
+ * `topic_posts` is polymorphic, but the routes that render those posts
+ * are not:
+ *   - `square` / `opening` / `chunk` → `/topics/{segment}/{key}/posts/{postId}`
+ *     (chunks use `/chunks/{slug}/...`) detail page. The page renders the
+ *     OP and every reply as a single-root `CommentNode` tree, where every
+ *     node has `id="post-{id}"` — same anchor scheme as the position
+ *     pages, so reply deep-links use `#post-{replyId}`.
+ *   - `position_memory` / `position_puzzle` → no detail page; the parent
+ *     puzzle / position page renders the same inline tree. Both top-level
+ *     and reply notifications point at `parent#post-{targetId}` (replyId
+ *     for replies, postId for top-level).
+ */
+function buildPostDetailUrl(
+  topicType: string,
+  topicKey: string,
+  postId: string,
+  replyId?: string
+): string {
+  if (topicType === 'position_memory') {
+    const targetId = replyId ?? postId;
+    return `/practice/position-memory/${topicKey}#post-${targetId}`;
+  }
+  if (topicType === 'position_puzzle') {
+    const targetId = replyId ?? postId;
+    return `/practice/puzzle/${topicKey}#post-${targetId}`;
+  }
+  if (topicType === 'chunk') {
+    // Chunk comments live at /chunks/{slug}/... — NOT under /topics/. Without
+    // this branch the URL resolves to a non-existent /topics/chunks/... path.
+    const baseUrl = `/chunks/${topicKey}/posts/${postId}`;
+    return replyId ? `${baseUrl}#post-${replyId}` : baseUrl;
+  }
+  const segment = getTopicSegment(topicType);
+  const baseUrl = `/topics/${segment}/${topicKey}/posts/${postId}`;
+  return replyId ? `${baseUrl}#post-${replyId}` : baseUrl;
+}
+
+/**
+ * Resolve the destination URL for a notification, or `null` when the
+ * notification should render as a non-link button (no meaningful target).
+ *
+ * Pure routing logic extracted from `NotificationItem` so it can be unit
+ * tested without rendering the component.
+ */
+export function buildNotificationLink(
+  notification: NotificationWithActor,
+  opts: { currentUsername?: string }
+): string | null {
+  const { currentUsername } = opts;
+  const actor = notification.actor;
+
+  if (notification.type === 'follow' && actor) {
+    return `/u/${actor.username}`;
+  }
+  if (notification.type === 'like' && notification.targetType === 'position') {
+    if (isPositionMetadata(notification.metadata)) {
+      // Prefer the stored `positionType` so puzzle likes route to
+      // `/practice/puzzle/:id` (the memory URL 404s for puzzles).
+      // May return `null` for types without a detail page (e.g.
+      // `sequence`); in that case the item degrades to a non-link
+      // button rather than producing a 404. Legacy notifications
+      // without `positionType` still fall back to the memory URL.
+      return resolvePositionLinkFromMetadata(
+        notification.metadata.positionId,
+        notification.metadata
+      );
+    }
+    if (notification.targetId) {
+      return `/practice/position-memory/${notification.targetId}`;
+    }
+  }
+  if (notification.type === 'new_position' && notification.targetId) {
+    if (isPositionMetadata(notification.metadata)) {
+      return resolvePositionLinkFromMetadata(notification.targetId, notification.metadata);
+    }
+    return `/practice/position-memory/${notification.targetId}`;
+  }
+  if (
+    (notification.type === 'like' ||
+      notification.type === 'reply' ||
+      notification.type === 'new_post' ||
+      notification.type === 'new_comment_on_topic') &&
+    isPostMetadata(notification.metadata)
+  ) {
+    const replyId =
+      notification.type === 'reply' && isReplyMetadata(notification.metadata)
+        ? notification.metadata.replyId
+        : undefined;
+    return buildPostDetailUrl(
+      notification.metadata.topicType,
+      notification.metadata.topicKey,
+      notification.metadata.postId,
+      replyId
+    );
+  }
+  if (notification.type === 'like' && notification.targetType === 'game' && notification.targetId) {
+    // The game id is the like target itself.
+    return `/games/shared/${notification.targetId}`;
+  }
+  if (notification.type === 'new_game' && notification.targetId) {
+    // A followed author published a game; the target is the game id.
+    return `/games/shared/${notification.targetId}`;
+  }
+  if (
+    notification.type === 'like' &&
+    notification.targetType === 'game_comment' &&
+    notification.targetId &&
+    isGameCommentLikeMetadata(notification.metadata)
+  ) {
+    // Deep-link to the liked comment: the detail page opens that comment's
+    // move and scrolls to it (the threads are per-move).
+    return `/games/shared/${notification.metadata.gameId}?comment=${notification.targetId}`;
+  }
+  if (notification.type === 'announcement' && isAnnouncementMetadata(notification.metadata)) {
+    return `/announcements/${notification.metadata.slug}`;
+  }
+  if (
+    (notification.type === 'chunk_edit_request_submitted' ||
+      notification.type === 'chunk_edit_request_accepted') &&
+    isChunkEditRequestMetadata(notification.metadata)
+  ) {
+    // Route to the chunk's edit-requests page rather than the
+    // individual request — the page already shows the full per-request
+    // list with the current chunk values for comparison, which is the
+    // context both notification types ask for.
+    return `/chunks/${notification.metadata.slug}/edit-requests`;
+  }
+  if (
+    (notification.type === 'new_chunk_draft' || notification.type === 'chunk_published') &&
+    isChunkLifecycleMetadata(notification.metadata)
+  ) {
+    // Drafts land on the edit-requests page since the call-to-action
+    // is to review the draft and propose changes. Published chunks
+    // route to the chunk's main page — the canonical post.
+    if (notification.type === 'new_chunk_draft') {
+      return `/chunks/${notification.metadata.slug}/edit-requests`;
+    }
+    return `/chunks/${notification.metadata.slug}`;
+  }
+  if (notification.type === 'achievement_granted' && currentUsername) {
+    return `/u/${currentUsername}/achievements`;
+  }
+  if (notification.type === 'benefit_grant') {
+    return '/mypage/benefits';
+  }
+  if (notification.type === 'point_grant' || notification.type === 'like_coin_grant') {
+    return '/mypage/coins';
+  }
+  return null;
+}
