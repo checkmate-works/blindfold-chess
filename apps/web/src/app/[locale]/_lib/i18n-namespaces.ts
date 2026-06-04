@@ -85,6 +85,7 @@ export const NAMESPACE_CLASSIFICATION = {
   navigation: 'client',
   newGame: 'client',
   onboarding: 'client',
+  onboardingProfile: 'client',
   openingSearch: 'client',
   pgnInput: 'client',
   play: 'client',

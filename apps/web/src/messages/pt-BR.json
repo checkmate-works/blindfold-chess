@@ -2605,6 +2605,16 @@
     "signInToView": "Faça login para ver",
     "announcementNotFound": "Anúncio Não Encontrado"
   },
+  "onboardingProfile": {
+    "sectionTitle": "Configure seu perfil",
+    "completed": "Cadastro concluído 🎉",
+    "prompt": "Em seguida, configure seu perfil (opcional).",
+    "avatarLabel": "Avatar",
+    "countryLabel": "País",
+    "saveAndStart": "Salvar e começar",
+    "skip": "Configurar mais tarde",
+    "saveError": "Falha ao salvar. Tente novamente."
+  },
   "onboarding": {
     "title": "Configuração Inicial",
     "pageTitle": "Etapa de Integração {step}",

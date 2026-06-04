@@ -87,7 +87,7 @@ export function UsernameForm({ locale }: Props) {
         return;
       }
 
-      router.push(`/${locale}/mypage`);
+      router.push(`/${locale}/mypage/onboarding/profile`);
     } catch {
       setError(getValidationMessage('unknown'));
       setIsSubmitting(false);

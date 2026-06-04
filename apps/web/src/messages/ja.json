@@ -2844,6 +2844,16 @@
     "signInToView": "ログインして閲覧",
     "announcementNotFound": "お知らせが見つかりません"
   },
+  "onboardingProfile": {
+    "sectionTitle": "プロフィール設定",
+    "completed": "本登録が完了しました 🎉",
+    "prompt": "続いてプロフィールを設定しましょう（任意）",
+    "avatarLabel": "アバター",
+    "countryLabel": "国籍",
+    "saveAndStart": "保存して始める",
+    "skip": "あとで設定する",
+    "saveError": "保存に失敗しました。もう一度お試しください。"
+  },
   "onboarding": {
     "title": "初期設定",
     "pageTitle": "オンボーディング Step {step}",

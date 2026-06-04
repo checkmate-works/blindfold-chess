@@ -2844,6 +2844,16 @@
     "signInToView": "Sign in to view",
     "announcementNotFound": "Announcement Not Found"
   },
+  "onboardingProfile": {
+    "sectionTitle": "Set Up Your Profile",
+    "completed": "Registration complete 🎉",
+    "prompt": "Next, set up your profile (optional).",
+    "avatarLabel": "Avatar",
+    "countryLabel": "Country",
+    "saveAndStart": "Save and get started",
+    "skip": "Set up later",
+    "saveError": "Failed to save. Please try again."
+  },
   "onboarding": {
     "title": "Setup",
     "pageTitle": "Onboarding Step {step}",

@@ -2605,6 +2605,16 @@
     "signInToView": "Inicia sesión para ver",
     "announcementNotFound": "Anuncio No Encontrado"
   },
+  "onboardingProfile": {
+    "sectionTitle": "Configura tu perfil",
+    "completed": "Registro completado 🎉",
+    "prompt": "A continuación, configura tu perfil (opcional).",
+    "avatarLabel": "Avatar",
+    "countryLabel": "País",
+    "saveAndStart": "Guardar y empezar",
+    "skip": "Configurar más tarde",
+    "saveError": "No se pudo guardar. Inténtalo de nuevo."
+  },
   "onboarding": {
     "title": "Configuración Inicial",
     "pageTitle": "Paso de Incorporación {step}",
