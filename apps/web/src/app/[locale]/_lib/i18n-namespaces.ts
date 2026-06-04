@@ -102,6 +102,7 @@ export const NAMESPACE_CLASSIFICATION = {
   redirect: 'client',
   resetPassword: 'client',
   setupUsername: 'client',
+  sharedGames: 'client',
   signIn: 'client',
   signUp: 'client',
   toast: 'client',
