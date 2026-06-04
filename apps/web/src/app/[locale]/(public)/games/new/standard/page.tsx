@@ -1,7 +1,7 @@
 import { createNewGamePage } from '../_lib/create-new-game-page';
 import { StandardGameForm } from './_components/StandardGameForm';
 
-const { generateStaticParams, dynamic, generateMetadata, Page } = createNewGamePage({
+const { generateStaticParams, generateMetadata, Page } = createNewGamePage({
   titleKey: 'newGame.standardTitle',
   path: 'games/new/standard',
   // The tour walks the engine cards first, then the skill-level dropdown —
@@ -27,5 +27,6 @@ const { generateStaticParams, dynamic, generateMetadata, Page } = createNewGameP
   ),
 });
 
-export { generateStaticParams, dynamic, generateMetadata };
+export const dynamic = 'force-dynamic';
+export { generateStaticParams, generateMetadata };
 export default Page;
