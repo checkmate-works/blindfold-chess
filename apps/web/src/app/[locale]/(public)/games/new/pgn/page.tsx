@@ -1,7 +1,7 @@
 import { createNewGamePage } from '../_lib/create-new-game-page';
 import { PgnGameForm } from './_components/PgnGameForm';
 
-const { generateStaticParams, dynamic, generateMetadata, Page } = createNewGamePage({
+const { generateStaticParams, generateMetadata, Page } = createNewGamePage({
   titleKey: 'newGame.pgnPageTitle',
   path: 'games/new/pgn',
   buildHelpSteps: (tNewGame) => [
@@ -30,5 +30,6 @@ const { generateStaticParams, dynamic, generateMetadata, Page } = createNewGameP
   renderForm: ({ locale, maiaAccess }) => <PgnGameForm locale={locale} maiaAccess={maiaAccess} />,
 });
 
-export { generateStaticParams, dynamic, generateMetadata };
+export const dynamic = 'force-dynamic';
+export { generateStaticParams, generateMetadata };
 export default Page;

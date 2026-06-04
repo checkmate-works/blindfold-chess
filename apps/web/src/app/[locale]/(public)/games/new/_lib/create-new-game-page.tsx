@@ -46,12 +46,17 @@ type CreateNewGamePageConfig = {
  * switches to dynamic rendering at runtime — the desired behaviour, since the
  * form renders different UI per user.
  *
+ * Note: the `dynamic` route-segment config is NOT returned from here. Next.js
+ * statically parses route-segment config exports (`dynamic`, `revalidate`, …)
+ * from their declaration site, and cannot read the value through a re-exported
+ * factory return. Each page must declare `export const dynamic = 'force-dynamic'`
+ * directly.
+ *
  * The opening mode is intentionally NOT built here: it has no Maia check,
  * loads the openings catalog, and renders without Suspense.
  */
 export function createNewGamePage(config: CreateNewGamePageConfig) {
   const generateStaticParams = generateLocaleStaticParams;
-  const dynamic = 'force-dynamic';
 
   async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { locale } = await params;
@@ -96,5 +101,5 @@ export function createNewGamePage(config: CreateNewGamePageConfig) {
     );
   }
 
-  return { generateStaticParams, dynamic, generateMetadata, Page };
+  return { generateStaticParams, generateMetadata, Page };
 }

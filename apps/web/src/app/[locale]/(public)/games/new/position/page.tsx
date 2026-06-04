@@ -1,7 +1,7 @@
 import { createNewGamePage } from '../_lib/create-new-game-page';
 import { PositionGameForm } from './_components/PositionGameForm';
 
-const { generateStaticParams, dynamic, generateMetadata, Page } = createNewGamePage({
+const { generateStaticParams, generateMetadata, Page } = createNewGamePage({
   titleKey: 'newGame.positionPageTitle',
   path: 'games/new/position',
   buildHelpSteps: (tNewGame) => [
@@ -32,5 +32,6 @@ const { generateStaticParams, dynamic, generateMetadata, Page } = createNewGameP
   ),
 });
 
-export { generateStaticParams, dynamic, generateMetadata };
+export const dynamic = 'force-dynamic';
+export { generateStaticParams, generateMetadata };
 export default Page;
