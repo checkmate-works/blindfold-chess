@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
-import { PageLayout } from '@/app/[locale]/_components';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps } from '@/app/[locale]/_lib/types';
 
@@ -20,9 +20,21 @@ export function generateMetadata({ params }: Props) {
 export default async function SetupUsernamePage({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'setupUsername' });
+  const tSignUp = await getTranslations({ locale, namespace: 'signUp' });
 
   return (
-    <PageLayout title={t('title')} locale={locale}>
+    <PageLayout
+      title={
+        <>
+          {tSignUp('title')}
+          <span className="ml-2 inline-flex items-center rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success align-middle">
+            {tSignUp('freeBadge')}
+          </span>
+        </>
+      }
+      locale={locale}
+    >
+      <SectionTitle>{t('sectionTitle')}</SectionTitle>
       <UsernameForm locale={locale} />
     </PageLayout>
   );

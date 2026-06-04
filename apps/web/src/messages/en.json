@@ -38,10 +38,6 @@
       "title": "Register",
       "description": "Register for Blindfold Chess"
     },
-    "onboarding": {
-      "title": "Setup",
-      "description": "Set up your preferences before starting your first game"
-    },
     "mypage": {
       "title": "My Page",
       "description": "View your account information and activity"
@@ -2553,8 +2549,10 @@
   },
   "verifyEmail": {
     "title": "Check Your Email",
+    "sectionTitle": "Registration Almost Complete",
     "description": "We've sent a confirmation link to your email address.",
     "checkInbox": "Please check your inbox and click the link to verify your account.",
+    "checkSpam": "If you can’t find the email, please check your spam or junk folder.",
     "resendButton": "Resend confirmation email",
     "resendLoading": "Sending...",
     "resendSuccess": "Confirmation email resent. Please check your inbox.",
@@ -2842,110 +2840,33 @@
     "signInToView": "Sign in to view",
     "announcementNotFound": "Announcement Not Found"
   },
-  "onboarding": {
-    "title": "Setup",
-    "pageTitle": "Onboarding Step {step}",
-    "skip": "Skip",
-    "back": "Back",
-    "next": "Next",
-    "step1": {
-      "shortLabel": "Input",
-      "title": "Move Input Method",
-      "description": "Choose how you want to enter your moves during a game.",
-      "modes": {
-        "text": {
-          "label": "Text Input",
-          "description": "Type moves using algebraic notation (e.g., e4, Nf3). Best for experienced players."
-        },
-        "select": {
-          "label": "Select from List",
-          "description": "Choose from a list of available legal moves. Easy to use, no notation knowledge needed."
-        },
-        "button": {
-          "label": "Button Input",
-          "description": "Enter moves by tapping piece and square buttons. A balanced option for all skill levels."
-        }
-      },
-      "preview": {
-        "label": "Preview",
-        "textPlaceholder": "e.g., e4, Nf3, O-O",
-        "selectPlaceholder": "Select a move..."
-      },
-      "hint": {
-        "multiSelect": "If you select multiple methods, you can switch between them during play.",
-        "changeLater": "You can change this later in the settings."
-      }
+  "onboardingProfile": {
+    "completed": "Registration complete 🎉",
+    "prompt": "Next, set up your profile (optional).",
+    "avatarLabel": "Avatar",
+    "countryLabel": "Country"
+  },
+  "onboardingWizard": {
+    "pageTitle": "Getting Started",
+    "saveError": "Failed to save. Please try again.",
+    "nav": {
+      "back": "Back",
+      "next": "Next",
+      "saveAndNext": "Save and continue",
+      "skip": "Skip"
     },
-    "step2": {
-      "shortLabel": "Board",
-      "title": "Board Visibility",
-      "description": "Decide how the chessboard surfaces during play. Piece-display settings (next step) still provide the blindfold experience when the board is shown.",
-      "boardVisibilities": {
-        "always": {
-          "label": "Always visible",
-          "description": "The board is shown throughout the game. Piece settings (next step) still hide the piece types/colors as you prefer."
-        },
-        "peek": {
-          "label": "Peek on demand",
-          "description": "The board is hidden by default; tap to peek when you need to verify a position."
-        },
-        "never": {
-          "label": "Hidden",
-          "description": "Pure blindfold mode — the board is never shown during play."
-        }
-      },
-      "modes": {
-        "modal": {
-          "label": "Modal",
-          "description": "The board appears as a popup dialog. Tap a button to show/hide."
-        },
-        "inline": {
-          "label": "Inline",
-          "description": "The board is embedded above the input area as a collapsible section."
-        }
-      },
-      "preview": {
-        "label": "Preview"
-      }
+    "belt": {
+      "description": "A curriculum designed to get you winning blindfold games against the AI.",
+      "playCta": "Play against the AI"
     },
-    "step3": {
-      "shortLabel": "Pieces",
-      "title": "Piece Settings",
-      "description": "Customize how pieces are displayed on the board.",
-      "visibility": {
-        "title": "Piece Visibility",
-        "showOwnPieces": "Show own pieces",
-        "showOpponentPieces": "Show opponent pieces"
-      },
-      "appearance": {
-        "title": "Piece Appearance"
-      },
-      "shape": {
-        "title": "Piece Shape",
-        "normal": "Normal pieces",
-        "circles-all": "Show all pieces as stones",
-        "circles-own": "Show own pieces as stones",
-        "circles-opponent": "Show opponent pieces as stones"
-      },
-      "color": {
-        "title": "Piece Color",
-        "normal": "Normal colors (White & Black)",
-        "white-only": "Show all pieces as white",
-        "black-only": "Show all pieces as black"
-      }
-    },
-    "step4": {
-      "shortLabel": "Start",
-      "title": "You're all set!",
-      "description": "Choose a game mode to start playing.",
-      "gameModes": {
-        "standard": "Standard Game",
-        "standardDescription": "Start a fresh game from the standard opening position",
-        "pgn": "Import PGN",
-        "pgnDescription": "Continue from a specific position using PGN notation",
-        "position": "Custom Position",
-        "positionDescription": "Set up a custom board position and start playing from there"
-      }
+    "helpTour": {
+      "title": "Not sure how to use a screen?",
+      "demoTitle": "Sample screen",
+      "demoHint": "Press the ? next to the page title at the top of the screen to view help for that screen.",
+      "label": "Help",
+      "demoTourTitle": "Help tour",
+      "demoTourText": "Like this, we'll walk you through each screen right where you are. Press ? whenever you're stuck.",
+      "note": "Note: the ? icon doesn't appear on screens without a tour yet, or on ones simple enough not to need one."
     }
   },
   "Mypage": {
@@ -3270,6 +3191,7 @@
   },
   "setupUsername": {
     "title": "Create Your Account",
+    "sectionTitle": "Complete Registration",
     "description": "Choose a username for your account.",
     "usernameLabel": "Username",
     "usernameDescription": "A unique ID used in your profile URL and mentions.",

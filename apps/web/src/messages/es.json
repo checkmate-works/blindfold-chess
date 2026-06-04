@@ -38,10 +38,6 @@
       "title": "Registrarse",
       "description": "Regístrate en Ajedrez a Ciegas"
     },
-    "onboarding": {
-      "title": "Configuración Inicial",
-      "description": "Configura tus preferencias antes de comenzar tu primera partida"
-    },
     "mypage": {
       "title": "Mi Página",
       "description": "Consulta la información de tu cuenta y tu actividad"
@@ -2549,8 +2545,10 @@
   },
   "verifyEmail": {
     "title": "Revisa tu Correo Electrónico",
+    "sectionTitle": "Registro casi completo",
     "description": "Hemos enviado un enlace de confirmación a tu dirección de correo electrónico.",
     "checkInbox": "Revisa tu bandeja de entrada y haz clic en el enlace para verificar tu cuenta.",
+    "checkSpam": "Si no encuentras el correo, revisa tu carpeta de spam o correo no deseado.",
     "resendButton": "Reenviar correo de confirmación",
     "resendLoading": "Enviando...",
     "resendSuccess": "Correo de confirmación reenviado. Revisa tu bandeja de entrada.",
@@ -2603,110 +2601,33 @@
     "signInToView": "Inicia sesión para ver",
     "announcementNotFound": "Anuncio No Encontrado"
   },
-  "onboarding": {
-    "title": "Configuración Inicial",
-    "pageTitle": "Paso de Incorporación {step}",
-    "skip": "Saltar",
-    "back": "Atrás",
-    "next": "Siguiente",
-    "step1": {
-      "shortLabel": "Entrada",
-      "title": "Método de Entrada de Movimientos",
-      "description": "Elige cómo quieres introducir tus movimientos durante una partida.",
-      "modes": {
-        "text": {
-          "label": "Entrada de Texto",
-          "description": "Escribe movimientos usando notación algebraica (ej., e4, Cf3). Mejor para jugadores experimentados."
-        },
-        "select": {
-          "label": "Seleccionar de Lista",
-          "description": "Elige de una lista de movimientos legales disponibles. Fácil de usar, sin necesidad de conocer la notación."
-        },
-        "button": {
-          "label": "Entrada por Botones",
-          "description": "Introduce movimientos tocando botones de piezas y casillas. Una opción equilibrada para todos los niveles."
-        }
-      },
-      "preview": {
-        "label": "Vista Previa",
-        "textPlaceholder": "ej., e4, Cf3, O-O",
-        "selectPlaceholder": "Selecciona un movimiento..."
-      },
-      "hint": {
-        "multiSelect": "Si seleccionas varios métodos, podrás cambiar entre ellos durante el juego.",
-        "changeLater": "Puedes cambiar esto más tarde en la configuración."
-      }
+  "onboardingProfile": {
+    "completed": "Registro completado 🎉",
+    "prompt": "A continuación, configura tu perfil (opcional).",
+    "avatarLabel": "Avatar",
+    "countryLabel": "País"
+  },
+  "onboardingWizard": {
+    "pageTitle": "Primeros pasos",
+    "saveError": "No se pudo guardar. Inténtalo de nuevo.",
+    "nav": {
+      "back": "Atrás",
+      "next": "Siguiente",
+      "saveAndNext": "Guardar y continuar",
+      "skip": "Omitir"
     },
-    "step2": {
-      "shortLabel": "Tablero",
-      "title": "Visibilidad del Tablero",
-      "description": "Decide cómo se presenta el tablero durante la partida. Los ajustes de visualización de piezas (siguiente paso) siguen brindando la experiencia a ciegas cuando el tablero está visible.",
-      "boardVisibilities": {
-        "always": {
-          "label": "Siempre visible",
-          "description": "El tablero se muestra durante toda la partida. Los ajustes de piezas (siguiente paso) ocultan los tipos/colores como prefieras."
-        },
-        "peek": {
-          "label": "Vistazo bajo demanda",
-          "description": "El tablero está oculto por defecto; toca para echar un vistazo cuando necesites verificar una posición."
-        },
-        "never": {
-          "label": "Oculto",
-          "description": "Modo a ciegas puro — el tablero nunca se muestra durante la partida."
-        }
-      },
-      "modes": {
-        "modal": {
-          "label": "Modal",
-          "description": "El tablero aparece como un diálogo emergente. Toca un botón para mostrar/ocultar."
-        },
-        "inline": {
-          "label": "En línea",
-          "description": "El tablero se incrusta encima del área de entrada como una sección plegable."
-        }
-      },
-      "preview": {
-        "label": "Vista Previa"
-      }
+    "belt": {
+      "description": "Un plan de estudios diseñado para que ganes partidas a ciegas contra la IA.",
+      "playCta": "Jugar contra la IA"
     },
-    "step3": {
-      "shortLabel": "Piezas",
-      "title": "Configuración de Piezas",
-      "description": "Personaliza cómo se muestran las piezas en el tablero.",
-      "visibility": {
-        "title": "Visibilidad de las Piezas",
-        "showOwnPieces": "Mostrar piezas propias",
-        "showOpponentPieces": "Mostrar piezas del rival"
-      },
-      "appearance": {
-        "title": "Apariencia de las Piezas"
-      },
-      "shape": {
-        "title": "Forma de las Piezas",
-        "normal": "Piezas normales",
-        "circles-all": "Mostrar todas las piezas como piedras",
-        "circles-own": "Mostrar piezas propias como piedras",
-        "circles-opponent": "Mostrar piezas del rival como piedras"
-      },
-      "color": {
-        "title": "Color de las Piezas",
-        "normal": "Colores normales (Blancas y Negras)",
-        "white-only": "Mostrar todas las piezas como blancas",
-        "black-only": "Mostrar todas las piezas como negras"
-      }
-    },
-    "step4": {
-      "shortLabel": "Inicio",
-      "title": "¡Todo listo!",
-      "description": "Elige un modo de juego para empezar a jugar.",
-      "gameModes": {
-        "standard": "Partida Estándar",
-        "standardDescription": "Inicia una partida nueva desde la posición de apertura estándar",
-        "pgn": "Importar PGN",
-        "pgnDescription": "Continúa desde una posición específica usando notación PGN",
-        "position": "Posición Personalizada",
-        "positionDescription": "Configura una posición personalizada del tablero y comienza a jugar desde ahí"
-      }
+    "helpTour": {
+      "title": "¿No sabes cómo usar una pantalla?",
+      "demoTitle": "Pantalla de ejemplo",
+      "demoHint": "Pulsa el ? junto al título de la página, en la parte superior, para ver la ayuda de esa pantalla.",
+      "label": "Ayuda",
+      "demoTourTitle": "Recorrido de ayuda",
+      "demoTourText": "Así te guiaremos por cada pantalla en el momento. Pulsa ? cuando tengas dudas.",
+      "note": "Nota: el icono ? no aparece en pantallas que aún no tienen recorrido, ni en las suficientemente simples como para no necesitarlo."
     }
   },
   "Mypage": {
@@ -3028,6 +2949,7 @@
   },
   "setupUsername": {
     "title": "Crea tu Cuenta",
+    "sectionTitle": "Completa el registro",
     "description": "Elige un nombre de usuario para tu cuenta.",
     "usernameLabel": "Nombre de usuario",
     "usernameDescription": "Un ID único usado en la URL de tu perfil y menciones.",
