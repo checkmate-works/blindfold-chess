@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
+import { AUTH_SUBMIT_BUTTON_CLASSES } from '@/app/_components/authFormStyles';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { resendEmail } from '../_actions/resendEmail';
@@ -54,11 +55,7 @@ export function ResendEmailButton({ email }: Props) {
 
   return (
     <div className="space-y-2">
-      <button
-        onClick={handleResend}
-        disabled={isDisabled}
-        className="px-6 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-      >
+      <button onClick={handleResend} disabled={isDisabled} className={AUTH_SUBMIT_BUTTON_CLASSES}>
         {isLoading
           ? t('resendLoading')
           : cooldown > 0

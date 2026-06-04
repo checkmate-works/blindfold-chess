@@ -2549,8 +2549,10 @@
   },
   "verifyEmail": {
     "title": "Verifique seu E-mail",
+    "sectionTitle": "Cadastro quase concluído",
     "description": "Enviamos um link de confirmação para seu endereço de e-mail.",
     "checkInbox": "Verifique sua caixa de entrada e clique no link para verificar sua conta.",
+    "checkSpam": "Se não encontrar o e-mail, verifique sua pasta de spam ou lixo eletrônico.",
     "resendButton": "Reenviar e-mail de confirmação",
     "resendLoading": "Enviando...",
     "resendSuccess": "E-mail de confirmação reenviado. Verifique sua caixa de entrada.",

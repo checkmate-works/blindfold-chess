@@ -2549,8 +2549,10 @@
   },
   "verifyEmail": {
     "title": "Revisa tu Correo Electrónico",
+    "sectionTitle": "Registro casi completo",
     "description": "Hemos enviado un enlace de confirmación a tu dirección de correo electrónico.",
     "checkInbox": "Revisa tu bandeja de entrada y haz clic en el enlace para verificar tu cuenta.",
+    "checkSpam": "Si no encuentras el correo, revisa tu carpeta de spam o correo no deseado.",
     "resendButton": "Reenviar correo de confirmación",
     "resendLoading": "Enviando...",
     "resendSuccess": "Correo de confirmación reenviado. Revisa tu bandeja de entrada.",

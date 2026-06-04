@@ -2553,8 +2553,10 @@
   },
   "verifyEmail": {
     "title": "Check Your Email",
+    "sectionTitle": "Registration Almost Complete",
     "description": "We've sent a confirmation link to your email address.",
     "checkInbox": "Please check your inbox and click the link to verify your account.",
+    "checkSpam": "If you can’t find the email, please check your spam or junk folder.",
     "resendButton": "Resend confirmation email",
     "resendLoading": "Sending...",
     "resendSuccess": "Confirmation email resent. Please check your inbox.",
