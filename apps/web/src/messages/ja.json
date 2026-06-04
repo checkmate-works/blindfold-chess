@@ -38,10 +38,6 @@
       "title": "アカウント登録",
       "description": "Blindfold Chess のアカウントを作成"
     },
-    "onboarding": {
-      "title": "初期設定",
-      "description": "初めてのゲームの前に設定をカスタマイズしましょう"
-    },
     "mypage": {
       "title": "マイページ",
       "description": "アカウント情報やアクティビティを確認できます"
@@ -2845,17 +2841,14 @@
     "announcementNotFound": "お知らせが見つかりません"
   },
   "onboardingProfile": {
-    "sectionTitle": "プロフィール設定",
     "completed": "本登録が完了しました 🎉",
     "prompt": "続いてプロフィールを設定しましょう（任意）",
     "avatarLabel": "アバター",
-    "countryLabel": "国籍",
-    "saveAndStart": "保存して始める",
-    "skip": "あとで設定する",
-    "saveError": "保存に失敗しました。もう一度お試しください。"
+    "countryLabel": "国籍"
   },
   "onboardingWizard": {
     "pageTitle": "オンボーディング",
+    "saveError": "保存に失敗しました。もう一度お試しください。",
     "nav": {
       "back": "戻る",
       "next": "次へ",
@@ -2874,112 +2867,6 @@
       "demoTourTitle": "ヘルプツアー",
       "demoTourText": "このように、各画面の使い方をその場でご案内します。操作に迷ったら ? を押してみてください。",
       "note": "※ ツアーが用意されていない画面や、説明が不要なシンプルな画面では ? アイコンは表示されません。"
-    }
-  },
-  "onboarding": {
-    "title": "初期設定",
-    "pageTitle": "オンボーディング Step {step}",
-    "skip": "スキップ",
-    "back": "戻る",
-    "next": "次へ",
-    "step1": {
-      "shortLabel": "入力方法",
-      "title": "手の入力方法",
-      "description": "対局中にどの方法で手を入力するかを選択してください。",
-      "modes": {
-        "text": {
-          "label": "テキスト入力",
-          "description": "代数記法で手を入力します（例: e4, Nf3）。経験者向けです。"
-        },
-        "select": {
-          "label": "リストから選択",
-          "description": "利用可能な合法手のリストから選択します。記法の知識は不要です。"
-        },
-        "button": {
-          "label": "ボタン入力",
-          "description": "駒とマスのボタンをタップして手を入力します。すべてのレベルに適したバランスの良い入力方法です。"
-        }
-      },
-      "preview": {
-        "label": "プレビュー",
-        "textPlaceholder": "例: e4, Nf3, O-O",
-        "selectPlaceholder": "手を選択..."
-      },
-      "hint": {
-        "multiSelect": "複数選択した場合はプレイ中に切り替えができます",
-        "changeLater": "あとで設定画面から変更できます"
-      }
-    },
-    "step2": {
-      "shortLabel": "ボード",
-      "title": "ボード表示",
-      "description": "対局中にチェスボードをどのように表示するかを選びます。駒の表示設定(次のステップ)は、ボードが表示される場合でも適用されます。",
-      "boardVisibilities": {
-        "always": {
-          "label": "常に表示",
-          "description": "対局中はずっとボードを表示します。駒の表示設定(次のステップ)で駒の種類/色をお好みで隠せます。"
-        },
-        "peek": {
-          "label": "必要なときにピーク",
-          "description": "通常はボードを隠し、確認したいときにタップしてピーク表示します。"
-        },
-        "never": {
-          "label": "非表示",
-          "description": "純粋な目隠しモード — 対局中にボードは一切表示されません。"
-        }
-      },
-      "modes": {
-        "modal": {
-          "label": "モーダル",
-          "description": "盤面がポップアップダイアログとして表示されます。ボタンをタップして表示/非表示を切り替えます。"
-        },
-        "inline": {
-          "label": "インライン",
-          "description": "入力エリアの上に折りたたみ式のセクションとして盤面が埋め込まれます。"
-        }
-      },
-      "preview": {
-        "label": "プレビュー"
-      }
-    },
-    "step3": {
-      "shortLabel": "駒",
-      "title": "駒の設定",
-      "description": "盤上の駒の表示方法をカスタマイズします。",
-      "visibility": {
-        "title": "駒の表示",
-        "showOwnPieces": "自分の駒を表示",
-        "showOpponentPieces": "相手の駒を表示"
-      },
-      "appearance": {
-        "title": "駒の外観"
-      },
-      "shape": {
-        "title": "駒の形状",
-        "normal": "通常の駒",
-        "circles-all": "すべての駒をストーンで表示",
-        "circles-own": "自分の駒をストーンで表示",
-        "circles-opponent": "相手の駒をストーンで表示"
-      },
-      "color": {
-        "title": "駒の色",
-        "normal": "通常の色（白と黒）",
-        "white-only": "すべての駒を白で表示",
-        "black-only": "すべての駒を黒で表示"
-      }
-    },
-    "step4": {
-      "shortLabel": "開始",
-      "title": "準備が整いました！",
-      "description": "ゲームモードを選んでプレイを始めましょう。",
-      "gameModes": {
-        "standard": "通常の対局",
-        "standardDescription": "通常の初期配置から新しいゲームを始めます",
-        "pgn": "PGNの読み込み",
-        "pgnDescription": "PGN記法を使って特定の局面から続けます",
-        "position": "カスタム局面",
-        "positionDescription": "カスタムの駒配置を設定してそこからプレイします"
-      }
     }
   },
   "Mypage": {
