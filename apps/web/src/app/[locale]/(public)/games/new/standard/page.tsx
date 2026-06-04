@@ -1,61 +1,12 @@
-import { Suspense } from 'react';
-
-import type { Metadata } from 'next';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
-
-import { getOptionalUser } from '@/lib/auth';
-import { getMaiaEngineAccess } from '@/lib/users/can-use-maia';
-
-import { PageLayout } from '@/app/[locale]/_components';
-import { type HelpStep, HelpTourButton } from '@/app/[locale]/_components/HelpTourButton';
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
-import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
-import type { Locale } from '@/app/[locale]/_lib/types';
-
-import { GameLimitCheck } from '../_components/GameLimitCheck';
+import { createNewGamePage } from '../_lib/create-new-game-page';
 import { StandardGameForm } from './_components/StandardGameForm';
 
-type Props = {
-  params: Promise<{
-    locale: Locale;
-  }>;
-};
-
-// `generateStaticParams` is intentionally retained for metadata pre-render
-// but the page reads cookies (auth state for the Maia entitlement check),
-// so Next.js will switch to dynamic rendering at runtime. That is the
-// desired behaviour — the form renders different UI per user.
-export const generateStaticParams = generateLocaleStaticParams;
-export const dynamic = 'force-dynamic';
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  const t = await getTranslations({ locale });
-
-  const title = t('newGame.standardTitle');
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'games/new/standard', title }),
-    title: resolveTitle(title, locale),
-  };
-}
-
-export default async function StandardGamePage({ params }: Props) {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  const t = await getTranslations({ locale });
-  const tNewGame = await getTranslations({ locale, namespace: 'newGame' });
-  const tGames = await getTranslations({ locale, namespace: 'gamesPage' });
-
-  const user = await getOptionalUser();
-  const maiaAccess = await getMaiaEngineAccess(user?.id ?? null);
-
-  // Tour steps are computed server-side so translations resolve via
-  // `next-intl/server` rather than the client-only `useTranslations`.
-  // The tour walks the engine cards first, then the skill-level
-  // dropdown — same order the form reads top-to-bottom (after Color).
-  const helpSteps: HelpStep[] = [
+const { generateStaticParams, dynamic, generateMetadata, Page } = createNewGamePage({
+  titleKey: 'newGame.standardTitle',
+  path: 'games/new/standard',
+  // The tour walks the engine cards first, then the skill-level dropdown —
+  // same order the form reads top-to-bottom (after Color).
+  buildHelpSteps: (tNewGame) => [
     {
       targetId: 'engine-selector',
       title: tNewGame('selectEngine'),
@@ -70,24 +21,11 @@ export default async function StandardGamePage({ params }: Props) {
       side: 'top',
       align: 'center',
     },
-  ];
+  ],
+  renderForm: ({ locale, maiaAccess }) => (
+    <StandardGameForm locale={locale} maiaAccess={maiaAccess} />
+  ),
+});
 
-  return (
-    <PageLayout
-      title={t('newGame.standardTitle')}
-      titleAction={<HelpTourButton steps={helpSteps} label={tNewGame('helpLabel')} />}
-      locale={locale}
-      breadcrumb={[
-        { label: tGames('pageTitle'), href: '/games' },
-        { label: t('newGame.title'), href: '/games/new' },
-        { label: t('newGame.standardTitle') },
-      ]}
-    >
-      <GameLimitCheck locale={locale}>
-        <Suspense fallback={null}>
-          <StandardGameForm locale={locale} maiaAccess={maiaAccess} />
-        </Suspense>
-      </GameLimitCheck>
-    </PageLayout>
-  );
-}
+export { generateStaticParams, dynamic, generateMetadata };
+export default Page;

@@ -1,9 +1,12 @@
 'use server';
 
 import { articles, db } from '@/lib/db';
-import { extractPgErrorCode } from '@/lib/db/extract-pg-error-code';
 
-import { adminMutationGuard, mutationSuccess } from '../../_lib/action-factories';
+import {
+  adminMutationGuard,
+  mapAdminUniqueViolation,
+  mutationSuccess,
+} from '../../_lib/action-factories';
 import type { MutationResult } from '../../_lib/action-factories';
 import { buildArticleMutationValues } from '../_lib/build-mutation-values';
 import type { ArticleMutationData } from '../_lib/types';
@@ -35,10 +38,7 @@ export async function createArticle(data: ArticleMutationData): Promise<Mutation
       })
       .returning({ id: articles.id });
   } catch (err: unknown) {
-    if (extractPgErrorCode(err) === '23505') {
-      return { error: 'An article with this slug and locale already exists' };
-    }
-    throw err;
+    return mapAdminUniqueViolation(err, 'An article with this slug and locale already exists');
   }
 
   return mutationSuccess(inserted.id, '/admin/articles');

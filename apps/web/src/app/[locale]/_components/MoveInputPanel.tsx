@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useMemo } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { getLegalMoves } from '@blindfold-chess/features/chess-core';
@@ -13,6 +13,8 @@ import { ButtonInput } from '@/app/[locale]/(public)/games/play/_components/Butt
 import { MoveInput } from '@/app/[locale]/(public)/games/play/_components/MoveInput';
 import { MoveSelect } from '@/app/[locale]/(public)/games/play/_components/MoveSelect';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
+
+import { useMoveSubmitTracking } from './use-move-submit-tracking';
 
 const INVALID_ATTEMPTS_THRESHOLD = 3;
 
@@ -101,93 +103,20 @@ export function MoveInputPanel({
   const t = useTranslations('play');
   const enabledModes = preferences.enabledMoveInputModes;
 
-  // Track consecutive invalid move attempts to offer legal moves hint.
-  // Counting is done directly in the submit wrapper (not via useEffect on error),
-  // so it reliably increments even when the same invalid move is submitted repeatedly.
-  const [invalidAttemptCount, setInvalidAttemptCount] = useState(0);
-  const [showLegalMoves, setShowLegalMoves] = useState(false);
-
-  // Bumped on every rejected submit — drives the one-shot "shake" of the
-  // input area. Makes an invalid move noticeable at the point of action,
-  // even when the textual error sits in an off-screen status slot (e.g.
-  // the PageTitle on /games/play, scrolled away while peeking the board).
-  const [invalidShakeKey, setInvalidShakeKey] = useState(0);
-  const inputAreaRef = useRef<HTMLDivElement>(null);
-
-  const handleShowLegalMoves = () => {
-    setShowLegalMoves(true);
-    setInvalidAttemptCount(0);
-    onMovePeek?.();
-  };
-
-  /**
-   * Wrap onSubmit to track valid/invalid submissions.
-   * - On valid move (returns true or void/Promise): reset counter, commit log
-   * - On invalid move (returns false): increment counter
-   */
-  const handleSubmitWithTracking = (move: AlgebraicNotation, inputMethod: MoveInputMethod) => {
-    const result = onSubmit(move);
-    if (result === false) {
-      setInvalidAttemptCount((prev) => prev + 1);
-      setInvalidShakeKey((k) => k + 1);
-    } else {
-      setInvalidAttemptCount(0);
-      setShowLegalMoves(false);
-      onMoveCommitted?.(inputMethod);
-    }
-  };
-
   // Defensive: if current mode is not in enabled list, fall back to first enabled mode
   const currentMode = enabledModes.includes(preferences.moveInputMode)
     ? preferences.moveInputMode
     : enabledModes[0];
 
-  // Reset legal moves display and invalid attempt counter when input mode changes.
-  // Switching modes is treated as a user edit, so clear any active move error too
-  // — otherwise a stale "⚠ Invalid move: …" persists in the title slot after the
-  // user navigated away from the failing input.
-  //
-  // `onErrorClear` is intentionally *not* listed as a dependency. The current
-  // `clearMoveError` only closes over stable `useState` setters and is
-  // referentially stable, so the ref is defensive rather than required — it
-  // guards against a future consumer passing a non-stable `onErrorClear`
-  // that would otherwise re-fire this effect and reset `invalidAttemptCount`
-  // on every error transition.
-  const onErrorClearRef = useRef(onErrorClear);
-  useEffect(() => {
-    onErrorClearRef.current = onErrorClear;
-  }, [onErrorClear]);
-
-  useEffect(() => {
-    setShowLegalMoves(false);
-    setInvalidAttemptCount(0);
-    onErrorClearRef.current();
-  }, [currentMode]);
-
-  // One-shot horizontal shake of the input area on each rejected submit.
-  // Transform-only — the persistent red ring is the static signal — and
-  // skipped entirely under `prefers-reduced-motion`, where the ring alone
-  // carries the feedback.
-  useEffect(() => {
-    if (invalidShakeKey === 0) return;
-    const el = inputAreaRef.current;
-    if (!el) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-    const animation = el.animate(
-      [
-        { transform: 'translateX(0)' },
-        { transform: 'translateX(-6px)' },
-        { transform: 'translateX(6px)' },
-        { transform: 'translateX(-5px)' },
-        { transform: 'translateX(4px)' },
-        { transform: 'translateX(-2px)' },
-        { transform: 'translateX(0)' },
-      ],
-      { duration: 360, easing: 'ease-in-out' }
-    );
-    return () => animation.cancel();
-  }, [invalidShakeKey]);
+  // Invalid-attempt tracking, one-shot shake, and mode-change reset all live in
+  // the feedback state machine.
+  const {
+    inputAreaRef,
+    invalidAttemptCount,
+    showLegalMoves,
+    handleSubmitWithTracking,
+    handleShowLegalMoves,
+  } = useMoveSubmitTracking({ onSubmit, onMoveCommitted, onMovePeek, currentMode, onErrorClear });
 
   const legalMoves = useMemo(
     () => (showLegalMoves ? getLegalMoves(currentFen).sort() : null),

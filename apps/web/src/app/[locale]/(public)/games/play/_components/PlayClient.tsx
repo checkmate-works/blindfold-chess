@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { notFound, useRouter, useSearchParams } from 'next/navigation';
+import { notFound, useSearchParams } from 'next/navigation';
 
 import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
@@ -10,13 +10,13 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 import type { MoveInputPreferenceHint } from '@/lib/games/move-input-cookie';
 
 import { AuthPromptModal } from '@/app/[locale]/_components/AuthPromptModal';
-import { useAuthGuard } from '@/app/[locale]/_hooks/use-auth-guard';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useBoardFlip, useConfirmationDialogs, useMoveNavigation } from '../_hooks';
+import { useFinishedGameNavigation } from '../_hooks/use-finished-game-navigation';
 import type { GameSession } from '../_hooks/use-game-session';
+import { usePeekState } from '../_hooks/use-peek-state';
 import { usePlayClientPreferences } from '../_hooks/use-play-client-preferences';
-import { buildPostmortemPath } from '../_lib';
 import { AiReplyChip, useAiReplyChip } from './AiReplyChip';
 import { BoardSettingsButton } from './BoardSettingsButton';
 import { FinishedGamePanel } from './FinishedGamePanel';
@@ -54,7 +54,6 @@ type Props = {
 };
 
 export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitializing }: Props) {
-  const router = useRouter();
   const searchParams = useSearchParams();
   // Opened from the result / games list with `finished=1` to review a
   // finished game in the familiar game UI (read-only). Suppresses the
@@ -134,35 +133,21 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
   // surfacing an inert affordance.
   const canEditPerGameSettings = initialPerGamePrefs !== undefined;
 
-  // Whether the always-present board is currently revealed in 'peek' mode.
-  // The board frame is always on screen (same position/size); in 'peek' it is
-  // masked until the player taps to reveal, then re-masked on their next move
-  // so each look is a discrete, counted peek. Irrelevant in 'always' (never
-  // masked) and 'never' (always masked) — see `boardMasked` below.
-  const [peekRevealed, setPeekRevealed] = useState(false);
+  // Blindfold peek/mask state for the always-present board (reveal counts a
+  // peek; `remask` re-covers it on the next move).
+  const { boardMasked, handleRevealBoard, remask } = usePeekState({
+    boardVisibility: preferences.boardVisibility,
+    recordPeek,
+  });
   const handleMoveCommitted = useCallback(
     (inputMethod: Parameters<typeof commitMoveLog>[0]) => {
       commitMoveLog(inputMethod);
       // Re-mask after each player move so the opponent's reply stays unseen
       // until the next deliberate peek (blindfold semantics).
-      setPeekRevealed(false);
+      remask();
     },
-    [commitMoveLog]
+    [commitMoveLog, remask]
   );
-
-  // Reveal the masked board for a peek: count it (audit / clean-rate) and lift
-  // the mask. The mask returns on the next committed move.
-  const handleRevealBoard = useCallback(() => {
-    recordPeek();
-    setPeekRevealed(true);
-  }, [recordPeek]);
-
-  // The board frame is always rendered; this decides whether it is covered.
-  // 'always' → never masked; 'never' → always masked; 'peek' → masked until
-  // the current peek reveal.
-  const boardMasked =
-    preferences.boardVisibility === 'never' ||
-    (preferences.boardVisibility === 'peek' && !peekRevealed);
 
   // Board-driven move handler — wired to InlineBoardView whenever the board is
   // currently visible (always mode, or a revealed peek) AND the player can act
@@ -178,10 +163,10 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
       const submitted = handleSubmitMove(san as AlgebraicNotation);
       if (submitted !== false) {
         commitMoveLog('board');
-        setPeekRevealed(false);
+        remask();
       }
     },
-    [handleSubmitMove, commitMoveLog]
+    [handleSubmitMove, commitMoveLog, remask]
   );
 
   // Board flip state
@@ -226,40 +211,20 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
   // Whether the loaded game has reached a terminal result.
   const isFinished = gameStatus !== 'in_progress' && !!playerResult;
 
-  // Redirect to result page when the game ends — UNLESS we are intentionally
-  // reviewing a finished game (`finished=1`), in which case we stay here and
-  // render the read-only FinishedGamePanel.
-  useEffect(() => {
-    if (isFinishedView) return;
-    if (isFinished && gameId) {
-      router.replace(`/${locale}/games/play/result?gameId=${gameId}`);
-    }
-  }, [isFinishedView, isFinished, gameId, locale, router]);
-
-  // Cross-links out of the finished-game view → result and postmortem,
-  // completing the result ⇄ game ⇄ postmortem navigation hub.
-  const handleViewResult = useCallback(() => {
-    if (gameId) router.push(`/${locale}/games/play/result?gameId=${gameId}`);
-  }, [router, locale, gameId]);
-
-  // Postmortem is a members-only feature; anonymous viewers get a sign-up
-  // prompt instead of the review screen. Mirrors the result page's guard.
-  const { guardAction, isModalOpen: isAuthModalOpen, closeModal: closeAuthModal } = useAuthGuard();
-
-  const handleOpenPostmortem = useCallback(() => {
-    if (!gameId) return;
-    router.push(
-      buildPostmortemPath({
-        locale,
-        formattedPgn,
-        playerColor: playerSide,
-        moves,
-        engineConfig,
-        gameId,
-        startingFen,
-      })
-    );
-  }, [router, locale, formattedPgn, playerSide, moves, engineConfig, gameId, startingFen]);
+  // Finished-game navigation hub: auto-redirect to the result page on game end
+  // (unless reviewing), plus the result / members-only postmortem cross-links.
+  const { handleViewResult, openPostmortem, isAuthModalOpen, closeAuthModal } =
+    useFinishedGameNavigation({
+      locale,
+      isFinished,
+      isFinishedView,
+      gameId,
+      formattedPgn,
+      playerSide,
+      moves,
+      engineConfig,
+      startingFen,
+    });
 
   // AI-reply chip visibility (thinking + transient post-move window). Lifted
   // here so `badgeActive` can also tell the board to drop the mask's own label.
@@ -421,7 +386,7 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
               <FinishedGamePanel
                 inlineBoardView={finishedBoardView}
                 onViewResult={handleViewResult}
-                onPostmortem={() => guardAction(handleOpenPostmortem)}
+                onPostmortem={openPostmortem}
                 showPostmortem={moves.length > 0}
                 onShowOperationLog={() => setShowOperationLogModal(true)}
               />

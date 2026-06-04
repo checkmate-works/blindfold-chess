@@ -5,9 +5,13 @@ import { revalidatePath, revalidateTag } from 'next/cache';
 import { eq } from 'drizzle-orm';
 
 import { articles, db } from '@/lib/db';
-import { extractPgErrorCode } from '@/lib/db/extract-pg-error-code';
 
-import { adminFindOrFail, adminMutationGuard, mutationSuccess } from '../../_lib/action-factories';
+import {
+  adminFindOrFail,
+  adminMutationGuard,
+  mapAdminUniqueViolation,
+  mutationSuccess,
+} from '../../_lib/action-factories';
 import type { MutationResult } from '../../_lib/action-factories';
 import { buildArticleMutationValues } from '../_lib/build-mutation-values';
 import type { ArticleMutationData } from '../_lib/types';
@@ -45,10 +49,7 @@ export async function updateArticle(
       })
       .where(eq(articles.id, id));
   } catch (err: unknown) {
-    if (extractPgErrorCode(err) === '23505') {
-      return { error: 'An article with this slug and locale already exists' };
-    }
-    throw err;
+    return mapAdminUniqueViolation(err, 'An article with this slug and locale already exists');
   }
 
   revalidatePath(`/admin/articles/${id}/edit`);

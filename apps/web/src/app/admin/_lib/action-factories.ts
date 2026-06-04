@@ -5,6 +5,7 @@ import type { PgTableWithColumns } from 'drizzle-orm/pg-core';
 
 import type { ActionResult } from '@/lib/action-types';
 import { db } from '@/lib/db';
+import { extractPgErrorCode } from '@/lib/db/extract-pg-error-code';
 
 import { requireAdmin } from './auth';
 
@@ -104,4 +105,22 @@ export async function adminMutationGuard<T>(
 export function mutationSuccess(id: string, revalidationPath: string): MutationResult {
   revalidatePath(revalidationPath);
   return { success: true, id };
+}
+
+/**
+ * Translate a Postgres unique-violation (23505) thrown by an admin
+ * insert/update into the standard `{ error }` result, re-throwing anything
+ * else. Centralises the recurring slug+locale conflict catch:
+ *
+ *   try {
+ *     await db.insert(...);
+ *   } catch (err) {
+ *     return mapAdminUniqueViolation(err, 'A foo with this slug and locale already exists');
+ *   }
+ */
+export function mapAdminUniqueViolation(err: unknown, conflictMessage: string): { error: string } {
+  if (extractPgErrorCode(err) === '23505') {
+    return { error: conflictMessage };
+  }
+  throw err;
 }

@@ -18,9 +18,7 @@ import type { SkillLevel } from '@/lib/games/saved-game-types';
 import { MAIA_GAME_POINT_COST } from '@/lib/points/constants';
 import type { MaiaEngineAccess } from '@/lib/users/can-use-maia';
 
-import { LargeDownloadConsentDialog } from '@/app/[locale]/(public)/games/new/_components/LargeDownloadConsentDialog';
-import { MaiaCoinConfirmModal } from '@/app/[locale]/(public)/games/new/_components/MaiaCoinConfirmModal';
-import { MaiaPointInfoModal } from '@/app/[locale]/(public)/games/new/_components/MaiaPointInfoModal';
+import { GameLaunchModals } from '@/app/[locale]/(public)/games/new/_components/GameLaunchModals';
 import { useLocalGameSettings } from '@/app/[locale]/(public)/games/new/_hooks/use-local-game-settings';
 import { useMaiaGameLaunch } from '@/app/[locale]/(public)/games/new/_hooks/use-maia-game-launch';
 import { deriveMaiaCardMode } from '@/app/[locale]/(public)/games/new/_lib/maia-launch';
@@ -30,8 +28,6 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 import { PgnPreview } from './PgnPreview';
 import { PgnSetupForm } from './PgnSetupForm';
 import { deriveInitialPgnState } from './_lib/derive-initial-pgn-state';
-
-const MAIA_MODEL_SIZE_LABEL = '46 MB';
 
 type Props = {
   locale: Locale;
@@ -174,23 +170,8 @@ export function PgnGameForm({ locale, maiaAccess }: Props) {
         onStartGame={() => launch.start(engine)}
         previewSlot={<PgnPreview pgnMoves={pgnMoves} startingFen={startingFen} color={color} />}
       />
-      <MaiaCoinConfirmModal
-        isOpen={launch.coinConfirmDialog.isOpen}
-        onConfirm={launch.coinConfirmDialog.onConfirm}
-        onCancel={launch.coinConfirmDialog.onCancel}
-        cost={MAIA_GAME_POINT_COST}
-        spendableBalance={maiaAccess.spendableBalance}
-      />
-      <LargeDownloadConsentDialog
-        isOpen={launch.consentDialog.isOpen}
-        onConfirm={launch.consentDialog.onConfirm}
-        onCancel={launch.consentDialog.onCancel}
-        sizeLabel={MAIA_MODEL_SIZE_LABEL}
-      />
-      <MaiaPointInfoModal
-        isOpen={launch.pointInfoModal.isOpen}
-        onClose={launch.pointInfoModal.onClose}
-        cost={MAIA_GAME_POINT_COST}
+      <GameLaunchModals
+        launch={launch}
         spendableBalance={maiaAccess.spendableBalance}
         locale={locale}
       />

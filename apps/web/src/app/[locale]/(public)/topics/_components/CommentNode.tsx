@@ -3,19 +3,18 @@
 import { useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FaEyeSlash } from 'react-icons/fa';
 
 import { LinkedText } from '@/app/[locale]/_components/LinkedText';
 import { UserAvatar } from '@/app/[locale]/_components/UserAvatar';
 
 import { formatAbsoluteDateTime } from '../_lib/absolute-time';
 import type { CommentTreeNode, FlatReply, ReplyGroup } from '../_lib/comment-tree';
+import { CommentActions } from './CommentActions';
+import { CommentSpoilerOverlay } from './CommentSpoilerOverlay';
 import { useCommentTreeContext } from './CommentTreeContext';
-import { DeletePostButton } from './DeletePostButton';
 import { EditPostForm } from './EditPostForm';
 import { EditableAttachments } from './EditableAttachments';
 import { EditedIndicator } from './EditedIndicator';
-import { LikeButton } from './LikeButton';
 import { ReplyForm } from './ReplyForm';
 
 type Props = {
@@ -58,12 +57,8 @@ export function CommentNode({ node, replyGroups, flatReplies, replyToDisplayName
     locale,
     topicKey,
     currentUserId,
-    canReply,
     enableSpoiler,
-    redirectPath,
-    toggleLikeAction,
     replyAttachmentActions,
-    deletePostAction,
     editPostAction,
     removeAttachmentAction,
     attachPgnAction,
@@ -211,20 +206,7 @@ export function CommentNode({ node, replyGroups, flatReplies, replyToDisplayName
                       <LinkedText text={localContent} locale={locale} />
                     </p>
                     {showSpoiler && (
-                      <button
-                        type="button"
-                        onClick={() => setIsSpoilerRevealed(true)}
-                        aria-label={tTopics('spoiler.overlayAriaLabel')}
-                        className="absolute inset-0 flex flex-col items-center justify-center gap-1 rounded-sm bg-muted text-muted-foreground hover:bg-muted/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors cursor-pointer"
-                      >
-                        <span className="flex items-center gap-1.5 text-sm font-medium">
-                          <FaEyeSlash aria-hidden="true" />
-                          {tTopics('spoiler.overlayTitle')}
-                        </span>
-                        <span className="text-xs text-muted-foreground/80">
-                          {tTopics('spoiler.overlayHint')}
-                        </span>
-                      </button>
+                      <CommentSpoilerOverlay onReveal={() => setIsSpoilerRevealed(true)} />
                     )}
                   </div>
                 )
@@ -233,44 +215,12 @@ export function CommentNode({ node, replyGroups, flatReplies, replyToDisplayName
               {!isDeleted && !isEditing && extraContentByPostId?.get(node.id)}
 
               {!isDeleted && !isEditing && (
-                <div className="flex items-center gap-4">
-                  <LikeButton
-                    postId={node.id}
-                    locale={locale}
-                    topicKey={topicKey}
-                    initialLikeCount={node.likeMeta.likeCount}
-                    initialLikedByMe={node.likeMeta.likedByMe}
-                    toggleLikeAction={toggleLikeAction}
-                    i18nNamespace={i18n.likeNamespace}
-                  />
-                  {canReply && currentUserId !== undefined && (
-                    <button
-                      type="button"
-                      onClick={() => setIsReplyOpen((prev) => !prev)}
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                    >
-                      {tTopics('replyButton')}
-                    </button>
-                  )}
-                  {isOwnComment && editPostAction && (
-                    <button
-                      type="button"
-                      onClick={() => setIsEditing(true)}
-                      className="text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                    >
-                      {tTopics('edit.button')}
-                    </button>
-                  )}
-                  {isOwnComment && (
-                    <DeletePostButton
-                      postId={node.id}
-                      locale={locale}
-                      redirectPath={redirectPath}
-                      deletePostAction={deletePostAction}
-                      i18nNamespace={i18n.deleteNamespace}
-                    />
-                  )}
-                </div>
+                <CommentActions
+                  node={node}
+                  isOwnComment={isOwnComment}
+                  onReply={() => setIsReplyOpen((prev) => !prev)}
+                  onEdit={() => setIsEditing(true)}
+                />
               )}
 
               {isReplyOpen && (

@@ -3,19 +3,13 @@ import 'server-only';
 
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
-import {
-  chunkEditRequests,
-  chunkFeedbackTopics,
-  chunks,
-  db,
-  feedItems,
-  topicPosts,
-} from '@/lib/db';
+import { chunkFeedbackTopics, chunks, db, feedItems, topicPosts } from '@/lib/db';
 import { isUniqueViolation } from '@/lib/db/extract-pg-error-code';
 import { clawbackPointsForPost, grantPointsForPost } from '@/lib/points';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
 import { dispatchChunkEvent } from './chunk-event-handlers';
+import { autoRejectPendingEditRequests, guardChunkOwnership } from './chunk-mutation-guards';
 import { buildChunkCreateValues, buildChunkUpdateValues } from './mutation-helpers';
 import { findChunkBySlug } from './queries';
 import type { ChunkFeedbackTopic, ChunkMutationData } from './validation';
@@ -221,11 +215,9 @@ export async function updateChunkEntry(
   if (!chunk) {
     return { error: 'notFound' };
   }
-  if (chunk.userId !== user.id) {
-    return { error: 'unauthorized' };
-  }
-  if (chunk.deletedAt) {
-    return { error: 'alreadyDeleted' };
+  const ownershipError = guardChunkOwnership(chunk, user.id);
+  if (ownershipError) {
+    return ownershipError;
   }
   // Field-level edits are only allowed while the chunk is in the
   // workshop state. Once published, content is locked at the
@@ -345,11 +337,9 @@ export async function publishChunkEntry(id: string): Promise<UpdateChunkResult> 
   if (!chunk) {
     return { error: 'notFound' };
   }
-  if (chunk.userId !== user.id) {
-    return { error: 'unauthorized' };
-  }
-  if (chunk.deletedAt) {
-    return { error: 'alreadyDeleted' };
+  const ownershipError = guardChunkOwnership(chunk, user.id);
+  if (ownershipError) {
+    return ownershipError;
   }
   if (chunk.status === 'published') {
     return { success: true };
@@ -374,13 +364,7 @@ export async function publishChunkEntry(id: string): Promise<UpdateChunkResult> 
     // Auto-reject any still-pending edit requests so they don't
     // strand behind the now-inaccessible review UI (the
     // /chunks/[slug]/edit-requests page 404s for non-draft chunks).
-    // Resolution metadata mirrors the owner-driven reject path so
-    // the audit history remains uniform. Intentionally silent —
-    // reject does not notify (see chunk-edit-requests/mutations.ts).
-    await tx
-      .update(chunkEditRequests)
-      .set({ status: 'rejected', resolvedAt: now, resolverId: user.id })
-      .where(and(eq(chunkEditRequests.chunkId, id), eq(chunkEditRequests.status, 'pending')));
+    await autoRejectPendingEditRequests(tx, id, user.id, now);
 
     // Surface the publish in the home timeline. A chunk created as
     // draft and later promoted thus emits two feed rows (one `created`
@@ -431,11 +415,9 @@ export async function deleteChunkEntry(id: string): Promise<DeleteChunkResult> {
   if (!chunk) {
     return { error: 'notFound' };
   }
-  if (chunk.userId !== user.id) {
-    return { error: 'unauthorized' };
-  }
-  if (chunk.deletedAt) {
-    return { error: 'alreadyDeleted' };
+  const ownershipError = guardChunkOwnership(chunk, user.id);
+  if (ownershipError) {
+    return ownershipError;
   }
 
   const deletedAt = new Date();
@@ -456,10 +438,7 @@ export async function deleteChunkEntry(id: string): Promise<DeleteChunkResult> {
     // 404s for deleted chunks (soft delete doesn't cascade to
     // chunk_edit_requests at the FK level), so without this sweep
     // the rows would sit pending forever with no path to resolve.
-    await tx
-      .update(chunkEditRequests)
-      .set({ status: 'rejected', resolvedAt: deletedAt, resolverId: user.id })
-      .where(and(eq(chunkEditRequests.chunkId, id), eq(chunkEditRequests.status, 'pending')));
+    await autoRejectPendingEditRequests(tx, id, user.id, deletedAt);
   });
 
   dispatchChunkEvent({

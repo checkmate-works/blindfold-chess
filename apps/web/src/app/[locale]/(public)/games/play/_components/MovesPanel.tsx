@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { useCopyToClipboard } from '@/_hooks/useCopyToClipboard';
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import type { Side } from '@blindfold-chess/types';
@@ -181,8 +182,8 @@ export function MovesPanel({
 
   const t = useTranslations('play');
   const [isMovesVisible, setIsMovesVisible] = useState(false);
-  const [isCopied, setIsCopied] = useState(false);
-  const [isFenCopied, setIsFenCopied] = useState(false);
+  const pgnCopy = useCopyToClipboard(UI_TIMEOUTS.PGN_COPY_DURATION);
+  const fenCopy = useCopyToClipboard(UI_TIMEOUTS.FEN_COPY_DURATION);
   // Which player move's ops popover is currently open. Identified by the
   // moves[] index, so the same key works for both white and black moves.
   const [opsOpenForMoveIndex, setOpsOpenForMoveIndex] = useState<number | null>(null);
@@ -215,28 +216,14 @@ export function MovesPanel({
   };
 
   const handleCopyPgn = () => {
-    const pgnText = formatPgnToText(formattedPgn, startingFen);
-    navigator.clipboard.writeText(pgnText).then(() => {
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), UI_TIMEOUTS.PGN_COPY_DURATION);
-    });
+    pgnCopy.copy(formatPgnToText(formattedPgn, startingFen));
   };
 
   const handleCopyFen = () => {
-    // Use the same FEN that is sent to Lichess
-    let fenToCopy: string;
-    if (currentPosition === -1) {
-      // Current position
-      fenToCopy = currentFen;
-    } else {
-      // Historical position
-      fenToCopy = displayFen || currentFen;
-    }
-
-    navigator.clipboard.writeText(fenToCopy).then(() => {
-      setIsFenCopied(true);
-      setTimeout(() => setIsFenCopied(false), UI_TIMEOUTS.FEN_COPY_DURATION);
-    });
+    // Use the same FEN that is sent to Lichess: the current position, or the
+    // displayed historical position when navigating back.
+    const fenToCopy = currentPosition === -1 ? currentFen : displayFen || currentFen;
+    fenCopy.copy(fenToCopy);
   };
 
   const handleAnalyzeOnLichess = () => {
@@ -432,7 +419,7 @@ export function MovesPanel({
               <Button
                 variant="secondary"
                 icon={
-                  isCopied ? (
+                  pgnCopy.copied ? (
                     <FaCheck className="w-3 h-3 text-success" />
                   ) : (
                     <FaCopy className="w-3 h-3" />
@@ -440,14 +427,14 @@ export function MovesPanel({
                 }
                 onClick={handleCopyPgn}
               >
-                {isCopied ? t('copied') || 'Copied!' : t('copyPgn')}
+                {pgnCopy.copied ? t('copied') || 'Copied!' : t('copyPgn')}
               </Button>
 
               {/* Copy FEN Button */}
               <Button
                 variant="secondary"
                 icon={
-                  isFenCopied ? (
+                  fenCopy.copied ? (
                     <FaCheck className="w-3 h-3 text-success" />
                   ) : (
                     <FaCopy className="w-3 h-3" />
@@ -455,7 +442,7 @@ export function MovesPanel({
                 }
                 onClick={handleCopyFen}
               >
-                {isFenCopied ? t('copied') || 'Copied!' : t('copyFen')}
+                {fenCopy.copied ? t('copied') || 'Copied!' : t('copyFen')}
               </Button>
             </div>
           )}

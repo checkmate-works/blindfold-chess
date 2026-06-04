@@ -1,36 +1,10 @@
-import type { Metadata } from 'next';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
-
-import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
-import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
-import type { Locale } from '@/app/[locale]/_lib/types';
-
+import { createOnboardingStepPage } from '../_lib/create-onboarding-step-page';
 import { Step2Client } from './_components/Step2Client';
 
-type Props = {
-  params: Promise<{
-    locale: Locale;
-  }>;
-};
+const { generateStaticParams, generateMetadata, Page } = createOnboardingStepPage({
+  step: 2,
+  Client: Step2Client,
+});
 
-export const generateStaticParams = generateLocaleStaticParams;
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  const t = await getTranslations({ locale, namespace: 'onboarding' });
-
-  const title = t('pageTitle', { step: 2 });
-
-  return {
-    ...generateCanonicalMetadata({ locale, path: 'onboarding/step2', title }),
-    title: resolveTitle(title, locale),
-  };
-}
-
-export default async function Step2Page(props: Props) {
-  const { locale } = await props.params;
-  setRequestLocale(locale);
-
-  return <Step2Client locale={locale} />;
-}
+export { generateStaticParams, generateMetadata };
+export default Page;

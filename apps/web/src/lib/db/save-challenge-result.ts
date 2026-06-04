@@ -2,6 +2,7 @@ import type { ExpInfo } from '@blindfold-chess/features/exp';
 import * as Sentry from '@sentry/nextjs';
 import { and, eq, sql } from 'drizzle-orm';
 
+import { detectScoreImprovement } from './challenge-best-score';
 import { getUserAllTimeRank } from './challenge-queries';
 import { decideChallengeRankFeedItem } from './challenge-rank-feed';
 import { db } from './index';
@@ -9,6 +10,7 @@ import type { GrantedRank } from './rank-evaluation';
 import { checkAndGrantRanks } from './rank-evaluation';
 import { grantChallengeExp } from './save-exp';
 import { challengeBestScores, challengeResults, feedItems } from './schema';
+import type { DbTx } from './types';
 
 export type ChallengeResultInput = {
   userId: string;
@@ -18,6 +20,53 @@ export type ChallengeResultInput = {
   incorrectAnswers: number;
   timeTaken: number;
 };
+
+/**
+ * Insert a rank-update feed item for a challenge result when the new
+ * all-time rank warrants one. Reads the post-UPSERT rank inside the
+ * transaction, so callers must pass the pre-UPSERT `oldRank` they captured
+ * earlier (rank shifts once the best score lands).
+ */
+async function insertChallengeRankFeedItem(
+  tx: DbTx,
+  params: {
+    userId: string;
+    menuType: string;
+    leaderboardKey: string;
+    score: number;
+    incorrectAnswers: number;
+    timeTaken: number;
+    challengeResultId: string;
+    isNewEntry: boolean;
+    oldRank: number | null;
+  }
+): Promise<void> {
+  const newRankResult = await getUserAllTimeRank(
+    params.userId,
+    params.menuType,
+    params.leaderboardKey,
+    tx
+  );
+  const feedMetadata = decideChallengeRankFeedItem({
+    isNewEntry: params.isNewEntry,
+    oldRank: params.oldRank,
+    newRank: newRankResult?.rank ?? null,
+    menuType: params.menuType,
+    leaderboardKey: params.leaderboardKey,
+    score: params.score,
+    incorrectAnswers: params.incorrectAnswers,
+    timeTaken: params.timeTaken,
+  });
+
+  if (feedMetadata) {
+    await tx.insert(feedItems).values({
+      entityType: 'challenge_rank_update',
+      entityId: params.challengeResultId,
+      actorId: params.userId,
+      metadata: feedMetadata,
+    });
+  }
+}
 
 /**
  * Writes challenge result records after a challenge session completes.
@@ -81,15 +130,10 @@ export async function saveChallengeResult(
         )
       );
 
-    const isNewEntry = !currentBest;
-
-    const isImprovement =
-      !isNewEntry &&
-      (score > currentBest.score ||
-        (score === currentBest.score && incorrectAnswers < currentBest.incorrectAnswers) ||
-        (score === currentBest.score &&
-          incorrectAnswers === currentBest.incorrectAnswers &&
-          timeTaken < currentBest.timeTaken));
+    const { isNewEntry, isImprovement } = detectScoreImprovement(
+      { score, incorrectAnswers, timeTaken },
+      currentBest
+    );
 
     // 2.5. For improvements, capture the old rank BEFORE the UPSERT
     let oldRank: number | null = null;
@@ -138,26 +182,17 @@ export async function saveChallengeResult(
 
     // 4. Insert a rank-update feed item when the new rank warrants one.
     if (isNewEntry || isImprovement) {
-      const newRankResult = await getUserAllTimeRank(userId, menuType, leaderboardKey, tx);
-      const feedMetadata = decideChallengeRankFeedItem({
-        isNewEntry,
-        oldRank,
-        newRank: newRankResult?.rank ?? null,
+      await insertChallengeRankFeedItem(tx, {
+        userId,
         menuType,
         leaderboardKey,
         score,
         incorrectAnswers,
         timeTaken,
+        challengeResultId: challengeResult.id,
+        isNewEntry,
+        oldRank,
       });
-
-      if (feedMetadata) {
-        await tx.insert(feedItems).values({
-          entityType: 'challenge_rank_update',
-          entityId: challengeResult.id,
-          actorId: userId,
-          metadata: feedMetadata,
-        });
-      }
     }
 
     // 5. Exp grant — calculate and persist Exp for this challenge completion
