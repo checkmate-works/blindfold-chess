@@ -2854,6 +2854,28 @@
     "skip": "Set up later",
     "saveError": "Failed to save. Please try again."
   },
+  "onboardingWizard": {
+    "pageTitle": "Getting Started",
+    "nav": {
+      "back": "Back",
+      "next": "Next",
+      "saveAndNext": "Save and continue",
+      "skip": "Skip"
+    },
+    "belt": {
+      "description": "A curriculum designed to get you winning blindfold games against the AI.",
+      "playCta": "Play against the AI"
+    },
+    "helpTour": {
+      "title": "Not sure how to use a screen?",
+      "demoTitle": "Sample screen",
+      "demoHint": "Press the ? next to the page title at the top of the screen to view help for that screen.",
+      "label": "Help",
+      "demoTourTitle": "Help tour",
+      "demoTourText": "Like this, we'll walk you through each screen right where you are. Press ? whenever you're stuck.",
+      "note": "Note: the ? icon doesn't appear on screens without a tour yet, or on ones simple enough not to need one."
+    }
+  },
   "onboarding": {
     "title": "Setup",
     "pageTitle": "Onboarding Step {step}",

@@ -2615,6 +2615,28 @@
     "skip": "Configurar mais tarde",
     "saveError": "Falha ao salvar. Tente novamente."
   },
+  "onboardingWizard": {
+    "pageTitle": "Primeiros passos",
+    "nav": {
+      "back": "Voltar",
+      "next": "Avançar",
+      "saveAndNext": "Salvar e continuar",
+      "skip": "Pular"
+    },
+    "belt": {
+      "description": "Um currículo feito para você vencer partidas às cegas contra a IA.",
+      "playCta": "Jogar contra a IA"
+    },
+    "helpTour": {
+      "title": "Não sabe como usar uma tela?",
+      "demoTitle": "Tela de exemplo",
+      "demoHint": "Toque no ? ao lado do título da página, no topo da tela, para ver a ajuda daquela tela.",
+      "label": "Ajuda",
+      "demoTourTitle": "Tour de ajuda",
+      "demoTourText": "Assim guiamos você por cada tela na hora. Toque em ? sempre que tiver dúvida.",
+      "note": "Obs.: o ícone ? não aparece em telas que ainda não têm tour, nem nas simples o bastante para dispensá-lo."
+    }
+  },
   "onboarding": {
     "title": "Configuração Inicial",
     "pageTitle": "Etapa de Integração {step}",

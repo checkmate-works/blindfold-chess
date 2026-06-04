@@ -2615,6 +2615,28 @@
     "skip": "Configurar más tarde",
     "saveError": "No se pudo guardar. Inténtalo de nuevo."
   },
+  "onboardingWizard": {
+    "pageTitle": "Primeros pasos",
+    "nav": {
+      "back": "Atrás",
+      "next": "Siguiente",
+      "saveAndNext": "Guardar y continuar",
+      "skip": "Omitir"
+    },
+    "belt": {
+      "description": "Un plan de estudios diseñado para que ganes partidas a ciegas contra la IA.",
+      "playCta": "Jugar contra la IA"
+    },
+    "helpTour": {
+      "title": "¿No sabes cómo usar una pantalla?",
+      "demoTitle": "Pantalla de ejemplo",
+      "demoHint": "Pulsa el ? junto al título de la página, en la parte superior, para ver la ayuda de esa pantalla.",
+      "label": "Ayuda",
+      "demoTourTitle": "Recorrido de ayuda",
+      "demoTourText": "Así te guiaremos por cada pantalla en el momento. Pulsa ? cuando tengas dudas.",
+      "note": "Nota: el icono ? no aparece en pantallas que aún no tienen recorrido, ni en las suficientemente simples como para no necesitarlo."
+    }
+  },
   "onboarding": {
     "title": "Configuración Inicial",
     "pageTitle": "Paso de Incorporación {step}",
