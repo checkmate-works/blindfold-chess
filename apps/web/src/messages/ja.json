@@ -3272,6 +3272,7 @@
   },
   "setupUsername": {
     "title": "アカウント登録",
+    "sectionTitle": "本登録",
     "description": "アカウント名を決めてください。",
     "usernameLabel": "ユーザー名",
     "usernameDescription": "プロフィールURL やメンションに使われる固有の ID です。",

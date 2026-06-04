@@ -3030,6 +3030,7 @@
   },
   "setupUsername": {
     "title": "Crie sua Conta",
+    "sectionTitle": "Concluir cadastro",
     "description": "Escolha um nome de usuário para sua conta.",
     "usernameLabel": "Nome de usuário",
     "usernameDescription": "Um ID único usado na URL do seu perfil e menções.",

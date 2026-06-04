@@ -3272,6 +3272,7 @@
   },
   "setupUsername": {
     "title": "Create Your Account",
+    "sectionTitle": "Complete Registration",
     "description": "Choose a username for your account.",
     "usernameLabel": "Username",
     "usernameDescription": "A unique ID used in your profile URL and mentions.",
