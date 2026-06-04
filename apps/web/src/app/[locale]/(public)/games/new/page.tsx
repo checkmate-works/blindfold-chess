@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
-import { CardLink, PageLayout } from '@/app/[locale]/_components';
+import { CardLink, PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import { generateLocaleStaticParams } from '@/app/[locale]/_lib/static-params';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -28,10 +28,11 @@ export default async function NewGamePage({ params }: Props) {
 
   return (
     <PageLayout
-      title={t('newGame.selectTitle')}
+      title={t('newGame.title')}
       locale={locale}
       breadcrumb={[{ label: tGames('pageTitle'), href: '/games' }, { label: t('newGame.title') }]}
     >
+      <SectionTitle>{t('newGame.selectTitle')}</SectionTitle>
       <GameLimitCheck locale={locale}>
         <div className="grid grid-cols-1 gap-4">
           <CardLink
