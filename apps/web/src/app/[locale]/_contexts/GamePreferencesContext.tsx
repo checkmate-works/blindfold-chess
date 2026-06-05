@@ -55,6 +55,15 @@ export type PerGamePreferences = {
    * setting — it controls UI affordance availability, not per-game intent.
    */
   moveInputMode: 'text' | 'select' | 'button';
+  /**
+   * How long the on-board AI-reply chip keeps the opponent's last move visible
+   * (ms; `0` = keep until the next reply). Per-game because how long a player
+   * wants the move to linger depends on the blindfold intensity they chose for
+   * that specific session. Only meaningful when the board is hidden
+   * (`boardVisibility !== 'always'`). Falls back to the global value for legacy
+   * records that predate this field.
+   */
+  aiReplyDuration: AiReplyDuration;
 };
 
 // Game preferences

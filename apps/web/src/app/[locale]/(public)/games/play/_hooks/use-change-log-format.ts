@@ -2,6 +2,7 @@
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import { aiReplyDurationLabel } from '@/lib/games/ai-reply-duration';
 import type { PreferenceChangeLogEntry } from '@/lib/games/saved-game-types';
 
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -43,6 +44,8 @@ export function useChangeLogFormat() {
         return t('operationLog.initialSettings.labelPieceColor');
       case 'moveInputMode':
         return t('operationLog.initialSettings.labelMoveInputMode');
+      case 'aiReplyDuration':
+        return t('operationLog.initialSettings.labelAiReplyDuration');
     }
   };
 
@@ -69,6 +72,11 @@ export function useChangeLogFormat() {
         return value
           ? tPrefsControls(`moveInputModes.${value as PerGamePreferences['moveInputMode']}`)
           : '—';
+      case 'aiReplyDuration': {
+        if (value === undefined) return '—';
+        const { key, params } = aiReplyDurationLabel(value as number);
+        return tPrefs(key, params);
+      }
     }
   };
 

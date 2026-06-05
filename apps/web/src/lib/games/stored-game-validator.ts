@@ -1,6 +1,7 @@
 import { isValidSkillLevel } from '@blindfold-chess/features/ai-game';
 
 import { isEngineConfig } from '@/lib/engines';
+import { isAiReplyDuration } from '@/lib/games/ai-reply-duration';
 import { isBoardVisibility } from '@/lib/games/board-visibility';
 import type { StoredGame } from '@/lib/games/saved-game-types';
 
@@ -50,6 +51,9 @@ export function isValidPreferenceChangeEntry(entry: unknown): boolean {
     case 'moveInputMode': {
       const modes = ['text', 'select', 'button'];
       return modes.includes(e.from as string) && modes.includes(e.to as string);
+    }
+    case 'aiReplyDuration': {
+      return isAiReplyDuration(e.from) && isAiReplyDuration(e.to);
     }
     default:
       return false;

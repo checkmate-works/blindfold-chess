@@ -17,6 +17,7 @@ const PER_GAME_KEYS = [
   'showOpponentPieces',
   'pieceShapeMode',
   'pieceColors',
+  'aiReplyDuration',
 ] as const satisfies ReadonlyArray<keyof PerGamePreferences>;
 
 type Props = {

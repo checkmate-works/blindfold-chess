@@ -1835,7 +1835,8 @@
         "labelShowOpponentPieces": "Show opponent pieces",
         "labelPieceShape": "Piece shape",
         "labelPieceColor": "Piece color",
-        "labelMoveInputMode": "Move input"
+        "labelMoveInputMode": "Move input",
+        "labelAiReplyDuration": "AI move display time"
       },
       "changeLog": {
         "title": "Change Log",

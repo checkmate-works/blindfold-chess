@@ -10,6 +10,7 @@ import type { Side } from '@blindfold-chess/types';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
+import { AiReplyDurationPicker } from './AiReplyDurationPicker';
 import { BoardAppearanceContent } from './BoardAppearanceContent';
 import { BoardPreview } from './BoardPreview';
 import { BoardVisibilityPicker } from './BoardVisibilityPicker';
@@ -194,6 +195,20 @@ export function GameSettingsContent({
               onChange={(value) => onSettingsChange({ boardVisibility: value })}
             />
           </div>
+        )}
+
+        {/* AI move display time — sits right under the board-visibility picker
+            it depends on. Only relevant when the board is hidden (the chip is
+            the sole place the AI's reply surfaces), so it's gated on
+            `!== 'always'`. Tied to `showBoardButtonOption` so it appears only
+            where this component owns the board-visibility picker (the mid-game
+            modal); the new-game / global surfaces render their own pair via
+            CollapsibleGameSettings. */}
+        {showBoardButtonOption && settings.boardVisibility !== 'always' && (
+          <AiReplyDurationPicker
+            value={settings.aiReplyDuration}
+            onChange={(aiReplyDuration) => onSettingsChange({ aiReplyDuration })}
+          />
         )}
 
         {/* Slot for content the caller wants immediately after the

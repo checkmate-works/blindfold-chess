@@ -5,6 +5,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
+import { AiReplyDurationPicker } from './AiReplyDurationPicker';
 import { BoardVisibilityPicker } from './BoardVisibilityPicker';
 import { GameSettingsContent } from './GameSettingsContent';
 
@@ -46,6 +47,16 @@ export function CollapsibleGameSettings({ settings, onSettingsChange }: Props) {
           onChange={(boardVisibility) => onSettingsChange({ boardVisibility })}
         />
       </div>
+
+      {/* AI move display time — only relevant when the board is hidden (the chip
+          is the only place the AI's reply surfaces); shown right under the
+          board-visibility choice that gates it. */}
+      {settings.boardVisibility !== 'always' && (
+        <AiReplyDurationPicker
+          value={settings.aiReplyDuration}
+          onChange={(aiReplyDuration) => onSettingsChange({ aiReplyDuration })}
+        />
+      )}
 
       {settings.boardVisibility !== 'never' && (
         <GameSettingsContent

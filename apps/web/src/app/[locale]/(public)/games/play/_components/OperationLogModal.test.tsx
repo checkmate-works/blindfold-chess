@@ -54,6 +54,7 @@ const DEFAULT_PREFS: PerGamePreferences = {
   pieceShapeMode: 'normal',
   pieceColors: 'normal',
   moveInputMode: 'text',
+  aiReplyDuration: 4000,
 };
 
 const DEFAULT_ENGINE: EngineConfig = { kind: 'stockfish', skillLevel: 8 };
@@ -114,7 +115,7 @@ describe('OperationLogModal — Initial Settings section', () => {
     expect(screen.getByText('play.operationLog.initialSettings.notRecorded')).toBeInTheDocument();
   });
 
-  it('renders all 7 setting rows when expanded with a complete snapshot', () => {
+  it('renders every setting row when expanded with a complete snapshot', () => {
     renderModal({ gamePreferences: DEFAULT_PREFS });
 
     fireEvent.click(screen.getByText('play.operationLog.initialSettings.title'));
@@ -128,6 +129,7 @@ describe('OperationLogModal — Initial Settings section', () => {
       'labelPieceShape',
       'labelPieceColor',
       'labelMoveInputMode',
+      'labelAiReplyDuration',
     ]) {
       expect(screen.getByText(`play.operationLog.initialSettings.${labelKey}`)).toBeInTheDocument();
     }

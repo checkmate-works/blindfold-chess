@@ -26,3 +26,15 @@ export function isAiReplyDuration(value: unknown): value is AiReplyDuration {
     typeof value === 'number' && (AI_REPLY_DURATION_VALUES as readonly number[]).includes(value)
   );
 }
+
+/**
+ * Resolve the i18n key + params under `Preferences.game` for displaying a
+ * duration value. Shared by the settings picker, the change-log formatter, and
+ * the operation-log so the wording ("Keep visible" / "{n}s") stays in lockstep.
+ * `0` (keep) takes a param-less key; finite values pass seconds.
+ */
+export function aiReplyDurationLabel(value: number): { key: string; params?: { seconds: number } } {
+  return value === AI_REPLY_DURATION_KEEP
+    ? { key: 'aiReplyDurationModes.keep' }
+    : { key: 'aiReplyDurationModes.seconds', params: { seconds: value / 1000 } };
+}

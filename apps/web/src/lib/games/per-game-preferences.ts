@@ -1,5 +1,6 @@
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
+import { DEFAULT_AI_REPLY_DURATION, isAiReplyDuration } from './ai-reply-duration';
 import { isBoardVisibility, legacyToBoardVisibility } from './board-visibility';
 
 /**
@@ -24,6 +25,7 @@ export const DEFAULT_PER_GAME_PREFERENCES: PerGamePreferences = {
   pieceShapeMode: 'normal',
   pieceColors: 'normal',
   moveInputMode: 'text',
+  aiReplyDuration: DEFAULT_AI_REPLY_DURATION,
 };
 
 const PIECE_SHAPE_MODES = [
@@ -104,5 +106,8 @@ export function normalisePerGamePreferences(
     moveInputMode: isOneOf(p.moveInputMode, MOVE_INPUT_MODES)
       ? p.moveInputMode
       : defaults.moveInputMode,
+    aiReplyDuration: isAiReplyDuration(p.aiReplyDuration)
+      ? p.aiReplyDuration
+      : defaults.aiReplyDuration,
   };
 }

@@ -1831,7 +1831,8 @@
         "labelShowOpponentPieces": "Mostrar peças do oponente",
         "labelPieceShape": "Forma das peças",
         "labelPieceColor": "Cor das peças",
-        "labelMoveInputMode": "Entrada de movimento"
+        "labelMoveInputMode": "Entrada de movimento",
+        "labelAiReplyDuration": "Tempo de exibição da jogada da IA"
       },
       "changeLog": {
         "title": "Histórico de alterações",

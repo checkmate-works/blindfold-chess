@@ -9,6 +9,7 @@ import { FaChevronDown } from 'react-icons/fa';
 
 import type { EngineConfig } from '@/lib/engines';
 import { ENGINE_LOGO_SRC } from '@/lib/engines';
+import { aiReplyDurationLabel } from '@/lib/games/ai-reply-duration';
 import type { PreferenceChangeLogEntry } from '@/lib/games/saved-game-types';
 
 import { Modal } from '@/app/[locale]/_components/Modal';
@@ -192,6 +193,24 @@ export function OperationLogModal({
                     {gamePreferences.moveInputMode
                       ? tPrefsControls(`moveInputModes.${gamePreferences.moveInputMode}`)
                       : '—'}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-3 px-4 py-2">
+                  <dt className="text-muted-foreground">
+                    {t('operationLog.initialSettings.labelAiReplyDuration')}
+                  </dt>
+                  <dd className="text-right">
+                    {/* aiReplyDuration entered PerGamePreferences late — older
+                        snapshots render an em-dash (recorded-vs-not). `== null`
+                        (not truthiness) since 0 ("keep visible") is valid. */}
+                    {gamePreferences.aiReplyDuration == null
+                      ? '—'
+                      : (() => {
+                          const { key, params } = aiReplyDurationLabel(
+                            gamePreferences.aiReplyDuration
+                          );
+                          return tPrefs(key, params);
+                        })()}
                   </dd>
                 </div>
               </dl>

@@ -15,6 +15,7 @@ const initial: PerGamePreferences = {
   pieceShapeMode: 'normal',
   pieceColors: 'normal',
   moveInputMode: 'text',
+  aiReplyDuration: 4000,
 };
 
 describe('foldPreferences', () => {
@@ -42,6 +43,13 @@ describe('foldPreferences', () => {
       { atMoveIndex: 2, key: 'pieceColors', from: 'normal', to: 'white-only' },
     ];
     expect(foldPreferences(initial, log)).toEqual({ ...initial, pieceColors: 'white-only' });
+  });
+
+  it('applies an aiReplyDuration change (including the 0 "keep" sentinel)', () => {
+    const log: PreferenceChangeLogEntry[] = [
+      { atMoveIndex: 2, key: 'aiReplyDuration', from: 4000, to: 0 },
+    ];
+    expect(foldPreferences(initial, log)).toEqual({ ...initial, aiReplyDuration: 0 });
   });
 
   it('composes changes across multiple keys', () => {

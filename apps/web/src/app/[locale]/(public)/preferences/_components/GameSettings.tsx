@@ -8,7 +8,6 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
-import { AiReplyDurationPicker } from './AiReplyDurationPicker';
 import { CollapsibleGameSettings } from './CollapsibleGameSettings';
 
 export function GameSettings() {
@@ -27,17 +26,6 @@ export function GameSettings() {
           "Game" tab and the game-start screen stay in lockstep (full-width
           visibility picker, peek-mode picker, collapsible visual settings). */}
       <CollapsibleGameSettings settings={preferences} onSettingsChange={updatePreferences} />
-
-      {/* AI move display time — a global-only setting (no per-game override), so
-          it lives here rather than in the shared CollapsibleGameSettings the
-          new-game / mid-game forms reuse. Only takes effect in blindfold modes,
-          where the AI's reply surfaces as the on-board chip. */}
-      <div className="mt-6">
-        <AiReplyDurationPicker
-          value={preferences.aiReplyDuration}
-          onChange={(aiReplyDuration) => updatePreferences({ aiReplyDuration })}
-        />
-      </div>
 
       {/* Reset Button */}
       <div className="mt-8 flex justify-end">
