@@ -1,3 +1,4 @@
+import { isAiReplyDuration } from '@/lib/games/ai-reply-duration';
 import type { BoardTheme } from '@/lib/games/board-themes';
 import { isBoardVisibility, legacyToBoardVisibility } from '@/lib/games/board-visibility';
 
@@ -77,6 +78,9 @@ export function validatePreferences(parsed: unknown): Partial<GamePreferences> {
     result.boardVisibility = p.boardVisibility;
   } else if (typeof p.showBoardButtonInGame === 'boolean') {
     result.boardVisibility = legacyToBoardVisibility(p.showBoardButtonInGame);
+  }
+  if (isAiReplyDuration(p.aiReplyDuration)) {
+    result.aiReplyDuration = p.aiReplyDuration;
   }
   return result;
 }

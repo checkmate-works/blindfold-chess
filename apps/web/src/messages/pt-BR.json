@@ -286,6 +286,12 @@
       },
       "hideBoard": "Ocultar o tabuleiro",
       "allowPeek": "Permitir espiar",
+      "aiReplyDuration": "Tempo de exibição da jogada da IA",
+      "aiReplyDurationHint": "Por quanto tempo a jogada do oponente fica na tela nos modos às cegas.",
+      "aiReplyDurationModes": {
+        "keep": "Manter visível",
+        "seconds": "{seconds}s"
+      },
       "resetDefaults": "Redefinir valores padrão",
       "resetDefaultsConfirm": {
         "title": "Redefinir configuração do tabuleiro?",

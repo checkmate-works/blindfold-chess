@@ -228,7 +228,19 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
 
   // AI-reply chip visibility (thinking + transient post-move window). Lifted
   // here so `badgeActive` can also tell the board to drop the mask's own label.
-  const aiReply = useAiReplyChip({ isAiThinking, aiMoveSignal });
+  const aiReply = useAiReplyChip({
+    isAiThinking,
+    aiMoveSignal,
+    durationMs: preferences.aiReplyDuration,
+  });
+  const { dismiss: dismissAiReply } = aiReply;
+  // Revealing the board (peek) also dismisses the AI-move announcement: once the
+  // player can see the position the "AI played …" chip is redundant, and with
+  // the "keep visible" duration it would otherwise linger over the open board.
+  const handleReveal = useCallback(() => {
+    handleRevealBoard();
+    dismissAiReply();
+  }, [handleRevealBoard, dismissAiReply]);
   // Only surface the on-board AI chip in blindfold modes. When the board is
   // always visible ('always'), the AI's move is right there on the board — an
   // "AI played …" badge would just be redundant clutter.
@@ -261,7 +273,7 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
       alwaysOpen
       masked={boardMasked}
       maskDismissable={preferences.boardVisibility === 'peek'}
-      onReveal={handleRevealBoard}
+      onReveal={handleReveal}
       onMove={canBoardMove ? handleBoardMove : undefined}
       onIllegalMove={canBoardMove ? recordInvalid : undefined}
       // AI reply surfaced on the board itself (visible without scrolling to the

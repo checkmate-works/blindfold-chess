@@ -290,6 +290,12 @@
       },
       "hideBoard": "ボードを隠す",
       "allowPeek": "ピークを許可",
+      "aiReplyDuration": "AIの手の表示時間",
+      "aiReplyDurationHint": "目隠しモードで相手の手を画面に表示し続ける時間です。",
+      "aiReplyDurationModes": {
+        "keep": "ずっと表示",
+        "seconds": "{seconds}秒"
+      },
       "resetDefaults": "デフォルトに戻す",
       "resetDefaultsConfirm": {
         "title": "ボード設定をリセットしますか？",

@@ -12,6 +12,7 @@ import type { ExpInfo } from '@blindfold-chess/features/exp';
 import { FaChartLine, FaChessBoard, FaMinus, FaTimes } from 'react-icons/fa';
 
 import { engineConfigToUrlParams } from '@/lib/engines';
+import { DEFAULT_AI_REPLY_DURATION } from '@/lib/games/ai-reply-duration';
 import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 import { computeGameStats } from '@/lib/games/compute-game-stats';
 import type { Game, GamePlaySettings, PlaySettingsChangeEntry } from '@/lib/games/saved-game-types';
@@ -61,6 +62,7 @@ const REVEALED_BOARD_PREFS: GamePreferences = {
   buttonInputPieceLabel: 'icon',
   enableAutoComplete: true,
   boardVisibility: 'always',
+  aiReplyDuration: DEFAULT_AI_REPLY_DURATION,
 };
 
 type Props = {

@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaRobot, FaSpinner } from 'react-icons/fa';
 
-/** How long the AI-move chip stays before fading out. */
+/** Default window the AI-move chip stays before fading out, when the user has
+ *  not configured one. Mirrors DEFAULT_AI_REPLY_DURATION in ai-reply-duration.ts. */
 const MOVE_VISIBLE_MS = 4000;
 
 /**
@@ -16,26 +17,40 @@ const MOVE_VISIBLE_MS = 4000;
  * - `thinking`: the AI is computing — a persistent spinner chip.
  * - `active`: the chip occupies the board center (thinking, or within the
  *   transient window after a move). `aiMoveSignal` bumps once per AI move;
- *   the move stays for {@link MOVE_VISIBLE_MS}, then `active` clears and the
- *   chip fades out.
+ *   the move stays for `durationMs`, then `active` clears and the chip fades
+ *   out. A `durationMs` of `0` keeps the move visible indefinitely (until the
+ *   next reply), restoring the historical "stays until the player responds"
+ *   behavior.
+ * - `dismiss`: clears the move announcement on demand. Called when the player
+ *   reveals the board (peek): once the position is visible the "AI played …"
+ *   label is redundant, and with `durationMs === 0` it would otherwise linger
+ *   over the open board forever.
  */
 export function useAiReplyChip({
   isAiThinking,
   aiMoveSignal,
+  durationMs = MOVE_VISIBLE_MS,
 }: {
   isAiThinking: boolean;
   aiMoveSignal: number;
-}): { active: boolean; thinking: boolean } {
+  /** Auto-dismiss window in ms; `0` (or negative) means never auto-dismiss. */
+  durationMs?: number;
+}): { active: boolean; thinking: boolean; dismiss: () => void } {
   const [moveVisible, setMoveVisible] = useState(false);
 
   useEffect(() => {
     if (!aiMoveSignal) return;
     setMoveVisible(true);
-    const id = setTimeout(() => setMoveVisible(false), MOVE_VISIBLE_MS);
+    // durationMs <= 0 → keep the move visible until the next reply re-triggers
+    // this effect; skip the auto-dismiss timer entirely.
+    if (durationMs <= 0) return;
+    const id = setTimeout(() => setMoveVisible(false), durationMs);
     return () => clearTimeout(id);
-  }, [aiMoveSignal]);
+  }, [aiMoveSignal, durationMs]);
 
-  return { active: isAiThinking || moveVisible, thinking: isAiThinking };
+  const dismiss = useCallback(() => setMoveVisible(false), []);
+
+  return { active: isAiThinking || moveVisible, thinking: isAiThinking, dismiss };
 }
 
 type Props = {

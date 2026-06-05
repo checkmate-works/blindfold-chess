@@ -27,7 +27,7 @@ describe('useAiReplyChip', () => {
 
   it('is active + thinking while the AI is thinking', () => {
     const { result } = renderHook(() => useAiReplyChip({ isAiThinking: true, aiMoveSignal: 0 }));
-    expect(result.current).toEqual({ active: true, thinking: true });
+    expect(result.current).toMatchObject({ active: true, thinking: true });
   });
 
   it('activates on a new move signal, then clears after the window', () => {
@@ -38,12 +38,67 @@ describe('useAiReplyChip', () => {
     expect(result.current.active).toBe(false);
 
     rerender({ signal: 1 });
-    expect(result.current).toEqual({ active: true, thinking: false });
+    expect(result.current).toMatchObject({ active: true, thinking: false });
 
     act(() => {
       vi.advanceTimersByTime(4000);
     });
     expect(result.current.active).toBe(false);
+  });
+
+  it('dismiss() clears the move announcement immediately (e.g. on board reveal)', () => {
+    const { result, rerender } = renderHook(
+      ({ signal }) => useAiReplyChip({ isAiThinking: false, aiMoveSignal: signal, durationMs: 0 }),
+      { initialProps: { signal: 0 } }
+    );
+
+    rerender({ signal: 1 });
+    expect(result.current.active).toBe(true);
+
+    act(() => {
+      result.current.dismiss();
+    });
+    expect(result.current.active).toBe(false);
+  });
+
+  it('honors a custom duration window', () => {
+    const { result, rerender } = renderHook(
+      ({ signal }) =>
+        useAiReplyChip({ isAiThinking: false, aiMoveSignal: signal, durationMs: 2000 }),
+      { initialProps: { signal: 0 } }
+    );
+
+    rerender({ signal: 1 });
+    expect(result.current.active).toBe(true);
+
+    // Still up just before the custom window elapses...
+    act(() => {
+      vi.advanceTimersByTime(1999);
+    });
+    expect(result.current.active).toBe(true);
+
+    // ...and gone right after.
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
+    expect(result.current.active).toBe(false);
+  });
+
+  it('keeps the move visible indefinitely when durationMs is 0', () => {
+    const { result, rerender } = renderHook(
+      ({ signal }) => useAiReplyChip({ isAiThinking: false, aiMoveSignal: signal, durationMs: 0 }),
+      { initialProps: { signal: 0 } }
+    );
+
+    rerender({ signal: 1 });
+    expect(result.current.active).toBe(true);
+
+    // No auto-dismiss timer is armed, so the move stays up no matter how much
+    // time passes — it only clears when the next reply replaces it.
+    act(() => {
+      vi.advanceTimersByTime(60_000);
+    });
+    expect(result.current.active).toBe(true);
   });
 });
 
