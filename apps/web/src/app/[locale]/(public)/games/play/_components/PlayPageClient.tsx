@@ -13,8 +13,6 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useGameSession } from '../_hooks';
-import { shouldShowAiPulse } from '../_lib';
-import { AiMovePulse } from './AiMovePulse';
 import { PlayClient } from './PlayClient';
 
 type Props = {
@@ -36,18 +34,10 @@ export function PlayPageClient({ locale, breadcrumb, initialMoveInputHint }: Pro
   // read move-error / AI-thinking / AI-move-announcement state directly,
   // without a useEffect bridge from PlayClient.
   const gameSession = useGameSession({ locale });
-  const { aiMoveSignal } = gameSession;
   const { error: moveError, lastAttemptedInput } = gameSession.moveInput;
   const { isLoadingFromStorage } = gameSession.gameState;
-  const { preferences: globalPreferences, isHydrated } = useGamePreferences();
+  const { isHydrated } = useGamePreferences();
 
-  // Resolve the effective board visibility (per-game falls back to global) and
-  // delegate the pulse-vs-no-pulse policy to `shouldShowAiPulse` (fires in the
-  // blindfold modes, suppressed when the board is always visible).
-  const perGamePrefs = gameSession.gameConfig.perGamePrefs;
-  const aiPulseEnabled = shouldShowAiPulse({
-    boardVisibility: perGamePrefs?.boardVisibility ?? globalPreferences.boardVisibility,
-  });
   // Matches the `isInitializing` predicate in `PlayClient` so the title and
   // the input panel both transition out of their "loading" state in lockstep.
   const isInitializing = isLoadingFromStorage || !isHydrated;
@@ -75,25 +65,21 @@ export function PlayPageClient({ locale, breadcrumb, initialMoveInputHint }: Pro
   );
 
   return (
-    <>
-      {/* Fixed / out-of-flow — kept outside `space-y-8` so it adds no margin. */}
-      <AiMovePulse signal={aiMoveSignal} enabled={aiPulseEnabled} />
-      <div className="space-y-8">
-        <PageTitle>{titleContent}</PageTitle>
-        <PagePanel>
-          <PlayClient
-            locale={locale}
-            gameSession={gameSession}
-            initialMoveInputHint={initialMoveInputHint}
-            isInitializing={isInitializing}
-          />
-          {/* Mirror `PageLayout`'s trailing block — see PageLayout.tsx. */}
-          <div className="!mt-4 space-y-4">
-            <Divider />
-            {breadcrumb}
-          </div>
-        </PagePanel>
-      </div>
-    </>
+    <div className="space-y-8">
+      <PageTitle>{titleContent}</PageTitle>
+      <PagePanel>
+        <PlayClient
+          locale={locale}
+          gameSession={gameSession}
+          initialMoveInputHint={initialMoveInputHint}
+          isInitializing={isInitializing}
+        />
+        {/* Mirror `PageLayout`'s trailing block — see PageLayout.tsx. */}
+        <div className="!mt-4 space-y-4">
+          <Divider />
+          {breadcrumb}
+        </div>
+      </PagePanel>
+    </div>
   );
 }

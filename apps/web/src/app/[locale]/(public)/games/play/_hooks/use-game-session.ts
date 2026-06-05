@@ -177,9 +177,9 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
     [startingFen, setLastMove]
   );
 
-  // Move-landed signal — bumped once per completed AI move. Drives the
-  // full-screen `AiMovePulse`. A counter (not a boolean) so each move is a
-  // distinct change even when two land back-to-back.
+  // Move-landed signal — bumped once per completed AI move. Drives the on-board
+  // `AiReplyChip` (re-triggers its visibility window). A counter (not a boolean)
+  // so each move is a distinct change even when two land back-to-back.
   const [aiMoveSignal, setAiMoveSignal] = useState(0);
 
   // AI move orchestration
@@ -188,7 +188,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
       pushMove(move);
       const newMoves = [...movesRef.current, move];
       updateLastMove(newMoves);
-      // Bump here — not in an effect on `moves` — so the pulse fires only
+      // Bump here — not in an effect on `moves` — so the chip refreshes only
       // for AI moves, never for player moves, undo, or game restore.
       setAiMoveSignal((n) => n + 1);
     },
