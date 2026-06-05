@@ -998,3 +998,28 @@ CREATE POLICY "game_chunks_select" ON "game_chunks"
         AND g.status = 'public'
     )
   );
+
+-- =============================================================================
+-- user_lines (private repertoire trees / 型 — owner-only)
+-- =============================================================================
+-- A line is visible to and mutable by its owner only. The app goes through
+-- service-role server actions (which bypass RLS); these owner-scoped policies
+-- are defense-in-depth so a direct authenticated query can never read or write
+-- another user's lines. There is intentionally no public/anon SELECT.
+ALTER TABLE "user_lines" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "user_lines_select" ON "user_lines";
+CREATE POLICY "user_lines_select" ON "user_lines"
+  FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "user_lines_insert" ON "user_lines";
+CREATE POLICY "user_lines_insert" ON "user_lines"
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "user_lines_update" ON "user_lines";
+CREATE POLICY "user_lines_update" ON "user_lines"
+  FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "user_lines_delete" ON "user_lines";
+CREATE POLICY "user_lines_delete" ON "user_lines"
+  FOR DELETE USING (auth.uid() = user_id);

@@ -831,3 +831,27 @@ $$;
 -- only; reads are public.
 GRANT SELECT ON TABLE public.game_chunks TO authenticated;
 GRANT SELECT ON TABLE public.game_chunks TO anon;
+
+-- =============================================================================
+-- user_lines (private repertoire trees / 型 — owner-only)
+-- =============================================================================
+-- FK constraint: user_lines.user_id → auth.users(id) ON DELETE CASCADE
+-- Lines are private user-generated content with no value once the owner is
+-- gone, so deletion cascades (unlike the public games catalog, which keeps
+-- orphans). user_id is NOT NULL — there is no anonymous-author path here.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'user_lines_user_id_fkey'
+  ) THEN
+    ALTER TABLE public.user_lines
+      ADD CONSTRAINT user_lines_user_id_fkey
+      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+  END IF;
+END;
+$$;
+
+-- Owner-only, never public. The app reads/writes via Drizzle (service role,
+-- bypasses RLS); the GRANT + owner-scoped RLS (see rls_policies.sql) are
+-- defense-in-depth for the authenticated API. No anon grant.
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.user_lines TO authenticated;
