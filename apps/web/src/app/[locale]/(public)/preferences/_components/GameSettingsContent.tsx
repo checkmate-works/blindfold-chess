@@ -193,22 +193,14 @@ export function GameSettingsContent({
             <BoardVisibilityPicker
               value={settings.boardVisibility}
               onChange={(value) => onSettingsChange({ boardVisibility: value })}
-            />
-          </div>
-        )}
-
-        {/* AI move display time — sits right under the board-visibility picker
-            it depends on. Only relevant when the board is hidden (the chip is
-            the sole place the AI's reply surfaces), so it's gated on
-            `!== 'always'`. Tied to `showBoardButtonOption` so it appears only
-            where this component owns the board-visibility picker (the mid-game
-            modal); the new-game / global surfaces render their own pair via
-            CollapsibleGameSettings. */}
-        {showBoardButtonOption && settings.boardVisibility !== 'always' && (
-          <div className="border-l border-border pl-4">
-            <AiReplyDurationPicker
-              value={settings.aiReplyDuration}
-              onChange={(aiReplyDuration) => onSettingsChange({ aiReplyDuration })}
+              // AI move display time rides inside the blindfold group, right
+              // under "Allow peeking", as another board-hidden-only sub-setting.
+              blindfoldExtra={
+                <AiReplyDurationPicker
+                  value={settings.aiReplyDuration}
+                  onChange={(aiReplyDuration) => onSettingsChange({ aiReplyDuration })}
+                />
+              }
             />
           </div>
         )}

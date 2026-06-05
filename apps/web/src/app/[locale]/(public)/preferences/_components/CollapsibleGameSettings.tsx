@@ -45,21 +45,16 @@ export function CollapsibleGameSettings({ settings, onSettingsChange }: Props) {
         <BoardVisibilityPicker
           value={settings.boardVisibility}
           onChange={(boardVisibility) => onSettingsChange({ boardVisibility })}
+          // AI move display time rides inside the blindfold group, right under
+          // "Allow peeking", as another board-hidden-only sub-setting.
+          blindfoldExtra={
+            <AiReplyDurationPicker
+              value={settings.aiReplyDuration}
+              onChange={(aiReplyDuration) => onSettingsChange({ aiReplyDuration })}
+            />
+          }
         />
       </div>
-
-      {/* AI move display time — only relevant when the board is hidden (the chip
-          is the only place the AI's reply surfaces); shown right under the
-          board-visibility choice that gates it, indented like "Allow peeking"
-          to read as a sub-setting of "Hide the board". */}
-      {settings.boardVisibility !== 'always' && (
-        <div className="border-l border-border pl-4">
-          <AiReplyDurationPicker
-            value={settings.aiReplyDuration}
-            onChange={(aiReplyDuration) => onSettingsChange({ aiReplyDuration })}
-          />
-        </div>
-      )}
 
       {settings.boardVisibility !== 'never' && (
         <GameSettingsContent
