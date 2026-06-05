@@ -10,6 +10,13 @@ import type { BoardVisibility } from '@/lib/games/board-visibility';
 type Props = {
   value: BoardVisibility;
   onChange: (value: BoardVisibility) => void;
+  /**
+   * Optional extra control rendered inside the blindfold group, right after
+   * "Allow peeking" and indented identically — used for board-hidden-only
+   * sub-settings (e.g. the AI move display time). Only shown while blindfolded
+   * (`value !== 'always'`), since that is the only time it is relevant.
+   */
+  blindfoldExtra?: ReactNode;
 };
 
 function ToggleRow({
@@ -68,7 +75,7 @@ function ToggleRow({
  *
  * Callers supply their own heading; this renders just the toggle group.
  */
-export function BoardVisibilityPicker({ value, onChange }: Props) {
+export function BoardVisibilityPicker({ value, onChange, blindfoldExtra }: Props) {
   const t = useTranslations('Preferences');
   const blindfold = value !== 'always';
   const peekAllowed = value === 'peek';
@@ -93,6 +100,9 @@ export function BoardVisibilityPicker({ value, onChange }: Props) {
             muted
           />
         </div>
+      )}
+      {blindfold && blindfoldExtra && (
+        <div className="border-l border-border pl-4">{blindfoldExtra}</div>
       )}
     </div>
   );

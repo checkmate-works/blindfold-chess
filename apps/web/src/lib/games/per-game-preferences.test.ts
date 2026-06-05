@@ -146,6 +146,7 @@ describe('normalisePerGamePreferences', () => {
         'pieceShapeMode',
         'pieceColors',
         'moveInputMode',
+        'aiReplyDuration',
       ];
       for (const k of expectedKeys) {
         expect(result).toHaveProperty(k);
@@ -159,6 +160,7 @@ describe('normalisePerGamePreferences', () => {
       });
       expect(Object.keys(result!).sort()).toEqual(
         [
+          'aiReplyDuration',
           'boardVisibility',
           'highlightLastMove',
           'moveInputMode',
@@ -183,6 +185,7 @@ describe('normalisePerGamePreferences', () => {
         pieceShapeMode: 'circles-all',
         pieceColors: 'white-only',
         moveInputMode: 'button',
+        aiReplyDuration: 10000,
       };
       const result = normalisePerGamePreferences({}, customDefaults);
       expect(result).toEqual(customDefaults);

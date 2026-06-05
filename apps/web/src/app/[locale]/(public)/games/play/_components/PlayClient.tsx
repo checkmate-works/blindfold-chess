@@ -7,6 +7,8 @@ import { notFound, useSearchParams } from 'next/navigation';
 import { fenToLichessUrl } from '@blindfold-chess/features/chess-core/fen';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
+import type { BoardVisibility } from '@/lib/games/board-visibility';
+import { writeBoardVisibilityCookieClient } from '@/lib/games/board-visibility-cookie';
 import type { MoveInputPreferenceHint } from '@/lib/games/move-input-cookie';
 
 import { AuthPromptModal } from '@/app/[locale]/_components/AuthPromptModal';
@@ -29,6 +31,7 @@ import { PlayClientModals } from './PlayClientModals';
 import {
   ActionRowSkeleton,
   AlwaysVisibleBoardSkeleton,
+  CompactBoardSkeleton,
   IconButtonSkeleton,
   TextLinkSkeleton,
 } from './skeletons';
@@ -45,6 +48,14 @@ type Props = {
    */
   initialMoveInputHint: MoveInputPreferenceHint;
   /**
+   * Server-resolved global `boardVisibility` hint (from the
+   * `bfc_board_visibility_pref` cookie). Picks the pre-hydration board
+   * skeleton: the compact bar for 'never' (pure blindfold) vs the full-size
+   * board for 'always' / 'peek', so a 'never' user's first paint matches the
+   * hydrated layout instead of collapsing ~500px.
+   */
+  initialBoardVisibility: BoardVisibility;
+  /**
    * Page-level "waiting for persisted state" flag, computed once in
    * `PlayPageClient` from `gameState.isLoadingFromStorage` and the
    * preferences hydration state. Passed down so the title slot and the
@@ -53,7 +64,13 @@ type Props = {
   isInitializing: boolean;
 };
 
-export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitializing }: Props) {
+export function PlayClient({
+  locale,
+  gameSession,
+  initialMoveInputHint,
+  initialBoardVisibility,
+  isInitializing,
+}: Props) {
   const searchParams = useSearchParams();
   // Opened from the result / games list with `finished=1` to review a
   // finished game in the familiar game UI (read-only). Suppresses the
@@ -69,7 +86,7 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
     actions,
     operationLogs,
     isAiThinking,
-    aiMoveDisplay,
+    aiMoveNotation,
     aiMoveSignal,
   } = gameSession;
 
@@ -121,6 +138,17 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
       perGamePrefs,
       initialMoveInputHint,
     });
+
+  // Mirror THIS game's effective board visibility (per-game merged with global)
+  // to the SSR cookie so the next /games/play paint reserves the matching board
+  // skeleton for the game being resumed — not just the global default. Without
+  // this, a game whose per-game visibility differs from the global setting
+  // (e.g. global 'peek' but this game 'never') would shift on hydration. The
+  // global default is still seeded by GamePreferencesProvider for the first-ever
+  // visit; this refines it to the active game.
+  useEffect(() => {
+    writeBoardVisibilityCookieClient(preferences.boardVisibility);
+  }, [preferences.boardVisibility]);
 
   // UI state
   const [showOperationLogModal, setShowOperationLogModal] = useState(false);
@@ -228,11 +256,26 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
 
   // AI-reply chip visibility (thinking + transient post-move window). Lifted
   // here so `badgeActive` can also tell the board to drop the mask's own label.
-  const aiReply = useAiReplyChip({ isAiThinking, aiMoveSignal });
-  // Only surface the on-board AI chip in blindfold modes. When the board is
-  // always visible ('always'), the AI's move is right there on the board — an
-  // "AI played …" badge would just be redundant clutter.
-  const showAiReplyChip = preferences.boardVisibility !== 'always';
+  const aiReply = useAiReplyChip({
+    isAiThinking,
+    aiMoveSignal,
+    durationMs: preferences.aiReplyDuration,
+  });
+  const { dismiss: dismissAiReply } = aiReply;
+  // Revealing the board (peek) also dismisses the AI-move announcement: once the
+  // player can see the position the "AI played …" chip is redundant, and with
+  // the "keep visible" duration it would otherwise linger over the open board.
+  const handleReveal = useCallback(() => {
+    handleRevealBoard();
+    dismissAiReply();
+  }, [handleRevealBoard, dismissAiReply]);
+  // Only surface the on-board AI chip while the board is actually hidden (a
+  // blindfold mode AND currently masked). When the board is visible — 'always'
+  // mode, or a peeked-open board — the AI's move is right there on the squares,
+  // so the "AI played …" / thinking chip would just be redundant clutter over a
+  // readable position. Gating on `boardMasked` (not just the mode) also keeps a
+  // setting change from popping the chip back over an open peek.
+  const showAiReplyChip = preferences.boardVisibility !== 'always' && boardMasked;
 
   // In-progress board: always rendered at a fixed position/size, with the
   // blindfold expressed as a mask overlay rather than as a different layout.
@@ -261,7 +304,7 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
       alwaysOpen
       masked={boardMasked}
       maskDismissable={preferences.boardVisibility === 'peek'}
-      onReveal={handleRevealBoard}
+      onReveal={handleReveal}
       onMove={canBoardMove ? handleBoardMove : undefined}
       onIllegalMove={canBoardMove ? recordInvalid : undefined}
       // AI reply surfaced on the board itself (visible without scrolling to the
@@ -273,7 +316,7 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
           <AiReplyChip
             active={aiReply.active}
             thinking={aiReply.thinking}
-            aiMoveDisplay={aiMoveDisplay}
+            aiMoveNotation={aiMoveNotation}
           />
         ) : undefined
       }
@@ -335,11 +378,16 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
             {/* In Progress Content */}
             {gameStatus === 'in_progress' && isInitializing && (
               <div className="flex flex-col gap-6">
-                {/* The board is always rendered at a fixed size now (the
-                    blindfold is a mask overlay, not a different layout), so the
-                    skeleton always reserves the full-size board card — no
-                    peek-hint branching, no modal "Show Board" button slot. */}
-                <AlwaysVisibleBoardSkeleton />
+                {/* Board skeleton shape is driven by the SSR boardVisibility
+                    hint: 'never' (pure blindfold) renders the compact bar — no
+                    board — so reserve the matching compact skeleton; 'always' /
+                    'peek' render a full-size board card. Picking the right one
+                    here keeps the pre-hydration → hydrated handoff CLS-free. */}
+                {initialBoardVisibility === 'never' ? (
+                  <CompactBoardSkeleton />
+                ) : (
+                  <AlwaysVisibleBoardSkeleton />
+                )}
                 <MoveInputSkeleton mode={skeletonMode} hasModeSwitch={skeletonHasModeSwitch} />
                 {/* Action row (Undo + Resign). */}
                 <ActionRowSkeleton />

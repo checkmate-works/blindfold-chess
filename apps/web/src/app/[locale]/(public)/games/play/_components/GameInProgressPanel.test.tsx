@@ -58,6 +58,7 @@ const preferences: GamePreferences = {
   buttonInputPieceLabel: 'icon',
   enableAutoComplete: true,
   boardVisibility: 'never',
+  aiReplyDuration: 5000,
 };
 
 type Overrides = {

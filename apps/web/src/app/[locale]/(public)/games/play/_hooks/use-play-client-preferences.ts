@@ -90,6 +90,9 @@ export function usePlayClientPreferences({
       // legacy `gamePreferences` records may not carry it; fall back to the
       // global until the user toggles in this game.
       moveInputMode: perGamePrefs.moveInputMode ?? globalPreferences.moveInputMode,
+      // aiReplyDuration entered PerGamePreferences after the field set settled,
+      // so legacy records may not carry it; fall back to the global default.
+      aiReplyDuration: perGamePrefs.aiReplyDuration ?? globalPreferences.aiReplyDuration,
     };
   }, [globalPreferences, perGamePrefs]);
 

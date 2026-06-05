@@ -290,6 +290,11 @@
       },
       "hideBoard": "ボードを隠す",
       "allowPeek": "ピークを許可",
+      "aiReplyDuration": "AIの手の表示時間",
+      "aiReplyDurationModes": {
+        "keep": "ずっと表示",
+        "seconds": "{seconds}秒"
+      },
       "resetDefaults": "デフォルトに戻す",
       "resetDefaultsConfirm": {
         "title": "ボード設定をリセットしますか？",
@@ -1727,7 +1732,19 @@
     "deleteFailedToast": "ゲームの削除に失敗しました"
   },
   "play": {
-    "title": "チェス対戦",
+    "title": "対局",
+    "help": {
+      "label": "ヘルプ",
+      "settings": {
+        "title": "対局の設定",
+        "description": "歯車をタップすると、この対局の盤面・駒・目隠しの設定を変更できます。"
+      },
+      "inputMode": {
+        "title": "入力方式の切り替え",
+        "description": "このアイコンをタップすると、手の入力方式（テキスト入力・一覧から選択・駒ボタン）を切り替えられます。",
+        "link": "入力方式を管理"
+      }
+    },
     "loading": "読み込み中...",
     "yourMove": "あなたの番です",
     "aiThinking": "AIが考えています...",
@@ -1784,7 +1801,7 @@
     "copyFen": "FENをコピー",
     "copied": "コピー済み！",
     "analyzeOnLichess": "Lichessで解析",
-    "aiPlayed": "AIが{move}を指しました",
+    "aiPlayed": "AIが<b>{move}</b>を指しました",
     "restartFromHere": "ここからやり直す",
     "confirmRestartTitle": "ここからやり直しますか？",
     "confirmRestartMessage": "選択した手以降の棋譜が削除されます。この操作は取り消せません。",
@@ -1829,7 +1846,8 @@
         "labelShowOpponentPieces": "相手の駒を表示",
         "labelPieceShape": "駒の形状",
         "labelPieceColor": "駒の色",
-        "labelMoveInputMode": "手入力方式"
+        "labelMoveInputMode": "手入力方式",
+        "labelAiReplyDuration": "AIの手の表示時間"
       },
       "changeLog": {
         "title": "変更履歴",

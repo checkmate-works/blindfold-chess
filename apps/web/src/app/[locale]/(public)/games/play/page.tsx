@@ -20,6 +20,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
+import { readBoardVisibilityFromCookies } from '@/lib/games/board-visibility-cookie.server';
 import { readMoveInputPreferenceFromCookies } from '@/lib/games/move-input-cookie.server';
 
 import { BreadcrumbContent } from '@/app/[locale]/_components/Breadcrumb';
@@ -67,11 +68,15 @@ export default async function PlayPage({ params }: Props) {
   const tGames = await getTranslations({ locale, namespace: 'gamesPage' });
   const tPlay = await getTranslations({ locale, namespace: 'play' });
 
-  // Server-resolved hint for the pre-hydration move-input skeleton. The reader
-  // returns the default hint on first visit (no cookie set yet). The board is
-  // now always rendered at a fixed size (the blindfold is a mask overlay, not a
-  // different layout), so no peek hint is needed to reserve the board skeleton.
-  const moveInputHint = await readMoveInputPreferenceFromCookies();
+  // Server-resolved hints for the pre-hydration skeletons. Both readers return
+  // defaults on first visit (no cookie yet). `moveInputHint` shapes the
+  // move-input skeleton; `boardVisibilityHint` lets the board skeleton reserve
+  // the compact bar for 'never' (pure blindfold) instead of a full-size board,
+  // avoiding a ~500px collapse on hydration.
+  const [moveInputHint, boardVisibilityHint] = await Promise.all([
+    readMoveInputPreferenceFromCookies(),
+    readBoardVisibilityFromCookies(),
+  ]);
 
   const breadcrumb = (
     <BreadcrumbContent
@@ -88,6 +93,7 @@ export default async function PlayPage({ params }: Props) {
         locale={locale}
         breadcrumb={breadcrumb}
         initialMoveInputHint={moveInputHint}
+        initialBoardVisibility={boardVisibilityHint}
       />
     </Suspense>
   );

@@ -5,6 +5,7 @@ import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translat
 import type { PerGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
+import { AiReplyDurationPicker } from './AiReplyDurationPicker';
 import { BoardVisibilityPicker } from './BoardVisibilityPicker';
 import { GameSettingsContent } from './GameSettingsContent';
 
@@ -44,6 +45,14 @@ export function CollapsibleGameSettings({ settings, onSettingsChange }: Props) {
         <BoardVisibilityPicker
           value={settings.boardVisibility}
           onChange={(boardVisibility) => onSettingsChange({ boardVisibility })}
+          // AI move display time rides inside the blindfold group, right under
+          // "Allow peeking", as another board-hidden-only sub-setting.
+          blindfoldExtra={
+            <AiReplyDurationPicker
+              value={settings.aiReplyDuration}
+              onChange={(aiReplyDuration) => onSettingsChange({ aiReplyDuration })}
+            />
+          }
         />
       </div>
 

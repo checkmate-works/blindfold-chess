@@ -43,6 +43,9 @@ export function foldPreferences(
       case 'moveInputMode':
         result.moveInputMode = entry.to;
         break;
+      case 'aiReplyDuration':
+        result.aiReplyDuration = entry.to;
+        break;
     }
   }
   return result;

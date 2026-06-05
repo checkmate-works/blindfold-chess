@@ -58,6 +58,7 @@ const PREFS: GamePreferences = {
   buttonInputPieceLabel: 'icon',
   enableAutoComplete: true,
   boardVisibility: 'peek',
+  aiReplyDuration: 5000,
 };
 
 const BASE_PROPS = {
@@ -175,10 +176,13 @@ describe('InlineBoardView — alwaysOpen mode', () => {
     expect(onReveal).toHaveBeenCalledTimes(1);
   });
 
-  it('renders a non-dismissable mask (never) with no reveal affordance', () => {
+  it('collapses to a compact bar (never) — no board, no reveal affordance', () => {
     const onReveal = vi.fn();
     render(<InlineBoardView {...BASE_PROPS} alwaysOpen masked onReveal={onReveal} />);
 
+    // Pure blindfold: the board frame is not rendered at all (no full-size
+    // board to scroll past / see through), only the "board hidden" indicator.
+    expect(screen.queryByTestId('chess-board')).not.toBeInTheDocument();
     expect(screen.getByText('boardHidden')).toBeInTheDocument();
     expect(screen.queryByText('revealBoard')).not.toBeInTheDocument();
     expect(onReveal).not.toHaveBeenCalled();

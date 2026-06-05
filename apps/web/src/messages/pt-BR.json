@@ -286,6 +286,11 @@
       },
       "hideBoard": "Ocultar o tabuleiro",
       "allowPeek": "Permitir espiar",
+      "aiReplyDuration": "Tempo de exibição da jogada da IA",
+      "aiReplyDurationModes": {
+        "keep": "Manter visível",
+        "seconds": "{seconds}s"
+      },
       "resetDefaults": "Redefinir valores padrão",
       "resetDefaultsConfirm": {
         "title": "Redefinir configuração do tabuleiro?",
@@ -1723,7 +1728,19 @@
     "deleteFailedToast": "Erro ao excluir as partidas"
   },
   "play": {
-    "title": "Jogar Xadrez",
+    "title": "Partida",
+    "help": {
+      "label": "Ajuda",
+      "settings": {
+        "title": "Configurações da partida",
+        "description": "Toque na engrenagem para alterar o tabuleiro, as peças e as configurações às cegas desta partida."
+      },
+      "inputMode": {
+        "title": "Alternar o método de entrada",
+        "description": "Toque neste ícone para mudar como você insere as jogadas: digitando, escolhendo de uma lista ou tocando nos botões das peças.",
+        "link": "Gerenciar métodos de entrada"
+      }
+    },
     "loading": "Carregando...",
     "yourMove": "Seu movimento",
     "aiThinking": "A IA está pensando...",
@@ -1780,7 +1797,7 @@
     "copyFen": "Copiar FEN",
     "copied": "Copiado!",
     "analyzeOnLichess": "Analisar no Lichess",
-    "aiPlayed": "A IA jogou {move}",
+    "aiPlayed": "A IA jogou <b>{move}</b>",
     "restartFromHere": "Reiniciar a partir daqui",
     "confirmRestartTitle": "Reiniciar a partir desta posição?",
     "confirmRestartMessage": "Todos os movimentos após o movimento selecionado serão excluídos. Esta ação não pode ser desfeita.",
@@ -1825,7 +1842,8 @@
         "labelShowOpponentPieces": "Mostrar peças do oponente",
         "labelPieceShape": "Forma das peças",
         "labelPieceColor": "Cor das peças",
-        "labelMoveInputMode": "Entrada de movimento"
+        "labelMoveInputMode": "Entrada de movimento",
+        "labelAiReplyDuration": "Tempo de exibição da jogada da IA"
       },
       "changeLog": {
         "title": "Histórico de alterações",

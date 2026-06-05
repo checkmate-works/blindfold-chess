@@ -109,6 +109,7 @@ const PREFS: GamePreferences = {
   buttonInputPieceLabel: 'icon',
   enableAutoComplete: true,
   boardVisibility: 'peek',
+  aiReplyDuration: 5000,
 };
 
 function renderModal(overrides?: {

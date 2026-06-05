@@ -148,7 +148,7 @@ function buildGameSession(overrides: {
     },
     operationLogs: [],
     isAiThinking: false,
-    aiMoveDisplay: null,
+    aiMoveNotation: null,
     aiMoveSignal: 0,
   } as unknown as GameSessionArg;
 }
@@ -161,6 +161,7 @@ function renderPlay(gameSession: GameSessionArg, opts: { isInitializing?: boolea
       initialMoveInputHint={
         'text' as unknown as Parameters<typeof PlayClient>[0]['initialMoveInputHint']
       }
+      initialBoardVisibility="peek"
       isInitializing={opts.isInitializing ?? false}
     />
   );

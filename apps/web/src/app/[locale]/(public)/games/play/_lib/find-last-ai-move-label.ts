@@ -3,26 +3,23 @@ import type { AlgebraicNotation, Side } from '@blindfold-chess/types';
 import { getMovingSide, parseFenMeta } from './fen-utils';
 
 /**
- * Translation function shape accepted by {@link findLastAiMoveLabel}.
- *
- * Matches the shape of `useTranslations('play')` — it must understand the
- * `'aiPlayed'` key and interpolate a `{ move }` parameter into a string.
- */
-export type AiMoveTranslator = (key: 'aiPlayed', values: { move: string }) => string;
-
-/**
  * Walk backwards through `moves` and find the last move made by the AI
- * (i.e. the side opposite to `playerSide`), then format it as a localized
- * label such as `"AI played 5... Nf6"`.
+ * (i.e. the side opposite to `playerSide`), then format just its move notation,
+ * e.g. `"5... Nf6"` (Black) or `"1. e4"` (White).
+ *
+ * Returns only the notation — not the full "AI played …" sentence — so callers
+ * can wrap it in localized, partially-bolded copy via `t.rich` (the move
+ * notation is the bolded fragment, and its position within the sentence varies
+ * by locale, so it must stay a separate value rather than be baked into a
+ * pre-translated string).
  *
  * Returns `null` when there is no AI move to announce — either because the
  * move list is empty, or because none of the moves belong to the AI side.
  */
-export function findLastAiMoveLabel(
+export function findLastAiMoveNotation(
   moves: readonly AlgebraicNotation[],
   playerSide: Side,
-  startingFen: string | undefined,
-  t: AiMoveTranslator
+  startingFen: string | undefined
 ): string | null {
   if (moves.length === 0) {
     return null;
@@ -45,8 +42,7 @@ export function findLastAiMoveLabel(
       isWhiteMove = i % 2 === 0;
     }
 
-    const moveNotation = `${moveNumber}.${isWhiteMove ? '' : '..'} ${moves[i]}`;
-    return t('aiPlayed', { move: moveNotation });
+    return `${moveNumber}.${isWhiteMove ? '' : '..'} ${moves[i]}`;
   }
 
   return null;

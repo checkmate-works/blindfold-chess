@@ -68,6 +68,7 @@ const preferences: GamePreferences = {
   buttonInputPieceLabel: 'icon',
   enableAutoComplete: true,
   boardVisibility: 'peek',
+  aiReplyDuration: 5000,
 };
 
 const TOGGLE_TITLE = 'switchInputMode';

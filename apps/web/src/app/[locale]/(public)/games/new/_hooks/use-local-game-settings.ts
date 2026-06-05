@@ -19,6 +19,7 @@ export function useLocalGameSettings() {
     // game start. Mid-game switches via the MoveInputPanel toggle accumulate
     // in the change log instead of mutating the global preference.
     moveInputMode: preferences.moveInputMode,
+    aiReplyDuration: preferences.aiReplyDuration,
   });
 
   const handleSettingsChange = (updates: Partial<PerGamePreferences>) => {

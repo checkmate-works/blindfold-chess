@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import type { BoardVisibility } from '@/lib/games/board-visibility';
 import type { MoveInputPreferenceHint } from '@/lib/games/move-input-cookie';
 
 import { Divider } from '@/app/[locale]/_components/Divider';
@@ -13,9 +14,8 @@ import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCont
 import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useGameSession } from '../_hooks';
-import { shouldShowAiPulse } from '../_lib';
-import { AiMovePulse } from './AiMovePulse';
 import { PlayClient } from './PlayClient';
+import { PlayHelpTour } from './PlayHelpTour';
 
 type Props = {
   locale: Locale;
@@ -27,30 +27,40 @@ type Props = {
    * CLS that returning `text` / `select` users otherwise saw on first paint.
    */
   initialMoveInputHint: MoveInputPreferenceHint;
+  /**
+   * Server-resolved global `boardVisibility` from the `bfc_board_visibility_pref`
+   * cookie. Lets the pre-hydration board skeleton reserve the compact bar for
+   * 'never' (pure blindfold) instead of a full-size board, avoiding a ~500px
+   * collapse on hydration.
+   */
+  initialBoardVisibility: BoardVisibility;
 };
 
-export function PlayPageClient({ locale, breadcrumb, initialMoveInputHint }: Props) {
+export function PlayPageClient({
+  locale,
+  breadcrumb,
+  initialMoveInputHint,
+  initialBoardVisibility,
+}: Props) {
   const t = useTranslations('play');
 
   // Own the game session here so the page-level status slot (PageTitle) can
   // read move-error / AI-thinking / AI-move-announcement state directly,
   // without a useEffect bridge from PlayClient.
   const gameSession = useGameSession({ locale });
-  const { aiMoveSignal } = gameSession;
   const { error: moveError, lastAttemptedInput } = gameSession.moveInput;
   const { isLoadingFromStorage } = gameSession.gameState;
   const { preferences: globalPreferences, isHydrated } = useGamePreferences();
 
-  // Resolve the effective board visibility (per-game falls back to global) and
-  // delegate the pulse-vs-no-pulse policy to `shouldShowAiPulse` (fires in the
-  // blindfold modes, suppressed when the board is always visible).
-  const perGamePrefs = gameSession.gameConfig.perGamePrefs;
-  const aiPulseEnabled = shouldShowAiPulse({
-    boardVisibility: perGamePrefs?.boardVisibility ?? globalPreferences.boardVisibility,
-  });
   // Matches the `isInitializing` predicate in `PlayClient` so the title and
   // the input panel both transition out of their "loading" state in lockstep.
   const isInitializing = isLoadingFromStorage || !isHydrated;
+
+  // Which on-page controls the help tour can point at. Mirrors the gates that
+  // decide whether each control renders: the settings gear needs a per-game
+  // snapshot to edit; the input-mode switch only appears with ≥2 enabled modes.
+  const hasSettingsGear = gameSession.gameConfig.initialPerGamePrefs !== undefined;
+  const hasInputModeSwitch = globalPreferences.enabledMoveInputModes.length >= 2;
 
   // Resolve the content of the page-title slot.
   // Priority: active move error → initial-load "Loading..." → "Play Chess"
@@ -75,25 +85,38 @@ export function PlayPageClient({ locale, breadcrumb, initialMoveInputHint }: Pro
   );
 
   return (
-    <>
-      {/* Fixed / out-of-flow — kept outside `space-y-8` so it adds no margin. */}
-      <AiMovePulse signal={aiMoveSignal} enabled={aiPulseEnabled} />
-      <div className="space-y-8">
-        <PageTitle>{titleContent}</PageTitle>
-        <PagePanel>
-          <PlayClient
+    <div className="space-y-8">
+      {/* A left spacer balances the right-hand help-tour slot so the title stays
+          truly centered, and the help slot keeps a constant width whether or not
+          the "?" button renders (its presence depends on post-hydration state).
+          Both keep the title row from shifting; loading.tsx mirrors this. */}
+      <div className="flex items-center justify-center gap-2">
+        <div className="w-6 shrink-0" aria-hidden />
+        {/* min-w-0 lets the h1 flex item shrink so the inner `truncate` still
+            clips a long move-error string instead of overflowing the row. */}
+        <PageTitle className="min-w-0">{titleContent}</PageTitle>
+        <div className="flex w-6 shrink-0 justify-center">
+          <PlayHelpTour
             locale={locale}
-            gameSession={gameSession}
-            initialMoveInputHint={initialMoveInputHint}
-            isInitializing={isInitializing}
+            hasSettingsGear={hasSettingsGear}
+            hasInputModeSwitch={hasInputModeSwitch}
           />
-          {/* Mirror `PageLayout`'s trailing block — see PageLayout.tsx. */}
-          <div className="!mt-4 space-y-4">
-            <Divider />
-            {breadcrumb}
-          </div>
-        </PagePanel>
+        </div>
       </div>
-    </>
+      <PagePanel>
+        <PlayClient
+          locale={locale}
+          gameSession={gameSession}
+          initialMoveInputHint={initialMoveInputHint}
+          initialBoardVisibility={initialBoardVisibility}
+          isInitializing={isInitializing}
+        />
+        {/* Mirror `PageLayout`'s trailing block — see PageLayout.tsx. */}
+        <div className="!mt-4 space-y-4">
+          <Divider />
+          {breadcrumb}
+        </div>
+      </PagePanel>
+    </div>
   );
 }

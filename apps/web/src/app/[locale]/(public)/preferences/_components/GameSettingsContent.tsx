@@ -10,6 +10,7 @@ import type { Side } from '@blindfold-chess/types';
 
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 
+import { AiReplyDurationPicker } from './AiReplyDurationPicker';
 import { BoardAppearanceContent } from './BoardAppearanceContent';
 import { BoardPreview } from './BoardPreview';
 import { BoardVisibilityPicker } from './BoardVisibilityPicker';
@@ -192,6 +193,14 @@ export function GameSettingsContent({
             <BoardVisibilityPicker
               value={settings.boardVisibility}
               onChange={(value) => onSettingsChange({ boardVisibility: value })}
+              // AI move display time rides inside the blindfold group, right
+              // under "Allow peeking", as another board-hidden-only sub-setting.
+              blindfoldExtra={
+                <AiReplyDurationPicker
+                  value={settings.aiReplyDuration}
+                  onChange={(aiReplyDuration) => onSettingsChange({ aiReplyDuration })}
+                />
+              }
             />
           </div>
         )}

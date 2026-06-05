@@ -10,10 +10,13 @@ import React, {
   useState,
 } from 'react';
 
+import type { AiReplyDuration } from '@/lib/games/ai-reply-duration';
+import { DEFAULT_AI_REPLY_DURATION } from '@/lib/games/ai-reply-duration';
 import type { BoardTheme } from '@/lib/games/board-themes';
 import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 import type { BoardVisibility } from '@/lib/games/board-visibility';
 import { DEFAULT_BOARD_VISIBILITY } from '@/lib/games/board-visibility';
+import { writeBoardVisibilityCookieClient } from '@/lib/games/board-visibility-cookie';
 import {
   DEFAULT_ENABLED_MOVE_INPUT_MODES,
   DEFAULT_MOVE_INPUT_MODE,
@@ -53,6 +56,15 @@ export type PerGamePreferences = {
    * setting — it controls UI affordance availability, not per-game intent.
    */
   moveInputMode: 'text' | 'select' | 'button';
+  /**
+   * How long the on-board AI-reply chip keeps the opponent's last move visible
+   * (ms; `0` = keep until the next reply). Per-game because how long a player
+   * wants the move to linger depends on the blindfold intensity they chose for
+   * that specific session. Only meaningful when the board is hidden
+   * (`boardVisibility !== 'always'`). Falls back to the global value for legacy
+   * records that predate this field.
+   */
+  aiReplyDuration: AiReplyDuration;
 };
 
 // Game preferences
@@ -75,6 +87,9 @@ export type GamePreferences = {
   enableAutoComplete: boolean; // Enable auto-complete for text input
   // Board visibility during gameplay — see BoardVisibility for semantics.
   boardVisibility: BoardVisibility;
+  // How long the on-board AI-reply chip keeps the opponent's last move visible
+  // in blindfold modes (ms; 0 = keep until the next reply). See AiReplyDuration.
+  aiReplyDuration: AiReplyDuration;
 };
 
 // Default preferences. `moveInputMode` / `enabledMoveInputModes` are derived
@@ -96,6 +111,7 @@ const defaultPreferences: GamePreferences = {
   buttonInputPieceLabel: 'icon',
   enableAutoComplete: true,
   boardVisibility: DEFAULT_BOARD_VISIBILITY,
+  aiReplyDuration: DEFAULT_AI_REPLY_DURATION,
 };
 
 // Local storage key
@@ -171,6 +187,7 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
         mode: loaded.moveInputMode,
         enabledModes: loaded.enabledMoveInputModes,
       });
+      writeBoardVisibilityCookieClient(loaded.boardVisibility);
       setIsLoaded(true);
     }
   }, []);
@@ -237,6 +254,9 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
         enabledModes: next.enabledMoveInputModes,
       });
     }
+    if ('boardVisibility' in updates && updates.boardVisibility !== prev.boardVisibility) {
+      writeBoardVisibilityCookieClient(next.boardVisibility);
+    }
     setPreferences(next);
   }, []);
 
@@ -248,6 +268,7 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
       mode: defaultPreferences.moveInputMode,
       enabledModes: defaultPreferences.enabledMoveInputModes,
     });
+    writeBoardVisibilityCookieClient(defaultPreferences.boardVisibility);
     setPreferences(defaultPreferences);
   }, []);
 

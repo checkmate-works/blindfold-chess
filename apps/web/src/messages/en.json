@@ -290,6 +290,11 @@
       },
       "hideBoard": "Hide the board",
       "allowPeek": "Allow peeking",
+      "aiReplyDuration": "AI move display time",
+      "aiReplyDurationModes": {
+        "keep": "Keep visible",
+        "seconds": "{seconds}s"
+      },
       "resetDefaults": "Reset to defaults",
       "resetDefaultsConfirm": {
         "title": "Reset Board Settings?",
@@ -1727,7 +1732,19 @@
     "deleteFailedToast": "Failed to delete games"
   },
   "play": {
-    "title": "Play Chess",
+    "title": "Game",
+    "help": {
+      "label": "Help",
+      "settings": {
+        "title": "Game settings",
+        "description": "Tap the gear to change this game's board, pieces, and blindfold settings."
+      },
+      "inputMode": {
+        "title": "Switch input method",
+        "description": "Tap this icon to change how you enter moves — typing, picking from a list, or tapping piece buttons.",
+        "link": "Manage input methods"
+      }
+    },
     "loading": "Loading...",
     "yourMove": "Your move",
     "aiThinking": "AI is thinking...",
@@ -1784,7 +1801,7 @@
     "copyFen": "Copy FEN",
     "copied": "Copied!",
     "analyzeOnLichess": "Analyze on Lichess",
-    "aiPlayed": "AI played {move}",
+    "aiPlayed": "AI played <b>{move}</b>",
     "restartFromHere": "Restart from here",
     "confirmRestartTitle": "Restart from this position?",
     "confirmRestartMessage": "All moves after the selected move will be deleted. This action cannot be undone.",
@@ -1829,7 +1846,8 @@
         "labelShowOpponentPieces": "Show opponent pieces",
         "labelPieceShape": "Piece shape",
         "labelPieceColor": "Piece color",
-        "labelMoveInputMode": "Move input"
+        "labelMoveInputMode": "Move input",
+        "labelAiReplyDuration": "AI move display time"
       },
       "changeLog": {
         "title": "Change Log",

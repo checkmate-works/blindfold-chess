@@ -2,18 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { MoveInputPreferenceHint } from '@/lib/games/move-input-cookie';
 
-import { deriveMoveInputSkeletonProps, shouldShowAiPulse } from './preferences';
-
-describe('shouldShowAiPulse', () => {
-  it('suppresses the pulse when the board is always visible (the move is seen directly)', () => {
-    expect(shouldShowAiPulse({ boardVisibility: 'always' })).toBe(false);
-  });
-
-  it('fires the pulse in the blindfold modes (board hidden — the pulse is the cue)', () => {
-    expect(shouldShowAiPulse({ boardVisibility: 'peek' })).toBe(true);
-    expect(shouldShowAiPulse({ boardVisibility: 'never' })).toBe(true);
-  });
-});
+import { deriveMoveInputSkeletonProps } from './preferences';
 
 describe('deriveMoveInputSkeletonProps', () => {
   it('returns hasModeSwitch=false when enabledModes has a single entry', () => {

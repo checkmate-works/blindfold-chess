@@ -213,6 +213,9 @@ export function MoveInputPanel({
               }
             }}
             disabled={disabled}
+            // Anchor for the play help tour (see PlayHelpTour). Harmless where
+            // this panel is reused outside the play surface — no tour targets it.
+            data-tour-id="play-input-mode"
             className="p-2 border border-border rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation select-none"
             title={toggleTitle}
           >

@@ -108,6 +108,12 @@ export type PreferenceChangeLogEntry =
       key: 'moveInputMode';
       from: PerGamePreferences['moveInputMode'];
       to: PerGamePreferences['moveInputMode'];
+    }
+  | {
+      atMoveIndex: number;
+      key: 'aiReplyDuration';
+      from: PerGamePreferences['aiReplyDuration'];
+      to: PerGamePreferences['aiReplyDuration'];
     };
 
 /**
