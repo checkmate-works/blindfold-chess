@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaRobot, FaSpinner } from 'react-icons/fa';
@@ -40,15 +40,23 @@ export function useAiReplyChip({
 }): { active: boolean; thinking: boolean; dismiss: () => void } {
   const [moveVisible, setMoveVisible] = useState(false);
 
+  // Read `durationMs` through a ref so it is NOT an effect dependency: only a
+  // new `aiMoveSignal` should (re)show the chip. If `durationMs` were a dep,
+  // changing the AI-display-time setting would re-run the effect and re-show a
+  // move that had already been dismissed (e.g. by a board reveal) or expired.
+  const durationRef = useRef(durationMs);
+  durationRef.current = durationMs;
+
   useEffect(() => {
     if (!aiMoveSignal) return;
     setMoveVisible(true);
-    // durationMs <= 0 → keep the move visible until the next reply re-triggers
-    // this effect; skip the auto-dismiss timer entirely.
-    if (durationMs <= 0) return;
-    const id = setTimeout(() => setMoveVisible(false), durationMs);
+    const ms = durationRef.current;
+    // ms <= 0 → keep the move visible until the next reply re-triggers this
+    // effect; skip the auto-dismiss timer entirely.
+    if (ms <= 0) return;
+    const id = setTimeout(() => setMoveVisible(false), ms);
     return () => clearTimeout(id);
-  }, [aiMoveSignal, durationMs]);
+  }, [aiMoveSignal]);
 
   const dismiss = useCallback(() => setMoveVisible(false), []);
 

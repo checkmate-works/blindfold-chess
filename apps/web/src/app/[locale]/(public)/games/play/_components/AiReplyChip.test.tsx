@@ -67,6 +67,26 @@ describe('useAiReplyChip', () => {
     expect(result.current.active).toBe(false);
   });
 
+  it('does not re-show a dismissed move when only durationMs changes (settings edit)', () => {
+    const { result, rerender } = renderHook(
+      ({ signal, durationMs }) =>
+        useAiReplyChip({ isAiThinking: false, aiMoveSignal: signal, durationMs }),
+      { initialProps: { signal: 1, durationMs: 0 } }
+    );
+    expect(result.current.active).toBe(true);
+
+    // Player reveals the board → the announcement is dismissed.
+    act(() => {
+      result.current.dismiss();
+    });
+    expect(result.current.active).toBe(false);
+
+    // Changing the AI-display-time setting must NOT bring the dismissed move
+    // back over the (now visible) board.
+    rerender({ signal: 1, durationMs: 5000 });
+    expect(result.current.active).toBe(false);
+  });
+
   it('honors a custom duration window', () => {
     const { result, rerender } = renderHook(
       ({ signal }) =>

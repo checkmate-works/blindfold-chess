@@ -269,10 +269,13 @@ export function PlayClient({
     handleRevealBoard();
     dismissAiReply();
   }, [handleRevealBoard, dismissAiReply]);
-  // Only surface the on-board AI chip in blindfold modes. When the board is
-  // always visible ('always'), the AI's move is right there on the board — an
-  // "AI played …" badge would just be redundant clutter.
-  const showAiReplyChip = preferences.boardVisibility !== 'always';
+  // Only surface the on-board AI chip while the board is actually hidden (a
+  // blindfold mode AND currently masked). When the board is visible — 'always'
+  // mode, or a peeked-open board — the AI's move is right there on the squares,
+  // so the "AI played …" / thinking chip would just be redundant clutter over a
+  // readable position. Gating on `boardMasked` (not just the mode) also keeps a
+  // setting change from popping the chip back over an open peek.
+  const showAiReplyChip = preferences.boardVisibility !== 'always' && boardMasked;
 
   // In-progress board: always rendered at a fixed position/size, with the
   // blindfold expressed as a mask overlay rather than as a different layout.
