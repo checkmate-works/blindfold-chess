@@ -3,7 +3,11 @@
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import type { AiReplyDuration } from '@/lib/games/ai-reply-duration';
-import { AI_REPLY_DURATION_KEEP, AI_REPLY_DURATION_VALUES } from '@/lib/games/ai-reply-duration';
+import {
+  AI_REPLY_DURATION_KEEP,
+  AI_REPLY_DURATION_SLIDER_ORDER,
+  aiReplyDurationLabel,
+} from '@/lib/games/ai-reply-duration';
 
 type Props = {
   value: AiReplyDuration;
@@ -11,41 +15,49 @@ type Props = {
 };
 
 /**
- * Radio row choosing how long the on-board AI-reply chip keeps the opponent's
- * last move visible in blindfold modes: a few presets plus "keep visible"
- * (`AI_REPLY_DURATION_KEEP`), which restores the historical behavior of leaving
- * the move up until the player responds. Global-only — rendered on the
- * Preferences "Game" tab, not in the per-game new-game / mid-game forms, so it
- * always writes the global default regardless of `boardVisibility`.
+ * Row-styled control (matching the Piece Visibility / Piece Color rows) for how
+ * long the on-board AI-reply chip keeps the opponent's move visible. A stepped
+ * slider whose stops run shortest → longest, with the final stop being "keep
+ * visible" (rendered as ∞). Dragging right always means "stays longer", so the
+ * no-auto-dismiss option reads naturally as the far end rather than an odd
+ * off-continuum choice.
  */
 export function AiReplyDurationPicker({ value, onChange }: Props) {
   const t = useTranslations('Preferences');
 
+  // Defensive max(0, …): an out-of-set value (legacy / corrupt) falls back to
+  // the first slider stop rather than a -1 index.
+  const index = Math.max(0, AI_REPLY_DURATION_SLIDER_ORDER.indexOf(value));
+  const { key, params } = aiReplyDurationLabel(value);
+  // Full localized label for assistive tech (e.g. "Keep visible" / "4s"); the
+  // visible readout stays compact (∞ / "4s") so it never crowds the slider.
+  const fullLabel = t(`game.${key}`, params);
+  const readout =
+    value === AI_REPLY_DURATION_KEEP
+      ? '∞'
+      : t('game.aiReplyDurationModes.seconds', { seconds: value / 1000 });
+
   return (
-    <div>
-      <h4 className="text-sm font-semibold text-foreground mb-2">{t('game.aiReplyDuration')}</h4>
-      <p className="text-xs text-muted-foreground mb-3">{t('game.aiReplyDurationHint')}</p>
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-        {AI_REPLY_DURATION_VALUES.map((option) => (
-          <label
-            key={option}
-            className="flex cursor-pointer items-center gap-1.5 text-sm text-foreground"
-          >
-            <input
-              type="radio"
-              name="aiReplyDuration"
-              value={option}
-              checked={value === option}
-              onChange={() => onChange(option)}
-              className="h-4 w-4 text-primary focus:ring-primary border-border"
-            />
-            <span>
-              {option === AI_REPLY_DURATION_KEEP
-                ? t('game.aiReplyDurationModes.keep')
-                : t('game.aiReplyDurationModes.seconds', { seconds: option / 1000 })}
-            </span>
-          </label>
-        ))}
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+      <span className="text-sm text-foreground">{t('game.aiReplyDuration')}</span>
+      <div className="flex items-center gap-3 sm:w-44">
+        <input
+          type="range"
+          min={0}
+          max={AI_REPLY_DURATION_SLIDER_ORDER.length - 1}
+          step={1}
+          value={index}
+          onChange={(e) => onChange(AI_REPLY_DURATION_SLIDER_ORDER[Number(e.target.value)])}
+          aria-label={t('game.aiReplyDuration')}
+          aria-valuetext={fullLabel}
+          className="h-2 w-full cursor-pointer appearance-none rounded-md bg-secondary accent-foreground"
+        />
+        <span
+          className="w-8 shrink-0 text-right text-sm tabular-nums text-muted-foreground"
+          title={fullLabel}
+        >
+          {readout}
+        </span>
       </div>
     </div>
   );

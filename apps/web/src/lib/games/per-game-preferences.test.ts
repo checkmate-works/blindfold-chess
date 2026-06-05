@@ -185,7 +185,7 @@ describe('normalisePerGamePreferences', () => {
         pieceShapeMode: 'circles-all',
         pieceColors: 'white-only',
         moveInputMode: 'button',
-        aiReplyDuration: 2000,
+        aiReplyDuration: 10000,
       };
       const result = normalisePerGamePreferences({}, customDefaults);
       expect(result).toEqual(customDefaults);

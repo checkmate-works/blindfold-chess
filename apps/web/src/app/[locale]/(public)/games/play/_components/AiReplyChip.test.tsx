@@ -41,7 +41,7 @@ describe('useAiReplyChip', () => {
     expect(result.current).toMatchObject({ active: true, thinking: false });
 
     act(() => {
-      vi.advanceTimersByTime(4000);
+      vi.advanceTimersByTime(5000);
     });
     expect(result.current.active).toBe(false);
   });

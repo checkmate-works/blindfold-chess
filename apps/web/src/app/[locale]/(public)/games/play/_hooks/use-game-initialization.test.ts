@@ -161,7 +161,7 @@ describe('parseUrlSearchParams', () => {
         pieceShapeMode: 'normal',
         pieceColors: 'normal',
         moveInputMode: 'button',
-        aiReplyDuration: 4000,
+        aiReplyDuration: 5000,
       };
       const params = new URLSearchParams({ gamePrefs: JSON.stringify(prefs) });
       const result = parseUrlSearchParams(params);

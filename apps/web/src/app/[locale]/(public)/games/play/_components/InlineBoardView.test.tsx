@@ -58,7 +58,7 @@ const PREFS: GamePreferences = {
   buttonInputPieceLabel: 'icon',
   enableAutoComplete: true,
   boardVisibility: 'peek',
-  aiReplyDuration: 4000,
+  aiReplyDuration: 5000,
 };
 
 const BASE_PROPS = {

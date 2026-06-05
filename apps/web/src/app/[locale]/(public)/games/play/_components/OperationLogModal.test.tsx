@@ -54,7 +54,7 @@ const DEFAULT_PREFS: PerGamePreferences = {
   pieceShapeMode: 'normal',
   pieceColors: 'normal',
   moveInputMode: 'text',
-  aiReplyDuration: 4000,
+  aiReplyDuration: 5000,
 };
 
 const DEFAULT_ENGINE: EngineConfig = { kind: 'stockfish', skillLevel: 8 };

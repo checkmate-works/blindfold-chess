@@ -15,7 +15,7 @@ const initial: PerGamePreferences = {
   pieceShapeMode: 'normal',
   pieceColors: 'normal',
   moveInputMode: 'text',
-  aiReplyDuration: 4000,
+  aiReplyDuration: 5000,
 };
 
 describe('foldPreferences', () => {
@@ -47,7 +47,7 @@ describe('foldPreferences', () => {
 
   it('applies an aiReplyDuration change (including the 0 "keep" sentinel)', () => {
     const log: PreferenceChangeLogEntry[] = [
-      { atMoveIndex: 2, key: 'aiReplyDuration', from: 4000, to: 0 },
+      { atMoveIndex: 2, key: 'aiReplyDuration', from: 5000, to: 0 },
     ];
     expect(foldPreferences(initial, log)).toEqual({ ...initial, aiReplyDuration: 0 });
   });

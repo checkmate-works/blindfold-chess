@@ -7,7 +7,7 @@ import { FaRobot, FaSpinner } from 'react-icons/fa';
 
 /** Default window the AI-move chip stays before fading out, when the user has
  *  not configured one. Mirrors DEFAULT_AI_REPLY_DURATION in ai-reply-duration.ts. */
-const MOVE_VISIBLE_MS = 4000;
+const MOVE_VISIBLE_MS = 5000;
 
 /**
  * Visibility state machine for the on-board AI-reply chip, lifted out of the

@@ -287,7 +287,6 @@
       "hideBoard": "Ocultar el tablero",
       "allowPeek": "Permitir vistazos",
       "aiReplyDuration": "Tiempo de visualización de la jugada de la IA",
-      "aiReplyDurationHint": "Cuánto tiempo permanece en pantalla la jugada del rival en los modos a ciegas.",
       "aiReplyDurationModes": {
         "keep": "Mantener visible",
         "seconds": "{seconds}s"

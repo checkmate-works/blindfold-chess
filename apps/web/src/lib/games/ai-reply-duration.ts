@@ -11,14 +11,27 @@
  * 'always' mode the move is read straight off the board and the chip is
  * suppressed, so this setting has no effect there.
  */
-export const AI_REPLY_DURATION_VALUES = [0, 2000, 4000, 8000] as const;
+export const AI_REPLY_DURATION_VALUES = [0, 5000, 10000] as const;
 export type AiReplyDuration = (typeof AI_REPLY_DURATION_VALUES)[number];
 
 /** Sentinel value meaning "never auto-dismiss the AI move". */
 export const AI_REPLY_DURATION_KEEP = 0;
 
-/** Default — the historical 4-second auto-dismiss window. */
-export const DEFAULT_AI_REPLY_DURATION: AiReplyDuration = 4000;
+/**
+ * Order the values sit on the settings slider: shortest → longest, with the
+ * "keep visible" sentinel placed at the far (right) end so it reads as the
+ * longest possible duration (∞). Dragging right always means "stays longer",
+ * which is why a slider works despite one stop being "forever" rather than a
+ * number. Holds exactly the same set as {@link AI_REPLY_DURATION_VALUES}.
+ */
+export const AI_REPLY_DURATION_SLIDER_ORDER = [
+  5000,
+  10000,
+  AI_REPLY_DURATION_KEEP,
+] as const satisfies readonly AiReplyDuration[];
+
+/** Default — a 5-second auto-dismiss window. */
+export const DEFAULT_AI_REPLY_DURATION: AiReplyDuration = 5000;
 
 /** Type guard for runtime validators reading data from localStorage. */
 export function isAiReplyDuration(value: unknown): value is AiReplyDuration {

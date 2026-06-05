@@ -291,7 +291,6 @@
       "hideBoard": "Hide the board",
       "allowPeek": "Allow peeking",
       "aiReplyDuration": "AI move display time",
-      "aiReplyDurationHint": "How long the opponent's move stays on screen in blindfold modes.",
       "aiReplyDurationModes": {
         "keep": "Keep visible",
         "seconds": "{seconds}s"

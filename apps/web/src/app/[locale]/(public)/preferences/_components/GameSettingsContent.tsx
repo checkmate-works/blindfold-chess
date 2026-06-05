@@ -205,10 +205,12 @@ export function GameSettingsContent({
             modal); the new-game / global surfaces render their own pair via
             CollapsibleGameSettings. */}
         {showBoardButtonOption && settings.boardVisibility !== 'always' && (
-          <AiReplyDurationPicker
-            value={settings.aiReplyDuration}
-            onChange={(aiReplyDuration) => onSettingsChange({ aiReplyDuration })}
-          />
+          <div className="border-l border-border pl-4">
+            <AiReplyDurationPicker
+              value={settings.aiReplyDuration}
+              onChange={(aiReplyDuration) => onSettingsChange({ aiReplyDuration })}
+            />
+          </div>
         )}
 
         {/* Slot for content the caller wants immediately after the
