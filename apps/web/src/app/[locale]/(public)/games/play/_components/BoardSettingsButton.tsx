@@ -21,6 +21,8 @@ export function BoardSettingsButton({ onClick }: Props) {
       onClick={onClick}
       title={t('settings.title')}
       aria-label={t('settings.title')}
+      // Anchor for the play help tour (see PlayHelpTour).
+      data-tour-id="play-settings-gear"
       className="rounded-full bg-background/80 p-1.5 text-muted-foreground shadow-sm backdrop-blur-sm transition-colors hover:text-foreground"
     >
       <FaCog className="h-4 w-4" />

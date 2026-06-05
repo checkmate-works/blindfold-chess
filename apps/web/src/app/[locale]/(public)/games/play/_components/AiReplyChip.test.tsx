@@ -12,9 +12,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AiReplyChip, useAiReplyChip } from './AiReplyChip';
 
-vi.mock('@/i18n/use-safe-translations', () => ({
-  useSafeTranslations: () => (key: string) => key,
-}));
+vi.mock('@/i18n/use-safe-translations', () => {
+  // Minimal t with the `.rich` subset AiReplyChip uses. `.rich` renders the
+  // move through the caller's `b` chunk fn (the <strong> wrapper), so tests can
+  // assert the notation is bolded.
+  const t = (key: string) => key;
+  t.rich = (_key: string, values: { move: string; b: (chunks: string) => unknown }) =>
+    values.b(values.move);
+  return { useSafeTranslations: () => t };
+});
 
 describe('useAiReplyChip', () => {
   beforeEach(() => {
@@ -106,20 +112,22 @@ describe('AiReplyChip (presentational)', () => {
   afterEach(() => cleanup());
 
   it('shows the thinking label at full opacity when active + thinking', () => {
-    render(<AiReplyChip active thinking aiMoveDisplay={null} />);
-    const chip = screen.getByText('aiThinking').parentElement!;
-    expect(chip.className).toContain('opacity-100');
+    const { container } = render(<AiReplyChip active thinking aiMoveNotation={null} />);
+    expect(screen.getByText('aiThinking')).toBeInTheDocument();
+    expect((container.firstChild as HTMLElement).className).toContain('opacity-100');
   });
 
-  it('shows the move label when active and not thinking', () => {
-    render(<AiReplyChip active thinking={false} aiMoveDisplay="AI played e5" />);
-    const chip = screen.getByText('AI played e5').parentElement!;
-    expect(chip.className).toContain('opacity-100');
+  it('renders the move notation in bold when active and not thinking', () => {
+    const { container } = render(<AiReplyChip active thinking={false} aiMoveNotation="1. e5" />);
+    const move = screen.getByText('1. e5');
+    expect(move.tagName).toBe('STRONG');
+    expect((container.firstChild as HTMLElement).className).toContain('opacity-100');
   });
 
   it('is faded out (opacity-0) when not active', () => {
-    render(<AiReplyChip active={false} thinking={false} aiMoveDisplay="AI played e5" />);
-    const chip = screen.getByText('AI played e5').parentElement!;
-    expect(chip.className).toContain('opacity-0');
+    const { container } = render(
+      <AiReplyChip active={false} thinking={false} aiMoveNotation="1. e5" />
+    );
+    expect((container.firstChild as HTMLElement).className).toContain('opacity-0');
   });
 });

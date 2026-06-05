@@ -301,13 +301,13 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
 
   // Current FEN and formatted PGN are memoized values from useNotation
 
-  // Localized label for the AI's last move (e.g. "AI played 1... e5"), or null
-  // when there is nothing to announce. Consumed by the page-level status slot.
-  const aiMoveDisplay = useAiMoveAnnouncer({
+  // Notation of the AI's last move (e.g. "1... e5"), or null when there is
+  // nothing to announce. The on-board chip wraps it in localized copy and
+  // bolds the notation; keeping it unwrapped lets that bolding stay locale-safe.
+  const aiMoveNotation = useAiMoveAnnouncer({
     moves,
     playerSide,
     startingFen,
-    t,
   });
 
   // Surface the "AI is computing" state so the page-level status slot can show
@@ -387,7 +387,7 @@ export function useGameSession({ locale }: UseGameSessionOptions) {
       message: aiMoveError,
       retry: retryAiMove,
     },
-    aiMoveDisplay,
+    aiMoveNotation,
     isAiThinking,
     aiMoveSignal,
     actions: {

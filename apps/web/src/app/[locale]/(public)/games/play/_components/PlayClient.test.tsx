@@ -148,7 +148,7 @@ function buildGameSession(overrides: {
     },
     operationLogs: [],
     isAiThinking: false,
-    aiMoveDisplay: null,
+    aiMoveNotation: null,
     aiMoveSignal: 0,
   } as unknown as GameSessionArg;
 }

@@ -1728,7 +1728,19 @@
     "deleteFailedToast": "Error al eliminar las partidas"
   },
   "play": {
-    "title": "Jugar Ajedrez",
+    "title": "Partida",
+    "help": {
+      "label": "Ayuda",
+      "settings": {
+        "title": "Ajustes de la partida",
+        "description": "Toca el engranaje para cambiar el tablero, las piezas y los ajustes a ciegas de esta partida."
+      },
+      "inputMode": {
+        "title": "Cambiar el método de entrada",
+        "description": "Toca este icono para cambiar cómo introduces las jugadas: escribiendo, eligiendo de una lista o tocando botones de piezas.",
+        "link": "Gestionar métodos de entrada"
+      }
+    },
     "loading": "Cargando...",
     "yourMove": "Tu movimiento",
     "aiThinking": "La IA está pensando...",
@@ -1785,7 +1797,7 @@
     "copyFen": "Copiar FEN",
     "copied": "¡Copiado!",
     "analyzeOnLichess": "Analizar en Lichess",
-    "aiPlayed": "La IA jugó {move}",
+    "aiPlayed": "La IA jugó <b>{move}</b>",
     "restartFromHere": "Reiniciar desde aquí",
     "confirmRestartTitle": "¿Reiniciar desde esta posición?",
     "confirmRestartMessage": "Todos los movimientos después del movimiento seleccionado serán eliminados. Esta acción no se puede deshacer.",

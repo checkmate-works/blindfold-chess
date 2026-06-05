@@ -58,8 +58,9 @@ type Props = {
   active: boolean;
   /** AI is computing its reply — show the thinking spinner instead of a move. */
   thinking: boolean;
-  /** Localized label for the last AI move, e.g. "AI played 1… e5"; null if none. */
-  aiMoveDisplay: string | null;
+  /** Notation of the last AI move, e.g. "1… e5"; null if none. Wrapped here in
+   *  localized "AI played …" copy with the notation bolded. */
+  aiMoveNotation: string | null;
 };
 
 /**
@@ -72,7 +73,7 @@ type Props = {
  * Purely informational — the wrapping slot is `pointer-events-none`, so taps
  * pass through to the board / blindfold mask below.
  */
-export function AiReplyChip({ active, thinking, aiMoveDisplay }: Props) {
+export function AiReplyChip({ active, thinking, aiMoveNotation }: Props) {
   const t = useTranslations('play');
 
   return (
@@ -90,7 +91,13 @@ export function AiReplyChip({ active, thinking, aiMoveDisplay }: Props) {
       ) : (
         <>
           <FaRobot className="h-4 w-4 shrink-0" aria-hidden />
-          <span className="truncate">{aiMoveDisplay}</span>
+          <span className="truncate">
+            {aiMoveNotation &&
+              t.rich('aiPlayed', {
+                move: aiMoveNotation,
+                b: (chunks) => <strong className="font-semibold">{chunks}</strong>,
+              })}
+          </span>
         </>
       )}
     </div>

@@ -69,7 +69,7 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
     actions,
     operationLogs,
     isAiThinking,
-    aiMoveDisplay,
+    aiMoveNotation,
     aiMoveSignal,
   } = gameSession;
 
@@ -285,7 +285,7 @@ export function PlayClient({ locale, gameSession, initialMoveInputHint, isInitia
           <AiReplyChip
             active={aiReply.active}
             thinking={aiReply.thinking}
-            aiMoveDisplay={aiMoveDisplay}
+            aiMoveNotation={aiMoveNotation}
           />
         ) : undefined
       }

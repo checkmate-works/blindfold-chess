@@ -14,6 +14,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { useGameSession } from '../_hooks';
 import { PlayClient } from './PlayClient';
+import { PlayHelpTour } from './PlayHelpTour';
 
 type Props = {
   locale: Locale;
@@ -36,11 +37,17 @@ export function PlayPageClient({ locale, breadcrumb, initialMoveInputHint }: Pro
   const gameSession = useGameSession({ locale });
   const { error: moveError, lastAttemptedInput } = gameSession.moveInput;
   const { isLoadingFromStorage } = gameSession.gameState;
-  const { isHydrated } = useGamePreferences();
+  const { preferences: globalPreferences, isHydrated } = useGamePreferences();
 
   // Matches the `isInitializing` predicate in `PlayClient` so the title and
   // the input panel both transition out of their "loading" state in lockstep.
   const isInitializing = isLoadingFromStorage || !isHydrated;
+
+  // Which on-page controls the help tour can point at. Mirrors the gates that
+  // decide whether each control renders: the settings gear needs a per-game
+  // snapshot to edit; the input-mode switch only appears with ≥2 enabled modes.
+  const hasSettingsGear = gameSession.gameConfig.initialPerGamePrefs !== undefined;
+  const hasInputModeSwitch = globalPreferences.enabledMoveInputModes.length >= 2;
 
   // Resolve the content of the page-title slot.
   // Priority: active move error → initial-load "Loading..." → "Play Chess"
@@ -66,7 +73,16 @@ export function PlayPageClient({ locale, breadcrumb, initialMoveInputHint }: Pro
 
   return (
     <div className="space-y-8">
-      <PageTitle>{titleContent}</PageTitle>
+      <div className="flex items-center justify-center gap-2">
+        {/* min-w-0 lets the h1 flex item shrink so the inner `truncate` still
+            clips a long move-error string instead of overflowing the row. */}
+        <PageTitle className="min-w-0">{titleContent}</PageTitle>
+        <PlayHelpTour
+          locale={locale}
+          hasSettingsGear={hasSettingsGear}
+          hasInputModeSwitch={hasInputModeSwitch}
+        />
+      </div>
       <PagePanel>
         <PlayClient
           locale={locale}
