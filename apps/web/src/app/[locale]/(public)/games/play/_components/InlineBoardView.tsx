@@ -288,7 +288,7 @@ export function InlineBoardView({
                   type="button"
                   onClick={onReveal}
                   aria-label={t('revealBoard')}
-                  className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-xl transition-colors"
+                  className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-2xl transition-colors"
                 >
                   {!badgeActive && (
                     <span className="inline-flex items-center gap-2 rounded-full bg-background/80 px-3 py-1.5 text-sm font-medium text-foreground shadow-sm">
@@ -299,7 +299,7 @@ export function InlineBoardView({
                 </button>
               ) : (
                 <div
-                  className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-xl"
+                  className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-2xl"
                   aria-label={t('boardHidden')}
                   role="img"
                 >
