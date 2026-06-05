@@ -1,4 +1,51 @@
 {
+  "Lines": {
+    "title": "Linhas",
+    "description": "Suas árvores de repertório privadas — linhas de abertura, padrões de mate e sequências memorizadas.",
+    "sectionTitle": "Suas linhas",
+    "importCta": "Importar",
+    "empty": "Nenhuma linha ainda. Importe um PGN para adicionar sua primeira árvore de repertório.",
+    "summary": "{lines} linhas · {moves} lances",
+    "form": {
+      "nameLabel": "Nome",
+      "namePlaceholder": "ex.: Najdorf (Pretas)",
+      "sideLabel": "Seu lado",
+      "side_white": "Brancas",
+      "side_black": "Pretas",
+      "pgnLabel": "PGN",
+      "pgnHelp": "Cole um PGN com variantes — exportações de estudos do Lichess ou do Chess.com funcionam como estão.",
+      "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
+      "submit": "Importar linha",
+      "submitting": "Importando…"
+    },
+    "new": {
+      "title": "Importar uma linha",
+      "description": "Dê um nome, escolha seu lado e cole o PGN do repertório que você quer memorizar."
+    },
+    "detail": {
+      "title": "Linha",
+      "pgnHeading": "PGN"
+    },
+    "delete": {
+      "button": "Excluir",
+      "title": "Excluir esta linha?",
+      "message": "Isso remove a linha permanentemente. Não é possível desfazer.",
+      "confirm": "Excluir",
+      "cancel": "Cancelar"
+    },
+    "errors": {
+      "nameRequired": "Digite um nome.",
+      "nameTooLong": "Esse nome é muito longo.",
+      "invalidSide": "Escolha um lado.",
+      "pgnRequired": "Cole um PGN.",
+      "pgnTooLarge": "Esse PGN é muito grande.",
+      "invalidPgn": "Não foi possível processar esse PGN — verifique se há lances ilegais.",
+      "signInRequired": "Faça login.",
+      "banned": "Sua conta está restrita.",
+      "rateLimited": "Muitas tentativas. Tente novamente mais tarde.",
+      "generic": "Algo deu errado. Tente novamente."
+    }
+  },
   "metadata": {
     "siteName": "Shingan Chess",
     "seoSiteName": "Xadrez às Cegas",

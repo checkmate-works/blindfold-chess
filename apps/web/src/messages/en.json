@@ -1,4 +1,51 @@
 {
+  "Lines": {
+    "title": "Lines",
+    "description": "Your private repertoire trees — opening lines, mate patterns, and memorized sequences.",
+    "sectionTitle": "Your lines",
+    "importCta": "Import",
+    "empty": "No lines yet. Import a PGN to add your first repertoire tree.",
+    "summary": "{lines} lines · {moves} moves",
+    "form": {
+      "nameLabel": "Name",
+      "namePlaceholder": "e.g. Najdorf (Black)",
+      "sideLabel": "Your side",
+      "side_white": "White",
+      "side_black": "Black",
+      "pgnLabel": "PGN",
+      "pgnHelp": "Paste a PGN with variations — exports from Lichess studies or Chess.com work as-is.",
+      "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
+      "submit": "Import line",
+      "submitting": "Importing…"
+    },
+    "new": {
+      "title": "Import a line",
+      "description": "Give it a name, choose your side, and paste the PGN of the repertoire you want to memorize."
+    },
+    "detail": {
+      "title": "Line",
+      "pgnHeading": "PGN"
+    },
+    "delete": {
+      "button": "Delete",
+      "title": "Delete this line?",
+      "message": "This permanently removes the line. This cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    },
+    "errors": {
+      "nameRequired": "Please enter a name.",
+      "nameTooLong": "That name is too long.",
+      "invalidSide": "Please choose a side.",
+      "pgnRequired": "Please paste a PGN.",
+      "pgnTooLarge": "That PGN is too large.",
+      "invalidPgn": "That PGN could not be parsed — check for illegal moves.",
+      "signInRequired": "Please sign in.",
+      "banned": "Your account is restricted.",
+      "rateLimited": "Too many attempts. Please try again later.",
+      "generic": "Something went wrong. Please try again."
+    }
+  },
   "metadata": {
     "siteName": "Shingan Chess",
     "seoSiteName": "Blindfold Chess",

@@ -1,4 +1,51 @@
 {
+  "Lines": {
+    "title": "Líneas",
+    "description": "Tus árboles de repertorio privados: líneas de apertura, patrones de mate y secuencias memorizadas.",
+    "sectionTitle": "Tus líneas",
+    "importCta": "Importar",
+    "empty": "Aún no hay líneas. Importa un PGN para añadir tu primer árbol de repertorio.",
+    "summary": "{lines} líneas · {moves} jugadas",
+    "form": {
+      "nameLabel": "Nombre",
+      "namePlaceholder": "p. ej. Najdorf (Negras)",
+      "sideLabel": "Tu color",
+      "side_white": "Blancas",
+      "side_black": "Negras",
+      "pgnLabel": "PGN",
+      "pgnHelp": "Pega un PGN con variantes: las exportaciones de estudios de Lichess o de Chess.com funcionan tal cual.",
+      "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
+      "submit": "Importar línea",
+      "submitting": "Importando…"
+    },
+    "new": {
+      "title": "Importar una línea",
+      "description": "Ponle un nombre, elige tu color y pega el PGN del repertorio que quieres memorizar."
+    },
+    "detail": {
+      "title": "Línea",
+      "pgnHeading": "PGN"
+    },
+    "delete": {
+      "button": "Eliminar",
+      "title": "¿Eliminar esta línea?",
+      "message": "Esto elimina la línea de forma permanente. No se puede deshacer.",
+      "confirm": "Eliminar",
+      "cancel": "Cancelar"
+    },
+    "errors": {
+      "nameRequired": "Introduce un nombre.",
+      "nameTooLong": "Ese nombre es demasiado largo.",
+      "invalidSide": "Elige un color.",
+      "pgnRequired": "Pega un PGN.",
+      "pgnTooLarge": "Ese PGN es demasiado grande.",
+      "invalidPgn": "No se pudo procesar ese PGN: comprueba si hay jugadas ilegales.",
+      "signInRequired": "Inicia sesión.",
+      "banned": "Tu cuenta está restringida.",
+      "rateLimited": "Demasiados intentos. Inténtalo más tarde.",
+      "generic": "Algo salió mal. Inténtalo de nuevo."
+    }
+  },
   "metadata": {
     "siteName": "Shingan Chess",
     "seoSiteName": "Ajedrez a Ciegas",
