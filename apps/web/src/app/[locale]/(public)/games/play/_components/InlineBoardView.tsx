@@ -180,6 +180,12 @@ export function InlineBoardView({
   // the previous peek-collapse state cleanly.
   const effectivelyOpen = alwaysOpen ? true : isOpen;
 
+  // Pure blindfold ('never'): the board is never revealed. Rather than render a
+  // full-size board under a permanent frosted cover — which wastes the board's
+  // vertical space and forces the player to scroll between the (hidden)
+  // position and the move input — collapse it to a compact bar (see below).
+  const isBlindfoldNever = masked && !maskDismissable;
+
   return (
     <div className={INLINE_BOARD_CARD_CHROME}>
       {!alwaysOpen && (
@@ -202,7 +208,28 @@ export function InlineBoardView({
           />
         </button>
       )}
-      {effectivelyOpen && (
+      {effectivelyOpen && isBlindfoldNever && (
+        // Compact blindfold bar: no board, no move list, no history nav —
+        // surfacing any of those would defeat the blindfold. Only the two
+        // affordances that must survive without a board remain: the AI-reply
+        // chip (the sole signal of the opponent's move in pure blindfold play)
+        // and the settings gear (the way back out of blindfold mode).
+        <div className="relative flex min-h-12 items-center justify-center px-4 py-3">
+          {!badgeActive && (
+            <span className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1.5 text-sm font-medium text-muted-foreground">
+              <FaEyeSlash className="h-4 w-4" aria-hidden />
+              {t('boardHidden')}
+            </span>
+          )}
+          {boardBadge && (
+            <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center px-2">
+              {boardBadge}
+            </div>
+          )}
+          {topRightControl && <div className="absolute right-2 top-2 z-30">{topRightControl}</div>}
+        </div>
+      )}
+      {effectivelyOpen && !isBlindfoldNever && (
         <div>
           {/* The board and the move-list strip above it share one mask: in
               blindfold modes the move list would otherwise reveal the game, so
@@ -276,41 +303,28 @@ export function InlineBoardView({
               </div>
             )}
 
-            {/* Blindfold mask: a frosted overlay over the whole board block —
-                the move-list strip above, the board, and the navigation / flip
-                controls below — so nothing board-related (incl. history
+            {/* Blindfold peek mask: a frosted overlay over the whole board
+                block — the move-list strip above, the board, and the navigation
+                / flip controls below — so nothing board-related (incl. history
                 stepping) shows or is operable while masked. The blur + tint
-                hides piece types; tapping a dismissable mask reveals it all for
-                a peek. */}
-            {masked &&
-              (maskDismissable ? (
-                <button
-                  type="button"
-                  onClick={onReveal}
-                  aria-label={t('revealBoard')}
-                  className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-2xl transition-colors"
-                >
-                  {!badgeActive && (
-                    <span className="inline-flex items-center gap-2 rounded-full bg-background/80 px-3 py-1.5 text-sm font-medium text-foreground shadow-sm">
-                      <FaEye className="h-4 w-4" aria-hidden />
-                      {t('revealBoard')}
-                    </span>
-                  )}
-                </button>
-              ) : (
-                <div
-                  className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-2xl"
-                  aria-label={t('boardHidden')}
-                  role="img"
-                >
-                  {!badgeActive && (
-                    <span className="inline-flex items-center gap-2 rounded-full bg-background/80 px-3 py-1.5 text-sm font-medium text-foreground shadow-sm">
-                      <FaEyeSlash className="h-4 w-4" aria-hidden />
-                      {t('boardHidden')}
-                    </span>
-                  )}
-                </div>
-              ))}
+                hides piece types; tapping reveals it all for a peek. (The
+                'never' mode never reaches here — it renders the compact bar
+                above instead, so this branch is always the dismissable peek.) */}
+            {masked && (
+              <button
+                type="button"
+                onClick={onReveal}
+                aria-label={t('revealBoard')}
+                className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-2xl transition-colors"
+              >
+                {!badgeActive && (
+                  <span className="inline-flex items-center gap-2 rounded-full bg-background/80 px-3 py-1.5 text-sm font-medium text-foreground shadow-sm">
+                    <FaEye className="h-4 w-4" aria-hidden />
+                    {t('revealBoard')}
+                  </span>
+                )}
+              </button>
+            )}
 
             {/* "AI is thinking" overlay for always-visible boards. A light
                 scrim keeps the position readable while clearly reading as
