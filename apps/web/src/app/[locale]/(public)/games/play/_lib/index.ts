@@ -8,4 +8,5 @@ export {
   INLINE_BOARD_CARD_CHROME,
   INLINE_BOARD_HEADER_CHROME,
   INLINE_BOARD_HEADER_MIN_H,
+  STATUS_PILL_CLASSES,
 } from './skeleton-layout-classes';

@@ -53,3 +53,16 @@ export const INLINE_BOARD_HEADER_CHROME = 'w-full flex items-center justify-betw
  * primitive.
  */
 export const INLINE_BOARD_HEADER_MIN_H = 'min-h-[46px]';
+
+/**
+ * Shared box metrics for the centered status pills that cycle in the same spot
+ * during a blindfold game: the AI-reply chip (its "thinking" and "AI played …"
+ * states) and the mask labels ("Tap to reveal" / "Board hidden"). Pinning a
+ * constant height + padding here means swapping between them never resizes the
+ * pill — even though the "AI played …" state bumps its move notation to a
+ * larger font. Each call site layers its own background / border / text colour
+ * on top; only the box size is shared. `h-10` comfortably fits the `text-lg`
+ * move notation (line-height 28px) within the 40px box.
+ */
+export const STATUS_PILL_CLASSES =
+  'inline-flex h-10 items-center justify-center gap-2 rounded-full px-4 text-sm font-medium whitespace-nowrap';

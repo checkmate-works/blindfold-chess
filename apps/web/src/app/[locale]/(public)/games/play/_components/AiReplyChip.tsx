@@ -5,6 +5,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 import { FaRobot, FaSpinner } from 'react-icons/fa';
 
+import { STATUS_PILL_CLASSES } from '../_lib';
+
 /** Default window the AI-move chip stays before fading out, when the user has
  *  not configured one. Mirrors DEFAULT_AI_REPLY_DURATION in ai-reply-duration.ts. */
 const MOVE_VISIBLE_MS = 5000;
@@ -79,7 +81,7 @@ export function AiReplyChip({ active, thinking, aiMoveNotation }: Props) {
   return (
     <div
       aria-live="polite"
-      className={`inline-flex max-w-full items-center gap-2 truncate rounded-full border border-border bg-background/90 px-4 py-2 text-sm font-medium text-foreground shadow-md backdrop-blur-sm transition-opacity duration-300 ${
+      className={`${STATUS_PILL_CLASSES} max-w-full truncate border border-border bg-background/90 text-foreground shadow-md backdrop-blur-sm transition-opacity duration-300 ${
         active ? 'opacity-100' : 'opacity-0'
       }`}
     >

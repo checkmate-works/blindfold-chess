@@ -13,6 +13,7 @@ import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesCo
 import {
   INLINE_BOARD_CARD_CHROME,
   INLINE_BOARD_HEADER_CHROME,
+  STATUS_PILL_CLASSES,
 } from '../_lib/skeleton-layout-classes';
 import { HorizontalMoveList } from './HorizontalMoveList';
 import { MoveNavigationControls } from './MoveNavigationControls';
@@ -214,17 +215,20 @@ export function InlineBoardView({
         // affordances that must survive without a board remain: the AI-reply
         // chip (the sole signal of the opponent's move in pure blindfold play)
         // and the settings gear (the way back out of blindfold mode).
-        <div className="relative flex min-h-12 items-center justify-center px-4 py-3">
-          {!badgeActive && (
-            <span className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1.5 text-sm font-medium text-muted-foreground">
+        <div className="relative flex h-16 items-center justify-center px-4">
+          {/* Fixed height (not min-h + padding): the chip and label differ in
+              height — the chip's move notation is text-lg — so a content-sized
+              box would grow/shrink between them and shift everything below.
+              A constant height centers whichever is shown with zero layout
+              shift. They share this one flow slot (mutually exclusive via
+              badgeActive) so both are centered identically. */}
+          {boardBadge && badgeActive ? (
+            boardBadge
+          ) : (
+            <span className={`${STATUS_PILL_CLASSES} bg-muted text-muted-foreground`}>
               <FaEyeSlash className="h-4 w-4" aria-hidden />
               {t('boardHidden')}
             </span>
-          )}
-          {boardBadge && (
-            <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center px-2">
-              {boardBadge}
-            </div>
           )}
           {topRightControl && <div className="absolute right-2 top-2 z-30">{topRightControl}</div>}
         </div>
@@ -318,7 +322,9 @@ export function InlineBoardView({
                 className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-2xl transition-colors"
               >
                 {!badgeActive && (
-                  <span className="inline-flex items-center gap-2 rounded-full bg-background/80 px-3 py-1.5 text-sm font-medium text-foreground shadow-sm">
+                  <span
+                    className={`${STATUS_PILL_CLASSES} bg-background/80 text-foreground shadow-sm`}
+                  >
                     <FaEye className="h-4 w-4" aria-hidden />
                     {t('revealBoard')}
                   </span>
