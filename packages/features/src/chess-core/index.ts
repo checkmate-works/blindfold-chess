@@ -68,6 +68,16 @@ export type { MoveTreeNode, PgnTree } from "./pgn-tree";
 export { parsePgnTree } from "./pgn-tree";
 
 export type {
+  Side,
+  LineMatchStatus,
+  LineDivergence,
+  LineMatchResult,
+  GameForMatch,
+  LineMatchCandidate,
+} from "./line-match";
+export { matchGameToLine, matchGameAgainstLines } from "./line-match";
+
+export type {
   AttachedPgnError,
   ValidateAttachedPgnResult,
 } from "./pgn-attachment";
