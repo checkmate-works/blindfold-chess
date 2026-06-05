@@ -16,6 +16,7 @@ import type { BoardTheme } from '@/lib/games/board-themes';
 import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 import type { BoardVisibility } from '@/lib/games/board-visibility';
 import { DEFAULT_BOARD_VISIBILITY } from '@/lib/games/board-visibility';
+import { writeBoardVisibilityCookieClient } from '@/lib/games/board-visibility-cookie';
 import {
   DEFAULT_ENABLED_MOVE_INPUT_MODES,
   DEFAULT_MOVE_INPUT_MODE,
@@ -186,6 +187,7 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
         mode: loaded.moveInputMode,
         enabledModes: loaded.enabledMoveInputModes,
       });
+      writeBoardVisibilityCookieClient(loaded.boardVisibility);
       setIsLoaded(true);
     }
   }, []);
@@ -252,6 +254,9 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
         enabledModes: next.enabledMoveInputModes,
       });
     }
+    if ('boardVisibility' in updates && updates.boardVisibility !== prev.boardVisibility) {
+      writeBoardVisibilityCookieClient(next.boardVisibility);
+    }
     setPreferences(next);
   }, []);
 
@@ -263,6 +268,7 @@ export function GamePreferencesProvider({ children }: { children: React.ReactNod
       mode: defaultPreferences.moveInputMode,
       enabledModes: defaultPreferences.enabledMoveInputModes,
     });
+    writeBoardVisibilityCookieClient(defaultPreferences.boardVisibility);
     setPreferences(defaultPreferences);
   }, []);
 

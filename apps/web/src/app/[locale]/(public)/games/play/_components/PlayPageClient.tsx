@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
+import type { BoardVisibility } from '@/lib/games/board-visibility';
 import type { MoveInputPreferenceHint } from '@/lib/games/move-input-cookie';
 
 import { Divider } from '@/app/[locale]/_components/Divider';
@@ -26,9 +27,21 @@ type Props = {
    * CLS that returning `text` / `select` users otherwise saw on first paint.
    */
   initialMoveInputHint: MoveInputPreferenceHint;
+  /**
+   * Server-resolved global `boardVisibility` from the `bfc_board_visibility_pref`
+   * cookie. Lets the pre-hydration board skeleton reserve the compact bar for
+   * 'never' (pure blindfold) instead of a full-size board, avoiding a ~500px
+   * collapse on hydration.
+   */
+  initialBoardVisibility: BoardVisibility;
 };
 
-export function PlayPageClient({ locale, breadcrumb, initialMoveInputHint }: Props) {
+export function PlayPageClient({
+  locale,
+  breadcrumb,
+  initialMoveInputHint,
+  initialBoardVisibility,
+}: Props) {
   const t = useTranslations('play');
 
   // Own the game session here so the page-level status slot (PageTitle) can
@@ -73,21 +86,29 @@ export function PlayPageClient({ locale, breadcrumb, initialMoveInputHint }: Pro
 
   return (
     <div className="space-y-8">
+      {/* A left spacer balances the right-hand help-tour slot so the title stays
+          truly centered, and the help slot keeps a constant width whether or not
+          the "?" button renders (its presence depends on post-hydration state).
+          Both keep the title row from shifting; loading.tsx mirrors this. */}
       <div className="flex items-center justify-center gap-2">
+        <div className="w-6 shrink-0" aria-hidden />
         {/* min-w-0 lets the h1 flex item shrink so the inner `truncate` still
             clips a long move-error string instead of overflowing the row. */}
         <PageTitle className="min-w-0">{titleContent}</PageTitle>
-        <PlayHelpTour
-          locale={locale}
-          hasSettingsGear={hasSettingsGear}
-          hasInputModeSwitch={hasInputModeSwitch}
-        />
+        <div className="flex w-6 shrink-0 justify-center">
+          <PlayHelpTour
+            locale={locale}
+            hasSettingsGear={hasSettingsGear}
+            hasInputModeSwitch={hasInputModeSwitch}
+          />
+        </div>
       </div>
       <PagePanel>
         <PlayClient
           locale={locale}
           gameSession={gameSession}
           initialMoveInputHint={initialMoveInputHint}
+          initialBoardVisibility={initialBoardVisibility}
           isInitializing={isInitializing}
         />
         {/* Mirror `PageLayout`'s trailing block — see PageLayout.tsx. */}

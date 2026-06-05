@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
+import { readBoardVisibilityFromCookies } from '@/lib/games/board-visibility-cookie.server';
 import { readMoveInputPreferenceFromCookies } from '@/lib/games/move-input-cookie.server';
 
 import { PagePanel, PageTitle } from '@/app/[locale]/_components';
@@ -9,6 +10,7 @@ import { MovesPanelSkeleton } from './_components/MovesPanelSkeleton';
 import {
   ActionRowSkeleton,
   AlwaysVisibleBoardSkeleton,
+  CompactBoardSkeleton,
   IconButtonSkeleton,
   TextLinkSkeleton,
 } from './_components/skeletons';
@@ -34,14 +36,16 @@ export const dynamic = 'force-dynamic';
  * cookie) fall back to the `DEFAULT_MOVE_INPUT_HINT` (button, single
  * enabled mode) via the cookie reader.
  *
- * The board is always rendered at a fixed size now (the blindfold is a mask
- * overlay, not a different layout), so the skeleton always reserves the
- * full-size board card (`AlwaysVisibleBoardSkeleton`) — no `bfc_peek_pref`
- * branching and no modal "Show Board" button slot.
+ * The board skeleton shape is driven by `bfc_board_visibility_pref`: 'never'
+ * (pure blindfold) renders no board, just a compact bar, so we reserve
+ * `CompactBoardSkeleton`; 'always' / 'peek' reserve the full-size board card
+ * (`AlwaysVisibleBoardSkeleton`). This keeps the loading→hydration handoff
+ * CLS-free for 'never'-mode users (whose real layout is ~64px, not ~576px).
  */
 export default async function GamesPlayLoading() {
-  const [moveInputHint, tPlay] = await Promise.all([
+  const [moveInputHint, boardVisibility, tPlay] = await Promise.all([
     readMoveInputPreferenceFromCookies(),
+    readBoardVisibilityFromCookies(),
     getTranslations('play'),
   ]);
   const moveInputSkeletonProps = deriveMoveInputSkeletonProps(moveInputHint);
@@ -51,8 +55,14 @@ export default async function GamesPlayLoading() {
       {/* Match the initial PlayPageClient render (`isInitializing` branch),
           which shows `t('loading')` rather than `t('title')`. Using
           `t('title')` here causes a visible double-flash:
-          "Play Chess" → "Loading..." → "Play Chess". */}
-      <PageTitle>{tPlay('loading')}</PageTitle>
+          "Play Chess" → "Loading..." → "Play Chess". The spacer + empty help
+          slot mirror PlayPageClient's title row so the centered title doesn't
+          shift when the real "?" help button mounts. */}
+      <div className="flex items-center justify-center gap-2">
+        <div className="w-6 shrink-0" aria-hidden />
+        <PageTitle className="min-w-0">{tPlay('loading')}</PageTitle>
+        <div className="w-6 shrink-0" aria-hidden />
+      </div>
 
       <PagePanel>
         {/* `-mt-4 sm:mt-0` matches PlayClient: cancel the mobile top padding so
@@ -64,7 +74,11 @@ export default async function GamesPlayLoading() {
               full-size card. */}
           <div className="lg:col-span-2">
             <div className="flex flex-col gap-6">
-              <AlwaysVisibleBoardSkeleton />
+              {boardVisibility === 'never' ? (
+                <CompactBoardSkeleton />
+              ) : (
+                <AlwaysVisibleBoardSkeleton />
+              )}
               <MoveInputSkeleton
                 mode={moveInputSkeletonProps.mode}
                 hasModeSwitch={moveInputSkeletonProps.hasModeSwitch}
