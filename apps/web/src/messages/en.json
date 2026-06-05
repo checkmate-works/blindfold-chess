@@ -4,7 +4,7 @@
     "description": "Your private repertoire trees — opening lines, mate patterns, and memorized sequences.",
     "sectionTitle": "Your lines",
     "importCta": "Import",
-    "empty": "No lines yet. Import a PGN to add your first repertoire tree.",
+    "empty": "No lines available yet",
     "summary": "{lines} lines · {moves} moves",
     "form": {
       "nameLabel": "Name",
@@ -20,7 +20,7 @@
     },
     "new": {
       "title": "Import a line",
-      "description": "Give it a name, choose your side, and paste the PGN of the repertoire you want to memorize."
+      "sectionTitle": "Line details"
     },
     "detail": {
       "title": "Line",

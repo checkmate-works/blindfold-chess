@@ -5,21 +5,25 @@
  * A logged-in user's private repertoire trees: opening lines, checkmate
  * patterns, or any memorized continuation from a fixed position. Each row is
  * one tree imported as PGN-with-variations. The feature is intentionally not
- * surfaced in global navigation yet (early access); it lives under (protected)
- * so it still requires sign-in.
+ * surfaced in global navigation yet (early access), but the list itself lives
+ * under (public) so it can be viewed without signing in — an anonymous visitor
+ * simply sees the empty state (lines stay private to their owner; import and
+ * detail remain auth-gated via `getAuthenticatedUser`).
  *
  * @flow
- * 1. The page lists the user's lines, newest first, with a side badge and a
- *    quick tree summary (lines · moves).
- * 2. "Import" routes to /lines/new to paste a PGN.
+ * 1. The page lists the signed-in user's lines, newest first, with a side badge
+ *    and a quick tree summary (lines · moves). Anonymous visitors see empty.
+ * 2. The "Import" CTA (signed-in only) routes to /lines/new to paste a PGN.
  * 3. Each row links to /lines/[id] for a board preview and the raw PGN.
  */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
+import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
+import { FaPlus } from 'react-icons/fa';
 
-import { getAuthenticatedUser } from '@/lib/auth';
+import { getOptionalUser } from '@/lib/auth';
 import { listLinesForUser } from '@/lib/lines/queries';
 import { summarizeLinePgn } from '@/lib/lines/validation';
 
@@ -36,26 +40,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function LinesPage({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'Lines' });
-  const user = await getAuthenticatedUser();
-  const lines = await listLinesForUser(user.id);
+  const user = await getOptionalUser();
+  const lines = user ? await listLinesForUser(user.id) : [];
 
   return (
     <PageLayout title={t('title')} locale={locale} breadcrumb={[{ label: t('title') }]}>
-      <div className="mb-6 flex items-center justify-between gap-4">
-        <SectionTitle>{t('sectionTitle')}</SectionTitle>
-        <Link
-          href="/lines/new"
-          locale={locale}
-          className="shrink-0 rounded-lg bg-link-primary px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
-        >
-          {t('importCta')}
-        </Link>
-      </div>
+      <SectionTitle>{t('sectionTitle')}</SectionTitle>
 
       {lines.length === 0 ? (
-        <p className="rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground">
-          {t('empty')}
-        </p>
+        <p className="text-muted-foreground text-center py-8">{t('empty')}</p>
       ) : (
         <ul className="space-y-3">
           {lines.map((line) => {
@@ -91,6 +84,16 @@ export default async function LinesPage({ params }: Props) {
             );
           })}
         </ul>
+      )}
+
+      {user && (
+        <div className="py-4">
+          <Link href="/lines/new" locale={locale}>
+            <Button asChild variant="primary" size="lg" icon={<FaPlus />} fullWidth>
+              {t('importCta')}
+            </Button>
+          </Link>
+        </div>
       )}
     </PageLayout>
   );

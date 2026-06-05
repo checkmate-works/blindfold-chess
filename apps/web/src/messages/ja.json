@@ -4,7 +4,7 @@
     "description": "あなた専用の定跡ツリー — オープニング、詰みパターン、覚えておきたい手順をまとめておけます。",
     "sectionTitle": "あなたの型",
     "importCta": "インポート",
-    "empty": "まだ型がありません。PGN をインポートして最初の定跡ツリーを追加しましょう。",
+    "empty": "型はまだありません",
     "summary": "{lines} ライン・{moves} 手",
     "form": {
       "nameLabel": "名前",
@@ -20,7 +20,7 @@
     },
     "new": {
       "title": "型をインポート",
-      "description": "名前を付け、自分の手番を選び、覚えたいレパートリーの PGN を貼り付けてください。"
+      "sectionTitle": "型の詳細"
     },
     "detail": {
       "title": "型",

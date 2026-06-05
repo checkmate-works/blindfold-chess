@@ -4,7 +4,7 @@
     "description": "Suas árvores de repertório privadas — linhas de abertura, padrões de mate e sequências memorizadas.",
     "sectionTitle": "Suas linhas",
     "importCta": "Importar",
-    "empty": "Nenhuma linha ainda. Importe um PGN para adicionar sua primeira árvore de repertório.",
+    "empty": "Nenhuma linha disponível ainda",
     "summary": "{lines} linhas · {moves} lances",
     "form": {
       "nameLabel": "Nome",
@@ -20,7 +20,7 @@
     },
     "new": {
       "title": "Importar uma linha",
-      "description": "Dê um nome, escolha seu lado e cole o PGN do repertório que você quer memorizar."
+      "sectionTitle": "Detalhes da linha"
     },
     "detail": {
       "title": "Linha",

@@ -4,7 +4,9 @@ import { useState } from 'react';
 
 import { useTranslations } from 'next-intl';
 
+import { Button } from '@/app/_components/Button';
 import { useRouter } from '@/i18n/routing';
+import { FaPlus } from 'react-icons/fa';
 
 import type { LineSide } from '@/lib/lines/validation';
 
@@ -112,13 +114,18 @@ export function LineImportForm({ locale }: Props) {
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded-lg bg-link-primary px-4 py-2 font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-      >
-        {pending ? t('form.submitting') : t('form.submit')}
-      </button>
+      <div className="py-4">
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          icon={<FaPlus />}
+          fullWidth
+          loading={pending}
+        >
+          {t('form.submit')}
+        </Button>
+      </div>
     </form>
   );
 }

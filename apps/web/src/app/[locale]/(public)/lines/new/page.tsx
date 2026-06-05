@@ -6,7 +6,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { getAuthenticatedUser } from '@/lib/auth';
 
-import { PageLayout } from '@/app/[locale]/_components';
+import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
@@ -34,7 +34,7 @@ export default async function NewLinePage({ params }: Props) {
       locale={locale}
       breadcrumb={[{ label: t('title'), href: '/lines' }, { label: t('new.title') }]}
     >
-      <p className="mb-6 text-sm text-muted-foreground">{t('new.description')}</p>
+      <SectionTitle>{t('new.sectionTitle')}</SectionTitle>
       <LineImportForm locale={locale} />
     </PageLayout>
   );
