@@ -64,6 +64,9 @@ export {
   parsePgnMoveSequence,
 } from "./pgn";
 
+export type { MoveTreeNode, PgnTree } from "./pgn-tree";
+export { parsePgnTree } from "./pgn-tree";
+
 export type {
   AttachedPgnError,
   ValidateAttachedPgnResult,
