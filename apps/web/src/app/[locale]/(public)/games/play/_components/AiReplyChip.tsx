@@ -95,7 +95,7 @@ export function AiReplyChip({ active, thinking, aiMoveNotation }: Props) {
             {aiMoveNotation &&
               t.rich('aiPlayed', {
                 move: aiMoveNotation,
-                b: (chunks) => <strong className="font-semibold">{chunks}</strong>,
+                b: (chunks) => <strong className="text-lg font-bold">{chunks}</strong>,
               })}
           </span>
         </>
