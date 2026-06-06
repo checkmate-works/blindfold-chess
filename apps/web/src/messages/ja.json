@@ -6,6 +6,10 @@
     "importCta": "インポート",
     "empty": "型はまだありません",
     "summary": "{lines} ライン・{moves} 手",
+    "like": "いいね",
+    "unlike": "いいね解除",
+    "newReply": "新しい返信 {time}",
+    "justNow": "たった今",
     "form": {
       "nameLabel": "名前",
       "namePlaceholder": "例：ナイドルフ（黒）",

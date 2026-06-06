@@ -6,6 +6,10 @@
     "importCta": "Importar",
     "empty": "Aún no hay líneas disponibles",
     "summary": "{lines} líneas · {moves} jugadas",
+    "like": "Me gusta",
+    "unlike": "Ya no me gusta",
+    "newReply": "Nueva Respuesta {time}",
+    "justNow": "ahora mismo",
     "form": {
       "nameLabel": "Nombre",
       "namePlaceholder": "p. ej. Najdorf (Negras)",

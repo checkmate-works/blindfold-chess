@@ -6,6 +6,10 @@
     "importCta": "Importar",
     "empty": "Nenhuma linha disponível ainda",
     "summary": "{lines} linhas · {moves} lances",
+    "like": "Curtir",
+    "unlike": "Descurtir",
+    "newReply": "Nova Resposta {time}",
+    "justNow": "agora mesmo",
     "form": {
       "nameLabel": "Nome",
       "namePlaceholder": "ex.: Najdorf (Pretas)",

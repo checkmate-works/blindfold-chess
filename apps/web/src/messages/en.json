@@ -6,6 +6,10 @@
     "importCta": "Import",
     "empty": "No lines available yet",
     "summary": "{lines} lines · {moves} moves",
+    "like": "Like",
+    "unlike": "Unlike",
+    "newReply": "New Reply {time}",
+    "justNow": "just now",
     "form": {
       "nameLabel": "Name",
       "namePlaceholder": "e.g. Najdorf (Black)",
