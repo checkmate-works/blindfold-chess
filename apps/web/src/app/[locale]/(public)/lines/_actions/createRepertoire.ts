@@ -16,6 +16,7 @@ export async function createRepertoire(input: {
   phase: RepertoirePhase;
   description?: string | null;
   pgn: string;
+  openingIds?: string[];
   locale: string;
 }): Promise<CreateRepertoireResult> {
   const result = await createRepertoireEntry({
@@ -24,6 +25,7 @@ export async function createRepertoire(input: {
     phase: input.phase,
     description: input.description,
     pgn: input.pgn,
+    openingIds: input.openingIds,
   });
   if ('success' in result) {
     revalidatePath(`/${input.locale}/lines`);

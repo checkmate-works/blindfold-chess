@@ -20,6 +20,8 @@
       "phase_opening": "Opening",
       "phase_middlegame": "Middlegame",
       "phase_endgame": "Endgame",
+      "openingLabel": "Linked openings",
+      "openingHelp": "Optionally link this repertoire to specific openings (a transposing line may match several).",
       "pgnLabel": "PGN",
       "pgnHelp": "Paste a PGN with variations — exports from Lichess studies or Chess.com work as-is.",
       "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",

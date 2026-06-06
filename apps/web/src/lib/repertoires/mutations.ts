@@ -1,8 +1,8 @@
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, eq, inArray, isNull } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
-import { db, repertoireLines, repertoires } from '@/lib/db';
+import { chessOpenings, db, repertoireLines, repertoireOpenings, repertoires } from '@/lib/db';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
 import type { RepertoireImportInput } from './validation';
@@ -27,6 +27,11 @@ export async function createRepertoireEntry(
   if (!validated.ok) return { error: validated.error };
   const { name, side, phase, description, startingFen, lines } = validated.data;
 
+  // Opening links only apply to opening-phase repertoires. Re-validate the ids
+  // against the master so an invalid id can't trip the FK (and to dedupe).
+  const requestedOpeningIds =
+    phase === 'opening' && input.openingIds?.length ? [...new Set(input.openingIds)] : [];
+
   const id = await db.transaction(async (tx) => {
     const [repertoire] = await tx
       .insert(repertoires)
@@ -41,6 +46,18 @@ export async function createRepertoireEntry(
         seq: index,
       }))
     );
+
+    if (requestedOpeningIds.length > 0) {
+      const valid = await tx
+        .select({ id: chessOpenings.id })
+        .from(chessOpenings)
+        .where(inArray(chessOpenings.id, requestedOpeningIds));
+      if (valid.length > 0) {
+        await tx
+          .insert(repertoireOpenings)
+          .values(valid.map((o) => ({ repertoireId: repertoire.id, openingId: o.id })));
+      }
+    }
 
     return repertoire.id;
   });

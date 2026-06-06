@@ -20,6 +20,8 @@
       "phase_opening": "オープニング",
       "phase_middlegame": "ミドルゲーム",
       "phase_endgame": "エンドゲーム",
+      "openingLabel": "紐づくオープニング",
+      "openingHelp": "この型を具体的なオープニングに紐づけられます（任意・転置で複数該当することも）。",
       "pgnLabel": "PGN",
       "pgnHelp": "変化手を含む PGN を貼り付けてください。Lichess スタディや Chess.com のエクスポートをそのまま使えます。",
       "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",

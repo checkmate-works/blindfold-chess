@@ -27,6 +27,8 @@ export type RepertoireImportInput = {
   phase: RepertoirePhase;
   description?: string | null;
   pgn: string;
+  /** Opening ids to link (only honoured when phase === 'opening'). */
+  openingIds?: string[];
 };
 
 /** One decomposed line, ready to insert as a `repertoire_lines` row. */

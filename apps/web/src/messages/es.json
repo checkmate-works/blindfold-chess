@@ -20,6 +20,8 @@
       "phase_opening": "Apertura",
       "phase_middlegame": "Medio juego",
       "phase_endgame": "Final",
+      "openingLabel": "Aperturas vinculadas",
+      "openingHelp": "Vincula opcionalmente este repertorio a aperturas concretas (una línea con transposiciones puede coincidir con varias).",
       "pgnLabel": "PGN",
       "pgnHelp": "Pega un PGN con variantes: las exportaciones de estudios de Lichess o de Chess.com funcionan tal cual.",
       "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
