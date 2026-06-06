@@ -833,36 +833,61 @@ GRANT SELECT ON TABLE public.game_chunks TO authenticated;
 GRANT SELECT ON TABLE public.game_chunks TO anon;
 
 -- =============================================================================
--- user_lines (repertoire trees / 型 — UGC, private by default)
+-- repertoires (型 — UGC course, private by default) + lines + opening links
 -- =============================================================================
--- FK constraint: user_lines.user_id → auth.users(id) ON DELETE SET NULL
--- Lines are UGC modelled on `games`: once a public catalog exists, a shared
--- line must survive its author's account deletion as an orphan rather than
--- cascade away (the personal/private rows that remain after deletion are
--- pruned by the app, not the FK). user_id is nullable for that reason.
--- Convergent: drop a stale non-SET-NULL variant (e.g. an earlier CASCADE) so
--- the SET NULL definition (re)applies; no-op once already SET NULL.
+-- FK: repertoires.user_id → auth.users(id) ON DELETE SET NULL. Modelled on
+-- games: a shared course survives its author's deletion as an orphan rather
+-- than cascade away; user_id is nullable for that reason.
 DO $$
 BEGIN
-  IF EXISTS (
-    SELECT 1 FROM pg_constraint
-    WHERE conname = 'user_lines_user_id_fkey' AND confdeltype <> 'n'
-  ) THEN
-    ALTER TABLE public.user_lines DROP CONSTRAINT user_lines_user_id_fkey;
-  END IF;
   IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'user_lines_user_id_fkey'
+    SELECT 1 FROM pg_constraint WHERE conname = 'repertoires_user_id_fkey'
   ) THEN
-    ALTER TABLE public.user_lines
-      ADD CONSTRAINT user_lines_user_id_fkey
+    ALTER TABLE public.repertoires
+      ADD CONSTRAINT repertoires_user_id_fkey
       FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
   END IF;
 END;
 $$;
 
--- Public read of shared lines (mirrors games); writes go through Drizzle
--- (service role, bypasses RLS), so no write grant to non-service roles. The
--- GRANT + RLS (see rls_policies.sql) are defense-in-depth for direct API reads
--- and forward-ready for the planned catalog.
-GRANT SELECT ON TABLE public.user_lines TO authenticated;
-GRANT SELECT ON TABLE public.user_lines TO anon;
+-- repertoire_lines / repertoire_chapters / repertoire_openings / annotations
+-- have no auth.users FK (ownership is the parent repertoire's; their other FKs
+-- are Drizzle-managed). Writes go through Drizzle (service role, bypasses RLS),
+-- so only SELECT is granted; RLS (see rls_policies.sql) gates direct API reads
+-- and is forward-ready for the planned catalog. Content tables are anon-readable
+-- (a public course's chapters/lines/annotations).
+GRANT SELECT ON TABLE public.repertoires TO authenticated;
+GRANT SELECT ON TABLE public.repertoires TO anon;
+GRANT SELECT ON TABLE public.repertoire_chapters TO authenticated;
+GRANT SELECT ON TABLE public.repertoire_chapters TO anon;
+GRANT SELECT ON TABLE public.repertoire_lines TO authenticated;
+GRANT SELECT ON TABLE public.repertoire_lines TO anon;
+GRANT SELECT ON TABLE public.repertoire_openings TO authenticated;
+GRANT SELECT ON TABLE public.repertoire_openings TO anon;
+GRANT SELECT ON TABLE public.repertoire_annotations TO authenticated;
+GRANT SELECT ON TABLE public.repertoire_annotations TO anon;
+
+-- Per-user learning state (reviews / deviations): user_id → auth.users
+-- ON DELETE CASCADE (the state is meaningless without its owner). These are
+-- private to the user — SELECT for authenticated only, never anon.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'repertoire_reviews_user_id_fkey'
+  ) THEN
+    ALTER TABLE public.repertoire_reviews
+      ADD CONSTRAINT repertoire_reviews_user_id_fkey
+      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'repertoire_deviations_user_id_fkey'
+  ) THEN
+    ALTER TABLE public.repertoire_deviations
+      ADD CONSTRAINT repertoire_deviations_user_id_fkey
+      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+  END IF;
+END;
+$$;
+
+GRANT SELECT ON TABLE public.repertoire_reviews TO authenticated;
+GRANT SELECT ON TABLE public.repertoire_deviations TO authenticated;

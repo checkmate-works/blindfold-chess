@@ -1000,30 +1000,89 @@ CREATE POLICY "game_chunks_select" ON "game_chunks"
   );
 
 -- =============================================================================
--- user_lines (repertoire trees / 型 — UGC, private by default)
+-- repertoires (型 — UGC course) + lines + opening links
 -- =============================================================================
--- Visibility mirrors games: a line is readable when it is a live, shared
--- (public) line OR when the requester is its owner — so an owner sees their own
--- private lines and anyone may see published ones (forward-ready for the
--- catalog; nothing is public yet). Mutations stay owner-only. The app goes
--- through service-role server actions (which bypass RLS); these policies are
--- defense-in-depth for direct API access.
-ALTER TABLE "user_lines" ENABLE ROW LEVEL SECURITY;
+-- Visibility mirrors games: a repertoire is readable when it is live and shared
+-- (public) OR when the requester is its owner — so an owner sees their own
+-- private courses and anyone may see published ones (forward-ready; nothing is
+-- public yet). Its lines and opening-links inherit that visibility. All writes
+-- go through service-role server actions (which bypass RLS); these policies are
+-- defense-in-depth for direct API access (read-only — no write grant exists).
+ALTER TABLE "repertoires" ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "user_lines_select" ON "user_lines";
-CREATE POLICY "user_lines_select" ON "user_lines"
+DROP POLICY IF EXISTS "repertoires_select" ON "repertoires";
+CREATE POLICY "repertoires_select" ON "repertoires"
   FOR SELECT USING (
     deleted_at IS NULL AND (status = 'public' OR auth.uid() = user_id)
   );
 
-DROP POLICY IF EXISTS "user_lines_insert" ON "user_lines";
-CREATE POLICY "user_lines_insert" ON "user_lines"
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
+-- A line is visible iff its parent repertoire is visible and the line itself is
+-- not soft-deleted.
+ALTER TABLE "repertoire_lines" ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "user_lines_update" ON "user_lines";
-CREATE POLICY "user_lines_update" ON "user_lines"
-  FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "repertoire_lines_select" ON "repertoire_lines";
+CREATE POLICY "repertoire_lines_select" ON "repertoire_lines"
+  FOR SELECT USING (
+    deleted_at IS NULL
+    AND EXISTS (
+      SELECT 1 FROM public.repertoires r
+      WHERE r.id = repertoire_lines.repertoire_id
+        AND r.deleted_at IS NULL
+        AND (r.status = 'public' OR auth.uid() = r.user_id)
+    )
+  );
 
-DROP POLICY IF EXISTS "user_lines_delete" ON "user_lines";
-CREATE POLICY "user_lines_delete" ON "user_lines"
-  FOR DELETE USING (auth.uid() = user_id);
+-- An opening link is visible iff its parent repertoire is visible.
+ALTER TABLE "repertoire_openings" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "repertoire_openings_select" ON "repertoire_openings";
+CREATE POLICY "repertoire_openings_select" ON "repertoire_openings"
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM public.repertoires r
+      WHERE r.id = repertoire_openings.repertoire_id
+        AND r.deleted_at IS NULL
+        AND (r.status = 'public' OR auth.uid() = r.user_id)
+    )
+  );
+
+-- Chapters / annotations are content: visible iff the parent repertoire is.
+ALTER TABLE "repertoire_chapters" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "repertoire_chapters_select" ON "repertoire_chapters";
+CREATE POLICY "repertoire_chapters_select" ON "repertoire_chapters"
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM public.repertoires r
+      WHERE r.id = repertoire_chapters.repertoire_id
+        AND r.deleted_at IS NULL
+        AND (r.status = 'public' OR auth.uid() = r.user_id)
+    )
+  );
+
+ALTER TABLE "repertoire_annotations" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "repertoire_annotations_select" ON "repertoire_annotations";
+CREATE POLICY "repertoire_annotations_select" ON "repertoire_annotations"
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM public.repertoires r
+      WHERE r.id = repertoire_annotations.repertoire_id
+        AND r.deleted_at IS NULL
+        AND (r.status = 'public' OR auth.uid() = r.user_id)
+    )
+  );
+
+-- Reviews / deviations are per-user private learning state: owner-only, no
+-- public/anon read even when the repertoire itself is public.
+ALTER TABLE "repertoire_reviews" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "repertoire_reviews_select" ON "repertoire_reviews";
+CREATE POLICY "repertoire_reviews_select" ON "repertoire_reviews"
+  FOR SELECT USING (auth.uid() = user_id);
+
+ALTER TABLE "repertoire_deviations" ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "repertoire_deviations_select" ON "repertoire_deviations";
+CREATE POLICY "repertoire_deviations_select" ON "repertoire_deviations"
+  FOR SELECT USING (auth.uid() = user_id);

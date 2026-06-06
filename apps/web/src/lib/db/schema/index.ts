@@ -33,4 +33,4 @@ export * from './gamification';
 export * from './positions';
 export * from './puzzles';
 export * from './games';
-export * from './lines';
+export * from './repertoires';
