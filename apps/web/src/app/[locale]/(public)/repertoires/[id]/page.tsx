@@ -31,8 +31,8 @@ type Props = { params: Promise<{ locale: Locale; id: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return createPageMetadata({
     params,
-    namespace: 'Lines',
-    path: 'lines',
+    namespace: 'Repertoires',
+    path: 'repertoires',
     titleKey: 'detail.title',
     noIndex: true,
     omitDescription: true,
@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function RepertoireDetailPage({ params }: Props) {
   const { locale, id } = await params;
-  const t = await getTranslations({ locale, namespace: 'Lines' });
+  const t = await getTranslations({ locale, namespace: 'Repertoires' });
   const user = await getAuthenticatedUser();
 
   const data = await getRepertoireForUser(id, user.id);
@@ -78,7 +78,7 @@ export default async function RepertoireDetailPage({ params }: Props) {
     <PageLayout
       title={repertoire.name}
       locale={locale}
-      breadcrumb={[{ label: t('title'), href: '/lines' }, { label: repertoire.name }]}
+      breadcrumb={[{ label: t('title'), href: '/repertoires' }, { label: repertoire.name }]}
     >
       <SectionTitle>{t('detail.linesHeading')}</SectionTitle>
 
@@ -107,7 +107,7 @@ export default async function RepertoireDetailPage({ params }: Props) {
             initialLikeCount={likeMeta.likeCount}
             initialLikedByMe={likeMeta.likedByMe}
             toggleLikeAction={toggleLike}
-            i18nNamespace="Lines"
+            i18nNamespace="Repertoires"
           />
           <DeleteRepertoireButton id={repertoire.id} locale={locale} afterDelete="list" />
         </div>

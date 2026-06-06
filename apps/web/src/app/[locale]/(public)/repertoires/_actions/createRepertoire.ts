@@ -8,7 +8,7 @@ import type { RepertoirePhase, RepertoireSide } from '@/lib/repertoires/validati
 
 /**
  * Create a repertoire (型) for the current user from a pasted PGN, then
- * revalidate the list so a navigation back to /lines shows the new course.
+ * revalidate the list so a navigation back to /repertoires shows the new course.
  */
 export async function createRepertoire(input: {
   name: string;
@@ -28,7 +28,7 @@ export async function createRepertoire(input: {
     openingIds: input.openingIds,
   });
   if ('success' in result) {
-    revalidatePath(`/${input.locale}/lines`);
+    revalidatePath(`/${input.locale}/repertoires`);
   }
   return result;
 }

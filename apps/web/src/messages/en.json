@@ -1,10 +1,10 @@
 {
-  "Lines": {
-    "title": "Lines",
+  "Repertoires": {
+    "title": "Repertoires",
     "description": "Your private repertoire trees — opening lines, mate patterns, and memorized sequences.",
-    "sectionTitle": "Your lines",
+    "sectionTitle": "Your repertoires",
     "importCta": "Import",
-    "empty": "No lines available yet",
+    "empty": "No repertoires available yet",
     "summary": "{lines} lines · {moves} moves",
     "like": "Like",
     "unlike": "Unlike",

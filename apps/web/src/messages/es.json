@@ -1,10 +1,10 @@
 {
-  "Lines": {
-    "title": "Líneas",
+  "Repertoires": {
+    "title": "Repertorios",
     "description": "Tus árboles de repertorio privados: líneas de apertura, patrones de mate y secuencias memorizadas.",
-    "sectionTitle": "Tus líneas",
+    "sectionTitle": "Tus repertorios",
     "importCta": "Importar",
-    "empty": "Aún no hay líneas disponibles",
+    "empty": "Aún no hay repertorios disponibles",
     "summary": "{lines} líneas · {moves} jugadas",
     "like": "Me gusta",
     "unlike": "Ya no me gusta",

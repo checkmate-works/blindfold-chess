@@ -35,6 +35,6 @@ export async function toggleRepertoireLike(
       return { userId: row.userId, extra: {} };
     },
     notificationMeta: (id) => ({ repertoireId: id }),
-    revalidatePaths: (loc, id) => [`/${loc}/lines`, `/${loc}/lines/${id}`],
+    revalidatePaths: (loc, id) => [`/${loc}/repertoires`, `/${loc}/repertoires/${id}`],
   });
 }

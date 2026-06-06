@@ -17,8 +17,8 @@ import { RepertoireImportForm } from '../_components/RepertoireImportForm';
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return createPageMetadata({
     params,
-    namespace: 'Lines',
-    path: 'lines/new',
+    namespace: 'Repertoires',
+    path: 'repertoires/new',
     titleKey: 'new.title',
     noIndex: true,
     omitDescription: true,
@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function NewLinePage({ params }: Props) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'Lines' });
+  const t = await getTranslations({ locale, namespace: 'Repertoires' });
   await getAuthenticatedUser();
   const openings = await getOpeningOptions(locale);
 
@@ -35,7 +35,7 @@ export default async function NewLinePage({ params }: Props) {
     <PageLayout
       title={t('new.title')}
       locale={locale}
-      breadcrumb={[{ label: t('title'), href: '/lines' }, { label: t('new.title') }]}
+      breadcrumb={[{ label: t('title'), href: '/repertoires' }, { label: t('new.title') }]}
     >
       <SectionTitle>{t('new.sectionTitle')}</SectionTitle>
       <RepertoireImportForm locale={locale} openings={openings} />

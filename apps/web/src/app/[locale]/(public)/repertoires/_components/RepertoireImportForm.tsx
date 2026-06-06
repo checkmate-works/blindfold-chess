@@ -39,7 +39,7 @@ type Props = { locale: string; openings: OpeningOption[] };
  * variations) also happens in `createRepertoire`.
  */
 export function RepertoireImportForm({ locale, openings }: Props) {
-  const t = useTranslations('Lines');
+  const t = useTranslations('Repertoires');
   const router = useRouter();
 
   const [name, setName] = useState('');
@@ -76,7 +76,7 @@ export function RepertoireImportForm({ locale, openings }: Props) {
       );
       return;
     }
-    router.push(`/lines/${result.id}`);
+    router.push(`/repertoires/${result.id}`);
   }
 
   return (

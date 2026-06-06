@@ -12,7 +12,7 @@ export async function deleteRepertoire(input: {
 }): Promise<DeleteRepertoireResult> {
   const result = await deleteRepertoireEntry(input.id);
   if ('success' in result) {
-    revalidatePath(`/${input.locale}/lines`);
+    revalidatePath(`/${input.locale}/repertoires`);
   }
   return result;
 }

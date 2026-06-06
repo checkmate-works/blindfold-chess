@@ -19,7 +19,7 @@ type Props = {
 };
 
 export function DeleteRepertoireButton({ id, locale, afterDelete }: Props) {
-  const t = useTranslations('Lines');
+  const t = useTranslations('Repertoires');
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
@@ -37,7 +37,7 @@ export function DeleteRepertoireButton({ id, locale, afterDelete }: Props) {
     setPending(false);
     setOpen(false);
     if (afterDelete === 'list') {
-      router.push('/lines');
+      router.push('/repertoires');
     } else {
       router.refresh();
     }

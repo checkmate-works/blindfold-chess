@@ -1,10 +1,10 @@
 {
-  "Lines": {
-    "title": "Linhas",
+  "Repertoires": {
+    "title": "Repertórios",
     "description": "Suas árvores de repertório privadas — linhas de abertura, padrões de mate e sequências memorizadas.",
-    "sectionTitle": "Suas linhas",
+    "sectionTitle": "Seus repertórios",
     "importCta": "Importar",
-    "empty": "Nenhuma linha disponível ainda",
+    "empty": "Nenhum repertório disponível ainda",
     "summary": "{lines} linhas · {moves} lances",
     "like": "Curtir",
     "unlike": "Descurtir",

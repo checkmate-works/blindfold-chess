@@ -35,7 +35,7 @@ type Props = {
  * server-side, so this stays a thin UI client component.
  */
 export function RepertoireLineViewer({ lines, side }: Props) {
-  const t = useTranslations('Lines');
+  const t = useTranslations('Repertoires');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [ply, setPly] = useState(0);
 

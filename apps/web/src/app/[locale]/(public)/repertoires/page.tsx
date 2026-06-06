@@ -1,5 +1,5 @@
 /**
- * Repertoires (型) — list page (route slug /lines).
+ * Repertoires (型) — list page (route slug /repertoires).
  *
  * @description
  * A user's repertoire courses (UGC, modelled on games): opening / middlegame /
@@ -15,8 +15,8 @@
  *
  * @flow
  * 1. List the signed-in user's repertoires, newest first, with like + comment meta.
- * 2. The "Import" CTA (signed-in only) routes to /lines/new to paste a PGN.
- * 3. Each card links to /lines/[id].
+ * 2. The "Import" CTA (signed-in only) routes to /repertoires/new to paste a PGN.
+ * 3. Each card links to /repertoires/[id].
  */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
@@ -39,12 +39,17 @@ import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 import { toggleLike } from './_actions/toggleLike';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  return createPageMetadata({ params, namespace: 'Lines', path: 'lines', noIndex: true });
+  return createPageMetadata({
+    params,
+    namespace: 'Repertoires',
+    path: 'repertoires',
+    noIndex: true,
+  });
 }
 
 export default async function RepertoiresPage({ params }: Props) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'Lines' });
+  const t = await getTranslations({ locale, namespace: 'Repertoires' });
   const user = await getOptionalUser();
   const rows = user ? await listRepertoiresForUser(user.id) : [];
 
@@ -76,8 +81,8 @@ export default async function RepertoiresPage({ params }: Props) {
                 profile={profile}
                 likeMeta={likeMetaMap.get(repertoire.id) ?? { likeCount: 0, likedByMe: false }}
                 replyMeta={replyMetaMap.get(repertoire.id) ?? EMPTY_REPLY_META}
-                detailHref={`/lines/${repertoire.id}`}
-                i18nNamespace="Lines"
+                detailHref={`/repertoires/${repertoire.id}`}
+                i18nNamespace="Repertoires"
                 toggleLikeAction={toggleLike}
                 justNowLabel={t('justNow')}
                 locale={locale}
@@ -100,7 +105,7 @@ export default async function RepertoiresPage({ params }: Props) {
 
       {user && (
         <div className="py-4">
-          <Link href="/lines/new" locale={locale}>
+          <Link href="/repertoires/new" locale={locale}>
             <Button asChild variant="primary" size="lg" icon={<FaPlus />} fullWidth>
               {t('importCta')}
             </Button>
