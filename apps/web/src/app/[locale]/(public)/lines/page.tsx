@@ -23,7 +23,6 @@ import { getTranslations } from 'next-intl/server';
 
 import { Button } from '@/app/_components';
 import { Link } from '@/i18n/routing';
-import { getStartingFen } from '@blindfold-chess/features/chess-core';
 import { FaPlus } from 'react-icons/fa';
 
 import { getOptionalUser } from '@/lib/auth';
@@ -66,11 +65,11 @@ export default async function RepertoiresPage({ params }: Props) {
       ) : (
         <GamePreferencesProvider>
           <div className="space-y-3">
-            {rows.map(({ repertoire, profile }) => (
+            {rows.map(({ repertoire, profile, thumbnailFen }) => (
               <CatalogListCard
                 key={repertoire.id}
                 id={repertoire.id}
-                fen={repertoire.startingFen ?? getStartingFen()}
+                fen={thumbnailFen}
                 title={repertoire.name}
                 description={repertoire.description}
                 createdAt={repertoire.createdAt}
