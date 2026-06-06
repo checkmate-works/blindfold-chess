@@ -2,13 +2,13 @@ import type { LikeMeta } from '@/lib/db/like-queries';
 import { getLikeMetaMap } from '@/lib/db/like-queries';
 
 /**
- * Like counts + "liked by me" for a batch of lines, keyed by line id.
+ * Like counts + "liked by me" for a batch of repertoires, keyed by id.
  * Thin wrapper over the polymorphic {@link getLikeMetaMap} with
- * `targetType = 'line'` (mirrors `positions/like-queries`).
+ * `targetType = 'repertoire'`.
  */
-export function getLineLikeMetaMap(
-  lineIds: string[],
+export function getRepertoireLikeMetaMap(
+  repertoireIds: string[],
   currentUserId?: string
 ): Promise<Map<string, LikeMeta>> {
-  return getLikeMetaMap('line', lineIds, currentUserId);
+  return getLikeMetaMap('repertoire', repertoireIds, currentUserId);
 }
