@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { useRouter } from '@/i18n/routing';
+import { FiTrash2 } from 'react-icons/fi';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
@@ -47,8 +48,10 @@ export function DeleteRepertoireButton({ id, locale, afterDelete }: Props) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="text-sm text-red-700 underline hover:opacity-80 dark:text-red-300"
+        disabled={pending}
+        className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-sm text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive disabled:opacity-50"
       >
+        <FiTrash2 className="h-3.5 w-3.5" aria-hidden />
         {t('delete.button')}
       </button>
       <ConfirmationModal
