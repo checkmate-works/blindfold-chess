@@ -16,6 +16,10 @@
       "sideLabel": "Tu color",
       "side_white": "Blancas",
       "side_black": "Negras",
+      "phaseLabel": "Fase",
+      "phase_opening": "Apertura",
+      "phase_middlegame": "Medio juego",
+      "phase_endgame": "Final",
       "pgnLabel": "PGN",
       "pgnHelp": "Pega un PGN con variantes: las exportaciones de estudios de Lichess o de Chess.com funcionan tal cual.",
       "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
@@ -27,8 +31,11 @@
       "sectionTitle": "Detalles de la línea"
     },
     "detail": {
-      "title": "Línea",
-      "pgnHeading": "PGN"
+      "title": "Repertorio",
+      "pgnHeading": "PGN",
+      "linesHeading": "Líneas",
+      "lineCount": "{count} líneas",
+      "lineFallback": "Línea {n}"
     },
     "delete": {
       "button": "Eliminar",
@@ -41,6 +48,7 @@
       "nameRequired": "Introduce un nombre.",
       "nameTooLong": "Ese nombre es demasiado largo.",
       "invalidSide": "Elige un color.",
+      "invalidPhase": "Elige una fase.",
       "pgnRequired": "Pega un PGN.",
       "pgnTooLarge": "Ese PGN es demasiado grande.",
       "invalidPgn": "No se pudo procesar ese PGN: comprueba si hay jugadas ilegales.",

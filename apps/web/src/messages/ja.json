@@ -16,6 +16,10 @@
       "sideLabel": "自分の手番",
       "side_white": "白",
       "side_black": "黒",
+      "phaseLabel": "局面",
+      "phase_opening": "オープニング",
+      "phase_middlegame": "ミドルゲーム",
+      "phase_endgame": "エンドゲーム",
       "pgnLabel": "PGN",
       "pgnHelp": "変化手を含む PGN を貼り付けてください。Lichess スタディや Chess.com のエクスポートをそのまま使えます。",
       "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
@@ -28,7 +32,10 @@
     },
     "detail": {
       "title": "型",
-      "pgnHeading": "PGN"
+      "pgnHeading": "PGN",
+      "linesHeading": "ライン",
+      "lineCount": "{count} ライン",
+      "lineFallback": "ライン {n}"
     },
     "delete": {
       "button": "削除",
@@ -41,6 +48,7 @@
       "nameRequired": "名前を入力してください。",
       "nameTooLong": "名前が長すぎます。",
       "invalidSide": "手番を選んでください。",
+      "invalidPhase": "局面を選んでください。",
       "pgnRequired": "PGN を貼り付けてください。",
       "pgnTooLarge": "PGN が大きすぎます。",
       "invalidPgn": "PGN を解析できませんでした。非合法手がないか確認してください。",

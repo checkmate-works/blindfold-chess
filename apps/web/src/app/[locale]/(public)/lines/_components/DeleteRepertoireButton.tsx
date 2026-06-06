@@ -8,7 +8,7 @@ import { useRouter } from '@/i18n/routing';
 
 import { ConfirmationModal } from '@/app/[locale]/_components/ConfirmationModal';
 
-import { deleteLine } from '../_actions/deleteLine';
+import { deleteRepertoire } from '../_actions/deleteRepertoire';
 
 type Props = {
   id: string;
@@ -17,7 +17,7 @@ type Props = {
   afterDelete: 'refresh' | 'list';
 };
 
-export function DeleteLineButton({ id, locale, afterDelete }: Props) {
+export function DeleteRepertoireButton({ id, locale, afterDelete }: Props) {
   const t = useTranslations('Lines');
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -27,7 +27,7 @@ export function DeleteLineButton({ id, locale, afterDelete }: Props) {
   async function handleConfirm() {
     setPending(true);
     setError(null);
-    const result = await deleteLine({ id, locale });
+    const result = await deleteRepertoire({ id, locale });
     if ('error' in result) {
       setPending(false);
       setError(t('errors.generic'));

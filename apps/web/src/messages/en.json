@@ -16,6 +16,10 @@
       "sideLabel": "Your side",
       "side_white": "White",
       "side_black": "Black",
+      "phaseLabel": "Phase",
+      "phase_opening": "Opening",
+      "phase_middlegame": "Middlegame",
+      "phase_endgame": "Endgame",
       "pgnLabel": "PGN",
       "pgnHelp": "Paste a PGN with variations — exports from Lichess studies or Chess.com work as-is.",
       "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
@@ -27,8 +31,11 @@
       "sectionTitle": "Line details"
     },
     "detail": {
-      "title": "Line",
-      "pgnHeading": "PGN"
+      "title": "Repertoire",
+      "pgnHeading": "PGN",
+      "linesHeading": "Lines",
+      "lineCount": "{count} lines",
+      "lineFallback": "Line {n}"
     },
     "delete": {
       "button": "Delete",
@@ -41,6 +48,7 @@
       "nameRequired": "Please enter a name.",
       "nameTooLong": "That name is too long.",
       "invalidSide": "Please choose a side.",
+      "invalidPhase": "Please choose a phase.",
       "pgnRequired": "Please paste a PGN.",
       "pgnTooLarge": "That PGN is too large.",
       "invalidPgn": "That PGN could not be parsed — check for illegal moves.",

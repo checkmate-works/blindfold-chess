@@ -1,5 +1,6 @@
 /**
- * Lines (型) — import page. Paste a PGN-with-variations to create a new line.
+ * Repertoires (型) — import page. Paste a PGN-with-variations to create a new
+ * repertoire; it is decomposed into one line per variation.
  */
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
@@ -10,7 +11,7 @@ import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { LocalePageProps as Props } from '@/app/[locale]/_lib/types';
 
-import { LineImportForm } from '../_components/LineImportForm';
+import { RepertoireImportForm } from '../_components/RepertoireImportForm';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return createPageMetadata({
@@ -35,7 +36,7 @@ export default async function NewLinePage({ params }: Props) {
       breadcrumb={[{ label: t('title'), href: '/lines' }, { label: t('new.title') }]}
     >
       <SectionTitle>{t('new.sectionTitle')}</SectionTitle>
-      <LineImportForm locale={locale} />
+      <RepertoireImportForm locale={locale} />
     </PageLayout>
   );
 }

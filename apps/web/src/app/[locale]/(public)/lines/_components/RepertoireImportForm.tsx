@@ -8,14 +8,15 @@ import { Button } from '@/app/_components/Button';
 import { useRouter } from '@/i18n/routing';
 import { FaPlus } from 'react-icons/fa';
 
-import type { LineSide } from '@/lib/lines/validation';
+import type { RepertoirePhase, RepertoireSide } from '@/lib/repertoires/validation';
 
-import { createLine } from '../_actions/createLine';
+import { createRepertoire } from '../_actions/createRepertoire';
 
 const KNOWN_ERROR_KEYS = new Set([
   'nameRequired',
   'nameTooLong',
   'invalidSide',
+  'invalidPhase',
   'pgnRequired',
   'pgnTooLarge',
   'invalidPgn',
@@ -24,20 +25,23 @@ const KNOWN_ERROR_KEYS = new Set([
   'rateLimited',
 ]);
 
+const PHASES: readonly RepertoirePhase[] = ['opening', 'middlegame', 'endgame'];
+
 type Props = { locale: string };
 
 /**
- * Import form for a repertoire line (型): a name, which side the user plays,
- * and a PGN-with-variations pasted from Lichess / Chess.com / another tool.
- * Validation (including move legality across all variations) happens
- * server-side in `createLine`; this surfaces the typed error it returns.
+ * Import form for a repertoire (型): name, your side, the game phase, and a
+ * PGN-with-variations. The PGN is decomposed server-side into one line per
+ * variation; validation (move legality across all variations) also happens in
+ * `createRepertoire`, and this surfaces the typed error it returns.
  */
-export function LineImportForm({ locale }: Props) {
+export function RepertoireImportForm({ locale }: Props) {
   const t = useTranslations('Lines');
   const router = useRouter();
 
   const [name, setName] = useState('');
-  const [side, setSide] = useState<LineSide>('white');
+  const [side, setSide] = useState<RepertoireSide>('white');
+  const [phase, setPhase] = useState<RepertoirePhase>('opening');
   const [pgn, setPgn] = useState('');
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +51,7 @@ export function LineImportForm({ locale }: Props) {
     setPending(true);
     setError(null);
 
-    const result = await createLine({ name, side, pgn, locale });
+    const result = await createRepertoire({ name, side, phase, pgn, locale });
     if ('error' in result) {
       setPending(false);
       setError(
@@ -61,11 +65,11 @@ export function LineImportForm({ locale }: Props) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <label htmlFor="line-name" className="block text-sm font-medium text-foreground">
+        <label htmlFor="repertoire-name" className="block text-sm font-medium text-foreground">
           {t('form.nameLabel')}
         </label>
         <input
-          id="line-name"
+          id="repertoire-name"
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -93,13 +97,33 @@ export function LineImportForm({ locale }: Props) {
         </div>
       </fieldset>
 
+      <fieldset>
+        <legend className="block text-sm font-medium text-foreground">
+          {t('form.phaseLabel')}
+        </legend>
+        <div className="mt-2 flex flex-wrap gap-4">
+          {PHASES.map((value) => (
+            <label key={value} className="flex items-center gap-2 text-sm text-foreground">
+              <input
+                type="radio"
+                name="phase"
+                value={value}
+                checked={phase === value}
+                onChange={() => setPhase(value)}
+              />
+              {t(`form.phase_${value}`)}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
       <div>
-        <label htmlFor="line-pgn" className="block text-sm font-medium text-foreground">
+        <label htmlFor="repertoire-pgn" className="block text-sm font-medium text-foreground">
           {t('form.pgnLabel')}
         </label>
         <p className="mt-1 text-xs text-muted-foreground">{t('form.pgnHelp')}</p>
         <textarea
-          id="line-pgn"
+          id="repertoire-pgn"
           value={pgn}
           onChange={(e) => setPgn(e.target.value)}
           placeholder={t('form.pgnPlaceholder')}

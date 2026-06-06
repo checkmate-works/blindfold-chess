@@ -1,21 +1,20 @@
 /**
- * Lines (型) — list page.
+ * Repertoires (型) — list page (route slug /lines).
  *
  * @description
- * A user's repertoire trees (UGC, modelled on games): opening lines, checkmate
- * patterns, or any memorized continuation from a fixed position. Each row is
- * one tree imported as PGN-with-variations. The feature is concealed only by
- * not being linked from global nav while it is built out; the list lives under
- * (public) so an anonymous visitor simply sees the empty state.
+ * A user's repertoire courses (UGC, modelled on games): opening / middlegame /
+ * endgame studies. Each card is one repertoire (name, side, phase); its lines
+ * (variations) live inside it. The feature is concealed only by not being
+ * linked from global nav while it is built out; the list lives under (public)
+ * so an anonymous visitor simply sees the empty state.
  *
  * Cards reuse the shared `CatalogListCard` so they carry the same board
  * thumbnail, author, like, and comment affordances as the puzzle /
- * position-memory catalogs — lines are likeable/commentable via the same
- * polymorphic `likes` / `topic_posts` infrastructure (`targetType` /
- * `topicType` = `'line'`).
+ * position-memory catalogs — repertoires are likeable/commentable via the same
+ * polymorphic infrastructure (`targetType` / `topicType` = `'repertoire'`).
  *
  * @flow
- * 1. List the signed-in user's lines, newest first, with like + comment meta.
+ * 1. List the signed-in user's repertoires, newest first, with like + comment meta.
  * 2. The "Import" CTA (signed-in only) routes to /lines/new to paste a PGN.
  * 3. Each card links to /lines/[id].
  */
@@ -29,8 +28,8 @@ import { FaPlus } from 'react-icons/fa';
 
 import { getOptionalUser } from '@/lib/auth';
 import { EMPTY_REPLY_META, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
-import { getLineLikeMetaMap } from '@/lib/lines/like-queries';
-import { listLinesForUser } from '@/lib/lines/queries';
+import { getRepertoireLikeMetaMap } from '@/lib/repertoires/like-queries';
+import { listRepertoiresForUser } from '@/lib/repertoires/queries';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { CatalogListCard } from '@/app/[locale]/_components/CatalogListCard';
@@ -44,15 +43,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return createPageMetadata({ params, namespace: 'Lines', path: 'lines', noIndex: true });
 }
 
-export default async function LinesPage({ params }: Props) {
+export default async function RepertoiresPage({ params }: Props) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'Lines' });
   const user = await getOptionalUser();
-  const rows = user ? await listLinesForUser(user.id) : [];
+  const rows = user ? await listRepertoiresForUser(user.id) : [];
 
-  const lineIds = rows.map((r) => r.line.id);
-  const [likeMetaMap, replyMetaMap] = lineIds.length
-    ? await Promise.all([getLineLikeMetaMap(lineIds, user?.id), getReplyMetaMap('line', lineIds)])
+  const ids = rows.map((r) => r.repertoire.id);
+  const [likeMetaMap, replyMetaMap] = ids.length
+    ? await Promise.all([
+        getRepertoireLikeMetaMap(ids, user?.id),
+        getReplyMetaMap('repertoire', ids),
+      ])
     : [new Map(), new Map()];
 
   return (
@@ -64,26 +66,31 @@ export default async function LinesPage({ params }: Props) {
       ) : (
         <GamePreferencesProvider>
           <div className="space-y-3">
-            {rows.map(({ line, profile }) => (
+            {rows.map(({ repertoire, profile }) => (
               <CatalogListCard
-                key={line.id}
-                id={line.id}
-                fen={line.startingFen ?? getStartingFen()}
-                title={line.name}
-                description={null}
-                createdAt={line.createdAt}
+                key={repertoire.id}
+                id={repertoire.id}
+                fen={repertoire.startingFen ?? getStartingFen()}
+                title={repertoire.name}
+                description={repertoire.description}
+                createdAt={repertoire.createdAt}
                 profile={profile}
-                likeMeta={likeMetaMap.get(line.id) ?? { likeCount: 0, likedByMe: false }}
-                replyMeta={replyMetaMap.get(line.id) ?? EMPTY_REPLY_META}
-                detailHref={`/lines/${line.id}`}
+                likeMeta={likeMetaMap.get(repertoire.id) ?? { likeCount: 0, likedByMe: false }}
+                replyMeta={replyMetaMap.get(repertoire.id) ?? EMPTY_REPLY_META}
+                detailHref={`/lines/${repertoire.id}`}
                 i18nNamespace="Lines"
                 toggleLikeAction={toggleLike}
                 justNowLabel={t('justNow')}
                 locale={locale}
-                topicKey={line.id}
+                topicKey={repertoire.id}
                 badge={
-                  <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                    {t(`form.side_${line.side}`)}
+                  <span className="flex flex-wrap gap-1">
+                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                      {t(`form.side_${repertoire.side}`)}
+                    </span>
+                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                      {t(`form.phase_${repertoire.phase}`)}
+                    </span>
                   </span>
                 }
               />
