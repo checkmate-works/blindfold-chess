@@ -1000,17 +1000,21 @@ CREATE POLICY "game_chunks_select" ON "game_chunks"
   );
 
 -- =============================================================================
--- user_lines (private repertoire trees / 型 — owner-only)
+-- user_lines (repertoire trees / 型 — UGC, private by default)
 -- =============================================================================
--- A line is visible to and mutable by its owner only. The app goes through
--- service-role server actions (which bypass RLS); these owner-scoped policies
--- are defense-in-depth so a direct authenticated query can never read or write
--- another user's lines. There is intentionally no public/anon SELECT.
+-- Visibility mirrors games: a line is readable when it is a live, shared
+-- (public) line OR when the requester is its owner — so an owner sees their own
+-- private lines and anyone may see published ones (forward-ready for the
+-- catalog; nothing is public yet). Mutations stay owner-only. The app goes
+-- through service-role server actions (which bypass RLS); these policies are
+-- defense-in-depth for direct API access.
 ALTER TABLE "user_lines" ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "user_lines_select" ON "user_lines";
 CREATE POLICY "user_lines_select" ON "user_lines"
-  FOR SELECT USING (auth.uid() = user_id);
+  FOR SELECT USING (
+    deleted_at IS NULL AND (status = 'public' OR auth.uid() = user_id)
+  );
 
 DROP POLICY IF EXISTS "user_lines_insert" ON "user_lines";
 CREATE POLICY "user_lines_insert" ON "user_lines"

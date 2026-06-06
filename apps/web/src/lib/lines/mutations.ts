@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 
 import type { ActionResult } from '@/lib/action-types';
 import { authenticateAndGuard } from '@/lib/auth';
@@ -41,8 +41,10 @@ export async function createLineEntry(input: LineImportInput): Promise<CreateLin
 }
 
 /**
- * Hard-delete a line. Scoped to the owner via the WHERE clause, so another
- * user's id can never match; `notFound` covers both "absent" and "not yours".
+ * Soft-delete a line (stamp `deleted_at`), mirroring `games` / `chunks`. Scoped
+ * to the owner and to live rows via the WHERE clause, so another user's id can
+ * never match and a re-delete is a no-op; `notFound` covers "absent", "already
+ * deleted", and "not yours".
  */
 export async function deleteLineEntry(id: string): Promise<DeleteLineResult> {
   const guard = await authenticateAndGuard(RATE_LIMITS.deleteLine);
@@ -50,8 +52,9 @@ export async function deleteLineEntry(id: string): Promise<DeleteLineResult> {
   const { user } = guard;
 
   const deleted = await db
-    .delete(userLines)
-    .where(and(eq(userLines.id, id), eq(userLines.userId, user.id)))
+    .update(userLines)
+    .set({ deletedAt: new Date() })
+    .where(and(eq(userLines.id, id), eq(userLines.userId, user.id), isNull(userLines.deletedAt)))
     .returning({ id: userLines.id });
 
   if (deleted.length === 0) return { error: 'notFound' };

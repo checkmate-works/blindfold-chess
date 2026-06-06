@@ -833,25 +833,36 @@ GRANT SELECT ON TABLE public.game_chunks TO authenticated;
 GRANT SELECT ON TABLE public.game_chunks TO anon;
 
 -- =============================================================================
--- user_lines (private repertoire trees / 型 — owner-only)
+-- user_lines (repertoire trees / 型 — UGC, private by default)
 -- =============================================================================
--- FK constraint: user_lines.user_id → auth.users(id) ON DELETE CASCADE
--- Lines are private user-generated content with no value once the owner is
--- gone, so deletion cascades (unlike the public games catalog, which keeps
--- orphans). user_id is NOT NULL — there is no anonymous-author path here.
+-- FK constraint: user_lines.user_id → auth.users(id) ON DELETE SET NULL
+-- Lines are UGC modelled on `games`: once a public catalog exists, a shared
+-- line must survive its author's account deletion as an orphan rather than
+-- cascade away (the personal/private rows that remain after deletion are
+-- pruned by the app, not the FK). user_id is nullable for that reason.
+-- Convergent: drop a stale non-SET-NULL variant (e.g. an earlier CASCADE) so
+-- the SET NULL definition (re)applies; no-op once already SET NULL.
 DO $$
 BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'user_lines_user_id_fkey' AND confdeltype <> 'n'
+  ) THEN
+    ALTER TABLE public.user_lines DROP CONSTRAINT user_lines_user_id_fkey;
+  END IF;
   IF NOT EXISTS (
     SELECT 1 FROM pg_constraint WHERE conname = 'user_lines_user_id_fkey'
   ) THEN
     ALTER TABLE public.user_lines
       ADD CONSTRAINT user_lines_user_id_fkey
-      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+      FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
   END IF;
 END;
 $$;
 
--- Owner-only, never public. The app reads/writes via Drizzle (service role,
--- bypasses RLS); the GRANT + owner-scoped RLS (see rls_policies.sql) are
--- defense-in-depth for the authenticated API. No anon grant.
-GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.user_lines TO authenticated;
+-- Public read of shared lines (mirrors games); writes go through Drizzle
+-- (service role, bypasses RLS), so no write grant to non-service roles. The
+-- GRANT + RLS (see rls_policies.sql) are defense-in-depth for direct API reads
+-- and forward-ready for the planned catalog.
+GRANT SELECT ON TABLE public.user_lines TO authenticated;
+GRANT SELECT ON TABLE public.user_lines TO anon;
