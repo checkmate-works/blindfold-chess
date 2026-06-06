@@ -188,3 +188,30 @@ export function parsePgnTree(pgn: string): PgnTree {
 
   return { startingFen, children: nodes };
 }
+
+/**
+ * Decompose a {@link PgnTree} into its individual *lines* — one SAN sequence
+ * per root-to-leaf path. A repertoire imported as a single PGN-with-variations
+ * is stored as N line rows; this is the decomposition that produces them.
+ *
+ * Example: `1. Nf3 d5 (1... Nc6 2. d4 d5 3. c4) (1... Nf6 2. b3 d5 3. Bb2) 2. g3 Nc6 3. d4`
+ * yields 3 lines (main line + the two variations). Move order within each line
+ * is preserved; the shared prefix (`1. Nf3`) is repeated in each.
+ */
+export function enumerateLines(tree: PgnTree): AlgebraicNotation[][] {
+  const lines: AlgebraicNotation[][] = [];
+
+  const walk = (nodes: MoveTreeNode[], prefix: AlgebraicNotation[]): void => {
+    for (const node of nodes) {
+      const path = [...prefix, node.san];
+      if (node.children.length === 0) {
+        lines.push(path);
+      } else {
+        walk(node.children, path);
+      }
+    }
+  };
+  walk(tree.children, []);
+
+  return lines;
+}

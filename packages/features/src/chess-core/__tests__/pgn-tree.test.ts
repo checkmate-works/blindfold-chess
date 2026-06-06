@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parsePgnTree } from "../pgn-tree";
+import { enumerateLines, parsePgnTree } from "../pgn-tree";
 import type { MoveTreeNode } from "../pgn-tree";
 
 const STANDARD_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -147,6 +147,42 @@ describe("parsePgnTree — noise stripping", () => {
   it("handles glued move numbers (e.g. '1.e4')", () => {
     const tree = parsePgnTree("1.e4 e5 2.Nf3");
     expect(mainLine(tree.children)).toEqual(["e4", "e5", "Nf3"]);
+  });
+});
+
+// ============================================================
+// enumerateLines
+// ============================================================
+describe("enumerateLines", () => {
+  it("returns a single line for a variation-free PGN", () => {
+    const tree = parsePgnTree("1. e4 e5 2. Nf3 Nc6");
+    expect(enumerateLines(tree)).toEqual([["e4", "e5", "Nf3", "Nc6"]]);
+  });
+
+  it("decomposes the main line plus each variation into separate lines", () => {
+    const tree = parsePgnTree(
+      "1. Nf3 d5 (1... Nc6 2. d4 d5 3. c4) (1... Nf6 2. b3 d5 3. Bb2) 2. g3 Nc6 3. d4",
+    );
+    const lines = enumerateLines(tree);
+    expect(lines).toHaveLength(3);
+    expect(lines).toContainEqual(["Nf3", "d5", "g3", "Nc6", "d4"]);
+    expect(lines).toContainEqual(["Nf3", "Nc6", "d4", "d5", "c4"]);
+    expect(lines).toContainEqual(["Nf3", "Nf6", "b3", "d5", "Bb2"]);
+  });
+
+  it("repeats the shared prefix in each line", () => {
+    const tree = parsePgnTree("1. e4 e5 (1... c5) (1... e6)");
+    const lines = enumerateLines(tree);
+    expect(lines).toHaveLength(3);
+    // Every line starts from the shared 1. e4.
+    expect(lines.every((l) => l[0] === "e4")).toBe(true);
+    expect(lines.map((l) => l[1]).sort()).toEqual(["c5", "e5", "e6"]);
+  });
+
+  it("handles a custom-FEN root", () => {
+    const fen = "6k1/5ppp/8/8/8/8/5PPP/3R2K1 w - - 0 1";
+    const tree = parsePgnTree(`[SetUp "1"]\n[FEN "${fen}"]\n\n1. Rd8#`);
+    expect(enumerateLines(tree)).toEqual([["Rd8#"]]);
   });
 });
 
