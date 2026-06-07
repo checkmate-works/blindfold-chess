@@ -14,8 +14,10 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { getRepertoireLikeMetaMap } from '@/lib/repertoires/like-queries';
 import { getRepertoireForUser } from '@/lib/repertoires/queries';
+import { resolveDisplayName } from '@/lib/users/display-name';
 
 import { formatMovesToPgn } from '@/app/[locale]/(public)/games/play/postmortem/_lib/format-moves-to-pgn';
+import { PositionAuthorAttribution } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorAttribution';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
@@ -46,7 +48,7 @@ export default async function RepertoireDetailPage({ params }: Props) {
 
   const data = await getRepertoireForUser(id, user.id);
   if (!data) notFound();
-  const { repertoire, lines } = data;
+  const { repertoire, lines, profile } = data;
 
   const likeMeta = (await getRepertoireLikeMetaMap([repertoire.id], user.id)).get(
     repertoire.id
@@ -82,35 +84,40 @@ export default async function RepertoireDetailPage({ params }: Props) {
     >
       <SectionTitle>{t('detail.linesHeading')}</SectionTitle>
 
-      <div className="space-y-4">
-        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          <span className="rounded-full bg-muted px-2 py-0.5">
-            {t(`form.side_${repertoire.side}`)}
-          </span>
-          <span className="rounded-full bg-muted px-2 py-0.5">
-            {t(`form.phase_${repertoire.phase}`)}
-          </span>
-          <span>{t('detail.lineCount', { count: lines.length })}</span>
-        </div>
+      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+        <span className="rounded-full bg-muted px-2 py-0.5">
+          {t(`form.side_${repertoire.side}`)}
+        </span>
+        <span className="rounded-full bg-muted px-2 py-0.5">
+          {t(`form.phase_${repertoire.phase}`)}
+        </span>
+        <span>{t('detail.lineCount', { count: lines.length })}</span>
+      </div>
 
-        {repertoire.description && (
-          <p className="text-sm text-muted-foreground">{repertoire.description}</p>
-        )}
+      {repertoire.description && (
+        <p className="whitespace-pre-wrap text-foreground">{repertoire.description}</p>
+      )}
 
-        <RepertoireLineViewer lines={viewerLines} side={repertoire.side} />
+      <RepertoireLineViewer lines={viewerLines} side={repertoire.side} />
 
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
-          <LikeButton
-            postId={repertoire.id}
-            locale={locale}
-            topicKey=""
-            initialLikeCount={likeMeta.likeCount}
-            initialLikedByMe={likeMeta.likedByMe}
-            toggleLikeAction={toggleLike}
-            i18nNamespace="Repertoires"
-          />
-          <DeleteRepertoireButton id={repertoire.id} locale={locale} afterDelete="list" />
-        </div>
+      <PositionAuthorAttribution
+        profile={profile}
+        displayName={resolveDisplayName(profile)}
+        createdByLabel={t('detail.createdBy')}
+        locale={locale}
+      />
+
+      <div className="flex items-center justify-between gap-4 text-xs text-muted-foreground">
+        <LikeButton
+          postId={repertoire.id}
+          locale={locale}
+          topicKey=""
+          initialLikeCount={likeMeta.likeCount}
+          initialLikedByMe={likeMeta.likedByMe}
+          toggleLikeAction={toggleLike}
+          i18nNamespace="Repertoires"
+        />
+        <DeleteRepertoireButton id={repertoire.id} locale={locale} afterDelete="list" />
       </div>
     </PageLayout>
   );

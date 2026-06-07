@@ -37,7 +37,8 @@
       "pgnHeading": "PGN",
       "linesHeading": "Lines",
       "lineCount": "{count} lines",
-      "lineFallback": "Line {n}"
+      "lineFallback": "Line {n}",
+      "createdBy": "Created by"
     },
     "delete": {
       "button": "Delete",

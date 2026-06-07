@@ -89,11 +89,15 @@ export async function listRepertoiresForUser(userId: string): Promise<Repertoire
   }));
 }
 
-export type RepertoireWithLines = { repertoire: Repertoire; lines: RepertoireLine[] };
+export type RepertoireWithLines = {
+  repertoire: Repertoire;
+  lines: RepertoireLine[];
+  profile: RepertoireAuthorProfile | null;
+};
 
 /**
- * A single live repertoire with its live lines (ordered), scoped to the owner.
- * Returns null if absent, deleted, or not owned.
+ * A single live repertoire with its live lines (ordered) and author profile,
+ * scoped to the owner. Returns null if absent, deleted, or not owned.
  */
 export async function getRepertoireForUser(
   id: string,
@@ -114,5 +118,19 @@ export async function getRepertoireForUser(
     .where(and(eq(repertoireLines.repertoireId, repertoire.id), isNull(repertoireLines.deletedAt)))
     .orderBy(asc(repertoireLines.seq));
 
-  return { repertoire, lines };
+  let profile: RepertoireAuthorProfile | null = null;
+  if (repertoire.userId) {
+    const [row] = await db
+      .select({
+        username: profiles.username,
+        displayName: profiles.displayName,
+        avatarUrl: profiles.avatarUrl,
+      })
+      .from(profiles)
+      .where(eq(profiles.id, repertoire.userId))
+      .limit(1);
+    profile = row?.username ? row : null;
+  }
+
+  return { repertoire, lines, profile };
 }

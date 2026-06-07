@@ -37,7 +37,8 @@
       "pgnHeading": "PGN",
       "linesHeading": "ライン",
       "lineCount": "{count} ライン",
-      "lineFallback": "ライン {n}"
+      "lineFallback": "ライン {n}",
+      "createdBy": "作成者"
     },
     "delete": {
       "button": "削除",
