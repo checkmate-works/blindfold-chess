@@ -59,7 +59,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     namespace: 'Repertoires',
     path: 'repertoires',
     titleKey: 'detail.title',
-    noIndex: true,
     omitDescription: true,
   });
 }

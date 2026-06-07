@@ -104,9 +104,9 @@ export type RepertoireForViewer = RepertoireWithLines & {
  * A single repertoire with its lines + author profile, for the public-facing
  * detail / line pages. Repertoires follow a soft-privacy model — "private" only
  * hides them from listings / navigation; an undeleted repertoire is viewable by
- * anyone who has the URL (the pages are `noIndex`, so this is "unlisted", not
- * "world-indexed"). Hence no status / auth gate on viewing here; the returned
- * `isOwner` flag is what gates the owner-only affordances (delete, annotate).
+ * anyone who has the URL. Hence no status / auth gate on viewing here; the
+ * returned `isOwner` flag is what gates the owner-only affordances (delete,
+ * annotate).
  *
  * `viewerId` is null for anonymous visitors.
  */
