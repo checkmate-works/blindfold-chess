@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 
+import { Button } from '@/app/_components';
 import { ChessBoard } from '@/app/_components/chess/ChessBoard';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import type { Side } from '@blindfold-chess/types';
@@ -69,29 +70,8 @@ export function RepertoireLineViewer({ lines, side, repertoireId, locale }: Prop
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-[minmax(0,240px)_1fr]">
-      <ul className="space-y-1">
-        {lines.map((l, i) => {
-          const isSelected = i === selectedIndex;
-          return (
-            <li key={l.id}>
-              <button
-                type="button"
-                onClick={() => selectLine(i)}
-                className={`w-full truncate rounded-md px-3 py-2 text-left text-sm transition-colors ${
-                  isSelected
-                    ? 'bg-link-primary/10 font-medium text-link-primary'
-                    : 'text-foreground hover:bg-muted'
-                }`}
-              >
-                {l.name ?? t('detail.lineFallback', { n: i + 1 })}
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-
-      <div className="min-w-0">
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+      <div className="space-y-4 lg:col-span-2">
         {/* Mirrors InlineBoardView's always-open (board-visible) chrome: a single
             card holding the horizontal move strip, the board, and the controls. */}
         <div className={INLINE_BOARD_CARD_CHROME}>
@@ -136,11 +116,36 @@ export function RepertoireLineViewer({ lines, side, repertoireId, locale }: Prop
 
         <Link
           href={`/${locale}/repertoires/${repertoireId}/lines/${line.lineNo}`}
-          className="mt-3 inline-block text-sm font-medium text-link-primary transition-colors hover:underline"
+          className="block"
         >
-          {t('detail.openLine')}
+          <Button asChild variant="outline" fullWidth>
+            {t('detail.openLine')}
+          </Button>
         </Link>
       </div>
+
+      {/* The line list sits in the right column, the same place (and width) the
+          game / line-detail screens put the move list. */}
+      <ul className="space-y-1 lg:col-span-1">
+        {lines.map((l, i) => {
+          const isSelected = i === selectedIndex;
+          return (
+            <li key={l.id}>
+              <button
+                type="button"
+                onClick={() => selectLine(i)}
+                className={`w-full truncate rounded-md px-3 py-2 text-left text-sm transition-colors ${
+                  isSelected
+                    ? 'bg-link-primary/10 font-medium text-link-primary'
+                    : 'text-foreground hover:bg-muted'
+                }`}
+              >
+                {l.name ?? t('detail.lineFallback', { n: i + 1 })}
+              </button>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
