@@ -12,10 +12,10 @@ import { notFound } from 'next/navigation';
 import { parsePgn, replayMoves } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
-import { getAuthenticatedUser } from '@/lib/auth';
+import { getOptionalUser } from '@/lib/auth';
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { getRepertoireLikeMetaMap } from '@/lib/repertoires/like-queries';
-import { getRepertoireForUser } from '@/lib/repertoires/queries';
+import { getRepertoireForViewer } from '@/lib/repertoires/queries';
 import { resolveDisplayName } from '@/lib/users/display-name';
 
 import { formatMovesToPgn } from '@/app/[locale]/(public)/games/play/postmortem/_lib/format-moves-to-pgn';
@@ -70,13 +70,15 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
   const t = await getTranslations({ locale, namespace: 'Repertoires' });
   const tComments = await getTranslations({ locale, namespace: 'topics.repertoire' });
   const tTopics = await getTranslations({ locale, namespace: 'topics' });
-  const user = await getAuthenticatedUser();
+  const currentUser = await getOptionalUser();
 
-  const data = await getRepertoireForUser(id, user.id);
+  // Public (or owned) repertoires are viewable without login; only the owner
+  // sees owner-only affordances (delete). Comments are read-only for anon.
+  const data = await getRepertoireForViewer(id, currentUser?.id ?? null);
   if (!data) notFound();
-  const { repertoire, lines, profile } = data;
+  const { repertoire, lines, profile, isOwner } = data;
 
-  const likeMeta = (await getRepertoireLikeMetaMap([repertoire.id], user.id)).get(
+  const likeMeta = (await getRepertoireLikeMetaMap([repertoire.id], currentUser?.id)).get(
     repertoire.id
   ) ?? {
     likeCount: 0,
@@ -104,7 +106,7 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
 
   // Comments — the same topic_posts thread the puzzle / topics pages use.
   const commentCount = await getPostCountByTopicKey('repertoire', repertoire.id);
-  const allComments = await getCommentTreeForTopic('repertoire', repertoire.id, user.id);
+  const allComments = await getCommentTreeForTopic('repertoire', repertoire.id, currentUser?.id);
   const commentTree = buildCommentTree(allComments, sortBy);
   const allPostIds = allComments.map((c) => c.id);
   const attachments = allPostIds.length > 0 ? await getAttachmentsForPosts(allPostIds) : new Map();
@@ -155,12 +157,14 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
           toggleLikeAction={toggleLike}
           i18nNamespace="Repertoires"
         />
-        <DeleteRepertoireButton id={repertoire.id} locale={locale} afterDelete="list" />
+        {isOwner && (
+          <DeleteRepertoireButton id={repertoire.id} locale={locale} afterDelete="list" />
+        )}
       </div>
 
       <SectionTitle>{tComments('commentsTitle')}</SectionTitle>
 
-      {commentCount === 0 ? (
+      {currentUser && commentCount === 0 ? (
         <NewPostForm locale={locale} repertoireId={repertoire.id} />
       ) : (
         <JoinConversationToggle count={commentCount} joinLabel={tTopics('joinConversation')}>
@@ -179,7 +183,7 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
             comments={commentTree}
             locale={locale}
             topicKey={repertoire.id}
-            currentUserId={user.id}
+            currentUserId={currentUser?.id}
             enableSpoiler={false}
             redirectPath={`/${locale}/repertoires/${repertoire.id}`}
             toggleLikeAction={toggleRepertoirePostLike}

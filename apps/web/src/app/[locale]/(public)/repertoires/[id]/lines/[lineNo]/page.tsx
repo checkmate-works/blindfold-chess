@@ -15,7 +15,7 @@ import { notFound } from 'next/navigation';
 import { parsePgn, replayMoves, toPositionKey } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
 
-import { getAuthenticatedUser } from '@/lib/auth';
+import { getOptionalUser } from '@/lib/auth';
 import { getAnnotationsForRepertoire } from '@/lib/repertoires/annotation-queries';
 import { getRepertoireForViewer } from '@/lib/repertoires/queries';
 
@@ -60,12 +60,12 @@ function moveLabel(
 export default async function RepertoireLineDetailPage({ params, searchParams }: Props) {
   const { locale, id, lineNo: lineNoParam } = await params;
   const t = await getTranslations({ locale, namespace: 'Repertoires' });
-  const user = await getAuthenticatedUser();
+  const currentUser = await getOptionalUser();
 
   const lineNo = Number(lineNoParam);
   if (!Number.isInteger(lineNo) || lineNo < 1) notFound();
 
-  const data = await getRepertoireForViewer(id, user.id);
+  const data = await getRepertoireForViewer(id, currentUser?.id ?? null);
   if (!data) notFound();
   const { repertoire, lines, isOwner } = data;
 

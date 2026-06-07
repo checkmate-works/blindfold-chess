@@ -95,59 +95,20 @@ export type RepertoireWithLines = {
   profile: RepertoireAuthorProfile | null;
 };
 
-/**
- * A single live repertoire with its live lines (ordered) and author profile,
- * scoped to the owner. Returns null if absent, deleted, or not owned.
- */
-export async function getRepertoireForUser(
-  id: string,
-  userId: string
-): Promise<RepertoireWithLines | null> {
-  const [repertoire] = await db
-    .select()
-    .from(repertoires)
-    .where(
-      and(eq(repertoires.id, id), eq(repertoires.userId, userId), isNull(repertoires.deletedAt))
-    )
-    .limit(1);
-  if (!repertoire) return null;
-
-  const lines = await db
-    .select()
-    .from(repertoireLines)
-    .where(and(eq(repertoireLines.repertoireId, repertoire.id), isNull(repertoireLines.deletedAt)))
-    .orderBy(asc(repertoireLines.seq));
-
-  let profile: RepertoireAuthorProfile | null = null;
-  if (repertoire.userId) {
-    const [row] = await db
-      .select({
-        username: profiles.username,
-        displayName: profiles.displayName,
-        avatarUrl: profiles.avatarUrl,
-      })
-      .from(profiles)
-      .where(eq(profiles.id, repertoire.userId))
-      .limit(1);
-    profile = row?.username ? row : null;
-  }
-
-  return { repertoire, lines, profile };
-}
-
 export type RepertoireForViewer = RepertoireWithLines & {
   /** Whether the requesting viewer owns this repertoire (gates annotation edits). */
   isOwner: boolean;
 };
 
 /**
- * A single repertoire with its lines + author profile, scoped to what a viewer
- * is allowed to see: the repertoire is visible when it is public OR owned by
- * the viewer (and not deleted). Used by the public-facing line detail page,
- * where non-owners may read + comment but only the owner may annotate.
+ * A single repertoire with its lines + author profile, for the public-facing
+ * detail / line pages. Repertoires follow a soft-privacy model — "private" only
+ * hides them from listings / navigation; an undeleted repertoire is viewable by
+ * anyone who has the URL (the pages are `noIndex`, so this is "unlisted", not
+ * "world-indexed"). Hence no status / auth gate on viewing here; the returned
+ * `isOwner` flag is what gates the owner-only affordances (delete, annotate).
  *
- * `viewerId` is null for anonymous visitors; they can still see public
- * repertoires (commenting itself is gated separately by auth).
+ * `viewerId` is null for anonymous visitors.
  */
 export async function getRepertoireForViewer(
   id: string,
@@ -161,7 +122,6 @@ export async function getRepertoireForViewer(
   if (!repertoire) return null;
 
   const isOwner = viewerId != null && repertoire.userId === viewerId;
-  if (repertoire.status !== 'public' && !isOwner) return null;
 
   const lines = await db
     .select()
