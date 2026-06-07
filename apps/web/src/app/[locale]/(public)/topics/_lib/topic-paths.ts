@@ -1,3 +1,5 @@
+import { parseMoveTopicKey } from '@/lib/repertoires/move-topic-key';
+
 import type { TopicType } from './constants';
 
 /**
@@ -26,6 +28,16 @@ export function buildTopicDetailPath(
       return `/${locale}/practice/puzzle/${topicKey}`;
     case 'repertoire':
       return `/${locale}/repertoires/${topicKey}`;
+    case 'repertoire_move': {
+      // topicKey packs `${repertoireId}_${lineNo}_${ply}` — rebuild the nested
+      // line path. No `?move` here: this feeds revalidatePath, which keys on the
+      // path and would not match a query-bearing string. (Deep links that need
+      // the focused move are built separately in the notification link helper.)
+      const parsed = parseMoveTopicKey(topicKey);
+      return parsed
+        ? `/${locale}/repertoires/${parsed.repertoireId}/lines/${parsed.lineNo}`
+        : `/${locale}/repertoires`;
+    }
     case 'square':
       return `/${locale}/topics/squares/${topicKey}`;
     case 'opening':

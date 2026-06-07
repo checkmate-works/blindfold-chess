@@ -26,6 +26,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import type { LineMove } from './_components/LineDetailBoard';
 import { LineDetailBoard } from './_components/LineDetailBoard';
+import { MoveCommentsSection } from './_components/MoveCommentsSection';
 
 type Props = {
   params: Promise<{ locale: Locale; id: string; lineNo: string }>;
@@ -122,17 +123,27 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
       {sans.length === 0 ? (
         <p className="text-muted-foreground">{t('line.empty')}</p>
       ) : (
-        <LineDetailBoard
-          side={repertoire.side}
-          formatted={formatted}
-          positions={positions}
-          moves={moves}
-          isOwner={isOwner}
-          repertoireId={id}
-          lineNo={lineNo}
-          locale={locale}
-          initialPly={initialPly}
-        />
+        <>
+          <LineDetailBoard
+            side={repertoire.side}
+            formatted={formatted}
+            positions={positions}
+            moves={moves}
+            isOwner={isOwner}
+            repertoireId={id}
+            lineNo={lineNo}
+            locale={locale}
+            initialPly={initialPly}
+          />
+
+          <MoveCommentsSection
+            locale={locale}
+            repertoireId={id}
+            lineNo={lineNo}
+            ply={initialPly}
+            currentUserId={currentUser?.id}
+          />
+        </>
       )}
     </PageLayout>
   );

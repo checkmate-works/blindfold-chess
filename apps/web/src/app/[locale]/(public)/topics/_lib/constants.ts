@@ -28,4 +28,5 @@ export type TopicType =
   | 'chunk'
   | 'position_memory'
   | 'position_puzzle'
-  | 'repertoire';
+  | 'repertoire'
+  | 'repertoire_move';

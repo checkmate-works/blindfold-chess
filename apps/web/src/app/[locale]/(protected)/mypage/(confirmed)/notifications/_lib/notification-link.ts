@@ -1,4 +1,5 @@
 import { getPositionDetailPath } from '@/lib/positions/routes';
+import { parseMoveTopicKey } from '@/lib/repertoires/move-topic-key';
 
 import type { NotificationWithActor } from './queries';
 import type { PositionMetadata } from './type-guards';
@@ -82,6 +83,16 @@ function buildPostDetailUrl(
     // so both top-level and reply notifications deep-link to it.
     const targetId = replyId ?? postId;
     return `/repertoires/${topicKey}#post-${targetId}`;
+  }
+  if (topicType === 'repertoire_move') {
+    // topicKey packs `${repertoireId}_${lineNo}_${ply}`; deep-link to the line
+    // focused on that move so the move's comment thread is the one rendered.
+    const targetId = replyId ?? postId;
+    const parsed = parseMoveTopicKey(topicKey);
+    if (parsed) {
+      return `/repertoires/${parsed.repertoireId}/lines/${parsed.lineNo}?move=${parsed.ply}#post-${targetId}`;
+    }
+    return `/repertoires#post-${targetId}`;
   }
   if (topicType === 'chunk') {
     // Chunk comments live at /chunks/{slug}/... — NOT under /topics/. Without

@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+
 import { ChessBoard } from '@/app/_components/chess/ChessBoard';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
 import type { Side } from '@blindfold-chess/types';
@@ -57,6 +59,11 @@ export function LineDetailBoard({
   locale,
   initialPly,
 }: Props) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const moveParam = searchParams.get('move');
+
   const maxPly = positions.length - 1;
   const [ply, setPly] = useState(Math.min(Math.max(initialPly, 0), maxPly));
 
@@ -73,6 +80,21 @@ export function LineDetailBoard({
   }, [maxPly]);
 
   const clampedPly = Math.min(ply, maxPly);
+
+  // Mirror the focused move into ?move= (debounced) so the server-rendered
+  // comment thread below follows the board. The board itself stays client-
+  // instant; only the URL / comments catch up. `move` is clamped to >= 1 (the
+  // first real move) since the start position has no move to discuss.
+  const syncPly = Math.max(clampedPly, 1);
+  useEffect(() => {
+    if (String(syncPly) === moveParam) return;
+    const timer = setTimeout(() => {
+      const params = new URLSearchParams(searchParams);
+      params.set('move', String(syncPly));
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [syncPly, moveParam, pathname, router, searchParams]);
   const current = positions[clampedPly];
   const lastMove = clampedPly > 0 ? current.lastMove : null;
   const focusedMove = clampedPly > 0 ? moves[clampedPly - 1] : null;
