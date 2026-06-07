@@ -4282,6 +4282,69 @@
         "deleting": "Eliminando..."
       }
     },
+    "repertoire": {
+      "commentsTitle": "Comentarios",
+      "postCount": "{count, plural, one {# comentario} other {# comentarios}}",
+      "noPosts": "Aún no hay comentarios. ¡Sé el primero en compartir tus ideas!",
+      "signInToComment": "Inicia sesión para comentar",
+      "readMore": "Leer más",
+      "sort": {
+        "new": "Nuevos",
+        "popular": "Populares",
+        "active": "Activos"
+      },
+      "detail": {
+        "pageTitle": "Comentario sobre Repertorio"
+      },
+      "postDetail": {
+        "authorView": "Comentarios de {author} sobre {name}",
+        "backToPuzzle": "Volver a {name}"
+      },
+      "newPostForm": {
+        "contentLabel": "Comentario",
+        "contentPlaceholder": "Comparte tus ideas sobre este repertorio...",
+        "submit": "Comentar",
+        "submitting": "Publicando...",
+        "contentRequired": "Por favor escribe algún contenido",
+        "contentTooLong": "El contenido debe tener 2000 caracteres o menos",
+        "error": "Ocurrió un error. Inténtalo de nuevo.",
+        "signInRequired": "Inicia sesión para comentar",
+        "invalidReplyPermission": "Configuración de permiso de respuesta inválida",
+        "rateLimited": "Demasiados comentarios. Inténtalo de nuevo más tarde."
+      },
+      "like": "Me gusta",
+      "unlike": "Quitar me gusta",
+      "newReply": "Nueva respuesta {time}",
+      "justNow": "ahora mismo",
+      "replies": {
+        "title": "Respuestas",
+        "count": "{count, plural, one {# respuesta} other {# respuestas}}",
+        "noReplies": "Aún no hay respuestas. ¡Sé el primero en responder!",
+        "contentLabel": "Tu respuesta",
+        "contentPlaceholder": "Comparte tus ideas...",
+        "submit": "Responder",
+        "submitting": "Respondiendo...",
+        "contentRequired": "Por favor escribe algún contenido",
+        "contentTooLong": "El contenido debe tener 2000 caracteres o menos",
+        "error": "Ocurrió un error. Inténtalo de nuevo.",
+        "signInRequired": "Inicia sesión para responder",
+        "loginToReply": "Inicia sesión para responder",
+        "rateLimited": "Demasiadas respuestas. Inténtalo de nuevo más tarde.",
+        "repliesDisabled": "El autor ha desactivado las respuestas a este comentario.",
+        "followRequired": "Solo los seguidores del autor pueden responder a este comentario.",
+        "replyButton": "Responder",
+        "replyingTo": "Respondiendo a @{username}",
+        "cancelReply": "Cancelar"
+      },
+      "deletePost": {
+        "button": "Eliminar",
+        "confirmTitle": "Eliminar comentario",
+        "confirmMessage": "¿Seguro que deseas eliminar este comentario? Esta acción no se puede deshacer.",
+        "confirm": "Eliminar",
+        "cancel": "Cancelar",
+        "deleting": "Eliminando..."
+      }
+    },
     "spoiler": {
       "toggleLabel": "Contiene la solución",
       "overlayTitle": "Contiene la solución",

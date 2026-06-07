@@ -77,6 +77,12 @@ function buildPostDetailUrl(
     const targetId = replyId ?? postId;
     return `/practice/puzzle/${topicKey}#post-${targetId}`;
   }
+  if (topicType === 'repertoire') {
+    // The repertoire detail page renders the inline comment tree (like puzzles),
+    // so both top-level and reply notifications deep-link to it.
+    const targetId = replyId ?? postId;
+    return `/repertoires/${topicKey}#post-${targetId}`;
+  }
   if (topicType === 'chunk') {
     // Chunk comments live at /chunks/{slug}/... — NOT under /topics/. Without
     // this branch the URL resolves to a non-existent /topics/chunks/... path.

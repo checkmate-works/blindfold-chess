@@ -24,6 +24,8 @@ export function buildTopicDetailPath(
       return `/${locale}/practice/position-memory/${topicKey}`;
     case 'position_puzzle':
       return `/${locale}/practice/puzzle/${topicKey}`;
+    case 'repertoire':
+      return `/${locale}/repertoires/${topicKey}`;
     case 'square':
       return `/${locale}/topics/squares/${topicKey}`;
     case 'opening':

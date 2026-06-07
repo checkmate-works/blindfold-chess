@@ -4528,6 +4528,69 @@
         "deleting": "Deleting..."
       }
     },
+    "repertoire": {
+      "commentsTitle": "Comments",
+      "postCount": "{count, plural, one {# comment} other {# comments}}",
+      "noPosts": "No comments yet. Be the first to share your thoughts!",
+      "signInToComment": "Sign in to comment",
+      "readMore": "Read more",
+      "sort": {
+        "new": "New",
+        "popular": "Popular",
+        "active": "Active"
+      },
+      "detail": {
+        "pageTitle": "Repertoire Comment"
+      },
+      "postDetail": {
+        "authorView": "{author}'s thoughts on {name}",
+        "backToPuzzle": "Back to {name}"
+      },
+      "newPostForm": {
+        "contentLabel": "Comment",
+        "contentPlaceholder": "Share your thoughts about this repertoire...",
+        "submit": "Comment",
+        "submitting": "Posting...",
+        "contentRequired": "Please enter some content",
+        "contentTooLong": "Content must be 2000 characters or less",
+        "error": "An error occurred. Please try again.",
+        "signInRequired": "Please sign in to comment",
+        "invalidReplyPermission": "Invalid reply permission setting",
+        "rateLimited": "Too many comments. Please try again later."
+      },
+      "like": "Like",
+      "unlike": "Unlike",
+      "newReply": "New Reply {time}",
+      "justNow": "just now",
+      "replies": {
+        "title": "Replies",
+        "count": "{count, plural, one {# reply} other {# replies}}",
+        "noReplies": "No replies yet. Be the first to reply!",
+        "contentLabel": "Your reply",
+        "contentPlaceholder": "Share your thoughts...",
+        "submit": "Reply",
+        "submitting": "Replying...",
+        "contentRequired": "Please enter some content",
+        "contentTooLong": "Content must be 2000 characters or less",
+        "error": "An error occurred. Please try again.",
+        "signInRequired": "Please sign in to reply",
+        "loginToReply": "Sign in to reply",
+        "rateLimited": "Too many replies. Please try again later.",
+        "repliesDisabled": "The author has disabled replies on this comment.",
+        "followRequired": "Only followers of the author can reply to this comment.",
+        "replyButton": "Reply",
+        "replyingTo": "Replying to @{username}",
+        "cancelReply": "Cancel"
+      },
+      "deletePost": {
+        "button": "Delete",
+        "confirmTitle": "Delete Comment",
+        "confirmMessage": "Are you sure you want to delete this comment? This action cannot be undone.",
+        "confirm": "Delete",
+        "cancel": "Cancel",
+        "deleting": "Deleting..."
+      }
+    },
     "spoiler": {
       "toggleLabel": "Contains solution",
       "overlayTitle": "Contains solution",

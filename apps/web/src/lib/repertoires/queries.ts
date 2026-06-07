@@ -134,3 +134,18 @@ export async function getRepertoireForUser(
 
   return { repertoire, lines, profile };
 }
+
+/**
+ * Existence + author lookup for the comment system (topicType 'repertoire').
+ * Returns the owner id (for notification targeting) when the repertoire exists
+ * and is not deleted; null otherwise. Mirrors the puzzle's `getPositionById`
+ * existence check used in the post-creation actions.
+ */
+export async function getRepertoireById(id: string): Promise<{ userId: string | null } | null> {
+  const [row] = await db
+    .select({ userId: repertoires.userId })
+    .from(repertoires)
+    .where(and(eq(repertoires.id, id), isNull(repertoires.deletedAt)))
+    .limit(1);
+  return row ?? null;
+}
