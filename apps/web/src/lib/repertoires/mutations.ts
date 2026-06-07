@@ -5,11 +5,64 @@ import { authenticateAndGuard } from '@/lib/auth';
 import { chessOpenings, db, repertoireLines, repertoireOpenings, repertoires } from '@/lib/db';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
-import type { RepertoireImportInput } from './validation';
-import { validateRepertoireImport } from './validation';
+import type { RepertoireImportInput, RepertoireLineEditError } from './validation';
+import { validateRepertoireImport, validateRepertoireLineEdit } from './validation';
 
 export type CreateRepertoireResult = ActionResult<{ id: string }>;
 export type DeleteRepertoireResult = ActionResult;
+
+export type UpdateLineResult =
+  | { ok: true }
+  | { ok: false; error: 'unauthorized' | 'notFound' | RepertoireLineEditError };
+
+/**
+ * Owner-only: replace a single line's name + moves. The line is addressed by
+ * its 1-based number (seq + 1); its root position is fixed (editing changes the
+ * moves only). Position-keyed annotations / comments are not touched — they
+ * follow the surviving positions automatically.
+ */
+export async function updateRepertoireLine(params: {
+  repertoireId: string;
+  lineNo: number;
+  viewerId: string;
+  name: string | null;
+  pgn: string;
+}): Promise<UpdateLineResult> {
+  const [repertoire] = await db
+    .select({ userId: repertoires.userId })
+    .from(repertoires)
+    .where(and(eq(repertoires.id, params.repertoireId), isNull(repertoires.deletedAt)))
+    .limit(1);
+  if (!repertoire) return { ok: false, error: 'notFound' };
+  if (repertoire.userId !== params.viewerId) return { ok: false, error: 'unauthorized' };
+
+  const [line] = await db
+    .select({ id: repertoireLines.id, startingFen: repertoireLines.startingFen })
+    .from(repertoireLines)
+    .where(
+      and(
+        eq(repertoireLines.repertoireId, params.repertoireId),
+        eq(repertoireLines.seq, params.lineNo - 1),
+        isNull(repertoireLines.deletedAt)
+      )
+    )
+    .limit(1);
+  if (!line) return { ok: false, error: 'notFound' };
+
+  const validated = validateRepertoireLineEdit({
+    name: params.name,
+    pgn: params.pgn,
+    startingFen: line.startingFen,
+  });
+  if (!validated.ok) return { ok: false, error: validated.error };
+
+  await db
+    .update(repertoireLines)
+    .set({ name: validated.data.name, pgn: validated.data.pgn })
+    .where(eq(repertoireLines.id, line.id));
+
+  return { ok: true };
+}
 
 /**
  * Create a repertoire (型) for the authenticated user, decomposing the imported

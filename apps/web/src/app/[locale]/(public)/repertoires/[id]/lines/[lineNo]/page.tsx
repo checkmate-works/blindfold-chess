@@ -12,8 +12,10 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
+import { Link } from '@/i18n/routing';
 import { parsePgn, replayMoves, toPositionKey } from '@blindfold-chess/features/chess-core';
 import type { AlgebraicNotation } from '@blindfold-chess/types';
+import { FiEdit2 } from 'react-icons/fi';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getAnnotationsForRepertoire } from '@/lib/repertoires/annotation-queries';
@@ -124,28 +126,40 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
       {sans.length === 0 ? (
         <p className="text-muted-foreground">{t('line.empty')}</p>
       ) : (
-        <>
-          <LineDetailBoard
-            side={repertoire.side}
-            formatted={formatted}
-            positions={positions}
-            moves={moves}
-            isOwner={isOwner}
-            repertoireId={id}
-            lineNo={lineNo}
-            locale={locale}
-            initialPly={initialPly}
-          />
+        <LineDetailBoard
+          side={repertoire.side}
+          formatted={formatted}
+          positions={positions}
+          moves={moves}
+          isOwner={isOwner}
+          repertoireId={id}
+          lineNo={lineNo}
+          locale={locale}
+          initialPly={initialPly}
+        />
+      )}
 
-          <MoveCommentsSection
-            locale={locale}
-            repertoireId={id}
-            lineNo={lineNo}
-            ply={initialPly}
-            topicKey={buildPositionTopicKey(id, positions[initialPly].fen)}
-            currentUserId={currentUser?.id}
-          />
-        </>
+      {isOwner && (
+        <div className="flex items-center justify-end gap-4 text-xs text-muted-foreground">
+          <Link
+            href={`/repertoires/${id}/lines/${lineNo}/edit`}
+            className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 transition-colors hover:border-foreground/20 hover:text-foreground"
+          >
+            <FiEdit2 className="h-3 w-3" aria-hidden />
+            {t('line.edit.editAction')}
+          </Link>
+        </div>
+      )}
+
+      {sans.length > 0 && (
+        <MoveCommentsSection
+          locale={locale}
+          repertoireId={id}
+          lineNo={lineNo}
+          ply={initialPly}
+          topicKey={buildPositionTopicKey(id, positions[initialPly].fen)}
+          currentUserId={currentUser?.id}
+        />
       )}
     </PageLayout>
   );

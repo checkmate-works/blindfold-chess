@@ -59,6 +59,28 @@
         "tooLong": "Esta nota é muito longa.",
         "unauthorized": "Apenas o proprietário pode editar anotações.",
         "notFound": "Este repertório não existe mais."
+      },
+      "edit": {
+        "editAction": "Editar",
+        "title": "Editar linha",
+        "breadcrumb": "Editar",
+        "nameLabel": "Título",
+        "namePlaceholder": "Nome opcional para esta linha",
+        "pgnLabel": "Lances (PGN)",
+        "pgnHelp": "Edite a sequência de lances. As anotações e os comentários permanecem vinculados às suas posições.",
+        "save": "Salvar",
+        "saving": "Salvando...",
+        "cancel": "Cancelar",
+        "errors": {
+          "unauthorized": "Apenas o proprietário pode editar esta linha.",
+          "notFound": "Esta linha não existe mais.",
+          "nameTooLong": "O título é muito longo.",
+          "pgnRequired": "Digite os lances.",
+          "pgnTooLarge": "O PGN é muito grande.",
+          "invalidPgn": "Não foi possível ler estes lances. Verifique a notação.",
+          "noMoves": "Digite pelo menos um lance.",
+          "generic": "Algo deu errado. Tente novamente."
+        }
       }
     },
     "delete": {
@@ -3045,6 +3067,7 @@
     "positionCreated": "Posição criada com sucesso",
     "positionDeleted": "Problema excluído",
     "positionUpdated": "Alterações salvas",
+    "lineUpdated": "Linha atualizada",
     "puzzleUpdated": "Alterações salvas",
     "puzzleDeleted": "Puzzle excluído"
   },

@@ -59,6 +59,28 @@
         "tooLong": "メモが長すぎます。",
         "unauthorized": "アノテーションを編集できるのはオーナーのみです。",
         "notFound": "このレパートリーは存在しません。"
+      },
+      "edit": {
+        "editAction": "編集",
+        "title": "ラインを編集",
+        "breadcrumb": "編集",
+        "nameLabel": "タイトル",
+        "namePlaceholder": "このラインの名前（任意）",
+        "pgnLabel": "手順 (PGN)",
+        "pgnHelp": "手順を編集します。アノテーションとコメントは局面に紐づいたまま保持されます。",
+        "save": "保存",
+        "saving": "保存中...",
+        "cancel": "キャンセル",
+        "errors": {
+          "unauthorized": "このラインを編集できるのはオーナーのみです。",
+          "notFound": "このラインは存在しません。",
+          "nameTooLong": "タイトルが長すぎます。",
+          "pgnRequired": "手順を入力してください。",
+          "pgnTooLarge": "PGN が大きすぎます。",
+          "invalidPgn": "手順を読み取れませんでした。記譜を確認してください。",
+          "noMoves": "少なくとも1手は入力してください。",
+          "generic": "問題が発生しました。もう一度お試しください。"
+        }
       }
     },
     "delete": {
@@ -3286,6 +3308,7 @@
     "positionCreated": "問題を作成しました",
     "positionDeleted": "問題を削除しました",
     "positionUpdated": "変更を保存しました",
+    "lineUpdated": "ラインを更新しました",
     "puzzleUpdated": "変更を保存しました",
     "puzzleDeleted": "パズルを削除しました",
     "editRequestSubmitted": "編集リクエストを送信しました"

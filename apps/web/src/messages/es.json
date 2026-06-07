@@ -59,6 +59,28 @@
         "tooLong": "Esta nota es demasiado larga.",
         "unauthorized": "Solo el propietario puede editar las anotaciones.",
         "notFound": "Este repertorio ya no existe."
+      },
+      "edit": {
+        "editAction": "Editar",
+        "title": "Editar línea",
+        "breadcrumb": "Editar",
+        "nameLabel": "Título",
+        "namePlaceholder": "Nombre opcional para esta línea",
+        "pgnLabel": "Jugadas (PGN)",
+        "pgnHelp": "Edita la secuencia de jugadas. Las anotaciones y los comentarios siguen asociados a sus posiciones.",
+        "save": "Guardar",
+        "saving": "Guardando...",
+        "cancel": "Cancelar",
+        "errors": {
+          "unauthorized": "Solo el propietario puede editar esta línea.",
+          "notFound": "Esta línea ya no existe.",
+          "nameTooLong": "El título es demasiado largo.",
+          "pgnRequired": "Introduce las jugadas.",
+          "pgnTooLarge": "El PGN es demasiado grande.",
+          "invalidPgn": "No se pudieron leer estas jugadas. Revisa la notación.",
+          "noMoves": "Introduce al menos una jugada.",
+          "generic": "Algo salió mal. Inténtalo de nuevo."
+        }
       }
     },
     "delete": {
@@ -3045,6 +3067,7 @@
     "positionCreated": "Posición creada con éxito",
     "positionDeleted": "Problema eliminado",
     "positionUpdated": "Cambios guardados",
+    "lineUpdated": "Línea actualizada",
     "puzzleUpdated": "Cambios guardados",
     "puzzleDeleted": "Puzzle eliminado"
   },
