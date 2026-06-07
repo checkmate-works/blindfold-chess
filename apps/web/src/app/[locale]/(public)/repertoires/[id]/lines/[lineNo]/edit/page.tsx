@@ -9,7 +9,7 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { getOptionalUser } from '@/lib/auth';
-import { getRepertoireForViewer } from '@/lib/repertoires/queries';
+import { getRepertoireLineForViewer } from '@/lib/repertoires/queries';
 
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
@@ -40,12 +40,10 @@ export default async function EditRepertoireLinePage({ params }: Props) {
   const lineNo = Number(lineNoParam);
   if (!Number.isInteger(lineNo) || lineNo < 1) notFound();
 
-  const data = await getRepertoireForViewer(id, currentUser?.id ?? null);
+  const data = await getRepertoireLineForViewer(id, lineNo, currentUser?.id ?? null);
   // Editing is owner-only — don't even reveal the page to others.
   if (!data || !data.isOwner) notFound();
-
-  const line = data.lines.find((l) => l.seq === lineNo - 1);
-  if (!line) notFound();
+  const { repertoire, line } = data;
 
   const lineName = line.name ?? t('detail.lineFallback', { n: lineNo });
 
@@ -55,7 +53,7 @@ export default async function EditRepertoireLinePage({ params }: Props) {
       locale={locale}
       breadcrumb={[
         { label: t('title'), href: '/repertoires' },
-        { label: data.repertoire.name, href: `/repertoires/${id}` },
+        { label: repertoire.name, href: `/repertoires/${id}` },
         { label: lineName, href: `/repertoires/${id}/lines/${lineNo}` },
         { label: t('line.edit.breadcrumb') },
       ]}

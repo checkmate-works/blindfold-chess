@@ -1,28 +1,26 @@
 'use server';
 
-import { parseMoveTopicKey } from '@/lib/repertoires/move-topic-key';
+import { REPERTOIRE_MOVE_TOPIC_TYPE, parseMoveTopicKey } from '@/lib/repertoires/move-topic-key';
 import { getRepertoireById } from '@/lib/repertoires/queries';
-import { resolveLineForPosition } from '@/lib/repertoires/resolve-line-position';
 
 import { toggleLikeBase } from '@/app/[locale]/(public)/topics/_actions/toggleLike';
+
+import { resolveMoveLinePath } from '../_lib/move-comment-config';
 
 /** Like / unlike a per-move comment (topicType 'repertoire_move'). */
 export async function toggleMovePostLike(postId: string, locale: string, topicKey: string) {
   const parsed = parseMoveTopicKey(topicKey);
   if (!parsed) return { error: 'Invalid move' };
   const { repertoireId, positionHash } = parsed;
-  const resolved = await resolveLineForPosition(repertoireId, positionHash);
-  const linePath = resolved
-    ? `/${locale}/repertoires/${repertoireId}/lines/${resolved.lineNo}`
-    : `/${locale}/repertoires/${repertoireId}`;
+  const { path } = await resolveMoveLinePath(locale, repertoireId, positionHash, false);
 
   return toggleLikeBase({
     postId,
     locale,
     topicIdentifier: topicKey,
-    topicType: 'repertoire_move',
+    topicType: REPERTOIRE_MOVE_TOPIC_TYPE,
     urlSegment: 'repertoires',
     validateTopic: async () => (await getRepertoireById(repertoireId)) !== null,
-    revalidate: () => [linePath],
+    revalidate: () => [path],
   });
 }

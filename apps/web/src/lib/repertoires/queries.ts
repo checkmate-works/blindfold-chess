@@ -147,6 +147,43 @@ export async function getRepertoireForViewer(
 }
 
 /**
+ * A single line of a viewable repertoire, addressed by its 1-based number
+ * (seq + 1). Wraps `getRepertoireForViewer` + the seq lookup the line detail and
+ * edit pages both did inline. Returns null when the repertoire isn't visible or
+ * the line doesn't exist.
+ */
+export async function getRepertoireLineForViewer(
+  id: string,
+  lineNo: number,
+  viewerId: string | null
+): Promise<{ repertoire: Repertoire; line: RepertoireLine; isOwner: boolean } | null> {
+  const data = await getRepertoireForViewer(id, viewerId);
+  if (!data) return null;
+  const line = data.lines.find((l) => l.seq === lineNo - 1);
+  if (!line) return null;
+  return { repertoire: data.repertoire, line, isOwner: data.isOwner };
+}
+
+/**
+ * Owner gate shared by the repertoire's write paths (annotations, line edits).
+ * The app DB connection bypasses RLS, so ownership is enforced here; a deleted
+ * or missing repertoire is treated as not found.
+ */
+export async function assertRepertoireOwner(
+  repertoireId: string,
+  viewerId: string
+): Promise<'unauthorized' | 'notFound' | null> {
+  const [row] = await db
+    .select({ userId: repertoires.userId })
+    .from(repertoires)
+    .where(and(eq(repertoires.id, repertoireId), isNull(repertoires.deletedAt)))
+    .limit(1);
+  if (!row) return 'notFound';
+  if (row.userId !== viewerId) return 'unauthorized';
+  return null;
+}
+
+/**
  * Existence + author lookup for the comment system (topicType 'repertoire').
  * Returns the owner id (for notification targeting) when the repertoire exists
  * and is not deleted; null otherwise. Mirrors the puzzle's `getPositionById`

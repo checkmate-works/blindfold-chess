@@ -1,13 +1,9 @@
 'use server';
 
-import { parseMoveTopicKey } from '@/lib/repertoires/move-topic-key';
-import { getRepertoireById } from '@/lib/repertoires/queries';
-import { RATE_LIMITS } from '@/lib/security/rate-limit';
-import { readSpoilerFlag } from '@/lib/spoiler-flag';
-import { validateContent } from '@/lib/validations/content';
-
 import type { CreatePostState } from '@/app/[locale]/(public)/topics/_actions/createPost';
 import { createPostWithFenAttachmentBase } from '@/app/[locale]/(public)/topics/_actions/createPostWithFenAttachmentBase';
+
+import { buildMovePostConfig } from '../_lib/move-comment-config';
 
 /** Top-level comment on a move (topicType 'repertoire_move'), FEN attachment. */
 export async function createMovePostWithFenAttachment(
@@ -18,29 +14,7 @@ export async function createMovePostWithFenAttachment(
   _prevState: CreatePostState,
   formData: FormData
 ): Promise<CreatePostState> {
-  const parsed = parseMoveTopicKey(topicKey);
-  if (!parsed) return { error: 'Invalid move' };
-  const { repertoireId } = parsed;
-  const isSpoiler = readSpoilerFlag(formData);
-  const repertoire = await getRepertoireById(repertoireId);
-
-  return createPostWithFenAttachmentBase({
-    locale,
-    topicIdentifier: topicKey,
-    topicType: 'repertoire_move',
-    topicKey,
-    urlSegment: 'repertoires',
-    validateTopic: () => repertoire !== null,
-    invalidTopicError: 'Invalid repertoire',
-    rateLimit: RATE_LIMITS.createPost,
-    validateContent,
-    emitFeedItem: false,
-    isSpoiler,
-    topicAuthorId: repertoire?.userId ?? undefined,
-    redirectPath: (postId, { toast }) =>
-      `/${locale}/repertoires/${repertoireId}/lines/${lineNo}?move=${ply}${
-        toast ? '&toast=post_created' : ''
-      }#post-${postId}`,
-    formData,
-  });
+  const config = await buildMovePostConfig({ locale, topicKey, lineNo, ply, formData });
+  if ('error' in config) return config;
+  return createPostWithFenAttachmentBase(config);
 }

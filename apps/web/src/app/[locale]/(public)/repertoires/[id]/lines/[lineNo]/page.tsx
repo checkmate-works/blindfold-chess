@@ -13,14 +13,14 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
-import { parsePgn, replayMoves, toPositionKey } from '@blindfold-chess/features/chess-core';
-import type { AlgebraicNotation } from '@blindfold-chess/types';
+import { toPositionKey } from '@blindfold-chess/features/chess-core';
 import { FiEdit2 } from 'react-icons/fi';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getAnnotationsForRepertoire } from '@/lib/repertoires/annotation-queries';
 import { buildPositionTopicKey } from '@/lib/repertoires/position-topic-key';
-import { getRepertoireForViewer } from '@/lib/repertoires/queries';
+import { getRepertoireLineForViewer } from '@/lib/repertoires/queries';
+import { replayRepertoireLine } from '@/lib/repertoires/replay-line';
 
 import { formatMovesToPgn } from '@/app/[locale]/(public)/games/play/postmortem/_lib/format-moves-to-pgn';
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
@@ -68,28 +68,12 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
   const lineNo = Number(lineNoParam);
   if (!Number.isInteger(lineNo) || lineNo < 1) notFound();
 
-  const data = await getRepertoireForViewer(id, currentUser?.id ?? null);
+  const data = await getRepertoireLineForViewer(id, lineNo, currentUser?.id ?? null);
   if (!data) notFound();
-  const { repertoire, lines, isOwner } = data;
-
-  const line = lines.find((l) => l.seq === lineNo - 1);
-  if (!line) notFound();
+  const { repertoire, line, isOwner } = data;
 
   // Replay + format the line server-side (no chess.js in the client bundle).
-  let sans: AlgebraicNotation[] = [];
-  try {
-    sans = parsePgn(line.pgn) as AlgebraicNotation[];
-  } catch {
-    sans = [];
-  }
-  const positions = replayMoves(sans, line.startingFen ?? undefined).map((p) => ({
-    fen: p.fen,
-    lastMove: p.lastMove ?? null,
-  }));
-
-  const startField = line.startingFen?.split(' ');
-  const startsAsBlack = startField?.[1] === 'b';
-  const startMoveNumber = startField ? Number(startField[5]) || 1 : 1;
+  const { sans, positions, startsAsBlack, startMoveNumber } = replayRepertoireLine(line);
   const formatted = formatMovesToPgn(sans, startsAsBlack, startMoveNumber);
 
   const annotations = await getAnnotationsForRepertoire(id);

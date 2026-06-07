@@ -9,13 +9,11 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
-import { parsePgn, replayMoves } from '@blindfold-chess/features/chess-core';
-import type { AlgebraicNotation } from '@blindfold-chess/types';
-
 import { getOptionalUser } from '@/lib/auth';
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { getRepertoireLikeMetaMap } from '@/lib/repertoires/like-queries';
 import { getRepertoireForViewer } from '@/lib/repertoires/queries';
+import { replayRepertoireLine } from '@/lib/repertoires/replay-line';
 import { resolveDisplayName } from '@/lib/users/display-name';
 
 import { formatMovesToPgn } from '@/app/[locale]/(public)/games/play/postmortem/_lib/format-moves-to-pgn';
@@ -86,20 +84,8 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
 
   // Replay + format each line on the server (no chess.js in the client bundle).
   const viewerLines: RepertoireViewerLine[] = lines.map((line) => {
-    let sans: string[] = [];
-    try {
-      sans = parsePgn(line.pgn);
-    } catch {
-      sans = [];
-    }
-    const positions = replayMoves(sans, line.startingFen ?? undefined).map((p) => ({
-      fen: p.fen,
-      lastMove: p.lastMove ?? null,
-    }));
-    const startField = line.startingFen?.split(' ');
-    const startsAsBlack = startField?.[1] === 'b';
-    const startMoveNumber = startField ? Number(startField[5]) || 1 : 1;
-    const formatted = formatMovesToPgn(sans as AlgebraicNotation[], startsAsBlack, startMoveNumber);
+    const { sans, positions, startsAsBlack, startMoveNumber } = replayRepertoireLine(line);
+    const formatted = formatMovesToPgn(sans, startsAsBlack, startMoveNumber);
     return { id: line.id, name: line.name, lineNo: line.seq + 1, formatted, positions };
   });
 

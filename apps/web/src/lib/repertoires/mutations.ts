@@ -5,6 +5,7 @@ import { authenticateAndGuard } from '@/lib/auth';
 import { chessOpenings, db, repertoireLines, repertoireOpenings, repertoires } from '@/lib/db';
 import { RATE_LIMITS } from '@/lib/security/rate-limit';
 
+import { assertRepertoireOwner } from './queries';
 import type { RepertoireImportInput, RepertoireLineEditError } from './validation';
 import { validateRepertoireImport, validateRepertoireLineEdit } from './validation';
 
@@ -28,13 +29,8 @@ export async function updateRepertoireLine(params: {
   name: string | null;
   pgn: string;
 }): Promise<UpdateLineResult> {
-  const [repertoire] = await db
-    .select({ userId: repertoires.userId })
-    .from(repertoires)
-    .where(and(eq(repertoires.id, params.repertoireId), isNull(repertoires.deletedAt)))
-    .limit(1);
-  if (!repertoire) return { ok: false, error: 'notFound' };
-  if (repertoire.userId !== params.viewerId) return { ok: false, error: 'unauthorized' };
+  const ownerError = await assertRepertoireOwner(params.repertoireId, params.viewerId);
+  if (ownerError) return { ok: false, error: ownerError };
 
   const [line] = await db
     .select({ id: repertoireLines.id, startingFen: repertoireLines.startingFen })
