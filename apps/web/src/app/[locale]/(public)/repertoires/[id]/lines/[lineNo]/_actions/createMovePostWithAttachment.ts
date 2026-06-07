@@ -9,16 +9,23 @@ import { validateContent } from '@/lib/validations/content';
 import type { CreatePostState } from '@/app/[locale]/(public)/topics/_actions/createPost';
 import { createPostWithAttachmentBase } from '@/app/[locale]/(public)/topics/_actions/createPostWithAttachmentBase';
 
-/** Top-level comment on a single move (topicType 'repertoire_move'), PGN attachment. */
+/**
+ * Top-level comment on a move (topicType 'repertoire_move'), PGN attachment.
+ * The thread key is position-based; `lineNo`/`ply` are bound by the compose
+ * form (the page knows where the user is) only to land the redirect back on the
+ * same move.
+ */
 export async function createMovePostWithAttachment(
   locale: string,
   topicKey: string,
+  lineNo: number,
+  ply: number,
   _prevState: CreatePostState,
   formData: FormData
 ): Promise<CreatePostState> {
   const parsed = parseMoveTopicKey(topicKey);
   if (!parsed) return { error: 'Invalid move' };
-  const { repertoireId, lineNo, ply } = parsed;
+  const { repertoireId } = parsed;
   const isSpoiler = readSpoilerFlag(formData);
   const repertoire = await getRepertoireById(repertoireId);
 

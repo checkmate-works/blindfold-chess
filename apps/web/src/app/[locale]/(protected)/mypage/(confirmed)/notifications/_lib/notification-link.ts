@@ -85,12 +85,15 @@ function buildPostDetailUrl(
     return `/repertoires/${topicKey}#post-${targetId}`;
   }
   if (topicType === 'repertoire_move') {
-    // topicKey packs `${repertoireId}_${lineNo}_${ply}`; deep-link to the line
-    // focused on that move so the move's comment thread is the one rendered.
+    // topicKey packs `${repertoireId}_${positionHash}`; the hash isn't reversible
+    // to a line here, so deep-link to the position resolver route, which finds a
+    // line + ply reaching it and redirects to that move's thread.
     const targetId = replyId ?? postId;
     const parsed = parseMoveTopicKey(topicKey);
     if (parsed) {
-      return `/repertoires/${parsed.repertoireId}/lines/${parsed.lineNo}?move=${parsed.ply}#post-${targetId}`;
+      // `post` rides as a query (not a #fragment): the resolver redirects
+      // server-side, and fragments are not sent to / preserved by the server.
+      return `/repertoires/${parsed.repertoireId}/position/${parsed.positionHash}?post=${targetId}`;
     }
     return `/repertoires#post-${targetId}`;
   }

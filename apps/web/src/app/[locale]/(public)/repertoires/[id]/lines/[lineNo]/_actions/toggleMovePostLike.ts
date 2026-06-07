@@ -2,6 +2,7 @@
 
 import { parseMoveTopicKey } from '@/lib/repertoires/move-topic-key';
 import { getRepertoireById } from '@/lib/repertoires/queries';
+import { resolveLineForPosition } from '@/lib/repertoires/resolve-line-position';
 
 import { toggleLikeBase } from '@/app/[locale]/(public)/topics/_actions/toggleLike';
 
@@ -9,7 +10,11 @@ import { toggleLikeBase } from '@/app/[locale]/(public)/topics/_actions/toggleLi
 export async function toggleMovePostLike(postId: string, locale: string, topicKey: string) {
   const parsed = parseMoveTopicKey(topicKey);
   if (!parsed) return { error: 'Invalid move' };
-  const { repertoireId, lineNo } = parsed;
+  const { repertoireId, positionHash } = parsed;
+  const resolved = await resolveLineForPosition(repertoireId, positionHash);
+  const linePath = resolved
+    ? `/${locale}/repertoires/${repertoireId}/lines/${resolved.lineNo}`
+    : `/${locale}/repertoires/${repertoireId}`;
 
   return toggleLikeBase({
     postId,
@@ -18,6 +23,6 @@ export async function toggleMovePostLike(postId: string, locale: string, topicKe
     topicType: 'repertoire_move',
     urlSegment: 'repertoires',
     validateTopic: async () => (await getRepertoireById(repertoireId)) !== null,
-    revalidate: () => [`/${locale}/repertoires/${repertoireId}/lines/${lineNo}`],
+    revalidate: () => [linePath],
   });
 }

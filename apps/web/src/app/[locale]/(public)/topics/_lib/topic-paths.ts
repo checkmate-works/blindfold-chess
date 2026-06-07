@@ -29,14 +29,13 @@ export function buildTopicDetailPath(
     case 'repertoire':
       return `/${locale}/repertoires/${topicKey}`;
     case 'repertoire_move': {
-      // topicKey packs `${repertoireId}_${lineNo}_${ply}` — rebuild the nested
-      // line path. No `?move` here: this feeds revalidatePath, which keys on the
-      // path and would not match a query-bearing string. (Deep links that need
-      // the focused move are built separately in the notification link helper.)
+      // topicKey packs `${repertoireId}_${positionHash}` — the position hash
+      // can't be reversed to a specific line, and this feeds revalidatePath
+      // anyway (which keys on a path). Revalidate the repertoire; its line pages
+      // are dynamic, so they re-render per request regardless. (Deep links that
+      // need the focused move resolve the line in the notification helper.)
       const parsed = parseMoveTopicKey(topicKey);
-      return parsed
-        ? `/${locale}/repertoires/${parsed.repertoireId}/lines/${parsed.lineNo}`
-        : `/${locale}/repertoires`;
+      return parsed ? `/${locale}/repertoires/${parsed.repertoireId}` : `/${locale}/repertoires`;
     }
     case 'square':
       return `/${locale}/topics/squares/${topicKey}`;

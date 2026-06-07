@@ -7,14 +7,17 @@ import { createMovePostWithFenAttachment } from '../_actions/createMovePostWithF
 
 type Props = {
   locale: string;
-  /** The move's topic key: `${repertoireId}_${lineNo}_${ply}`. */
+  /** Position-based thread key: `${repertoireId}_${positionHash}`. */
   topicKey: string;
+  /** Current line + ply — only so the post redirect lands back on this move. */
+  lineNo: number;
+  ply: number;
 };
 
 /** Compose form for a top-level comment on the focused move. */
-export function NewMovePostForm({ locale, topicKey }: Props) {
-  const pgn = createMovePostWithAttachment.bind(null, locale, topicKey);
-  const fen = createMovePostWithFenAttachment.bind(null, locale, topicKey);
+export function NewMovePostForm({ locale, topicKey, lineNo, ply }: Props) {
+  const pgn = createMovePostWithAttachment.bind(null, locale, topicKey, lineNo, ply);
+  const fen = createMovePostWithFenAttachment.bind(null, locale, topicKey, lineNo, ply);
 
   return (
     <BasePostForm

@@ -1,7 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
 import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
-import { buildMoveTopicKey } from '@/lib/repertoires/move-topic-key';
 
 import { attachPostFenFromForm } from '@/app/[locale]/(public)/topics/_actions/attachPostFen';
 import { attachPostPgn } from '@/app/[locale]/(public)/topics/_actions/attachPostPgn';
@@ -27,8 +26,10 @@ type Props = {
   locale: Locale;
   repertoireId: string;
   lineNo: number;
-  /** 1-based half-move the thread is keyed to. */
+  /** 1-based half-move in focus — for the compose redirect / list link only. */
   ply: number;
+  /** Position-based thread key (`${repertoireId}_${positionHash}`). */
+  topicKey: string;
   currentUserId?: string;
 };
 
@@ -49,12 +50,12 @@ export async function MoveCommentsSection({
   repertoireId,
   lineNo,
   ply,
+  topicKey,
   currentUserId,
 }: Props) {
   const tComments = await getTranslations({ locale, namespace: 'topics.repertoire_move' });
   const tTopics = await getTranslations({ locale, namespace: 'topics' });
 
-  const topicKey = buildMoveTopicKey(repertoireId, lineNo, ply);
   const commentCount = await getPostCountByTopicKey('repertoire_move', topicKey);
   const allComments = await getCommentTreeForTopic('repertoire_move', topicKey, currentUserId);
   const commentTree = buildCommentTree(allComments, 'new');
@@ -68,10 +69,10 @@ export async function MoveCommentsSection({
       <SectionTitle>{tComments('commentsTitle')}</SectionTitle>
 
       {currentUserId && commentCount === 0 ? (
-        <NewMovePostForm locale={locale} topicKey={topicKey} />
+        <NewMovePostForm locale={locale} topicKey={topicKey} lineNo={lineNo} ply={ply} />
       ) : (
         <JoinConversationToggle count={commentCount} joinLabel={tTopics('joinConversation')}>
-          <NewMovePostForm locale={locale} topicKey={topicKey} />
+          <NewMovePostForm locale={locale} topicKey={topicKey} lineNo={lineNo} ply={ply} />
         </JoinConversationToggle>
       )}
 

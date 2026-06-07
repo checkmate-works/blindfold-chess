@@ -9,16 +9,18 @@ import { validateContent } from '@/lib/validations/content';
 import type { CreatePostState } from '@/app/[locale]/(public)/topics/_actions/createPost';
 import { createPostWithFenAttachmentBase } from '@/app/[locale]/(public)/topics/_actions/createPostWithFenAttachmentBase';
 
-/** Top-level comment on a single move (topicType 'repertoire_move'), FEN attachment. */
+/** Top-level comment on a move (topicType 'repertoire_move'), FEN attachment. */
 export async function createMovePostWithFenAttachment(
   locale: string,
   topicKey: string,
+  lineNo: number,
+  ply: number,
   _prevState: CreatePostState,
   formData: FormData
 ): Promise<CreatePostState> {
   const parsed = parseMoveTopicKey(topicKey);
   if (!parsed) return { error: 'Invalid move' };
-  const { repertoireId, lineNo, ply } = parsed;
+  const { repertoireId } = parsed;
   const isSpoiler = readSpoilerFlag(formData);
   const repertoire = await getRepertoireById(repertoireId);
 

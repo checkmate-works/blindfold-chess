@@ -2,6 +2,7 @@
 
 import { parseMoveTopicKey } from '@/lib/repertoires/move-topic-key';
 import { getRepertoireById } from '@/lib/repertoires/queries';
+import { resolveLineForPosition } from '@/lib/repertoires/resolve-line-position';
 import { readSpoilerFlag } from '@/lib/spoiler-flag';
 
 import type { CreateReplyState } from '@/app/[locale]/(public)/topics/_actions/createReply';
@@ -17,8 +18,12 @@ export async function createMoveReplyWithFenAttachment(
 ): Promise<CreateReplyState> {
   const parsed = parseMoveTopicKey(topicKey);
   if (!parsed) return { error: 'Invalid move' };
-  const { repertoireId, lineNo, ply } = parsed;
+  const { repertoireId, positionHash } = parsed;
   const isSpoiler = readSpoilerFlag(formData);
+  const resolved = await resolveLineForPosition(repertoireId, positionHash);
+  const linePath = resolved
+    ? `/${locale}/repertoires/${repertoireId}/lines/${resolved.lineNo}?move=${resolved.ply}`
+    : `/${locale}/repertoires/${repertoireId}`;
 
   return createReplyWithFenAttachmentBase({
     locale,
@@ -29,8 +34,8 @@ export async function createMoveReplyWithFenAttachment(
     urlSegment: 'repertoires',
     validateTopic: async () => (await getRepertoireById(repertoireId)) !== null,
     redirectPath: (_postId, replyId) =>
-      `/${locale}/repertoires/${repertoireId}/lines/${lineNo}?move=${ply}&toast=post_created#post-${replyId}`,
-    revalidate: () => `/${locale}/repertoires/${repertoireId}/lines/${lineNo}`,
+      `${linePath}${resolved ? '&' : '?'}toast=post_created#post-${replyId}`,
+    revalidate: () => linePath.split('?')[0],
     isSpoiler,
     formData,
   });

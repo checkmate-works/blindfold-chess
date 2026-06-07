@@ -17,6 +17,7 @@ import type { AlgebraicNotation } from '@blindfold-chess/types';
 
 import { getOptionalUser } from '@/lib/auth';
 import { getAnnotationsForRepertoire } from '@/lib/repertoires/annotation-queries';
+import { buildPositionTopicKey } from '@/lib/repertoires/position-topic-key';
 import { getRepertoireForViewer } from '@/lib/repertoires/queries';
 
 import { formatMovesToPgn } from '@/app/[locale]/(public)/games/play/postmortem/_lib/format-moves-to-pgn';
@@ -141,6 +142,7 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
             repertoireId={id}
             lineNo={lineNo}
             ply={initialPly}
+            topicKey={buildPositionTopicKey(id, positions[initialPly].fen)}
             currentUserId={currentUser?.id}
           />
         </>
