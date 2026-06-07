@@ -38,7 +38,28 @@
       "linesHeading": "Lines",
       "lineCount": "{count} lines",
       "lineFallback": "Line {n}",
+      "openLine": "Open this line →",
       "createdBy": "Created by"
+    },
+    "line": {
+      "title": "Line",
+      "breadcrumb": "Line {n}",
+      "empty": "This line has no moves.",
+      "annotation": {
+        "title": "Why this move",
+        "addButton": "Add a note",
+        "editButton": "Edit",
+        "save": "Save",
+        "saving": "Saving...",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "placeholder": "Explain why this move is played…",
+        "error": "Something went wrong. Please try again.",
+        "empty": "Please enter a note.",
+        "tooLong": "This note is too long.",
+        "unauthorized": "Only the owner can edit annotations.",
+        "notFound": "This repertoire no longer exists."
+      }
     },
     "delete": {
       "button": "Delete",

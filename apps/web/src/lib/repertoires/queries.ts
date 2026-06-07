@@ -135,6 +135,57 @@ export async function getRepertoireForUser(
   return { repertoire, lines, profile };
 }
 
+export type RepertoireForViewer = RepertoireWithLines & {
+  /** Whether the requesting viewer owns this repertoire (gates annotation edits). */
+  isOwner: boolean;
+};
+
+/**
+ * A single repertoire with its lines + author profile, scoped to what a viewer
+ * is allowed to see: the repertoire is visible when it is public OR owned by
+ * the viewer (and not deleted). Used by the public-facing line detail page,
+ * where non-owners may read + comment but only the owner may annotate.
+ *
+ * `viewerId` is null for anonymous visitors; they can still see public
+ * repertoires (commenting itself is gated separately by auth).
+ */
+export async function getRepertoireForViewer(
+  id: string,
+  viewerId: string | null
+): Promise<RepertoireForViewer | null> {
+  const [repertoire] = await db
+    .select()
+    .from(repertoires)
+    .where(and(eq(repertoires.id, id), isNull(repertoires.deletedAt)))
+    .limit(1);
+  if (!repertoire) return null;
+
+  const isOwner = viewerId != null && repertoire.userId === viewerId;
+  if (repertoire.status !== 'public' && !isOwner) return null;
+
+  const lines = await db
+    .select()
+    .from(repertoireLines)
+    .where(and(eq(repertoireLines.repertoireId, repertoire.id), isNull(repertoireLines.deletedAt)))
+    .orderBy(asc(repertoireLines.seq));
+
+  let profile: RepertoireAuthorProfile | null = null;
+  if (repertoire.userId) {
+    const [row] = await db
+      .select({
+        username: profiles.username,
+        displayName: profiles.displayName,
+        avatarUrl: profiles.avatarUrl,
+      })
+      .from(profiles)
+      .where(eq(profiles.id, repertoire.userId))
+      .limit(1);
+    profile = row?.username ? row : null;
+  }
+
+  return { repertoire, lines, profile, isOwner };
+}
+
 /**
  * Existence + author lookup for the comment system (topicType 'repertoire').
  * Returns the owner id (for notification targeting) when the repertoire exists

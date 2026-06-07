@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 
 import { useTranslations } from 'next-intl';
+import Link from 'next/link';
 
 import { ChessBoard } from '@/app/_components/chess/ChessBoard';
 import type { FormattedPgnMove } from '@blindfold-chess/features/chess-core';
@@ -16,6 +17,8 @@ import { INLINE_BOARD_CARD_CHROME } from '@/app/[locale]/(public)/games/play/_li
 export type RepertoireViewerLine = {
   id: string;
   name: string | null;
+  /** 1-based line number within the repertoire (seq + 1); the detail-page key. */
+  lineNo: number;
   /** Numbered move pairs, rendered like the in-game move list. */
   formatted: FormattedPgnMove[];
   /** Board position at each ply; index 0 is the start. */
@@ -25,6 +28,9 @@ export type RepertoireViewerLine = {
 type Props = {
   lines: RepertoireViewerLine[];
   side: Side;
+  /** Repertoire id, for linking each line to its detail (annotations) page. */
+  repertoireId: string;
+  locale: string;
 };
 
 /**
@@ -34,7 +40,7 @@ type Props = {
  * / next / last controls (and ←/→ keys). Positions/formatting are precomputed
  * server-side, so this stays a thin UI client component.
  */
-export function RepertoireLineViewer({ lines, side }: Props) {
+export function RepertoireLineViewer({ lines, side, repertoireId, locale }: Props) {
   const t = useTranslations('Repertoires');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [ply, setPly] = useState(0);
@@ -127,6 +133,13 @@ export function RepertoireLineViewer({ lines, side }: Props) {
             </div>
           </div>
         </div>
+
+        <Link
+          href={`/${locale}/repertoires/${repertoireId}/lines/${line.lineNo}`}
+          className="mt-3 inline-block text-sm font-medium text-link-primary transition-colors hover:underline"
+        >
+          {t('detail.openLine')}
+        </Link>
       </div>
     </div>
   );

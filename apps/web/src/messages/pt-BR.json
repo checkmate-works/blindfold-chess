@@ -38,7 +38,28 @@
       "linesHeading": "Linhas",
       "lineCount": "{count} linhas",
       "lineFallback": "Linha {n}",
+      "openLine": "Abrir esta linha →",
       "createdBy": "Criado por"
+    },
+    "line": {
+      "title": "Linha",
+      "breadcrumb": "Linha {n}",
+      "empty": "Esta linha não tem lances.",
+      "annotation": {
+        "title": "Por que este lance",
+        "addButton": "Adicionar uma nota",
+        "editButton": "Editar",
+        "save": "Salvar",
+        "saving": "Salvando...",
+        "cancel": "Cancelar",
+        "delete": "Excluir",
+        "placeholder": "Explique por que este lance é jogado…",
+        "error": "Algo deu errado. Tente novamente.",
+        "empty": "Digite uma nota.",
+        "tooLong": "Esta nota é muito longa.",
+        "unauthorized": "Apenas o proprietário pode editar anotações.",
+        "notFound": "Este repertório não existe mais."
+      }
     },
     "delete": {
       "button": "Excluir",

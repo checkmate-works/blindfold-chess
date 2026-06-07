@@ -17,6 +17,8 @@ export type RepertoirePhase = 'opening' | 'middlegame' | 'endgame';
 export const REPERTOIRE_NAME_MAX = 120;
 /** Mirrors the PGN attachment cap (100 KiB). */
 export const REPERTOIRE_PGN_MAX_BYTES = 100 * 1024;
+/** Max length of an owner's per-move "why" annotation. */
+export const REPERTOIRE_ANNOTATION_MAX = 2000;
 export const REPERTOIRE_PHASES: readonly RepertoirePhase[] = ['opening', 'middlegame', 'endgame'];
 
 const STANDARD_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';

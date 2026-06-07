@@ -99,7 +99,7 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
     const startsAsBlack = startField?.[1] === 'b';
     const startMoveNumber = startField ? Number(startField[5]) || 1 : 1;
     const formatted = formatMovesToPgn(sans as AlgebraicNotation[], startsAsBlack, startMoveNumber);
-    return { id: line.id, name: line.name, formatted, positions };
+    return { id: line.id, name: line.name, lineNo: line.seq + 1, formatted, positions };
   });
 
   // Comments — the same topic_posts thread the puzzle / topics pages use.
@@ -131,7 +131,12 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
         <p className="whitespace-pre-wrap text-foreground">{repertoire.description}</p>
       )}
 
-      <RepertoireLineViewer lines={viewerLines} side={repertoire.side} />
+      <RepertoireLineViewer
+        lines={viewerLines}
+        side={repertoire.side}
+        repertoireId={repertoire.id}
+        locale={locale}
+      />
 
       <PositionAuthorAttribution
         profile={profile}

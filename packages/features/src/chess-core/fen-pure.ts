@@ -107,6 +107,17 @@ export function isBlackToMoveFromFen(fen: string): boolean {
   return fen.split(" ")[1] === "b";
 }
 
+/**
+ * The position-identity key: the first four FEN fields (placement, side to
+ * move, castling rights, en-passant square), dropping the halfmove/fullmove
+ * clocks. Two FENs that differ only in their clocks denote the same position
+ * for repertoire purposes, so this is the canonical key used to dedupe
+ * transpositions and to key position-scoped data (reviews, annotations).
+ */
+export function toPositionKey(fen: string): string {
+  return fen.split(" ").slice(0, 4).join(" ");
+}
+
 export function getTurnFromFen(fen: string): "w" | "b" {
   const parts = fen.split(" ");
   if (parts.length < 6) {

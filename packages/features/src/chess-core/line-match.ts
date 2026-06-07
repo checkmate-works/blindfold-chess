@@ -1,4 +1,4 @@
-import { getTurnFromFen } from "./fen";
+import { getTurnFromFen, toPositionKey } from "./fen";
 import { replayMoves } from "./moves";
 import type { PgnTree } from "./pgn-tree";
 
@@ -65,9 +65,7 @@ export type GameForMatch = {
 };
 
 /** The position-identity key: the first four FEN fields (clocks dropped). */
-function positionKey(fen: string): string {
-  return fen.split(" ").slice(0, 4).join(" ");
-}
+const positionKey = toPositionKey;
 
 function sideToMove(fen: string): Side {
   return getTurnFromFen(fen) === "w" ? "white" : "black";

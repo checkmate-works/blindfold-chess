@@ -38,7 +38,28 @@
       "linesHeading": "ライン",
       "lineCount": "{count} ライン",
       "lineFallback": "ライン {n}",
+      "openLine": "このラインを開く →",
       "createdBy": "作成者"
+    },
+    "line": {
+      "title": "ライン",
+      "breadcrumb": "ライン {n}",
+      "empty": "このラインには手がありません。",
+      "annotation": {
+        "title": "この手の狙い",
+        "addButton": "メモを追加",
+        "editButton": "編集",
+        "save": "保存",
+        "saving": "保存中...",
+        "cancel": "キャンセル",
+        "delete": "削除",
+        "placeholder": "なぜこの手を指すのかを説明…",
+        "error": "問題が発生しました。もう一度お試しください。",
+        "empty": "メモを入力してください。",
+        "tooLong": "メモが長すぎます。",
+        "unauthorized": "アノテーションを編集できるのはオーナーのみです。",
+        "notFound": "このレパートリーは存在しません。"
+      }
     },
     "delete": {
       "button": "削除",
