@@ -3313,6 +3313,7 @@
       "usersBySignupMethod": "Usuários por Método de Cadastro",
       "noData": "Sem dados disponíveis",
       "users": "usuários",
+      "unknownCountry": "Desconhecido",
       "rankNames": {
         "mukyu": "Sem Graduação",
         "5kyu": "5º Kyu",

@@ -3311,6 +3311,7 @@
       "usersBySignupMethod": "Usuarios por método de registro",
       "noData": "Sin datos disponibles",
       "users": "usuarios",
+      "unknownCountry": "Desconocido",
       "rankNames": {
         "1dan": "1 Dan",
         "1kyu": "1 Kyu",
