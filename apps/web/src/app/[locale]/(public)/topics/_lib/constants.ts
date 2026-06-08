@@ -22,4 +22,11 @@ export const VALID_REPLY_PERMISSIONS = ['everyone', 'followers', 'nobody'] as co
  * a JOIN — keeping URL/route mapping (see `deletePost`) and per-type UI
  * branching (e.g. spoiler toggle) trivially `switch`-able.
  */
-export type TopicType = 'square' | 'opening' | 'chunk' | 'position_memory' | 'position_puzzle';
+export type TopicType =
+  | 'square'
+  | 'opening'
+  | 'chunk'
+  | 'position_memory'
+  | 'position_puzzle'
+  | 'repertoire'
+  | 'repertoire_move';

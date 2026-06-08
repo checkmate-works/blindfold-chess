@@ -21,6 +21,7 @@ export {
   boardFlatToFen,
   getTurnFromFen,
   isBlackToMoveFromFen,
+  toPositionKey,
   getFenAfterMoves,
   getStartingFen,
   fenToLichessUrl,
@@ -63,6 +64,19 @@ export {
   validatePgnMoves,
   parsePgnMoveSequence,
 } from "./pgn";
+
+export type { MoveTreeNode, PgnTree } from "./pgn-tree";
+export { parsePgnTree, enumerateLines } from "./pgn-tree";
+
+export type {
+  Side,
+  LineMatchStatus,
+  LineDivergence,
+  LineMatchResult,
+  GameForMatch,
+  LineMatchCandidate,
+} from "./line-match";
+export { matchGameToLine, matchGameAgainstLines } from "./line-match";
 
 export type {
   AttachedPgnError,

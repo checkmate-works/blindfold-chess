@@ -1,4 +1,109 @@
 {
+  "Repertoires": {
+    "title": "Repertoires",
+    "description": "Your private repertoire trees — opening lines, mate patterns, and memorized sequences.",
+    "sectionTitle": "Your repertoires",
+    "importCta": "Import",
+    "empty": "No repertoires available yet",
+    "summary": "{lines} lines · {moves} moves",
+    "like": "Like",
+    "unlike": "Unlike",
+    "newReply": "New Reply {time}",
+    "justNow": "just now",
+    "form": {
+      "nameLabel": "Name",
+      "namePlaceholder": "e.g. Najdorf (Black)",
+      "sideLabel": "Your side",
+      "side_white": "White",
+      "side_black": "Black",
+      "phaseLabel": "Phase",
+      "phase_opening": "Opening",
+      "phase_middlegame": "Middlegame",
+      "phase_endgame": "Endgame",
+      "openingLabel": "Linked openings",
+      "openingHelp": "Optionally link this repertoire to specific openings (a transposing line may match several).",
+      "pgnLabel": "PGN",
+      "pgnHelp": "Paste a PGN with variations — exports from Lichess studies or Chess.com work as-is.",
+      "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
+      "submit": "Import line",
+      "submitting": "Importing…"
+    },
+    "new": {
+      "title": "Import a line",
+      "sectionTitle": "Line details"
+    },
+    "detail": {
+      "title": "Repertoire",
+      "pgnHeading": "PGN",
+      "linesHeading": "Lines",
+      "lineCount": "{count} lines",
+      "lineFallback": "Line {n}",
+      "openLine": "Open this line →",
+      "createdBy": "Created by"
+    },
+    "line": {
+      "title": "Line",
+      "breadcrumb": "Line {n}",
+      "empty": "This line has no moves.",
+      "annotation": {
+        "title": "Why this move",
+        "addButton": "Add a note",
+        "editButton": "Edit",
+        "save": "Save",
+        "saving": "Saving...",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "placeholder": "Explain why this move is played…",
+        "error": "Something went wrong. Please try again.",
+        "empty": "Please enter a note.",
+        "tooLong": "This note is too long.",
+        "unauthorized": "Only the owner can edit annotations.",
+        "notFound": "This repertoire no longer exists."
+      },
+      "edit": {
+        "editAction": "Edit",
+        "title": "Edit line",
+        "breadcrumb": "Edit",
+        "nameLabel": "Title",
+        "namePlaceholder": "Optional name for this line",
+        "pgnLabel": "Moves (PGN)",
+        "pgnHelp": "Edit the move sequence. Annotations and comments stay attached to their positions.",
+        "save": "Save",
+        "saving": "Saving...",
+        "cancel": "Cancel",
+        "errors": {
+          "unauthorized": "Only the owner can edit this line.",
+          "notFound": "This line no longer exists.",
+          "nameTooLong": "The title is too long.",
+          "pgnRequired": "Please enter the moves.",
+          "pgnTooLarge": "The PGN is too large.",
+          "invalidPgn": "Could not read these moves. Check the notation.",
+          "noMoves": "Please enter at least one move.",
+          "generic": "Something went wrong. Please try again."
+        }
+      }
+    },
+    "delete": {
+      "button": "Delete",
+      "title": "Delete this line?",
+      "message": "This permanently removes the line. This cannot be undone.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    },
+    "errors": {
+      "nameRequired": "Please enter a name.",
+      "nameTooLong": "That name is too long.",
+      "invalidSide": "Please choose a side.",
+      "invalidPhase": "Please choose a phase.",
+      "pgnRequired": "Please paste a PGN.",
+      "pgnTooLarge": "That PGN is too large.",
+      "invalidPgn": "That PGN could not be parsed — check for illegal moves.",
+      "signInRequired": "Please sign in.",
+      "banned": "Your account is restricted.",
+      "rateLimited": "Too many attempts. Please try again later.",
+      "generic": "Something went wrong. Please try again."
+    }
+  },
   "metadata": {
     "siteName": "Shingan Chess",
     "seoSiteName": "Blindfold Chess",
@@ -3203,6 +3308,7 @@
     "positionCreated": "Position created successfully",
     "positionDeleted": "Problem deleted",
     "positionUpdated": "Changes saved",
+    "lineUpdated": "Line updated",
     "puzzleUpdated": "Changes saved",
     "puzzleDeleted": "Puzzle deleted",
     "editRequestSubmitted": "Edit suggestion submitted"
@@ -4424,6 +4530,132 @@
       "newPostForm": {
         "contentLabel": "Comment",
         "contentPlaceholder": "Share your thoughts about this puzzle...",
+        "submit": "Comment",
+        "submitting": "Posting...",
+        "contentRequired": "Please enter some content",
+        "contentTooLong": "Content must be 2000 characters or less",
+        "error": "An error occurred. Please try again.",
+        "signInRequired": "Please sign in to comment",
+        "invalidReplyPermission": "Invalid reply permission setting",
+        "rateLimited": "Too many comments. Please try again later."
+      },
+      "like": "Like",
+      "unlike": "Unlike",
+      "newReply": "New Reply {time}",
+      "justNow": "just now",
+      "replies": {
+        "title": "Replies",
+        "count": "{count, plural, one {# reply} other {# replies}}",
+        "noReplies": "No replies yet. Be the first to reply!",
+        "contentLabel": "Your reply",
+        "contentPlaceholder": "Share your thoughts...",
+        "submit": "Reply",
+        "submitting": "Replying...",
+        "contentRequired": "Please enter some content",
+        "contentTooLong": "Content must be 2000 characters or less",
+        "error": "An error occurred. Please try again.",
+        "signInRequired": "Please sign in to reply",
+        "loginToReply": "Sign in to reply",
+        "rateLimited": "Too many replies. Please try again later.",
+        "repliesDisabled": "The author has disabled replies on this comment.",
+        "followRequired": "Only followers of the author can reply to this comment.",
+        "replyButton": "Reply",
+        "replyingTo": "Replying to @{username}",
+        "cancelReply": "Cancel"
+      },
+      "deletePost": {
+        "button": "Delete",
+        "confirmTitle": "Delete Comment",
+        "confirmMessage": "Are you sure you want to delete this comment? This action cannot be undone.",
+        "confirm": "Delete",
+        "cancel": "Cancel",
+        "deleting": "Deleting..."
+      }
+    },
+    "repertoire": {
+      "commentsTitle": "Comments",
+      "postCount": "{count, plural, one {# comment} other {# comments}}",
+      "noPosts": "No comments yet. Be the first to share your thoughts!",
+      "signInToComment": "Sign in to comment",
+      "readMore": "Read more",
+      "sort": {
+        "new": "New",
+        "popular": "Popular",
+        "active": "Active"
+      },
+      "detail": {
+        "pageTitle": "Repertoire Comment"
+      },
+      "postDetail": {
+        "authorView": "{author}'s thoughts on {name}",
+        "backToPuzzle": "Back to {name}"
+      },
+      "newPostForm": {
+        "contentLabel": "Comment",
+        "contentPlaceholder": "Share your thoughts about this repertoire...",
+        "submit": "Comment",
+        "submitting": "Posting...",
+        "contentRequired": "Please enter some content",
+        "contentTooLong": "Content must be 2000 characters or less",
+        "error": "An error occurred. Please try again.",
+        "signInRequired": "Please sign in to comment",
+        "invalidReplyPermission": "Invalid reply permission setting",
+        "rateLimited": "Too many comments. Please try again later."
+      },
+      "like": "Like",
+      "unlike": "Unlike",
+      "newReply": "New Reply {time}",
+      "justNow": "just now",
+      "replies": {
+        "title": "Replies",
+        "count": "{count, plural, one {# reply} other {# replies}}",
+        "noReplies": "No replies yet. Be the first to reply!",
+        "contentLabel": "Your reply",
+        "contentPlaceholder": "Share your thoughts...",
+        "submit": "Reply",
+        "submitting": "Replying...",
+        "contentRequired": "Please enter some content",
+        "contentTooLong": "Content must be 2000 characters or less",
+        "error": "An error occurred. Please try again.",
+        "signInRequired": "Please sign in to reply",
+        "loginToReply": "Sign in to reply",
+        "rateLimited": "Too many replies. Please try again later.",
+        "repliesDisabled": "The author has disabled replies on this comment.",
+        "followRequired": "Only followers of the author can reply to this comment.",
+        "replyButton": "Reply",
+        "replyingTo": "Replying to @{username}",
+        "cancelReply": "Cancel"
+      },
+      "deletePost": {
+        "button": "Delete",
+        "confirmTitle": "Delete Comment",
+        "confirmMessage": "Are you sure you want to delete this comment? This action cannot be undone.",
+        "confirm": "Delete",
+        "cancel": "Cancel",
+        "deleting": "Deleting..."
+      }
+    },
+    "repertoire_move": {
+      "commentsTitle": "Comments",
+      "postCount": "{count, plural, one {# comment} other {# comments}}",
+      "noPosts": "No comments yet. Be the first to share your thoughts!",
+      "signInToComment": "Sign in to comment",
+      "readMore": "Read more",
+      "sort": {
+        "new": "New",
+        "popular": "Popular",
+        "active": "Active"
+      },
+      "detail": {
+        "pageTitle": "Repertoire Comment"
+      },
+      "postDetail": {
+        "authorView": "{author}'s thoughts on {name}",
+        "backToPuzzle": "Back to {name}"
+      },
+      "newPostForm": {
+        "contentLabel": "Comment",
+        "contentPlaceholder": "Share your thoughts about this move...",
         "submit": "Comment",
         "submitting": "Posting...",
         "contentRequired": "Please enter some content",

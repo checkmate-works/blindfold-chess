@@ -1,3 +1,5 @@
+import { parseMoveTopicKey } from '@/lib/repertoires/move-topic-key';
+
 import type { TopicType } from './constants';
 
 /**
@@ -24,6 +26,17 @@ export function buildTopicDetailPath(
       return `/${locale}/practice/position-memory/${topicKey}`;
     case 'position_puzzle':
       return `/${locale}/practice/puzzle/${topicKey}`;
+    case 'repertoire':
+      return `/${locale}/repertoires/${topicKey}`;
+    case 'repertoire_move': {
+      // topicKey packs `${repertoireId}_${positionHash}` — the position hash
+      // can't be reversed to a specific line, and this feeds revalidatePath
+      // anyway (which keys on a path). Revalidate the repertoire; its line pages
+      // are dynamic, so they re-render per request regardless. (Deep links that
+      // need the focused move resolve the line in the notification helper.)
+      const parsed = parseMoveTopicKey(topicKey);
+      return parsed ? `/${locale}/repertoires/${parsed.repertoireId}` : `/${locale}/repertoires`;
+    }
     case 'square':
       return `/${locale}/topics/squares/${topicKey}`;
     case 'opening':

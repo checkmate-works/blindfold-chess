@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useId, useRef, useState } from 'react';
 
-import { Button, FormErrorBanner, Textarea } from '@/app/_components';
+import { Button, FormErrorBanner, Textarea, UnsavedChangesDialog } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
 
 import { MAX_CONTENT_LENGTH } from '@/lib/validations/content';
@@ -43,11 +43,24 @@ export function EditPostForm({
   onCancel,
 }: Props) {
   const t = useTranslations('topics.edit');
+  const tUnsaved = useTranslations('unsavedChanges');
   const textareaId = useId();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [content, setContent] = useState(initialContent);
   const [isSpoiler, setIsSpoiler] = useState(initialIsSpoiler);
+  const [confirmingDiscard, setConfirmingDiscard] = useState(false);
+
+  const isDirty = content !== initialContent || isSpoiler !== initialIsSpoiler;
+
+  // Discard only needs confirming when something would actually be lost.
+  function handleCancel() {
+    if (isDirty) {
+      setConfirmingDiscard(true);
+    } else {
+      onCancel();
+    }
+  }
 
   useEffect(() => {
     const el = textareaRef.current;
@@ -109,14 +122,35 @@ export function EditPostForm({
         </label>
       )}
 
-      <div className="flex items-center gap-2">
-        <Button type="submit" variant="primary" size="sm" disabled={isPending} loading={isPending}>
+      {/* Save mirrors the full-width primary submit used by the new-comment /
+          reply forms (BasePostForm); cancel is a quiet text link below so it
+          reads as clearly secondary without crowding the primary action. */}
+      <div className="space-y-2">
+        <Button type="submit" variant="primary" fullWidth disabled={isPending} loading={isPending}>
           {isPending ? t('saving') : t('save')}
         </Button>
-        <Button type="button" variant="outline" size="sm" onClick={onCancel} disabled={isPending}>
+        <button
+          type="button"
+          onClick={handleCancel}
+          disabled={isPending}
+          className="block w-full text-center text-sm text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+        >
           {t('cancel')}
-        </Button>
+        </button>
       </div>
+
+      <UnsavedChangesDialog
+        open={confirmingDiscard}
+        onConfirm={() => {
+          setConfirmingDiscard(false);
+          onCancel();
+        }}
+        onCancel={() => setConfirmingDiscard(false)}
+        title={tUnsaved('title')}
+        message={tUnsaved('message')}
+        confirmLabel={tUnsaved('confirm')}
+        cancelLabel={tUnsaved('cancel')}
+      />
     </form>
   );
 }

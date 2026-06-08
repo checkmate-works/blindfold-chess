@@ -1,4 +1,109 @@
 {
+  "Repertoires": {
+    "title": "Repertórios",
+    "description": "Suas árvores de repertório privadas — linhas de abertura, padrões de mate e sequências memorizadas.",
+    "sectionTitle": "Seus repertórios",
+    "importCta": "Importar",
+    "empty": "Nenhum repertório disponível ainda",
+    "summary": "{lines} linhas · {moves} lances",
+    "like": "Curtir",
+    "unlike": "Descurtir",
+    "newReply": "Nova Resposta {time}",
+    "justNow": "agora mesmo",
+    "form": {
+      "nameLabel": "Nome",
+      "namePlaceholder": "ex.: Najdorf (Pretas)",
+      "sideLabel": "Seu lado",
+      "side_white": "Brancas",
+      "side_black": "Pretas",
+      "phaseLabel": "Fase",
+      "phase_opening": "Abertura",
+      "phase_middlegame": "Meio-jogo",
+      "phase_endgame": "Final",
+      "openingLabel": "Aberturas vinculadas",
+      "openingHelp": "Vincule opcionalmente este repertório a aberturas específicas (uma linha com transposições pode corresponder a várias).",
+      "pgnLabel": "PGN",
+      "pgnHelp": "Cole um PGN com variantes — exportações de estudos do Lichess ou do Chess.com funcionam como estão.",
+      "pgnPlaceholder": "1. e4 c5 2. Nf3 d6 (2... Nc6 3. d4) 3. d4 cxd4 ...",
+      "submit": "Importar linha",
+      "submitting": "Importando…"
+    },
+    "new": {
+      "title": "Importar uma linha",
+      "sectionTitle": "Detalhes da linha"
+    },
+    "detail": {
+      "title": "Repertório",
+      "pgnHeading": "PGN",
+      "linesHeading": "Linhas",
+      "lineCount": "{count} linhas",
+      "lineFallback": "Linha {n}",
+      "openLine": "Abrir esta linha →",
+      "createdBy": "Criado por"
+    },
+    "line": {
+      "title": "Linha",
+      "breadcrumb": "Linha {n}",
+      "empty": "Esta linha não tem lances.",
+      "annotation": {
+        "title": "Por que este lance",
+        "addButton": "Adicionar uma nota",
+        "editButton": "Editar",
+        "save": "Salvar",
+        "saving": "Salvando...",
+        "cancel": "Cancelar",
+        "delete": "Excluir",
+        "placeholder": "Explique por que este lance é jogado…",
+        "error": "Algo deu errado. Tente novamente.",
+        "empty": "Digite uma nota.",
+        "tooLong": "Esta nota é muito longa.",
+        "unauthorized": "Apenas o proprietário pode editar anotações.",
+        "notFound": "Este repertório não existe mais."
+      },
+      "edit": {
+        "editAction": "Editar",
+        "title": "Editar linha",
+        "breadcrumb": "Editar",
+        "nameLabel": "Título",
+        "namePlaceholder": "Nome opcional para esta linha",
+        "pgnLabel": "Lances (PGN)",
+        "pgnHelp": "Edite a sequência de lances. As anotações e os comentários permanecem vinculados às suas posições.",
+        "save": "Salvar",
+        "saving": "Salvando...",
+        "cancel": "Cancelar",
+        "errors": {
+          "unauthorized": "Apenas o proprietário pode editar esta linha.",
+          "notFound": "Esta linha não existe mais.",
+          "nameTooLong": "O título é muito longo.",
+          "pgnRequired": "Digite os lances.",
+          "pgnTooLarge": "O PGN é muito grande.",
+          "invalidPgn": "Não foi possível ler estes lances. Verifique a notação.",
+          "noMoves": "Digite pelo menos um lance.",
+          "generic": "Algo deu errado. Tente novamente."
+        }
+      }
+    },
+    "delete": {
+      "button": "Excluir",
+      "title": "Excluir esta linha?",
+      "message": "Isso remove a linha permanentemente. Não é possível desfazer.",
+      "confirm": "Excluir",
+      "cancel": "Cancelar"
+    },
+    "errors": {
+      "nameRequired": "Digite um nome.",
+      "nameTooLong": "Esse nome é muito longo.",
+      "invalidSide": "Escolha um lado.",
+      "invalidPhase": "Escolha uma fase.",
+      "pgnRequired": "Cole um PGN.",
+      "pgnTooLarge": "Esse PGN é muito grande.",
+      "invalidPgn": "Não foi possível processar esse PGN — verifique se há lances ilegais.",
+      "signInRequired": "Faça login.",
+      "banned": "Sua conta está restrita.",
+      "rateLimited": "Muitas tentativas. Tente novamente mais tarde.",
+      "generic": "Algo deu errado. Tente novamente."
+    }
+  },
   "metadata": {
     "siteName": "Shingan Chess",
     "seoSiteName": "Xadrez às Cegas",
@@ -2962,6 +3067,7 @@
     "positionCreated": "Posição criada com sucesso",
     "positionDeleted": "Problema excluído",
     "positionUpdated": "Alterações salvas",
+    "lineUpdated": "Linha atualizada",
     "puzzleUpdated": "Alterações salvas",
     "puzzleDeleted": "Puzzle excluído"
   },
@@ -4178,6 +4284,132 @@
       "newPostForm": {
         "contentLabel": "Comentário",
         "contentPlaceholder": "Compartilhe suas ideias sobre este puzzle...",
+        "submit": "Comentar",
+        "submitting": "Publicando...",
+        "contentRequired": "Por favor, insira algum conteúdo",
+        "contentTooLong": "O conteúdo deve ter 2000 caracteres ou menos",
+        "error": "Ocorreu um erro. Tente novamente.",
+        "signInRequired": "Entre para comentar",
+        "invalidReplyPermission": "Configuração de permissão de resposta inválida",
+        "rateLimited": "Comentários demais. Tente novamente mais tarde."
+      },
+      "like": "Curtir",
+      "unlike": "Descurtir",
+      "newReply": "Nova resposta {time}",
+      "justNow": "agora mesmo",
+      "replies": {
+        "title": "Respostas",
+        "count": "{count, plural, one {# resposta} other {# respostas}}",
+        "noReplies": "Ainda não há respostas. Seja o primeiro a responder!",
+        "contentLabel": "Sua resposta",
+        "contentPlaceholder": "Compartilhe suas ideias...",
+        "submit": "Responder",
+        "submitting": "Respondendo...",
+        "contentRequired": "Por favor, insira algum conteúdo",
+        "contentTooLong": "O conteúdo deve ter 2000 caracteres ou menos",
+        "error": "Ocorreu um erro. Tente novamente.",
+        "signInRequired": "Entre para responder",
+        "loginToReply": "Entre para responder",
+        "rateLimited": "Respostas demais. Tente novamente mais tarde.",
+        "repliesDisabled": "O autor desativou as respostas neste comentário.",
+        "followRequired": "Apenas seguidores do autor podem responder a este comentário.",
+        "replyButton": "Responder",
+        "replyingTo": "Respondendo a @{username}",
+        "cancelReply": "Cancelar"
+      },
+      "deletePost": {
+        "button": "Excluir",
+        "confirmTitle": "Excluir comentário",
+        "confirmMessage": "Tem certeza de que deseja excluir este comentário? Esta ação não pode ser desfeita.",
+        "confirm": "Excluir",
+        "cancel": "Cancelar",
+        "deleting": "Excluindo..."
+      }
+    },
+    "repertoire": {
+      "commentsTitle": "Comentários",
+      "postCount": "{count, plural, one {# comentário} other {# comentários}}",
+      "noPosts": "Ainda não há comentários. Seja o primeiro a compartilhar suas ideias!",
+      "signInToComment": "Entre para comentar",
+      "readMore": "Ler mais",
+      "sort": {
+        "new": "Novos",
+        "popular": "Populares",
+        "active": "Ativos"
+      },
+      "detail": {
+        "pageTitle": "Comentário sobre Repertório"
+      },
+      "postDetail": {
+        "authorView": "Comentário de {author} sobre {name}",
+        "backToPuzzle": "Voltar para {name}"
+      },
+      "newPostForm": {
+        "contentLabel": "Comentário",
+        "contentPlaceholder": "Compartilhe suas ideias sobre este repertório...",
+        "submit": "Comentar",
+        "submitting": "Publicando...",
+        "contentRequired": "Por favor, insira algum conteúdo",
+        "contentTooLong": "O conteúdo deve ter 2000 caracteres ou menos",
+        "error": "Ocorreu um erro. Tente novamente.",
+        "signInRequired": "Entre para comentar",
+        "invalidReplyPermission": "Configuração de permissão de resposta inválida",
+        "rateLimited": "Comentários demais. Tente novamente mais tarde."
+      },
+      "like": "Curtir",
+      "unlike": "Descurtir",
+      "newReply": "Nova resposta {time}",
+      "justNow": "agora mesmo",
+      "replies": {
+        "title": "Respostas",
+        "count": "{count, plural, one {# resposta} other {# respostas}}",
+        "noReplies": "Ainda não há respostas. Seja o primeiro a responder!",
+        "contentLabel": "Sua resposta",
+        "contentPlaceholder": "Compartilhe suas ideias...",
+        "submit": "Responder",
+        "submitting": "Respondendo...",
+        "contentRequired": "Por favor, insira algum conteúdo",
+        "contentTooLong": "O conteúdo deve ter 2000 caracteres ou menos",
+        "error": "Ocorreu um erro. Tente novamente.",
+        "signInRequired": "Entre para responder",
+        "loginToReply": "Entre para responder",
+        "rateLimited": "Respostas demais. Tente novamente mais tarde.",
+        "repliesDisabled": "O autor desativou as respostas neste comentário.",
+        "followRequired": "Apenas seguidores do autor podem responder a este comentário.",
+        "replyButton": "Responder",
+        "replyingTo": "Respondendo a @{username}",
+        "cancelReply": "Cancelar"
+      },
+      "deletePost": {
+        "button": "Excluir",
+        "confirmTitle": "Excluir comentário",
+        "confirmMessage": "Tem certeza de que deseja excluir este comentário? Esta ação não pode ser desfeita.",
+        "confirm": "Excluir",
+        "cancel": "Cancelar",
+        "deleting": "Excluindo..."
+      }
+    },
+    "repertoire_move": {
+      "commentsTitle": "Comentários",
+      "postCount": "{count, plural, one {# comentário} other {# comentários}}",
+      "noPosts": "Ainda não há comentários. Seja o primeiro a compartilhar suas ideias!",
+      "signInToComment": "Entre para comentar",
+      "readMore": "Ler mais",
+      "sort": {
+        "new": "Novos",
+        "popular": "Populares",
+        "active": "Ativos"
+      },
+      "detail": {
+        "pageTitle": "Comentário sobre Repertório"
+      },
+      "postDetail": {
+        "authorView": "Comentário de {author} sobre {name}",
+        "backToPuzzle": "Voltar para {name}"
+      },
+      "newPostForm": {
+        "contentLabel": "Comentário",
+        "contentPlaceholder": "Compartilhe suas ideias sobre este lance...",
         "submit": "Comentar",
         "submitting": "Publicando...",
         "contentRequired": "Por favor, insira algum conteúdo",

@@ -1,4 +1,5 @@
 import { getPositionDetailPath } from '@/lib/positions/routes';
+import { parseMoveTopicKey } from '@/lib/repertoires/move-topic-key';
 
 import type { NotificationWithActor } from './queries';
 import type { PositionMetadata } from './type-guards';
@@ -76,6 +77,25 @@ function buildPostDetailUrl(
   if (topicType === 'position_puzzle') {
     const targetId = replyId ?? postId;
     return `/practice/puzzle/${topicKey}#post-${targetId}`;
+  }
+  if (topicType === 'repertoire') {
+    // The repertoire detail page renders the inline comment tree (like puzzles),
+    // so both top-level and reply notifications deep-link to it.
+    const targetId = replyId ?? postId;
+    return `/repertoires/${topicKey}#post-${targetId}`;
+  }
+  if (topicType === 'repertoire_move') {
+    // topicKey packs `${repertoireId}_${positionHash}`; the hash isn't reversible
+    // to a line here, so deep-link to the position resolver route, which finds a
+    // line + ply reaching it and redirects to that move's thread.
+    const targetId = replyId ?? postId;
+    const parsed = parseMoveTopicKey(topicKey);
+    if (parsed) {
+      // `post` rides as a query (not a #fragment): the resolver redirects
+      // server-side, and fragments are not sent to / preserved by the server.
+      return `/repertoires/${parsed.repertoireId}/position/${parsed.positionHash}?post=${targetId}`;
+    }
+    return `/repertoires#post-${targetId}`;
   }
   if (topicType === 'chunk') {
     // Chunk comments live at /chunks/{slug}/... — NOT under /topics/. Without

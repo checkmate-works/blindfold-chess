@@ -337,6 +337,13 @@
       "when": 1780401982874,
       "tag": "20260602120622_add_play_settings_log_to_games",
       "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "7",
+      "when": 1780725592989,
+      "tag": "20260606055952_create_repertoires",
+      "breakpoints": true
     }
   ]
 }
