@@ -69,7 +69,9 @@ async function countActivePosters(start: Date, end: Date): Promise<number> {
         .selectDistinct({ userId: userIdColumn })
         .from(table)
         .where(and(...conditions));
-      return rows.map((r) => r.userId as string);
+      // Drop NULL authors (account-less `games` submissions) so they are not
+      // unioned into the Set as a single phantom poster.
+      return rows.map((r) => r.userId as string | null).filter((id): id is string => id != null);
     })
   );
 

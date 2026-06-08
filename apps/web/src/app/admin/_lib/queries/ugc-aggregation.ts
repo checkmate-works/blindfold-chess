@@ -1,7 +1,7 @@
 import { and, count, gte, isNull, lte, sql } from 'drizzle-orm';
 import { type PgColumn, type PgTable } from 'drizzle-orm/pg-core';
 
-import { chunks, db, positions, topicPosts } from '@/lib/db';
+import { chunks, db, games, positions, topicPosts } from '@/lib/db';
 
 import { type DailyCount, fillDateRange } from './aggregate-by-day';
 
@@ -24,10 +24,15 @@ import { type DailyCount, fillDateRange } from './aggregate-by-day';
  */
 export type UgcSource = {
   /** Stable identifier used as a key in summary responses and i18n lookups. */
-  name: 'topic_posts' | 'positions' | 'chunks';
+  name: 'topic_posts' | 'positions' | 'chunks' | 'games';
   table: PgTable;
   createdAtColumn: PgColumn;
   deletedAtColumn: PgColumn | null;
+  /**
+   * Column holding the posting user's id. May be nullable (e.g. `games`
+   * allows account-less authors); `countActivePosters` filters NULLs so an
+   * anonymous post does not register as a phantom poster.
+   */
   userIdColumn: PgColumn;
   /** Categorical column used for per-source breakdown rows. */
   breakdownColumn: PgColumn | null;
@@ -57,6 +62,18 @@ export const UGC_SOURCES: readonly UgcSource[] = [
     deletedAtColumn: chunks.deletedAt,
     userIdColumn: chunks.userId,
     breakdownColumn: chunks.status,
+  },
+  {
+    // Shared games (公開対局): a published AI-game snapshot. Counting a row =
+    // a publish event. `private` is unimplemented, so non-deleted ≈ public; we
+    // count all non-deleted games (mirrors chunks counting drafts) rather than
+    // filtering on `status`. Broken down by engine_kind (stockfish / maia).
+    name: 'games',
+    table: games,
+    createdAtColumn: games.createdAt,
+    deletedAtColumn: games.deletedAt,
+    userIdColumn: games.authorId,
+    breakdownColumn: games.engineKind,
   },
 ];
 
