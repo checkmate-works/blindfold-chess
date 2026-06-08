@@ -10,7 +10,6 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { getOptionalUser } from '@/lib/auth';
-import { getAttachmentsForPosts } from '@/lib/games/get-attachments-for-posts';
 import { getRepertoireLikeMetaMap } from '@/lib/repertoires/like-queries';
 import { getRepertoireForViewer } from '@/lib/repertoires/queries';
 import { replayRepertoireLine } from '@/lib/repertoires/replay-line';
@@ -18,21 +17,7 @@ import { resolveDisplayName } from '@/lib/users/display-name';
 
 import { formatMovesToPgn } from '@/app/[locale]/(public)/games/play/postmortem/_lib/format-moves-to-pgn';
 import { PositionAuthorAttribution } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorAttribution';
-import { attachPostFenFromForm } from '@/app/[locale]/(public)/topics/_actions/attachPostFen';
-import { attachPostPgn } from '@/app/[locale]/(public)/topics/_actions/attachPostPgn';
-import { deletePost } from '@/app/[locale]/(public)/topics/_actions/deletePost';
-import { editPost } from '@/app/[locale]/(public)/topics/_actions/editPost';
-import { removePostAttachment } from '@/app/[locale]/(public)/topics/_actions/removePostAttachment';
-import { CommentTree } from '@/app/[locale]/(public)/topics/_components/CommentTree';
-import { JoinConversationToggle } from '@/app/[locale]/(public)/topics/_components/JoinConversationToggle';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
-import { SortSelect } from '@/app/[locale]/(public)/topics/_components/SortSelect';
-import { buildCommentTree } from '@/app/[locale]/(public)/topics/_lib/comment-tree';
-import { validateSort } from '@/app/[locale]/(public)/topics/_lib/pagination';
-import {
-  getCommentTreeForTopic,
-  getPostCountByTopicKey,
-} from '@/app/[locale]/(public)/topics/_lib/queries';
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -41,10 +26,7 @@ import { toggleLike } from '../_actions/toggleLike';
 import { DeleteRepertoireButton } from '../_components/DeleteRepertoireButton';
 import type { RepertoireViewerLine } from '../_components/RepertoireLineViewer';
 import { RepertoireLineViewer } from '../_components/RepertoireLineViewer';
-import { createReplyWithAttachment } from './_actions/createReplyWithAttachment';
-import { createReplyWithFenAttachment } from './_actions/createReplyWithFenAttachment';
-import { toggleRepertoirePostLike } from './_actions/toggleRepertoirePostLike';
-import { NewPostForm } from './_components/NewPostForm';
+import { RepertoireCommentsSection } from './_components/RepertoireCommentsSection';
 
 type Props = {
   params: Promise<{ locale: Locale; id: string }>;
@@ -63,11 +45,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function RepertoireDetailPage({ params, searchParams }: Props) {
   const { locale, id } = await params;
-  const sortBy = validateSort(((await searchParams).sort as string | undefined) ?? 'new');
   const t = await getTranslations({ locale, namespace: 'Repertoires' });
-  const tComments = await getTranslations({ locale, namespace: 'topics.repertoire' });
-  const tTopics = await getTranslations({ locale, namespace: 'topics' });
   const currentUser = await getOptionalUser();
+  const sortParam = (await searchParams).sort;
 
   // Public (or owned) repertoires are viewable without login; only the owner
   // sees owner-only affordances (delete). Comments are read-only for anon.
@@ -88,13 +68,6 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
     const formatted = formatMovesToPgn(sans, startsAsBlack, startMoveNumber);
     return { id: line.id, name: line.name, lineNo: line.seq + 1, formatted, positions };
   });
-
-  // Comments — the same topic_posts thread the puzzle / topics pages use.
-  const commentCount = await getPostCountByTopicKey('repertoire', repertoire.id);
-  const allComments = await getCommentTreeForTopic('repertoire', repertoire.id, currentUser?.id);
-  const commentTree = buildCommentTree(allComments, sortBy);
-  const allPostIds = allComments.map((c) => c.id);
-  const attachments = allPostIds.length > 0 ? await getAttachmentsForPosts(allPostIds) : new Map();
 
   return (
     <PageLayout
@@ -147,49 +120,12 @@ export default async function RepertoireDetailPage({ params, searchParams }: Pro
         )}
       </div>
 
-      <SectionTitle>{tComments('commentsTitle')}</SectionTitle>
-
-      {currentUser && commentCount === 0 ? (
-        <NewPostForm locale={locale} repertoireId={repertoire.id} />
-      ) : (
-        <JoinConversationToggle count={commentCount} joinLabel={tTopics('joinConversation')}>
-          <NewPostForm locale={locale} repertoireId={repertoire.id} />
-        </JoinConversationToggle>
-      )}
-
-      {commentTree.length > 0 && (
-        <>
-          <SortSelect
-            basePath={`/repertoires/${repertoire.id}`}
-            translationKey="topics.repertoire.sort"
-            currentSort={sortBy}
-          />
-          <CommentTree
-            comments={commentTree}
-            locale={locale}
-            topicKey={repertoire.id}
-            currentUserId={currentUser?.id}
-            enableSpoiler={false}
-            redirectPath={`/${locale}/repertoires/${repertoire.id}`}
-            toggleLikeAction={toggleRepertoirePostLike}
-            replyAttachmentActions={{
-              pgn: createReplyWithAttachment,
-              fen: createReplyWithFenAttachment,
-            }}
-            deletePostAction={deletePost}
-            editPostAction={editPost}
-            removeAttachmentAction={removePostAttachment}
-            attachPgnAction={attachPostPgn}
-            attachFenAction={attachPostFenFromForm}
-            attachmentsByPostId={attachments}
-            i18n={{
-              likeNamespace: 'topics.repertoire',
-              replyNamespace: 'topics.repertoire.replies',
-              deleteNamespace: 'topics.repertoire.deletePost',
-            }}
-          />
-        </>
-      )}
+      <RepertoireCommentsSection
+        locale={locale}
+        repertoireId={repertoire.id}
+        sort={typeof sortParam === 'string' ? sortParam : undefined}
+        currentUserId={currentUser?.id}
+      />
     </PageLayout>
   );
 }

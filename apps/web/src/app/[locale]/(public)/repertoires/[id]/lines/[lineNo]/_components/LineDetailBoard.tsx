@@ -12,18 +12,9 @@ import { HorizontalMoveList } from '@/app/[locale]/(public)/games/play/_componen
 import { MoveNavigationControls } from '@/app/[locale]/(public)/games/play/_components/MoveNavigationControls';
 import { INLINE_BOARD_CARD_CHROME } from '@/app/[locale]/(public)/games/play/_lib/skeleton-layout-classes';
 
+import type { LineMove } from '../_lib/line-moves';
 import { AnnotationPanel } from './AnnotationPanel';
 import { LineMovesPanel } from './LineMovesPanel';
-
-/** Per-move data for the move currently in focus: its annotation key + note. */
-export type LineMove = {
-  /** Normalised FEN of the position this move reaches (annotation key). */
-  positionKey: string;
-  /** Display label for the move, e.g. "3. d4" / "3... Nf6". */
-  label: string;
-  /** Owner's "why this move" note, or null. */
-  annotation: string | null;
-};
 
 type Props = {
   side: Side;

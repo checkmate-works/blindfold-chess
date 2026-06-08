@@ -13,7 +13,6 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { Link } from '@/i18n/routing';
-import { toPositionKey } from '@blindfold-chess/features/chess-core';
 import { FiEdit2 } from 'react-icons/fi';
 
 import { getOptionalUser } from '@/lib/auth';
@@ -27,9 +26,9 @@ import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { createPageMetadata } from '@/app/[locale]/_lib/metadata';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
-import type { LineMove } from './_components/LineDetailBoard';
 import { LineDetailBoard } from './_components/LineDetailBoard';
 import { MoveCommentsSection } from './_components/MoveCommentsSection';
+import { buildLineMoves } from './_lib/line-moves';
 
 type Props = {
   params: Promise<{ locale: Locale; id: string; lineNo: string }>;
@@ -44,20 +43,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     titleKey: 'line.title',
     omitDescription: true,
   });
-}
-
-/** Full-move number + side label for the i-th half-move (1-based). */
-function moveLabel(
-  san: string,
-  ply: number,
-  startsAsBlack: boolean,
-  startMoveNumber: number
-): string {
-  const blackToMove = startsAsBlack ? ply % 2 === 1 : ply % 2 === 0;
-  const fullMove = startsAsBlack
-    ? startMoveNumber + Math.floor(ply / 2)
-    : startMoveNumber + Math.floor((ply - 1) / 2);
-  return blackToMove ? `${fullMove}... ${san}` : `${fullMove}. ${san}`;
 }
 
 export default async function RepertoireLineDetailPage({ params, searchParams }: Props) {
@@ -77,17 +62,7 @@ export default async function RepertoireLineDetailPage({ params, searchParams }:
   const formatted = formatMovesToPgn(sans, startsAsBlack, startMoveNumber);
 
   const annotations = await getAnnotationsForRepertoire(id);
-
-  // One LineMove per ply (positions[i] is the position after move i).
-  const moves: LineMove[] = sans.map((san, idx) => {
-    const ply = idx + 1;
-    const positionKey = toPositionKey(positions[ply].fen);
-    return {
-      positionKey,
-      label: moveLabel(san, ply, startsAsBlack, startMoveNumber),
-      annotation: annotations.get(positionKey)?.text ?? null,
-    };
-  });
+  const moves = buildLineMoves({ sans, positions, startsAsBlack, startMoveNumber, annotations });
 
   const moveParam = Number((await searchParams).move);
   const initialPly =
