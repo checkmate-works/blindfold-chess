@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 
-import { countryCodeToFlag } from '@/lib/countries';
-
 import { UserAvatar } from '@/app/[locale]/_components';
+
+import { CountryFlag } from './CountryFlag';
 
 type Props = {
   avatarUrl: string | null;
@@ -41,7 +41,7 @@ export function ProfileHeader({
           <h1 className="text-xl font-bold tracking-tight break-words">
             {displayName}
             {flair && <span className="ml-2">{flair}</span>}
-            {country && <span className="ml-2">{countryCodeToFlag(country)}</span>}
+            {country && <CountryFlag code={country} locale={locale} className="ml-2" />}
           </h1>
           <p className="text-muted-foreground mt-1">@{username}</p>
         </div>
