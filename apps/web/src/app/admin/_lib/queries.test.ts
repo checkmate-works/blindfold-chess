@@ -135,6 +135,12 @@ vi.mock('@/lib/db', () => {
       userId: { __col: 'chunks.user_id' },
       status: { __col: 'chunks.status' },
     },
+    games: {
+      createdAt: { __col: 'games.created_at' },
+      deletedAt: { __col: 'games.deleted_at' },
+      authorId: { __col: 'games.author_id' },
+      engineKind: { __col: 'games.engine_kind' },
+    },
     likes: {
       createdAt: { __col: 'likes.created_at' },
     },
@@ -488,7 +494,11 @@ describe('getPostsPerDay', () => {
     whereCalls.length = 0;
   });
 
-  /** Enqueue per-source results in `UGC_SOURCES` order (topicPosts, positions, chunks). */
+  /**
+   * Enqueue per-source results in `UGC_SOURCES` order (topicPosts, positions,
+   * chunks, games). Sources omitted from the call default to no rows (the mock
+   * dequeues `[]`), so existing three-source tests stay valid as games is added.
+   */
   function enqueueSourceResults(...perSource: Array<Array<{ date: string; count: number }>>): void {
     for (const rows of perSource) dbResultsQueue.push(rows);
   }
@@ -632,29 +642,43 @@ describe('getPostsPerDay', () => {
   });
 
   it('should issue one db.select() per UGC source in parallel', async () => {
-    enqueueSourceResults([], [], []);
+    enqueueSourceResults([], [], [], []);
 
     await getPostsPerDay('2026-03-14', '2026-03-16');
 
-    // One query each for topicPosts, positions, and chunks.
-    expect(selectSpy).toHaveBeenCalledTimes(3);
+    // One query each for topicPosts, positions, chunks, and games.
+    expect(selectSpy).toHaveBeenCalledTimes(4);
   });
 
   it('should apply an isNull(deletedAt) filter to every UGC source', async () => {
-    enqueueSourceResults([], [], []);
+    enqueueSourceResults([], [], [], []);
 
     await getPostsPerDay('2026-03-14', '2026-03-16');
 
-    // Three `where` calls — one per source — each with an `and(...)` predicate
+    // Four `where` calls — one per source — each with an `and(...)` predicate
     // that must include an `isNull` conjunct.
-    expect(whereCalls).toHaveLength(3);
+    expect(whereCalls).toHaveLength(4);
 
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 4; i++) {
       const predicate = getWherePredicateAt(i);
       expect(predicate.__kind).toBe('and');
       const hasIsNull = predicate.conds.some((c) => c.__kind === 'isNull');
       expect(hasIsNull).toBe(true);
     }
+  });
+
+  it('should include games in the combined per-day total', async () => {
+    enqueueSourceResults(
+      [{ date: '2026-03-14', count: 3 }], // topicPosts
+      [], // positions
+      [], // chunks
+      [{ date: '2026-03-14', count: 4 }] // games
+    );
+
+    const result = await getPostsPerDay('2026-03-14', '2026-03-14');
+
+    expect(result.total).toBe(7);
+    expect(result.daily).toEqual([{ date: '2026-03-14', count: 7 }]);
   });
 
   it('should have total equal to the sum of daily counts', async () => {
@@ -694,26 +718,32 @@ describe('getKpiSummary', () => {
    *   1. countActivePosters → selectDistinct on topicPosts
    *   2. countActivePosters → selectDistinct on positions
    *   3. countActivePosters → selectDistinct on chunks
-   *   4. getUgcSourceBreakdown → select on topicPosts
-   *   5. getUgcSourceBreakdown → select on positions
-   *   6. getUgcSourceBreakdown → select on chunks
-   *   7. countLikesInPeriod → select on likes
+   *   4. countActivePosters → selectDistinct on games
+   *   5. getUgcSourceBreakdown → select on topicPosts
+   *   6. getUgcSourceBreakdown → select on positions
+   *   7. getUgcSourceBreakdown → select on chunks
+   *   8. getUgcSourceBreakdown → select on games
+   *   9. countLikesInPeriod → select on likes
    */
   function enqueueKpiResults(opts: {
-    activePostersTopic?: Array<{ userId: string }>;
-    activePostersPosition?: Array<{ userId: string }>;
-    activePostersChunk?: Array<{ userId: string }>;
+    activePostersTopic?: Array<{ userId: string | null }>;
+    activePostersPosition?: Array<{ userId: string | null }>;
+    activePostersChunk?: Array<{ userId: string | null }>;
+    activePostersGames?: Array<{ userId: string | null }>;
     breakdownTopic?: Array<{ key: string; count: number }>;
     breakdownPosition?: Array<{ key: string; count: number }>;
     breakdownChunk?: Array<{ key: string; count: number }>;
+    breakdownGames?: Array<{ key: string; count: number }>;
     likes?: Array<{ total: number }>;
   }): void {
     dbResultsQueue.push(opts.activePostersTopic ?? []);
     dbResultsQueue.push(opts.activePostersPosition ?? []);
     dbResultsQueue.push(opts.activePostersChunk ?? []);
+    dbResultsQueue.push(opts.activePostersGames ?? []);
     dbResultsQueue.push(opts.breakdownTopic ?? []);
     dbResultsQueue.push(opts.breakdownPosition ?? []);
     dbResultsQueue.push(opts.breakdownChunk ?? []);
+    dbResultsQueue.push(opts.breakdownGames ?? []);
     dbResultsQueue.push(opts.likes ?? [{ total: 0 }]);
   }
 
@@ -858,6 +888,52 @@ describe('getKpiSummary', () => {
     });
 
     expect(result.ugcPosts.activePosters).toBe(0);
+  });
+
+  it('should not count NULL game authors (account-less) as active posters', async () => {
+    // `games.author_id` is nullable; account-less submissions surface as NULL.
+    // They must be filtered out, not unioned in as a single phantom poster.
+    enqueueKpiResults({
+      activePostersTopic: [{ userId: 'real-user' }],
+      activePostersGames: [{ userId: null }, { userId: null }],
+    });
+
+    const result = await getKpiSummary({
+      startDate: '2026-03-14',
+      endDate: '2026-03-14',
+      usersTotalInPeriod: 0,
+      ugcTotalInPeriod: 3,
+    });
+
+    // Only `real-user` counts; the two NULL authors are dropped.
+    expect(result.ugcPosts.activePosters).toBe(1);
+  });
+
+  it('should include games breakdown rows keyed by engine kind', async () => {
+    enqueueKpiResults({
+      breakdownGames: [
+        { key: 'stockfish', count: 6 },
+        { key: 'maia', count: 4 },
+      ],
+    });
+
+    const result = await getKpiSummary({
+      startDate: '2026-03-14',
+      endDate: '2026-03-14',
+      usersTotalInPeriod: 0,
+      ugcTotalInPeriod: 10,
+    });
+
+    expect(result.ugcPosts.breakdown).toContainEqual({
+      source: 'games',
+      key: 'stockfish',
+      count: 6,
+    });
+    expect(result.ugcPosts.breakdown).toContainEqual({
+      source: 'games',
+      key: 'maia',
+      count: 4,
+    });
   });
 
   it('should include a breakdown row for each (source, key) pair from both sources', async () => {
@@ -1008,11 +1084,13 @@ describe('getKpiSummary', () => {
     //   0: activePosters topicPosts (has isNull)
     //   1: activePosters positions  (has isNull)
     //   2: activePosters chunks     (has isNull)
-    //   3: breakdown topicPosts     (has isNull)
-    //   4: breakdown positions      (has isNull)
-    //   5: breakdown chunks         (has isNull)
-    //   6: likes                    (NO isNull)
-    const likesPredicate = getWherePredicateAt(6);
+    //   3: activePosters games      (has isNull)
+    //   4: breakdown topicPosts     (has isNull)
+    //   5: breakdown positions      (has isNull)
+    //   6: breakdown chunks         (has isNull)
+    //   7: breakdown games          (has isNull)
+    //   8: likes                    (NO isNull)
+    const likesPredicate = getWherePredicateAt(8);
     expect(likesPredicate.__kind).toBe('and');
     const hasIsNull = likesPredicate.conds.some((c) => c.__kind === 'isNull');
     expect(hasIsNull).toBe(false);
@@ -1028,9 +1106,9 @@ describe('getKpiSummary', () => {
       ugcTotalInPeriod: 0,
     });
 
-    // First six queries (3 active-posters + 3 breakdowns) must each include
+    // First eight queries (4 active-posters + 4 breakdowns) must each include
     // an `isNull(deletedAt)` conjunct in their `and(...)` predicate.
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 8; i++) {
       const predicate = getWherePredicateAt(i);
       expect(predicate.__kind).toBe('and');
       const hasIsNull = predicate.conds.some((c) => c.__kind === 'isNull');
@@ -1048,10 +1126,10 @@ describe('getKpiSummary', () => {
       ugcTotalInPeriod: 0,
     });
 
-    // 3 selectDistinct calls (one per UGC source for active posters).
-    expect(selectDistinctSpy).toHaveBeenCalledTimes(3);
-    // 3 breakdown selects + 1 likes select = 4 select calls.
-    expect(selectSpy).toHaveBeenCalledTimes(4);
+    // 4 selectDistinct calls (one per UGC source for active posters).
+    expect(selectDistinctSpy).toHaveBeenCalledTimes(4);
+    // 4 breakdown selects + 1 likes select = 5 select calls.
+    expect(selectSpy).toHaveBeenCalledTimes(5);
   });
 
   it('should return all zeros (and empty breakdown) for a fully empty period', async () => {
@@ -1096,10 +1174,10 @@ describe('getKpiSummary', () => {
     // (breakdown), `where` (likes), and `selectDistinct` (active posters).
     // We already asserted the exact call counts above. As a stronger
     // regression guard, assert that the TOTAL number of drizzle queries is
-    // exactly 7 (3 selectDistinct + 4 select), i.e. no duplicate per-day
+    // exactly 9 (4 selectDistinct + 5 select), i.e. no duplicate per-day
     // aggregation queries leaked in.
-    expect(selectDistinctSpy).toHaveBeenCalledTimes(3);
-    expect(selectSpy).toHaveBeenCalledTimes(4);
+    expect(selectDistinctSpy).toHaveBeenCalledTimes(4);
+    expect(selectSpy).toHaveBeenCalledTimes(5);
   });
 
   it('should handle a single-day period (days = 1)', async () => {

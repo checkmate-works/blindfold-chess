@@ -3448,7 +3448,8 @@
         "sources": {
           "topic_posts": "topic_posts",
           "positions": "positions",
-          "chunks": "chunks"
+          "chunks": "chunks",
+          "games": "games"
         },
         "breakdowns": {
           "topic_posts": {
@@ -3461,6 +3462,10 @@
           "chunks": {
             "draft": "draft",
             "published": "published"
+          },
+          "games": {
+            "stockfish": "Stockfish",
+            "maia": "Maia"
           }
         },
         "help": {
