@@ -8,6 +8,7 @@ import { MUKYU_SLUG } from '@/lib/db/data/ranks';
 import { listAllAuthUsers } from '@/lib/supabase/list-all-auth-users';
 
 import type { AdminUserFilters } from '../filters';
+import { UNKNOWN_COUNTRY } from './country-stats';
 import { getSignupMethod } from './signup-methods';
 
 type Profile = typeof profiles.$inferSelect;
@@ -99,7 +100,7 @@ export const getFilteredPopulation = cache(
 
       // Country filter
       if (countryFilter) {
-        const userCountry = profile?.country ?? 'Unknown';
+        const userCountry = profile?.country ?? UNKNOWN_COUNTRY;
         if (userCountry !== countryFilter) return false;
       }
 

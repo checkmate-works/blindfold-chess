@@ -3553,6 +3553,7 @@
       "usersBySignupMethod": "Users by Signup Method",
       "noData": "データがありません",
       "users": "人",
+      "unknownCountry": "不明",
       "rankNames": {
         "mukyu": "無級",
         "5kyu": "5級",

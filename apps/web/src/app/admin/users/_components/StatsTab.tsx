@@ -54,6 +54,7 @@ export async function StatsTab({
             labels={{
               noData: t('stats.noData'),
               users: t('stats.users'),
+              unknown: t('stats.unknownCountry'),
             }}
           />
         </StatsChartNav>
