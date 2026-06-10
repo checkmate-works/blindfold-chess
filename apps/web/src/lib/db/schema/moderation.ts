@@ -131,6 +131,24 @@ export type NewRateLimitKeyEvent = typeof rateLimitKeyEvents.$inferInsert;
  * profile edits, logins) for analytics and admin visibility. Append-only — no
  * UPDATE or DELETE RLS policies.
  *
+ * @design What earns a row here — prefer events NOT derivable from domain tables
+ *
+ * The genuine reason this table exists is to preserve facts the domain tables
+ * cannot reproduce on their own:
+ *   - Toggle-offs: `unlike`, unfollow. `likes` / `userFollows` are current-state
+ *     only (no soft delete) — once toggled off, the row is physically gone, so
+ *     "user liked then un-liked" survives ONLY here.
+ *   - Ephemeral auth events: `logout`, login frequency, `change_password`.
+ *     `auth.users` keeps only the latest sign-in; the sequence lives only here.
+ * For soft-deleted UGC (games, chunks, posts, repertoires, positions, interview —
+ * all carry `deletedAt`), the create/publish/edit/delete actions are fully
+ * reconstructable from the entity table itself, so logging them here is REDUNDANT
+ * denormalization whose only payoff is the unified `/admin/activity-log` timeline
+ * (one read surface instead of an N-table UNION). That is a legitimate ergonomics
+ * choice, not a data-preservation need — decide per action which one you're buying.
+ * Note also: `logActivityEvent` is fire-and-forget (errors swallowed), so this is
+ * NOT a trustworthy audit trail. Moderator-actor auditing lives in `moderation_actions`.
+ *
  * @design Polymorphic target_type + target_id
  *
  * Consistent with `moderation_actions` and `topicPosts.topicType + topicKey`.
