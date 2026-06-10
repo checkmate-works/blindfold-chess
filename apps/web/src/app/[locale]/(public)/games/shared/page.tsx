@@ -18,6 +18,7 @@ import { listSharedGames } from '@/lib/db/games';
 import { GAME_LIKE_TARGET, getLikeMetaMap } from '@/lib/db/like-queries';
 import { EMPTY_REPLY_META, getGameCommentMetaMap } from '@/lib/db/reply-meta-queries';
 
+import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import { CatalogListCard } from '@/app/[locale]/_components/CatalogListCard';
 import { generateCanonicalMetadata, resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -25,6 +26,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { GamesTabs } from '../_components/GamesTabs';
 import { toggleGameLikeAction } from './[id]/_actions/game-like';
+import { OpeningTag } from './_components/OpeningTag';
 import { SharedGamesSort } from './_components/SharedGamesSort';
 import { parseSharedGamesSort } from './_lib/sort';
 
@@ -62,6 +64,7 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
     getGameCommentMetaMap(ids),
   ]);
   const justNowLabel = t('detail.justNow');
+  const openingNameT = await getTranslations({ locale, namespace: 'topics.openings.names' });
 
   return (
     <PageLayout title={t('list.title')} locale={locale}>
@@ -94,6 +97,21 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
               justNowLabel={justNowLabel}
               locale={locale}
               topicKey=""
+              badge={
+                g.opening ? (
+                  <OpeningTag
+                    compact
+                    slug={g.opening.slug}
+                    displayName={getOpeningDisplayName(
+                      openingNameT,
+                      g.opening.slug,
+                      g.opening.name
+                    )}
+                    ecoCode={g.opening.ecoCode}
+                    locale={locale}
+                  />
+                ) : undefined
+              }
             />
           ))}
         </div>
