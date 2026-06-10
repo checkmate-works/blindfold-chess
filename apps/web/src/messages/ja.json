@@ -1916,6 +1916,10 @@
     "saved": "保存済み",
     "postmortem": "感想戦",
     "resultTitle": "ゲーム結果",
+    "playerColor": {
+      "white": "白",
+      "black": "黒"
+    },
     "gameDetails": {
       "title": "ゲーム詳細"
     },

@@ -18,6 +18,7 @@ import type {
   MoveOperationLog,
   PlaySettingsChangeEntry,
 } from '@/lib/games/saved-game-types';
+import type { DetectedOpening } from '@/lib/openings/detect-game-opening';
 
 import { InlineBoardView } from '@/app/[locale]/(public)/games/play/_components/InlineBoardView';
 import { MovesPanel } from '@/app/[locale]/(public)/games/play/_components/MovesPanel';
@@ -49,6 +50,8 @@ type Props = {
   moves: string[];
   startingFen: string | null;
   playerColor: 'white' | 'black';
+  /** Opening detected from the moves (server-side); shown above the stats block. */
+  detectedOpening: DetectedOpening | null;
   engineConfig: EngineConfig;
   operationLogs: MoveOperationLog[] | null;
   /** Start-of-game blindfold settings snapshot; null for legacy/plain games. */
@@ -95,6 +98,7 @@ export function GameReplay({
   moves,
   startingFen,
   playerColor,
+  detectedOpening,
   engineConfig,
   operationLogs,
   playSettings,
@@ -248,6 +252,8 @@ export function GameReplay({
         engineConfig={engineConfig}
         playSettings={playSettings ?? undefined}
         playerColor={playerColor}
+        opening={detectedOpening}
+        locale={locale}
         playSettingsLog={playSettingsLog ?? undefined}
         headingAsSection
         showInitialSettings={false}

@@ -17,6 +17,7 @@ import 'server-only';
 
 import { generateManageToken, manageTokenMatches } from '@/lib/games/manage-token';
 import type { GameColumns, ValidatedGame } from '@/lib/games/publish-game';
+import { type DetectedOpening, detectGameOpening } from '@/lib/openings/detect-game-opening';
 
 import { db } from './index';
 import type { GameRecord } from './schema';
@@ -92,6 +93,8 @@ export type SharedGameListItem = {
   engineKind: 'stockfish' | 'maia';
   engineElo: number;
   result: 'win' | 'loss' | 'draw';
+  /** Side the author played — shown with a colour icon on the card. */
+  playerColor: 'white' | 'black';
   moveCount: number;
   cleanRate: number | null;
   /** Author profile for the card avatar; null for an account-less author. */
@@ -100,6 +103,12 @@ export type SharedGameListItem = {
     displayName: string | null;
     avatarUrl: string | null;
   } | null;
+  /**
+   * The deepest named opening the game played, derived from its moves against
+   * the opening master; null for custom-start games or unrecognised lines. The
+   * move list itself is fetched only to compute this and is not exposed here.
+   */
+  opening: DetectedOpening | null;
 };
 
 /** Gallery sort modes (kept in sync with the page's sort control). */
@@ -135,8 +144,11 @@ export async function listSharedGames(
       engineKind: games.engineKind,
       engineElo: games.engineElo,
       result: games.result,
+      playerColor: games.playerColor,
       moveCount: games.moveCount,
       cleanRate: games.cleanRate,
+      // Fetched only to derive the opening below; not returned to the caller.
+      moves: games.moves,
       authorUsername: profiles.username,
       authorDisplayName: profiles.displayName,
       authorAvatarUrl: profiles.avatarUrl,
@@ -147,25 +159,31 @@ export async function listSharedGames(
     .orderBy(...orderBy)
     .limit(limit);
 
-  return rows.map((r) => ({
-    id: r.id,
-    title: r.title,
-    description: r.description,
-    startingFen: r.startingFen,
-    createdAt: r.createdAt,
-    engineKind: r.engineKind,
-    engineElo: r.engineElo,
-    result: r.result,
-    moveCount: r.moveCount,
-    cleanRate: r.cleanRate,
-    author: r.authorUsername
-      ? {
-          username: r.authorUsername,
-          displayName: r.authorDisplayName,
-          avatarUrl: r.authorAvatarUrl,
-        }
-      : null,
-  }));
+  // Opening detection shares one position index across the page (React.cache),
+  // and each game is only replayed through its opening phase, so this is cheap.
+  return Promise.all(
+    rows.map(async (r) => ({
+      id: r.id,
+      title: r.title,
+      description: r.description,
+      startingFen: r.startingFen,
+      createdAt: r.createdAt,
+      engineKind: r.engineKind,
+      engineElo: r.engineElo,
+      result: r.result,
+      playerColor: r.playerColor,
+      moveCount: r.moveCount,
+      cleanRate: r.cleanRate,
+      author: r.authorUsername
+        ? {
+            username: r.authorUsername,
+            displayName: r.authorDisplayName,
+            avatarUrl: r.authorAvatarUrl,
+          }
+        : null,
+      opening: await detectGameOpening({ moves: r.moves, startingFen: r.startingFen }),
+    }))
+  );
 }
 
 export type PublishGameResult = {

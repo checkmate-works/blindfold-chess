@@ -79,6 +79,13 @@ export type {
 export { matchGameToLine, matchGameAgainstLines } from "./line-match";
 
 export type {
+  OpeningEntry,
+  OpeningIndex,
+  OpeningMatch,
+} from "./detect-opening";
+export { buildOpeningIndex, detectOpening } from "./detect-opening";
+
+export type {
   AttachedPgnError,
   ValidateAttachedPgnResult,
 } from "./pgn-attachment";

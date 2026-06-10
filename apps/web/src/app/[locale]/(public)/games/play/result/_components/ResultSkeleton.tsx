@@ -1,4 +1,7 @@
-import { Skeleton } from '@/app/[locale]/_components';
+// Import the leaf directly (not the `_components` barrel): this skeleton is also
+// rendered by PlayClient as the finished-game → result transition bridge, and
+// pulling the whole barrel there would drag in next-intl navigation modules.
+import { Skeleton } from '@/app/[locale]/_components/Skeleton';
 
 /**
  * Loading skeleton for the result page, mirroring {@link ResultClient}'s
@@ -24,22 +27,23 @@ export function ResultSkeleton() {
 
         {/* Stats overview */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between gap-2">
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-3 w-16" />
-          </div>
+          {/* Section title (underlined h2 on the result page) */}
+          <Skeleton className="h-6 w-28" />
 
-          {/* Metric cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                className="rounded-lg border border-border bg-card px-3 py-3 flex flex-col items-center gap-2"
-              >
-                <Skeleton className="h-7 w-10" />
-                <Skeleton className="h-3 w-12" />
-              </div>
-            ))}
+          {/* Opponent + player-colour / opening rows, mirroring
+              GameStatsOverview: the engine badge line, then the colour chip +
+              opening tag row added beneath it. */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-1.5">
+              <Skeleton className="h-[18px] w-[18px] rounded" />
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-3 w-12" />
+            </div>
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-5 w-5 rounded-full" />
+              <Skeleton className="h-4 w-12" />
+              <Skeleton className="h-5 w-28 rounded-full" />
+            </div>
           </div>
 
           {/* Per-move effort strip */}

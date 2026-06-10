@@ -6,6 +6,7 @@ import { listGameChunks } from '@/lib/db/game-chunks';
 import { getCommentUserProfile, listGameComments } from '@/lib/db/game-comments';
 import { getGameById } from '@/lib/db/games';
 import { GAME_LIKE_TARGET, getLikeMeta } from '@/lib/db/like-queries';
+import { detectGameOpening } from '@/lib/openings/detect-game-opening';
 import { createClient } from '@/lib/supabase/server';
 import { resolveDisplayName } from '@/lib/users/display-name';
 import { UUID_RE } from '@/lib/validations/uuid';
@@ -42,6 +43,11 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
   const { game, author } = detail;
   const authorDisplayName = author ? resolveDisplayName(author) : t('detail.guest');
 
+  // Opening is derived from the moves (see detectGameOpening); null for
+  // custom-start games or lines outside the master. Rendered (with the player
+  // colour) inside GameReplay, above the stats block.
+  const opening = await detectGameOpening({ moves: game.moves, startingFen: game.startingFen });
+
   // Registered ownership is known server-side; account-less ownership (manage
   // token) is resolved client-side inside OwnerActions.
   const supabase = await createClient();
@@ -77,6 +83,7 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
           moves={game.moves}
           startingFen={game.startingFen}
           playerColor={game.playerColor}
+          detectedOpening={opening}
           engineConfig={game.engineConfig}
           operationLogs={game.operationLogs}
           playSettings={game.playSettings ?? null}

@@ -14,6 +14,7 @@ import { PlayClient } from './PlayClient';
 
 const replace = vi.fn();
 const push = vi.fn();
+const prefetch = vi.fn();
 let finishedParam: string | null;
 const notFoundSpy = vi.fn();
 
@@ -21,7 +22,7 @@ let guardAction: Mock;
 let isAuthModalOpen: boolean;
 
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ replace, push }),
+  useRouter: () => ({ replace, push, prefetch }),
   useSearchParams: () => ({ get: (k: string) => (k === 'finished' ? finishedParam : null) }),
   notFound: () => notFoundSpy(),
 }));

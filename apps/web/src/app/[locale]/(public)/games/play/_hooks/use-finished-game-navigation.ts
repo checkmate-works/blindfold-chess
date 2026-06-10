@@ -56,6 +56,17 @@ export function useFinishedGameNavigation({
   const router = useRouter();
   const { guardAction, isModalOpen, closeModal } = useAuthGuard();
 
+  // Warm the result route ahead of the on-finish redirect. That redirect is a
+  // programmatic (non-prefetched) navigation to a dynamic route, so without
+  // this its `loading.tsx` shell — the result skeleton — only paints after a
+  // server round-trip, leaving a blank gap. Prefetch keys on the pathname; the
+  // `?gameId` query is irrelevant to the prefetched shell. Skipped in review
+  // mode, which never redirects.
+  useEffect(() => {
+    if (isFinishedView) return;
+    router.prefetch(`/${locale}/games/play/result`);
+  }, [isFinishedView, locale, router]);
+
   // Redirect to result page when the game ends — UNLESS we are intentionally
   // reviewing a finished game (`finished=1`), in which case we stay here and
   // render the read-only FinishedGamePanel.

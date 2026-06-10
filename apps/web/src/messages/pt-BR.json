@@ -1912,6 +1912,10 @@
     "saved": "Salvo",
     "postmortem": "Revisão da Partida",
     "resultTitle": "Resultado da Partida",
+    "playerColor": {
+      "white": "Brancas",
+      "black": "Pretas"
+    },
     "gameDetails": {
       "title": "Detalhes da Partida"
     },

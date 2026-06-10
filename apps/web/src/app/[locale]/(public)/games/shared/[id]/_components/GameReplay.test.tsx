@@ -113,6 +113,7 @@ function baseProps(overrides: Partial<ReplayProps> = {}): ReplayProps {
     moves: mockMoves,
     startingFen: null,
     playerColor: 'white',
+    detectedOpening: null,
     engineConfig: { kind: 'stockfish', skillLevel: 5 } as ReplayProps['engineConfig'],
     operationLogs: null,
     playSettings: null,
