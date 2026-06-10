@@ -70,6 +70,11 @@ type Props = {
    */
   badge?: ReactNode;
   /**
+   * Optional metadata row rendered on its own line under the title (e.g. the
+   * shared-games gallery's player-colour + opening row).
+   */
+  meta?: ReactNode;
+  /**
    * Optional owner-only / management actions (e.g. an Edit link) rendered
    * directly below `PostFooter`.
    */
@@ -110,6 +115,7 @@ export function CatalogListCard({
   locale,
   topicKey,
   badge,
+  meta,
   actions,
 }: Props) {
   const displayName = resolveDisplayName(profile);
@@ -169,6 +175,7 @@ export function CatalogListCard({
         </h3>
         {badge}
       </div>
+      {meta && <div className="mt-1.5">{meta}</div>}
       {descriptionExcerpt && (
         <p className="text-sm text-muted-foreground line-clamp-2">{descriptionExcerpt}</p>
       )}

@@ -3,7 +3,7 @@
 import Image from 'next/image';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FaChessKing, FaClipboardList } from 'react-icons/fa';
+import { FaClipboardList } from 'react-icons/fa';
 
 import type { EngineConfig } from '@/lib/engines';
 import { ENGINE_LOGO_SRC } from '@/lib/engines';
@@ -13,7 +13,7 @@ import type { GamePlaySettings, PlaySettingsChangeEntry } from '@/lib/games/save
 import type { DetectedOpening } from '@/lib/openings/detect-game-opening';
 
 import { PlaySettingsIndicator } from '@/app/[locale]/(public)/games/shared/[id]/_components/PlaySettingsIndicator';
-import { OpeningTag } from '@/app/[locale]/(public)/games/shared/_components/OpeningTag';
+import { GameColorOpeningRow } from '@/app/[locale]/(public)/games/shared/_components/GameColorOpeningRow';
 import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
@@ -198,34 +198,20 @@ export function GameStatsOverview({
           )}
           {/* Which side the player had, plus the opening they reached. The
               colour chip removes the "who was white?" ambiguity of the bare
-              engine line; the opening links to its topic page. */}
+              engine line; the opening links to its topic page. Shared with the
+              gallery card so both render identically. */}
           {playerColor && opening !== undefined && locale && (
-            <div className="flex flex-wrap items-center gap-2 text-xs">
-              <span
-                className="inline-flex items-center gap-1.5"
-                title={t(`playerColor.${playerColor}`)}
-              >
-                <span
-                  className={`inline-flex h-5 w-5 items-center justify-center rounded-full border ${
-                    playerColor === 'white'
-                      ? 'border-border bg-white text-neutral-900'
-                      : 'border-neutral-700 bg-neutral-900 text-white'
-                  }`}
-                >
-                  <FaChessKing className="h-3 w-3" aria-hidden />
-                </span>
-                <span className="text-muted-foreground">{t(`playerColor.${playerColor}`)}</span>
-              </span>
-              {opening && (
-                <OpeningTag
-                  compact
-                  slug={opening.slug}
-                  displayName={getOpeningDisplayName(openingNameT, opening.slug, opening.name)}
-                  ecoCode={opening.ecoCode}
-                  locale={locale}
-                />
-              )}
-            </div>
+            <GameColorOpeningRow
+              playerColor={playerColor}
+              colorLabel={t(`playerColor.${playerColor}`)}
+              opening={opening}
+              openingDisplayName={
+                opening
+                  ? getOpeningDisplayName(openingNameT, opening.slug, opening.name)
+                  : undefined
+              }
+              locale={locale}
+            />
           )}
           {showInitialSettings && playSettings && playerColor && (
             <PlaySettingsIndicator

@@ -93,6 +93,8 @@ export type SharedGameListItem = {
   engineKind: 'stockfish' | 'maia';
   engineElo: number;
   result: 'win' | 'loss' | 'draw';
+  /** Side the author played — shown with a colour icon on the card. */
+  playerColor: 'white' | 'black';
   moveCount: number;
   cleanRate: number | null;
   /** Author profile for the card avatar; null for an account-less author. */
@@ -142,6 +144,7 @@ export async function listSharedGames(
       engineKind: games.engineKind,
       engineElo: games.engineElo,
       result: games.result,
+      playerColor: games.playerColor,
       moveCount: games.moveCount,
       cleanRate: games.cleanRate,
       // Fetched only to derive the opening below; not returned to the caller.
@@ -168,6 +171,7 @@ export async function listSharedGames(
       engineKind: r.engineKind,
       engineElo: r.engineElo,
       result: r.result,
+      playerColor: r.playerColor,
       moveCount: r.moveCount,
       cleanRate: r.cleanRate,
       author: r.authorUsername

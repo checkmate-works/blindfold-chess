@@ -26,7 +26,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { GamesTabs } from '../_components/GamesTabs';
 import { toggleGameLikeAction } from './[id]/_actions/game-like';
-import { OpeningTag } from './_components/OpeningTag';
+import { GameColorOpeningRow } from './_components/GameColorOpeningRow';
 import { SharedGamesSort } from './_components/SharedGamesSort';
 import { parseSharedGamesSort } from './_lib/sort';
 
@@ -64,7 +64,10 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
     getGameCommentMetaMap(ids),
   ]);
   const justNowLabel = t('detail.justNow');
-  const openingNameT = await getTranslations({ locale, namespace: 'topics.openings.names' });
+  const [openingNameT, tPlay] = await Promise.all([
+    getTranslations({ locale, namespace: 'topics.openings.names' }),
+    getTranslations({ locale, namespace: 'play' }),
+  ]);
 
   return (
     <PageLayout title={t('list.title')} locale={locale}>
@@ -97,20 +100,22 @@ export default async function SharedGamesPage({ params, searchParams }: Props) {
               justNowLabel={justNowLabel}
               locale={locale}
               topicKey=""
-              badge={
-                g.opening ? (
-                  <OpeningTag
-                    compact
-                    slug={g.opening.slug}
-                    displayName={getOpeningDisplayName(
-                      openingNameT,
-                      g.opening.slug,
-                      g.opening.name
-                    )}
-                    ecoCode={g.opening.ecoCode}
-                    locale={locale}
-                  />
-                ) : undefined
+              meta={
+                <GameColorOpeningRow
+                  playerColor={g.playerColor}
+                  colorLabel={
+                    g.playerColor === 'white'
+                      ? tPlay('playerColor.white')
+                      : tPlay('playerColor.black')
+                  }
+                  opening={g.opening}
+                  openingDisplayName={
+                    g.opening
+                      ? getOpeningDisplayName(openingNameT, g.opening.slug, g.opening.name)
+                      : undefined
+                  }
+                  locale={locale}
+                />
               }
             />
           ))}
