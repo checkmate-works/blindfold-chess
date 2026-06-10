@@ -18,6 +18,7 @@ import type {
   MoveOperationLog,
   PlaySettingsChangeEntry,
 } from '@/lib/games/saved-game-types';
+import type { DetectedOpening } from '@/lib/openings/detect-game-opening';
 
 import { InlineBoardView } from '@/app/[locale]/(public)/games/play/_components/InlineBoardView';
 import { MovesPanel } from '@/app/[locale]/(public)/games/play/_components/MovesPanel';
@@ -31,6 +32,8 @@ import { getMovingSide, parseFenMeta } from '@/app/[locale]/(public)/games/play/
 import { computeMoveNumber } from '@/app/[locale]/(public)/games/play/postmortem/_lib/compute-move-number';
 import { GameStatsOverview } from '@/app/[locale]/(public)/games/play/result/_components/GameStatsOverview';
 import { StatsAuthGate } from '@/app/[locale]/(public)/games/play/result/_components/StatsAuthGate';
+import { GameColorOpeningRow } from '@/app/[locale]/(public)/games/shared/_components/GameColorOpeningRow';
+import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -49,6 +52,8 @@ type Props = {
   moves: string[];
   startingFen: string | null;
   playerColor: 'white' | 'black';
+  /** Opening detected from the moves (server-side); shown above the stats block. */
+  detectedOpening: DetectedOpening | null;
   engineConfig: EngineConfig;
   operationLogs: MoveOperationLog[] | null;
   /** Start-of-game blindfold settings snapshot; null for legacy/plain games. */
@@ -95,6 +100,7 @@ export function GameReplay({
   moves,
   startingFen,
   playerColor,
+  detectedOpening,
   engineConfig,
   operationLogs,
   playSettings,
@@ -110,6 +116,8 @@ export function GameReplay({
   children,
 }: Props) {
   const t = useTranslations('sharedGames');
+  const tPlay = useTranslations('play');
+  const tOpeningNames = useTranslations('topics.openings.names');
   const router = useRouter();
   const { preferences } = useGamePreferences();
 
@@ -355,6 +363,24 @@ export function GameReplay({
       {isInitialPosition ? (
         <>
           {children}
+
+          {/* Player colour + opening — kept OUTSIDE the stats auth gate so this
+              public-permalink overview stays visible to logged-out visitors and
+              crawlers, while still sitting right above the (gated) stats block
+              for layout parity with the result screen. */}
+          <GameColorOpeningRow
+            playerColor={playerColor}
+            colorLabel={
+              playerColor === 'white' ? tPlay('playerColor.white') : tPlay('playerColor.black')
+            }
+            opening={detectedOpening}
+            openingDisplayName={
+              detectedOpening
+                ? getOpeningDisplayName(tOpeningNames, detectedOpening.slug, detectedOpening.name)
+                : undefined
+            }
+            locale={locale}
+          />
 
           {statsOverview &&
             (currentUser ? (

@@ -11,10 +11,8 @@ import { createClient } from '@/lib/supabase/server';
 import { resolveDisplayName } from '@/lib/users/display-name';
 import { UUID_RE } from '@/lib/validations/uuid';
 
-import { GameColorOpeningRow } from '@/app/[locale]/(public)/games/shared/_components/GameColorOpeningRow';
 import { PositionAuthorAttribution } from '@/app/[locale]/(public)/practice/(free-play)/_components/PositionAuthorAttribution';
 import { LikeButton } from '@/app/[locale]/(public)/topics/_components/LikeButton';
-import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import { PageLayout, SectionTitle } from '@/app/[locale]/_components';
 import type { Locale } from '@/app/[locale]/_lib/types';
 
@@ -46,13 +44,9 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
   const authorDisplayName = author ? resolveDisplayName(author) : t('detail.guest');
 
   // Opening is derived from the moves (see detectGameOpening); null for
-  // custom-start games or lines outside the master. The colour chip always
-  // shows (it's the author's side); the opening tag only when one is detected.
+  // custom-start games or lines outside the master. Rendered (with the player
+  // colour) inside GameReplay, above the stats block.
   const opening = await detectGameOpening({ moves: game.moves, startingFen: game.startingFen });
-  const [openingNameT, tPlay] = await Promise.all([
-    getTranslations({ locale, namespace: 'topics.openings.names' }),
-    getTranslations({ locale, namespace: 'play' }),
-  ]);
 
   // Registered ownership is known server-side; account-less ownership (manage
   // token) is resolved client-side inside OwnerActions.
@@ -79,18 +73,6 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
       breadcrumb={[{ label: t('list.title'), href: '/games/shared' }, { label: game.title }]}
     >
       <div className="space-y-6">
-        <GameColorOpeningRow
-          playerColor={game.playerColor}
-          colorLabel={
-            game.playerColor === 'white' ? tPlay('playerColor.white') : tPlay('playerColor.black')
-          }
-          opening={opening}
-          openingDisplayName={
-            opening ? getOpeningDisplayName(openingNameT, opening.slug, opening.name) : undefined
-          }
-          locale={locale}
-        />
-
         {/* Board + move list (games/play layout); the description sits below
             the board, above the stats, via GameReplay's slot. The blindfold
             difficulty (board visibility + piece obfuscation) is surfaced inside
@@ -101,6 +83,7 @@ export async function SharedGameDetailView({ locale, id, highlightCommentId, ori
           moves={game.moves}
           startingFen={game.startingFen}
           playerColor={game.playerColor}
+          detectedOpening={opening}
           engineConfig={game.engineConfig}
           operationLogs={game.operationLogs}
           playSettings={game.playSettings ?? null}
