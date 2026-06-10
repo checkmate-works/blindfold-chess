@@ -32,8 +32,6 @@ import { getMovingSide, parseFenMeta } from '@/app/[locale]/(public)/games/play/
 import { computeMoveNumber } from '@/app/[locale]/(public)/games/play/postmortem/_lib/compute-move-number';
 import { GameStatsOverview } from '@/app/[locale]/(public)/games/play/result/_components/GameStatsOverview';
 import { StatsAuthGate } from '@/app/[locale]/(public)/games/play/result/_components/StatsAuthGate';
-import { GameColorOpeningRow } from '@/app/[locale]/(public)/games/shared/_components/GameColorOpeningRow';
-import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import type { Locale } from '@/app/[locale]/_lib/types';
@@ -116,8 +114,6 @@ export function GameReplay({
   children,
 }: Props) {
   const t = useTranslations('sharedGames');
-  const tPlay = useTranslations('play');
-  const tOpeningNames = useTranslations('topics.openings.names');
   const router = useRouter();
   const { preferences } = useGamePreferences();
 
@@ -256,6 +252,8 @@ export function GameReplay({
         engineConfig={engineConfig}
         playSettings={playSettings ?? undefined}
         playerColor={playerColor}
+        opening={detectedOpening}
+        locale={locale}
         playSettingsLog={playSettingsLog ?? undefined}
         headingAsSection
         showInitialSettings={false}
@@ -363,24 +361,6 @@ export function GameReplay({
       {isInitialPosition ? (
         <>
           {children}
-
-          {/* Player colour + opening — kept OUTSIDE the stats auth gate so this
-              public-permalink overview stays visible to logged-out visitors and
-              crawlers, while still sitting right above the (gated) stats block
-              for layout parity with the result screen. */}
-          <GameColorOpeningRow
-            playerColor={playerColor}
-            colorLabel={
-              playerColor === 'white' ? tPlay('playerColor.white') : tPlay('playerColor.black')
-            }
-            opening={detectedOpening}
-            openingDisplayName={
-              detectedOpening
-                ? getOpeningDisplayName(tOpeningNames, detectedOpening.slug, detectedOpening.name)
-                : undefined
-            }
-            locale={locale}
-          />
 
           {statsOverview &&
             (currentUser ? (

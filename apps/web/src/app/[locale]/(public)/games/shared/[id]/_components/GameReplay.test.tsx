@@ -87,10 +87,6 @@ vi.mock('@/app/[locale]/(public)/games/play/result/_components/GameStatsOverview
   GameStatsOverview: () => <div data-testid="stats-overview" />,
 }));
 
-vi.mock('@/app/[locale]/(public)/games/shared/_components/GameColorOpeningRow', () => ({
-  GameColorOpeningRow: () => <div data-testid="color-opening" />,
-}));
-
 vi.mock('@/app/[locale]/(public)/games/play/result/_components/StatsAuthGate', () => ({
   StatsAuthGate: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="auth-gate">{children}</div>
