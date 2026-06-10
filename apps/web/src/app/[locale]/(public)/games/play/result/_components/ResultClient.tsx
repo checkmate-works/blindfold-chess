@@ -23,9 +23,7 @@ import type { Game, GamePlaySettings, PlaySettingsChangeEntry } from '@/lib/game
 import { getSharedGame } from '@/lib/games/shared-game-store';
 import type { OpeningCatalogEntry } from '@/lib/openings/detect-game-opening';
 
-import { OpeningTag } from '@/app/[locale]/(public)/games/shared/_components/OpeningTag';
 import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
-import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import { AuthPromptModal } from '@/app/[locale]/_components/AuthPromptModal';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -143,7 +141,6 @@ function ResultContent({
   openingEntries,
 }: ResultContentProps) {
   const t = useTranslations('play');
-  const openingNameT = useTranslations('topics.openings.names');
   const router = useRouter();
   const [isBoardModalOpen, setIsBoardModalOpen] = useState(false);
   // Postmortem is a members-only feature; anonymous viewers get a sign-up
@@ -339,20 +336,6 @@ function ResultContent({
           </div>
         )}
 
-        {/* Opening played — a subtle link to that opening's topic page, under
-            the result banner. Hidden for custom-start / unrecognised games. */}
-        {opening && (
-          <div className="flex justify-center">
-            <OpeningTag
-              compact
-              slug={opening.slug}
-              displayName={getOpeningDisplayName(openingNameT, opening.slug, opening.name)}
-              ecoCode={opening.ecoCode}
-              locale={locale}
-            />
-          </div>
-        )}
-
         {/* Share entry point — a subtle emoji link under the result banner
             rather than another full-width button, to avoid button clutter.
             Spacing comes from the parent gap-4 (equal above/below); the win
@@ -391,6 +374,8 @@ function ResultContent({
               engineConfig={game.engineConfig}
               playSettings={playSettings}
               playerColor={game.playerColor}
+              opening={opening}
+              locale={locale}
               playSettingsLog={playSettingsLog}
               headingAsSection
             />
@@ -404,6 +389,8 @@ function ResultContent({
                 engineConfig={game.engineConfig}
                 playSettings={playSettings}
                 playerColor={game.playerColor}
+                opening={opening}
+                locale={locale}
                 playSettingsLog={playSettingsLog}
                 headingAsSection
               />

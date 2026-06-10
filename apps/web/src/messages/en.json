@@ -1916,6 +1916,10 @@
     "saved": "Saved",
     "postmortem": "Game Review",
     "resultTitle": "Game Result",
+    "playerColor": {
+      "white": "White",
+      "black": "Black"
+    },
     "gameDetails": {
       "title": "Game Details"
     },

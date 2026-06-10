@@ -3,17 +3,21 @@
 import Image from 'next/image';
 
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { FaClipboardList } from 'react-icons/fa';
+import { FaChessKing, FaClipboardList } from 'react-icons/fa';
 
 import type { EngineConfig } from '@/lib/engines';
 import { ENGINE_LOGO_SRC } from '@/lib/engines';
 import type { GameStats, MoveMarker } from '@/lib/games/compute-game-stats';
 import { playSettingsAtHalfMove } from '@/lib/games/play-settings-log';
 import type { GamePlaySettings, PlaySettingsChangeEntry } from '@/lib/games/saved-game-types';
+import type { DetectedOpening } from '@/lib/openings/detect-game-opening';
 
 import { PlaySettingsIndicator } from '@/app/[locale]/(public)/games/shared/[id]/_components/PlaySettingsIndicator';
+import { OpeningTag } from '@/app/[locale]/(public)/games/shared/_components/OpeningTag';
+import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import { SectionTitle } from '@/app/[locale]/_components/SectionTitle';
 import { TEXT_LINK_MUTED_CLASSES } from '@/app/[locale]/_lib/link-classes';
+import type { Locale } from '@/app/[locale]/_lib/types';
 
 type Props = {
   stats: GameStats;
@@ -44,6 +48,16 @@ type Props = {
   playSettings?: GamePlaySettings;
   /** Player's side — needed by {@link PlaySettingsIndicator} for the piece sample. */
   playerColor?: 'white' | 'black';
+  /**
+   * The opening the player reached, shown (with a player-colour icon) on its own
+   * row under the engine badge and linked to its topic page. Passing this prop —
+   * even as `null` — opts the row in (so the player's colour is always shown on
+   * the result page); omitting it (the shared detail page) leaves the row out,
+   * since that page surfaces the opening above the board instead.
+   */
+  opening?: DetectedOpening | null;
+  /** Locale for the opening link. Required to render the {@link opening} row. */
+  locale?: Locale;
   /**
    * Mid-game blindfold-setting changes (display subset). When non-empty, a
    * "change log" renders under the By Move strip: one icon row per change
@@ -103,11 +117,14 @@ export function GameStatsOverview({
   engineConfig,
   playSettings,
   playerColor,
+  opening,
+  locale,
   playSettingsLog,
   headingAsSection = false,
   showInitialSettings = true,
 }: Props) {
   const t = useTranslations('play');
+  const openingNameT = useTranslations('topics.openings.names');
 
   // Distinct change points (a single move may carry several simultaneous edits;
   // collapse them into one snapshot row per move). Set preserves insertion
@@ -178,6 +195,37 @@ export function GameStatsOverview({
               <span className="font-medium text-foreground">{engineName}</span>
               <span className="text-muted-foreground">{engineDifficulty}</span>
             </span>
+          )}
+          {/* Which side the player had, plus the opening they reached. The
+              colour chip removes the "who was white?" ambiguity of the bare
+              engine line; the opening links to its topic page. */}
+          {playerColor && opening !== undefined && locale && (
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <span
+                className="inline-flex items-center gap-1.5"
+                title={t(`playerColor.${playerColor}`)}
+              >
+                <span
+                  className={`inline-flex h-5 w-5 items-center justify-center rounded-full border ${
+                    playerColor === 'white'
+                      ? 'border-border bg-white text-neutral-900'
+                      : 'border-neutral-700 bg-neutral-900 text-white'
+                  }`}
+                >
+                  <FaChessKing className="h-3 w-3" aria-hidden />
+                </span>
+                <span className="text-muted-foreground">{t(`playerColor.${playerColor}`)}</span>
+              </span>
+              {opening && (
+                <OpeningTag
+                  compact
+                  slug={opening.slug}
+                  displayName={getOpeningDisplayName(openingNameT, opening.slug, opening.name)}
+                  ecoCode={opening.ecoCode}
+                  locale={locale}
+                />
+              )}
+            </div>
           )}
           {showInitialSettings && playSettings && playerColor && (
             <PlaySettingsIndicator
