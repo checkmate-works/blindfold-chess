@@ -19,6 +19,7 @@ import { useFinishedGameNavigation } from '../_hooks/use-finished-game-navigatio
 import type { GameSession } from '../_hooks/use-game-session';
 import { usePeekState } from '../_hooks/use-peek-state';
 import { usePlayClientPreferences } from '../_hooks/use-play-client-preferences';
+import { ResultSkeleton } from '../result/_components/ResultSkeleton';
 import { AiReplyChip, useAiReplyChip } from './AiReplyChip';
 import { BoardSettingsButton } from './BoardSettingsButton';
 import { FinishedGamePanel } from './FinishedGamePanel';
@@ -362,6 +363,16 @@ export function PlayClient({
 
   if (gameNotFound) {
     notFound();
+  }
+
+  // Game just ended in normal play: we are about to auto-redirect to the result
+  // page (see useFinishedGameNavigation). The in-game panels only cover the
+  // in-progress and review states, so without this the main column would flash
+  // blank until the (dynamic, non-prefetched) result route paints its
+  // loading.tsx. Bridge with the exact skeleton the result page shows, for a
+  // seamless, CLS-free handoff. Review mode (`finished=1`) stays on this page.
+  if (isFinished && !isFinishedView && gameId) {
+    return <ResultSkeleton />;
   }
 
   return (
