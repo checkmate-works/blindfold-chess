@@ -10,6 +10,7 @@ import { eq } from 'drizzle-orm';
 import { db, profiles } from '@/lib/db';
 import { getExpInfoBySource } from '@/lib/db/get-exp-info-by-source';
 import { AI_GAME_RESULT_SOURCE } from '@/lib/db/save-exp';
+import { getOpeningEntries } from '@/lib/openings/detect-game-opening';
 import { createClient } from '@/lib/supabase/server';
 
 import { PageLayout } from '@/app/[locale]/_components';
@@ -82,6 +83,10 @@ export default async function ResultPage({ params, searchParams }: Props) {
     initialExp = await getExpInfoBySource(user.id, AI_GAME_RESULT_SOURCE, gameId);
   }
 
+  // The result game lives only in the browser's localStorage, so the opening is
+  // detected client-side; ship the (cached, ~100-row) opening master for it.
+  const openingEntries = await getOpeningEntries();
+
   const breadcrumb = (
     <BreadcrumbContent
       items={[{ label: tGames('pageTitle'), href: '/games' }, { label: tPlay('gameOver') }]}
@@ -99,6 +104,7 @@ export default async function ResultPage({ params, searchParams }: Props) {
           displayName={displayName}
           isAuthenticated={Boolean(user)}
           initialExp={initialExp}
+          openingEntries={openingEntries}
         />
       </Suspense>
 

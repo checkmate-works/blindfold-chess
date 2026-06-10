@@ -7,7 +7,11 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Button } from '@/app/_components';
 import { useSafeTranslations as useTranslations } from '@/i18n/use-safe-translations';
-import { getLastMoveDetails } from '@blindfold-chess/features/chess-core';
+import {
+  buildOpeningIndex,
+  detectOpening,
+  getLastMoveDetails,
+} from '@blindfold-chess/features/chess-core';
 import type { ExpInfo } from '@blindfold-chess/features/exp';
 import { FaChartLine, FaChessBoard, FaMinus, FaTimes } from 'react-icons/fa';
 
@@ -17,8 +21,11 @@ import { DEFAULT_BOARD_THEME } from '@/lib/games/board-themes';
 import { computeGameStats } from '@/lib/games/compute-game-stats';
 import type { Game, GamePlaySettings, PlaySettingsChangeEntry } from '@/lib/games/saved-game-types';
 import { getSharedGame } from '@/lib/games/shared-game-store';
+import type { OpeningCatalogEntry } from '@/lib/openings/detect-game-opening';
 
+import { OpeningTag } from '@/app/[locale]/(public)/games/shared/_components/OpeningTag';
 import { ExpGainDisplay } from '@/app/[locale]/(public)/practice/_components/ExpGainDisplay';
+import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import { AuthPromptModal } from '@/app/[locale]/_components/AuthPromptModal';
 import type { GamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
 import { useGamePreferences } from '@/app/[locale]/_contexts/GamePreferencesContext';
@@ -72,9 +79,17 @@ type Props = {
   isAuthenticated: boolean;
   /** Exp already granted for this game (resolved server-side on revisit), or null. */
   initialExp: ExpInfo | null;
+  /** Opening master, shipped from the server so detection can run on the local game. */
+  openingEntries: OpeningCatalogEntry[];
 };
 
-export function ResultClient({ locale, displayName, isAuthenticated, initialExp }: Props) {
+export function ResultClient({
+  locale,
+  displayName,
+  isAuthenticated,
+  initialExp,
+  openingEntries,
+}: Props) {
   const t = useTranslations('play');
   const searchParams = useSearchParams();
   const gameId = searchParams.get('gameId');
@@ -103,6 +118,7 @@ export function ResultClient({ locale, displayName, isAuthenticated, initialExp 
       displayName={displayName}
       isAuthenticated={isAuthenticated}
       initialExp={initialExp}
+      openingEntries={openingEntries}
     />
   );
 }
@@ -114,6 +130,7 @@ type ResultContentProps = {
   displayName: string;
   isAuthenticated: boolean;
   initialExp: ExpInfo | null;
+  openingEntries: OpeningCatalogEntry[];
 };
 
 function ResultContent({
@@ -123,8 +140,10 @@ function ResultContent({
   displayName,
   isAuthenticated,
   initialExp,
+  openingEntries,
 }: ResultContentProps) {
   const t = useTranslations('play');
+  const openingNameT = useTranslations('topics.openings.names');
   const router = useRouter();
   const [isBoardModalOpen, setIsBoardModalOpen] = useState(false);
   // Postmortem is a members-only feature; anonymous viewers get a sign-up
@@ -143,6 +162,15 @@ function ResultContent({
 
   // Derive player result from game status
   const playerResult = game.status === 'win' ? 'win' : game.status === 'loss' ? 'loss' : 'draw';
+
+  // Opening played — detected client-side from the local game (the result game
+  // is never persisted server-side; see detectOpening). Null for custom-start
+  // games or lines outside the master.
+  const opening = useMemo(() => {
+    const index = buildOpeningIndex(openingEntries.map((e) => ({ id: e.slug, fen: e.fen })));
+    const match = detectOpening({ moves: game.moves, startingFen: game.startingFen }, index);
+    return match ? (openingEntries.find((e) => e.slug === match.id) ?? null) : null;
+  }, [openingEntries, game.moves, game.startingFen]);
 
   // Notation hook - game is guaranteed to be loaded here
   const { moves, formattedPgn } = useNotation({
@@ -308,6 +336,20 @@ function ResultContent({
                 <h3 className="text-xl font-bold">{t('draw')}</h3>
               </>
             )}
+          </div>
+        )}
+
+        {/* Opening played — a subtle link to that opening's topic page, under
+            the result banner. Hidden for custom-start / unrecognised games. */}
+        {opening && (
+          <div className="flex justify-center">
+            <OpeningTag
+              compact
+              slug={opening.slug}
+              displayName={getOpeningDisplayName(openingNameT, opening.slug, opening.name)}
+              ecoCode={opening.ecoCode}
+              locale={locale}
+            />
           </div>
         )}
 

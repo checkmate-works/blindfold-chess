@@ -31,7 +31,15 @@ export type DetectedOpening = {
   ecoCode: string;
 };
 
-type OpeningRow = DetectedOpening & { fen: string };
+/**
+ * A master opening plus its signature FEN. Shipped to the client when detection
+ * must run there (the play-result game lives only in localStorage, so the server
+ * never sees its moves); the client builds the index and runs {@link detectOpening}
+ * directly — both are browser-safe pure functions.
+ */
+export type OpeningCatalogEntry = DetectedOpening & { fen: string };
+
+type OpeningRow = OpeningCatalogEntry;
 
 /**
  * The raw rows behind detection, cached for an hour under the shared `openings`
@@ -68,6 +76,16 @@ const getOpeningLookup = cache(
     return { index, bySlug };
   }
 );
+
+/**
+ * The opening master (`{ slug, name, ecoCode, fen }`), cached. Exposed for the
+ * client-side detection path: a Server Component fetches this and hands it to a
+ * client component, which builds the index and detects locally (see the
+ * play-result page).
+ */
+export async function getOpeningEntries(): Promise<OpeningCatalogEntry[]> {
+  return loadOpeningRows();
+}
 
 /**
  * Return the deepest named opening the game reached, or null when none applies
