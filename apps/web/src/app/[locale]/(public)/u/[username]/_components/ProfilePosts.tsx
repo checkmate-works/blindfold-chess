@@ -8,6 +8,7 @@ type Props = {
   posts: ProfilePostWithReplyMeta[];
   totalCount: number;
   problemsCount: number;
+  gamesCount: number;
   activeTab: string;
   currentPage: number;
   totalPages: number;
@@ -17,17 +18,29 @@ type Props = {
   labels: {
     topicsTab: string;
     problemsTab: string;
+    gamesTab: string;
     noTopicPosts: string;
     showMore: string;
     justNow: (topicType: string) => string;
   };
-  children?: React.ReactNode;
+  /** Problems-tab content, rendered when `activeTab === 'problems'`. */
+  problemsSlot?: React.ReactNode;
+  /** Games-tab content, rendered when `activeTab === 'games'`. */
+  gamesSlot?: React.ReactNode;
 };
+
+const TAB_CLASSES = (isActive: boolean) =>
+  `px-4 py-2 text-sm font-bold ${
+    isActive
+      ? 'text-foreground border-b-2 border-foreground'
+      : 'text-muted-foreground hover:text-foreground'
+  }`;
 
 export function ProfilePosts({
   posts,
   totalCount,
   problemsCount,
+  gamesCount,
   activeTab,
   currentPage,
   totalPages,
@@ -35,7 +48,8 @@ export function ProfilePosts({
   buildHref,
   buildTabHref,
   labels,
-  children,
+  problemsSlot,
+  gamesSlot,
 }: Props) {
   return (
     <div>
@@ -44,24 +58,23 @@ export function ProfilePosts({
           <Link
             href={buildTabHref('topics')}
             locale={locale}
-            className={`px-4 py-2 text-sm font-bold ${
-              activeTab === 'topics'
-                ? 'text-foreground border-b-2 border-foreground'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
+            className={TAB_CLASSES(activeTab === 'topics')}
           >
             {labels.topicsTab} <span className="font-normal">{totalCount}</span>
           </Link>
           <Link
             href={buildTabHref('problems')}
             locale={locale}
-            className={`px-4 py-2 text-sm font-bold ${
-              activeTab === 'problems'
-                ? 'text-foreground border-b-2 border-foreground'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
+            className={TAB_CLASSES(activeTab === 'problems')}
           >
             {labels.problemsTab} <span className="font-normal">{problemsCount}</span>
+          </Link>
+          <Link
+            href={buildTabHref('games')}
+            locale={locale}
+            className={TAB_CLASSES(activeTab === 'games')}
+          >
+            {labels.gamesTab} <span className="font-normal">{gamesCount}</span>
           </Link>
         </nav>
       </div>
@@ -87,8 +100,10 @@ export function ProfilePosts({
 
           <PaginationNav currentPage={currentPage} totalPages={totalPages} buildHref={buildHref} />
         </>
+      ) : activeTab === 'games' ? (
+        gamesSlot
       ) : (
-        children
+        problemsSlot
       )}
     </div>
   );

@@ -27,6 +27,7 @@ import { getAchievementCategoryNames } from '@/lib/achievements/display';
 import { EMPTY_REPLY_META } from '@/lib/db/reply-meta-queries';
 import { createClient } from '@/lib/supabase/server';
 
+import { getOpeningDisplayName } from '@/app/[locale]/(public)/topics/openings/_lib/get-opening-display-name';
 import { LinkedText, PageLayout } from '@/app/[locale]/_components';
 import { TEXT_LINK_CLASSES } from '@/app/[locale]/_lib/link-classes';
 import { resolveTitle } from '@/app/[locale]/_lib/metadata';
@@ -34,6 +35,7 @@ import type { Locale } from '@/app/[locale]/_lib/types';
 
 import { FollowButton } from './_components/FollowButton';
 import { ProfileAchievements } from './_components/ProfileAchievements';
+import { ProfileGames } from './_components/ProfileGames';
 import { ProfileHeader } from './_components/ProfileHeader';
 import { ProfilePosts } from './_components/ProfilePosts';
 import { ProfileProblems } from './_components/ProfileProblems';
@@ -93,7 +95,18 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
   const user = authResult.data.user;
   const isOwnProfile = user?.id === profile.id;
 
-  const [pageData, t, tTopics, tSquares, tOpenings, tPuzzle, tMemory] = await Promise.all([
+  const [
+    pageData,
+    t,
+    tTopics,
+    tSquares,
+    tOpenings,
+    tPuzzle,
+    tMemory,
+    tPlay,
+    tSharedGames,
+    tOpeningNames,
+  ] = await Promise.all([
     loadPublicProfilePageData({
       profileId: profile.id,
       currentUserId: user?.id,
@@ -107,6 +120,9 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
     getTranslations({ locale, namespace: 'topics.openings' }),
     getTranslations({ locale, namespace: 'practice.puzzle' }),
     getTranslations({ locale, namespace: 'practice.positionMemory' }),
+    getTranslations({ locale, namespace: 'play' }),
+    getTranslations({ locale, namespace: 'sharedGames' }),
+    getTranslations({ locale, namespace: 'topics.openings.names' }),
   ]);
 
   const {
@@ -125,6 +141,12 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
     problemsTotalPages,
     problemLikeMetaMap,
     problemReplyMetaMap,
+    games,
+    gamesCount,
+    gamesCurrentPage,
+    gamesTotalPages,
+    gameLikeMetaMap,
+    gameReplyMetaMap,
     userAchievementRows,
   } = pageData;
 
@@ -216,11 +238,12 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
           </div>
         )}
 
-        {/* Topics / Problems Tabs */}
+        {/* Topics / Problems / Games Tabs */}
         <ProfilePosts
           posts={posts}
           totalCount={topicsCount}
           problemsCount={problemsCount}
+          gamesCount={gamesCount}
           activeTab={activeTab}
           currentPage={topicsCurrentPage}
           totalPages={topicsTotalPages}
@@ -230,37 +253,62 @@ export default async function PublicProfilePage({ params, searchParams }: Props)
           labels={{
             topicsTab: t('topicsTab'),
             problemsTab: t('problemsTab'),
+            gamesTab: t('gamesTab'),
             noTopicPosts: t('noTopicPosts'),
             showMore: tTopics('showMore'),
             justNow: (topicType) =>
               topicType === 'opening' ? tOpenings('justNow') : tSquares('justNow'),
           }}
-        >
-          <ProfileProblems
-            positions={problemPositions}
-            authorProfile={{
-              username: profile.username,
-              displayName: profile.displayName,
-              avatarUrl: profile.avatarUrl,
-            }}
-            likeMetaMap={problemLikeMetaMap}
-            replyMetaMap={problemReplyMetaMap}
-            emptyReplyMeta={EMPTY_REPLY_META}
-            currentPage={problemsCurrentPage}
-            totalPages={problemsTotalPages}
-            locale={locale}
-            buildHref={buildHref}
-            justNowLabels={{
-              puzzle: tPuzzle('justNow'),
-              memory: tMemory('justNow'),
-            }}
-            labels={{
-              noProblems: t('noProblems'),
-              problemTypeMemory: t('problemTypeMemory'),
-              problemTypePuzzle: t('problemTypePuzzle'),
-            }}
-          />
-        </ProfilePosts>
+          problemsSlot={
+            <ProfileProblems
+              positions={problemPositions}
+              authorProfile={{
+                username: profile.username,
+                displayName: profile.displayName,
+                avatarUrl: profile.avatarUrl,
+              }}
+              likeMetaMap={problemLikeMetaMap}
+              replyMetaMap={problemReplyMetaMap}
+              emptyReplyMeta={EMPTY_REPLY_META}
+              currentPage={problemsCurrentPage}
+              totalPages={problemsTotalPages}
+              locale={locale}
+              buildHref={buildHref}
+              justNowLabels={{
+                puzzle: tPuzzle('justNow'),
+                memory: tMemory('justNow'),
+              }}
+              labels={{
+                noProblems: t('noProblems'),
+                problemTypeMemory: t('problemTypeMemory'),
+                problemTypePuzzle: t('problemTypePuzzle'),
+              }}
+            />
+          }
+          gamesSlot={
+            <ProfileGames
+              games={games}
+              likeMetaMap={gameLikeMetaMap}
+              replyMetaMap={gameReplyMetaMap}
+              emptyReplyMeta={EMPTY_REPLY_META}
+              currentPage={gamesCurrentPage}
+              totalPages={gamesTotalPages}
+              locale={locale}
+              buildHref={buildHref}
+              justNowLabel={tSharedGames('detail.justNow')}
+              colorLabels={{
+                white: tPlay('playerColor.white'),
+                black: tPlay('playerColor.black'),
+              }}
+              resolveOpeningName={(slug, fallbackName) =>
+                getOpeningDisplayName(tOpeningNames, slug, fallbackName)
+              }
+              labels={{
+                noGames: t('noGames'),
+              }}
+            />
+          }
+        />
 
         {/* Achievements */}
         {userAchievementRows.length > 0 && (
