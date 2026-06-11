@@ -12,7 +12,7 @@
  */
 import { cache } from 'react';
 
-import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { type SQL, and, count, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import 'server-only';
 
 import { generateManageToken, manageTokenMatches } from '@/lib/games/manage-token';
@@ -115,26 +115,14 @@ export type SharedGameListItem = {
 export type SharedGamesSort = 'new' | 'clean' | 'strong';
 
 /**
- * Publicly-listed games for the gallery. Only `public`, non-deleted games
- * appear here (the planned `private` tier and soft-deleted rows are excluded).
- * Sort:
- * - 'new' (default): newest first via the time-ordered UUIDv7 id.
- * - 'clean': highest blindfold clean-rate first (nulls last).
- * - 'strong': strongest opponent first (unified Elo).
- * Every mode tie-breaks on id desc so paging stays stable.
+ * Base list query shared by every gallery/profile list path: the column
+ * projection for a {@link SharedGameListItem} joined to the author profile.
+ * Callers chain `.where()` / `.orderBy()` / `.limit()` etc. `moves` is fetched
+ * only to derive the opening in {@link mapGameRowsToListItems} and is dropped
+ * before the item is returned.
  */
-export async function listSharedGames(
-  sort: SharedGamesSort = 'new',
-  limit = 30
-): Promise<SharedGameListItem[]> {
-  const orderBy =
-    sort === 'clean'
-      ? [sql`${games.cleanRate} DESC NULLS LAST`, desc(games.id)]
-      : sort === 'strong'
-        ? [desc(games.engineElo), desc(games.id)]
-        : [desc(games.id)];
-
-  const rows = await db
+function gameListQuery() {
+  return db
     .select({
       id: games.id,
       title: games.title,
@@ -147,20 +135,24 @@ export async function listSharedGames(
       playerColor: games.playerColor,
       moveCount: games.moveCount,
       cleanRate: games.cleanRate,
-      // Fetched only to derive the opening below; not returned to the caller.
       moves: games.moves,
       authorUsername: profiles.username,
       authorDisplayName: profiles.displayName,
       authorAvatarUrl: profiles.avatarUrl,
     })
     .from(games)
-    .leftJoin(profiles, eq(profiles.id, games.authorId))
-    .where(and(isNull(games.deletedAt), eq(games.status, 'public')))
-    .orderBy(...orderBy)
-    .limit(limit);
+    .leftJoin(profiles, eq(profiles.id, games.authorId));
+}
 
-  // Opening detection shares one position index across the page (React.cache),
-  // and each game is only replayed through its opening phase, so this is cheap.
+type GameListRow = Awaited<ReturnType<typeof gameListQuery>>[number];
+
+/**
+ * Map raw rows from {@link GAME_LIST_COLUMNS} into gallery items, deriving each
+ * game's opening from its moves. Opening detection shares one position index
+ * across the request (React.cache), and each game is only replayed through its
+ * opening phase, so this stays cheap.
+ */
+function mapGameRowsToListItems(rows: GameListRow[]): Promise<SharedGameListItem[]> {
   return Promise.all(
     rows.map(async (r) => ({
       id: r.id,
@@ -184,6 +176,64 @@ export async function listSharedGames(
       opening: await detectGameOpening({ moves: r.moves, startingFen: r.startingFen }),
     }))
   );
+}
+
+/**
+ * Publicly-listed games for the gallery. Only `public`, non-deleted games
+ * appear here (the planned `private` tier and soft-deleted rows are excluded).
+ * Sort:
+ * - 'new' (default): newest first via the time-ordered UUIDv7 id.
+ * - 'clean': highest blindfold clean-rate first (nulls last).
+ * - 'strong': strongest opponent first (unified Elo).
+ * Every mode tie-breaks on id desc so paging stays stable.
+ */
+export async function listSharedGames(
+  sort: SharedGamesSort = 'new',
+  limit = 30
+): Promise<SharedGameListItem[]> {
+  const orderBy: SQL[] =
+    sort === 'clean'
+      ? [sql`${games.cleanRate} DESC NULLS LAST`, desc(games.id)]
+      : sort === 'strong'
+        ? [desc(games.engineElo), desc(games.id)]
+        : [desc(games.id)];
+
+  const rows = await gameListQuery()
+    .where(and(isNull(games.deletedAt), eq(games.status, 'public')))
+    .orderBy(...orderBy)
+    .limit(limit);
+
+  return mapGameRowsToListItems(rows);
+}
+
+/**
+ * Publicly-visible games authored by a single registered user, newest first —
+ * the data behind the Games tab on a public profile. Matches the gallery's
+ * visibility rule (`public`, non-deleted) so the profile never leaks a game the
+ * gallery hides. Paginated via `limit`/`offset`; tie-breaks on the time-ordered
+ * UUIDv7 id so paging stays stable.
+ */
+export async function listGamesByAuthorId(
+  authorId: string,
+  limit: number,
+  offset: number
+): Promise<SharedGameListItem[]> {
+  const rows = await gameListQuery()
+    .where(and(eq(games.authorId, authorId), isNull(games.deletedAt), eq(games.status, 'public')))
+    .orderBy(desc(games.id))
+    .limit(limit)
+    .offset(offset);
+
+  return mapGameRowsToListItems(rows);
+}
+
+/** Count an author's publicly-visible games (matches {@link listGamesByAuthorId}). */
+export async function countGamesByAuthorId(authorId: string): Promise<number> {
+  const [row] = await db
+    .select({ value: count() })
+    .from(games)
+    .where(and(eq(games.authorId, authorId), isNull(games.deletedAt), eq(games.status, 'public')));
+  return row?.value ?? 0;
 }
 
 export type PublishGameResult = {

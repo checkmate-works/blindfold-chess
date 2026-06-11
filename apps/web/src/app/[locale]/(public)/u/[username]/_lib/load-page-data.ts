@@ -2,14 +2,20 @@ import { and, count, eq, isNull } from 'drizzle-orm';
 
 import { db, profiles, userFollows } from '@/lib/db';
 import { type UserAchievementRow, getUserAchievements } from '@/lib/db/achievement-queries';
-import { type ReplyMeta, getReplyMetaMap } from '@/lib/db/reply-meta-queries';
+import { type SharedGameListItem, countGamesByAuthorId, listGamesByAuthorId } from '@/lib/db/games';
+import { GAME_LIKE_TARGET, type LikeMeta, getLikeMetaMap } from '@/lib/db/like-queries';
+import {
+  type ReplyMeta,
+  getGameCommentMetaMap,
+  getReplyMetaMap,
+} from '@/lib/db/reply-meta-queries';
 import { type PositionLikeMeta, getPositionLikeMetaMap } from '@/lib/positions/like-queries';
 import { countPositions, listPositions } from '@/lib/positions/queries';
 
 import type { ProfilePostWithReplyMeta } from '@/app/[locale]/(public)/topics/_lib/shared';
 import { getPostsByUserId } from '@/app/[locale]/(public)/topics/_lib/user-post-queries';
 
-type ProfileTab = 'topics' | 'problems';
+type ProfileTab = 'topics' | 'problems' | 'games';
 
 type ListedPosition = Awaited<ReturnType<typeof listPositions>>[number];
 
@@ -29,6 +35,12 @@ export type PublicProfilePageData = {
   problemsTotalPages: number;
   problemLikeMetaMap: Map<string, PositionLikeMeta>;
   problemReplyMetaMap: Map<string, ReplyMeta>;
+  games: SharedGameListItem[];
+  gamesCount: number;
+  gamesCurrentPage: number;
+  gamesTotalPages: number;
+  gameLikeMetaMap: Map<string, LikeMeta>;
+  gameReplyMetaMap: Map<string, ReplyMeta>;
   userAchievementRows: UserAchievementRow[];
 };
 
@@ -59,7 +71,12 @@ export async function loadPublicProfilePageData({
   parsedParams: { page: number; tab: string };
   pageSize: number;
 }): Promise<PublicProfilePageData> {
-  const activeTab: ProfileTab = parsedParams.tab === 'problems' ? 'problems' : 'topics';
+  const activeTab: ProfileTab =
+    parsedParams.tab === 'problems'
+      ? 'problems'
+      : parsedParams.tab === 'games'
+        ? 'games'
+        : 'topics';
 
   const followCheckPromise =
     currentUserId && !isOwnProfile
@@ -105,6 +122,7 @@ export async function loadPublicProfilePageData({
     allPosts,
     userAchievementRows,
     problemsCount,
+    gamesCount,
   ] = await Promise.all([
     followCheckPromise,
     reverseFollowCheckPromise,
@@ -113,6 +131,7 @@ export async function loadPublicProfilePageData({
     getPostsByUserId(profileId, currentUserId),
     getUserAchievements(profileId),
     countPositions({ userId: profileId }),
+    countGamesByAuthorId(profileId),
   ]);
 
   const topicsCount = allPosts.length;
@@ -157,6 +176,27 @@ export async function loadPublicProfilePageData({
     problemReplyMetaMap = new Map([...puzzleReplyMetaMap, ...memoryReplyMetaMap]);
   }
 
+  const gamesTotalPages = Math.ceil(gamesCount / pageSize);
+  const gamesCurrentPage =
+    activeTab === 'games' ? Math.max(1, Math.min(parsedParams.page, gamesTotalPages || 1)) : 1;
+
+  let games: SharedGameListItem[] = [];
+  let gameLikeMetaMap: Map<string, LikeMeta> = new Map();
+  let gameReplyMetaMap: Map<string, ReplyMeta> = new Map();
+
+  if (activeTab === 'games') {
+    games = await listGamesByAuthorId(profileId, pageSize, (gamesCurrentPage - 1) * pageSize);
+
+    const gameIds = games.map((g) => g.id);
+    const [likeMetaMap, commentMetaMap] = await Promise.all([
+      getLikeMetaMap(GAME_LIKE_TARGET, gameIds, currentUserId),
+      getGameCommentMetaMap(gameIds),
+    ]);
+
+    gameLikeMetaMap = likeMetaMap;
+    gameReplyMetaMap = commentMetaMap;
+  }
+
   return {
     activeTab,
     initialFollowing: !!existingFollowRows[0],
@@ -173,6 +213,12 @@ export async function loadPublicProfilePageData({
     problemsTotalPages,
     problemLikeMetaMap,
     problemReplyMetaMap,
+    games,
+    gamesCount,
+    gamesCurrentPage,
+    gamesTotalPages,
+    gameLikeMetaMap,
+    gameReplyMetaMap,
     userAchievementRows,
   };
 }
